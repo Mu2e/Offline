@@ -150,7 +150,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
-    std::array<FaceZ_t,FaceZ_t::kNTotalFaces>            _oTracker;
+    std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;
     // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions

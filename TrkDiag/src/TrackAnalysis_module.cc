@@ -43,6 +43,8 @@
 #include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
+#include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -67,6 +69,7 @@ namespace mu2e {
     virtual ~TrackAnalysis() { }
 
     void beginJob();
+    void beginSubRun(const art::SubRun & subrun ) override;
     void analyze(const art::Event& e);
 
   private:
@@ -80,8 +83,7 @@ namespace mu2e {
     art::InputTag _dmmtag;
     // event-weighting modules
     art::InputTag _genWttag;
-    art::InputTag _beamWttag;
-    art::InputTag _PBItag;
+    art::InputTag _PBItag, _meanPBItag;
     // CRV info
     std::string _crvCoincidenceModuleLabel;
     // analysis options
@@ -99,6 +101,7 @@ namespace mu2e {
     // main TTree
     TTree* _trkana;
     // general event info branch
+    double _meanPBI;
     EventInfo _einfo;
     // hit counting
     HitCount _hcnt;
@@ -140,11 +143,12 @@ namespace mu2e {
 
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
-    _demtag(pset.get<art::InputTag>("DownstreameMinusTrackTag",art::InputTag()) ),
-    _uemtag(pset.get<art::InputTag>("UpstreameMinusTrackTag",art::InputTag()) ),
-    _dmmtag(pset.get<art::InputTag>("DownstreammuMinusTrackTag",art::InputTag()) ),
-    _genWttag( pset.get<art::InputTag>("generatorWeightTag",art::InputTag()) ),
-    _beamWttag( pset.get<art::InputTag>("beamWeightTag",art::InputTag()) ),
+    _demtag(pset.get<art::InputTag>("DownstreameMinusTrack",art::InputTag()) ),
+    _uemtag(pset.get<art::InputTag>("UpstreameMinusTrack",art::InputTag()) ),
+    _dmmtag(pset.get<art::InputTag>("DownstreammuMinusTrack",art::InputTag()) ),
+    _genWttag( pset.get<art::InputTag>("generatorWeight",art::InputTag()) ),
+    _PBItag( pset.get<art::InputTag>("BeamIntensity",art::InputTag()) ),
+    _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
@@ -153,7 +157,8 @@ namespace mu2e {
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _cdiag(_spart,_sdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet())),
-    _trkana(0)
+    _trkana(0),
+    _meanPBI(0.0)
   {
   }
 
@@ -194,6 +199,13 @@ namespace mu2e {
 
   }
 
+  void TrackAnalysis::beginSubRun(const art::SubRun & subrun ) {
+    // mean number of protons on target
+    art::Handle<ProtonBunchIntensity> PBIHandle;
+    subrun.getByLabel(_meanPBItag, PBIHandle);
+    if(PBIHandle.isValid())
+      _meanPBI = PBIHandle->intensity();
+  }
   void TrackAnalysis::analyze(const art::Event& event) {
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalRepPtrCollection> demH;
@@ -377,18 +389,17 @@ namespace mu2e {
       _einfo._genwt = genWtHandle->weight();
       _einfo._evtwt *= genWtHandle->weight();
     } 
-    // proton bunch weight
-    art::Handle<EventWeight> beamWtHandle;
-    event.getByLabel(_beamWttag, beamWtHandle);
-    if(beamWtHandle.isValid()){
-      _einfo._beamwt = beamWtHandle->weight();
-      _einfo._evtwt *= beamWtHandle->weight();
-    }
     // actual number of protons on target
     art::Handle<ProtonBunchIntensity> PBIHandle;
-    event.getByLabel(_beamWttag, PBIHandle);
-    if(PBIHandle.isValid())
+    event.getByLabel(_PBItag, PBIHandle);
+    if(PBIHandle.isValid()) {
       _einfo._nprotons = PBIHandle->intensity();
+      if(_meanPBI > 0.0){
+	_einfo._beamwt = _einfo._nprotons/_meanPBI; 
+	_einfo._evtwt *= _einfo._beamwt;
+      }
+    }
+
   }
 
   void TrackAnalysis::findBestClusterMatch(TrackClusterMatchCollection const& tcmc,

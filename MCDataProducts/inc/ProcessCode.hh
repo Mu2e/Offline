@@ -75,7 +75,7 @@ namespace mu2e {
       muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr,
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary,
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit,
-      G4ErrorMagFieldLimit,   ePairProd,
+      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,
       lastEnum,
 
       // An alias for backward compatibility
@@ -117,7 +117,7 @@ namespace mu2e {
     "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
-    "G4ErrorMagFieldLimit", "ePairProd"
+    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator"
 
   public:
 

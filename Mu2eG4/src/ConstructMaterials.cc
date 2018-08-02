@@ -1116,6 +1116,12 @@ namespace mu2e {
       CarbonFiber->AddMaterial(CFibers, fiberFrac );
       CarbonFiber->AddMaterial(CFresin, (1.0-fiberFrac) );
     }
+ 
+    mat = uniqueMaterialOrThrow("PET_P100");
+      G4Material* PET_P100 = new G4Material( mat.name, 0.11*CLHEP::g/CLHEP::cm3, 3);
+      PET_P100->AddElement( getElementOrThrow("C"), 10);
+      PET_P100->AddElement( getElementOrThrow("H"),  8);
+      PET_P100->AddElement( getElementOrThrow("O"),  4);
 
     mat = uniqueMaterialOrThrow( "Lyso_01");  /// Alessandra
     {
@@ -1138,6 +1144,11 @@ namespace mu2e {
       Lyso_01->AddMaterial( Lyso_00, 99.85*CLHEP::perCent ); 
       Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );    
     }   
+
+    mat = uniqueMaterialOrThrow( "CuW1090");
+     G4Material* CuW1090 = new G4Material(mat.name, 17.3*CLHEP::g/CLHEP::cm3, 2);
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90); 
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_Cu"),0.10); 
 
 
     mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
@@ -1174,6 +1185,15 @@ namespace mu2e {
       Electronics2->AddMaterial(findMaterialOrThrow("G10_FR4"), 0.26);
       Electronics2->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.74);
     }
+    
+    mat = uniqueMaterialOrThrow( "AluminumHoneycomb");
+    {
+      //Honeycomb used to fill the source-panel and the inner step margins of the calorimeter
+      G4double density;
+      G4int nel;
+      G4Material *AluminumHoneycomb = new G4Material(mat.name, density = 0.03*CLHEP::g/CLHEP::cm3, nel=1);
+      AluminumHoneycomb->AddMaterial(findMaterialOrThrow("G4_Al"), 100.0*CLHEP::perCent);
+     }
 
     mat = uniqueMaterialOrThrow( "PolypropyleneFoam");
     {
@@ -1271,6 +1291,80 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMl, 96.95e-2 );
       stWallEq->AddMaterial(strwMet1, 1.80e-2 );
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
+    }
+
+    // various densities of Al and Be to permit staging of pbar window studies without changing geometry
+    // between stages
+    mat = uniqueMaterialOrThrow( "G4_Be_Quarter");
+    {
+      G4int nel;
+      G4Material* G4_Be_Quarter = new G4Material(mat.name, 0.25*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Quarter->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Half");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Half = new G4Material(mat.name, 0.50*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Half->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Standard");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Standard = new G4Material(mat.name, 1.0*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Standard->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Double");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Double = new G4Material(mat.name, 2.0*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Double->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Be_Triple");
+    {
+      G4int nel;
+      G4Material*  G4_Be_Triple = new G4Material(mat.name, 3.0*1.85*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Be  = getElementOrThrow("Be");
+      G4_Be_Triple->AddElement(Be, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Quarter");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Quarter = new G4Material(mat.name, 0.25*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Quarter->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Half");
+    { 
+      G4int nel; 
+      G4Material*  G4_Al_Half = new G4Material(mat.name, 0.50*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Half->AddElement(Al, 100.0*CLHEP::perCent );
+
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Standard");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Standard = new G4Material("G4_Al_Standard", 1.0*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Standard->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Double");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Double = new G4Material(mat.name, 2.0*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Double->AddElement(Al, 100.0*CLHEP::perCent );
+    }
+    mat = uniqueMaterialOrThrow( "G4_Al_Triple");
+    {
+      G4int nel;
+      G4Material*  G4_Al_Triple = new G4Material(mat.name, 3.0*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
+      G4Element* Al  = getElementOrThrow("Al");
+      G4_Al_Triple->AddElement(Al, 100.0*CLHEP::perCent );
     }
 
 

@@ -9,7 +9,6 @@
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "canvas/Utilities/InputTag.h"
@@ -111,10 +110,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
   static int ncalls(0);
   ++ncalls;
 
-  ConditionsHandle<TrackerCalibrations> trackerCalibrations("ignored");
-
   const TTracker& tracker = *GeomHandle<TTracker>();
-  //    const Tracker& tracker = getTrackerOrThrow();
 
   auto const& hits = *evt.getValidHandle<StrawHitCollection>( _hitsTag );
   if ( _diagLevel > 1 ) {

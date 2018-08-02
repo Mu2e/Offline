@@ -3,16 +3,12 @@
 //
 // Maintain a list of dead straws.  This should be moved to the conditions system.
 //
-// $Id: DeadStrawList.hh,v 1.1 2014/05/30 19:15:32 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/05/30 19:15:32 $
-//
 // Original author Rob Kutschke
 // Modified to model dead central section by D. Brown
 //
 
 // Mu2e includes
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "TrackerGeom/inc/Straw.hh"
 
 // art and its tool chain
@@ -29,16 +25,16 @@ namespace mu2e {
 // at the lowest radius = straw center)
 //
   struct DeadStrawRange {
-    StrawIndex _strawind; // which straw
+    StrawId _strawId; // which straw
     double _range; // how much is dead
 // constructor.  Default range is longer than the longest straw, meaning the
 // straw is 100% dead
-    DeadStrawRange(StrawIndex const& ind,double range=1000.0) : _strawind(ind), _range(range) {}
-    DeadStrawRange(Straw const& straw,double range=1000.0) : DeadStrawRange(straw.index(),range) {}
+    DeadStrawRange(StrawId const& id,double range=1000.0) : _strawId(id), _range(range) {}
+    DeadStrawRange(Straw const& straw,double range=1000.0) : DeadStrawRange(straw.id(),range) {}
 // test if a given position (relative to the straw center) is dead
     bool isDead(double hitpos) const { return fabs(hitpos)<_range; }
-// define comparator to ignore range: this allows finding an element based on strawindex quickly
-    bool operator < (DeadStrawRange const& other) const { return _strawind < other._strawind; }
+// define comparator to ignore range: this allows finding an element based on strawid quickly
+    bool operator < (DeadStrawRange const& other) const { return _strawId < other._strawId; }
   };
 
   class DeadStrawList{
@@ -51,8 +47,8 @@ namespace mu2e {
     void reset( fhicl::ParameterSet const& pset );
 
     // Accessors; test if a straw is dead.  The position argument refers to distance from the straw center in mm
-    bool isAlive( StrawIndex ind,double hitpos=0.0 ) const { return !(isDead(ind,hitpos)); }
-    bool isDead ( StrawIndex ind,double hitpos=0.0 ) const;
+    bool isAlive( StrawId id,double hitpos=0.0 ) const { return !(isDead(id,hitpos)); }
+    bool isDead ( StrawId id,double hitpos=0.0 ) const;
 
     void print( std::ostream& ) const;
 

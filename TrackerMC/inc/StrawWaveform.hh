@@ -5,10 +5,6 @@
 // a straw, over the time period of 1 microbunch.  It includes all physical and electronics
 // effects prior to digitization.
 //
-// $Id: StrawWaveform.hh,v 1.11 2014/03/04 00:29:17 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/04 00:29:17 $
-//
 // Original author David Brown, LBNL
 //
 
@@ -19,8 +15,8 @@
 #include <utility>
 
 // Mu2e includes
-#include "DataProducts/inc/StrawIndex.hh"
-#include "TrackerConditions/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/Types.hh"
@@ -30,12 +26,12 @@ namespace mu2e {
   namespace TrackerMC {
     // struct to represent cross-talk.
     struct XTalk {
-      XTalk(StrawIndex const& sid) : _source(sid), _dest(sid), _preamp(0.0), _postamp(1.0)  {} // self x-talk constructor
-      XTalk(StrawIndex const& source, StrawIndex const& dest,double preamp, double postamp) :
+      XTalk(StrawId const& sid) : _source(sid), _dest(sid), _preamp(0.0), _postamp(1.0)  {} // self x-talk constructor
+      XTalk(StrawId const& source, StrawId const& dest,double preamp, double postamp) :
 	_source(source), _dest(dest), _preamp(preamp), _postamp(postamp) {} // true x-talk constructor
       bool self() const { return _dest==_source; }
-      StrawIndex _source; // index of the straw which is the source of the x-talk
-      StrawIndex _dest; // index of the straw in which x-talk is observed
+      StrawId _source; // index of the straw which is the source of the x-talk
+      StrawId _dest; // index of the straw in which x-talk is observed
       double _preamp; // scaling before amplification
       double _postamp; // scaling after amplificiation
     };
@@ -44,7 +40,7 @@ namespace mu2e {
     class StrawWaveform{
       public:
 	// construct from a clust sequence and response object.  Scale affects the voltage
-	StrawWaveform(StrawClusterSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk); 
+	StrawWaveform(StrawClusterSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk);
 	// disallow copy and assignment
 	StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
 	StrawWaveform(StrawWaveform const& other);
@@ -52,8 +48,8 @@ namespace mu2e {
 	// find the next point the waveform crosses threhold.  Waveform crossing
 	// is both input (determines starting point) and output
 	bool crossesThreshold(double threshold,WFX& wfx) const;
-	// sample the waveform at a given time, no saturation included.  Return value is in units of volts 
-	double sampleWaveform(TrkTypes::Path ipath,double time) const;
+	// sample the waveform at a given time, no saturation included.  Return value is in units of volts
+	double sampleWaveform(StrawElectronics::Path ipath,double time) const;
 	// sample the waveform at a series of points allowing saturation to occur after preamp stage
         // FIXME no cross talk yet
 	void sampleADCWaveform(TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
@@ -62,12 +58,14 @@ namespace mu2e {
 	StrawClusterSequence const& clusts() const { return _cseq; }
 	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
-	StrawEnd strawEnd() const { return _cseq.strawEnd(); }
+	StrawEnd const& strawEnd() const { return _cseq.strawEnd(); }
+        StrawId const& strawId() const { return _sid; }
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;
 	ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
 	XTalk _xtalk; // X-talk applied to all voltages
+        StrawId const& _sid;
 	// helper functions
 	void returnCrossing(double threshold, WFX& wfx) const;
 	bool roughCrossing(double threshold, WFX& wfx) const;
@@ -89,4 +87,3 @@ namespace mu2e {
   }
 }
 #endif
-

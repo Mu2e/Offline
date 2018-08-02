@@ -168,8 +168,7 @@ CprKFFinal : {
 # Seed fit; this is really a least-squares fit, but uses the Kalman infrastructure
 KSF : {
   module_type                 : KalSeedFit
-  StrawHitCollection	      : "makeSH"
-  StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
+  ComboHitCollection	      : "makeSH"
   SeedCollection	      : "RobustHelixFinder"
   KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
@@ -181,7 +180,7 @@ KSF : {
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KFF : {
   module_type                 : KalFinalFit
-  StrawHitCollection	      : "makeSH"
+  ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
@@ -191,12 +190,10 @@ KFF : {
 # same for trigger
 TTKSF : {
   module_type                 : KalSeedFit
-  StrawHitCollection	      : "TTmakeSH"
-  StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
+  ComboHitCollection	      : "TTmakeSH"
   SeedCollection	      : "TThelixFinder:Positive"
   KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-#  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
   MaxAddDoca                  : 7.    # mm
   MaxAddChi                   : 5.    # normalized unit
   rescueHits                  : 0     # turned off 
@@ -204,8 +201,7 @@ TTKSF : {
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 TTKFF : {
   module_type                 : KalFinalFit
-  StrawHitCollection	      : "TTmakeSH"
-  StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
+  ComboHitCollection	      : "TTmakeSH"
   SeedCollection	      : "TTkalSeedFit"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]

@@ -32,17 +32,18 @@ namespace mu2e {
   private:
 
     std::string                                    myLabel_;
+    CLHEP::HepRandomEngine&                        engine_;
     CLHEP::RandFlat                                flat1_;
     CLHEP::RandFlat                                flat2_;
-
   };
 
   Random02::Random02(fhicl::ParameterSet const& pset):
     EDAnalyzer(pset),
     myLabel_(pset.get<std::string>("module_label")),
-    flat1_( createEngine(art::ServiceHandle<SeedService>()->getSeed() )),
-    flat2_( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(), 1., 2. ){
-
+    engine_{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
+    flat1_{engine_},
+    flat2_{engine_, 1., 2.}
+  {
     mf::LogVerbatim("TEST") << "Random02 Constructor: "
                             << myLabel_
                             << endl;

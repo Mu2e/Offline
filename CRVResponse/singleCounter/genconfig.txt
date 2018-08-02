@@ -13,12 +13,10 @@ double particleGun.tmin  =  800.0;
 double particleGun.tmax  =  800.0;
 
 // position
-vector<double> particleGun.point = {-3904., 2610.6, 10200.0};  
+vector<double> particleGun.point = {-5904., 2673.11, 10200.0}; //x=1000 ,l=6000
 
-// vector<double> particleGun.halfLength = { 3300., 0., 0. };
-// vector<double> particleGun.halfLength = { 2800., 0., 0. };
-// vector<double> particleGun.halfLength = { 2250., 0., 0. };
-vector<double> particleGun.halfLength = { 1500., 0., 0. };
+// half lengths
+vector<double> particleGun.halfLength = { 3000., 0., 0. };
 
 // Limits on momentum:
 double particleGun.pmin = 120.0e3;

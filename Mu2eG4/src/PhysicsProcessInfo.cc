@@ -41,16 +41,15 @@ namespace mu2e{
     _allProcesses(),
     _longestName(0){
   }
-
+    
   void PhysicsProcessInfo::beginRun(){
-
+      
     _allProcesses.clear();
 
     // Number of processes that are not known to the ProcessCode enum.
     int nUnknownProcesses(0);
 
     // Get an iterator over existing particles. See note 1.
-
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
     iter->reset();
@@ -94,9 +93,30 @@ namespace mu2e{
           }
 
           pair<map_type::iterator,bool> result = _allProcesses.insert(
-                 std::make_pair(proc->GetProcessName(),ProcInfo(name,code) ));
+                 std::make_pair(name,ProcInfo(name,code) ));
           jj = result.first;
 
+        }
+        // we will artificially attach "FieldPropagator" to all particles
+        // fixme : do it only for charged particles; factorize the code
+
+        G4String const pname = G4String("FieldPropagator");
+        jj = _allProcesses.find(pname);
+        // If not already in the map, then create it.
+        if ( jj == _allProcesses.end() ){
+          _longestName = (pname.size() > _longestName) ? pname.size() : _longestName;
+
+          ProcessCode code = ProcessCode::findByName(pname);
+          if ( code.id() == ProcessCode::unknown ){
+            ++nUnknownProcesses;
+            cout << "Physics process named: " << pname
+                 << " is not known to the ProcessCode enum."
+                 << endl;
+          }
+
+          pair<map_type::iterator,bool> result = _allProcesses.insert(
+                 std::make_pair(pname,ProcInfo(pname,code) ));
+          jj = result.first;
         }
 
         // Add a particle to the
@@ -120,7 +140,7 @@ namespace mu2e{
            << endl;
     }
 
-    pair<map_type::iterator,bool> result = 
+    pair<map_type::iterator,bool> result =
       _allProcesses.insert(std::make_pair(pname,ProcInfo(pname,pcode)));
     map_type::iterator resultFirst = result.first;
 
@@ -146,12 +166,16 @@ namespace mu2e{
   } // PhysicsProcessInfo::beginRun
 
   void PhysicsProcessInfo::endRun(){
-    printSummary(cout);
+      
+      //NEED TO PUT IN SOME PRINT SUMMARY FOR SEQUENTIAL MODE OR A SINGLE SUMMARRY IN MT
+      //MODE.  RIGHT NOW WE GET ONE SUMMARY FOR EACH TRHEAD.
+      //printSummary(cout);
     // printAll(cout);
   }
 
   // This can possibly be sped up considerably by checking frequently occuring names first.
   ProcessCode PhysicsProcessInfo::findAndCount( G4String const& name ){
+      
     map_type::iterator i = _allProcesses.find(name);
     if ( i == _allProcesses.end() ){
       throw cet::exception("RANGE")

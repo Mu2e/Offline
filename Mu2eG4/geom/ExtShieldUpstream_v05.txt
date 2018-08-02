@@ -6,7 +6,7 @@
 // Sort boxes into "types"
 // 04/08/18: addition of CR passive absorbers (GG3) as described in doicdb-8322
 
-int ExtShieldUpstream.numberOfBoxTypes = 19;
+int ExtShieldUpstream.numberOfBoxTypes = 20;
 
 // How many of each type box to make
 int ExtShieldUpstream.nBoxType1 = 5;   // Block label  BRP-152
@@ -28,6 +28,8 @@ int ExtShieldUpstream.nBoxType16 = 1;  // Borated poly: Inner CRV-U
 int ExtShieldUpstream.nBoxType17 = 1;  // Borated poly: Inner CRV-TS
 int ExtShieldUpstream.nBoxType18 = 1;  // Borated poly: Outer CRV-TS
 int ExtShieldUpstream.nBoxType19 = 1;  // Borated poly: Outer CRV-TS-Ext
+int ExtShieldUpstream.nBoxType20 = 1;  // Remote handling room door
+
 
 // Dimensions in u, v, w for each type of box.  Dimensions should be in mm.
 // Dimensions should be reduced 10 mm from nominal in all directions
@@ -63,6 +65,7 @@ vector<double> ExtShieldUpstream.dimsType16 = {6400.8,2743.2,25.4};
 vector<double> ExtShieldUpstream.dimsType17 = {6908.8,4876.6,25.4};
 vector<double> ExtShieldUpstream.dimsType18 = {5486.4,4978.6,25.4};
 vector<double> ExtShieldUpstream.dimsType19 = {1625.6,4978.6,25.4};
+vector<double> ExtShieldUpstream.dimsType20 = {609.6,4418,6090};
 
 // "Tolerances" on the dimensions in u, v, and w for each type of box.
 // Tolerance here means the amount the size is changed from nominal, in mm.
@@ -87,6 +90,7 @@ vector<double> ExtShieldUpstream.tolsType16 = {0.0,0.0,0.0}; // Borated poly
 vector<double> ExtShieldUpstream.tolsType17 = {0.0,0.0,0.0}; // Borated poly
 vector<double> ExtShieldUpstream.tolsType18 = {0.0,0.0,0.0}; // Borated poly
 vector<double> ExtShieldUpstream.tolsType19 = {0.0,0.0,0.0}; // Borated poly
+vector<double> ExtShieldUpstream.tolsType20 = {0.0,0.0,0.0}; // RHR door
 
 // Materials for each type of box.  Here, Barite and regular concrete.
 string ExtShieldUpstream.materialType1   = "CONCRETE_CB4_1P";
@@ -108,6 +112,7 @@ string ExtShieldUpstream.materialType16  = "Polyethylene092B050d095";
 string ExtShieldUpstream.materialType17  = "Polyethylene092B050d095";
 string ExtShieldUpstream.materialType18  = "Polyethylene092B050d095";
 string ExtShieldUpstream.materialType19  = "Polyethylene092B050d095";
+string ExtShieldUpstream.materialType20  = "CONCRETE_MARS";
 
 // The center of the boxes in Mu2e Offline coordinates
 vector<double> ExtShieldUpstream.centerType1Box1 = {812.5,-382,-2997};// 5 
@@ -149,6 +154,9 @@ vector<double> ExtShieldUpstream.centerType16Box1 = {-2655.4,1175.1,-2260.6};
 vector<double> ExtShieldUpstream.centerType17Box1 = {-2909.4,2526.2,  203.2};
 vector<double> ExtShieldUpstream.centerType18Box1 = {-3620.6,2780.2,  213.6};
 vector<double> ExtShieldUpstream.centerType19Box1 = {-267.8 ,2952.0,  202.4};
+
+// Remote handling room door
+vector<double> ExtShieldUpstream.centerType20Box1 = {9381 ,-103, -11931};
 
 // The orientation of each detector.  See docdb xxx for details.
 string ExtShieldUpstream.orientationType1Box1 = "000";

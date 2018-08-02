@@ -129,12 +129,10 @@ namespace mu2e {
     float				_minrerr; // minimum radius error
 
     bool				_usemva; // use MVA to cut outliers
-    float				_minmva; // outlier cut on MVA
+    float                               _minmva; // outlier cut on MVA
 
-    art::InputTag			_ccTag;
-    art::InputTag			_chTag;
-    art::InputTag			_chfTag;
-    art::InputTag			_tcTag;
+    art::ProductToken<ComboHitCollection> const _chToken;
+    art::ProductToken<TimeClusterCollection> const _tcToken;
 
     StrawHitFlag  _hsel, _hbkg;
 
@@ -144,7 +142,7 @@ namespace mu2e {
     TH1F* _niter, *_niterxy, *_niterfz, *_nitermva;
 
     RobustHelixFit   _hfit;
-    std::vector<Helicity> _hels; // helicity values to fit 
+    std::vector<Helicity> _hels; // helicity values to fit
     TrkTimeCalculator _ttcalc;
     float             _t0shift;   
     StrawHitFlag      _outlier;
@@ -153,7 +151,6 @@ namespace mu2e {
     std::unique_ptr<ModuleHistToolBase>   _hmanager;
     RobustHelixFinderTypes::Data_t        _data;
     RobustHelixFinderData                 _hfResult;
-
 
     void     findHelices(ComboHitCollection& chcol, const TimeClusterCollection& tccol);    
     void     prefilterHits(RobustHelixFinderData& helixData, int& nFilteredStrawHits); 
@@ -196,8 +193,8 @@ namespace mu2e {
     _maxphisep	 (pset.get<float>("MaxPhiHitSeparation",1.0)),
     _saveflag    (pset.get<vector<string> >("SaveHelixFlag",vector<string>{"HelixOK"})),
     _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
-    _cradres	 (pset.get<float>("CenterRadialResolution",20.0)),
-    _cperpres	 (pset.get<float>("CenterPerpResolution",12.0)),
+    _cradres     (pset.get<float>("CenterRadialResolution",20.0)),
+    _cperpres    (pset.get<float>("CenterPerpResolution",12.0)),
     _maxdwire    (pset.get<float>("MaxWireDistance",200.0)), // max distance along wire
     _maxdtrans   (pset.get<float>("MaxTransDistance",80.0)), // max distance perp to wire (and z)
     _maxchisq    (pset.get<float>("MaxChisquared",100.0)), // max chisquared
@@ -205,10 +202,8 @@ namespace mu2e {
     _minrerr     (pset.get<float>("MinRadiusErr",20.0)), // mm
     _usemva      (pset.get<bool>("UseHitMVA",false)),
     _minmva      (pset.get<float> ("MinMVA",0.1)), // min MVA output to define an outlier
-    _ccTag	 (pset.get<art::InputTag>("CaloClusterCollection","CaloClusterFast")),
-    _chTag	 (pset.get<art::InputTag>("ComboHitCollection")),
-    _chfTag	 (pset.get<art::InputTag>("ComboHitFlagCollection")),
-    _tcTag	 (pset.get<art::InputTag>("TimeClusterCollection")),
+    _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
+    _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
     _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
     _stmva       (pset.get<fhicl::ParameterSet>("HelixStereoHitMVA",fhicl::ParameterSet())),
@@ -298,7 +293,7 @@ namespace mu2e {
 
       FaceZ_t* facez(0);
     
-      for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+      for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	facez = &_hfResult._oTracker[f];
 	double z = facez->z;
 	printf("//  %5i     %10.3f //\n", f, z);
@@ -334,17 +329,15 @@ namespace mu2e {
 
   void RobustHelixFinder::produce(art::Event& event ) {
     // find input
-    auto tcH = event.getValidHandle<TimeClusterCollection>(_tcTag);
+    auto const& tcH = event.getValidHandle(_tcToken);
     const TimeClusterCollection& tccol(*tcH);
 
-    art::Handle<ComboHitCollection> chH;
-    if(!event.getByLabel(_chTag, chH))
-      throw cet::exception("RECO")<<"RobustHelixFinder: No ComboHit collection found for tag" <<  _chTag << endl;
+    auto const& chH = event.getValidHandle(_chToken);
     const ComboHitCollection& chcol(*chH);
 
-    auto chfH = event.getValidHandle<StrawHitFlagCollection>(_chfTag);
+    //    auto chfH = event.getValidHandle<StrawHitFlagCollection>(_chfTag);
     
-    const StrawHitFlagCollection*       _chfcol = chfH.product();
+    //    const StrawHitFlagCollection*       _chfcol = chfH.product();
     // if(!event.getByLabel(_chfTag, chfH)){
     //   _chfcol= chfH.product();
     // }else {
@@ -356,7 +349,6 @@ namespace mu2e {
     int counter(0);
     for( auto const& hel : _hels) {
       helcols[hel] = unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
-      //      _data.helices[counter] = helcols[hel].get();
       _data.nseeds [counter] = 0;
       ++counter;
     }
@@ -366,7 +358,7 @@ namespace mu2e {
     _data.nTimePeaks  = tccol.size();
 
     _hfResult._chcol  = &chcol;
-    _hfResult._chfcol = _chfcol;
+    //    _hfResult._chfcol = _chfcol;
       
     // create initial helicies from time clusters: to begin, don't specificy helicity
     for (size_t index=0;index< tccol.size();++index) {
@@ -450,7 +442,7 @@ namespace mu2e {
     double       dfdz          = 1./rhel.lambda();
     bool         isFirst(true);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez = &helixData._oTracker[f];
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];
@@ -493,7 +485,7 @@ namespace mu2e {
     PanelZ_t*      panelz(0);
     int            nhitsFace(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];
@@ -557,7 +549,7 @@ namespace mu2e {
     PanelZ_t*      panelz(0);
     int            nhitsFace(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -744,7 +736,7 @@ namespace mu2e {
     PanelZ_t*     panelz;
     int           nhitsFace(0);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
       
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -832,7 +824,7 @@ namespace mu2e {
     
     hitChi2Max            = _maxchi2dxy;
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez         = &helixData._oTracker[f];
       bool       isFaceUsed(false);
       HitInfo_t  hitInfo;
@@ -939,7 +931,7 @@ namespace mu2e {
 	accumulator_set<float, stats<tag::median(with_p_square_quantile) > > accx;
 	accumulator_set<float, stats<tag::median(with_p_square_quantile) > > accy;
 
-	for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	  facez              = &HelixData._oTracker[f];
 	  
 	  for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -965,7 +957,7 @@ namespace mu2e {
 
 	float maxdphi{0.0};
 	// auto worsthit = hhits.end();
-	for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	  facez              = &HelixData._oTracker[f];
 
 	  for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -1007,7 +999,7 @@ namespace mu2e {
     PanelZ_t*      panelz(0);
     int            nhitsFace(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
    
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -1062,10 +1054,10 @@ namespace mu2e {
 	ComboHit hhit(ch);
 	hhit._flag.clear(StrawHitFlag::resolvedphi);
 
-	cx.Station                 = ch.sid().station();//straw.id().getStation();
-	cx.Plane                   = ch.sid().plane() % 2;//straw.id().getPlane() % 2;
-	cx.Face                    = ch.sid().face();
-	cx.Panel                   = ch.sid().panel();//straw.id().getPanel();
+	cx.Station                 = ch.strawId().station();//straw.id().getStation();
+	cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+	cx.Face                    = ch.strawId().face();
+	cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
 
 	// get Z-ordered location
 	HelixData.orderID(&cx, &co);
@@ -1108,7 +1100,7 @@ namespace mu2e {
     
     int           nhitsFace(0);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
       
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -1346,7 +1338,7 @@ namespace mu2e {
     PanelZ_t*      panelz(0);
     int            nhitsFace(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -1465,7 +1457,7 @@ namespace mu2e {
     helixData._nXYSh   = 0;
     helixData._nZPhiSh = 0;
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -1544,7 +1536,7 @@ namespace mu2e {
     PanelZ_t*      panelz(0);
     int            nhitsFace(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -1595,7 +1587,7 @@ namespace mu2e {
     float          chi2min(1e10), chi2;
     ::LsqSums4     szphi;
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){

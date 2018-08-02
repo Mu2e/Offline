@@ -307,7 +307,7 @@ namespace mu2e {
       PanelZ_t*      panelz(0);
       FaceZ_t*       facez(0);
 
-      for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+      for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	facez     = &Helix._oTracker[f];
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	  panelz = &facez->panelZs[p];
@@ -752,7 +752,7 @@ namespace mu2e {
     PanelZ_t* panelz(0);
     FaceZ_t*  facez(0);
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
 
       int  firstPanel(0);
@@ -771,7 +771,7 @@ namespace mu2e {
 	  int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
 	  if (Helix._hitsUsed[index] != 1 )                         continue;
 
-	  int ist = hit->sid().station();//_straw->id().getStation();                   // station number
+	  int ist = hit->strawId().station();//_straw->id().getStation();                   // station number
 	  phi     = polyAtan2(hit->pos().y()-center->y(),hit->pos().x()-center->x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
 	  if (phi < 0) phi += 2*M_PI;
 	  zVec  [ist] += hit->pos().z();
@@ -1059,7 +1059,7 @@ namespace mu2e {
 
     zlast = 0;
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       z         = facez->z;
 
@@ -1118,7 +1118,7 @@ namespace mu2e {
 	  if (_debug > 10) {
 	    printf("[CalHelixFinderAlg::doLinearFitPhiZ:LOOP] %08x %2i %6i %3i %12.5f %12.5f %10.5f %10.3f %10.3f %10.3f %10.5f %10.5f %5.3f\n",
 		   *((int*) &hit->_flag), Helix._hitsUsed[index],
-		   hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, i,
+		   hit->strawId().straw()/*_strawhit->strawIndex().asInt()*/, i,
 		   z, phi, dphi,xdphi,zlast,dz,
 		   dfdz, Helix._szphi.dfdz(), Helix._szphi.chi2DofLine());
 	  }
@@ -1130,7 +1130,6 @@ namespace mu2e {
 	    continue;
 	  }
 
-	  
 	  if (xdphi < faceHitChi2){
 	    faceHitChi2               = xdphi;
 	    goodFaceHit.face          = f;
@@ -1152,8 +1151,8 @@ namespace mu2e {
       ++count;
 
       if (count == 1) {//FIXME! investigate if it is needed or not
-	zlast = z;
-	dz    = 0.;
+      	zlast = z;
+      	dz    = 0.;
       }
 	
 	
@@ -1161,11 +1160,11 @@ namespace mu2e {
 	   // (xdphi < 2.)){
 	   (faceHitChi2 < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
-	  //close to the starting one. update dfdz only if:
+	                                                         //close to the starting one. update dfdz only if:
 	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
 	       (dz >=_mindist ) ){
-	    phi0  = Helix._szphi.phi0();                     // 2. and require dfdz to be positivie! scattered hits or
 	    dfdz  = Helix._szphi.dfdz();                     //    delta hits could have moved dfdz to negative value!
+	    phi0  = Helix._szphi.phi0();// + z*dfdz;                     // 2. and require dfdz to be positivie! scattered hits or
 	    zlast = z;
 	  }
 	}
@@ -1194,7 +1193,7 @@ namespace mu2e {
 	chi2min     = 1e10;
 	weightWorst = -1;
 
-	for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+	for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
 	  facez     = &Helix._oTracker[f];
 	  z         = facez->z;
 	  int  firstPanel(0);
@@ -1262,7 +1261,7 @@ namespace mu2e {
 
 	weightWorst = -1;
 
-	for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+	for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
 	  facez     = &Helix._oTracker[f];
 	  z         = facez->z;
 	  int  firstPanel(0);
@@ -1368,7 +1367,7 @@ namespace mu2e {
       if (success) {
 	int h=0;
 
-	for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+	for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
 	  facez     = &Helix._oTracker[f];
 	  int  firstPanel(0);
 	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -1410,7 +1409,7 @@ namespace mu2e {
 
 	int lastFace  = SeedIndex.face;
 
-	for (int f=FaceZ_t::kNTotalFaces-1; f>= lastFace; --f){
+	for (int f=StrawId::_ntotalfaces-1; f>= lastFace; --f){
 	  facez     = &Helix._oTracker[f];
 	  z         = facez->z;//pos.z();
 	  int    lastPanel(0);
@@ -1430,7 +1429,7 @@ namespace mu2e {
 	      int index =  facez->evalUniqueHitIndex(f,p,i);//p*FaceZ_t::kNMaxHitsPerPanel + i;
 	      printf("[CalHelixFinderAlg::doLinearFitPhiZ:END2] %08x %2i %6i %12.5f %12.5f %12.5f\n",
 		     *((int*) &hit->_flag), Helix._hitsUsed[index],
-		     hit->sid().straw()/*_strawhit->strawIndex().asInt()*/,  z, hit->_hphi, deltaPhi);
+		     hit->strawId().straw()/*_strawhit->strawIndex().asInt()*/,  z, hit->_hphi, deltaPhi);
 	    }
 	  }//end panel loop
 	}//end face loop
@@ -1542,7 +1541,7 @@ namespace mu2e {
 
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 
-	const mu2e::ComboHit& ch          = Helix.chcol()->at(loc);
+	const ComboHit& ch          = Helix.chcol()->at(loc);
 	// const Straw& straw          = _tracker->getStraw(ch.strawIndex());
 	// const StrawHitPosition& shp = Helix.shpos()->at(loc);
 
@@ -1559,10 +1558,10 @@ namespace mu2e {
 	  if (fabs(dphi) > pi/2)                            continue;
 	}
 
-	cx.Station                 = ch.sid().station();//straw.id().getStation();
-	cx.Plane                   = ch.sid().plane() % 2;//straw.id().getPlane() % 2;
-	cx.Face                    = ch.sid().face();
-	cx.Panel                   = ch.sid().panel();//straw.id().getPanel();
+	cx.Station                 = ch.strawId().station();//straw.id().getStation();
+	cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+	cx.Face                    = ch.strawId().face();
+	cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
 
 	// get Z-ordered location
 	Helix.orderID(&cx, &co);
@@ -1799,7 +1798,7 @@ namespace mu2e {
       PanelZ_t*       panelz(0);
       mu2e::ComboHit* hit(0);
 
-      for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+      for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	facez     = &Helix._oTracker[f];
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	  panelz =  &facez->panelZs[p];//&Helix._oTracker[p];
@@ -1810,7 +1809,7 @@ namespace mu2e {
 	    dy = hit->pos().y() - Helix._sxy.y0();
 	    dr = sqrt(dx*dx+dy*dy) - Helix._sxy.radius();
 	    printf("[%s] %08x %6i %3i %6i %12.5f %12.5f %12.5f %10.3f\n",banner,
-		   *((int*) &hit->_flag),  int(hit->index()), i, hit->sid().straw(),
+		   *((int*) &hit->_flag),  int(hit->index()), i, hit->strawId().straw(),
 		   hit->pos().x(), hit->pos().y(), hit->pos().z(), dr
 		   );//FIXME!
 	  }
@@ -1841,7 +1840,7 @@ namespace mu2e {
 
     mu2e::ComboHit* hit(0); bool isFirst(true);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];// &Helix._oTracker[p];
@@ -1900,7 +1899,7 @@ namespace mu2e {
 	    double dist(0);// = hit->_drFromPred;
 	    double dz  (0);// = hit->_dzFromSeed;//FIXME!
 	    printf("[CalHelixFinderAlg::filterUsingPatternRecognition] %5i %5i %4i %4s  %8.3f %8.3f %9.3f %8.3f %8.3f\n",
-		   i,hit->sid().straw(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
+		   i,hit->strawId().straw(),is_outlier,type.data(),shPos->x(),shPos->y(),shPos->z(),dist,dz);
 	  }
 	}
       }
@@ -1937,7 +1936,7 @@ namespace mu2e {
     FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];//&Helix._oTracker[p];
@@ -2226,7 +2225,7 @@ namespace mu2e {
 
     mu2e::ComboHit* hit   (0);
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -2292,7 +2291,7 @@ namespace mu2e {
     //    FaceZ_t*       seedFacez = &Helix._oTracker[Helix._seedIndex.face];
 
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces;  ++f){
       facez     = &Helix._oTracker[f]; 
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -2349,7 +2348,7 @@ namespace mu2e {
     PanelZ_t*       panelz(0);
     FaceZ_t*        facez(0);
  
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -2661,7 +2660,7 @@ namespace mu2e {
     wtBest      = -1;
     phiwtBest   = -1;
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -2810,7 +2809,7 @@ namespace mu2e {
 	printf("[CalHelixFinderAlg::%s:PT2] x0 = %8.3f y0 = %8.3f radius = %8.3f  chi2 = %6.3f chi2Maxxy = %6.3f index point added = %i straw-id = %6i hitChi2 = %6.3f x = %8.3f y = %8.3f z = %9.3f\n",
 	       banner,
 	       Helix._sxy.x0(), Helix._sxy.y0(), Helix._sxy.radius(), Helix._sxy.chi2DofCircle(), _chi2xyMax, ibest.panel,
-	       hit->sid().straw()/*_strawhit->strawIndex().asInt()*/, chi2_min,
+	       hit->strawId().straw()/*_strawhit->strawIndex().asInt()*/, chi2_min,
 	       x, y, facez->z);//FIXME!
       }
 					// mark point as active
@@ -2829,7 +2828,7 @@ namespace mu2e {
 //----------------------------------------------------------------------
 //now update information about the radial residual of the hits
 //----------------------------------------------------------------------
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
       int firstPanel = 0;
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -2987,7 +2986,7 @@ namespace mu2e {
 
     mu2e::ComboHit* hit(0);
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces;  ++f){
       facez     = &Helix._oTracker[f]; 
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -3075,15 +3074,6 @@ namespace mu2e {
 	  //-----------------------------------------------------------------------------
 	  double dxy_max = _distPatRec + _dfdzErr*deltaZ;
 	  if (dist <= dxy_max) {
-	    // double delta_min(0);
-	    // int    index_min(-1);
-	    // for (int k=0; k<_nHitsMaxPerPanel; ++k){
-	    //   double delta = dist - panelHitChi2[k];
-	    //   if (delta < delta_min){
-	    // 	delta_min = delta;
-	    // 	index_min = k;
-	    //   }
-	    // }
 	    if (dist < faceHitChi2){
 	      faceHitChi2               = dist;
 	      //set the coordiante of the hit
@@ -3091,11 +3081,6 @@ namespace mu2e {
 	      goodFaceHit.panel         = p;
 	      goodFaceHit.panelHitIndex = i;
 	    }
-	    
-	    // if (index_min>=0) {
-	    //   panelHitIndex[index_min] = i;
-	    //   panelHitChi2 [index_min] = dist;
-	    // }
 	  }
 	}
 
@@ -3292,7 +3277,7 @@ namespace mu2e {
       NComboHits = 0;
 
       //FIXME! implement a function
-      for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+      for (int f=SeedIndex.face; f<StrawId::_ntotalfaces;  ++f){
 	facez     = &Helix._oTracker[f]; 
 	int  firstPanel(0);
 	if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -3396,7 +3381,7 @@ namespace mu2e {
       Helix._diag.dphi0res_24 = dphi0Res[2];
 
       int j=0;
-      for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+      for (int f=SeedIndex.face; f<StrawId::_ntotalfaces;  ++f){
 	facez     = &Helix._oTracker[f]; 
 	int  firstPanel(0);
 	if (f == SeedIndex.face) firstPanel = SeedIndex.panel;   
@@ -3584,7 +3569,7 @@ namespace mu2e {
 
     bool           isFirst(true);
 
-    for (int f=SeedIndex.face; f<FaceZ_t::kNTotalFaces;  ++f){
+    for (int f=SeedIndex.face; f<StrawId::_ntotalfaces;  ++f){
       facez     = &Helix._oTracker[f]; 
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
@@ -3927,7 +3912,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
     
-    for (int f=0; f<FaceZ_t::kNTotalFaces;  ++f){
+    for (int f=0; f<StrawId::_ntotalfaces;  ++f){
       facez     = &Helix._oTracker[f]; 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];//Helix._oTracker[p];
@@ -3940,9 +3925,8 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 	  int loc    = shIndices[i];	 // index in chcol of i-th timecluster hit
     
 	  // const StrawHit& sh          = Helix.chcol()->at(loc);
-
 	  printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-		 i, loc,  pt->sid().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), 0/*pt->use()FIXME!*/, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+		 i, loc,  pt->strawId().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), 0/*pt->use()FIXME!*/, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
 	}
       }
     }
@@ -3959,7 +3943,7 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     PanelZ_t*       panelz(0);
     mu2e::ComboHit* hit(0);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces;  ++f){
+    for (int f=0; f<StrawId::_ntotalfaces;  ++f){
       facez     = &Helix._oTracker[f]; 
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];//Helix._oTracker[p];

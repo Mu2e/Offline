@@ -142,7 +142,7 @@ namespace mu2e {
 	 {	
 	      int    digitizedHitLength     = caloFromDigi.at(index);
 	      int    roId                   = caloFromDigi.at(index+1);
-              int    crystalId              = cal.crystalByRO(roId);
+              int    crystalId              = cal.caloInfo().crystalByRO(roId);
 	      double adc2MeV                = calorimeterCalibrations->ADC2MeV(roId);
               CaloShowerSimVec& caloShowers = caloShowerSimsMap[crystalId];
 

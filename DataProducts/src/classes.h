@@ -3,7 +3,7 @@
 //
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
 #include "DataProducts/inc/PanelId.hh"
@@ -14,6 +14,7 @@
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 #include "DataProducts/inc/IndexMap.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"

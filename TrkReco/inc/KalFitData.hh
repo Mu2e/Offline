@@ -45,7 +45,7 @@ namespace mu2e {
   struct KalFitData {
     const art::Event*                 event;
     KalRep*                           krep;           // Kalman rep, owned by the collection
-    const StrawHitCollection*         shcol;          // 
+    const ComboHitCollection*         chcol;          // 
 
     // const StrawHitPositionCollection* shpos;          //
     const StrawHitFlagCollection*     shfcol;         //

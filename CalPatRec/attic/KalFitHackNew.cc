@@ -17,7 +17,7 @@
 
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/PanelAmbigResolver.hh"
-#include "TrkReco/inc/PocaAmbigResolver.hh"
+// #include "TrkReco/inc/PocaAmbigResolver.hh"
 #include "TrkReco/inc/HitAmbigResolver.hh"
 #include "TrkReco/inc/FixedAmbigResolver.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
@@ -31,7 +31,7 @@
 #include "BFieldGeom/inc/BFieldConfig.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -40,7 +40,6 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 // BaBar
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
@@ -85,10 +84,10 @@ namespace mu2e {
 
 // struct for finding materials
   struct StrawFlight {
-    StrawIndex _index;  // straw being tested
-    double _flt; // flight where trajectory comes near this straw
+    StrawId _id;  // straw being tested
+    double  _flt; // flight where trajectory comes near this straw
 // construct from pair
-    StrawFlight(StrawIndex strawind, double flt) : _index(strawind), _flt(flt) {}
+    StrawFlight(StrawId id, double flt) : _id(id), _flt(flt) {}
   };
 
 // comparison operators understand that the same straw could be hit twice, so the flight lengths need
@@ -96,8 +95,8 @@ namespace mu2e {
   struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
     double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
     StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
-    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._index < b._index ||
-    ( a._index == b._index && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
+    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._id < b._id ||
+    ( a._id == b._id && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
   };
 
 // construct from a parameter set
@@ -202,9 +201,9 @@ namespace mu2e {
         <<"mu2e::KalFitHackNew: inconsistent _weedhits size" << endl;
     }
     if (_hiterr.size() != _addmaterial.size()) {
-      throw cet::exception("RECO") 
+      throw cet::exception("RECO")
 	<< "mu2e::KalFit: inconsistent ambiguity resolution AddMaterial" << endl;
-    } 
+    }
     AmbigResolver* ar;
     double         err;
     int            n, final(0);
@@ -222,9 +221,9 @@ namespace mu2e {
       case kPanelAmbig:
         ar = new PanelAmbig::PanelAmbigResolver(pset,err,i);
         break;
-      case kPocaAmbig:
-        ar = new PocaAmbigResolver(pset,err);
-        break;
+      // case kPocaAmbig:
+      //   ar = new PocaAmbigResolver(pset,err);
+      //   break;
       case kDoubletAmbig: // 4
         ar = new DoubletAmbigResolver(*_darPset,err,i,final);
         break;
@@ -232,7 +231,7 @@ namespace mu2e {
       _ambigresolver.push_back(ar);
     }
 //-----------------------------------------------------------------------------
-// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance with 
+// 2016-01-27 P.Murat: for DoubletAmbigResolver need one more instance with
 // 'final' set to 1 - now need to figure how to use it
 // assume that KalFitHackNew is using the DoubletAmbigResolver only
 //-----------------------------------------------------------------------------
@@ -242,7 +241,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // print routine
 //-----------------------------------------------------------------------------
-    _mcTruth = pset.get <int >("mcTruth"); 
+    _mcTruth = pset.get <int >("mcTruth");
 
     if (_mcTruth != 0) {
       fhicl::ParameterSet ps = pset.get<fhicl::ParameterSet>("mcUtils");
@@ -276,7 +275,7 @@ namespace mu2e {
 
     initT0(Result);
 //-----------------------------------------------------------------------------
-// knowing t0, create the BaBar hit list, and fill. 
+// knowing t0, create the BaBar hit list, and fill.
 // The BaBar list takes ownership
 // This will go away when we cleanup the BaBar hit storage, FIXME!!!
 // Find the wall and gas material description objects for these hits
@@ -317,7 +316,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-// addHits is called _only_once_ from CalPatRec_module::produce after 
+// addHits is called _only_once_ from CalPatRec_module::produce after
 // the last iteration
 //-----------------------------------------------------------------------------
   void KalFitHackNew::addHits(KalFitResultNew& KFRes, double MaxChi) {
@@ -327,8 +326,8 @@ namespace mu2e {
                                         // there must be a valid Kalman fit to add hits to
     int  activity(0);
 					// last iteration
-    int    iteration = _hiterr.size();
-    double hit_error = _hiterr[iteration-1];
+    //    int    iteration = _hiterr.size();
+    //    double hit_error = _hiterr[iteration-1];//NOT USED ANYMORE TO INITILIZE THE TRKSTRAWHIT
 
     KalRep* krep = KFRes.krep;
 
@@ -356,7 +355,7 @@ namespace mu2e {
       int nadd = KFRes.missingHits.size();
       for (int i=0; i<nadd; i++) {
         size_t istraw = KFRes.missingHits[i].index;
-        const StrawHit& strawhit(KFRes.shcol->at(istraw));
+        const ComboHit& strawhit(KFRes.shcol->at(istraw));
         const Straw& straw = _tracker->getStraw(strawhit.strawId());
 //-----------------------------------------------------------------------------
 // estimate  initial flightlength
@@ -365,7 +364,7 @@ namespace mu2e {
         TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
 //-----------------------------------------------------------------------------
 // find the bounding sites near this hit, and extrapolate to get the hit t0
-// hits are supposed to be sorted 
+// hits are supposed to be sorted
 //-----------------------------------------------------------------------------
         std::sort(hits.begin(),hits.end(),fltlencomp(KFRes.fdir.fitDirection()));
         findBoundingHits(hits,hflt,ilow,ihigh);
@@ -382,7 +381,7 @@ namespace mu2e {
                                         // update the time in the TrkT0 object and create a new
                                         // hit object.  Assume we're at the last iteration over added error
         hitt0._t0 += tflt;
-        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,hit_error,_maxdriftpull,1.,_mint0doca);
+        trkhit     = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,_maxdriftpull,1.);
         assert(trkhit != 0);
                                         // 3 means "Added by addHits"
         trkhit->setFlag(3);
@@ -428,7 +427,7 @@ namespace mu2e {
 
         if (debug_addhits > 0) {
           printf("%s %5i %3i  %6i  %6i  %6i  %10.3f  %10.3f %10.3f  %10.3f \n",oname,
-                 straw.index().asInt(),
+                 straw.id().asUint16(),
                  activity,
                  straw.id().getPlane(),
                  straw.id().getPanel(),
@@ -461,14 +460,14 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-// Dave's "annealing" procedure: refit the track 'KRes' multiple times 
+// Dave's "annealing" procedure: refit the track 'KRes' multiple times
 //                               gradually reducing the external hit errors
 //
-// assume this is not the final fit, 
+// assume this is not the final fit,
 // the final fit will be performed later, after the hit pickup
 //
 // final=1 in fitIteration means 'make decision about the hit drift directions no matter what'
-//      =0                 means 'reduce external hit error down to zero only for hits which 
+//      =0                 means 'reduce external hit error down to zero only for hits which
 //                                drift direction is well defined'
 //-----------------------------------------------------------------------------
   void KalFitHackNew::fitTrack(KalFitResultNew& KRes) {
@@ -489,6 +488,15 @@ namespace mu2e {
 // update external hit errors.  This isn't strictly necessary on the 1st iteration.
 //-----------------------------------------------------------------------------
   void KalFitHackNew::fitIteration(KalFitResultNew& KRes, int Iteration) {
+//-----------------------------------------------------------------------------------
+// 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error
+// for the doublets
+// 2015-04-03: IHErr = -1: special value, invoke last iteration ..
+// 2016-05-08 P.Murat: there are Niter+1 ambig resolvers, so last iteration = _hiterr.size()-1
+//-----------------------------------------------------------------------------------
+    if (Iteration == -1) Iteration = _hiterr.size()-1;
+
+    _annealingStep     = Iteration;
 
     // update the external hit errors.  This isn't strictly necessary on the 1st iteration.
     TrkHitVector* thv   = &(KRes.krep->hitVector());
@@ -507,15 +515,6 @@ namespace mu2e {
       printf("[KalFitHackNew::fitIteration] BEGIN Iteration:%i \n", Iteration);
       printf("------------------------------------------------------------------------------------------\n");
     }
-//-----------------------------------------------------------------------------------
-// 2015 -02 -17 G. Pezzullo: loop over the hits and assign a smaller external error
-// for the doublets
-// 2015-04-03: IHErr = -1: special value, invoke last iteration .. 
-// 2016-05-08 P.Murat: there are Niter+1 ambig resolvers, so last iteration = _hiterr.size()-1
-//-----------------------------------------------------------------------------------
-    if (Iteration == -1) Iteration = _hiterr.size()-1;
-
-    _annealingStep     = Iteration;
 //--------------------------------------------------------------------------------
 // 2015-02-19 G.Pezzu: re-search multiplets using updated fit results
 // 2015-03-25 P.Murat: *TODO* I don't think this call is needed, the one in the
@@ -674,7 +673,7 @@ namespace mu2e {
             int istraw = (int)rint(nstraws*(prho-s0.perp())/(sn.perp()-s0.perp()));
             // take a few straws around this
             for(int is = max(0,istraw-3); is<min(nstraws,istraw+3); ++is){
-              matstraws.insert(StrawFlight(panel.getStraw(is).index(),flt));
+              matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
               ++nadded;
             }
           }
@@ -685,7 +684,7 @@ namespace mu2e {
     if(_debugLevel > 2) std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto strawflt : matstraws){
     // hack
-      Straw const& straw = tracker.getStraw(strawflt._index);
+      Straw const& straw = tracker.getStraw(strawflt._id);
       const DetStrawElem* strawelem = detmodel.strawElem(straw.id());
       DetIntersection strawinter;
       strawinter.delem = strawelem;
@@ -694,14 +693,14 @@ namespace mu2e {
 // If the rep already has a material site for this element, skip it
         std::vector<const KalMaterial*> kmats;
         KRep->findMaterialSites(strawelem,kmats);
-        if(_debugLevel > 2) std::cout << "found intersection with straw " << strawelem->straw()->index() << " with "
+        if(_debugLevel > 2) std::cout << "found intersection with straw " << strawelem->straw()->id() << " with "
         << kmats.size() << " materials " << std::endl;
 // test material isn't on the track
         bool hasmat(false);
         for(auto kmat : kmats ){
           const DetStrawElem* kelem = dynamic_cast<const DetStrawElem*>(kmat->detIntersection().delem);
           if(kelem != 0){
-            StrawFlight ksflt(kelem->straw()->index(),kmat->globalLength());
+            StrawFlight ksflt(kelem->straw()->id(),kmat->globalLength());
             if(_debugLevel>2)std::cout << " comparing flights " << kmat->globalLength() << " and " << strawflt._flt << std::endl;
             if(!strawcomp.operator()(strawflt,ksflt)){
               if(_debugLevel>2)std::cout << "operator returned false!!" << std::endl;
@@ -730,7 +729,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void KalFitHackNew::makeHits(KalFitResultNew& KRes, TrkHitVector& ListOfHits) {
 
-    TrkT0 hitt0; 
+    TrkT0 hitt0;
 
     const HelixTraj* hel = KRes.helixTraj;
     double     flt0 = hel->zFlight(0.0);
@@ -741,13 +740,13 @@ namespace mu2e {
 
     for (unsigned iind=0; iind<nind; iind++) {
       size_t istraw = KRes.strawHitIndices()->at(iind);             //[iind];
-      const StrawHit& strawhit(KRes.shcol->at(istraw));
+      const ComboHit& strawhit(KRes.shcol->at(istraw));
       const Straw& straw = _tracker->getStraw(strawhit.strawId());
       double fltlen      = hel->zFlight(straw.getMidPoint().z());
     // estimate arrival time at the wire
       hitt0._t0          = KRes.t0._t0 + (fltlen-flt0)/vflt;
       // create the hit object.  Start with the 1st additional error for anealing
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_hiterr.front(),_maxdriftpull,1.,_mint0doca);
+      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,fltlen,_maxdriftpull,1.);
       assert(trkhit != 0);
 					// set hit flag and the initial ambiguity to null
       trkhit->setFlag(0);
@@ -836,7 +835,7 @@ namespace mu2e {
 
     mu2e::TrkStrawHit     *hit;
     Hep3Vector            pos;
-    const mu2e::StrawHit  *sh;
+    const mu2e::ComboHit  *sh;
     const mu2e::Straw     *straw;
     int                   ihit;
     double                len;
@@ -845,7 +844,7 @@ namespace mu2e {
     ihit = 0;
     for (int it=0; it<nhits; ++it) {
       hit   = static_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
-      sh    = &hit->strawHit();
+      sh    = &hit->comboHit();
       straw = &hit->straw();
 
       hit->hitPosition(pos);
@@ -858,13 +857,13 @@ namespace mu2e {
       ihit += 1;
       printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
              ihit,
-             straw->index().asInt(),
+             straw->id().asUint16(),
              hit->hitFlag(),
              hit->isActive(),
              len,
              //      hit->hitRms(),
              plen.x(),plen.y(),plen.z(),
-             sh->time(), sh->dt()
+             sh->time(), 0.//sh->dt()//FIXME!
              );
 
       printf(" %2i %2i %2i %2i",
@@ -1102,9 +1101,9 @@ namespace mu2e {
   }
 
 //----------------------------------------------------------------------------
-// if a calorimeter cluster is present, estimate T0 using the cluster time and 
+// if a calorimeter cluster is present, estimate T0 using the cluster time and
 // the existing parameterization of the trajectory
-// in case there is no cluster, estimate T0 using the hit times and the trajectory 
+// in case there is no cluster, estimate T0 using the hit times and the trajectory
 // parameterization and assuming that the drift time is defined by R(straw)/2
 //-----------------------------------------------------------------------------
   void KalFitHackNew::initT0(KalFitResultNew& KRes) {
@@ -1116,12 +1115,14 @@ namespace mu2e {
     double mom           = TrkMomCalculator::vecMom(*hel,bField(),t0flt).mag();
     double vflt          = KRes.tpart.beta(mom)*CLHEP::c_light;
 
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+
     const CaloCluster* cl = KRes.caloCluster;
     if (cl) {
 //-----------------------------------------------------------------------------
 // calculate the path length of the particle from the middle of the Tracker to the
 // calorimeter, cl->Z() is calculated wrt the tracker center
-// _dtoffset : global time offset between the tracker and the calorimeter, 
+// _dtoffset : global time offset between the tracker and the calorimeter,
 //             think of an average cable delay
 //-----------------------------------------------------------------------------
       Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
@@ -1137,11 +1138,10 @@ namespace mu2e {
       int nind = KRes.strawHitIndices()->size();
       std::vector<double> times(nind);
 					// for crude estimates, we only need 1 d2t function
-      D2T d2t;
       for (int iind=0; iind<nind; iind++) {
 
 	size_t istraw = KRes.strawHitIndices()->at(iind);
-	const StrawHit& strawhit(KRes.shcol->at(istraw));
+	const ComboHit& strawhit(KRes.shcol->at(istraw));
 	const Straw& straw = _tracker->getStraw(strawhit.strawId());
 //-----------------------------------------------------------------------------
 // compute the flightlength to this hit from z=0 (can be negative)
@@ -1149,14 +1149,24 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	double hflt  = hel->zFlight(straw.getMidPoint().z()) - t0flt;
 	double tprop = hflt/vflt;
+
 	// estimate signal propagation time on the wire assuming the middle (average)
-	double vwire = _tcal->SignalVelocity(straw.index());
+	//	double vwire = _tcal->SignalVelocity(straw.index());
+
+	double vwire = srep->halfPropV(strawhit.strawId(),strawhit.energyDep())*2.;
+
 	double teprop = straw.getHalfLength()/vwire;
 	// correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
 	// when the track crossed Z=0
 	// assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
-	if(iind==0)_tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,d2t);
-	double htime = strawhit.time() - tprop - teprop - d2t._tdrift;
+
+	double tdrift(0);
+	if (iind==0) {
+	  //	  tdrift = _tcal->DistanceToTime(straw.index(),0.5*straw.getRadius(),zdir,d2t);
+	  double phi(0);
+	  tdrift = srep->driftDistanceToTime(straw.id(),0.5*straw.getRadius(),phi);
+	}
+	double htime = strawhit.time() - tprop - teprop - tdrift;
 	times.push_back(htime);
       }
       // find the median time
@@ -1225,81 +1235,12 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   bool KalFitHackNew::updateT0(KalRep* KRep) {
     using namespace boost::accumulators;
-    //    bool retval(false);
-
-    // TrkHitVector& hits = KRep->hitVector();
-
-    // int nhits   = hits.size();
-    // 					// need to have a valid fit
-    // if (KRep->fitValid()) {
-    // 					// find the global fltlen associated with z=0.
-    //   double flt0(0.0);
-    //   bool   converged = TrkHelixUtils::findZFltlen(KRep->traj(),0.0,flt0);
-    //   if (converged) {
-    //     std::vector<double> hitt0   (nhits);          // store t0, to allow outlyer removal
-    //     std::vector<double> hitt0err(nhits);
-    //     // loop over the hits
-    //     for(std::vector<TrkHit*>::iterator ihit= hits.begin();ihit != hits.end(); ihit++) {
-    //       TrkStrawHit* hit = static_cast<TrkStrawHit*>(*ihit);
-    //       if(hit->isActive() && hit->hasResidual()){
-    //         // find the residual, exluding this hits measurement
-    //         double resid,residerr;
-    //         if(KRep->resid(hit,resid,residerr,true)){
-    //           // convert this to a distance to the wire
-    //           double doca = (resid + hit->driftRadius()*hit->ambig());
-    //           if(hit->ambig() == 0)
-    //             doca = fabs(doca);
-    //           else
-    //             doca *= hit->ambig();
-    //           // restrict the range, symmetrically to avoid bias
-    //           double rad = hit->straw().getRadius();
-    //           if(doca > _mint0doca && doca < rad-_mint0doca){
-    //             // translate the DOCA into a time
-    //             D2T d2t;
-    //             _tcal->DistanceToTime(hit->straw().index(),doca,KRep->traj().direction(hit->fltLen()),d2t);
-    //             // subtracting hitT0 makes this WRT the previous track t0
-    //             hitt0.push_back(hit->time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
-    //             // assume residual error dominates
-    //             hitt0err.push_back(residerr/d2t._vdrift);
-    //           }
-    //         }
-    //       }
-    //     }
-    //     if (hitt0.size() > 1) {
-    //       TrkT0 t0;
-    //       // find the median
-    //       accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
-    //       med = std::for_each( hitt0.begin(), hitt0.end(), med );
-    //       t0._t0 = extract_result<tag::median>(med);
-    //       // iterate an outlier search and linear fit until the set of used hits doesn't change
-    //       bool changed(true);
-    //       std::vector<bool> used(hitt0.size(),true);
-    //       unsigned niter(0);
-    //       while(changed && niter < 10){
-    //         niter++;
-    //         changed = false;
-    //         accumulator_set<double,stats<tag::weighted_variance>,double> wmean;
-    //         for (unsigned ihit=0; ihit<hitt0.size(); ihit++) {
-    //           bool useit = fabs(hitt0[ihit]-t0._t0) < _t0nsig*hitt0err[ihit];
-    //           changed   |= useit != used[ihit];
-    //           used[ihit] = useit;
-    //           if(useit){
-    //             wmean(hitt0[ihit], weight=1.0/(hitt0err[ihit]*hitt0err[ihit]));
-    //           }
-    //         }
-    //         unsigned nused = extract_result<tag::count>(wmean);
-    //         if (nused > 1) {
-    //           t0._t0    = extract_result<tag::weighted_mean>(wmean);
-    //           t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
-    //         } 
-    // 	    else {
-    //           break;
-    //         }
-    //       }
 
     TrkHitVector *thv = &(KRep->hitVector());
-    bool retval(false);
-    ConditionsHandle<TrackerCalibrations> tcal("ignored");
+    bool   retval(false);
+    double phi(0);
+
+    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // need to have a valid fit
     if(KRep->fitValid()){
 // find the global fltlen associated with z=0.
@@ -1326,14 +1267,26 @@ namespace mu2e {
                 doca *= hit->ambig();
               // restrict the range, symmetrically to avoid bias
               double rad = hit->straw().getRadius();
-              if(doca > _mint0doca && doca < rad-_mint0doca){
+              if(doca > _mint0doca && doca < rad-_mint0doca) {
                 // translate the DOCA into a time
-                D2T d2t;
-                _tcal->DistanceToTime(hit->straw().index(),doca,KRep->traj().direction(hit->fltLen()),d2t);
+		StrawId sid = hit->straw().id();
+
+                // D2T d2t;
+                // _tcal->DistanceToTime(hit->straw().index(),doca,KRep->traj().direction(hit->fltLen()),d2t);
+//-----------------------------------------------------------------------------
+// use phi = 0, as the accuracy should be sufficient
+//-----------------------------------------------------------------------------
+		double tdrift = srep->driftDistanceToTime(sid,doca,phi);
+
                 // subtracting hitT0 makes this WRT the previous track t0
-                hitt0.push_back(hit->time() - d2t._tdrift - hit->signalTime() - hit->hitT0()._t0);
+
+                hitt0.push_back(hit->time() - tdrift - hit->signalTime() - hit->hitT0()._t0);
+
                 // assume residual error dominates
-                hitt0err.push_back(residerr/d2t._vdrift);
+
+		double vdrift = srep->driftInstantSpeed(sid,doca,phi);
+
+                hitt0err.push_back(residerr/vdrift);
               }
             }
           }
@@ -1364,7 +1317,7 @@ namespace mu2e {
             if (nused > 1) {
               t0._t0    = extract_result<tag::weighted_mean>(wmean);
               t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
-            } 
+            }
 	    else {
               break;
             }
@@ -1441,5 +1394,3 @@ namespace mu2e {
   }
 
 }
-
-

@@ -53,13 +53,11 @@ using CLHEP::HepLorentzVector;
 using CLHEP::RandFlat;
 using CLHEP::GeV;
 
-namespace mu2e 
+namespace mu2e
 {
 
-  CosmicDYB::CosmicDYB( art::Run& run, const SimpleConfig& config )
-  : GeneratorBase()
-
-  , _verbose( config.getInt("cosmicDYB.verbose", 0) )
+  CosmicDYB::CosmicDYB(CLHEP::HepRandomEngine& engine, art::Run& run, const SimpleConfig& config )
+    : _verbose( config.getInt("cosmicDYB.verbose", 0) )
   , _doHistograms( config.getBool("cosmicDYB.doHistograms", true) )
   , _hStartXZ(NULL)
   , _hStartY(NULL)
@@ -89,9 +87,8 @@ namespace mu2e
     // Time range (in ns) over which to generate events.
   , _dt ( 0.0 )
 
-    // Random number distributions; getEngine comes from the base class.
-  , _randFlat( getEngine() )
-  , _randPoissonQ( getEngine(), std::abs(_mean) )
+    , _randFlat{engine}
+    , _randPoissonQ{engine, std::abs(_mean)}
 
     /*
       TRACKER:(-3904,0,10200)
@@ -113,7 +110,7 @@ namespace mu2e
 
     bool box=false;
     std::string directionString = "Undefined";
-    if(_dx!=0 && _dy!=0 && _dz!=0) 
+    if(_dx!=0 && _dy!=0 && _dz!=0)
     {
        log << "Since dx, dy, and dz are non-zero, the generator uses 5 production planes arranged in a box around the reference point\n";
        log << "The cosmicDYB.direction gets set automatically for all 5 production planes\n";
@@ -130,23 +127,23 @@ namespace mu2e
       else if(directionString=="Negative_z") {_direction=DYBGenerator::Direction::NEGATIVE_Z; _muPhiMin=M_PI;      _muPhiMax=2.0*M_PI;}
       else throw cet::exception("Configuration")<<"Unknown cosmicDYB.directionChoice\n";
 
-      if(_dx!=0 && _dz!=0) 
+      if(_dx!=0 && _dz!=0)
       {
-        if(_direction!=DYBGenerator::Direction::NEGATIVE_Y) 
+        if(_direction!=DYBGenerator::Direction::NEGATIVE_Y)
         cet::exception("Configuration")<<"dx!=0 and dz!=0 requires a negative_y direction\n";
       }
-      if(_dx!=0 && _dy!=0) 
+      if(_dx!=0 && _dy!=0)
       {
-        if(_direction!=DYBGenerator::Direction::NEGATIVE_Z && _direction!=DYBGenerator::Direction::POSITIVE_Z) 
+        if(_direction!=DYBGenerator::Direction::NEGATIVE_Z && _direction!=DYBGenerator::Direction::POSITIVE_Z)
         cet::exception("Configuration")<<"dx!=0 and dy!=0 requires a negative_z or positive_z direction\n";
       }
-      if(_dy!=0 && _dz!=0) 
+      if(_dy!=0 && _dz!=0)
       {
-        if(_direction!=DYBGenerator::Direction::NEGATIVE_X && _direction!=DYBGenerator::Direction::POSITIVE_X) 
+        if(_direction!=DYBGenerator::Direction::NEGATIVE_X && _direction!=DYBGenerator::Direction::POSITIVE_X)
         cet::exception("Configuration")<<"dy!=0 and dz!=0 requires a negative_x or positive_x direction\n";
       }
 
-      if((_dx==0 && _dy==0) || (_dx==0 && _dz==0) || (_dy==0 && _dz==9)) 
+      if((_dx==0 && _dy==0) || (_dx==0 && _dz==0) || (_dy==0 && _dz==9))
         cet::exception("Configuration")<<"At least two of the dx, dy, and dz needs to be non-zero\n";
 
       //azimuth angle can be overriden
@@ -216,9 +213,9 @@ namespace mu2e
       switch(_generators[i]->GetDirection())
       {
         case DYBGenerator::Direction::NEGATIVE_Y: rate*=0.04*_dx*_dz; break;
-        case DYBGenerator::Direction::POSITIVE_X: 
+        case DYBGenerator::Direction::POSITIVE_X:
         case DYBGenerator::Direction::NEGATIVE_X: rate*=0.04*_dy*_dz; break;
-        case DYBGenerator::Direction::POSITIVE_Z: 
+        case DYBGenerator::Direction::POSITIVE_Z:
         case DYBGenerator::Direction::NEGATIVE_Z: rate*=0.04*_dx*_dy; break;
                                          default: throw cet::exception("Configuration")<<"Invalid direction in DYB generator\n";
       };
@@ -258,7 +255,7 @@ namespace mu2e
     if(!_checkedProductionPlanes)
     {
       _checkedProductionPlanes=true;
-    
+
       const Hep3Vector halfLengths(_dx,_dy,_dz);
 
       std::cout<<"production center in Mu2e coordinates = "<<_productionCenterInMu2e<<std::endl;
@@ -269,7 +266,7 @@ namespace mu2e
                <<worldGeom->halfLengths()[1]<<", "
                <<worldGeom->halfLengths()[2]<<")"<<std::endl;
 
-      if(!worldGeom->inWorld(_productionCenterInMu2e+halfLengths) || 
+      if(!worldGeom->inWorld(_productionCenterInMu2e+halfLengths) ||
          !worldGeom->inWorld(_productionCenterInMu2e-halfLengths))
       {
         throw cet::exception("GEOM")<<"Cosmic ray production plane is outside of the world volume! Increase the world margins or change production plane\n";
@@ -389,7 +386,7 @@ namespace mu2e
       // implement a rough charge asymmetry
       double logP = log10(p)-3.;
       double asym = 1.15;
-      if(logP>0) 
+      if(logP>0)
       {
         if(logP>1) asym = 1.3;
         else asym = 1.15+0.15*logP;

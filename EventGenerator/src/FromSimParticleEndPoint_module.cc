@@ -6,7 +6,7 @@
 // $Date: 2013/09/27 16:03:41 $
 //
 // Original author Gianni Onorato
-// 
+//
 //
 
 #include <iostream>
@@ -47,13 +47,11 @@ namespace mu2e {
   class FromSimParticleEndPoint : public art::EDProducer {
   public:
     explicit FromSimParticleEndPoint(fhicl::ParameterSet const& pset);
-    void produce(art::Event& event);
-    void setNtuplaInfo(art::Event& event, GenParticle& gen,TNtuple*& ntup);
-    virtual void beginJob();
-
-
 
   private:
+    void produce(art::Event& event) override;
+    void setNtuplaInfo(art::Event& event, GenParticle& gen,TNtuple*& ntup);
+
     string _inModuleLabel;
     Vpdg _inPdgId;
     Vstring _inVolumes;
@@ -95,16 +93,18 @@ namespace mu2e {
     if ( _doHistograms ){
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "FromSPEndPoint" );
-      
+
       _ntup = tfs->make<TNtuple>("fromspep","Generator information",
                                  "evt:E:x:y:z:p:costh:phi:t:pdgId:GenId");
     }
 
-    createEngine( art::ServiceHandle<SeedService>()->getSeed() );    
-
     if (_outGenIdToCreate == GenId::PiCaptureCombined) {
-      _piCaptCreator = new PiCaptureEffects(_piCaptureProbInternalConversion, _piCaptureELow, 
-                                            _piCaptureEHi, _piCaptureNBins);
+      auto& engine = createEngine(art::ServiceHandle<SeedService>()->getSeed());
+      _piCaptCreator = new PiCaptureEffects(engine,
+                                            _piCaptureProbInternalConversion,
+                                            _piCaptureELow,
+                                            _piCaptureEHi,
+                                            _piCaptureNBins);
     }
 
     //Other possibilities to be implemented
@@ -114,23 +114,18 @@ namespace mu2e {
 
   }
 
-  void FromSimParticleEndPoint::beginJob() {
-   
-  }
-
-
   void FromSimParticleEndPoint::setNtuplaInfo(art::Event& event, GenParticle& gen,TNtuple*& ntup) {
 
     float nt[11];
     nt[0] = event.id().event();
     nt[1] = gen.momentum().e();
-    nt[2] = gen.position().x();     
-    nt[3] = gen.position().y();     
-    nt[4] = gen.position().z();     
+    nt[2] = gen.position().x();
+    nt[3] = gen.position().y();
+    nt[4] = gen.position().z();
     nt[5] = gen.momentum().vect().mag();
     nt[6] = gen.momentum().cosTheta();
     nt[7] = gen.momentum().phi();
-    nt[8] = gen.time();    
+    nt[8] = gen.time();
     nt[9] = gen.pdgId();
     nt[10] = gen.generatorId().id();
 
@@ -145,26 +140,26 @@ namespace mu2e {
 
       for (size_t i=0; i<vols.size(); ++i) {
         PhysicalVolumeInfo const& theVol = vols.at(i);
-        
+
         for (size_t j=0; j<_inVolumes.size(); ++j) {
           if (theVol.name().compare(0,_inVolumes[j].size(),_inVolumes[j]) == 0) {
             _selVolumes.push_back(i);
           }
         }
       }
-      
+
       if (_diagLevel>-1) {
         cout << "Searching for all ";
         for (size_t i = 0; i < _inPdgId.size(); ++i ) {
-	  cout << _inPdgId[i] << " ";
+          cout << _inPdgId[i] << " ";
         }
         cout << "dead in ";
         for (size_t i = 0; i < _selVolumes.size(); ++i ) {
           cout << vols.at(_selVolumes[i]).name() << endl;
         }
         cout << "with process code ";
-	cout << _inProcessCodeToLook.name() << " ";
-	cout << "to create a " << _outGenIdToCreate.name() << endl;
+        cout << _inProcessCodeToLook.name() << " ";
+        cout << "to create a " << _outGenIdToCreate.name() << endl;
       }
   }
 
@@ -199,7 +194,7 @@ namespace mu2e {
 
         //Check the end volume of the SimParticle
         bool findvolume = false;
-        for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin(); 
+        for (vector<unsigned>::iterator volumeFinder = _selVolumes.begin();
              volumeFinder != _selVolumes.end(); ++volumeFinder) {
           if ( *volumeFinder == aParticle.endVolumeIndex()) {
             findvolume = true;
@@ -211,33 +206,33 @@ namespace mu2e {
         if (findvolume) {
 
           if (_diagLevel>-1) {
-            cout << "find particle " << aParticle.pdgId(); 
+            cout << "find particle " << aParticle.pdgId();
             cout << " in the selected volume " << endl;
           }
           if (_inProcessCodeToLook == aParticle.stoppingCode() ) {
-            
+
             if (_diagLevel>-1) cout << "with stopping code " << aParticle.stoppingCode().name() << endl;
 
             CLHEP::Hep3Vector pos = aParticle.endPosition();
             double time = aParticle.endGlobalTime();
-            
+
             if (_outGenIdToCreate == GenId::PiCaptureCombined) {
-           
-	      _piCaptCreator->defineOutput();
-	      
+
+              _piCaptCreator->defineOutput();
+
               if (_piCaptCreator->doPhoton()) {
 
-		if (_diagLevel>1) cout << "creating photon" << endl;
-		
+                if (_diagLevel>1) cout << "creating photon" << endl;
+
                 output->push_back(_piCaptCreator->outputGamma(pos, time));
                 history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
                                    art::Ptr<SimParticle>(inh, std::distance(insims.begin(), i)) );
                 if (_doHistograms) {
                   setNtuplaInfo(event, output->back(),_ntup);
-		}
+                }
 
               }
-              
+
               if (_piCaptCreator->doElectron()) {
 
                 if (_diagLevel>1) cout << "creating electron" << endl;
@@ -245,11 +240,11 @@ namespace mu2e {
                 output->push_back(_piCaptCreator->outputElec(pos, time));
                 history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
                                    art::Ptr<SimParticle>(inh, std::distance(insims.begin(), i)) );
-                if (_doHistograms) 
+                if (_doHistograms)
                   setNtuplaInfo(event, output->back(),_ntup);
 
               }
-              
+
               if (_piCaptCreator->doPositron()) {
 
                 if (_diagLevel>1) cout << "creating positron" << endl;
@@ -257,19 +252,19 @@ namespace mu2e {
                 output->push_back(_piCaptCreator->outputPosit(pos, time));
                 history->addSingle(art::Ptr<GenParticle>(gpc_pid, output->size()-1, event.productGetter(gpc_pid)),
                                    art::Ptr<SimParticle>(inh, std::distance(insims.begin(), i)) );
-                if (_doHistograms) 
+                if (_doHistograms)
                   setNtuplaInfo(event, output->back(),_ntup);
-                
+
               }
             }
           }
         }
       }
     }
-    
+
     event.put(std::move(output));
     event.put(std::move(history));
-    
+
   }
 
 } // namespace mu2e

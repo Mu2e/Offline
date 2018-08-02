@@ -72,6 +72,7 @@ namespace mu2e {
       StrawHitFlag   _shsel;      // flag selection
       StrawHitFlag   _shmask;     // flag anti-selection 
       float         _maxDt;      // maximum time separation between hits
+      bool          _useTOT;     // use TOT to estimate drift time
       float         _maxDPerp;   // maximum transverse separation
       float         _minDdot;    // minimum dot product of straw directions
       float _minR2, _maxR2; // transverse radius (squared) 
@@ -97,7 +98,8 @@ namespace mu2e {
     _chTag(pset.get<art::InputTag>("ComboHitCollection")),
     _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),
     _shmask(pset.get<std::vector<std::string> >("StrawHitMaskBits",std::vector<std::string>{} )),
-    _maxDt(pset.get<float>(   "maxDt",40.0)), // nsec
+    _maxDt(pset.get<float>(   "maxDt",40.0)), // nsec //FIXME tune with TOT
+    _useTOT(pset.get<bool>("UseTOT",false)), // use TOT to estimate drift time
     _maxDPerp(pset.get<float>("maxDPerp",500.)), // mm, maximum perpendicular distance between time-division points
     _minDdot(pset.get<float>( "minDdot",0.6)), // minimum angle between straws
     _maxChisq(pset.get<float>("maxChisquared",5.0)), // position matching
@@ -154,7 +156,7 @@ namespace mu2e {
       ComboHit const& ch = (*_chcol)[ihit];
       // select hits based on flag
       if( (!_testflag) ||( ch.flag().hasAllProperties(_shsel) && (!ch.flag().hasAnyProperty(_shmask))) ){
-	phits[ch.sid().uniquePanel()].push_back(ihit);
+	phits[ch.strawId().uniquePanel()].push_back(ihit);
       }
     }
     if(_debug > 2){
@@ -176,13 +178,17 @@ namespace mu2e {
       combohit._qual = 0.0;
       combohit._pos = XYZVec(0.0,0.0,0.0);
       // loop over the panels which overlap this hit's panel
-      for (auto sid : _panelOverlap[ch1.sid().uniquePanel()]) {
+      for (auto sid : _panelOverlap[ch1.strawId().uniquePanel()]) {
       // loop over hits in the overlapping panel
 	for (auto jhit : phits[sid.uniquePanel()]) {
 	  const ComboHit& ch2 = (*_chcol)[jhit];
-	  if(_debug > 3) cout << " comparing hits " << ch1.sid().uniquePanel() << " and " << ch2.sid().uniquePanel();
+	  if(_debug > 3) cout << " comparing hits " << ch1.strawId().uniquePanel() << " and " << ch2.strawId().uniquePanel();
 	  if (!used[jhit] ){
-	    float dt = fabs(ch1.time()-ch2.time());
+            float dt;
+            if (_useTOT)
+	      dt = fabs(ch1.correctedTime()-ch2.correctedTime());
+            else
+	      dt = fabs(ch1.time()-ch2.time());
 	    if(_debug > 3) cout << " dt = " << dt;
 	    if (dt < _maxDt){
 	      float ddot = ch1.wdir().Dot(ch2.wdir());
@@ -240,6 +246,8 @@ namespace mu2e {
       combohit._flag.merge(StrawHitFlag::radsel);
       accumulator_set<float, stats<tag::weighted_mean>, unsigned > eacc;
       accumulator_set<float, stats<tag::weighted_mean>, unsigned > tacc;
+      accumulator_set<float, stats<tag::weighted_mean>, unsigned > dtacc;
+      accumulator_set<float, stats<tag::weighted_mean>, unsigned > placc;
       accumulator_set<float, stats<tag::min > > zmin;
       accumulator_set<float, stats<tag::max > > zmax;
       combohit._nsh = 0;
@@ -249,6 +257,8 @@ namespace mu2e {
 	combohit._flag.merge(ch.flag());
 	eacc(ch.energyDep(),weight=ch.nStrawHits());
 	tacc(ch.time(),weight=ch.nStrawHits());
+	dtacc(ch.driftTime(),weight=ch.nStrawHits());
+	placc(ch.pathLength(),weight=ch.nStrawHits());
 	zmin(ch.pos().z());
 	zmax(ch.pos().z());
 	combohit._nsh += ch.nStrawHits();
@@ -256,6 +266,8 @@ namespace mu2e {
       float maxz = extract_result<tag::max>(zmax);
       float minz = extract_result<tag::min>(zmin);
       combohit._time = extract_result<tag::weighted_mean>(tacc);
+      combohit._dtime = extract_result<tag::weighted_mean>(dtacc);
+      combohit._pathlength = extract_result<tag::weighted_mean>(placc);
       combohit._edep = extract_result<tag::weighted_mean>(eacc);
       float dz = (maxz-minz);
       combohit._wdist = dz; 

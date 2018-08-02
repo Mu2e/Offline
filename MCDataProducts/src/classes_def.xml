@@ -28,6 +28,7 @@
  <class name="mu2e::GenId"/>
  <class name="mu2e::GenParticle"/>
  <class name="mu2e::GenParticleCollection"/>
+ <class name="mu2e::GenParticleCollections"/>
  <class name="mu2e::StepPointMC"/>
  <class name="mu2e::StepPointMCCollection"/>
  <class name="mu2e::StrawHitMCTruth"/>
@@ -88,10 +89,13 @@
  <class name="mu2e::VisibleGenElTrack"/>
  <class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>
  <class name="mu2e::StepFilterMode"/>
+ <class name="mu2e::MCTrajectoryPoint"/>
+ <class name="std::vector<mu2e::MCTrajectoryPoint>"/>
  <class name="mu2e::MCTrajectory"/>
  <class name="std::pair<art::Ptr<mu2e::SimParticle>, mu2e::MCTrajectory>"/>
  <class name="std::map<art::Ptr<mu2e::SimParticle>, mu2e::MCTrajectory>"/>
  <class name="art::Wrapper<mu2e::GenParticleCollection>"/>
+ <class name="art::Wrapper<mu2e::GenParticleCollections>"/>
  <class name="art::Wrapper<mu2e::StepPointMCCollection>"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoCollection>"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>"/>

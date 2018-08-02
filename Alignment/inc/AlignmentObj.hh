@@ -25,26 +25,27 @@ namespace mu2e {
 
   class AlignmentObj {
   public:
-    AlignmentObj() {_displacement.set(0,0,0); _rotation=CLHEP::HepRotation::IDENTITY; _detail=0;}
+    AlignmentObj() {_displacement.set(0,0,0); _rotation=CLHEP::HepRotation::IDENTITY; _isValid=false; }
     AlignmentObj( CLHEP::Hep3Vector & disp, CLHEP::HepRotation & rot, 
-		  ShapeDetail* deet = 0 ) :
+	bool valid=true	   ) :
       _displacement(disp),
       _rotation(rot),
-      _detail( deet ){}
+      _isValid(valid){}
+
     AlignmentObj( const AlignmentObj& rhs );
 
     CLHEP::Hep3Vector  displacement() const { return _displacement;}
     CLHEP::HepRotation rotation()     const { return _rotation;    }
-    ShapeDetail*       detail()       const { return _detail;      }
+    bool isValid() const { return ( _isValid); }
 
-    void  setDetail( ShapeDetail* theDeets ) { _detail = theDeets; }
     void  setDisplacement ( CLHEP::Hep3Vector & aDisp ) { _displacement = aDisp;}
     void  setRotation ( CLHEP::HepRotation & aRot ) { _rotation = aRot; }
+    void  setValid ( bool & valid ) { _isValid = valid; }
 
   private:
     CLHEP::Hep3Vector  _displacement;
     CLHEP::HepRotation _rotation;
-    ShapeDetail*       _detail;
+    bool _isValid;
   }; // end of AlignmentObj class declaration and "inline" defs
 
   std::ostream& operator<<(std::ostream& os, const AlignmentObj& rhs );

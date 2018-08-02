@@ -136,7 +136,7 @@ namespace mu2e {
     _candIndex   = HitInfo_t();//SeedInfo_t(-1,-1);
 
     //clear the panel-based structure
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f) {
+    for (int f=0; f<StrawId::_ntotalfaces; ++f) {
       FaceZ_t*  facez  = &_oTracker[f];
       facez->bestFaceHit = HitInfo_t();
 

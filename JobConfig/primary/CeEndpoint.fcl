@@ -1,0 +1,33 @@
+# mono-energetic e- at the Al Ce endpoint without background mixing
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: CeEndpoint
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::CeEndpointGun
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#outputs.SelectEvents : [ TriggerPath ]
+# set the stops
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+# customize the filter
+physics.filters.DigiFilter.MinNDigis : 10
+physics.filters.DigiFilter.MinParticleMom : 75.0
+physics.filters.DigiFilter.particleTypes : [11]
+# customize the output
+services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
+outputs.Output.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

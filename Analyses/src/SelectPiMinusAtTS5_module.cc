@@ -82,7 +82,7 @@ namespace mu2e {
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
     , _positionCut(pset.get<bool>("positionCut", false))
     , _positionCenter(std::vector<double>(3, 0.0))
-    , _positionHalfLength(std::vector<double>(3, 0.0)) 
+    , _positionHalfLength(std::vector<double>(3, 0.0))
     , _storeParents(pset.get<bool>("storeParents"))
       // default to false for compatibility with existing .fcl files.
     , _storeExtraHits(pset.get<bool>("storeExtraHits", false))
@@ -125,20 +125,20 @@ namespace mu2e {
     for(StepPointMCCollection::const_iterator i=inhits.begin(); i!=inhits.end(); ++i) {
 
       if(std::find(_vids.begin(), _vids.end(), i->volumeId()) != _vids.end()) {
-	std::cout << "particle type " << ((*i).simParticle())->pdgId() << std::endl;
-	if ( ((*i).simParticle())->pdgId() != PDGCode::pi_minus ) continue;
+        std::cout << "particle type " << ((*i).simParticle())->pdgId() << std::endl;
+        if ( ((*i).simParticle())->pdgId() != PDGCode::pi_minus ) continue;
 
-        if ( _positionCut && 
+        if ( _positionCut &&
              ( fabs(i->position().x() - _positionCenter[0]) > _positionHalfLength[0] ||
                fabs(i->position().y() - _positionCenter[1]) > _positionHalfLength[1] ||
                fabs(i->position().z() - _positionCenter[2]) > _positionHalfLength[2] ) )
-          continue;          
+          continue;
 
         AGDEBUG("here");
         const art::Ptr<SimParticle>& particle = outhits->back().simParticle();
         AGDEBUG("here");
 
-       	if (particle->pdgId() != PDGCode::pi_minus) continue;
+        if (particle->pdgId() != PDGCode::pi_minus) continue;
 
           AGDEBUG("here: found a piminus!! "<<particle<<" (internal id = "<< particle->id()<< " pdgId = " << particle->pdgId() <<")"<<" for hit "<<*i);
 

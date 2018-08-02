@@ -3,6 +3,8 @@
 // The file that is included will be time dependent.
 //
 
+#include "Mu2eG4/geom/stoppingTarget_CD3C_34foils.txt"
+
 double stoppingTarget.holeRadius = 21.5;
 
 vector<double> stoppingTarget.radii  =

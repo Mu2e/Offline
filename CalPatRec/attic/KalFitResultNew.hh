@@ -8,7 +8,7 @@
 #ifndef KalFitResultNew_HH
 #define KalFitResultNew_HH
 
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
@@ -45,8 +45,8 @@ namespace mu2e {
   struct KalFitResultNew {
     const art::Event*                 event;
     KalRep*                           krep;           // Kalman rep, owned by the collection
-    const StrawHitCollection*         shcol;          // 
-    const StrawHitPositionCollection* shpos;          //
+    const ComboHitCollection*         shcol;          // 
+    //    const StrawHitPositionCollection* shpos;          //
     const StrawHitFlagCollection*     shfcol;         //
     std::string                       shDigiLabel;    // 
     TrkParticle                       tpart;

@@ -146,7 +146,7 @@ namespace mu2e
     virtual ~CosmicAnalysis() { }
     virtual void beginJob();
     void analyze(const art::Event& e);
-    void findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
+    void findCrossingDetails(const std::vector<MCTrajectoryPoint> &trajectoryPoints, int dim, double crossingPos,
                              double *crossingPoint, double *crossingDirection);
     void findCrossings(const art::Event& event, const cet::map_vector_key& particleKey);
 
@@ -240,14 +240,14 @@ namespace mu2e
     _tree->Branch("filename",e.filename,"filename[200]/C");
   }
 
-  void CosmicAnalysis::findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
+  void CosmicAnalysis::findCrossingDetails(const std::vector<MCTrajectoryPoint> &trajectoryPoints, int dim, double crossingPos,
                                            double *crossingPoint, double *crossingDirection)
   {
     if(!std::isnan(crossingPoint[0])) return;  //point already found
     for(unsigned int i=1; i<trajectoryPoints.size(); i++)
     {
-      CLHEP::Hep3Vector point1=trajectoryPoints[i-1]-_detSysOrigin;
-      CLHEP::Hep3Vector point2=trajectoryPoints[i]-_detSysOrigin;
+      CLHEP::Hep3Vector point1=trajectoryPoints[i-1].pos()-_detSysOrigin;
+      CLHEP::Hep3Vector point2=trajectoryPoints[i].pos()-_detSysOrigin;
       CLHEP::Hep3Vector diffVector=point2-point1;
       if(diffVector[dim]==0) continue;  //these two points are both on the same plane, try to find another pair
       if((point1[dim]>=crossingPos && point2[dim]<=crossingPos)
@@ -284,7 +284,7 @@ namespace mu2e
       {
         if(traj_iter->first->id()==particleKey) 
         {
-          const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints = traj_iter->second.points();
+          const auto &trajectoryPoints = traj_iter->second.points();
           findCrossingDetails(trajectoryPoints, 0, xCrossing1, _eventinfo.xplane1, _eventinfo.xplane1Dir);
           findCrossingDetails(trajectoryPoints, 0, xCrossing2, _eventinfo.xplane2, _eventinfo.xplane2Dir);
           findCrossingDetails(trajectoryPoints, 0, xCrossing3, _eventinfo.xplane3, _eventinfo.xplane3Dir);

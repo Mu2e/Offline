@@ -100,7 +100,7 @@ namespace mu2e {
 	const mu2e::PtrStepPointMCVector&  mcptr(listOfMCStrawHits->at(i));
 	step = &(*mcptr.at(0));
 	int volume_id = step->volumeId();
-	if (volume_id == Straw->index().asInt()) {
+	if (volume_id == Straw->id().asUint16()) {
 //-----------------------------------------------------------------------------
 // step found - use the first one in the straw
 //-----------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
-#include "TrackerConditions/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 
 namespace mu2e {
 
@@ -50,10 +50,10 @@ namespace mu2e {
 
     // Accessors
     StrawId strawId() const { return _strawId; }
-    float      time(StrawEnd end=TrkTypes::cal)       const { return _time[end];}
+    float      time(StrawEnd end=StrawEnd::cal)       const { return _time[end];}
     // return the earliest time
-    float      dt()         const { return _time[TrkTypes::cal] - _time[TrkTypes::hv]; }
-    float      TOT(StrawEnd end=TrkTypes::cal)       const { return _tot[end];}
+    float      dt()         const { return _time[StrawEnd::cal] - _time[StrawEnd::hv]; }
+    float      TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
     float      energyDep()  const { return _energyDep; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.

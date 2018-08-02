@@ -153,7 +153,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector& pos = hit.position();
 
       // Information about the straw.
-      const Straw& straw = tracker->getStraw( hit.strawIndex() );
+      const Straw& straw = tracker->getStraw( hit.strawId() );
 
       // Fill a histogram.
       _hStrawEDep->Fill(hit.eDep()/CLHEP::keV);

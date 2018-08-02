@@ -34,10 +34,11 @@ namespace mu2e
 //    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
 //    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","Background"})),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _shOffset(pset.get<double>("StrawHitTimeOffset",25.5)),
+    _avgDriftTime(pset.get<double>("AverageDriftTime",25.5)), // FIXME calibrate from sim
+    _useTOTdrift(pset.get<bool>("UseTOTDrift",true)),
     _shSlope(pset.get<double>("StrawHitVelocitySlope",0.785398)), // 45 deg
     _shBeta(pset.get<double>("StrawHitBeta",1.)),
-    _shErr(pset.get<double>("StrawHitTimeErr",9.7)) // ns
+    _shErr(pset.get<double>("StrawHitTimeErr",9.7)) // ns //FIXME what is this number
   {
     _shDtDz          = 1./(std::sin(_shSlope)*CLHEP::c_light*_shBeta);
 
@@ -57,8 +58,8 @@ namespace mu2e
 
   }
 
-  double TrkTimeCalculator::strawHitTimeOffset(double hitz) const {
-    double retval = _shOffset + hitz*_shDtDz;
+  double TrkTimeCalculator::timeOfFlightTimeOffset(double hitz) const {
+    double retval = hitz*_shDtDz;
     if(_fdir != TrkFitDirection::downstream)// change sign for upstream
       retval *= -1.0;
     return retval;
@@ -81,11 +82,14 @@ namespace mu2e
   }
 
   double TrkTimeCalculator::strawHitTime(StrawHit const& sh, StrawHitPosition const& shp) {
-    return sh.time() - strawHitTimeOffset(shp.pos().z());
+    return sh.time() - timeOfFlightTimeOffset(shp.pos().z()) - _avgDriftTime;
   }
 
   double TrkTimeCalculator::comboHitTime(ComboHit const& ch) {
-    return ch.time() - strawHitTimeOffset(ch.pos().z());
+    if (_useTOTdrift)
+      return ch.correctedTime() - timeOfFlightTimeOffset(ch.pos().z());
+    else
+      return ch.time() - timeOfFlightTimeOffset(ch.pos().z()) - _avgDriftTime;
   }
 
   double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {

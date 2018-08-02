@@ -47,28 +47,13 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
 //-----------------------------------------------------------------------------
-// comparison functor for sorting by Z(wire)
-//-----------------------------------------------------------------------------
-  // struct straw_zcomp : public binary_function<StrawHitIndex,StrawHitIndex,bool> {
-  //   bool operator()(StrawHitIndex const& h1, StrawHitIndex const& h2) {
-
-  //     mu2e::GeomHandle<mu2e::TTracker> handle;
-  //     const TTracker* t = handle.get();
-  //     const Straw* s1 = &t->getStraw(StrawIndex(h1));
-  //     const Straw* s2 = &t->getStraw(StrawIndex(h2));
-
-  //     return s1->getMidPoint().z() < s2->getMidPoint().z();
-  //   }
-  // }; // a semicolumn here is required
-
-//-----------------------------------------------------------------------------
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalHelixFinder::CalHelixFinder(fhicl::ParameterSet const& pset) :
     _diagLevel   (pset.get<int>   ("diagLevel"                      )),
     _debugLevel  (pset.get<int>   ("debugLevel"                     )),
     _printfreq   (pset.get<int>   ("printFrequency"                 )),
-    _useAsFilter (pset.get<int>   ("useAsFilter"                    )),    
+    _useAsFilter (pset.get<int>   ("useAsFilter"                    )),
     _shLabel     (pset.get<string>("StrawHitCollectionLabel"        )),
     // _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
     _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),
@@ -78,6 +63,9 @@ namespace mu2e {
     _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _hfinder     (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet()))
   {
+    consumes<ComboHitCollection>(_shLabel);
+    consumes<StrawHitFlagCollection>(_shfLabel);
+    consumes<TimeClusterCollection>(_timeclLabel);
     produces<HelixSeedCollection>();
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
@@ -125,7 +113,7 @@ namespace mu2e {
 
     for (int ist=0; ist<_tracker->nStations(); ist++) {
       const Station* st = &_tracker->getStation(ist);
-      
+
       for (int ipl=0; ipl<st->nPlanes(); ipl++) {
 	const Plane* pln = &st->getPlane(ipl);
 	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
@@ -171,7 +159,7 @@ namespace mu2e {
       FaceZ_t*        facez(0);
       //      PanelZ_t*       panelz(0);
 
-      for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+      for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	facez     = &_hfResult._oTracker[f];
 	double z  = facez->z;
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -182,7 +170,7 @@ namespace mu2e {
       printf("//----------------------------------//\n");
 
     }
-    
+
     return true;
   }
 
@@ -241,7 +229,7 @@ namespace mu2e {
   bool CalHelixFinder::filter(art::Event& event ) {
     const char*             oname = "CalHelixFinder::filter";
     //    CalHelixFinderData      hf_result;
-  					// diagnostic info
+                                        // diagnostic info
     _data.event     = &event;
     _data.nseeds[0] = 0;
     _data.nseeds[1] = 0;
@@ -266,7 +254,7 @@ namespace mu2e {
     _hfResult._chcol  = _chcol;
     // _hfResult._shpos  = _shpcol;
     _hfResult._shfcol = _shfcol;
-   
+
     _data.nTimePeaks  = _timeclcol->size();
     for (int ipeak=0; ipeak<_data.nTimePeaks; ipeak++) {
       const TimeCluster* tc = &_timeclcol->at(ipeak);
@@ -279,7 +267,7 @@ namespace mu2e {
 // track fitting objects for this peak
 //-----------------------------------------------------------------------------
       _hfResult.clearTempVariables();
-      
+
       _hfResult._timeCluster    = tc;
       _hfResult._timeClusterPtr = art::Ptr<mu2e::TimeCluster>(_timeclcolH,ipeak);
 //-----------------------------------------------------------------------------
@@ -291,62 +279,62 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // fill seed information
 //-----------------------------------------------------------------------------
-	initHelixSeed(helix_seed, _hfResult);
-	helix_seed._status.merge(TrkFitFlag::helixOK);
-	outseeds->push_back(helix_seed);
+        initHelixSeed(helix_seed, _hfResult);
+        helix_seed._status.merge(TrkFitFlag::helixOK);
+        outseeds->push_back(helix_seed);
 
-	if (_diagLevel > 0) {
-//--------------------------------------------------------------------------------    
+        if (_diagLevel > 0) {
+//--------------------------------------------------------------------------------
 // fill diagnostic information
 //--------------------------------------------------------------------------------
-	  int             nhitsMin(15);
-	  double          mm2MeV = 3./10.;  // approximately , at B=1T
-	  
-	  int loc = _data.nseeds[0];
-	  if (loc < _data.maxSeeds()) {
-	    int nhits          = helix_seed._hhits.size();
-	    _data.ntclhits[loc]= nGoodTClusterHits;
-	    _data.nhits[loc]   = nhits;
-	    _data.radius[loc]  = helix_seed.helix().radius();
-	    _data.pT[loc]      = mm2MeV*_data.radius[loc];
-	    _data.p[loc]       = _data.pT[loc]/std::cos( std::atan(helix_seed.helix().lambda()/_data.radius[loc]));
-	
-	    _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
-	    _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
-	    
-	    _data.nseeds[0]++;
-	    _data.good[loc] = 0;
-	    if (nhits >= nhitsMin) {
-	      _data.nseeds[1]++;
-	      _data.good[loc] = 1;
-	    }
-	    _data.nStationPairs[loc] = _hfResult._diag.nStationPairs;
-	    
-	    _data.dr           [loc] = _hfResult._diag.dr;
-	    _data.shmeanr      [loc] = _hfResult._diag.straw_mean_radius;
-	    _data.chi2d_helix  [loc] = _hfResult._diag.chi2d_helix;
-	    if (_hfResult._diag.chi2d_helix>3) printf("[%s] : chi2Helix = %10.3f event number %8i\n", oname,_hfResult._diag.chi2d_helix,_iev);
+          int             nhitsMin(15);
+          double          mm2MeV = 3./10.;  // approximately , at B=1T
+
+          int loc = _data.nseeds[0];
+          if (loc < _data.maxSeeds()) {
+            int nhits          = helix_seed._hhits.size();
+            _data.ntclhits[loc]= nGoodTClusterHits;
+            _data.nhits[loc]   = nhits;
+            _data.radius[loc]  = helix_seed.helix().radius();
+            _data.pT[loc]      = mm2MeV*_data.radius[loc];
+            _data.p[loc]       = _data.pT[loc]/std::cos( std::atan(helix_seed.helix().lambda()/_data.radius[loc]));
+
+            _data.chi2XY[loc]   = _hfResult._sxy.chi2DofCircle();
+            _data.chi2ZPhi[loc] = _hfResult._szphi.chi2DofLine();
+
+            _data.nseeds[0]++;
+            _data.good[loc] = 0;
+            if (nhits >= nhitsMin) {
+              _data.nseeds[1]++;
+              _data.good[loc] = 1;
+            }
+            _data.nStationPairs[loc] = _hfResult._diag.nStationPairs;
+
+            _data.dr           [loc] = _hfResult._diag.dr;
+            _data.shmeanr      [loc] = _hfResult._diag.straw_mean_radius;
+            _data.chi2d_helix  [loc] = _hfResult._diag.chi2d_helix;
+            if (_hfResult._diag.chi2d_helix>3) printf("[%s] : chi2Helix = %10.3f event number %8i\n", oname,_hfResult._diag.chi2d_helix,_iev);
 //-----------------------------------------------------------------------------
 // info of the track candidate after the first loop with findtrack on CalHelixFinderAlg::doPatternRecognition
 //-----------------------------------------------------------------------------
-	    _data.loopId       [loc] = _hfResult._diag.loopId_4;
-	    if (_hfResult._diag.loopId_4 == 1) {
-	      _data.chi2d_loop0       [loc] = _hfResult._diag.chi2_dof_circle_12;
-	      _data.chi2d_line_loop0  [loc] = _hfResult._diag.chi2_dof_line_13;
-	      _data.npoints_loop0     [loc] = _hfResult._diag.n_active_11;
-	      
-	    }
-	    if (_hfResult._diag.loopId_4 == 2){
-	      _data.chi2d_loop1       [loc] = _hfResult._diag.chi2_dof_circle_12;
-	      _data.chi2d_line_loop1  [loc] = _hfResult._diag.chi2_dof_line_13;
-	      _data.npoints_loop1     [loc] = _hfResult._diag.n_active_11;
-	    }
+            _data.loopId       [loc] = _hfResult._diag.loopId_4;
+            if (_hfResult._diag.loopId_4 == 1) {
+              _data.chi2d_loop0       [loc] = _hfResult._diag.chi2_dof_circle_12;
+              _data.chi2d_line_loop0  [loc] = _hfResult._diag.chi2_dof_line_13;
+              _data.npoints_loop0     [loc] = _hfResult._diag.n_active_11;
+
+            }
+            if (_hfResult._diag.loopId_4 == 2){
+              _data.chi2d_loop1       [loc] = _hfResult._diag.chi2_dof_circle_12;
+              _data.chi2d_line_loop1  [loc] = _hfResult._diag.chi2_dof_line_13;
+              _data.npoints_loop1     [loc] = _hfResult._diag.n_active_11;
+            }
 
 //--------------------------------------------------------------------------------
 // info of the track candidate during the CAlHelixFinderAlg::findTrack loop
 //--------------------------------------------------------------------------------
 	    int   counter(0);
-	    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	    for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	      FaceZ_t* facez     = &_hfResult._oTracker[f];
 	      for (int p=0; p<FaceZ_t::kNPanels; ++p){//for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
 		PanelZ_t* panelz = &facez->panelZs[p];//&_hfResult._oTracker[p];
@@ -373,7 +361,7 @@ namespace mu2e {
 	}
       }
     }
-//--------------------------------------------------------------------------------    
+//--------------------------------------------------------------------------------
 // fill histograms
 //--------------------------------------------------------------------------------
     if (_diagLevel > 0) _hmanager->fillHistograms(&_data);
@@ -385,7 +373,7 @@ namespace mu2e {
     event.put(std::move(outseeds));
 //-----------------------------------------------------------------------------
 // filtering
-//-----------------------------------------------------------------------------    
+//-----------------------------------------------------------------------------
     if (_useAsFilter == 0) return true;
     else                   return (nseeds >  0);
  }
@@ -402,7 +390,7 @@ namespace mu2e {
 // set helix parameters
 //-----------------------------------------------------------------------------
   void CalHelixFinder::initHelixSeed(HelixSeed& HelSeed, CalHelixFinderData& HfResult) {
-    
+
     HelixTraj* hel = HfResult.helix();
 
     double   helixRadius   = 1./fabs(hel->omega());
@@ -412,9 +400,9 @@ namespace mu2e {
     double   y0            =  (helixRadius + impactParam)*cos(phi0);
     double   dfdz          = 1./hel->tanDip()/helixRadius;
     double   z0            = hel->z0();
-					// center of the helix in the transverse plane
+                                        // center of the helix in the transverse plane
     Hep3Vector center(x0, y0, 0);
-    					//define the reconstructed helix parameters
+                                        //define the reconstructed helix parameters
 
     HelSeed._helix._rcent    = center.perp();
     HelSeed._helix._fcent    = center.phi();
@@ -429,21 +417,21 @@ namespace mu2e {
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);
     CLHEP::Hep3Vector        gpos = _calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
-									HfResult._timeClusterPtr->caloCluster()->cog3Vector());
+                                                                        HfResult._timeClusterPtr->caloCluster()->cog3Vector());
     CLHEP::Hep3Vector        tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
     double   pitchAngle    = M_PI/2. - atan(tandip);
     double   hel_t0        = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
-    
+
     HelSeed._t0            = TrkT0(hel_t0, 0.1); //dummy error on T0 FIXME!
     HelSeed._timeCluster   = HfResult._timeClusterPtr;
-    
+
     // cluster hits assigned to the reconsturcted Helix
 
     int nhits = HfResult.nGoodHits();
     // printf("[CalHelixFinder::initHelixSeed] radius = %2.3f x0 = %2.3f y0 = %2.3f dfdz = %2.3e nhits = %i chi2XY = %2.3f chi2PHIZ = %2.3f\n",
-    // 	   helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
+    //     helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
-      
+
     double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
@@ -455,7 +443,7 @@ namespace mu2e {
 
       double                  hit_z  = hit->pos().z();
       if ( i==0 ) z_start = hit_z;
-      
+
       double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
       int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
       shphi = shphi + double(nLoops)*2.*M_PI;
@@ -463,18 +451,18 @@ namespace mu2e {
       ComboHit                hhit(*hit);
       hhit._hphi = shphi;
       hhit._flag.merge(StrawHitFlag::resolvedphi);
-					
+
       HelSeed._hhits.push_back(hhit);
     }
   }
 
 //-----------------------------------------------------------------------------
   int CalHelixFinder::initHelixFinderData(CalHelixFinderData&                Data,
-					  const TrkParticle&                 TPart,
-					  const TrkFitDirection&             FDir,
-					  const ComboHitCollection*          ComboCollection ,
-					  // const StrawHitPositionCollection*  ShPosCollection , 
-					  const StrawHitFlagCollection*      ShFlagCollection) {
+                                          const TrkParticle&                 TPart,
+                                          const TrkFitDirection&             FDir,
+                                          const ComboHitCollection*          ComboCollection ,
+                                          // const StrawHitPositionCollection*  ShPosCollection ,
+                                          const StrawHitFlagCollection*      ShFlagCollection) {
     Data._fit         = TrkErrCode::fail;
     Data._tpart       = TPart;
     Data._fdir        = FDir;
@@ -482,14 +470,14 @@ namespace mu2e {
     Data._chcol       = ComboCollection;
     // Data._shpos       = ShPosCollection;
     Data._shfcol      = ShFlagCollection;
-    
+
     Data._radius      = -1.0;
     Data._dfdz        = 0.;
     Data._fz0         = 0.;
 
     return 0;
   }
-  
+
   int  CalHelixFinder::goodHitsTimeCluster(const TimeCluster* TCluster){
     int   nhits         = TCluster->nhits();
     int   ngoodhits(0);
@@ -507,7 +495,7 @@ namespace mu2e {
       // ++ngoodhits;
       ngoodhits += sh.nStrawHits();
     }
-    
+
     return ngoodhits;
   }
 

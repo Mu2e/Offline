@@ -7,7 +7,7 @@ namespace mu2e {
 }
 #endif
 ////
-//// simple reconstruction of 2 straw hits in different views giving 3-d information from stereo 
+//// simple reconstruction of 2 straw hits in different views giving 3-d information from stereo
 ////
 //// $Author: brownd $
 //// $Date: 2013/03/08 04:29:49 $
@@ -23,7 +23,6 @@ namespace mu2e {
 //// Mu2e includes
 //#include "RecoDataProducts/inc/StrawHit.hh"
 //#include "RecoDataProducts/inc/StrawHitCollection.hh"
-//#include "TTrackerGeom/inc/TTracker.hh"
 //#include "DataProducts/inc/PanelId.hh"
 //// C++
 //#include <vector>
@@ -38,9 +37,9 @@ namespace mu2e {
 //// accessors
 //      StrawHit const& sh1(StrawHitCollection const& strawhits) const { return strawhits[_hind1]; }
 //      StrawHit const& sh2(StrawHitCollection const& strawhits) const { return strawhits[_hind2]; }
-//      Straw const& s1(StrawHitCollection const& strawhits,Tracker const& tracker) const 
+//      Straw const& s1(StrawHitCollection const& strawhits,Tracker const& tracker) const
 //	{ return tracker.getStraw(sh1(strawhits).strawIndex()); }
-//      Straw const& s2(StrawHitCollection const& strawhits,Tracker const& tracker) const 
+//      Straw const& s2(StrawHitCollection const& strawhits,Tracker const& tracker) const
 //	{ return tracker.getStraw(sh2(strawhits).strawIndex()); }
 //      CLHEP::Hep3Vector const& pos() const { return _pos; }
 //      // compute the positions for the 2 hits given a direction vector for the track between them.

@@ -113,7 +113,7 @@ void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelec
         if(hitFlag.hasAnyProperty(_hitFlagSetting))
         {
           (*hit)->setFilter(_minTime, _maxTime, false);
-        } 
+        }
       }
     }
     else
@@ -130,7 +130,7 @@ void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelec
     (*crystalhit)->setFilter(_minTime, _maxTime);
     (*crystalhit)->update(time);
   }
-  
+
   std::vector<boost::shared_ptr<Cylinder> >::const_iterator driftradius;
   for(driftradius=_driftradii.begin(); driftradius!=_driftradii.end(); driftradius++)
   {
@@ -140,7 +140,7 @@ void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelec
 }
 
 void DataInterface::getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,
-                                    bool &showElectrons, bool &showMuons, bool &showGammas, 
+                                    bool &showElectrons, bool &showMuons, bool &showGammas,
                                     bool &showNeutrinos, bool &showNeutrons, bool &showOthers,
                                     mu2e::StrawHitFlag &hitFlagSetting)
 {
@@ -158,7 +158,7 @@ void DataInterface::getFilterValues(unsigned int &minPoints, double &minTime, do
 }
 
 void DataInterface::setFilterValues(unsigned int minPoints, double minTime, double maxTime, double minMomentum,
-                                    bool showElectrons, bool showMuons, bool showGammas, 
+                                    bool showElectrons, bool showMuons, bool showGammas,
                                     bool showNeutrinos, bool showNeutrons, bool showOthers,
                                     mu2e::StrawHitFlag hitFlagSetting)
 {
@@ -175,7 +175,7 @@ void DataInterface::setFilterValues(unsigned int minPoints, double minTime, doub
     _hitFlagSetting=hitFlagSetting;
 }
 
-DataInterface::timeminmax DataInterface::getHitsTimeBoundary() 
+DataInterface::timeminmax DataInterface::getHitsTimeBoundary()
 {
   DataInterface::timeminmax toReturn=_hitsTimeMinmax;
   if(_minTime>toReturn.mint) toReturn.mint=_minTime;
@@ -183,7 +183,7 @@ DataInterface::timeminmax DataInterface::getHitsTimeBoundary()
   return toReturn;
 }
 
-DataInterface::timeminmax DataInterface::getTracksTimeBoundary() 
+DataInterface::timeminmax DataInterface::getTracksTimeBoundary()
 {
   DataInterface::timeminmax toReturn=_tracksTimeMinmax;
   if(_minTime>toReturn.mint) toReturn.mint=_minTime;
@@ -194,7 +194,7 @@ DataInterface::timeminmax DataInterface::getTracksTimeBoundary()
 void DataInterface::createGeometryManager()
 {
   _geometrymanager = new TGeoManager("GeoManager", "GeoManager");
-  _geometrymanager->SetVerboseLevel(0); 
+  _geometrymanager->SetVerboseLevel(0);
    TGeoMaterial *matVacuum = new TGeoMaterial("Vacuum", 0,0,0);
    TGeoMedium *Vacuum = new TGeoMedium("Vacuum",1, matVacuum);
   _topvolume = _geometrymanager->MakeBox("TopVolume", Vacuum, 1000, 1000, 1500);
@@ -245,17 +245,17 @@ void DataInterface::fillGeometry()
       int idLayer =  s.id().getLayer();
       int idPanel =  s.id().getPanel();
       int idPlane =  s.id().getPlane();
-      int index = s.index().asInt();
+      int id = s.id().asUint16();
 
       char c[200];
       sprintf(c,"Straw %i  Layer %i  Panel %i  Plane %i",idStraw,idLayer,idPanel,idPlane);
       boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
       info->setName(c);
       info->setText(0,c);
-      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l, 
+      boost::shared_ptr<Straw> shape(new Straw(x,y,z, NAN, theta, phi, l,
                                                _geometrymanager, _topvolume, _mainframe, info, true));
       _components.push_back(shape);
-      _straws[index]=shape;
+      _straws[id]=shape;
     }
 
 //Support Structure
@@ -277,7 +277,7 @@ void DataInterface::fillGeometry()
     sprintf(c,"Center at x: 0 mm, y: 0 mm, z: 0 mm");
     info->setText(3,c);
     boost::shared_ptr<Cylinder> shape(new Cylinder(0,0,0, 0,0,0,
-                                          zHalfLength,innerRadius,outerRadius, NAN, 
+                                          zHalfLength,innerRadius,outerRadius, NAN,
                                           _geometrymanager, _topvolume, _mainframe, info, true));
     shape->makeGeometryVisible(true);
     _components.push_back(shape);
@@ -304,14 +304,14 @@ void DataInterface::fillGeometry()
     shapeEnvelope->makeGeometryVisible(true);
     _components.push_back(shapeEnvelope);
     _supportstructures.push_back(shapeEnvelope);
-  } 
+  }
 
   art::ServiceHandle<mu2e::GeometryService> geoservice;
   if(geoservice->hasElement<mu2e::DetectorSolenoid>())
   {
     mu2e::GeomHandle<mu2e::DetectorSolenoid> ds;
 
-    double innerRadius=ds->rIn1(); 
+    double innerRadius=ds->rIn1();
     double outerRadius=ds->rOut2();
     double zHalfLength=ds->halfLength();
     double z=ds->position().z() - _detSysOrigin.z();
@@ -362,7 +362,7 @@ void DataInterface::fillGeometry()
       info->setText(2,c);
       sprintf(c,"Center at x: %.2f mm, y: %.2f mm, z: %.2f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm);
       info->setText(3,c);
-      boost::shared_ptr<Cylinder> shape(new Cylinder(x,y,z, 0,0,0, halfThickness,0,radius, NAN, 
+      boost::shared_ptr<Cylinder> shape(new Cylinder(x,y,z, 0,0,0, halfThickness,0,radius, NAN,
                                           _geometrymanager, _topvolume, _mainframe, info, true));
       shape->makeGeometryVisible(true);
       _components.push_back(shape);
@@ -373,8 +373,8 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->caloInfo().crystalHalfTrans();
-    double crystalHalflength = calo->caloInfo().crystalHalfLength();
+    double rmax = calo->caloInfo().getDouble("crystalXYLength")/2.0;
+    double crystalHalflength = calo->caloInfo().getDouble("crystalZLength")/2.0;
 
 
     int crystalIdOffset=0;
@@ -398,13 +398,13 @@ void DataInterface::fillGeometry()
       sprintf(c,"Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",outerRadius,innerRadius,2.0*diskHalflength);
       diskInfo->setText(2,c);
       boost::shared_ptr<Cylinder> calodisk(new Cylinder(diskPos.x(),diskPos.y(),diskPos.z(),  0,0,0,
-                                                        diskHalflength, innerRadius, outerRadius, NAN, 
+                                                        diskHalflength, innerRadius, outerRadius, NAN,
                                                         _geometrymanager, _topvolume, _mainframe, diskInfo, true));
       calodisk->makeGeometryVisible(true);
       _components.push_back(calodisk);
       _supportstructures.push_back(calodisk);
 
-      int nCrystalInThisDisk = calo->disk(idisk).nCrystals();			
+      int nCrystalInThisDisk = calo->disk(idisk).nCrystals();
       for(int ic=0; ic<nCrystalInThisDisk; ic++)
       {
         int id=crystalIdOffset+ic;
@@ -419,7 +419,7 @@ void DataInterface::fillGeometry()
         sprintf(c,"Size: %.f mm, Thickness: %.f mm",rmax,2.0*crystalHalflength);
         info->setText(2,c);
         //these position were meant for Geant4, where the "z position of [the] hexagon is their base, not their center"
-        //since this Hexagon class uses the center as a reference for, crystalHalflength needs to be added 
+        //since this Hexagon class uses the center as a reference for, crystalHalflength needs to be added
         boost::shared_ptr<Hexagon> shape(new Hexagon(pos.x(),pos.y(),pos.z()+crystalHalflength,
                                                      rmax,crystalHalflength,360, NAN,
                                                      _geometrymanager, _topvolume, _mainframe, info, true));
@@ -428,9 +428,9 @@ void DataInterface::fillGeometry()
       }
       crystalIdOffset +=nCrystalInThisDisk;
     }
-  } 
-  
-  
+  }
+
+
   //MBS
 /*
   if(config.getBool("hasMBS", false)) {
@@ -470,7 +470,7 @@ void DataInterface::fillGeometry()
     }
   }
 */
-  //MecoStyleProtonAbsorber 
+  //MecoStyleProtonAbsorber
   if(config.getBool("hasProtonAbsorber", false)) {
     if (!config.getBool("protonabsorber.isHelical", false)) {
       char c[200];
@@ -507,11 +507,11 @@ void DataInterface::fillGeometry()
   }
 
 //active CRV Shields
-  if( geom->hasElement<mu2e::CosmicRayShield>() ) 
+  if( geom->hasElement<mu2e::CosmicRayShield>() )
   {
     mu2e::GeomHandle<mu2e::CosmicRayShield> CosmicRayShieldGeomHandle;
     std::vector<mu2e::CRSScintillatorShield> const& shields = CosmicRayShieldGeomHandle->getCRSScintillatorShields();
-    for(std::vector<mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield) 
+    for(std::vector<mu2e::CRSScintillatorShield>::const_iterator ishield=shields.begin(); ishield!=shields.end(); ++ishield)
     {
       mu2e::CRSScintillatorShield const& shield = *ishield;
       std::string const& shieldName = shield.getName();
@@ -522,17 +522,17 @@ void DataInterface::fillGeometry()
       double dz=barDetail.getHalfLengths()[2];
 
       int nModules = shield.nModules();
-      for (int im = 0; im < nModules; ++im) 
+      for (int im = 0; im < nModules; ++im)
       {
         mu2e::CRSScintillatorModule const & module = shield.getModule(im);
 
         int nLayers = module.nLayers();
-        for (int il = 0; il < nLayers; ++il) 
+        for (int il = 0; il < nLayers; ++il)
         {
           mu2e::CRSScintillatorLayer const & layer = module.getLayer(il);
 
           int nBars = layer.nBars();
-          for (int ib = 0; ib < nBars; ++ib)  
+          for (int ib = 0; ib < nBars; ++ib)
           {
             mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
             CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
@@ -835,11 +835,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=steppointMChits->begin(); iter!=steppointMChits->end(); iter++)
     {
       const mu2e::StepPointMC& hit = *iter;
-      int strawindex = hit.strawIndex().asInt();
+      int sid = hit.strawId().asUint16();
       int trackid = hit.trackId().asInt();
       double time = hit.time();
       double energy = hit.eDep();
-      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
+      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
@@ -875,11 +875,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=strawhits->begin(); iter!=strawhits->end(); iter++, hitnumber++)
     {
       const mu2e::StrawHit& hit = *iter;
-      int strawindex = hit.strawId().asUint16();
+      int sid  = hit.strawId().asUint16();
       double time = hit.time();
       double dt = hit.dt();
       double energy = hit.energyDep();
-      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
+      std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
       {
         double previousStartTime=straw->second->getStartTime();
@@ -926,11 +926,11 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           const mu2e::TrkStrawHit* strawHit = dynamic_cast<const mu2e::TrkStrawHit*>(hitOnTrack);
           if(strawHit)
           {
-            int    strawindex=strawHit->straw().index().asInt();
-            double time = strawHit->time(); 
+            int    sid=strawHit->straw().id().asUint16();
+            double time = strawHit->time();
             double hitT0 = strawHit->hitT0()._t0; //this is the time the hit "arrived at the straw"
                                               //don't know what the other times are
-            double strawtime = strawHit->strawHit().time();
+            double strawtime = strawHit->comboHit().time();
             double driftRadius = strawHit->driftRadius();
             const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
             double theta = strawHit->straw().getDirection().theta();
@@ -944,7 +944,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               residualGraph->SetPointError(n,0,residualError);
             }
 
-            std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(strawindex);
+            std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
             if(straw!=_straws.end() && !std::isnan(time))
             {
               double previousStartTime=straw->second->getStartTime();
@@ -979,10 +979,10 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               info->setName(c0);
               info->setText(0,strawname->c_str());
               info->setText(1,c1);
-              boost::shared_ptr<Cylinder> driftradius(new Cylinder(p.x(),p.y(),p.z(), 
+              boost::shared_ptr<Cylinder> driftradius(new Cylinder(p.x(),p.y(),p.z(),
                                                           phi+TMath::Pi()/2.0,theta,0,
-                                                          5, //the halflength of 5 has no meaning 
-                                                          0,driftRadius,hitT0, 
+                                                          5, //the halflength of 5 has no meaning
+                                                          0,driftRadius,hitT0,
                                                           _geometrymanager, _topvolume, _mainframe, info, false));
               _components.push_back(driftradius);
               _driftradii.push_back(driftradius);
@@ -1082,7 +1082,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       if(geoservice->hasElement<mu2e::DiskCalorimeter>())
       {
         mu2e::GeomHandle<mu2e::DiskCalorimeter> diskCalo;
-        crystalid=diskCalo->crystalByRO(roid);
+        crystalid=diskCalo->caloInfo().crystalByRO(roid);
       }
       double time = calohit.time();
       double energy = calohit.energyDep();
@@ -1189,8 +1189,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       {
         info->expandLine(4,daughter->asInt(),"");
       }
-      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 
-                                               particleid, trackclass, trackclassindex, e1, 
+      boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+                                               particleid, trackclass, trackclassindex, e1,
                                                _geometrymanager, _topvolume, _mainframe, info, false));
       findTrajectory(contentSelector,shape,particle.id(), t1,t2, simParticles,particle.daughterIds(), trackInfos[i]);
       _components.push_back(shape);
@@ -1232,7 +1232,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
             {
               double strawTime   = strawHit->hitT0()._t0/CLHEP::ns;
               double trackTime   = strawTime*CLHEP::ns;  //TODO: add correction for drift time
-              double weight= strawHit->weight();  
+              double weight= strawHit->weight();
               double fltLen= strawHit->fltLen();
               const HepPoint &p=strawHit->hitTraj()->position(strawHit->hitLen());
               double t     = kalrep->arrivalTime(fltLen);
@@ -1266,15 +1266,15 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         double z2=kalrep->position(fltLMax).z();
         double t1=kalrep->arrivalTime(fltLMin)+offset;
         double t2=kalrep->arrivalTime(fltLMax)+offset;
-        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 
-                                                 particleid, trackclass, trackclassindex, p1, 
+        boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+                                                 particleid, trackclass, trackclassindex, p1,
                                                  _geometrymanager, _topvolume, _mainframe, info, false));
         _components.push_back(track);
         _tracks.push_back(track);
 
         double fltStep = (fltLMax - fltLMin)/400.0;
-        for(unsigned int step = 0; step <= 400.0; step++) 
-        {		
+        for(unsigned int step = 0; step <= 400.0; step++)
+        {
           double fltL = fltLMin + step*fltStep;
           double   t = kalrep->arrivalTime(fltL)+offset;
           HepPoint p = kalrep->position(fltL);
@@ -1285,7 +1285,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
 	int charge = kalrep->charge();
         double t0=kalrep->t0().t0();
-        double firsthitfltlen = kalrep->lowFitRange(); 
+        double firsthitfltlen = kalrep->lowFitRange();
         double lasthitfltlen = kalrep->hiFitRange();
         double entlen = min(firsthitfltlen,lasthitfltlen);
         double loclen(0.0);
@@ -1336,8 +1336,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double z2 = trkExtTraj.back().z();
       double t1 = 0;
       double t2 = 0;
-      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2, 
-                                               particleid, trackclass, trackclassindex, p1, 
+      boost::shared_ptr<Track> track(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
+                                               particleid, trackclass, trackclassindex, p1,
                                                _geometrymanager, _topvolume, _mainframe, info, false));
       _components.push_back(track);
       _tracks.push_back(track);
@@ -1363,11 +1363,10 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
     std::map<art::Ptr<mu2e::SimParticle>,mu2e::MCTrajectory>::const_iterator traj_iter;
     for(traj_iter=mcTrajectories->begin(); traj_iter!=mcTrajectories->end(); traj_iter++)
     {
-      if(traj_iter->first->id()==id) 
+      if(traj_iter->first->id()==id)
       {
-        const std::vector<CLHEP::HepLorentzVector> &points = traj_iter->second.points();
-        std::vector<CLHEP::HepLorentzVector>::const_iterator point_iter;
-        for(point_iter=points.begin(); point_iter!=points.end(); point_iter++)
+        const auto& points = traj_iter->second.points();
+        for(auto point_iter=points.begin(); point_iter!=points.end(); ++point_iter)
         {
           track->addTrajectoryPoint(point_iter->x()-_detSysOrigin.x(),
                                     point_iter->y()-_detSysOrigin.y(),
@@ -1376,7 +1375,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
         }
       }
     }
-    return; 
+    return;
   }
 }
 

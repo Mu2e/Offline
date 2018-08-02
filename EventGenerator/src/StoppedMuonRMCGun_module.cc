@@ -48,7 +48,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
-
+#include "TMath.h"
 namespace mu2e {
 
   //================================================================
@@ -87,6 +87,8 @@ namespace mu2e {
     TH1F* _hmomentum;
     TH1F* _hEnergyElectron;
     TH1F* _hEnergyPositron;
+    TH1F* _hWeight;
+    TH1F* _htZero;
 
   public:
     explicit StoppedMuonRMCGun(const fhicl::ParameterSet& pset);
@@ -132,6 +134,8 @@ namespace mu2e {
       _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum, RMC", 70,  0.,  140.  );
       _hEnergyElectron     = tfdir.make<TH1F>( "hEnergyElectron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
       _hEnergyPositron     = tfdir.make<TH1F>( "hEnergyPositron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
+      _htZero              = tfdir.make<TH1F>( "htZero", "Stopped Muon time", 100,0.,2000.);
+      _hWeight             = tfdir.make<TH1F>( "hWeight",         "Event Weight ", 100,0.,1.);
     }
 
   }
@@ -249,8 +253,14 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
+    // next step is to get muon lifetime in the code together with the capture fraction 5/29/2018
+
+    if (doHistograms_){
+	_htZero->Fill(stop.t);
+    }
     const double energy = generateEnergy();
 
+    double weight{0.};
     // two things can now happen with this photon.  It can proceed and possibly convert, or it can internally convert.
     // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat 
 
@@ -264,10 +274,10 @@ namespace mu2e {
       event.put(std::move(output));
 
       // for future normalization
-      const double weight = fractionSpectrum * omcNormalization;
-      std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+      const double weightExternal = fractionSpectrum * omcNormalization;
+      std::unique_ptr<EventWeight> pw(new EventWeight(weightExternal));
       event.put(std::move(pw));
-
+      weight = weightExternal;
       if ( doHistograms_ ) {
 
 	_hmomentum->Fill(energy);
@@ -278,37 +288,45 @@ namespace mu2e {
       static const double massE = GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::e_minus).ref().mass().value();
 
       // Uses energy above as photon energy, assuming distribution created by 
-      static Random2Dpair< MuonCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
+      Random2Dpair< MuonCaptureSpectrum > random2dPair( eng_, 2*massE, energy, -1., 1. );
  
       const auto xyPair          = random2dPair.fire( energy );
       const auto elecPosiVectors = MuonCaptureSpectrum::getElecPosiVectors( energy, xyPair.first, xyPair.second ); 
- 
+      //      CLHEP::HepLorentzVector fakeElectron( 105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
+      //      CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+ massE*massE));
       output->emplace_back( PDGCode::e_minus, 
 			    GenId::radiativeMuonCaptureInternal, 
 			    pos,
 			    elecPosiVectors.first, 
-			    stop.t );
+			    //fakeElectron, 
+			    //			    800. );
+      			    stop.t );
       output->emplace_back( PDGCode::e_plus, 
 			    GenId::radiativeMuonCaptureInternal, 
 			    pos,
 			    elecPosiVectors.second, 
-			    stop.t );
+			    //fakePositron, 
+			    //			    800.);
+      			    stop.t );
 
       event.put(std::move(output));
 
       // for future normalization
-      const double weight = fractionSpectrum*rhoInternal_;
-      std::unique_ptr<EventWeight> pw(new EventWeight(weight));
+      const double weightInternal = omcNormalization*fractionSpectrum*rhoInternal_;
+      std::unique_ptr<EventWeight> pw(new EventWeight(weightInternal));
+      weight = weightInternal;
       event.put(std::move(pw));
+      if (verbosityLevel_ > 0) {
+	std::cout << "original photon energy = " << energy << " and electron mass = " << massE <<  std::endl;
+	std::cout << "RMC electron/positron energies = " << elecPosiVectors.first.e() << " " << elecPosiVectors.second.e() << std::endl;
+	std::cout << "and the full 4-vector: " << elecPosiVectors.first << " " << elecPosiVectors.second << std::endl;
+	std::cout << "stop time = " << stop.t << std::endl;
+	std::cout << " event weight = " << fractionSpectrum << " " << rhoInternal_ << " " << weightInternal << std::endl;
+      }
 
       if ( doHistograms_ ) {
-
+	_hWeight->Fill(weight);
 	_hmomentum->Fill(energy);
-	if (verbosityLevel_ > 0) {
-	  std::cout << "original photon energy = " << energy << " and electron mass = " << massE <<  std::endl;
-	  std::cout << "RMC electron/positron energies = " << elecPosiVectors.first.e() << " " << elecPosiVectors.second.e() << std::endl;
-	  std::cout << "and the full 4-vector: " << elecPosiVectors.first << " " << elecPosiVectors.second << std::endl;
-	}
 	_hEnergyElectron->Fill(elecPosiVectors.first.e());
 	_hEnergyPositron->Fill(elecPosiVectors.second.e());
 

@@ -58,7 +58,7 @@
 namespace mu2e {
 
   const SimParticleTimeOffset           *ObjectDumpUtils::_TimeOffsets(NULL);
-  const PtrStepPointMCVectorCollection  *ObjectDumpUtils::_ListOfMCStrawHits(NULL);
+  const StrawDigiMCCollection           *ObjectDumpUtils::_ListOfMCStrawHits(NULL);
   std::string                            ObjectDumpUtils::_FlagBgrHitsModuleLabel;
 
 // //______________________________________________________________________________
@@ -113,7 +113,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
     printf("       Address  SectionID  IsSplit  NC    Time    Energy      \n");
     printf("-----------------------------------------------------------------------------------------------------\n");
   }
- 
+
   const mu2e::CaloProtoCluster::CaloCrystalHitPtrVector caloClusterHits = Cluster->caloCrystalHitsPtrVector();
   int nh = caloClusterHits.size();
 
@@ -126,9 +126,9 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 	   Cluster->isSplit(),
 	   Cluster->time(),
 	   Cluster->energyDep()
-	   ); 
+	   );
   }
-  
+
   if (opt.Index("hits") >= 0) {
 //-----------------------------------------------------------------------------
 // print individual crystals in local disk coordinate system
@@ -136,7 +136,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
     for (int i=0; i<nh; i++) {
       const mu2e::CaloCrystalHit* hit = &(*caloClusterHits.at(i));
       int id = hit->id();
-      
+
       //      pos = cg->crystalOriginInSection(id);
 
       cr  = &cal->crystal(id);
@@ -144,7 +144,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 
       iz = -1;
       ir = -1;
-      
+
       printf("%6i     %10.3f %5i %5i %8.3f %10.3f %10.3f %10.3f %10.3f\n",
 	     id,
 	     hit->time(),
@@ -183,7 +183,7 @@ void ObjectDumpUtils::printCaloProtoCluster(const mu2e::CaloProtoCluster* Cluste
 void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const char* Prefix) {
 
   std::string opt = Opt;
-  
+
   if ((opt == "") || (opt == "banner")) {
     printf("-----------------------------------------------------------------------------------------------");
     printf("-----------------------------------------------------\n");
@@ -192,7 +192,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
     printf("-----------------------------------------------------------------------------------------------");
     printf("-----------------------------------------------------\n");
   }
- 
+
   if ((opt == "") || (opt.find("data") >= 0)) {
     double chi2   = Krep->chisq();
 
@@ -223,12 +223,12 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
     CLHEP::Hep3Vector fitmom = Krep->momentum(s);
     CLHEP::Hep3Vector momdir = fitmom.unit();
     BbrVectorErr      momerr = Krep->momentumErr(s);
-    
+
     HepVector momvec(3);
     for (int i=0; i<3; i++) momvec[i] = momdir[i];
-    
+
     double sigp = sqrt(momerr.covMatrix().similarity(momvec));
-  
+
     double fit_consistency = Krep->chisqConsistency().consistency();
     int q         = Krep->charge();
 
@@ -287,7 +287,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 
       hit = (mu2e::TrkStrawHit*) (*it);
 
-      const mu2e::StrawHit* sh = &hit->strawHit();
+      const mu2e::ComboHit* sh = &hit->comboHit();
       mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
       hit->hitPosition(pos);
@@ -305,10 +305,19 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
       const mu2e::StepPointMC* step(0);
 
       for (int i=0; i<nstraws; i++) {
-	mu2e::PtrStepPointMCVector  const& mcptr(_ListOfMCStrawHits->at(i));
-	step = &(*mcptr.at(0));
+
+	const mu2e::StrawDigiMC* mcdigi = &_ListOfMCStrawHits->at(i);
+
+	const mu2e::StepPointMC   *step;
+	if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
+	  step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
+	}
+	else {
+	  step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
+	}
+
 	vol_id = step->volumeId();
- 	if (vol_id == straw->index().asInt()) {
+ 	if (vol_id == straw->id().asUint16()) {
  					// step found - use the first one in the straw
  	  break;
  	}
@@ -327,20 +336,20 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
 
 	TrkPoca poca(trstep, 0., trstraw, 0.);
-    
+
 	mcdoca = poca.doca();
       }
 
       //      printf("%3i %5i %1i %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
       printf("%3i %5i %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
 	     ++i,
-	     straw->index().asInt(), 
+	     straw->id().asUint16(),
 	     //	     hit->isUsable(),
 	     hit->isActive(),
 	     len,
 	     //	     hit->hitRms(),
 	     plen.x(),plen.y(),plen.z(),
-	     sh->time(), sh->dt()
+	     sh->time(), 0.//sh->dt()//FIXME!
 	     );
 
       printf(" %2i %2i %2i %2i",
@@ -362,7 +371,7 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	     res,
 	     sigres
 	     );
-      
+
       if (hit->isActive()) {
 	if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
 	else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
@@ -370,15 +379,15 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
       }
       else {
 //-----------------------------------------------------------------------------
-// do not analyze correctness of the drift sign determination for hits not 
+// do not analyze correctness of the drift sign determination for hits not
 // marked as 'active'
 //-----------------------------------------------------------------------------
 	printf("   %6.3f",hit->driftRadius());
       }
-	  
+
 
       printf("  %7.3f",mcdoca);
-      printf(" %6.3f %6.3f %6.3f %6.3f %6.3f",		 
+      printf(" %6.3f %6.3f %6.3f %6.3f %6.3f",
 	     hit->totalErr(),
 	     hit->hitErr(),
 	     hit->t0Err(),
@@ -398,19 +407,19 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 
 
 //-----------------------------------------------------------------------------
-void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        , 
+void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
 					    const KalRepPtrCollection* Coll,
 					    int               PrintHits    ) {
 
-  art::Handle<mu2e::PtrStepPointMCVectorCollection> mcptrHandle;
+  art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
 
-  Event->getByLabel("makeSH","",mcptrHandle);
-  if (mcptrHandle.isValid()) {
-    _ListOfMCStrawHits = (mu2e::PtrStepPointMCVectorCollection*) mcptrHandle.product();
+  Event->getByLabel("makeSD","",mcdigiH);
+  if (mcdigiH.isValid()) {
+    _ListOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
   }
   else {
     _ListOfMCStrawHits = NULL;
-    printf(">>> ERROR in ObjectDumpUtils::printKalRepCollection: failed to locate StepPointMCCollection makeSH:StrawHitMCPtr\n");
+    printf(">>> ERROR in ObjectDumpUtils::printKalRepCollection: failed to locate StrawDigiMCCollection by makeSD\n");
   }
 
   int ntrk = Coll->size();
@@ -423,11 +432,11 @@ void ObjectDumpUtils::printKalRepCollection(const art::Event* Event        ,
 //     Event->get(kptr.id(), krepsHandle);
 //     fhicl::ParameterSet const& pset = krepsHandle.provenance()->parameterSet();
 //     string module_type = pset.get<std::string>("module_type");
- 
+
     trk = kptr.get();
     printKalRep(trk,"banner+data+hits",""); // module_type.data());
   }
- 
+
 }
 
 

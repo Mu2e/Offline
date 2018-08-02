@@ -4,10 +4,6 @@
 // Pure virtual base class that is used by the TTracker and was used
 // by the LTracker, which has since been removed.
 //
-// $Id: Tracker.hh,v 1.8 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
-//
 // Original author Rob Kutschke
 //
 
@@ -31,15 +27,14 @@ namespace mu2e {
 
     // Check for legal identifiers; add these later.
     //virtual isLegal(PlaneId d) const = 0;
-    //virtual bool isLegal(const PanelId& pnlid) const = 0;
-    //vitrual bool isLegal(const LayerId& layid ) const = 0;
-    //virtual bool isLegal(const StrawId& strid) const =0;
+    //virtual bool isLegal(const PanelId pnlid) const = 0;
+    //vitrual bool isLegal(const LayerId layid ) const = 0;
+    //virtual bool isLegal(const StrawId strid) const =0;
     constexpr static int _nttstraws = StrawId::_nplanes *
                                       StrawId::_npanels *
                                       StrawId::_nstraws;
 
-    virtual const Straw& getStraw ( const StrawId& strid ) const=0;
-    virtual const Straw& getStraw ( StrawIndex i ) const=0;
+    virtual const Straw& getStraw ( const StrawId strid ) const=0;
     virtual const std::array<Straw,_nttstraws>& getAllStraws() const=0;
     virtual const std::vector<StrawDetail>& getStrawDetails() const=0;
     virtual uint16_t nPlanes() const=0;

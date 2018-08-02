@@ -79,7 +79,7 @@ namespace mu2e
     //    _mindelta(pset.get<float>("minDelta",500.0)),
     _lmin(pset.get<float>("minAbsLambda",130.0)),
     _lmax(pset.get<float>("maxAbsLambda",320.0)),
-    _targetcon(pset.get<bool>("targeconsistent",true)),
+    _targetcon(pset.get<bool>("targetconsistent",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
     _tripler(pset.get<bool>("TripleRadius",false)),
     _errrwt(pset.get<bool>("HitErrorWeight",false)),
@@ -276,7 +276,7 @@ namespace mu2e
     int          nhitsFace(0);
     ComboHit*    hit(0);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &HelixData._oTracker[f];
  
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -300,7 +300,7 @@ namespace mu2e
     PanelZ_t*      panelz1(0), *panelz2(0);
     int            nhitsPanelF1(0),nhitsPanelF2(0);
     
-    for (int f1=0; f1<FaceZ_t::kNTotalFaces-1; ++f1){
+    for (int f1=0; f1<StrawId::_ntotalfaces-1; ++f1){
       facezF1     = &HelixData._oTracker[f1];
   
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
@@ -315,7 +315,7 @@ namespace mu2e
 	  // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
 	  if (!use(*hitP1))   continue;
 	    
-	  for (int f2=f1+1; f2<FaceZ_t::kNTotalFaces; ++f2){
+	  for (int f2=f1+1; f2<StrawId::_ntotalfaces; ++f2){
 	    facezF2     = &HelixData._oTracker[f2];
 	    for (int p2=0; p2<FaceZ_t::kNPanels; ++p2){
 	      panelz2     = &facezF2->panelZs[p2];   
@@ -362,7 +362,7 @@ namespace mu2e
     // find phi at z intercept.  Use a histogram technique since phi looping
     // hasn't been resolved yet, and to avoid inefficiency at the phi wrapping edge
     _hphi.Reset();
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezF1     = &HelixData._oTracker[f];
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	panelz1     = &facezF1->panelZs[p1];   
@@ -403,7 +403,7 @@ namespace mu2e
 	fz0 /= count;
 	rhel._fz0 = deltaPhi(0.0,fz0);
 	//	for (auto& hhit : hhits) resolvePhi(hhit,rhel);
-	for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	  facezF1     = &HelixData._oTracker[f];
 	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	    panelz1     = &facezF1->panelZs[p1];   
@@ -466,7 +466,7 @@ namespace mu2e
     FaceZ_t*   facez(0);
     PanelZ_t*  panelz(0);
     
-    for (int f1=0; f1<FaceZ_t::kNTotalFaces; ++f1){
+    for (int f1=0; f1<StrawId::_ntotalfaces; ++f1){
       facez = &HelixData._oTracker[f1];
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	panelz  = &facez->panelZs[p1];   
@@ -480,7 +480,7 @@ namespace mu2e
 	  if (!use(*hit))   continue;
 
 
-	  int ist = hit->sid().station();//_straw->id().getStation();                   // station number
+	  int ist = hit->strawId().station();//_straw->id().getStation();                   // station number
 	  phi     = polyAtan2(hit->pos().y() - center.y(),hit->pos().x() - center.x()); // atan2 returns its result in [-pi,pi], convert to [0,2pi]
 	  if (phi < 0) phi += 2*M_PI;
 	  zVec  [ist] += hit->pos().z();
@@ -668,7 +668,7 @@ namespace mu2e
       printf("[RobustHelixFinder::initFZ_2] END: hdfdz = %9.5f hphi0 = %9.6f ", hdfdz, hphi0);
     }
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &HelixData._oTracker[f];
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	panelz  = &facez->panelZs[p1];   
@@ -715,7 +715,7 @@ namespace mu2e
 	PanelZ_t*      panelz1(0), *panelz2(0);
 	int            nhitsPanelF1(0),nhitsPanelF2(0);
     
-	for (int f1=0; f1<FaceZ_t::kNTotalFaces-1; ++f1){
+	for (int f1=0; f1<StrawId::_ntotalfaces-1; ++f1){
 	  facezF1     = &HelixData._oTracker[f1];
 	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	    panelz1  = &facezF1->panelZs[p1];   
@@ -730,7 +730,7 @@ namespace mu2e
 	      // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
 	      if (!use(*hitP1))                               continue;
 	    
-	      for (int f2=f1+1; f2<FaceZ_t::kNTotalFaces; ++f2){
+	      for (int f2=f1+1; f2<StrawId::_ntotalfaces; ++f2){
 		facezF2     = &HelixData._oTracker[f2];
 		for (int p2=0; p2<FaceZ_t::kNPanels; ++p2){
 		panelz2     = &facezF2->panelZs[p2];   
@@ -768,7 +768,7 @@ namespace mu2e
 	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > acci;
 
 
-	for (int f1=0; f1<FaceZ_t::kNTotalFaces; ++f1){
+	for (int f1=0; f1<StrawId::_ntotalfaces; ++f1){
 	  facezF1     = &HelixData._oTracker[f1];
 	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	    panelz1  = &facezF1->panelZs[p1];   
@@ -796,7 +796,7 @@ namespace mu2e
 
 	// resolve the hit loops again
 
-	for (int f1=0; f1<FaceZ_t::kNTotalFaces; ++f1){
+	for (int f1=0; f1<StrawId::_ntotalfaces; ++f1){
 	  facezF1     = &HelixData._oTracker[f1];
 	  for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	    panelz1  = &facezF1->panelZs[p1];   
@@ -879,7 +879,7 @@ namespace mu2e
     PanelZ_t*      panelz1(0);
     int            nhitsFace1(0);
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezP1    = &HelixData._oTracker[f];
 
       HitInfo_t    indexBestHit;
@@ -1000,7 +1000,7 @@ namespace mu2e
     FaceZ_t*      facezP1, *facezP2, *facezP3;
     PanelZ_t*     panelz1(0), *panelz2(0), *panelz3(0);
     
-    for (int f1=0; f1<FaceZ_t::kNTotalFaces-2; ++f1){
+    for (int f1=0; f1<StrawId::_ntotalfaces-2; ++f1){
       facezP1    = &HelixData._oTracker[f1];
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	panelz1  = &facezP1->panelZs[p1];   
@@ -1012,7 +1012,7 @@ namespace mu2e
 	  if (!use(*hitP1) )                          continue;
 	  float ri2 = (hitP1->pos().x()*hitP1->pos().x() + hitP1->pos().y()*hitP1->pos().y());
 
-	  for (int f2=f1+1; f2<FaceZ_t::kNTotalFaces-1; ++f2){
+	  for (int f2=f1+1; f2<StrawId::_ntotalfaces-1; ++f2){
 	    facezP2    = &HelixData._oTracker[f2];
 	    for (int p2=0; p2<FaceZ_t::kNPanels; ++p2){
 	      panelz2  = &facezP2->panelZs[p2];   
@@ -1028,7 +1028,7 @@ namespace mu2e
 
 		float rj2 = (hitP2->pos().x()*hitP2->pos().x() + hitP2->pos().y()*hitP2->pos().y());
 
-		for (int f3=f2+1; f3<FaceZ_t::kNTotalFaces; ++f3){
+		for (int f3=f2+1; f3<StrawId::_ntotalfaces; ++f3){
 		  facezP3    = &HelixData._oTracker[f3];
 		  for (int p3=0; p3<FaceZ_t::kNPanels; ++p3){
 		    panelz3    = &facezP3->panelZs[p3];   
@@ -1083,7 +1083,7 @@ namespace mu2e
 			  if (ntriple>_ntripleMax) {
 			    ip=nhitsPanelF1           ; jp=nhitsPanelF2           ; kp=nhitsPanelF3;
 			    p1=FaceZ_t::kNPanels      ; p2=FaceZ_t::kNPanels      ; p3=FaceZ_t::kNPanels;
-			    f1=FaceZ_t::kNTotalFaces-2; f2=FaceZ_t::kNTotalFaces-1; f3=FaceZ_t::kNTotalFaces;
+			    f1=StrawId::_ntotalfaces-2; f2=StrawId::_ntotalfaces-1; f3=StrawId::_ntotalfaces;
 			  }
 			}
 
@@ -1110,7 +1110,7 @@ namespace mu2e
 	XYVec center(centx,centy);
 	if(!_tripler) {
 	  if(!_errrwt) {		//FIXME! INSPECT THE USE OF LSQSUM!
-	    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	    for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	      facezP1    = &HelixData._oTracker[f];
 	      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 		panelz1  = &facezP1->panelZs[p1];   
@@ -1127,7 +1127,7 @@ namespace mu2e
 	    }
 	  } else {
 	    // set weight according to the errors
-	    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+	    for (int f=0; f<StrawId::_ntotalfaces; ++f){
 	      facezP1    = &HelixData._oTracker[f];
 	      for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 		panelz1  = &facezP1->panelZs[p1];   
@@ -1197,7 +1197,7 @@ namespace mu2e
     float        rho   = rhel.radius();
     XYVec        center(XYVec(rhel.centerx(), rhel.centery()));
 
-    for (int f=0; f<FaceZ_t::kNTotalFaces; ++f){
+    for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezP1    = &HelixData._oTracker[f];
       HitInfo_t  indexBestComboHit;
       float      minResid(_minxyresid);

@@ -2,6 +2,10 @@
 #include <ostream>
 
 namespace mu2e {
+  void  ExtMonFNALSimHit::setSimParticle(const art::Ptr<SimParticle>& p) {
+    particle_ = p;
+  }
+
   std::ostream& operator<<(std::ostream& os, const ExtMonFNALSimHit& hit) {
     return os<<"ExtMonFNALSimHit(sid="<<hit.moduleId()
              <<", particle="<<hit.simParticle()->id()

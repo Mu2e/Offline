@@ -8,6 +8,7 @@
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 // Framework includes.
 #include "cetlib_except/exception.h"
 // C++ includes
@@ -23,7 +24,7 @@ namespace mu2e {
   {}
 
   StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2],
-      CLHEP::HepLorentzVector cpos[2], 
+      CLHEP::HepLorentzVector cpos[2],
       art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
     _strawid(sid), _stepMCs(stepMCs)
   {
@@ -35,8 +36,8 @@ namespace mu2e {
   }
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs) : _strawid(rhs.strawId()), _stepMCs(rhs.stepPointMCs()) {
-    for(int i_end=0;i_end<TrkTypes::nends;++i_end){
-      TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
+    for(int i_end=0;i_end<StrawEnd::nends;++i_end){
+      StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
       _wetime[end] = rhs.wireEndTime(end);
       _cpos[end] = rhs.clusterPosition(end);
       _stepMC[end] = rhs.stepPointMC(end);
@@ -44,8 +45,8 @@ namespace mu2e {
   }
 
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs) : _strawid(rhs.strawId()) {
-    for(int i_end=0;i_end<TrkTypes::nends;++i_end){
-      TrkTypes::End end = static_cast<TrkTypes::End>(i_end);
+    for(int i_end=0;i_end<StrawEnd::nends;++i_end){
+      StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
       _wetime[end] = rhs.wireEndTime(end);
       _cpos[end] = rhs.clusterPosition(end);
       _stepMC[end] = stepMC[i_end];
@@ -58,7 +59,7 @@ namespace mu2e {
     if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
       // use the MC true sid, not the straws sid (digi could be from x-talk)
-      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
+      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawId());
       retval = (_cpos[strawend] - straw.getMidPoint()).perp(straw.getDirection());
     }
     return retval;
@@ -68,7 +69,7 @@ namespace mu2e {
     double retval = -100.0;
     if(!_stepMC[strawend].isNull()){
       const Tracker& tracker = getTrackerOrThrow();
-      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawIndex());
+      Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawId());
       retval =  (_cpos[strawend] - straw.getMidPoint()).dot(straw.getDirection());
     }
     return retval;
@@ -77,8 +78,7 @@ namespace mu2e {
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {
     bool retval(false);
     if(!_stepMC[strawend].isNull()){
-    // this is currently broken till we replace starwIndex with strawId FIXME!!
-      //retval = _strawid == _stepMC[strawend]->strawIndex();
+      retval = _strawid == _stepMC[strawend]->strawId();
     }
     return retval;
   }
@@ -109,10 +109,10 @@ namespace mu2e {
   // Print the information found in this hit.
   void StrawDigiMC::print( ostream& ost, bool doEndl ) const {
 
-    ost << "Straw Digi MC Truth for straw ends " << StrawEnd(TrkTypes::cal) << " : " << StrawEnd(TrkTypes::hv)
+    ost << "Straw Digi MC Truth for straw ends " << StrawEnd(StrawEnd::cal) << " : " << StrawEnd(StrawEnd::hv)
       << " cluster times : "      << _cpos[0].t() << " : " << _cpos[1].t()
-      << " drift distance: "      << driftDistance(TrkTypes::cal) << " : " << driftDistance(TrkTypes::hv)
-      << " distance to wire center: "     << distanceToMid(TrkTypes::cal) << " : " << distanceToMid(TrkTypes::hv)
+      << " drift distance: "      << driftDistance(StrawEnd::cal) << " : " << driftDistance(StrawEnd::hv)
+      << " distance to wire center: "     << distanceToMid(StrawEnd::cal) << " : " << distanceToMid(StrawEnd::hv)
       << " Energy: " << energySum();
 
     if ( doEndl ){

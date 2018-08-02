@@ -43,9 +43,9 @@ namespace mu2e {
     //    std::array<ComboHit, kNMaxPanelHits>        fHitData;
     std::vector<ComboHit>        fHitData;
 
-    double                           wx;          // direction cosines of the wires, assumed to be all the same
-    double                           wy;      
-    double                           phi;         // phi angle of the wire
+    float                          wx;          // direction cosines of the wires, assumed to be all the same
+    float                          wy;      
+    float                          phi;         // phi angle of the wire
     //    double                           z;           // 
 
     PanelZ_t    (){
@@ -53,27 +53,27 @@ namespace mu2e {
       //      fHitData.reserve(kNMaxPanelHits);
     }
 
-    PanelZ_t    (const PanelZ_t&Copy){
-      fNHits = Copy.fNHits;  
-      //      fPanel = Copy.fPanel;  
-      wx     = Copy.wx;      
-      wy     = Copy.wy;      
-      phi    = Copy.phi;     
-      //      z      = Copy.z;       
-      int nhits = Copy.fHitData.size();
-      //      fHitData.reserve(kNMaxPanelHits);
-      for (int i=0; i<nhits; ++i){
-	fHitData[i] = ComboHit(Copy.fHitData[i]);
-      }
-    }
+    // PanelZ_t    (const PanelZ_t&Copy){
+    //   fNHits = Copy.fNHits;  
+    //   //      fPanel = Copy.fPanel;  
+    //   wx     = Copy.wx;      
+    //   wy     = Copy.wy;      
+    //   phi    = Copy.phi;     
+    //   //      z      = Copy.z;       
+    //   int nhits = Copy.fHitData.size();
+    //   //      fHitData.reserve(kNMaxPanelHits);
+    //   for (int i=0; i<nhits; ++i){
+    // 	fHitData[i] = ComboHit(Copy.fHitData[i]);
+    //   }
+    // }
   }; 
 
   struct FaceZ_t {
     constexpr static uint16_t kNPanels           = 3; // number of panels per plane
-    constexpr static uint16_t kNTotalFaces       = StrawId::_nfaces*StrawId::_nplanes;
+    // constexpr static uint16_t kNTotalFaces       = StrawId::_nfaces*StrawId::_nplanes;
     constexpr static uint16_t kNPlanesPerStation = 2;
 
-    double                         z;           // 
+    float                          z;           // 
     HitInfo_t                      bestFaceHit;             
     std::array<PanelZ_t,kNPanels>  panelZs;
 
@@ -81,14 +81,14 @@ namespace mu2e {
       bestFaceHit = HitInfo_t();
     }
 
-    FaceZ_t    (const FaceZ_t&Copy){
-      //      fNHits = Copy.fNHits;  
-      z           = Copy.z;  
-      bestFaceHit = Copy.bestFaceHit;
-      for (int i=0; i<kNPanels; ++i){
-	panelZs[i] = Copy.panelZs[i];
-      }
-    }
+    // FaceZ_t    (const FaceZ_t&Copy){
+    //   //      fNHits = Copy.fNHits;  
+    //   z           = Copy.z;  
+    //   bestFaceHit = Copy.bestFaceHit;
+    //   for (int i=0; i<kNPanels; ++i){
+    // 	panelZs[i] = Copy.panelZs[i];
+    //   }
+    // }
     
     
     int   evalUniqueHitIndex(int &Face, int& Panel, int& PanelHitIndex){

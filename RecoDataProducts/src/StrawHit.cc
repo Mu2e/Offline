@@ -24,12 +24,12 @@ namespace mu2e {
   // Print the information found in this hit.
   void StrawHit::print( ostream& ost, bool doEndl ) const {
 
-    ost << "traw Hit:"
+    ost << " StrawHit:"
         << " idx: "      << _strawId
-        << " cal time "     << _time[TrkTypes::cal]
-        << " HV time "     << _time[TrkTypes::hv]
-        << " cal TOT "     << _tot[TrkTypes::cal]
-        << " HV TOT "     << _tot[TrkTypes::hv]
+        << " cal time "     << _time[StrawEnd::cal]
+        << " HV time "     << _time[StrawEnd::hv]
+        << " cal TOT "     << _tot[StrawEnd::cal]
+        << " HV TOT "     << _tot[StrawEnd::hv]
         << " eDep: "     << _energyDep;
 
     if ( doEndl ){

@@ -4,7 +4,6 @@
 #include "TH1.h"
 #include "TH2.h"
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
@@ -16,7 +15,6 @@
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -30,7 +28,6 @@ namespace mu2e {
   class CalHelixFinderDiag : public mu2e::ModuleHistToolBase {
 
   protected:
-    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
     Hist_t                     _hist;
     Data_t*                    _data;
     int                        _first_call;

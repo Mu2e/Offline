@@ -62,14 +62,21 @@ if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
     MU2E_G4_GRAPHICS_QUALIFIER=':+qt'
 fi
 
+MU2E_G4_MT_QUALIFIER=''
+if [[ $($MU2E_BASE_RELEASE/buildopts --g4mt) == on ]]; then
+    MU2E_G4_MT_QUALIFIER=':+mt'
+fi
+
+export MU2E_G4_EXTRA_QUALIFIER=':+cl23'
+
 # Setup the framework and its dependent products
 setup -B art v2_10_04 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_10_4 -qcl23:${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}
+  setup -B geant4 v4_10_4a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}${MU2E_G4_MT_QUALIFIER}${MU2E_G4_EXTRA_QUALIFIER}
 else
-  setup -B xerces_c v3_1_4b   -q${MU2E_UPS_QUALIFIERS}
+  setup -B xerces_c v3_2_0a   -q${MU2E_UPS_QUALIFIERS}
 fi
 
 # Get access to raw data formats.

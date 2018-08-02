@@ -18,7 +18,7 @@ namespace mu2e {
     helixTraj   = NULL;
     tpart       = TrkParticle::e_minus;        // 11
     fdir        = TrkFitDirection::downstream; // = 0
-    shcol       = 0;
+    chcol       = 0;
     // shpos       = 0;
     shfcol      = 0;
     krep        = 0;

@@ -30,13 +30,6 @@ namespace art {
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 
-// #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-// #include "MCDataProducts/inc/StrawHitMCTruth.hh"
-// #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-// #include "MCDataProducts/inc/StepPointMCCollection.hh"
-// #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
-// #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
-
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
@@ -54,7 +47,6 @@ namespace art {
 
 // Mu2e
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "DataProducts/inc/Helicity.hh"
 
 //CLHEP
@@ -131,8 +123,6 @@ namespace mu2e {
     const StrawHitPositionCollection*     _shpcol;
     int                                   _nhits;  // N hits in _shcol
 
-    const PtrStepPointMCVectorCollection* _listOfMCStrawHits;
-
     const HelixSeedCollection*            _helixSeeds;
 
     art::Handle<HelixSeedCollection>      _helixSeedsHandle;
@@ -142,7 +132,6 @@ namespace mu2e {
     KalFitResultNew                       _result; // seed fit result
 
     const TTracker*                       _tracker;     // straw tracker
-    const TrackerCalibrations*            _trackerCalib;
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter
 
     TFolder*                              _folder;

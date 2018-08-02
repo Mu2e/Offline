@@ -27,7 +27,7 @@ namespace mu2e {
   using namespace DeltaFinder2Types;
 
   class SimParticle;
-  class PtrStepPointMCVectorCollection;
+  class StrawDigiMCCollection;
   
   class DeltaFinder2Diag: public ModuleHistToolBase {
 

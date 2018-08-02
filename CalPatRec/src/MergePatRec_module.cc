@@ -1,11 +1,11 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id: MergePatRec_module.cc,v 1.8 2014/09/19 20:49:45 murat Exp $
-// $Author: murat $ 
+// $Author: murat $
 // $Date: 2014/09/19 20:49:45 $
-// takes inputs from two track finding algorithms, produces one track collection 
+// takes inputs from two track finding algorithms, produces one track collection
 // on output to be used for analysis
 //
-// development history: 
+// development history:
 // --------------------
 // calPatRecMVAType = 0 : use log10(fitCons)
 //                  = 1 : use chi2/ndof
@@ -61,7 +61,7 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
-// root 
+// root
 #include "TMath.h"
 #include "TFile.h"
 #include "TH1F.h"
@@ -77,7 +77,7 @@
 #include <vector>
 #include <set>
 #include <map>
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
@@ -85,12 +85,11 @@ namespace mu2e {
 
   class MergePatRec : public art::EDProducer {
   public:
-    explicit       MergePatRec(fhicl::ParameterSet const&);
-    virtual       ~MergePatRec();
-    virtual void   beginJob();
-    virtual void   beginRun(art::Run&);
-    virtual void   produce(art::Event& event ); 
-    void           endJob();
+    explicit MergePatRec(fhicl::ParameterSet const&);
+    virtual ~MergePatRec();
+    void beginJob() override;
+    void beginRun(art::Run&) override;
+    void produce(art::Event& event) override;
 
     double         s_at_given_z(const KalRep* Krep, double Z);
 
@@ -98,10 +97,10 @@ namespace mu2e {
     public:
 
       static int fgIndex;
-      
+
       TH1F* _h;
       TH1F* _hprob;
-      
+
       ProbDist();
       ProbDist(TH1F* Hist);
       ProbDist(const char* Fn);
@@ -115,21 +114,23 @@ namespace mu2e {
 
   private:
     unsigned         _iev;
-					// configuration parameters
+                                        // configuration parameters
     int              _diagLevel;
     int              _debugLevel;
     int              _printfreq;
-    bool             _addhits; 
-    TrkParticle      _tpart;	        // particle type being searched for
+    bool             _addhits;
+    TrkParticle      _tpart;            // particle type being searched for
     TrkFitDirection  _fdir;		// fit direction in search
-					// event object labels
-    std::string      _trkPatRecModuleLabel;
-    std::string      _calPatRecModuleLabel;
+                                        // event object tokens
+    art::ProductToken<KalRepPtrCollection> const _tprToken;
+    art::ProductToken<KalRepPtrCollection> const _cprToken;
+    art::ProductToken<KalSeedCollection> const _stprToken;
+    art::ProductToken<KalSeedCollection> const _scprToken;
 
     float            _minTprQual;
     std::string      _trkPatRecMVAHist ;  // in .tab format
 
-    int              _calPatRecMVAType ;  // 
+    int              _calPatRecMVAType ;  //
     float            _minCprQual;
     std::string      _calPatRecMVAHist ;  // in .tab format
 
@@ -144,12 +145,14 @@ namespace mu2e {
     Data_t                              _data;              // all data used
     std::unique_ptr<ModuleHistToolBase> _hmanager;
   };
-  
+
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
     _diagLevel              (pset.get<int>("diagLevel" )),
     _debugLevel             (pset.get<int>("debugLevel")),
-    _trkPatRecModuleLabel   (pset.get<std::string>("trkPatRecModuleLabel"   )),
-    _calPatRecModuleLabel   (pset.get<std::string>("calPatRecModuleLabel"   ))
+    _tprToken{consumes<KalRepPtrCollection>(pset.get<std::string>("trkPatRecModuleLabel"))},
+    _cprToken{consumes<KalRepPtrCollection>(pset.get<std::string>("calPatRecModuleLabel"))},
+    _stprToken{consumes<KalSeedCollection>(pset.get<std::string>("trkPatRecModuleLabel"))},
+    _scprToken{consumes<KalSeedCollection>(pset.get<std::string>("calPatRecModuleLabel"))}
   {
 
     produces<AlgorithmIDCollection>  ();
@@ -157,10 +160,10 @@ namespace mu2e {
     produces<TrkQualCollection>      ();
     produces<KalSeedCollection>      ();
 
-    _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet()));
+    _kalDiag = new KalDiag(pset.get<fhicl::ParameterSet>("KalDiag", {}));
     _dar     = new DoubletAmbigResolver (pset.get<fhicl::ParameterSet>("DoubletAmbigResolver"),0.,0,0);
 
-    fhicl::ParameterSet pset_cpr = pset.get<fhicl::ParameterSet>("calPatRecMVA",fhicl::ParameterSet());
+    fhicl::ParameterSet pset_cpr = pset.get<fhicl::ParameterSet>("calPatRecMVA", {});
 
     _calPatRecQualMVA = new mu2e::MVATools(pset_cpr);
     _calPatRecQualMVA->initMVA();
@@ -171,7 +174,7 @@ namespace mu2e {
     _minCprQual       = pset_cpr.get<float>      ("minTrkQual");
     _calPatRecMVAHist = configFile(pset_cpr.get<std::string>("trkQualHist"));
 
-    fhicl::ParameterSet pset_tpr = pset.get<fhicl::ParameterSet>("trkPatRecMVA",fhicl::ParameterSet());
+    fhicl::ParameterSet pset_tpr = pset.get<fhicl::ParameterSet>("trkPatRecMVA", {});
     _minTprQual       = pset_tpr.get<float>      ("minTrkQual");
     _trkPatRecMVAHist = configFile(pset_tpr.get<std::string>("trkQualHist"));
 //-----------------------------------------------------------------------------
@@ -188,17 +191,17 @@ namespace mu2e {
     delete _calPatRecQualMVA;
     delete _kalDiag;
   }
-  
+
   void MergePatRec::beginJob() {
     if (_diagLevel > 0) {
       art::ServiceHandle<art::TFileService> tfs;
       _hmanager->bookHistograms(tfs);
     }
   }
-  
+
   void MergePatRec::beginRun(art::Run& ) {
   }
-  
+
 //-----------------------------------------------------------------------------
 // extrapolate track to a given Z
 //-----------------------------------------------------------------------------
@@ -230,7 +233,7 @@ namespace mu2e {
     z01    = Krep->position(sz+ds).z();
 
     dzds   = (z01-z0)/ds;
-    sz1    = sz+(Z-z0)/dzds;	          // should be good enough
+    sz1    = sz+(Z-z0)/dzds;              // should be good enough
 
     return sz1;
   }
@@ -238,7 +241,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void MergePatRec::produce(art::Event& AnEvent) {
 
-					// assume less than 100 tracks
+                                        // assume less than 100 tracks
     int const   max_ntrk(100);
     int         tpr_flag[max_ntrk], cpr_flag[max_ntrk], ntpr(0), ncpr(0);
 
@@ -248,26 +251,26 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::DetectorSystem>      ds;
     mu2e::GeomHandle<mu2e::VirtualDetector>     vdet;
 
-    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection );
-    unique_ptr<KalRepPtrCollection>    trackPtrs(new KalRepPtrCollection   );
-    unique_ptr<TrkQualCollection>      tqcol    (new TrkQualCollection()   );
-    unique_ptr<KalSeedCollection>      kscol    (new KalSeedCollection()   );
+    auto algs = std::make_unique<AlgorithmIDCollection>();
+    auto trackPtrs = std::make_unique<KalRepPtrCollection>();
+    auto tqcol = std::make_unique<TrkQualCollection>();
+    auto kscol = std::make_unique<KalSeedCollection>();
 
     if (_debugLevel > 0) ObjectDumpUtils::printEventHeader(&AnEvent,"MergePatRec::produce");
 
-    AnEvent.getByLabel(_trkPatRecModuleLabel,htpr);
-    AnEvent.getByLabel(_calPatRecModuleLabel,hcpr);
-    
-    AnEvent.getByLabel(_trkPatRecModuleLabel,hstpr);
-    AnEvent.getByLabel(_calPatRecModuleLabel,hscpr);
-    
-    _data.event = &AnEvent;
-    _data.list_of_kreps_tpr = NULL;
-    _data.list_of_kreps_cpr = NULL;
-    _data.list_of_kseed_tpr = NULL;
-    _data.list_of_kseed_cpr = NULL;
+    AnEvent.getByToken(_tprToken, htpr);
+    AnEvent.getByToken(_cprToken, hcpr);
 
-    if (htpr.isValid()) { 
+    AnEvent.getByToken(_stprToken, hstpr);
+    AnEvent.getByToken(_scprToken, hscpr);
+
+    _data.event = &AnEvent;
+    _data.list_of_kreps_tpr = nullptr;
+    _data.list_of_kreps_cpr = nullptr;
+    _data.list_of_kseed_tpr = nullptr;
+    _data.list_of_kseed_cpr = nullptr;
+
+    if (htpr.isValid()) {
       _data.list_of_kreps_tpr = htpr.product();
       ntpr                    = _data.list_of_kreps_tpr->size();
     }
@@ -277,7 +280,7 @@ namespace mu2e {
       ncpr                    = _data.list_of_kreps_cpr->size();
     }
 
-    if (hstpr.isValid()) { 
+    if (hstpr.isValid()) {
       _data.list_of_kseed_tpr = hstpr.product();
     }
 
@@ -321,38 +324,38 @@ namespace mu2e {
       tpr_qual    = tpr_trkinfo._trkqual;
 
       for (int i2=0; i2<ncpr; i2++) {
-	cpr_kseed = &_data.list_of_kseed_cpr->at(i2);
-	cpr       = &_data.list_of_kreps_cpr->at(i2);
-	krep_cpr  = cpr->get();
+        cpr_kseed = &_data.list_of_kseed_cpr->at(i2);
+        cpr       = &_data.list_of_kreps_cpr->at(i2);
+        krep_cpr  = cpr->get();
 
-	_kalDiag->kalDiag(krep_cpr,false);
-	cpr_trkinfo = _kalDiag->_trkinfo;
+        _kalDiag->kalDiag(krep_cpr,false);
+        cpr_trkinfo = _kalDiag->_trkinfo;
 
-	cpr_mom   = krep_cpr->momentum();
-	clist     = krep_cpr->hitVector();
-	nac       = krep_cpr->nActive();
+        cpr_mom   = krep_cpr->momentum();
+        clist     = krep_cpr->hitVector();
+        nac       = krep_cpr->nActive();
 
-	vector<double>  pmva;
-	pmva.resize(10);
+        vector<double>  pmva;
+        pmva.resize(10);
 
-	float na = nac;
+        float na = nac;
 
-	pmva[ 0] = na;
-	pmva[ 1] = na/krep_cpr->nHits();
+        pmva[ 0] = na;
+        pmva[ 1] = na/krep_cpr->nHits();
 
-	if      (_calPatRecMVAType == 0) pmva[2] = log10(krep_cpr->chisqConsistency().consistency());
-	else                             pmva[2] = krep_cpr->chisq()/(na-5.);
+        if      (_calPatRecMVAType == 0) pmva[2] = log10(krep_cpr->chisqConsistency().consistency());
+        else                             pmva[2] = krep_cpr->chisq()/(na-5.);
 //-----------------------------------------------------------------------------
-// determine, approximately, 'sz0' - flight length corresponding to the 
+// determine, approximately, 'sz0' - flight length corresponding to the
 // virtual detector at the tracker entrance
 //-----------------------------------------------------------------------------
-	double  h1_fltlen, hn_fltlen, entlen;
-	
-	h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
-	hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
-	entlen         = std::min(h1_fltlen,hn_fltlen);
+        double  h1_fltlen, hn_fltlen, entlen;
 
-	CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
+        h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
+        hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
+        entlen         = std::min(h1_fltlen,hn_fltlen);
+
+        CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
 //-----------------------------------------------------------------------------
 // pmva[3]: momentum error in the first point
 // for consistency, use helical parameterization in the first point
@@ -427,7 +430,7 @@ namespace mu2e {
 	    for(auto itc=clist.begin(); itc<clist.end(); itc++) {
 	      hitc = static_cast<const mu2e::TrkStrawHit*> (*itc);
 	      if (hitc->isActive()) {
-		if (&hitt->strawHit() == &hitc->strawHit()) {
+		if (&hitt->comboHit() == &hitc->comboHit()) {
 		  natc += 1;
 		  break;
 		}
@@ -449,70 +452,70 @@ namespace mu2e {
 	  double tpr_prob = _trkPatRecProb->prob(tpr_qual);
 	  double cpr_prob = _calPatRecProb->prob(cpr_qual);
 
-	  if ((tpr_trkinfo._trkqual > _minTprQual) && (cpr_qual > _minCprQual)) {
+          if ((tpr_trkinfo._trkqual > _minTprQual) && (cpr_qual > _minCprQual)) {
 //-----------------------------------------------------------------------------
 // both tracks are "good", choose the one with higher probability
 //-----------------------------------------------------------------------------
-	    if (tpr_prob >= cpr_prob) {
-	      trackPtrs->push_back(*tpr);
-	      kscol    ->push_back(*tpr_kseed);
-	      best    = AlgorithmID::TrkPatRecBit;
-	      best_MVAQual = tpr_qual;
-	    }
-	    else {
-	      trackPtrs->push_back(*cpr);
-	      kscol    ->push_back(*cpr_kseed);
-	      best    = AlgorithmID::CalPatRecBit;
-	      best_MVAQual = cpr_qual;
-	    }
-	  }
-	  else if (tpr_trkinfo._trkqual > _minTprQual) {
+            if (tpr_prob >= cpr_prob) {
+              trackPtrs->push_back(*tpr);
+              kscol    ->push_back(*tpr_kseed);
+              best    = AlgorithmID::TrkPatRecBit;
+              best_MVAQual = tpr_qual;
+            }
+            else {
+              trackPtrs->push_back(*cpr);
+              kscol    ->push_back(*cpr_kseed);
+              best    = AlgorithmID::CalPatRecBit;
+              best_MVAQual = cpr_qual;
+            }
+          }
+          else if (tpr_trkinfo._trkqual > _minTprQual) {
 //-----------------------------------------------------------------------------
 // only TrkPatRec track is "good", choose it
 //-----------------------------------------------------------------------------
-	    trackPtrs->push_back(*tpr);
-	    kscol    ->push_back(*tpr_kseed);
-	    best    = AlgorithmID::TrkPatRecBit; 
-	    best_MVAQual = tpr_qual;
-	  }
-	  else if (cpr_qual > _minCprQual) {
+            trackPtrs->push_back(*tpr);
+            kscol    ->push_back(*tpr_kseed);
+            best    = AlgorithmID::TrkPatRecBit;
+            best_MVAQual = tpr_qual;
+          }
+          else if (cpr_qual > _minCprQual) {
 //-----------------------------------------------------------------------------
 // only CalPatRec track is "good", choose it
 //-----------------------------------------------------------------------------
-	    trackPtrs->push_back(*cpr);
-	    kscol    ->push_back(*cpr_kseed);
-	    best    = AlgorithmID::CalPatRecBit; 
-	    best_MVAQual = cpr_qual;
-	  }
-	  else {
+            trackPtrs->push_back(*cpr);
+            kscol    ->push_back(*cpr_kseed);
+            best    = AlgorithmID::CalPatRecBit;
+            best_MVAQual = cpr_qual;
+          }
+          else {
 //-----------------------------------------------------------------------------
 // neither track will be selected for analysis, make a choice anyway
 //-----------------------------------------------------------------------------
-	    if (tpr_prob >= cpr_prob) {
-	      trackPtrs->push_back(*tpr);
-	      kscol    ->push_back(*tpr_kseed);
-	      best    = AlgorithmID::TrkPatRecBit; 
-	      best_MVAQual = tpr_qual;
-	    }
-	    else {
-	      trackPtrs->push_back(*cpr);
-	      kscol    ->push_back(*cpr_kseed);
-	      best    = AlgorithmID::CalPatRecBit; 
-	      best_MVAQual = cpr_qual;
-	    }
-	  }
+            if (tpr_prob >= cpr_prob) {
+              trackPtrs->push_back(*tpr);
+              kscol    ->push_back(*tpr_kseed);
+              best    = AlgorithmID::TrkPatRecBit;
+              best_MVAQual = tpr_qual;
+            }
+            else {
+              trackPtrs->push_back(*cpr);
+              kscol    ->push_back(*cpr_kseed);
+              best    = AlgorithmID::CalPatRecBit;
+              best_MVAQual = cpr_qual;
+            }
+          }
 
-	  tpr_flag[i1] = 0;
-	  cpr_flag[i2] = 0;
-	  break;
-	}
+          tpr_flag[i1] = 0;
+          cpr_flag[i2] = 0;
+          break;
+        }
       }
 
       if (tpr_flag[i1] == 1) {
-	trackPtrs->push_back(*tpr);
-	kscol    ->push_back(*tpr_kseed);
-	best = AlgorithmID::TrkPatRecBit;
-	best_MVAQual = tpr_qual;
+        trackPtrs->push_back(*tpr);
+        kscol    ->push_back(*tpr_kseed);
+        best = AlgorithmID::TrkPatRecBit;
+        best_MVAQual = tpr_qual;
       }
 
       alg_id.Set(best,mask);
@@ -530,39 +533,39 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     for (int i=0; i<ncpr; i++) {
       if (cpr_flag[i] == 1) {
-	cpr = &_data.list_of_kreps_cpr->at(i);
-	cpr_kseed = &_data.list_of_kseed_cpr->at(i);
+        cpr = &_data.list_of_kreps_cpr->at(i);
+        cpr_kseed = &_data.list_of_kseed_cpr->at(i);
 
-	trackPtrs->push_back(*cpr);
-	kscol    ->push_back(*cpr_kseed);
+        trackPtrs->push_back(*cpr);
+        kscol    ->push_back(*cpr_kseed);
 
-	best = AlgorithmID::CalPatRecBit;
-	mask = 1 << AlgorithmID::CalPatRecBit;
+        best = AlgorithmID::CalPatRecBit;
+        mask = 1 << AlgorithmID::CalPatRecBit;
 
-	alg_id.Set(best,mask);
-	algs->push_back(alg_id);
+        alg_id.Set(best,mask);
+        algs->push_back(alg_id);
 
  // compute TrkQual for this track and save it
  // DUMMY FILLING. FIXME!
-	krep_cpr  = cpr->get();	_kalDiag->kalDiag(krep_cpr,false);
-	cpr_trkinfo = _kalDiag->_trkinfo;
+        krep_cpr  = cpr->get();	_kalDiag->kalDiag(krep_cpr,false);
+        cpr_trkinfo = _kalDiag->_trkinfo;
 
-	cpr_mom   = krep_cpr->momentum();
-	clist     = krep_cpr->hitVector();
-	nac       = krep_cpr->nActive();
+        cpr_mom   = krep_cpr->momentum();
+        clist     = krep_cpr->hitVector();
+        nac       = krep_cpr->nActive();
 
-	vector<double>  pmva;
-	pmva.resize(10);
+        vector<double>  pmva;
+        pmva.resize(10);
 
-	float na = nac;
+        float na = nac;
 
-	pmva[ 0] = na;
-	pmva[ 1] = na/krep_cpr->nHits();
+        pmva[ 0] = na;
+        pmva[ 1] = na/krep_cpr->nHits();
 
-	if      (_calPatRecMVAType == 0) pmva[2] = log10(krep_cpr->chisqConsistency().consistency());
-	else                             pmva[2] = krep_cpr->chisq()/(na-5.);
+        if      (_calPatRecMVAType == 0) pmva[2] = log10(krep_cpr->chisqConsistency().consistency());
+        else                             pmva[2] = krep_cpr->chisq()/(na-5.);
 //-----------------------------------------------------------------------------
-// determine, approximately, 'sz0' - flight length corresponding to the 
+// determine, approximately, 'sz0' - flight length corresponding to the
 // virtual detector at the tracker entrance
 //-----------------------------------------------------------------------------
 	double  h1_fltlen, hn_fltlen, entlen;
@@ -576,72 +579,72 @@ namespace mu2e {
 // pmva[3]: momentum error in the first point
 // for consistency, use helical parameterization in the first point
 //-----------------------------------------------------------------------------
-	CLHEP::Hep3Vector momdir = fitmom.unit();
-	BbrVectorErr      momerr = krep_cpr->momentumErr(entlen);
-	
-	CLHEP::HepVector momvec(3);
-	for (int i=0; i<3; i++) momvec[i] = momdir[i];
-	
-	pmva[ 3] = sqrt(momerr.covMatrix().similarity(momvec));
-	pmva[ 4] = krep_cpr->t0().t0Err();
+        CLHEP::Hep3Vector momdir = fitmom.unit();
+        BbrVectorErr      momerr = krep_cpr->momentumErr(entlen);
 
-	Hep3Vector tfront = ds->toDetector(vdet->getGlobal(mu2e::VirtualDetectorId::TT_FrontPA));
-	double     zfront = tfront.z();
-	double     sz0    = s_at_given_z(krep_cpr,zfront);
+        CLHEP::HepVector momvec(3);
+        for (int i=0; i<3; i++) momvec[i] = momdir[i];
 
-	HelixParams helx  = krep_cpr->helix(sz0);
+        pmva[ 3] = sqrt(momerr.covMatrix().similarity(momvec));
+        pmva[ 4] = krep_cpr->t0().t0Err();
 
-	pmva[ 5] = helx.d0();
-	pmva[ 6] = helx.d0()+2/helx.omega();
+        Hep3Vector tfront = ds->toDetector(vdet->getGlobal(mu2e::VirtualDetectorId::TT_FrontPA));
+        double     zfront = tfront.z();
+        double     sz0    = s_at_given_z(krep_cpr,zfront);
 
-					// calculate number of doublets 
+        HelixParams helx  = krep_cpr->helix(sz0);
 
-	vector<mu2e::Doublet> list_of_doublets;
-	_dar->findDoublets(krep_cpr,&list_of_doublets);
+        pmva[ 5] = helx.d0();
+        pmva[ 6] = helx.d0()+2/helx.omega();
+
+                                        // calculate number of doublets
+
+        vector<mu2e::Doublet> list_of_doublets;
+        _dar->findDoublets(krep_cpr,&list_of_doublets);
 
 //-----------------------------------------------------------------------------
 // counting only 2+ hit doublets
 //-----------------------------------------------------------------------------
-	mu2e::Doublet*                     d;
-	//	mu2e::DoubletAmbigResolver::Data_t r;
-	
-	int   nd_tot(0), nd_os(0), nd_ss(0), ns;
+        mu2e::Doublet*                     d;
+        //	mu2e::DoubletAmbigResolver::Data_t r;
 
-	int nad(0);                     // number of doublets with at least one hit active
-	
-	int nd = list_of_doublets.size();
-	for (int i=0; i<nd; i++) {
-	  d  = (mu2e::Doublet*) &list_of_doublets.at(i);
-	  ns = d->fNStrawHits;
-	  
-	  if (ns > 1) { 
-	    nd_tot += 1;
-	    if (d->isSameSign()) nd_ss += 1;
-	    else                 nd_os += 1;
+        int   nd_tot(0), nd_os(0), nd_ss(0), ns;
 
-	    int active = 1;
-	    for (int is=0; is<ns; is++) {
-	      if (!d->fHit[is]->isActive()) {
-		active = 0;
-		break;
-	      }
-	    }
-	    
-	    if (active == 1) {
-	      nad += 1;
-	    }
-	  }
-	}
-	
-	pmva[ 7] = nad/na;
-	pmva[ 8] = cpr_trkinfo._nnullambig/na;
-	pmva[ 9] = cpr_trkinfo._nmatactive/na;
+        int nad(0);                     // number of doublets with at least one hit active
 
-	double  cpr_MVAQual = _calPatRecQualMVA->evalMVA(pmva);
-	TrkQual trkqual;
-	trkqual.setMVAValue(cpr_MVAQual);
-	
-	tqcol->push_back(trkqual);
+        int nd = list_of_doublets.size();
+        for (int i=0; i<nd; i++) {
+          d  = (mu2e::Doublet*) &list_of_doublets.at(i);
+          ns = d->fNStrawHits;
+
+          if (ns > 1) {
+            nd_tot += 1;
+            if (d->isSameSign()) nd_ss += 1;
+            else                 nd_os += 1;
+
+            int active = 1;
+            for (int is=0; is<ns; is++) {
+              if (!d->fHit[is]->isActive()) {
+                active = 0;
+                break;
+              }
+            }
+
+            if (active == 1) {
+              nad += 1;
+            }
+          }
+        }
+
+        pmva[ 7] = nad/na;
+        pmva[ 8] = cpr_trkinfo._nnullambig/na;
+        pmva[ 9] = cpr_trkinfo._nmatactive/na;
+
+        double  cpr_MVAQual = _calPatRecQualMVA->evalMVA(pmva);
+        TrkQual trkqual;
+        trkqual.setMVAValue(cpr_MVAQual);
+
+        tqcol->push_back(trkqual);
       }
     }
 
@@ -658,61 +661,52 @@ namespace mu2e {
     if (_debugLevel > 0) _hmanager->debug(&_data);
   }
 
-
-//-----------------------------------------------------------------------------
-// end job : 
-//-----------------------------------------------------------------------------
-  void MergePatRec::endJob() {
-  }
-
-
-
   int MergePatRec::ProbDist::fgIndex(0);
 
 //-----------------------------------------------------------------------------
   MergePatRec::ProbDist::ProbDist() {
-    _h     = NULL;
-    _hprob = NULL;
+    _h     = nullptr;
+    _hprob = nullptr;
   }
 
 
 //-----------------------------------------------------------------------------
   MergePatRec::ProbDist::ProbDist(TH1F* Hist) {
-    
+
     _h     = (TH1F*) Hist->Clone(Form("hprob_dist_h_%i"  ,fgIndex));
 
     _hprob = (TH1F*) _h->Clone(Form("hprob_dist_hprob_%i",fgIndex));
     fgIndex += 1;
-    
+
     _hprob->Reset();
-    
+
     int nb = _h->GetNbinsX();
-    
+
     double anorm = _h->Integral(1,nb);
-    
+
     for (int i=1; i<=nb; i++) {
       double prob = _h->Integral(1,i)/anorm;
       _hprob->SetBinContent(i,prob);
     }
   }
-  
+
 
 //-----------------------------------------------------------------------------
 // read histogram from a text file
 //-----------------------------------------------------------------------------
   MergePatRec::ProbDist::ProbDist(const char* Fn) {
 
-    _h = NULL;
+    _h = nullptr;
     readHistogram(Fn,&_h);
     _hprob =  (TH1F*) _h->Clone(Form("h_ProbDist_hprob_%i"  ,fgIndex));
     fgIndex += 1;
-    
+
     _hprob->Reset();
-    
+
     int nb = _h->GetNbinsX();
-    
+
     double anorm = _h->Integral(1,nb);
-    
+
     for (int i=1; i<=nb; i++) {
       double prob = _h->Integral(1,i)/anorm;
       _hprob->SetBinContent(i,prob);
@@ -725,47 +719,47 @@ namespace mu2e {
     int    done = 0, nbx, loc(0), ix, line(0);
     char   c[1000], title[200], name[200];
     float  val, xmin, xmax;
-    
+
     f = fopen(Fn,"r");
     if (f == 0) {
       Error("TEmuLogLH::ReadHistogram",Form("missing file %s\n",Fn));
       return -2;
     }
-    
-    if ((*Hist) != NULL) delete (*Hist);
-    
+
+    if ((*Hist) != nullptr) delete (*Hist);
+
     while ( ((c[0]=getc(f)) != EOF) && !done) {
-      
-					// check if it is a comment line
+
+                                        // check if it is a comment line
       if (c[0] != '#') {
-	ungetc(c[0],f);
-	
-	if (line == 0) {
-	  fscanf(f,"title: %s" ,title);
-	  line++;
-	}
-	else if (line == 1) {
-	  fscanf(f,"name: %s"  ,name);
-	  line++;
-	}
-	else if (line ==2) {
-	  fscanf(f,"nbx,xmin,xmax: %i %f %f"  ,&nbx,&xmin,&xmax);
-	  *Hist = new TH1F(name,title,nbx,xmin,xmax);
-	  line++;
-	}
-	else {
-	  for (int i=0; i<10; i++) {
-	    fscanf(f,"%f" ,&val);
-	    ix = loc + 1;
-	    (*Hist)->SetBinContent(ix,val);
-	    loc++;
-	  }
-	  line++;
-	}
+        ungetc(c[0],f);
+
+        if (line == 0) {
+          fscanf(f,"title: %s" ,title);
+          line++;
+        }
+        else if (line == 1) {
+          fscanf(f,"name: %s"  ,name);
+          line++;
+        }
+        else if (line ==2) {
+          fscanf(f,"nbx,xmin,xmax: %i %f %f"  ,&nbx,&xmin,&xmax);
+          *Hist = new TH1F(name,title,nbx,xmin,xmax);
+          line++;
+        }
+        else {
+          for (int i=0; i<10; i++) {
+            fscanf(f,"%f" ,&val);
+            ix = loc + 1;
+            (*Hist)->SetBinContent(ix,val);
+            loc++;
+          }
+          line++;
+        }
       }
-					// skip the rest of the line
+                                        // skip the rest of the line
       fgets(c,100,f);
-    
+
     }
 
     fclose(f);
@@ -775,32 +769,27 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  MergePatRec::ProbDist::~ProbDist() {
-  }
-
-
-//-----------------------------------------------------------------------------
   double MergePatRec::ProbDist::prob(double X) {
     double f(0);
-    
+
     int nb = _h->GetNbinsX();
-					// assume all bins are the same
+                                        // assume all bins are the same
     double binw = _h->GetBinWidth(1);
-    
+
     if      (X <  _hprob->GetBinCenter( 1)-binw/2) return 0.;
     else if (X >= _hprob->GetBinCenter(nb)+binw/2) return 1.;
-    
+
     for (int i=1; i<=nb; i++) {
       double x = _h->GetBinCenter(i);
       if (x+binw/2 > X) {
-	f = _hprob->GetBinContent(i);
-	break;
+        f = _hprob->GetBinContent(i);
+        break;
       }
     }
-    
+
     return f;
   }
-  
+
 }
 
 using mu2e::MergePatRec;

@@ -312,7 +312,7 @@ namespace mu2e {
       for (int i=0; i<nhits; ++i) {
 	const mu2e::TrkStrawHit* hit = static_cast<TrkStrawHit*> (hot_l.at(i));
 	int                hIndex    = hit->index();
-	StrawHit const*    sh        = & _data->result->shcol->at(hIndex);
+	ComboHit const*    sh        = & _data->result->shcol->at(hIndex);
 	Straw const&       straw     = _data->tracker->getStraw(sh->strawId());
 	const CLHEP::Hep3Vector& hpos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& hdir = straw.getDirection();

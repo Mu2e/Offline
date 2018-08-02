@@ -50,6 +50,10 @@ vector<double> building.dsArea.firstFloor.S.yPositions = {
   -25908   // q5
 };
 
+int building.dsArea.firstFloor.S.Notch.numberOfNotches  = 1;
+vector<double> building.dsArea.firstFloor.S.Notch.halfDims.1 = {76.2,127.,3350};
+vector<double> building.dsArea.firstFloor.S.Notch.position.1 = {18000.,-12801.6,-2159.};
+string building.dsArea.firstFloor.S.Notch.orientation.1 = "500";
 // Local Variables:
 // mode:c++
 // End:

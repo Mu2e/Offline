@@ -22,7 +22,8 @@
 
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
-#include "TrackerConditions/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawEnd.hh"
+#include "RecoDataProducts/inc/StrawDigiFlag.hh"
 #include "TrackerConditions/inc/Types.hh"
 // unfortunately the persistence requires this array dimension be
 // instantiated by hand in the classesdef, so this this #define
@@ -42,10 +43,12 @@ namespace mu2e {
       TrkTypes::TDCValues const& TDC() const { return _tdc; }
       TrkTypes::TOTValues const& TOT() const { return _tot; }
       TrkTypes::ADCWaveform const& adcWaveform() const { return _adc; }
+      StrawDigiFlag const& digiFlag() const { return _flag; }
     private:
       StrawId  _strawid;      // Straw id
       TrkTypes::TDCValues _tdc; // TDC values for each end
       TrkTypes::TOTValues _tot;  // TOT values for each end
+      StrawDigiFlag _flag; // bit flags for this digi
       TrkTypes::ADCWaveform _adc; // ADC waveform (sum of both ends)
   };
   typedef std::vector<mu2e::StrawDigi> StrawDigiCollection;

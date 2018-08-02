@@ -43,6 +43,7 @@ Services : {
   SimOnly   : {
     RandomNumberGenerator   : { }
     SeedService		    : @local::automaticSeeds
+    G4Helper: {}
   }
 
   RecoOnly  : {

@@ -15,10 +15,9 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
-// root 
+// root
 #include "TMath.h"
 #include "TH1F.h"
 #include "TTree.h"
@@ -29,10 +28,10 @@
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 
-namespace mu2e 
+namespace mu2e
 {
   class StrawHitDiag : public art::EDAnalyzer {
     public:
@@ -64,7 +63,7 @@ namespace mu2e
       TTree *_shdiag;
       Int_t _eventid, _subrunid, _runid;
       Hep3Vector _shp;
-      Float_t _shlen, _slen; 
+      Float_t _shlen, _slen;
       Float_t _edep;
       Float_t _time[2], _tot[2];
       Float_t _rho;
@@ -98,7 +97,7 @@ namespace mu2e
     _shfTag(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
-    _end{TrkTypes::cal,TrkTypes::hv}
+    _end{StrawEnd::cal,StrawEnd::hv}
   {}
 
   StrawHitDiag::~StrawHitDiag(){}
@@ -216,7 +215,7 @@ namespace mu2e
       ComboHit const& ch = _chcol->at(istr);
       StrawHitFlag shf = ch.flag();
       if(_useshfcol) shf.merge(_shfcol->at(istr));
-      const Straw& straw = tracker.getStraw( ch.sid() );
+      const Straw& straw = tracker.getStraw( ch.strawId() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();
@@ -228,7 +227,7 @@ namespace mu2e
       }
       _shp = ch.posCLHEP();
       _shlen =(ch.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
-      _slen = straw.getHalfLength(); 
+      _slen = straw.getHalfLength();
       _stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
       _tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
       _esel = shf.hasAllProperties(StrawHitFlag::energysel);
@@ -288,7 +287,7 @@ namespace mu2e
         _mcnsteps = mcdigi.stepPointMCs().size();
         // compute energy sum
         _mcedep = mcdigi.energySum();
-        _mcetrig = mcdigi.triggerEnergySum(TrkTypes::cal);
+        _mcetrig = mcdigi.triggerEnergySum(StrawEnd::cal);
         _mcpdg = osp.pdgId();
         _mcproc = osp.creationCode();
         _mcgen = -1;
@@ -342,7 +341,7 @@ namespace mu2e
             _mcgpos = det->toDetector(sp->genParticle()->position());
           }
         }
-//        _mcxtalk = spmcp->strawIndex() != sh.strawIndex();
+        _mcxtalk = spmcp->strawId() != sh.strawId();
       }
       _shwres = _chcol->at(istr).posRes(ComboHit::wire);
       _shtres = _chcol->at(istr).posRes(ComboHit::trans);
@@ -352,8 +351,4 @@ namespace mu2e
   }
 }  // end namespace mu2e
 
-// Part of the magic that makes this class a module.
-using mu2e::StrawHitDiag;
-DEFINE_ART_MODULE(StrawHitDiag);
-
-
+DEFINE_ART_MODULE(mu2e::StrawHitDiag);

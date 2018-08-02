@@ -227,7 +227,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
       mu2eCrv::LookupConstants LC;
       LC.version1           = 4;
-      LC.version2           = 0;
+      LC.version2           = 1;
       LC.halfThickness      = detector->GetScintillatorHalfThickness(),
       LC.halfWidth          = detector->GetScintillatorHalfWidth(), 
       LC.halfLength         = detector->GetScintillatorHalfLength(),

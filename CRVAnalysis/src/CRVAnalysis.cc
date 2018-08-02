@@ -31,10 +31,10 @@ namespace mu2e
       if(cluster.HasMCInfo())
       {
         const art::Ptr<SimParticle> &simParticle = cluster.GetMostLikelySimParticle();
+        const art::Ptr<SimParticle> &primaryParticle = FindPrimaryParticle(simParticle);
         MCInfo.emplace_back(true, 
                             simParticle->pdgId(), 
-                            simParticle->genParticle()->pdgId(),
-                            simParticle->genParticle()->generatorId().id(),
+                            primaryParticle->pdgId(),
                             cluster.GetEarliestHitPos(),
                             cluster.GetEarliestHitTime(),
                             cluster.GetTotalEnergyDeposited());

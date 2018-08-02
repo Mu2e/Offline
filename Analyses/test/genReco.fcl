@@ -25,7 +25,7 @@ BEGIN_PROLOG
 
 generatorSeq  : [ generate, g4run ]
 
-make_digis   : [ @sequence::CommonDigiSim.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
+make_digis   : [ @sequence::CommonMC.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
 
 # calorimeter cluster reconstruction
 calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
@@ -99,6 +99,7 @@ paths : {
 			  ]
 }
 
+
 END_PROLOG
 
 process_name : AllPatRecReco
@@ -153,8 +154,7 @@ physics : {
 # G4, hit makers, calorimeter, track reconstruction, and PID
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
-        @table::EventMixing.producers 
-	@table::CommonDigiSim.producers
+	@table::CommonMC.producers
 	@table::CaloDigiMC.producers
         @table::CaloReco.producers
         @table::CaloDigiMC.producersMC
@@ -228,6 +228,9 @@ physics : {
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
 # services.Timing: { }
+
+# Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # print
 services.scheduler.wantSummary: true
 

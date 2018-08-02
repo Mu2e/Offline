@@ -1,26 +1,17 @@
+#include "CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 # straw digis
 makeSD : {
     module_type : StrawDigisFromStepPointMCs
-    g4ModuleLabel : g4run
-    TimeOffsets   : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-    deadStrawList        : {
-	verbosity   : 0
-	deadPlanes : [ ]
-	deadPanels : [ ]
-	deadLayers  : [ ]
-	deadStraws  : [ ]
-    }
+    TimeOffsets   : { inputs : [ @sequence::CommonMC.TimeMaps ] }
 }
 #------------------------------------------------------------------------------
 
 TrackerMC : {
     producers : { 
-	makeSD                    : { @table::makeSD                    }
+	makeSD                    : { @table::makeSD  }
     }
     DigiSim : [ makeSD ]
-      
 }
-
 
 END_PROLOG

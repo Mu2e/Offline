@@ -3,9 +3,9 @@
 
 
 #include "CalorimeterGeom/inc/CrystalMapper.hh"
-
-#include <vector>
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include <vector>
 
 
 
@@ -34,20 +34,22 @@ namespace mu2e {
 	    SquareMapper();
             virtual ~SquareMapper() {};
 
-            virtual int               nCrystalMax(int maxRing)              const {return (2*maxRing+1)*(2*maxRing+1);}
-            virtual int               nApex()                               const {return apexX_.size();}
-            virtual double            apexX(int i)                          const {return apexX_.at(i);}
-            virtual double            apexY(int i)                          const {return apexY_.at(i);}
+            virtual int               nCrystalMax(int maxRing)            const {return (2*maxRing+1)*(2*maxRing+1);}
+	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)          const;
+            virtual int               indexFromXY(double x, double y)     const;
+            virtual int               indexFromRowCol(int nRow, int nCol) const;
+            virtual bool              isInsideCrystal(double x, double y, 
+                                                      const CLHEP::Hep3Vector& pos, 
+                                                      const CLHEP::Hep3Vector& size) const; 
 
-	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)            const;
-            virtual int               indexFromXY(double x, double y)       const;
-
-	    virtual std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
+	    virtual std::vector<int>  neighbors(int thisIndex, int level=1) const;
+            virtual const std::vector<double>& apexX() const {return apexY_;}
+            virtual const std::vector<double>& apexY() const {return apexY_;}
 
 
 	private:
 
-	    SquLK        lk(int index) const;
+	    SquLK lk(int index)        const;
 	    int index(const SquLK &lk) const;
 	    int ring(const  SquLK &lk) const;
 

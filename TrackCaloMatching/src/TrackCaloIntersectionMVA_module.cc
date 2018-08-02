@@ -233,7 +233,7 @@ namespace mu2e {
     void TrackCaloIntersectionMVA::doExtrapolation(TrkCaloIntersectCollection& extrapolatedTracks, KalRepPtrCollection const& trksPtrColl)
     {
 	 Calorimeter const&  cal = *(GeomHandle<Calorimeter>());
-	 CLHEP::Hep3Vector   endCalTracker = cal.geomUtil().mu2eToTracker( CLHEP::Hep3Vector(cal.geomInfo().origin().x(),cal.geomInfo().origin().y(),cal.caloInfo().envelopeZ1()) );
+	 CLHEP::Hep3Vector   endCalTracker = cal.geomUtil().mu2eToTracker( CLHEP::Hep3Vector(cal.geomUtil().origin().x(),cal.geomUtil().origin().y(),cal.caloInfo().getDouble("envelopeZ1")) );
 	 
          	 
 	 for (unsigned int itrk=0; itrk< trksPtrColl.size(); ++itrk )
@@ -504,8 +504,8 @@ double TrackCaloIntersectionMVA::scanOutDisk(Calorimeter const& cal, TrkDifTraj 
 {         
 
      double rangeForward(0);
-     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 4*cal.diskInfo().crystalHalfTrans();
-     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 4*cal.diskInfo().crystalHalfTrans();
+     double caloRadiusIn  = cal.disk(iSection).innerEnvelopeR() + 2*cal.diskInfo().crystalXYLength();
+     double caloRadiusOut = cal.disk(iSection).outerEnvelopeR() - 2*cal.diskInfo().crystalXYLength();
 
      double range(rangeStart);
 

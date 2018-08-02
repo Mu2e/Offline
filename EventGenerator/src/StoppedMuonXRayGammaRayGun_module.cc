@@ -68,16 +68,16 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& _eng;
     RandomUnitSphere _randomUnitSphere;
-    CLHEP::RandFlat _randFlat;    
+    CLHEP::RandFlat _randFlat;
     CLHEP::RandExponential  _randExp;
     RootTreeSampler<IO::StoppedParticleF> _stops;
-    
+
     // Control which photons we want to simulate
     bool _do66;
     bool _do347;
     bool _do844;
     bool _do1809;
-    
+
     // Control histograms.
     bool _doHistograms;
 
@@ -98,25 +98,25 @@ namespace mu2e {
     explicit StoppedMuonXRayGammaRayGun(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
   };
-  
+
   //================================================================
   StoppedMuonXRayGammaRayGun::StoppedMuonXRayGammaRayGun(const fhicl::ParameterSet& pset):
     _psphys(pset.get<fhicl::ParameterSet>("physics")),
-    _p(0.0), 
+    _p(0.0),
     _czmin (_psphys.get<double>("czmin", -1.0)),
     _czmax (_psphys.get<double>("czmax",  1.0)),
     _phimin(_psphys.get<double>("phimin", 0. )),
     _phimax(_psphys.get<double>("phimax", CLHEP::twopi )),
     _eng(createEngine(art::ServiceHandle<SeedService>()->getSeed())),
     _randomUnitSphere(_eng, _czmin, _czmax, _phimin, _phimax ),
-    _randFlat(_eng),    
-    _randExp(_eng),  
-    _stops(_eng, pset.get<fhicl::ParameterSet>("muonStops")),    
+    _randFlat(_eng),
+    _randExp(_eng),
+    _stops(_eng, pset.get<fhicl::ParameterSet>("muonStops")),
     _do66(_psphys.get<bool>("do66", true )),
     _do347(_psphys.get<bool>("do347", true )),
     _do844(_psphys.get<bool>("do844", true )),
     _do1809(_psphys.get<bool>("do1809", true )),
-    _doHistograms(_psphys.get<bool>("doHistograms", true )),    
+    _doHistograms(_psphys.get<bool>("doHistograms", true )),
     _hMultiplicity(0),
     _hcz(0),
     _hphi(0),
@@ -125,28 +125,28 @@ namespace mu2e {
     //_hzPos(0),
     _htime(0),
     _hxyPos(0){ //,_hrzPos(0)
-       
+
     produces<mu2e::GenParticleCollection>();
-    
+
     if ( _doHistograms ) bookHistograms();
   }
 
-  
+
   //================================================================
   void StoppedMuonXRayGammaRayGun::produce(art::Event& event) {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
     const auto& stop = _stops.fire();
-    
+
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
     double time = stop.t;
     const double genRadius = sqrt((stop.x+3904.0)*(stop.x+3904.0)+stop.y*stop.y);
-    
+
     int nphotons = 0;
     vector<double> photonEnergy;
     vector<double> photonTime;
-    
+
     // create X Rays and Gamma Rays:
     double prob = _randFlat.fire();
     if (_do66 && prob < 0.625){  // 3d-2p line
@@ -161,13 +161,13 @@ namespace mu2e {
       photonTime.push_back(time);
     }
     prob = _randFlat.fire();
-    if (_do844 && prob < 0.040){  // 
+    if (_do844 && prob < 0.040){  //
       ++nphotons;
       photonEnergy.push_back(0.844);
       //Note: This is a delayed gamma, need to add delay time
       double meanLifetime844 = 822.0*CLHEP::second; //822 second lifetime (same as 9.5min(570s) halflife)
       photonTime.push_back(time + _randExp.fire(meanLifetime844));
-      
+
     }
     prob = _randFlat.fire();
     if (_do1809 && prob < 0.300){  //
@@ -177,26 +177,26 @@ namespace mu2e {
       double meanLifetime1809 = 864.0*CLHEP::ns; //864ns, same lifetime as muonic Aluminum
       photonTime.push_back(time + _randExp.fire(meanLifetime1809));
     }
-    
+
     for (int ithphoton=0; ithphoton < nphotons; ++ithphoton){
       // Compute momentum 3-vector
       CLHEP::Hep3Vector p3 = _randomUnitSphere.fire(photonEnergy[ithphoton]);
-      
+
       // Compute energy
       _p = photonEnergy[ithphoton];
       double e = _p; // yes this is stupid, let the optimizer fix it.  keeps code parallel among guns
-      
+
       // Set four-momentum
       CLHEP::HepLorentzVector mom(p3, e);
-      
+
       //time for this photon
       double timephoton = photonTime[ithphoton];
-      
+
       // Add the particle(s) to  the list.
-      output->push_back( GenParticle( PDGCode::gamma, 
+      output->push_back( GenParticle( PDGCode::gamma,
                                      GenId::StoppedMuonXRayGammaRayGun, pos, mom, timephoton));
-      
-      // Fill histograms 
+
+      // Fill histograms
       if (_doHistograms){
           _hMultiplicity->Fill(nphotons);
           _hcz->Fill(p3.cosTheta());
@@ -208,12 +208,12 @@ namespace mu2e {
           _hxyPos->Fill( stop.x+3904.0, stop.y   );
           //_hrzPos->Fill( stop.z, genRadius );
       }
-    } 
-    
-    
+    }
+
+
     event.put(std::move(output));
   }
-  
+
 
   void StoppedMuonXRayGammaRayGun::bookHistograms(){
 
@@ -225,8 +225,8 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir( "StoppedMuonXRayGammaRayGun" );
 
-    _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity", 
-                                       "MuonicXRay Multiplicity",  
+    _hMultiplicity = tfdir.make<TH1F>( "hMultiplicity",
+                                       "MuonicXRay Multiplicity",
                                        10,  0.,  10.  );
     _hcz           = tfdir.make<TH1F>( "hcz",
                                        "MuonicXRay Photon cos(theta) at Production;(MeV)",

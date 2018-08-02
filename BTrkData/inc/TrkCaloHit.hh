@@ -9,7 +9,6 @@
 // Mu2e
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // c++
@@ -22,7 +21,7 @@ namespace mu2e
 {
   class TrkCaloHit : public TrkHit {
   public:
-    TrkCaloHit(const CaloCluster& caloCluster, CLHEP::Hep3Vector &caloClusterPos, 
+    TrkCaloHit(const CaloCluster& caloCluster, CLHEP::Hep3Vector &caloClusterPos,
 	       double crystalHalfLength,  CLHEP::Hep3Vector const& clusterAxis,
 	       const HitT0& trkt0, double fltlen, double timeWeight, double _dtoffset);
     virtual ~TrkCaloHit();
@@ -32,7 +31,7 @@ namespace mu2e
 // correct the hit time
     virtual double time                 () const;
     virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
-    virtual bool   signalPropagationTime(double &propTime, double&Doca, 
+    virtual bool   signalPropagationTime(double &propTime, double&Doca,
 				 double resid, double &residErr,
 				 CLHEP::Hep3Vector trajDirection);//propagation time
     virtual void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);

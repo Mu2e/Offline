@@ -559,7 +559,7 @@ namespace mu2e {
       size_t collectionPosition = ROIds.at(0).key();
       CaloHit const & thehit = *ROIds.at(0);
 
-      int crystalId = cg->crystalByRO(thehit.id());
+      int crystalId = cg->caloInfo().crystalByRO(thehit.id());
       CLHEP::Hep3Vector cryCenter =  cg->crystal(crystalId).position();
       int diskId = cg->crystal(crystalId).diskId();
 

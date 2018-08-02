@@ -154,7 +154,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //    PanelZ_t                                           _oTracker[kNTotalPanels];
 //    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
-    std::array<FaceZ_t,FaceZ_t::kNTotalFaces>             _oTracker;
+    std::array<FaceZ_t,StrawId::_ntotalfaces>             _oTracker;
     std::array<int,StrawId::_nupanels*PanelZ_t::kNMaxPanelHits>  _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions

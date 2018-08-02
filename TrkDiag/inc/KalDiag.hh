@@ -112,7 +112,7 @@ namespace mu2e
     std::string _branchprefix;
 // event data labels
     std::string _mcptrlabel;
-    std::string _mcstepslabel;
+    std::string _mcstepslabel, _mcstepsinstance;
     std::string _simpartslabel, _simpartsinstance;
     std::string _mcdigislabel;
 // time offsets

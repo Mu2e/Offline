@@ -1,0 +1,32 @@
+           Release notes for Mu2e Offline software, v7_0_1
+	   This new series includes breaking changes for MDC2018
+
+5) May 21-25, 2018 brownd
+   - updated scripts for stage4 production
+
+4) May 25, 2018 gandr
+
+   - Remove obsolete data members from SimParticle.
+
+3) May 18-20, 2018 gandr
+
+   - Updates to calorimeter digitization code.  In particular,
+     CaloShowerStepROFromShowerStep must support multiple compressed
+     shower collections in order to run on mixed events.
+
+2) May 18, 2018 gandr
+
+   - GenId cleanup: replace several GenId values for DIO with a single
+     dioTail, to be used for signal-like high momentum tracks.
+
+     Most of the "bulk hit" processes that are mixed into the "emtpy
+     event" background frames, including the bulk DIO spectrum, use
+     the StoppedParticleReactionGun generator ID.
+
+1) May 30, 2018 kutschke
+    - Removed StrawIndex
+    - Lots of follow-on changes
+    - See ./removeStrawIndex.txt for details
+
+
+

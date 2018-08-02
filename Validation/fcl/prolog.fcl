@@ -1,7 +1,6 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
 
 
 BEGIN_PROLOG
@@ -77,13 +76,6 @@ timeSimulation : {
       }
       seq : [ @sequence::EventMixing.TimeMaps ]
    }
-}
-
-protonBunch : {
-   mod : {
-      protonBunchSummarizer: { module_type : ProtonBunchIntensitySummarizer }
-   }
-   seq : [ protonBunchSummarizer]
 }
 
 digis : {

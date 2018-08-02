@@ -16,7 +16,7 @@
 #include <algorithm>
 
 #include "fhiclcpp/ParameterSet.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "canvas/Persistency/Common/Ptr.h"
@@ -29,6 +29,7 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "MCDataProducts/inc/CaloDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 
 
 namespace mu2e {
@@ -52,6 +53,7 @@ namespace mu2e {
     InputTags _trkDMCtags; // StrawDigiMC to skip
     InputTags _calDMCtags;  // CaloDigiMC to skip
     InputTags _calCSStags;  // CaloShowerStep to skip
+    InputTags _crvDMCtags;  // CaloShowerStep to skip
 
     bool _skipDereference; // do not do dereference check
     int _verbose; // 0 = none, 1 = print as you go
@@ -66,6 +68,7 @@ namespace mu2e {
     bool checkStrawDigiMC(StrawDigiMCCollection const& coll);
     bool checkCaloDigiMC(CaloDigiMCCollection const& coll);
     bool checkCaloShowerStep(CaloShowerStepCollection const& coll);
+    bool checkCrvDigiMC(CrvDigiMCCollection const& coll);
 
   };
 
@@ -109,6 +112,10 @@ namespace mu2e {
     // lists of CaloShowerStep collections to skip
     slist = pset.get<VS>("skipCaloShowerStep",VS());
     for(auto const& i: slist) _calDMCtags.emplace_back(art::InputTag(i));
+
+    // lists of CrvDigiMC collections to skip
+    slist = pset.get<VS>("skipCrvDigiMC",VS());
+    for(auto const& i: slist) _crvDMCtags.emplace_back(art::InputTag(i));
 
   }
 
@@ -168,13 +175,23 @@ namespace mu2e {
 	checkCaloDigiMC(*ah);
       } // endif excluded
     } // loop over handles
-
+    std::cout << "Startgin shower steps" << std::endl;
     std::vector< art::Handle<CaloShowerStepCollection> > vah_cs;
     event.getManyByType(vah_cs);
     for (auto const & ah : vah_cs) {
       if(!excludedCollection(*ah.provenance(),_calCSStags)) {
 	printProvenance(*ah.provenance());
 	checkCaloShowerStep(*ah);
+      } // endif excluded
+    } // loop over handles
+
+    std::cout << "Starting crvMC" << std::endl;
+    std::vector< art::Handle<CrvDigiMCCollection> > vah_cm;
+    event.getManyByType(vah_cm);
+    for (auto const & ah : vah_cm) {
+      if(!excludedCollection(*ah.provenance(),_crvDMCtags)) {
+	printProvenance(*ah.provenance());
+	checkCrvDigiMC(*ah);
       } // endif excluded
     } // loop over handles
 
@@ -412,8 +429,8 @@ namespace mu2e {
       n++;
       // assemble all the pointer in the object
       ptrs = d.stepPointMCs();
-      ptrs.push_back(d.stepPointMC(TrkTypes::cal));
-      ptrs.push_back(d.stepPointMC(TrkTypes::hv ));
+      ptrs.push_back(d.stepPointMC(StrawEnd::cal));
+      ptrs.push_back(d.stepPointMC(StrawEnd::hv ));
       // check them
       for(auto const& p: ptrs) {
 	np++;
@@ -509,6 +526,74 @@ namespace mu2e {
     std::cout << std::setw(8) << ni << " parents dereferenced" << std::endl;
 
     if(!rc) throw cet::exception("BadArtPtr") << " in CaloShowerStep coll";
+
+    return rc;
+  }
+
+  bool PointerCheck::checkCrvDigiMC(CrvDigiMCCollection const& coll) {
+
+    int n,nn,na,ni,np;
+    n=nn=na=ni=0;
+    for(auto const& s: coll) { // loop over the collection
+      n++;
+      // check parent pointers
+      auto const& p = s.GetSimParticle();
+      if(p.isNonnull()) {
+	nn++;
+	if(p.isAvailable()) {
+	  na++;
+	  if(!_skipDereference && p.get()) {
+	    ni++;
+	  }
+	}
+      }
+    } // loop over SS in coll
+    
+    bool rc = (n<10 || (n>10 && ni>=n/2));
+    if(_verbose>0) {
+    // report
+      std::cout << "Note: about 5-10% of the digis are from noise and have empty SimParticle" << std::endl;
+    std::cout << std::setw(8) << n  << " CrvDigiMC SimParticle Ptr checked" << std::endl;
+    std::cout << std::setw(8) << nn << " parents nonnull" << std::endl;
+    std::cout << std::setw(8) << na << " parents available" << std::endl;
+    std::cout << std::setw(8) << ni << " parents dereferenced" << std::endl;
+    }
+
+    if(!rc) throw cet::exception("BadArtPtr") << " in CrvDigiMC coll";
+
+    n=np=nn=na=ni=0;
+    std::vector<art::Ptr<StepPointMC> > ptrs;
+    for(auto const& d: coll) { // loop over the collection
+      n++;
+      // assemble all the pointer in the object
+      ptrs = d.GetStepPoints();
+
+      // check them
+      for(auto const& p: ptrs) {
+	np++;
+	if(p.isNonnull()) {
+	  nn++;
+	  if(p.isAvailable()) {
+	    na++;
+	    if(!_skipDereference && p.get()) {
+	      ni++;
+	    }
+	  }
+	}
+      }
+    } // loop over SDMC in coll
+    
+    rc = rc && (n<10 || (n>10 && ni>=n/2));
+    if(_verbose<1 && !rc) return rc;
+    // report
+
+    std::cout << std::setw(8) << n  << " CrvDigiMC StepPoint Ptr checked" << std::endl;
+    std::cout << std::setw(8) << np << " Ptrs checked" << std::endl;
+    std::cout << std::setw(8) << nn << " Ptrs nonnull" << std::endl;
+    std::cout << std::setw(8) << na << " Ptrs available" << std::endl;
+    std::cout << std::setw(8) << ni << " Ptrs dereferenced" << std::endl;
+
+    if(!rc) throw cet::exception("BadArtPtr") << " in CrvDigiMC coll";
 
     return rc;
   }

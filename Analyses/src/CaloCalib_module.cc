@@ -329,7 +329,7 @@ namespace mu2e {
        {	   
 	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
 	   int diskId                     = cal.crystal(hit.id()).diskId();
-           CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
+           CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
            CaloHit const& caloHit         = *(hit.readouts().at(0));
 
 

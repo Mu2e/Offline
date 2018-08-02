@@ -30,7 +30,6 @@ namespace mu2e {
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
       // set external error and don't allow the hit to auto-update its ambiguity
-      (*itsh)->setAmbigUpdate(false);
       if(_neutralize) (*itsh)->setAmbig(0);
     }
     return true;

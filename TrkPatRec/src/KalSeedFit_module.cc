@@ -30,8 +30,8 @@
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -48,7 +48,7 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
-// root 
+// root
 #include "TH1F.h"
 #include "TTree.h"
 // C++
@@ -58,11 +58,11 @@
 #include <functional>
 #include <float.h>
 #include <vector>
-using namespace std; 
+using namespace std;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 
-namespace mu2e 
+namespace mu2e
 {
   
   using namespace KalSeedFitTypes;
@@ -83,9 +83,8 @@ namespace mu2e
     int _printfreq;
     bool _saveall;
     // event object tags
-    art::InputTag _shTag;
-    art::InputTag _shfTag;
-    art::InputTag _hsTag;
+    art::ProductToken<ComboHitCollection> const _shToken;
+    art::ProductToken<HelixSeedCollection> const _hsToken;
     TrkFitFlag _seedflag; // helix fit flag
     unsigned _minnhits; // minimum # of hits
     double _maxdoca;      // outlier cut
@@ -101,8 +100,7 @@ namespace mu2e
     double _amsign; // cached sign of angular momentum WRT the z axis 
     HepSymMatrix _hcovar; // cache of parameter error covariance matrix
     // cache of event objects
-    const StrawHitCollection* _shcol;
-    // const StrawHitFlagCollection* _shfcol;
+    const ComboHitCollection* _chcol;
     const HelixSeedCollection * _hscol;
     // ouptut collections
     // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
@@ -125,9 +123,8 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _saveall(pset.get<bool>("saveall",false)),
-    _shTag(pset.get<art::InputTag>("StrawHitCollection")),
-    _shfTag(pset.get<art::InputTag>("StrawHitFlagCollection")),
-    _hsTag(pset.get<art::InputTag>("SeedCollection")),
+    _shToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
+    _hsToken{consumes<HelixSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
     _seedflag(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
     _minnhits(pset.get<unsigned>("MinNHits",10)),
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
@@ -135,13 +132,17 @@ namespace mu2e
     _fhoutliers(pset.get<bool>("FilterHelixOutliers",false)),
     _maxAddDoca(pset.get<double>("MaxAddDoca")),
     _maxAddChi(pset.get<double>("MaxAddChi")),
-    _rescueHits(pset.get<int>("rescueHits")),    
+    _rescueHits(pset.get<int>("rescueHits")),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _result()
   {
+    // This following consumesMany call is necessary because
+    // ComboHitCollection::fillStrawHitIndices calls getManyByType
+    // under the covers.
+    consumesMany<ComboHitCollection>();
     produces<KalSeedCollection>();
     // check dimensions
     if(_perr.size() != HelixTraj::NHLXPRM)
@@ -209,7 +210,7 @@ namespace mu2e
 
     _result.fitType     = 0;
     _result.event       = &event ;
-    _result.shcol       = _shcol ;
+    _result.chcol       = _chcol ;
     _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
 
@@ -254,13 +255,13 @@ namespace mu2e
 	double           helt0 = hseed.t0().t0();
 	
 	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
-	auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
+	auto hsH = event.getValidHandle(_hsToken);
 	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
 	int nsh = seeddef.strawHitIndices().size();//tclust._strawHitIdxs.size();
 	for (int i=0; i< nsh; ++i){
 	  size_t          istraw   = seeddef.strawHitIndices().at(i);
-	  const StrawHit& strawhit(_shcol->at(istraw));
+          const ComboHit& strawhit(_chcol->at(istraw));
 	  const Straw&    straw    = _tracker->getStraw(strawhit.strawId());	  
 	  double          fltlen   = htraj->zFlight(straw.getMidPoint().z());
 	  double          propTime = (fltlen-flt0)/vflt;
@@ -316,7 +317,7 @@ namespace mu2e
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 	  // fill ptr to the helix seed
-	  auto hsH = event.getValidHandle<HelixSeedCollection>(_hsTag);
+          auto hsH = event.getValidHandle(_hsToken);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillHitSeeds(_result.krep,kseed._hits);
@@ -351,7 +352,6 @@ namespace mu2e
 	// cleanup the seed fit KalRep.  Optimally the krep should be a data member of this module
 	// and get reused to avoid thrashing memory, but the BTrk code doesn't support that, FIXME!
         _result.deleteTrack();
-	//	delete krep;
       }
     }
     // put the tracks into the event
@@ -359,20 +359,17 @@ namespace mu2e
   }
 
 
-  // find the input data objects 
+  // find the input data objects
   bool KalSeedFit::findData(const art::Event& evt){
-    _shcol = 0;
-    // _shfcol = 0;
+    _chcol = 0;
     _hscol = 0;
 
-    auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
-    _shcol = shH.product();
-    // auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
-    // _shfcol = shfH.product();
-    auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
+    auto shH = evt.getValidHandle(_shToken);
+    _chcol = shH.product();
+    auto hsH = evt.getValidHandle(_hsToken);
     _hscol = hsH.product();
 
-    return _shcol != 0 && /*_shfcol != 0 &&*/ _hscol != 0;
+    return _chcol != 0 && _hscol != 0;
   }
 
   void KalSeedFit::filterOutliers(TrkDef& mydef){
@@ -387,7 +384,7 @@ namespace mu2e
     const vector<StrawHitIndex>& indices = mydef.strawHitIndices();
     vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){
-      StrawHit const& sh = _shcol->at(indices[ihit]);
+      ComboHit const& sh = _chcol->at(indices[ihit]);
       Straw const& straw = tracker.getStraw(sh.strawId());
       CLHEP::Hep3Vector hpos = straw.getMidPoint();
       CLHEP::Hep3Vector hdir = straw.getDirection();
@@ -421,7 +418,7 @@ namespace mu2e
 
     mu2e::TrkStrawHit*       hit;
     int                      hit_index;
-    const StrawHit*          sh;
+    const ComboHit*          sh;
     const Straw*             straw;
 
     Hep3Vector               tdir;
@@ -449,20 +446,20 @@ namespace mu2e
     int n = tchits.size();
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
-      sh        = &kalData.shcol->at(hit_index);
+      sh        = &kalData.chcol->at(hit_index);
       straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();
       const CLHEP::Hep3Vector& wdir = straw->getDirection();
-	    
+
       HepPoint      wpt  (wpos.x(),wpos.y(),wpos.z());
       TrkLineTraj   wire (wpt,wdir,-20,20);
-      //-----------------------------------------------------------------------------
-      // estimate flightlength along the track for z-coordinate corresponding to the 
-      // wire position. This assumes a constant BField!!!
-      // in principle, this should work well enough, however, may want to check
-      // then determine the distance from the wire to the trajectory
-      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// estimate flightlength along the track for z-coordinate corresponding to the
+// wire position. This assumes a constant BField!!!
+// in principle, this should work well enough, however, may want to check
+// then determine the distance from the wire to the trajectory
+//-----------------------------------------------------------------------------
       fltlen = (wpos.z()-tpos.z())/tdir.z();
       TrkPoca wpoca(trajectory,fltlen,wire,0.0);
       doca   = wpoca.doca();

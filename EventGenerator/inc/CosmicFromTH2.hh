@@ -31,7 +31,9 @@ namespace mu2e {
   class CosmicFromTH2: public GeneratorBase {
 
   public:
-    CosmicFromTH2( art::Run& run, const SimpleConfig& config );
+    CosmicFromTH2(CLHEP::HepRandomEngine& engine,
+                  art::Run& run,
+                  const SimpleConfig& config);
     virtual ~CosmicFromTH2();
 
     virtual void generate( GenParticleCollection&  );

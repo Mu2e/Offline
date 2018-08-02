@@ -37,12 +37,13 @@ namespace mu2e {
   _nggauss(pset.get<unsigned>("NGainGauss",30)), // number of electrons/cluster to switch to a Gaussian model of the gain fluctuations
   _vprop(pset.get<double>("PropagationVelocity",299.0)), //mm/nsec
   _cdpoly(pset.get<vector<double> >("ClusterDriftPolynomial",vector<double>{0.0,16.0})), // linear term has units nanoseconds/mm
-  _dtvar(pset.get<double>("DriftTimeVariance",0.22)), // Drift time variance linear dependence on drift time (ns)
+  _dtvar(pset.get<vector<double> >("DriftTimeVariance",vector<double>{0.2,0.5})), // Drift time variance linear dependence on drift time (ns)
   _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl")), //JB: DriftFile is a handle for the fcl file to change this default
   _wirevoltage(pset.get<double>("WireVoltage",1400)), //JB: set the default sense wire to 1400 V
   _phiBins(pset.get<int>("DriftPhiBins",20)),
   _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
-  _nonlindrift(pset.get<bool>("UseNonLinearDrift",false)) //JB: switch to turn on/off non linear drift for diagnosis
+  _nonlindrift(pset.get<bool>("UseNonLinearDrift",true)), //JB: switch to turn on/off non linear drift for diagnosis
+  _bz(pset.get<double>("BFieldOverride",-1.0))
   {
     
    
@@ -93,6 +94,8 @@ namespace mu2e {
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
     CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
     float Bz = b0.z();
+    if (_bz >= 0)
+      Bz = _bz;
     _strawDrift->Initialize(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
   }
   
@@ -142,8 +145,8 @@ namespace mu2e {
   }
   
   
-  double StrawPhysics::driftTimeSpread(double dtime) const {
-    return dtime*_dtvar;
+  double StrawPhysics::driftTimeSpread(double ddist) const {
+    return _dtvar[0] + ddist*_dtvar[1];
   }
   
   

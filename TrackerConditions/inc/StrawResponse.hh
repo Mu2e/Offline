@@ -10,6 +10,10 @@
 #include <iostream>
 #include <vector>
 // Mu2e includes
+#include "TrackerConditions/inc/Types.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "TrackerConditions/inc/StrawElectronics.hh"
+#include "TrackerConditions/inc/StrawPhysics.hh"
 #include "Mu2eInterfaces/inc/ConditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -26,6 +30,7 @@ namespace mu2e {
       bool useDriftError() const { return _usederr; } 
       bool useNonLinearDrift() const { return _usenonlindrift; }
       double Mint0doca() const { return _mint0doca;}
+      double strawGain() const { return _gasGain;}
 
       float halfPropV(StrawId strawId, float kedep) const;
 
@@ -35,7 +40,33 @@ namespace mu2e {
       double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
       double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
 
+      double peakMinusPedestalEnergyScale() const { return _pmpEnergyScaleAvg; }
+      double peakMinusPedestalEnergyScale(StrawId sid) const { return _pmpEnergyScale[sid.getStraw()]; }
+      double analogNoise(StrawElectronics::Path ipath) const { return _analognoise[ipath]; }  // incoherent noise
+      double fallTime(StrawElectronics::Path ipath) const { return 22.;} //FIXME
+      double currentToVoltage(StrawElectronics::Path ipath) const { return _dVdI[ipath]; }
+      double saturatedResponse(double vlin) const;
+      double ADCPedestal() const { return _ADCped; };
+      double t0shift() const { return _t0shift; }
+
+      // converts times from TDC times to time relative to Event Window
+      // removes channel to channel delays and overall electronics time delay
+      void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
+
+      double driftTime(StrawHit const& strawhit) const;
+      double pathLength(StrawHit const& strawhit, double theta) const;
+
       void print(std::ostream& os) const;
+
+      // StrawElectronics functions we are allowed to use
+      inline size_t nADCPreSamples() const { return _strawele->nADCPreSamples(); }
+      inline double adcLSB() const { return _strawele->adcLSB(); }
+      inline double totLSB() const { return _strawele->totLSB(); }
+      inline double adcPeriod() const { return _strawele->adcPeriod(); }
+      inline uint16_t maxADC() const { return _strawele->maxADC(); }
+      // StrawPhysics functions we are allowed to use
+      inline double ionizationEnergy(double q) const { return _strawphys->ionizationEnergy(q); }
+
     private:
 // helper functions
       float wpRes(float kedep, float wdist) const;
@@ -69,6 +100,25 @@ namespace mu2e {
       double _rres_max;
       double _rres_rad;
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
+
+      double _TOTIntercept, _TOTSlope, _TOTmin, _TOTmax;
+      double _t0shift;
+      double _gasGain;
+      std::vector<double> _pmpEnergyScale;
+      double _pmpEnergyScaleAvg;
+      double _analognoise[StrawElectronics::npaths]; //noise (mVolt) from the straw itself
+      double _dVdI[StrawElectronics::npaths]; // scale factor between charge and voltage (milliVolts/picoCoulombs)
+      double _vsat;
+      double _ADCped;
+
+
+      double _electronicsTimeDelay;
+      std::vector<double> _timeOffsetPanel;
+      std::vector<double> _timeOffsetStrawHV;
+      std::vector<double> _timeOffsetStrawCal;
+      
+      ConditionsHandle<StrawElectronics> _strawele;
+      ConditionsHandle<StrawPhysics> _strawphys;
 
   };
 }

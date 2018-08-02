@@ -27,7 +27,6 @@ namespace mu2e {
   using           CLHEP::Hep3Vector;
 
   class SimParticle;
-  class PtrStepPointMCVectorCollection;
   
   class MergePatRecDiag: public ModuleHistToolBase {
 

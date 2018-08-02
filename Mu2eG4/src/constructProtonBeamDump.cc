@@ -57,8 +57,7 @@
 
 namespace mu2e {
 
-  void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config,
-                               const SensitiveDetectorHelper& sdHelper) {
+  void constructProtonBeamDump(const VolumeInfo& parent, const SimpleConfig& config) {
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
@@ -187,7 +186,7 @@ namespace mu2e {
             G4Colour::Blue()
             );
 
-    constructExtMonFNAL(beamDumpFront, shieldingRot, parent, CLHEP::HepRotation::IDENTITY, config, sdHelper);
+    constructExtMonFNAL(beamDumpFront, shieldingRot, parent, CLHEP::HepRotation::IDENTITY, config);
 
   } // constructProtonBeamDump()
 

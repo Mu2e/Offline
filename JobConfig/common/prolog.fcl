@@ -90,7 +90,7 @@ draTopLevelDefs: {
 	 //------------------------------------------------------------------------------
 	 // digitization
          
-	 @table::CommonDigiSim.producers
+	 @table::CommonMC.producers
 	 @table::TrackerMC.producers
          //----------------------------------------------------------------
          // calorimeter
@@ -138,7 +138,7 @@ draTopLevelDefs: {
       //==============================================================================
       draDigiTrigSeq : [
 	 @sequence::draEventMixing.CD3Mixers
-	 , @sequence::CommonDigiSim.DigiSim
+	 , @sequence::CommonMC.DigiSim
 	 , @sequence::CaloDigiMC.DigiSim
 	 , @sequence::TrackerMC.DigiSim
       ]

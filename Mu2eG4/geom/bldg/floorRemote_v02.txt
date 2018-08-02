@@ -13,7 +13,6 @@ double building.floor.remote.offsetFromMu2eOrigin.z   = -3581.4;
 double building.floor.remote.yHalfThickness           = 76.2;
 
 vector<double> building.floor.remote.xPositions = {
-  -6121.4,   // FR0
   -11709.4,   // FR1
   -11709.4,   // FR2
   3251.2,   // FR3
@@ -29,7 +28,6 @@ vector<double> building.floor.remote.xPositions = {
 };
 
 vector<double> building.floor.remote.yPositions = {
-  6248.4,   // FR0
   6248.4,   // FR1
   16002,   // FR2
   16002,   // FR3

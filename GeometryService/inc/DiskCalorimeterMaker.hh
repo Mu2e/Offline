@@ -43,10 +43,19 @@ namespace mu2e{
 
     private:
 
-      void MakeDisks(void);
       void CheckIt(void);
+      void MakeIt(void);
 
       int verbosityLevel_;
+      double FPHalfZLength_;
+      double diskCaseHalfZLength_;     
+      double BPHalfZLength_;     
+      double diskHalfZLength_;
+      double FEBHalfZLength_;
+      double motherHalfZ_;
+      double crateToDiskDeltaZ_;
+      CLHEP::Hep3Vector diskOriginToCrystalOrigin_;
+
 
     };
 

@@ -1,0 +1,28 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Bulk spectrum DIO electrons.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: dio
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate.physics: {
+    pdgId : 11
+    spectrumShape: Czarnecki
+    spectrumVariable: totalEnergy
+    elow: 1.  // MeV
+    spectrumResolution: 0.1 // MeV
+}
+
+services.TFileService.fileName: "nts.owner.dio.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.dio-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.dio-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.dio-truncated.version.sequencer.art"

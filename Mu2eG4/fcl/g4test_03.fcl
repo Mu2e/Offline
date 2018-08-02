@@ -41,19 +41,19 @@ physics : {
   producers: {
 
     # Generate the event.
-    generate: @local::StoppedMuonConversionGun
+    generate: @local::CeEndpointGun
 
     # Run G4 and add its output to the event.
     g4run : @local::g4run
 
-    protonTimeMap        : { module_type : GenerateProtonTimes }
-    muonTimeMap          : { module_type : GenerateMuonLife }
+    # Work needed to setup the digi makers.
+    @table::CommonMC.producers
 
     # Form StrawHits (SH).
     makeSD               : @local::makeSD
     makeSH               : @local::makeSH
 
-    # Calorimeter sequence    
+    # Calorimeter sequence
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
 
@@ -90,7 +90,7 @@ physics : {
 
   }
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
+  p1 : [generate, g4run, @sequence::CommonMC.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
   e1 : [readGens, checkhits, readStrawHits, outfile]
 
@@ -116,7 +116,8 @@ services.SeedService.maxUniqueEngines :  20
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 # physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
 
-
+# mu stops
+physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_mdc2018
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
@@ -126,3 +127,5 @@ physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 #physics.producers.g4run.physics.turnOffRadioactiveDecay: true
 #physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
 #physics.producers.g4run.physics.captureDModel: "muMinusNuclearCapture"
+
+

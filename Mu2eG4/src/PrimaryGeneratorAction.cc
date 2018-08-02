@@ -24,6 +24,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "canvas/Persistency/Provenance/ProductID.h"
 
 // G4 Includes
 #include "G4Event.hh"
@@ -34,6 +35,7 @@
 #include "G4IonTable.hh"
 #include "Randomize.hh"
 #include "globals.hh"
+#include "G4Threading.hh"
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -45,9 +47,13 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "DataProducts/inc/PDGCode.hh"
+#include "Mu2eG4/inc/GenEventBroker.hh"
+#include "Mu2eG4/inc/PerEventObjectsManager.hh"
+#include "Mu2eG4/inc/SimParticleHelper.hh"
 
 // ROOT includes
 #include "TH1D.h"
+
 
 using namespace std;
 
@@ -56,122 +62,167 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill, int verbosityLevel)
-    : _totalMultiplicity(nullptr),  verbosityLevel_(verbosityLevel)
+  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill,
+                                                 int verbosityLevel,
+                                                 GenEventBroker *gen_eventbroker,
+                                                 PerEventObjectsManager *per_evtobjmanager)
+    :
+    _totalMultiplicity(nullptr),
+    verbosityLevel_(verbosityLevel),
+    genEventBroker_(gen_eventbroker),
+    perEvtObjManager(per_evtobjmanager)
   {
-    if(fill) {
-      art::ServiceHandle<art::TFileService> tfs;
-      _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
-    }
 
-    if ( verbosityLevel_ > 0 ) {
-      cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
-    }
+      if(fill) {
+          art::ServiceHandle<art::TFileService> tfs;
+          _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
+      }
+
+      if ( verbosityLevel_ > 0 ) {
+          cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
+      }
 
   }
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
-    : PrimaryGeneratorAction(true)
+    : PrimaryGeneratorAction(true, 0, nullptr, perEvtObjManager)
   {}
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset)
-    : PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false),
-                             pset.get<int>("debug.diagLevel", 0))
-  {}
-
-  void PrimaryGeneratorAction::setEventData(const GenParticleCollection* gens,
-                                            const HitHandles& hitInputs,
-                                            SimParticlePrimaryHelper *parentMapping)
-  {
-    genParticles_ = gens;
-    hitInputs_ = &hitInputs;
-    parentMapping_ = parentMapping;
-  }
+  PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
+                                                 GenEventBroker *gen_eventbroker,
+                                                 PerEventObjectsManager* per_evtobjmanager)
+    :
+    PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false),
+                           pset.get<int>("debug.diagLevel", 0),
+                           gen_eventbroker,
+                           per_evtobjmanager)
+    {}
 
 
-  void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-  {
+//load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
+void PrimaryGeneratorAction::setEventData()
+    {
 
-    // For debugging.
-    //testTrack(anEvent);
+        if (G4Threading::IsWorkerThread())//if this is being called by a worker thread, we are in MT mode
+        {
+            //get the instance of the GenParticleCollection that we need for this event
+            GenEventBroker::GenParticleCollectionInstance genCollectionInstance = genEventBroker_->getNextGenPartCollectionInstance();
 
-    fromEvent(anEvent);
+            //store the instance number currently being used
+            perEvtObjManager->storeEventInstanceNumber(genCollectionInstance.instanceNumber);
 
-  }
+            //here's the ptr to the GPC
+            genParticles_ = genCollectionInstance.genCollection;
+
+        }
+        else//we are in sequential mode
+        {
+            genParticles_ = genEventBroker_->getGenParticleHandle().isValid() ?
+                            genEventBroker_->getGenParticleHandle().product() :
+                            nullptr;
+            perEvtObjManager->storeEventInstanceNumber(0);
+        }
+
+        hitInputs_ = genEventBroker_->getHitHandles();
+
+        perEvtObjManager->createSimParticleHelpers(genEventBroker_->getproductID(),
+                                                   genEventBroker_->getartEvent(),
+                                                   &(genEventBroker_->getGenParticleHandle()),
+                                                   genEventBroker_->getSimProductGetter());
+
+        parentMapping_ = perEvtObjManager->getSimParticlePrimaryHelper();
+
+    }
+
+
+void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+    {
+        //load the GenParticleCollection etc for the event
+        setEventData();
+        // For debugging.
+        //testTrack(anEvent);
+
+        fromEvent(anEvent);
+    }
 
   // Copy generated particles from the event into G4.
-  //
   // At the moment none of the supported generators make multi-particle vertices.
   // That may change in the future.
-  //
-  void PrimaryGeneratorAction::fromEvent(G4Event* event){
+void PrimaryGeneratorAction::fromEvent(G4Event* event)
+    {
 
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const & _config = geom->config();
+        art::ServiceHandle<GeometryService> geom;
+        SimpleConfig const & _config = geom->config();
 
-    // Get the offsets to map from generator world to G4 world.
-    // check if this is standard mu2e configuration or not
+        // Get the offsets to map from generator world to G4 world.
+        // check if this is standard mu2e configuration or not
 
-    G4ThreeVector const mu2eOrigin =
-      (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector())) 
-      ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+        G4ThreeVector const mu2eOrigin =
+        (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
+        ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
-    // For each generated particle, add it to the event.
-    if(genParticles_) {
-      for (unsigned i=0; i < genParticles_->size(); ++i) {
-        const GenParticle& genpart = (*genParticles_)[i];
-        addG4Particle(event,
-                      genpart.pdgId(),
-                      // Transform into G4 world coordinate system
-                      genpart.position() + mu2eOrigin,
-                      genpart.time(),
-                      genpart.properTime(),
-                      genpart.momentum());
+        // For each generated particle, add it to the event.
+        if(genParticles_) {
+            for (unsigned i=0; i < genParticles_->size(); ++i) {
+                const GenParticle& genpart = (*genParticles_)[i];
+                addG4Particle(event,
+                              genpart.pdgId(),
+                              // Transform into G4 world coordinate system
+                              genpart.position() + mu2eOrigin,
+                              genpart.time(),
+                              genpart.properTime(),
+                              genpart.momentum());
 
-        parentMapping_->addEntry(i, SimParticleCollection::key_type());
-      }
+                parentMapping_->addEntryFromGenParticle(i);
+            }
+        }
+
+
+        // a test
+        // int ovl = verbosityLevel_;
+        // verbosityLevel_ = 2;
+        // addG4Particle(event,
+        //               static_cast<PDGCode::type>(1000010048),
+        //               // Transform into G4 world coordinate system
+        //               G4ThreeVector()+mu2eOrigin,
+        //               0.0,
+        //               0.0,
+        //               G4ThreeVector());
+        // verbosityLevel_ = ovl;
+
+
+        // Also create particles from the input hits
+        for(const auto& hitcoll : *hitInputs_) {
+
+            for(const auto& hit : *hitcoll) {
+                addG4Particle(event,
+                              hit.simParticle()->pdgId(),
+                              // Transform into G4 world coordinate system
+                              hit.position() + mu2eOrigin,
+                              hit.time(),
+                              hit.properTime(),
+                              hit.momentum());
+
+                parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
+
+            }
+        }
+
+        // Fill multiplicity histogram.
+        if(_totalMultiplicity){
+            _totalMultiplicity->Fill(parentMapping_->numPrimaries());
+        }
+
     }
 
-    // a test
-    // int ovl = verbosityLevel_;
-    // verbosityLevel_ = 2;
-    // addG4Particle(event,
-    //               static_cast<PDGCode::type>(1000010048),
-    //               // Transform into G4 world coordinate system
-    //               G4ThreeVector()+mu2eOrigin,
-    //               0.0,
-    //               0.0,
-    //               G4ThreeVector());
-    // verbosityLevel_ = ovl;
 
-    // Also create particles from the input hits
-    for(const auto& hitcoll : *hitInputs_) {
-      for(const auto& hit : *hitcoll) {
-
-        addG4Particle(event,
-                      hit.simParticle()->pdgId(),
-                      // Transform into G4 world coordinate system
-                      hit.position() + mu2eOrigin,
-                      hit.time(),
-                      hit.properTime(),
-                      hit.momentum());
-
-        parentMapping_->addEntry(-1u, hit.simParticle()->id());
-      }
-    }
-
-   // Fill multiplicity histogram.
-    if(_totalMultiplicity) _totalMultiplicity->Fill(parentMapping_->numPrimaries());
-  }
-
-
-  void PrimaryGeneratorAction::addG4Particle(G4Event *event,
-                                             PDGCode::type pdgId,
-                                             const G4ThreeVector& pos,
-                                             double time,
-                                             double properTime,
-                                             const G4ThreeVector& mom)
-  {
+void PrimaryGeneratorAction::addG4Particle(G4Event *event,
+                                           PDGCode::type pdgId,
+                                           const G4ThreeVector& pos,
+                                           double time,
+                                           double properTime,
+                                           const G4ThreeVector& mom)
+    {
     // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
 
@@ -261,7 +312,7 @@ namespace mu2e {
 
     // Add the vertex to the event.
     event->AddPrimaryVertex( vertex );
-  }
+    }
 
 
 } // end namespace mu2e
