@@ -1,9 +1,9 @@
 //
 
-#include "CalPatRec/inc/CalSeedFit_types.hh"
+#include "TrkPatRec/inc/KalSeedFit_types.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/KalFitResultNew.hh"
+#include "TrkReco/inc/KalFitData.hh"
 
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -17,9 +17,9 @@
 
 namespace mu2e {
 
-  using namespace CalSeedFitTypes;
+  using namespace KalSeedFitTypes;
   
-  class CalSeedFitDiag : public mu2e::ModuleHistToolBase {
+  class KalSeedFitDiag : public mu2e::ModuleHistToolBase {
   public:
 
     enum {
@@ -70,8 +70,8 @@ namespace mu2e {
 
   public:
 
-    CalSeedFitDiag(const fhicl::ParameterSet& PSet);
-    ~CalSeedFitDiag();
+    KalSeedFitDiag(const fhicl::ParameterSet& PSet);
+    ~KalSeedFitDiag();
 
   private:
 
@@ -88,7 +88,7 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  CalSeedFitDiag::CalSeedFitDiag(const fhicl::ParameterSet& PSet) {
+  KalSeedFitDiag::KalSeedFitDiag(const fhicl::ParameterSet& PSet) {
     _mcTruth = PSet.get <int >("mcTruth"); 
 
     if (_mcTruth != 0) _mcUtils = art::make_tool<McUtilsToolBase>(PSet.get<fhicl::ParameterSet>("mcUtils"));
@@ -96,17 +96,17 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  CalSeedFitDiag::~CalSeedFitDiag() {
+  KalSeedFitDiag::~KalSeedFitDiag() {
   }
 
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
+  int KalSeedFitDiag::bookEventHistograms(EventHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->ntracks  = Dir->make<TH1F>("ntracks", "number of track candidates: all events", 21, -0.5, 20.5);
     return 0;
   }
     
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::bookTrackHistograms(TrackHist_t* Hist, art::TFileDirectory* Dir) {
+  int KalSeedFitDiag::bookTrackHistograms(TrackHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->nha     = Dir->make<TH1F>("nha"  , "N(track hits)"            , 101,  -0.5, 100.5);
     Hist->nhd     = Dir->make<TH1F>("nhd"  , "N(deactivated track hits)", 101,  -0.5, 100.5);
     Hist->nhr     = Dir->make<TH1F>("nhr"  , "N(rescued track hits)"    , 101,  -0.5, 100.5);
@@ -117,13 +117,13 @@ namespace mu2e {
   }
     
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::bookHitHistograms(HitHist_t* Hist, art::TFileDirectory* Dir) {
+  int KalSeedFitDiag::bookHitHistograms(HitHist_t* Hist, art::TFileDirectory* Dir) {
     Hist->doca = Dir->make<TH1F>("doca","doca, [mm]", 1000, -20., 20);
     return 0;
   }
     
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
+  int KalSeedFitDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
     char folder_name[20];
     
     TH1::AddDirectory(0);
@@ -186,14 +186,14 @@ namespace mu2e {
 
 
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::fillEventHistograms(EventHist_t* Hist, Data_t* Data) {
+  int KalSeedFitDiag::fillEventHistograms(EventHist_t* Hist, Data_t* Data) {
     int ntrk = Data->tracks->size();
     Hist->ntracks->Fill(ntrk);
     return 0;
   }
 
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::fillTrackHistograms(TrackHist_t* Hist, KalSeed* Track, KalSeedData_t* KsData) {
+  int KalSeedFitDiag::fillTrackHistograms(TrackHist_t* Hist, KalSeed* Track, KalSeedData_t* KsData) {
     Hist->nha->Fill(KsData->nactive);
     Hist->nhd->Fill(KsData->ndeactivated);
     Hist->nhr->Fill(KsData->ndeactivated);
@@ -208,7 +208,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Mode is not used
 //-----------------------------------------------------------------------------
-  int CalSeedFitDiag::fillHistograms(void* Data, int Mode) {
+  int KalSeedFitDiag::fillHistograms(void* Data, int Mode) {
 
     _data = (Data_t*) Data;
 
@@ -243,6 +243,6 @@ namespace mu2e {
     return 0;
   }
 
-  DEFINE_ART_CLASS_TOOL(CalSeedFitDiag)
+  DEFINE_ART_CLASS_TOOL(KalSeedFitDiag)
 
 }

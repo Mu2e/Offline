@@ -17,8 +17,8 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 
@@ -86,7 +86,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
     
     std::vector<McPart_t*>                _list_of_mc_particles; // list_of_particles with hits in the tracker
     std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart 

@@ -287,6 +287,8 @@ namespace mu2e {
     for (unsigned istr=0; istr<_chcol->size();++istr) {
       if (_testflag && !goodHit((*_shfcol)[istr])) continue;
       ComboHit const& ch = (*_chcol)[istr];
+      // if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+      // if ( (ch.time() < _minT) || (ch.time() > _maxT) )  continue;
       float time = _ttcalc.comboHitTime((*_chcol)[istr]);
       _timespec.Fill(time,ch.nStrawHits());
     }
@@ -346,6 +348,8 @@ namespace mu2e {
     for(auto ish :tc._strawHitIdxs) {
       if (_testflag && !goodHit((*_shfcol)[ish])) continue;
       ComboHit const& ch = (*_chcol)[ish];
+      // if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+      // if ( (ch.time() < _minT) || (ch.time() > _maxT) )  continue;
       unsigned nsh = ch.nStrawHits();
       tc._nsh += nsh;
       const XYZVec& pos = ch.pos();

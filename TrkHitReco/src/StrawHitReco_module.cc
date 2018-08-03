@@ -189,98 +189,100 @@ namespace mu2e {
       largeHitPanels.reserve(sdcol.size());
 
       for (size_t isd=0;isd<sdcol.size();++isd)
-      {
-        const StrawDigi& digi = sdcol[isd];
-        StrawHitFlag flag;
-        // start by reconstructing the times
-        TDCTimes times;
-        srep->calibrateTimes(digi.TDC(),times,digi.strawId());
-        // take the earliest of the 2 end times
-        float time = std::min(times[0],times[1]) + ewmOffset;
-        if (time < _minT || time > _maxT ){
-          if(_filter)continue;
-        } else
-          flag.merge(StrawHitFlag::timesel);
+	{
+	  const StrawDigi& digi = sdcol[isd];
+	  StrawHitFlag flag;
+	  // start by reconstructing the times
+	  TDCTimes times;
+	  srep->calibrateTimes(digi.TDC(),times,digi.strawId());
+	  // take the earliest of the 2 end times
+	  float time = std::min(times[0],times[1]) + ewmOffset;
+	  if (time < _minT || time > _maxT ){
+	    if(_filter)continue;
+	  } else
+	    flag.merge(StrawHitFlag::timesel);
 
-        //calorimeter filtering
-        if (_usecc && caloClusters) {
-          bool outsideCaloTime(true);
-          for (const auto& cluster : *caloClusters)
-            if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
-          if (outsideCaloTime){
-            if(_filter)continue;
-          } else
-            flag.merge(StrawHitFlag::calosel);
-        }
+	  //calorimeter filtering
+	  if (_usecc && caloClusters) {
+	    bool outsideCaloTime(true);
+	    for (const auto& cluster : *caloClusters)
+	      if (std::abs(time-cluster.time())<_clusterDt) {outsideCaloTime=false; break;}
+	    if (outsideCaloTime){
+	      if(_filter)continue;
+	    } else
+	      flag.merge(StrawHitFlag::calosel);
+	  }
 
-        //extract energy from waveform
-        float energy(0.0);
-        if (_fittype == TrkHitReco::FitType::peakminuspedavg){
-          float charge = peakMinusPedAvg(digi.adcWaveform());
-          energy = srep->ionizationEnergy(charge);
-        } else if (_fittype == TrkHitReco::FitType::peakminusped){
-          float charge = peakMinusPed(digi.strawId(),digi.adcWaveform());
-          energy = srep->ionizationEnergy(charge);
-        } else {
-          TrkHitReco::PeakFitParams params;
-          _pfit->process(digi.adcWaveform(),params);
-          energy = srep->ionizationEnergy(params._charge/srep->strawGain());
-          if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
-            << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
-        }
+	  //extract energy from waveform
+	  float energy(0.0);
+	  if (_fittype == TrkHitReco::FitType::peakminuspedavg){
+	    float charge = peakMinusPedAvg(digi.adcWaveform());
+	    energy = srep->ionizationEnergy(charge);
+	  } else if (_fittype == TrkHitReco::FitType::peakminusped){
+	    float charge = peakMinusPed(digi.strawId(),digi.adcWaveform());
+	    energy = srep->ionizationEnergy(charge);
+	  } else {
+	    TrkHitReco::PeakFitParams params;
+	    _pfit->process(digi.adcWaveform(),params);
+	    energy = srep->ionizationEnergy(params._charge/srep->strawGain());
+	    if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
+					   << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
+	  }
 
-        if( energy > _maxE){
-          if(_filter) continue;
-        } else if (energy < _minE){
-          if(_filter) continue;
-        } else
-          flag.merge(StrawHitFlag::energysel);
-        // time-over-threshold
-        TOTTimes tots{0.0,0.0};
-        for(size_t iend=0;iend<2;++iend){
-          tots[iend] = digi.TOT(_end[iend])*srep->totLSB();
-        }
-        //create straw hit; this is currently required by the wireDistance function FIXME!
-        StrawHit hit(digi.strawId(),times,tots,energy);
-        // get distance along wire from the straw center and it's estimated error
-        const Straw& straw  = tracker.getStraw( digi.strawId() );
-        float dw, dwerr;
-        bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
-        XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
-        if(_writesh){
-          shCol->push_back(std::move(hit));
-        }
-        // create combo hit
-        ComboHit ch;
-        ch._nsh = 1; // 'combo' of 1 hit
-        ch._pos = pos;
-        ch._wdir = straw.getDirection();
-        ch._wdist = dw;
-        ch._wres = dwerr;
-        ch._time = time;
-        ch._edep = energy;
-        ch._sid = straw.id();
-        ch._dtime = srep->driftTime(hit);
-        ch._pathlength = srep->pathLength(hit,0); //FIXME default angle
-        ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
-        // crude initial estimate of the transverse error
-        static const float invsqrt12 = 1.0/sqrt(12.0);
-        ch._tres = straw.getRadius()*invsqrt12;
-        // set flags
-        ch._mask = _mask;
-        ch._flag = flag;
-        if (td) ch._flag.merge(StrawHitFlag::tdiv);
-        if(!_filter && _flagXT){
-          //buffer large hit for cross-talk analysis
-          size_t iplane       = straw.id().getPlane();
-          size_t ipnl         = straw.id().getPanel();
-          size_t global_panel = ipnl + iplane*npanels;
-          hits_by_panel[global_panel].push_back(shCol->size());
-          if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
-        }
+	  if( energy > _maxE){
+	    if(_filter) continue;
+	  } else if (energy < _minE){
+	    if(_filter) continue;
+	  } else
+	    flag.merge(StrawHitFlag::energysel);
+	  // time-over-threshold
+	  TOTTimes tots{0.0,0.0};
+	  for(size_t iend=0;iend<2;++iend){
+	    tots[iend] = digi.TOT(_end[iend])*srep->totLSB();
+	  }
+	  //create straw hit; this is currently required by the wireDistance function FIXME!
+	  StrawHit hit(digi.strawId(),times,tots,energy);
+	  // get distance along wire from the straw center and it's estimated error
+	  const Straw& straw  = tracker.getStraw( digi.strawId() );
+	  float dw, dwerr;
+	  bool td = srep->wireDistance(hit,straw.getHalfLength(),dw,dwerr);
+	  XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
+	  if(_writesh){
+	    shCol->push_back(std::move(hit));
+	  }
+	  // create combo hit
+	  static const XYZVec _zdir(0.0,0.0,1.0);
+	  ComboHit ch;
+	  ch._nsh = 1; // 'combo' of 1 hit
+	  ch._pos = pos;
+	  ch._wdir = straw.getDirection();
+	  ch._sdir = _zdir.Cross(ch._wdir);
+	  ch._wdist = dw;
+	  ch._wres = dwerr;
+	  ch._time = time;
+	  ch._edep = energy;
+	  ch._sid = straw.id();
+	  ch._dtime = srep->driftTime(hit);
+	  ch._pathlength = srep->pathLength(hit,0); //FIXME default angle
+	  ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
+	  // crude initial estimate of the transverse error
+	  static const float invsqrt12 = 1.0/sqrt(12.0);
+	  ch._tres = straw.getRadius()*invsqrt12;
+	  // set flags
+	  ch._mask = _mask;
+	  ch._flag = flag;
+	  if (td) ch._flag.merge(StrawHitFlag::tdiv);
+	  if(!_filter && _flagXT){
+	    //buffer large hit for cross-talk analysis
+	    size_t iplane       = straw.id().getPlane();
+	    size_t ipnl         = straw.id().getPanel();
+	    size_t global_panel = ipnl + iplane*npanels;
+	    hits_by_panel[global_panel].push_back(shCol->size());
+	    if (energy >= _ctE) {largeHits.push_back(shCol->size()); largeHitPanels.push_back(global_panel);}
+	  }
 
-        chCol->push_back(std::move(ch));
-      }
+	  chCol->push_back(std::move(ch));
+	}
 
       //flag straw and electronic cross-talk
       if(!_filter && _flagXT){

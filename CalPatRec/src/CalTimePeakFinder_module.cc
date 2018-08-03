@@ -8,7 +8,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/CalTimePeakFinder_module.hh"
 
 // framework

@@ -473,7 +473,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-        _visManager = std::make_unique<G4VisManager>();
+        _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive());
         _visManager->Initialize();
 
         ConfigFileLookupPolicy visPath;

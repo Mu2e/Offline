@@ -33,7 +33,7 @@
 #include "CalPatRec/inc/DeltaFinder2_types.hh"
 
 // #include "CalPatRec/inc/LsqSums2.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include <algorithm>
