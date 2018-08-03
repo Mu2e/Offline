@@ -724,22 +724,22 @@ CalPatRec: { @table::CalPatRec
 	}
 	
 	CalTrkFitDem                   : { @table::CalPatRec.producers.CalTrkFit         
-	    TrackSeedModuleLabel       : CalSeedFitDem
+	    SeedCollection             : CalSeedFitDem
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDmm                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muminus 
-	    TrackSeedModuleLabel       : CalSeedFitDmm
+	    SeedCollection             : CalSeedFitDmm
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDep                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.eplus  
-	    TrackSeedModuleLabel       : CalSeedFitDep
+	    SeedCollection             : CalSeedFitDep
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
 	CalTrkFitDmp                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muplus 
-	    TrackSeedModuleLabel       : CalSeedFitDmp
+	    SeedCollection             : CalSeedFitDmp
 	    CalTimePeakModuleLabel     : CalTimePeakFinder
 	}
     }
