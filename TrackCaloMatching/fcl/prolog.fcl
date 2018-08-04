@@ -132,6 +132,17 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    fitdirection         : @local::FitDir.downstream
 	}
 
+	TrackCaloIntersectionCprDem : { @table::TrackCaloMatching.producers.TrackCaloIntersection # CalPatRec only
+	    fitterModuleLabel    : MergePatRecCprDem
+	    fitparticle          : @local::Particle.eminus
+	    fitdirection         : @local::FitDir.downstream
+	}
+
+	TrackCaloIntersectionTprDem : { @table::TrackCaloMatching.producers.TrackCaloIntersection # CalPatRec only
+	    fitterModuleLabel    : MergePatRecTprDem
+	    fitparticle          : @local::Particle.eminus
+	    fitdirection         : @local::FitDir.downstream
+	}
 
 	TrackCaloIntersectionCprDep : { @table::TrackCaloMatching.producers.TrackCaloIntersection # CalPatRec only
 	    fitterModuleLabel    : MergePatRecCprDep
@@ -203,6 +214,15 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionTpr.fitterModuleLabel
 	}
 
+	TrackCaloMatchingCprDem  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
+	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionCprDem
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionCprDem.fitterModuleLabel
+	}
+
+	TrackCaloMatchingTprDem  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
+	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTprDem
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionTprDem.fitterModuleLabel
+	}
 
 	TrackCaloMatchingCprDep  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
 	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionCprDep
@@ -218,10 +238,10 @@ TrackCaloMatching : { @table::TrackCaloMatching
 #------------------------------------------------------------------------------
 # sequences
 #------------------------------------------------------------------------------
-TrackCaloMatching.matching     : [ TrackCaloIntersection   , TrackCaloMatching    ]   # this is the default
+TrackCaloMatching.matching         : [ TrackCaloIntersection   , TrackCaloMatching    ]   # this is the default
 
-TrackCaloMatching.matching_cpr : [ TrackCaloIntersectionCpr, TrackCaloMatchingCpr ] 
-TrackCaloMatching.matching_tpr : [ TrackCaloIntersectionTpr, TrackCaloMatchingTpr ] 
+TrackCaloMatching.matching_cpr     : [ TrackCaloIntersectionCpr, TrackCaloMatchingCpr ] 
+TrackCaloMatching.matching_tpr     : [ TrackCaloIntersectionTpr, TrackCaloMatchingTpr ] 
 
 TrackCaloMatching.matching_cpr_dem : [ TrackCaloIntersectionCprDem, TrackCaloMatchingCprDem ] 
 TrackCaloMatching.matching_tpr_dem : [ TrackCaloIntersectionTprDem, TrackCaloMatchingTprDem ] 
@@ -229,14 +249,14 @@ TrackCaloMatching.matching_tpr_dem : [ TrackCaloIntersectionTprDem, TrackCaloMat
 TrackCaloMatching.matching_cpr_dep : [ TrackCaloIntersectionCprDep, TrackCaloMatchingCprDep ] 
 TrackCaloMatching.matching_tpr_dep : [ TrackCaloIntersectionTprDep, TrackCaloMatchingTprDep ] 
 
-TrackCaloMatching.matching_dem : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
-TrackCaloMatching.matching_dmm : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]
-TrackCaloMatching.matching_dep : [ TrackCaloIntersectionDep, TrackCaloMatchingDep ]
-TrackCaloMatching.matching_dmp : [ TrackCaloIntersectionDmp, TrackCaloMatchingDmp ]
-TrackCaloMatching.matching_uem : [ TrackCaloIntersectionUem, TrackCaloMatchingUem ]
-TrackCaloMatching.matching_umm : [ TrackCaloIntersectionUmm, TrackCaloMatchingUmm ]
-TrackCaloMatching.matching_uep : [ TrackCaloIntersectionUep, TrackCaloMatchingUep ]
-TrackCaloMatching.matching_ump : [ TrackCaloIntersectionUmp, TrackCaloMatchingUmp ]
+TrackCaloMatching.matching_dem     : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
+TrackCaloMatching.matching_dmm     : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]
+TrackCaloMatching.matching_dep     : [ TrackCaloIntersectionDep, TrackCaloMatchingDep ]
+TrackCaloMatching.matching_dmp     : [ TrackCaloIntersectionDmp, TrackCaloMatchingDmp ]
+TrackCaloMatching.matching_uem     : [ TrackCaloIntersectionUem, TrackCaloMatchingUem ]
+TrackCaloMatching.matching_umm     : [ TrackCaloIntersectionUmm, TrackCaloMatchingUmm ]
+TrackCaloMatching.matching_uep     : [ TrackCaloIntersectionUep, TrackCaloMatchingUep ]
+TrackCaloMatching.matching_ump     : [ TrackCaloIntersectionUmp, TrackCaloMatchingUmp ]
 
 #------------------------------------------------------------------------------
 # preserve backward compatibility

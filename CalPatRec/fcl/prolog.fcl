@@ -673,31 +673,6 @@ CalPatRec : { @table::CalPatRec
 		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
 	    }
 	}
-
-	# CalTrkFit : { module_type:CalTrkFit
-	#     diagLevel                                   : 0
-	#     debugLevel                                  : 0
-	#     printFrequency                              : 100
-	#     useAsFilter                                 : 0
-	#     addhits                                     : true
-	#     StrawHitCollectionLabel                     : makeSH
-	#     StrawDigiCollectionLabel                    : makeSD
-	#     StrawHitPositionCollectionLabel             : makeSH	 
-	#     StrawHitFlagCollectionLabel                 : "DeltaFinder:StrawHits"
-	#     TrackSeedModuleLabel                        : CalSeedFit
-	#     MaxDtMiss                                   : 55.
-	#     MaxAddDoca                                  : 5.    # mm
-	#     MaxAddChi                                   : 5.    # 3.5 used by unweedHits and addHits
-	#     GoodKalSeedFitBits                          : ["SeedOK"]
-	#     fitparticle                                 : @local::Particle.eminus
-	#     fitdirection                                : @local::FitDir.downstream
-	#     Fitter                                      : { @table::CalPatRec.KalFitter }
-	#     TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	#     diagPlugin : { tool_type                    : "CalTrkFitDiag" 
-	# 	mcTruth                                 : 0
-	# 	mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
-	#     }
-	# }
     }
 }
 
@@ -712,7 +687,7 @@ CalPatRec: { @table::CalPatRec
 	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
-	    SeedCollection          : CalHelixFinderDmm
+	    SeedCollection             : CalHelixFinderDmm
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
@@ -745,15 +720,12 @@ CalPatRec: { @table::CalPatRec
     }
     
     filters : { @table::CalPatRec.filters
-
-   }
+	CalHelixFinderDem              : { @table::CalPatRec.filters.CalHelixFinder    }
+	CalHelixFinderDmm              : { @table::CalPatRec.filters.CalHelixFinder    fitparticle: @local::Particle.muminus }
+	CalHelixFinderDep              : { @table::CalPatRec.filters.CalHelixFinder    fitparticle: @local::Particle.eplus   }
+	CalHelixFinderDmp              : { @table::CalPatRec.filters.CalHelixFinder    fitparticle: @local::Particle.muplus  }
+    }
 }
-
-# if needed, makeSH should be added explicitly, so far assume that it is included 
-# by some hit reco sequence
-
-# CalPatRec.prepare_hits : [ makeSH, CalTimePeakFinder, DeltaFinder]
-# CalPatRec.prepare_hits : [ CalTimePeakFinder, DeltaFinder]
 
 CalPatRec.reco     : [ CalTimePeakFinder, DeltaFinder, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
 CalPatRec.dem_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem ]

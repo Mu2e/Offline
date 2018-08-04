@@ -396,8 +396,12 @@ namespace mu2e {
     double   helixRadius   = 1./fabs(hel->omega());
     double   impactParam   = hel->d0();
     double   phi0          = hel->phi0();
-    double   x0            = -(helixRadius + impactParam)*sin(phi0);
-    double   y0            =  (helixRadius + impactParam)*cos(phi0);
+    // double   x0            = -(helixRadius + impactParam)*sin(phi0)*sig;
+    // double   y0            =  (helixRadius + impactParam)*cos(phi0)*sig;
+
+    double   x0            = -(1/hel->omega()+impactParam)*sin(phi0);
+    double   y0            =  (1/hel->omega()+impactParam)*cos(phi0);
+
     double   dfdz          = 1./hel->tanDip()/helixRadius;
     double   z0            = hel->z0();
                                         // center of the helix in the transverse plane
@@ -407,8 +411,12 @@ namespace mu2e {
     HelSeed._helix._rcent    = center.perp();
     HelSeed._helix._fcent    = center.phi();
     HelSeed._helix._radius   = helixRadius;
-    HelSeed._helix._lambda   = 1./dfdz;
-    HelSeed._helix._fz0      = -z0*dfdz*_hfinder._dfdzsign + phi0 - M_PI/2.;
+    HelSeed._helix._lambda   = 1./dfdz*_hfinder._dfdzsign;
+    //    HelSeed._helix._fz0      = -z0*dfdz*_hfinder._dfdzsign + phi0 - M_PI/2.;
+    //    HelSeed._helix._fz0      = -z0*dfdz*_hfinder._dfdzsign + phi0 - M_PI/2.*_hfinder._dfdzsign;
+
+    HelSeed._helix._fz0      = phi0 - M_PI/2.*_hfinder._dfdzsign -z0*hel->omega()/hel->tanDip() ;
+
     HelSeed._helix._helicity = _hfinder._dfdzsign > 0 ? Helicity::poshel : Helicity::neghel;
 
                                         //now evaluate the helix T0 using the calorimeter cluster

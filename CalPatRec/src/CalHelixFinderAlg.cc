@@ -148,8 +148,7 @@ namespace mu2e {
     _maxElectronHitEnergy(pset.get<double>("maxElectronHitEnergy")),
     _minNHits         (pset.get<int>   ("minNHit"          )),
     //    _maxDz            (pset.get<double>("maxdz",35.0)),
-    _mpDfDz           (pset.get<double>("mostProbableDfDz")),
-    // _minNSt           (pset.get<double>("minNActiveStationPairs")),
+    _absMpDfDz        (pset.get<double>("mostProbableDfDz")),
     _dzOverHelPitchCut(pset.get<double>("dzOverHelPitchCut")),
     _maxDfDz          (pset.get<double>("maxDfDz",0.01)),
     _minDfDz          (pset.get<double>("minDfDz",5e-04)),
@@ -157,20 +156,14 @@ namespace mu2e {
     _weightXY         (pset.get<double>("weightXY")),
     _weightZPhi       (pset.get<double>("weightZPhi")),
     _weight3D         (pset.get<double>("weight3D")),
-    // _ew               (pset.get<double>("errorAlongWire")),
     _maxXDPhi         (pset.get<double>("maxXDPhi",5.)),
     _maxPanelToHelixDPhi(pset.get<double>("maxPanelToHelixDPhi",1.309)),// 75 degrees
     _distPatRec       (pset.get<double>("distPatRec")),
-    // _rhomin           (pset.get<double>("rhomin",350.0)),
-    // _rhomax           (pset.get<double>("rhomax",780.0)),
     _mindist          (pset.get<double>("mindist",500.0)),
-    // _maxdist          (pset.get<double>("maxdist",500.0)),
     _pmin             (pset.get<double>("minP",50.0)),
     _pmax             (pset.get<double>("maxP",150.0)),
     _tdmin            (pset.get<double>("minAbsTanDip",0.3)),
     _tdmax            (pset.get<double>("maxAbsTanDip",2.0)),
-    // _rcmin            (pset.get<double>("rcmin",200.0)),
-    // _rcmax            (pset.get<double>("rcmax",350.0)),
     _xyweights        (pset.get<bool>  ("xyWeights",false)),
     _zweights         (pset.get<bool>  ("zWeights",false)),
     _filter           (pset.get<bool>  ("filter",true)),
@@ -238,13 +231,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
 
-    if(_dfdzsign > 0.0){
-      _smin = 1.0/(_rmax*_tdmax);
-      _smax = 1.0/(_rmin*_tdmin);
-    } else {
-      _smax = -1.0/(_rmax*_tdmax);
-      _smin = -1.0/(_rmin*_tdmin);
-    }
+    _smax     = _dfdzsign/(_rmax*_tdmax);
+    _smin     = _dfdzsign/(_rmin*_tdmin);
+
+    _mpDfDz   = _dfdzsign*_absMpDfDz;
 //-----------------------------------------------------------------------------
 // call down
 //-----------------------------------------------------------------------------
@@ -3420,9 +3410,9 @@ namespace mu2e {
 						   const XYZVec&   p2       ,
 						   const XYZVec&   p3       ,
 						   XYZVec&         Center   ,
-						   double&             Radius   ,
-						   double&             Phi0     ,
-						   double&             DfDz23) {
+						   double&         Radius   ,
+						   double&         Phi0     ,
+						   double&         DfDz32) {
     Center.SetZ(p2.z());
 
     double x_m, y_m, x_n, y_n;
@@ -3477,50 +3467,54 @@ namespace mu2e {
     Phi0        = polyAtan2(dy2,dx2);
 //-----------------------------------------------------------------------------
 // this assumes that the helix is right-handed, *FIXME*
-// make sure that we are lookign for a particle which makes the number of turns
-// close to the expected 
+// make sure that we are lookign for a particle which makes close to expected 
+// number of turns
 //-----------------------------------------------------------------------------
     double dphi32 = polyAtan2(dy3,dx3) - Phi0;
     if (dphi32*_dfdzsign < 0.) dphi32 += 2.*M_PI;
 
     //    double exp_dphi = _mpDfDz*dz32;
 
-    DfDz23 = dphi32/dz32; 
+    //check id DfDz is within the range 
+    if ( (fabs(DfDz32) < _minDfDz) || (fabs(DfDz32) > _maxDfDz)) DfDz32 = _mpDfDz;
 
-    double   diff      = fabs(DfDz23 - _mpDfDz);
+    DfDz32 = dphi32/dz32; 
+
+    double   diff      = fabs(DfDz32 - _mpDfDz);
     double   diff_plus = fabs( (dphi32 + 2.*M_PI)/dz32 -_mpDfDz );
     while ( diff_plus < diff ){
       dphi32  = dphi32 + 2.*M_PI;
-      DfDz23      = dphi32/dz32;
-      diff      = fabs(DfDz23 - _mpDfDz);
+      DfDz32      = dphi32/dz32;
+      diff      = fabs(DfDz32 - _mpDfDz);
       diff_plus = fabs( (dphi32 + 2.*M_PI)/dz32 -_mpDfDz );
     }
     
     double   diff_minus = fabs( (dphi32 - 2.*M_PI)/dz32 -_mpDfDz );
     while ( diff_minus < diff ){
       dphi32   = dphi32 - 2.*M_PI;
-      DfDz23       = dphi32/dz32;
-      diff       = fabs(DfDz23 - _mpDfDz);
+      DfDz32       = dphi32/dz32;
+      diff       = fabs(DfDz32 - _mpDfDz);
       diff_minus = fabs( (dphi32 - 2.*M_PI)/dz32 -_mpDfDz );
     }
 
     //check id DfDz is within the range 
-    if ( (fabs(DfDz23) < _minDfDz) || (fabs(DfDz23) > _maxDfDz)) DfDz23 = _mpDfDz;
+    if ( (fabs(DfDz32) < _minDfDz) || (fabs(DfDz32) > _maxDfDz)) DfDz32 = _mpDfDz;
 
     if (_debug > 5) {
 //-----------------------------------------------------------------------------
 // in debug mode also want to print the helix parameters, calculate them
+// phi00 - phi angle of (x0,y0) point - center of the helix
 //-----------------------------------------------------------------------------
       double d0     = sqrt(x0*x0+y0*y0)-Radius;
-      double phi00  = polyAtan2(y0,x0)+M_PI/2;   // for negatively charged particle
-      double tandip = DfDz23*Radius;
-      double dphi   = phi00-Phi0-M_PI/2;
-      if (dphi < 0) dphi += 2*M_PI;           // *FIXME* right-handed ellipse
+      double phi00  = polyAtan2(y0,x0);                    // sign taken into account 
+      double tandip = DfDz32*_dfdzsign*Radius;             // signs of DfDz32 and _dfdzsign should be the same
+      double dphi   = phi00-Phi0;
+      if (dphi < 0) dphi += 2*M_PI;                        // *FIXME* right-handed helix
 
       double z0     = p2.z()-dphi*dz32/dphi32;
 
       printf("[CalHelixFinderAlg:calculateTrackParameters] X0: %9.3f Y0: %9.3f phi0: %8.5f p1.z = %9.3f p2.z = %9.3f p3.z = %9.3f dphi32 = %8.5f dfdz = %8.5f\n",
-	     Center.x(),Center.y(),Phi0,p1.z(),p2.z(),p3.z(),dphi32,DfDz23);
+	     Center.x(),Center.y(),Phi0,p1.z(),p2.z(),p3.z(),dphi32,DfDz32);
       printf("[CalHelixFinderAlg:calculateTrackParameters] z0 = %9.3f d0 = %8.4f  phi00 = %8.5f omega = %8.5f tandip = %8.4f\n",z0,d0,phi00,1/Radius,tandip);
     }
   }
