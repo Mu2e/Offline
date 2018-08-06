@@ -1,0 +1,18 @@
+# Run TrkAna on unmixed, compressed digi files
+
+#include "TrkDiag/fcl/TrkAnaDigis.fcl"
+
+process_name : TrkAna
+
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
+physics.analyzers.TrkAna.diagLevel : 1
+# update labels to read mixing output from MDC2018
+physics.analyzers.TrkAna.KalDiag.StrawDigiMCLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.MCStepsLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.MCStepsInstance : ""
+physics.analyzers.TrkAna.KalDiag.SimParticleLabel : "compressDigiMCs"
+physics.analyzers.TrkAna.KalDiag.SimParticleInstance : "g4run"
+physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
+physics.producers.CrvCoincidenceClusterSummarizer.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+

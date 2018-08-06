@@ -22,6 +22,19 @@ Primary: {
       @table::makeSD
       TimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
+# digi compression
+    compressDigiMCs : {
+      module_type : CompressDigiMCs
+      strawDigiMCTag : "makeSD"
+      crvDigiMCTag : ""
+      simParticleTags : [ "g4run" ] 
+      extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+      timeMapTags : [ @sequence::CommonMC.TimeMaps ]
+      primarySimPtrsTag : "DigiFilter"
+      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
+      caloShowerSimTag : "CaloShowerStepROFromShowerStep"
+      caloShowerStepROTag : "CaloShowerStepROFromShowerStep"
+    }
   }
   filters : {
 # digi filtering for Primary selection.
@@ -50,6 +63,20 @@ Primary: {
       "drop *_g4run_calorimeterRO_*"
     ] 
   }
+}
 
+Compress: {
+  TriggerPathCompress : [ @sequence::Primary.TriggerPath, compressDigiMCs ]
+  EndPathCompress : [ genCountLogger, OutputCompress ]
+  OutputCompress : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPathCompress ]
+     fileName : @nil
+     outputCommands : [ "keep *_*_*_*",
+     		      	"drop *_g4run_*_*",
+			"drop *_CaloShowerStepFromStepPt_*_*",
+			"drop *_CaloShowerStepROFromShowerStep_*_*"
+		      ]
+  }
 }
 END_PROLOG

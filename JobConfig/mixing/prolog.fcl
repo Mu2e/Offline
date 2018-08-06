@@ -75,13 +75,13 @@ DigiCompressOutputCommands : [ "drop *_*_*_*",
     "keep *_compressDigiMCs_*_*",
     "keep mu2e::StrawDigis_*_*_*",
     "keep mu2e::CaloDigis_*_*_*",
-    "keep mu2e::CaloShowerSteps_*_*_*",
-    "keep mu2e::CaloShowerStepROs_*_*_*",
+#    "keep mu2e::CaloShowerSteps_*_*_*",
+#    "keep mu2e::CaloShowerStepROs_*_*_*",
     "keep mu2e::SimParticleart::Ptrs_CaloShowerStepFromStepPt_*_*",
-    "keep mu2e::CaloShowerSims_*_*_*",
+#    "keep mu2e::CaloShowerSims_*_*_*",
     "keep mu2e::CrvDigis_*_*_*",
-    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvPhotonsstd::map_CrvPhotons_*_*",
-    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvSiPMChargesstd::map_CrvSiPMCharges_*_*",
+#    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvPhotonsstd::map_CrvPhotons_*_*",
+#    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvSiPMChargesstd::map_CrvSiPMCharges_*_*",
     "keep mu2e::StatusG4_*_*_*",
     "keep mu2e::ProtonBunchIntensity_*_*_*",
     "keep art::TriggerResults_*_*_*",
@@ -117,6 +117,17 @@ Mixing : {
       extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
       timeMapTags : [ @sequence::CommonMC.TimeMaps ]
       primarySimPtrsTag : "DigiFilter"
+      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO",
+      			     "ootMixerTrkCal:calorimeter", "ootMixerTrkCal:calorimeterRO",
+      			     "protonMixerTrkCal:calorimeter", "protonMixerTrkCal:calorimeterRO",
+      			     "deuteronMixerTrkCal:calorimeter", "deuteronMixerTrkCal:calorimeterRO",
+      			     "dioMixerTrkCal:calorimeter", "dioMixerTrkCal:calorimeterRO",
+      			     "photonMixerTrkCal:calorimeter", "photonMixerTrkCal:calorimeterRO",
+      			     "neutronMixerTrkCal:calorimeter", "neutronMixerTrkCal:calorimeterRO",
+      			     "flashMixerTrkCal:CaloShowerCrystalSteps", "flashMixerTrkCal:CaloShowerROSteps"
+      			   ]
+      caloShowerSimTag : "CaloShowerStepROFromShowerStep"
+      caloShowerStepROTag : "CaloShowerStepROFromShowerStep"
     }
   }
   filters : {
