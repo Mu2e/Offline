@@ -14,6 +14,11 @@ TrkTrigger : {
      module_type : TimeClusterFilter
      TimeClusterCollection : "TTtimeClusterFinder"
     }
+    CPRTCFilter : {
+     module_type : TimeClusterFilter
+     TimeClusterCollection : "CalTimePeakFinder"
+     MinNHits              : 1  #just check if there are TimeClusters
+    }
 # filters for either positive or negative helicity tracks near the CE energy
     PosHelixFilter : {
      module_type : HelixFilter
@@ -23,10 +28,33 @@ TrkTrigger : {
       module_type : HelixFilter
       HelixSeedCollection : "TThelixFinder:Negative"
     }
+    CPRPosHelixFilter : {
+     module_type : HelixFilter
+     HelixSeedCollection : "CalHelixFinderDem"
+     MinNHits            : 1    #don't apply any cut
+     MinMomentum         : 0.   #don't apply any cut
+     MaxMomentum         : 500. #don't apply any cut
+    }
+    CPRNegHelixFilter : {
+      module_type : HelixFilter
+      HelixSeedCollection : "CalHelixFinderDep"
+      MinNHits            : 1    #don't apply any cut
+      MinMomentum         : 0.   #don't apply any cut
+      MaxMomentum         : 500. #don't apply any cut
+    }
 # filters for CE candidates (downstream eminus near 100 MeV/c)
     DeMSeedFilter : {
       module_type : SeedFilter
       KalSeedCollection : "TTKSFDeM"
+    }
+    CPRDeMSeedFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "CalSeedFitDem"    
+      MinNHits          : 15
+      MinMomentum       : 70.      #don't apply cut
+      MaxMomentum       : 200.     #don't apply cut
+      MaxChi2DOF        : 20.      #don't apply cut
+      MaxMomErr         : 10.      #don't apply cut
     }
     DeMKalFilter : {
       module_type : SeedFilter
@@ -37,6 +65,16 @@ TrkTrigger : {
       module_type : SeedFilter
       KalSeedCollection : "TTKSFDeP"
     }
+    CPRDePSeedFilter : {
+      module_type : SeedFilter
+      KalSeedCollection : "CalSeedFitDep"    
+      MinNHits          : 15
+      MinMomentum       : 70.      #don't apply cut
+      MaxMomentum       : 200.     #don't apply cut
+      MaxChi2DOF        : 20.      #don't apply cut
+      MaxMomErr         : 10.      #don't apply cut
+    }
+
     DePKalFilter : {
       module_type : SeedFilter
       KalSeedCollection : "TTKFFDeP"
@@ -64,6 +102,8 @@ TrkTrigger : {
     PosHelixFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, PosHelixPrescale   ]
     DeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter ]
     DePSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFDeP, DePSeedFilter ]
+    CPRDeMSeedFilterSequence : [ @sequence::CaloClusterFast.Reco, @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder, CPRTCFilter, CalHelixFinderDem, CPRPosHelixFilter, CalSeedFitDem, CPRDeMSeedFilter ]
+    CPRDePSeedFilterSequence : [ @sequence::CaloClusterFast.Reco, @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder, CPRTCFilter, CalHelixFinderDep, CPRNegHelixFilter, CalSeedFitDep, CPRDePSeedFilter ]
     DeMKalFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter, TTKFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
   }

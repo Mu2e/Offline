@@ -92,6 +92,30 @@ KFSeed : {
   mcTruth                         : 0
 }
 
+# TTKSFDeM                  : {
+#   module_type                 : KalSeedFit
+#   ComboHitCollection	      : "TTmakeSH"
+#   SeedCollection	      : "TThelixFinder:Positive"
+#   KalFit		      : @local::KFSeed
+#   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
+#   MaxAddDoca                  : 7.    # mm
+#   MaxAddChi                   : 5.    # normalized unit
+#   rescueHits                  : 0     # turned off 
+# }
+
+# TTKSFDeP                  : {
+#   module_type                 : KalSeedFit
+#   ComboHitCollection	      : "TTmakeSH"
+#   SeedCollection	      : "TThelixFinder:Negative"
+#   KalFit		      : @local::KFSeed
+#   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
+#   MaxAddDoca                  : 7.    # mm
+#   MaxAddChi                   : 5.    # normalized unit
+#   rescueHits                  : 0     # turned off 
+#   fitparticle    	      : @local::Particle.eplus
+#   fitdirection	              : @local::FitDir.downstream 
+# }
+
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
 KFFinal : {
   materialCorrection          : true
@@ -215,6 +239,13 @@ KSFDeM			      : @local::KSF
 KSFDeM.SeedCollection      : "HelixFinder:Positive"
 KSFDeM.fitparticle	      : @local::Particle.eminus
 KSFDeM.fitdirection	      : @local::FitDir.downstream 
+
+TTKSFDeM                      : @local::TTKSF
+TTKSFDeM.ComboHitCollection   : "TTmakeSH"
+TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+TTKSFDeM.fitparticle	      : @local::Particle.eminus
+TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
+
 # upstream electrons
 KSFUeM			      : @local::KSF
 KSFUeM.SeedCollection      : "HelixFinder:Negative"
@@ -225,6 +256,13 @@ KSFDeP			      : @local::KSF
 KSFDeP.SeedCollection      : "HelixFinder:Negative"
 KSFDeP.fitparticle	      : @local::Particle.eplus
 KSFDeP.fitdirection	      : @local::FitDir.downstream 
+
+TTKSFDeP                      : @local::TTKSF
+TTKSFDeP.ComboHitCollection   : "TTmakeSH"
+TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+TTKSFDeP.fitparticle	      : @local::Particle.eplus
+TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
+
 # upstream positrons
 KSFUeP			      : @local::KSF
 KSFUeP.SeedCollection      : "HelixFinder:Positive"
@@ -277,6 +315,11 @@ KFFDeM			      : @local::KFF
 KFFDeM.SeedCollection      : "KSFDeM"
 KFFDeM.fitparticle	      : @local::Particle.eminus
 KFFDeM.fitdirection	      : @local::FitDir.downstream 
+
+TTKFFDeM		      : @local::KFF
+TTKFFDeM.SeedCollection       : "TTKSFDeM"
+TTKFFDeM.fitparticle	      : @local::Particle.eminus
+TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
 # upstream electrons
 KFFUeM			      : @local::KFF
 KFFUeM.SeedCollection      : "KSFUeM"
@@ -287,6 +330,11 @@ KFFDeP			      : @local::KFF
 KFFDeP.SeedCollection      : "KSFDeP"
 KFFDeP.fitparticle	      : @local::Particle.eplus
 KFFDeP.fitdirection	      : @local::FitDir.downstream 
+
+TTKFFDeP		      : @local::KFF
+TTKFFDeP.SeedCollection       : "TTKSFDeP"
+TTKFFDeP.fitparticle	      : @local::Particle.eplus
+TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
 # upstream positrons
 KFFUeP			      : @local::KFF
 KFFUeP.SeedCollection      : "KSFUeP"
@@ -374,7 +422,11 @@ Tracking : {
   TrkTrigger : {
     producers : {
       TTtimeClusterFinder  : @local::TTtimeClusterFinder
-      TThelixFinder  : @local::TTrobustHelixFinder
+      TThelixFinder        : @local::TTrobustHelixFinder
+      TTKSFDeM	           : @local::TTKSFDeM
+      TTKSFDeP	           : @local::TTKSFDeP
+      TTKFFDeM             : @local::TTKFFDeM
+      TTKFFDeP             : @local::TTKFFDeP
     }
   }
 
