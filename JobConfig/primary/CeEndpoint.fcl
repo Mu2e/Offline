@@ -28,6 +28,9 @@ physics.filters.DigiFilter.MinNDigis : 10
 physics.filters.DigiFilter.MinParticleMom : 75.0
 physics.filters.DigiFilter.particleTypes : [11]
 # customize the output
-services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
+services.TFileService.fileName: "out/nts.owner.CeEndpoint.version.sequencer.root"
+outputs.Output.fileName: "out/sim.owner.CeEndpoint.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
