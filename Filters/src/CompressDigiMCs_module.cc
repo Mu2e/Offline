@@ -38,7 +38,6 @@
 #include "Mu2eUtilities/inc/compressSimParticleCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
-#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 
 namespace mu2e {
@@ -106,7 +105,6 @@ private:
   std::vector<art::InputTag> _simParticleTags;
   std::vector<art::InputTag> _extraStepPointMCTags;
   std::vector<art::InputTag> _timeMapTags;
-  art::InputTag _primarySimPtrsTag;
   std::vector<art::InputTag> _caloShowerStepTags;
   art::InputTag _caloShowerSimTag;
   art::InputTag _caloShowerStepROTag;
@@ -115,7 +113,6 @@ private:
   art::Handle<StrawDigiMCCollection> _strawDigiMCsHandle;
   art::Handle<CrvDigiMCCollection> _crvDigiMCsHandle;
   std::vector<SimParticleTimeMap> _oldTimeMaps;
-  art::Handle<SimParticlePtrCollection> _primarySimPtrsHandle;
   art::Handle<CaloShowerStepCollection> _caloShowerStepsHandle;
   art::Handle<CaloShowerSimCollection> _caloShowerSimsHandle;
   art::Handle<CaloShowerStepROCollection> _caloShowerStepROsHandle;
@@ -127,7 +124,6 @@ private:
   std::unique_ptr<SimParticleCollection> _newSimParticles;
   std::unique_ptr<GenParticleCollection> _newGenParticles;
   std::vector<std::unique_ptr<SimParticleTimeMap> > _newSimParticleTimeMaps;
-  std::unique_ptr<SimParticlePtrCollection> _newPrimarySimPtrs;
   std::unique_ptr<CaloShowerStepCollection> _newCaloShowerSteps;
   std::unique_ptr<CaloShowerSimCollection> _newCaloShowerSims;
   std::unique_ptr<CaloShowerStepROCollection> _newCaloShowerStepROs;
@@ -155,7 +151,6 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
-    _primarySimPtrsTag(pset.get<art::InputTag>("primarySimPtrsTag")),
     _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _caloShowerSimTag(pset.get<art::InputTag>("caloShowerSimTag")),
     _caloShowerStepROTag(pset.get<art::InputTag>("caloShowerStepROTag"))
@@ -172,8 +167,6 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
     produces<SimParticleTimeMap>( (*i_tag).label() );
   }
-
-  produces<SimParticlePtrCollection>();
 
   produces<CaloShowerStepCollection>();
   produces<CaloShowerSimCollection>();
@@ -223,10 +216,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
     _newSimParticleTimeMaps.push_back(std::unique_ptr<SimParticleTimeMap>(new SimParticleTimeMap));
   }
-
-  event.getByLabel(_primarySimPtrsTag, _primarySimPtrsHandle);
-  const auto& primarySimPtrs = *_primarySimPtrsHandle;
-  _newPrimarySimPtrs = std::unique_ptr<SimParticlePtrCollection>(new SimParticlePtrCollection);  
 
   event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
   const auto& strawDigiMCs = *_strawDigiMCsHandle;
@@ -329,12 +318,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     }
   }
 
-  // Update the PrimarySimPtrs
-  for (const auto& i_primarySimPtr : primarySimPtrs) {
-    art::Ptr<SimParticle> newSimPtr = remap->at(i_primarySimPtr);
-    _newPrimarySimPtrs->push_back(newSimPtr);
-  }
-
   // Update the StepPointMCs
   for (auto& i_stepPointMC : *_newStepPointMCs) {
     art::Ptr<SimParticle> newSimPtr = remap->at(i_stepPointMC.simParticle());
@@ -379,7 +362,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     size_t i_element = i_tag - _timeMapTags.begin();
     event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
   }
-  event.put(std::move(_newPrimarySimPtrs));
 
   event.put(std::move(_newCaloShowerSteps));
   event.put(std::move(_newCaloShowerSims));

@@ -77,7 +77,7 @@ DigiCompressOutputCommands : [ "drop *_*_*_*",
     "keep mu2e::CaloDigis_*_*_*",
 #    "keep mu2e::CaloShowerSteps_*_*_*",
 #    "keep mu2e::CaloShowerStepROs_*_*_*",
-    "keep mu2e::SimParticleart::Ptrs_CaloShowerStepFromStepPt_*_*",
+#    "keep mu2e::SimParticleart::Ptrs_CaloShowerStepFromStepPt_*_*",
 #    "keep mu2e::CaloShowerSims_*_*_*",
     "keep mu2e::CrvDigis_*_*_*",
 #    "keep mu2e::CRSScintillatorBarIndexmu2e::CrvPhotonsstd::map_CrvPhotons_*_*",
@@ -116,7 +116,6 @@ Mixing : {
       simParticleTags : @nil 
       extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
       timeMapTags : [ @sequence::CommonMC.TimeMaps ]
-      primarySimPtrsTag : "DigiFilter"
       caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter",
       			     "ootMixerTrkCal:calorimeter",
       			     "protonMixerTrkCal:calorimeter",
