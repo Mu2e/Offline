@@ -117,14 +117,14 @@ Mixing : {
       extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
       timeMapTags : [ @sequence::CommonMC.TimeMaps ]
       primarySimPtrsTag : "DigiFilter"
-      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO",
-      			     "ootMixerTrkCal:calorimeter", "ootMixerTrkCal:calorimeterRO",
-      			     "protonMixerTrkCal:calorimeter", "protonMixerTrkCal:calorimeterRO",
-      			     "deuteronMixerTrkCal:calorimeter", "deuteronMixerTrkCal:calorimeterRO",
-      			     "dioMixerTrkCal:calorimeter", "dioMixerTrkCal:calorimeterRO",
-      			     "photonMixerTrkCal:calorimeter", "photonMixerTrkCal:calorimeterRO",
-      			     "neutronMixerTrkCal:calorimeter", "neutronMixerTrkCal:calorimeterRO",
-      			     "flashMixerTrkCal:CaloShowerCrystalSteps", "flashMixerTrkCal:CaloShowerROSteps"
+      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter",
+      			     "ootMixerTrkCal:calorimeter",
+      			     "protonMixerTrkCal:calorimeter",
+      			     "deuteronMixerTrkCal:calorimeter",
+      			     "dioMixerTrkCal:calorimeter",
+      			     "photonMixerTrkCal:calorimeter",
+      			     "neutronMixerTrkCal:calorimeter",
+      			     "flashMixerTrkCal:CaloShowerCrystalSteps"
       			   ]
       caloShowerSimTag : "CaloShowerStepROFromShowerStep"
       caloShowerStepROTag : "CaloShowerStepROFromShowerStep"
