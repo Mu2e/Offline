@@ -6,7 +6,7 @@
 //  Original author Pavel Murat
 //
 
-#include "CalPatRec/inc/AlgorithmID.hh"
+#include "RecoDataProducts/inc/AlgorithmID.hh"
 
 using namespace std;
 

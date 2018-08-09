@@ -88,6 +88,8 @@
  <class name="mu2e::AvikPIDProductCollection" />
  <class name="mu2e::AvikPIDNewProduct" />
  <class name="mu2e::AvikPIDNewProductCollection" />
+ <class name="mu2e::AlgorithmID"/>
+ <class name="mu2e::AlgorithmIDCollection"/>
 
  <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
@@ -131,6 +133,10 @@
  <class name="art::Ptr<mu2e::PIDProduct>" />
  <class name="art::Ptr<mu2e::AvikPIDProduct>" />
  <class name="art::Ptr<mu2e::AvikPIDNewProduct>" />
+ <class name="art::Ptr<mu2e::AlgorithmID>"/>
+ <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/>
+
+ <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
 
  <class name="mu2e::TriggerFlagDetail"/>
  <class name="mu2e::TriggerFlag"/>

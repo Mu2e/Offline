@@ -33,7 +33,8 @@
 
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+// #include "CalPatRec/inc/LsqSums2.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 #include <algorithm>
@@ -109,7 +110,8 @@ namespace mu2e {
     DeltaFinderTypes::Data_t            _data;              // all data used
     int                                 _testOrderPrinted;
 
-    double                              _stationToCaloTOF[2][20];
+    float                               _stationToCaloTOF[2][20];
+    float                               _faceTOF[80];
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -213,7 +215,7 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::TTracker> ttHandle;
     _tracker      = ttHandle.get();
     _data.tracker = _tracker;
-
+    
     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
     _calorimeter = ch.get();
 
@@ -226,6 +228,8 @@ namespace mu2e {
       Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
       disk_z[i] = tpos.z();
     }
+
+    float     z_tracker_center(0.);
 
     for (int ist=0; ist<_tracker->nStations(); ist++) {
       const Station* st = &_tracker->getStation(ist);
@@ -262,6 +266,8 @@ namespace mu2e {
 	    pz->wy  = panel->straw0Direction().y();
 	    pz->phi = panel->straw0MidPoint().phi();
 	    pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	    int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
+	    _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_pitchAngle)/CLHEP::c_light;
 	  }
 	}	
       }

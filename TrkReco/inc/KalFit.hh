@@ -31,12 +31,16 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
+#include "TrkReco/inc/KalFitData.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
 
 namespace mu2e 
 {
+  class Calorimeter;
+
   class KalFit : public KalContext
   {
   public:
@@ -53,19 +57,27 @@ namespace mu2e
 // // create a fit object from a track definition
 //     void makeTrack(const ComboHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
-    void makeTrack(const ComboHitCollection* shcol, KalSeed const& kseed, KalRep*& kres);
+    void makeTrack(KalFitData&kalData);
 // add a set of hits to an existing fit
-    void addHits(KalRep* kres,const ComboHitCollection* shcol, std::vector<StrawHitIndex> indices, double maxchi);
+    void addHits(KalFitData&kalData, double maxchi);
 // add materials to a track
-    bool unweedHits(KalRep* kres, double maxchi);
+    bool unweedHits(KalFitData&kalData, double maxchi);
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
+    void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
+    void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
+    
+    TrkErrCode fitIteration(KalFitData& kalData,int iter); 
+    void       printHits   (KalFitData& kalData, const char* Caller);
+    bool       weedHits    (KalFitData& kalData, int    iter);
+    bool       updateT0    (KalFitData& kalData);
   private:
     // iteration-independent configuration parameters
     int _debug;		    // debug level
     double _maxhitchi;	    // maximum hit chi when adding or weeding
     double _maxpull;   // maximum pull in TrkHit 
+    unsigned _maxweed;
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
     bool _updatet0;	    // update t0 ieach iteration?
@@ -86,24 +98,26 @@ namespace mu2e
     bool _resolveAfterWeeding;
     extent _exup;
     extent _exdown;
+    const mu2e::Tracker*             _tracker;     // straw tracker geometry
+    const mu2e::Calorimeter*         _calorimeter;
+    int                              _mcTruth;
+    std::unique_ptr<McUtilsToolBase> _mcUtils;
+    int    _annealingStep;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
   // helper functions
     bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);
-    void initT0(KalRep* krep);
+    void initT0(KalFitData&kalData);
     
-    void makeTrkStrawHits  (const ComboHitCollection* shcol, HelixTraj const& htraj,
-			    std::vector<TrkStrawHitSeed>const& hseeds, TrkStrawHitVector& tshv );
-    void makeTrkCaloHit    (KalSeed const& kseed, TrkCaloHit *&tch);
+    void makeTrkStrawHits  (KalFitData&kalData, TrkStrawHitVector& tshv );
+    void makeTrkCaloHit    (KalFitData&kalData, TrkCaloHit *&tch);
     void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial   (KalRep* krep);
-    bool weedHits          (KalRep* kres, size_t iter);
-    bool unweedBestHit     (KalRep* kres, double maxchi);
-    bool updateT0          (KalRep* kres);
-    TrkErrCode fitTrack    (KalRep* kres);
-    TrkErrCode fitIteration(KalRep* kres,size_t iter); 
-    void updateHitTimes    (KalRep* kres); 
+    bool unweedBestHit     (KalFitData&kalData, double maxchi);
+    void updateCalT0       (KalFitData&kalData);
+    TrkErrCode fitTrack    (KalFitData&kalData);
+    void updateHitTimes    (KalRep* krep); 
     double zFlight         (KalRep* krep,double pz);
     double extendZ         (extent ex);
     TrkErrCode extendFit   (KalRep* krep);

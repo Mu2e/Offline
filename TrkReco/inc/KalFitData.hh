@@ -1,14 +1,14 @@
 //
 // Simple accessor to Kalman fit
 //
-// $Id: KalFitResultNew.hh,v 1.4 2012/12/05 21:14:14 tassiell Exp $
-// $Author: tassiell $ 
-// $Date: 2012/12/05 21:14:14 $
+// $Id: $
+// $Author: $ 
+// $Date:  $
 //
-#ifndef KalFitResultNew_HH
-#define KalFitResultNew_HH
+#ifndef KalFitData_HH
+#define KalFitData_HH
 
-#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
@@ -38,27 +38,29 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // struct defining the Kalman fit inputs and output
 // an internal CalPatRec data structure
-// KalFitResultNew doesn't own any pointers, '_krep' is handled in the pattern 
+// KalFitData doesn't own any pointers, '_krep' is handled in the pattern 
 // recognition modules, so, in principle, no need to delete it here
-// otherwise, a deletion of the list of KalFitResultNews (a data product) resutls in a crash
+// otherwise, a deletion of the list of KalFitDatas (a data product) resutls in a crash
 //-----------------------------------------------------------------------------
-  struct KalFitResultNew {
+  struct KalFitData {
     const art::Event*                 event;
     KalRep*                           krep;           // Kalman rep, owned by the collection
-    const ComboHitCollection*         shcol;          // 
-    //    const StrawHitPositionCollection* shpos;          //
+    const ComboHitCollection*         chcol;          // 
+
+    // const StrawHitPositionCollection* shpos;          //
     const StrawHitFlagCollection*     shfcol;         //
     std::string                       shDigiLabel;    // 
+
     TrkParticle                       tpart;
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
 
     const HelixSeed*                  helixSeed;      //
-    KalSeed*                          kalSeed;        // 
+    const KalSeed*                    kalSeed;        // 
     TrkT0                             t0;             // estimate of the track t0
     HelixTraj*                        helixTraj;      // initial parameterization of the track
-    std::vector<StrawHitIndex>*       hitIndices;     // list of hit indices, updates during the fit
-    std::vector<StrawHitIndex>*       savedHits;      // list of hit indices, updates during the fit
+    // std::vector<StrawHitIndex>*       hitIndices;     // list of hit indices, updates during the fit
+    // std::vector<StrawHitIndex>*       savedHits;      // list of hit indices, updates during the fit
 
     TrkErrCode                        fit;            // error code from last fit
     unsigned                          nt0iter;        // number of times t0 was iterated
@@ -73,8 +75,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
-    KalFitResultNew();
-    ~KalFitResultNew();
+    KalFitData();
+    ~KalFitData();
 
     void    removeFailed() { if(fit.failure()) deleteTrack(); }
     void    deleteTrack ();
@@ -82,7 +84,7 @@ namespace mu2e {
     void    init        ();
 
     int                               nHelixHits     () { return helixSeed->hits().size(); }
-    std::vector<StrawHitIndex>*       strawHitIndices() { return hitIndices; }
+    // std::vector<StrawHitIndex>*       strawHitIndices() { return hitIndices; }
 
     //    const HelixTraj*                  helixTraj      () { return _helixTraj; }
   };

@@ -339,9 +339,16 @@ namespace mu2e {
     } else if(_kdiag.mcData()._simparts != 0) { 
       // assume the 1st primary particle is the CE.  FIXME!!!
       for ( auto isp = _kdiag.mcData()._simparts->begin(); isp != _kdiag.mcData()._simparts->end(); ++isp ){
-	if(isp->second.isPrimary()){
+	/*	if(isp->second.isPrimary()){
 	  demSP = art::Ptr<SimParticle>(_kdiag.mcData()._simparthandle,isp->second.id().asInt());
 	  break;
+	}
+	*/
+	if (isp->second.isSecondary()){
+	  if (isp->second.parent()->isPrimary()){
+	    demSP = isp->second.parent();
+	    break;
+	  }
 	}
       }
     }
@@ -350,9 +357,9 @@ namespace mu2e {
       _kdiag.fillTrkInfoMCStep(demSP,_demmcgen);
       // find virtual detector steps where the particle crosses the tracker at fixed points
       static TrkFitDirection downstream;
-      fillMCSteps(KalDiag::trackerEnt, downstream, demSP->id(), _demmcent);
-      fillMCSteps(KalDiag::trackerMid, downstream, demSP->id(), _demmcmid);
-      fillMCSteps(KalDiag::trackerExit, downstream, demSP->id(), _demmcxit);
+      fillMCSteps(KalDiag::trackerEnt, downstream, cet::map_vector_key(demSP.key()), _demmcent);
+      fillMCSteps(KalDiag::trackerMid, downstream, cet::map_vector_key(demSP.key()), _demmcmid);
+      fillMCSteps(KalDiag::trackerExit, downstream, cet::map_vector_key(demSP.key()), _demmcxit);
       if(_diag > 1 && demK != 0) {
 // MC truth hit information
 	_kdiag.fillHitInfoMC(demSP, demK, _demtshmc);

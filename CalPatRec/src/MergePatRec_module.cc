@@ -50,8 +50,8 @@
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 
 #include "CalPatRec/inc/MergePatRec_types.hh"
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 // Xerces XML Parser

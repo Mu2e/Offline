@@ -48,7 +48,8 @@ namespace mu2e {
           double              energyMC()        const {return energyMC_;}
           double              momentumIn()      const {return pIn_;}
 
-
+          void setSimParticle(const art::Ptr<SimParticle>& sim) {sim_ = sim;}
+          void setCaloShowerSteps(const CaloStepPtrs& steps) {steps_ = steps;}
 
        private:
             
