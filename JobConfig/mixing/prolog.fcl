@@ -85,6 +85,7 @@ DigiCompressOutputCommands : [ "drop *_*_*_*",
     "keep mu2e::StatusG4_*_*_*",
     "keep mu2e::ProtonBunchIntensity_*_*_*",
     "keep art::TriggerResults_*_*_*",
+    "keep mu2e::EventWindowMarker_*_*_*",
     "keep *_genCounter_*_*" ]
 
 # mixing configuration
