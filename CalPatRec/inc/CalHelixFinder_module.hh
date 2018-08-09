@@ -42,7 +42,6 @@
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
-// Mu2e
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 

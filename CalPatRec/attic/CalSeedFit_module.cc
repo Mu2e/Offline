@@ -5,7 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 
 // framework
 #include "art/Framework/Core/EDFilter.h"
@@ -62,7 +62,7 @@
 #include <boost/accumulators/statistics/moment.hpp>
 #include <boost/algorithm/string.hpp>
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/KalFitHackNew.hh"
 #include "CalPatRec/inc/KalFitResultNew.hh"
 #include "CalPatRec/inc/CalSeedFit_types.hh"

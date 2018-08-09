@@ -32,7 +32,7 @@
 
 #include "CalPatRec/inc/CalHelixFinderData.hh"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 #include "Mu2eUtilities/inc/polyAtan2.hh"
 
@@ -115,51 +115,57 @@ namespace mu2e {
       const Station* st = &_tracker->getStation(ist);
 
       for (int ipl=0; ipl<st->nPlanes(); ipl++) {
-        const Plane* pln = &st->getPlane(ipl);
-        for (int ipn=0; ipn<pln->nPanels(); ipn++) {
-          const Panel* panel = &pln->getPanel(ipn);
-          int face;
-          if (panel->id().getPanel() % 2 == 0) face = 0;
-          else                                 face = 1;
-          cx.Station = ist;
-          cx.Plane   = ipl;
-          cx.Face    = face;
-          cx.Panel   = ipn;
-          //        cx.Layer   = il;
-          _hfResult.orderID (&cx, &co);
-          int os = co.Station;
-          int of = co.Face;
-          int op = co.Panel;
+	const Plane* pln = &st->getPlane(ipl);
+	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+	  const Panel* panel = &pln->getPanel(ipn);
+	  int face;
+	  if (panel->id().getPanel() % 2 == 0) face = 0;
+	  else                                 face = 1;
+	  cx.Station = ist;
+	  cx.Plane   = ipl;
+	  cx.Face    = face;
+	  cx.Panel   = ipn;
+	  //	    cx.Layer   = il;
+	  _hfResult.orderID (&cx, &co);
+	  int os = co.Station; 
+	  int of = co.Face;
+	  int op = co.Panel;
 
-          int       stationId = os;
-          int       faceId    = of + stationId*CalHelixFinderData::kNFaces;
-          int       panelId   = op + faceId*CalHelixFinderData::kNPanelsPerFace;
-          PanelZ_t* pz        = &_hfResult._oTracker[panelId];
+	  int       stationId = os;
+	  int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//CalHelixFinderData::kNFaces;
+	  //	  int       panelId   = op;// + faceId*CalHelixFinderData::kNPanelsPerFace;
+	  FaceZ_t*  fz        = &_hfResult._oTracker[faceId];
+	  fz->z               = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
 
-          pz->fPanel = panel;
-          //-----------------------------------------------------------------------------
-          // panel caches phi of its center and the z
-          //-----------------------------------------------------------------------------
-          pz->wx     = panel->straw0Direction().x();
-          pz->wy     = panel->straw0Direction().y();
-          pz->phi    = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
-          pz->z      = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-          pz->fNHits = 0;
-        }
+	  PanelZ_t* pz        = &fz->panelZs[op];//_hfResult._oTracker[panelId];
+
+	  //	  pz->fPanel = panel;
+	  //-----------------------------------------------------------------------------
+	  // panel caches phi of its center and the z
+	  //-----------------------------------------------------------------------------
+	  pz->wx     = panel->straw0Direction().x();
+	  pz->wy     = panel->straw0Direction().y();
+	  pz->phi    = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
+	  pz->fNHits = 0;
+	}	
       }
     }
 
     if (_debugLevel > 10){
-      printf("//-------------------------//\n");
-      printf("//     Panel      Z        //\n");
-      printf("//-------------------------//\n");
+      printf("//-----------------------------------//\n");
+      printf("//     Face      Panel      Z        //\n");
+      printf("//-----------------------------------//\n");
 
-      PanelZ_t* panelz(0);
+      FaceZ_t*        facez(0);
+      //      PanelZ_t*       panelz(0);
 
-      for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-        panelz = &_hfResult._oTracker[p];
-        double z = panelz->z;
-        printf("//  %5i     %10.3f //\n", p, z);
+      for (int f=0; f<StrawId::_ntotalfaces; ++f){
+	facez     = &_hfResult._oTracker[f];
+	double z  = facez->z;
+	for (int p=0; p<FaceZ_t::kNPanels; ++p){
+	  //	  panelz =  &facez->panelZs[p];//	panelz = &_hfResult._oTracker[p];
+	  printf("//  %5i      %5i     %10.3f //\n", f, p, z);
+	}
       }
       printf("//----------------------------------//\n");
 
@@ -327,29 +333,32 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
 // info of the track candidate during the CAlHelixFinderAlg::findTrack loop
 //--------------------------------------------------------------------------------
-            int   counter(0);
-            for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-              PanelZ_t* panelz = &_hfResult._oTracker[p];
-              int       nhits  = panelz->fNHits;
-              if (nhits == 0)                                  continue;
-
-              for (int i=0; i<nhits; ++i){
-                CalHelixPoint*	hit = &panelz->fHitData.at(i);
-                int index = p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-                if (_hfResult._hitsUsed[index] != 1)           continue;
-
-                double   dzFromSeed = hit->_dzFromSeed;     //distance form the hit used to seed the 3D-search
-                double   drFromPred = hit->_drFromPred;     //distance from prediction
-                _data.hitDzSeed[loc][counter] = dzFromSeed;
-                _data.hitDrPred[loc][counter] = drFromPred;
-                ++counter;
-              }
-            }
-          }
-          else {
-            printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
-          }
-        }
+	    int   counter(0);
+	    for (int f=0; f<StrawId::_ntotalfaces; ++f){
+	      FaceZ_t* facez     = &_hfResult._oTracker[f];
+	      for (int p=0; p<FaceZ_t::kNPanels; ++p){//for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
+		PanelZ_t* panelz = &facez->panelZs[p];//&_hfResult._oTracker[p];
+		int       nhits  = panelz->fNHits;
+		if (nhits == 0)                                  continue;
+	      
+		for (int i=0; i<nhits; ++i){   
+		  //		  ComboHit*	hit = &panelz->fHitData.at(i);
+		  int index = facez->evalUniqueHitIndex(f,p,i);//p*CalHelixFinderData::kNMaxHitsPerPanel + i;
+		  if (_hfResult._hitsUsed[index] != 1)           continue;
+		
+		  // double   dzFromSeed = hit->_dzFromSeed;     //distance form the hit used to seed the 3D-search
+		  // double   drFromPred = hit->_drFromPred;     //distance from prediction
+		  // _data.hitDzSeed[loc][counter] = dzFromSeed;
+		  // _data.hitDrPred[loc][counter] = drFromPred;
+		  ++counter;
+		}//end loop over the hits within a panel
+	      }//end panels loop
+	    }//end faces loop
+	  }
+	  else {
+	    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
+	  }
+	}
       }
     }
 //--------------------------------------------------------------------------------
@@ -426,8 +435,12 @@ namespace mu2e {
     double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
-      const StrawHitIndex     loc    = HfResult._goodhits[i];
-      const ComboHit*         hit    = &(_chcol->at(loc));
+      HitInfo_t*      hitInfo = &HfResult._goodhits[i];
+      FaceZ_t*        facez   = &HfResult._oTracker[hitInfo->face];
+      PanelZ_t*       panelz  = &facez->panelZs[hitInfo->panel];
+      
+      ComboHit*       hit    = &panelz->fHitData.at(hitInfo->panelHitIndex);
+
       double                  hit_z  = hit->pos().z();
       if ( i==0 ) z_start = hit_z;
 
@@ -435,12 +448,9 @@ namespace mu2e {
       int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
       shphi = shphi + double(nLoops)*2.*M_PI;
 
-      ComboHit  hhit(*hit);
-
+      ComboHit                hhit(*hit);
       hhit._hphi = shphi;
-
-      hhit._flag.clear(StrawHitFlag::resolvedphi);
-      hhit._flag.merge(_shfcol->at(loc)); // merge in other flags, hit Quality no yet assigned
+      hhit._flag.merge(StrawHitFlag::resolvedphi);
 
       HelSeed._hhits.push_back(hhit);
     }

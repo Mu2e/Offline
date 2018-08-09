@@ -16,19 +16,19 @@
 
 
 <lcgdict>
- <class name="mu2e::AlgorithmID"/>
- <class name="mu2e::AlgorithmIDCollection"/>
+ <!-- <class name="mu2e::AlgorithmID"/> -->
+ <!-- <class name="mu2e::AlgorithmIDCollection"/> -->
 
- <class name="art::Ptr<mu2e::AlgorithmID>"/>
- <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/>
+ <!-- <class name="art::Ptr<mu2e::AlgorithmID>"/> -->
+ <!-- <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/> -->
 
- <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
+ <!-- <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/> -->
 
- <class name="mu2e::CalTimePeak"/>
- <class name="mu2e::CalTimePeakCollection"/>
+ <!-- <class name="mu2e::CalTimePeak"/> -->
+ <!-- <class name="mu2e::CalTimePeakCollection"/> -->
 
- <class name="art::Ptr<mu2e::CalTimePeak>"/>
- <class name="std::vector<art::Ptr<mu2e::CalTimePeak> >"/>
+ <!-- <class name="art::Ptr<mu2e::CalTimePeak>"/> -->
+ <!-- <class name="std::vector<art::Ptr<mu2e::CalTimePeak> >"/> -->
 
- <class name="art::Wrapper<mu2e::CalTimePeakCollection>"/>
+ <!-- <class name="art::Wrapper<mu2e::CalTimePeakCollection>"/> -->
 </lcgdict>

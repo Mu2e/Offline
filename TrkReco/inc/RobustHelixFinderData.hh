@@ -1,8 +1,9 @@
 //
-#ifndef CalHelixFinderData_HH
-#define CalHelixFinderData_HH
+#ifndef RobustHelixFinderData_HH
+#define RobustHelixFinderData_HH
 
 #include "Mu2eUtilities/inc/LsqSums4.hh"
+// #include "CalPatRec/inc/CalHelixPoint.hh"
 
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
@@ -13,6 +14,7 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 
 #include "TrkReco/inc/TrkFaceData.hh"
 
@@ -23,84 +25,87 @@ class HelixTraj;
 namespace mu2e {
 
   class TimeCluster;
+  class FaceZ_t;
   //  class Panel;
-
-  struct ChannelID {
-    int Station;
-    int Plane; 
-    int Face; 
-    int Panel; 
-    //      int Layer;
-  };
 
   //---------------------------------------------------------------------------
   // output struct
   //-----------------------------------------------------------------------------
-  class CalHelixFinderData {
+  class RobustHelixFinderData {
   public:
-   
-
-    // enum {
-    //   // kNStations      = 20,
-    //   // kNTotalFaces    = 80,
-    //   // kNTotalPanels   = 240,
-    //   kNMaxHitsPerPanel= 20
-    //   // kNFaces         =  4,
-    //   // kNPanelsPerFace =  3
-    // };
     
     enum { kMaxResidIndex = 500 };
     
-    struct Diag_t {
-      int       loopId_4;    // fData[4]
-      double    radius_5;    // fData[5]
-      double    phi0_6;
-      double    chi2_circle;
-      double    z0_6;
-      double    rdfdz_7;
-      double    dfdz_8;
-      int       n_rescued_points_9;    // fData[9]
-      double    dz_10;
-      int       n_active_11;           // fData[11]
-      double    chi2_dof_circle_12;
-      double    chi2_dof_line_13;
-      double    radius_14;
-      double    chi2_dof_circle_15;
-      int       n_rescued_points_16;    // fData[16]
-      double    dfdzres_17;
-      double    dfdzres_18;
-      double    dfdzres_19;
-      double    dr_20;
-      double    dr_21;
-      double    dphi0res_22;
-      double    dphi0res_23;
-      double    dphi0res_24;
+    struct ChannelID {
+      int Station;
+      int Plane; 
+      int Face; 
+      int Panel; 
+      //      int Layer;
+    };
 
-      int       nStationPairs;
+    struct Diag_t {
       
-      double    dfdz;
-      double    dfdz_scaled;
-      double    chi2_line;
-      int       n_active;
       double    resid[kMaxResidIndex];
       double    dist [kMaxResidIndex];
       double    dz   [kMaxResidIndex];
+      
+      int       circleFitCounter;
+      int       nrescuedhits;
 
       double    dr;
-      double    straw_mean_radius;
       double    chi2d_helix;
+      
+      double    chi2dXY;
+
+      int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
+      double    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
+  
+      int       nshsxy_0;
+      double    rsxy_0;
+      double    chi2dsxy_0;
+
+      int       nshsxy_1;
+      double    rsxy_1;
+      double    chi2dsxy_1;
+
+      int       nfz0counter;
+
+      int       nshszphi;
+      double    lambdaszphi;
+      double    chi2dszphi;
+
+      int       nshszphi_1;
+      double    lambdaszphi_1;
+      double    chi2dszphi_1;
+
+
+      int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
+      double    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
+      
+      int       ntriple_2;
+      double    radius_2;
+
+      double    lambda_0;
+      double    lambda_1;
+
+      int       xyniter;
+      int       fzniter;
+      int       niter;
 
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
 
-    HelixTraj*                        _helix;
+    //    HelixTraj*                        _helix;
 
-    std::vector<HitInfo_t>           _goodhits;
+    HelixSeed                         _hseed;
 
-    HitInfo_t                        _seedIndex;
-    HitInfo_t                        _candIndex;
+    std::vector<StrawHitIndex>        _goodhits;
+
+    // SeedInfo_t                        _seedIndex;
+    // SeedInfo_t                        _candIndex;
 
     int                               _nStrawHits;      
     int                               _nComboHits;    
@@ -108,7 +113,7 @@ namespace mu2e {
     int                               _nXYSh;
     int                               _nZPhiSh;
   
-    int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering 
+    int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
     double                            _helixChi2;
@@ -118,7 +123,7 @@ namespace mu2e {
 
     const ComboHitCollection*         _chcol;
     // const StrawHitPositionCollection* _shpos;
-    const StrawHitFlagCollection*     _shfcol;
+    const StrawHitFlagCollection*     _chfcol;
     
     TrkErrCode                        _fit;	    // fit status code from last fit
 //-----------------------------------------------------------------------------
@@ -131,13 +136,6 @@ namespace mu2e {
     double             _radius;
 
     double             _chi2;
-//-----------------------------------------------------------------------------
-// 2015-02-06 P.Murat: fit with non-equal weights - XY-only
-//-----------------------------------------------------------------------------
-    // ::LsqSums4         _sxyw;
-    // XYZVec             _cw;
-    // double             _rw;
-    // double             _chi2w;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
@@ -152,28 +150,26 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
-//    PanelZ_t                                           _oTracker[kNTotalPanels];
-//    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
-    std::array<FaceZ_t,StrawId::_ntotalfaces>             _oTracker;
-    std::array<int,StrawId::_nupanels*PanelZ_t::kNMaxPanelHits>  _hitsUsed;
+    std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;
+    // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
-    CalHelixFinderData();
-    ~CalHelixFinderData();
+    RobustHelixFinderData();
+    ~RobustHelixFinderData();
 
-    CalHelixFinderData(const CalHelixFinderData& Data);
+    // RobustHelixFinderData(const RobustHelixFinderData& Data);
 
-    // CalHelixFinderData& operator =(CalHelixFinderData const& other);
+    // RobustHelixFinderData& operator =(RobustHelixFinderData const& other);
 
     const ComboHitCollection*         chcol () { return _chcol ; }
     // const StrawHitPositionCollection* shpos () { return _shpos ; }
-    const StrawHitFlagCollection*     shfcol() { return _shfcol; }
+    const StrawHitFlagCollection*     chfcol() { return _chfcol; }
 
-    bool          fitIsValid        () { return _sxy.qn() > 0; }
-    bool          weightedFitIsValid() { return _sxy.qn() > 0; }
+    // bool          fitIsValid        () { return _sxy.qn() > 0; }
+    // bool          weightedFitIsValid() { return _sxy.qn() > 0; }
     int           maxIndex          () { return kMaxResidIndex; }
-    HelixTraj*    helix             () { return _helix;        }
+    // HelixTraj*    helix             () { return _helix;        }
 
     int           nGoodHits         () { return _goodhits.size(); }
 

@@ -17,8 +17,8 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
-#include "CalPatRec/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 
 using namespace std;
 
@@ -109,7 +109,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    const PtrStepPointMCVectorCollection* _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
     

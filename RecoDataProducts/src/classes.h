@@ -72,4 +72,7 @@
 
 #include "RecoDataProducts/inc/TrkQual.hh"
 
+#include "RecoDataProducts/inc/AlgorithmID.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
+
 #undef ENABLE_MU2E_GENREFLEX_HACKS
