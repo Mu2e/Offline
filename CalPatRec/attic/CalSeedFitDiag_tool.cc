@@ -1,8 +1,8 @@
 //
 
 #include "CalPatRec/inc/CalSeedFit_types.hh"
-#include "CalPatRec/inc/McUtilsToolBase.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalPatRec/inc/KalFitResultNew.hh"
 
 #include "BTrk/KalmanTrack/KalHit.hh"

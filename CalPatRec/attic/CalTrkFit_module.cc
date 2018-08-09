@@ -44,10 +44,10 @@
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
-#include "CalPatRec/inc/AlgorithmIDCollection.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "CalPatRec/inc/KalFitHackNew.hh"
 #include "CalPatRec/inc/CalTrkFit_types.hh"
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "art/Utilities/make_tool.h"
 
 // Mu2e BaBar

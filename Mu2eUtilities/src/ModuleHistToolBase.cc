@@ -6,7 +6,7 @@
 // #include "art/Framework/Services/Optional/TFileService.h"
 // #include "art/Framework/Principal/Handle.h"
 
-#include "CalPatRec/inc/ModuleHistToolBase.hh"
+#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
 namespace mu2e {
 
