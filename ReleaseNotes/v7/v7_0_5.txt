@@ -1,6 +1,8 @@
            Release notes for Mu2e Offline software, v7_0_5
            This new series includes breaking changes for MDC2018
 
+10) Aug 10, 2018 brownd
+   - Further consolidation and simplification of primary and mixing fcl
 9) Aug 9, 2018 edmonds
    Completed digi compression
    - StepPOintMCCollections are no longer consolidated into one and are kept separate on the output

@@ -3,7 +3,7 @@
 #  Currently set for MDC2018 production
 #
 #  Mixing can include primary generation
-#include "JobConfig/primary/epilog.fcl
+#include "JobConfig/primary/epilog.fcl"
 #
 # TrkCal mixing
 #physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.777e-4 # for uncut flash

@@ -1,16 +1,29 @@
 #
-# mono-energetic e- at the Al Ce endpoint with background mixing
+# flat energy spectrum e- with background mixing
 #
 #  Dave Brown (LBNL) june 2018
 #
 #include "JobConfig/mixing/prolog.fcl"
-process_name: CeEndpointMix
+process_name: flateplusMix
 
 source: { module_type : EmptyEvent }
+
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : @local::CeEndpointGun
+    generate : { 
+      module_type: StoppedParticleReactionGun
+      verbosityLevel : 1
+      muonStops: @local::mu2e.tgtMuonStops
+      physics: {
+	spectrumShape: flat
+	spectrumVariable: totalEnergy
+        genId : radiativeMuonCapture
+	pdgId : -11
+	elow : 80.0 // Mev
+	ehi : 105.0 // Mev
+      }
+    }
     @table::Mixing.producers
   }
   filters: { @table::Mixing.filters }
@@ -24,6 +37,6 @@ outputs: { Output : @local::Mixing.Output }
 #
 #include "JobConfig/mixing/epilog.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.flateplus-mix.version.sequencer.root"
+outputs.Output.fileName: "sim.owner.flateplus-mix.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl

@@ -7,7 +7,7 @@ physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS
 # customize the filter.
 physics.filters.DigiFilter.particleTypes : [ 11, -11, 13, -13 ]
 physics.filters.DigiFilter.MinNDigis : 10
-physics.filters.DigiFilter.MinParticleMom : 75.0
+physics.filters.DigiFilter.MinParticleMom : 70.0
 # configure the straw digi simulation timing
 physics.producers.makeSD.AllHitsPlanes : [34,35]
 services.ConditionsService.StrawElectronics.FlashStart : 1705
