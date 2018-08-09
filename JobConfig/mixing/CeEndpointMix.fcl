@@ -7,37 +7,25 @@
 process_name: CeEndpointMix
 
 source: { module_type : EmptyEvent }
-
 services: @local::Services.Sim
 physics : { 
   producers : {
     generate : @local::CeEndpointGun
     @table::Mixing.producers
   }
-  filters: {
-    @table::Mixing.filters
-   }
-  analyzers: {
-    @table::Mixing.analyzers
-  }
-  TriggerPath : [
-    @sequence::Mixing.CreatePrimarySequence, 
-    @sequence::Mixing.MixSequence
-  ]
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+  TriggerPath : @local::Mixing.TriggerPath
+  EndPath : @local::Mixing.EndPath
 }
 outputs: {
   Output : @local::Mixing.Output
 }
-
-# customize the filter
-physics.filters.DigiFilter.particleTypes : [ 11 ]
-physics.filters.DigiFilter.MinNDigis : 10
-physics.filters.DigiFilter.MinParticleMom : 75.0
 #
 # final configuration
 #
 #include "JobConfig/mixing/epilog.fcl"
+# customize the output
 services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
 outputs.Output.fileName: "sim.owner.CeEndpoint-mix.version.sequencer.art"
-physics.EndPath : [ genCountLogger, Output ]
 physics.end_paths : [ EndPath ] # needed for generate_fcl

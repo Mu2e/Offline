@@ -2,6 +2,7 @@
 # Prolog specific to createing primary (signal, signal-like or calibration) particles
 #
 #include "JobConfig/beam/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"

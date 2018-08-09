@@ -148,6 +148,11 @@ Mixing : {
       makeHistograms: false
     }
   }
+  TriggerPath : [
+    @sequence::Mixing.CreatePrimarySequence, 
+    @sequence::Mixing.MixSequence
+  ]
+  EndPath : [ genCountLogger, Output ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
