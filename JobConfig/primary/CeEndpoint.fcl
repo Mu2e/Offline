@@ -27,5 +27,5 @@ outputs : {
 #include "JobConfig/primary/epilog.fcl"
 # customize the output
 services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
+outputs.Output.fileName: "dig.owner.CeEndpoint.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
