@@ -405,8 +405,8 @@ namespace mu2e {
 
 	  //fit the helix: refine the XY-circle fit + performs the ZPhi fit
 	  // it also performs a clean-up of the hits with large residuals
-	  fitHelix(tmpResult);
-	  // fitHelix_2(tmpResult);
+	  //	  fitHelix(tmpResult);
+	  fitHelix_2(tmpResult);
 
 	  if (tmpResult._hseed.status().hasAnyProperty(_saveflag)){
 	    //fill the hits in the HelixSeedCollection
@@ -1285,32 +1285,19 @@ namespace mu2e {
       }
     }
 
-    //now search for missing hits
-    findMissingHits(helixData);
-
     if (_hfit.goodHelix(helixData._hseed.helix()) && _hfit.goodHelixChi2(helixData)) {
       helixData._hseed._status.merge(TrkFitFlag::helixOK);
+
+      //now search for missing hits
+      findMissingHits(helixData);
+
       updateT0(helixData);
       
       helixData._hseed._status.merge(TrkFitFlag::helixConverged);
 
-      if (_usemva) {
-	bool changed = true;
-	while (helixData._hseed._status.hasAllProperties(TrkFitFlag::helixOK)  && nitermva < _maxniter && changed) {
-	  fillMVA(helixData);
-	  changed = filterHitsMVA(helixData);
-	  if (!changed) break;
-	  refitHelix(helixData);
-	  // update t0 each iteration as that's used in the MVA
-	  updateT0(helixData);
-	  ++nitermva;
-	}
-	if (nitermva < _maxniter)
-	  helixData._hseed._status.merge(TrkFitFlag::helixConverged);
-	else
-	  helixData._hseed._status.clear(TrkFitFlag::helixConverged);
-      }
+      _hfit.defineHelixParams(helixData);
     }
+
     if (_diag > 0){
       //      _niter->Fill(niter);
       _nitermva->Fill(nitermva);

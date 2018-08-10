@@ -71,6 +71,7 @@ namespace mu2e
     _maxdphi(pset.get<float>("maxdphi",2.5)),
     _mindist(pset.get<float>("mindist",100.0)), // mm
     _maxdist(pset.get<float>("maxdist",500.0)), // mm
+    _maxdxy(pset.get<float>("maxdxy",100.0)),
     _maxXDPhi(pset.get<float>("maxXDPhi",5.0)), 
     _rmin(pset.get<float>("minR",160.0)), // mm
     _rmax(pset.get<float>("maxR",320.0)), // mm
@@ -106,7 +107,8 @@ namespace mu2e
     fitCircle(HelixData);
     if (HelixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
       {
-	fitFZ(HelixData);
+	//	fitFZ(HelixData);
+	fitFZ_2(HelixData);
 	if (goodHelix(HelixData._hseed._helix)) HelixData._hseed._status.merge(TrkFitFlag::helixOK);
       }
   }
@@ -529,7 +531,7 @@ namespace mu2e
 
 	dphi = phiVec[j]-phi_ref;
 	dz   = zVec[j] - z_ref;
-	double dphidz = dphi/dz;
+	double dphidz = dphi/dz*double(rhel.helicity()._value);
 	
 	weight = nhits[i] + nhits[j];
 //-----------------------------------------------------------------------------
@@ -615,7 +617,7 @@ namespace mu2e
 // Part 2: perform a more accurate estimate - straight line fit
 //-----------------------------------------------------------------------------
     if (nstations_with_hits < 2) return false;//hdfdz = _mpDfDz;
-    else                         hdfdz = xmp;
+    else                         hdfdz = xmp*rhel.helicity()._value;
 //-----------------------------------------------------------------------------
 // last step - determine phi0 = phi(z=0)
 //-----------------------------------------------------------------------------
@@ -833,8 +835,8 @@ namespace mu2e
     HelixData._hseed._status.clear(TrkFitFlag::phizOK);
     if (!HelixData._hseed._status.hasAllProperties(TrkFitFlag::phizInit))
       {
-	// if (initFZ(HelixData))
-	if (initFZ_2(HelixData))
+	if (initFZ(HelixData))
+	  //	if (initFZ_2(HelixData))
 	  HelixData._hseed._status.merge(TrkFitFlag::phizInit);
 	else
 	  return;
@@ -865,7 +867,7 @@ namespace mu2e
   void  RobustHelixFit::refineFitZPhi(RobustHelixFinderData& HelixData){
     ::LsqSums4 szphi;
     float      phi,phi_ref,wt, dphi, z;
-    int        minNReducedChi2Points(5);//FIXME!
+    int        minNReducedChi2Points(15);//FIXME!
     int        nZPHISh(0);
 
     RobustHelix& rhel   = HelixData._hseed._helix;
@@ -989,7 +991,7 @@ namespace mu2e
     const float maxd2 = _maxdist*_maxdist;
       
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
-    RobustHelix& rhel         = HelixData._hseed._helix;
+    RobustHelix* rhel         = &HelixData._hseed._helix;
     accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accx, accy, accr;
 
     // loop over all triples
@@ -1152,9 +1154,9 @@ namespace mu2e
 	  }
 	}
 	float rho = extract_result<tag::weighted_median>(accr);
-        rhel._rcent = sqrtf(center.Mag2());
-        rhel._fcent = polyAtan2(center.y(), center.x());//center.Phi();
-        rhel._radius = rho;
+        rhel->_rcent = sqrtf(center.Mag2());
+        rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
+        rhel->_radius = rho;
 
 	//refine the circle fit
 	//perform a reduced chi2 fit using only 1 ComboHit-per-face
@@ -1164,17 +1166,17 @@ namespace mu2e
 	// 	//check the number of strawHits associated with the track
 	// 	if (nStrawHits < _minnhit) return;
 
-        if (goodCircle(rhel)) HelixData._hseed._status.merge(TrkFitFlag::circleOK);
+        if (goodCircle(*rhel)) HelixData._hseed._status.merge(TrkFitFlag::circleOK);
       }
   
     if (_diag){
       if ( HelixData._diag.circleFitCounter == 0){
 	HelixData._diag.ntriple_0 = ntriple;
-	HelixData._diag.radius_0  = rhel._radius;
+	HelixData._diag.radius_0  = rhel->_radius;
       } 
 
       HelixData._diag.ntriple_1 = ntriple;
-      HelixData._diag.radius_1  = rhel._radius;
+      HelixData._diag.radius_1  = rhel->_radius;
       
       ++HelixData._diag.circleFitCounter;
     }
@@ -1184,7 +1186,7 @@ namespace mu2e
 
     ::LsqSums4 sxy;
     float      wt, resid;
-    int        minNReducedChi2Points(5);//FIXME!
+    int        minNReducedChi2Points(15);//FIXME!
     int        nXYSh(0);
 
     FaceZ_t*      facezP1(0);
@@ -1193,14 +1195,15 @@ namespace mu2e
     int           nhitsPanelF1(0);
 
     //get the radius
-    RobustHelix& rhel  = HelixData._hseed._helix;
-    float        rho   = rhel.radius();
-    XYVec        center(XYVec(rhel.centerx(), rhel.centery()));
+    RobustHelix* rhel  = &HelixData._hseed._helix;
+    float        rho   = rhel->radius();
+    XYVec        center(XYVec(rhel->centerx(), rhel->centery()));
 
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezP1    = &HelixData._oTracker[f];
       HitInfo_t  indexBestComboHit;
-      float      minResid(_minxyresid);
+      //      float      minResid(_maxdxy);// version 0: uses wt=1.
+      float      minResid(_minxyresid);//version 1:
 
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	panelz1  = &facezP1->panelZs[p1];   
@@ -1262,9 +1265,14 @@ namespace mu2e
     //if we collected enough points update the results
     //should we also check the chi2?
     if (nXYSh >= _minnsh){
-      rhel._rcent = sqrtf(center.Mag2());
-      rhel._fcent = polyAtan2(center.y(), center.x());//center.Phi();
-      rhel._radius = rho;
+      //update the parameters
+      center.SetX(sxy.x0());
+      center.SetY(sxy.y0());
+      rho    = sxy.radius();
+      
+      rhel->_rcent = sqrtf(center.Mag2());
+      rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
+      rhel->_radius = rho;
 	  
       HelixData._sxy   = sxy;
       HelixData._nXYSh = nXYSh;
@@ -1432,11 +1440,25 @@ namespace mu2e
   
   bool RobustHelixFit::goodHelixChi2(RobustHelixFinderData& helixData)
   {
-    RobustHelix& rhel = helixData._hseed._helix;
-    return goodCircle(rhel) && goodFZ(rhel) && (helixData._sxy.chi2DofCircle() <= _chi2xymax) && (helixData._szphi.chi2DofLine() <= _chi2zphimax);
+    RobustHelix* rhel = &helixData._hseed._helix;
+    return goodCircle(*rhel) && goodFZ(*rhel) && (helixData._sxy.chi2DofCircle() <= _chi2xymax) && (helixData._szphi.chi2DofLine() <= _chi2zphimax);
   }
   
-  
+  void RobustHelixFit::defineHelixParams(RobustHelixFinderData& helixData)
+  {
+    //this function is needed in case we used refineFitZPhi to set the value of phi0 properly
+    static const float pi(M_PI), halfpi(pi/2.0);
+
+    float amsign =  helixData._hseed._helix._helicity == Helicity::poshel ? 1. : -1.;
+    
+    float  dx     = amsign*helixData._hseed._helix.center().x();
+    float  dy     = -amsign*helixData._hseed._helix.center().y();
+    float  fcent  = polyAtan2(dy, dx);
+    float  dphi   = deltaPhi(helixData._hseed._helix._fz0+amsign*halfpi,fcent);
+
+    helixData._hseed._helix._fz0 = fcent - halfpi*amsign - dphi;
+    //    helixData._hseed._helix._fz0 = deltaPhi(0.0, helixData._hseed._helix._fz0);
+  }
 
   float RobustHelixFit::hitWeight(const ComboHit& hhit) const 
   {

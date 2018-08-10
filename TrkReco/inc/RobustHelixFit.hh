@@ -82,6 +82,7 @@ namespace mu2e
     void fitFZ_2(RobustHelixFinderData& helixData);
     bool goodHelix(RobustHelix const& rhel);
     bool goodHelixChi2(RobustHelixFinderData& helixData);
+    void defineHelixParams(RobustHelixFinderData& helixData);
     Helicity const& helicity() const { return _helicity; }
 
     bool goodCircle(RobustHelix const& rhel);
@@ -144,6 +145,7 @@ namespace mu2e
     float _mindphi, _maxdphi; // phi separation of points for pitch estimate
     float _mindist; // minimum distance between points used in circle initialization
     float _maxdist; // maximum distance in hits
+    float _maxdxy; // maximum distance in hits after the triplet loop in fitCiircleMedian
     float _maxXDPhi;//maximum normalized residual for a hit in the z-phi fit
     float _rmin,_rmax; // circle radius range
     float _rcmin,_rcmax; // circle centerradius range
