@@ -1,14 +1,6 @@
 # generate flat particles from stopped muons and produce digis.  this is WITHOUT MIXING
 
-#include "TrackerMC/fcl/prolog.fcl"
-#include "EventMixing/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
-#include "Mu2eG4/fcl/prolog.fcl"
-#include "CRVResponse/fcl/prolog.fcl"
-#include "fcl/minimalMessageService.fcl"
-#include "fcl/standardServices.fcl"
-#include "JobConfig/beam/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
@@ -23,38 +15,18 @@ physics : {
 	spectrumVariable: totalEnergy
       }
     }
-    g4run : @local::mu2e.physics.producers.g4run.muons
-    genCounter: { module_type: GenEventCounter }
-    @table::CommonMC.producers
-    @table::TrackerMC.producers
-    @table::CaloDigiMC.producers
+    @table::Primary.producers
   }
-  filters: {
-    TrkDigiFilter : {
-      module_type : StrawDigiMCFilter
-      MinNDigis : 10
-    }
-  }
-  analyzers: {
-    genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
-  }
-  flatEPath : [ generate, genCounter, g4run,
-    @sequence::CommonMC.DigiSim,
-    @sequence::TrackerMC.DigiSim,
-    TrkDigiFilter,
-    @sequence::CaloDigiMC.DigiSim
-  ]
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
 }
-outputs: {
-   flatEOutput : {
-     module_type : RootOutput
-     SelectEvents : [ flatEPath ]
-     fileName    : @nil
-  }
+outputs : { 
+  Output :@local::Primary.Output
 }
-
-physics.out : [ flatEOutput ]
-physics.end_paths : [ out ] # needed for generate_fcl
-# the following are overwritten by generate_fcl
-services.SeedService.baseSeed         :  773651
-services.SeedService.maxUniqueEngines :  20
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

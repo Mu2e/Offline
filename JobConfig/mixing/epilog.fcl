@@ -1,8 +1,11 @@
 #
-#  Specific values for mixers: currently set for MDC2018 production
+#  Specific values for mixers that can't be done in prolog
+#  Currently set for MDC2018 production
 #
-# TrkCal
+#  Mixing can include primary generation
+#include "JobConfig/primary/epilog.fcl"
 #
+# TrkCal mixing
 #physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.777e-4 # for uncut flash
 physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 1.482e-5 # for cut flash
 physics.filters.ootMixerTrkCal.mu2e.meanEventsPerProton      : 2.4185E-05
@@ -11,7 +14,7 @@ physics.filters.dioMixerTrkCal.mu2e.meanEventsPerProton      : 3.8434E-06
 physics.filters.photonMixerTrkCal.mu2e.meanEventsPerProton   : 8.6966E-06
 physics.filters.protonMixerTrkCal.mu2e.meanEventsPerProton   : 7.4322E-07
 physics.filters.deuteronMixerTrkCal.mu2e.meanEventsPerProton : 1.6261E-07
-# CRV
+# CRV mixing
 physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
 physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-07
 physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
@@ -26,9 +29,6 @@ physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ 
 physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
-# mustops
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
-
 # patches for cut inputs
 physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
 physics.filters.flashMixerTrkCal.mu2e.products.simParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
@@ -36,6 +36,7 @@ physics.filters.flashMixerTrkCal.mu2e.products.protonTimeMapMixer: { mixingMap: 
 physics.filters.flashMixerTrkCal.mu2e.products.stepPointMCMixer: { mixingMap:
       [ 
 	 [ "flashMixerTrkCalCut:tracker", ":" ]
+#  Don't include VD and IPA steps from flash: they just add bulk
 #	 [ "flashMixerTrkCalCut:virtualdetector", ":" ],
 #	 [ "flashMixerTrkCalCut:protonabsorber", ":" ]
       ]
@@ -46,8 +47,7 @@ physics.filters.flashMixerTrkCal.mu2e.products.caloShowerStepMixer: { mixingMap:
 	 [ "flashMixerTrkCalCut:CaloShowerROSteps", ":" ]
       ]
    }
-
-# input maps from prirmaries and flash. these get used first, new times are only generated for particles not already referenced
+# input maps from prirmaries and flash. these get used first, new times are only generated for mu-daughter backgrounds 
 physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPrimary", @sequence::Mixing.protonTimeMaps ]
 physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPrimary" ]
 
@@ -61,11 +61,6 @@ physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "PSM
 physics.filters.PSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
 physics.filters.PSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "PSMixerCRVCut:protonTimeMap", ":" ] ] }
 physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSMixerCRVCut:CRV", ":" ] ] }
-
-physics.producers.makeSD.AllHitsPlanes : [34,35]
-services.ConditionsService.StrawElectronics.FlashStart : 1705
-services.ConditionsService.StrawElectronics.DiscriminatorThreshold : [ 12.2 , 11.3 , 12.6 , 12.5 , 12.7 , 12.5 , 12.3 , 11.1 , 11.3 , 12.1 , 11.6 , 11.5 , 13.0 , 11.1 , 10.5 , 11.4 , 11.0 , 12.0 , 12.8 , 12.8 , 12.1 , 11.2 , 11.6 , 13.1 , 12.3 , 12.3 , 12.2 , 11.8 , 13.5 , 13.4 , 10.7 , 11.7 , 13.6 , 12.3 , 9.9 , 12.1 , 10.4 , 13.2 , 11.9 , 13.5 , 12.5 , 12.6 , 12.1 , 14.2 , 13.3 , 11.5 , 11.5 , 11.7 , 11.6 , 13.2 , 14.9 , 12.7 , 12.7 , 12.6 , 11.4 , 13.5 , 12.2 , 12.6 , 11.9 , 10.3 , 12.4 , 12.3 , 11.1 , 10.7 , 12.0 , 12.9 , 13.4 , 13.8 , 11.1 , 13.1 , 13.2 , 12.3 , 13.3 , 12.6 , 11.6 , 11.4 , 11.6 , 11.9 , 10.9 , 10.8 , 11.5 , 12.4 , 11.5 , 11.0 , 12.3 , 12.4 , 12.2 , 10.9 , 11.7 , 11.3 , 12.8 , 13.3 , 11.4 , 12.6 , 10.7 , 12.0 , 14.3 , 12.1 , 12.4 , 12.6 , 11.5 , 13.3 , 11.8 , 13.3 , 11.4 , 11.0 , 11.8 , 13.1 , 12.6 , 11.5 , 10.5 , 11.2 , 12.5 , 11.9 , 11.4 , 12.3 , 11.7 , 12.2 , 13.4 , 10.5 , 12.6 , 11.7 , 12.3 , 11.3 , 12.0 , 12.6 , 12.5 , 12.1 , 11.2 , 13.6 , 11.9 , 11.4 , 12.6 , 12.9 , 11.4 , 12.8 , 11.4 , 13.2 , 13.0 , 11.4 , 13.2 , 12.4 , 13.1 , 14.9 , 12.4 , 11.2 , 10.6 , 10.4 , 11.3 , 13.0 , 10.8 , 11.9 , 11.6 , 12.3 , 11.4 , 12.6 , 12.3 , 13.7 , 12.7 , 12.1 , 12.3 , 10.2 , 9.9 , 10.9 , 11.6 , 12.6 , 12.7 , 12.4 , 10.9 , 12.2 , 13.2 , 13.2 , 11.3 , 12.8 , 11.7 , 12.7 , 13.3 , 12.4 , 12.0 , 12.3 , 12.0 , 12.9 , 11.9 , 12.6 , 11.6 , 13.6 , 12.8 , 13.6 , 13.3 , 13.2 , 12.4 , 11.6 ]
-
 
 # must explicitly list all the mixers!
 physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter",

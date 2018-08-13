@@ -1,10 +1,7 @@
 # common parts used in all mixing jobs
 
 #include "JobConfig/beam/prolog.fcl"
-#include "EventGenerator/fcl/prolog.fcl"
-#include "CommonMC/fcl/prolog.fcl"
-#include "TrackerMC/fcl/prolog.fcl"
-#include "CaloMC/fcl/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 
 BEGIN_PROLOG
@@ -159,13 +156,7 @@ Mixing : {
       makeHistograms: false
     }
   }
-  Output : {
-     module_type : RootOutput
-     SelectEvents : [ TriggerPath ]
-     fileName    : @nil
-     outputCommands : @local::DigiCompressOutputCommands
-  }
-  # input time maps from cut mix inputs.  All are needed
+   # input time maps from cut mix inputs.  All are needed
   protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
   # sequences
   TrkCalMixSequence : [ flashMixerTrkCal,
@@ -176,9 +167,17 @@ Mixing : {
   CreatePrimarySequence : [ generate, genCounter, g4run,
     @sequence::CommonMC.PrimaryDigiSim,
     makeSDPrimary, DigiFilter ]
+# paths and output
+  EndPath : [ genCountLogger, Output ]
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     fileName    : @nil
+     outputCommands : @local::DigiCompressOutputCommands
+  }
 }
-Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence,
-@sequence::Mixing.CRVMixSequence]
+
+Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
 
 Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::Mixing.TrkCalMixSequence,
@@ -188,5 +187,9 @@ Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::CaloDigiMC.DigiSim,
     @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
+
+Mixing.TriggerPath : [
+    @sequence::Mixing.CreatePrimarySequence, 
+    @sequence::Mixing.MixSequence ]
 
 END_PROLOG
