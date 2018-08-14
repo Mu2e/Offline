@@ -441,10 +441,10 @@ namespace mu2e {
     PanelZ_t*     panelz(0);
     ComboHit*     hit(0);
 
-    RobustHelix& rhel          = helixData._hseed._helix;
-    double       z_start(0);
-    double       dfdz          = 1./rhel.lambda();
-    bool         isFirst(true);
+    // RobustHelix& rhel          = helixData._hseed._helix;
+    // double       z_start(0);
+    // double       dfdz          = 1./rhel.lambda();
+    // bool         isFirst(true);
 
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez = &helixData._oTracker[f];
@@ -455,21 +455,21 @@ namespace mu2e {
 	  hit = &panelz->fHitData.at(i);
 	  // if (hit->_flag.hasAnyProperty(_outlier))     continue;//FIX ME! 
 	
-	  double   hit_z  = hit->pos().z();
-	  if ( isFirst ){ 
-	    z_start = hit_z;
-	    isFirst = false;
-	  }
+	  // double   hit_z  = hit->pos().z();
+	  // if ( isFirst ){ 
+	  //   z_start = hit_z;
+	  //   isFirst = false;
+	  // }
       
-	  double   dx     = (hit->pos().x() - rhel.center().y());
-	  double   dy     = (hit->pos().y() - rhel.center().y());
-	  double   shphi  = polyAtan2(dy,dx);//XYZVec(hit->pos() - rhel.center()).phi();
-	  int      nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
-	  shphi = shphi + double(nLoops)*2.*M_PI;
+	  // double   dx     = (hit->pos().x() - rhel.center().y());
+	  // double   dy     = (hit->pos().y() - rhel.center().y());
+	  // double   shphi  = polyAtan2(dy,dx);//XYZVec(hit->pos() - rhel.center()).phi();
+	  // int      nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
+	  // shphi = shphi + double(nLoops)*2.*M_PI;
 
 	  ComboHit                hhit(*hit);
-	  hhit._hphi = shphi;
-	  hhit._flag.merge(StrawHitFlag::resolvedphi);
+	  //	  hhit._hphi = shphi;
+	  // hhit._flag.merge(StrawHitFlag::resolvedphi);
 					
 	  helixData._hseed._hhits.push_back(hhit);
 	

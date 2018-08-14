@@ -440,7 +440,7 @@ namespace mu2e {
     //     helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
 
-    double     z_start(0);
+    // double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
       HitInfo_t*      hitInfo = &HfResult._goodhits[i];
@@ -449,16 +449,16 @@ namespace mu2e {
       
       ComboHit*       hit    = &panelz->fHitData.at(hitInfo->panelHitIndex);
 
-      double                  hit_z  = hit->pos().z();
-      if ( i==0 ) z_start = hit_z;
+      // double                  hit_z  = hit->pos().z();
+      // if ( i==0 ) z_start = hit_z;
 
-      double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
-      int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
-      shphi = shphi + double(nLoops)*2.*M_PI;
+      // double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
+      // int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
+      // shphi = shphi + double(nLoops)*2.*M_PI;
 
       ComboHit                hhit(*hit);
-      hhit._hphi = shphi;
-      hhit._flag.merge(StrawHitFlag::resolvedphi);
+      //      hhit._hphi = shphi;
+      // hhit._flag.merge(StrawHitFlag::resolvedphi);
 
       HelSeed._hhits.push_back(hhit);
     }
