@@ -94,11 +94,13 @@ namespace mu2e
     float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
 
     //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
-    void  refineFitXY  (RobustHelixFinderData& helixData);
+    void  refineFitXY  (RobustHelixFinderData& helixData, int weightMode=1);
     void  refineFitZPhi(RobustHelixFinderData& helixData);
 
     void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
+
+    bool  targetcon()   {return _targetcon; }
 
     const TTracker*            _tracker;
     const Calorimeter*         _calorimeter;

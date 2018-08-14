@@ -376,7 +376,7 @@ namespace mu2e
 	  if (!use(*hitP1) )                          continue;   
 	
 	  float phiex = rhel.circleAzimuth(hitP1->pos().z());
-	  float dphi  = deltaPhi(phiex,hit->helixPhi());
+	  float dphi  = deltaPhi(phiex,hitP1->helixPhi());
 	  _hphi.Fill(dphi);
 	  _hphi.Fill(dphi-CLHEP::twopi);
 	  _hphi.Fill(dphi+CLHEP::twopi);
@@ -526,7 +526,7 @@ namespace mu2e
       phi_ref = phiVec[i];
       z_ref   = zVec  [i];
 
-      for(int j=i+1; j<nstations; ++j) { // nstations+1 accounts for the cluster
+      for(int j=i+1; j<nstations; ++j) { 
 	if (nhits[j] == 0)                                  continue;
 
 	dphi = phiVec[j]-phi_ref;
@@ -663,7 +663,7 @@ namespace mu2e
     float hphi0 = phi0 + sdphi/sn;
 
     //now update the helix info
-    rhel._fz0    = hphi0;
+    rhel._fz0    = deltaPhi(0.0, hphi0);
     rhel._lambda = 1/hdfdz;
       
     if (_debug > 5) {
@@ -836,7 +836,7 @@ namespace mu2e
     if (!HelixData._hseed._status.hasAllProperties(TrkFitFlag::phizInit))
       {
 	if (initFZ(HelixData))
-	  //	if (initFZ_2(HelixData))
+	//      if (initFZ_2(HelixData))
 	  HelixData._hseed._status.merge(TrkFitFlag::phizInit);
 	else
 	  return;
@@ -1159,9 +1159,11 @@ namespace mu2e
         rhel->_radius = rho;
 
 	//refine the circle fit
-	//perform a reduced chi2 fit using only 1 ComboHit-per-face
+	//perform a chi2 fit using only 1 ComboHit-per-face
 	//the best hit is defined computing the residual
-	if (_refineXYFit)	  refineFitXY(HelixData);
+	if (_refineXYFit){
+	  refineFitXY(HelixData,0);	  
+	}
 
 	// 	//check the number of strawHits associated with the track
 	// 	if (nStrawHits < _minnhit) return;
@@ -1182,10 +1184,20 @@ namespace mu2e
     }
   }
   
-  void  RobustHelixFit::refineFitXY(RobustHelixFinderData&HelixData){
+  void  RobustHelixFit::refineFitXY(RobustHelixFinderData&HelixData, int WeightMode){
 
     ::LsqSums4 sxy;
-    float      wt, resid;
+    if (_targetcon) {
+      if (WeightMode == 1) 
+//-------------------------------------------------------------------------------
+// add stopping target center with a position error of 100 mm/sqrt(12) ~ 30mm => wt = 1/900
+//-------------------------------------------------------------------------------
+	sxy.addPoint(0.,0.,1./900.);
+      else
+	sxy.addPoint(0.,0.,0.1);
+    }
+	
+    float      wt(1.), resid;
     int        minNReducedChi2Points(15);//FIXME!
     int        nXYSh(0);
 
@@ -1202,8 +1214,9 @@ namespace mu2e
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezP1    = &HelixData._oTracker[f];
       HitInfo_t  indexBestComboHit;
-      //      float      minResid(_maxdxy);// version 0: uses wt=1.
+
       float      minResid(_minxyresid);//version 1:
+      if (WeightMode == 0 ) minResid = _maxdxy;
 
       for (int p1=0; p1<FaceZ_t::kNPanels; ++p1){
 	panelz1  = &facezP1->panelZs[p1];   
@@ -1219,7 +1232,9 @@ namespace mu2e
 	  // hitP1->_flag.merge(StrawHitFlag::outlier);//FIXME!
 
 	  XYVec rvec = (XYVec(hitP1->pos().x(),hitP1->pos().y())-center);
-	  wt         = evalWeightXY(*hitP1, center);
+
+	  if (WeightMode == 1 ) wt         = evalWeightXY(*hitP1, center);
+
 	  resid      = fabs(sqrtf(rvec.Mag2()) - rho)*sqrtf(wt);
 	  if (resid < minResid) {
 	    indexBestComboHit.face          = f;
@@ -1456,7 +1471,7 @@ namespace mu2e
     float  fcent  = polyAtan2(dy, dx);
     float  dphi   = deltaPhi(helixData._hseed._helix._fz0+amsign*halfpi,fcent);
 
-    helixData._hseed._helix._fz0 = fcent - halfpi*amsign - dphi;
+       helixData._hseed._helix._fz0 = fcent - halfpi*amsign - dphi;
     //    helixData._hseed._helix._fz0 = deltaPhi(0.0, helixData._hseed._helix._fz0);
   }
 

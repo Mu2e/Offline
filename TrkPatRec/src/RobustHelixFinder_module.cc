@@ -106,7 +106,7 @@ namespace mu2e {
     virtual void produce(art::Event& event );
 
   private:
-    int                                 _diag,_debug;
+    int                                 _diag,_debug,_reducedchi2;
     int                                 _printfreq;
     bool				_prefilter; // prefilter hits based on sector
     bool				_updatestereo; // update the stereo hit positions each iteration
@@ -180,6 +180,7 @@ namespace mu2e {
   RobustHelixFinder::RobustHelixFinder(fhicl::ParameterSet const& pset) :
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
+    _reducedchi2 (pset.get<int>("reducedchi2",0)),
     _printfreq   (pset.get<int>("printFrequency",101)),
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
     _updatestereo(pset.get<bool>("UpdateStereoHits",false)),
@@ -405,8 +406,11 @@ namespace mu2e {
 
 	  //fit the helix: refine the XY-circle fit + performs the ZPhi fit
 	  // it also performs a clean-up of the hits with large residuals
-	  //	  fitHelix(tmpResult);
-	  fitHelix_2(tmpResult);
+	  if (_reducedchi2)
+	    fitHelix_2(tmpResult);
+	  else
+	    fitHelix(tmpResult);
+	    
 
 	  if (tmpResult._hseed.status().hasAnyProperty(_saveflag)){
 	    //fill the hits in the HelixSeedCollection
@@ -580,11 +584,7 @@ namespace mu2e {
     //reset the value of the XY fit result
     helixData._hseed._status.clear(TrkFitFlag::circleOK);
 
-    int           changed(0);
-    int           oldNHitsSh = helixData._nXYSh;
-    
-    RobustHelix&  helix      = helixData._hseed._helix;
-
+  
     ComboHit*     hit(0);
     FaceZ_t*      facez;
     PanelZ_t*     panelz(0);
@@ -592,6 +592,10 @@ namespace mu2e {
     //perform a reduced chi2 fit
     _hfit.refineFitXY(helixData);
 
+    int           changed(0);
+    int           oldNHitsSh = helixData._nXYSh;
+    
+    RobustHelix&  helix      = helixData._hseed._helix;
 
     // helixData._hseed._status.clear(TrkFitFlag::circleOK);
 
@@ -1278,24 +1282,29 @@ namespace mu2e {
       if (_diag) helixData._diag.fzniter = fzniter;
 
       if (helixData._hseed._status.hasAnyProperty(TrkFitFlag::phizOK)) {
-	if (fzniter < _maxniter)
+	if (fzniter < _maxniter){
 	  helixData._hseed._status.merge(TrkFitFlag::phizConverged);
+	  
+	  //now update all the helix parameters
+	  updateHelixInfo(helixData);
+
+	  if (_hfit.goodHelix(helixData._hseed.helix()) && _hfit.goodHelixChi2(helixData)) {
+	    helixData._hseed._status.merge(TrkFitFlag::helixOK);
+
+	    //now search for missing hits
+	    findMissingHits(helixData);
+
+	    updateT0(helixData);
+      
+	    helixData._hseed._status.merge(TrkFitFlag::helixConverged);
+
+	    _hfit.defineHelixParams(helixData);
+	  }
+	}
 	else
 	  helixData._hseed._status.clear(TrkFitFlag::phizConverged);
       }
-    }
-
-    if (_hfit.goodHelix(helixData._hseed.helix()) && _hfit.goodHelixChi2(helixData)) {
-      helixData._hseed._status.merge(TrkFitFlag::helixOK);
-
-      //now search for missing hits
-      findMissingHits(helixData);
-
-      updateT0(helixData);
       
-      helixData._hseed._status.merge(TrkFitFlag::helixConverged);
-
-      _hfit.defineHelixParams(helixData);
     }
 
     if (_diag > 0){
@@ -1440,6 +1449,8 @@ namespace mu2e {
     //    float          wtXY, wtZPhi;
     
     helixData._sxy.clear();
+    if (_hfit.targetcon()) helixData._sxy.addPoint(0.,0.,1./900.);
+
     helixData._szphi.clear();
     helixData._nXYSh   = 0;
     helixData._nZPhiSh = 0;
