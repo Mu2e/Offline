@@ -33,4 +33,58 @@ VetoIncorrectHits: {
     crvPositionTolerance : 0.01
 }
 
+DigiCompressionTags : {
+    
+    commonStrawDigiMCTag : "makeSD"
+    commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+    commonCaloShowerSimTag : "CaloShowerStepROFromShowerStep"
+    commonCaloShowerStepROTag : "CaloShowerStepROFromShowerStep"
+
+    primarySimParticleTag : "g4run"
+    primaryCrvDigiMCTag : ""
+    primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
+
+    mixingCrvDigiMCTag : "CrvWaveforms"
+}
+
+DigiCompression : {
+
+    # for primary only jobs
+    Primary : {
+	module_type : CompressDigiMCs
+	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	crvDigiMCTag : @local::DigiCompressionTags.primaryCrvDigiMCTag
+	simParticleTags : [ @local::DigiCompressionTags.primarySimParticleTag ] 
+	extraStepPointMCTags : @local::DigiCompressionTags.commonExtraStepPointMCTags
+	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
+	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
+	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+    }
+
+    # for mixing jobs
+    Mixing : {
+	module_type : CompressDigiMCs
+	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	crvDigiMCTag : @local::DigiCompressionTags.mixingCrvDigiMCTag
+	simParticleTags : @nil
+	extraStepPointMCTags : [ @sequence::DigiCompressionTags.commonExtraStepPointMCTags ]
+	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
+	caloShowerStepTags : @nil
+	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+    }
+
+    OutputCommands : [ "drop *_*_*_*",
+		       "keep *_compressDigiMCs_*_*",
+		       "keep mu2e::StrawDigis_*_*_*",
+		       "keep mu2e::CaloDigis_*_*_*",
+		       "keep mu2e::CrvDigis_*_*_*",
+		       "keep mu2e::StatusG4_*_*_*",
+		       "keep art::TriggerResults_*_*_*",
+		       "keep mu2e::EventWindowMarker_*_*_*",
+		       "keep *_genCounter_*_*" 
+		     ]
+}
+
 END_PROLOG
