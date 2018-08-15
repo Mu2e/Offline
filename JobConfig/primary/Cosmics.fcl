@@ -1,0 +1,42 @@
+#
+# cosmic ray muons produced at a box around the tracker and calorimeter
+#
+# original author: Ralf Ehrlich, UVA 
+# (based on Dave Brown's CeEndpoint)
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: Cosmics
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate: 
+    {
+       module_type : EventGenerator
+       inputfile   : "JobConfig/primary/genconfig_cosmics.txt"
+    }
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+# customize the output
+services.TFileService.fileName: "nts.owner.Cosmics.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.Cosmics.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+
+#this seems to be needed when running locally
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+

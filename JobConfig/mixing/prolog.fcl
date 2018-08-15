@@ -66,17 +66,6 @@ CRVCut : { module_type : CompressStepPointMCs
 				    timeMapTags : [ "protonTimeMap" ]
 				    diagLevel : 0
      				  }
-# start by keeing the output of primary production (if present)
-DigiCompressOutputCommands : [ "drop *_*_*_*",
-    "keep *_compressDigiMCs_*_*",
-    "keep mu2e::StrawDigis_*_*_*",
-    "keep mu2e::CaloDigis_*_*_*",
-    "keep mu2e::CrvDigis_*_*_*",
-    "keep mu2e::StatusG4_*_*_*",
-    "keep mu2e::ProtonBunchIntensity_*_*_*",
-    "keep art::TriggerResults_*_*_*",
-    "keep mu2e::EventWindowMarker_*_*_*",
-    "keep *_genCounter_*_*" ]
 
 # mixing configuration
 Mixing : {
@@ -95,25 +84,7 @@ Mixing : {
       TimeOffsets   : { inputs : [ @sequence::CommonMC.TimeMapsPrimary ] }
     }
    # digi compression
-    compressDigiMCs : {
-      module_type : CompressDigiMCs
-      strawDigiMCTag : "makeSD"
-      crvDigiMCTag : "CrvWaveforms"
-      simParticleTags : @nil 
-      extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-      timeMapTags : [ @sequence::CommonMC.TimeMaps ]
-      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter",
-      			     "ootMixerTrkCal:calorimeter",
-      			     "protonMixerTrkCal:calorimeter",
-      			     "deuteronMixerTrkCal:calorimeter",
-      			     "dioMixerTrkCal:calorimeter",
-      			     "photonMixerTrkCal:calorimeter",
-      			     "neutronMixerTrkCal:calorimeter",
-      			     "flashMixerTrkCal:CaloShowerCrystalSteps"
-      			   ]
-      caloShowerSimTag : "CaloShowerStepROFromShowerStep"
-      caloShowerStepROTag : "CaloShowerStepROFromShowerStep"
-    }
+    compressDigiMCs : @local::DigiCompression.Mixing
   }
   filters : {
     # TrkCal mixing
@@ -158,11 +129,15 @@ Mixing : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
-     outputCommands : @local::DigiCompressOutputCommands
+     outputCommands : @local::DigiCompression.OutputCommands
   }
 }
 
 Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+Mixing.producers.compressDigiMCs.caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "ootMixerTrkCal:calorimeter", "protonMixerTrkCal:calorimeter",
+						      	"deuteronMixerTrkCal:calorimeter", "dioMixerTrkCal:calorimeter", "photonMixerTrkCal:calorimeter",
+							"neutronMixerTrkCal:calorimeter", "flashMixerTrkCal:CaloShowerCrystalSteps"
+						      ]
 
 Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::Mixing.TrkCalMixSequence,
