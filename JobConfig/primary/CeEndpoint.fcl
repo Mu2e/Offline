@@ -1,3 +1,4 @@
+#
 # mono-energetic e- at the Al Ce endpoint without background mixing
 #
 # original author: Dave Brown, LBNL
@@ -20,14 +21,11 @@ physics : {
 outputs : { 
   Output :@local::Primary.Output
 }
-#outputs.SelectEvents : [ TriggerPath ]
-# set the stops
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
-# customize the filter
-physics.filters.DigiFilter.MinNDigis : 10
-physics.filters.DigiFilter.MinParticleMom : 75.0
-physics.filters.DigiFilter.particleTypes : [11]
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
 # customize the output
 services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.CeEndpoint.version.sequencer.art"
+outputs.Output.fileName: "dig.owner.CeEndpoint.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl

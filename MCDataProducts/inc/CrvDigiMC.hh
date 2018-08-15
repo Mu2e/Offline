@@ -39,6 +39,9 @@ namespace mu2e
     mu2e::CRSScintillatorBarIndex GetScintillatorBarIndex() const {return _scintillatorBarIndex;}
     int                           GetSiPMNumber() const           {return _SiPMNumber;}
 
+    void setSimParticle(const art::Ptr<SimParticle>& sim) {_simParticle = sim;}
+    void setStepPoints(const std::vector<art::Ptr<StepPointMC> >& steps) {_steps = steps;}
+
     private:
 
     std::array<double,NSamples>         _voltages;

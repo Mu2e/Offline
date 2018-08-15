@@ -2,6 +2,7 @@
 # Prolog specific to createing primary (signal, signal-like or calibration) particles
 #
 #include "JobConfig/beam/prolog.fcl"
+#include "EventGenerator/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
@@ -22,8 +23,25 @@ Primary: {
       @table::makeSD
       TimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
+# digi compression
+    compressDigiMCs : {
+      module_type : CompressDigiMCs
+      strawDigiMCTag : "makeSD"
+      crvDigiMCTag : ""
+      simParticleTags : [ "g4run" ] 
+      extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
+      timeMapTags : [ @sequence::CommonMC.TimeMaps ]
+      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
+      caloShowerSimTag : "CaloShowerStepROFromShowerStep"
+      caloShowerStepROTag : "CaloShowerStepROFromShowerStep"
+    }
   }
   filters : {
+# generator truncation filter; only needed for cosmic rays in principle
+    g4status: {
+      module_type: FilterStatusG4
+      input: "g4run"
+    }
 # digi filtering for Primary selection.
     DigiFilter : {
       module_type : StrawDigiMCFilter
@@ -33,23 +51,28 @@ Primary: {
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
   }
-  TriggerPath : [ generate, genCounter, g4run,
+  TriggerPath : [ generate, genCounter, g4run, g4status,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     DigiFilter,
-    @sequence::CaloDigiMC.DigiSim ]
+    @sequence::CaloDigiMC.DigiSim,
+    compressDigiMCs ]
   EndPath : [ genCountLogger, Output ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
      # drop StepPoints from calorimeter
-    outputCommands : [
-      "keep *_*_*_*",
-      "drop *_g4run_calorimeter_*",
-      "drop *_g4run_calorimeterRO_*"
-    ] 
+  outputCommands : [ "drop *_*_*_*",
+    		     "keep *_compressDigiMCs_*_*",
+    		     "keep mu2e::StrawDigis_*_*_*",
+    		     "keep mu2e::CaloDigis_*_*_*",
+    		     "keep mu2e::CrvDigis_*_*_*",
+    		     "keep mu2e::StatusG4_*_*_*",
+    		     "keep art::TriggerResults_*_*_*",
+		     "keep mu2e::EventWindowMarker_*_*_*",
+    		     "keep *_genCounter_*_*" ]
   }
-
 }
+
 END_PROLOG

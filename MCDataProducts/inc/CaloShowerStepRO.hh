@@ -32,7 +32,7 @@ namespace mu2e {
 	  double                     time()            const {return time_;}
 	  double                     energy()          const {return energy_;}
 
-
+          void setCaloShowerStep(const caloStepPtr& step) {step_ = step;}
        private:
 	    
 	    int                 ROID_;      

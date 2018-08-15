@@ -85,6 +85,7 @@ namespace mu2e {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
           if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
+             part->genParticle()->generatorId() == GenId::dioTail                       ||
              part->genParticle()->generatorId() == GenId::conversionGun                 ||
              part->genParticle()->generatorId() == GenId::radiativeMuonCapture          ||
              part->genParticle()->generatorId() == GenId::radiativeMuonCaptureInternal )
