@@ -6,6 +6,7 @@
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
@@ -18,6 +19,7 @@ Primary: {
     @table::CommonMC.producers
     @table::TrackerMC.producers
     @table::CaloDigiMC.producers
+    @table::CrvDAQPackage.producers
 # dedicated digi maker for filter
     makeSD:{
       @table::makeSD
@@ -51,6 +53,7 @@ Primary: {
     @sequence::TrackerMC.DigiSim,
     DigiFilter,
     @sequence::CaloDigiMC.DigiSim,
+    @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
   EndPath : [ genCountLogger, Output ]
   Output : {

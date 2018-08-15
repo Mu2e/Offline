@@ -1,0 +1,40 @@
+#
+# pure background frames with full (digi + mc) and detector (digi only) output streams
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/mixing/prolog.fcl"
+process_name: NoPrimary
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : { @table::Mixing.producers }
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+  TriggerPath : [ @sequence::Mixing.MixSequence ]
+  EndPath : [ FullOutput, DetOutput ] 
+}
+outputs : { 
+  FullOutput :@local::Mixing.Output
+  DetOutput :@local::Mixing.Output
+}
+outputs.DetOutput.outputCommands : [ "drop *_*_*_*",
+    		     "keep mu2e::StrawDigis_*_*_*",
+    		     "keep mu2e::CaloDigis_*_*_*",
+		     "keep mu2e::CrvDigis_*_*_*" ]
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+#patches; not clear how to get rid of this FIXME!
+physics.producers.generate.module_type : StoppedParticleReactionGun 
+physics.producers.protonTimeMap.InputTimeMaps : [ @sequence::Mixing.protonTimeMaps ]
+physics.producers.compressDigiMCs.simParticleTags : [ @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+physics.producers.compressDigiMCs.extraStepPointMCTags : [ ]
+
+# customize the output
+services.TFileService.fileName: "nts.owner.NoPrimary-mix.version.sequencer.root"
+outputs.FullOutput.fileName: "dig.owner.NoPrimary-mix.version.sequencer.art"
+outputs.DetOutput.fileName: "dig.owner.NoPrimary-mix-det.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
