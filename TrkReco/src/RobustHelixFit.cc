@@ -69,6 +69,7 @@ namespace mu2e
     _maxzsep(pset.get<float>("maxzsep",500.0)),
     _mindphi(pset.get<float>("mindphi",0.5)),
     _maxdphi(pset.get<float>("maxdphi",2.5)),
+    _sigmaPhi(pset.get<float>("sigmaPhi",0.1636)),
     _mindist(pset.get<float>("mindist",100.0)), // mm
     _maxdist(pset.get<float>("maxdist",500.0)), // mm
     _maxdxy(pset.get<float>("maxdxy",100.0)),
@@ -830,7 +831,7 @@ namespace mu2e
 
 
 
-  void RobustHelixFit::fitFZ_2(RobustHelixFinderData& HelixData) {
+  void RobustHelixFit::fitFZ_2(RobustHelixFinderData& HelixData, int UseInteligentWeights) {
     // if required, initialize
     HelixData._hseed._status.clear(TrkFitFlag::phizOK);
     if (!HelixData._hseed._status.hasAllProperties(TrkFitFlag::phizInit))
@@ -856,7 +857,7 @@ namespace mu2e
       //refine the circle fit
       //perform a reduced chi2 fit using only 1 ComboHit-per-face
       //the best hit is defined computing the residual
-      if (_refineZPhiFit) refineFitZPhi(HelixData);
+      if (_refineZPhiFit) refineFitZPhi(HelixData, UseInteligentWeights);
     }
     if (_diag){
       HelixData._diag.lambda_1 = rhel._lambda;
@@ -864,7 +865,7 @@ namespace mu2e
   }
 
   //reduced linear fit to evaluate lambda and phi0
-  void  RobustHelixFit::refineFitZPhi(RobustHelixFinderData& HelixData){
+  void  RobustHelixFit::refineFitZPhi(RobustHelixFinderData& HelixData, int UseInteligentWeights){
     ::LsqSums4 szphi;
     float      phi,phi_ref,wt, dphi, z;
     int        minNReducedChi2Points(15);//FIXME!
@@ -876,10 +877,13 @@ namespace mu2e
     float        dfdz   = 1/rhel._lambda;
     float        phi0   = rhel._fz0;
 
-    ComboHit*      hitP1(0);
-    FaceZ_t*       facezP1(0);
-    PanelZ_t*      panelz1(0);
-    int            nhitsFace1(0);
+    ComboHit*    hitP1(0);
+    FaceZ_t*     facezP1(0);
+    PanelZ_t*    panelz1(0);
+    int          nhitsFace1(0);
+    
+    float        dzMin_second_arch(500.), last_z_first_arch(9999.);
+    int          nPoints_second_arch(0), nPoints_first_arch(0), minNPoints_second_arch(5);//OPTIMIZE ME!
 
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezP1    = &HelixData._oTracker[f];
@@ -920,7 +924,8 @@ namespace mu2e
 	  if (!use(*hitP1) )                          continue;
 
 	  dphi        = fabs(dphi);
-	  wt          = evalWeightZPhi(*hitP1,center,radius);
+	  wt          = 1./(_sigmaPhi*_sigmaPhi);
+	  if (UseInteligentWeights == 1) wt = evalWeightZPhi(*hitP1,center,radius);
 	  xdphi       = dphi*sqrtf(wt);
 
 
@@ -951,8 +956,19 @@ namespace mu2e
 	//increase the StrwaHit counter
 	nZPHISh += hitP1->nStrawHits();
 
+	if (nPoints_first_arch == 0) {	//initialize last_z_first_arch
+	  last_z_first_arch = z;
+	  ++nPoints_first_arch;
+	}else if ( (z - last_z_first_arch) >= dzMin_second_arch ){//we reached the second arch of the helix
+	  ++nPoints_second_arch;
+	}else  {
+	  last_z_first_arch = z;
+	  ++nPoints_first_arch;
+	}	
+
 	//if we collected enough points update the center and the radius
 	if ( (szphi.qn() >= minNReducedChi2Points) &&
+	     (nPoints_second_arch >= minNPoints_second_arch) &&
 	     (fabs(dfdz - szphi.dfdz()) < 8e-4)){//in case delta-electron hits are present, with need to pay attention to the change of slope!
 	  dfdz  = szphi.dfdz();
 	  phi0  = szphi.phi0();
@@ -1162,8 +1178,12 @@ namespace mu2e
 	//perform a chi2 fit using only 1 ComboHit-per-face
 	//the best hit is defined computing the residual
 	if (_refineXYFit){
+	  //first perform the chi2 fit assuming all hits have same error
 	  refineFitXY(HelixData,0);
-	  refineFitXY(HelixData);	  	  
+
+	  //now that radius and center are more accurate, repeat the fit using the orientation of the hit
+	  //to estimate more accurately the expected uncertanty
+	  refineFitXY(HelixData);
 	}
 
 	// 	//check the number of strawHits associated with the track
@@ -1214,7 +1234,10 @@ namespace mu2e
     float        rho   = rhel->radius();
     XYVec        center(XYVec(rhel->centerx(), rhel->centery()));
 
-    for (int f=0; f<StrawId::_ntotalfaces; ++f){
+    float        dzMin_second_arch(500.), last_z_first_arch(9999.);
+    int          nPoints_second_arch(0), nPoints_first_arch(0), minNPoints_second_arch(5);//OPTIMIZE ME!
+
+     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facezP1    = &HelixData._oTracker[f];
       HitInfo_t  indexBestComboHit;
 
@@ -1270,8 +1293,19 @@ namespace mu2e
 	//increase the StrwaHit counter
 	nXYSh += hitP1->nStrawHits();
 
+	if (nPoints_first_arch == 0) {	//initialize last_z_first_arch
+	  last_z_first_arch = facezP1->z;
+	  ++nPoints_first_arch;
+	}else if ( (facezP1->z - last_z_first_arch) >= dzMin_second_arch ){//we reached the second arch of the helix
+	  ++nPoints_second_arch;
+	}else  {
+	  last_z_first_arch = facezP1->z;
+	  ++nPoints_first_arch;
+	}	
+
 	//if we collected enough points update the center and the radius
-	if (sxy.qn() >= minNReducedChi2Points){
+	if ( (sxy.qn() >= minNReducedChi2Points) &&
+	     (nPoints_second_arch >= minNPoints_second_arch) ){
 	  center.SetX(sxy.x0());
 	  center.SetY(sxy.y0());
 	  rho    = sxy.radius();

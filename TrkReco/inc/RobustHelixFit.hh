@@ -79,7 +79,7 @@ namespace mu2e
     bool initFZ(RobustHelixFinderData& helixData);
     bool initFZ_2(RobustHelixFinderData& helixData);
     void fitFZ(RobustHelixFinderData& helixData);
-    void fitFZ_2(RobustHelixFinderData& helixData);
+    void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
     bool goodHelix(RobustHelix const& rhel);
     bool goodHelixChi2(RobustHelixFinderData& helixData);
     void defineHelixParams(RobustHelixFinderData& helixData);
@@ -95,7 +95,7 @@ namespace mu2e
 
     //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
     void  refineFitXY  (RobustHelixFinderData& helixData, int weightMode=1);
-    void  refineFitZPhi(RobustHelixFinderData& helixData);
+    void  refineFitZPhi(RobustHelixFinderData& helixData, int weightMode=1);
 
     void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
@@ -145,6 +145,7 @@ namespace mu2e
     unsigned _maxniter; // maxium # of iterations to global minimum
     float _minzsep, _maxzsep; // Z separation of points for pitch estimate
     float _mindphi, _maxdphi; // phi separation of points for pitch estimate
+    float _sigmaPhi; //approximated uncertanty on the ComboHit helix-phi coordinate
     float _mindist; // minimum distance between points used in circle initialization
     float _maxdist; // maximum distance in hits
     float _maxdxy; // maximum distance in hits after the triplet loop in fitCiircleMedian

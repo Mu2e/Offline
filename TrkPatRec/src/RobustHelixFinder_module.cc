@@ -453,7 +453,7 @@ namespace mu2e {
 	int  nhits = panelz->fNHits;
 	for (int i=0; i<nhits; ++i){   
 	  hit = &panelz->fHitData.at(i);
-	  // if (hit->_flag.hasAnyProperty(_outlier))     continue;//FIX ME! 
+	  if (hit->_flag.hasAnyProperty(_outlier))     continue;
 	
 	  // double   hit_z  = hit->pos().z();
 	  // if ( isFirst ){ 
@@ -743,6 +743,9 @@ namespace mu2e {
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
       
+      float      minChi2(_maxchisq);
+      HitInfo_t  indexBestComboHit;
+
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];  
 
@@ -782,15 +785,46 @@ namespace mu2e {
 
 	  if( dphi > _maxphisep || fabs(dwire) > _maxdwire || fabs(dtrans) > _maxdtrans || chisq > _maxchisq) 
 	    {
-	      hit->_flag.merge(_outlier);
+	      // hit->_flag.merge(_outlier);
 	      changed = true;
-	    }else 
+	      
+	      if (chisq <= minChi2){
+		minChi2 = chisq;
+		
+		indexBestComboHit.face          = f;
+		indexBestComboHit.panel         = p;
+		indexBestComboHit.panelHitIndex = ip;
+	      }
+	    } else if (chisq <= minChi2)
 	    {
-	      hit->_flag.clear(_outlier);
-	      nGoodSH += hit->nStrawHits();
+	      minChi2 = chisq;
+	      
+	      indexBestComboHit.face          = f;
+	      indexBestComboHit.panel         = p;
+	      indexBestComboHit.panelHitIndex = ip;
 	    }
+	  
+	  // {
+	  //   hit->_flag.clear(_outlier);
+	  //   nGoodSH += hit->nStrawHits();
+	  // }
+	  
+	  //flagg all hits within the face as outlier. Only the best found will be "cleared"
+	  hit->_flag.merge(_outlier);
+
+
 	}
       }//end loop over the panels
+      
+      //remove the outlier flag 
+      if (indexBestComboHit.face >=0 ) {
+	panelz  = &facez->panelZs[indexBestComboHit.panel];   
+	hit     = &panelz->fHitData.at(indexBestComboHit.panelHitIndex);
+
+	//remove the outlier flag
+	hit->_flag.clear(StrawHitFlag::outlier);
+	nGoodSH += hit->nStrawHits();
+      }
     }//end loop over the faces
     
     helixData._nZPhiSh = nGoodSH;
@@ -1107,6 +1141,9 @@ namespace mu2e {
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez     = &helixData._oTracker[f];
       
+      float      minChi2(_maxrpull);
+      HitInfo_t  indexBestComboHit;
+
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];  
 	nhitsFace = panelz->fNHits;
@@ -1148,10 +1185,30 @@ namespace mu2e {
 	  }
 	
 	  if (oldout) ++changed;
-	
-	  nGoodSH += hit->nStrawHits();
+
+	  if (fabs(rpull) < minChi2){
+	    minChi2 = rpull;
+
+	    indexBestComboHit.face          = f;
+	    indexBestComboHit.panel         = p;
+	    indexBestComboHit.panelHitIndex = ip;
+	  }
+	  
+	  //set all the hits as outlier. Only the best within the face will be cleared
+	  hit->_flag.merge(_outlier);
+	  
 	}//end loop over the hits within a face
       }//end loop over the panels
+      
+      if (indexBestComboHit.face >=0 ) {
+	panelz  = &facez->panelZs[indexBestComboHit.panel];   
+	hit     = &panelz->fHitData.at(indexBestComboHit.panelHitIndex);
+	
+	//remove the outlier flag
+	hit->_flag.clear(StrawHitFlag::outlier);
+	nGoodSH += hit->nStrawHits();
+      }
+      
     }//end loop over the faces
     
     helixData._nXYSh = nGoodSH;
@@ -1251,12 +1308,14 @@ namespace mu2e {
 
   void RobustHelixFinder::fitHelix_2(RobustHelixFinderData& helixData){
     // iteratively fit the helix including filtering
-    unsigned nitermva(0);
+
+    //before starting, try to resolve the z-phi part of the helix 
+    //to reject spurious hits first
+    _hfit.fitFZ_2(helixData, 0);//don't use inteligent weights
 
     unsigned xyniter(0);
     int      xychanged = filterXYHits(helixData);
     while (helixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK) && xyniter < _maxniter && (xychanged!=0)) {
-      //	_hfit.fitCircle(helixData);//now the filterCircleHits updates also the info of the helixs
       xychanged = filterXYHits(helixData);
       ++xyniter;
     } 
@@ -1277,7 +1336,7 @@ namespace mu2e {
       while (helixData._hseed._status.hasAnyProperty(TrkFitFlag::phizOK)  && fzniter < _maxniter && (fzchanged!=0)) {
 	fzchanged = filterZPhiHits(helixData);
 	++fzniter;
-      } //while (helixData._hseed._status.hasAllProperties(TrkFitFlag::phizOK)  && fzniter < _maxniter && fzchanged);
+      }
 
       if (_diag) helixData._diag.fzniter = fzniter;
 
@@ -1307,11 +1366,6 @@ namespace mu2e {
       
     }
 
-    if (_diag > 0){
-      //      _niter->Fill(niter);
-      _nitermva->Fill(nitermva);
-      if (!_usemva) fillMVA(helixData);
-    }
   }
 
   void RobustHelixFinder::refitHelix(RobustHelixFinderData& helixData) {
