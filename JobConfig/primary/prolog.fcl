@@ -37,6 +37,11 @@ Primary: {
     }
   }
   filters : {
+# generator truncation filter; only needed for cosmic rays in principle
+    g4status: {
+      module_type: FilterStatusG4
+      input: "g4run"
+    }
 # digi filtering for Primary selection.
     DigiFilter : {
       module_type : StrawDigiMCFilter
@@ -46,7 +51,7 @@ Primary: {
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
   }
-  TriggerPath : [ generate, genCounter, g4run,
+  TriggerPath : [ generate, genCounter, g4run, g4status,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     DigiFilter,
