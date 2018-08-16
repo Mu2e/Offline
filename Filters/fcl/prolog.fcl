@@ -2,6 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+#include "CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # Reject events with no hits from signal-like tracks in the detectors.  
