@@ -143,8 +143,8 @@ namespace mu2e {
 	  //-----------------------------------------------------------------------------
 	  // panel caches phi of its center and the z
 	  //-----------------------------------------------------------------------------
-	  pz->wx     = panel->straw0Direction().x();
-	  pz->wy     = panel->straw0Direction().y();
+	  // pz->wx     = panel->straw0Direction().x();
+	  // pz->wy     = panel->straw0Direction().y();
 	  pz->phi    = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
 	  pz->fNHits = 0;
 	}	
