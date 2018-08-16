@@ -31,6 +31,7 @@ namespace mu2e {
     
     struct Hist_t {
       TH1F*  nTimePeaks;
+      TH1F*  nChPerPanel;
       TH1F*  ntclhits[2];
       TH1F*  nhits   [2];           // number of hits on a helix  
       TH1F*  nseeds  [2];
@@ -55,6 +56,10 @@ namespace mu2e {
       TH1F*   rsxy_1      [2];
       TH1F*   chi2dsxy_1  [2];
             
+      TH1F*   nshszphi_0   [2];
+      TH1F*   lambdaszphi_0[2];
+      TH1F*   chi2dszphi_0 [2];
+
       TH1F*   nshszphi_1   [2];
       TH1F*   lambdaszphi_1[2];
       TH1F*   chi2dszphi_1 [2];
@@ -109,6 +114,7 @@ namespace mu2e {
   int RobustHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
   
     _hist.nTimePeaks    = Tfs->make<TH1F>("ntpeaks"  , "number of time peaks"                      , 11, -0.5, 10.5);
+    _hist.nChPerPanel   = Tfs->make<TH1F>("nchppanel", "number of ComboHits per panel"             , 101, -0.5, 100.5);
     _hist.nseeds[0]     = Tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events"    , 21, -0.5, 20.5);
     _hist.nseeds[1]     = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15;"    , 21, -0.5, 20.5);
     _hist.ntclhits[0]   = Tfs->make<TH1F>("ntclhits0" , "number of hits on a time peak - no delta"  , 201, -0.5, 200.5);
@@ -162,7 +168,15 @@ namespace mu2e {
     _hist.rsxy_1       [1]   = Tfs->make<TH1F>("rsxy_1Pos"     , "number of strawHits from the xy fit, Pos "   , 301, 99.5, 400.5);
     _hist.chi2dsxy_1   [0]   = Tfs->make<TH1F>("chi2dsxy_1Neg", "#chi^{2}/ndof from the xy fit, Neg "   , 201, -0.05, 20.05);
     _hist.chi2dsxy_1   [1]   = Tfs->make<TH1F>("chi2dsxy_1Pos", "#chi^{2}/ndof from the xy fit, Pos "   , 201, -0.5, 20.5);
+ 
+    _hist.nshszphi_0   [0] = Tfs->make<TH1F>("nshszphi_0Neg"   , "number of strawHits from the zphi fit, Neg "   , 201, -0.5, 200.5);
+    _hist.nshszphi_0   [1] = Tfs->make<TH1F>("nshszphi_0Pos"   , "number of strawHits from the zphi fit, Pos "   , 201, -0.5, 200.5);
                            
+    _hist.lambdaszphi_0[0] = Tfs->make<TH1F>("lambdaszphi_0Neg", "#lambda from the zphi fit, Neg "   , 301, 99.5, 400.5);
+    _hist.lambdaszphi_0[1] = Tfs->make<TH1F>("lambdaszphi_0Pos", "#lambda from the zphi fit, Pos "   , 301, 99.5, 400.5);
+    _hist.chi2dszphi_0 [0] = Tfs->make<TH1F>("chi2dszphi_0Neg", "#chi^{2}/ndof from the zphi fit, Neg "   , 201, -0.5, 20.5);
+    _hist.chi2dszphi_0 [1] = Tfs->make<TH1F>("chi2dszphi_0Pos", "#chi^{2}/ndof from the zphi fit, Pos "   , 201, -0.5, 20.5);
+                          
     _hist.nshszphi_1   [0] = Tfs->make<TH1F>("nshszphi_1Neg"   , "number of strawHits from the zphi fit, Neg "   , 201, -0.5, 200.5);
     _hist.nshszphi_1   [1] = Tfs->make<TH1F>("nshszphi_1Pos"   , "number of strawHits from the zphi fit, Pos "   , 201, -0.5, 200.5);
                            
@@ -211,7 +225,7 @@ namespace mu2e {
 // fill helix-level histograms
 //-----------------------------------------------------------------------------
     
-    _hist.nTimePeaks->Fill(_data->nTimePeaks);
+    _hist.nTimePeaks ->Fill(_data->nTimePeaks);
 
     int   nhelicities(2);
 
@@ -220,6 +234,8 @@ namespace mu2e {
       _hist.nseeds[k]->Fill(_data->nseeds[k]);
 
       for (int i=0; i<_data->nseeds[k]; i++) {
+	_hist.nChPerPanel->Fill(_data->nChPPanel[k][i] );
+
 	_hist.ntclhits   [k]->Fill(_data->ntclhits[k][i]   );
 	if (k==1){
 	  _hist.ntripl0 ->Fill(_data->ntriplet0[k][i]      );
@@ -263,6 +279,12 @@ namespace mu2e {
 	_hist.rsxy_1       [k] ->Fill(_data->rsxy_1[k][i]       );
 	_hist.chi2dsxy_1   [k] ->Fill(_data->chi2dsxy_1[k][i]   );
                        
+	_hist.nshszphi_0   [k] ->Fill(_data->nshszphi_0[k][i]   );
+                       
+	_hist.lambdaszphi_0[k] ->Fill(_data->lambdaszphi_0[k][i]);
+	_hist.chi2dszphi_0 [k] ->Fill(_data->chi2dszphi_0[k][i] );
+
+
 	_hist.nshszphi_1   [k] ->Fill(_data->nshszphi_1[k][i]   );
                        
 	_hist.lambdaszphi_1[k] ->Fill(_data->lambdaszphi_1[k][i]);

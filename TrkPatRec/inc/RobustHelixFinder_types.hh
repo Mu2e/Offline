@@ -31,6 +31,7 @@ namespace mu2e {
       enum  { kMaxHelicities = 2, kMaxSeeds = 100 };
       
       int     nTimePeaks;               // number of time peaks (input)
+      int     nChPPanel[kMaxHelicities][kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
       int     nseeds   [kMaxHelicities]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
       int     ntclhits [kMaxHelicities][kMaxSeeds];
       int     nhits    [kMaxHelicities][kMaxSeeds];
@@ -54,6 +55,10 @@ namespace mu2e {
       
       int     nfz0counter [kMaxHelicities][kMaxSeeds];
                   
+      int     nshszphi_0  [kMaxHelicities][kMaxSeeds];
+      double  lambdaszphi_0[kMaxHelicities][kMaxSeeds];
+      double  chi2dszphi_0[kMaxHelicities][kMaxSeeds];
+
       int     nshszphi_1  [kMaxHelicities][kMaxSeeds];
       double  lambdaszphi_1[kMaxHelicities][kMaxSeeds];
       double  chi2dszphi_1[kMaxHelicities][kMaxSeeds];

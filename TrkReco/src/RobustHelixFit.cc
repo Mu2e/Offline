@@ -69,7 +69,7 @@ namespace mu2e
     _maxzsep(pset.get<float>("maxzsep",500.0)),
     _mindphi(pset.get<float>("mindphi",0.5)),
     _maxdphi(pset.get<float>("maxdphi",2.5)),
-    _sigmaPhi(pset.get<float>("sigmaPhi",0.1636)),
+    _sigmaPhi(pset.get<float>("sigmaPhi",0.49)),//1636)),// rad
     _mindist(pset.get<float>("mindist",100.0)), // mm
     _maxdist(pset.get<float>("maxdist",500.0)), // mm
     _maxdxy(pset.get<float>("maxdxy",100.0)),
@@ -289,7 +289,7 @@ namespace mu2e
 	if (nhitsFace == 0)                          continue;
 
 	for (int ip=0; ip<nhitsFace; ++ip){
-	  hit = &panelz->fHitData.at(ip);
+	  hit = &panelz->fHitData[ip];
 	  initPhi(*hit,rhel); 
 	}
       }//end panels loop
@@ -313,7 +313,7 @@ namespace mu2e
 	if (nhitsPanelF1 == 0)                          continue;
 
 	for (int ip=0; ip<nhitsPanelF1; ++ip){
-	  hitP1 = &panelz1->fHitData.at(ip);
+	  hitP1 = &panelz1->fHitData[ip];
 	
 	  // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
 	  if (!use(*hitP1))   continue;
@@ -327,7 +327,7 @@ namespace mu2e
 	      if (nhitsPanelF2 == 0)                          continue;
 
 	      for (int jp=0; jp<nhitsPanelF2; ++jp){
-		hitP2 = &panelz2->fHitData.at(jp);
+		hitP2 = &panelz2->fHitData[jp];
 	
 		// if (hitP2->_flag.hasAnyProperty(_dontuseflag))   continue;
 		if (!use(*hitP2))   continue;
@@ -373,7 +373,7 @@ namespace mu2e
 	if (nhitsPanelF1 == 0)                          continue;
       
 	for (int ip=0; ip<nhitsPanelF1; ++ip){
-	  hitP1 = &panelz1->fHitData.at(ip);
+	  hitP1 = &panelz1->fHitData[ip];
 	  if (!use(*hitP1) )                          continue;   
 	
 	  float phiex = rhel.circleAzimuth(hitP1->pos().z());
@@ -414,7 +414,7 @@ namespace mu2e
 	    if (nhitsPanelF1 == 0)                          continue;
       
 	    for (int ip=0; ip<nhitsPanelF1; ++ip){
-	      hitP1 = &panelz1->fHitData.at(ip);
+	      hitP1 = &panelz1->fHitData[ip];
 	      // if (!use(*hitP1) )                          continue;   
 	      resolvePhi(*hitP1,rhel);
 	    }
@@ -477,7 +477,7 @@ namespace mu2e
 	if (nhitsPanelF1 == 0)                                     continue;
 
 	for (int i=0; i<nhitsPanelF1; ++i){   
-	  ComboHit* hit = &panelz->fHitData.at(i);
+	  ComboHit* hit = &panelz->fHitData[i];
 
 	  // if (hit->_flag.hasAnyProperty(_dontuseflag))                  continue;
 	  if (!use(*hit))   continue;
@@ -680,7 +680,7 @@ namespace mu2e
 	if (nhitsPanelF1 == 0)                          continue;
       
 	for (int ip=0; ip<nhitsPanelF1; ++ip){
-	  ComboHit* hit = &panelz->fHitData.at(ip);
+	  ComboHit* hit = &panelz->fHitData[ip];
 	  // if (!use(*hitP1) )                          continue;   
 	  resolvePhi(*hit,rhel);
 	}
@@ -728,7 +728,7 @@ namespace mu2e
 	    if (nhitsPanelF1 == 0)                             continue;
 
 	    for (int ip=0; ip<nhitsPanelF1; ++ip){
-	      hitP1 = &panelz1->fHitData.at(ip);
+	      hitP1 = &panelz1->fHitData[ip];
 	
 	      // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
 	      if (!use(*hitP1))                               continue;
@@ -742,7 +742,7 @@ namespace mu2e
 		if (nhitsPanelF2 == 0)                         continue;
 
 		for (int jp=0; jp<nhitsPanelF2; ++jp){
-		  hitP2 = &panelz2->fHitData.at(jp);
+		  hitP2 = &panelz2->fHitData[jp];
 	
 		  // if (hitP2->_flag.hasAnyProperty(_dontuseflag))   continue;
 		  if (!use(*hitP2))                           continue;
@@ -780,7 +780,7 @@ namespace mu2e
 	    if (nhitsPanelF1 == 0)                          continue;
 
 	    for (int ip=0; ip<nhitsPanelF1; ++ip){
-	      hitP1 = &panelz1->fHitData.at(ip);
+	      hitP1 = &panelz1->fHitData[ip];
 	
 	      // if (hitP1->_flag.hasAnyProperty(_dontuseflag))   continue;
 	      if (!use(*hitP1))   continue;
@@ -809,7 +809,7 @@ namespace mu2e
 	    if (nhitsPanelF1 == 0)                          continue;
 
 	    for (int ip=0; ip<nhitsPanelF1; ++ip){
-	      hitP1 = &panelz1->fHitData.at(ip);
+	      hitP1 = &panelz1->fHitData[ip];
 	    
 	      changed |= resolvePhi(*hitP1,rhel);
 	    }//end loop over hits on face f1
@@ -899,7 +899,7 @@ namespace mu2e
 
 	float  xdphi(1e10), xdphiBestHit(_maxXDPhi);
 	for (int ip=0; ip<nhitsFace1; ++ip){
-	  hitP1 = &panelz1->fHitData.at(ip);
+	  hitP1 = &panelz1->fHitData[ip];
 
 	  //set by default as outlier. Only the best hit will be used
 	  phi = hitP1->helixPhi();
@@ -945,7 +945,7 @@ namespace mu2e
       //now add the best hit if found!
       if (indexBestHit.face>=0) {
 	panelz1  = &facezP1->panelZs[indexBestHit.panel];
-	hitP1    = &panelz1->fHitData.at(indexBestHit.panelHitIndex);
+	hitP1    = &panelz1->fHitData[indexBestHit.panelHitIndex];
 
 	//remove the outlier flag
 	hitP1->_flag.clear(StrawHitFlag::outlier);
@@ -989,9 +989,15 @@ namespace mu2e
       HelixData._nZPhiSh = nZPHISh;
 
       if (_diag){
-	HelixData._diag.lambdaszphi_1 = 1./szphi.dfdz();
-	HelixData._diag.chi2dszphi_1  = szphi.chi2DofLine();
-	HelixData._diag.nshszphi_1    = nZPHISh;
+	if (UseInteligentWeights == 1){
+	  HelixData._diag.lambdaszphi_1 = 1./szphi.dfdz();
+	  HelixData._diag.chi2dszphi_1  = szphi.chi2DofLine();
+	  HelixData._diag.nshszphi_1    = nZPHISh;
+	} if (UseInteligentWeights == 0){
+	  HelixData._diag.lambdaszphi_0 = 1./szphi.dfdz();
+	  HelixData._diag.chi2dszphi_0  = szphi.chi2DofLine();
+	  HelixData._diag.nshszphi_0    = nZPHISh;
+	}
       }
     }
 
@@ -1026,7 +1032,7 @@ namespace mu2e
 	if (nhitsPanelF1 == 0)                          continue;
       
 	for (int ip=0; ip<nhitsPanelF1; ++ip){
-	  hitP1 = &panelz1->fHitData.at(ip);
+	  hitP1 = &panelz1->fHitData[ip];
 	  if (!use(*hitP1) )                          continue;
 	  float ri2 = (hitP1->pos().x()*hitP1->pos().x() + hitP1->pos().y()*hitP1->pos().y());
 
@@ -1039,7 +1045,7 @@ namespace mu2e
 	      if (nhitsPanelF2 == 0)                      continue;
       
 	      for (int jp=0; jp<nhitsPanelF2; ++jp){
-		hitP2 = &panelz2->fHitData.at(jp);
+		hitP2 = &panelz2->fHitData[jp];
 		if (!use(*hitP2) )                      continue;
 		float dist2ij = pow(hitP1->pos().x()-hitP2->pos().x(), 2) + pow(hitP1->pos().y() - hitP2->pos().y(), 2);
 		if (dist2ij < mind2 || dist2ij > maxd2) continue;	  
@@ -1054,7 +1060,7 @@ namespace mu2e
 		    if (nhitsPanelF3 == 0)                  continue;
       
 		    for (int kp=0; kp<nhitsPanelF3; ++kp){
-		      hitP3 = &panelz3->fHitData.at(kp);
+		      hitP3 = &panelz3->fHitData[kp];
 		      if (!use(*hitP3) )                  continue;
 	 
 		      float dist2ik = pow(hitP1->pos().x()-hitP3->pos().x(), 2) + pow(hitP1->pos().y() - hitP3->pos().y(), 2);
@@ -1136,7 +1142,7 @@ namespace mu2e
 		if (nhitsPanelF1 == 0)                          continue;
       
 		for (int ip=0; ip<nhitsPanelF1; ++ip){
-		  hitP1 = &panelz1->fHitData.at(ip);
+		  hitP1 = &panelz1->fHitData[ip];
 		  if (!use(*hitP1) )                          continue;	  
 		  float rho = sqrtf(pow(hitP1->pos().x() - centx,2) + pow(hitP1->pos().y() - centy,2));//(wp - center).Mag2());
 		  accr(rho,weight = hitP1->nStrawHits()); 
@@ -1153,7 +1159,7 @@ namespace mu2e
 		if (nhitsPanelF1 == 0)                          continue;
       
 		for (int ip=0; ip<nhitsPanelF1; ++ip){
-		  hitP1 = &panelz1->fHitData.at(ip);
+		  hitP1 = &panelz1->fHitData[ip];
 		  if (!use(*hitP1) )                          continue;
 		  // compute the projection to the radius
 		  XYVec rvec = (XYVec(hitP1->pos().x(),hitP1->pos().y())-center);
@@ -1251,7 +1257,7 @@ namespace mu2e
 	if (nhitsPanelF1 == 0)                          continue;
 	
 	for (int ip=0; ip<nhitsPanelF1; ++ip){
-	  hitP1 = &panelz1->fHitData.at(ip);
+	  hitP1 = &panelz1->fHitData[ip];
 	  if (!use(*hitP1) )                          continue;
 
 	  //set by default as outlier. Only the best hit will be used
@@ -1278,7 +1284,7 @@ namespace mu2e
       //now add the best hit if found!
       if (indexBestComboHit.face >=0 ) {
 	panelz1  = &facezP1->panelZs[indexBestComboHit.panel];   
-	hitP1    = &panelz1->fHitData.at(indexBestComboHit.panelHitIndex);
+	hitP1    = &panelz1->fHitData[indexBestComboHit.panelHitIndex];
 
 	//remove the outlier flag
 	hitP1->_flag.clear(StrawHitFlag::outlier);//FIXME!
@@ -1589,7 +1595,7 @@ namespace mu2e
     // float e2     = _ew*_ew*costh2+rs*rs*sinth2;
     float e2     = Hit.wireErr2()*costh2+transErr2*sinth2;
     float wt     = Radius*Radius/e2;
-    wt           *= 0.025;//_weightZPhi;
+    //    wt           *= 0.025;//_weightZPhi;
 
     return wt;
   }

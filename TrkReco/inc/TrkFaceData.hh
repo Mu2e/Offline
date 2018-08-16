@@ -36,41 +36,25 @@ namespace mu2e {
   
  
   struct PanelZ_t {
-    int                              fNHits;      // guess, total number of hits per panel
-    //    std::vector<ComboHit>            fHitData;
-    constexpr static uint16_t        kNMaxPanelHits = 100;//maximum number of hits within a panel
+    int                              fNHits;      // total number of hits per panel
+    constexpr static uint16_t        kNMaxPanelHits = 20;//maximum number of hits within a panel
 
     //    std::array<ComboHit, kNMaxPanelHits>        fHitData;
     std::vector<ComboHit>        fHitData;
-
-    float                          wx;          // direction cosines of the wires, assumed to be all the same
-    float                          wy;      
+    
+    // float                          wx;          // direction cosines of the wires, assumed to be all the same
+    // float                          wy;      
     float                          phi;         // phi angle of the wire
     //    double                           z;           // 
 
     PanelZ_t    (){
       fNHits  = 0;
-      //      fHitData.reserve(kNMaxPanelHits);
+      fHitData.reserve(kNMaxPanelHits);
     }
-
-    // PanelZ_t    (const PanelZ_t&Copy){
-    //   fNHits = Copy.fNHits;  
-    //   //      fPanel = Copy.fPanel;  
-    //   wx     = Copy.wx;      
-    //   wy     = Copy.wy;      
-    //   phi    = Copy.phi;     
-    //   //      z      = Copy.z;       
-    //   int nhits = Copy.fHitData.size();
-    //   //      fHitData.reserve(kNMaxPanelHits);
-    //   for (int i=0; i<nhits; ++i){
-    // 	fHitData[i] = ComboHit(Copy.fHitData[i]);
-    //   }
-    // }
   }; 
 
   struct FaceZ_t {
     constexpr static uint16_t kNPanels           = 3; // number of panels per plane
-    // constexpr static uint16_t kNTotalFaces       = StrawId::_nfaces*StrawId::_nplanes;
     constexpr static uint16_t kNPlanesPerStation = 2;
 
     float                          z;           // 
@@ -80,16 +64,6 @@ namespace mu2e {
     FaceZ_t    (){
       bestFaceHit = HitInfo_t();
     }
-
-    // FaceZ_t    (const FaceZ_t&Copy){
-    //   //      fNHits = Copy.fNHits;  
-    //   z           = Copy.z;  
-    //   bestFaceHit = Copy.bestFaceHit;
-    //   for (int i=0; i<kNPanels; ++i){
-    // 	panelZs[i] = Copy.panelZs[i];
-    //   }
-    // }
-    
     
     int   evalUniqueHitIndex(int &Face, int& Panel, int& PanelHitIndex){
       return Face*FaceZ_t::kNPanels*PanelZ_t::kNMaxPanelHits + Panel*PanelZ_t::kNMaxPanelHits + PanelHitIndex;

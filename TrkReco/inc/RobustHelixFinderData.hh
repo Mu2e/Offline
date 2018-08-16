@@ -46,6 +46,8 @@ namespace mu2e {
 
     struct Diag_t {
       
+      int       nChPPanel;
+
       double    resid[kMaxResidIndex];
       double    dist [kMaxResidIndex];
       double    dz   [kMaxResidIndex];
@@ -74,6 +76,10 @@ namespace mu2e {
       int       nshszphi;
       double    lambdaszphi;
       double    chi2dszphi;
+
+      int       nshszphi_0;
+      double    lambdaszphi_0;
+      double    chi2dszphi_0;
 
       int       nshszphi_1;
       double    lambdaszphi_1;
