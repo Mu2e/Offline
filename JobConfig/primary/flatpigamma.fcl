@@ -16,6 +16,7 @@ physics : {
       }
       pionStops : {
 	treeName : "stoppedPionDumper/stops"
+	branchName : "stops"
       }
     }
     @table::Primary.producers
@@ -35,5 +36,5 @@ outputs : {
 physics.end_paths : [ EndPath ] # needed for generate_fclprocess_name: flatpigamma
 services.TFileService.fileName: "nts.owner.flatpigamma.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.flatpigamma.version.sequencer.art"
-physics.producers.generate.pionStops.inputFiles :  [ "nts.hsong.pions_nts3tgtstops.MDC2018Head_0809.root" ]
+physics.producers.generate.pionStops.inputFiles :  ["mergedMuonStops/nts.mu2e.pion-DS-TGTstops.MDC2018a.001002_00000000.root" ] 
 

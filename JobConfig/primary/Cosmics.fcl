@@ -34,7 +34,8 @@ outputs : {
 services.TFileService.fileName: "nts.owner.Cosmics.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.Cosmics.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-
+# loosen digi cuts
+physics.filters.DigiFilter.MinNDigis : 5
 
 #this seems to be needed when running locally
 services.SeedService.baseSeed         :  0

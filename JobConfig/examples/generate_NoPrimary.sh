@@ -1,5 +1,5 @@
 generate_fcl --description NoPrimary --dsconf MDC2018a --dsowner mu2e --include JobConfig/mixing/NoPrimary.fcl \
---run-number 1002 --events-per-job 500 --njobs 50 --max-engines 30 \
+--run-number 1002 --events-per-job 500 --njobs 200 --max-engines 30 \
 --auxinput=2:physics.filters.ootMixerCRV.fileNames:oot-CRV-cat.txt \
 --auxinput=1:physics.filters.neutronMixerCRV.fileNames:neutron-CRV-cat.txt \
 --auxinput=1:physics.filters.dioMixerCRV.fileNames:dio-CRV-cat.txt \
