@@ -1010,7 +1010,18 @@ namespace mu2e {
 
     G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
 
-    CLHEP::Hep3Vector parentPos    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
+    CLHEP::Hep3Vector parentPosW    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
+    CLHEP::Hep3Vector parentPosM    = _helper->locateVolInfo("TS1Vacuum").centerInMu2e();
+
+
+    if ( verbosityLevel > 0 ) {
+      cout << __func__ << " Coll1 OffsetInW     : " << coll1.getLocal() + parentPosW << endl;
+      cout << __func__ << " Coll1 OffsetInMu2e  : " << coll1.getLocal() + parentPosM << endl;
+      cout << __func__ << " Coll1 Extent        :[ " << coll1.getLocal().z() - coll1.halfLength() + parentPosM.z() <<","
+           << coll1.getLocal().z() + coll1.halfLength()  + parentPosM.z() << "]" << endl;
+     }
+
+
 
     nestCons( "Coll11",
               coll1Param1,
@@ -1898,8 +1909,8 @@ namespace mu2e {
       double pbarTS1InOffset = config.getDouble("pbar.coll1In.offset", 1.0);
 
       if ( verbosityLevel > 0 ) {
-        cout << __func__ << "Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
-        cout << __func__ << "Pbar absorber at TS1 coll1 entrance offset : " << pbarTS1InOffset << std::endl;
+        cout << __func__ << " Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
+        cout << __func__ << " Pbar absorber at TS1 coll1 entrance offset : " << pbarTS1InOffset << std::endl;
       }
 
       CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
@@ -1925,10 +1936,11 @@ namespace mu2e {
         pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
 
         if ( verbosityLevel > 0 ) {
-          cout << __func__ << "coll1 halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << endl;
-          cout << __func__ << "pbarTS1InHalfLength " << pbarTS1InHalfLength << endl;
-          cout << __func__ << "pbarTS1InOffset " << pbarTS1InOffset << endl;
-          cout << __func__ << "pbarTS1InPos " << pbarTS1InPos << endl;
+
+          cout << __func__ << " straight section halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << endl;
+          cout << __func__ << " pbarTS1InHalfLength " << pbarTS1InHalfLength << endl;
+          cout << __func__ << " pbarTS1InOffset " << pbarTS1InOffset << endl;
+          cout << __func__ << " pbarTS1InPos " << pbarTS1InPos << endl;
         }
       }
       // mother volume set in block above
@@ -2173,29 +2185,50 @@ namespace mu2e {
     if (is_pbarTS1Out) {
 
       // Get VDs
-      GeomHandle<VirtualDetector> vdg;
-      double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
+      // GeomHandle<VirtualDetector> vdg;
+      // double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
 
       CollimatorTS1 const& coll1  = ts.getColl1() ;
 
       string pbarTS1OutMaterial   = config.getString("pbar.coll1Out.material1Name");
-      //      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
-      double pbarTS1OutHalfLength = coll1.collarHalfLength()-2.*vdHalfLength;
-      double pbarTS1OutrIn        = config.getDouble("pbar.coll1Out.rIn",        120.0);
-      double pbarTS1OutphiBegin   = config.getDouble("pbar.coll1Out.phiBegin",   210.0);
-      double pbarTS1OutphiDelta   = config.getDouble("pbar.coll1Out.phiDelta",   120.0);
+      // double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      // double pbarTS1OutHalfLength = coll1.collarHalfLength()-2.*vdHalfLength;
+      double pbarTS1OutHalfLength = coll1.collarHalfLength();
+      double pbarTS1OutrIn        = coll1.collarrIn();
+      double pbarTS1OutphiBegin   = coll1.collarphiBegin();
+      double pbarTS1OutphiDelta   = coll1.collarphiDelta();
       double pbarTS1OutParams[5]  = { pbarTS1OutrIn, coll1.rIn1(), pbarTS1OutHalfLength,
                                       pbarTS1OutphiBegin*CLHEP::degree, pbarTS1OutphiDelta*CLHEP::degree };
-      double pbarTS1OutPosz       = config.getDouble("pbar.coll1Out.z", -3144.0);
+
+      double pbarTS1OutPosz       = coll1.collarZ();
+
       if ( verbosityLevel > 0 ) {
-        std::cout << "Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
+        cout << __func__ << " Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
           << " pbarTS1OutPosz " << pbarTS1OutPosz << " phiBegin " << pbarTS1OutphiBegin << " dPhi " << pbarTS1OutphiDelta << std::endl;
       }
 
-      CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal();
-      //      CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
-      //      pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
-      pbarTS1OutPos.setZ( pbarTS1OutPos.z() + (pbarTS1OutPosz-(-4044)) - coll1.halfLength() );
+      CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal(); // the absorber is placed on the axis of coll1, shifted in z, see below
+      // CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
+      // pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
+
+      if ( verbosityLevel > 1 ) {
+	// printout related to the old code below
+	cout << __func__ << " pbarTS1OutPos :                      " << pbarTS1OutPos << endl;
+	cout << __func__ << " pbarTS1OutPosz-(-4044)) :            " << pbarTS1OutPosz-(-4044) << endl;
+	cout << __func__ << " coll1.halfLength() :                 " << coll1.halfLength() << endl;
+      }
+
+      // pbarTS1OutPos.setZ( pbarTS1OutPos.z() + (pbarTS1OutPosz-(-4044)) - coll1.halfLength() );
+      pbarTS1OutPos.setZ( coll1.collarZ() - ((_helper->locateVolInfo("TS1Vacuum")).centerInMu2e()).z() );
+
+      if ( verbosityLevel > 0 ) {
+	cout << __func__ << " PbarAbsTS1Out position in TS1Vacuum: " << pbarTS1OutPos << endl;
+	double zpos = pbarTS1OutPos.z()+((_helper->locateVolInfo("TS1Vacuum")).centerInMu2e()).z();
+	cout << __func__ << " PbarAbsTS1Out position in mu2e:      " << pbarTS1OutPos+(_helper->locateVolInfo("TS1Vacuum")).centerInMu2e() << endl;
+	cout << __func__ << " PbarAbsTS1Out Extent:               [" << zpos - pbarTS1OutHalfLength << ","
+	     << zpos + pbarTS1OutHalfLength << "]" << endl;
+	cout << __func__ << " PbarAbsTS1Out HalfLength :           " << pbarTS1OutHalfLength << endl;
+      }
 
       nestTubs( "PbarAbsTS1Out",
                 pbarTS1OutParams,
