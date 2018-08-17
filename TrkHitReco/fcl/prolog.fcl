@@ -76,6 +76,7 @@ TTmakeSH : {
   module_type : StrawHitReco
   FilterHits : true
   WriteStrawHitCollection : false
+  EventWindowMarkerLabel : "EWMProducer"
 }
 # combine hits in a panel
 TTmakePH : {
