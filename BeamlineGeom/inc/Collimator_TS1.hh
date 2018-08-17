@@ -36,6 +36,9 @@ namespace mu2e {
     double collarHalfLength() const { return _collarHalfLength; }
     double collarZ() const { return _collarZ; }
     double collarMarginZ() const { return _collarMarginZ; }
+    double collarrIn() const { return _collarrIn; }
+    double collarphiBegin() const { return _collarphiBegin; }
+    double collarphiDelta() const { return _collarphiDelta; }
 
   private:
 
@@ -52,6 +55,9 @@ namespace mu2e {
     double _collarHalfLength;
     double _collarZ;
     double _collarMarginZ;
+    double _collarrIn;
+    double _collarphiBegin;
+    double _collarphiDelta;
 
 };
 
