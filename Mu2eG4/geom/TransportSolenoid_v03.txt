@@ -50,7 +50,7 @@ vector<double> ts.yRing = {0, 0, 0, 0, 0, 0, 0, 0};
 vector<double> ts.zRing = {-2934, -859.3, 0, 0, 0, 0, 859.3, 2934};
 vector<double> ts.thetaRing = {0, 45, 90, 90, 90, 90, 45, 0}; // degrees yrot
 
-int  ts.cryo.verbosityLevel = 0.;
+int  ts.cryo.verbosityLevel = 0 ;
 bool ts.cryo.isVisible = true;
 bool ts.cryo.isSolid   = false;
 
@@ -69,7 +69,7 @@ int    pbar.version        = 3;
 bool   pbar.isVisible      = true;
 bool   pbar.isSolid        = false;
 int    pbar.verbosityLevel = 0;
-double pbar.halfLength     = 825.0e-04;// 100.0e-3; // 0.06->0.1
+double pbar.halfLength     = 0.254; // 825.0e-04;// 100.0e-3; // 0.06->0.1
 string pbar.Type           = "wedge"; // "disk"
 string pbar.materialName   = "G4_Be";// "G4_KAPTON";
 double pbar.diskradius     = 225.0; // mm
@@ -133,10 +133,10 @@ double pbar.coll1In.pegRadialPosition = 166.7; // midway between inner and
 
 // Collar pbar absorber in TS1 collimator near end
 bool   pbar.coll1Out.build = true;
-string pbar.coll1Out.material1Name = "G4_C";
+string pbar.coll1Out.material1Name = "G4_GRAPHITE_POROUS";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
-double pbar.coll1Out.z = -3144.5;
+double pbar.coll1Out.z = -3154;
 double pbar.coll1Out.zDiff = 0.5; // margin between end of collar and Coll1    
 // Has always been there, now we keep track of it 
 //double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values 
@@ -167,16 +167,16 @@ double ts.coll1.innerRadius1 = 150.0;
 double ts.coll1.innerRadius2 = 150.0;
 double ts.coll1.innerRadius3 = 160.0; 
 double ts.coll1.innerRadius4 = 240.0;
-double ts.coll1.outerRadius4 = 248.0;
+double ts.coll1.outerRadius4 = 243.0;
 // r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
 // and both materials to G4_Cu to get the previous setup
-string ts.coll1.material1Name = "G4_C";
-string ts.coll1.material2Name = "CollCu";
-string ts.coll1.material3Name = "StainlessSteel";
+string ts.coll1.material1Name = "G4_GRAPHITE_POROUS";
+string ts.coll1.material2Name = "BronzeC608";
+string ts.coll1.material3Name = "BronzeC608";
 
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
-string ts.coll3.materialName     = "CollCu";
+string ts.coll3.materialName     = "BronzeC608";
 double ts.coll3.rotationAngle    = 0.0;
 double ts.coll3.holeRadius       = 150.0;
 double ts.coll3.holeHalfHeight   = 100.0;
@@ -189,7 +189,7 @@ double ts.flashBlockUp.Width       = 50.0; // mm
 double ts.flashBlockUp.TransOffset = 15.0; // mm
 double ts.flashBlockUp.LongOffset  = 200.0;  // from Center:  neg = upstream
 double ts.flashBlockUp.Length      = 200.0; // mm full length
-string ts.flashBlockUp.Material    = "CollCu"; //
+string ts.flashBlockUp.Material    = "BronzeC608"; //
 
 bool   ts.useFlashBlockDn          = false;
 double ts.flashBlockDn.Height      = 35.0; // mm
@@ -197,7 +197,7 @@ double ts.flashBlockDn.Width       = 50.0; // mm
 double ts.flashBlockDn.TransOffset = 15.0; // mm
 double ts.flashBlockDn.LongOffset  = 0.0;  // from Center:  neg = upstream
 double ts.flashBlockDn.Length      = 100.0; // mm full length
-string ts.flashBlockDn.Material    = "CollCu"; //
+string ts.flashBlockDn.Material    = "BronzeC608"; //
 
 
 double ts.coll5.halfLength    = 500.0;
