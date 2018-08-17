@@ -493,8 +493,11 @@ namespace mu2e {
     coll1._material3 = c.getString("ts.coll1.material3Name","None");
 
     coll1._collarHalfLength = c.getDouble("pbar.coll1Out.halfLength",100.0);
-    coll1._collarZ = c.getDouble("pbar.coll1Out.z",-3144.5);
-    coll1._collarMarginZ = c.getDouble("pbar.coll1Out.zDiff",0.5);
+    coll1._collarZ          = c.getDouble("pbar.coll1Out.z",-3104.5); // in Mu2e
+    coll1._collarMarginZ    = c.getDouble("pbar.coll1Out.zDiff",0.5);
+    coll1._collarrIn        = c.getDouble("pbar.coll1Out.rIn",        120.0);
+    coll1._collarphiBegin   = c.getDouble("pbar.coll1Out.phiBegin",   210.0);
+    coll1._collarphiDelta   = c.getDouble("pbar.coll1Out.phiDelta",   120.0);
 
     // TS3
     coll32._hole             = coll31._hole              = c.getDouble("ts.coll3.hole",0.);
@@ -512,7 +515,7 @@ namespace mu2e {
     coll31._flashBlockLength  = c.getDouble("ts.flashBlockUp.Length",0.0);
     coll31._flashBlockTO      = c.getDouble("ts.flashBlockUp.TransOffset",0.);
     coll31._flashBlockLO      = c.getDouble("ts.flashBlockUp.LongOffset",0.);
-    coll31._flashBlockMaterial= c.getString("ts.flashBlockUp.Material","CollCu");
+    coll31._flashBlockMaterial= c.getString("ts.flashBlockUp.Material","BronzeC608");
 
     coll32._useFlashBlock     = c.getBool("ts.useFlashBlockDn",false);
     coll32._flashBlockHeight  = c.getDouble("ts.flashBlockDn.Height",0.0);
@@ -520,7 +523,7 @@ namespace mu2e {
     coll32._flashBlockLength  = c.getDouble("ts.flashBlockDn.Length",0.0);
     coll32._flashBlockTO      = c.getDouble("ts.flashBlockDn.TransOffset",0.);
     coll32._flashBlockLO      = c.getDouble("ts.flashBlockDn.LongOffset",0.);
-    coll32._flashBlockMaterial= c.getString("ts.flashBlockDn.Material","CollCu");
+    coll32._flashBlockMaterial= c.getString("ts.flashBlockDn.Material","BronzeC608");
 
 
 
