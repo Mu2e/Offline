@@ -30,6 +30,8 @@ outputs : {
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
+# update the maximum # of particles
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
 services.TFileService.fileName: "nts.owner.Cosmics.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.Cosmics.version.sequencer.art"
