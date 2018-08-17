@@ -6,6 +6,7 @@
 #include "CommonMC/fcl/prolog.fcl"
 #include "TrackerMC/fcl/prolog.fcl"
 #include "CaloMC/fcl/prolog.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
@@ -18,23 +19,13 @@ Primary: {
     @table::CommonMC.producers
     @table::TrackerMC.producers
     @table::CaloDigiMC.producers
+    @table::CrvDAQPackage.producers
 # dedicated digi maker for filter
     makeSD:{
       @table::makeSD
       TimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
-# digi compression
-    compressDigiMCs : {
-      module_type : CompressDigiMCs
-      strawDigiMCTag : "makeSD"
-      crvDigiMCTag : ""
-      simParticleTags : [ "g4run" ] 
-      extraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-      timeMapTags : [ @sequence::CommonMC.TimeMaps ]
-      caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
-      caloShowerSimTag : "CaloShowerStepROFromShowerStep"
-      caloShowerStepROTag : "CaloShowerStepROFromShowerStep"
-    }
+    compressDigiMCs : @local::DigiCompression.Primary
   }
   filters : {
 # generator truncation filter; only needed for cosmic rays in principle
@@ -56,6 +47,8 @@ Primary: {
     @sequence::TrackerMC.DigiSim,
     DigiFilter,
     @sequence::CaloDigiMC.DigiSim,
+# don't include CRV for now: it adds no content but takes up >2GBytes memory with tables
+#    @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
   EndPath : [ genCountLogger, Output ]
   Output : {
@@ -63,15 +56,7 @@ Primary: {
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
      # drop StepPoints from calorimeter
-  outputCommands : [ "drop *_*_*_*",
-    		     "keep *_compressDigiMCs_*_*",
-    		     "keep mu2e::StrawDigis_*_*_*",
-    		     "keep mu2e::CaloDigis_*_*_*",
-    		     "keep mu2e::CrvDigis_*_*_*",
-    		     "keep mu2e::StatusG4_*_*_*",
-    		     "keep art::TriggerResults_*_*_*",
-		     "keep mu2e::EventWindowMarker_*_*_*",
-    		     "keep *_genCounter_*_*" ]
+     outputCommands : @local::DigiCompression.OutputCommands
   }
 }
 

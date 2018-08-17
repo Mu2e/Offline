@@ -24,8 +24,7 @@ namespace mu2e {
   }
   
   StrawDigi::StrawDigi(StrawDigi const& other) : _strawid(other._strawid),
-  //  _tdc(other._tdc),
-     _adc(other._adc)
+     _flag(other._flag),_adc(other._adc)
   {
     for(size_t itdc=0;itdc<2;++itdc){
       _tdc[itdc] = other._tdc[itdc];
@@ -36,11 +35,12 @@ namespace mu2e {
   StrawDigi& StrawDigi::operator=(StrawDigi const& other) {
     if(this != &other){
       _strawid = other._strawid;
+      _flag = other._flag;
+      _adc = other._adc;
       for(size_t itdc=0;itdc<2;++itdc){
 	_tdc[itdc] = other._tdc[itdc];
 	_tot[itdc] = other._tot[itdc];
       }
-      _adc = other._adc;
     }
     return *this;
   }
