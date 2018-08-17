@@ -438,6 +438,17 @@ namespace mu2e {
       BronzeC943->AddMaterial(findMaterialOrThrow("G4_Zn"),0.0025);
     }
 
+    // Bronze C60800 somewat based on www.matweb.com
+    mat = uniqueMaterialOrThrow( "BronzeC608" );
+    {
+      G4Material* BronzeC608 = new G4Material( mat.name, 8.17*CLHEP::g/CLHEP::cm3, 5);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Cu"),0.9310);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Al"),0.0572);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Fe"),0.0050);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Pb"),0.0050);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_As"),0.0018);
+    }
+
     // C360 brass
     mat = uniqueMaterialOrThrow( "BrassC360" );
     {
@@ -471,6 +482,20 @@ namespace mu2e {
       A95083->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0013);
       A95083->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.0007);
       A95083->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.0005);
+    }
+
+    // 1100 Aluminum
+    // https://en.wikipedia.org/wiki/1100_aluminium_alloy
+    // http://www.matweb.com/search/DataSheet.aspx?MatGUID=2ca5a0592e4147848bdbd40d1ff1a056&ckck=1
+    mat = uniqueMaterialOrThrow( "A1100");
+    {
+      G4Material* A1100 = new G4Material( mat.name, 2.71*CLHEP::g/CLHEP::cm3, 6);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Al"), 0.99275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.00275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Si"), 0.00275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.00100);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.00025);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0005);
     }
 
     // NbTi
