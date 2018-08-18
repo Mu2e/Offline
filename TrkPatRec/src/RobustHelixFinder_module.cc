@@ -398,11 +398,14 @@ namespace mu2e {
       
       if (_hfResult._hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
 	// loop over helicities. 
-	int     helCounter(0);
+	unsigned    helCounter(0);
+	HelixSeed   helixSeed_from_fitCircle = _hfResult._hseed;
+
 	for(auto const& hel : _hels ) {
 	  // tentatively put a copy with the specified helicity in the appropriate output vector
 	  RobustHelixFinderData tmpResult(_hfResult);
 	  tmpResult._hseed._helix._helicity = hel;
+	  //	  _hfResult._hseed._helix._helicity = hel;
 
 	  //fit the helix: refine the XY-circle fit + performs the ZPhi fit
 	  // it also performs a clean-up of the hits with large residuals
@@ -410,20 +413,34 @@ namespace mu2e {
 	    fitHelix_2(tmpResult);
 	  else
 	    fitHelix(tmpResult);
+	  // if (_reducedchi2)
+	  //   fitHelix_2(_hfResult);
+	  // else
+	  //   fitHelix(_hfResult);
 	    
 
 	  if (tmpResult._hseed.status().hasAnyProperty(_saveflag)){
+	    //	  if (_hfResult._hseed.status().hasAnyProperty(_saveflag)){
 	    //fill the hits in the HelixSeedCollection
 	    fillGoodHits(tmpResult);
+	    // fillGoodHits(_hfResult);
 
 	    HelixSeedCollection* hcol = helcols[hel].get();
 	    hcol->push_back(tmpResult._hseed);
+	    //	    hcol->push_back(_hfResult._hseed);
 	    if (_diag > 0) {
 	      fillPluginDiag(tmpResult, helCounter);
+	      //	      fillPluginDiag(_hfResult, helCounter);
 	    }
 	  }
 	  ++helCounter;
-	}
+	  
+	  // if (helCounter < _hels.size()) {
+	  //   _hfResult.clearResults();
+	  //   _hfRerult.
+	  //   _hfResult._hseed = helixSeed_from_fitCircle;
+	  // }
+	}//end loop over the helicity
       }	
       
     }
@@ -441,11 +458,6 @@ namespace mu2e {
     PanelZ_t*     panelz(0);
     ComboHit*     hit(0);
 
-    // RobustHelix& rhel          = helixData._hseed._helix;
-    // double       z_start(0);
-    // double       dfdz          = 1./rhel.lambda();
-    // bool         isFirst(true);
-
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
       facez = &helixData._oTracker[f];
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
@@ -454,23 +466,8 @@ namespace mu2e {
 	for (int i=0; i<nhits; ++i){   
 	  hit = &panelz->fHitData[i];
 	  if (hit->_flag.hasAnyProperty(_outlier))     continue;
-	
-	  // double   hit_z  = hit->pos().z();
-	  // if ( isFirst ){ 
-	  //   z_start = hit_z;
-	  //   isFirst = false;
-	  // }
-      
-	  // double   dx     = (hit->pos().x() - rhel.center().y());
-	  // double   dy     = (hit->pos().y() - rhel.center().y());
-	  // double   shphi  = polyAtan2(dy,dx);//XYZVec(hit->pos() - rhel.center()).phi();
-	  // int      nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
-	  // shphi = shphi + double(nLoops)*2.*M_PI;
 
-	  ComboHit                hhit(*hit);
-	  //	  hhit._hphi = shphi;
-	  // hhit._flag.merge(StrawHitFlag::resolvedphi);
-					
+	  ComboHit                hhit(*hit);					
 	  helixData._hseed._hhits.push_back(hhit);
 	
 	}//end loop over the hits within a panel
@@ -873,7 +870,7 @@ namespace mu2e {
 
 	nhitsPerPanel  = panelz->fNHits;
 	  
-	if (nhitsPerPanel != 0)                       continue;
+	if (nhitsPerPanel == 0)                       continue;
 
 	for (int i=0; i<nhitsPerPanel;++i){
 	  hit =  &panelz->fHitData[i];

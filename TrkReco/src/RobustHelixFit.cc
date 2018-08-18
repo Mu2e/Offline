@@ -447,7 +447,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     if (_debug > 5) {
       printf("[RobustHelixFinder::initFZ_2:BEGIN] x0 = %9.3f y0 = %9.3f Helix._radius = %9.3f Helix._nStrawHits = %3i",
-	     center.x(), center.y(), HelixData._radius,HelixData._nStrawHits);
+	     center.x(), center.y(), HelixData._hseed._helix._radius,HelixData._nStrawHits);
     }
 
     int       nstations, nhits[30], nstations_with_hits(0);

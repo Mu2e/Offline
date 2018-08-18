@@ -108,7 +108,7 @@ namespace mu2e {
 
     HelixSeed                         _hseed;
 
-    std::vector<StrawHitIndex>        _goodhits;
+    //    std::vector<StrawHitIndex>        _goodhits;
 
     // SeedInfo_t                        _seedIndex;
     // SeedInfo_t                        _candIndex;
@@ -122,33 +122,33 @@ namespace mu2e {
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
-    double                            _helixChi2;
+    // double                            _helixChi2;
 
-    TrkParticle                       _tpart;
-    TrkFitDirection                   _fdir;
+    // TrkParticle                       _tpart;
+    // TrkFitDirection                   _fdir;
 
     const ComboHitCollection*         _chcol;
     // const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _chfcol;
     
-    TrkErrCode                        _fit;	    // fit status code from last fit
+    //    TrkErrCode                        _fit;	    // fit status code from last fit
 //-----------------------------------------------------------------------------
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
     ::LsqSums4         _sxy;
     ::LsqSums4         _szphi;
 
-    XYZVec             _center;
-    double             _radius;
+    // XYZVec             _center;
+    // double             _radius;
 
-    double             _chi2;
+    // double             _chi2;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
 //-----------------------------------------------------------------------------
-    double             _dfdz;
-    double             _fz0;
+    // double             _dfdz;
+    // double             _fz0;
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
 //-----------------------------------------------------------------------------
@@ -177,7 +177,7 @@ namespace mu2e {
     int           maxIndex          () { return kMaxResidIndex; }
     // HelixTraj*    helix             () { return _helix;        }
 
-    int           nGoodHits         () { return _goodhits.size(); }
+    // int           nGoodHits         () { return _goodhits.size(); }
 
     void          orderID           (ChannelID* X, ChannelID* O);
 
