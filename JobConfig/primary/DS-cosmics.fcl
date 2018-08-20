@@ -5,7 +5,7 @@
 # (based on Dave Brown's CeEndpoint)
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: DS-cosmics
+process_name: DScosmics
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
