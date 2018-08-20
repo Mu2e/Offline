@@ -1,11 +1,11 @@
 #
-# cosmic ray muons produced at a box around the tracker and calorimeter
+# cosmic ray muons produced at a box around the DS
 #
 # original author: Ralf Ehrlich, UVA 
 # (based on Dave Brown's CeEndpoint)
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: Cosmics
+process_name: DS-cosmics
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
@@ -20,7 +20,8 @@ physics : {
   }
   filters: { @table::Primary.filters }
   analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
+# enable CRV digis
+  TriggerPath : [ @sequence::Primary.TriggerPath, @sequence::CrvDAQPackage.CrvResponseSequence ]
   EndPath : @local::Primary.EndPath
 }
 outputs : { 
@@ -33,8 +34,8 @@ outputs : {
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.Cosmics.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.Cosmics.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.DS-cosmics.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.DS-cosmics.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 # loosen digi cuts
 physics.filters.DigiFilter.MinNDigis : 5
