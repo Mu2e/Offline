@@ -13,8 +13,8 @@ namespace mu2e {
 // RobustHelixFinderData
 //-----------------------------------------------------------------------------
   RobustHelixFinderData::RobustHelixFinderData() {
-    // _helix = NULL;
-    // _hseed = NULL;
+    _chHitsToProcess.reserve(kNMaxChHits);
+    _chHitsWPos     .reserve(kNMaxChHits);
   }
 
 
@@ -56,29 +56,15 @@ namespace mu2e {
 
     _timeCluster    = NULL;
     _timeClusterPtr = art::Ptr<TimeCluster>();
-
-    // _helix          = NULL;
-    // _hseed          = NULL;
-
-    //    _goodhits.clear();
+    
+    _chHitsToProcess.clear();
+    _chHitsWPos.clear();
 
     _nStrawHits = 0;
     _nComboHits = 0;
-
-    // _fit.setFailure(1,"failure");
     
     _sxy.clear();
     _szphi.clear();
-    // _chi2   = -1.;
-    // _radius = -1.;
-    
-    // _sxyw.clear();
-    // _rw   = -1.;
-    // _chi2w = -1.;
-      
-    // _dfdz = -1.e6;
-    // _fz0  = -1.e6;
-
     _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
 
@@ -91,22 +77,17 @@ namespace mu2e {
     _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
 
-    // _helixChi2   = 1e10;
-
-    // _seedIndex   = SeedInfo_t(-1,-1);
-    // _candIndex   = SeedInfo_t(-1,-1);
-
     //clear the panel-based structure
     for (int f=0; f<StrawId::_ntotalfaces; ++f) {
       FaceZ_t* facez = &_oTracker[f];
+      facez->bestFaceHit = -1;
+
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	PanelZ_t* panelz  = &facez->panelZs[p];   
-	panelz->fNHits = 0;
-	panelz->fHitData.clear() ;
+	panelz->idChBegin = -1;
+	panelz->idChEnd   = -1;
       }
     }
-
-    // _hitsUsed =  {0};
   }
 
 //-----------------------------------------------------------------------------

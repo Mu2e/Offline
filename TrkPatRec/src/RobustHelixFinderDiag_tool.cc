@@ -32,6 +32,7 @@ namespace mu2e {
     struct Hist_t {
       TH1F*  nTimePeaks;
       TH1F*  nChPerPanel;
+      TH1F*  nChHits;
       TH1F*  ntclhits[2];
       TH1F*  nhits   [2];           // number of hits on a helix  
       TH1F*  nseeds  [2];
@@ -113,8 +114,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int RobustHelixFinderDiag::bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) {
   
-    _hist.nTimePeaks    = Tfs->make<TH1F>("ntpeaks"  , "number of time peaks"                      , 11, -0.5, 10.5);
+    _hist.nTimePeaks    = Tfs->make<TH1F>("ntpeaks"  , "number of time peaks"                      , 51, -0.5, 50.5);
     _hist.nChPerPanel   = Tfs->make<TH1F>("nchppanel", "number of ComboHits per panel"             , 101, -0.5, 100.5);
+    _hist.nChHits       = Tfs->make<TH1F>("nchhits"  , "number of ComboHits processed"             , 101, -0.5, 100.5);
     _hist.nseeds[0]     = Tfs->make<TH1F>("nseeds0"  , "number of track candidates: all events"    , 21, -0.5, 20.5);
     _hist.nseeds[1]     = Tfs->make<TH1F>("nseeds1"  , "number of track candidates: nhits > 15;"    , 21, -0.5, 20.5);
     _hist.ntclhits[0]   = Tfs->make<TH1F>("ntclhits0" , "number of hits on a time peak - no delta"  , 201, -0.5, 200.5);
@@ -235,6 +237,7 @@ namespace mu2e {
 
       for (int i=0; i<_data->nseeds[k]; i++) {
 	_hist.nChPerPanel->Fill(_data->nChPPanel[k][i] );
+	_hist.nChHits    ->Fill(_data->nChHits  [k][i] );
 
 	_hist.ntclhits   [k]->Fill(_data->ntclhits[k][i]   );
 	if (k==1){

@@ -21,24 +21,24 @@
 
 using namespace ROOT::Math::VectorUtil;
 
-namespace {
-  typedef ROOT::Math::XYVectorF  XYVec;
-  // struct for weighted positions
-  class XYWVec : public XYVec {
-  public :
-    XYWVec(XYZVec pos,int faceId, float weight=1.0) : XYVec(pos.x(),pos.y()) {
-      _weight = weight;
-      _faceId = faceId;
-    }
-    int   faceId() const { return _faceId; }
-    float weight() const { return _weight; }
+// namespace {
+//   typedef ROOT::Math::XYVectorF  XYVec;
+//   // struct for weighted positions
+//   class XYWVec : public XYVec {
+//   public :
+//     XYWVec(XYZVec pos,int faceId, float weight=1.0) : XYVec(pos.x(),pos.y()) {
+//       _weight = weight;
+//       _faceId = faceId;
+//     }
+//     int   faceId() const { return _faceId; }
+//     float weight() const { return _weight; }
 
-  private :
-    float _weight; // weight for this position
-    int   _faceId;
-  };
+//   private :
+//     float _weight; // weight for this position
+//     int   _faceId;
+//   };
 
-}
+// }
 
 namespace mu2e 
 {
@@ -76,7 +76,7 @@ namespace mu2e
 
     bool initCircle(RobustHelixFinderData& helixData);
     void fitCircle(RobustHelixFinderData& helixData);
-    bool initFZ(RobustHelixFinderData& helixData);
+    bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
     void fitFZ(RobustHelixFinderData& helixData);
     void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);

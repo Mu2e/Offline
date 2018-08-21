@@ -261,7 +261,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  Helix, HitInfo_t SeedIndex   ,
 				 int UsePhiResiduals = 0);
 
-    void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
+    // void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------

@@ -32,6 +32,7 @@ namespace mu2e {
       
       int     nTimePeaks;               // number of time peaks (input)
       int     nChPPanel[kMaxHelicities][kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
+      int     nChHits  [kMaxHelicities][kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
       int     nseeds   [kMaxHelicities]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
       int     ntclhits [kMaxHelicities][kMaxSeeds];
       int     nhits    [kMaxHelicities][kMaxSeeds];

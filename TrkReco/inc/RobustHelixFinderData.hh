@@ -18,11 +18,26 @@
 
 #include "TrkReco/inc/TrkFaceData.hh"
 
+#include "Math/VectorUtil.h"
+#include "Math/Vector2D.h"
+//c++
 #include <array>
 
 class HelixTraj;
 
+using namespace ROOT::Math::VectorUtil;
+
 namespace mu2e {
+  typedef ROOT::Math::XYVectorF  XYVec;
+  // struct for weighted positions
+  class XYWVec : public XYVec {
+  public :
+    XYWVec(XYZVec pos, float weight=1.0) : XYVec(pos.x(),pos.y()), _weight(weight){}
+    float weight() const { return _weight; }
+
+  private :
+    float _weight; // weight for this position
+  };
 
   class TimeCluster;
   class FaceZ_t;
@@ -35,7 +50,9 @@ namespace mu2e {
   public:
     
     enum { kMaxResidIndex = 500 };
-    
+
+    constexpr static uint16_t        kNMaxChHits = 150;
+
     struct ChannelID {
       int Station;
       int Plane; 
@@ -47,53 +64,54 @@ namespace mu2e {
     struct Diag_t {
       
       int       nChPPanel;
-
-      double    resid[kMaxResidIndex];
-      double    dist [kMaxResidIndex];
-      double    dz   [kMaxResidIndex];
+      int       nChHits;
+      
+      float    resid[kMaxResidIndex];
+      float    dist [kMaxResidIndex];
+      float    dz   [kMaxResidIndex];
       
       int       circleFitCounter;
       int       nrescuedhits;
 
-      double    dr;
-      double    chi2d_helix;
+      float    dr;
+      float    chi2d_helix;
       
-      double    chi2dXY;
+      float    chi2dXY;
 
       int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
-      double    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
+      float    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
   
       int       nshsxy_0;
-      double    rsxy_0;
-      double    chi2dsxy_0;
+      float    rsxy_0;
+      float    chi2dsxy_0;
 
       int       nshsxy_1;
-      double    rsxy_1;
-      double    chi2dsxy_1;
+      float    rsxy_1;
+      float    chi2dsxy_1;
 
       int       nfz0counter;
 
       int       nshszphi;
-      double    lambdaszphi;
-      double    chi2dszphi;
+      float    lambdaszphi;
+      float    chi2dszphi;
 
       int       nshszphi_0;
-      double    lambdaszphi_0;
-      double    chi2dszphi_0;
+      float    lambdaszphi_0;
+      float    chi2dszphi_0;
 
       int       nshszphi_1;
-      double    lambdaszphi_1;
-      double    chi2dszphi_1;
+      float    lambdaszphi_1;
+      float    chi2dszphi_1;
 
 
       int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
-      double    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
+      float    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
       
       int       ntriple_2;
-      double    radius_2;
+      float    radius_2;
 
-      double    lambda_0;
-      double    lambda_1;
+      float    lambda_0;
+      float    lambda_1;
 
       int       xyniter;
       int       fzniter;
@@ -157,6 +175,9 @@ namespace mu2e {
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
     std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;
+
+    std::vector<ComboHit>                                _chHitsToProcess;
+    std::vector<XYWVec>                                  _chHitsWPos;
     // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
