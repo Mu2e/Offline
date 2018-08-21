@@ -21,7 +21,7 @@ physics : {
   filters: { @table::Primary.filters }
   analyzers: { @table::Primary.analyzers }
 # enable CRV digis
-  TriggerPath : [ @sequence::Primary.TriggerPath, @sequence::CrvDAQPackage.CrvResponseSequence ]
+  TriggerPath : [ @sequence::Primary.TriggerPath ]
   EndPath : @local::Primary.EndPath
 }
 outputs : { 
