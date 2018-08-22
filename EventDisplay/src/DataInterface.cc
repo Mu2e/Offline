@@ -1182,17 +1182,17 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       info->setText(2,c3);
       info->setText(3,c4);
       info->setText(4,"Daughter IDs:");
-      std::vector<cet::map_vector_key>::const_iterator daughter;
-      for(daughter=particle.daughterIds().begin();
-          daughter!=particle.daughterIds().end();
+      std::vector<art::Ptr<mu2e::SimParticle> >::const_iterator daughter;
+      for(daughter=particle.daughters().begin();
+          daughter!=particle.daughters().end();
           daughter++)
       {
-        info->expandLine(4,daughter->asInt(),"");
+        info->expandLine(4,(*daughter)->id().asInt(),"");
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
                                                particleid, trackclass, trackclassindex, e1,
                                                _geometrymanager, _topvolume, _mainframe, info, false));
-      findTrajectory(contentSelector,shape,particle.id(), t1,t2, simParticles,particle.daughterIds(), trackInfos[i]);
+      findTrajectory(contentSelector,shape,particle.id(), t1,t2, simParticles, trackInfos[i]);
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
@@ -1354,7 +1354,6 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
                                    boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
                                    double t1, double t2,
                                    const mu2e::SimParticleCollection *simParticles,
-                                   const std::vector<cet::map_vector_key> &daughterVect,
                                    const ContentSelector::trackInfoStruct &trackInfo)
 {
   const mu2e::MCTrajectoryCollection *mcTrajectories=contentSelector->getMCTrajectoryCollection(trackInfo);

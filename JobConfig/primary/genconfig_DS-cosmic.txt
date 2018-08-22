@@ -1,0 +1,28 @@
+//
+// cosmic ray muons produced at a box around the tracker and calorimeter
+//
+
+bool conversionGun.do = false;
+bool cosmicDYB.do = true;
+bool picapture.do = false;
+bool ejectedProtonGun.do = false;
+bool decayinorbitGun.do = false;
+bool piEplusNuGun.do = false;
+
+double cosmicDYB.mean =  -1.1; 
+double cosmicDYB.muEMin = 0.5e3;
+double cosmicDYB.muEMax = 500e3;
+
+double cosmicDYB.dx     = 1328;
+double cosmicDYB.dy     = 1328;
+double cosmicDYB.dz     = 5450;
+double cosmicDYB.tMin   =  400;
+double cosmicDYB.tMax   = 1705;
+
+vector<double> cosmicDYB.productionCenterInMu2e = {-3904,0,8689};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -1,6 +1,5 @@
-# Note: the jobs created by this script need at least 8GBytes of memory
-generate_fcl --description CeEndpointMix --dsconf MDC2018a --dsowner mu2e --include JobConfig/mixing/CeEndpointMix.fcl \
---run-number 1002 --events-per-job 500 --njobs 5000 --max-engines 30 \
+generate_fcl --description NoPrimary --dsconf MDC2018a --dsowner mu2e --include JobConfig/mixing/NoPrimary.fcl \
+--run-number 1002 --events-per-job 500 --njobs 200 --max-engines 30 \
 --auxinput=2:physics.filters.ootMixerCRV.fileNames:oot-CRV-cat.txt \
 --auxinput=1:physics.filters.neutronMixerCRV.fileNames:neutron-CRV-cat.txt \
 --auxinput=1:physics.filters.dioMixerCRV.fileNames:dio-CRV-cat.txt \
@@ -15,5 +14,5 @@ generate_fcl --description CeEndpointMix --dsconf MDC2018a --dsowner mu2e --incl
 --auxinput=10:physics.filters.flashMixerTrkCal.fileNames:DS-flash-TrkCal-cut.txt \
 --auxinput=1:physics.filters.protonMixerTrkCal.fileNames:proton-TrkCal.txt \
 --auxinput=1:physics.filters.deuteronMixerTrkCal.fileNames:deuteron-TrkCal.txt 
-rm -rf CeEndpointMix
-mv 000 CeEndpointMix
+rm -rf NoPrimary
+mv 000 NoPrimary

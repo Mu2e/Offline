@@ -29,13 +29,13 @@ namespace mu2e {
 
   
 //-----------------------------------------------------------------------------
-  const PtrStepPointMCVectorCollection* McUtilsToolBase::getListOfMcStrawHits(const art::Event* Event,
-									      const art::InputTag& Tag) {
+  const StrawDigiMCCollection* McUtilsToolBase::getListOfMcStrawHits(const art::Event* Event,
+								     const art::InputTag& Tag) {
     return NULL;
   }
 
 //-----------------------------------------------------------------------------
-  const SimParticle* McUtilsToolBase::getSimParticle(const PtrStepPointMCVectorCollection* List, int IHit) {
+  const SimParticle* McUtilsToolBase::getSimParticle(const StrawDigiMCCollection* List, int IHit) {
     return NULL;
   }
   
