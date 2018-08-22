@@ -31,14 +31,14 @@ TrkTrigger : {
     CPRPosHelixFilter : {
      module_type : HelixFilter
      HelixSeedCollection : "CalHelixFinderDem"
-     MinNHits            : 1    #don't apply any cut
+     MinNHits            : 15    #don't apply any cut
      MinMomentum         : 0.   #don't apply any cut
      MaxMomentum         : 500. #don't apply any cut
     }
     CPRNegHelixFilter : {
       module_type : HelixFilter
       HelixSeedCollection : "CalHelixFinderDep"
-      MinNHits            : 1    #don't apply any cut
+      MinNHits            : 15    #don't apply any cut
       MinMomentum         : 0.   #don't apply any cut
       MaxMomentum         : 500. #don't apply any cut
     }

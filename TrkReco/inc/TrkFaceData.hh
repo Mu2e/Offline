@@ -62,9 +62,16 @@ namespace mu2e {
     // float                          z;           // 
     int                       bestFaceHit;             
     std::array<PanelZ_t,kNPanels>  panelZs;
+    
+    int                              idChBegin;
+    int                              idChEnd;
+ 
+    int   nChHits(){ return (idChEnd - idChBegin); }
 
     FaceZ_t    (){
       bestFaceHit = -1;
+      idChBegin   = -1;
+      idChEnd     = -1;
     }
     
     int   evalUniqueHitIndex(int &Face, int& Panel, int& PanelHitIndex){

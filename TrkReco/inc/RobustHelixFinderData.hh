@@ -32,10 +32,12 @@ namespace mu2e {
   // struct for weighted positions
   class XYWVec : public XYVec {
   public :
-    XYWVec(XYZVec pos, float weight=1.0) : XYVec(pos.x(),pos.y()), _weight(weight){}
+    XYWVec(XYZVec pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
     float weight() const { return _weight; }
+    int   face() const { return _face; }
 
   private :
+    int   _face;
     float _weight; // weight for this position
   };
 
@@ -68,7 +70,11 @@ namespace mu2e {
       
       float    resid[kMaxResidIndex];
       float    dist [kMaxResidIndex];
+      float    rwdot[kMaxResidIndex];
       float    dz   [kMaxResidIndex];
+      
+      int      nXYCh;
+      int      nZPhiCh;
       
       int       circleFitCounter;
       int       nrescuedhits;
@@ -77,6 +83,7 @@ namespace mu2e {
       float    chi2d_helix;
       
       float    chi2dXY;
+      float    chi2dZPhi;
 
       int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
       float    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
@@ -136,6 +143,9 @@ namespace mu2e {
 
     int                               _nXYSh;
     int                               _nZPhiSh;
+
+    int                               _nXYCh;
+    int                               _nZPhiCh;
   
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 

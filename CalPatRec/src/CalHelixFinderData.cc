@@ -141,11 +141,11 @@ namespace mu2e {
     for (int f=0; f<StrawId::_ntotalfaces; ++f) {
       FaceZ_t*  facez  = &_oTracker[f];
       facez->bestFaceHit = -1;
+      facez->idChBegin   = -1;
+      facez->idChEnd     = -1;
 
       for (int p=0; p<FaceZ_t::kNPanels; ++p) {
 	PanelZ_t* panelz = &facez->panelZs[p];
-	//	panelz->fNHits   = 0;
-	//	panelz->_chHitsToProcess.clear();
 	panelz->idChBegin = -1;
 	panelz->idChEnd   = -1;
       }

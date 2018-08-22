@@ -1528,8 +1528,13 @@ namespace mu2e {
     // if (Helix.shpos() != 0) {
     int loc;
     StrawHitFlag flag;
+
+    //sort the hits by z coordinate
+    ComboHitCollection ordChCol;
+    ordChCol.reserve(size);
+    
     for (int i=0; i<size; ++i) {
-      loc          = shIndices[i];	 // index in chcol of i-th timecluster hit
+      loc = shIndices[i];
       flag         = Helix.shfcol()->at(loc);
       //-----------------------------------------------------------------------------
       // select hits: don't reuse straw hits
@@ -1537,66 +1542,89 @@ namespace mu2e {
       int good_hit = flag.hasAllProperties(_hsel  );
       int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
       int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
-
       if (good_hit && (! bkg_hit) && (! used_hit)) {
-
-	const ComboHit& ch          = Helix.chcol()->at(loc);
-	// const Straw& straw          = _tracker->getStraw(ch.strawIndex());
-	// const StrawHitPosition& shp = Helix.shpos()->at(loc);
-
-	if (ch.energyDep() > _maxElectronHitEnergy)         continue;
-
-	//skip the hit if it doesn't rely on the semi-plane where the calo-lcuster is
-	if (_filter) {
-	  double chPhi = polyAtan2(ch.pos().y(), ch.pos().x());
-	  double dphi  = chPhi - clPhi;
-
-	  if (dphi >  pi) dphi -= twopi;
-	  if (dphi < -pi) dphi += twopi;
-	    
-	  if (fabs(dphi) > pi/2)                            continue;
-	}
-
-	cx.Station                 = ch.strawId().station();//straw.id().getStation();
-	cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
-	cx.Face                    = ch.strawId().face();
-	cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
-
-	// get Z-ordered location
-	Helix.orderID(&cx, &co);
-     
-	int os       = co.Station; 
-	int of       = co.Face;
-	//FIXME!!! COMPARE OF WITH ch.sid().uniqueFace()
-	int op       = co.Panel;
-
-	int       stationId = os;
-	int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//FaceZ_t::kNFaces;
-	//	int       panelId   = op + faceId*FaceZ_t::kNPanels;//PerFace;
-	FaceZ_t*  fz        = &Helix._oTracker[faceId];
-	PanelZ_t* pz        = &fz->panelZs[op];
-	
-	//	if ((os < 0) || (os >= FaceZ_t::kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
-	if ((of < 0) || (of >  StrawId::_nfaces*FaceZ_t::kNPlanesPerStation  )) printf(" >>> ERROR: wrong face    number: %i\n",of);
-	if ((op < 0) || (op >= FaceZ_t::kNPanels )) printf(" >>> ERROR: wrong panel   number: %i\n",op);
-
-	Helix._chHitsToProcess.push_back(mu2e::ComboHit(ch));
-
-	if (pz->idChBegin < 0 ){
-	  pz->idChBegin = Helix._chHitsToProcess.size() - 1;
-	  pz->idChEnd   = Helix._chHitsToProcess.size();	
-	} else {
-	  pz->idChEnd   = Helix._chHitsToProcess.size();	
-	}
-
-	//	pz->_chHitsToProcess.push_back(mu2e::ComboHit(ch));
-	//	pz->fNHits  = pz->fNHits + 1;
-	//	if (pz->fNHits > PanelZ_t::kNMaxPanelHits) printf("[CalHelixFinderAlg::fillXYZP] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
-	++nFiltPoints;
-	nFiltStrawHits += ch.nStrawHits();
+	const ComboHit& ch  = Helix.chcol()->at(loc);
+	ordChCol.push_back(ComboHit(ch));
       }
     }
-    // }
+    std::sort(ordChCol.begin(), ordChCol.end(),zcomp());
+
+
+    for (unsigned i=0; i<ordChCol.size(); ++i) {
+      // loc          = shIndices[i];	 // index in chcol of i-th timecluster hit
+      // flag         = Helix.shfcol()->at(loc);
+      // //-----------------------------------------------------------------------------
+      // // select hits: don't reuse straw hits
+      // //-----------------------------------------------------------------------------
+      // int good_hit = flag.hasAllProperties(_hsel  );
+      // int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
+      // int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
+
+      // if (good_hit && (! bkg_hit) && (! used_hit)) {
+
+      // 	const ComboHit& ch          = Helix.chcol()->at(loc);
+      ComboHit& ch = ordChCol[i];
+
+      if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+
+      //skip the hit if it doesn't rely on the semi-plane where the calo-lcuster is
+      if (_filter) {
+	double chPhi = polyAtan2(ch.pos().y(), ch.pos().x());
+	double dphi  = chPhi - clPhi;
+
+	if (dphi >  pi) dphi -= twopi;
+	if (dphi < -pi) dphi += twopi;
+	    
+	if (fabs(dphi) > pi/2)                            continue;
+      }
+
+      cx.Station                 = ch.strawId().station();//straw.id().getStation();
+      cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
+      cx.Face                    = ch.strawId().face();
+      cx.Panel                   = ch.strawId().panel();//straw.id().getPanel();
+
+      // get Z-ordered location
+      Helix.orderID(&cx, &co);
+     
+      int os       = co.Station; 
+      int of       = co.Face;
+      //FIXME!!! COMPARE OF WITH ch.sid().uniqueFace()
+      int op       = co.Panel;
+
+      int       stationId = os;
+      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//FaceZ_t::kNFaces;
+      //	int       panelId   = op + faceId*FaceZ_t::kNPanels;//PerFace;
+      FaceZ_t*  fz        = &Helix._oTracker[faceId];
+      PanelZ_t* pz        = &fz->panelZs[op];
+	
+      //	if ((os < 0) || (os >= FaceZ_t::kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
+      if ((of < 0) || (of >  StrawId::_nfaces*FaceZ_t::kNPlanesPerStation  )) printf(" >>> ERROR: wrong face    number: %i\n",of);
+      if ((op < 0) || (op >= FaceZ_t::kNPanels )) printf(" >>> ERROR: wrong panel   number: %i\n",op);
+
+      Helix._chHitsToProcess.push_back(mu2e::ComboHit(ch));
+
+      if (pz->idChBegin < 0 ){
+	pz->idChBegin = Helix._chHitsToProcess.size() - 1;
+	pz->idChEnd   = Helix._chHitsToProcess.size();	
+      } else {
+	pz->idChEnd   = Helix._chHitsToProcess.size();	
+      }
+
+	
+      if (fz->idChBegin < 0 ){
+	fz->idChBegin = Helix._chHitsToProcess.size() - 1;
+	fz->idChEnd   = Helix._chHitsToProcess.size();	
+      } else {
+	fz->idChEnd   = Helix._chHitsToProcess.size();	
+      }
+	
+      //	pz->_chHitsToProcess.push_back(mu2e::ComboHit(ch));
+      //	pz->fNHits  = pz->fNHits + 1;
+      //	if (pz->fNHits > PanelZ_t::kNMaxPanelHits) printf("[CalHelixFinderAlg::fillXYZP] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
+      ++nFiltPoints;
+      nFiltStrawHits += ch.nStrawHits();
+      //      }
+    }
     
     Helix._nFiltPoints    = nFiltPoints;     //mu2e::ComboHit counter
     Helix._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter

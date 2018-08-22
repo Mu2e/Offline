@@ -78,6 +78,9 @@ namespace mu2e {
       TH1F*  p       [2];
       TH1F*  dr[2];
       TH1F*  chi2d_helix[2];
+
+      TH1F*  resid   [2];
+      TH1F*  rwdot   [2];
     };
 
   protected:
@@ -187,9 +190,6 @@ namespace mu2e {
     _hist.chi2dszphi_1 [0] = Tfs->make<TH1F>("chi2dszphi_1Neg", "#chi^{2}/ndof from the zphi fit, Neg "   , 201, -0.5, 20.5);
     _hist.chi2dszphi_1 [1] = Tfs->make<TH1F>("chi2dszphi_1Pos", "#chi^{2}/ndof from the zphi fit, Pos "   , 201, -0.5, 20.5);
 
-  
-
-
 
     _hist.rinit  [0]    = Tfs->make<TH1F>("rinitNeg"       , "helix radius fitCircle, Neg; r [mm]"      , 401, -0.5, 400.5);
 
@@ -201,17 +201,25 @@ namespace mu2e {
     _hist.p  [0]        = Tfs->make<TH1F>("p0"       , "momentum; p [MeV/c]"                       , 400, -0.5, 200.5);
     _hist.pT [1]        = Tfs->make<TH1F>("pT1"      , "transverse momentum nhits > 15; pT [MeV/c]", 400, -0.5, 200.5);
     _hist.p  [1]        = Tfs->make<TH1F>("p1"       , "momentum nhits > 15; p [MeV/c]"            , 400, -0.5, 200.5);
-    _hist.chi2XY[0]     = Tfs->make<TH1F>("chi2XY0"  , "normalized chi2-XY"                        , 200, 0., 20.);
-    _hist.chi2XY[1]     = Tfs->make<TH1F>("chi2XY1"  , "normalized chi2-XY: nhits>15"              , 200, 0., 20.);
-    _hist.chi2ZPhi[0]   = Tfs->make<TH1F>("chi2ZPhi0", "normalized chi2-ZPhi"                      , 200, 0., 20.);
-    _hist.chi2ZPhi[1]   = Tfs->make<TH1F>("chi2ZPhi1", "normalized chi2-ZPhi: nhits>15"            , 200, 0., 20.);
+
+    _hist.chi2XY[0]     = Tfs->make<TH1F>("chi2XY0_Neg" , "normalized chi2-XY, Neg"               , 500,   0., 50.);
+    _hist.chi2XY[1]     = Tfs->make<TH1F>("chi2XY0_Pos" , "normalized chi2-XY, Pos"               , 500,   0., 50.);
+    _hist.chi2ZPhi[0]   = Tfs->make<TH1F>("chi2ZPhi_Neg", "normalized chi2-ZPhi, Neg"                 , 500,   0., 50.);
+    _hist.chi2ZPhi[1]   = Tfs->make<TH1F>("chi2ZPhi_Pos", "normalized chi2-ZPhi, Pos"                 , 500,   0., 50.);
+
     _hist.dr  [0]       = Tfs->make<TH1F>("dr0"      , "dr; r - r_{no-target} [mm]"                , 800, -200, 200);
     _hist.dr  [1]       = Tfs->make<TH1F>("dr1"      , "dr: nhits>15; r - r_{no-target} [mm]"      , 800, -200, 200);
     // _hist.shmeanr  [0]  = Tfs->make<TH1F>("shmeanr0" , "straw hit mean radius; r_{sh} [mm]"          , 1800, 0, 900);
     // _hist.shmeanr  [1]  = Tfs->make<TH1F>("shmeanr1" , "straw hit mean radius: nhits>15; r_{sh} [mm]", 1800, 0, 900);
     _hist.chi2d_helix[0]= Tfs->make<TH1F>("chi2dhel0" , "global chi2d; #chi^{2}/ndof"                   , 100, 0, 10); 
     _hist.chi2d_helix[1]= Tfs->make<TH1F>("chi2dhel1" , "global chi2d: nhits>15; #chi^{2}/ndof"         , 100, 0, 10); 
-
+ 
+    _hist.resid[0]     = Tfs->make<TH1F>("resid_Neg" , "helix hit dr, Neg"               , 500,   -250., 250.);
+    _hist.resid[1]     = Tfs->make<TH1F>("resid_Pos" , "helix hit dr, Pos"               , 500,   -250., 250.);
+ 
+    _hist.rwdot[0]     = Tfs->make<TH1F>("rwdot_Neg" , "helix hit rwdot, Neg"               , 200,   -2., 2.);
+    _hist.rwdot[1]     = Tfs->make<TH1F>("rwdot_Pos" , "helix hit rwdot, Pos"               , 200,   -2., 2.);
+ 
     return 0;
   }
 
@@ -293,6 +301,11 @@ namespace mu2e {
 	_hist.lambdaszphi_1[k] ->Fill(_data->lambdaszphi_1[k][i]);
 	_hist.chi2dszphi_1 [k] ->Fill(_data->chi2dszphi_1[k][i] );
 
+	for (int j=0; j<_data->nXYCh[k][i];++j){
+	  _hist.rwdot[k]->Fill(_data->hitRWDot[k][i][j]);
+	  _hist.resid[k]->Fill(_data->hitDr   [k][i][j]);
+	}
+	
       }
     }
 
