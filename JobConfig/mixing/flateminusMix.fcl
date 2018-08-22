@@ -11,7 +11,7 @@ source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : { 
+   generate : { 
       module_type: StoppedParticleReactionGun
       verbosityLevel : 1
       muonStops: @local::mu2e.tgtMuonStops
@@ -24,7 +24,7 @@ physics : {
 	ehi : 110.0 // Mev
       }
     }
-    @table::Mixing.producers
+     @table::Mixing.producers
   }
   filters: { @table::Mixing.filters }
   analyzers: { @table::Mixing.analyzers }
@@ -38,5 +38,5 @@ outputs: { Output : @local::Mixing.Output }
 #include "JobConfig/mixing/epilog.fcl"
 # customize the output
 services.TFileService.fileName: "nts.owner.flateminus-mix.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.flateminus-mix.version.sequencer.art"
+outputs.Output.fileName: "dig.owner.flateminus-mix.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl

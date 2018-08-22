@@ -74,6 +74,19 @@ CeEndpointGun: {
     muonStops      : @local::mu2e.tgtMuonStops
 }
 
+CeplusEndpointGun : {
+    module_type    : StoppedParticleReactionGun
+    physics: {
+      genId : conversionGun 
+      pdgId : -11
+# temporary hack until we get this number into code FIXME!
+      spectrumShape: flat
+      elow : 92.32
+      ehi : 92.3200001
+      spectrumVariable: totalEnergy
+    }
+    muonStops      : @local::mu2e.tgtMuonStops
+}
 
 PrimaryProtonGunN: {
 module_type          : PrimaryProtonGunN

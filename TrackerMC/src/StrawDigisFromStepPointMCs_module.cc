@@ -406,6 +406,7 @@ namespace mu2e {
       const EventWindowMarker& ewMarker(*ewMarkerHandle);
       _ewMarkerOffset = ewMarker.timeOffset();
       // calculate event window marker jitter for this microbunch for each panel
+      _ewMarkerROCdt.clear();
       for (size_t i=0;i<240;i++){
         _ewMarkerROCdt.push_back(_randgauss.fire(0,_strawele->eventWindowMarkerROCJitter()));
       }
@@ -916,6 +917,7 @@ namespace mu2e {
     }
     // diagnostic functions
     void StrawDigisFromStepPointMCs::waveformHist(SWFP const& wfs, WFXPList const& xings) {
+      _waveforms.clear();
       // histogram individual waveforms
       static unsigned nhist(0);// maximum number of histograms per job!
       for(size_t iend=0;iend<2;++iend){

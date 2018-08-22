@@ -1,16 +1,16 @@
 #
-# mono-energetic e- at the Al Ce endpoint without background mixing
+# mono-energetic e+ at the Al Ce endpoint without background mixing
 #
 # original author: Dave Brown, LBNL
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: CeEndpoint
+process_name: CeplusEndpoint
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : @local::CeEndpointGun
+    generate : @local::CeplusEndpointGun
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }
@@ -26,6 +26,6 @@ outputs : {
 #
 #include "JobConfig/primary/epilog.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.CeEndpoint.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.CeEndpoint.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CeplusEndpoint.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CeplusEndpoint.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl

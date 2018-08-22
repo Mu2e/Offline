@@ -6,4 +6,4 @@ physics.producers.generate.physics.pdgId : -11
 physics.producers.generate.physics.elow : 80.0 // MeV
 physics.producers.generate.physics.ehi : 105.0 // MeV
 services.TFileService.fileName: "nts.owner.flateplus.version.sequencer.root"
-outputs.Output.fileName: "sim.owner.flateplus.version.sequencer.art"
+outputs.Output.fileName: "dig.owner.flateplus.version.sequencer.art"
