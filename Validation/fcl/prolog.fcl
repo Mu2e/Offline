@@ -71,10 +71,9 @@ simulation.default.mod.g4run.ResourceLimits.maxSimParticleCollectionSize: 100000
 timeSimulation : {
    beam: {
       mod : {
-	 protonTimeMap: { module_type : GenerateProtonTimes }
-	 muonTimeMap: { module_type : GenerateMuonLife }
+	 @table::CommonMC.producers
       }
-      seq : [ @sequence::EventMixing.TimeMaps ]
+      seq : [ @sequence::CommonMC.DigiSim ]
    }
 }
 
