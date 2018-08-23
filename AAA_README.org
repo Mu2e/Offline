@@ -1,9 +1,0 @@
-#
-
-* resolving conflicts: 
-murat@mu2e01:/data/murat/merge>git merge MDC2018
-Auto-merging CalPatRec/src/CalHelixFinderAlg.cc
-CONFLICT (content): Merge conflict in CalPatRec/src/CalHelixFinderAlg.cc
-Auto-merging CalPatRec/fcl/prolog.fcl
-CONFLICT (content): Merge conflict in CalPatRec/fcl/prolog.fcl
-Automatic merge failed; fix conflicts and then commit the result.
