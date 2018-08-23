@@ -754,7 +754,7 @@ namespace mu2e {
 	int  seedPanelIndex(0);
 	if (nhitsPerPanel == 0)                                      continue;
 	//	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
-	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	  int           index = panelz->idChBegin + i;
@@ -1068,7 +1068,7 @@ namespace mu2e {
 	int       nhits  = panelz->nChHits();
 	int       seedPanelIndex(0);
 	if (nhits == 0)                                                                    continue;
-	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	for (int i=seedPanelIndex; i<nhits; ++i){
 	  int           index = panelz->idChBegin + i;
@@ -1197,7 +1197,7 @@ namespace mu2e {
 	    int       nhits  = panelz->nChHits();//fNHits;
 	    int       seedPanelIndex(0);
 	    if (nhits == 0)                                        continue;
-	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	    for (int i=seedPanelIndex; i<nhits; ++i){
 	      int           index = i + panelz->idChBegin;
@@ -1266,7 +1266,7 @@ namespace mu2e {
 	    int       nhits  = panelz->nChHits();//fNHits;
 	    int       seedPanelIndex(0);
 	    if (nhits == 0)                                        continue;
-	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	    for (int i=seedPanelIndex; i<nhits; ++i){
 	      int           index = panelz->idChBegin + i;
@@ -1374,7 +1374,7 @@ namespace mu2e {
 	    int  nhitsPerPanel  = panelz->nChHits();
 	    int  seedPanelIndex(0);
 	    if (nhitsPerPanel == 0)                                                            continue;
-	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	    for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	      int   index = panelz->idChBegin + i;
@@ -1417,7 +1417,7 @@ namespace mu2e {
 	    panelz = &facez->panelZs[p];
 	    int  nhitsPerPanel  = panelz->nChHits();
 	    if (nhitsPerPanel == 0)                                                            continue;
-	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) nhitsPerPanel = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) nhitsPerPanel = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	    for (int  i=nhitsPerPanel-1;i>=0; --i){   
 	      int    index = panelz->idChBegin + i;
@@ -1544,6 +1544,20 @@ namespace mu2e {
       int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 	const ComboHit& ch  = Helix.chcol()->at(loc);
+
+	if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+
+	//skip the hit if it doesn't rely on the semi-plane where the calo-lcuster is
+	if (_filter) {
+	  double chPhi = polyAtan2(ch.pos().y(), ch.pos().x());
+	  double dphi  = chPhi - clPhi;
+
+	  if (dphi >  pi) dphi -= twopi;
+	  if (dphi < -pi) dphi += twopi;
+	    
+	  if (fabs(dphi) > pi/2)                            continue;
+	}
+
 	ordChCol.push_back(ComboHit(ch));
       }
     }
@@ -1564,19 +1578,6 @@ namespace mu2e {
 
       // 	const ComboHit& ch          = Helix.chcol()->at(loc);
       ComboHit& ch = ordChCol[i];
-
-      if (ch.energyDep() > _maxElectronHitEnergy)         continue;
-
-      //skip the hit if it doesn't rely on the semi-plane where the calo-lcuster is
-      if (_filter) {
-	double chPhi = polyAtan2(ch.pos().y(), ch.pos().x());
-	double dphi  = chPhi - clPhi;
-
-	if (dphi >  pi) dphi -= twopi;
-	if (dphi < -pi) dphi += twopi;
-	    
-	if (fabs(dphi) > pi/2)                            continue;
-      }
 
       cx.Station                 = ch.strawId().station();//straw.id().getStation();
       cx.Plane                   = ch.strawId().plane() % 2;//straw.id().getPlane() % 2;
@@ -1703,7 +1704,7 @@ namespace mu2e {
 	int  nhitsPerPanel  = panelz->nChHits();
 
 	if (nhitsPerPanel == 0)                                              continue;
-	if ( (f==Helix._seedIndex.face) && (p==Helix._seedIndex.panel) ) nhitsPerPanel = Helix._seedIndex.panelHitIndex - panelz->idChBegin;//the seedHit is already clusterized!      
+	if ( (f==Helix._seedIndex.face) && (p==Helix._seedIndex.panel) && (Helix._seedIndex.panelHitIndex >=0) ) nhitsPerPanel = Helix._seedIndex.panelHitIndex - panelz->idChBegin;//the seedHit is already clusterized!      
 
 
 	double  deltaPhi = hePosPhi - Helix._phiPanel[f*FaceZ_t::kNPanels + p];//panelz->phi;
@@ -1711,8 +1712,9 @@ namespace mu2e {
 	if ( deltaPhi < -M_PI) deltaPhi += 2*M_PI;
 	if ( fabs(deltaPhi) > _maxPanelToHelixDPhi)                             continue;
   
-	for (int  i=nhitsPerPanel-1;i>=0; --i){   
-	  hit       = &Helix._chHitsToProcess[panelz->idChBegin + i];
+	for (int  i=nhitsPerPanel-1;i>=0; --i){
+	  int   index = panelz->idChBegin + i;
+	  hit       = &Helix._chHitsToProcess[index];
 	  shPos     = hit->_pos;
 	  strawDir  = hit->_sdir;
 
@@ -1732,7 +1734,7 @@ namespace mu2e {
 	    if (dist < faceHitChi2){
 	      goodFaceHit.face          = f;
 	      goodFaceHit.panel         = p;
-	      goodFaceHit.panelHitIndex = i;
+	      goodFaceHit.panelHitIndex = index;
 	      faceHitChi2               = dist;
 	    }
 	  }else {
@@ -1972,7 +1974,7 @@ namespace mu2e {
 	  //clear the info of the tmp object used to test the triplet
 	  TmpHelix.clearResults();
 
-	  HitInfo_t          seed(f,p,i);
+	  HitInfo_t          seed(f,p,panelz->idChBegin + i);
 	  findTrack(seed,TmpHelix,UseMPVdfdz);
 
 	  nHitsTested += Helix._chHitsToProcess[panelz->idChBegin + i].nStrawHits();// panelz->_chHitsToProcess.at(i).nStrawHits();
@@ -1983,7 +1985,7 @@ namespace mu2e {
 	    Helix = TmpHelix;
 	  }
 	  if (_debug > 5) {
-	    printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",i,UseMPVdfdz);
+	    printf("[CalHelixFinderAlg::doPatternRecognition]: calling findTrack(i=%i,Helix,useDefaltDfDz=FALSE,useMPVdfdz=%i)",panelz->idChBegin +i,UseMPVdfdz);
 	    printf(" : np=%3i _goodPointsTrkCandidate=%3i\n",nSh,Helix._nStrawHits);
 	  }
 	}//end loop over the hits on the panel
@@ -2037,7 +2039,7 @@ namespace mu2e {
       printInfo(Helix);
     }
 
-    rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);
+    rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,-1), useIntelligentWeight);
 
     //2017-10-05 Gianipez added the following line to make some tests
     if (Helix._szphi.qn() == 0.)                                 goto  PATTERN_RECOGNITION_END;
@@ -2055,7 +2057,7 @@ namespace mu2e {
 //--------------------------------------------------------------------------------
     strcpy(banner,"refineHelixParameters");
 
-    refineHelixParameters(Helix, HitInfo_t(0,0,0), banner, _debug);
+    refineHelixParameters(Helix, HitInfo_t(0,0,-1), banner, _debug);
 
      if (_debug != 0)  printInfo(Helix);
 //---------------------------------------------------------------------------------------
@@ -2064,9 +2066,9 @@ namespace mu2e {
     if ((Helix._nZPhiSh < _minNHits) || (!rc)) usePhiResid = 0;
     else                                       usePhiResid = 1;
 
-    rescueHits(Helix, HitInfo_t(0,0,0), usePhiResid);
+    rescueHits(Helix, HitInfo_t(0,0,-1), usePhiResid);
     
-    if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);//the factor "-1" takes into account that the XY fit includes the target center
+    if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,-1), useIntelligentWeight);//the factor "-1" takes into account that the XY fit includes the target center
 
     if (_debug != 0)  printInfo(Helix);
 //--------------------------------------------------------------------------------------------------------------
@@ -2076,7 +2078,7 @@ namespace mu2e {
 // re-evaluate the df/dz and phi0 including rescued hits and new XY parameters
 //--------------------------------------------------------------------------------------------------------------
     if (Helix._nZPhiSh < _minNHits || (!rc)){
-      rs = findDfDz(Helix, HitInfo_t(0,0,0));
+      rs = findDfDz(Helix, HitInfo_t(0,0,-1));
       
       if (rs == 1) {			// update Helix Z-phi part
 	Helix._dfdz = _hdfdz;
@@ -2084,16 +2086,16 @@ namespace mu2e {
       }
     }
 
-    rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);
+    rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,-1), useIntelligentWeight);
 
     if (rc) {
       usePhiResid = 1;
-      rescueHits(Helix, HitInfo_t(0,0,0), usePhiResid);
-      if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,0), useIntelligentWeight);  //the factor "-1" takes into account that the XY fit includes the target center
+      rescueHits(Helix, HitInfo_t(0,0,-1), usePhiResid);
+      if ((Helix._nXYSh - 1) != Helix._nZPhiSh) rc = doLinearFitPhiZ(Helix, HitInfo_t(0,0,-1), useIntelligentWeight);  //the factor "-1" takes into account that the XY fit includes the target center
 
       if (_debug != 0)  printInfo(Helix);
       strcpy(banner,"refineHelixParameters-after-doLinearFitPhiZ");
-      refineHelixParameters(Helix,HitInfo_t(0,0,0),banner,_debug);
+      refineHelixParameters(Helix,HitInfo_t(0,0,-1),banner,_debug);
       if (_debug != 0)  printInfo(Helix);
     }
 //-----------------------------------------------------------------------------
@@ -2259,7 +2261,7 @@ namespace mu2e {
 	int  nhits          = panelz->nChHits();
 	int  seedPanelIndex(0);
 	if (nhits == 0)                                                                    continue;
-	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;
+	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;
 	
 	for (int i=seedPanelIndex; i<nhits; ++i){   
 	  int     index = panelz->idChBegin + i;
@@ -2325,7 +2327,7 @@ namespace mu2e {
 	int  nhitsPerPanel  = panelz->nChHits();
 	int  seedPanelIndex(0);
 	if (nhitsPerPanel == 0)                                                            continue;
-	if ((f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
+	if ((f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	  int     index = panelz->idChBegin + i;
@@ -2384,7 +2386,7 @@ namespace mu2e {
 	int  nhitsPerPanel  = panelz->nChHits();
 	int  seedPanelIndex(0);
 	if (nhitsPerPanel == 0)                                                             continue;
-	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
+	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	  int     index = panelz->idChBegin + i;
@@ -2694,7 +2696,7 @@ namespace mu2e {
 	int  nhits          = panelz->nChHits();
 	int  seedPanelIndex(0);
 	if (nhits == 0)                                       continue;
-	if ((f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;
+	if ((f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex  - panelz->idChBegin;
 
 	for (int i=seedPanelIndex; i<nhits; ++i){   
 	  int    index = panelz->idChBegin + i;
@@ -2865,7 +2867,7 @@ namespace mu2e {
 	int  nhits          = panelz->nChHits();
 	int  seedPanelIndex(0);
 	if (nhits == 0)                                                                    continue;
-	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;
+	if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;
 
 	for (int i=seedPanelIndex; i<nhits; ++i){   
 	  int index = panelz->idChBegin + i; // facez->evalUniqueHitIndex(f,p,i);
@@ -3052,7 +3054,7 @@ namespace mu2e {
 	  }
 	}
 	
-	if ((f == SeedIndex.face) && (p==SeedIndex.panel)) seedPanelIndex = SeedIndex.panelHitIndex + 1 - panelz->idChBegin;  
+	if ((f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex + 1 - panelz->idChBegin;  
 
 	double  deltaPhi = hePosPhi - Helix._phiPanel[f*FaceZ_t::kNPanels + p];//panelz->phi;
 	if ( deltaPhi > M_PI ) deltaPhi -= 2*M_PI;
@@ -3299,7 +3301,7 @@ namespace mu2e {
 	  int  nhitsPerPanel  = panelz->nChHits();
 	  int  seedPanelIndex(0);
 	  if (nhitsPerPanel == 0)                                 continue;
-	  if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
+	  if ( (f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	  for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	    index = panelz->idChBegin + i;
@@ -3404,7 +3406,7 @@ namespace mu2e {
 	  int  nhitsPerPanel  = panelz->nChHits();
 	  int  seedPanelIndex(0);
 	  if (nhitsPerPanel == 0)                          continue;
-	  if ( (f==SeedIndex.face) && (p==SeedIndex.panel)) seedPanelIndex = SeedIndex.panelHitIndex;  
+	  if ( (f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	  for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	    int   index = panelz->idChBegin + i;
@@ -3598,7 +3600,7 @@ namespace mu2e {
 	int  nhitsPerPanel  = panelz->nChHits();
 	int  seedPanelIndex(0);
 	if (nhitsPerPanel == 0)                           continue;
-	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) ) seedPanelIndex = SeedIndex.panelHitIndex;  
+	if ( (f==SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
 	  int   index = panelz->idChBegin + i;

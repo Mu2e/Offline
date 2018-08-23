@@ -26,7 +26,7 @@ namespace mu2e {
     if (Data._helix) _helix = Data._helix->clone();
     else             _helix = NULL;
 
-    _chHitsToProcess        = Data._chHitsToProcess;
+    _chHitsToProcess= Data._chHitsToProcess;
     _zFace          = Data._zFace;
     _phiPanel       = Data._phiPanel;
 
@@ -161,6 +161,8 @@ namespace mu2e {
 
     _goodhits.clear();
     
+    _chHitsToProcess.clear();
+
     _fit.setFailure(1,"failure");
     
     _sxy.clear();
