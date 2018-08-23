@@ -20,10 +20,8 @@ int mu2e::ValStrawHitFlag::fill(const mu2e::StrawHitFlagCollection & coll,
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 
   for(auto f : coll) {
-    int i=0;
     for(auto sn: f.bitNames()) { 
-      if(f.hasAnyProperty(StrawHitFlag(sn.first))) _hBits->Fill(i); 
-      i++;
+      if(f.hasAnyProperty(StrawHitFlag(sn.first))) _hBits->Fill(sn.second); 
     }
   }
   return 0;
