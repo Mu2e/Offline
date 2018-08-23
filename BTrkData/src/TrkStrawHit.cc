@@ -144,12 +144,13 @@ namespace mu2e
    _phi = tperp.theta(); 
    _rdrift = srep->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
    _vdriftinst = srep->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
+   double vdriftconst = srep->driftConstantSpeed();
    _rdrifterr = srep->driftDistanceError(_combohit.strawId(),_rdrift,_phi,fabs(poca().doca()));
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
     // annealing error depends on the 'temperature'
-    double exterr = _vdriftinst*temperature();
+    double exterr = vdriftconst*temperature();
     // total hit error is the sum of all
     _toterr = sqrt(_rdrifterr*_rdrifterr + rt0err*rt0err + exterr*exterr + _penerr*_penerr);
 // If the hit is wildly away from the track , disable it
