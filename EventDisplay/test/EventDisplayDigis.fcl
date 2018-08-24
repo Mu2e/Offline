@@ -1,0 +1,57 @@
+#
+# reconstruct tracks and Display events from a file
+#
+# $Id: TrkPatRecEventDisplay.fcl,v 1.4 2014/05/28 21:02:13 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2014/05/28 21:02:13 $
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+
+process_name : TrkPatRecTest
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : 
+  {
+      @table::TrkHitReco.producers
+      @table::Tracking.producers
+  #    @table::CaloReco.producers
+  #    @table::CaloCluster.producers
+  #    @table::CrvResponsePackage.producers
+  }
+
+  analyzers:
+  {
+    eventdisplay:
+    {
+      module_type     : EventDisplay
+      g4ModuleLabel             : "CompressDigisMC"
+      physicalVolumesMultiLabel : "compressPV"
+     }
+  }
+
+  p1: [ 
+	@sequence::TrkHitReco.PrepareHits,
+	@sequence::Tracking.FindHelices,
+	@sequence::Tracking.TPRDeM,
+	@sequence::Tracking.TPRUeM
+      ]
+
+  e1 : [eventdisplay]
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+source.readParameterSets : false
+
