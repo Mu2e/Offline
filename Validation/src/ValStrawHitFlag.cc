@@ -1,5 +1,6 @@
 
 #include "Validation/inc/ValStrawHitFlag.hh"
+#include <cmath>
 
 int mu2e::ValStrawHitFlag::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
@@ -21,7 +22,7 @@ int mu2e::ValStrawHitFlag::fill(const mu2e::StrawHitFlagCollection & coll,
   _hN2->Fill(coll.size()); 
   for(auto f : coll) {
     for(auto sn: f.bitNames()) { 
-      if(f.hasAnyProperty(StrawHitFlag(sn.first))) _hBits->Fill(sn.second); 
+      if(f.hasAnyProperty(StrawHitFlag(sn.first))) _hBits->Fill(std::log2(sn.second)); 
     }
   }
   return 0;
