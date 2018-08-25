@@ -105,11 +105,14 @@ namespace mu2e
     const TTracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
+    void fitCircleMedian(RobustHelixFinderData& helixData);
+    
+    float lambdaMin()  { return _lmin; }
+    float lambdaMax()  { return _lmax; }
 
   private:
 
     void fitHelix(RobustHelixFinderData& helixData);
-    void fitCircleMedian(RobustHelixFinderData& helixData);
     void fitCircleAGE(RobustHelixFinderData& helixData);
     void fitCircleMean(RobustHelixFinderData& helixData);
     void findAGE(RobustHelixFinderData  const& helixData, XYZVec const& center,float& rmed, float& age);

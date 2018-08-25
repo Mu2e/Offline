@@ -1164,6 +1164,12 @@ namespace mu2e
 	  
       HelixData._sxy   = sxy;
       HelixData._nXYSh = nXYSh;
+      if (_targetcon) {
+	HelixData._nXYCh = sxy.qn() - 1;
+      }else {
+	HelixData._nXYCh = sxy.qn();      
+      }
+
       if (_diag){
 	if ( HelixData._diag.circleFitCounter == 0){
 	  HelixData._diag.rsxy_0     = rho;
