@@ -44,6 +44,7 @@ namespace mu2e {
       TrkTypes::TOTValues const& TOT() const { return _tot; }
       TrkTypes::ADCWaveform const& adcWaveform() const { return _adc; }
       StrawDigiFlag const& digiFlag() const { return _flag; }
+      StrawDigiFlag& digiFlag() { return _flag; }
     private:
       StrawId  _strawid;      // Straw id
       TrkTypes::TDCValues _tdc; // TDC values for each end

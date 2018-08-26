@@ -43,14 +43,17 @@
 namespace mu2e {
   class CompressDigiMCs;
 
+  typedef std::set<art::Ptr<SimParticle> > SimParticleSet;
+
   class SimParticleSelector {
   public:
-    SimParticleSelector() { }
-    
-    void push_back(cet::map_vector_key key) {
-      m_keys.insert(key);
+    SimParticleSelector(const SimParticleSet& simPartSet) { 
+      for (const auto& i_simPart : simPartSet) {
+	cet::map_vector_key key = cet::map_vector_key(i_simPart.key());
+	m_keys.insert(key);
+      }
     }
-
+    
     bool operator[]( cet::map_vector_key key ) const {
       return m_keys.find(key) != m_keys.end();
     }
@@ -70,6 +73,7 @@ namespace mu2e {
 
   typedef std::map<art::Ptr<mu2e::CaloShowerStep>, art::Ptr<mu2e::CaloShowerStep> > CaloShowerStepRemap;
   typedef std::string InstanceLabel;
+  typedef std::map<cet::map_vector_key, cet::map_vector_key> KeyRemap;
 }
 
 
@@ -142,7 +146,7 @@ private:
   std::map<art::ProductID, const art::EDProductGetter*> _oldCaloShowerStepGetter;
 
   // record the SimParticles that we are keeping so we can use compressSimParticleCollection to do all the work for us
-  std::map<art::ProductID, SimParticleSelector> _simParticlesToKeep;
+  std::map<art::ProductID, SimParticleSet> _simParticlesToKeep;
 
   InstanceLabel _trackerOutputInstanceLabel;
   InstanceLabel _crvOutputInstanceLabel;
@@ -287,10 +291,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 	if (stepPointMC.simParticle().id() != oldProdID) {
 	  continue;
 	}
-	const SimParticleSelector& simParticles = simPartsToKeep.second;
-	const std::set<cet::map_vector_key>& alreadyKeptKeys = simParticles.keys();
-	for (const auto& alreadyKeptKey : alreadyKeptKeys) {
-	  if (stepPointMC.simParticle()->id() == alreadyKeptKey) {
+	const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
+	for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
+	  if (stepPointMC.simParticle() == alreadyKeptSimPart) {
 	    copyStepPointMC(stepPointMC, (*i_tag).instance() );
 	  }
 	}
@@ -299,17 +302,25 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
   
   // Now compress the SimParticleCollections into their new collections
-  SimParticleRemapping* remap = new SimParticleRemapping;
+  KeyRemap* keyRemap = new KeyRemap;
+  SimParticleRemapping remap;
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
+    SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
     compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
-				  _simParticlesToKeep[i_product_id], *_newSimParticles, remap);
+				  simPartSelector, *_newSimParticles, keyRemap);
+
+    // Fill out the SimParticleRemapping and also update the GenParticleCollection
+    for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
+      cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
+      cet::map_vector_key newKey = keyRemap->at(oldKey);
+      remap[i_keptSimPart] = art::Ptr<SimParticle>(_newSimParticlesPID, newKey.asUint(), _newSimParticleGetter);
+    }
   }
 
-  for(auto& i : *_newSimParticles) {
-      
-    mu2e::SimParticle& newsim = i.second;
+  for (auto& i_simParticle : *_newSimParticles) {
+    mu2e::SimParticle& newsim = i_simParticle.second;
     if(!newsim.genParticle().isNull()) { // will crash if not resolvable
       
       // Copy GenParticle to the new collection
@@ -317,6 +328,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       newsim.genParticle() = art::Ptr<GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
     }
   }
+
   
   // Now update all objects with SimParticlePtrs
   // Update the time maps
@@ -327,8 +339,8 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     SimParticleTimeMap& i_newTimeMap = *_newSimParticleTimeMaps.at(i_element);
     for (const auto& timeMapPair : i_oldTimeMap) {
       art::Ptr<SimParticle> oldSimPtr = timeMapPair.first;
-      const auto& newSimPtrIter = remap->find(oldSimPtr);
-      if (newSimPtrIter != remap->end()) {
+      const auto& newSimPtrIter = remap.find(oldSimPtr);
+      if (newSimPtrIter != remap.end()) {
 	art::Ptr<SimParticle> newSimPtr = newSimPtrIter->second;
 	i_newTimeMap[newSimPtr] = timeMapPair.second;
       }
@@ -338,20 +350,20 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   // Update the StepPointMCs
   for (const auto& i_instance : _newStepPointMCInstances) {
     for (auto& i_stepPointMC : *_newStepPointMCs.at(i_instance)) {
-      art::Ptr<SimParticle> newSimPtr = remap->at(i_stepPointMC.simParticle());
+      art::Ptr<SimParticle> newSimPtr = remap.at(i_stepPointMC.simParticle());
       i_stepPointMC.simParticle() = newSimPtr;
     }
   }
 
   // Update the CaloShowerSteps
   for (auto& i_caloShowerStep : *_newCaloShowerSteps) {
-    art::Ptr<SimParticle> newSimPtr = remap->at(i_caloShowerStep.simParticle());
+    art::Ptr<SimParticle> newSimPtr = remap.at(i_caloShowerStep.simParticle());
     i_caloShowerStep.setSimParticle(newSimPtr);
   }
 
   // Update the CaloShowerSims
   for (auto& i_caloShowerSim : *_newCaloShowerSims) {
-    art::Ptr<SimParticle> newSimPtr = remap->at(i_caloShowerSim.sim());
+    art::Ptr<SimParticle> newSimPtr = remap.at(i_caloShowerSim.sim());
     i_caloShowerSim.setSimParticle(newSimPtr);
   }
 
@@ -360,7 +372,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     art::Ptr<SimParticle> oldSimPtr = i_crvDigiMC.GetSimParticle();
     art::Ptr<SimParticle> newSimPtr;
     if (oldSimPtr.isNonnull()) { // if the old CrvDigiMC doesn't have a null ptr for the SimParticle...
-      newSimPtr = remap->at(oldSimPtr);
+      newSimPtr = remap.at(oldSimPtr);
     }
     else {
       newSimPtr = art::Ptr<SimParticle>();
@@ -490,12 +502,12 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::S
 void mu2e::CompressDigiMCs::keepSimParticle(const art::Ptr<SimParticle>& sim_ptr) {
 
   // Also need to add all the parents (and change their genParticles) too
-  _simParticlesToKeep[sim_ptr.id()].push_back(sim_ptr->id());
+  _simParticlesToKeep[sim_ptr.id()].insert(sim_ptr);
   art::Ptr<SimParticle> childPtr = sim_ptr;
   art::Ptr<SimParticle> parentPtr = childPtr->parent();
   
   while (parentPtr) {
-    _simParticlesToKeep[sim_ptr.id()].push_back(parentPtr->id());
+    _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
     childPtr = parentPtr;
     parentPtr = parentPtr->parent();
   }

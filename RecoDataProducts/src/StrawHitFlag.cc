@@ -45,31 +45,8 @@ namespace mu2e {
       bitnames[std::string("Active")]		    = bit_to_mask(active);
       bitnames[std::string("GoodDOCA")]		    = bit_to_mask(doca);
       bitnames[std::string("InTime")]		    = bit_to_mask(intime);
-      for(unsigned itrk=0;itrk<=_maxTrkId;++itrk){
-	bitnames[trackBitName(itrk)] = bit_to_mask(trackBit(itrk));
-      }
+      bitnames[std::string("Track")]		    = bit_to_mask(track);
     }
     return bitnames;
   }
-
-  StrawHitFlagDetail::bit_type StrawHitFlagDetail::trackBit(unsigned itrk) {
-    if(itrk > _maxTrkId ){
-      std::ostringstream os;
-      os << typeName() << " invalid track number : " << itrk;
-      throw std::out_of_range( os.str() );
-    }
-    return static_cast<bit_type>(16+itrk);
-  }
-
-  std::string StrawHitFlagDetail::trackBitName(unsigned itrk) {
-    if(itrk > _maxTrkId ){
-      std::ostringstream os;
-      os << typeName() << " invalid track number : " << itrk;
-      throw std::out_of_range( os.str() );
-    }
-    static char bitname[20];
-    snprintf(bitname,20,"Track%i",itrk);
-    return std::string(bitname);
-  }
-
 }

@@ -310,11 +310,10 @@ namespace mu2e
 	  if(!_result.krep->fitCurrent()){
 	    cout << "Fit not current! " << endl;
 	  }
-	  // flg all hits as belonging to this track
-	  // // this is probably obsolete, FIXME!
+	  // flg all hits as belonging to a track
 	  if(ikseed<StrawHitFlag::_maxTrkId){
 	    for(auto ihit=_result.krep->hitVector().begin();ihit != _result.krep->hitVector().end();++ihit){
-	      if((*ihit)->isActive())shfcol->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::trackBit(ikseed));
+	      if((*ihit)->isActive())shfcol->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::track);
 	    }
 	  }
 	  

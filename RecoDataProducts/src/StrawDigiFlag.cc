@@ -24,6 +24,7 @@ namespace mu2e {
     if(bitnames.size()==0){
       bitnames[std::string("EnergySelection")]      = bit_to_mask(energysel);
       bitnames[std::string("dE/dxSelection")]      = bit_to_mask(dedxsel);
+      bitnames[std::string("processed")]      = bit_to_mask(dedxsel);
     }
     return bitnames;
   }

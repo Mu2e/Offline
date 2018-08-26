@@ -134,37 +134,38 @@ namespace mu2e {
 	  int       stationId = os;
 	  int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//CalHelixFinderData::kNFaces;
 	  //	  int       panelId   = op;// + faceId*CalHelixFinderData::kNPanelsPerFace;
-	  FaceZ_t*  fz        = &_hfResult._oTracker[faceId];
-	  fz->z               = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	  //  FaceZ_t*  fz        = &_hfResult._oTracker[faceId];
+	  //	  fz->z               = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	  _hfResult._zFace[faceId] = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
 
-	  PanelZ_t* pz        = &fz->panelZs[op];//_hfResult._oTracker[panelId];
+	  //	  PanelZ_t* pz        = &fz->panelZs[op];//_hfResult._oTracker[panelId];
 
 	  //	  pz->fPanel = panel;
 	  //-----------------------------------------------------------------------------
 	  // panel caches phi of its center and the z
 	  //-----------------------------------------------------------------------------
-	  pz->wx     = panel->straw0Direction().x();
-	  pz->wy     = panel->straw0Direction().y();
-	  pz->phi    = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
-	  pz->fNHits = 0;
+	  // pz->phi    = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
+	  // pz->fNHits = 0;
+	  _hfResult._phiPanel[faceId*FaceZ_t::kNPanels + op] = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
 	}	
       }
     }
 
     if (_debugLevel > 10){
-      printf("//-----------------------------------//\n");
-      printf("//     Face      Panel      Z        //\n");
-      printf("//-----------------------------------//\n");
+      printf("//----------------------------------------------//\n");
+      printf("//     Face      Panel       PHI       Z        //\n");
+      printf("//----------------------------------------------//\n");
 
-      FaceZ_t*        facez(0);
+      //      FaceZ_t*        facez(0);
       //      PanelZ_t*       panelz(0);
 
       for (int f=0; f<StrawId::_ntotalfaces; ++f){
-	facez     = &_hfResult._oTracker[f];
-	double z  = facez->z;
+	//	facez     = &_hfResult._oTracker[f];
+	//	double z  = facez->z;
+	float z  =_hfResult._zFace[f];
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
-	  //	  panelz =  &facez->panelZs[p];//	panelz = &_hfResult._oTracker[p];
-	  printf("//  %5i      %5i     %10.3f //\n", f, p, z);
+	  float  phi = _hfResult._phiPanel[f*FaceZ_t::kNPanels + p];
+	  printf("//  %5i      %5i     %5.3f    %10.3f //\n", f, p, phi, z);
 	}
       }
       printf("//----------------------------------//\n");
@@ -334,26 +335,30 @@ namespace mu2e {
 // info of the track candidate during the CAlHelixFinderAlg::findTrack loop
 //--------------------------------------------------------------------------------
 	    int   counter(0);
-	    for (int f=0; f<StrawId::_ntotalfaces; ++f){
-	      FaceZ_t* facez     = &_hfResult._oTracker[f];
-	      for (int p=0; p<FaceZ_t::kNPanels; ++p){//for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
-		PanelZ_t* panelz = &facez->panelZs[p];//&_hfResult._oTracker[p];
-		int       nhits  = panelz->fNHits;
-		if (nhits == 0)                                  continue;
+	    for (unsigned i=0; i<_hfResult._hitsUsed.size(); ++i){
+	      if (_hfResult._hitsUsed[i] != 1)           continue;
+	      ++counter;
+	    }
+	    // for (int f=0; f<StrawId::_ntotalfaces; ++f){
+	    //   FaceZ_t* facez     = &_hfResult._oTracker[f];
+	    //   for (int p=0; p<FaceZ_t::kNPanels; ++p){//for (int p=0; p<CalHelixFinderData::kNTotalPanels; ++p){
+	    // 	PanelZ_t* panelz = &facez->panelZs[p];//&_hfResult._oTracker[p];
+	    // 	int       nhits  = panelz->fNHits;
+	    // 	if (nhits == 0)                                  continue;
 	      
-		for (int i=0; i<nhits; ++i){   
-		  //		  ComboHit*	hit = &panelz->fHitData.at(i);
-		  int index = facez->evalUniqueHitIndex(f,p,i);//p*CalHelixFinderData::kNMaxHitsPerPanel + i;
-		  if (_hfResult._hitsUsed[index] != 1)           continue;
+	    // 	for (int i=0; i<nhits; ++i){   
+	    // 	  //		  ComboHit*	hit = &panelz->_chHitsToProcess.at(i);
+	    // 	  int index = facez->evalUniqueHitIndex(f,p,i);//p*CalHelixFinderData::kNMaxHitsPerPanel + i;
+	    // 	  if (_hfResult._hitsUsed[index] != 1)           continue;
 		
-		  // double   dzFromSeed = hit->_dzFromSeed;     //distance form the hit used to seed the 3D-search
-		  // double   drFromPred = hit->_drFromPred;     //distance from prediction
-		  // _data.hitDzSeed[loc][counter] = dzFromSeed;
-		  // _data.hitDrPred[loc][counter] = drFromPred;
-		  ++counter;
-		}//end loop over the hits within a panel
-	      }//end panels loop
-	    }//end faces loop
+	    // 	  // double   dzFromSeed = hit->_dzFromSeed;     //distance form the hit used to seed the 3D-search
+	    // 	  // double   drFromPred = hit->_drFromPred;     //distance from prediction
+	    // 	  // _data.hitDzSeed[loc][counter] = dzFromSeed;
+	    // 	  // _data.hitDrPred[loc][counter] = drFromPred;
+	    // 	  ++counter;
+	    // 	}//end loop over the hits within a panel
+	    //   }//end panels loop
+	    // }//end faces loop
 	  }
 	  else {
 	    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
@@ -424,9 +429,9 @@ namespace mu2e {
     double   tandip        = hel->tanDip();
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);
-    CLHEP::Hep3Vector        gpos = _calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
+    CLHEP::Hep3Vector        gpos = _hfinder._calorimeter->geomUtil().diskToMu2e(HfResult._timeClusterPtr->caloCluster()->diskId(),
                                                                         HfResult._timeClusterPtr->caloCluster()->cog3Vector());
-    CLHEP::Hep3Vector        tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    CLHEP::Hep3Vector        tpos = _hfinder._calorimeter->geomUtil().mu2eToTracker(gpos);
     double   pitchAngle    = M_PI/2. - atan(tandip);
     double   hel_t0        = HfResult._timeClusterPtr->caloCluster()->time() - (tpos.z() - z0)/sin(pitchAngle)/(beta*CLHEP::c_light);
 
@@ -440,25 +445,18 @@ namespace mu2e {
     //     helixRadius, center.x(), center.y(), dfdz, nhits, HfResult._sxyw.chi2DofCircle(), HfResult._srphi.chi2DofLine());
     // printf("[CalHelixFinder::initHelixSeed] Index      X          Y         Z          PHI\n");
 
-    double     z_start(0);
+    // double     z_start(0);
     HelSeed._hhits.setParent(_chcol->parent());
     for (int i=0; i<nhits; ++i){
-      HitInfo_t*      hitInfo = &HfResult._goodhits[i];
-      FaceZ_t*        facez   = &HfResult._oTracker[hitInfo->face];
-      PanelZ_t*       panelz  = &facez->panelZs[hitInfo->panel];
-      
-      ComboHit*       hit    = &panelz->fHitData.at(hitInfo->panelHitIndex);
-
-      double                  hit_z  = hit->pos().z();
-      if ( i==0 ) z_start = hit_z;
-
-      double                  shphi  = XYZVec(hit->pos() - HelSeed._helix.center()).phi();
-      int                     nLoops = (hit_z - z_start)/(2.*M_PI/dfdz);
-      shphi = shphi + double(nLoops)*2.*M_PI;
+      // HitInfo_t*      hitInfo = &HfResult._goodhits[i];
+      // FaceZ_t*        facez   = &HfResult._oTracker[hitInfo->face];
+      // PanelZ_t*       panelz  = &facez->panelZs[hitInfo->panel];
+      unsigned        hitId   = HfResult._goodhits[i];
+      ComboHit*       hit     = &HfResult._chHitsToProcess[hitId];//panelz->_chHitsToProcess.at(hitInfo->panelHitIndex);
 
       ComboHit                hhit(*hit);
-      hhit._hphi = shphi;
-      hhit._flag.merge(StrawHitFlag::resolvedphi);
+      //      hhit._hphi = shphi;
+      // hhit._flag.merge(StrawHitFlag::resolvedphi);
 
       HelSeed._hhits.push_back(hhit);
     }

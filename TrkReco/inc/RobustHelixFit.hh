@@ -21,24 +21,24 @@
 
 using namespace ROOT::Math::VectorUtil;
 
-namespace {
-  typedef ROOT::Math::XYVectorF  XYVec;
-  // struct for weighted positions
-  class XYWVec : public XYVec {
-  public :
-    XYWVec(XYZVec pos,int faceId, float weight=1.0) : XYVec(pos.x(),pos.y()) {
-      _weight = weight;
-      _faceId = faceId;
-    }
-    int   faceId() const { return _faceId; }
-    float weight() const { return _weight; }
+// namespace {
+//   typedef ROOT::Math::XYVectorF  XYVec;
+//   // struct for weighted positions
+//   class XYWVec : public XYVec {
+//   public :
+//     XYWVec(XYZVec pos,int faceId, float weight=1.0) : XYVec(pos.x(),pos.y()) {
+//       _weight = weight;
+//       _faceId = faceId;
+//     }
+//     int   faceId() const { return _faceId; }
+//     float weight() const { return _weight; }
 
-  private :
-    float _weight; // weight for this position
-    int   _faceId;
-  };
+//   private :
+//     float _weight; // weight for this position
+//     int   _faceId;
+//   };
 
-}
+// }
 
 namespace mu2e 
 {
@@ -76,12 +76,13 @@ namespace mu2e
 
     bool initCircle(RobustHelixFinderData& helixData);
     void fitCircle(RobustHelixFinderData& helixData);
-    bool initFZ(RobustHelixFinderData& helixData);
+    bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
     void fitFZ(RobustHelixFinderData& helixData);
-    void fitFZ_2(RobustHelixFinderData& helixData);
+    void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
     bool goodHelix(RobustHelix const& rhel);
     bool goodHelixChi2(RobustHelixFinderData& helixData);
+    void defineHelixParams(RobustHelixFinderData& helixData);
     Helicity const& helicity() const { return _helicity; }
 
     bool goodCircle(RobustHelix const& rhel);
@@ -93,11 +94,13 @@ namespace mu2e
     float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
 
     //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
-    void  refineFitXY  (RobustHelixFinderData& helixData);
-    void  refineFitZPhi(RobustHelixFinderData& helixData);
+    void  refineFitXY  (RobustHelixFinderData& helixData, int weightMode=1);
+    void  refineFitZPhi(RobustHelixFinderData& helixData, int weightMode=1);
 
     void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
+
+    bool  targetcon()   {return _targetcon; }
 
     const TTracker*            _tracker;
     const Calorimeter*         _calorimeter;
@@ -142,8 +145,10 @@ namespace mu2e
     unsigned _maxniter; // maxium # of iterations to global minimum
     float _minzsep, _maxzsep; // Z separation of points for pitch estimate
     float _mindphi, _maxdphi; // phi separation of points for pitch estimate
+    float _sigmaPhi; //approximated uncertanty on the ComboHit helix-phi coordinate
     float _mindist; // minimum distance between points used in circle initialization
     float _maxdist; // maximum distance in hits
+    float _maxdxy; // maximum distance in hits after the triplet loop in fitCiircleMedian
     float _maxXDPhi;//maximum normalized residual for a hit in the z-phi fit
     float _rmin,_rmax; // circle radius range
     float _rcmin,_rcmax; // circle centerradius range

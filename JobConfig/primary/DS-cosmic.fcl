@@ -1,11 +1,11 @@
 #
-# cosmic ray muons produced at a box around the tracker and calorimeter
+# cosmic ray muons produced at a box around the DS
 #
 # original author: Ralf Ehrlich, UVA 
 # (based on Dave Brown's CeEndpoint)
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: Cosmics
+process_name: DScosmic
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
@@ -14,13 +14,14 @@ physics : {
     generate: 
     {
        module_type : EventGenerator
-       inputfile   : "JobConfig/primary/genconfig_cosmics.txt"
+       inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
     }
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }
   analyzers: { @table::Primary.analyzers }
-  TriggerPath : @local::Primary.TriggerPath
+# enable CRV digis
+  TriggerPath : [ @sequence::Primary.TriggerPath ]
   EndPath : @local::Primary.EndPath
 }
 outputs : { 
@@ -30,13 +31,9 @@ outputs : {
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
+# update the maximum # of particles
+physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.Cosmics.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.Cosmics.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.DS-cosmic.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.DS-cosmic.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-
-
-#this seems to be needed when running locally
-services.SeedService.baseSeed         :  0
-services.SeedService.maxUniqueEngines :  20
-

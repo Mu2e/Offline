@@ -201,7 +201,7 @@ BEGIN_PROLOG
       TrkAna: @local::TrackAnalysis
     }
   
-    # Reco sequences starting from digis; these belong elsewhere FIXME!
+    # diagnostic Reco sequences starting from digis
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
