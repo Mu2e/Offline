@@ -18,6 +18,7 @@
 
 // CLHEP includes
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Vector/LorentzVector.h"
 
 // C++ includes
 #include <iostream>
@@ -29,7 +30,7 @@ using cet::square;
 
 namespace mu2e {
 
-  double PionCaptureSpectrum::getWeight( const double E ) const {
+  double PionCaptureSpectrum::getWeight(double E) const {
 
     double weight(0.);
     if      ( _spectrum == Flat )       weight = getFlat( E );
@@ -39,7 +40,7 @@ namespace mu2e {
 
   }
 
-  double PionCaptureSpectrum::get2DWeight( const double x, const double y, const double E ) const {
+  double PionCaptureSpectrum::get2DWeight(double x, double y, double E) const {
 
     double weight(0.);
     if      ( _spectrum2D == Flat2D          ) weight = getFlat( E, x, y );
@@ -52,7 +53,7 @@ namespace mu2e {
   //======================================================
   // Flat spectrum to be used with weighting
   //======================================================
-  double PionCaptureSpectrum::getFlat( const double E, const double x, const double y ) {
+  double PionCaptureSpectrum::getFlat(double E, double x, double y) const {
     return 1.;
   }
 
@@ -62,7 +63,7 @@ namespace mu2e {
   //  - Fit results given in I. Sarra, mu2e-docdb-665-v2
   //=======================================================
 
-  double PionCaptureSpectrum::getBistirlichSpectrum( const double e ) {
+  double PionCaptureSpectrum::getBistirlichSpectrum(double e) const {
     static const double emax  = 138.2;
     static const double alpha =   2.691;
     static const double gamma =   1.051;
@@ -81,16 +82,15 @@ namespace mu2e {
   //  - Joseph, Il Nuovo Cimento 16, 997 (1960)
   //=======================================================
 
-  double PionCaptureSpectrum::get2DMax( const double E ) const {
+  double PionCaptureSpectrum::get2DMax(double E) const {
     static const GlobalConstantsHandle<ParticleDataTable> pdt;
     static const HepPDT::ParticleData& e_data  = pdt->particle(PDGCode::e_minus).ref();
 
     return getKrollWadaJosephSpectrum( E, 2*e_data.mass().value(), 0. );
   }
 
-  double PionCaptureSpectrum::getKrollWadaJosephSpectrum(const double ePhoton,
-                                                         const double x,
-                                                         const double y ) const {
+
+  double PionCaptureSpectrum::getKrollWadaJosephSpectrum(double ePhoton, double x, double y) const {
 
     static const GlobalConstantsHandle<ParticleDataTable> pdt;
     static const HepPDT::ParticleData& e_data  = pdt->particle(PDGCode::e_minus).ref();
@@ -99,8 +99,7 @@ namespace mu2e {
     static const double m = e_data.mass().value();
     static const double E = ePhoton;
 
-    // Assume pion is not bound to stopped nucleus and there is no
-    // nuclear recoil
+    // Assume pion is not bound to stopped nucleus and there is no nuclear recoil
     static const double M = GlobalConstantsHandle<PhysicsParams>()->getAtomicMass() + pi_data.mass().value() - ePhoton;
 
     // Set pdf to zero if x is out of bounds
@@ -130,13 +129,14 @@ namespace mu2e {
 
   }
 
-  std::pair<CLHEP::HepLorentzVector, CLHEP::HepLorentzVector>
-  PionCaptureSpectrum::getElecPosiVectors(RandomUnitSphere& randomUnitSphere,
-                                          CLHEP::RandFlat& randFlat,
-                                          const double ePhoton,
-                                          const double x,
-                                          const double y)
-  {
+  void PionCaptureSpectrum::getElecPosiVectors(RandomUnitSphere* randomUnitSphere,
+					       CLHEP::RandFlat* randFlat,
+					       double           ePhoton,
+					       double           x,
+					       double           y,
+					       CLHEP::HepLorentzVector& mome,
+					       CLHEP::HepLorentzVector& momp) const {
+
     // Get electron/positron energies from x, y values (see Mu2eUtilities/src/PionCaptureSpectrum.cc for details)
     const double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
     const double ePositron = 0.5*( ePhoton + y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) );
@@ -148,7 +148,7 @@ namespace mu2e {
     const double pPositron = std::sqrt( cet::diff_of_squares( ePositron, m ) );
 
     // Produce electron momentum
-    const CLHEP::Hep3Vector p3electron = randomUnitSphere.fire( pElectron );
+    const CLHEP::Hep3Vector p3electron = randomUnitSphere->fire( pElectron );
 
     // Get positron momentum
     CLHEP::Hep3Vector p3positron( p3electron );
@@ -159,7 +159,7 @@ namespace mu2e {
 
     const double cosTheta = 1/(2*pElectron*pPositron)*( cet::square(ePhoton) - cet::sum_of_squares( x, pElectron, pPositron) );
 
-    const double phi = 2*M_PI*randFlat.fire();
+    const double phi = 2*M_PI*randFlat->fire();
 
     // - find a vector that is not collinear with the electron direction
     const CLHEP::Hep3Vector n1 = (std::abs(p3electron.x()) < std::abs(p3electron.y())) ?
@@ -172,9 +172,8 @@ namespace mu2e {
     p3positron.rotate(perp      , std::acos(cosTheta) );
     p3positron.rotate(p3electron, phi                 );
 
-    return std::make_pair( CLHEP::HepLorentzVector( p3electron, eElectron ),
-                           CLHEP::HepLorentzVector( p3positron, ePositron ) );
-
+    mome.set(p3electron,eElectron);
+    momp.set(p3electron,eElectron);
   }
 
 }

@@ -95,7 +95,7 @@ namespace mu2e {
 
     RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
 
-    bool doHistograms_;
+    bool   doHistograms_;
 
     double generateEnergy();
 
@@ -154,17 +154,17 @@ namespace mu2e {
 
     // Uses energy above as photon energy.
     Random2Dpair<PionCaptureSpectrum> random2dPair{eng_, 2*massE, energy, -1., 1.};
-    const auto xyPair          = random2dPair.fire(energy);
-    const auto elecPosiVectors = PionCaptureSpectrum::getElecPosiVectors(randomUnitSphere_,
-                                                                         randomFlat_,
-                                                                         energy,
-                                                                         xyPair.first,
-                                                                         xyPair.second);
+
+    CLHEP::HepLorentzVector mome, momp;
+    double                  x,y;
+
+    random2dPair.fire(energy,x,y);
+    random2dPair.pdf().getElecPosiVectors(&randomUnitSphere_,&randomFlat_,energy,x,y,mome,momp);
 
     // Add particles to list
     auto output = std::make_unique<GenParticleCollection>();
-    output->emplace_back(PDGCode::e_minus, GenId::internalRPC, pos, elecPosiVectors.first , stop.t);
-    output->emplace_back(PDGCode::e_plus , GenId::internalRPC, pos, elecPosiVectors.second, stop.t);
+    output->emplace_back(PDGCode::e_minus, GenId::internalRPC,pos,mome,stop.t);
+    output->emplace_back(PDGCode::e_plus , GenId::internalRPC,pos,momp,stop.t);
     event.put(move(output));
 
     // Calculate survival probability
@@ -173,10 +173,9 @@ namespace mu2e {
 
     if (doHistograms_) {
       _hmomentum->Fill(energy);
-      _hElecMom ->Fill(elecPosiVectors.first .vect().mag());
-      _hPosiMom ->Fill(elecPosiVectors.second.vect().mag());
+      _hElecMom ->Fill(mome.vect().mag());
+      _hPosiMom ->Fill(momp.vect().mag());
     }
-
   }
 
   //================================================================

@@ -44,30 +44,25 @@ namespace mu2e {
     // I have inspected RandFlat source and assert that its destructor does not throw
     ~Random2Dpair() noexcept {}
 
-    // Includes optional arguments that (*_function) accepts
-    template<typename... Args>
-    std::pair<double,double> fire( Args... args ) {
+    void fire(double energy, double& x, double& y) {
 
       // Accept/reject method
-      double prob(0.), threshold(0.), x(0.), y(0.);
+      double prob(0.), threshold(0.);
+      double pdfMax = _pdf.get2DMax(energy);
 
+      x = 0;
+      y = 0;
       do {
-        x = _xmin + ( _xmax - _xmin )*_randFlat.fire();
-        y = _ymin + ( _ymax - _ymin )*_randFlat.fire();
-        
-        static const double pdfMax = _pdf.get2DMax( std::forward<Args>(args)...);
-        threshold = _pdf.get2DWeight( x, y, std::forward<Args>(args)... );
+        x         = _xmin + ( _xmax - _xmin )*_randFlat.fire();
+        y         = _ymin + ( _ymax - _ymin )*_randFlat.fire();
+	threshold = _pdf.get2DWeight(x, y, energy);
         prob      = pdfMax*_randFlat.fire();
 
       } while ( prob > threshold );
-      
-      return std::make_pair( x, y );
+          }
 
-    }
-
-    CLHEP::HepRandomEngine& engine(){
-      return _randFlat.engine();
-    }
+    CLHEP::HepRandomEngine& engine() { return _randFlat.engine(); }
+    const FunctionClass&    pdf   () { return _pdf;               }
 
   private:
 
@@ -80,7 +75,6 @@ namespace mu2e {
 
     // An underlying uniform random number distribution.
     CLHEP::RandFlat _randFlat;
-
   };
 
 }
