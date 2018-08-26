@@ -195,10 +195,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void MuonCaptureSpectrum::getElecPosiVectors(double ePhoton,CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const {
 
-    // Get electron/positron energies from x, y values (see Mu2eUtilities/src/MuonCaptureSpectrum.cc for details)
-
     double x, y;
-
+					// generate invariant mass and energy splitting
     fire(ePhoton,x,y);
 
     double eElectron = 0.5*( ePhoton - y*std::sqrt( cet::diff_of_squares( ePhoton, x ) ) ); 

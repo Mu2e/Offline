@@ -66,11 +66,11 @@ namespace mu2e {
     int verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandGeneral randSpectrum_;
-    RandomUnitSphere   randUnitSphere_;
-    CLHEP::RandFlat    randFlat_;
+    CLHEP::RandGeneral*  randSpectrum_;
+    RandomUnitSphere     randUnitSphere_;
+    CLHEP::RandFlat      randFlat_;
 
-    MuonCaptureSpectrum muonCaptureSpectrum_;
+    MuonCaptureSpectrum  muonCaptureSpectrum_;
 
     RootTreeSampler<IO::StoppedParticleF> stops_;
 
@@ -91,6 +91,7 @@ namespace mu2e {
     TH1F* _htZero;
     TH1F* _hMee;
     TH2F* _hMeeVsE;
+    TH1F* _hMeeOverE;
     TH1F* _hy;				// splitting function
 //-----------------------------------------------------------------------------
 // functions
@@ -100,6 +101,7 @@ namespace mu2e {
 
   public:
     explicit StoppedMuonRMCGun(const fhicl::ParameterSet& pset);
+    ~StoppedMuonRMCGun();
     virtual void produce(art::Event& event);
   };
 
@@ -112,7 +114,6 @@ namespace mu2e {
     , ehi_                (psphys_.get<double>("ehi"))
     , verbosityLevel_     (pset.get<int>("verbosityLevel", 0))
     , eng_                (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randSpectrum_       (eng_, spectrum_.getPDF(), spectrum_.getNbins())
     , randUnitSphere_     (eng_)
     , randFlat_           (eng_)
     , muonCaptureSpectrum_(&randFlat_,&randUnitSphere_)
@@ -139,19 +140,27 @@ namespace mu2e {
     // initialize binned spectrum - this needs to be done right
     parseSpectrumShape(psphys_);
 
+    randSpectrum_ = new CLHEP::RandGeneral(eng_, spectrum_.getPDF(), spectrum_.getNbins());
+
     if ( doHistograms_ ) {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "StoppedMuonRMCGun" );
 
-      _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum, RMC", 70,  0.,  140.  );
-      _hEnergyElectron     = tfdir.make<TH1F>( "hEnergyElectron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
-      _hEnergyPositron     = tfdir.make<TH1F>( "hEnergyPositron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
-      _htZero              = tfdir.make<TH1F>( "htZero"         , "Stopped Muon time", 100,0.,2000.);
-      _hWeight             = tfdir.make<TH1F>( "hWeight"        , "Event Weight ", 100,0.,1.);
-      _hMee                = tfdir.make<TH1F>( "hMee"           , "M(e+e-) "     , 200,0.,200.);
-      _hMeeVsE             = tfdir.make<TH2F>( "hMeeVsE"        , "M(e+e-) "     , 200,0.,200.,200,0,200);
-      _hy                  = tfdir.make<TH1F>( "hy"             , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+      _hmomentum       = tfdir.make<TH1F>("hmomentum", "Produced photon momentum, RMC", 70,  0.,  140.  );
+      _hEnergyElectron = tfdir.make<TH1F>("hEnergyElectron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
+      _hEnergyPositron = tfdir.make<TH1F>("hEnergyPositron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
+      _htZero          = tfdir.make<TH1F>("htZero"         , "Stopped Muon time", 100,0.,2000.);
+      _hWeight         = tfdir.make<TH1F>("hWeight"        , "Event Weight ", 100,0.,1.);
+      _hMee            = tfdir.make<TH1F>("hMee"           , "M(e+e-) "     , 200,0.,200.);
+      _hMeeVsE         = tfdir.make<TH2F>("hMeeVsE"        , "M(e+e-) "     , 200,0.,200.,200,0,200);
+      _hMeeOverE       = tfdir.make<TH1F>("hMeeOverE"      , "M(e+e-)/E"          , 200, 0.,1);
+     _hy               = tfdir.make<TH1F>("hy"             , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
     }
+  }
+
+  //================================================================
+  StoppedMuonRMCGun::~StoppedMuonRMCGun() {
+    delete randSpectrum_;
   }
 
   //================================================================
@@ -237,6 +246,11 @@ namespace mu2e {
       throw cet::exception("BADCONFIG")
         << "StoppedParticleMuonGun: unknown spectrum shape "<<spectrumShape<<"\n";
     }
+  }
+
+  //================================================================
+  double StoppedMuonRMCGun::generateEnergy() {
+    return elow_ + (ehi_ - elow_)*randSpectrum_->fire();
   }
 
   //================================================================
@@ -326,23 +340,14 @@ namespace mu2e {
 	double mee = (mome+momp).m();
 	_hMee->Fill(mee);
 	_hMeeVsE->Fill(energy,mee);
+	_hMeeOverE->Fill(mee/energy);
 
 	CLHEP::Hep3Vector p = mome.vect()+momp.vect();
 	double y = (mome.e()-momp.e())/p.mag();
 
 	_hy->Fill(y);
-
-	// if ((mee > 85) && (energy > 85)) {
-	//   printf(" >>> StoppedMuonRMCGun::produce EVENT: %10i energy: %12.5f mee: %12.5f\n",event.event(),energy,mee);
-	// }
-
       }
     }
-  }
-
-  //================================================================
-  double StoppedMuonRMCGun::generateEnergy() {
-    return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
   }
 
   //================================================================

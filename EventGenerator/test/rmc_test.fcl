@@ -1,0 +1,83 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 105 MeV/c electrons
+# make STNTUPLE in one go, without creating an intermediate file
+# for 105 MeV/c electron : E = 105.00124           MeV
+# for 105 MeV/c muon     : E = 148.9584269653785   MeV
+#------------------------------------------------------------------------------
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+#include "Stntuple/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+  pdgCode    : @local::Particle.eminus
+  bgHitFiles : @nil
+END_PROLOG
+
+#include "Stntuple/fcl/templates.fcl"
+
+process_name : RmcTest
+
+source       : { module_type : EmptyEvent   }
+# source       : { module_type : RootInput   }
+
+outputs      : { @table::Stntuple.outputs   }
+producers    : { @table::Stntuple.producers }
+filters      : { @table::Stntuple.filters   }
+paths        : { @table::Stntuple.paths     }
+
+physics : {
+    producers: { @table::producers 
+	generate              : {  module_type:StoppedMuonRMCGun
+	    physics: {
+		rhoInternal           : 1. # 0.0071
+		spectrumShape         : "ClosureApprox"    # could also be "flat"
+#		spectrumShape         : "flat"
+		elow                  : 1.5
+#		elow                  : 100.0
+		ehi                   : 100.1
+		kMaxUserSet           : false
+		kMaxUser              : 100.1
+#		kMaxUserSet           : true
+		kMaxUser              : 90.1     # per Bergbush et al...
+		rmcFrac               : 1.43e-5
+		spectrumResolution    : 0.1 # hopefully, in MeV
+		blind                 : false
+		physicsVerbosityLevel : 0
+
+	    }
+#	    czmin : 0.98 
+	    #radius ~ 650mm, dist ~ 5500mm --> cos(angle)~ 0.99
+#	    czmax : 1.0
+	    muonStops                 : @local::muonStops
+	    doHistograms              : true
+	}
+    }
+    
+    @table::paths
+    
+    p1            : [ generate ] 
+
+
+    trigger_paths : [ p1 ]
+
+    #    out : [detectorOutput]  
+    out           : [     ]
+    end_paths     : [ out ]
+}
+
+services.TFileService.fileName            : "nts.user.rmc_test.xxx.000001.root"
+#------------------------------------------------------------------------------
+# uncomment the next 2 lines if you want the DST file to be written out
+#-----------------------------------------------------------------------------
+#physics.out                               : [ detectorOutput ]
+#outputs.detectorOutput.SelectEvents       : [ p3l ]
+#outputs.detectorOutput.fileName           : "sim.user.rmc_test.xxx.000001.art"
+#------------------------------------------------------------------------------
+# uncomment to avoid waisting time on the initialization of detailed neutron 
+# cross sections - that shouldn't affect the CE simulation 
+#------------------------------------------------------------------------------
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]

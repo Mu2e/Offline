@@ -36,6 +36,13 @@ namespace mu2e {
     enum enum_type_2D { Flat2D, KrollWadaJoseph };
 
     PionCaptureSpectrum() : _spectrum( Bistirlich ), _spectrum2D( KrollWadaJoseph ) {}
+
+    // random number generators ar owned by the callers, no memory cleanup needed
+    PionCaptureSpectrum(CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
+
+    PionCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
+			CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
+
     ~PionCaptureSpectrum(){}
 
     double getWeight   (double E) const;
@@ -48,21 +55,26 @@ namespace mu2e {
     double getFlat              (double e, double x = 0., double y = 0.) const ;
     double getBistirlichSpectrum(double e) const ;
 
-    void   getElecPosiVectors(RandomUnitSphere* randomUnitSphere,
-			      CLHEP::RandFlat*  randFlat,
-			      double energy,
-			      double x,
-			      double y,
-			      CLHEP::HepLorentzVector& mome,
-			      CLHEP::HepLorentzVector& momp) const;
+    void   fire(double energy, double& x, double& y) const; 
+
+    void   getElecPosiVectors(double energy, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const;
 
     double getKrollWadaJosephSpectrum( const double e, const double x, const double y ) const;
 
   private:
 
-    enum_type    _spectrum;
-    enum_type_2D _spectrum2D;
+    enum_type          _spectrum;
+    enum_type_2D       _spectrum2D;
+    bool               _kMaxUserSet;
+    double             _kMaxUser;
+    double             _kMaxMax;
 
+    CLHEP::RandFlat*   _rnFlat;
+    RandomUnitSphere*  _rnUnitSphere;
+
+    double             _me;		// electron mass
+    double             _mpi;		// pi- mass
+    double             _MN;		// mass of the initial state nucleus (Al)
   };
 
 } // end of namespace mu2e
