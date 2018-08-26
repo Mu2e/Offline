@@ -90,23 +90,35 @@ namespace mu2e {
     return 1.;
   }
 
-  //=======================================================
-  // Analytic fit to the photon energy spectrum for Mg
-  //  - J.A.Bistirlich, et al, Phys. Rev. C 5, 1867 (1972)
-  //  - Fit results given in I. Sarra, mu2e-docdb-665-v2
-  //=======================================================
-
+//=======================================================
+// Analytic fit to the photon energy spectrum for Mg
+//  - J.A.Bistirlich, et al, Phys. Rev. C 5, 1867 (1972)
+//  - commented out: fit results given in I. Sarra, mu2e-docdb-665-v2
+//    Ivano fitted the distribution in fig 7b in the paper, whereas the one 
+//    to fit is the one in fig 7a. The paper is not very clear on that,
+//    see mu2e-19366 for details
+//    new fit is the same parameterization of the spectrum in fig 7a, 
+//    normalization the fit function: integral(f) = 1
+//=======================================================
   double PionCaptureSpectrum::getBistirlichSpectrum(double e) const {
-    static const double emax  = 138.2;
-    static const double alpha =   2.691;
-    static const double gamma =   1.051;
-    static const double tau   =   8.043;
-    static const double c0    =   2.741;
-    static const double c1    =  -0.005;
+    // static const double emax  = 138.2;
+    // static const double alpha =   2.691;
+    // static const double gamma =   1.051;
+    // static const double tau   =   8.043;
+    // static const double c0    =   2.741;
+    // static const double c1    =  -0.005;
+    // return std::pow(emax-e,alpha) * std::exp(-(emax-gamma*e)/tau) * (c0 + c1*e) / 10000;
+
+    static const double emax  =   1.34530e2;
+    static const double alpha =   1.29931;
+    static const double gamma =   9.28705e-1;
+    static const double tau   =   9.39676;
+    static const double c0    =   4.77611e-2;
+    static const double c1    =  -3.26349e-4;
 
     if ( e > emax ) return 0.;
 
-    return std::pow(emax-e,alpha) * std::exp(-(emax-gamma*e)/tau) * (c0 + c1*e) / 10000;
+    return std::pow(emax-e,alpha) * std::exp(-(emax-gamma*e)/tau) * (c0+c1*e);
   }
 
   //=======================================================
