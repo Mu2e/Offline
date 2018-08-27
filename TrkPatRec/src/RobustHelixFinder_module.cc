@@ -1226,10 +1226,10 @@ namespace mu2e {
 
     if (_diag) helixData._diag.niter = niter;
 
-    if (_hfit.goodHelix(helixData._hseed.helix()) && 
+    if (_hfit.goodHelix(helixData._hseed.helix())  && 
 	helixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK) && 
-	helixData._hseed._status.hasAllProperties(TrkFitFlag::phizOK)) {
-
+	helixData._hseed._status.hasAnyProperty(TrkFitFlag::phizOK) ) {
+	
       helixData._hseed._status.merge(TrkFitFlag::helixOK);
       updateT0(helixData);
       if (niter < _maxniter) helixData._hseed._status.merge(TrkFitFlag::helixConverged);
@@ -1313,7 +1313,7 @@ namespace mu2e {
 	  //now update all the helix parameters
 	  updateChi2HelixInfo(helixData);
 
-	  if (_hfit.goodHelix(helixData._hseed.helix()) && _hfit.goodHelixChi2(helixData)) {
+	  if (_hfit.goodHelix(helixData._hseed.helix()) && _chi2hfit.goodHelixChi2(helixData)) {
 	    helixData._hseed._status.merge(TrkFitFlag::helixOK);
 
 	    //now search for missing hits

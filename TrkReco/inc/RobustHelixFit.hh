@@ -16,29 +16,10 @@
 #include "TH1F.h"
 #include "Math/VectorUtil.h"
 #include "Math/Vector2D.h"
-#include "Mu2eUtilities/inc/LsqSums4.hh"
+//#include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "TrkReco/inc/RobustHelixFinderData.hh"
 
-using namespace ROOT::Math::VectorUtil;
-
-// namespace {
-//   typedef ROOT::Math::XYVectorF  XYVec;
-//   // struct for weighted positions
-//   class XYWVec : public XYVec {
-//   public :
-//     XYWVec(XYZVec pos,int faceId, float weight=1.0) : XYVec(pos.x(),pos.y()) {
-//       _weight = weight;
-//       _faceId = faceId;
-//     }
-//     int   faceId() const { return _faceId; }
-//     float weight() const { return _weight; }
-
-//   private :
-//     float _weight; // weight for this position
-//     int   _faceId;
-//   };
-
-// }
+//using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e 
 {
@@ -81,21 +62,14 @@ namespace mu2e
     void fitFZ(RobustHelixFinderData& helixData);
     void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
     bool goodHelix(RobustHelix const& rhel);
-    bool goodHelixChi2(RobustHelixFinderData& helixData);
-    void defineHelixParams(RobustHelixFinderData& helixData);
     Helicity const& helicity() const { return _helicity; }
 
     bool goodCircle(RobustHelix const& rhel);
     bool goodFZ(RobustHelix const& rhel);
-    bool goodZPhiFit(LsqSums4& lsqsum);
 
     //function used to evaluate the hit weight used in the XY fit
     float evalWeightXY  (const ComboHit& Hit, XYVec& Center);
     float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
-
-    //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
-    void  refineFitXY  (RobustHelixFinderData& helixData, int weightMode=1);
-    void  refineFitZPhi(RobustHelixFinderData& helixData, int weightMode=1);
 
     void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
@@ -138,8 +112,6 @@ namespace mu2e
     int      _minnsh;  // minimum # of StrawHits
     unsigned _minnhit; // minimum # of hits to work with
     float _minxyresid; // minimum distance used in the circle fit to be clusterized. units are mm
-    int   _refineXYFit, _refineZPhiFit; //flag for using the reduced chi2 fit
-    float _chi2xymax, _chi2zphimax; //maximum chi2 allowed for the XY and ZPhi fit respectively
     float _lambda0,_lstep,_minlambda; // parameters for AGE center determination
     float _mindfdz, _maxdfdz;//paramters use for findDfDz function
     unsigned _nphibins; // # of bins in histogram for phi at z intercept
