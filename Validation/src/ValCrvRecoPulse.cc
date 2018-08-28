@@ -6,7 +6,7 @@ int mu2e::ValCrvRecoPulse::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NPulses", "N Pulses", 101, -0.5, 100.5);
   _hN2= tfs.make<TH1D>( "NPulse2", "N Pulses", 100, -0.5, 2000.0);
-  _hI = tfs.make<TH1D>( "BarId", "Bar ID",200, -0.5, 5343.5);
+  _hI = tfs.make<TH1D>( "BarId", "Bar ID",200, -0.5, 5503.5);
   _hIS= tfs.make<TH1D>( "SiPM", "SiPM",4, -0.5, 3.5);
   _hPE = tfs.make<TH1D>( "PE", "Fit Photoelectrons",100, 0.0, 400.0);
   _hPH = tfs.make<TH1D>( "PEHeight", "PE from Pulse Height", 100, 0.0, 400.0);
