@@ -8,7 +8,9 @@ int mu2e::ValComboHit::declare(art::TFileDirectory tfs) {
   _hsid = tfs.make<TH1D>( "sid", "StrawId", 100, -0.5, 40960.0);
   _hNcmb = tfs.make<TH1D>( "Ncmb", "N Parent Combos", 11, -0.5, 10.5);
   _hNstr = tfs.make<TH1D>( "Nstr", "N Parent Straws", 11, -0.5, 10.5);
-  _pos.declare(tfs,"","");
+  _hx = tfs.make<TH1D>( "X", "tracker X", 100, -800.0, 800.0);
+  _hy = tfs.make<TH1D>( "Y", "tracker Y", 100, -800.0, 800.0);
+  _hz = tfs.make<TH1D>( "Z", "tracker Z", 100, -1600.0, 1600.0);
   _ht = tfs.make<TH1D>( "t", "time", 100, 0.0, 2000.0);
   _hE = tfs.make<TH1D>( "E", "Energy",50, 0.0, 0.02);
   _hqual = tfs.make<TH1D>( "qual", "Qual",50, 0.001, 3.0);
@@ -31,7 +33,9 @@ int mu2e::ValComboHit::fill(const mu2e::ComboHitCollection & coll,
     _hsid->Fill(co.strawId().asUint16());
     _hNcmb->Fill(co.nCombo());
     _hNstr->Fill(co.nStrawHits());
-    _pos.fill(co.posCLHEP());
+    _hx->Fill(co.posCLHEP().x());
+    _hy->Fill(co.posCLHEP().y());
+    _hz->Fill(co.posCLHEP().z());
     _ht->Fill(co.time());
     _hE->Fill(co.energyDep());
     _hqual->Fill(co.qual());
