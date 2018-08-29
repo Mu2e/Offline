@@ -42,7 +42,7 @@ namespace mu2e {
 
   private:
     std::string _name;
-    unsigned _copyNo;
+    unsigned _copyNo=0;
     std::string _materialName;
   };
 

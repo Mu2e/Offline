@@ -41,8 +41,8 @@ namespace mu2e {
 
   public:
 
-    Panel():_id(PanelId()){}
-    Panel( const PanelId& id ):_id(id){}
+    Panel():_id(PanelId()),_straws2_p(){}
+    Panel( const PanelId& id ):_id(id),_straws2_p(){}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
@@ -76,7 +76,7 @@ namespace mu2e {
         return *(_straws2_p.at((strid2.asUint16() & StrawId::_strawmsk)));
       } else {
         std::ostringstream msg;
-        msg << __func__ << " Inconsistent straw/panel request " 
+        msg << __func__ << " Inconsistent straw/panel request "
             << strid2 << " / " << _id << std::endl;
         throw cet::exception("RANGE") << msg.str();
       }
