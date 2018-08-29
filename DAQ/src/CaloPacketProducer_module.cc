@@ -53,11 +53,11 @@ namespace mu2e {
       int recoDigiT0;
       int recoDigiSamples;
       std::vector<adc_t> waveform;
-      
+
       int rocID;
       int ringID;
       int apdID;
-      
+
       dtc_id dtcID;
     };
 
@@ -81,7 +81,7 @@ namespace mu2e {
     // 2 optical links per ring (readout both ends)
     // => 3 Rings per DTC/server
     //
-    // 16 ROCs/server 
+    // 16 ROCs/server
     // 3 Rings per server
     // => 6 ROCs per ring (every third ring will actually only have 4 ROCS)
     //
@@ -160,8 +160,8 @@ namespace mu2e {
     bool gblresult;
     art::Handle<CaloDigiCollection> caloDigisHandle;
     gblresult = evt.getByLabel(_makerModuleLabel, caloDigisHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " CaloDigiCollection             _makerModuleLabel: " << _makerModuleLabel << ", "
       << ", "<< gblresult << std::endl;
@@ -194,7 +194,7 @@ namespace mu2e {
       }
 
       // 192 ROCs total
-      if(curHit.crystalId >= 192 * abs(number_of_crystals_per_roc)) {
+      if(curHit.crystalId >= 192 * long(number_of_crystals_per_roc)) {
 	throw cet::exception("DATA") << " Crystal index " << curHit.crystalId
 				     << " exceeds limit of 192*" << number_of_crystals_per_roc
 				     << "=" << 216*number_of_crystals_per_roc;
@@ -226,7 +226,7 @@ namespace mu2e {
       }
 
     }
-    
+
     dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;
     if(number_of_rings % rings_per_dtc > 0) {
       max_dtc_id += 1;
@@ -236,10 +236,10 @@ namespace mu2e {
     for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {
       for(size_t curRingID = 0; curRingID < rings_per_dtc; curRingID++) {
 	for(size_t curROCID = 0; curROCID < rocs_per_ring; curROCID++) {
-	  std::pair<int, int> curRocRingPair(curRingID, curROCID);	  
+	  std::pair<int, int> curRocRingPair(curRingID, curROCID);
 	  std::pair<dtc_id, std::pair<size_t,size_t> > curPair(curDTCID, curRocRingPair);
 	  rocRingVector.push_back(curPair);
-	  
+
 	}
       }
     }
@@ -291,7 +291,7 @@ namespace mu2e {
 	curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
 	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
 	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	
+
 	// Seventh 16 bits of header (data packet format version and status)
 	adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
 	adc_t formatVersion = (5 << 8); // Using 5 for now
@@ -302,21 +302,21 @@ namespace mu2e {
 	adc_t sysID = (1 << 6) & 0x00C0;
 	adc_t curDTCID = dtcID & 0x003F;
 	curDataBlock.push_back(evbMode + sysID + curDTCID);
-	
+
 	// Fill in the byte count field of the header packet
 	adc_t numBytes = 16; // Just the header packet
 	curDataBlock[0] = numBytes;
-	
+
 	// Create mu2e::DataBlock and add to the collection
 	DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
 	dtcPackets->push_back(theBlock);
-	
+
       } else {
 	for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
 	  // Generate a DataBlock for the current hit
-	  
+
 	  calhit curHit = curHitVector[curHitIdx];
-	  
+
 	  std::vector<adc_t> curDataBlock;
 	  // Add the header packet to the DataBlock (leaving including a placeholder for
 	  // the number of packets in the DataBlock);
@@ -339,7 +339,7 @@ namespace mu2e {
 	  curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
 	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
 	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	  
+
 	  // Seventh 16 bits of header (data packet format version and status)
 	  adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
 	  adc_t formatVersion = (5 << 8); // Using 5 for now
@@ -350,17 +350,17 @@ namespace mu2e {
 	  adc_t sysID = (1 << 6) & 0x00C0;
 	  adc_t curDTCID = dtcID & 0x003F;
 	  curDataBlock.push_back(evbMode + sysID + curDTCID);
-	  
+
 	  // Create a vector of adc_t values corresponding to
 	  // the content of CAL data packets.
 	  std::vector<adc_t> packetVector;
-	  
+
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
 	  adc_t crystalID = curHit.crystalId;
 	  adc_t apdID = curHit.recoDigiId % 2;
 	  adc_t IDNum = ((apdID << 12) | crystalID);
-	  
+
 	  packetVector.push_back(IDNum);
 	  packetVector.push_back((adc_t)(curHit.recoDigiT0));
 
@@ -392,25 +392,25 @@ namespace mu2e {
 	      packetVector.push_back((adc_t)0);
 	    }
 	  }
-	  
+
 	  // Fill in the number of data packets entry in the header packet
 	  adc_t numDataPackets = static_cast<adc_t>(packetVector.size() / 8);
 	  curDataBlock[2] = numDataPackets;
-	  
+
 	  // Fill in the byte count field of the header packet
 	  adc_t numBytes = (numDataPackets + 1) * 16;
 	  curDataBlock[0] = numBytes;
-	  
+
 	  // Append the data packets after the header packet in the DataBlock
 	  curDataBlock.insert(curDataBlock.end(), packetVector.begin(), packetVector.end());
-	  
+
 	  // Create mu2e::DataBlock and add to the collection
 	  DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
 	  dtcPackets->push_back(theBlock);
 	} // Done looping over hits for this roc/ring pair
 
       }
-	
+
 
     } // Done looping of roc/ring pairs
 

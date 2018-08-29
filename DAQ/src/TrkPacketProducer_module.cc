@@ -57,7 +57,7 @@ namespace mu2e {
       unsigned long  recoDigiToT2;
       int recoDigiSamples;
       std::vector<adc_t> waveform;
-      
+
       int rocID;
       int ringID;
 
@@ -148,8 +148,8 @@ namespace mu2e {
     bool gblresult;
     art::Handle<StrawDigiCollection> strawDigisHandle;
     gblresult = evt.getByLabel(_makerModuleLabel, strawDigisHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " StrawHitCollection             _makerModuleLabel: " << _makerModuleLabel << ", "
       << ", " << gblresult << std::endl;
@@ -173,7 +173,7 @@ namespace mu2e {
       // Fill struct with info for current hit
       trkhit curHit;
       curHit.evt = eventNum;
-      curHit.strawIdx = SD.strawId().asUint16();      
+      curHit.strawIdx = SD.strawId().asUint16();
       curHit.recoDigiT0 = SD.TDC(StrawEnd::cal);
       curHit.recoDigiT1 = SD.TDC(StrawEnd::hv);
       curHit.recoDigiToT1 = SD.TOT(StrawEnd::cal);
@@ -202,7 +202,7 @@ namespace mu2e {
       curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
 
       // 240 ROCs total
-      if(globalROCID >= abs(number_of_rings * rocs_per_ring) ) {
+      if(globalROCID >= number_of_rings * rocs_per_ring ) {
 	throw cet::exception("DATA") << " Global ROC ID " << globalROCID
 				     << " exceeds limit of " <<  number_of_rings << "*"
 				     << rocs_per_ring << "*"
@@ -213,10 +213,10 @@ namespace mu2e {
       //      std::cout << "GREPME GLOBALRINGID " << globalRingID
       //		<<  " RINGID "            << curHit.ringID << "/" << rings_per_dtc - 1
       //		<<  " ROCID "             << curHit.rocID  << "/" << rocs_per_ring - 1
-      //		<<  " DTCID "             << (int)curHit.dtcID  << "/" << (int)max_dtc_id_temp 
+      //		<<  " DTCID "             << (int)curHit.dtcID  << "/" << (int)max_dtc_id_temp
       //		<<  " panelID "           << panel
       //		<<  " planeID "           << plane << std::endl;
-       
+
       trkHitVector.push_back(curHit);
 
       if(_generateTextFile>0) {
@@ -239,7 +239,7 @@ namespace mu2e {
 
 
     }
-    
+
     dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;
     //    if(number_of_rings % rings_per_dtc > 0) {
     //      max_dtc_id += 1;
@@ -250,10 +250,10 @@ namespace mu2e {
     for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {
       for(size_t curRingID = 0; curRingID < rings_per_dtc; curRingID++) {
 	for(size_t curROCID = 0; curROCID < rocs_per_ring; curROCID++) {
-	  std::pair<int, int> curRocRingPair(curRingID, curROCID);	  
+	  std::pair<int, int> curRocRingPair(curRingID, curROCID);
 	  std::pair<dtc_id, std::pair<size_t,size_t> > curPair(curDTCID, curRocRingPair);
 	  rocRingVector.push_back(curPair);
-	  
+
 	}
       }
     }
@@ -274,8 +274,8 @@ namespace mu2e {
       // Find all hits for this event coming from the specified Ring/ROC
       for (size_t curHitIdx = 0; curHitIdx < trkHitVector.size(); curHitIdx++) {
 	//	if (trkHitVector[curHitIdx].rocID == (int)rocID && trkHitVector[curHitIdx].ringID == (int)ringID) {
-	if (trkHitVector[curHitIdx].dtcID == (int)dtcID && 
-	    trkHitVector[curHitIdx].rocID == (int)rocID && 
+	if (trkHitVector[curHitIdx].dtcID == (int)dtcID &&
+	    trkHitVector[curHitIdx].rocID == (int)rocID &&
 	    trkHitVector[curHitIdx].ringID == (int)ringID) {
 	  curHitVector.push_back(trkHitVector[curHitIdx]);
 	}
@@ -305,7 +305,7 @@ namespace mu2e {
 	curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
 	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
 	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	
+
 	// Seventh 16 bits of header (data packet format version and status)
 	adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
 	adc_t formatVersion = (5 << 8); // Using 5 for now
@@ -316,24 +316,24 @@ namespace mu2e {
 	adc_t sysID = (0 << 6) & 0x00C0;
 	adc_t curDTCID = dtcID & 0x003F;
 	curDataBlock.push_back(evbMode + sysID + curDTCID);
-	
+
 	// Fill in the byte count field of the header packet
 	adc_t numBytes = 16; // Just the header packet
 	curDataBlock[0] = numBytes;
-	
+
 	// curDataBlockVector.push_back(curDataBlock);
-	
+
 	// Create mu2e::DataBlock and add to the collection
 	//	DataBlock theBlock(DataBlock::TRK, uniqueID, dtcID, curDataBlock);
 	DataBlock theBlock(DataBlock::TRK, evt.id(), dtcID, curDataBlock);
 	dtcPackets->push_back(theBlock);
-	
+
       } else {
 	for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
 	  // Generate a DataBlock for the current hit
-	  
+
 	  trkhit curHit = curHitVector[curHitIdx];
-	  
+
 	  std::vector<adc_t> curDataBlock;
 	  // Add the header packet to the DataBlock (leaving including a placeholder for
 	  // the number of packets in the DataBlock);
@@ -356,7 +356,7 @@ namespace mu2e {
 	  curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
 	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
 	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	  
+
 	  // Seventh 16 bits of header (data packet format version and status)
 	  adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
 	  adc_t formatVersion = (5 << 8); // Using 5 for now
@@ -367,18 +367,18 @@ namespace mu2e {
 	  adc_t sysID = (0 << 6) & 0x00C0;
 	  adc_t curDTCID = dtcID & 0x003F;
 	  curDataBlock.push_back(evbMode + sysID + curDTCID);
-	  
+
 	  // Create a vector of adc_t values corresponding to
 	  // the content of TRK data packets.
 	  std::vector<adc_t> packetVector;
-	  
+
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
 	  uint16_t strawIndex = curHit.strawIdx;
-	  
+
 	  adc_t TDC0 = curHit.recoDigiT0 & 0xFFFF;
 	  adc_t TDC1 = curHit.recoDigiT1 & 0xFFFF;
-	  
+
       	  packetVector.push_back(strawIndex);
 	  packetVector.push_back(TDC0);
 	  packetVector.push_back(TDC1);
@@ -392,7 +392,7 @@ namespace mu2e {
 
 	  adc_t TOT_Combined = (TOT1 << 8) | (TOT0 & 0x00FF);
 
-      	  packetVector.push_back(TOT_Combined);	    
+      	  packetVector.push_back(TOT_Combined);
 
 	  // Four 12-bit tracker ADC samples fit into every three slots (16 bits * 3)
 	  // when we pack them tightly
@@ -401,7 +401,7 @@ namespace mu2e {
 	    adc_t sample1 = (sampleIdx+1<curHit.recoDigiSamples) ? static_cast<adc_t>(curHit.waveform[sampleIdx+1]) : 0x0000;
 	    adc_t sample2 = (sampleIdx+2<curHit.recoDigiSamples) ? static_cast<adc_t>(curHit.waveform[sampleIdx+2]) : 0x0000;
 	    adc_t sample3 = (sampleIdx+3<curHit.recoDigiSamples) ? static_cast<adc_t>(curHit.waveform[sampleIdx+3]) : 0x0000;
-	    
+
 	    packetVector.push_back((sample1 << 12) | (sample0 & 0x0FFF)      );
 	    packetVector.push_back((sample2 << 8) | ((sample1 >> 4) & 0x00FF));
 	    packetVector.push_back((sample3 << 4) | ((sample2 >> 8) & 0x000F));
@@ -414,20 +414,20 @@ namespace mu2e {
 	      packetVector.push_back((adc_t)0);
 	    }
 	  }
-	  
+
 	  // Fill in the number of data packets entry in the header packet
-	  
+
 	  adc_t numDataPackets = static_cast<adc_t>(packetVector.size() / 8);
 	  curDataBlock[2] = numDataPackets;
-	  
+
 	  // Fill in the byte count field of the header packet
 	  adc_t numBytes = (numDataPackets + 1) * 16;
 	  curDataBlock[0] = numBytes;
-	  
+
 	  // Append the data packets after the header packet in the DataBlock
 	  curDataBlock.insert(curDataBlock.end(), packetVector.begin(), packetVector.end());
 	  //	curDataBlockVector.push_back(curDataBlock);
-	  
+
 	  // Create mu2e::DataBlock and add to the collection
 	  //	  DataBlock theBlock(DataBlock::TRK, uniqueID, dtcID, curDataBlock);
 	  DataBlock theBlock(DataBlock::TRK, evt.id(), dtcID, curDataBlock);
@@ -435,7 +435,7 @@ namespace mu2e {
 	} // Done looping over hits for this roc/ring pair
 
       }
-	
+
 
     } // Done looping of roc/ring pairs
 
