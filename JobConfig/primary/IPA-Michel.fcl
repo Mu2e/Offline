@@ -37,4 +37,4 @@ physics.end_paths : [ EndPath ] # needed for generate_fcl
 # set the correct stops
 physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-IPAstops.MDC2018a.001002_00000000.root"]
 physics.filters.DigiFilter.MinParticleMom : 40.0
-
+physics.filters.DigiFilter.MinNDigis : 50

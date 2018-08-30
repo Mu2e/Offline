@@ -1,11 +1,11 @@
 #
-# cosmic ray muons produced at a box around the DS
+# cosmic ray muons produced at a box around the Calorimeter
 #
 # original author: Ralf Ehrlich, UVA 
 # (based on Dave Brown's CeEndpoint)
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: DScosmic
+process_name: Calocosmic
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
@@ -14,7 +14,7 @@ physics : {
     generate: 
     {
        module_type : EventGenerator
-       inputfile   : "JobConfig/primary/genconfig_DS-cosmic.txt"
+       inputfile   : "JobConfig/primary/genconfig_Calo-cosmic.txt"
     }
     @table::Primary.producers
   }
@@ -34,6 +34,9 @@ outputs : {
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
-services.TFileService.fileName: "nts.owner.DS-cosmic.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.DS-cosmic.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.Calo-cosmic.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.Calo-cosmic.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
+# require a lot of hits: we want reflections
+physics.filters.DigiFilter.MinNDigis : 60
+
