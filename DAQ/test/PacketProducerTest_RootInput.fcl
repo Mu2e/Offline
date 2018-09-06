@@ -22,6 +22,8 @@ physics : {
       diagLevel        : 0
       maxFullPrint     : 0
       generateTextFile : 1
+
+      enableDIRACEmulation : 1
     }
 
     TrackerPacketProducer: {
@@ -31,7 +33,7 @@ physics : {
       maxFullPrint     : 0
       generateTextFile : 1
 
-      usePhysicalStrawIndex : 0
+      enableFPGAEmulation : 1
     }
 
     CosmicRayVetoPacketProducer: {

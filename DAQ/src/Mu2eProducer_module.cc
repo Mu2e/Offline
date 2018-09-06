@@ -13,14 +13,14 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-#include "canvas/Utilities/Exception.h"
-
+//#include "canvas/Utilities/Exception.h"
 #include "mu2e-artdaq-core/Overlays/ArtFragmentReader.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 #include "TrackerConditions/inc/Types.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
+//#include "TrackerConditions/inc/Types.hh"
 
 #include <iostream>
 
@@ -185,7 +185,6 @@ void
       }	    
 
       adc_t rocID = cc.DBH_ROCID(pos);
-      adc_t ringID = cc.DBH_RingID(pos);
       adc_t valid = cc.DBH_Valid(pos);
       adc_t packetCount = cc.DBH_PacketCount(pos);
 	    
@@ -208,54 +207,51 @@ void
       // Parse phyiscs information from TRK packets
       if(mode_ == "TRK" && packetCount>0 && parseTRK_>0) {
 
-	uint16_t strawIdx = cc.DBT_StrawIndex(pos);
-	unsigned long TDC0  = cc.DBT_TDC0(pos);
-	unsigned long TDC1  = cc.DBT_TDC1(pos);
-	unsigned long TOT0  = cc.DBT_TOT0(pos);
-	unsigned long TOT1  = cc.DBT_TOT1(pos);
-
-
-	std::vector<adc_t> waveform = cc.DBT_Waveform(pos);
-
 	// Create the StrawDigi data products
-	mu2e::TrkTypes::TDCValues tdc;
-	tdc[0] = TDC0;
-	tdc[1] = TDC1;
-	mu2e::StrawId sid(strawIdx);
+	mu2e::StrawId sid(cc.DBT_StrawIndex(pos));
+	mu2e::TrkTypes::TDCValues tdc = {cc.DBT_TDC0(pos) , cc.DBT_TDC1(pos)};
+	mu2e::TrkTypes::TOTValues tot = {cc.DBT_TOT0(pos) , cc.DBT_TOT1(pos)};
 
-	mu2e::TrkTypes::TOTValues tot;
-	tot[0] = TOT0;
-	tot[1] = TOT1;
-	
-	if( diagLevel_ > 1 ) {
-	  std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
-	    << tot[0] << " " << tot[1] << " ";
-	  for(size_t i=0; i<waveform.size(); i++) {
-	    std::cout << waveform[i];
-	    if(i<waveform.size()-1) {
-	      std::cout << " ";
-	    }
-	  }
-	  std::cout << std::endl;
-	}
 
-	mu2e::TrkTypes::ADCWaveform wf;
-	for(size_t i=0; i<waveform.size(); i++) {
-//	  wf.push_back((unsigned short)waveform[i]);
-	  wf[i] =waveform[i];
-	}
+//	///////////////////////////////////////////////////////////////////////////
+//	// NOTE: Because the tracker code in offline has not been updated to
+//	// use 15 samples, it is necessary to add an extra sample in order to
+//	// initialize an ADCWaveform that can be passed to the StrawDigi
+//	// constructor. This means that the digis produced by Mu2eProducer
+//	// will differ from those processed in offline so the filter performance
+//	// will be different. This is only temporary.
+//	std::array<adc_t,15> const & shortWaveform = cc.DBT_Waveform(pos);
+//	mu2e::TrkTypes::ADCWaveform wf;
+//	for(size_t i=0; i<15; i++) {
+//	  wf[i] = shortWaveform[i];
+//	}
+//	wf[15] = 0;
+//	///////////////////////////////////////////////////////////////////////////
+
+
+	mu2e::TrkTypes::ADCWaveform wf = cc.DBT_Waveform(pos);	
+
+	adc_t flags = cc.DBT_Flags(pos);
 
 	// Fill the StrawDigiCollection
 	straw_digis->push_back(mu2e::StrawDigi( sid, tdc, tot, wf));
 
-	
-
 	if( diagLevel_ > 1 ) {
+  	  std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
+	    << tot[0] << " " << tot[1] << " ";
+	  for(size_t i=0; i<mu2e::TrkTypes::NADC; i++) {
+	    std::cout << wf[i];
+	    if(i<mu2e::TrkTypes::NADC-1) {
+	      std::cout << " ";
+	    }
+	  }
+	  std::cout << std::endl;
+
+
 	  std::cout << "timestamp: " << timestamp << std::endl;
 	  std::cout << "sysID: " << sysID << std::endl;
 	  std::cout << "dtcID: " << dtcID << std::endl;
 	  std::cout << "rocID: " << rocID << std::endl;
-	  std::cout << "ringID: " << ringID << std::endl;
 	  std::cout << "packetCount: " << packetCount << std::endl;
 	  std::cout << "valid: " << valid << std::endl;
 	  std::cout << "EVB mode: " << EVBMode << std::endl;
@@ -272,69 +268,69 @@ void
 	  }
 	  std::cout << std::endl;
 	  
-	  std::cout << "strawIdx: " << strawIdx << std::endl;
-	  std::cout << "sid: "      << sid.asUint16() << std::endl;
-	  std::cout << "TDC0: " << TDC0 << std::endl;
-	  std::cout << "TDC1: " << TDC1 << std::endl;
-	  std::cout << "TOT0: " << TOT0 << std::endl;
-	  std::cout << "TOT1: " << TOT1 << std::endl;
+	  std::cout << "strawIdx: " << sid.asUint16() << std::endl;
+	  std::cout << "TDC0: " << tdc[0] << std::endl;
+	  std::cout << "TDC1: " << tdc[1] << std::endl;
+	  std::cout << "TOT0: " << tot[0] << std::endl;
+	  std::cout << "TOT1: " << tot[1] << std::endl;
 	  std::cout << "Waveform: {";
-	  for(size_t i=0; i<waveform.size(); i++) {
-	    std::cout << waveform[i];
-	    if(i<waveform.size()-1) {
+	  for(size_t i=0; i<mu2e::TrkTypes::NADC; i++) {
+	    std::cout << wf[i];
+	    if(i<mu2e::TrkTypes::NADC-1) {
 	      std::cout << ",";
 	    }
 	  }
 	  std::cout << "}" << std::endl;
-	  
+
+	  std::cout << "FPGA Flags: ";
+	  for(size_t i=8; i<16; i++) {
+	    if( ((0x0001<<(15-i)) & flags) > 0) {
+	      std::cout << "1";
+	    } else {
+	      std::cout << "0";
+	    }
+	  }
+	  std::cout << std::endl;
+	  	  
 	  std::cout << "LOOP: " << eventNumber << " " << curBlockIdx << " " << "(" << timestamp << ")" << std::endl;	    
 	  
 	  // Text format: timestamp strawidx tdc0 tdc1 nsamples sample0-11
 	  // Example: 1 1113 36978 36829 12 1423 1390 1411 1354 2373 2392 2342 2254 1909 1611 1525 1438
 	  std::cout << "GREPMETRK: " << timestamp << " ";
-	  std::cout << strawIdx << " ";
-	  std::cout << TDC0 << " ";
-	  std::cout << TDC1 << " ";
-	  std::cout << TOT0 << " ";
-	  std::cout << TOT1 << " ";
-	  std::cout << waveform.size() << " ";
-	  for(size_t i=0; i<waveform.size(); i++) {
-	    std::cout << waveform[i];
-	    if(i<waveform.size()-1) {
+	  std::cout << sid.asUint16() << " ";
+	  std::cout << tdc[0] << " ";
+	  std::cout << tdc[1] << " ";
+	  std::cout << tot[0] << " ";
+	  std::cout << tot[1] << " ";
+	  std::cout << wf.size() << " ";
+	  for(size_t i=0; i<mu2e::TrkTypes::NADC; i++) {
+	    std::cout << wf[i];
+	    if(i<mu2e::TrkTypes::NADC-1) {
 	      std::cout << " ";
 	    }
 	  }
 	  std::cout << std::endl;
 	} // End debug output
-	
-	
-	
-	
-	
+
+
       } else if(mode_ == "CAL" && packetCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
 	
-	adc_t crystalID  = cc.DBC_CrystalID(pos);
-	adc_t apdID      = cc.DBC_apdID(pos);
-	adc_t time       = cc.DBC_Time(pos);
-	adc_t numSamples = cc.DBC_NumSamples(pos);
-	//adc_t peakIdx    = cc.DBC_PeakSampleIdx(pos);
-	std::vector<unsigned short> waveform = cc.DBC_Waveform(pos);
-
-	std::vector<int> cwf;
-	for(size_t i=0; i<waveform.size(); i++) {
-	  cwf.push_back((int)waveform[i]);
-	}
 
 	// Fill the CaloDigiCollection
-	calo_digis->push_back(mu2e::CaloDigi(crystalID*2 + apdID, time, cwf));
-	//calo_digis->push_back(mu2e::CaloDigi(crystalID*2 + apdID, time, cwf, peakIdx));
+	std::vector<int> cwf = cc.DBC_Waveform(pos);
+	calo_digis->push_back(mu2e::CaloDigi(cc.DBC_CrystalID(pos)*2 + cc.DBC_apdID(pos), cc.DBC_Time(pos), cwf));
 	
 	if( diagLevel_ > 1 ) {
+	  adc_t crystalID  = cc.DBC_CrystalID(pos);
+	  adc_t apdID      = cc.DBC_apdID(pos);
+	  adc_t time       = cc.DBC_Time(pos);
+	  adc_t numSamples = cc.DBC_NumSamples(pos);
+	  //adc_t peakIdx    = cc.DBC_PeakSampleIdx(pos);
+
 	  std::cout << "timestamp: " << timestamp << std::endl;
 	  std::cout << "sysID: " << sysID << std::endl;
 	  std::cout << "dtcID: " << dtcID << std::endl;
 	  std::cout << "rocID: " << rocID << std::endl;
-	  std::cout << "ringID: " << ringID << std::endl;
 	  std::cout << "packetCount: " << packetCount << std::endl;
 	  std::cout << "valid: " << valid << std::endl;
 	  std::cout << "EVB mode: " << EVBMode << std::endl;		
@@ -356,9 +352,9 @@ void
 	  std::cout << "Time: " << time << std::endl;
 	  std::cout << "NumSamples: " << numSamples << std::endl;
 	  std::cout << "Waveform: {";
-	  for(size_t i=0; i<waveform.size(); i++) {
-	    std::cout << waveform[i];
-	    if(i<waveform.size()-1) {
+	  for(size_t i=0; i<cwf.size(); i++) {
+	    std::cout << cwf[i];
+	    if(i<cwf.size()-1) {
 	      std::cout << ",";
 	    }
 	  }
@@ -370,10 +366,10 @@ void
 	  std::cout << crystalID << " ";
 	  std::cout << apdID << " ";
 	  std::cout << time << " ";
-	  std::cout << waveform.size() << " ";
-	  for(size_t i=0; i<waveform.size(); i++) {
-	    std::cout << waveform[i];
-	    if(i<waveform.size()-1) {
+	  std::cout << cwf.size() << " ";
+	  for(size_t i=0; i<cwf.size(); i++) {
+	    std::cout << cwf[i];
+	    if(i<cwf.size()-1) {
 	      std::cout << " ";
 	    }
 	  }

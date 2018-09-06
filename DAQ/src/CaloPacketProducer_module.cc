@@ -48,17 +48,15 @@ namespace mu2e {
 
     struct calhit {
       DataBlock::timestamp evt;
-      int crystalId;
+      size_t crystalId;
+      int apdID;
       int recoDigiId;
       int recoDigiT0;
       int recoDigiSamples;
       std::vector<adc_t> waveform;
 
-      int rocID;
-      int ringID;
-      int apdID;
-
       dtc_id dtcID;
+      int rocID;
     };
 
     explicit CaloPacketProducer(fhicl::ParameterSet const& pset);
@@ -74,34 +72,15 @@ namespace mu2e {
     string                _outputFile;
     ofstream              outputStream;
 
-    // For now, crystal IDs start at 0 and end at number_of_rings*rocs_per_ring*number_of_crystals_per_roc-1
-    const size_t number_of_crystals_per_roc = 8;
 
-    // 6 optical transceivers per DTC
-    // 2 optical links per ring (readout both ends)
-    // => 3 Rings per DTC/server
-    //
-    // 16 ROCs/server
-    // 3 Rings per server
-    // => 6 ROCs per ring (every third ring will actually only have 4 ROCS)
-    //
-    // 12 Servers
-    // 3 rings per server
-    // => 36 rings
-    //
-    // 12 servers
-    // 16 ROCs/server
-    // 8 crystals per ROC
-    // => MAX 1536 Crystals
-    //
-    // However, for now if we use 6 rocs on every ring, we have 18 ROCs per
-    // server giving us 216 ROCs for a maximum of 1728 crystals
-    //
-    const size_t number_of_rings = 36;
-    const size_t rings_per_dtc = 3;
-    const size_t rocs_per_ring = 6;
-    // Actually, every third ring will only have 4 ROCs, but for now we'll
-    // assign 6 to all rings
+    //const size_t number_of_rocs = 160;
+    const size_t number_of_rocs = 172;
+    const size_t number_of_crystals_per_roc = 8;
+    const size_t number_of_rocs_per_dtc = 6;
+
+    // 6 rocs per DTC => 27 DTCs
+    // 172 rocs * 8 crystals per roc => 1376
+    // Note: the highest crystal ID in the old simulation was 1355
 
     int _generateTextFile;
 
@@ -185,7 +164,7 @@ namespace mu2e {
       // Fill struct with info for current hit
       calhit curHit;
       curHit.evt = eventNum;
-      curHit.crystalId = (int)(CD.roId()/2);
+      curHit.crystalId = CD.roId()/2;
       curHit.recoDigiId = CD.roId();
       curHit.recoDigiT0 = CD.t0();
       curHit.recoDigiSamples = theWaveform.size();
@@ -194,19 +173,19 @@ namespace mu2e {
       }
 
       // 192 ROCs total
-      if(curHit.crystalId >= 192 * long(number_of_crystals_per_roc)) {
+      if(curHit.crystalId >= number_of_rocs * number_of_crystals_per_roc) {
 	throw cet::exception("DATA") << " Crystal index " << curHit.crystalId
-				     << " exceeds limit of 192*" << number_of_crystals_per_roc
-				     << "=" << 216*number_of_crystals_per_roc;
+				     << " exceeds limit of " << number_of_rocs
+				     << " * " << number_of_crystals_per_roc
+				     << " =" << number_of_rocs*number_of_crystals_per_roc;
       }
 
-      // Ring ID, counting from 0, across all (for the calorimeter)
-      size_t globalRingID = int(curHit.crystalId / (rocs_per_ring * number_of_crystals_per_roc));
+      // ROC ID, counting from 0, across all (for the calorimeter)
+      size_t globalROCID = curHit.crystalId / number_of_crystals_per_roc;
 
-      curHit.ringID = globalRingID % rings_per_dtc;
-      curHit.rocID = (curHit.crystalId - (rocs_per_ring * number_of_crystals_per_roc) * globalRingID) / number_of_crystals_per_roc;
+      curHit.rocID = globalROCID % number_of_rocs_per_dtc;
       curHit.apdID = curHit.recoDigiId % 2; // Even is APD 0, Odd is APD 1
-      curHit.dtcID = dtc_id(globalRingID/rings_per_dtc);
+      curHit.dtcID = dtc_id(globalROCID / number_of_rocs_per_dtc);
 
       caloHitVector.push_back(curHit);
 
@@ -224,44 +203,38 @@ namespace mu2e {
 	}
 	outputStream << endl;
       }
-
+      
     }
 
-    dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;
-    if(number_of_rings % rings_per_dtc > 0) {
+    dtc_id max_dtc_id = number_of_rocs/number_of_rocs_per_dtc-1;
+    if(number_of_rocs % number_of_rocs_per_dtc > 0) {
       max_dtc_id += 1;
     }
-    // Create a vector to hold all Ring ID / ROC ID combinations for all DTCs to simulate
-    std::vector< std::pair<dtc_id, std::pair<size_t,size_t> > > rocRingVector;
-    for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {
-      for(size_t curRingID = 0; curRingID < rings_per_dtc; curRingID++) {
-	for(size_t curROCID = 0; curROCID < rocs_per_ring; curROCID++) {
-	  std::pair<int, int> curRocRingPair(curRingID, curROCID);
-	  std::pair<dtc_id, std::pair<size_t,size_t> > curPair(curDTCID, curRocRingPair);
-	  rocRingVector.push_back(curPair);
 
-	}
+    // Create a vector to hold all DTC ID / ROC ID combinations
+    std::vector< std::pair<dtc_id, size_t> > dtcRocVector;
+    for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {
+      for(size_t curROCID = 0; curROCID < number_of_rocs_per_dtc; curROCID++) {
+	std::pair<dtc_id, size_t> curPair(curDTCID, curROCID);
+	dtcRocVector.push_back(curPair);	  
       }
     }
-    // // Randomize the order in which the Rings and ROCs are received
-    // std::shuffle(rocRingVector.begin(),rocRingVector.end(),generator);
 
+    // // Randomize the order in which the DTCs are added to the event
+    // std::shuffle(dtcRocVector.begin(),dtcRocVector.end(),generator);
 
-    // Loop over the ROC/ring pairs and generate datablocks for each ROC on
-    // all the rings
-    auto targetNumROCs = rocRingVector.size();
+    // Loop over the DTC/ROC pairs and generate datablocks for each ROC
+    auto targetNumROCs = dtcRocVector.size();
     for(size_t curPairNum = 0; curPairNum < targetNumROCs; curPairNum++) {
 
-      size_t dtcID = rocRingVector[curPairNum].first;
-      size_t ringID = rocRingVector[curPairNum].second.first;
-      size_t rocID = rocRingVector[curPairNum].second.second;
+      size_t dtcID = dtcRocVector[curPairNum].first;
+      size_t rocID = dtcRocVector[curPairNum].second;
 
       std::vector<calhit> curHitVector;
-      // Find all hits for this event coming from the specified Ring/ROC
+      // Find all hits for this event coming from the specified DTC/ROC
       for (size_t curHitIdx = 0; curHitIdx < caloHitVector.size(); curHitIdx++) {
 	if (caloHitVector[curHitIdx].dtcID == (int)dtcID &&
-	    caloHitVector[curHitIdx].rocID == (int)rocID &&
-	    caloHitVector[curHitIdx].ringID == (int)ringID) {
+	    caloHitVector[curHitIdx].rocID == (int)rocID) {
 	  curHitVector.push_back(caloHitVector[curHitIdx]);
 	}
       }
@@ -275,13 +248,11 @@ namespace mu2e {
 	adc_t null_adc = 0;
 	// First 16 bits of header (reserved values)
 	curDataBlock.push_back(null_adc);
-	// Second 16 bits of header (ROC ID, packet type, and ring ID):
+	// Second 16 bits of header (ROC ID, packet type):
 	adc_t curROCID = rocID; // 4 bit ROC ID
 	adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
 	headerPacketType <<= 4; // Shift left by 4
-	adc_t curRingID = ringID; // 3 bit ring ID
-	curRingID <<= 8; // Shift left by 8
-	adc_t secondEntry = (curROCID | headerPacketType | curRingID);
+	adc_t secondEntry = (curROCID | headerPacketType);
 	secondEntry = (secondEntry | (1 << 15)); // valid bit
 	curDataBlock.push_back(secondEntry);
 	// Third 16 bits of header (number of data packets is 0)
@@ -291,7 +262,7 @@ namespace mu2e {
 	curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
 	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
 	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-
+	
 	// Seventh 16 bits of header (data packet format version and status)
 	adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
 	adc_t formatVersion = (5 << 8); // Using 5 for now
@@ -302,34 +273,32 @@ namespace mu2e {
 	adc_t sysID = (1 << 6) & 0x00C0;
 	adc_t curDTCID = dtcID & 0x003F;
 	curDataBlock.push_back(evbMode + sysID + curDTCID);
-
+	
 	// Fill in the byte count field of the header packet
 	adc_t numBytes = 16; // Just the header packet
 	curDataBlock[0] = numBytes;
-
+	
 	// Create mu2e::DataBlock and add to the collection
 	DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
 	dtcPackets->push_back(theBlock);
-
+	
       } else {
 	for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
 	  // Generate a DataBlock for the current hit
-
+	  
 	  calhit curHit = curHitVector[curHitIdx];
-
+	  
 	  std::vector<adc_t> curDataBlock;
 	  // Add the header packet to the DataBlock (leaving including a placeholder for
 	  // the number of packets in the DataBlock);
 	  adc_t null_adc = 0;
 	  // First 16 bits of header (reserved values)
 	  curDataBlock.push_back(null_adc);
-	  // Second 16 bits of header (ROC ID, packet type, and ring ID):
+	  // Second 16 bits of header (ROC ID, packet type):
 	  adc_t curROCID = rocID; // 4 bit ROC ID
 	  adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
 	  headerPacketType <<= 4; // Shift left by 4
-	  adc_t curRingID = ringID; // 3 bit ring ID
-	  curRingID <<= 8; // Shift left by 8
-	  adc_t secondEntry = (curROCID | headerPacketType | curRingID);
+	  adc_t secondEntry = (curROCID | headerPacketType);
 	  secondEntry = (secondEntry | (1 << 15)); // valid bit
 	  curDataBlock.push_back(secondEntry);
 	  // Third 16 bits of header (number of data packets is 0)
@@ -339,7 +308,7 @@ namespace mu2e {
 	  curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
 	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
 	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-
+	  
 	  // Seventh 16 bits of header (data packet format version and status)
 	  adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
 	  adc_t formatVersion = (5 << 8); // Using 5 for now
@@ -350,17 +319,17 @@ namespace mu2e {
 	  adc_t sysID = (1 << 6) & 0x00C0;
 	  adc_t curDTCID = dtcID & 0x003F;
 	  curDataBlock.push_back(evbMode + sysID + curDTCID);
-
+	  
 	  // Create a vector of adc_t values corresponding to
 	  // the content of CAL data packets.
 	  std::vector<adc_t> packetVector;
-
+	  
 	  // Fill the data packets:
 	  // Assume the 0th apd is always read out before the second
 	  adc_t crystalID = curHit.crystalId;
-	  adc_t apdID = curHit.recoDigiId % 2;
+	  adc_t apdID = curHit.apdID;
 	  adc_t IDNum = ((apdID << 12) | crystalID);
-
+	  
 	  packetVector.push_back(IDNum);
 	  packetVector.push_back((adc_t)(curHit.recoDigiT0));
 
@@ -392,27 +361,27 @@ namespace mu2e {
 	      packetVector.push_back((adc_t)0);
 	    }
 	  }
-
+	  
 	  // Fill in the number of data packets entry in the header packet
 	  adc_t numDataPackets = static_cast<adc_t>(packetVector.size() / 8);
 	  curDataBlock[2] = numDataPackets;
-
+	  
 	  // Fill in the byte count field of the header packet
 	  adc_t numBytes = (numDataPackets + 1) * 16;
 	  curDataBlock[0] = numBytes;
-
+	  
 	  // Append the data packets after the header packet in the DataBlock
 	  curDataBlock.insert(curDataBlock.end(), packetVector.begin(), packetVector.end());
-
+	  
 	  // Create mu2e::DataBlock and add to the collection
 	  DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
 	  dtcPackets->push_back(theBlock);
-	} // Done looping over hits for this roc/ring pair
+	} // Done looping over hits for this DTC/ROC pair
 
       }
+	
 
-
-    } // Done looping of roc/ring pairs
+    } // Done looping of DTC/ROC pairs
 
     evt.put(move(dtcPackets));
 

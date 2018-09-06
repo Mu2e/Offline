@@ -83,8 +83,7 @@ helper.make_plugins( [ mainlib,
                        'xerces-c', # only needed for MakeStereoHits_module.cc
                        'Minuit'  # Needed for BetaTauPitch_module.cc and ReadStrawCluster_module.cc
                                  # See the Fixme at the top of the file.
-                     ],
-                     [ 'Mu2eProducer_module.cc' ],  # Excluded from the build
+                     ]
                      )
 
 # This tells emacs to view this file in python mode.
