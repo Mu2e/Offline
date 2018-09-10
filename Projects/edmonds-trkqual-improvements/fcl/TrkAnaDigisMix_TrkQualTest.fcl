@@ -1,0 +1,2 @@
+#include "TrkDiga/fcl/TrkAnaDigisMix.fcl"
+physics.analyzers.TrkAna.TestTrkQual : true
