@@ -21,6 +21,16 @@ physics :
 {
   producers : @local::TrkAna.producers
   analyzers : @local::TrkAna.analyzers
+
+  # For other diagnostic trees (e.g. SHD (StrawHitDiag) or HD (HelixDiag)) comment out the above line
+  # and comment in the below line
+  # analyzers : { @table::TrkAna.analyzers
+  # 	      	  @table::TrkDiag.analyzers
+  #  		}
+  # Then add the modules to TrkAnaEndPath below e.g.
+  # physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence, SHD, HD ]
+  #
+  # A list of diagnostic trees can be found in TrkDiag/fcl/prolog.fcl
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
