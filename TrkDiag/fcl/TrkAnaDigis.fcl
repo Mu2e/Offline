@@ -20,21 +20,17 @@ services : @local::Services.Reco
 physics :
 {
   producers : @local::TrkAna.producers
-  analyzers : @local::TrkAna.analyzers
-
-  # For other diagnostic trees (e.g. SHD (StrawHitDiag) or HD (HelixDiag)) comment out the above line
-  # and comment in the below line
-  # analyzers : { @table::TrkAna.analyzers
-  # 	      	  @table::TrkDiag.analyzers
-  #  		}
-  # Then add the modules to TrkAnaEndPath below e.g.
-  # physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence, SHD, HD ]
-  #
-  # A list of diagnostic trees can be found in TrkDiag/fcl/prolog.fcl
+  analyzers : { @table::TrkAna.analyzers
+  	        @table::TrkDiag.analyzers
+	      }
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
+
+# To use other TrkDiag modules (e.g. CHD (ComboHitDiag) or HD (HelixDiag))
+# append them to TrkAnaEndPath here
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+# A list of diagnostic trees can be found in TrkDiag/fcl/prolog.fcl
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAna.diagLevel : 1

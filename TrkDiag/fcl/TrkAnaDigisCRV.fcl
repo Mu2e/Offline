@@ -1,0 +1,11 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
+#  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
+# will process 100 events from (your files).  Note that background mixing requires different scripts
+# for interactive and grid processing
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "TrkDiag/fcl/TrkAnaDigis.fcl"
+
+physics.analyzers.TrkAna.AnalyzeCRV : true
