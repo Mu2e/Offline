@@ -8,4 +8,9 @@
 #
 #include "TrkDiag/fcl/TrkAnaDigis.fcl"
 
+physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloCrvRecoSequence ]
 physics.analyzers.TrkAna.AnalyzeCRV : true
+
+# update labels to read compressed output from MDC2018
+physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
+physics.producers.CrvCoincidenceClusterSummarizer.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
