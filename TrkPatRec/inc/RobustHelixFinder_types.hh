@@ -25,7 +25,7 @@ namespace mu2e {
   
     struct Data_t {
       const art::Event*               event;
-      RobustHelixFit*                 result;
+      //      RobustHelixFit*                 result;
       fhicl::ParameterSet*            timeOffsets;
 
       enum  { kMaxHelicities = 2, kMaxSeeds = 100, kMaxNHits = 500 };
@@ -42,6 +42,10 @@ namespace mu2e {
       int     xyniter  [kMaxHelicities][kMaxSeeds];
       int     fzniter  [kMaxHelicities][kMaxSeeds];
       int     niter    [kMaxHelicities][kMaxSeeds];
+      int     nShFitXY [kMaxHelicities][kMaxSeeds];
+      int     nChFitXY [kMaxHelicities][kMaxSeeds];
+      int     nShFitCircle [kMaxHelicities][kMaxSeeds];
+      int     nChFitCircle [kMaxHelicities][kMaxSeeds];
       int     nrescuedhits[kMaxHelicities][kMaxSeeds];
       int     nXYSh    [kMaxHelicities][kMaxSeeds];
       int     nZPhiSh  [kMaxHelicities][kMaxSeeds];
