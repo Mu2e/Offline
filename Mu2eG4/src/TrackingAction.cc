@@ -444,10 +444,26 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
     //Get number od steps the track is made of
     int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
+    
+    // final momentum
+    CLHEP::HepLorentzVector trackP(trk->GetMomentum(),trk->GetTotalEnergy());
+    // if this is an incoming proton interaction, set the SimParticle 
+    // final momentum to the momentum right before the interaction
+    //if(i->second.isPrimary() && i->second.pdgId()==PDGCode::proton) {
+    if(stoppingCode.name().find("Inelastic")!=std::string::npos) {
+      // get the final momentum from the start of last step
+      auto const sptr = trk->GetStep()->GetPreStepPoint();
+      if(sptr) {
+	trackP = CLHEP::HepLorentzVector(sptr->GetMomentum(),sptr->GetTotalEnergy());
+      } else {
+	throw cet::exception("PROTON_NO_STEPS")
+	  << "In TrackingAction::saveSimParticleEnd(): incoming proton had no step pointer\n";
+      }
+    }
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          CLHEP::HepLorentzVector(trk->GetMomentum(),trk->GetTotalEnergy()),
+                          trackP,
                           trk->GetGlobalTime(),
                           trk->GetProperTime(),
                           _physVolHelper->index(trk),
