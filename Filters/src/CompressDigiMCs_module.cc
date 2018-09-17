@@ -137,7 +137,6 @@ private:
   std::map<InstanceLabel, art::ProductID> _newStepPointMCsPID;
   std::map<InstanceLabel, const art::EDProductGetter*> _newStepPointMCGetter;
   art::ProductID _newSimParticlesPID;
-  std::map<art::ProductID, const art::EDProductGetter*> _oldSimParticleGetter;
   const art::EDProductGetter* _newSimParticleGetter;
   art::ProductID _newGenParticlesPID;
   const art::EDProductGetter* _newGenParticleGetter;
@@ -217,7 +216,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
-    _oldSimParticleGetter[i_product_id] = event.productGetter(i_product_id);
     
     _simParticlesToKeep[i_product_id].clear();
   }
@@ -304,24 +302,30 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   // Now compress the SimParticleCollections into their new collections
   KeyRemap* keyRemap = new KeyRemap;
   SimParticleRemapping remap;
+  unsigned int keep_size = 0;
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
     SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
+    keep_size += _simParticlesToKeep[i_product_id].size();
     compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
 				  simPartSelector, *_newSimParticles, keyRemap);
 
-    // Fill out the SimParticleRemapping and also update the GenParticleCollection
+    // Fill out the SimParticleRemapping
     for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
       cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
       cet::map_vector_key newKey = keyRemap->at(oldKey);
       remap[i_keptSimPart] = art::Ptr<SimParticle>(_newSimParticlesPID, newKey.asUint(), _newSimParticleGetter);
     }
   }
+  if (keep_size != _newSimParticles->size()) {
+    throw cet::exception("CompressDigiMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles we wanted to keep (" << keep_size << ")" << std::endl;
+  }
 
+  // Loop through the new SimParticles to keep any GenParticles
   for (auto& i_simParticle : *_newSimParticles) {
     mu2e::SimParticle& newsim = i_simParticle.second;
-    if(!newsim.genParticle().isNull()) { // will crash if not resolvable
+    if(newsim.genParticle().isNonnull()) { // will crash if not resolvable
       
       // Copy GenParticle to the new collection
       _newGenParticles->emplace_back(*newsim.genParticle());
@@ -501,7 +505,7 @@ art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::S
 
 void mu2e::CompressDigiMCs::keepSimParticle(const art::Ptr<SimParticle>& sim_ptr) {
 
-  // Also need to add all the parents (and change their genParticles) too
+  // Also need to add all the parents too
   _simParticlesToKeep[sim_ptr.id()].insert(sim_ptr);
   art::Ptr<SimParticle> childPtr = sim_ptr;
   art::Ptr<SimParticle> parentPtr = childPtr->parent();
