@@ -304,6 +304,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   SimParticleRemapping remap;
   unsigned int keep_size = 0;
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
+    keyRemap->clear();
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
     SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
