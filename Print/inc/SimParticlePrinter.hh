@@ -52,9 +52,9 @@ namespace mu2e {
     void Print(const SimParticleCollection& coll, 
 	       std::ostream& os = std::cout);
     void Print(const art::Ptr<SimParticle>& ptr, 
-	       int ind = -1, std::ostream& os = std::cout);
+	  int ind = -1, std::ostream& os = std::cout);
     void Print(const mu2e::SimParticle& obj, 
-	       int ind = -1, std::ostream& os = std::cout);
+	  int ind = -1, std::size_t key = -1, std::ostream& os = std::cout);
 
     void PrintHeader(const std::string& tag, 
 		     std::ostream& os = std::cout);
