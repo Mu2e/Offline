@@ -18,11 +18,28 @@
 
 #include "TrkReco/inc/TrkFaceData.hh"
 
+#include "Math/VectorUtil.h"
+#include "Math/Vector2D.h"
+//c++
 #include <array>
 
 class HelixTraj;
 
+using namespace ROOT::Math::VectorUtil;
+
 namespace mu2e {
+  typedef ROOT::Math::XYVectorF  XYVec;
+  // struct for weighted positions
+  class XYWVec : public XYVec {
+  public :
+    XYWVec(XYZVec pos, int face, float weight=1.0) : XYVec(pos.x(),pos.y()), _face(face), _weight(weight){}
+    float weight() const { return _weight; }
+    int   face() const { return _face; }
+
+  private :
+    int   _face;
+    float _weight; // weight for this position
+  };
 
   class TimeCluster;
   class FaceZ_t;
@@ -35,7 +52,9 @@ namespace mu2e {
   public:
     
     enum { kMaxResidIndex = 500 };
-    
+
+    constexpr static uint16_t        kNMaxChHits = 150;
+
     struct ChannelID {
       int Station;
       int Plane; 
@@ -46,48 +65,66 @@ namespace mu2e {
 
     struct Diag_t {
       
-      double    resid[kMaxResidIndex];
-      double    dist [kMaxResidIndex];
-      double    dz   [kMaxResidIndex];
+      int       nShFitCircle;
+      int       nChFitCircle;
+
+      int       nShFitXY;
+      int       nChFitXY;
+
+      int       nChPPanel;
+      int       nChHits;
+
+      float    resid[kMaxResidIndex];
+      float    dist [kMaxResidIndex];
+      float    rwdot[kMaxResidIndex];
+      float    dz   [kMaxResidIndex];
+      
+      int      nXYCh;
+      int      nZPhiCh;
       
       int       circleFitCounter;
       int       nrescuedhits;
 
-      double    dr;
-      double    chi2d_helix;
+      float    dr;
+      float    chi2d_helix;
       
-      double    chi2dXY;
+      float    chi2dXY;
+      float    chi2dZPhi;
 
       int       ntriple_0;    //number of triplets used in the first call of RobustHelix::fitCircle
-      double    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
+      float    radius_0;     //radius resulting from the first call of RobustHelix::fitCircle
   
       int       nshsxy_0;
-      double    rsxy_0;
-      double    chi2dsxy_0;
+      float    rsxy_0;
+      float    chi2dsxy_0;
 
       int       nshsxy_1;
-      double    rsxy_1;
-      double    chi2dsxy_1;
+      float    rsxy_1;
+      float    chi2dsxy_1;
 
       int       nfz0counter;
 
       int       nshszphi;
-      double    lambdaszphi;
-      double    chi2dszphi;
+      float    lambdaszphi;
+      float    chi2dszphi;
+
+      int       nshszphi_0;
+      float    lambdaszphi_0;
+      float    chi2dszphi_0;
 
       int       nshszphi_1;
-      double    lambdaszphi_1;
-      double    chi2dszphi_1;
+      float    lambdaszphi_1;
+      float    chi2dszphi_1;
 
 
       int       ntriple_1;    //number of triplets used in the first call of RobustHelix::fitCircle
-      double    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
+      float    radius_1;     //radius resulting from the first call of RobustHelix::fitCircle
       
       int       ntriple_2;
-      double    radius_2;
+      float    radius_2;
 
-      double    lambda_0;
-      double    lambda_1;
+      float    lambda_0;
+      float    lambda_1;
 
       int       xyniter;
       int       fzniter;
@@ -102,7 +139,7 @@ namespace mu2e {
 
     HelixSeed                         _hseed;
 
-    std::vector<StrawHitIndex>        _goodhits;
+    //    std::vector<StrawHitIndex>        _goodhits;
 
     // SeedInfo_t                        _seedIndex;
     // SeedInfo_t                        _candIndex;
@@ -112,37 +149,40 @@ namespace mu2e {
 
     int                               _nXYSh;
     int                               _nZPhiSh;
+
+    int                               _nXYCh;
+    int                               _nZPhiCh;
   
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster + DeltaFinder filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
-    double                            _helixChi2;
+    // double                            _helixChi2;
 
-    TrkParticle                       _tpart;
-    TrkFitDirection                   _fdir;
+    // TrkParticle                       _tpart;
+    // TrkFitDirection                   _fdir;
 
     const ComboHitCollection*         _chcol;
     // const StrawHitPositionCollection* _shpos;
     const StrawHitFlagCollection*     _chfcol;
     
-    TrkErrCode                        _fit;	    // fit status code from last fit
+    //    TrkErrCode                        _fit;	    // fit status code from last fit
 //-----------------------------------------------------------------------------
 // circle parameters; the z center is ignored.
 //-----------------------------------------------------------------------------
     ::LsqSums4         _sxy;
     ::LsqSums4         _szphi;
 
-    XYZVec             _center;
-    double             _radius;
+    // XYZVec             _center;
+    // double             _radius;
 
-    double             _chi2;
+    // double             _chi2;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
 //-----------------------------------------------------------------------------
-    double             _dfdz;
-    double             _fz0;
+    // double             _dfdz;
+    // double             _fz0;
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
 //-----------------------------------------------------------------------------
@@ -151,6 +191,9 @@ namespace mu2e {
 // structure used to organize thei strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
     std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;
+
+    std::vector<ComboHit>                                _chHitsToProcess;
+    std::vector<XYWVec>                                  _chHitsWPos;
     // std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
@@ -171,7 +214,7 @@ namespace mu2e {
     int           maxIndex          () { return kMaxResidIndex; }
     // HelixTraj*    helix             () { return _helix;        }
 
-    int           nGoodHits         () { return _goodhits.size(); }
+    // int           nGoodHits         () { return _goodhits.size(); }
 
     void          orderID           (ChannelID* X, ChannelID* O);
 

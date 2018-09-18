@@ -65,7 +65,8 @@ mu2e::StepPointMCPrinter::Print(const mu2e::StepPointMC& obj, int ind, std::ostr
 
   if( obj.momentum().mag() < _pCut ) return;
 
-  int pkey = obj.trackId().asInt();
+  int pkey = -1;
+  if(obj.simParticle()) pkey = int(obj.simParticle().key());
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;

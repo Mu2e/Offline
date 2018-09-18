@@ -36,6 +36,7 @@
 #include "TrackerConditions/inc/Types.hh"
 // data
 #include "DataProducts/inc/EventWindowMarker.hh"
+#include "DataProducts/inc/StrawId.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
@@ -171,7 +172,8 @@ namespace mu2e {
       Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2], _dtime[2], _ptime[2];
       Float_t _wdist[2], _vstart[2], _vcross[2];
       Float_t _phi[2]; //JB
-      Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
+      Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
+      Double_t _mctime;
       Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
       Float_t _mcdca, _mcdcaphi, _mcdcadtime;
       Int_t _dmcpdg, _dmcproc, _dmcgen;
@@ -184,10 +186,8 @@ namespace mu2e {
       Int_t _nclusd, _netot, _partPDG;
       vector<IonCluster> _clusters;
       Float_t _ewMarkerOffset;
-      vector<Float_t> _ewMarkerROCdt;
+      array<Float_t, StrawId::_nupanels> _ewMarkerROCdt;
 
-      //    vector<TGraph*> _waveforms;
-      vector<TH1F*> _waveforms;
       //  helper functions
       void fillClusterMap(art::Event const& event, StrawClusterMap & hmap);
       void addStep(art::Ptr<StepPointMC> const& spmcptr, Straw const& straw, StrawClusterSequencePair& shsp);
@@ -345,7 +345,7 @@ namespace mu2e {
           _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
           _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
           _sddiag->Branch("adc",&_adc);
-          _sddiag->Branch("mctime",&_mctime,"mctime/F");
+          _sddiag->Branch("mctime",&_mctime,"mctime/D");
           _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
           _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
           _sddiag->Branch("mcthreshenergy",&_mcthreshenergy,"mcthreshenergy/F");
@@ -406,8 +406,8 @@ namespace mu2e {
       const EventWindowMarker& ewMarker(*ewMarkerHandle);
       _ewMarkerOffset = ewMarker.timeOffset();
       // calculate event window marker jitter for this microbunch for each panel
-      for (size_t i=0;i<240;i++){
-        _ewMarkerROCdt.push_back(_randgauss.fire(0,_strawele->eventWindowMarkerROCJitter()));
+      for (size_t i=0;i<StrawId::_nupanels;i++){
+        _ewMarkerROCdt.at(i) = _randgauss.fire(0,_strawele->eventWindowMarkerROCJitter());
       }
       const Tracker& tracker = getTrackerOrThrow();
       // make the microbunch buffer long enough to get the full waveform
@@ -955,7 +955,6 @@ namespace mu2e {
             smark->SetMarkerSize(2);
             flist->Add(smark);
           }
-          _waveforms.push_back(wfh);
         }
       }
     }

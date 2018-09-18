@@ -25,11 +25,7 @@ namespace mu2e {
     tdiv=10, tclust=11,
     calosel=12, strawxtalk=13, elecxtalk=14, trksel=15,
     active=16,doca=17, resolvedphi=18,
-    calopresel=19, intime=20, panelcombo=21,
-    track0=24,track1=25,track2=26,track3=27,track4=28,track5=29,track6=30,track7=31};
-// special function to return the enum value associated with a given track number
-    static bit_type trackBit(unsigned itrk);
-    static std::string trackBitName(unsigned itrk);
+    calopresel=19, intime=20, panelcombo=21, track=22};
     // functions needed for the BitMap template
     static std::string const& typeName();
     static std::map<std::string,mask_type> const& bitNames();

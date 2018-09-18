@@ -78,10 +78,11 @@ namespace mu2e
       Float_t _mcedep, _mcetrig;
       Float_t _mcct[2], _mccphi[2], _mccd[2];
       Float_t _pdist,_pperp,_pmom;
-      Float_t _mcsptime,_mcwt[2];
+      Float_t _mcwt[2];
+      Double_t _mcsptime;
       Float_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
-      Int_t _plane, _panel, _layer, _straw;
+      Int_t _sid, _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres;
       Bool_t _mcxtalk;
       // helper array
@@ -149,6 +150,7 @@ namespace mu2e
     _shdiag->Branch("time",&_time,"tcal/F:thv/F");
     _shdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
+    _shdiag->Branch("sid",&_sid,"sid/I");
     _shdiag->Branch("plane",&_plane,"plane/I");
     _shdiag->Branch("panel",&_panel,"panel/I");
     _shdiag->Branch("layer",&_layer,"layer/I");
@@ -190,7 +192,7 @@ namespace mu2e
       _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-      _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/F");
+      _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/D");
       _shdiag->Branch("mcwt",&_mcwt,"mcwtcal/F:mcwthv/F");
       _shdiag->Branch("mcppdg",&_mcppdg,"mcppdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
@@ -216,6 +218,7 @@ namespace mu2e
       StrawHitFlag shf = ch.flag();
       if(_useshfcol) shf.merge(_shfcol->at(istr));
       const Straw& straw = tracker.getStraw( ch.strawId() );
+      _sid = straw.id().asUint16();
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();

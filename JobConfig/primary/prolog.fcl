@@ -47,8 +47,7 @@ Primary: {
     @sequence::TrackerMC.DigiSim,
     DigiFilter,
     @sequence::CaloDigiMC.DigiSim,
-# don't include CRV for now: it adds no content but takes up >2GBytes memory with tables
-#    @sequence::CrvDAQPackage.CrvResponseSequence,
+    @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
   EndPath : [ genCountLogger, Output ]
   Output : {

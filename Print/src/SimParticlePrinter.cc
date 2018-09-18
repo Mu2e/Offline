@@ -50,17 +50,19 @@ mu2e::SimParticlePrinter::Print(const SimParticleCollection& coll, std::ostream&
   os << "SimParticleCollection has " << coll.size() << " particles\n";
   if(verbose()==1) PrintListHeader();
   int i = 0;
-  for(const auto& obj: coll) Print(obj.second, i++);
+  for(const auto& obj: coll) Print(obj.second, i++, obj.first.asUint() );
 }
 
 void 
-mu2e::SimParticlePrinter::Print(const art::Ptr<SimParticle>& obj, int ind, std::ostream& os) {
+mu2e::SimParticlePrinter::Print(const art::Ptr<SimParticle>& obj, 
+				int ind, std::ostream& os) {
   if(verbose()<1) return;
-  Print(*obj,ind);
+  Print(*obj,ind,obj.key());
 }
 
 void 
-mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostream& os) {
+mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, 
+				int ind, std::size_t key, std::ostream& os) {
   if(verbose()<1) return;
 
   if( obj.startMomentum().vect().mag() < _pCut ) return;
@@ -69,8 +71,8 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
   if( _primaryOnly && (!obj.isPrimary()) ) return;
 
   art::Ptr<SimParticle> const& pptr = obj.parent();
-  long unsigned int pkey = 0;
-  if(pptr) pkey = pptr->id().asUint();
+  int pkey = -1;
+  if(pptr) pkey = int(pptr.key());
 
   art::Ptr<GenParticle> const& gptr = obj.genParticle();
   std::string gid("none");
@@ -81,7 +83,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
 
   if(verbose()==1) {
     os 
-      << " " << std::setw(7) << obj.id().asUint()
+      << " " << std::setw(7) << key
       << " " << std::setw(7) << pkey
       << " " << std::setw(8) << obj.pdgId()
       << " " << std::setw(8)  << std::setprecision(1) << obj.startPosition().x()
@@ -101,7 +103,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
   } else if(verbose()==2) {
 
      os 
-      << "  id: " << std::setw(8) << obj.id().asUint()
+      << "  id: " << std::setw(8) << key 
       << " pdgId: " << std::setw(4) << obj.pdgId()
       << " parentKey: " << std::setw(8) << pkey
       << " genId: " << std::setiosflags(std::ios::left) << gid << "\n";

@@ -40,12 +40,10 @@ DigiCompressionTags : {
     commonExtraStepPointMCTags : [ "g4run:virtualdetector", "g4run:protonabsorber" ]
     commonCaloShowerSimTag : "CaloShowerStepROFromShowerStep"
     commonCaloShowerStepROTag : "CaloShowerStepROFromShowerStep"
+    commonCrvDigiMCTag : "CrvWaveforms"
 
     primarySimParticleTag : "g4run"
-    primaryCrvDigiMCTag : ""
     primaryCaloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "CaloShowerStepFromStepPt:calorimeterRO" ]
-
-    mixingCrvDigiMCTag : "CrvWaveforms"
 }
 
 DigiCompression : {
@@ -54,7 +52,7 @@ DigiCompression : {
     Primary : {
 	module_type : CompressDigiMCs
 	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
-	crvDigiMCTag : @local::DigiCompressionTags.primaryCrvDigiMCTag
+	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
 	simParticleTags : [ @local::DigiCompressionTags.primarySimParticleTag ] 
 	extraStepPointMCTags : @local::DigiCompressionTags.commonExtraStepPointMCTags
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
@@ -67,7 +65,7 @@ DigiCompression : {
     Mixing : {
 	module_type : CompressDigiMCs
 	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
-	crvDigiMCTag : @local::DigiCompressionTags.mixingCrvDigiMCTag
+	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
 	simParticleTags : @nil
 	extraStepPointMCTags : [ @sequence::DigiCompressionTags.commonExtraStepPointMCTags ]
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
@@ -84,7 +82,9 @@ DigiCompression : {
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::EventWindowMarker_*_*_*",
-		       "keep *_genCounter_*_*" 
+		       "keep *_genCounter_*_*",
+		       "keep mu2e::EventWeight_*_*_*",
+		       "keep mu2e::ProtonBunchIntensity_*_*_*"
 		     ]
 }
 

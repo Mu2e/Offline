@@ -30,7 +30,8 @@ namespace mu2e {
     double envHalfLength() const { return _envelHalfLength; }
 
     // Parameters for version 2 for stiffening parts
-    double finHeight() const      { return _finHeight;    }
+    double nFins       () const   { return _nFins;    }
+    double finHeight   () const   { return _finHeight;    }
     double finThickness() const   { return _finThickness; }
     double hubDistUS() const      { return _hubDistUS;    }
     double hubDistDS() const      { return _hubDistDS;    }
@@ -74,6 +75,7 @@ namespace mu2e {
     // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
     ProductionTarget(int version, double rOut, double halfLength, double rotX,
 		     double rotY, const CLHEP::Hep3Vector& position, 
+		     int    nFins,
 		     double finHeight, double finThickness, 
 		     double hubDistUS, double hubDistDS,
 		     double hubAngleUS, double hubAngleDS,
@@ -98,7 +100,8 @@ namespace mu2e {
     double _halfLength;
     double _envelHalfLength;
     
-    // version 2 parameters
+    // version 1+ parameters
+    int    _nFins;
     double _finHeight;
     double _finThickness;
     double _hubDistUS;

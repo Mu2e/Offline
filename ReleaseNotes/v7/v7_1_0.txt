@@ -1,0 +1,7 @@
+           Release notes for Mu2e Offline software, v7_1_0
+3) bonventre Aug 22, 2018
+  - improve data structures for time jitter in sttraw digi simulation
+2) song (brownd) Aug 21, 2018
+  - add scripts for producing pion stops
+1) kutschke Aug 21, 2018
+    --ff-only merge the MDC2018 branch at tag v7_0_8.

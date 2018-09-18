@@ -215,7 +215,7 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::TTracker> ttHandle;
     _tracker      = ttHandle.get();
     _data.tracker = _tracker;
-    
+
     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
     _calorimeter = ch.get();
 

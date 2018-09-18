@@ -151,6 +151,9 @@ EventGenerator : {
 		spectrumVariable : "momentum"
 		spectrumShape    : "flat"
 	    }
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+	    }
 	}
 
   	mgun : { @table::StoppedParticleReactionGun 
@@ -160,6 +163,9 @@ EventGenerator : {
 		ehi              : 104.97176
 		spectrumVariable : "momentum"
 		spectrumShape    : "flat"
+	    }
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	}
 #------------------------------------------------------------------------------
@@ -195,6 +201,19 @@ EventGenerator : {
 		ehi              : 100.01
 		spectrumVariable : "momentum"
 		spectrumShape    : "flat"
+	    }
+	}
+
+  	photonGun : { @table::StoppedParticleReactionGun # p(photon)=100 MeV/c
+	    physics : {
+		pdgId            : 22
+		elow             :  99.999
+		ehi              : 100.001
+		spectrumVariable : "momentum"
+		spectrumShape    : "flat"
+	    }
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	}
     }
