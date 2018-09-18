@@ -1,11 +1,10 @@
 #
-# This script runs the TrackAnalysis module on MDC2018 digi output to create a prototype track-based analysis TTree.  
-# For example:
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
 #  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
-# will process 100 events from (your files).
+# will process 100 events from (your files).  Note that background mixing requires different scripts
+# for interactive and grid processing
 #
 # David Brown (LBNL) 13 July 2016
-# Updated: A. Edmonds 12 September2018
 #
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -21,16 +20,13 @@ services : @local::Services.Reco
 physics :
 {
   producers : @local::TrkAna.producers
-  analyzers : { @table::TrkAna.analyzers
-  	        @table::TrkDiag.analyzers
-	      }
+  analyzers : @local::TrkAna.analyzers
 }
 
 physics.analyzers.TrkAnaNeg.TrkParticle : 11
 physics.analyzers.TrkAnaPos.TrkParticle : -11
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
-<<<<<<< HEAD
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence, genCountLogger ]
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
@@ -38,13 +34,3 @@ physics.analyzers.TrkAnaNeg.diagLevel : 1
 physics.analyzers.TrkAnaPos.diagLevel : 1
 
 services.TFileService.fileName: "nts.owner.trkanadigi.version.sequencer.root"
-=======
-
-# To use other TrkDiag modules (e.g. CHD (ComboHitDiag) or HD (HelixDiag))
-# append them to TrkAnaEndPath here
-physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
-# A list of diagnostic trees can be found in TrkDiag/fcl/prolog.fcl
-
-# You can add detailed (hit) information to the TTree by setting diagLevel to 2
-physics.analyzers.TrkAna.diagLevel : 1
->>>>>>> master
