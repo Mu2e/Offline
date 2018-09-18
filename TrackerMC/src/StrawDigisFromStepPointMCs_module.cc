@@ -172,7 +172,8 @@ namespace mu2e {
       Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2], _dtime[2], _ptime[2];
       Float_t _wdist[2], _vstart[2], _vcross[2];
       Float_t _phi[2]; //JB
-      Float_t _mctime, _mcenergy, _mctrigenergy, _mcthreshenergy;
+      Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
+      Double_t _mctime;
       Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
       Float_t _mcdca, _mcdcaphi, _mcdcadtime;
       Int_t _dmcpdg, _dmcproc, _dmcgen;
@@ -344,7 +345,7 @@ namespace mu2e {
           _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
           _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
           _sddiag->Branch("adc",&_adc);
-          _sddiag->Branch("mctime",&_mctime,"mctime/F");
+          _sddiag->Branch("mctime",&_mctime,"mctime/D");
           _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
           _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
           _sddiag->Branch("mcthreshenergy",&_mcthreshenergy,"mcthreshenergy/F");

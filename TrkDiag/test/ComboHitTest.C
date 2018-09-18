@@ -162,5 +162,25 @@ void ComboHitTest(TTree* CHD, const char* page="count"){
     st->SetX2NDC(st->GetX1NDC());
     st->SetX1NDC(st->GetX1NDC()-dx);
     st->Draw();
+  } else if (spage == "edep") {
+    TH1F* pedep = new TH1F("pedep","ComboHit Energy Deposit;EDep (KeV)",100,0,4.0); 
+    TH1F* eedep = new TH1F("eedep","ComboHit Energy Deposit;EDep (KeV)",100,0,4.0); 
+    pedep->SetLineColor(kBlue);
+    eedep->SetLineColor(kRed);
+    pedep->SetStats(0);
+    eedep->SetStats(0);
+    CHD->Project("pedep","1000.0*edep","mcpdg==2212");
+    CHD->Project("eedep","1000.0*edep","mcpdg==11");
+    double np =pedep->GetEntries();
+    double ne =eedep->GetEntries();
+    pedep->Scale(1.0/np);
+    eedep->Scale(1.0/ne);
+    TCanvas* cedep = new TCanvas("cedep","cedep",600,600);
+    pedep->Draw();
+    eedep->Draw("same");
+    TLegend* edleg = new TLegend(0.2,0.7,0.4,0.9);
+    edleg->AddEntry(pedep,"protons","L");
+    edleg->AddEntry(eedep,"electrons","L");
+    edleg->Draw();
   }
 }
