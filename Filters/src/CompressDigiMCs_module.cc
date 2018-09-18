@@ -241,12 +241,20 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   for (const auto& i_strawDigiMC : strawDigiMCs) {
     copyStrawDigiMC(i_strawDigiMC);
   }
-
+  if (strawDigiMCs.size() != _newStrawDigiMCs->size()) {
+    throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match (" 
+					    << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
+  }
+  
   if (_crvDigiMCTag != "") {
     event.getByLabel(_crvDigiMCTag, _crvDigiMCsHandle);
     const auto& crvDigiMCs = *_crvDigiMCsHandle;
     for (const auto& i_crvDigiMC : crvDigiMCs) {
       copyCrvDigiMC(i_crvDigiMC);
+    }
+    if (crvDigiMCs.size() != _newCrvDigiMCs->size()) {
+      throw cet::exception("CompressDigiMCs") << "The number of CrvDigiMCs before and after compression does not match (" 
+					      << crvDigiMCs.size() << " != " << _newCrvDigiMCs->size() << ")" << std::endl;
     }
   }
 
@@ -325,7 +333,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 					    << ") does not match the number of SimParticles we wanted to keep (" 
 					    << keep_size << ")" << std::endl;
   }
-
+  
   // Loop through the new SimParticles to keep any GenParticles
   for (auto& i_simParticle : *_newSimParticles) {
     mu2e::SimParticle& newsim = i_simParticle.second;
@@ -358,8 +366,31 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   // Update the StepPointMCs
   for (const auto& i_instance : _newStepPointMCInstances) {
     for (auto& i_stepPointMC : *_newStepPointMCs.at(i_instance)) {
+      double old_time_offset = 0;
+      for (std::vector<SimParticleTimeMap>::const_iterator i_time_map = _oldTimeMaps.begin(); i_time_map != _oldTimeMaps.end(); ++i_time_map) {	
+	const SimParticleTimeMap& i_oldTimeMap = *i_time_map;
+	const auto& old_time_offset_pair = i_oldTimeMap.find(i_stepPointMC.simParticle());
+	if (old_time_offset_pair != i_oldTimeMap.end()) {
+	  old_time_offset += old_time_offset_pair->second;
+	}
+      }
+
       art::Ptr<SimParticle> newSimPtr = remap.at(i_stepPointMC.simParticle());
       i_stepPointMC.simParticle() = newSimPtr;
+
+      double new_time_offset = 0;
+      for (std::vector<std::unique_ptr<SimParticleTimeMap> >::const_iterator i_time_map = _newSimParticleTimeMaps.begin(); i_time_map != _newSimParticleTimeMaps.end(); ++i_time_map) {	
+	const SimParticleTimeMap& i_newTimeMap = *(*i_time_map);
+	const auto& new_time_offset_pair = i_newTimeMap.find(i_stepPointMC.simParticle());
+	if (new_time_offset_pair != i_newTimeMap.end()) {
+	  new_time_offset += new_time_offset_pair->second;
+	}
+      }
+
+      if (std::fabs(new_time_offset - old_time_offset) > 1e-5) {
+	throw cet::exception("CompressDigiMCs") << "The old time offset for this step does not match the new time offset for this step ("
+						<< old_time_offset << " != " << new_time_offset << ")" << std::endl;
+      }
     }
   }
 
@@ -387,7 +418,6 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     }
     i_crvDigiMC.setSimParticle(newSimPtr);
   }
-
 
   // Now add everything to the event
   for (const auto& i_instance : _newStepPointMCInstances) {
