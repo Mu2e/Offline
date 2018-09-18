@@ -153,22 +153,26 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
     if(!a0.isAvailable()) {
       os << " StepPointMC_0: is invalid " << std::endl;
     } else {
+      int isim = -1;
+      if(a0->simParticle()) isim = int(a0->simParticle().key());
       os << " StepPointMC_0: " 
 	 << "   key: " << std::setw(5) << a0.key()
 	 << "   energy: " << std::setw(8) << std::setprecision(6)  
 	       << a0->totalEDep()
-	 << "   Simparticle: " << std::setw(5) << a0->trackId().asInt();
+	 << "   Simparticle: " << std::setw(5) << isim;
       os << std::endl;
     }
 
     if(!a1.isAvailable()) {
       os << " StepPointMC_1: is invalid " << std::endl;
     } else {
+      int isim = -1;
+      if(a1->simParticle()) isim = int(a1->simParticle().key());
       os << " StepPointMC_1: " 
 	 << "   key: " << std::setw(5) << a1.key()
 	 << "   energy: " << std::setw(8) << std::setprecision(4)  
 	       << a1->totalEDep()
-	 << "   SimParticle: " << std::setw(5) << a1->trackId().asInt();
+	 << "   SimParticle: " << std::setw(5) << isim;
       os << std::endl;
     }
   } // verbose=2

@@ -65,9 +65,15 @@ namespace mu2e {
 
     struct Diag_t {
       
+      int       nShFitCircle;
+      int       nChFitCircle;
+
+      int       nShFitXY;
+      int       nChFitXY;
+
       int       nChPPanel;
       int       nChHits;
-      
+
       float    resid[kMaxResidIndex];
       float    dist [kMaxResidIndex];
       float    rwdot[kMaxResidIndex];

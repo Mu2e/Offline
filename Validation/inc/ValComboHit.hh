@@ -5,7 +5,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "Validation/inc/ValId.hh"
-#include "Validation/inc/ValPosition.hh"
 #include "TH1D.h"
 #include <string>
 
@@ -28,7 +27,9 @@ namespace mu2e {
     TH1D* _hsid;
     TH1D* _hNcmb;
     TH1D* _hNstr;
-    ValPosition _pos;
+    TH1D* _hx;
+    TH1D* _hy;
+    TH1D* _hz;
     TH1D* _ht;
     TH1D* _hE;
     TH1D* _hqual;
