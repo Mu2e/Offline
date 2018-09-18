@@ -42,5 +42,10 @@ BEGIN_PROLOG
 # MDC config: no detectorFilter
   KalDiagReadMDC : {
     @table::KalDiagDirect
+    StrawDigiMCLabel : "compressDigiMCs" #Update Labels
+    MCStepsLabel : "compressDigiMCs"
+    SimParticleLabel : "compressDigiMCs"
+    TimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
   }
+  
 END_PROLOG

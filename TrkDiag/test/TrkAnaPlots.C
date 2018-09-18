@@ -92,10 +92,10 @@ void Draw(TTree* ta) {
 
   TCanvas* can = new TCanvas("can","can",800,800);
 
-  ta->Project("evspem","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==11");
-  ta->Project("evspmm","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==13");
-  ta->Project("evspep","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-11");
-  ta->Project("evspmp","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-13");
+  ta->Project("evspem","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==11");
+  ta->Project("evspmm","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==13");
+  ta->Project("evspep","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==-11");
+  ta->Project("evspmp","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==-13");
 
   evspem->Draw();
   evspem->Draw("box");
@@ -110,20 +110,20 @@ void Draw(TTree* ta) {
 
 void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
 // cuts
-  TCut reco("dem.status>0");
+  TCut reco("de.status>0");
   char ctext[80];
-  snprintf(ctext,80,"dem.trkqual>%f",tqcut);
+  snprintf(ctext,80,"de.trkqual>%f",tqcut);
   TCut goodfit(ctext);
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(700.0);
   double t0max(1695.0);
-  snprintf(ctext,80,"dem.td>%5.5f&&dem.td<%5.5f",tdlow,tdhigh);
+  snprintf(ctext,80,"de.td>%5.5f&&de.td<%5.5f",tdlow,tdhigh);
   TCut rpitch = TCut(ctext);
-  snprintf(ctext,80,"dem.t0>%f&&dem.t0<%f",t0min,t0max);
+  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   TCut livegate = TCut(ctext);
-  TCut cosmic = TCut("dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680");
-  TCut rmomloose("dem.mom>100.0");
+  TCut cosmic = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
+  TCut rmomloose("de.mom>100.0");
   TCut physics = rpitch+cosmic+livegate+rmomloose;
 
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
@@ -143,7 +143,7 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
   TCut final = reco+goodfit;
-  ta->Project("momresp","dem.mom-demmcgen.mom","evtinfo.evtwt"*final);
+  ta->Project("momresp","de.mom-demcgen.mom","evtinfo.evtwt"*final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
@@ -162,20 +162,20 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
 }
 void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 // cuts
-  TCut reco("dem.status>0");
+  TCut reco("de.status>0");
   char ctext[80];
-  snprintf(ctext,80,"dem.trkqual>%f",tqcut);
+  snprintf(ctext,80,"de.trkqual>%f",tqcut);
   TCut goodfit(ctext);
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(700.0);
   double t0max(1695.0);
-  snprintf(ctext,80,"dem.td>%5.5f&&dem.td<%5.5f",tdlow,tdhigh);
+  snprintf(ctext,80,"de.td>%5.5f&&de.td<%5.5f",tdlow,tdhigh);
   TCut rpitch = TCut(ctext);
-  snprintf(ctext,80,"dem.t0>%f&&dem.t0<%f",t0min,t0max);
+  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   TCut livegate = TCut(ctext);
-  TCut cosmic = TCut("dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680");
-  TCut rmomloose("dem.mom>100.0");
+  TCut cosmic = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
+  TCut rmomloose("de.mom>100.0");
   TCut physics = rpitch+cosmic+livegate+rmomloose;
 
   TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
@@ -195,7 +195,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  ta->Project("momres","dem.mom-demmcent.mom","evtinfo.evtwt"*final);
+  ta->Project("momres","de.mom-demcent.mom","evtinfo.evtwt"*final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
@@ -271,15 +271,15 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   ibin = 0;
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
 
-  TCut mcsel = "demmc.ndigigood>15&&demmcent.mom>90.0";
+  TCut mcsel = "demc.ndigigood>15&&demcent.mom>90.0";
   // &&demmcent.td>0.55&&demmcent.td<1.05";
   //&&fmod(demmcent.t0,1695.0)>500.0";
-  TCut reco = "dem.status>0";
-  TCut goodfit = "dem.trkqual>0.4";
-  TCut livegate = "dem.t0>500.0&&dem.t0<1695";
-  TCut rpitch = "dem.td>0.57735027&&dem.td<1.0";
-  TCut cosmic = "dem.d0<105 && dem.d0>-80 && (dem.d0+2/dem.om)>450 && (dem.d0+2/dem.om)<680";
-  TCut rmom = "dem.mom>100.0";
+  TCut reco = "de.status>0";
+  TCut goodfit = "de.trkqual>0.4";
+  TCut livegate = "de.t0>500.0&&de.t0<1695";
+  TCut rpitch = "de.td>0.57735027&&de.td<1.0";
+  TCut cosmic = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
+  TCut rmom = "de.mom>100.0";
 
   ta->Project("acc",binnames[ibin++],"evtinfo.evtwt");
   ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*mcsel);
@@ -338,9 +338,9 @@ void hitres(TTree* ta) {
   THStack* hresidst = new THStack("hresidst","Hit Residual;mm");
   hresidst->Add(hresida);
   hresidst->Add(hresidna);
-  ta->Project("hresida","demtsh._resid","dem.status>0&&demtsh._active&&demtsh._ambig!=0");
-  ta->Project("hresidna","demtsh._resid","dem.status>0&&demtsh._active&&demtsh._ambig==0");
-  ta->Project("hresidall","demtsh._resid","dem.status>0&&demtsh._active");
+  ta->Project("hresida","detsh._resid","de.status>0&&detsh._active&&detsh._ambig!=0");
+  ta->Project("hresidna","detsh._resid","de.status>0&&detsh._active&&detsh._ambig==0");
+  ta->Project("hresidall","detsh._resid","de.status>0&&detsh._active");
   
   TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
   TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
@@ -352,9 +352,9 @@ void hitres(TTree* ta) {
   THStack* hresst = new THStack("hresst","Hit Drift Resolution;Reco R_{drift}-MC (mm)");
   hresst->Add(hresa);
   hresst->Add(hresna);
-  ta->Project("hresa","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active&&demtsh._ambig!=0");
-  ta->Project("hresna","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active&&demtsh._ambig==0");
-  ta->Project("hresall","demtsh._rdrift-demtshmc._dist","dem.status>0&&demtsh._active");
+  ta->Project("hresa","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active&&detsh._ambig!=0");
+  ta->Project("hresna","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active&&detsh._ambig==0");
+  ta->Project("hresall","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active");
   TCanvas* rescan = new TCanvas("rescan","rescan",800,800);
   rescan->Divide(1,2);
   rescan->cd(1);

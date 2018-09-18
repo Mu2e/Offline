@@ -76,7 +76,7 @@ DigiCompression : {
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
     }
 
-    OutputCommands : [ "drop *_*_*_*",
+    OutputCommands : [ "keep *_*_*_*",
 		       "keep *_compressDigiMCs_*_*",
 		       "keep mu2e::StrawDigis_*_*_*",
 		       "keep mu2e::CaloDigis_*_*_*",

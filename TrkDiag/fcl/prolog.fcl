@@ -133,10 +133,8 @@ BEGIN_PROLOG
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis
-    DownstreameMinusTrack : "KFFDeM"
-    UpstreameMinusTrack : "KFFUeM"
-    DownstreammuMinusTrack : "KFFDmuM"
-#    KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
+    TrackAnalysisTagRoot : KFF
+#   KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
@@ -145,7 +143,7 @@ BEGIN_PROLOG
     # produces them is run
     BeamIntensity : "protonBunchIntensity"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    generatorWeight : "DIOWeight"
+    generatorWeight : "eventWeight"
   }
 
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
@@ -158,11 +156,18 @@ BEGIN_PROLOG
 	fitterModuleLabel : KFFDeM
 	trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTRFDem
       }
+      TrackCaloIntersectionTRFDep: { @table::TrackCaloMatching.producers.TrackCaloIntersectionDep
+	fitterModuleLabel : KFFDeP
+      }
+      TrackCaloMatchingTRFDep : { @table::TrackCaloMatching.producers.TrackCaloMatchingDep
+	fitterModuleLabel : KFFDeP
+	trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTRFDep
+      }
     }
   }
   
   TrackCaloMatching.matching_dem_TRF : [ TrackCaloIntersectionTRFDem, TrackCaloMatchingTRFDem ]
-
+  TrackCaloMatching.matching_dep_TRF : [ TrackCaloIntersectionTRFDep, TrackCaloMatchingTRFDep ]
 
   TrkDiag : {
     analyzers : {
@@ -198,7 +203,20 @@ BEGIN_PROLOG
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
-      TrkAna: @local::TrackAnalysis
+      TrkAnaNeg: {
+        @table::TrackAnalysis
+#        DownstreameTrack : "KFFDeM"
+#        UpstreameTrack : "KFFUeM"
+        DownstreammuTrack : "KFFDmuM"
+        TrkParticle : 11
+      }
+      TrkAnaPos: {
+        @table::TrackAnalysis
+#        DownstreameTrack : "KFFDeP"
+#        UpstreameTrack : "KFFUeP"
+        DownstreammuTrack : "KFFDmuP"
+        TrkParticle : -11
+      }
     }
   
     # diagnostic Reco sequences starting from digis
@@ -206,7 +224,10 @@ BEGIN_PROLOG
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
-		     @sequence::Tracking.TPRDmuM ]
+		     @sequence::Tracking.TPRDmuM,
+                     @sequence::Tracking.TPRDeP,
+                     @sequence::Tracking.TPRUeP,
+                     @sequence::Tracking.TPRDmuP ]
     CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
 
@@ -214,13 +235,14 @@ BEGIN_PROLOG
 
     #nb: matching only done for dem, should be for other particles FIXME!
 #
-    EndSequence : [ TrkAna ]
+    EndSequence : [ TrkAnaNeg, TrkAnaPos ]
 
   }
   # aggregate these for convenience
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.TrkRecoSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
-		            @sequence::TrackCaloMatching.matching_dem_TRF ]
+		            @sequence::TrackCaloMatching.matching_dem_TRF,
+                            @sequence::TrackCaloMatching.matching_dep_TRF ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 				 @sequence::TrkAna.CrvRecoSequence ]
 

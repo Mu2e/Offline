@@ -16,7 +16,7 @@ namespace mu2e
   {
 // construct the calo matching module name.  Convention is 1st letter of direction, 1st letter of particle name + 1st letter of charge
 // This code will break if the fhicl prolog conventions change, FIXME!!!
-    static std::string chargename = tpart.charge() > 0.0 ? "p" : "m";
+    std::string chargename = tpart.charge() > 0.0 ? "p" : "m";
     std::string caloMatchingRoot = pset.get<std::string>("caloMatchingRoot","TrackCaloMatching");
     _caloMatchModule = caloMatchingRoot + fdir.name().substr(0,1) + tpart.name().substr(0,1) + chargename;
   }
