@@ -170,7 +170,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   produces<CrvDigiMCCollection>();
 
   _newStepPointMCInstances.push_back(_trackerOutputInstanceLabel); // will always be a tracker and CRV instance
-  _newStepPointMCInstances.push_back("CRV");     // filled with the StepPointMCs referenced by their DigiMCs
+  _newStepPointMCInstances.push_back(_crvOutputInstanceLabel);     // filled with the StepPointMCs referenced by their DigiMCs
   for (std::vector<art::InputTag>::const_iterator i_tag = _extraStepPointMCTags.begin(); i_tag != _extraStepPointMCTags.end(); ++i_tag) {
     _newStepPointMCInstances.push_back( (*i_tag).instance() );
   }
@@ -320,7 +320,10 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     }
   }
   if (keep_size != _newSimParticles->size()) {
-    throw cet::exception("CompressDigiMCs") << "Number of SimParticles in output collection (" << _newSimParticles->size() << ") does not match the number of SimParticles we wanted to keep (" << keep_size << ")" << std::endl;
+    throw cet::exception("CompressDigiMCs") << "Number of SimParticles in output collection (" 
+					    << _newSimParticles->size() 
+					    << ") does not match the number of SimParticles we wanted to keep (" 
+					    << keep_size << ")" << std::endl;
   }
 
   // Loop through the new SimParticles to keep any GenParticles
