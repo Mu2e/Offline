@@ -23,19 +23,14 @@ physics :
   analyzers : @local::TrkAna.analyzers
 }
 
+physics.analyzers.TrkAnaNeg.TrkParticle : 11
+physics.analyzers.TrkAnaPos.TrkParticle : -11
+
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
-physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence, genCountLogger ]
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
-physics.analyzers.TrkAna.diagLevel : 1
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaPos.diagLevel : 1
 
-# update labels to read compressed output from MDC2018
-physics.analyzers.TrkAna.KalDiag.StrawDigiMCLabel : "compressDigiMCs"
-physics.analyzers.TrkAna.KalDiag.MCStepsLabel : "compressDigiMCs"
-physics.analyzers.TrkAna.KalDiag.MCStepsInstance : "virtualdetector"
-physics.analyzers.TrkAna.KalDiag.SimParticleLabel : "compressDigiMCs"
-physics.analyzers.TrkAna.KalDiag.SimParticleInstance : ""
-physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
-physics.producers.CrvCoincidenceClusterSummarizer.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-
+services.TFileService.fileName: "nts.owner.trkanadigi.version.sequencer.root"
