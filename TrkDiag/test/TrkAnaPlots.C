@@ -272,8 +272,8 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
 
   TCut mcsel = "demc.ndigigood>15&&demcent.mom>90.0";
-  // &&demmcent.td>0.55&&demmcent.td<1.05";
-  //&&fmod(demmcent.t0,1695.0)>500.0";
+  // &&demcent.td>0.55&&demcent.td<1.05";
+  //&&fmod(demcent.t0,1695.0)>500.0";
   TCut reco = "de.status>0";
   TCut goodfit = "de.trkqual>0.4";
   TCut livegate = "de.t0>500.0&&de.t0<1695";
@@ -376,9 +376,9 @@ void wpull(TTree* ta) {
   swp->SetLineColor(kGreen);
   uwp->SetLineColor(kRed);
   rwp->SetLineColor(kBlue);
-  ta->Project("swp","(demtsh._wdist-demtsh._hlen)/demtsh._werr","dem.status>0&&demtsh._active&&demtshmc._rel==0");
-  ta->Project("uwp","(demtsh._wdist-demtsh._hlen)/demtsh._werr","dem.status>0&&demtsh._active&&demtshmc._rel<0");
-  ta->Project("rwp","(demtsh._wdist-demtsh._hlen)/demtsh._werr","dem.status>0&&demtsh._active&&demtshmc._rel>0");
+  ta->Project("swp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel==0");
+  ta->Project("uwp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel<0");
+  ta->Project("rwp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel>0");
   TCanvas* wpcan = new TCanvas("wpcan","wpcan",800,800);
   wpcan->Divide(2,2);
   wpcan->cd(1);
