@@ -78,7 +78,8 @@ namespace mu2e
       Float_t _mcedep, _mcetrig;
       Float_t _mcct[2], _mccphi[2], _mccd[2];
       Float_t _pdist,_pperp,_pmom;
-      Float_t _mcsptime,_mcwt[2];
+      Float_t _mcwt[2];
+      Double_t _mcsptime;
       Float_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _sid, _plane, _panel, _layer, _straw;
@@ -191,7 +192,7 @@ namespace mu2e
       _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-      _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/F");
+      _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/D");
       _shdiag->Branch("mcwt",&_mcwt,"mcwtcal/F:mcwthv/F");
       _shdiag->Branch("mcppdg",&_mcppdg,"mcppdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");
