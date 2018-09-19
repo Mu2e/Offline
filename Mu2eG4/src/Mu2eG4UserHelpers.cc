@@ -66,20 +66,12 @@ namespace mu2e {
 
     //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
     double getPreLastStepKE(G4Track const* const trk) {
-
-      G4VUserTrackInformation* info = trk->GetUserInformation();
-      UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
-      return tinfo->preLastStepKE();
-
+      return trk->GetStep()->GetPreStepPoint()->GetKineticEnergy();
     }
 
     // Get the number of G4 steps the track is made of
     int getNSteps(G4Track const* const trk) {
-
-      G4VUserTrackInformation* info = trk->GetUserInformation();
-      UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
-      return tinfo->nSteps();
-
+      return trk->GetCurrentStepNumber();
     }
 
     // Find the name of the code for the process that created this track.

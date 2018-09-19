@@ -33,15 +33,8 @@ namespace mu2e{
       _muCapCode = code;
     }
 
-    void setStepInfo (double kineticEnergy, int nSteps ) {
-      _preLastStepKE = kineticEnergy;
-      _nSteps = nSteps;
-    }
-
     bool         isForced() const { return _forcedStop; }
     ProcessCode  code()    const { return _code; }
-    double       preLastStepKE() const { return _preLastStepKE; }
-    int          nSteps() const { return _nSteps; }
     ProcessCode  muCapCode() const { return _muCapCode; }
 
     virtual void Print() const;
@@ -53,12 +46,6 @@ namespace mu2e{
 
     // If it did, then this is the reason why.
     ProcessCode _code;
-
-    // Kinetic energy of the particle at the beginning of the last step
-    double _preLastStepKE;
-
-    // Number of G4 steps the track if made of
-    int _nSteps;
 
     // Label of muMinusCaptureAtRest daugter particles (if any)
 

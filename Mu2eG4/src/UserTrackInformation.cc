@@ -21,8 +21,6 @@ namespace mu2e{
     G4VUserTrackInformation("Mu2eTrackInfo"),
     _forcedStop(false),
     _code(),
-    _preLastStepKE(-1),
-    _nSteps(0),
     _muCapCode(){
   }
 

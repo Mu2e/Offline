@@ -105,7 +105,7 @@ void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
       }
       ProcessCode cCode = Mu2eG4UserHelpers::findCreationCode(trk);
       if (cCode == ProcessCode(ProcessCode::muMinusCaptureAtRest)) {
-	ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
+        ti->setMuCapCode(ProcessCode::findByName((tui->GetType()).c_str()));
         if ( trackingVerbosityLevel > 0 ) {
           G4cout << __func__ << " set UserTrackInformation  muCapCode " 
                  << ti->muCapCode()  << G4endl;
@@ -337,9 +337,9 @@ void TrackingAction::saveSimParticleStart(const G4Track* trk){
       }
 
       ProcessCode utic = 
-	(static_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
+        (static_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
       if (utic!=ProcessCode(ProcessCode::unknown)) {
-	creationCode=utic;
+        creationCode=utic;
       }
     }
       
@@ -459,7 +459,13 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
     if (trackingVerbosityLevel > 0 ) {
       G4cout << __func__
-             << " particle stopped by " << stoppingCode << ", " << pname
+             << " particle "
+             << i->second.pdgId() << ", "
+             << trk->GetParticleDefinition()->GetParticleName()
+             << " stopped by " << stoppingCode << ", " << pname
+             << G4endl;
+      G4cout << __func__ << " track statuses: " << i->second.startG4Status()
+             << ", " << i->second.endG4Status()
              << G4endl;
       G4cout << __func__
              << " step length " << trk->GetStepLength()
