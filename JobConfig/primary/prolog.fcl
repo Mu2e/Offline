@@ -41,6 +41,7 @@ Primary: {
   }
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+    digiCompressionCheck : @local::DigiCompression.Check
   }
   TriggerPath : [ generate, genCounter, g4run, g4status,
     @sequence::CommonMC.DigiSim,
@@ -49,7 +50,7 @@ Primary: {
     @sequence::CaloDigiMC.DigiSim,
     @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
-  EndPath : [ genCountLogger, Output ]
+  EndPath : [ genCountLogger, digiCompressionCheck, Output ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
