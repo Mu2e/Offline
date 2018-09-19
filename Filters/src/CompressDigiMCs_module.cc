@@ -213,11 +213,23 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
   // There is one for each background frame plus one for the primary event
+  unsigned int n_gen_particles_to_keep = 0;
   for (std::vector<art::InputTag>::const_iterator i_tag = _simParticleTags.begin(); i_tag != _simParticleTags.end(); ++i_tag) {
     const auto& oldSimParticles = event.getValidHandle<SimParticleCollection>(*i_tag);
     art::ProductID i_product_id = oldSimParticles.id();
+    const art::EDProductGetter* i_product_getter = event.productGetter(i_product_id);
 
     _simParticlesToKeep[i_product_id].clear();
+
+    // Add all the SimParticles that are also GenParticles
+    for (const auto& i_oldSimParticle : *oldSimParticles) {
+      const cet::map_vector_key& key = i_oldSimParticle.first;
+      const SimParticle& i_oldSim = i_oldSimParticle.second;
+      if (i_oldSim.genParticle().isNonnull()) {
+	keepSimParticle(art::Ptr<SimParticle>(i_product_id, key.asUint(), i_product_getter));
+	++n_gen_particles_to_keep;
+      }	
+    }
   }
 
   _oldTimeMaps.clear();
@@ -344,7 +356,10 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       newsim.genParticle() = art::Ptr<GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
     }
   }
-
+  if (_newGenParticles->size() != n_gen_particles_to_keep) {
+    throw cet::exception("CompressDigiMCs") << "Number of GenParticles in output collection does not match the number of GenParticles we wanted to keep (" << n_gen_particles_to_keep << " != " << _newGenParticles->size() << ")" << std::endl;
+  }
+  
   
   // Now update all objects with SimParticlePtrs
   // Update the time maps
