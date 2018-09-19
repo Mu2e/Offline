@@ -42,10 +42,12 @@ namespace mu2e {
   void CompressDigiMCsCheck::analyze(const art::Event& event) {
     art::Handle<StrawDigiMCCollection> oldStrawDigiMCHandle;
     event.getByLabel(_oldStrawDigiMCTag, oldStrawDigiMCHandle);
-    if (oldStrawDigiMCHandle.isValid()) {
-      const auto& oldStrawDigiMCs = *oldStrawDigiMCHandle;
 
-      const auto& newStrawDigiMCHandle = event.getValidHandle<StrawDigiMCCollection>(_newStrawDigiMCTag);
+    art::Handle<StrawDigiMCCollection> newStrawDigiMCHandle;
+    event.getByLabel(_newStrawDigiMCTag, newStrawDigiMCHandle);
+
+    if (oldStrawDigiMCHandle.isValid() && newStrawDigiMCHandle.isValid()) {
+      const auto& oldStrawDigiMCs = *oldStrawDigiMCHandle;
       const auto& newStrawDigiMCs = *newStrawDigiMCHandle;
 
       _oldTOff.updateMap(event);
