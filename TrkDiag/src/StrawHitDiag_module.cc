@@ -99,7 +99,22 @@ namespace mu2e
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{StrawEnd::cal,StrawEnd::hv}
-  {}
+  {
+    if(pset.get<bool>("TestStrawId",false)) {
+      for(uint16_t plane = 0; plane < StrawId::_nplanes; ++plane){
+	StrawId sid(plane,0,0);
+	std::cout << "Plane StrawId " << sid.asUint16() << " plane " << sid.plane() << std::endl;
+	for(uint16_t panel = 0; panel < StrawId::_npanels; ++panel){
+	  StrawId sid(plane,panel,0);
+	  std::cout << "Panel StrawId " << sid.asUint16() << " panel " << sid.uniquePanel() << std::endl;
+	  for(uint16_t straw = 0; straw < StrawId::_nstraws; ++straw){
+	    StrawId sid(plane,panel,straw);
+	      std::cout << "Straw StrawId " << sid.asUint16() << " unique straw " << sid.uniqueStraw() << std::endl;
+	  }
+	}
+      }
+    }
+  }
 
   StrawHitDiag::~StrawHitDiag(){}
 
