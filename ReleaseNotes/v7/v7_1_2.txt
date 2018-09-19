@@ -5,6 +5,13 @@
     fixed mixing fraction for Crv neutrons
     added input map for muon lifetime generation
 
+2) edmonds 19 September 2018
+   Digi compression
+   - fixed bug (see DocDB-20380)
+   - added module to check compression consistency (Filters/src/CompressDigiMCsCheck_module.cc)
+   - also fixed key <---> SimParticle::_id consistency
+   - also keeping all GenParticles for future internal generators
+
 1) genser 12 September 2018
 
    added optional timing printout
