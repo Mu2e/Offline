@@ -30,6 +30,7 @@ outputs.DetOutput.outputCommands : [ "drop *_*_*_*",
 #patches; not clear how to get rid of this FIXME!
 physics.producers.generate.module_type : StoppedParticleReactionGun 
 physics.producers.protonTimeMap.InputTimeMaps : [ @sequence::Mixing.protonTimeMaps ]
+physics.producers.muonTimeMap.InputTimeMaps : [ ]
 physics.producers.compressDigiMCs.simParticleTags : [ @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
 physics.producers.compressDigiMCs.extraStepPointMCTags : [ ]
 

@@ -57,18 +57,16 @@ namespace mu2e {
 
   typedef std::map<cet::map_vector_key, cet::map_vector_key> KeyRemap;
 
-  // Pass in the old key to check if it's already added to keyRemap, if it ahsn't been then use nextNewKey for the next key
+  // Pass in the old key to check if it's already added to keyRemap, if it hasn't been then use nextNewKey for the next key
   cet::map_vector_key getNewKey(const cet::map_vector_key& oldKey, KeyRemap* keyRemap, const unsigned int& nextNewKey) {
     cet::map_vector_key nextKey;
-    //    std::cout << "oldKey = " << oldKey << " ";
-    if ( keyRemap->find(oldKey) == keyRemap->end() ) { // might have already added the key since we add parents earlier when remapping
+
+    if ( keyRemap->find(oldKey) == keyRemap->end() ) { // might have already added the key since parents have a position reserved before they are added to the output
       nextKey = cet::map_vector_key(nextNewKey);
       keyRemap->insert( std::make_pair(oldKey, nextKey) ); // update the map
-      //      std::cout << " not added yet, newKey = " << nextKey << ")" << std::endl;
     }
     else {
       nextKey = keyRemap->at(oldKey);
-      //      std::cout << " already added, newKey = " << nextKey << ")" << std::endl;
     }
 
     return nextKey;
@@ -99,10 +97,13 @@ namespace mu2e {
         SimParticle& sim = out[newSimKey];
         sim = i->second;
 
+	if (keyRemap) {
+	  sim.id() = newSimKey; // need to make sure the SimParticle's trackId is the same as its key in the output collection
+	}
+
         // See note 1).
         if ( sim.isSecondary() ){
           cet::map_vector_key parentKey = cet::map_vector_key(sim.parent().key());
-	  //	  std::cout << "Should have a parent" << std::endl;
           if ( keep[parentKey] ) {
 	    art::Ptr<SimParticle> newParentPtr;
 	    if (keyRemap) {
@@ -140,7 +141,7 @@ namespace mu2e {
         }
         sim.setDaughterPtrs(daughters);
       }
-    }    
+    }
   } // end compressSimParticleCollection
 
 }
