@@ -95,20 +95,24 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-          if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
-             part->genParticle()->generatorId() == GenId::dioTail                       ||
-             part->genParticle()->generatorId() == GenId::conversionGun                 ||
-             part->genParticle()->generatorId() == GenId::radiativeMuonCapture          ||
-             part->genParticle()->generatorId() == GenId::radiativeMuonCaptureInternal )
+	  // don't re-simulate if particle is already present.  This can happen if there is an input map
+	  if(res->find(part) == res->end()){
 
-            {
-              (*res)[part] = rexp_.fire(mean_);
-            }
-          else
-            {
-              (*res)[part] = 0;
-            }
-        }
+	    if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
+		part->genParticle()->generatorId() == GenId::dioTail                       ||
+		part->genParticle()->generatorId() == GenId::conversionGun                 ||
+		part->genParticle()->generatorId() == GenId::radiativeMuonCapture          ||
+		part->genParticle()->generatorId() == GenId::radiativeMuonCaptureInternal )
+
+	    {
+	      (*res)[part] = rexp_.fire(mean_);
+	    }
+	    else
+	    {
+	      (*res)[part] = 0;
+	    }
+	  }
+	}
       }
     }
 
