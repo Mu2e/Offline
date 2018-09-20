@@ -78,7 +78,8 @@ namespace mu2e
       Float_t _mcedep, _mcetrig;
       Float_t _mcct[2], _mccphi[2], _mccd[2];
       Float_t _pdist,_pperp,_pmom;
-      Float_t _mcsptime,_mcwt[2];
+      Float_t _mcwt[2];
+      Double_t _mcsptime;
       Float_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _sid, _plane, _panel, _layer, _straw;
@@ -98,7 +99,22 @@ namespace mu2e
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{StrawEnd::cal,StrawEnd::hv}
-  {}
+  {
+    if(pset.get<bool>("TestStrawId",false)) {
+      for(uint16_t plane = 0; plane < StrawId::_nplanes; ++plane){
+	StrawId sid(plane,0,0);
+	std::cout << "Plane StrawId " << sid.asUint16() << " plane " << sid.plane() << std::endl;
+	for(uint16_t panel = 0; panel < StrawId::_npanels; ++panel){
+	  StrawId sid(plane,panel,0);
+	  std::cout << "Panel StrawId " << sid.asUint16() << " panel " << sid.uniquePanel() << std::endl;
+	  for(uint16_t straw = 0; straw < StrawId::_nstraws; ++straw){
+	    StrawId sid(plane,panel,straw);
+	      std::cout << "Straw StrawId " << sid.asUint16() << " unique straw " << sid.uniqueStraw() << std::endl;
+	  }
+	}
+      }
+    }
+  }
 
   StrawHitDiag::~StrawHitDiag(){}
 
@@ -191,7 +207,7 @@ namespace mu2e
       _shdiag->Branch("mcpdg",&_mcpdg,"mcpdg/I");
       _shdiag->Branch("mcgen",&_mcgen,"mcgen/I");
       _shdiag->Branch("mcproc",&_mcproc,"mcproc/I");
-      _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/F");
+      _shdiag->Branch("mcsptime",&_mcsptime,"mcsptime/D");
       _shdiag->Branch("mcwt",&_mcwt,"mcwtcal/F:mcwthv/F");
       _shdiag->Branch("mcppdg",&_mcppdg,"mcppdg/I");
       _shdiag->Branch("mcpproc",&_mcpproc,"mcpproc/I");

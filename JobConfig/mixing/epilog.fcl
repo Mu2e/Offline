@@ -16,7 +16,7 @@ physics.filters.protonMixerTrkCal.mu2e.meanEventsPerProton   : 7.4322E-07
 physics.filters.deuteronMixerTrkCal.mu2e.meanEventsPerProton : 1.6261E-07
 # CRV mixing
 physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
-physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-07
+physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-06
 physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
 physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
 #physics.filters.PSMixerCRV.mu2e.meanEventsPerProton   : 9.5035E-05 # uncut
