@@ -4,9 +4,9 @@ generate_fcl --description flatpigammaMix --dsconf MDC2018a --dsowner mu2e --inc
 --auxinput=1:physics.filters.neutronMixerCRV.fileNames:neutron-CRV-cat.txt \
 --auxinput=1:physics.filters.dioMixerCRV.fileNames:dio-CRV-cat.txt \
 --auxinput=1:physics.filters.photonMixerCRV.fileNames:photon-CRV-cat.txt \
---auxinput=2:physics.filters.PSMixerCRV.fileNames:PS-CRV-cut.txt \
---auxinput=2:physics.filters.TSMixerCRV.fileNames:TS-CRV-cat.txt \
---auxinput=2:physics.filters.DSMixerCRV.fileNames:DS-CRV-cut.txt \
+--auxinput=25:physics.filters.PSMixerCRV.fileNames:PS-CRV-cut.txt \
+--auxinput=25:physics.filters.TSMixerCRV.fileNames:TS-CRV-cat.txt \
+--auxinput=25:physics.filters.DSMixerCRV.fileNames:DS-CRV-cut.txt \
 --auxinput=15:physics.filters.ootMixerTrkCal.fileNames:oot-TrkCal-cat.txt \
 --auxinput=1:physics.filters.neutronMixerTrkCal.fileNames:neutron-TrkCal-cat.txt \
 --auxinput=1:physics.filters.dioMixerTrkCal.fileNames:dio-TrkCal-cat.txt \
