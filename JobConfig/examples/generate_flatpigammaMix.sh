@@ -11,7 +11,7 @@ generate_fcl --description flatpigammaMix --dsconf MDC2018a --dsowner mu2e --inc
 --auxinput=1:physics.filters.neutronMixerTrkCal.fileNames:neutron-TrkCal-cat.txt \
 --auxinput=1:physics.filters.dioMixerTrkCal.fileNames:dio-TrkCal-cat.txt \
 --auxinput=1:physics.filters.photonMixerTrkCal.fileNames:photon-TrkCal-cat.txt \
---auxinput=25:physics.filters.flashMixerTrkCal.fileNames:DS-flash-TrkCal-cut.txt \
+--auxinput=10:physics.filters.flashMixerTrkCal.fileNames:DS-flash-TrkCal-cut.txt \
 --auxinput=1:physics.filters.protonMixerTrkCal.fileNames:proton-TrkCal.txt \
 --auxinput=1:physics.filters.deuteronMixerTrkCal.fileNames:deuteron-TrkCal.txt 
 rm -rf flatpigammaMix
