@@ -1,7 +1,7 @@
 #
-# Read Tracker digis and run the track trigger prototype 
+# Tracker-only trigger based on digis
 #
-#  > mu2e --config TrkFilters/fcl/ReadDigis.fcl --source "your digis file" --TFile ReadDigis.root --nevts=100
+#  > mu2e --config TrkFilters/fcl/TTDigis.fcl --source "your digis file" --TFile TTDigis.root --nevts=100
 #
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
@@ -11,7 +11,7 @@
 #include "TrkFilters/fcl/prolog.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
-process_name : ReadDigis
+process_name : TTDigis
 
 source :
 {
@@ -22,7 +22,7 @@ services : @local::Services.Reco
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "readDigis.hist" }
+    TFileService          : { fileName : "TTDigis.hist" }
 
     RandomNumberGenerator : { }
     #   Timing                : { }
@@ -42,7 +42,7 @@ services : {
 # timing information
 services.TimeTracker : {
     dbOutput : {
-	filename : "ReadDigis.db"
+	filename : "TTDigis.db"
 	overwrite : true
     }
 }
@@ -52,8 +52,6 @@ physics :
     producers : {
 	@table::TrkHitReco.producers
 	@table::Tracking.TrkTrigger.producers
-	@table::CalPatRec.producers
-	@table::CaloClusterFast.producers
 
 	TTKSFDeM : @local::TTKSF
 	TTKSFDeP : @local::TTKSF
@@ -95,23 +93,14 @@ physics.producers.TTKSFDeP.fitparticle	      : @local::Particle.eplus
 physics.producers.TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
 physics.producers.TTKSFDeP.KalFit.MaxIterations : 1
 
-physics.filters.CalTimePeakFinder.caloClusterModuleLabel : "CaloClusterFast"
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 
 physics.TCTrigPath : [ RSD, @sequence::TrkTrigger.Sequences.TCFilterSequence ]
-
 physics.PHTrigPath : [ RSD, @sequence::TrkTrigger.Sequences.PosHelixFilterSequence ]
-
 physics.DeMSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DeMSeedFilterSequence ]
-
-#physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilterSequence ]
 physics.DePSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DePSeedFilterSequence ] 
 
-physics.CPRDeMSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.CPRDeMSeedFilterSequence ]
-physics.CPRDePSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.CPRDePSeedFilterSequence ] 
-
-
 # analysis path: this is for monitoring only
-# physics.ReadDigisEndPath : [ TrkTriggerDiag ]
+# physics.TTDigisEndPath : [ TrkTriggerDiag ]
 

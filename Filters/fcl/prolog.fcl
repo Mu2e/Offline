@@ -86,6 +86,14 @@ DigiCompression : {
 		       "keep mu2e::EventWeight_*_*_*",
 		       "keep mu2e::ProtonBunchIntensity_*_*_*"
 		     ]
+
+    Check : {
+	module_type : CompressDigiMCsCheck
+	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	newStrawDigiMCTag : "compressDigiMCs"
+	OldTimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+    }
 }
 
 END_PROLOG
