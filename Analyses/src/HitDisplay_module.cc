@@ -751,7 +751,7 @@ namespace mu2e {
 
 	// Position along wire, from delta t.
         float wdist, wderr;
-        bool vStatus = strawResponse->wireDistance( *hit, float(straw->getHalfLength()), wdist, wderr);
+        bool vStatus = strawResponse->wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr);
         v=wdist;
         sigv=wderr;
         cout << "return status: " << vStatus << endl;

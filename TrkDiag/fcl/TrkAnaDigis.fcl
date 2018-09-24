@@ -1,10 +1,11 @@
 #
-#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
+# This script runs the TrackAnalysis module on MDC2018 digi output to create a prototype track-based analysis TTree.  
+# For example:
 #  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
-# will process 100 events from (your files).  Note that background mixing requires different scripts
-# for interactive and grid processing
+# will process 100 events from (your files).
 #
 # David Brown (LBNL) 13 July 2016
+# Updated: A. Edmonds 12 September2018
 #
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -20,22 +21,17 @@ services : @local::Services.Reco
 physics :
 {
   producers : @local::TrkAna.producers
-  analyzers : @local::TrkAna.analyzers
+  analyzers : { @table::TrkAna.analyzers
+  	        @table::TrkDiag.analyzers
+	      }
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
+
+# To use other TrkDiag modules (e.g. CHD (ComboHitDiag) or HD (HelixDiag))
+# append them to TrkAnaEndPath here
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence ]
+# A list of diagnostic trees can be found in TrkDiag/fcl/prolog.fcl
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAna.diagLevel : 1
-
-# update labels to read compressed output from MDC2018
-physics.analyzers.TrkAna.KalDiag.StrawDigiMCLabel : "compressDigiMCs"
-physics.analyzers.TrkAna.KalDiag.MCStepsLabel : "compressDigiMCs"
-physics.analyzers.TrkAna.KalDiag.MCStepsInstance : "virtualdetector"
-physics.analyzers.TrkAna.KalDiag.SimParticleLabel : "compressDigiMCs"
-physics.analyzers.TrkAna.KalDiag.SimParticleInstance : ""
-physics.analyzers.TrkAna.KalDiag.TimeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "compressDigiMCs"
-physics.producers.CrvCoincidenceClusterSummarizer.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-

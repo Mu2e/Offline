@@ -45,6 +45,7 @@ namespace mu2e {
       constexpr static uint16_t _nfaces = 2; // number of faces in a plane
       constexpr static uint16_t _nplanes = 36; // number of planes
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
+      constexpr static uint16_t _nustraws = _nupanels* _nstraws; // number of unique straws
       constexpr static uint16_t _ntotalfaces = StrawId::_nfaces*StrawId::_nplanes;
 
       // One more than the largest legal StrawId; not a fully functional end iterator.
@@ -149,6 +150,11 @@ namespace mu2e {
 
       uint16_t station() const{
 	return (_sid & _stationmsk) >> _stationsft;
+      }
+
+    // compact unique integer
+      uint16_t uniqueStraw() const{
+	return uniquePanel()*_nstraws + straw();
       }
 
       // logical comparators

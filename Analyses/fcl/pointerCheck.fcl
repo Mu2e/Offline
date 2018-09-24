@@ -17,7 +17,6 @@ physics :{
       module_type : PointerCheck
 
 	 skipDerference : false
-	 simPartsRemapped : false
 	 # 0 (quiet) or 1 (print every event)
 	 verbose : 1
          # skip any known problematic collections with these inputTags

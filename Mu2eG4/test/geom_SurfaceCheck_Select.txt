@@ -43,6 +43,9 @@ bool g4.doSurfaceCheck    = false;
 // bool ttracker.doSurfaceCheck = true;
 // bool calorimeter.doSurfaceCheck = true;
 
+// *** CRV
+// bool crs.doSurfaceCheck = true;
+
 // *** Virtual detectors
 // bool vd.doSurfaceCheck = true;
 
