@@ -58,8 +58,6 @@ namespace mu2e {
     bool _skipDereference; // do not do dereference check
     int _verbose; // 0 = none, 1 = print as you go
 
-    bool _simPartsRemapped; // don't check that the SimParticleCollection index matches the SimParticle's internal index, if they have been remapped (e.g. after digi compression)
-
     void printProvenance(art::Provenance const& p);
     bool excludedCollection(art::Provenance const& p, InputTags const& tags);
 
@@ -81,9 +79,6 @@ namespace mu2e {
     
     // if true, don't check dereferencing pointers (can crash)
     _skipDereference = pset.get<bool>("skipDereference",false);
-
-    // if true, skip the SimParticle map index check
-    _simPartsRemapped = pset.get<bool>("simPartsRemapped", false);
 
     // 1 = print for each event
     _verbose = pset.get<int>("verbose",1);
@@ -246,13 +241,11 @@ namespace mu2e {
       auto const& i = x.first;
       auto const& s = x.second;
       // check that the map index equals the SP internal index
-      if (!_simPartsRemapped) {
-	if(i==s.id()) {
-	  ne++;
-	} else {
-	  throw cet::exception("BadSimParticleKey")
-	    << "SimParticle map_vector index does not match id()";
-	}
+      if(i==s.id()) {
+	ne++;
+      } else {
+	throw cet::exception("BadSimParticleKey")
+	  << "SimParticle map_vector index does not match id()";
       }
       // check parent pointers
       auto const& p = s.parent();
@@ -296,13 +289,7 @@ namespace mu2e {
     } // loop over SP in coll
     
     bool rc;
-    if (!_simPartsRemapped) {
-      rc = (ne==n && nn+ns==n && ni==nn && gi==gn && di==nd);
-    }
-    else {
-      rc = (nn+ns==n && ni==nn && gi==gn && di==nd);
-    }
-
+    rc = (ne==n && nn+ns==n && ni==nn && gi==gn && di==nd);
 
     if(_verbose<1 && !rc) return rc;
     // report

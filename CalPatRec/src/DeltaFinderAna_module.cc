@@ -700,9 +700,6 @@ bool DeltaFinderAna::findData(const art::Event& Evt) {
     _shcol    = shH.product();
     _nsh      = _shcol->size();
 
-    // auto shpH = Evt.getValidHandle<StrawHitPositionCollection>(_shpTag);
-    // _shpcol   = shpH.product();
-
     auto shfH = Evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
     _shfcol   = shfH.product();
 

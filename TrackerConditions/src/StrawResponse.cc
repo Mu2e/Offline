@@ -4,10 +4,9 @@
 //
 #include "TrackerConditions/inc/StrawResponse.hh"
 // data products
-#include "RecoDataProducts/inc/StrawHit.hh"
 #include <math.h>
 #include <algorithm>
-
+#include "TrackerGeom/inc/Straw.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
 
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -175,11 +174,12 @@ namespace mu2e {
     return 0;
   }
 
-  bool StrawResponse::wireDistance(StrawHit const& strawhit, float slen, float& wdist, float& wderr) const {
+  bool StrawResponse::wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr) const {
     bool retval(true);
+    float slen = straw.getHalfLength();
     // convert edep from Mev to KeV (should be standardized, FIXME!)
-    float kedep = 1000.0*strawhit.energyDep();
-    wdist = halfPropV(strawhit.strawId(),kedep)*(strawhit.dt());
+    float kedep = 1000.0*edep;
+    wdist = halfPropV(straw.id(),kedep)*(dt);
     wderr = wpRes(kedep,fabs(wdist));
     // truncate positions that exceed the length of the straw (with a buffer): these come from missing a cluster on one end
     if(fabs(wdist) > slen+_wbuf*wderr){
@@ -221,26 +221,28 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawResponse::driftTime(StrawHit const& strawhit) const {
-    double closeToT = strawhit.TOT(StrawEnd::cal);
-    if (strawhit.time(StrawEnd::hv) < strawhit.time(StrawEnd::cal)){
-      closeToT = strawhit.TOT(StrawEnd::hv);
-    }
+  double StrawResponse::driftTime(Straw const& straw, float tot) const {
+  // straw is present in case of eventual calibration
     double drifttime;
-    if (closeToT < _TOTmin)
+    if (tot < _TOTmin)
       drifttime = 30.;
-    else if (closeToT > _TOTmax)
+    else if (tot > _TOTmax)
       drifttime = 10.;
     else
-      drifttime = _TOTSlope*closeToT + _TOTIntercept;
+      drifttime = _TOTSlope*tot + _TOTIntercept;
     return drifttime;
   }
 
-  double StrawResponse::pathLength(StrawHit const& strawhit, double theta) const {
-    double dtime = driftTime(strawhit);
-    double ddist = min(driftTimeToDistance(strawhit.strawId(), dtime, 0),2.5);
-    double perp_dist = sqrt(pow(2.5,2)-pow(ddist,2));
-    return perp_dist / sin(theta);
+  double StrawResponse::pathLength(Straw const& straw, float tot) const {
+  // needs to be implemented, FIXME!!
+    return 5.0;
   }
+  
+//  double StrawResponse::pathLength(StrawHit const& strawhit, double theta) const {
+//    double dtime = driftTime(strawhit);
+//    double ddist = min(driftTimeToDistance(strawhit.strawId(), dtime, 0),2.5);
+//    double perp_dist = sqrt(pow(2.5,2)-pow(ddist,2));
+//    return perp_dist / sin(theta);
+//  }
      
 }

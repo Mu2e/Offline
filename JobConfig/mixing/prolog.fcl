@@ -87,6 +87,7 @@ Mixing : {
     compressDigiMCs : @local::DigiCompression.Mixing
   }
   filters : {
+    @table::Primary.filters
     # TrkCal mixing
     flashMixerTrkCal    : @local::mixerTemplateTrkCal
     ootMixerTrkCal      : @local::mixerTemplateTrkCal
@@ -120,11 +121,12 @@ Mixing : {
     photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal ]
   CRVMixSequence : [ PSMixerCRV, TSMixerCRV, DSMixerCRV,
     ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV ]
-  CreatePrimarySequence : [ generate, genCounter, g4run,
+  CreatePrimarySequence : [
+    @sequence::Primary.GenAndG4,
     @sequence::CommonMC.PrimaryDigiSim,
     makeSDPrimary, DigiFilter ]
 # paths and output
-  EndPath : [ genCountLogger, Output ]
+  EndPath : [ @sequence::Primary.EndPath ] 
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
