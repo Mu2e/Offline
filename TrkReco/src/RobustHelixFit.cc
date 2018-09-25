@@ -77,7 +77,7 @@ namespace mu2e
     //    _mindelta(pset.get<float>("minDelta",500.0)),
     _lmin(pset.get<float>("minAbsLambda",130.0)),
     _lmax(pset.get<float>("maxAbsLambda",320.0)),
-    _targetcon(pset.get<bool>("targetconsistent",true)),
+    //    _targetcon(pset.get<bool>("targetconsistent",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),
     _tripler(pset.get<bool>("TripleRadius",false)),
     _errrwt(pset.get<bool>("HitErrorWeight",false)),
@@ -98,10 +98,10 @@ namespace mu2e
   {}
 
 
-  void RobustHelixFit::fitHelix(RobustHelixFinderData& HelixData) {
+  void RobustHelixFit::fitHelix(RobustHelixFinderData& HelixData, bool forceTargetCon) {
     HelixData._hseed._status.clear(TrkFitFlag::helixOK);
 
-    fitCircle(HelixData);
+    fitCircle(HelixData, forceTargetCon);
     if (HelixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK))
       {
 	fitFZ(HelixData);
@@ -110,26 +110,26 @@ namespace mu2e
       }
   }
 
-  bool RobustHelixFit::initCircle(RobustHelixFinderData& HelixData) {
+  bool RobustHelixFit::initCircle(RobustHelixFinderData& HelixData, bool forceTargetCon) {
     bool retval(false);
 
     switch ( _cinit ) {
     case median : default :
-      fitCircleMedian(HelixData);
+      fitCircleMedian(HelixData, forceTargetCon);
       retval = HelixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK);
       break;
     }
     return retval;
   }
 
-  void RobustHelixFit::fitCircle(RobustHelixFinderData& HelixData) {
+  void RobustHelixFit::fitCircle(RobustHelixFinderData& HelixData, bool forceTargetCon) {
     HelixData._hseed._status.clear(TrkFitFlag::circleOK);
 
     // if required, initialize
     bool init(false);
     if (!HelixData._hseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
       init = true;
-      if (initCircle(HelixData))
+      if (initCircle(HelixData, forceTargetCon))
 	HelixData._hseed._status.merge(TrkFitFlag::circleInit);
       else
 	return;
@@ -139,7 +139,7 @@ namespace mu2e
     if(!init || _cfit != _cinit) {
       switch ( _cfit ) {
       case median : default :
-	fitCircleMedian(HelixData);
+	fitCircleMedian(HelixData, forceTargetCon);
 	break;
       case mean :
 	fitCircleMean(HelixData);
@@ -749,7 +749,7 @@ namespace mu2e
   }
 
   // simple median fit.  No initialization required
-  void RobustHelixFit::fitCircleMedian(RobustHelixFinderData& HelixData) 
+  void RobustHelixFit::fitCircleMedian(RobustHelixFinderData& HelixData, bool forceTargetCon) 
   {
     const float mind2 = _mindist*_mindist;
     const float maxd2 = _maxdist*_maxdist;
@@ -822,7 +822,9 @@ namespace mu2e
 	  // optionally consistent with the target
 	  if (rc > _rcmin && rc < _rcmax &&
 	      rho > _rmin && rho < _rmax && rmax < _trackerradius && 
-	      ( !_targetcon || rmin < _targetradius) )
+	      //	      ( !_targetcon || rmin < _targetradius) )
+	      ( !forceTargetCon || rmin < _targetradius) )
+
 	    {
 	      ++ntriple;
 
