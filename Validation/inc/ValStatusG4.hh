@@ -3,9 +3,8 @@
 #define ValStatusG4_HH_
 
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "MCDataProducts/inc/StatusG4.hh"
-#include "Validation/inc/ValId.hh"
-#include "Validation/inc/ValPosition.hh"
 #include "TH1D.h"
 #include <string>
 

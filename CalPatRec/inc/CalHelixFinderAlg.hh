@@ -88,7 +88,7 @@ namespace mu2e {
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
     double               _mpDfDz;
-    // int                  _minNSt;       // minimum number of active stations found in the ::findDfDZ(...) function
+    double               _absMpDfDz;         // absolute value of most probable expected dphi/dz
     double               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
     double               _maxDfDz;
     double               _minDfDz;
@@ -96,7 +96,6 @@ namespace mu2e {
     double               _weightXY;     // scale factor for makeing the xy-chi2 with a mean close to 1
     double               _weightZPhi;
     double               _weight3D;
-    // double               _ew;           // error along the wire (mm)
     double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
     double               _maxPanelToHelixDPhi;  // max dphi between the helix prediction and a given tracker plane
 
@@ -108,14 +107,9 @@ namespace mu2e {
 					// position used in the patter recognition procedure
     double               _distPatRec;
 
-    // double               _rhomin;
-    // double               _rhomax;        // crude cuts on tranvservse radius for stereo hits
     double               _mindist;       // minimum distance between points used in circle initialization
-    // double               _maxdist;       // maximum distance in hits
     double               _pmin, _pmax;   // range of total momentum
     double               _tdmin, _tdmax; // range of abs(tan(dip)
-    // double               _rcmin,_rcmax;  // maximum transverse radius of circle
-    // double               _sfactor;       // stereo hit error factor
     bool                 _xyweights;
     bool                 _zweights;      // weight points by estimated errors
     bool                 _filter;        // filter hits
@@ -267,7 +261,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  Helix, HitInfo_t SeedIndex   ,
 				 int UsePhiResiduals = 0);
 
-    void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
+    // void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------

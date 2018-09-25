@@ -20,7 +20,7 @@ physics : {
 	spectrumVariable: totalEnergy
         genId : dioTail
 	pdgId : 11
-	elow : 85.0 // Mev
+	elow : 75.0 // Mev
 	ehi : 110.0 // Mev
       }
     }

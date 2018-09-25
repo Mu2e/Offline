@@ -17,6 +17,7 @@
 // Mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "Mu2eUtilities/inc/polyAtan2.hh"
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
@@ -383,7 +384,7 @@ namespace mu2e {
   {
     tc._nsh = 0;
 
-    float pphi(tc._pos.phi());
+    float pphi = polyAtan2(tc._pos.y(), tc._pos.x());//(tc._pos.phi());
     float ptime(tc._t0.t0());
 
     bool enoughhits(true);
@@ -400,7 +401,7 @@ namespace mu2e {
           unsigned ish = tc._strawHitIdxs[ips];
           ComboHit const& ch = (*_chcol)[ish];
           unsigned nsh = ch.nStrawHits();
-          float phi   = ch.phi();  // should be float FIXME!
+          float phi   = polyAtan2(ch.pos().y(), ch.pos().x()); //ch.phi();  // should be float FIXME!
           float dphi  = Angles::deltaPhi(phi,pphi);
           float adphi = std::abs(dphi);
           sumphi += nsh*phi;
@@ -440,7 +441,7 @@ namespace mu2e {
         float time = _ttcalc.comboHitTime(ch);
 
         float rho = sqrtf(ch.pos().Perp2());
-        float phi = ch.phi();
+        float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
         float dphi = Angles::deltaPhi(phi,pphi);
         sumphi += nsh*phi;
         sumt += nsh*time;
@@ -486,7 +487,7 @@ namespace mu2e {
         unsigned nsh = ch.nStrawHits();
         float  time = _ttcalc.comboHitTime(ch);
         float  dt = time - ptime;
-        float  phi = ch.phi();
+        float  phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
         float rho = sqrtf(ch.pos().Perp2());
         Angles::deltaPhi(phi,pphi);
         if (fabs(dt) < _maxpeakdt) {

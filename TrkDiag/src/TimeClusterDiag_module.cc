@@ -138,7 +138,7 @@ namespace mu2e {
     // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     _tcsel = StrawHitFlag(StrawHitFlag::tclust); 
-    _cesel = StrawHitFlag(StrawHitFlag::track0);
+    _cesel = StrawHitFlag(StrawHitFlag::track);
   }
 
   void TimeClusterDiag::beginJob(){

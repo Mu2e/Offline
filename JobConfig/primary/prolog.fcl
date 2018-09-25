@@ -41,15 +41,11 @@ Primary: {
   }
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }
+    digiCompressionCheck : @local::DigiCompression.Check
   }
-  TriggerPath : [ generate, genCounter, g4run, g4status,
-    @sequence::CommonMC.DigiSim,
-    @sequence::TrackerMC.DigiSim,
-    DigiFilter,
-    @sequence::CaloDigiMC.DigiSim,
-    @sequence::CrvDAQPackage.CrvResponseSequence,
-    compressDigiMCs ]
-  EndPath : [ genCountLogger, Output ]
+  GenAndG4 :  [ generate, genCounter, g4run, g4status ]
+
+ EndPath : [ genCountLogger, digiCompressionCheck, Output ]
   Output : {
      module_type : RootOutput
      SelectEvents : [ TriggerPath ]
@@ -58,5 +54,13 @@ Primary: {
      outputCommands : @local::DigiCompression.OutputCommands
   }
 }
+# must define this outside the brackets due to internal dependence
+Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
+  @sequence::CommonMC.DigiSim,
+  @sequence::TrackerMC.DigiSim,
+  DigiFilter,
+  @sequence::CaloDigiMC.DigiSim,
+  @sequence::CrvDAQPackage.CrvResponseSequence,
+  compressDigiMCs ]
 
 END_PROLOG

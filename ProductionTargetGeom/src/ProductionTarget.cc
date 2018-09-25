@@ -4,6 +4,7 @@ namespace mu2e {
   ProductionTarget::ProductionTarget(int version, double rOut, 
 				     double halfLength, double rotX, 
 				     double rotY, const CLHEP::Hep3Vector& position,
+				     int    nFins = 0,
 				     double finHt = 0, double finThick = 0,
 				     double hubDisU = 0, double hubDisD = 0,
 				     double hubAngU = 0, double hubAngD = 0,

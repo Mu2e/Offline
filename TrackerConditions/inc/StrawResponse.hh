@@ -18,7 +18,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 namespace mu2e {
-  class StrawHit;
+  class Straw;
   class StrawDrift;
   class StrawId;
   class StrawResponse : virtual public ConditionsEntity {
@@ -26,7 +26,7 @@ namespace mu2e {
       // construct from parameters
       explicit StrawResponse(fhicl::ParameterSet const& pset);
       virtual ~StrawResponse();
-      bool wireDistance(StrawHit const& strawhit, float shlen, float& wdist, float& wderr) const;
+      bool wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr) const;
       bool useDriftError() const { return _usederr; } 
       bool useNonLinearDrift() const { return _usenonlindrift; }
       double Mint0doca() const { return _mint0doca;}
@@ -37,6 +37,7 @@ namespace mu2e {
       double driftDistanceToTime(StrawId strawId, double ddist, double phi) const;
       double driftTimeToDistance(StrawId strawId, double dtime, double phi) const;
       double driftInstantSpeed(StrawId strawId, double ddist, double phi) const;
+      double driftConstantSpeed() const {return _lindriftvel;} // constant value used for annealing errors, should be close to average velocity
       double driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const;
       double driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const;
 
@@ -52,9 +53,10 @@ namespace mu2e {
       // converts times from TDC times to time relative to Event Window
       // removes channel to channel delays and overall electronics time delay
       void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
-
-      double driftTime(StrawHit const& strawhit) const;
-      double pathLength(StrawHit const& strawhit, double theta) const;
+      // approximate drift distatnce from ToT value
+      double driftTime(Straw const& straw, float tot) const;
+      double pathLength(Straw const& straw, float tot) const;
+//      double pathLength(StrawHit const& strawhit, double theta) const;
 
       void print(std::ostream& os) const;
 

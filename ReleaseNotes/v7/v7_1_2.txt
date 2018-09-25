@@ -1,0 +1,38 @@
+           Release notes for Mu2e Offline software, v7_1_2
+
+4) genser 20 September 2018
+
+    Moved "last step" related code from stepping to tracking action
+    Removed _preLastStepKE and _nSteps from 
+      Mu2eG4/inc/UserTrackInformation.hh
+    and the accessors from:
+      Mu2eG4/src/UserTrackInformation.cc
+    Updated 
+      Mu2eG4/src/Mu2eG4UserHelpers.cc
+    accordingly. Other files changed:
+      Mu2eG4/src/Mu2eG4SteppingAction.cc
+      Mu2eG4/src/TrackingAction.cc
+
+3) brownd 19 September 2018
+    added database index accessor functions to StrawId
+    fixed mixing fraction for Crv neutrons
+    added input map for muon lifetime generation
+
+2) edmonds 19 September 2018
+   Digi compression
+   - fixed bug (see DocDB-20380)
+   - added module to check compression consistency (Filters/src/CompressDigiMCsCheck_module.cc)
+   - also fixed key <---> SimParticle::_id consistency
+   - also keeping all GenParticles for future internal generators
+
+1) genser 12 September 2018
+
+   added optional timing printout
+      Mu2eG4/src/checkForOverlaps.cc
+   enabled selective CRV overalp check
+      Mu2eG4/src/constructCRV.cc
+      Mu2eG4/test/geom_SurfaceCheck_Select.txt
+   enabled use of g4mt buildopts flag:
+      Mu2eG4/src/SConscript
+      SConstruct
+
