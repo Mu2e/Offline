@@ -43,7 +43,7 @@ services : {
 # timing information
 services.TimeTracker : {
     dbOutput : {
-	filename : "ReadDigis.db"
+	filename : "ReadDigisCalo.db"
 	overwrite : true
     }
 }
