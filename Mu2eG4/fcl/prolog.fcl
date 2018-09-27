@@ -20,6 +20,7 @@ mu2eg4DefaultPhysics: {
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
     modifyEMOption4: false
+    modifyEMOption0: false
     addProcesses: []
     captureDModel: ""
 
