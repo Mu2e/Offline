@@ -154,6 +154,7 @@ namespace mu2e {
 
         int _rmvlevel;
         int _tmvlevel;
+        int _smvlevel;
         int _checkFieldMap;
 
         // Names of macro files for visualization.
@@ -229,6 +230,7 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     // FIXME:  naming of pset parameters
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
     _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
+    _smvlevel(pSet.get<int>("debug.steppingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visualization.initMacro")),
     _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
@@ -446,7 +448,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     G4TrackingManager* tm  = rmk->GetTrackingManager();
     tm->SetVerboseLevel(_tmvlevel);
     G4SteppingManager* sm  = tm->GetSteppingManager();
-    sm->SetVerboseLevel(_tmvlevel);
+    sm->SetVerboseLevel(_smvlevel);
 
     _UI = G4UImanager::GetUIpointer();
 
