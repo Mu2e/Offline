@@ -415,7 +415,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     originInWorld = (!standardMu2eDetector_) ? G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
 
-    preG4InitializeTasks(pset_.get<fhicl::ParameterSet>("physics"));
+    preG4InitializeTasks(pset_);
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
