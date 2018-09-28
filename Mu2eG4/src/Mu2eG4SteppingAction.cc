@@ -146,15 +146,7 @@ namespace mu2e {
                                     prept->GetKineticEnergy()
                                     );
       }
-      
-      // Get kinetic energy at the begin of the step
-      const double preStepEK = prept->GetKineticEnergy();
-      
-      G4VUserTrackInformation* info = track->GetUserInformation();
-      UserTrackInformation* tinfo   = static_cast<UserTrackInformation*>(info);
-      
-      tinfo->setStepInfo(preStepEK, numTrackSteps_);
-      
+
       // Save hits in time virtual detector
       for( unsigned int i=0; i<tvd_time_.size(); ++i ) {
           if( prept->GetGlobalTime()<=tvd_time_[i] && postpt->GetGlobalTime()>tvd_time_[i] ) {
