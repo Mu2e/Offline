@@ -140,14 +140,10 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
   };
-// instantiate statics
 
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
-    _trkanaroot(pset.get<std::string>("TrackAnalysisTagRoot","KFF") ),
-//    _detag(pset.get<art::InputTag>("DownstreameTrack",art::InputTag()) ), // now determined from TrkParticle
-//    _uetag(pset.get<art::InputTag>("UpstreameTrack",art::InputTag()) ), // now determined from TrkParticle
-    _dmtag(pset.get<art::InputTag>("DownstreammuTrack",art::InputTag()) ),
+    _trkanaroot(pset.get<std::string>("KalFinalTagRoot") ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
@@ -210,7 +206,6 @@ namespace mu2e {
       _meanPBI = PBIHandle->intensity();
   }
   void TrackAnalysis::analyze(const art::Event& event) {
-
     // need to create and define the event weight branch here because we only know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
       std::vector<art::Handle<EventWeight> > eventWeightHandles;
@@ -230,10 +225,12 @@ namespace mu2e {
 	_trkana->Branch("evtwt",&_wtinfo,_wtinfo.leafnames(labels).c_str());
       }
     }
-    // Decide TrackTags from fit particle (muon tags specified in fcl)
+
+    // Decide TrackTags from fit particle (muon collection matches electron charge )
     std::string chargename = _spart.charge() > 0.0 ? "P" : "M";
     _detag = _trkanaroot + "D" + _spart.name().substr(0,1) + chargename;
     _uetag = _trkanaroot + "U" + _spart.name().substr(0,1) + chargename;
+    _dmtag = _trkanaroot + "D" + "mu" + chargename; //dm branch is always used for muons
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalRepPtrCollection> deH;
     event.getByLabel(_detag,deH);

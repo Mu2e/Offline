@@ -141,7 +141,7 @@ BEGIN_PROLOG
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis
-    TrackAnalysisTagRoot : KFF
+    KalFinalTagRoot : KFF
 #   KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
@@ -206,6 +206,7 @@ BEGIN_PROLOG
 	inputModule: compressDigiMCs
 	verbosityLevel: 1
       }
+      # converts ProtonBunchIntensity object to EventWeight object
       PBIWeight : { module_type : PBIWeight
       	PBITag : "protonBunchIntensity"
 	meanPBITag : "protonBunchIntensity:MeanIntensity"
@@ -215,16 +216,10 @@ BEGIN_PROLOG
       genCountLogger: { module_type: GenEventCountReader }
       TrkAnaNeg: {
         @table::TrackAnalysis
-#        DownstreameTrack : "KFFDeM"
-#        UpstreameTrack : "KFFUeM"
-        DownstreammuTrack : "KFFDmuM"
         TrkParticle : 11
       }
       TrkAnaPos: {
         @table::TrackAnalysis
-#        DownstreameTrack : "KFFDeP"
-#        UpstreameTrack : "KFFUeP"
-        DownstreammuTrack : "KFFDmuP"
         TrkParticle : -11
       }
     }
@@ -239,22 +234,22 @@ BEGIN_PROLOG
                      @sequence::Tracking.TPRDeP,
                      @sequence::Tracking.TPRUeP,
                      @sequence::Tracking.TPRDmuP ]
+
     CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
 
     CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 
-    #nb: matching only done for dem, should be for other particles FIXME!
-#
     EndSequence : [ TrkAnaNeg, TrkAnaPos ]
 
   }
+TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
+                         @sequence::TrackCaloMatching.matching_dep_TRF ]
   # aggregate these for convenience
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
 			    @sequence::TrkAna.TrkRecoSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
-		            @sequence::TrackCaloMatching.matching_dem_TRF,
-                            @sequence::TrackCaloMatching.matching_dep_TRF ]
+		            @sequence::TrkCaloMatchSequence ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 				 @sequence::TrkAna.CrvRecoSequence ]
 

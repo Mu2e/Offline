@@ -23,9 +23,6 @@ physics :
   analyzers : @local::TrkAna.analyzers
 }
 
-physics.analyzers.TrkAnaNeg.TrkParticle : 11
-physics.analyzers.TrkAnaPos.TrkParticle : -11
-
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence, genCountLogger ]
 
