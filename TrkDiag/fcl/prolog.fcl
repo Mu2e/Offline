@@ -147,11 +147,9 @@ BEGIN_PROLOG
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
-    # note that these weights will only be applied if the module which
-    # produces them is run
-    BeamIntensity : "protonBunchIntensity"
+    # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    generatorWeight : "eventWeight"
+    PBIWeightTag : "PBIWeight"
   }
 
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
@@ -205,8 +203,12 @@ BEGIN_PROLOG
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight
-	inputModule: generate
+	inputModule: compressDigiMCs
 	verbosityLevel: 1
+      }
+      PBIWeight : { module_type : PBIWeight
+      	PBITag : "protonBunchIntensity"
+	meanPBITag : "protonBunchIntensity:MeanIntensity"
       }
     }
     analyzers : {
@@ -228,6 +230,7 @@ BEGIN_PROLOG
     }
   
     # diagnostic Reco sequences starting from digis
+    EventWeightSequence : [ PBIWeight ]
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
@@ -247,7 +250,8 @@ BEGIN_PROLOG
 
   }
   # aggregate these for convenience
-TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.TrkRecoSequence,
+TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
+			    @sequence::TrkAna.TrkRecoSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
 		            @sequence::TrackCaloMatching.matching_dem_TRF,
                             @sequence::TrackCaloMatching.matching_dep_TRF ]
