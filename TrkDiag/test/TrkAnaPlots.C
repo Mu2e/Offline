@@ -143,7 +143,8 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
   TCut final = reco+goodfit;
-  ta->Project("momresp","de.mom-demcgen.mom","evtinfo.evtwt"*final);
+  TCut evtwt = "evtwt.PBIWeight";
+  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
@@ -195,7 +196,8 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  ta->Project("momres","de.mom-demcent.mom","evtinfo.evtwt"*final);
+  TCut evtwt = "evtwt.PBIWeight";
+  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
@@ -280,15 +282,15 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
   TCut cosmic = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>100.0";
-
-  ta->Project("acc",binnames[ibin++],"evtinfo.evtwt");
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*mcsel);
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco));
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit));
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate));
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate+rpitch));
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate+rpitch+cosmic));
-  ta->Project("+acc",binnames[ibin++],"evtinfo.evtwt"*(mcsel+reco+goodfit+livegate+rpitch+cosmic+rmom));
+  TCut evtwt = "evtwt.PBIWeight";
+  ta->Project("acc",binnames[ibin++],evtwt);
+  ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+cosmic));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+cosmic+rmom));
 
   double all = acc->GetBinContent(1);
   double norm = ngen;
