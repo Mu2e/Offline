@@ -20,8 +20,8 @@ namespace mu2e
       }
     }
 
-    static std::string const& leafnames() { 
-      static std::string leaves = "";
+    static std::string const leafnames() { 
+      std::string leaves = "";
       int n_trkqual_vars = TrkQual::n_vars;
       for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
 	TrkQual::MVA_varindex i_index =TrkQual::MVA_varindex(i_trkqual_var);

@@ -231,7 +231,7 @@ namespace mu2e
       // compute the tracker entrance fit information
       fillTrkFitInfo(krep,entlen,trkinfo._ent);
       // use the above information to compute the TrkQual value.
-      fillTrkQual(trkinfo);
+      //      fillTrkQual(trkinfo);
     } else {
       // failed fit
       trkinfo._status = -krep->fitStatus().failure();
@@ -681,7 +681,7 @@ namespace mu2e
     mcstepinfo._hpar = helixpar(parvec);
   }
 
- void KalDiag::fillTrkQual(TrkInfo& trkinfo) const {
+  /* void KalDiag::fillTrkQual(TrkInfo& trkinfo) const {
     TrkQual trkqual;
 //    static std::vector<double> trkqualvec; // input variables for TrkQual computation
 //    trkqualvec.resize(10);
@@ -697,6 +697,7 @@ namespace mu2e
     trkqual[TrkQual::fstraws] = (float)trkinfo._nmatactive/(float)trkinfo._nactive;  // fraction of straws to hits
     trkinfo._trkqual = _trkqualmva->evalMVA(trkqual.values());
   }
+  */
 
   void KalDiag::reset() {
     // reset ttree variables that might otherwise be stale and misleading

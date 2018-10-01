@@ -120,7 +120,7 @@ namespace mu2e
 // helper functions
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
     void countHits(const KalRep* krep, TrkInfo& tinfo) const;
-    void fillTrkQual(TrkInfo& trkinfo) const;
+    //    void fillTrkQual(TrkInfo& trkinfo) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     void reset();
     // config parameters

@@ -1,3 +1,7 @@
            Release notes for Mu2e Offline software, v7_1_3
 	   still under development
 
+1) hsong, edmonds TrkAna updates
+   - branch names changed to make it charge blind
+   - added separate evtwts branch
+     - also added PBIWeight module to convert ProtonBunchIntensity to an EventWeight
