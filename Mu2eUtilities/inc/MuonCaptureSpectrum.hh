@@ -2,7 +2,7 @@
 #define Mu2eUtilities_MuonCaptureSpectrum_hh
 
 // Mu2e includes
-#include "Mu2eUtilities/inc/Table.hh"
+// #include "Mu2eUtilities/inc/Table.hh"
 
 // CLHEP includes
 #include "CLHEP/Vector/LorentzVector.h"
@@ -10,47 +10,63 @@
 // C++ includes
 #include <utility>
 
+
+namespace CLHEP {
+  class RandFlat;
+}
 namespace mu2e {
+
+  class RandomUnitSphere;
 
   class MuonCaptureSpectrum {
 
   public:
     
-    enum enum_type    { Flat  , RMC      };
+    enum enum_type    { Flat  , RMC             };
     enum enum_type_2D { Flat2D, KrollWadaJoseph };
 
+   MuonCaptureSpectrum(){}
 
-    MuonCaptureSpectrum() : _spectrum( RMC ), _spectrum2D( KrollWadaJoseph ) {}
+    // random number generators ar owned by the callers, no memory cleanup needed
+    MuonCaptureSpectrum(CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
+
+    MuonCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
+			CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
+
     ~MuonCaptureSpectrum(){}
-    MuonCaptureSpectrum(const bool kMaxUserSet, const double kMaxUser, const double kMaxMax) : _kMaxUserSet( kMaxUserSet), _kMaxUser( kMaxUser), _kMaxMax ( kMaxMax) {}
 
-    double getWeight   ( const double E ) const;
-    double get2DWeight ( const double x, const double y, const double E ) const; 
-    double get2DMax    ( const double E ) const;
-
-
+    double getWeight   (double E) const;
+    double get2DWeight (double x, double y, double E) const; 
+    double get2DMax    (double E) const;
  
-    void   setSpectrum   ( enum_type    spectrum   ) { _spectrum   = spectrum;   }
-    void   setSpectrum2D ( enum_type_2D spectrum2D ) { _spectrum2D = spectrum2D; }
+    void   setSpectrum   (enum_type    spectrum  ) { _spectrum   = spectrum;   }
+    void   setSpectrum2D (enum_type_2D spectrum2D) { _spectrum2D = spectrum2D; }
 
 
-    static double getFlat( const double e, const double x = 0., const double y = 0.);
-    static double getRMCSpectrum( const double e , const bool kMaxUserSet, const double kMaxUser, const double kMaxMax);
-    static std::pair<CLHEP::HepLorentzVector,CLHEP::HepLorentzVector> getElecPosiVectors( const double energy,
-                                                                                          const double x,
-                                                                                          const double y );
+    double getFlat       (double e, double x = 0., double y = 0.) const ;
+    double getRMCSpectrum(double e, bool kMaxUserSet, double kMaxUser, double kMaxMax) const;
 
-    double getKrollWadaJosephSpectrum( const double e, const double x, const double y ) const;
+    void   getElecPosiVectors(double energy, CLHEP::HepLorentzVector& mome, CLHEP::HepLorentzVector& momp) const;
 
+    double getKrollWadaJosephSpectrum(double e, double x, double y) const;
+
+    void   fire(double energy, double& x, double& y) const; 
+   
 
   private:
 
-    enum_type    _spectrum{};
-    enum_type_2D _spectrum2D{};
-    bool _kMaxUserSet{false};
-    double _kMaxUser{0.};
-    double _kMaxMax{0};
+    enum_type          _spectrum;
+    enum_type_2D       _spectrum2D;
+    bool               _kMaxUserSet;
+    double             _kMaxUser;
+    double             _kMaxMax;
 
+    CLHEP::RandFlat*   _rnFlat;
+    RandomUnitSphere*  _rnUnitSphere;
+
+    double             _me;		// electron mass
+    double             _mmu;		// muon mass
+    double             _MN;		// mass of the initial state nucleus
   };
 
 } // end of namespace mu2e
