@@ -1,3 +1,18 @@
            Release notes for Mu2e Offline software, v7_1_3
 	   still under development
 
+1) genser  1 October 2018
+
+    updated pset level used when Birk's constants are changed
+       Mu2eG4/src/Mu2eG4_module.cc
+       Mu2eG4/src/setBirksConstant.cc
+    added steppingVerbosityLevel
+       Mu2eG4/fcl/prolog.fcl
+       Mu2eG4/src/Mu2eG4_module.cc
+    added modifyEMOption0 to enable changing standard EM MSC Models
+    transition energy in geant4 10.4
+       Mu2eG4/fcl/prolog.fcl
+       Mu2eG4/inc/Mu2eEmStandardPhysics.hh
+       Mu2eG4/src/Mu2eEmStandardPhysics.cc
+       Mu2eG4/src/physicsListDecider.cc
+
