@@ -8,3 +8,11 @@
 2) brownd 9/27/18
    - Fixed minor bug in StrawDigi creation
    - Added config for flat protons and calo-filtered flat gammas
+3) branch muminus_eplus : P.Murat
+  3.1 bug fix in RMC/RPC internal conversion generation
+      Bob's fix to RMC event weight
+  3.2 all spectra parameterized as arrays of (x,y) pairs have x's corresponding to the bin centers
+  3.3 fix shape of the RPC photon energy spectrum - wrong plot has been digitized and fit
+  3.4 fix use of uninitialized memory in CalPatRec/src/DeltaFinder_module.cc
+  3.5 initialize TrkStrawHit::hitRms with a small number to avoid assert's when printing
+  3.6 add configs for proton reco to TrackCaloMatching and CalPatRec prolog files
