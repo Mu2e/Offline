@@ -1,3 +1,11 @@
            Release notes for Mu2e Offline software, v7_1_3
 	   still under development
 
+x. branch muminus_eplus : P.Murat
+  x.1 bug fix in RMC/RPC internal conversion generation
+      Bob's fix to RMC event weight
+  x.2 all spectra parameterized as arrays of (x,y) pairs have x's corresponding to the bin centers
+  x.3 fix shape of the RPC photon energy spectrum - wrong plot has been digitized and fit
+  x.4 fix use of uninitialized memory in CalPatRec/src/DeltaFinder_module.cc
+  x.5 initialize TrkStrawHit::hitRms with a small number to avoid assert's when printing
+  x.6 add configs for proton reco to TrackCaloMatching and CalPatRec prolog files
