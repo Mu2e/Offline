@@ -1159,15 +1159,15 @@ namespace mu2e {
 	double dm = dperp.dot(mperp);
         double m2 = mperp.mag2();
         double dp2 = dperp.mag2();
-	double sarg = dm*dm - m2*(dp2 - r2);
+	double sarg = dm*dm + m2*(r2 - dp2);
 	// some glancing cases fail the linear math
 	if(sarg > 0.0 && m2 > 0.0){
 	  double smax = (-dm + sqrt(sarg))/m2;
-	  double slen = std::min(smax,slen);
+	  slen = std::min(smax,slen);
 	}
-        // generate a vector of random lengths
+        // generate random cluster positions
         for(unsigned ic=0;ic < cpos.size();++ic){
-          // generate a random cluster position
+          // 
           cpos[ic] = step.position() +_randflat.fire(slen) *mdir;
         }
       } else {

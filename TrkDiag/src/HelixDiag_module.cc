@@ -300,7 +300,7 @@ namespace mu2e {
 	// plot if requested and the fit satisfies the requirements
 	if( _plot && hseed._status.hasAllProperties(_plotinc) &&
 	    (!hseed._status.hasAnyProperty(_plotexc))  &&
-	    _nprimary >= _minnprimary && _mcgen == _gen) {
+	    ((!_mcsel) || (_nprimary >= _minnprimary && _mcgen == _gen)) ) {
 	    // fill graphs for display
 	    plotXY(evt,pspp,hseed,ihel);
 	    plotZ(evt,pspp,hseed,ihel);
