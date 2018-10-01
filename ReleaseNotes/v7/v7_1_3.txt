@@ -4,4 +4,7 @@
 1) hsong, edmonds TrkAna updates
    - branch names changed to make it charge blind
    - added separate evtwts branch
-     - also added PBIWeight module to convert ProtonBunchIntensity to an EventWeight
+   - also added PBIWeight module to convert ProtonBunchIntensity to an EventWeight
+2) brownd 9/27/18
+   - Fixed minor bug in StrawDigi creation
+   - Added config for flat protons and calo-filtered flat gammas
