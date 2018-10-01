@@ -80,7 +80,7 @@ namespace mu2e
       Float_t _pdist,_pperp,_pmom;
       Float_t _mcwt[2];
       Double_t _mcsptime;
-      Float_t _mcptime;
+      Double_t _mcptime;
       Int_t _esel,_rsel, _tsel,  _bkgclust, _bkg, _stereo, _tdiv, _isolated, _strawxtalk, _elecxtalk, _calosel;
       Int_t _sid, _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres;
