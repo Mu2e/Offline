@@ -45,6 +45,7 @@
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
@@ -88,7 +89,7 @@ namespace mu2e {
     // CRV info
     std::string _crvCoincidenceModuleLabel;
     // analysis options
-    bool _fillmc, _pempty, _crv, _testTrkQual;
+    bool _fillmc, _pempty, _crv, _filltrkqual;
     int _diag;
     // analysis parameters
     double _minReflectTime; // minimum time for a track to reflect in the gradient
@@ -120,6 +121,7 @@ namespace mu2e {
     TrkInfoMCStep _demmcent, _demmcmid, _demmcxit;
     std::vector<TrkStrawHitInfoMC> _demtshmc;
     // test trkqual variable branches
+    TrkQualInfo _trkQualInfo;
     TrkQualTestInfo _trkqualTest;
     // helper functions
     void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
@@ -140,7 +142,7 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
-    void fillTrkQualTest(const KalRep* krep, TrkQualTestInfo& trkqualTest);
+    void fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   };
 // instantiate statics
   TrkFitDirection TrackAnalysis::_sdir(TrkFitDirection::downstream);
@@ -158,7 +160,7 @@ namespace mu2e {
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
-    _testTrkQual(pset.get<bool>("TestTrkQual",false)),
+    _filltrkqual(pset.get<bool>("fillTrkQual",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
@@ -202,8 +204,9 @@ namespace mu2e {
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("demtshmc",&_demtshmc);
     }
-    if (_testTrkQual) {
-      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
+    if (_filltrkqual) {
+      _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
+      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
     }
   }
 
@@ -273,7 +276,15 @@ namespace mu2e {
       // fill CRV info
       if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
 
-      if (_testTrkQual) fillTrkQualTest(demK, _trkqualTest);
+      if (_filltrkqual) {
+	art::Handle<TrkQualCollection> trkQualHandle;
+	event.getByLabel(_demtag, trkQualHandle);
+	if (trkQualHandle.isValid()) {
+	  if (trkQualHandle->size()>0) {
+	    fillTrkQual(trkQualHandle->at(0), _trkQualInfo);
+	  }
+	}
+      }
 
       // fill this row in the TTree
       _trkana->Fill();
@@ -468,6 +479,7 @@ namespace mu2e {
     _demmcmid.reset();
     _demmcxit.reset();
     _trkqualTest.reset();
+    _trkQualInfo.reset();
     // clear vectors
     _demtsh.clear();
     _demtsm.clear();
@@ -476,9 +488,11 @@ namespace mu2e {
     _crvinfomc.clear();
   }
 
-  void TrackAnalysis::fillTrkQualTest(const KalRep* krep, TrkQualTestInfo& trkqualTest) {
-    if (krep !=0) {
-      trkqualTest._longCon = krep->nDof();
+  void TrackAnalysis::fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
+    int n_trkqual_vars = TrkQual::n_vars;
+    for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
+      TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
+      trkqualInfo._trkqualvars[i_trkqual_var] = (float) tqual[i_index];
     }
   }
 }  // end namespace mu2e
