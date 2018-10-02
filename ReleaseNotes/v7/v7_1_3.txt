@@ -9,3 +9,13 @@ x. branch muminus_eplus : P.Murat
   x.4 fix use of uninitialized memory in CalPatRec/src/DeltaFinder_module.cc
   x.5 initialize TrkStrawHit::hitRms with a small number to avoid assert's when printing
   x.6 add configs for proton reco to TrackCaloMatching and CalPatRec prolog files
+
+2. branch muminus_eplus : H. Song 1 October 2018
+  2.1 TrackAnalysis module analyzes both negative and positive tracks as the default
+  2.2 TrkParticle can be changed in TrkDiag/fcl/prolog.fcl
+  2.3 TrackAnalysis now decides KalmanHitCollections for reconstruction and TrackCaloMatching using desired TrkParticle (previously electrons were hardcoded)
+  2.4 TrkAnaDigis ntuple output has 2 directories with a trkana TTree each. (Analysis scripts will have to be updated)
+  2.5 trkana TTree branch names were changed to generalize charge
+  2.6 TrackCaloMatching is now done for both electrons and positrons
+  2.7 TrkDiag/fcl/TrkAnaDigis.fcl and TrkDiag/fcl/TrkAnaDigisCRV.fcl were cleaned up and various renamings were moved to prologs
+
