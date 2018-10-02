@@ -43,6 +43,7 @@
 #include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
+#include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 // CRV info
@@ -83,8 +84,8 @@ namespace mu2e {
     art::InputTag _uetag;
     art::InputTag _dmtag;
     // event-weighting modules
-    art::InputTag _genWttag;
-    art::InputTag _PBItag, _meanPBItag;
+    art::InputTag _meanPBItag;
+    art::InputTag _PBIwtTag;
     //TrkCaloMatchingParameters FitDirection and Track Particle
     TrkFitDirection _sdir;
     TrkParticle _spart;
@@ -107,6 +108,7 @@ namespace mu2e {
     // general event info branch
     double _meanPBI;
     EventInfo _einfo;
+    EventWeightInfo _wtinfo;
     // hit counting
     HitCount _hcnt;
     // track counting
@@ -142,9 +144,8 @@ namespace mu2e {
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
     _trkanaroot(pset.get<std::string>("KalFinalTagRoot") ),
-    _genWttag( pset.get<art::InputTag>("generatorWeight",art::InputTag()) ),
-    _PBItag( pset.get<art::InputTag>("BeamIntensity",art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
+    _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
     _spart((TrkParticle::type)(pset.get<int>("TrkParticle"))),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -205,6 +206,26 @@ namespace mu2e {
       _meanPBI = PBIHandle->intensity();
   }
   void TrackAnalysis::analyze(const art::Event& event) {
+    // need to create and define the event weight branch here because we only know the EventWeight creating modules that have been run through the Event
+    if (!_trkana->GetBranch("evtwt")) { 
+      std::vector<art::Handle<EventWeight> > eventWeightHandles;
+      event.getManyByType(eventWeightHandles);
+      if (eventWeightHandles.size()>0) {
+	std::vector<std::string> labels;
+	for (const auto& i_weightHandle : eventWeightHandles) {
+	  std::string moduleLabel = i_weightHandle.provenance()->moduleLabel();
+	  std::string instanceName = i_weightHandle.provenance()->productInstanceName();
+
+	  std::string branchname = moduleLabel;
+	  if (instanceName != "") {
+	    branchname += "_" + instanceName;
+	  }
+	  labels.push_back(branchname);
+	}
+	_trkana->Branch("evtwt",&_wtinfo,_wtinfo.leafnames(labels).c_str());
+      }
+    }
+
     // Decide TrackTags from fit particle (muon collection matches electron charge )
     std::string chargename = _spart.charge() > 0.0 ? "P" : "M";
     _detag = _trkanaroot + "D" + _spart.name().substr(0,1) + chargename;
@@ -389,28 +410,24 @@ namespace mu2e {
     _einfo._eventid = event.event();
     _einfo._runid = event.run();
     _einfo._subrunid = event.subRun();
-    // get event weight product
-    _einfo._genwt = _einfo._beamwt = _einfo._evtwt = 1.; 
-    _einfo._nprotons=-1;
-    // total weight is the product of all weights
-    // generator weight
-    art::Handle<EventWeight> genWtHandle;
-    event.getByLabel(_genWttag, genWtHandle);
-    if(genWtHandle.isValid()){
-      _einfo._genwt = genWtHandle->weight();
-      _einfo._evtwt *= genWtHandle->weight();
-    } 
-    // actual number of protons on target
-    art::Handle<ProtonBunchIntensity> PBIHandle;
-    event.getByLabel(_PBItag, PBIHandle);
-    if(PBIHandle.isValid()) {
-      _einfo._nprotons = PBIHandle->intensity();
-      if(_meanPBI > 0.0){
-	_einfo._beamwt = _einfo._nprotons/_meanPBI; 
-	_einfo._evtwt *= _einfo._beamwt;
-      }
-    }
 
+    // get event weight products
+    std::vector<art::Handle<EventWeight> > eventWeightHandles;
+    event.getManyByType(eventWeightHandles);
+    std::vector<Float_t> weights;
+    for (const auto& i_weightHandle : eventWeightHandles) {
+      double weight = i_weightHandle->weight();
+      if (i_weightHandle.provenance()->moduleLabel() == _PBIwtTag.label()) {
+	if (_meanPBI > 0.0){
+	  _einfo._nprotons = _meanPBI*weight;
+	}
+	else {
+	  _einfo._nprotons = 1; // for non-background mixed jobs
+	}
+      }
+      weights.push_back(weight);
+    }
+    _wtinfo.setWeights(weights);
   }
 
   void TrackAnalysis::findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
@@ -461,6 +478,7 @@ namespace mu2e {
     _demcent.reset();
     _demcmid.reset();
     _demcxit.reset();
+    _wtinfo.reset();
     // clear vectors
     _detsh.clear();
     _detsm.clear();

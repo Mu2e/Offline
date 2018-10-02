@@ -147,10 +147,9 @@ BEGIN_PROLOG
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
-    # note that these weights will only be applied if the module which
-    # produces them is run
-    BeamIntensity : "protonBunchIntensity"
+    # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
+    PBIWeightTag : "PBIWeight"
   }
 
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
@@ -201,6 +200,17 @@ BEGIN_PROLOG
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers
+  # DIO weighting for flat spectrum electrons
+      DIOWeight: {
+	module_type: DecayInOrbitWeight
+	inputModule: compressDigiMCs
+	verbosityLevel: 1
+      }
+      # converts ProtonBunchIntensity object to EventWeight object
+      PBIWeight : { module_type : PBIWeight
+      	PBITag : "protonBunchIntensity"
+	meanPBITag : "protonBunchIntensity:MeanIntensity"
+      }
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
@@ -215,6 +225,7 @@ BEGIN_PROLOG
     }
   
     # diagnostic Reco sequences starting from digis
+    EventWeightSequence : [ PBIWeight ]
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
@@ -235,7 +246,8 @@ BEGIN_PROLOG
 TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
                          @sequence::TrackCaloMatching.matching_dep_TRF ]
   # aggregate these for convenience
-TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.TrkRecoSequence,
+TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
+			    @sequence::TrkAna.TrkRecoSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
 		            @sequence::TrkCaloMatchSequence ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
