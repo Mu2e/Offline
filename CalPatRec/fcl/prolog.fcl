@@ -74,7 +74,6 @@ CalPatRec : { @table::CalPatRec
     HelixFinderAlg : {
 	debugLevel                              : 0
 	debugLevel2                             : 0
-	smartTag                                : 1
 	diagLevel                               : 0
 	HelixFitSelectionBits                   : [] 
 	BackgroundSelectionBits                 : ["Background"]
@@ -90,6 +89,7 @@ CalPatRec : { @table::CalPatRec
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
 	weightXY                                : 1.11      #0.4527
+	targetconsistent                        : 1
 	weightZPhi                              : 0.29      #0.4423    
 	weight3D                                : 0.12      #1
 #	errorAlongWire                          : 30.  # mm

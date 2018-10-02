@@ -1231,12 +1231,17 @@ namespace mu2e {
 
     do {
       niterxy = 0;
-      xychanged = filterCircleHits(helixData) > 0;
-      while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged) {
+      // xychanged = filterCircleHits(helixData) > 0;
+      // while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged) {
+      // 	_hfit.fitCircle(helixData, _targetcon);
+      // 	xychanged = filterCircleHits(helixData) > 0;
+      // 	++niterxy;
+      // } 
+      do {
 	_hfit.fitCircle(helixData, _targetcon);
 	xychanged = filterCircleHits(helixData) > 0;
 	++niterxy;
-      } 
+      } while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged);
    
       if (_diag) {
 	helixData._diag.xyniter  = niterxy;

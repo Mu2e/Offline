@@ -154,6 +154,7 @@ namespace mu2e {
     _minDfDz          (pset.get<double>("minDfDz",5e-04)),
     _sigmaPhi         (pset.get<double>("sigmaPhi")),
     _weightXY         (pset.get<double>("weightXY")),
+    _targetcon        (pset.get<int>   ("targetconsistent")),
     _weightZPhi       (pset.get<double>("weightZPhi")),
     _weight3D         (pset.get<double>("weight3D")),
     _maxXDPhi         (pset.get<double>("maxXDPhi",5.)),
@@ -2234,9 +2235,11 @@ namespace mu2e {
 //-------------------------------------------------------------------------------
 // add stopping target center with a position error of 100 mm/sqrt(12) ~ 30mm => wt = 1/900
 //-------------------------------------------------------------------------------
-    Helix._sxy.addPoint(0.,0.,1./900.);
-    Helix._nXYSh += 1;
-    Helix._nComboHits += 1;
+    if (_targetcon == 1){
+      Helix._sxy.addPoint(0.,0.,1./900.);
+      Helix._nXYSh += 1;
+      Helix._nComboHits += 1;
+    }
 
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doWeightedCircleFit] BEGIN: x0 = %8.3f y0 = %8.3f radius = %8.3f chi2dof = %8.3f\n",
