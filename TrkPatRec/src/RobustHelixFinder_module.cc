@@ -342,7 +342,7 @@ namespace mu2e {
       if (_reducedchi2){
 	_chi2hfit.fitChi2Circle(_hfResult, _targetcon);
       }else{
-	_hfit.fitCircle(_hfResult, true);//require consistency for the trajectory of being produced in the Al stopping target
+	_hfit.fitCircle(_hfResult, _targetconInit);//require consistency for the trajectory of being produced in the Al stopping target
       }
 
       if (_diag && _reducedchi2) {
@@ -1228,12 +1228,12 @@ namespace mu2e {
     unsigned nitermva(0);
     bool     changed(true), xychanged(true), fzchanged(true);
     unsigned niterxy(0), niterfz(0);
-    bool     useSTCons(false);
+
     do {
       niterxy = 0;
       xychanged = filterCircleHits(helixData) > 0;
       while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged) {
-	_hfit.fitCircle(helixData, useSTCons);
+	_hfit.fitCircle(helixData, _targetcon);
 	xychanged = filterCircleHits(helixData) > 0;
 	++niterxy;
       } 
@@ -1401,7 +1401,7 @@ namespace mu2e {
   void RobustHelixFinder::refitHelix(RobustHelixFinderData& helixData) {
     // reset the fit status flags, in case this is called iteratively
     helixData._hseed._status.clear(TrkFitFlag::helixOK);      
-    _hfit.fitCircle(helixData, false);
+    _hfit.fitCircle(helixData, _targetcon);
     if (helixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
       _hfit.fitFZ(helixData);
       if (_hfit.goodHelix(helixData._hseed._helix)) helixData._hseed._status.merge(TrkFitFlag::helixOK);
