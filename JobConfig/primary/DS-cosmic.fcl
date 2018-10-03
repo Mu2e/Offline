@@ -31,6 +31,8 @@ outputs : {
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
+#  Allow 'infinite' momentum
+physics.filters.DigiFilter.MaxParticleMom : 1e7
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output

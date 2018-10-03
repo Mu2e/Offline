@@ -62,6 +62,10 @@ generate: {
     messageOnReplacement : true
 }
 
+# provided for consistency in some production scripts
+dummyGenerator : {
+  module_type : EventGenerator
+}
 
 CeEndpointGun: {
     module_type    : StoppedParticleReactionGun
