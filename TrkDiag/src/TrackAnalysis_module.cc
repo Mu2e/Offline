@@ -145,7 +145,8 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
-    void fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo, TrkInfo& trkInfo);
+    void fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
+    void findBestTrkQualMatch(const TrkQualCollection& tqcol, const KalRep* deK, TrkQual& tqual);
   };
 
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
@@ -271,6 +272,7 @@ namespace mu2e {
       countHits(shfC);
       // fill the standard diagnostics
       if(deK != 0){
+	_kdiag.fillTrkQual(deK);
 	_kdiag.fillTrkInfo(deK,_deti);
 	if(_diag > 1){
 	  _kdiag.fillHitInfo(deK, _detsh);
@@ -294,22 +296,22 @@ namespace mu2e {
 	if(dmK != 0){
 	  _kdiag.fillTrkInfo(dmK,_dmti);
 	}
+
+	if (_filltrkqual) {
+	  art::Handle<TrkQualCollection> trkQualHandle;
+	  event.getByLabel(_detag, trkQualHandle);
+	  if (trkQualHandle.isValid()) {
+	    TrkQual i_tqual;
+	    findBestTrkQualMatch(*trkQualHandle, deK, i_tqual);
+	    fillTrkQual(i_tqual, _trkQualInfo);
+	  }
+	}
       }
       // fill mC info associated with this track
       if(_fillmc) fillMCInfo(deK);
 
       // fill CRV info
       if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
-
-      if (_filltrkqual) {
-	art::Handle<TrkQualCollection> trkQualHandle;
-	event.getByLabel(_detag, trkQualHandle);
-	if (trkQualHandle.isValid()) {
-	  if (trkQualHandle->size()>0) {
-	    fillTrkQual(trkQualHandle->at(0), _trkQualInfo, _deti);
-	  }
-	}
-      }
 
       // fill this row in the TTree
       _trkana->Fill();
@@ -510,13 +512,23 @@ namespace mu2e {
     _crvinfomc.clear();
   }
 
-  void TrackAnalysis::fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo, TrkInfo& trkInfo) {
+  void TrackAnalysis::fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
     int n_trkqual_vars = TrkQual::n_vars;
     for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
       TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
       trkqualInfo._trkqualvars[i_trkqual_var] = (float) tqual[i_index];
     }
-    trkInfo._trkqual = tqual.MVAOutput();
+    trkqualInfo._trkqual = tqual.MVAOutput();
+  }
+
+  void TrackAnalysis::findBestTrkQualMatch(const TrkQualCollection& tqcol, const KalRep* deK, TrkQual& tqual) {
+    int n_active_krep_hits = deK->nActive();
+    for (const auto& i_tqual : tqcol) {
+      if ( i_tqual[TrkQual::nactive] == n_active_krep_hits) {
+	tqual = i_tqual;
+	break;
+      }
+    }
   }
 }  // end namespace mu2e
 

@@ -21,6 +21,7 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "Mu2eBTrk/inc/DetStrawElem.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -135,7 +136,7 @@ namespace mu2e {
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
 	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+				tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, tsh->comboHit().nStrawHits());
 	hitseeds.push_back(seedhit);
       }
     }
@@ -252,5 +253,26 @@ namespace mu2e {
     //   return fltlen;
     // }
 
+    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndactive, unsigned& nnullambig) {
+      nhits = 0; nactive = 0; ndactive = 0; nnullambig = 0;
+      static StrawHitFlag active(StrawHitFlag::active);
+      for (const auto& i_hit : hits) {
+	++nhits;
+	if (i_hit.flag().hasAllProperties(active)) {
+	  ++nactive;
+
+	  if (i_hit.ambig()==0) {
+	    ++nnullambig;
+	  }
+	  if (i_hit.nStrawHits()>=2) {
+	    ++ndactive;
+	  }
+	}
+      }
+    }
+
+    double chisqConsistency(const KalRep* krep) {
+      return ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
+    }
   } // TrkUtilities
 }// mu2e

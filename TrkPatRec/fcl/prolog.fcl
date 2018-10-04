@@ -210,6 +210,7 @@ KFF : {
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []
   AddHitBackgroundBits	      : []
+  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
 }
 # same for trigger
 TTKSF : {

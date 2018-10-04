@@ -20,6 +20,7 @@
 #include "RecoDataProducts/inc/TrkQual.hh"
 // Utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
+#include "TrkReco/inc/TrkQualHelper.hh"
 // MC data
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
@@ -105,6 +106,7 @@ namespace mu2e
     TrkStrawHitInfoMC& tshinfomc) const;
 // count CE hits
     unsigned countCEHits() const;
+    void fillTrkQual(const KalRep* krep);
   private:
 // cache of event data
     MCEvtData _mcdata;
@@ -136,7 +138,8 @@ namespace mu2e
     public:
     TTree *_trkdiag;
 // track quality computation
-    std::unique_ptr<MVATools> _trkqualmva;
+    TrkQual _trkqual;
+    TrkQualHelper _tqhelper;
 // struct for track info
     TrkInfo _trkinfo;
 // hit information
