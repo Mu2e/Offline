@@ -8,6 +8,8 @@ source.maxEvents: 10
 services.SeedService.policy:  autoIncrement
 services.SeedService.maxUniqueEngines: 30
 services.SeedService.baseSeed: 53589261
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
 physics.filters.ootMixerCRV.fileNames : [
 "/pnfs/mu2e/tape/phy-sim/sim/mu2e/oot-CRV-cat/MDC2018a/art/16/d9/sim.mu2e.oot-CRV-cat.MDC2018a.001002_00000276.art",
 "/pnfs/mu2e/tape/phy-sim/sim/mu2e/oot-CRV-cat/MDC2018a/art/c8/43/sim.mu2e.oot-CRV-cat.MDC2018a.001002_00000508.art",
@@ -174,8 +176,8 @@ physics.filters.protonMixerTrkCal.fileNames : [
 physics.filters.deuteronMixerTrkCal.fileNames : [
 "/pnfs/mu2e/tape/phy-sim/sim/mu2e/deuteron-TrkCal/MDC2018a/art/27/7c/sim.mu2e.deuteron-TrkCal.MDC2018a.001002_00000033.art"
 ]
-services.TFileService.fileName: "nts.MU2EGRIDDSOWNER.CeEndpoint-mix.MU2EGRIDDSCONF.001002_00000000.root"
-outputs.Output.fileName : "dig.MU2EGRIDDSOWNER.CeEndpoint-mix.MU2EGRIDDSCONF.001002_00000000.art"
+services.TFileService.fileName: "nts.owner.val-ceMixDigi.dsconf.seq.root"
+outputs.Output.fileName : "dig.owner.val-ceMixDigi.dsconf.seq.art"
 mu2emetadata.fcl.prologkeys: [  ]
 mu2emetadata.fcl.inkeys: [ "physics.filters.ootMixerCRV.fileNames", "physics.filters.neutronMixerCRV.fileNames", "physics.filters.dioMixerCRV.fileNames", "physics.filters.photonMixerCRV.fileNames", "physics.filters.PSMixerCRV.fileNames", "physics.filters.TSMixerCRV.fileNames", "physics.filters.DSMixerCRV.fileNames", "physics.filters.ootMixerTrkCal.fileNames", "physics.filters.neutronMixerTrkCal.fileNames", "physics.filters.dioMixerTrkCal.fileNames", "physics.filters.photonMixerTrkCal.fileNames", "physics.filters.flashMixerTrkCal.fileNames", "physics.filters.protonMixerTrkCal.fileNames", "physics.filters.deuteronMixerTrkCal.fileNames" ]
 mu2emetadata.fcl.outkeys: [ "services.TFileService.fileName", "outputs.Output.fileName" ]
