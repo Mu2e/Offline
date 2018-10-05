@@ -17,6 +17,11 @@ physics : {
   producers : {
     generate : @local::dummyGenerator
     @table::Mixing.producers
+    separateCaloShowerSteps : { module_type : SeparateCaloShowerSteps
+    			        inputTag : "compressDigiMCs"
+				crystalOutputInstance : "calorimeter"
+				sipmOutputInstance : "calorimeterRO"
+			      }
   }
   filters: { @table::Mixing.filters }
   analyzers: { @table::Mixing.analyzers }
@@ -28,6 +33,7 @@ physics : {
     @sequence::Mixing.CRVMixSequence,
     @sequence::CommonMC.TimeMaps,
     @sequence::TrackerMC.DigiSim,
+    separateCaloShowerSteps,
     CaloShowerStepROFromShowerStep, CaloDigiFromShower,
     @sequence::CrvDAQPackage.CrvResponseSequence,
     compressDigiMCs ]
@@ -50,7 +56,7 @@ physics.filters.DigiFilter.MinNDigis : 15
 # change compression to also merge (compressed) primary info from the input file instead of g4run
 #
 physics.producers.compressDigiMCs.simParticleTags : [ "compressDigiMCs", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
-physics.producers.compressDigiMCs.caloShowerStepTags : [ "compressDigiMCs", @sequence::Mixing.caloMixerTags ]
+physics.producers.compressDigiMCs.caloShowerStepTags : [ "separateCaloShowerSteps:calorimeter", "separateCaloShowerSteps:calorimeterRO", @sequence::Mixing.caloMixerTags ]
 physics.producers.compressDigiMCs.extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
 #
 # change maps to use the read-in compressed primary maps as input (these are empty for cosmic rays)
@@ -60,7 +66,7 @@ physics.producers.muonTimeMap.InputTimeMaps : [ "compressDigiMCs:muonTimeMap" ]
 #
 # calo shower config
 #
-physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "compressDigiMCs", @sequence::Mixing.caloMixerTags ]
+physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "separateCaloShowerSteps:calorimeter", @sequence::Mixing.caloMixerTags ]
 #
 # change output to only keep new compression output, not old
 #
