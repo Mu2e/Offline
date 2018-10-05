@@ -255,27 +255,32 @@ namespace mu2e {
 	_ceclust._time +=  _ttcalc.comboHitTime(ch);
       }
     }
-    _ceclust._pos /= nce;
-    _ceclust._time /= nce;
+    if(nce > 0){
+      _ceclust._pos /= nce;
+      _ceclust._time /= nce;
+    }
     // 2nd pass to get extents {
     double cphi = _ceclust._pos.phi();
+    double mindphi(1e10), maxdphi(-1e10);
     for(unsigned ich=0; ich<nstrs;++ich){
       ComboHit const& ch = _chcol->at(ich);
       if(_shfcol[ich].hasAllProperties(_cesel)){
-	++_ceclust._nce;
+	_ceclust._nce += ch.nStrawHits();
 	XYZVec cpos = ch.pos();
 	float hrho = sqrt(cpos.Perp2());
 	double hphi = cpos.phi();
-	float dphi = fabs(Angles::deltaPhi(hphi,cphi));
-	_ceclust._maxdphi = std::max(dphi,_ceclust._maxdphi);
+	double dphi = Angles::deltaPhi(hphi,cphi);
+	maxdphi = std::max(dphi,maxdphi);
+	mindphi = std::min(dphi,mindphi);
 	_ceclust._minrho = std::min(hrho,_ceclust._minrho);
 	_ceclust._maxrho = std::max(hrho,_ceclust._maxrho);
 	if(_shfcol[ich].hasAllProperties(_hsel) && !_shfcol[ich].hasAnyProperty(_hbkg))
-	  ++_ceclust._ncesel;
+	  _ceclust._ncesel += ch.nStrawHits();
 	if(_shfcol[ich].hasAllProperties(_tcsel))
-	    ++_ceclust._nceclust;
+	  _ceclust._nceclust += ch.nStrawHits();
       }
     }
+    _ceclust._maxdphi = maxdphi-mindphi;
   }
 
   void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc, art::Event const& event) {
@@ -416,14 +421,14 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     const Calorimeter* calo = ch.get();
 // simple entries
-    tcinfo._nhits = tp._strawHitIdxs.size();
+    tcinfo._nhits = tp.nStrawHits();
     tcinfo._time  = tp._t0._t0;
     tcinfo._terr  = tp._t0._t0err;
     tcinfo._pos	  = tp._pos;
     // calo info if available
     if(tp._caloCluster.isNonnull()){
       tcinfo._ecalo = tp._caloCluster->energyDep();
-      tcinfo._tcalo = tp._caloCluster->time();
+      tcinfo._tcalo = _ttcalc.caloClusterTime(*tp._caloCluster);
       tcinfo._dtcalo = _ttcalc.caloClusterTime(*tp._caloCluster) - tp._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
       XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tp._caloCluster->diskId(),tp._caloCluster->cog3Vector())));
