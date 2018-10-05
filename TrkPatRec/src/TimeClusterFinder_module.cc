@@ -522,7 +522,7 @@ namespace mu2e {
     auto bestcc = _cccol->end();
     for (auto icc = _cccol->begin();icc != _cccol->end(); ++icc)
     {
-      if (icc->energyDep() > _ccmine) continue;
+      if (icc->energyDep() < _ccmine) continue;
       float time = _ttcalc.caloClusterTime(*icc);
       if (fabs(tc._t0._t0-time) > _maxdt) continue;
       if (bestcc == _cccol->end() || icc->energyDep() > bestcc->energyDep()) bestcc = icc;
