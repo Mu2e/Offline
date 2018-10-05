@@ -10,6 +10,7 @@
 # Updated: A. Edmonds 12 September 2018
 #
 #include "TrkDiag/fcl/TrkAnaDigis.fcl"
+process_name : TrkAnaDigisCRV
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloCrvRecoSequence ]
 physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
