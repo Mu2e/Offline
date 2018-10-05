@@ -1,5 +1,10 @@
            Release notes for Mu2e Offline software, v7_1_3
 
+6) edmonds 5 October 2018
+  - add a module that separates out the "calorimeter" and "calorimeterRO" CaloShowerSteps (representing crystal and SiPM steps) out of the compression, which had combined them (Filters/src/SeparatesCaloShowerSteps_module.cc)
+  - add a module that checks this separation by plotting histograms of the z-position of the steps (Filters/src/SeparatesCaloShowerStepsCheck_module.cc)
+  - this is for DS-cosmic-mixing, which doesn't run the primary generation inline and so runs on the DS-cosmic primary dataset itself
+  - the separated collections are not kept so that all datasets have the same output, if you run into a problem that needs the CaloShowerSteps separating, then use the new modules
 5) brownd 1 October 2018
   - add scripts for CeplusEndpoint-mix 
 4) genser  1 October 2018
