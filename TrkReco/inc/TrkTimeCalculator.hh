@@ -57,10 +57,9 @@ namespace mu2e
       TrkFitDirection _fdir; // fit direction.  This is used to make z-dependent time shifts
       double _avgDriftTime;  // average time offset for straw hits
       bool _useTOTdrift;
-      double _shSlope; // dv/dv_z for straw hits
+      double _shDtDz;  // dt/dz for straw hits
       double _shBeta;  // beta of the particle-hypothesis used
       double _shErr;
-      double _shDtDz;  // dt/dz for straw hits
       double _caloT0Offset[2]; // time offsets for downstream particls in the 2 disks
       double _caloT0Err[2]; // time offsets errors for downstream particls in the 2 disks
   };
