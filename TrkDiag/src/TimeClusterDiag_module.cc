@@ -17,12 +17,14 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 // tracking
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 // TrkDiag
 #include "TrkDiag/inc/TimeClusterInfo.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+#include "TrkDiag/inc/KalDiag.hh"
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
