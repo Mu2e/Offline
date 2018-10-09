@@ -93,7 +93,8 @@ namespace mu2e {
       bool              _usecc, _useccpos;
       float             _ccmine, _ccwt;
       float             _maxover;
-      MVATools          _peakMVA; // MVA for peak cleaning
+      MVATools          _tcMVA; // MVA for peak cleaning
+      MVATools          _tcCaloMVA; // MVA for peak cleaning, with calo cluster
       TimePeakMVA       _pmva; // input variables to TMVA for peak cleaning
       TrkTimeCalculator _ttcalc;
       int               _npeak;
@@ -137,7 +138,8 @@ namespace mu2e {
     _useccpos          (pset.get<bool>(    "UseCaloClusterPosition",false)),
     _ccmine            (pset.get<float>(  "CaloClusterMinE",50.0)),
     _ccwt              (pset.get<float>(  "CaloClusterWeight",5.0)),
-    _peakMVA           (pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
+    _tcMVA           (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
+    _tcCaloMVA           (pset.get<fhicl::ParameterSet>("CausterCaloMVA",fhicl::ParameterSet())),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _npeak       (pset.get<int>("PeakWidth",1)) // # of bins
     {
@@ -147,11 +149,11 @@ namespace mu2e {
     }
 
   void TimeClusterFinder::beginJob() {
-    _peakMVA.initMVA();
+    _tcMVA.initMVA();
     if (_debug > 0)
     {
       std::cout << "TimeClusterFinder MVA : " << std::endl;
-      _peakMVA.showMVA();
+      _tcMVA.showMVA();
     }
   }
 
@@ -452,7 +454,11 @@ namespace mu2e {
         _pmva._dphi = dphi;
         _pmva._rho = rho; // change this to use radius^2 FIXME!
 
-        float mvaout = _peakMVA.evalMVA(_pmva._pars);
+	float mvaout(-1.0);
+	if (tc._caloCluster.isNonnull())
+	   mvaout = _tcMVA.evalMVA(_pmva._pars);
+	else
+	   mvaout = _tcCaloMVA.evalMVA(_pmva._pars);
         if (mvaout < worstmva) {
           worstmva = mvaout;
           iworst = ips;
