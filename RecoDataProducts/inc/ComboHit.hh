@@ -46,7 +46,8 @@ namespace mu2e {
     Float_t helixPhi() const { return _hphi;}
     Float_t time() const { return _time; }
     Float_t driftTime() const { return _dtime; }
-    Float_t correctedTime() const { return _time - _dtime; }
+    Float_t propTime() const { return _ptime; }
+    Float_t correctedTime() const { return _time - _ptime - _dtime; }
     Float_t specificIonization() const { return _edep/_pathlength; }
     Float_t pathLength() const { return _pathlength; }
     Float_t qual() const { return _qual; }
@@ -74,6 +75,7 @@ namespace mu2e {
     Float_t _wdist; // distance from wire center along this direction (agregate)
     Float_t _time, _edep, _qual; // derived StrawHit (agregate) info
     Float_t _dtime; // drift time estimate
+    Float_t _ptime; // prop time estimate
     Float_t _pathlength; // path length estimate
     Float_t _hphi; // azimuth relative to a helix center
     Float_t _xyWeight;       // weight used to perform the x-y circle fit

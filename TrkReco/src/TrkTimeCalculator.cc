@@ -34,7 +34,7 @@ namespace mu2e
 //    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
 //    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","Background"})),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _avgDriftTime(pset.get<double>("AverageDriftTime",24)), 
+    _avgDriftTime(pset.get<double>("AverageDriftTime",22.7)), 
     _useTOTdrift(pset.get<bool>("UseTOTDrift",true)),
     _shDtDz(pset.get<double>("StrawHitInversVelocity",0.00535)), // ns/mm
     _shBeta(pset.get<double>("StrawHitBeta",1.)),

@@ -251,6 +251,10 @@ namespace mu2e {
 	float dt = times[StrawEnd::cal] - times[StrawEnd::hv];
 	// get distance along wire from the straw center and it's estimated error
 	bool td = srep->wireDistance(straw,energy,dt, dw,dwerr);
+        float propv = dw/dt*2;
+        float propd = straw.getHalfLength()+dw;
+        if (eend == StrawEnd(StrawEnd::hv))
+          propd = straw.getHalfLength()-dw;
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
 	// create combo hit
 	static const XYZVec _zdir(0.0,0.0,1.0);
@@ -264,7 +268,8 @@ namespace mu2e {
 	ch._time = time;
 	ch._edep = energy;
 	ch._sid = straw.id();
-	ch._dtime = srep->driftTime(straw,tot);
+	ch._dtime = srep->driftTime(straw,tot,energy);
+        ch._ptime = propd/propv;
 	ch._pathlength = srep->pathLength(straw,tot); 
 	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
 	// crude initial estimate of the transverse error
