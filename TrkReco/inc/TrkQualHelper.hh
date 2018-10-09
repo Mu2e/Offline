@@ -27,20 +27,9 @@ namespace mu2e
       _trkqualmva = new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet()));
       _trkqualmva->initMVA();
     }
-    void fillTrkQual(const KalRep* krep, TrkQual& trkqual);
-    void fillTrkQual(const KalSeed& kseed, TrkQual& trkqual);
+    void fillTrkQual(const KalSeed& kseed, TrkQual& trkqual, const double& zpos);
 
     const MVATools* MVATool() { return _trkqualmva; }
-
-  private:
-    inline bool checkStatus(const int& status);
-    inline bool checkStatus(const TrkFitFlag& status);
-
-    void findBestKSeg(const KalRep* krep, KalSegment& kseg);
-    bool findBestKSeg(const KalSeed& kseed, KalSegment& kseg);
-
-    void fillHitCountVariables(const std::vector<TrkStrawHitSeed>& hits, const std::vector<TrkStraw>& straws, TrkQual& trkqual);
-    void fillTrkVariables(const double& fit_con, const TrkT0& trkt0, const KalSegment& bestkseg, TrkQual& trkqual);
   };
 }
 #endif

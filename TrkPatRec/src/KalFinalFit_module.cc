@@ -370,7 +370,7 @@ namespace mu2e
 	  kscol->push_back(fseed);
 	  // compute TrkQual for this track and save it
 	  TrkQual trkqual;
-	  _tqhelper.fillTrkQual(fseed,trkqual);
+	  _tqhelper.fillTrkQual(fseed,trkqual, _zsave[0]);
 	  tqcol->push_back(trkqual);
 	} else {// fit failure
 	  _result.deleteTrack();

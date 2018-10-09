@@ -87,8 +87,7 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",1)),
     _uresid(pset.get<bool>("UnbiasedResiduals",true)),
     _mingood(pset.get<double>("MinimumGoodMomentumFraction",0.9)),
-    _trkdiag(0),
-    _tqhelper(pset)
+    _trkdiag(0)
   {
 // define the ids of the virtual detectors
     _midvids.push_back(VirtualDetectorId::TT_Mid);
@@ -96,8 +95,6 @@ namespace mu2e
     _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
     _entvids.push_back(VirtualDetectorId::TT_FrontPA);
     _xitvids.push_back(VirtualDetectorId::TT_Back);
-// initialize TrkQual MVA.  Note the weight file is passed in from the KalDiag config
-    if(_debug>0)_tqhelper.MVATool()->showMVA();
   }
 
 // Find MC truth for the given particle entering a given detector(s).  Unfortunately the same logical detector can map
@@ -228,16 +225,10 @@ namespace mu2e
       TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1);
       // compute the tracker entrance fit information
       fillTrkFitInfo(krep,entlen,trkinfo._ent);
-      // use the above information to compute the TrkQual value.
-      trkinfo._trkqual = _trkqual.MVAOutput();
     } else {
       // failed fit
       trkinfo._status = -krep->fitStatus().failure();
     }
-  }
-
-  void KalDiag::fillTrkQual(const KalRep* krep) {
-    _tqhelper.fillTrkQual(krep, _trkqual);
   }
 
   void KalDiag::countHits(const KalRep* krep,TrkInfo& tinfo) const {
@@ -266,10 +257,11 @@ namespace mu2e
 
     std::vector<TrkStrawHitSeed> hits;
     TrkUtilities::fillHitSeeds(krep, hits);
-    unsigned int nhits(-1), nactive(-1), ndactive(-1), nnullambig(-1);
-    TrkUtilities::countHits(hits, nhits, nactive, ndactive, nnullambig);
+    unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
+    TrkUtilities::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
     tinfo._nhits = nhits;
     tinfo._nactive = nactive;
+    tinfo._ndouble = ndouble;
     tinfo._ndactive = ndactive;
     tinfo._nnullambig = nnullambig;
   }

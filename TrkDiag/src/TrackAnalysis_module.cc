@@ -16,7 +16,6 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -145,7 +144,7 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
-    void fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
+    void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
     void findBestTrkQualMatch(const TrkQualCollection& tqcol, const KalRep* deK, TrkQual& tqual);
   };
 
@@ -160,7 +159,7 @@ namespace mu2e {
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
-    _filltrkqual(pset.get<bool>("fillTrkQual",false)),
+    _filltrkqual(pset.get<bool>("fillTrkQualInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
@@ -272,7 +271,6 @@ namespace mu2e {
       countHits(shfC);
       // fill the standard diagnostics
       if(deK != 0){
-	_kdiag.fillTrkQual(deK);
 	_kdiag.fillTrkInfo(deK,_deti);
 	if(_diag > 1){
 	  _kdiag.fillHitInfo(deK, _detsh);
@@ -297,13 +295,14 @@ namespace mu2e {
 	  _kdiag.fillTrkInfo(dmK,_dmti);
 	}
 
-	if (_filltrkqual) {
-	  art::Handle<TrkQualCollection> trkQualHandle;
-	  event.getByLabel(_detag, trkQualHandle);
-	  if (trkQualHandle.isValid()) {
-	    TrkQual i_tqual;
-	    findBestTrkQualMatch(*trkQualHandle, deK, i_tqual);
-	    fillTrkQual(i_tqual, _trkQualInfo);
+	art::Handle<TrkQualCollection> trkQualHandle;
+	event.getByLabel(_detag, trkQualHandle);
+	if (trkQualHandle.isValid()) {
+	  TrkQual i_tqual;
+	  findBestTrkQualMatch(*trkQualHandle, deK, i_tqual);
+	  _deti._trkqual = i_tqual.MVAOutput();
+	  if (_filltrkqual) {
+	    fillTrkQualInfo(i_tqual, _trkQualInfo);
 	  }
 	}
       }
@@ -512,11 +511,11 @@ namespace mu2e {
     _crvinfomc.clear();
   }
 
-  void TrackAnalysis::fillTrkQual(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
+  void TrackAnalysis::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
     int n_trkqual_vars = TrkQual::n_vars;
     for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
       TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
-      trkqualInfo._trkqualvars[i_trkqual_var] = (float) tqual[i_index];
+      trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
     }
     trkqualInfo._trkqual = tqual.MVAOutput();
   }

@@ -106,7 +106,6 @@ namespace mu2e
     TrkStrawHitInfoMC& tshinfomc) const;
 // count CE hits
     unsigned countCEHits() const;
-    void fillTrkQual(const KalRep* krep);
   private:
 // cache of event data
     MCEvtData _mcdata;
@@ -122,7 +121,6 @@ namespace mu2e
 // helper functions
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
     void countHits(const KalRep* krep, TrkInfo& tinfo) const;
-    //    void fillTrkQual(TrkInfo& trkinfo) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     void reset();
     // config parameters
@@ -137,9 +135,6 @@ namespace mu2e
 // trk tuple variables
     public:
     TTree *_trkdiag;
-// track quality computation
-    TrkQual _trkqual;
-    TrkQualHelper _tqhelper;
 // struct for track info
     TrkInfo _trkinfo;
 // hit information

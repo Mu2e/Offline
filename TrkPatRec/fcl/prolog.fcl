@@ -211,6 +211,7 @@ KFF : {
   AddHitSelectionBits	      : []
   AddHitBackgroundBits	      : []
   TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
+  ZSavePositions : [-1631.11, -1522.0, 0.0, 1522.0 ]
 }
 # same for trigger
 TTKSF : {

@@ -43,7 +43,7 @@ namespace mu2e {
     // compute the flightlength for a given z position
     //    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
     // count different hit types
-    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndactive, unsigned& nnullambig);
+    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig);
     double chisqConsistency(const KalRep* krep);
   }
 }

@@ -9,8 +9,8 @@ namespace mu2e
 {
 // general information about a track
   struct TrkQualInfo {
-    Float_t _trkqualvars[TrkQualDetail::n_vars];      // consistency between the longitudinal position from the fit with the previous time division measurement
-    Float_t _trkqual;
+    Double_t _trkqualvars[TrkQualDetail::n_vars];      // consistency between the longitudinal position from the fit with the previous time division measurement
+    Double_t _trkqual;
 
     TrkQualInfo() { reset(); }
 
@@ -28,9 +28,9 @@ namespace mu2e
       for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
 	TrkQual::MVA_varindex i_index =TrkQual::MVA_varindex(i_trkqual_var);
 	std::string varname = TrkQual::varName(i_index);
-	leaves += varname + "/F:";
+	leaves += varname + "/D:";
       }
-      leaves += "trkqual";
+      leaves += "trkqual/D";
       return leaves;
     }
   };
