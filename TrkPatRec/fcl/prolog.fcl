@@ -14,15 +14,12 @@ FitDir : {
 
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
-  module_type               : TimeClusterFinder
+  module_type  : TimeClusterFinder
   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
   TestFlag : true
-
-    maxElectronHitEnergy          : 0.0035                # means: use all hits
-    minimumTime                   : 500.                  # ns
-    maximumTime                   : 1750.                 # ns
 }
 # stereo version
 STimeClusterFinder : {
