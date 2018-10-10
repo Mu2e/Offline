@@ -16,6 +16,7 @@ BaBar/difAlgebra/
 bin/artProductSizes
 bin/eventCount
 bin/valCompare
+bin/dbTool
 lib
 tmp
 *.stn

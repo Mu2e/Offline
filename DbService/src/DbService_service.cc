@@ -1,0 +1,80 @@
+
+#include "DbService/inc/DbService.hh"
+#include "DbTables/inc/DbUtil.hh"
+
+
+namespace mu2e {
+
+  DbService::DbService(Parameters const& config,
+		       art::ActivityRegistry& iRegistry):
+    _config(config()),_verbose(config().verbose()),
+    _version(config().purpose(),config().version()){
+
+    // register callbacks
+    iRegistry.sPostBeginJob.watch(this, &DbService::postBeginJob);
+    iRegistry.sPostEndJob.watch (this, &DbService::postEndJob );
+
+    if(_verbose>0) {
+      std::cout << "DbManager: purpose = " 
+		<< _version.purpose() << std::endl;
+      std::cout << "DbManager: version = " 
+		<< config().version() << std::endl;
+      std::cout << "DbManager: interpreted version = " 
+		<< _version.major() <<"/"
+		<< _version.minor() <<"/"
+		<< _version.extension() 
+		<< std::endl;
+      std::cout << "DbManager: dbName = " 
+		<< config().dbName() << std::endl;
+      std::vector<std::string> files;
+      config().textFile(files);
+      std::cout << "DbManager: textFile =" ;
+      for(auto const& s : files) std::cout << " " << s;
+      std::cout << std::endl;
+    }
+
+
+
+    if(_verbose>1) std::cout << "DbService::postBeginJob " <<std::endl;
+
+    // the engine which will read db, hold calibrations, deliver them
+    _engine.setVerbose(_verbose);
+
+    // if there were text files containing calibrations,
+    // then read them and tell the engine to let them override IOV
+    std::vector<std::string> files;
+    _config.textFile(files);
+    for(auto ss : files ) {
+      if(_verbose>1) std::cout << "DbManager::beginJob read file "<<
+		       ss <<std::endl;
+      auto coll = DbUtil::readFile(ss);
+      _engine.addOverride(coll);
+    }
+
+    // this prepares IOV infrastructure for efficient queries
+    if(_verbose>1) std::cout << "DbManager::beginJob initializing engine "
+			     <<std::endl;
+    _engine.beginJob( DbId(_config.dbName()) , _version );
+    
+
+
+  }
+
+  DbService::~DbService() {}
+
+  /********************************************************/
+  void DbService::postBeginJob(){
+
+  }
+
+
+  /********************************************************/
+  void DbService::postEndJob(){
+    // just print summaries according to verbosity
+    _engine.endJob();
+  }
+
+}
+
+DEFINE_ART_SERVICE(mu2e::DbService)
+
