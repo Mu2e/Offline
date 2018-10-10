@@ -97,6 +97,7 @@ mu2eg4DefaultDebug: {
     worldVerbosityLevel : 0
     printElements : false
     printMaterials : false
+    storePhysicsTablesDir: "" // Make it not "" to activate; directory must exist first
     exportPDTStart : false
     exportPDTEnd : false
     fillDiagnosticHistograms: false
