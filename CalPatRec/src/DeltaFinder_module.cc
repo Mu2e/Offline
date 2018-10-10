@@ -231,7 +231,8 @@ namespace mu2e {
 
     float     z_tracker_center(0.);
 
-    for (int ist=0; ist<_tracker->nStations(); ist++) {
+    int nst = _tracker->nStations();
+    for (int ist=0; ist<nst; ist++) {
       const Station* st = &_tracker->getStation(ist);
 
       //calculate the time-of-flight between the station and each calorimeter disk
@@ -271,9 +272,8 @@ namespace mu2e {
 	  }
 	}	
       }
-
-      if ((ist == 6) || (ist == 13))  _data.stationUsed[ist] = 0;
-      else                            _data.stationUsed[ist] = 1;
+      _data.stationUsed[ist] = 1;
+      // if ((ist == 6) || (ist == 13))  _data.stationUsed[ist] = 0; // this is the past
     }
 //-----------------------------------------------------------------------------
 // it is enough to print that once

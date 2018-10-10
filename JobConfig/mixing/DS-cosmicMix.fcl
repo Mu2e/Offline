@@ -1,0 +1,74 @@
+#
+# mix beam backgrounds on top of cosmic rays. 
+#
+#  Dave Brown (LBNL) October 2018
+#
+#include "JobConfig/mixing/prolog.fcl"
+process_name: DScosmicMix
+
+source: { 
+  module_type : RootInput
+  # drop products that will get remade and aren't needed for filtering.
+  inputCommands: ["keep *_*_*_*",
+		  @sequence::Mixing.Input.droppedProducts]
+}
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::dummyGenerator
+    @table::Mixing.producers
+  }
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+# special path that reuses some of the inputs as primary information
+  TriggerPath : [
+    DigiFilter,
+    protonBunchIntensity,
+    @sequence::Mixing.TrkCalMixSequence,
+    @sequence::Mixing.CRVMixSequence,
+    @sequence::CommonMC.TimeMaps,
+    @sequence::TrackerMC.DigiSim,
+    CaloShowerStepROFromShowerStep, CaloDigiFromShower,
+    @sequence::CrvDAQPackage.CrvResponseSequence,
+    compressDigiMCs ]
+ 
+  EndPath : @local::Mixing.EndPath
+}
+outputs: { Output : @local::Mixing.Output }
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+#
+# filter out high-momentum cosmics with few hits
+#
+physics.filters.DigiFilter.StrawDigiMCCollection : "compressDigiMCs"
+physics.filters.DigiFilter.MinParticleMom : 70.0
+physics.filters.DigiFilter.MaxParticleMom : 200.0
+physics.filters.DigiFilter.MinNDigis : 15
+#
+# change compression to also merge (compressed) primary info from the input file instead of g4run
+#
+physics.producers.compressDigiMCs.simParticleTags : [ "compressDigiMCs", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+physics.producers.compressDigiMCs.caloShowerStepTags : [ "compressDigiMCs", @sequence::Mixing.caloMixerTags ]
+physics.producers.compressDigiMCs.extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
+#
+# change maps to use the read-in compressed primary maps as input (these are empty for cosmic rays)
+#
+physics.producers.protonTimeMap.InputTimeMaps : [ "compressDigiMCs:protonTimeMap", @sequence::Mixing.protonTimeMaps ]
+physics.producers.muonTimeMap.InputTimeMaps : [ "compressDigiMCs:muonTimeMap" ]
+#
+# calo shower config
+#
+physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "compressDigiMCs", @sequence::Mixing.caloMixerTags ]
+#
+# change output to only keep new compression output, not old
+#
+outputs.Output.outputCommands : [ "drop *_*_*_*",
+		       "keep *_compressDigiMCs_*_DScosmicMix",
+		       @sequence::DigiCompression.Mixing.keptProducts ]
+#
+# customize the output
+services.TFileService.fileName: "nts.owner.DS-cosmic-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.DS-cosmic-mix.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
