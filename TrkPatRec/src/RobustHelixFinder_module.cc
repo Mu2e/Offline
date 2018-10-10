@@ -116,7 +116,6 @@ namespace mu2e {
     bool				_prefilter; // prefilter hits based on sector
     bool				_updatestereo; // update the stereo hit positions each iteration
     int 				_minnsh; // minimum # of strawHits to work with
-    unsigned				_minnhit; // minimum # of hits to work with
     float                               _maxchi2dxy;
     float                               _maxchi2dzphi;
     float                               _maxphihitchi2;
@@ -193,7 +192,6 @@ namespace mu2e {
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
     _updatestereo(pset.get<bool>("UpdateStereoHits",false)),
     _minnsh      (pset.get<int>("minNStrawHits",10)),
-    _minnhit	 (pset.get<unsigned>("minNHit",5)),
     _maxchi2dxy  (pset.get<float>("MaxChi2dXY", 5.0)),
     _maxchi2dzphi(pset.get<float>("MaxChi2dZPhi", 5.0)),
     _maxphihitchi2(pset.get<float>("MaxHitPhiChi2", 25.0)),
@@ -876,25 +874,18 @@ namespace mu2e {
 
   void RobustHelixFinder::updateT0(RobustHelixFinderData& helixData)
   {
+  // Don't update if there's a calo cluster
+    if (helixData._hseed.caloCluster().isNonnull())
+      return;
+
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
-    
     ComboHit*      hit(0);
-    
     for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
       hit = &helixData._chHitsToProcess[f];
-	
       if (hit->_flag.hasAnyProperty(_outlier))   continue;
       float wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
       terr(_ttcalc.comboHitTime(*hit),weight=wt);
     }//end faces loop
-
-    if (helixData._hseed.caloCluster().isNonnull())
-      {
-	float time = _ttcalc.caloClusterTime(*helixData._hseed.caloCluster());
-	float wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(helixData._hseed.caloCluster()->diskId()),2);
-	terr(time,weight=wt);
-      }
-
     if (sum_of_weights(terr) > 0.0)
       {
 	helixData._hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
