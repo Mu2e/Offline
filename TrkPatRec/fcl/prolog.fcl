@@ -50,7 +50,8 @@ SRobustHelixFinder : {
 #same for trigger
 TTtimeClusterFinder : {
   module_type               : TimeClusterFinder
-  PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+  ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+  ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   ComboHitCollection : "TTflagBkgHits"
   StrawHitFlagCollection : "none"
   TestFlag : false

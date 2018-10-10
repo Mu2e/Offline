@@ -89,6 +89,7 @@ BEGIN_PROLOG
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
 	PlotTimeSpectra : false
+	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
       }
 
   HD : {

@@ -150,10 +150,13 @@ namespace mu2e {
 
   void TimeClusterFinder::beginJob() {
     _tcMVA.initMVA();
+    _tcCaloMVA.initMVA();
     if (_debug > 0)
     {
       std::cout << "TimeClusterFinder MVA : " << std::endl;
       _tcMVA.showMVA();
+      std::cout << "TimeClusterFinder Calo MVA : " << std::endl;
+      _tcCaloMVA.showMVA();
     }
   }
 
