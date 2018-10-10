@@ -29,6 +29,23 @@ namespace mu2e {
 	  vector<float>{76.2103 , 66.2778 , 58.3431 , 53.2878 , 49.9309 , 47.1836 , 45.13 , 42.9479 , 41.208 , 39.6033 , 38.1616 , 37.1039 , 35.9969 , 35.0815 , 34.0823 , 33.4877 , 32.9431 , 32.3805 , 32.071 , 31.4614 , 31.2776 , 30.635 , 30.1217 , 29.7487 , 29.1309 , 28.4732 , 28.1865 , 27.6331 , 27.5013 , 27.0485 , 26.4937 , 25.9912 , 25.5595 , 25.0649 , 24.0109 , 23.1914 , 22.2386 , 21.7544 , 21.3721 , 21.0055 , 20.5813 , 20.1229 , 20.2912 , 20.615 , 20.4152 , 20.6086 , 20.6452 , 20.6372 , 20.6297 , 20.4731 , 20.401 , 20.174 , 20.2679 , 20.3807 , 20.1217 , 19.7474 , 19.8524 , 19.8093 , 19.8447 , 19.8788 , 19.5326 , 19.1781 , 19.7947 , 19.3696 , 18.6408 , 18.0923 , 18.1123 , 21.371 })),
     _resslope(pset.get<vector<float> >("TDResSlope",
 	  vector<float>{0.0160651 , 0.023741 , 0.0421304 , 0.0537863 , 0.0633849 , 0.0697326 , 0.0725653 , 0.0736391 , 0.0746531 , 0.0745937 , 0.0750631 , 0.0738193 , 0.0740473 , 0.0761049 , 0.0785487 , 0.0783369 , 0.0802156 , 0.081579 , 0.0815734 , 0.0830998 , 0.0824664 , 0.0847393 , 0.0857842 , 0.0846082 , 0.0866494 , 0.0879027 , 0.0883831 , 0.0917368 , 0.0909706 , 0.0899623 , 0.0899677 , 0.0890875 , 0.0888003 , 0.0865446 , 0.0847627 , 0.0794976 , 0.0802735 , 0.0797023 , 0.0798181 , 0.0750883 , 0.073853 , 0.0751729 , 0.0737468 , 0.071133 , 0.0698957 , 0.0661819 , 0.0642328 , 0.0635607 , 0.0623173 , 0.0606496 , 0.0574217 , 0.0562718 , 0.0532419 , 0.0510767 , 0.0493828 , 0.0472257 , 0.0447443 , 0.0425958 , 0.0419509 , 0.0391222 , 0.0372135 , 0.0399352 , 0.0340117 , 0.0375563 , 0.0368355 , 0.052548 , 0.0649657 , 0.168875 })),
+    _totdtime(pset.get<vector<float> >("TOTDriftTime",
+          vector<float>{25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  
+          41.2,  33.4,  21.9,  17.4,  14.5,  13.1,  12.9,  11.2,  13.1,  12.9,  
+          40.8,  37.2,  23.0,  15.8,  13.0,  10.7,  10.1,  12.1,  11.0,  16.7,  
+          39.3,  36.7,  29.7,  17.5,  11.7,  9.6,  9.5,  8.6,  14.0,  10.4,  
+          37.8,  34.1,  31.5,  27.7,  21.0,  13.1,  8.5,  7.5,  7.9,  8.4,  
+          34.4,  29.9,  27.7,  27.2,  27.1,  27.1,  27.8,  26.5,  15.5,  7.2,  
+          33.1,  24.7,  22.7,  22.1,  22.6,  23.8,  25.7,  27.3,  27.4,  25.9,  
+          23.9,  20.2,  18.5,  17.7,  17.9,  18.5,  19.6,  21.1,  22.3,  22.5,  
+          25.0,  15.2,  14.4,  14.3,  14.3,  14.2,  15.0,  15.8,  16.5,  17.6,  
+          12.7,  12.3,  11.7,  11.4,  11.2,  11.1,  11.4,  11.7,  12.3,  12.9,  
+          23.9,  9.6,  8.7,  8.7,  8.5,  8.6,  8.8,  8.4,  8.9,  9.6,  
+          9.1,  9.1,  7.0,  5.9,  5.8,  6.5,  6.4,  6.2,  6.5,  6.9,  
+          1.9,  1.9,  5.0,  4.2,  3.8,  5.0,  4.7,  4.3,  5.2,  5.0,  
+          5.5,  5.5,  5.5,  0.6,  1.2,  2.3,  4.8,  2.4,  5.5,  2.7,  
+          3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  
+          12.0,  12.0,  12.0,  12.0,  12.0,  12.0,  12.0,  12.0, 12.0,  12.0 })),
     _usederr(pset.get<bool>("UseDriftErrorCalibration",false)),
     _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{0.2631,-0.05315, 2.55, 0.1978, 0.5964})),
     _wbuf(pset.get<float>("WireLengthBuffer",2.0)), //sigma
@@ -44,10 +61,6 @@ namespace mu2e {
     _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
     _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
     _mint0doca(pset.get<double>("minT0DOCA", -0.2)), //FIXME should be moved to a reconstruction configuration 
-    _TOTIntercept(pset.get<double>("TOTIntersept",46.4716)),
-    _TOTSlope(pset.get<double>("TOTSlope",-0.831775)),
-    _TOTmin(pset.get<double>("TOTMin",12)),
-    _TOTmax(pset.get<double>("TOTMax",45)),
     _t0shift(pset.get<double>("t0shift",4.0)), //FIXME should be average slewing?
 
     _pmpEnergyScale(pset.get<vector<double> >("peakMinusPedestalEnergyScale",vector<double>(96,0.0042))), // fudge factor for peak minus pedestal energy method
@@ -221,16 +234,15 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawResponse::driftTime(Straw const& straw, float tot) const {
-  // straw is present in case of eventual calibration
-    double drifttime;
-    if (tot < _TOTmin)
-      drifttime = 30.;
-    else if (tot > _TOTmax)
-      drifttime = 10.;
-    else
-      drifttime = _TOTSlope*tot + _TOTIntercept;
-    return drifttime;
+  double StrawResponse::driftTime(Straw const& straw, float tot, float edep) const {
+    // straw is present in case of eventual calibration
+    size_t totbin = (size_t) (tot/4.);
+    size_t ebin = (size_t) (edep/0.00025);
+    if (totbin > 15)
+      totbin = 15;
+    if (ebin > 9)
+      ebin = 9;
+    return _totdtime[totbin*10+ebin];
   }
 
   double StrawResponse::pathLength(Straw const& straw, float tot) const {

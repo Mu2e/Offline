@@ -221,7 +221,7 @@ namespace mu2e {
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
     _chi2hfit    (pset.get<fhicl::ParameterSet>("Chi2HelixFit",fhicl::ParameterSet())),
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<float>("T0Shift",4.0)),
+    _t0shift     (pset.get<float>("T0Shift",1.0)),
     _outlier     (StrawHitFlag::outlier),
     _updateStereo    (pset.get<bool>("UpdateStereo",false))
   {

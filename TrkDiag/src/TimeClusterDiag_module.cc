@@ -31,6 +31,7 @@
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 // root
 #include "TH1F.h"
 #include "TTree.h"
@@ -70,6 +71,7 @@ namespace mu2e {
 
     int           _diag;
     bool _mcdiag, _useflagcol;
+    int _mcgen;
     bool	  _plotts;
     unsigned _minnce; // minimum # CE hits to make plots
     double _ccmine; // min calo cluster energy to plot
@@ -81,6 +83,7 @@ namespace mu2e {
     art::InputTag   _shfTag;
     art::InputTag   _ccTag;
     art::InputTag   _mcdigisTag;
+    art::InputTag _vdmcstepsTag;
     // hit selectors
     StrawHitFlag  _hsel, _tcsel, _hbkg;
 
@@ -97,6 +100,7 @@ namespace mu2e {
     const CaloClusterCollection*	  _cccol;
     const StrawDigiMCCollection*          _mcdigis;
     const StrawHitFlagCollection*	  _evtshfcol;
+    const StepPointMCCollection* _vdmcsteps;
     StrawHitFlagCollection _shfcol; // local copy of flag collection
     StrawHitFlag _cesel; // flag bit for Ce (from truth)
 // TTree variables
@@ -104,6 +108,7 @@ namespace mu2e {
     // event number
     Int_t      _iev;
     Int_t     _ntc; // # clusters/event
+    Float_t   _mcmidt0;
     TimeClusterInfo		  _besttc;  // info about best time cluster (most CE hits)
     MCClusterInfo		  _ceclust; // info about 'cluster' of MC CE hits
     vector<TimeClusterHitInfo>	  _tchinfo; // info about hits of best time cluster
@@ -134,6 +139,7 @@ namespace mu2e {
     _diag		(pset.get<int>("diagLevel",1)),
     _mcdiag		(pset.get<bool>("MCdiag",true)),
     _useflagcol		(pset.get<bool>("UseFlagCollection")),
+    _mcgen              (pset.get<int>("MCGenerator",2)),// default for conversion electron
     _plotts		(pset.get<bool>("PlotTimeSpectra",false)),
     _minnce		(pset.get<unsigned>("MinimumCEHits",15)),
     _ccmine		(pset.get<double>("CaloClusteriMinE",50.0)),
@@ -143,6 +149,7 @@ namespace mu2e {
     _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _ccTag              (pset.get<art::InputTag>("caloClusterModuleLabel","MakeCaloCluster")),
     _mcdigisTag		(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
+    _vdmcstepsTag       (pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg		(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _peakMVA		(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
@@ -177,6 +184,32 @@ namespace mu2e {
     if(_mcdiag){
       fillCECluster();
       findPrimaries(event, primaries );
+      // get _mcmidt0
+      art::Ptr<SimParticle> spp; 
+      // loop over the digis and find the ones that match
+      for(auto mcd : *_mcdigis) {
+        art::Ptr<SimParticle> sp;
+        TrkMCTools::simParticle(sp,mcd);
+        if(sp.isNonnull() &&
+            sp->genParticle().isNonnull() &&
+            sp->genParticle()->generatorId().id() == _mcgen){
+          spp = sp;
+        }
+      }
+      cet::map_vector_key trkid = spp->id();
+      auto jmc = _vdmcsteps->end();
+      for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+        // find matching steps
+        if(  imc->trackId() == trkid && 
+            (imc->volumeId() == VirtualDetectorId::TT_Mid || imc->volumeId() == VirtualDetectorId::TT_MidInner)) {
+          if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+            jmc = imc;
+        }
+      }
+      if (jmc == _vdmcsteps->end())
+        _mcmidt0 = -1000;
+      else
+        _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
     }
     // fill info for all TimeClusters
     fillClusterInfo(primaries);
@@ -208,6 +241,7 @@ namespace mu2e {
   // find the input data objects
   bool TimeClusterDiag::findData(art::Event const& evt){
     _evtshfcol = 0; _chcol = 0; _tccol = 0; _mcdigis = 0;
+    _vdmcsteps = 0;
     auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
     _chcol = chH.product();
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
@@ -215,6 +249,10 @@ namespace mu2e {
     if(_mcdiag){
       auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigisTag);
       _mcdigis = mcdH.product();
+      if(_mcgen > 0){
+	auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
+	_vdmcsteps = mcstepsH.product();
+      }
       _toff.updateMap(evt);
     }
     if(_useflagcol){
@@ -545,6 +583,7 @@ namespace mu2e {
     // event info should use the TrkAna struct, FIXME!!
     _tcdiag->Branch("iev",&_iev,"iev/I");
     _tcdiag->Branch("ntc",&_ntc,"ntc/I");
+    _tcdiag->Branch("mcmidt0",&_mcmidt0,"mcmidt0/F");
     _tcdiag->Branch("besttc",&_besttc,TimeClusterInfo::leafnames().c_str());
     if(_mcdiag){
       _tcdiag->Branch("ceclust",&_ceclust,MCClusterInfo::leafnames().c_str());
