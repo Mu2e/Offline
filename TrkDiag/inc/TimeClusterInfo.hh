@@ -26,12 +26,16 @@ namespace mu2e {
     Float_t _tcalo; // calo cluster time
     Float_t _dtcalo; // calo cluster time
     XYZVec _cog; // calo cluster position
+    Int_t _prigen, _priproc;
+    Float_t _prifrac; // MC truth about the primary of a cluster
     
-    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = 0.0; _pos = XYZVec(); }
+    void reset() { _tcindex = _prigen = _priproc = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = _prifrac = 0.0; _pos = _cog= XYZVec(); }
     static std::string leafnames() { 
       static std::string leaves; leaves =
-      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:posx/F:posy/F:posz/F") + std::string(":ecalo/F:tcalo/F:dtcalo/F:")
-      + std::string("cogx/F:cogy/F:cogz/F");
+      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:posx/F:posy/F:posz/F")
+      + std::string(":ecalo/F:tcalo/F:dtcalo/F")
+      + std::string(":cogx/F:cogy/F:cogz/F")
+      + std::string(":prigin/I:priproc/I:prifrac/F");
       return leaves;
     } 
   };
@@ -44,7 +48,8 @@ namespace mu2e {
     Float_t _rho; // transverse radius of this hit
     Float_t _z; // z of this hit
     Float_t _mva; // cluster MVA output
-    Int_t _mcpdg, _mcgen, _mcproc; // MC truth info for this hit
+    Int_t _nsh; 
+    Int_t _mcpdg, _mcgen, _mcproc, _mcrel; // MC truth info for this hit
     Float_t _mctime, _mcmom;
     void reset() { _time = _dt = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = 0; }
   };

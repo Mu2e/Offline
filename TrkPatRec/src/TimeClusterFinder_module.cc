@@ -139,7 +139,7 @@ namespace mu2e {
     _ccmine            (pset.get<float>(  "CaloClusterMinE",50.0)),
     _ccwt              (pset.get<float>(  "CaloClusterWeight",5.0)),
     _tcMVA           (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
-    _tcCaloMVA           (pset.get<fhicl::ParameterSet>("CausterCaloMVA",fhicl::ParameterSet())),
+    _tcCaloMVA           (pset.get<fhicl::ParameterSet>("ClusterCaloMVA",fhicl::ParameterSet())),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _npeak       (pset.get<int>("PeakWidth",1)) // # of bins
     {

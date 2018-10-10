@@ -44,8 +44,20 @@ using namespace std;
 namespace mu2e {
 // ttree structs
   class TimeClusterDiag : public art::EDAnalyzer {
-  public:
+  // MC matching
+    struct spcount {
+      spcount() : _count(0) {}
+      spcount(art::Ptr<SimParticle> const& spp) : _spp(spp), _count(1) {}
+      void append(art::Ptr<SimParticle> const& sp) { if(sp == _spp)++_count; }
+      bool operator ==(art::Ptr<SimParticle> const& sp) const { return _spp == sp; }
+      art::Ptr<SimParticle> _spp;
+      unsigned _count;
+    };
+    struct spcountcomp : public binary_function<spcount, spcount , bool> {
+      bool operator() (spcount a, spcount b) { return a._count > b._count; }
+    };
 
+    public:
     explicit TimeClusterDiag(fhicl::ParameterSet const& pset);
     virtual ~TimeClusterDiag();
 
@@ -54,7 +66,7 @@ namespace mu2e {
     // This is called for each event.
     virtual void analyze(art::Event const& e);
 
-  private:
+    private:
 
     int           _diag;
     bool _mcdiag, _useflagcol;
@@ -105,10 +117,13 @@ namespace mu2e {
     bool findData(art::Event const& evt);
     void setFlags(art::Event const& evt);
     void plotTimeSpectra ();
-    void fillClusterInfo ();
-    void fillClusterInfo (TimeCluster const& tc,TimeClusterInfo& tcinfo);
-    void fillClusterHitInfo (TimeCluster const& besttc,art::Event const& evt); 
+    void fillClusterInfo (std::vector<spcount> const& primaries);
+    void fillClusterInfo (TimeCluster const& tc,spcount const& primary, TimeClusterInfo& tcinfo);
+    void fillClusterHitInfo (TimeCluster const& besttc,
+	art::Ptr<SimParticle> const& primary, art::Event const& evt); 
     void fillCECluster();
+    void findPrimaries (art::Event const& evt, std::vector<spcount>& primaries);
+    void findPrimary(art::Event const& evt, TimeCluster const& tc, spcount& primary );
   };
 
   TimeClusterDiag::~TimeClusterDiag() {
@@ -158,19 +173,24 @@ namespace mu2e {
     //
     setFlags(event);
     // fill MC info
+    std::vector<spcount> primaries; 
     if(_mcdiag){
       fillCECluster();
+      findPrimaries(event, primaries );
     }
     // fill info for all TimeClusters
-    fillClusterInfo();
+    fillClusterInfo(primaries);
     if(_alltc.size() > 0)
       // best is defined as having the most CE hits
       _besttc = _alltc[0];
     else
       _besttc.reset();
+
+
     if(_diag > 1 && _besttc._tcindex >= 0 && _besttc._tcindex < static_cast<int>(_tccol->size())){
       _tchinfo.clear();
-      fillClusterHitInfo(_tccol->at(_besttc._tcindex),event);
+      fillClusterHitInfo(_tccol->at(_besttc._tcindex),
+      primaries.at(_besttc._tcindex)._spp,event);
     }
     // fill the tree
     _tcdiag->Fill();
@@ -285,7 +305,8 @@ namespace mu2e {
     _ceclust._maxdphi = maxdphi-mindphi;
   }
 
-  void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc, art::Event const& event) {
+  void TimeClusterDiag::fillClusterHitInfo(TimeCluster const& tc,
+  art::Ptr<SimParticle> const& primary,  art::Event const& event) {
     for (auto ich : tc._strawHitIdxs) {
       ComboHit const& ch = _chcol->at(ich);
       TimeClusterHitInfo tchi;
@@ -296,6 +317,7 @@ namespace mu2e {
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
       tchi._rho = sqrt(pos.Perp2());
       tchi._z = pos.z();
+      tchi._nsh = ch.nStrawHits();
 // compute MVA
       std::vector<Double_t> pars(3);
       pars[0] = tchi._dt;
@@ -316,6 +338,8 @@ namespace mu2e {
 	  tchi._mcproc = sp->creationCode();
 	  if(sp->genParticle().isNonnull())
 	    tchi._mcgen = sp->genParticle()->generatorId().id();
+	  if(primary.isNonnull())
+	    tchi._mcrel = MCRelationship::relationship(primary,sp);
 	}
       }
       _tchinfo.push_back(tchi);
@@ -403,13 +427,13 @@ namespace mu2e {
     clist->Add(cmark);
   }
 
-  void TimeClusterDiag::fillClusterInfo () {
+  void TimeClusterDiag::fillClusterInfo (std::vector<spcount> const& primaries) {
     _alltc.clear();
     for(size_t ic = 0;ic< _tccol->size(); ++ ic){
       TimeCluster const& tc = _tccol->at(ic);
       TimeClusterInfo tcinfo;
       tcinfo._tcindex = ic;
-      fillClusterInfo(tc,tcinfo);
+      fillClusterInfo(tc,primaries[ic],tcinfo);
       _alltc.push_back(tcinfo);
     }
 // sort by the # of CE
@@ -418,30 +442,85 @@ namespace mu2e {
       std::sort(_alltc.begin(),_alltc.end(),comp);
     }
   }
+
+  void TimeClusterDiag::findPrimaries (art::Event const& event,
+      std::vector<spcount>& primaries) {
+    _alltc.clear();
+    primaries.clear();
+    for(size_t ic = 0;ic< _tccol->size(); ++ ic){
+      TimeCluster const& tc = _tccol->at(ic);
+      spcount primary;
+      findPrimary(event, tc, primary);
+      primaries.push_back(primary);
+    }
+  }
+
+  void TimeClusterDiag::findPrimary(art::Event const& event,
+      TimeCluster const& tc, spcount& primary ){
+    vector<spcount> sct;
+    for (auto ich : tc._strawHitIdxs) {
+      std::vector<StrawDigiIndex> shids;
+      _chcol->fillStrawDigiIndices(event,ich,shids);
+      for(auto shid : shids ) {
+	StrawDigiMC const& mcdigi = _mcdigis->at(shid);
+	StrawEnd itdc;
+	art::Ptr<SimParticle> sp;
+	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
+	  bool found(false);
+	  for(size_t isp=0;isp<sct.size();++isp){
+	    // count direct daughter/parent as part the same particle
+	    if(sct[isp]._spp == sp ){
+	      found = true;
+	      sct[isp].append(sp);
+	      break;
+	    }
+	  }
+	  if(!found)sct.push_back(sp);
+	}
+      }
+    }
+    // sort by # of contributions
+    sort(sct.begin(),sct.end(),spcountcomp());
+    if(sct.size() > 0){
+      primary = sct[0];
+    }
+  }
     
-  void TimeClusterDiag::fillClusterInfo (TimeCluster const& tp,TimeClusterInfo& tcinfo) {
+  void TimeClusterDiag::fillClusterInfo (TimeCluster const& tc,
+    spcount const& primary, TimeClusterInfo& tcinfo) {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     const Calorimeter* calo = ch.get();
 // simple entries
-    tcinfo._nhits = tp.nStrawHits();
-    tcinfo._time  = tp._t0._t0;
-    tcinfo._terr  = tp._t0._t0err;
-    tcinfo._pos	  = tp._pos;
+    tcinfo._nhits = tc.nStrawHits();
+    tcinfo._time  = tc._t0._t0;
+    tcinfo._terr  = tc._t0._t0err;
+    tcinfo._pos	  = tc._pos;
     // calo info if available
-    if(tp._caloCluster.isNonnull()){
-      tcinfo._ecalo = tp._caloCluster->energyDep();
-      tcinfo._tcalo = _ttcalc.caloClusterTime(*tp._caloCluster);
-      tcinfo._dtcalo = _ttcalc.caloClusterTime(*tp._caloCluster) - tp._t0._t0;
+    if(tc._caloCluster.isNonnull()){
+      tcinfo._ecalo = tc._caloCluster->energyDep();
+      tcinfo._tcalo = _ttcalc.caloClusterTime(*tc._caloCluster);
+      tcinfo._dtcalo = _ttcalc.caloClusterTime(*tc._caloCluster) - tc._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
-      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tp._caloCluster->diskId(),tp._caloCluster->cog3Vector())));
+      XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskId(),tc._caloCluster->cog3Vector())));
       tcinfo._cog = cog;
     }
+    // mc info
+    if(_mcdiag){
+      tcinfo._prifrac = float(primary._count)/tc.nStrawHits();
+      art::Ptr<SimParticle> const& sp = primary._spp;
+      if(sp.isNonnull()){
+	tcinfo._priproc = sp->creationCode();
+	if(sp->genParticle().isNonnull())
+	  tcinfo._prigen = sp->genParticle()->generatorId().id();
+      }
+    }
+
     // hit summary
     tcinfo._minhtime = 1.0e9;
     tcinfo._maxhtime = 0.0; 
     tcinfo._ncehits = 0;
     // count CE hits 
-    for (auto const& idx : tp._strawHitIdxs) {
+    for (auto const& idx : tc._strawHitIdxs) {
       ComboHit const& ch = _chcol->at(idx);
       float ht = _ttcalc.comboHitTime(ch);
       tcinfo._maxhtime = std::max( ht , tcinfo._maxhtime);
@@ -455,7 +534,7 @@ namespace mu2e {
     // look for overlaps
     for(size_t ic = 0;ic< _tccol->size(); ++ ic){
       if((int)ic != tcinfo._tcindex) // don't count myself
-	tcinfo._maxover = max(tcinfo._maxover,(Float_t)TrkUtilities::overlap(tp,_tccol->at(ic)));
+	tcinfo._maxover = max(tcinfo._maxover,(Float_t)TrkUtilities::overlap(tc,_tccol->at(ic)));
     }
   }
 
