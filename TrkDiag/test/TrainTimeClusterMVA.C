@@ -272,7 +272,7 @@ void TrainTimeClusterMVA(TTree* mytree,bool calo=false)
 
   // Apply additional cuts on the signal and background samples (can be different)
   TCut signalCut = "besttc.ncehits>9&&tchinfo._mcgen==2";
-  TCut backgrCut = "besttc.ncehits>9&&tchinfo._mcgen!=2";
+  TCut backgrCut = "besttc.ncehits>9&&tchinfo._mcgen!=2&&tchinfo._mcrel<0";
 
   if(calo){
     signalCut += TCut("besttc.ecalo>10.0");

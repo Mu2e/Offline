@@ -4,11 +4,11 @@
     <Info name="TMVA Release" value="4.2.1 [262657]"/>
     <Info name="ROOT Release" value="6.10/06 [395782]"/>
     <Info name="Creator" value="brownd"/>
-    <Info name="Date" value="Tue Oct  9 15:15:39 2018"/>
+    <Info name="Date" value="Tue Oct  9 22:31:39 2018"/>
     <Info name="Host" value="Darwin macitois19.cern.ch 16.5.0 Darwin Kernel Version 16.5.0: Fri Mar 3 16:52:33 PST 2017; root:xnu-3789.51.2~3/RELEASE_X86_64 x86_64"/>
     <Info name="Dir" value="/Users/brownd/mu2e/Mu2eSim/MDC2018/Offline"/>
-    <Info name="Training events" value="10185"/>
-    <Info name="TrainingTime" value="1.86468880e+01"/>
+    <Info name="Training events" value="10614"/>
+    <Info name="TrainingTime" value="1.94241090e+01"/>
     <Info name="AnalysisType" value="Classification"/>
   </GeneralInfo>
   <Options>
@@ -46,9 +46,9 @@
     <Option name="WeightRange" modified="No">1.000000e+00</Option>
   </Options>
   <Variables NVar="3">
-    <Variable VarIndex="0" Expression="_dt" Label="_dt" Title="Time Difference" Unit="F" Internal="_dt" Type="F" Min="-2.96959515e+01" Max="3.01930504e+01"/>
-    <Variable VarIndex="1" Expression="_dphi" Label="_dphi" Title="Azimuth Difference" Unit="F" Internal="_dphi" Type="F" Min="-3.07464743e+00" Max="2.69715834e+00"/>
-    <Variable VarIndex="2" Expression="_rho" Label="_rho" Title="Transverse Radius" Unit="F" Internal="_rho" Type="F" Min="3.95008148e+02" Max="6.49692932e+02"/>
+    <Variable VarIndex="0" Expression="_dt" Label="_dt" Title="Time Difference" Unit="F" Internal="_dt" Type="F" Min="-3.11017628e+01" Max="3.00033112e+01"/>
+    <Variable VarIndex="1" Expression="_dphi" Label="_dphi" Title="Azimuth Difference" Unit="F" Internal="_dphi" Type="F" Min="-1.86553001e+00" Max="2.19464779e+00"/>
+    <Variable VarIndex="2" Expression="_rho" Label="_rho" Title="Transverse Radius" Unit="F" Internal="_rho" Type="F" Min="3.95005066e+02" Max="6.49893188e+02"/>
   </Variables>
   <Spectators NSpec="0"/>
   <Classes NClass="2">
@@ -71,23 +71,23 @@
       </Selection>
       <Class ClassIndex="0">
         <Ranges>
-          <Range Index="0" Min="-2.8856746673583984e+01" Max="2.3134088516235352e+01"/>
-          <Range Index="1" Min="-2.6858606338500977e+00" Max="2.5492713451385498e+00"/>
-          <Range Index="2" Min="3.9500814819335938e+02" Max="6.4913623046875000e+02"/>
+          <Range Index="0" Min="-2.4698005676269531e+01" Max="2.1618917465209961e+01"/>
+          <Range Index="1" Min="-1.5648428201675415e+00" Max="1.4273810386657715e+00"/>
+          <Range Index="2" Min="3.9500506591796875e+02" Max="6.4913623046875000e+02"/>
         </Ranges>
       </Class>
       <Class ClassIndex="1">
         <Ranges>
-          <Range Index="0" Min="-2.9695951461791992e+01" Max="3.0193050384521484e+01"/>
-          <Range Index="1" Min="-3.0746474266052246e+00" Max="2.6971583366394043e+00"/>
-          <Range Index="2" Min="3.9504122924804688e+02" Max="6.4969293212890625e+02"/>
+          <Range Index="0" Min="-3.1101762771606445e+01" Max="3.0003311157226562e+01"/>
+          <Range Index="1" Min="-1.8655300140380859e+00" Max="2.1946477890014648e+00"/>
+          <Range Index="2" Min="3.9504122924804688e+02" Max="6.4989318847656250e+02"/>
         </Ranges>
       </Class>
       <Class ClassIndex="2">
         <Ranges>
-          <Range Index="0" Min="-2.9695951461791992e+01" Max="3.0193050384521484e+01"/>
-          <Range Index="1" Min="-3.0746474266052246e+00" Max="2.6971583366394043e+00"/>
-          <Range Index="2" Min="3.9500814819335938e+02" Max="6.4969293212890625e+02"/>
+          <Range Index="0" Min="-3.1101762771606445e+01" Max="3.0003311157226562e+01"/>
+          <Range Index="1" Min="-1.8655300140380859e+00" Max="2.1946477890014648e+00"/>
+          <Range Index="2" Min="3.9500506591796875e+02" Max="6.4989318847656250e+02"/>
         </Ranges>
       </Class>
     </Transform>
@@ -97,41 +97,41 @@
     <Layout NLayers="4">
       <Layer Index="0" NNeurons="4">
         <Neuron NSynapses="3">
-          -5.2909433224738223e+00 5.5658884627345468e+00 2.9635116393917702e+00 
+          -4.4466997246684645e+00 -1.8911670176509439e+00 7.9794410659713426e+00 
         </Neuron>
         <Neuron NSynapses="3">
-          3.3944634994924638e+00 6.3149809529388499e+00 -1.2828283058338382e+01 
+          5.8607922852431171e+00 -9.0941584182900925e+00 1.5186766550824440e+00 
         </Neuron>
         <Neuron NSynapses="3">
-          3.9002184636134413e-01 6.2567979700107923e-01 6.2058962625852054e-01 
+          9.2296901156345157e-01 1.0563247326750165e+00 1.3935894861627862e-01 
         </Neuron>
         <Neuron NSynapses="3">
-          -7.9445164767993126e-01 -2.8870156770941700e+00 -1.6072692011439482e+00 
+          -1.5921176385668165e+00 -3.6468709054579262e+00 -2.2957212353747223e+00 
         </Neuron>
       </Layer>
       <Layer Index="1" NNeurons="4">
         <Neuron NSynapses="2">
-          -4.7050441534791823e+00 7.1635517532940121e+00 
+          -6.0888271046544071e+00 5.0079155405166418e+00 
         </Neuron>
         <Neuron NSynapses="2">
-          -3.6637772349547295e+00 8.3043357822536770e+00 
+          -7.0205112401050851e+00 1.0815171147281015e+00 
         </Neuron>
         <Neuron NSynapses="2">
-          -4.2182422406297260e+00 7.2492237608167160e+00 
+          -5.8189286301283172e+00 4.4848092301216571e+00 
         </Neuron>
         <Neuron NSynapses="2">
-          1.3848176100903280e+00 -6.9144805374159466e+00 
+          5.3073891288003727e+00 -5.4790891599417186e+00 
         </Neuron>
       </Layer>
       <Layer Index="2" NNeurons="3">
         <Neuron NSynapses="1">
-          -3.5015673999847419e+00 
+          5.8311824893802937e+00 
         </Neuron>
         <Neuron NSynapses="1">
-          -5.8997060025628025e+00 
+          -3.8305248776268543e+00 
         </Neuron>
         <Neuron NSynapses="1">
-          1.9539041296964597e+00 
+          -4.2568726491425677e+00 
         </Neuron>
       </Layer>
       <Layer Index="3" NNeurons="1">
