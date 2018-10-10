@@ -40,8 +40,8 @@ namespace mu2e
     _shBeta(pset.get<double>("StrawHitBeta",1.)),
     _shErr(pset.get<double>("StrawHitTimeErr",9.7)) // ns effective hit time res. without TOT
   {
-    _caloT0Offset[0] = pset.get<double>("Disk0TimeOffset",12.4); // nanoseconds
-    _caloT0Offset[1] = pset.get<double>("Disk1TimeOffset",15.7); // nanoseconds
+    _caloT0Offset[0] = pset.get<double>("Disk0TimeOffset",10.7); // nanoseconds
+    _caloT0Offset[1] = pset.get<double>("Disk1TimeOffset",14.0); // nanoseconds
     _caloT0Err[0] = pset.get<double>("Disk0TimeErr",0.8); // nanoseconds
     _caloT0Err[1] = pset.get<double>("Disk1TimeErr",1.7); // nanoseconds
   }

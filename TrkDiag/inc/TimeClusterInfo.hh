@@ -26,7 +26,7 @@ namespace mu2e {
     Float_t _tcalo; // calo cluster time
     Float_t _dtcalo; // calo cluster time
     XYZVec _cog; // calo cluster position
-    Int_t _prigen, _priproc;
+    Int_t _pripdg, _prigen, _priproc;
     Float_t _prifrac; // MC truth about the primary of a cluster
     
     void reset() { _tcindex = _prigen = _priproc = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = _prifrac = 0.0; _pos = _cog= XYZVec(); }
@@ -35,7 +35,7 @@ namespace mu2e {
       std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:posx/F:posy/F:posz/F")
       + std::string(":ecalo/F:tcalo/F:dtcalo/F")
       + std::string(":cogx/F:cogy/F:cogz/F")
-      + std::string(":prigin/I:priproc/I:prifrac/F");
+      + std::string(":pripdg/I:prigen/I:priproc/I:prifrac/F");
       return leaves;
     } 
   };
@@ -67,8 +67,8 @@ namespace mu2e {
     void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = 0.0; _minrho = 1000.0; _pos = XYZVec();}
     static std::string leafnames() {
       static std::string leaves; leaves =
-	std::string("nce/I:ncesel/I:nceclust/I:time/F:")
-	+std::string("posx/F:posy/F:posz/F")
+	std::string("nce/I:ncesel/I:nceclust/I:time/F")
+	+std::string(":posx/F:posy/F:posz/F")
 	+std::string(":maxdphi/F:minrho/F:maxrho/F");
       return leaves;
     } 

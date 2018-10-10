@@ -547,6 +547,7 @@ namespace mu2e {
       tcinfo._prifrac = float(primary._count)/tc.nStrawHits();
       art::Ptr<SimParticle> const& sp = primary._spp;
       if(sp.isNonnull()){
+	tcinfo._pripdg = sp->pdgId();
 	tcinfo._priproc = sp->creationCode();
 	if(sp->genParticle().isNonnull())
 	  tcinfo._prigen = sp->genParticle()->generatorId().id();

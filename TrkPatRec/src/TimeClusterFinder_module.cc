@@ -230,7 +230,8 @@ namespace mu2e {
       if (_finalDt && tc.nStrawHits() >= _minnhits) clusterDt(tc);
 // cleanup
       if (tc.nStrawHits() < _minnhits) {
-	tccol.erase(itc);
+	std::swap(tc,tccol.back());	
+	tccol.pop_back();
       }
       //std::cout<<"Collection size final"<<tc._strawHitIdxs.size()<<std::endl;
     }
