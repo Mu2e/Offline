@@ -26,7 +26,7 @@ namespace mu2e {
       // construct from parameters
       explicit StrawResponse(fhicl::ParameterSet const& pset);
       virtual ~StrawResponse();
-      bool wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr) const;
+      bool wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr, float& halfpv) const;
       bool useDriftError() const { return _usederr; } 
       bool useNonLinearDrift() const { return _usenonlindrift; }
       double Mint0doca() const { return _mint0doca;}

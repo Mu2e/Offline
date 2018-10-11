@@ -187,12 +187,13 @@ namespace mu2e {
     return 0;
   }
 
-  bool StrawResponse::wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr) const {
+  bool StrawResponse::wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr, float &halfpv) const {
     bool retval(true);
     float slen = straw.getHalfLength();
     // convert edep from Mev to KeV (should be standardized, FIXME!)
     float kedep = 1000.0*edep;
-    wdist = halfPropV(straw.id(),kedep)*(dt);
+    halfpv = halfPropV(straw.id(),kedep);
+    wdist = halfpv*(dt);
     wderr = wpRes(kedep,fabs(wdist));
     // truncate positions that exceed the length of the straw (with a buffer): these come from missing a cluster on one end
     if(fabs(wdist) > slen+_wbuf*wderr){
