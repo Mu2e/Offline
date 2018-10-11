@@ -88,7 +88,8 @@ namespace mu2e {
     StrawHitFlag  _hsel, _tcsel, _hbkg;
 
     // mva stuff
-    MVATools                              _peakMVA; // MVA for peak cleaning
+    MVATools          _tcMVA; // MVA for peak cleaning
+    MVATools          _tcCaloMVA; // MVA for peak cleaning, with calo cluster
     // time spectrum parameters
     double        _tmin;
     double        _tmax;
@@ -152,7 +153,8 @@ namespace mu2e {
     _vdmcstepsTag       (pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
     _hsel		(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg		(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
-    _peakMVA		(pset.get<fhicl::ParameterSet>("PeakCleanMVA",fhicl::ParameterSet())),
+    _tcMVA           (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
+    _tcCaloMVA           (pset.get<fhicl::ParameterSet>("ClusterCaloMVA",fhicl::ParameterSet())),
     _tmin		(pset.get<double>("tmin",500.0)),
     _tmax		(pset.get<double>("tmax",1700.0)),
    _tbin		(pset.get<double>("tbin",15.0)),
@@ -167,7 +169,8 @@ namespace mu2e {
 
   void TimeClusterDiag::beginJob(){
   // initialize MVA: this is used just for diagnostics
-    _peakMVA.initMVA();
+    _tcMVA.initMVA();
+    _tcCaloMVA.initMVA();
     createDiagnostics();
   }
 
@@ -357,12 +360,16 @@ namespace mu2e {
       tchi._z = pos.z();
       tchi._nsh = ch.nStrawHits();
 // compute MVA
-      std::vector<Double_t> pars(3);
-      pars[0] = tchi._dt;
-      pars[1] = tchi._dphi;
-      pars[2] = tchi._rho;
-      tchi._mva = _peakMVA.evalMVA(pars);
-// MC truth
+      std::vector<Double_t> pars(4);
+      pars[0] = fabs(tchi._dt);
+      pars[1] = fabs(tchi._dphi);
+      pars[2] = std::max(tchi._rho,float(500.0));
+      pars[3] = tchi._nsh;
+      if (tc._caloCluster.isNonnull())
+	tchi._mva = _tcCaloMVA.evalMVA(pars);
+      else
+	tchi._mva = _tcMVA.evalMVA(pars);
+      // MC truth
       if(_mcdiag){
      	std::vector<StrawDigiIndex> shids;
 	_chcol->fillStrawDigiIndices(event,ich,shids);

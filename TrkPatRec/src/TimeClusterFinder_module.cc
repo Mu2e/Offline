@@ -54,7 +54,8 @@ namespace {
     Float_t& _dt;
     Float_t& _dphi;
     Float_t& _rho;
-    TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
+    Float_t& _nsh;
+    TimePeakMVA() : _pars(4,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]) {}
   };
 }
 
@@ -89,6 +90,7 @@ namespace mu2e {
       float             _ymin;
       bool              _refine;
       bool              _preFilter;
+      bool              _recover;
       bool              _finalDt;
       bool              _usecc, _useccpos;
       float             _ccmine, _ccwt;
@@ -104,7 +106,11 @@ namespace mu2e {
       void fillTimeSpectrum();
       void initCluster(TimeCluster& tc);
       void prefilterCluster(TimeCluster& tc);
+      void prefilterCaloCluster(TimeCluster& tc);
+      void prefilterNoCaloCluster(TimeCluster& tc);
+      void recoverHits(TimeCluster& tc);
       void removeHit(TimeCluster& tc,size_t iremove);
+      void addHit(TimeCluster& tc,size_t iadd);
       void clusterMean(TimeCluster& tc);
       void refineCluster(TimeCluster& tc);
       void clusterDt(TimeCluster& tc);
@@ -124,7 +130,7 @@ namespace mu2e {
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _maxdt             (pset.get<float>(  "DtMax",30.0)),
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
-    _minpeakmva        (pset.get<float>(  "MinTimePeakMVA",0.2)),
+    _minpeakmva        (pset.get<float>(  "MinTimePeakMVA",0.1)),
     _maxpeakdt         (pset.get<float>(  "MaxTimePeakDeltat",25.0)),
     _maxdPhi           (pset.get<float>(  "MaxdPhi",1.5)),
     _tmin              (pset.get<float>(  "tmin",450.0)),
@@ -133,6 +139,7 @@ namespace mu2e {
     _ymin              (pset.get<float>(  "ymin",5.0)),
     _refine            (pset.get<bool>(  "RefineClusters",true)),
     _preFilter         (pset.get<bool>(    "PrefilterCluster",true)),
+    _recover           (pset.get<bool>(    "RecoverHits",true)),
     _finalDt	       (pset.get<bool>(    "FinalDtCut",true)),
     _usecc             (pset.get<bool>(    "UseCaloCluster",false)),
     _useccpos          (pset.get<bool>(    "UseCaloClusterPosition",false)),
@@ -226,9 +233,13 @@ namespace mu2e {
     for (auto itc = tccol.begin(); itc < tccol.end(); ++itc){
       TimeCluster& tc = *itc;
       initCluster(tc);
-      if (_refine && tc.nStrawHits() >= _minnhits) refineCluster(tc);
-      if (_finalDt && tc.nStrawHits() >= _minnhits) clusterDt(tc);
-// cleanup
+      if (_preFilter) prefilterCluster(tc);
+      if( tc.nStrawHits() >= _minnhits) {
+	clusterMean(tc);
+	if (_refine) refineCluster(tc);
+	if (_finalDt) clusterDt(tc);
+	if (_recover) recoverHits(tc);
+      }
       if (tc.nStrawHits() < _minnhits) {
 	std::swap(tc,tccol.back());	
 	tccol.pop_back();
@@ -359,21 +370,44 @@ namespace mu2e {
         extract_result<tag::weighted_median>(zacc));
 
     if (_debug > 0) std::cout<<"Init time peak "<<tc._t0._t0<<std::endl;
-    // hemisphere filter
-    if (_preFilter) prefilterCluster(tc);
   }
 
   // prefilter based on a rough hemisphere cut
   void TimeClusterFinder::prefilterCluster(TimeCluster& tc){
-    clusterMean(tc);
-    bool enoughhits(true);
+  // no loop for Calo clusters
+    if (tc._caloCluster.isNonnull())
+      prefilterCaloCluster(tc);
+    else
+      prefilterNoCaloCluster(tc);
+  }
+
+  void TimeClusterFinder::prefilterCaloCluster(TimeCluster& tc){
+  // use calo cluster time and position
+    float pphi = polyAtan2( tc._caloCluster->cog3Vector().y(), tc._caloCluster->cog3Vector().x());
+    for (size_t ips = 0; ips <  tc._strawHitIdxs.size(); ++ips){
+      bool remove(false);
+      StrawHitIndex ish = tc._strawHitIdxs[ips];
+      ComboHit const& ch = (*_chcol)[ish];
+      if(fabs(_ttcalc.comboHitTime(ch) - tc._t0._t0) > _maxpeakdt) {
+	remove = true;
+      } else {
+	float phi   = polyAtan2(ch.pos().y(), ch.pos().x()); 
+	float dphi  = Angles::deltaPhi(phi,pphi);
+	float adphi = std::abs(dphi);
+	remove = adphi > _maxdPhi;
+      }
+      if(remove)removeHit(tc, ips);
+    }
+  }
+
+  void TimeClusterFinder::prefilterNoCaloCluster(TimeCluster& tc){
     bool changed(true);
     //prefilter one after another
-    while (enoughhits && changed) {
+    while (changed) {
       float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
       changed = false;
-      size_t iworst(0);
-      float maxadPhi(0);
+      int iworst(-1);
+      float maxadPhi(_maxdPhi);
       for (size_t ips = 0; ips <  tc._strawHitIdxs.size(); ++ips){
 	StrawHitIndex ish = tc._strawHitIdxs[ips];
 	ComboHit const& ch = (*_chcol)[ish];
@@ -382,11 +416,44 @@ namespace mu2e {
 	float adphi = std::abs(dphi);
 	if (adphi > maxadPhi) {iworst=ips; maxadPhi=adphi;}
       }
-      if (maxadPhi>_maxdPhi){
+      if (iworst > 0){
 	changed = true;
 	removeHit(tc,iworst);
       }
-      enoughhits = tc._nsh >= _minnhits;
+    }
+  }
+  
+  void TimeClusterFinder::recoverHits(TimeCluster& tc){
+    bool changed(true);
+    while (changed) {
+      changed = false;
+      float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
+      for(size_t ich=0;ich < _chcol->size(); ++ich){
+	if ((!_testflag) || goodHit((*_shfcol)[ich])) {
+	  if(std::find(tc._strawHitIdxs.begin(),tc._strawHitIdxs.end(),ich) == tc._strawHitIdxs.end()){
+	    ComboHit const& ch = (*_chcol)[ich];
+	    float cht = _ttcalc.comboHitTime(ch);
+	    _pmva._dt = fabs(cht - tc._t0._t0);
+	    if(_pmva._dt < _maxpeakdt){
+	      float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
+	      _pmva._dphi = fabs(Angles::deltaPhi(phi,pphi));
+	      if(_pmva._dphi < _maxdPhi){ 
+		_pmva._rho = ch.pos().Perp2();
+		_pmva._nsh = ch.nStrawHits();
+		float mvaout(-1.0);
+		if (tc._caloCluster.isNonnull())
+		  mvaout = _tcCaloMVA.evalMVA(_pmva._pars);
+		else
+		  mvaout = _tcMVA.evalMVA(_pmva._pars);
+		if (mvaout > _minpeakmva) {
+		  addHit(tc,ich);
+		  changed = true;
+		}
+	      }
+	    }
+	  }
+	}
+      }
     }
   }
 
@@ -395,15 +462,34 @@ namespace mu2e {
     ComboHit const& ch = (*_chcol)[tc._strawHitIdxs.back()];
     unsigned nsh = ch.nStrawHits();
     float denom = float(tc._nsh - nsh);
-    float cht = _ttcalc.comboHitTime(ch);
     // update time cluster properties 
-    if(!tc._caloCluster.isNonnull())tc._t0._t0 = (tc._t0._t0*tc._nsh - cht*nsh)/denom;
+    if(!tc._caloCluster.isNonnull()){
+      float cht = _ttcalc.comboHitTime(ch);
+      tc._t0._t0 = (tc._t0._t0*tc._nsh - cht*nsh)/denom;
+    }
     // update t0 error too FIXME!
     tc._pos.SetX((tc._pos.x()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._pos.SetY((tc._pos.y()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._pos.SetZ((tc._pos.z()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._nsh -= nsh;
     tc._strawHitIdxs.pop_back();
+  }
+
+  void TimeClusterFinder::addHit(TimeCluster& tc,size_t iadd) {
+    ComboHit const& ch = (*_chcol)[iadd];
+    unsigned nsh = ch.nStrawHits();
+    float denom = float(tc._nsh + nsh);
+    // update time cluster properties 
+    if(!tc._caloCluster.isNonnull()){
+      float cht = _ttcalc.comboHitTime(ch);
+      tc._t0._t0 = (tc._t0._t0*tc._nsh + cht*nsh)/denom;
+    }
+    // update t0 error too FIXME!
+    tc._pos.SetX((tc._pos.x()*tc._nsh + ch.pos().x()*nsh)/denom);
+    tc._pos.SetY((tc._pos.y()*tc._nsh + ch.pos().x()*nsh)/denom);
+    tc._pos.SetZ((tc._pos.z()*tc._nsh + ch.pos().x()*nsh)/denom);
+    tc._nsh += nsh;
+    tc._strawHitIdxs.push_back(iadd);
   }
 
   void TimeClusterFinder::clusterMean(TimeCluster& tc) {
@@ -435,12 +521,9 @@ namespace mu2e {
   } 
 
   void TimeClusterFinder::refineCluster(TimeCluster& tc) {
-    // convert to means
-    clusterMean(tc);
     // mva filtering; remove worst hit iteratively
     bool changed = true;
-    bool enoughhits = true;
-    while (enoughhits && changed) {
+    while (changed) {
       changed = false;
       size_t iworst(0);
       float worstmva(100.0);
@@ -450,22 +533,23 @@ namespace mu2e {
         ComboHit const& ch = (*_chcol)[ish];
         float cht = _ttcalc.comboHitTime(ch);
 
-        float rho = sqrtf(ch.pos().Perp2());
+        float rho = ch.pos().Perp2();
         float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
         float dphi = Angles::deltaPhi(phi,pphi);
 
-        _pmva._dt = cht - tc._t0._t0;
-        _pmva._dphi = dphi;
-        _pmva._rho = rho; // change this to use radius^2 FIXME!
+        _pmva._dt = fabs(cht - tc._t0._t0);
+        _pmva._dphi = fabs(dphi);
+        _pmva._rho = rho;
+	_pmva._nsh = ch.nStrawHits();
 
 	float mvaout(-1.0);
 	if (tc._caloCluster.isNonnull())
-	   mvaout = _tcMVA.evalMVA(_pmva._pars);
-	else
 	   mvaout = _tcCaloMVA.evalMVA(_pmva._pars);
-        if (mvaout < worstmva) {
-          worstmva = mvaout;
-          iworst = ips;
+	else
+	  mvaout = _tcMVA.evalMVA(_pmva._pars);
+	if (mvaout < worstmva) {
+	  worstmva = mvaout;
+	  iworst = ips;
         }
       }
 
@@ -473,7 +557,6 @@ namespace mu2e {
         changed = true;
 	removeHit(tc,iworst);
       }
-      enoughhits = tc._nsh >= _minnhits;
     }
   }
 

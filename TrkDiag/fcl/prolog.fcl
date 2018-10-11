@@ -87,7 +87,8 @@ BEGIN_PROLOG
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
-	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+        ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+        ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
 	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
       }
