@@ -8,9 +8,9 @@ services : {
 
    DbService : {
       purpose :  "TEST"
-      version :  "v1_1_*"
-      dbName : "mu2e_conditions_dev"
-      textFile : ["table.txt"]
+      version :  "v1_0"
+      dbName : "mu2e_conditions_prd"
+      #textFile : ["table.txt"]
       verbose : 1
    }
 
