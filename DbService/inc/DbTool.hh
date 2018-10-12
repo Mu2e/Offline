@@ -37,7 +37,6 @@ namespace mu2e {
 
     int run();
     int init();
-    int reloadCache();
 
     int printTable(std::string name="", 
 		   std::vector<int> cids=std::vector<int>());
@@ -46,7 +45,10 @@ namespace mu2e {
     int printVersions(bool details=false);
     int printSet();
     int commitCalibration();
-    int commitCalibrationSql(DbTableCollection const& coll);
+    int commitCalibrationTable(DbTable::table_ptr const& ptr, 
+			       bool qdr=false, bool admin=false);
+    int commitCalibrationList(DbTableCollection const& coll,
+			      bool qdr=false, bool admin=false);
     int commitIov(int cid=0, std::string iovtext="");
     int commitGroup(std::vector<int> iids=std::vector<int>());
     int commitExtension();

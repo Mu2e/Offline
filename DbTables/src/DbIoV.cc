@@ -78,10 +78,14 @@ std::string mu2e::DbIoV::to_string(bool compress) const {
 }
 
 void mu2e::DbIoV::setByString(std::string iovstr) {
-  boost::trim(iovstr); // remove leading. trailing whitespace
+  boost::trim(iovstr); // remove leading, trailing whitespace
   boost::to_upper(iovstr);
   if(iovstr.empty()||iovstr=="MAX"||iovstr=="ALL") {
     setMax();
+    return;
+  }
+  if(iovstr=="EMPTY") {
+    set(0,0,0,0);
     return;
   }
   std::vector<std::string> words;
@@ -92,6 +96,8 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
     start = words[0];
     end = words[1];
   } else {
+    // this allows strings with spaces like
+    // "1 2 3 4" -> start = 1:2, end=3:4
     boost::split(words,iovstr, boost::is_any_of(" \t"), 
 		 boost::token_compress_on);
     if(words.size()==4) {
@@ -109,15 +115,45 @@ void mu2e::DbIoV::setByString(std::string iovstr) {
     }
   }
 
+  // require a string for start and end
+  if(start.empty()||end.empty()) {
+    throw cet::exception("DBIOV_EMPTY_INIT_STRING") 
+      << "DbIoV::setByString found start or end point was blank: " << iovstr << "\n";
+  }
+
   boost::split(words,start, boost::is_any_of(":"),boost::token_compress_on);
   uint32_t startr = 0, startsr = 0;
-  if(words.size()>=1) startr  = std::stoi(words[0]);
-  if(words.size()>=2) startsr = std::stoi(words[1]);
-
+  if(words.size()>=1) {
+    boost::to_upper(words[0]);
+    if(words[0]!="MIN") {
+      startr  = std::stoi(words[0]);
+    }
+  }
+  if(words.size()>=2) {
+    boost::to_upper(words[1]);
+    if(words[1]!="MIN") {
+      startsr = std::stoi(words[1]);
+    }
+  }
   boost::split(words,end, boost::is_any_of(":"),boost::token_compress_on);
   uint32_t endr = maxr, endsr = maxsr;
-  if(words.size()>=1) endr  = std::stoi(words[0]);
-  if(words.size()>=2) endsr = std::stoi(words[1]);
+  if(words.size()>=1) {
+    boost::to_upper(words[0]);
+    if(words[0]!="MAX") {
+      endr  = std::stoi(words[0]);
+    }
+  }
+  if(words.size()>=2) {
+    boost::to_upper(words[1]);
+    if(words[1]!="MAX") {
+      endsr = std::stoi(words[1]);
+    }
+  }
+
+  if( endr<startr || (endr==startr && endsr<startsr) ) {
+    throw cet::exception("DBIOV_NEGATIVE_INIT_STRING") 
+      << "DbIoV::setByString found end point was before start point: " << iovstr << "\n";
+  }
 
   set(startr,startsr,endr,endsr);
 

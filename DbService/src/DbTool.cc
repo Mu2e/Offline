@@ -58,19 +58,6 @@ int mu2e::DbTool::init() {
   return 0;
 }
 
-// ****************************************  reloadCache
-// after writing to val tables, read them back 
-// to refresh the web cache
-
-int mu2e::DbTool::reloadCache() {
-  _reader.setUseCache(false);
-  _reader.setVerbose(0);
-  _valcache.setVerbose(0);
-  int rc = _reader.fillValTables(_valcache);
-  return rc;
-}
-
-
 // ****************************************  printTable
 
 int mu2e::DbTool::printTable(std::string name, std::vector<int> cids) {
@@ -141,6 +128,7 @@ int mu2e::DbTool::commitCalibration() {
 
   map_ss args;
   args["file"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
 
   if(args["file"].empty()) {
@@ -148,8 +136,11 @@ int mu2e::DbTool::commitCalibration() {
     return 1;
   }
 
+  bool qdr = !args["dry-run"].empty();
+
   DbTableCollection coll = DbUtil::readFile(args["file"]);
-  if(_verbose>0) std::cout << "commit-calibration: read "<< coll.size() <<" tables "
+  if(_verbose>0) std::cout << "commit-calibration: read "
+			   << coll.size() <<" tables "
 			   << " from " << args["file"] <<std::endl;
   if(_verbose>5) {
     for(auto lt: coll) {
@@ -165,14 +156,26 @@ int mu2e::DbTool::commitCalibration() {
     return 2;
   }
 
-  rc = commitCalibrationSql(coll);
+  rc = commitCalibrationList(coll,qdr,_admin);
 
   return rc;
 }
 
-// ****************************************  commitCalibrationSql
+// ****************************************  commitCalibrationTable
+// the list insert has the core function, so if a single table,
+// put it in a list
 
-int mu2e::DbTool::commitCalibrationSql(DbTableCollection const& coll) {
+int mu2e::DbTool::commitCalibrationTable(DbTable::table_ptr const& ptr, 
+					 bool qdr, bool admin) {
+  DbTableCollection coll;
+  coll.emplace_back(DbLiveTable(mu2e::DbIoV(),ptr));
+  return commitCalibrationList(coll,qdr,admin);
+}
+
+// ****************************************  commitCalibrationList
+
+int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
+					bool qdr, bool admin) {
 
   int rc = 0;
   rc = _sql.connect();
@@ -181,19 +184,97 @@ int mu2e::DbTool::commitCalibrationSql(DbTableCollection const& coll) {
     return 3;
   }
 
+  std::string command,result;
+  command = "BEGIN";
+  rc = _sql.execute(command,result);
+  if(rc!=0) return rc;
+
   int cid = -1;
   for(auto const& liveTable: coll) {
-    rc = _sql.writeWithCid(liveTable.table_ptr(),cid,_admin);
-    if(rc) {
-      std::cout << "commit-calibration: SQL failed to write "<<std::endl;
-      return 4;
+    auto const& ptr = liveTable.table_ptr();
+    int tid = -1;
+    for(auto const& tr:_valcache.valTables().rows()) {
+      if(tr.name()==ptr->name()) tid = tr.tid();
     }
-    std::cout << "commit-calibration: table "<<liveTable.table_ptr()->name()
-	      <<" created with " << liveTable.table_ptr()->nrow() 
-	      <<" rows and cid " << cid << std::endl;
+    if(tid<=0) {
+      std::cout << "DbTool::commitCalibrationList could not find tid for "
+		<< "table named "<< ptr->name()<<std::endl;
+      return 1;
+    }
+
+    command = "SET ROLE val_role;";
+    rc = _sql.execute(command,result);
+    if(rc!=0) return rc;
+
+    command = "INSERT INTO val.calibrations (tid,create_time,create_user)  VALUES ("+std::to_string(tid)+",CURRENT_TIMESTAMP,SESSION_USER) RETURNING cid;";
+    rc = _sql.execute(command,result);
+    if(rc!=0) return rc;
+
+    cid = std::stoi(result);
+    if(cid<=0 || cid>1000000) {
+      std::cout << "DbTool::commitCalibrationList could not get cid, result is " 
+		<<result << std::endl;
+    }
+
+    // devine the schema name from the first dot field of the dbname
+    std::string dbname = ptr->dbname();
+    size_t dpos = dbname.find(".");
+    if(dpos==std::string::npos) {
+      std::cout << "DbTool::commitCalibrationList could not decode schema from "
+		<< dbname << std::endl;
+      return 1;
+    }
+    std::string schema = dbname.substr(0,dpos);
+  
+    // inserting into a detector schema is done by the detector role
+    // or overridden by admin
+    if(admin) {
+      command = "SET ROLE admin_role;";
+    } else {
+      // the tst schema is written by val role, just to remove one more role
+      // with a duplicate membership
+      if(schema=="tst") {
+	command = "SET ROLE val_role;";
+      } else {
+	command = "SET ROLE "+schema+"_role;";
+      }
+    }
+    rc = _sql.execute(command,result);
+    if(rc!=0) return rc;
+
+    // insert table values
+    std::string csv = ptr->csv();
+    std::vector<std::string> lines = DbUtil::splitCsvLines(csv);
+    for(auto line: lines) {
+      std::string cline = DbUtil::sqlLine(line);
+      command = "INSERT INTO "+ptr->dbname()+"(cid,"+ptr->query()
+	+") VALUES ("+std::to_string(cid)+","+cline+");";
+      rc = _sql.execute(command,result);
+      if(rc!=0) return rc;
+    }
+
+    if(qdr) {
+      std::cout << "would create calibration "<< ptr->name() 
+		<< " with " << ptr->nrow() 
+		<< " rows, new cid would be " << cid << std::endl;
+    } else {
+      std::cout << "created calibration "<< ptr->name() 
+		<< " with " << ptr->nrow() 
+		<< " rows, new cid is " << cid << std::endl;
+    }
+
   }
-  _sql.disconnect();
-  return 0;
+
+  if(qdr) {
+    command = "ROLLBACK;";
+  } else {
+    command = "COMMIT;";
+  }
+  rc = _sql.execute(command,result);
+  if(rc!=0) return rc;
+
+  rc = _sql.disconnect();
+  return rc;
 }
 
 
@@ -369,6 +450,7 @@ int mu2e::DbTool::commitIov(int cid, std::string iovtext) {
   map_ss args;
   args["cid"] = "";
   args["iov"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
   if(cid<=0 and !args["cid"].empty()) cid = stoi(args["cid"]);
   if(iovtext.empty() && !args["iov"].empty()) iovtext = args["iov"];
@@ -383,6 +465,8 @@ int mu2e::DbTool::commitIov(int cid, std::string iovtext) {
     return 1;
   }
 
+  bool qdr = !args["dry-run"].empty();
+
   DbIoV iov;
   iov.setByString(iovtext);
 
@@ -390,6 +474,11 @@ int mu2e::DbTool::commitIov(int cid, std::string iovtext) {
   if(rc) return rc;
 
   std::string command,result;
+
+  command = "BEGIN;";
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
+
   command = "SET ROLE val_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
@@ -398,19 +487,22 @@ int mu2e::DbTool::commitIov(int cid, std::string iovtext) {
     +std::to_string(cid)+","
     +std::to_string(iov.startRun())+","+std::to_string(iov.startSubrun())+","
     +std::to_string(iov.endRun())+","+std::to_string(iov.endSubrun())
-    +",CURRENT_TIMESTAMP,SESSION_USER);";
+    +",CURRENT_TIMESTAMP,SESSION_USER) RETURNING iid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  command = "SELECT iid FROM val.iovs ORDER BY iid DESC LIMIT 1;";
+  if(qdr) {
+    std::cout << "new IID would be "<<result;
+    command = "ROLLBACK;";
+  } else {
+    std::cout << "new IID is "<<result;
+    command = "COMMIT;";
+  }
+
   rc = _sql.execute(command, result);
   if(rc) return rc;
-
-  std::cout << "new IID is "<<result;
 
   rc = _sql.disconnect();
-
-  reloadCache();
 
   return rc;
 
@@ -422,6 +514,7 @@ int mu2e::DbTool::commitGroup(std::vector<int> iids) {
 
   map_ss args;
   args["iid"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
   if(iids.empty() && !args["iid"].empty()) iids = intList(args["iid"]);
 
@@ -430,34 +523,40 @@ int mu2e::DbTool::commitGroup(std::vector<int> iids) {
     return 1;
   }
 
+  bool qdr = !args["dry-run"].empty();
+
   rc = _sql.connect();
+  if(rc) return rc;
+
   std::string command,result;
+
+  command = "BEGIN;";
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
 
   command = "SET ROLE val_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-
   // first create the group and get new GID
-  command = "INSERT INTO val.groups (create_time,create_user) VALUES (CURRENT_TIMESTAMP,SESSION_USER);";
+  command = "INSERT INTO val.groups (create_time,create_user) VALUES (CURRENT_TIMESTAMP,SESSION_USER) RETURNING gid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  command = "SELECT gid FROM val.groups ORDER BY gid DESC LIMIT 1;";
-  rc = _sql.execute(command, result);
-  if(rc) return rc;
   int gid = std::stoi(result);
   if(gid<=0) {
     std::cout << "commit-group: did get proper GID: "<<result<<std::endl;
-    rc = 1;
-    return rc;
+    return 1;
   }
-  std::cout << "new GID is "<<result;
+
+  if(qdr) {
+    std::cout << "new GID would be "<<result;
+  } else {
+    std::cout << "new GID is "<<result;
+  }
 
   // now insert each iid into grouplists
   for(auto iid :iids) {
-    rc = _sql.connect();
-    std::string command,result;
     command = "INSERT INTO val.grouplists (gid,iid) VALUES ("
       +std::to_string(gid)+","+std::to_string(iid)+");";
     rc = _sql.execute(command, result);
@@ -467,9 +566,15 @@ int mu2e::DbTool::commitGroup(std::vector<int> iids) {
     }
   }
 
-  rc = _sql.disconnect();
+  if(qdr) {
+    command = "ROLLBACK;";
+  } else {
+    command = "COMMIT;";
+  }
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
 
-  reloadCache();
+  rc = _sql.disconnect();
 
   return rc;
 
@@ -483,6 +588,7 @@ int mu2e::DbTool::commitExtension() {
   args["purpose"] = "";
   args["version"] = "";
   args["gid"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
 
   if(args["purpose"].empty() || args["version"].empty()) {
@@ -495,6 +601,8 @@ int mu2e::DbTool::commitExtension() {
     std::cout << "commit-extension: --gid is required "<<std::endl;
     return 1;
   }
+
+  bool qdr = !args["dry-run"].empty();
 
   DbVersion version(args["purpose"],args["version"]);
 
@@ -564,11 +672,15 @@ int mu2e::DbTool::commitExtension() {
   }
 
   // finally do the commits
-  
+
   rc = _sql.connect();
   std::string command,result;
 
-  command = "SET ROLE admin_role;";
+  command = "BEGIN;";
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
+
+  command = "SET ROLE manager_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
@@ -576,22 +688,24 @@ int mu2e::DbTool::commitExtension() {
 
   command = "INSERT INTO val.extensions (vid,extension,create_time,create_user) VALUES ("
     +std::to_string(vid)+","
-    +std::to_string(emax)+",CURRENT_TIMESTAMP,SESSION_USER);";
+    +std::to_string(emax)+",CURRENT_TIMESTAMP,SESSION_USER) RETURNING eid;";
   rc = _sql.execute(command, result);
   if(rc) {
     std::cout <<"commit-extension : error committing extension " << std::endl;
     return rc;
   }
 
-  command = "SELECT eid FROM val.extensions ORDER BY eid DESC LIMIT 1;";
-  rc = _sql.execute(command, result);
-  if(rc) return rc;
   int eid = std::stoi(result);
   if(eid<=0) {
     std::cout << "commit-extension: did get proper EID: "<<result<<std::endl;
-    return -1;
+    return 1;
   }
-  std::cout << "new EID is "<<result;
+
+  if(qdr) {
+    std::cout << "new EID would be "<<result;
+  } else {
+    std::cout << "new EID is "<<result;
+  }
 
   for(auto g : gids) {
     command = "INSERT INTO val.extensionlists (eid,gid) VALUES ("
@@ -605,16 +719,32 @@ int mu2e::DbTool::commitExtension() {
     }
   }
 
-  std::cout <<"committed "<< gids.size() <<" groups with eid "<< eid <<" to extensionlist " << std::endl;
+  if(qdr) {
+    std::cout <<"would have committed "<< gids.size() <<" groups with eid "<< eid <<" to extensionlist " << std::endl;
+  } else {
+    std::cout <<"committed "<< gids.size() <<" groups with eid "<< eid <<" to extensionlist " << std::endl;
+  }
 
   DbVersion newversion(version.purpose(),version.major(),version.minor(),emax);
 
-  std::cout << "new largest verison is " 
-	    << newversion.to_string("_") << std::endl;
+  if(qdr) {
+    std::cout << "new largest verison would be " 
+	      << newversion.to_string("_") << std::endl;
+  } else {
+    std::cout << "new largest verison is " 
+	      << newversion.to_string("_") << std::endl;
+  }
+
+  if(qdr) {
+    command = "ROLLBACK;";
+  } else {
+    command = "COMMIT;";
+  }
+
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
 
   rc = _sql.disconnect();
-
-  reloadCache();
 
   return rc;
 
@@ -628,6 +758,7 @@ int mu2e::DbTool::commitTable() {
   map_ss args;
   args["name"] = "";
   args["dbname"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
 
   if(args["name"].empty()) {
@@ -639,27 +770,40 @@ int mu2e::DbTool::commitTable() {
     return 1;
   }
 
+  bool qdr = !args["dry-run"].empty();
+
   rc = _sql.connect();
   std::string command,result;
 
-  command = "SET ROLE admin_role;";
+  command = "BEGIN;";
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
+
+  command = "SET ROLE manager_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
   command = "INSERT INTO val.tables (name,dbname,create_time,create_user) VALUES ('"
-    +args["name"]+"','"+args["dbname"]+"',CURRENT_TIMESTAMP,SESSION_USER);";
+    +args["name"]+"','"+args["dbname"]
+    +"',CURRENT_TIMESTAMP,SESSION_USER) RETURNING tid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  command = "SELECT tid FROM val.tables WHERE name='"+args["name"]+"';";
+  if(qdr) {
+    std::cout << "new TID would be "<<result;
+  } else {
+    std::cout << "new TID is "<<result;
+  }
+
+  if(qdr) {
+    command = "ROLLBACK;";
+  } else {
+    command = "COMMIT;";
+  }
   rc = _sql.execute(command, result);
   if(rc) return rc;
-
-  std::cout << "new TID is "<<result;
 
   rc = _sql.disconnect();
-
-  reloadCache();
 
   return rc;
 
@@ -674,6 +818,7 @@ int mu2e::DbTool::commitTableList() {
   args["name"] = "";
   args["comment"] = "";
   args["tids"] = "";
+  args["dry-run"] = "";
   rc = getArgs(args);
   if(rc) return rc;
 
@@ -699,12 +844,18 @@ int mu2e::DbTool::commitTableList() {
     return 1;
   }
   
+  bool qdr = !args["dry-run"].empty();
+
   std::string command,result;
   rc = _sql.connect();
   if(rc) return rc;
 
+  command = "BEGIN;";
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
+
   // only admin can create a new table list
-  command = "SET ROLE admin_role;";
+  command = "SET ROLE manager_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
@@ -712,12 +863,7 @@ int mu2e::DbTool::commitTableList() {
     "INSERT INTO val.lists (name,comment,create_time,create_user) VALUES ('"
     +args["name"]+"','"
     +args["comment"]
-    +"',CURRENT_TIMESTAMP,SESSION_USER);";
-  rc = _sql.execute(command, result);
-  if(rc) return rc;
-  
-  // find and verify the new lid
-  command = "SELECT lid FROM val.lists WHERE name='"+args["name"]+"';";
+    +"',CURRENT_TIMESTAMP,SESSION_USER) RETURNING lid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
   
@@ -753,12 +899,23 @@ int mu2e::DbTool::commitTableList() {
     if(rc) return rc;
   }
   
-  rc = _sql.disconnect();
 
   std::cout <<"commit-tablelist: new list "+args["name"]+" has lid "
 	    << lid << " with "<< ntid <<" list entries " << std::endl;
 
-  reloadCache();
+  if(qdr) {
+    std::cout <<"commit-tablelist: new list "+args["name"]+" would have lid "
+	      << lid << " with "<< ntid <<" list entries " << std::endl;
+    command = "ROLLBACK;";
+  } else {
+    std::cout <<"commit-tablelist: new list "+args["name"]+" has lid "
+	      << lid << " with "<< ntid <<" list entries " << std::endl;
+    command = "COMMIT;";
+  }
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
+
+  rc = _sql.disconnect();
 
   return rc;
 
@@ -772,6 +929,7 @@ int mu2e::DbTool::commitPurpose() {
   map_ss args;
   args["name"] = "";
   args["comment"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
 
   if(args["name"].empty()) {
@@ -783,28 +941,37 @@ int mu2e::DbTool::commitPurpose() {
     return 1;
   }
 
-  rc = _sql.connect();
+  bool qdr = !args["dry-run"].empty();
 
+  rc = _sql.connect();
   std::string command,result;
 
-  command = "SET ROLE admin_role;";
+  command = "BEGIN;";
+  rc = _sql.execute(command, result);
+  if(rc) return rc;
+
+  command = "SET ROLE manager_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
   command = "INSERT INTO val.purposes (name,comment,create_time,create_user) VALUES ('"
-    +args["name"]+"','"+args["comment"]+"',CURRENT_TIMESTAMP,SESSION_USER);";
+    +args["name"]+"','"+args["comment"]
+    +"',CURRENT_TIMESTAMP,SESSION_USER) RETURNING pid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  command = "SELECT pid FROM val.purposes WHERE name='"+args["name"]+"';";
+
+  if(qdr) {
+    std::cout << "new PID would be "<<result;
+    command = "ROLLBACK;";
+  } else {
+    std::cout << "new PID is "<<result;
+    command = "COMMIT;";
+  }
   rc = _sql.execute(command, result);
   if(rc) return rc;
-
-  std::cout << "new PID is "<<result;
 
   rc = _sql.disconnect();
-
-  reloadCache();
 
   return rc;
 
@@ -820,6 +987,7 @@ int mu2e::DbTool::commitVersion() {
   args["major"] = "";
   args["minor"] = "";
   args["comment"] = "";
+  args["dry-run"] = "";
   if( (rc = getArgs(args)) ) return rc;
 
   if(args["purpose"].empty()) {
@@ -845,73 +1013,97 @@ int mu2e::DbTool::commitVersion() {
     return 1;
   }
 
+  bool qdr = !args["dry-run"].empty();
+
+  // verify the purpose exists
+  // true if numeric
+  bool qpp = args["purpose"].find_first_not_of("0123456789") 
+                      == std::string::npos;
+  int pid = -1;
+  int pidTest = -1;
+  if(qpp) pidTest = std::stoi(args["purpose"]);
+  for(auto const& pr : _valcache.valPurposes().rows()) {
+    if(qpp) {
+      if(pr.pid()==pidTest) {
+	pid = pr.pid();
+	break;
+      }
+    } else {
+      if(pr.name()==args["purpose"]) {
+	pid = pr.pid();
+	break;
+      }
+    }
+  }
+  if(pid<=0) {
+    std::cout << "commit-version: failed to verify purpose " 
+	      << args["purpose"] << std::endl;
+    return 1;
+  }
+
+  // verify the list exists
+  // true if numeric
+  bool qll = args["list"].find_first_not_of("0123456789") == std::string::npos;
+
+  int lid = -1;
+  int lidTest = -1;
+  if(qll) lidTest = std::stoi(args["list"]);
+  for(auto const& lr : _valcache.valLists().rows()) {
+    if(qll) {
+      if(lr.lid()==lidTest) {
+	lid = lr.lid();
+	break;
+      }
+    } else {
+      if(lr.name()==args["list"]) {
+	lid = lr.lid();
+	break;
+      }
+    }
+  }
+  if(lid<=0) {
+    std::cout << "commit-version: failed to verify list " 
+	      << args["list"] << std::endl;
+    return 1;
+  }
+
+  // now make the insert
+
   rc = _sql.connect();
   if(rc) return rc;
 
   std::string command,result;
 
-  command = "SET ROLE admin_role;";
+  command = "BEGIN;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  // only admin can create a new version
-  command = "SET ROLE admin_role;";
+  command = "SET ROLE manager_role;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  // verify the purpose
-  bool qpp = args["purpose"].find_first_not_of("0123456789") 
-                      == std::string::npos;
-  if(qpp) {
-    command = "SELECT pid FROM val.purposes WHERE pid='"+args["purpose"]+"';";
-  } else {
-    command = "SELECT pid FROM val.purposes WHERE name='"+args["purpose"]+"';";
-  }
-  rc = _sql.execute(command, result);
-  if(rc) return rc;
-  int pid = std::stoi(result);
-  if(pid<=0 || pid>1000) {
-    std::cout << "commit-version: failed to verify purpose " 
-	      << args["purpose"] << ", found pid=" << pid << std::endl;
-    return 1;
-  }
-
-  // verify the list
-  bool qll = args["list"].find_first_not_of("0123456789") == std::string::npos;
-  if(qll) {
-    command = "SELECT lid FROM val.lists WHERE lid='"+args["list"]+"';";
-  } else {
-    command = "SELECT lid FROM val.lists WHERE name='"+args["list"]+"';";
-  }
-  rc = _sql.execute(command, result);
-  if(rc) return rc;
-  int lid = std::stoi(result);
-  if(lid<=0 || lid>1000) {
-    std::cout << "commit-version: failed to verify list " 
-	      << args["list"] << ", found lid=" << lid << std::endl;
-    return 1;
-  }
-
-  // now make the insert
   command = "INSERT INTO val.versions (pid,lid,major,minor,comment,create_time,create_user) VALUES ('"
     +std::to_string(pid)+"','"
     +std::to_string(lid)+"','"
     +std::to_string(major)+"','"
     +std::to_string(minor)+"','"
     +args["comment"]
-    +"',CURRENT_TIMESTAMP,SESSION_USER);";
+    +"',CURRENT_TIMESTAMP,SESSION_USER) RETURNING vid;";
   rc = _sql.execute(command, result);
   if(rc) return rc;
 
-  command = "SELECT vid FROM val.versions ORDER BY vid DESC LIMIT 1;";
+  if(qdr) {
+    std::cout << "new VID would be "<<result;
+    command = "ROLLBACK;";
+  } else {
+    std::cout << "new VID is "<<result;
+    command = "COMMIT;";
+  }
+
   rc = _sql.execute(command, result);
   if(rc) return rc;
-
-  std::cout << "new VID is "<<result;
 
   rc = _sql.disconnect();
-
-  reloadCache();
 
   return rc;
 
@@ -993,15 +1185,15 @@ int mu2e::DbTool::help() {
       "    \n"
       "    the following are for a calibration maintainer (detector roles)...\n"
       "    commit-calibration : write calibration tables\n"
-      "    commit-iov : new interval of validity for ValTables\n"
-      "    commit-group : new set of IOV's for ValGroups/ValGroupLists\n"
+      "    commit-iov : declare new interval of validity for calibration table\n"
+      "    commit-group : declare a set of IOV's to be a group \n"
       "    \n"
-      "    the following are for a database manager (admin_role)...\n"
-      "    commit-extension : new entry in ValExtensions\n"
-      "    commit-table : new entry in ValTables\n"
-      "    commit-tablelist : new entry in ValTableLists\n"
-      "    commit-purpose : new entry in ValPurpose\n"
-      "    commit-version : new entry in ValVersions\n"
+      "    the following are for a database manager (manager_role)...\n"
+      "    commit-extension : add to a calibration set (purpose/version)\n"
+      "    commit-table : declare a new calibration table type\n"
+      "    commit-tablelist : declare a new list of table types for a version\n"
+      "    commit-purpose : declare a new calibration set purpose\n"
+      "    commit-version : declare a new version of a calibration set purpose\n"
       " \n"
       " arguments that are lists of integers may have the form:\n"
       "    int   example: --cid 234\n"
@@ -1045,9 +1237,10 @@ int mu2e::DbTool::help() {
       " table data, and the run/subrun interval in cononical format.\n"
       " \n"
       " [OPTIONS]\n"
-      "    --cid : cid for data table (required)\n"
-      "    --iov : valid range in cononical one-word format (required)\n"
+      "    --cid INT : cid for data table (required)\n"
+      "    --iov RUNRANGE : valid range in canonical one-word format (required)\n"
       "            if ALL, then applies to all runs\n"
+      "    --dry-run : don't do final commit\n"
       << std::endl;
   } else if(_action=="commit-group") {
     std::cout << 
@@ -1059,7 +1252,8 @@ int mu2e::DbTool::help() {
       " integers (see main help).\n"
       " \n"
       " [OPTIONS]\n"
-      "    --iid : the iid's of the IOV, in the format of a list of int\n"
+      "    --iid INT : the iid's of the IOV, in the format of a list of int\n"
+      "    --dry-run : don't do final commit\n"
       << std::endl;
   } else if(_action=="print-lists") {
     std::cout << 
@@ -1099,8 +1293,8 @@ int mu2e::DbTool::help() {
       " List the groups in a given purpose/version\n"
       " \n"
       " [OPTIONS]\n"
-      "    --purpose : the purpose of the calibration set (required)\n"
-      "    --verison : the version of the calibration set (required)\n"
+      "    --purpose TEXT : the purpose of the calibration set (required)\n"
+      "    --verison TEXT : the version of the calibration set (required)\n"
       "    --details : also print the IIDs and CIDs\n"
       << std::endl;
   } else if(_action=="commit-table") {
@@ -1109,8 +1303,9 @@ int mu2e::DbTool::help() {
       " dbTool commit-table [OPTIONS]\n"
       " \n"
       " [OPTIONS]\n"
-      "    --name : the c++ name of the table (required)\n"
-      "    --dbname : the database name of the table (required)\n"
+      "    --name TEXT : the c++ name of the table (required)\n"
+      "    --dbname TEXT : the database name of the table (required)\n"
+      "    --dry-run : don't do final commit\n"
       " \n"
       " Make an new entry in ValTables to record that \n"
       " there is a new type of calibration table coded and available.\n"
@@ -1132,9 +1327,10 @@ int mu2e::DbTool::help() {
       " This is input to an entry ValVersions in commit-version. \n"
       " \n"
       " [OPTIONS]\n"
-      "    --name : the name of the list (required)\n"
-      "    --comment : ""a comment in quotes"" (required)\n"
-      "    --tids : the list of TID's (required)\n"
+      "    --name TEXT : the name of the list (required)\n"
+      "    --comment TEXT : ""a comment in quotes"" (required)\n"
+      "    --tids INT : the list of TID's (required)\n"
+      "    --dry-run : don't do final commit\n"
       " \n"
       " Example: \n"
       " dbTool commit-tablelist --name TRK_TEST2 --tids 3,4,5 \\\n"
@@ -1152,8 +1348,9 @@ int mu2e::DbTool::help() {
       " This is input to an entry ValVersions in commit-version. \n"
       " \n"
       " [OPTIONS]\n"
-      "    --name : the name of the purpose (required)\n"
-      "    --comment : ""a comment in quotes"" (required)\n"
+      "    --name TEXT : the name of the purpose (required)\n"
+      "    --comment TEXT : ""a comment in quotes"" (required)\n"
+      "    --dry-run : don't do final commit\n"
       " \n"
       " Example: \n"
       " dbTool commit-purpose --name PRODUCTION --comment \"for official production\"\n"
@@ -1170,11 +1367,12 @@ int mu2e::DbTool::help() {
       " This is ready to be extended with new groups of calibrations. \n"
       " \n"
       " [OPTIONS]\n"
-      "    --purpose : purpose PID or name (required)\n"
-      "    --list : list LID or name from commit-tablelist (required)\n"
-      "    --major : major version number (required)\n"
-      "    --minor : minor version number (required)\n"
-      "    --comment : ""a comment in quotes"" (required)\n"
+      "    --purpose TEXT|PID : purpose name or PID (required)\n"
+      "    --list TEXT|INT : list name or LID from commit-tablelist (required)\n"
+      "    --major INT : major version number (required)\n"
+      "    --minor INT : minor version number (required)\n"
+      "    --comment TEXT : ""a comment in quotes"" (required)\n"
+      "    --dry-run : don't do final commit\n"
       "  \n"
       "  Example:\n"
       "  dbTool commit-version --purpose PRODUCTION --lid 12 \\\n"
@@ -1191,9 +1389,10 @@ int mu2e::DbTool::help() {
       " third number in the verson \n"
       " \n"
       " [OPTIONS]\n"
-      "    --purpose : purpose PID or name (required)\n"
-      "    --version : the major/minor version (required)\n"
-      "    --gid : an integer list of the groups to add (required)\n"
+      "    --purpose TEXT : purpose PID or name (required)\n"
+      "    --version TEXT : the major/minor version (required)\n"
+      "    --gid INT : an integer list of the groups to add (required)\n"
+      "    --dry-run : don't do final commit\n"
       "  \n"
       "  Example:\n"
       "  dbTool commit-extension --purpose PRODUCTION --version v1_1 \\\n"

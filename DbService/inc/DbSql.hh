@@ -11,17 +11,18 @@ namespace mu2e {
   class DbSql {
   public:
     DbSql(const DbId& id = DbId());
+
     const DbId& id() const { return _id; }
+
     int connect();
     int disconnect();
     int execute(const std::string& command, std::string& result);
-    int writeWithCid(DbTable::table_ptr const& ptr, int& cid, bool admin);
-    std::string sqlLine(std::string line);
 
     void setDbId(DbId id) { _id = id; }
     void setUserPass(const std::string& user, const std::string& pass) 
                                          { _user=user; _pass=pass; }
     void setVerbose(uint v) { _verbose = v; }
+
   private:
     DbId _id;
     std::string _user;

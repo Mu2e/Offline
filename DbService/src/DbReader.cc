@@ -38,15 +38,10 @@ int mu2e::DbReader::query(std::string& csv,
 			  const std::string& where,
 			  const std::string& order) {
 
-  //csv="1,3.14\n2,6.28\n";
-  //std::string url="http://www.google.com";
-
   // result is cached on the web server
   // calibration table entries don't change
-  std::string url;
-  if(_useCache) {
-    url = _id.url();
-  } else {
+  std::string url = _id.url();
+  if( !_useCache || table.substr(0,3)=="val" ) {
     // result will come directly from the db
     url = _id.urlNoCache();
   }
