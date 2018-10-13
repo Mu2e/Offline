@@ -180,9 +180,10 @@ void TrainTimeClusterMVA(TTree* mytree,bool calo=false)
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  dataloader->AddVariable("tchinfo._dt","Time Difference",'F'); 
-  dataloader->AddVariable("tchinfo._dphi","Azimuth Difference", 'F');
-  dataloader->AddVariable("tchinfo._rho", "Transverse Radius",'F');
+  dataloader->AddVariable("abs(tchinfo._dt)","Time Difference",'F'); 
+  dataloader->AddVariable("abs(tchinfo._dphi)","Azimuth Difference", 'F');
+  dataloader->AddVariable("tchinfo._rho*tchinfo._rho", "Transverse Radius2",'F');
+  dataloader->AddVariable("tchinfo._nsh", "NStraws",'I');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
@@ -271,8 +272,8 @@ void TrainTimeClusterMVA(TTree* mytree,bool calo=false)
 
 
   // Apply additional cuts on the signal and background samples (can be different)
-  TCut signalCut = "besttc.ncehits>9&&tchinfo._mcgen==2";
-  TCut backgrCut = "besttc.ncehits>9&&tchinfo._mcgen!=2&&tchinfo._mcrel<0";
+  TCut signalCut = "besttc.ncehits>9&&besttc.prigen==2&&besttc.prifrac>0.5&&tchinfo._mcgen==2&&tchinfo._mcrel==0";
+  TCut backgrCut = "besttc.ncehits>9&&besttc.prigen==2&&besttc.prifrac>0.5&&tchinfo._mcgen!=2&&tchinfo._mcrel<0";
 
   if(calo){
     signalCut += TCut("besttc.ecalo>10.0");
