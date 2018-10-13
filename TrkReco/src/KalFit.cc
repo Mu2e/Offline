@@ -23,8 +23,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 // data
@@ -106,7 +104,7 @@ namespace mu2e
     // t0 parameters
     _initt0(pset.get<bool>("initT0",true)),
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
-    _updatet0(pset.get<bool>("updateT0",true)),
+    _updatet0(pset.get<vector<bool>>("updateT0")),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
@@ -124,6 +122,7 @@ namespace mu2e
     _exup((extent)pset.get<int>("UpstreamExtent",noextension)),
     _exdown((extent)pset.get<int>("DownstreamExtent",noextension)),
     _mcTruth(pset.get<int>("mcTruth",0)),
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _bfield(0)
   {
 // set KalContext parameters
@@ -430,7 +429,7 @@ namespace mu2e
       retval = krep->fit();
       if(! retval.success())break;
       // updates
-      if(_updatet0){
+      if(_updatet0[iter]){
 	updateT0(kalData);
         changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
       }
@@ -499,17 +498,21 @@ namespace mu2e
 
   void 
   KalFit::makeTrkCaloHit  (KalFitData& kalData, TrkCaloHit *&tch){
-    if (kalData.kalSeed->caloCluster().get() != 0){
-      HitT0 ht0;
-      ht0._t0    = kalData.kalSeed->caloCluster()->time();
-      ht0._t0err = 0.5;//dummy error FIXME!
-      
-      double fltlen(0);//dummy value FIXME! maybe I can use the dip angle from the kseed?
+    art::Ptr<CaloCluster> const& calo = kalData.kalSeed->caloCluster();
+    if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      Hep3Vector          cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e(
-		   kalData.kalSeed->caloCluster()->diskId(), kalData.kalSeed->caloCluster()->cog3Vector())); 
+      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
+      // estimate fltlen from pitch
+      double td = kalData.kalSeed->segments()[0].helix().tanDip();
+      double sd = td/sqrt(1.0+td*td);
+      double fltlen = cog.z()/sd - kalData.kalSeed->flt0();
+      // t0 represents the time the particle reached the sensor; estimate that
+      HitT0 ht0;
+      //ht0._t0 = kalData.t0._t0 + _ttcalc.timeOfFlightTimeOffset(cog.z()) + _ttcalc.caloClusterTimeOffset();
+      ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
+      ht0._t0err = _ttcalc.caloClusterTimeErr();
       
-      Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIX ME!
+      Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
       double      crystalHalfLength = ch->caloInfo().getDouble("crystalZLength")/2.;
       tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalHalfLength, clusterAxis, ht0, fltlen, _calHitW, _dtoffset);
     }
@@ -997,8 +1000,7 @@ namespace mu2e
       t0._t0err = 1;
       //set the new T0
       kalData.krep->setT0(t0, t0flt);
-    }
-    else {
+    } else {
       using namespace boost::accumulators;
       // make an array of all the hit times, correcting for propagation delay
       unsigned nind = kalData.krep->hitVector().size();
@@ -1155,7 +1157,7 @@ namespace mu2e
   
   void
   KalFit::updateHitTimes(KalRep* krep) {
-  // compute the time the track came closest to the wire for each hit, starting from t0 and working out.
+  // compute the time the track came closest to the sensor for each hit, starting from t0 and working out.
   // this function allows for momentum change along the track.
   // find the bounding hits on either side of this
     TrkHitVector *thv = &(krep->hitVector());

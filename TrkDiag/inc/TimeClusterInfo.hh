@@ -51,7 +51,7 @@ namespace mu2e {
     Int_t _nsh; 
     Int_t _mcpdg, _mcgen, _mcproc, _mcrel; // MC truth info for this hit
     Float_t _mctime, _mcmom;
-    void reset() { _time = _dt = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = 0; }
+    void reset() { _time = _dt = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = _mcrel = 0; }
   };
     
   struct MCClusterInfo {  

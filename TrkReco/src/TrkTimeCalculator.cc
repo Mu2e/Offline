@@ -16,6 +16,8 @@
 #include "boost_fix/accumulators/statistics.hpp"
 #include <boost/accumulators/statistics/mean.hpp>
 #include <boost/accumulators/statistics/median.hpp>
+#include "GeometryService/inc/GeomHandle.hh"
+#include "CalorimeterGeom/inc/Calorimeter.hh"
 // root
 #include "TH1F.h"
 // C++
@@ -34,17 +36,14 @@ namespace mu2e
 //    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
 //    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","Background"})),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
-    _avgDriftTime(pset.get<double>("AverageDriftTime",22.7)), 
+    _avgDriftTime(pset.get<double>("AverageDriftTime",22.5)), 
     _useTOTdrift(pset.get<bool>("UseTOTDrift",true)),
-    _shDtDz(pset.get<double>("StrawHitInversVelocity",0.00535)), // ns/mm
+    _shDtDz(pset.get<double>("StrawHitInversVelocity",0.00534)), // ns/mm
     _shBeta(pset.get<double>("StrawHitBeta",1.)),
-    _shErr(pset.get<double>("StrawHitTimeErr",9.7)) // ns effective hit time res. without TOT
-  {
-    _caloT0Offset[0] = pset.get<double>("Disk0TimeOffset",10.46); // nanoseconds
-    _caloT0Offset[1] = pset.get<double>("Disk1TimeOffset",13.76); // nanoseconds
-    _caloT0Err[0] = pset.get<double>("Disk0TimeErr",0.8); // nanoseconds
-    _caloT0Err[1] = pset.get<double>("Disk1TimeErr",1.7); // nanoseconds
-  }
+    _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
+    _caloT0Offset(pset.get<double>("CaloT0Offset",-0.4)), // nanoseconds
+    _caloT0Err(pset.get<double>("CaloTimeErr",0.8)) // nanoseconds
+    { }
 
   TrkTimeCalculator::~TrkTimeCalculator() {}
 
@@ -59,20 +58,6 @@ namespace mu2e
     return hitz*_shDtDz*_fdir.dzdt();
   }
 
-  double TrkTimeCalculator::caloClusterTimeOffset(int diskId) const {
-    double retval(0.0);
-    if(diskId > -1 && diskId < 2)
-      retval = _caloT0Offset[diskId]*_fdir.dzdt();
-    return retval;
-  }
-
-  double TrkTimeCalculator::caloClusterTimeErr(int diskId) const {
-    double retval(1e10);
-    if(diskId > -1 && diskId < 2)
-      retval = _caloT0Err[diskId];
-    return retval;
-  }
-
   double TrkTimeCalculator::strawHitTime(StrawHit const& sh, StrawHitPosition const& shp) {
     return sh.time() - timeOfFlightTimeOffset(shp.pos().z()) - _avgDriftTime;
   }
@@ -85,7 +70,9 @@ namespace mu2e
   }
 
   double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
-    return cc.time() - caloClusterTimeOffset(cc.diskId());
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskId(), cc.cog3Vector())); 
+    return cc.time() - timeOfFlightTimeOffset(cog.z()) + caloClusterTimeOffset();
   }
 
 }

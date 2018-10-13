@@ -363,7 +363,7 @@ namespace mu2e {
       std::vector<Double_t> pars(4);
       pars[0] = fabs(tchi._dt);
       pars[1] = fabs(tchi._dphi);
-      pars[2] = std::max(tchi._rho,float(500.0));
+      pars[2] = tchi._rho*tchi._rho;
       pars[3] = tchi._nsh;
       if (tc._caloCluster.isNonnull())
 	tchi._mva = _tcCaloMVA.evalMVA(pars);

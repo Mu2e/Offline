@@ -91,7 +91,8 @@ BEGIN_PROLOG
         ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
 	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-      }
+        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+    }
 
   HD : {
 	module_type : HelixDiag

@@ -28,7 +28,7 @@ class TimeClusterDiag  {
     _goodCalo("besttc.ecalo>50.0"),
     _disk1("besttc.cogz<2000.0"),
     _disk2("besttc.cogz>2000.0"),
-    _cehit("tchinfo._mcproc==56"),
+    _cehit("tchinfo._mcgen==2"),
     _effcan(0), _btccan(0), _cecan(0), _tcan(0), _ctcan(0)
   {
     _goodCE = _goodCENHits+_goodCETime;
@@ -172,8 +172,8 @@ void TimeClusterDiag::CE(){
 void TimeClusterDiag::time() {
   TH1F* calodt1 = new TH1F("calodt1","Calo Cluster time - CE time, Disk 1;#Delta t (ns)",100,-15.0,15.0);
   TH1F* calodt2 = new TH1F("calodt2","Calo Cluster time - CE time, Disk 2;#Delta t (ns)",100,-15.0,15.0);
-  _tcdiag->Project("calodt1","besttc.tcalo-ceclust.time",_goodCE+_goodReco+_goodCalo+_disk1);
-  _tcdiag->Project("calodt2","besttc.tcalo-ceclust.time",_goodCE+_goodReco+_goodCalo+_disk2);
+  _tcdiag->Project("calodt1","besttc.tcalo-mcmidt0",_goodCE+_goodReco+_goodCalo+_disk1);
+  _tcdiag->Project("calodt2","besttc.tcalo-mcmidt0",_goodCE+_goodReco+_goodCalo+_disk2);
 
   calodt1->Fit("gaus","qO");
   calodt2->Fit("gaus","qO");
@@ -182,8 +182,8 @@ void TimeClusterDiag::time() {
   hdtzp->SetStats(1);
   TH2F* hdtz = new TH2F("hdtz","Hit time - CE time vs z;z (mm);#Delta t (ns)",50,-1600,1600,50,-25,75);
   hdtz->SetStats(0);
-  _tcdiag->Project("hdtz","tchinfo._time - ceclust.time:tchinfo._z",_goodCE+_goodReco+_cehit);
-  _tcdiag->Project("hdtzp","tchinfo._time - ceclust.time:tchinfo._z",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("hdtz","tchinfo._time - mcmidt0:tchinfo._z",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("hdtzp","tchinfo._time - mcmidt0:tchinfo._z",_goodCE+_goodReco+_cehit);
   hdtzp->SetMarkerStyle(20);
   hdtzp->SetMarkerColor(kBlack);
 
@@ -192,8 +192,8 @@ void TimeClusterDiag::time() {
   htres->SetLineColor(kGreen);
 //  htres->SetStats(0);
   chtres->SetLineColor(kBlue);
-  _tcdiag->Project("htres","tchinfo._time -25.5 -ceclust.time",_goodCE+_goodReco+_cehit);
-  _tcdiag->Project("chtres","tchinfo._time -25.5 - tchinfo._z*0.0047 -ceclust.time",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("htres","tchinfo._time -22.5 - mcmidt0",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("chtres","tchinfo._time -22.5 - tchinfo._z*0.0047 -mcmidt0",_goodCE+_goodReco+_cehit);
 
   _tcan = new TCanvas("tcan","Time",800,800);
   _tcan->Divide(2,2);

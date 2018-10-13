@@ -310,10 +310,11 @@ namespace mu2e
 	  if(!_result.krep->fitCurrent()){
 	    cout << "Fit not current! " << endl;
 	  }
-	  // flg all hits as belonging to a track
+	  // flg all hits as belonging to a track.  Doesn't work for TrkCaloHit FIXME!
 	  if(ikseed<StrawHitFlag::_maxTrkId){
 	    for(auto ihit=_result.krep->hitVector().begin();ihit != _result.krep->hitVector().end();++ihit){
-	      if((*ihit)->isActive())shfcol->at(static_cast<TrkStrawHit*>(*ihit)->index()).merge(StrawHitFlag::track);
+	      TrkStrawHit* tsh = dynamic_cast<TrkStrawHit*>(*ihit);
+	      if((*ihit)->isActive() && tsh != 0)shfcol->at(tsh->index()).merge(StrawHitFlag::track);
 	    }
 	  }
 	  
