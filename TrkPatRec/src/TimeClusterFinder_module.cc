@@ -60,9 +60,10 @@ namespace {
 }
 
 namespace mu2e {
+  typedef std::vector<StrawHitIndex>::iterator ISH;
+  typedef std::pair<Float_t,int> BinContent;
   class TimeClusterFinder : public art::EDProducer {
     public:
-      typedef std::pair<Float_t,int> BinContent;
       enum Mode{flag=0,filter};
       explicit TimeClusterFinder(fhicl::ParameterSet const& pset);
 
@@ -100,12 +101,13 @@ namespace mu2e {
       int               _npeak;
 
 
-      void findClusters(TimeClusterCollection& tccol, art::Handle<CaloClusterCollection> const& ccH);
+      void findClusters(TimeClusterCollection& tccol);
+      void findCaloSeeds(TimeClusterCollection& tccol, art::Handle<CaloClusterCollection> const& ccH);
       void fillTimeSpectrum();
       void initCluster(TimeCluster& tc);
       void prefilterCluster(TimeCluster& tc);
       void recoverHits(TimeCluster& tc);
-      void removeHit(TimeCluster& tc, std::vector<StrawHitIndex>::iterator);
+      ISH  removeHit(TimeCluster& tc, ISH);
       void addHit(TimeCluster& tc,size_t iadd);
       void clusterMean(TimeCluster& tc);
       void refineCluster(TimeCluster& tc);
@@ -186,7 +188,10 @@ namespace mu2e {
     }
 
     std::unique_ptr<TimeClusterCollection> tccol(new TimeClusterCollection);
-    findClusters(*tccol,ccH);
+    // If requested, use calo clusters to for time cluster seeds
+    if (_usecc) findCaloSeeds(*tccol,ccH);
+    // find all the hit clusters
+    findClusters(*tccol);
 
     if (_debug > 0) std::cout << "Found " << tccol->size() << " Time Clusters " << std::endl;
 
@@ -206,19 +211,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------------------------------------------------
-  void TimeClusterFinder::findClusters(TimeClusterCollection& tccol, art::Handle<CaloClusterCollection>const& ccH) {
-    // find seeds from calo clusters
-    if (_usecc) {
-      for(size_t icalo=0; icalo < _cccol->size(); ++icalo){
-	auto const& calo = (*_cccol)[icalo];
-	if (calo.energyDep() > _ccmine){
-	  TimeCluster tc;
-	  tc._t0 = TrkT0(_ttcalc.caloClusterTime(calo), _ttcalc.caloClusterTimeErr());
-	  tc._caloCluster = art::Ptr<CaloCluster>(ccH,icalo);
-	  tccol.push_back(tc);
-	}
-      }
-    }
+  void TimeClusterFinder::findClusters(TimeClusterCollection& tccol) {
     // find seed from hits
     fillTimeSpectrum();
     findPeaks(tccol);
@@ -236,7 +229,6 @@ namespace mu2e {
 	if (_recover) recoverHits(tc);
       }
       if (tc.nStrawHits() < _minnhits) {
-	// swap with the end and don't advance the pointer
 	itc = tccol.erase(itc);
       } else
 	++itc;
@@ -251,6 +243,18 @@ namespace mu2e {
       snprintf(name,40,"tspec_%i",_iev);
       snprintf(title,100,"time spectrum event %i;nsec",_iev);
       tspec->SetNameTitle(name,title);
+    }
+  }
+
+  void TimeClusterFinder::findCaloSeeds(TimeClusterCollection& tccol, art::Handle<CaloClusterCollection>const& ccH) {
+    for(size_t icalo=0; icalo < _cccol->size(); ++icalo){
+      auto const& calo = (*_cccol)[icalo];
+      if (calo.energyDep() > _ccmine){
+	TimeCluster tc;
+	tc._t0 = TrkT0(_ttcalc.caloClusterTime(calo), _ttcalc.caloClusterTimeErr());
+	tc._caloCluster = art::Ptr<CaloCluster>(ccH,icalo);
+	tccol.push_back(tc);
+      }
     }
   }
 
@@ -353,7 +357,7 @@ namespace mu2e {
       zacc(pos.z(),weight=pwt);
     }
 
-    if (tc._caloCluster.isNonnull()) {
+    if (tc.hasCaloCluster()) {
     // don't update t0 if there's an assigned calo cluster
       if(_useccpos){
 	xacc(tc._caloCluster->cog3Vector().x(),weight=_ccwt);
@@ -374,17 +378,26 @@ namespace mu2e {
 
   // prefilter based on a rough hemisphere cut and the initial robust position
   void TimeClusterFinder::prefilterCluster(TimeCluster& tc){
-    float pphi = polyAtan2( tc._pos.y(), tc._pos.x());
-    auto ips = tc._strawHitIdxs.begin();
-    while(ips != tc._strawHitIdxs.end()){
-      ComboHit const& ch = (*_chcol)[*ips];
-      float phi   = polyAtan2(ch.pos().y(), ch.pos().x()); 
-      float dphi  = Angles::deltaPhi(phi,pphi);
-      float adphi = std::abs(dphi);
-      if(adphi > _maxdPhi )
-	ips = tc._strawHitIdxs.erase(ips);
-      else
-	++ips;
+    bool changed(true);
+    while (changed) {
+      changed = false;
+      float pphi = polyAtan2( tc._pos.y(), tc._pos.x());
+      auto iworst = tc._strawHitIdxs.end();
+      float maxadPhi(_maxdPhi);
+      for( auto ips = tc._strawHitIdxs.begin(); ips != tc._strawHitIdxs.end(); ++ips){
+	ComboHit const& ch = (*_chcol)[*ips];
+	float phi   = polyAtan2(ch.pos().y(), ch.pos().x()); 
+	float dphi  = Angles::deltaPhi(phi,pphi);
+	float adphi = std::abs(dphi);
+	if(adphi > maxadPhi ){
+	  iworst = ips;
+	  maxadPhi = adphi;
+	}
+      }
+      if( iworst != tc._strawHitIdxs.end()){
+	changed = true;
+	removeHit(tc,iworst);
+      }
     }
   }
 
@@ -406,7 +419,7 @@ namespace mu2e {
 		_pmva._rho = ch.pos().Perp2();
 		_pmva._nsh = ch.nStrawHits();
 		float mvaout(-1.0);
-		if (tc._caloCluster.isNonnull())
+		if (tc.hasCaloCluster())
 		  mvaout = _tcCaloMVA.evalMVA(_pmva._pars);
 		else
 		  mvaout = _tcMVA.evalMVA(_pmva._pars);
@@ -422,12 +435,12 @@ namespace mu2e {
     }
   }
 
-  void TimeClusterFinder::removeHit(TimeCluster& tc, std::vector<StrawHitIndex>::iterator iworst) {
+  ISH TimeClusterFinder::removeHit(TimeCluster& tc, ISH iworst) {
     ComboHit const& ch = (*_chcol)[*iworst];
     unsigned nsh = ch.nStrawHits();
     float denom = float(tc._nsh - nsh);
     // update time cluster properties 
-    if(!tc._caloCluster.isNonnull()){
+    if(!tc.hasCaloCluster()){
       float cht = _ttcalc.comboHitTime(ch);
       tc._t0._t0 = (tc._t0._t0*tc._nsh - cht*nsh)/denom;
     }
@@ -436,7 +449,7 @@ namespace mu2e {
     tc._pos.SetY((tc._pos.y()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._pos.SetZ((tc._pos.z()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._nsh -= nsh;
-    tc._strawHitIdxs.erase(iworst);
+    return tc._strawHitIdxs.erase(iworst);
   }
 
   void TimeClusterFinder::addHit(TimeCluster& tc,size_t iadd) {
@@ -444,7 +457,7 @@ namespace mu2e {
     unsigned nsh = ch.nStrawHits();
     float denom = float(tc._nsh + nsh);
     // update time cluster properties 
-    if(!tc._caloCluster.isNonnull()){
+    if(!tc.hasCaloCluster()){
       float cht = _ttcalc.comboHitTime(ch);
       tc._t0._t0 = (tc._t0._t0*tc._nsh + cht*nsh)/denom;
     }
@@ -469,7 +482,7 @@ namespace mu2e {
       yacc(ch.pos().y(),weight=nsh);
       zacc(ch.pos().z(),weight=nsh);
     }
-    if (tc._caloCluster.isNonnull()) {
+    if (tc.hasCaloCluster()) {
       if(_useccpos){
 	xacc(tc._caloCluster->cog3Vector().x(),weight=_ccwt);
 	yacc(tc._caloCluster->cog3Vector().y(),weight=_ccwt);
@@ -496,17 +509,15 @@ namespace mu2e {
         ComboHit const& ch = (*_chcol)[*ips];
         float cht = _ttcalc.comboHitTime(ch);
 
-        float rho = ch.pos().Perp2();
+        _pmva._dt = fabs(cht - tc._t0._t0);
         float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
         float dphi = Angles::deltaPhi(phi,pphi);
-
-        _pmva._dt = fabs(cht - tc._t0._t0);
         _pmva._dphi = fabs(dphi);
-        _pmva._rho = rho;
+	_pmva._rho = ch.pos().Perp2();
 	_pmva._nsh = ch.nStrawHits();
 
 	float mvaout(-1.0);
-	if (tc._caloCluster.isNonnull())
+	if (tc.hasCaloCluster())
 	   mvaout = _tcCaloMVA.evalMVA(_pmva._pars);
 	else
 	  mvaout = _tcMVA.evalMVA(_pmva._pars);
