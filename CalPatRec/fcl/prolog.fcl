@@ -617,6 +617,7 @@ CalPatRec : { @table::CalPatRec
 	MergePatRecTprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
 
 	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
+	MergePatRecDpp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDpP  calPatRecModuleLabel: none         }
 	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
 	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: CalTrkFitDep }
 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }

@@ -22,8 +22,7 @@ services : @local::Services.Reco
 
 services : {
     message               : @local::default_message
-    #    TFileService          : { fileName : "e11s6220.hist" }
-    TFileService          : { fileName : "/mu2e/data/users/gianipez/hist/readDigis.hist" }
+    TFileService          : { fileName : "readDigis.hist" }
 
     RandomNumberGenerator : { }
     #   Timing                : { }
@@ -62,16 +61,6 @@ physics :
 	    module_type : ReadStrawDigi
 	}
 	
-	# TThelixFinder : { @table::Tracking.TrkTrigger.producers.TThelixFinder
-	#     reducedchi2 : 1
-
-	#     RobustHelixFit : {
-	# 	#      	      diagLevel     : 1
-	# 	refineXYFit   : 1
-	# 	refineZPhiFit : 1
-	#     }
-	# }
-
     }
     filters : {
 	@table::TrkTrigger.Filters
@@ -121,7 +110,6 @@ physics.DePSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.DePSeedFilterSe
 
 physics.CPRDeMSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.CPRDeMSeedFilterSequence ]
 physics.CPRDePSeedTrigPath : [RSD,  @sequence::TrkTrigger.Sequences.CPRDePSeedFilterSequence ] 
-
 
 
 # analysis path: this is for monitoring only

@@ -34,7 +34,7 @@ physics :
     eventdisplay:
     {
       module_type     : EventDisplay
-      g4ModuleLabel             : "CompressDigisMC"
+      g4ModuleLabel             : "CompressDigiMCs"
       physicalVolumesMultiLabel : "compressPV"
      }
   }

@@ -41,6 +41,12 @@ namespace mu2e {
       TH1F*  xyniter [2];
       TH1F*  fzniter [2];
       TH1F*  niter   [2];
+
+      TH1F*  nShFitXY    [2];
+      TH1F*  nChFitXY    [2];
+      TH1F*  nShFitCircle[2];
+      TH1F*  nChFitCircle[2];
+
       TH1F*  nrescuedhits[2];
 
       TH1F*  nXYSh   [2];
@@ -144,6 +150,18 @@ namespace mu2e {
 
     _hist.niter  [0]    = Tfs->make<TH1F>("niterNeg"     , "number of iterations helix fit, Neg "   , 401, -0.5, 800.5);
     _hist.niter  [1]    = Tfs->make<TH1F>("niterPos"     , "number of iterations helix fit, Pos "   , 401, -0.5, 800.5);
+
+    _hist.nShFitXY  [0]    = Tfs->make<TH1F>("nShFitXYNeg"     , "number of strawhits after the XY fit, Neg "   , 101, -0.5, 100.5);
+    _hist.nShFitXY  [1]    = Tfs->make<TH1F>("nShFitXYPos"     , "number of strawhits after the XY fit, Pos "   , 101, -0.5, 100.5);
+
+    _hist.nChFitXY  [0]    = Tfs->make<TH1F>("nChFitXYNeg"     , "number of combo hits after the XY fit, Neg "   , 101, -0.5, 100.5);
+    _hist.nChFitXY  [1]    = Tfs->make<TH1F>("nChFitXYPos"     , "number of combo hits after the XY fit, Pos "   , 101, -0.5, 100.5);
+
+    _hist.nShFitCircle  [0]    = Tfs->make<TH1F>("nShFitCircleNeg"     , "number of strawhits after the Circle fit, Neg "   , 101, -0.5, 100.5);
+    _hist.nShFitCircle  [1]    = Tfs->make<TH1F>("nShFitCirclePos"     , "number of strawhits after the Circle fit, Pos "   , 101, -0.5, 100.5);
+
+    _hist.nChFitCircle  [0]    = Tfs->make<TH1F>("nChFitCircleNeg"     , "number of combo hits after the Circle fit, Neg "   , 101, -0.5, 100.5);
+    _hist.nChFitCircle  [1]    = Tfs->make<TH1F>("nChFitCirclePos"     , "number of combo hits after the Circle fit, Pos "   , 101, -0.5, 100.5);
 
     _hist.nrescuedhits  [0]    = Tfs->make<TH1F>("nrescuedhitsNeg"     , "number of rescued hits, Neg "   , 801, -0.5, 800.5);
     _hist.nrescuedhits  [1]    = Tfs->make<TH1F>("nrescuedhitsyPos"    , "number of rescued hits, Pos "   , 801, -0.5, 800.5);
@@ -262,6 +280,12 @@ namespace mu2e {
 	_hist.ntripl1    [k]->Fill(_data->ntriplet1[k][i]  );
 	_hist.xyniter    [k]->Fill(_data->xyniter[k][i]    );
 	_hist.fzniter    [k]->Fill(_data->fzniter[k][i]    );
+
+	_hist.nShFitXY    [k]->Fill(_data->nShFitXY[k][i]    );
+	_hist.nChFitXY    [k]->Fill(_data->nChFitXY[k][i]    );
+
+	_hist.nShFitCircle    [k]->Fill(_data->nShFitCircle[k][i]    );
+	_hist.nChFitCircle    [k]->Fill(_data->nChFitCircle[k][i]    );
 
 	_hist.nXYSh      [k]->Fill(_data->nXYSh[k][i]      );       
 	_hist.nZPhiSh    [k]->Fill(_data->nZPhiSh[k][i]   );

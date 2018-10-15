@@ -59,7 +59,7 @@ namespace mu2e
     bool forMARS        = _config.getBool("crs.forMARS",false);
 
     bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
+    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("crs.doSurfaceCheck",false);
 
     std::string hallAirMaterialName = _config.getString("hall.insideMaterialName");
 
@@ -162,7 +162,8 @@ namespace mu2e
                                          false/*solid*/,
                                          forceAuxEdgeVisible,
                                          true/*placePV*/,
-                                         doSurfaceCheck);
+                                         false/*doSurfaceCheck*/);
+	  if(doSurfaceCheck) checkForOverlaps(layerInfo.physical, _config, verbosityLevel>0);
 
           const std::vector<std::shared_ptr<CRSScintillatorBar> > &bars = ilayer->getBars();
           std::vector<std::shared_ptr<CRSScintillatorBar> >::const_iterator ibar;

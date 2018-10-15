@@ -74,7 +74,7 @@ DigiCompression : {
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
     }
 
-    OutputCommands : [ "drop *_*_*_*",
+    OutputCommands : [ "keep *_*_*_*",
 		       "keep *_compressDigiMCs_*_*",
 		       "keep mu2e::StrawDigis_*_*_*",
 		       "keep mu2e::CaloDigis_*_*_*",
@@ -82,8 +82,18 @@ DigiCompression : {
 		       "keep mu2e::StatusG4_*_*_*",
 		       "keep art::TriggerResults_*_*_*",
 		       "keep mu2e::EventWindowMarker_*_*_*",
-		       "keep *_genCounter_*_*" 
+		       "keep *_genCounter_*_*",
+		       "keep mu2e::EventWeight_*_*_*",
+		       "keep mu2e::ProtonBunchIntensity_*_*_*"
 		     ]
+
+    Check : {
+	module_type : CompressDigiMCsCheck
+	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	newStrawDigiMCTag : "compressDigiMCs"
+	OldTimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+    }
 }
 
 END_PROLOG

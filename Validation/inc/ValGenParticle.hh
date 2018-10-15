@@ -3,9 +3,9 @@
 #define ValGenParticle_HH_
 
 #include "art/Framework/Principal/Event.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Validation/inc/ValId.hh"
-#include "Validation/inc/ValPosition.hh"
 #include "TH1D.h"
 #include <string>
 
@@ -27,7 +27,13 @@ namespace mu2e {
     ValId _id;
     TH1D* _hp;
     TH1D* _hlogp;
-    ValPosition _pos;
+    TH1D* _hx;
+    TH1D* _hxt;
+    TH1D* _hy;
+    TH1D* _hyt;
+    TH1D* _hz;
+    TH1D* _hzt;
+
   };
 }
 

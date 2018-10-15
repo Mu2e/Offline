@@ -7,7 +7,8 @@ BEGIN_PROLOG
 # has to go before the CalPatRec prolog
 #------------------------------------------------------------------------------
 TrackCaloMatching : { 
-    DtOffset : 6.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
+# 2018-09-04: apparently, Richie calibrated the straw hit timing offset out
+    DtOffset : 0. # 6.4 # v6_3: was 2.9  # track-cluster offset, ns v5_7_6 # 1.2  # 1.4   
 }
 END_PROLOG
 
