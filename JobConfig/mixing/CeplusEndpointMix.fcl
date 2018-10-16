@@ -1,0 +1,29 @@
+#
+# mono-energetic e+ at the Al Ce endpoint with background mixing
+#
+#  Dave Brown (LBNL) October 2018
+#
+#include "JobConfig/mixing/prolog.fcl"
+process_name: CeplusEndpointMix
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::CeplusEndpointGun
+    @table::Mixing.producers
+  }
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+  TriggerPath : @local::Mixing.TriggerPath
+  EndPath : @local::Mixing.EndPath
+}
+outputs: { Output : @local::Mixing.Output }
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+# customize the output
+services.TFileService.fileName: "nts.owner.CeplusEndpoint-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CeplusEndpoint-mix.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

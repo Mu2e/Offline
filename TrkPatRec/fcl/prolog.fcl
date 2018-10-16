@@ -3,7 +3,7 @@
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
 #include "TrkPatRec/fcl/Particle.fcl"
-#include "TrkPatRec/fcl/PanelAmbigResolver.fcl"
+#include "TrkPatRec/fcl/PanelAmbigResolver.fcl" 
 BEGIN_PROLOG
 
 # this should go in a general file FIXME!!

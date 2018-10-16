@@ -89,6 +89,12 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    fitdirection         : @local::FitDir.downstream 
 	}
 
+	TrackCaloIntersectionDpp : { @table::TrackCaloMatching.producers.TrackCaloIntersection
+	    fitterModuleLabel    : MergePatRecDpp
+	    fitparticle          : @local::Particle.proton
+	    fitdirection         : @local::FitDir.downstream 
+	}
+
 	TrackCaloIntersectionDmp : { @table::TrackCaloMatching.producers.TrackCaloIntersection 
 	    fitterModuleLabel    : MergePatRecDmp
 	    fitparticle          : @local::Particle.muplus
@@ -176,12 +182,17 @@ TrackCaloMatching : { @table::TrackCaloMatching
 
 	TrackCaloMatchingDep  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
 	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionDep
-	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionDep.fitterModuleLabel     # MergePatRecDem
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionDep.fitterModuleLabel     # MergePatRecDep
+	}
+
+	TrackCaloMatchingDpp  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
+	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionDpp
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionDpp.fitterModuleLabel     # MergePatRecDpp
 	}
 
 	TrackCaloMatchingDmp  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
 	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionDmp
-	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionDmp.fitterModuleLabel     # MergePatRecDmm
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionDmp.fitterModuleLabel     # MergePatRecDmp
 	}
 
 	TrackCaloMatchingUem  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
@@ -252,6 +263,7 @@ TrackCaloMatching.matching_tpr_dep : [ TrackCaloIntersectionTprDep, TrackCaloMat
 TrackCaloMatching.matching_dem     : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
 TrackCaloMatching.matching_dmm     : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]
 TrackCaloMatching.matching_dep     : [ TrackCaloIntersectionDep, TrackCaloMatchingDep ]
+TrackCaloMatching.matching_dpp     : [ TrackCaloIntersectionDpp, TrackCaloMatchingDpp ]
 TrackCaloMatching.matching_dmp     : [ TrackCaloIntersectionDmp, TrackCaloMatchingDmp ]
 TrackCaloMatching.matching_uem     : [ TrackCaloIntersectionUem, TrackCaloMatchingUem ]
 TrackCaloMatching.matching_umm     : [ TrackCaloIntersectionUmm, TrackCaloMatchingUmm ]

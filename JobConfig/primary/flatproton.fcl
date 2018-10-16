@@ -1,0 +1,43 @@
+#
+# protons from muon nuclear capture 
+#
+# original author: Dave Brown, LBNL
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: proton
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : {
+      module_type: StoppedParticleReactionGun
+      verbosityLevel : 1
+      muonStops: @local::mu2e.tgtMuonStops
+      physics: {
+	pdgId : 2212
+	spectrumShape: flat
+	spectrumVariable: kineticEnergy
+	elow : 0.0 // Mev
+	ehi : 105.0 // Mev
+      }
+    }
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+physics.filters.DigiFilter.particleTypes : [ 2212 ]
+# customize the output
+services.TFileService.fileName: "nts.owner.flatproton.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.flatproton.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

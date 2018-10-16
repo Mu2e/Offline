@@ -24,51 +24,31 @@ physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 4.2425E-05 # cut
 physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
 #physics.filters.DSMixerCRV.mu2e.meanEventsPerProton   : 2.8126E-04 # uncut
 physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 1.4588E-06 # cut
-# fixes
-physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashResample", "" ] ] }
-physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
-physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
-physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
-# patches for cut inputs
-physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.simParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "flashMixerTrkCalCut:protonTimeMap", ":" ] ] }
-physics.filters.flashMixerTrkCal.mu2e.products.stepPointMCMixer: { mixingMap:
-      [ 
-	 [ "flashMixerTrkCalCut:tracker", ":" ]
-#  Don't include VD and IPA steps from flash: they just add bulk
-#	 [ "flashMixerTrkCalCut:virtualdetector", ":" ],
-#	 [ "flashMixerTrkCalCut:protonabsorber", ":" ]
-      ]
-   }
-physics.filters.flashMixerTrkCal.mu2e.products.caloShowerStepMixer: { mixingMap:
-      [
-	 [ "flashMixerTrkCalCut:CaloShowerCrystalSteps", ":" ],
-	 [ "flashMixerTrkCalCut:CaloShowerROSteps", ":" ]
-      ]
-   }
 # input maps from prirmaries and flash. these get used first, new times are only generated for mu-daughter backgrounds 
 physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPrimary", @sequence::Mixing.protonTimeMaps ]
 physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPrimary" ]
-
+# after flash time cut mix change
+#  Don't include VD and IPA steps from flash: they just add bulk
+physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.simParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "flashMixerTrkCalCut:protonTimeMap", ":" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "flashMixerTrkCalCut:tracker", ":" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.caloShowerStepMixer: { mixingMap:
+  [ [ "flashMixerTrkCalCut:CaloShowerCrystalSteps", ":" ],
+    [ "flashMixerTrkCalCut:CaloShowerROSteps", ":" ] ] }
 #
 physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "DSMixerCRVCut:protonTimeMap", ":" ] ] }
 physics.filters.DSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "DSMixerCRVCut:CRV", ":" ] ] }
-
+#
 physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
 physics.filters.PSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
 physics.filters.PSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "PSMixerCRVCut:protonTimeMap", ":" ] ] }
 physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSMixerCRVCut:CRV", ":" ] ] }
+# TS input wasn't cut, just uses the production filter
+physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
 
-# must explicitly list all the mixers!
-physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter",
-  "flashMixerTrkCal:CaloShowerCrystalSteps",
-  "ootMixerTrkCal:calorimeter", 
-  "neutronMixerTrkCal:calorimeter",
-  "dioMixerTrkCal:calorimeter",
-  "photonMixerTrkCal:calorimeter",
-  "protonMixerTrkCal:calorimeter",
-  "deuteronMixerTrkCal:calorimeter"]
+# calo configuration
+physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter", @sequence::Mixing.caloMixerTags ]
 
