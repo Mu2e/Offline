@@ -1,0 +1,14 @@
+#include "JobConfig/beam/DS-flash.fcl"
+
+// Set output file names
+services.TFileService.fileName: "out/nts.owner.DS-flash-forDoseCalc.version.sequencer.root"
+outputs.detectorOutput.fileName: "out/sim.owner.DS-flash-forDoseCalc-TrkCal.version.sequencer.art"
+
+physics.producers.g4run.SDConfig.enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
+physics.producers.g4run.SDConfig.sensitiveVolumes : [ "TTrackerSupportElecG10Downstream" ]
+#physics.producers.g4run.debug.trackingVerbosityLevel : 1
+physics.filters.detectorFilter.mainHitInputs: ["g4run:TTrackerSupportElecG10Downstream" ]
+
+
+// Test:
+physics.filters.flashResample.fileNames: [ "/pnfs/mu2e/phy-sim/sim/mu2e/cd3-beam-g4s2-mubeam/0728a/031/509/sim.mu2e.cd3-beam-g4s2-mubeam.0728a.001002_00000000.art" ]
