@@ -28,7 +28,7 @@ class TimeClusterDiag  {
     _goodCalo("besttc.ecalo>50.0"),
     _disk1("besttc.cogz<2000.0"),
     _disk2("besttc.cogz>2000.0"),
-    _cehit("tchinfo._mcgen==2"),
+    _cehit("tchinfo._mcrel==0&&tchinfo._mcgen==2"),
     _effcan(0), _btccan(0), _cecan(0), _tcan(0), _ctcan(0)
   {
     _goodCE = _goodCENHits+_goodCETime;
@@ -39,13 +39,14 @@ class TimeClusterDiag  {
     TCut _goodReco, _goodCEReco;
     TCut _goodCalo, _disk1, _disk2;
     TCut _cehit;
-    TCanvas *_effcan, *_btccan, *_cecan, *_tcan, *_ctcan;
+    TCanvas *_effcan, *_btccan, *_cecan, *_tcan, *_ctcan, *_hcan;
 
     void Efficiency();
     void BestTC();
     void CE();
     void time();
     void ctime();
+    void HitTimeRes();
     void save(const char* suffix=".png");
 };
 
@@ -244,6 +245,36 @@ void TimeClusterDiag::ctime() {
   _ctcan->cd(4);
   tcdtp->Fit("gaus");
 }
+
+void TimeClusterDiag::HitTimeRes() {
+  TH1F* raw = new TH1F("raw","Combo Hit T0 Resolution;T0 (nsec)",100,-30.0,30);
+  TH1F* flt = new TH1F("flt","Combo Hit T0 Resolution;T0 (nsec)",100,-30.0,30);
+  TH1F* TOT = new TH1F("TOT","Combo Hit T0 Resolution;T0 (nsec)",100,-30.0,30);
+  raw->SetLineColor(kRed);
+  flt->SetLineColor(kGreen);
+  TOT->SetLineColor(kBlue);
+  raw->SetStats(0);
+  flt->SetStats(0);
+  TOT->SetStats(0);
+  _tcdiag->Project("raw","tchinfo._time - mcmidt0 - 22.5",_goodCE+_goodReco+_goodCEReco+_cehit);
+  _tcdiag->Project("flt","tchinfo._time -22.6 - tchinfo._z*0.00535 -mcmidt0",_goodCE+_goodReco+_goodCEReco+_cehit);
+  _tcdiag->Project("TOT","tchinfo._dt+besttc.time - mcmidt0",_goodCE+_goodReco+_goodCEReco+_cehit);
+  _hcan = new TCanvas("hcan","hcan",600,600);
+  _hcan->Divide(1,1);
+  _hcan->cd(1);
+  TOT->Draw();
+  raw->Draw("same");
+  flt->Draw("same");
+  TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
+  char cap[40];
+  snprintf(cap,40,"Raw Hit Time, RMS=%3.2f",raw->GetRMS());
+  leg->AddEntry(raw,cap,"L");
+  snprintf(cap,40,"Flt Corr Time, RMS=%3.2f",flt->GetRMS());
+  leg->AddEntry(flt,cap,"L");
+  snprintf(cap,40,"TOT+Flt Corr Time, RMS=%3.2f",TOT->GetRMS());
+  leg->AddEntry(TOT,cap,"L");
+  leg->Draw();
+}
   
 void TimeClusterDiag::save(const char* suffix) {
   string ss(suffix);
@@ -267,5 +298,9 @@ void TimeClusterDiag::save(const char* suffix) {
   if(_ctcan){
     cfname = string(_ctcan->GetName())+ss;
     _ctcan->SaveAs(cfname.c_str());
+  }
+  if(_hcan){
+    cfname = string(_hcan->GetName())+ss;
+    _hcan->SaveAs(cfname.c_str());
   }
 }
