@@ -234,7 +234,7 @@ void
 	adc_t flags = cc.DBT_Flags(pos);
 
 	// Fill the StrawDigiCollection
-	straw_digis->push_back(mu2e::StrawDigi( sid, tdc, tot, wf));
+	straw_digis->emplace_back(sid, tdc, tot, wf);
 
 	if( diagLevel_ > 1 ) {
   	  std::cout << "MAKEDIGI: " << sid.asUint16() << " " << tdc[0] << " " << tdc[1] << " "
@@ -318,7 +318,7 @@ void
 
 	// Fill the CaloDigiCollection
 	std::vector<int> cwf = cc.DBC_Waveform(pos);
-	calo_digis->push_back(mu2e::CaloDigi(cc.DBC_CrystalID(pos)*2 + cc.DBC_apdID(pos), cc.DBC_Time(pos), cwf));
+	calo_digis->emplace_back(cc.DBC_CrystalID(pos)*2 + cc.DBC_apdID(pos), cc.DBC_Time(pos), cwf);
 	
 	if( diagLevel_ > 1 ) {
 	  adc_t crystalID  = cc.DBC_CrystalID(pos);
