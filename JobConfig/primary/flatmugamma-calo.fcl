@@ -1,0 +1,23 @@
+# flat range of photons from muon stops to study external RMC photons in the calorimeter
+#include "JobConfig/primary/flatE.fcl"
+process_name: flatmugammacalo
+physics.producers.generate.physics.genId : radiativeMuonCapture
+physics.producers.generate.physics.pdgId : 22
+physics.producers.generate.physics.elow : 70.0 // Mev
+physics.producers.generate.physics.ehi : 105.0 // Mev
+physics.filters.CaloShowerSimFilter : {
+  module_type :CaloShowerSimFilter
+  particleTypes : [ 22  ]
+  MinEnergySum : 50.0
+}
+physics.TriggerPath : [ @sequence::Primary.GenAndG4,
+  @sequence::CommonMC.DigiSim,
+  @sequence::CaloDigiMC.DigiSim,
+  CaloShowerSimFilter,
+  @sequence::TrackerMC.DigiSim,
+  @sequence::CrvDAQPackage.CrvResponseSequence,
+  compressDigiMCs ]
+
+services.TFileService.fileName: "nts.owner.flatmugamma-calo.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.flatmugamma-calo.version.sequencer.art"
+

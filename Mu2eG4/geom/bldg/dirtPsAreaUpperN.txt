@@ -7,10 +7,10 @@ string dirt.psArea.upper.N.name     = "dirtPsAreaUpperN";
 string dirt.psArea.upper.N.material = "MBOverburden";
 
 double dirt.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.4;
-double dirt.psArea.upper.N.offsetFromFloorSurface.y = 4787.9;
+double dirt.psArea.upper.N.offsetFromFloorSurface.y = 4807.9;//4787.9;
 double dirt.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.4;
 
-double dirt.psArea.upper.N.yHalfThickness           = 393.7;
+double dirt.psArea.upper.N.yHalfThickness           = 413.7;//393.7;
 
 vector<int>    dirt.psArea.upper.N.xreplace   = { 3, 4 }; 
 vector<double> dirt.psArea.upper.N.xPositions = {
@@ -22,11 +22,11 @@ vector<double> dirt.psArea.upper.N.xPositions = {
 };
 
 vector<double> dirt.psArea.upper.N.yPositions = {
-  6858,   // h1
+  7086.59,   // h1
   3390.67,   // h2
   2083.23,   // h3
   2083.23,   // h3_to_W
-  6858   // h1_to_W
+  7086.59   // h1_to_W
 };
 
 // Local Variables:

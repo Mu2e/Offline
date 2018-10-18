@@ -112,7 +112,7 @@ namespace mu2e {
 
       fhicl::Table<TrackCaloCuts> caloCuts{ Name("caloCuts"),
           Comment("Config for calo matching and related cuts"),
-          [this](){ return caloCutsEnabled(); }
+          fhicl::MaybeUseFunction([this](){ return caloCutsEnabled(); })
       };
 
       fhicl::Atom<double> pmin{Name("pmin"), Comment("Low cut on signal track momentum")};

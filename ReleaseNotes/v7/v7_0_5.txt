@@ -1,0 +1,71 @@
+           Release notes for Mu2e Offline software, v7_0_5
+           This new series includes breaking changes for MDC2018
+
+10) Aug 10, 2018 brownd
+   - Further consolidation and simplification of primary and mixing fcl
+9) Aug 9, 2018 edmonds
+   Completed digi compression
+   - StepPOintMCCollections are no longer consolidated into one and are kept separate on the output
+   - SimParticleCollections, GenParticleCollections and CaloShowerStepCollections are consolidated into one output collection
+     -- compressSimParticleCollection was modified to deal with this
+     	-- The old behaviour is still default
+	--  To turn on the new behaviour pass in a SimParticleRemapping*
+     -- SimParticles are no longer keyed to their internal ID in SimParticleCollection
+   - calorimeterRO CaloShowerSteps are dropped from the event because of the Ptr bug (see DocDB-19477)
+   - had to add a few modifier functions to CrvDigiMC, CaloShowerSim and CaloShowerStepRO so that I could remap their Ptrs
+
+8) Aug 2, 2018 kutschke
+   Mu2eG4/src/Mu2eWorld.cc
+     - After a calo geometry change from Bertrand the simulation stopped
+       registering StepPointMCs in the calorimeter.
+     - The reason was that the crystals in the front and back disks
+       were different logical volumes with the same name.
+     - Accessing the logical volumes by:
+         G4LogicalVolumeStore::GetVolume(G4String const&)
+       always returns the first of the two volumes with the same name.
+     - So the sensitive detector handler was never registered with the
+       crystals in the second disk.
+     - Fixed by using an explicit loop over all logical volumes and
+       checking the name to find both G4LogicalVolumes.
+  The same inappropriate use of
+     G4LogicalVolumeStore::GetVolume(G4String const&)
+  was in place for every sensitive detector but it did not hurt us in
+  other places because we did not have multiple logical volumes with the
+  same name.  I fixed all of these instances.
+
+7) Aug 2, 2018 kutschke
+   --ff-only merged branch trackerPatRec from Giani into MDC2018.
+   For details see:
+    https://mu2e-docdb.fnal.gov/cgi-bin/private/ShowDocument?docid=19348
+    https://mu2e-docdb.fnal.gov/cgi-bin/private/ShowDocument?docid=19390
+
+6) July 31, 2018 genser
+   Corrected _visManager in Mu2eG4/src/Mu2eG4_module.cc which changed during MT merge
+
+5) July 20, 2018 brownd
+    Consolidate and cleanup fcl in prepreation for primary particle and mixing production
+    Rename HitMakers to CommonMC as that is now its purpose
+4) July 19, 2018 kutschke
+   EventGenerator/fcl/prolog.fcl
+     Commented out the definition of PrimaryProtonGunN
+     in the table EventGenerator.producers that defines the full set of
+     generators.  The corresponding library is not present in this commit so it
+     generates an error at job startup when running EventGenerator/fcl/prolog.fcl.
+
+3) July 18, 2018 kutschke
+   Mu2eG4/fcl/g4test_03.fcl
+     - Remove the individual configuration of proton time map and muon time map.
+       Instead use the definitions in the prolog CommonDigiSim.  This now
+       brings in the EventWindowMarker module; it's absence was the cause of the
+       original error.
+
+2) July 18, 2018 brownd, bonventre
+    Update straw digitization.  This includes:
+    - refinements to deal with boundary conditions near the microbunch wrapping
+    - introduction of the event window marker and its use in digitization
+    - clock distribution jitter
+    - random threshold variation within hardware expectations
+    - resolution of most of the FIXMEs
+1) July 15, 2018 edmonds, brown
+    Filtering and compression for beam flash hits in TrkCal and CRV
+

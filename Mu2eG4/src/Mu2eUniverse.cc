@@ -16,7 +16,7 @@
 
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"

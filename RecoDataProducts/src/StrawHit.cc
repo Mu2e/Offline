@@ -12,7 +12,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -24,10 +24,12 @@ namespace mu2e {
   // Print the information found in this hit.
   void StrawHit::print( ostream& ost, bool doEndl ) const {
 
-    ost << "traw Hit:"
-        << " idx: "      << _strawIndex
-        << " time: "     << _time
-        << " dt: "       << _dt
+    ost << " StrawHit:"
+        << " idx: "      << _strawId
+        << " cal time "     << _time[StrawEnd::cal]
+        << " HV time "     << _time[StrawEnd::hv]
+        << " cal TOT "     << _tot[StrawEnd::cal]
+        << " HV TOT "     << _tot[StrawEnd::hv]
         << " eDep: "     << _energyDep;
 
     if ( doEndl ){

@@ -1,0 +1,29 @@
+<lcgdict>
+ <class name="mu2e_eventdisplay::ComponentInfo"/>
+ <class name="mu2e_eventdisplay::ComponentInfoContainer"/>
+ <class name="mu2e_eventdisplay::EventDisplayGeoVolumeBox"/>
+ <class name="mu2e_eventdisplay::EventDisplayGeoVolumeCone"/>
+ <class name="mu2e_eventdisplay::EventDisplayGeoVolumePgon"/>
+ <class name="mu2e_eventdisplay::EventDisplayGeoVolumeTube"/>
+ <class name="mu2e_eventdisplay::EventDisplayPolyLine3D"/>
+ <class name="mu2e_eventdisplay::EventDisplayViewSetup"/>
+ <class name="mu2e_eventdisplay::HistDraw"/>
+
+ <class name="mu2e_eventdisplay::Cone"/>
+ <class name="mu2e_eventdisplay::ContentSelector"/>
+ <class name="mu2e_eventdisplay::Cube"/>
+ <class name="mu2e_eventdisplay::Cylinder"/>
+ <class name="mu2e_eventdisplay::DataInterface"/>
+ <class name="mu2e_eventdisplay::EventDisplayFrame"/>
+ <class name="mu2e_eventdisplay::FilterDialog"/>
+ <class name="mu2e_eventdisplay::Hexagon"/>
+ <class name="mu2e_eventdisplay::RootFileManager"/>
+ <class name="SaveDialogManager"/>
+ <class name="mu2e_eventdisplay::SetupDialog"/>
+ <class name="mu2e_eventdisplay::Sphere"/>
+ <class name="mu2e_eventdisplay::Straw"/>
+ <class name="mu2e_eventdisplay::Track"/>
+ <class name="mu2e_eventdisplay::TrackColorSelector"/>
+ <class name="mu2e_eventdisplay::VirtualShape"/>
+</lcgdict>
+

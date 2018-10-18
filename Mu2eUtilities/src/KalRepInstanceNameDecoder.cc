@@ -7,7 +7,7 @@
 
 #include "Mu2eUtilities/inc/KalRepInstanceNameDecoder.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 mu2e::KalRepInstanceNameDecoder::KalRepInstanceNameDecoder( std::string const& instanceName ):
   instanceName_(instanceName),

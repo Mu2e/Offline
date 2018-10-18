@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <cassert>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Vector/ThreeVector.h"

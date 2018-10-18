@@ -21,7 +21,17 @@ vector<double> dirt.psArea.dirtSlab.N.xPositions = {
   -17405,   // e
   -50000,   // e_to_W
   -50000,   // NWcorner
-  -1270   // c_to_N
+  -1270,   // c_to_N
+  -1270,   // Down to NRetWall
+  -12319,  // NW corner NRetWall
+  -12319,  // NE corner WextWallFoot
+  -14706.6,// top elbow WextWallFoot
+  -20628.71,// NW corner WextWallFoot
+  -19761.22,// SW corner WextWallFoot
+  -14503.4,// bot elbow WextWallFoot
+  -12319,  // SE corner WextWallFoot
+  -12319,  // SW corner NRetWall
+  -1270    // c to N
 };
 
 vector<int>    dirt.psArea.dirtSlab.N.yreplace   = { 6, 7 }; 
@@ -32,8 +42,18 @@ vector<double> dirt.psArea.dirtSlab.N.yPositions = {
   1760.03,   // d
   1688.26,   // e
   1688.26,   // e_to_W
-  50000,   // NWcorner
-  50000   // c_to_N
+  50000,     // NWcorner
+  50000,     // c_to_N
+  10312.41,  // Down to NRetWall
+  10312.41,  // NW corner NRetWall
+  10922.01,  // NE corner WextWallFoot
+  10922.01,  // top of elbow
+  9476.19,   // NW corner WextWallFoot
+  5922.91,   // SW corner WextWallFoot
+  7264.39,   // bot of elbow
+  7264.39,   // SE corner WextWallFoot
+  9702.79,   // SW corner NRetWall
+  9702.79    // c to N
 };
 
 // Local Variables:

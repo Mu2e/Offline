@@ -38,7 +38,6 @@
 #include "G4ThreeVector.hh"
 #include "G4TessellatedSolid.hh"
 #include "G4VPhysicalVolume.hh"
-#include "G4VSensitiveDetector.hh"
 
 
 namespace mu2e {
@@ -55,7 +54,7 @@ public:
         HelicalProtonAbsorber(double z_start, double length_i, double *inner_radii,
                         double *outer_radii, double *inner_phis, double *outer_phis,
                         double thickness_i, /*double num_of_turns_i,*/ int vane_num_i,
-                        G4Material* material, G4LogicalVolume* world, G4VSensitiveDetector *paSD=0x0);
+                        G4Material* material, G4LogicalVolume* world);
         ~HelicalProtonAbsorber();
 
         inline G4LogicalVolume* GetLog() {return pabs_logic;}

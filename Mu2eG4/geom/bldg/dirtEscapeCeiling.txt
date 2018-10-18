@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/dirt_escape_ceiling.ccl
+
+string dirt.escape.ceiling.name     = "dirtEscapeCeiling";
+
+string dirt.escape.ceiling.material = "MBOverburden";
+
+double dirt.escape.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.escape.ceiling.offsetFromFloorSurface.y = 5689.6;
+double dirt.escape.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.escape.ceiling.yHalfThickness           = 203.2;
+
+vector<double> dirt.escape.ceiling.xPositions = {
+  25927.1,   // D2
+  24561.1,   // B5
+  20660.7,   // B6
+  20744.5,   // Y1
+  17288.5,   // Y0
+  17204.7,   // dEC05
+  13106.9,   // B10
+  14472.9   // E0
+};
+
+vector<double> dirt.escape.ceiling.yPositions = {
+  14516.4,   // D2
+  20085,   // B5
+  19140,   // B6
+  18794.4,   // Y1
+  17957,   // Y0
+  18302.6,   // dEC05
+  17309.7,   // B10
+  11741.1   // E0
+};
+
+// Local Variables:
+// mode:c++
+// End:

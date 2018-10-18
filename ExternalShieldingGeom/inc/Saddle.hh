@@ -31,6 +31,8 @@ namespace mu2e {
 
     // 
 
+    int                                      getVersion() const
+    { return _version; }
 
     const std::vector<std::vector<std::vector<double> > >& getOutlines() const 
     { return _saddleOutlines; }
@@ -70,23 +72,25 @@ namespace mu2e {
     friend class SaddleMaker;
 
     // Private ctr: the class should only be constructed via Saddle::SaddleMaker.
-    Saddle(const std::vector<std::vector<std::vector<double> > >& outlines,
-			const std::vector<double>&               lengths,
-			const std::vector<std::vector<double> >& tols, 
-			const std::vector<std::string>&          mats, 
-			const std::vector<CLHEP::Hep3Vector>&    sites, 
-			const std::vector<std::string>&          orients,
-			const std::vector<int>&                  nHoles,
-			const std::vector<int>&                  nNotches,
-			const std::vector<int>&                  iHole,
-			const std::vector<CLHEP::Hep3Vector>&    locHole,
-			const std::vector<double>&               radHole,
-			const std::vector<double>&               lenHole,
-			const std::vector<std::string>&          oHole,
-			const std::vector<int>&                  iNotch,
-			const std::vector<CLHEP::Hep3Vector>&    locNotch,
-			const std::vector<std::vector<double> >& locDims)
-      : _saddleOutlines(outlines),
+    Saddle(const int                                version,
+	   const std::vector<std::vector<std::vector<double> > >& outlines,
+	   const std::vector<double>&               lengths,
+	   const std::vector<std::vector<double> >& tols, 
+	   const std::vector<std::string>&          mats, 
+	   const std::vector<CLHEP::Hep3Vector>&    sites, 
+	   const std::vector<std::string>&          orients,
+	   const std::vector<int>&                  nHoles,
+	   const std::vector<int>&                  nNotches,
+	   const std::vector<int>&                  iHole,
+	   const std::vector<CLHEP::Hep3Vector>&    locHole,
+	   const std::vector<double>&               radHole,
+	   const std::vector<double>&               lenHole,
+	   const std::vector<std::string>&          oHole,
+	   const std::vector<int>&                  iNotch,
+	   const std::vector<CLHEP::Hep3Vector>&    locNotch,
+	   const std::vector<std::vector<double> >& locDims)
+      : _version(version),
+	_saddleOutlines(outlines),
 	_saddleLengths (lengths),
 	_saddleBoxTols (tols),
 	_materialNames    (mats),
@@ -111,7 +115,7 @@ namespace mu2e {
 
     // Current description based on Geometry 14, adapted by
     // David Norvil Brown, 
-
+    int _version;
     // The following vectors hold one piece of information per "block"
     std::vector<std::vector< std::vector< double > > > _saddleOutlines;
     std::vector< double >                _saddleLengths;

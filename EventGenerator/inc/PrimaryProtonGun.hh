@@ -27,12 +27,15 @@
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
+#include "Mu2eUtilities/inc/RandomUnitSphere.hh"
 
 // Framework Includes
 #include "art/Framework/Principal/Run.h"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
+#include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references outside of namespace mu2e
@@ -47,10 +50,10 @@ namespace mu2e {
   class SimpleConfig;
 
   class PrimaryProtonGun: public GeneratorBase{
-
   public:
-    PrimaryProtonGun( art::Run& run, const SimpleConfig& config );
-    virtual ~PrimaryProtonGun();
+
+    PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run& run, SimpleConfig const& config);
+    ~PrimaryProtonGun() = default;
 
     virtual void generate( GenParticleCollection&  );
 
@@ -94,6 +97,10 @@ namespace mu2e {
 
     double _mean;  // poisson mean; negative for non-random abs(mean)
     CLHEP::RandPoissonQ _randPoissonQ;
+    CLHEP::RandFlat     _randFlat;
+    CLHEP::RandGaussQ   _randGaussQ;
+    RandomUnitSphere    _randomUnitSphere;
+
 
     // Make histograms or not.
     bool _doHistograms;
@@ -116,5 +123,3 @@ namespace mu2e {
 } // end namespace mu2e,
 
 #endif /* EventGenerator_PrimaryProtonGun_hh */
-
-

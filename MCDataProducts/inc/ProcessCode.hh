@@ -72,7 +72,10 @@ namespace mu2e {
       sigma0Inelastic,        xi_MinusInelastic,       xi0Inelastic,        positronNuclear,
       electronNuclear,        photonNuclear,           antilambdaInelastic, DecayWithSpin,
       ionElastic,             EMCascade,               DIO,                 NuclearCapture,
-      muonNuclear,
+      muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr,
+      G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary,
+      Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit,
+      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,
       lastEnum,
 
       // An alias for backward compatibility
@@ -111,8 +114,10 @@ namespace mu2e {
     "sigma0Inelastic",        "xi-Inelastic",            "xi0Inelastic",           "positronNuclear", \
     "electronNuclear",        "photonNuclear",           "anti-lambdaInelastic",   "DecayWithSpin", \
     "ionElastic",             "EMCascade",               "DIO",                    "NuclearCapture", \
-    "muonNuclear"
-
+    "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
+    "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
+    "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
+    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator"
 
   public:
 
@@ -183,7 +188,7 @@ namespace mu2e {
     }
 
     // Number of valid codes, not including lastEnum, but including "unknown".
-    static size_t size(){
+    static std::size_t size(){
       return lastEnum;
     }
 

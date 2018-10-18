@@ -1,0 +1,39 @@
+#
+#  PS CRV flash filtering
+#  Andrew Edmonds June 2018
+#
+#include "JobConfig/mixing/prolog.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+
+process_name: dscrvfilter
+
+services : @local::Services.Sim
+
+source : {
+  module_type : RootInput
+  readParameterSets: false
+}
+
+physics.producers.protonTimeMap : { module_type : GenerateProtonTimes }
+
+physics.filters.PSMixerCRVCut : @local::CRVCut
+physics.filters.PSMixerCRVCut.timeMapTags : [ "protonTimeMap" ]
+
+outputs.PSMixerCRVCutOutput.module_type : RootOutput
+outputs.PSMixerCRVCutOutput.SelectEvents : [ p1 ]
+outputs.PSMixerCRVCutOutput.outputCommands : [ "drop *_*_*_*",
+			      	  		     "keep *_PSMixerCRVCut_*_*",
+				  		     "keep *_genCounter_*_*"
+						   ]
+outputs.PSMixerCRVCutOutput.fileName : "sim.owner.PS-CRV-cut.version.sequencer.art"
+
+# trigger path
+physics.p1: [ protonTimeMap, PSMixerCRVCut ]
+physics.e1 : [ PSMixerCRVCutOutput ]
+
+physics.trigger_paths : [ p1 ]
+physics.end_paths : [ e1 ]
+
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  30

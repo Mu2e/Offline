@@ -1,0 +1,171 @@
+# common parts used in all mixing jobs
+
+#include "JobConfig/beam/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+
+BEGIN_PROLOG
+
+#----------------------------------------------------------------
+mixerTemplateCommon: {
+   module_type         : MixBackgroundFrames
+   fileNames           : @nil
+#     sequential -- read the secondary events in order
+#     randomReplace -- random with replacement
+#     randomLimReplace -- events unique within a primary event
+#     randomNoReplace -- events guaranteed to be used once only.
+#   readMode            : randomNoReplace
+   readMode            : randomLimReplace
+   wrapFiles           : true
+
+   mu2e: {
+      protonBunchIntensityTag: "protonBunchIntensity"
+      meanEventsPerProton: @nil
+      products: @nil
+   }
+}
+
+#----------------------------------------------------------------
+mixerTemplateTrkCal: @local::mixerTemplateCommon
+mixerTemplateTrkCal.mu2e.products: {
+   genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+   simParticleMixer: { mixingMap: [ [ "detectorFilter", "" ] ] }
+   stepPointMCMixer: { mixingMap:
+      [
+	 [ "detectorFilter:tracker", ":" ],
+	 [ "detectorFilter:virtualdetector", ":" ],
+	 [ "detectorFilter:protonabsorber", ":" ]
+      ]
+   }
+   caloShowerStepMixer: { mixingMap:
+      [
+	 [ "CaloShowerCrystalSteps", "calorimeter" ],
+	 [ "CaloShowerROSteps", "calorimeterRO" ]
+      ]
+   }
+}
+#----------------------------------------------------------------
+mixerTemplateCRV: @local::mixerTemplateCommon
+mixerTemplateCRV.mu2e.products: {
+   genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+   simParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+   stepPointMCMixer: { mixingMap:
+      [
+	 [ "crvFilter:CRV", ":" ]
+      ]
+   }
+}
+# flash cut configuration
+CRVCut : { module_type : CompressStepPointMCs
+	 			    stepPointMCTags : [ "crvFilter:CRV" ]
+				    caloShowerStepTags : [ ]
+				    simParticleTag : "crvFilter"
+				    minTime : 350
+				    maxTime : 1695
+				    minEdep : 10.0e-6
+				    maxEdep : 1.0e6
+				    timeMapTags : [ "protonTimeMap" ]
+				    diagLevel : 0
+     				  }
+
+# mixing configuration
+Mixing : {
+  producers : {
+    @table::Primary.producers
+    # proton bunch intensity
+    protonBunchIntensity: {
+      module_type: ProtonBunchIntensityLogNormal
+      sigma: 0.3814
+      extendedMean: 3.9e7 // mean of the uncut distribution
+      cutMax: 11.7e7  // cut the tail at 3 times the mean
+    }
+   # tracker digis for primary selection
+    makeSDPrimary : {
+      module_type : StrawDigisFromStepPointMCs
+      TimeOffsets   : { inputs : [ @sequence::CommonMC.TimeMapsPrimary ] }
+    }
+   # digi compression
+    compressDigiMCs : @local::DigiCompression.Mixing
+  }
+  filters : {
+    @table::Primary.filters
+    # TrkCal mixing
+    flashMixerTrkCal    : @local::mixerTemplateTrkCal
+    ootMixerTrkCal      : @local::mixerTemplateTrkCal
+    neutronMixerTrkCal  : @local::mixerTemplateTrkCal
+    dioMixerTrkCal      : @local::mixerTemplateTrkCal
+    photonMixerTrkCal   : @local::mixerTemplateTrkCal
+    protonMixerTrkCal   : @local::mixerTemplateTrkCal
+    deuteronMixerTrkCal : @local::mixerTemplateTrkCal
+    # CRV mixing
+    PSMixerCRV	     : @local::mixerTemplateCRV 
+    TSMixerCRV	     : @local::mixerTemplateCRV 
+    DSMixerCRV	     : @local::mixerTemplateCRV
+    ootMixerCRV	     : @local::mixerTemplateCRV 
+    neutronMixerCRV  : @local::mixerTemplateCRV 
+    dioMixerCRV	     : @local::mixerTemplateCRV 
+    photonMixerCRV   : @local::mixerTemplateCRV 
+# digi filtering for Primary selection.
+    DigiFilter : {
+      module_type : StrawDigiMCFilter
+      StrawDigiMCCollection : "makeSDPrimary"
+    }
+  }
+  analyzers : {
+    @table::Primary.analyzers
+  }
+   # input time maps from cut mix inputs.  All are needed
+  protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
+  # calo tags.  flashMixer is different because they are filtered
+  caloMixerTags : ["ootMixerTrkCal:calorimeter",
+		"protonMixerTrkCal:calorimeter",
+		"deuteronMixerTrkCal:calorimeter",
+		"dioMixerTrkCal:calorimeter",
+		"photonMixerTrkCal:calorimeter",
+		"neutronMixerTrkCal:calorimeter",
+		"flashMixerTrkCal:CaloShowerCrystalSteps" ]
+
+# sequences
+  TrkCalMixSequence : [ flashMixerTrkCal,
+    ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
+    photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal ]
+  CRVMixSequence : [ PSMixerCRV, TSMixerCRV, DSMixerCRV,
+    ootMixerCRV, neutronMixerCRV, dioMixerCRV, photonMixerCRV ]
+  CreatePrimarySequence : [
+    @sequence::Primary.GenAndG4,
+    @sequence::CommonMC.PrimaryDigiSim,
+    makeSDPrimary, DigiFilter ]
+# paths and output
+  EndPath : [ @sequence::Primary.EndPath ] 
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     fileName    : @nil
+     outputCommands : @local::DigiCompression.OutputCommands
+  }
+# drops for reading primaries as input to mixing.  TrkDigis are kept to allow filtering
+  Input : {
+    droppedProducts : ["drop mu2e::CaloDigis_*_*_*",
+		      "drop mu2e::CrvDigis_*_*_*",
+		      "drop mu2e::CrvDigiMCs_*_*_*",
+		      "drop mu2e::CaloShowerSims_*_*_*",
+		      "drop art::TriggerResults_*_*_*" ]
+  }
+}
+
+Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+Mixing.producers.compressDigiMCs.caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", @sequence::Mixing.caloMixerTags ]
+
+Mixing.MixSequence : [ protonBunchIntensity,
+    @sequence::Mixing.TrkCalMixSequence,
+    @sequence::Mixing.CRVMixSequence,
+    @sequence::CommonMC.DigiSim,
+    @sequence::TrackerMC.DigiSim,
+    @sequence::CaloDigiMC.DigiSim,
+    @sequence::CrvDAQPackage.CrvResponseSequence ]
+
+Mixing.TriggerPath : [
+    @sequence::Mixing.CreatePrimarySequence, 
+    @sequence::Mixing.MixSequence, 
+    compressDigiMCs ]
+
+END_PROLOG

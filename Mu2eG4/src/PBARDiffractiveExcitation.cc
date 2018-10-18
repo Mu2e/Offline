@@ -42,7 +42,7 @@
 //  processes more exactly.
 // Modified: KLG added Zhengyun's pbar related modifications (on the top of 9.6.p04)
 // ---------------------------------------------------------------------
-
+#if G4VERSION<4099
 
 #include "globals.hh"
 #include "Randomize.hh"
@@ -1630,3 +1630,4 @@ int PBARDiffractiveExcitation::operator!=(const PBARDiffractiveExcitation &) con
 	throw G4HadronicException(__FILE__, __LINE__, "PBARDiffractiveExcitation != operator meant to be called");
 	return true;
 }
+#endif

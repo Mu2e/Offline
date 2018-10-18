@@ -35,8 +35,8 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
       unknown,       particleGun,       conversionGun,
-      cosmicToy,     cosmicDYB,         cosmic,          dioShankerWatanabe,
-      dioCzarnecki,  dioE5,  dioE58,  dioFlat,           pionCapture,
+      cosmicToy,     cosmicDYB,         cosmic,          obsolete1,
+      dioTail,       obsolete2,         obsolete3,       obsolete4,           pionCapture,
       muonCapture,   muonDecayInFlight, ejectedProtonGun,
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
       ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
@@ -44,21 +44,23 @@ namespace mu2e {
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun,
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun,
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun,
+      cosmicCRY, pbarFlat, fromAscii, radiativeMuonCapture, radiativeMuonCaptureInternal,
       lastEnum
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "conversionGun",               \
-      "cosmicToy",    "cosmicDYB",         "cosmic",           "dioShankerWatanabe",  \
-      "dioCzarnecki", "dioFlat",  "dioE5", "dioE58",           "pionCapture", \
+      "cosmicToy",    "cosmicDYB",         "cosmic",           "obsolete1",  \
+      "dioTail", "obsolete2",  "obsolete3", "obsolete4",           "pionCapture", \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
       "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
       "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
-      "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun"
+      "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
+      "CosmicCRY","pbarFlat","fromAscii","radiativeMuonCapture","radiativeMuonCaptureInternal"
 
   public:
 
@@ -105,11 +107,6 @@ namespace mu2e {
       return ( _id != g._id );
     }
 
-    bool isDio() const {
-      return (_id == dioCzarnecki || _id == dioShankerWatanabe || _id == dioFlat  || 
-              _id == dioE5        || _id == dioE58 );
-    }
-
     bool isCosmic() const {
       return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic);
     }
@@ -147,7 +144,7 @@ namespace mu2e {
     const static char* _name[];
 
     // Number of valid codes, not including lastEnum, but including "unknown".
-    static size_t size(){
+    static std::size_t size(){
       return lastEnum;
     }
 

@@ -1,0 +1,43 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DSelevator_interior.ccl
+
+string building.dsArea.elevator.interior.name     = "dsAreaElevatorInterior";
+
+string building.dsArea.elevator.interior.material = "CONCRETE_MARS";
+
+double building.dsArea.elevator.interior.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.elevator.interior.offsetFromFloorSurface.y = 5410.2;
+double building.dsArea.elevator.interior.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.elevator.interior.yHalfThickness           = 1955.8;
+
+vector<double> building.dsArea.elevator.interior.xPositions = {
+  29895.8,   // E0
+  32689.8,   // E1
+  32689.8,   // E2
+  29794.2,   // E3
+  29794.2,   // E4
+  37350.7,   // E5
+  37350.7,   // E6
+  32994.6,   // E7
+  32994.6,   // E8
+  29895.8   // E9
+};
+
+vector<double> building.dsArea.elevator.interior.yPositions = {
+  -12090.4,   // E0
+  -12090.4,   // E1
+  -14427.2,   // E2
+  -14427.2,   // E3
+  -14732,   // E4
+  -14732,   // E5
+  -14427.2,   // E6
+  -14427.2,   // E7
+  -11684,   // E8
+  -11684   // E9
+};
+
+// Local Variables:
+// mode:c++
+// End:

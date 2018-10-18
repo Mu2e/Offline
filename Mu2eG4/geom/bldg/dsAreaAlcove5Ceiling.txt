@@ -26,6 +26,11 @@ vector<double> building.dsArea.alcove5.ceiling.yPositions = {
   -8661.4   // d
 };
 
+int building.dsArea.alcove5.ceiling.Notch.numberOfNotches  = 1;
+vector<double> building.dsArea.alcove5.ceiling.Notch.halfDims.1 = {76.2,127.,3350};
+vector<double> building.dsArea.alcove5.ceiling.Notch.position.1 = {18000.,-12801.6,2159.};
+string building.dsArea.alcove5.ceiling.Notch.orientation.1 = "500";
+
 // Local Variables:
 // mode:c++
 // End:

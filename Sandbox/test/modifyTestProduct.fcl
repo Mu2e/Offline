@@ -1,0 +1,44 @@
+# Read the test file made by MakeTestProduct and
+# modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : modifyTestProduct
+
+source : {
+  module_type : RootInput
+  fileNames   :  ["testProduct01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  producers : {
+    makeTestProduct : {
+      module_type : ModifyTestProduct
+      productTag  : "makeTestProduct"
+    }
+  }
+
+ t1 : [ makeTestProduct ]
+ e1 : [ out1 ]
+
+ trigger_paths : [ t1 ]
+ end_paths     : [ e1 ]
+
+}
+
+outputs : {
+  out1 : {
+    module_type : RootOutput
+    fileName    : "testProduct02.art"
+    outputCommands:   [ "keep *_*_*_*",
+                        "drop *_makeTestProduct_*_makeTestProduct"
+                      ]
+
+  }
+}

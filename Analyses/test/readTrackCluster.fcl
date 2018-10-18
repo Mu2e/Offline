@@ -7,9 +7,9 @@
 # so need to define input and 
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
@@ -31,14 +31,12 @@ services : {
 
     RandomNumberGenerator : { }
 
-    user : {
-        GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
-        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-        BTrkHelper             : @local::BTrkHelperDefault
-        G4Helper               : { }
-        SeedService            : @local::automaticSeeds
-    }
+    GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
 }
 
 physics : {
@@ -80,8 +78,8 @@ physics : {
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+	@table::CaloDigiMC.producers
+	@table::CaloReco.producers
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
@@ -89,11 +87,11 @@ physics : {
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+	TrkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
+	@table::CaloCluster.producers
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	CalPatRec            : @local::CalPatRec
 	MergePatRec          : @local::MergePatRec
@@ -147,8 +145,9 @@ physics : {
 	  , FilterStepPointMomentum
 	  , protonTimeMap, muonTimeMap 
 	  , makeSD, makeSH
-	  , CaloReadoutHitsMaker, CaloCrystalHitsMaker
-	  , MakeCaloCluster
+          , @sequence::CaloDigiMC.DigiSim
+          , @sequence::CaloReco.Reco		  
+          , @sequence::CaloCluster.Reco
 # 
 	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
 #
@@ -177,7 +176,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
@@ -189,8 +188,8 @@ outputs: {
 #------------------------------------------------------------------------------
 # 1. only for interactive submission
 #------------------------------------------------------------------------------
-services.user.SeedService.baseSeed             :  0
-services.user.SeedService.maxUniqueEngines     :  20
+services.SeedService.baseSeed             :  0
+services.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points
 # services.Timing: { }
@@ -212,7 +211,7 @@ physics.producers.CaloReadoutHitsMaker.g4ModuleLabel : g4run
 physics.producers.CalPatRec.minClusterEnergy         : 60.
 physics.producers.CalPatRec. minClusterSize          : 2
 physics.producers.CalPatRec.HelixFit.distPatRec      : 100.
-physics.producers.CalPatRec.BackgroundSelectionBits  : ["DeltaRay","Isolated"]
+physics.producers.CalPatRec.BackgroundSelectionBits  : ["Background","Isolated"]
 
 
 physics.producers.TrkExtrapol.fitterModuleLabel      : MergePatRec

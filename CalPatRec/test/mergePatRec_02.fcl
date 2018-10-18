@@ -3,9 +3,9 @@
 #------------------------------------------------------------------------------
 #  mergePatRec02: read input data, remake all hits, do not regenereate events
 #------------------------------------------------------------------------------
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
 #include "ParticleID/fcl/prolog.fcl"
@@ -41,14 +41,12 @@ services : {
     TFileService : { fileName   : "mergePatRec.root" }
     RandomNumberGenerator : { }
 
-    user : {
-	GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
-	ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-	GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        BTrkHelper             : @local::BTrkHelperDefault
-	G4Helper               : { }
-	SeedService            : @local::automaticSeeds
-    }
+    GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
 } 
 #------------------------------------------------------------------------------
 # physics
@@ -76,7 +74,7 @@ physics : {
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	trkPatRec            : @local::TrkPatRecDownstreameMinus
+	trkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
@@ -122,7 +120,7 @@ physics : {
 
 	    #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
 	    goodHitMask                  : ["EnergySelection", "RadiusSelection"]
-	    badHitMask                   : ["DeltaRay", "Isolated"]
+	    badHitMask                   : ["Background", "Isolated"]
 	
 	    trackerStepPoints            : tracker
 	    minHits                      : 5
@@ -173,8 +171,8 @@ services.scheduler.wantSummary: true
 #------------------------------------------------------------------------------
 # services.scheduler.wantSummary: true
 source.firstRun                            :  1 
-services.user.SeedService.baseSeed         :  1
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  1
+services.SeedService.maxUniqueEngines :  20
 
 physics.producers.generate.inputfile               : "Mu2eG4/test/genconfig_DownstreameMinus.txt"
 physics.producers.makeSD.TimeOffsets               :  { inputs : [ "protonTimeMap", "muonTimeMap" ] }

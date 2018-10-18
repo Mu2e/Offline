@@ -1,0 +1,36 @@
+#
+# Test reading back results from track trigger sequences.  Dave Brown (LBNL) 3/15/2017
+#
+#  > mu2e --config TrkFilters/fcl/TTRead.fcl --source-list (your files) --TFile TTRead.root --nevts=100
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkFilters/fcl/prolog.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TTRead
+
+source :
+{
+  module_type : RootInput
+}
+
+services : @local::Services.SimAndReco
+physics :
+{
+  analyzers : {
+    TrkRecoDiag : @local::TrkRecoDiag
+    TrkTriggerDiag : {
+      module_type : TrkTriggerDiag
+#      debugLevel : 1
+    }
+  }
+}
+# analysis path: this is for monitoring only
+#
+physics.TTReadEndPath : [ TrkTriggerDiag ]
+# the following are needed for interactive running
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+

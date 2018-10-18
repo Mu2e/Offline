@@ -1,9 +1,9 @@
 # Variant of g4test_03 but with transport only.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : transportOnly
@@ -20,7 +20,7 @@ services : {
   TFileService          : { fileName : "transportOnly.root" }
   RandomNumberGenerator : { }
 
-  GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
+  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   BTrkHelper             : @local::BTrkHelperDefault
@@ -35,14 +35,14 @@ physics : {
     generate : @local::generate
     g4run :  @local::g4run
 
-    protonTimeMap        : { module_type : GenerateProtonTimes }
-    muonTimeMap          : { module_type : GenerateMuonLife }
+    @table::CommonMC.producers
 
     makeSD               : @local::makeSD
-    makeSH               : @local::makeSHfromSD
+    makeSH               : @local::makeSH
 
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
+
     randomsaver          : @local::randomsaver
 
   }
@@ -54,7 +54,6 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloReadoutHitsMaker
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201
@@ -78,7 +77,7 @@ physics : {
 
   }
 
-  p1 : [generate , g4run , protonTimeMap, muonTimeMap, makeSD, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver]
+  p1 : [generate , g4run, @sequence::CommonMC.DigiSim, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
   e1 : [checkhits, checksdd, readvd, outfile]
 
   trigger_paths  : [p1]
@@ -98,6 +97,8 @@ outputs:  {
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
+#physics.producers.g4run.SDConfig.enableSD     : @erase
+#physics.producers.g4run.SDConfig.enableAllSDs     : true
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0
@@ -108,7 +109,6 @@ physics.producers.makeSH.diagLevel     : 0
 physics.producers.makeSH.maxFullPrint  : 5
 physics.producers.makeSH.minimumEnergy : 0
 
-physics.producers.CaloReadoutHitsMaker.diagLevel    :   0
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-physics.producers.CaloCrystalHitsMaker.diagLevel    :   0
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+
+#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"

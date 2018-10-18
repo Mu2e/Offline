@@ -11,7 +11,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruth.hh"

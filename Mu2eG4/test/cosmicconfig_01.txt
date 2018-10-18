@@ -1,24 +1,33 @@
 //
-// Run-time test config for CosmicDYB
+// Configuration for CosmicDYB
+// (general simulation)
 //
-// $Id: cosmicconfig_01.txt,v 1.3 2012/01/28 23:01:55 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2012/01/28 23:01:55 $
-//
-// Original author Yury Kolomensky
+// Ralf Ehrlich, 2018
 
-bool conversionGun.do = false;
+// enable process
 bool cosmicDYB.do = true;
-bool picapture.do = false;
-bool ejectedProtonGun.do = false;
-bool decayinorbitGun.do = false;
-bool piEplusNuGun.do = false;
 
+// Mean multiplicity. If negative, use -_mean as a fixed number
 double cosmicDYB.mean =  -1.1; 
-double cosmicDYB.muEMin = 5e3;
-double cosmicDYB.muEMax = 500e3;
-double cosmicDYB.dx     = 5000.;
-double cosmicDYB.dz     = 5000.;
+
+// Energy Ranges (MeV)
+double cosmicDYB.muEMin = 0.5e3;
+double cosmicDYB.muEMax = 5000e3;
+
+// Half lengths of the production plane to generate events (mm)
+// If all half lengths are non-zero, 5 sides on a box are used as production planes
+double cosmicDYB.dx     = 10000;
+double cosmicDYB.dy     = 0;
+double cosmicDYB.dz     = 20000;
+
+// Orientation of the production plane
+double cosmicDYB.direction = "Negative_y";
+
+// Constant starting time of muons at surface
+double cosmicDYB.constTime = 800;
+
+// Center of production plane/box
+vector<double> cosmicDYB.productionCenterInMu2e = {-3904,0,10200};
 
 //
 // This tells emacs to view this file in c++ mode.

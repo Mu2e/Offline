@@ -1,0 +1,354 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry as of March 2016
+// See Mu2e docdb #4678 for more details on parameters
+
+// Sort boxes into "types"
+int Pipe.numberOfPipeTypes = 6;
+int Pipe.version           = 2;
+
+// How many of each type pipe to make, and how many components in each.
+int Pipe.nPipeType1 = 20;  // straight sections of ln2 and lHE pipes   
+int Pipe.nComponentsInType1 = 10;
+int Pipe.nPipeType2 = 16;  // Bend sections of those pipes
+int Pipe.nComponentsInType2 = 10;
+int Pipe.nPipeType3 = 6; // Crude model of diffusion pumps
+int Pipe.nComponentsInType3 = 1;
+int Pipe.nPipeType4 = 1;  //Pump out pipe for  production solenoid
+int Pipe.nComponentsInType4 = 1;
+int Pipe.nPipeType5 = 4; // Simple model of cable runs behind IFB
+int Pipe.nComponentsInType5 = 1;
+int Pipe.nPipeType6 = 1; // Simple model of air handling duct in Remote Handling Room
+int Pipe.nComponentsInType6 = 1;
+
+
+// Lengths in w dimension for each type of pipe.  Dimensions should be in mm.
+double Pipe.lengthType1Pipe1 = 3632.48; // 4254.48;
+double Pipe.lengthType1Pipe2 = 12721.18;
+double Pipe.lengthType1Pipe3 = 745.98;
+double Pipe.lengthType1Pipe4 = 2438.68; //3060.68;
+double Pipe.lengthType1Pipe5 = 2387.58;
+double Pipe.lengthType1Pipe6 = 965.18;
+double Pipe.lengthType1Pipe7 = 10861.58;
+double Pipe.lengthType1Pipe8 = 1849.48;
+double Pipe.lengthType1Pipe9 = 939.78;
+double Pipe.lengthType1Pipe10 = 3632.48; //4254.48;
+double Pipe.lengthType1Pipe11 = 2317.58;
+double Pipe.lengthType1Pipe12 = 14274.78;
+double Pipe.lengthType1Pipe13 = 1339.98;
+double Pipe.lengthType1Pipe14 = 945.18;
+double Pipe.lengthType1Pipe15 = 812.78;
+double Pipe.lengthType1Pipe16 = 2893.38;
+double Pipe.lengthType1Pipe17 = 7772.68; // 8394.68;
+double Pipe.lengthType1Pipe18 = 4851.38;
+double Pipe.lengthType1Pipe19 = 1491.88;
+double Pipe.lengthType1Pipe20 = 2178.18;
+
+double Pipe.lengthType2 = 127.01; //radius of torus
+
+double Pipe.lengthType3 = 1700.0;  // Guess based on blueprint in doc-8048-v4
+
+double Pipe.lengthType4 = 2500.0;  //Guess based on TeamCenter
+
+double Pipe.lengthType5Pipe1 = 1000.0;
+double Pipe.lengthType5Pipe2 = 1500.0;
+double Pipe.lengthType5Pipe3 = 1500.0;
+double Pipe.lengthType5Pipe4 = 1000.0;
+
+double Pipe.lengthType6Pipe1 = 4000.0;  // Simplistic model
+
+// Flavor of the type.  Here, flavor means "straight" (default) or "bend".
+string Pipe.flavorType1 = "straight";
+string Pipe.flavorType2 = "bend";
+string Pipe.flavorType3 = "straight";
+string Pipe.flavorType4 = "straight";
+string Pipe.flavorType5 = "straight";
+string Pipe.flavorType6 = "straight";
+
+// Fill material of the type
+string Pipe.fillMaterialType1 = "G10Lite";
+string Pipe.fillMaterialType2 = "G10Lite";
+string Pipe.fillMaterialType3 = "DC704"; // pump oil - crude model, excuse pun
+string Pipe.fillMaterialType4 = "PSVacuum";
+string Pipe.fillMaterialType5 = "Electronics";
+string Pipe.fillMaterialType6 = "G4_AIR";
+
+// The position of the piece in Mu2e Offline coordinates
+// Pipes added from PS-TS_Shield.txt of g4beamline
+vector<double> Pipe.centerType1Pipe1 = {-10076.2,3237.68,-3911.6};//{-10076.2,3548.68,-3911.6};
+vector<double> Pipe.centerType1Pipe2 = {-3588.6,1294.43,-3911.6};
+vector<double> Pipe.centerType1Pipe3 = {2899,1294.43,-4411.6};
+vector<double> Pipe.centerType1Pipe4 = {-10076.2,3834.48,-2692.4};//{-10076.2,4145.48,-2692.4}
+vector<double> Pipe.centerType1Pipe5 = {-8755.4,2488.13,-2692.4};
+vector<double> Pipe.centerType1Pipe6 = {-7434.6,2488.13,-3302};
+vector<double> Pipe.centerType1Pipe7 = {-1876.8,2488.13,-3911.6};
+vector<double> Pipe.centerType1Pipe8 = {3681,2488.13,-2859.85};
+vector<double> Pipe.centerType1Pipe9 = {3681,1891.23,-1808.1};
+vector<double> Pipe.centerType1Pipe10 = {-10076.2,3237.68,-1473.2};//{-10076.2,3548.68,-1473.2};
+vector<double> Pipe.centerType1Pipe11 = {-8790.4,1294.43,-1473.2};
+vector<double> Pipe.centerType1Pipe12 = {-7504.6,1294.43,5791.2};
+vector<double> Pipe.centerType1Pipe13 = {-6707.6,1294.43,13055.6};
+vector<double> Pipe.centerType1Pipe14 = {-5910.6,1294.43,12456};
+vector<double> Pipe.centerType1Pipe15 = {-5377.2,1294.43,11866.4};
+vector<double> Pipe.centerType1Pipe16 = {-4843.8,1294.43,10282.7};
+vector<double> Pipe.centerType1Pipe17 = {-10076.2,1167.58,-254.0};//{-10076.2,1478.58,-254.0};
+vector<double> Pipe.centerType1Pipe18 = {-7523.5,-2845.77,-254.0};
+vector<double> Pipe.centerType1Pipe19 = {-4970.8,-1972.82,-254.0};
+vector<double> Pipe.centerType1Pipe20 = {-4326.02,-1099.87,777.13};
+vector<double> Pipe.centerType2Pipe1 = {-6037.61,1294.43,12928.59};
+vector<double> Pipe.centerType2Pipe2 = {-5783.59,1294.43,11983.41};
+vector<double> Pipe.centerType2Pipe3 = {-4970.81,1294.43,11729.39};
+vector<double> Pipe.centerType2Pipe4 = {-7377.59,1294.43,12928.59};
+vector<double> Pipe.centerType2Pipe5 = {-7631.61,1294.43,-1346.19};
+vector<double> Pipe.centerType2Pipe6 = {-9949.19,1421.44,-1473.2};
+vector<double> Pipe.centerType2Pipe7 = {-5097.81,-2718.76,-254.0};
+vector<double> Pipe.centerType2Pipe8 = {-9949.19,-2718.76,-254.0};
+vector<double> Pipe.centerType2Pipe9 = {-9949.19,2615.14,-2692.4};
+vector<double> Pipe.centerType2Pipe10 = {-9949.19,1421.44,-3911.6};
+vector<double> Pipe.centerType2Pipe11 = {-7561.61,2488.13,-2819.41};
+vector<double> Pipe.centerType2Pipe12 = {-7307.59,2488.13,-3784.59};
+vector<double> Pipe.centerType2Pipe13 = {2771.99,1294.43,-4038.61};
+vector<double> Pipe.centerType2Pipe14 = {3553.99,2488.13,-3784.59};
+vector<double> Pipe.centerType2Pipe15 = {3681,2361.12,-1935.11};
+vector<double> Pipe.centerType2Pipe16 = {-4903.2,-1226.88,-146.5};
+
+vector<double> Pipe.centerType3Pipe1 = { -2664.0,50.0,14600.0 };
+vector<double> Pipe.centerType3Pipe2 = { -2664.0,50.0,16000.0 };
+vector<double> Pipe.centerType3Pipe3 = { -5144.0,50.0,14600.0 };
+vector<double> Pipe.centerType3Pipe4 = { -5144.0,50.0,16000.0 };
+vector<double> Pipe.centerType3Pipe5 = {  8540.0,50.0,-7940.0 };
+vector<double> Pipe.centerType3Pipe6 = {  8500.0,50.0,-7400.0 };
+
+vector<double> Pipe.centerType4Pipe1 = {  6185.3,-47.0,-8180.0 };
+
+vector<double> Pipe.centerType5Pipe1 = { -2950.0, -500.0, 17420.0 };
+vector<double> Pipe.centerType5Pipe2 = { -3200.0, -250.0, 17420.0 };
+vector<double> Pipe.centerType5Pipe3 = { -4550.0, -250.0, 17420.0 };
+vector<double> Pipe.centerType5Pipe4 = { -4900.0, -500.0, 17420.0 };
+
+vector<double> Pipe.centerType6Pipe1 = { 8550.0, 0.0, -4500.0};
+  
+// The orientation of the pipe.  See docdb xxxx for details.
+string Pipe.orientationType1Pipe1 = "100";
+string Pipe.orientationType1Pipe2 = "010";
+string Pipe.orientationType1Pipe3 = "000";
+string Pipe.orientationType1Pipe4 = "100";
+string Pipe.orientationType1Pipe5 = "010";
+string Pipe.orientationType1Pipe6 = "000";
+string Pipe.orientationType1Pipe7 = "010";
+string Pipe.orientationType1Pipe8 = "000";
+string Pipe.orientationType1Pipe9 = "100";
+string Pipe.orientationType1Pipe10 = "100";
+string Pipe.orientationType1Pipe11 = "010";
+string Pipe.orientationType1Pipe12 = "000";
+string Pipe.orientationType1Pipe13 = "010";
+string Pipe.orientationType1Pipe14 = "000";
+string Pipe.orientationType1Pipe15 = "010";
+string Pipe.orientationType1Pipe16 = "000";
+string Pipe.orientationType1Pipe17 = "100";
+string Pipe.orientationType1Pipe18 = "010";
+string Pipe.orientationType1Pipe19 = "100";
+string Pipe.orientationType1Pipe20 = "060";
+string Pipe.orientationType2Pipe1 = "100";
+string Pipe.orientationType2Pipe2 = "320";
+string Pipe.orientationType2Pipe3 = "100";
+string Pipe.orientationType2Pipe4 = "120";
+string Pipe.orientationType2Pipe5 = "300";
+string Pipe.orientationType2Pipe6 = "002";
+string Pipe.orientationType2Pipe7 = "003";
+string Pipe.orientationType2Pipe8 = "002";
+string Pipe.orientationType2Pipe9 = "002";
+string Pipe.orientationType2Pipe10 = "002";
+string Pipe.orientationType2Pipe11 = "100";
+string Pipe.orientationType2Pipe12 = "320";
+string Pipe.orientationType2Pipe13 = "100";
+string Pipe.orientationType2Pipe14 = "300";
+string Pipe.orientationType2Pipe15 = "030";
+string Pipe.orientationType2Pipe16 = "0b0"; // special for this pipe
+string Pipe.orientationType3Pipe1 = "100";
+string Pipe.orientationType3Pipe2 = "100";
+string Pipe.orientationType3Pipe3 = "100";
+string Pipe.orientationType3Pipe4 = "100";
+string Pipe.orientationType3Pipe5 = "100";
+string Pipe.orientationType3Pipe6 = "100";
+
+string Pipe.orientationType4Pipe1 = "ll0"; // Special for this pipe
+
+string Pipe.orientationType5Pipe1 = "100";
+string Pipe.orientationType5Pipe2 = "100";
+string Pipe.orientationType5Pipe3 = "100";
+string Pipe.orientationType5Pipe4 = "100";
+
+string Pipe.orientationType6Pipe1 = "000";
+
+// Now the component information
+
+// Radii in mm
+// First, inner radii
+double Pipe.rInType1Comp1 = 124.23; 
+double Pipe.rInType1Comp2 = 100.015; 
+double Pipe.rInType1Comp3 = 11.05; 
+double Pipe.rInType1Comp4 = 11.05; 
+double Pipe.rInType1Comp5 = 11.05; 
+double Pipe.rInType1Comp6 = 11.05; 
+double Pipe.rInType1Comp7 = 17.4; 
+double Pipe.rInType1Comp8 = 14.224; 
+double Pipe.rInType1Comp9 = 9.464; 
+double Pipe.rInType1Comp10 = 9.464; 
+
+double Pipe.rInType2Comp1 = 124.23;
+double Pipe.rInType2Comp2 = 100.015; 
+double Pipe.rInType2Comp3 = 11.05; 
+double Pipe.rInType2Comp4 = 11.05; 
+double Pipe.rInType2Comp5 = 11.05; 
+double Pipe.rInType2Comp6 = 11.05; 
+double Pipe.rInType2Comp7 = 17.4; 
+double Pipe.rInType2Comp8 = 14.224; 
+double Pipe.rInType2Comp9 = 9.464; 
+double Pipe.rInType2Comp10 = 9.464; 
+
+double Pipe.rInType3Comp1 = 200.0;
+
+double Pipe.rInType4Comp1 = 295.3; // 11 5/8 inches
+
+double Pipe.rInType5Comp1 = 1.0; // "solid"
+
+double Pipe.rInType6Comp1 = 400.0;
+
+// next, outer radii
+double Pipe.rOutType1Comp1 = 127.0; 
+double Pipe.rOutType1Comp2 = 103.19; 
+double Pipe.rOutType1Comp3 = 12.7; 
+double Pipe.rOutType1Comp4 = 12.7; 
+double Pipe.rOutType1Comp5 = 12.7; 
+double Pipe.rOutType1Comp6 = 12.7; 
+double Pipe.rOutType1Comp7 = 19.05; 
+double Pipe.rOutType1Comp8 = 15.875; 
+double Pipe.rOutType1Comp9 = 11.115; 
+double Pipe.rOutType1Comp10 = 11.115; 
+
+double Pipe.rOutType2Comp1 = 127.0;
+double Pipe.rOutType2Comp2 = 103.19; 
+double Pipe.rOutType2Comp3 = 12.7; 
+double Pipe.rOutType2Comp4 = 12.7; 
+double Pipe.rOutType2Comp5 = 12.7; 
+double Pipe.rOutType2Comp6 = 12.7; 
+double Pipe.rOutType2Comp7 = 19.05; 
+double Pipe.rOutType2Comp8 = 15.875; 
+double Pipe.rOutType2Comp9 = 11.115; 
+double Pipe.rOutType2Comp10 = 11.115; 
+
+double Pipe.rOutType3Comp1 = 260.0;
+
+double Pipe.rOutType4Comp1 = 304.8;
+
+double Pipe.rOutType5Comp1 = 75.0;
+
+double Pipe.rOutType6Comp1 = 415.0;
+
+// Materials for each type of component pipe.  
+string Pipe.materialType1Comp1   = "StainlessSteel";
+string Pipe.materialType1Comp2   = "G4_Al";
+string Pipe.materialType1Comp3   = "G4_Al";
+string Pipe.materialType1Comp4   = "G4_Al";
+string Pipe.materialType1Comp5   = "G4_Al";
+string Pipe.materialType1Comp6   = "G4_Al";
+string Pipe.materialType1Comp7   = "G4_Al";
+string Pipe.materialType1Comp8   = "G4_Al";
+string Pipe.materialType1Comp9   = "G4_Al";
+string Pipe.materialType1Comp10   = "G4_Al";
+
+string Pipe.materialType2Comp1 = "StainlessSteel";
+string Pipe.materialType2Comp2   = "G4_Al";
+string Pipe.materialType2Comp3   = "G4_Al";
+string Pipe.materialType2Comp4   = "G4_Al";
+string Pipe.materialType2Comp5   = "G4_Al";
+string Pipe.materialType2Comp6   = "G4_Al";
+string Pipe.materialType2Comp7   = "G4_Al";
+string Pipe.materialType2Comp8   = "G4_Al";
+string Pipe.materialType2Comp9   = "G4_Al";
+string Pipe.materialType2Comp10   = "G4_Al";
+
+string Pipe.materialType3Comp1 = "StainlessSteel";
+
+string Pipe.materialType4Comp1 ="StainlessSteel316L";
+
+string Pipe.materialType5Comp1 ="Electronics";
+
+string Pipe.materialType6Comp1 = "G4_Al";
+
+// Now the offsets, defining the positions of the components relative
+// to the mother pipe
+double Pipe.uOffsetType1Comp1  = 0.0;
+double Pipe.uOffsetType1Comp2  = 0.0;
+double Pipe.uOffsetType1Comp3  = 60.0;
+double Pipe.uOffsetType1Comp4  = -60.0;
+double Pipe.uOffsetType1Comp5  = 60.0;
+double Pipe.uOffsetType1Comp6  = -60.0;
+double Pipe.uOffsetType1Comp7  = 0.0;
+double Pipe.uOffsetType1Comp8  = 0.0;
+double Pipe.uOffsetType1Comp9  = 0.0;
+double Pipe.uOffsetType1Comp10  = 63.5;
+
+double Pipe.uOffsetType2Comp1 = 0.0;
+double Pipe.uOffsetType2Comp2  = 0.0;
+double Pipe.uOffsetType2Comp3  = 60.0;
+double Pipe.uOffsetType2Comp4  = -60.0;
+double Pipe.uOffsetType2Comp5  = 60.0;
+double Pipe.uOffsetType2Comp6  = -60.0;
+double Pipe.uOffsetType2Comp7  = 0.0;
+double Pipe.uOffsetType2Comp8  = 0.0;
+double Pipe.uOffsetType2Comp9  = 0.0;
+double Pipe.uOffsetType2Comp10  = 63.5;
+
+double Pipe.uOffsetType3Comp1 = 0.0;
+
+double Pipe.uOffsetType4Comp1 = 0.0;
+
+double Pipe.uOffsetType5Comp1 = 0.0;
+
+double Pipe.uOffsetType6Comp1 = 0.0;
+
+
+// in v
+double Pipe.vOffsetType1Comp1  = 0.0;
+double Pipe.vOffsetType1Comp2  = 0.0;
+double Pipe.vOffsetType1Comp3  = -58.74;
+double Pipe.vOffsetType1Comp4  = -58.74;
+double Pipe.vOffsetType1Comp5  = 58.74;
+double Pipe.vOffsetType1Comp6  = 58.74;
+double Pipe.vOffsetType1Comp7  = 55.56;
+double Pipe.vOffsetType1Comp8  = -58.74;
+double Pipe.vOffsetType1Comp9  = 0.0;
+double Pipe.vOffsetType1Comp10  = 0.0;
+
+double Pipe.vOffsetType2Comp1 = 0.0;
+double Pipe.vOffsetType2Comp2  = 0.0;
+double Pipe.vOffsetType2Comp3  = -58.74;
+double Pipe.vOffsetType2Comp4  = -58.74;
+double Pipe.vOffsetType2Comp5  = 58.74;
+double Pipe.vOffsetType2Comp6  = 58.74;
+double Pipe.vOffsetType2Comp7  = 55.56;
+double Pipe.vOffsetType2Comp8  = -58.74;
+double Pipe.vOffsetType2Comp9  = 0.0;
+double Pipe.vOffsetType2Comp10  = 0.0;
+
+double Pipe.vOffsetType3Comp1 = 0.0;
+
+double Pipe.vOffsetType4Comp1 = 0.0;
+
+double Pipe.vOffsetType5Comp1 = 0.0;
+
+double Pipe.vOffsetType6Comp1 = 0.0;
+
+// Global stuff
+
+bool  Pipe.visible = true;
+bool  Pipe.solid   = false;
+
+int   Pipe.verbosityLevel = 0;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

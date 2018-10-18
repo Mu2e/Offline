@@ -17,10 +17,10 @@ double          crs.scintillatorBarLengthTest    =  5600;
 double          crs.scintillatorBarThickness     =  20;   //mm
 double          crs.scintillatorBarWidth         =  50;   //mm
 double          crs.layerOffset                  =  42;   //mm
-double          crs.gapLarge                     =   2;   //mm
-double          crs.gapSmall                     =   1;   //mm
+double          crs.gapLarge                     =  .5;   //mm
+double          crs.gapSmall                     =  .1;   //mm
 double          crs.gapBetweenModules            =   5;   //mm
-vector<double>  crs.gapBetweenLayers             =   {9.525, 12.7, 9.525}; //mm
+vector<double>  crs.gapBetweenLayers             =   {9.525, 9.525, 9.525}; //mm
 double          crs.aluminumSheetThickness       =  1.29; //mm
 
 int             crs.nModulesTest                 =   1;

@@ -1,0 +1,23 @@
+#include "JobConfig/common/geom_baseline.txt"
+#include "Mu2eG4/geom/studies/crv_counters_v05.txt"
+vector<double>  crs.gapBetweenLayers = {9.525, 9.525, 9.525}; //mm
+
+// Borated poly sheets
+int ExtShieldUpstream.numberOfBoxTypes = 13;
+int ExtShieldUpstream.nBoxType13 = 4;  // Borated poly in CRV-U upstream
+vector<double> ExtShieldUpstream.dimsType13 = {3658,3658,25.4};
+vector<double> ExtShieldUpstream.tolsType13 = {0.0,0.0,0.0}; // Borated poly
+string ExtShieldUpstream.materialType13  = "Polyethylene092B050d095";
+vector<double> ExtShieldUpstream.centerType13Box1 = {-1290,1705,-2585};//BRW-175
+vector<double> ExtShieldUpstream.centerType13Box2 = {-1290,620,-2250};//BRW-175
+vector<double> ExtShieldUpstream.centerType13Box3 = {-1290,2480,-405};
+vector<double> ExtShieldUpstream.centerType13Box4 = {-1290,3080,-405};
+string ExtShieldUpstream.orientationType13Box3 = "100";
+string ExtShieldUpstream.orientationType13Box4 = "100";
+
+double stm.shield.rOut = 160.0; //which allows the STM to have the correct rOut
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

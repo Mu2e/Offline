@@ -1,0 +1,44 @@
+
+           Release notes for Mu2e Offline software, v6_5_7
+
+4) Aug 21, 2018
+    Ray added the first draft of a valgrid suppression file
+
+3) July 8, 2018 kutschke
+   The merge of G4 MT mode broke multi-stage mode.
+   This commit fixes the problems that I can see.
+   I have not done a full set of tests that it is working correctly.
+
+   Mu2eG4/src/GenEventBroker.cc
+     - The test for a non-empty GenParticleCollection
+       is only done in MT mode, not sequential mode.
+     - The new test also requires the the GenParticle
+       input stash data product to be present.
+
+   Mu2eG4/src/Mu2eG4_module.cc
+     - About reseating the art::Ptr from a SimParticle
+       to its coresponding GenParticle: this is now
+       only done in MT mode and if and only iff the
+       the GenParticleCollection is present.
+
+   Mu2eG4/src/PrimaryGeneratorAction.cc
+      - In sequential mode, permit the GenParticleCollection to be absent
+      - If it is absent, set the local variable genParticles_ to nullptr
+
+2) kutschke July 2, 2017
+   Changes commited by others since v6_5_6
+      - Nam:   CRY refactored code following my request
+      - Pasha: TracekrCalibrations with StrawResponse
+      - Bob B: geometry of the proton absorber wedge in TS3
+               Other changes releated to pbar studies.
+   This tag is still usable with CD3 files.
+   It is not usable with MDC2018 files.
+
+1) brownd, rbonventre, May 23, 2018
+  merge triggerDev branch: this includes:
+  -TrkStrawHit now references ComboHit instead of StrawHit class objects.  This reduces
+  data duplication and improves trigger processing time.
+  - Knock-on changes to some reco-level persistent classes
+  - Change straw hit signal propagation time to use calibrated propagation velocity
+  - straw-in-panel calibration parameters for t0, gain
+  - panel t0 offsets

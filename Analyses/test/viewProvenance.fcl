@@ -4,9 +4,9 @@
 # $Author: kutschke $
 # $Date: 2013/03/31 14:48:46 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : ViewProvenanceBug
 

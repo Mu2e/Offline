@@ -1,0 +1,12 @@
+//
+// Redirection to the current Mu2e top level geometry file.
+// The file that is included will be time dependent.
+//
+
+#include "Mu2eG4/geom/geom_common.txt"
+double stoppingTarget.holeRadius = 20;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

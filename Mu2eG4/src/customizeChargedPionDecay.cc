@@ -46,7 +46,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "G4ParticleTable.hh"
 #include "G4DecayTable.hh"

@@ -20,9 +20,9 @@
 #     --fclinput=@muStops:muStops.txt 
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "CaloCluster/fcl/prolog.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
@@ -90,8 +90,8 @@ physics : {
         muonTimeMap          : { module_type : GenerateMuonLife }
         makeSD               : @local::makeSD
         makeSH               : @local::makeSHfromSD
-	CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-	CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+	@table::CaloDigiMC.producers
+	@table::CaloReco.producers
 #------------------------------------------------------------------------------
 #  default tracking
 #------------------------------------------------------------------------------
@@ -99,11 +99,11 @@ physics : {
 	MakeStereoHits       : @local::MakeStereoHits
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
-	TrkPatRec            : @local::TrkPatRecDownstreameMinus
+	TrkPatRec            : @local::TrkPatRecDeM
 #------------------------------------------------------------------------------
 # CalPatRec modules
 #------------------------------------------------------------------------------
-	MakeCaloCluster      : @local::MakeCaloCluster
+	@table::CaloCluster.producers
 	MakeStrawHitPositions: @local::MakeStrawHitPositions
 	CalPatRec            : @local::CalPatRec
 	MergePatRec          : @local::MergePatRec
@@ -133,7 +133,7 @@ physics : {
     analyzers: {
 
 #     Read the TrkPatRec output and make diagnostic ntuples.
-      RKFDownstreameMinus: {
+      RKFDeM: {
          module_type: ReadKalFits
          fitterModuleLabel: TrkPatRec
          KalDiag : {
@@ -151,13 +151,14 @@ physics : {
 # paths
 # write out ntuple only, so don't need compression modules...
 #------------------------------------------------------------------------------
-    e1 : [ RKFDownstreameMinus ]
+    e1 : [ RKFDeM ]
 
     p1 : [generate, g4run
 	  , protonTimeMap, muonTimeMap 
 	  , makeSD, makeSH
-	  , CaloReadoutHitsMaker, CaloCrystalHitsMaker
-	  , MakeCaloCluster
+	  , @sequence::CaloDigiMC.DigiSim
+          , @sequence::CaloReco.Reco
+	  , @sequence::CaloCluster.Reco
 # 
 	  , FSHPreStereo, MakeStereoHits, FlagStrawHits, FlagBkgHits, TrkPatRec 
 #
@@ -175,7 +176,7 @@ physics : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
@@ -197,4 +198,3 @@ services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
 physics.producers.makeSD.TimeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-physics.producers.CaloReadoutHitsMaker.TimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }

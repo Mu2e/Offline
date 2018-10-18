@@ -1,0 +1,10 @@
+           Release notes for Mu2e Offline software, v7_0_6
+           This new series includes breaking changes for MDC2018
+
+
+3) brownd Aug 18, 2018
+  - Production fcl consolidation and new modes.  Add G4Status filter to primary production
+2) ehrlich Aug 17, 2018
+  - Add cosmic ray box around DS
+1) edmonds 
+  - Fixes to Digi compression

@@ -1,0 +1,28 @@
+#
+# Run the parameter set viewer
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : myproc
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+services : {
+  message      : @local::default_message
+}
+
+physics : {
+
+  analyzers : {
+    view : { module_type : PSetViewer   }
+  }
+
+  e1 : [ view  ]
+
+  end_paths  : [e1]
+
+}

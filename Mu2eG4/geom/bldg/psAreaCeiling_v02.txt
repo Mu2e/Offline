@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_ceiling.ccl
+
+string building.psArea.ceiling.name     = "psAreaCeiling";
+
+string building.psArea.ceiling.material = "CONCRETE_MARS";
+
+double building.psArea.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.ceiling.offsetFromFloorSurface.y = 5638.8;
+double building.psArea.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.ceiling.yHalfThickness           = 457.2;
+
+vector<double> building.psArea.ceiling.xPositions = {
+  -2006.6,   // b1
+  -2006.6,   // H2
+  6705.6,   // H3
+  6705.6,   // H4
+  0,   // H5
+  0   // H6
+};
+
+vector<double> building.psArea.ceiling.yPositions = {
+  0,   // b1
+  2438.4,   // H2
+  2438.4,   // H3
+  609.6,   // H4
+  609.6,   // H5
+  0   // H6
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -41,15 +41,15 @@
   gStyle->SetOptStat("emruo");
 
   // Base name of input file and of all plot files.
-  TString basename("g4test_03");
+  TString filebasename("g4test_03");
 
   // Open the input file that contains histograms and ntuples
   // made by ReadBack.cc
-  TFile* file = new TFile( basename + ".root");
+  TFile* file = new TFile( filebasename + ".root");
 
   // Name of the output postscript file.
   // Postscript is the only graphics format for which root supports multi-page output files.
-  TString psfile( basename + ".pdf");
+  TString psfile( filebasename + ".pdf");
 
   // Get pointers to some of the histograms.
   TH1F* hMultiplicity;  file->GetObject("checkhits/hMultiplicity",  hMultiplicity);
@@ -62,7 +62,7 @@
 
   // Open a new canvas on the screen.
   // The last two arguments are the size of the window.
-  TCanvas *canvas = new TCanvas("c", "Plots from " + basename, 900, 900 );
+  TCanvas *canvas = new TCanvas("c", "Plots from " + filebasename, 900, 900 );
 
   // Open a multi-page output postscript file .
   canvas->Print( psfile+"[");
@@ -82,10 +82,10 @@
   canvas->Update();
 
   // Add this canvas to the postscript file.
-  canvas->Print(psfile);
+  //  canvas->Print(psfile);
 
   // Uncomment this line to save this canvas as a png file (slow)
-  //canvas->Print( basename + "_1.png" );
+  canvas->Print( filebasename + "_1.png" );
 
   // Prompt and wait for response before continuing.
   cerr << "Double click in the last active pad to continue: " ;
@@ -104,10 +104,10 @@
   canvas->Update();
 
   // Add this canvas to the postscript file.
-  canvas->Print(psfile);
+  //  canvas->Print(psfile);
 
   // Uncomment this line to save this canvas as a jpg file.
-  // canvas->Print( basename + "_2.jpg" );
+  canvas->Print( filebasename + "_2.jpg" );
 
   // Prompt and wait for response before continuing.
   cerr << "Double click in the last active pad to continue: " ;
@@ -131,8 +131,8 @@
   canvas->Print(psfile);
 
   // Uncomment these lines to save this canvas as a gif file and as a pdf file.
-  // canvas->Print( basename + "_3.gif" );
-  // canvas->Print( basename + "_3.pdf" );
+  // canvas->Print( filebasename + "_3.gif" );
+  // canvas->Print( filebasename + "_3.pdf" );
 
   // Close the postscript file.
   canvas->Print(psfile+"]");

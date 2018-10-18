@@ -1,0 +1,77 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_extMon_ceiling.ccl
+
+string dirt.extMon.ceiling.name     = "dirtExtMonCeiling";
+
+string dirt.extMon.ceiling.material = "MBOverburden";
+
+double dirt.extMon.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.extMon.ceiling.offsetFromFloorSurface.y = 7061.2;
+double dirt.extMon.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.extMon.ceiling.yHalfThickness           = 228.6;
+
+vector<int>    dirt.extMon.ceiling.xreplace   = { 15, 16 }; 
+vector<double> dirt.extMon.ceiling.xPositions = {
+  -17108.7,   // c
+  -26655.4,   // d
+  -25571,   // e
+  -23646.4,   // f
+  -23104.2,   // g
+  -21062.3,   // h
+  -20396.6,   // e0
+  -18795.7,   // e1
+  -18350.7,   // e5
+  -15361.7,   // e5a
+  -15265.3,   // e5b
+  -16841.4,   // e5c
+  -16817.3,   // e5d
+  -17853.7,   // e6
+  -17853.7,   // e6_to_S
+  -50000,   // SWcorner
+  -50000,   // NWcorner
+  -17108.7,   // c_to_N
+  -17108.7,   // Down to WextWallFoot
+  -20628.7,   // NW corner WextWallFoot
+  -20483.5,   // Oy, elbow of WextWallFoot and WextWall
+  -20527.1,   // NW corner of WextWall
+  -20442.7,    // SW corner of WextWall
+  -20399.2,  // other elbow of WextWallFoot and WextWall
+  -19761.2,   // SW corner WextWallFoot
+  -17108.7    // c to N again
+};
+
+vector<int>    dirt.extMon.ceiling.yreplace   = { 14, 15, 16, 17 }; 
+vector<double> dirt.extMon.ceiling.yPositions = {
+  1761.51,   // c
+  -569.258,   // d
+  -5010.8,   // e
+  -4540.91,   // f
+  -6761.68,   // g
+  -6263.17,   // h
+  -8989.78,   // e0
+  -7818.36,   // e1
+  -3247,      // e5
+  -2518.25,   // e5a
+  -2913.21,   // e5b
+  -3297.85,   // e5c
+  -3396.55,   // e5d
+  -3649.57,   // e6
+  -50000,   // e6_to_S
+  -50000,   // SWcorner
+  50000,   // NWcorner
+  50000,   // c_to_N
+  10335.55, // To top of WextWallFoot
+  9476.17,  // NW corner WextWallFoot
+  8878.45,  // elbow between WextWallFoot and WextWall
+  8866.57,  // NW corner WextWall
+  8521.11,  // SW corner WextWall
+  8531.24,   // other elbow between WextWallFoot and WextWall
+  5922.93,  // SW corner WextWallFoot
+  6599.68   // c to N again
+};
+
+// Local Variables:
+// mode:c++
+// End:

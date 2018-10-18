@@ -38,6 +38,7 @@
 
 class G4Step;
 class G4Track;
+
 namespace CLHEP { class Hep3Vector; }
 
 namespace art { class Event; }
@@ -48,24 +49,28 @@ namespace mu2e {
 
   class SimParticleHelper;
   class Mu2eG4ResourceLimits;
+  class EventStash;
 
   class IMu2eG4Cut {
   public:
 
-    virtual bool steppingActionCut(const G4Step  *step) = 0;
-    virtual bool stackingActionCut(const G4Track *trk) = 0;
+      virtual bool steppingActionCut(const G4Step  *step) = 0;
+      virtual bool stackingActionCut(const G4Track *trk) = 0;
 
-    virtual void declareProducts(art::EDProducer *parent) =  0;
+      virtual void declareProducts(art::EDProducer *parent) =  0;
 
-    virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
+      virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
 
-    // Create data  products and pre-fill with input hits, if any; to be called at the start of each event.
-    virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
+      // Create data products and pre-fill with input hits, if any; to be called at the start of each event.
+      virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
 
-    // Put the data products into the event.
-    virtual void put(art::Event& event) = 0;
-
-    virtual ~IMu2eG4Cut() {}
+      // put data into the stash
+      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) = 0;
+      
+      // Put the data products into the event.
+      //virtual void put(art::Event& event) = 0;
+      
+      virtual ~IMu2eG4Cut() {}
   };
 
   //================================================================

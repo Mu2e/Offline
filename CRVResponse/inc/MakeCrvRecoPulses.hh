@@ -8,33 +8,32 @@ namespace mu2eCrv
 
 class MakeCrvRecoPulses
 {
-  private:
-  MakeCrvRecoPulses();
-
   public:
-  MakeCrvRecoPulses(double pulseThreshold, double leadingEdgeThreshold, double param0, double param1);
-  void         SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth);
+  MakeCrvRecoPulses();
+  void         SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, 
+                           double digitizationPeriod, double pedestal, double calibrationFactor, double calibrationFactorPulseHeight, bool darkNoise);
   unsigned int GetNPulses();
   int          GetPEs(int pulse);
-  double       GetLeadingEdge(int pulse);
-  double       GetTimeOverThreshold(int pulse);
+  int          GetPEsPulseHeight(int pulse);
+  double       GetPulseTime(int pulse);
   double       GetPulseHeight(int pulse);
-  double       GetIntegral(int pulse);
-  double       GetLandauParam0(int pulse);
-  double       GetLandauParam1(int pulse);
-  double       GetLandauParam2(int pulse);
+  double       GetPulseWidth(int pulse);
+  double       GetPulseFitChi2(int pulse);
+  double       GetFitParam0(int pulse);
+  double       GetFitParam1(int pulse);
+  double       GetFitParam2(int pulse);
   double       GetT1(int pulse);
   double       GetT2(int pulse);
+  double       GetLEtime(int pulse);
+  double       GetLEfitChi2(int pulse);
+  int          GetPeakBin(int pulse);
 
   private:
-  double _pulseThreshold;
-  double _leadingEdgeThreshold;
-  double _param0, _param1;
-
-  std::vector<int>    _PEs;
-  std::vector<double> _leadingEdges;
-  std::vector<double> _pulseHeights;
-  std::vector<double> _integrals, _landauParams0, _landauParams1, _landauParams2, _T1s, _T2s, _TOTs;
+  std::vector<int>    _PEs, _PEsPulseHeight;
+  std::vector<double> _pulseTimes, _pulseHeights, _pulseWidths, _pulseFitChi2s;
+  std::vector<double> _fitParams0, _fitParams1, _fitParams2, _t1s, _t2s;
+  std::vector<double> _LEtimes, _LEfitChi2s;
+  std::vector<int>    _peakBins;
 };
 
 }

@@ -1,0 +1,36 @@
+           Release notes for Mu2e Offline software, v6_1_0
+
+4) kutschke Feb 28, 2017
+   cetlib has been split into two packages
+        cetlib
+        cetlib_except
+
+   This means that the following change is needed:
+   #include "cetlib/exception.h”
+    becomes
+   #include "cetlib_except/exception.h”
+
+   All packages that use cetlib_except had their link lists updated to
+   add cetlib_except where needed.
+
+   Any packages that no longer need cetlib in their link list
+   should have it removed.  I have not done this carefully.
+
+3) kutschke Feb 28, 2017
+   The canvas package used to have two libraries:
+      canvas_Utilities.so
+      canvas_Persistency_Common.so
+
+   It now only has canvas.so
+   Link lists were updated accordingly
+
+2) kutschke Feb 28, 2017
+   1) Introduced a new ups product cetlib_except
+   Add inc and lib for this product to SConstruct.
+
+1) kutschke Feb 28, 2017
+   Switch setup.sh to use art v2_06_02a
+    - Forces changes to versions of some other other products.
+    - This is a variant of v2_06_02 that is built against
+       an older clhep for compatibility with geant4 v4_9_6_p04e
+    - Remove setup of xerces_c - it is now included in the geant4 setup.

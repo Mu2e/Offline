@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_foundation_ExtMonPSarea_10.ccl
+
+string dirt.foundation.extMonPSarea.10.name     = "dirtFoundationExtMonPSarea10";
+
+string dirt.foundation.extMonPSarea.10.material = "CA7Backfill";
+
+double dirt.foundation.extMonPSarea.10.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.foundation.extMonPSarea.10.offsetFromFloorSurface.y = 1371.6;
+double dirt.foundation.extMonPSarea.10.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.foundation.extMonPSarea.10.yHalfThickness           = 1523.9;
+
+vector<double> dirt.foundation.extMonPSarea.10.xPositions = {
+  -21843.9,   // A8
+  -20518.6,   // A9
+  -20814.7,   // B0
+  -22140   // B1
+};
+
+vector<double> dirt.foundation.extMonPSarea.10.yPositions = {
+  1128.35,   // A8
+  -4300.2,   // A9
+  -4372.49,   // B0
+  1056.06   // B1
+};
+
+// Local Variables:
+// mode:c++
+// End:

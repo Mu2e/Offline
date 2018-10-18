@@ -1,0 +1,5 @@
+#include "Mu2eG4/geom/geom_common_current.txt"
+
+#include "Mu2eG4/geom/STM_v03.txt" // change in stm.shield.pipe.halfLength due to new crv geometry (v07)
+
+#include "Mu2eG4/geom/crv_counters_v07.txt"

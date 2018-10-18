@@ -6,6 +6,7 @@
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "G4MaterialPropertyVector.hh"
 #include "G4ThreeVector.hh"
+#include "WLSSteppingAction.hh"
 
 class G4ParticleGun;
 class G4Event;
@@ -16,8 +17,9 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
   public:
 
-    WLSPrimaryGeneratorAction(int mode, int numberOfPhotons=-1, int simType=-1, int startBin=-1, bool verbose=false);
-    ~WLSPrimaryGeneratorAction();
+    WLSPrimaryGeneratorAction(WLSSteppingAction::simulationMode mode, 
+                              int numberOfPhotons=-1, int simType=-1, int startBin=-1, bool verbose=false, double posY=0.0, double posZ=0.0);
+    ~WLSPrimaryGeneratorAction();                                                                   //posY and posZ only used for mode 0 and 1
 
     void BuildEmissionSpectrum();
     bool SetNextBins();
@@ -30,7 +32,9 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
     CLHEP::HepRandomEngine*    _randomEngine;
     G4ParticleGun*             _particleGun;
 
-    int                        _mode, _numberOfPhotons, _simType, _currentBin;
+    WLSSteppingAction::simulationMode _mode;
+
+    int                        _numberOfPhotons, _simType, _currentBin;
     bool                       _verbose;
     G4PhysicsOrderedFreeVector _emissionIntegral[2];
     G4MaterialPropertyVector*  _rindexFiber;
@@ -42,6 +46,8 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     double                     _minBinX, _minBinY, _minBinZ, _minBinBeta, _minBinTheta, _minBinPhi, _minBinR;
     double                     _maxBinX, _maxBinY, _maxBinZ, _maxBinBeta, _maxBinTheta, _maxBinPhi, _maxBinR;
+
+    double                     _posY, _posZ;  //only used for mode 0 and 1
 };
 
 #endif

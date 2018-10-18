@@ -1,0 +1,31 @@
+// Andrei Gaponenko, 2015
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name :  DSTGTstops
+
+source : { module_type : RootInput }
+
+services : {
+   message: @local::default_message
+   TFileService: { fileName: "nts.owner.DS-TGTstops.version.sequencer.root" }
+}
+
+physics: {
+
+   analyzers: {
+      genCountLogger: { module_type: GenEventCountReader }
+
+      stoppedMuonDumper: {
+         module_type: StoppedParticlesDumper
+	 dumpSimParticleLeaves: true
+         inputCollection: "tgtStopFilter"
+         writeProperTime : false
+      }
+   }
+
+   an: [ genCountLogger, stoppedMuonDumper ]
+   end_paths: [an]
+}
+

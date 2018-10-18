@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_escape_ceiling_W.ccl
+
+string building.escape.ceiling.W.name     = "escapeCeilingW";
+
+string building.escape.ceiling.W.material = "CONCRETE_MARS";
+
+double building.escape.ceiling.W.offsetFromMu2eOrigin.x   = 947.4;
+double building.escape.ceiling.W.offsetFromFloorSurface.y = 5334;
+double building.escape.ceiling.W.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.escape.ceiling.W.yHalfThickness           = 152.4;
+
+vector<double> building.escape.ceiling.W.xPositions = {
+  14472.9,   // E0
+  13106.9,   // B10
+  15044.8,   // EC0
+  15499.3,   // EC1
+  15848.7,   // EC2
+  16743.9   // E1
+};
+
+vector<double> building.escape.ceiling.W.yPositions = {
+  11741.1,   // E0
+  17309.7,   // B10
+  17779.3,   // EC0
+  15903.2,   // EC1
+  15986.8,   // EC2
+  12291.5   // E1
+};
+
+// Local Variables:
+// mode:c++
+// End:

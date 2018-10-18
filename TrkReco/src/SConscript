@@ -8,7 +8,7 @@ Import('env')
 
 Import('mu2e_helper')
 
-helper=mu2e_helper()
+helper=mu2e_helper(env)
 
 rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
@@ -19,6 +19,7 @@ mainlib = helper.make_mainlib ( [
     'mu2e_Mu2eUtilities',
     'mu2e_ConditionsService',
     'mu2e_GeometryService',
+    'mu2e_CalorimeterGeom',
     'mu2e_BFieldGeom',
     'mu2e_TrackerGeom',
     'mu2e_MCDataProducts',
@@ -34,13 +35,12 @@ mainlib = helper.make_mainlib ( [
     'art_Framework_Services_Optional_TFileService_service',
     'art_Framework_Services_Optional',
     'art_Persistency_Provenance',
-    'canvas_Persistency_Provenance',
     'art_Persistency_Common',
-    'canvas_Persistency_Common',
     'art_Utilities',
-    'canvas_Utilities',
+    'canvas',
     'fhiclcpp',
     'cetlib',
+    'cetlib_except',
     rootlibs,
     'CLHEP',
     'HepPDT',
@@ -55,6 +55,7 @@ helper.make_plugins( [
    'mu2e_SeedService_SeedService_service',
    'mu2e_ConditionsService',
    'mu2e_GeometryService',
+   'mu2e_CalorimeterGeom',
    'mu2e_BFieldGeom',
    'mu2e_Mu2eHallGeom',
    'mu2e_TrackerGeom',
@@ -73,14 +74,13 @@ helper.make_plugins( [
    'art_Framework_Services_Optional_TFileService_service',
    'art_Framework_Services_Optional_RandomNumberGenerator_service',
    'art_Persistency_Common',
-   'canvas_Persistency_Common',
    'art_Persistency_Provenance',
-   'canvas_Persistency_Provenance',
    'art_Utilities',
-   'canvas_Utilities',
+   'canvas',
    'MF_MessageLogger',
    'fhiclcpp',
    'cetlib',
+   'cetlib_except',
    'CLHEP',
    'HepPDT',
    rootlibs,
@@ -94,10 +94,10 @@ helper.make_dict_and_map( [
         mainlib,
         babarlibs,
         'art_Persistency_Common',
-        'canvas_Persistency_Common',
         'art_Utilities',
-        'canvas_Utilities',
+        'canvas',
         'cetlib',
+        'cetlib_except',
         'CLHEP',
         'Core'
     ] )

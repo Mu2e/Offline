@@ -15,7 +15,7 @@
 #include "MCDataProducts/inc/StepInstanceName.hh"
 
 // Includes from art and its tool chain.
-#include "art/Framework/IO/ProductMix/MixContainerTypes.h"
+#include "art/Framework/IO/ProductMix/MixTypes.h"
 
 // C++ includes
 #include <iosfwd>

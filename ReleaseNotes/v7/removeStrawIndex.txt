@@ -1,0 +1,125 @@
+This note discusses the removal of StrawIndex and it's replacement
+by StrawId everywhere.
+
+As of May 30, 2018 there is one known outstanding issue.
+I have not tested to see if the DeadStrawList correctly parses
+the lists of dead planes and dead panels.
+
+The remove of StrawIndex triggered the following additional changes:
+ 1) I reordered the dense array of all straws, held inside the
+    TTracker object; none of our code was every supposed to
+    depend on this order.  I did not find any that did.
+      - old order: within a panel the straws were ordered by
+                   one layer and then the other.
+      - new order: straws are ordered in increasing radius
+                   at their midpoint - ie alternating layers.
+                   This is consistent with numbering the scheme
+                   used by the tracker hardware project.
+
+ 2) Removed TrackerCalibrations everywhere. It is replaced
+    by the many classes in TrackerConditions.
+
+ 3) Removed support for all variants of the tracker except
+    the most recent.  I did not clean out old tracker
+    geometry files - that will be another project.
+    ( which will take some care because the new files are
+      built as deltas to the old ones ... )
+
+In addition I cleaned up some targets of opportunity:
+ 4) Removed cvs history comments
+ 5) Removed large bodies of commented out obsolete code.
+ 6) Removed unnecessary includes
+ 7) Rewrote some loops using ranged-for syntax.
+ 8) Moved some files to Legacy. These make use of StrawIndex
+    and I did not have the energy to convert them.
+    They will be useful for people who want to ressurect their
+    functionality using StrawId.  In many cases these files
+    need other maintenance to keep up with other evolutions
+    in our code.
+
+Thanks to Pasha for doing the work to remove StrawIndex
+and TrackerCalibrations from the CalPatRec package.
+
+Background:
+
+In the old days there were two identifiers of straws:
+  DataProducts/inc/StrawIndex.hh
+  DataProducts/inc/StrawId.hh
+
+StrawIndex - a dense identifier 0...(N-1)
+             The order was arbitrary and no code should
+             depend on the order
+
+StrawId (old style) a tuple-of-ints identifier
+   originally: plane, sector( aka panel), layer, straw
+   later:      plane, panel, straw
+
+StrawId (new style) a bit mapped uint16_t encoding:
+        plane, panel, straw
+        This is not a dense identifier but it is
+        structured in a way that it convenient
+        for writing FPGA code.
+
+With this change, StrawIndex is gone entirely and
+all access to straw information is via the new style
+StrawId.
+
+The key changes are:
+
+ 1) DataProducts/inc/StrawIndex.hh
+    DataProducts/src/classes.h
+    DataProducts/src/classes_def.xml
+      - removed the .hh file and removed refernences to StrawIndex in the
+        two genreflex files.
+
+ 2) GeometryService/src/TTrackerMaker.cc
+     - change the order in which straws are inserted into the big array
+     - Remove all use of StrawIndex
+     - Lots of cleanup to remove support for obsolete trackers designs.
+
+ 3) TrackerGeom/inc/Straw.hh
+    TrackerGeom/inc/Tracker.hh
+    TrackerGeom/src/SConscript
+    TrackerGeom/src/Straw.cc
+    TTrackerGeom/inc/TTracker.hh
+       - Remove all use of StrawIndex, which was only used as a key
+         for accessors
+       - Each accessor has been replaced by a matched accessor using
+         a StrawId ( much of this was in place already ).
+
+ 4) DataProducts/src/StrawId.cc
+    Reading a StrawId from a string now recognizes PlaneIds and PanelIds.
+    If a, b, c are integers the formats are:
+       StrawId: a_b_c
+       PanelId: a_b
+       PlaneId: a
+    By convention a PanelId is equivalent to the StrawID for straw 0
+    in that panel.  Similarly for a PlaneId - it is equivalent to the
+    StrawId for straw 0 in panel 0 of that plane.
+
+ 5) Mu2eG4/src/StrawSD.cc
+    From the G4 volume copy numbers, construct a StrawId and
+    add this to the StepPointMC as it's volumeId.  Previously
+    the code constructed a StrawIndex.
+
+  6) Analyses/src/ConvElecHistory_module.cc
+     Analyses/src/DIOElecHistory_module.cc
+     Mu2eUtilities/inc/BkgElecUtilities.hh
+     Mu2eUtilities/inc/ConvElecUtilities.hh
+     Mu2eUtilities/src/BkgElecUtilities.cc
+     Mu2eUtilities/src/ConvElecUtilities.cc
+         - moved to Legacy
+
+  7) Mu2eG4/inc/ConstructTTrackerTDR.hh
+     Mu2eG4/inc/constructDummyTracker.hh
+     Mu2eG4/src/ConstructTTrackerTDR.cc
+     Mu2eG4/src/constructDummyTracker.cc
+     Mu2eG4/src/constructTTrackerv3.cc
+     Mu2eG4/src/constructTTrackerv3Detailed.cc
+      - Removed support for obsolete tracker geometries.
+
+  8) In many other files, find use of StrawIndex and
+     change it to StrawId.  In most cases this was:
+      a) diagnostic printout
+      b) comparison to see if two objects refer to the same straw
+      c) std::map<StrawIndex,T> changed to std::map<StrawId,T>

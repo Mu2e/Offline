@@ -89,6 +89,7 @@ private:
 
     G4bool AbsorptionOn;
 
+    G4VMPLData::G4PhysConstVectorData* fPhysicsVector;
 };
 
 #endif

@@ -8,7 +8,7 @@
 #include <vector>
 #include <algorithm>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

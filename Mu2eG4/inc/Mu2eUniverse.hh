@@ -42,6 +42,8 @@ namespace mu2e {
     // The non-const return type is eventually required 
     // by G4VUserDetectorConstruction::Construct();
     virtual G4VPhysicalVolume * construct() = 0;
+      
+      virtual void constructSDandField() = 0;
 
   protected:
 

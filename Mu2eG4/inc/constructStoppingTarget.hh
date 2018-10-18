@@ -15,12 +15,11 @@
 
 namespace mu2e{
 
-  class SimpleConfig;
+    class SimpleConfig;
 
-  VolumeInfo constructStoppingTarget( VolumeInfo   const& mother,
+    VolumeInfo constructStoppingTarget( VolumeInfo   const& mother,
                                       SimpleConfig const& config );
-
-
+    
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_constructStoppingTarget_hh */

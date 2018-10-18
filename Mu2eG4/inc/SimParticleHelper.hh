@@ -17,14 +17,17 @@ namespace art { class ProductID; }
 
 namespace mu2e {
   class SimParticleHelper {
-    unsigned particleNumberOffset_;
-    art::ProductID simID_;
-    const art::Event* event_;
+    
+      unsigned particleNumberOffset_;
+      art::ProductID simID_;
+      const art::Event* event_;
+      const art::EDProductGetter* simProductGetter_;
 
   public:
     SimParticleHelper(unsigned particleNumberOffset,
                       const art::ProductID& simID,
-                      const art::Event& event);
+                      const art::Event* event,
+                      const art::EDProductGetter* sim_prod_getter);
 
     art::Ptr<SimParticle> particlePtr(const G4Track* trk) const;
 

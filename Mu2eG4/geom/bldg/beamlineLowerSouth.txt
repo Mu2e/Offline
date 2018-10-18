@@ -1,0 +1,47 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_lower_south.ccl
+
+string building.beamline.lower.south.name     = "beamlineLowerSouth";
+
+string building.beamline.lower.south.material = "CONCRETE_MARS";
+
+double building.beamline.lower.south.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.lower.south.offsetFromFloorSurface.y = 1066.8;
+double building.beamline.lower.south.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.lower.south.yHalfThickness           = 1219.2;
+
+vector<double> building.beamline.lower.south.xPositions = {
+  16258.4,   // A0
+  18641,   // A1
+  19753.6,   // A2
+  17500.6,   // O
+  17500.6,   // O1
+  19909.1,   // A3
+  19933,   // A4
+  20955.9,   // A5
+  19484.5,   // A6
+  18461.6,   // A7
+  18485.5,   // A8
+  16109.8   // A9
+};
+
+vector<double> building.beamline.lower.south.yPositions = {
+  11421.5,   // A0
+  12010.9,   // A1
+  7419.35,   // A2
+  6874.92,   // O
+  6195.22,   // O1
+  6777.52,   // A3
+  6678.78,   // A4
+  6915.85,   // A5
+  12988.5,   // A6
+  12751.5,   // A7
+  12652.7,   // A8
+  12065   // A9
+};
+
+// Local Variables:
+// mode:c++
+// End:

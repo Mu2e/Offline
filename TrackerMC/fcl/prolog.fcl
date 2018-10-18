@@ -1,0 +1,17 @@
+#include "CommonMC/fcl/prolog.fcl"
+BEGIN_PROLOG
+# straw digis
+makeSD : {
+    module_type : StrawDigisFromStepPointMCs
+    TimeOffsets   : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+}
+#------------------------------------------------------------------------------
+
+TrackerMC : {
+    producers : { 
+	makeSD                    : { @table::makeSD  }
+    }
+    DigiSim : [ makeSD ]
+}
+
+END_PROLOG

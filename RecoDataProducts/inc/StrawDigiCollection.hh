@@ -11,13 +11,6 @@
 // Original author David Brown 
 //
 
-#include <vector>
-//#include <array>
-
 #include "RecoDataProducts/inc/StrawDigi.hh"
-
-namespace mu2e {
-   typedef std::vector<mu2e::StrawDigi> StrawDigiCollection;
-}
 
 #endif /* DataProducts_StrawDigiCollection_hh */

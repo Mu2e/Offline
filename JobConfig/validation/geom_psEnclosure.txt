@@ -1,0 +1,12 @@
+#include "JobConfig/common/geom_baseline.txt"
+
+int PSEnclosure.verbosityLevel = 99;
+
+string PSEnclosure.shell.materialName  = "PSVacuum";
+string PSEnclosure.window1.materialName = "PSVacuum";
+string PSEnclosure.window2.materialName = "PSVacuum";
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

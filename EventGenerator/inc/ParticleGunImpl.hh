@@ -36,9 +36,9 @@ namespace mu2e {
   class RandomUnitSphereParams;
 
   class ParticleGunImpl: public GeneratorBase{
-
   public:
-    ParticleGunImpl(double meanMultiplicity,
+    ParticleGunImpl(CLHEP::HepRandomEngine& engine,
+        double meanMultiplicity,
         PDGCode::type pdgId,
         double pmin,
         double pmax,
@@ -63,7 +63,8 @@ namespace mu2e {
         int verbosityLevel);
 
     // Old style constructor. Kept for backward compatibility.
-    ParticleGunImpl(double meanMultiplicity,
+    ParticleGunImpl(CLHEP::HepRandomEngine& engine,
+                    double meanMultiplicity,
         PDGCode::type pdgId,
         double pmin,
         double pmax,
@@ -154,7 +155,7 @@ namespace mu2e {
 
     // Limit of generation iteration. To check the limit of momentum or the shaped vertex distribution,
     // pass-and-fail algorithm is applied. This config limits the maximum iteration for pass-and fail.
-    // Generation will crash at any point of excess of iterationLimit when throwOnIterationLimit = true. 
+    // Generation will crash at any point of excess of iterationLimit when throwOnIterationLimit = true.
     // Else, it will just print warning. (Default is false)
     // Default : 100
     int _iterationLimit;
@@ -206,7 +207,7 @@ namespace mu2e {
     TH1F* _hT0;
     TNtuple* _hGenerationNtuple;
 
-    // Detector coordinate origin in Mu2e coordinate. Add this to transform from Detector coord. to Mu2e coord. 
+    // Detector coordinate origin in Mu2e coordinate. Add this to transform from Detector coord. to Mu2e coord.
     CLHEP::Hep3Vector _origin;
     bool _originSetFlag;
 

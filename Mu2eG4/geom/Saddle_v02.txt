@@ -1,0 +1,246 @@
+// Original author David Norvil Brown, University of Louisville
+// Numbers based on Mu2e geometry 14 as of March 2015
+// See Mu2e docdb #4678 for more details on parameters
+// Updated by Dustin Cox & A. Hill June 2017
+
+// Sort boxes into "types"
+int Saddle.version    = 2;
+int Saddle.numberOfBoxTypes = 9;
+
+// How many of each type box to make
+int Saddle.nBoxType1 = 2;  // PS Saddles.  
+int Saddle.nBoxType2 = 2;  // PS axial Stands (long)
+int Saddle.nBoxType3 = 2;  // PS transverse Stands (short)
+
+int Saddle.nBoxType4 = 6;  // TS Saddles
+int Saddle.nBoxType5 = 6; // TS Stands
+
+int Saddle.nBoxType6 = 2; // DS Saddles Cryo
+int Saddle.nBoxType7 = 2; // DS axial Stands (long)
+int Saddle.nBoxType8 = 4; // DS transvers Stands (short)
+
+int Saddle.nBoxType9 = 1; // DS Special Saddle (near cal)
+
+
+
+// ***
+// Number of vertices of each type of box.  Code assumed 4 if nothing
+// specified.  (All have 4 in this version, so no listing...)
+// ***
+// int Saddle.nVertType1 = 4;
+
+//
+// Vertices in u, v for each type of box.  Dimensions should be in mm.
+//
+//====
+// PS Saddles 
+vector<double> Saddle.outlineType1UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType1VVerts = {-50,971,971,-50};
+double Saddle.lengthType1                = 700; // mm in w (z) dimension
+string Saddle.materialType1              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nHolesType1                   = 1;
+vector<double> Saddle.holeCenterType1Hole1 = {0,1550,0};
+double Saddle.holeRadiusType1Hole1   = 1301.0;
+double Saddle.holeLengthType1Hole1   = 701.0;
+int Saddle.nNotchesType1             = 3;
+vector<double> Saddle.notchCenterType1Notch1 = {0, 486, -300};
+vector<double> Saddle.notchDimType1Notch1    = {1264.1, 486.1, 50.1};
+vector<double> Saddle.notchCenterType1Notch2 = {0, 486, 300};
+vector<double> Saddle.notchDimType1Notch2    = {1264.1, 486.1, 50.1};
+vector<double> Saddle.notchCenterType1Notch3 = {0, 486, 0};
+vector<double> Saddle.notchDimType1Notch3    = {1234., 486.1, 220};
+// Now place and orient the instances
+vector<double> Saddle.centerType1Box1    = {3904,-1550, -7143};
+vector<double> Saddle.centerType1Box2    = {3904,-1550, -4243};
+string Saddle.orientationType1Box1       = "000";
+string Saddle.orientationType1Box2       = "000";
+
+
+//====
+// PS Axial Stands (long - parallel to beam axis)
+vector<double> Saddle.outlineType2UVerts = {1114.4,1114.4,714.4,714.4};
+vector<double> Saddle.outlineType2VVerts = {0,656.76,656.76,0};
+double Saddle.lengthType2                = 3565; // mm in w (z) dimension
+string Saddle.materialType2              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nNotchesType2                 = 1;
+vector<double> Saddle.notchCenterType2Notch1 = {914.4, 428.38, 0};
+vector<double> Saddle.notchDimType2Notch1    = {184.12,625,1766.2}; // halflengths
+// Now place and orient the instances
+vector<double> Saddle.centerType2Box1    = {3904,-2263.1, -5693};
+vector<double> Saddle.centerType2Box2    = {3904,-2263.1, -5693};
+string Saddle.orientationType2Box1       = "000";
+string Saddle.orientationType2Box2       = "020";
+
+//=====
+// PS transverse Stand (short - perpendicular to beam axis)
+vector<double> Saddle.outlineType3UVerts = {714.3,714.3,-714.3,-714.3};
+vector<double> Saddle.outlineType3VVerts = {0,656.76,656.76,0};
+double Saddle.lengthType3                = 400; // mm in w (z) dimension
+string Saddle.materialType3              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nNotchesType3                     = 1;
+vector<double> Saddle.notchCenterType3Notch1 = {0, 328.38, 0};
+vector<double> Saddle.notchDimType3Notch1    = {698.42,625,184.12}; // halflengths
+// Now place and orient the instances
+vector<double> Saddle.centerType3Box1    = {3904,-2263.1, -7143};
+vector<double> Saddle.centerType3Box2    = {3904,-2263.1, -4243};
+string Saddle.orientationType3Box1       = "000";
+string Saddle.orientationType3Box2       = "000";
+
+
+
+//====
+// TS Saddles
+vector<double> Saddle.outlineType4UVerts = {1100,1100,-1100,-1100};
+vector<double> Saddle.outlineType4VVerts = {-50,995,995,-50};
+double Saddle.lengthType4                = 700; // mm in w (z) dimension
+string Saddle.materialType4              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nHolesType4                   = 1;
+vector<double> Saddle.holeCenterType4Hole1 = {0,1550,0};
+double Saddle.holeRadiusType4Hole1   = 1051.0;
+double Saddle.holeLengthType4Hole1   = 701.0;
+int Saddle.nNotchesType4             = 5;
+vector<double> Saddle.notchCenterType4Notch1 = {0, 497.5, -275};
+vector<double> Saddle.notchDimType4Notch1    = {1100.1, 497.6, 75.1};
+vector<double> Saddle.notchCenterType4Notch2 = {0, 497.5, 275};
+vector<double> Saddle.notchDimType4Notch2    = {1100.1, 497.6, 75.1};
+vector<double> Saddle.notchCenterType4Notch3 = {1075, 497.5, 0};
+vector<double> Saddle.notchDimType4Notch3    = {50.1,497.6, 350.1};
+vector<double> Saddle.notchCenterType4Notch4 = {-1075, 497.5, 0};
+vector<double> Saddle.notchDimType4Notch4    = {50.1,497.6, 350.1};
+vector<double> Saddle.notchCenterType4Notch5 = {0, 497.5, 0};
+vector<double> Saddle.notchDimType4Notch5    = {1020,497.6, 170};
+// Now place and orient the instances
+vector<double> Saddle.centerType4Box1    = {  3904,-1550, -2934};
+vector<double> Saddle.centerType4Box2    = {3044.7,-1550, -859.3};
+vector<double> Saddle.centerType4Box3    = {   770,-1550, 0};
+vector<double> Saddle.centerType4Box4    = {  -770,-1550, 0};
+vector<double> Saddle.centerType4Box5    = {-3044.7,-1550, 859.3};
+vector<double> Saddle.centerType4Box6    = { -3904,-1550, 2934};
+string Saddle.orientationType4Box1       = "000";
+string Saddle.orientationType4Box2       = "040";
+string Saddle.orientationType4Box3       = "010";
+string Saddle.orientationType4Box4       = "010";
+string Saddle.orientationType4Box5       = "040";
+string Saddle.orientationType4Box6       = "000";
+
+
+//TS Stands
+vector<double> Saddle.outlineType5UVerts = {1100,1100,-1100,-1100};
+vector<double> Saddle.outlineType5VVerts = {0,710,710,0};
+double Saddle.lengthType5                = 600; // mm in w (z) dimension
+string Saddle.materialType5              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nNotchesType5             = 1;
+vector<double> Saddle.notchCenterType5Notch1 = {0, 355, 0};
+vector<double> Saddle.notchDimType5Notch1    = {1050, 345, 250};
+// Now place and orient the instances
+vector<double> Saddle.centerType5Box1    = {  3904,-2312, -2934};
+vector<double> Saddle.centerType5Box2    = {3044.7,-2312, -859.3};
+vector<double> Saddle.centerType5Box3    = {   770,-2312, 0};
+vector<double> Saddle.centerType5Box4    = {  -770,-2312, 0};
+vector<double> Saddle.centerType5Box5    = {-3044.7,-2312, 859.3};
+vector<double> Saddle.centerType5Box6    = { -3904,-2312, 2934};
+string Saddle.orientationType5Box1       = "000";
+string Saddle.orientationType5Box2       = "040";
+string Saddle.orientationType5Box3       = "010";
+string Saddle.orientationType5Box4       = "010";
+string Saddle.orientationType5Box5       = "040";
+string Saddle.orientationType5Box6       = "000";
+
+
+// DS Saddles
+vector<double> Saddle.outlineType6UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType6VVerts = {-88,776,776,-88};
+double Saddle.lengthType6                = 700; // mm in w (z) dimension
+string Saddle.materialType6              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nHolesType6                   = 1;
+vector<double> Saddle.holeCenterType6Hole1 = {0,1550,0};
+double Saddle.holeRadiusType6Hole1   = 1329.0;
+double Saddle.holeLengthType6Hole1   = 701.0;
+int Saddle.nNotchesType6             = 3;
+vector<double> Saddle.notchCenterType6Notch1 = {0, 486, -300};
+vector<double> Saddle.notchDimType6Notch1    = {1264.1, 486.1, 50.1};
+vector<double> Saddle.notchCenterType6Notch2 = {0, 486, 300};
+vector<double> Saddle.notchDimType6Notch2    = {1264.1, 486.1, 50.1};
+vector<double> Saddle.notchCenterType6Notch3 = {0, 486, 0};
+vector<double> Saddle.notchDimType6Notch3    = {1234., 486.1, 220};
+// Now place and orient the instances
+vector<double> Saddle.centerType6Box1    = {-3904,-1550, 4039};
+vector<double> Saddle.centerType6Box2    = {-3904,-1550, 13339};
+string Saddle.orientationType6Box1       = "000";
+string Saddle.orientationType6Box2       = "000";
+
+
+// DS axial Stands (long - parallel to beam axis)
+vector<double> Saddle.outlineType7UVerts = {180,180,-180,-180};
+vector<double> Saddle.outlineType7VVerts = {0,623,623,0};
+double Saddle.lengthType7                = 11922; // mm in w (z) dimension
+string Saddle.materialType7              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nNotchesType7                 = 1;
+vector<double> Saddle.notchCenterType7Notch1 = {0, 311.5, 0};
+vector<double> Saddle.notchDimType7Notch1    = {160,290,5941}; // halflengths
+// Now place and orient the instances
+vector<double> Saddle.centerType7Box1    = {-2990,-2282, 9665};
+vector<double> Saddle.centerType7Box2    = {-4818,-2282, 9665};
+string Saddle.orientationType7Box1       = "000";
+string Saddle.orientationType7Box2       = "000";
+
+
+// DS transverse Stands (short - perpendicular to the beam axis)
+vector<double> Saddle.outlineType8UVerts = {714,714,-714,-714};
+vector<double> Saddle.outlineType8VVerts = {0,623,623,0};
+double Saddle.lengthType8                = 400; // mm in w (z) dimension
+string Saddle.materialType8              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nNotchesType8                 = 1;
+vector<double> Saddle.notchCenterType8Notch1 = {0, 311.5, 0};
+vector<double> Saddle.notchDimType8Notch1    = {694,290,180}; // halflengths
+// Now place and orient the instances
+vector<double> Saddle.centerType8Box1    = { -3904,-2282, 4039};
+vector<double> Saddle.centerType8Box2    = { -3904,-2282, 8689};
+vector<double> Saddle.centerType8Box3    = { -3904,-2282, 13339};
+vector<double> Saddle.centerType8Box4    = { -3904,-2282, 15290.8};
+string Saddle.orientationType8Box1       = "000";
+string Saddle.orientationType8Box2       = "000";
+
+
+// DS special Saddle near the Calorimeter
+vector<double> Saddle.outlineType9UVerts = {1264,1264,-1264,-1264};
+vector<double> Saddle.outlineType9VVerts = {-80,1550,1550,-80};
+double Saddle.lengthType9                = 700; // mm in w (z) dimension
+string Saddle.materialType9              = "StainlessSteel";
+// Notches and Holes
+int Saddle.nHolesType9                   = 1;
+vector<double> Saddle.holeCenterType9Hole1 = {0,1550,0};
+double Saddle.holeRadiusType9Hole1   = 971.0;
+double Saddle.holeLengthType9Hole1   = 701.0;
+int Saddle.nNotchesType9             = 3;
+vector<double> Saddle.notchCenterType9Notch1 = {0, 775, -300};
+vector<double> Saddle.notchDimType9Notch1    = {1264.1, 775.1, 50.1};
+vector<double> Saddle.notchCenterType9Notch2 = {0, 775, 300};
+vector<double> Saddle.notchDimType9Notch2    = {1264.1, 775.1, 50.1};
+vector<double> Saddle.notchCenterType9Notch3 = {0, 775, 0};
+vector<double> Saddle.notchDimType9Notch3    = {1234., 775.1, 220};
+// Now place and orient the instances
+vector<double> Saddle.centerType9Box1    = {-3904,-1550, 15290.8};
+string Saddle.orientationType9Box1       = "000";
+
+
+// Global stuff
+
+bool  Saddle.visible = true;
+bool  Saddle.solid   = false;
+
+int   Saddle.verbosityLevel = 0;
+
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

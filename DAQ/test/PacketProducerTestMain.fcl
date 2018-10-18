@@ -1,0 +1,149 @@
+# -*- mode: tcl -*-
+#
+#  This script is an example of how to configure the TrkPacketProducer, CalPacketProducer, and CrvPacketProducer
+#  modules to generate simulated DTC packets.
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/KalDiag.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+
+process_name : PacketProducerTestMain
+
+source :
+{
+  module_type : RootInput
+}
+
+services :
+{
+  message : @local::default_message
+  TFileService : { fileName : "PacketProducerTest.root" }
+  RandomNumberGenerator: { }
+
+#  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_cd3_s4p2.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  BTrkHelper : @local::BTrkHelperDefault
+  SeedService: @local::automaticSeeds
+}
+
+#------------------------------------------------------------------------------
+# reconstruction and analysis modules
+#------------------------------------------------------------------------------
+
+physics :
+{
+  producers :
+  {
+    generate             : @local::generate
+    g4run                : @local::g4run    
+    protonTimeMap        : @local::protonTimeMap
+    muonTimeMap          : @local::muonTimeMap
+
+    @table::EventMixing.producers
+    @table::Tracking.producers
+    
+    @table::CaloDigiMC.producers
+
+    @table::CrvDAQPackage.producers
+
+    CalorimeterPacketProducer: {
+      module_type      : CaloPacketProducer
+      makerModuleLabel : CaloDigiFromShower
+      diagLevel        : 0
+      maxFullPrint     : 0
+      generateTextFile : 1
+    }
+
+    TrackerPacketProducer: {
+      module_type      : TrkPacketProducer
+      makerModuleLabel : makeSD
+      diagLevel        : 0
+      maxFullPrint     : 0
+      generateTextFile : 1
+
+      usePhysicalStrawIndex : 0
+    }
+
+    CosmicRayVetoPacketProducer: {
+      module_type      : CrvPacketProducer
+      makerModuleLabel : CrvDigi
+      diagLevel        : 0
+      maxFullPrint     : 0
+      generateTextFile : 1
+    }
+
+  }
+
+  filters :
+  {
+    @table::EventMixing.filters
+  }
+
+  analyzers :
+  {
+      genCountLogger: { module_type: GenEventCountReader }
+
+      Info: {
+        module_type: ViewAllProvenances
+      }
+
+   }
+
+  p1 : [
+        generate, 
+        g4run, 
+	@sequence::EventMixing.CD3Mixers,
+	@sequence::EventMixing.TimeMaps,
+	protonTimeMap, muonTimeMap,
+	@sequence::Tracking.DigiSim,
+	@sequence::CaloDigiMC.DigiSim,
+        @sequence::CrvDAQPackage.CrvResponseSequence,
+	
+	CalorimeterPacketProducer,
+	TrackerPacketProducer,
+	CosmicRayVetoPacketProducer
+       ] 
+
+   e1 : [ outfile ]
+  
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+
+outputs: {
+
+  outfile :  {
+    module_type   :   RootOutput
+    fileName      :   "hit_data.root"
+
+    outputCommands: [ "drop *",
+		      "keep mu2e::StrawDigis_makeSD_*_*",
+                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
+                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
+                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
+                     ]
+  }
+
+}
+
+# specify the time offset maps when building straw digis
+physics.producers.makeSD.TimeOffsets.inputs : [ "protonTimeMap", "muonTimeMap" ] 
+
+# patch Calo
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+
+# specify background frame files: these must be define outside this script, before it is included
+physics.filters.flashMixer.fileNames : @local::bgHitFiles
+physics.filters.ootMixer.fileNames : @local::bgHitFiles
+physics.filters.dioMixer.fileNames : @local::bgHitFiles
+physics.filters.neutronMixer.fileNames : @local::bgHitFiles
+physics.filters.photonMixer.fileNames : @local::bgHitFiles
+physics.filters.protonMixer.fileNames : @local::bgHitFiles
+physics.filters.deuteronMixer.fileNames : @local::bgHitFiles

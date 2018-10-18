@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/fill_beamline_south.ccl
+
+string building.backfill.beamline.south.name     = "backfillBeamlineSouth";
+
+string building.backfill.beamline.south.material = "CA7Backfill";
+
+double building.backfill.beamline.south.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.beamline.south.offsetFromFloorSurface.y = 4089.4;
+double building.backfill.beamline.south.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.beamline.south.yHalfThickness           = 1803.4;
+
+vector<double> building.backfill.beamline.south.xPositions = {
+  19909.1,   // BLS05
+  19933,   // BLS06
+  27520.4,   // BFDU01
+  27460.6,   // BFDU02
+  37483,   // BFDU03
+  37483.7,   // B2
+  27337.9,   // bBS06
+  27397.7   // bBS07
+};
+
+vector<double> building.backfill.beamline.south.yPositions = {
+  6777.52,   // BLS05
+  6678.78,   // BLS06
+  8518.61,   // BFDU01
+  8765.47,   // BFDU02
+  11193.9,   // BFDU03
+  11298.6,   // B2
+  8840.29,   // bBS06
+  8593.43   // bBS07
+};
+
+// Local Variables:
+// mode:c++
+// End:

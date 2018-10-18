@@ -18,7 +18,6 @@
 
 #include "fhiclcpp/ParameterSet.h"
 
-#include "EventGenerator/inc/GeneratorBase.hh"
 #include "EventGenerator/inc/ParticleGunImpl.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 
@@ -30,14 +29,10 @@ namespace art{ class Run; }
 
 namespace mu2e {
 
-  // Forward reference.
-  class SimpleConfig;
-
-  class ExtMonFNALGun: public GeneratorBase {
+  class ExtMonFNALGun {
 
   public:
-    ExtMonFNALGun(art::Run const& run, const SimpleConfig& config);
-    explicit ExtMonFNALGun(const fhicl::ParameterSet& pset);
+    explicit ExtMonFNALGun(CLHEP::HepRandomEngine& engine, const fhicl::ParameterSet& pset);
 
     // adds generated particles to the collection
     virtual void generate(GenParticleCollection& out);

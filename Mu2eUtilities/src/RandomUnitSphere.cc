@@ -20,17 +20,6 @@ using CLHEP::RandFlat;
 
 namespace mu2e{
 
-  RandomUnitSphere::RandomUnitSphere( double czmin,
-                                      double czmax,
-                                      double phimin,
-                                      double phimax):
-    _czmin(czmin),
-    _czmax(czmax),
-    _phimin(phimin),
-    _phimax(phimax),
-    _randFlat( art::ServiceHandle<art::RandomNumberGenerator>()->getEngine() ){
-  }
-
   RandomUnitSphere::RandomUnitSphere( CLHEP::HepRandomEngine& engine,
                                       double czmin,
                                       double czmax,
@@ -44,7 +33,7 @@ namespace mu2e{
   }
 
   RandomUnitSphere::RandomUnitSphere( CLHEP::HepRandomEngine& engine,
-				      const RandomUnitSphereParams& pars): 
+                                      const RandomUnitSphereParams& pars):
     _czmin(pars.czmin),
     _czmax(pars.czmax),
     _phimin(pars.phimin),

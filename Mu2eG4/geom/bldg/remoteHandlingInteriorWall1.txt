@@ -1,0 +1,48 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteIntWall1.ccl
+
+string building.remote.handling.Interior.Wall.1.name     = "remoteHandlingInteriorWall1";
+
+string building.remote.handling.Interior.Wall.1.material = "CONCRETE_MARS";
+
+double building.remote.handling.Interior.Wall.1.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Interior.Wall.1.offsetFromFloorSurface.y = 2209.8;
+double building.remote.handling.Interior.Wall.1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Interior.Wall.1.yHalfThickness           = 2209.8;
+
+vector<double> building.remote.handling.Interior.Wall.1.xPositions = {
+  -5461,   // P0
+  -5003.8,   // P1
+  -5003.8,   // P2
+  1468.12,   // P3
+  3251.2,   // P4
+  3251.2,   // P5
+  3708.4,   // P6
+  3708.4,   // P7
+  1544.32,   // P8
+  -5461   // P9
+};
+
+vector<double> building.remote.handling.Interior.Wall.1.yPositions = {
+  8128,   // P0
+  8128,   // P1
+  6858,   // P2
+  6858,   // P3
+  7289.8,   // P4
+  8674.1,   // P5
+  8674.1,   // P6
+  6771.64,   // P7
+  6248.4,   // P8
+  6248.4   // P9
+};
+
+int building.remote.handling.Interior.Wall.1.Notch.numberOfNotches = 1;
+vector<double> building.remote.handling.Interior.Wall.1.Notch.halfDims.1 = {406.,325.,406.};
+vector<double> building.remote.handling.Interior.Wall.1.Notch.position.1 = {-4318.,6553.,110.0};
+string  building.remote.handling.Interior.Wall.1.Notch.orientation.1 = "000";
+
+// Local Variables:
+// mode:c++
+// End:

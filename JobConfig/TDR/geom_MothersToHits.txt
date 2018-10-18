@@ -1,8 +1,0 @@
-#include "JobConfig/TDR/geom_baseline.txt"
-
-double g4.minRangeCut     = 0.010; // mm
-
-// This tells emacs to view this file in c++ mode.
-// Local Variables:
-// mode:c++
-// End:

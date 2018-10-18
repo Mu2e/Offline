@@ -40,12 +40,16 @@ namespace mu2e {
     // These represet type-level information
     // ***
 
+    const int &                           getVersion() const
+    { return _version; }
     const std::vector<int> &              getNComponentsInPipe() const
     { return _nComponentsInPipe; }
     const std::vector<int> &              getNPipes() const
     { return _nPipes; }
     // If the flavor (see below) is "bend", then the length is really
     // the toroidal radius of the containing pipe
+    // In version 2, length is not a property of a type, but of an individual
+    // pipe.  Use the same vector for code simplicity.
     const std::vector<double> &           getLengths() const
     { return _lengths; }
     const std::vector<std::string> &      getFlavor() const
@@ -82,7 +86,8 @@ namespace mu2e {
     friend class PipeMaker;
 
     // Private ctr: the class should only be constructed via Pipe::PipeMaker.
-    Pipe(const std::vector<int>&                  nComponentsInPipe,
+    Pipe(const int&                               version,
+	 const std::vector<int>&                  nComponentsInPipe,
 	 const std::vector<int>&                  nPipes,
 	 const std::vector<double>&               lengths,
 	 const std::vector<std::string>&          flavs,
@@ -94,7 +99,8 @@ namespace mu2e {
 	 const std::vector<std::vector<std::string> >&          mats, 
 	 const std::vector<std::vector<double> >& uOffsets, 
 	 const std::vector<std::vector<double> >& vOffsets)      
-      : _nComponentsInPipe (nComponentsInPipe),
+      : _version          (version), 
+	_nComponentsInPipe (nComponentsInPipe),
 	_nPipes           (nPipes),
 	_lengths          (lengths),
 	_flavors          (flavs),
@@ -116,6 +122,7 @@ namespace mu2e {
     // Current description based on Geometry 14, adapted by
     // David Norvil Brown, 
 
+    int                                  _version;
     // The following vectors hold information about the pipes
     // The first five are type-level information
     std::vector< int >                   _nComponentsInPipe;

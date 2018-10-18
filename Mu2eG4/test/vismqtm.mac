@@ -1,0 +1,25 @@
+#
+# Macro file for setting up the graphics scene with qt and the verbosity level
+#
+#
+# $Id: vismqt.mac,v 1.1 2013/12/16 22:24:50 genser Exp $
+# $Author: genser $
+# $Date: 2013/12/16 22:24:50 $
+#
+# Original author KLG
+
+#/control/verbose 0
+#/run/verbose 0
+#/vis/verbose 5
+#6 is all
+
+/vis/scene/create
+/vis/scene/add/volume world
+/vis/scene/add/trajectories smooth
+/vis/sceneHandler/create OGLSQt
+/vis/scene/endOfEventAction refresh
+/vis/viewer/create ! ! !
+/vis/viewer/flush !
+/vis/sceneHandler/drawEvent !
+
+# Do NOT issue the /run/beamon command

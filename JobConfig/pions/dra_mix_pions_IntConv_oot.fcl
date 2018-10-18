@@ -1,0 +1,3 @@
+#include "JobConfig/pions/dra_mix_pions_defs.fclinc"
+physics.producers.protonTimeMap.randPDFparameters.pulseType: oot
+services.TFileService.fileName: "nts.owner.dra-mix-pions-IntConv.ver.seq.root"

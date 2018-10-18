@@ -3,10 +3,6 @@
 //
 // Hold information about one straw in a tracker.
 //
-// $Id: Straw.hh,v 1.18 2013/03/26 23:28:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/03/26 23:28:23 $
-//
 // Original author Rob Kutschke
 //
 
@@ -14,7 +10,6 @@
 
 #include "TrackerGeom/inc/StrawDetail.hh"
 #include "DataProducts/inc/StrawId.hh"
-#include "DataProducts/inc/StrawIndex.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -42,7 +37,6 @@ namespace mu2e {
 
     // Constructor using wire tangents.
     Straw( const StrawId& id,
-           StrawIndex index,
            const CLHEP::Hep3Vector& c,
            const StrawDetail* detail,
            int    detailIndex,
@@ -52,7 +46,6 @@ namespace mu2e {
 
     // Constructor using wire unit vector.
     Straw( const StrawId& id,
-           StrawIndex index,
            const CLHEP::Hep3Vector& c,
            const StrawDetail* detail,
            int detailIndex,
@@ -61,54 +54,26 @@ namespace mu2e {
 
     // Accept the compiler copy constructor and assignment operators
 
-    // I don't think that this class should have virtual functions but 
+    // I don't think that this class should have virtual functions but
     // since it does, it must have a virtual destructor.
     virtual ~Straw(){}
 
 
     const StrawId& id() const { return _id;}
-    StrawIndex index() const { return _index;}
+
     int detailIndex() const { return _detailIndex;}
 
     const StrawDetail& getDetail() const { return *_detail;}
 
     // Navigation, normally within a panel:
 
-    // Return true if the argument is one of the nearest neighbours of this straw.
-    bool isNearestNeighbour( StrawIndex idx ) const;
-
-    bool isSamePreamp( StrawIndex idx ) const;
-
     // The following routnies will return the nearest neighbors (or the
     // single nearest neighbor if this straw is at the end of its layer):
-    const std::vector<StrawIndex>& nearestNeighboursByIndex() const{
-      return _nearestByIndex;
-    }
     const std::vector<StrawId>& nearestNeighboursById() const{
       return _nearestById;
     }
-    const std::vector<StrawIndex>& preampNeighboursByIndex() const{
-      return _preampByIndex;
-    }
     const std::vector<StrawId>& preampNeighboursById() const{
       return _preampById;
-    }
-    
-    
-    // The following routines deal with straws in this straw's layer
-    // as well as the other layer in the same panel.  They return 
-    // the enum NO_STRAW when the appropriate requested straw does not exist.
-    StrawIndex nextOuterSameLayer() const {
-      return  _nextOuterL;
-    }
-    StrawIndex nextInnerSameLayer() const {
-      return  _nextInnerL;
-    }
-    StrawIndex nextOuterInPanel() const {
-      return _nextOuterP;  // This will always be in the opposite layer
-    }
-    StrawIndex nextInnerInPanel() const {
-      return _nextInnerP;
     }
 
     // Formatted string embedding the id of the straw.
@@ -155,21 +120,18 @@ namespace mu2e {
 
     int hack;
     bool operator==(const Straw other) const {
-      return _index == other.index();
+      return _id == other.id();
     }
     bool operator>(const Straw other) const {
-      return _index > other.index();
+      return _id > other.id();
     }
    bool operator<(const Straw other) const {
-      return _index < other.index();
+      return _id < other.id();
    }
  protected:
 
     // Identifier
     StrawId _id;
-
-    // Index into the array of all straws.
-    StrawIndex _index;
 
     // Mid-point of the straw.
     CLHEP::Hep3Vector _c;
@@ -185,14 +147,8 @@ namespace mu2e {
 
     // Nearest neighbours.
     std::vector<StrawId>    _nearestById;
-    std::vector<StrawIndex> _nearestByIndex;
     std::vector<StrawId>    _preampById;
-    std::vector<StrawIndex> _preampByIndex;
 
-    StrawIndex _nextOuterL;
-    StrawIndex _nextInnerL;
-    StrawIndex _nextOuterP;
-    StrawIndex _nextInnerP;
   };
 
 }  //namespace mu2e

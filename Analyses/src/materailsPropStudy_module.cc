@@ -1,13 +1,8 @@
 //
 // Module which starts the event display, and transmits the data of each event to the event display.
 //
-// $Id: materailsPropStudy_module.cc,v 1.2 2013/10/21 21:01:23 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2013/10/21 21:01:23 $
-//
 
 // framework
-//#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -24,41 +19,10 @@
 #include "BTrk/MatEnv/MatDBInfo.hh"
 #include "BTrk/DetectorModel/DetMaterial.hh"
 
-// Mu2e
-/*
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "ITrackerGeom/inc/ITracker.hh"
-#include "GeometryService/inc/WorldG4.hh"
-#include "Mu2eHallGeom/inc/Mu2eBuilding.hh"
-
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-
-// data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
-// tracker
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "KalmanTestsI/inc/TrkCellHit.hh"
-
-// conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
-
-#include "KalmanTestsI/inc/kalFitOutUtils.hh"
-*/
-
 // c++
 #include <iostream>
 #include <string>
 #include <vector>
-//#include <memory>
-//#include <fstream>
 
 // ROOT
 #include "TNtuple.h"
@@ -71,7 +35,6 @@
 #include "TTree.h"
 
 // CLHEP
-//#include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 

@@ -6,7 +6,7 @@
 # $Date: 2011/11/04 18:55:55 $
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 # Give this job a name.
 process_name : PtrBug01

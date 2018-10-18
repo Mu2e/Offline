@@ -1,4 +1,0 @@
-#include "TrkDiag/test/TrkAnaMix.fcl"
-# Add DIO weight module
-physics.DIOpath : [ DIOWeight ]
-physics.trigger_paths : [ DIOpath, TrkAnaTriggerPath ]

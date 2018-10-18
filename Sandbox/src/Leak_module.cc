@@ -8,7 +8,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
 

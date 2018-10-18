@@ -107,19 +107,21 @@ void WLSOpticalPhysics::ConstructProcess()
 
   pManager->AddDiscreteProcess(theWLSProcess);
 
+//gets set by the material properties
 //  theScintProcess->SetScintillationYieldFactor(1.);
 //  theScintProcess->SetScintillationExcitationRatio(0.0);
-  theScintProcess->SetTrackSecondariesFirst(true);
+//  theScintProcess->SetTrackSecondariesFirst(true);
 
   // Use Birks Correction in the Scintillation process
 
   G4EmSaturation* emSaturation = G4LossTableManager::Instance()->EmSaturation();
   theScintProcess->AddSaturation(emSaturation);
 
-  theParticleIterator->reset();
-  while ( (*theParticleIterator)() ){
+//  auto aParticleIterator=GetParticleIterator();  //FIXME: needed for GEANT v10_4
+  aParticleIterator->reset();
+  while ( (*aParticleIterator)() ){
 
-    G4ParticleDefinition* particle = theParticleIterator->value();
+    G4ParticleDefinition* particle = aParticleIterator->value();
     G4String particleName = particle->GetParticleName();
 
     pManager = particle->GetProcessManager();

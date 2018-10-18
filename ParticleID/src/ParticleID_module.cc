@@ -129,7 +129,6 @@ int findlowhist(float d){
 
     TrkParticle _tpart;
     TrkFitDirection _fdir;
-    std::string _iname; // data instance name
 
 
     int _trkid;
@@ -188,7 +187,6 @@ int findlowhist(float d){
   {
     _processed_events = -1;
 
-    _iname = _fdir.name() + _tpart.name();
     produces<PIDProductCollection>();
 
     // location-independent files
@@ -287,7 +285,7 @@ int findlowhist(float d){
 
 
    art::Handle<KalRepPtrCollection> trksHandle;
-   event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
+   event.getByLabel(_fitterModuleLabel,trksHandle);
    const KalRepPtrCollection* const trks = trksHandle.product();
 
 
@@ -348,7 +346,7 @@ int findlowhist(float d){
            const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
            gaspaths.push_back(2. * strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
 
-           edeps.push_back(hit->strawHit().energyDep());
+           edeps.push_back(hit->comboHit().energyDep());
 
          }
        }

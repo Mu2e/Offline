@@ -3,7 +3,7 @@
 // $Date: 2014/01/07 06:29:19 $
 //
 
-int    physicsParams.verbosityLevel = 1;
+int    physicsParams.verbosityLevel = 0;
 
 // Primary particle data table and the auxillary table.
 string particleDataTable.filename          = "GlobalConstantsService/data/particle.tbl";

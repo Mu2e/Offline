@@ -21,6 +21,7 @@ namespace mu2e{
     std::swap( _nG4Tracks,            rhs._nG4Tracks);
     std::swap( _overflowSimParticles, rhs._overflowSimParticles);
     std::swap( _nKilledStepLimit,     rhs._nKilledStepLimit);
+    std::swap( _nKilledByFieldPropagator, rhs._nKilledByFieldPropagator);
     std::swap( _cpuTime,              rhs._cpuTime);
     std::swap( _realTime,             rhs._realTime);
   }
@@ -39,6 +40,7 @@ namespace mu2e{
         ost << " SimParticleCollection overflowed;";
       }
       ost << "   Number killed by too many steps: " << _nKilledStepLimit
+          << "   Number killed by Field Propagator: " << _nKilledByFieldPropagator
           << ";";
     }
 
@@ -62,6 +64,7 @@ namespace mu2e{
     _nG4Tracks            += rhs._nG4Tracks;
     _overflowSimParticles += rhs._overflowSimParticles;
     _nKilledStepLimit     += rhs._nKilledStepLimit;
+    _nKilledByFieldPropagator += rhs._nKilledByFieldPropagator;
     _cpuTime              += rhs._cpuTime;
     _realTime             += rhs._realTime;
 

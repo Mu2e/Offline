@@ -19,7 +19,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
@@ -29,7 +29,6 @@
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
@@ -42,13 +41,13 @@
 #include "G4ThreeVector.hh"
 #include "G4PVPlacement.hh"
 #include "G4VisAttributes.hh"
-#include "G4SDManager.hh"
+#include "G4LogicalVolumeStore.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  VolumeInfo constructStoppingTarget( VolumeInfo   const& parent,
+    VolumeInfo constructStoppingTarget( VolumeInfo   const& parent,
                                       SimpleConfig const& config ){
 
     const bool forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
@@ -60,9 +59,6 @@ namespace mu2e {
     if ( verbosity > 1 ) std::cout << "In constructStoppingTarget" << std::endl;
     // Master geometry for the Target assembly
     GeomHandle<StoppingTarget> target;
-
-    G4VSensitiveDetector* stSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::StoppingTarget());
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
@@ -113,7 +109,7 @@ namespace mu2e {
                                                 , foilMaterial
                                                 , foilInfo.name
                                                 );
-        if(stSD) foilInfo.logical->SetSensitiveDetector(stSD);
+        
 
         // rotation matrix...
         G4RotationMatrix* rot = 0; //... will have to wait
@@ -175,7 +171,7 @@ namespace mu2e {
                                                 , supportStructureMaterial
                                                 , supportStructureInfo.name
                                                 );
-        if(stSD) supportStructureInfo.logical->SetSensitiveDetector(stSD);
+        
 
 	if ( verbosity > 1 ) std::cout << "supportStructure.support_id() = "
                                        << supportStructure.support_id() 
@@ -259,5 +255,5 @@ namespace mu2e {
 
     return targetInfo;
   }
-
+    
 } // end namespace mu2e

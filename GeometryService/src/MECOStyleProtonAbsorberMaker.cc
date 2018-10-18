@@ -11,7 +11,8 @@
 // and modify protonabsorber.halfLength and protonabsorber.distFromTargetEnd
 // Modifing the radii protobabsorber.OutRaduis[0,1] is not recommanded.
 //
-
+// Updated by David Norvil Brown to allow for a "barrel of slats" geometry
+// for the outer proton absorber.
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -57,7 +58,7 @@ namespace mu2e {
   {
 
     //////////////////////////////////////
-    // All variables read from geom_01.txt
+    // All variables read from geometry txt files
     //////////////////////////////////////
 
     // geometry and material
@@ -72,10 +73,26 @@ namespace mu2e {
     const double pabsRegionLength = 2500.;
     std::string materialName = _config.getString("protonabsorber.materialName", "Polyethylene092");
     if (distFromTargetEnd > pabsRegionLength || distFromTargetEnd <0) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: Wrong value for distFromTargetEnd. Set to 0" << std::endl;
       distFromTargetEnd = 0;
     }
 
+    int oPAversion              = _config.getInt("protonabsorber.outerPAversion",1);
+    int oPAnSides = 0;
+    double oPAslotWidth  = 0.0;
+    double oPAslotLength = 0.0;
+    double oPAslotOffset = 0.0;
+    double oPASlatHeight = 0.0;
+    double oPASlatWidth  = 0.0;
+    double oPASlatLength = 0.0;
+    if ( oPAversion > 1 ) {
+      oPAnSides = _config.getInt("protonabsorber.outerPAnSides",0);
+      oPAslotWidth = _config.getDouble("protonabsorber.outerPAslotWidth",0.0);
+      oPAslotLength = _config.getDouble("protonabsorber.outerPAslotLength",0.0);
+      oPAslotOffset = _config.getDouble("protonabsorber.outerPAslotOffset",0.0);
+      oPASlatHeight = _config.getDouble("protonabsorber.oPASupportSlatHeight",0.0);
+      oPASlatWidth = _config.getDouble("protonabsorber.oPASupportSlatWidth",0.0);
+      oPASlatLength = _config.getDouble("protonabsorber.oPASupportSlatLength",0.0);
+    }
     double oPAin0               = _config.getDouble("protonabsorber.outerPAInnerRadius0", 436.0);
     double oPAin1               = _config.getDouble("protonabsorber.outerPAInnerRadius1", 720.0);
     double oPAhl                = _config.getDouble("protonabsorber.outerPAHalfLength", 2250.0);
@@ -84,6 +101,7 @@ namespace mu2e {
     std::string oPAmaterialName = _config.getString("protonabsorber.outerPAMaterialName", "Polyethylene092");
     double ds23split = _ds->vac_zLocDs23Split();
 
+    
     // TS and DS geometry for locating the center of Proton Absorber
     double solenoidOffset = _config.getDouble("mu2e.solenoidOffset");
 
@@ -121,23 +139,19 @@ namespace mu2e {
 
     // if pabs starts from DS3 region
     if (distFromTargetEnd > targetEndToDS2End) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: pabs1 turned off." << std::endl;
       pabs1 = false;
     }
 
     // if pabs is short enouhg to locate at DS2 region only
     if (distFromTargetEnd + pabsZHalfLen*2.< targetEndToDS2End) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: pabs2 turned off." << std::endl;
       pabs2 = false;
     }
     if (!pabs1 && !pabs2) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: no pabs can be built." << std::endl;
       return;
     }
 
     // if opa2 is short enough to locate at DS2 region only
     if (oPAzcenter + oPAhl< ds23split) {
-      std::cerr <<"MECOStyleProtonAbsorberMaker: opa2 turned off." << std::endl;
       opa2 = false;
     }
 
@@ -231,7 +245,12 @@ namespace mu2e {
     /////////
 
     _pabs = unique_ptr<MECOStyleProtonAbsorber>(new MECOStyleProtonAbsorber());
-
+    _pabs->_oPAslotWidth  = oPAslotWidth;
+    _pabs->_oPAslotLength = oPAslotLength;
+    _pabs->_oPAslotOffset = oPAslotOffset;
+    _pabs->_oPASlatHeight = oPASlatHeight;
+    _pabs->_oPASlatWidth  = oPASlatWidth;
+    _pabs->_oPASlatLength = oPASlatLength;
     CLHEP::Hep3Vector pabs1Offset(-1.*solenoidOffset, 0.0, pabs1ZOffset);
     CLHEP::Hep3Vector pabs2Offset(-1.*solenoidOffset, 0.0, pabs2ZOffset);
     CLHEP::Hep3Vector pabs3Offset(-1.*solenoidOffset, 0.0, pabs3ZOffset);
@@ -242,8 +261,13 @@ namespace mu2e {
 
     _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 0, pabs1Offset, pabs1rOut0, pabs1rIn0, pabs1rOut1, pabs1rIn1, pabs1halflen, materialName));
     _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 1, pabs2Offset, pabs2rOut0, pabs2rIn0, pabs2rOut1, pabs2rIn1, pabs2halflen, materialName));
-    _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAmaterialName));
-    _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAmaterialName));
+    if ( oPAversion > 1 ) {
+      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAnSides, oPAmaterialName));
+      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAnSides, oPAmaterialName));
+    } else {
+      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 2, pabs3Offset, pabs3rOut0, pabs3rIn0, pabs3rOut1, pabs3rIn1, pabs3halflen, oPAmaterialName));
+      _pabs->_parts.push_back( MECOStyleProtonAbsorberPart( 3, pabs4Offset, pabs4rOut0, pabs4rIn0, pabs4rOut1, pabs4rIn1, pabs4halflen, oPAmaterialName));
+    }
 
     // global variables
     (_pabs->_pabs1flag) = pabs1;
@@ -260,6 +284,22 @@ namespace mu2e {
     (_pabs->_oPAzcenter) = oPAzcenter;
     (_pabs->_oPAhalflength) = oPAhl;
     (_pabs->_oPAthickness) = oPAthick;
+
+    ////////////////////////
+    // Support Structure for OPA
+    ////////////////////////
+    (_pabs->_oPASupportMaterialName) = _config.getString("protonabsorber.oPASupportMaterialName");
+    (_pabs->_oPAnSupports) = _config.getInt("protonabsorber.oPASupportNSupportRing",0);
+    if ( _pabs->_oPAnSupports > 0 ) {
+      _config.getVectorDouble("protonabsorber.oPASupportInnerRadii",_pabs->_oPASupportIR,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportOuterRadii",_pabs->_oPASupportOR,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportHalflength",_pabs->_oPASupportHL,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportZMidpoints",_pabs->_oPASupportZM,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportHasExtra",_pabs->_oPASupportHE,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportExtraRad",_pabs->_oPASupportXR,(_pabs->_oPAnSupports));
+      _config.getVectorDouble("protonabsorber.oPASupportExtraDPhi",_pabs->_oPASupportPH,(_pabs->_oPAnSupports));
+    }
+
 
     ////////////////////////
     // Support Structure for IPA
@@ -288,6 +328,52 @@ namespace mu2e {
     // Will be used for v2 only
     const double wireRotation = _config.getDouble("protonabsorber.ipa.wireRotationToVertical", 45);
     const double wire_rotation_from_vertical = wireRotation*CLHEP::rad;
+
+    //******************
+    // Degrader
+    //******************
+
+    (_pabs->_degraderBuild) = _config.getBool("degrader.build",false);
+    if ( _pabs->_degraderBuild ) {
+      _pabs->_degraderRot = _config.getDouble("degrader.rotation");
+      _pabs->_degraderZ0 =  _config.getDouble("degrader.upstreamEdge.z");
+      _pabs->_degraderFiltMaterial = 
+	_config.getString("degrader.filter.materialName");
+      _pabs->_degraderFramMaterial =
+	_config.getString("degrader.frame.materialName");
+      _pabs->_degraderCowtMaterial = 
+	_config.getString("degrader.counterweight.materialName");
+      _pabs->_degraderRodMaterial =
+	_config.getString("degrader.rod.materialName");
+      double rin = _config.getDouble("degrader.frame.rIn");
+      _pabs->_degraderFrameDims.push_back(rin);
+      double rout = _config.getDouble("degrader.frame.rOut");
+      _pabs->_degraderFrameDims.push_back(rout);
+      double hl  = _config.getDouble("degrader.frame.halfLength");
+      _pabs->_degraderFrameDims.push_back(hl);
+      double coffs = _config.getDouble("degrader.frame.centerOffFromPivot");
+      _pabs->_degraderFrameDims.push_back(coffs);
+      rin = _config.getDouble("degrader.filter.rIn");
+      _pabs->_degraderFilterDims.push_back(rin);
+      rout = _config.getDouble("degrader.filter.rOut");
+      _pabs->_degraderFilterDims.push_back(rout);
+      hl  = _config.getDouble("degrader.filter.halfLength");
+      _pabs->_degraderFilterDims.push_back(hl);
+      _pabs->_degraderFilterDims.push_back(coffs);
+      rin = _config.getDouble("degrader.counterweight.rIn");
+      _pabs->_degraderCounterDims.push_back(rin);
+      rout = _config.getDouble("degrader.counterweight.rOut");
+      _pabs->_degraderCounterDims.push_back(rout);
+      hl  = _config.getDouble("degrader.counterweight.halfLength");
+      _pabs->_degraderCounterDims.push_back(hl);
+      coffs = _config.getDouble("degrader.counterweight.centerOffFromPivot");
+      _pabs->_degraderCounterDims.push_back(coffs);
+      double width = _config.getDouble("degrader.rod.width");
+      _pabs->_degraderRodDims.push_back(width);
+      double depth = _config.getDouble("degrader.rod.depth");
+      _pabs->_degraderRodDims.push_back(depth);
+    }
+
 
     ////////////////////
     // End Rings for IPA

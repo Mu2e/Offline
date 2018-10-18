@@ -1,0 +1,123 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+process_name : CRVEfficiency
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : @nil
+}
+
+services :
+{
+  message               : @local::default_message
+  TFileService          : { fileName : "hist_dicounter_across.root" }
+  RandomNumberGenerator : { }
+
+  GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom_dicounter.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
+}
+
+physics :
+{
+  producers:
+  {
+    generate: 
+    {
+       module_type          : EventGenerator
+       inputfile            : "CRVResponse/singleCounter/genconfig_dicounter_across.txt"
+    }
+
+    g4run : 
+    {
+       module_type: Mu2eG4
+       physics: @local::mu2eg4DefaultPhysics
+       ResourceLimits: @local::mu2eg4DefaultResourceLimits
+       TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+       debug: @local::mu2eg4DefaultDebug
+       visualization: @local::mu2eg4NoVisualization
+
+       generatorModuleLabel: generate
+       MultiStageParameters: {} // this is the first stage
+
+       SDConfig: 
+       {
+            enableSD: [ CRV ] 
+            sensitiveVolumes: []
+            TimeVD: { times: [] }
+       }
+
+       Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+       Mu2eG4SteppingOnlyCut: {}
+
+       Mu2eG4CommonCut: 
+       {
+         type: union
+         pars:
+         [
+            {
+              type  : plane 
+              normal: [  0, -1, 0 ] 
+              point : [ 0, 2653.31, 0 ] 
+            },
+            { 
+              type: inVolume
+              pars: [ worldDirtBottom, worldDirtNW, worldDirtSW, worldDirtSE, worldDirtNE ]
+            }
+         ]
+       }
+    }
+
+    CrvPhotons       : @local::CrvPhotons
+    CrvSiPMCharges   : @local::CrvSiPMCharges
+    CrvWaveforms     : @local::CrvWaveforms
+    CrvDigi          : @local::CrvDigi
+    CrvRecoPulses    : @local::CrvRecoPulses
+  }
+
+  analyzers:
+  {
+    CrvTest : 
+    {
+      module_type                 : CRVTest
+      crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
+      crvRecoPulsesModuleLabel    : "CrvRecoPulses"
+      genParticleModuleLabel      : "generate" 
+    }
+  }
+
+  trig : [generate, g4run, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses ]
+  trigger_paths  : [trig]
+
+#  out: [CrvTest, Output]
+  out: [CrvTest]
+  end_paths: [out]
+}
+
+outputs: 
+{
+    Output : 
+    {
+        module_type : RootOutput
+        fileName    : "data_crv_across.root"
+    }
+}
+
+physics.producers.CrvPhotons.timeOffsets                  : {}
+physics.producers.CrvPhotons.scintillationYieldVariation  : 0.0
+physics.producers.CrvPhotons.CRVSectors                   : ["Test"]
+physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v4_1/LookupTable_6000"]
+physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
+physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
+
+
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+

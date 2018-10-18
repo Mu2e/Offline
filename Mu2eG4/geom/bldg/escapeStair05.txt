@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_escape_stair_05.ccl
+
+string building.escape.stair.05.name     = "escapeStair05";
+
+string building.escape.stair.05.material = "CONCRETE_MARS";
+
+double building.escape.stair.05.offsetFromMu2eOrigin.x   = 947.4;
+double building.escape.stair.05.offsetFromFloorSurface.y = 1485.9;
+double building.escape.stair.05.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.escape.stair.05.yHalfThickness           = 88.9;
+
+vector<double> building.escape.stair.05.xPositions = {
+  14520.2,   // S0
+  15705.1,   // S1
+  15358.2,   // F2
+  14173.3   // F3
+};
+
+vector<double> building.escape.stair.05.yPositions = {
+  13418.3,   // S0
+  13705.4,   // S1
+  15137.1,   // F2
+  14850   // F3
+};
+
+// Local Variables:
+// mode:c++
+// End:

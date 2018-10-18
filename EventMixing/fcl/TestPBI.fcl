@@ -1,0 +1,56 @@
+// Produce and histogram some proton bunch intensity distributions.
+//
+// Andrei Gaponenko, 2018
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name :  pbitest
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : 100000
+}
+
+services : {
+   message               : @local::default_message
+   TFileService          : { fileName : "pbitest.root" }
+   RandomNumberGenerator : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   producers: {
+      pbiflat: {
+         module_type: ProtonBunchIntensityFlat
+         mean: 39.e6
+	 halfWidth: 0.1
+      }
+      pbiln: {
+         module_type: ProtonBunchIntensityLogNormal
+         extendedMean: 3.9e7
+	 sigma: 0.3814
+	 cutMax: 7.8e7
+      }
+   }
+
+   analyzers: {
+      hflat: {
+	 module_type: ProtonBunchIntensityAnalyzer
+	 input: pbiflat
+      }
+      hln: {
+	 module_type: ProtonBunchIntensityAnalyzer
+	 input: pbiln
+      }
+   }
+
+   t1: [ pbiflat, pbiln ]
+   trigger_paths: [t1]
+
+   a1: [ hflat, hln ]
+   end_paths: [ a1 ]
+}
+
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

@@ -1,0 +1,199 @@
+{
+   root0_0
+   Memcheck:Value2
+   obj:*/libCore.so
+}
+{
+   root0_1
+   Memcheck:Value4
+   obj:*/libCore.so
+}
+{
+   root0_2
+   Memcheck:Value8
+   obj:*/libCore.so
+}
+{
+   root0_3
+   Memcheck:Jump
+   ...
+   obj:*/libCore.so
+   ...
+}
+{
+   root0_4
+   Memcheck:Cond
+   ...
+   obj:*/libCore.so
+   ...
+}
+
+
+{
+  root1_0
+  Memcheck:Value2
+  obj:*/libRIO.so
+}
+{
+root1_1
+Memcheck:Value4
+obj:*/libRIO.so
+}
+{
+  root1_2
+  Memcheck:Value8
+  obj:*/libRIO.so
+}
+{
+  root1_3
+  Memcheck:Jump
+  ...
+  obj:*/libRIO.so
+  ...
+}
+{
+  root1_4
+  Memcheck:Cond
+  ...
+  obj:*/libRIO.so
+  ...
+}
+
+{
+  root_leak_0
+  Memcheck:Leak
+  ...
+  obj:/cvmfs/mu2e.opensciencegrid.org/artexternals/root/*
+  ...
+}
+
+{
+  getenv0_0
+  Memcheck:Value2
+  fun:getenv
+  ...
+}
+{
+  getenv0_1
+  Memcheck:Value4
+  fun:getenv
+  ...
+}
+{
+  getenv0_2
+  Memcheck:Value8
+  fun:getenv
+  ...
+}
+{
+  getenv1
+  Memcheck:Addr2
+  fun:getenv
+  ...
+}
+{
+  getenv2
+  Memcheck:Jump
+  fun:getenv
+  ...
+}
+{
+  getenv3
+  Memcheck:Cond
+  fun:getenv
+  ...
+}
+
+
+{
+  geant_leak_0_may_hide_leaks_in_callbacks
+  Memcheck:Leak
+  ...
+  obj:/cvmfs/mu2e.opensciencegrid.org/artexternals/geant4/*
+  ...
+}
+
+
+{
+   art_SetTransientStreamer
+   Memcheck:Leak
+   ...		     
+   fun:*SetTransientStreamer*
+   ...								       
+}
+
+{
+   art_setBranchDescriptionStreamer
+   Memcheck:Leak
+   ...		     
+   fun:*setBranchDescriptionStreamer*
+   ...								       
+}
+
+{
+   art_setPtrVectorBaseStreamer
+   Memcheck:Leak
+   ...		     
+   fun:*setPtrVectorBaseStreamer*
+   ...								       
+}
+
+{
+   art_configureRefCoreStreamer
+   Memcheck:Leak
+   ...		     
+   fun:*configureRefCoreStreamer*
+   ...								       
+}
+
+{
+   art_configureProductIDStreamer
+   Memcheck:Leak
+   ...		     
+   fun:*configureProductIDStreamer*
+   ...								       
+}
+
+{
+   art_setCacheStreamers
+   Memcheck:Leak
+   ...		     
+   fun:*setCacheStreamers*
+   ...								       
+}
+
+{
+   art_MessageLoggerScribe
+   Memcheck:Leak
+   ...		     
+   fun:*MessageLoggerScribe*
+   ...								       
+}
+
+{
+   art_getSymbolByLibspec
+   Memcheck:Leak
+   ...		     
+   fun:*getSymbolByLibspec*
+   ...								       
+}
+
+{
+   art_create_instance
+   Memcheck:Leak
+   ...		     
+   fun:*create_instance*
+   ...								       
+}
+
+{
+   art_makePlugin
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_lookup_symbol_x
+   fun:_dl_fixup
+   fun:_dl_runtime_resolve
+   fun:makePlugin
+   ...
+}

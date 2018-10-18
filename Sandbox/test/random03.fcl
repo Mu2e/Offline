@@ -2,8 +2,8 @@
 # Instantiate a second instace of the class that does not have saved engine.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : random03
 
@@ -17,9 +17,7 @@ services : {
   message               : @local::default_message
   RandomNumberGenerator : {  restoreStateLabel :  randomsaver }
 
-  user : {
-     SeedService : @local::automaticSeeds
-  }
+  SeedService : @local::automaticSeeds
 
 }
 
@@ -37,5 +35,5 @@ physics : {
 
 }
 
-services.user.SeedService.baseSeed         :  40
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  40
+services.SeedService.maxUniqueEngines :  20

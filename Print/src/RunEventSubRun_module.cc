@@ -50,6 +50,8 @@ namespace mu2e {
     art::SubRunNumber_t _min_sub;
     art::RunNumber_t _max_run_e; // min and max run number for events
     art::RunNumber_t _min_run_e;
+    art::SubRunNumber_t _max_sub_e;
+    art::SubRunNumber_t _min_sub_e;
     art::EventNumber_t _max_evt;
     art::EventNumber_t _min_evt;
     int _runCount;   // event count
@@ -133,20 +135,32 @@ mu2e::RunEventSubRun::analyze(art::Event const& event){
   // min event
   if(event.run() < _min_run_e) {
     _min_run_e = event.run();
+    _min_sub_e = event.subRun();
     _min_evt = event.event();
   } else if(event.run() == _min_run_e) {
-    if(event.event() < _min_evt) {
+    if(event.subRun() < _min_sub_e) {
+      _min_sub_e = event.subRun();
       _min_evt = event.event();
+    } else if (event.subRun() == _min_sub_e) {
+      if(event.event() < _min_evt) {
+	_min_evt = event.event();
+      }
     }
   }
 
   // max event
   if(event.run() > _max_run_e) {
     _max_run_e = event.run();
+    _max_sub_e = event.subRun();
     _max_evt = event.event();
   } else if(event.run() == _max_run_e) {
-    if(event.event() > _max_evt) {
+    if(event.subRun() > _max_sub_e) {
+      _max_sub_e = event.subRun();
       _max_evt = event.event();
+    } else if (event.subRun() == _max_sub_e) {
+      if(event.event() > _max_evt) {
+	_max_evt = event.event();
+      }
     }
   }
   
@@ -169,10 +183,12 @@ void mu2e::RunEventSubRun::endJob () {
   std::cout << "  \"dh.first_run_subrun\" : " << _min_run_s << "," << std::endl;
   std::cout << "  \"dh.first_subrun\"     : " << _min_sub   << "," << std::endl;
   std::cout << "  \"dh.first_run_event\"  : " << _min_run_e << "," << std::endl;
+  std::cout << "  \"dh.first_subrun_event\" : " << _min_sub_e << "," << std::endl;
   std::cout << "  \"dh.first_event\"      : " << _min_evt   << "," << std::endl;
   std::cout << "  \"dh.last_run_subrun\"  : " << _max_run_s << "," << std::endl;
   std::cout << "  \"dh.last_subrun\"      : " << _max_sub   << "," << std::endl;
   std::cout << "  \"dh.last_run_event\"   : " << _max_run_e << "," << std::endl;
+  std::cout << "  \"dh.last_subrun_event\"  : " << _max_sub_e << "," << std::endl;
   std::cout << "  \"dh.last_event\"       : " << _max_evt   << "," << std::endl;
   std::cout << "  \"runs\"             : [\n";
   for (auto sr : _subruns ){

@@ -4,7 +4,7 @@
 
 // C++ includes
 #include <ostream>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 //Mu2e and CLHEP includes
 #include "MCDataProducts/inc/CaloHitSimPartMC.hh"

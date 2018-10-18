@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_Ds_trench_cover.ccl
+
+string building.dsArea.trench.cover.name     = "dsAreaTrenchCover";
+
+string building.dsArea.trench.cover.material = "G4_Al";
+
+double building.dsArea.trench.cover.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.trench.cover.offsetFromFloorSurface.y = -25.4;
+double building.dsArea.trench.cover.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.trench.cover.yHalfThickness           = 25.4;
+
+vector<double> building.dsArea.trench.cover.xPositions = {
+  37439.6,   // FSD03
+  37439.6,   // FSD02
+  20345.4,   // FSD01
+  20345.4,   // FSU13
+  19431,   // FSU14
+  19431   // FSU15
+};
+
+vector<double> building.dsArea.trench.cover.yPositions = {
+  -4419.6,   // FSD03
+  -5334.0,   // FSD02
+  -5334.0,   // FSD01
+  -11303,   // FSU13
+  -11303,   // FSU14
+  -4419.6   // FSU15
+};
+
+// Local Variables:
+// mode:c++
+// End:

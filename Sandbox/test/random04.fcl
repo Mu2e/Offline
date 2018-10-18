@@ -1,8 +1,8 @@
 # Run the second random number generator test module.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : random04
 
@@ -15,9 +15,8 @@ services : {
   message               : @local::default_message
   RandomNumberGenerator : {}
 
-  user : {
-     SeedService : @local::automaticSeeds
-  }
+  SeedService : @local::automaticSeeds
+
 }
 
 physics : {
@@ -29,5 +28,5 @@ physics : {
 
 }
 
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

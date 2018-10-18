@@ -9,7 +9,7 @@
 #include "G4LogicalVolumeStore.hh"
 #include "G4LogicalVolume.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <algorithm>
 #include <cmath>

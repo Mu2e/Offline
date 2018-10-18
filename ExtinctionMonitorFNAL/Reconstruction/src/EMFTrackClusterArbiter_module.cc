@@ -22,7 +22,7 @@
 
 //#include "CLHEP/GenericFunctions/CumulativeChiSquare.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

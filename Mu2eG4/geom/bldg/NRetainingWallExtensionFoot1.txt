@@ -1,0 +1,35 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_NretainingWallWext_foot1.ccl
+
+string building.N.retaining.Wall.extension.foot.1.name     = "NRetainingWallExtensionFoot1";
+
+string building.N.retaining.Wall.extension.foot.1.material = "CONCRETE_MARS";
+
+double building.N.retaining.Wall.extension.foot.1.offsetFromMu2eOrigin.x   = 947.4;
+double building.N.retaining.Wall.extension.foot.1.offsetFromFloorSurface.y = 6629.4;
+double building.N.retaining.Wall.extension.foot.1.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.N.retaining.Wall.extension.foot.1.yHalfThickness           = 228.6;
+
+vector<double> building.N.retaining.Wall.extension.foot.1.xPositions = {
+  -12319,   // P0
+  -14706.6,   // P1
+  -20628.7,   // P2
+  -19761.2,   // P3
+  -14503.4,   // P4
+  -12319   // P5
+};
+
+vector<double> building.N.retaining.Wall.extension.foot.1.yPositions = {
+  10922,   // P0
+  10922,   // P1
+  9476.17,   // P2
+  5922.93,   // P3
+  7264.4,   // P4
+  7264.4   // P5
+};
+
+// Local Variables:
+// mode:c++
+// End:

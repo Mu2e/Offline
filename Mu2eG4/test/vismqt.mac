@@ -13,10 +13,10 @@
 /vis/verbose 5
 #6 is all
 
-/vis/scene/create
-/vis/scene/add/volume world
-/vis/scene/add/trajectories smooth
-/vis/sceneHandler/create OGLSQt
-/vis/scene/endOfEventAction refresh
+#/vis/scene/create
+#/vis/scene/add/volume world
+#/vis/scene/add/trajectories smooth
+#/vis/sceneHandler/create OGLSQt
+#/vis/scene/endOfEventAction refresh
 
 # Do NOT issue the /run/beamon command

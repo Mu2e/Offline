@@ -1,0 +1,32 @@
+# generate flat particles from stopped muons and produce digis.  this is WITHOUT MIXING
+
+#include "JobConfig/primary/prolog.fcl"
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : {
+      module_type: StoppedParticleReactionGun
+      verbosityLevel : 1
+      muonStops: @local::mu2e.tgtMuonStops
+      physics: {
+	spectrumShape: flat
+	spectrumVariable: totalEnergy
+      }
+    }
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

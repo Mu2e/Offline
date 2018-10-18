@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Matrix.h"

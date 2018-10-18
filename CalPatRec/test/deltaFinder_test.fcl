@@ -1,0 +1,113 @@
+# -*- mode:tcl -*-
+#
+# use murat/scripts/submit_mu2e_job
+# when submitting, may want to define TRIGGER_PATH, for example: "-r TRIGGER_PATH=p16"
+# variables which need defaults:
+# -----------------------------
+# :DEFAULT: TRIGGER_PATH=p6
+#------------------------------------------------------------------------------
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+BEGIN_PROLOG
+#  meanBackground                      : -1        # fixed at 1
+bgHitFiles                          : ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cd3-detmix-cut/v566b/art/00/90/sim.mu2e.cd3-detmix-cut.v566b.000004_00000341.art"]
+  TrackRecoCheck_trkPatRecModuleLabel : MergePatRec
+  G4_MODULE_LABEL                     : "g4run"          # for normal generators and Ralf's cosmics
+#  G4_MODULE_LABEL                     : "detectorFilter" # for Andrei's datasets 
+END_PROLOG
+
+services : {
+    message               : @local::default_message
+    TFileService          : { fileName : "deltaFinder_test.root" }
+    RandomNumberGenerator : { }
+    #   Timing                : { }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"      }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : { @table::automaticSeeds
+	baseSeed         :  0
+	maxUniqueEngines :  20
+    }
+    
+    TimeTracker : {
+	printSummary : true
+	dbOutput : {
+	    filename  : ""
+	    overwrite : false
+	}
+    }
+}
+
+services.scheduler.wantSummary     : true
+
+process_name : TestDeltaFinder
+
+source       : { 
+    module_type : RootInput 
+}
+
+producers: { 
+    @table::CaloCluster.producers
+    @table::CaloCluster.producersMC
+    @table::Tracking.producers
+    @table::CalPatRec.producers
+}
+
+filters: {
+    @table::CalPatRec.filters
+}
+
+physics: { 
+    producers : { 
+	@table::producers
+
+	DeltaFinder: { @table::producers.DeltaFinder
+#	DeltaFinder: { @table::producers.DeltaFinder2
+	    diagLevel                     : 0
+	    debugLevel                    : 0
+	    useTimePeaks                  : 0
+	    diagPlugin : { @table::producers.DeltaFinder.diagPlugin
+#	    diagPlugin : { @table::producers.DeltaFinder2.diagPlugin
+		mcDiag                    : true
+		printElectrons            : 1
+		printElectronsMinMom      : 0.
+		printElectronsMaxMom      : 20.
+		printElectronsMinNHits    : 30
+		printElectronsMaxFReco    : 0.5
+	    }
+	}
+
+	DeltaFinderAna: { @table::producers.DeltaFinderAna
+	    debugLevel                    : 0
+	    strawHitFlagCollectionTag     : DeltaFinder
+	}
+    }
+
+    filters   : { @table::filters }
+
+    analyzers : { }
+
+    p1: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p2: [ @sequence::Tracking.PrepareHits, CalTimePeakFinder, DeltaFinder ]
+    p3: [               CalTimePeakFinder, DeltaFinder ]
+    p4: [ PrefetchData, CalTimePeakFinder, DeltaFinder ]
+    p5: [ PrefetchData, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+    p6: [ PrefetchData, @sequence::CaloCluster.Reco, @sequence::CaloCluster.TruthMatch, CalTimePeakFinder, DeltaFinder, DeltaFinderAna ]
+
+    trigger_paths : [ p6 ]
+    out           : []
+    end_paths     : [ out ]
+}
+
+#------------------------------------------------------------------------------
+# uncomment to write the DST out
+#------------------------------------------------------------------------------
+# physics.out : [detectorOutput]
+# outputs.detectorOutput.fileName           : "sim.murat.bbb.ccc.read_reco_stn_tcn.art"
+#------------------------------------------------------------------------------
+# everything below is appended by murat/scripts/submit_mu2e_job
+#------------------------------------------------------------------------------

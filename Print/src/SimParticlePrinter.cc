@@ -27,7 +27,7 @@ mu2e::SimParticlePrinter::Print(const art::Handle<SimParticleCollection>& handle
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::SimParticlePrinter::Print(const art::ValidHandle<SimParticleCollection>& h
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -50,17 +50,19 @@ mu2e::SimParticlePrinter::Print(const SimParticleCollection& coll, std::ostream&
   os << "SimParticleCollection has " << coll.size() << " particles\n";
   if(verbose()==1) PrintListHeader();
   int i = 0;
-  for(const auto& obj: coll) Print(obj.second, i++);
+  for(const auto& obj: coll) Print(obj.second, i++, obj.first.asUint() );
 }
 
 void 
-mu2e::SimParticlePrinter::Print(const art::Ptr<SimParticle>& obj, int ind, std::ostream& os) {
+mu2e::SimParticlePrinter::Print(const art::Ptr<SimParticle>& obj, 
+				int ind, std::ostream& os) {
   if(verbose()<1) return;
-  Print(*obj,ind);
+  Print(*obj,ind,obj.key());
 }
 
 void 
-mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostream& os) {
+mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, 
+				int ind, std::size_t key, std::ostream& os) {
   if(verbose()<1) return;
 
   if( obj.startMomentum().vect().mag() < _pCut ) return;
@@ -68,20 +70,20 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
       obj.startMomentum().vect().mag() < _emPCut ) return;
   if( _primaryOnly && (!obj.isPrimary()) ) return;
 
-  art::Ptr<SimParticle> const& pptr = obj.realParent();
-  long unsigned int pkey = 0;
-  if(pptr.isNonnull()) pkey = pptr->id().asUint();
+  art::Ptr<SimParticle> const& pptr = obj.parent();
+  int pkey = -1;
+  if(pptr) pkey = int(pptr.key());
 
   art::Ptr<GenParticle> const& gptr = obj.genParticle();
   std::string gid("none");
-  if(gptr.isNonnull()) gid = gptr->generatorId().name();
+  if(gptr) gid = gptr->generatorId().name();
 
   os << std::setiosflags(std::ios::fixed | std::ios::right);
   if(ind>=0) os << std::setw(4) << ind;
 
   if(verbose()==1) {
     os 
-      << " " << std::setw(7) << obj.id().asUint()
+      << " " << std::setw(7) << key
       << " " << std::setw(7) << pkey
       << " " << std::setw(8) << obj.pdgId()
       << " " << std::setw(8)  << std::setprecision(1) << obj.startPosition().x()
@@ -101,7 +103,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
   } else if(verbose()==2) {
 
      os 
-      << "  id: " << std::setw(8) << obj.id().asUint()
+      << "  id: " << std::setw(8) << key 
       << " pdgId: " << std::setw(4) << obj.pdgId()
       << " parentKey: " << std::setw(8) << pkey
       << " genId: " << std::setiosflags(std::ios::left) << gid << "\n";
@@ -114,7 +116,7 @@ mu2e::SimParticlePrinter::Print(const mu2e::SimParticle& obj, int ind, std::ostr
        << "  Start  creationCode: " << std::setiosflags(std::ios::left)
            << obj.creationCode().name()
        << "    realCreationCode: " << std::setiosflags(std::ios::left)
-           << obj.realCreationCode().name() << "\n";
+           << obj.originParticle().creationCode().name() << "\n";
      os
        << "  Start pos: " << std::setw(8) << std::setprecision(1) << obj.startPosition().x()
        << " " << std::setw(8) << std::setprecision(1) << obj.startPosition().y()

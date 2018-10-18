@@ -1,0 +1,69 @@
+
+           Release notes for Mu2e Offline software, v6_5_4
+
+9) rlc, Apr 19, 2018
+   Update geant4 from v4_10_2_p03e to v4_10_4
+
+8) ehrlich, April 16, 2018
+   First step of updating the CRV data classes
+
+7) genser, April 5, 2018
+   Enabled changing Geant4 stepper precision parameters
+   modified:   Mu2eG4/fcl/prolog.fcl
+   modified:   Mu2eG4/inc/Mu2eWorld.hh
+   modified:   Mu2eG4/src/Mu2eWorld.cc
+
+6) ehrlich, April 5, 2018
+   Changes to the CRVResponse package
+   -The updated code is now using the integral instead of the pulse height 
+    to determine the number of PEs.
+   -The new parameters and lookup tables (v4.0) are tuned to the
+    June 2017 test beam data.
+
+5) genser, March 29, 2018
+   Added Calorimeter and Tracker regions and minRangeCut2,3 and
+   removed some more templating on config.
+   modified:   Mu2eG4/inc/physicsListDecider.hh
+   modified:   Mu2eG4/inc/postG4InitializeTasks.hh
+   modified:   Mu2eG4/inc/setMinimumRangeCut.hh
+   modified:   Mu2eG4/src/Mu2eWorld.cc
+   modified:   Mu2eG4/src/physicsListDecider.cc
+   modified:   Mu2eG4/src/postG4InitializeTasks.cc
+   modified:   Mu2eG4/src/setMinimumRangeCut.cc
+
+4) genser, March 28, 2018
+   Removed disabled Mu2eG4Study_module and renamed g4study2 files to g4study etc...
+   renamed:    Mu2eG4/fcl/g4study2.fcl -> Mu2eG4/fcl/g4study.fcl
+   renamed:    Mu2eG4/fcl/g4study2Calo_01.fcl -> Mu2eG4/fcl/g4studyCalo_01.fcl
+   renamed:    Mu2eG4/fcl/g4study2MuCapture.fcl -> Mu2eG4/fcl/g4studyMuCapture.fcl
+   deleted:    Mu2eG4/src/Mu2eG4Study_module.cc
+   deleted:    Mu2eG4/test/g4study2GeomCalo_01.txt
+   renamed:    Mu2eG4/test/g4study2Geom.txt -> Mu2eG4/test/g4studyGeom.txt
+   modified:   Mu2eG4/test/g4studyGeomCalo_01.txt
+   renamed:    Mu2eG4/test/g4study2GeomMuCapture.txt -> Mu2eG4/test/g4studyGeomMuCapture.txt
+
+3) genser, 28 March, 2018
+   Removed templating and simple config from physicsListDecider and related files
+   modified:   Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh
+   modified:   Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc
+   modified:   Mu2eG4/inc/Shielding_MU2E01.hh
+   modified:   Mu2eG4/inc/Shielding_MU2E01.icc
+   modified:   Mu2eG4/inc/Shielding_MU2E02.hh
+   modified:   Mu2eG4/inc/Shielding_MU2E02.icc
+   modified:   Mu2eG4/inc/physicsListDecider.hh
+   modified:   Mu2eG4/src/physicsListDecider.cc
+
+2) genser, 15 Mar 2018
+   Added Mu2eEmStandardPhysics_option4 with modified highEnergyLimit for msc models
+   for use with Geant4 10.4+
+   new file:   Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh
+   new file:   Mu2eG4/src/Mu2eEmStandardPhysics_option4.cc
+   modified:   Mu2eG4/src/physicsListDecider.cc
+
+1) bownd, 10 Mar 2018.  Merge triggerDev branch with master, which includes major
+   changes to the track hit reconstruction and pattern recognition.  StrawHitPosition,
+   StereoHit, HelixHit and several other data products are replaced by ComboHit. Other
+   data products are modified to use Root cartesian vectors instead of Hep3Vector,
+   replace doubles with floats, etc. A module combining hits in the same panel is added
+   to the hit reco sequence.  The trigger sequence now uses separate module instances and
+   configurations from standard (diagnostic) reconstruction.

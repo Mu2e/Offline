@@ -1,0 +1,65 @@
+#
+# generate protons on target and simulate through the detector
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "Validation/fcl/prolog.fcl"
+
+process_name : potSim
+
+services : {
+    @table::service.all
+}
+
+source : {
+    module_type : EmptyEvent
+}
+
+physics : {
+   producers: {
+      @table::generation.POT.mod
+      @table::simulation.default.mod
+    }
+
+   filters : {
+      @table::simulation.default.flt
+   }
+
+    all_path : [ 
+      @sequence::generation.POT.seq , 
+      @sequence::simulation.default.seq
+   ]
+
+    trigger_paths  : [ all_path ]
+    out : [ fullOutput ]
+
+}
+
+outputs: {
+    fullOutput : {
+	module_type : RootOutput
+	fileName    : @nil
+    }
+}
+
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName : "nts.owner.val-potSim.dsconf.seq.root"
+# art file
+outputs.fullOutput.fileName : "sim.owner.val-potSim.dsconf.seq.art"
+
+# run 1h by default
+source.maxEvents: 500
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# use the geometry on the head
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"

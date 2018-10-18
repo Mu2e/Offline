@@ -1,0 +1,11 @@
+# -*- mode:tcl -*-
+
+#include "CalPatRec/test/deltaFinder_test.fcl"
+
+physics.producers.DeltaFinder.maxElectronHitEnergy : 0.0035
+services.TFileService.fileName                     : "deltaFinder_test_0035.root"
+
+# physics.producers.MakeStrawHitPositions.printHits  : 1
+
+# for time profiling
+physics.producers.PrefetchData.mcDiag  : false

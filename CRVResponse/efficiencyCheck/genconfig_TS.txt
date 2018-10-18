@@ -1,0 +1,17 @@
+bool cosmicFromTH2.do = true;
+
+string cosmicFromTH2.histogram = "CRVResponse/efficiencyCheck/cosmicTS.root";
+
+double cosmicFromTH2.energy =    1e3;  //MeV 
+double cosmicFromTH2.time   =  800.0;  //ns
+double cosmicFromTH2.dx     = 3000.0;  //mm
+double cosmicFromTH2.dy     =    0;    //mm
+double cosmicFromTH2.dz     =  828.0;  //mm
+
+vector<double> cosmicFromTH2.cosmicReferencePointInMu2e = {-3904.0, 2764.26, 3670.55};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

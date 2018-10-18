@@ -24,9 +24,10 @@
 #include <TCanvas.h>
 #include <TPaveStats.h>
 
-#include "MakeCrvPhotonArrivals.hh"
-#include "MakeCrvSiPMResponses.hh"
+#include "MakeCrvPhotons.hh"
+#include "MakeCrvSiPMCharges.hh"
 #include "MakeCrvWaveforms.hh"
+#include "MakeCrvDigis.hh"
 #include "MakeCrvRecoPulses.hh"
 
 #include <stdexcept>
@@ -35,21 +36,28 @@
 
 WLSEventAction* WLSEventAction::_fgInstance = NULL;
 
-WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int minBin, bool verbose) : 
-                                                                                         _mode(mode), _numberOfPhotons(numberOfPhotons), 
-                                                                                         _simType(simType), _minBin(minBin), 
-                                                                                         _verbose(verbose), _storeConstants(false)
+WLSEventAction::WLSEventAction(WLSSteppingAction::simulationMode mode, const std::string &singlePEWaveformFilename, 
+                               int numberOfPhotons, int simType, int minBin, bool verbose) : 
+                                                                                         _mode(mode), 
+                                                                                         _numberOfPhotons(numberOfPhotons), 
+                                                                                         _simType(simType), 
+                                                                                         _minBin(minBin), 
+                                                                                         _singlePEWaveformFilename(singlePEWaveformFilename), 
+                                                                                         _verbose(verbose),
+                                                                                         _storeConstants(false)
+                               //numberOfPhotons, simType, minBin, verbose is only needed for simulationMode::CreateLookupTables
 {
-  if(simType==0 && minBin==0) _storeConstants=true;
+  if(simType==0 && minBin==0) _storeConstants=true; //store constants only once at the beginning of the lookup tables
+
   _fgInstance = this;
 
-  if(_mode==0)
+  if(_mode==WLSSteppingAction::UseGeantOnly || _mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       std::stringstream s0, s1, title;
-      s0<<"Photons_Mode_"<<0<<"__SiPM_"<<SiPM;
-      s1<<"Photons_Mode_"<<1<<"__SiPM_"<<SiPM;
+      s0<<"Photons_Geant_SiPM_"<<SiPM;
+      s1<<"Photons_LookupTable_SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
       _histP[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),1000,0,1000);
       _histP[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),1000,0,1000);
@@ -62,8 +70,8 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       std::stringstream s0, s1, title;
-      s0<<"ArrivalTimes_Mode_"<<0<<"__SiPM_"<<SiPM;
-      s1<<"ArrivalTimes_Mode_"<<1<<"__SiPM_"<<SiPM;
+      s0<<"ArrivalTimes_Geant_SiPM_"<<SiPM;
+      s1<<"ArrivalTimes_LookupTable_SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
       _histT[0][SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),250,0,250);
       _histT[1][SiPM] = new TH1D(s1.str().c_str(),title.str().c_str(),250,0,250);
@@ -76,33 +84,20 @@ WLSEventAction::WLSEventAction(int mode, int numberOfPhotons, int simType, int m
     for(int SiPM=0; SiPM<4; SiPM++)
     {
       std::stringstream s0, title;
-      s0<<"PE_SiPM_"<<SiPM;
+      s0<<"PEs_SiPM_"<<SiPM;
       title<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
       _histPE[SiPM] = new TH1D(s0.str().c_str(),title.str().c_str(),500,0,500);
       _histPE[SiPM]->GetXaxis()->SetTitle("PEs");
       _histPE[SiPM]->SetLineColor(1);
     }
 
-    _photonsVsIntegral = new TH2D("PhotonsVsIntegral","PhotonsVsIntegral", 200,0,2.0, 100,0,100);
-    _photonsVsIntegral->SetYTitle("Photons");
-    _photonsVsIntegral->SetXTitle("Integral");
-    _photonsVsPulseHeight = new TH2D("PhotonsVsPulseHeight","PhotonVsPulseHeight", 200,0,0.5, 100,0,100);
-    _photonsVsPulseHeight->SetYTitle("Photons");
-    _photonsVsPulseHeight->SetXTitle("PulseHeight [mV]");
-    _PEsVsIntegral = new TH2D("PEsVsIntegral","PEsVsIntegral", 200,0,2.0, 100,0,100);
-    _PEsVsIntegral->SetYTitle("PEs");
-    _PEsVsIntegral->SetXTitle("Integral");
-    _PEsVsPulseHeight = new TH2D("PEsVsPulseHeight","PEsVsPulseHeight", 200,0,0.5, 100,0,100);
-    _PEsVsPulseHeight->SetYTitle("PEs");
-    _PEsVsPulseHeight->SetXTitle("PulseHeight [mV]");
-
-    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:integral:pulseHeight");
+    _ntuple = new TNtuple("CRVNtuple","CRVNtuple","SiPM:photons:PEs:pulseHeight:pulseWidth:recoPEs:pulseTime:LEtime:chi2");
   }
 }
 
 WLSEventAction::~WLSEventAction()
 {
-  if(_mode==0)
+  if(_mode==WLSSteppingAction::UseGeantOnly || _mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
@@ -113,9 +108,6 @@ WLSEventAction::~WLSEventAction()
       delete _histPE[SiPM];
     }
   
-    delete _photonsVsIntegral;
-    delete _photonsVsPulseHeight;
-
     _ntuple->SaveAs("CRVNtuple.root");
     delete _ntuple;
   }
@@ -131,12 +123,13 @@ void WLSEventAction::BeginOfEventAction(const G4Event* evt)
 
 void WLSEventAction::EndOfEventAction(const G4Event* evt)
 {
-  if(_mode==-1)
+  //create entry in lookup tables
+  if(_mode==WLSSteppingAction::CreateLookupTables)
   {
     G4Material *fiber = G4Material::GetMaterial("PMMA",true); //fiber
     G4MaterialPropertiesTable* fiberPropertiesTable = fiber->GetMaterialPropertiesTable();
     G4MaterialPropertyVector *rindexFiber = fiberPropertiesTable->GetProperty("RINDEX");
-    double speedOfLightFiber = CLHEP::c_light/(*rindexFiber)[0];  //we assume a constant rindex for all energies
+    double speedOfLightFiber = CLHEP::c_light/(*rindexFiber)[0];  //a constant rindex for all energies is used
 
     WLSDetectorConstruction *detector = WLSDetectorConstruction::Instance();
 
@@ -144,22 +137,40 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
 
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      bin.arrivalProbability[SiPM]=static_cast<float>(WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size())/static_cast<float>(_generatedPhotons);
+      if(WLSSteppingAction::Instance()->GetArrivalTimes(SiPM).size()==0)
+      {
+        bin.arrivalProbability[SiPM]=0;
+        continue;
+      }
 
-      float zSiPM=(SiPM%2==0?-detector->GetScintillatorHalfLength():detector->GetScintillatorHalfLength());
-      float straightLineTravelTime=fabs(_startZ-zSiPM)/speedOfLightFiber;
-      const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);
+      float arrivalProbability=static_cast<float>(WLSSteppingAction::Instance()->GetArrivalTimes(SiPM).size())/static_cast<float>(_generatedPhotons);
+                                                                                                   //_generatedPhotons gets set by WLSPrimaryGeneratorAction
+                                                                                                   //after sending out all photons
+      bin.arrivalProbability[SiPM]=arrivalProbability;
+
+      float endZScintillator=(SiPM%2==0?-detector->GetScintillatorHalfLength():detector->GetScintillatorHalfLength());
+      float straightLineTravelTime=fabs(_startZ-endZScintillator)/speedOfLightFiber;
+                                                                                                   //_startZ gets set by WLSPrimaryGeneratorAction
+                                                                                                   //after sending out all photons
+                                                                                                   //_startZ=0 is at the center of the scintillator
+      const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(SiPM);
+      //store time difference between actual arrival time at SiPM and arrival time, if the photon travel a straight path
+      //this is done to reduce the number of bins in the arrival time histogram
       int histTimeDifference[mu2eCrv::LookupBin::nTimeDelays]={0}; //in ns
       for(size_t i=0; i<arrivalTimes.size(); i++)
       {
-        int timeDifference=static_cast<int>(arrivalTimes[i]-straightLineTravelTime+0.5);  //rounded to full ns  //the fiber decay time has been set to 0 for mode==-1
+        int timeDifference=static_cast<int>(arrivalTimes[i]-straightLineTravelTime+0.5);  //rounded to full ns  
+                                                                                          //the WLS decay time has been set to 0 for mode=CreateLookupTables
+                                                                                          //so that the true travel time can be determined
+                                                                                          //(in WLSPrimaryGeneratorAction)
         if(timeDifference<0) timeDifference=0;
         if(timeDifference>mu2eCrv::LookupBin::nTimeDelays-1) timeDifference=mu2eCrv::LookupBin::nTimeDelays-1;
-        histTimeDifference[timeDifference]++;
+        histTimeDifference[timeDifference]++;   //fill this histogram bin
       }
       for(size_t i=0; i<mu2eCrv::LookupBin::nTimeDelays; i++)
       {
         float p=static_cast<float>(histTimeDifference[i])/static_cast<float>(arrivalTimes.size());
+        //multiplying the probability with the probability makes it possible to store it as an unsigned short
         bin.timeDelays[SiPM][i]=static_cast<unsigned short>(mu2eCrv::LookupBin::probabilityScale*p+0.5);
       }
 
@@ -175,9 +186,10 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       for(size_t i=0; i<mu2eCrv::LookupBin::nFiberEmissions; i++)
       {
         float p=static_cast<float>(histEmissions[i])/static_cast<float>(fiberEmissions.size());
+        //multiplying the probability with the probability makes it possible to store it as an unsigned short
         bin.fiberEmissions[SiPM][i]=static_cast<unsigned short>(mu2eCrv::LookupBin::probabilityScale*p+0.5);
       }
-    }
+    } //loop over SiPMs
 
     if(_verbose)
     {
@@ -185,7 +197,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       {
         std::cout<<"SiPM: "<<SiPM<<std::endl;
         std::streamsize origPrecision = std::cout.precision();
-        std::cout.precision (10);
+        std::cout.precision(10);
         std::cout<<"Probability: "<<bin.arrivalProbability[SiPM]<<std::endl;
         std::cout.precision(origPrecision);
         std::cout<<"Time Difference Probabilities: ";
@@ -203,10 +215,10 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     filename.fill('0');
     filename.width(6);
     filename<<_minBin;
-    if(evt->GetEventID()==0) std::remove(filename.str().c_str());
+    if(evt->GetEventID()==0) std::remove(filename.str().c_str());  //remove existing file
 
 //write some constants to the file before the first bin
-    if(_storeConstants)
+    if(_storeConstants) 
     {
       _storeConstants=false;
       G4Material *scintillator = G4Material::GetMaterial("Polystyrene",true); //scintillator
@@ -214,6 +226,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       G4MaterialPropertyVector *rindexScintillator = scintillatorPropertiesTable->GetProperty("RINDEX");
 
       mu2eCrv::LookupConstants LC;
+      LC.version1           = 4;
+      LC.version2           = 1;
       LC.halfThickness      = detector->GetScintillatorHalfThickness(),
       LC.halfWidth          = detector->GetScintillatorHalfWidth(), 
       LC.halfLength         = detector->GetScintillatorHalfLength(),
@@ -226,12 +240,11 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
       cerenkovEnergyMin = rindexFiber->GetMinLowEdgeEnergy();
       cerenkovEnergyMax = rindexFiber->GetMaxLowEdgeEnergy();
       LC.cerenkovEnergyIntervalFiber = cerenkovEnergyMax - cerenkovEnergyMin;
-      LC.ratioFastSlow             = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");  //will not be used later
-      LC.scintillatorDensity       = scintillator->GetDensity();
-      LC.scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();  //will not be used later
       LC.fiberSeparation = detector->GetFiberSeparation(),
-      LC.holeRadius      = detector->GetHoleRadius(),
+      LC.holeRadiusX     = detector->GetHoleRadiusX(),
+      LC.holeRadiusY     = detector->GetHoleRadiusY(),
       LC.fiberRadius     = detector->GetClad2Radius();
+      LC.scintillatorCornerRadius = detector->GetScintillatorCornerRadius();
       LC.Write(filename.str());
 
       mu2eCrv::LookupBinDefinitions LBD;
@@ -249,17 +262,17 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     bin.Write(filename.str());
   }
 
-  if(_mode==0)
+  //fill histograms if a simulation is run
+  if(_mode==WLSSteppingAction::UseGeantOnly || _mode==WLSSteppingAction::UseGeantAndLookupTables)
   {
     for(int SiPM=0; SiPM<4; SiPM++)
     {
-      _histP[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM).size());
-      _histP[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM).size());
-
-      const std::vector<double> &arrivalTimes0 = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);
-      const std::vector<double> &arrivalTimes1 = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
-      for(size_t i=0; i<arrivalTimes0.size(); i++) _histT[0][SiPM]->Fill(arrivalTimes0[i]);
-      for(size_t i=0; i<arrivalTimes1.size(); i++) _histT[1][SiPM]->Fill(arrivalTimes1[i]);
+      _histP[0][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimes(SiPM).size());
+      _histP[1][SiPM]->Fill(WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM).size());
+      const std::vector<double> &arrivalTimes = WLSSteppingAction::Instance()->GetArrivalTimes(SiPM);
+      const std::vector<double> &arrivalTimesFromLookupTables = WLSSteppingAction::Instance()->GetArrivalTimesFromLookupTables(SiPM);
+      for(size_t i=0; i<arrivalTimes.size(); i++) _histT[0][SiPM]->Fill(arrivalTimes[i]);
+      for(size_t i=0; i<arrivalTimesFromLookupTables.size(); i++) _histT[1][SiPM]->Fill(arrivalTimes[i]);
     }
 
     Draw(evt);
@@ -276,54 +289,77 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
   }
 }
 
-void WLSEventAction::Draw(const G4Event* evt) const
+void WLSEventAction::Draw(const G4Event* evt) 
 {
-  mu2eCrv::MakeCrvSiPMResponses::ProbabilitiesStruct probabilities;
-  probabilities._constGeigerProbCoef = 1;
-  probabilities._constGeigerProbVoltScale = 5.5;
-  probabilities._constTrapType0Prob = 0.14;  
-  probabilities._constTrapType1Prob = 0.06;
-  probabilities._constTrapType0Lifetime = 5;
-  probabilities._constTrapType1Lifetime = 50;
-  probabilities._constThermalProb = 6.31e-7; 
-  probabilities._constPhotonProduction = 0.136; 
+  double maxTime=200.0;
 
-  probabilities._constTrapType0Prob = 0;  
-  probabilities._constTrapType1Prob = 0;
-  probabilities._constThermalProb = 0; 
-  probabilities._constPhotonProduction = 0; 
+  mu2eCrv::MakeCrvSiPMCharges::ProbabilitiesStruct probabilities;
+  probabilities._avalancheProbParam1 = 0.607;
+  probabilities._avalancheProbParam2 = 2.7;
+  probabilities._trapType0Prob = 0.0;
+  probabilities._trapType1Prob = 0.0;
+  probabilities._trapType0Lifetime = 5;
+  probabilities._trapType1Lifetime = 50;
+  probabilities._thermalRate = 3.0e-4;   
+  probabilities._crossTalkProb = 0.05;
+
+  std::vector<std::pair<int,int> > inactivePixels = { {18,18}, {18,19}, {18,20}, {18,21},
+                                                      {19,18}, {19,19}, {19,20}, {19,21},
+                                                      {20,18}, {20,19}, {20,20}, {20,21},
+                                                      {21,18}, {21,19}, {21,20}, {21,21} };
 
   static CLHEP::HepJamesRandom engine(1);
   static CLHEP::RandFlat randFlat(engine);
+  static CLHEP::RandGaussQ randGaussQ(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
-  mu2eCrv::MakeCrvSiPMResponses sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(1584, 615, 2.4, 0, 1695, 0.08, probabilities);
+  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ);
+  sim.SetSiPMConstants(40, 40, 14, 2.1, 0, 1695, 13.3, 8.84e-14, probabilities, inactivePixels);
 
-  mu2eCrv::MakeCrvWaveforms makeCrvWaveform, makeCrvWaveform2;
-  double digitizationInterval = 12.5; //ns
+  mu2eCrv::MakeCrvWaveforms makeCrvWaveform;
+  double digitizationInterval = 12.58; //ns
   double digitizationInterval2 = 1.0; //ns
-  gStyle->SetOptStat(0);
-  makeCrvWaveform.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 100);
-  makeCrvWaveform2.LoadSinglePEWaveform("singlePEWaveform.txt", 1.0, 100);
+  double noise = 4.0e-4;
+  double pedestal = 100; //ADC
+  double calibrationFactor = 394.6; //ADC*ns/PE
+  double calibrationFactorPulseHeight = 11.4; //ADC/PE
+  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.047, 100, 1.8564e-13);
+
+  mu2eCrv::MakeCrvDigis makeCrvDigis;
+
+  mu2eCrv::MakeCrvRecoPulses makeRecoPulses;
 
   double startTime=-G4UniformRand()*digitizationInterval;
-  std::vector<double> siPMtimes[4], siPMcharges[4];
+  std::vector<double> siPMtimes[4], siPMcharges[4], siPMchargesInPEs[4];
   std::vector<double> waveform[4], waveform2[4];
+  std::vector<unsigned int> ADCs[4], ADCs2[4];
+  unsigned int TDC, TDC2;
   for(int SiPM=0; SiPM<4; SiPM++)
   {
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);  //from lookup tables
-//    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(0,SiPM);  //from full GEANT
+    const std::vector<double> &photonTimesTmp = WLSSteppingAction::Instance()->GetArrivalTimes(SiPM);
+    std::vector<std::pair<double, size_t> > photonTimes;
+    for(size_t i=0; i<photonTimesTmp.size(); i++) photonTimes.emplace_back(std::pair<double,size_t>(photonTimesTmp[i],0));
 
     std::vector<mu2eCrv::SiPMresponse> SiPMresponseVector;
     sim.Simulate(photonTimes, SiPMresponseVector);
-    for(unsigned int i=0; i<SiPMresponseVector.size(); i++)
+    for(size_t i=0; i<SiPMresponseVector.size(); i++)
     {
       siPMtimes[SiPM].push_back(SiPMresponseVector[i]._time);
       siPMcharges[SiPM].push_back(SiPMresponseVector[i]._charge);
+      siPMchargesInPEs[SiPM].push_back(SiPMresponseVector[i]._chargeInPEs);
     }
 
     makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform[SiPM], startTime, digitizationInterval);
-    makeCrvWaveform2.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, digitizationInterval2);
+    makeCrvWaveform.MakeWaveform(siPMtimes[SiPM], siPMcharges[SiPM], waveform2[SiPM], startTime, digitizationInterval2);
+
+    makeCrvWaveform.AddElectronicNoise(waveform[SiPM], noise, randGaussQ);
+    makeCrvWaveform.AddElectronicNoise(waveform2[SiPM], noise, randGaussQ);
+
+    makeCrvDigis.SetWaveform(waveform[SiPM], 2300, pedestal, startTime, digitizationInterval);
+    ADCs[SiPM] = makeCrvDigis.GetADCs();
+    TDC = makeCrvDigis.GetTDC();
+    makeCrvDigis.SetWaveform(waveform2[SiPM], 2300, pedestal, startTime, digitizationInterval2);
+    ADCs2[SiPM] = makeCrvDigis.GetADCs();
+    TDC2 = makeCrvDigis.GetTDC();
   }
 
   std::ostringstream s1;
@@ -338,8 +374,6 @@ void WLSEventAction::Draw(const G4Event* evt) const
   std::vector<TGraph*> graphVector;
   std::vector<TMarker*> markerVector;
   std::vector<TGaxis*> axisVector;
-  std::vector<TLine*> lineVector;
-  std::vector<TText*> textVector;
 
   for(int SiPM=0; SiPM<4; SiPM++)
   {
@@ -349,8 +383,8 @@ void WLSEventAction::Draw(const G4Event* evt) const
     std::ostringstream s2, s3;
     s2<<"Photons_"<<evt->GetEventID()<<"__"<<SiPM;
     s3<<"Fiber: "<<SiPM/2<<",  Side: "<<SiPM%2;
-    hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,200);
-    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(1,SiPM);
+    hist[SiPM]=new TH1D(s2.str().c_str(),s3.str().c_str(),100,0,maxTime);
+    const std::vector<double> &photonTimes = WLSSteppingAction::Instance()->GetArrivalTimes(SiPM);
     for(unsigned int i=0; i<photonTimes.size(); i++)
     {
       hist[SiPM]->Fill(photonTimes[i]);
@@ -359,37 +393,37 @@ void WLSEventAction::Draw(const G4Event* evt) const
     hist[SiPM]->SetLineColor(kBlue);
     hist[SiPM]->GetXaxis()->SetTitle("t [ns]");
     hist[SiPM]->GetYaxis()->SetTitle("Photons");
-    hist[SiPM]->GetYaxis()->SetTitleOffset(0.5);
+    hist[SiPM]->GetYaxis()->SetTitleOffset(1.0);
     hist[SiPM]->GetYaxis()->SetAxisColor(kBlue);
     hist[SiPM]->GetYaxis()->SetTitleColor(kBlue);
     hist[SiPM]->GetYaxis()->SetLabelColor(kBlue);
     hist[SiPM]->Draw();
 
 //SiPM response
-    double scaleSiPMResponse = 0.25;
+    double scaleSiPMResponse = 1.0;
     double totalPEs=0;
-    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,200);
+    histSiPMResponse[SiPM]=new TH1D((s2.str()+"SiPMResponse").c_str(),"",100,0,maxTime);
     for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++)
     {
-      histSiPMResponse[SiPM]->Fill(siPMtimes[SiPM][j], siPMcharges[SiPM][j]*scaleSiPMResponse);
-      totalPEs+=siPMcharges[SiPM][j];
+      histSiPMResponse[SiPM]->Fill(siPMtimes[SiPM][j], siPMchargesInPEs[SiPM][j]*scaleSiPMResponse);
+      totalPEs+=siPMchargesInPEs[SiPM][j];
     }
     histSiPMResponse[SiPM]->SetLineColor(kOrange);
-    histSiPMResponse[SiPM]->Draw("same");
+    histSiPMResponse[SiPM]->Draw("histsame");
     _histPE[SiPM]->Fill(totalPEs);
 
 //waveforms with 1 ns bin width
-    unsigned int n2 = waveform2[SiPM].size();
+    unsigned int n2 = ADCs2[SiPM].size();
     if(n2==0) continue;
     double *t2 = new double[n2];
     double *v2 = new double[n2];
     double histMax = hist[SiPM]->GetMaximum();
-    double waveformMax = *std::max_element(waveform2[SiPM].begin(),waveform2[SiPM].end());
+    double waveformMax = *std::max_element(ADCs2[SiPM].begin(),ADCs2[SiPM].end());
     double scale = histMax/waveformMax;
     for(unsigned int j=0; j<n2; j++)
     {
-      t2[j]=startTime+j*digitizationInterval2;
-      v2[j]=waveform2[SiPM][j];
+      t2[j]=(TDC2+j)*digitizationInterval2;
+      v2[j]=ADCs2[SiPM][j];
       v2[j]*=scale;
     }
     graph2[SiPM]=new TGraph();
@@ -401,20 +435,20 @@ void WLSEventAction::Draw(const G4Event* evt) const
     delete[] t2;
     delete[] v2;
 
-//waveforms with 12.5 ns bin width
-    unsigned int n = waveform[SiPM].size();
+//waveforms with 12.58 ns bin width
+    unsigned int n = ADCs[SiPM].size();
     if(n==0) continue;
     double *t = new double[n];
     double *v = new double[n];
     for(unsigned int j=0; j<n; j++)
     {
-      t[j]=startTime+j*digitizationInterval;
-      v[j]=waveform[SiPM][j];
+      t[j]=(TDC+j)*digitizationInterval;
+      v[j]=ADCs[SiPM][j];
       v[j]*=scale;
     }
     graph[SiPM]=new TGraph(n,t,v);
     graph[SiPM]->SetTitle("");
-    graph[SiPM]->SetMarkerStyle(24);
+    graph[SiPM]->SetMarkerStyle(20);
     graph[SiPM]->SetMarkerSize(1.5);
     graph[SiPM]->SetMarkerColor(kRed);
     graph[SiPM]->Draw("sameP");
@@ -422,140 +456,113 @@ void WLSEventAction::Draw(const G4Event* evt) const
     delete[] t;
     delete[] v;
 
-//waveforms with 12.5 ns bin width for points above the threshold
-//used for the integral
-    for(unsigned int j=0; j<n; j++)
-    {
-      double tI=startTime+j*digitizationInterval;
-      double vI=waveform[SiPM][j];
-      if(tI>200) break;
-      if(vI<=0.015) continue;
-      TMarker *marker = new TMarker(tI, vI*scale, markerVector.size());
-      markerVector.push_back(marker);
-      marker->SetMarkerStyle(20);
-      marker->SetMarkerSize(1.5);
-      marker->SetMarkerColor(kRed);
-      marker->Draw("same");
-    }
-
-//Landau fit
-    mu2eCrv::MakeCrvRecoPulses makeRecoPulses(0.022,0.2, 0.0,159.0);
-    makeRecoPulses.SetWaveform(waveform[SiPM], startTime, digitizationInterval);
+//fit
+    makeRecoPulses.SetWaveform(ADCs[SiPM], TDC, digitizationInterval, pedestal, calibrationFactor, calibrationFactorPulseHeight, false);
     unsigned int nPulse = makeRecoPulses.GetNPulses();
     for(unsigned int pulse=0; pulse<nPulse; pulse++)
     {
-      double tL1=makeRecoPulses.GetT1(pulse);
-      double tL2=makeRecoPulses.GetT2(pulse);
-      int nL=(tL2-tL1)/1.0 + 1;
-      double *tL = new double[nL];
-      double *vL = new double[nL];
-      for(int iL=0; iL<nL; iL++)
+      if(isnan(makeRecoPulses.GetPulseWidth(pulse))) continue;
+      double tF1=makeRecoPulses.GetT1(pulse);
+      double tF2=makeRecoPulses.GetT2(pulse);
+      int nF=(tF2-tF1)/1.0 + 1;
+      double *tF = new double[nF];
+      double *vF = new double[nF];
+      for(int iF=0; iF<nF; iF++)
       {
-        double p0 = makeRecoPulses.GetLandauParam0(pulse);
-        double p1 = makeRecoPulses.GetLandauParam1(pulse);
-        double p2 = makeRecoPulses.GetLandauParam2(pulse);
-        tL[iL] = tL1 + iL*1.0;
-        vL[iL] = p0*TMath::Landau(tL[iL], p1, p2);
-        vL[iL]*=scale;
-        if(isnan(vL[iL])) nL=0;
+        double p0 = makeRecoPulses.GetFitParam0(pulse);
+        double p1 = makeRecoPulses.GetFitParam1(pulse);
+        double p2 = makeRecoPulses.GetFitParam2(pulse);
+        tF[iF] = tF1 + iF*1.0;
+        vF[iF] = p0*TMath::Exp(-(tF[iF]-p1)/p2-TMath::Exp(-(tF[iF]-p1)/p2));
+        vF[iF]+=pedestal;
+        vF[iF]*=scale;
+        if(isnan(vF[iF])) nF=0;
       }
-      if(nL>0)
+      if(nF>0)
       {
-        TGraph *graphL=new TGraph();
-        graphVector.push_back(graphL);
-        graphL->SetTitle("");
-        graphL->SetLineWidth(2);
-        graphL->SetLineColor(kGreen);
-        graphL->DrawGraph(nL,tL,vL,"same");
+        TGraph *graphF=new TGraph();
+        graphVector.push_back(graphF);
+        graphF->SetTitle("");
+        graphF->SetLineWidth(2);
+        graphF->SetLineColor(kGreen);
+        graphF->DrawGraph(nF,tF,vF,"same");
       }
 
-      double leadingEdge=makeRecoPulses.GetLeadingEdge(pulse);
-      if(!isnan(leadingEdge) && leadingEdge<200.0)
-      {
-        TMarker *marker = new TMarker(leadingEdge,
-                                      0.2*makeRecoPulses.GetPulseHeight(pulse)*scale,
-                                      markerVector.size());
-        markerVector.push_back(marker);
-        marker->SetMarkerStyle(21);
-        marker->SetMarkerSize(1.5);
-        marker->SetMarkerColor(kGreen);
-        marker->Draw("same");
-      }
-      delete[] tL;
-      delete[] vL;
+      delete[] tF;
+      delete[] vF;
     }
 
-    if(makeRecoPulses.GetNPulses()==1)
+    if(makeRecoPulses.GetNPulses()>0) 
     {
       int photons = photonTimes.size();
-      double integral = makeRecoPulses.GetIntegral(0);
-      double pulseHeight = makeRecoPulses.GetPulseHeight(0);
-      std::cout<<"SiPM: "<<SiPM<<"  integral: "<<integral<<std::endl;
-      std::cout<<"Photons/integral: "<<photons/integral<<"         ";
-      std::cout<<"Photons/maxBin: "<<photons/pulseHeight<<std::endl;
-      _photonsVsIntegral->Fill(integral,photons);
-      _photonsVsPulseHeight->Fill(pulseHeight,photons);
-      double PEs=0;
-      double leadingEdge=makeRecoPulses.GetLeadingEdge(0);
-      double TOT=makeRecoPulses.GetTimeOverThreshold(0);
-      for(unsigned int j=0; j<siPMtimes[SiPM].size(); j++) 
-      {
-        if(siPMtimes[SiPM][j]<leadingEdge+TOT-40.0 && siPMtimes[SiPM][j]>leadingEdge-40.0) PEs+=siPMcharges[SiPM][j];
-      } 
-      std::cout<<"PEs/integral: "<<PEs/integral<<"         ";
-      std::cout<<"PEs/maxBin: "<<PEs/pulseHeight<<std::endl;
-      _PEsVsIntegral->Fill(integral,PEs);
-      _PEsVsPulseHeight->Fill(pulseHeight,PEs);
 
-      _ntuple->Fill(SiPM,photons,PEs,integral,pulseHeight);
+      double PEs=0;
+      for(size_t j=0; j<siPMtimes[SiPM].size(); j++) PEs+=siPMchargesInPEs[SiPM][j];
+
+      double pulseHeight=0;
+      double recoPEs= 0;
+      double pulseWidth=0;
+      double pulseTime=0;
+      double LEtime=0;
+      double pulseChi2=0;
+      for(size_t j=0; j<makeRecoPulses.GetNPulses(); j++)
+      {
+         double recoPEsTmp = makeRecoPulses.GetPEs(j);
+         if(recoPEsTmp>recoPEs)
+         {
+           recoPEs=recoPEsTmp;
+           pulseHeight = makeRecoPulses.GetPulseHeight(j);
+           pulseWidth = makeRecoPulses.GetPulseWidth(j);
+           pulseTime = makeRecoPulses.GetPulseTime(j);
+           LEtime = makeRecoPulses.GetLEtime(j);
+           pulseChi2 = makeRecoPulses.GetPulseFitChi2(j);
+         }
+      }
+      _ntuple->Fill(SiPM,photons,PEs,pulseHeight,pulseWidth,recoPEs,pulseTime,LEtime,pulseChi2);
+      _PEs[SiPM].push_back(PEs);
+      _recoPEs[SiPM].push_back(recoPEs);
+      _pulseTimes[SiPM].push_back(pulseTime);
+      _LETimes[SiPM].push_back(LEtime);
+      _pulseWidths[SiPM].push_back(pulseWidth);
+      double avgPEs=0;
+      double avgrecoPEs=0;
+      double avgPulseTime=0;
+      double avgLETime=0;
+      double avgPulseWidth=0;
+      for(size_t j=0; j<_PEs[SiPM].size(); j++) {avgPEs+=_PEs[SiPM][j];}
+      for(size_t j=0; j<_recoPEs[SiPM].size(); j++) {avgrecoPEs+=_recoPEs[SiPM][j];}
+      for(size_t j=0; j<_pulseTimes[SiPM].size(); j++) {avgPulseTime+=_pulseTimes[SiPM][j];}
+      for(size_t j=0; j<_LETimes[SiPM].size(); j++) {avgLETime+=_LETimes[SiPM][j];}
+      for(size_t j=0; j<_pulseWidths[SiPM].size(); j++) {avgPulseWidth+=_pulseWidths[SiPM][j];}
+      avgPEs/=_PEs[SiPM].size();
+      avgrecoPEs/=_recoPEs[SiPM].size();
+      avgPulseTime/=_pulseTimes[SiPM].size();
+      avgLETime/=_LETimes[SiPM].size();
+      avgPulseWidth/=_pulseWidths[SiPM].size();
+      std::cout<<"SiPM: "<<SiPM<<" PEs: "<<PEs<<"  avg: "<<avgPEs<<"     recoPEs: "<<recoPEs<<"("<<recoPEs/PEs<<") avg: "<<avgrecoPEs<<"("<<avgrecoPEs/avgPEs<<")   ";
+      std::cout<<"avgtime:"<<avgPulseTime<<"/"<<avgLETime<<"       width:"<<pulseWidth<<"  avg:"<<avgPulseWidth<<"   height:"<<pulseHeight<<"  ";
+      std::cout<<"nPulses:"<<makeRecoPulses.GetNPulses()<<std::endl;
     }
 
-    TGaxis *axis = new TGaxis(170.0,0,170.0,histMax,0,histMax/scale,10,"+L");
+    TGaxis *axis = new TGaxis(maxTime*0.9,0,maxTime*0.9,histMax,0,histMax/scale,10,"+L");
     axisVector.push_back(axis);
-    axis->SetTitle("voltage [V]");
+    axis->SetTitle("ADC");
     axis->SetTitleOffset(-0.5);
     axis->SetTitleColor(kRed);
     axis->SetLineColor(kRed);
     axis->SetLabelColor(kRed);
     axis->Draw("same");
 
-    TGaxis *axisSiPMResponse = new TGaxis(200.0,0,200.0,histMax,0,histMax/scaleSiPMResponse,10,"+L");
+    TGaxis *axisSiPMResponse = new TGaxis(maxTime,0,maxTime,histMax,0,histMax/scaleSiPMResponse,10,"+L");
     axisVector.push_back(axisSiPMResponse);
-    axisSiPMResponse->SetTitle("SiPM output [PE]");
-    axisSiPMResponse->SetTitleOffset(-0.5);
+    axisSiPMResponse->SetTitle("SiPM charges [PE]");
+    axisSiPMResponse->SetTitleOffset(1.0);
     axisSiPMResponse->SetTitleColor(kOrange);
     axisSiPMResponse->SetLineColor(kOrange);
     axisSiPMResponse->SetLabelColor(kOrange);
     axisSiPMResponse->Draw("same");
-
-    TLine *landauLine = new TLine(100, histMax*0.9, 130, histMax*0.9);
-    lineVector.push_back(landauLine);
-    landauLine->SetLineWidth(2);
-    landauLine->SetLineColor(kGreen);
-    landauLine->Draw("same");
-    TMarker *landauMarker = new TMarker(110, histMax*0.9, markerVector.size());
-    markerVector.push_back(landauMarker);
-    landauMarker->SetMarkerStyle(21);
-    landauMarker->SetMarkerSize(1.5);
-    landauMarker->SetMarkerColor(kGreen);
-    landauMarker->Draw("same");
-    TText *landauText1 = new TText(100, histMax*0.82, "Landau fit with");
-    TText *landauText2 = new TText(100, histMax*0.76, "leading edge");
-    textVector.push_back(landauText1);
-    textVector.push_back(landauText2);
-    landauText1->SetTextSize(0.03);
-    landauText2->SetTextSize(0.03);
-    landauText1->SetTextColor(kGreen);
-    landauText2->SetTextColor(kGreen);
-    landauText1->Draw("same");
-    landauText2->Draw("same");
   }
   if(evt->GetEventID()<20) c.SaveAs((s1.str()+".C").c_str());
-  _photonsVsIntegral->SaveAs("PhotonsVsIntegral.C");
-  _photonsVsPulseHeight->SaveAs("PhotonsVsPulseHeight.C");
-  _PEsVsIntegral->SaveAs("PEsVsIntegral.C");
-  _PEsVsPulseHeight->SaveAs("PEsVsPulseHeight.C");
-
 
   gStyle->SetOptStat(1111);
   TCanvas c1("Photons","Photons",1000,1000);
@@ -636,7 +643,5 @@ void WLSEventAction::Draw(const G4Event* evt) const
   for(size_t i=0; i<graphVector.size(); i++) delete graphVector[i];
   for(size_t i=0; i<markerVector.size(); i++) delete markerVector[i];
   for(size_t i=0; i<axisVector.size(); i++) delete axisVector[i];
-  for(size_t i=0; i<textVector.size(); i++) delete textVector[i];
-  for(size_t i=0; i<lineVector.size(); i++) delete lineVector[i];
 }
 

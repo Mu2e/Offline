@@ -13,7 +13,7 @@
 #include <typeinfo>
 #include <cassert>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 
@@ -41,9 +41,9 @@ namespace mu2e {
              )
   {
 
+    config_.printOpen(std::cout,"GlobalConstants");
     iRegistry.sPostEndJob.watch (this, &GlobalConstantsService::postEndJob );
 
-    std::cout <<"GlobalConstantsService input file is: "<< pset.get<std::string>("inputFile") << std::endl;
     if ( pset.get<bool>("printConfig",false) ) {
       config_.print(std::cout,"GlobalConstants: ");
     }

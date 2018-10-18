@@ -1,0 +1,75 @@
+# Read the test file made by MakeTestProduct and
+# modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : modifyTrackSPM
+
+source : {
+  module_type : RootInput
+  fileNames   :  ["testG4S4pionSimDOE_01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  producers : {
+    deuteronMixer : {
+      module_type : ModifyTrackSPM
+      productTag  : "deuteronMixer:tracker"
+    }
+    ootMixer      : {
+      module_type : ModifyTrackSPM
+      productTag  : "ootMixer:tracker"
+    }
+    flashMixer    : {
+      module_type : ModifyTrackSPM
+      productTag  : "flashMixer:tracker"
+    }
+    photonMixer   : {
+      module_type : ModifyTrackSPM
+      productTag  : "photonMixer:tracker"
+    }
+    neutronMixer  : {
+      module_type : ModifyTrackSPM
+      productTag  : "neutronMixer:tracker"
+    }
+    dioMixer      : {
+      module_type : ModifyTrackSPM
+      productTag  : "dioMixer:tracker"
+    }
+    protonMixer   : {
+      module_type : ModifyTrackSPM
+      productTag  : "protonMixer:tracker"
+    }
+  }
+
+ t1 : [ deuteronMixer, ootMixer, flashMixer, photonMixer, neutronMixer, dioMixer, protonMixer ]
+ e1 : [ out1 ]
+
+ trigger_paths : [ t1 ]
+ end_paths     : [ e1 ]
+
+}
+
+outputs : {
+  out1 : {
+    module_type : RootOutput
+    fileName    : "sim.owner.DNBtrackerTestDM.version.sequencer.art"
+    outputCommands:   [ "keep *_*_*_*",
+                        "drop *_deuteronMixer_tracker_MixPBI",
+                        "drop *_ootMixer_tracker_MixPBI",
+                        "drop *_flashMixer_tracker_MixPBI",
+                        "drop *_photonMixer_tracker_MixPBI",
+                        "drop *_neutronMixer_tracker_MixPBI",
+                        "drop *_dioMixer_tracker_MixPBI",
+                        "drop *_protonMixer_tracker_MixPBI",
+			"drop *_TriggerResults_*_modifyTrackSPM"
+                      ]
+
+  }
+}

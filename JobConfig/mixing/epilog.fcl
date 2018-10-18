@@ -1,0 +1,54 @@
+#
+#  Specific values for mixers that can't be done in prolog
+#  Currently set for MDC2018 production
+#
+#  Mixing can include primary generation
+#include "JobConfig/primary/epilog.fcl"
+#
+# TrkCal mixing
+#physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 9.777e-4 # for uncut flash
+physics.filters.flashMixerTrkCal.mu2e.meanEventsPerProton    : 1.482e-5 # for cut flash
+physics.filters.ootMixerTrkCal.mu2e.meanEventsPerProton      : 2.4185E-05
+physics.filters.neutronMixerTrkCal.mu2e.meanEventsPerProton  : 1.8790E-05
+physics.filters.dioMixerTrkCal.mu2e.meanEventsPerProton      : 3.8434E-06
+physics.filters.photonMixerTrkCal.mu2e.meanEventsPerProton   : 8.6966E-06
+physics.filters.protonMixerTrkCal.mu2e.meanEventsPerProton   : 7.4322E-07
+physics.filters.deuteronMixerTrkCal.mu2e.meanEventsPerProton : 1.6261E-07
+# CRV mixing
+physics.filters.ootMixerCRV.mu2e.meanEventsPerProton	  : 4.5379E-06
+physics.filters.neutronMixerCRV.mu2e.meanEventsPerProton  : 3.6173E-06
+physics.filters.dioMixerCRV.mu2e.meanEventsPerProton      : 3.2816E-07
+physics.filters.photonMixerCRV.mu2e.meanEventsPerProton   : 1.3449E-07
+#physics.filters.PSMixerCRV.mu2e.meanEventsPerProton   : 9.5035E-05 # uncut
+physics.filters.PSMixerCRV.mu2e.meanEventsPerProton	  : 4.2425E-05 # cut 
+physics.filters.TSMixerCRV.mu2e.meanEventsPerProton	  : 2.4368E-06
+#physics.filters.DSMixerCRV.mu2e.meanEventsPerProton   : 2.8126E-04 # uncut
+physics.filters.DSMixerCRV.mu2e.meanEventsPerProton	  : 1.4588E-06 # cut
+# input maps from prirmaries and flash. these get used first, new times are only generated for mu-daughter backgrounds 
+physics.producers.protonTimeMap.InputTimeMaps : [ "protonTimeMapPrimary", @sequence::Mixing.protonTimeMaps ]
+physics.producers.muonTimeMap.InputTimeMaps : [ "muonTimeMapPrimary" ]
+# after flash time cut mix change
+#  Don't include VD and IPA steps from flash: they just add bulk
+physics.filters.flashMixerTrkCal.mu2e.products.genParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.simParticleMixer: { mixingMap: [ [ "flashMixerTrkCalCut", "" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "flashMixerTrkCalCut:protonTimeMap", ":" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "flashMixerTrkCalCut:tracker", ":" ] ] }
+physics.filters.flashMixerTrkCal.mu2e.products.caloShowerStepMixer: { mixingMap:
+  [ [ "flashMixerTrkCalCut:CaloShowerCrystalSteps", ":" ],
+    [ "flashMixerTrkCalCut:CaloShowerROSteps", ":" ] ] }
+#
+physics.filters.DSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
+physics.filters.DSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "DSMixerCRVCut", "" ] ] }
+physics.filters.DSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "DSMixerCRVCut:protonTimeMap", ":" ] ] }
+physics.filters.DSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "DSMixerCRVCut:CRV", ":" ] ] }
+#
+physics.filters.PSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
+physics.filters.PSMixerCRV.mu2e.products.simParticleMixer: { mixingMap: [ [ "PSMixerCRVCut", "" ] ] }
+physics.filters.PSMixerCRV.mu2e.products.protonTimeMapMixer: { mixingMap: [ [ "PSMixerCRVCut:protonTimeMap", ":" ] ] }
+physics.filters.PSMixerCRV.mu2e.products.stepPointMCMixer: { mixingMap: [ [ "PSMixerCRVCut:CRV", ":" ] ] }
+# TS input wasn't cut, just uses the production filter
+physics.filters.TSMixerCRV.mu2e.products.genParticleMixer: { mixingMap: [ [ "crvFilter", "" ] ] }
+
+# calo configuration
+physics.producers.CaloShowerStepROFromShowerStep.caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter", @sequence::Mixing.caloMixerTags ]
+

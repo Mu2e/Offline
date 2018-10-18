@@ -66,7 +66,7 @@ Dio_toy(unsigned ntrials,double corefactor=1.0,double ratefactor=1.0,double lamb
   double plotlow(100.0);
   double plothi(105.0);
   double receff(0.11);
-  double nstopped(5.76e17);
+  double nstopped(6.7e17);
   double capfrac(0.609); 
   double decayfrac = 1.0 - capfrac;
   double ndecay = nstopped*decayfrac;

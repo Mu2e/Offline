@@ -23,7 +23,7 @@ include(${Geant4_USE_FILE})
 #----------------------------------------------------------------------------
 # Find ROOT (required package)
 #
-find_package(ROOT QUIET)
+find_package(ROOT REQUIRED)
 if(NOT ROOT_FOUND)
   message(STATUS "ROOT package not found.")  
   return()
@@ -35,17 +35,20 @@ endif()
 include_directories(${PROJECT_SOURCE_DIR}/include 
                     ${PROJECT_SOURCE_DIR}/../../inc
                     ${Geant4_INCLUDE_DIR}
+#                    ${ROOT_INCLUDE_DIRS})
                     ${ROOT_INCLUDE_DIR})
 file(GLOB sources ${PROJECT_SOURCE_DIR}/src/*.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvPhotonArrivals.cc
-                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvSiPMResponses.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvPhotons.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvSiPMCharges.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvWaveforms.cc
+                  ${PROJECT_SOURCE_DIR}/../../src/MakeCrvDigis.cc
                   ${PROJECT_SOURCE_DIR}/../../src/MakeCrvRecoPulses.cc
                   ${PROJECT_SOURCE_DIR}/../../src/DrawLookupTableHistograms.cc)
 file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh
-                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvPhotonArrivals.hh
-                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvSiPMResponses.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvPhotons.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvSiPMCharges.hh
                   ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvWaveforms.hh
+                  ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvDigis.hh
                   ${PROJECT_SOURCE_DIR}/../../inc/MakeCrvRecoPulses.hh)
 
 #----------------------------------------------------------------------------

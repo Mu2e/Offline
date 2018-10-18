@@ -6,9 +6,9 @@
 #
 # Original author Gianni Onorato.
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : TestTO
@@ -31,25 +31,21 @@ services :
 
   RandomNumberGenerator : { }
 
-  user :
+  GeometryService :
   {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/geom_01_v42_lght_1.txt"
-    }
-
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01_it.txt"
-    }
-
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-
-    G4Helper : { }
-
-    SeedService: @local::automaticSeeds
-
+    inputFile : "Mu2eG4/geom/geom_common_v42_lght_1.txt"
   }
+
+  ConditionsService :
+  {
+    conditionsfile : "Mu2eG4/test/conditions_01_it.txt"
+  }
+
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
+  G4Helper : { }
+
+  SeedService: @local::automaticSeeds
 
 } # close of services block
 
@@ -66,8 +62,8 @@ physics :
     makeDcH : @local::makeDcH
     makeDcHWTO : @local::makeDcHWTOff
 
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
     randomsaver : @local::randomsaver
 
   }
@@ -90,8 +86,8 @@ physics :
        , g4run
        , makeDcH
        , makeDcHWTO
-       , CaloReadoutHitsMaker
-       , CaloCrystalHitsMaker
+       , @sequence::CaloDigiMC.DigiSim
+       ,  @sequence::CaloReco.Reco	 
        ]
   e1 : [
 TurnOffTest, 
@@ -119,5 +115,5 @@ outputs:
 physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/conversionGun.txt"
 physics.producers.makeDcHWTO.diagLevel : 1
 physics.producers.makeDcHWTO.cellsToTurnOff : 10
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

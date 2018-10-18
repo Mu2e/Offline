@@ -36,6 +36,7 @@
 //
 //----------------------------------------------------------------------------
 //
+#if G4VERSION<4099
 #include <iomanip>   
 
 #include "Mu2eG4/inc/HadronPhysicsFTFP_BERT_PBAR_MU2E02.hh"
@@ -197,4 +198,4 @@ void HadronPhysicsFTFP_BERT_PBAR_MU2E02::ConstructProcess()
   theHyperon->Build();
   theAntiBaryon->Build();
 }
-
+#endif

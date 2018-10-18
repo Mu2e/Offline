@@ -5,8 +5,8 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
 
 # Give this process a name.
 process_name : HitDisplay
@@ -36,18 +36,16 @@ services :
 
   RandomNumberGenerator : { }
 
-  user : {
-    GeometryService : {
-      inputFile : "Mu2eG4/test/geom_01.txt"
-    }
-
-    ConditionsService : {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-    BTrkHelper             : @local::BTrkHelperDefault
+  GeometryService : {
+    inputFile : "Mu2eG4/geom/geom_common.txt"
   }
+
+  ConditionsService : {
+    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+  }
+
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  BTrkHelper             : @local::BTrkHelperDefault
 
 } # close of services block
 
@@ -60,10 +58,10 @@ physics : {
     FlagStrawHits  : @local::FlagStrawHits
     FlagBkgHits    : @local::FlagBkgHits
 
-    trkPatRec1     : @local::TrkPatRecDownstreameMinus
-    trkPatRec2     : @local::TrkPatRecUpstreamePlus
-    trkPatRec3     : @local::TrkPatRecDownstreammuMinus
-    trkPatRec4     : @local::TrkPatRecUpstreammuPlus
+    trkPatRec1     : @local::TrkPatRecDeM
+    trkPatRec2     : @local::TrkPatRecUeP
+    trkPatRec3     : @local::TrkPatRecDmuM
+    trkPatRec4     : @local::TrkPatRecUmuP
 
     makeCaloCluster: {
       module_type           : MakeCaloClusterNew
@@ -102,7 +100,7 @@ physics : {
 
 #      goodHitMask                 : ["EnergySelection","RadiusSelection","TimeSelection"]
       goodHitMask                  : ["EnergySelection", "RadiusSelection"]
-      badHitMask                   : ["DeltaRay", "Isolated"]
+      badHitMask                   : ["Background", "Isolated"]
 
       trackerStepPoints            : tracker
       minHits                      : 5

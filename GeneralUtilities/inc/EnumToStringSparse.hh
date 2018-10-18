@@ -159,7 +159,7 @@ namespace mu2e {
     }
 
     // Tne number of names, including "unknown".
-    static size_t size(){ return Detail::names().size(); }
+    static std::size_t size(){ return Detail::names().size(); }
 
     // Access the translation map.
     static map_type const& names() { return Detail::names(); }

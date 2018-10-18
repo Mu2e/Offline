@@ -15,7 +15,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // G4 includes
 #include "G4String.hh"

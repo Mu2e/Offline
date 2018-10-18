@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_NretainingWallaboveRH.ccl
+
+string building.N.retaining.Wall.aboveRH.name     = "NRetainingWallAboveRH";
+
+string building.N.retaining.Wall.aboveRH.material = "CONCRETE_MARS";
+
+double building.N.retaining.Wall.aboveRH.offsetFromMu2eOrigin.x   = 947.4;
+double building.N.retaining.Wall.aboveRH.offsetFromFloorSurface.y = 8102.6;
+double building.N.retaining.Wall.aboveRH.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.N.retaining.Wall.aboveRH.yHalfThickness           = 2870.2;
+
+vector<double> building.N.retaining.Wall.aboveRH.xPositions = {
+  3708.4,   // P0
+  -12319,   // P1
+  -12319,   // P2
+  3708.4   // P3
+};
+
+vector<double> building.N.retaining.Wall.aboveRH.yPositions = {
+  10312.4,   // P0
+  10312.4,   // P1
+  9702.8,   // P2
+  9702.8   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

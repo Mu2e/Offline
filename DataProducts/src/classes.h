@@ -3,10 +3,18 @@
 //
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawEnd.hh"
+#include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawIdMask.hh"
+#include "DataProducts/inc/PanelId.hh"
+#include "DataProducts/inc/LayerId.hh"
+#include "DataProducts/inc/PlaneId.hh"
+#include "DataProducts/inc/Helicity.hh"
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
+#include "DataProducts/inc/IndexMap.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "cetlib/map_vector.h"
@@ -25,3 +33,4 @@
 #include "CLHEP/Matrix/Matrix.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 
+template class art::Wrapper<mu2e::IndexMap>;

@@ -15,13 +15,11 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CaloCluster/inc/CaloContentMC.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -49,7 +47,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -258,7 +256,7 @@ namespace mu2e {
       //Get handle to the calorimeter
       art::ServiceHandle<GeometryService> geom;
       if( ! geom->hasElement<Calorimeter>() ) return;
-      Calorimeter const & cal = *(GeomHandle<Calorimeter>());
+      //Calorimeter const & cal = *(GeomHandle<Calorimeter>());
   
 
       //Get generated particles
@@ -283,9 +281,9 @@ namespace mu2e {
       CaloHitSimPartMCCollection const& caloHitSimPartMC(*caloHitSimMCHandle);
             
       //Get calo crystal hits (average from readouts)
-      art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
-      event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
-      CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
+      //art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
+      //event.getByLabel(_caloCrystalModuleLabel, caloCrystalHitsHandle);
+      //CaloCrystalHitCollection const& caloCrystalHits(*caloCrystalHitsHandle);
 
    
       //Utility to match  cloHits with MCtruth, simParticles and StepPoints
@@ -293,8 +291,8 @@ namespace mu2e {
 
    
 
-      const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
-      const double CrMass    = CrDensity*cal.caloGeomInfo().crystalVolume();
+      //const double CrDensity = 4.9e-6;  // in kg/mm3 to be consistent with volume units!
+      //const double CrMass    = CrDensity*cal.caloInfo().crystalVolume();
 	   
 
 
@@ -326,11 +324,12 @@ namespace mu2e {
       
        _nHits = _nSim = 0;
        
+/*
        for (unsigned int ic=0; ic<caloCrystalHits.size();++ic) 
        {	   
 	   CaloCrystalHit const& hit      = caloCrystalHits.at(ic);
-	   int sectionId                  = cal.crystal(hit.id()).sectionId();
-           CLHEP::Hep3Vector crystalPos   = cal.crystal(hit.id()).localPositionFF();  //in disk FF frame
+	   int diskId                     = cal.crystal(hit.id()).diskId();
+           CLHEP::Hep3Vector crystalPos   = cal.geomUtil().mu2eToDiskFF(diskId,cal.crystal(hit.id()).position());  //in disk FF frame
            CaloHit const& caloHit         = *(hit.readouts().at(0));
 
 
@@ -346,7 +345,7 @@ namespace mu2e {
 	   _cryPosY[_nHits]      = crystalPos.y();
 	   _cryPosZ[_nHits]      = crystalPos.z();
 	   _cryId[_nHits]        = hit.id();
-	   _crySectionId[_nHits] = cal.crystal(hit.id()).sectionId();
+	   _crySectionId[_nHits] = cal.crystal(hit.id()).diskId();
            _crySimIdx[_nHits]    = _nSim;   	              
            _crySimLen[_nHits]    = nPartInside;
 
@@ -359,7 +358,7 @@ namespace mu2e {
              while (grandMother->hasParent()) grandMother = grandMother->parent();
 	     GenParticle const* generated = grandMother->genParticle() ? grandMother->genParticle().get() : 0;
 
-             CLHEP::Hep3Vector hitSimPos = cal.toSectionFrameFF(sectionId,hitSim.position().at(ip)); //in disk FF frame
+             CLHEP::Hep3Vector hitSimPos = cal.geomUtil().mu2eToDiskFF(diskId,hitSim.position().at(ip)); //in disk FF frame
              
 	     _motId[_nSim]      = mother->id().asInt();
 	     _motPdgId[_nSim]   = mother->pdgId();
@@ -367,7 +366,7 @@ namespace mu2e {
 	     _motcrCode[_nSim]  = mother->creationCode();
              _motStartX[_nSim]  = mother->startPosition().x() + 3904; //in Mu2e frame
              _motStartY[_nSim]  = mother->startPosition().y();
-             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;
+             _motStartZ[_nSim]  = mother->startPosition().z() - 10200;  if this is uncommented, the hardwired 10200 should be changed to parametrized version
              _motStartT[_nSim]  = mother->startGlobalTime();
              _motPosX[_nSim]    = hitSimPos.x(); // in disk FF frame
              _motPosY[_nSim]    = hitSimPos.y();
@@ -383,7 +382,7 @@ namespace mu2e {
 	   	   
            ++_nHits;
        }
-
+*/
 
 
   	_Ntup->Fill();

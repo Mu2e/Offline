@@ -5,14 +5,15 @@
 //
 #ifndef TrkStrawHit_HH
 #define TrkStrawHit_HH
-// BaBar
+// BTrk
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
+#include "BTrk/TrkBase/TrkDifPieceTraj.hh"
 #include "BTrk/TrkBase/TrkHit.hh"
 #include "BTrk/TrkBase/TrkT0.hh"
 // Mu2e
-#include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "ConditionsService/inc/TrackerCalibrations.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // c++
@@ -20,91 +21,93 @@
 #include <functional>
 // forward refs
 class TrkDifTraj;
+class TrkDifPieceTraj;
 
 namespace mu2e
 {
   class TrkStrawHit : public TrkHit {
   public:
   // enum for hit flags
-    enum TrkStrawHitFlag {weededHit=-5, driftFail=-3, updateFail=-1,addedHit=3,unweededHit=4};
-    TrkStrawHit(const StrawHit& strawhit, const Straw& straw,unsigned istraw,
-    const TrkT0& trkt0, double fltlen, double exterr, double maxdriftpull);
+    TrkStrawHit(const ComboHit& strawhit, const Straw& straw,StrawHitIndex index,
+		const TrkT0& trkt0, double fltlen, double maxdriftpull,
+		double timeWeight);
     virtual ~TrkStrawHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
-    virtual int ambig() const { return _iamb; }
-//    virtual void invert();
+    int ambig() const { return _iamb; }
     virtual void setAmbig(int newambig);
-    void setAmbigUpdate(bool update) { _ambigupdate = update; }
-    unsigned index() const { return _istraw; } // index into StrawHit vector
-    double hitRMS() const { return _t2d._rdrifterr;}
+    StrawHitIndex index() const { return _index; } // index into StrawHit vector
+    double hitRMS() const { return _rdrifterr;}
 // strawhit specific interface
-    const StrawHit& strawHit() const { return _strawhit; }
+    const ComboHit& comboHit() const { return _combohit; }
     const Straw& straw() const { return _straw; }
-// correct the hit time for the wire propagation
-    double time() const;
-    double driftRadius() const { return _t2d._rdrift;}
-    double driftRadiusErr() const { return _t2d._rdrifterr;}
-    double driftVelocity() const { return _t2d._vdrift; }
-    double timeDiffDist() const { return _tddist; }
-    double timeDiffDistErr() const { return _tddist_err; }
+    virtual double time() const { return _combohit.time(); }
+    StrawEnd const& driftEnd() const { return _combohit.driftEnd(); }
+    double driftTime() const; // drift time for the current end strategy
+    double driftPhi() const { return _phi;}
+    double driftRadius() const { return _rdrift;}
+    double driftRadiusErr() const { return _rdrifterr;}
+    double driftVelocity() const { return _vdriftinst; }
+    double timeDiffDist() const { return _combohit.wireDist(); }
+    double timeDiffDistErr() const { return _combohit.wireRes(); }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
-    const CLHEP::Hep3Vector& wirePositionError() const { return _wpos_err; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    TrkT0 const& hitT0() const { return _hitt0;}
-    void updateHitT0(TrkT0 const& t0) { _hitt0 = t0; }
+    virtual bool signalPropagationTime(double &propTime, double&Doca,
+			       double resid, double &residErr,
+			       CLHEP::Hep3Vector trajDirection);//propagation time
+    virtual void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
+
     double signalTime() const { return _stime; } // time for signal to reach the end of the wire
-// external hit error (mm); the intrinsic error comes from the t2d calibration object
-    double extErr() const { return _exterr; }
 // error to penalize mis-assigned ambiguity
     double penaltyErr() const { return _penerr; }
 // error ON RDrift and residual coming from hit t0 error
-    double t0Err() const { return _hitt0._t0err*_t2d._vdrift; }
+    double t0Err() const { return hitT0()._t0err*_vdriftinst; }
 // total error
     double totalErr() const { return _toterr; }
 // intrinsic hit error (mm)
-    double hitErr() const { return _t2d._rdrifterr; }
-// changing the extneral hit error invalidates the cache, it should invalidate the fit, FIXME!!!!
-    void setExtErr(double exterr) { _exterr = exterr; }
-// set the penalty error: this is set when we can't resolve the ambiguity
+    virtual double hitErr() const { return _rdrifterr; }
+  // test the consistincy of this hit with 'physical' limts, with a given # of sigma
+    virtual bool isPhysical(double maxchi) const;
+    virtual void print(std::ostream& ) const;
+
+    //**************************************************
+    // SET VALUES
+    //**************************************************
+    // set the penalty error: this is set when we can't resolve the ambiguity
     void setPenalty(double penerr) { _penerr = penerr; }
-    bool physicalDrift(double maxchi) const;
-// logical operators to allow searching for StrawHits
-    bool operator == (StrawHit const& sh) const { return _strawhit == sh; }
-    bool operator != (StrawHit const& sh) const { return !operator==(sh); }
-    void print(std::ostream& ) const;
+
   protected:
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
     virtual void updateDrift();
     virtual void updateSignalTime();
   //private:
-    const StrawHit& _strawhit;
-    const Straw& _straw;
-    unsigned _istraw;
-    TrkLineTraj* _hittraj;
+    const ComboHit&   _combohit;
+    const Straw&      _straw;
+    StrawHitIndex     _index;
+    TrkLineTraj*      _hittraj;
     CLHEP::Hep3Vector _wpos;
     CLHEP::Hep3Vector _wpos_err;
-    TrkT0 _hitt0;
-    double _stime;
-    double _exterr,_penerr,_toterr;
-    int _iamb;
-    bool _ambigupdate;
-    T2D _t2d; // current values of t2d
-    double _tddist;
-    double _tddist_err;
-    double _maxdriftpull;
+    double            _penerr,_toterr;
+    int               _iamb;
+    double            _rdrift;
+    double            _rdrifterr;
+    double            _phi;
+    double            _vdriftinst;
+    double            _vprop; // effective signal propagation velocity
+    double	      _stime; // signal propagation time
+    double            _maxdriftpull;
   };
 
 // binary functor to sort TrkStrawHits by StrawHit index
   struct indexcomp : public std::binary_function<TrkStrawHit,TrkStrawHit, bool> {
     bool operator()(const TrkStrawHit* x,const TrkStrawHit* y) { return x->index() < y->index(); }
   };
- 
+
 // unary functor to select TrkStrawHit from a given hit
   struct FindTrkStrawHit {
-    FindTrkStrawHit(StrawHit const& strawhit) : _strawhit(strawhit) {}
-    bool operator () (TrkStrawHit* const& tsh ) { return tsh->strawHit() == _strawhit; }
-    StrawHit const& _strawhit;
+    FindTrkStrawHit(ComboHit const& strawhit) : _combohit(strawhit) {}
+    bool operator () (TrkStrawHit* const& tsh ) { return &tsh->comboHit() == &_combohit; }
+    ComboHit const& _combohit;
   };
 // define TrkStrawHitVector, to allow explicit conversion and construction
   typedef std::vector<TrkStrawHit*> TrkStrawHitVector;

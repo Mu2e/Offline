@@ -1,0 +1,12 @@
+
+           Release notes for Mu2e Offline software, v6_4_1
+1)        brownd 11 Jan 2018
+	  merged triggerDev and TDReco branches back into master.  This includes the work of B. Echenard and R. Bonventre.
+	  - repackaging and reloaction of straw hit reconstruction modules
+	  - changes to straw hit reco and early pat. rec. algorithms to reduce the processing time in the trigger
+	  - reorganization of related fcl to configure modules in their own package's prolog
+	  - use std::array in TrkDigi schema: note this change is NOT BACKWARDS COMPATIBLE with existing digi files
+	  - calibration of straw time division following the electronics simulation updates of a few months ago, resulting in subtantially improved position resolution and much more accurate error estimates
+	  - introduction of StrawResponse conditions object to describe parameters used in tracker reconstruction
+	  - new module and data type for combining straw hits in a panel
+	  

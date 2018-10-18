@@ -460,12 +460,10 @@ namespace mu2e {
         anti_bc_1 = -5403 ,
         bb_1 = 5503 ,
         anti_bb_1 = -5503 ,
-        deuteron = 0,
-        tritium = 0,
-        alpha = 0,
-        geantino = 0,
-        He3 = 0,
-        Cerenkov = 0,
+        deuteron = 1000010020,
+        tritium =  1000010030,
+        alpha =    1000020040,
+        He3 =      1000020030,
         null = 0,
 
         // Codes above or equal to this value are defined by G4.

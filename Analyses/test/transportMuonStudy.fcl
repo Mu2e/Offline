@@ -4,9 +4,9 @@
 #
 # Original author Giovanni Tassielli.
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : transportMuonStudy
@@ -29,21 +29,15 @@ services :
 
   RandomNumberGenerator : { }
 
-  user :
-  {
+  GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 
-    GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
+  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
-    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper : { }
 
-    G4Helper : { }
-
-    SeedService: @local::automaticSeeds
-
-
-  }
+  SeedService: @local::automaticSeeds
 
 } # close of services block
 
@@ -116,5 +110,5 @@ outputs:
 physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/primaryProtonGun.txt"
 //physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

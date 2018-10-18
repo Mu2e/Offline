@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_escape_door_header.ccl
+
+string building.beamline.escape.door.header.name     = "beamlineEscapeDoorHeader";
+
+string building.beamline.escape.door.header.material = "CONCRETE_MARS";
+
+double building.beamline.escape.door.header.offsetFromMu2eOrigin.x   = 947.4;
+double building.beamline.escape.door.header.offsetFromFloorSurface.y = 2590.8;
+double building.beamline.escape.door.header.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.beamline.escape.door.header.yHalfThickness           = 152.4;
+
+vector<double> building.beamline.escape.door.header.xPositions = {
+  16256.6,   // BESH00
+  15073,   // ESB1
+  15001.5,   // BESH02
+  16186.4   // BESH03
+};
+
+vector<double> building.beamline.escape.door.header.yPositions = {
+  11421.1,   // BESH00
+  11134.3,   // ESB1
+  11429.3,   // BESH02
+  11716.4   // BESH03
+};
+
+// Local Variables:
+// mode:c++
+// End:

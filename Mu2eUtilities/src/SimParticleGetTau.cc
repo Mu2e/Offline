@@ -7,7 +7,7 @@
 #include "CLHEP/Vector/LorentzVector.h"
 
 // cetlib includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include <iostream>
 

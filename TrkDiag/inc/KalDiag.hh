@@ -4,8 +4,8 @@
 // $Author: brownd $ 
 // $Date: 2014/09/20 14:34:22 $
 //
-#ifndef KalDiag_HH
-#define KalDiag_HH
+#ifndef TrkDiag_KalDiag_HH
+#define TrkDiag_KalDiag_HH
 // structs
 #include "TrkDiag/inc/MCEvtData.hh"
 #include "TrkDiag/inc/helixpar.hh"
@@ -17,6 +17,7 @@
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 // Utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
 // MC data
@@ -111,13 +112,12 @@ namespace mu2e
     std::string _branchprefix;
 // event data labels
     std::string _mcptrlabel;
-    std::string _mcstepslabel;
+    std::string _mcstepslabel, _mcstepsinstance;
     std::string _simpartslabel, _simpartsinstance;
     std::string _mcdigislabel;
 // time offsets
     SimParticleTimeOffset _toff;
 // helper functions
-    static void findRelatives(PtrStepPointMCVector const& mcptr,std::map<SPPtr,SPPtr>& mdmap );
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
     void countHits(const KalRep* krep, TrkInfo& tinfo) const;
     void fillTrkQual(TrkInfo& trkinfo) const;
@@ -137,7 +137,6 @@ namespace mu2e
     TTree *_trkdiag;
 // track quality computation
     std::unique_ptr<MVATools> _trkqualmva;
-    std::string _trkqualweights;
 // struct for track info
     TrkInfo _trkinfo;
 // hit information

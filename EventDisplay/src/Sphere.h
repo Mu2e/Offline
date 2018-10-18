@@ -131,7 +131,7 @@ class Sphere: public VirtualShape
 
   void update(double time)
   {
-    if(time<getStartTime() || isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
+    if(time<getStartTime() || std::isnan(getStartTime()) || getStartTime()<_minTime || getStartTime()>_maxTime)
     {
       start();
       return;
@@ -146,6 +146,8 @@ class Sphere: public VirtualShape
       }
     }
   }
+
+  ClassDef(Sphere,1);
 };
 
 }

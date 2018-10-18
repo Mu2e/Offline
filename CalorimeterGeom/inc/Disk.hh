@@ -1,71 +1,80 @@
-#ifndef CalorimeterGeom_Disk_hh
-#define CalorimeterGeom_Disk_hh
-// $Id: Disk.hh,v 1.7 2014/08/01 20:57:44 echenard Exp $
-// $Author: echenard $
-// $Date: 2014/08/01 20:57:44 $
+#ifndef CalorimeterGeom_CaloSection_hh
+#define CalorimeterGeom_CaloSection_hh
 //
-// Hold information about a disk in the calorimter.
+// Hold information about a disk in the calorimter. Note that there are two radii. The physics dimensions of the disk, including the 
+// inner / outer rings (radiusIn_/radiusOut_), and the radii inside which the crystals are placed (radiusInCrystal_/radiusOutCrystal_).
 //
 // Original author B Echenard 
 //
 
-// C++ includes
+
+#include "CalorimeterGeom/inc/DiskGeomInfo.hh"
+#include "CalorimeterGeom/inc/Crystal.hh"
+#include "CalorimeterGeom/inc/CrystalMapper.hh"
+
+#include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/Rotation.h"
 #include <vector>
 #include <memory>
-#include "CLHEP/Vector/TwoVector.h"
-#include "CLHEP/Vector/ThreeVector.h"
-
-// Mu2e includes
-#include "CalorimeterGeom/inc/CaloSection.hh"
-#include "CalorimeterGeom/inc/CrystalMapper.hh"
-#include "CalorimeterGeom/inc/Crystal.hh"
-
 
 
 namespace mu2e {
 
-
-    class Disk : public CaloSection {
+   class Disk {
 
        public:
-
-	   Disk(int id, 
-	        double rin, 
-		double rout, 
-	        const CLHEP::Hep3Vector &size,
-	        double cellSize, 
-		int crystalNedges, 
-		bool shiftCrystal, 
-		double crystalHalfLength, 
-		const CLHEP::Hep3Vector &diskOriginToCrystalOrigin); 
-	   
-	   
-	   
-	   double                          innerRadius()                                const {return _radiusIn;}
-           double                          outerRadius()                                const {return _radiusOut;}
-	   double                          estimateEmptySpace()                         const;
            
-	   int                             idxFromPosition(double x, double y)          const;           
-	   std::vector<int>                findLocalNeighbors(int crystalId, int level) const;            
-
-           void                            print(std::ostream &os = std::cout)          const;
+           Disk(int id, double rin, double rout, double rCrystalIn, double rCrystalOut, double nominalCellSize, 
+                int offset, const CLHEP::Hep3Vector& diskOriginToCrystalOrigin);
+           ~Disk(){};     	   
+           
+           int                             id()                     const {return id_;}
+           
+	   size_t                          nCrystals()              const {return crystalList_.size();}
+	   int                             crystalOffset()          const {return globalCrystalOffset_;}
+           const Crystal&                  crystal(int i)           const {return crystalList_.at(i);}
+                 Crystal&                  crystal(int i)                 {return crystalList_.at(i);}   
+           
+           const DiskGeomInfo&             geomInfo()               const {return geomInfo_;}
+                 DiskGeomInfo&             geomInfo()                     {return geomInfo_;}           
+	   
+           double                          innerRadius()            const {return radiusIn_;}
+           double                          outerRadius()            const {return radiusOut_;}
+ 	   
+	   int                             idxFromPosition(double x, double y) const;           
+	   std::vector<int>                findLocalNeighbors(int crystalId, int level, bool raw=false) const;            
+           std::vector<int>                nearestIdxFromPosition(double x, double y) const; 
+           int                             idMinCrystalInside(int row);
+       	   int 	       	                   idMaxCrystalInside(int row);
+           
+           double                          estimateEmptySpace() const;
+           void                            print(std::ostream& os = std::cout) const;
 
 
        private:
-
+       
+           void                            fillCrystalsIdeal(const CLHEP::Hep3Vector &crystalOriginInDisk);
            void                            fillCrystals(const CLHEP::Hep3Vector &crystalOriginInDisk);
-           bool                            isInsideDisk(double x, double y) const;
-	   double                          calcDistToSide(const CLHEP::Hep2Vector& a, const CLHEP::Hep2Vector& b) const;
+           bool                            isInsideDisk(double x, double y, double widthX, double widthY) const;
+           bool                            isInsideCrystal(int icry, double x, double y) const;
+           void                            checkCrystalSize();
 
-	   double                          _radiusIn;
-	   double                          _radiusOut;
-	   double                          _cellSize;	 
-       	   std::shared_ptr<CrystalMapper>  _crystalMap;
+	   int                             id_;
+           std::vector<Crystal>            crystalList_;
+           DiskGeomInfo                    geomInfo_;
+	   double                          radiusIn_;
+	   double                          radiusOut_;
+	   double                          radiusInCrystal_;
+	   double                          radiusOutCrystal_;
+	   double                          nominalCellSize_;	 
+	   int                             globalCrystalOffset_;	 
+       	   std::shared_ptr<CrystalMapper>  crystalMap_;
+           std::vector<int>                mapToCrystal_;
+	   std::vector<int>                crystalToMap_;
 
-           std::vector<int>                _mapToCrystal;
-	   std::vector<int>                _crystalToMap;
+   };
 
-    };
 }
 
-#endif 
+#endif

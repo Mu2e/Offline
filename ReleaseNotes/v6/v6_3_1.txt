@@ -1,0 +1,10 @@
+           Release notes for Mu2e Offline software, v6_3_1
+
+1) brownd, pezzullo August 31, 2017
+  - This release is in preparation for a 6-parameter track fit, including
+  - Follow improvements to BTrk
+  - Create a calorimeter cluster based 'hit' that can be included in a Kalman track fit
+  - Improve the t0 calculation, in particular the particle transit time is now integrated along the track instead of assuming a constant beta
+  - Allow assuming a different value of 'beta' from 1.0 when creating time clusters used in the pattern recognition 
+
+ 

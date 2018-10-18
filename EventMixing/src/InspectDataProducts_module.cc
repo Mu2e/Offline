@@ -26,7 +26,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -238,7 +238,7 @@ namespace mu2e {
       GenId genId = ( sim.fromGenerator() ) ? sim.genParticle()->generatorId() : GenId();
 
       cout << instanceName                     << ": "
-           << hit.strawIndex()                 << " "
+           << hit.strawId()                    << " "
            << hit.time()                       << " "
            << hit.ionizingEdep()/CLHEP::keV    << " "
            << hit.stepLength()                 << " | "

@@ -52,17 +52,5 @@ namespace mu2e {
     return nover;
   }
 
-  void TrkComp::fillOverlap(const KalRep* k1, const KalRep* k2,TrkOverlap& overlap){
-  // count overlaps
-    unsigned nover = nOverlap(k1,k2);
-    overlap._nover = nover;
-    overlap._f1 = overlap._f2 = 0;
-    // create output object
-    if(nover > 0){
-    // count active hits in each track
-      overlap._f1 = nover/(float)k1->nActive();
-      overlap._f2 = nover/(float)k2->nActive();
-    }
-  }
 }
 

@@ -1,11 +1,10 @@
-# -*- mode: tcl -*-
 #------------------------------------------------------------------------------
 # standalone test by Vadim Rusu
 # creates output histogram file testpid.root
 #------------------------------------------------------------------------------
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : TestPID
 
@@ -21,12 +20,11 @@ services : {
 #  TFileService : { fileName : "out/ex01.root" }
   TFileService : { fileName : "testpid.root" }
 
-  user : {
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt"            }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-    BTrkHelper             : @local::BTrkHelperDefault
-  }
+  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  BTrkHelper             : @local::BTrkHelperDefault
+
 }
 
 physics : {
@@ -37,15 +35,15 @@ physics : {
 	FlagStrawHits        : @local::FlagStrawHits
 	FlagBkgHits          : @local::FlagBkgHits
 # Tracking for some different particle types
-	TPRDownstreameMinus  : @local::TrkPatRecDownstreameMinus
-	TPRDownstreammuMinus : @local::TrkPatRecDownstreammuMinus
+	TPRDeM  : @local::TrkPatRecDeM
+	TPRDmuM : @local::TrkPatRecDmuM
 	PID                  : @local::ParticleID
     }
 
     analyzers : {
-	RKFDownstreameMinus : {
+	RKFDeM : {
 	    module_type       : ReadKalFits
-	    fitterModuleLabel : TPRDownstreameMinus
+	    fitterModuleLabel : TPRDeM
 	    fitparticle       : 11
 	    fitdirection      : 0
 	verbosity         : 0
@@ -53,16 +51,16 @@ physics : {
 	    
 	
     }
-	RKFDownstreammuMinus : {
+	RKFDmuM : {
 	    module_type       : ReadKalFits
-	    fitterModuleLabel : TPRDownstreammuMinus
+	    fitterModuleLabel : TPRDmuM
 	    fitparticle       : 13
 	    fitdirection      : 0
 	    verbosity         : 0
 	    maxPrint          : 0
 	}
 	
-	PIDReadDownstreameMinus :  {
+	PIDReadDeM :  {
 	    module_type    : ParticleIDRead
 	    fitterModuleLabel : PID
 	    verbosity : 0
@@ -73,9 +71,9 @@ physics : {
     
     p1 : [ FSHPreStereo
 	   , MakeStereoHits, FlagStrawHits, FlagBkgHits
-	   , TPRDownstreameMinus, TPRDownstreammuMinus, PID]
+	   , TPRDeM, TPRDmuM, PID]
     
-    e1 : [ PIDReadDownstreameMinus]
+    e1 : [ PIDReadDeM]
     
     trigger_paths  : [p1]
     end_paths      : [e1]
@@ -95,5 +93,5 @@ outputs: {
 # print 
 
 services.scheduler.wantSummary: true
-physics.producers.PID.fitterModuleLabel    : TPRDownstreameMinus
+physics.producers.PID.fitterModuleLabel    : TPRDeM
 

@@ -140,8 +140,11 @@ namespace mu2e {
     static const std::vector<std::string>& policyNames();
 
     SeedService(const fhicl::ParameterSet&, art::ActivityRegistry&);
-
-    // Accept compiler written d'tor.  Not copyable or assignable.
+    // Accept compiler written d'tor.  Not copyable or movable.
+    SeedService(SeedService const&) = delete;
+    SeedService& operator=(SeedService const&)= delete;
+    SeedService(SeedService&&) = delete;
+    SeedService& operator=(SeedService&&)= delete;
 
     // Return the seed value for this module label (instance name).
     seed_t getSeed();
@@ -151,18 +154,15 @@ namespace mu2e {
     template<class Stream> void print(Stream&) const;
     void print() const; // prints to the framework Info logger
 
+
+  private:
+
     // Call backs that will be called by art.
     void preModuleConstruction (art::ModuleDescription const& md);
     void postModuleConstruction(art::ModuleDescription const& md);
     void preModuleBeginRun     (art::ModuleDescription const& md);
     void postModuleBeginRun    (art::ModuleDescription const& md);
     void postEndJob();
-
-  private:
-
-    // This class is not copyable or assignable: these methods are not implemented.
-    SeedService(SeedService const& rhs);
-    SeedService const& operator=(SeedService const& rhs);
 
     // Control the level of information messages.
     int verbosity_;

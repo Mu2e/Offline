@@ -46,6 +46,10 @@ namespace mu2e {
     PlacedTubs const& cuUpstream()              const { return _cuUpstream;}
     PlacedTubs const& cuDownstream()            const { return _cuDownstream;}
 
+    double     const& panelPhiRange()           const { return _panelPhiRange;}
+    double     const& panelPhiRibs()            const { return _panelPhiRibs;}
+    double     const& ribHalfAngle()            const { return _ribHalfAngle;}
+
     // Accessors for outer support structure.
     std::vector<PlacedTubs> const& stiffRings()   const { return _stiffRings;    }
     std::vector<PlacedTubs> const& beamBody()   const { return _beamBody;     }
@@ -64,6 +68,11 @@ namespace mu2e {
     PlacedTubs _outerRingDownstream;
     PlacedTubs _coverUpstream;
     PlacedTubs _coverDownstream;
+
+    // New for v5 - angular span of a panel, between ribs in panel, span of rib
+    double _panelPhiRange;
+    double _panelPhiRibs;
+    double _ribHalfAngle;
 
     // Channels in the inner ring to make a place for the straws to fit.
     PlacedTubs _innerChannelUpstream;

@@ -2,9 +2,9 @@
 #define CalorimeterGeom_SqaureShiftMapper_hh
 
 #include "CalorimeterGeom/inc/CrystalMapper.hh"
-
-#include <vector>
 #include "CLHEP/Vector/TwoVector.h"
+#include "CLHEP/Vector/ThreeVector.h"
+#include <vector>
 
 
 
@@ -14,49 +14,45 @@ namespace mu2e {
 
          public:
 
-            SquShiftLK()             : _l(0),_k(0) {}
-	    SquShiftLK(int l, int k) : _l(l),_k(k) {}
+            SquShiftLK()             : l_(0),k_(0) {}
+	    SquShiftLK(int l, int k) : l_(l),k_(k) {}
 
-            void add(const SquShiftLK &x) {_l+=x._l;_k+=x._k;}
+            void add(const SquShiftLK &x) {l_+=x.l_;k_+=x.k_;}
 
-            int _l; 
-	    int _k;                    
-            
+            int l_; 
+	    int k_;                                
     };
     
-    
-
-
-
 
     class SquareShiftMapper : public CrystalMapper {
-
 
 	public:
 
 	    SquareShiftMapper();
+            virtual ~SquareShiftMapper() {};
 
-            int               nCrystalMax(int maxRing)        {return 3*maxRing*(maxRing+1)+1;}
-            int               nApex()                   const {return _apexX.size();}
-            double            apexX(int i)              const {return _apexX.at(i);}
-            double            apexY(int i)              const {return _apexY.at(i);}
+            virtual int               nCrystalMax(int maxRing)            const {return 3*maxRing*(maxRing+1)+1;}
+	    virtual CLHEP::Hep2Vector xyFromIndex(int thisIndex)          const;
+            virtual int               indexFromXY(double x, double y)     const;
+            virtual int               indexFromRowCol(int nRow, int nCol) const;
+            virtual bool              isInsideCrystal(double x, double y, 
+                                                      const CLHEP::Hep3Vector& pos, 
+                                                      const CLHEP::Hep3Vector& size) const; 
 
-	    CLHEP::Hep2Vector xyFromIndex(int thisIndex)       const;
-            int               indexFromXY(double x, double y)  const;
-
-	    std::vector<int>  neighbors(int thisIndex, unsigned int level=1) const;
-
+	    virtual std::vector<int>  neighbors(int thisIndex, int level=1) const;
+            virtual const std::vector<double>& apexX() const {return apexX_;}
+            virtual const std::vector<double>& apexY() const {return apexY_;}
 
 
 	private:
 
-	    SquShiftLK   lk(int index)      const;
-	    int index(SquShiftLK const &lk) const;
-	    int ring(SquShiftLK const &lk)  const;
+	    SquShiftLK lk(int index)        const;
+	    int index(const SquShiftLK& lk) const;
+	    int ring(const SquShiftLK&lk)   const;
 
-	    std::vector<SquShiftLK>   _step;
-	    std::vector<double>       _apexX;
-	    std::vector<double>       _apexY;
+	    std::vector<SquShiftLK> step_;
+	    std::vector<double>     apexX_;
+	    std::vector<double>     apexY_;
     };
 }
 

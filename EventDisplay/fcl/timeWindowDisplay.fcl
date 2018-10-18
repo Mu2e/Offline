@@ -1,0 +1,62 @@
+#
+# Filter the hits, SimParticles and PointTrajectories to find the subset
+# that are in time with the convesion electron.  Create new data products
+# to hold these. Then run the event display.
+#
+# $Id: timeWindowDisplay.fcl,v 1.1 2012/05/21 19:31:23 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2012/05/21 19:31:23 $
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+
+process_name : EventDisplay
+
+// An input file with mixed in backgrounds.
+// Straw hits been made but not calo hits.
+source : {
+  module_type : RootInput
+  fileNames   : [ "/mu2e/data/users/kutschke/MixTest_05/signalPlusBg_DoubleNeutrons_data.root" ]
+  maxEvents   : 20
+}
+
+services : {
+  message      : @local::default_message
+  TFileService : { fileName : "eventDisplay.root"  }
+
+  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+}
+
+physics : {
+
+  producers:  {
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
+  }
+
+  filters: {
+     interesting : {
+     module_type : HitsInConversionTimeWindow
+     generatorModuleLabel : "generate"
+     g4ModuleLabel        : "g4run"
+     strawHitMakerLabel   : "makeSH"
+   }
+  }
+
+  analyzers: {
+    eventdisplay: {
+      module_type     : EventDisplay
+      g4ModuleLabel   : "g4run"
+    }
+  }
+
+  t1 : [ @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, interesting]
+  e1 : [ eventdisplay ]
+
+  trigger_paths : [t1]
+  end_paths     : [e1]
+
+}

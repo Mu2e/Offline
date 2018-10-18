@@ -2,7 +2,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 //================================================================
 mu2e::ExtMonFNALMagnet::ExtMonFNALMagnet()

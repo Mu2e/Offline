@@ -1,0 +1,240 @@
+           Release notes for Mu2e Offline software, v6_2_5
+
+7)  rlc 18 August 2017
+    Add scripts directory to hold helper functions for scons.
+    Simplify SConstruct by using helper functions - minor mod is 
+    needed for all SConscripts.  Use new helper for build while using 
+    ClassDef (two places).  Fix bug where genreflex runs before lib
+    directory is available.  Remove a few obsolete paths.
+    Fix dependencies in genreflex build.  Fix genreflex warnings
+    from out-of-date classes_def.xml several places and activate
+    fail-onw-warning. Remove mu2e_genreflex.
+
+6)  gandr  16 August 2017
+    Update ExtMonFNAL code to revive the detector
+    simulation-digitization-reconstruction chain.
+
+5)  dnbrow01  16 August 2017
+    A large number of changes, primarily from Aaron Hill, to bring the
+    conventional construction model more up to date.  This work adds
+    the north escape hatch, extends the beam tunnel, improves the model
+    in and around the beamline area.  None of this affects the default,
+    geometry, but will be picked up using geom_common_current.
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineBerm_v02.txt
+    modified:   Mu2eG4/geom/bldg/dirtFoundationN_v02.txt
+    modified:   Mu2eG4/geom/bldg/floorN_v02.txt
+    modified:   Mu2eG4/geom/bldg/floorRemote_v02.txt
+    modified:   Mu2eG4/geom/bldg/foundationN_v02.txt
+    modified:   Mu2eG4/geom/bldg/remoteHandlingCeilingStrip.txt
+    modified:   Mu2eG4/geom/bldg/remoteHandlingCeiling_v02.txt
+    modified:   Mu2eG4/geom/mu2eHall_v02.txt
+  New Files:
+    EventDisplay/src/EventDisplayDict_rdict.pcm
+    Mu2eG4/geom/bldg/backfillBeamline.txt
+    Mu2eG4/geom/bldg/backfillBeamlineFoundationS01.txt
+    Mu2eG4/geom/bldg/backfillBeamlineFoundationS02.txt
+    Mu2eG4/geom/bldg/backfillBeamlineFoundationS03.txt
+    Mu2eG4/geom/bldg/backfillBeamlineFoundationS04.txt
+    Mu2eG4/geom/bldg/backfillBeamlineFoundationS05.txt
+    Mu2eG4/geom/bldg/backfillBeamlineFoundationS06.txt
+    Mu2eG4/geom/bldg/backfillBeamlineNorth.txt
+    Mu2eG4/geom/bldg/backfillBeamlineSouth.txt
+    Mu2eG4/geom/bldg/backfillEscapeInner01.txt
+    Mu2eG4/geom/bldg/backfillEscapeInner02.txt
+    Mu2eG4/geom/bldg/backfillEscapeInner03.txt
+    Mu2eG4/geom/bldg/backfillEscapeStair01.txt
+    Mu2eG4/geom/bldg/backfillEscapeStair02.txt
+    Mu2eG4/geom/bldg/backfillEscapeStair03.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairE01.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairE02.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairE03.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairE04.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairW01.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairW02.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairW03.txt
+    Mu2eG4/geom/bldg/backfillEscapeStairW04.txt
+    Mu2eG4/geom/bldg/backfillFoundationN.txt
+    Mu2eG4/geom/bldg/beamlineBlockWallE.txt
+    Mu2eG4/geom/bldg/beamlineBlockWallS.txt
+    Mu2eG4/geom/bldg/beamlineBlockWallTop.txt
+    Mu2eG4/geom/bldg/beamlineCeilingE.txt
+    Mu2eG4/geom/bldg/beamlineCeiling_v02.txt
+    Mu2eG4/geom/bldg/beamlineEscapeDoorHeader.txt
+    Mu2eG4/geom/bldg/beamlineFoundationS01.txt
+    Mu2eG4/geom/bldg/beamlineFoundationS02.txt
+    Mu2eG4/geom/bldg/beamlineFoundationS03.txt
+    Mu2eG4/geom/bldg/beamlineFoundationS04.txt
+    Mu2eG4/geom/bldg/beamlineFoundationS05.txt
+    Mu2eG4/geom/bldg/beamlineFoundationS06.txt
+    Mu2eG4/geom/bldg/beamlineFoundationUpper.txt
+    Mu2eG4/geom/bldg/beamlineLowerSouth.txt
+    Mu2eG4/geom/bldg/beamlineNW.txt
+    Mu2eG4/geom/bldg/beamlineUpperE.txt
+    Mu2eG4/geom/bldg/beamlineUpperN.txt
+    Mu2eG4/geom/bldg/beamlineUpperNW.txt
+    Mu2eG4/geom/bldg/beamlineUpperS.txt
+    Mu2eG4/geom/bldg/beamlineUpper_v02.txt
+    Mu2eG4/geom/bldg/beamline_v02.txt
+    Mu2eG4/geom/bldg/dirtBeamlineCeilingE.txt
+    Mu2eG4/geom/bldg/dirtBeamlineCeilingW.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlab2NC.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlab2NE.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlab2NW.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlab2N_v02.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlabE.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlabNC.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlabW.txt
+    Mu2eG4/geom/bldg/dirtBeamlineSlab_v02.txt
+    Mu2eG4/geom/bldg/dirtBeamlineUpper_v02.txt
+    Mu2eG4/geom/bldg/dirtBeamline_v02.txt
+    Mu2eG4/geom/bldg/dirtEscapeCeiling.txt
+    Mu2eG4/geom/bldg/dirtEscapeStair04.txt
+    Mu2eG4/geom/bldg/dirtEscapeStair07.txt
+    Mu2eG4/geom/bldg/dirtEscapeStair11.txt
+    Mu2eG4/geom/bldg/dirtIslandUpper_v02.txt
+    Mu2eG4/geom/bldg/dirtTsDsAreaFirstFloorEdgeN_v02.txt
+    Mu2eG4/geom/bldg/escapeCeilingE.txt
+    Mu2eG4/geom/bldg/escapeCeilingW.txt
+    Mu2eG4/geom/bldg/escapeHatchLid.txt
+    Mu2eG4/geom/bldg/escapeHatchN.txt
+    Mu2eG4/geom/bldg/escapeHatchS.txt
+    Mu2eG4/geom/bldg/escapeStair01.txt
+    Mu2eG4/geom/bldg/escapeStair02.txt
+    Mu2eG4/geom/bldg/escapeStair03.txt
+    Mu2eG4/geom/bldg/escapeStair04.txt
+    Mu2eG4/geom/bldg/escapeStair05.txt
+    Mu2eG4/geom/bldg/escapeStair06.txt
+    Mu2eG4/geom/bldg/escapeStair07.txt
+    Mu2eG4/geom/bldg/escapeStair08.txt
+    Mu2eG4/geom/bldg/escapeStair09.txt
+    Mu2eG4/geom/bldg/escapeStair10.txt
+    Mu2eG4/geom/bldg/escapeStair11.txt
+    Mu2eG4/geom/bldg/escapeStair12.txt
+    Mu2eG4/geom/bldg/escapeStair13.txt
+    Mu2eG4/geom/bldg/escapeStairBrick.txt
+    Mu2eG4/geom/bldg/escapeStairFoundation01.txt
+    Mu2eG4/geom/bldg/escapeStairFoundation02.txt
+    Mu2eG4/geom/bldg/escapeStairFoundation03.txt
+    Mu2eG4/geom/bldg/escapeStairFoundation04.txt
+    Mu2eG4/geom/bldg/escapeStairWallE01.txt
+    Mu2eG4/geom/bldg/escapeStairWallE02.txt
+    Mu2eG4/geom/bldg/escapeStairWallE03.txt
+    Mu2eG4/geom/bldg/escapeStairWallE04.txt
+    Mu2eG4/geom/bldg/escapeStairWallW01.txt
+    Mu2eG4/geom/bldg/escapeStairWallW02.txt
+    Mu2eG4/geom/bldg/escapeStairWallW03.txt
+    Mu2eG4/geom/bldg/escapeStairWallW04.txt
+    Mu2eG4/geom/bldg/escapeWallE.txt
+    Mu2eG4/geom/bldg/islandNUpper_v02.txt
+    Mu2eG4/geom/bldg/remoteHandling_v02.txt
+
+    A sample Analysis module and fcl control script for use by UofL 
+    (or others welcome) students exploring particles in different areas 
+    of the beamline.
+    Analyses/src/SelectiveStepPtPrinter_module.cc
+    Analyses/test/SelectiveStepPtPrinter_g4s1.fcl
+
+
+4)  dnbrow01  27 July 2017
+    Fixed a few more redundant vertices pointed out by Krzysztof.  No
+    actual change to the geometry.  Fix a typo introduced in the last
+    commit that only affected the "bleeding edge" geometry and not the
+    default.
+    modified:   Mu2eG4/geom/bldg/beamlineCeiling.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineBerm.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineBerm_v02.txt
+    modified:   Mu2eG4/geom/bldg/dirtExtMonCeiling_v02.txt
+    modified:   Mu2eG4/geom/bldg/dirtFoundationN.txt
+    modified:   Mu2eG4/geom/bldg/dirtFoundationN_v02.txt
+    modified:   Mu2eG4/geom/bldg/floorN.txt
+    modified:   Mu2eG4/geom/bldg/floorN_v02.txt
+    modified:   Mu2eG4/geom/bldg/remoteHandlingCeilingStrip.txt
+
+    Add two new Virtual Detectors requested by Bob Bernstein.  They fit
+    into Coll1 and are immediately upstream and downstream of the 
+    pbar "collar" in Coll1.  VirtualDetector 110 = "Coll1_pBarCollar_In",
+    VirtualDetector 111 = "Coll1_pBarCollar_Out".  Cleaned code a bit.
+    modified:   BeamlineGeom/inc/Collimator_TS1.hh
+    modified:   DataProducts/inc/VirtualDetectorId.hh
+    modified:   GeometryService/src/BeamlineMaker.cc
+    modified:   GeometryService/src/VirtualDetectorMaker.cc
+    modified:   Mu2eG4/geom/TransportSolenoid_DOErev2017.txt
+    modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+    modified:   Mu2eG4/geom/TransportSolenoid_v02.txt
+    modified:   Mu2eG4/src/constructTS.cc
+    modified:   Mu2eG4/src/constructVirtualDetectors.cc
+
+
+3) gandr 26 July 2017
+
+   Removed 14 files, more than 3000 lines of obsolete code in Mu2eG4.
+
+
+2)  kutschke  24 July 2017
+    Many changes to make the code compatible with gcc v6.3.0 -std=c++14.
+    There should be no changes to executable behaviour and I have not seen
+    any in my tests.  The next upgrade to a new art will require this compiler.
+
+    Most of the changes arise because the new compiler is pickier than the old one.
+    A) Some compiler headers that were not explicitly #included in our code were
+       accidentally included by other compiler headers. Some of these now need to
+       be explcitly included they are no longer accidentally included.
+
+    B) Some automatic type conversions no longer work - fix by making them explicit.
+
+    C) Many files have a misleading indentation warning
+       - Usually fixed by adding {} in the right place or by changing indentation,
+       - My judgement is that there were no real errors in the code.
+       - The affected files are:
+        CaloMC/src/CaloPulseShape.cc
+        CaloReco/src/CaloRecoDigiFromDigi_module.cc
+        CalorimeterGeom/src/SquareMapper.cc
+        CalorimeterGeom/src/SquareShiftMapper.cc
+        GeometryService/src/GeometryService_service.cc
+        TrkChargeReco/src/ComboPeakFitRoot.cc
+
+    D) RecoDataProducts/inc/HelixHit.hh
+         - The variable _hqual was not initialized by the second c'tor; initialize it to 0.
+
+    E) Analyses/src/ReadCaloDigi_module.cc
+         - Initialize an uninitialized variable - need to do a code review on this code.
+           It should throw an exception rather than dereference an 0 pointer.
+
+    F) New directory: boost_fix/. This contains header files named after boost
+       headers.  In each case the file #includes the corresponding boost header
+       and wraps it in pragmas that disable certain warnings just for that header.
+       The reason is that the boost headers contain code that triggers compiler
+       warnings - as best we can tell the code is correct.  This is our way to
+       disable the checks only in the smallest possible scope.
+       For this release the pragmas have been commented out - when we move to
+       gcc 6.3.0 we will uncomment them.
+
+    G) Many files: replace #include of native boost header with the one from boost_fix.
+       When boost is fixed, we can find these later by acking the code base for boost_fix.
+
+    H) Missing link library (one link now needs tbb that did not before).
+
+1)  dnbrow01  20 July 2017
+    Commit work done by UofL student Lacee Pyles.  She has removed redundant
+    vertices from a number of files used to specify building and dirt
+    volumes.  The building and dirt are specified as extruded solids, 
+    which means they are shapes specified on a plane as a series of
+    vertices and then extruded from the plane.  It turns out some of our
+    shapes had redundant vertices - series of three consecutive vertices
+    with the same x- or y- coordinates.  In such cases, the middle vertex
+    is unneeded.  Krzysztof pointed out to us that such extraneous 
+    vertices could be flagged as an error in upcoming versions of GEANT4,
+    so Lacee fixed these.  These changes do not affect the actual volumes.
+    modified:   Mu2eG4/geom/bldg/backfillPsAreaTopLayer.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineSlab.txt
+    modified:   Mu2eG4/geom/bldg/dirtBeamlineSlab2N.txt
+    modified:   Mu2eG4/geom/bldg/dirtExtMonCeiling.txt
+    modified:   Mu2eG4/geom/bldg/dirtExtMonCeiling_v02.txt
+    modified:   Mu2eG4/geom/bldg/dirtUpToGradeLevelW.txt
+    modified:   Mu2eG4/geom/bldg/dsAreaUpper.txt
+    modified:   Mu2eG4/geom/bldg/foundationN.txt
+    modified:   Mu2eG4/geom/bldg/foundationN_v02.txt
+    modified:   Mu2eG4/geom/bldg/psAreaCeiling.txt
+    modified:   Mu2eG4/geom/bldg/remoteHandling.txt
+    modified:   Mu2eG4/geom/bldg/tsDsAreaFirstFloorEdgeN.txt
+    modified:   Mu2eG4/geom/protonAbsorber_cylindrical.txt

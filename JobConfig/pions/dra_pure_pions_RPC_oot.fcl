@@ -1,0 +1,3 @@
+#include "JobConfig/pions/dra_pure_pions_defs.fclinc"
+physics.producers.protonTimeMap.randPDFparameters.pulseType: oot
+services.TFileService.fileName: "nts.owner.dra-pure-pions-RPC-oot.ver.seq.root"

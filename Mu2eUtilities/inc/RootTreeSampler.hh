@@ -43,7 +43,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -313,12 +313,10 @@ namespace mu2e {
       //----------------------------------------------------------------
 
       const Long64_t nTreeEntries = nt->GetEntries();
-      if(verbosityLevel > 0) {
-        std::cout<<"RootTreeSampler: reading "<<nTreeEntries
-                 <<" entries.  Tree "<<treeName
-                 <<", file "<<infile->GetName()
-                 <<std::endl;
-      }
+      std::cout<<"RootTreeSampler: reading "<<nTreeEntries
+	       <<" entries.  Tree "<<treeName
+	       <<", file "<<infile->GetName()
+	       <<std::endl;
 
       // If the average per-event ntuple record multiplicity is large,
       // this will over-allocate the memory.

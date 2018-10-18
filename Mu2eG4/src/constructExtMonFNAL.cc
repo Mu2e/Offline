@@ -26,7 +26,6 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -127,9 +126,6 @@ namespace mu2e {
 
       GeomHandle<VirtualDetector> vdg;
 
-      G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-        FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
-
       for(int vdId = entranceVD; vdId <= 1 + entranceVD; ++vdId) {
         if( vdg->exist(vdId) ) {
           if ( verbosityLevel > 0) {
@@ -178,9 +174,7 @@ namespace mu2e {
           if (doSurfaceCheck) {
             checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
           }
-
-          if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
-        }
+        }//if( vdg->exist(vdId) )
       } // for(vdId-1)
     } // detector VD block
 
@@ -287,16 +281,11 @@ namespace mu2e {
                                      placePV,
                                      doSurfaceCheck
                                      );
+        
+        G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
+                                  stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
+                                  stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
 
-         G4VSensitiveDetector* emSD = G4SDManager::GetSDMpointer()->
-           FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL());
-         
-         if(emSD) vsensor.logical->SetSensitiveDetector(emSD);
-        
-         G4ThreeVector coffset0 = {stack.planes()[iplane].module_xoffset()[imodule] + module.chipHalfSize()[0] + .065 + offset[0], // +/- .065 to achieve the designed .13mm gap
-                                   stack.planes()[iplane].module_yoffset()[imodule] + offset[1] + ((stack.planes()[iplane].module_rotation()[imodule] == 0 ? 1 : -1)*.835),
-                                   stack.planes()[iplane].module_zoffset()[imodule]*(module.chipHalfSize()[2] + stack.planes()[iplane].halfSize()[2]) + offset[2]};
-        
         VolumeInfo vchip0 = nestBox(osm.str() + "chip0",
                                     module.chipHalfSize(),
                                     findMaterialOrThrow("G4_Si"),
@@ -354,9 +343,6 @@ namespace mu2e {
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
-
     GeomHandle<VirtualDetector> vdg;
     GeomHandle<ExtMonFNALBuilding> emfb;
 
@@ -397,7 +383,6 @@ namespace mu2e {
 
         // vd are very thin, a more thorough check is needed
         doSurfaceCheck && checkForOverlaps( vdInfo.physical, config, verbosityLevel>0);
-        if(vdSD) vdInfo.logical->SetSensitiveDetector(vdSD);
       }
     } // for(vdId-2)
   }
@@ -459,11 +444,6 @@ namespace mu2e {
 
     // vd are very thin, a more thorough check is needed
     doSurfaceCheck && checkForOverlaps( boxFront.physical, config, verbosityLevel>0);
-
-    G4VSensitiveDetector* vdSD = G4SDManager::GetSDMpointer()->
-      FindSensitiveDetector(SensitiveDetectorName::VirtualDetector());
-
-    if(vdSD) boxFront.logical->SetSensitiveDetector(vdSD);
 
   }
 

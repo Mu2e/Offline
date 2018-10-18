@@ -4,9 +4,9 @@
 # $Author: gandr $
 # $Date: 2014/05/28 21:16:30 $
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.
 process_name : TrkExt
@@ -24,20 +24,17 @@ services :
   TFileService : { fileName : "result-TrkExt.root" }
   RandomNumberGenerator : { }
 
-  user :
-  {
-    GeometryService : { inputFile : "Mu2eG4/test/geom_01.txt" }
+  GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 
-    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
-    BTrkHelper             : @local::BTrkHelperDefault
+  BTrkHelper             : @local::BTrkHelperDefault
 
-    G4Helper : { }
+  G4Helper : { }
 
-    SeedService       : @local::automaticSeeds
-  }
+  SeedService       : @local::automaticSeeds
 
 }
 
@@ -57,10 +54,10 @@ physics :
     MakeStereoHits : @local::MakeStereoHits 
     FlagStrawHits :@local::FlagStrawHits 
     FlagBkgHits : @local::FlagBkgHits
-    tprDem : @local::TrkPatRecDownstreameMinus
-    tprDep : @local::TrkPatRecDownstreamePlus
-    tprUem : @local::TrkPatRecUpstreameMinus
-    tprUep : @local::TrkPatRecUpstreamePlus
+    tprDem : @local::TrkPatRecDeM
+    tprDep : @local::TrkPatRecDeP
+    tprUem : @local::TrkPatRecUeM
+    tprUep : @local::TrkPatRecUeP
 
 
     # extrapolation producer module
@@ -158,5 +155,5 @@ outputs: {
 physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 0
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

@@ -52,7 +52,7 @@ namespace mu2e {
     std::string myModuleLabel_;
 
     // Helper object needed by the member function managePrincipals.
-    art::SourceHelper pm_;
+    art::SourceHelper const& pm_;
 
     // Used to identify boundaries between runs and subruns.
     art::SubRunID lastSubRunID_;

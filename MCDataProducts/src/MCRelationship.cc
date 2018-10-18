@@ -10,22 +10,23 @@ namespace mu2e
 
   MCRelationship::relation MCRelationship::relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) {
     SPPtr ptr1, ptr2;
-    if(mcd1.stepPointMC(StrawDigi::zero).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawDigi::zero)->simParticle();
-    else if(mcd1.stepPointMC(StrawDigi::one).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawDigi::one)->simParticle();
-    if(mcd2.stepPointMC(StrawDigi::zero).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawDigi::zero)->simParticle();
-    else if(mcd2.stepPointMC(StrawDigi::one).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawDigi::one)->simParticle();
+    // should take the earlier of the 2 cluster times FIXME!
+    if(mcd1.stepPointMC(StrawEnd::cal).isNonnull())
+      ptr1 = mcd1.stepPointMC(StrawEnd::cal)->simParticle();
+    else if(mcd1.stepPointMC(StrawEnd::hv).isNonnull())
+      ptr1 = mcd1.stepPointMC(StrawEnd::hv)->simParticle();
+    if(mcd2.stepPointMC(StrawEnd::cal).isNonnull())
+      ptr2 = mcd2.stepPointMC(StrawEnd::cal)->simParticle();
+    else if(mcd2.stepPointMC(StrawEnd::hv).isNonnull())
+      ptr2 = mcd2.stepPointMC(StrawEnd::hv)->simParticle();
     return relationship(ptr1,ptr2);
   }
 
   MCRelationship::relation MCRelationship::relationship(SPPtr const& sppi,SPPtr const& sppj) {
     if(sppi.isNull() || sppj.isNull()) return none;
     if(sppi == sppj)return same;
-    SPPtr pi = sppi->realParent();
-    SPPtr pj = sppj->realParent();
+    SPPtr pi = sppi->originParticle().parent();
+    SPPtr pj = sppj->originParticle().parent();
 
     if(pi.isNonnull() && pi == sppj)return daughter;
     if(pj.isNonnull() && pj == sppi)return mother;
@@ -36,11 +37,11 @@ namespace mu2e
       pvj.push_back(sppj);
       while(pi.isNonnull()){
 	pvi.push_back(pi);
-	pi = pi->realParent();
+	pi = pi->originParticle().parent();
       }
       while(pj.isNonnull()){
 	pvj.push_back(pj);
-	pj = pj->realParent();
+	pj = pj->originParticle().parent();
       }
       vector<art::Ptr<SimParticle> >::iterator ifnd;
       ifnd = find(pvi.begin(),pvi.end(),sppj);

@@ -1,0 +1,37 @@
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : strawHit
+
+source : {
+  module_type : RootInput
+  fileNames   : [ "/scratch/kutschke/Trigger/v2.art" ]
+  maxEvents   : 5
+}
+
+services : {
+
+  message               : @local::default_message
+  TFileService          : { fileName : "strawDigi.root" }
+
+}
+
+physics : {
+
+  analyzers: {
+
+    readStrawDigis: {
+      module_type : ReadStrawDigiReco
+      digisTag    : "mu2eprod"
+    }
+
+
+  }
+
+  e1 : [ readStrawDigis ]
+
+  end_paths      : [e1]
+
+}

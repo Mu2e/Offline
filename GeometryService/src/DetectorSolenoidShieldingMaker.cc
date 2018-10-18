@@ -10,7 +10,7 @@
 #include <vector>
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"

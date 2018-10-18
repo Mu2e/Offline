@@ -8,7 +8,7 @@
 #include <utility>
 #include <cmath>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Vector/TwoVector.h"
 
@@ -80,8 +80,6 @@ namespace mu2e {
 
     xmin_ -= config.getDouble( "world.dirt.minimalMargin.xmin" );
     xmax_ += config.getDouble( "world.dirt.minimalMargin.xmax" );
-
-    std::cout << *this << std::endl; 
 
   }
 

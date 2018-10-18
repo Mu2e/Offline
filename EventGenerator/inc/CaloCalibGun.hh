@@ -43,23 +43,16 @@ namespace art {
 
 namespace mu2e {
 
-
   class SimpleConfig;
   class DetectorSystem;
 
-
-
   class CaloCalibGun: public GeneratorBase {
-
   public:
 
-    CaloCalibGun( art::Run& run, const SimpleConfig& config );
+    CaloCalibGun(CLHEP::HepRandomEngine& engine, art::Run& run, const SimpleConfig& config);
     virtual ~CaloCalibGun();
 
     virtual void generate( GenParticleCollection& );
-
-
-
 
   private:
 

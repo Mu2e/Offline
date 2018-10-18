@@ -13,59 +13,63 @@
 // C++ includes
 #include <iostream>
 #include <vector>
+#include "TrackerConditions/inc/Types.hh"
 
 // Mu2e includes
-#include "DataProducts/inc/StrawIndex.hh"
+#include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawEnd.hh"
 
 namespace mu2e {
 
   struct StrawHit{
   private:
 
-    StrawIndex       _strawIndex;       // See note 1.
-    float            _time;             // (ns)
-    float            _dt;               // (ns)
-    float            _energyDep;        // (MeV)
+    StrawId      _strawId;       
+    TrkTypes::TDCTimes	    _time;             // (ns)
+    TrkTypes::TOTTimes        _tot;               // (ns)
+    float           _energyDep;        // (MeV)
 
   public:
 
     StrawHit():
-      _strawIndex(StrawIndex(-1)),
-      _time(0.),
-      _dt(0.),
-      _energyDep(0.) {
+      _strawId(StrawId(-1)),
+      _time{0.0,0.0},
+      _tot{0.0,0.0},
+      _energyDep(0.){
     }
 
-    // Constructor for a hit that came from an unpacked digi, either
+// Constructor for a hit that came from an unpacked digi, either
     // from data or from the full MC chain.
-    StrawHit( StrawIndex       strawIndex,
-              float            time,
-              float            dt,
+    StrawHit( StrawId       strawId,
+              TrkTypes::TDCTimes const& time,
+              TrkTypes::TOTTimes const& tot,
               float            energyDep  ):
-      _strawIndex(strawIndex),
-      _time(time),
-      _dt(dt),
+      _strawId(strawId),_time(time),_tot(tot),
       _energyDep(energyDep) {
     }
 
     // Accessors
-    StrawIndex strawIndex() const { return _strawIndex; }
-    float      time()       const { return _time;}
-    float      dt()         const { return _dt;}
+    StrawId strawId() const { return _strawId; }
+    float      time(StrawEnd end=StrawEnd::cal)       const { return _time[end];}
+    // return the earliest time
+    float      dt()         const { return _time[StrawEnd::cal] - _time[StrawEnd::hv]; }
+    float      TOT(StrawEnd end=StrawEnd::cal)       const { return _tot[end];}
     float      energyDep()  const { return _energyDep; }
 
     // Accept compiler generated versions of d'tor, copy c'tor, assignment operator.
         bool operator==(StrawHit const& other) const {
-      return (_strawIndex==other._strawIndex&&
-          _time==other._time&&
-          _dt==other._dt&&
-              _energyDep==other._energyDep);
-    }
+	  return (_strawId==other._strawId&&
+	      _time[0]==other._time[0]&&
+	      _time[1]==other._time[1]&&
+	      _tot[0]==other._tot[0]&&
+	      _tot[1]==other._tot[1]&&
+	      _energyDep==other._energyDep);
+	}
     bool operator<( const StrawHit other) const{
-      return ( _strawIndex< other._strawIndex);
+      return ( _strawId< other._strawId);
     }
     bool operator>( const StrawHit other) const{
-      return ( _strawIndex>other._strawIndex);
+      return ( _strawId>other._strawId);
     }
     // Print contents of the object.
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
@@ -76,6 +80,7 @@ namespace mu2e {
     return ost;
   }
 
+   typedef std::vector<mu2e::StrawHit> StrawHitCollection;
 
 } // namespace mu2e
 

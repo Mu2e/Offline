@@ -7,13 +7,14 @@ import os
 Import('env')
 Import('mu2e_helper')
 
-helper=mu2e_helper();
+helper=mu2e_helper(env);
 
 mainlib = helper.make_mainlib ( [ 'mu2e_GeneralUtilities',
                                   'mu2e_ConfigTools',
                                   'mu2e_Mu2eInterfaces',
                                   'art_Framework_Core',
                                   'cetlib',
+                                  'cetlib_except',
                                   'CLHEP' ] )
 
 # This tells emacs to view this file in python mode.

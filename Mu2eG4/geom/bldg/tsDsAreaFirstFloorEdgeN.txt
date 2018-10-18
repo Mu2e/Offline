@@ -15,7 +15,6 @@ double building.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
 vector<double> building.tsDsArea.firstFloorEdge.N.xPositions = {
   -2921,   // A
   0,   // A0
-  0,   // B
   0,   // C
   6705.6,   // E
   6705.6,   // F
@@ -29,7 +28,6 @@ vector<double> building.tsDsArea.firstFloorEdge.N.xPositions = {
 vector<double> building.tsDsArea.firstFloorEdge.N.yPositions = {
   -8661.4,   // A
   -8661.4,   // A0
-  0,   // B
   609.6,   // C
   609.6,   // E
   -1041.4,   // F

@@ -25,8 +25,8 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceCheckResult.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -146,7 +146,7 @@ namespace mu2e
     virtual ~CosmicAnalysis() { }
     virtual void beginJob();
     void analyze(const art::Event& e);
-    void findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
+    void findCrossingDetails(const std::vector<MCTrajectoryPoint> &trajectoryPoints, int dim, double crossingPos,
                              double *crossingPoint, double *crossingDirection);
     void findCrossings(const art::Event& event, const cet::map_vector_key& particleKey);
 
@@ -158,7 +158,7 @@ namespace mu2e
     std::string _hitmakerModuleLabel;
     std::string _hitmakerModuleInstance;
     std::string _crvCoincidenceModuleLabel;
-    std::string _crvRecoPulsesModuleLabel;
+    std::string _crvRecoPulseModuleLabel;
     std::string _volumeModuleLabel;
     std::string _filenameSearchPattern;
     EventInfo   _eventinfo;
@@ -178,7 +178,7 @@ namespace mu2e
     _hitmakerModuleLabel(pset.get<std::string>("hitmakerModuleLabel")),
     _hitmakerModuleInstance(pset.get<std::string>("hitmakerModuleInstance")),
     _crvCoincidenceModuleLabel(pset.get<std::string>("crvCoincidenceModuleLabel")),
-    _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
+    _crvRecoPulseModuleLabel(pset.get<std::string>("crvRecoPulseModuleLabel")),
     _volumeModuleLabel(pset.get<std::string>("volumeModuleLabel")),
     _filenameSearchPattern(pset.get<std::string>("filenameSearchPattern"))
   {
@@ -240,14 +240,14 @@ namespace mu2e
     _tree->Branch("filename",e.filename,"filename[200]/C");
   }
 
-  void CosmicAnalysis::findCrossingDetails(const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints, int dim, double crossingPos,
+  void CosmicAnalysis::findCrossingDetails(const std::vector<MCTrajectoryPoint> &trajectoryPoints, int dim, double crossingPos,
                                            double *crossingPoint, double *crossingDirection)
   {
-    if(!isnan(crossingPoint[0])) return;  //point already found
+    if(!std::isnan(crossingPoint[0])) return;  //point already found
     for(unsigned int i=1; i<trajectoryPoints.size(); i++)
     {
-      CLHEP::Hep3Vector point1=trajectoryPoints[i-1]-_detSysOrigin;
-      CLHEP::Hep3Vector point2=trajectoryPoints[i]-_detSysOrigin;
+      CLHEP::Hep3Vector point1=trajectoryPoints[i-1].pos()-_detSysOrigin;
+      CLHEP::Hep3Vector point2=trajectoryPoints[i].pos()-_detSysOrigin;
       CLHEP::Hep3Vector diffVector=point2-point1;
       if(diffVector[dim]==0) continue;  //these two points are both on the same plane, try to find another pair
       if((point1[dim]>=crossingPos && point2[dim]<=crossingPos)
@@ -284,7 +284,7 @@ namespace mu2e
       {
         if(traj_iter->first->id()==particleKey) 
         {
-          const std::vector<CLHEP::HepLorentzVector> &trajectoryPoints = traj_iter->second.points();
+          const auto &trajectoryPoints = traj_iter->second.points();
           findCrossingDetails(trajectoryPoints, 0, xCrossing1, _eventinfo.xplane1, _eventinfo.xplane1Dir);
           findCrossingDetails(trajectoryPoints, 0, xCrossing2, _eventinfo.xplane2, _eventinfo.xplane2Dir);
           findCrossingDetails(trajectoryPoints, 0, xCrossing3, _eventinfo.xplane3, _eventinfo.xplane3Dir);
@@ -304,6 +304,9 @@ namespace mu2e
 
   void CosmicAnalysis::analyze(const art::Event& event)
   {
+//FIXME
+//Will be fixed later after the update of the CRV code is done
+/*
     _eventinfo.clear();
 
     for(int i=0; i<gROOT->GetListOfFiles()->GetEntries(); i++)
@@ -397,7 +400,7 @@ namespace mu2e
           for(size_t k=0; k<kalReps->size(); k++)
           {
             double momentumDifference=fabs(kalReps->at(k).momentum(0).mag()-104.375);
-            if(momentumDifference<minMomentumDifference || isnan(minMomentumDifference)) selectedTrack=k;
+            if(momentumDifference<minMomentumDifference || std::isnan(minMomentumDifference)) selectedTrack=k;
           }
           
           const KalRep &particle = kalReps->at(selectedTrack); 
@@ -512,14 +515,14 @@ namespace mu2e
           barIndex=coincidenceCombinations[i]._counters[j];
           CLHEP::Hep3Vector pos = CRS->getBar(barIndex).getPosition()-_detSysOrigin;
 
-          if(isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime)
+          if(std::isnan(_eventinfo.firstCoincidenceHitTime) || t<_eventinfo.firstCoincidenceHitTime)
           {
             _eventinfo.firstCoincidenceHitTime=t;
             _eventinfo.firstCoincidenceHitSectorType=sectorType;
             for(int k=0; k<3; k++) _eventinfo.firstCoincidenceHitPos[k]=pos[k];
           }
 
-          if(isnan(_eventinfo.CRVvetoTime[sectorType]) || t<_eventinfo.CRVvetoTime[sectorType])
+          if(std::isnan(_eventinfo.CRVvetoTime[sectorType]) || t<_eventinfo.CRVvetoTime[sectorType])
           {
             _eventinfo.CRVvetoTime[sectorType]=t;
             for(int k=0; k<3; k++) _eventinfo.CRVvetoPos[sectorType][k]=pos[k];
@@ -564,7 +567,7 @@ namespace mu2e
 
         _eventinfo.CRVhit_allSectors =true;
         _eventinfo.CRVhit[sectorType]=true;
-        if(_eventinfo.CRVhitTime[sectorType]>t || isnan(_eventinfo.CRVhitTime[sectorType]))
+        if(_eventinfo.CRVhitTime[sectorType]>t || std::isnan(_eventinfo.CRVhitTime[sectorType]))
         {
           _eventinfo.CRVhitTime[sectorType]=t;
           for(int j=0; j<3; j++)
@@ -575,6 +578,7 @@ namespace mu2e
         }
       }
     }
+*/
 
 /***************/
 /* only a test */
@@ -604,7 +608,10 @@ namespace mu2e
 */
 /***************/
 
+//FIXME
+/*
     _tree->Fill();
+*/
   }
 }
 

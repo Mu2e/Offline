@@ -9,11 +9,12 @@
 // $Date: 2012/06/04 19:28:01 $
 //
 
+class G4VUserPhysicsList;
+namespace fhicl{class ParameterSet;}
+
 namespace mu2e{
 
-  // This only needs to be templated to share
-  // code for fhicl::ParameterSet and SimpleConfig cases.
-  template<class Config> void postG4InitializeTasks(const Config& config);
+  void postG4InitializeTasks(const fhicl::ParameterSet& pset, G4VUserPhysicsList* pL);
 
 }  // end namespace mu2e
 

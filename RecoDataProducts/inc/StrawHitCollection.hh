@@ -11,12 +11,6 @@
 // Original author Rob Kutschke
 //
 
-#include <vector>
-
 #include "RecoDataProducts/inc/StrawHit.hh"
-
-namespace mu2e {
-   typedef std::vector<mu2e::StrawHit> StrawHitCollection;
-}
 
 #endif /* RecoDataProducts_StrawHitCollection_hh */

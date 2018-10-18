@@ -25,7 +25,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "GeometryService/inc/MBSMaker.hh"
@@ -608,9 +608,7 @@ namespace mu2e {
 	std::ostringstream sHoleName;
 	sHoleName << "mbs.steelHoleCenter" << ihole+1;
 	tempLoc = _config.getHep3Vector(sHoleName.str());
-	cout << "DNB:  MBSMaker:  tempLoc is:  " << tempLoc << endl;
 	tempLoc+=moveIt;
-	cout << "DNB:  MBSMaker:  tempLoc moved is:  " << tempLoc << endl;
 	_BSTSHoleCenters.push_back(tempLoc);
       }
       for ( int ihole = 0; ihole < _nHolesUP; ihole++ ) {

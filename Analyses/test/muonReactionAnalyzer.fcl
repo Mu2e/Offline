@@ -1,4 +1,4 @@
-#include "standardServices.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: muonReactionAnalyzer
 

@@ -1,0 +1,47 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remote.ccl
+
+string building.remote.handling.name     = "remoteHandling";
+
+string building.remote.handling.material = "CONCRETE_MARS";
+
+double building.remote.handling.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.offsetFromFloorSurface.y = 2133.6;
+double building.remote.handling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.yHalfThickness           = 2286;
+
+vector<double> building.remote.handling.xPositions = {
+  11684,   // R0
+  11684,   // r1
+  -12319,   // r2
+  -12319,   // R3
+  -11709.4,   // R4
+  -11709.4,   // R5
+  3251.2,   // R6
+  3251.2,   // R7
+  3708.4,   // R8
+  3708.4,   // R9
+  11074.4,   // S0
+  11074   // FR8
+};
+
+vector<double> building.remote.handling.yPositions = {
+  10692.4,   // R0
+  16611.6,   // r1
+  16611.6,   // r2
+  6858,   // R3
+  6858,   // R4
+  16002,   // R5
+  16002,   // R6
+  13716,   // R7
+  13716,   // R8
+  16002,   // R9
+  16002,   // S0
+  10544.6   // FR8
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -224,8 +224,8 @@ namespace mu2e {
   bool 
   Reflect::reflection() const {
 // check basic info
-    bool retval = _utrkinfo._fitstatus > 0 && _dtrkinfo._fitstatus > 0 &&
-      _utrkinfo._fitpart == _dtrkinfo._fitpart;
+    bool retval = _utrkinfo._status > 0 && _dtrkinfo._status > 0 &&
+      _utrkinfo._pdg == _dtrkinfo._pdg;
     if(retval){
       // rough cuts on momentum and direction at tracker entrance
       double dmom = _utrkinfo._ent._fitmom-_dtrkinfo._ent._fitmom;

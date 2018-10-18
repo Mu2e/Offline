@@ -19,7 +19,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"
@@ -191,6 +191,16 @@ namespace mu2e {
 
     return worldVInfo.physical;
   }
+    
+
+    
+    void Mu2eStudyWorld::constructSDandField(){
+        
+        std::cout << "We are in Mu2eStudyWorld::constructSDandField()" << std::endl;
+        
+        //constructWorldSD();
+    }
+
 
   // Adding a step limiter is a two step process.
   // 1) In the physics list constructor add a G4StepLimiter to the list of discrete

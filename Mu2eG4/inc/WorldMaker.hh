@@ -14,17 +14,18 @@
 // Mu2e world.  This class manages the lifetime of
 // the Mu2eUniverse and ConstructMaterials objects.
 //
+// Modified by Lisa Goodenough 7/11/17 to add MT functionality
+// through G4 ConstructSDandField method, which instantiates the
+// thread-local instances of SensitiveDetectors in the threads
+//
 
-//#include <string>
+
 #include <memory>
 
 #include "boost/noncopyable.hpp"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
-
-// Forward references.
-// class G4VPhysicalVolume;
 
 // G4 includes
 #include "G4GeometryManager.hh"
@@ -33,50 +34,44 @@
 #include "G4SolidStore.hh"
 #include "G4VUserDetectorConstruction.hh"
 
+
 namespace mu2e {
 
-  template <typename WorldType, typename MaterialsType=ConstructMaterials>
+  template <typename WorldType, typename MaterialsType=ConstructMaterials>    
   class WorldMaker : public G4VUserDetectorConstruction,
                      private boost::noncopyable
-  {
-  public:
-
-    explicit WorldMaker(std::unique_ptr<WorldType> pw = std::unique_ptr<WorldType>(new WorldType()),
-                        std::unique_ptr<MaterialsType> pm = std::unique_ptr<MaterialsType>(new ConstructMaterials())) :
-      _materials(std::move(pm)),
-      _world(std::move(pw))
     {
-    }
-    ~WorldMaker(){}
+    public:
+        
+        explicit WorldMaker(std::unique_ptr<WorldType> pw = std::unique_ptr<WorldType>(new WorldType()), std::unique_ptr<MaterialsType> pm = std::unique_ptr<MaterialsType>(new ConstructMaterials()))
+        :
+        _materials(std::move(pm)),
+        _world(std::move(pw))
+        {
+        }
+        
+        ~WorldMaker(){}
 
-    // This is the required method prescribed by G4.
-    G4VPhysicalVolume* Construct(){
 
-      // Clean old geometry, if any
-      Clean();
+        // These are required methods prescribed by G4.
+      
+        // Construct() is called by GEANT and just returns world physical volume
+        // Construct() method should contain definition of materials, volumes and visualization attributes
+        G4VPhysicalVolume* Construct();
+      
+        // Given sensitive detector class objects should be thread-local, instantiation of such
+        // thread-localclasses should be implemented in this method ConstructSDandField()
+        void ConstructSDandField();
+      
+        // Accessors
+        WorldType const* getWorld()     { return _world.get(); }
 
-      _materials->construct();
+    private:
 
-      return _world ->construct();
-    }
-
-    // Accessors.
-    WorldType const* getWorld()     { return _world.get(); }
-
-  private:
-
-    // Clean old geometry, if any.
-    void Clean(){
-
-      G4GeometryManager::GetInstance()->OpenGeometry();
-      G4PhysicalVolumeStore::GetInstance()->Clean();
-      G4LogicalVolumeStore::GetInstance()->Clean();
-      G4SolidStore::GetInstance()->Clean();
-
-    }
-
-    std::unique_ptr<MaterialsType> _materials;
-    std::unique_ptr<WorldType>     _world;
+        // Clean old geometry, if any.
+        void Clean();
+        std::unique_ptr<MaterialsType> _materials;
+        std::unique_ptr<WorldType>     _world;
 
   };
 

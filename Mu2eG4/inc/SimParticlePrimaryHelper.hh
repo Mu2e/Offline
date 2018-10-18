@@ -29,41 +29,46 @@ namespace mu2e {
   class SimParticlePrimaryHelper {
   public:
 
-    SimParticlePrimaryHelper(const art::Event& event,
-                             const art::ProductID& simProdID,
-                             const art::Handle<GenParticleCollection>& gensHandle);
+      SimParticlePrimaryHelper(const art::Event* event,
+                               const art::ProductID& simProdID,
+                               const art::Handle<GenParticleCollection>& gensHandle,
+                               const art::EDProductGetter* sim_prod_getter);
 
-    unsigned numPrimaries() const { return entries_.size(); }
+      unsigned numPrimaries() const { return entries_.size(); }
 
-    const art::Ptr<GenParticle>& genParticlePtr(int g4TrkID) const {
-      return entries_.at(g4TrkID - 1).genParticlePtr;
-    }
+      const art::Ptr<GenParticle>& genParticlePtr(int g4TrkID) const {
+          return entries_.at(g4TrkID - 1).genParticlePtr;
+      }
 
-    const art::Ptr<SimParticle>& simParticlePrimaryPtr(int g4TrkID) const {
-      return entries_.at(g4TrkID - 1).simParticlePrimaryPtr;
-    }
-
-    void addEntry(unsigned genParticleIndex, SimParticleCollection::key_type simParticlePrimaryID);
+      const art::Ptr<SimParticle>& simParticlePrimaryPtr(int g4TrkID) const {
+          return entries_.at(g4TrkID - 1).simParticlePrimaryPtr;
+      }
+      
+      void addEntryFromGenParticle(unsigned genId);
+      
+      void addEntryFromStepPointMC (SimParticleCollection::key_type simId);
 
   private:
 
-    struct Entry {
-      art::Ptr<GenParticle> genParticlePtr;
-      art::Ptr<SimParticle> simParticlePrimaryPtr;
-      Entry(const art::Ptr<GenParticle>& g, const art::Ptr<SimParticle>& p)
-        : genParticlePtr(g), simParticlePrimaryPtr(p)
-      {}
-    };
+      struct Entry {
+          art::Ptr<GenParticle> genParticlePtr;
+          art::Ptr<SimParticle> simParticlePrimaryPtr;
+          Entry(const art::Ptr<GenParticle>& g, const art::Ptr<SimParticle>& p)
+          : genParticlePtr(g), simParticlePrimaryPtr(p)
+          {}
+      };
 
-    typedef std::vector<Entry> Entries;
-    Entries entries_;
+      typedef std::vector<Entry> Entries;
+      Entries entries_;
 
-    // need this to create art::Ptr to GenParticles
-    const art::Handle<GenParticleCollection> gensHandle_;
+      // need this to create art::Ptr to GenParticles
+      const art::Handle<GenParticleCollection> gensHandle_;
 
-    // need these to create art::Ptr to SimParticles
-    art::ProductID simProdID_;
-    const art::Event* event_;
+      // need these to create art::Ptr to SimParticles
+      art::ProductID simProdID_;
+      const art::Event* event_;
+      const art::EDProductGetter* simProductGetter_;
+            
   };
 }
 

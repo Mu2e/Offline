@@ -84,7 +84,7 @@ void mu2e::KalRepsPrinter::analyze(const art::Event& event) {
          << tracksTag_.label() << " "
          << ptr                << " "
          << type.name()
-         << " Status: "        << track._fitstatus
+         << " Status: "        << track._status
          << " nHits:  "        << track._nhits
          << " nActive: "       << track._nactive
          << " ent.fitmom:  "   << track._ent._fitmom

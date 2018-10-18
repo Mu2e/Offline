@@ -46,10 +46,9 @@ namespace mu2e {
     // A default c'tor is required for ROOT.
     SimParticle():
       _id(),
-      _parentId(0),
+      _stageOffset(),
       _parentSim(),
       _pdgId(),
-      _genIndex(-1),
       _genParticle(),
       _startPosition(),
       _startMomentum(),
@@ -68,11 +67,11 @@ namespace mu2e {
       _preLastStepKE(-1),
       _nSteps(0),
       _daughterSims(),
-      _weight(0.),
       _endDefined(false){
     }
 
     SimParticle( key_type                       aid,
+                 unsigned                       stageOffset,
                  art::Ptr<SimParticle> const&   aparentSim,
                  PDGCode::type                  apdgId,
                  art::Ptr<GenParticle> const&   agenParticle,
@@ -82,13 +81,11 @@ namespace mu2e {
                  double                         astartProperTime,
                  unsigned                       astartVolumeIndex,
                  unsigned                       astartG4Status,
-                 ProcessCode                    acreationCode,
-                 double                         aweight=1.):
+                 ProcessCode                    acreationCode):
       _id(aid),
-      _parentId(0),
+      _stageOffset(stageOffset),
       _parentSim(aparentSim),
       _pdgId(apdgId),
-      _genIndex(-1),
       _genParticle(agenParticle),
       _startPosition(aposition),
       _startMomentum(amomentum),
@@ -107,7 +104,6 @@ namespace mu2e {
       _preLastStepKE(-1),
       _nSteps(0),
       _daughterSims(),
-      _weight(aweight),
       _endDefined(false)
     {}
 
@@ -136,7 +132,6 @@ namespace mu2e {
 
     void addDaughter( art::Ptr<SimParticle> const& p ){
       _daughterSims.push_back(p);
-      _daughterIds.push_back( key_type(p.key()) );
     }
 
     // Some Accessors/Modifier pairs.
@@ -146,18 +141,19 @@ namespace mu2e {
     key_type  id() const {return _id;}
     key_type& id()       { return _id;}
 
+    unsigned stageOffset() const { return _stageOffset; }
+
     // The parent of this track; may be null.
     art::Ptr<SimParticle> const& parent() const { return _parentSim; }
     art::Ptr<SimParticle>&       parent()       { return _parentSim; }
 
-    // Similar to the above, but follow the genealogy back to the non-trivial parent
-    // This 'bridges' the gaps created in staged MC production, where particles
-    // are stopped at a detector volume.  In that case, the 'parent' is the particle
-    // itself, and the process code is given as 'primary'
-    art::Ptr<SimParticle> const& realParent() const {
-      return selfParent() ? parent()->realParent() : parent();
+    // work back through the genealogy to find the earliest representation of this
+    // physical particle. This bridges the gaps created in staged MC production, where particles
+    // are stopped at a detector volume.
+    SimParticle const& originParticle() const {
+      return selfParent() ? parent()->originParticle() : *this;
     }
-    
+
     // The genparticle corresponding to this track; may be null.
     art::Ptr<GenParticle> const& genParticle() const { return _genParticle;}
     art::Ptr<GenParticle>&       genParticle()       { return _genParticle;}
@@ -170,7 +166,7 @@ namespace mu2e {
     // Where was this particle created: in the event generator or in G4?
     bool isSecondary()   const { return _parentSim.isNonnull(); }
     bool isPrimary()     const { return _genParticle.isNonnull(); }
-    bool selfParent()	 const { return _parentSim.isNonnull() && _creationCode == ProcessCode::mu2ePrimary; }
+    bool selfParent()    const { return _parentSim.isNonnull() && _creationCode == ProcessCode::mu2ePrimary; }
 
     // Some synonyms for the previous two accessors.
     bool hasParent()     const { return _parentSim.isNonnull(); }
@@ -185,9 +181,6 @@ namespace mu2e {
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
     ProcessCode creationCode()      const { return _creationCode;  }
-    ProcessCode realCreationCode()      const {
-      return selfParent() ? parent()->realCreationCode() : creationCode();
-    }
 
     // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
@@ -200,12 +193,13 @@ namespace mu2e {
     double       preLastStepKineticEnergy() const { return _preLastStepKE; }
     int          nSteps()  const { return _nSteps;        }
 
-    // SimParticle indices of daughters of this track.
-    std::vector<key_type>               const& daughterIds() const { return _daughterIds;}
+    // SimParticle daughters of this track.
     std::vector<art::Ptr<SimParticle> > const& daughters()   const { return _daughterSims; }
+    std::vector<art::Ptr<SimParticle> >&       daughters()         { return _daughterSims; }
 
-    // Weight
-    double weight() const { return  _weight;}
+    // SimParticle indices of daughters of this track.
+    // DO NOT USE - this is an expensive (at run time) crutch for legacy code.
+    std::vector<key_type>                      daughterIds() const;
 
     // Is the second half defined?
     bool endDefined() const { return _endDefined;}
@@ -215,11 +209,6 @@ namespace mu2e {
       _daughterSims.clear();
       _daughterSims.reserve(ptr.size());
       _daughterSims.insert( _daughterSims.begin(), ptr.begin(), ptr.end() );
-      _daughterIds.clear();
-      _daughterIds.reserve(ptr.size());
-      for ( size_t i=0; i != ptr.size(); ++i){
-        _daughterIds.push_back( key_type( ptr[i].key() ) );
-      }
     }
 
     // Two older accessors that will soon be removed from the interface.
@@ -239,15 +228,17 @@ namespace mu2e {
     // G4 ID number of this track and of its parent.
     // See notes 1 and 2.
     key_type _id;
-    key_type _parentId;                  // Obsolete and not used.  Will be deleted at a convenient time.
+
+    // The offset between G4 track number and _id above, which
+    // uniquely identifies the Mu2eG4 simulation stage that produced
+    // this particle
+    unsigned _stageOffset;
+
     art::Ptr<SimParticle> _parentSim;
 
     // PDG particle ID code.  See note 1.
     PDGCode::type _pdgId;
 
-    // Index into the container of generated tracks;
-    // -1 if there is no corresponding generated track.
-    int                    _genIndex;      // Obsolete and not used.  Will be deleted at a convenient time.
     art::Ptr<GenParticle>  _genParticle;
 
     // Information at the start of the track.
@@ -271,11 +262,7 @@ namespace mu2e {
     int                     _nSteps;
 
     // SimParticle IDs of daughters of this track.
-    std::vector<key_type>  _daughterIds;
     std::vector<art::Ptr<SimParticle> > _daughterSims;
-
-    // Weight
-    double _weight;
 
     // Is the second half defined?
     bool _endDefined;

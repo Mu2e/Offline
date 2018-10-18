@@ -1,0 +1,7 @@
+           Release notes for Mu2e Offline software, v7_0_8
+           This new series includes breaking changes for MDC2018
+
+1) kutschke Aug 21, 2018
+    - Merge in recent commits from master
+       - valgrid supression file
+       - release notes for last commits of the v6_5_7 release notes

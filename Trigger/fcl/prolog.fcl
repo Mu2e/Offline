@@ -1,0 +1,69 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+EcalTriggerPreselect : {
+    diagLevel              : 0
+    module_type            : EcalTriggerPreselect
+    trkPatRecModuleLabel   : MergePatRec
+    trkQualTag             : MergePatRec
+    caloClusterModuleLabel : CaloClusterFromProtoCluster
+    trackClusterMatchModuleLabel : TrackCaloMatching
+    fitparticle            : 11
+    fitdirection           : 0 
+    TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    virtualhit             : 1 # ask for CE hit on a ECAL virtual detector
+    trkgood                : 1 # 0:no match 1:good track 
+    matchgood              : 1 # 0:no match 1:good track match
+    T0MIN                  : 700
+    ECLUMIN                : 50
+}
+
+FilterEcalMVATrigger:	{
+    diagLevel              : 0
+    module_type            : FilterEcalMVATrigger
+    MVAMethod                  : BDT
+    caloTrigSeedModuleLabel     : CaloTrigger
+    weightsfile            : "Trigger/data/ce_bkg_ecal_20_BDT.weights.xml"
+    TimeOFFSET             : 22.5
+    MVAhighcut0             : 0.1
+    MVArpivot0              : 445 # mm
+    MVApivotcut0            : 0.1
+    MVAlowcut0              : 0.0
+    MVAhighcut1             : 0.1
+    MVArpivot1              : 445 # mm
+    MVApivotcut1            : 0.1
+    MVAlowcut1              : 0.0
+    downscale500factor	       : 1
+}
+
+FilterEcalMixedTrigger:	{
+    diagLevel              : 0
+    module_type            : FilterEcalMixedTrigger
+    MVAMethod              : BDT
+    caloTrigSeedModuleLabel     : CaloTrigger
+    ecalweightsfile        : "Trigger/data/ce_bkg_ecal_20_BDT.weights.xml"
+    mixedweightsfile            : "Trigger/data/ce_bkg_20_BDT.weights.xml"
+    StrawHitCollectionTag  : "makePH"
+    TimeOFFSET             : 22.5
+    MVArpivot              : 445 # mm
+    ecalMVAhighcut0             : -0.3
+    ecalMVApivotcut0            : -0.3
+    ecalMVAlowcut0              : -0.3
+    ecalMVAhighcut1             : -0.3
+    ecalMVApivotcut1            : -0.3
+    ecalMVAlowcut1              : -0.3
+    mixedMVAhighcut0             : -0.1
+    mixedMVApivotcut0            : -0.1
+    mixedMVAlowcut0              : -0.1
+    mixedMVAhighcut1             : -0.1
+    mixedMVApivotcut1            : -0.1
+    mixedMVAlowcut1              : -0.1
+    downscale500factor	       : 1
+    step                       : 10
+}  
+
+END_PROLOG

@@ -9,7 +9,7 @@
 #include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 #include "BTrk/DetectorModel/DetMaterial.hh"
 #include "BTrk/MatEnv/MatDBInfo.hh"
-#include "cetlib/coded_exception.h"
+#include "cetlib_except/coded_exception.h"
 #include "TTrackerGeom/inc/TTracker.hh"
 
 using namespace std;
@@ -49,28 +49,27 @@ namespace mu2e {
 // construct the type.  This is reused by all straws
     _strawtype = new DetStrawType(gasmat,wallmat,wiremat,offset,tol,rfrac);
 // loop over Planes
-    for(auto plane : ttracker.getPlanes()){
+    // for(auto plane : ttracker.getPlanes()){ // tmp till we process cd3
+    for ( size_t i=0; i!= ttracker.nPlanes(); ++i){
+      const auto& plane = ttracker.getPlane(i);
   // loop over panels
-      for(auto panel : plane.getPanels()){
-  // loop over layers: this shouldn't be here, FIXME!!!
-	for(auto layer : panel.getLayers()){
-  // finally loop over straws
-	  for(auto straw : layer.getStraws()){
+      for(auto& panel : plane.getPanels()){
+  // loop over straws
+        for (const auto& straw : panel.getStrawPointers()) {
   // build the straw elements from this
-	    DetStrawElem* elem = new DetStrawElem(_strawtype,straw);
+          DetStrawElem* elem = new DetStrawElem(_strawtype,straw);
 // push this into the map
-	    _strawmap[straw->index()] = elem;
-	  }
+          _strawmap[straw->id()] = elem;
 	}
       }
     }
   }
 
   const DetStrawElem* Mu2eDetectorModel::strawElem(Straw const& straw) const{
-    return strawElem(straw.index());
+    return strawElem(straw.id());
   }
   
-  const DetStrawElem* Mu2eDetectorModel::strawElem(StrawIndex const& istraw) const{
+  const DetStrawElem* Mu2eDetectorModel::strawElem(StrawId const& istraw) const{
     const DetStrawElem* retval(0);
     auto ifnd = _strawmap.find(istraw);
     if(ifnd != _strawmap.end())

@@ -10,7 +10,7 @@
 #include <cmath>
 #include <map>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelDenseId.hh"

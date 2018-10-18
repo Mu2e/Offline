@@ -19,7 +19,7 @@
 //
 //    At this writing allowed non-zero values are:
 //     1  - one or more tracks were stopped in SteppingAction because they took too many steps.
-//          Usually these are particles trapped in the field.
+//          Usually these are particles trapped in the field. (or killed by the Field Propagator)
 //     10 - The SimParticleCollection has overflowed.  So there can be hits that point back to
 //          a Simparticle that is not in the collection.
 //
@@ -43,6 +43,7 @@ namespace mu2e {
       _nG4Tracks(0),
       _overflowSimParticles(0),
       _nKilledStepLimit(0),
+      _nKilledByFieldPropagator(0),
       _cpuTime(0),
       _realTime(0){}
 
@@ -50,6 +51,7 @@ namespace mu2e {
               int nG4Tracks,
               bool overflowSimParticles,
               int nKilledStepLimit,
+              int nKilledByFieldPropagator,
               float cpuTime,
               float realTime
               ):
@@ -57,6 +59,7 @@ namespace mu2e {
       _nG4Tracks(nG4Tracks),
       _overflowSimParticles(overflowSimParticles),
       _nKilledStepLimit(nKilledStepLimit),
+      _nKilledByFieldPropagator(nKilledByFieldPropagator),
       _cpuTime(cpuTime),
       _realTime(realTime)
     {}
@@ -70,6 +73,7 @@ namespace mu2e {
     int             nG4Tracks() const { return _nG4Tracks; }
     bool overflowSimParticles() const { return _overflowSimParticles; }
     int      nKilledStepLimit() const { return _nKilledStepLimit; }
+    int nKilledByFieldPropagator() const { return _nKilledByFieldPropagator; }
     float             cpuTime() const { return _cpuTime; }
     float            realTime() const { return _realTime; }
 
@@ -89,6 +93,9 @@ namespace mu2e {
 
     // Number of G4Tracks killed in SteppingAction because there were too many steps.
     int _nKilledStepLimit;
+
+    // Number of G4Tracks killed by the Field Propagator
+    int _nKilledByFieldPropagator;
 
     // Execution time, in seconds.  CPU time is the sum of user time plus system time.
     // The times come from G4Timer - the least count is 10 ms and it appears that the resolution

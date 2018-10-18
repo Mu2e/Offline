@@ -1,0 +1,87 @@
+           Release notes for Mu2e Offline software, v6_0_7
+
+14) Feb 20, 2017 kutschke
+    Switch to mu2e_artdaq_core v1_00_06 for compatibility with mu2edaq* machines.
+    I was previously using an untagged version working towards releas v1_01_00.
+
+13) Feb 20, 2017 kutschke
+    Append offline include directory to ROOT_INCLUDE_PATH
+
+12) Feb 20, 2017 kutschke
+    New code to look at StrawDigis made via the trigger
+      - Analyses/src/ReadStrawHitReco_module.cc
+      - Analyses/test/strawDigi.fcl
+
+11) Feb 20, 2017 kutschke
+   Update scripts in the ups_install directory
+     - Add s qualfier
+     - Support for builds with and without the trigger qualifier
+     - Lots of bug fixes
+
+10) Feb 20, 2017 kutschke
+   Rename the buildopts --triggerSplit option to just --trigger.
+   It is now used to control setup options as well as to control
+   skipping packages not needed in the trigger.
+
+   Files affecte:  SConstruct buildopts setup.sh
+
+9) Feb 17, 2017 kutschke
+   New code to look at StrawHits made via the trigger.
+     - Analyses/src/ReadStrawHitReco_module.cc
+     - Analyses/test/strawHit.fcl
+
+8) 18 Feb 2017  dnbrow01
+   Small improvements in HRS and PS cryostat geometry based on discussions with
+   Rick Coleman.
+   modified:   GeometryService/inc/ProductionSolenoidMaker.hh
+   modified:   GeometryService/src/PSShieldMaker.cc
+   modified:   GeometryService/src/ProductionSolenoidMaker.cc
+   modified:   Mu2eG4/geom/PSShield_v06.txt
+   modified:   Mu2eG4/geom/ProductionSolenoid_v02.txt
+   modified:   Mu2eG4/src/constructPSShield.cc
+   modified:   ReleaseNotes/v6/v6_0_7.txt
+
+
+7) Feb 17, 2017 echenard
+   Removed unnecessary packing / unpacking in calorimeter digitization chain, removinh unneeded module and data product
+   Renamed Calorimeter production module all singular (yes, these few scattered 's' were bothering me...)
+
+6) Feb 13, 2017 kutschke
+   Remove tbb from ups packages we setup.  It was needed temporarily
+   because of an oversight in the art table file - that has since been fixed.
+
+5) Feb 13, 2017 kutschke
+   bin/satelliteFuncs
+     - Add setting of ROOT_INCLUDE_PATH to the setup.sh in a satellite release.
+
+4) Feb 13, 2017 kutschke
+   Renamed bin/genreflex.sh to bin/mu2e_genreflex
+     - this is script is executed, not sourced - so no .sh
+     - the base name is more accurate
+   Modify SConstruct to use mu2e_genreflex
+     - Remove the hard coded path to mu2e_genreflex and
+       let the command be resolved from $PATH.
+
+3) Feb 13, 2017 kutschke
+   Add support for copying a build of Offline into a ups product.
+   All files are in the ups_install directory.
+   Later in the day change the ups product name from "Offline" to "offline".
+
+2) Feb 13, 2017 kutschke
+   Add support for building a release for use in the trigger.
+     - Do not setup G4 and do not build any code that requires G4
+     - Do not build Sandbox (keep HelloWorld for debugging)
+
+   buildopts  - add a new option: --triggerStrip
+   setup.sh   - do not setup geant4 if --triggerStrip is asserted
+   SConstruct - remove selected SConscript files from the build.
+
+1)  dnbrow01  07 Feb 2017
+    Add the above-ground walls to the Mu2e building.  Update the PS Cryostat,
+    crucially modifying Al->Stainless Steel and correcting the inner radius.
+    new file:   Mu2eG4/geom/ProductionSolenoid_v02.txt
+    new file:   Mu2eG4/geom/bldg/exteriorWallE.txt
+    new file:   Mu2eG4/geom/bldg/exteriorWallN.txt
+    new file:   Mu2eG4/geom/bldg/exteriorWallS.txt
+    modified:   Mu2eG4/geom/mu2eHall.txt
+    modified:   ReleaseNotes/v6/v6_0_7.txt

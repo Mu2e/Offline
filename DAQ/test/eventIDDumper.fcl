@@ -1,0 +1,34 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+# Example fhicl file for running the ReadEventIDs module
+
+process_name : EventIDDumper
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+  maxEvents   : -1
+}
+
+physics : {
+
+  analyzers: {
+
+    readEventIDs: {
+      diagLevel       : 1
+      maxFullPrint    : -1
+      module_type : ReadEventIDs
+      tableFile : "tsTable.bin"
+      outputFile : "parsedEventIDs.txt"
+      bufferSize      : 1000
+    }
+
+  }
+
+  e1 : [ readEventIDs ]
+
+  end_paths      : [e1]
+
+}

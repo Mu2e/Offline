@@ -15,7 +15,7 @@
 #include "GeometryService/inc/G4GeometryOptions.hh"
 
 // Framework include files
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Boost includes
 #include "boost/algorithm/string/replace.hpp"

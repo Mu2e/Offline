@@ -10,7 +10,7 @@
 //
 // Added proton beam inlet to HRS.  David N. Brown (Louisville), 
 // March 2015
-
+// Add upstream and downstream end rings to HRS, January 2017
 #include <ostream>
 #include <vector>
 
@@ -52,10 +52,14 @@ namespace mu2e {
       Groove(); // persistency for vector<Groove> requires default ctr.
     };
 
+    const int& version() const { return version_; } // Versioning implemented by DNB, Jan 2017
+
     const std::vector<Polycone>& shells() const { return shells_; }
+    const std::vector<Polycone>& endRings() const { return endRings_;}
 
     const std::vector<Groove>& grooves() const { return grooves_; }
     unsigned nGrooves() const { return grooves_.size(); }
+
 
     const Tube beamInlet() const { return beamInlet_; }
     const double getBeamAngleY() const { return beamAngleY_; }
@@ -74,6 +78,8 @@ namespace mu2e {
 
     std::vector<Polycone> shells_;
     std::vector<Groove> grooves_;
+    int version_;
+    std::vector<Polycone> endRings_;
     Tube beamInlet_;
     double beamAngleY_;
     double beamAngleX_;

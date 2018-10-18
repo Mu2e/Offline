@@ -10,7 +10,7 @@
 #include <ostream>
 
 // Framework includes.
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"

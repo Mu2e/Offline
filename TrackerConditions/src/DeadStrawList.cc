@@ -38,9 +38,9 @@ namespace mu2e {
     // Out-of-class functions to deal with the parameter set work.
     // Kept out-of-class to hide implementation from the header.
     void addDeadPlanes( TTracker const& tracker,
-                         fhicl::ParameterSet const& pset,
-                         set<DeadStrawRange>& dead,
-                         bool verbosity ){
+                        fhicl::ParameterSet const& pset,
+                        set<DeadStrawRange>& dead,
+                        bool verbosity ){
 
       vector<int> devs = pset.get<vector<int> >( "deadPlanes", vector<int>() );
 
@@ -55,9 +55,9 @@ namespace mu2e {
     }
 
     void addDeadPanels( TTracker const& tracker,
-                         fhicl::ParameterSet const& pset,
-                         set<DeadStrawRange>& dead,
-                         bool verbosity  ){
+                        fhicl::ParameterSet const& pset,
+                        set<DeadStrawRange>& dead,
+                        bool verbosity  ){
 
       vector<string> secs = pset.get<vector<string> >( "deadPanels", vector<string>() );
       vector<PanelId> secIds;
@@ -77,29 +77,29 @@ namespace mu2e {
 
     }
 
+    // fixme: rewrite using panels if needed
+    // void addDeadLayers( TTracker const& tracker,
+    //                     fhicl::ParameterSet const& pset,
+    //                     set<DeadStrawRange>& dead,
+    //                      bool verbosity  ){
 
-    void addDeadLayers( TTracker const& tracker,
-                        fhicl::ParameterSet const& pset,
-                        set<DeadStrawRange>& dead,
-                         bool verbosity  ){
+    //   vector<string> lays = pset.get<vector<string> >( "deadLayers", vector<string>() );
+    //   vector<LayerId> layIds;
 
-      vector<string> lays = pset.get<vector<string> >( "deadLayers", vector<string>() );
-      vector<LayerId> layIds;
+    //   for ( vector<string>::const_iterator i=lays.begin(), e=lays.end();
+    //         i != e; ++i ){
+    //     layIds.push_back( LayerId(*i) );
+    //   }
 
-      for ( vector<string>::const_iterator i=lays.begin(), e=lays.end();
-            i != e; ++i ){
-        layIds.push_back( LayerId(*i) );
-      }
+    //   MarkAsDead marker(dead);
 
-      MarkAsDead marker(dead);
+    //   for ( vector<LayerId>::const_iterator i=layIds.begin(), e=layIds.end();
+    //         i != e; ++i ){
+    //     if ( verbosity > 0 ) cout << "Deadening straws in Layer: " << *i << endl;
+    //     tracker.getLayer(*i).forAllStraws( marker );
+    //   }
 
-      for ( vector<LayerId>::const_iterator i=layIds.begin(), e=layIds.end();
-            i != e; ++i ){
-        if ( verbosity > 0 ) cout << "Deadening straws in Layer: " << *i << endl;
-        tracker.getLayer(*i).forAllStraws( marker );
-      }
-
-    }
+    // }
 
     void addDeadStraws( TTracker const& tracker,
                         fhicl::ParameterSet const& pset,
@@ -124,23 +124,23 @@ namespace mu2e {
     }
 
     void addPartlyDeadStraws( TTracker const& tracker,
-                        fhicl::ParameterSet const& pset,
-                        set<DeadStrawRange>& dead,
-                        bool verbosity  ){
+                              fhicl::ParameterSet const& pset,
+                              set<DeadStrawRange>& dead,
+                              bool verbosity  ){
 
       vector<string> dstraws = pset.get<vector<string> >( "PartlyDeadStraws", vector<string>() );
 
       for ( auto dstring : dstraws){
-// split the string into a StrawId (underscore delimited) and the FP range
+        // split the string into a StrawId (underscore delimited) and the FP range
 	std::istringstream dstrings(dstring);
 	double range(0.0);
 	std::string sidname;
 	dstrings >> sidname >> range;
 	// check
 	if(range == 0.0)
-        throw cet::exception("CONFIG")
-          << "DeadStrawList: expected StrawId and range but got "
-	  << dstring << endl;
+          throw cet::exception("CONFIG")
+            << "DeadStrawList: expected StrawId and range but got "
+            << dstring << endl;
 	StrawId sid(sidname);
         Straw const& straw = tracker.getStraw(sid);
         dead.insert(DeadStrawRange(straw,range));
@@ -161,7 +161,7 @@ namespace mu2e {
     // first, mark completely dead straws
     addDeadPlanes( tracker, pset, _deadstraws, _verbosity );
     addDeadPanels( tracker, pset, _deadstraws, _verbosity );
-    addDeadLayers( tracker, pset, _deadstraws, _verbosity );
+    //    addDeadLayers( tracker, pset, _deadstraws, _verbosity );
     addDeadStraws( tracker, pset, _deadstraws, _verbosity );
 
     // Then, add dead straw ranges.  set semantics insures a
@@ -175,22 +175,19 @@ namespace mu2e {
     }
 
     if(_verbosity > 1) {
-      std::deque<Straw> straws = tracker.getAllStraws();
-      for(auto straw: straws){
-	std::cout << "Straw Index " << straw.index() << " Id " << straw.id() << endl;
-      }
+      for(const auto & straw: tracker.getAllStraws())
+	std::cout << "Straw Id " << straw.id() << endl;
     }
-
   }
 
-  bool DeadStrawList::isDead ( StrawIndex ind,double hitpos) const {
+  bool DeadStrawList::isDead ( StrawId id,double hitpos) const {
     bool retval(false);
-    auto ifnd = _deadstraws.find(DeadStrawRange(ind));
+    auto ifnd = _deadstraws.find(DeadStrawRange(id));
     if(ifnd != _deadstraws.end()){
       if(ifnd->_range > 0)
-	retval = fabs(hitpos) < ifnd->_range;
+        retval = fabs(hitpos) < ifnd->_range;
       else
-	retval = fabs(hitpos) > -ifnd->_range;
+        retval = fabs(hitpos) > -ifnd->_range;
     }
     return retval;
   }
@@ -199,8 +196,8 @@ namespace mu2e {
     TTracker const& tracker(*GeomHandle<TTracker>());
 
     for( auto idead: _deadstraws) {
-      out << "Straw " << tracker.getStraw(idead._strawind).id() 
-      << " is dead for distances < " << idead._range << endl;
+      out << "Straw " << tracker.getStraw(idead._strawId).id()
+          << " is dead for distances < " << idead._range << endl;
     }
 
   }

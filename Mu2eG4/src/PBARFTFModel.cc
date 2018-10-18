@@ -36,7 +36,7 @@
 //       class implementing the excitation in the FTF Parton String Model
 // Modified: KLG added Zhengyun's pbar related modifications (on the top of 9.6.p04)
 // ------------------------------------------------------------
-
+#if G4VERSION<4099
 #include <utility> 
 
 #include "Mu2eG4/inc/PBARFTFModel.hh"
@@ -1815,3 +1815,4 @@ void PBARFTFModel::ModelDescription(std::ostream& desc) const
 {
 	desc << "please add description here" << G4endl;
 }
+#endif

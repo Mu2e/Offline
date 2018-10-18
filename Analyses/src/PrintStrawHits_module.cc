@@ -56,7 +56,7 @@ namespace mu2e {
 	       <<std::endl;
       for (StrawHitCollection::const_iterator i = coll.begin(); i != coll.end(); ++i) {
 	printf("Straw hit index: %8i time: %10.3f dt: %10.3f eDep: %10.5f\n",
-	       i->strawIndex().asInt(), i->time(), i->dt(), i->energyDep());
+	       i->strawId().asUint16(), i->time(), i->dt(), i->energyDep());
       }
       std::cout<<"PrintStrawHits:   end printing collection moduleLabel = \""<<_makeSHmoduleLabel
 	       <<"\", makeSHinstance = \""<<_makeSHinstance<<"\""

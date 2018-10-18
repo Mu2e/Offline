@@ -27,7 +27,7 @@ mu2e::StrawHitPrinter::Print(const art::Handle<StrawHitCollection>& handle,
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::StrawHitPrinter::Print(const art::ValidHandle<StrawHitCollection>& handle,
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -69,7 +69,7 @@ mu2e::StrawHitPrinter::Print(const mu2e::StrawHit& obj, int ind, std::ostream& o
   if(ind>=0) os << std::setw(4) << ind;
 
   os 
-    << " " << std::setw(5) << obj.strawIndex().asInt()
+    << " " << std::setw(5) << obj.strawId().asUint16()
     << " " 
     << " " << std::setw(8) << std::setprecision(1) << obj.time()
     << " " << std::setw(8) << std::setprecision(3) << obj.dt()

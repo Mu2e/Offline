@@ -6,7 +6,7 @@
 
 process_name : digiG4s2delta
 
-outputs.FullOutput.fileName    : "dataDigiDelta.root"
+outputs.FullOutput.fileName    : "dataDigiDelta.art"
 services.TFileService.fileName : "histDigiDelta.root"
 
 physics.producers.pixelDigitization.geomModuleLabel : "geoms2"

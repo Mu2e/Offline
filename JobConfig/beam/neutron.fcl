@@ -1,0 +1,27 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Neutrons from muon capture.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: neutron
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate.physics: {
+    pdgId : 2112
+    spectrumShape: tabulated
+    spectrumFileName: "ConditionsService/data/neutronSpectrum.txt"
+    spectrumVariable: kineticEnergy
+}
+
+services.TFileService.fileName: "nts.owner.neutron.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.neutron-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.neutron-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.neutron-truncated.version.sequencer.art"

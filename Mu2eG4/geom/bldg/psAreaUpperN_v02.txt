@@ -1,0 +1,39 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_upperExtension_N.ccl
+
+string building.psArea.upper.N.name     = "psAreaUpperN";
+
+string building.psArea.upper.N.material = "CONCRETE_MARS";
+
+double building.psArea.upper.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.upper.N.offsetFromFloorSurface.y = 4787.9;
+double building.psArea.upper.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.upper.N.yHalfThickness           = 393.7;
+
+vector<double> building.psArea.upper.N.xPositions = {
+  -17134.6,   // R0
+  -12319,   // P6
+  -12319,   // R1
+  -11709.4,   // R2
+  -11709.4,   // Q2
+  -16669.8,   // R5
+  -16742.1,   // R6
+  -17038.2   // R7
+};
+
+vector<double> building.psArea.upper.N.yPositions = {
+  2173.52,   // R0
+  3349.22,   // P6
+  6502.4,   // R1
+  6502.4,   // R2
+  2765.96,   // Q2
+  1554.9,   // R5
+  1851.01,   // R6
+  1778.71   // R7
+};
+
+// Local Variables:
+// mode:c++
+// End:

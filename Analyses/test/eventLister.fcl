@@ -4,7 +4,7 @@
 # $Author: kutschke $
 # $Date: 2013/01/22 00:05:10 $
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : eventLister
 

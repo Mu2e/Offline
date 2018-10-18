@@ -301,16 +301,15 @@ namespace mu2e {
       tntpArray[idx++] = hit.energyDep(); //leaf 5
 
       //Get hit straw
-      StrawIndex si = hit.strawIndex();
-      Straw str = tracker.getStraw(si);
-      StrawId sid = str.id();
-      LayerId lid = sid.getLayerId();
-      PlaneId did = sid.getPlaneId();
-      PanelId secid = sid.getPanelId();
+      StrawId sid = hit.strawId();
+      Straw str = tracker.getStraw(sid);
+      // LayerId lid = sid.getLayerId();
+      // PlaneId did = sid.getPlaneId();
+      // PanelId secid = sid.getPanelId();
 
-      tntpArray[idx++] = lid.getLayer(); //leaf 6
-      tntpArray[idx++] = did; //leaf 7
-      tntpArray[idx++] = secid.getPanel(); //leaf 8
+      tntpArray[idx++] = sid.getLayer(); //leaf 6
+      tntpArray[idx++] = sid.getPlane(); //leaf 7
+      tntpArray[idx++] = sid.getPanel(); //leaf 8
       tntpArray[idx++] = sid.getStraw(); //leaf 9
 
 
@@ -479,7 +478,7 @@ namespace mu2e {
   void BkgRates::doCalorimeter(art::Event const& evt, bool skip) {
 
     if (skip) return;
-
+/*
     const double CrDensity = 7.4*(CLHEP::g/CLHEP::cm3);
 
     //Get handle to the calorimeter
@@ -487,7 +486,7 @@ namespace mu2e {
     if( ! geom->hasElement<Calorimeter>() ) return;
 
     GeomHandle<Calorimeter> cg;
-    double CrMass  = CrDensity*cg->caloGeomInfo().crystalVolume();
+    double CrMass  = CrDensity*cg->caloInfo().crystalVolume();
 
 
     // Get handles to calorimeter collections
@@ -537,6 +536,7 @@ namespace mu2e {
       CaloCrystalHit const & hit = (*caloCrystalHits).at(i);
       if (hit.energyDep() < _minimumEnergyCalo) continue;
       
+
       std::vector<art::Ptr<CaloHit> > const& ROIds  = hit.readouts();
       
       //      cout << "Event " << evt.id().event() << ". In the caloCrystalHits there are " << ROIds.size() << " RO associated" << endl;
@@ -559,9 +559,9 @@ namespace mu2e {
       size_t collectionPosition = ROIds.at(0).key();
       CaloHit const & thehit = *ROIds.at(0);
 
-      int crystalId = cg->crystalByRO(thehit.id());
+      int crystalId = cg->caloInfo().crystalByRO(thehit.id());
       CLHEP::Hep3Vector cryCenter =  cg->crystal(crystalId).position();
-      int sectionId = cg->crystal(crystalId).sectionId();
+      int diskId = cg->crystal(crystalId).diskId();
 
 
 
@@ -572,10 +572,10 @@ namespace mu2e {
       double dose = hit.energyDep() / CrMass / (CLHEP::joule/CLHEP::kg);
       cntpArray[idx++] = dose;
       cntpArray[idx++] = crystalId;
-      cntpArray[idx++] = sectionId;
+      cntpArray[idx++] = diskId;
       cntpArray[idx++] = cryCenter.getX() + 3904.;  //value used to shift in tracker coordinate system
       cntpArray[idx++] = cryCenter.getY();
-      cntpArray[idx++] = cryCenter.getZ() - 10200;  //value used to shift in tracker coordinate system
+      cntpArray[idx++] = cryCenter.getZ() - 10200;  value used to shift in tracker coordinate system.  The hardwired value should be changed to a parametrized version if this is ever uncommented.
       
 
       PtrStepPointMCVector const & mcptr(hits_mcptr->at(collectionPosition));      
@@ -695,6 +695,7 @@ namespace mu2e {
       }
       _cNtup->Fill(cntpArray);
     }
+*/
   } // end of doCalorimeter
   
   

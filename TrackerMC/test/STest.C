@@ -13,8 +13,11 @@
 #include "TMath.h"
 #include "TProfile.h"
 #include "TDirectory.h"
+#include "TFitResultPtr.h"
+#include "TFitResult.h"
+#include "TGraph.h"
 
-void STest(TTree* sdiag, TTree* cdiag, char* page ="G4") {
+void STest(TTree* sdiag, const char* page ="G4") {
   TString spage(page);
   if(spage == "G4") {
     THStack* sstack = new THStack("sstack","G4 Step Length in Straw Gas;step (mm)");
@@ -54,11 +57,11 @@ void STest(TTree* sdiag, TTree* cdiag, char* page ="G4") {
     sdiag->Project("selen","stepE*1000:steplen");
     sdiag->Project("pe","partP");
 
-    sstack->Add(slenl);
     sstack->Add(slenh);
+    sstack->Add(slenl);
  
-    estack->Add(sel);
     estack->Add(seh);
+    estack->Add(sel);
 
     TCanvas* g4can = new TCanvas("g4can","g4can",1000,1000);
     g4can->Divide(2,2);
@@ -83,54 +86,96 @@ void STest(TTree* sdiag, TTree* cdiag, char* page ="G4") {
     pe->Draw();
 
   } else if(spage == "cluster") {
-    THStack* cstack = new THStack("cstack","Number of clusters");
-//    TH1F* nc = new TH1F("nc","Number of clusters",50,-0.5,49.5);
-    TH1F* nch = new TH1F("nch","Number of clusters",50,-0.5,49.5);
-    TH1F* ncl = new TH1F("ncl","Number of clusters",50,-0.5,49.5);
-    TH2F* ncs = new TH2F("ncs","Number of clusters vs G4 step length;step (mm)",50,0.5,10.0,50,-0.5,49.5);
-    TH1F* ne = new TH1F("ne","Number of electrons/cluster",15,-0.5,14.5);
-//    nc->SetStats(0);
+    TH2F* nch = new TH2F("nch","N Clusters vs G4 Step Length;Step Length (mm)",50,0.0,10.0,60,-0.5,59.5);
+    TProfile* nchp = new TProfile("nchp","N Clusters vs G4 Step Length;Step Length (mm)",50,0.0,10.0,-0.5,99.5,"S");
+    TH1F* ncl = new TH1F("ncl","N Clusters",12,-0.5,11.5);
+    TH1F* nech = new TH1F("nech","Number of electrons/cluster",25,-0.5,24.5);
+    TH1F* necl = new TH1F("necl","Number of electrons/cluster",300,-0.5,299.5);
+    TH2F* eeh = new TH2F("eeh","Sum electron energy vs G4 Step Energy;G4 Step Energy (KeV);#Sigma N_{e}#timesE_{avg} (KeV)",100,0,5.0,100,0.0,5.0);
+    TH2F* eel = new TH2F("eel","Sum electron energy vs G4 Step Energy;G4 Step Energy (KeV);#Sigma N_{e}#timesE_{avg} Energy (KeV)",100,0,100.0,100,0.0,100.0);
+
     nch->SetStats(0);
+    nchp->SetStats(0);
+    necl->SetStats(0);
+    eel->SetStats(0);
+//    eeh->SetStats(0);
+    nech->SetFillColorAlpha(kRed,0.5);
     ncl->SetStats(0);
-    nch->SetLineColor(kRed);
-    nch->SetFillColor(kRed);
-    ncl->SetLineColor(kGreen);
-    ncl->SetFillColor(kGreen);
-    ncs->SetStats(0);
-    ne->SetStats(0);
+    eeh->SetStats(0);
+    necl->SetFillColor(kGreen);
+    TCut mini("partPDG==11&&partP>100");
+    TCut highi("partPDG==2212||partPDG==11&&partP<0.3");
 
-//    sdiag->Project("nc","nsubstep");
-    sdiag->Project("nch","nsubstep","partP>100");
-    sdiag->Project("ncl","nsubstep","partP<5");
-    sdiag->Project("ncs","nsubstep:steplen");
-    cdiag->Project("ne","nion");
+    sdiag->Project("nch","nclust:steplen",mini);
+    sdiag->Project("nchp","nclust:steplen",mini);
+    sdiag->Project("ncl","nclust",highi);
+    sdiag->Project("nech","clusters._ne",mini);
+    sdiag->Project("necl","clusters._ne",highi);
+    sdiag->Project("eeh","eesum*1.0e3:stepE*1.0e3",mini);
+    sdiag->Project("eel","eesum*1.0e3:stepE*1.0e3",highi);
 
-    cstack->Add(ncl);
-    cstack->Add(nch);
+    // create a histogram from the prob. distribution and scale it
+    std::vector<double> nProb{0.656,0.15,0.064,0.035,0.0225,0.0155,0.0105,
+      0.0081,0.0061, 0.0049, 0.0039, 0.0030, 0.0025, 0.0020, 0.0016, 0.0012, 0.00095, 0.00075}; // Blum, table 1.4
+    TH1F* neB = new TH1F("neB","Number of electrons/cluster",25,-0.5,24.5);
+    for(size_t iprob=0;iprob<nProb.size();++iprob){
+      neB->Fill(iprob+1.0,nProb[iprob]);
+    }
+    neB->SetStats(0);
+    neB->Scale(nech->GetEntries());
+    neB->SetLineColor(kBlack);
+//    neB->SetFillColor(kYellow);
+    TFitResultPtr fp = nchp->Fit("pol1","+S");
+    double slope = fp->Parameter(1);
 
-    TCanvas* ccan = new TCanvas("ccan","ccan",800,800);
-    ccan->Divide(2,2);
-    ccan->cd(1);
-    ne->Draw();
-    ccan->cd(2);
-//    nc->Draw();
-//    nch->Draw("same");
-//    ncl->Draw("same");
-    cstack->Draw();
-    TLegend* cleg = new TLegend(0.5,0.6,0.9,0.9);
-    cleg->AddEntry(nch,"E_{e} > 100 MeV");
-    cleg->AddEntry(ncl,"E_{e} < 5 MeV");
-//    cleg->AddEntry(nc,"All E_{e}");
-    cleg->Draw();
-ccan->cd(3);
-    ncs->Draw("colorz");
+    std::vector<float> nmean;
+    std::vector<float> nspread;
+    for(int ibin=2;ibin<nchp->GetNbinsX();++ibin){
+      nmean.push_back(sqrt(nchp->GetBinContent(ibin)));
+      nspread.push_back(nchp->GetBinError(ibin));
+    }
+    TGraph* ncs = new TGraph(nmean.size(),nmean.data(),nspread.data());
+    ncs->SetTitle("N_{c} Spread vs sqrt(<N_{c}>);sqrt(<N_{c}>);#sigma_{Nc}");
 
-  } else if(spage == "gain") {
-
-    TH1F* gp = new TH1F("gp","Straw Gain",100,0,4e5);
-    cdiag->Project("gp","gain");
-    TCanvas* gcan = new TCanvas("gcan","gcan",600,600);
-    gp->Draw();
-
+    char legtit[80];
+    TCanvas* hcan = new TCanvas("hcan","hcan",600,600);
+    hcan->Divide(2,2);
+    hcan->cd(1);
+    nch->Draw("colorz");
+    nchp->Draw("same");
+    TLegend* fleg = new TLegend(0.2,0.7,0.6,0.9);
+    snprintf(legtit,80,"Fit Slope = %3.2f mm^{-1}",slope);
+    fleg->AddEntry(nchp,legtit,"");
+    fleg->Draw();
+    hcan->cd(2);
+    ncs->Draw("ACP");
+    hcan->cd(3);
+    neB->Draw("HIST");
+    nech->Draw("same");
+    neB->Draw("HISTsame");
+    TLegend* leg = new TLegend(0.4,0.7,0.9,0.9);
+    snprintf(legtit,80,"Input <N_{e}> = %3.2f",neB->GetMean());
+    leg->AddEntry(neB,legtit,"LF");
+    snprintf(legtit,80,"Sim Result <N_{e}> = %3.2f",nech->GetMean());
+    leg->AddEntry(nech,legtit,"F");
+    leg->Draw();
+    hcan->cd(4);
+    eeh->Draw("colorz");
+    TLine* diag = new TLine(0.0,0.0,5.0,5.0);
+    diag->SetLineColor(kRed);
+    diag->Draw();
+    
+    TCanvas* lcan = new TCanvas("lcan","lcan",600,600);
+    lcan->Divide(2,2);
+    lcan->cd(1);
+    ncl->Draw();
+    lcan->cd(2);
+    necl->Draw();
+    lcan->cd(3);
+    gPad->SetLogz();
+    eel->Draw("colorz");
+    TLine* diag2 = new TLine(0.0,0.0,100.0,100.0);
+    diag2->SetLineColor(kRed);
+    diag2->Draw();
   }
 }

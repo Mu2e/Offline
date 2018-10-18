@@ -16,7 +16,7 @@
 #include <iterator>
 #include <map>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Random/RandomEngine.h"
 #include "CLHEP/Random/RandFlat.h"
@@ -268,10 +268,10 @@ namespace mu2e {
       std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
       std::unique_ptr<GenParticleMARSAssns> assns(new GenParticleMARSAssns());
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>(event);
+      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>(event);
+      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       typedef std::set<MARSInfo, CmpProtonId> UniqProtons;

@@ -1,0 +1,41 @@
+#
+# 
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+
+process_name : validation1
+
+#services : @local::Services.Core
+services : {
+#  message : @local::mf_production
+  message : @local::default_message
+  TFileService          : { fileName : "validation.root" }
+  GeometryService :
+  {
+    inputFile : "Mu2eG4/geom/geom_common.txt"
+  }  
+  ConditionsService :
+  {
+    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+  }  
+
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+
+}
+
+physics :{
+  analyzers: {
+    Validation : {
+      module_type : Validation
+      validation_level : 1
+    }
+  }
+
+  e1        : [ Validation ]
+  end_paths : [ e1 ]
+
+}

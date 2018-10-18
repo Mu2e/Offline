@@ -5,9 +5,9 @@
 //
 
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 #include "Analyses/fcl/prolog.fcl"
 
@@ -25,13 +25,11 @@ services : {
     TFileService          : { fileName : "vdntuple.root" }
     RandomNumberGenerator : { }
 
-    user : {
-        GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt" }
-        ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-        GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-        G4Helper               : { }
-        SeedService            : @local::automaticSeeds
-    }
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
 }
 
 physics : {
@@ -57,8 +55,8 @@ outputs: {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 
 // List of virtual detectors to save in ntuple

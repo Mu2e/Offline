@@ -1,0 +1,93 @@
+// PS heat and radiation shield: Final version
+// Taking numbers from Docdb-3926-v3
+//
+// Original author: Andrei Gaponenko
+// Modified for final version specifics by David N Brown (Louisville)
+// 
+int PSShield.version = 2;
+
+// The shield consists of a number of nested polycones
+int PSShield.nShells = 4; // stainless steel, bronze, water, stainless
+
+// Reference Z planes for all polycones
+vector<double> PSShield.zPlane = { 1210., 2404.6, 2990., 3490.2, 4955.1};
+
+// Define the n+1 boundaries, starting from the innermost
+vector<double> PSShield.r1 = {  650., 200., 200., 200., 200. };
+string PSShield.material1 = "StainlessSteel";
+vector<double> PSShield.color1 = { 0.1, 0.1, 0.1};
+
+// HRS_Bronze
+vector<double> PSShield.r2 = { 677.13, 225.4, 225.4, 225.4, 225.4 };
+string PSShield.material2 = "HRSBronze";
+vector<double> PSShield.color2 = { 1., 0.5, 0.};
+
+// HRS_Water_out
+vector<double> PSShield.r3 = { 700., 700., 700., 493., 493. };
+string PSShield.material3 = "G4_WATER";
+vector<double> PSShield.color3 = { 0., 0., 1};
+
+// Stainless cylindrical shell
+vector<double> PSShield.r4 = { 723.9, 723.9, 723.9, 723.9, 723.9 };
+string PSShield.material4 = "StainlessSteel";
+vector<double> PSShield.color4 = { 0.1, 0.1, 0.1};
+
+// Outer boundary - outer surface of stainless
+vector<double> PSShield.r5 = { 736.6, 736.6, 736.6, 736.6, 736.6 };
+
+// The endRings for the HRS.  
+vector<double> PSShield.frontRing.zPlane = { 1023.5 ,1074.2, 1074.2, 1083.7, 1086.8, 1086.8, 1120.0, 1120.0, 1124.0, 1124.0, 1150.0, 1210.0 };
+vector<double> PSShield.frontRing.rIn =    { 719.9, 700.9, 700.9, 697.36, 696.2, 696.2, 683.75, 683.75, 682.25, 682.25, 672.5, 650.0 };
+vector<double> PSShield.frontRing.rOut =   { 750.0, 750.0, 750., 750., 746.3, 736.6, 736.6, 723.5, 723.5, 709., 700.0, 700.0 }; 
+string PSShield.frontRing.material = "StainlessSteel";
+vector<double> PSShield.backRing.zPlane = { 4955.1, 4983.68, 4983.7,4990.1  };
+vector<double> PSShield.backRing.rIn =    { 250.8, 225.4, 225.4, 225.4 };
+vector<double> PSShield.backRing.rOut =   { 736.6, 736.6, 723.9, 723.9 }; 
+string PSShield.backRing.material = "StainlessSteel";
+vector<double> PSShield.waterRing.zPlane = { 1124.01, 1150., 1210.  };
+vector<double> PSShield.waterRing.rIn =    { 709.01, 700.01, 700.01 };
+vector<double> PSShield.waterRing.rOut =   { 723.5, 723.5, 723.5 }; 
+string PSShield.waterRing.material = "G4_WATER";
+vector<double> PSShield.sheathRing.zPlane = { 1120.0, 1210.0  };
+vector<double> PSShield.sheathRing.rIn =    { 723.9, 723.9 };
+vector<double> PSShield.sheathRing.rOut =   { 736.6, 736.6 }; 
+string PSShield.sheathRing.material = "StainlessSteel";
+
+vector<double> PSShield.endRing.color = { 0.1, 0.1, 0.1 };
+
+
+
+
+// Information for the proton beam pipe inlet.  David Norvil Brown, March 2015
+string PSShield.inlet.materialName = "G4_Al";
+double PSShield.inlet.innerR = 60.25;
+double PSShield.inlet.outerR = 63.5;
+double PSShield.inlet.length = 1800; // Keeps hitting vacuum
+double PSShield.inlet.angleY = -13.62;  // degrees
+double PSShield.inlet.angleX = 2.30;   // degrees
+//vector<double> PSShield.inlet.center = {4127.1, 39.0, -5250.0};
+vector<double> PSShield.inlet.center = {4424.4, 91., -4031.5};
+
+// Each groove is a cylinder of the given dimensions, with the center
+// at the given reference point and rotated by the given angles, which
+// is subtracted from the polycone above.
+int PSShield.nGrooves = 0;
+
+// The shield is positioned on the PS axis.
+// To fix its Z position we specify the offset w.r.t. to the production target center
+// of the PSShield point at the most negative z.
+//
+// From Peter Kasper's e-mail May 17, 2012, + updates from V. Pronskikh:
+//     HRS downstream end z = -7858.0
+//     Target center      z = -6164.5
+double PSShield.zOffsetFromProductionTarget = -1693.5;
+
+bool PSShield.isVisible = true;
+bool PSShield.isSolid = false;
+
+int PSShield.verbosityLevel = 0;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

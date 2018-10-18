@@ -1,0 +1,56 @@
+           Release notes for Mu2e Offline software, v6_0_5
+
+5)  dnbrow01  24 Jan 2017
+    Added a conf file for geometry testing (runs a simple event and produces
+    a mu2e.gdml file) so one doesn't need to change Mu2eG4/fcl/prolog.fcl
+    and then accidentally commit it...
+    Modified the first floor south of the main building to more correctly 
+    reflect as-built construction.
+    modified:   Mu2eG4/geom/bldg/dirtDsAreaFirstFloorS.txt
+    modified:   Mu2eG4/geom/bldg/dsAreaFirstFloorS.txt
+    modified:   ReleaseNotes/v6/v6_0_5.txt
+    new file:   Mu2eG4/gcl/geomTest_01.fcl
+
+4)  dnbrow01  23 Jan 2017
+    Undid my accidental change to Mu2eG4/fcl/prolog.fcl yesterday.
+   
+3)  dnbrow01  22 Jan 2017
+    Small modification to a vertex to fix a minuscule overlap that 
+    was just exposed in recent releases.
+    modified:   Mu2eG4/fcl/prolog.fcl
+    modified:   Mu2eG4/geom/bldg/remoteHandlingCeiling.txt
+
+2)  lmpyles 19 Jan 2017
+    Updated geometry files of the ds Area Elevator interior, dirt and lower
+    interior.
+      modified:   Mu2eG4/geom/bldg/dirtDsAreaElevator.txt
+      modified:   Mu2eG4/geom/mu2eHall.txt
+      added:      Mu2eG4/geom/bldg/dsAreaElevatorInterior.txt
+      added:      Mu2eG4/geom/bldg/dsAreaElevatorInteriorLower.txt
+
+1)  B. Echenard 16 Jan 2017
+
+     - New calorimeter digitization and reconstruction scheme, completely
+     incompatible with the previous one.
+     
+     - Example of fcl scripts to run the calorimeter are in 
+        Mu2eG4/fcl/g4CaloExample.fcl
+        
+        Add in your producer:
+         @table::CaloDigiMC.producers     //calo MC digi
+         @table::CaloReco.producers       // calo digi reconstruction
+         @table::CaloDigiMC.producersMC   // calo digi truth matching
+         @table::CaloCluster.producers    //cluster reconstruction
+         @table::CaloCluster.producersMC  // cluster truth matching
+        
+        Add in your path:
+         @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco,       
+         @sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco, 
+         @sequence::CaloCluster.TruthMatch   
+        
+     - Example of module for the calo analysis:
+        Analyses/src/CaloExample_module.cc
+        
+       Enjoy! 
+
+     

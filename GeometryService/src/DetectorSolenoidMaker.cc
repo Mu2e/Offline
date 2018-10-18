@@ -6,7 +6,7 @@
 #include "GeometryService/inc/DetectorSolenoidMaker.hh"
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -33,6 +33,11 @@ namespace mu2e {
     ds->_halfLength   = c.getDouble("ds.halfLength");
     ds->_endWallHalfLength = c.getDouble("ds.endWallHalfLength");
     ds->_frontHalfLength   = c.getDouble("ds.frontHalfLength");
+
+    // experimental inner lining for shielding
+    ds->_hasInnerLining = c.getBool("ds.hasInnerLining",false);
+    ds->_innerLiningThickness = c.getDouble("ds.innerLiningThickness",0.0)*CLHEP::mm;
+    ds->_innerLiningMaterial = c.getString("ds.innerLiningMaterial","None");
 
     // DS shield
     ds->_shield_materialName       = c.getString("dsShield.materialName");
@@ -117,6 +122,67 @@ namespace mu2e {
 	ds->_BBlockCenters2.push_back(center);
       }
     }
+    ds->_widthCoupler = c.getDouble("ds.widthCoupler",0.0);
+    ds->_heightCoupler = c.getDouble("ds.heightCoupler",0.0);
+    ds->_yCenterCoupler = c.getDouble("ds.yCenterCoupler",0.0);
+    ds->_couplerScheme = c.getInt("ds.couplerScheme",-1);
+
+    // MBS spherical support structure
+    ds->_hasMBSS = c.getBool("ds.hasMBSSupport",false);
+    if ( ds->_hasMBSS ) {
+      ds->_lengthMBSS = c.getDouble("ds.MBSSupport.length");
+      int nPtMBSS = c.getInt("ds.MBSSupport.nVertices");
+      c.getVectorDouble("ds.MBSSupport.outlineU",ds->_uOutlineMBSS, nPtMBSS );
+      c.getVectorDouble("ds.MBSSupport.outlineV",ds->_vOutlineMBSS, nPtMBSS );
+      ds->_locationMBSS = c.getHep3Vector("ds.MBSSupport.location");
+      ds->_materialMBSS = c.getString("ds.MBSSupport.material");
+    }
+
+    // Cable Runs
+    ds->_hasCableRunCal = c.getBool("ds.hasCableRunCal",false);
+    ds->_hasCableRunTrk = c.getBool("ds.hasCableRunTrk",false);
+    if ( ds->_hasCableRunCal ) {
+      ds->_cableRunVersion = c.getInt("ds.CableRun.version",1);
+      if ( ds->_cableRunVersion > 1 ) {
+	ds->_upRInCableRunCal  = c.getDouble("ds.CableRunCal.UpRin");
+	ds->_upROutCableRunCal = c.getDouble("ds.CableRunCal.UpRout");
+	ds->_upHL1CableRunCal  = c.getDouble("ds.CableRunCal.UpHL1");
+	ds->_upHL2CableRunCal  = c.getDouble("ds.CableRunCal.UpHL2");
+	ds->_upZC1CableRunCal  = c.getDouble("ds.CableRunCal.UpZC1");
+	ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
+      }
+      ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");
+      ds->_rInCableRunCal    = c.getDouble("ds.CableRunCal.Rin");
+      ds->_rOutCableRunCal   = c.getDouble("ds.CableRunCal.Rout");
+      ds->_dPhiCableRunCal   = c.getDouble("ds.CableRunCal.dPhi");
+      ds->_zCCableRunCal     = c.getDouble("ds.CableRunCal.zC"  );
+      ds->_phi0CableRunCal   = c.getDouble("ds.CableRunCal.phi0");
+      ds->_materialCableRunCal = c.getString("ds.CableRunCal.material");
+    }
+    if ( ds->_hasCableRunTrk ) {
+      ds->_lengthCableRunTrk = c.getDouble("ds.CableRunTrk.length");
+      ds->_rInCableRunTrk    = c.getDouble("ds.CableRunTrk.Rin");
+      ds->_rOutCableRunTrk   = c.getDouble("ds.CableRunTrk.Rout");
+      ds->_dPhiCableRunTrk   = c.getDouble("ds.CableRunTrk.dPhi");
+      ds->_zCCableRunTrk     = c.getDouble("ds.CableRunTrk.zC"  );
+      ds->_phi0CableRunTrk   = c.getDouble("ds.CableRunTrk.phi0");
+      ds->_materialCableRunTrk = c.getString("ds.CableRunTrk.material");
+    }
+  
+    // Service pipes
+    bool hasServicePipes = c.getBool("ds.hasServicePipes",false);
+    ds->_hasServicePipes = hasServicePipes;
+    if ( hasServicePipes ) {
+      ds->_servicePipeRIn = c.getDouble("ds.servicePipeRIn");
+      ds->_servicePipeROut = c.getDouble("ds.servicePipeROut");
+      ds->_servicePipeHL  = c.getDouble("ds.servicePipeHL");
+      ds->_servicePipeMat = c.getString("ds.servicePipeMat");
+      ds->_servicePipeFillMat = c.getString("ds.servicePipeFillMat");
+      ds->_servicePipeZC = c.getDouble("ds.servicePipeZC");
+      ds->_servicePipeYC = c.getDouble("ds.servicePipeYC");
+      c.getVectorDouble("ds.servicePipeXCs",ds->_servicePipeXCs);
+    } 
+
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");

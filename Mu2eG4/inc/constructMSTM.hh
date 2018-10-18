@@ -15,8 +15,8 @@ namespace mu2e {
   class VolumeInfo;
   class SimpleConfig;
 
-  void constructMSTM(VolumeInfo   const & parent,
-                     SimpleConfig const & _config
+  void constructMSTM(const VolumeInfo& parent,
+                     const SimpleConfig& _config
                      );
 
 }

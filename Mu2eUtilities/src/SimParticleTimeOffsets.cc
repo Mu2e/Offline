@@ -1,6 +1,6 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
@@ -10,6 +10,12 @@
 
 namespace mu2e {
 
+  SimParticleTimeOffset::SimParticleTimeOffset(const Config& conf) {
+    for(const auto& i: conf.inputs()) {
+      inputs_.emplace_back(i);
+    }
+  }
+
   SimParticleTimeOffset::SimParticleTimeOffset(const fhicl::ParameterSet& pset) {
     // Do not add any offsets by default
     if(!pset.is_empty()) {
@@ -18,6 +24,12 @@ namespace mu2e {
       for(const auto& i : in) {
         inputs_.emplace_back(i);
       }
+    }
+  }
+
+  SimParticleTimeOffset::SimParticleTimeOffset(const std::vector<art::InputTag>& tags) {
+    for(const auto& i_tag : tags) {
+      inputs_.emplace_back(i_tag);
     }
   }
 

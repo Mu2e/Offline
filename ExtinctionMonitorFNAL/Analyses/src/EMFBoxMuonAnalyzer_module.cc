@@ -8,7 +8,7 @@
 #include <string>
 #include <cmath>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Units/PhysicalConstants.h"
 

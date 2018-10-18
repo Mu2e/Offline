@@ -16,13 +16,13 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
+#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 
 class TH1D;
 class TH2D;
 
 namespace mu2e {
 
-  class ExtMonFNALSimHitCollection;
   namespace ExtMonFNAL { class ExtMon; }
 
   class EMFSimHitHistograms :  private boost::noncopyable {

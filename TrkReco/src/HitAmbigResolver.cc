@@ -12,6 +12,7 @@
 #include "BTrk/KalmanTrack/KalSite.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <functional>
@@ -19,15 +20,16 @@
 namespace mu2e {
   typedef std::vector<TrkStrawHit*>::iterator TSHI;
 
-  HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset, double extErr) : 
-    AmbigResolver(extErr),
+  HitAmbigResolver::HitAmbigResolver(fhicl::ParameterSet const& pset, double tmpErr) : 
+    AmbigResolver(tmpErr),
     _mindrift(pset.get<double>("HitMinDrift",0.1)),
     _zeropenalty(pset.get<double>("ZeroDriftPenalty",0.05)),
     _penalty(pset.get<bool>("HitAmbigPenalty",false)),
     _expnorm(pset.get<double>("HitExpNorm",0.03907)),
     _lambda(pset.get<double>("HitLambda",0.1254)),
     _offset(pset.get<double>("HitOffset",0.073)),
-    _slope(pset.get<double>("HitSlope",-0.002374))
+    _slope(pset.get<double>("HitSlope",-0.002374)),
+    _debug(pset.get<int>("debugLevel",0))
   {}
 
   HitAmbigResolver::~HitAmbigResolver() {}
@@ -41,8 +43,6 @@ namespace mu2e {
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
-// don't allow the hit to auto-update its ambiguity
-      (*itsh)->setAmbigUpdate(false);
 // get the drift radius
       double rdrift = (*itsh)->driftRadius();
       if(rdrift <= _mindrift){
@@ -58,6 +58,9 @@ namespace mu2e {
 	if(poca.status().success()){
 	  // set the ambiguity if allowed, based on the sign of DOCA
 	  int newamb = poca.doca() > 0 ? 1 : -1;
+	  if(_debug > 1)
+	    std::cout << "hit " << (*itsh)->index() << " active " << (*itsh)->isActive() << " old ambig " <<(*itsh)->ambig() << " new ambig " << newamb << std::endl;
+ 
 	  retval |= newamb == (*itsh)->ambig();
 	  (*itsh)->setAmbig(newamb);
 	  // based on the drift distance, set the penalty error based on the a-priori function.
@@ -66,6 +69,9 @@ namespace mu2e {
 	    retval |= (*itsh)->penaltyErr() == perr;
 	    (*itsh)->setPenalty(perr);
 	  }
+	} else {
+	  if(_debug > 0)std::cout << "POCA failure hit " << (*itsh)->index()  << " being disabled" << std::endl;
+	  (*itsh)->setActivity(false);
 	}
       }
     }

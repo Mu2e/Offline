@@ -1,9 +1,9 @@
 // Run G4 simulation starting from saved hits.
 // Most of the configuration was copied from g4test_03.fcl
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name: g4FromStepPointMCs
 
@@ -22,13 +22,11 @@ services: {
     TFileService          : { fileName : "g4FromStepPointMCs.root" }
     RandomNumberGenerator : { }
 
-    user : {
-        GeometryService   : { inputFile : "Mu2eG4/test/geom_01.txt" }
-        ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
-        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        G4Helper          : { }
-        SeedService       : @local::automaticSeeds
-    }
+    GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper          : { }
+    SeedService       : @local::automaticSeeds
 }
 
 physics: {
@@ -44,13 +42,11 @@ physics: {
         g4run : @local::g4run
 
         # Form StrawHits (SH).
-        makeSH : @local::makeSH
+        makeSD : @local::makeSD
+        makeSH : @local::makeSHfromSD
 
-        # Form CaloHits (APD hits)
-        CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-        # Form CaloCrystalHits (reconstruct crystals from APDs)
-        CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+        @table::CaloDigiMC.producers
+        @table::CaloReco.producers
 
         # Save state of the random number engines.
         randomsaver : @local::randomsaver
@@ -63,7 +59,7 @@ physics: {
             module_type            : ReadBack
             generatorModuleLabel   : generate
             g4ModuleLabel          : g4run
-            caloReadoutModuleLabel : CaloReadoutHitsMaker
+            caloReadoutModuleLabel : CaloCrystalHitFromHit
             diagLevel              : 0
             minimumEnergy          : 0.000
             maxFullPrint           : 201
@@ -71,14 +67,15 @@ physics: {
 
         readStrawHits: {
             module_type      : ReadStrawHit
-            makerModuleLabel : makeSH
+            recoModuleLabel : makeSH
+	    simModuleLabel : makeSD
             diagLevel        : 3
             maxFullPrint     : 100
         }
 
     }
 
-    p1 : [testSPM, g4run, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker, randomsaver ]
+    p1 : [testSPM, g4run, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco, randomsaver ]
     e1 : [checkhits, readStrawHits, outfile]
 
     trigger_paths  : [p1]
@@ -106,5 +103,5 @@ physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

@@ -1,0 +1,85 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/fill_beamline.ccl
+
+string building.backfill.beamline.name     = "backfillBeamline";
+
+string building.backfill.beamline.material = "CA7Backfill";
+
+double building.backfill.beamline.offsetFromMu2eOrigin.x   = 947.4;
+double building.backfill.beamline.offsetFromFloorSurface.y = 2870.2;
+double building.backfill.beamline.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.backfill.beamline.yHalfThickness           = 3022.6;
+
+vector<double> building.backfill.beamline.xPositions = {
+  17860.2,   // PE04
+  19909.1,   // BLS05
+  19933,   // bB02
+  20955.9,   // BFDS01
+  22734.7,   // bB04
+  27520.4,   // BFDU01
+  27460.6,   // BFDU02
+  37483,   // BFDU03
+  37483.7,   // B2
+  36574.6,   // bB07
+  36526,   // BFDU04
+  26454.2,   // BFDU05
+  24635.9,   // BFDU06
+  20735.6,   // BFDU07
+  19431.7,   // BFDU08
+  15778.2,   // BFDU09
+  17082.1,   // BFDU10
+  12984.2,   // BFDU11
+  14443.7,   // bB16
+  11684,   // R0
+  11684,   // dB10
+  12751,   // dFDN08
+  15886.1,   // dFDN09
+  14582.2,   // dFDN10
+  20161.1,   // dFDN11
+  21465,   // dFDN12
+  25365.4,   // dFDN13
+  27183.7,   // dFDN14
+  37255.5,   // dFDN15
+  38679,   // dFDN16
+  24324.2   // dB00
+};
+
+vector<double> building.backfill.beamline.yPositions = {
+  6281.78,   // PE04
+  6777.52,   // BLS05
+  6678.53,   // bB02
+  6915.85,   // BFDS01
+  7345.58,   // bB04
+  8518.61,   // BFDU01
+  8765.47,   // BFDU02
+  11193.9,   // BFDU03
+  11298.6,   // B2
+  15050.8,   // bB07
+  15143.6,   // BFDU04
+  12703.2,   // BFDU05
+  20207.7,   // BFDU06
+  19262.7,   // BFDU07
+  24644.1,   // BFDU08
+  23758.9,   // BFDU09
+  18377.4,   // BFDU10
+  17384.5,   // BFDU11
+  11361,   // bB16
+  10692.4,   // R0
+  17703.8,   // dB10
+  18347.3,   // dFDN08
+  19106.9,   // dFDN09
+  24488.4,   // dFDN10
+  25840.2,   // dFDN11
+  20458.7,   // dFDN12
+  21403.7,   // dFDN13
+  13899.2,   // dFDN14
+  16339.6,   // dFDN15
+  10464.4,   // dFDN16
+  6281.78   // dB00
+};
+
+// Local Variables:
+// mode:c++
+// End:

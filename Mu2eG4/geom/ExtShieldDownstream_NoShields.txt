@@ -1,0 +1,17 @@
+// Original author David Norvil Brown, University of Louisville
+// 
+// This is just a simple file to use when you want to turn off 
+// the downstream external shielding, but keep other things the same.
+// 
+
+// Sort boxes into "types"
+int ExtShieldDownstream.numberOfBoxTypes = 0;
+bool ExtShieldDownstream.verbosityLevel = 0;
+
+// This is a hack for breaking the dependency of virtual detectors on the
+// Geometry #13 version of external shielding.
+double ExtShieldDownstream.detecHoleX = -3904.0;
+double ExtShieldDownstream.detecHoleY = -249.0;
+double ExtShieldDownstream.detecHoleZ = 18007.0;
+double ExtShieldDownstream.detecHoleHalflength = 458.0;
+double ExtShieldDownstream.detecHoleRadius = 76.2;

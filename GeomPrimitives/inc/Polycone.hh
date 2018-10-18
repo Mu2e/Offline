@@ -63,17 +63,8 @@ namespace mu2e {
 
     PolyconsParams      _params;
 
-    std::vector<double> _zPlanes;
-    std::vector<double> _rInner;
-    std::vector<double> _rOuter;
-
     CLHEP::Hep3Vector _originInMu2e;
     std::string       _materialName;
-
-    double _phiStart;
-    double _phiTotal;
-
-    // do we need/want the rotation here?
 
   };
 

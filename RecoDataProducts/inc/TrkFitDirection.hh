@@ -20,6 +20,8 @@ namespace mu2e
   // return the SIGN of the z component of velocity (magnitude is not returned)
       double dzdt() const { return _fdir == downstream ? 1.0 : -1.0; }
       std::string const& name() const;
+      bool operator == ( TrkFitDirection const& other) const { return _fdir == other._fdir; }
+      bool operator != ( TrkFitDirection const& other) const { return _fdir != other._fdir; }
     private:
       FitDirection _fdir;
   };

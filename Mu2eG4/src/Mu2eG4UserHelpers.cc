@@ -15,7 +15,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes.
 
@@ -40,12 +40,12 @@ namespace mu2e {
   namespace Mu2eG4UserHelpers {
 
     // Enable/disable storing of trajectories based on several considerations
-    void controlTrajectorySaving(G4Track const* const trk, int sizeLimit, int currentSize, 
+    void controlTrajectorySaving(G4Track const* const trk, int sizeLimit, int currentSize,
                                  double pointTrajectoryMomentumCut){
 
       // Do not add the trajectory if the corresponding SimParticle is missing or if it fails momentum cut
 
-      bool keep = ( sizeLimit<=0 || currentSize<sizeLimit ) && 
+      bool keep = ( sizeLimit<=0 || currentSize<sizeLimit ) &&
         saveThisTrajectory(trk, pointTrajectoryMomentumCut);
 
       G4TrackingManager* trkmgr = G4EventManager::GetEventManager()->GetTrackingManager();
@@ -60,26 +60,18 @@ namespace mu2e {
       // We might want to change the momentum cut depending on which volume
       // the track starts in.
       CLHEP::Hep3Vector const& mom = trk->GetMomentum();
-      return ( mom.mag() > pointTrajectoryMomentumCut ); 
+      return ( mom.mag() > pointTrajectoryMomentumCut );
 
     }
 
     //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
     double getPreLastStepKE(G4Track const* const trk) {
-
-      G4VUserTrackInformation* info = trk->GetUserInformation();
-      UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
-      return tinfo->preLastStepKE();
-
+      return trk->GetStep()->GetPreStepPoint()->GetKineticEnergy();
     }
 
     // Get the number of G4 steps the track is made of
     int getNSteps(G4Track const* const trk) {
-
-      G4VUserTrackInformation* info = trk->GetUserInformation();
-      UserTrackInformation const* tinfo   = dynamic_cast<UserTrackInformation*>(info);
-      return tinfo->nSteps();
-
+      return trk->GetCurrentStepNumber();
     }
 
     // Find the name of the code for the process that created this track.
@@ -111,6 +103,67 @@ namespace mu2e {
       // Otherwise, G4 killed this track.
       return findStepStoppingProcessName(trk->GetStep());
 
+    }
+
+    // Is the particle killed due to the integration limits?
+    bool isTrackKilledByFieldPropagator(G4Track const* const trk, int trVerbosity){
+      G4Step const* const theStep = trk->GetStep();
+      G4VProcess const* const process = theStep->GetPostStepPoint()->GetProcessDefinedStep();
+      if (process) {
+        if ( process->GetProcessName() == "Transportation" ) {
+          if (theStep->GetPreStepPoint()->GetPhysicalVolume()==
+              theStep->GetPostStepPoint()->GetPhysicalVolume()) {
+            // the two volumes should not be the same in standard cases
+
+            double kE = trk->GetKineticEnergy();
+
+            if ( (trVerbosity>0 && kE > 1.*CLHEP::eV) ||
+                 trVerbosity>1 ) {
+              cout << __func__ << " WARNING: particle killed by the Field Propagator in "
+                   << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetName()
+                   << endl;
+
+              int constexpr newPrecision = 8;
+              int constexpr newWidth = 14;
+              int oldPrecision = cout.precision(newPrecision);
+              int oldWidth = cout.width(newWidth);
+              std::ios::fmtflags oldFlags = cout.flags();
+              cout.setf(std::ios::fixed,std::ios::floatfield);
+              cout << __func__ << " Track info:"
+                   << " ID: "
+                   << trk->GetTrackID()
+                   << " name: "
+                   << trk->GetParticleDefinition()->GetParticleName()
+                   << ", CurrentStepNumber: "
+                   << trk->GetCurrentStepNumber()
+                   << ", TrackStatus: "
+                   << trk->GetTrackStatus()
+                   << ", step length: "
+                   << theStep->GetStepLength()
+                   << ", track length: "
+                   << trk->GetTrackLength();
+              cout.unsetf(std::ios::fixed);
+              cout.setf(std::ios::scientific,std::ios::dec);
+              cout << ", KE: "
+                   << kE
+                   << ", mom: "
+                   << trk->GetMomentum()
+                   << ", mag: "
+                   << trk->GetMomentum().mag()
+                   << ", TrackCreationCode: "
+                   << findCreationCode(trk)
+                   << endl;
+              cout.setf(oldFlags);
+              cout.precision(oldPrecision);
+              cout.width(oldWidth);
+            }
+
+            return true;
+
+          }
+        }
+      }
+      return false;
     }
 
     // Find the name of the process that defined the step
@@ -239,16 +292,17 @@ namespace mu2e {
            << setw(4) << parentId              << " "
            << setw(8) << partName              << " | "
            << trk->GetPosition()-mu2eOrigin    << " prestep pos: "
-           << ( (pstep!=nullptr) ? 
+           << ( (pstep!=nullptr) ?
               pstep->GetPreStepPoint()->GetPosition() : G4ThreeVector() ) << " poststep pos: "
-           << ( (pstep!=nullptr) ? 
+           << ( (pstep!=nullptr) ?
                 pstep->GetPostStepPoint()->GetPosition() : G4ThreeVector() ) << " prestep mom: "
-           << ( (pstep!=nullptr) ? 
+           << ( (pstep!=nullptr) ?
               pstep->GetPreStepPoint()->GetMomentum() : G4ThreeVector() ) << " poststep mom: "
-           << ( (pstep!=nullptr) ? 
+           << ( (pstep!=nullptr) ?
               pstep->GetPostStepPoint()->GetMomentum() : G4ThreeVector() ) << " trk mom: "
            << trk->GetMomentum()               << " | "
            << trk->GetKineticEnergy()          << " | "
+           << trk->GetTrackLength()            << " | "
            << volName                          << " ";
 
       if ( isEnd ){

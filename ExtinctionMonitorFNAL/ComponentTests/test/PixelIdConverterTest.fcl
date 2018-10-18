@@ -2,9 +2,9 @@
 //
 // Andrei Gaponenko, 2011
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 // Give this job a name.
 process_name : PixelIdConverterTest
@@ -18,11 +18,8 @@ services : {
     message : @local::default_message
     scheduler: { defaultExceptions : false }
     RandomNumberGenerator : {}
-
-    user : {
-        GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
-        SeedService       : @local::automaticSeeds
-    }
+    GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
+    SeedService       : @local::automaticSeeds
 }
 
 physics : {
@@ -40,8 +37,8 @@ physics : {
 }
 
 //----------------------------------------------------------------
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

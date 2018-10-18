@@ -16,7 +16,7 @@
 #endif/*__GCCXML__*/
 
 // data
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 // tracker
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -25,51 +25,68 @@
 #include "BTrk/KalmanTrack/KalContext.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/BField/BField.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
 // Mu2e objects
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/TrkFitDirection.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
+#include "TrkReco/inc/KalFitData.hh"
+#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
 
 namespace mu2e 
 {
+  class Calorimeter;
+
   class KalFit : public KalContext
   {
   public:
 // define different ambiguity resolution strategies
-    enum ambigStrategy {fixedambig=0,pocaambig=1,hitambig=2,panelambig=3,doubletambig=4};
+    enum ambigStrategy {fixedambig=0,hitambig=2,panelambig=3,doubletambig=4};
 // different locations to which the track may be extended
     enum extent {noextension=-1,target=0,ipa=1,tracker=2,calo=3};
 // parameter set should be passed in on construction
 #ifndef __GCCXML__
-    explicit KalFit(fhicl::ParameterSet const&, TrkFitDirection const& tdir);
+    explicit KalFit(fhicl::ParameterSet const&);
 #endif/*__GCCXML__*/
 
     virtual ~KalFit();
-// main function: given a track definition, create a fit object from it
-    virtual void makeTrack(TrkDef const& tdef, KalRep*& kres);
+// // create a fit object from a track definition
+//     void makeTrack(const ComboHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
+// create a fit object from  a track seed, 
+    void makeTrack(KalFitData&kalData);
 // add a set of hits to an existing fit
-    virtual void addHits(KalRep* kres,const StrawHitCollection* straws, std::vector<hitIndex> indices, double maxchi);
+    void addHits(KalFitData&kalData, double maxchi);
 // add materials to a track
-    bool unweedHits(KalRep* kres, double maxchi);
+    bool unweedHits(KalFitData&kalData, double maxchi);
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
+    void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
+    void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
+    
+    TrkErrCode fitIteration(KalFitData& kalData,int iter); 
+    void       printHits   (KalFitData& kalData, const char* Caller);
+    bool       weedHits    (KalFitData& kalData, int    iter);
+    bool       updateT0    (KalFitData& kalData);
   private:
     // iteration-independent configuration parameters
     int _debug;		    // debug level
     double _maxhitchi;	    // maximum hit chi when adding or weeding
-    double _maxdriftpull;   // maximum drift pull in TrkStrawHit 
+    double _maxpull;   // maximum pull in TrkHit 
+    unsigned _maxweed;
     bool _initt0;	    // initialize t0?
+    bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
     bool _updatet0;	    // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
+    double _dtoffset;
+    double _strHitW, _calHitW;//weight used to evaluate the initial track T0
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
     // iteration-dependent configuration parameters
@@ -81,30 +98,35 @@ namespace mu2e
     bool _resolveAfterWeeding;
     extent _exup;
     extent _exdown;
-// state
-    TrkParticle _tpart;
-    TrkFitDirection _fdir;
+    const mu2e::Tracker*             _tracker;     // straw tracker geometry
+    const mu2e::Calorimeter*         _calorimeter;
+    int                              _mcTruth;
+    std::unique_ptr<McUtilsToolBase> _mcUtils;
+    int    _annealingStep;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
   // helper functions
     bool fitable(TrkDef const& tdef);
-    void initT0(TrkDef const& tdef, TrkT0& t0);
-    virtual void makeHits(TrkDef const& tdef, TrkT0 const& t0, TrkStrawHitVector& tshv); 
-    virtual void makeMaterials(TrkStrawHitVector const&, TrkDef const& tdef, std::vector<DetIntersection>& dinter);
-    unsigned addMaterial(KalRep* krep);
-    bool weedHits(KalRep* kres, TrkStrawHitVector& tshv,size_t iter);
-    bool unweedHits(KalRep* kres, TrkStrawHitVector& tshv, double maxchi);
-    bool updateT0(KalRep* kres, TrkStrawHitVector& tshv);
-    TrkErrCode fitTrack(KalRep* kres, TrkStrawHitVector& tshv);
-    TrkErrCode fitIteration(KalRep* kres,TrkStrawHitVector& tshv,size_t iter); 
-    void updateHitTimes(KalRep* kres, TrkStrawHitVector& tshv); 
-    double zFlight(KalRep* krep,double pz);
-    double extendZ(extent ex);
-    TrkErrCode extendFit(KalRep* krep);
+    bool fitable(KalSeed const& kseed);
+    void initT0(KalFitData&kalData);
+    
+    void makeTrkStrawHits  (KalFitData&kalData, TrkStrawHitVector& tshv );
+    void makeTrkCaloHit    (KalFitData&kalData, TrkCaloHit *&tch);
+    void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
+    unsigned addMaterial   (KalRep* krep);
+    bool unweedBestHit     (KalFitData&kalData, double maxchi);
+    void updateCalT0       (KalFitData&kalData);
+    TrkErrCode fitTrack    (KalFitData&kalData);
+    void updateHitTimes    (KalRep* krep); 
+    double zFlight         (KalRep* krep,double pz);
+    double extendZ         (extent ex);
+    TrkErrCode extendFit   (KalRep* krep);
 
-    void findBoundingHits(TrkStrawHitVector& hits, double flt0,
-	TrkStrawHitVector::reverse_iterator& ilow,
-	TrkStrawHitVector::iterator& ihigh);
+    void findBoundingHits  (KalRep* krep, double flt0,
+			    TrkHitVector::reverse_iterator& ilow,
+			    TrkHitVector::iterator& ihigh);
+    
+    void findTrkCaloHit    (KalRep*krep, TrkCaloHit*tch);
   };
 }
 #endif

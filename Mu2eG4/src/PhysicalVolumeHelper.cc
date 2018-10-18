@@ -31,7 +31,7 @@
 //    will throw. The client code need not check for errors.
 
 // Framework includes
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
@@ -89,7 +89,7 @@ namespace mu2e {
 
   // Build _persistentInfo and _volumeMap from G4PhysicalVolumeStore.
   void PhysicalVolumeHelper::beginRun(){
-
+      
     _volumeMap.clear();
     _persistentInfo.clear();
     _pSingleStage.clear();

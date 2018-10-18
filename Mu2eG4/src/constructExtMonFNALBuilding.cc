@@ -30,7 +30,7 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
@@ -353,7 +353,7 @@ namespace mu2e {
     chordFinder->SetDeltaChord(config.getDouble("extMonFNAL."+volNameSuffix+".magnet.deltaChord", deltaOld));
     AGDEBUG("chordFinder: using deltaChord = "<<chordFinder->GetDeltaChord()<<" (default = "<<deltaOld<<")");
 
-    G4FieldManager *manager = reg.add(new G4FieldManager(field, chordFinder));
+    G4FieldManager *manager = new G4FieldManager(field, chordFinder);
 
     AGDEBUG("orig: manager epsMin = "<<manager->GetMinimumEpsilonStep()
             <<", epsMax = "<<manager->GetMaximumEpsilonStep()
@@ -471,7 +471,7 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     CLHEP::HepRotation *ductrot = reg.add(HVACductRotInParent.inverse());
 
-    G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, 360.0 );
+    G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, CLHEP::twopi );
 
     VolumeInfo HVACduct("coll2ShieldingHVACduct",
                              collimator2ParentRotationInMu2e*(emfb->HVACductCenterInMu2e() - emfb->coll2ShieldingCenterInMu2e()),

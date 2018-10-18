@@ -11,12 +11,11 @@
 #include <vector>
 
 #include "TTrackerGeom/inc/TTracker.hh"
-
-#include "TrackerGeom/inc/Plane.hh"
-#include "TrackerGeom/inc/Layer.hh"
+#include "DataProducts/inc/LayerId.hh"
 #include "TrackerGeom/inc/Panel.hh"
-
+#include "TrackerGeom/inc/Plane.hh"
 #include "TTrackerGeom/inc/Station.hh"
+#include "Alignment/inc/AlignmentMap.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -45,21 +44,16 @@ namespace mu2e {
 
     void makeMother();
     void makePlane( PlaneId planeId );
-    void makePanel( const PanelId& secId, Plane& plane );
-    void makeLayer ( const LayerId& layId,  Panel& sec );
-    void makeManifolds( const PanelId& secId);
+    void makePanel( const PanelId& panelId, Plane& plane );
+    void makeLayer ( const LayerId& layId,  Panel& panel );
 
     void computeStrawHalfLengths();
-    void computePanelBoxParams(Panel& panel, Plane& plane);
-    void computeConstantPanelBoxParams();
     void computeLayerSpacingAndShift();
     void computeManifoldEdgeExcessSpace();
     void computeTrackerEnvelope();
     void computePlaneEnvelope();
 
     void identifyNeighbourStraws();
-    void identifyDirectionalNeighbourStraws();
-    StrawIndex ttStrawIndex (LayerId const &layerId, int snum);
 
     void makeStation( StationId stationId );
 
@@ -68,7 +62,7 @@ namespace mu2e {
 
     double choosePlaneSpacing( int iplane ) const;
     double findFirstPlaneZ0() const;
-    double panelRotation(int isec,int iplane) const;
+    double panelRotation(int ipanel,int iplane) const;
     double panelZSide(int ipanel, int iplane) const;
 
     // Some functions for the, fully detailed support structure.
@@ -84,6 +78,7 @@ namespace mu2e {
     void finalCheck();
 
     int    _verbosityLevel;
+    int    _ttVersion;
 
     // Properties of the mother volume.
     double _motherRIn;               // Inner radius of the mother volume
@@ -93,11 +88,11 @@ namespace mu2e {
                                      // necessarily the same as the center of the instrumented region of the tracker.
 
     // Basic parameters needed to describe the TTracker.
-    int    _numPlanes;                  // Number of planes.
-    int    _panelsPerPlane;            // Number of panels in one plane.
-    int    _layersPerPanel;             // Number of layers in one panel.
-    int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer.
-    int    _strawsPerManifold;           // Number of straws connected to each manifold.
+    uint16_t    _numPlanes;                   // Number of planes.
+    uint16_t    _panelsPerPlane;              // Number of panels in one plane.
+    uint16_t    _layersPerPanel;              // Number of layers in one panel
+    int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer. 48 = 96/2
+    int    _strawsPerManifold;           // Number of straws connected to each manifold. = 1
     int    _rotationPattern;             // Pattern of rotations from plane to plane.
     int    _panelZPattern;               // Pattern of rotations from plane to plane.
     int    _layerZPattern;               // If 0 then layer 0 is closest to base plane; if 1 then layer 1 is closes to base plane.
@@ -112,7 +107,12 @@ namespace mu2e {
     double _strawWallThickness;          // Thickness of each straw.
     double _strawGap;                    // Gap between straws.
     double _planeSpacing;               // Z-separation between adjacent stations.
-    double _planeHalfSeparation;        // Z-separation between adjacent planes.
+    double _planeHalfSeparation;        // Z-separation between adjacent planes
+
+    double _planePadding;         // Small spaces around panel and plane to 
+    double _panelPadding;         // allow for misalignment (and more 
+    // realistically describe how both are built.
+
     double _innerSupportRadius;          // Inner radius of support frame.
     double _outerSupportRadius;          // Outer radius of support frame.
     double _supportHalfThickness;        // Thickness of support frame.
@@ -154,12 +154,12 @@ namespace mu2e {
     // This is only valid for SupportModel==simple
     std::vector<double> _strawActiveHalfLengths;
 
-    // panel box half lengths
-    std::vector<double> _panelBoxHalfLengths;
+    // // panel box half lengths
+    // std::vector<double> _panelBoxHalfLengths;
 
-    // panel box offset magnitudes
-    double _panelBoxXOffsetMag;
-    double _panelBoxZOffsetMag;
+    // // panel box offset magnitudes
+    // double _panelBoxXOffsetMag;
+    // double _panelBoxZOffsetMag;
 
     // distance between layers (in Z)
     double _layerHalfSpacing;
@@ -173,8 +173,9 @@ namespace mu2e {
     // Z Location of the first plane.
     double _z0;
 
-    int    _numStations;                  // Number of Stations.
-    int    _planesPerStation;
+    // planes per station has to be 2
+    constexpr static int _planesPerStation = 2;
+    int _numStations;
 
     // The detailed description of the complete support structure
     SupportModel _supportModel;
@@ -183,8 +184,23 @@ namespace mu2e {
     double       _endRingHalfLength;
     double       _endRingZOffset;
     std::string  _endRingMaterial;
+    bool         _hasDownRing;
+    double       _downRingOuterRadius;
+    double       _downRingInnerRadius;
+    double       _downRingHalfLength;
+    double       _downRingZOffset;
+    std::string  _downRingMaterial;
+
     std::vector<int> _midRingSlot;
     double           _midRingHalfLength;
+    double           _midRingPhi0;
+    double           _midRingdPhi;
+    std::string      _midRingMaterial;
+
+    //  These for all panels
+    double         _panelPhi;
+    double         _dphiRibs;
+    double         _ribHalfAngle;
 
     double      _innerRingInnerRadius;
     double      _innerRingOuterRadius;
@@ -210,13 +226,9 @@ namespace mu2e {
     double      _channelZOffset;
     double      _channelDepth;
     std::string _channelMaterial;
+    double      _panelZOffset;  // used from version 5 on
 
     std::string _electronicsSpaceMaterial;
-
-    int         _nStaves;
-    double      _stavePhi0;
-    double      _stavePhiWidth;
-    std::string _staveMaterial;
 
     std::vector<double> _beam0_phiRange;
     double _beam0_innerRadius;
@@ -237,7 +249,32 @@ namespace mu2e {
     std::vector<double> _beam1_serviceCovRelThickness;
     std::vector<std::string> _beam1_serviceMaterialsCov;
 
+    // electronic board aka key 
+    // connected to each of the panels
+
+    double _EBKeyHalfLength;
+    double _EBKeyShieldHalfLength;
+    double _EBKeyInnerRadius;
+    double _EBKeyOuterRadius;
+    double _EBKeyShiftFromPanelFace;
+    bool   _EBKeyVisible;
+    bool   _EBKeySolid;
+    bool   _EBKeyShieldVisible;
+    bool   _EBKeyShieldSolid;
+    std::string _EBKeyMaterial;
+    std::string _EBKeyShieldMaterial;
+    double _EBKeyPhiRange;
+    double _EBKeyPhiExtraRotation;
+
     std::vector<int>  _nonExistingPlanes;
+
+    // straw construction counters when using the std::array
+    int _strawTrckrConstrCount; // first straw will be at 0
+    int _strawPanelConstrCount; // first straw will be at 0
+
+    // For use with alignment - is this being aligned?
+    bool useAlignment;
+    AlignmentMap* myAlignMap;
 
   };
 

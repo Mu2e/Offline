@@ -2,115 +2,218 @@
 #define TrackerGeom_StrawId_hh
 //
 // Identifier of one straw in a tracker.
-//
-
-//
-// $Id: StrawId.hh,v 1.7 2011/05/20 19:18:45 wb Exp $
-// $Author: wb $
-// $Date: 2011/05/20 19:18:45 $
-//
 // Original author Rob Kutschke
+// Re-implemented as integer bitfields by Dave Brown (LBNL)
 //
-#include <ostream>
-#include "DataProducts/inc/LayerId.hh"
+#include <iosfwd>
 #include <string>
+#include <math.h>
 
 namespace mu2e {
 
-  class StrawId;
-  inline std::ostream& operator<<(std::ostream& ost,
-                                  const StrawId& s );
+  class StrawId{
 
-class StrawId{
+    friend class Tracker;
+    friend class TTracker;
+    friend class TTrackerMaker;
+    friend class Plane;
+    friend class Panel;
+    friend class StrawSD;
 
-public:
+    private:
+      //  data member is a short
+      uint16_t _sid;
 
-  StrawId(std::string const& asstring);
+      // define the bit field shifts and masks
+    public:
+      constexpr static uint16_t _layermsk = 0x1; // mask for layer field
+      constexpr static uint16_t _strawmsk = 0x7F; // mask for straw field
+      constexpr static uint16_t _preampmsk = 0x7E; // mask for preamp
+      constexpr static uint16_t _panelmsk = 0x380; // mask for panel field
+      constexpr static uint16_t _preampsft = 1; // shift for preamp field
+      constexpr static uint16_t _panelsft = 7; // shift for panel field
+      constexpr static uint16_t _facemsk = 0x80; // mask for face field
+      constexpr static uint16_t _facesft = 7; // shift for face field
+      constexpr static uint16_t _planemsk = 0xFC00; // mask for plane field
+      constexpr static uint16_t _planesft = 10; // shift for plane field
+      constexpr static uint16_t _stationmsk = 0xF800; // mask for station field
+      constexpr static uint16_t _stationsft = 11; // shift for station field
+      constexpr static uint16_t _invalid = 0xFFFF; // invalid identifier
+      constexpr static uint16_t _nstraws = 96; // number of straws per panel
+      constexpr static uint16_t _nlayers = 2; // number of layers per panel ; do we need it, see below
+      constexpr static uint16_t _npanels = 6; // number of panels per plane
+      constexpr static uint16_t _nfaces = 2; // number of faces in a plane
+      constexpr static uint16_t _nplanes = 36; // number of planes
+      constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
+      constexpr static uint16_t _nustraws = _nupanels* _nstraws; // number of unique straws
+      constexpr static uint16_t _ntotalfaces = StrawId::_nfaces*StrawId::_nplanes;
 
-  StrawId():
-    _lid(),
-    _n(-1){
-  }
+      // One more than the largest legal StrawId; not a fully functional end iterator.
+      constexpr static uint16_t _end = ((StrawId::_nplanes -1) << StrawId::_planesft) +
+                                       ((StrawId::_npanels -1) << StrawId::_panelsft) +
+                                       StrawId::_nstraws;
 
-  StrawId( LayerId layer,
-           int n
-           ):
-    _lid(layer),
-    _n(n){
-  }
+      // test values
+      static bool validStraw(uint16_t istraw) { return istraw < _nstraws; }
+      static bool validPanel(uint16_t ipanel) { return ipanel < _npanels; }
+      static bool validPlane(uint16_t iplane) { return iplane < _nplanes; }
 
-  StrawId( PanelId panelid,
-           int layer,
-           int n
-           ):
-    _lid(panelid,layer),
-    _n(n){
-  }
+      explicit StrawId(std::string const& asstring);
 
-  StrawId( PlaneId plane,
-           int section,
-           int layer,
-           int n
-           ):
-    _lid(LayerId(plane,section,layer)),
-    _n(n){
-  }
+      StrawId(): _sid(_invalid) {}
 
-  // Use compiler-generated copy c'tor, copy assignment, and d'tor.
+      // construct from fields
+      StrawId( uint16_t plane,
+	  uint16_t panel,
+	  uint16_t straw);
 
-  const PlaneId& getPlaneId() const {
-    return _lid.getPlaneId();
-  }
+      // No automatic conversion of uint16_t to StrawId.
+      explicit StrawId(uint16_t sid):
+        _sid(sid){
+        valid();
+      }
 
-  const PanelId& getPanelId() const {
-    return _lid.getPanelId();
-  }
+      // Use compiler-generated copy c'tor, copy assignment, and d'tor.
 
-  const LayerId& getLayerId() const {
-    return _lid;
-  }
+      // test validity
+      bool valid() const { return validStraw(getStraw()) &&
+	validPanel(getPanel()) && validPlane(getPlane()); }
 
-  int getPlane() const{
-    return _lid.getPlane();
-  }
+      // various accessors
+      uint16_t asUint16() const { return _sid;}
 
-  int getPanel() const{
-    return _lid.getPanel();
-  }
+      uint16_t getPlane() const{
+	return plane();
+      }
 
-  int getLayer() const{
-    return _lid.getLayer();
-  }
+      StrawId getPlaneId() const{
+	return static_cast<StrawId>(_sid & _planemsk);
+      }
 
-  int getStraw() const{
-    return _n;
-  }
+      StrawId getPanelId() const{
+	return static_cast<StrawId>(_sid & (_planemsk+_panelmsk) );
+      }
 
-  int getStation() const{
-    return _lid.getStation();
-  }
+      // Id of the first straw in a layer assuming 0 is in 0th etc...
+      StrawId getLayerId() const{
+	return static_cast<StrawId>( (_sid & (_planemsk+_panelmsk)) +
+                                     (_sid & _strawmsk)%_nlayers);
+      }
 
-  bool operator==( StrawId const& rhs) const{
-    return ( _lid == rhs._lid && _n == rhs._n );
-  }
+      uint16_t getPanel() const{
+	return panel();
+      }
 
-  bool operator!=( StrawId const& rhs) const{
-    return !( *this == rhs);
-  }
+      uint16_t getStraw() const{
+	return straw();
+      }
 
-  friend std::ostream& operator<<(std::ostream& ost,
-                                  const StrawId& s ){
-    ost << s.getLayerId() << "_"
-        << s._n;
-    return ost;
-  }
+      uint16_t getLayer() const{
+	return layer();
+      }
 
-private:
+      uint16_t getStation() const{
+	return station();
+      }
 
-  LayerId _lid;
-  int     _n;
+      uint16_t plane() const{
+	return (_sid & _planemsk) >> _planesft;
+      }
 
-};
+      uint16_t face() const {
+	return (_sid & _facemsk) >> _facesft;
+      }
+
+      uint16_t uniqueFace() const {
+	return plane()*_nfaces + face();
+      }
+
+      uint16_t panel() const{
+	return (_sid & _panelmsk) >> _panelsft;
+      }
+
+      uint16_t uniquePanel() const{
+	return plane()*_npanels + panel();
+      }
+
+      uint16_t straw() const{
+	return (_sid & _strawmsk);
+      }
+
+      uint16_t preamp() const{
+	return (_sid & _preampmsk) >> _preampsft;
+      }
+
+      uint16_t layer() const{
+	return (_sid & _layermsk);
+      }
+
+      uint16_t station() const{
+	return (_sid & _stationmsk) >> _stationsft;
+      }
+
+    // compact unique integer
+      uint16_t uniqueStraw() const{
+	return uniquePanel()*_nstraws + straw();
+      }
+
+      // logical comparators
+
+      bool samePreamp(StrawId other){
+	return plane() == other.plane() &&
+	      panel() == other.panel() &&
+	      preamp() == other.preamp();
+      }
+
+      bool nearestNeighbor(StrawId other){
+	return plane() == other.plane() &&
+	      panel() == other.panel() &&
+	      abs(straw()-other.straw())<2;
+      }
+
+      // operators
+
+      bool operator==( StrawId const& rhs) const{
+	return ( _sid == rhs._sid );
+      }
+
+      bool operator!=( StrawId const& rhs) const{
+	return !( *this == rhs);
+      }
+
+      bool operator<( StrawId const& rhs) const{
+        return ( _sid < rhs._sid);
+      }
+      bool operator>( StrawId const& rhs) const{
+        return ( _sid > rhs._sid);
+      }
+
+      // helpers
+
+      bool samePlane( StrawId const& sid) const{
+	return ((_sid & _planemsk) == (sid._sid & _planemsk));
+      }
+
+      bool samePanel( StrawId const& sid) const{
+	return ((_sid & _panelmsk) == (sid._sid & _panelmsk));
+      }
+
+// qualify how close 2 panels are by their Z separation.  This needs to be a logical
+// separation, in case there are alignment constants applied
+      enum isep{same=0,plane1,station1,station2,station3,apart};
+      isep separation(StrawId const& other) const;
+
+    private:
+      // fill fields
+      void setStraw(uint16_t istraw);
+      void setPanel(uint16_t ipanel);
+      void setPlane(uint16_t iplane);
+
+  };
+
+  // printout
+  std::ostream& operator<<(std::ostream& ost,
+                           const StrawId& s );
 
 }
 #endif /* TrackerGeom_StrawId_hh */

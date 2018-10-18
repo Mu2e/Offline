@@ -15,7 +15,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Units/PhysicalConstants.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -350,7 +350,7 @@ namespace mu2e {
       // Hits near microbunch boundaries are duplicated.
       foldHitTimes(&pixcharges);
 
-      const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>(event);
+      const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>();
       const art::EDProductGetter *hitsGetter = event.productGetter(hitsPID);
       discriminate(&*outHits, &*outTruth, hitsPID, hitsGetter, pixcharges);
 

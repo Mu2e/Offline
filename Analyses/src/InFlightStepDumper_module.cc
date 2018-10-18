@@ -5,7 +5,7 @@
 #include <string>
 #include <algorithm>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"

@@ -1,5 +1,5 @@
-#include "minimalMessageService.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 
 process_name : CRVResponse
@@ -7,31 +7,36 @@ process_name : CRVResponse
 source :
 {
   module_type : RootInput
+  inputCommands: ["keep *", 
+                  "drop *KalRepPayload*_*_*_*",
+                  "drop *CaloCrystalOnlyHit*_*_*_*"]
 }
 
 services :
 {
   RandomNumberGenerator: { }
-  user :
-  {
-    GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-    SeedService            : @local::automaticSeeds
-  }
+  GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  SeedService            : @local::automaticSeeds
 }
 
 physics :
 {
   producers:
   {
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
     @table::CrvResponsePackage.producers
   }
 
-  an : [@sequence::CrvResponsePackage.CrvResponseSequence]
-  out: [Output]
+  an : [protonTimeMap, muonTimeMap, @sequence::CrvResponsePackage.CrvResponseSequence]
+#  out: [Output]
+  out: []
 
-  end_paths: [an, out]
+  trigger_paths: [an]
+  end_paths:     [out]
 }
 
 outputs: 
@@ -43,5 +48,5 @@ outputs:
   }
 }
 
-services.user.SeedService.baseSeed         :  773651
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20

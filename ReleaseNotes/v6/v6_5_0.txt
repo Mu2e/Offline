@@ -1,0 +1,67 @@
+
+           Release notes for Mu2e Offline software, v6_5_0
+
+1) genser, 25 Jan 2018
+           
+          Removed the Layer class; Replaced 4 element StrawId with the
+          3 element one: Plane_Panel_Straw (which is internally an
+          uint16_t; initially introduced as StrawId2); 
+          Made changes forced by the above
+
+          Affected files:
+
+           Analyses/src/BkgRates_module.cc
+           Analyses/src/ConvElecHistory_module.cc
+           Analyses/src/DIOElecHistory_module.cc
+           Analyses/src/PrintTTrackerGeom_module.cc
+           Analyses/src/ReadStrawHitReco_module.cc
+           Analyses/src/TTrackerGeomIntRootPlots_module.cc
+           CalPatRec/src/DeltaFinder_module.cc
+           CalPatRec/src/KalFitHackNew.cc
+           DataProducts/inc/LayerId.hh
+           DataProducts/inc/PanelId.hh
+           DataProducts/inc/PlaneId.hh
+           DataProducts/inc/StrawId.hh
+           DataProducts/inc/StrawId2.hh
+           DataProducts/inc/StrawIndex.hh
+           DataProducts/src/LayerId.cc
+           DataProducts/src/PanelId.cc
+           DataProducts/src/StrawId.cc
+           DataProducts/src/StrawId2.cc
+           EventDisplay/src/DataInterface.cc
+           GeometryService/inc/TTrackerMaker.hh
+           GeometryService/src/TTrackerMaker.cc
+           HitMakers/inc/StrawClusterUtilities.hh
+           HitMakers/src/BetaTauPitch_module.cc
+           HitMakers/src/ReadStrawCluster_module.cc
+           HitMakers/src/ReadStrawHit_module.cc
+           HitMakers/src/StrawClusterUtilities.cc
+           MCDataProducts/inc/StepPointMC.hh
+           Mu2eBTrk/src/Mu2eDetectorModel.cc
+           Mu2eG4/inc/StrawSD.hh
+           Mu2eG4/src/ConstructTTrackerDetail5.cc
+           Mu2eG4/src/ConstructTTrackerTDR.cc
+           Mu2eG4/src/StrawSD.cc
+           Mu2eG4/src/constructTTrackerv3.cc
+           Mu2eG4/src/constructTTrackerv3Detailed.cc
+           RecoDataProducts/src/StereoHit.cc
+           TTrackerGeom/inc/TTracker.hh
+           TTrackerGeom/inc/View.hh
+           TTrackerGeom/src/TTracker.cc
+           TrackerConditions/src/DeadStrawList.cc
+           TrackerGeom/inc/Layer.hh
+           TrackerGeom/inc/Panel.hh
+           TrackerGeom/inc/Plane.hh
+           TrackerGeom/inc/Straw.hh
+           TrackerGeom/inc/Tracker.hh
+           TrackerGeom/src/Layer.cc
+           TrackerGeom/src/Panel.cc
+           TrackerGeom/src/SConscript
+           TrackerGeom/src/Straw.cc
+           TrackerMC/src/StrawDigisFromStepPointMCs_module.cc
+           TrkDiag/src/StereoHitDiag_module.cc
+           TrkDiag/src/StrawHitDiag_module.cc
+           TrkHitReco/src/FlagBkgHits_module.cc
+           TrkHitReco/src/MakeStereoHits_module.cc
+           TrkReco/inc/PanelAmbigResolver.hh
+           TrkReco/src/KalFit.cc

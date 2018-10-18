@@ -19,7 +19,6 @@ vector<double> building.backfill.psArea.TopLayer.xPositions = {
   -12321,   // P3
   -18147.9,   // P4
   -18196.8,   // p5
-  -12213.8,   // e0
   -2921   // P6
 };
 
@@ -30,7 +29,6 @@ vector<double> building.backfill.psArea.TopLayer.yPositions = {
   -2185.21,   // P3
   -3595.8,   // P4
   -7505.7,   // p5
-  -7505.7,   // e0
   -7505.7   // P6
 };
 

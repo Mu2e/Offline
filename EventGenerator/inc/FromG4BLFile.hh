@@ -38,7 +38,7 @@ namespace mu2e {
   class FromG4BLFile: public GeneratorBase{
 
   public:
-    FromG4BLFile( art::Run const& run, const SimpleConfig& config );
+    FromG4BLFile(CLHEP::HepRandomEngine& engine, art::Run const& run, const SimpleConfig& config);
     virtual ~FromG4BLFile();
 
     virtual void generate( GenParticleCollection&  );

@@ -6,7 +6,7 @@
 
 process_name : digiG4s2delta
 
-outputs.FullOutput.fileName    : "dataDigiFlatMars.root"
+outputs.FullOutput.fileName    : "dataDigiFlatMars.art"
 services.TFileService.fileName : "histDigiFlatMars.root"
 
 physics.producers.pixelDigitization.geomModuleLabel : "geoms2"

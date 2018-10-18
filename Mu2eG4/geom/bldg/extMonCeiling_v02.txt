@@ -1,0 +1,43 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_extMon_ceiling.ccl
+
+string building.extMon.ceiling.name     = "extMonCeiling";
+
+string building.extMon.ceiling.material = "CONCRETE_MARS";
+
+double building.extMon.ceiling.offsetFromMu2eOrigin.x   = 947.4;
+double building.extMon.ceiling.offsetFromFloorSurface.y = 7061.2;
+double building.extMon.ceiling.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.extMon.ceiling.yHalfThickness           = 228.6;
+
+vector<double> building.extMon.ceiling.xPositions = {
+  -16446,   // a2
+  -26655.4,   // a3
+  -25571,   // A4
+  -23646.4,   // A5
+  -23104.2,   // A6
+  -21062.3,   // A7
+  -20396.6,   // A8
+  -18795.7,   // C0
+  -18350.7,   // C1
+  -15361.7   // C2
+};
+
+vector<double> building.extMon.ceiling.yPositions = {
+  1923.3,   // a2
+  -569.258,   // a3
+  -5010.8,   // A4
+  -4540.91,   // A5
+  -6761.68,   // A6
+  -6263.17,   // A7
+  -8989.78,   // A8
+  -7818.36,   // C0
+  -3247,   // C1
+  -2518.25   // C2
+};
+
+// Local Variables:
+// mode:c++
+// End:

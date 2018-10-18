@@ -2,9 +2,9 @@
 //
 // Andrei Gaponenko, 2012
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 // Give this job a name.
 process_name : runExtMonCommon
@@ -22,13 +22,12 @@ services : {
     TFileService : { fileName : "g4hists_ExtMonCommon.root" }
     RandomNumberGenerator : {}
 
-    user : {
-        GeometryService : { inputFile : "Mu2eG4/test/geom_extMonCommon.txt" }
-        ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-        GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        SeedService       : @local::automaticSeeds
-        G4Helper : { }
-    }
+    GeometryService : { inputFile : "Mu2eG4/test/geom_extMonCommon.txt" }
+    ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    SeedService       : @local::automaticSeeds
+    G4Helper : { }
+
 }
 
 physics : {
@@ -67,7 +66,7 @@ outputs:
     outVDCommon: {
         module_type: RootOutput
         fileName: "gvdCommon.root"
-        SelectEvents: { SelectEvents: [tCommon] }
+        SelectEvents: [tCommon]
         outputCommands:   [ "keep *_fvdCommon_*_*" ]
     }
 

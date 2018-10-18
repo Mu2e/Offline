@@ -13,6 +13,8 @@
 
 #include <string>
 
+#include "BFieldGeom/inc/BFCacheManager.hh"
+
 #include "G4MagneticField.hh"
 #include "G4Types.hh"
 #include "G4ThreeVector.hh"
@@ -44,6 +46,9 @@ namespace mu2e {
 
     // Non-owning pointer to the field map object (it is owned by the geometry service).
     const BFieldManager* _map;
+
+    // A copy of the bfield cache manager - must be thread local.
+    BFCacheManager _cm;
 
   };
 }

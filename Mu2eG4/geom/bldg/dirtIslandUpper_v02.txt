@@ -1,0 +1,53 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_DirtIsland_upperExtension.ccl
+
+string dirt.island.upper.name     = "dirtIslandUpper";
+
+//string dirt.island.upper.material = "MBOverburden";
+string dirt.island.upper.material = "CA7Backfill";
+
+double dirt.island.upper.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.island.upper.offsetFromFloorSurface.y = 4241.8;
+double dirt.island.upper.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.island.upper.yHalfThickness           = 1651;
+
+vector<int>    dirt.island.upper.xreplace   = { 12, 13 }; 
+vector<double> dirt.island.upper.xPositions = {
+  21158.2,   // D
+  21158.2,   // C
+  14046.2,   // B
+  14046.2,   // A
+  13233.4,   // Z
+  13233.4,   // Y
+  7975.6,   // X
+  7975.6,   // W
+  7366,   // V
+  7366,   // U
+  17500.6,   // T
+  17858.3,   // S
+  50000,   // S_to_E
+  50000   // D_to_E
+};
+
+vector<double> dirt.island.upper.yPositions = {
+  2616.2,   // D
+  -152.4,   // C
+  -152.4,   // B
+  2438.4,   // A
+  2438.4,   // Z
+  -152.4,   // Y
+  -152.4,   // X
+  2438.4,   // W
+  2438.4,   // V
+  3727.45,   // U
+  6195.19,   // T
+  6281.75,   // S
+  6281.78,   // S_to_E
+  2616.2   // D_to_E
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -42,13 +42,15 @@
 #include "G4VModularPhysicsList.hh"
 #include "globals.hh"
 #include "CompileTimeConstraints.hh"
+// Mu2e include
+#include "fhiclcpp/ParameterSet.h"
 
-template<class T, class Config>
+template<class T>
 class TQGSP_BERT_HP_MU2E00: public T
 {
 
 public:
-  explicit TQGSP_BERT_HP_MU2E00(Config const & config, G4int ver=1);
+  explicit TQGSP_BERT_HP_MU2E00(const fhicl::ParameterSet& config, G4int ver=1);
   virtual ~TQGSP_BERT_HP_MU2E00();
   
 public:

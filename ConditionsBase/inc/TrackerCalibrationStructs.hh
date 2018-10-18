@@ -47,15 +47,6 @@ namespace mu2e
     A2E() : _edep(0.0),_edeperr(1.0) {}
   };
 
-// simple strict to hold straw hit position info
-  struct SHInfo {
-    CLHEP::Hep3Vector _pos;
-    double _tddist;
-    double _time;
-    double _tdres;
-    double _timeres;
-    bool _tdiv;
-  };
 }
 
 #endif

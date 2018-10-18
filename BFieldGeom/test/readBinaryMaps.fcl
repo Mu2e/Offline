@@ -2,9 +2,9 @@
 # output is the same as for the text maps.
 #
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 process_name : ReadBinaryMaps
 
@@ -38,8 +38,8 @@ physics : {
     muonTimeMap          : @local::muonTimeMap
     makeSD               : @local::makeSD
     makeSH               : @local::makeSHfromSD
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-    CaloCrystalHitsMaker : @local::MakeCaloCrystalHitsNew
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
   }
 
@@ -49,7 +49,7 @@ physics : {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
-      caloReadoutModuleLabel : CaloReadoutHitsMaker
+      caloReadoutModuleLabel : CaloCrystalHitFromHit
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201
@@ -57,14 +57,15 @@ physics : {
 
     readStrawHits: {
       module_type      : ReadStrawHit
-      makerModuleLabel : makeSH
+      recoModuleLabel : makeSH
+      simModuleLabel : makeSD
       diagLevel        : 3
       maxFullPrint     : 100
     }
 
   }
 
-  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, CaloReadoutHitsMaker, CaloCrystalHitsMaker ]
+  p1 : [generate, g4run, protonTimeMap, muonTimeMap, makeSD, makeSH, @sequence::CaloDigiMC.DigiSim,@sequence::CaloReco.Reco ]
   e1 : [checkhits, readStrawHits ]
 
   trigger_paths  : [p1]
@@ -79,7 +80,3 @@ physics.producers.g4run.SDConfig.enableSD : [tracker, calorimeter, calorimeterRO
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
-physics.producers.CaloReadoutHitsMaker.diagLevel : 0
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 201
-physics.producers.CaloCrystalHitsMaker.diagLevel : 0
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201

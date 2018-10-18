@@ -1,4 +1,77 @@
-void Draw(TTree* c) {
+#include "TH1F.h"
+#include "TF1.h"
+#include "TTree.h"
+#include "TLegend.h"
+#include "TPad.h"
+#include "TPaveText.h"
+#include "TCanvas.h"
+#include "TH2F.h"
+#include "TStyle.h"
+#include "TLine.h"
+#include "TArrow.h"
+#include "TCut.h"
+#include "TBox.h"
+#include "TMath.h"
+#include "TProfile.h"
+#include "TFitResult.h"
+#include "TFitResultPtr.h"
+#include "TDirectory.h"
+#include "Math/Math.h"
+#include "THStack.h"
+
+
+Double_t crystalball (Double_t *x, Double_t *par) {
+  // par[0] : norm
+  // par[1] : x0
+  // par[2] : sigma
+  // par[3] : n
+  // par[4] : alpha
+  // par[5] : fraction of exponential tail
+  // par[6] : tail exponential lambda
+
+  double dx = x[0]-par[1];
+  if ( dx/fabs(par[2]) > -1.*par[4]) {
+    double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
+//    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
+//    return g1+g2;
+    double e = par[0]*par[5]*dx*exp(-(dx)/par[6])/(par[6]*par[6]);
+    return g+e;
+  }
+  else {
+    double A = pow(par[3]/fabs(par[4]), par[3])*exp(-0.5*par[4]*par[4]);
+    double B = par[3]/fabs(par[4]) - fabs(par[4]);
+    return par[0]*A*pow(B-dx/fabs(par[2]), -1.*par[3]);
+  }
+}
+
+
+// The following is from Alexx Perloff, JetMetaAnalysis
+double fnc_dscb(double*xx,double*pp) {
+  double x   = xx[0];
+// gaussian core
+  double N   = pp[0];//norm
+  double mu  = pp[1];//mean
+  double sig = pp[2];//variance
+  // transition parameters
+  double a1  = pp[3];
+  double p1  = pp[4];
+  double a2  = pp[5];
+  double p2  = pp[6];
+
+  double u   = (x-mu)/sig;
+  double A1  = TMath::Power(p1/TMath::Abs(a1),p1)*TMath::Exp(-a1*a1/2);
+  double A2  = TMath::Power(p2/TMath::Abs(a2),p2)*TMath::Exp(-a2*a2/2);
+  double B1  = p1/TMath::Abs(a1) - TMath::Abs(a1);
+  double B2  = p2/TMath::Abs(a2) - TMath::Abs(a2);
+
+  double result(N);
+  if      (u<-a1) result *= A1*TMath::Power(B1-u,-p1);
+  else if (u<a2)  result *= TMath::Exp(-u*u/2);
+  else            result *= A2*TMath::Power(B2+u,-p2);
+  return result;
+}
+
+void Draw(TTree* ta) {
 
   TH2F* evspep = new TH2F("evspep","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
   TH2F* evspmp = new TH2F("evspmp","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
@@ -19,10 +92,10 @@ void Draw(TTree* c) {
 
   TCanvas* can = new TCanvas("can","can",800,800);
 
-  c->Project("evspem","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==11");
-  c->Project("evspmm","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==13");
-  c->Project("evspep","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-11");
-  c->Project("evspmp","demc.eclust:dem.mom","dem.status>0&&tcnt.ndemc>0&&demmc.pdg==-13");
+  ta->Project("evspem","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==11");
+  ta->Project("evspmm","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==13");
+  ta->Project("evspep","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==-11");
+  ta->Project("evspmp","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==-13");
 
   evspem->Draw();
   evspem->Draw("box");
@@ -34,3 +107,296 @@ void Draw(TTree* c) {
   leg->AddEntry(evspmp,"True #mu^{+}","L");
   leg->Draw();
 }
+
+void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
+// cuts
+  TCut reco("de.status>0");
+  char ctext[80];
+  snprintf(ctext,80,"de.trkqual>%f",tqcut);
+  TCut goodfit(ctext);
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(700.0);
+  double t0max(1695.0);
+  snprintf(ctext,80,"de.td>%5.5f&&de.td<%5.5f",tdlow,tdhigh);
+  TCut rpitch = TCut(ctext);
+  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
+  TCut livegate = TCut(ctext);
+  TCut cosmic = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
+  TCut rmomloose("de.mom>100.0");
+  TCut physics = rpitch+cosmic+livegate+rmomloose;
+
+  TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
+  rcan->Clear();
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  gPad->SetLogy();
+  TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
+  momresp->Sumw2();
+  TCut final = reco+goodfit;
+  TCut evtwt = "evtwt.PBIWeight";
+  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
+  momresp->Scale(1.0/nmu);
+  //    ta->Project(mname,"fit.mom-mcent.mom",final);
+  double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
+  dscb->SetParameters(0.05*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
+  dscb->SetNpx(1000);
+  dscb->SetParLimits(3,0.0,50.0);
+  dscb->SetParLimits(4,1.0,50.0);
+  dscb->SetParLimits(5,0.0,50.0);
+  dscb->SetParLimits(6,1.0,50.0);
+
+  momresp->SetMinimum(0.5);
+  momresp->Fit("dscb","LRQ");
+  momresp->Fit("dscb","LRM");
+  if(strcmp(file,"")!=0)rcan->SaveAs(file);
+}
+void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
+// cuts
+  TCut reco("de.status>0");
+  char ctext[80];
+  snprintf(ctext,80,"de.trkqual>%f",tqcut);
+  TCut goodfit(ctext);
+  double tdlow(0.57735027);
+  double tdhigh(1.0);
+  double t0min(700.0);
+  double t0max(1695.0);
+  snprintf(ctext,80,"de.td>%5.5f&&de.td<%5.5f",tdlow,tdhigh);
+  TCut rpitch = TCut(ctext);
+  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
+  TCut livegate = TCut(ctext);
+  TCut cosmic = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
+  TCut rmomloose("de.mom>100.0");
+  TCut physics = rpitch+cosmic+livegate+rmomloose;
+
+  TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+
+  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
+  rcan->Clear();
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  gPad->SetLogy();
+  TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
+  momres->Sumw2();
+  TCut final = reco+goodfit+physics;
+  TCut evtwt = "evtwt.PBIWeight";
+  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+  momres->Scale(1.0/nmu);
+  //    ta->Project(mname,"fit.mom-mcent.mom",final);
+  double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
+  cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
+  dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
+
+//  momres->SetMinimum(0.5);
+  momres->Fit("dscb","RQ");
+  momres->Fit("dscb","RMQ");
+  TFitResultPtr fitres = momres->Fit("dscb","SRE");
+  cout << "Core Sigma = " << dscb->GetParameter(2) << " +- " << dscb->GetParError(2) << endl;
+  cout << "High Side Power = " << dscb->GetParameter(6) << " +- " << dscb->GetParError(6) << endl;
+
+  // count outliers
+  int outbin = momres->FindBin(1.1);
+  double outint = momres->Integral(outbin,momres->GetNbinsX());
+  double totint = momres->Integral();
+  double outrat = outint/totint;
+  cout <<"Outlier integral = " << outint  << " total integral = " << totint << " Outlier fraction = " << outrat << endl;
+
+
+  TLine* zero = new TLine(0.0,0.0,0.0,momres->GetBinContent(momres->GetMaximumBin()));
+  zero->SetLineStyle(2);
+  zero->Draw();
+
+  TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
+  rtext->AddText("Reco Cuts");
+  char line[40];
+  snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
+  rtext->AddText(line);
+  snprintf(line,80,"t0>%5.1f nsec",t0min);
+  rtext->AddText(line);
+  sprintf(line,"%s",goodfit.GetTitle());
+  rtext->AddText(line);
+  sprintf(line,"%s",rmomloose.GetTitle());
+  rtext->AddText(line);
+  sprintf(line,"%5.0f Tracks",momres->GetEntries());
+  rtext->AddText(line);
+  rtext->Draw();
+  if(strcmp(file,"")!=0)rcan->SaveAs(file);
+
+}
+
+void Acc(TTree* ta, int ngen,const char* file="") {
+  unsigned nbins(8);
+  double bmax = nbins-0.5;
+
+  TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
+  TH1F* racc = new TH1F("racc","CE Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
+//  acc->Sumw2();
+//  racc->Sumw2();
+  unsigned ibin(1);
+  acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
+  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
+
+
+  ibin = 1;
+  racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
+  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
+
+  ibin = 0;
+  const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
+
+  TCut mcsel = "demc.ndigigood>15&&demcent.mom>90.0";
+  // &&demcent.td>0.55&&demcent.td<1.05";
+  //&&fmod(demcent.t0,1695.0)>500.0";
+  TCut reco = "de.status>0";
+  TCut goodfit = "de.trkqual>0.4";
+  TCut livegate = "de.t0>500.0&&de.t0<1695";
+  TCut rpitch = "de.td>0.57735027&&de.td<1.0";
+  TCut cosmic = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
+  TCut rmom = "de.mom>100.0";
+  TCut evtwt = "evtwt.PBIWeight";
+  ta->Project("acc",binnames[ibin++],evtwt);
+  ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+cosmic));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+cosmic+rmom));
+
+  double all = acc->GetBinContent(1);
+  double norm = ngen;
+  if(ngen < 0)
+    norm = all;
+  double prev = norm;
+  for(ibin=1;ibin<=nbins;ibin++){
+    racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
+    prev = acc->GetBinContent(ibin);
+  }
+  cout << "Found " << norm << "Entries." << endl;
+  racc->SetMaximum(1.1);
+  acc->Scale(1.0/(float)norm);
+  acc->SetMaximum(1.1);
+  acc->SetStats(0);
+  racc->SetStats(0);
+  acc->GetXaxis()->SetLabelSize(0.06);
+  racc->GetXaxis()->SetLabelSize(0.06);
+  acc->SetMarkerSize(2.0);
+  racc->SetMarkerSize(2.0);
+  acc->GetYaxis()->SetTitleSize(0.05);
+  racc->GetYaxis()->SetTitleSize(0.05);
+
+  gStyle->SetPaintTextFormat("5.4f");
+  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
+  acan->Clear();
+  acan->Divide(1,2);
+  acan->cd(1);
+  TPad* tp = (TPad*)acan->cd(1);
+  tp->SetBottomMargin(0.15);
+  acc->Draw("histtext0");
+  acan->cd(2);
+  tp = (TPad*)acan->cd(2);
+  tp->SetBottomMargin(0.15);
+  racc->Draw("histtext0");
+  if(strcmp(file,"")!=0)acan->SaveAs(file);
+}
+
+void hitres(TTree* ta) {
+  TH1F* hresida = new TH1F("hresida","Hit Residual;mm",100,-2,2);
+  TH1F* hresidna = new TH1F("hresidna","Hit Residual;mm",100,-2,2);
+  TH1F* hresidall = new TH1F("hresidall","Hit Residual;mm",100,-2,2);
+  hresida->SetFillColor(kGreen);
+  hresidna->SetFillColor(kBlue);
+  hresida->SetStats(0);
+  hresidna->SetStats(0);
+  THStack* hresidst = new THStack("hresidst","Hit Residual;mm");
+  hresidst->Add(hresida);
+  hresidst->Add(hresidna);
+  ta->Project("hresida","detsh._resid","de.status>0&&detsh._active&&detsh._ambig!=0");
+  ta->Project("hresidna","detsh._resid","de.status>0&&detsh._active&&detsh._ambig==0");
+  ta->Project("hresidall","detsh._resid","de.status>0&&detsh._active");
+  
+  TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  TH1F* hresall = new TH1F("hresall","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
+  hresa->SetFillColor(kGreen);
+  hresna->SetFillColor(kBlue);
+  hresa->SetStats(0);
+  hresna->SetStats(0);
+  THStack* hresst = new THStack("hresst","Hit Drift Resolution;Reco R_{drift}-MC (mm)");
+  hresst->Add(hresa);
+  hresst->Add(hresna);
+  ta->Project("hresa","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active&&detsh._ambig!=0");
+  ta->Project("hresna","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active&&detsh._ambig==0");
+  ta->Project("hresall","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active");
+  TCanvas* rescan = new TCanvas("rescan","rescan",800,800);
+  rescan->Divide(1,2);
+  rescan->cd(1);
+  hresidst->Draw("h");
+  hresidall->Fit("gaus","","sames");
+  TLegend* rleg = new TLegend(0.15,0.6,0.4,0.85);
+  rleg->AddEntry(hresida,"Resolved Ambiguity","f");
+  rleg->AddEntry(hresidna,"Null Ambiguity","f");
+  rleg->Draw();
+  rescan->cd(2);
+  hresst->Draw("h");
+  hresall->Fit("gaus","","sames");
+}
+
+void wpull(TTree* ta) {
+  TH1F* swp = new TH1F("swp","Final Fit Wire Position Pull",100,-25,25);
+  TH1F* uwp = new TH1F("uwp","Final Fit Wire Position Pull",100,-25,25);
+  TH1F* rwp = new TH1F("rwp","Final Fit Wire Position Pull",100,-25,25);
+  swp->SetLineColor(kGreen);
+  uwp->SetLineColor(kRed);
+  rwp->SetLineColor(kBlue);
+  ta->Project("swp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel==0");
+  ta->Project("uwp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel<0");
+  ta->Project("rwp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel>0");
+  TCanvas* wpcan = new TCanvas("wpcan","wpcan",800,800);
+  wpcan->Divide(2,2);
+  wpcan->cd(1);
+  gPad->SetLogy();
+  swp->Fit("gaus");
+  wpcan->cd(2);
+  uwp->Draw();
+  wpcan->cd(3);
+  gPad->SetLogy();
+  rwp->Fit("gaus");
+  TLegend* wleg = new TLegend(0.5,0.5,0.9,0.9);
+  wleg->AddEntry(swp,"Primary Hit","L");
+  wleg->AddEntry(uwp,"Unrelated Hit","L");
+  wleg->AddEntry(rwp,"Related Hit","L");
+  wpcan->cd(4);
+  wleg->Draw();
+
+}
+

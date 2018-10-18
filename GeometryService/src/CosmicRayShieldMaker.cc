@@ -101,6 +101,7 @@ namespace mu2e
 
     config.getVectorDouble("crs.gapBetweenLayers",_gapBetweenLayers,_nLayers-1);
     _aluminumSheetThickness = config.getDouble("crs.aluminumSheetThickness");
+    _strongBackThickness    = config.getDouble("crs.strongBackThickness");
 
     _scintillatorBarMaterialName  = config.getString("crs.scintillatorBarMaterialName");
     _absorberMaterialName         = config.getString("crs.absorberMaterialName");
@@ -214,8 +215,21 @@ namespace mu2e
           absorberLayer._halfLengths[thicknessDirection]=0.5*_gapBetweenLayers[ilayer];
         }
 
-        //Thin aluminum sheets
-        if(ilayer==0 || ilayer==_nLayers-1)
+        //Strong back
+        if(ilayer==0)
+        {
+          module._aluminumSheets.push_back(CRSAluminumSheet());
+          CRSAluminumSheet &aluminumSheet = module._aluminumSheets.back();
+
+          aluminumSheet._position = layer._position;
+          aluminumSheet._halfLengths = layer._halfLengths;
+          double shift=-0.5*(_counterThickness+_strongBackThickness)*_layerDirection[isector][thicknessDirection];
+          aluminumSheet._position[thicknessDirection]+=shift;
+          aluminumSheet._halfLengths[thicknessDirection]=0.5*_strongBackThickness;
+        }
+
+        //Thin aluminum sheet
+        if(ilayer==_nLayers-1)
         {
           module._aluminumSheets.push_back(CRSAluminumSheet());
           CRSAluminumSheet &aluminumSheet = module._aluminumSheets.back();
@@ -223,7 +237,6 @@ namespace mu2e
           aluminumSheet._position = layer._position;
           aluminumSheet._halfLengths = layer._halfLengths;
           double shift=0.5*(_counterThickness+_aluminumSheetThickness)*_layerDirection[isector][thicknessDirection];
-          if(ilayer==0) shift*=-1;
           aluminumSheet._position[thicknessDirection]+=shift;
           aluminumSheet._halfLengths[thicknessDirection]=0.5*_aluminumSheetThickness;
         }
@@ -235,7 +248,7 @@ namespace mu2e
           {          
             double FEBcoordinate0 = layer._position[thicknessDirection] + _layerDirection[isector][thicknessDirection]*(0.5*_counterThickness+_FEBDistanceToModule);
             if(FEBlayer==1) FEBcoordinate0 += _layerDirection[isector][thicknessDirection]*_FEBDistanceBetween2FEBsT;
-            double FEBcoordinate1_1FEB = layer._position[widthDirection] - _offsetDirection[isector][widthDirection]*1.5*_offset; //centered if only 1 FEB
+            double FEBcoordinate1_1FEB = layer._position[widthDirection]; //centered if only 1 FEB
             double FEBcoordinate1_2FEBs_0 = FEBcoordinate1_1FEB - 0.5*_FEBDistanceBetween2FEBsW;
             double FEBcoordinate1_2FEBs_1 = FEBcoordinate1_1FEB + 0.5*_FEBDistanceBetween2FEBsW;
             double FEBcoordinate2_side0 = layer._position[lengthDirection] - layer._halfLengths[lengthDirection] + _FEBDistanceToEdge; 

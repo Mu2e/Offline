@@ -117,8 +117,9 @@ namespace mu2e {
       cerr << "Crystal: "
            << crystal.id() << " "
            << crystal.energyDep()  <<  " "
-           << crystal.numberOfROIdsUsed()
+           << crystal.nROId()
            << endl;
+      /*
       std::vector<art::Ptr<CaloHit> > const & readouts = crystal.readouts();
       for ( std::vector<art::Ptr<CaloHit> >::const_iterator j=readouts.begin(), je=readouts.end();
             j != je; ++j ){
@@ -133,6 +134,7 @@ namespace mu2e {
              << p->energyDep() << " "
              << endl;
       }
+      */
     }
 
   } // end bug01a
@@ -269,7 +271,7 @@ namespace mu2e {
       StrawHit const& straw(straws[i]);
       PtrStepPointMCVector const& steps(stepPtrs[i]);
       cout << "Straw: "
-           << straw.strawIndex() << " "
+           << straw.strawId() << " "
            << straw.energyDep()*1000.<< " " // keV
            << steps.size()
            << endl;

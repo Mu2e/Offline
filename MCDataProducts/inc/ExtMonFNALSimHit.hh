@@ -55,6 +55,7 @@ namespace mu2e {
     const ExtMonFNALModuleId& moduleId() const { return moduleId_; }
 
     const art::Ptr<SimParticle>& simParticle() const { return particle_; }
+    art::Ptr<SimParticle>&       simParticle()       { return particle_; }
 
     double totalEnergyDeposit()        const { return totalEnergyDeposit_; }
     double nonIonizingEnergyDeposit()  const { return nonIonizingEnergyDeposit_; }
@@ -67,6 +68,9 @@ namespace mu2e {
 
     const CLHEP::Hep3Vector& localEndPosition() const { return endPosition_;  }
     double                   endTime() const { return endTime_;  }
+
+    // needed for event mixing
+    void setSimParticle(const art::Ptr<SimParticle>& p);
 
   private:
     ExtMonFNALModuleId    moduleId_;

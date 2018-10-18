@@ -27,16 +27,16 @@ namespace mu2e {
 
        public:
 
-	   TrkCaloIntersect():_sectionId(-1),_trk(),_trkId(-1),_pathLengthEntrance(0.0),_pathLengthEntranceErr(0),_pathLengthExit(0.0) {}
+	   TrkCaloIntersect():_diskId(-1),_trk(),_trkId(-1),_pathLengthEntrance(0.0),_pathLengthEntranceErr(0),_pathLengthExit(0.0) {}
 
 	   TrkCaloIntersect(int section,  KalRepPtr& trk, int trkId, double entrance, double entranceErr, double exit):
-	     _sectionId(section), _trk(trk), _trkId(trkId), _pathLengthEntrance(entrance),_pathLengthEntranceErr(entranceErr), _pathLengthExit(exit)
+	     _diskId(section), _trk(trk), _trkId(trkId), _pathLengthEntrance(entrance),_pathLengthEntranceErr(entranceErr), _pathLengthExit(exit)
 	   {}
 
 	   ~TrkCaloIntersect(){}
 
 
-	   int                sectionId()             const {return _sectionId;}
+	   int                diskId()                const {return _diskId;}
 	   double             pathLengthEntrance()    const {return _pathLengthEntrance;}
 	   double             pathLengthExit()        const {return _pathLengthExit;}
 	   double             pathLenghtEntranceErr() const {return _pathLengthEntranceErr;}
@@ -46,7 +46,7 @@ namespace mu2e {
 
        private:
 
-	   int         _sectionId;           
+	   int         _diskId;           
 	   KalRepPtr   _trk;
 	   int         _trkId;
 	   double      _pathLengthEntrance;

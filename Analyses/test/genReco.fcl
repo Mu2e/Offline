@@ -11,10 +11,11 @@
 #  mu2e -c Analyses/test/genReco.fcl -n 1000 >| results/2014-12-19-Analyses_test_genReco.log 2>&1 &
 #------------------------------------------------------------------------------
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
+#include "CaloCluster/fcl/prolog.fcl"
 #include "Analyses/fcl/prolog.fcl"
 
 #------------------------------------------------------------------------------
@@ -22,39 +23,42 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-generatorSeq  : [ generate, g4run, @sequence::EventMixing.TimeMaps ]
+generatorSeq  : [ generate, g4run ]
 
-make_digis   : [ MakeCaloReadoutHits, @sequence::Tracking.DigiSim ]
+make_digis   : [ @sequence::CommonMC.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::TrackerMC.DigiSim ]
 
 # calorimeter cluster reconstruction
-calRecoSeq    : [ MakeCaloCrystalHits, MakeCaloProtoCluster, MakeCaloCluster ]
+calRecoSeq    : [ @sequence::CaloReco.Reco,@sequence::CaloDigiMC.TruthMatch,@sequence::CaloCluster.Reco,@sequence::CaloCluster.TruthMatch ]
 
 # hit making for CalPatRec
-cprMakeHitSeq : [ CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  
-		    CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
+# cprMakeHitSeq : [ @sequence::CalPatRec.prepare_hits] # 
+
+# CalPatRecFSHP, CalPatRecMakeStrawHitPositions, CalPatRecMakeStereoHits,  CalPatRecFlagStrawHits, CalPatRecFlagBkgHits ]
 # 
-calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
+# calPatRecSeq  : [ @sequence::cprMakeHitSeq, CalPatRec, MergePatRec ]
 
 #------------------------------------------------------------------------------
 # downstream electron and downstream muon reconstruction - needed for particle ID
 #------------------------------------------------------------------------------
-trkPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
-			  @sequence::Tracking.TPRDownstreammuMinus,
-			  MergePatRecDem, MergePatRecDmm ]
+trkPatRecDemDmmSeq  : [ @sequence::TrkHitReco.PrepareHits,
+			@sequence::Tracking.TPRDeM, 
+			@sequence::Tracking.TPRDmuM,
+			MergePatRecDem, MergePatRecDmm ]
 
-calPatRecDemDmmSeq  : [ @sequence::cprMakeHitSeq, CalPatRecDem, CalPatRecDmm, MergePatRecDem, MergePatRecDmm ]
+calPatRecDemDmmSeq  : [ @sequence::TrkHitReco.PrepareHits, @sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, MergePatRecDem, MergePatRecDmm ]
 
-allPatRecDemDmmSeq  : [ @sequence::Tracking.TPRDownstreameMinus, 
-			@sequence::Tracking.TPRDownstreammuMinus,
-			@sequence::cprMakeHitSeq, 
-			CalPatRecDem, CalPatRecDmm,
+allPatRecDemDmmSeq  : [	@sequence::TrkHitReco.PrepareHits,
+			@sequence::Tracking.TPRDeM, 
+			@sequence::Tracking.TPRDmuM,
+#			@sequence::cprMakeHitSeq, 
+			@sequence::CalPatRec.dem_reco, @sequence::CalPatRec.dmm_reco, 
 			MergePatRecDem, MergePatRecDmm ]
 
 # particle identification
 
 vadimPidSeq         : [ @sequence::TrackCaloMatching.matching, ParticleID ]
 avikPidSeq          : [ @sequence::TrackCaloMatching.matching_dem,
-			  @sequence::TrackCaloMatching.matching_dmm,
+			@sequence::TrackCaloMatching.matching_dmm,
 			AvikPID ]
 
 #-----------------------------------------------------------------------------
@@ -95,6 +99,7 @@ paths : {
 			  ]
 }
 
+
 END_PROLOG
 
 process_name : AllPatRecReco
@@ -111,7 +116,7 @@ source : {
 outputs: {
     detectorOutput : {
         module_type : RootOutput
-#        SelectEvents: { SelectEvents: [p1] }
+#        SelectEvents: [p1]
         outputCommands:   [ "keep *_*_*_*",
                             "drop mu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*"
                           ]
@@ -128,7 +133,7 @@ services : {
     RandomNumberGenerator : { }
 
     # Mu2e services
-    GeometryService        : { inputFile      : "Mu2eG4/test/geom_01.txt" }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
     G4Helper               : { }
@@ -149,10 +154,15 @@ physics : {
 # G4, hit makers, calorimeter, track reconstruction, and PID
 #------------------------------------------------------------------------------
 	@table::Mu2eG4.producers
-        @table::EventMixing.producers 
-	@table::HitMakers.producers
-	@table::CaloCluster.producers
+	@table::CommonMC.producers
+	@table::CaloDigiMC.producers
+        @table::CaloReco.producers
+        @table::CaloDigiMC.producersMC
+        @table::CaloCluster.producers
+        @table::CaloCluster.producersMC
+	@table::TrackerMC.producers
 	@table::Tracking.producers
+	@table::TrkHitReco.producers
 	@table::CalPatRec.producers
 	@table::TrackCaloMatching.producers
 	@table::ParticleID.producers
@@ -160,7 +170,7 @@ physics : {
 # track summary maker
 #------------------------------------------------------------------------------
 	TrackSummaryMaker:    { @table::TrackSummaryMaker
-	    trackInput : "MergePatRecDem:DownstreameMinus"
+	    trackInput : "MergePatRecDem"
 	}
     }
 
@@ -170,6 +180,7 @@ physics : {
 # Reject events with no hits from signal-like tracks in the detectors.
 # The filter does not look at the background hits from mixed events.
 #------------------------------------------------------------------------------
+	@table::CalPatRec.filters
 	FilterStepPointMomentum: {
             module_type    : FilterStepPointMomentum
             inputs         : [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO"]
@@ -182,9 +193,11 @@ physics : {
     analyzers: {
 
 #     Read the TrkPatRec output and make diagnostic ntuples.
-      RKFDownstreameMinus: {
+      RKFDeM: {
          @table::ReadKalFits
          addCalo : true
+         fitterModuleLabel    : MergePatRecDem
+         KalDiag              : @local::KalDiagDirect
       }
     }
 
@@ -193,7 +206,7 @@ physics : {
 #------------------------------------------------------------------------------
     @table::paths
 
-    e1 : [ RKFDownstreameMinus ]
+    e1 : [ RKFDeM ]
 #     e1 : [  ]				
 #------------------------------------------------------------------------------
 # 1. generation part only
@@ -215,10 +228,15 @@ physics : {
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
 # services.Timing: { }
+
+# Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
+physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 # print
 services.scheduler.wantSummary: true
 
 # Apply the time offsets at the digitization stage
 
-physics.analyzers.RKFDownstreameMinus.KalDiag.MCStepsLabel     : "g4run"
-physics.analyzers.RKFDownstreameMinus.KalDiag.SimParticleLabel : "g4run"
+physics.analyzers.RKFDeM.KalDiag.MCStepsLabel     : "g4run"
+physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
+#physics.producers.KFFDeM.KalFit.debugLevel : 4

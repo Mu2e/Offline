@@ -4,7 +4,7 @@
 // Original author G. Pezzullo
 
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/CaloShowerStepMC.hh"
+#include "MCDataProducts/inc/CaloShowerStep.hh"
 
 // C++ includes
 #include <iostream>
@@ -81,7 +81,7 @@ namespace mu2e {
 
     art::Ptr<SimParticle>    simParticle (int Index)const {return _simParticle.at(Index); }
 
-    void                     addCaloShower(const CaloShowerStepMC* CaloShower, double HitTimeUnfolded);
+    void                     addCaloShower(const CaloShowerStep* CaloShower, double HitTimeUnfolded);
     void                     init();
 
   private:

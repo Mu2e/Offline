@@ -1,0 +1,63 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_foundation_N.ccl
+
+string building.foundation.N.name     = "foundationN";
+
+string building.foundation.N.material = "CONCRETE_MARS";
+
+double building.foundation.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.foundation.N.offsetFromFloorSurface.y = -685.8;
+double building.foundation.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.foundation.N.yHalfThickness           = 533.4;
+
+vector<double> building.foundation.N.xPositions = {
+  0,   // A
+  -6042.02,   // C
+  -12022.1,   // D
+  -12393,   // E
+  -17853.7,   // F
+  -19179,   // G
+  -12420.6,   // H
+  -12420.6,   // I
+  11785.6,   // J
+  11785.6,   // K
+  14385.8,   // L
+  14313.8,   // M
+  19484.5,   // Z0
+  20955.9,   // Z1
+  17957.8,   // P
+  7467.6,   // Q
+  7467.6,   // R
+  8077.2,   // S
+  8077.2,   // T
+  0   // U
+};
+
+vector<double> building.foundation.N.yPositions = {
+  -2387.6,   // A
+  -2387.6,   // C
+  -3836.55,   // D
+  -2306.04,   // E
+  -3649.57,   // F
+  1778.98,   // G
+  3418.66,   // H
+  16713.2,   // I
+  16713.2,   // J
+  10835.6,   // K
+  11449.7,   // L
+  11745.8,   // M
+  12988.5,   // Z0
+  6915.85,   // Z1
+  6201.81,   // P
+  3648.58,   // Q
+  2518.28,   // R
+  2518.28,   // S
+  609.6,   // T
+  609.6   // U
+};
+
+// Local Variables:
+// mode:c++
+// End:

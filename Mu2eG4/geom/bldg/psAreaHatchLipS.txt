@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_hatchLipS.ccl
+
+string building.psArea.hatch.lip.S.name     = "psAreaHatchLipS";
+
+string building.psArea.hatch.lip.S.material = "CONCRETE_MARS";
+
+double building.psArea.hatch.lip.S.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.hatch.lip.S.offsetFromFloorSurface.y = 5486.4;
+double building.psArea.hatch.lip.S.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.hatch.lip.S.yHalfThickness           = 304.8;
+
+vector<double> building.psArea.hatch.lip.S.xPositions = {
+  -4749.8,   // P0
+  -4749.8,   // P1
+  -11709.4,   // P2
+  -11709.4   // P3
+};
+
+vector<double> building.psArea.hatch.lip.S.yPositions = {
+  355.6,   // P0
+  711.2,   // P1
+  711.2,   // P2
+  355.6   // P3
+};
+
+// Local Variables:
+// mode:c++
+// End:

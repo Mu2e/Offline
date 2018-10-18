@@ -12,9 +12,9 @@
 #
 # Original author Gianni Onorato.
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this process a name.
 process_name : BkgRatesCounter
@@ -30,41 +30,36 @@ source :
 
 services :
 {
-  message : @local::default_message
+   message : @local::default_message
 
-  # Adjust configuration of message logger:
-  # Load the standard message logger configuration:
-  # Threshold=Info (from using mf_interactive). 
-  # Limit of 5 per category; then exponential backoff.
-  # message.destinations.log.default.limit : 5
+   # Adjust configuration of message logger:
+   # Load the standard message logger configuration:
+   # Threshold=Info (from using mf_interactive). 
+   # Limit of 5 per category; then exponential backoff.
+   # message.destinations.log.default.limit : 5
    
-  TFileService :
-  {
-    fileName      : "BkgRates.root"
-  }
+   TFileService :
+   {
+      fileName      : "BkgRates.root"
+   }
 
-  RandomNumberGenerator : { }
+   RandomNumberGenerator : { }
 
-  user :
-  {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/geom_01.txt"
-    }
+   GeometryService :
+   {
+      inputFile : "Mu2eG4/geom/geom_common.txt"
+   }
 
-    ConditionsService :
-    {
+   ConditionsService :
+   {
       conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
+   }
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
-    G4Helper : { }
+   G4Helper : { }
 
-    SeedService: @local::automaticSeeds
-
-
-  }
+   SeedService: @local::automaticSeeds
 
 } # close of services block
 
@@ -81,11 +76,8 @@ physics :
     # Form StrawHits (SH).
     makeSH : @local::makeSH
 
-    # Form CaloHits (APD hits)
-    CaloReadoutHitsMaker : @local::MakeCaloReadoutHits
-
-    # Form CaloCrystalHits (reconstruct crystals from APDs)
-    CaloCrystalHitsMaker : @local::CaloCrystalHitsMaker
+    @table::CaloDigiMC.producers
+    @table::CaloReco.producers
 
 #    randomsaver : @local::randomsaver
 
@@ -130,8 +122,8 @@ physics :
        generate
        , g4run
        , makeSH
-       , CaloReadoutHitsMaker
-       , CaloCrystalHitsMaker
+       , @sequence::CaloDigiMC.DigiSim
+       , @sequence::CaloReco.Reco
        # , filterEmpty
        ]
   e1 : [CountRates, outfile ]
@@ -160,11 +152,7 @@ outputs:
 
 physics.producers.makeSH.diagLevel : -1
 physics.producers.makeSH.maxFullPrint : 0
-physics.producers.CaloReadoutHitsMaker.diagLevel : -1
-physics.producers.CaloReadoutHitsMaker.maxFullPrint : 0
-physics.producers.CaloCrystalHitsMaker.diagLevel : -1
-physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
 physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
 #physics.producers.generate.inputfile : "Analyses/test/genconfig_fromBeam.txt"
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

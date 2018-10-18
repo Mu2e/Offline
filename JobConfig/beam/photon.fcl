@@ -1,0 +1,28 @@
+// Start with particles hitting the detector mother volumes and
+// write out StepPoints in the detectors.
+//
+// Photons from muon capture.
+//
+// Andrei Gaponenko, 2015
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: photon
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Muons }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+physics.producers.generate.physics: {
+    pdgId : 22
+    spectrumShape: flat
+    spectrumVariable: totalEnergy
+    elow: 0.0 // MeV
+    ehi: 7.0  // MeV
+}
+
+services.TFileService.fileName: "nts.owner.photon.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.photon-TrkCal.version.sequencer.art"
+outputs.crvOutput.fileName: "sim.owner.photon-CRV.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName: "sim.owner.photon-truncated.version.sequencer.art"

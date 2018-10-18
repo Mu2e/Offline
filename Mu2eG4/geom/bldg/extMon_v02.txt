@@ -1,0 +1,63 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_extMon.ccl
+
+string building.extMon.name     = "extMon";
+
+string building.extMon.material = "CONCRETE_MARS";
+
+double building.extMon.offsetFromMu2eOrigin.x   = 947.4;
+double building.extMon.offsetFromFloorSurface.y = 5613.4;
+double building.extMon.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.extMon.yHalfThickness           = 1219.2;
+
+vector<double> building.extMon.xPositions = {
+  -16965.9,   // A
+  -26287,   // B
+  -25347.2,   // C
+  -23422.6,   // D
+  -22880.4,   // E
+  -20838.5,   // F
+  -20172.8,   // G
+  -19098.7,   // H
+  -18570.7,   // I
+  -16026.1,   // J
+  -15954.5,   // K
+  -18350.7,   // L
+  -18795.7,   // M
+  -20396.6,   // N
+  -21062.3,   // O
+  -23104.2,   // P
+  -23646.4,   // Q
+  -25571,   // R
+  -26655.4,   // S
+  -17037.6   // T
+};
+
+vector<double> building.extMon.yPositions = {
+  1482.61,   // A
+  -793.069,   // B
+  -4642.41,   // C
+  -4172.51,   // D
+  -6393.28,   // E
+  -5894.77,   // F
+  -8621.39,   // G
+  -7785.02,   // H
+  -2988.23,   // I
+  -2366.73,   // J
+  -2660.36,   // K
+  -3247,   // L
+  -7818.36,   // M
+  -8989.78,   // N
+  -6263.17,   // O
+  -6761.68,   // P
+  -4540.91,   // Q
+  -5010.8,   // R
+  -569.258,   // S
+  1776.25   // T
+};
+
+// Local Variables:
+// mode:c++
+// End:

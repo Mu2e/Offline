@@ -29,7 +29,7 @@ namespace mu2e {
 
     // Accept compiler written d'tor, copy c'tor an assignment operator.
 
-    // Bulid _allProcesses.  Valid until the end of the run.
+    // Build _allProcesses.  Valid until the end of the run.
     void beginRun();
 
     // Clear information at end of run and write summary printout.
@@ -38,7 +38,7 @@ namespace mu2e {
     // Locate a process by its name, return the corresponding process code and
     // increment the counter.
     ProcessCode findAndCount( G4String const& name );
-
+      
     void printAll ( std::ostream& os) const;
     void printSummary ( std::ostream& os) const;
 

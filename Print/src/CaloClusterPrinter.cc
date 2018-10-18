@@ -27,7 +27,7 @@ mu2e::CaloClusterPrinter::Print(const art::Handle<CaloClusterCollection>& handle
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -38,7 +38,7 @@ mu2e::CaloClusterPrinter::Print(const art::ValidHandle<CaloClusterCollection>& h
 				std::ostream& os) {
   if(verbose()<1) return;
   // the product tags with all four fields, with underscores
-  std::string tag = handle.provenance()->branchDescription().branchName();
+  std::string tag = handle.provenance()->productDescription().branchName();
   tag.pop_back(); // remove trailing dot
   PrintHeader(tag,os);
   Print(*handle);
@@ -72,7 +72,7 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
 
   if(verbose()==1) {
     os 
-      << " " << std::setw(5) << obj.sectionId()
+      << " " << std::setw(5) << obj.diskId()
       << " " << std::setw(5) << obj.size()
       << " " 
       << " " << std::setw(8) << std::setprecision(1) << obj.time()
@@ -84,7 +84,7 @@ mu2e::CaloClusterPrinter::Print(const mu2e::CaloCluster& obj, int ind, std::ostr
       << std::endl;
   } else if(verbose()==2) {
      os 
-       << "  secId: " << std::setw(8) << obj.sectionId()
+       << "  secId: " << std::setw(8) << obj.diskId()
        << "  size: " << std::setw(4) << obj.size()
        << "  time: " << std::setw(8) << std::setprecision(1) << obj.time()
        << "  eDep: " << std::setw(8) << std::setprecision(1) << obj.energyDep() << "\n";

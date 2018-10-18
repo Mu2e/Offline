@@ -1,0 +1,46 @@
+# Read the test file made by MakeTestProduct and
+# modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : modifyTrackSPM
+
+source : {
+  module_type : RootInput
+  fileNames   :  ["testG4S4pionSimDOE_01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  producers : {
+    detectorFilter : {
+      module_type : ModifyTrackSPM
+      productTag  : "detectorFilter:tracker"
+    }
+  }
+
+ t1 : [ detectorFilter ]
+ e1 : [ out1 ]
+
+ trigger_paths : [ t1 ]
+ end_paths     : [ e1 ]
+
+}
+
+outputs : {
+  out1 : {
+    module_type : RootOutput
+    fileName    : "sim.owner.DNBtrackerTest.version.sequencer.art"
+
+    outputCommands:   [ "keep *_*_*_*",
+                        "drop *_detectorFilter_tracker_beamg4s4conversion",
+			"drop *_TriggerResults_*_modifyTrackSPM"
+                      ]
+
+  }
+}

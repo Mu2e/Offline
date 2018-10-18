@@ -11,7 +11,7 @@
 #include <map>
 #include <utility>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Event.h"

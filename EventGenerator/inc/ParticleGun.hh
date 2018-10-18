@@ -27,7 +27,7 @@ namespace mu2e {
   class ParticleGun: public GeneratorBase{
 
   public:
-    ParticleGun( art::Run const& run, const SimpleConfig& config );
+    ParticleGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config);
 
     // adds generated particles to the collection
     virtual void generate(GenParticleCollection& out);

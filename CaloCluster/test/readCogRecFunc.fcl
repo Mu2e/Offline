@@ -8,9 +8,9 @@
 # Original author G. Pezzullo & G. Tassielli
 
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
 # Give this job a name.  
 process_name : ReadOffSetCog
@@ -101,26 +101,22 @@ services :
 
   RandomNumberGenerator : { }
 
-  user :
+  GeometryService :
   {
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/test/geom_01.txt"
-    }  
+    inputFile : "Mu2eG4/geom/geom_common.txt"
+  }  
 
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }  
+  ConditionsService :
+  {
+    conditionsfile : "Mu2eG4/test/conditions_01.txt"
+  }  
 
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
 
-    G4Helper : { }
-        SeedService: @local::automaticSeeds
-    }
+  G4Helper : { }
+     SeedService: @local::automaticSeeds
 
-
-  }
+}
 
 
 
@@ -244,6 +240,6 @@ outputs:
 #physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
 physics.producers.generate.inputfile : "CaloCluster/test/genconfig_giani.txt"
 #physics.producers.generate.inputfile : "Analyses/test/genconfig_fromBeam.txt"
-services.user.SeedService.baseSeed         :  0
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
 

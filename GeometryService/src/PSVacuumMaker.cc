@@ -23,7 +23,9 @@ namespace mu2e {
                                                )
 
   {
-    const double zmin = ps.psEndRefPoint().z() - 2*pse.shell().halfLength();
+    double pseHL = pse.shell().halfLength();
+    if (pseHL < 1.0e-06) pseHL = pse.shellCone().halfLength();
+    const double zmin = ps.psEndRefPoint().z() - 2*pseHL + pse.getExtraOffset();
 
     const CLHEP::Hep3Vector originInMu2e(ps.psEndRefPoint().x(),
                                          ps.psEndRefPoint().y(),

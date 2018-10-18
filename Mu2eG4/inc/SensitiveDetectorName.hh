@@ -38,6 +38,10 @@ namespace mu2e {
       return StepInstanceName::name(StepInstanceName::calorimeterROCard).c_str();
     }
 
+    static char const * CaloCrate(){
+      return StepInstanceName::name(StepInstanceName::calorimeterCrate).c_str();
+    }
+
     static char const * ExtMonFNAL(){
       return "ExtMonFNAL";
     }
@@ -81,7 +85,14 @@ namespace mu2e {
     static char const * STMDet() {
       return StepInstanceName::name(StepInstanceName::STMDet).c_str();
     }
-   
+
+    static char const * panelEBKey() {
+      return StepInstanceName::name(StepInstanceName::panelEBKey).c_str();
+    }
+
+    static char const * DSCableRun() {
+      return StepInstanceName::name(StepInstanceName::DSCableRun).c_str();
+    }
 
   };
 

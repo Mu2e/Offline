@@ -83,8 +83,6 @@ namespace mu2e {
     // calorimeter diagnostics.  Unfortunately the PID objects have no default constructor
     // so this MUST be created on the heap to maintain backwards compatibility.  FIXME!!
     TrkCaloDiag* _cdiag;
-    // instance name of data products.  This should be removed, FIXME!!
-    std::string _iname;
     // Control level of printout.
     int _verbosity;
     int _maxPrint;
@@ -122,10 +120,10 @@ namespace mu2e {
   ReadKalFits::ReadKalFits(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
     _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
-    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _generatorModuleLabel(pset.get<std::string>("generatorModule", "generate")),
     _genWtModule( pset.get<art::InputTag>("generatorWeightModule",art::InputTag()) ),
     _beamWtModule( pset.get<art::InputTag>("beamWeightModule",art::InputTag()) ),
-    _PBIModule( pset.get<art::InputTag>("ProtonBunchIntensityModule",art::InputTag("ProtonBunchIntensitySummarizer")) ),
+    _PBIModule( pset.get<art::InputTag>("ProtonBunchIntensityModule",art::InputTag("protonBunchIntensity")) ),
     _evtWtModules( pset.get<std::vector<art::InputTag>>("eventWeightModules",std::vector<art::InputTag>() ) ),
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
@@ -144,7 +142,6 @@ namespace mu2e {
     _trkdiag(0)
   {
 // construct the data product instance name
-    _iname = _fdir.name() + _tpart.name();
     if(_addCalo){
       _cdiag = new TrkCaloDiag(_tpart,_fdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet()));
     }
@@ -190,7 +187,7 @@ namespace mu2e {
       throw cet::exception("RECO")<<"mu2e::ReadKalFits: MC data missing or incomplete" << std::endl;
     // Get handle to tracks collection
     art::Handle<KalRepPtrCollection> trksHandle;
-    event.getByLabel(_fitterModuleLabel,_iname,trksHandle);
+    event.getByLabel(_fitterModuleLabel,trksHandle);
     KalRepPtrCollection const& trks = *trksHandle;
     // Track-cluster matching
     if(_addCalo)_cdiag->findData(event);
@@ -277,7 +274,7 @@ namespace mu2e {
 	  unsigned nhshared(0);
 	  for(const TrkStrawHit* ihit: ihits){
 	    for(const TrkStrawHit* jhit: jhits){
-	      if(ihit->isActive() && jhit->isActive() && ihit->strawHit() == jhit->strawHit())
+	      if(ihit->isActive() && jhit->isActive() && &ihit->comboHit() == &jhit->comboHit())
 		++nhshared;
 	    }
 	  }

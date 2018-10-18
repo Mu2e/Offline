@@ -15,7 +15,6 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
-#include "CaloCluster/inc/CaloContentMC.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -26,7 +25,6 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 
-#include "MCDataProducts/inc/CaloCrystalOnlyHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -52,7 +50,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
@@ -222,7 +220,8 @@ namespace mu2e {
 	  {	      	      
 	       for (auto const& crystalIncluster : clusterIt.caloCrystalHitsPtrVector()) 
 	       {
-		    if (cal.crystal(hit.id()).sectionId() != cal.crystal(crystalIncluster->id()).sectionId()) break;
+		    if (cal.crystal(hit.id()).diskId() !=
+                    cal.crystal(crystalIncluster->id()).diskId()) break;
 
 		    if (&(*crystalIncluster) == &hit) ++nCr;
                     if (nCr > 1) std::cout<<"Warning, crystal associated to more than one cluster "<<hit.id()<<" for cluster "<<nClu<<std::endl;

@@ -23,13 +23,13 @@ namespace mu2e {
 
   public:
     MECOStyleProtonAbsorberPart( int id,
-                CLHEP::Hep3Vector const& c,
-                double rOut0, 
-                double rIn0,
-                double rOut1, 
-                double rIn1,
-                double halflen,
-                std::string m):
+				 CLHEP::Hep3Vector const& c,
+				 double rOut0, 
+				 double rIn0,
+				 double rOut1, 
+				 double rIn1,
+				 double halflen,
+				 std::string m):
       _id(id),
       _c(c),
       _rOut0(rOut0),
@@ -37,6 +37,27 @@ namespace mu2e {
       _rOut1(rOut1),
       _rIn1(rIn1),
       _halflen(halflen),
+      _nSides(0),
+      _material(m){
+    }
+
+    MECOStyleProtonAbsorberPart( int id,
+				 CLHEP::Hep3Vector const& c,
+				 double rOut0, 
+				 double rIn0,
+				 double rOut1, 
+				 double rIn1,
+				 double halflen,
+				 int    nSides,
+				 std::string m):
+      _id(id),
+      _c(c),
+      _rOut0(rOut0),
+      _rIn0(rIn0),
+      _rOut1(rOut1),
+      _rIn1(rIn1),
+      _halflen(halflen),
+      _nSides(nSides),
       _material(m){
     }
 
@@ -52,7 +73,9 @@ namespace mu2e {
     double innerRadiusAtEnd()          const { return _rIn1;}
     double halfLength()                const { return _halflen;}
 
+    int    nSides()                    const { return _nSides; }
     std::string material()             const { return _material;}
+
 
   private:
 
@@ -73,7 +96,10 @@ namespace mu2e {
     // halflength
     double _halflen;
 
+    int _nSides;  // 0 for cones, non-zero for barrels with slats
+
     std::string _material;
+
 
   };
 

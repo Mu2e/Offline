@@ -29,7 +29,6 @@ Original author Giovanni Onorato
 #include "art/Framework/Principal/Handle.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
-#include "CalorimeterGeom/inc/VaneCalorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -105,7 +104,7 @@ namespace mu2e {
 
     //Get handle to the calorimeter
     art::ServiceHandle<GeometryService> geom;
-    if( geom->hasElement<VaneCalorimeter>()  || geom->hasElement<DiskCalorimeter>()) {
+    if(geom->hasElement<DiskCalorimeter>()) {
 
       // Get handles to calorimeter collections
       art::Handle<CaloHitCollection> caloHits;

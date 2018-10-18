@@ -34,7 +34,7 @@ double PS.VacVessel.WallThickness  = 20.;
 // e-mail 2012-03-27 from Tom Page, and PS-solenoid-magnet-assembly-2012-02-15.PDF in docdb-2066
 double PS.VacVessel.EndPlateHalfThickness = 40.;
 double PS.VacVessel.HalfLength     = 2250.;
-string PS.VacVessel.materialName   = "G4_Al";
+string PS.VacVessel.materialName   = "StainlessSteel";
 string PS.vacuumMaterialName       = "PSVacuum";
 bool   PS.Vacuum.Sensitive         = false;
 

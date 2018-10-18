@@ -1,0 +1,55 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_foundation_ExtMon.ccl
+
+string dirt.foundation.extMon.name     = "dirtFoundationExtMon";
+
+string dirt.foundation.extMon.material = "MBOverburden";
+
+double dirt.foundation.extMon.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.foundation.extMon.offsetFromFloorSurface.y = 3860.8;
+double dirt.foundation.extMon.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.foundation.extMon.yHalfThickness           = 533.4;
+
+vector<int>    dirt.foundation.extMon.xreplace   = { 13, 14 }; 
+vector<double> dirt.foundation.extMon.xPositions = {
+  -19179,     // b
+  -19085.1,   // c
+  -26778.2,   // d
+  -25645.6,   // e
+  -23721,   // f
+  -23178.8,   // g
+  -21136.9,   // h
+  -20471.2,   // e0
+  -18670.6,   // e1
+  -18326.3,   // e6
+  -17952.5,   // SE corner of foundationExtMon
+  -17853.7,   // SW corner psWallUpper
+  -17853.7,   // e7_to_S
+  -50000,   // SWcorner
+  -50000   // b_to_W
+};
+
+vector<int>    dirt.foundation.extMon.yreplace   = { 12, 13 }; 
+vector<double> dirt.foundation.extMon.yPositions = {
+  1778.98,   // b
+  1383.57,   // c
+  -494.654,   // d
+  -5133.6,   // e
+  -4663.7,   // f
+  -6884.48,   // g
+  -6385.97,   // h
+  -9112.58,   // e0
+  -7928.18,   // e1
+  -3346.64,   // e6
+  -3255.37,   // SE corner foundationExtMon
+  -3649.57,   // SW corner psWallUpper
+  -50000,   // e7_to_S
+  -50000,   // SWcorner
+  1778.98   // b_to_W
+};
+
+// Local Variables:
+// mode:c++
+// End:

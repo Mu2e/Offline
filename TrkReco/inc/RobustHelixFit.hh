@@ -5,156 +5,144 @@
 // $Author: brownd $ 
 // $Date: 2014/07/10 14:47:26 $
 //
-#ifndef HelixFit_HH
-#define HelixFit_HH
+#ifndef TrkReco_RobustHelixFit_HH
+#define TrkReco_RobustHelixFit_HH
 
-// framework
 #include "fhiclcpp/ParameterSet.h"
-// data
-#include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "RecoDataProducts/inc/StrawHitFlag.hh"
-// tracker
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
-// HelixFit objects
-#include "TrkReco/inc/HelixDef.hh"
-#include "TrkReco/inc/HelixFitResult.hh"
-// BaBar
+#include "DataProducts/inc/Helicity.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/HelixSeed.hh"
 #include "BTrk/TrkBase/TrkErrCode.hh"
-//root
-class TH1F;
-// C+
+#include "TH1F.h"
+#include "Math/VectorUtil.h"
+#include "Math/Vector2D.h"
+//#include "Mu2eUtilities/inc/LsqSums4.hh"
+#include "TrkReco/inc/RobustHelixFinderData.hh"
+
+//using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e 
 {
 
-// utility struct; value plus error
-  struct VALERR {
-    double _val;
-    double _err;
-  };
-  struct FZ {
-    VALERR _phi;
-    double _z;
+  class Calorimeter;
+  class TTracker;
+
+  // simple struct to keep track of azimuth/radius projection
+  struct FZ 
+  {
+    float _phi;
+    float _z;
+    FZ(XYZVec const& hpos, XYZVec const& center);
   };
 
-// utility struct
-  struct XYZP {
-// straw hit index
-    int _ind;
-// position
-    CLHEP::Hep3Vector _pos;
-// ambiguity-resolved phi angle
-    double _phi;
-// flag
-    StrawHitFlag _flag;
-// wire direction
-    CLHEP::Hep3Vector _wdir;
-// straw radial direction, perp to Z and wire direction
-    CLHEP::Hep3Vector _sdir;
-// errors are asymmetric; along the wire is given by time division, perp to the wire by the straw size/sqrt(12)
-    double _perr,_rerr;
-// if this hit is from a MC conversion
-    bool _conversion;
-// initialize some variables on construction
-    XYZP():_ind(-1),_phi(0.0),_perr(1000.0),_rerr(1000.0),_conversion(false){}
-    XYZP(size_t index,StrawHit const& sh, StrawHitPosition const& shp,Straw const& straw);
-    XYZP(size_t ind,CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& wdir, double werr, double serr);
-     XYZP(CLHEP::Hep3Vector const& pos, double size);
-// radial position information
-    virtual void rinfo(CLHEP::Hep3Vector const& center, VALERR& rad) const;
-    virtual void finfo(CLHEP::Hep3Vector const& center, VALERR& phi) const;
-    bool use() const;
-    bool stereo() const;
-    void setOutlier();
-    void setUse(bool use);
-    static double _efac;
-// flag bits to define use
-    static StrawHitFlag _useflag, _dontuseflag;
-    static int _debug;
-// for checking if it's a conversion hit
-    bool conversion() const { return _conversion; }
-    void setConversion(bool conv) { _conversion = conv; }
-  };
-
-  typedef std::vector<XYZP> XYZPVector;
-// struct to hold AGE sums
-  struct SUMS {
-// weighted (s)ums of (c)osine and (s)in for points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
-    double _scc, _ssc, _sco, _sso, _sci, _ssi;
+  // struct to hold AGE sums
+  struct AGESums {
+    // (s)ums of (c)osine and (s)in for points on (c)ircumference, (o)utside the median radius, or (i)nside the median radius
+    float _scc, _ssc, _sco, _sso, _sci, _ssi;
     unsigned _nc, _no, _ni;
-    SUMS() : _scc(0.0),_ssc(0.0),_sco(0.0),_sso(0.0),_sci(0.0),_ssi(0.0){}
+    AGESums() : _scc(0.0),_ssc(0.0),_sco(0.0),_sso(0.0),_sci(0.0),_ssi(0.0){}
     void clear() { _scc = _ssc = _sco = _sso = _sci = _ssi = 0.0;
       _nc = _no = _ni = 0; }
   };
-  
+
+
   class RobustHelixFit
   {
   public:
-// parameter set should be passed in on construction
+      
+    enum CircleFit {median=0, mean, AGE };
+
     explicit RobustHelixFit(fhicl::ParameterSet const&);
     virtual ~RobustHelixFit();
-// main function: given a track definition, find the helix parameters
-    bool findHelix(HelixFitResult& myfit,bool plothelix=false);
-// allow passing in the struct by hand
-    bool findHelix(XYZPVector& xyzp, HelixFitResult& myfit);
-// convert to BaBar helix parameters.  Also return an error estimate
-    void helixParams (HelixFitResult const& helix,CLHEP::HepVector& pvec,CLHEP::HepVector& perr) const;
-  protected:
-// utlity functions
-    bool findXY(XYZPVector& xyzp,HelixFitResult& myhel);
-    bool findZ(XYZPVector& xyzp,HelixFitResult& myhel);
-    bool initCircle(XYZPVector const& xyzp,HelixFitResult& myhel);
+
+    bool initCircle(RobustHelixFinderData& helixData);
+    void fitCircle(RobustHelixFinderData& helixData);
+    bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
+    bool initFZ_2(RobustHelixFinderData& helixData);
+    void fitFZ(RobustHelixFinderData& helixData);
+    void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
+    bool goodHelix(RobustHelix const& rhel);
+    Helicity const& helicity() const { return _helicity; }
+
+    bool goodCircle(RobustHelix const& rhel);
+    bool goodFZ(RobustHelix const& rhel);
+
+    //function used to evaluate the hit weight used in the XY fit
+    float evalWeightXY  (const ComboHit& Hit, XYVec& Center);
+    float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
+
+    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
+
+    bool  targetcon()   {return _targetcon; }
+
+    const TTracker*            _tracker;
+    const Calorimeter*         _calorimeter;
+
+    void fitCircleMedian(RobustHelixFinderData& helixData);
+    
+    float lambdaMin()  { return _lmin; }
+    float lambdaMax()  { return _lmax; }
+
   private:
-    void fillXYZP(HelixDef const& mytrk, XYZPVector& xyzp);
-// cached bfield accessor
-    double bz() const;
-// utility function to resolve phi wrapping    
-    static double deltaPhi(double phi1, double phi2);
-// diagnostics
-    void plotXY(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const;
-    void plotZ(HelixDef const& mytrk, XYZPVector const& xyzp, HelixFitResult const& myhel) const;
-// find the Absolute Geometric Error.  Returns the median radius as well.
-    bool findCenterAGE(XYZPVector const& xyzp,CLHEP::Hep3Vector& center, double& rmed, double& age,bool useweights=false);
-    void findAGE(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double& rmed, double& age,bool useweights=false);
-    void fillSums(XYZPVector const& xyzp, CLHEP::Hep3Vector const& center,double rmed,SUMS& sums,bool useweights=false);
-    void filterXY(XYZPVector& xyzp, CLHEP::Hep3Vector const& center,double rmed,bool& changed);
-    void filterDist(XYZPVector& xyzp);
-// configuration parameters
-    int _diag,_debug;
-    double _mindelta; // minimum slope difference to use a triple in circle center initialization
+
+    void fitHelix(RobustHelixFinderData& helixData);
+    void fitCircleAGE(RobustHelixFinderData& helixData);
+    void fitCircleMean(RobustHelixFinderData& helixData);
+    void findAGE(RobustHelixFinderData  const& helixData, XYZVec const& center,float& rmed, float& age);
+    void fillSums(RobustHelixFinderData const& helixData, XYZVec const& center,float rmed,AGESums& sums);
+    void forceTargetInter(XYZVec& center, float& radius);
+
+    bool use(ComboHit const&) const;
+    bool stereo(ComboHit const&) const;
+    void setOutlier(ComboHit&) const;
+
+    static float deltaPhi(float phi1, float phi2);
+    void initPhi(ComboHit& hh, RobustHelix const& myhel) const;
+    bool resolvePhi(ComboHit& hh, RobustHelix const& myhel) const;
+    float hitWeight(ComboHit const& hhit) const;
+    bool goodLambda(Helicity const& h, float lambda) const;
+
+   
+
+    int _diag;
+    int _debug;
+    CircleFit _cinit, _cfit; // type of circle fit
+    StrawHitFlag _useflag, _dontuseflag;
+    int      _minnsh;  // minimum # of StrawHits
     unsigned _minnhit; // minimum # of hits to work with
-    unsigned _minnstereo; // minimum # of stereo hits
-    double _lambda0,_lstep,_minlambda; // parameters for AGE center determination
+    float _minxyresid; // minimum distance used in the circle fit to be clusterized. units are mm
+    float _lambda0,_lstep,_minlambda; // parameters for AGE center determination
+    float _mindfdz, _maxdfdz;//paramters use for findDfDz function
+    unsigned _nphibins; // # of bins in histogram for phi at z intercept
+    float _phifactor; // range factr for phi z intercept histogram 
+    unsigned _minnphi; // minimum # of entries in max bin of phi intercept histogram 
     unsigned _maxniter; // maxium # of iterations to global minimum
-    double _nsigma; // # of sigma for filtering outlyers
-    double _minzsep, _maxzsep; // Z separation of points for pitch estimate
-    double _rbias;  // robust fit parameter bias
-    double _efac; // error factor
-    double _mindist; // minimum distance between points used in circle initialization
-    double _maxdist; // maximum distance in hits
-    double _pmin, _pmax; // range of total momentum
-    double _tdmin, _tdmax; // range of abs(tan(dip)
-    double _rcmin,_rcmax; // maximum transverse radius of circle
-    double _sfactor; // stereo hit error factor
-    bool _forcep; // force the p/pt to be in range (true), or exclude fits outside that range (false)
-    bool _xyweights,_zweights; // weight points by estimated errors 
-    bool _filterxy, _filterz; // filter hits
-    bool _stereoinit; // require stereo hits to initialize
-    bool _stereofit; // require stereo hits 
+    float _minzsep, _maxzsep; // Z separation of points for pitch estimate
+    float _mindphi, _maxdphi; // phi separation of points for pitch estimate
+    float _sigmaPhi; //approximated uncertanty on the ComboHit helix-phi coordinate
+    float _mindist; // minimum distance between points used in circle initialization
+    float _maxdist; // maximum distance in hits
+    float _maxdxy; // maximum distance in hits after the triplet loop in fitCiircleMedian
+    float _maxXDPhi;//maximum normalized residual for a hit in the z-phi fit
+    float _rmin,_rmax; // circle radius range
+    float _rcmin,_rcmax; // circle centerradius range
+    //      float _mindelta; // minimum slope difference to use a triple in circle center initialization
+    float _minarea2; // minimum triangle area for triple (squared)
+    float _lmin, _lmax; // range of lambda = dz/dphi
     bool _targetpoint; // use target as a point in the circle fit
-    bool _targetinit; // require consistency with target when initializing circle
+    bool _targetcon; // require consistency with target
     bool _targetinter; // require fit to intersect the target
-    double _targetradius; // target size to use in constraint or init
-    double _trackerradius; // tracker radius to use in init
-    mutable double _bz; // cached value of Field Z component at the tracker origin
-// cached value of radius and pitch sign: these depend on the particle type
-// and direction
-    double _rmin, _rmax, _smin, _smax, _dfdzsign;
-// diagnostic histograms
-    TH1F *_rdiff, *_fdiff;
-    TH1F *_rpull, *_fpull;
+    bool _tripler; // use triples to compute r
+    bool _errrwt; // use hit errors to weight radius calculation 
+    bool _usecc; // use the calorimeter cluster in the fit (transverse only)
+    float _ccwt; // weight of a calorimeter cluster in non-stereo hit units
+    float _targetradius; // target size to use in constraint or init
+    float _trackerradius; // tracker radius to use in init
+    float _rwind; // raidus window for defining points to be 'on' the helix
+    Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
+    TH1F _hphi;
+    unsigned _ntripleMin, _ntripleMax;
   };
 }
 #endif

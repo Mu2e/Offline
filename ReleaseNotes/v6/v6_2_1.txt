@@ -1,0 +1,151 @@
+           Release notes for Mu2e Offline software, v6_2_1
+
+6) ehrlich 5 May 2017
+   added a CRV coincidence cluster finder
+
+5) dbrown 01 May 2017
+   Significant updates to Offline Geometry - representing a long-term
+   effort, particularly by Aaron Hill.
+
+   i. Fix versioning protection is TS code
+      	modified:   GeometryService/src/BeamlineMaker.cc
+        modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+
+   ii.  Add new civil/conventional construction updates from Aaron Hill,
+        and start to carve out dirt and backfill to match.  New versions
+        of existing files have v02 appended to their names.  None of this
+        will be seen by users until a version of geom_common_current.txt
+        including mu2eHall_v02.txt is linked from geom_common.txt.
+	modified:   GeometryService/src/ProtonBeamDumpMaker.cc
+	new file:   Mu2eG4/geom/bldg/NRetainingWallWExtension_v02.txt
+	new file:   Mu2eG4/geom/bldg/backfillPsAreaBaselevel_v02.txt
+	new file:   Mu2eG4/geom/bldg/backfillPsAreaInter_v02.txt
+	new file:   Mu2eG4/geom/bldg/backfillPsAreaLower_v02.txt
+	new file:   Mu2eG4/geom/bldg/backfillPsAreaRWallFootLevel_v02.txt
+	new file:   Mu2eG4/geom/bldg/backfillPsAreaTopLayer_v02.txt
+	new file:   Mu2eG4/geom/bldg/dirtBeamlineBerm_v02.txt
+	new file:   Mu2eG4/geom/bldg/dirtExtMonCeiling_v02.txt
+	new file:   Mu2eG4/geom/bldg/dirtExtMonUpper_v02.txt
+	new file:   Mu2eG4/geom/bldg/dirtExtMon_v02.txt
+	new file:   Mu2eG4/geom/bldg/dirtUpToGradeLevelW_v02.txt
+	new file:   Mu2eG4/geom/bldg/extMonBitN.txt
+	new file:   Mu2eG4/geom/bldg/extMonBitS.txt
+	new file:   Mu2eG4/geom/bldg/extMonCeiling_v02.txt
+	new file:   Mu2eG4/geom/bldg/extMonUpper_v02.txt
+	new file:   Mu2eG4/geom/bldg/extMon_v02.txt
+	new file:   Mu2eG4/geom/bldg/floorN_v02.txt
+	new file:   Mu2eG4/geom/bldg/floorRemote_v02.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea1.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea10.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea11.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea2.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea3.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea4.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea5.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea6.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea7.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea8.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMonPSarea9.txt
+	new file:   Mu2eG4/geom/bldg/foundationExtMon_v02.txt
+	new file:   Mu2eG4/geom/bldg/foundationN_v02.txt
+	new file:   Mu2eG4/geom/bldg/psAreaCF1_v02.txt
+	new file:   Mu2eG4/geom/bldg/psAreaCF2_v02.txt
+	new file:   Mu2eG4/geom/bldg/psAreaCeilingE.txt
+	new file:   Mu2eG4/geom/bldg/psAreaCeilingN.txt
+	new file:   Mu2eG4/geom/bldg/psAreaCeilingSW.txt
+	new file:   Mu2eG4/geom/bldg/psAreaCeiling_v02.txt
+	new file:   Mu2eG4/geom/bldg/psAreaHatchBlock.txt
+	new file:   Mu2eG4/geom/bldg/psAreaHatchLid.txt
+	new file:   Mu2eG4/geom/bldg/psAreaHatchLipN.txt
+	new file:   Mu2eG4/geom/bldg/psAreaHatchLipS.txt
+	new file:   Mu2eG4/geom/bldg/psAreaHatchLower.txt
+	new file:   Mu2eG4/geom/bldg/psAreaHatchUpper.txt
+	new file:   Mu2eG4/geom/bldg/psAreaShieldingBlock_v02.txt
+	new file:   Mu2eG4/geom/bldg/psAreaUpperN_v02.txt
+	new file:   Mu2eG4/geom/bldg/psAreaUpperS_v02.txt
+	new file:   Mu2eG4/geom/bldg/psArea_v02.txt
+	new file:   Mu2eG4/geom/bldg/psWallUpper_v02.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingCeilingStrip.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingCeiling_v02.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorBeam.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorWall1.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorWall2.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorWall3.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorWall4.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorWallNotch1.txt
+	new file:   Mu2eG4/geom/bldg/remoteHandlingInteriorWallNotch2.txt
+	new file:   Mu2eG4/geom/mu2eHall_v02.txt
+	new file:   Mu2eG4/geom/protonBeamDump_v03.txt
+
+    iii. Misc.
+    modified:   Mu2eG4/geom/geom_common_current.txt
+    modified:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+
+4) dbrown 28 April 2017
+     Added more updates to the Offline Geometry.  
+
+     i.  Added rough model of downstream cable run for the tracker.
+     modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+     modified:   GeometryService/src/DetectorSolenoidMaker.cc
+     modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+     modified:   Mu2eG4/src/constructDS.cc
+
+
+     ii. Added a stainless steel sheath on Coll1.
+     modified:   BeamlineGeom/inc/Collimator_TS1.hh
+     modified:   GeometryService/src/BeamlineMaker.cc
+     modified:   Mu2eG4/geom/TransportSolenoid_v02.txt
+     modified:   Mu2eG4/src/constructTS.cc
+
+
+3) dbrown 28 April 2017
+    Made numerous changes to bring aspects of the Offline Geometry model
+    up to date with current designs or plans for various components.
+
+    i.  Updated model for TS3u/d interface region.  Added some structure
+        representing flanges, vacuum end plates, pbar window support.
+	modified:   BeamlineGeom/inc/TransportSolenoid.hh
+	modified:   GeometryService/src/BeamlineMaker.cc
+	modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+	new file:   Mu2eG4/geom/TransportSolenoid_v02.txt
+	modified:   Mu2eG4/src/constructTS.cc
+
+    ii. Added a rough model of a downstream cable run for Cal
+        modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+        modified:   GeometryService/src/DetectorSolenoidMaker.cc
+        modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+    	modified:   Mu2eG4/src/constructDS.cc
+    	modified:   Mu2eG4/geom/protonAbsorber_cylindrical.txt
+
+    iii.Made a working version of a reduced overlap checker.  Modify 
+        Mu2eG4/test/geom_SurfaceCheck_Select.txt to pick the items you
+        wish to check.  Then mu2e -c Mu2eG4/fcl/surfaceCheckSelect.fcl
+        to run it.  Did require minor changes to a couple of construction
+        code files to make it work right.
+	new file:   Mu2eG4/fcl/surfaceCheckSelect.fcl
+	modified:   Mu2eG4/src/constructDiskCalorimeter.cc
+	modified:   Mu2eG4/src/constructExternalShielding.cc
+	deleted:    Mu2eG4/test/geom_SurfaceCheck_ExtShieldsOnly.txt
+	new file:   Mu2eG4/test/geom_SurfaceCheck_Select.txt
+
+    iv. Added some pipes, finished the internal structure of some existing
+        pipes.
+	modified:   Mu2eG4/geom/Pipe_v01.txt
+
+    v.  Housekeeping, announced earlier in mu2e-hn-Geometry HN.
+    	deleted:    Mu2eG4/geom/PSShield_v01.txt
+    	deleted:    Mu2eG4/geom/PSShield_v03.txt
+    	deleted:    Mu2eG4/geom/protonAbsorber_conical.txt
+    	deleted:    Mu2eG4/geom/protonAbsorber_helical.txt
+
+    vi. Updated 'master' geometry file with changes above.  Did not make
+        this the default master geometry file yet, due to concern raised
+	by Rob K.
+	modified:   Mu2eG4/geom/geom_common_current.txt
+
+2) brownd 21 April 2017
+  Implemented stereo position correction for helix hits, plus some minor cleanup.
+
+1) brownd 17 April 2017
+   Added scripts for reading, writing, and analyzing digi files for processing in track trigger studies.

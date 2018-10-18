@@ -1,0 +1,51 @@
+#include "Mu2eG4/geom/geom_common.txt" 
+
+//-------------------------------------------
+// Magnetic field
+//-------------------------------------------
+
+// Form of DS field: 0 is full field;
+//                   1 is full upstream, const downstream;
+//                   2 is const throughout
+int detSolFieldForm = 0;
+vector<string> bfield.innerMaps = {
+  "BFieldMaps/Mau11/DSMap.header",
+  "BFieldMaps/Mau11/PSMap.header",
+  "BFieldMaps/Mau11/TSuMap.header",
+  "BFieldMaps/Mau11/TSdMap.header",
+  "BFieldMaps/Mau11/PStoDumpAreaMap.header",
+  "BFieldMaps/Mau11/ProtonDumpAreaMap.header",
+  "BFieldMaps/Mau11/DSExtension.header"
+};
+
+// Value of the uniform magnetic field with the DS volume (only for
+// detSolFieldForm>0)
+double toyDS.bz            = 1.0;
+
+// Gradient of field in DS2 volume. Applied only in the case
+// of detSolFieldForm=1 or detSolFieldForm=2.
+double toyDS.gradient      = 0.0; // Tesla/m
+
+// This is recommended field map. See geom_mecofield.txt to use the meco field.
+string bfield.format  = "G4BL";
+
+// The other option is "meco"
+string bfield.interpolationStyle = trilinear;
+
+int  bfield.verbosityLevel =  0;
+bool bfield.writeG4BLBinaries     =  false;
+
+// Note that outer maps allow overlaps.
+vector<string> bfield.outerMaps = {
+  "BFieldMaps/Mau11/PSAreaMap.header",
+  "BFieldMaps/Mau11/WorldMap.header"
+};
+
+// This scale factor is of limited use.
+// It can make approximate sense to scale the PS field to get a rough
+// answer; the answer will be wrong in detail.
+// It never makes sense to scale the TS field.
+// Not sure if it ever makes sense to scale the PS field.
+double bfield.scaleFactor = 1.0;
+
+//---------------------------------------

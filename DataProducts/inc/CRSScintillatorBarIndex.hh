@@ -5,13 +5,8 @@
 // Dense integer identifier of one CRSScintillatorBar.
 // Has values 0...(N-1), where N is the number
 // of CRSScintillatorBars in the system.
-
 //
-// $Id: CRSScintillatorBarIndex.hh,v 1.2 2014/08/07 01:33:41 ehrlich Exp $
-// $Author: ehrlich $
-// $Date: 2014/08/07 01:33:41 $
-//
-// Original author KLG; based on Rob Kutschke StrawIndex
+// Original author KLG
 //
 
 #include <ostream>

@@ -127,8 +127,7 @@ namespace mu2e {
 // find MC truth information
       StrawDigiMC const& mcdigi = mcdigis->at(ihit);
       // use TDC channel 0 to define the MC match
-      StrawDigi::TDCChannel itdc = StrawDigi::zero;
-      if(!mcdigi.hasTDC(StrawDigi::one)) itdc = StrawDigi::one;
+      StrawEnd itdc(StrawEnd::cal);
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       _mcpdg = spp->pdgId();
@@ -156,7 +155,7 @@ namespace mu2e {
 	_mcptime = 0.0;
       }
 // Get the straw information:
-      const Straw& straw = tracker.getStraw( hit.strawIndex() );
+      const Straw& straw = tracker.getStraw( hit.strawId() );
       _plane = straw.id().getPlane();
       _panel = straw.id().getPanel();
       _layer = straw.id().getLayer();

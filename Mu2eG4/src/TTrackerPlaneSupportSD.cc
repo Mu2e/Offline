@@ -12,7 +12,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/TTrackerPlaneSupportSD.hh"
@@ -46,9 +46,9 @@ namespace mu2e {
     } 
     else {
       _TrackerVersion = config.getInt("TTrackerVersion",3);
-      if ( _TrackerVersion != 3) {
+      if ( _TrackerVersion < 3) {
         throw cet::exception("TTrackerPlaneSupportSD")
-          << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
+          << "Expected TTrackerVersion >= 3 but found " << _TrackerVersion <<endl;
       }
     }
   }

@@ -1,0 +1,92 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+  HitMakerBlindTime      : 500. # ns
+  HitMakerDigiSampling   : 5    # ns
+END_PROLOG
+
+
+
+BEGIN_PROLOG
+
+
+CaloShowerStepFromStepPt  : 
+{
+    module_type             : CaloShowerStepFromStepPt
+    numZSlices              : 20
+    deltaTime               : 0.2
+    calorimeterStepPoints   : calorimeter
+    calorimeterROStepPoints : calorimeterRO
+    usePhysVolInfo          : false
+    physVolInfoInput        : "compressPVDetector"
+    caloMaterial            : ["G4_CESIUM_IODIDE", "Polyethylene092"]
+    compressMuons           : false 
+    diagLevel               : 0
+}
+
+
+CaloShowerStepROFromShowerStep : 
+{
+    module_type                 : CaloShowerStepROFromShowerStep
+    caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter" ]
+    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    blindTime                   : @local::HitMakerBlindTime
+    caloLRUCorrection           : true
+    caloBirksCorrection         : true
+    caloPEStatCorrection        : true
+    addTravelTime               : true	    
+    diagLevel                   : 0
+}
+
+
+CaloDigiFromShower : 
+{
+    module_type           : CaloDigiFromShower
+    caloShowerModuleLabel : CaloShowerStepROFromShowerStep
+
+    blindTime             : @local::HitMakerBlindTime
+    addNoise              : true
+    noise                 : 2       # mV equivalent to 150 keV of Noise               
+
+    thresholdVoltage      : 5.0  
+    thresholdAmplitude    : 10 
+    energyScale           : 60 
+    digiSampling          : @local::HitMakerDigiSampling
+    nBits                 : 12
+    dynamicRange          : 2000 
+    endTimeBuffer         : 80
+    bufferDigi            : 5  
+    pulseIntegralSteps    : 50
+
+    diagLevel             : 0
+}
+
+
+CaloHitTruthMatch:
+{
+    module_type               : CaloHitTruthMatch
+    caloShowerSimModuleLabel  : CaloShowerStepROFromShowerStep
+    caloCrystalHitModuleLabel : CaloCrystalHitFromHit
+    deltaTimeMinus            : 4.0    #ns
+    deltaTimePlus             : 150.0  #ns
+    diagLevel                 : 0
+}
+
+CaloDigiMC : 
+{
+   producers : {
+     CaloShowerStepFromStepPt       : @local::CaloShowerStepFromStepPt
+     CaloShowerStepROFromShowerStep : @local::CaloShowerStepROFromShowerStep
+     CaloDigiFromShower            : @local::CaloDigiFromShower
+   }
+   producersMC : {
+     CaloHitTruthMatch : @local::CaloHitTruthMatch
+   }
+   DigiSim    : [ CaloShowerStepFromStepPt, CaloShowerStepROFromShowerStep, CaloDigiFromShower]
+   TruthMatch : [ CaloHitTruthMatch ]
+}
+
+END_PROLOG

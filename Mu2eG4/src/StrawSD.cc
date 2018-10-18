@@ -6,10 +6,6 @@
 // This version only works for the TTracker.  It also allows that the tracker may not
 // be centered in its mother volume.
 //
-// $Id: StrawSD.cc,v 1.45 2014/01/06 20:56:15 kutschke Exp $
-// $Author: kutschke $
-// $Date: 2014/01/06 20:56:15 $
-//
 // Original author Rob Kutschke
 //
 
@@ -20,7 +16,7 @@
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/StrawSD.hh"
@@ -73,18 +69,22 @@ namespace mu2e {
 
       const Plane& plane = ttracker->getPlane(0);
       const Panel& panel = plane.getPanel(0);
-      const Layer&  layer  = panel.getLayer(0);
 
-      _nStrawsPerPanel = panel.nLayers()  * layer.nStraws();
+      _nStrawsPerPanel = panel.nStraws();
       _nStrawsPerPlane = plane.nPanels() * _nStrawsPerPanel;
 
       _TrackerVersion = config.getInt("TTrackerVersion",3);
+
+      _npanels  = StrawId::_npanels;
+      _panelsft = StrawId::_panelsft;
+      _planesft = StrawId::_planesft;
+
       _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
       _supportModel   = ttracker->getSupportModel();
 
-      if ( _TrackerVersion != 3) {
+      if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
-          << "Expected TTrackerVersion of 3 but found " << _TrackerVersion <<endl;
+          << "Expected TTrackerVersion >= 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 
@@ -183,17 +183,31 @@ namespace mu2e {
 
     // getting the panel/plane number
 
-    G4int sdcn = 0;
-    if ( _TrackerVersion == 3) {
+    StrawId sid;
+    if ( _TrackerVersion >= 3) {
 
-      if ( _supportModel == SupportModel::simple ){
-        sdcn = touchableHandle->GetCopyNumber(1) +
-          _nStrawsPerPanel*(touchableHandle->GetCopyNumber(2)) +
-          _nStrawsPerPlane*(touchableHandle->GetCopyNumber(3));
-      } else {
-        sdcn = touchableHandle->GetCopyNumber(0) +
-          _nStrawsPerPanel*(touchableHandle->GetCopyNumber(1));
-      }
+      // Compute StrawId from copy numbers.
+      uint16_t panelNumber = touchableHandle->GetCopyNumber(1)%_npanels;
+      uint16_t planeNumber = touchableHandle->GetCopyNumber(1)/_npanels;
+      uint16_t strawNumber = touchableHandle->GetCopyNumber(0);
+      sid = StrawId( planeNumber, panelNumber, strawNumber );
+
+
+      // if (_verbosityLevel>3) {
+
+      //   GeomHandle<TTracker> ttracker;
+      //   // print out info based on the old StrawID etc... first
+      //   cout << __func__ <<  " sid, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid, sid2 : "
+      //        << setw(6) << sid.asUint16()
+      //        << setw(6) << panelNumber
+      //        << setw(6) << panelNumberShifted
+      //        << setw(6) << planeNumber
+      //        << setw(6) << planeNumberShifted;
+      //   // print out info based on the StrawID etc...
+      //   const Straw& straw2 = ttracker->getStraw(sid);
+      //   cout << setw(7) << straw2.id()
+      //        << endl;
+      // }
 
     } else {
 
@@ -209,9 +223,9 @@ namespace mu2e {
         setw(4) << ti << " " <<
         setw(4) << touchableHandle->GetCopyNumber(2) << " " <<
         setw(4) << touchableHandle->GetCopyNumber(3) << " " <<
-        setw(6) << sdcn << endl;
+        setw(6) << sid.asUint16() << endl;
 
-      cout << __func__ << " sdcn " << sdcn << endl;
+      cout << __func__ << " sid " << sid.asUint16() << endl;
 
     }
 
@@ -223,7 +237,7 @@ namespace mu2e {
 
 
     _collection->push_back( StepPointMC(_spHelper->particlePtr(aStep->GetTrack()),
-                                        sdcn,
+                                        sid.asUint16(),
                                         edep,
                                         aStep->GetNonIonizingEnergyDeposit(),
                                         aStep->GetPreStepPoint()->GetGlobalTime(),
@@ -240,7 +254,7 @@ namespace mu2e {
 
       art::ServiceHandle<GeometryService> geom;
       GeomHandle<TTracker> ttracker;
-      const Straw&  straw = ttracker->getStraw( StrawIndex(sdcn) );
+      const Straw& straw = ttracker->getStraw(sid);
 
       // will compare straw.getMidPoint() with the straw position according to Geant4
 
@@ -265,15 +279,15 @@ namespace mu2e {
           setw(4) << ti << " " <<
           setw(4) << straw.id().getPanel() << " " <<
           setw(4) << straw.id().getPlane() << " " <<
-          setw(6) << sdcn << " " <<
+          setw(6) << sid.asUint16() << " " <<
           straw.id() << endl;
 
         cout << __func__ << " straw pos     "
              << en << " "
              << ti << " "       <<
-          " sdcn: "             << sdcn <<
+          " sid: "             << sid.asUint16() <<
           ", straw.MidPoint "   << straw.getMidPoint() <<
-          ", panel.boxOffset " << panel.boxOffset() <<
+          //          ", panel.boxOffset " << panel.boxOffset() <<
           ", plane.origin "    << plane.origin() <<
           ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
           ", plane.rotation "  << plane.rotation() <<
@@ -282,7 +296,7 @@ namespace mu2e {
         cout << __func__ << " straw pos G4  "
              << en << " "
              << ti << " "       <<
-          " sdcn: "             << sdcn <<
+          " sid: "             << sid.asUint16() <<
           ", straw.MidPoint "   << strawInTracker <<
           ", diff magnitude "   << scientific << diffMag  << fixed <<
           endl;
@@ -332,7 +346,8 @@ namespace mu2e {
 
     // make sure it works with the constructTTrackerv3
     //    int copy = touchableHandle->GetCopyNumber();
-    int copy = sdcn;
+    int copy = sid.asUint16();
+
     /*
     int eventNo = event->GetEventID();
     // Works for both TTracker.
@@ -350,7 +365,7 @@ namespace mu2e {
     if ( geom->hasElement<TTracker>() ) {
 
       GeomHandle<TTracker> ttracker;
-      Straw const& straw = ttracker->getStraw( StrawIndex(copy) );
+      const Straw& straw = ttracker->getStraw(StrawId(copy));
       G4ThreeVector mid  = straw.getMidPoint();
       G4ThreeVector w    = straw.getDirection();
 

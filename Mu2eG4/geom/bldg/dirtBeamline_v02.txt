@@ -1,0 +1,53 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/dirt_beamline.ccl
+
+string dirt.beamline.name     = "dirtBeamline";
+
+string dirt.beamline.material = "MBOverburden";
+
+double dirt.beamline.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.offsetFromFloorSurface.y = 2870.2;
+double dirt.beamline.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.yHalfThickness           = 3022.6;
+
+vector<int>    dirt.beamline.xreplace   = { 12, 13 }; 
+vector<double> dirt.beamline.xPositions = {
+  24324.2,   // dB00
+  38679,   // dFDN16
+  37255.5,   // dFDN15
+  27183.7,   // dFDN14
+  25365.4,   // dFDN13
+  21465,   // dFDN12
+  20161.1,   // dFDN11
+  14582.2,   // dFDN10
+  15886.1,   // dFDN09
+  12751,   // dFDN08
+  11684,   // dB10
+  11684,   // o7dirt_to_N
+  50000,   // NEcorner
+  50000   // o2_to_E
+};
+
+vector<int>    dirt.beamline.yreplace   = { 11, 12 }; 
+vector<double> dirt.beamline.yPositions = {
+  6281.78,   // dB00
+  10464.4,   // dFDN16
+  16339.6,   // dFDN15
+  13899.2,   // dFDN14
+  21403.7,   // dFDN13
+  20458.7,   // dFDN12
+  25840.2,   // dFDN11
+  24488.4,   // dFDN10
+  19106.9,   // dFDN09
+  18347.3,   // dFDN08
+  17703.8,   // dB10
+  50000,   // o7dirt_to_N
+  50000,   // NEcorner
+  6281.78   // o2_to_E
+};
+
+// Local Variables:
+// mode:c++
+// End:

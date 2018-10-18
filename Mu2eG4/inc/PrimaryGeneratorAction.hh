@@ -12,6 +12,7 @@
 
 // C++ includes
 #include <string>
+#include <vector>
 
 // Framework includes
 #include "art/Framework/Principal/Handle.h"
@@ -19,7 +20,9 @@
 // G4 includes
 #include "globals.hh"
 #include "G4VUserPrimaryGeneratorAction.hh"
+#include "G4ThreeVector.hh"
 
+// Mu2eG4 includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
@@ -30,50 +33,63 @@ class TH1D;
 
 namespace fhicl { class ParameterSet; }
 
+namespace art { class ProductID; }
+
 namespace mu2e {
 
-  class SteppingAction;
-  class SimParticlePrimaryHelper;
+    class SteppingAction;
+    class SimParticlePrimaryHelper;
+    class GenEventBroker;
+    class PerEventObjectsManager;
 
-  typedef std::vector<art::ValidHandle<StepPointMCCollection> > HitHandles;
+    typedef std::vector<art::ValidHandle<StepPointMCCollection> > HitHandles;
 
   class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction{
   public:
 
-    PrimaryGeneratorAction();
-    explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset);
-
-    // This is the interface specified by G4.
-    void GeneratePrimaries(G4Event*);
-
-    // Should change the interface for Primary
-    void setEventData(const GenParticleCollection *gens, // may be NULL. No ownership passing.
-                      const HitHandles& hitInputs,
-                      SimParticlePrimaryHelper *parentMapping);
+      PrimaryGeneratorAction();
+      
+      explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
+                                      GenEventBroker *gen_eventbroker,
+                                      PerEventObjectsManager *per_evtobjmanager);
+      
+      // This is the interface specified by G4.
+      void GeneratePrimaries(G4Event*);
 
   private:
 
-    explicit PrimaryGeneratorAction(bool fillHistograms,  int verbosityLevel=0);
+      explicit PrimaryGeneratorAction(bool fillHistograms,
+                                      int verbosityLevel,
+                                      GenEventBroker *gen_eventbroker,
+                                      PerEventObjectsManager *per_evtobjmanager);
+      
 
-    void fromEvent( G4Event* );
+      void setEventData();
 
-    void addG4Particle(G4Event *event,
-                       PDGCode::type pdgId,
-                       const G4ThreeVector& pos,
-                       double time,
-                       double properTime,
-                       const G4ThreeVector& mom);
+      void fromEvent( G4Event* );
 
-    // Input event kinematics
-    // Must be set before the call to GeneratePrimaries.
-    const GenParticleCollection *genParticles_;
-    const HitHandles *hitInputs_;
-    SimParticlePrimaryHelper *parentMapping_;
+      void addG4Particle(G4Event *event,
+                         PDGCode::type pdgId,
+                         const G4ThreeVector& pos,
+                         double time,
+                         double properTime,
+                         const G4ThreeVector& mom);
+      
 
-    TH1D* _totalMultiplicity;
+      // Input event kinematics
+      // Must be set before the call to GeneratePrimaries.
+      
+      const GenParticleCollection* genParticles_;
+      const HitHandles* hitInputs_;
+      SimParticlePrimaryHelper* parentMapping_;
 
-    int verbosityLevel_;
+      TH1D* _totalMultiplicity;
 
+      int verbosityLevel_;
+      
+      GenEventBroker* genEventBroker_;
+      PerEventObjectsManager* perEvtObjManager;
+      
   };
 
 }  // end namespace mu2e

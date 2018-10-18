@@ -31,6 +31,14 @@ namespace mu2e {
       aRotation.rotateY(45.0*CLHEP::degree);
       return;
     }
+    if ( orient == "400" ) { // Special 45 degree turn around x
+      aRotation.rotateX(45.0*CLHEP::degree);
+      return;
+    }
+    if ( orient == "500" ) { // Special 45 degree turn around x other way
+      aRotation.rotateX(-45.0*CLHEP::degree);
+      return;
+    }
     if ( orient == "060" ) { // Special -32 degree turn around y for pipe in TS
       aRotation.rotateY(-32.0*CLHEP::degree);
       return;
@@ -39,6 +47,12 @@ namespace mu2e {
       aRotation.rotateY(-122.0*CLHEP::degree);
       return;
     }
+    if ( orient == "ll0" ) { // Special 78 and 2 degree turn for PS pump out pipe
+      aRotation.rotateY(-78.0*CLHEP::degree);
+      aRotation.rotateX(-2.0*CLHEP::degree);
+      return;
+    }
+    
     int uRotNum=0,vRotNum=0,wRotNum=0;
     for ( int iChar = 0; iChar < 3; iChar++ ) {
       // unpack the orientation number

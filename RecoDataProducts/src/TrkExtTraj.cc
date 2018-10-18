@@ -9,7 +9,7 @@
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/TrkExtTrajPoint.hh"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include <utility>
 #include <cmath>
 

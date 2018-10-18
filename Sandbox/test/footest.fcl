@@ -2,7 +2,7 @@
 # Illustrate the printout from the FooService
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : Example01
 
@@ -14,9 +14,8 @@ source : {
 services : {
   message      : @local::default_message
 
-  user : {
-    FooService : {}
-  }
+  FooService : {}
+
 }
 
 physics : {

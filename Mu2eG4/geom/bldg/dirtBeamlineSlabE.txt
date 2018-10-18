@@ -1,0 +1,63 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_beamline_dirtSlab.ccl
+
+string dirt.beamline.slab.E.name     = "dirtBeamlineSlabE";
+
+string dirt.beamline.slab.E.material = "MBOverburden";
+
+double dirt.beamline.slab.E.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.slab.E.offsetFromFloorSurface.y = 5994.4;
+double dirt.beamline.slab.E.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.slab.E.yHalfThickness           = 101.6;
+
+vector<int>    dirt.beamline.slab.E.xreplace   = { 13, 14 }; 
+vector<double> dirt.beamline.slab.E.xPositions = {
+  21158.2,   // x1
+  21971,   // x2
+  21971,   // x3
+  29083,   // x4
+  29083,   // x5
+  29895.8,   // x6
+  29895.8,   // x7
+  37007.8,   // x8
+  37007.8,   // x9
+  37820.6,   // y0
+  37820.6,   // y1
+  44932.6,   // y2
+  44932.6,   // y3
+  50000,   // y4_to_E
+  50000,   // NEcorner
+  15900.81, // N of escape hatch NW corner                          
+  15900.8,  // NW corner escape hatch                                 
+  19356.8,  // NE corner escape hatch                                        
+  20744.5  // SE corner escape hatch                                  
+};
+
+vector<int>    dirt.beamline.slab.E.yreplace   = { 14, 15}; 
+vector<double> dirt.beamline.slab.E.yPositions = {
+  2616.2,   // x1
+  2616.2,   // x2
+  -431.8,   // x3
+  -431.8,   // x4
+  2616.2,   // x5
+  2616.2,   // x6
+  -431.8,   // x7
+  -431.8,   // x8
+  2616.2,   // x9
+  2616.2,   // y0
+  -431.8,   // y1
+  -431.8,   // y2
+  2616.2,   // y3
+  2616.2,   // y4_to_E
+  50000,   // NEcorner
+  50000, // N of escape hatch NW corner          
+  23684.2,  // NW corner escape hatch                                 
+  24521.6,  // NE corner escape hatch                         
+  18794.4     // SE corner escape hatch                             
+};
+
+// Local Variables:
+// mode:c++
+// End:

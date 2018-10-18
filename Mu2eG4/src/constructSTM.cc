@@ -33,7 +33,6 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "GeomPrimitives/inc/PolyconsParams.hh"
 
 // G4 includes
@@ -59,7 +58,7 @@ using namespace std;
 
 namespace mu2e {
 
-  void constructSTM(SimpleConfig const & _config){
+  void constructSTM(const SimpleConfig& _config){
 
     STM const & stmgh = *(GeomHandle<STM>());
 
@@ -830,7 +829,7 @@ namespace mu2e {
     const double z_collimator_downstream = stmSSCollPositionInMu2e1.z() + stmSSCollHalfLength1;
     const double z_distance_tgt_coll = (z_collimator_downstream-z_tgtfoil_downstream);
 
-    //Make the conical section for the first hole as wide as the StoppingTarget+extra on one end
+    //Make the conical.disk for the first hole as wide as the StoppingTarget+extra on one end
     //and as narrow as the desired collimation on the other end    
     G4Cons* collWindow1 = new G4Cons( "collWindow1", 
                                       0.0,                          // rMin cone upstream
@@ -841,7 +840,7 @@ namespace mu2e {
                                       0.0,                          //start angle
                                       CLHEP::twopi                  //end angle  
                                     );    
-    //Make the conical section for the second hole as wide as the StoppingTarget+extra on one end
+    //Make the conical.disk for the second hole as wide as the StoppingTarget+extra on one end
     //and as narrow as the desired collimation on the other end
     G4Cons* collWindow2 = new G4Cons( "collWindow2", 
                                       0.0,                          // rMin cone upstream
@@ -878,7 +877,7 @@ namespace mu2e {
 //                                       0.0,                     //start angle
 //                                       CLHEP::twopi             //end angle  
 //                                     );    
-//     //Make the conical section for the first hole as wide as the Stopping Target on one end
+//     //Make the conical.disk for the first hole as wide as the Stopping Target on one end
 //     //and as narrow as the desired collimation on the other end
 //     G4Cons* collWindow2 = new G4Cons( "collWindow2", 
 //                                       0.0,                     // rMin upstream
@@ -1175,11 +1174,6 @@ namespace mu2e {
     if (verbosityLevel>0){
       std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl; 
     }
-
-    // Make stmDet1 a sensitive detector.
-    G4VSensitiveDetector *sd1 = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
-    if(sd1) stmDet1.logical->SetSensitiveDetector(sd1);
-    
     
     //===================== STM Detector 2 ==========================
     
@@ -1276,13 +1270,6 @@ namespace mu2e {
     if (verbosityLevel>0){
       std::cout << __func__ << " Warning: Gas not implemented inside STM detector1 can! (so that VD inside can does not overlap with can gas)" << std::endl; 
     }
-
-    // Make stmDet2 a sensitive detector.
-    G4VSensitiveDetector *sd2 = G4SDManager::GetSDMpointer()->FindSensitiveDetector(SensitiveDetectorName::STMDet());
-    if(sd1) stmDet2.logical->SetSensitiveDetector(sd2);
-    
-    
-    
     
     //===================== Shield Pipe/Wall to prevent michel electrons from causing deadtime in the CRV  ==========================
 

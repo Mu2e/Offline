@@ -29,6 +29,9 @@ double calorimeter.crystalHalfTrans            = 16.5;
 double calorimeter.crystalHexsize              = 16.5;  //mm  half distance across flats of hex crystal
 double calorimeter.crystalHalfLong             = 100.0;
 string calorimeter.crystalMaterial             = "G4_BARIUM_FLUORIDE"; //"G4_PbWO4" "G4_BARIUM_FLUORIDE" "Lyso_01" "G4_CESIUM_IODIDE"
+double calorimeter.refractiveIndex             = 1.47;
+double calorimeter.crystalDecayTime            = 0.9;
+
 string calorimeter.crystalWrapper              = "Polyethylene092";
 double calorimeter.crystalWrapperThickness     = 0.100; //mm
 
@@ -46,7 +49,7 @@ int calorimeter.crateVersion        = 2;
 string calorimeter.crateMaterial    = "Electronics"; //"G10"  calorimeter electronics material. NEED to refine
 double calorimeter.crateInnerRadius = 680;       
 double calorimeter.crateOuterRadius = 810;         // calorimeter electronics crates outer radius  //mm.  Yuri indicated 906
-double calorimeter.crateExtendLen   = 180.0;  
+double calorimeter.crateHalfLength  = 215.575;  
 
 
 
@@ -74,4 +77,4 @@ bool calorimeter.crystalSolid                 = true;
 bool calorimeter.absorberBoxVisible           = true;
 bool calorimeter.absorberBoxSolid             = true;
 
-int  calorimeter.verbosityLevel               = 0;
+int  calorimeter.verbosityLevel               = 1;

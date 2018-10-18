@@ -1,0 +1,12 @@
+           Release notes for Mu2e Offline software, v6_1_2
+
+1) March 25, 2017 kutschke, brownd
+   Dave Brown (LBL) merged in his development branch that
+   implements:
+    - track persistency
+    - filter modules for selecting events based on track precursor objects (time clusters, helices, seed fits)
+    - a prototype fcl for a track trigger with several paths and prescaling
+    new files are primarily in:
+    TrkFilters
+    RecoDataProducts
+    TrkAdapters

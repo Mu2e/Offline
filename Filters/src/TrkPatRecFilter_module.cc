@@ -83,14 +83,12 @@ namespace mu2e
     if(retval && _minCEHits > 0){
       int ncehits(0);
       art::Handle<StrawDigiMCCollection> mcdigisHandle;
-      if(event.getByLabel(_mcdigislabel,"StrawHitMC",mcdigisHandle)){
+      if(event.getByLabel(_mcdigislabel,mcdigisHandle)){
 	const StrawDigiMCCollection* mcdigis = mcdigisHandle.product();
 	for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
-	  // require both ends to fire
-	  if(imcdigi->hasTDC(StrawDigi::zero) && imcdigi->hasTDC(StrawDigi::one) &&
-	    imcdigi->wireEndTime(StrawDigi::zero) > _minCETime ) {
-	    if(imcdigi->stepPointMC(StrawDigi::zero)->simParticle()->genParticle().isNonnull() &&
-		imcdigi->stepPointMC(StrawDigi::zero)->simParticle()->genParticle()->generatorId().id() == GenId::conversionGun) ++ncehits;
+	  if( imcdigi->wireEndTime(StrawEnd::cal) > _minCETime ) {
+	    if(imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
+		imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle()->generatorId().id() == GenId::conversionGun) ++ncehits;
 	  }
 	}
       }

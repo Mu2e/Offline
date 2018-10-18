@@ -6,7 +6,7 @@
 # If it is false then the BarService is called first.
 #
 
-#include "minimalMessageService.fcl"
+#include "fcl/minimalMessageService.fcl"
 
 process_name : BarTest
 
@@ -18,10 +18,9 @@ source : {
 services : {
   message      : @local::default_message
 
-  user : {
-    FooService : {}
-    BarService : { pokeFoo : true }
-  }
+  FooService : {}
+  BarService : { pokeFoo : true }
+
 }
 
 physics : {

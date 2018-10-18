@@ -1,0 +1,47 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_floor_remote.ccl
+
+string building.floor.remote.name     = "floorRemote";
+
+string building.floor.remote.material = "CONCRETE_MARS";
+
+double building.floor.remote.offsetFromMu2eOrigin.x   = 947.4;
+double building.floor.remote.offsetFromFloorSurface.y = -76.2;
+double building.floor.remote.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.floor.remote.yHalfThickness           = 76.2;
+
+vector<double> building.floor.remote.xPositions = {
+  -11709.4,   // FR1
+  -11709.4,   // FR2
+  3251.2,   // FR3
+  3251.2,   // FR4
+  3708.4,   // FR5
+  3708.4,   // FR6
+  11074.4,   // FR7
+  11072.5,   // FR8
+  9163.95,   // BNW03
+  9312.4,   // BNW00
+  2787.8,   // FN7
+  1193.8   // FN6
+};
+
+vector<double> building.floor.remote.yPositions = {
+  6248.4,   // FR1
+  16002,   // FR2
+  16002,   // FR3
+  13716,   // FR4
+  13716,   // FR5
+  16002,   // FR6
+  16002,   // FR7
+  10544.1,   // FR8
+  10080.4,   // BNW03
+  9436.98,   // BNW00
+  7842.4,   // FN7
+  6248.4   // FN6
+};
+
+// Local Variables:
+// mode:c++
+// End:

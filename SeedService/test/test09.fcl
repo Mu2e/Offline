@@ -5,7 +5,7 @@
 # $Author: gandr $
 # $Date: 2012/02/11 01:49:47 $
 
-#include "messageService.fcl"
+#include "fcl/messageService.fcl"
 
 # Give this job a name.
 process_name : SeedTest01
@@ -21,16 +21,15 @@ services :
 {
   message : @local::mf_errorsOnly
 
-  user : {
-     SeedService: {
+   SeedService: {
       policy            : "ThisIsNotAValidPolicy"
       baseSeed          :   123
       maxUniqueEngines  :    20
       checkRange        :  true
       verbosity         :     2
       endOfJobSummary   :  false
-     }
-  }
+
+   }
 
 }
 

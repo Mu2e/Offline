@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/TwoVector.h"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 
@@ -28,13 +28,19 @@ namespace mu2e {
     std::unique_ptr<ProtonBeamDump> dump(new ProtonBeamDump());
 
     int verbose = c.getInt("protonBeamDump.verbosityLevel", 0);
+    int version = c.getInt("protonBeamDump.version",2);
 
     // Get relevant Hall solids
     ExtrudedSolid psArea  = hall.getBldgSolid("psArea");        // contains front corners of dump slab
     ExtrudedSolid psWall  = hall.getBldgSolid("psWallUpper");   // contains back corners of dump slab
     ExtrudedSolid psWallS = hall.getBldgSolid("psAreaUpperS");  // contains boundary between front and back
     ExtrudedSolid psWallN = hall.getBldgSolid("psAreaUpperN");  // contains boundary between front and back
-    ExtrudedSolid psCeil  = hall.getBldgSolid("psAreaCeiling"); // contains ceiling height
+    ExtrudedSolid psCeil;
+    if ( version > 2 ) {
+      psCeil = hall.getBldgSolid("psAreaCeilingSW");
+    } else {
+      psCeil = hall.getBldgSolid("psAreaCeiling"); // contains ceiling height
+    }
 
     // position
     dump->_coreCenterInMu2e = c.getHep3Vector("protonBeamDump.coreCenterInMu2e");
@@ -57,7 +63,7 @@ namespace mu2e {
     dump->_frontShieldingHalfSize.resize(3);
     dump->_frontShieldingHalfSize[0] = dump->_coreHalfSize[0] + dump->_minCoreShieldingThickness;
     dump->_frontShieldingHalfSize[1] = (ceiling[1] - psCeil.getYhalfThickness() - dump->_shieldingFaceYmin)/2.0;
-    dump->_frontShieldingHalfSize[2] = dump->_coreHalfSize[2] + dump->_neutronCaveHalfSize[2] + dump->_mouthHalfSize[2] + coreAirGap/2.;
+    dump->_frontShieldingHalfSize[2] = dump->_coreHalfSize[2] + dump->_neutronCaveHalfSize[2] + dump->_mouthHalfSize[2];
     if(verbose) {
       std::cout<<"ProtonBeamDumpMaker"<<": ProtonBeamDump frontShielding half size = ";
       std::copy(dump->_frontShieldingHalfSize.begin(), dump->_frontShieldingHalfSize.end(), std::ostream_iterator<double>(std::cout, ", "));
@@ -67,19 +73,19 @@ namespace mu2e {
     dump->_frontSteelHalfSize.resize(3);
     dump->_frontSteelHalfSize[0] = additionalSteel[0]/2.0;
     dump->_frontSteelHalfSize[1] = additionalSteel[1]/2.0;
-    dump->_frontSteelHalfSize[2] = dump->_coreHalfSize[2] + coreAirGap/2.0;
+    dump->_frontSteelHalfSize[2] = dump->_coreHalfSize[2];
     dump->_backSteelHalfSize.resize(3);
     dump->_backSteelHalfSize[0] = dump->_frontSteelHalfSize[0];
     dump->_backSteelHalfSize[1] = dump->_frontSteelHalfSize[1];
-    dump->_backSteelHalfSize[2] = additionalSteel[2]/2.0 - dump->_frontSteelHalfSize[2];
+    dump->_backSteelHalfSize[2] = additionalSteel[2]/2.0 - dump->_frontSteelHalfSize[2]-0.5;
     dump->_coreAirHalfSize.resize(3);
     dump->_coreAirHalfSize[0] = dump->_coreHalfSize[0] + coreAirGap;
-    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + coreAirGap;
-    dump->_coreAirHalfSize[2] = dump->_coreHalfSize[2] + coreAirGap/2.0;
+    dump->_coreAirHalfSize[1] = dump->_coreHalfSize[1] + coreAirGap/2.0;
+    dump->_coreAirHalfSize[2] = dump->_coreHalfSize[2];
 
     // The offset of the front shielding coordinates w.r.t. the core, along the dump z
     dump->_coreCenterDistanceToReferencePlane = c.getDouble("protonBeamDump.coreCenterDistanceToReferencePlane");
-    dump->_coreCenterDistanceToShieldingFace = 2.0*dump->_frontShieldingHalfSize[2] - dump->_coreHalfSize[2] - coreAirGap;
+    dump->_coreCenterDistanceToShieldingFace = 2.0*dump->_frontShieldingHalfSize[2] - dump->_coreHalfSize[2];
 
     const double frontShieldingOffset = dump->_coreCenterDistanceToShieldingFace - dump->_frontShieldingHalfSize[2];
     dump->_frontShieldingCenterInMu2e[0] = dump->_coreCenterInMu2e[0] + frontShieldingOffset*sin(coreRotY);
@@ -102,7 +108,7 @@ namespace mu2e {
     dump->_neutronCaveCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
       *CLHEP::Hep3Vector(0,0, frontShieldingOffset + dump->_frontShieldingHalfSize[2] - 2*dump->_mouthHalfSize[2] - dump->_neutronCaveHalfSize[2]);
 
-    dump->_coreAirCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e * CLHEP::Hep3Vector(0,0,-coreAirGap/2.0);
+    dump->_coreAirCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e * CLHEP::Hep3Vector(0,-coreAirGap/2.0,0);
 
     dump->_frontSteelCenterInMu2e = dump->_coreCenterInMu2e + dump->_coreRotationInMu2e
       *CLHEP::Hep3Vector(0,     dump->_coreAirHalfSize[1] + dump->_frontSteelHalfSize[1],
@@ -145,7 +151,9 @@ namespace mu2e {
 
     // Create deltas (of 1.1 mm, with rotation) to avoid overlaps
     double dW = 1.1;
-    const CLHEP::Hep2Vector deltaNE( -cos(coreRotY)*dW, -sin(coreRotY)*dW );
+    double ccW = cos(coreRotY)*dW;
+    if ( version > 2 ) ccW = -ccW;
+    const CLHEP::Hep2Vector deltaNE( -ccW, -sin(coreRotY)*dW );
     const CLHEP::Hep2Vector deltaNW(  cos(coreRotY)*dW, -sin(coreRotY)*dW );
     const CLHEP::Hep2Vector deltaSW(  cos(coreRotY)*dW,  sin(coreRotY)*dW );
     const CLHEP::Hep2Vector deltaSE( -cos(coreRotY)*dW,  sin(coreRotY)*dW );
@@ -170,25 +178,45 @@ namespace mu2e {
     double xn = dump->_coreCenterInMu2e[0] - dump->_coreHalfSize[2]*sin(coreRotY)
       + dump->_frontShieldingHalfSize[0]*cos(coreRotY);
 
-    dump->_backShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
-    dump->_backShieldingOutline.emplace_back(pswVertices[3][0]+psWoffset[2]+deltaNW[0],pswVertices[3][1]+psWoffset[0]+deltaNW[1]);
-    dump->_backShieldingOutline.emplace_back(pswVertices[2][0]+psWoffset[2]+deltaSW[0],pswVertices[2][1]+psWoffset[0]+deltaSW[1]);
-    // Due to changes in bldg construction, use vertex [7] instead of [2]
+    if (version > 2) {
+      dump->_backShieldingOutline.emplace_back(psNVertices[5][0]+psNoffset[2]+deltaNE[0],psNVertices[5][1]+psNoffset[0]+deltaNE[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[14][0]+psWoffset[2]+deltaNW[0],pswVertices[14][1]+psWoffset[0]+deltaNW[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[15][0]+psWoffset[2]+deltaSW[0],pswVertices[15][1]+psWoffset[0]+deltaSW[1]);
+
+    } else {
+      dump->_backShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[3][0]+psWoffset[2]+deltaNW[0],pswVertices[3][1]+psWoffset[0]+deltaNW[1]);
+      dump->_backShieldingOutline.emplace_back(pswVertices[2][0]+psWoffset[2]+deltaSW[0],pswVertices[2][1]+psWoffset[0]+deltaSW[1]);
+    }
+      // Due to changes in bldg construction, use vertex [7] instead of [2]
     dump->_backShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
     dump->_backShieldingOutline.emplace_back(zs,xs);
     dump->_backShieldingOutline.emplace_back(zn,xn);
 
-    dump->_frontShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
+    if ( version > 2 ) {
+      dump->_frontShieldingOutline.emplace_back(psNVertices[5][0]+psNoffset[2]+deltaNE[0],psNVertices[5][1]+psNoffset[0]+deltaNE[1]);
+    } else {
+      dump->_frontShieldingOutline.emplace_back(psNVertices[7][0]+psNoffset[2]+deltaNE[0],psNVertices[7][1]+psNoffset[0]+deltaNE[1]);
+    }
+
     dump->_frontShieldingOutline.emplace_back(zn,xn);
     dump->_frontShieldingOutline.emplace_back(zs,xs);
     // Due to changes in bldg construction, use vertex [7] instead of [2]
     dump->_frontShieldingOutline.emplace_back(psSVertices[7][0]+psSoffset[2]+deltaSE[0],psSVertices[7][1]+psSoffset[0]+deltaSE[1]);
     // Temporary workaround while bldg geom is in flux.
     double tempWorkaround = 10.5;
-    dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
+    if ( version > 2 ) {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[15][0]+psAoffset[2]+deltaSE[0],psaVertices[15][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
+    } else {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[2][0]+psAoffset[2]+deltaSE[0],psaVertices[2][1]+psAoffset[0]+deltaSE[1]+tempWorkaround);
+    }
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmin,dump->_shieldingFaceXmin);
     dump->_frontShieldingOutline.emplace_back(dump->_shieldingFaceZatXmax,dump->_shieldingFaceXmax);
-    dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2]+deltaNE[0],psaVertices[3][1]+psAoffset[0]+deltaNE[1]);
+    if ( version > 2 ) {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[14][0]+psAoffset[2]+deltaNE[0],psaVertices[14][1]+psAoffset[0]+deltaNE[1]);
+    } else {
+      dump->_frontShieldingOutline.emplace_back(psaVertices[3][0]+psAoffset[2]+deltaNE[0],psaVertices[3][1]+psAoffset[0]+deltaNE[1]);
+    }
 
     //----------------------------------------------------------------
     if(verbose) {

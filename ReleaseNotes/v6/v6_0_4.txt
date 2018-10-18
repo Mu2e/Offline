@@ -1,0 +1,87 @@
+           Release notes for Mu2e Offline software, v6_0_4
+
+7) dnbrow01  13 Jan 2017
+   Script-assisted change to particle type names throughout Offline.
+   Name changes such as XXXDownstreameMinus -> XXXDeM, etc.
+   See https://mu2e-hnews.fnal.gov/HyperNews/Mu2e/get/Sim/219/1/1/1/1/3.html
+   for more detail.
+   modified:   Analyses/fcl/prolog.fcl
+   modified:   Analyses/test/cosmicFilter.fcl
+   modified:   Analyses/test/debug_config_bug.fcl
+   modified:   Analyses/test/genMixReco.fcl
+   modified:   Analyses/test/hitDisplay.fcl
+   modified:   Analyses/test/printKalReps.fcl
+   modified:   Analyses/test/readTrackCluster.fcl
+   modified:   Analyses/test/testKalRepProvenanceHelpers.fcl
+   modified:   CalPatRec/test/calPatRec_02.fcl
+   modified:   CalPatRec/test/mergePatRec.fcl
+   modified:   CalPatRec/test/mergePatRec_02.fcl
+   modified:   CalPatRec/test/mergePatRec_03.fcl
+   modified:   CalPatRec/test/mergePatRec_display.fcl
+   modified:   CalPatRec/test/mergePatRec_display_read.fcl
+   modified:   CalPatRec/test/trkPatRec_01.fcl
+   modified:   CalPatRec/test/trkPatRec_02.fcl
+   modified:   CalPatRec/test/trkPatRec_display.fcl
+   modified:   CalPatRec/test/trkPatRec_display_read.fcl
+   modified:   EventDisplay/test/EventDisplayTPR.fcl
+   modified:   JobConfig/TDR/TrackSummaryUnweightedAnalyzer.fcl
+   modified:   JobConfig/TDR/cosmic_s3.fcl
+   modified:   JobConfig/TDR/digiMixAndTrackFile.fcl
+   modified:   JobConfig/TDR/pions_as2.fcl
+   modified:   JobConfig/TDR/tracking.fcl
+   modified:   JobConfig/cd3/beam/MixPremixedPBIAndTrack.fcl
+   modified:   JobConfig/cd3/common/prolog.fcl
+   modified:   Mu2eG4/fcl/g4CaloExample.fcl
+   modified:   Mu2eG4/fcl/g4TrackCaloMatch.fcl
+   modified:   Mu2eG4/fcl/g4validate_01.fcl
+   modified:   ParticleID/test/test.fcl
+   modified:   Print/fcl/printLong.fcl
+   modified:   Projects/edmonds-ipa-and-beam-test-sims/fcl/ipa-sims-conversion.fcl
+   modified:   Projects/edmonds-ipa-and-beam-test-sims/fcl/ipa-sims-deuteron.fcl
+   modified:   Projects/edmonds-ipa-and-beam-test-sims/fcl/ipa-sims-flash.fcl
+   modified:   Projects/edmonds-ipa-and-beam-test-sims/fcl/ipa-sims-proton.fcl
+   modified:   TrackCaloMatching/fcl/prolog.fcl
+   modified:   TrkDiag/fcl/prolog.fcl
+   modified:   TrkDiag/test/RKFCalo.fcl
+   modified:   TrkExt/test/TrkExt.fcl
+   modified:   TrkPatRec/test/TrkPatRecTestGenerate.fcl
+
+6) dnbrow01  11 Jan 2017
+   Added end plates/rings for new HRS design, not yet included in 
+   geometry by default (not ready for prime time).
+
+
+5) Echenard, 9 Jan 2017
+   Added TriggerInfo data product classes
+   Added CaloCrate sensitive detector
+
+4) dnbrow01  07 Jan 2017
+   Updated t0 cut definitions for RPC background cutAndCount studies.
+   Updated this release note (first *documented* update of the year!)
+   modified:   JobConfig/cd3/pions/dra_pure_pions_defs.fclinc
+   modified:   ReleaseNotes/v6/v6_0_4.txt
+
+
+3) dnbrow01  07 Jan 2017
+   Updated design of the HRS to match latest drawings in Docdb 3926.
+   Added proper bronze material (had used G4_Cu).  New version of the
+   HRS is not actually used yet, as endcap rings/plates are needed.
+   Geometry for now still points to PSShield_v05.txt.
+   modified:   GeometryService/src/MBSMaker.cc
+   modified:   Mu2eG4/src/ConstructMaterials.cc
+   new:        Mu2eG4/geom/PSShield_v06.txt
+
+
+2) kutschke Dec 20, 2016
+   Add Sandbox/src/PSetViewer_module.cc and Sandbox/test/viewPSet.fcl
+    - Illustrate what is in the parameter set registry and the process history registry
+
+1) brownd 13 Dec 2016
+  Merge development branch 'trktime' in with master.  This includes >100 individual commands and >100 individual
+  file changes.  These changes are mostly structural in the track reconstruction, providing more granular reconstruction,
+  better separation of reconstruction and diagnostics, improved data products, and improved diagnostics.  Some algorithms
+  have changed, notably those where bugs were found in the unupdated version.  There is also some consolidation and
+  simplification of redundant existing code and data products.  Data product secondary keys have been removed and module
+  instance labels in tracking simplified and standardized.  These changes should be transparent to users using
+  the tracking fcl sequences, but they do change the TTree directories of diagnostics output and so analysis macros
+  may need revision.

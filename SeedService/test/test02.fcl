@@ -5,7 +5,7 @@
 # $Author: gandr $
 # $Date: 2012/02/10 16:27:49 $
 
-#include "messageService.fcl"
+#include "fcl/messageService.fcl"
 
 # Give this job a name.
 process_name : SeedTest01
@@ -21,8 +21,7 @@ services :
 {
   message : @local::mf_errorsOnly
 
-  user : {
-     SeedService: {
+   SeedService: {
       policy            : "preDefinedOffset"
       baseSeed          :     1
       maxUniqueEngines  :    20
@@ -36,8 +35,7 @@ services :
          a : 4
          c : 6
       }
-     }
-  }
+   }
 
 }
 

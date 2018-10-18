@@ -1,0 +1,45 @@
+# Read the test file made by MakeTestProduct and
+# modified by ModifyTestProduct
+#
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : modifyTrackSPM
+
+source : {
+  module_type : RootInput
+  fileNames   :  ["testG4S4pionSimDOE_01.art" ]
+}
+
+services : {
+  message : @local::default_message
+}
+
+physics : {
+
+  producers : {
+    g4run : {
+      module_type : ModifyTrackSPM
+      productTag  : "g4run:tracker"
+    }
+  }
+
+ t1 : [ g4run ]
+ e1 : [ out1 ]
+
+ trigger_paths : [ t1 ]
+ end_paths     : [ e1 ]
+
+}
+
+outputs : {
+  out1 : {
+    module_type : RootOutput
+    fileName    : "testG4S4pionSimDOE_02.art"
+    outputCommands:   [ "keep *_*_*_*",
+                        "drop *_g4run_tracker_pionsg4s4IntConv",
+			"drop *_TriggerResults_*_modifyTrackSPM"
+                      ]
+
+  }
+}

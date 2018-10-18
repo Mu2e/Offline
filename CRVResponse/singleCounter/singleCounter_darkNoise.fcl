@@ -1,0 +1,76 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "CRVResponse/fcl/prolog.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+process_name : CRVEfficiency
+
+source :
+{
+  module_type : EmptyEvent
+  maxEvents : @nil
+}
+
+services :
+{
+  message               : @local::default_message
+  TFileService          : { fileName : "dark_noise.root" }
+  RandomNumberGenerator : { }
+
+  GeometryService        : { inputFile      : "CRVResponse/singleCounter/geom.txt" }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+  G4Helper               : { }
+  SeedService            : @local::automaticSeeds
+}
+
+physics :
+{
+  producers:
+  {
+    generate: #not needed, but CRVTest wants to see a genParticleCollection 
+    {
+       module_type          : EventGenerator
+       inputfile            : "CRVResponse/singleCounter/genconfig.txt"
+    }
+
+    protonTimeMap: { module_type : GenerateProtonTimes }
+    muonTimeMap: { module_type : GenerateMuonLife }
+
+    CrvPhotons       : @local::CrvPhotons
+    CrvSiPMCharges   : @local::CrvSiPMCharges
+    CrvWaveforms     : @local::CrvWaveforms
+    CrvDigi          : @local::CrvDigi
+    CrvRecoPulses    : @local::CrvRecoPulses
+  }
+
+  analyzers:
+  {
+    CrvTest : 
+    {
+      module_type                 : CRVTest
+      crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
+      crvRecoPulsesModuleLabel    : "CrvRecoPulses"
+      genParticleModuleLabel      : "generate" 
+    }
+  }
+
+  trig : [generate, protonTimeMap, muonTimeMap, CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses]
+  trigger_paths  : [trig]
+
+  out: [CrvTest]
+  end_paths: [out]
+}
+
+physics.producers.CrvPhotons.g4ModuleLabels           : []   #emtpy so that the module doesn't expect any StepPointMCs
+physics.producers.CrvPhotons.processNames             : []   #the module needs to be present so that an empty PhotonsCollection is produced
+physics.producers.CrvPhotons.CRVSectors               : ["Test"]
+physics.producers.CrvPhotons.lookupTableFileNames     : ["CRVConditions/v4_1/LookupTable_6000"]
+physics.producers.CrvSiPMCharges.deadSiPMProbability  : 0.0
+physics.producers.CrvWaveforms.minVoltage             : -10.0
+physics.producers.CrvRecoPulses.minPEs                : 0
+physics.producers.CrvRecoPulses.darkNoise             : true
+
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+

@@ -6,7 +6,7 @@
 #include <vector>
 #include <sstream>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TH1.h"
 #include "TH2.h"

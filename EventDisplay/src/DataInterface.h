@@ -105,7 +105,6 @@ class DataInterface
                       boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
                       double t1, double t2,
                       const mu2e::SimParticleCollection *simParticles,
-                      const std::vector<cet::map_vector_key> &daughterVect,
                       const ContentSelector::trackInfoStruct &trackInfo);
   struct trajectoryStruct
   {

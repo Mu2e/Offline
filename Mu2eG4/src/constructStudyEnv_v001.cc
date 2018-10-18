@@ -26,6 +26,9 @@
 #include "G4Material.hh"
 #include "G4Color.hh"
 #include "G4Tubs.hh"
+#include "G4RotationMatrix.hh"
+#include "G4Helper/inc/G4Helper.hh"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
 
@@ -47,7 +50,9 @@ namespace mu2e {
 
     TubsParams tubeParams( _config.getDouble("tube.rIn"),
                            _config.getDouble("tube.rOut"),
-                           _config.getDouble("tube.halfLength"));
+                           _config.getDouble("tube.halfLength"),
+                           _config.getDouble("tube.phi0")*CLHEP::degree,
+                           _config.getDouble("tube.phiSpan")*CLHEP::degree );
 
     MaterialFinder materialFinder(_config);
     G4Material* tubeMaterial = materialFinder.get("tube.wallMaterialName");
@@ -56,10 +61,22 @@ namespace mu2e {
 
     G4Colour  orange  (.75, .55, .0);
 
+    double sgn(_config.getDouble("tube.sign"));
+
+    G4Helper& helper(*art::ServiceHandle<G4Helper>());
+    AntiLeakRegistry& reg(helper.antiLeakRegistry());
+
+    CLHEP::HepRotationZ rotZ(_config.getDouble("tube.phiRotZ")*CLHEP::degree);
+    CLHEP::HepRotationY rotY(M_PI);
+    G4RotationMatrix* rotation  = (sgn < 0 )?
+      reg.add(G4RotationMatrix(rotZ)) :
+      reg.add(G4RotationMatrix(rotZ*rotY));
+
+
     VolumeInfo tubeVInfo(nestTubs( "Tube",
                                    tubeParams,
                                    tubeMaterial,
-                                   0, // no rotation
+                                   rotation, // rotation
                                    tubeCenterInWorld,
                                    parentVInfo,
                                    _config.getInt("tube.copyNumber",2), 

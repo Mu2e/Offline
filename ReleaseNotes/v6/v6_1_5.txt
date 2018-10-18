@@ -1,0 +1,57 @@
+           Release notes for Mu2e Offline software, v6_1_5
+
+2) kutschke April 18, 2017
+   Made tag to docment end of the geant 4.9.6 era.
+
+   Just prior to makign the tag Andrei reverted a bunch of
+   commits by Bob Bernstein.  A cursor check found some
+   debug code that changed the behaviour of Mu2eG4SteppingAction
+   in an unintended way.
+
+1) dnbrow01  12 April 2017
+   Multiple changes to Offline geometry.
+
+   modified:   DetectorSolenoidGeom/inc/DetectorSolenoid.hh
+   modified:   GeometryService/src/DetectorSolenoidMaker.cc
+   modified:   Mu2eG4/geom/DetectorSolenoid_v02.txt
+   modified:   Mu2eG4/src/ConstructMaterials.cc
+   modified:   Mu2eG4/src/constructDS.cc
+   	       Add a rough model of the MBS spherical support.  Mass is
+    	       correct according to doc-1351v7, though the fraction
+  	       of bronze/brass and stainless are guesses and model is not
+	       highly detailed.  Uses new material "MBSSupportMix".
+	       Fix positions of bearing blocks on rails.
+   new file:   Mu2eG4/geom/muonBeamStop_v04.txt
+       	       Update details on the MBS according to v12 of the 
+	       table of dimensions (not sure if it has a doc#).
+
+   modified:   GeometryService/src/MECOStyleProtonAbsorberMaker.cc
+   modified:   MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh
+   modified:   Mu2eG4/geom/protonAbsorber_cylindrical.txt
+   modified:   Mu2eG4/src/constructProtonAbsorber.cc
+   modified:   Mu2eG4/geom/TSdA_v01.txt
+   new file:   Mu2eG4/geom/degrader_v01.txt
+       	       Add support rings to OPA and guesses at rings for the 
+	       stopping target support.  Update dimensions of the OPA,
+	       TSdA, and add a simple model of the Pion degrader (with
+	       a single text parameter to determine if it is in or 
+	       out of the beamline).  This work corresponds to doc-7638,
+	       doc-6654, doc-8391, and doc-1439 (WBS 5.07), with comments
+	       from George Ginther and Hank Glass.
+
+   modified:   Mu2eG4/geom/PSShield_v06.txt
+	       Updated model of HRS to correct dimensions, materials, etc.
+	       Corresponds to doc-3926-v3.  Checked with R. Coleman.
+
+   modified:   Mu2eG4/geom/TransportSolenoid_v01.txt
+   	       Fixed location of COL1 and size of upstream antiproton window,
+	       based on doc-1044-v6 and communication from R. Coleman and 
+	       G. Ginther.
+
+   new file:   Mu2eG4/geom/geom_common_current.txt
+       	       This will become the new current geom_common file, pointed
+	       to by geom_common.txt, in the near future.  Will supersede 
+	       the geom_common_cd3... files as defaults.
+
+   new file:   Mu2eG4/test/geom_SurfaceCheck_ExtShieldsOnly.txt
+       	       Prototype of a file to be used with a reduced surfaceCheck.

@@ -16,7 +16,7 @@ namespace mu2e
   {
 // construct the calo matching module name.  Convention is 1st letter of direction, 1st letter of particle name + 1st letter of charge
 // This code will break if the fhicl prolog conventions change, FIXME!!!
-    static std::string chargename = tpart.charge() > 0.0 ? "p" : "m";
+    std::string chargename = tpart.charge() > 0.0 ? "p" : "m";
     std::string caloMatchingRoot = pset.get<std::string>("caloMatchingRoot","TrackCaloMatching");
     _caloMatchModule = caloMatchingRoot + fdir.name().substr(0,1) + tpart.name().substr(0,1) + chargename;
   }
@@ -25,7 +25,7 @@ namespace mu2e
     if(_caloMatchHandle.isValid()){
       _caloinfo.clear();
       _ncalo = 0;
-      for( auto tcm : *_caloMatchHandle ) {
+      for( auto const& tcm : *_caloMatchHandle ) {
 	if(tcm.textrapol()->trk().get() == krep){
 	  TrkCaloInfo tcinfo;
 	  fillCaloInfo(tcm,tcinfo);
@@ -52,7 +52,7 @@ namespace mu2e
     const CaloCluster* cluster = tcm.caloCluster();
     tcinfo._eclust = cluster->energyDep();
     tcinfo._tclust = cluster->time();
-    tcinfo._section = cluster->sectionId();
+    tcinfo._section = cluster->diskId();
     tcinfo._cpos = threevec(cluster->cog3Vector());
 // track information at intersection point.  Don't use this as there's an
 // additional fltlen added for the depth (59mm).

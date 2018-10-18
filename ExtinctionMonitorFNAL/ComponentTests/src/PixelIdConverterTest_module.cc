@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Core/EDAnalyzer.h"

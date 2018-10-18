@@ -1,0 +1,54 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+
+CaloRecoDigiFromDigi :
+{ 
+
+    module_type           : CaloRecoDigiFromDigi
+    caloDigiModuleLabel   : CaloDigiFromShower
+    processorStrategy     : "FixedFast"     
+    digiSampling          : @local::HitMakerDigiSampling
+    maxChi2Cut            : 10
+    diagLevel             : 0
+
+    FixedFastProcessor : 
+    {
+        windowPeak        : 2
+        minPeakAmplitude  : 15
+	psdThreshold      : 0.2
+	pulseLowBuffer    : 3
+        pulseHighBuffer   : 8
+        minDiffTime       : 6
+        shiftTime         : 19.90
+
+	fitPrintLevel     : -1
+ 	fitStrategy       : 1
+	diagLevel         : 0
+    }
+}
+
+
+CaloCrystalHitFromHit:
+{
+    module_type           : CaloCrystalHitFromHit
+    caloDigisModuleLabel  : CaloRecoDigiFromDigi	    	    
+    time4Merge            : 4.0   #ns
+    diagLevel             : 0
+}
+
+
+CaloReco : 
+{
+   producers : {
+     CaloRecoDigiFromDigi    : @local::CaloRecoDigiFromDigi
+     CaloCrystalHitFromHit  : @local::CaloCrystalHitFromHit
+   }
+   Reco : [ CaloRecoDigiFromDigi ,CaloCrystalHitFromHit ]
+}
+
+END_PROLOG

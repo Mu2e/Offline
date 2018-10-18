@@ -2,7 +2,7 @@
 //
 // Andrei Gaponenko, 2012, 2015
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 

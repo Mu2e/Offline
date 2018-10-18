@@ -8,118 +8,109 @@
 namespace mu2eCrv
 {
 
-MakeCrvRecoPulses::MakeCrvRecoPulses(double pulseThreshold,       //in V
-                                     double leadingEdgeThreshold, //in percent
-                                     double param0, 
-                                     double param1) : 
-                                     _pulseThreshold(pulseThreshold), 
-                                     _leadingEdgeThreshold(leadingEdgeThreshold), 
-                                     _param0(param0),
-                                     _param1(param1)
+MakeCrvRecoPulses::MakeCrvRecoPulses()  
 {}
 
-void MakeCrvRecoPulses::SetWaveform(const std::vector<double> &waveform, double startTime, double binWidth)
+void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, unsigned int startTDC, double digitizationPeriod, 
+                                    double pedestal, double calibrationFactor, double calibrationFactorPulseHeight, bool darkNoise)
 {
-  _PEs.clear();
-  _leadingEdges.clear();
+  _pulseTimes.clear();
   _pulseHeights.clear();
+  _pulseWidths.clear();
+  _pulseFitChi2s.clear();
+  _fitParams0.clear();
+  _fitParams1.clear();
+  _fitParams2.clear();
+  _t1s.clear();
+  _t2s.clear();
+  _PEs.clear();
+  _PEsPulseHeight.clear();
+  _LEtimes.clear();
+  _peakBins.clear();
 
-  _integrals.clear();
-  _landauParams0.clear();
-  _landauParams1.clear();
-  _landauParams2.clear();
-  _T1s.clear();
-  _T2s.clear();
-  _TOTs.clear();
-
-  unsigned int nBins = waveform.size();
-  double time = startTime;
-  for(unsigned bin=0; bin<nBins; bin++, time+=binWidth)
+  //find the maxima
+  int nBins = static_cast<int>(waveform.size());
+  std::vector<std::pair<int,bool> > peaks;
+  for(int bin=2; bin<nBins-2; bin++) 
   {
-    double voltage = waveform[bin];
-    if(voltage>_pulseThreshold)
+    if(waveform[bin-1]<waveform[bin] && waveform[bin]>waveform[bin+1]) peaks.emplace_back(bin,false);
+    if(waveform[bin-1]<waveform[bin] && waveform[bin]==waveform[bin+1] && waveform[bin+1]>waveform[bin+2]) peaks.emplace_back(bin,true);
+  }
+
+  for(size_t i=0; i<peaks.size(); i++)
+  {
+  //select a range of up to 4 points before and after the maximum point
+  //-find up to 5 points before and after the maximum point for which the waveform is stricly decreasing
+  //-remove 1 point on each side. this removes potentially "bad points" belonging to a second pulse (i.e. in double pulses)
+    int maxBin = peaks[i].first;
+    if(waveform[maxBin]-pedestal<5) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+
+    int startBin=maxBin;
+    int endBin=maxBin;
+    for(int bin=maxBin-1; bin>=0 && bin>=maxBin-5; bin--)
     {
-      TGraph g, gFull;
-      double T1 = time;
-      double T2 = NAN;
-      double TOTstart = time;
-      double integral = 0;
-      double maxVoltage = NAN;
-      bool   insideFitInterval = true;
-
-      //add one more fit point before the waveform crosses the threshold
-      if(bin>0) 
-      {
-        g.SetPoint(0,time-binWidth,waveform[bin-1]); 
-        gFull.SetPoint(0,time-binWidth,waveform[bin-1]); 
-        T1-=binWidth;
-      }
-
-      //loop over all points over the threshold
-      for( ; bin<nBins; bin++, time+=binWidth)
-      {
-        voltage = waveform[bin];
-        gFull.SetPoint(g.GetN(),time,voltage);
-        if(voltage<_pulseThreshold) break;
-
-        integral += voltage;
-        if(insideFitInterval) g.SetPoint(g.GetN(),time,voltage);
-        if(voltage>maxVoltage || isnan(maxVoltage)) maxVoltage=voltage;
-        else
-        {
-          insideFitInterval=false;  //the first local maximum (and possibly the global maximum) of this pulse 
-          if(isnan(T2)) T2=time;    //has been reached; don't include subsequent points in fit
-                                    //subsequent points of this pulse are still used to determine the integral
-                                    //and the pulse height
-        }
-      }
-      if(isnan(T2)) T2=time;    //if T2 hasn't been found yet, take the last time
-                                //this can happen e.g. if the voltage drops below the pulse threshold
-                                //right after the maximum
-
-//      int PEs = static_cast<int>(integral*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
-      int PEs = static_cast<int>(maxVoltage*_param1+_param0+0.5);  //the 0.5 is used to properly round the doubles
-      double leadingEdge = T1;
-
-      TF1 f("","landau");
-      TFitResultPtr fr = g.Fit(&f,"NQS");
-      int fitStatus = fr;
-      if(fitStatus==0)
-      {
-//if fit is successfull, walk through the Landau graph to find where it becomes 
-//20% (_leadingEdgeThreshold) of the maximum.
-//this will replace the leading edge
-        double param0 = fr->Parameter(0);
-        double param1 = fr->Parameter(1);
-        double param2 = fr->Parameter(2);
-        _landauParams0.push_back(param0);
-        _landauParams1.push_back(param1);
-        _landauParams2.push_back(param2);
-        for(double t=T1; t<T2; t+=1.0)
-        {
-          double v = param0*TMath::Landau(t, param1, param2);
-          if(v>=_leadingEdgeThreshold*maxVoltage)
-          {
-            leadingEdge=t;
-            break;
-          }
-        }
-      }
-      else
-      {
-        _landauParams0.push_back(NAN);
-        _landauParams1.push_back(NAN);
-        _landauParams2.push_back(NAN);
-      }  
-
-      _PEs.push_back(PEs);
-      _leadingEdges.push_back(leadingEdge);
-      _pulseHeights.push_back(maxVoltage);
-      _integrals.push_back(integral);
-      _T1s.push_back(T1);
-      _T2s.push_back(T2);
-      _TOTs.push_back((time-binWidth)-TOTstart);
+      if(waveform[bin]<=waveform[bin+1]) startBin=bin;
+      else break;
     }
+    for(int bin=maxBin+1; bin<nBins && bin<=maxBin+5; bin++)
+    {
+      if(waveform[bin]<=waveform[bin-1]) endBin=bin;
+      else break;
+    }
+    if(maxBin-startBin>1) startBin++;
+    if(endBin-maxBin>1) endBin--;
+
+    double t1=(startTDC+startBin)*digitizationPeriod;
+    double t2=(startTDC+endBin)*digitizationPeriod;
+
+    //fill the graph
+    TGraph g;
+    for(int bin=startBin; bin<=endBin; bin++) 
+    {
+      double t=(startTDC+bin)*digitizationPeriod;
+      double v=waveform[bin]-pedestal;
+      g.SetPoint(g.GetN(), t, v);
+    }
+
+    //set the fit function
+    TF1 f("peakfitter","[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))");
+    f.SetParameter(0, (waveform[maxBin]-pedestal)*2.718);
+    f.SetParameter(1, (startTDC+maxBin)*digitizationPeriod);
+    f.SetParameter(2, darkNoise?12.6:19.0);
+    if(peaks[i].second) f.SetParameter(1, (startTDC+maxBin+0.5)*digitizationPeriod);
+
+    //do the fit
+    TFitResultPtr fr = g.Fit(&f,"NQS");
+    if(!fr->IsValid()) continue;
+
+    double fitParam0 = fr->Parameter(0);
+    double fitParam1 = fr->Parameter(1);
+    double fitParam2 = fr->Parameter(2);
+    if(fitParam0<=0 || fitParam2<=0) continue;
+    if(fitParam2>50 && waveform[maxBin]-pedestal<10) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+
+    int    PEs          = lrint(fitParam0*fitParam2 / calibrationFactor);
+    double pulseTime    = fitParam1;
+    double pulseHeight  = fitParam0/2.718;    //=fitParam0/e
+    double pulseWidth   = fitParam2*1.283;    //=fitParam2*pi/sqrt(6)  // =standard deviation of the Gumbel distribution
+    double pulseFitChi2 = fr->Chi2();
+
+    double LEtime=f.GetX(0.5*pulseHeight,pulseTime-50,pulseTime);   //i.e. at 50% of pulse height
+    int    PEsPulseHeight = lrint(pulseHeight / calibrationFactorPulseHeight);
+
+    _pulseTimes.push_back(pulseTime);
+    _pulseHeights.push_back(pulseHeight);
+    _pulseWidths.push_back(pulseWidth);
+    _pulseFitChi2s.push_back(pulseFitChi2);
+    _fitParams0.push_back(fitParam0);
+    _fitParams1.push_back(fitParam1);
+    _fitParams2.push_back(fitParam2);
+    _t1s.push_back(t1);
+    _t2s.push_back(t2);
+    _PEs.push_back(PEs);
+    _PEsPulseHeight.push_back(PEsPulseHeight);
+    _LEtimes.push_back(LEtime);
+    _peakBins.push_back(maxBin);
   }
 }
 
@@ -135,11 +126,18 @@ int MakeCrvRecoPulses::GetPEs(int pulse)
   return _PEs[pulse];
 }
 
-double MakeCrvRecoPulses::GetLeadingEdge(int pulse)
+int MakeCrvRecoPulses::GetPEsPulseHeight(int pulse)
 {
-  int n = _leadingEdges.size();
+  int n = _PEs.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _leadingEdges[pulse];
+  return _PEsPulseHeight[pulse];
+}
+
+double MakeCrvRecoPulses::GetPulseTime(int pulse)
+{
+  int n = _pulseTimes.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _pulseTimes[pulse];
 }
 
 double MakeCrvRecoPulses::GetPulseHeight(int pulse)
@@ -149,53 +147,68 @@ double MakeCrvRecoPulses::GetPulseHeight(int pulse)
   return _pulseHeights[pulse];
 }
 
-double MakeCrvRecoPulses::GetIntegral(int pulse)
+double MakeCrvRecoPulses::GetPulseWidth(int pulse)
 {
-  int n = _integrals.size();
+  int n = _pulseWidths.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _integrals[pulse];
+  return _pulseWidths[pulse];
 }
 
-double MakeCrvRecoPulses::GetLandauParam0(int pulse)
+double MakeCrvRecoPulses::GetPulseFitChi2(int pulse)
 {
-  int n = _landauParams0.size();
+  int n = _pulseFitChi2s.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _landauParams0[pulse];
+  return _pulseFitChi2s[pulse];
 }
 
-double MakeCrvRecoPulses::GetLandauParam1(int pulse)
+double MakeCrvRecoPulses::GetFitParam0(int pulse)
 {
-  int n = _landauParams1.size();
+  int n = _fitParams0.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _landauParams1[pulse];
+  return _fitParams0[pulse];
 }
 
-double MakeCrvRecoPulses::GetLandauParam2(int pulse)
+double MakeCrvRecoPulses::GetFitParam1(int pulse)
 {
-  int n = _landauParams2.size();
+  int n = _fitParams1.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _landauParams2[pulse];
+  return _fitParams1[pulse];
+}
+
+double MakeCrvRecoPulses::GetFitParam2(int pulse)
+{
+  int n = _fitParams2.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _fitParams2[pulse];
 }
 
 double MakeCrvRecoPulses::GetT1(int pulse)
 {
-  int n = _T1s.size();
+  int n = _t1s.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _T1s[pulse];
+  return _t1s[pulse];
 }
 
 double MakeCrvRecoPulses::GetT2(int pulse)
 {
-  int n = _T2s.size();
+  int n = _t2s.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _T2s[pulse];
+  return _t2s[pulse];
 }
 
-double MakeCrvRecoPulses::GetTimeOverThreshold(int pulse)
+double MakeCrvRecoPulses::GetLEtime(int pulse)
 {
-  int n = _TOTs.size();
+  int n = _LEtimes.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _TOTs[pulse];
+  return _LEtimes[pulse];
+}
+
+int MakeCrvRecoPulses::GetPeakBin(int pulse)
+{
+  int n = _peakBins.size();
+  if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
+  return _peakBins[pulse];
 }
 
 }
+

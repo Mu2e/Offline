@@ -1,0 +1,22 @@
+// This file contains the common part of job configuration for stage 4
+// cosmic ray simulations.  It is included by top level files
+// (like cosmic_s4_target1.fcl), which define output file names.
+
+#include "JobConfig/common/dra_pure_defs.fcl"
+
+source.inputCommands: ["keep *", "drop *CaloCrystalOnlyHit*_*_*_*"]
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: "compressPV"
+
+physics.trigger_paths: [ draCutAndCountTrigSeq ]
+physics.filteredOutput: [ filteredOutput ]
+physics.end_paths: [ draCommonEndSeq, filteredOutput ]
+outputs: { @table::dra.filteredOutputDef }
+
+physics.filters.cutAndCountFilter.weight: {}
+physics.filters.cutAndCountFilter.signalTrackCuts.pmin: 100.0
+physics.filters.cutAndCountFilter.signalTrackCuts.pmax: 110.0
+
+services.SeedService.policy           :  autoIncrement
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+

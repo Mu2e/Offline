@@ -1,0 +1,20 @@
+
+           Release notes for Mu2e Offline software, v6_5_1
+
+3) rlc, 20 Feb 2018
+           
+	  checkpoint tag before art v2_10_02
+
+2) genser, 14 Feb 2018
+   Changes for the future use of Geant4 10.4
+
+     MCDataProducts/inc/ProcessCode.hh
+     Mu2eG4/src/Mu2eWorld.cc
+     Mu2eG4/src/constructVirtualDetectors.cc
+
+
+1) kutschke, 29 Jan 2018
+   Added support for interaction with the new gridexport ups package.
+
+
+

@@ -48,31 +48,72 @@
 //
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticleRemapping.hh"
 
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "canvas/Persistency/Common/EDProductGetter.h"
 
 namespace mu2e {
 
+  typedef std::map<cet::map_vector_key, cet::map_vector_key> KeyRemap;
+
+  // Pass in the old key to check if it's already added to keyRemap, if it hasn't been then use nextNewKey for the next key
+  cet::map_vector_key getNewKey(const cet::map_vector_key& oldKey, KeyRemap* keyRemap, const unsigned int& nextNewKey) {
+    cet::map_vector_key nextKey;
+
+    if ( keyRemap->find(oldKey) == keyRemap->end() ) { // might have already added the key since parents have a position reserved before they are added to the output
+      nextKey = cet::map_vector_key(nextNewKey);
+      keyRemap->insert( std::make_pair(oldKey, nextKey) ); // update the map
+    }
+    else {
+      nextKey = keyRemap->at(oldKey);
+    }
+
+    return nextKey;
+  }
+
+
   template<typename SELECTOR, typename OUTCOLL>
   void compressSimParticleCollection ( art::ProductID         const& newProductID,
                                        art::EDProductGetter   const* productGetter,
                                        SimParticleCollection  const& in,
                                        SELECTOR               const& keep,
-                                       OUTCOLL&        out  ){
+                                       OUTCOLL&        out,
+				       KeyRemap* keyRemap = NULL){
 
+    unsigned int initial_out_size = out.size();
     for ( SimParticleCollection::const_iterator i=in.begin(), e=in.end(); i!=e; ++i ){
       if ( keep[i->first] ){
 
         // Default construct and replace to avoid multiple searches through the collection.
-        SimParticle& sim = out[i->first];
+	cet::map_vector_key oldSimKey = i->first;
+	cet::map_vector_key newSimKey;
+	if (keyRemap) {
+	  newSimKey = getNewKey(oldSimKey, keyRemap, initial_out_size + keyRemap->size());
+	}
+	else { 
+	  newSimKey = oldSimKey;
+	}
+        SimParticle& sim = out[newSimKey];
         sim = i->second;
+
+	if (keyRemap) {
+	  sim.id() = newSimKey; // need to make sure the SimParticle's trackId is the same as its key in the output collection
+	}
 
         // See note 1).
         if ( sim.isSecondary() ){
           cet::map_vector_key parentKey = cet::map_vector_key(sim.parent().key());
           if ( keep[parentKey] ) {
-            sim.parent() = art::Ptr<SimParticle>( newProductID, sim.parent().key(), productGetter);
+	    art::Ptr<SimParticle> newParentPtr;
+	    if (keyRemap) {
+	      cet::map_vector_key newParentKey = getNewKey(parentKey, keyRemap, initial_out_size + keyRemap->size());
+	      newParentPtr = art::Ptr<SimParticle>( newProductID, newParentKey.asUint(), productGetter);
+	    }
+	    else {
+	      newParentPtr = art::Ptr<SimParticle>( newProductID, sim.parent().key(), productGetter);
+	    }
+            sim.parent() = newParentPtr;
           } else{
             // This particle is a secondary particle but does not have a mother.
             // Do we wish to throw or warn here?
@@ -85,14 +126,22 @@ namespace mu2e {
         for ( std::vector<art::Ptr<SimParticle> >::const_iterator j=oldDaughters.begin(),
                 je=oldDaughters.end(); j !=je; ++j ){
           cet::map_vector_key dkey = cet::map_vector_key(j->key());
+
           if ( keep[dkey] ){
-            daughters.push_back( art::Ptr<SimParticle>( newProductID, j->key(), productGetter) );
+	    art::Ptr<SimParticle> newDPtr;
+	    if (keyRemap) {
+	      cet::map_vector_key newDKey = getNewKey(dkey, keyRemap, initial_out_size + keyRemap->size());
+	      newDPtr = art::Ptr<SimParticle>( newProductID, newDKey.asUint(), productGetter);
+	    }
+	    else {
+	      newDPtr = art::Ptr<SimParticle>( newProductID, j->key(), productGetter);
+	    }
+            daughters.push_back(newDPtr);
           }
         }
         sim.setDaughterPtrs(daughters);
       }
     }
-
   } // end compressSimParticleCollection
 
 }

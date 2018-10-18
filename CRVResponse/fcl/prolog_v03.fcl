@@ -1,0 +1,171 @@
+BEGIN_PROLOG
+
+    CrvPhotons:
+    {
+      module_type               : CrvPhotonGenerator
+      g4ModuleLabels            : ["*"]
+      processNames              : ["*"]
+      CRVSectors                : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
+      lookupTableFileNames      : ["CRVConditions/v4_0/LookupTable_4500", //R1
+                                   "CRVConditions/v4_0/LookupTable_900",  //R2
+                                   "CRVConditions/v4_0/LookupTable_3000", //R3
+                                   "CRVConditions/v4_0/LookupTable_4500", //R4
+                                   "CRVConditions/v4_0/LookupTable_4500", //R5
+                                   "CRVConditions/v4_0/LookupTable_4500", //R6
+                                   "CRVConditions/v4_0/LookupTable_4500", //L1
+                                   "CRVConditions/v4_0/LookupTable_4500", //L2
+                                   "CRVConditions/v4_0/LookupTable_4500", //L3
+                                   "CRVConditions/v4_0/LookupTable_6600", //T1
+                                   "CRVConditions/v4_0/LookupTable_5600", //T2
+                                   "CRVConditions/v4_0/LookupTable_5600", //T3
+                                   "CRVConditions/v4_0/LookupTable_5600", //T4
+                                   "CRVConditions/v4_0/LookupTable_5600", //D1
+                                   "CRVConditions/v4_0/LookupTable_6600", //U
+                                   "CRVConditions/v4_0/LookupTable_900",  //C1
+                                   "CRVConditions/v4_0/LookupTable_900",  //C2
+                                   "CRVConditions/v4_0/LookupTable_900",  //C3
+                                   "CRVConditions/v4_0/LookupTable_2300", //D2
+                                   "CRVConditions/v4_0/LookupTable_2300", //D3
+                                   "CRVConditions/v4_0/LookupTable_5600"] //D4
+      scintillationYield                : 47000 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
+                                                //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
+      scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
+      scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
+      scintillatorBirksConstant : 0.126    //0.126 mm/Mev
+      scintillatorRatioFastSlow : 1.0      //100% fast
+      scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
+      scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
+      fiberDecayTime            : 8.7      //8.7 ns
+      startTime                 : 400.0    //0.0 ns
+      visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
+      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    }
+    CrvSiPMCharges:
+    {
+      module_type                  : CrvSiPMChargeGenerator
+      crvPhotonsModuleLabel        : "CrvPhotons"
+      deadSiPMProbability          : 0.01
+      nPixelsX                     : 40
+      nPixelsY                     : 40
+      nPixelsRFiber                : 14
+      inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
+                                       [19,18], [19,19], [19,20], [19,21],
+                                       [20,18], [20,19], [20,20], [20,21],
+                                       [21,18], [21,19], [21,20], [21,21] ]
+      overvoltage                  : 2.1        //V
+      timeConstant                 : 13.3       //ns  according to an Hamamatsu example with R_q=150kOhm --> tau=R_q*C=13.3ns
+      capacitance                  : 8.84e-14   //F   capacitance of one pixel according to specs
+      blindTime                    : 500.0      //ns
+
+      AvalancheProbParam1          : 0.607      // = p1
+      AvalancheProbParam2          : 2.7        // = p2
+                                                //Avalanche probability at over voltage v: p1*(1 - exp(-v/p2))
+
+      TrapType0Prob                : 0.0        //0.14 (Paul's number)  ????
+      TrapType1Prob                : 0.0        //0.06 (Paul's number)  ????
+      TrapType0Lifetime            : 5.0        //ns  ????
+      TrapType1Lifetime            : 50.0       //ns  ????
+
+      ThermalRate                  : 3.0e-4     //ns^-1     0.3MHz for entire SiPM 
+      CrossTalkProb                : 0.05       //
+    }
+    CrvWaveforms:
+    {
+      module_type                  : CrvWaveformsGenerator
+      crvSiPMChargesModuleLabel    : "CrvSiPMCharges"
+      singlePEWaveformFileName     : "CRVResponse/fcl/singlePEWaveform_v3.txt"
+      singlePEWaveformPrecision    : 0.5    //0.5 ns
+      singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
+      singlePEWaveformMaxTime      : 100    //100 ns
+      singlePEReferenceCharge      : 1.8564e-13  //1.8564e-13 C charge which was used to generate the above 1PE waveform
+                                                 //capacitance of one pixel (8.84e-14C) * overvoltage (2.1V)
+      FEBtimeSpread                : 2.0    //2.0 ns
+      minVoltage                   : 0.0275  //27.5mV (corresponds to 5.5PE)
+      noise                        : 4.0e-4 //0.4mV
+    }
+    CrvDigi:
+    {
+      module_type                  : CrvDigitizer
+      crvWaveformsModuleLabel      : "CrvWaveforms"
+      ADCconversionFactor          : 2300  //2300 ADC/V
+      pedestal                     : 100
+    }
+    CrvRecoPulses:
+    {
+      module_type               : CrvRecoPulsesFinder
+      crvDigiModuleLabel        : "CrvDigi"
+      minPEs                    : 6        //6 PEs
+      darkNoise                 : false    //reduced initial pulse width for the reco pulse fit for dark noise (12.6ns instead of 19.0ns)
+    }
+    CrvCoincidence:
+    {
+      module_type                   : CrvCoincidenceCheck
+      verboseLevel                  : 1
+      crvRecoPulsesModuleLabel      : "CrvRecoPulses"
+      CRVSectors                    : ["R1","R2","R3","R4","R5","R6","L1","L2","L3","T1","T2","T3","T4","D1","U" ,"C1","C2","C3","D2","D3","D4"] //used only to match the vector entries below
+      PEthresholds                  : [ 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 16 , 18 , 18 , 18 , 22 , 16 , 18 , 18 , 18 , 22 , 22 , 22 ] //beam on
+//      PEthresholds                  : [ 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 18 , 12 , 14 , 14 , 14 , 18 , 12 , 14 , 14 , 14 , 18 , 18 , 18 ] //end of run
+      adjacentPulseTimeDifferences  : [  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 , 10 ,  5 ,  5 ,  5 ,  5 ,  5 ,  5 ] //ns
+      maxTimeDifferences            : [ 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 20 , 10 , 10 , 10 , 10 , 10 , 10 ] //ns
+      useFourLayers                 : [false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false] 
+//      useFourLayers                 : [ true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true] 
+      usingPEsPulseHeight           : false  //using the PEs which were calculated using the pulse height
+      maxSlope                      : 7.0    //7.0mm over 1mm, which is a little bit more than 4 counters per layer
+      maxSlopeDifference            : 2.0    //
+      acceptThreeAdjacentCounters   : false  //use hits in three adjacent counters in one layer to form a coincidence
+      timeWindowStart               : 500    //ns
+      timeWindowEnd                 : 1750   //ns
+      leadingVetoTime               : 0      //the time window before the first hit time of the coincidence triplet (only used to print out the results)
+      trailingVetoTime              : 125    //the time window after the last hit time of the coincidence triplet (only used to print out the results)
+      crvWaveformsModuleLabel       : "CrvWaveforms"
+    }
+    CrvCoincidenceClusterFinder:
+    {
+      module_type                    : CrvCoincidenceClusterFinder
+      verboseLevel                   : 1
+      usingPEsPulseHeight            : false  //using the PEs which were calculated using the pulse height
+      maxDistance                    : 1000 //mm
+      maxTimeDifference              : 100  //ns
+      crvCoincidenceCheckModuleLabel : "CrvCoincidence"
+      crvWaveformsModuleLabel        : "CrvWaveforms"
+      timeWindowStart                : 500  //ns
+      timeWindowEnd                  : 1750 //ns
+      deadTimeWindowStartMargin      : 0    //ns
+      deadTimeWindowEndMargin        : 125  //ns
+    }
+    CrvCoincidenceClusterSummarizer:
+    {
+      module_type                            : CrvCoincidenceClusterSummarizer
+      crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
+      crvWaveformsModuleLabel                : "CrvWaveforms"
+    }
+
+CrvResponsePackage : 
+{
+   producers : 
+   {
+     CrvPhotons                  : @local::CrvPhotons
+     CrvSiPMCharges              : @local::CrvSiPMCharges
+     CrvWaveforms                : @local::CrvWaveforms
+     CrvDigi                     : @local::CrvDigi
+     CrvRecoPulses               : @local::CrvRecoPulses
+     CrvCoincidence              : @local::CrvCoincidence
+     CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
+     CrvCoincidenceClusterSummarizer : @local::CrvCoincidenceClusterSummarizer
+   }
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+}
+
+CrvDAQPackage : 
+{
+   producers : 
+   {
+     CrvPhotons                  : @local::CrvPhotons
+     CrvSiPMCharges              : @local::CrvSiPMCharges
+     CrvWaveforms                : @local::CrvWaveforms
+     CrvDigi                     : @local::CrvDigi
+   }
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ]
+}
+
+END_PROLOG

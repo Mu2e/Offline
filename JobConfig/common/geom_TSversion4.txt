@@ -1,0 +1,15 @@
+#include "Mu2eG4/geom/geom_common.txt"
+#include "Mu2eG4/geom/TransportSolenoid_v04.txt"
+int pbar.version = 4;
+int pbar.verbosityLevel    = 3;
+string pbar.Type = "wedge";
+double pbar.halfLength = 2540.0e-04;
+int    pbarwedge.nStrips              = 6;
+double pbarwedge.width                = 304.6; // mm (1 foot)
+//these are same as TransportSolenoid_v04.txt but just trying to save you looking
+vector<double> pbarwedge.stripThicknesses       = {0.,0.,0., 0.127,0.127,0.127}; // mm
+vector<double> pbarwedge.stripHeights = {173, 146, 113, 79, 46, 13}; // mm
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

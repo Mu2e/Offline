@@ -10,9 +10,9 @@
 #
 # Original author Rob Kutschke
 
-#include "minimalMessageService.fcl"
-#include "standardProducers.fcl"
-#include "standardServices.fcl"
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 #include "HitMakers/fcl/prolog.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
@@ -42,14 +42,12 @@ services : {
     TFileService          : { fileName   : "calPatRec.root" }
     RandomNumberGenerator : { }
 
-    user : {
-	GeometryService        : { inputFile : "Mu2eG4/test/geom_01.txt" }
-	ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-	GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-        BTrkHelper             : @local::BTrkHelperDefault
-	G4Helper               : { }
-	SeedService            : @local::automaticSeeds
-    }
+    GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : @local::automaticSeeds
 } 
 #------------------------------------------------------------------------------
 # physics
@@ -141,7 +139,7 @@ physics : {
 	    TimeSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    HelixFitSelectionBits : ["EnergySelection","TimeSelection","RadiusSelection"]
 	    KalmanFitSelectionBits : []
-	    BackgroundSelectionBits : []#"DeltaRay","Isolated"]
+	    BackgroundSelectionBits : []#"Background","Isolated"]
 	}
 
 	makeCaloCluster: {
@@ -197,7 +195,7 @@ outputs: {
     outfile : {
 	module_type    : RootOutput
 	fileName       : "calPatRec_outFile.root"
-	SelectEvents  : { SelectEvents: [ p1 ] }
+	SelectEvents  : [ p1 ]
 	outputCommands : ['keep *_*_*_*'
 			  #                   , 'drop mu2eStrawDigis_*_*_*'
 			  #                   , 'drop mu2eStrawHits_*_*_*'
@@ -211,8 +209,8 @@ outputs: {
 #     services.Timing: { }
 source.firstRun                            :  1 
 services.scheduler.wantSummary             : true # print timing summary
-services.user.SeedService.baseSeed         :  1
-services.user.SeedService.maxUniqueEngines :  20
+services.SeedService.baseSeed         :  1
+services.SeedService.maxUniqueEngines :  20
 #------------------------------------------------------------------------------
 # event generation,simulation and digitization
 #------------------------------------------------------------------------------

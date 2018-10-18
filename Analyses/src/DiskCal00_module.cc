@@ -181,11 +181,11 @@ namespace mu2e {
       _hEnergyDep ->Fill(cryHit.energyDep());
       _hEnergyDep1->Fill(cryHit.energyDep());
       double logE    = ( cryHit.energyDep() > 0.)      ? log10(cryHit.energyDep())      : -5.5;
-      double logETot = ( cryHit.energyDepTotal() > 0.) ? log10(cryHit.energyDepTotal()) : -5.5;
+      double logETot = ( cryHit.energyDepTot() > 0.) ? log10(cryHit.energyDepTot()) : -5.5;
       _hEnergyDep2->Fill(logE);
       _hEnergyDep3->Fill(logETot);
       _hTime->Fill(cryHit.time());
-      _hNROId->Fill( cryHit.numberOfROIdsUsed() );
+      _hNROId->Fill( cryHit.nROId() );
 
       int id = cryHit.id();
       hit_crystals.insert(id);
@@ -223,6 +223,7 @@ namespace mu2e {
 
   void DiskCal00::followHistory( const CaloCrystalHit& cryHit){
 
+    /*
     vector<art::Ptr<CaloHit> > const & readouts(cryHit.readouts());
 
     if ( readouts.size()< 2 ) return;
@@ -241,6 +242,7 @@ namespace mu2e {
         _hDeltaTime->Fill(step.time()-cryHit.time());
       }
     }
+    */
   }
 
   void DiskCal00::simCheck(const art::Event& event) {
@@ -278,14 +280,14 @@ namespace mu2e {
     DiskCalorimeter const& cal(*GeomHandle<DiskCalorimeter>());
     cout << "Information about the disk Calorimeter: "  << endl;
     cout << "Number of disks:    " << cal.nDisk()      << endl;
-    cout << "Number of Readouts: " << cal.nRO() << " "  << cal.caloGeomInfo().nROPerCrystal() << " " << cal.nRO()/cal.caloGeomInfo().nROPerCrystal() << endl;
-    cout << "Hex side size:      " << 2.0*cal.caloGeomInfo().crystalHalfTrans() << endl;
+    cout << "Number of Readouts: " << cal.nRO() << " "  << cal.caloInfo().nROPerCrystal() << " " << cal.nRO()/cal.caloInfo().nROPerCrystal() << endl;
+    cout << "Hex side size:      " << 2.0*cal.caloInfo().getDouble("crystalXYLength") << endl;
 
-    cout << "Depth:              " << cal.caloGeomInfo().crystalHalfLength()   << endl;
-    cout << "Origin:             " << cal.origin()      << endl;
-    for ( unsigned int i=0; i<cal.nDisk(); ++i){
+    cout << "Depth:              " << cal.caloInfo().getDouble("crystalZLength")   << endl;
+    cout << "Origin:             " << cal.geomUtil().origin()      << endl;
+    for (unsigned i=0; i<cal.nDisk(); ++i){
       Disk const& disk = cal.disk(i);
-      cout << "Disk: " << i << " " << "origin: " << disk.origin() << endl;
+      cout << "Disk: " << i << " " << "origin: " << disk.geomInfo().origin() << endl;
     }
   }
 

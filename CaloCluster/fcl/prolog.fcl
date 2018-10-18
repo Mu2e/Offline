@@ -2,40 +2,113 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+
 BEGIN_PROLOG
-	MakeCaloProtoCluster :
-	{
-	  module_type            : MakeCaloProtoCluster
-	  caloCrystalModuleLabel : MakeCaloCrystalHits
-	  mainClusterCollName    : mainCluster
-	  splitClusterCollName   : splitCluster
-	  EminSeed               : 10
-	  ExpandCut              : 0.9
-	  EnoiseCut              : 0.9
-	  timeCut                : 300
-	  deltaTimePlus          : 10
-	  deltaTimeMinus         : 10
-	  diagLevel              : 0
-	}  
+  HitMakerBlindTime      : 500. # ns
+  HitMakerDigiSampling   : 5    # ns
+END_PROLOG
 
-	MakeCaloCluster :
-	{
-	  module_type            : MakeCaloCluster
-	  caloClusterModuleLabel : MakeCaloProtoCluster
-	  mainClusterCollName    : mainCluster
-	  splitClusterCollName   : splitCluster
-	  deltaTimePlus          : 5
-	  deltaTimeMinus         : 5
-	  maxDistSplit           : 100
-	  maxDistMain            : 100
-	  cogTypeName            : Linear
-	  diagLevel              : 0
-	}  
 
-CaloCluster : {
-    producers : {
-	MakeCaloProtoCluster : { @table::MakeCaloProtoCluster }
-	MakeCaloCluster      : { @table::MakeCaloCluster      }
-    }
+
+
+BEGIN_PROLOG
+
+CaloTrigger : {    
+    module_type           : CaloTrigger
+    caloDigiModuleLabel   : CaloDigiFromShower
+    digiSampling          : @local::HitMakerDigiSampling
+    blindTime             : @local::HitMakerBlindTime   
+    endTimeBuffer         : 80                          
+    windowPeak            : 2
+    minAmplitude          : 20
+    extendSecond          : false
+    minSeedAmplitude      : 433
+    minEnergy             : 50
+    timeCorrection        : 20.0
+    adcToEnergy           : 0.0461333
+    diagLevel             : 0
 }
+
+
+CaloClusterFast :
+{ 
+    module_type           : CaloClusterFast
+    caloDigiModuleLabel   : CaloDigiFromShower
+    digiSampling          : @local::HitMakerDigiSampling
+    blindTime             : @local::HitMakerBlindTime
+    endTimeBuffer         : 80
+    windowPeak            : 2
+    minAmplitude          : 20
+    extendSecond          : false
+    minSeedAmplitude      : 200
+    minEnergy             : 50
+    timeCorrection        : 20.0
+    adcToEnergy           : 0.0461333
+    diagLevel             : 0
+    includeCrystalHits    : false
+}
+
+
+CaloProtoClusterFromCrystalHit :
+{
+  module_type            : CaloProtoClusterFromCrystalHit
+  caloCrystalModuleLabel : CaloCrystalHitFromHit
+  mainClusterCollName    : mainCluster
+  splitClusterCollName   : splitCluster
+  EminSeed               : 10
+  ExpandCut              : 1.0
+  EnoiseCut              : 1.0
+  timeCut                : 500
+  deltaTime              : 2
+  diagLevel              : 0
+}  
+
+
+
+CaloClusterFromProtoCluster :
+{
+  module_type            : CaloClusterFromProtoCluster
+  caloClusterModuleLabel : CaloProtoClusterFromCrystalHit
+  mainClusterCollName    : mainCluster
+  splitClusterCollName   : splitCluster
+  deltaTime              : 2
+  maxDistSplit           : 150
+  maxDistMain            : 150
+  cogTypeName            : Linear
+  diagLevel              : 0
+}  
+
+CaloClusterTruthMatch:
+{
+    module_type               : CaloClusterTruthMatch
+    caloClusterModuleLabel    : CaloClusterFromProtoCluster
+    caloHitTruthModuleLabel   : CaloHitTruthMatch
+    diagLevel                 : 0
+}
+
+CaloCluster : 
+{
+   producers : {
+     CaloProtoClusterFromCrystalHit  : @local::CaloProtoClusterFromCrystalHit
+     CaloClusterFromProtoCluster : @local::CaloClusterFromProtoCluster
+   }
+   producersMC : {
+     CaloClusterTruthMatch : @local::CaloClusterTruthMatch
+   }
+   Reco       : [ CaloProtoClusterFromCrystalHit, CaloClusterFromProtoCluster ]
+   TruthMatch : [ CaloClusterTruthMatch ]
+}
+
+
+CaloClusterFast :
+{
+   producers : {
+     CaloClusterFast  : @local::CaloClusterFast
+   }
+
+   Reco : [ CaloClusterFast ]
+}
+
+
+
 END_PROLOG

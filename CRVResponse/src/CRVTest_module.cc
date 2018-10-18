@@ -15,10 +15,9 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "MCDataProducts/inc/CrvPhotonArrivalsCollection.hh"
-#include "MCDataProducts/inc/CrvSiPMResponsesCollection.hh"
-#include "MCDataProducts/inc/CrvWaveformsCollection.hh"
-#include "RecoDataProducts/inc/CrvRecoPulsesCollection.hh"
+#include "MCDataProducts/inc/CrvPhotonsCollection.hh"
+#include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "art/Framework/Principal/Event.h"
@@ -47,23 +46,25 @@ namespace mu2e
     void endJob();
 
     private:
-    std::string _crvSiPMResponsesModuleLabel;
+    std::string _crvStepsModuleLabel;
+    std::string _crvSiPMChargesModuleLabel;
     std::string _crvRecoPulsesModuleLabel;
     std::string _genParticleModuleLabel;
-    std::string _simParticleModuleLabel;
 
-    TNtuple  *_recoPulses, *_leadingEdgesGlobal, *_leadingEdgesCounter;
+    TNtuple  *_recoPulses, *_recoPulses2;
   };
 
   CRVTest::CRVTest(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
-    _crvSiPMResponsesModuleLabel(pset.get<std::string>("crvSiPMResponsesModuleLabel")),
+    _crvStepsModuleLabel(pset.get<std::string>("crvStepsModuleLabel")),
+    _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _genParticleModuleLabel(pset.get<std::string>("genParticleModuleLabel"))
   {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("CrvSingleCounter");
-    _recoPulses = tfdir.make<TNtuple>( "RecoPulses",    "RecoPulses",  "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseIntegral:MCPEs" );
+    _recoPulses = tfdir.make<TNtuple>("RecoPulses", "RecoPulses", "event:startX:startY:startZ:barIndex:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:recoLEtime:MCPEs:chi2");
+    _recoPulses2 = tfdir.make<TNtuple>("RecoPulses2", "RecoPulses2", "startX:startY:startZ:SiPM:nRecoPulses:recoPEs:recoPulseHeight:recoPulseWidth:recoPulseTime:MCPEs:ionizingEnergy:nonIonizingEnergy:notDepositedEnergyElectron:notDepositedEnergyOther:energyLoss");
   }
 
   void CRVTest::beginJob()
@@ -76,11 +77,17 @@ namespace mu2e
 
   void CRVTest::analyze(const art::Event& event) 
   {
-    art::Handle<CrvSiPMResponsesCollection> crvSiPMResponsesCollection;
-    event.getByLabel(_crvSiPMResponsesModuleLabel,"",crvSiPMResponsesCollection);
+    art::Handle<StepPointMCCollection> crvStepsCollection;
+    event.getByLabel(_crvStepsModuleLabel,"CRV",crvStepsCollection);
 
-    art::Handle<CrvRecoPulsesCollection> crvRecoPulsesCollection;
-    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulsesCollection);
+    art::Handle<SimParticleCollection> simParticleCollection;
+    event.getByLabel(_crvStepsModuleLabel,"",simParticleCollection);
+
+    art::Handle<CrvSiPMChargesCollection> crvSiPMChargesCollection;
+    event.getByLabel(_crvSiPMChargesModuleLabel,"",crvSiPMChargesCollection);
+
+    art::Handle<CrvRecoPulseCollection> crvRecoPulseCollection;
+    event.getByLabel(_crvRecoPulsesModuleLabel,"",crvRecoPulseCollection);
 
     art::Handle<GenParticleCollection> genParticleCollection;
     event.getByLabel(_genParticleModuleLabel,"",genParticleCollection);
@@ -95,41 +102,79 @@ namespace mu2e
     {
       const CRSScintillatorBarIndex &barIndex = (*iter)->index();
 
-      CrvRecoPulsesCollection::const_iterator    iterRecoPulses    = crvRecoPulsesCollection->find(barIndex);
-      CrvSiPMResponsesCollection::const_iterator iterSiPMResponses = crvSiPMResponsesCollection->find(barIndex);
+      CrvSiPMChargesCollection::const_iterator   iterSiPMCharges   = crvSiPMChargesCollection->find(barIndex);
+
+      double ionizingEnergy=0;
+      double nonIonizingEnergy=0;
+      double energyLoss=0;
+      for(size_t istep=0; istep<crvStepsCollection->size(); istep++)
+      {
+        StepPointMC const& step(crvStepsCollection->at(istep));
+        if(step.volumeId()==barIndex.asUint())
+        {
+          nonIonizingEnergy+=step.nonIonizingEDep();
+          ionizingEnergy+=step.ionizingEdep();
+          if(step.simParticle()->id().asUint()==1) energyLoss=step.simParticle()->startMomentum().e()-step.simParticle()->endMomentum().e();
+        }
+      }
+
+      double notDepositedEnergyElectron=0;
+      double notDepositedEnergyOther=0;
+      cet::map_vector<mu2e::SimParticle>::const_iterator iterParticle;
+      for(iterParticle=simParticleCollection->begin(); iterParticle!=simParticleCollection->end(); iterParticle++)
+      {
+        SimParticle const& particle(iterParticle->second);
+        if(particle.id().asUint()!=1)
+        {
+          if(abs(particle.pdgId())==11) notDepositedEnergyElectron+=particle.endMomentum().v().mag();
+          else notDepositedEnergyOther+=particle.endMomentum().v().mag();
+        }
+      }
 
       for(int SiPM=0; SiPM<4; SiPM++) 
       {
 
         int    nRecoPulses=0;
         int    recoPEs=0;
-        double recoPulseHeights=0;
-        double recoPulseIntegrals=0;
+        double recoPulseHeight=0;
+        double recoPulseWidth=0;
+        double recoPulseTime=0;
+        double recoLEtime=0;
         double MCPEs=0;
+        double chi2=0;
 
-        if(iterRecoPulses!=crvRecoPulsesCollection->end()) 
+        for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
         {
-          const CrvRecoPulses &crvRecoPulses = iterRecoPulses->second;
-
-          const std::vector<CrvRecoPulses::CrvSingleRecoPulse> &singlePulses = crvRecoPulses.GetRecoPulses(SiPM);
-          nRecoPulses = singlePulses.size();
-          if(singlePulses.size()>0)
+          const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
+          if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM) 
           {
-            recoPEs            = singlePulses[0]._PEs;
-            recoPulseHeights   = singlePulses[0]._pulseHeight;
-            recoPulseIntegrals = singlePulses[0]._integral;
+            nRecoPulses++;
+            if(recoPEs<crvRecoPulse.GetPEs())  //record the largest pulse to remove noise hits, after pulses, ...
+            {
+              recoPEs            = crvRecoPulse.GetPEs();
+              recoPulseHeight    = crvRecoPulse.GetPulseHeight();
+              recoPulseWidth     = crvRecoPulse.GetPulseWidth();
+              recoPulseTime      = crvRecoPulse.GetPulseTime();
+              recoLEtime         = crvRecoPulse.GetLEtime();
+              chi2               = crvRecoPulse.GetPulseFitChi2();
+            }
           }
         }
 
-        if(iterSiPMResponses!=crvSiPMResponsesCollection->end()) 
+        if(iterSiPMCharges!=crvSiPMChargesCollection->end()) 
         {
-          const CrvSiPMResponses &crvSiPMResponses = iterSiPMResponses->second;
+          const CrvSiPMCharges &crvSiPMCharges = iterSiPMCharges->second;
 
-          const std::vector<CrvSiPMResponses::CrvSingleSiPMResponse> &singleSiPMResponses = crvSiPMResponses.GetSiPMResponses(SiPM);
-          for(size_t i=0; i<singleSiPMResponses.size(); i++) MCPEs += singleSiPMResponses[i]._charge;
+          const std::vector<CrvSiPMCharges::CrvSingleCharge> &singleSiPMCharges = crvSiPMCharges.GetSiPMCharges(SiPM);
+          for(size_t i=0; i<singleSiPMCharges.size(); i++) 
+          {
+            double charge = singleSiPMCharges[i]._chargeInPEs;
+            MCPEs+=charge; 
+          }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeights,recoPulseIntegrals,MCPEs);
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs,chi2);
+        _recoPulses2->Fill(startPos.x(),startPos.y(),startPos.z(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,MCPEs,ionizingEnergy,nonIonizingEnergy,notDepositedEnergyElectron,notDepositedEnergyOther,energyLoss);
       }
     }
 

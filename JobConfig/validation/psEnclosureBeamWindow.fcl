@@ -1,0 +1,107 @@
+// Record hits in PSEnclosure end plate and the windows for the main beam.
+// 
+// Andrei Gaponenko, 2015
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+process_name :  psEnclosureBeamWindow
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : {
+
+   message               : @local::default_message
+   TFileService          : { fileName : "hist_beam_psebeamwin.root" }
+   RandomNumberGenerator : { }
+
+   GeometryService        : { inputFile      : "JobConfig/validation/geom_psEnclosure.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+
+      endplate: {
+	 module_type: StepPointMCDumper TimeOffsets: {}
+	 hitsInputTag: "g4run:PSEnclosureEndPlate"
+      }
+      win0: {
+	 module_type: StepPointMCDumper TimeOffsets: {}
+	 hitsInputTag: "g4run:PSEnclosureWindow0"
+      }
+      win1: {
+	 module_type: StepPointMCDumper TimeOffsets: {}
+	 hitsInputTag: "g4run:PSEnclosureWindow1"
+      }
+   }
+
+   producers: {
+      generate: {
+         module_type          : EventGenerator
+         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
+      }
+
+      genCounter: {
+         module_type: GenEventCounter
+      }
+
+      g4run : {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
+
+         SDConfig: {
+            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
+	    sensitiveVolumes: [ PSEnclosureEndPlate, PSEnclosureWindow0, PSEnclosureWindow1 ]
+            TimeVD: { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+         Mu2eG4SteppingOnlyCut: {}
+
+         Mu2eG4CommonCut: {
+	    type: union
+	    pars: [
+	       // speed things up
+	       { type: inVolume pars: [TS1Vacuum,PSShieldShell1,ProtonBeamDumpCore,ProtonBeamDumpFront] },
+	       // ignore the soft stuff
+	       { type: kineticEnergy cut: 3000 }
+	    ]
+
+         }
+      }
+   }
+
+   trigmainbeam : [generate, genCounter, g4run]
+   trigger_paths  : [trigmainbeam]
+
+   an: [ genCountLogger, endplate, win0, win1 ]
+   end_paths: [an]
+}
+
+// Larger range cut for the first stage
+physics.producers.g4run.physics.minRangeCut : 1. // mm
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

@@ -1,6 +1,6 @@
 #include "ConditionsService/inc/ExtMonFNALConditions.hh"
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
 

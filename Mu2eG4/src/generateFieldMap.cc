@@ -124,7 +124,7 @@ namespace mu2e {
         _nt->Fill(nt);
 
       } else {
-        //cout << "No field manager" << endl;
+        cout << "No field manager" << endl;
         continue;
       }
 
