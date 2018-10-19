@@ -59,6 +59,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn) {
 
       // create the type of table indicated, in a shared_ptr
       current = mu2e::DbTableFactory::newTable(words[1]);
+      csv.clear();
       ncom0 = -1;
 
       if(words.size()>2) { // has iov run/subrun information

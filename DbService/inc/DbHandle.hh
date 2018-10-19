@@ -14,18 +14,19 @@ namespace mu2e {
 
     // is the current table contents valid for this event?
     //   - it does not update the table 
-    bool current(art::EventID const& eid);
+    bool current(art::EventID const& eid) const;
     // return the table data, after fetching from db if necessary
     T const& get(art::EventID const& eid);
     // the unique identifier for the table contents
-    int cid() { return _liveTable.cid(); } 
+    int cid() const { return _liveTable.cid(); } 
+    DbIoV const& iov() const { return _liveTable.iov(); } 
 
   private:
 
     // an interval of validity and a shared_ptr to the table data
-    mu2e::DbLiveTable _liveTable; 
+    mu2e::DbLiveTable _liveTable;
     // this is pre-cast for quick event-to-event access
-    std::shared_ptr<const T> _table; 
+    std::shared_ptr<const T> _table;
 
     std::string _name;
     int _tid;
@@ -42,7 +43,7 @@ mu2e::DbHandle<T>::DbHandle() {
 
 
 template <class T>
-bool mu2e::DbHandle<T>::current(art::EventID const& eid) {
+bool mu2e::DbHandle<T>::current(art::EventID const& eid) const {
 
   return _liveTable.iov().inInterval(
 		   uint32_t(eid.run()), uint32_t(eid.subRun()) );

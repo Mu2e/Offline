@@ -53,7 +53,7 @@ namespace mu2e {
     int commitGroup(std::vector<int> iids=std::vector<int>());
     int commitExtension();
     int commitTable();
-    int commitTableList();
+    int commitList();
     int commitPurpose();
     int commitVersion();
 

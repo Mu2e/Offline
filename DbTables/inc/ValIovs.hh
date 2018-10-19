@@ -49,16 +49,17 @@ namespace mu2e {
 	  "iid,cid,start_run,start_subrun,end_run,end_subrun,create_time,create_user") {}
 
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
-    const Row& row(const int iid) const { return _rows.at(iid-1); }
+    const Row& row(const int iid) const { return _rows.at(_index.at(iid)); }
     std::size_t nrow() const { return _rows.size(); };
     size_t size() const { return sizeof(this) + _csv.capacity() 
-	+ nrow()*64; };
+	+ nrow()*nrow()/2 + nrow()*64; };
 
     void addRow(const std::vector<std::string>& columns) {
       _rows.emplace_back(std::stoi(columns[0]),std::stoi(columns[1]),
 			 std::stoi(columns[2]),std::stoi(columns[3]),
 			 std::stoi(columns[4]),std::stoi(columns[5]),
 			 columns[6],columns[7]);
+      _index[_rows.back().iid()] = _rows.size()-1;
     }
 
     void rowToCsv(std::ostringstream& sstream, std::size_t irow) const {
@@ -77,6 +78,7 @@ namespace mu2e {
 
   private:
     std::vector<Row> _rows;
+    std::map<int,std::size_t> _index;
   };
   
 };

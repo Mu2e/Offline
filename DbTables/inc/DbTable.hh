@@ -21,6 +21,8 @@ namespace mu2e {
 	    const char* query = "noquery") :
       _name(name),_dbname(dbname),_query(query) {}
 
+    virtual ~DbTable() {}
+
     // table name as it appears offline
     const std::string& name() const { return _name;}
     // table name as it appears in the db

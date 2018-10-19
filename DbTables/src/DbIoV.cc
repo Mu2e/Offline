@@ -60,6 +60,36 @@ void mu2e::DbIoV::subtract(DbIoV const& iov, uint32_t run, uint32_t subrun) {
 
 }
 
+
+void mu2e::DbIoV::overlap(DbIoV const& iov) {
+
+  // check for no overlap
+  bool null = false;
+  if(iov.endRun()<startRun() || 
+     (iov.endRun()==startRun() && iov.endSubrun()<startSubrun()) ) null = true;
+  if(iov.startRun()>endRun() || 
+     (iov.startRun()==endRun() && iov.startSubrun()>endSubrun()) ) null = true;
+  if(null) {
+    set(0,0,0,0);
+    return;
+  }
+
+  //check if iov start/end are inside this interval
+  bool sin = inInterval(iov.startRun(),iov.startSubrun());
+  bool ein = inInterval(iov.endRun(),iov.endSubrun());
+
+  if(sin && ein) { // overlap is iov
+    set(iov.startRun(),iov.startSubrun(),iov.endRun(),iov.endSubrun());
+  } else if(sin && ! ein) { //overlap middle to end
+    set(iov.startRun(),iov.startSubrun(),endRun(),endSubrun());
+  } else if(ein && ! sin) { // overlap start to middle
+    set(startRun(),startSubrun(),iov.endRun(),iov.endSubrun());
+  }
+  // last case (!sin && !ein) is no change
+  return;
+}
+
+
 std::string mu2e::DbIoV::simpleString() const {
   std::ostringstream ss;
   ss << startRun() << " " << startSubrun()  << " "

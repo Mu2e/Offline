@@ -1,5 +1,5 @@
 #ifndef DbTables_TstCalib3_hh
-#define DbTables_TetaCalib1_hh
+#define DbTables_TstCalib3_hh
 
 
 #include <string>

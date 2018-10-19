@@ -35,8 +35,11 @@ namespace mu2e {
       _endRun = maxr;
       _endSubrun = maxsr;
     }
+
     // remove argument's interval from this
     void subtract(DbIoV const& iov, uint32_t run=0, uint32_t subrun=0);
+    // remove any interval not overlapping
+    void overlap(DbIoV const& iov);
 
     // formats (see the wiki for more info):
     // start_run:start_subrun-end_run:end_subrun

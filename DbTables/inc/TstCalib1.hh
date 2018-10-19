@@ -1,11 +1,12 @@
 #ifndef DbTables_TstCalib1_hh
-#define DbTables_TetaCalib1_hh
+#define DbTables_TstCalib1_hh
 
 
 #include <string>
 #include <iomanip>
 #include <sstream>
 #include <map>
+#include "cetlib/exception.h"
 #include "DbTables/inc/DbTable.hh"
 
 namespace mu2e {
@@ -28,7 +29,6 @@ namespace mu2e {
 
 
     TstCalib1():DbTable("TstCalib1","tst.calib1","channel,flag,dtoe") {}
-    static std::string staticName() { return std::string("TstCalib1");}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int channel) const { 
                 return _rows.at(_chanIndex.at(channel)); }
@@ -40,9 +40,17 @@ namespace mu2e {
 	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
     void addRow(const std::vector<std::string>& columns) {
-      _rows.emplace_back(std::stoul(columns[0]),
+      int channel = std::stoi(columns[0]);
+      // enforce a strict sequential order - optional
+      if(channel!=int(_rows.size())) {
+	throw cet::exception("TSTCALIB1_BAD_INDEX") 
+	  << "TstCalib1::addRow found index out of order: " 
+	  <<channel << " != " << _rows.back().channel()+1 <<"\n";
+      }
+      _rows.emplace_back(channel,
 			 std::stoi(columns[1]),
 			 std::stof(columns[2]) );
+      // add this channel to the map index - optional
       _chanIndex[_rows.back().channel()] = _rows.size()-1;
     }
 

@@ -2,7 +2,6 @@
 #define DbService_DbService_hh
 
 #include <string>
-#include <mutex>
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"

@@ -24,7 +24,7 @@ int mu2e::DbTool::run() {
   if(_action=="commit-group") return commitGroup();
   if(_action=="commit-extension") return commitExtension();
   if(_action=="commit-table") return commitTable();
-  if(_action=="commit-tablelist") return commitTableList();
+  if(_action=="commit-list") return commitList();
   if(_action=="commit-purpose") return commitPurpose();
   if(_action=="commit-version") return commitVersion();
   
@@ -210,10 +210,14 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
     rc = _sql.execute(command,result);
     if(rc!=0) return rc;
 
+      std::cout << command << std::endl;
+      std::cout << result << std::endl;
+
     cid = std::stoi(result);
     if(cid<=0 || cid>1000000) {
-      std::cout << "DbTool::commitCalibrationList could not get cid, result is " 
-		<<result << std::endl;
+      std::cout 
+	<< "DbTool::commitCalibrationList could not get cid, result is " 
+	<<result << std::endl;
     }
 
     // devine the schema name from the first dot field of the dbname
@@ -250,6 +254,8 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
       command = "INSERT INTO "+ptr->dbname()+"(cid,"+ptr->query()
 	+") VALUES ("+std::to_string(cid)+","+cline+");";
       rc = _sql.execute(command,result);
+      std::cout << command << std::endl;
+      std::cout << result << std::endl;
       if(rc!=0) return rc;
     }
 
@@ -258,7 +264,7 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
 		<< " with " << ptr->nrow() 
 		<< " rows, new cid would be " << cid << std::endl;
     } else {
-      std::cout << "created calibration "<< ptr->name() 
+      std::cout << "created calibration for "<< ptr->name() 
 		<< " with " << ptr->nrow() 
 		<< " rows, new cid is " << cid << std::endl;
     }
@@ -810,8 +816,8 @@ int mu2e::DbTool::commitTable() {
 }
 
 
-// ****************************************  commmitTableList
-int mu2e::DbTool::commitTableList() {
+// ****************************************  commmitList
+int mu2e::DbTool::commitList() {
   int rc = 0;
 
   map_ss args;
@@ -824,23 +830,23 @@ int mu2e::DbTool::commitTableList() {
 
 
   if(args["name"].empty()) {
-    std::cout << "commit-tablelist: --name is missing"<<std::endl;
+    std::cout << "commit-list: --name is missing"<<std::endl;
     return 1;
   }
 
   if(args["comment"].empty()) {
-    std::cout << "commit-tablelist: --comment is missing"<<std::endl;
+    std::cout << "commit-list: --comment is missing"<<std::endl;
     return 1;
   }
 
   if(args["tids"].empty()) {
-    std::cout << "commit-tablelist: --tids is missing or failing"<<std::endl;
+    std::cout << "commit-list: --tids is missing or failing"<<std::endl;
     return 1;
   }
   // the TID's for the list
   std::vector<int> tids = intList(args["tids"]);
   if(tids.empty()) {
-    std::cout << "commit-tablelist: --tids produced no list of TID's "<<std::endl;
+    std::cout << "commit-list: --tids produced no list of TID's "<<std::endl;
     return 1;
   }
   
@@ -869,7 +875,7 @@ int mu2e::DbTool::commitTableList() {
   
   int lid = std::stoi(result);
   if(lid<=0 || lid>1000) {
-    std::cout << "commit-tablelist: found new lid out of range lid="
+    std::cout << "commit-list: found new lid out of range lid="
 	      << lid << std::endl;
     return 1;
   }
@@ -881,7 +887,7 @@ int mu2e::DbTool::commitTableList() {
   if (rc) return rc;
   int ntid = std::stoi(result);
   if (ntid>0) {
-    std::cout << "commit-tablelist: found lid " 
+    std::cout << "commit-list: found lid " 
 	      << lid << " already has " << ntid 
 	      << " tids, but there should be zero right after it is created" 
 	      << std::endl;
@@ -900,15 +906,15 @@ int mu2e::DbTool::commitTableList() {
   }
   
 
-  std::cout <<"commit-tablelist: new list "+args["name"]+" has lid "
+  std::cout <<"commit-list: new list "+args["name"]+" has lid "
 	    << lid << " with "<< ntid <<" list entries " << std::endl;
 
   if(qdr) {
-    std::cout <<"commit-tablelist: new list "+args["name"]+" would have lid "
+    std::cout <<"commit-list: new list "+args["name"]+" would have lid "
 	      << lid << " with "<< ntid <<" list entries " << std::endl;
     command = "ROLLBACK;";
   } else {
-    std::cout <<"commit-tablelist: new list "+args["name"]+" has lid "
+    std::cout <<"commit-list: new list "+args["name"]+" has lid "
 	      << lid << " with "<< ntid <<" list entries " << std::endl;
     command = "COMMIT;";
   }
@@ -1191,7 +1197,7 @@ int mu2e::DbTool::help() {
       "    the following are for a database manager (manager_role)...\n"
       "    commit-extension : add to a calibration set (purpose/version)\n"
       "    commit-table : declare a new calibration table type\n"
-      "    commit-tablelist : declare a new list of table types for a version\n"
+      "    commit-list : declare a new list of table types for a version\n"
       "    commit-purpose : declare a new calibration set purpose\n"
       "    commit-version : declare a new version of a calibration set purpose\n"
       " \n"
@@ -1316,13 +1322,13 @@ int mu2e::DbTool::help() {
       " \n"
       " dbTool commit-table --name TstCalib1 --dbname tst.calib1\n"
       << std::endl;
-  } else if(_action=="commit-tablelist") {
+  } else if(_action=="commit-list") {
     std::cout << 
       " \n"
-      " dbTool commit-tablelist [OPTIONS]\n"
+      " dbTool commit-list [OPTIONS]\n"
       " \n"
-      " Create a new table list in ValTableLists.  This list records \n"
-      " what table types are in a calibration set\n"
+      " Create a new table list in ValLists and ValTableLists.  This \n"
+      " list records what table types are in a calibration set\n"
       " The result is a new list identifier integer called an LID \n"
       " This is input to an entry ValVersions in commit-version. \n"
       " \n"
