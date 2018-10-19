@@ -50,6 +50,7 @@ namespace mu2e {
       TH1F*   ncl;
       TH1F*   ncl50;
       TH1F*   nseeds;
+      TH1F*   dt;
     };
     
     struct ClusterHist_t {
@@ -120,6 +121,7 @@ namespace mu2e {
     Hist->nseeds = Dir->make<TH1F>("nseeds0", "number of track candidates"  , 21, -0.5, 20.5);
     Hist->ncl    = Dir->make<TH1F>("ncl"    , "N(calorimeter clusters)"     , 500, 0, 500);
     Hist->ncl50  = Dir->make<TH1F>("ncl50"  , "N(calorimeter clusters) E>50", 100, 0, 100);
+    Hist->dt     = Dir->make<TH1F>("dt"     , "hit dt"                      , 200, -100, 100);
     return 0;
   }
     
@@ -208,7 +210,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   int CalTimePeakFinderDiag::fillEventHistograms(EventHist_t* Hist, Data_t* Data) {
-    int nseeds = Data->_outseeds->size();
+    int nseeds = Data->_tcColl->size();
     int ncl    = Data->ccCollection->size();
     int ncl50(0);
 
@@ -220,6 +222,13 @@ namespace mu2e {
     Hist->nseeds->Fill(nseeds);
     Hist->ncl->Fill(ncl);
     Hist->ncl50->Fill(ncl50);
+
+
+    int nh = Data->dtvec.size();
+    for (int i=0; i<nh; i++) {
+      float dt = Data->dtvec[i];
+      Hist->dt->Fill(dt);
+    }
 
     return 0;
   }
@@ -261,11 +270,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // Precalculate some parameters
 //-----------------------------------------------------------------------------
-    int nseeds       = _data->_outseeds->size();
+    int nseeds       = _data->_tcColl->size();
     int n_good_seeds = 0;
     
     for (int i=0; i<nseeds; ++i) {
-      TimeCluster* tcl = &_data->_outseeds->at(i);
+      TimeCluster* tcl = &_data->_tcColl->at(i);
       int nhits        = tcl->hits().size();
       if (nhits >= _data->minNHits) n_good_seeds += 1;
     }
@@ -288,7 +297,7 @@ namespace mu2e {
 // fill time cluster histograms
 //-----------------------------------------------------------------------------
     for (int i=0; i<nseeds; ++i) {
-      TimeCluster* tcl = &_data->_outseeds->at(i);
+      TimeCluster* tcl = &_data->_tcColl->at(i);
       fillTimeClusterHistograms(_hist._tcl[0],tcl);
       int nhits            = tcl->hits().size();
       if (nhits > _data->minNHits) {

@@ -50,45 +50,47 @@ namespace mu2e {
     // };
     
     enum { kMaxResidIndex = 500 };
-    
+
+    constexpr static uint16_t        kNMaxChHits = 150;
+
     struct Diag_t {
       int       loopId_4;    // fData[4]
-      double    radius_5;    // fData[5]
-      double    phi0_6;
-      double    chi2_circle;
-      double    z0_6;
-      double    rdfdz_7;
-      double    dfdz_8;
+      float    radius_5;    // fData[5]
+      float    phi0_6;
+      float    chi2_circle;
+      float    z0_6;
+      float    rdfdz_7;
+      float    dfdz_8;
       int       n_rescued_points_9;    // fData[9]
-      double    dz_10;
+      float    dz_10;
       int       n_active_11;           // fData[11]
-      double    chi2_dof_circle_12;
-      double    chi2_dof_line_13;
-      double    radius_14;
-      double    chi2_dof_circle_15;
+      float    chi2_dof_circle_12;
+      float    chi2_dof_line_13;
+      float    radius_14;
+      float    chi2_dof_circle_15;
       int       n_rescued_points_16;    // fData[16]
-      double    dfdzres_17;
-      double    dfdzres_18;
-      double    dfdzres_19;
-      double    dr_20;
-      double    dr_21;
-      double    dphi0res_22;
-      double    dphi0res_23;
-      double    dphi0res_24;
+      float    dfdzres_17;
+      float    dfdzres_18;
+      float    dfdzres_19;
+      float    dr_20;
+      float    dr_21;
+      float    dphi0res_22;
+      float    dphi0res_23;
+      float    dphi0res_24;
 
       int       nStationPairs;
       
-      double    dfdz;
-      double    dfdz_scaled;
-      double    chi2_line;
+      float    dfdz;
+      float    dfdz_scaled;
+      float    chi2_line;
       int       n_active;
-      double    resid[kMaxResidIndex];
-      double    dist [kMaxResidIndex];
-      double    dz   [kMaxResidIndex];
+      float    resid[kMaxResidIndex];
+      float    dist [kMaxResidIndex];
+      float    dz   [kMaxResidIndex];
 
-      double    dr;
-      double    straw_mean_radius;
-      double    chi2d_helix;
+      float    dr;
+      float    straw_mean_radius;
+      float    chi2d_helix;
 
     };
     
@@ -97,7 +99,8 @@ namespace mu2e {
 
     HelixTraj*                        _helix;
 
-    std::vector<HitInfo_t>           _goodhits;
+    // std::vector<HitInfo_t>           _goodhits;
+    std::vector<int>                 _goodhits;
 
     HitInfo_t                        _seedIndex;
     HitInfo_t                        _candIndex;
@@ -111,7 +114,7 @@ namespace mu2e {
     int                               _nFiltPoints;     //ComboHits from the TimeCluster + DeltaFinder filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster + DeltaFinder filtering 
 
-    double                            _helixChi2;
+    float                            _helixChi2;
 
     TrkParticle                       _tpart;
     TrkFitDirection                   _fdir;
@@ -128,23 +131,23 @@ namespace mu2e {
     ::LsqSums4         _szphi;
 
     XYZVec             _center;
-    double             _radius;
+    float             _radius;
 
-    double             _chi2;
+    //    float             _chi2;
 //-----------------------------------------------------------------------------
 // 2015-02-06 P.Murat: fit with non-equal weights - XY-only
 //-----------------------------------------------------------------------------
     // ::LsqSums4         _sxyw;
     // XYZVec             _cw;
-    // double             _rw;
-    // double             _chi2w;
+    // float             _rw;
+    // float             _chi2w;
 //-----------------------------------------------------------------------------
 // Z parameters; dfdz is the slope of phi vs z (=-sign(1.0,qBzdir)/(R*tandip)), 
 // fz0 is the phi value of the particle where it goes through z=0
 // note that dfdz has a physical ambiguity in q*zdir.
 //-----------------------------------------------------------------------------
-    double             _dfdz;
-    double             _fz0;
+    float             _dfdz;
+    float             _fz0;
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
 //-----------------------------------------------------------------------------
@@ -155,7 +158,13 @@ namespace mu2e {
 //    PanelZ_t                                           _oTracker[kNTotalPanels];
 //    std::array<int,kNTotalPanels*kNMaxHitsPerPanel>     _hitsUsed;
     std::array<FaceZ_t,StrawId::_ntotalfaces>             _oTracker;
-    std::array<int,StrawId::_nupanels*PanelZ_t::kNMaxPanelHits>  _hitsUsed;
+    std::array<float,StrawId::_ntotalfaces>               _zFace;
+    std::array<float,StrawId::_nupanels>                  _phiPanel;
+
+    std::vector<ComboHit>                                 _chHitsToProcess;
+    std::array<int,kNMaxChHits>                           _hitsUsed;
+
+    //    std::array<int,StrawId::_nupanels*PanelZ_t::kNMaxPanelHits>  _hitsUsed;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

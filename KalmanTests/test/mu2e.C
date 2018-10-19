@@ -99,6 +99,33 @@ Double_t crystalball (Double_t *x, Double_t *par) {
   }
 }
 
+// The following is from Alexx Perloff, JetMetaAnalysis
+double fnc_dscb(double*xx,double*pp) {
+  double x   = xx[0];
+  // gaussian core
+  double N   = pp[0];//norm
+  double mu  = pp[1];//mean
+  double sig = pp[2];//variance
+  // transition parameters
+  double a1  = pp[3];
+  double p1  = pp[4];
+  double a2  = pp[5];
+  double p2  = pp[6];
+
+  double u   = (x-mu)/sig;
+  double A1  = TMath::Power(p1/TMath::Abs(a1),p1)*TMath::Exp(-a1*a1/2);
+  double A2  = TMath::Power(p2/TMath::Abs(a2),p2)*TMath::Exp(-a2*a2/2);
+  double B1  = p1/TMath::Abs(a1) - TMath::Abs(a1);
+  double B2  = p2/TMath::Abs(a2) - TMath::Abs(a2);
+
+  double result(N);
+  if      (u<-a1) result *= A1*TMath::Power(B1-u,-p1);
+  else if (u<a2)  result *= TMath::Exp(-u*u/2);
+  else            result *= A2*TMath::Power(B2+u,-p2);
+  return result;
+}
+
+
 class mu2e {
   public:
     mu2e(TTree* d, TTree* c, double dgenrange, double nd, double nc,bool weightd=true,double np=3.6e20,double mustopfrac=1.87e-3) : dio(d), con(c),diogenrange(dgenrange),
@@ -133,6 +160,7 @@ class mu2e {
     TCut mcdio, mccon;
     TF1* _diocz_f;
     TF1* _cball;
+    TF1* _dscb;
     TF1* _racc;
     TF1* _reco_f;
 //    TF1* _flat_f[4];
@@ -552,10 +580,20 @@ void mu2e::fitReco(unsigned icut) {
   _cball->SetParName(4,"alpha");
   _cball->SetParName(5,"tailfrac");
   _cball->SetParName(6,"taillambda");
+
+  _dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
+  _dscb->SetParName(0,"Norm");
+  _dscb->SetParName(1,"x0");
+  _dscb->SetParName(2,"sigma");
+  _dscb->SetParName(3,"ANeg");
+  _dscb->SetParName(4,"PNeg");
+  _dscb->SetParName(5,"APos");
+  _dscb->SetParName(6,"PPos");
+
 // set parameters according to cutset 'C'
-  _momres = new TH1F("momres","Reco Momentum Resolution;P_{RECO}-P_{Conversion} (MeV/c)",_nbins,-5,1.0);
+  _momres = new TH1F("momres","Track Momentum Resolution;p_{eco}-p_{True} (MeV/c)",_nbins,-5,2.0);
 //  _momres->Sumw2();
-  con->Project("momres","dem.mom-demmcgen.mom",final[icut]);
+  dio->Project("momres","dem.mom-demmcgen.mom",final[icut]);
 //  _momres->Scale(conscale);
   TCanvas* fcan = new TCanvas("fcan","Fits",1000,800);
   fcan->Clear();
@@ -565,14 +603,17 @@ void mu2e::fitReco(unsigned icut) {
   fcan->cd(2);
   gPad->SetLogy();
   double integral = _momres->GetEntries()*_momres->GetBinWidth(1);
-  _cball->SetParameters(integral,_momres->GetMean()+0.07,0.3*_momres->GetRMS(),3.0,1.0,0.001,0.2);
+//  _cball->SetParameters(integral,_momres->GetMean()+0.07,0.3*_momres->GetRMS(),3.0,1.0,0.001,0.2);
 //  _cball->SetParLimits(5,0.00001,0.01);
 //  _cball->SetParLimits(6,0.1,_momres->GetRMS());
 //  _cball->FixParameter(5,0.0);
 //  _cball->FixParameter(6,0.1);
-  _momres->Fit(_cball,"0");
-  _momres->Fit(_cball,"L0");
-  _momres->Fit(_cball,"L");
+
+  _dscb->SetParameters(3*integral,_momres->GetMean()+0.07,0.3*_momres->GetRMS(),0.9,3.5,1.5,6.0);
+
+  _momres->Fit(_dscb,"0");
+  _momres->Fit(_dscb,"L0");
+  _momres->Fit(_dscb,"L");
 }
 
 void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
@@ -600,7 +641,7 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
   econ->SetLineColor(kRed);
   rawcon->Fill(trueconvmom,rmue*ncap);
   acccon->Fill(trueconvmom,rmue*ncap*_racc->Eval(trueconvmom));
-  econ->Fill(trueconvmom+_cball->GetParameter(1),rmue*ncap*_racc->Eval(trueconvmom));
+  econ->Fill(trueconvmom+_dscb->GetParameter(1),rmue*ncap*_racc->Eval(trueconvmom));
   double genrange = trueconvmom-_mmin+buffer;
   for(unsigned itrial=0;itrial<ntrials;++itrial){
 // make the range bigger than expected, to account for smearing
@@ -610,7 +651,7 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
     double recowt = evtwt*acc;
     rawdio->Fill(diomom,evtwt);
     for(unsigned ires=0;ires<nres;++ires){
-      double mres = _cball->GetRandom();
+      double mres = _dscb->GetRandom();
       double recomom = diomom+mres;
       _recodio->Fill(recomom,recowt); 
     }
@@ -664,7 +705,7 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
 
   TF1* dspece_f = new TF1("dspece_f",DIOCZ_R,_mmin,_mmax,6);
   dspece_f->FixParameter(0,rawscale_f);
-  dspece_f->SetParameter(1,_cball->GetParameter(1)); // parameter 1 is the offset of the mean in the resolution function = average energy loss
+  dspece_f->SetParameter(1,_dscb->GetParameter(1)); // parameter 1 is the offset of the mean in the resolution function = average energy loss
   dspece_f->SetParameter(2,_racc->GetParameter(0));
   dspece_f->SetParameter(3,_racc->GetParameter(1));
   dspece_f->SetParameter(4,0.0);
@@ -728,14 +769,14 @@ void mu2e::smearDIO(unsigned ntrials,unsigned nres) {
   gPad->SetLogy();
   dspecs->Draw();
   _reco_f->Draw("same");
-  TF1* reccon = new TF1(*_cball);
+  TF1* reccon = new TF1(*_dscb);
   reccon->SetLineColor(kRed);
   reccon->SetName("reccon");
-  reccon->SetParameter(1,_cball->GetParameter(1)+trueconvmom);
+  reccon->SetParameter(1,_dscb->GetParameter(1)+trueconvmom);
 // must scale functions
-  double csum = _cball->Integral(-5.0,1.0)/_momres->GetBinWidth(1);
+  double csum = _dscb->Integral(-5.0,1.0)/_momres->GetBinWidth(1);
   cout << "CBall sum = " << csum;
-  double norm = conscale*_cball->GetParameter(0)*_momres->GetBinWidth(1)/dspec->GetBinWidth(1);
+  double norm = conscale*_dscb->GetParameter(0)*_momres->GetBinWidth(1)/dspec->GetBinWidth(1);
   reccon->SetParameter(0,norm);
   reccon->SetRange(_mmin,_mmax);
   cout << "reccon name " << reccon->GetName() << " norm = " << reccon->GetParameter(0) << " shift = " << reccon->GetParameter(1) << endl;

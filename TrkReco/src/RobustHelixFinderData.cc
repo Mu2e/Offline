@@ -13,8 +13,8 @@ namespace mu2e {
 // RobustHelixFinderData
 //-----------------------------------------------------------------------------
   RobustHelixFinderData::RobustHelixFinderData() {
-    // _helix = NULL;
-    // _hseed = NULL;
+    _chHitsToProcess.reserve(kNMaxChHits);
+    _chHitsWPos     .reserve(kNMaxChHits);
   }
 
 
@@ -56,29 +56,15 @@ namespace mu2e {
 
     _timeCluster    = NULL;
     _timeClusterPtr = art::Ptr<TimeCluster>();
-
-    // _helix          = NULL;
-    // _hseed          = NULL;
-
-    _goodhits.clear();
+    
+    _chHitsToProcess.clear();
+    _chHitsWPos.clear();
 
     _nStrawHits = 0;
     _nComboHits = 0;
-
-    _fit.setFailure(1,"failure");
     
     _sxy.clear();
     _szphi.clear();
-    _chi2   = -1.;
-    _radius = -1.;
-    
-    // _sxyw.clear();
-    // _rw   = -1.;
-    // _chi2w = -1.;
-      
-    _dfdz = -1.e6;
-    _fz0  = -1.e6;
-
     _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
 
@@ -91,22 +77,18 @@ namespace mu2e {
     _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
 
-    _helixChi2   = 1e10;
-
-    // _seedIndex   = SeedInfo_t(-1,-1);
-    // _candIndex   = SeedInfo_t(-1,-1);
-
     //clear the panel-based structure
     for (int f=0; f<StrawId::_ntotalfaces; ++f) {
       FaceZ_t* facez = &_oTracker[f];
+      facez->bestFaceHit = -1;
+      facez->idChBegin   = -1;
+      facez->idChEnd     = -1;
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	PanelZ_t* panelz  = &facez->panelZs[p];   
-	panelz->fNHits = 0;
-	panelz->fHitData.clear() ;
+	panelz->idChBegin = -1;
+	panelz->idChEnd   = -1;
       }
     }
-
-    // _hitsUsed =  {0};
   }
 
 //-----------------------------------------------------------------------------
@@ -114,36 +96,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
    void RobustHelixFinderData::clearResults() {
 
-    _goodhits.clear();
-    
-    _fit.setFailure(1,"failure");
+    // _goodhits.clear();
     
     _sxy.clear();
     _szphi.clear();
-    _chi2   = -1.;
-    _radius = -1.;
-    
-    // _sxyw.clear();
-    // _rw   = -1.;
-    // _chi2w = -1.;
-      
-    _dfdz = -1.e6;
-    _fz0  = -1.e6;
-
-
+   
     _nXYSh       = 0;
     _nZPhiSh     = 0;
 
     _nStrawHits  = 0;
     _nComboHits  = 0;
-
-    _helixChi2   = 1e10;
-
-    // _seedIndex   = SeedInfo_t(-1,-1);
-    // _candIndex   = SeedInfo_t(-1,-1);
-    
-    // _hitsUsed    = {0};
- }
+   }
 
 
 //-----------------------------------------------------------------------------
@@ -154,7 +117,8 @@ namespace mu2e {
     // printf(" _sxy (N, X0, Y0, R, chi2: %3.0f %8.3f %8.3f %8.3f %10.2f)\n",
     // 	   _sxy.qn(),_sxy.x0(),_sxy.y0(),_sxy.radius(),_sxy.chi2DofCircle());
 
-    printf(" center, radius, chi2: %8.3f %8.3f %8.3f %10.2f\n", _center.x(),_center.y(),_radius,_chi2);
+    printf(" center, radius, chi2: %8.3f %8.3f %8.3f %10.2f\n", _hseed._helix.centerx(),
+	   _hseed._helix.centery(),_hseed._helix._radius,_sxy.chi2DofCircle());
 
     // printf(" _sxyw(N, X0, Y0, R, chi2: %3.0f %8.3f %8.3f %8.3f %10.2f)\n",
     // 	   _sxyw.qn(),_sxyw.x0(),_sxyw.y0(),_sxyw.radius(),_sxyw.chi2DofCircle());
@@ -164,7 +128,7 @@ namespace mu2e {
     // printf(" _szphi(phi0, df/dz, chi2: %3.0f %8.3f %10.5f %10.2f\n",
     // 	   _sxy.qn(),_szphi.phi0(),_szphi.dfdz(),_szphi.chi2DofLine());
 
-    printf(" _dfdz, _fz0, : %10.4f %10.4f\n", _dfdz,_fz0);
+    printf(" _dfdz, _fz0, : %10.4f %10.4f\n", 1./_hseed._helix._lambda,_hseed._helix._fz0);
 
   }
 

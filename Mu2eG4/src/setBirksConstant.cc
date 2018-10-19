@@ -31,16 +31,21 @@ namespace mu2e{
     std::map<std::string,double> birksConstsMap;
 
     const fhicl::ParameterSet& birksConstsPSet{
-      pset.get<fhicl::ParameterSet>("BirksConsts",fhicl::ParameterSet())};
+      pset.get<fhicl::ParameterSet>("physics.BirksConsts",fhicl::ParameterSet())};
 
     const std::vector<std::string> matNames{birksConstsPSet.get_names()};
 
     //    std::cout << __func__ << " matNames.size() " << matNames.size() << std::endl;
+    int verbosityLevel = pset.get<int>("debug.diagLevel",0);
 
     for(const auto& mat: matNames) {
       birksConstsMap[mat] = birksConstsPSet.get<double>(mat);
-      mf::LogInfo("GEOM")
-        << "setting Birks constant for " <<  mat << " to " << birksConstsMap[mat] << " mm/MeV";
+
+      if ( verbosityLevel > 0) {
+	mf::LogInfo("PHYS")
+	  << "setting Birks constant for " <<  mat
+	  << " to " << birksConstsMap[mat] << " mm/MeV";
+      }
       G4Material *gmat = findMaterialOrThrow( mat );
       gmat->GetIonisation()->SetBirksConstant(birksConstsMap[mat]*CLHEP::mm/CLHEP::MeV);
     }

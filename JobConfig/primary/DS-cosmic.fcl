@@ -31,16 +31,11 @@ outputs : {
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
+#  Allow 'infinite' momentum
+physics.filters.DigiFilter.MaxParticleMom : 1e7
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 # customize the output
 services.TFileService.fileName: "nts.owner.DS-cosmic.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.DS-cosmic.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-# loosen digi cuts
-physics.filters.DigiFilter.MinNDigis : 5
-
-#this seems to be needed when running locally
-services.SeedService.baseSeed         :  0
-services.SeedService.maxUniqueEngines :  20
-
