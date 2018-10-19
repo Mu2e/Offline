@@ -4,12 +4,32 @@
 #include <tuple>
 #include <string>
 #include <set>
+#include <mutex>
+#include <chrono>
+
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "DbTables/inc/DbIoV.hh"
 #include "DbExample/inc/ConditionsEntity2.hh"
 
 namespace mu2e {
   class ConditionsCache {
+
+  protected:
+    // for subclass to make sure that when the update 
+    // method exits, the lock is released
+    class LockGuard {
+      ConditionsCache& _cache;
+    public:
+      LockGuard(ConditionsCache& cache);
+      ~LockGuard();
+    };
+    // lock for threaded access
+    std::mutex _lock;
+    // count the time locked
+    std::chrono::high_resolution_clock::time_point _lockTime;
+    std::chrono::microseconds _lockTotalTime;
+
+
   public: 
     typedef std::shared_ptr<ConditionsCache> ptr;
     typedef std::tuple<ConditionsEntity2::ptr,DbIoV> ret_t;

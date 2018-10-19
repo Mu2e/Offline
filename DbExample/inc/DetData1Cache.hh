@@ -14,6 +14,9 @@ namespace mu2e {
 
     ConditionsCache::ret_t update(art::EventID const& eid) {
 
+      // lock access to the data, will release when this method returns
+      LockGuard lock(*this);
+
       auto const& c1 = _c1_h.get(eid);
       auto iov = _c1_h.iov();
       ConditionsCache::set_t s;

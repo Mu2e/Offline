@@ -15,20 +15,20 @@ namespace mu2e {
     iRegistry.sPostEndJob.watch (this, &DbService::postEndJob );
 
     if(_verbose>0) {
-      std::cout << "DbManager: purpose = " 
+      std::cout << "DbService: purpose = " 
 		<< _version.purpose() << std::endl;
-      std::cout << "DbManager: version = " 
+      std::cout << "DbService: version = " 
 		<< config().version() << std::endl;
-      std::cout << "DbManager: interpreted version = " 
+      std::cout << "DbService: interpreted version = " 
 		<< _version.major() <<"/"
 		<< _version.minor() <<"/"
 		<< _version.extension() 
 		<< std::endl;
-      std::cout << "DbManager: dbName = " 
+      std::cout << "DbService: dbName = " 
 		<< config().dbName() << std::endl;
       std::vector<std::string> files;
       config().textFile(files);
-      std::cout << "DbManager: textFile =" ;
+      std::cout << "DbService: textFile =" ;
       for(auto const& s : files) std::cout << " " << s;
       std::cout << std::endl;
     }
@@ -45,14 +45,14 @@ namespace mu2e {
     std::vector<std::string> files;
     _config.textFile(files);
     for(auto ss : files ) {
-      if(_verbose>1) std::cout << "DbManager::beginJob read file "<<
+      if(_verbose>1) std::cout << "DbService::beginJob read file "<<
 		       ss <<std::endl;
       auto coll = DbUtil::readFile(ss);
       _engine.addOverride(coll);
     }
 
     // this prepares IOV infrastructure for efficient queries
-    if(_verbose>1) std::cout << "DbManager::beginJob initializing engine "
+    if(_verbose>1) std::cout << "DbService::beginJob initializing engine "
 			     <<std::endl;
     _engine.beginJob( DbId(_config.dbName()) , _version );
     

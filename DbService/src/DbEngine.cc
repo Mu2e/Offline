@@ -336,7 +336,7 @@ mu2e::DbEngine::LockGuard::~LockGuard() {
 
 int mu2e::DbEngine::endJob() {
   if(_verbose>0) {
-    std::cout << "DbManager::endJob" << std::endl;
+    std::cout << "DbEngine::endJob" << std::endl;
     std::cout << "    Total time in reading DB: "<< _reader.totalTime() 
 	      <<" s" << std::endl;
     std::cout << "    Total time in locks: "<< _lockTotalTime.count()*1.0e-6
