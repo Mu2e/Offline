@@ -115,7 +115,16 @@ Mixing : {
   }
    # input time maps from cut mix inputs.  All are needed
   protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
-  # sequences
+  # calo tags.  flashMixer is different because they are filtered
+  caloMixerTags : ["ootMixerTrkCal:calorimeter",
+		"protonMixerTrkCal:calorimeter",
+		"deuteronMixerTrkCal:calorimeter",
+		"dioMixerTrkCal:calorimeter",
+		"photonMixerTrkCal:calorimeter",
+		"neutronMixerTrkCal:calorimeter",
+		"flashMixerTrkCal:CaloShowerCrystalSteps" ]
+
+# sequences
   TrkCalMixSequence : [ flashMixerTrkCal,
     ootMixerTrkCal, neutronMixerTrkCal, dioMixerTrkCal,
     photonMixerTrkCal, protonMixerTrkCal, deuteronMixerTrkCal ]
@@ -133,13 +142,18 @@ Mixing : {
      fileName    : @nil
      outputCommands : @local::DigiCompression.OutputCommands
   }
+# drops for reading primaries as input to mixing.  TrkDigis are kept to allow filtering
+  Input : {
+    droppedProducts : ["drop mu2e::CaloDigis_*_*_*",
+		      "drop mu2e::CrvDigis_*_*_*",
+		      "drop mu2e::CrvDigiMCs_*_*_*",
+		      "drop mu2e::CaloShowerSims_*_*_*",
+		      "drop art::TriggerResults_*_*_*" ]
+  }
 }
 
 Mixing.producers.compressDigiMCs.simParticleTags : [ "g4run", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
-Mixing.producers.compressDigiMCs.caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", "ootMixerTrkCal:calorimeter", "protonMixerTrkCal:calorimeter",
-						      	"deuteronMixerTrkCal:calorimeter", "dioMixerTrkCal:calorimeter", "photonMixerTrkCal:calorimeter",
-							"neutronMixerTrkCal:calorimeter", "flashMixerTrkCal:CaloShowerCrystalSteps"
-						      ]
+Mixing.producers.compressDigiMCs.caloShowerStepTags : [ "CaloShowerStepFromStepPt:calorimeter", @sequence::Mixing.caloMixerTags ]
 
 Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::Mixing.TrkCalMixSequence,
@@ -147,11 +161,11 @@ Mixing.MixSequence : [ protonBunchIntensity,
     @sequence::CommonMC.DigiSim,
     @sequence::TrackerMC.DigiSim,
     @sequence::CaloDigiMC.DigiSim,
-    @sequence::CrvDAQPackage.CrvResponseSequence,
-    compressDigiMCs ]
+    @sequence::CrvDAQPackage.CrvResponseSequence ]
 
 Mixing.TriggerPath : [
     @sequence::Mixing.CreatePrimarySequence, 
-    @sequence::Mixing.MixSequence ]
+    @sequence::Mixing.MixSequence, 
+    compressDigiMCs ]
 
 END_PROLOG

@@ -35,7 +35,7 @@ namespace mu2e {
   private:
 
     unsigned minndigi_;
-    double minpmom_;
+    double minpmom_, maxpmom_;
     std::vector<PDGCode::type> pdgs_;
     int diag_, debug_;
     art::InputTag _mcdigisTag;
@@ -45,6 +45,7 @@ namespace mu2e {
   StrawDigiMCFilter::StrawDigiMCFilter(fhicl::ParameterSet const& pset):
     minndigi_(pset.get<unsigned>("MinNDigis")),
     minpmom_(pset.get<double>("MinParticleMom")),
+    maxpmom_(pset.get<double>("MaxParticleMom")),
     diag_(pset.get<int>("diagLevel",0)),
     debug_(pset.get<int>("debugLevel",0)),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")){
@@ -72,7 +73,7 @@ namespace mu2e {
       CLHEP::Hep3Vector const& mom = step->momentum(); // cast to 3-vector
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << mom.mag() << std::endl;
       auto pdgfnd = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId());
-      if(pdgfnd != pdgs_.end() && mom.mag() > minpmom_){
+      if(pdgfnd != pdgs_.end() && mom.mag() > minpmom_ && mom.mag() < maxpmom_ ){
 	auto mapfnd = pmap.find(sp);
 	if(mapfnd == pmap.end()) 
 	  pmap[sp] = 1;
