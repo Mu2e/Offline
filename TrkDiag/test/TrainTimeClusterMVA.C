@@ -180,10 +180,13 @@ void TrainTimeClusterMVA(TTree* mytree,bool calo=false)
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  dataloader->AddVariable("abs(tchinfo._dt)","Time Difference",'F'); 
-  dataloader->AddVariable("abs(tchinfo._dphi)","Azimuth Difference", 'F');
-  dataloader->AddVariable("tchinfo._rho*tchinfo._rho", "Transverse Radius2",'F');
-  dataloader->AddVariable("tchinfo._nsh", "NStraws",'I');
+  dataloader->AddVariable("abs(tchinfo._dt)","Time Difference","nsec",'F'); 
+//  dataloader->AddVariable("abs(tchinfo._dphi)","Azimuth Difference","radians", 'F');
+//  dataloader->AddVariable("tchinfo._rho*tchinfo._rho", "Transverse Radius2","mm2",'F');
+  dataloader->AddVariable("tchinfo._nsh", "NStraws","n",'I');
+  dataloader->AddVariable("tchinfo._z", "Z","mm",'F');
+  dataloader->AddVariable("tchinfo._werr", "Wire Error","mm",'F');
+  dataloader->AddVariable("abs(tchinfo._wdist)", "Wire Distance","mm",'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
