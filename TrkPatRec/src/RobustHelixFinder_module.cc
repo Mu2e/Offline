@@ -204,7 +204,7 @@ namespace mu2e {
     _maxrpull	 (pset.get<float>("MaxRPull",5.0)), // unitless
     _targetconInit(pset.get<bool>("targetconsistent_init",true)),
     _targetcon   (pset.get<bool>("targetconsistent",true)),
-    _rpullScaleF (pset.get<float>("RPullScaleF",1.0)),//0.895)), // unitless
+    _rpullScaleF (pset.get<float>("RPullScaleF",1.414)), // unitless
     _maxphisep	 (pset.get<float>("MaxPhiHitSeparation",1.0)),
     _saveflag    (pset.get<vector<string> >("SaveHelixFlag",vector<string>{"HelixOK"})),
     _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
@@ -399,68 +399,19 @@ namespace mu2e {
     ComboHit*     hit(0);
     unsigned      nhits = helixData._chHitsToProcess.size();
 
-    //few variables used for diagnostic purposes
-    //    int           nMinHitsLoop(3), nLoops(0), nHitsLoop(0), nHitsLoopChecked(0);
-    //    float         meanHitRadialDist(0), z_first_hit(0), z_last_hit(0), counter(0);
-    //    bool          isFirst(true);
-    // float         half_pitch  =  M_PI*fabs(helixData._hseed._helix._lambda);
-    // float         dz_min_toll = 600.;
-
     for (unsigned f=0; f<nhits; ++f){
       hit = &helixData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))     continue;
       
       ComboHit                hhit(*hit);					
       helixData._hseed._hhits.push_back(hhit);
-      
-      // if (_diag){
-      // 	meanHitRadialDist += sqrtf(hit->pos().x()*hit->pos().x() + hit->pos().y()*hit->pos().y());
-      // 	++counter;
-      // 	float z = hit->pos().z();
-      // 	if (isFirst){
-      // 	  z_first_hit = z;
-      // 	  z_last_hit  = z;
-      // 	  nHitsLoop   = 1;
-      // 	  isFirst     = false;
-      // 	}else {
-      // 	  float    dz_last_hit  = z - z_last_hit;
-      // 	  float    dz_first_hit = z - z_first_hit;
-
-      // 	  if ( ( dz_first_hit < half_pitch) && ( dz_last_hit < dz_min_toll)){
-      // 	    ++nHitsLoop;
-      // 	    z_last_hit        = z;
-      // 	  } else {
-      // 	    if (nHitsLoop >= nMinHitsLoop) {
-      // 		++nLoops;
-      // 		nHitsLoopChecked +=  nHitsLoop;
-      // 	    }
-      // 	    nHitsLoop = 0;
-
-      // 	    if ( (z - z_last_hit) >= half_pitch){
-      // 	      //reset the hits-per-loop counter
-      // 	      nHitsLoop = 1;
-	      
-      // 	      //re-set the values of the first and last z of the hits within the loop
-      // 	      z_first_hit = z;
-      // 	      z_last_hit  = z;
-      // 	    }
-      // 	  }
-      // 	}
-      // }
     }
 
     if (_diag){
       HelixTool helTool(&helixData._hseed, 3);
-      // if (counter > 0) meanHitRadialDist /= counter;
-      // if (nHitsLoop >= nMinHitsLoop) {
-      // 	++nLoops;
-      // 	nHitsLoopChecked +=  nHitsLoop;
-      // }
-      // if (nLoops == 1) printf("[RobustHelixFinder::fillGoodHits] nloops = %i event = %i\n", 
-      // 			      nLoops, _data.event->id().event());
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
-      helixData._diag.nHitsLoopFailed   = helTool.nHitsLoopFailed();//(int)nhits - nHitsLoopChecked;
+      helixData._diag.nHitsLoopFailed   = helTool.nHitsLoopFailed();
     }
   }
 
@@ -1231,12 +1182,6 @@ namespace mu2e {
 
     do {
       niterxy = 0;
-      // xychanged = filterCircleHits(helixData) > 0;
-      // while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged) {
-      // 	_hfit.fitCircle(helixData, _targetcon);
-      // 	xychanged = filterCircleHits(helixData) > 0;
-      // 	++niterxy;
-      // } 
       do {
 	_hfit.fitCircle(helixData, _targetcon);
 	xychanged = filterCircleHits(helixData) > 0;

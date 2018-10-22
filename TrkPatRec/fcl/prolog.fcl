@@ -19,10 +19,6 @@ TimeClusterFinder : {
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   TestFlag : true
-
-    maxElectronHitEnergy          : 0.0035                # means: use all hits
-    minimumTime                   : 500.                  # ns
-    maximumTime                   : 1750.                 # ns
 }
 # stereo version
 STimeClusterFinder : {
@@ -50,21 +46,21 @@ SRobustHelixFinder : {
    HitSelectionBits : ["TimeDivision","Stereo"]
 }
 #same for trigger
-TTtimeClusterFinder : {
-  module_type               : TimeClusterFinder
-  PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-  ComboHitCollection : "TTflagBkgHits"
-  StrawHitFlagCollection : "none"
-  TestFlag : false
-}
+# TTtimeClusterFinder : {
+#   module_type               : TimeClusterFinder
+#   PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
+#   ComboHitCollection : "TTflagBkgHits"
+#   StrawHitFlagCollection : "none"
+#   TestFlag : false
+# }
 
-TTrobustHelixFinder : {
-   module_type		: RobustHelixFinder
-   ComboHitCollection : "TTflagBkgHits"
-   TimeClusterCollection : "TTtimeClusterFinder"
-   HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-   HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-}
+# TTrobustHelixFinder : {
+#    module_type		: RobustHelixFinder
+#    ComboHitCollection : "TTflagBkgHits"
+#    TimeClusterCollection : "TTtimeClusterFinder"
+#    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+#    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+# }
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
 KFSeed : {
@@ -91,30 +87,6 @@ KFSeed : {
   caloHitT0Weight                 : 10
   mcTruth                         : 0
 }
-
-# TTKSFDeM                  : {
-#   module_type                 : KalSeedFit
-#   ComboHitCollection	      : "TTmakeSH"
-#   SeedCollection	      : "TThelixFinder:Positive"
-#   KalFit		      : @local::KFSeed
-#   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-#   MaxAddDoca                  : 7.    # mm
-#   MaxAddChi                   : 5.    # normalized unit
-#   rescueHits                  : 0     # turned off 
-# }
-
-# TTKSFDeP                  : {
-#   module_type                 : KalSeedFit
-#   ComboHitCollection	      : "TTmakeSH"
-#   SeedCollection	      : "TThelixFinder:Negative"
-#   KalFit		      : @local::KFSeed
-#   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-#   MaxAddDoca                  : 7.    # mm
-#   MaxAddChi                   : 5.    # normalized unit
-#   rescueHits                  : 0     # turned off 
-#   fitparticle    	      : @local::Particle.eplus
-#   fitdirection	              : @local::FitDir.downstream 
-# }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
 KFFinal : {
@@ -212,26 +184,26 @@ KFF : {
   AddHitBackgroundBits	      : []
 }
 # same for trigger
-TTKSF : {
-  module_type                 : KalSeedFit
-  ComboHitCollection	      : "TTmakeSH"
-  SeedCollection	      : "TThelixFinder:Positive"
-  KalFit		      : @local::KFSeed
-  ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-  MaxAddDoca                  : 7.    # mm
-  MaxAddChi                   : 5.    # normalized unit
-  rescueHits                  : 0     # turned off 
-}
-# Final Kalman fit, including material and magnetic inhomogeneity effects
-TTKFF : {
-  module_type                 : KalFinalFit
-  ComboHitCollection	      : "TTmakeSH"
-  SeedCollection	      : "TTkalSeedFit"
-  KalFit		      : @local::KFFinal
-  GoodKallSeedFitBits	      : ["SeedOK"]
-  AddHitSelectionBits	      : []
-  AddHitBackgroundBits	      : []
-}
+# TTKSF : {
+#   module_type                 : KalSeedFit
+#   ComboHitCollection	      : "TTmakeSH"
+#   SeedCollection	      : "TThelixFinder:Positive"
+#   KalFit		      : @local::KFSeed
+#   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
+#   MaxAddDoca                  : 7.    # mm
+#   MaxAddChi                   : 5.    # normalized unit
+#   rescueHits                  : 0     # turned off 
+# }
+# # Final Kalman fit, including material and magnetic inhomogeneity effects
+# TTKFF : {
+#   module_type                 : KalFinalFit
+#   ComboHitCollection	      : "TTmakeSH"
+#   SeedCollection	      : "TTkalSeedFit"
+#   KalFit		      : @local::KFFinal
+#   GoodKallSeedFitBits	      : ["SeedOK"]
+#   AddHitSelectionBits	      : []
+#   AddHitBackgroundBits	      : []
+# }
 
 # seed Fit configuration for specific particles
 #  First, downstream electrons
@@ -240,11 +212,11 @@ KSFDeM.SeedCollection      : "HelixFinder:Positive"
 KSFDeM.fitparticle	      : @local::Particle.eminus
 KSFDeM.fitdirection	      : @local::FitDir.downstream 
 
-TTKSFDeM                      : @local::TTKSF
-TTKSFDeM.ComboHitCollection   : "TTmakeSH"
-TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
-TTKSFDeM.fitparticle	      : @local::Particle.eminus
-TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
+# TTKSFDeM                      : @local::TTKSF
+# TTKSFDeM.ComboHitCollection   : "TTmakeSH"
+# TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+# TTKSFDeM.fitparticle	      : @local::Particle.eminus
+# TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
 
 # upstream electrons
 KSFUeM			      : @local::KSF
@@ -257,11 +229,11 @@ KSFDeP.SeedCollection      : "HelixFinder:Negative"
 KSFDeP.fitparticle	      : @local::Particle.eplus
 KSFDeP.fitdirection	      : @local::FitDir.downstream 
 
-TTKSFDeP                      : @local::TTKSF
-TTKSFDeP.ComboHitCollection   : "TTmakeSH"
-TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
-TTKSFDeP.fitparticle	      : @local::Particle.eplus
-TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
+# TTKSFDeP                      : @local::TTKSF
+# TTKSFDeP.ComboHitCollection   : "TTmakeSH"
+# TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+# TTKSFDeP.fitparticle	      : @local::Particle.eplus
+# TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
 
 # upstream positrons
 KSFUeP			      : @local::KSF
@@ -316,10 +288,10 @@ KFFDeM.SeedCollection      : "KSFDeM"
 KFFDeM.fitparticle	      : @local::Particle.eminus
 KFFDeM.fitdirection	      : @local::FitDir.downstream 
 
-TTKFFDeM		      : @local::KFF
-TTKFFDeM.SeedCollection       : "TTKSFDeM"
-TTKFFDeM.fitparticle	      : @local::Particle.eminus
-TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
+# TTKFFDeM		      : @local::KFF
+# TTKFFDeM.SeedCollection       : "TTKSFDeM"
+# TTKFFDeM.fitparticle	      : @local::Particle.eminus
+# TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
 # upstream electrons
 KFFUeM			      : @local::KFF
 KFFUeM.SeedCollection      : "KSFUeM"
@@ -331,10 +303,10 @@ KFFDeP.SeedCollection      : "KSFDeP"
 KFFDeP.fitparticle	      : @local::Particle.eplus
 KFFDeP.fitdirection	      : @local::FitDir.downstream 
 
-TTKFFDeP		      : @local::KFF
-TTKFFDeP.SeedCollection       : "TTKSFDeP"
-TTKFFDeP.fitparticle	      : @local::Particle.eplus
-TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
+# TTKFFDeP		      : @local::KFF
+# TTKFFDeP.SeedCollection       : "TTKSFDeP"
+# TTKFFDeP.fitparticle	      : @local::Particle.eplus
+# TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
 # upstream positrons
 KFFUeP			      : @local::KFF
 KFFUeP.SeedCollection      : "KSFUeP"
@@ -419,21 +391,21 @@ Tracking : {
     KFFUpiP	  : @local::KFFUpiP
   }
   # now for triggering
-  TrkTrigger : {
-    producers : {
-      TTtimeClusterFinder  : @local::TTtimeClusterFinder
-      TThelixFinder        : @local::TTrobustHelixFinder
-      TTKSFDeM	           : @local::TTKSFDeM
-      TTKSFDeP	           : @local::TTKSFDeP
-      TTKFFDeM             : @local::TTKFFDeM
-      TTKFFDeP             : @local::TTKFFDeP
-    }
-  }
+  # TrkTrigger : {
+  #   producers : {
+  #     TTtimeClusterFinder  : @local::TTtimeClusterFinder
+  #     TThelixFinder        : @local::TTrobustHelixFinder
+  #     TTKSFDeM	           : @local::TTKSFDeM
+  #     TTKSFDeP	           : @local::TTKSFDeP
+  #     TTKFFDeM             : @local::TTKFFDeM
+  #     TTKFFDeP             : @local::TTKFFDeP
+  #   }
+  # }
 
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
   SFindHelices : [ STimeClusterFinder, SHelixFinder ]
-  TTfindHelices : [ TTtimeClusterFinder, TThelixFinder ]
+  # TTfindHelices : [ TTtimeClusterFinder, TThelixFinder ]
 # define standard outputs 
   Output : {
     Digis : [ "keep mu2e::StrawDigis_*_*_*" ]

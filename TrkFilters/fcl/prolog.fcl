@@ -93,18 +93,20 @@ TrkTrigger : {
       module_type : PrescaleEvent
       nPrescale : 300
     }
-#
+    #
   }
 
 # sequences for different trigger paths.  Early triggers are prescaled
   Sequences : {
-    TCFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter,  TCPrescale  ]
-    PosHelixFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, PosHelixPrescale   ]
-    DeMSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter ]
-    DePSeedFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFDeP, DePSeedFilter ]
+    TCFilterSequence         : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter,  TCPrescale  ]
+    PosHelixFilterSequence   : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, PosHelixPrescale   ]
+    DeMSeedFilterSequence    : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter ]
+    DePSeedFilterSequence    : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, NegHelixFilter, TTKSFDeP, DePSeedFilter ]
+#calo-seeded tracking
     CPRDeMSeedFilterSequence : [ @sequence::CaloClusterFast.Reco, @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder, CPRTCFilter, CalHelixFinderDem, CPRPosHelixFilter, CalSeedFitDem, CPRDeMSeedFilter ]
     CPRDePSeedFilterSequence : [ @sequence::CaloClusterFast.Reco, @sequence::TrkHitReco.PrepareHits, CalTimePeakFinder, DeltaFinder, CPRTCFilter, CalHelixFinderDep, CPRNegHelixFilter, CalSeedFitDep, CPRDePSeedFilter ]
-    DeMKalFilterSequence : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter, TTKFFDeM, DeMKalFilter ]
+#kalman filter included
+    DeMKalFilterSequence     : [ @sequence::TrkHitReco.TTprepareHits, TTtimeClusterFinder, TCFilter, TThelixFinder, PosHelixFilter, TTKSFDeM, DeMSeedFilter, TTKFFDeM, DeMKalFilter ]
 # add sequences for upstream, calibration, ...  FIXME!
   }
 }

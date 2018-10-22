@@ -7,7 +7,7 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 #include "TrkHitReco/fcl/prolog.fcl"
-#include "TrkPatRec/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "TrkFilters/fcl/prolog.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 

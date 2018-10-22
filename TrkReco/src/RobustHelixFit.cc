@@ -75,7 +75,7 @@ namespace mu2e
     _rcmin(pset.get<float>("minCenterR",140.0)), // mm
     _rcmax(pset.get<float>("maxCenterR",410.0)), // mm
     //    _mindelta(pset.get<float>("minDelta",500.0)),
-    _lmin(pset.get<float>("minAbsLambda",130.0)),
+    _lmin(pset.get<float>("minAbsLambda",130.0)), 
     _lmax(pset.get<float>("maxAbsLambda",320.0)),
     //    _targetcon(pset.get<bool>("targetconsistent",true)),
     _targetinter(pset.get<bool>("targetintersect",false)),

@@ -150,7 +150,7 @@ namespace mu2e {
     //    _maxDz            (pset.get<double>("maxdz",35.0)),
     _absMpDfDz        (pset.get<double>("mostProbableDfDz")),
     _dzOverHelPitchCut(pset.get<double>("dzOverHelPitchCut")),
-    _maxDfDz          (pset.get<double>("maxDfDz",0.01)),
+    _maxDfDz          (pset.get<double>("maxDfDz",0.1)),//0.01)),2018-10-11 gianipez test
     _minDfDz          (pset.get<double>("minDfDz",5e-04)),
     _sigmaPhi         (pset.get<double>("sigmaPhi")),
     _weightXY         (pset.get<double>("weightXY")),
@@ -2291,6 +2291,12 @@ namespace mu2e {
     HelCenter.SetX(Helix._sxy.x0());
     HelCenter.SetY(Helix._sxy.y0());
 
+    //2018-10-04: gianipez added the follwoing line to store the new valuse of circle center and radius in the Helix
+    Helix._center.SetX(Helix._sxy.x0());
+    Helix._center.SetY(Helix._sxy.y0());
+    Helix._radius  = Helix._sxy.radius();
+  
+    
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doWeightedCircleFit:END] : npt = %3.0f  chi2dof = %8.3f x0 = %8.3f y0 = %8.3f radius = %8.3f\n",
 	     Helix._sxy.qn(),Helix._sxy.chi2DofCircle(),HelCenter.x(),HelCenter.y(),Radius);
@@ -3929,11 +3935,9 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     int n = Helix._nFiltPoints;//_xyzp.size();
 
     printf("[CalHelixFinderAlg::printXYZP]-----------------------------------------------------------------------------------------\n");
-    printf("[CalHelixFinderAlg::printXYZP]     i index strawID   flag    Used     X         Y         Z      _debug: %5i nhits: %5i\n",_debug,n);
+    printf("[CalHelixFinderAlg::printXYZP]     f  p  i  shId index     X         Y         Z      _debug: %5i nhits: %5i\n",_debug,n);
     printf("[CalHelixFinderAlg::printXYZP]-----------------------------------------------------------------------------------------\n");
     
-    const vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
-
     FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
     
@@ -3945,13 +3949,11 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 
 
 	for (int i=0; i<nhitsPerPanel; ++i){   
-	  mu2e::ComboHit* pt = &Helix._chHitsToProcess[panelz->idChBegin + i];//panelz->_chHitsToProcess.at(i);
+	  int             index = panelz->idChBegin + i;
+	  mu2e::ComboHit* pt    = &Helix._chHitsToProcess[index];//panelz->_chHitsToProcess.at(i);
 
-	  int loc    = shIndices[i];	 // WRONG!!!! FIXME!
-    
-	  // const StrawHit& sh          = Helix.chcol()->at(loc);
 	  printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-		 i, loc,  pt->strawId().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), 0/*pt->use()FIXME!*/, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+		 f, p, i, pt->strawId().straw(), index, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
 	}
       }
     }
