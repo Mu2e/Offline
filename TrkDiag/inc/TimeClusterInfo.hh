@@ -44,14 +44,16 @@ namespace mu2e {
     TimeClusterHitInfo() { reset(); }
     Float_t _time; // hit time
     Float_t _dt; // time relative to the cluster
+    Float_t _wdist; // distance along wire
+    Float_t _werr; // distance error along wire
     Float_t _dphi; // resolved phi relative to the cluster
     Float_t _rho; // transverse radius of this hit
     Float_t _z; // z of this hit
     Float_t _mva; // cluster MVA output
-    Int_t _nsh; 
+    Int_t _nsh, _plane;
     Int_t _mcpdg, _mcgen, _mcproc, _mcrel; // MC truth info for this hit
     Float_t _mctime, _mcmom;
-    void reset() { _time = _dt = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = _mcrel = 0; }
+    void reset() { _time = _dt = _wdist = _werr = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = _mcrel = 0; _nsh = _plane = -1; }
   };
     
   struct MCClusterInfo {  

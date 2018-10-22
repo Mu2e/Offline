@@ -52,10 +52,17 @@ namespace {
   {
     vector<Float_t> _pars;
     Float_t& _dt;
-    Float_t& _dphi;
-    Float_t& _rho;
+//    Float_t& _dphi;
+//    Float_t& _rho;
     Float_t& _nsh;
-    TimePeakMVA() : _pars(4,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]) {}
+    Float_t& _z;
+    Float_t& _werr;
+    Float_t& _wdist;
+    
+//    TimePeakMVA() : _pars(7,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]),
+//      _z(_pars[4]), _werr(_pars[5]), _wdist(_pars[6]){}
+    TimePeakMVA() : _pars(5,0.0), _dt(_pars[0]), _nsh(_pars[1]),
+      _z(_pars[2]), _werr(_pars[3]), _wdist(_pars[4]){}
   };
 }
 
@@ -84,7 +91,7 @@ namespace mu2e {
       StrawHitFlag      _hsel, _hbkg;
       float             _maxdt;
       unsigned          _minnhits;
-      float             _minpeakmva, _minaddmva, _maxpeakdt; 
+      float             _minpeakmva, _minaddmva; 
       float             _maxdPhi;
       float             _tmin, _tmax, _tbin;
       TH1F              _timespec;
@@ -125,11 +132,10 @@ namespace mu2e {
     _ccToken{mayConsume<CaloClusterCollection>(pset.get<art::InputTag>("CaloClusterCollection"))},
     _hsel              (pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
-    _maxdt             (pset.get<float>(  "DtMax",30.0)),
+    _maxdt             (pset.get<float>(  "DtMax",25.0)),
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
     _minpeakmva        (pset.get<float>(  "MinTimePeakMVA",0.1)),
     _minaddmva         (pset.get<float>(  "MinAddHitMVA",0.1)),
-    _maxpeakdt         (pset.get<float>(  "MaxTimePeakDeltat",25.0)),
     _maxdPhi           (pset.get<float>(  "MaxdPhi",1.5)),
     _tmin              (pset.get<float>(  "tmin",450.0)),
     _tmax              (pset.get<float>(  "tmax",1700.0)),
@@ -276,21 +282,19 @@ namespace mu2e {
       if ((!_testflag) || goodHit((*_shfcol)[istr])) {
 	ComboHit const& ch =(*_chcol)[istr];
 	float time = _ttcalc.comboHitTime(ch);
-	float mindt(_maxdt);
+	float mindt(1e5);
 	auto besttc = tccol.end();
 	// find the closest seed (if any)
 	for (auto itc = tccol.begin(); itc != tccol.end(); ++itc) {
 	  float dt = fabs(time - itc->_t0._t0);
-	  if (dt < mindt){
+	  // make an absolute cut, including error on the cluster t0
+	  if (dt < _maxdt+itc->_t0._t0err && dt < mindt){
 	    mindt = dt;
 	    besttc = itc;
 	  }
 	}
-	if(besttc != tccol.end()){
-	// require final time cut on calo clusters since the cluster time doesn't change
-	  if((!besttc->_caloCluster.isNonnull()) || mindt < _maxpeakdt)
-	    besttc->_strawHitIdxs.push_back(istr);
-	}
+	if(besttc != tccol.end())
+	  besttc->_strawHitIdxs.push_back(istr);
       }
     }
   }
@@ -324,8 +328,7 @@ namespace mu2e {
       // if the count is enough, create a cluster
       if (nsh > _minnhits){
 	TimeCluster tc;
-	static const float isqrt12 = 1.0/sqrt(12.0);
-	tc._t0 = TrkT0(t0,_tbin*isqrt12);
+	tc._t0 = TrkT0(t0,_tbin*0.5); // bin width
 	tc._nsh = nsh;
 	tccol.push_back(tc);
       }    
@@ -412,12 +415,16 @@ namespace mu2e {
 	    ComboHit const& ch = (*_chcol)[ich];
 	    float cht = _ttcalc.comboHitTime(ch);
 	    _pmva._dt = fabs(cht - tc._t0._t0);
-	    if(_pmva._dt < _maxpeakdt){
+	    if(_pmva._dt < _maxdt+tc._t0._t0err){
 	      float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
-	      _pmva._dphi = fabs(Angles::deltaPhi(phi,pphi));
-	      if(_pmva._dphi < _maxdPhi){ 
-		_pmva._rho = ch.pos().Perp2();
+	      float dphi = fabs(Angles::deltaPhi(phi,pphi));
+	      if(dphi < _maxdPhi){ 
+//		_pmva._rho = ch.pos().Perp2();
 		_pmva._nsh = ch.nStrawHits();
+		_pmva._z = ch.pos().z();
+		_pmva._werr = ch.wireRes();
+		_pmva._wdist = fabs(ch.wireDist());
+
 		float mvaout(-1.0);
 		if (tc.hasCaloCluster())
 		  mvaout = _tcCaloMVA.evalMVA(_pmva._pars);
@@ -442,9 +449,10 @@ namespace mu2e {
     // update time cluster properties 
     if(!tc.hasCaloCluster()){
       float cht = _ttcalc.comboHitTime(ch);
-      tc._t0._t0 = (tc._t0._t0*tc._nsh - cht*nsh)/denom;
+      float newt0  = (tc._t0._t0*tc._nsh - cht*nsh)/denom;
+      tc._t0._t0err = sqrt((tc._t0._t0err*tc._t0._t0err*tc._nsh - (cht-newt0)*(cht-tc._t0._t0)*nsh )/denom);
+      tc._t0._t0 = newt0;
     }
-    // update t0 error too FIXME!
     tc._pos.SetX((tc._pos.x()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._pos.SetY((tc._pos.y()*tc._nsh - ch.pos().x()*nsh)/denom);
     tc._pos.SetZ((tc._pos.z()*tc._nsh - ch.pos().x()*nsh)/denom);
@@ -459,9 +467,10 @@ namespace mu2e {
     // update time cluster properties 
     if(!tc.hasCaloCluster()){
       float cht = _ttcalc.comboHitTime(ch);
-      tc._t0._t0 = (tc._t0._t0*tc._nsh + cht*nsh)/denom;
+      float newt0  = (tc._t0._t0*tc._nsh + cht*nsh)/denom;
+      tc._t0._t0err = sqrt((tc._t0._t0err*tc._t0._t0err*tc._nsh + (cht-newt0)*(cht-tc._t0._t0)*nsh )/denom);
+      tc._t0._t0 = newt0;
     }
-    // update t0 error too FIXME!
     tc._pos.SetX((tc._pos.x()*tc._nsh + ch.pos().x()*nsh)/denom);
     tc._pos.SetY((tc._pos.y()*tc._nsh + ch.pos().x()*nsh)/denom);
     tc._pos.SetZ((tc._pos.z()*tc._nsh + ch.pos().x()*nsh)/denom);
@@ -489,7 +498,7 @@ namespace mu2e {
       }
     } else {
       tc._t0._t0 = extract_result<tag::weighted_mean>(terr);
-      tc._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
+      tc._t0._t0err = sqrtf(std::max(double(1.0),2.0*extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
     }
     
     tc._pos = XYZVec(extract_result<tag::weighted_mean>(xacc),
@@ -504,17 +513,20 @@ namespace mu2e {
       changed = false;
       auto iworst = tc._strawHitIdxs.end();
       float worstmva(100.0);
-      float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
+//      float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
       for (auto ips=tc._strawHitIdxs.begin();ips != tc._strawHitIdxs.end();++ips) {
         ComboHit const& ch = (*_chcol)[*ips];
         float cht = _ttcalc.comboHitTime(ch);
 
         _pmva._dt = fabs(cht - tc._t0._t0);
-        float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
-        float dphi = Angles::deltaPhi(phi,pphi);
-        _pmva._dphi = fabs(dphi);
-	_pmva._rho = ch.pos().Perp2();
+//        float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
+//        float dphi = Angles::deltaPhi(phi,pphi);
+//        _pmva._dphi = fabs(dphi);
+//	_pmva._rho = ch.pos().Perp2();
 	_pmva._nsh = ch.nStrawHits();
+	_pmva._z = ch.pos().z();
+	_pmva._werr = ch.wireRes();
+	_pmva._wdist = fabs(ch.wireDist());
 
 	float mvaout(-1.0);
 	if (tc.hasCaloCluster())
@@ -538,7 +550,6 @@ namespace mu2e {
   {
     return flag.hasAllProperties(_hsel) && !flag.hasAnyProperty(_hbkg);
   }
-
 
 }
 

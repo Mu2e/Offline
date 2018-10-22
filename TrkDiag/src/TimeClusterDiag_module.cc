@@ -353,18 +353,24 @@ namespace mu2e {
       TimeClusterHitInfo tchi;
       tchi._time = ch.time();
       tchi._dt = _ttcalc.comboHitTime(ch) -tc._t0._t0;
+      tchi._wdist = ch.wireDist();
+      tchi._werr = ch.wireRes();
       XYZVec const& pos = ch.pos();
       double phi = ch.phi();
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
       tchi._rho = sqrt(pos.Perp2());
       tchi._z = pos.z();
       tchi._nsh = ch.nStrawHits();
+      tchi._plane = ch.strawId().plane();
 // compute MVA
-      std::vector<Double_t> pars(4);
+      std::vector<Double_t> pars(5);
       pars[0] = fabs(tchi._dt);
-      pars[1] = fabs(tchi._dphi);
-      pars[2] = tchi._rho*tchi._rho;
-      pars[3] = tchi._nsh;
+//      pars[1] = fabs(tchi._dphi);
+//      pars[2] = tchi._rho*tchi._rho;
+      pars[1] = tchi._nsh;
+      pars[2] = tchi._z;
+      pars[3] = tchi._werr;
+      pars[4] = fabs(tchi._wdist);
       if (tc._caloCluster.isNonnull())
 	tchi._mva = _tcCaloMVA.evalMVA(pars);
       else
