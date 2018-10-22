@@ -19,7 +19,7 @@ pbars1EkCuts: {  type: kineticEnergy  cut: 1876. } // MeV
 END_PROLOG
 
 # Give this job a name.
-process_name : pbars1
+process_name : pbars0
 
 source : {
    module_type : EmptyEvent
@@ -28,7 +28,7 @@ source : {
 
 services : {
    message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.pbar-g4s1.version.sequencer.root" }
+   TFileService          : { fileName : "nts.owner.pbar-g4s0.version.sequencer.root" }
    RandomNumberGenerator : { }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
@@ -52,7 +52,7 @@ physics : {
          physics           : @local::mu2eg4DefaultPhysics
          ResourceLimits    : @local::mu2eg4DefaultResourceLimits
          TrajectoryControl : @local::mu2eg4NoTrajectories
-         debug             : @local::mu2eg4DefaultDebug
+//         debug             : @local::mu2eg4DefaultDebug
  debug: {
     stepLimitKillerVerbose: true
     printPhysicsProcessSummary : false
@@ -108,7 +108,7 @@ physics : {
          module_type    : CompressPhysicalVolumes
          volumesInput   : "g4run"
          hitInputs      : []
-         particleInputs : [ "g4filter" ]
+         particleInputs : [ "g4run" ]
       }
 
    }
@@ -129,10 +129,10 @@ physics : {
       }
    }
 
-   trigFilter    : [ generate, genCounter, g4run, g4filter, compressPV ]
+   trigFilter    : [ generate, genCounter, g4run, compressPV ]
    trigger_paths : [ trigFilter ]
 
-   e1        : [ genCountLogger, filteredOutput ]
+   e1        : [ genCountLogger, allOutput ]
    end_paths : [ e1 ]
 }
 
@@ -148,10 +148,19 @@ outputs: {
          "keep *_compressPV_*_*" ]
       fileName       : "sim.owner.pbar-g4s1.version.sequencer.art"
    }
+
+   allOutput     : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "keep *_*_*_*" ]
+      fileName       : "sim.owner.pbar-g4s1.version.sequencer.art"
+   }
+
+
 }
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
-physics.producers.g4run.physics.physicsListName: "FTFP_BERT_PBAR_MU2E02"
+#physics.producers.g4run.physics.physicsListName: "FTFP_BERT_PBAR_MU2E02"
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
@@ -162,3 +171,23 @@ services.message.destinations.log.categories.ArtReport.timespan : 300
 // Grid jobs will overwrite this to use different seeds.
 services.SeedService.baseSeed          : 0
 services.SeedService.maxUniqueEngines  : 20
+
+physics.producers.g4run.Mu2eG4SteppingOnlyCut : { }
+physics.producers.g4run.Mu2eG4CommonCut : {  
+   type: plane normal: [  0,  0, -1 ] point : [ 0, 0, -6500 ]
+}
+physics.producers.g4run.Mu2eG4StackingOnlyCut : { 
+   type: union
+   pars: [
+      {type: intersection pars: [ 
+	    {type: pdgId pars:  [ 2212,2112 ]}, 
+	    {type: kineticEnergy cut: 5000.0} 
+	 ] },
+      {type: intersection pars: [ 
+	    {type: pdgId pars:  [ 211, -211 ]}, 
+	    {type: kineticEnergy cut: 6000.0} 
+	 ] },
+      {type: notPdgId pars:  [ 2212,2112, 211, -211 ]}
+   ]
+
+}
