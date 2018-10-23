@@ -21,6 +21,7 @@ TimeClusterFinder : {
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection : "CaloClusterFromProtoCluster"
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
   TestFlag : true
 }
 # stereo version
@@ -55,6 +56,7 @@ TTtimeClusterFinder : {
   ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   ComboHitCollection : "TTflagBkgHits"
   StrawHitFlagCollection : "none"
+  CaloClusterCollection : "CaloClusterFast"
   TestFlag : false
 }
 

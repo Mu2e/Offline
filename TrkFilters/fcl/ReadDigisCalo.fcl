@@ -43,7 +43,7 @@ services : {
 # timing information
 services.TimeTracker : {
     dbOutput : {
-	filename : "ReadDigis.db"
+	filename : "ReadDigisCalo.db"
 	overwrite : true
     }
 }
@@ -90,6 +90,8 @@ physics.filters.PosHelixFilter.MinNHits	              : 10.0
 physics.filters.NegHelixFilter.MinNHits   	      : 10.0
 physics.filters.DeMSeedFilter.MinMomentum	      : 10.0
 physics.filters.DePSeedFilter.MinMomentum	      : 10.0
+
+physics.producers.TTtimeClusterFinder.UseCaloCluster : true
 
 physics.producers.TTKSFDeM.SeedCollection      : "TThelixFinder:Positive"
 physics.producers.TTKSFDeM.fitparticle	      : @local::Particle.eminus

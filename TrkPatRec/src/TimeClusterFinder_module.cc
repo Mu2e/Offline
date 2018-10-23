@@ -1,5 +1,5 @@
 //
-// TTracker time peak finder
+// TTracker time cluster finder
 //
 // $Id: TimeClusterFinder_module.cc,v 1.3 2014/08/25 12:08:29 tassiell Exp $
 // $Author: tassiell $
@@ -48,7 +48,7 @@ using namespace boost::accumulators;
 
 namespace {
 
-  struct TimePeakMVA
+  struct TimeCluMVA
   {
     vector<Float_t> _pars;
     Float_t& _dt;
@@ -59,9 +59,9 @@ namespace {
     Float_t& _werr;
     Float_t& _wdist;
     
-//    TimePeakMVA() : _pars(7,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]),
+//    TimeCluMVA() : _pars(7,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]),
 //      _z(_pars[4]), _werr(_pars[5]), _wdist(_pars[6]){}
-    TimePeakMVA() : _pars(5,0.0), _dt(_pars[0]), _nsh(_pars[1]),
+    TimeCluMVA() : _pars(5,0.0), _dt(_pars[0]), _nsh(_pars[1]),
       _z(_pars[2]), _werr(_pars[3]), _wdist(_pars[4]){}
   };
 }
@@ -91,7 +91,7 @@ namespace mu2e {
       StrawHitFlag      _hsel, _hbkg;
       float             _maxdt;
       unsigned          _minnhits;
-      float             _minpeakmva, _minaddmva; 
+      float             _minkeepmva, _minaddmva; 
       float             _maxdPhi;
       float             _tmin, _tmax, _tbin;
       TH1F              _timespec;
@@ -101,9 +101,9 @@ namespace mu2e {
       bool              _recover;
       bool              _usecc, _useccpos;
       float             _ccmine, _ccwt;
-      MVATools          _tcMVA; // MVA for peak cleaning
-      MVATools          _tcCaloMVA; // MVA for peak cleaning, with calo cluster
-      TimePeakMVA       _pmva; // input variables to TMVA for peak cleaning
+      MVATools          _tcMVA; // MVA for cluster cleaning
+      MVATools          _tcCaloMVA; // MVA for cluster cleaning, with calo cluster
+      TimeCluMVA       _pmva; // input variables to TMVA for cluster cleaning
       TrkTimeCalculator _ttcalc;
       int               _npeak;
 
@@ -134,7 +134,7 @@ namespace mu2e {
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _maxdt             (pset.get<float>(  "DtMax",25.0)),
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
-    _minpeakmva        (pset.get<float>(  "MinTimePeakMVA",0.1)),
+    _minkeepmva        (pset.get<float>(  "MinKeepHitMVA",0.1)),
     _minaddmva         (pset.get<float>(  "MinAddHitMVA",0.1)),
     _maxdPhi           (pset.get<float>(  "MaxdPhi",1.5)),
     _tmin              (pset.get<float>(  "tmin",450.0)),
@@ -539,7 +539,7 @@ namespace mu2e {
         }
       }
 
-      if (worstmva < _minpeakmva) {
+      if (worstmva < _minkeepmva) {
         changed = true;
 	removeHit(tc,iworst);
       }
