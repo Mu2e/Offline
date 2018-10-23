@@ -151,7 +151,6 @@ namespace mu2e {
 
     std::vector<Helicity> _hels; // helicity values to fit
     TrkTimeCalculator _ttcalc;
-    float             _t0shift;   
     StrawHitFlag      _outlier;
     bool              _updateStereo;
     
@@ -219,7 +218,6 @@ namespace mu2e {
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
     _chi2hfit    (pset.get<fhicl::ParameterSet>("Chi2HelixFit",fhicl::ParameterSet())),
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<float>("T0Shift",1.0)),
     _outlier     (StrawHitFlag::outlier),
     _updateStereo    (pset.get<bool>("UpdateStereo",false))
   {
@@ -888,7 +886,7 @@ namespace mu2e {
     }//end faces loop
     if (sum_of_weights(terr) > 0.0)
       {
-	helixData._hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
+	helixData._hseed._t0._t0 = extract_result<tag::weighted_mean>(terr);
 	helixData._hseed._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
       }
   }
