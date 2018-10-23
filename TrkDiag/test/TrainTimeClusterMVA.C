@@ -174,17 +174,17 @@ void TrainTimeClusterMVA(TTree* mytree,bool calo=false)
   //    (TMVA::gConfig().GetIONames()).fWeightFileDir = "myWeightDirectory";
 
   //(TMVA::gConfig().GetIONames()).fWeightFileDir = "/data/HD2/dding/newGeometry2.18.14/gDist/test/";
-  (TMVA::gConfig().GetIONames()).fWeightFileDir = "TimeClusterWeights";
+  (TMVA::gConfig().GetIONames()).fWeightFileDir = "Weights";
 
   // Define the input variables that shall be used for the MVA training
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
   dataloader->AddVariable("abs(tchinfo._dt)","Time Difference","nsec",'F'); 
-//  dataloader->AddVariable("abs(tchinfo._dphi)","Azimuth Difference","radians", 'F');
-//  dataloader->AddVariable("tchinfo._rho*tchinfo._rho", "Transverse Radius2","mm2",'F');
+  dataloader->AddVariable("abs(tchinfo._dphi)","Azimuth Difference","radians", 'F');
+  dataloader->AddVariable("tchinfo._rho*tchinfo._rho", "Transverse Radius2","mm2",'F');
   dataloader->AddVariable("tchinfo._nsh", "NStraws","n",'I');
-  dataloader->AddVariable("tchinfo._z", "Z","mm",'F');
+  dataloader->AddVariable("tchinfo._plane", "Plane","n",'I');
   dataloader->AddVariable("tchinfo._werr", "Wire Error","mm",'F');
   dataloader->AddVariable("abs(tchinfo._wdist)", "Wire Distance","mm",'F');
 
@@ -275,8 +275,8 @@ void TrainTimeClusterMVA(TTree* mytree,bool calo=false)
 
 
   // Apply additional cuts on the signal and background samples (can be different)
-  TCut signalCut = "besttc.ncehits>9&&besttc.prigen==2&&besttc.prifrac>0.5&&tchinfo._mcgen==2&&tchinfo._mcrel==0";
-  TCut backgrCut = "besttc.ncehits>9&&besttc.prigen==2&&besttc.prifrac>0.5&&tchinfo._mcgen!=2&&tchinfo._mcrel<0";
+  TCut signalCut = "besttc.ncehits>9&&besttc.prigen==2&&besttc.prifrac>0.2&&tchinfo._mcgen==2&&tchinfo._mcrel==0";
+  TCut backgrCut = "besttc.ncehits>9&&besttc.prigen==2&&besttc.prifrac>0.2&&tchinfo._mcgen!=2&&tchinfo._mcrel<0";
 
   if(calo){
     signalCut += TCut("besttc.ecalo>10.0");
