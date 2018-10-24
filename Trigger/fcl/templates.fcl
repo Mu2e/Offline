@@ -24,10 +24,31 @@ Trigger : {
 	@table::CprTrigger.filters
 	@table::CaloFilters.filters
 	@table::TrkFilters.filters
+
+	UnbiasedFilter : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::UnbiasedFilters_evt_sf
+	}
+      }
+    
+    analyzers  : { 
+	ReadTriggerInfo : { 
+	    module_type : ReadTriggerInfo
+	}
     }
     
     paths : {
 	@table::CaloFilters.sequences
 	@table::TrkFilters.sequences
+	unbiased : [ UnbiasedFilter ]
+    }
+    
+    outputs: {
+	triggerOutput : {
+	    module_type : RootOutput
+	    SelectEvents   : [] 
+	    outputCommands : [ "keep *_*_*_*" ]
+	    fileName       : "nts.trigger.jobtype.offver.sequencer.art"
+	}
     }
 }

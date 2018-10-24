@@ -24,6 +24,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 
 #include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
@@ -128,6 +129,8 @@ namespace mu2e {
     _MVAcutA[1]=_MVApivotcut1-_MVAcutB[1]*_MVArpivot1;
     _MVArpivot[1]= _MVArpivot1;
     _MVAlowcut[1]= _MVAlowcut1;
+    
+    produces<TriggerInfo>();
   }
 
 
@@ -151,6 +154,8 @@ namespace mu2e {
   }
 
   bool FilterEcalMVATrigger::filter(art::Event& event) {
+    unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    bool   retval(false);
 
     if (_step==0) return false;
 
@@ -193,15 +198,24 @@ namespace mu2e {
 	  }
 	}
 	if (_rpeak>_MVArpivot[disk]){
-	  if (_MVA>_MVAlowcut[disk]) return true;
+	  if (_MVA>_MVAlowcut[disk]) {
+	    retval = true;
+	    triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	    break;
+	  }
 	}
 	else{
 	  MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
-	  if (_MVA>MVAcut) return true;
+	  if (_MVA>MVAcut) {
+	    retval = true;
+	    triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	    break;
+	  }
 	}
       }
     }
-    return false;
+    event.put(std::move(triginfo));
+    return retval;
   }
   void FilterEcalMVATrigger::endJob(){
     cout << "FilterEcalMVATrigger filter end job:" << _nProcessed << " events processed" << endl;

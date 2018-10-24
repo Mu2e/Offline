@@ -8,6 +8,8 @@
 #include "fcl/standardProducers.fcl"
 
 BEGIN_PROLOG
+#prescale factor for the unbiased trigger
+UnbiasedFilters_evt_sf  : 10
 #prescale factor for the calorimeter-only trigger
 CaloOnly_evt_sf         : 1
 CaloOnly_sf             : 1
@@ -69,14 +71,26 @@ services.scheduler.wantSummary: true
 
 producers    : { @table::Trigger.producers }
 filters      : { @table::Trigger.filters   }
+analyzers    : { @table::Trigger.analyzers }
 paths        : { @table::Trigger.paths     }
-
+outputs      : { @table::Trigger.outputs   }
 
 physics : {
-    producers: { @table::producers }
+    producers : { @table::producers }
 
-    filters  : { @table::filters }
+    filters   : { @table::filters }
+ 
+    analyzers : {  
 
+	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	    nFilters      : 25
+	    SelecEvents   : [ unbiased_path, calo_only_path, tpr_dem_path, tpr_dep_path, cpr_dem_path, cpr_dep_path ]
+	}
+    }
+
+    #unbiased trigger path
+    unbiased_path  : [ @sequence::paths.unbiased                        ]
+    
     #path for the calorimeter only trigger
     calo_only_path : [ FetchCaloDigis, @sequence::paths.calo_only       ]
 
@@ -88,7 +102,8 @@ physics : {
     cpr_dem_path   : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter ]
     cpr_dep_path   : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter ]
     
-    out           : [     ]
+    out           : [ ReadTriggerInfo ]
+#    out           : [ ReadTriggerInfo, triggerOutput  ]
     end_paths     : [ out ]
 }
 
