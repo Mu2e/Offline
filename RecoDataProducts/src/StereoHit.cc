@@ -9,7 +9,7 @@
 //
 //// Mu2e includes
 //#include "RecoDataProducts/inc/StereoHit.hh"
-//#include "GeneralUtilities/inc/TwoLinePCA.hh"
+//#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 //// C++ includes
 //#include <ostream>
 //// clhep includes

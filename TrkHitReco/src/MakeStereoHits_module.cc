@@ -20,7 +20,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeneralUtilities/inc/TwoLinePCA_XYZ.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
