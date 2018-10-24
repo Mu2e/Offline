@@ -52,17 +52,17 @@ namespace {
   {
     vector<Float_t> _pars;
     Float_t& _dt;
-//    Float_t& _dphi;
-//    Float_t& _rho;
+    Float_t& _dphi;
+    Float_t& _rho;
     Float_t& _nsh;
-    Float_t& _z;
+    Float_t& _plane;
     Float_t& _werr;
     Float_t& _wdist;
     
-//    TimeCluMVA() : _pars(7,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]),
-//      _z(_pars[4]), _werr(_pars[5]), _wdist(_pars[6]){}
-    TimeCluMVA() : _pars(5,0.0), _dt(_pars[0]), _nsh(_pars[1]),
-      _z(_pars[2]), _werr(_pars[3]), _wdist(_pars[4]){}
+    TimeCluMVA() : _pars(7,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nsh(_pars[3]),
+     _plane(_pars[4]), _werr(_pars[5]), _wdist(_pars[6]){}
+//    TimeCluMVA() : _pars(5,0.0), _dt(_pars[0]), _nsh(_pars[1]),
+//      _plane(_pars[2]), _werr(_pars[3]), _wdist(_pars[4]){}
   };
 }
 
@@ -419,9 +419,10 @@ namespace mu2e {
 	      float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
 	      float dphi = fabs(Angles::deltaPhi(phi,pphi));
 	      if(dphi < _maxdPhi){ 
-//		_pmva._rho = ch.pos().Perp2();
+		_pmva._dphi = dphi;
+		_pmva._rho = ch.pos().Perp2();
 		_pmva._nsh = ch.nStrawHits();
-		_pmva._z = ch.pos().z();
+		_pmva._plane = ch.strawId().plane();
 		_pmva._werr = ch.wireRes();
 		_pmva._wdist = fabs(ch.wireDist());
 
@@ -513,18 +514,18 @@ namespace mu2e {
       changed = false;
       auto iworst = tc._strawHitIdxs.end();
       float worstmva(100.0);
-//      float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
+      float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
       for (auto ips=tc._strawHitIdxs.begin();ips != tc._strawHitIdxs.end();++ips) {
         ComboHit const& ch = (*_chcol)[*ips];
         float cht = _ttcalc.comboHitTime(ch);
 
         _pmva._dt = fabs(cht - tc._t0._t0);
-//        float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
-//        float dphi = Angles::deltaPhi(phi,pphi);
-//        _pmva._dphi = fabs(dphi);
-//	_pmva._rho = ch.pos().Perp2();
+        float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
+        float dphi = Angles::deltaPhi(phi,pphi);
+        _pmva._dphi = fabs(dphi);
+	_pmva._rho = ch.pos().Perp2();
 	_pmva._nsh = ch.nStrawHits();
-	_pmva._z = ch.pos().z();
+	_pmva._plane = ch.strawId().plane();
 	_pmva._werr = ch.wireRes();
 	_pmva._wdist = fabs(ch.wireDist());
 

@@ -360,17 +360,18 @@ namespace mu2e {
       tchi._dphi = Angles::deltaPhi(phi,tc._pos.phi());
       tchi._rho = sqrt(pos.Perp2());
       tchi._z = pos.z();
+      tchi._edep = ch.energyDep();
       tchi._nsh = ch.nStrawHits();
       tchi._plane = ch.strawId().plane();
 // compute MVA
-      std::vector<Double_t> pars(5);
-      pars[0] = fabs(tchi._dt);
-//      pars[1] = fabs(tchi._dphi);
-//      pars[2] = tchi._rho*tchi._rho;
-      pars[1] = tchi._nsh;
-      pars[2] = tchi._z;
-      pars[3] = tchi._werr;
-      pars[4] = fabs(tchi._wdist);
+      std::vector<Double_t> pars;
+      pars.push_back(fabs(tchi._dt));
+      pars.push_back(fabs(tchi._dphi));
+      pars.push_back(tchi._rho*tchi._rho);
+      pars.push_back(tchi._nsh);
+      pars.push_back(tchi._plane);
+      pars.push_back(tchi._werr);
+      pars.push_back(fabs(tchi._wdist));
       if (tc._caloCluster.isNonnull())
 	tchi._mva = _tcCaloMVA.evalMVA(pars);
       else
