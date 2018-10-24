@@ -33,7 +33,7 @@ BEGIN_PROLOG
     caloMatchingRoot : "TrackCaloMatchingTRF"
   }
 
-  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 #Generic ReadKalFits config.  These only work for CD3
   ReadKalFits : {
     module_type: ReadKalFits
@@ -146,7 +146,8 @@ BEGIN_PROLOG
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
+    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
+    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
@@ -238,7 +239,7 @@ BEGIN_PROLOG
     CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
 
-    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 
     EndSequence : [ TrkAnaNeg, TrkAnaPos ]
 
