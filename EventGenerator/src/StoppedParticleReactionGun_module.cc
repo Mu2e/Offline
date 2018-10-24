@@ -152,7 +152,7 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       art::TFileDirectory tfdir = tfs->mkdir( "StoppedParticleReactionGun" );
 
-      _hEnergyPositron = tfdir.make<TH1F>("hEnergyPositron", "Energy of the positron from #mu", 1200,  0.02,  120.02  );
+      _hEnergyPositron = tfdir.make<TH1F>("hEnergy", "Energy", 1200,  0.02,  120.02  );
     }
   }
 
@@ -201,7 +201,7 @@ namespace mu2e {
 
     }
     else if (spectrumShape == "ConversionSpectrum") {
-      std::cout<<"using the right spectrum"<<std::endl;
+     
        *elow = psphys.get<double>("elow");
        *ehi  = psphys.get<double>("ehi" );
        *eMax = psphys.get<double>("eMax");
