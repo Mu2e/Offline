@@ -5,7 +5,7 @@
 #ifndef TrkDiag_TimeClusterInfo_HH
 #define TrkDiag_TimeClusterInfo_HH
 // mu2e includes
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 // root includes
 #include "Rtypes.h"
 // C++ includes

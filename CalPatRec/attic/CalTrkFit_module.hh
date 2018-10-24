@@ -50,7 +50,7 @@ namespace art {
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 //#include "CalPatRec/inc/CalTimePeak.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 

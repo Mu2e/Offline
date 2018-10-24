@@ -13,8 +13,6 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include <algorithm>
 
-#include "TrkReco/inc/TrkUtilities.hh"
-
 using namespace std;
 using CLHEP::Hep3Vector;
 

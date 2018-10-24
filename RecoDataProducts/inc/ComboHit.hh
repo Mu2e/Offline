@@ -10,7 +10,7 @@
 #include "DataProducts/inc/StrawEnd.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawIdMask.hh"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include <stdint.h>

@@ -28,7 +28,7 @@
 //
 //
 
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 
 namespace mu2e {
 
