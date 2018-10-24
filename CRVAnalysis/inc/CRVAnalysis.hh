@@ -13,7 +13,8 @@ namespace mu2e
 
     CRVAnalysis() {}
 
-    static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterSummarizerModuleLabel,
+    static void FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterModuleLabel,
+                                          const std::string &crvCoincidenceClusterMCModuleLabel,
                                           const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo);
 
     private:
