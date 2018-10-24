@@ -27,7 +27,6 @@ END_PROLOG
 #include "CaloMC/fcl/prolog.fcl"
 #include "CaloReco/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
-#include "Trigger/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 
 
