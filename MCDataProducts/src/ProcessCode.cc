@@ -36,21 +36,12 @@ namespace mu2e {
     }
   }
 
-  ProcessCode::ProcessCode( int id ):
-    _id(static_cast<enum_type>(id)){
-    if ( !isValid() ){
-      ostringstream os;
-      os << "Invalid ProcessCode::enum_type: " << id;
-      throw std::logic_error ( os.str());
-    }
-  }
-
   ProcessCode ProcessCode::findByName ( std::string const& name){
 
     // Size must be at least 2 (for unknown and lastEnum).
     for ( size_t i=0; i<size(); ++i ){
       if ( _name[i] == name ){
-        return ProcessCode(i);
+        return ProcessCode(enum_type(i));
       }
     }
     return ProcessCode(unknown);
@@ -62,7 +53,7 @@ namespace mu2e {
     for ( size_t i=0; i<size(); ++i ){
       string name = _name[i];
       if ( name.substr(0,4) == "mu2e" ){
-        codes.push_back(ProcessCode(i));
+        codes.push_back(ProcessCode(enum_type(i)));
       }
     }
     return codes;

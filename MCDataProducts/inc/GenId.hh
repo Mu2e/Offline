@@ -80,15 +80,6 @@ namespace mu2e {
       _id(unknown){
     }
 
-    // Need this to interface with HepMC::GenEvent which stores an int.
-    explicit GenId( int id):
-      _id(static_cast<enum_type>(id)){
-      if ( !isValid() ){
-        // throw or something
-        std::exit(-1);
-      }
-    }
-
     virtual ~GenId(){}
 
     bool operator==(const GenId g) const{
