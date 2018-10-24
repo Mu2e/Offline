@@ -85,13 +85,9 @@ namespace mu2e
   }
 
 
-  bool
-  TrkCaloHit::signalPropagationTime(double &propTime, double&Doca,
-				    double resid    , double &residErr,
-				    CLHEP::Hep3Vector trajDirection){
-
-    propTime = 0;//FIX ME!
-    residErr = 0.5;//FIX ME!
+  bool TrkCaloHit::signalPropagationTime(TrkT0& t0) {
+    t0._t0 = 0;//FIXME!
+    t0._t0err = 0.5;//FIXME!
     return true;
   }
 

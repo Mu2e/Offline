@@ -601,61 +601,63 @@ namespace mu2e
 
     ihit = 0;
     for (int it=0; it<nhits; ++it) {
-      hit   = static_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
-      sh    = &hit->comboHit();
-      straw = &hit->straw();
+      hit   = dynamic_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
+      if(hit != 0){
+	sh    = &hit->comboHit();
+	straw = &hit->straw();
 
-      hit->hitPosition(pos);
+	hit->hitPosition(pos);
 
-      len   = hit->fltLen();
-      plen  = Trk->position(len);
+	len   = hit->fltLen();
+	plen  = Trk->position(len);
 
-      double mcdoca = _mcUtils->mcDoca(KRes.event,KRes.shDigiLabel.data(),straw);
+	double mcdoca = _mcUtils->mcDoca(KRes.event,KRes.shDigiLabel.data(),straw);
 
-      ihit += 1;
-      printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
-             ihit,
-             straw->id().asUint16(),
-             hit->hitFlag(),
-             hit->isActive(),
-             len,
-             //      hit->hitRms(),
-             plen.x(),plen.y(),plen.z(),
-             sh->time(), -1.//sh->dt()
-             );
+	ihit += 1;
+	printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
+	    ihit,
+	    straw->id().asUint16(),
+	    hit->hitFlag(),
+	    hit->isActive(),
+	    len,
+	    //      hit->hitRms(),
+	    plen.x(),plen.y(),plen.z(),
+	    sh->time(), -1.//sh->dt()
+	    );
 
-      printf(" %2i %2i %2i %2i",
-             straw->id().getPlane(),
-             straw->id().getPanel(),
-             straw->id().getLayer(),
-             straw->id().getStraw()
-             );
+	printf(" %2i %2i %2i %2i",
+	    straw->id().getPlane(),
+	    straw->id().getPanel(),
+	    straw->id().getLayer(),
+	    straw->id().getStraw()
+	    );
 
-      printf(" %8.3f",hit->hitT0().t0());
+	printf(" %8.3f",hit->hitT0().t0());
 
-      double res, sigres;
-      hit->resid(res, sigres, true);
+	double res, sigres;
+	hit->resid(res, sigres, true);
 
-      printf(" %8.3f %8.3f %9.3f %7.3f %7.3f",
-             pos.x(),
-             pos.y(),
-             pos.z(),
-             res,
-             sigres
-             );
+	printf(" %8.3f %8.3f %9.3f %7.3f %7.3f",
+	    pos.x(),
+	    pos.y(),
+	    pos.z(),
+	    res,
+	    sigres
+	    );
 
-      if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
-      else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
-      else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
+	if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
+	else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
+	else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
 
-      printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",
-             mcdoca,
-             hit->totalErr(),
-             hit->hitErr(),
-             hit->t0Err(),
-             hit->penaltyErr(),
-             hit->temperature()*hit->driftVelocity()
-             );
+	printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",
+	    mcdoca,
+	    hit->totalErr(),
+	    hit->hitErr(),
+	    hit->t0Err(),
+	    hit->penaltyErr(),
+	    hit->temperature()*hit->driftVelocity()
+	    );
+      }
     }
   }
 
@@ -1088,35 +1090,28 @@ namespace mu2e
       double flt0(0.0);
       bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
       if(converged){
-        std::vector<double> hitt0; // store t0, to allow outlyer removal
-        std::vector<double> hitt0err;
+        std::vector<double> hitt0, hitt0err; // store t0, to allow outlyer removal
         size_t nhits = krep->hitVector().size();
         hitt0.reserve(nhits);
         hitt0err.reserve(nhits);
-        // loop over the hits
+        // loop over the hits and accumulate t0
         for(auto ihit=thv->begin(); ihit != thv->end(); ihit++){
           TrkHit* hit = *ihit;
-          if(hit->isActive() && hit->hasResidual()){
-            // find the residual, exluding this hits measurement
-            double resid,residerr;
-	    double pTime, doca;//propagation-time
-	    CLHEP::Hep3Vector trjDir(krep->traj().direction(hit->fltLen()));
-            if(krep->resid(hit,resid,residerr,true)){
-	      if (hit->signalPropagationTime(pTime, doca, resid, residerr, trjDir)){	      
-                // subtracting hitT0 makes this WRT the previous track t0
-                hitt0.push_back(hit->time() - pTime - hit->hitT0()._t0);
-                // assume residual error dominates
-                hitt0err.push_back(residerr);
-	      }
+          if(hit->isActive() ) {
+	    TrkT0 st0;
+	    if (hit->signalPropagationTime(st0 )){
+	      // subtracting hitT0 makes this WRT the previous track t0
+	      hitt0.push_back(hit->time() - st0._t0 - hit->hitT0()._t0);
+	      hitt0err.push_back(st0._t0err);// add temperature? FIXME!!!
             }
           }
         }
         if(hitt0.size() >1){
           TrkT0 t0;
-          // find the median
-          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
-          med = std::for_each( hitt0.begin(), hitt0.end(), med );
-          t0._t0 = extract_result<tag::median>(med);
+          // find the median.  Why is this necessary?  Input t0 has very good precision < 2ns.
+//          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
+//          med = std::for_each( hitt0.begin(), hitt0.end(), med );
+//          t0._t0 = extract_result<tag::median>(med);
           // iterate an outlier search and linear fit until the set of used hits doesn't change
           bool changed(true);
           std::vector<bool> used(hitt0.size(),true);

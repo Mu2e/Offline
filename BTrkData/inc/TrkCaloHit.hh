@@ -31,9 +31,7 @@ namespace mu2e
 // correct the hit time
     virtual double time                 () const;
     virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
-    virtual bool   signalPropagationTime(double &propTime, double&Doca,
-				 double resid, double &residErr,
-				 CLHEP::Hep3Vector trajDirection);//propagation time
+    virtual bool signalPropagationTime(	TrkT0& t0);
     virtual void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
      // test the consistincy of this hit with 'physical' limts, with a given # of sigma
     virtual bool isPhysical         (double maxchi) const;

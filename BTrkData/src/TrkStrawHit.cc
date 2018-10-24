@@ -78,35 +78,39 @@ namespace mu2e
   TrkStrawHit::driftTime() const {
     return comboHit().time() - _stime - hitT0()._t0;
   }
-
-  bool
-  TrkStrawHit::signalPropagationTime(double &PropTime, double &Doca      , 
-				     double Resid    , double &ResidError, 
-				     CLHEP::Hep3Vector TrajDirection){
+  
+  bool TrkStrawHit::signalPropagationTime( TrkT0& t0 ){
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    // convert this to a distance to the wire
-    double driftRadius = _rdrift;
-    Doca = (Resid + driftRadius*_iamb);
-    if(_iamb == 0)
-      Doca = fabs(Doca);
-    else
-      Doca *= _iamb;
+// propagation includes drift and signal propagation along the wire.  First, compute the drift
+// time from the distance of closest approach
+// correct this for the most recent fit, excluding the effect of this hit on the fit
+    double resid, residerr;
+    bool retval = this->resid(resid,residerr,true);
+    if(retval ) {
+      double doca;
+    // 0-ambig hit residual is WRT the wire
+      if(_iamb == 0)
+	doca = fabs(resid);
+      else
+	doca = _rdrift + _iamb*resid;
     // restrict the range, symmetrically to avoid bias
-    double rad       = _straw.getRadius();
-    double mint0doca = srep->Mint0doca(); 
-    if(Doca > mint0doca && Doca < rad-mint0doca){
-      // translate the DOCA into a time
-      Hep3Vector tperp = TrajDirection - TrajDirection.dot(straw().getDirection())*straw().getDirection();
-      double phi = tperp.theta(); 
-      double tdrift = srep->driftDistanceToTime(_combohit.strawId(), Doca, phi);
-      double vdrift = srep->driftInstantSpeed(_combohit.strawId(),Doca, phi);
-      PropTime    = tdrift + _stime;
-      ResidError /= vdrift;
-      return true;
-    } else {
-      PropTime = 0;
-      return false;
+      double rad       = _straw.getRadius();
+      double mint0doca = srep->Mint0doca(); 
+      if(doca > mint0doca && doca < rad-mint0doca){
+	// compute phi WRT BField for lorentz drift.
+	CLHEP::Hep3Vector trjDir(parentRep()->traj().direction(fltLen()));
+	Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
+	double phi = tperp.theta();   // This assumes B along z, FIXME!
+	// translate the DOCA into a time
+	double tdrift = srep->driftDistanceToTime(_combohit.strawId(), doca, phi);
+	double vdrift = srep->driftInstantSpeed(_combohit.strawId(),doca, phi);
+	t0._t0 = tdrift + _stime;
+	t0._t0err = residerr/vdrift;// instantaneous velocity to translate the error on the residual
+      } else {
+	retval = false;
+      }
     }
+    return retval;
   }
   
   void 
