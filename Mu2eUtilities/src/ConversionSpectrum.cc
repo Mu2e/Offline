@@ -27,14 +27,7 @@ using namespace std;
 
   
 namespace mu2e {
-  /* ConversionSpectrum::ConversionSpectrum():  
-     _spectrum    (RadiativelyCorrected)          // could also be DeltaFunction
-     {
-     GlobalConstantsHandle<ParticleDataTable> pdt;
-
-     _me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
-     }*/
-
+ 
   ConversionSpectrum::ConversionSpectrum(double maxEnergy, double bin, int RadCorrected) :
     _bin          (bin         ),
     _spectrumType (RadCorrected) 
@@ -70,10 +63,9 @@ namespace mu2e {
   double ConversionSpectrum::getWeight(double E) const {
     
     double weight(0.);
-    //   if      (_spectrum == DeltaFunction)           weight = _eMax;
-    //  else if (_spectrum == RadiativelyCorrected)      weight = getCorrectedConversionSpectrum(E);
+  
 
-    int bin    = E/_bin   ; // 
+    int bin    = E/_bin   ; 
     int _nbins = (_par.eMax/_bin)   ;
 
     if (bin < _nbins) {
@@ -83,8 +75,7 @@ namespace mu2e {
       // last bin
       weight =( 1.-_integral);
     }
-    // std::cout<< _par.eMax<<std::endl;
-    std::cout<<bin<<"  "<<E<<"  "<<weight<<std::endl;
+    
     return weight;
   }
 
