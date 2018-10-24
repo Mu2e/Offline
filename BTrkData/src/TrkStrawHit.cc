@@ -93,7 +93,6 @@ namespace mu2e
       else
 	doca = _rdrift + _iamb*resid;
     // restrict the range, symmetrically to avoid bias
-<<<<<<< HEAD
       double rad       = _straw.getRadius();
       double mint0doca = srep->Mint0doca(); 
       if(doca > mint0doca && doca < rad-mint0doca){
@@ -109,22 +108,6 @@ namespace mu2e
       } else {
 	retval = false;
       }
-=======
-    double rad       = _straw.getRadius();
-    double mint0doca = srep->Mint0doca();
-    if(Doca > mint0doca && Doca < rad-mint0doca){
-      // translate the DOCA into a time
-      Hep3Vector tperp = TrajDirection - TrajDirection.dot(straw().getDirection())*straw().getDirection();
-      double phi = tperp.theta();
-      double tdrift = srep->driftDistanceToTime(_combohit.strawId(), Doca, phi);
-      double vdrift = srep->driftInstantSpeed(_combohit.strawId(),Doca, phi);
-      PropTime    = tdrift + _stime;
-      ResidError /= vdrift;
-      return true;
-    } else {
-      PropTime = 0;
-      return false;
->>>>>>> master
     }
     return retval;
   }
