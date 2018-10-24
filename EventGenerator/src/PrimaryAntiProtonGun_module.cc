@@ -58,6 +58,11 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 
+
+#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Mu2eUtilities/inc/copySimParticleCollection.hh"
+
+
 // ROOT includes
 #include "TTree.h"
 #include "TFile.h"
@@ -74,7 +79,6 @@
 #include <iostream>
 
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 
@@ -127,7 +131,6 @@ namespace mu2e {
     double                         startProperTimePbar{0.};
     unsigned                       startVolumeIndexPbar{0};
     unsigned                       startG4StatusPbar{1};
-    const ProcessCode              creationCodePbar{GenId::pbarFlat};
 
     // Limits on the generated energy.
     
@@ -221,7 +224,6 @@ namespace mu2e {
   void PrimaryAntiProtonGun::produce(art::Event& event )
   {
 
-    //    std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
     //
     //only allow one pbar; at 8 GeV primary or less, can't make two with a 4.3 GeV threshold 
@@ -325,6 +327,16 @@ namespace mu2e {
     _hNonProtonInelastics->Fill(nonProtonInelastics);
 
     //
+    // make new output collection; also return before I start defining kinematics on non-existent particle.  
+    std::unique_ptr<mu2e::SimParticleCollection> outSPp(new mu2e::SimParticleCollection());
+
+    if(iInteracting <= 0) { // failed to find interacting proton
+      //write empty collection
+      event.put(std::move(outSPp), "");
+      return;	
+    }
+
+    //
     // need kinematic max for pbar in the Lab frame.
     // all the parameterizations we use assume a free proton at rest, even though the target is something else. Assume that for consistency.
     // 
@@ -395,28 +407,19 @@ namespace mu2e {
 
       }
 
-    //
-    // make new output collection
-    std::unique_ptr<mu2e::SimParticleCollection> outSPp(new mu2e::SimParticleCollection());
-    if(iInteracting < 0) { // failed to find interacting proton
-      //write empty collection
-      event.put(std::move(outSPp), "");
-      return;	
-    }
 
     //
     // in order to make the pbar's art pointer to parent, need to 
     // collect info about the parent product
-    auto SPpid = getProductID<SimParticleCollection>(_inputModuleLabel);
+    //    auto SPpid = getProductID<SimParticleCollection>(_inputModuleLabel);
+    auto SPpid = simParticleHandle.id();
     auto SPpg  = event.productGetter(SPpid);
 
     //
     // make the parent art ptr
     art::Ptr<SimParticle> pptr(SPpid,size_t(iInteracting),SPpg);
-
     //
     // make new SimParticle:  create pbar, copy starting point..
-
 
     //
     // will have to dereference the pointer to the simparticle collection
@@ -433,26 +436,73 @@ namespace mu2e {
     key_type newPbarKey = cet::map_vector_key(biggestSimParticleId + 1);
 
     SimParticle newPbar(
-			newPbarKey                             //id
-			,0                                     //stageOffset
-			,pptr                                  //parentSim
-			,PDGCode::anti_proton                  //pdgId
-			,pptr->genParticle()                   //ptr to GenParticle that created original proton (same as proton for us)
-			,pptr->endPosition()                   //born where parent stopped
-			,momPbar                               //momentum created here
-			,pptr->endGlobalTime()                 //pbar created at same time as parent interacted
-			,0.                                    //proper time is zero for this new particle
-			,pptr->endVolumeIndex()                //starts where parent ends
-			,1                                     //G4 status for new particle
-			,creationCodePbar                      //defined in 'header' so if it changes it's more obvious
+			 newPbarKey                            // id
+			,0                                     // stageOffset
+			,pptr                                  // parentSim
+			,PDGCode::anti_proton                  // pdgId
+			,art::Ptr<GenParticle>()               // since this comes from a SimParticle the ptr to a GenParticle should be null
+			,pptr->endPosition()                   // born where parent stopped
+			,momPbar                               // momentum created here
+			,pptr->endGlobalTime()                 // pbar created at same time as parent interacted
+			,0.                                    // proper time is zero for this new particle
+			,pptr->endVolumeIndex()                // starts where parent ends
+			,1                                     // G4 status for new particle
+			,ProcessCode::mu2eProtonInelastic      // defined for this sort of process
 			);
+    //
+    // add end information to complete SimParticle
+    newPbar.addEndInfo(
+		        pptr->endPosition()                   // hasn't gone anywhere
+		       ,momPbar                               // ditto, just fill in
+		       ,pptr->endGlobalTime()                 // ditto
+		       ,0.                                    // again no change in proper time
+		       ,pptr->endVolumeIndex()                // same
+		       ,1                                     // G4 status for where pbar ends
+		       ,ProcessCode::mu2eProtonInelastic      // same process code
+		       ,momPbar.e()- _mass                    // preLastStepKE
+		       ,0                                     // nSteps
+		       );                       
+ 
+
     //
     // you would think one could treat this like an STL container but you would be wrong...
     outSP[newPbarKey] = newPbar;
+    copySimParticleCollection(simParticles,outSP,SPpid,SPpg);
+
     //
     // write out new collection
-    event.put(std::move(outSPp), "");
 
+    if (_verbosityLevel > 1){
+      os << " \n \n \n" << "output simpart: " << "\n" << std::endl;
+
+      for (const auto& outPartPair: outSP){
+	auto const& outPart = outPartPair.second;
+	key_type const outKey = outPartPair.first;
+	art::Ptr<SimParticle> const& outParentPtr = outPart.parent();
+	int outParentKey = -1;
+	if(outParentPtr) outParentKey = int(outParentPtr.key());
+	os 
+	  << std::setiosflags(std::ios::fixed | std::ios::right) 
+	  << " " << std::setw(7) << outKey
+	   << " " << std::setw(7) << outParentKey
+	   << " " << std::setw(8) << outPart.pdgId()
+	   << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().x()
+	   << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().y()
+	   << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().z()
+	   << " " << std::setw(9) << std::setprecision(1) << outPart.startMomentum().vect().mag()
+	   << "   "
+	   << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().x()
+	   << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().y()
+	   << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().z()
+	   << " " << std::setw(9) << std::setprecision(1) << outPart.endMomentum().vect().mag()
+	   << " " << std::setw(6) << outPart.endVolumeIndex()
+	   << "  "
+	   << " " << std::setiosflags(std::ios::left) << outPart.stoppingCode().name() 
+	   << std::endl;
+     
+      }
+    }
+   event.put(std::move(outSPp), "");
   }
 
   // PrimaryAntiProtonGun::generate
