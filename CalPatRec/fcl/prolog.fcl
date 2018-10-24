@@ -9,8 +9,6 @@
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
 
-#include "CalPatRec/fcl/prolog.fcl"
-
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 
@@ -46,8 +44,64 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 # CalPatRec.HelixFinder and HelixFitHack configuratons (pattern recognition)
 #------------------------------------------------------------------------------
-    TThelixFinderAlg : { @table::CalPatRec.HelixFinderAlg
-	targetconsistent                        : 0
+    HelixFitHack : {
+	debugLevel                              : 0
+	debugLevel2                             : 0
+	diagLevel                               : 0
+	minNHit                                 : 10      # minimal number of hits on found helix
+	hitChi2Max                              : 9.
+	mostProbableDfDz                        : 0.00475
+	minNActiveStationPairs                  : 10
+	dzOverHelPitchCut                       : 0.7
+	maxDfDz                                 : 0.01
+	minDfDz                                 : 0.002
+	sigmaPhi                                : 0.1636  # radians
+	weightXY                                : 0.14705
+	weightZPhi                              : 0.174
+	weight3D                                : 1
+	errorAlongWire                          : 30.  # mm
+	maxXDPhi                                : 5    #
+	distPatRec                              : 100. # mm
+	maxChi2TrkCandidate                     : 1500
+	markCandidateHits                       : 0
+	minPointsTrkCandidate                   : 25
+	# confirmed on 2015-02-07
+	chi2xyMax                               : 5.0    # default value is 300
+	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging purposes
+	chi2hel3DMax                            : 9.0
+	dfdzErr                                 : 0.1
+    }
+
+    HelixFinderAlg : {
+	debugLevel                              : 0
+	debugLevel2                             : 0
+	smartTag                                : 1
+	diagLevel                               : 0
+	HelixFitSelectionBits                   : [] 
+	BackgroundSelectionBits                 : ["Background"]
+	maxElectronHitEnergy                    : 0.005           # 5 KeV, in MeV
+	minimumTime                             : 500.    #ns
+	maximumTime                             : 2000.   #ns
+	minNHit                                 : @local::CalPatRec.minNStrawHits       # minimal number of hits on found helix
+	hitChi2Max                              : @local::CalPatRec.chi2HitCut
+	mostProbableDfDz                        : 0.00475
+#	minNActiveStationPairs                  : 10
+	dzOverHelPitchCut                       : 0.7
+	maxDfDz                                 : 0.01
+	minDfDz                                 : 0.002
+	sigmaPhi                                : 0.1636  # radians
+	weightXY                                : 1.11      #0.4527
+	weightZPhi                              : 0.29      #0.4423    
+	weight3D                                : 0.12      #1
+#	errorAlongWire                          : 30.  # mm
+	maxXDPhi                                : 5    #
+	distPatRec                              : 100. # mm
+	maxChi2TrkCandidate                     : 1500
+	nHitsMaxPerPanel                        : 1
+	chi2xyMax                               : 5.0    
+	chi2zphiMax                             : 5.0    
+	chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
+	dfdzErr                                 : 0.1
     }
 #------------------------------------------------------------------------------
 # Kalman fitter configuration for the seed fit: not used anymore

@@ -9,8 +9,6 @@
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
 
-#include "CalPatRec/fcl/prolog.fcl"
-
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 
@@ -54,24 +52,25 @@ CprTrigger : {
 CprTrigger : { @table::CprTrigger 
 
     producers : { 
+	@table::CaloClusterFast.producers
 
-	PrefetchData : { module_type:PrefetchData
+	CPRFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
 	    mcDiag                        : true
 
 	    fetchCaloDigis                : 1
 	    fetchStrawDigis               : 1
-	    fetchStrawHits                : 1
+	    fetchStrawHits                : 0
 	    fetchStrawHitFlags            : 0
-	    fetchStrawHitPositions        : 1
-	    fetchComboHits                : 1
+	    fetchStrawHitPositions        : 0
+	    fetchComboHits                : 0
 
 	    caloDigiCollectionTag         : CaloDigiFromShower
 	    strawDigiCollection           : makeSD
-	    strawHitCollectionTag         : makeSH
-	    strawHitPositionCollectionTag : makeSH
-	    strawHitFlagCollectionTag     : makeSH
-	    comboHitCollectionTag         : makePH # MakeStereoHits
+	    strawHitCollectionTag         : TTmakeSH
+	    strawHitPositionCollectionTag : TTmakeSH
+	    strawHitFlagCollectionTag     : TTmakeSH
+	    comboHitCollectionTag         : TTmakePH # MakeStereoHits
 	}
 
 #------------------------------------------------------------------------------
@@ -91,8 +90,8 @@ CprTrigger : { @table::CprTrigger
 	TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : TTmakePH          
-	    StrawHitFlagCollectionLabel                 : TTflagBkgHits:ComboHits
-	    caloClusterModuleLabel                      : CaloClusterFromProtoCluster
+	    StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+	    caloClusterModuleLabel                      : CaloClusterFast
 	    HitSelectionBits                            : ["EnergySelection","TimeSelection"] 
 	    BackgroundSelectionBits                     : ["Background"] 
 	    minClusterEnergy                            : 50.    # MeV
@@ -118,28 +117,28 @@ CprTrigger : { @table::CprTrigger
 CprTrigger: { @table::CprTrigger 
     producers : { @table::CprTrigger.producers
 	
-	TTCalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
+	TTCalSeedFitDem                  : { @table::CprTrigger.producers.TTCalSeedFit        
 	    SeedCollection             : TTCalHelixFinderDem
 	}
-	TTCalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
+	TTCalSeedFitDmm                  : { @table::CprTrigger.producers.TTCalSeedFit 
 	    fitparticle                : @local::Particle.muminus
 	    SeedCollection             : TTCalHelixFinderDmm
 	}
-	TTCalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
+	TTCalSeedFitDep                  : { @table::CprTrigger.producers.TTCalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
 	    SeedCollection             : TTCalHelixFinderDep
 	}
-	TTCalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
+	TTCalSeedFitDmp                  : { @table::CprTrigger.producers.TTCalSeedFit 
 	    fitparticle                : @local::Particle.muplus
 	    SeedCollection             : TTCalHelixFinderDmp
 	}
     }
     
     filters : { @table::CprTrigger.filters
-	TTCalHelixFinderDem              : { @table::CprTrigger.filters.CalHelixFinder    }
-	TTCalHelixFinderDmm              : { @table::CprTrigger.filters.CalHelixFinder    fitparticle: @local::Particle.muminus }
-	TTCalHelixFinderDep              : { @table::CprTrigger.filters.CalHelixFinder    fitparticle: @local::Particle.eplus   }
-	TTCalHelixFinderDmp              : { @table::CprTrigger.Filters.CalHelixFinder    fitparticle: @local::Particle.muplus  }
+	TTCalHelixFinderDem              : { @table::CprTrigger.filters.TTCalHelixFinder    }
+	TTCalHelixFinderDmm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
+	TTCalHelixFinderDep              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.eplus   }
+	TTCalHelixFinderDmp              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muplus  }
     }
 }
 

@@ -12,8 +12,8 @@ TrkReco: {
     TTrobustHelixFit     : {
 	diagLevel      : 0
 	debugLevel     : 0
-	CircleInitType : median
-	CircleFitType  : median
+	CircleInitType : 0     # 0=median, 1=mean
+	CircleFitType  : 0     # 0=median, 1=mean
 	DontUseFlag    : ["Outlier"]
 	minNStrawHits  : 10
 	minNHit        : 5

@@ -1,0 +1,33 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#include "TrkPatRec/fcl/prolog_trigger.fcl"
+#include "CalPatRec/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog_trigger.fcl"
+#include "CaloCluster/fcl/prolog_trigger.fcl"
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkHitReco/fcl/prolog_trigger.fcl"
+#include "TrkFilters/fcl/prolog.fcl"
+#include "CaloFilters/fcl/prolog.fcl"
+
+Trigger : {
+    producers : {
+	@table::CaloFilters.producers
+	@table::CaloClusterFast.producers
+	@table::TrkHitRecoTrigger.producers
+	@table::TrkHitReco.producers
+	@table::TprTrigger.producers
+	@table::CprTrigger.producers
+    }
+
+    filters : {
+	@table::CprTrigger.filters
+	@table::CaloFilters.filters
+	@table::TrkFilters.filters
+    }
+    
+    paths : {
+	@table::CaloFilters.sequences
+	@table::TrkFilters.sequences
+    }
+}
