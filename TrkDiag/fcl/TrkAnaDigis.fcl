@@ -20,7 +20,10 @@ services : @local::Services.Reco
 physics :
 {
   producers : @local::TrkAna.producers
-  analyzers : @local::TrkAna.analyzers
+  analyzers :  {
+    @table::TrkAna.analyzers
+    @table::TrkDiag.analyzers
+  }
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
