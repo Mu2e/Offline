@@ -61,6 +61,7 @@ namespace mu2e
 // compute initial hit t0 and drift
 //    updateHitT0(hitt0);
     setHitT0(hitt0);
+    setHitRms(1.e-6);   // to make sure that the print routine bomb if called from SeedFit
     setActivity(true);
     sett0Weight(timeWeight);
     setTemperature(0.0); // initially no temperature

@@ -138,8 +138,8 @@ BEGIN_PROLOG
     {
       module_type                            : CrvCoincidenceClusterSummarizer
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
-      crvWaveformsModuleLabel                : "CrvWaveforms"
-      timeOffsets                            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      crvWaveformsModuleLabel                : "compressDigiMCs" // Was CrvWaveforms
+      timeOffsets                            : { inputs : [ "CompressDigiMCs:protonTimeMap", "CompressDigiMCs:muonTimeMap" ] } // Was [ protonTimeMap, muonTimeMap ]
     }
 
 

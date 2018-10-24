@@ -8,19 +8,19 @@
 namespace mu2e 
 {
   struct TrkCount {
-    Int_t _ndem; // number of downstreameMinus tracks 
-    Int_t _nuem; // number of upstreameMinus tracks 
-    Int_t _ndmm; // number of downstreammuMinus tracks 
-    Int_t _ndemc; // Number of calo clusters matched to the best dem track.
-    Int_t _ndemo; // number of shared hits between primary and next-best track
-    Int_t _ndmmo; // number of shared hits between primary and muon-fit track
+    Int_t _nde; // number of downstreameMinus tracks 
+    Int_t _nue; // number of upstreameMinus tracks 
+    Int_t _ndm; // number of downstreammuMinus tracks 
+    Int_t _ndec; // Number of calo clusters matched to the best dem track.
+    Int_t _ndeo; // number of shared hits between primary and next-best track
+    Int_t _ndmo; // number of shared hits between primary and muon-fit track
     static std::string const& leafnames() { 
       static const std::string leaves =
-	std::string("ndem/I:nuem/I:ndmm/I:ndemc/I:ndemo/I:ndmmo/I");
+	std::string("nde/I:nue/I:ndmm/I:ndec/I:ndeo/I:ndmmo/I");
 	return leaves;
     }
     void reset() {
-      _ndem = _nuem = _ndmm = _ndemc = _ndemo = _ndmmo = 0;
+      _nde = _nue = _ndm = _ndec = _ndeo = _ndmo = 0;
     }
   };
 }

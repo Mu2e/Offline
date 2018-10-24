@@ -59,6 +59,8 @@ DigiCompression : {
 	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
+	keptProducts : [ "keep *_compressDigiMCs_*_*" ]
+
     }
 
     # for mixing jobs
@@ -72,11 +74,7 @@ DigiCompression : {
 	caloShowerStepTags : @nil
 	caloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	caloShowerStepROTag : @local::DigiCompressionTags.commonCaloShowerStepROTag
-    }
-
-    OutputCommands : [ "drop *_*_*_*",
-		       "keep *_compressDigiMCs_*_*",
-		       "keep mu2e::StrawDigis_*_*_*",
+	keptProducts : [ "keep mu2e::StrawDigis_*_*_*",
 		       "keep mu2e::CaloDigis_*_*_*",
 		       "keep mu2e::CrvDigis_*_*_*",
 		       "keep mu2e::StatusG4_*_*_*",
@@ -84,8 +82,21 @@ DigiCompression : {
 		       "keep mu2e::EventWindowMarker_*_*_*",
 		       "keep *_genCounter_*_*",
 		       "keep mu2e::EventWeight_*_*_*",
-		       "keep mu2e::ProtonBunchIntensity_*_*_*"
-		     ]
+		       "keep mu2e::ProtonBunchIntensity_*_*_*" ]
+    }
+
+    Check : {
+	module_type : CompressDigiMCsCheck
+	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
+	newStrawDigiMCTag : "compressDigiMCs"
+	OldTimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+	NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+    }
 }
+
+DigiCompression.OutputCommands : [ "drop *_*_*_*",
+		       @sequence::DigiCompression.Primary.keptProducts,
+		       @sequence::DigiCompression.Mixing.keptProducts
+		     ]
 
 END_PROLOG
