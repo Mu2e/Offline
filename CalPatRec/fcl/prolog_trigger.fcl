@@ -81,6 +81,12 @@ CprTrigger : { @table::CprTrigger
 	    ComboHitCollection          : TTmakeSH			 
 	    SeedCollection              : TTCalHelixFinder
 	}
+	
+	TTCalTrkFit  : { @table::CalPatRec.producers.CalTrkFit
+	    ComboHitCollection          : TTmakeSH			 
+	    SeedCollection              : TTCalSeedFit	
+	    StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
+	}
     }
 
     filters : { 
@@ -117,7 +123,7 @@ CprTrigger : { @table::CprTrigger
 CprTrigger: { @table::CprTrigger 
     producers : { @table::CprTrigger.producers
 	
-	TTCalSeedFitDem                  : { @table::CprTrigger.producers.TTCalSeedFit        
+	TTCalSeedFitDem                : { @table::CprTrigger.producers.TTCalSeedFit        
 	    SeedCollection             : TTCalHelixFinderDem
 	}
 	TTCalSeedFitDmm                  : { @table::CprTrigger.producers.TTCalSeedFit 
@@ -132,6 +138,13 @@ CprTrigger: { @table::CprTrigger
 	    fitparticle                : @local::Particle.muplus
 	    SeedCollection             : TTCalHelixFinderDmp
 	}
+	
+	TTCalTrkFitDem                 : { @table::CprTrigger.producers.TTCalTrkFit
+	    SeedCollection             : TTCalSeedFitDem
+	}
+	TTCalTrkFitDep                 : { @table::CprTrigger.producers.TTCalTrkFit        
+	    SeedCollection             : TTCalSeedFitDep
+	}
     }
     
     filters : { @table::CprTrigger.filters
@@ -139,6 +152,17 @@ CprTrigger: { @table::CprTrigger
 	TTCalHelixFinderDmm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
 	TTCalHelixFinderDep              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.eplus   }
 	TTCalHelixFinderDmp              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muplus  }
+    }
+    
+    sequences : {
+	# production sequence to find helicse
+	findHelices     : [ TTtimeClusterFinder, TThelixFinder ]
+	# production sequence to find TrackSeeds
+	KSFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDem, TTCalSeedFitDem ]
+	KSFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDep, TTCalSeedFitDep ]
+	# production sequence to find KalReps
+	KFFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDem, TTCalSeedFitDem, TTCalTrkFitDem ]
+	KFFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDep, TTCalSeedFitDep, TTCalTrkFitDep ]	
     }
 }
 

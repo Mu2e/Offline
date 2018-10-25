@@ -39,7 +39,6 @@ namespace mu2e
   private:
     art::InputTag _hsTag;
     bool _hascc; // Calo Cluster
-    unsigned _minnhits;
     int _minnstrawhits;
     double _minmom, _maxmom;
     double _maxpT;
@@ -60,11 +59,10 @@ namespace mu2e
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
     _hsTag(pset.get<art::InputTag>("HelixSeedCollection","PosHelixFinder")),
     _hascc(pset.get<bool>("RequireCaloCluster",false)),
-    _minnhits(pset.get<unsigned>("MinNHits",0)),
     _minnstrawhits(pset.get<int>("MinNStrawHits",15)),
     _minmom(pset.get<double>("MinMomentum",70.0)),
     _maxmom(pset.get<double>("MaxMomentum",120.0)),
-    _minpT(pset.get<double>("MinpT", 0.)),
+    _minpT(pset.get<double>("MinPt", 0.)),
     _maxchi2XY(pset.get<double>("MaxChi2XY", 8.)),
     _maxchi2PhiZ(pset.get<double>("MaxChi2PhiZ", 8.)),
     _maxd0(pset.get<double>("MaxD0", 200.)),
@@ -115,7 +113,6 @@ namespace mu2e
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
-          hs.hits().size() >= _minnhits &&
 	  nstrawhits >= _minnstrawhits &&
           hpT >= _minpT &&
 	  chi2XY <= _maxchi2XY &&

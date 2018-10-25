@@ -7,6 +7,7 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
+#include "CaloCluster/fcl/prolog_trigger.fcl"
 
 BEGIN_PROLOG
 #prescale factor for the calorimeter-only trigger
@@ -62,7 +63,7 @@ paths        : { @table::CaloFilters.sequences }
 physics : {
     producers: {
 	@table::producers 
-	@table::CaloClusterFast.producers
+	@table::CaloClusterTrigger.producers
     }
 
     filters  : { @table::filters }

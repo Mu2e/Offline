@@ -42,7 +42,7 @@ CaloClusterFast :
 
 
 
-CaloClusterFast :
+CaloClusterTrigger :
 {
    producers : {
        CaloClusterFast  : @local::CaloClusterFast

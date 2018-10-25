@@ -180,8 +180,17 @@ TprTrigger : {
 	TTKFFDeP             : @local::TTKFFDeP
     }
 
-    # production sequence to find helices
-    TTfindHelices : [ TTtimeClusterFinder, TThelixFinder ]
+    sequences : {
+	# production sequence to find helicse
+	findHelices     : [ TTtimeClusterFinder, TThelixFinder ]
+	# production sequence to find TrackSeeds
+	KSFDeM          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeM ]
+	KSFDeP          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeP ]
+	# production sequence to find KalReps
+	KFFDeM          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeM, TTKFFDeM ]
+	KFFDeP          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeP, TTKFFDeP ]
+    }
+    
     # define standard outputs 
     Output : {
 	Digis  : [ "keep mu2e::StrawDigis_*_*_*" ]
