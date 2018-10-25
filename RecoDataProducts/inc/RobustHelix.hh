@@ -32,6 +32,8 @@ namespace mu2e {
     float centery() const { return _rcent*sin(_fcent); }
     XYZVec center() const { return XYZVec(centerx(),centery(),0.0); }
     CLHEP::Hep3Vector centerCLHEP() const { return CLHEP::Hep3Vector(centerx(),centery(),0.0); }
+    float chi2dXY  () const { return _chi2dXY; }
+    float chi2dZPhi() const { return _chi2dZPhi; }
     // azimuth wrt the circle center expected for a given z position
     Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector

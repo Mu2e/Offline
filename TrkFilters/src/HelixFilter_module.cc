@@ -105,8 +105,8 @@ namespace mu2e
       float hmom       = hs.helix().momentum()*mm2MeV;
       int   nstrawhits = helTool.nstrawhits();
       float hpT        = hs.helix().radius()*mm2MeV;
-      float chi2XY     = helTool.chi2dXY();
-      float chi2PhiZ   = helTool.chi2dZPhi();
+      float chi2XY     = hs.helix().chi2dXY();
+      float chi2PhiZ   = hs.helix().chi2dZPhi();
       float d0         = hs.helix().rcent() - hs.helix().radius();
       float lambda     = std::fabs(hs.helix().lambda());
 
