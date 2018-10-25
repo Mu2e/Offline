@@ -43,7 +43,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 #include "TrkDiag/inc/KalDiag.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 

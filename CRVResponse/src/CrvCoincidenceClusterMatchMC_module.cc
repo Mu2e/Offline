@@ -17,9 +17,9 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulse.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusterSummaryCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "canvas/Persistency/Common/Ptr.h"
@@ -39,10 +39,10 @@
 
 namespace mu2e 
 {
-  class CrvCoincidenceClusterSummarizer : public art::EDProducer 
+  class CrvCoincidenceClusterMatchMC : public art::EDProducer 
   {
     public:
-    explicit CrvCoincidenceClusterSummarizer(fhicl::ParameterSet const& pset);
+    explicit CrvCoincidenceClusterMatchMC(fhicl::ParameterSet const& pset);
     void produce(art::Event& e);
     void beginJob();
     void beginRun(art::Run &run);
@@ -57,37 +57,37 @@ namespace mu2e
     void CollectStepPoints(std::set<art::Ptr<StepPointMC> > &steps, 
                            const art::Handle<CrvDigiMCCollection> &digis, 
                            size_t waveformIndex);
-    void GetSummary(const std::set<art::Ptr<StepPointMC> > &steps, 
-                    double &energyDeposited, double &earliestHitTime,
-                    CLHEP::Hep3Vector &earliestHitPos,
-                    art::Ptr<SimParticle> &mostLikelySimParticle);
+    void ScanStepPoints(const std::set<art::Ptr<StepPointMC> > &steps, 
+                        double &energyDeposited, double &earliestHitTime,
+                        CLHEP::Hep3Vector &earliestHitPos,
+                        art::Ptr<SimParticle> &mostLikelySimParticle);
   };
 
-  CrvCoincidenceClusterSummarizer::CrvCoincidenceClusterSummarizer(fhicl::ParameterSet const& pset) :
+  CrvCoincidenceClusterMatchMC::CrvCoincidenceClusterMatchMC(fhicl::ParameterSet const& pset) :
     _crvCoincidenceClusterFinderModuleLabel(pset.get<std::string>("crvCoincidenceClusterFinderModuleLabel")),
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel","")),
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
   {
-    produces<CrvCoincidenceClusterSummaryCollection>();
+    produces<CrvCoincidenceClusterMCCollection>();
   }
 
-  void CrvCoincidenceClusterSummarizer::beginJob()
+  void CrvCoincidenceClusterMatchMC::beginJob()
   {
   }
 
-  void CrvCoincidenceClusterSummarizer::endJob()
+  void CrvCoincidenceClusterMatchMC::endJob()
   {
   }
 
-  void CrvCoincidenceClusterSummarizer::beginRun(art::Run &run)
+  void CrvCoincidenceClusterMatchMC::beginRun(art::Run &run)
   {
   }
 
-  void CrvCoincidenceClusterSummarizer::produce(art::Event& event) 
+  void CrvCoincidenceClusterMatchMC::produce(art::Event& event) 
   {
     _timeOffsets.updateMap(event);
 
-    std::unique_ptr<CrvCoincidenceClusterSummaryCollection> crvCoincidenceClusterSummaryCollection(new CrvCoincidenceClusterSummaryCollection);
+    std::unique_ptr<CrvCoincidenceClusterMCCollection> crvCoincidenceClusterMCCollection(new CrvCoincidenceClusterMCCollection);
 
     art::Handle<CrvCoincidenceClusterCollection> crvCoincidenceClusterCollection;
     event.getByLabel(_crvCoincidenceClusterFinderModuleLabel,"",crvCoincidenceClusterCollection);
@@ -100,11 +100,6 @@ namespace mu2e
     CrvCoincidenceClusterCollection::const_iterator iter;
     for(iter=crvCoincidenceClusterCollection->begin(); iter!=crvCoincidenceClusterCollection->end(); iter++)
     {
-      int    crvSectorType            = iter->GetCrvSectorType();
-      CLHEP::Hep3Vector avgCounterPos = iter->GetAvgCounterPos();
-      double startTime                = iter->GetStartTime();
-      double endTime                  = iter->GetEndTime();
-      int    PEs                      = iter->GetPEs();
       bool   hasMCInfo                = (crvDigiMCCollection.isValid()?true:false); //MC
       double totalEnergyDeposited     = 0;         //MC
       double earliestHitTime          = NAN;       //MC
@@ -112,7 +107,7 @@ namespace mu2e
       CLHEP::Hep3Vector     earliestHitPos;        //MC
 
       //loop through all reco pulses and try to find the MC information
-      std::vector<CrvCoincidenceClusterSummary::PulseInfo> pulses; //collection all pulses (incl. reco and MC info)
+      std::vector<CrvCoincidenceClusterMC::PulseInfo> pulses; //collection all pulses (sim particles, energy dep.)
       std::map<art::Ptr<SimParticle>, int> simParticleMap;  //counting all simParticles
       std::set<art::Ptr<StepPointMC> > stepsAllPulses;  //collecting all step points for total energy calculation
                                             //use a set to avoid double counts, e.g. for two pulses coming from same digi
@@ -137,25 +132,24 @@ namespace mu2e
 
           double earliestHitTimeThisPulse; //not used here
           CLHEP::Hep3Vector earliestHitPosThisPulse; //not used here
-          GetSummary(stepsThisPulse, energyDeposited, earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticle);
+          ScanStepPoints(stepsThisPulse, energyDeposited, earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticle);
         }
 
-        pulses.emplace_back(crvRecoPulse,simParticle,energyDeposited);
+        pulses.emplace_back(simParticle,energyDeposited);
       }//loop over reco pulses
 
-      GetSummary(stepsAllPulses, totalEnergyDeposited, earliestHitTime, earliestHitPos, mostLikelySimParticle);
+      ScanStepPoints(stepsAllPulses, totalEnergyDeposited, earliestHitTime, earliestHitPos, mostLikelySimParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters
-      crvCoincidenceClusterSummaryCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, hasMCInfo, 
-                                                           pulses, mostLikelySimParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
+      crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, mostLikelySimParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
     }//loop over all clusters
 
-    event.put(std::move(crvCoincidenceClusterSummaryCollection));
+    event.put(std::move(crvCoincidenceClusterMCCollection));
   } // end produce
 
-  void CrvCoincidenceClusterSummarizer::CollectStepPoints(std::set<art::Ptr<StepPointMC> > &steps, 
-                                                          const art::Handle<CrvDigiMCCollection> &digis, 
-                                                          size_t waveformIndex)
+  void CrvCoincidenceClusterMatchMC::CollectStepPoints(std::set<art::Ptr<StepPointMC> > &steps, 
+                                                  const art::Handle<CrvDigiMCCollection> &digis, 
+                                                  size_t waveformIndex)
   {
     const CrvDigiMC &digi = digis->at(waveformIndex);
     const std::vector<art::Ptr<StepPointMC> > &stepPoints = digi.GetStepPoints();
@@ -165,10 +159,10 @@ namespace mu2e
     }
   }
 
-  void CrvCoincidenceClusterSummarizer::GetSummary(const std::set<art::Ptr<StepPointMC> > &steps, 
-                                                   double &energyDeposited, double &earliestHitTime,
-                                                   CLHEP::Hep3Vector &earliestHitPos,
-                                                   art::Ptr<SimParticle> &mostLikelySimParticle)
+  void CrvCoincidenceClusterMatchMC::ScanStepPoints(const std::set<art::Ptr<StepPointMC> > &steps, 
+                                               double &energyDeposited, double &earliestHitTime,
+                                               CLHEP::Hep3Vector &earliestHitPos,
+                                               art::Ptr<SimParticle> &mostLikelySimParticle)
   {
     energyDeposited=0;
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
@@ -213,5 +207,5 @@ namespace mu2e
 
 } // end namespace mu2e
 
-using mu2e::CrvCoincidenceClusterSummarizer;
-DEFINE_ART_MODULE(CrvCoincidenceClusterSummarizer)
+using mu2e::CrvCoincidenceClusterMatchMC;
+DEFINE_ART_MODULE(CrvCoincidenceClusterMatchMC)

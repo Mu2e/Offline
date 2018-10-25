@@ -32,7 +32,7 @@
 #include "CalPatRec/inc/KalFitResult.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 //ROOT

@@ -6,7 +6,7 @@
 #define RecoDataProducts_RobustHelix_HH
 // Mu2e
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 // Root
 #include "Rtypes.h"
 // C++
