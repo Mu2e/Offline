@@ -95,7 +95,7 @@ namespace mu2e
     // find the collection
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
     const HelixSeedCollection* hscol = hsH.product();
-    float mm2MeV = 3./10./_bz0;
+    float mm2MeV = 3./10.*_bz0;
     // loop over the collection: if any pass the selection, pass this event
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
