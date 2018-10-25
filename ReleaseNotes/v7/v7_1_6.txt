@@ -1,6 +1,10 @@
            Release notes for Mu2e Offline software, v7_1_6
 	   still under development
 
+6) kutschke Oct 24, 2018
+   Merge in Ralf's changes from branch CRV_tmp.
+   These changes remove the MC awareness of the top level reco data product.
+
 5) kutschke Oct 24, 2018
    Removed unnecessary header that was creating a compile-time loop.
       BTrkData/src/TrkCaloHit.cc
