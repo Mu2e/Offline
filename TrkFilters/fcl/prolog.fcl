@@ -46,6 +46,11 @@ TrkFilters : {
 	DeMSeedFilter : {
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTKSFDeM"
+	    MinNHits          : 15
+	    MinMomentum       : 70.      #don't apply cut
+	    MaxMomentum       : 200.     #don't apply cut
+	    MaxChi2DOF        : 20.      #don't apply cut
+	    MaxMomErr         : 10.      #don't apply cut
 	}
 	CPRDeMSeedFilter : {
 	    module_type : SeedFilter
@@ -64,6 +69,11 @@ TrkFilters : {
 	DePSeedFilter : {
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTKSFDeP"
+	    MinNHits          : 15
+	    MinMomentum       : 70.      #don't apply cut
+	    MaxMomentum       : 200.     #don't apply cut
+	    MaxChi2DOF        : 20.      #don't apply cut
+	    MaxMomErr         : 10.      #don't apply cut
 	}
 	CPRDePSeedFilter : {
 	    module_type : SeedFilter
