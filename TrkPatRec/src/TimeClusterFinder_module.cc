@@ -134,8 +134,8 @@ namespace mu2e {
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _maxdt             (pset.get<float>(  "DtMax",25.0)),
     _minnhits          (pset.get<unsigned>("MinNHits",10)),
-    _minkeepmva        (pset.get<float>(  "MinKeepHitMVA",0.1)),
-    _minaddmva         (pset.get<float>(  "MinAddHitMVA",0.1)),
+    _minkeepmva        (pset.get<float>(  "MinKeepHitMVA",0.2)),
+    _minaddmva         (pset.get<float>(  "MinAddHitMVA",0.2)),
     _maxdPhi           (pset.get<float>(  "MaxdPhi",1.5)),
     _tmin              (pset.get<float>(  "tmin",450.0)),
     _tmax              (pset.get<float>(  "tmax",1700.0)),
@@ -351,13 +351,13 @@ namespace mu2e {
       tc._nsh += nsh;
       const XYZVec& pos = ch.pos();
       float htime = _ttcalc.comboHitTime(ch);
-      float pwt = ch.nStrawHits();
+      float hwt = ch.nStrawHits();
       tmin(htime);
       tmax(htime);
-      tacc(htime,weight=pwt);
-      xacc(pos.x(),weight=pwt);
-      yacc(pos.y(),weight=pwt);
-      zacc(pos.z(),weight=pwt);
+      tacc(htime,weight=hwt);
+      xacc(pos.x(),weight=hwt);
+      yacc(pos.y(),weight=hwt);
+      zacc(pos.z(),weight=hwt);
     }
 
     if (tc.hasCaloCluster()) {
@@ -481,16 +481,16 @@ namespace mu2e {
 
   void TimeClusterFinder::clusterMean(TimeCluster& tc) {
     // compute properties using weighted mean
-    accumulator_set<float, stats<tag::weighted_variance(lazy)>, unsigned > terr;
-    accumulator_set<float, stats<tag::weighted_mean >,unsigned > xacc, yacc, zacc;
+    accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
+    accumulator_set<float, stats<tag::weighted_mean >,float > xacc, yacc, zacc;
     for(StrawHitIndex ish : tc._strawHitIdxs) {
       ComboHit const& ch = (*_chcol)[ish];
-      unsigned nsh = ch.nStrawHits();
+      float hwt = ch.nStrawHits();
       float cht = _ttcalc.comboHitTime(ch);
-      terr(cht,weight=nsh);
-      xacc(ch.pos().x(),weight=nsh);
-      yacc(ch.pos().y(),weight=nsh);
-      zacc(ch.pos().z(),weight=nsh);
+      terr(cht,weight=hwt);
+      xacc(ch.pos().x(),weight=hwt);
+      yacc(ch.pos().y(),weight=hwt);
+      zacc(ch.pos().z(),weight=hwt);
     }
     if (tc.hasCaloCluster()) {
       if(_useccpos){
