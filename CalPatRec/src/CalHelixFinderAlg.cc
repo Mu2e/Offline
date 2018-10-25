@@ -117,7 +117,7 @@ namespace mu2e {
 
     HelixTraj ht(pvec,hcov);
 
-    Helix._helix = ht.clone();
+    Helix._helix = ht.clone();    
   }
 
 //-------------------------------------------------------------------------//

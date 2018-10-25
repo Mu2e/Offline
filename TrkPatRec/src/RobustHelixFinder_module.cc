@@ -716,6 +716,9 @@ namespace mu2e {
     
     helixData._nZPhiSh = nGoodSH;
 
+    //update the value of the chi2ZPhi
+    helix._chi2dZPhi   = chi2dZPhi/chCounter;
+
     if (_diag) {
       helixData._diag.chi2dZPhi = chi2dZPhi/chCounter;
     }
@@ -1157,6 +1160,8 @@ namespace mu2e {
     
     helixData._nXYSh = nGoodSH;
     helixData._nXYCh = int(chCounter);
+
+    helix._chi2dXY   = chi2dXY/chCounter;
 
     if (_diag) {
       helixData._diag.chi2dXY = chi2dXY/chCounter;

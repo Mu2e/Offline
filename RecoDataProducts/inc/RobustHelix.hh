@@ -67,6 +67,8 @@ namespace mu2e {
     Float_t _radius;  // transverse radius of the helix (mm).  Always positive
     Float_t _lambda; // dz/dphi (mm/radian)
     Float_t _fz0; // azimuth (phi) at the center z position (radians)
+    Float_t _chi2dXY;   // squared sum of the hit residuals wrt the XY plane normalized by the degree of freedom
+    Float_t _chi2dZPhi; // squared sum of the hit residuals wrt the ZPhi plane normalized by the degree of freedom
     Helicity _helicity; // explicit helicity value
   };
   std::ostream& operator<<(std::ostream& os, mu2e::RobustHelix const& helix);
