@@ -22,7 +22,8 @@ namespace mu2e
 			 double crystalHalfLength, Hep3Vector const& clusterAxis,
 			 const HitT0& hitt0,double fltlen, double timeWeight, double dtoffset) :
     _caloCluster(caloCluster),
-    _dtoffset(dtoffset)
+    _dtoffset(dtoffset),
+    _hitErr(10.0)  // transverse cluster resolution this should come from data FIXME!!
   {
 
     caloClusterPos.setZ(caloClusterPos.z() + crystalHalfLength);
@@ -61,8 +62,7 @@ namespace mu2e
       status = poca().status();
       double residual = poca().doca();
       setHitResid(residual);
-      double     extErr  = temperature();
-      double     totErr  = sqrt(_hitErr*_hitErr + extErr*extErr);
+      double     totErr  = _hitErr; // geometric error is unaffected by temperature
       setHitRms(totErr);
     } else {
 //      cout << "TrkCaloHit:: updateMeasurement() failed" << endl;

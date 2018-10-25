@@ -48,7 +48,7 @@ namespace mu2e
     const CaloCluster& _caloCluster;
     double             _dtoffset;
     TrkLineTraj*       _hittraj;
-    double             _hitErr;
+    double             _hitErr; // geometric error on the cluster transverse position for POCA calculation
   };
 
 // define TrkStrawHitVector, to allow explicit conversion and construction
