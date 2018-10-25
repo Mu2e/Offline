@@ -111,26 +111,11 @@ namespace mu2e
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
     if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/CRVSectors)");
-
     ConfigFileLookupPolicy configFile;
     _visibleEnergyAdjustmentFileName = configFile(_visibleEnergyAdjustmentFileName);
 
-    produces<CrvPhotonsCollection>();
-  }
-
-  void CrvPhotonGenerator::beginRun(art::Run& rr)
-  {
-    GeomHandle<CosmicRayShield> CRS;
-    std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
-    if(shields.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
-
-    for(size_t i=0; i<shields.size(); i++)
+    for(size_t i=0; i<_lookupTableFileNames.size(); i++)
     {
-      if(shields[i].getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
-        throw std::logic_error("ERROR: scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
-      if(shields[i].getName().substr(4)!=_lookupTableCRVSectors[i]) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
-                            //substr(4) removes the "CRV_" part of the sector name
-
       bool tableLoaded=false;
       for(size_t j=0; j<i; j++)
       {
@@ -155,6 +140,23 @@ namespace mu2e
       photonMaker->SetFiberDecayTime(_fiberDecayTime);
       photonMaker->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
       std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
+    }
+
+    produces<CrvPhotonsCollection>();
+  }
+
+  void CrvPhotonGenerator::beginRun(art::Run& rr)
+  {
+    GeomHandle<CosmicRayShield> CRS;
+    std::vector<CRSScintillatorShield> const &shields = CRS->getCRSScintillatorShields();
+    if(shields.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
+
+    for(size_t i=0; i<shields.size(); i++)
+    {
+      if(shields[i].getCRSScintillatorBarDetail().getMaterialName()!="G4_POLYSTYRENE")
+        throw std::logic_error("ERROR: scintillator material is not the expected G4_POLYSTYRENE which is used in the look-up tables");
+      if(shields[i].getName().substr(4)!=_lookupTableCRVSectors[i]) throw std::logic_error("ERROR: mismatch between the geometry and the specified lookup table CRVSectors");
+                            //substr(4) removes the "CRV_" part of the sector name
     }
   }
 

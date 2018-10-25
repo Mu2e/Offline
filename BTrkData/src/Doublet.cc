@@ -1,5 +1,5 @@
 //
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 
 namespace mu2e {

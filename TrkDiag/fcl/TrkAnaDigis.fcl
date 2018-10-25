@@ -11,7 +11,7 @@
 #include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
-process_name : TrkAna
+process_name : TrkAnaDigis
 
 source : { module_type : RootInput }
 
