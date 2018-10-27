@@ -147,7 +147,7 @@ namespace mu2e {
     _usecc             (pset.get<bool>(    "UseCaloCluster",false)),
     _useccpos          (pset.get<bool>(    "UseCaloClusterPosition",false)),
     _ccmine            (pset.get<float>(  "CaloClusterMinE",50.0)),
-    _ccwt              (pset.get<float>(  "CaloClusterWeight",5.0)),
+    _ccwt              (pset.get<float>(  "CaloClusterWeight",10.0)),
     _tcMVA           (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
     _tcCaloMVA           (pset.get<fhicl::ParameterSet>("ClusterCaloMVA",fhicl::ParameterSet())),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
