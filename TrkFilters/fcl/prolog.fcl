@@ -109,7 +109,7 @@ TrkFilters : {
 	    KalSeedCollection : "TTKSFDeP"
 	    MinNStrawHits     : 15
 	    MinMomentum       : 70.      
-	    MaxMomentum       : 200.     #don't apply cut
+	    MaxMomentum       : 110.     #don't apply cut
 	    MaxChi2DOF        : 20.      #don't apply cut
 	    MaxMomErr         : 10.      #don't apply cut
 	    MinD0             : -200.
@@ -120,7 +120,7 @@ TrkFilters : {
 	    KalSeedCollection : "TTCalSeedFitDep"    
 	    MinNStrawHits     : 15
 	    MinMomentum       : 70.      
-	    MaxMomentum       : 200.     #don't apply cut
+	    MaxMomentum       : 110.     #don't apply cut
 	    MaxChi2DOF        : 20.      #don't apply cut
 	    MaxMomErr         : 10.      #don't apply cut
 	    MinD0             : -200.
@@ -208,6 +208,7 @@ TrkFilters : {
 
     # sequences for different trigger paths.  Early triggers are prescaled
     sequences : {
+	#trkpatrec tracking
 	TPRTCFilter       : [ TPRTCEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			      TTtimeClusterFinder, TPRTCFilter,  TPRTCPrescale  ]
 	TPRPosHelixFilter : [ TPRPosHelixEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
@@ -216,7 +217,7 @@ TrkFilters : {
 			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TTKSFDeM, TPRDeMSeedFilter, TPRDeMSeedPrescale ]
 	TPRDePSeedFilter  : [ TPRDePSeedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRNegHelixFilter, TTKSFDeP, TPRDePSeedFilter, TPRDePSeedPrescale ]
-		
+	
 	#calo-seeded tracking
 	CPRDeMSeedFilter : [ CPRDeMSeedEventPrescale, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 			     TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDem, CPRPosHelixFilter,
@@ -226,9 +227,9 @@ TrkFilters : {
 			     TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
 
 	#kalman filter included
-	DeMKalFilter     : [ @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			     TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, 
-			     TTKSFDeM, TPRDeMSeedFilter, TTKFFDeM, TPRDeMKalFilter ]
+	TPRDeMKalFilter     : [ @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+				TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, 
+				TTKSFDeM, TPRDeMSeedFilter, TTKFFDeM, TPRDeMKalFilter ]
 	# add sequences for upstream, calibration, ...  FIXME!
     }
 }

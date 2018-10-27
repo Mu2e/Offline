@@ -1,11 +1,12 @@
 # -*- mode: tcl -*-
 #------------------------------------------------------------------------------
+# this file includes all the prolog needed to run the reconstruction 
+# at the trigger level and the filters used to make the trigger decision
 #------------------------------------------------------------------------------
 #include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
-#include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
 #include "TrkFilters/fcl/prolog.fcl"
 #include "CaloFilters/fcl/prolog.fcl"
@@ -13,7 +14,7 @@
 Trigger : {
     producers : {
 	@table::CaloFilters.producers
-	@table::CaloClusterFast.producers
+	@table::CaloClusterTrigger.producers
 	@table::TrkHitRecoTrigger.producers
 	@table::TrkHitReco.producers
 	@table::TprTrigger.producers
