@@ -35,7 +35,7 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 
 #include "TrkDiag/inc/WeightModule.hh"
-#include "TrkDiag/inc/RMCPhys.hh"
+#include "Mu2eUtilities/inc/RMCPhys.hh"
 namespace mu2e {
   typedef WeightModule<RMCPhys> RMCWeight; 
 }
