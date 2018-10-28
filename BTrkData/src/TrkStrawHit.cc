@@ -18,7 +18,6 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
-#include "TrkReco/inc/TrkUtilities.hh"
 #include "cetlib_except/coded_exception.h"
 #include <algorithm>
 
@@ -28,7 +27,7 @@ using CLHEP::Hep3Vector;
 namespace mu2e
 {
   TrkStrawHit::TrkStrawHit(const ComboHit& strawhit  , const Straw& straw    , StrawHitIndex index,
-			   const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull, 
+			   const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull,
 			   double          timeWeight) :
     _combohit(strawhit),
     _straw(straw),
@@ -41,7 +40,7 @@ namespace mu2e
 // make sure this ComboHit represents only a single straw hit
     if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)
       throw cet::exception("RECO")<<"mu2e::TrkStrawHit: ComboHit > 1 StrawHit"<< endl;
-    // The StrawResponse should be passsed in from outside FIXME! 
+    // The StrawResponse should be passsed in from outside FIXME!
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
     Hep3Vector const& wiredir = straw.getDirection();
     Hep3Vector const& mid = straw.getMidPoint();
@@ -80,8 +79,8 @@ namespace mu2e
   }
 
   bool
-  TrkStrawHit::signalPropagationTime(double &PropTime, double &Doca      , 
-				     double Resid    , double &ResidError, 
+  TrkStrawHit::signalPropagationTime(double &PropTime, double &Doca      ,
+				     double Resid    , double &ResidError,
 				     CLHEP::Hep3Vector TrajDirection){
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
     // convert this to a distance to the wire
@@ -93,11 +92,11 @@ namespace mu2e
       Doca *= _iamb;
     // restrict the range, symmetrically to avoid bias
     double rad       = _straw.getRadius();
-    double mint0doca = srep->Mint0doca(); 
+    double mint0doca = srep->Mint0doca();
     if(Doca > mint0doca && Doca < rad-mint0doca){
       // translate the DOCA into a time
       Hep3Vector tperp = TrajDirection - TrajDirection.dot(straw().getDirection())*straw().getDirection();
-      double phi = tperp.theta(); 
+      double phi = tperp.theta();
       double tdrift = srep->driftDistanceToTime(_combohit.strawId(), Doca, phi);
       double vdrift = srep->driftInstantSpeed(_combohit.strawId(),Doca, phi);
       PropTime    = tdrift + _stime;
@@ -108,8 +107,8 @@ namespace mu2e
       return false;
     }
   }
-  
-  void 
+
+  void
   TrkStrawHit::trackT0Time(double &Htime, double T0flt, const TrkDifPieceTraj* Ptraj, double Vflt){
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
     // compute the flightlength to this hit from z=0 (can be negative)
@@ -142,7 +141,7 @@ namespace mu2e
 // convert time to distance.  This computes the intrinsic drift radius error as well
 
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
-   _phi = tperp.theta(); 
+   _phi = tperp.theta();
    _rdrift = srep->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
    _vdriftinst = srep->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
    double vdriftconst = srep->driftConstantSpeed();

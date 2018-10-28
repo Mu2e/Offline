@@ -30,7 +30,7 @@
 #include "CalPatRec/inc/KalFitResultNew.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"

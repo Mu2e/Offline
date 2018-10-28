@@ -11,7 +11,7 @@
 //
 
 #include <iostream>
-#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std;
 

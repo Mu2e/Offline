@@ -7,7 +7,7 @@
 #ifndef StrawHitInfo_hh
 #define StrawHitInfo_hh
 //#include "BTrk/BaBar/BaBar.hh"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "Rtypes.h"
 
 namespace mu2e {

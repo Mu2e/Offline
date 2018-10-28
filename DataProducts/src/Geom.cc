@@ -1,4 +1,4 @@
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 namespace Geom {
   XYZVec toXYZVec(CLHEP::Hep3Vector const& cvec) { return
     XYZVec((float)cvec.x(),(float)cvec.y(),(float)cvec.z()); }

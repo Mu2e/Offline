@@ -7,7 +7,7 @@
 #define TNTClusterer_HH
 
 #include "TrkReco/inc/BkgClusterer.hh"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "fhiclcpp/ParameterSet.h"
 #include "TTree.h"
 #include "TH2.h"
