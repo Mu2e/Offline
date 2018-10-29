@@ -84,10 +84,10 @@ namespace mu2e {
     }
 
     // Need this to interface with legacy code; prefer to remove it if possible.
-    explicit StepFilterMode( int id):
-      _id(static_cast<enum_type>(id)){
-      isValidorThrow(_id);
-    }
+//    explicit StepFilterMode( int id):
+//      _id(static_cast<enum_type>(id)){
+//      isValidorThrow(_id);
+//    }
 
     virtual ~StepFilterMode(){}
 

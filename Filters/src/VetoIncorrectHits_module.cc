@@ -14,7 +14,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"

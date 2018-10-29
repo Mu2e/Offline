@@ -44,7 +44,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/PIDProduct.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 

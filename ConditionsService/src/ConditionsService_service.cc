@@ -14,6 +14,7 @@
 
 // Mu2e include files
 #include "ConditionsService/inc/ConditionsService.hh"
+#include "GeometryService/inc/GeometryService.hh"
 
 // Calibration entities.
 // Would like to break the coupling to these.
@@ -47,6 +48,11 @@ namespace mu2e {
     _entities(),
     _run_count()
   {
+
+    // by creating this handle here, we make sure that geometry service is
+    // created before any conditions service access, and its callbacks are called first
+    art::ServiceHandle<GeometryService> g;
+
     _config.printOpen(std::cout, "Conditions");
     iRegistry.sPreBeginRun.watch(this, &ConditionsService::preBeginRun);
     iRegistry.sPostEndJob.watch (this, &ConditionsService::postEndJob   );
