@@ -41,9 +41,11 @@ void mu2e::TrkQualHelper::fillTrkQual(const KalSeed& kseed, TrkQual& trkqual, co
     }
     kseg = *bestkseg;
     if (bestkseg != ksegs.end()) {
+      double charge = kseed.particle().charge();
+
       trkqual[TrkQual::momerr] = bestkseg->momerr();
-      trkqual[TrkQual::d0] = bestkseg->helix().d0();
-      trkqual[TrkQual::rmax] = bestkseg->helix().d0() + 2.0/bestkseg->helix().omega();
+      trkqual[TrkQual::d0] = -1*charge*bestkseg->helix().d0();
+      trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
 
       trkqual.setMVAStatus(TrkQual::calculated);
       trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values()));
