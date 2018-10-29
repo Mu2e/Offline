@@ -1,4 +1,5 @@
-// Andrei Gaponenko, 2015
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)--> rhb adapts for antiprotons
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -7,187 +8,165 @@
 
 BEGIN_PROLOG
 
-pbars1out: {
-   type: pdgId
-   pars: [ -2212 ]  # stop and save pbars
-   write: pbars1
+// Energy cuts on electron, positron, photon, and neutron.
+CutEPPhN : {
+    type : intersection
+    pars : [ { type: kineticEnergy cut: 100.0 },
+             { type: pdgId pars: [ 11, -11, 22, 2112 ] } ]
 }
-
-// Energy cut on everything.  Very conservative: 2*m_proton.
-pbars1EkCuts: {  type: kineticEnergy  cut: 1876. } // MeV
 
 END_PROLOG
 
 # Give this job a name.
-process_name : pbars0
+process_name : pbarg4s1
 
-source : {
-   module_type : EmptyEvent
-   maxEvents   : @nil
+source : { 
+    module_type : RootInput
 }
 
 services : {
-   message               : @local::default_message
-   TFileService          : { fileName : "nts.owner.pbar-g4s0.version.sequencer.root" }
-   RandomNumberGenerator : { }
-
-   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
-   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-   G4Helper               : { }
-   SeedService            : @local::automaticSeeds
+    message                : @local::default_message
+    TFileService           : { fileName : "nts.owner.pbar_g4s1.version.sequencer.root" }
+    RandomNumberGenerator  : {}
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : {}
+    SeedService            : @local::automaticSeeds
 }
 
 physics : {
-   producers : {
-      generate : {
-         module_type : EventGenerator
-         inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
 
-      genCounter: { module_type : GenEventCounter }
+    producers : {
 
-      g4run : {
-         module_type       : Mu2eG4
-         physics           : @local::mu2eg4DefaultPhysics
-         ResourceLimits    : @local::mu2eg4DefaultResourceLimits
-         TrajectoryControl : @local::mu2eg4NoTrajectories
-//         debug             : @local::mu2eg4DefaultDebug
- debug: {
-    stepLimitKillerVerbose: true
-    printPhysicsProcessSummary : false
-    PiENuPolicyVerbosity : 0
-    printTrackTiming: false
-    worldVerbosityLevel : 0
-    printElements : false
-    printMaterials : false
-    exportPDTStart : false
-    exportPDTEnd : false
-    fillDiagnosticHistograms: false
-    warnEveryNewRun : false
-    diagLevel : 0
-    trackingVerbosityLevel : 2
-    steppingVerbosityLevel : 2
-    checkFieldMap : 0
-    writeGDML : false
-    GDMLFileName : "mu2e.gdml"
-}
-         visualization     : @local::mu2eg4NoVisualization
+        g4run : {
 
-         generatorModuleLabel : generate
-         MultiStageParameters : {} // This is the first stage
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
 
-         SDConfig: {
-            enableSD : [] // activate just the explicitly listed SDs
-            TimeVD   : { times: [] }
-         }
+            generatorModuleLabel : generate 
+            MultiStageParameters : {
+                 simParticleNumberOffset : 100000
+                 genInputHits               : ["g4filter:pbars0"]
+                 inputSimParticles          : "pbarWrite"
+                 inputMCTrajectories        : ""
+                 inputPhysVolumeMultiInfo   : "compressPV"
+          }
 
-         Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
-         // Mu2eG4 cuts are evaluated in the listed order.
-         // The first match wins.  For the "intersection"
-         // type, the first false stops the evaluation.
-         // For the "union" type the first true stops the evaluation.
-         Mu2eG4SteppingOnlyCut : {
-            type: union pars: [
-               @local::pbars1out,
-               @local::pbars1EkCuts,
-               { type: notInVolume pars: [ "ProductionTarget" ] }
-            ]
-         }
-         Mu2eG4CommonCut : @local::mu2eg4NoCut
+            doWriteLegacyPhysVolumeInfo : false
 
-         SimParticlePrinter : {
-            enabled             : false
-            primariesOnly       : false
-            prefix              : "SimParticle: "
-         }
+            SDConfig : {
+                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
+                TimeVD           : { times : [] }
+            }
 
-      }
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            // For the "union" type the first true stops the evaluation.
+            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+            Mu2eG4CommonCut : {
+                type : union
+                pars : [
+                    @local::CutEPPhN,
+                    { type: inVolume pars: [ HallAir ] },
+                   {
+		      type: intersection
+		      pars: [
+     		     {
+                        type  : inVolume
+                        pars  : [TS1Vacuum]
+		     },
+		     {
+			type: pdgId
+			pars: [ -2212 ]
+		     }
+		     ]
+                        write : enterTS1
+                    }
+                ]
+            }
 
-      compressPV : {
-         module_type    : CompressPhysicalVolumes
-         volumesInput   : "g4run"
-         hitInputs      : []
-         particleInputs : [ "g4run" ]
-      }
+ 
+            SimParticlePrinter : {
+                enabled       : false
+                primariesOnly : false
+                prefix        : "SimParticle : "
+            }
+        } // g4run
 
-   }
+ 
+        compressPV : {
+            module_type    : CompressPhysicalVolumes
+            volumesInput   : "g4run"
+            hitInputs      : []
+            particleInputs : [ "g4filter" ]
+        }
+    } // producers
 
-   analyzers : {
-      genCountLogger : {
-         module_type : GenEventCountReader
-      }
-   }
+    analyzers : {
+        genCountLogger : {
+            module_type : GenEventCountReader
+        }
+        readVirtualDetector : {
+             module_type : ReadVirtualDetector
+             savePDG : [-2212]
+             saveVD  : [91,92]
+        }
+        readAntiProtonSteps : {
+             module_type : ReadAntiProtonSteps
+             savePDG : [-2212]
+             psVacuumStepPoints : "enterTS1"
+       }
 
-   filters: {
-      g4filter: {
-         module_type               : FilterG4Out
-         noInstanceName            : true
-         mainHitInputs             : [ "g4run:pbars1" ]
-         numSimParticleCollections : 1
-         vetoDaughters             : []
-      }
-   }
+    } // analyzers
 
-   trigFilter    : [ generate, genCounter, g4run, compressPV ]
-   trigger_paths : [ trigFilter ]
-
-   e1        : [ genCountLogger, allOutput ]
-   end_paths : [ e1 ]
-}
-
-outputs: {
-   filteredOutput     : {
-      module_type    : RootOutput
-      SelectEvents   : ["trigFilter"]
-      outputCommands : [ "drop *_*_*_*",
-         "keep mu2e::GenParticles_*_*_*",
-         "keep mu2e::GenEventCount_*_*_*",
-         "keep mu2e::StatusG4_*_*_*",
-         "keep *_g4filter_*_*",
-         "keep *_compressPV_*_*" ]
-      fileName       : "sim.owner.pbar-g4s1.version.sequencer.art"
-   }
-
-   allOutput     : {
-      module_type    : RootOutput
-      SelectEvents   : ["trigFilter"]
-      outputCommands : [ "keep *_*_*_*" ]
-      fileName       : "sim.owner.pbar-g4s1.version.sequencer.art"
-   }
+    filters : {
+        g4filter : {
+            module_type               : FilterG4Out
+            noInstanceName            : true
+            mainHitInputs             : [ "g4run:enterTS1" ]
+            extraHitInputs            : [ "g4run:virtualdetector"]
+            numSimParticleCollections : 1
+            vetoDaughters             : []
+        }
+    } // filters
 
 
+    trigFilter    : [ g4run, g4filter, compressPV ]
+    trigger_paths : [ trigFilter ]
+
+    e1        : [ filteredOutput, genCountLogger ]
+    end_paths : [ e1 ]
+} // physics
+
+outputs : {
+    filteredOutput : {
+        module_type    : RootOutput
+        SelectEvents   : [ "trigFilter" ]
+        outputCommands : [ "drop *_*_*_*",
+                           "keep mu2e::GenParticles_*_*_*",
+                           "keep mu2e::GenEventCount_*_*_*",
+                           "keep mu2e::StatusG4_*_*_*",
+                           "keep *_pbarWrite_*_*",
+                           "keep *_g4filter_*_*",
+                           "keep *_compressPV_*_*" ]
+        fileName       : "sim.owner.antiprotons_g4s1.version.sequencer.art"
+    }
 }
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
-#physics.producers.g4run.physics.physicsListName: "FTFP_BERT_PBAR_MU2E02"
 
-// Limit the amount of "Begin processing the ... record" messages
+// Limit the rate of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
-// Initialze seeding of random engines for an out-of-the-box test job.
-// Grid jobs will overwrite this to use different seeds.
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed          : 0
 services.SeedService.maxUniqueEngines  : 20
-
-physics.producers.g4run.Mu2eG4SteppingOnlyCut : { }
-physics.producers.g4run.Mu2eG4CommonCut : {  
-   type: plane normal: [  0,  0, -1 ] point : [ 0, 0, -6500 ]
-}
-physics.producers.g4run.Mu2eG4StackingOnlyCut : { 
-   type: union
-   pars: [
-      {type: intersection pars: [ 
-	    {type: pdgId pars:  [ 2212,2112 ]}, 
-	    {type: kineticEnergy cut: 5000.0} 
-	 ] },
-      {type: intersection pars: [ 
-	    {type: pdgId pars:  [ 211, -211 ]}, 
-	    {type: kineticEnergy cut: 6000.0} 
-	 ] },
-      {type: notPdgId pars:  [ 2212,2112, 211, -211 ]}
-   ]
-
-}

@@ -17,7 +17,7 @@ CutEPPhN : {
 END_PROLOG
 
 # Give this job a name.
-process_name : pbarg4s1
+process_name : antiprotonsg4s2
 
 source : { 
     module_type : RootInput
@@ -25,7 +25,7 @@ source : {
 
 services : {
     message                : @local::default_message
-    TFileService           : { fileName : "nts.owner.pbar_g4s1.version.sequencer.root" }
+    TFileService           : { fileName : "nts.owner.antiprotons_g4s2.version.sequencer.root" }
     RandomNumberGenerator  : {}
     GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt"    }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

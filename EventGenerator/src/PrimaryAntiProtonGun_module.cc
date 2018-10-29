@@ -61,6 +61,7 @@
 
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "Mu2eUtilities/inc/copySimParticleCollection.hh"
+#include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 
 // ROOT includes
@@ -204,6 +205,7 @@ namespace mu2e {
 
 
     produces <mu2e::SimParticleCollection>(""); 
+    produces <mu2e::StepPointMCCollection>("");
  
     // set up histos
     if (_doHistograms)
@@ -328,11 +330,21 @@ namespace mu2e {
 
     //
     // make new output collection; also return before I start defining kinematics on non-existent particle.  
-    std::unique_ptr<mu2e::SimParticleCollection> outSPp(new mu2e::SimParticleCollection());
+    std::unique_ptr<mu2e::SimParticleCollection> outSimPartPtr(new mu2e::SimParticleCollection());
+    //
+    // will have to dereference the pointer to the simparticle collection
+    auto& outSimPart = *outSimPartPtr;
+
+
+    //
+    // need a new StepPointMCCollection with the outgoing proton to trigger G4 in next stage
+    std::unique_ptr<mu2e::StepPointMCCollection> outStepPointMCPtr(new mu2e::StepPointMCCollection());
+    auto& outStepPoint = *outStepPointMCPtr;
 
     if(iInteracting <= 0) { // failed to find interacting proton
-      //write empty collection
-      event.put(std::move(outSPp), "");
+      //write empty collections
+      event.put(std::move(outSimPartPtr), "");
+      event.put(std::move(outStepPointMCPtr),"");
       return;	
     }
 
@@ -411,9 +423,10 @@ namespace mu2e {
     //
     // in order to make the pbar's art pointer to parent, need to 
     // collect info about the parent product
-    //    auto SPpid = getProductID<SimParticleCollection>(_inputModuleLabel);
-    auto SPpid = simParticleHandle.id();
+    auto SPpid = getProductID<SimParticleCollection>("");
+    //      auto SPpid = simParticleHandle.id();
     auto SPpg  = event.productGetter(SPpid);
+    copySimParticleCollection(simParticles,outSimPart,SPpid,SPpg);
 
     //
     // make the parent art ptr
@@ -421,53 +434,62 @@ namespace mu2e {
     //
     // make new SimParticle:  create pbar, copy starting point..
 
-    //
-    // will have to dereference the pointer to the simparticle collection
-    auto& outSP = *outSPp;
-
 
     if (_verbosityLevel > 0){
-      os << "size of sim particle collection before pbar = " << outSP.size() << std::endl;
+      os << "size of sim particle collection before pbar = " << outSimPart.size() << std::endl;
     }
-
 
     // get key for new simpart
     // https://internal.dunescience.org/doxygen/map__vector_8h_source.html for next line; 
     key_type newPbarKey = cet::map_vector_key(biggestSimParticleId + 1);
 
+
+    if (_verbosityLevel > 1){
+      os << "made newPbarKey, about to make newPbar" << std::endl;
+    }
+    auto const& oldParent = simParticles[key_type(iInteracting)]; 
     SimParticle newPbar(
-			 newPbarKey                            // id
+			newPbarKey                            // id
 			,0                                     // stageOffset
 			,pptr                                  // parentSim
 			,PDGCode::anti_proton                  // pdgId
 			,art::Ptr<GenParticle>()               // since this comes from a SimParticle the ptr to a GenParticle should be null
-			,pptr->endPosition()                   // born where parent stopped
-			,momPbar                               // momentum created here
-			,pptr->endGlobalTime()                 // pbar created at same time as parent interacted
+			,oldParent.endPosition()                   // born where parent stopped
+			,momPbar                              // momentum created here
+			,oldParent.endGlobalTime()                 // pbar created at same time as parent interacted
 			,0.                                    // proper time is zero for this new particle
-			,pptr->endVolumeIndex()                // starts where parent ends
+			,oldParent.endVolumeIndex()                // starts where parent ends
 			,1                                     // G4 status for new particle
 			,ProcessCode::mu2eProtonInelastic      // defined for this sort of process
 			);
+
+    if (_verbosityLevel > 1){
+      os << "made newPbar" << std::endl;
+    }
+
+
     //
     // add end information to complete SimParticle
     newPbar.addEndInfo(
-		        pptr->endPosition()                   // hasn't gone anywhere
+		       oldParent.endPosition()                   // hasn't gone anywhere
 		       ,momPbar                               // ditto, just fill in
-		       ,pptr->endGlobalTime()                 // ditto
+		       ,oldParent.endGlobalTime()                 // ditto
 		       ,0.                                    // again no change in proper time
-		       ,pptr->endVolumeIndex()                // same
+		       ,oldParent.endVolumeIndex()                // same
 		       ,1                                     // G4 status for where pbar ends
-		       ,ProcessCode::mu2eProtonInelastic      // same process code
+		       ,ProcessCode::mu2eProtonInelastic           // same process code
 		       ,momPbar.e()- _mass                    // preLastStepKE
 		       ,0                                     // nSteps
-		       );                       
- 
-
+		       );                 
     //
     // you would think one could treat this like an STL container but you would be wrong...
-    outSP[newPbarKey] = newPbar;
-    copySimParticleCollection(simParticles,outSP,SPpid,SPpg);
+
+    if (_verbosityLevel > 1){
+      os << "made newPbar and added endInfo" << std::endl;
+    }
+ 
+    outSimPart[newPbarKey] = newPbar;
+
 
     //
     // write out new collection
@@ -475,7 +497,7 @@ namespace mu2e {
     if (_verbosityLevel > 1){
       os << " \n \n \n" << "output simpart: " << "\n" << std::endl;
 
-      for (const auto& outPartPair: outSP){
+      for (const auto& outPartPair: outSimPart){
 	auto const& outPart = outPartPair.second;
 	key_type const outKey = outPartPair.first;
 	art::Ptr<SimParticle> const& outParentPtr = outPart.parent();
@@ -484,28 +506,77 @@ namespace mu2e {
 	os 
 	  << std::setiosflags(std::ios::fixed | std::ios::right) 
 	  << " " << std::setw(7) << outKey
-	   << " " << std::setw(7) << outParentKey
-	   << " " << std::setw(8) << outPart.pdgId()
-	   << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().x()
-	   << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().y()
-	   << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().z()
-	   << " " << std::setw(9) << std::setprecision(1) << outPart.startMomentum().vect().mag()
-	   << "   "
-	   << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().x()
-	   << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().y()
-	   << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().z()
-	   << " " << std::setw(9) << std::setprecision(1) << outPart.endMomentum().vect().mag()
-	   << " " << std::setw(6) << outPart.endVolumeIndex()
-	   << "  "
-	   << " " << std::setiosflags(std::ios::left) << outPart.stoppingCode().name() 
-	   << std::endl;
+	  << " " << std::setw(7) << outParentKey
+	  << " " << std::setw(8) << outPart.pdgId()
+	  << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().x()
+	  << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().y()
+	  << " " << std::setw(8)  << std::setprecision(1) << outPart.startPosition().z()
+	  << " " << std::setw(9) << std::setprecision(1) << outPart.startMomentum().vect().mag()
+	  << "   "
+	  << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().x()
+	  << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().y()
+	  << " " << std::setw(8)  << std::setprecision(1) << outPart.endPosition().z()
+	  << " " << std::setw(9) << std::setprecision(1) << outPart.endMomentum().vect().mag()
+	  << " " << std::setw(6) << outPart.endVolumeIndex()
+	  << "  "
+	  << " " << std::setiosflags(std::ios::left) << outPart.stoppingCode().name() 
+	  << std::endl;
      
       }
     }
-   event.put(std::move(outSPp), "");
+
+    //
+    // I need to create a StepPointMC
+    bool foundThePbar{false};
+    for (const auto& outPartPair: outSimPart){
+      auto const& outPart = outPartPair.second;
+      key_type const outKey = outPartPair.first;
+      if (_verbosityLevel > 1){
+	os << "copied collection PDGid = " << outPart.pdgId() << std::endl;
+      }
+      if (outPart.pdgId() == PDGCode::anti_proton){
+	if (foundThePbar){
+	  throw cet::exception("FOUND MULTIPLE PBARS IN COLLECTION") << " from " << __func__ << std::endl;
+	}
+	foundThePbar = true;
+	//
+	// make the parent art ptr
+	if (_verbosityLevel > 1){
+	  os << " about to make pptr for newStepPointMC" << std::endl;
+	}
+
+	art::Ptr<SimParticle> pptr(SPpid,size_t(outKey.asInt()),SPpg);
+
+	if (_verbosityLevel > 1){
+	  os << " made pptr for newStepPointMC" << std::endl;
+	}
+
+	StepPointMC newStepPointMC(
+				   pptr                                  // SimPart constructor with an art::Ptr
+				   ,oldParent.endVolumeIndex()           // starts where parent ends
+				   ,0.                                   // total energy deposit
+				   ,0.                                   // non-ionizing energy deposit
+				   ,oldParent.endGlobalTime()            // as above
+				   ,0.                                   // proper time is zero for this new particle
+				   ,oldParent.endPosition()              // born where parent stopped
+				   ,momPbar.vect()                       // momentum created here
+				   ,0.                                   // step length
+				   ,ProcessCode::Transportation          // this is lie a virtual detector
+				   );
+	outStepPoint.push_back(newStepPointMC);  //not a map just a regular std::vector...yay...
+      }
+    }
+    if (!foundThePbar) {
+      throw cet::exception("DIDNT FIND PBAR IN COLLECTION") << " from " << __func__ << std::endl;
+    }
+
+
+    event.put(std::move(outSimPartPtr), "");
+    event.put(std::move(outStepPointMCPtr),"");
   }
 
-  // PrimaryAntiProtonGun::generate
+
+// PrimaryAntiProtonGun::generate
 
 } //end namespace mu2e
 
