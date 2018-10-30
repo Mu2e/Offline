@@ -189,7 +189,8 @@ namespace mu2e {
       findPrimaries(event, primaries );
       // get _mcmidt0
       art::Ptr<SimParticle> spp; 
-      // loop over the digis and find the ones that match
+      _mcmidt0 = -1000;
+     // loop over the digis and find the ones that match
       for(auto mcd : *_mcdigis) {
         art::Ptr<SimParticle> sp;
         TrkMCTools::simParticle(sp,mcd);
@@ -199,20 +200,20 @@ namespace mu2e {
           spp = sp;
         }
       }
-      cet::map_vector_key trkid = spp->id();
-      auto jmc = _vdmcsteps->end();
-      for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
-        // find matching steps
-        if(  imc->trackId() == trkid && 
-            (imc->volumeId() == VirtualDetectorId::TT_Mid || imc->volumeId() == VirtualDetectorId::TT_MidInner)) {
-          if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
-            jmc = imc;
-        }
+      if(spp.isNonnull()){
+	cet::map_vector_key trkid = spp->id();
+	auto jmc = _vdmcsteps->end();
+	for(auto imc = _vdmcsteps->begin();imc != _vdmcsteps->end(); ++imc ) {
+	  // find matching steps
+	  if(  imc->trackId() == trkid && 
+	      (imc->volumeId() == VirtualDetectorId::TT_Mid || imc->volumeId() == VirtualDetectorId::TT_MidInner)) {
+	    if(jmc == _vdmcsteps->end() || imc->time() < jmc->time())
+	      jmc = imc;
+	  }
+	}
+	if (jmc != _vdmcsteps->end())
+	  _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
       }
-      if (jmc == _vdmcsteps->end())
-        _mcmidt0 = -1000;
-      else
-        _mcmidt0 = _toff.timeWithOffsetsApplied(*jmc);
     }
     // fill info for all TimeClusters
     fillClusterInfo(primaries);
