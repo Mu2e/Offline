@@ -45,11 +45,47 @@ Trigger : {
     }
     
     outputs: {
-	triggerOutput : {
-	    module_type : RootOutput
-	    SelectEvents   : [] 
-	    outputCommands : [ "keep *_*_*_*" ]
-	    fileName       : "nts.trigger.jobtype.offver.sequencer.art"
+	
+	rootout_unbiased : { 
+	    module_type: RootOutput
+	    fileName: "driver_unbiased.root"
+	    SelectEvents : [ unbiased_path ]
+	    compressionLevel: 0
+	    
+	    outputCommands: [ "keep *_*_*_*",
+			      "drop *_daq_*_*" ]
 	}
+	
+	rootout_calo_only : {
+	    module_type: RootOutput
+	    fileName: "driver_calo_only.root"
+	    SelectEvents : [ calo_only_path ]
+	    compressionLevel: 0
+	    
+	    outputCommands: [ "keep *_*_*_*",
+			      "drop *_daq_*_*" ]
+	}
+
+	rootout_trk_dem : {
+	    module_type: RootOutput
+	    fileName: "driver_trk_dem.root"
+	    SelectEvents : [ tpr_dem_path, cpr_dem_path ]
+	    compressionLevel: 0
+	    
+	    outputCommands: [ "keep *_*_*_*",
+			      "drop *_daq_*_*" ]
+	}
+
+	rootout_trk_dep : {
+	    module_type: RootOutput
+	    fileName: "driver_trk_dep.root"
+	    SelectEvents : [ tpr_dep_path, cpr_dep_path ]
+	    compressionLevel: 0
+	    
+	    outputCommands: [ "keep *_*_*_*",
+			      "drop *_daq_*_*" ]
+	}
+	
+
     }
 }
