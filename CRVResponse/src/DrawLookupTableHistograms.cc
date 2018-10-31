@@ -1,4 +1,4 @@
-#include "MakeCrvPhotons.hh"
+#include "CRVResponse/inc/MakeCrvPhotons.hh"
 
 #include <TStyle.h>
 #include <TMarker.h>
