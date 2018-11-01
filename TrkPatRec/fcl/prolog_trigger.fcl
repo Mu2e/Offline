@@ -14,24 +14,20 @@ FitDir : {
     upstream : 1
 }
 
-TTtimeClusterFinder : {
-    module_type               : TimeClusterFinder
-    ClusterMVA             : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
-    ClusterCaloMVA         : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+TTtimeClusterFinder : { @table::TimeClusterFinder
     ComboHitCollection     : "TTflagBkgHits"
     CaloClusterCollection  : "CaloClusterFast"
     StrawHitFlagCollection : "none"
     TestFlag               : false
 }
 
-TTrobustHelixFinder : {
-    module_type		: RobustHelixFinder
+TTrobustHelixFinder : { @table::RobustHelixFinder
     ComboHitCollection    : "TTflagBkgHits"
     TimeClusterCollection : "TTtimeClusterFinder"
     HitSelectionBits      : ["TimeDivision"]
     HitBackgroundBits     : ["Background"]
-    HelixStereoHitMVA     : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-    HelixNonStereoHitMVA  : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+#    HelixStereoHitMVA     : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+#    HelixNonStereoHitMVA  : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
     
     diagLevel        : 0
     debugLevel       : 0
@@ -72,51 +68,16 @@ TTrobustHelixFinder : {
 }
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
-KFSeed : {
-    MaxIterations                   : 3
-    fieldCorrection	      	  : false
-    materialCorrection              : false
-    seedsmear       		  : 10000
-    maxhitchi                       : 5.0
-    # interate the fit twice: once at the physical size of the straw, once at its RMS
-    #  hiterr                          : [ 5.0, 1.44 ]
-    # time external error, assuming s drift velocity of 62.5 #mu m / ns
-    hiterr                          : [ 80., 23.04]
-    ambiguityStrategy       	  : [ 0  , 0    ]
-    t0Tolerance			  : [ 5.0, 5.0  ]
-    weedhits			  : [ true, true ]
-    ResolveAfterWeeding		  : false
-    AddMaterial			  : [ false, false ]
-    #  initT0			  : true
-    initT0			  : false 
-    useTrkCaloHit                   : false
-    updateT0			  : [false, false ]
-    dtOffset                        : @local::TrackCaloMatching.DtOffset
-    strawHitT0Weight                : 1
-    caloHitT0Weight                 : 10
-    mcTruth                         : 0
-}
 
 # same for trigger
-TTKSF : {
-    module_type                 : KalSeedFit
+TTKSF : { @table::KSF
     ComboHitCollection	      : "TTmakeSH"
     SeedCollection	      : "TThelixFinder:Positive"
-    KalFit		      : @local::KFSeed
-    ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
-    MaxAddDoca                  : 7.    # mm
-    MaxAddChi                   : 5.    # normalized unit
-    rescueHits                  : 0     # turned off 
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
-TTKFF : {
-    module_type                 : KalFinalFit
+TTKFF : { @table::KFF
     ComboHitCollection	      : "TTmakeSH"
     SeedCollection	      : "TTkalSeedFit"
-    KalFit		      : @local::KFFinal
-    GoodKallSeedFitBits	      : ["SeedOK"]
-    AddHitSelectionBits	      : []
-    AddHitBackgroundBits	      : []
 }
 
 # seed Fit configuration for specific particles

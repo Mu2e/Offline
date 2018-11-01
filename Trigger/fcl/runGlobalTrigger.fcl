@@ -9,7 +9,7 @@
 
 BEGIN_PROLOG
 #prescale factor for the unbiased trigger
-UnbiasedFilters_evt_sf  : 1000
+UnbiasedFilters_evt_sf  : 500
 #prescale factor for the calorimeter-only trigger
 CaloOnly_evt_sf         : 1
 CaloOnly_sf             : 1
@@ -63,6 +63,7 @@ services : {
 services.TimeTracker : {
     dbOutput : {
 	filename : ""
+#	filename : "runGlobalTrigger.db" #uncomment to create the .db output
 	overwrite : true
     }
 }
