@@ -4,42 +4,57 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "RecoDataProducts/inc/CrvCoincidenceClusterSummaryCollection.hh"
+#include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
+#include "RecoDataProducts/inc/CrvCoincidenceClusterCollection.hh"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
 
 namespace mu2e
 {
-  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterSummarizerModuleLabel,
+  void CRVAnalysis::FillCrvHitInfoCollections(const std::string &crvCoincidenceClusterModuleLabel,
+                                              const std::string &crvCoincidenceClusterMCModuleLabel,
                                               const art::Event& event, CrvHitInfoRecoCollection &recoInfo, CrvHitInfoMCCollection &MCInfo)
   {
-    art::Handle<CrvCoincidenceClusterSummaryCollection> crvCoincidenceClusterSummaryCollection;
-    event.getByLabel(crvCoincidenceClusterSummarizerModuleLabel,"",crvCoincidenceClusterSummaryCollection);
+    art::Handle<CrvCoincidenceClusterCollection>   crvCoincidenceClusterCollection;
+    art::Handle<CrvCoincidenceClusterMCCollection> crvCoincidenceClusterMCCollection;
 
-    if(crvCoincidenceClusterSummaryCollection.product()==NULL) return;
+    event.getByLabel(crvCoincidenceClusterModuleLabel,"",crvCoincidenceClusterCollection);
+    event.getByLabel(crvCoincidenceClusterMCModuleLabel,"",crvCoincidenceClusterMCCollection);
 
-    std::vector<CrvCoincidenceClusterSummary>::const_iterator iter;
-    for(iter=crvCoincidenceClusterSummaryCollection->begin(); iter!=crvCoincidenceClusterSummaryCollection->end(); iter++)
+    if(crvCoincidenceClusterCollection.product()==NULL) return;
+    size_t nClusters=crvCoincidenceClusterCollection->size();
+
+    for(size_t i=0; i<nClusters; i++)
     {
-      const CrvCoincidenceClusterSummary &cluster = *iter;
+      const CrvCoincidenceCluster &cluster = crvCoincidenceClusterCollection->at(i);
 
       //fill the Reco collection
-      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(), cluster.GetStartTime(), cluster.GetEndTime(), cluster.GetPEs(), 
-                            cluster.GetPulses().size());
+      recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(), 
+                            cluster.GetStartTime(), cluster.GetEndTime(), 
+                            cluster.GetPEs(), cluster.GetCrvRecoPulses().size());
+    }
 
-      //fill the MC collection
-      if(cluster.HasMCInfo())
+    //fill the MC collection
+    if(crvCoincidenceClusterMCCollection.product()!=NULL)
+    {
+      size_t nClustersMC=crvCoincidenceClusterMCCollection->size();
+      if(nClusters!=nClustersMC) std::cout<<"The number of MC and reco CRV coincidence clusters does not match!"<<std::endl;
+      for(size_t i=0; i<nClustersMC; i++)
       {
-        const art::Ptr<SimParticle> &simParticle = cluster.GetMostLikelySimParticle();
-        const art::Ptr<SimParticle> &primaryParticle = FindPrimaryParticle(simParticle);
-        MCInfo.emplace_back(true, 
-                            simParticle->pdgId(), 
-                            primaryParticle->pdgId(),
-                            cluster.GetEarliestHitPos(),
-                            cluster.GetEarliestHitTime(),
-                            cluster.GetTotalEnergyDeposited());
+        const CrvCoincidenceClusterMC &clusterMC = crvCoincidenceClusterMCCollection->at(i);
+        if(clusterMC.HasMCInfo())
+        {
+          const art::Ptr<SimParticle> &simParticle = clusterMC.GetMostLikelySimParticle();
+          const art::Ptr<SimParticle> &primaryParticle = FindPrimaryParticle(simParticle);
+          MCInfo.emplace_back(true, 
+                              simParticle->pdgId(), 
+                              primaryParticle->pdgId(),
+                              clusterMC.GetEarliestHitPos(),
+                              clusterMC.GetEarliestHitTime(),
+                              clusterMC.GetTotalEnergyDeposited());
+        }
+        else MCInfo.emplace_back();
       }
-      else MCInfo.emplace_back();
     }//loop through all clusters
   }//FillCrvInfoStructure
 

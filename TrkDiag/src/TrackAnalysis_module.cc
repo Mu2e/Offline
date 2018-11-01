@@ -91,6 +91,7 @@ namespace mu2e {
     TrkParticle _spart;
     // CRV info
     std::string _crvCoincidenceModuleLabel;
+    std::string _crvCoincidenceMCModuleLabel;
     // analysis options
     bool _fillmc, _pempty, _crv;
     int _diag;
@@ -150,6 +151,7 @@ namespace mu2e {
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
     _spart((TrkParticle::type)(pset.get<int>("TrkParticle"))),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
+    _crvCoincidenceMCModuleLabel(pset.get<string>("CrvCoincidenceMCModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
@@ -293,7 +295,8 @@ namespace mu2e {
 
       // fill CRV info
       if(_crv){
-	CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
+        CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel,
+                                                      event, _crvinfo, _crvinfomc);
 	_ncrv = _crvinfo.size();
       }
 

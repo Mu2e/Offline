@@ -264,6 +264,13 @@
  <class name="mu2e::CrvDigiMCCollection" />
  <class name="art::Wrapper<mu2e::CrvDigiMCCollection>" />
 
+ <class name="mu2e::CrvCoincidenceClusterMC::PulseInfo" />
+ <class name="std::vector<mu2e::CrvCoincidenceClusterMC::PulseInfo>" />
+ <class name="mu2e::CrvCoincidenceClusterMC" />
+ <class name="std::vector<mu2e::CrvCoincidenceClusterMC>" />
+ <class name="mu2e::CrvCoincidenceClusterMCCollection" />
+ <class name="art::Wrapper<mu2e::CrvCoincidenceClusterMCCollection>" />
+
  <class name="mu2e::ProtonBunchIntensity" />
  <class name="art::Wrapper<mu2e::ProtonBunchIntensity>"/>
  
