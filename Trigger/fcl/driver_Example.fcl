@@ -164,10 +164,10 @@ physics:
     
 
     e2: [ ReadTriggerInfo, 
-	  @sequence::Trigger.rootout_unbiased, 
-	  @sequence::Trigger.rootout_calo_only, 
-	  @sequence::Trigger.rootout_trk_dem, 
-	  @sequence::Trigger.rootout_trk_dep ]
+	  rootoutUnbiased, 
+	  rootoutCaloUnly, 
+	  rootoutTrkDem, 
+	  rootoutTrkDep ]
 
     end_paths: [ e2 ]
 

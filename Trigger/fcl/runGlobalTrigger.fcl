@@ -103,9 +103,18 @@ physics : {
     cpr_dem_path   : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter ]
     cpr_dep_path   : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter ]
     
-    out           : [ ReadTriggerInfo ]
-#    out           : [ ReadTriggerInfo, triggerOutput  ]
+    out           : [ ReadTriggerInfo,
+		      rootoutUnbiased, 
+		      rootoutCaloOnly, 
+		      rootoutTrkDem, 
+		      rootoutTrkDep
+		     ]
+    #    out           : [ ReadTriggerInfo ]
     end_paths     : [ out ]
+}
+
+outputs : {
+    @table::outputs
 }
 
 
