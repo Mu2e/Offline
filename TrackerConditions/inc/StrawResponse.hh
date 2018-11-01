@@ -26,7 +26,7 @@ namespace mu2e {
       // construct from parameters
       explicit StrawResponse(fhicl::ParameterSet const& pset);
       virtual ~StrawResponse();
-      bool wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr) const;
+      bool wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr, float& halfpv) const;
       bool useDriftError() const { return _usederr; } 
       bool useNonLinearDrift() const { return _usenonlindrift; }
       double Mint0doca() const { return _mint0doca;}
@@ -54,7 +54,7 @@ namespace mu2e {
       // removes channel to channel delays and overall electronics time delay
       void calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const;
       // approximate drift distatnce from ToT value
-      double driftTime(Straw const& straw, float tot) const;
+      double driftTime(Straw const& straw, float tot, float edep) const;
       double pathLength(Straw const& straw, float tot) const;
 //      double pathLength(StrawHit const& strawhit, double theta) const;
 
@@ -86,6 +86,7 @@ namespace mu2e {
       float _central; // max wire distance for central wire region
       std::vector<float> _centres; // wire center resolution by edep
       std::vector<float> _resslope; // resolution slope vs position by edep
+      std::vector<float> _totdtime;
       bool _usederr; // flag to use the doca-dependent calibration of the drift error
       std::vector<float> _derr; // parameters describing the drift error function
       float _wbuf; // buffer at the edge of the straws, in terms of sigma
@@ -103,7 +104,6 @@ namespace mu2e {
       double _rres_rad;
       double _mint0doca;  // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
 
-      double _TOTIntercept, _TOTSlope, _TOTmin, _TOTmax;
       double _t0shift;
       double _gasGain;
       std::vector<double> _pmpEnergyScale;

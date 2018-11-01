@@ -179,6 +179,7 @@ namespace mu2e {
     accumulator_set<float, stats<tag::mean> > eacc;
     accumulator_set<float, stats<tag::mean> > tacc;
     accumulator_set<float, stats<tag::mean> > dtacc;
+    accumulator_set<float, stats<tag::mean> > ptacc;
     accumulator_set<float, stats<tag::mean> > placc;
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float> wacc;
     accumulator_set<float, stats<tag::mean> > werracc;
@@ -196,6 +197,7 @@ namespace mu2e {
       eacc(ch.energyDep());
       tacc(ch.time());// time is an unweighted average
       dtacc(ch.driftTime());
+      ptacc(ch.propTime());
       placc(ch.pathLength());
       float wt = 1.0/(ch.wireErr2());
       wacc(ch.wireDist(),weight=wt); // wire position is weighted
@@ -208,6 +210,7 @@ namespace mu2e {
     if(_debug > 2)std::cout << std::endl;
     combohit._time = extract_result<tag::mean>(tacc);
     combohit._dtime = extract_result<tag::mean>(dtacc);
+    combohit._ptime = extract_result<tag::mean>(ptacc);
     combohit._pathlength = extract_result<tag::mean>(placc);
     combohit._edep = extract_result<tag::mean>(eacc);
     combohit._wdist = extract_result<tag::weighted_mean>(wacc);

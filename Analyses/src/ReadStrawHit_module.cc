@@ -288,8 +288,8 @@ namespace mu2e {
       const CLHEP::Hep3Vector sdir   = str.getDirection();
 
       // calculate the hit position
-      float dw, dwerr;
-      srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr);
+      float dw, dwerr, halfpv;
+      srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
       CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
 
       // we may also need the truth hit position, do we need another function?
