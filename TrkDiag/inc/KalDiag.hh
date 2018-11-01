@@ -17,10 +17,8 @@
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
 // Utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkReco/inc/TrkQualHelper.hh"
 // MC data
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"

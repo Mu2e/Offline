@@ -22,6 +22,7 @@
 // data
 #include "art/Framework/Principal/Event.h"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

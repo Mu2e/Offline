@@ -46,7 +46,6 @@ BEGIN_PROLOG
     MCStepsLabel : "compressDigiMCs"
     SimParticleLabel : "compressDigiMCs"
     TimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
-    TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
   }
   
 END_PROLOG

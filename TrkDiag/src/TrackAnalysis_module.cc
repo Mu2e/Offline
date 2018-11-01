@@ -84,6 +84,8 @@ namespace mu2e {
     art::InputTag _detag;
     art::InputTag _uetag;
     art::InputTag _dmtag;
+    std::string _tqroot;
+    art::InputTag _tqtag;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
@@ -151,6 +153,7 @@ namespace mu2e {
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
     _trkanaroot(pset.get<std::string>("KalFinalTagRoot") ),
+    _tqroot(pset.get<std::string>("TrkQualTagRoot") ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
@@ -242,6 +245,7 @@ namespace mu2e {
     _detag = _trkanaroot + "D" + _spart.name().substr(0,1) + chargename;
     _uetag = _trkanaroot + "U" + _spart.name().substr(0,1) + chargename;
     _dmtag = _trkanaroot + "D" + "mu" + chargename; //dm branch is always used for muons
+    _tqtag = _tqroot + "D" + _spart.name().substr(0,1) + chargename;
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalRepPtrCollection> deH;
     event.getByLabel(_detag,deH);
@@ -296,7 +300,7 @@ namespace mu2e {
 	}
 
 	art::Handle<TrkQualCollection> trkQualHandle;
-	event.getByLabel(_detag, trkQualHandle);
+	event.getByLabel(_tqtag, trkQualHandle);
 	if (trkQualHandle.isValid()) {
 	  TrkQual i_tqual;
 	  findBestTrkQualMatch(*trkQualHandle, deK, i_tqual);
@@ -304,6 +308,9 @@ namespace mu2e {
 	  if (_filltrkqual) {
 	    fillTrkQualInfo(i_tqual, _trkQualInfo);
 	  }
+	}
+	else {
+	  throw cet::exception("TrackAnalysis") << "TrkQualCollection not found with InputTag " << _tqtag << std::endl;
 	}
       }
       // fill mC info associated with this track

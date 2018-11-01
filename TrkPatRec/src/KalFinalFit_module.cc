@@ -26,14 +26,12 @@
 #include "Mu2eUtilities/inc/MVATools.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
-#include "TrkReco/inc/TrkQualHelper.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
 #include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkReco/inc/KalFitData.hh"
@@ -107,8 +105,6 @@ namespace mu2e
     // Kalman fitter
     KalFit _kfit;
     KalFitData _result;
-    // trkqual calculation
-    TrkQualHelper _tqhelper;
 
     // diagnostic
     Data_t                                _data;
@@ -143,17 +139,14 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle", TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection", TrkFitDirection::downstream))),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit", {})),
-    _result(),
-    _tqhelper(pset)
+    _result()
   {
-    if(_debug>0)_tqhelper.MVATool()->showMVA();
 
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
     produces<AlgorithmIDCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
-    produces<TrkQualCollection>();
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
@@ -204,7 +197,6 @@ namespace mu2e
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
-    unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
     art::ProductID kalRepsID(getProductID<KalRepCollection>());
@@ -368,10 +360,6 @@ namespace mu2e
 	  }
 	  // save KalSeed for this track
 	  kscol->push_back(fseed);
-	  // compute TrkQual for this track and save it
-	  TrkQual trkqual;
-	  _tqhelper.fillTrkQual(fseed,trkqual, _zsave[0]);
-	  tqcol->push_back(trkqual);
 	} else {// fit failure
 	  _result.deleteTrack();
 	  //	  delete krep;
@@ -385,7 +373,6 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
-    event.put(move(tqcol));
     event.put(move(algs));
     event.put(move(shfcol));
   }
