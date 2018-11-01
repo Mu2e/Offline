@@ -211,11 +211,11 @@ TrkFilters : {
 	#trkpatrec tracking
 	TPRTCFilter       : [ TPRTCEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			      TTtimeClusterFinder, TPRTCFilter,  TPRTCPrescale  ]
-	TPRPosHelixFilter : [ TPRPosHelixEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	TPRPosHelixFilter : [ TPRPosHelixEventPrescale, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TPRPosHelixPrescale   ]
-	TPRDeMSeedFilter  : [ TPRDeMSeedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	TPRDeMSeedFilter  : [ TPRDeMSeedEventPrescale, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TTKSFDeM, TPRDeMSeedFilter, TPRDeMSeedPrescale ]
-	TPRDePSeedFilter  : [ TPRDePSeedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	TPRDePSeedFilter  : [ TPRDePSeedEventPrescale, @sequence::CaloClusterTrigger.Reco,  @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRNegHelixFilter, TTKSFDeP, TPRDePSeedFilter, TPRDePSeedPrescale ]
 	
 	#calo-seeded tracking
@@ -227,7 +227,8 @@ TrkFilters : {
 			     TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
 
 	#kalman filter included
-	TPRDeMKalFilter     : [ @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+	TPRDeMKalFilter     : [ @sequence::CaloClusterTrigger.Reco,
+				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, 
 				TTKSFDeM, TPRDeMSeedFilter, TTKFFDeM, TPRDeMKalFilter ]
 	# add sequences for upstream, calibration, ...  FIXME!
