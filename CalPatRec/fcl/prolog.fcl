@@ -90,6 +90,7 @@ CalPatRec : { @table::CalPatRec
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
+	targetconsistent                        : 0
 	weightXY                                : 1.11      #0.4527
 	weightZPhi                              : 0.29      #0.4423    
 	weight3D                                : 0.12      #1
