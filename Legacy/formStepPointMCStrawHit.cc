@@ -11,7 +11,7 @@
 // Mu2e includes
 #include "HitMakers/inc/formStepPointMCStrawHit.hh"
 #include "GeneralUtilities/inc/LinePointPCA.hh"
-#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 namespace mu2e {
 

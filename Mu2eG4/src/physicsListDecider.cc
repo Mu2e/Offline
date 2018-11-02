@@ -40,6 +40,7 @@
 #include "Mu2eG4/inc/MinDEDXPhysicsList.hh"
 #if G4VERSION>4103
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
+#include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
@@ -89,6 +90,9 @@ namespace mu2e{
 #if G4VERSION>4103
     bool modifyEMOption4(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.modifyEMOption4",false);
+    }
+    bool modifyEMOption0(const fhicl::ParameterSet& pset) {
+      return pset.get<bool>("physics.modifyEMOption0",false);
     }
 #endif
 
@@ -197,6 +201,13 @@ namespace mu2e{
         G4cout << __func__ << " Registering Mu2eEmStandardPhysics_option4" << G4endl;
       }
       tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(getDiagLevel(pset)));
+    }
+    if ( modifyEMOption0(pset) && (name.find("_EM") == std::string::npos) ) {
+      tmpPL->RemovePhysics(("G4EmStandard"));
+      if (getDiagLevel(pset)>0) {
+        G4cout << __func__ << " Registering Mu2eEmStandardPhysics" << G4endl;
+      }
+      tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics(getDiagLevel(pset)));
     }
 #endif
 

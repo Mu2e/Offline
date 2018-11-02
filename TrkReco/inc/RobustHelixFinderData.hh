@@ -130,6 +130,10 @@ namespace mu2e {
       int       fzniter;
       int       niter;
 
+      int       nLoops;
+      float     meanHitRadialDist;
+      int       nHitsLoopFailed;
+
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices

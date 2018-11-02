@@ -5,7 +5,7 @@
 #include "TH1.h"
 
 #include <vector>
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 

@@ -8,6 +8,7 @@
 # CalPatRec uses its own instance of the hit flags
 # DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
 #------------------------------------------------------------------------------
+
 BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # there seems to be a circular dependence between MakeStrawHitPositions and 
@@ -89,6 +90,7 @@ CalPatRec : { @table::CalPatRec
 	maxDfDz                                 : 0.01
 	minDfDz                                 : 0.002
 	sigmaPhi                                : 0.1636  # radians
+	targetconsistent                        : 0
 	weightXY                                : 1.11      #0.4527
 	weightZPhi                              : 0.29      #0.4423    
 	weight3D                                : 0.12      #1
@@ -163,7 +165,7 @@ CalPatRec : { @table::CalPatRec
 	# did Dave mean that? 
 	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
 	initT0					: true
-	updateT0				: true
+	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	T0UpdateMode                            : 1
 	HitAmbigPenalty 			: false
 	HitMinDrift				: 0.2
@@ -223,7 +225,7 @@ CalPatRec : { @table::CalPatRec
 	#  initT0			  : true
 	initT0   			  : false 
 	useTrkCaloHit                     : false
-	updateT0			  : false
+	updateT0				: [ false, false, false, false, false, false, false, false, false ]
 	dtOffset                          : @local::TrackCaloMatching.DtOffset
 	strawHitT0Weight                : 1
 	caloHitT0Weight                 : 10
@@ -280,7 +282,7 @@ CalPatRec : { @table::CalPatRec
 	useTrkCaloHit                           : false
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
-	updateT0		                : true
+	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
 	#------------------------------------------------------------------------------
@@ -334,7 +336,7 @@ CalPatRec : { @table::CalPatRec
 	t0window                                : 2.5
 	dtOffset                                : @local::TrackCaloMatching.DtOffset
 	# did Dave mean that? 
-	updateT0				: true
+	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	HitAmbigPenalty 			: false
 	HitMinDrift				: 0.2
@@ -617,6 +619,7 @@ CalPatRec : { @table::CalPatRec
 	MergePatRecTprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
 
 	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
+	MergePatRecDpp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDpP  calPatRecModuleLabel: none         }
 	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
 	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: CalTrkFitDep }
 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }

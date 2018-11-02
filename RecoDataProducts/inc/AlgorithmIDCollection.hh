@@ -13,7 +13,7 @@
 
 #include <vector>
 
-#include "AlgorithmID.hh"
+#include "RecoDataProducts/inc/AlgorithmID.hh"
 
 namespace mu2e {
    typedef std::vector<mu2e::AlgorithmID> AlgorithmIDCollection;

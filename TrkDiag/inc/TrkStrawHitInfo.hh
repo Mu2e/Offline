@@ -7,7 +7,7 @@
 #ifndef TrkStrawHitInfo_HH
 #define TrkStrawHitInfo_HH
 #include "Rtypes.h"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 namespace mu2e 
 {
   struct TrkStrawHitInfo {

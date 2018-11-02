@@ -13,7 +13,7 @@
 
 #include "BTrkData/inc/TrkStrawHit.hh"
 
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 #include "TrkPatRec/inc/KalFinalFit_types.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"

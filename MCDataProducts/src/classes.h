@@ -33,6 +33,7 @@
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
+#include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"

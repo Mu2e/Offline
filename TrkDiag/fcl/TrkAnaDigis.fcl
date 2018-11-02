@@ -1,8 +1,7 @@
 #
 #  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
-#  > mu2e --config TrkDiag/test/TrkAna.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
-# will process 100 events from (your files).  Note that background mixing requires different scripts
-# for interactive and grid processing
+#  > mu2e --config TrkDiag/test/TrkAnaDigis.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
+# will process 100 events from (your files).
 #
 # David Brown (LBNL) 13 July 2016
 #
@@ -11,7 +10,7 @@
 #include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
 
-process_name : TrkAna
+process_name : TrkAnaDigis
 
 source : { module_type : RootInput }
 
@@ -20,7 +19,10 @@ services : @local::Services.Reco
 physics :
 {
   producers : @local::TrkAna.producers
-  analyzers : @local::TrkAna.analyzers
+  analyzers :  {
+    @table::TrkAna.analyzers
+    @table::TrkDiag.analyzers
+  }
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]

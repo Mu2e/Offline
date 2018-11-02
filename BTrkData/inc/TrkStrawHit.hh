@@ -52,9 +52,7 @@ namespace mu2e
     double timeDiffDistErr() const { return _combohit.wireRes(); }
     const CLHEP::Hep3Vector& wirePosition() const { return _wpos; }
     void hitPosition(CLHEP::Hep3Vector& hpos) const;
-    virtual bool signalPropagationTime(double &propTime, double&Doca,
-			       double resid, double &residErr,
-			       CLHEP::Hep3Vector trajDirection);//propagation time
+    virtual bool signalPropagationTime( TrkT0& t0 ); // time and error 
     virtual void trackT0Time(double &htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
 
     double signalTime() const { return _stime; } // time for signal to reach the end of the wire

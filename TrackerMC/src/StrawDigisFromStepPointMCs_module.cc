@@ -30,7 +30,7 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 // utiliities
-#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrackerConditions/inc/DeadStrawList.hh"
 #include "TrackerConditions/inc/Types.hh"

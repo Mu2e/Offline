@@ -26,7 +26,7 @@ namespace mu2e {
     ost << "List of names of instances for StepPointMCCollections Id codes: "
         << endl;
     for ( int i=0; i<lastEnum; ++i){
-      StepFilterMode id(i);
+      StepFilterMode id{enum_type(i)};
       ost << setw(2) << i << " " << name(id.id()) << std::endl;
     }
   }
@@ -67,7 +67,7 @@ namespace mu2e {
         if ( i == unknown && throwIfUndefined ){
           throw std::out_of_range( "StepFilterMode the value \"unknown\" is not permitted in this context. " );
         }
-        return StepFilterMode(i);
+        return StepFilterMode(enum_type(i));
       }
     }
 
@@ -86,7 +86,7 @@ namespace mu2e {
 
     static std::vector<StepFilterMode> values;
     for ( size_t i=unknown; i<lastEnum; ++i ){
-      values.push_back(StepFilterMode(i));
+      values.push_back(StepFilterMode(enum_type(i)));
     }
     return values;
 

@@ -94,6 +94,7 @@ namespace mu2e {
     TrkParticle _spart;
     // CRV info
     std::string _crvCoincidenceModuleLabel;
+    std::string _crvCoincidenceMCModuleLabel;
     // analysis options
     bool _fillmc, _pempty, _crv, _filltrkqual;
     int _diag;
@@ -143,6 +144,7 @@ namespace mu2e {
     const KalRep* findUpstreamTrack(KalRepPtrCollection const& kcol,const KalRep* deK);
     const KalRep* findMuonTrack(KalRepPtrCollection const& kcol,const KalRep* deK);
     // CRV info
+    int _ncrv;
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
@@ -159,6 +161,7 @@ namespace mu2e {
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
     _spart((TrkParticle::type)(pset.get<int>("TrkParticle"))),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
+    _crvCoincidenceMCModuleLabel(pset.get<string>("CrvCoincidenceMCModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
@@ -195,7 +198,10 @@ namespace mu2e {
 // calorimeter information for the downstream electron track
     _trkana->Branch("dec.",&_dec,TrkCaloInfo::leafnames().c_str());
 // CRV info
-   if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
+   if(_crv) {
+      _trkana->Branch("ncrv",&_ncrv,"ncrv/I");
+     _trkana->Branch("crvinfo",&_crvinfo);
+   }
 // optionally add MC truth branches
     if(_fillmc){
       _trkana->Branch("demc",&_demc,TrkInfoMC::leafnames().c_str());
@@ -317,7 +323,11 @@ namespace mu2e {
       if(_fillmc) fillMCInfo(deK);
 
       // fill CRV info
-      if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, event, _crvinfo, _crvinfomc);
+      if(_crv){
+        CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel,
+                                                      event, _crvinfo, _crvinfomc);
+	_ncrv = _crvinfo.size();
+      }
 
       // fill this row in the TTree
       _trkana->Fill();
