@@ -6,7 +6,7 @@
 int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.0);
-  _hNStraw = tfs.make<TH1D>( "NHit", "N Straw", 101, -0.5, 100.0);
+  _hNStraw = tfs.make<TH1D>( "NHit", "N Hits", 101, -0.5, 100.0);
   _hNSeg = tfs.make<TH1D>( "NSeg", "N KalSegment", 21, -0.5, 20.0);
   _hStatus = tfs.make<TH1D>( "Status", "Status", 32, -0.5, 31.0);
   _hflt0 = tfs.make<TH1D>( "flt0", "flt0", 100, -1200.0, 1200.0);
@@ -56,7 +56,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   _hN->Fill(coll.size()); 
   for(auto const& ks : coll) {
-    _hNStraw->Fill(ks.straws().size());
+    _hNStraw->Fill(ks.hits().size());
     _hNSeg->Fill(ks.segments().size());
     const TrkFitFlag& tff = ks.status();
 
@@ -72,7 +72,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     _hflt0->Fill(ks.flt0());
     double t0 = ks.t0().t0();
     _ht0->Fill(t0);
-    _hchi2->Fill(ks.chisquared());
+    _hchi2->Fill(ks.chisquared()/std::max(1.0,double(ks.hits().size()-5)));
     int q = (ks.caloCluster().isNull()?0:1);
     _hhasCal->Fill(q);
     _hfitCon->Fill(ks.fitConsistency());
