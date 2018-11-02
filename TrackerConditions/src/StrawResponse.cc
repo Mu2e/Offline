@@ -47,7 +47,8 @@ namespace mu2e {
           3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  
           12.0,  12.0,  12.0,  12.0,  12.0,  12.0,  12.0,  12.0, 12.0,  12.0 })),
     _usederr(pset.get<bool>("UseDriftErrorCalibration",false)),
-    _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{0.2631,-0.05315, 2.55, 0.1978, 0.5964})),
+    _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{
+	  0.363559, 0.362685, 0.359959, 0.349385, 0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557, 0.229172, 0.2224, 0.219224, 0.217334, 0.212797, 0.210303, 0.209876, 0.208739, 0.207411, 0.208738, 0.209646, 0.210073, 0.207101, 0.20431, 0.203994, 0.202931, 0.19953, 0.196999, 0.194559, 0.191766, 0.187725, 0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338, 0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319, 0.132159, 0.130062, 0.123545, 0.120212})),
     _wbuf(pset.get<float>("WireLengthBuffer",2.0)), //sigma
     _slfac(pset.get<float>("StrawLengthFactor",0.9)),
     _errfac(pset.get<float>("ErrorFactor",1.0)),
@@ -170,9 +171,9 @@ namespace mu2e {
     if(useDriftError()){
       // maximum drift is the straw radius.  should come from conditions FIXME!
       static float rstraw(2.5);
-      DOCA = std::min(DOCA,rstraw);
-      // drift errors are modeled as a truncated line + exponential
-      return std::min(_derr[4],_derr[0]+_derr[1]*DOCA + _derr[2]*exp(-DOCA/_derr[3]));
+      float doca = std::min(fabs(DOCA),rstraw);
+      size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(doca/rstraw))));
+      return _derr[idoca];
     }else{
       double rres = _rres_min;
       if(ddist < _rres_rad){
