@@ -19,6 +19,8 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // #include "CalPatRec/inc/KalFitResult.hh"
@@ -99,6 +101,11 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool CalHelixFinder::beginRun(art::Run& ) {
+    mu2e::GeomHandle<mu2e::BFieldManager> bfmgr;
+    mu2e::GeomHandle<mu2e::DetectorSystem> det;
+    Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+
     mu2e::GeomHandle<mu2e::TTracker> th;
     _tracker = th.get();
 
@@ -424,8 +431,12 @@ namespace mu2e {
 
     HelSeed._helix._helicity = _hfinder._dfdzsign > 0 ? Helicity::poshel : Helicity::neghel;
 
+    //include also the values of the chi2d
+    HelSeed._helix._chi2dXY   = HfResult._sxy.chi2DofCircle();
+    HelSeed._helix._chi2dZPhi = HfResult._szphi.chi2DofLine();
+
                                         //now evaluate the helix T0 using the calorimeter cluster
-    double   mm2MeV        = 3/10.;//FIX ME!
+    double   mm2MeV        = (3/10.)*_bz0;
     double   tandip        = hel->tanDip();
     double   mom           = helixRadius*mm2MeV/std::cos( std::atan(tandip));
     double   beta          = _tpart.beta(mom);

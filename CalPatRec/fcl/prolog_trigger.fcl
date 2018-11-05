@@ -1,0 +1,166 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+# CalPatRec: calorimeter-seeded track finding
+# CalPatRec uses its own instance of the hit flags
+# DoubletAmbigResolver is defined in TrkReco/fcl/prolog.fcl
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+#------------------------------------------------------------------------------
+# there seems to be a circular dependence between MakeStrawHitPositions and 
+# FlagStrawHits ... FlagBkgHits ?
+# MakeStrawHitPositions stores the hit flag in StrawHitPosition object
+# for that, an existing StrawHitFlagCollection is required
+#
+# in its turn, the FlagStrawHits module flags if the corresponding hit 
+# position 'stereo' and also sets radial selection flag
+# it also sets 'timesel' and 'energysel' flags
+# if, however, the StrawHitPosition doesnt exist, the 'stereo' and 'radsel' 
+# flags are not set
+#
+# FlagBkgHits produces yet another hit flag collection, copying flags set by 
+# the OR of FlagStrawHits and flags stored in StrawHitPositions, and potentially adding 
+# a 'delta' and 'isolated' flags
+# in principle, FlagBkgHits also uses StereoHitCollection, but that is not a must
+#
+# yes, there is a circular dependence between the data products.
+# Dave runs several instances of the hit flagging modules for a reason
+#------------------------------------------------------------------------------ 
+#-----------------------------------------------------------------------------
+# new format
+#------------------------------------------------------------------------------
+
+CprTrigger : { 
+
+#------------------------------------------------------------------------------
+# CalPatRec.HelixFinder and HelixFitHack configuratons (pattern recognition)
+#------------------------------------------------------------------------------
+    TTHelixFinderAlg : { @table::CalPatRec.HelixFinderAlg
+	targetconsistent                        : 0
+    }
+#------------------------------------------------------------------------------
+# SeedFitter(SeedFitHackNew) configuration for the final track fit: NOT USED ANYMORE
+#------------------------------------------------------------------------------
+}
+#------------------------------------------------------------------------------
+# producers
+#------------------------------------------------------------------------------
+CprTrigger : { @table::CprTrigger 
+
+    producers : { 
+	@table::CaloClusterFast.producers
+
+	CPRFetchDigis : { module_type:PrefetchData
+	    debugLevel                    : 0
+	    mcDiag                        : true
+
+	    fetchCaloDigis                : 1
+	    fetchStrawDigis               : 1
+	    fetchStrawHits                : 0
+	    fetchStrawHitFlags            : 0
+	    fetchStrawHitPositions        : 0
+	    fetchComboHits                : 0
+
+	    caloDigiCollectionTag         : CaloDigiFromShower
+	    strawDigiCollection           : makeSD
+	    strawHitCollectionTag         : TTmakeSH
+	    strawHitPositionCollectionTag : TTmakeSH
+	    strawHitFlagCollectionTag     : TTmakeSH
+	    comboHitCollectionTag         : TTmakePH # MakeStereoHits
+	}
+
+#------------------------------------------------------------------------------
+# default configuration: DEM
+# CalPatRec, so far, has been validated only for e- 
+#------------------------------------------------------------------------------
+	TTCalSeedFit : { @table::CalPatRec.producers.CalSeedFit
+	    ComboHitCollection          : TTmakeSH			 
+	    SeedCollection              : TTCalHelixFinder
+	}
+	
+	TTCalTrkFit  : { @table::CalPatRec.producers.CalTrkFit
+	    ComboHitCollection          : TTmakeSH			 
+	    SeedCollection              : TTCalSeedFit	
+	    StrawHitFlagCollection      : "TTflagBkgHits:StrawHits"
+	}
+    }
+
+    filters : { 
+#------------------------------------------------------------------------------
+# new modules
+#------------------------------------------------------------------------------
+	TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH          
+	    StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+	    caloClusterModuleLabel                      : CaloClusterFast
+	    HitSelectionBits                            : ["EnergySelection","TimeSelection"] 
+	    BackgroundSelectionBits                     : ["Background"] 
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    minClusterTime                              : 500.   # ns
+	}
+
+	TTCalHelixFinder             : { @table::CalPatRec.filters.CalHelixFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH
+	    StrawHitFlagCollectionLabel                 : "TTflagBkgHits:ComboHits"
+	    TimeClusterCollectionLabel                  : TTCalTimePeakFinder
+
+	    # HelixFinderAlg configuraton (pattern recognition)
+	    HelixFinderAlg                              : { @table::CprTrigger.TTHelixFinderAlg }
+	}
+    }
+}
+
+#------------------------------------------------------------------------------
+# calorimeter-seeded tracking makes sense only for downstream particles
+#------------------------------------------------------------------------------
+CprTrigger: { @table::CprTrigger 
+    producers : { @table::CprTrigger.producers
+	
+	TTCalSeedFitDem                : { @table::CprTrigger.producers.TTCalSeedFit        
+	    SeedCollection             : TTCalHelixFinderDem
+	}
+	TTCalSeedFitDmm                  : { @table::CprTrigger.producers.TTCalSeedFit 
+	    fitparticle                : @local::Particle.muminus
+	    SeedCollection             : TTCalHelixFinderDmm
+	}
+	TTCalSeedFitDep                  : { @table::CprTrigger.producers.TTCalSeedFit 
+	    fitparticle                : @local::Particle.eplus  
+	    SeedCollection             : TTCalHelixFinderDep
+	}
+	TTCalSeedFitDmp                  : { @table::CprTrigger.producers.TTCalSeedFit 
+	    fitparticle                : @local::Particle.muplus
+	    SeedCollection             : TTCalHelixFinderDmp
+	}
+	
+	TTCalTrkFitDem                 : { @table::CprTrigger.producers.TTCalTrkFit
+	    SeedCollection             : TTCalSeedFitDem
+	}
+	TTCalTrkFitDep                 : { @table::CprTrigger.producers.TTCalTrkFit        
+	    SeedCollection             : TTCalSeedFitDep
+	}
+    }
+    
+    filters : { @table::CprTrigger.filters
+	TTCalHelixFinderDem              : { @table::CprTrigger.filters.TTCalHelixFinder    }
+	TTCalHelixFinderDmm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
+	TTCalHelixFinderDep              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.eplus   }
+	TTCalHelixFinderDmp              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muplus  }
+    }
+    
+    sequences : {
+	# production sequence to find helicse
+	findHelices     : [ TTtimeClusterFinder, TThelixFinder ]
+	# production sequence to find TrackSeeds
+	KSFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDem, TTCalSeedFitDem ]
+	KSFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDep, TTCalSeedFitDep ]
+	# production sequence to find KalReps
+	KFFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDem, TTCalSeedFitDem, TTCalTrkFitDem ]
+	KFFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDep, TTCalSeedFitDep, TTCalTrkFitDep ]	
+    }
+}
+
+END_PROLOG

@@ -6,8 +6,8 @@
 #include <TGButton.h>
 #include <TGComboBox.h>
 #include <TGTextEntry.h>
-#include "DataInterface.h"
-#include "ContentSelector.h"
+#include "EventDisplay/src/DataInterface.h"
+#include "EventDisplay/src/ContentSelector.h"
 
 namespace mu2e_eventdisplay
 {
