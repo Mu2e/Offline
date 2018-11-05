@@ -487,18 +487,15 @@ namespace mu2e {
   int  CalHelixFinder::goodHitsTimeCluster(const TimeCluster* TCluster){
     int   nhits         = TCluster->nhits();
     int   ngoodhits(0);
-    //    std::vector<string> bkgsel;
-    //    bkgsel.push_back("Background");
-    double     minT(500.), maxT(2000.);
+    //    double     minT(500.), maxT(2000.);
     for (int i=0; i<nhits; ++i){
       int          index   = TCluster->hits().at(i);
       StrawHitFlag flag    = _shfcol->at(index);
       ComboHit     sh      = _chcol ->at(index);
       int          bkg_hit = flag.hasAnyProperty(StrawHitFlag::bkg);
       if (bkg_hit)                              continue;
-      if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
+      //       if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
 
-      // ++ngoodhits;
       ngoodhits += sh.nStrawHits();
     }
 
