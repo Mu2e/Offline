@@ -1,4 +1,4 @@
-#include "MakeCrvDigis.hh"
+#include "CRVResponse/inc/MakeCrvDigis.hh"
 
 namespace mu2eCrv
 {
