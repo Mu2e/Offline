@@ -159,7 +159,7 @@ namespace mu2e {
     _tcTag(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _beamWtModule( pset.get<art::InputTag>("beamWeightModule","protonBunchSummarizer" )),
+    _beamWtModule( pset.get<art::InputTag>("beamWeightModule","PBIWeight" )),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     if(_diag > 0){
@@ -423,7 +423,7 @@ namespace mu2e {
     // take the fit with the highest product momentum*nhits
     double maxqual(0.0);
     for(auto ihs = hsc.begin(); ihs != hsc.end(); ++ihs) {
-      double qual = ihs->hits().size()*abs(ihs->helix().lambda()*ihs->helix().radius());
+      double qual = ihs->hits().nStrawHits()*abs(ihs->helix().lambda()*ihs->helix().radius());
       if(ihs->status().hasAllProperties(goodreco) && qual > maxqual){
 	maxqual = qual;
 	retval = ihs;
@@ -437,8 +437,8 @@ namespace mu2e {
     // take the cluster with the most hits.  Should add quality later?
     unsigned maxnhits(0);
     for(auto itc = tcc.begin(); itc != tcc.end(); ++itc) {
-      if(itc->hits().size() > maxnhits){
-	maxnhits = itc->hits().size();
+      if(itc->nStrawHits() > maxnhits){
+	maxnhits = itc->nStrawHits();
 	retval = itc;
       }
     }
@@ -557,17 +557,17 @@ namespace mu2e {
     _hsh = hs.helix();
     _hst0 = hs.t0().t0();
     _hst0err = hs.t0().t0Err();
-    _hsn = hs.hits().size();
     // count the active hits
     for(auto hhit : hs.hits()){
-      if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))++_hsna;
+      _hsn += hhit.nStrawHits(); 
+      if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsna += hhit.nStrawHits();
       if(spp.isNonnull()){
 	StrawDigiMC const& mcdigi = _mcdigis->at(hhit.index());
 	art::Ptr<StepPointMC> spmcp;
 	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
 	    spmcp->simParticle() == spp){
-	  ++_hsnp;
-	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))++_hsnap;
+	  _hsnp += hhit.nStrawHits(); 
+	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsnap += hhit.nStrawHits(); 
 	}
       }
     }
@@ -583,7 +583,7 @@ namespace mu2e {
     // fill branches
     _tct0 = tc.t0().t0();
     _tct0err = tc.t0().t0Err();
-    _tcn = tc.hits().size();
+    _tcn = tc.nStrawHits();
     // count matching hits
     for(auto tchit : tc.hits()){
       StrawDigiMC const& mcdigi = _mcdigis->at(tchit);
