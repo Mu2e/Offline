@@ -60,9 +60,10 @@ namespace mu2e {
     virtual void analyze(const art::Event& e);
     virtual void beginRun(const art::Run & run);
 
-    void   findTrigIndex    (std::vector<std::string> Vec, std::string ModuleLabel, int &Index);
-    void   fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*  KSeed);
-    void   fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed);
+    void   findTrigIndex        (std::vector<std::string> Vec, std::string ModuleLabel, int &Index);
+    void   fillTrackTrigInfo    (int TrkTrigIndex, const KalSeed*  KSeed);
+    void   fillHelixTrigInfo    (int HelTrigIndex, const HelixSeed*HSeed);
+    void   fillCaloCalibTrigInfo(int ClCalibIndex, const CaloCluster*HCl);
 
   private:
 
@@ -71,6 +72,7 @@ namespace mu2e {
     
     int      _nTrackTrig;
     int      _nCaloTrig;
+    int      _nCaloCalibTrig;
 
     int      _nProcess;
     int      _numEvents;
@@ -83,6 +85,9 @@ namespace mu2e {
     std::vector<std::string>  _trigLabelsCaloOnly;
     std::vector<int>          _trigCountsCaloOnly;
     
+    std::vector<std::string>  _trigLabelsCaloCalib;
+    std::vector<int>          _trigCountsCaloCalib;
+    
     std::vector<std::string>  _trigLabelsTrack;
     std::vector<int>          _trigCountsTrack;
     
@@ -92,10 +97,11 @@ namespace mu2e {
     std::vector<std::string>  _trigLabelsEvtPS;
     std::vector<int>          _trigCountsEvtPS;
     
-    TH1F *_hTrigInfo[5];
+    TH1F *_hTrigInfo[10];
     TH1F *_hTrkInfo [10][6];
     TH1F *_hHelInfo [10][7];
 
+    TH1F *_hCaloCalibInfo[5][5];
   };
 
 
@@ -105,6 +111,7 @@ namespace mu2e {
     _nMaxTrig      (pset.get<size_t>("nFilters", 20)),
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
+    _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
     _nProcess(0), 
     _numEvents(0)
   {
@@ -113,6 +120,9 @@ namespace mu2e {
 
     _trigLabelsCaloOnly.resize(_nMaxTrig);
     _trigCountsCaloOnly.resize(_nMaxTrig);
+
+    _trigLabelsCaloCalib.resize(_nMaxTrig);
+    _trigCountsCaloCalib.resize(_nMaxTrig);
 
     _trigLabelsTrack.resize(_nMaxTrig);
     _trigCountsTrack.resize(_nMaxTrig);
@@ -129,15 +139,23 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory trigInfoDir = tfs->mkdir("trigInfo");
 
-    _hTrigInfo[0] = trigInfoDir.make<TH1F>("hTrigInfo_global", "Global Trigger rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[1] = trigInfoDir.make<TH1F>("hTrigInfo_track" , "Calo-only Triggers rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[2] = trigInfoDir.make<TH1F>("hTrigInfo_calo"  , "Track Triggers rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[3] = trigInfoDir.make<TH1F>("hTrigInfo_evtPS" , "Event prescaler Trigger bits distribution", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[4] = trigInfoDir.make<TH1F>("hTrigInfo_helix" , "HelixSeed Triggers rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[0] = trigInfoDir.make<TH1F>("hTrigInfo_global"    , "Global Trigger rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[1] = trigInfoDir.make<TH1F>("hTrigInfo_track"     , "Calo-only Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[2] = trigInfoDir.make<TH1F>("hTrigInfo_calo"      , "Track Triggers rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[3] = trigInfoDir.make<TH1F>("hTrigInfo_evtPS"     , "Event prescaler Trigger bits distribution"  , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[4] = trigInfoDir.make<TH1F>("hTrigInfo_helix"     , "HelixSeed Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[5] = trigInfoDir.make<TH1F>("hTrigInfo_caloCalib" , "Calo Calibration rejection"                 , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     
     for (int i=0; i<_nCaloTrig; ++i){
       art::TFileDirectory caloInfoDir = tfs->mkdir(Form("caloOnly_%i",i));
      
+    }
+    
+    for (int i=0; i<_nCaloCalibTrig; ++i){
+      art::TFileDirectory caloCalibInfoDir = tfs->mkdir(Form("caloCalib_%i",i));
+      _hCaloCalibInfo[i][0] = caloCalibInfoDir.make<TH1F>(Form("hE_%i"   , i), "Cluster energy; E[MeV]", 400, 0, 200);
+      _hCaloCalibInfo[i][1] = caloCalibInfoDir.make<TH1F>(Form("hN_%i"   , i), "Cluster size; nCrystalHits", 101, -0.5, 100.5);
+   
     }
     
     for (int i=0; i<_nTrackTrig; ++i){
@@ -181,6 +199,9 @@ namespace mu2e {
 
       _hTrigInfo[4]->GetXaxis()->SetBinLabel(i+1, _trigLabelsHelix[i].c_str());
       if (_trigCountsHelix[i] > 0) _hTrigInfo[4]->SetBinContent(i+1, _trigCountsHelix[i]);
+
+      _hTrigInfo[5]->GetXaxis()->SetBinLabel(i+1, _trigLabelsCaloCalib[i].c_str());
+      if (_trigCountsCaloCalib[i] > 0) _hTrigInfo[5]->SetBinContent(i+1, _trigCountsCaloCalib[i]);
     }
   }
 
@@ -203,11 +224,13 @@ namespace mu2e {
     event.getManyByType(hTrigInfoVec);
     
     art::Handle<TriggerInfo>       hTrigInfo;
-    TriggerFlag                    prescalerFlag   = TriggerFlag::prescaleRandom;
-    TriggerFlag                    trackFlag       = TriggerFlag::track;
-    TriggerFlag                    helixFlag       = TriggerFlag::helix;
-    TriggerFlag                    caloFlag        = TriggerFlag::caloCluster;
-    TriggerFlag                    caloOrTrackFlag = trackFlag; caloOrTrackFlag.merge(caloFlag); caloOrTrackFlag.merge(helixFlag);
+    TriggerFlag                    prescalerFlag       = TriggerFlag::prescaleRandom;
+    TriggerFlag                    trackFlag           = TriggerFlag::track;
+    TriggerFlag                    helixFlag           = TriggerFlag::helix;
+    TriggerFlag                    caloFlag            = TriggerFlag::caloCluster;
+    TriggerFlag                    caloCalibFlag       = TriggerFlag::caloCalib;
+    TriggerFlag                    caloTrigSeedFlag    = TriggerFlag::caloTrigSeed;
+    TriggerFlag                    caloOrTrackFlag     = trackFlag; caloOrTrackFlag.merge(caloFlag); caloOrTrackFlag.merge(caloCalibFlag); caloOrTrackFlag.merge(caloTrigSeedFlag); caloOrTrackFlag.merge(helixFlag);
     
     for (size_t i=0; i<hTrigInfoVec.size(); ++i){
       hTrigInfo = hTrigInfoVec.at(i);
@@ -215,7 +238,7 @@ namespace mu2e {
       const TriggerInfo* trigInfo  = hTrigInfo.product();
       const TriggerFlag  flag      = trigInfo->triggerBits();
 
-      std::string    moduleLabel         = hTrigInfo.provenance()->moduleLabel();
+      std::string    moduleLabel   = hTrigInfo.provenance()->moduleLabel();
       int            index(0);         
       
       //fill the Global Trigger bits info
@@ -227,9 +250,18 @@ namespace mu2e {
       
       //fill the Calo-Only Trigger bits info
       findTrigIndex(_trigLabelsCaloOnly, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloFlag)){ 
+      if ( flag.hasAnyProperty(caloFlag) || flag.hasAnyProperty(caloTrigSeedFlag)){ 
 	_trigLabelsCaloOnly[index] = moduleLabel;
 	_trigCountsCaloOnly[index] = _trigCountsCaloOnly[index] + 1;
+      }
+
+      //fill the CaloCalib Trigger bits info
+      findTrigIndex(_trigLabelsCaloCalib, moduleLabel, index);
+      if ( flag.hasAnyProperty(caloCalibFlag)){ 
+	_trigLabelsCaloCalib[index] = moduleLabel;
+	_trigCountsCaloCalib[index] = _trigCountsCaloCalib[index] + 1;
+	const CaloCluster*cluster = trigInfo->caloCluster().get();
+	if(cluster) fillCaloCalibTrigInfo(index, cluster);
       }
       
       //fill the Track Trigger bits info
@@ -315,6 +347,15 @@ namespace mu2e {
     _hHelInfo[HelTrigIndex][6]->Fill(clE);
   }
 
+  void   ReadTriggerInfo::fillCaloCalibTrigInfo(int ClCalibIndex, const CaloCluster*HCl){
+    int        clsize    = HCl->size();
+    double     energy    = HCl->energyDep();
+
+    _hCaloCalibInfo[ClCalibIndex][0]->Fill(energy);
+    _hCaloCalibInfo[ClCalibIndex][1]->Fill(clsize);
+  }
+
+  
   
 }  
 

@@ -10,9 +10,12 @@
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 
 BEGIN_PROLOG
-#prescale factor for the calorimeter-only trigger
+#prescale factors for the calorimeter-only trigger
 CaloOnly_evt_sf         : 1
 CaloOnly_sf             : 1
+#prescale factors for the cosmic muon calibration
+CaloCosmicMuon_evt_sf         : 1
+CaloCosmicMuon_sf             : 1
 END_PROLOG
 
 #include "CaloFilters/fcl/prolog.fcl"

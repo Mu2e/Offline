@@ -18,9 +18,11 @@ namespace mu2e {
      {
          bitnames[std::string("PrescaleRandom")]  = bit_to_mask(prescaleRandom);
          bitnames[std::string("HitCluster")]      = bit_to_mask(hitCluster);
-         bitnames[std::string("Helix")]      = bit_to_mask(helix);
-         bitnames[std::string("Track")]      = bit_to_mask(track);
-         bitnames[std::string("CaloCluster")]   = bit_to_mask(caloCluster);
+         bitnames[std::string("Helix")]           = bit_to_mask(helix);
+         bitnames[std::string("Track")]           = bit_to_mask(track);
+         bitnames[std::string("CaloCluster")]     = bit_to_mask(caloCluster);
+         bitnames[std::string("CaloTrigSeed")]    = bit_to_mask(caloTrigSeed);
+         bitnames[std::string("CaloCalib")]       = bit_to_mask(caloCalib);
          bitnames[std::string("AnotherTrigger")]  = bit_to_mask(AnotherTrigger);
      }
      return bitnames;

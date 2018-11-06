@@ -13,6 +13,9 @@ UnbiasedFilters_evt_sf  : 500
 #prescale factor for the calorimeter-only trigger
 CaloOnly_evt_sf         : 1
 CaloOnly_sf             : 1
+#prescale factor for the calorimeter cosmic muon calibration
+CaloCosmicMuon_evt_sf         : 1
+CaloCosmicMuon_sf             : 1
 #prescale factor fot the tracker-only track triggers
 # downstream e-
 TPRDeMSeedFilter_evt_sf : 1
@@ -91,26 +94,29 @@ physics : {
     }
 
     #unbiased trigger path
-    unbiased_path  : [ @sequence::paths.unbiased                        ]
+    unbiased_path         : [ @sequence::paths.unbiased                        ]
     
     #path for the calorimeter only trigger
-    calo_only_path : [ FetchCaloDigis, @sequence::paths.calo_only       ]
+    calo_only_path        : [ FetchCaloDigis, @sequence::paths.calo_only       ]
+
+    #path for calorimeter cosmic muon calibration
+    calo_cosmic_muon_path : [ FetchCaloDigis, @sequence::paths.calo_cosmic_muon ]
 
     #paths for TrkPatRec downstream e- and e+
-    tpr_dem_path   : [ TPRFetchDigis, @sequence::paths.TPRDeMSeedFilter ]
-    tpr_dep_path   : [ TPRFetchDigis, @sequence::paths.TPRDePSeedFilter ]
+    tpr_dem_path          : [ TPRFetchDigis, @sequence::paths.TPRDeMSeedFilter ]
+    tpr_dep_path          : [ TPRFetchDigis, @sequence::paths.TPRDePSeedFilter ]
 
     #paths for CalPatRec downstream e- and e+
-    cpr_dem_path   : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter ]
-    cpr_dep_path   : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter ]
+    cpr_dem_path          : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter ]
+    cpr_dep_path          : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter ]
     
-    out           : [ ReadTriggerInfo,
-		      rootoutUnbiased, 
-		      rootoutCaloOnly, 
-		      rootoutTrkDem, 
-		      rootoutTrkDep
-		     ]
-    #    out           : [ ReadTriggerInfo ]
+    # out           : [ ReadTriggerInfo,
+    # 		      rootoutUnbiased, 
+    # 		      rootoutCaloOnly, 
+    # 		      rootoutTrkDem, 
+    # 		      rootoutTrkDep
+    # 		     ]
+    out           : [ ReadTriggerInfo ]
     end_paths     : [ out ]
 }
 

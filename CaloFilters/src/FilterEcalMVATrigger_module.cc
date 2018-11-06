@@ -200,7 +200,9 @@ namespace mu2e {
 	if (_rpeak>_MVArpivot[disk]){
 	  if (_MVA>_MVAlowcut[disk]) {
 	    retval = true;
-	    triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
+	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    break;
 	  }
 	}
@@ -208,7 +210,9 @@ namespace mu2e {
 	  MVAcut=_MVAcutA[disk]+_MVAcutB[disk]*_rpeak;
 	  if (_MVA>MVAcut) {
 	    retval = true;
-	    triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
+	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    break;
 	  }
 	}
