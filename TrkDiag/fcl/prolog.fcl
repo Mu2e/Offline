@@ -207,7 +207,7 @@ BEGIN_PROLOG
 
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
-	module_type: DIOWeight
+	module_type: DecayInOrbitWeight
 	weightingScheme : pol58
 	verbosityLevel: 1
       }
@@ -230,7 +230,7 @@ BEGIN_PROLOG
     }
   
     # diagnostic Reco sequences starting from digis
-    EventWeightSequence : [ PBIWeight, RMCWeight10, RMCWeight20 ]
+    EventWeightSequence : [ PBIWeight ]
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
