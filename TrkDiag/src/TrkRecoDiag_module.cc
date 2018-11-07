@@ -155,7 +155,7 @@ namespace mu2e {
     _hsTag(pset.get<art::InputTag>("HelixSeedCollection","HelixFinder:Positive")),
     _ksTag(pset.get<art::InputTag>("KalSeedFitCollection","KSFDeM")),
     _kfTag(pset.get<art::InputTag>("KalFinalFitCollection","KFFDeM")),
-    _tqTag(pset.get<art::InputTag>("TrkQualTag","KFFDeM")),
+    _tqTag(pset.get<art::InputTag>("TrkQualTag","TrkQualDeM")),
     _tcTag(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),

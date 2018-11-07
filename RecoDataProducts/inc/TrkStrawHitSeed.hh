@@ -15,10 +15,10 @@ namespace mu2e {
   struct TrkStrawHitSeed {
     TrkStrawHitSeed() : _index(0), _trklen(0), _hitlen(0), _rdrift(0), _wdoca(0), _rerr(0), _ambig(0) {}
     // construct from the information
-  TrkStrawHitSeed(StrawHitIndex index, StrawId const& strawid, HitT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
-      Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag) :
+  TrkStrawHitSeed(StrawHitIndex index, StrawId const& strawid, TrkT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
+		  Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, int const& nsh) :
     _index(index), _sid(strawid), _t0(t0), _trklen(trklen),
-    _hitlen(hitlen), _rdrift(rdrift), _wdoca(wdoca), _rerr(rerr), _ambig(ambig), _flag(flag)  {}
+    _hitlen(hitlen), _rdrift(rdrift), _wdoca(wdoca), _rerr(rerr), _ambig(ambig), _flag(flag),_nsh(nsh)  {}
 // accessors
     StrawHitIndex	index() const { return _index; }
     StrawId const&	strawId() const { return _sid; }
@@ -30,6 +30,7 @@ namespace mu2e {
     Float_t	radialErr() const { return _rerr; }
     Int_t	ambig() const { return _ambig; }
     StrawHitFlag const& flag() const { return _flag; }
+    Int_t       nStrawHits() const { return _nsh; }
     //
     StrawHitIndex	    _index;	  // index into the primary StrawHit (and StrawHitPosition, StrawHitFlag, ..) collection
     StrawId	    _sid;	  // which straw has the hit
@@ -41,6 +42,7 @@ namespace mu2e {
     Float_t	    _rerr;	  // intrinsic radial error
     Int_t	    _ambig;	  // LR ambiguity assigned to this hit
     StrawHitFlag    _flag;	  // flag describing the status of this hit (active, ....)
+    Int_t           _nsh;         // number of underlying straw hits
   };
 }
 #endif
