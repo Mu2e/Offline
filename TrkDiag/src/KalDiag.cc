@@ -257,7 +257,7 @@ namespace mu2e
     }
 
     std::vector<TrkStrawHitSeed> hits;
-    TrkUtilities::fillHitSeeds(krep, hits);
+    TrkUtilities::fillStrawHitSeeds(krep, hits);
     unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
     TrkUtilities::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
     tinfo._nhits = nhits;

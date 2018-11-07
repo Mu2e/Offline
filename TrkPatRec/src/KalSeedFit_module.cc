@@ -320,7 +320,7 @@ namespace mu2e
           auto hsH = event.getValidHandle(_hsToken);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
-	  TrkUtilities::fillHitSeeds(_result.krep,kseed._hits);
+	  TrkUtilities::fillStrawHitSeeds(_result.krep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
 	  kseed._chisq = _result.krep->chisq();
 	  // use the default consistency calculation, as t0 is not fit here

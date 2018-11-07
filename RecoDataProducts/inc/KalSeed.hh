@@ -35,7 +35,7 @@ namespace mu2e {
     std::vector<KalSegment> const& segments() const { return _segments; }
     TrkFitFlag const& status() const { return _status; }
     Float_t flt0() const { return _flt0; }
-    TrkT0 const& t0() const { return _t0; }
+    HitT0 const& t0() const { return _t0; }
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
@@ -46,7 +46,7 @@ namespace mu2e {
     TrkParticle			    _tpart; // particle assumed for this fit
     TrkFitDirection	      	    _fdir; // direction in which this particle was fit
     TrkFitFlag			    _status; // status of this fit
-    TrkT0			    _t0; // track t0; Time particle crosses z=0
+    HitT0			    _t0; // track t0; Time particle crosses z=0
     Float_t			    _flt0; // flight distance where the track crosses the tracker midplane (z=0)
     Float_t			    _chisq; // fit chisquared value
     Float_t			    _fitcon; // fit consistency

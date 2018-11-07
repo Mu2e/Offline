@@ -327,7 +327,10 @@ namespace mu2e
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
-	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  TrkFitFlag fflag(kseed.status());
+	  fflag.merge(TrkFitFlag::kalmanOK);
+	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
+	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),fflag);
 	  // reference the seed fit in this fit
 	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
 	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
@@ -336,14 +339,19 @@ namespace mu2e
 	  // fill with new information
 	  fseed._t0 = krep->t0();
 	  fseed._flt0 = krep->flt0();
-	  fseed._status.merge(TrkFitFlag::kalmanOK);
 	  // global fit information
 	  fseed._chisq = krep->chisq();
 	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
 	  fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-	  if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
-	  TrkUtilities::fillHitSeeds(krep,fseed._hits);
+	  TrkUtilities::fillStrawHitSeeds(krep,fseed._hits);
 	  TrkUtilities::fillStraws(krep,fseed._straws);
+	  // see if there's a TrkCaloHit
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
+	  if(tch != 0){
+	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	    // set the Ptr using the helix: this could be more direct FIXME!
+	    fseed._chit._cluster = fseed._helix->caloCluster();
+	  }
 	  // sample the fit at the requested z positions.  Need options here to define a set of
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {

@@ -8,6 +8,16 @@
 #include <Rtypes.h>
 #include "BTrk/TrkBase/TrkT0.hh"
 namespace mu2e {
-  typedef TrkT0  HitT0;
+  struct HitT0 {
+    Float_t _t0; // t0 value
+    Float_t _t0err; // error on t0
+    Float_t t0() const { return _t0; }
+    Float_t t0Err() const { return _t0err; }
+    HitT0() : _t0(0.0), _t0err(0.0) {}
+    // conversion with TrkT0
+    HitT0(TrkT0 const& trkt0) : _t0(trkt0.t0()), _t0err(trkt0.t0Err()) {}
+    HitT0& operator =(TrkT0 const& trkt0) { _t0 = trkt0.t0(); _t0err = trkt0.t0Err(); return *this; }
+    operator TrkT0() const { return TrkT0(_t0,_t0err); }
+  };
 }
 #endif
