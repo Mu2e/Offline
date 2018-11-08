@@ -7,8 +7,8 @@
 using namespace std;
 
 TrkRecoDiag::TrkRecoDiag(TTree *tree, double norm) : fChain(0) ,_tffval(32,0), _norm(norm),
-  _eff(0), _acc(0), _effcan(0), _tcseln(10), 
-  _hseln(10), _hselminm(280.0),_hselmaxm(380.0),
+  _eff(0), _acc(0), _effcan(0), _tcseln(6), 
+  _hseln(6), _hselminm(280.0),_hselmaxm(380.0),
   _sselminm(95.0), _sselmaxm(110.0), _sselmerr(1.2), _sselchi2(9.0), 
   _pseltq(0.4), _pselminm(95.0), _pselmaxm(110.0),
   _mincost(0.45), _maxcost(0.7571),

@@ -129,6 +129,7 @@ reco : {
 	 ele : [ @sequence::Tracking.TPRDeM, @sequence::Tracking.TPRUeM,
 	    @sequence::Tracking.TPRDeP, @sequence::Tracking.TPRUeP ]
 	 eleDMUP : [ @sequence::Tracking.TPRDeM, @sequence::Tracking.TPRUeP ]
+	 eleDMDP : [ @sequence::Tracking.TPRDeM, @sequence::Tracking.TPRDeP ]
       } # end reco.trk.seq
 
    } # end reco.trk

@@ -28,6 +28,8 @@ namespace mu2e {
     TH1D* _hy;
     TH1D* _hz;
     TH1D* _ht;
+    TH1D* _hterr;
+    TH1D* _nc;
   };
 }
 

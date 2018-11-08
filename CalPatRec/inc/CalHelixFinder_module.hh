@@ -116,6 +116,7 @@ namespace mu2e {
     CalHelixFinderAlg                     _hfinder;	
     CalHelixFinderData                    _hfResult;
 
+    double                                _bz0;
     const TTracker*                       _tracker     ; // straw tracker geometry
     const Calorimeter*                    _calorimeter ; // cached pointer to the calorimeter geometry
 //-----------------------------------------------------------------------------

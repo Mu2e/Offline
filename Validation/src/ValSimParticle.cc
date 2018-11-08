@@ -13,6 +13,7 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hp0 = tfs.make<TH1D>( "p0", "P pi0", 100, 0.0, 600.0);
   _hpi = tfs.make<TH1D>( "pi", "P pi+/-", 100, 0.0, 600.0);
   _hpn = tfs.make<TH1D>( "pn", "P nuclei", 100, 0.0, 200.0);
+  _hpn2 = tfs.make<TH1D>( "pn2", "P nuclei", 100, 0.0, 10.0);
   _hsx = tfs.make<TH1D>( "Xstart", "start X", 100, -6000.0, 6000.0);
   _hsy = tfs.make<TH1D>( "Ystart", "start Y", 100, -2000.0, 2000.0);
   _hsz = tfs.make<TH1D>( "Zstart", "start Z", 100, -20000.0, 20000.0);
@@ -63,7 +64,10 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     if(abs(idc)==13) _hpm->Fill(p);
     if(abs(idc)==30) _hp0->Fill(p);
     if(abs(idc)==31) _hpi->Fill(p);
-    if(abs(idc)==51) _hpn->Fill(p);
+    if(abs(idc)==51) {
+      _hpn->Fill(p);
+      _hpn2->Fill(p);
+    }
 
     _hsx->Fill(part.startPosition().x());
     _hsy->Fill(part.startPosition().y());
