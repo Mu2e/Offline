@@ -147,8 +147,9 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
       // the earliest stage this simparticle appears
       auto const& opart = part.originParticle(); //mu2e::SimParticle
       auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
-      if(part.pdgId()==11 && gptr.isNonnull()) { // e- pointing to GenParticle
-	cea.push_back(part.id());
+      // e+/- pointing to GenParticle
+      if(std::abs(part.pdgId())==11 && gptr.isNonnull()) { 
+	cea.push_back(sp.first);
       }
     }
   }

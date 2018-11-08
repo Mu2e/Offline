@@ -22,6 +22,8 @@ namespace mu2e {
   class TrkStrawHitSeed;
   class TrkStraw;
   class TimeCluster;
+  class TrkCaloHit;
+  class TrkCaloHitSeed;
   typedef std::vector<StrawHitIndex> SHIV;
   namespace TrkUtilities {
   // convert the robust helix format into the BaBar format HelixTraj.  This requires
@@ -32,7 +34,8 @@ namespace mu2e {
     // create a KalSegment (helix segment) from a HelixTraj
     void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
-    void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
+    void fillStrawHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
+    void fillCaloHitSeed(const TrkCaloHit* chit, TrkCaloHitSeed& caloseed);
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& straws);
     // compute overlap between 2 time clusters
     double overlap(TimeCluster const& tc1, TimeCluster const& tc2);
@@ -42,6 +45,10 @@ namespace mu2e {
     double overlap(SHIV const& shiv1, SHIV const& shiv2); 
     // compute the flightlength for a given z position
     //    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
+    // count different hit types
+    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig);
+    double chisqConsistency(const KalRep* krep);
+    const TrkCaloHit* findTrkCaloHit(const KalRep* krep);
   }
 }
 #endif

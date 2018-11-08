@@ -31,9 +31,9 @@ physics : {
       @table::digis.straw.mod
       @table::digis.cal.mod
       #@table::digis.crv.mod      # no CRV digi yet
+      @table::reco.cal.mod
       @table::reco.straw.mod      # digi to straw hit, flagBgHits
       @table::reco.trk.mod
-      @table::reco.cal.mod
       @table::reco.ctrk.mod
       @table::reco.pid.mod
     }
@@ -49,9 +49,9 @@ physics : {
       @sequence::digis.straw.seq , 
       @sequence::digis.cal.seq ,
       #@sequence::digis.crv.seq ,
+      @sequence::reco.cal.seq ,
       @sequence::reco.straw.seq ,
       @sequence::reco.trk.seq.eleDMUP , # DeM and UeP
-      @sequence::reco.cal.seq ,
       @sequence::reco.ctrk.seq , 
       @sequence::reco.pid.seq 
    ]

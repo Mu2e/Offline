@@ -1055,12 +1055,7 @@ namespace mu2e
 	    if (hit->signalPropagationTime(st0 )){
 	      // subtracting hitT0 makes this WRT the previous track t0
 	      hitt0.push_back(hit->time() - st0._t0 - hit->hitT0()._t0);
-//	      TrkCaloHit* tch = dynamic_cast<TrkCaloHit*>(hit);
-//	      if(tch != 0){
-		// add temperature, as this isn't part of the geometric error
-//		hitt0err.push_back(sqrt(st0._t0err*st0._t0err + tch->temperature()*tch->temperature()));
-//	      else	
-		hitt0err.push_back(st0._t0err);// temperature is already part of the residual error
+	      hitt0err.push_back(st0._t0err);// temperature is already part of the residual error
             }
           }
         }
@@ -1197,17 +1192,5 @@ namespace mu2e
     }
     return retval;
   }
-
-  void KalFit::findTrkCaloHit(KalRep*krep, TrkCaloHit*tch){
-    for(auto ith=krep->hitVector().begin(); ith!=krep->hitVector().end(); ++ith){
-      TrkCaloHit* tsh = dynamic_cast<TrkCaloHit*>(*ith);
-      if(tsh != 0) {
-	tch = tsh;
-	break;
-      }
-    }
-
-  }
-  
 
 }
