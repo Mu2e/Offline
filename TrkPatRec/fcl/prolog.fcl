@@ -338,6 +338,28 @@ Tracking : {
     KFFUpiM	  : @local::KFFUpiM
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
+    KFFUeM	  : @local::KFFUeM
+    KFFDeP	  : @local::KFFDeP
+    KFFUeP	  : @local::KFFUeP
+    KFFDmuM	  : @local::KFFDmuM
+    KFFUmuM	  : @local::KFFUmuM
+    KFFDmuP	  : @local::KFFDmuP
+    KFFUmuP	  : @local::KFFUmuP
+  
+# configuration for using the sequence with MergeHelix
+    MHKFFDeM	  : { @table::KFFDeM
+	SeedCollection : SeedFitDem
+    }
+    MHKFFDeP	  : { @table::KFFDeP
+	SeedCollection : SeedFitDep
+    }
+    MHKFFDmM	  : { @table::KFFDmM
+	SeedCollection : SeedFitDmm
+    }
+    MHKFFDmP	  : { @table::KFFDmP
+	SeedCollection : SeedFitDmp
+    }
+    
   }
 
 # production sequence to find helices

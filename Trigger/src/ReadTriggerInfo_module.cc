@@ -27,12 +27,14 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 //ROOT
 #include "TH1F.h"
+#include "TH2F.h"
 
 #include <cmath>
 // #include <iostream>
@@ -49,6 +51,18 @@ namespace mu2e {
 
   public:
 
+    enum {
+      kNTrigInfo     = 10,
+      kNTrackTrig    = 10,
+      kNTrackTrigVar = 6,
+      kNHelixTrig    = 10,
+      kNHelixTrigVar = 7,
+      kNCaloCalib    = 5,
+      kNCaloCalibVar = 5,
+      kNCaloOnly     = 5,
+      kNCaloOnlyVar  = 5      
+    };
+    
     explicit ReadTriggerInfo(fhicl::ParameterSet const& pset);
     virtual ~ReadTriggerInfo() { }
 
@@ -63,7 +77,8 @@ namespace mu2e {
     void   findTrigIndex        (std::vector<std::string> Vec, std::string ModuleLabel, int &Index);
     void   fillTrackTrigInfo    (int TrkTrigIndex, const KalSeed*  KSeed);
     void   fillHelixTrigInfo    (int HelTrigIndex, const HelixSeed*HSeed);
-    void   fillCaloCalibTrigInfo(int ClCalibIndex, const CaloCluster*HCl);
+    void   fillCaloTrigSeedInfo (int CTrigSeedIndex, const CaloTrigSeed*HCl);
+    void   fillCaloCalibTrigInfo(int ClCalibIndex, const CaloCluster*  HCl);
 
   private:
 
@@ -97,18 +112,21 @@ namespace mu2e {
     std::vector<std::string>  _trigLabelsEvtPS;
     std::vector<int>          _trigCountsEvtPS;
     
-    TH1F *_hTrigInfo[10];
-    TH1F *_hTrkInfo [10][6];
-    TH1F *_hHelInfo [10][7];
+    TH1F *_hTrigInfo  [kNTrigInfo];
+    TH2F *_h2DTrigInfo[kNTrigInfo];
 
-    TH1F *_hCaloCalibInfo[5][5];
+    TH1F *_hTrkInfo [kNTrackTrig][kNTrackTrigVar];
+    TH1F *_hHelInfo [kNHelixTrig][kNHelixTrigVar];
+
+    TH1F *_hCaloCalibInfo[kNCaloCalib][kNCaloCalibVar];
+    TH1F *_hCaloOnlyInfo [kNCaloOnly][kNCaloOnlyVar];
   };
 
 
   ReadTriggerInfo::ReadTriggerInfo(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset), 
     _diagLevel     (pset.get<int>("diagLevel", 0)),
-    _nMaxTrig      (pset.get<size_t>("nFilters", 20)),
+    _nMaxTrig      (pset.get<size_t>("nFilters", 50)),
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
     _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
@@ -139,21 +157,26 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory trigInfoDir = tfs->mkdir("trigInfo");
 
-    _hTrigInfo[0] = trigInfoDir.make<TH1F>("hTrigInfo_global"    , "Global Trigger rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[1] = trigInfoDir.make<TH1F>("hTrigInfo_track"     , "Calo-only Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[2] = trigInfoDir.make<TH1F>("hTrigInfo_calo"      , "Track Triggers rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[3] = trigInfoDir.make<TH1F>("hTrigInfo_evtPS"     , "Event prescaler Trigger bits distribution"  , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[4] = trigInfoDir.make<TH1F>("hTrigInfo_helix"     , "HelixSeed Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[5] = trigInfoDir.make<TH1F>("hTrigInfo_caloCalib" , "Calo Calibration rejection"                 , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    
+    _hTrigInfo[0]   = trigInfoDir.make<TH1F>("hTrigInfo_global"    , "Global Trigger rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[1]   = trigInfoDir.make<TH1F>("hTrigInfo_track"     , "Calo-only Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[2]   = trigInfoDir.make<TH1F>("hTrigInfo_calo"      , "Track Triggers rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[3]   = trigInfoDir.make<TH1F>("hTrigInfo_evtPS"     , "Event prescaler Trigger bits distribution"  , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[4]   = trigInfoDir.make<TH1F>("hTrigInfo_helix"     , "HelixSeed Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[5]   = trigInfoDir.make<TH1F>("hTrigInfo_caloCalib" , "Calo Calibration rejection"                 , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
+    _h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
     for (int i=0; i<_nCaloTrig; ++i){
       art::TFileDirectory caloInfoDir = tfs->mkdir(Form("caloOnly_%i",i));
-     
+      _hCaloOnlyInfo[i][0] = caloInfoDir.make<TH1F>(Form("hEPeak_%i"   , i), "peak energy; E[MeV]"        , 400, 0, 200);
+      _hCaloOnlyInfo[i][1] = caloInfoDir.make<TH1F>(Form("hR1Max1_%i"   , i), "ring1 max; ring1max [MeV]" , 400, 0, 200);
+      _hCaloOnlyInfo[i][2] = caloInfoDir.make<TH1F>(Form("hR1Max2_%i"   , i), "ring1 max; ring1max2 [MeV]", 400, 0, 200);
+    
     }
     
     for (int i=0; i<_nCaloCalibTrig; ++i){
       art::TFileDirectory caloCalibInfoDir = tfs->mkdir(Form("caloCalib_%i",i));
-      _hCaloCalibInfo[i][0] = caloCalibInfoDir.make<TH1F>(Form("hE_%i"   , i), "Cluster energy; E[MeV]", 400, 0, 200);
+      _hCaloCalibInfo[i][0] = caloCalibInfoDir.make<TH1F>(Form("hE_%i"   , i), "Cluster energy; E[MeV]", 800, 0, 800);
       _hCaloCalibInfo[i][1] = caloCalibInfoDir.make<TH1F>(Form("hN_%i"   , i), "Cluster size; nCrystalHits", 101, -0.5, 100.5);
    
     }
@@ -185,8 +208,15 @@ namespace mu2e {
   void ReadTriggerInfo::endJob(){
     //set the labels of the histrograms
     for (size_t i=0; i<_trigCounts.size(); ++i ){
-      _hTrigInfo[0]->GetXaxis()->SetBinLabel(i+1, _trigLabels[i].c_str());
-      if (_trigCounts[i] > 0) _hTrigInfo[0]->SetBinContent(i+1, _nProcess/_trigCounts[i]);
+      _hTrigInfo  [0]->GetXaxis()->SetBinLabel(i+1, _trigLabels[i].c_str());
+      _h2DTrigInfo[0]->GetXaxis()->SetBinLabel(i+1, _trigLabels[i].c_str());
+      if (_trigCounts[i] > 0) {
+	_hTrigInfo[0]->SetBinContent(i+1, _nProcess/_trigCounts[i]);
+	for (size_t j=0; j<_trigCounts.size(); ++j ){
+	  _h2DTrigInfo[0]->GetYaxis()->SetBinLabel(j+1, _trigLabels[j].c_str());
+	  if (_trigCounts[j] > 0) _h2DTrigInfo[0]->SetBinContent(i+1, j+1, _trigCounts[j]);
+	}
+      }
 
       _hTrigInfo[1]->GetXaxis()->SetBinLabel(i+1, _trigLabelsTrack[i].c_str());
       if (_trigCountsTrack[i] > 0) _hTrigInfo[1]->SetBinContent(i+1, _nProcess/_trigCountsTrack[i]);
@@ -253,6 +283,8 @@ namespace mu2e {
       if ( flag.hasAnyProperty(caloFlag) || flag.hasAnyProperty(caloTrigSeedFlag)){ 
 	_trigLabelsCaloOnly[index] = moduleLabel;
 	_trigCountsCaloOnly[index] = _trigCountsCaloOnly[index] + 1;
+	const CaloTrigSeed*clseed = trigInfo->caloTrigSeed().get();
+	if(clseed) fillCaloTrigSeedInfo(index, clseed);
       }
 
       //fill the CaloCalib Trigger bits info
@@ -355,10 +387,14 @@ namespace mu2e {
     _hCaloCalibInfo[ClCalibIndex][1]->Fill(clsize);
   }
 
+   void   ReadTriggerInfo::fillCaloTrigSeedInfo(int Index, const CaloTrigSeed*HCl){
+    _hCaloOnlyInfo[Index][0]->Fill(HCl->epeak());
+    _hCaloOnlyInfo[Index][1]->Fill(HCl->ring1max());
+    _hCaloOnlyInfo[Index][2]->Fill(HCl->ring1max2());
+  }
+
   
   
 }  
 
 DEFINE_ART_MODULE(mu2e::ReadTriggerInfo);
-
-

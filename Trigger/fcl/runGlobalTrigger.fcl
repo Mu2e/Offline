@@ -10,6 +10,12 @@
 BEGIN_PROLOG
 #prescale factor for the unbiased trigger
 UnbiasedFilters_evt_sf  : 500
+#prescale factors for the strawDigi count filter
+SDCountFilter_evt_sf    : 500
+SDCountFilter_sf        : 1
+#prescale factors for the "large" strawDigi counter filter
+LargeSDCountFilter_evt_sf    : 500
+LargeSDCountFilter_sf        : 1
 #prescale factor for the calorimeter-only trigger
 CaloOnly_evt_sf         : 1
 CaloOnly_sf             : 1
@@ -87,28 +93,38 @@ physics : {
     analyzers : {  
 
 	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 25
-	    SelecEvents   : [ unbiased_path, calo_only_path, tpr_dem_path, tpr_dep_path, cpr_dem_path, cpr_dep_path ]
+	    nFilters      : 35
+	    SelecEvents   : [ unbiased_path, 
+			      minimumbias_sd_count_pat,
+			      large_sd_count_path,
+			      calo_only_path,
+			      tpr_dem_path, tpr_dep_path, cpr_dem_path, cpr_dep_path ]
 	}
 	
     }
 
     #unbiased trigger path
-    unbiased_path         : [ @sequence::paths.unbiased                        ]
+    unbiased_path             : [ @sequence::paths.unbiased                         ]
     
+    #minimum bias filters
+    minimumbias_sd_count_path : [ @sequence::paths.minimumbias_sd_count             ]
+
+    #path for selecting events with large ammount of strawDigis
+    large_sd_count_path       : [ @sequence::paths.large_sd_count                   ]
+
     #path for the calorimeter only trigger
-    calo_only_path        : [ FetchCaloDigis, @sequence::paths.calo_only       ]
+    calo_only_path            : [ FetchCaloDigis, @sequence::paths.calo_only        ]
 
     #path for calorimeter cosmic muon calibration
-    calo_cosmic_muon_path : [ FetchCaloDigis, @sequence::paths.calo_cosmic_muon ]
+    calo_cosmic_muon_path     : [ FetchCaloDigis, @sequence::paths.calo_cosmic_muon ]
 
     #paths for TrkPatRec downstream e- and e+
-    tpr_dem_path          : [ TPRFetchDigis, @sequence::paths.TPRDeMSeedFilter ]
-    tpr_dep_path          : [ TPRFetchDigis, @sequence::paths.TPRDePSeedFilter ]
+    tpr_dem_path              : [ TPRFetchDigis, @sequence::paths.TPRDeMSeedFilter  ]
+    tpr_dep_path              : [ TPRFetchDigis, @sequence::paths.TPRDePSeedFilter  ]
 
     #paths for CalPatRec downstream e- and e+
-    cpr_dem_path          : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter ]
-    cpr_dep_path          : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter ]
+    cpr_dem_path              : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter  ]
+    cpr_dep_path              : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter  ]
     
     # out           : [ ReadTriggerInfo,
     # 		      rootoutUnbiased, 

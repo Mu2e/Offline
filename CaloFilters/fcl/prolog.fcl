@@ -73,7 +73,7 @@ CaloFilters : {
 	CaloClusterCollection  : "CaloClusterFast"
 	debugLevel             : 0
 	MinNCrystalHits        : 7
-	MinEnergy              : 120.0    #MeV
+	MinEnergy              : 150.0    #MeV
 	MaxEnergy              : 600.0    #MeV
     }
    
