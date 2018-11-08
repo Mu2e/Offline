@@ -28,13 +28,11 @@
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
-#include "MCDataProducts/inc/CaloClusterContentMC.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
 #include "MCDataProducts/inc/CrvSiPMChargesCollection.hh"
 #include "MCDataProducts/inc/CrvDigiMCCollection.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
-#include "MCDataProducts/inc/ExtMonUCITofHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfo.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -72,8 +70,6 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
-#include "MCDataProducts/inc/SimParticleTrackerHitSummaryCollection.hh"
-#include "MCDataProducts/inc/SimParticleTrackerHitSummaryAssns.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 
 
