@@ -41,7 +41,7 @@
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "Mu2eRecorderProcess.hh"
+#include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace std;

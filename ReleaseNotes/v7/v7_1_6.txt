@@ -1,6 +1,26 @@
            Release notes for Mu2e Offline software, v7_1_6
 	   still under development
 
+7) genser November 9, 2018
+    Added Mu2eRecorderProcess to record particle state just before it interacts
+      UserTrackInformation::GetKineticEnergy() and
+      UserTrackInformation::GetMomentumDirection() provide the info
+      MCDataProducts/inc/ProcessCode.hh
+      Mu2eG4/fcl/prolog.fcl
+      Mu2eG4/inc/Mu2eRecorderProcess.hh
+      Mu2eG4/inc/UserTrackInformation.hh
+      Mu2eG4/src/Mu2eG4SteppingAction.cc
+      Mu2eG4/src/Mu2eG4_module.cc
+      Mu2eG4/src/Mu2eRecorderProcess.cc
+      Mu2eG4/src/TrackingAction.cc
+      Mu2eG4/src/UserTrackInformation.cc
+      Mu2eG4/src/toggleProcesses.cc
+
+7) genser October 10, 2018
+    enabled storing process physics tables
+      Mu2eG4/fcl/prolog.fcl
+      Mu2eG4/src/Mu2eG4_module.cc
+
 6) kutschke Oct 24, 2018
    Merge in Ralf's changes from branch CRV_tmp.
    These changes remove the MC awareness of the top level reco data product.

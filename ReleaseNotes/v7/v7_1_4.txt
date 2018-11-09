@@ -9,8 +9,3 @@
   - move loading CRV phtoton tables to constructor to avoid double-loading in multi-run jobs
 1) brownd 2 Octover 2018
   - add scripts for DS-cosmic-mix
-
-1) genser 10 October 2018
-    enabled storing process physics tables
-      Mu2eG4/fcl/prolog.fcl
-      Mu2eG4/src/Mu2eG4_module.cc

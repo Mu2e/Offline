@@ -1,13 +1,13 @@
 // Special process to record track info before geant4 post step processes occurred
 //
-// Original author Kl Genser
+// Original author KL Genser
 
 // Mu2e includes
 #include "Mu2eG4/inc/UserTrackInformation.hh"
+#include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 
 // G4 includes
 #include "G4ios.hh"
-#include "Mu2eRecorderProcess.hh"
 #include "G4VParticleChange.hh"
 #include "G4Track.hh"
 #include "G4Step.hh"
