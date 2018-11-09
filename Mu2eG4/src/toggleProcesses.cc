@@ -41,6 +41,7 @@
 
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "Mu2eRecorderProcess.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
@@ -196,6 +197,21 @@ namespace mu2e{
       ph->RegisterProcess(thePosiToHadrons, positron);
     }
 
+    // special process to look at the track before post step interaction
+    // fixme: make it a function guarded by pset flag and access to the stepping verbosity level
+    Mu2eRecorderProcess* rmp = new Mu2eRecorderProcess();
+    //    rmp->SetVerboseLevel(1);
+    G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
+    G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
+    iter->reset();
+    while( (*iter)() ){
+      G4ParticleDefinition* particle = iter->value();
+      G4ProcessManager* pmanager     = particle->GetProcessManager();
+      // The process manager takes ownership of the process
+      // ph->RegisterProcess(rmp, proton); // RegisterProcess only works for known geant4 processes
+      pmanager->AddContinuousProcess(rmp);
+      pmanager->SetProcessOrderingToLast(rmp, idxAlongStep);
+    }
   }
 
   void addUserProcesses(const fhicl::ParameterSet& pset) {

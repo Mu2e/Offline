@@ -168,13 +168,22 @@ namespace mu2e {
       
       // Get information about this track.
       G4int id = track->GetTrackID();
-      
+
       // If no tracks are listed, then printout for all tracks.
       // If some tracks are listed, then printout only for those tracks.
       if ( _debugTrackList.size() > 0 ){
           if ( !_debugTrackList.inList(id) ) return;
       }
       
+      const G4DynamicParticle*  pParticle = track->GetDynamicParticle();
+      double theKEnergy  = pParticle->GetKineticEnergy();
+      const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
+      G4int prec = G4cout.precision(15);
+      G4cout << __func__ << " KE " << theKEnergy
+             << " Momentum direction " << theMomentumDirection
+             << G4endl;
+      G4cout.precision(prec);
+
       // Momentum at the the pre point.
       G4ThreeVector const& mom = prept->GetMomentum();
       
