@@ -26,12 +26,16 @@ namespace mu2e {
     Float_t _tcalo; // calo cluster time
     Float_t _dtcalo; // calo cluster time
     XYZVec _cog; // calo cluster position
+    Int_t _pripdg, _prigen, _priproc;
+    Float_t _prifrac; // MC truth about the primary of a cluster
     
-    void reset() { _tcindex = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = 0.0;  }
+    void reset() { _tcindex = _prigen = _priproc = -1; _nhits = _ncehits = 0; _time = _terr = _maxover = _ecalo = _tcalo = _dtcalo = _prifrac = 0.0; _pos = _cog= XYZVec(); }
     static std::string leafnames() { 
       static std::string leaves; leaves =
-      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:posx/F:posy/F:posz/F") + std::string(":ecalo/F:tcalo/F:dtcalo/F:")
-      + std::string("cogx/F:cogy/F:cogz/F");
+      std::string("tcindex/I:nhits/I:ncehits/I:time/F:terr/F:minhtime/F:maxhtime/F:maxover/F:posx/F:posy/F:posz/F")
+      + std::string(":ecalo/F:tcalo/F:dtcalo/F")
+      + std::string(":cogx/F:cogy/F:cogz/F")
+      + std::string(":pripdg/I:prigen/I:priproc/I:prifrac/F");
       return leaves;
     } 
   };
@@ -40,13 +44,17 @@ namespace mu2e {
     TimeClusterHitInfo() { reset(); }
     Float_t _time; // hit time
     Float_t _dt; // time relative to the cluster
+    Float_t _wdist; // distance along wire
+    Float_t _werr; // distance error along wire
     Float_t _dphi; // resolved phi relative to the cluster
     Float_t _rho; // transverse radius of this hit
     Float_t _z; // z of this hit
+    Float_t _edep; // edep
     Float_t _mva; // cluster MVA output
-    Int_t _mcpdg, _mcgen, _mcproc; // MC truth info for this hit
+    Int_t _nsh, _plane;
+    Int_t _mcpdg, _mcgen, _mcproc, _mcrel; // MC truth info for this hit
     Float_t _mctime, _mcmom;
-    void reset() { _time = _dt = _dphi = _rho = _z = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = 0; }
+    void reset() { _time = _dt = _wdist = _werr = _dphi = _rho = _z = _edep = _mva = _mctime = _mcmom = -1000.0; _mcpdg = _mcgen = _mcproc = _mcrel = 0; _nsh = _plane = -1; }
   };
     
   struct MCClusterInfo {  
@@ -59,11 +67,11 @@ namespace mu2e {
     Float_t	_maxdphi; // max dphi WRT average
     Float_t	_minrho; // min rho WRT average
     Float_t	_maxrho; // max rho WRT average
-    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = 0.0; _minrho = 1000.0;}
+    void reset() { _nce = _ncesel = _nceclust = 0; _time = _maxdphi = _maxrho = 0.0; _minrho = 1000.0; _pos = XYZVec();}
     static std::string leafnames() {
       static std::string leaves; leaves =
-	std::string("nce/I:ncesel/I:nceclust/I:time/F:")
-	+std::string("posx/F:posy/F:posz/F")
+	std::string("nce/I:ncesel/I:nceclust/I:time/F")
+	+std::string(":posx/F:posy/F:posz/F")
 	+std::string(":maxdphi/F:minrho/F:maxrho/F");
       return leaves;
     } 

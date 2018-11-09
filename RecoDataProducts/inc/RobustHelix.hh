@@ -32,6 +32,8 @@ namespace mu2e {
     float centery() const { return _rcent*sin(_fcent); }
     XYZVec center() const { return XYZVec(centerx(),centery(),0.0); }
     CLHEP::Hep3Vector centerCLHEP() const { return CLHEP::Hep3Vector(centerx(),centery(),0.0); }
+    float chi2dXY  () const { return _chi2dXY; }
+    float chi2dZPhi() const { return _chi2dZPhi; }
     // azimuth wrt the circle center expected for a given z position
     Float_t circleAzimuth( double zpos) const { return _lambda != 0.0 ? _fz0 + zpos/_lambda : 0.0; }
     // position in space given the Z position of the input vector
@@ -67,6 +69,8 @@ namespace mu2e {
     Float_t _radius;  // transverse radius of the helix (mm).  Always positive
     Float_t _lambda; // dz/dphi (mm/radian)
     Float_t _fz0; // azimuth (phi) at the center z position (radians)
+    Float_t _chi2dXY;   // squared sum of the hit residuals wrt the XY plane normalized by the degree of freedom
+    Float_t _chi2dZPhi; // squared sum of the hit residuals wrt the ZPhi plane normalized by the degree of freedom
     Helicity _helicity; // explicit helicity value
   };
   std::ostream& operator<<(std::ostream& os, mu2e::RobustHelix const& helix);

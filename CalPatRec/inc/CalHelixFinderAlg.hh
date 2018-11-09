@@ -94,6 +94,7 @@ namespace mu2e {
     double               _minDfDz;
     double               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
     double               _weightXY;     // scale factor for makeing the xy-chi2 with a mean close to 1
+    int                  _targetcon;    //require or not the circle fit to inlcude the Stopping Target center
     double               _weightZPhi;
     double               _weight3D;
     double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)

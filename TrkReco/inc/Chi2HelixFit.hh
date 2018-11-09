@@ -35,8 +35,8 @@ namespace mu2e
     explicit Chi2HelixFit(fhicl::ParameterSet const&);
     virtual ~Chi2HelixFit();
 
-    bool initChi2Circle(RobustHelixFinderData& helixData);
-    void fitChi2Circle(RobustHelixFinderData& helixData);
+    bool initChi2Circle(RobustHelixFinderData& helixData, bool TargetCon);
+    void fitChi2Circle(RobustHelixFinderData& helixData, bool TargetCon);
 
     bool initFZ_2(RobustHelixFinderData& helixData);
     void initFitChi2FZ(RobustHelixFinderData& helixData);
@@ -52,7 +52,7 @@ namespace mu2e
     float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
 
     //function to perfrom the XY and ZPhi fit using the Lsqsum4 class
-    void  refineFitXY  (RobustHelixFinderData& helixData, int weightMode=1);
+    void  refineFitXY  (RobustHelixFinderData& helixData, bool TargetCon, int weightMode=1);
     void  refineFitZPhi(RobustHelixFinderData& helixData, int weightMode=1);
 
     void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
@@ -66,7 +66,7 @@ namespace mu2e
 
   private:
 
-    void fitChi2CircleMedian(RobustHelixFinderData& helixData);
+    void fitChi2CircleMedian(RobustHelixFinderData& helixData, bool TargetCon);
 
     bool use(ComboHit const&) const;
     void setOutlier(ComboHit&) const;

@@ -54,7 +54,7 @@
 #include "G4ProtonBuilder.hh"
 #include "G4BertiniProtonBuilder.hh"
 #include "G4FTFPNeutronBuilder.hh"
-#include "PBARFTFPProtonBuilder.hh"
+#include "Mu2eG4/inc/PBARFTFPProtonBuilder.hh"
 
 #include "G4NeutronBuilder.hh"
 #include "G4BertiniNeutronBuilder.hh"
