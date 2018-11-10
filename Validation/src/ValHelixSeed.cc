@@ -3,16 +3,16 @@
 #include "Mu2eUtilities/inc/HelixTool.hh"
 
 int mu2e::ValHelixSeed::declare(art::TFileDirectory tfs) {
-  _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
-  _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.0);
-  _hNCombo = tfs.make<TH1D>( "NCombo", "N Combo Hits", 101, -0.5, 100.0);
-  _hNStrHit = tfs.make<TH1D>( "NStrHit", "N Straw Hits", 101, -0.5, 100.0);
+  _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.5);
+  _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.5);
+  _hNCombo = tfs.make<TH1D>( "NCombo", "N Combo Hits", 101, -0.5, 100.5);
+  _hNStrHit = tfs.make<TH1D>( "NStrHit", "N Straw Hits", 101, -0.5, 100.5);
   _hStatus = tfs.make<TH1D>( "Status", "Status", 32, -0.5, 31.5);
   _ht0 = tfs.make<TH1D>( "t0", "t0", 100, 400.0, 1800.0);
   _hp = tfs.make<TH1D>( "p", "p (mm)", 100, 0.0, 400.);
   _hpce = tfs.make<TH1D>( "pce", "p CE (mm)", 100, 300.0, 400.);
   _hpt = tfs.make<TH1D>( "pt", "pt (mm)", 100, 0., 400.);
-  _hD0 = tfs.make<TH1D>( "d0", "d0", 100, -120., 120.);
+  _hD0 = tfs.make<TH1D>( "d0", "d0", 400, -400., 400.);
   _hPhi0 = tfs.make<TH1D>( "phi0", "phi0", 100, -M_PI, M_PI);
   _hLambda = tfs.make<TH1D>( "lambda", "lambda", 100, -400.0, 400.0);
   _hchi2dXY= tfs.make<TH1D>( "chi2dXY", "chi2dXY", 100, 0.0, 10.0);
