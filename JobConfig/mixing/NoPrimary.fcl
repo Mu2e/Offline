@@ -20,6 +20,7 @@ outputs : {
   DetOutput :@local::Mixing.Output
 }
 outputs.DetOutput.outputCommands : [ "drop *_*_*_*",
+		     "keep mu2e::ProtonBunchIntensity_*_*_*",
     		     "keep mu2e::StrawDigis_*_*_*",
     		     "keep mu2e::CaloDigis_*_*_*",
 		     "keep mu2e::CrvDigis_*_*_*" ]
