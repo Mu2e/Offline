@@ -9,33 +9,33 @@
 
 BEGIN_PROLOG
 #prescale factor for the unbiased trigger
-UnbiasedFilters_evt_sf  : 500
+UnbiasedFilters_evt_sf       : 500
 #prescale factors for the strawDigi count filter
-SDCountFilter_evt_sf    : 500
-SDCountFilter_sf        : 1
+SDCountFilter_evt_sf         : 500
+SDCountFilter_sf             : 1
 #prescale factors for the "large" strawDigi counter filter
 LargeSDCountFilter_evt_sf    : 500
 LargeSDCountFilter_sf        : 1
 #prescale factor for the calorimeter-only trigger
-CaloOnly_evt_sf         : 1
-CaloOnly_sf             : 1
+CaloOnly_evt_sf              : 1
+CaloOnly_sf                  : 1
 #prescale factor for the calorimeter cosmic muon calibration
-CaloCosmicMuon_evt_sf         : 1
-CaloCosmicMuon_sf             : 1
+CaloCosmicMuon_evt_sf        : 1
+CaloCosmicMuon_sf            : 1
 #prescale factor fot the tracker-only track triggers
 # downstream e-
-TPRDeMSeedFilter_evt_sf : 1
-TPRDeMSeedFilter_sf     : 1
+TPRDeMSeedFilter_evt_sf      : 1
+TPRDeMSeedFilter_sf          : 1
 # downstream e+
-TPRDePSeedFilter_evt_sf : 1
-TPRDePSeedFilter_sf     : 1
+TPRDePSeedFilter_evt_sf      : 1
+TPRDePSeedFilter_sf          : 1
 #prescale factor fot the calo-seeded track triggers
 # downstream e-
-CPRDeMSeedFilter_evt_sf : 1
-CPRDeMSeedFilter_sf     : 1
+CPRDeMSeedFilter_evt_sf      : 1
+CPRDeMSeedFilter_sf          : 1
 # downstream e+
-CPRDePSeedFilter_evt_sf : 1
-CPRDePSeedFilter_sf     : 1
+CPRDePSeedFilter_evt_sf      : 1
+CPRDePSeedFilter_sf          : 1
 END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"

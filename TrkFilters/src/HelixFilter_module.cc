@@ -70,7 +70,7 @@ namespace mu2e
     _maxlambda(pset.get<double>("MaxAbsLambda",350.)),
     _minlambda(pset.get<double>("MinAbsLambda",150.)),
     _goodh(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
-    _debug(pset.get<int>("debugLevel",1)),
+    _debug(pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();

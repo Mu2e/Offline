@@ -54,7 +54,7 @@ namespace mu2e
     _minD0     (pset.get<double>("MinD0",-200.)),
     _maxD0     (pset.get<double>("MaxD0",200.)),
     _goods     (pset.get<vector<string> >("SeedFitFlag",vector<string>{"SeedOK"})),
-    _debug     (pset.get<int>("debugLevel",1)),
+    _debug     (pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
