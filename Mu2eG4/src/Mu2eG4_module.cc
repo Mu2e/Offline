@@ -195,6 +195,12 @@ namespace mu2e {
         G4ThreeVector originInWorld;
 
         std::vector< SensitiveDetectorHelper > SensitiveDetectorHelpers;
+
+        // In sequential mode, there is one SensitiveDetetorHelper object and it is
+        // at index 0; in MT mode the SensitiveDetectorHelper object for the master
+        // thread is at index _nThreads.
+        size_t _masterThreadIndex;
+
         EventStash _StashForEventData;
         int stashInstanceToStore;
 
@@ -247,6 +253,7 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _systemElapsed(0.),
     _userElapsed(0.),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
+    _masterThreadIndex(_use_G4MT ? _nThreads+1 : 0),
     _StashForEventData(pSet),
     stashInstanceToStore(-1)
     {
@@ -263,18 +270,22 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
             << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
     }
 
-    //we need one SDHelper for each Worker thread, plus one extra for the Master
+    // In sequential mode, we need 1 SDHelper.
+    //
+    //In MT, mode we need one SDHelper for each Worker thread, plus one extra for the Master
     //in the ActionInitialization, each worker thread is given one of these SDHs to hold its SD-related data
     //the "0th" worker thread gets the "0th" element of the vector, etc
     //we give the "_nThreads" element to the Master thread through Mu2eG4World to setup the InstanceMap in the ctor of the SDH class
     //we need only one of these SDHs to declare to art the list of products that will be produced
-    SensitiveDetectorHelpers.reserve(_nThreads+1);
+    int helpersToReserve = ( _use_G4MT ) ? _nThreads+1 : 1;
+    SensitiveDetectorHelpers.reserve(helpersToReserve);
 
-    for (int i = 0; i <= _nThreads; i++) {
-        SensitiveDetectorHelpers.emplace_back(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet()));
+    auto sd_pSet = pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet());;
+    for (int i = 0; i != helpersToReserve; ++i) {
+      SensitiveDetectorHelpers.emplace_back(sd_pSet);
     }
 
-    SensitiveDetectorHelpers[0].declareProducts(this);
+    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(this);
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -400,12 +411,12 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     //as mentioned above, we give the last element to the Master thread to setup the InstanceMap in the ctor of the SDH class
     if (standardMu2eDetector_) {
         allMu2e =
-            (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers[_nThreads])  ),
+          (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex))  ),
                                        std::make_unique<ConstructMaterials>(pset_)) );
     }
     else {
-        allMu2e =
-            (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers[_nThreads]) ),
+      allMu2e =
+        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex)) ),
                                             std::make_unique<ConstructMaterials>(pset_)) );
     }
 
@@ -597,7 +608,7 @@ void Mu2eG4::produce(art::Event& event) {
             event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
         }
         
-        if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
+        if(SensitiveDetectorHelpers[_masterThreadIndex].extMonPixelsEnabled()) {
             event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
         }
     }//sequential
@@ -831,9 +842,9 @@ void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGett
     if(multiStagePars_.multiStage()) {
         evt.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
     }
-    
-    
-    if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
+        
+    // Fixme: does this work in MT mode?  If not, does it need to?
+    if(SensitiveDetectorHelpers.at(_masterThreadIndex).extMonPixelsEnabled()) {
         std::unique_ptr<ExtMonFNALSimHitCollection> tempExtMonHits = std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore));
         
         for ( ExtMonFNALSimHitCollection::iterator i=tempExtMonHits->begin(); i!=tempExtMonHits->end(); ++i ){
