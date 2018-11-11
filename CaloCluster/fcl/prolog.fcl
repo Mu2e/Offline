@@ -39,7 +39,7 @@ CaloClusterFast :
     endTimeBuffer         : 80
     windowPeak            : 2
     minAmplitude          : 20
-    extendSecond          : false
+    extendSecond          : true
     minSeedAmplitude      : 200
     minEnergy             : 50
     timeCorrection        : 20.0
@@ -103,7 +103,8 @@ CaloCluster :
 CaloClusterFast :
 {
    producers : {
-     CaloClusterFast  : @local::CaloClusterFast
+       CaloClusterFast  : @local::CaloClusterFast
+       CaloTrigger      : @local::CaloTrigger
    }
 
    Reco : [ CaloClusterFast ]

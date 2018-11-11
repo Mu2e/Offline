@@ -29,6 +29,7 @@
 #include "Validation/inc/ValBkgQual.hh"
 #include "Validation/inc/ValTrackSummary.hh"
 #include "Validation/inc/ValTrackClusterMatch.hh"
+#include "Validation/inc/ValHelixSeed.hh"
 #include "Validation/inc/ValKalSeed.hh"
 #include "Validation/inc/ValStrawHitFlag.hh"
 #include "Validation/inc/ValSimParticleTimeMap.hh"
@@ -75,6 +76,7 @@ namespace mu2e {
     std::vector<std::shared_ptr<ValBkgQual>>           _bgql;
     std::vector<std::shared_ptr<ValTrackSummary>>      _trks;
     std::vector<std::shared_ptr<ValTrackClusterMatch>> _mtch;
+    std::vector<std::shared_ptr<ValHelixSeed>>         _hxsd;
     std::vector<std::shared_ptr<ValKalSeed>>           _klsd;
     std::vector<std::shared_ptr<ValStrawHitFlag>>      _shfl;
     std::vector<std::shared_ptr<ValSimParticleTimeMap>> _sptm;
@@ -129,6 +131,7 @@ void mu2e::Validation::analyze(art::Event const& event){
   analyzeProduct<BkgQualCollection,ValBkgQual>                (_bgql,event);
   analyzeProduct<ComboHitCollection,ValComboHit>              (_stht,event);
   analyzeProduct<TimeClusterCollection,ValTimeCluster>        (_tmcl,event);
+  analyzeProduct<HelixSeedCollection,ValHelixSeed>            (_hxsd,event);
   analyzeProduct<KalSeedCollection,ValKalSeed>                (_klsd,event);
   analyzeProduct<TrackSummaryCollection,ValTrackSummary>      (_trks,event);
   analyzeProduct<TrackClusterMatchCollection,ValTrackClusterMatch>(_mtch,event);

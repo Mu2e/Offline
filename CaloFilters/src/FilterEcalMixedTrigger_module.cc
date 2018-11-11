@@ -15,16 +15,16 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 
-#include "MCDataProducts/inc/SimParticleCollection.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+//#include "MCDataProducts/inc/SimParticleCollection.hh"
+//#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "DataProducts/inc/VirtualDetectorId.hh"
+//#include "MCDataProducts/inc/GenParticleCollection.hh"
+//#include "DataProducts/inc/VirtualDetectorId.hh"
 
 #include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
 
@@ -37,7 +37,7 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
+
 
 // Root includes
 #include "TDirectory.h"
@@ -74,10 +74,10 @@ namespace mu2e {
     float dt;
   };
   
-  class FilterEcalStrawHitTrigger : public art::EDFilter {
+  class FilterEcalMixedTrigger : public art::EDFilter {
   public:
-    explicit FilterEcalStrawHitTrigger(fhicl::ParameterSet const& pset);
-    virtual ~FilterEcalStrawHitTrigger() { }
+    explicit FilterEcalMixedTrigger(fhicl::ParameterSet const& pset);
+    virtual ~FilterEcalMixedTrigger() { }
 
     bool filter( art::Event& event);
 
@@ -233,7 +233,7 @@ namespace mu2e {
     float mixedMVAcut;
   };
 
-  FilterEcalStrawHitTrigger::FilterEcalStrawHitTrigger(fhicl::ParameterSet const& pset):
+  FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
     _diagLevel(pset.get<int>("diagLevel",0)),
 
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
@@ -283,7 +283,7 @@ namespace mu2e {
   }
 
 
-  void FilterEcalStrawHitTrigger::beginJob(){
+  void FilterEcalMixedTrigger::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory tfdir = tfs->mkdir("diag");
     
@@ -321,14 +321,14 @@ namespace mu2e {
     mixedreader->BookMVA(_MVAmethod ,configFile(_mixedweightsfile));
   }
 
-  bool FilterEcalStrawHitTrigger::filter(art::Event& event) {
+  bool FilterEcalMixedTrigger::filter(art::Event& event) {
 
     if (_step==0) return false;
 
     _fevt=(float)event.id().event();
 
     ++_nProcessed;
-    if (_nProcessed%10==0 && _diagLevel > 0) std::cout<<"Processing event from FilterEcalStrawHitTrigger =  "<<_nProcessed <<std::endl;
+    if (_nProcessed%10==0 && _diagLevel > 0) std::cout<<"Processing event from FilterEcalMixedTrigger =  "<<_nProcessed <<std::endl;
 
 
     //Handle to the calorimeter
@@ -737,11 +737,11 @@ namespace mu2e {
     }
     return false;
   }
-  void FilterEcalStrawHitTrigger::endJob(){
-    std::cout << "FilterEcalStrawHitTrigger filter end job:" << _nProcessed << " events processed" << std::endl;
+  void FilterEcalMixedTrigger::endJob(){
+    std::cout << "FilterEcalMixedTrigger filter end job:" << _nProcessed << " events processed" << std::endl;
   }
   
 }
 
-using mu2e::FilterEcalStrawHitTrigger;
-DEFINE_ART_MODULE(FilterEcalStrawHitTrigger);
+using mu2e::FilterEcalMixedTrigger;
+DEFINE_ART_MODULE(FilterEcalMixedTrigger);

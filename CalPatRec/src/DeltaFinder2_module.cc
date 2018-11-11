@@ -24,7 +24,7 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 //#include "RecoDataProducts/inc/TimeCluster.hh"
 
 // diagnostics
@@ -39,7 +39,7 @@
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
-#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using namespace std; 
 using CLHEP::Hep3Vector;

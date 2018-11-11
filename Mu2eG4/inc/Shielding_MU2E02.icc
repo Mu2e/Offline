@@ -67,9 +67,9 @@
 #include "G4HadronElasticPhysicsLEND.hh"
 
 #include "G4DataQuestionaire.hh"
-#include "HadronPhysicsShielding_MU2E02.hh"
+#include "Mu2eG4/inc/HadronPhysicsShielding_MU2E02.hh"
 
-#include "DecayMuonsWithSpin.hh"
+#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 
 template<class T> TShielding_MU2E02<T>::TShielding_MU2E02(const fhicl::ParameterSet& config,
                                                           G4int verbose, G4String LEN_model ):  T()

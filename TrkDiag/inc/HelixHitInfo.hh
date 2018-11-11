@@ -1,7 +1,7 @@
 #ifndef TrkDiag_HelixHitInfo_HH
 #define TrkDiag_HelixHitInfo_HH
 #include "TrkDiag/inc/HitInfoMC.hh"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "Rtypes.h"
 namespace mu2e {
   struct HelixHitInfo {

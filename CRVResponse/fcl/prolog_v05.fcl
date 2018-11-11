@@ -130,17 +130,17 @@ BEGIN_PROLOG
       maxDistance                    : 1000 //mm
       maxTimeDifference              : 100  //ns
       crvCoincidenceCheckModuleLabel : "CrvCoincidence"
-      crvWaveformsModuleLabel        : "CrvWaveforms"
       timeWindowStart                : 500  //ns
       timeWindowEnd                  : 1750 //ns
       deadTimeWindowStartMargin      : 0    //ns
       deadTimeWindowEndMargin        : 125  //ns
     }
-    CrvCoincidenceClusterSummarizer:
+    CrvCoincidenceClusterMatchMC:
     {
-      module_type                            : CrvCoincidenceClusterSummarizer
+      module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
+      timeOffsets                            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
 
 
@@ -155,9 +155,9 @@ CrvResponsePackage :
      CrvRecoPulses               : @local::CrvRecoPulses
      CrvCoincidence              : @local::CrvCoincidence
      CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
-     CrvCoincidenceClusterSummarizer : @local::CrvCoincidenceClusterSummarizer
+     CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
    }
-   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 }
 
 CrvDAQPackage : 

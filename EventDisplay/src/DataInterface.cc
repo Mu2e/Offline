@@ -4,7 +4,7 @@
 // $Date: 2014/09/10 07:40:38 $
 //
 using namespace std;
-#include "DataInterface.h"
+#include "EventDisplay/src/DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"

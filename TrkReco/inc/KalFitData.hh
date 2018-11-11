@@ -14,7 +14,7 @@
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 #include "BTrk/TrkBase/TrkT0.hh"
 #include "BTrk/BaBar/BaBar.hh"

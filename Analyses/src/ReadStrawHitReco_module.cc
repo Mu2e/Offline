@@ -146,8 +146,8 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     // Calculate the hit position; it's a point on the wire
     // (for now wire is modeled as a straight line).
     ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    float dw, dwerr;
-    bool td = srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr);
+    float dw, dwerr, halfpv;
+    bool td = srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
     _hTDivOK->Fill( td );
 
     // Fractional length along the wire.

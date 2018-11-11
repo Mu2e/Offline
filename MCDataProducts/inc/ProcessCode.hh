@@ -126,9 +126,6 @@ namespace mu2e {
       _id(id)
     {}
 
-    // Constructor from an int; should not be needed often.  This checks for validity and throws.
-    explicit ProcessCode( int id);
-
     // ROOT requires a default c'tor.
     ProcessCode():
       _id(unknown){
