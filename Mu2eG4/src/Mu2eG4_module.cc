@@ -270,18 +270,18 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
             << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
     }
 
-    // In sequential mode, we need 1 SDHelper.
+    //In sequential mode, we need 1 SDHelper and it lives at index 0.
     //
     //In MT, mode we need one SDHelper for each Worker thread, plus one extra for the Master
     //in the ActionInitialization, each worker thread is given one of these SDHs to hold its SD-related data
     //the "0th" worker thread gets the "0th" element of the vector, etc
     //we give the "_nThreads" element to the Master thread through Mu2eG4World to setup the InstanceMap in the ctor of the SDH class
     //we need only one of these SDHs to declare to art the list of products that will be produced
-    int helpersToReserve = ( _use_G4MT ) ? _nThreads+1 : 1;
-    SensitiveDetectorHelpers.reserve(helpersToReserve);
+    int nSDHelpersNeeded = ( _use_G4MT ) ? _nThreads+1 : 1;
+    SensitiveDetectorHelpers.reserve(nSDHelpersNeeded);
 
     auto sd_pSet = pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet());;
-    for (int i = 0; i != helpersToReserve; ++i) {
+    for (int i = 0; i != nSDHelpersNeeded; ++i) {
       SensitiveDetectorHelpers.emplace_back(sd_pSet);
     }
 
