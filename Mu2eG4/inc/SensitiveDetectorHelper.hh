@@ -82,16 +82,14 @@ namespace mu2e {
     struct StepInstance {
         explicit StepInstance(StepInstanceName::enum_type astepName):
         p(),
-        stepName(StepInstanceName(astepName).name()),
-        sensitiveDetector(0)
+        stepName(StepInstanceName(astepName).name())
         {}
 
       explicit StepInstance(const std::string &name)  : stepName(name) {}
 
       explicit StepInstance():
         p(),
-        stepName(),
-        sensitiveDetector(nullptr){
+        stepName(){
       }
 
       // Accept compiler written d'tor, copy c'tor and assignment operator.
@@ -100,7 +98,7 @@ namespace mu2e {
       // For historical reasons the two names are different; maybe some day we will synchronize them.
       StepPointMCCollection    p;
       std::string              stepName;
-      Mu2eSensitiveDetector *  sensitiveDetector;
+      Mu2eSensitiveDetector *  sensitiveDetector = nullptr;
     };
 
       // Enabled pre-defined StepPointMC collections, except the timevd.
