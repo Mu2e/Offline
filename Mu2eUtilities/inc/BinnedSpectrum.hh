@@ -62,10 +62,10 @@ namespace mu2e {
       std::vector<double> pdf, abscissa;
 
       Shape s( std::forward<Args>(args)... );
-       for ( double step = emin ; step <= emax ; step += spectRes ) {
-     
+      for ( double step = emin ; step <= emax ; step += spectRes ) {	 
+
         abscissa.push_back( step );
-        pdf     .push_back( s.getWeight(step) );
+        pdf     .push_back( s.getWeight(step) ); 
       }
 
       assert( abscissa.size() == pdf.size() );
@@ -75,31 +75,31 @@ namespace mu2e {
 
     }
 
+    //
+    //template<class Shape, typename... Args>
+    //void initialize(double maxe, double emin, double emax, double spectRes, Args... args)// {
+    // //void initialize(double maxe, double spectRes, Args... args){
+    //   if(!(spectRes > 0.) /*catches NaNs as well*/) {
+    //     throw cet::exception("BADCONFIG")
+    //       <<"BinnedSpectrum::initialize(): invalid spectRes = "<<spectRes<<"\n";
+    //   }
 
-    template<class Shape, typename... Args>
-     void initialize(double maxe, double emin, double emax, double spectRes, Args... args){
-    //void initialize(double maxe, double spectRes, Args... args){
-      if(!(spectRes > 0.) /*catches NaNs as well*/) {
-        throw cet::exception("BADCONFIG")
-          <<"BinnedSpectrum::initialize(): invalid spectRes = "<<spectRes<<"\n";
-      }
-
-      _binWidth = spectRes;
+    //   _binWidth = spectRes;
   
-      std::vector<double> pdf, abscissa;
-      Shape s( std::forward<Args>(args)... );
-      // for ( double step = emin ; step <= maxe ; step += spectRes ) {
-      for ( double step = 0.72 ; step <= maxe ; step += spectRes ) {
-        abscissa.push_back( step ); 
-	pdf     .push_back( s.getWeight(step) );
-      }
+    //   std::vector<double> pdf, abscissa;
+    //   Shape s( std::forward<Args>(args)... );
+    //   // for ( double step = emin ; step <= maxe ; step += spectRes ) {
+    //   for ( double step = 0.72 ; step <= maxe ; step += spectRes ) {
+    //     abscissa.push_back( step ); 
+    // 	pdf     .push_back( s.getWeight(step) );
+    //   }
 
-      assert( abscissa.size() == pdf.size() );
-      _nBins    = abscissa.size();
+    //   assert( abscissa.size() == pdf.size() );
+    //   _nBins    = abscissa.size();
 
-      _spectrum = std::make_pair( std::move(abscissa), std::move(pdf) );
+    //   _spectrum = std::make_pair( std::move(abscissa), std::move(pdf) );
 
-    }
+    // }
 
 
 
