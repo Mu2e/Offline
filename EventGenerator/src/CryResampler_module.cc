@@ -28,6 +28,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
   class CryResampler : public art::EDProducer {
@@ -73,7 +74,8 @@ namespace mu2e {
     branchName_ = pset.get<std::string>("branchName", "hits");
 
     art::ServiceHandle<art::TFileService> tfs;
-    TFile *input = tfs->make<TFile>(inputFile_.c_str(), "READ");
+    const std::string resolvedFileName = ConfigFileLookupPolicy()(inputFile_);
+    TFile *input = tfs->make<TFile>(resolvedFileName.c_str(), "READ");
     particles_ = (TTree*)input->Get(treeName_.c_str());
 
     if(!particles_) {
