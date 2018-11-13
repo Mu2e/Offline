@@ -34,11 +34,11 @@ namespace mu2e {
   {
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
-    _par.me     = pdt->particle(PDGCode::e_minus ).ref().mass().value();
+    _par.me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
     _par.alpha = 1./137.035999139;
     _par.eMax  = maxEnergy;
-  
-    // calculate integral.... for n-1 bins;
+    _nbins     = maxEnergy/_bin ;
+					// calculate integral.... for n-1 bins;
      _integral = evalIntegral(bin); 
 
   }
@@ -51,7 +51,11 @@ namespace mu2e {
     double alpha = ((ConversionSpectrum::Params_t*) p)->alpha;
 
     double f     = (1./eMax)*(alpha/(2*M_PI))*(log(4*E*E/me/me)-2.)*((E*E+eMax*eMax)/eMax/(eMax-E));
-    return  f;
+
+    // below 0.7 MeV the function becomes negative, work around
+
+    if (f < 0) f = 0;
+    return f;
   }
 
 //-----------------------------------------------------------------------------  
@@ -65,11 +69,10 @@ namespace mu2e {
     double weight(0.);
   
 
-    int bin    = E/_bin   ; 
-    int _nbins = (_par.eMax/_bin)   ;
+    int bin  = E/_bin   ; 
 
     if (bin < _nbins) {
-      weight = 0.1* getCorrectedConversionSpectrum(E);
+      weight = _bin* getCorrectedConversionSpectrum(E);
     }
     else {
       // last bin
@@ -106,9 +109,7 @@ namespace mu2e {
 			 &abserr);
 
     gsl_integration_workspace_free(ws);
-    std::cout<<"il valore dell'integrale fino al penultimo bin e' "<< result<<std::endl;
+    //    std::cout<<"il valore dell'integrale fino al penultimo bin e' "<< result<<std::endl;
     return result;
-
-
   }
 }
