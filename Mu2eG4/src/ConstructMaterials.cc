@@ -426,7 +426,7 @@ namespace mu2e {
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Ni"),0.050);
     }
 
-    // Bronze C94300  from www.matweb.com
+    // Bronze C93800  from www.matweb.com
     mat = uniqueMaterialOrThrow( "BronzeC943" );
     {
       G4Material* BronzeC943 = new G4Material( mat.name, 9.29*CLHEP::g/CLHEP::cm3, 6);
@@ -452,10 +452,10 @@ namespace mu2e {
     // Bronze C94500  from https://alloys.copper.org/alloy/C94500
     mat = uniqueMaterialOrThrow( "BronzeC945" );
     {
-      G4Material* BronzeC943 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 3);
-      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Cu"),0.78);
-      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Pb"),0.16);
-      BronzeC943->AddMaterial(findMaterialOrThrow("G4_Sn"),0.06);
+      G4Material* BronzeC945 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 3);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Cu"),0.78);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Pb"),0.16);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Sn"),0.06);
     }
 
 
