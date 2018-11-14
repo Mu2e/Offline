@@ -771,6 +771,7 @@ namespace mu2e {
 
          CLHEP::Hep3Vector posPSPbarIn = pbarTS1InPos;
          posPSPbarIn.setZ( pbarTS1InPos.z() - pbarTS1InHalfLength - vdHL );
+	 cout << "posPSPbarIn and parent Center is psVacuumOrigin " << posPSPbarIn << " " << parentCenterInMu2e << endl;
          vd->addVirtualDetector(VirtualDetectorId::PSPbarIn, parentCenterInMu2e, 0, posPSPbarIn);
 
          CLHEP::Hep3Vector posPSPbarOut = pbarTS1InPos;
@@ -778,12 +779,12 @@ namespace mu2e {
          vd->addVirtualDetector(VirtualDetectorId::PSPbarOut, parentCenterInMu2e, 0, posPSPbarOut);
 
 
-         if ( verbosityLevel > 0 ) {
+	 //       if ( verbosityLevel > 0 ) {
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarIn) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarIn) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarIn) <<endl;
             cout << " Constructing " << VirtualDetector::volumeName(VirtualDetectorId::PSPbarOut) << endl;
             cout << "               at local=" << vd->getLocal(VirtualDetectorId::PSPbarOut) << " global="<< vd->getGlobal(VirtualDetectorId::PSPbarOut) <<endl;
-         }
+	    //        }
       }
 
       if(c.getBool("vd.crv.build", false))

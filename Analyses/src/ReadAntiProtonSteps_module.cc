@@ -153,6 +153,8 @@ namespace mu2e {
     if (_diagLevel > 1){
       std::cout << "found gen particle: " << haveGenPart << std::endl;
     }
+
+    // in new style, we don't use the gen particle!
     if (haveGenPart)
       {
 	for (auto iGen : genParticles )
@@ -161,9 +163,9 @@ namespace mu2e {
 	      {
 		std::cout << " particle id " << iGen.pdgId() << " particle momentum " << iGen.momentum() << " position " << iGen.position() << std::endl;
 	      }
-	    if (iGen.pdgId() == 0)
+	    if (iGen.pdgId() == PDGCode::proton)
 	      {
-		initialProtonFourMomentum = iGen.momentum();
+		//		initialProtonFourMomentum = iGen.momentum();
 	      }
 	  }
       } 
@@ -213,7 +215,7 @@ namespace mu2e {
 		      startingFourMomentum = originalParticle.startMomentum();
 		      startingPosition     = originalParticle.startPosition();
 		      currentKE = sqrt( mom.mag()*mom.mag() + pbarMass2) - pbarMass;
-
+		      initialProtonFourMomentum = (sim.parent())->endMomentum();
 		      if (_diagLevel > 0)
 			{
 			  std::cout << "\n inside hit number: " << i << std::endl;
@@ -245,7 +247,11 @@ namespace mu2e {
 	      nt[6]  = pos.y();
 	      nt[7]  = pos.z();
 	      nt[8] = hit.properTime();
-	      nt[9] = startingFourMomentum.cosTheta();
+	      //	      nt[9] = startingFourMomentum.cosTheta();
+	      // 
+	      // get angle of initial proton to pbar; convert from HepDouble whatever that is
+	      nt[9] =    (initialProtonFourMomentum.vect().dot(startingFourMomentum.vect()))
+		                 /(initialProtonFourMomentum.vect().mag()*startingFourMomentum.mag());
 	      nt[10] = startingFourMomentum.vect().mag(); 
 	      nt[11] = initialProtonFourMomentum.vect().mag();
 	      nt[12] = currentKE;

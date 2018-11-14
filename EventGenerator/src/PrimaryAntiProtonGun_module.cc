@@ -462,7 +462,6 @@ namespace mu2e {
 			,1                                     // G4 status for new particle
 			,ProcessCode::mu2eProtonInelastic      // defined for this sort of process
 			);
-
     if (_verbosityLevel > 1){
       os << "made newPbar" << std::endl;
     }
@@ -471,19 +470,22 @@ namespace mu2e {
     //
     // add end information to complete SimParticle
     newPbar.addEndInfo(
-		       oldParent.endPosition()                   // hasn't gone anywhere
+		       oldParent.endPosition()                // hasn't gone anywhere
 		       ,momPbar                               // ditto, just fill in
-		       ,oldParent.endGlobalTime()                 // ditto
+		       ,oldParent.endGlobalTime()             // ditto
 		       ,0.                                    // again no change in proper time
-		       ,oldParent.endVolumeIndex()                // same
+		       ,oldParent.endVolumeIndex()            // same
 		       ,1                                     // G4 status for where pbar ends
-		       ,ProcessCode::mu2eProtonInelastic           // same process code
+		       ,ProcessCode::mu2eProtonInelastic      // same process code
 		       ,momPbar.e()- _mass                    // preLastStepKE
 		       ,0                                     // nSteps
 		       );                 
     //
-    // you would think one could treat this like an STL container but you would be wrong...
-
+    // next stage will fail unless you tell it this new particle is the daughter of the proton!
+    art::Ptr<SimParticle> pbarAsDaughter(SPpid,size_t(newPbarKey.asInt()),SPpg);
+    auto & newCopyParent = outSimPart[key_type(iInteracting)];
+    newCopyParent.addDaughter(pbarAsDaughter);
+ 
     if (_verbosityLevel > 1){
       os << "made newPbar and added endInfo" << std::endl;
     }
@@ -561,7 +563,7 @@ namespace mu2e {
 				   ,oldParent.endPosition()              // born where parent stopped
 				   ,momPbar.vect()                       // momentum created here
 				   ,0.                                   // step length
-				   ,ProcessCode::Transportation          // this is lie a virtual detector
+				   ,ProcessCode::Transportation          // this is like a virtual detector
 				   );
 	outStepPoint.push_back(newStepPointMC);  //not a map just a regular std::vector...yay...
       }
