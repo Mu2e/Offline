@@ -14,7 +14,7 @@
 #include "art/Utilities/make_tool.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
+#include "TrkDiag/inc/TrkTools.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
@@ -72,7 +72,7 @@ namespace mu2e
 
 	// fill the hit count variables
 	unsigned nhits = 0; unsigned nactive = 0; unsigned ndouble = 0; unsigned ndactive = 0; unsigned nnullambig = 0;
-	TrkUtilities::countHits(i_kalSeed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
+	TrkTools::countHits(i_kalSeed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
 	trkqual[TrkQual::nactive] = nactive;
 	trkqual[TrkQual::factive] = (double)nactive / nhits;
 	trkqual[TrkQual::fdouble] = (double)ndactive / nactive;

@@ -42,8 +42,6 @@ namespace mu2e {
     double overlap(SHIV const& shiv1, SHIV const& shiv2); 
     // compute the flightlength for a given z position
     //    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
-    // count different hit types
-    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig);
     double chisqConsistency(const KalRep* krep);
   }
 }

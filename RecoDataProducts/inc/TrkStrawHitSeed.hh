@@ -11,6 +11,7 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include <Rtypes.h>
+#include <functional>
 namespace mu2e {
   struct TrkStrawHitSeed {
     TrkStrawHitSeed() : _index(0), _trklen(0), _hitlen(0), _rdrift(0), _wdoca(0), _rerr(0), _ambig(0) {}
@@ -44,5 +45,11 @@ namespace mu2e {
     StrawHitFlag    _flag;	  // flag describing the status of this hit (active, ....)
     Int_t           _nsh;         // number of underlying straw hits
   };
+
+// binary functor to sort TrkStrawHits by StrawHit index
+  struct indexcompseed : public std::binary_function<TrkStrawHitSeed,TrkStrawHitSeed, bool> {
+    bool operator()(const TrkStrawHitSeed& x,const TrkStrawHitSeed& y) { return x.index() < y.index(); }
+  };
+
 }
 #endif

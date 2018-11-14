@@ -4,6 +4,7 @@
 #include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/TrkTools.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -259,7 +260,7 @@ namespace mu2e
     std::vector<TrkStrawHitSeed> hits;
     TrkUtilities::fillHitSeeds(krep, hits);
     unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
-    TrkUtilities::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
+    TrkTools::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
     tinfo._nhits = nhits;
     tinfo._nactive = nactive;
     tinfo._ndouble = ndouble;

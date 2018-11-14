@@ -253,43 +253,6 @@ namespace mu2e {
     //   return fltlen;
     // }
 
-    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig) {
-      nhits = 0; nactive = 0; ndouble = 0; ndactive = 0; nnullambig = 0;
-      static StrawHitFlag active(StrawHitFlag::active);
-      //      for (const auto& i_hit : hits) {
-      for (std::vector<TrkStrawHitSeed>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
-	++nhits;
-	if (ihit->flag().hasAllProperties(active)) {
-	  ++nactive;
-	  if (ihit->ambig()==0) {
-	    ++nnullambig;
-	  }
-	}
-	  /*	  if (ihit->nStrawHits()>=2) {
-	    ++ndactive;
-	  }
-	  */
-	  //	  std::cout << "AE: ihit->nStrawHits() = " << ihit->nStrawHits() << std::endl;
-	const auto& jhit = ihit+1;
-	const auto& hhit = ihit-1;
-	if( (jhit != hits.end() &&
-	     jhit->flag().hasAllProperties(active) &&
-	     jhit->strawId().getPlane() == ihit->strawId().getPlane() &&
-	     jhit->strawId().getPanel() == ihit->strawId().getPanel() ) ||
-	    (hhit >= hits.begin() &&
-	     hhit->flag().hasAllProperties(active) &&
-	     hhit->strawId().getPlane() == ihit->strawId().getPlane() &&
-	     hhit->strawId().getPanel() == ihit->strawId().getPanel() )
-	    ) {
-	  ++ndouble;
-	  if (ihit->flag().hasAllProperties(StrawHitFlag::active)) {
-	    ++ndactive;
-	  }
-	}
-      }
-      //      std::cout << "AE: ndactive hits = " << ndactive << std::endl;
-    }
-
     double chisqConsistency(const KalRep* krep) {
       return ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
     }
