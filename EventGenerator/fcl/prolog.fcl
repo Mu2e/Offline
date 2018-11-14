@@ -81,26 +81,26 @@ CeEndpointGun: {
 CeplusEndpointGun : {
     module_type    : StoppedParticleReactionGun
     physics: {
-      genId : conversionGun 
-      pdgId : -11
-# temporary hack until we get this number into code FIXME!
-      spectrumShape: flat
-      elow : 92.32
-      ehi : 92.3200001
-      spectrumVariable: totalEnergy
+	genId : conversionGun 
+	pdgId : -11
+	# temporary hack until we get this number into code FIXME!
+	spectrumShape: flat
+	elow : 92.32
+	ehi : 92.3200001
+	spectrumVariable: totalEnergy
     }
     muonStops      : @local::mu2e.tgtMuonStops
 }
 
 PrimaryProtonGunN: {
-module_type          : PrimaryProtonGunN
-inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-stashSize     : @nil
+    module_type          : PrimaryProtonGunN
+    inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+    stashSize     : @nil
 }
 
 
 StoppedParticleReactionGun: {
-  @table::CeEndpointGun 
+    @table::CeEndpointGun 
 }
 
 
@@ -129,8 +129,8 @@ randomsaver: {
 #------------------------------------------------------------------------------
 EventGenerator : {
     producers : {
-	CeEndpointGun   : { @table::CeEndpointGun   }
-	StoppedParticleReactionGun : { @table::StoppedParticleReactionGun }
+	CeEndpointGun               : { @table::CeEndpointGun               }
+	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
         PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 #------------------------------------------------------------------------------
