@@ -229,6 +229,8 @@ namespace mu2e
         // std::cout <<  genParts.back() << std::endl;
       }
 
+      std::cout << "Live time simulated by CRY: " << _cryGen->timeSimulated() << std::endl;
+
       delete secondary;
     }
 

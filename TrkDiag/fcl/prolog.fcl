@@ -204,10 +204,11 @@ BEGIN_PROLOG
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers
+
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
-	module_type: DecayInOrbitWeight
-	inputModule: compressDigiMCs
+	module_type: DIOWeight
+	weightingScheme : pol58
 	verbosityLevel: 1
       }
       # converts ProtonBunchIntensity object to EventWeight object
@@ -229,7 +230,7 @@ BEGIN_PROLOG
     }
   
     # diagnostic Reco sequences starting from digis
-    EventWeightSequence : [ PBIWeight ]
+    EventWeightSequence : [ PBIWeight, RMCWeight10, RMCWeight20 ]
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
