@@ -161,6 +161,26 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    fitparticle          : @local::Particle.eplus
 	    fitdirection         : @local::FitDir.downstream
 	}
+
+	#define the modules for the case where the helices were merged by MergeHelixFinder
+	TrackCaloIntersectionMH : { @table::TrackCaloMatching.producers.TrackCaloIntersection # CalPatRec only
+	    fitterModuleLabel    : MHFinalFit
+	    fitparticle          : @local::Particle.eminus
+	    fitdirection         : @local::FitDir.downstream
+	}
+
+	TrackCaloIntersectionMHDem : { @table::TrackCaloMatching.producers.TrackCaloIntersection # CalPatRec only
+	    fitterModuleLabel    : MHFinalFitDeM
+	    fitparticle          : @local::Particle.eminus
+	    fitdirection         : @local::FitDir.downstream
+	}
+
+	TrackCaloIntersectionMHDep : { @table::TrackCaloMatching.producers.TrackCaloIntersection # CalPatRec only
+	    fitterModuleLabel    : MHFinalFitDeP
+	    fitparticle          : @local::Particle.eplus
+	    fitdirection         : @local::FitDir.downstream
+	}
+
     }
 }
 #------------------------------------------------------------------------------
@@ -244,6 +264,22 @@ TrackCaloMatching : { @table::TrackCaloMatching
 	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTprDep
 	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionTprDep.fitterModuleLabel
 	}
+
+	#define the modules for the case were is MergeHelixFinder sequence is used
+	TrackCaloMatchingMH  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
+	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionMH
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionMH.fitterModuleLabel
+	}
+
+	TrackCaloMatchingMHDem  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
+	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionMHDem
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionMHDem.fitterModuleLabel
+	}
+
+	TrackCaloMatchingMHDep  : { @table::TrackCaloMatching.producers.TrackCaloMatching 
+	    trkToCaloExtrapolModuleLabel: TrackCaloIntersectionMHDep
+	    fitterModuleLabel           : @local::TrackCaloMatching.producers.TrackCaloIntersectionMHDep.fitterModuleLabel
+	}
     }
 }
 #------------------------------------------------------------------------------
@@ -256,9 +292,11 @@ TrackCaloMatching.matching_tpr     : [ TrackCaloIntersectionTpr, TrackCaloMatchi
 
 TrackCaloMatching.matching_cpr_dem : [ TrackCaloIntersectionCprDem, TrackCaloMatchingCprDem ] 
 TrackCaloMatching.matching_tpr_dem : [ TrackCaloIntersectionTprDem, TrackCaloMatchingTprDem ] 
+TrackCaloMatching.matching_mh_dem  : [ TrackCaloIntersectionMHDem , TrackCaloMatchingMHDem  ] 
 
 TrackCaloMatching.matching_cpr_dep : [ TrackCaloIntersectionCprDep, TrackCaloMatchingCprDep ] 
 TrackCaloMatching.matching_tpr_dep : [ TrackCaloIntersectionTprDep, TrackCaloMatchingTprDep ] 
+TrackCaloMatching.matching_mh_dep  : [ TrackCaloIntersectionMHDep , TrackCaloMatchingMHDep  ] 
 
 TrackCaloMatching.matching_dem     : [ TrackCaloIntersectionDem, TrackCaloMatchingDem ]
 TrackCaloMatching.matching_dmm     : [ TrackCaloIntersectionDmm, TrackCaloMatchingDmm ]

@@ -138,7 +138,7 @@ namespace mu2e {
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
     _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
-    _duty_cycle    (pset.get<float> ("dutyCycle", 0.3)),
+    _duty_cycle    (pset.get<float> ("dutyCycle", 1.)),
     _nProcess(0), 
     _numEvents(0)
   {
@@ -206,7 +206,7 @@ namespace mu2e {
     art::TFileDirectory trigBDWDir = tfs->mkdir("trigBDW");
 
     _hTrigBDW[0]   = trigBDWDir.make<TH1F>("hTrigBDW_global"    , "Trigger bandwidth; ; rate [Hz]"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigBDW[1]   = trigBDWDir.make<TH1F>("hTrigBDW_cumulative", "Cumulative Trigger bandwidth"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigBDW[1]   = trigBDWDir.make<TH1F>("hTrigBDW_cumulative", "Cumulative Trigger bandwidth; ; rate [Hz]"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     
   }
 
@@ -267,7 +267,7 @@ namespace mu2e {
     int   index_x(0);
     for (int i=0; i<nbinsx; ++i){
       int    counts = std::count(binsToSkip.begin(), binsToSkip.end(), i);
-      if (counts < 1)       continue;
+      if (counts >= 1)       continue;
       //set the label
       _h2DTrigInfo[1]->GetXaxis()->SetBinLabel(index_x+1, _trigAll[i].label.c_str());
 
@@ -275,7 +275,7 @@ namespace mu2e {
 
       for (int j=0; j<nbinsy; ++j){
 	counts = std::count(binsToSkip.begin(), binsToSkip.end(), j);
-	if (counts < 1)       continue;
+	if (counts >= 1)       continue;
 	double  content =  _h2DTrigInfo[0]->GetBinContent(i+1, j+1);
 	_h2DTrigInfo[1]->SetBinContent(index_x+1, index_y+1, content);
 	
@@ -421,7 +421,7 @@ namespace mu2e {
       if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
 	_trigFinal[index].label  = moduleLabel;
 	_trigFinal[index].counts = _trigFinal[index].counts + 1;
-	_trigAll[index_all].counts = _trigAll[index].counts + 1;
+	_trigAll[index_all].counts = _trigAll[index_all].counts + 1;
 	trigFlagAll_index.push_back(index_all);
       }
       //fill the Calo-Only Trigger bits info
@@ -473,13 +473,7 @@ namespace mu2e {
     }//end loop over the TriggerInfo Handles
 
     //now fill the correlation matrix
-    for (size_t i=0; i<trigFlag_index.size(); ++i){
-      for (size_t j=0; j<trigFlag_index.size(); ++j){
-	_h2DTrigInfo[1]->Fill(trigFlag_index.at(i), trigFlag_index.at(j));
-      }
-    }
-    
-     for (size_t i=0; i<trigFlagAll_index.size(); ++i){
+    for (size_t i=0; i<trigFlagAll_index.size(); ++i){
       for (size_t j=0; j<trigFlagAll_index.size(); ++j){
 	_h2DTrigInfo[0]->Fill(trigFlagAll_index.at(i), trigFlagAll_index.at(j));
       }

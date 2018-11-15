@@ -303,26 +303,26 @@ KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 
 
-MHKFFDeM                : @local::KFF
-MHKFFDeM.SeedCollection : SeedFitDem
-MHKFFDeM.fitparticle	: @local::Particle.eminus
-MHKFFDeM.fitdirection	: @local::FitDir.downstream 
+MHFinalFitDeM                : @local::KFF
+MHFinalFitDeM.SeedCollection : MHSeedFitDem
+MHFinalFitDeM.fitparticle	: @local::Particle.eminus
+MHFinalFitDeM.fitdirection	: @local::FitDir.downstream 
 
 
-MHKFFDeP                :  @local::KFF
-MHKFFDeP.SeedCollection : SeedFitDep
-MHKFFDeP.fitparticle	      : @local::Particle.eplus
-MHKFFDeP.fitdirection	      : @local::FitDir.downstream 
+MHFinalFitDeP                :  @local::KFF
+MHFinalFitDeP.SeedCollection : MHSeedFitDep
+MHFinalFitDeP.fitparticle	      : @local::Particle.eplus
+MHFinalFitDeP.fitdirection	      : @local::FitDir.downstream 
 
-MHKFFDmuM               : @local::KFF
-MHKFFDmuMSeedCollection : SeedFitDmm
-MHKFFDmuM.fitparticle	      : @local::Particle.muminus
-MHKFFDmuM.fitdirection	      : @local::FitDir.downstream 
+MHFinalFitDmuM               : @local::KFF
+MHFinalFitDmuMSeedCollection : MHSeedFitDmm
+MHFinalFitDmuM.fitparticle	      : @local::Particle.muminus
+MHFinalFitDmuM.fitdirection	      : @local::FitDir.downstream 
 #
-MHKFFDmuP                :  @local::KFF
-MHKFFDmuP.SeedCollection : SeedFitDmp
-MHKFFDmuP.fitparticle	 : @local::Particle.muplus
-MHKFFDmuP.fitdirection	 : @local::FitDir.downstream 
+MHFinalFitDmuP                :  @local::KFF
+MHFinalFitDmuP.SeedCollection : MHSeedFitDmp
+MHFinalFitDmuP.fitparticle	 : @local::Particle.muplus
+MHFinalFitDmuP.fitdirection	 : @local::FitDir.downstream 
 
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
@@ -369,10 +369,10 @@ Tracking : {
     KFFUmuP	  : @local::KFFUmuP
   
 # configuration for using the sequence with MergeHelix
-    MHKFFDeM	  : @local::KFFDeM
-    MHKFFDeP	  : @local::KFFDeP
-    MHKFFDmuM     : @local::KFFDmuM
-    MHKFFDmuP	  : @local::KFFDmuP
+    MHFinalFitDeM	  : @local::MHFinalFitDeM
+    MHFinalFitDeP	  : @local::MHFinalFitDeP
+    MHFinalFitDmuM        : @local::MHFinalFitDmuM
+    MHFinalFitDmuP	  : @local::MHFinalFitDmuP
     
   }
 

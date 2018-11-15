@@ -135,8 +135,8 @@ namespace mu2e {
 
 
   void FilterEcalMVATrigger::beginJob(){
-    art::ServiceHandle<art::TFileService> tfs;
-    art::TFileDirectory tfdir = tfs->mkdir("diag");
+    // art::ServiceHandle<art::TFileService> tfs;
+    // art::TFileDirectory tfdir = tfs->mkdir("diag");
     
     ConfigFileLookupPolicy configFile;
     // this loads the TMVA library

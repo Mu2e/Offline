@@ -22,10 +22,12 @@ namespace mu2e {
     // shpos       = 0;
     shfcol      = 0;
     krep        = 0;
-    fit         = TrkErrCode::fail;
-    nt0iter     = 0;
+    kalSeed     = 0;
+    helixSeed   = 0;
+    //    fit         = TrkErrCode::fail;
+    //    nt0iter     = 0;
     nweediter   = 0;
-    nunweediter = 0;
+    //    nunweediter = 0;
 
     // hitIndices  = new vector<StrawHitIndex>;
   }
@@ -55,9 +57,9 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void KalFitData::init() {
     deleteTrack();
-    // hitIndices->clear();
     missingHits.clear();
-    //    doca.clear();
+    nweediter = 0;
+    helixTraj = NULL;
   } 
 
 //-----------------------------------------------------------------------------
