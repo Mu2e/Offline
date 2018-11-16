@@ -3,8 +3,8 @@
 # this file includes all the prolog needed to run the reconstruction 
 # at the trigger level and the filters used to make the trigger decision
 #------------------------------------------------------------------------------
-#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog_trigger.fcl"
 #include "CalPatRec/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"

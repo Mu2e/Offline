@@ -225,29 +225,29 @@ TrkFilters : {
     # sequences for different trigger paths.  Early triggers are prescaled
     sequences : {
 	#trkpatrec tracking
-	TPRTCFilter       : [ TPRTCEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,
-			      @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			      TTtimeClusterFinder, TPRTCFilter,  TPRTCPrescale  ]
-	TPRPosHelixFilter : [ TPRPosHelixEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TPRPosHelixPrescale   ]
-	TPRDeMSeedFilter  : [ TPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TTKSFDeM, TPRDeMSeedFilter, TPRDeMSeedPrescale ]
-	TPRDePSeedFilter  : [ TPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,  @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			      TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRNegHelixFilter, TTKSFDeP, TPRDePSeedFilter, TPRDePSeedPrescale ]
+	TPRTC       : [ TPRTCEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+			@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter,  TPRTCPrescale  ]
+	TPRPosHelix : [ TPRPosHelixEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TPRPosHelixPrescale   ]
+	TPRDeMSeed  : [ TPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TTKSFDeM, TPRDeMSeedFilter, TPRDeMSeedPrescale ]
+	TPRDePSeed  : [ TPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,  @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRNegHelixFilter, TTKSFDeP, TPRDePSeedFilter, TPRDePSeedPrescale ]
 	
 	#calo-seeded tracking
-	CPRDeMSeedFilter : [ CPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-			     TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDem, CPRPosHelixFilter,
-			     TTCalSeedFitDem, CPRDeMSeedFilter, CPRDeMSeedPrescale ]
-	CPRDePSeedFilter : [ CPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-			     TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDep, CPRNegHelixFilter, 
-			     TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
+	CPRDeMSeed : [ CPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDem, CPRPosHelixFilter,
+		       TTCalSeedFitDem, CPRDeMSeedFilter, CPRDeMSeedPrescale ]
+	CPRDePSeed : [ CPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDep, CPRNegHelixFilter, 
+		       TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
 
 	#kalman filter included
-	TPRDeMKalFilter     : [ @sequence::CaloClusterTrigger.Reco,
-				@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, 
-				TTKSFDeM, TPRDeMSeedFilter, TTKFFDeM, TPRDeMKalFilter ]
+	TPRDeMKal  : [ @sequence::CaloClusterTrigger.Reco,
+		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+		       TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, 
+		       TTKSFDeM, TPRDeMSeedFilter, TTKFFDeM, TPRDeMKalFilter ]
 	# add sequences for upstream, calibration, ...  FIXME!
     }
 }

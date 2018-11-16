@@ -71,7 +71,7 @@ physics : {
 
     filters  : { @table::filters }
 
-    calo_only_path : [ FetchCaloDigis, @sequence::paths.calo_only ]
+    calo_only_path : [ FetchCaloDigis, @sequence::paths.CaloOnly ]
 
     out           : [     ]
     end_paths     : [ out ]

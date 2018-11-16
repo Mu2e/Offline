@@ -95,14 +95,14 @@ physics :
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 
-physics.TCTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.TPRTCFilter        ]
+physics.TCTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.TPRTC        ]
 
-physics.PHTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.TPRPosHelixFilter  ]
+physics.PHTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.TPRPosHelix  ]
 
-physics.DeMSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.TPRDeMSeedFilter ]
+physics.DeMSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.TPRDeMSeed ]
 
-#physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilter           ]
-physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.TPRDePSeedFilter ] 
+#physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKal           ]
+physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.TPRDePSeed ] 
 
 # analysis path: this is for monitoring only
 # physics.ReadDigisEndPath : [ TrkTriggerDiag ]

@@ -180,11 +180,11 @@ CaloFilters : { @table::CaloFilters
 
     sequences   : {
 	
-	calo_only        : [ CaloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, CaloOnlyPrescale ]
+	CaloOnly         : [ CaloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, CaloOnlyPrescale ]
 	
-	calo_mixed       : [ CaloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, CaloMixedPrescale ] 
+	CaloMixed        : [ CaloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, CaloMixedPrescale ] 
 	
-	calo_cosmic_muon : [ CaloCosmicMuonEventPrescale, CaloClusterFast, CaloCosmicCalib, CaloCosmicMuonPrescale] 
+	CaloCosmicMuon   : [ CaloCosmicMuonEventPrescale, CaloClusterFast, CaloCosmicCalib, CaloCosmicMuonPrescale] 
 
     }
 }
