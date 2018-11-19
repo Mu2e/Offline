@@ -29,30 +29,30 @@ Trigger : {
 	#used to select 1 event out of N
 	UnbiasedFilter : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::UnbiasedFilters_evt_sf
+	    nPrescale         : @local::unbiased_evt_sf
 	}
 
 	#prescaler for the standard strawDigi occupancy filter
 	SDCountEventPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::SDCountFilter_evt_sf
+	    nPrescale         : @local::sDCount_evt_sf
 	}
 	
 	SDCountPrescale      : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::SDCountFilter_sf
+	    nPrescale         : @local::sDCount_sf
 	    useFilteredEvents : true
 	}
 
 	#prescaler for the strawDigi large-occupancy filter
 	LargeSDCountEventPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::LargeSDCountFilter_evt_sf
+	    nPrescale         : @local::largeSDCount_evt_sf
 	}
 	
 	LargeSDCountPrescale      : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::LargeSDCountFilter_sf
+	    nPrescale         : @local::largeSDCount_sf
 	    useFilteredEvents : true
 	}
 
@@ -104,18 +104,32 @@ Trigger : {
 	@table::TrkFilters.sequences
 
 	#unbiased filter. It selects the events based on their event id
-	unbiased             : [ UnbiasedFilter ]
+	unbiased           : [ UnbiasedFilter ]
 
 	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
-	minimumbias_sd_count : [ SDCountEventPrescale, SDCountFilter, SDCountPrescale]
+	minimumbiasSdCount : [ SDCountEventPrescale, SDCountFilter, SDCountPrescale]
 
 	#filter to select events with large occupancy in the tracker
-	large_sd_count       : [ LargeSDCountEventPrescale, LargeSDCountFilter, LargeSDCountPrescale]
+	largeSdCount       : [ LargeSDCountEventPrescale, LargeSDCountFilter, LargeSDCountPrescale]
 	
     }
     
     outputs: {
 	
+	triggerOutput : { 
+	    module_type: RootOutput
+	    fileName: "filteredOutput.root"
+	    SelectEvents : [ unbiased_path, 
+			     minimumbiasSdCount_path,
+			     largeSdCount_path,
+			     caloOnly_path,
+			     tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
+#	    Compressionlevel: 0
+	    
+	    outputCommands: [ "keep *_*_*_*",
+			      "drop *_daq_*_*" ]
+	}
+
 	rootoutUnbiased : { 
 	    module_type: RootOutput
 	    fileName: "driver_unbiased.root"
@@ -129,8 +143,8 @@ Trigger : {
 	rootoutCaloOnly : {
 	    module_type: RootOutput
 	    fileName: "driver_calo_only.root"
-	    SelectEvents : [ calo_only_path ]
-	    compressionLevel: 0
+	    SelectEvents : [ caloOnly_path ]
+#	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
 			      "drop *_daq_*_*" ]
@@ -139,7 +153,7 @@ Trigger : {
 	rootoutTrkDem : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dem.root"
-	    SelectEvents : [ tpr_dem_path, cpr_dem_path ]
+	    SelectEvents : [ tprDeMSeed_path, cprDeMSeed_path ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -149,7 +163,7 @@ Trigger : {
 	rootoutTrkDep : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dep.root"
-	    SelectEvents : [ tpr_dep_path, cpr_dep_path ]
+	    SelectEvents : [ tprDeP_path, cprDePSeed_path ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
