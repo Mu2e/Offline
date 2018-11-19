@@ -251,7 +251,7 @@ namespace mu2e {
 	      // 
 	      // get angle of initial proton to pbar; convert from HepDouble whatever that is
 	      nt[9] =    (initialProtonFourMomentum.vect().dot(startingFourMomentum.vect()))
-		                 /(initialProtonFourMomentum.vect().mag()*startingFourMomentum.mag());
+		/(initialProtonFourMomentum.vect().mag()*startingFourMomentum.vect().mag());
 	      nt[10] = startingFourMomentum.vect().mag(); 
 	      nt[11] = initialProtonFourMomentum.vect().mag();
 	      nt[12] = currentKE;
