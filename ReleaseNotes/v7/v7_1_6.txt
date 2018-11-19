@@ -1,31 +1,3 @@
            Release notes for Mu2e Offline software, v7_1_6
 	   still under development
 
-6) kutschke Oct 24, 2018
-   Merge in Ralf's changes from branch CRV_tmp.
-   These changes remove the MC awareness of the top level reco data product.
-
-5) kutschke Oct 24, 2018
-   Removed unnecessary header that was creating a compile-time loop.
-      BTrkData/src/TrkCaloHit.cc
-      BTrkData/src/TrkStrawHit.cc
-
-4) kutschke Oct 24, 2018
-   To break a compile time loop moved
-       Doublet.hh and Doublet.cc from RecoDataProducts to BTrkData
-
-   Modified the code base to find header file in its new location.
-
-3) kutschke Oct 24, 2018
-    a) Moved TwoLinePCA_XYZ and TwoLinePCA from GeneralUtilities to Mu2eUtilties
-        - to break compile time loops
-    b) Moved XYZVec.hh and Geom.cc from RecoDataProducts to DataProducts
-        - I view this class a lowest level object
-
-   Modified the code base to find header files in their new locations.
-
-2) youzy Oct 8, 2018 ---based on v7_1_1
-    - add position and momentum cuts in /Analyses/src/StepPointMCDumperCompact_module.cc
-1) youzy, wangy Oct 8, 2018 ---based on v7_1_1
-    - add AntiProtonGun_module.cc in EventGenerator/src/ based on our work to generate antiproton angular distribution.
-

@@ -26,9 +26,67 @@ Trigger : {
 	@table::CaloFilters.filters
 	@table::TrkFilters.filters
 
+	#used to select 1 event out of N
 	UnbiasedFilter : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::UnbiasedFilters_evt_sf
+	}
+
+	#prescaler for the standard strawDigi occupancy filter
+	SDCountEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::SDCountFilter_evt_sf
+	}
+	
+	SDCountPrescale      : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::SDCountFilter_sf
+	    useFilteredEvents : true
+	}
+
+	#prescaler for the strawDigi large-occupancy filter
+	LargeSDCountEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::LargeSDCountFilter_evt_sf
+	}
+	
+	LargeSDCountPrescale      : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::LargeSDCountFilter_sf
+	    useFilteredEvents : true
+	}
+
+	#filters based on the strawDigi occupancy:
+
+	# LargeSDCountFilter: we need this filter to select strange events 
+	#                     where we had lot of hits. That is a good handle
+	#                     for spotting strange behaviour of the tracker
+	LargeSDCountFilter     : {
+	    module_type : DigiFilter
+	    StrawDigiCollection : makeSD
+	    CaloDigiCollection  : notUsed
+	    UseStrawDigi        : true
+	    UseCaloDigi         : false
+	    MinNStrawDigi       : 10000 
+	    MaxNStrawDigi       : 1000000 
+	    MinNCaloDigi        : -1
+	    MaxNCaloDigi        : -1
+	    MaxCaloEnergy       : -1
+	}
+
+	# SDCountFilter     : it's a minimum bias filter. It allows to select
+	#                     events based on the number of strawDigi
+	SDCountFilter          : {
+	    module_type : DigiFilter
+	    StrawDigiCollection : makeSD
+	    CaloDigiCollection  : notUsed
+	    UseStrawDigi        : true
+	    UseCaloDigi         : false
+	    MinNStrawDigi       : 500    
+	    MaxNStrawDigi       : 10000
+	    MinNCaloDigi        : -1
+	    MaxNCaloDigi        : -1
+	    MaxCaloEnergy       : -1
 	}
       }
     
@@ -39,9 +97,21 @@ Trigger : {
     }
     
     paths : {
+	#calorimeter based filters. It includes: CE, and calibrations
 	@table::CaloFilters.sequences
+	
+	#tracking filters. It includes: TrkPatRec, CalPatRec
 	@table::TrkFilters.sequences
-	unbiased : [ UnbiasedFilter ]
+
+	#unbiased filter. It selects the events based on their event id
+	unbiased             : [ UnbiasedFilter ]
+
+	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
+	minimumbias_sd_count : [ SDCountEventPrescale, SDCountFilter, SDCountPrescale]
+
+	#filter to select events with large occupancy in the tracker
+	large_sd_count       : [ LargeSDCountEventPrescale, LargeSDCountFilter, LargeSDCountPrescale]
+	
     }
     
     outputs: {

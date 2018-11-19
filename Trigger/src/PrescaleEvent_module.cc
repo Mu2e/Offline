@@ -44,15 +44,17 @@ namespace mu2e
 
     private:
 
-      uint32_t nPrescale_;
-      bool     useFilteredEvts_;
-      unsigned _nevt, _npass;
+    uint32_t nPrescale_;
+    bool     useFilteredEvts_;
+    int      _debug;
+    unsigned _nevt, _npass;
 
   };
 
   PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p)
     : nPrescale_      (p.get<uint32_t>("nPrescale")), 
       useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)), 
+      _debug          (p.get<int>     ("debugLevel",0)), 
       _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -76,7 +78,7 @@ namespace mu2e
   }
 
   bool PrescaleEvent::endRun( art::Run& run ) {
-    if(_nevt > 0){
+    if(_debug > 0){
       std::cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
