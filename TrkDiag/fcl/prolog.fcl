@@ -216,7 +216,6 @@ BEGIN_PROLOG
       PBIWeight : { module_type : PBIWeight
       	PBITag : "protonBunchIntensity"
 	meanPBITag : "protonBunchIntensity:MeanIntensity"
-	inputModule : compressDigiMCs
       }
     }
     analyzers : {
