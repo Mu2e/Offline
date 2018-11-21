@@ -115,6 +115,10 @@ namespace mu2e
         }
 
 
+  double CosmicCRY::getLiveTime() {
+    return _cryGen->timeSimulated();
+  }
+
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
     // Ref point, need to be here so that geometry info can be obtained
@@ -210,7 +214,7 @@ namespace mu2e
               secondary->t() - _cryGen->timeSimulated()));
 
       if (_verbose > 1) {
-        std::cout << "Secondary " << j 
+        mf::LogInfo("CosmicCRY") << "Secondary " << j 
           << ": " << CRYUtils::partName(secondary->id()) 
           << " (pdgId " << secondary->PDGid() << ")"
           << ", kinetic energy " << secondary->ke()  << " MeV"
@@ -223,13 +227,11 @@ namespace mu2e
           << ", mass: " << mass
           << ", mom: " << totalP
           << ", mom dir.: " << secondary->u() <<", " << secondary->v()
-          << ", " << secondary->w()
-          << std::endl;
+          << ", " << secondary->w();
 
         // std::cout <<  genParts.back() << std::endl;
       }
 
-      std::cout << "Live time simulated by CRY: " << _cryGen->timeSimulated() << std::endl;
 
       delete secondary;
     }
