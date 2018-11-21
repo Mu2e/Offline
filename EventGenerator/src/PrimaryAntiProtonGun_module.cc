@@ -158,6 +158,10 @@ namespace mu2e {
     TH1F* _hNumberOfProtonInelastics;
     TH1F* _hNonProtonInelastics;
 
+    TH1F* _hxLocationOfInelastic;
+    TH1F* _hyLocationOfInelastic;
+    TH1F* _hzLocationOfInelastic;
+    TH1F* _hFoundInteractingProton;
 
     int numberOfProtonInelastics{0};
     int nonProtonInelastics{0};
@@ -218,6 +222,10 @@ namespace mu2e {
 	_hPbarPhi = tfdir.make<TH1F>("_hPbarPhi","antiproton phi in Lab Frame",100,-M_PI,+M_PI);
 	_hNumberOfProtonInelastics = tfdir.make<TH1F>("_hNumberOfProtonInelastics","number of proton inelastics",10,0.,10.);
 	_hNonProtonInelastics = tfdir.make<TH1F>("_hNonProtonInelastics","number of non-proton-inelastics but not killer volume",10,0.,10.);
+	_hxLocationOfInelastic = tfdir.make<TH1F>("_hxLocationOfInelastic","x location of inelastic", 100,-100.,100.);
+	_hyLocationOfInelastic = tfdir.make<TH1F>("_hyLocationOfInelastic","y location of inelastic", 100,-100.,100.);
+	_hzLocationOfInelastic = tfdir.make<TH1F>("_hzLocationOfInelastic","z location of inelastic", 400,-6300,-5900.);//nominal is -6164.5+-80
+	_hFoundInteractingProton = tfdir.make<TH1F>("_hFoundInteractingProton"," zero if wrote collection, one if did",2,0.,2.); 
       }
 
   }
@@ -265,6 +273,10 @@ namespace mu2e {
     uint iInteracting{0};
     uint biggestSimParticleId{0};
 
+    double xInelastic{-10000.};
+    double yInelastic{-10000.};
+    double zInelastic{0.};
+ 
     for (const auto& simPartPair: simParticles) {
       auto const& simPart = simPartPair.second;
       key_type const& key = simPartPair.first;
@@ -311,6 +323,9 @@ namespace mu2e {
 	iInteracting = key.asInt(); 
 	first_protonInelastic = false;
 	eInitialProton = sqrt( simPart.endMomentum().vect().mag()*simPart.endMomentum().vect().mag() + _mass*_mass);
+	xInelastic = simPart.endPosition().x();
+	yInelastic = simPart.endPosition().y();
+	zInelastic = simPart.endPosition().z();
 	//
 	//  need to save variables for populating pbar simParticle I will make later
 	startVolumeIndexPbar =  simPart.endVolumeIndex();
@@ -345,7 +360,12 @@ namespace mu2e {
       //write empty collections
       event.put(std::move(outSimPartPtr), "");
       event.put(std::move(outStepPointMCPtr),"");
+      _hFoundInteractingProton->Fill(0.5);
       return;	
+    } else {_hFoundInteractingProton->Fill(1.5);}
+
+    if (_verbosityLevel > 1) {
+      std::cout << "interacting > 0" << xInelastic << " " << yInelastic << " " << zInelastic << std::endl;
     }
 
     //
@@ -412,6 +432,9 @@ namespace mu2e {
 	_hPbarMomentum->Fill(momPbar.vect().mag());
 	_hPbarCosTheta->Fill(momPbar.cosTheta());
 	_hPbarPhi->Fill(momPbar.phi());
+	_hxLocationOfInelastic->Fill(xInelastic-3904.);
+	_hyLocationOfInelastic->Fill(yInelastic);
+	_hzLocationOfInelastic->Fill(zInelastic);
 	if (_verbosityLevel > 0)
 	  {
 	    std::cout << " momentum, cos Theta, phi = " << momPbar.vect().mag() << " " << momPbar.cosTheta() << " " << momPbar.phi() << std::endl;
