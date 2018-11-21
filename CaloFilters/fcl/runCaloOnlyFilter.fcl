@@ -11,11 +11,11 @@
 
 BEGIN_PROLOG
 #prescale factors for the calorimeter-only trigger
-CaloOnly_evt_sf         : 1
-CaloOnly_sf             : 1
+caloOnly_evt_sf         : 1
+caloOnly_sf             : 1
 #prescale factors for the cosmic muon calibration
-CaloCosmicMuon_evt_sf         : 1
-CaloCosmicMuon_sf             : 1
+caloCosmicMuon_evt_sf         : 1
+caloCosmicMuon_sf             : 1
 END_PROLOG
 
 #include "CaloFilters/fcl/prolog.fcl"
@@ -67,11 +67,14 @@ physics : {
     producers: {
 	@table::producers 
 	@table::CaloClusterTrigger.producers
+	@table::TrkHitRecoTrigger.producers
     }
 
     filters  : { @table::filters }
 
-    calo_only_path : [ FetchCaloDigis, @sequence::paths.calo_only ]
+    caloOnly_path : [ FetchCaloDigis, @sequence::paths.caloOnly ]
+
+    caloMixed_path : [ FetchCaloDigis, @sequence::paths.caloMixed ]
 
     out           : [     ]
     end_paths     : [ out ]

@@ -14,18 +14,18 @@
 BEGIN_PROLOG
 #prescale factor fot the tracker-only track triggers
 # downstream e-
-TPRDeMSeedFilter_evt_sf : 1
-TPRDeMSeedFilter_sf     : 1
+tprDeMSeed_evt_sf : 1
+tprDeMSeed_sf     : 1
 # downstream e+
-TPRDePSeedFilter_evt_sf : 1
-TPRDePSeedFilter_sf     : 1
+tprDePSeed_evt_sf : 1
+tprDePSeed_sf     : 1
 #prescale factor fot the calo-seeded track triggers
 # downstream e-
-CPRDeMSeedFilter_evt_sf : 1
-CPRDeMSeedFilter_sf     : 1
+cprDeMSeed_evt_sf : 1
+cprDeMSeed_sf     : 1
 # downstream e+
-CPRDePSeedFilter_evt_sf : 1
-CPRDePSeedFilter_sf     : 1
+cprDePSeed_evt_sf : 1
+cprDePSeed_sf     : 1
 END_PROLOG
 
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
@@ -95,14 +95,14 @@ physics :
 # create a trigger test path.  Note that physics.trigger_paths and physics.end_paths are not used, art will
 # create those automatically from all the defined paths
 
-physics.TCTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.TPRTCFilter        ]
+physics.TCTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.tprTC        ]
 
-physics.PHTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.TPRPosHelixFilter  ]
+physics.PHTrigPath : [ TPRFetchDigis, @sequence::TrkFilters.sequences.tprPosHelix  ]
 
-physics.DeMSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.TPRDeMSeedFilter ]
+physics.DeMSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.tprDeMSeed ]
 
-#physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKalFilter           ]
-physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.TPRDePSeedFilter ] 
+#physics.DeMKalTrigPath : [ @sequence::Tracking.Trigger.DeMKal           ]
+physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.tprDePSeed ] 
 
 # analysis path: this is for monitoring only
 # physics.ReadDigisEndPath : [ TrkTriggerDiag ]

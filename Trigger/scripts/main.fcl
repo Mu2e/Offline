@@ -92,46 +92,14 @@ physics : {
  
     analyzers : {  
 
-	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
 	    nFilters      : 35
-	    nTrackTriggers: 5
-	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSdCount_path,
-			      largeSdCount_path,
-			      caloOnly_path,
-			      tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
 	}
 	
     }
 
-    #unbiased trigger path
-    unbiased_path                : [ @sequence::paths.unbiased                         ]
-    
-    #minimum bias filters
-    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount             ]
-
-    #path for selecting events with large ammount of strawDigis
-    largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
-
-    #path for the calorimeter only trigger
-    caloOnly_path                : [ FetchCaloDigis, @sequence::paths.caloOnly         ]
-
-    #path for calorimeter cosmic muon calibration
-    caloCosmicMuon_path          : [ FetchCaloDigis, @sequence::paths.caloCosmicMuon   ]
-
-    #paths for TrkPatRec downstream e- and e+
-    tprDeMSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDeMSeed        ]
-    tprDePSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDePSeed        ]
-
-    #paths for CalPatRec downstream e- and e+
-    cprDeMSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDeMSeed        ]
-    cprDePSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDePSeed        ]
-    
-    
-    out           : [ readTriggerInfo ]
-    
-#    out           : [ ReadTriggerInfo, triggerOutput ]
-    end_paths     : [ out ]
+    out       : [ ReadTriggerInfo ]
+    end_paths : [ out ]
 }
 
 outputs : {
