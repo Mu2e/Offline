@@ -29,6 +29,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
+// #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -43,6 +44,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "canvas/Utilities/InputTag.h"
 
+#include "TDirectory.h"
 #include "TH2F.h"
 #include "TH1D.h"
 #include "TH1F.h"
@@ -110,7 +112,62 @@ namespace mu2e {
 
   CaloLikelihood::CaloLikelihood(const fhicl::ParameterSet & pset) :
     _diagLevel                   (pset.get<int>("diagLevel",0)),
-    _nProcess                    (0),      _signalCorrHist1D[0][i]->Scale(1/Area);
+    _nProcess                    (0),
+    _nPass                       (0),
+    _cogType                     (ClusterMoments::Linear),                
+    _clTag                       (pset.get<art::InputTag>("CaloClusterModuleLabel")),
+    _templateFile                (pset.get<string>("Templates")),
+    _dropSecondDisk              (pset.get<bool>  ("DropSecondDisk"       , false)),
+    _minClEnergy                 (pset.get<double>("MinClusterEnergy"     ,   50.)),   // MeV
+    _clEStep                     (pset.get<double>("ClusterEnergyStep"    ,   10.)),   // MeV
+    _minRDist                    (pset.get<double>("MinClusterRadialDist" ,  350.)),   // mm
+    _rDistStep                   (pset.get<double>("ClusterRadialDistStep",   50.)),   // mm
+    _minLH                       (pset.get<double>("MinLikelihoodCut"     ,   1.)){   // likelihood threshold
+
+    ConfigFileLookupPolicy configFile;
+    _templates = configFile(_templateFile);
+    
+    TFile* templateFile = TFile::Open(_templates.c_str());
+    //get the templates histograms
+    _signalHist1D[0]   = (TH1F*)templateFile->Get("photonEnergy");
+    _signalHist1D[1]   = (TH1F*)templateFile->Get("photonRatio");   
+    _signalHist1D[2]   = (TH1F*)templateFile->Get("photonSize");   
+    _signalHist1D[3]   = (TH1F*)templateFile->Get("photonRadial");
+    _signalHist1D[4]   = (TH1F*)templateFile->Get("photon2ndCrystal");
+
+    _bkgHist1D   [0]   = (TH1F*)templateFile->Get("bkgEnergy");
+    _bkgHist1D   [1]   = (TH1F*)templateFile->Get("bkgRatio");
+    _bkgHist1D   [2]   = (TH1F*)templateFile->Get("bkgSize");   
+    _bkgHist1D   [3]   = (TH1F*)templateFile->Get("bkgRadial");
+    _bkgHist1D   [4]   = (TH1F*)templateFile->Get("bkg2ndCrystal");
+    
+    _signalHist2D[0]   = (TH2F*)templateFile->Get("photonRadialEnergy");
+    _bkgHist2D   [0]   = (TH2F*)templateFile->Get("bkgRadialEnergy");
+
+    _signalHist2D[1]   = (TH2F*)templateFile->Get("photonRadialRatio");
+    _bkgHist2D   [1]   = (TH2F*)templateFile->Get("bkgRadialRatio");
+
+    _signalHist2D[2]   = (TH2F*)templateFile->Get("photonRadial2ndRatio");
+    _bkgHist2D   [2]   = (TH2F*)templateFile->Get("bkgRadial2ndRatio");
+
+    //make correlation templates
+    double    binsizesignal = _signalHist2D[0]->GetYaxis()->GetBinWidth(1);
+    double    binsizebkg    = _bkgHist2D   [0]->GetYaxis()->GetBinWidth(1);
+    
+    double    binlowsignal  = _signalHist2D[0]->GetYaxis()->GetBinLowEdge(1);
+    double    binlowbkg     = _bkgHist2D   [0]->GetYaxis()->GetBinLowEdge(1);
+    
+    // double    energy_step   = 10.;  // MeV
+    // double    min_energy    = 50.;  //MeV
+
+    for (int i=0; i<kNCorHist; ++i){
+      double  Estart      = (_minClEnergy + i*_clEStep);
+      int     binstart    = (Estart - binlowsignal)/binsizesignal + 1;
+      int     binend      = binstart + (_clEStep/binsizesignal);
+      // _photonEnergyRad[i]= _signalHist2D[0]->ProjectionX(Form("photonEnRad_%i", i), binstart, binend);
+      _signalCorrHist1D[0][i] = (TH1F*)_signalHist2D[0]->ProjectionX(Form("photonEnRad_%i", i), binstart, binend);
+      double  Area        = _signalCorrHist1D[0][i]->Integral();
+      _signalCorrHist1D[0][i]->Scale(1/Area);
     }
 
 
