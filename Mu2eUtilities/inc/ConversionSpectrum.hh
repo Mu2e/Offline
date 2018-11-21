@@ -30,7 +30,7 @@ namespace mu2e {
       double me;
     } _par;
     
-    // ConversionSpectrum(){}
+
 
     ConversionSpectrum(double maxEnergy, double bin, int RadCorrected = 0);
     

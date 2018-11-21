@@ -65,6 +65,18 @@ CaloFilters : {
 	downscale500factor	       : 1
 	step                       : 10
     }  
+    
+    
+#skelethon for a cosmic muon calibration
+    CaloCosmicCalib : {
+	module_type            : CaloCosmicCalib
+	CaloClusterCollection  : "CaloClusterFast"
+	debugLevel             : 0
+	MinNCrystalHits        : 7
+	MinEnergy              : 150.0    #MeV
+	MaxEnergy              : 600.0    #MeV
+    }
+   
 }
 
 CaloFilters : { @table::CaloFilters
@@ -139,6 +151,18 @@ CaloFilters : { @table::CaloFilters
 	    useFilteredEvents : true
 	}
 	
+	CaloCosmicMuonEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::CaloCosmicMuon_evt_sf
+	}
+	
+	CaloCosmicMuonPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::CaloCosmicMuon_sf
+	    useFilteredEvents : true
+	}
+
+	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
 	EcalTriggerPreselect   : { @table::CaloFilters.EcalTriggerPreselect   }
 	
@@ -148,13 +172,19 @@ CaloFilters : { @table::CaloFilters
 	FilterEcalMVATrigger   : { @table::CaloFilters.FilterEcalMVATrigger   }
 	
 	FilterEcalMixedTrigger : { @table::CaloFilters.FilterEcalMixedTrigger }
+	
+	
+	#dummy filter for cosmic muon calibration
+	CaloCosmicCalib        : { @table::CaloFilters.CaloCosmicCalib        }
     }
 
     sequences   : {
 	
-	calo_only  : [ CaloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, CaloOnlyPrescale ]
+	calo_only        : [ CaloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, CaloOnlyPrescale ]
 	
-	calo_mixed : [ CaloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, CaloMixedPrescale ] 
+	calo_mixed       : [ CaloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, CaloMixedPrescale ] 
+	
+	calo_cosmic_muon : [ CaloCosmicMuonEventPrescale, CaloClusterFast, CaloCosmicCalib, CaloCosmicMuonPrescale] 
 
     }
 }

@@ -17,15 +17,15 @@ source       : { module_type : EmptyEvent   }
 producers     : { @table::EventGenerator.producers }
 
 services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "nts.stntuple.jobtype.offver.sequencer.root" }
-    RandomNumberGenerator : { }
+    message                : @local::default_message
+    TFileService           : { fileName       : "nts._USER_._DATASET_._DSCONF_.000000.root" }
 
-    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"      }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     BTrkHelper             : @local::BTrkHelperDefault
     G4Helper               : { }
+    RandomNumberGenerator  : { }
     SeedService            : { @table::automaticSeeds
 	baseSeed         :  0
 	maxUniqueEngines :  20
@@ -46,13 +46,12 @@ physics : {
     producers: {   @table::producers
 	generate              : {   module_type: StoppedParticleReactionGun
 	    physics: {
-		spectrumShape         : "CeEndpoint"          #"ConversionSpectrum"  could also be "flat"
-		spectrumVariable      : "totalEnergy"  # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-		pdgId                 : -11
-		eMax                  : 92.32                 # 92.32 if you consider mu2pos --  104.975 for e-    
-		spectrumResolution    : 0.1                     # hopefully, in MeV
-		ehi                   : 92.32
-		elow                  : 0.
+		spectrumShape         : "ConversionSpectrum" # "ConversionSpectrum" for rad-corrected, "CeEndpoint" for delta-function
+		spectrumVariable      : "totalEnergy"        # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		pdgId                 : -11                  # 
+		spectrumResolution    : 0.1                  # in MeV
+		elow                  : 0.                   # needed to make the templated interface happy
+		ehi                   : 92.32                # needed to make the templated interface happy
 	    } 
 	    muonStops                 : @local::muonStops
 	    doHistograms              : true
