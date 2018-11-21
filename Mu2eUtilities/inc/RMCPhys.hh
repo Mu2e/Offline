@@ -66,6 +66,12 @@ namespace mu2e {
         x = energy/kmax_;
         wt = norm*(1-2*x+2*(x*x))*x*(1-x)*(1-x) ; //RMCSpectrum1;
       }
+      if (verbosityLevel_ == 1) {
+      std::cout << "Norm: " << norm << std::endl;
+      std::cout << "Energy: " << energy << std::endl;
+      std::cout << "Weight:" << wt << std::endl;
+      
+      }
       return wt;
     };
   };

@@ -369,7 +369,6 @@ namespace mu2e {
   void TrackAnalysis::fillMCInfo(const KalRep* deK) {
   // for now MC truth is only for the DE track.  Maybe we need MC truth on other tracks too?  FIXME!
     art::Ptr<SimParticle> deSP;
-    art::Ptr<SimParticle> degenSP;
     if(deK != 0) {
       _kdiag.findMCTrk(deK,deSP);
     } else if(_kdiag.mcData()._simparts != 0) { 
@@ -388,6 +387,7 @@ namespace mu2e {
 	}
       }
     }
+
     if(deSP.isNonnull()){
       _kdiag.fillTrkInfoMC(deSP,deK,_demc);
       _kdiag.fillTrkInfoMCStep(deSP,_demcgen);
