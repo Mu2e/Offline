@@ -38,6 +38,10 @@ Primary: {
       module_type : StrawDigiMCFilter
       StrawDigiMCCollection : "makeSD"
     }
+# shower filter for calorimeter selection
+    CaloFilter : {
+      module_type : CaloShowerSimFilter
+    }
   }
   analyzers: {
     genCountLogger: { module_type: GenEventCountReader makeHistograms: false }

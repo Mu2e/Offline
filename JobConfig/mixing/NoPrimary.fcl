@@ -12,8 +12,8 @@ physics : {
   producers : { @table::Mixing.producers }
   filters: { @table::Mixing.filters }
   analyzers: { @table::Mixing.analyzers }
-  TriggerPath : [ @sequence::Mixing.MixSequence ]
-  EndPath : [ FullOutput, DetOutput ] 
+  TriggerPath : [ @sequence::Mixing.MixSequence, compressDigiMCs ]
+  EndPath : [ digiCompressionCheck, FullOutput, DetOutput ] 
 }
 outputs : { 
   FullOutput :@local::Mixing.Output
