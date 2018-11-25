@@ -8,8 +8,8 @@
 #include "CalPatRec/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
-#include "TrkFilters/fcl/prolog.fcl"
-#include "CaloFilters/fcl/prolog.fcl"
+#include "TrkFilters/fcl/prolog_trigger.fcl"
+#include "CaloFilters/fcl/prolog_trigger.fcl"
 
 Trigger : {
     producers : {
@@ -74,18 +74,75 @@ Trigger : {
 	    MaxCaloEnergy       : -1
 	}
 
-	# SDCountFilter     : it's a minimum bias filter. It allows to select
+	# CDCountFilter     : it's a minimum bias filter. It allows to select
 	#                     events based on the number of strawDigi
 	SDCountFilter          : {
 	    module_type : DigiFilter
 	    StrawDigiCollection : makeSD
-	    CaloDigiCollection  : notUsed
+	    CaloDigiCollection  : notUSed
 	    UseStrawDigi        : true
 	    UseCaloDigi         : false
-	    MinNStrawDigi       : 500    
+	    MinNStrawDigi       : 500   
 	    MaxNStrawDigi       : 10000
 	    MinNCaloDigi        : -1
 	    MaxNCaloDigi        : -1
+	    MaxCaloEnergy       : -1
+	}
+
+	#prescaler for the standard strawDigi occupancy filter
+	CDCountEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::cDCount_evt_sf
+	}
+	
+	CDCountPrescale      : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::cDCount_sf
+	    useFilteredEvents : true
+	}
+
+	#prescaler for the strawDigi large-occupancy filter
+	LargeCDCountEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::largeCDCount_evt_sf
+	}
+	
+	LargeCDCountPrescale      : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::largeCDCount_sf
+	    useFilteredEvents : true
+	}
+
+	#filters based on the strawDigi occupancy:
+
+	# LargeCDCountFilter: we need this filter to select strange events 
+	#                     where we had lot of hits. That is a good handle
+	#                     for spotting strange behaviour of the tracker
+	LargeCDCountFilter     : {
+	    module_type : DigiFilter
+	    StrawDigiCollection : notUsed
+	    CaloDigiCollection  : CaloDigiFromShower
+	    UseStrawDigi        : false
+	    UseCaloDigi         : false
+	    MinNStrawDigi       : 5000 
+	    MaxNStrawDigi       : 1000000 
+	    MinNCaloDigi        : -1
+	    MaxNCaloDigi        : -1
+	    MaxCaloEnergy       : -1
+	}
+
+	# CDCountFilter     : it's a minimum bias filter. It allows to select
+	#                     events based on the number of strawDigi
+	CDCountFilter          : {
+	    module_type : DigiFilter
+	    StrawDigiCollection : notUsed
+	    CaloDigiCollection  : CaloDigiFromShower
+	    UseStrawDigi        : false
+	    UseCaloDigi         : true
+	    MinNStrawDigi       : -1    
+	    MaxNStrawDigi       : -1
+	    MinNCaloDigi        : 200
+	    MaxNCaloDigi        : 5000
 	    MaxCaloEnergy       : -1
 	}
       }
@@ -112,6 +169,11 @@ Trigger : {
 	#filter to select events with large occupancy in the tracker
 	largeSdCount       : [ LargeSDCountEventPrescale, LargeSDCountFilter, LargeSDCountPrescale]
 	
+	#minimum bias filters. So far, a filter based on the StrawDigi occupancy
+	minimumbiasCdCount : [ CDCountEventPrescale, CDCountFilter, CDCountPrescale]
+
+	#filter to select events with large occupancy in the tracker
+	largeCdCount       : [ LargeCDCountEventPrescale, LargeCDCountFilter, LargeCDCountPrescale]
     }
     
     outputs: {

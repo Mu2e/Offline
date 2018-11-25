@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 parser = ArgumentParser()
 parser.add_argument("-c", "--config-file", dest="configfilename",
-                    help="file with Trigger configuration. Paths available are: unbiased, minimumbiasSdCount,largeSdCount, caloOnly, caloMixed, caloCosmicMuon, tprDeMSeed, tprDePSeed, cprDeMSeed, cprDePSeed, triggerOutput", metavar="FILE")
+                    help="file with Trigger configuration. Paths available are: unbiased, minimumbiasSdCount,largeSdCount, minimumbiasCdCount,largeCdCount, caloOnly, caloMixed, caloCosmicMuon, tprDeMSeed, tprDePSeed, cprDeMSeed, cprDePSeed, triggerOutput", metavar="FILE")
 parser.add_argument("-o", "--output-file", dest="outputfilename",
                     help="name of the generated fcl file for running the Trigger executable", metavar="OUTPUT")
 parser.add_argument("-q", "--quiet",
