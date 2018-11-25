@@ -66,7 +66,7 @@ namespace mu2e {
     
     enum {
       kN1DVar    = 10,
-      kN2DVar    = 3,
+      kN2DVar    = 6,
       kNCorHist  = 10
     };
 
@@ -104,13 +104,14 @@ namespace mu2e {
     TH1F*       _bkgHist1D   [2][kN1DVar];
     TH2F*       _bkgHist2D   [2][kN2DVar];
 
-    TH1F*       _signalCorrHist1D[kN2DVar][kNCorHist];
-    TH1F*       _bkgCorrHist1D   [kN2DVar][kNCorHist];
+    TH1F*       _signalCorrHist1D[2][kN2DVar][kNCorHist];
+    TH1F*       _bkgCorrHist1D   [2][kN2DVar][kNCorHist];
     
-    void   buildTemplateHist(TH2F*Input, TH1F**FinalHist,  TString Label, double MinX, double StepSize);
+    void        buildTemplateHist(TH2F*Input, TH1F**FinalHist,  TString Label, double MinX, double StepSize);
 
     //initialize calclate prob in private
-    double calculateProb(double &variable, TH1* templates);
+    double      calculateProb    (double&variable, TH1* templates);
+    double      calculate2DProb  (double& Ref, double&Variable, TH1F** Template, double MinX, double Step);
   };
 
 
@@ -190,23 +191,34 @@ namespace mu2e {
     _bkgHist2D   [1][2]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2RDist0");
 
     //make correlation templates
-    
-    //cluster energy vs cluster radial distance
-    buildTemplateHist(_signalHist2D[0][0], _signalCorrHist1D[0], "SignalDisk0_eRDist", _minClEnergy, _clEStep);
-    buildTemplateHist(_bkgHist2D   [0][0], _bkgCorrHist1D   [0], "BkgDisk0_eRDist"   , _minClEnergy, _clEStep);
-    
-    //E1 (seedHitEnergy/cluster_energy) vs cluster radial distance
-    buildTemplateHist(_signalHist2D[0][1], _signalCorrHist1D[1], "SignalDisk0_e1RDist", _minRDist, _rDistStep);
-    buildTemplateHist(_bkgHist2D   [0][1], _bkgCorrHist1D   [1], "BkgDisk0_e1RDist"   , _minRDist, _rDistStep);
+    //make correlation templates
+    int     nCaloDisks(2);
+    for (int i=0; i<nCaloDisks; ++i){    
+      //cluster energy vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][0], _signalCorrHist1D[i][0], Form("SignalDisk%i_eRDist", i), _minClEnergy, _clEStep);
+      buildTemplateHist(_bkgHist2D   [i][0], _bkgCorrHist1D   [i][0], Form("BkgDisk%i_eRDist"   , i), _minClEnergy, _clEStep);
+      
+      //E1 (seedHitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][1], _signalCorrHist1D[i][1], Form("SignalDisk%i_e1RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][1], _bkgCorrHist1D   [i][1], Form("BkgDisk%i_e1RDist"   , i), _minRDist, _rDistStep);
+      
+      //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][2], _signalCorrHist1D[i][2], Form("SignalDisk%i_e2RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][2], _bkgCorrHist1D   [i][2], Form("BkgDisk%i_e2RDist"   , i), _minRDist, _rDistStep);
 
-    //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
-    buildTemplateHist(_signalHist2D[0][2], _signalCorrHist1D[2], "SignalDisk0_e2RDist", _minRDist, _rDistStep);
-    buildTemplateHist(_bkgHist2D   [0][2], _bkgCorrHist1D   [2], "BkgDisk0_e2RDist"   , _minRDist, _rDistStep);
-  
-    //E2/E1 vs cluster radial distance
-    // buildTemplateHist(_signalHist2D[0][3], _signalCorrHist1D[3], "SignalDisk0_e2e1RDist", _minRDist, _rDistStep);
-    // buildTemplateHist(_bkgHist2D   [0][3], _bkgCorrHist1D   [3], "BkgDisk0_e2e1RDist"   , _minRDist, _rDistStep);
-  
+      //E2/E1 vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][3], _signalCorrHist1D[i][3], Form("SignalDisk%i_e2e1RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][3], _bkgCorrHist1D   [i][3], Form("BkgDisk%i_e2e1RDist"   , i), _minRDist, _rDistStep);
+
+      //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][4], _signalCorrHist1D[i][4], Form("SignalDisk%i_e3RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][4], _bkgCorrHist1D   [i][4], Form("BkgDisk%i_e3RDist"   , i), _minRDist, _rDistStep);
+
+      //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][5], _signalCorrHist1D[i][5], Form("SignalDisk%i_e4RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][5], _bkgCorrHist1D   [i][5], Form("BkgDisk%i_e4RDist"   , i), _minRDist, _rDistStep);
+
+    }    
   }
 
   //--------------------------------------------------------------------------------
@@ -284,8 +296,8 @@ namespace mu2e {
 
       int       nCrystalHits = caloClusterHits->size();
       double    maxECrystal(0);
-      double    secondmaxECrystal(0);
-      double    indexMaxECrystal(0);
+      double    secondmaxECrystal(-1), thirdmaxECrystal(-1)   , fourthmaxECrystal(-1);
+      double    indexMaxECrystal(0)  , index2ndMaxECrystal(-1), index3rdMaxECrystal(-1);
 
       //first loop to find the most energetic crystalHit
       for (int j=0; j<nCrystalHits; ++j){
@@ -299,88 +311,90 @@ namespace mu2e {
 
       //second loop to find the second most energetic crystalHit
       for (int j=0; j<nCrystalHits; ++j){
-	if (j == indexMaxECrystal) continue;
+	if (j == indexMaxECrystal)              continue;
 	crystalHit = &(*caloClusterHits->at(j));
-	double crystalEnergy= crystalHit->energyDep();
+
+	double crystalEnergy = crystalHit->energyDep();
+
 	if (crystalEnergy > secondmaxECrystal){
-	  secondmaxECrystal =crystalEnergy;
+	  secondmaxECrystal   = crystalEnergy;
+	  index2ndMaxECrystal = j;
 	}
       }
+    
+      for (int j=0; j<nCrystalHits; ++j){
+	if (j == indexMaxECrystal || 
+	    j == index2ndMaxECrystal  )         continue;
+	crystalHit = &(*caloClusterHits->at(j));
+
+	double crystalEnergy = crystalHit->energyDep();
+
+	if (crystalEnergy > thirdmaxECrystal){
+	  thirdmaxECrystal    = crystalEnergy;
+	  index3rdMaxECrystal = j;
+	}
+      }
+    
+      for (int j=0; j<nCrystalHits; ++j){
+	if (j == indexMaxECrystal  || 
+	    j == index2ndMaxECrystal ||
+	    j == index3rdMaxECrystal )          continue;
+	crystalHit = &(*caloClusterHits->at(j));
+
+	double crystalEnergy = crystalHit->energyDep();
+
+	if (crystalEnergy > fourthmaxECrystal){
+	  fourthmaxECrystal    = crystalEnergy;
+	}
+      }       
             
       double   e1Ratio   = maxECrystal/clEnergy;
       double   e2Ratio   = secondmaxECrystal/clEnergy;
+      double   e3Ratio   = thirdmaxECrystal/clEnergy;
+      double   e4Ratio   = fourthmaxECrystal/clEnergy;
       double   e2e1Ratio = secondmaxECrystal/maxECrystal;
 
-      //calculate probability for likelihood 
-      // double  signalEClusterProb    = calculateProb(clEnergy, _signalHist1D[0]);
-      // double  bkgEClusterProb       = calculateProb(clEnergy, _bkgHist1D[0]);
-      // double  logEClusterRatio      = log(signalEClusterProb/bkgEClusterProb);
+      //calculate probability for likelihood       
+      double  clusterSize             = (double) nCrystalHits;
 
-      // double  signalE1Prob          = calculateProb(e1Ratio, _signalHist1D[1]);
-      // double  bkgE1Prob             = calculateProb(e1Ratio, _bkgHist1D[1]);
-      // double  logE1Ratio            = log(signalE1Prob/bkgE1Prob);
-      
-      double  clusterSize = (double) nCrystalHits;
-      
-      double  signalClusterSizeProb = calculateProb(clusterSize, _signalHist1D[clSection][2]);
-      double  bkgClusterSizeProb    = calculateProb(clusterSize , _bkgHist1D[clSection][2]);
-      double  logClusterSizeRatio   = log(signalClusterSizeProb/bkgClusterSizeProb);
-      
-      double  signalRDistProb       = calculateProb(rDist, _signalHist1D[clSection][3]);
-      double  bkgRDistProb          = calculateProb(rDist, _bkgHist1D   [clSection][3]);
-      double  logRDistRatio         = log(signalRDistProb/bkgRDistProb);
+      double  signalEnergyProb        = calculateProb(clEnergy, _signalHist1D[clSection][0]);
+      double  bkgEnergyProb           = calculateProb(clEnergy, _bkgHist1D   [clSection][0]);
+      double  logEnergyRatio          = log(signalEnergyProb/bkgEnergyProb);
 
-      double  signalE2E1Prob        = calculateProb(e2e1Ratio, _signalHist1D[clSection][4]);
-      double  bkgE2E1Prob           = calculateProb(e2e1Ratio, _bkgHist1D   [clSection][4]);
-      double  logE2E1Ratio          = log(signalE2E1Prob/bkgE2E1Prob);
-      
+      double  signalClusterSizeProb   = calculateProb(clusterSize, _signalHist1D[clSection][2]);
+      double  bkgClusterSizeProb      = calculateProb(clusterSize , _bkgHist1D  [clSection][2]);
+      double  logClusterSizeRatio     = log(signalClusterSizeProb/bkgClusterSizeProb);
+ 
+      double  signalRDist2DProb       = calculate2DProb(clEnergy, rDist, _signalCorrHist1D[clSection][0], _minClEnergy, _clEStep);
+      double  bkgRDist2DProb          = calculate2DProb(clEnergy, rDist, _bkgCorrHist1D   [clSection][0], _minClEnergy, _clEStep);
+      double  logRDist2DRatio         = log(signalRDist2DProb/bkgRDist2DProb);
+  
+      double  signalE12DProb          = calculate2DProb(rDist, e1Ratio, _signalCorrHist1D[clSection][1], _minRDist, _rDistStep);
+      double  bkgE12DProb             = calculate2DProb(rDist, e1Ratio, _bkgCorrHist1D   [clSection][1], _minRDist, _rDistStep);
+      double  logE12DRatio            = log(signalE12DProb/bkgE12DProb);
+  
+      double  signalE22DProb          = calculate2DProb(rDist, e2Ratio, _signalCorrHist1D[clSection][2], _minRDist, _rDistStep);
+      double  bkgE22DProb             = calculate2DProb(rDist, e2Ratio, _bkgCorrHist1D   [clSection][2], _minRDist, _rDistStep);
+      double  logE22DRatio            = log(signalE22DProb/bkgE22DProb);
+  
+      double  signalE2E12DProb        = calculate2DProb(rDist, e2e1Ratio, _signalCorrHist1D[clSection][3], _minRDist, _rDistStep);
+      double  bkgE2E12DProb           = calculate2DProb(rDist, e2e1Ratio, _bkgCorrHist1D   [clSection][3], _minRDist, _rDistStep);
+      double  logE2E12DRatio          = log(signalE2E12DProb/bkgE2E12DProb);      
 
-      //Energy versus Radial correlation
-      double  logEClusterRDistRatio(-1e10);
-      for (int j=0; j<kNCorHist; ++j){
-	double   eCl_min = (_minClEnergy + (double)j*_clEStep);
-	double   eCl_max = (_minClEnergy + (double)(j+1)*_clEStep);
-	if ( ( clEnergy >= eCl_min) && ( clEnergy < eCl_max) ){
-	  double signalEClusterRDistProb = calculateProb(rDist,  _signalCorrHist1D[0][j]);
-	  double bkgEClusterRDistProb    = calculateProb(rDist, _bkgCorrHist1D    [0][j]);
-	  logEClusterRDistRatio          = log(signalEClusterRDistProb/bkgEClusterRDistProb);
-	  break;
-	}
-      }
-   
-      //E1 Ratio (Energy_most_energetic_crystalHit / cluster_energy) versus Radial correlation
-      double logE1RDistRatio(-1e10);
-      for (int j=0; j<kNCorHist; ++j){
-	double   rDist_min = (_minRDist + (double)j*_rDistStep);
-	double   rDist_max = (_minRDist + (double)(j+1)*_rDistStep);
-	if ( ( rDist >= rDist_min) && (rDist < rDist_max) ){
-	  double signalE1RDistProb = calculateProb(e1Ratio,  _signalCorrHist1D[1][j]);
-	  double bkgE1RDistProb    = calculateProb(e1Ratio, _bkgCorrHist1D    [1][j]);
-	  logE1RDistRatio          = log(signalE1RDistProb/bkgE1RDistProb);
-	  break;
-	}
-      }
+      double  signalE32DProb          = calculate2DProb(rDist, e3Ratio, _signalCorrHist1D[clSection][4], _minRDist, _rDistStep);
+      double  bkgE32DProb             = calculate2DProb(rDist, e3Ratio, _bkgCorrHist1D   [clSection][4], _minRDist, _rDistStep);
+      double  logE32DRatio            = log(signalE32DProb/bkgE32DProb);
 
-      //Second Highest Crystal Ratio versus Radial
-      double logE2RDistRatio(-1e10);
-      for (int j=0; j<kNCorHist; ++j){
-	double   rDist_min = (_minRDist + (double)j*_rDistStep);
-	double   rDist_max = (_minRDist + (double)(j+1)*_rDistStep);
-	if ( ( rDist >= rDist_min) && (rDist < rDist_max) ){
-	  double signalE2RDistProb = calculateProb(e2Ratio,  _signalCorrHist1D[2][j]);
-	  double bkgE2RDistProb    = calculateProb(e2Ratio, _bkgCorrHist1D    [2][j]);
-	  logE2RDistRatio          = log(signalE2RDistProb/bkgE2RDistProb);
-	  break;
-	}
-      }
+      double  signalE42DProb          = calculate2DProb(rDist, e4Ratio, _signalCorrHist1D[clSection][5], _minRDist, _rDistStep);
+      double  bkgE42DProb             = calculate2DProb(rDist, e4Ratio, _bkgCorrHist1D   [clSection][5], _minRDist, _rDistStep);
+      double  logE42DRatio            = log(signalE42DProb/bkgE42DProb);
 
-      // double lh_1 = logE1Ratio + logEClusterRatio + logClusterSizeRatio + logRDistRatio;
-      // double lh_2 = lh_1 + logE2E1Ratio;
+      double  lhValue = logEnergyRatio + logRDist2DRatio + logE12DRatio + logRDist2DRatio + logClusterSizeRatio;
+      if (nCrystalHits>=2) lhValue += logE22DRatio + logE2E12DRatio;     
+      if (nCrystalHits>=3) lhValue += logE32DRatio;
+      if (nCrystalHits>=4) lhValue += logE42DRatio;
 
-      double lh_4 = logE1RDistRatio  + logE2RDistRatio + logEClusterRDistRatio + logClusterSizeRatio + logRDistRatio;
-      double lh_5 = lh_4 + logE2E1Ratio;
-   
-      if ( lh_5 > _minLH) {
+      if ( lhValue > _minLH) {
 	retval = true;
 	++_nPass;
         // Fill the trigger info object
@@ -404,6 +418,23 @@ namespace mu2e {
     return retval;
   }
  
+  //--------------------------------------------------------------------------------//
+ //--------------------------------------------------------------------------------
+  double   CaloLikelihood::calculate2DProb(double& Ref, double&Variable, TH1F** Template, double MinX, double Step){
+    double     thisprob = 1e-17;
+
+    for (int j=0; j<kNCorHist; ++j){
+      double   ref_min = (MinX + (double)j*Step);
+      double   ref_max = (MinX + (double)(j+1)*Step);
+      if ( ( Ref >= ref_min) && (Ref < ref_max) ){
+	thisprob = calculateProb(Variable,  Template[j]);
+	break;
+      }
+    }
+    
+    return thisprob;
+  }
+
   double CaloLikelihood::calculateProb(double&Variable, TH1* Template){
 
     double     thisprob      = 1;
