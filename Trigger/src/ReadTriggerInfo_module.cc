@@ -57,7 +57,7 @@ namespace mu2e {
   public:
 
     enum {
-      kNTrigInfo     = 10,
+      kNTrigInfo     = 20,
       kNTrackTrig    = 10,
       kNTrackTrigVar = 6,
       kNHelixTrig    = 10,
@@ -70,7 +70,10 @@ namespace mu2e {
 
     struct  trigInfo_ {
       int           counts;
+      int           exclusive_counts;
       std::string   label;
+      
+      trigInfo_ ():counts(0), exclusive_counts(0){}
     };
 
     
@@ -164,8 +167,10 @@ namespace mu2e {
     _hTrigInfo[5]   = trigInfoDir.make<TH1F>("hTrigInfo_caloCalib" , "Calo Calibration rejection"                 , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     _hTrigInfo[6]   = trigInfoDir.make<TH1F>("hTrigInfo_final"     , "Global Trigger rejection of the paths"      , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
 
+    _hTrigInfo[10]  = trigInfoDir.make<TH1F>("hTrigInfo_unique"    , "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
     _h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map for all filters"    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));   
 
     for (int i=0; i<_nCaloTrig; ++i){
       art::TFileDirectory caloInfoDir = tfs->mkdir(Form("caloOnly_%i",i));
@@ -245,6 +250,9 @@ namespace mu2e {
 	_hTrigInfo  [6]->GetXaxis()->SetBinLabel(i+1, _trigFinal[i].label.c_str());
 	_hTrigInfo  [6]->SetBinContent(i+1, _nProcess/_trigFinal[i].counts);
       }
+
+      _hTrigInfo  [10]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
+
     }
 
     //now let's filter the 2D correlation histogram with only those that actually triggered at least one event
@@ -478,6 +486,9 @@ namespace mu2e {
 	_h2DTrigInfo[0]->Fill(trigFlagAll_index.at(i), trigFlagAll_index.at(j));
       }
     }
+    
+    if (trigFlagAll_index.size() == 1) _hTrigInfo[10]->Fill(trigFlagAll_index.at(0));
+
   }
   
   void   ReadTriggerInfo::findTrigIndex(std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index){
