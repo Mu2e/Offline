@@ -78,7 +78,7 @@ CaloFilters : {
     }
  
     
-    CaloLHCE : {
+    CaloLikelihoodCE : {
 	module_type            : CaloLikelihood
 	CaloClusterModuleLabel : CaloClusterFast
 	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root" 
@@ -88,7 +88,7 @@ CaloFilters : {
 	ClusterEnergyStep      : 10.   # MeV          
 	MinClusterRadialDist   : 350.  # mm
 	ClusterRadialDistStep  : 50.   # mm
-	MinLikelihoodCut       : 10.   
+	MinLikelihoodCut       : [ 50., 50.]   
     }
   
 }
@@ -217,7 +217,7 @@ CaloFilters : { @table::CaloFilters
 	CaloCosmicCalib        : { @table::CaloFilters.CaloCosmicCalib        }
 	
 	#select events based on a likelihood discriminator
-	CaloLHCE               : { @table::CaloFilters.CaloLHCE               }
+	CaloLikelihoodCE       : { @table::CaloFilters.CaloLikelihoodCE       }
 	
     }
 
@@ -229,7 +229,7 @@ CaloFilters : { @table::CaloFilters
 	
 	caloCosmicMuon   : [ caloCosmicMuonEventPrescale, CaloCDCountFilter, CaloClusterFast, CaloCosmicCalib, caloCosmicMuonPrescale] 
 
-	caloLHCE         : [ caloLHCEEventPrescale, CaloCDCountFilter, CaloClusterFast, CaloLHCE, caloLHCEPrescale] 
+	caloLHCE         : [ caloLHCEEventPrescale, CaloCDCountFilter, CaloClusterFast, CaloLikelihoodCE, caloLHCEPrescale] 
 
     }
 }
