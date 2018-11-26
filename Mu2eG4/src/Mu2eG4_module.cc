@@ -476,6 +476,8 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // Mu2e specific customizations that must be done after the call to Initialize.
     postG4InitializeTasks(pset_,physicsList_);
 
+    _runManager->PhysicsHasBeenModified();
+
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
