@@ -1,6 +1,7 @@
 import re
 import sys
 import string
+import os
 from shutil import copyfile
 
 from argparse import ArgumentParser
@@ -40,7 +41,7 @@ trig_paths = [
 
 #print fh.readline()
 new_file   = args.outputfilename
-input_file = 'main.fcl'
+input_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/main.fcl'
 copyfile(input_file, new_file)
 
 new_file = open(new_file,"a")
