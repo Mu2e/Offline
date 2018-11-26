@@ -19,6 +19,7 @@ mu2eg4DefaultPhysics: {
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
+    setMuHadLateralDisplacement: false // improves accuracy of boundary crossing for muons and hadrons
     modifyEMOption4: false // to set 115 MeV transition energy for the msc models when using _EMZ
     modifyEMOption0: false // to set 115 MeV transition energy for the msc models with "opt0"
     addProcesses: []
