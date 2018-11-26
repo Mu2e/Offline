@@ -64,7 +64,11 @@ namespace mu2e {
 
     art::RandomNumberGenerator::base_engine_t& eng_;
     CLHEP::RandGeneral randSpectrum_;
-    RandomUnitSphere randomUnitSphere_;
+    double             czmin_;
+    double             czmax_;
+    double             phimin_;
+    double             phimax_;
+    RandomUnitSphere   randomUnitSphere_;
 
     RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
 
@@ -88,7 +92,12 @@ namespace mu2e {
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
-    , randomUnitSphere_(eng_)
+    , czmin_           (pset.get<double>("czmin" , -1.0))
+    , czmax_           (pset.get<double>("czmax" ,  1.0))
+    , phimin_          (pset.get<double>("phimin",  0. ))
+    , phimax_          (pset.get<double>("phimax", CLHEP::twopi ))
+    , randomUnitSphere_(eng_, czmin_,czmax_,phimin_,phimax_)
+      //    , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
   {

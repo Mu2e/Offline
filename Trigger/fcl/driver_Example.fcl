@@ -139,7 +139,11 @@ physics:
 	
 	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
 	    nFilters      : 25
-	    SelecEvents   : [ unbiased_path, calo_only_path, tpr_dem_path, tpr_dep_path, cpr_dem_path, cpr_dep_path ]
+	    SelecEvents   : [ unbiased_path, 
+			      minimumbiasSdCount_path,
+			      largeSdCount_path,
+			      caloOnly_path,
+			      tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
 	}
 	
     }
@@ -148,26 +152,28 @@ physics:
 #    prod_sequence : [ makeSD, CaloDigiFromShower ]
     
     #unbiased trigger path
-    unbiased_path  : [ @sequence::paths.unbiased                                     ]
+    unbiased_path                : [ @sequence::paths.unbiased                       ]
+    
+    #minimum bias filters
+    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount             ]
+
+    #path for selecting events with large ammount of strawDigis
+    largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
     
     #path for the calorimeter only trigger
-    calo_only_path : [ CaloDigiFromShower, @sequence::paths.calo_only                ]
+    calo_only_path               : [ CaloDigiFromShower, @sequence::paths.caloOnly   ]
 
     #paths for TrkPatRec downstream e- and e+
-    tpr_dem_path   : [ makeSD,  @sequence::paths.TPRDeMSeedFilter                    ]
-    tpr_dep_path   : [ makeSD,  @sequence::paths.TPRDePSeedFilter                    ]
+    tpr_dem_path   : [ makeSD,  @sequence::paths.tprDeMSeed                          ]
+    tpr_dep_path   : [ makeSD,  @sequence::paths.tprDePSeed                          ]
 
     #paths for CalPatRec downstream e- and e+
-    cpr_dem_path   : [ makeSD, CaloDigiFromShower, @sequence::paths.CPRDeMSeedFilter ]
-    cpr_dep_path   : [ makeSD, CaloDigiFromShower, @sequence::paths.CPRDePSeedFilter ]
+    cpr_dem_path   : [ makeSD, CaloDigiFromShower, @sequence::paths.cprDeMSeed       ]
+    cpr_dep_path   : [ makeSD, CaloDigiFromShower, @sequence::paths.cprDePSeed       ]
     
     
 
-    e2: [ ReadTriggerInfo, 
-	  rootoutUnbiased, 
-	  rootoutCaloUnly, 
-	  rootoutTrkDem  , 
-	  rootoutTrkDep   ]
+    e2: [ ReadTriggerInfo ]
 
     end_paths: [ e2 ]
 
