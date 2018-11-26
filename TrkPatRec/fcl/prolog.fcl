@@ -302,6 +302,28 @@ KFFUpiP.SeedCollection     : "KSFUpiP"
 KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 
+
+MHFinalFitDeM                : @local::KFF
+MHFinalFitDeM.SeedCollection : MHSeedFitDem
+MHFinalFitDeM.fitparticle	: @local::Particle.eminus
+MHFinalFitDeM.fitdirection	: @local::FitDir.downstream 
+
+
+MHFinalFitDeP                :  @local::KFF
+MHFinalFitDeP.SeedCollection : MHSeedFitDep
+MHFinalFitDeP.fitparticle	      : @local::Particle.eplus
+MHFinalFitDeP.fitdirection	      : @local::FitDir.downstream 
+
+MHFinalFitDmuM               : @local::KFF
+MHFinalFitDmuMSeedCollection : MHSeedFitDmm
+MHFinalFitDmuM.fitparticle	      : @local::Particle.muminus
+MHFinalFitDmuM.fitdirection	      : @local::FitDir.downstream 
+#
+MHFinalFitDmuP                :  @local::KFF
+MHFinalFitDmuP.SeedCollection : MHSeedFitDmp
+MHFinalFitDmuP.fitparticle	 : @local::Particle.muplus
+MHFinalFitDmuP.fitdirection	 : @local::FitDir.downstream 
+
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
 Tracking : {
@@ -338,6 +360,20 @@ Tracking : {
     KFFUpiM	  : @local::KFFUpiM
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
+    KFFUeM	  : @local::KFFUeM
+    KFFDeP	  : @local::KFFDeP
+    KFFUeP	  : @local::KFFUeP
+    KFFDmuM	  : @local::KFFDmuM
+    KFFUmuM	  : @local::KFFUmuM
+    KFFDmuP	  : @local::KFFDmuP
+    KFFUmuP	  : @local::KFFUmuP
+  
+# configuration for using the sequence with MergeHelix
+    MHFinalFitDeM	  : @local::MHFinalFitDeM
+    MHFinalFitDeP	  : @local::MHFinalFitDeP
+    MHFinalFitDmuM        : @local::MHFinalFitDmuM
+    MHFinalFitDmuP	  : @local::MHFinalFitDmuP
+    
   }
 
 # production sequence to find helices

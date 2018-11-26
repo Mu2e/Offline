@@ -65,6 +65,18 @@ CaloFilters : {
 	downscale500factor	       : 1
 	step                       : 10
     }  
+    
+    
+#skelethon for a cosmic muon calibration
+    CaloCosmicCalib : {
+	module_type            : CaloCosmicCalib
+	CaloClusterCollection  : "CaloClusterFast"
+	debugLevel             : 0
+	MinNCrystalHits        : 7
+	MinEnergy              : 150.0    #MeV
+	MaxEnergy              : 600.0    #MeV
+    }
+   
 }
 
 CaloFilters : { @table::CaloFilters
@@ -115,29 +127,41 @@ CaloFilters : { @table::CaloFilters
 	#set the prescaler for each trigger path: we want a event-based prescaler and also a prescaler
 	#on the good events.
 	#TODO: add also a path for the selection of failed events
-	CaloOnlyEventPrescale : {
+	caloOnlyEventPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::CaloOnly_evt_sf
+	    nPrescale         : @local::caloOnly_evt_sf
 	}
 	
-	CaloOnlyPrescale : {
+	caloOnlyPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::CaloOnly_sf
+	    nPrescale         : @local::caloOnly_sf
 	    useFilteredEvents : true
 	}
 	
-	CaloMixedEventPrescale : {
+	caloMixedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-#	    nPrescale         : @local::CaloMixed_evt_sf
+#	    nPrescale         : @local::caloMixed_evt_sf
 	}
 	
-	CaloMixedPrescale : {
+	caloMixedPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-#	    nPrescale         : @local::CaloMixed_sf
+#	    nPrescale         : @local::caloMixed_sf
 	    useFilteredEvents : true
 	}
+	
+	caloCosmicMuonEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::caloCosmicMuon_evt_sf
+	}
+	
+	caloCosmicMuonPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::caloCosmicMuon_sf
+	    useFilteredEvents : true
+	}
+
 	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
 	EcalTriggerPreselect   : { @table::CaloFilters.EcalTriggerPreselect   }
@@ -148,13 +172,19 @@ CaloFilters : { @table::CaloFilters
 	FilterEcalMVATrigger   : { @table::CaloFilters.FilterEcalMVATrigger   }
 	
 	FilterEcalMixedTrigger : { @table::CaloFilters.FilterEcalMixedTrigger }
+	
+	
+	#dummy filter for cosmic muon calibration
+	CaloCosmicCalib        : { @table::CaloFilters.CaloCosmicCalib        }
     }
 
     sequences   : {
 	
-	calo_only  : [ CaloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, CaloOnlyPrescale ]
+	caloOnly         : [ caloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, caloOnlyPrescale ]
 	
-	calo_mixed : [ CaloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, CaloMixedPrescale ] 
+	caloMixed        : [ caloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, caloMixedPrescale ] 
+	
+	caloCosmicMuon   : [ caloCosmicMuonEventPrescale, CaloClusterFast, CaloCosmicCalib, caloCosmicMuonPrescale] 
 
     }
 }

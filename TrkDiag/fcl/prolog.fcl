@@ -204,10 +204,12 @@ BEGIN_PROLOG
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers
+
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight
-	inputModule: compressDigiMCs
+	weightingScheme : pol58
+	inputModule : compressDigiMCs
 	verbosityLevel: 1
       }
       # converts ProtonBunchIntensity object to EventWeight object

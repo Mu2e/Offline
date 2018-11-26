@@ -43,7 +43,7 @@ namespace mu2e
     _minnhits(pset.get<unsigned>("MinNHits",11)),
     _mintime(pset.get<double>("MinTime",500.0)),
     _maxtime(pset.get<double>("MaxTime",1695.0)) ,
-    _debug(pset.get<int>("debugLevel",1)),
+    _debug(pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
