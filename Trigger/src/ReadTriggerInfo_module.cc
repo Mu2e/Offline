@@ -167,9 +167,10 @@ namespace mu2e {
     _hTrigInfo[5]   = trigInfoDir.make<TH1F>("hTrigInfo_caloCalib" , "Calo Calibration rejection"                 , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     _hTrigInfo[6]   = trigInfoDir.make<TH1F>("hTrigInfo_final"     , "Global Trigger rejection of the paths"      , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
 
-    _hTrigInfo[10]  = trigInfoDir.make<TH1F>("hTrigInfo_unique"    , "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[10]  = trigInfoDir.make<TH1F>("hTrigInfo_unique_all", "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[11]  = trigInfoDir.make<TH1F>("hTrigInfo_unique"    , "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
 
-    _h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map for all filters"    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map from all filters"   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     _h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));   
 
     for (int i=0; i<_nCaloTrig; ++i){
@@ -217,17 +218,17 @@ namespace mu2e {
 
   void ReadTriggerInfo::endJob(){
 
+    int    indexTrigInfo11(0);
+
     //fill the histograms
     for (size_t i=0; i<_trigAll.size(); ++i ){
       _hTrigInfo  [0]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
       _h2DTrigInfo[0]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
-      //      _h2DTrigInfo[1]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
+
       if (_trigAll[i].counts > 0) {
 	_hTrigInfo[0]->SetBinContent(i+1, _nProcess/_trigAll[i].counts);
 	for (size_t j=0; j<_trigAll.size(); ++j ){
 	  _h2DTrigInfo[0]->GetYaxis()->SetBinLabel(j+1, _trigAll[j].label.c_str());
-	  //	  _h2DTrigInfo[1]->GetYaxis()->SetBinLabel(j+1, _trigAll[j].label.c_str());
-	  // if (_trigAll[j].counts > 0) _h2DTrigInfo[0]->SetBinContent(i+1, j+1, _trigAll[j].counts);
 	}
       }
 
@@ -251,7 +252,14 @@ namespace mu2e {
 	_hTrigInfo  [6]->SetBinContent(i+1, _nProcess/_trigFinal[i].counts);
       }
 
+      //fill  the histograms that shows how many events were found exclusively by each trigger path
       _hTrigInfo  [10]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
+      double    content_trigInfo11 = _hTrigInfo [10]->GetBinContent(i+1);
+      if (content_trigInfo11>0){
+	_hTrigInfo  [11]->GetXaxis()->SetBinLabel(indexTrigInfo11 +1, _trigAll[i].label.c_str());
+	_hTrigInfo  [11]->SetBinContent(indexTrigInfo11 +1, content_trigInfo11);
+	++indexTrigInfo11;
+      }
 
     }
 
@@ -296,9 +304,6 @@ namespace mu2e {
       }
       ++index_x;
     }
-    
-
-    
     
     // now evaluate the bandwidth
     // NOTE: "evalTriggerrate" re-order the vectors _trigFinal
