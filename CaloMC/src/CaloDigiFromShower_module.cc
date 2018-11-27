@@ -14,7 +14,7 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
-#include "CaloMC/src/CaloPulseShape.cc"
+#include "CaloMC/inc/CaloPulseShape.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
