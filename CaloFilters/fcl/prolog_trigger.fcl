@@ -88,7 +88,7 @@ CaloFilters : {
 	ClusterEnergyStep      : 10.   # MeV          
 	MinClusterRadialDist   : 350.  # mm
 	ClusterRadialDistStep  : 50.   # mm
-	MinLikelihoodCut       : [ 50., 50.]   
+	MinLikelihoodCut       : [ 41.44, 10.36]   
     }
   
 }
