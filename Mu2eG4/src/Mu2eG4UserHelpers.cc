@@ -12,6 +12,7 @@
 
 // c++ includes
 #include <algorithm>
+#include <limits>
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -22,6 +23,7 @@
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/UserTrackInformation.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
+#include "GeneralUtilities/inc/sqrtOrThrow.hh"
 
 // G4 includes
 
@@ -64,9 +66,27 @@ namespace mu2e {
 
     }
 
-    //Retrieve kinetic energy at the beginnig of the last step from UserTrackInfo
-    double getPreLastStepKE(G4Track const* const trk) {
-      return trk->GetStep()->GetPreStepPoint()->GetKineticEnergy();
+    // kinetic energy at the point of annihilation
+    double getLastKE(G4Track const* const trk) {
+      auto const* uti = dynamic_cast<UserTrackInformation*>(trk->GetUserInformation());
+      return uti->GetKineticEnergy();
+    }
+
+    // momentum at the point of annihilation
+    CLHEP::HepLorentzVector getLastMomentum(G4Track const* const trk) {
+      auto const* const uti = dynamic_cast<UserTrackInformation*>(trk->GetUserInformation());
+      auto const& pdir = uti->GetMomentumDirection();
+      double ke = uti->GetKineticEnergy();
+      double mass = trk->GetParticleDefinition()->GetPDGMass();
+      double e=0,p=0;
+      if(mass > std::numeric_limits<double>::epsilon() ) {
+	e = ke + mass;
+	p = sqrtOrThrow<double>(e*e-mass*mass,std::numeric_limits<double>::epsilon());
+      } else {
+	e = ke;
+	p = ke;
+      }
+      return CLHEP::HepLorentzVector(p*pdir,e);
     }
 
     // Get the number of G4 steps the track is made of
