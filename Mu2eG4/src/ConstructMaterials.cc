@@ -461,7 +461,7 @@ namespace mu2e {
     // Bronze C93800  from https://alloys.copper.org/alloy/C93800
     mat = uniqueMaterialOrThrow( "BronzeC938" );
     {
-      G4Material* BronzeC938 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 3);
+      G4Material* BronzeC938 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 6);
       BronzeC938->AddMaterial(findMaterialOrThrow("G4_Cu"),0.76);
       BronzeC938->AddMaterial(findMaterialOrThrow("G4_Pb"),0.145);
       BronzeC938->AddMaterial(findMaterialOrThrow("G4_Sn"),0.069);
