@@ -253,7 +253,7 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _systemElapsed(0.),
     _userElapsed(0.),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-    _masterThreadIndex(_use_G4MT ? _nThreads+1 : 0),
+    _masterThreadIndex(_use_G4MT ? _nThreads : 0),
     _StashForEventData(pSet),
     stashInstanceToStore(-1)
     {
