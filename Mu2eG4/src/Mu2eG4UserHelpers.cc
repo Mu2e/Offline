@@ -67,13 +67,13 @@ namespace mu2e {
     }
 
     // kinetic energy at the point of annihilation
-    double getLastKE(G4Track const* const trk) {
+    double getEndKE(G4Track const* const trk) {
       auto const* uti = dynamic_cast<UserTrackInformation*>(trk->GetUserInformation());
       return uti->GetKineticEnergy();
     }
 
     // momentum at the point of annihilation
-    CLHEP::HepLorentzVector getLastMomentum(G4Track const* const trk) {
+    CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk) {
       auto const* const uti = dynamic_cast<UserTrackInformation*>(trk->GetUserInformation());
       auto const& pdir = uti->GetMomentumDirection();
       double ke = uti->GetKineticEnergy();

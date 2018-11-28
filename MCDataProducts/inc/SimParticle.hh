@@ -116,7 +116,7 @@ namespace mu2e {
                      unsigned                aendVolumeIndex,
                      unsigned                aendG4Status,
                      ProcessCode             astoppingCode,
-                     double                  preLastStepKE,
+                     float                   endKE,
                      int                     nSteps){
       _endDefined      = true;
       _endPosition     = aendPosition;
@@ -126,7 +126,8 @@ namespace mu2e {
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
       _stoppingCode    = astoppingCode;
-      _preLastStepKE   = preLastStepKE;
+      _preLastStepKE   = 0.0;      
+      _endKE           = endKE;
       _nSteps          = nSteps;
     }
 
@@ -191,6 +192,7 @@ namespace mu2e {
     unsigned     endG4Status()    const { return _endG4Status;   }
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
     double       preLastStepKineticEnergy() const { return _preLastStepKE; }
+    float        endKineticEnergy() const { return _endKE; }
     int          nSteps()  const { return _nSteps;        }
 
     // SimParticle daughters of this track.
@@ -259,6 +261,7 @@ namespace mu2e {
     unsigned                _endG4Status;
     ProcessCode             _stoppingCode;
     double                  _preLastStepKE;
+    float                   _endKE;
     int                     _nSteps;
 
     // SimParticle IDs of daughters of this track.

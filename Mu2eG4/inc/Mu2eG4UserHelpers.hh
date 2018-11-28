@@ -56,8 +56,8 @@ namespace mu2e {
     ProcessCode findCreationCode(G4Track const* const trk);
 
     // kinematics at the point of annihilation
-    double getLastKE(G4Track const* const trk);
-    CLHEP::HepLorentzVector getLastMomentum(G4Track const* const trk);
+    double getEndKE(G4Track const* const trk);
+    CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk);
 
     int  getNSteps(G4Track const* const trk);  
 
