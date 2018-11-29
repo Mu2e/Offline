@@ -53,25 +53,6 @@ physics : {
          physics           : @local::mu2eg4DefaultPhysics
          ResourceLimits    : @local::mu2eg4DefaultResourceLimits
          TrajectoryControl : @local::mu2eg4NoTrajectories
- debug: {
-    stepLimitKillerVerbose: true
-    printPhysicsProcessSummary : false
-    PiENuPolicyVerbosity : 0
-    printTrackTiming: false
-    worldVerbosityLevel : 0
-    printElements : false
-    printMaterials : false
-    exportPDTStart : false
-    exportPDTEnd : false
-    fillDiagnosticHistograms: false
-    warnEveryNewRun : false
-    diagLevel : 2
-    trackingVerbosityLevel : 2
-    steppingVerbosityLevel : 2
-    checkFieldMap : 0
-    writeGDML : false
-    GDMLFileName : "mu2e.gdml"
-}
          debug             : @local::mu2eg4DefaultDebug
          visualization     : @local::mu2eg4NoVisualization
 
