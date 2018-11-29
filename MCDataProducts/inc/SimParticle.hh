@@ -65,6 +65,7 @@ namespace mu2e {
       _endG4Status(),
       _stoppingCode(),
       _preLastStepKE(-1),
+      _endKE(-1),
       _nSteps(0),
       _daughterSims(),
       _endDefined(false){
@@ -102,6 +103,7 @@ namespace mu2e {
       _endG4Status(),
       _stoppingCode(),
       _preLastStepKE(-1),
+      _endKE(-1),
       _nSteps(0),
       _daughterSims(),
       _endDefined(false)
@@ -126,7 +128,7 @@ namespace mu2e {
       _endVolumeIndex  = aendVolumeIndex;
       _endG4Status     = aendG4Status;
       _stoppingCode    = astoppingCode;
-      _preLastStepKE   = 0.0;      
+      _preLastStepKE   = -1.0;      
       _endKE           = endKE;
       _nSteps          = nSteps;
     }
