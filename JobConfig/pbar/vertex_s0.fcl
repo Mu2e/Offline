@@ -91,16 +91,7 @@ physics : {
          volumesInput   : "g4run"
          hitInputs      : []
          particleInputs : [ "g4run" ]
-      }
-
-      pbarWrite : {
-         module_type          : PrimaryAntiProtonGun
-	 verbosityLevel: 2
-	 pLowFlat: 0.
-	 pHighFlat: 9000.
-  	 doHistograms: true
-	 }
-      
+      }    
  
  
    }
