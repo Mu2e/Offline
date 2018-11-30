@@ -1,13 +1,16 @@
 #ifndef DbExample_DetData2Maker_hh
 #define DbExample_DetData2Maker_hh
+
+// make time dependant - detector data 2
+// with dependence on one db table
+// this file and cc will be in the detector code area
+
+
 #include <vector>
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "DbExample/inc/DetData2.hh"
 #include "DbTables/inc/TstCalib1.hh"
 #include "DbTables/inc/TstCalib2.hh"
-
-// make time dependant - detector data 2
-// with dependence on one db table
 
 namespace mu2e {
 

@@ -4,7 +4,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DbTables/inc/DbUtil.hh"
 #include "DbTables/inc/DbIoV.hh"
 #include "DbTables/inc/DbTableFactory.hh"

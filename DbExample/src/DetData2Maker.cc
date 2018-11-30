@@ -15,12 +15,12 @@ namespace mu2e {
     return std::make_shared<DetData2>(aa);
   }
   
-  DetData2::ptr_t DetData2Maker::fromDb(TstCalib1 const& c1, 
-					TstCalib2 const& c2) {
+  DetData2::ptr_t DetData2Maker::fromDb(TstCalib1 const& t1, 
+					TstCalib2 const& t2) {
     std::array<double,3> aa;
     for(int channel=0; channel<3; channel++) {
-      aa[channel] += c1.row(channel).dToE();
-      if(c2.row(channel).status()!="OK") aa[channel] = -1.0;
+      aa[channel] += t1.row(channel).dToE();
+      if(t2.row(channel).status()!="OK") aa[channel] = -1.0;
     }
     return std::make_shared<DetData2>(aa);
   }

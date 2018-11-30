@@ -3,6 +3,7 @@
 
 // time dependant detector data 1
 // with dependence one db table
+// this code is in an object directory, last in link order
 
 #include <string>
 #include <memory>

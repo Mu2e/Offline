@@ -4,7 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <iterator>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DbService/inc/DbTool.hh"
 #include "DbTables/inc/DbTableFactory.hh"
 

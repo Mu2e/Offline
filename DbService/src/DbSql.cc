@@ -3,7 +3,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DbService/inc/DbSql.hh"
 #include "DbTables/inc/DbUtil.hh"
 

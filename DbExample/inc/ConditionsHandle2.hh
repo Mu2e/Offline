@@ -16,29 +16,34 @@ namespace mu2e {
   {
   public:
     ConditionsHandle2() {
-      art::ServiceHandle<ConditionsService2> sg;
-      ENTITY e;
-      _cptr = sg->getCache(e.name());
     }
     ~ConditionsHandle2() { }
 
     ENTITY const& get(art::EventID const& eid) { 
+
+      if(!_cptr) {
+	ENTITY e;
+	art::ServiceHandle<ConditionsService2> sg;
+	_cptr = sg->getCache(e.name());
+      }
+
       uint32_t r = eid.run();
       uint32_t s = eid.subRun();
-      if(!iov.inInterval(r,s)) {
+      if(!_iov.inInterval(r,s)) {
 	ConditionsEntity2::ptr bptr;
-	std::tie(bptr,iov) = _cptr->update(eid);
+	std::tie(bptr,_iov) = _cptr->update(eid);
 	ptr = std::dynamic_pointer_cast
 	  <const ENTITY,const ConditionsEntity2>(bptr);
       }
       return *ptr; 
-
     }
+
+    DbIoV const& iov() const { return _iov;}
 
   private:
     ConditionsCache::ptr _cptr;
     std::shared_ptr<const ENTITY> ptr;
-    DbIoV iov;
+    DbIoV _iov;
   };
 }
 

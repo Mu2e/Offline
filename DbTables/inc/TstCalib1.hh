@@ -6,7 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include <map>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DbTables/inc/DbTable.hh"
 
 namespace mu2e {

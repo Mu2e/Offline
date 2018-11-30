@@ -1,7 +1,7 @@
 #include <iostream>
 #include "DbTables/inc/DbTable.hh"
 #include "DbTables/inc/DbUtil.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include <boost/algorithm/string/split.hpp>
 
 int mu2e::DbTable::fill(const std::string& csv, bool saveCsv) {

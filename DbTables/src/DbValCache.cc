@@ -1,6 +1,6 @@
 #include <iostream>
 #include <algorithm>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DbTables/inc/DbValCache.hh"
 
 mu2e::DbTable const& mu2e::DbValCache::asTable(std::string const& tableName) const {

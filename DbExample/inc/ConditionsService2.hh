@@ -48,7 +48,7 @@ namespace mu2e {
     ConditionsCache::ptr getCache(std::string name) { 
       return _caches[name];
     }
-    //void postBeginJob() {}
+    void postBeginJob();
 
   private:
 

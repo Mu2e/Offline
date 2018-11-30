@@ -1,5 +1,5 @@
 #include <iostream>
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "DbTables/inc/DbId.hh"
 
 void mu2e::DbId::setDb(std::string const& name) {

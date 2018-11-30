@@ -16,6 +16,7 @@
 #include "DbExample/inc/ConditionsHandle2.hh"
 #include "DbExample/inc/DetData1.hh"
 #include "DbExample/inc/DetData2.hh"
+#include "DbExample/inc/DetData3.hh"
 
 namespace mu2e {
 
@@ -34,6 +35,7 @@ namespace mu2e {
   private:
     ConditionsHandle2<DetData1> _detData1_h;
     ConditionsHandle2<DetData2> _detData2_h;
+    ConditionsHandle2<DetData3> _detData3_h;
   };
 
 //-----------------------------------------------------------------------------
@@ -52,6 +54,7 @@ namespace mu2e {
 
     auto const& d1 = _detData1_h.get(event.id());
     auto const& d2 = _detData2_h.get(event.id());
+    auto const& d3 = _detData3_h.get(event.id());
     
     std::cout 
       << "r/s/e"  << std::setw(5) << event.run()
@@ -65,7 +68,13 @@ namespace mu2e {
 	<< std::setw(6) << std::setprecision(2) 
 	<< x;
     }
-      std::cout << std::endl;
+    std::cout  << "   data3: " ;
+    for(auto x : d3.getData()) {
+      std::cout 
+	<< std::setw(6) << std::setprecision(2) 
+	<< x;
+    }
+    std::cout << std::endl;
 
   };
 };

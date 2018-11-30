@@ -5,7 +5,7 @@
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "DbService/inc/DbService.hh"
 #include "DbTables/inc/DbLiveTable.hh"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace mu2e {
   template <typename T>  class DbHandle {

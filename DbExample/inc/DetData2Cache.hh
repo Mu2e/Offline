@@ -13,7 +13,7 @@ namespace mu2e {
     std::string const& name() const { return _name; }
 
     ConditionsCache::ret_t update(art::EventID const& eid) {
-
+      
       // lock access to the data, will release when this method returns
       LockGuard lock(*this);
 
@@ -22,17 +22,18 @@ namespace mu2e {
       auto iov = _c1_h.iov();
       auto const& iov2 = _c2_h.iov();
       iov.overlap(iov2);
-      ConditionsCache::set_t s;
+      ConditionsEntity2::set_t s;
       s.insert(_c1_h.cid());
       s.insert(_c2_h.cid());
       auto p = find(s);
       if(!p) {
-	p = _maker.fromDb(c1,c2);
 	std::cout<< "making new DetData2 " << std::endl;
+	p = _maker.fromDb(c1,c2);
+	p->addCids(s);
+	push(p);
       } else {
 	std::cout<< "found DetData2 " << std::endl;
       }
-      push(p,s);
       return std::make_tuple(p,iov);
     }
 

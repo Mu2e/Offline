@@ -19,16 +19,17 @@ namespace mu2e {
 
       auto const& c1 = _c1_h.get(eid);
       auto iov = _c1_h.iov();
-      ConditionsCache::set_t s;
+      ConditionsEntity2::set_t s;
       s.insert(_c1_h.cid());
       auto p = find(s);
       if(!p) {
-	p = _maker.fromDb(c1);
 	std::cout<< "making new DetData1 " << std::endl;
+	p = _maker.fromDb(c1);
+	p->addCids(s);
+	push(p);
       } else {
 	std::cout<< "found DetData1 " << std::endl;
       }
-      push(p,s);
       return std::make_tuple(p,iov);
     }
 
