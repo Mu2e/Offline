@@ -9,4 +9,3 @@
   - move loading CRV phtoton tables to constructor to avoid double-loading in multi-run jobs
 1) brownd 2 Octover 2018
   - add scripts for DS-cosmic-mix
-

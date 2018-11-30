@@ -36,7 +36,7 @@
 //----------------------------------------------------------------------------
 //
 
-#include "DecayMuonsWithSpin.hh"
+#include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "fhiclcpp/ParameterSet.h"

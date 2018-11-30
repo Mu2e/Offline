@@ -137,6 +137,9 @@ namespace mu2e {
         bool  _exportPDTStart;
         bool  _exportPDTEnd;
 
+        // to be able to make StorePhysicsTable call after the event loop started
+        G4VUserPhysicsList* physicsList_;
+        std::string storePhysicsTablesDir_;
 
         ActionInitialization const * _actionInit;
 
@@ -195,6 +198,12 @@ namespace mu2e {
         G4ThreeVector originInWorld;
 
         std::vector< SensitiveDetectorHelper > SensitiveDetectorHelpers;
+
+        // In sequential mode, there is one SensitiveDetetorHelper object and it is
+        // at index 0; in MT mode the SensitiveDetectorHelper object for the master
+        // thread is at index _nThreads.
+        size_t _masterThreadIndex;
+
         EventStash _StashForEventData;
         int stashInstanceToStore;
 
@@ -217,6 +226,8 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
     _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
+
+    storePhysicsTablesDir_(pSet.get<std::string>("debug.storePhysicsTablesDir","")),
 
     stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
     steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
@@ -247,6 +258,7 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _systemElapsed(0.),
     _userElapsed(0.),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
+    _masterThreadIndex(_use_G4MT ? _nThreads : 0),
     _StashForEventData(pSet),
     stashInstanceToStore(-1)
     {
@@ -263,18 +275,22 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
             << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
     }
 
-    //we need one SDHelper for each Worker thread, plus one extra for the Master
+    //In sequential mode, we need 1 SDHelper and it lives at index 0.
+    //
+    //In MT, mode we need one SDHelper for each Worker thread, plus one extra for the Master
     //in the ActionInitialization, each worker thread is given one of these SDHs to hold its SD-related data
     //the "0th" worker thread gets the "0th" element of the vector, etc
     //we give the "_nThreads" element to the Master thread through Mu2eG4World to setup the InstanceMap in the ctor of the SDH class
     //we need only one of these SDHs to declare to art the list of products that will be produced
-    SensitiveDetectorHelpers.reserve(_nThreads+1);
+    int nSDHelpersNeeded = ( _use_G4MT ) ? _nThreads+1 : 1;
+    SensitiveDetectorHelpers.reserve(nSDHelpersNeeded);
 
-    for (int i = 0; i <= _nThreads; i++) {
-        SensitiveDetectorHelpers.emplace_back(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet()));
+    auto sd_pSet = pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet());;
+    for (int i = 0; i != nSDHelpersNeeded; ++i) {
+      SensitiveDetectorHelpers.emplace_back(sd_pSet);
     }
 
-    SensitiveDetectorHelpers[0].declareProducts(this);
+    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(this);
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -400,12 +416,12 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     //as mentioned above, we give the last element to the Master thread to setup the InstanceMap in the ctor of the SDH class
     if (standardMu2eDetector_) {
         allMu2e =
-            (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers[_nThreads])  ),
+          (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex))  ),
                                        std::make_unique<ConstructMaterials>(pset_)) );
     }
     else {
         allMu2e =
-            (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers[_nThreads]) ),
+        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex)) ),
                                             std::make_unique<ConstructMaterials>(pset_)) );
     }
 
@@ -421,14 +437,14 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     _runManager->SetUserInitialization(allMu2e);
 
-    G4VUserPhysicsList* pL = physicsListDecider(pset_);
-    pL->SetVerboseLevel(_rmvlevel);
+    physicsList_ = physicsListDecider(pset_);
+    physicsList_->SetVerboseLevel(_rmvlevel);
 
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(_rmvlevel);
 
     G4HadronicProcessStore::Instance()->SetVerbose(_rmvlevel);
 
-    _runManager->SetUserInitialization(pL);
+    _runManager->SetUserInitialization(physicsList_);
 
 
     //this is where the UserActions are instantiated
@@ -469,7 +485,9 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // that is derived from the G4 geometry or physics processes.
 
     // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(pset_,pL);
+    postG4InitializeTasks(pset_,physicsList_);
+
+    _runManager->PhysicsHasBeenModified();
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
@@ -597,7 +615,7 @@ void Mu2eG4::produce(art::Event& event) {
             event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
         }
         
-        if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
+        if(SensitiveDetectorHelpers[_masterThreadIndex].extMonPixelsEnabled()) {
             event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
         }
     }//sequential
@@ -736,6 +754,15 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
 // Do the "end of run" parts of DoEventLoop and BeamOn.
 void Mu2eG4::BeamOnEndRun(){
 
+    if (storePhysicsTablesDir_!="") {
+      if ( _rmvlevel > 0 ) {
+        G4cout << __func__ << " Will write out physics tables to "
+               << storePhysicsTablesDir_
+               << G4endl;
+      }
+      physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+    }
+
     if (_use_G4MT)//MT mode
     {
         dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4RunTermination();
@@ -832,8 +859,8 @@ void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGett
         evt.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
     }
     
-    
-    if(SensitiveDetectorHelpers[0].extMonPixelsEnabled()) {
+    // Fixme: does this work in MT mode?  If not, does it need to?
+    if(SensitiveDetectorHelpers.at(_masterThreadIndex).extMonPixelsEnabled()) {
         std::unique_ptr<ExtMonFNALSimHitCollection> tempExtMonHits = std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore));
         
         for ( ExtMonFNALSimHitCollection::iterator i=tempExtMonHits->begin(); i!=tempExtMonHits->end(); ++i ){

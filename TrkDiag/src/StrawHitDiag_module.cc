@@ -66,6 +66,7 @@ namespace mu2e
       Float_t _shlen, _slen;
       Float_t _edep;
       Float_t _time[2], _tot[2];
+      Float_t _correcttime, _ctime, _dtime, _ptime;
       Float_t _rho;
       Int_t _mcnsteps;
       Int_t _mcpdg,_mcgen,_mcproc, _mcid;
@@ -163,6 +164,10 @@ namespace mu2e
     _shdiag->Branch("slen",&_slen,"slen/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"tcal/F:thv/F");
+    _shdiag->Branch("ctime",&_ctime,"ctime/F");
+    _shdiag->Branch("dtime",&_dtime,"dtime/F");
+    _shdiag->Branch("ptime",&_ptime,"ptime/F");
+    _shdiag->Branch("correcttime",&_correcttime,"correcttime/F");
     _shdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
     _shdiag->Branch("sid",&_sid,"sid/I");
@@ -243,6 +248,10 @@ namespace mu2e
 	_time[iend] = sh.time(_end[iend]);
 	_tot[iend] = sh.TOT(_end[iend]);
       }
+      _correcttime = ch.correctedTime();
+      _ctime = ch.time();
+      _dtime = ch.driftTime();
+      _ptime = ch.propTime();
       _shp = ch.posCLHEP();
       _shlen =(ch.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
       _slen = straw.getHalfLength();

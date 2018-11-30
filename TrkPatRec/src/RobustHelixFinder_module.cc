@@ -41,6 +41,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Mu2eUtilities/inc/polyAtan2.hh"
+#include "Mu2eUtilities/inc/HelixTool.hh"
 #include "art/Utilities/make_tool.h"
 
 #include "TrkPatRec/inc/RobustHelixFinder_types.hh"
@@ -116,12 +117,13 @@ namespace mu2e {
     bool				_prefilter; // prefilter hits based on sector
     bool				_updatestereo; // update the stereo hit positions each iteration
     int 				_minnsh; // minimum # of strawHits to work with
-    unsigned				_minnhit; // minimum # of hits to work with
     float                               _maxchi2dxy;
     float                               _maxchi2dzphi;
     float                               _maxphihitchi2;
     float				_maxdr; // maximum hit-helix radius difference
     float				_maxrpull; // maximum hit-helix radius difference pull
+    bool                                _targetconInit;//require the firs circle fit to intersect the Al stopping Target
+    bool                                _targetcon;//require the circle fit to intersect the Al stopping Target
     float                               _rpullScaleF;//need to scale the radial pull in filterCircleHits
     float				_maxphisep; // maximum separation in global azimuth of hits
     TrkFitFlag				_saveflag; // write out all helices that satisfy these flags
@@ -152,7 +154,6 @@ namespace mu2e {
 
     std::vector<Helicity> _hels; // helicity values to fit
     TrkTimeCalculator _ttcalc;
-    float             _t0shift;   
     StrawHitFlag      _outlier;
     bool              _updateStereo;
     
@@ -193,12 +194,13 @@ namespace mu2e {
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
     _updatestereo(pset.get<bool>("UpdateStereoHits",false)),
     _minnsh      (pset.get<int>("minNStrawHits",10)),
-    _minnhit	 (pset.get<unsigned>("minNHit",5)),
     _maxchi2dxy  (pset.get<float>("MaxChi2dXY", 5.0)),
     _maxchi2dzphi(pset.get<float>("MaxChi2dZPhi", 5.0)),
     _maxphihitchi2(pset.get<float>("MaxHitPhiChi2", 25.0)),
     _maxdr	 (pset.get<float>("MaxRadiusDiff",100.0)), // mm
     _maxrpull	 (pset.get<float>("MaxRPull",5.0)), // unitless
+    _targetconInit(pset.get<bool>("targetconsistent_init",true)),
+    _targetcon   (pset.get<bool>("targetconsistent",true)),
     _rpullScaleF (pset.get<float>("RPullScaleF",1.414)), // unitless
     _maxphisep	 (pset.get<float>("MaxPhiHitSeparation",1.0)),
     _saveflag    (pset.get<vector<string> >("SaveHelixFlag",vector<string>{"HelixOK"})),
@@ -221,7 +223,6 @@ namespace mu2e {
     _hfit        (pset.get<fhicl::ParameterSet>("RobustHelixFit",fhicl::ParameterSet())),
     _chi2hfit    (pset.get<fhicl::ParameterSet>("Chi2HelixFit",fhicl::ParameterSet())),
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<float>("T0Shift",4.0)),
     _outlier     (StrawHitFlag::outlier),
     _updateStereo    (pset.get<bool>("UpdateStereo",false))
   {
@@ -335,9 +336,9 @@ namespace mu2e {
       // initial circle fit
 
       if (_reducedchi2){
-	_chi2hfit.fitChi2Circle(_hfResult);
+	_chi2hfit.fitChi2Circle(_hfResult, _targetcon);
       }else{
-	_hfit.fitCircle(_hfResult);
+	_hfit.fitCircle(_hfResult, _targetconInit);//require consistency for the trajectory of being produced in the Al stopping target
       }
 
       if (_diag && _reducedchi2) {
@@ -392,13 +393,21 @@ namespace mu2e {
   void RobustHelixFinder::fillGoodHits(RobustHelixFinderData& helixData){
     
     ComboHit*     hit(0);
+    unsigned      nhits = helixData._chHitsToProcess.size();
 
-    for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
+    for (unsigned f=0; f<nhits; ++f){
       hit = &helixData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))     continue;
       
       ComboHit                hhit(*hit);					
       helixData._hseed._hhits.push_back(hhit);
+    }
+
+    if (_diag){
+      HelixTool helTool(&helixData._hseed, 3);
+      helixData._diag.nLoops            = helTool.nLoops();
+      helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
+      helixData._diag.nHitsLoopFailed   = helTool.nHitsLoopFailed();
     }
   }
 
@@ -484,7 +493,7 @@ namespace mu2e {
     ComboHit*     hit(0);
 
     //perform a reduced chi2 fit
-    _chi2hfit.refineFitXY(helixData);
+    _chi2hfit.refineFitXY(helixData, _targetcon);
 
     int           changed(0);
     int           oldNHitsSh = helixData._nXYSh;
@@ -495,7 +504,7 @@ namespace mu2e {
 
     if (helixData._nXYSh >= _minnsh) {//update the helix info
       //need to update the weights in the LSqsum
-      _chi2hfit.refineFitXY(helixData);
+      _chi2hfit.refineFitXY(helixData, _targetcon);
    
       //      updateHelixXYInfo(helixData);//should be unnecessary!FIXME!
           
@@ -520,7 +529,7 @@ namespace mu2e {
 	  helixData._sxy.removePoint(hit->pos().x(), hit->pos().y(), hit->_xyWeight);//worstHit.weightXY);
 	  helixData._nXYSh -= hit->nStrawHits();
 	  helixData._nXYCh -= 1;
-	  _chi2hfit.refineFitXY(helixData);//should be unnecessary!FIXME!
+	  _chi2hfit.refineFitXY(helixData, _targetcon);//should be unnecessary!FIXME!
 	  chi2d             = helixData._sxy.chi2DofCircle();
 	}
       }
@@ -703,6 +712,9 @@ namespace mu2e {
     
     helixData._nZPhiSh = nGoodSH;
 
+    //update the value of the chi2ZPhi
+    helix._chi2dZPhi   = chi2dZPhi/chCounter;
+
     if (_diag) {
       helixData._diag.chi2dZPhi = chi2dZPhi/chCounter;
     }
@@ -876,28 +888,21 @@ namespace mu2e {
 
   void RobustHelixFinder::updateT0(RobustHelixFinderData& helixData)
   {
+  // Don't update if there's a calo cluster
+    if (helixData._hseed.caloCluster().isNonnull())
+      return;
+
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
-    
     ComboHit*      hit(0);
-    
     for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
       hit = &helixData._chHitsToProcess[f];
-	
       if (hit->_flag.hasAnyProperty(_outlier))   continue;
       float wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
       terr(_ttcalc.comboHitTime(*hit),weight=wt);
     }//end faces loop
-
-    if (helixData._hseed.caloCluster().isNonnull())
-      {
-	float time = _ttcalc.caloClusterTime(*helixData._hseed.caloCluster());
-	float wt = std::pow(1.0/_ttcalc.caloClusterTimeErr(helixData._hseed.caloCluster()->diskId()),2);
-	terr(time,weight=wt);
-      }
-
     if (sum_of_weights(terr) > 0.0)
       {
-	helixData._hseed._t0._t0 = extract_result<tag::weighted_mean>(terr) + _t0shift; // ad-hoc correction FIXME!!
+	helixData._hseed._t0._t0 = extract_result<tag::weighted_mean>(terr);
 	helixData._hseed._t0._t0err = sqrtf(std::max(float(0.0),extract_result<tag::weighted_variance(lazy)>(terr))/extract_result<tag::count>(terr));
       }
   }
@@ -1097,7 +1102,8 @@ namespace mu2e {
 	float werr = hit->posRes(StrawHitPosition::wire);
 	float terr = hit->posRes(StrawHitPosition::trans);
 	// the resolution is dominated the resolution along the wire
-	float rres = std::max(sqrtf(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2)),_minrerr);
+	//	float rres = std::max(sqrtf(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2)),_minrerr);
+	float rres = sqrtf(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2));
 	float rpull = fabs(dr/rres)*_rpullScaleF;
 	if ( rpull > _maxrpull ) {
 	  hit->_flag.merge(_outlier);
@@ -1144,6 +1150,8 @@ namespace mu2e {
     helixData._nXYSh = nGoodSH;
     helixData._nXYCh = int(chCounter);
 
+    helix._chi2dXY   = chi2dXY/chCounter;
+
     if (_diag) {
       helixData._diag.chi2dXY = chi2dXY/chCounter;
       helixData._diag.nXYCh   = helixData._nXYCh;
@@ -1163,16 +1171,16 @@ namespace mu2e {
     // iteratively fit the helix including filtering
     unsigned niter(0);
     unsigned nitermva(0);
-    bool changed(true), xychanged(true), fzchanged(true);
+    bool     changed(true), xychanged(true), fzchanged(true);
     unsigned niterxy(0), niterfz(0);
+
     do {
       niterxy = 0;
-      xychanged = filterCircleHits(helixData) > 0;
-      while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged) {
-	_hfit.fitCircle(helixData);
+      do {
+	_hfit.fitCircle(helixData, _targetcon);
 	xychanged = filterCircleHits(helixData) > 0;
 	++niterxy;
-      } 
+      } while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged);
    
       if (_diag) {
 	helixData._diag.xyniter  = niterxy;
@@ -1337,7 +1345,7 @@ namespace mu2e {
   void RobustHelixFinder::refitHelix(RobustHelixFinderData& helixData) {
     // reset the fit status flags, in case this is called iteratively
     helixData._hseed._status.clear(TrkFitFlag::helixOK);      
-    _hfit.fitCircle(helixData);
+    _hfit.fitCircle(helixData, _targetcon);
     if (helixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
       _hfit.fitFZ(helixData);
       if (_hfit.goodHelix(helixData._hseed._helix)) helixData._hseed._status.merge(TrkFitFlag::helixOK);
@@ -1441,10 +1449,16 @@ namespace mu2e {
 	    
       _data.nseeds[helCounter]++;
 	    
-      _data.dr           [helCounter][loc] = helixData._diag.radius_2 - helixData._diag.radius_1;
-      _data.chi2d_helix  [helCounter][loc] = helixData._diag.chi2d_helix;
+      _data.dr          [helCounter][loc] = helixData._diag.radius_2 - helixData._diag.radius_1;
+      _data.chi2d_helix [helCounter][loc] = helixData._diag.chi2d_helix;
       
-      _data.nXYCh        [helCounter][loc] = helixData._diag.nXYCh;
+      _data.nXYCh       [helCounter][loc] = helixData._diag.nXYCh;
+
+      _data.nLoops      [helCounter][loc] = helixData._diag.nLoops           ;
+
+      _data.nHitsLoopFailed[helCounter][loc] = helixData._diag.nHitsLoopFailed;
+
+      _data.meanHitRadialDist [helCounter][loc] = helixData._diag.meanHitRadialDist;
 
       for (int i=0; i<helixData._diag.nXYCh; ++i) {
 	if (helixData._diag.rwdot[i]>-999.) _data.hitRWDot[helCounter][loc][i] = helixData._diag.rwdot[i];
@@ -1468,7 +1482,7 @@ namespace mu2e {
     ComboHit*      hit(0);
     
     helixData._sxy.clear();
-    if (_hfit.targetcon()) helixData._sxy.addPoint(0.,0.,1./900.);
+    if (_targetcon) helixData._sxy.addPoint(0.,0.,1./900.);
 
     helixData._szphi.clear();
     helixData._nXYSh   = 0;

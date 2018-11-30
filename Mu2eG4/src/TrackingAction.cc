@@ -52,6 +52,10 @@
 #include "G4Ions.hh"
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
+#include "G4SteppingManager.hh"
+#include "G4MaterialCutsCouple.hh"
+#include "G4ParticleChange.hh"
+#include "G4DynamicParticle.hh"
 
 using namespace std;
 
@@ -95,9 +99,10 @@ void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
     G4int trackingVerbosityLevel = fpTrackingManager->GetVerboseLevel();
 
     // Create a user track information object and attach it to the track.
-    G4VUserTrackInformation* tui = trk->GetUserInformation();
     UserTrackInformation* ti =  new UserTrackInformation();
 
+    // an old code used when mu2e was using a custom geant4 version
+    G4VUserTrackInformation* tui = trk->GetUserInformation();
     if (tui) {
       if ( trackingVerbosityLevel > 0 ) {
         G4cout << __func__ 
@@ -111,9 +116,9 @@ void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
                  << ti->muCapCode()  << G4endl;
         }
       }
-    } 
+    }
     else {
-      if ( trackingVerbosityLevel > 0 ) {
+      if ( trackingVerbosityLevel > 1 ) {
         G4cout << __func__ 
                << " the track was not labeled" << G4endl;
       }
@@ -331,22 +336,34 @@ void TrackingAction::saveSimParticleStart(const G4Track* trk){
                  << G4endl;
           G4cout << __func__ 
                  << " muCapCode is: " 
-                 << (static_cast<UserTrackInformation*>(tui))->muCapCode()
+                 << (dynamic_cast<UserTrackInformation*>(tui))->muCapCode()
                  << G4endl;
         }
       }
 
       ProcessCode utic = 
-        (static_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
+        (dynamic_cast<UserTrackInformation*>(trk->GetUserInformation()))->muCapCode();
       if (utic!=ProcessCode(ProcessCode::unknown)) {
         creationCode=utic;
       }
     }
       
     if ( trackingVerbosityLevel > 0 ) {
-      G4cout << __func__ 
-             << " saving particle as created by " << creationCode.name()
-             << G4endl;
+      G4cout << __func__
+             << " saving particle "
+             << trk->GetParticleDefinition()->GetPDGEncoding()
+             << ", "
+             << trk->GetParticleDefinition()->GetParticleName()
+             << " created by " << creationCode.name()
+             << " with kinetic energy " << fixed << setw(8) << trk->GetKineticEnergy()
+             << " with tot energy " << fixed << setw(8) << trk->GetTotalEnergy();
+      if (trk->GetTouchable()) {
+        G4cout << " in " << trk->GetTouchable()->GetVolume()->GetName()
+               << " material " << trk->GetTouchable()->GetVolume()->GetLogicalVolume()->GetMaterial()->GetName()
+               << " material cuts index "
+               << trk->GetTouchable()->GetVolume()->GetLogicalVolume()->GetMaterialCutsCouple()->GetIndex();
+      }
+      G4cout << G4endl; // step related info is not available at this stage
     }
 
     // Track should not yet be in the map.  Add a debug clause to skip this test?
@@ -376,7 +393,7 @@ void TrackingAction::saveSimParticleStart(const G4Track* trk){
                << " Warning: Unusual excited ion: " << ppdgId;
         pDef->DumpTable();
         G4cout << " Excitation energy: " 
-               << static_cast<const G4Ions*>(pDef)->GetExcitationEnergy() << G4endl
+               << dynamic_cast<const G4Ions*>(pDef)->GetExcitationEnergy() << G4endl
                << " produced by " << creationCode 
                << G4endl;
       }
@@ -439,46 +456,58 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
 
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
 
-    //Get kinetic energy at the begin of the last step
-    double preLastStepKE = Mu2eG4UserHelpers::getPreLastStepKE(trk);
+    if (trackingVerbosityLevel > 0 ) {
+      G4int prec = G4cout.precision(15);
+      const G4DynamicParticle*  pParticle = trk->GetDynamicParticle();
+      double theKEnergy  = pParticle->GetKineticEnergy();
+      const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
+      UserTrackInformation* uti =
+        (dynamic_cast<UserTrackInformation*>(trk->GetUserInformation()));
+      G4cout << __func__ << " KE before int " << uti->GetKineticEnergy()
+             << " Momentum direction before int " << uti->GetMomentumDirection()
+             << G4endl;
+      G4cout << __func__ << " KE            " << theKEnergy
+             << " Momentum direction            " << theMomentumDirection
+             << G4endl;
+      G4cout.precision(prec);
+    }
+
+
+    //Get kinematics just before annihilation
+    double endKE = Mu2eG4UserHelpers::getEndKE(trk);
+    CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
 
     //Get number od steps the track is made of
     int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
-    
-    // final momentum
-    CLHEP::HepLorentzVector trackP(trk->GetMomentum(),trk->GetTotalEnergy());
-    // if this is an incoming proton interaction, set the SimParticle 
-    // final momentum to the momentum right before the interaction
-    //if(i->second.isPrimary() && i->second.pdgId()==PDGCode::proton) {
-    if(stoppingCode.name().find("Inelastic")!=std::string::npos) {
-      // get the final momentum from the start of last step
-      auto const sptr = trk->GetStep()->GetPreStepPoint();
-      if(sptr) {
-	trackP = CLHEP::HepLorentzVector(sptr->GetMomentum(),sptr->GetTotalEnergy());
-      } else {
-	throw cet::exception("PROTON_NO_STEPS")
-	  << "In TrackingAction::saveSimParticleEnd(): incoming proton had no step pointer\n";
-      }
-    }
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          trackP,
+                          endMomentum,
                           trk->GetGlobalTime(),
                           trk->GetProperTime(),
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
                           stoppingCode,
-                          preLastStepKE,
+                          endKE,
                           nSteps
                           );
 
     if (trackingVerbosityLevel > 0 ) {
+      G4int prec = G4cout.precision(15);
       G4cout << __func__
              << " particle "
              << i->second.pdgId() << ", "
              << trk->GetParticleDefinition()->GetParticleName()
              << " stopped by " << stoppingCode << ", " << pname
+             << " totE deposit " << fixed << trk->GetStep()->GetTotalEnergyDeposit()
+             << " NonIonE deposit " << fixed << trk->GetStep()->GetNonIonizingEnergyDeposit()
+             << " in " << trk->GetVolume()->GetName()
+             << " material " << trk->GetMaterial()->GetName()
+             << " material cuts index " << trk->GetMaterialCutsCouple()->GetIndex()
+             << G4endl;
+      G4cout << __func__
+             << " vertex KE " << trk->GetVertexKineticEnergy()
+             << " vertex direction " << trk->GetVertexMomentumDirection()
              << G4endl;
       G4cout << __func__ << " track statuses: " << i->second.startG4Status()
              << ", " << i->second.endG4Status()
@@ -487,6 +516,7 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
              << " step length " << trk->GetStepLength()
              << ", track length " << trk->GetTrackLength()
              << G4endl;
+      G4cout.precision(prec);
     }
   }//saveSimParticleEnd
     

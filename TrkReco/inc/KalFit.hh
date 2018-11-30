@@ -32,6 +32,7 @@
 #include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "TrkReco/inc/KalFitData.hh"
+#include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -80,7 +81,7 @@ namespace mu2e
     unsigned _maxweed;
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
-    bool _updatet0;	    // update t0 ieach iteration?
+    std::vector<bool> _updatet0; // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
@@ -103,6 +104,7 @@ namespace mu2e
     int                              _mcTruth;
     std::unique_ptr<McUtilsToolBase> _mcUtils;
     int    _annealingStep;
+    TrkTimeCalculator _ttcalc;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
   // helper functions

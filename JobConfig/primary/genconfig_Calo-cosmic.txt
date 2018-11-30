@@ -1,5 +1,5 @@
 //
-// cosmic ray muons produced at a box around the tracker and calorimeter
+// cosmic ray muons produced at a box around the calorimeter
 //
 
 bool conversionGun.do = false;

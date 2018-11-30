@@ -35,7 +35,8 @@ namespace mu2e {
   private:
 
     unsigned minndigi_;
-    double minesum_;
+    double minpe_;
+    double minetot_;
     std::vector<PDGCode::type> pdgs_;
     int diag_, debug_;
     art::InputTag cssTag_;
@@ -43,7 +44,8 @@ namespace mu2e {
   };
 
   CaloShowerSimFilter::CaloShowerSimFilter(fhicl::ParameterSet const& pset):
-    minesum_(pset.get<double>("MinEnergySum")),
+    minpe_(pset.get<double>("MinParticleEnergy")),
+    minetot_(pset.get<double>("MinTotalEnergy")),
     diag_(pset.get<int>("diagLevel",0)),
     debug_(pset.get<int>("debugLevel",0)),
     cssTag_(pset.get<art::InputTag>("CaloShowerSimCollection","CaloShowerStepROFromShowerStep"))
@@ -59,11 +61,13 @@ namespace mu2e {
     bool retval(false);
     auto cssH = evt.getValidHandle<CaloShowerSimCollection>(cssTag_);
     const CaloShowerSimCollection *csscol = cssH.product();
-    // keep count of digis produced by specific particle
+    // keep count of energy deposited by specific particle
     std::map<art::Ptr<SimParticle>,float> emap;
+    double etot(0.0);
     for(auto const& css : *csscol) {
       art::Ptr<SimParticle> const& sp = css.sim();
       double energy = css.energy();
+      etot += energy;
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() 
       << " Crystal " << css.crystalId()
       << " Shower Energy = " << energy << std::endl;
@@ -80,12 +84,14 @@ namespace mu2e {
     // that have enough in the map
     for(auto const& imap : emap) {
       if(debug_ > 0)std::cout << "Energy sum = " << imap.second << std::endl;
-      if(imap.second >= minesum_){
+      if(imap.second >= minpe_){
 	retval = true;
 	output->push_back(imap.first);
       }
     }
     evt.put(std::move(output));
+    // look at total energy too
+    retval |= etot > minetot_;
     return retval; 
   }
 

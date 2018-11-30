@@ -30,7 +30,7 @@ namespace art {
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"

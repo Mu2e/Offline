@@ -17,24 +17,27 @@ source: { module_type: RootInput }
 
 physics : {
    producers: {
+      @table::reco.cal.mod
       @table::reco.straw.mod      # digi to straw hit, flagBgHits
       @table::reco.trk.mod
-      @table::reco.cal.mod
       @table::reco.ctrk.mod
       @table::reco.pid.mod
+      @table::reco.crv.mod
     }
    filters: {
       @table::reco.ctrk.flt
    }
 
     all_path : [ 
+      @sequence::reco.cal.seq ,
       @sequence::reco.straw.seq ,
       #@sequence::reco.trk.seq.all ,   # all species and toplogies
       #@sequence::reco.trk.seq.ele ,   # all electron toplogies
-      @sequence::reco.trk.seq.eleDMUP , # DeM and UeP
-      @sequence::reco.cal.seq ,
+      #@sequence::reco.trk.seq.eleDMUP , # DeM and UeP
+      @sequence::reco.trk.seq.eleDMDP , # DeM and DeP
       @sequence::reco.ctrk.seq , 
-      @sequence::reco.pid.seq 
+      @sequence::reco.pid.seq ,
+      @sequence::reco.crv.seq 
    ]
 
     trigger_paths  : [ all_path ]

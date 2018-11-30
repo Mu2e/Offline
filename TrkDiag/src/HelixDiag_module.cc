@@ -138,7 +138,7 @@ namespace mu2e {
     _useshfcol		(pset.get<bool>("UseFlagCollection")),
     _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
-    _minnprimary(pset.get<int>("MinimumPrimaryHits",10)),
+    _minnprimary(pset.get<int>("MinimumPrimaryHits",8)),
     _mcgen(pset.get<int>("MCGeneratorCode",2)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
@@ -252,60 +252,62 @@ namespace mu2e {
 	if(_mcdiag) {
 	  // get information about the primary particle (produced most hits)
 	  _nprimary = TrkMCTools::primaryParticle(pspp,sdis,_mcdigis);
-	  _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
-	  _pdg = pspp->pdgId();
-	  _proc = pspp->originParticle().creationCode();
-	  if(pspp->genParticle().isNonnull())
-	    _gen = pspp->genParticle()->generatorId().id();
-	  else
-	    _gen = -1;
-	  // fill MC true helix parameters
-	  _mchelixOK = fillMCHelix(pspp);
-	  _mct0 = 0.0;
-	  unsigned nmc = 0;
-	  _npused = 0;
-	  for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
-	    ComboHit const& hhit = hhits[ihh];
-	    vector<StrawDigiIndex> sdis;
-	    hhits.fillStrawDigiIndices(evt,ihh,sdis);
-	    for(auto idigi : sdis) {
-	      StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
-	      art::Ptr<StepPointMC> spmcp;
-	      if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-		  spmcp->simParticle() == pspp ){
-		++nmc;
-		_mct0 += _toff.timeWithOffsetsApplied(*spmcp);
-		if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+	  if(_nprimary >= _minnprimary){
+	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
+	    _pdg = pspp->pdgId();
+	    _proc = pspp->originParticle().creationCode();
+	    if(pspp->genParticle().isNonnull())
+	      _gen = pspp->genParticle()->generatorId().id();
+	    else
+	      _gen = -1;
+	    // fill MC true helix parameters
+	    _mchelixOK = fillMCHelix(pspp);
+	    _mct0 = 0.0;
+	    unsigned nmc = 0;
+	    _npused = 0;
+	    for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
+	      ComboHit const& hhit = hhits[ihh];
+	      vector<StrawDigiIndex> sdis;
+	      hhits.fillStrawDigiIndices(evt,ihh,sdis);
+	      for(auto idigi : sdis) {
+		StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
+		art::Ptr<StepPointMC> spmcp;
+		if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
+		    spmcp->simParticle() == pspp ){
+		  ++nmc;
+		  _mct0 += _toff.timeWithOffsetsApplied(*spmcp);
+		  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
+		}
+	      }
+	      if(_diag > 1){
+		HelixHitInfoMC hhinfomc;
+		StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
+		fillHitInfoMC(pspp,mcdigi,hhinfomc);
+		XYZVec mchpos = hhit.pos(); // sets z position
+		_mch.position(mchpos);
+		hhinfomc._hpos = mchpos;
+		hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
+
+		XYZVec mcdh = hhit.pos() - mchpos;
+		hhinfomc._dwire = mcdh.Dot(hhit.wdir());
+		static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
+		XYZVec wtdir = zaxis.Cross(hhit.wdir()); // transverse direction to the wire
+		hhinfomc._dtrans = mcdh.Dot(wtdir);
+		_hhinfomc.push_back(hhinfomc);
 	      }
 	    }
-	    if(_diag > 1){
-	      HelixHitInfoMC hhinfomc;
-	      StrawDigiMC const& mcdigi = _mcdigis->at(sdis[0]);
-	      fillHitInfoMC(pspp,mcdigi,hhinfomc);
-	      XYZVec mchpos = hhit.pos(); // sets z position
-	      _mch.position(mchpos);
-	      hhinfomc._hpos = mchpos;
-	      hhinfomc._hphi = _mch.circleAzimuth(hhit.pos().z());
-
-	      XYZVec mcdh = hhit.pos() - mchpos;
-	      hhinfomc._dwire = mcdh.Dot(hhit.wdir());
-	      static XYZVec zaxis(0.0,0.0,1.0); // unit in z direction
-	      XYZVec wtdir = zaxis.Cross(hhit.wdir()); // transverse direction to the wire
-	      hhinfomc._dtrans = mcdh.Dot(wtdir);
-	      _hhinfomc.push_back(hhinfomc);
-	    }
+	    if(nmc > 0)_mct0 /= nmc;
 	  }
-	  if(nmc > 0)_mct0 /= nmc;
 	}
 	// plot if requested and the fit satisfies the requirements
 	if( _plot && hseed._status.hasAllProperties(_plotinc) &&
 	    (!hseed._status.hasAnyProperty(_plotexc))  &&
 	    ((!_mcsel) || (_nprimary >= _minnprimary && _mcgen == _gen)) ) {
-	    // fill graphs for display
-	    plotXY(evt,pspp,hseed,ihel);
-	    plotZ(evt,pspp,hseed,ihel);
+	  // fill graphs for display
+	  plotXY(evt,pspp,hseed,ihel);
+	  plotZ(evt,pspp,hseed,ihel);
 	}
-	
+
 	if(_diag > 1){
 	  for(auto const& hhit : hhits) {
 	    HelixHitInfo hhinfo;
@@ -323,7 +325,7 @@ namespace mu2e {
 	    rhel.position(hpos);
 	    hhinfo._hpos = hpos;
 	    hhinfo._hphi = rhel.circleAzimuth(hhit.pos().z());
-// compute the chisquared componentes for this hit
+	    // compute the chisquared componentes for this hit
 	    XYZVec const& wdir = hhit.wdir();
 	    XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
 	    XYZVec cvec = PerpVector(hhit.pos() - rhel.center(),Geom::ZDir()); // vector from the circle center to the hit

@@ -92,6 +92,8 @@ namespace mu2e {
       float    straw_mean_radius;
       float    chi2d_helix;
 
+      int      nLoops;
+      float    meanHitRadialDist;
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
