@@ -40,6 +40,7 @@ namespace mu2e {
 
     int printTable(std::string name="", 
 		   std::vector<int> cids=std::vector<int>());
+    int printTables();
     int printLists();
     int printPurposes();
     int printVersions(bool details=false);

@@ -15,6 +15,7 @@ int mu2e::DbTool::run() {
 
   if(_action=="help")  return help();
   if(_action=="print-table")  return printTable();
+  if(_action=="print-tables")  return printTables();
   if(_action=="print-lists")  return printLists();
   if(_action=="print-purposes")  return printPurposes();
   if(_action=="print-versions")  return printVersions();
@@ -280,6 +281,27 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
   if(rc!=0) return rc;
 
   rc = _sql.disconnect();
+  return rc;
+}
+
+
+// ****************************************  printTables
+int mu2e::DbTool::printTables() {
+  int rc = 0;
+
+  ValTables const& tt = _valcache.valTables();
+
+  std::cout << "TID            name               dbname              user              time" 
+	    << std::endl;
+  for(auto const& r : tt.rows()) {
+    std::cout << std::setw(3) << r.tid() 
+	      << std::setw(20) << r.name()
+	      << std::setw(20) << r.dbname()
+	      << "  " << std::setw(15) << r.create_user()
+	      << "  " << r.create_time()
+	      << std::endl;
+  }
+
   return rc;
 }
 
@@ -1184,6 +1206,7 @@ int mu2e::DbTool::help() {
       " \n"
       " <ACTION>\n"
       "    print-table : print any tables\n"
+      "    print-tables : print types of calibration tables\n"
       "    print-purposes : print purposes of calibration sets\n"
       "    print-lists : print lists of table types used in a calibration set\n"
       "    print-versions : print calibration set versions\n"
@@ -1220,6 +1243,15 @@ int mu2e::DbTool::help() {
       "    --cid CID : only print contents for this cid \n"
       " \n"
       "    --name or --cid option is required\n"
+      " \n"
+      << std::endl;
+  } else if(_action=="print-tables") {
+    std::cout << 
+      " \n"
+      " dbTool print-tables [OPTIONS]\n"
+      " \n"
+      " Print the types of calibration tables and their Table\n"
+      " ID's ofr TID's\n"
       " \n"
       << std::endl;
   } else if(_action=="commit-calibration") {
