@@ -75,7 +75,7 @@ namespace mu2e {
       muonNuclear,            GammaToMuPair,           AnnihiToMuPair,      ee2hadr,
       G4MinEkineCuts,         G4MaxTimeCuts,           OpAbsorption,        OpBoundary,
       Scintillation,          inelastic,               G4ErrorEnergyLoss,   G4ErrorStepLengthLimit,
-      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,
+      G4ErrorMagFieldLimit,   ePairProd,               FieldPropagator,     Mu2eRecorderProcess,
       lastEnum,
 
       // An alias for backward compatibility
@@ -117,7 +117,7 @@ namespace mu2e {
     "muonNuclear",            "GammaToMuPair",           "AnnihiToMuPair",         "ee2hadr", \
     "G4MinEkineCuts",         "G4MaxTimeCuts",           "OpAbsorption",           "OpBoundary", \
     "Scintillation",          "inelastic",               "G4ErrorEnergyLoss",      "G4ErrorStepLengthLimit", \
-    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator"
+    "G4ErrorMagFieldLimit",   "ePairProd",               "FieldPropagator",        "Mu2eRecorderProcess"
 
   public:
 
@@ -125,9 +125,6 @@ namespace mu2e {
     ProcessCode( enum_type id):
       _id(id)
     {}
-
-    // Constructor from an int; should not be needed often.  This checks for validity and throws.
-    explicit ProcessCode( int id);
 
     // ROOT requires a default c'tor.
     ProcessCode():

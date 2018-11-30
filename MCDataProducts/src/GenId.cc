@@ -34,7 +34,7 @@ namespace mu2e {
     // Size must be at least 2 (for unknown and lastEnum).
     for ( size_t i=0; i<size(); ++i ){
       if ( _name[i] == name ){
-        return GenId(i);
+        return GenId(enum_type(i));
       }
     }
     return GenId(unknown);

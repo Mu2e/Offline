@@ -75,7 +75,7 @@ namespace mu2e {
     if (i <0 || i >= int(size())) return dummy;
     return _pt[i];
   }
-      
+
   TrkExtTrajPoint    TrkExtTraj::operator[] (int i) const  {
     if (i <0 || i >= int(size())) return TrkExtTrajPoint();
     return _pt[i];
@@ -217,7 +217,7 @@ namespace mu2e {
       else volid = _pt[id+1].volumeId();
       Hep3Vector pos(x, y, z);
       Hep3Vector mom(px,py,pz);
-      HepMatrix cov; 
+      HepMatrix cov;
       TrkExtTrajPoint point(idx[0], pos, mom, cov, volid, fl, ft);
       points.push_back(point);
     }
@@ -235,7 +235,7 @@ namespace mu2e {
         int volid = _pt[id].volumeId();
         Hep3Vector pos(x, y, z);
         Hep3Vector mom(px,py,pz);
-        HepMatrix cov(6,6,0); 
+        HepMatrix cov(6,6,0);
         HepMatrix const & cov1 = _pt[id-1].covariance();
         HepMatrix const & cov2 = _pt[id].covariance();
         HepMatrix const & cov3 = _pt[id+1].covariance();
@@ -273,44 +273,44 @@ namespace mu2e {
   }
 
 
-  const TrkExtTrajPoint & TrkExtTraj::getFirstPAHit (unsigned int i) const { 
+  const TrkExtTrajPoint & TrkExtTraj::getFirstPAHit (unsigned int i) const {
     // always returns final hit inside PA in time
-    unsigned int first = _ptidx_pa[i].first; 
-    unsigned int second = _ptidx_pa[i].second;
+    int first = _ptidx_pa[i].first;
+    int second = _ptidx_pa[i].second;
 
-    int nsteps = abs(second - first);
+    int nsteps = std::abs(second - first);
     if (nsteps ==0) {
       return _pt[first];
     }
     else {
       if (_pt[first].flightTime() > _pt[second].flightTime())
         return _pt[first];
-      else 
+      else
         return _pt[second];
     }
   }
 
-  const TrkExtTrajPoint & TrkExtTraj::getFirstSTHit (unsigned int i) const { 
+  const TrkExtTrajPoint & TrkExtTraj::getFirstSTHit (unsigned int i) const {
     // always returns final hit inside ST in time
-    unsigned int first = _ptidx_st[i].first; 
-    unsigned int second = _ptidx_st[i].second;
+    int first = _ptidx_st[i].first;
+    int second = _ptidx_st[i].second;
 
-    int nsteps = abs(second - first);
+    int nsteps = std::abs(second - first);
     if (nsteps ==0) {
       return _pt[first];
     }
     else {
       if (_pt[first].flightTime() > _pt[second].flightTime())
         return _pt[first];
-      else 
+      else
         return _pt[second];
     }
   }
 
 
-  TrkExtTrajPoint TrkExtTraj::getMeanPAHit (unsigned int i) const { 
+  TrkExtTrajPoint TrkExtTraj::getMeanPAHit (unsigned int i) const {
     // returns interpolated center inside PA in z
-    unsigned int first = _ptidx_pa[i].first; 
+    unsigned int first = _ptidx_pa[i].first;
     unsigned int second = _ptidx_pa[i].second;
 
     if (first == second) return _pt[first];
@@ -319,7 +319,7 @@ namespace mu2e {
 
     vector<TrkExtTrajPoint> points = getPointsAtZ(zc, first, second);
     if (points.size() <=0) {
-      throw cet::exception("DATAPRODUCT") 
+      throw cet::exception("DATAPRODUCT")
         << "TrkExtTraj Error : cannot find getMeanPaHit. Error in interpolation! Report to the author." << endl;
       TrkExtTrajPoint point;
       return point;
@@ -327,9 +327,9 @@ namespace mu2e {
     return points[0];
   }
 
-  TrkExtTrajPoint TrkExtTraj::getMeanSTHit (unsigned int i) const { 
+  TrkExtTrajPoint TrkExtTraj::getMeanSTHit (unsigned int i) const {
     // returns interpolated center inside ST in z
-    unsigned int first = _ptidx_st[i].first; 
+    unsigned int first = _ptidx_st[i].first;
     unsigned int second = _ptidx_st[i].second;
 
     if (first == second) return _pt[first];
@@ -338,7 +338,7 @@ namespace mu2e {
 
     vector<TrkExtTrajPoint> points = getPointsAtZ(zc, first, second);
     if (points.size() <=0) {
-      throw cet::exception("DATAPRODUCT") 
+      throw cet::exception("DATAPRODUCT")
         << "TrkExtTraj Error : cannot find getMeanPaHit. Error in interpolation! Report to the author." << endl;
       TrkExtTrajPoint point;
       return point;
@@ -349,5 +349,3 @@ namespace mu2e {
 
 
 } // end namespace mu2e
-
-

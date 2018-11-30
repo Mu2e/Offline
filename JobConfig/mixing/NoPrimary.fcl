@@ -12,14 +12,15 @@ physics : {
   producers : { @table::Mixing.producers }
   filters: { @table::Mixing.filters }
   analyzers: { @table::Mixing.analyzers }
-  TriggerPath : [ @sequence::Mixing.MixSequence ]
-  EndPath : [ FullOutput, DetOutput ] 
+  TriggerPath : [ @sequence::Mixing.MixSequence, compressDigiMCs ]
+  EndPath : [ digiCompressionCheck, FullOutput, DetOutput ] 
 }
 outputs : { 
   FullOutput :@local::Mixing.Output
   DetOutput :@local::Mixing.Output
 }
 outputs.DetOutput.outputCommands : [ "drop *_*_*_*",
+		     "keep mu2e::ProtonBunchIntensity_*_*_*",
     		     "keep mu2e::StrawDigis_*_*_*",
     		     "keep mu2e::CaloDigis_*_*_*",
 		     "keep mu2e::CrvDigis_*_*_*" ]

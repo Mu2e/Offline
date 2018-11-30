@@ -21,8 +21,10 @@ namespace mu2e{
     G4VUserTrackInformation("Mu2eTrackInfo"),
     _forcedStop(false),
     _code(),
-    _muCapCode(){
-  }
+    _muCapCode(),
+    _momDirection(),
+    _kinEnergy(0)
+  {}
 
   UserTrackInformation::~UserTrackInformation(){
   }
@@ -31,4 +33,3 @@ namespace mu2e{
   }
 
 } // end namespace mu2e
-

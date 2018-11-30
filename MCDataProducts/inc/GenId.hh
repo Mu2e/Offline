@@ -35,17 +35,17 @@ namespace mu2e {
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
       unknown,       particleGun,       conversionGun,
-      cosmicToy,     cosmicDYB,         cosmic,          obsolete1,
-      dioTail,       obsolete2,         obsolete3,       obsolete4,           pionCapture,
-      muonCapture,   muonDecayInFlight, ejectedProtonGun,
-      piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi,
-      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC,
-      extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined,
-      MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun,
-      fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun,
-      CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun,
-      cosmicCRY, pbarFlat, fromAscii, radiativeMuonCapture, radiativeMuonCaptureInternal,
-      lastEnum
+      cosmicToy,     cosmicDYB,         cosmic,          obsolete1, //6
+      dioTail,       obsolete2,         obsolete3,       obsolete4,           pionCapture, //11
+      muonCapture,   muonDecayInFlight, ejectedProtonGun, //14
+      piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi, //18
+      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC, //22
+      extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined, //26
+      MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun, //30
+      fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, //33
+      CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
+      cosmicCRY, pbarFlat, fromAscii, radiativeMuonCapture, radiativeMuonCaptureInternal, //42
+      lastEnum //43
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
@@ -78,15 +78,6 @@ namespace mu2e {
     // ROOT requires a default c'tor.
     GenId():
       _id(unknown){
-    }
-
-    // Need this to interface with HepMC::GenEvent which stores an int.
-    explicit GenId( int id):
-      _id(static_cast<enum_type>(id)){
-      if ( !isValid() ){
-        // throw or something
-        std::exit(-1);
-      }
     }
 
     virtual ~GenId(){}

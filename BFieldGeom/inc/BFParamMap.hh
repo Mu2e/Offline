@@ -23,7 +23,7 @@
 #include "BFieldGeom/inc/BFMapType.hh"
 #include "BFieldGeom/inc/Container3D.hh"
 #include "CLHEP/Vector/ThreeVector.h"
-#include "GeneralUtilities/inc/csv.h"
+#include "GeneralUtilities/inc/csv.hh"
 
 using namespace std;
 
