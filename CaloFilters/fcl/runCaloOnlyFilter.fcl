@@ -16,9 +16,15 @@ caloOnly_sf             : 1
 #prescale factors for the cosmic muon calibration
 caloCosmicMuon_evt_sf         : 1
 caloCosmicMuon_sf             : 1
+#prescale factors for the caloDigi count filter
+cDCount_evt_sf         : 500
+cDCount_sf             : 1
+#prescale factors for the "large" caloDigi counter filter
+largeCDCount_evt_sf    : 500
+largeCDCount_sf        : 1
 END_PROLOG
 
-#include "CaloFilters/fcl/prolog.fcl"
+#include "CaloFilters/fcl/prolog_trigger.fcl"
 
 process_name : caloOnlyFilter
 

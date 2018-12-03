@@ -1,13 +1,14 @@
 import re
 import sys
 import string
+import os
 from shutil import copyfile
 
 from argparse import ArgumentParser
 
 parser = ArgumentParser()
 parser.add_argument("-c", "--config-file", dest="configfilename",
-                    help="file with Trigger configuration. Paths available are: unbiased, minimumbiasSdCount,largeSdCount, caloOnly, caloMixed, caloCosmicMuon, tprDeMSeed, tprDePSeed, cprDeMSeed, cprDePSeed, triggerOutput", metavar="FILE")
+                    help="file with Trigger configuration. Paths available are: unbiased, minimumbiasSdCount,largeSdCount, minimumbiasCdCount,largeCdCount, caloOnly, caloMixed, caloCosmicMuon, tprDeMSeed, tprDePSeed, cprDeMSeed, cprDePSeed, triggerOutput", metavar="FILE")
 parser.add_argument("-o", "--output-file", dest="outputfilename",
                     help="name of the generated fcl file for running the Trigger executable", metavar="OUTPUT")
 parser.add_argument("-q", "--quiet",
@@ -40,7 +41,7 @@ trig_paths = [
 
 #print fh.readline()
 new_file   = args.outputfilename
-input_file = 'main.fcl'
+input_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/main.fcl'
 copyfile(input_file, new_file)
 
 new_file = open(new_file,"a")
