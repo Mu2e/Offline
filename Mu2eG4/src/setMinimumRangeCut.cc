@@ -33,50 +33,42 @@ namespace mu2e{
                     // called during pre_init or after initialization;
                     // the selective SetCutValue does work
 
-    // special cuts per region (this would need to be generalized if we have many regions)
-    if (pset.has_key("physics.minRangeCut2")) {
-      std::string regName("Calorimeter");
-      G4Region* region = G4RegionStore::GetInstance()->GetRegion(regName);
-      if (region!=nullptr) {
-        G4ProductionCuts* cuts = new G4ProductionCuts();
-        double minRangeCut2 = pset.get<double>("physics.minRangeCut2");
-        cuts->SetProductionCut(minRangeCut2); // same cut for gamma, e- and e+, proton/ions
-        double protonProductionCut = pset.get<double>("physics.protonProductionCut");
-        cuts->SetProductionCut(protonProductionCut,"proton");
-        if (pset.get<int>("debug.diagLevel") > 0) {
-          std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
-                    << regName << " to " << minRangeCut2 << " mm and for proton to "
-                    << protonProductionCut << " mm" << std::endl;
+    // special cuts per region
+    const fhicl::ParameterSet& minRangeRegionCutsPSet{
+      pset.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
+
+    if (!minRangeRegionCutsPSet.is_empty()) {
+
+      int verbosityLevel = pset.get<int>("debug.diagLevel",0);
+      const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
+
+      for(const auto& regionName : regionNames) {
+        G4Region* region = G4RegionStore::GetInstance()->GetRegion(regionName);
+        if (region!=nullptr) {
+          G4ProductionCuts* cuts = new G4ProductionCuts();
+          double rangeCut = minRangeRegionCutsPSet.get<double>(regionName);
+          cuts->SetProductionCut(rangeCut); // same cut for gamma, e- and e+, proton/ions
+          double protonProductionCut = pset.get<double>("physics.protonProductionCut");
+          cuts->SetProductionCut(protonProductionCut,"proton");
+          if ( verbosityLevel > 0 ) {
+            std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
+                      << regionName << " to " << rangeCut << " mm and for proton to "
+                      << protonProductionCut << " mm" << std::endl;
+            std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: ";
+            for (auto const& rcut : cuts->GetProductionCuts() ) {
+              std::cout << " " << rcut;
+            }
+            std::cout << std::endl;
+          }
+          region->SetProductionCuts(cuts);
+        } else {
+          if ( verbosityLevel > -1 ) {
+            std::cout << __func__ << " Did not find requested region: "
+                      << regionName << std::endl;
+          }
         }
-        std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: " << std::endl;
-        for (auto const& rcut : cuts->GetProductionCuts() ) {
-          std::cout << " " << rcut;
-        }
-        std::cout << std::endl;
-        region->SetProductionCuts(cuts);
-      }
-    }
-    if (pset.has_key("physics.minRangeCut3")) {
-      std::string regName("Tracker");
-      G4Region* region = G4RegionStore::GetInstance()->GetRegion(regName);
-      if (region!=nullptr) {
-        G4ProductionCuts* cuts = new G4ProductionCuts();
-        double minRangeCut3 = pset.get<double>("physics.minRangeCut3");
-        cuts->SetProductionCut(minRangeCut3); // same cut for gamma, e- and e+, proton/ions
-        double protonProductionCut = pset.get<double>("physics.protonProductionCut");
-        cuts->SetProductionCut(protonProductionCut,"proton");
-        if (pset.get<int>("debug.diagLevel") > 0) {
-          std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
-                    << regName << " to " << minRangeCut3 << " mm and for proton to "
-                    << protonProductionCut  << " mm" << std::endl;
-        }
-        std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: " << std::endl;
-        for (auto const& rcut : cuts->GetProductionCuts() ) {
-          std::cout << " " << rcut;
-        }
-        std::cout << std::endl;
-        region->SetProductionCuts(cuts);
       }
     }
   }
+
 }  // end namespace mu2e
