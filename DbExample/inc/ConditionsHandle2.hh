@@ -16,16 +16,13 @@ namespace mu2e {
   {
   public:
     ConditionsHandle2() {
+      ENTITY e;
+      art::ServiceHandle<ConditionsService2> sg;
+      _cptr = sg->getCache(e.name());
     }
     ~ConditionsHandle2() { }
 
     ENTITY const& get(art::EventID const& eid) { 
-
-      if(!_cptr) {
-	ENTITY e;
-	art::ServiceHandle<ConditionsService2> sg;
-	_cptr = sg->getCache(e.name());
-      }
 
       uint32_t r = eid.run();
       uint32_t s = eid.subRun();

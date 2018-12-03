@@ -23,11 +23,6 @@ namespace mu2e {
     // create this here to force DbService to be active before Conditions2
     art::ServiceHandle<DbService> d;
 
-    iRegistry.sPostBeginJob.watch(this, &ConditionsService2::postBeginJob);
-  }
-
-  void ConditionsService2::postBeginJob() {
-
     auto dd1 = std::make_shared<mu2e::DetData1Cache>();
     _caches[dd1->name()] = dd1;
     auto dd2 = std::make_shared<mu2e::DetData2Cache>();
@@ -35,7 +30,11 @@ namespace mu2e {
     auto dd3 = std::make_shared<mu2e::DetData3Cache>();
     _caches[dd3->name()] = dd3;
 
+    //iRegistry.sPostBeginJob.watch(this, &ConditionsService2::postBeginJob);
   }
+
+  //void ConditionsService2::postBeginJob() {
+  //}
 
 
   //ConditionsService2::~ConditionsService2(){

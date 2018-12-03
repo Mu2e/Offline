@@ -1,6 +1,7 @@
 #ifndef DbExample_DetData3Cache_hh
 #define DbExample_DetData3Cache_hh
 
+#include <memory>
 #include "DbExample/inc/DetData1.hh"
 #include "DbExample/inc/DetData2.hh"
 #include "DbExample/inc/ConditionsCache.hh"
@@ -18,8 +19,18 @@ namespace mu2e {
       
       // lock access to the data, will release when this method returns
       LockGuard lock(*this);
-      
-      auto const& c1 = _detData1_h.get(eid);  // get the conditins objects
+
+      // this has to be here because we can't create 
+      // these handles in the constructor since this object
+      // is created before the service is done creation.
+      if(!_detData1_p) {
+	_detData1_p = std::make_unique<ConditionsHandle2<DetData1> >();
+	_detData2_p = std::make_unique<ConditionsHandle2<DetData2> >();
+      }
+
+      auto & _detData1_h = *_detData1_p;
+      auto & _detData2_h = *_detData2_p;
+      auto const& c1 = _detData1_h.get(eid);  // get the conditions objects
       auto const& c2 = _detData2_h.get(eid);  // this is dependant on
       auto iov = _detData1_h.iov();
       auto const& iov2 = _detData2_h.iov();
@@ -43,8 +54,8 @@ namespace mu2e {
     std::string _name;
     int _index;
     DetData3Maker _maker;
-    ConditionsHandle2<DetData1> _detData1_h;
-    ConditionsHandle2<DetData2> _detData2_h;
+    std::unique_ptr<ConditionsHandle2<DetData1> > _detData1_p;
+    std::unique_ptr<ConditionsHandle2<DetData2> > _detData2_p;
   };
 };
 
