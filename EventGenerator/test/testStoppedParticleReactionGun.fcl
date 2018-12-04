@@ -1,0 +1,135 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 104.97 MeV electrons with radative Correction included
+#for more info DocDB 20844
+#------------------------------------------------------------------------------
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+
+process_name : StoppedParticleReactionGunTest
+
+source       : { module_type : EmptyEvent   
+    maxEvents : 100000
+}
+
+producers     : { @table::EventGenerator.producers }
+
+services : {
+    message               : @local::default_message
+    TFileService          : { fileName        : "nts._USER_.testStoppedParticleReactionGun.xxx.sequencer.root" }
+    RandomNumberGenerator : { }
+
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : { @table::automaticSeeds
+	baseSeed         :  0
+	maxUniqueEngines :  20
+    }
+
+    TimeTracker : {
+	printSummary : true
+	dbOutput : {
+	    filename  : ""
+	    overwrite : false
+	}
+    }
+}
+services.scheduler.wantSummary: true
+
+
+physics : {
+    producers: {   @table::producers
+	generate : { @table::StoppedParticleReactionGun 
+	    doHistograms : true
+	}
+
+	Czarnecki : { @table::StoppedParticleReactionGun 
+#------------------------------------------------------------------------------
+#  ehi is determined internally
+#------------------------------------------------------------------------------
+	    physics      : { @table::StoppedParticleReactionGun.physics
+		elow               : 1.
+		spectrumShape      : "Czarnecki"
+		spectrumResolution : 0.1
+	    }
+	    doHistograms : true
+	}
+
+	Flat : { @table::StoppedParticleReactionGun 
+	    physics      : { @table::StoppedParticleReactionGun.physics
+		spectrumShape : "flat"
+		elow          : 10
+		ehi           : 100
+	    }
+	    doHistograms : true
+	}
+
+	CeEndpoint : { @table::StoppedParticleReactionGun  # so far, this gives Al
+	    physics      : { @table::StoppedParticleReactionGun.physics
+		spectrumShape : "CeEndpoint"
+	    }
+	    doHistograms : true
+	}
+
+	Eplus : { @table::StoppedParticleReactionGun  # so far, this gives Al
+	    physics      : { @table::StoppedParticleReactionGun.physics
+		spectrumShape      : "ConversionSpectrum"
+		pdgId              : -11                  # 
+		elow               : 0.                   # needed to make the templated interface happy
+		ehi                : 92.32                # needed to make the templated interface happy
+		spectrumResolution : 0.05
+	    }
+	    doHistograms : true
+	}
+
+	Protons : { @table::StoppedParticleReactionGun  # so far, this gives Al
+	    physics      : { @table::StoppedParticleReactionGun.physics
+		pdgId         : 2212
+		spectrumShape : "ejectedProtons"
+		nbins         : 1050
+	    }
+	    doHistograms : true
+	}
+
+	dioalll          : { @table::producers.dioalll
+	    doHistograms : true
+	}
+    }
+    
+    p1            : [ generate  , 
+		      Czarnecki ,
+		      Flat      ,
+		      CeEndpoint,
+		      Eplus     ,
+		      Protons   ,
+		      dioalll
+		     ]
+
+    trigger_paths : [ p1 ]
+}
+   
+services.TFileService.fileName            : "nts._USER_.testStoppedParticleReactionGun.xxx.000001.root"
+#------------------------------------------------------------------------------
+# uncomment the next 2 lines if you want the DST file to be written out
+#-----------------------------------------------------------------------------
+#physics.out                               : [ detectorOutput ]
+#outputs.detectorOutput.SelectEvents       : [ p1 ]
+#outputs.detectorOutput.fileName           : "sim.user.testStoppedParticleReactionGun.xxx.000001.art"
+#------------------------------------------------------------------------------
+# uncomment to avoid waisting time on the initialization of detailed neutron 
+# cross sections - that shouldn't affect the CE simulation 
+#------------------------------------------------------------------------------
+# physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
+physics.producers.generate.muonStops.inputFiles   : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.Czarnecki.muonStops.inputFiles  : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.Flat.muonStops.inputFiles       : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.CeEndpoint.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.Eplus.muonStops.inputFiles      : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.Protons.muonStops.inputFiles    : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.dioalll.muonStops.inputFiles    : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]

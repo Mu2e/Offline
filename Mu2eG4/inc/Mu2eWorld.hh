@@ -128,7 +128,8 @@ namespace mu2e {
       int    g4MaxIntSteps_;
       double bfieldMaxStep_;
       bool limitStepInAllVolumes_;
-      
+      bool useEmOption4InTracker_;
+
       //returned from constructPS
       G4LogicalVolume* psVacuumLogical_;
 

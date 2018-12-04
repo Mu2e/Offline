@@ -1,0 +1,254 @@
+# -*- mode: tcl -*-
+#
+# Define sequences for track based triggers.  The sequences for hit preparation
+# and the tracking modules configuration must preceede these and are defined elsewhere
+# original author: Dave Brown (LBNL) Mar. 7 2017
+#
+BEGIN_PROLOG
+# define the filter modules used for track-based trigger
+# filter to require a minimum # of hits in a time slot
+TrkFilters : {
+    filters : {
+	# filters for track hit clustering
+	TPRTCFilter : {
+	    module_type : TimeClusterFilter
+	    TimeClusterCollection : "TTtimeClusterFinder"
+	}
+	CPRTCFilter : {
+	    module_type : TimeClusterFilter
+	    TimeClusterCollection : "TTCalTimePeakFinder"
+	    MinNHits              : 1  #just check if there are TimeClusters
+	}
+	# filters for either positive or negative helicity tracks near the CE energy
+	TPRPosHelixFilter : {
+	    module_type : HelixFilter
+	    HelixSeedCollection : "TThelixFinder:Positive"
+	    MinNStrawHits       : 15  
+	    MinMomentum         : 70. 
+	    MaxMomentum         : 120.
+	    MinPt               : 0
+	    MaxChi2XY           : 8.
+	    MaxChi2PhiZ         : 8.
+	    MaxD0               : 300.
+	    MinD0               : -150.
+	    MinAbsLambda        : 140.
+	    MaxAbsLambda        : 300.
+	}
+	TPRNegHelixFilter : {
+	    module_type : HelixFilter
+	    HelixSeedCollection : "TThelixFinder:Negative"
+	    MinNStrawHits       : 15  
+	    MinMomentum         : 60. 
+	    MaxMomentum         : 140.
+	    MinPt               : 0
+	    MaxChi2XY           : 8.
+	    MaxChi2PhiZ         : 8.
+	    MaxD0               : 300.
+	    MinD0               : -150.
+	    MinAbsLambda        : 100.
+	    MaxAbsLambda        : 330.
+	}
+	CPRPosHelixFilter : {
+	    module_type : HelixFilter
+	    HelixSeedCollection : "TTCalHelixFinderDem"
+	    MinNStrawHits       : 15  
+	    MinMomentum         : 80. 
+	    MaxMomentum         : 140.
+	    MinPt               : 0
+	    MaxChi2XY           : 5.
+	    MaxChi2PhiZ         : 5.
+	    MaxD0               : 350.
+	    MinD0               : -350.
+	    MinAbsLambda        : 140.
+	    MaxAbsLambda        : 330.
+	}
+	CPRNegHelixFilter : {
+	    module_type : HelixFilter
+	    HelixSeedCollection : "TTCalHelixFinderDep"
+	    MinNStrawHits       : 15  
+	    MinMomentum         : 60. 
+	    MaxMomentum         : 140.
+	    MinPt               : 0
+	    MaxChi2XY           : 5.
+	    MaxChi2PhiZ         : 5.
+	    MaxD0               : 300.
+	    MinD0               : -150.
+	    MinAbsLambda        : 100.
+	    MaxAbsLambda        : 330.
+	}
+	# filters for CE candidates (downstream eminus near 100 MeV/c)
+	TPRDeMSeedFilter : {
+	    module_type : SeedFilter
+	    KalSeedCollection : "TTKSFDeM"
+	    MinNStrawHits     : 15
+	    MinMomentum       : 80.      
+	    MaxMomentum       : 200.     #don't apply cut
+	    MaxChi2DOF        : 20.      #don't apply cut
+	    MaxMomErr         : 10.      #don't apply cut
+	    MinD0             : -200.
+	    MaxD0             : 200.
+	}
+	CPRDeMSeedFilter : {
+	    module_type : SeedFilter
+	    KalSeedCollection : "TTCalSeedFitDem"    
+	    MinNStrawHits     : 15
+	    MinMomentum       : 80.      
+	    MaxMomentum       : 200.     #don't apply cut
+	    MaxChi2DOF        : 20.      #don't apply cut
+	    MaxMomErr         : 10.      #don't apply cut
+	    MinD0             : -200.
+	    MaxD0             : 200.
+	}
+	TPRDeMKalFilter : {
+	    module_type : SeedFilter
+	    KalSeedCollection : "TTKFFDeM"
+	}
+	# filters for downstream positrons (mu- -> e+ conversion) 
+	TPRDePSeedFilter : {
+	    module_type : SeedFilter
+	    KalSeedCollection : "TTKSFDeP"
+	    MinNStrawHits     : 15
+	    MinMomentum       : 70.      
+	    MaxMomentum       : 110.     #don't apply cut
+	    MaxChi2DOF        : 20.      #don't apply cut
+	    MaxMomErr         : 10.      #don't apply cut
+	    MinD0             : -200.
+	    MaxD0             : 200.
+	}
+	CPRDePSeedFilter : {
+	    module_type : SeedFilter
+	    KalSeedCollection : "TTCalSeedFitDep"    
+	    MinNStrawHits     : 15
+	    MinMomentum       : 70.      
+	    MaxMomentum       : 110.     #don't apply cut
+	    MaxChi2DOF        : 20.      #don't apply cut
+	    MaxMomErr         : 10.      #don't apply cut
+	    MinD0             : -200.
+	    MaxD0             : 200.
+	}
+
+	TPRDePKalFilter : {
+	    module_type : SeedFilter
+	    KalSeedCollection : "TTKFFDeP"
+	}
+	# Other filters FIXME!!
+	# calibration filters
+	# reflecting cosmic filters
+	# low-momentum electron filters
+	# low-field running filters
+
+	# trackSDCountFilter: is used upstream all the tracking sequence.
+	#                     it requires minimum number of hits; that is
+	#                     particularly useful for the off-spill events
+	TrackSDCountFilter     : {
+	    module_type : DigiFilter
+	    StrawDigiCollection : makeSD
+	    CaloDigiCollection  : notUsed
+	    UseStrawDigi        : true
+	    UseCaloDigi         : false
+	    MinNStrawDigi       : 10 
+	    MaxNStrawDigi       : 10000
+	    MinNCaloDigi        : -1
+	    MaxNCaloDigi        : -1
+	    MaxCaloEnergy       : -1
+	}
+	
+	#  Prescaling filters
+	#follow the prescaler filters for Tpr Track sequences
+	TPRTCEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale : 1
+	}
+	TPRTCPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale : 1000
+	    useFilteredEvents : true
+	}
+
+	TPRPosHelixEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale : 1
+	}
+	TPRPosHelixPrescale : {
+	    module_type : PrescaleEvent
+	    useFilteredEvents : true
+	    nPrescale         : 300
+	}
+	
+	TPRDeMSeedEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::tprDeMSeed_evt_sf 
+	}
+	
+	TPRDeMSeedPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::tprDeMSeed_sf
+	    useFilteredEvents : true
+	}
+
+	TPRDePSeedEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::tprDePSeed_evt_sf
+	}
+	
+	TPRDePSeedPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::tprDePSeed_sf
+	    useFilteredEvents : true
+	}
+	
+	#follow the prescaler filters for Tpr Track sequences
+	CPRDeMSeedEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::cprDeMSeed_evt_sf
+	}
+	
+	CPRDeMSeedPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::cprDeMSeed_sf
+	    useFilteredEvents : true
+	}
+
+	CPRDePSeedEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::cprDePSeed_evt_sf
+	}
+	
+	CPRDePSeedPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::cprDePSeed_sf
+	    useFilteredEvents : true
+	}
+	
+    }
+
+    # sequences for different trigger paths.  Early triggers are prescaled
+    sequences : {
+	#trkpatrec tracking
+	tprTC       : [ TPRTCEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+			@sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter,  TPRTCPrescale  ]
+	tprPosHelix : [ TPRPosHelixEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TPRPosHelixPrescale   ]
+	tprDeMSeed  : [ TPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, TTKSFDeM, TPRDeMSeedFilter, TPRDeMSeedPrescale ]
+	tprDePSeed  : [ TPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco,  @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+			TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRNegHelixFilter, TTKSFDeP, TPRDePSeedFilter, TPRDePSeedPrescale ]
+	
+	#calo-seeded tracking
+	cprDeMSeed : [ CPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDem, CPRPosHelixFilter,
+		       TTCalSeedFitDem, CPRDeMSeedFilter, CPRDeMSeedPrescale ]
+	cprDePSeed : [ CPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDep, CPRNegHelixFilter, 
+		       TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
+
+	#kalman filter included
+	tprDeMKal  : [ @sequence::CaloClusterTrigger.Reco,
+		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
+		       TTtimeClusterFinder, TPRTCFilter, TThelixFinder, TPRPosHelixFilter, 
+		       TTKSFDeM, TPRDeMSeedFilter, TTKFFDeM, TPRDeMKalFilter ]
+	# add sequences for upstream, calibration, ...  FIXME!
+    }
+}
+END_PROLOG

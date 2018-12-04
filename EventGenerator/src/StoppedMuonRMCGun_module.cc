@@ -65,8 +65,11 @@ namespace mu2e {
     int verbosityLevel_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
+    const double czmax_;
+    const double czmin_;
     CLHEP::RandGeneral*  randSpectrum_;
     RandomUnitSphere     randUnitSphere_;
+    RandomUnitSphere     randUnitSphereExt_; //For photons, to limit cosz
     CLHEP::RandFlat      randFlat_;
 
     MuonCaptureSpectrum  muonCaptureSpectrum_;
@@ -87,6 +90,7 @@ namespace mu2e {
 
 
     TH1F* _hmomentum;
+    TH1F* _hCosz;
     TH1F* _hEnergyElectron;
     TH1F* _hEnergyPositron;
     TH1F* _hWeight;
@@ -118,7 +122,10 @@ namespace mu2e {
     , ehi_                (psphys_.get<double>("ehi"))
     , verbosityLevel_     (pset.get<int>("verbosityLevel", 0))
     , eng_                (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    , czmax_              (pset.get<double>("czmax",  1.))
+    , czmin_              (pset.get<double>("czmin", -1.))
     , randUnitSphere_     (eng_)
+    , randUnitSphereExt_  (eng_, czmax_, czmin_)
     , randFlat_           (eng_)
     , muonCaptureSpectrum_(&randFlat_,&randUnitSphere_)
     , stops_              (eng_, pset.get<fhicl::ParameterSet>("muonStops"))
@@ -151,14 +158,15 @@ namespace mu2e {
       art::TFileDirectory tfdir = tfs->mkdir( "StoppedMuonRMCGun" );
 
       _hmomentum       = tfdir.make<TH1F>("hmomentum", "Produced photon momentum, RMC", 70,  0.,  140.  );
+      _hCosz           = tfdir.make<TH1F>("hCosz", "Produced external photon cosz, RMC", 200,  -1.,  1.  );
       _hEnergyElectron = tfdir.make<TH1F>("hEnergyElectron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
       _hEnergyPositron = tfdir.make<TH1F>("hEnergyPositron", "Produced electron energy, RMC Internal", 70,  0.,  140.  );
       _htZero          = tfdir.make<TH1F>("htZero"         , "Stopped Muon time", 100,0.,2000.);
-      _hWeight         = tfdir.make<TH1F>("hWeight"        , "Event Weight ", 100,0.,1.);
+      _hWeight         = tfdir.make<TH1F>("hWeight"        , "Event Weight ", 100,0.,2.e-5);
       _hMee            = tfdir.make<TH1F>("hMee"           , "M(e+e-) "     , 200,0.,200.);
       _hMeeVsE         = tfdir.make<TH2F>("hMeeVsE"        , "M(e+e-) "     , 200,0.,200.,200,0,200);
       _hMeeOverE       = tfdir.make<TH1F>("hMeeOverE"      , "M(e+e-)/E"          , 200, 0.,1);
-     _hy               = tfdir.make<TH1F>("hy"             , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+      _hy              = tfdir.make<TH1F>("hy"             , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
     }
   }
 
@@ -240,8 +248,8 @@ namespace mu2e {
 
       double fractionOfSpectrum = integrateClosure(xLower,xUpper)/integrateClosure(xGammaEnergy,1.);
 
-      externalNormalization = fractionOfSpectrum*rmcFrac;
-      internalNormalization = rhoInternal_*externalNormalization;
+      externalNormalization = fractionOfSpectrum*rmcFrac*(czmax_-czmin_)/2.; //including fraction of cosz simulated in externals
+      internalNormalization = rhoInternal_*fractionOfSpectrum*rmcFrac;
 
       if (physicsVerbosityLevel_ > 0){
 	std::cout << "lowestEnergy, upperEnergy, xLower, xUpper, xGammaEnergy, kMax, rmcFrac, externalNormalization, internalNormalization" << "\n" <<
@@ -287,19 +295,22 @@ namespace mu2e {
     // the probability of internal conversion is given by rho = 0.0069 (assume same as for RPC).  Throw a flat 
 
     if (randFlat_.fire() > rhoInternal_) {
+      CLHEP::HepLorentzVector photon(randUnitSphereExt_.fire(energy),energy);
       output->emplace_back( PDGCode::gamma, 
 			    GenId::radiativeMuonCapture, 
 			    pos,
-			    CLHEP::HepLorentzVector(randUnitSphere_.fire(energy),energy), 
+			    photon,
 			    stop.t );
 
       event.put(std::move(output));
-      std::unique_ptr<EventWeight> pw(new EventWeight(externalNormalization));
+      std::unique_ptr<EventWeight> pw(new EventWeight(externalNormalization)); 
       event.put(std::move(pw));
  
-      //      weight = weightExternal;
+      weight = externalNormalization;
       if ( doHistograms_ ) {
 	_hmomentum->Fill(energy);
+	_hCosz->Fill(photon.cosTheta());
+	_hWeight->Fill(weight);
       }
     } 
     else {    // internal conversions
@@ -339,7 +350,7 @@ namespace mu2e {
 	std::cout << "stop time = " << stop.t << std::endl;
 	std::cout << " event weight = " << fractionSpectrum_ << " " << rhoInternal_ << " " << internalNormalization << std::endl;
       }
-
+      weight = internalNormalization;
       if ( doHistograms_ ) {
 	_hWeight->Fill(weight);
 	_hmomentum->Fill(energy);

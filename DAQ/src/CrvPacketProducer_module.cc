@@ -61,10 +61,8 @@ namespace mu2e {
       adc_t recoDigiSamples;
       std::vector<adc_t> waveform;
       
-      adc_t rocID;
-      adc_t ringID;
-
       dtc_id dtcID;
+      adc_t rocID;
     };
 
     explicit CrvPacketProducer(fhicl::ParameterSet const& pset);
@@ -80,33 +78,13 @@ namespace mu2e {
     string                _outputFile;
     ofstream              outputStream;
 
-    // For now, SiPM IDs start at 0 and end at number_of_rings*rocs_per_ring*number_of_sipms_per_roc-1
+    // For now, SiPM IDs start at 0 and end at number_of_rocs*number_of_sipms_per_roc-1
+    const size_t number_of_rocs = 14;
     const size_t number_of_sipms_per_roc = 2048; // 24*64;
+    const size_t number_of_rocs_per_dtc = 6;
 
-    // 6 optical transceivers per DTC
-    // 2 optical links per ring (readout both ends)
-    // => 3 Rings per DTC/server
-    //
-    // 12 ROCs/server
-    // 3 Rings per server
-    // => 4 ROCs per ring
-    //
-    // 15 ROCs
-    // 4 ROCs per ring
-    // => 4 rings
-    //
-    // 4 rings
-    // 3 rings per server
-    // => 2 servers
-    //
-    // 2 servers
-    // 12 ROCs/server
-    // ? SiPMs per ROC
-    // => MAX ???? SiPMs
-    //
-    const size_t number_of_rings = 4;
-    const size_t rings_per_dtc = 3;
-    const size_t rocs_per_ring = 4;
+    // 6 rocs per DTC => 3 DTCs
+    // 14 rocs * 2048 sipms per roc => 28,672 sipms max
 
     int _generateTextFile;
 
@@ -159,8 +137,8 @@ namespace mu2e {
     bool gblresult;
     art::Handle<CrvDigiCollection> crvDigisHandle;
     gblresult = evt.getByLabel(_makerModuleLabel,"", crvDigisHandle);
-    ( _diagLevel > 0 ) && 
-      std::cout 
+    ( _diagLevel > 0 ) &&
+      std::cout
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " CrvDigiCollection             _makerModuleLabel: " << _makerModuleLabel << ", "
       << ", " << gblresult << std::endl;
@@ -178,37 +156,34 @@ namespace mu2e {
     std::vector<crvhit> crvHitVector; // Vector of trk hit digi data
 
 
-    for(CrvDigiCollection::const_iterator iter=hits_CRV.begin(); 
+    for(CrvDigiCollection::const_iterator iter=hits_CRV.begin();
         iter!=hits_CRV.end(); iter++) {
 
 	  const CrvDigi &crvDigi = *iter;
 	  const CRSScintillatorBarIndex &barIndex = crvDigi.GetScintillatorBarIndex();
 	  int SiPM = crvDigi.GetSiPMNumber();
-      
-	  int sipmID = barIndex.asInt()*4 + SiPM;
-	  
+
+	  size_t sipmID = barIndex.asInt()*4 + SiPM;
+
 	  // 15 ROCs total
-	  if(sipmID>= abs(number_of_rings * rocs_per_ring * number_of_sipms_per_roc) ) {
+	  if(sipmID>= number_of_rocs * number_of_sipms_per_roc) {
 	    throw cet::exception("DATA") << " SiPM index " << sipmID
-					 << " exceeds limit of " <<  number_of_rings << "*"
-					 << rocs_per_ring << "*" << number_of_sipms_per_roc
-					 << "=" << number_of_rings * rocs_per_ring * number_of_sipms_per_roc;
+					 << " exceeds limit of " <<  number_of_rocs
+					 << " * " << number_of_sipms_per_roc
+					 << " = " << number_of_rocs * number_of_sipms_per_roc;
 	  }
+
+	  // ROC ID, counting from 0, across all (for the CRV)
+	  size_t globalROCID = sipmID / number_of_sipms_per_roc;
 	  
-	  // Ring ID, counting from 0, across all (for the tracker)
-	  size_t globalRingID = int(sipmID / (rocs_per_ring * number_of_sipms_per_roc));
+	  size_t rocID = globalROCID % number_of_rocs_per_dtc;
+	  size_t dtcID = dtc_id(globalROCID / number_of_rocs_per_dtc);	  
 	  
-	  size_t ringID = globalRingID % rings_per_dtc;
-	  size_t rocID = (sipmID - (rocs_per_ring * number_of_sipms_per_roc) * globalRingID) / number_of_sipms_per_roc;  
-	  size_t dtcID = dtc_id(globalRingID/rings_per_dtc);
-	  
-	  
-	    // Fill struct with info for current hit
+	  // Fill struct with info for current hit
 	  crvhit curHit;
 	  curHit.evt = eventNum;
 	  curHit.sipmID = sipmID;
 	  curHit.rocID = rocID;
-	  curHit.ringID = ringID;
 	  curHit.dtcID = dtcID;
 
 	  curHit.time = crvDigi.GetStartTDC();
@@ -216,16 +191,15 @@ namespace mu2e {
 	  for(size_t j = 0; j<curHit.recoDigiSamples; j++) {
 	      curHit.waveform.push_back((adc_t) (crvDigi.GetADCs()[j]) );
 	  }
-	    
+
 	  crvHitVector.push_back(curHit);
-	    
+
 	  if(_generateTextFile>0) {
 	      outputStream << curHit.evt << "\t";
 
-	      // Added temporarily for extra debugging info
-	      outputStream << (int) curHit.dtcID << "\t";
-	      outputStream << curHit.ringID << "\t";
-	      outputStream << curHit.rocID << "\t";
+	      // // Added temporarily for extra debugging info
+	      // outputStream << (int) curHit.dtcID << "\t";
+	      // outputStream << curHit.rocID << "\t";
 
 	      outputStream << curHit.sipmID << "\t";
 	      outputStream << curHit.time << "\t";
@@ -238,44 +212,37 @@ namespace mu2e {
 	      }
 	      outputStream << endl;
 	  }
-	  
+
     }
 
-    dtc_id max_dtc_id = number_of_rings / rings_per_dtc - 1;
-    if(number_of_rings % rings_per_dtc > 0) {
+    dtc_id max_dtc_id = number_of_rocs/number_of_rocs_per_dtc-1;
+    if(number_of_rocs % number_of_rocs_per_dtc > 0) {
       max_dtc_id += 1;
     }
-    // Create a vector to hold all Ring ID / ROC ID combinations for all DTCs to simulate
-    std::vector< std::pair<dtc_id, std::pair<size_t,size_t> > > rocRingVector;
+
+    // Create a vector to hold all DTC ID / ROC ID combinations
+    std::vector< std::pair<dtc_id, size_t> > dtcRocVector;
     for(dtc_id curDTCID = 0; curDTCID <= max_dtc_id; curDTCID++) {
-      for(size_t curRingID = 0; curRingID < rings_per_dtc; curRingID++) {
-	for(size_t curROCID = 0; curROCID < rocs_per_ring; curROCID++) {
-	  std::pair<int, int> curRocRingPair(curRingID, curROCID);	  
-	  std::pair<dtc_id, std::pair<size_t,size_t> > curPair(curDTCID, curRocRingPair);
-	  rocRingVector.push_back(curPair);  
-	}
+      for(size_t curROCID = 0; curROCID < number_of_rocs_per_dtc; curROCID++) {
+	std::pair<dtc_id, size_t> curPair(curDTCID, curROCID);
+	dtcRocVector.push_back(curPair);
       }
     }
-    // // Randomize the order in which the Rings and ROCs are received
-    // std::shuffle(rocRingVector.begin(),rocRingVector.end(),generator);
+    // // Randomize the order in which the DTCs are added to event
+    // std::shuffle(dtcRocVector.begin(),dtcRocVector.end(),generator);
 
-    // Loop over the ROC/ring pairs and generate datablocks for each ROC on
-    // all the rings
-    auto targetNumROCs = rocRingVector.size();
+    // Loop over the DTC/ROC pairs and generate datablocks for each ROC
+    auto targetNumROCs = dtcRocVector.size();
     for(size_t curPairNum = 0; curPairNum < targetNumROCs; curPairNum++) {
 
-      size_t dtcID = rocRingVector[curPairNum].first;
-      size_t ringID = rocRingVector[curPairNum].second.first;
-      size_t rocID = rocRingVector[curPairNum].second.second;
-
+      size_t dtcID = dtcRocVector[curPairNum].first;
+      size_t rocID = dtcRocVector[curPairNum].second;
 
       std::vector<crvhit> curHitVector;
-      // Find all hits for this event coming from the specified Ring/ROC
+      // Find all hits for this event coming from the specified DTC/ROC
       for (size_t curHitIdx = 0; curHitIdx < crvHitVector.size(); curHitIdx++) {
-	//	if (crvHitVector[curHitIdx].rocID == (int)rocID && crvHitVector[curHitIdx].ringID == (int)ringID) {
 	if (crvHitVector[curHitIdx].dtcID == (unsigned int)dtcID && 
-	    crvHitVector[curHitIdx].rocID == (unsigned int)rocID && 
-	    crvHitVector[curHitIdx].ringID == (unsigned int)ringID) {
+	    crvHitVector[curHitIdx].rocID == (unsigned int)rocID) {
 	  curHitVector.push_back(crvHitVector[curHitIdx]);
 	}
       }
@@ -288,13 +255,11 @@ namespace mu2e {
 	adc_t null_adc = 0;
 	// First 16 bits of header (reserved values)
 	curDataBlock.push_back(null_adc);
-	// Second 16 bits of header (ROC ID, packet type, and ring ID):
+	// Second 16 bits of header (ROC ID, packet type):
 	adc_t curROCID = rocID; // 4 bit ROC ID
 	adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
 	headerPacketType <<= 4; // Shift left by 4
-	adc_t curRingID = ringID; // 3 bit ring ID
-	curRingID <<= 8; // Shift left by 8
-	adc_t secondEntry = (curROCID | headerPacketType | curRingID);
+	adc_t secondEntry = (curROCID | headerPacketType);
 	secondEntry = (secondEntry | (1 << 15)); // valid bit
 	curDataBlock.push_back(secondEntry);
 	// Third 16 bits of header (number of data packets is 0)
@@ -335,13 +300,11 @@ namespace mu2e {
 	  adc_t null_adc = 0;
 	  // First 16 bits of header (reserved values)
 	  curDataBlock.push_back(null_adc);
-	  // Second 16 bits of header (ROC ID, packet type, and ring ID):
+	  // Second 16 bits of header (ROC ID, packet type):
 	  adc_t curROCID = rocID; // 4 bit ROC ID
 	  adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
 	  headerPacketType <<= 4; // Shift left by 4
-	  adc_t curRingID = ringID; // 3 bit ring ID
-	  curRingID <<= 8; // Shift left by 8
-	  adc_t secondEntry = (curROCID | headerPacketType | curRingID);
+	  adc_t secondEntry = (curROCID | headerPacketType);
 	  secondEntry = (secondEntry | (1 << 15)); // valid bit
 	  curDataBlock.push_back(secondEntry);
 	  // Third 16 bits of header (number of data packets is 0)
@@ -399,10 +362,10 @@ namespace mu2e {
 	  //	  DataBlock theBlock(DataBlock::CAL, uniqueID, dtcID, curDataBlock);
 	  DataBlock theBlock(DataBlock::CRV, evt.id(), dtcID, curDataBlock);
 	  dtcPackets->push_back(theBlock);
-	} // Done looping over hits for this roc/ring pair	
+	} // Done looping over hits for this DTC/ROC pair	
       }
 
-    } // Done looping of roc/ring pairs
+    } // Done looping of DTC/ROC pairs
 
     evt.put(move(dtcPackets));
 

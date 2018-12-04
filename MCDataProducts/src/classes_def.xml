@@ -56,15 +56,12 @@
  <class name="mu2e::CaloDigiMCCollection"/>
  <class name="mu2e::CaloDigi"/>
  <class name="mu2e::CaloDigiCollection"/>
- <class name="mu2e::CaloClusterContentMC"/>
  <class name="mu2e::CaloHitSimPartMC"/>
  <class name="mu2e::CaloHitSimPartMCCollection"/>
  <class name="art::Ptr<mu2e::CaloDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
  <class name="art::Wrapper<mu2e::CaloDigi>"/>
 
- <class name="mu2e::ExtMonUCITofHitMCTruth"/>
- <class name="mu2e::ExtMonUCITofHitMCTruthCollection"/>
  <class name="mu2e::SimParticle"/>
  <class name="std::pair<cet::map_vector_key,mu2e::SimParticle>"/>
  <class name="std::vector<std::pair<cet::map_vector_key,mu2e::SimParticle> >" />
@@ -111,7 +108,6 @@
  <class name="art::Wrapper<mu2e::CaloDigiMCCollection>"/>
  <class name="art::Wrapper<mu2e::CaloHitSimPartMCCollection>"/>
  <class name="art::Wrapper<mu2e::CaloDigiCollection>"/>
- <class name="art::Wrapper<mu2e::ExtMonUCITofHitMCTruthCollection>"/>
  <class name="art::Wrapper<mu2e::PointTrajectoryCollection>"/>
  <class name="art::Wrapper<mu2e::MCTrajectoryCollection>"/>
  <class name="art::Wrapper<mu2e::StatusG4>"/>
@@ -210,15 +206,6 @@
  <class name="art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo>" />
  <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::TrackSummary,mu2e::TrackSummaryMatchInfo> >" />
  <class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo> >" />
-
- <class name="mu2e::SimParticleTrackerHitSummary" />
- <class name="std::vector<mu2e::SimParticleTrackerHitSummary>" />
- <class name="std::pair<art::Ptr<mu2e::SimParticle>,art::Ptr<mu2e::SimParticleTrackerHitSummary> >" />
- <class name="std::pair<art::Ptr<mu2e::SimParticleTrackerHitSummary>,art::Ptr<mu2e::SimParticle> >" />
- <class name="art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void>" />
- <class name="art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void>" />
- <class name="art::Wrapper<art::Assns<mu2e::SimParticle,mu2e::SimParticleTrackerHitSummary,void> >" />
- <class name="art::Wrapper<art::Assns<mu2e::SimParticleTrackerHitSummary,mu2e::SimParticle,void> >" />
 
  <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Assns<mu2e::CaloCrystalHit,mu2e::SimParticle,void >" />

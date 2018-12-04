@@ -21,6 +21,7 @@ void PlotTime(const char* dirname, const char* name, TH1F* timeplot) {
 void PlotAllTimes(const char* dirname, double maxtime) {
   // find all the csv files in this directory
   float ttime(0.0);
+  float noRSDtime(0.0);
   static const string csv(".csv");
   vector<TH1F*> plots;
   void* dirp = gSystem->OpenDirectory(dirname);
@@ -37,6 +38,7 @@ void PlotAllTimes(const char* dirname, double maxtime) {
     }
     bool first(true);
     float norm(0.0);
+
     std::sort(fnames.begin(),fnames.end());
     for(auto const& fname : fnames ){
       string name = fname.substr(1,fname.find_last_of(".")-1);
@@ -48,7 +50,10 @@ void PlotAllTimes(const char* dirname, double maxtime) {
 	first = false;
 	norm = plot->GetEntries();
       }
-      ttime += plot->GetMean()*plot->GetEntries()/norm;
+      float mtime = plot->GetMean()*plot->GetEntries()/norm;
+      cout << "module " << name << " time = " << mtime << endl;
+      ttime += mtime;
+      if(name != "RSD")noRSDtime += plot->GetMean()*plot->GetEntries()/norm;
     }
     TCanvas* atcan = new TCanvas("atcan","times",800,800);
     int nxcel = (int)ceil(sqrt(plots.size()));
@@ -59,5 +64,6 @@ void PlotAllTimes(const char* dirname, double maxtime) {
       plots[iplot]->Draw();
     }
     cout << "Total time = " << ttime << endl;
+    cout << "No RSD time = " << noRSDtime << endl;
   }
 }

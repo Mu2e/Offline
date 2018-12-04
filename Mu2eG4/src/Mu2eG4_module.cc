@@ -137,6 +137,9 @@ namespace mu2e {
         bool  _exportPDTStart;
         bool  _exportPDTEnd;
 
+        // to be able to make StorePhysicsTable call after the event loop started
+        G4VUserPhysicsList* physicsList_;
+        std::string storePhysicsTablesDir_;
 
         ActionInitialization const * _actionInit;
 
@@ -223,6 +226,8 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
     _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
+
+    storePhysicsTablesDir_(pSet.get<std::string>("debug.storePhysicsTablesDir","")),
 
     stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
     steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
@@ -432,14 +437,14 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     _runManager->SetUserInitialization(allMu2e);
 
-    G4VUserPhysicsList* pL = physicsListDecider(pset_);
-    pL->SetVerboseLevel(_rmvlevel);
+    physicsList_ = physicsListDecider(pset_);
+    physicsList_->SetVerboseLevel(_rmvlevel);
 
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(_rmvlevel);
 
     G4HadronicProcessStore::Instance()->SetVerbose(_rmvlevel);
 
-    _runManager->SetUserInitialization(pL);
+    _runManager->SetUserInitialization(physicsList_);
 
 
     //this is where the UserActions are instantiated
@@ -480,7 +485,9 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // that is derived from the G4 geometry or physics processes.
 
     // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(pset_,pL);
+    postG4InitializeTasks(pset_,physicsList_);
+
+    _runManager->PhysicsHasBeenModified();
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
@@ -746,6 +753,15 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
 
 // Do the "end of run" parts of DoEventLoop and BeamOn.
 void Mu2eG4::BeamOnEndRun(){
+
+    if (storePhysicsTablesDir_!="") {
+      if ( _rmvlevel > 0 ) {
+        G4cout << __func__ << " Will write out physics tables to "
+               << storePhysicsTablesDir_
+               << G4endl;
+      }
+      physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+    }
 
     if (_use_G4MT)//MT mode
     {

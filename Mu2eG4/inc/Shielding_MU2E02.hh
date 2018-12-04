@@ -64,6 +64,6 @@ public:
 private:
   enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
 };
-#include "Shielding_MU2E02.icc"
+#include "Mu2eG4/inc/Shielding_MU2E02.icc"
 
 #endif

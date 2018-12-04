@@ -44,7 +44,7 @@
 //----------------------------------------------------------------------------
 //
 #if G4VERSION>4103
-#include "Mu2eEmStandardPhysics.hh"
+#include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
 #include "G4SystemOfUnits.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4EmParameters.hh"
