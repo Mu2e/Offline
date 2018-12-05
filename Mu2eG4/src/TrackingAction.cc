@@ -473,21 +473,22 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
     }
 
 
-    //Get kinetic energy at the begin of the last step
-    double preLastStepKE = Mu2eG4UserHelpers::getPreLastStepKE(trk);
+    //Get kinematics just before annihilation
+    double endKE = Mu2eG4UserHelpers::getEndKE(trk);
+    CLHEP::HepLorentzVector endMomentum =  Mu2eG4UserHelpers::getEndMomentum(trk);
 
     //Get number od steps the track is made of
     int nSteps = Mu2eG4UserHelpers::getNSteps(trk);
 
     // Add info about the end of the track.  Throw if SimParticle not already there.
     i->second.addEndInfo( trk->GetPosition()-_mu2eOrigin,
-                          CLHEP::HepLorentzVector(trk->GetMomentum(),trk->GetTotalEnergy()),
+                          endMomentum,
                           trk->GetGlobalTime(),
                           trk->GetProperTime(),
                           _physVolHelper->index(trk),
                           trk->GetTrackStatus(),
                           stoppingCode,
-                          preLastStepKE,
+                          endKE,
                           nSteps
                           );
 
