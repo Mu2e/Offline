@@ -52,8 +52,9 @@ namespace mu2e {
   private:
     Conf conf_;
 
-    TH2* h_p_by_parent_;
     TH1* h_p_all_;
+    TH2* h_p_by_parent_;
+    TH2* h_p_by_process_;
 
     const ParticleDataTable *particleTable_;
 
@@ -69,11 +70,13 @@ namespace mu2e {
     : art::EDAnalyzer(c)
     , conf_{c}
 
-    , h_p_by_parent_{tf.make<TH2D>("p_pion_by_parent", "Pion production momentum vs parent PID",  1, 0., 0., c().nPBins(), c().pmin(), c().pmax())}
     , h_p_all_{tf.make<TH1D>("p_pion", "Pion production momentum", c().nPBins(), c().pmin(), c().pmax())}
+    , h_p_by_parent_{tf.make<TH2D>("p_pion_by_parent", "Pion production momentum vs parent PID",  1, 0., 0., c().nPBins(), c().pmin(), c().pmax())}
+    , h_p_by_process_{tf.make<TH2D>("p_pion_by_process", "Pion production momentum vs production process",  1, 0., 0., c().nPBins(), c().pmin(), c().pmax())}
     , particleTable_{nullptr}
   {
     h_p_by_parent_->SetOption("colz");
+    h_p_by_process_->SetOption("colz");
   }
 
   //================================================================
@@ -98,6 +101,9 @@ namespace mu2e {
         const auto pref = particleTable_->particle(parent.pdgId()).ref();
         std::string parentName = pref.name();
         h_p_by_parent_->Fill(parentName.c_str(), momentum, 1.0);
+
+        std::string codename = p.creationCode().name(); // need to bind for the c_str() call below
+        h_p_by_process_->Fill(codename.c_str(), momentum, 1.0);
       }
     }
   }
