@@ -150,13 +150,6 @@
  <class name="mu2e::CaloDigiMCCollection"/>
  <class name="art::Wrapper<mu2e::CaloDigiMCCollection>"/>
 
- <class name="mu2e::CaloDigi"/>
- <class name="mu2e::CaloDigiCollection"/>
- <class name="art::Ptr<mu2e::CaloDigi>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
- <class name="art::Wrapper<mu2e::CaloDigi>"/>
- <class name="art::Wrapper<mu2e::CaloDigiCollection>"/>
-
  <class name="mu2e::CaloHitSimPartMC"/>
  <class name="mu2e::CaloHitSimPartMCCollection"/>
  <class name="art::Wrapper<mu2e::CaloHitSimPartMCCollection>"/>
