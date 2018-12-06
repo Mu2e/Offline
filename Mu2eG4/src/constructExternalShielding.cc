@@ -19,6 +19,7 @@
 
 // etc...
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -63,11 +64,18 @@ namespace mu2e {
     OrientationResolver* OR = new OrientationResolver();
 
     // Get config info
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheckGL      = config.getBool("g4.doSurfaceCheck",false);
-    const bool doSurfaceCheckESO   = config.getBool("ExtShield.doSurfaceCheck",false);
-    const bool doSurfaceCheck = (doSurfaceCheckGL || doSurfaceCheckESO);
-    const bool placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "ExtShield",           "ExtShield");
+    geomOptions->loadEntry( config, "ExtShielUpstream",    "ExtShieldUpstream");
+    geomOptions->loadEntry( config, "ExtShieldDownstream", "ExtShieldDownstream");
+
+    const bool isExtShieldUpstreamVisible   = geomOptions->isVisible("ExtShieldUpstream"); 
+    const bool isExtShieldUpstreamSolid     = geomOptions->isSolid("ExtShieldUpstream"); 
+    const bool isExtShieldDownstreamVisible = geomOptions->isVisible("ExtShieldDownstream"); 
+    const bool isExtShieldDownstreamSolid   = geomOptions->isSolid("ExtShieldDownstream"); 
+    const bool forceAuxEdgeVisible          = geomOptions->forceAuxEdgeVisible("ExtShield"); 
+    const bool doSurfaceCheck               = geomOptions->doSurfaceCheck("ExtShield");
+    const bool placePV                      = geomOptions->placePV("ExtShield");
 
     
     //----------------------------------------------------------------
@@ -84,10 +92,10 @@ namespace mu2e {
     int nBox = dims.size();
 
     for(int i = 0; i < nBox; i++)
-      {
+    {
 
 	// combine the tolerances with the dimensions.
-	std::vector<double> lwhs = dims[i];
+	std::vector<double> lwhs  = dims[i];
 	std::vector<double> dlwhs = tols[i];
 	for ( unsigned int idim = 0; idim < lwhs.size(); idim++ ) {
 	  lwhs[idim] += dlwhs[idim]/2.0;
@@ -104,19 +112,17 @@ namespace mu2e {
 	OR->getRotationFromOrientation(*itsRotat, orientInit);
 
 	// Build each box here
-
 	nestBox( name.str(), lwhs, findMaterialOrThrow(mats[i]),
 		 itsRotat, sites[i]-parent.centerInMu2e(),
 		 parent.logical,
 		 0,
-		 config.getBool("ExtShieldUpstream.visible"),
+		 isExtShieldUpstreamVisible,
 		 G4Colour::Magenta(),
-		 config.getBool("ExtShieldUpstream.solid"),
+		 isExtShieldUpstreamSolid,
 		 forceAuxEdgeVisible,
 		 placePV,
 		 doSurfaceCheck);
-
-      }
+    }
 
 
     //----------------------------------------------------------------
@@ -395,9 +401,9 @@ namespace mu2e {
 			extShieldVol.centerInParent,
 			parent.logical,
 			0,
-			config.getBool("ExtShieldDownstream.visible"),
+			isExtShieldDownstreamVisible,
 			G4Colour::Magenta(),
-			config.getBool("ExtShieldDownstream.solid"),
+			isExtShieldDownstreamSolid,
 			forceAuxEdgeVisible,
 			placePV,
 			doSurfaceCheck);
@@ -422,9 +428,9 @@ namespace mu2e {
 			extShieldVol.centerInParent,
 			parent.logical,
 			0,
-			config.getBool("ExtShieldDownstream.visible"),
+			isExtShieldDownstreamVisible,
 			G4Colour::Magenta(),
-			config.getBool("ExtShieldDownstream.solid"),
+			isExtShieldDownstreamSolid,
 			forceAuxEdgeVisible,
 			placePV,
 			doSurfaceCheck);

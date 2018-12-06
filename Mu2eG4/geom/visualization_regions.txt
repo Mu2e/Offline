@@ -3,12 +3,10 @@
 //
 // Original author Andrei Gaponenko
 
-#include "Mu2eG4/test/geom_01_LowDetailGraphics.txt"
-
 //================================================================
 // Visualization of magnetic field map regions
-bool visregions.innerFieldMaps.isVisible  = true;
-bool visregions.innerFieldMaps.isSolid    = true;
+bool visregions.innerFieldMaps.visible  = false;
+bool visregions.innerFieldMaps.solid    = false;
 string visregions.innerFieldMaps.material = "G4_AIR";
 
 // The color vectors should be non-empty and of the same size.  If
@@ -24,8 +22,8 @@ vector<double> visregions.innerFieldMaps.squashY = { -2, 2 };
 
 //================================================================
 // Visualization of magnetic field map regions
-bool visregions.outerFieldMaps.isVisible  = true;
-bool visregions.outerFieldMaps.isSolid    = true;
+bool visregions.outerFieldMaps.visible  = false;
+bool visregions.outerFieldMaps.solid    = false;
 string visregions.outerFieldMaps.material = "G4_AIR";
 
 // The color vectors should be non-empty and of the same size.  If
@@ -43,8 +41,8 @@ vector<double> visregions.outerFieldMaps.squashY = { -1, 1 };
 // Add a set of arbitrary boxes.
 // All coordinates are in mu2e system.
 
-bool visregions.boxes.isVisible = false;
-bool visregions.boxes.isSolid  =  true;
+bool visregions.boxes.visible = false;
+bool visregions.boxes.solid  =  false;
 
 // Material may affect how the box is shown in a viewer, thus make is configurable
 string visregions.boxes.material = "G4_AIR";
