@@ -34,6 +34,7 @@ namespace mu2e {
       // Accept compiler written d'tor.  Modules are never moved or copied.
       virtual void produce (art::Event& e);
       virtual void beginRun(art::Run&   r);
+      virtual void endRun(art::Run&   r);
     private:
       std::unique_ptr<CosmicCRY> cryGen;
       std::string inputfile;
@@ -60,6 +61,9 @@ namespace mu2e {
     evt.put(std::move(genParticles));
   }
 
+  void CryEventGenerator::endRun(art::Run&){
+    mf::LogInfo("CRYEventGenerator") << "Total live time simulated by CRY in this run: " << cryGen->getLiveTime();
+  }
 
 }
 

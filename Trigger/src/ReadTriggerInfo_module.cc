@@ -26,13 +26,20 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 
+//Conditions
+#include "ConditionsService/inc/AcceleratorParams.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+
+//Dataproducts
 #include "RecoDataProducts/inc/CaloCluster.hh"
+#include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 //ROOT
 #include "TH1F.h"
+#include "TH2F.h"
 
 #include <cmath>
 // #include <iostream>
@@ -49,6 +56,27 @@ namespace mu2e {
 
   public:
 
+    enum {
+      kNTrigInfo     = 20,
+      kNTrackTrig    = 10,
+      kNTrackTrigVar = 6,
+      kNHelixTrig    = 10,
+      kNHelixTrigVar = 7,
+      kNCaloCalib    = 5,
+      kNCaloCalibVar = 5,
+      kNCaloOnly     = 5,
+      kNCaloOnlyVar  = 5      
+    };
+
+    struct  trigInfo_ {
+      int           counts;
+      int           exclusive_counts;
+      std::string   label;
+      
+      trigInfo_ ():counts(0), exclusive_counts(0){}
+    };
+
+    
     explicit ReadTriggerInfo(fhicl::ParameterSet const& pset);
     virtual ~ReadTriggerInfo() { }
 
@@ -60,9 +88,14 @@ namespace mu2e {
     virtual void analyze(const art::Event& e);
     virtual void beginRun(const art::Run & run);
 
-    void   findTrigIndex    (std::vector<std::string> Vec, std::string ModuleLabel, int &Index);
-    void   fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*  KSeed);
-    void   fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed);
+    void   findTrigIndex        (std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index);
+    void   fillTrackTrigInfo    (int TrkTrigIndex, const KalSeed*  KSeed);
+    void   fillHelixTrigInfo    (int HelTrigIndex, const HelixSeed*HSeed);
+    void   fillCaloTrigSeedInfo (int CTrigSeedIndex, const CaloTrigSeed*HCl);
+    void   fillCaloCalibTrigInfo(int ClCalibIndex, const CaloCluster*  HCl);
+
+    void   findCorrelatedEvents (std::vector<string>& VecLabels, double &NCorrelated);
+    void   evalTriggerRate      ();
 
   private:
 
@@ -71,57 +104,54 @@ namespace mu2e {
     
     int      _nTrackTrig;
     int      _nCaloTrig;
+    int      _nCaloCalibTrig;
+
+    double   _duty_cycle;
 
     int      _nProcess;
     int      _numEvents;
     
     double   _bz0;
     
-    std::vector<std::string>  _trigLabels;
-    std::vector<int>          _trigCounts;
+    std::vector<trigInfo_>    _trigAll;	     
+    std::vector<trigInfo_>    _trigFinal;    
+    std::vector<trigInfo_>    _trigCaloOnly; 
+    std::vector<trigInfo_>    _trigCaloCalib;
+    std::vector<trigInfo_>    _trigTrack;    
+    std::vector<trigInfo_>    _trigHelix;    
+    std::vector<trigInfo_>    _trigEvtPS;    
     
-    std::vector<std::string>  _trigLabelsCaloOnly;
-    std::vector<int>          _trigCountsCaloOnly;
-    
-    std::vector<std::string>  _trigLabelsTrack;
-    std::vector<int>          _trigCountsTrack;
-    
-    std::vector<std::string>  _trigLabelsHelix;
-    std::vector<int>          _trigCountsHelix;
-    
-    std::vector<std::string>  _trigLabelsEvtPS;
-    std::vector<int>          _trigCountsEvtPS;
-    
-    TH1F *_hTrigInfo[5];
-    TH1F *_hTrkInfo [10][6];
-    TH1F *_hHelInfo [10][7];
+    TH1F *_hTrigInfo  [kNTrigInfo];
+    TH2F *_h2DTrigInfo[kNTrigInfo];
 
+    TH1F *_hTrkInfo [kNTrackTrig][kNTrackTrigVar];
+    TH1F *_hHelInfo [kNHelixTrig][kNHelixTrigVar];
+
+    TH1F *_hCaloCalibInfo[kNCaloCalib][kNCaloCalibVar];
+    TH1F *_hCaloOnlyInfo [kNCaloOnly][kNCaloOnlyVar];
+    
+    TH1F *_hTrigBDW[kNTrigInfo];
   };
 
 
   ReadTriggerInfo::ReadTriggerInfo(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset), 
-    _diagLevel     (pset.get<int>("diagLevel", 0)),
-    _nMaxTrig      (pset.get<size_t>("nFilters", 20)),
+    _diagLevel     (pset.get<int>   ("diagLevel", 0)),
+    _nMaxTrig      (pset.get<size_t>("nFilters", 50)),
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
+    _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
+    _duty_cycle    (pset.get<float> ("dutyCycle", 1.)),
     _nProcess(0), 
     _numEvents(0)
   {
-    _trigLabels.resize(_nMaxTrig);
-    _trigCounts.resize(_nMaxTrig);
-
-    _trigLabelsCaloOnly.resize(_nMaxTrig);
-    _trigCountsCaloOnly.resize(_nMaxTrig);
-
-    _trigLabelsTrack.resize(_nMaxTrig);
-    _trigCountsTrack.resize(_nMaxTrig);
-
-    _trigLabelsHelix.resize(_nMaxTrig);
-    _trigCountsHelix.resize(_nMaxTrig);
-
-    _trigLabelsEvtPS.resize(_nMaxTrig);
-    _trigCountsEvtPS.resize(_nMaxTrig);
+    _trigAll.      resize(_nMaxTrig);	     
+    _trigFinal.    resize(_nMaxTrig);    
+    _trigCaloOnly. resize(_nMaxTrig); 
+    _trigCaloCalib.resize(_nMaxTrig);
+    _trigTrack.    resize(_nMaxTrig);    
+    _trigHelix.    resize(_nMaxTrig);    
+    _trigEvtPS.    resize(_nMaxTrig);    
   }
   
   void ReadTriggerInfo::beginJob(){
@@ -129,15 +159,33 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
     art::TFileDirectory trigInfoDir = tfs->mkdir("trigInfo");
 
-    _hTrigInfo[0] = trigInfoDir.make<TH1F>("hTrigInfo_global", "Global Trigger rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[1] = trigInfoDir.make<TH1F>("hTrigInfo_track" , "Calo-only Triggers rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[2] = trigInfoDir.make<TH1F>("hTrigInfo_calo"  , "Track Triggers rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[3] = trigInfoDir.make<TH1F>("hTrigInfo_evtPS" , "Event prescaler Trigger bits distribution", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    _hTrigInfo[4] = trigInfoDir.make<TH1F>("hTrigInfo_helix" , "HelixSeed Triggers rejection", (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
-    
+    _hTrigInfo[0]   = trigInfoDir.make<TH1F>("hTrigInfo_global"    , "Global Trigger rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[1]   = trigInfoDir.make<TH1F>("hTrigInfo_track"     , "Calo-only Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[2]   = trigInfoDir.make<TH1F>("hTrigInfo_calo"      , "Track Triggers rejection"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[3]   = trigInfoDir.make<TH1F>("hTrigInfo_evtPS"     , "Event prescaler Trigger bits distribution"  , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[4]   = trigInfoDir.make<TH1F>("hTrigInfo_helix"     , "HelixSeed Triggers rejection"               , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[5]   = trigInfoDir.make<TH1F>("hTrigInfo_caloCalib" , "Calo Calibration rejection"                 , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[6]   = trigInfoDir.make<TH1F>("hTrigInfo_final"     , "Global Trigger rejection of the paths"      , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
+    _hTrigInfo[10]  = trigInfoDir.make<TH1F>("hTrigInfo_unique_all", "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigInfo[11]  = trigInfoDir.make<TH1F>("hTrigInfo_unique"    , "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
+    _h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map from all filters"   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));   
+
     for (int i=0; i<_nCaloTrig; ++i){
       art::TFileDirectory caloInfoDir = tfs->mkdir(Form("caloOnly_%i",i));
-     
+      _hCaloOnlyInfo[i][0] = caloInfoDir.make<TH1F>(Form("hEPeak_%i"   , i), "peak energy; E[MeV]"        , 400, 0, 200);
+      _hCaloOnlyInfo[i][1] = caloInfoDir.make<TH1F>(Form("hR1Max1_%i"   , i), "ring1 max; ring1max [MeV]" , 400, 0, 200);
+      _hCaloOnlyInfo[i][2] = caloInfoDir.make<TH1F>(Form("hR1Max2_%i"   , i), "ring1 max; ring1max2 [MeV]", 400, 0, 200);
+    
+    }
+    
+    for (int i=0; i<_nCaloCalibTrig; ++i){
+      art::TFileDirectory caloCalibInfoDir = tfs->mkdir(Form("caloCalib_%i",i));
+      _hCaloCalibInfo[i][0] = caloCalibInfoDir.make<TH1F>(Form("hE_%i"   , i), "Cluster energy; E[MeV]", 800, 0, 800);
+      _hCaloCalibInfo[i][1] = caloCalibInfoDir.make<TH1F>(Form("hN_%i"   , i), "Cluster size; nCrystalHits", 101, -0.5, 100.5);
+   
     }
     
     for (int i=0; i<_nTrackTrig; ++i){
@@ -161,31 +209,184 @@ namespace mu2e {
       _hHelInfo[i][6] = helinfoDir.make<TH1F>(Form("hClE_%i"  , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
     }
     
+    art::TFileDirectory trigBDWDir = tfs->mkdir("trigBDW");
 
+    _hTrigBDW[0]   = trigBDWDir.make<TH1F>("hTrigBDW_global"    , "Trigger bandwidth; ; rate [Hz]"                   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    _hTrigBDW[1]   = trigBDWDir.make<TH1F>("hTrigBDW_cumulative", "Cumulative Trigger bandwidth; ; rate [Hz]"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+    
   }
 
   void ReadTriggerInfo::endJob(){
-    //set the labels of the histrograms
-    for (size_t i=0; i<_trigCounts.size(); ++i ){
-      _hTrigInfo[0]->GetXaxis()->SetBinLabel(i+1, _trigLabels[i].c_str());
-      if (_trigCounts[i] > 0) _hTrigInfo[0]->SetBinContent(i+1, _nProcess/_trigCounts[i]);
 
-      _hTrigInfo[1]->GetXaxis()->SetBinLabel(i+1, _trigLabelsTrack[i].c_str());
-      if (_trigCountsTrack[i] > 0) _hTrigInfo[1]->SetBinContent(i+1, _nProcess/_trigCountsTrack[i]);
+    int    indexTrigInfo11(0);
 
-      _hTrigInfo[2]->GetXaxis()->SetBinLabel(i+1, _trigLabelsCaloOnly[i].c_str());
-      if (_trigCountsCaloOnly[i] > 0) _hTrigInfo[2]->SetBinContent(i+1, _nProcess/_trigCountsCaloOnly[i]);
+    //fill the histograms
+    for (size_t i=0; i<_trigAll.size(); ++i ){
+      _hTrigInfo  [0]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
+      _h2DTrigInfo[0]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
 
-      _hTrigInfo[3]->GetXaxis()->SetBinLabel(i+1, _trigLabelsEvtPS[i].c_str());
-      if (_trigCountsEvtPS[i] > 0) _hTrigInfo[3]->SetBinContent(i+1, _trigCountsEvtPS[i]);
+      if (_trigAll[i].counts > 0) {
+	_hTrigInfo[0]->SetBinContent(i+1, _nProcess/_trigAll[i].counts);
+	for (size_t j=0; j<_trigAll.size(); ++j ){
+	  _h2DTrigInfo[0]->GetYaxis()->SetBinLabel(j+1, _trigAll[j].label.c_str());
+	}
+      }
 
-      _hTrigInfo[4]->GetXaxis()->SetBinLabel(i+1, _trigLabelsHelix[i].c_str());
-      if (_trigCountsHelix[i] > 0) _hTrigInfo[4]->SetBinContent(i+1, _trigCountsHelix[i]);
+      _hTrigInfo[1]->GetXaxis()->SetBinLabel(i+1, _trigTrack[i].label.c_str());
+      if (_trigTrack[i].counts > 0) _hTrigInfo[1]->SetBinContent(i+1, _nProcess/_trigTrack[i].counts);
+
+      _hTrigInfo[2]->GetXaxis()->SetBinLabel(i+1, _trigCaloOnly[i].label.c_str());
+      if (_trigCaloOnly[i].counts > 0) _hTrigInfo[2]->SetBinContent(i+1, _nProcess/_trigCaloOnly[i].counts);
+
+      _hTrigInfo[3]->GetXaxis()->SetBinLabel(i+1, _trigEvtPS[i].label.c_str());
+      if (_trigEvtPS[i].counts > 0) _hTrigInfo[3]->SetBinContent(i+1, _trigEvtPS[i].counts);
+
+      _hTrigInfo[4]->GetXaxis()->SetBinLabel(i+1, _trigHelix[i].label.c_str());
+      if (_trigHelix[i].counts > 0) _hTrigInfo[4]->SetBinContent(i+1, _trigHelix[i].counts);
+
+      _hTrigInfo[5]->GetXaxis()->SetBinLabel(i+1, _trigCaloCalib[i].label.c_str());
+      if (_trigCaloCalib[i].counts > 0) _hTrigInfo[5]->SetBinContent(i+1, _trigCaloCalib[i].counts);
+
+      if (_trigFinal[i].counts > 0) {
+	_hTrigInfo  [6]->GetXaxis()->SetBinLabel(i+1, _trigFinal[i].label.c_str());
+	_hTrigInfo  [6]->SetBinContent(i+1, _nProcess/_trigFinal[i].counts);
+      }
+
+      //fill  the histograms that shows how many events were found exclusively by each trigger path
+      _hTrigInfo  [10]->GetXaxis()->SetBinLabel(i+1, _trigAll[i].label.c_str());
+      double    content_trigInfo11 = _hTrigInfo [10]->GetBinContent(i+1);
+      if (content_trigInfo11>0){
+	_hTrigInfo  [11]->GetXaxis()->SetBinLabel(indexTrigInfo11 +1, _trigAll[i].label.c_str());
+	_hTrigInfo  [11]->SetBinContent(indexTrigInfo11 +1, content_trigInfo11);
+	++indexTrigInfo11;
+      }
+
     }
+
+    //now let's filter the 2D correlation histogram with only those that actually triggered at least one event
+    int                nbinsx = _h2DTrigInfo[0]->GetNbinsX();
+    int                nbinsy = _h2DTrigInfo[0]->GetNbinsY();
+    std::vector<int>   binsToSkip;
+
+    for (int i=0; i<nbinsx; ++i){
+      bool used(false);
+
+      for (int j=0; j<nbinsy; ++j){
+	if (_h2DTrigInfo[0]->GetBinContent(i+1, j+1) > 0) {
+	  used = true;
+	  break;
+	}
+      }
+      if (!used) binsToSkip.push_back(i);
+    }
+
+    int   index_x(0);
+    for (int i=0; i<nbinsx; ++i){
+      int    counts = std::count(binsToSkip.begin(), binsToSkip.end(), i);
+      if (counts >= 1)       continue;
+      //set the label
+      _h2DTrigInfo[1]->GetXaxis()->SetBinLabel(index_x+1, _trigAll[i].label.c_str());
+
+      int    index_y(0);
+
+      for (int j=0; j<nbinsy; ++j){
+	counts = std::count(binsToSkip.begin(), binsToSkip.end(), j);
+	if (counts >= 1)       continue;
+	double  content =  _h2DTrigInfo[0]->GetBinContent(i+1, j+1);
+	_h2DTrigInfo[1]->SetBinContent(index_x+1, index_y+1, content);
+	
+	//set the label
+	if (index_x == 0){
+	  _h2DTrigInfo[1]->GetYaxis()->SetBinLabel(index_y+1, _trigAll[j].label.c_str());
+	}
+
+	++index_y;
+      }
+      ++index_x;
+    }
+    
+    // now evaluate the bandwidth
+    // NOTE: "evalTriggerrate" re-order the vectors _trigFinal
+    evalTriggerRate();
+  }
+  
+  //--------------------------------------------------------------------------------  
+  void   ReadTriggerInfo::evalTriggerRate        (){
+    //order the array with the filter used at the end of each path
+    std::sort(_trigFinal.begin(), _trigFinal.end(), [](const auto a, const auto b) {return a.counts < b.counts; });
+    
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    double    mbtime         = accPar->deBuncherPeriod;
+    double    mean_mb_rate   = 1./(mbtime/CLHEP::s)*_duty_cycle;
+
+    bool      isFirst(true);
+    int       index(0);
+   
+    std::vector<string>    labels_by_rate;
+
+    for (size_t i=0; i< _trigFinal.size(); ++i){
+      double  nEvents = (double)_trigFinal[i].counts;
+      if ( nEvents <= 1e-3)                 continue;
+
+      labels_by_rate.push_back(_trigFinal[i].label);
+
+      double  eff   = nEvents/(double)_nProcess;
+      double  rate  = mean_mb_rate*eff;
+      _hTrigBDW[0]->GetXaxis()->SetBinLabel(index+1, _trigFinal[i].label.c_str());
+      _hTrigBDW[1]->GetXaxis()->SetBinLabel(index+1, _trigFinal[i].label.c_str());
+      _hTrigBDW[0]->SetBinContent(index+1, rate);
+      
+      if (isFirst) {
+      	_hTrigBDW[1]->SetBinContent(index+1, rate);
+      	//	rate_ref  = rate;
+      	isFirst = false;
+      }else{
+	double    nCorrelated(0);
+	findCorrelatedEvents(labels_by_rate, nCorrelated);
+
+	rate = _hTrigBDW[1]->GetBinContent(index) + (nEvents-nCorrelated)/(double)_nProcess*mean_mb_rate;
+      	_hTrigBDW[1]->SetBinContent(index+1, rate);
+      }
+
+      ++index;
+    }
+
+  }
+
+
+
+  void   ReadTriggerInfo::findCorrelatedEvents(std::vector<string>& VecLabels, double &NCorrelated){
+    
+    NCorrelated = 0;
+    
+    const char* label_ref = VecLabels.at(VecLabels.size()-1).c_str();
+
+    //    char* label(0);
+    
+    int        nLabels = VecLabels.size() -1;
+    int        nbins   = _h2DTrigInfo[1]->GetNbinsX();
+    for(int i=0; i<nbins; ++i){
+      const char* label = _h2DTrigInfo[1]->GetXaxis()->GetBinLabel(i+1);
+      if (std::strcmp(label_ref, label) != 0)      continue;
+      
+      for (int k=0; k<nLabels; ++k){
+	label_ref = VecLabels.at(k).c_str();
+	for (int j=0; j<nbins; ++j){
+	  if (j == i)      break;
+	  label =   _h2DTrigInfo[1]->GetYaxis()->GetBinLabel(j+1);
+	  if (std::strcmp(label_ref, label) != 0)        continue;
+	  NCorrelated += _h2DTrigInfo[1]->GetBinContent(i+1, j+1);
+	}
+      }
+      break;
+    }
+    
+    
+    
   }
 
   //================================================================
-  void ReadTriggerInfo::beginRun(const art::Run & run){
+  void   ReadTriggerInfo::beginRun(const art::Run & run){
     // get bfield
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
@@ -203,11 +404,15 @@ namespace mu2e {
     event.getManyByType(hTrigInfoVec);
     
     art::Handle<TriggerInfo>       hTrigInfo;
-    TriggerFlag                    prescalerFlag   = TriggerFlag::prescaleRandom;
-    TriggerFlag                    trackFlag       = TriggerFlag::track;
-    TriggerFlag                    helixFlag       = TriggerFlag::helix;
-    TriggerFlag                    caloFlag        = TriggerFlag::caloCluster;
-    TriggerFlag                    caloOrTrackFlag = trackFlag; caloOrTrackFlag.merge(caloFlag); caloOrTrackFlag.merge(helixFlag);
+    TriggerFlag                    prescalerFlag       = TriggerFlag::prescaleRandom;
+    TriggerFlag                    trackFlag           = TriggerFlag::track;
+    TriggerFlag                    helixFlag           = TriggerFlag::helix;
+    TriggerFlag                    caloFlag            = TriggerFlag::caloCluster;
+    TriggerFlag                    caloCalibFlag       = TriggerFlag::caloCalib;
+    TriggerFlag                    caloTrigSeedFlag    = TriggerFlag::caloTrigSeed;
+    TriggerFlag                    caloOrTrackFlag     = trackFlag; caloOrTrackFlag.merge(caloFlag); caloOrTrackFlag.merge(caloCalibFlag); caloOrTrackFlag.merge(caloTrigSeedFlag);// caloOrTrackFlag.merge(helixFlag);
+    
+    std::vector<int>   trigFlagAll_index, trigFlag_index;
     
     for (size_t i=0; i<hTrigInfoVec.size(); ++i){
       hTrigInfo = hTrigInfoVec.at(i);
@@ -215,59 +420,90 @@ namespace mu2e {
       const TriggerInfo* trigInfo  = hTrigInfo.product();
       const TriggerFlag  flag      = trigInfo->triggerBits();
 
-      std::string    moduleLabel         = hTrigInfo.provenance()->moduleLabel();
+      std::string    moduleLabel   = hTrigInfo.provenance()->moduleLabel();
+      int            index_all(0);         
       int            index(0);         
       
       //fill the Global Trigger bits info
-      findTrigIndex(_trigLabels, moduleLabel, index);
-      _trigLabels[index] = moduleLabel;
+      findTrigIndex(_trigAll, moduleLabel, index_all);
+      _trigAll[index_all].label  = moduleLabel;
+      //      if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
+	//      }
+
+      findTrigIndex(_trigFinal, moduleLabel, index);
       if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	_trigCounts[index] = _trigCounts[index] + 1;
+	_trigFinal[index].label  = moduleLabel;
+	_trigFinal[index].counts = _trigFinal[index].counts + 1;
+	_trigAll[index_all].counts = _trigAll[index_all].counts + 1;
+	trigFlagAll_index.push_back(index_all);
       }
-      
       //fill the Calo-Only Trigger bits info
-      findTrigIndex(_trigLabelsCaloOnly, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloFlag)){ 
-	_trigLabelsCaloOnly[index] = moduleLabel;
-	_trigCountsCaloOnly[index] = _trigCountsCaloOnly[index] + 1;
+      findTrigIndex(_trigCaloOnly, moduleLabel, index);
+      if ( flag.hasAnyProperty(caloFlag) || flag.hasAnyProperty(caloTrigSeedFlag)){ 
+	_trigCaloOnly[index].label  = moduleLabel;
+	_trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
+	const CaloTrigSeed*clseed = trigInfo->caloTrigSeed().get();
+	if(clseed) fillCaloTrigSeedInfo(index, clseed);
+	trigFlag_index.push_back(index_all);
+      }
+
+      //fill the CaloCalib Trigger bits info
+      findTrigIndex(_trigCaloCalib, moduleLabel, index);
+      if ( flag.hasAnyProperty(caloCalibFlag)){ 
+	_trigCaloCalib[index].label  = moduleLabel;
+	_trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
+	const CaloCluster*cluster = trigInfo->caloCluster().get();
+	if(cluster) fillCaloCalibTrigInfo(index, cluster);
+	trigFlag_index.push_back(index_all);
       }
       
       //fill the Track Trigger bits info
-      findTrigIndex(_trigLabelsTrack, moduleLabel, index);
+      findTrigIndex(_trigTrack, moduleLabel, index);
       if ( flag.hasAnyProperty(trackFlag)){ 
-	_trigLabelsTrack[index] = moduleLabel;
-	_trigCountsTrack[index] = _trigCountsTrack[index] + 1;
+	_trigTrack[index].label  = moduleLabel;
+	_trigTrack[index].counts = _trigTrack[index].counts + 1;
 	const KalSeed*kseed = trigInfo->track().get();
 	if(kseed) fillTrackTrigInfo(index, kseed);
+	trigFlag_index.push_back(index_all);
       }
        //fill the Helix Trigger bits info
-      findTrigIndex(_trigLabelsHelix, moduleLabel, index);
+      findTrigIndex(_trigHelix, moduleLabel, index);
       if ( flag.hasAnyProperty(helixFlag)){ 
-	_trigLabelsHelix[index] = moduleLabel;
-	_trigCountsHelix[index] = _trigCountsHelix[index] + 1;
+	_trigHelix[index].label  = moduleLabel;
+	_trigHelix[index].counts = _trigHelix[index].counts + 1;
 	const HelixSeed*hseed = trigInfo->helix().get();
 	if(hseed) fillHelixTrigInfo(index, hseed);
       }
       
       //fill the Event-Prescaler Trigger bits info
-      findTrigIndex(_trigLabelsEvtPS, moduleLabel, index);
+      findTrigIndex(_trigEvtPS, moduleLabel, index);
       if ( flag.hasAnyProperty(prescalerFlag)){ 
-	_trigLabelsEvtPS[index] = moduleLabel;
-	_trigCountsEvtPS[index] = _trigCountsEvtPS[index] + 1;
+	_trigEvtPS[index].label  = moduleLabel;
+	_trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
       }
       
       
     }//end loop over the TriggerInfo Handles
+
+    //now fill the correlation matrix
+    for (size_t i=0; i<trigFlagAll_index.size(); ++i){
+      for (size_t j=0; j<trigFlagAll_index.size(); ++j){
+	_h2DTrigInfo[0]->Fill(trigFlagAll_index.at(i), trigFlagAll_index.at(j));
+      }
+    }
+    
+    if (trigFlagAll_index.size() == 1) _hTrigInfo[10]->Fill(trigFlagAll_index.at(0));
+
   }
   
-  void   ReadTriggerInfo::findTrigIndex(std::vector<std::string> Vec, std::string ModuleLabel, int &Index){
+  void   ReadTriggerInfo::findTrigIndex(std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index){
     //reset the index value
     Index = 0;
     for (size_t i=0; i<Vec.size(); ++i){
-      if (Vec[i] == ModuleLabel) { 
+      if (Vec[i].label == ModuleLabel) { 
 	Index = i;
 	break;
-      }else if (Vec[i] != ""){
+      }else if (Vec[i].label != ""){
 	Index = i+1;
       }
     }
@@ -315,9 +551,22 @@ namespace mu2e {
     _hHelInfo[HelTrigIndex][6]->Fill(clE);
   }
 
+  void   ReadTriggerInfo::fillCaloCalibTrigInfo(int ClCalibIndex, const CaloCluster*HCl){
+    int        clsize    = HCl->size();
+    double     energy    = HCl->energyDep();
+
+    _hCaloCalibInfo[ClCalibIndex][0]->Fill(energy);
+    _hCaloCalibInfo[ClCalibIndex][1]->Fill(clsize);
+  }
+
+   void   ReadTriggerInfo::fillCaloTrigSeedInfo(int Index, const CaloTrigSeed*HCl){
+    _hCaloOnlyInfo[Index][0]->Fill(HCl->epeak());
+    _hCaloOnlyInfo[Index][1]->Fill(HCl->ring1max());
+    _hCaloOnlyInfo[Index][2]->Fill(HCl->ring1max2());
+  }
+
+  
   
 }  
 
 DEFINE_ART_MODULE(mu2e::ReadTriggerInfo);
-
-

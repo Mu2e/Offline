@@ -65,6 +65,32 @@ CaloFilters : {
 	downscale500factor	       : 1
 	step                       : 10
     }  
+    
+    
+#skelethon for a cosmic muon calibration
+    CaloCosmicCalib : {
+	module_type            : CaloCosmicCalib
+	CaloClusterCollection  : "CaloClusterFast"
+	debugLevel             : 0
+	MinNCrystalHits        : 7
+	MinEnergy              : 150.0    #MeV
+	MaxEnergy              : 600.0    #MeV
+    }
+ 
+    
+    CaloLikelihoodCE : {
+	module_type            : CaloLikelihood
+	CaloClusterModuleLabel : CaloClusterFast
+	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root" 
+	BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root"
+	DropSecondDisk         : false
+	MinClusterEnergy       : 50.   # MeV
+	ClusterEnergyStep      : 10.   # MeV          
+	MinClusterRadialDist   : 350.  # mm
+	ClusterRadialDistStep  : 50.   # mm
+	MinLikelihoodCut       : [ 41.44, 10.36]   
+    }
+  
 }
 
 CaloFilters : { @table::CaloFilters
@@ -115,29 +141,67 @@ CaloFilters : { @table::CaloFilters
 	#set the prescaler for each trigger path: we want a event-based prescaler and also a prescaler
 	#on the good events.
 	#TODO: add also a path for the selection of failed events
-	CaloOnlyEventPrescale : {
+	CaloCDCountFilter     : {
+	    module_type : DigiFilter
+	    StrawDigiCollection : notUSed
+	    CaloDigiCollection  : CaloDigiFromShower
+	    UseStrawDigi        : false
+	    UseCaloDigi         : true
+	    MinNStrawDigi       : -1
+	    MaxNStrawDigi       : -1
+	    MinNCaloDigi        : 2
+	    MaxNCaloDigi        : 10000
+	    MaxCaloEnergy       : -1
+	}
+
+	caloOnlyEventPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::CaloOnly_evt_sf
+	    nPrescale         : @local::caloOnly_evt_sf
 	}
 	
-	CaloOnlyPrescale : {
+	caloOnlyPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::CaloOnly_sf
+	    nPrescale         : @local::caloOnly_sf
 	    useFilteredEvents : true
 	}
 	
-	CaloMixedEventPrescale : {
+	caloMixedEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-#	    nPrescale         : @local::CaloMixed_evt_sf
+#	    nPrescale         : @local::caloMixed_evt_sf
 	}
 	
-	CaloMixedPrescale : {
+	caloMixedPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-#	    nPrescale         : @local::CaloMixed_sf
+#	    nPrescale         : @local::caloMixed_sf
 	    useFilteredEvents : true
 	}
+	
+	caloCosmicMuonEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::caloCosmicMuon_evt_sf
+	}
+	
+	caloCosmicMuonPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : @local::caloCosmicMuon_sf
+	    useFilteredEvents : true
+	}
+
+	caloLHCEEventPrescale : {
+	    module_type : PrescaleEvent
+#	    nPrescale         : @local::caloLHCE_evt_sf
+	    nPrescale         : 1
+	}
+	
+	caloLHCEPrescale : {
+	    module_type : PrescaleEvent
+#	    nPrescale         : @local::caloLHCE_sf
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	}
+
 	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
 	EcalTriggerPreselect   : { @table::CaloFilters.EcalTriggerPreselect   }
@@ -148,13 +212,24 @@ CaloFilters : { @table::CaloFilters
 	FilterEcalMVATrigger   : { @table::CaloFilters.FilterEcalMVATrigger   }
 	
 	FilterEcalMixedTrigger : { @table::CaloFilters.FilterEcalMixedTrigger }
+	
+	#dummy filter for cosmic muon calibration
+	CaloCosmicCalib        : { @table::CaloFilters.CaloCosmicCalib        }
+	
+	#select events based on a likelihood discriminator
+	CaloLikelihoodCE       : { @table::CaloFilters.CaloLikelihoodCE       }
+	
     }
 
     sequences   : {
 	
-	calo_only  : [ CaloOnlyEventPrescale, CaloTrigger, FilterEcalMVATrigger, CaloOnlyPrescale ]
+	caloOnly         : [ caloOnlyEventPrescale, CaloCDCountFilter, CaloTrigger, FilterEcalMVATrigger, caloOnlyPrescale ]
 	
-	calo_mixed : [ CaloMixedEventPrescale, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, CaloMixedPrescale ] 
+	caloMixed        : [ caloMixedEventPrescale, CaloCDCountFilter, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, CaloTrigger, FilterEcalMixedTrigger, caloMixedPrescale ] 
+	
+	caloCosmicMuon   : [ caloCosmicMuonEventPrescale, CaloCDCountFilter, CaloClusterFast, CaloCosmicCalib, caloCosmicMuonPrescale] 
+
+	caloLHCE         : [ caloLHCEEventPrescale, CaloCDCountFilter, CaloClusterFast, CaloLikelihoodCE, caloLHCEPrescale] 
 
     }
 }
