@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CrvDigiCollection_hh
-#define MCDataProducts_CrvDigiCollection_hh
+#ifndef RecoDataProducts_CrvDigiCollection_hh
+#define RecoDataProducts_CrvDigiCollection_hh
 
 //
 // $Id: $
