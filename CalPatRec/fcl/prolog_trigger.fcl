@@ -49,7 +49,7 @@ CprTrigger : {
 CprTrigger : { @table::CprTrigger 
 
     producers : { 
-	@table::CaloClusterFast.producers
+#	@table::CaloClusterFast.producers
 
 	CPRFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0

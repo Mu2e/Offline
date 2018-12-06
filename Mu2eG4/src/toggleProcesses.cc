@@ -27,6 +27,8 @@
 #include "G4VRestProcess.hh"
 #include "G4ProcessManager.hh"
 
+#include "G4EmParameters.hh"
+
 #include "G4MuonMinus.hh"
 #include "G4MuonMinusCapture.hh"
 #include "G4MuMinusCapturePrecompound.hh"
@@ -40,7 +42,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "ConfigTools/inc/SimpleConfig.hh"
+#include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
@@ -127,23 +129,9 @@ namespace mu2e{
     }
   }
 
-  void switchCaptureDModel(const SimpleConfig& config) { 
-    if( ! config.hasName("g4.captureDModel") ) return;
-    std::string cDModel = config.getString("g4.captureDModel");
-    switchCaptureDModel(cDModel);
-  }
-
   void switchCaptureDModel(const fhicl::ParameterSet& pset) { 
     std::string cDModel= pset.get<std::string>("physics.captureDModel");
     switchCaptureDModel(cDModel);
-  }
-
-  void switchDecayOff(const SimpleConfig& config) {
-    // Read list of particles for which the decay should be switched off
-    std::vector<int> plist;
-    if( ! config.hasName("g4.noDecay") ) return;
-    config.getVectorInt("g4.noDecay",plist);
-    switchDecayOff(plist);
   }
 
   void switchDecayOff(const fhicl::ParameterSet& pset) {
@@ -196,6 +184,21 @@ namespace mu2e{
       ph->RegisterProcess(thePosiToHadrons, positron);
     }
 
+    // special process to look at the track before post step interaction
+    // fixme: make it a function guarded by pset flag and access to the stepping verbosity level
+    Mu2eRecorderProcess* rmp = new Mu2eRecorderProcess();
+    //    rmp->SetVerboseLevel(1);
+    G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
+    G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
+    iter->reset();
+    while( (*iter)() ){
+      G4ParticleDefinition* particle = iter->value();
+      G4ProcessManager* pmanager     = particle->GetProcessManager();
+      // The process manager takes ownership of the process
+      // ph->RegisterProcess(rmp, proton); // RegisterProcess only works for known geant4 processes
+      pmanager->AddContinuousProcess(rmp);
+      pmanager->SetProcessOrderingToLast(rmp, idxAlongStep);
+    }
   }
 
   void addUserProcesses(const fhicl::ParameterSet& pset) {
@@ -203,11 +206,14 @@ namespace mu2e{
     addUserProcesses(plist);
   }
 
-  void addUserProcesses(const SimpleConfig& config) {
-    std::vector<std::string> plist;
-    if( !config.hasName("g4.addProcesses")) return;
-    config.getVectorString("g4.addProcesses",plist);
-    addUserProcesses(plist);
+  void setMuHadLateralDisplacement(const fhicl::ParameterSet& pset) {
+    if (pset.get<bool>("physics.setMuHadLateralDisplacement",false)) {
+      G4EmParameters* params = G4EmParameters::Instance();
+      params->SetMuHadLateralDisplacement(true);
+    }
   }
+
+
+
   //================================================================
 } // end namespace mu2e

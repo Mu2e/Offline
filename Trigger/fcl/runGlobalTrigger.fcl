@@ -9,24 +9,39 @@
 
 BEGIN_PROLOG
 #prescale factor for the unbiased trigger
-UnbiasedFilters_evt_sf  : 500
+unbiased_evt_sf        : 500
+#prescale factors for the strawDigi count filter
+sDCount_evt_sf         : 500
+sDCount_sf             : 1
+#prescale factors for the "large" strawDigi counter filter
+largeSDCount_evt_sf    : 500
+largeSDCount_sf        : 1
+#prescale factors for the caloDigi count filter
+cDCount_evt_sf         : 500
+cDCount_sf             : 1
+#prescale factors for the "large" caloDigi counter filter
+largeCDCount_evt_sf    : 500
+largeCDCount_sf        : 1
 #prescale factor for the calorimeter-only trigger
-CaloOnly_evt_sf         : 1
-CaloOnly_sf             : 1
+caloOnly_evt_sf        : 1
+caloOnly_sf            : 1
+#prescale factor for the calorimeter cosmic muon calibration
+caloCosmicMuon_evt_sf  : 1
+caloCosmicMuon_sf      : 1
 #prescale factor fot the tracker-only track triggers
 # downstream e-
-TPRDeMSeedFilter_evt_sf : 1
-TPRDeMSeedFilter_sf     : 1
+tprDeMSeed_evt_sf      : 1
+tprDeMSeed_sf          : 1
 # downstream e+
-TPRDePSeedFilter_evt_sf : 1
-TPRDePSeedFilter_sf     : 1
+tprDePSeed_evt_sf      : 1
+tprDePSeed_sf          : 1
 #prescale factor fot the calo-seeded track triggers
 # downstream e-
-CPRDeMSeedFilter_evt_sf : 1
-CPRDeMSeedFilter_sf     : 1
+cprDeMSeed_evt_sf      : 1
+cprDeMSeed_sf          : 1
 # downstream e+
-CPRDePSeedFilter_evt_sf : 1
-CPRDePSeedFilter_sf     : 1
+cprDePSeed_evt_sf      : 1
+cprDePSeed_sf          : 1
 END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"
@@ -83,34 +98,45 @@ physics : {
  
     analyzers : {  
 
-	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 25
-	    SelecEvents   : [ unbiased_path, calo_only_path, tpr_dem_path, tpr_dep_path, cpr_dem_path, cpr_dep_path ]
+	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	    nFilters      : 35
+	    nTrackTriggers: 5
+	    SelecEvents   : [ unbiased_path, 
+			      minimumbiasSdCount_path,
+			      largeSdCount_path,
+			      caloOnly_path,
+			      tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
 	}
 	
     }
 
     #unbiased trigger path
-    unbiased_path  : [ @sequence::paths.unbiased                        ]
+    unbiased_path                : [ @sequence::paths.unbiased                         ]
     
+    #minimum bias filters
+    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount             ]
+
+    #path for selecting events with large ammount of strawDigis
+    largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
+
     #path for the calorimeter only trigger
-    calo_only_path : [ FetchCaloDigis, @sequence::paths.calo_only       ]
+    caloOnly_path                : [ FetchCaloDigis, @sequence::paths.caloOnly         ]
+
+    #path for calorimeter cosmic muon calibration
+    caloCosmicMuon_path          : [ FetchCaloDigis, @sequence::paths.caloCosmicMuon   ]
 
     #paths for TrkPatRec downstream e- and e+
-    tpr_dem_path   : [ TPRFetchDigis, @sequence::paths.TPRDeMSeedFilter ]
-    tpr_dep_path   : [ TPRFetchDigis, @sequence::paths.TPRDePSeedFilter ]
+    tprDeMSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDeMSeed        ]
+    tprDePSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDePSeed        ]
 
     #paths for CalPatRec downstream e- and e+
-    cpr_dem_path   : [ CPRFetchDigis, @sequence::paths.CPRDeMSeedFilter ]
-    cpr_dep_path   : [ CPRFetchDigis, @sequence::paths.CPRDePSeedFilter ]
+    cprDeMSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDeMSeed        ]
+    cprDePSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDePSeed        ]
     
-    out           : [ ReadTriggerInfo,
-		      rootoutUnbiased, 
-		      rootoutCaloOnly, 
-		      rootoutTrkDem, 
-		      rootoutTrkDep
-		     ]
-    #    out           : [ ReadTriggerInfo ]
+    
+    out           : [ readTriggerInfo ]
+    
+#    out           : [ ReadTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 

@@ -1,0 +1,46 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : PionMomentumAnalyzer
+
+source: { module_type: RootInput }
+
+services: {
+   message: @local::default_message
+   TFileService: { fileName: "nts.owner.pionMomentum.ver.seq.root" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+}
+
+physics: {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+      overview: {
+         module_type: PionMomentumAnalyzer
+         inputs: "g4run"
+         nPBins: 500
+         pmin: 0
+         pmax: 500
+      }
+      zoom1: {
+         module_type: PionMomentumAnalyzer
+         inputs: "g4run"
+         nPBins: 300
+         pmin: 87.
+         pmax: 90.
+      }
+      zoom2: {
+         module_type: PionMomentumAnalyzer
+         inputs: "g4run"
+         nPBins: 1000
+         pmin: 88.07
+         pmax: 88.08
+      }
+   }
+
+   e1: [ genCountLogger,overview, zoom1, zoom2]
+   end_paths: [e1]
+}

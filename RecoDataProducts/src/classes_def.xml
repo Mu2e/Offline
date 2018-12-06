@@ -44,8 +44,7 @@
  <class name="TrkT0"/>
  <class name="mu2e::HitT0"/>
  <class name="mu2e::TrkFitFlagDetail"/>
- <class name="mu2e::StrawCluster"/>
- <class name="mu2e::StrawClusterCollection"/>
+
 <!--
  <class name="mu2e::KalRepPayload">
     <field name="transientTrack_" transient="true"/>
@@ -59,13 +58,8 @@
 <!-- <class name="mu2e::KalRepExtensionPayload"/> -->
 <!-- <class name="mu2e::KalRepExtensionPayloadCollection"/> -->
 
- <class name="mu2e::ExtMonUCITofHit"/>
- <class name="mu2e::ExtMonUCITofHitCollection"/>
  <class name="mu2e::TimeCluster"/>
  <class name="mu2e::TimeClusterCollection"/>
- <class name="mu2e::ZRotStrawHitMap"/>
- <class name="mu2e::ZRotStrawHitMapCollection" persistent="false"/>
- <class name="mu2e::TrackerHitByID" persistent="false"/>
  <class name="mu2e::RobustHelix"/>
  <class name="mu2e::HelixVal"/>
  <class name="mu2e::HelixCov"/>
@@ -103,9 +97,6 @@
  <class name="std::vector<art::Ptr<mu2e::CaloTrigSeed> >"/>
  <class name="art::Ptr<mu2e::CaloRecoDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloRecoDigi> >"/>
-
- <class name="art::Ptr<mu2e::ExtMonUCITofHit>"/>
- <class name="std::vector<art::Ptr<mu2e::ExtMonUCITofHit> >"/>
  <class name="art::Ptr<mu2e::StrawHit>"/>
  <class name="std::vector<art::Ptr<mu2e::StrawHit> >"/>
  <class name="art::Ptr<mu2e::ComboHit>"/>
@@ -158,17 +149,12 @@
  <class name="art::Wrapper<mu2e::CaloTrigSeedCollection>"/>
  <class name="art::Wrapper<mu2e::ComboHitCollection>"/>
  <class name="art::Wrapper<mu2e::StrawHitFlagCollection>"/>
- <class name="art::Wrapper<mu2e::StrawClusterCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloIntersectCollection>"/>
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
 <!-- <class name="art::Wrapper<mu2e::KalRepPayloadCollection>"/> -->
 <!--  <class name="art::Wrapper<mu2e::KalRepExtensionPayloadCollection>"/> -->
  <class name="art::Wrapper<mu2e::TimeClusterCollection>"/>
  <class name="art::Wrapper<mu2e::HelixSeedCollection>"/>
-
- <class name="art::Wrapper<mu2e::ExtMonUCITofHitCollection>"/>
- <class name="art::Wrapper<mu2e::ZRotStrawHitMapCollection>"/>
- <class name="art::Wrapper<mu2e::TrackerHitByID>"/>
  <class name="art::Wrapper<mu2e::TrackSeedCollection>"/>
  <class name="art::Wrapper<mu2e::TrkExtTrajCollection>" />
  <class name="art::Wrapper<mu2e::PIDProductCollection>" />

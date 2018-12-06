@@ -262,7 +262,7 @@ namespace mu2e
 	// if successfull, try to add missing hits
 	if(_addhits && _result.krep != 0 && _result.krep->fitStatus().success()){
 	    // first, add back the hits on this track
-	  _result.nunweediter = 0;
+	  //	  _result.nunweediter = 0;
 	  _kfit.unweedHits(_result,_maxaddchi);
 	  if (_debug > 0) _kfit.printHits(_result,"CalTrkFit::produce after unweedHits");
 

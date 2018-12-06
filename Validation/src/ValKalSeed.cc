@@ -8,14 +8,15 @@ int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.0);
   _hNStraw = tfs.make<TH1D>( "NHit", "N Hits", 101, -0.5, 100.0);
   _hNSeg = tfs.make<TH1D>( "NSeg", "N KalSegment", 21, -0.5, 20.0);
-  _hStatus = tfs.make<TH1D>( "Status", "Status", 32, -0.5, 31.0);
+  _hStatus = tfs.make<TH1D>( "Status", "Status", 32, -0.5, 31.5);
   _hflt0 = tfs.make<TH1D>( "flt0", "flt0", 100, -1200.0, 1200.0);
   _ht0 = tfs.make<TH1D>( "t0", "t0", 100, 400.0, 1800.0);
-  _hchi2 = tfs.make<TH1D>( "Chi2N", "Chi2/DOF", 100, 0.0, 100.0);
+  _hchi2 = tfs.make<TH1D>( "Chi2N", "Chi2/DOF", 100, 0.0, 20.0);
   _hhasCal = tfs.make<TH1D>( "hasCal", "CalCluster attached", 2, -0.5, 1.5);
   _hfitCon = tfs.make<TH1D>( "FitConn", "Fit CL", 100, 0.0, 1.0);
   _hp = tfs.make<TH1D>( "p", "p", 100, 0., 110.);
   _hpce = tfs.make<TH1D>( "pce", "p CE", 100, 95.0, 110.);
+  _hpcep = tfs.make<TH1D>( "pcep", "p CE+", 100, 82.0, 97.);
   _hpe = tfs.make<TH1D>( "pe", "p error", 100, 0.0, 1.0);
   _hD0 = tfs.make<TH1D>( "d0", "d0", 100, -100., 100.);
   _hPhi0 = tfs.make<TH1D>( "phi0", "phi0", 100, -M_PI, M_PI);
@@ -44,8 +45,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(0.0);
-
+  _hVer->Fill(1.0);
 
   // p of highest momentum electron SimParticle with good tanDip
   double p_mc = mcTrkP(event);
@@ -87,6 +87,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
       double p = ss.mom();
       _hp->Fill(ss.mom());
       _hpce->Fill(ss.mom());
+      _hpcep->Fill(ss.mom());
       _hpe->Fill(ss.momerr());
       _hD0->Fill(h.d0());
       _hPhi0->Fill(h.phi0());
@@ -147,13 +148,12 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
       // the earliest stage this simparticle appears
       auto const& opart = part.originParticle(); //mu2e::SimParticle
       auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
-      // e+/- pointing to GenParticle
-      if(std::abs(part.pdgId())==11 && gptr.isNonnull()) { 
+      // e- associated with a GenParticle
+      if(part.pdgId()==11 && gptr.isNonnull()) { 
 	cea.push_back(sp.first);
       }
     }
   }
-
   // now loop over all StepPointMC's and look for a step
   // at the virtual front of the tracker which points to the SimParticle
 
