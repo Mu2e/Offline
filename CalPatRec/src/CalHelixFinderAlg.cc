@@ -959,7 +959,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::doLinearFitPhiZ(CalHelixFinderData& Helix    ,
-					  HitInfo_t          SeedIndex,
+					  HitInfo_t           SeedIndex,
 					  int                 UseInteligentWeight,
 					  int                 DoCleanUp           ) {
 
