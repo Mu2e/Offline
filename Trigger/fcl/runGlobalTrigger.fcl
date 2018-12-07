@@ -46,11 +46,13 @@ END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"
 
-process_name : globalTrigger
+#process_name : globalTrigger
 
 source :
 {
     module_type : RootInput
+    inputCommands : [  "keep *_*_*_*",
+		       "drop *mu2e::TriggerInfo_*_*_*"]
 }
 # we don't need any simulation services for this job
 services : @local::Services.Reco
