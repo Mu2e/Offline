@@ -39,11 +39,17 @@ trig_paths = [
     #paths for CalPatRec downstream e- and e+
     "cprDeMSeed",
     "cprDePSeed"
-]
+    ]
+
+trig_prolog_files = [
+    os.environ["MU2E_BASE_RELEASE"]+'/Trigger/fcl/templates.fcl',
+    os.environ["MU2E_BASE_RELEASE"]+'/TrkFilters/fcl/prolog_trigger.fcl',
+    os.environ["MU2E_BASE_RELEASE"]+'/CaloFilters/fcl/prolog_trigger.fcl'
+    ]
 
 #print fh.readline()
 new_file   = args.outputfilename
-input_file = args.templatefilename #os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/main.fcl'
+input_file = args.templatefilename 
 
 isOnlineMode = False
 if 'Mu2eProducer' in open(input_file).read():
@@ -69,6 +75,16 @@ for line in fh:
             vec_path.append(t)
 
     if vec_path[0] != "triggerOutput":
+        #check if the name of the path is present in the prolog_trigger files
+        pathCheck=False
+        for i in range(0, len(trig_prolog_files)):
+            if vec_path[0] in open(trig_prolog_files[i]).read():
+                pathCheck  = True
+        if pathCheck == False: 
+            print (vec_path[0]+" NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED \n")
+            exit()
+        print pathCheck
+
         if path_list == "":
             path_list += vec_path[0]+"_path"
         else:
