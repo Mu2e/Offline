@@ -138,7 +138,7 @@ physics : {
     
     out           : [ readTriggerInfo ]
     
-#    out           : [ ReadTriggerInfo, triggerOutput ]
+#    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 
