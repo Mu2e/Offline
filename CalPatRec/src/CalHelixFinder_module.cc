@@ -52,18 +52,17 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalHelixFinder::CalHelixFinder(fhicl::ParameterSet const& pset) :
-    _diagLevel   (pset.get<int>   ("diagLevel"                      )),
-    _debugLevel  (pset.get<int>   ("debugLevel"                     )),
-    _printfreq   (pset.get<int>   ("printFrequency"                 )),
-    _useAsFilter (pset.get<int>   ("useAsFilter"                    )),
-    _shLabel     (pset.get<string>("StrawHitCollectionLabel"        )),
-    // _shpLabel    (pset.get<string>("StrawHitPositionCollectionLabel")),
-    _shfLabel    (pset.get<string>("StrawHitFlagCollectionLabel"    )),
-    _timeclLabel (pset.get<string>("TimeClusterCollectionLabel"       )),
-    _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster"       )),
-    _tpart       ((TrkParticle::type)(pset.get<int>("fitparticle"))),
-    _fdir        ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _hfinder     (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet()))
+    _diagLevel          (pset.get<int>   ("diagLevel"                      )),
+    _debugLevel         (pset.get<int>   ("debugLevel"                     )),
+    _printfreq          (pset.get<int>   ("printFrequency"                 )),
+    _useAsFilter        (pset.get<int>   ("useAsFilter"                    )),
+    _shLabel            (pset.get<string>("StrawHitCollectionLabel"        )),
+    _shfLabel           (pset.get<string>("StrawHitFlagCollectionLabel"    )),
+    _timeclLabel        (pset.get<string>("TimeClusterCollectionLabel"     )),
+    _minNHitsTimeCluster(pset.get<int>   ("minNHitsTimeCluster"            )),
+    _tpart              ((TrkParticle::type)(pset.get<int>("fitparticle"))),
+    _fdir               ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
+    _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet()))
   {
     consumes<ComboHitCollection>(_shLabel);
     consumes<StrawHitFlagCollection>(_shfLabel);
@@ -80,7 +79,7 @@ namespace mu2e {
 
     if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+    if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
 
   }
