@@ -140,43 +140,42 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::CalHelixFinderAlg(fhicl::ParameterSet const& pset) :
-    _diag             (pset.get<int>   ("diagLevel"        )),
-    _debug            (pset.get<int>   ("debugLevel"       )),
-    _debug2           (pset.get<int>   ("debugLevel2"      )),
-    _hsel             (pset.get<vector<string> >("HelixFitSelectionBits"  )),
-    _bkgsel           (pset.get<vector<string> >("BackgroundSelectionBits")),
-    _maxElectronHitEnergy(pset.get<double>("maxElectronHitEnergy")),
-    _minNHits         (pset.get<int>   ("minNHit"          )),
-    //    _maxDz            (pset.get<double>("maxdz",35.0)),
-    _absMpDfDz        (pset.get<double>("mostProbableDfDz")),
-    _dzOverHelPitchCut(pset.get<double>("dzOverHelPitchCut")),
-    _maxDfDz          (pset.get<double>("maxDfDz",0.1)),//0.01)),2018-10-11 gianipez test
-    _minDfDz          (pset.get<double>("minDfDz",5e-04)),
-    _sigmaPhi         (pset.get<double>("sigmaPhi")),
-    _weightXY         (pset.get<double>("weightXY")),
-    _targetcon        (pset.get<int>   ("targetconsistent")),
-    _weightZPhi       (pset.get<double>("weightZPhi")),
-    _weight3D         (pset.get<double>("weight3D")),
-    _maxXDPhi         (pset.get<double>("maxXDPhi",5.)),
-    _maxPanelToHelixDPhi(pset.get<double>("maxPanelToHelixDPhi",1.309)),// 75 degrees
-    _distPatRec       (pset.get<double>("distPatRec")),
-    _mindist          (pset.get<double>("mindist",500.0)),
-    _pmin             (pset.get<double>("minP",50.0)),
-    _pmax             (pset.get<double>("maxP",150.0)),
-    _tdmin            (pset.get<double>("minAbsTanDip",0.3)),
-    _tdmax            (pset.get<double>("maxAbsTanDip",2.0)),
-    _xyweights        (pset.get<bool>  ("xyWeights",false)),
-    _zweights         (pset.get<bool>  ("zWeights",false)),
-    _filter           (pset.get<bool>  ("filter",true)),
-    _plotall          (pset.get<bool>  ("plotall",false)),
-    _usetarget        (pset.get<bool>  ("usetarget",true)),
-    _bz               (0.0),
-    _nHitsMaxPerPanel      (pset.get<int>("nHitsMaxPerPanel"     )),
-    _hitChi2Max            (pset.get<double>("hitChi2Max"         )),
-    _chi2xyMax             (pset.get<double>("chi2xyMax")),
-    _chi2zphiMax           (pset.get<double>("chi2zphiMax")),
-    _chi2hel3DMax          (pset.get<double>("chi2hel3DMax")),
-    _dfdzErr               (pset.get<double>("dfdzErr")){
+    _diag               (pset.get<int>           ("diagLevel"              )),
+    _debug              (pset.get<int>           ("debugLevel"             )),
+    _debug2             (pset.get<int>           ("debugLevel2"            )),
+    _hsel               (pset.get<vector<string>>("HelixFitSelectionBits"  )),
+    _bkgsel             (pset.get<vector<string>>("BackgroundSelectionBits")),
+    _maxHitEnergy       (pset.get<double>        ("maxElectronHitEnergy"   )),
+    _minNHits           (pset.get<int>           ("minNHit"                )),
+    _absMpDfDz          (pset.get<double>        ("mostProbableDfDz"       )),
+    _dzOverHelPitchCut  (pset.get<double>        ("dzOverHelPitchCut"      )),
+    _maxDfDz            (pset.get<double>        ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
+    _minDfDz            (pset.get<double>        ("minDfDz"                )),
+    _sigmaPhi           (pset.get<double>        ("sigmaPhi"               )),
+    _weightXY           (pset.get<double>        ("weightXY"               )),
+    _targetcon          (pset.get<int>           ("targetconsistent"       )),
+    _weightZPhi         (pset.get<double>        ("weightZPhi"             )),
+    _weight3D           (pset.get<double>        ("weight3D"               )),
+    _maxXDPhi           (pset.get<double>        ("maxXDPhi"               )),
+    _maxPanelToHelixDPhi(pset.get<double>        ("maxPanelToHelixDPhi"    )), // 75 degrees
+    _distPatRec         (pset.get<double>        ("distPatRec"             )),
+    _mindist            (pset.get<double>        ("mindist"                )),
+    _pmin               (pset.get<double>        ("minP"                   )),
+    _pmax               (pset.get<double>        ("maxP"                   )),
+    _tdmin              (pset.get<double>        ("minAbsTanDip"           )),
+    _tdmax              (pset.get<double>        ("maxAbsTanDip"           )),
+    _xyweights          (pset.get<bool>          ("xyWeights"              )),
+    _zweights           (pset.get<bool>          ("zWeights"               )),
+    _filter             (pset.get<bool>          ("filter"                 )),
+    _plotall            (pset.get<bool>          ("plotall"                )),
+    _usetarget          (pset.get<bool>          ("usetarget"              )),
+    _bz                 (0.0),
+    _nHitsMaxPerPanel   (pset.get<int>           ("nHitsMaxPerPanel"       )),
+    _hitChi2Max         (pset.get<double>        ("hitChi2Max"             )),
+    _chi2xyMax          (pset.get<double>        ("chi2xyMax"              )),
+    _chi2zphiMax        (pset.get<double>        ("chi2zphiMax"            )),
+    _chi2hel3DMax       (pset.get<double>        ("chi2hel3DMax"           )),
+    _dfdzErr            (pset.get<double>        ("dfdzErr"                )){
 
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
@@ -1492,7 +1491,7 @@ namespace mu2e {
 // 	  const Straw*            straw = &_tracker->getStraw(sh->strawId());
 // 	  const StrawHitPosition* shp   = &Helix.shpos()->at(loc);
 //       
-// 	  if (sh->energyDep() > _maxElectronHitEnergy)         continue;
+// 	  if (sh->energyDep() > _maxHitEnergy)         continue;
 // 
 // 	  int       layerId  = straw->id().getLayer();
 // 	  float     sigw     = shp->posRes(StrawHitPosition::wire);
@@ -1546,7 +1545,7 @@ namespace mu2e {
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 	const ComboHit& ch  = Helix.chcol()->at(loc);
 
-	if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+	if (ch.energyDep() > _maxHitEnergy)                 continue;
 
 	//skip the hit if it doesn't rely on the semi-plane where the calo-lcuster is
 	if (_filter) {
