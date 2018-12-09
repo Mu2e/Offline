@@ -28,13 +28,10 @@
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
-#include "TROOT.h"
-#include "TFolder.h"
 #include "TVector2.h"
 
 #include "RecoDataProducts/inc/HelixSeed.hh"
@@ -45,24 +42,16 @@
 #include "BTrkData/inc/Doublet.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
-// CalPatRec
-// #include "CalPatRec/inc/TrkDefHack.hh"
 #include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "CalPatRec/inc/ObjectDumpUtils.hh"
 
 #include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
-// Xerces XML Parser
-#include <xercesc/dom/DOM.hpp>
 
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Vector/ThreeVector.h"
 // root 
 #include "TMath.h"
-#include "TFile.h"
-#include "TH1F.h"
-#include "TH2F.h"
-#include "TH3F.h"
 // C++
 #include <iostream>
 #include <fstream>
@@ -100,15 +89,15 @@ namespace mu2e {
     int              _printfreq;
     bool             _addhits; 
 					// event object labels
-    std::string      _trkHelixFinderModuleLabel;
-    std::string      _calHelixFinderModuleLabel;
+    std::string      _tprHelixCollTag;
+    std::string      _cprHelixCollTag;
   };
   
   MergeHelixFinder::MergeHelixFinder(fhicl::ParameterSet const& pset) :
-    _diag                        (pset.get<int>("diagLevel" )),
-    _debugLevel                  (pset.get<int>("debugLevel")),
-    _trkHelixFinderModuleLabel   (pset.get<std::string>("trkHelixFinderModuleLabel"   )),
-    _calHelixFinderModuleLabel   (pset.get<std::string>("calHelixFinderModuleLabel"   ))
+    _diag            (pset.get<int>        ("diagLevel"                )),
+    _debugLevel      (pset.get<int>        ("debugLevel"               )),
+    _tprHelixCollTag (pset.get<std::string>("trkHelixFinderModuleLabel")),
+    _cprHelixCollTag (pset.get<std::string>("calHelixFinderModuleLabel"))
   {
 
     produces<AlgorithmIDCollection>  ();
@@ -146,11 +135,11 @@ namespace mu2e {
       best = algH->at(Index).BestID();
     }
     else                 {
-      if      (_calHelixFinderModuleLabel.find("HelixFinder:"  ) == 0) {
+      if      (_cprHelixCollTag.find("HelixFinder:"  ) == 0) {
 	mask = 1 << AlgorithmID::TrkPatRecBit;
 	best = AlgorithmID::TrkPatRecBit;
       }
-      else if (_calHelixFinderModuleLabel.find("CalHelixFinder") == 0) {
+      else if (_cprHelixCollTag.find("CalHelixFinder") == 0) {
 	mask = 1 << AlgorithmID::CalPatRecBit;
 	best = AlgorithmID::CalPatRecBit;
       }
@@ -172,8 +161,8 @@ namespace mu2e {
 
     mu2e::HelixSeedCollection                 *hcoll[2] {nullptr,nullptr};
 
-    mu2e::GeomHandle<mu2e::DetectorSystem>    ds;
-    mu2e::GeomHandle<mu2e::VirtualDetector>   vdet;
+    // mu2e::GeomHandle<mu2e::DetectorSystem>    ds;
+    // mu2e::GeomHandle<mu2e::VirtualDetector>   vdet;
 
     unique_ptr<AlgorithmIDCollection>         algs     (new AlgorithmIDCollection );
     unique_ptr<HelixSeedCollection>           helixPtrs(new HelixSeedCollection   );
@@ -186,8 +175,8 @@ namespace mu2e {
 
     const art::Provenance  *prov[2] {nullptr,nullptr};
 
-    AnEvent.getByLabel(_trkHelixFinderModuleLabel,hcH[0]);
-    AnEvent.getByLabel(_calHelixFinderModuleLabel,hcH[1]);
+    AnEvent.getByLabel(_tprHelixCollTag,hcH[0]);
+    AnEvent.getByLabel(_cprHelixCollTag,hcH[1]);
 
     for (int i=0; i<2; i++) {
       if (hcH[i].isValid()) { 
@@ -247,8 +236,8 @@ namespace mu2e {
 // if > 50% of the helix hits are common, it unlikely to be an "independent" object
 // logic of the choice: 
 // 1. take the track which has more hits
-// 2. if two tracks have the same number of active hits, choose the one with 
-//    best chi2
+// 2. if two helices have the same number of hits, pending future studies, 
+//    the choose CalPatRec one
 //-----------------------------------------------------------------------------
 	if ((natc > nh1/2.) || (natc > nh2/2.)) {
 //-----------------------------------------------------------------------------
