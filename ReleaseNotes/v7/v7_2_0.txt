@@ -1,5 +1,17 @@
            Release notes for Mu2e Offline software, v7_2_0
 
+10) genser December 10, 2018
+    Enhanced setting minRangeRegionCuts alowing it for any logical volume.
+    Use it with caution.
+      Mu2eG4/src/Mu2eWorld.cc
+    Fhicl example:
+
+physics.producers.g4run.physics.minRangeRegionCuts: {
+    CalorimeterMother      : 0.1
+    TrackerMother          : 0.001
+} // {RegionName : mm }
+
+
 9) genser December 3, 2018
     Rewrote setting minRangeRegionCuts and added useEmOption4InTracker
       Mu2eG4/fcl/prolog.fcl
