@@ -236,7 +236,7 @@ namespace mu2e {
     
     // float ApproxAtan                  (float z);
     // float polyAtan2                   (float y, float x);
-
+    bool isFaceUsed                   (CalHelixFinderData& Helix, FaceZ_t* face);
 //-----------------------------------------------------------------------------
 // setters
 //-----------------------------------------------------------------------------

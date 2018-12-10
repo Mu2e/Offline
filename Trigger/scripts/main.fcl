@@ -98,13 +98,13 @@ physics : {
  
     analyzers : {  
 
-	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
 	    nFilters      : 35
 	}
 	
     }
 
-    out       : [ ReadTriggerInfo ]
+    out       : [ readTriggerInfo ]
     end_paths : [ out ]
 }
 
