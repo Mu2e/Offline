@@ -1,4 +1,12 @@
            Release notes for Mu2e Offline software, v7_2_0
+11) gianipez December 10, 2018
+    added the option in the Trigger-generator script for producing and fcl 
+    compatible with the online environment
+      Trigger/scripts/genTriggerFcl.py
+    and improved diagnostic in		
+      Trigger/src/ReadTriggerInfo_module.cc
+    module that now includes also the info of the event proton bunch intensity
+    and the MC info of the Helices and the KalSeeds used to Trigger the events.
 
 10) genser December 10, 2018
     Enhanced setting minRangeRegionCuts alowing it for any logical volume.
