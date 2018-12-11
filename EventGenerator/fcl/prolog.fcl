@@ -162,6 +162,7 @@ EventGenerator : { @table::EventGenerator
 #------------------------------------------------------------------------------
 	ceMEndpoint              : {   module_type: StoppedParticleReactionGun
 	    physics: {
+		genId                 : conversionGun 
 		pdgId                 : 11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -178,6 +179,7 @@ EventGenerator : { @table::EventGenerator
 
 	cePEndpoint              : {   module_type: StoppedParticleReactionGun
 	    physics: {
+		genId                 : conversionGun 
 		pdgId                 : -11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -187,13 +189,14 @@ EventGenerator : { @table::EventGenerator
 		elow                  : 0.
 	    } 
 	    muonStops            : { @table::mu2e.tgtMuonStops
-		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	    doHistograms              : true
 	}
 
 	ceMLeadingLog              : {   module_type: StoppedParticleReactionGun
 	    physics: {
+		genId                 : conversionGun 
 		pdgId                 : 11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -203,13 +206,14 @@ EventGenerator : { @table::EventGenerator
 		elow                  : 0.
 	    } 
 	    muonStops            : { @table::mu2e.tgtMuonStops
-		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	    doHistograms              : true
 	}
 
 	cePLeadingLog              : {   module_type: StoppedParticleReactionGun
 	    physics: {
+		genId                 : conversionGun 
 		pdgId                 : -11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -235,7 +239,7 @@ EventGenerator : { @table::EventGenerator
 		spectrumShape    : "flat"
 	    }
 	    muonStops            : { @table::mu2e.tgtMuonStops
-		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	}
 
@@ -248,7 +252,7 @@ EventGenerator : { @table::EventGenerator
 		spectrumShape    : "flat"
 	    }
 	    muonStops            : { @table::mu2e.tgtMuonStops
-		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	}
 #------------------------------------------------------------------------------

@@ -74,11 +74,11 @@ namespace mu2e {
     
     double weight(0.);
   
-
-    int bin  = E/_bin+0.5 ; 
+    double e   = E+_bin/2;
+    int    bin = e/_bin ; 
 
     if (bin < _nbins-1) {
-      weight = _bin* getCorrectedConversionSpectrum(E+_bin/2);
+      weight = _bin* getCorrectedConversionSpectrum(e);
     }
     else {
       // last bin
