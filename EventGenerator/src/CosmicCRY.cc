@@ -115,10 +115,6 @@ namespace mu2e
         }
 
 
-  double CosmicCRY::getLiveTime() {
-    return _cryGen->timeSimulated();
-  }
-
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
     // Ref point, need to be here so that geometry info can be obtained
@@ -131,12 +127,12 @@ namespace mu2e
 
       // slightly smaller box to avoid rounding error problem if any
       double deltaX = 1; // mm
-      _envXmin = env->xmin() + deltaX;
-      _envXmax = env->xmax() - deltaX;
+      _envXmin = worldGeom->mu2eOriginInWorld().x() - worldGeom->halfLengths()[0] + deltaX;
+      _envXmax = worldGeom->mu2eOriginInWorld().x() + worldGeom->halfLengths()[0] - deltaX;
       _envYmin = env->ymin() + deltaX;
       _envYmax = env->ymax() - deltaX;
-      _envZmin = env->zmin() + deltaX;
-      _envZmax = env->zmax() - deltaX;
+      _envZmin = worldGeom->mu2eOriginInWorld().z() - worldGeom->halfLengths()[2] + deltaX;
+      _envZmax = worldGeom->mu2eOriginInWorld().z() + worldGeom->halfLengths()[2] - deltaX;
 
       if (_refPointChoice == "TRACKER") 
         _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
@@ -214,7 +210,7 @@ namespace mu2e
               secondary->t() - _cryGen->timeSimulated()));
 
       if (_verbose > 1) {
-        mf::LogInfo("CosmicCRY") << "Secondary " << j 
+        std::cout << "Secondary " << j 
           << ": " << CRYUtils::partName(secondary->id()) 
           << " (pdgId " << secondary->PDGid() << ")"
           << ", kinetic energy " << secondary->ke()  << " MeV"
@@ -223,15 +219,20 @@ namespace mu2e
           << ", " << secondary->y()
           << ", " << secondary->z()
           << ") m"
+          << ", position at world boundaries" 
+          << "("  << position.x()
+          << ", " << position.y()
+          << ", " << position.z()
+          << ") m"
           << ", time " << secondary->t() << " sec"
           << ", mass: " << mass
           << ", mom: " << totalP
           << ", mom dir.: " << secondary->u() <<", " << secondary->v()
-          << ", " << secondary->w();
+          << ", " << secondary->w()
+          << std::endl;
 
         // std::cout <<  genParts.back() << std::endl;
       }
-
 
       delete secondary;
     }

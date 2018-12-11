@@ -1,0 +1,10 @@
+#include "JobConfig/cosmic/cosmic_defs_s1s2.fclinc"
+
+physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_general.txt"
+//physics.producers.generate.stashSize    : 50
+//physics.producers.g4run.runinMTMode     : true
+//physics.producers.g4run.numberOfThreads : 20
+
+services.TFileService.fileName       : "nts.owner.cosmic-g4s1-dbaygeneral.version.sequencer.root"
+outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1-dbaygeneral.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName : "sim.owner.cosmic-g4s1-truncated-dbaygeneral.version.sequencer.art"

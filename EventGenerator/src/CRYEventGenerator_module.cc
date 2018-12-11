@@ -62,7 +62,7 @@ namespace mu2e {
   }
 
   void CryEventGenerator::endRun(art::Run&){
-    mf::LogInfo("CRYEventGenerator") << "Total live time simulated by CRY in this run: " << cryGen->getLiveTime();
+//    mf::LogInfo("CRYEventGenerator") << "Total live time simulated by CRY in this run: " << cryGen->getLiveTime();
   }
 
 }
