@@ -51,7 +51,8 @@ physics : {
   producers : {
     cryGen : {
       module_type : CRYEventGenerator
-      inputFile : "EventGenerator/defaultConfigs/othersCRYconfig.txt"
+      inputFile : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
+      totalECutoff: 1000.E3 // MeV
     }
 
     g4run : 
