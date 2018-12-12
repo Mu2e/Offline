@@ -245,7 +245,7 @@ namespace mu2e {
         const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
         for(const auto& regionName : regionNames) {
           G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
-          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName+"Mother");
+          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
           volInfo.logical->SetRegion(region);
           region->AddRootLogicalVolume(volInfo.logical);
         }
@@ -253,8 +253,8 @@ namespace mu2e {
 
       // special case for the tracker
       if ( useEmOption4InTracker_
-           && !pset_.has_key("physics.minRangeRegionCuts.Tracker")) {
-        G4Region* region = new G4Region("Tracker");
+           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+        G4Region* region = new G4Region("TrackerMother");
         trackerInfo.logical->SetRegion(region);
         region->AddRootLogicalVolume(trackerInfo.logical);
       }
