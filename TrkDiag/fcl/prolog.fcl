@@ -209,6 +209,7 @@ BEGIN_PROLOG
       DIOWeight: {
 	module_type: DecayInOrbitWeight
 	weightingScheme : pol58
+	inputModule : compressDigiMCs
 	verbosityLevel: 1
       }
       # converts ProtonBunchIntensity object to EventWeight object
