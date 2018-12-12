@@ -42,7 +42,7 @@ namespace mu2e {
       std::string inputfile;
       unsigned int nRejected_;
       unsigned int nTotal_;
-      double totalECutoff_;
+      double showerEnergyCutoff_;
       int seed_;
       art::RandomNumberGenerator::base_engine_t&     engine_;
   };
@@ -50,11 +50,11 @@ namespace mu2e {
   CryEventGenerator::CryEventGenerator(fhicl::ParameterSet const& pSet) :
     inputfile(pSet.get<std::string>("inputFile",
           "CRYEventGenerator/config/defaultCRYconfig.txt")),
-    nRejected_(0), nTotal_(0), totalECutoff_(pSet.get<double>("totalECutoff", 1E6)),
+    nRejected_(0), nTotal_(0), showerEnergyCutoff_(pSet.get<double>("showerEnergyCutoff", 1E6)),
     seed_( art::ServiceHandle<SeedService>()->getSeed() ),
     engine_(createEngine(seed_))
   {
-    mf::LogInfo("CRYEventGenerator") << "Cutoff energy: " << totalECutoff_ << " MeV.";
+    mf::LogInfo("CRYEventGenerator") << "Cutoff energy: " << showerEnergyCutoff_ << " MeV.";
     produces<GenParticleCollection>();
   }
 
@@ -72,12 +72,12 @@ namespace mu2e {
       genParticles->clear();
       cryGen->generate(*genParticles);
 
-      for (unsigned int i = 0; i < genParticles->size(); ++i) {
-        // mf::LogInfo("CRYEventGenerator") << "nRejected_ " << nRejected_ << ", particle: " << genParticles->at(i);
-        if (genParticles->at(i).momentum().e() > totalECutoff_) {
-          belowECutoff = false;
-          break;
-        }
+      if (cryGen->getShowerSumEnergy() > showerEnergyCutoff_) {
+        // mf::LogInfo("CRYEventGenerator") << "total E: " << cryGen->getShowerSumEnergy();
+        // for (unsigned int i = 0; i < genParticles->size(); ++i) {
+          // mf::LogInfo("CRYEventGenerator") << "nRejected_ " << nRejected_ << ", particle: " << genParticles->at(i) << genParticles->at(i).momentum().e();
+        // }
+        belowECutoff = false;
       }
 
       if (!belowECutoff) 
@@ -91,7 +91,7 @@ namespace mu2e {
     std::ostringstream oss;
     oss << "Total live time simulated in this run: " << cryGen->getLiveTime() << "\n";
     oss << "Total number of events: " << nTotal_ << "\n";
-    oss << "Number of events rejected due to total energy cutoff (" << totalECutoff_ << " MeV): " << nRejected_;
+    oss << "Number of events rejected due to shower energy cutoff (" << showerEnergyCutoff_ << " MeV): " << nRejected_;
     mf::LogInfo("CRYEventGenerator") << oss.str();
   }
 
