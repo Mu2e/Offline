@@ -43,6 +43,9 @@ namespace mu2e{
     // swap Bertini Cascade with Precompound model in G4MuonMinusCapture
     switchCaptureDModel(pset);
 
+    // use more accurate boundary crossing algorithm for muons and hadrons
+    setMuHadLateralDisplacement(pset);
+
   }
 
 }  // end namespace mu2e

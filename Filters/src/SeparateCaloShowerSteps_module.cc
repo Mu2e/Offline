@@ -89,7 +89,7 @@ void mu2e::SeparateCaloShowerSteps::produce(art::Event & event)
     // if the volume ID is greater than the number of crystals, then we know it is a SiPM step
     CaloShowerStep new_step = i_caloShowerStep;
     int volumeId = i_caloShowerStep.volumeId();
-    if (volumeId > n_crystals) {
+    if (volumeId >= n_crystals) {
       _newSiPMSteps->push_back(new_step);
       continue;
     }

@@ -66,7 +66,7 @@ namespace mu2e {
     
     enum {
       kN1DVar    = 10,
-      kN2DVar    = 3,
+      kN2DVar    = 10,
       kNCorHist  = 10
     };
 
@@ -88,25 +88,30 @@ namespace mu2e {
     int                     _nPass;
     ClusterMoments::cogtype _cogType;
     art::InputTag           _clTag;
-    std::string             _templateFile;
+    std::string             _signalTemplateFile;
+    std::string             _bkgTemplateFile;
     bool                    _dropSecondDisk;
-    std::string             _templates;
+    std::string             _signalTemplates;
+    std::string             _bkgTemplates;
     double                  _minClEnergy, _clEStep;
     double                  _minRDist   , _rDistStep;
-    double                  _minLH;
+    vector<double>          _minLH;
 
   //Histograms need to load the templates for the signal and background hypothesis
-    TH1F*       _signalHist1D[kN1DVar];
-    TH2F*       _signalHist2D[kN2DVar];
+    TH1F*       _signalHist1D[2][kN1DVar];
+    TH2F*       _signalHist2D[2][kN2DVar];
 
-    TH1F*       _bkgHist1D   [kN1DVar];
-    TH2F*       _bkgHist2D   [kN2DVar];
+    TH1F*       _bkgHist1D   [2][kN1DVar];
+    TH2F*       _bkgHist2D   [2][kN2DVar];
 
-    TH1F*       _signalCorrHist1D[kN2DVar][kNCorHist];
-    TH1F*       _bkgCorrHist1D   [kN2DVar][kNCorHist];
+    TH1F*       _signalCorrHist1D[2][kN2DVar][kNCorHist];
+    TH1F*       _bkgCorrHist1D   [2][kN2DVar][kNCorHist];
     
+    void        buildTemplateHist(TH2F*Input, TH1F**FinalHist,  TString Label, double MinX, double StepSize);
+
     //initialize calclate prob in private
-    double calculateProb(double &variable, TH1* templates);
+    double      calculateProb    (double&variable, TH1* templates);
+    double      calculate2DProb  (double& Ref, double&Variable, TH1F** Template, double MinX, double Step);
   };
 
 
@@ -115,122 +120,146 @@ namespace mu2e {
     _nProcess                    (0),
     _nPass                       (0),
     _cogType                     (ClusterMoments::Linear),                
-    _clTag                       (pset.get<art::InputTag>("CaloClusterModuleLabel")),
-    _templateFile                (pset.get<string>("Templates")),
-    _dropSecondDisk              (pset.get<bool>  ("DropSecondDisk"       , false)),
-    _minClEnergy                 (pset.get<double>("MinClusterEnergy"     ,   50.)),   // MeV
-    _clEStep                     (pset.get<double>("ClusterEnergyStep"    ,   10.)),   // MeV
-    _minRDist                    (pset.get<double>("MinClusterRadialDist" ,  350.)),   // mm
-    _rDistStep                   (pset.get<double>("ClusterRadialDistStep",   50.)),   // mm
-    _minLH                       (pset.get<double>("MinLikelihoodCut"     ,   1.)){   // likelihood threshold
+    _clTag                       (pset.get<art::InputTag> ("CaloClusterModuleLabel")),
+    _signalTemplateFile          (pset.get<string>        ("SignalTemplates")),
+    _bkgTemplateFile             (pset.get<string>        ("BackgroundTemplates")),
+    _dropSecondDisk              (pset.get<bool>          ("DropSecondDisk"       , false)),
+    _minClEnergy                 (pset.get<double>        ("MinClusterEnergy"     ,   50.)),   // MeV
+    _clEStep                     (pset.get<double>        ("ClusterEnergyStep"    ,   10.)),   // MeV
+    _minRDist                    (pset.get<double>        ("MinClusterRadialDist" ,  350.)),   // mm
+    _rDistStep                   (pset.get<double>        ("ClusterRadialDistStep",   50.)),   // mm
+    _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})){   // likelihood threshold
+
+    produces<TriggerInfo>();
 
     ConfigFileLookupPolicy configFile;
-    _templates = configFile(_templateFile);
+    _signalTemplates = configFile(_signalTemplateFile);
+    _bkgTemplates    = configFile(_bkgTemplateFile);
     
-    TFile* templateFile = TFile::Open(_templates.c_str());
+    TFile* signalFile = TFile::Open(_signalTemplates.c_str());
+    TFile* bkgFile    = TFile::Open(_bkgTemplates.c_str());
+
     //get the templates histograms
-    _signalHist1D[0]   = (TH1F*)templateFile->Get("photonEnergy");
-    _signalHist1D[1]   = (TH1F*)templateFile->Get("photonRatio");   
-    _signalHist1D[2]   = (TH1F*)templateFile->Get("photonSize");   
-    _signalHist1D[3]   = (TH1F*)templateFile->Get("photonRadial");
-    _signalHist1D[4]   = (TH1F*)templateFile->Get("photon2ndCrystal");
+    //signal on calo-disk 0
+    _signalHist1D[0][0]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_E2");	
+    _signalHist1D[0][1]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e1eRatio2");   
+    _signalHist1D[0][2]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_nCr2");   	
+    _signalHist1D[0][3]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_rDist2");	
+    _signalHist1D[0][4]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2eRatio2");	
+    _signalHist1D[0][5]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2e1Ratio2");
+    //signal on calo-disk 1
+    _signalHist1D[1][0]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_E2");
+    _signalHist1D[1][1]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e1eRatio2");   
+    _signalHist1D[1][2]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_nCr2");   
+    _signalHist1D[1][3]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_rDist2");
+    _signalHist1D[1][4]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2eRatio2");
+    _signalHist1D[1][5]   = (TH1F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2e1Ratio2");
 
-    _bkgHist1D   [0]   = (TH1F*)templateFile->Get("bkgEnergy");
-    _bkgHist1D   [1]   = (TH1F*)templateFile->Get("bkgRatio");
-    _bkgHist1D   [2]   = (TH1F*)templateFile->Get("bkgSize");   
-    _bkgHist1D   [3]   = (TH1F*)templateFile->Get("bkgRadial");
-    _bkgHist1D   [4]   = (TH1F*)templateFile->Get("bkg2ndCrystal");
+    //background on calo-disk 0
+    _bkgHist1D   [0][0]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_E0");	
+    _bkgHist1D   [0][1]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e1eRatio0");
+    _bkgHist1D   [0][2]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_nCr0");   
+    _bkgHist1D   [0][3]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_rDist0");
+    _bkgHist1D   [0][4]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2eRatio0");
+    _bkgHist1D   [0][5]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2e1Ratio0");
+    //background on calo-disk 1
+    _bkgHist1D   [1][0]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_E0");	
+    _bkgHist1D   [1][1]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e1eRatio0");
+    _bkgHist1D   [1][2]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_nCr0");   
+    _bkgHist1D   [1][3]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_rDist0");
+    _bkgHist1D   [1][4]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2eRatio0");
+    _bkgHist1D   [1][5]   = (TH1F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2e1Ratio0");
     
-    _signalHist2D[0]   = (TH2F*)templateFile->Get("photonRadialEnergy");
-    _bkgHist2D   [0]   = (TH2F*)templateFile->Get("bkgRadialEnergy");
 
-    _signalHist2D[1]   = (TH2F*)templateFile->Get("photonRadialRatio");
-    _bkgHist2D   [1]   = (TH2F*)templateFile->Get("bkgRadialRatio");
+    //get the 2D histograms
+    // signal
+    //disk 0
+    _signalHist2D[0][0]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_eRDist2"); 
+    _signalHist2D[0][1]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e1RDist2");
+    _signalHist2D[0][2]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2RDist2");
+    _signalHist2D[0][3]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e2e1RDist2");
+    _signalHist2D[0][4]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e3RDist2");
+    _signalHist2D[0][5]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_e4RDist2");
+    _signalHist2D[0][6]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk0_nCrRDist2");
+    //disk 1
+    _signalHist2D[1][0]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_eRDist2");
+    _signalHist2D[1][1]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e1RDist2");
+    _signalHist2D[1][2]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2RDist2");
+    _signalHist2D[1][3]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e2e1RDist2");
+    _signalHist2D[1][4]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e3RDist2");
+    _signalHist2D[1][5]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_e4RDist2");
+    _signalHist2D[1][6]   = (TH2F*)signalFile->Get("ceAna/cluster_electron/clDisk1_nCrRDist2");
 
-    _signalHist2D[2]   = (TH2F*)templateFile->Get("photonRadial2ndRatio");
-    _bkgHist2D   [2]   = (TH2F*)templateFile->Get("bkgRadial2ndRatio");
+    //background
+    //disk 0
+    _bkgHist2D   [0][0]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_eRDist0"); 
+    _bkgHist2D   [0][1]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e1RDist0");
+    _bkgHist2D   [0][2]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2RDist0");
+    _bkgHist2D   [0][3]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e2e1RDist0");
+    _bkgHist2D   [0][4]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e3RDist0");
+    _bkgHist2D   [0][5]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_e4RDist0");
+    _bkgHist2D   [0][6]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk0_nCrRDist0");
+    //disk 1
+    _bkgHist2D   [1][0]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_eRDist0"); 
+    _bkgHist2D   [1][1]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e1RDist0");
+    _bkgHist2D   [1][2]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2RDist0");
+    _bkgHist2D   [1][3]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e2e1RDist0");
+    _bkgHist2D   [1][4]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e3RDist0");
+    _bkgHist2D   [1][5]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_e4RDist0");
+    _bkgHist2D   [1][6]   = (TH2F*)bkgFile->Get("ceAna/cluster_all/clDisk1_nCrRDist0");
 
     //make correlation templates
-    double    binsizesignal = _signalHist2D[0]->GetYaxis()->GetBinWidth(1);
-    double    binsizebkg    = _bkgHist2D   [0]->GetYaxis()->GetBinWidth(1);
-    
-    double    binlowsignal  = _signalHist2D[0]->GetYaxis()->GetBinLowEdge(1);
-    double    binlowbkg     = _bkgHist2D   [0]->GetYaxis()->GetBinLowEdge(1);
-    
-    // double    energy_step   = 10.;  // MeV
-    // double    min_energy    = 50.;  //MeV
+    //make correlation templates
+    int     nCaloDisks(2);
+    for (int i=0; i<nCaloDisks; ++i){    
+      //cluster energy vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][0], _signalCorrHist1D[i][0], Form("SignalDisk%i_eRDist", i),  _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][0], _bkgCorrHist1D   [i][0], Form("BkgDisk%i_eRDist"   , i),  _minRDist, _rDistStep);
+      
+      //E1 (seedHitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][1], _signalCorrHist1D[i][1], Form("SignalDisk%i_e1RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][1], _bkgCorrHist1D   [i][1], Form("BkgDisk%i_e1RDist"   , i), _minRDist, _rDistStep);
+      
+      //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][2], _signalCorrHist1D[i][2], Form("SignalDisk%i_e2RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][2], _bkgCorrHist1D   [i][2], Form("BkgDisk%i_e2RDist"   , i), _minRDist, _rDistStep);
 
+      //E2/E1 vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][3], _signalCorrHist1D[i][3], Form("SignalDisk%i_e2e1RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][3], _bkgCorrHist1D   [i][3], Form("BkgDisk%i_e2e1RDist"   , i), _minRDist, _rDistStep);
+
+      //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][4], _signalCorrHist1D[i][4], Form("SignalDisk%i_e3RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][4], _bkgCorrHist1D   [i][4], Form("BkgDisk%i_e3RDist"   , i), _minRDist, _rDistStep);
+
+      //E2 (2nd_HitEnergy/cluster_energy) vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][5], _signalCorrHist1D[i][5], Form("SignalDisk%i_e4RDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][5], _bkgCorrHist1D   [i][5], Form("BkgDisk%i_e4RDist"   , i), _minRDist, _rDistStep);
+
+      //nCrystals vs cluster radial distance
+      buildTemplateHist(_signalHist2D[i][6], _signalCorrHist1D[i][6], Form("SignalDisk%i_nCrRDist", i), _minRDist, _rDistStep);
+      buildTemplateHist(_bkgHist2D   [i][6], _bkgCorrHist1D   [i][6], Form("BkgDisk%i_nCrRDist"   , i), _minRDist, _rDistStep);
+
+    }    
+  }
+
+  //--------------------------------------------------------------------------------
+  // routine function used to produce the template histograms 
+  // from the 2D distributions
+  //--------------------------------------------------------------------------------
+  void   CaloLikelihood::buildTemplateHist(TH2F*Input, TH1F**FinalHist,  TString Label, double MinX, double StepSize){
+    double    binsize = Input->GetXaxis()->GetBinWidth(1);
+    double    binlow  = Input->GetXaxis()->GetBinLowEdge(1);
+    
     for (int i=0; i<kNCorHist; ++i){
-      double  Estart      = (_minClEnergy + i*_clEStep);
-      int     binstart    = (Estart - binlowsignal)/binsizesignal + 1;
-      int     binend      = binstart + (_clEStep/binsizesignal);
-      // _photonEnergyRad[i]= _signalHist2D[0]->ProjectionX(Form("photonEnRad_%i", i), binstart, binend);
-      _signalCorrHist1D[0][i] = (TH1F*)_signalHist2D[0]->ProjectionX(Form("photonEnRad_%i", i), binstart, binend);
-      double  Area        = _signalCorrHist1D[0][i]->Integral();
-      _signalCorrHist1D[0][i]->Scale(1/Area);
-    }
-
-
-    for (int j=0; j<kNCorHist; ++j){
-      double Estart = _minClEnergy + j*_clEStep;
-      int binstart = (Estart - binlowbkg)/binsizebkg + 1;
-      int binend   = (binstart + (_clEStep/binsizebkg));
-      // _bkgEnergyRad[j]= _bkgHist2D[0]->ProjectionX(Form("bkgEnRad_%i",j), binstart, binend);
-      _bkgCorrHist1D[0][j] = (TH1F*)_bkgHist2D[0]->ProjectionX(Form("bkgEnRad_%i",j), binstart, binend);
-      double Area = _bkgCorrHist1D[0][j]->Integral();
-      _bkgCorrHist1D[0][j]->Scale(1/Area);
+      double  start      = (MinX + i*StepSize);
+      int     binstart   = (start - binlow)/binsize;
+      int     binend     = binstart + (StepSize/binsize);
+      FinalHist[i]       = (TH1F*)Input->ProjectionY(Form("%s_%i", Label.Data(), i), binstart, binend);
+      double  area       = FinalHist[i]->Integral();
+      FinalHist[i]->Scale(1/area);
     }
     
-    double binsizephoton2 = _signalHist2D[1]->GetYaxis()->GetBinWidth(1);
-    double binsizebkg2    = _bkgHist2D   [1]->GetYaxis()->GetBinWidth(1);
-    
-    double binlowphoton2  = _signalHist2D[1]->GetYaxis()->GetBinLowEdge(1);
-    double binlowbkg2     = _bkgHist2D   [1]->GetYaxis()->GetBinLowEdge(1);
-
-    for (int i=0; i<kNCorHist; ++i){
-      double  Estart   = (_minRDist + i*_rDistStep);
-      int     binstart = (Estart - binlowphoton2)/binsizephoton2 + 1;
-      int     binend   = binstart + (_rDistStep/binsizephoton2);
-      _signalCorrHist1D[1][i]= (TH1F*)_signalHist2D[1]->ProjectionX(Form("photonRadRatio_%i",i), binstart, binend);
-      double  Area     = _signalCorrHist1D[1][i]->Integral();
-      _signalCorrHist1D[1][i]->Scale(1/Area);
-    }
-
-    for (int j=0; j<kNCorHist; ++j){
-      double  Estart   = (_minRDist + j*_rDistStep);
-      int     binstart = (Estart - binlowbkg2)/binsizebkg2 + 1;
-      int     binend   = binstart + (_rDistStep/binsizebkg2);
-      _bkgCorrHist1D[1][j]= (TH1F*)_bkgHist2D[1]->ProjectionX(Form("bkgRadRatio_%i",j), binstart, binend);
-      double  Area     =_bkgCorrHist1D[1][j]->Integral();
-      _bkgCorrHist1D[1][j]->Scale(1/Area);
-    }
-    
-    double   binsizephoton3 = _signalHist2D[2]->GetYaxis()->GetBinWidth(1);
-    double   binsizebkg3    = _bkgHist2D[2]->GetYaxis()->GetBinWidth(1);
-    
-    double   binlowphoton3  = _signalHist2D[2]->GetYaxis()->GetBinLowEdge(1);
-    double   binlowbkg3     = _bkgHist2D[2]->GetYaxis()->GetBinLowEdge(1);
-
-  
-    for (int i=0; i<kNCorHist; ++i){
-      double Estart   = (_minRDist + i*_rDistStep);
-      int    binstart = (Estart - binlowphoton3)/binsizephoton3 + 1;
-      int    binend   = binstart + (_rDistStep/binsizephoton3);
-      _signalCorrHist1D[2][i] = (TH1F*)_signalHist2D[2]->ProjectionX(Form("photonRad2ndRatio_%i",i), binstart, binend);
-      double Area     = _signalCorrHist1D[2][i]->Integral();
-      _signalCorrHist1D[2][i]->Scale(1/Area);
-    }
-
-
-    for (int j=0; j<kNCorHist; ++j){
-      double  Estart   = (_minRDist + j*_rDistStep);
-      int     binstart = (Estart - binlowbkg3)/binsizebkg3 + 1;
-      int     binend   = binstart + (_rDistStep/binsizebkg3);
-      _bkgCorrHist1D[2][j] = (TH1F*)_bkgHist2D[2]->ProjectionX(Form("bkgRad2ndRatio_%i",j), binstart, binend);
-      double  Area     = _bkgCorrHist1D[2][j]->Integral();
-      _bkgCorrHist1D[2][j]->Scale(1/Area);
-    }
-  
   }
 
   void CaloLikelihood::beginJob(){ }
@@ -289,8 +318,8 @@ namespace mu2e {
 
       int       nCrystalHits = caloClusterHits->size();
       double    maxECrystal(0);
-      double    secondmaxECrystal(0);
-      double    indexMaxECrystal(0);
+      double    secondmaxECrystal(-1), thirdmaxECrystal(-1)   , fourthmaxECrystal(-1);
+      double    indexMaxECrystal(0)  , index2ndMaxECrystal(-1), index3rdMaxECrystal(-1);
 
       //first loop to find the most energetic crystalHit
       for (int j=0; j<nCrystalHits; ++j){
@@ -304,88 +333,90 @@ namespace mu2e {
 
       //second loop to find the second most energetic crystalHit
       for (int j=0; j<nCrystalHits; ++j){
-	if (j == indexMaxECrystal) continue;
+	if (j == indexMaxECrystal)              continue;
 	crystalHit = &(*caloClusterHits->at(j));
-	double crystalEnergy= crystalHit->energyDep();
+
+	double crystalEnergy = crystalHit->energyDep();
+
 	if (crystalEnergy > secondmaxECrystal){
-	  secondmaxECrystal =crystalEnergy;
+	  secondmaxECrystal   = crystalEnergy;
+	  index2ndMaxECrystal = j;
 	}
       }
+    
+      for (int j=0; j<nCrystalHits; ++j){
+	if (j == indexMaxECrystal || 
+	    j == index2ndMaxECrystal  )         continue;
+	crystalHit = &(*caloClusterHits->at(j));
+
+	double crystalEnergy = crystalHit->energyDep();
+
+	if (crystalEnergy > thirdmaxECrystal){
+	  thirdmaxECrystal    = crystalEnergy;
+	  index3rdMaxECrystal = j;
+	}
+      }
+    
+      for (int j=0; j<nCrystalHits; ++j){
+	if (j == indexMaxECrystal  || 
+	    j == index2ndMaxECrystal ||
+	    j == index3rdMaxECrystal )          continue;
+	crystalHit = &(*caloClusterHits->at(j));
+
+	double crystalEnergy = crystalHit->energyDep();
+
+	if (crystalEnergy > fourthmaxECrystal){
+	  fourthmaxECrystal    = crystalEnergy;
+	}
+      }       
             
       double   e1Ratio   = maxECrystal/clEnergy;
       double   e2Ratio   = secondmaxECrystal/clEnergy;
+      double   e3Ratio   = thirdmaxECrystal/clEnergy;
+      double   e4Ratio   = fourthmaxECrystal/clEnergy;
       double   e2e1Ratio = secondmaxECrystal/maxECrystal;
 
-      //calculate probability for likelihood 
-      // double  signalEClusterProb    = calculateProb(clEnergy, _signalHist1D[0]);
-      // double  bkgEClusterProb       = calculateProb(clEnergy, _bkgHist1D[0]);
-      // double  logEClusterRatio      = log(signalEClusterProb/bkgEClusterProb);
+      //calculate probability for likelihood       
+      double  clusterSize             = (double) nCrystalHits;
 
-      // double  signalE1Prob          = calculateProb(e1Ratio, _signalHist1D[1]);
-      // double  bkgE1Prob             = calculateProb(e1Ratio, _bkgHist1D[1]);
-      // double  logE1Ratio            = log(signalE1Prob/bkgE1Prob);
-      
-      double  clusterSize = (double) nCrystalHits;
-      
-      double  signalClusterSizeProb = calculateProb(clusterSize, _signalHist1D[2]);
-      double  bkgClusterSizeProb    = calculateProb(clusterSize, _bkgHist1D[2]);
-      double  logClusterSizeRatio   = log(signalClusterSizeProb/bkgClusterSizeProb);
-      
-      double  signalRDistProb       = calculateProb(rDist, _signalHist1D[3]);
-      double  bkgRDistProb          = calculateProb(rDist, _bkgHist1D[3]);
-      double  logRDistRatio         = log(signalRDistProb/bkgRDistProb);
+      double  signalRDistProb         = calculateProb(rDist, _signalHist1D[clSection][3]);
+      double  bkgRDistProb            = calculateProb(rDist, _bkgHist1D   [clSection][3]);
+      double  logRDistRatio           = log(signalRDistProb/bkgRDistProb);
 
-      double  signalE2E1Prob        = calculateProb(e2e1Ratio, _signalHist1D[4]);
-      double  bkgE2E1Prob           = calculateProb(e2e1Ratio, _bkgHist1D[4]);
-      double  logE2E1Ratio          = log(signalE2E1Prob/bkgE2E1Prob);
-      
+      double  signalEnergy2DProb      = calculate2DProb(rDist, rDist, _signalCorrHist1D[clSection][0], _minClEnergy, _clEStep);
+      double  bkgEnergy2DProb         = calculate2DProb(rDist, rDist, _bkgCorrHist1D   [clSection][0], _minClEnergy, _clEStep);
+      double  logEnergy2DRatio        = log(signalEnergy2DProb/bkgEnergy2DProb);
+  
+      double  signalE12DProb          = calculate2DProb(rDist, e1Ratio, _signalCorrHist1D[clSection][1], _minRDist, _rDistStep);
+      double  bkgE12DProb             = calculate2DProb(rDist, e1Ratio, _bkgCorrHist1D   [clSection][1], _minRDist, _rDistStep);
+      double  logE12DRatio            = log(signalE12DProb/bkgE12DProb);
+  
+      double  signalE22DProb          = calculate2DProb(rDist, e2Ratio, _signalCorrHist1D[clSection][2], _minRDist, _rDistStep);
+      double  bkgE22DProb             = calculate2DProb(rDist, e2Ratio, _bkgCorrHist1D   [clSection][2], _minRDist, _rDistStep);
+      double  logE22DRatio            = log(signalE22DProb/bkgE22DProb);
+  
+      double  signalE2E12DProb        = calculate2DProb(rDist, e2e1Ratio, _signalCorrHist1D[clSection][3], _minRDist, _rDistStep);
+      double  bkgE2E12DProb           = calculate2DProb(rDist, e2e1Ratio, _bkgCorrHist1D   [clSection][3], _minRDist, _rDistStep);
+      double  logE2E12DRatio          = log(signalE2E12DProb/bkgE2E12DProb);      
 
-      //Energy versus Radial correlation
-      double  logEClusterRDistRatio(-1e10);
-      for (int j=0; j<kNCorHist; ++j){
-	double   eCl_min = (_minClEnergy + (double)j*_clEStep);
-	double   eCl_max = (_minClEnergy + (double)(j+1)*_clEStep);
-	if ( ( clEnergy >= eCl_min) && ( clEnergy < eCl_max) ){
-	  double signalEClusterRDistProb = calculateProb(rDist,  _signalCorrHist1D[0][j]);
-	  double bkgEClusterRDistProb    = calculateProb(rDist, _bkgCorrHist1D    [0][j]);
-	  logEClusterRDistRatio          = log(signalEClusterRDistProb/bkgEClusterRDistProb);
-	  break;
-	}
-      }
-   
-      //E1 Ratio (Energy_most_energetic_crystalHit / cluster_energy) versus Radial correlation
-      double logE1RDistRatio(-1e10);
-      for (int j=0; j<kNCorHist; ++j){
-	double   rDist_min = (_minRDist + (double)j*_rDistStep);
-	double   rDist_max = (_minRDist + (double)(j+1)*_rDistStep);
-	if ( ( rDist >= rDist_min) && (rDist < rDist_max) ){
-	  double signalE1RDistProb = calculateProb(e1Ratio,  _signalCorrHist1D[1][j]);
-	  double bkgE1RDistProb    = calculateProb(e1Ratio, _bkgCorrHist1D    [1][j]);
-	  logE1RDistRatio          = log(signalE1RDistProb/bkgE1RDistProb);
-	  break;
-	}
-      }
+      double  signalE32DProb          = calculate2DProb(rDist, e3Ratio, _signalCorrHist1D[clSection][4], _minRDist, _rDistStep);
+      double  bkgE32DProb             = calculate2DProb(rDist, e3Ratio, _bkgCorrHist1D   [clSection][4], _minRDist, _rDistStep);
+      double  logE32DRatio            = log(signalE32DProb/bkgE32DProb);
 
-      //Second Highest Crystal Ratio versus Radial
-      double logE2RDistRatio(-1e10);
-      for (int j=0; j<kNCorHist; ++j){
-	double   rDist_min = (_minRDist + (double)j*_rDistStep);
-	double   rDist_max = (_minRDist + (double)(j+1)*_rDistStep);
-	if ( ( rDist >= rDist_min) && (rDist < rDist_max) ){
-	  double signalE2RDistProb = calculateProb(e2Ratio,  _signalCorrHist1D[2][j]);
-	  double bkgE2RDistProb    = calculateProb(e2Ratio, _bkgCorrHist1D    [2][j]);
-	  logE2RDistRatio          = log(signalE2RDistProb/bkgE2RDistProb);
-	  break;
-	}
-      }
+      double  signalE42DProb          = calculate2DProb(rDist, e4Ratio, _signalCorrHist1D[clSection][5], _minRDist, _rDistStep);
+      double  bkgE42DProb             = calculate2DProb(rDist, e4Ratio, _bkgCorrHist1D   [clSection][5], _minRDist, _rDistStep);
+      double  logE42DRatio            = log(signalE42DProb/bkgE42DProb);
 
-      // double lh_1 = logE1Ratio + logEClusterRatio + logClusterSizeRatio + logRDistRatio;
-      // double lh_2 = lh_1 + logE2E1Ratio;
+      double  signalClSize2DProb      = calculate2DProb(rDist, clusterSize, _signalCorrHist1D[clSection][6], _minRDist, _rDistStep);
+      double  bkgClSize2DProb         = calculate2DProb(rDist, clusterSize , _bkgCorrHist1D  [clSection][6], _minRDist, _rDistStep);
+      double  logClSize2DRatio        = log(signalClSize2DProb/bkgClSize2DProb);
 
-      double lh_4 = logE1RDistRatio  + logE2RDistRatio + logEClusterRDistRatio + logClusterSizeRatio + logRDistRatio;
-      double lh_5 = lh_4 + logE2E1Ratio;
-   
-      if ( lh_5 > _minLH) {
+      double  lhValue  =  logRDistRatio + logEnergy2DRatio + logE12DRatio + logRDistRatio + logClSize2DRatio;
+      if (nCrystalHits>=2) lhValue += logE22DRatio  + logE2E12DRatio;     
+      if (nCrystalHits>=3) lhValue += logE32DRatio;
+      if (nCrystalHits>=4) lhValue += logE42DRatio;
+
+      if ( lhValue > _minLH[clSection]) {
 	retval = true;
 	++_nPass;
         // Fill the trigger info object
@@ -409,14 +440,31 @@ namespace mu2e {
     return retval;
   }
  
+  //--------------------------------------------------------------------------------//
+ //--------------------------------------------------------------------------------
+  double   CaloLikelihood::calculate2DProb(double& Ref, double&Variable, TH1F** Template, double MinX, double Step){
+    double     thisprob = 1e-17;
+
+    for (int j=0; j<kNCorHist; ++j){
+      double   ref_min = (MinX + (double)j*Step);
+      double   ref_max = (MinX + (double)(j+1)*Step);
+      if ( ( Ref >= ref_min) && (Ref < ref_max) ){
+	thisprob = calculateProb(Variable,  Template[j]);
+	break;
+      }
+    }
+    
+    return thisprob;
+  }
+
   double CaloLikelihood::calculateProb(double&Variable, TH1* Template){
 
-    double thisprob = 1;
+    double     thisprob      = 1;
     //not sure how to loop over variable value   i should be event number
-    double     binSize   = Template->GetBinWidth(1);
-    double     binIndex = (Variable - Template->GetBinLowEdge(1))/binSize + 1;
+    double     binSize       = Template->GetBinWidth(1);
+    int        binIndex      = (Variable - Template->GetBinLowEdge(1))/binSize;
     //what is the probability for this variable
-    int           templateNBins = Template->GetNbinsX();
+    int        templateNBins = Template->GetNbinsX();
     if (binIndex > templateNBins) {
       thisprob = 1e-17;
       std::cout << "whoops out of range" << std::endl;

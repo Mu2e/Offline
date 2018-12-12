@@ -51,7 +51,9 @@ physics : {
   producers : {
     cryGen : {
       module_type : CRYEventGenerator
-      inputFile : "EventGenerator/defaultConfigs/othersCRYconfig.txt"
+      inputFile : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
+      showerEnergyCutoff: 1.E6 // MeV
+      // showerEnergyCutoff: 1373.3 // MeV
     }
 
     g4run : 

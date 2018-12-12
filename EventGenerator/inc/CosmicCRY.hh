@@ -22,6 +22,8 @@ namespace mu2e {
     public:
       CosmicCRY(art::Run& run, const SimpleConfig& config,
           CLHEP::HepRandomEngine& engine);
+      const double getLiveTime();
+      const double getShowerSumEnergy();
 
       virtual void generate( GenParticleCollection&  );
 
@@ -72,6 +74,7 @@ namespace mu2e {
 
       double _GeV2MeV;
       double _m2mm;
+      double _showerSumEnergy;
 
       std::vector<CLHEP::Hep3Vector> _envIntersections;
       void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir);

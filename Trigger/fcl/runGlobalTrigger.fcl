@@ -16,6 +16,12 @@ sDCount_sf             : 1
 #prescale factors for the "large" strawDigi counter filter
 largeSDCount_evt_sf    : 500
 largeSDCount_sf        : 1
+#prescale factors for the caloDigi count filter
+cDCount_evt_sf         : 500
+cDCount_sf             : 1
+#prescale factors for the "large" caloDigi counter filter
+largeCDCount_evt_sf    : 500
+largeCDCount_sf        : 1
 #prescale factor for the calorimeter-only trigger
 caloOnly_evt_sf        : 1
 caloOnly_sf            : 1
@@ -40,11 +46,13 @@ END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"
 
-process_name : globalTrigger
+#process_name : globalTrigger
 
 source :
 {
     module_type : RootInput
+    inputCommands : [  "keep *_*_*_*",
+		       "drop *mu2e::TriggerInfo_*_*_*"]
 }
 # we don't need any simulation services for this job
 services : @local::Services.Reco
@@ -130,7 +138,7 @@ physics : {
     
     out           : [ readTriggerInfo ]
     
-#    out           : [ ReadTriggerInfo, triggerOutput ]
+#    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 
