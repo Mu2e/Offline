@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CrvDigi_hh
-#define MCDataProducts_CrvDigi_hh
+#ifndef RecoDataProducts_CrvDigi_hh
+#define RecoDataProducts_CrvDigi_hh
 //
 // $Id: $
 // $Author: ehrlich $

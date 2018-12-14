@@ -17,6 +17,7 @@ bin/artProductSizes
 bin/eventCount
 bin/valCompare
 bin/dbTool
+bin/deps
 lib
 tmp
 *.stn
