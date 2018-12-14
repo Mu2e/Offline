@@ -6,9 +6,11 @@
 #include "fcl/standardServices.fcl"
 #include "Mu2eG4/fcl/prolog.fcl"
 
+#BEGIN_PROLOG
+#protonInteractionFile: @nil
+#END_PROLOG
+
 BEGIN_PROLOG
-
-
 pbars0out: {
    type: pdgId
    pars: [ -2212 ]  # stop and save pbars
@@ -59,7 +61,7 @@ physics : {
             visualization     : @local::mu2eg4NoVisualization
 
             MultiStageParameters : {
-                 simParticleNumberOffset : 100000
+                 simParticleNumberOffset : 1000000
                  genInputHits               : ["pbarWrite"]
                  inputSimParticles          : "pbarWrite"
                  inputMCTrajectories        : ""
@@ -70,7 +72,6 @@ physics : {
 
             SDConfig : {
                 enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
-//                preSimulatedHits: ["mixread:virtualdetector"] // I don't think this is right; not staging from a VD and no VD has been hit yet
                 TimeVD           : { times : [] }
             }
 
@@ -164,7 +165,7 @@ physics : {
 
       mixread: {
 	 module_type: ResamplingMixer
-	 fileNames: [ "sim.owner.pbar_s0.version.sequencer.art" ]
+	 fileNames: ["vertexFile.art"]
          readMode: "randomNoReplace"
          wrapFiles: true
 
@@ -180,31 +181,32 @@ physics : {
     } // filters
 
 
-    trigFilter    : [ mixread,pbarWrite,g4run,genCounter] //compressPV removed since doesn't work with mixing
+    trigFilter    : [ genCounter,mixread,pbarWrite,g4run,g4filter] //compressPV removed since doesn't work with mixing
     trigger_paths : [ trigFilter]
 
-    e1        : [ allOutput , readAntiProtonSteps,genCountLogger]
+    e1        : [ filterOutput , readAntiProtonSteps,genCountLogger]
 
     end_paths : [ e1 ]
 } // physics
 
 outputs : {
-   allOutput     : {
+   filterOutput     : {
       module_type    : RootOutput
       SelectEvents   : ["trigFilter"]
-      outputCommands : [ "keep *_*_*_*" ]
-      fileName       : "sim.owner.pbar_s1toVD91unfiltered.version.sequencer.art"
+      outputCommands : [ "drop *_*_*_*",
+                         "keep mu2e::GenParticles_*_*_*",
+                         "keep *_g4filter_*_*" ]
+      fileName       : "sim.owner.pbar_s1toVD91.version.sequencer.art"
    }
 
 }
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
-
+//physics.filters.mixread.fileNames : @local::protonInteractionFile
 // Limit the rate of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
-
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed          : 0
-services.SeedService.maxUniqueEngines  : 20
+#services.SeedService.baseSeed          : 0
+#services.SeedService.maxUniqueEngines  : 20

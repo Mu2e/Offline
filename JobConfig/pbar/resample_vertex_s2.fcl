@@ -1,6 +1,6 @@
 // Andrei Gaponenko, 2013
 // Jake Colston & Joseph Brock, 2015 (edit for cd3)--> rhb adapts for antiprotons
-
+//starts at VD91 and propagates to Coll31Out, use to study collar collimator and then TS3 central window
 #include "minimalMessageService.fcl"
 #include "standardProducers.fcl"
 #include "standardServices.fcl"
@@ -17,15 +17,15 @@ CutEPPhN : {
 END_PROLOG
 
 # Give this job a name.
-process_name : pbarg4s1
+process_name : pbars2
 
 source : { 
-    module_type : RootInput
+    module_type : EmptyEvent maxEvents: @nil
 }
 
 services : {
     message                : @local::default_message
-    TFileService           : { fileName : "nts.owner.pbar_g4s1.version.sequencer.root" }
+    TFileService           : { fileName : "nts.owner.pbar_s2_toColl31Out.version.sequencer.root" }
     RandomNumberGenerator  : {}
     GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt"    }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -49,11 +49,11 @@ physics : {
 
             generatorModuleLabel : generate 
             MultiStageParameters : {
-                 simParticleNumberOffset : 100000
+                 simParticleNumberOffset : 2000000
                  genInputHits               : ["g4filter:enterTS"]
                  inputSimParticles          : "g4filter"
                  inputMCTrajectories        : ""
-                 inputPhysVolumeMultiInfo   : "compressPV"
+                 inputPhysVolumeMultiInfo   : ""
           }
 
             doWriteLegacyPhysVolumeInfo : false
@@ -79,48 +79,31 @@ physics : {
 		      pars: [
      		     {
                         type  : inVolume
-                        pars  : [TS5Vacuum]
+                        pars  : [Coll31_Out]
 		     },
 		     {
 			type: pdgId
 			pars: [ -2212 ]
 		     }
 		     ]
-                        write : enterTS5
+                        write : Coll31Out
                     }
                 ]
             }
 
- 
-            SimParticlePrinter : {
-                enabled       : false
-                primariesOnly : false
-                prefix        : "SimParticle : "
-            }
         } // g4run
 
  
-        compressPV : {
-            module_type    : CompressPhysicalVolumes
-            volumesInput   : "g4run"
-            hitInputs      : []
-            particleInputs : [ "g4filter" ]
-        }
     } // producers
 
     analyzers : {
         genCountLogger : {
             module_type : GenEventCountReader
         }
-        readVirtualDetector : {
-             module_type : ReadVirtualDetector
-             savePDG : [-2212]
-             saveVD  : [91,92]
-        }
         readAntiProtonSteps : {
              module_type : ReadAntiProtonSteps
              savePDG : [-2212]
-             psVacuumStepPoints : "enterTS5"
+             psVacuumStepPoints : "Coll31Out"
        }
 
     } // analyzers
@@ -129,33 +112,45 @@ physics : {
         g4filter : {
             module_type               : FilterG4Out
             noInstanceName            : true
-            mainHitInputs             : [ "g4run:enterTS5" ]
+            mainHitInputs             : [ "g4run:Coll31Out" ]
             extraHitInputs            : [ "g4run:virtualdetector"]
             numSimParticleCollections : 1
             vetoDaughters             : []
         }
+      mixread: {
+	 module_type: ResamplingMixer
+	 fileNames: @nil
+         readMode: "randomNoReplace"
+         wrapFiles: true
+
+	 // detail
+	 mu2e: {
+	    products: {
+	       genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	       simParticleMixer: { mixingMap: [ [ "g4run", "" ] ] }
+	    }
+	 }
+
+
     } // filters
 
 
-    trigFilter    : [ g4run, g4filter, compressPV ]
+    trigFilter    : [ mixread, g4run, g4filter,genCounter]
     trigger_paths : [ trigFilter ]
 
-    e1        : [ filteredOutput, readVirtualDetector, readAntiProtonSteps, genCountLogger ]
+    e1        : [ filteredOutput, readAntiProtonSteps, genCountLogger ]
     end_paths : [ e1 ]
 } // physics
 
 outputs : {
-    filteredOutput : {
-        module_type    : RootOutput
-        SelectEvents   : { SelectEvents : ["trigFilter"] }
-        outputCommands : [ "drop *_*_*_*",
-                           "keep mu2e::GenParticles_*_*_*",
-                           "keep mu2e::GenEventCount_*_*_*",
-                           "keep mu2e::StatusG4_*_*_*",
-                           "keep *_g4filter_*_*",
-                           "keep *_compressPV_*_*" ]
-        fileName       : "sim.owner.antiprotons_g4s2.version.sequencer.art"
-    }
+
+outputs : {
+   filteredOutput     : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "drop art::TriggerResults_*_*_*"]
+      fileName       : "sim.owner.pbar_s2toColl31Out.version.sequencer.art"
+   }
 }
 
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
