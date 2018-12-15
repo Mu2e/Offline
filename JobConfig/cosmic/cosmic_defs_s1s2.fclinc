@@ -222,6 +222,7 @@ physics :
       {
          module_type: FilterStatusG4
          input: "g4run"
+	 maxAcceptedStatus: 1  #  status 2 and above means StepPointMCCollection may have non-dereferencable pointers
       }
 
       g4consistent: {
@@ -277,17 +278,8 @@ outputs:
 
 // FIX ME. minRangeCut has to be 0.01 mm in detectot volumes.
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
-#physics.producers.g4run.physics.minRangeRegionCuts: {
-#    Calorimeter      : 0.01
-#    Tracker          : 0.01
-#    StoppingTarget   : 0.01
-#}
-#physics.producers.g4run.debug.trackingVerbosityLevel: 1
-physics.producers.g4run.debug.steppingVerbosityLevel: 1
-#physics.producers.g4run.debug.diagLevel: 1
-
-
-physics.producers.g4run.physics.setMuHadLateralDisplacement: true
+physics.producers.g4run.physics.minRangeCut2: 0.1  // calorimeter
+physics.producers.g4run.physics.minRangeCut3: 0.01 // tracker
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 
 // Limit the amount of "Begin processing the ... record" messages
