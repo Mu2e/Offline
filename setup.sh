@@ -3,6 +3,7 @@
 #
 # Original author Rob Kutschke
 #
+#
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it." >&2
@@ -33,6 +34,8 @@ if [ "${MU2E_BASE_RELEASE}" != '' ];then
     return 1
 fi
 
+
+
 # A very ill-defined state.  We have  a satellite release but no base release!
 if [ "${MU2E_SATELLITE_RELEASE}" != '' ];then
     echo "ERROR: A satellite release has already been setup but there is no base release." >&2
@@ -40,6 +43,50 @@ if [ "${MU2E_SATELLITE_RELEASE}" != '' ];then
     echo "The satellite release is: " ${MU2E_SATELLITE_RELEASE} >&2
     return 1
 fi
+
+#
+# if this is a partial checkout, run the base release setup
+# and add this to the path
+#
+
+# This variable contains the physical path to the directory
+# that contains this file  (regardless of cwd when this script is sourced ).
+SCRIPTDIR=`dirname $(readlink -f $BASH_SOURCE)`
+BASEREPO=$( git config --file $SCRIPTDIR/.git/config --get mu2e.baserelease )
+
+if [ -n "$BASEREPO" ]; then
+
+  #echo "found partial checkout active"
+  #echo "base release: $BASEREPO"
+  if [ ! -f $BASEREPO/setup.sh ]; then
+    echo " ERROR - could not find base release setup"
+    return 1
+  fi
+
+  # do the base release setup (redefines SCRIPTDIR)
+  source $BASEREPO/setup.sh
+
+  # this file
+  SATSCRIPTDIR=`dirname $(readlink -f $BASH_SOURCE)` 
+  # Add the satellite release to path variables.
+  export MU2E_SATELLITE_RELEASE=$SATSCRIPTDIR
+  export MU2E_SEARCH_PATH=`dropit -p $MU2E_SEARCH_PATH -sf $MU2E_SATELLITE_RELEASE`
+  export FHICL_FILE_PATH=`dropit -p $FHICL_FILE_PATH -sf $MU2E_SATELLITE_RELEASE`
+  export LD_LIBRARY_PATH=`dropit -p $LD_LIBRARY_PATH -sf $MU2E_SATELLITE_RELEASE/lib`
+  export PYTHONPATH=`dropit -p $PYTHONPATH -sf $MU2E_SATELLITE_RELEASE/scripts/build/python`
+  export PATH=`dropit -p $PATH -sf $MU2E_SATELLITE_RELEASE/bin`
+  export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_SATELLITE_RELEASE`
+
+  if [ -f $MU2E_SATELLITE_RELEASE/.buildopts ] ; then
+      echo "WARNING - buildopts will be taken from the base release, "
+      echo "        in partial checkout your local buildopts is ignored"
+  fi
+  # items below were defined by the base release 
+  # source setup.sh, so exit now
+  return 0
+
+fi
+
 
 # Define the directory in which this file lives as the root of a release.
 export MU2E_BASE_RELEASE=`cd "$(dirname ${BASH_SOURCE})" >/dev/null 2>&1 && /bin/pwd`
@@ -112,4 +159,4 @@ export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_BASE_RELEASE`
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
 export BUILD_BASE=${MU2E_BASE_RELEASE}
 
-
+# 

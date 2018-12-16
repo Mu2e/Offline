@@ -92,6 +92,7 @@ TrkHitRecoTrigger : {
     # production sequence to prepare hits for tracking
     sequences: {
 	TTprepareHits  : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
+	TTmakefastHits : [ TTmakeSH, TTmakePH ]
 	TTSprepareHits : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
     }
 }

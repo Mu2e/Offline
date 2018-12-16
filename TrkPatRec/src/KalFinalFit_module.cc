@@ -226,7 +226,7 @@ namespace mu2e
       _data.tracks = krcol.get();
     }
 
-    _result.fitType     = 0;
+    _result.fitType     = 1;
     _result.event       = &event ;
     _result.chcol       = _chcol ;
     _result.shfcol      = _shfcol ;
