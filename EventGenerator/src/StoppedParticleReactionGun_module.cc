@@ -181,7 +181,7 @@ namespace mu2e {
       *elow = *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
       res.initialize<SimpleSpectrum>( 0., 1., 1., SimpleSpectrum::Spectrum::Flat );
     }
-    else if (spectrumShape == "ConversionSpectrum") {
+    else if (spectrumShape == "ceLeadingLog") {
 //-----------------------------------------------------------------------------
 // ehi determines the conversion electron energy (tabulated in the .FCL file)
       //   *elow = psphys.get<double>("elow");
@@ -189,8 +189,8 @@ namespace mu2e {
       *ehi  = psphys.get<double>("ehi" );
 					// for radiatively corrected spectrum, elow and ehi are derivatives 
       double bin   = psphys.get<double>("spectrumResolution");
-      int    ratio = *ehi/bin;
-      *ehi         = (ratio+1.)*bin;
+      // int    ratio = *ehi/bin;
+      // *ehi         = (ratio+1.)*bin;
       
       res.initialize<ConversionSpectrum>(*elow,*ehi,bin,*ehi,bin);
     }

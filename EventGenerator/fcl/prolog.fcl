@@ -157,6 +157,36 @@ EventGenerator : { @table::EventGenerator
 	    }
 	}
 #------------------------------------------------------------------------------
+# new implementation from Eleonora, doesn't require tabulations
+#------------------------------------------------------------------------------
+	ceMLeadingLog              : {   module_type: StoppedParticleReactionGun
+	    physics: {
+		pdgId                 : 11
+		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		eMax                  : 104.97                
+		spectrumResolution    : 0.1                # MeV
+		ehi                   : 104.97
+		elow                  : 0.
+	    } 
+	    muonStops                 : @local::muonStops
+	    doHistograms              : true
+	}
+
+	cePLeadingLog              : {   module_type: StoppedParticleReactionGun
+	    physics: {
+		pdgId                 : -11
+		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		eMax                  : 92.32                
+		spectrumResolution    : 0.1                # MeV
+		ehi                   : 92.32
+		elow                  : 0.
+	    } 
+	    muonStops                 : @local::muonStops
+	    doHistograms              : true
+	}
+#------------------------------------------------------------------------------
 # generic electron and muon guns, default momentum is that of the CE on Al
 #------------------------------------------------------------------------------
   	egun : { @table::StoppedParticleReactionGun 
