@@ -44,11 +44,11 @@ CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuM
 # ambiguity resolvers
 #------------------------------------------------------------------------------
 CommonTrk.reco_DeMHPar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar  ]
-CommonTrk.reco_DeMHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar  ]
+CommonTrk.reco_DeMHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHDar  ]
 CommonTrk.reco_DeMH      : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar,  KFFDeMHDar  ]
 
 CommonTrk.reco_DmuMHPar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar ]
-CommonTrk.reco_DmuMHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar ]
+CommonTrk.reco_DmuMHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHDar ]
 CommonTrk.reco_DmuMH     : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar, KFFDmuMHDar ]
 
 END_PROLOG

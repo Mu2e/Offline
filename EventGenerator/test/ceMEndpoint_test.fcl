@@ -9,16 +9,13 @@
 #include "fcl/standardServices.fcl"
 
 
-process_name : EminusConvSpectrumTest
+process_name : CeMEndpointTest
 
 source       : { module_type : EmptyEvent   }
- #source       : { module_type : RootInput   }
-
-producers     : { @table::EventGenerator.producers }
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName : "nts.stntuple.jobtype.offver.sequencer.root" }
+    TFileService          : { fileName        : "nts.user.ceMEndpoint_test.xxx.000001.root" }
     RandomNumberGenerator : { }
 
     GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"  }
@@ -42,18 +39,8 @@ services : {
 services.scheduler.wantSummary: true
 
 physics : {
-    producers: {   @table::producers
-	generate              : {   module_type: StoppedParticleReactionGun
-	    physics: {
-		spectrumShape         : "CeEndpoint"       # "ConversionSpectrum", could also be "flat"
-		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-		pdgId                 : 11
-		eMax                  : 104.97                
-		spectrumResolution    : 0.1                # hopefully, in MeV
-		ehi                   : 104.97
-		elow                  : 0.
-	    } 
-	    muonStops                 : @local::muonStops
+    producers: {
+	generate              : { @table::EventGenerator.producers.ceMEndpoint
 	    doHistograms              : true
 	}
     }
@@ -62,17 +49,10 @@ physics : {
 
     trigger_paths : [ p1 ]
 }
-   
-services.TFileService.fileName            : "nts.user.eminus_conv_spectrum_test.xxx.000001.root"
 #------------------------------------------------------------------------------
 # uncomment the next 2 lines if you want the DST file to be written out
 #-----------------------------------------------------------------------------
 #physics.out                               : [ detectorOutput ]
 #outputs.detectorOutput.SelectEvents       : [ p1 ]
-#outputs.detectorOutput.fileName           : "sim.user.conv_spectrum_test.xxx.000001.art"
-#------------------------------------------------------------------------------
-# uncomment to avoid waisting time on the initialization of detailed neutron 
-# cross sections - that shouldn't affect the CE simulation 
-#------------------------------------------------------------------------------
-# physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+#outputs.detectorOutput.fileName           : "sim.user.ceLeadignLog_test.xxx.000001.art"
+

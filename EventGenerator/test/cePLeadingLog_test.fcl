@@ -9,7 +9,7 @@
 #include "fcl/standardServices.fcl"
 
 
-process_name : EminusConvSpectrumTest
+process_name : CePLeadingLogTest
 
 source       : { module_type : EmptyEvent   }
 
@@ -49,8 +49,6 @@ physics : {
 
     trigger_paths : [ p1 ]
 }
-   
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 #------------------------------------------------------------------------------
 # uncomment the next 2 lines if you want the DST file to be written out
 #-----------------------------------------------------------------------------

@@ -178,7 +178,9 @@ namespace mu2e {
     }
     else if (spectrumShape == "CeEndpoint") {
       // A simple kludge: ignore the random distribution by setting elow=ehi=eConversion
-      *elow = *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
+      //      *elow = *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
+      // default to conversion e- energy on Al
+      *elow = *ehi = psphys.get<double>("ehi", GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy());
       res.initialize<SimpleSpectrum>( 0., 1., 1., SimpleSpectrum::Spectrum::Flat );
     }
     else if (spectrumShape == "ceLeadingLog") {

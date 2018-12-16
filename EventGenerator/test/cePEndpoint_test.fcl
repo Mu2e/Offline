@@ -1,19 +1,21 @@
 # -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # generate 104.97 MeV electrons with radative Correction included
-# for more info DocDB 20844
+#for more info DocDB 20844
 #------------------------------------------------------------------------------
+
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-process_name : CeMLeadingLogTest
 
-source       : { module_type : EmptyEvent } 
+process_name : CePEndpointTest
+
+source       : { module_type : EmptyEvent   }
 
 services : {
     message               : @local::default_message
-    TFileService          : { fileName        : "nts.user.ceMLeadingLog_test.xxx.000001.root" }
+    TFileService          : { fileName        : "nts.user.cePEndpoint_test.xxx.000001.root" }
     RandomNumberGenerator : { }
 
     GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"  }
@@ -38,7 +40,7 @@ services.scheduler.wantSummary: true
 
 physics : {
     producers: {
-	generate              : { @table::EventGenerator.producers.ceMLeadingLog
+	generate              : { @table::EventGenerator.producers.cePEndpoint
 	    doHistograms              : true
 	}
     }
