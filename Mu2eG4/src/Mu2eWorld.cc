@@ -825,7 +825,7 @@ namespace mu2e {
           for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
               G4String LVname = (*pos)->GetName();
 
-              if (LVname.find("ElectronicsROLog") != std::string::npos) {
+              if (LVname.find("caloFEECardROLog") != std::string::npos) {
                 (*pos)->SetSensitiveDetector(crCardSD);
               }
           }//for
@@ -839,7 +839,7 @@ namespace mu2e {
           for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
               G4String LVname = (*pos)->GetName();
 
-              if (LVname.find("activeStripBoardLog") != std::string::npos) {
+              if (LVname.find("ccrateActiveStripLog") != std::string::npos) {
                 (*pos)->SetSensitiveDetector(cCrateSD);
               }
           }//for
