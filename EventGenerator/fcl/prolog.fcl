@@ -157,12 +157,6 @@ EventGenerator : { @table::EventGenerator
 	    }
 	}
 #------------------------------------------------------------------------------
-<<<<<<< HEAD
-# new implementation from Eleonora, doesn't require tabulations
-#------------------------------------------------------------------------------
-	ceMLeadingLog              : {   module_type: StoppedParticleReactionGun
-	    physics: {
-=======
 # new implementation from Eleonora, doesn't require tabulations of LL spectra
 # conversion e- and e+ on Al27 
 #------------------------------------------------------------------------------
@@ -203,7 +197,6 @@ EventGenerator : { @table::EventGenerator
 	ceMLeadingLog              : {   module_type: StoppedParticleReactionGun
 	    physics: {
 		genId                 : conversionGun 
->>>>>>> 4d53e379fa992a07c2ea6355b6dcd51ecbbbe290
 		pdgId                 : 11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -212,22 +205,15 @@ EventGenerator : { @table::EventGenerator
 		ehi                   : 104.97
 		elow                  : 0.
 	    } 
-<<<<<<< HEAD
-	    muonStops                 : @local::muonStops
-=======
 	    muonStops            : { @table::mu2e.tgtMuonStops
 		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
->>>>>>> 4d53e379fa992a07c2ea6355b6dcd51ecbbbe290
 	    doHistograms              : true
 	}
 
 	cePLeadingLog              : {   module_type: StoppedParticleReactionGun
 	    physics: {
-<<<<<<< HEAD
-=======
 		genId                 : conversionGun 
->>>>>>> 4d53e379fa992a07c2ea6355b6dcd51ecbbbe290
 		pdgId                 : -11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -235,15 +221,10 @@ EventGenerator : { @table::EventGenerator
 		spectrumResolution    : 0.1                # MeV
 		ehi                   : 92.32
 		elow                  : 0.
-<<<<<<< HEAD
-	    } 
-	    muonStops                 : @local::muonStops
-=======
 	    }
 	    muonStops            : { @table::mu2e.tgtMuonStops
 		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
 	    }
->>>>>>> 4d53e379fa992a07c2ea6355b6dcd51ecbbbe290
 	    doHistograms              : true
 	}
 #------------------------------------------------------------------------------
