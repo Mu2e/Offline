@@ -50,7 +50,7 @@ namespace mu2e {
     const StrawHitFlagCollection*     shfcol;         //
     std::string                       shDigiLabel;    // 
 
-    TrkParticle                       tpart;
+    //    TrkParticle                       tpart;   // krep already has this info 
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
 

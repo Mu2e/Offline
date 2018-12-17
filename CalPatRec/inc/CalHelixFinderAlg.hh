@@ -83,7 +83,7 @@ namespace mu2e {
     // int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
-    double               _maxElectronHitEnergy;
+    double               _maxHitEnergy; // 
     int                  _minNHits;     // minimum # of hits for a helix candidate
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
