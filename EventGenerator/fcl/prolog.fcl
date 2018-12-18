@@ -6,7 +6,7 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
-    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
@@ -305,6 +305,22 @@ EventGenerator : { @table::EventGenerator
 		spectrumResolution    : 0.1 # hopefully, in MeV
 	    }
 	    pionStops                 : { @table::EventGenerator.pionStops }
+
+	}
+
+	StoppedParticleRMCGun : { 
+	    module_type    : StoppedMuonRMCGun
+	    verbosityLevel : 0
+	    doHistograms   : 0
+	    physics : {
+	        rhoInternal    : 1.0
+	        elow           : 1.5
+	        ehi            : 120.0 
+		generateIntConversion : 0    # 0:photons 1: e+e- internal conversion pairs 
+		spectrumShape         : "flat"    # could also be "flat"
+		physicsVerbosityLevel : 0
+	    }
+	    muonStops                 : { @table::muonStops  }
 
 	}
     }
