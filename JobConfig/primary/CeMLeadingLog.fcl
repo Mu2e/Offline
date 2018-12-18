@@ -2,13 +2,13 @@
 # Radiative Ce- spectrum, based on doc 7615 spectrum 
 #
 #include "JobConfig/primary/prolog.fcl"
-process_name: CeLeadingLog
+process_name: CeMLeadingLog
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : @local::EventGenerator.producers.ceLeadingLog
+    generate : @local::EventGenerator.producers.ceMLeadingLog
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }
@@ -24,6 +24,6 @@ outputs : {
 #
 #include "JobConfig/primary/epilog.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.CeLeadingLog.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.CeLeadingLog.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CeMLeadingLog.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CeMLeadingLog.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
