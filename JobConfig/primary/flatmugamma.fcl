@@ -1,7 +1,7 @@
 # flat range of photons from muon stops to study external RMC background
 #include "JobConfig/primary/flatE.fcl"
 process_name: flatmugamma
-physics.producers.generate.physics.genId : radiativeMuonCapture
+physics.producers.generate.physics.genId : ExtRMC
 physics.producers.generate.physics.pdgId : 22
 physics.producers.generate.physics.elow : 80.0 // Mev
 physics.producers.generate.physics.ehi : 105.0 // Mev

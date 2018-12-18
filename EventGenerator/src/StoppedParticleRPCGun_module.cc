@@ -186,7 +186,7 @@ namespace mu2e {
 
     if(!generateInternalConversion_){
       output->emplace_back( PDGCode::gamma,
-                          GenId::pionCapture,
+                          GenId::ExtRPC,
                           pos,
                           CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
                           stop.t );
@@ -197,8 +197,8 @@ namespace mu2e {
       pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
       // Add particles to list
       auto output = std::make_unique<GenParticleCollection>();
-      output->emplace_back(PDGCode::e_minus, GenId::internalRPC,pos,mome,stop.t);
-      output->emplace_back(PDGCode::e_plus , GenId::internalRPC,pos,momp,stop.t);
+      output->emplace_back(PDGCode::e_minus, GenId::IntRPC,pos,mome,stop.t);
+      output->emplace_back(PDGCode::e_plus , GenId::IntRPC,pos,momp,stop.t);
       event.put(move(output));
       
       if(doHistograms_){

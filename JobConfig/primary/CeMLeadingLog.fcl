@@ -8,7 +8,7 @@ source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : @local::EventGenerator.producers.ceMLeadingLog
+    generate : @local::EventGenerator.producers.CeMLeadingLog
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }

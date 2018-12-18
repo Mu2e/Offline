@@ -70,7 +70,7 @@ namespace mu2e {
     RandomUnitSphere    randomUnitSphere_;
     CLHEP::RandFlat     randomFlat_;
 
-    PionCaptureSpectrum pionCaptureSpectrum_;
+    PionCaptureSpectrum ExtRPCSpectrum_;
 
     RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
 
@@ -104,7 +104,7 @@ namespace mu2e {
     , eng_{createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , randomUnitSphere_(eng_)
     , randomFlat_(eng_)
-    , pionCaptureSpectrum_(&randomFlat_,&randomUnitSphere_)
+    , ExtRPCSpectrum_(&randomFlat_,&randomUnitSphere_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
     , doHistograms_{pset.get<bool>("doHistograms", true)}
   {
@@ -174,13 +174,13 @@ namespace mu2e {
     double energy = generateEnergy();
 
     CLHEP::HepLorentzVector mome, momp;
-    pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
+    ExtRPCSpectrum_.getElecPosiVectors(energy,mome,momp); 
 
 					// Add particles to list
 
     auto output = std::make_unique<GenParticleCollection>();
-    output->emplace_back(PDGCode::e_minus, GenId::internalRPC,pos,mome,stop.t);
-    output->emplace_back(PDGCode::e_plus , GenId::internalRPC,pos,momp,stop.t);
+    output->emplace_back(PDGCode::e_minus, GenId::IntRPC,pos,mome,stop.t);
+    output->emplace_back(PDGCode::e_plus , GenId::IntRPC,pos,momp,stop.t);
     event.put(move(output));
 					// calculate survival probability
 

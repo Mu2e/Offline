@@ -81,7 +81,7 @@ namespace mu2e {
     }
     CLHEP::HepLorentzVector mom (_randomUnitSphere.fire(_e), _e);
 
-    GenParticle outGen(PDGCode::gamma, GenId::pionCapture, pos, mom, time);
+    GenParticle outGen(PDGCode::gamma, GenId::ExtRPC, pos, mom, time);
 
     return outGen;
   }
@@ -95,7 +95,7 @@ namespace mu2e {
 
     CLHEP::HepLorentzVector mom (_randomUnitSphere.fire(_elecMom), _elecMom);
 
-    GenParticle outGen(PDGCode::e_minus, GenId::internalRPC, pos, mom, time);
+    GenParticle outGen(PDGCode::e_minus, GenId::IntRPC, pos, mom, time);
 
     return outGen;
   }
@@ -108,7 +108,7 @@ namespace mu2e {
 
     CLHEP::HepLorentzVector mom (_randomUnitSphere.fire(_positMom), _positMom);
 
-    GenParticle outGen(PDGCode::e_plus, GenId::internalRPC, pos, mom, time);
+    GenParticle outGen(PDGCode::e_plus, GenId::IntRPC, pos, mom, time);
 
     return outGen;
   }

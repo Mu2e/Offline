@@ -34,33 +34,33 @@ namespace mu2e {
 
     // Need to keep the enum and the _name member in sync.
     enum enum_type {
-      unknown,       particleGun,       conversionGun,
+      unknown,       particleGun,       CeEndpoint,
       cosmicToy,     cosmicDYB,         cosmic,          obsolete1, //6
-      dioTail,       obsolete2,         obsolete3,       obsolete4,           pionCapture, //11
+      dioTail,       obsolete2,         obsolete3,       obsolete4,           ExtRPC, //11
       muonCapture,   muonDecayInFlight, ejectedProtonGun, //14
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi, //18
-      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, internalRPC, //22
+      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, IntRPC, //22
       extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined, //26
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun, //30
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, //33
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
-      cosmicCRY, pbarFlat, fromAscii, radiativeMuonCapture, radiativeMuonCaptureInternal, //42
-      lastEnum //43
+      cosmicCRY, pbarFlat, fromAscii, ExtRMC, IntRMC, CeLeadingLog, //43
+      lastEnum //44
     };
 
     // Keep this in sync with the enum. Used in GenId.cc
 #define GENID_NAMES                                                     \
-    "unknown",      "particleGun",       "conversionGun",               \
+    "unknown",      "particleGun",       "CeEndpoint",               \
       "cosmicToy",    "cosmicDYB",         "cosmic",           "obsolete1",  \
-      "dioTail", "obsolete2",  "obsolete3", "obsolete4",           "pionCapture", \
+      "dioTail", "obsolete2",  "obsolete3", "obsolete4",           "ExtRPC", \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
-      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "internalRPC", \
+      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "IntRPC", \
       "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
-      "CosmicCRY","pbarFlat","fromAscii","radiativeMuonCapture","radiativeMuonCaptureInternal"
+      "CosmicCRY","pbarFlat","fromAscii","ExtRMC","IntRMC","CeLeadingLog"
 
   public:
 
@@ -100,6 +100,10 @@ namespace mu2e {
 
     bool isCosmic() const {
       return (_id == cosmicToy || _id == cosmicDYB || _id == cosmic);
+    }
+
+    bool isConversion() const { 
+      return _id == GenId::CeEndpoint || _id == GenId::CeLeadingLog;
     }
 
     // Accessor for the version.
