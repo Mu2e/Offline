@@ -1,0 +1,38 @@
+#
+# internal RPC with a flat virtual photon energy spectrum
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: flatIntRPC
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.StoppedParticleRPCGun
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+physics.producers.generate.physics.generateIntConversion : 1
+physics.producers.generate.physics.spectrumShape : "flat"
+physics.producers.generate.physics.elow : 40.0
+physics.filters.DigiFilter.MinParticleMom : 40.0
+#
+# customize the output
+services.TFileService.fileName: "nts.owner.flatIntRPC.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.flatIntRPC.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+# debugging
+physics.producers.generate.doHistograms      : true
+physics.producers.generate.verbosityLevel    : 1
+
