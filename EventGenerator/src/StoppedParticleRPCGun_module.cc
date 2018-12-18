@@ -46,6 +46,7 @@
 #include "TTree.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TH2.h"
 
 namespace mu2e {
 
@@ -60,15 +61,20 @@ namespace mu2e {
                                              double *elow,
                                              double *ehi);
 
-    int verbosityLevel_;
+    int                 verbosityLevel_;
+    int                 generateInternalConversion_;
+
+    double              czmin_;
+    double              czmax_;
+    double              phimin_;
+    double              phimax_;
 
     art::RandomNumberGenerator::base_engine_t& eng_;
-    CLHEP::RandGeneral randSpectrum_;
-    double             czmin_;
-    double             czmax_;
-    double             phimin_;
-    double             phimax_;
-    RandomUnitSphere   randomUnitSphere_;
+
+    CLHEP::RandGeneral  randSpectrum_;
+    CLHEP::RandFlat     randomFlat_;
+    RandomUnitSphere    randomUnitSphere_;
+    PionCaptureSpectrum pionCaptureSpectrum_;
 
     RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
 
@@ -77,6 +83,12 @@ namespace mu2e {
     double generateEnergy();
 
     TH1F* _hmomentum;
+    TH1F* _hElecMom {nullptr};
+    TH1F* _hPosiMom {nullptr};
+    TH1F* _hMee;
+    TH2F* _hMeeVsE;
+    TH1F* _hMeeOverE;    		// M(ee)/E(gamma)
+    TH1F* _hy;				// splitting function
 
   public:
     explicit StoppedParticleRPCGun(const fhicl::ParameterSet& pset);
@@ -88,15 +100,18 @@ namespace mu2e {
     : psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , elow_()
     , ehi_()
-    , spectrum_(parseSpectrumShape(psphys_, &elow_, &ehi_))
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , spectrum_                  (parseSpectrumShape(psphys_, &elow_, &ehi_))
+    , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))
+    , generateInternalConversion_{psphys_.get<int>("generateIntConversion", 0)}
+    , czmin_                     (pset.get<double>("czmin" , -1.0))
+    , czmax_                     (pset.get<double>("czmax" ,  1.0))
+    , phimin_                    (pset.get<double>("phimin",  0. ))
+    , phimax_                    (pset.get<double>("phimax", CLHEP::twopi ))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
-    , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())
-    , czmin_           (pset.get<double>("czmin" , -1.0))
-    , czmax_           (pset.get<double>("czmax" ,  1.0))
-    , phimin_          (pset.get<double>("phimin",  0. ))
-    , phimax_          (pset.get<double>("phimax", CLHEP::twopi ))
-    , randomUnitSphere_(eng_, czmin_,czmax_,phimin_,phimax_)
+    , randSpectrum_       (eng_, spectrum_.getPDF(), spectrum_.getNbins())
+    , randomFlat_         (eng_)
+    , randomUnitSphere_   (eng_, czmin_,czmax_,phimin_,phimax_)
+    , pionCaptureSpectrum_(&randomFlat_,&randomUnitSphere_)
       //    , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
@@ -118,6 +133,15 @@ namespace mu2e {
       art::TFileDirectory tfdir = tfs->mkdir( "StoppedParticleRPCGun" );
 
       _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
+      
+      if(generateInternalConversion_){
+        _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
+        _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
+        _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
+        _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
+        _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
+        _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+      }
     }
 
   }
@@ -160,15 +184,40 @@ namespace mu2e {
 
     const double energy = generateEnergy();
 
-    output->emplace_back( PDGCode::gamma,
+    if(!generateInternalConversion_){
+      output->emplace_back( PDGCode::gamma,
                           GenId::pionCapture,
                           pos,
                           CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
                           stop.t );
 
-    event.put(std::move(output));
+      event.put(std::move(output));
+    } else {
+      CLHEP::HepLorentzVector mome, momp;
+      pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
+      // Add particles to list
+      auto output = std::make_unique<GenParticleCollection>();
+      output->emplace_back(PDGCode::e_minus, GenId::internalRPC,pos,mome,stop.t);
+      output->emplace_back(PDGCode::e_plus , GenId::internalRPC,pos,momp,stop.t);
+      event.put(move(output));
+      
+      if(doHistograms_){
+        _hElecMom ->Fill(mome.vect().mag());
+        _hPosiMom ->Fill(momp.vect().mag());
+ 
+        double mee = (mome+momp).m();
+        _hMee->Fill(mee);
+        _hMeeVsE->Fill(energy,mee);
+        _hMeeOverE->Fill(mee/energy);
+      
+        CLHEP::Hep3Vector p = mome.vect()+momp.vect();
+        double y = (mome.e()-momp.e())/p.mag();
+      
+        _hy->Fill(y);
+      }
+    }
 
-    // Calculate survival probability
+// Calculate survival probability
     const double weight = exp(-stop.tauNormalized);
     std::unique_ptr<EventWeight> pw(new EventWeight(weight));
     event.put(std::move(pw));

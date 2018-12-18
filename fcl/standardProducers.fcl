@@ -21,6 +21,7 @@ END_PROLOG
 #include "TrkReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog_common.fcl"
 #include "TrackCaloMatching/fcl/prolog.fcl"
 #include "ParticleID/fcl/prolog.fcl"
 #include "EventMixing/fcl/prolog.fcl"
