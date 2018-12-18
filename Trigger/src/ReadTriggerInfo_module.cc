@@ -102,27 +102,76 @@ namespace mu2e {
       TH1F *_hTrigInfo  [kNTrigInfo];
       TH2F *_h2DTrigInfo[kNTrigInfo];
       TH1F *_hTrigBDW   [kNTrigInfo];
+      
+      summaryInfoHist_() {
+	for (int i=0; i<kNTrigInfo; ++i){ 
+	  _hTrigInfo  [i] = NULL;
+	  _h2DTrigInfo[i] = NULL;
+	  _hTrigBDW   [i] = NULL;
+	}
+      }
     };
     
     struct  trackInfoHist_    {
       TH1F *_hTrkInfo [kNTrackTrig][kNTrackTrigVar];
+
+      trackInfoHist_ (){
+	for (int i=0; i<kNTrackTrig; ++i){ 
+	  for (int j=0; j<kNTrackTrigVar; ++j){
+	    _hTrkInfo  [i][j] = NULL;
+	  }
+	}     
+      }
     };
     
     struct  helixInfoHist_    {
       TH1F *_hHelInfo [kNHelixTrig][kNHelixTrigVar];
+      
+      helixInfoHist_(){
+	for (int i=0; i<kNHelixTrig; ++i){ 
+	  for (int j=0; j<kNHelixTrigVar; ++j){
+	    _hHelInfo  [i][j] = NULL;
+	  }
+	}	
+      }
     };  
 
     struct  caloTrigSeedHist_ {
-     TH1F *_hCaloOnlyInfo [kNCaloOnly][kNCaloOnlyVar];
+      TH1F *_hCaloOnlyInfo [kNCaloOnly][kNCaloOnlyVar];
+      
+      caloTrigSeedHist_(){
+	for (int i=0; i<kNCaloOnly; ++i){ 
+	  for (int j=0; j<kNCaloOnlyVar; ++j){
+	    _hCaloOnlyInfo  [i][j] = NULL;
+	  }
+	}	
+      }
     };
     
     struct  caloCalibrationHist_ {
       TH1F *_hCaloCalibInfo[kNCaloCalib][kNCaloCalibVar];
-    };
+      
+      caloCalibrationHist_ (){
+	for (int i=0; i<kNCaloCalib; ++i){ 
+	  for (int j=0; j<kNCaloCalibVar; ++j){
+	    _hCaloCalibInfo  [i][j] = NULL;
+	  }
+	}
+      }
+   };
     
     struct  occupancyHist_       {
       TH1F *_hOccInfo  [kNOcc][kNOccVar];
       TH2F *_h2DOccInfo[kNOcc][kNOccVar];
+      
+      occupancyHist_ (){
+	for (int i=0; i<kNOcc; ++i){ 
+	  for (int j=0; j<kNOccVar; ++j){
+	    _hOccInfo    [i][j] = NULL;
+	    _h2DOccInfo  [i][j] = NULL;
+	  }
+	}
+      }
     };
       
     explicit ReadTriggerInfo(fhicl::ParameterSet const& pset);
@@ -305,7 +354,7 @@ namespace mu2e {
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hHelInfo[i][11] = helInfoDir.make<TH1F>(Form("hPtMC_%i", i), "MC Track Pt @ tracker front; p_{t} [MeV/c]" , 400, 0, 200);
-      Hist._hHelInfo[i][12] = helInfoDir.make<TH1F>(Form("hPzMC_%i", i), "MC Track Pt @ tracker front; p_{t} [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][12] = helInfoDir.make<TH1F>(Form("hPzMC_%i", i), "MC Track Pt @ tracker front; p_{z} [MeV/c]" , 400, 0, 200);
       Hist._hHelInfo[i][13] = helInfoDir.make<TH1F>(Form("hDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
       Hist._hHelInfo[i][14] = helInfoDir.make<TH1F>(Form("hDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
       Hist._hHelInfo[i][15] = helInfoDir.make<TH1F>(Form("hDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
@@ -382,6 +431,69 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------//
   void ReadTriggerInfo::endJob(){
+
+    //set hitograms' titles
+
+    //Helix
+    for (int i=0; i<_nTrackTrig; ++i){
+      for (int j=0; j<kNHelixTrigVar; ++j){
+	if (_helHist._hHelInfo[i][j] == NULL)    continue;
+	string title = _trigHelix[i].label +": "+ _helHist._hHelInfo[i][j]->GetTitle();
+	_helHist._hHelInfo[i][j]->SetTitle(title.c_str());
+      }
+    }
+    
+    //Tracks
+    for (int i=0; i<_nTrackTrig; ++i){
+      for (int j=0; j<kNTrackTrigVar; ++j){
+	if (_trkHist._hTrkInfo[i][j] == NULL)    continue;
+	string title = _trigTrack[i].label +": "+ _trkHist._hTrkInfo[i][j]->GetTitle();
+	_trkHist._hTrkInfo[i][j]->SetTitle(title.c_str());
+      }
+    }
+
+ 
+    //occupancy
+    //tracks
+    for (int i=0; i<_nTrackTrig; ++i){
+      for (int j=0; j<kNOccVar; ++j){
+	if (_occupancyHist._hOccInfo[i][j] != NULL)    {
+	  string title = _trigTrack[i].label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
+	  _occupancyHist._hOccInfo[i][j]->SetTitle(title.c_str());
+	}
+	if (_occupancyHist._h2DOccInfo[i][j] != NULL)    {
+	  string title = _trigTrack[i].label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
+	  _occupancyHist._h2DOccInfo[i][j]->SetTitle(title.c_str());
+	}
+      }
+    }
+    //helix
+    for (int i=_nTrackTrig; i<_nTrackTrig*2; ++i){
+      for (int j=0; j<kNOccVar; ++j){
+	if (_occupancyHist._hOccInfo[i][j] != NULL)    {
+	  string title = _trigHelix[i].label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
+	  _occupancyHist._hOccInfo[i][j]->SetTitle(title.c_str());
+	}
+	if (_occupancyHist._h2DOccInfo[i][j] != NULL)    {
+	  string title = _trigHelix[i].label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
+	  _occupancyHist._h2DOccInfo[i][j]->SetTitle(title.c_str());
+	}
+      }
+    }
+    //calo trig
+    for (int i=_nTrackTrig*2; i<_nTrackTrig*2+_nCaloTrig; ++i){
+      for (int j=0; j<kNOccVar; ++j){
+	if (_occupancyHist._hOccInfo[i][j] != NULL)    {
+	  string title = _trigCaloOnly[i].label +": "+ _occupancyHist._hOccInfo[i][j]->GetTitle();
+	  _occupancyHist._hOccInfo[i][j]->SetTitle(title.c_str());
+	}
+	if (_occupancyHist._h2DOccInfo[i][j] != NULL)    {
+	  string title = _trigCaloOnly[i].label +": "+ _occupancyHist._h2DOccInfo[i][j]->GetTitle();
+	  _occupancyHist._h2DOccInfo[i][j]->SetTitle(title.c_str());
+	}
+      }   
+    }
+
 
     int    indexTrigInfo11(0);
 
@@ -816,9 +928,9 @@ namespace mu2e {
 	while(mother->hasParent()) mother = mother->parent();
 	sim = mother.operator ->();
 	int      pdgM   = sim->pdgId();
-	double   pXMC   = simptr->startMomentum().x();
-	double   pYMC   = simptr->startMomentum().y();
-	double   pZMC   = simptr->startMomentum().z();
+	double   pXMC   = step->momentum().x();
+	double   pYMC   = step->momentum().y();
+	double   pZMC   = step->momentum().z();
 	double   mass(-1.);//  = part->Mass();
 	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
 	mass   = pdt->particle(pdg).ref().mass();
@@ -829,7 +941,7 @@ namespace mu2e {
       
 	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
 	XYZVec origin;
-	origin.SetX(sp->x());
+	origin.SetX(sp->x()+3904);
 	origin.SetY(sp->y());
 	origin.SetZ(sp->z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
@@ -932,9 +1044,9 @@ namespace mu2e {
 	while(mother->hasParent()) mother = mother->parent();
 	sim = mother.operator ->();
 	int      pdgM   = sim->pdgId();
-	double   pXMC   = simptr->startMomentum().x();
-	double   pYMC   = simptr->startMomentum().y();
-	double   pZMC   = simptr->startMomentum().z();
+	double   pXMC   = step->momentum().x();
+	double   pYMC   = step->momentum().y();
+	double   pZMC   = step->momentum().z();
 	double   mass(-1.);//  = part->Mass();
 	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
 	mass   = pdt->particle(pdg).ref().mass();
@@ -945,7 +1057,7 @@ namespace mu2e {
       
 	const CLHEP::Hep3Vector* sp = &simptr->startPosition();
 	XYZVec origin;
-	origin.SetX(sp->x());
+	origin.SetX(sp->x()+3904);
 	origin.SetY(sp->y());
 	origin.SetZ(sp->z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
