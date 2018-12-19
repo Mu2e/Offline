@@ -293,8 +293,8 @@ EventGenerator : { @table::EventGenerator
 	    }
 	}
 
-	StoppedParticleRPCGun : { 
-	    module_type    : StoppedParticleRPCGun
+	RPCGun : { 
+	    module_type    : RPCGun
 	    verbosityLevel : 0
 	    doHistograms   : 0
 	    physics : {

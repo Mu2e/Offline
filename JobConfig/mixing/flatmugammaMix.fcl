@@ -19,7 +19,7 @@ physics : {
       physics: {
 	spectrumShape: flat
 	spectrumVariable: totalEnergy
-        genId : ExtRMC
+        genId : ExternalRMC
 	pdgId : 22
 	elow : 80.0 // Mev
 	ehi : 111.0 // Mev

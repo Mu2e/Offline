@@ -297,7 +297,7 @@ namespace mu2e {
     if (randFlat_.fire() > rhoInternal_) {
       CLHEP::HepLorentzVector photon(randUnitSphereExt_.fire(energy),energy);
       output->emplace_back( PDGCode::gamma, 
-			    GenId::ExtRMC, 
+			    GenId::ExternalRMC, 
 			    pos,
 			    photon,
 			    stop.t );
@@ -323,14 +323,14 @@ namespace mu2e {
       // CLHEP::HepLorentzVector fakePositron(-105.*TMath::Sin(CLHEP::pi*60./180.),0.,105.*TMath::Cos(CLHEP::pi*60./180.),sqrt(105*105+me_*me_));
 
       output->emplace_back( PDGCode::e_minus, 
-			    GenId::IntRMC, 
+			    GenId::InternalRMC, 
 			    pos,
 			    mome, 
 			    //fakeElectron, 
 			    //			    800. );
       			    stop.t );
       output->emplace_back( PDGCode::e_plus, 
-			    GenId::IntRMC, 
+			    GenId::InternalRMC, 
 			    pos,
 			    momp,
 			    //fakePositron, 

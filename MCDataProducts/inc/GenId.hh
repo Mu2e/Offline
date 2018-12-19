@@ -36,15 +36,15 @@ namespace mu2e {
     enum enum_type {
       unknown,       particleGun,       CeEndpoint,
       cosmicToy,     cosmicDYB,         cosmic,          obsolete1, //6
-      dioTail,       obsolete2,         obsolete3,       obsolete4,           ExtRPC, //11
+      dioTail,       obsolete2,         obsolete3,       obsolete4,           ExternalRPC, //11
       muonCapture,   muonDecayInFlight, ejectedProtonGun, //14
       piEplusNuGun,  primaryProtonGun,  fromG4BLFile,      ePlusfromStoppedPi, //18
-      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, IntRPC, //22
+      ejectedNeutronGun, ejectedPhotonGun, nuclearCaptureGun, InternalRPC, //22
       extMonFNALGun, fromStepPointMCs, stoppedMuonGun, PiCaptureCombined, //26
       MARS, StoppedParticleReactionGun, bremElectronGun, muonicXRayGun, //30
       fromSimParticleStartPoint, fromSimParticleCompact, StoppedParticleG4Gun, //33
       CaloCalib, InFlightParticleSampler, muplusDecayGun, StoppedMuonXRayGammaRayGun, //37
-      cosmicCRY, pbarFlat, fromAscii, ExtRMC, IntRMC, CeLeadingLog, //43
+      cosmicCRY, pbarFlat, fromAscii, ExternalRMC, InternalRMC, CeLeadingLog, //43
       lastEnum //44
     };
 
@@ -52,15 +52,15 @@ namespace mu2e {
 #define GENID_NAMES                                                     \
     "unknown",      "particleGun",       "CeEndpoint",               \
       "cosmicToy",    "cosmicDYB",         "cosmic",           "obsolete1",  \
-      "dioTail", "obsolete2",  "obsolete3", "obsolete4",           "ExtRPC", \
+      "dioTail", "obsolete2",  "obsolete3", "obsolete4",           "ExternalRPC", \
       "muonCapture",  "muonDecayInFlight", "ejectedProtonGun",          \
       "piEplusNuGun", "primaryProtonGun",  "fromG4BLFile"    , "ePlusfromStoppedPi", \
-      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "IntRPC", \
+      "ejectedNeutronGun", "ejectedPhotonGun", "nuclearCaptureGun", "InternalRPC", \
       "extMonFNALGun", "fromStepPointMCs", "stoppedMuonGun", "PiCaptureCombined", \
       "MARS", "StoppedParticleReactionGun","bremElectronGun", "muonicXRayGun", \
       "fromSimParticleStartPoint", "fromSimParticleCompact", "StoppedParticleG4Gun", \
       "CaloCalib", "InFlightParticleSampler","muplusDecayGun", "StoppedMuonXRayGammaRayGun", \
-      "CosmicCRY","pbarFlat","fromAscii","ExtRMC","IntRMC","CeLeadingLog"
+      "CosmicCRY","pbarFlat","fromAscii","ExternalRMC","InternalRMC","CeLeadingLog"
 
   public:
 
