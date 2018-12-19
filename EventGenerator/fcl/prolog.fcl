@@ -137,6 +137,9 @@ EventGenerator : {
 	averageNumRecordsToUse : 0
 	verbosityLevel         : 0
     }
+    muonStops      : { @table::mu2e.tgtMuonStops
+	inputFiles : @local::mergedMuon_tgtStops_mdc2018_1
+    } 
 }
 
 EventGenerator : { @table::EventGenerator 
@@ -316,7 +319,20 @@ EventGenerator : { @table::EventGenerator
 		spectrumResolution    : 0.1 # hopefully, in MeV
 	    }
 	    pionStops                 : { @table::EventGenerator.pionStops }
-
+	}
+        
+        StoppedParticleRMCGun : {
+	    module_type    : StoppedParticleRMCGun
+	    verbosityLevel : 0
+	    doHistograms   : 0
+	    physics : {
+		generateIntConversion : 0
+		spectrumShape         : "flat"
+		elow                  : 60
+		ehi                   : 110
+		spectrumResolution    : 0.1
+	    }
+	    muonStops      : { @table::EventGenerator.muonStops }
 	}
     }
 }

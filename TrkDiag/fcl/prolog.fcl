@@ -222,7 +222,8 @@ BEGIN_PROLOG
       RMCWeight : { 
         module_type : RMCWeight
         kinematic_endpoint : 100
-        verbosityLevel : 1
+        internalConversion : 1
+        verbosityLevel : 0
       }
     }
     analyzers : {
@@ -239,7 +240,7 @@ BEGIN_PROLOG
   
     # diagnostic Reco sequences starting from digis
 
-    EventWeightSequence : [ PBIWeight ]
+    EventWeightSequence : [ PBIWeight, RMCWeight ]
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,

@@ -1,5 +1,5 @@
 #
-# Prolog specific to createing primary (signal, signal-like or calibration) particles
+# Prolog specific to creating primary (signal, signal-like or calibration) particles
 #
 #include "JobConfig/beam/prolog.fcl"
 #include "EventGenerator/fcl/prolog.fcl"
@@ -62,7 +62,7 @@ Primary: {
 Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
   @sequence::CommonMC.DigiSim,
   @sequence::TrackerMC.DigiSim,
-  DigiFilter,
+  #DigiFilter,
   @sequence::CaloDigiMC.DigiSim,
   @sequence::CrvDAQPackage.CrvResponseSequence,
   compressDigiMCs ]
