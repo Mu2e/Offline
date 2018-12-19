@@ -51,7 +51,7 @@
 namespace mu2e {
 
   //================================================================
-  class StoppedParticleRPCGun : public art::EDProducer {
+  class RPCGun : public art::EDProducer {
     fhicl::ParameterSet psphys_;
 
     double elow_; // BinnedSpectrum does not store emin and emax reliably
@@ -91,12 +91,12 @@ namespace mu2e {
     TH1F* _hy;				// splitting function
 
   public:
-    explicit StoppedParticleRPCGun(const fhicl::ParameterSet& pset);
+    explicit RPCGun(const fhicl::ParameterSet& pset);
     virtual void produce(art::Event& event);
   };
 
   //================================================================
-  StoppedParticleRPCGun::StoppedParticleRPCGun(const fhicl::ParameterSet& pset)
+  RPCGun::RPCGun(const fhicl::ParameterSet& pset)
     : psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , elow_()
     , ehi_()
@@ -120,17 +120,17 @@ namespace mu2e {
     produces<mu2e::EventWeight>();
 
     if(verbosityLevel_ > 0) {
-      std::cout<<"StoppedParticleRPCGun: using = "
+      std::cout<<"RPCGun: using = "
                <<stops_.numRecords()
                <<" stopped particles"
                <<std::endl;
 
-      std::cout<<"StoppedParticleRPCGun: producing photon " << std::endl;
+      std::cout<<"RPCGun: producing photon " << std::endl;
     }
 
     if ( doHistograms_ ) {
       art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir( "StoppedParticleRPCGun" );
+      art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
 
       _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
       
@@ -148,7 +148,7 @@ namespace mu2e {
 
   //================================================================
   BinnedSpectrum
-  StoppedParticleRPCGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
+  RPCGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
                                                  double *elow,
                                                  double *ehi)
   {
@@ -174,7 +174,7 @@ namespace mu2e {
   }
 
   //================================================================
-  void StoppedParticleRPCGun::produce(art::Event& event) {
+  void RPCGun::produce(art::Event& event) {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
@@ -186,7 +186,7 @@ namespace mu2e {
 
     if(!generateInternalConversion_){
       output->emplace_back( PDGCode::gamma,
-                          GenId::pionCapture,
+                          GenId::ExternalRPC,
                           pos,
                           CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
                           stop.t );
@@ -197,8 +197,8 @@ namespace mu2e {
       pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
       // Add particles to list
       auto output = std::make_unique<GenParticleCollection>();
-      output->emplace_back(PDGCode::e_minus, GenId::internalRPC,pos,mome,stop.t);
-      output->emplace_back(PDGCode::e_plus , GenId::internalRPC,pos,momp,stop.t);
+      output->emplace_back(PDGCode::e_minus, GenId::InternalRPC,pos,mome,stop.t);
+      output->emplace_back(PDGCode::e_plus , GenId::InternalRPC,pos,momp,stop.t);
       event.put(move(output));
       
       if(doHistograms_){
@@ -229,11 +229,11 @@ namespace mu2e {
   }
 
   //================================================================
-  double StoppedParticleRPCGun::generateEnergy() {
+  double RPCGun::generateEnergy() {
     return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
   }
 
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::StoppedParticleRPCGun);
+DEFINE_ART_MODULE(mu2e::RPCGun);

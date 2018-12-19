@@ -6,7 +6,7 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
-    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
@@ -72,7 +72,7 @@ dummyGenerator : {
 CeEndpointGun: {
     module_type    : StoppedParticleReactionGun
     physics: {
-      genId : conversionGun 
+      genId : CeEndpoint 
       pdgId : 11
       spectrumShape: CeEndpoint
       spectrumVariable: totalEnergy
@@ -83,7 +83,7 @@ CeEndpointGun: {
 CeplusEndpointGun : {
     module_type    : StoppedParticleReactionGun
     physics: {
-	genId           : conversionGun 
+	genId           : CeEndpoint 
 	pdgId           : -11
 # temporary hack until we get this number into code FIXME!
 	spectrumShape: flat
@@ -149,23 +149,12 @@ EventGenerator : { @table::EventGenerator
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
         PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 #------------------------------------------------------------------------------
-# CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
-#------------------------------------------------------------------------------
-  	ceLeadingLog : { @table::StoppedParticleReactionGun # CE + rad corr
-	    physics : {
-		pdgId            :  11
-		spectrumVariable : "totalEnergy"
-		spectrumShape    : "tabulated"
-		spectrumFileName : "ConditionsService/data/szafron_mu2e_7615.tbl"
-	    }
-	}
-#------------------------------------------------------------------------------
 # new implementation from Eleonora, doesn't require tabulations of LL spectra
 # conversion e- and e+ on Al27 
 #------------------------------------------------------------------------------
-	ceMEndpoint              : {   module_type: StoppedParticleReactionGun
+	CeMEndpoint              : {   module_type: StoppedParticleReactionGun
 	    physics: {
-		genId                 : conversionGun 
+		genId                 : CeEndpoint 
 		pdgId                 : 11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -180,9 +169,9 @@ EventGenerator : { @table::EventGenerator
 	    doHistograms              : true
 	}
 
-	cePEndpoint              : {   module_type: StoppedParticleReactionGun
+	CePEndpoint              : {   module_type: StoppedParticleReactionGun
 	    physics: {
-		genId                 : conversionGun 
+		genId                 : CeEndpoint 
 		pdgId                 : -11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -197,9 +186,9 @@ EventGenerator : { @table::EventGenerator
 	    doHistograms              : true
 	}
 
-	ceMLeadingLog              : {   module_type: StoppedParticleReactionGun
+	CeMLeadingLog              : {   module_type: StoppedParticleReactionGun
 	    physics: {
-		genId                 : conversionGun 
+		genId                 : CeLeadingLog 
 		pdgId                 : 11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -214,9 +203,9 @@ EventGenerator : { @table::EventGenerator
 	    doHistograms              : true
 	}
 
-	cePLeadingLog              : {   module_type: StoppedParticleReactionGun
+	CePLeadingLog              : {   module_type: StoppedParticleReactionGun
 	    physics: {
-		genId                 : conversionGun 
+		genId                 : CeLeadingLog 
 		pdgId                 : -11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
@@ -307,8 +296,8 @@ EventGenerator : { @table::EventGenerator
 	    }
 	}
 
-	StoppedParticleRPCGun : { 
-	    module_type    : StoppedParticleRPCGun
+	RPCGun : { 
+	    module_type    : RPCGun
 	    verbosityLevel : 0
 	    doHistograms   : 0
 	    physics : {
@@ -333,6 +322,22 @@ EventGenerator : { @table::EventGenerator
 		spectrumResolution    : 0.1
 	    }
 	    muonStops      : { @table::EventGenerator.muonStops }
+	}
+
+	StoppedParticleRMCGun : { 
+	    module_type    : StoppedMuonRMCGun
+	    verbosityLevel : 0
+	    doHistograms   : 0
+	    physics : {
+	        rhoInternal    : 1.0
+	        elow           : 1.5
+	        ehi            : 120.0 
+		generateIntConversion : 0    # 0:photons 1: e+e- internal conversion pairs 
+		spectrumShape         : "flat"    # could also be "flat"
+		physicsVerbosityLevel : 0
+	    }
+	    muonStops                 : { @table::muonStops  }
+
 	}
     }
 }
