@@ -149,6 +149,7 @@ namespace mu2e {
     , g4DeltaIntersection_(_config.getDouble("g4.deltaIntersection")*CLHEP::mm)
     , g4DeltaChord_(_config.getDouble("g4.deltaChord")*CLHEP::mm)
     , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.)*CLHEP::mm)
+    , useEmOption4InTracker_(_config.getBool("g4.useEmOption4InTracker",false))
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
   }
@@ -170,6 +171,7 @@ namespace mu2e {
     , g4MaxIntSteps_(pset.get<int>("physics.maxIntSteps"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
+    , useEmOption4InTracker_(pset.get<bool>("physics.useEmOption4InTracker",false))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
   }
@@ -234,24 +236,31 @@ namespace mu2e {
       constructProtonAbsorber(_config);
       VolumeInfo calorimeterInfo = constructCal();
 
-    if (pset_.has_key("physics.minRangeCut2")) {
-      // creating a region to be able to asign special cut and EM options
-      G4Region* regionCalorimeter = new G4Region("Calorimeter");
-      calorimeterInfo.logical->SetRegion(regionCalorimeter);
-      regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
-    }
+      // creating regions to be able to asign special cut and EM options
 
-    if (pset_.has_key("physics.minRangeCut3")) {
-      // creating a region to be able to asign special cut and EM options
-      G4Region* regionTracker = new G4Region("Tracker");
-      trackerInfo.logical->SetRegion(regionTracker);
-      regionTracker->AddRootLogicalVolume(trackerInfo.logical);
-    }
+      const fhicl::ParameterSet& minRangeRegionCutsPSet{
+        pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
 
-    // This is just placeholder for now - and might be misnamed.
-    constructMagnetYoke();
+      if (!minRangeRegionCutsPSet.is_empty()) {
+        const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
+        for(const auto& regionName : regionNames) {
+          G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
+          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
+          volInfo.logical->SetRegion(region);
+          region->AddRootLogicalVolume(volInfo.logical);
+        }
+      }
 
-    // Check for stale names
+      // special case for the tracker
+      if ( useEmOption4InTracker_
+           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+        G4Region* region = new G4Region("TrackerMother");
+        trackerInfo.logical->SetRegion(region);
+        region->AddRootLogicalVolume(trackerInfo.logical);
+      }
+
+      // This is just placeholder for now - and might be misnamed.
+      constructMagnetYoke();
 
       if ( _config.getBool("hasExternalShielding",false) ) {
           constructExternalShielding(hallInfo, _config);

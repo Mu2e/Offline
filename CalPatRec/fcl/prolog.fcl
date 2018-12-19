@@ -399,6 +399,8 @@ CalPatRec : { @table::CalPatRec
 	    maxDriftTime                  : 50.                   # ns, includes some tolerance
 	    maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
 	    maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
+	    writeStrawHits                : 1
+	    filter                        : 0
 	    # debugging/diagnostics
 	    testOrder                     : 0
 	    debugLevel                    : 0

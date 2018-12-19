@@ -38,21 +38,11 @@ namespace mu2e {
       float         z_first_hit(0), z_last_hit(0), counter(0);
       bool          isFirst(true);
       float         half_pitch  =  M_PI*fabs(_hel->_helix._lambda);
-      float         dz_min_toll = 600.;
+      float         dz_min_toll = 600.;//FIXME! this parameter need to be evaluated inside the loop for
+                                       //each point that defines the beginning of a new loop.
       unsigned      nhits = _hel->_hhits.size();
 
-      static const XYZVec zdir(0.0,0.0,1.0);
-      float          rpullScaleF(1);
-      float          cradres(20.);
-      float          cperpres(20.);
-
-      //initialize to 0 the chi2 values
-      _chi2dXY   = 0.;
-      _chi2dZPhi = 0.;
-
       const mu2e::RobustHelix  *robustHel = &Helix->helix();
-      XYZVec                    wdir(0,0,0);
-      static XYZVec             zaxis(0.0,0.0,1.0); // unit in z direction
 
       int nstrawhits = 0;
 
@@ -93,59 +83,9 @@ namespace mu2e {
 	    }
 	  }
 	}
-
-	wdir      = hit->wdir();
-
-	//calculate the residuals on the XY and ZPhi planes
-	XYZVec cvec  = PerpVector(hit->pos() - robustHel->center(),Geom::ZDir()); // direction from the circle center to the hit
-	XYZVec cdir  = cvec.Unit(); // direction from the circle center to the hit
-	float  rwdot = wdir.Dot(cdir); // compare directions of radius and wire
-	float  dr    = sqrtf(cvec.mag2()) - robustHel->radius();
-
-	float rwdot2 = rwdot*rwdot;
-	// compute radial difference and pull
-	float werr   = hit->posRes(mu2e::ComboHit::wire);
-	float terr   = hit->posRes(mu2e::ComboHit::trans);
-	// the resolution is dominated the resolution along the wire
-	//      float rres   = std::max(sqrtf(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2)),minrerr);
-	float rres   = sqrtf(werr*werr*rwdot2 + terr*terr*(1.0-rwdot2));
-	float rpull  = fabs(dr/rres)*rpullScaleF;
-
-	_chi2dXY  += rpull*rpull;
-
-	//RobustHelix: Z-Phi 
-	XYZVec wtdir = zaxis.Cross(wdir);   // transverse direction to the wire
-	// XYZVec cvec = PerpVector(hit->pos() - helix.center(),Geom::ZDir()); // direction from the circle center to the hit
-	// XYZVec cdir = cvec.Unit();          // direction from the circle center to the hit
-	XYZVec cperp = zaxis.Cross(cdir);   // direction perp to the radius
-
-	XYZVec hpos = hit->pos(); // this sets the z position to the hit z
-	robustHel->position(hpos);                // this computes the helix expectation at that z
-	XYZVec dh = hit->pos() - hpos;   // this is the vector between them
-	float dtrans = fabs(dh.Dot(wtdir)); // transverse projection
-	float dwire = fabs(dh.Dot(wdir));   // projection along wire direction
-
-	// compute the total resolution including hit and helix parameters first along the wire
-	float wres2 = std::pow(hit->posRes(mu2e::ComboHit::wire),(int)2) +
-	  std::pow(cradres*cdir.Dot(wdir),(int)2) +
-	  std::pow(cperpres*cperp.Dot(wdir),(int)2);
-	// transverse to the wires
-	float wtres2 = std::pow(hit->posRes(mu2e::ComboHit::trans),(int)2) +
-	  std::pow(cradres*cdir.Dot(wtdir),(int)2) +
-	  std::pow(cperpres*cperp.Dot(wtdir),(int)2);
-
-	_chi2dZPhi += dwire*dwire/wres2 + dtrans*dtrans/wtres2;
-	
-	
       }//end loop over the hits
 
       _nStrawHits = nstrawhits;
-
-      if (counter>0){
-	_chi2dXY   = _chi2dXY  /counter;
-	_chi2dZPhi = _chi2dZPhi/counter;
-      }
-
 
       if (counter > 0) _meanHitRadialDist /= counter;
       if (nHitsLoop >= _nMinHitsLoop) {
@@ -171,9 +111,6 @@ namespace mu2e {
     
     float  meanHitRadialDist() const { return _meanHitRadialDist; }
     
-    float  chi2dXY          () const { return _chi2dXY;           }   
-    float  chi2dZPhi        () const { return _chi2dZPhi;         }   
-    
     float  d0               () const { return _d0;                }
 
     float  nstrawhits       () const { return _nStrawHits;        }
@@ -189,8 +126,6 @@ namespace mu2e {
     int        _nStrawHits;
     int        _nHitsLoopFailed;
     float      _meanHitRadialDist;
-    float      _chi2dXY;
-    float      _chi2dZPhi;
     float      _d0;
   };
 

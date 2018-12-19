@@ -70,6 +70,14 @@ CprTrigger : { @table::CprTrigger
 	    comboHitCollectionTag         : TTmakePH # MakeStereoHits
 	}
 
+	TTDeltaFinder : { @table::CalPatRec.producers.DeltaFinder
+	    comboHitCollectionTag         : TTmakePH                # input coll
+	    strawHitCollectionTag         : TTmakeSH                # input coll
+	    timePeakCollectionTag         : TTfastTimeClusterFinder
+	    writeStrawHits                : 0
+	    filter                        : 1
+	}
+
 #------------------------------------------------------------------------------
 # default configuration: DEM
 # CalPatRec, so far, has been validated only for e- 
@@ -90,6 +98,19 @@ CprTrigger : { @table::CprTrigger
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
+	TTfastTimeClusterFinder      : { @table::CalPatRec.filters.CalTimePeakFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH          
+	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
+	    caloClusterModuleLabel                      : CaloClusterFast
+	    HitSelectionBits                            : ["EnergySelection","TimeSelection"] 
+	    BackgroundSelectionBits                     : ["Background"] 
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    minClusterTime                              : 500.   # ns
+	}
+
+
 	TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : TTmakePH          

@@ -16,6 +16,12 @@ sDCount_sf             : 1
 #prescale factors for the "large" strawDigi counter filter
 largeSDCount_evt_sf    : 500
 largeSDCount_sf        : 1
+#prescale factors for the caloDigi count filter
+cDCount_evt_sf         : 500
+cDCount_sf             : 1
+#prescale factors for the "large" caloDigi counter filter
+largeCDCount_evt_sf    : 500
+largeCDCount_sf        : 1
 #prescale factor for the calorimeter-only trigger
 caloOnly_evt_sf        : 1
 caloOnly_sf            : 1
@@ -92,13 +98,13 @@ physics : {
  
     analyzers : {  
 
-	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
 	    nFilters      : 35
 	}
 	
     }
 
-    out       : [ ReadTriggerInfo ]
+    out       : [ readTriggerInfo ]
     end_paths : [ out ]
 }
 

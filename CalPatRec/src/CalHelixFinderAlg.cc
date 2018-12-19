@@ -958,7 +958,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::doLinearFitPhiZ(CalHelixFinderData& Helix    ,
-					  HitInfo_t          SeedIndex,
+					  HitInfo_t           SeedIndex,
 					  int                 UseInteligentWeight,
 					  int                 DoCleanUp           ) {
 
@@ -1373,7 +1373,7 @@ namespace mu2e {
 	    panelz = &facez->panelZs[p];
 	    int  nhitsPerPanel  = panelz->nChHits();
 	    int  seedPanelIndex(0);
-	    if (nhitsPerPanel == 0)                                                            continue;
+	    if (nhitsPerPanel == 0)                                                            continue; //Could the error be here? 
 	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	    for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
@@ -1384,14 +1384,15 @@ namespace mu2e {
 	      phi      = z* Helix._dfdz + Helix._fz0;
 	      deltaPhi = hit->_hphi - phi;
 
-	      if (h < Helix.maxIndex()) {
+ 	      if (h < Helix.maxIndex()) {
 		Helix._diag.resid[h] = deltaPhi;
 		++h;
 	      }
+	    
 	      else {
 		printf (" ERROR: too many hits. Ignore \n");
 	      }
-	    }
+	    } //There seems to be an error here in where the brackets are placed. 
 	  }
 	}//end loop over the panels
       }//end loop pver the faces
@@ -2699,6 +2700,7 @@ namespace mu2e {
       facez     = &Helix._oTracker[f];
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+      if (isFaceUsed(Helix, facez))                continue;
       for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];//Helix._oTracker[p];
 	int  nhits          = panelz->nChHits();
@@ -3956,6 +3958,25 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 	}
       }
     }
+  }
+
+  bool CalHelixFinderAlg::isFaceUsed(CalHelixFinderData& Helix, FaceZ_t* facez){
+    int c = 0;
+    for (int p = 0; p < FaceZ_t::kNPanels; p++){
+      PanelZ_t* panelz = &facez->panelZs[p];
+      int  nhits = panelz->nChHits();
+      for (int i=0; i<nhits; ++i){   
+	int index = panelz->idChBegin + i;
+	if (Helix._hitsUsed[index] == 1){
+	  c++;
+	  break;
+	}
+      }
+      if (c >= 1) break;
+    }
+    
+    if (c > 0) return true;
+    else       return false; 
   }
 //-----------------------------------------------------------------------------
 //

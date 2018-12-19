@@ -239,8 +239,8 @@ BEGIN_PROLOG
     }
   
     # diagnostic Reco sequences starting from digis
+    EventWeightSequence : [ PBIWeight ]
 
-    EventWeightSequence : [ PBIWeight, RMCWeight ]
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
