@@ -299,7 +299,7 @@ EventGenerator : { @table::EventGenerator
 	RPCGun : { 
 	    module_type    : RPCGun
 	    verbosityLevel : 0
-	    doHistograms   : 0
+	    doHistograms   : false
 	    physics : {
 		generateIntConversion : 0    # 0:photons 1: e+e- internal conversion pairs 
 		spectrumShape         : "Bistirlich"    # could also be "flat"
@@ -313,7 +313,7 @@ EventGenerator : { @table::EventGenerator
         RMCGun : {
 	    module_type    : RMCGun
 	    verbosityLevel : 0
-	    doHistograms   : 0
+	    doHistograms   : false
 	    physics : {
 		generateIntConversion : 0
 		spectrumShape         : "flat"

@@ -62,7 +62,7 @@ Primary: {
 Primary.TriggerPath : [ @sequence::Primary.GenAndG4,
   @sequence::CommonMC.DigiSim,
   @sequence::TrackerMC.DigiSim,
-  #DigiFilter,
+  DigiFilter,
   @sequence::CaloDigiMC.DigiSim,
   @sequence::CrvDAQPackage.CrvResponseSequence,
   compressDigiMCs ]

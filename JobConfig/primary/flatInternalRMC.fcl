@@ -8,7 +8,7 @@ source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : @local::EventGenerator.producers.StoppedParticleRMCGun
+    generate : @local::EventGenerator.producers.RMCGun
     @table::Primary.producers
   }
   filters: { @table::Primary.filters }
@@ -23,6 +23,8 @@ outputs : {
 # final configuration
 #
 #include "JobConfig/primary/epilog.fcl"
+physics.producers.generate.physics.generateIntConversion : 1
+physics.producers.generate.physics.spectrumShape : "flat"
 physics.producers.generate.physics.elow : 40.0
 physics.filters.DigiFilter.MinParticleMom : 40.0
 #
@@ -30,7 +32,3 @@ physics.filters.DigiFilter.MinParticleMom : 40.0
 services.TFileService.fileName: "nts.owner.flatInternalRMC.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.flatInternalRMC.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-# debugging
-physics.producers.generate.doHistograms      : true
-physics.producers.generate.verbosityLevel    : 1
-

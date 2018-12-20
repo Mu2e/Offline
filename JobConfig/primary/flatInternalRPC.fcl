@@ -32,7 +32,4 @@ physics.filters.DigiFilter.MinParticleMom : 40.0
 services.TFileService.fileName: "nts.owner.flatInternalRPC.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.flatInternalRPC.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-# debugging
-physics.producers.generate.doHistograms      : true
-physics.producers.generate.verbosityLevel    : 1
 
