@@ -214,9 +214,17 @@ BEGIN_PROLOG
 	verbosityLevel: 1
       }
       # converts ProtonBunchIntensity object to EventWeight object
-      PBIWeight : { module_type : PBIWeight
+      PBIWeight : { 
+        module_type : PBIWeight
       	PBITag : "protonBunchIntensity"
 	meanPBITag : "protonBunchIntensity:MeanIntensity"
+      }
+      #Example configuration of RMCWeightModule
+      RMCWeight : { 
+        module_type : RMCWeight
+        kinematic_endpoint : 100
+        internalConversion : 1
+        verbosityLevel : 0
       }
     }
     analyzers : {
@@ -233,6 +241,7 @@ BEGIN_PROLOG
   
     # diagnostic Reco sequences starting from digis
     EventWeightSequence : [ PBIWeight ]
+
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,

@@ -107,7 +107,7 @@ namespace mu2e {
         }
 
         out << "================ BFieldManager: outerMaps ================\n";
-        for (MapContainerType::iterator i = innerMaps_.begin(); i != innerMaps_.end(); ++i) {
+        for (MapContainerType::iterator i = outerMaps_.begin(); i != outerMaps_.end(); ++i) {
             (*i)->print(out);
         }
 

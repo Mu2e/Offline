@@ -89,7 +89,26 @@ namespace mu2e
       std::string("t0/F:mom/F:")+threevec::leafnames() +std::string(":")+helixpar::leafnames();
       return leaves;
     }
-};
+  };
+  //MC information for DIOBrem study
+  struct MCPart {
+    Int_t _pdg;
+    Float_t _time;
+    Float_t _e;
+    Float_t _posx;
+    Float_t _posy;
+    Float_t _posz;
+    Float_t _momx;
+    Float_t _momy;
+    Float_t _momz;
+    MCPart() { reset(); }
+    void reset() { _pdg = _time = _e = _posx = _posy = _posz = _momx = _momy = _momz = -1; }
+    static std::string leafnames() { static std::string leaves; leaves =
+      std::string("pdg/I:t/F:e/F:posx/F:posy/F:posz/F:momx/F:momy/F:momz/F");
+      return leaves;
+    }
+  };  
+  
 }
 #endif
 

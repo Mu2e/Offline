@@ -53,16 +53,17 @@ namespace mu2e {
 
 
                      CaloCrystalList& list = idHitVec[iId];
-                     for (auto it=list.begin(); it != list.end(); ++it)
+                     auto it=list.begin();
+                     while(it != list.end())
                      {
                          CaloCrystalHit const* hit = *it;
-
-                         if (std::abs(hit->time() - seedTime_) > deltaTime_)  continue; 
-
-                         if (hit->energyDep() > ExpandCut_) crystalToVisit_.push(iId);
-                         clusterList_.push_front(hit);
-                         list.erase(it--);   
-                         
+                         if (std::abs(hit->time() - seedTime_) < deltaTime_)
+                         { 
+                            if (hit->energyDep() > ExpandCut_) crystalToVisit_.push(iId);
+                            clusterList_.push_front(hit);
+                            it = list.erase(it);   
+                         } 
+                         else {++it;}
                      } 
                      
                  }

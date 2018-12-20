@@ -416,6 +416,7 @@ namespace mu2e {
 	}
       }
     }
+
     if(deSP.isNonnull()){
       _kdiag.fillTrkInfoMC(deSP,deK,_demc);
       _kdiag.fillTrkInfoMCStep(deSP,_demcgen);

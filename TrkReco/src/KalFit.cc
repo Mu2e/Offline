@@ -237,7 +237,8 @@ namespace mu2e
 	}
       }
       if(kseg == kalData.kalSeed->segments().end()){
-	std::cout << "Helix segment range doesn't cover flt0" << std::endl;
+	std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
+		  <<", Helix segment range doesn't cover flt0 = " << flt0 << std::endl;
 	kseg = kalData.kalSeed->segments().begin();
       }
       // create a trajectory from the seed. This shoudl be a general utility function that
