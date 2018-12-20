@@ -78,6 +78,7 @@ namespace mu2e {
     Tube const & pSPBSLParams    = *mbsgh.getSPBSLPtr();
     Tube const & pSPBSRParams    = *mbsgh.getSPBSRPtr();
     Tube const & pCLV2ABSParams  = *mbsgh.getCLV2ABSPtr();
+    Tube const & pCalShieldRingParams  = *mbsgh.getCalRingShieldPtr();
 
 
     bool const MBSisVisible        = _config.getBool("mbs.visible",true);
@@ -121,6 +122,7 @@ namespace mu2e {
       cout << __func__ << " MBSMotherOffsetInMu2e                 : " << MBSMOffsetInMu2e << endl;
       cout << __func__ << " MBSMotherOffsetInMBS                  : " << MBSMOffset << endl;
     }
+
 
     VolumeInfo MBSMotherInfo  = nestPolycone("MBSMother",
                                     pMBSMParams.getPolyconsParams(),
@@ -242,7 +244,7 @@ namespace mu2e {
 		     placePV,
 		     doSurfaceCheck
 		     );
-	       
+      
     }
 
 
@@ -310,7 +312,7 @@ namespace mu2e {
 					  MBSisSolid,
 					  forceAuxEdgeVisible,
 					  placePV,
-                                    doSurfaceCheck
+					  doSurfaceCheck
 					  );
 
       if ( verbosityLevel > 0) {
@@ -727,6 +729,26 @@ namespace mu2e {
         
         
       }
+    }
+
+    //Adding a shield at the front of the MBS to protect the calorimeter
+    if(MBSversion == 6) {
+      CLHEP::Hep3Vector RingOffset = pCalShieldRingParams.originInMu2e() - detSolDownstreamVacInfo.centerInMu2e(); // MBSMOffsetInMu2e;
+       
+      VolumeInfo MBSCalShieldRing  = nestTubs("CalShieldRing",
+					      pCalShieldRingParams.getTubsParams(),
+					      findMaterialOrThrow(pCalShieldRingParams.materialName()),
+					      0,
+					      RingOffset,
+					      detSolDownstreamVacInfo, // MBSMotherInfo,
+					      0,
+					      MBSisVisible,
+					      G4Colour::Blue(),
+					      MBSisSolid,
+					      forceAuxEdgeVisible,
+					      placePV,
+					      doSurfaceCheck
+					      );
     }
 
   } // end of constructMBS;
