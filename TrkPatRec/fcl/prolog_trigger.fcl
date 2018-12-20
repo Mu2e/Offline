@@ -137,8 +137,18 @@ TprTrigger : {
 
 	TTtimeClusterFinder  : @local::TTtimeClusterFinder
 	TThelixFinder        : @local::TTrobustHelixFinder
+	TTfastHelixFinder    : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTDeltaFinder"
+	    TimeClusterCollection : "TTfastTimeClusterFinder"
+	}
 	TTKSFDeM	     : @local::TTKSFDeM
 	TTKSFDeP	     : @local::TTKSFDeP
+	TTFKSFDeM	     : { @table::TTKSFDeM
+	    SeedCollection : "TTfastHelixFinder:Positive"
+	}
+	TTFKSFDeP	     : { @table::TTKSFDeP 
+	    SeedCollection : "TTfastHelixFinder:Negative"
+	}
 	TTKFFDeM             : @local::TTKFFDeM
 	TTKFFDeP             : @local::TTKFFDeP
     }

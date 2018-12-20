@@ -53,7 +53,7 @@ namespace mu2e {
 	       if (mfind != simContentMap_.end()) mfind->second.update(eDep,time,pIn);
 	       else simContentMap_.insert(std::pair<art::Ptr<SimParticle>, CaloContentSim>(parent,CaloContentSim(eDep,time,pIn)) );
 
-	       if (parent->genParticle() && parent->genParticle()->generatorId()==GenId::conversionGun) hasConversion_ = true; 		
+	       if (parent->genParticle() && parent->genParticle()->generatorId().isConversion() ) hasConversion_ = true; 		
 	   }
        }
 

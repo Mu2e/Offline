@@ -34,9 +34,11 @@ namespace mu2e
   private:
     art::InputTag _ksTag;
     bool _hascc; // Calo Cluster
-    unsigned _minnhits;
-    double _minmom, _maxmom, _maxchi2dof, _maxmomerr;
-    double _minD0, _maxD0; // impact parameter limits
+    double     _minfitcons;
+    unsigned   _minnhits;
+    double     _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
+    double     _minD0, _maxD0; // impact parameter limits
+    double     _minT0;
     TrkFitFlag _goods; // helix fit flag
     int _debug;
     // counters
@@ -46,15 +48,19 @@ namespace mu2e
   SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
     _ksTag     (pset.get<art::InputTag>("KalSeedCollection","KSFDeM")),
     _hascc     (pset.get<bool>("RequireCaloCluster",false)),
+    _minfitcons(pset.get<double>("MinFitCons",-1.)),   //not used by default
     _minnhits  (pset.get<unsigned>("MinNHits",15)),
-    _minmom    (pset.get<double>("MinMomentum",95.0)),
-    _maxmom    (pset.get<double>("MaxMomentum",110.0)) ,
-    _maxchi2dof(pset.get<double>("MaxChi2DOF",10.0)),
-    _maxmomerr (pset.get<double>("MaxMomErr",1.5)),
+    _minmom    (pset.get<double>("MinMomentum",40.0)),
+    _maxmom    (pset.get<double>("MaxMomentum",200.0)) ,
+    _mintdip   (pset.get<double>("MinTanDip", 0.)),       //not used by default. 0.57735027
+    _maxtdip   (pset.get<double>("MaxTanDip", 100.)),     //not used by default. 1.5574077
+    _maxchi2dof(pset.get<double>("MaxChi2DOF",20.0)),
+    _maxmomerr (pset.get<double>("MaxMomErr",10)),
     _minD0     (pset.get<double>("MinD0",-200.)),
-    _maxD0     (pset.get<double>("MaxD0",200.)),
+    _maxD0     (pset.get<double>("MaxD0", 200.)),
+    _minT0     (pset.get<double>("MinT0", 0.)),
     _goods     (pset.get<vector<string> >("SeedFitFlag",vector<string>{"SeedOK"})),
-    _debug     (pset.get<int>("debugLevel",1)),
+    _debug     (pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -85,19 +91,21 @@ namespace mu2e
           nactive >= _minnhits &&
           fseg.mom() > _minmom && fseg.mom() < _maxmom && fseg.momerr() < _maxmomerr &&
           ks.chisquared()/ndof < _maxchi2dof &&
-	  fseg.helix().d0() > _minD0 && fseg.helix().d0() < _maxD0) {
-        retval = true;
-        ++_npass;
-        // Fill the trigger info object
-        triginfo->_triggerBits.merge(TriggerFlag::track);
-        // associate to the helix which triggers.  Note there may be other helices which also pass the filter
-        // but filtering is by event!
-        size_t index = std::distance(kscol->begin(),iks);
-        triginfo->_track = art::Ptr<KalSeed>(ksH,index);
-        if(_debug > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
-        }
-        break;
+	  ks.fitConsistency()  > _minfitcons &&
+	  fseg.helix().tanDip() > _mintdip && fseg.helix().tanDip() < _maxtdip &&
+	  fseg.helix().d0() > _minD0 && fseg.helix().d0() < _maxD0 ) {
+	retval = true;
+	++_npass;
+	// Fill the trigger info object
+	triginfo->_triggerBits.merge(TriggerFlag::track);
+	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
+	// but filtering is by event!
+	size_t index = std::distance(kscol->begin(),iks);
+	triginfo->_track = art::Ptr<KalSeed>(ksH,index);
+	if(_debug > 1){
+	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+	}
+	break;
       }
     }
     evt.put(std::move(triginfo));

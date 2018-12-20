@@ -49,7 +49,7 @@ CprTrigger : {
 CprTrigger : { @table::CprTrigger 
 
     producers : { 
-	@table::CaloClusterFast.producers
+#	@table::CaloClusterFast.producers
 
 	CPRFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
@@ -68,6 +68,14 @@ CprTrigger : { @table::CprTrigger
 	    strawHitPositionCollectionTag : TTmakeSH
 	    strawHitFlagCollectionTag     : TTmakeSH
 	    comboHitCollectionTag         : TTmakePH # MakeStereoHits
+	}
+
+	TTDeltaFinder : { @table::CalPatRec.producers.DeltaFinder
+	    comboHitCollectionTag         : TTmakePH                # input coll
+	    strawHitCollectionTag         : TTmakeSH                # input coll
+	    timePeakCollectionTag         : TTfastTimeClusterFinder
+	    writeStrawHits                : 0
+	    filter                        : 1
 	}
 
 #------------------------------------------------------------------------------
@@ -90,6 +98,19 @@ CprTrigger : { @table::CprTrigger
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
+	TTfastTimeClusterFinder      : { @table::CalPatRec.filters.CalTimePeakFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH          
+	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
+	    caloClusterModuleLabel                      : CaloClusterFast
+	    HitSelectionBits                            : ["EnergySelection","TimeSelection"] 
+	    BackgroundSelectionBits                     : ["Background"] 
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    minClusterTime                              : 500.   # ns
+	}
+
+
 	TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : TTmakePH          

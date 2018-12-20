@@ -215,26 +215,29 @@ namespace mu2e
       _data.tracks = krcol.get();
     }
 
-    _result.fitType     = 0;
+    _result.fitType     = 1;
     _result.event       = &event ;
     _result.chcol       = _chcol ;
     _result.shfcol      = _shfcol ;
-    _result.tpart       = _tpart ;
+    //    _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
 
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       KalSeed const& kseed(_kscol->at(ikseed));
       _result.kalSeed = & kseed;
+      //      _result.tpart   = kseed.particle();
 
       if (kseed.caloCluster()) _result.caloCluster = kseed.caloCluster().get();
 
       // only process fits which meet the requirements
       if(kseed.status().hasAllProperties(_goodseed)) {
 	// check the seed has the same basic parameters as this module expects
-	if(kseed.particle() != _tpart || kseed.fitDirection() != _fdir ) {
-	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: wrong particle or direction"<< endl;
-	}
+
+	// if(kseed.particle() != _tpart || kseed.fitDirection() != _fdir ) {
+	//   throw cet::exception("RECO")<<"mu2e::KalFinalFit: wrong particle or direction"<< endl;
+	// }
+
 	// seed should have at least 1 segment
 	if(kseed.segments().size() < 1){
 	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: no segments"<< endl;
@@ -262,7 +265,7 @@ namespace mu2e
 	// if successfull, try to add missing hits
 	if(_addhits && _result.krep != 0 && _result.krep->fitStatus().success()){
 	    // first, add back the hits on this track
-	  _result.nunweediter = 0;
+	  //	  _result.nunweediter = 0;
 	  _kfit.unweedHits(_result,_maxaddchi);
 	  if (_debug > 0) _kfit.printHits(_result,"CalTrkFit::produce after unweedHits");
 
@@ -327,7 +330,11 @@ namespace mu2e
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
-	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  TrkFitFlag fflag(kseed.status());
+	  fflag.merge(TrkFitFlag::kalmanOK);
+	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
+	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),kseed.status());
 	  // reference the seed fit in this fit
 	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
 	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
@@ -336,14 +343,19 @@ namespace mu2e
 	  // fill with new information
 	  fseed._t0 = krep->t0();
 	  fseed._flt0 = krep->flt0();
-	  fseed._status.merge(TrkFitFlag::kalmanOK);
 	  // global fit information
 	  fseed._chisq = krep->chisq();
 	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
 	  fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-	  if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
-	  TrkUtilities::fillHitSeeds(krep,fseed._hits);
+	  TrkUtilities::fillStrawHitSeeds(krep,fseed._hits);
 	  TrkUtilities::fillStraws(krep,fseed._straws);
+	  // see if there's a TrkCaloHit
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
+	  if(tch != 0){
+	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	    // set the Ptr using the helix: this could be more direct FIXME!
+	    fseed._chit._cluster = fseed._helix->caloCluster();
+	  }
 	  // sample the fit at the requested z positions.  Need options here to define a set of
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {

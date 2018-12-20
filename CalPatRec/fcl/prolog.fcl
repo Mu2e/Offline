@@ -40,38 +40,9 @@ CalPatRec : {
 }
 
 CalPatRec : { @table::CalPatRec
-
 #------------------------------------------------------------------------------
-# CalPatRec.HelixFinder and HelixFitHack configuratons (pattern recognition)
+# CalPatRec.HelixFinder configuraton (pattern recognition)
 #------------------------------------------------------------------------------
-    HelixFitHack : {
-	debugLevel                              : 0
-	debugLevel2                             : 0
-	diagLevel                               : 0
-	minNHit                                 : 10      # minimal number of hits on found helix
-	hitChi2Max                              : 9.
-	mostProbableDfDz                        : 0.00475
-	minNActiveStationPairs                  : 10
-	dzOverHelPitchCut                       : 0.7
-	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002
-	sigmaPhi                                : 0.1636  # radians
-	weightXY                                : 0.14705
-	weightZPhi                              : 0.174
-	weight3D                                : 1
-	errorAlongWire                          : 30.  # mm
-	maxXDPhi                                : 5    #
-	distPatRec                              : 100. # mm
-	maxChi2TrkCandidate                     : 1500
-	markCandidateHits                       : 0
-	minPointsTrkCandidate                   : 25
-	# confirmed on 2015-02-07
-	chi2xyMax                               : 5.0    # default value is 300
-	chi2zphiMax                             : 5.0    # 0.1 #default is 0.1, use 0.05 for debugging purposes
-	chi2hel3DMax                            : 9.0
-	dfdzErr                                 : 0.1
-    }
-
     HelixFinderAlg : {
 	debugLevel                              : 0
 	debugLevel2                             : 0
@@ -94,63 +65,25 @@ CalPatRec : { @table::CalPatRec
 	weightXY                                : 1.11      #0.4527
 	weightZPhi                              : 0.29      #0.4423    
 	weight3D                                : 0.12      #1
-#	errorAlongWire                          : 30.  # mm
-	maxXDPhi                                : 5    #
-	distPatRec                              : 100. # mm
-	maxChi2TrkCandidate                     : 1500
+	maxXDPhi                                : 5         #
+	maxPanelToHelixDPhi                     : 1.309     # 75 degrees
+	distPatRec                              : 100.      # mm
+	mindist                                 : 500.      # mm
+	minP                                    :  50.      # 
+	maxP                                    : 150.      # 
+	minAbsTanDip                            : 0.3
+	maxAbsTanDip                            : 2.0
+	xyWeights                               : false
+	zWeights                                : false
+	filter                                  : true
+	plotall                                 : false
+	usetarget                               : true
 	nHitsMaxPerPanel                        : 1
 	chi2xyMax                               : 5.0    
 	chi2zphiMax                             : 5.0    
 	chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
 	dfdzErr                                 : 0.1
     }
-#------------------------------------------------------------------------------
-# Kalman fitter configuration for the seed fit: not used anymore
-#------------------------------------------------------------------------------
-#     SeedFitHack : {
-# 	makeStrawHitModuleLabel                 : makeSH
-# 	debugLevel                              : 0
-# 	minnstraws                              : 10
-# 	MaxIterations                           : 3
-# 	materialCorrection                      : false
-# 	SeedSmear       			: 10000
-# 	maxhitchi                               : 5.0
-# 	hiterr                                  : [ 80.  , 23.04 ]
-# 	ambiguityStrategy       		: [ 0    , 0     ]
-# 	t0Tolerance				: [ 5.0  , 5.0   ]
-# 	weedhits                                : [ true , true  ]   # default:true
-# 	AddMaterial		                : [ false, false ]
-# 	initT0					: true 
-# 	updateT0				: false
-# 	T0UpdateMode                            : 1                # doesnt matter for the seed fit
-# 	HitMinDrift 				: 0.2
-# 	DivergeFlt                              : 1000.            #  default: 1000.
-# 	RdriftMinusDocaTol                      : 1.
-# 	dtOffset                                : @local::TrackCaloMatching.DtOffset
-# #------------------------------------------------------------------------------
-# # shouldn't be used during the seed fit, only during the hit-based fit 
-# #------------------------------------------------------------------------------
-# 	scaleErrDoublet                         : 1.
-# 	minDriftDoublet                         : 0.3
-# 	deltaDriftDoublet                       : 0.3
-# 	sigmaSlope                              : 0.025
-# #------------------------------------------------------------------------------
-# #  parameters of KalContext 
-# #------------------------------------------------------------------------------
-# 	MinNDOF                                 : 5 # match 10 hits of HelixFit
-# #------------------------------------------------------------------------------
-# # ambiguity resolver parameters
-# #------------------------------------------------------------------------------
-# 	FixedAmbigResolver                      : {}
-# 	HitAmbigResolver                        : {}
-# 	PocaAmbigResolver                       : {}
-# 	PanelAmbigResolver                      : {}
-# #------------------------------------------------------------------------------
-# # provision for doublet ambiguity resolver - SeedFit is not using it, but the
-# # initialization might require
-# #------------------------------------------------------------------------------
-# 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
-#     }
 #------------------------------------------------------------------------------
 # KalFitHack configuration for the final track fit
 #------------------------------------------------------------------------------
@@ -225,12 +158,12 @@ CalPatRec : { @table::CalPatRec
 	#  initT0			  : true
 	initT0   			  : false 
 	useTrkCaloHit                     : false
-	updateT0				: [ false, false, false, false, false, false, false, false, false ]
+	updateT0			  : [ false, false, false, false, false, false, false, false, false ]
 	dtOffset                          : @local::TrackCaloMatching.DtOffset
-	strawHitT0Weight                : 1
-	caloHitT0Weight                 : 10
+	strawHitT0Weight                  : 1
+	caloHitT0Weight                   : 10
 	
-	DivergeFlt                              : 1000.            #  default: 1000.
+	DivergeFlt                        : 1000.            #  default: 1000.
 #	RdriftMinusDocaTol                      : 1.
 #	daveMode                                : 0
 #------------------------------------------------------------------------------
@@ -401,14 +334,11 @@ CalPatRec : { @table::CalPatRec
 	    }
 	}
 	
-
 	MergeHelixFinder : { module_type:MergeHelixFinder	
 	    diagLevel                    : 0
 	    debugLevel                   : 0
-	    minTprChi2                   : 100 
-	    minCprChi2                   : 100
 	    trkHelixFinderModuleLabel    : "HelixFinder:Positive"
-	    calHelixFinderModuleLabel    : "CalHelixFinder"
+	    cprHelixCollTag    : "CalHelixFinder"
 	}
 
 	MergePatRec : { module_type:MergePatRec
@@ -469,6 +399,8 @@ CalPatRec : { @table::CalPatRec
 	    maxDriftTime                  : 50.                   # ns, includes some tolerance
 	    maxStrawDt                    : 50.                   # max sensible time difference for a straw, ns, off by default
 	    maxDtDs                       :  5.                   # ns, max allowed T0 shift per station
+	    writeStrawHits                : 1
+	    filter                        : 0
 	    # debugging/diagnostics
 	    testOrder                     : 0
 	    debugLevel                    : 0
@@ -540,7 +472,6 @@ CalPatRec : { @table::CalPatRec
 	    debugLevel                                  : 0
 	    printFrequency                              : 100
 	    ComboHitCollection                          : makeSH			 
-	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalHelixFinder
 	    MinNHits                                    : 10
 	    MaxDoca                                     : 40.
@@ -555,58 +486,52 @@ CalPatRec : { @table::CalPatRec
 	    KalFit                                      : { @table::CalPatRec.KalSeedFitter }
 	}
 
-	MergeHelixFinderCpr : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : none
-	    calHelixFinderModuleLabel : CalHelixFinder
-	    fitparticle          : @local::Particle.eminus
-	    fitdirection         : @local::FitDir.downstream
+	MHSeedFit : { module_type:KalSeedFit   
+	    debugLevel                                  : 0
+	    printFrequency                              : 100
+	    ComboHitCollection                          : makeSH			 
+	    SeedCollection                              : MergeHelixFinder
+	    MinNHits                                    : 10
+	    MaxDoca                                     : 40.
+	    FilterOutliers                              : true
+	    FilterHelixOutliers                         : false
+	    MaxAddDoca                                  : 7.    # mm
+	    MaxAddChi                                   : 5.    # normalized unit
+	    rescueHits                                  : 1
+	    fitparticle                                 : @local::Particle.eminus
+	    fitdirection                                : @local::FitDir.downstream
+	    ParameterErrors                             : [10.0,0.05,0.001,10.0,0.05]
+	    KalFit                                      : { @table::CalPatRec.KalSeedFitter }
 	}
 
-	MergeHelixFinderTpr : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : PosHelixFinder
-	    calHelixFinderModuleLabel : none
-	    fitparticle          : @local::Particle.eminus
-	    fitdirection         : @local::FitDir.downstream
+	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
+	    trkHelixFinderModuleLabel : "HelixFinder:Positive"
+	    calHelixFinderModuleLabel : "HelixFinder:Negative"
 	}
 
-	MergeHelixFinderDem : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : PosHelixFinderDem
-	    calHelixFinderModuleLabel : CalHelixFinderDem
+	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 
+	    trkHelixFinderModuleLabel : CalHelixFinderDeM
+	    calHelixFinderModuleLabel : CalHelixFinderDeP
 	}
 
-	MergeHelixFinderDmm : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : PosHelixFinderDmm
-	    calHelixFinderModuleLabel : CalHelixFinderDmm
+	MHFinderDe   : { @table::CalPatRec.producers.MergeHelixFinder 
+	    trkHelixFinderModuleLabel : MHFinderTprDe
+	    calHelixFinderModuleLabel : MHFinderCprDe
 	}
 
-	MergeHelixFinderDep : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : NegHelixFinderDep
-	    calHelixFinderModuleLabel : none
+	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
+	    trkHelixFinderModuleLabel : "HelixFinder:Positive"
+	    calHelixFinderModuleLabel : "HelixFinder:Negative"
 	}
 
-	MergeHelixFinderDmp : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : NegHelixFinderDmp
-	    calHelixFinderModuleLabel : CalHelixFinderDmp
+	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
+	    trkHelixFinderModuleLabel : CalHelixFinderDmuM
+	    calHelixFinderModuleLabel : CalHelixFinderDmuP
 	}
 
-	MergeHelixFinderUem : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : NegHelixFinderUem
-	    calHelixFinderModuleLabel : none
-	}
-
-	MergeHelixFinderUmm : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : NegHelixFinderUmm
-	    calHelixFinderModuleLabel : none
-	}
-
-	MergeHelixFinderUep : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : PosHelixFinderUep
-	    calHelixFinderModuleLabel : none
-	}
-
-	MergeHelixFinderUmp : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : PosHelixFinderUmp
-	    calHelixFinderModuleLabel : none
+	MHFinderDmu   : { @table::CalPatRec.producers.MergeHelixFinder 
+	    trkHelixFinderModuleLabel : MHFinderTprDmu
+	    calHelixFinderModuleLabel : MHFinderCprDmu
 	}
 
 	MergePatRecCpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFit    }
@@ -686,19 +611,35 @@ CalPatRec: { @table::CalPatRec
     producers : { @table::CalPatRec.producers
 	
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
-	    SeedCollection             : CalHelixFinderDem
+	    SeedCollection             : CalHelixFinderDeM
 	}
 	CalSeedFitDmm                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muminus
-	    SeedCollection             : CalHelixFinderDmm
+	    SeedCollection             : CalHelixFinderDmuM
 	}
 	CalSeedFitDep                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
-	    SeedCollection             : CalHelixFinderDep
+	    SeedCollection             : CalHelixFinderDeP
 	}
 	CalSeedFitDmp                  : { @table::CalPatRec.producers.CalSeedFit 
 	    fitparticle                : @local::Particle.muplus
-	    SeedCollection             : CalHelixFinderDmp
+	    SeedCollection             : CalHelixFinderDmuP
+	}
+	
+	MHSeedFitDem                  : { @table::CalPatRec.producers.MHSeedFit        
+	    SeedCollection             : MergeHelixFinderDem
+	}
+	MHSeedFitDmm                  : { @table::CalPatRec.producers.MHSeedFit 
+	    fitparticle                : @local::Particle.muminus
+	    SeedCollection             : MergeHelixFinderDmm
+	}
+	MHSeedFitDep                  : { @table::CalPatRec.producers.MHSeedFit 
+	    fitparticle                : @local::Particle.eplus  
+	    SeedCollection             : MergeHelixFinderDep
+	}
+	MHSeedFitDmp                  : { @table::CalPatRec.producers.MHSeedFit 
+	    fitparticle                : @local::Particle.muplus
+	    SeedCollection             : MergeHelixFinderDmp
 	}
 	
 	CalTrkFitDem                   : { @table::CalPatRec.producers.CalTrkFit         
@@ -723,17 +664,17 @@ CalPatRec: { @table::CalPatRec
     }
     
     filters : { @table::CalPatRec.filters
-	CalHelixFinderDem              : { @table::CalPatRec.filters.CalHelixFinder    }
-	CalHelixFinderDmm              : { @table::CalPatRec.filters.CalHelixFinder    fitparticle: @local::Particle.muminus }
-	CalHelixFinderDep              : { @table::CalPatRec.filters.CalHelixFinder    fitparticle: @local::Particle.eplus   }
-	CalHelixFinderDmp              : { @table::CalPatRec.filters.CalHelixFinder    fitparticle: @local::Particle.muplus  }
+	CalHelixFinderDeM              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
+	CalHelixFinderDmuM             : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muminus }
+	CalHelixFinderDeP              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
+	CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muplus  }
     }
 }
 
-CalPatRec.reco     : [ CalTimePeakFinder, DeltaFinder, CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDem, CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDep, CalSeedFitDep, CalTrkFitDep ]
-CalPatRec.dmm_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmm, CalSeedFitDmm, CalTrkFitDmm ]
-CalPatRec.dmp_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmp, CalSeedFitDmp, CalTrkFitDmp ]
+CalPatRec.reco     : [ CalTimePeakFinder, DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeM,  CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeP,  CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.dmm_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuM, CalSeedFitDmm, CalTrkFitDmm ]
+CalPatRec.dmp_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuP, CalSeedFitDmp, CalTrkFitDmp ]
 
 END_PROLOG

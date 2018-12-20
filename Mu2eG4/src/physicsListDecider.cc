@@ -54,11 +54,18 @@
 #if G4VERSION<4099
 #include "Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.hh"
 #endif
+
+// CLHEP includes
+#include "CLHEP/Units/SystemOfUnits.h"
+
 // G4 includes
 #include "G4PhysListFactory.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4ErrorPhysicsList.hh"
+#if G4VERSION>4103
+#include "G4EmParameters.hh"
+#endif
 #if G4VERSION<4099
 #include "QGSP.hh"
 #endif
@@ -91,6 +98,11 @@ namespace mu2e{
     bool modifyEMOption4(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.modifyEMOption4",false);
     }
+
+    bool useEmOption4InTracker(const fhicl::ParameterSet& pset) {
+      return pset.get<bool>("physics.useEmOption4InTracker",false);
+    }
+
     bool modifyEMOption0(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.modifyEMOption0",false);
     }
@@ -194,7 +206,10 @@ namespace mu2e{
     if (turnOffRadioactiveDecay(pset)) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
     }
+
 #if G4VERSION>4103
+    // for version 4105 it will need to be rplaced with
+    // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
     if ( modifyEMOption4(pset) && (name.find("_EMZ") != std::string::npos) ) {
       tmpPL->RemovePhysics(("G4EmStandard_opt4"));
       if (getDiagLevel(pset)>0) {
@@ -202,6 +217,18 @@ namespace mu2e{
       }
       tmpPL->RegisterPhysics( new Mu2eEmStandardPhysics_option4(getDiagLevel(pset)));
     }
+
+    if ( useEmOption4InTracker(pset) && (name.find("_EMZ") == std::string::npos) ) {
+      // assign Mu2eEmStandard_opt4 to the tracker
+      if (getDiagLevel(pset)>0) {
+        G4cout << __func__ << " Assigning EmStandardPhysics_option4 to the tracker" << G4endl;
+      }
+      G4EmParameters* emParams = G4EmParameters::Instance();
+      // fixme: get the value from fhicl and key on modifyEMOption once using 4105
+      // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
+      emParams->AddPhysics("Tracker", "G4EmStandard_opt4");
+    }
+
     if ( modifyEMOption0(pset) && (name.find("_EM") == std::string::npos) ) {
       tmpPL->RemovePhysics(("G4EmStandard"));
       if (getDiagLevel(pset)>0) {

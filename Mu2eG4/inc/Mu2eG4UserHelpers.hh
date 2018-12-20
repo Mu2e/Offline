@@ -55,7 +55,9 @@ namespace mu2e {
     void printProcessNotSpecifiedWarning(G4Track const* const trk);
     ProcessCode findCreationCode(G4Track const* const trk);
 
-    double getPreLastStepKE(G4Track const* const trk);
+    // kinematics at the point of annihilation
+    double getEndKE(G4Track const* const trk);
+    CLHEP::HepLorentzVector getEndMomentum(G4Track const* const trk);
 
     int  getNSteps(G4Track const* const trk);  
 

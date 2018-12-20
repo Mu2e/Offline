@@ -12,6 +12,7 @@
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkStraw.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
+#include "RecoDataProducts/inc/TrkCaloHitSeed.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -20,6 +21,7 @@
 #include "BTrk/TrkBase/TrkDifPieceTraj.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 #include "Mu2eBTrk/inc/DetStrawElem.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 // CLHEP
@@ -124,7 +126,7 @@ namespace mu2e {
       }
     }
 
-    void fillHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds) {
+    void fillStrawHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds) {
       // extract the TkrStrawHits from the KalRep
       TrkStrawHitVector tshv;
       convert(krep->hitVector(),tshv);
@@ -136,11 +138,22 @@ namespace mu2e {
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
 	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-				tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, tsh->comboHit().nStrawHits());
+	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
 	hitseeds.push_back(seedhit);
       }
     }
- // compute the overlap between 2 clusters 
+
+
+   void fillCaloHitSeed(const TrkCaloHit* tch, TrkCaloHitSeed& caloseed) {
+     // set the flag according to the status of this hit
+     StrawHitFlag hflag;
+     if(tch->isActive())hflag.merge(StrawHitFlag::active);
+     if(tch->poca().status().success())hflag.merge(StrawHitFlag::doca);
+      caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
+	  tch->poca().doca(), tch->hitErr(), hflag);
+    }
+
+  // compute the overlap between 2 clusters 
     double overlap(SHIV const& shiv1, SHIV const& shiv2) {
       double over(0.0);
       double norm = std::min(shiv1.size(),shiv2.size());
@@ -253,8 +266,57 @@ namespace mu2e {
     //   return fltlen;
     // }
 
+    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig) {
+      nhits = 0; nactive = 0; ndouble = 0; ndactive = 0; nnullambig = 0;
+      static StrawHitFlag active(StrawHitFlag::active);
+      for (std::vector<TrkStrawHitSeed>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
+	++nhits;
+	if (ihit->flag().hasAllProperties(active)) {
+	  ++nactive;
+	  if (ihit->ambig()==0) {
+	    ++nnullambig;
+	  }
+	}
+	  /*	  if (ihit->nStrawHits()>=2) {
+	    ++ndactive;
+	  }
+	  */
+	  //	  std::cout << "AE: ihit->nStrawHits() = " << ihit->nStrawHits() << std::endl;
+	const auto& jhit = ihit+1;
+	const auto& hhit = ihit-1;
+	if( (jhit != hits.end() &&
+	     jhit->flag().hasAllProperties(active) &&
+	     jhit->strawId().getPlane() == ihit->strawId().getPlane() &&
+	     jhit->strawId().getPanel() == ihit->strawId().getPanel() ) ||
+	    (hhit >= hits.begin() &&
+	     hhit->flag().hasAllProperties(active) &&
+	     hhit->strawId().getPlane() == ihit->strawId().getPlane() &&
+	     hhit->strawId().getPanel() == ihit->strawId().getPanel() )
+	    ) {
+	  ++ndouble;
+	  if (ihit->flag().hasAllProperties(StrawHitFlag::active)) {
+	    ++ndactive;
+	  }
+	}
+      }
+      //      std::cout << "AE: ndactive hits = " << ndactive << std::endl;
+    }
+
     double chisqConsistency(const KalRep* krep) {
       return ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
     }
+
+    const TrkCaloHit* findTrkCaloHit(const KalRep* krep){
+      const TrkCaloHit* tch(0);
+      for(auto ith=krep->hitVector().begin(); ith!=krep->hitVector().end(); ++ith){
+	const TrkCaloHit* tsh = dynamic_cast<const TrkCaloHit*>(*ith);
+	if(tsh != 0) {
+	  tch = tsh;
+	  break;
+	}
+      }
+      return tch;
+    }
+
   } // TrkUtilities
 }// mu2e

@@ -258,7 +258,7 @@ namespace mu2e
     }
 
     std::vector<TrkStrawHitSeed> hits;
-    TrkUtilities::fillHitSeeds(krep, hits);
+    TrkUtilities::fillStrawHitSeeds(krep, hits);
     unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
     TrkTools::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
     tinfo._nhits = nhits;
@@ -689,10 +689,7 @@ namespace mu2e
       StrawEnd itdc;
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      Int_t mcpdg = spp->pdgId();
-      Int_t mcproc = spp->originParticle().creationCode();
-      Int_t mcgen = spp->genParticle()->generatorId().id();
-      bool conversion = (mcpdg == 11 && mcgen == 2 && mcproc == GenId::conversionGun && spmcp->momentum().mag()>90.0);
+      bool conversion = (spp->genParticle().isNonnull() && spp->genParticle()->generatorId().isConversion() && spmcp->momentum().mag()>90.0);
       if(conversion){
 	++ncehits;
       }

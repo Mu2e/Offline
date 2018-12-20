@@ -188,6 +188,13 @@ namespace mu2e {
     return retval; 
   }
 
+  uint16_t ComboHitCollection::nStrawHits() const {
+    uint16_t retval(0);
+    for(auto const& ch : *this )
+      retval += ch.nStrawHits();
+    return retval;
+  }
+
   void ComboHit::print( std::ostream& ost, bool doEndl) const {
     ost << " ComboHit:"
         << " id"      << _sid
