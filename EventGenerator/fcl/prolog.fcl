@@ -310,8 +310,8 @@ EventGenerator : { @table::EventGenerator
 	    pionStops                 : { @table::EventGenerator.pionStops }
 	}
         
-        StoppedParticleRMCGun : {
-	    module_type    : StoppedParticleRMCGun
+        RMCGun : {
+	    module_type    : RMCGun
 	    verbosityLevel : 0
 	    doHistograms   : 0
 	    physics : {
