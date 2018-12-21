@@ -23,15 +23,15 @@ class TimeClusterDiag  {
     TimeClusterDiag(TTree* tcdiag) : _tcdiag(tcdiag),
     _goodCENHits("ceclust.nce > 14"),
     _goodCETime("ceclust.time > 500.0"),
-    _goodReco("besttc.nhits > 0 "),
+    _goodReco("besttc.nhits >= 10 "),
+    _goodCEReco("besttc.ncehits > 0 "),
     _goodCalo("besttc.ecalo>50.0"),
     _disk1("besttc.cogz<2000.0"),
     _disk2("besttc.cogz>2000.0"),
-    _cehit("tchinfo._mcproc==56"),
+    _cehit("tchinfo._mcrel==0&&tchinfo._mcgen==2"),
     _effcan(0), _btccan(0), _cecan(0), _tcan(0), _ctcan(0)
   {
     _goodCE = _goodCENHits+_goodCETime;
-    _goodCEReco = _goodReco +TCut("besttc.ncehits/besttc.nhits>0.5");
   }
 
     TTree* _tcdiag;
@@ -39,13 +39,14 @@ class TimeClusterDiag  {
     TCut _goodReco, _goodCEReco;
     TCut _goodCalo, _disk1, _disk2;
     TCut _cehit;
-    TCanvas *_effcan, *_btccan, *_cecan, *_tcan, *_ctcan;
+    TCanvas *_effcan, *_btccan, *_cecan, *_tcan, *_ctcan, *_hcan;
 
     void Efficiency();
     void BestTC();
     void CE();
     void time();
     void ctime();
+    void HitTimeRes();
     void save(const char* suffix=".png");
 };
 
@@ -91,32 +92,63 @@ void TimeClusterDiag::Efficiency() {
 
 void TimeClusterDiag::BestTC(){
   TH1F* nhit = new TH1F("nhit","BestTC N hits",100,-0.5,99.5);
-  TH1F* ncehit = new TH1F("ncehit","BestTC N CE hits",100,-0.5,99.5);
-  TH1F* hpur = new TH1F("hpur","BestTC CE Hit Fraction",100,0,1.0001);
-  TH1F* ecalo = new TH1F("ecalo","BestTC Calo Cluster Energy;E_{Calo} (MeV)",100,0,120.0);
+  TH1F* nhitc = new TH1F("nhitc","BestTC N hits",100,-0.5,99.5);
+//  TH1F* ncehit = new TH1F("ncehit","BestTC N CE hits",100,-0.5,99.5);
+  TH1F* hpur = new TH1F("hpur","BestTC CE Hit Purity",100,0,1.0001);
+  TH1F* hpurc = new TH1F("hpurc","BestTC CE Hit Purity",100,0,1.0001);
+//
+  TH1F* heff = new TH1F("heff","BestTC CE Hit Efficiency",100,0,1.0001);
+  TH1F* heffc = new TH1F("heffc","BestTC CE Hit Efficiency",100,0,1.0001);
+//  TH1F* ecalo = new TH1F("ecalo","BestTC Calo Cluster Energy;E_{Calo} (MeV)",100,0,120.0);
+//  TH1F* time = new TH1F("time","BestTC Time;Average Cluster Time (ns)",100,0.0,1695.0);
+  TH1F* tres = new TH1F("tres","BestTC Time Resolution;Cluster Time - Ce Time (ns)",100,-20,20.0);
+  TH1F* tresc = new TH1F("tresc","BestTC Time Resolution;Cluster Time - Ce Time (ns)",100,-20,20.0);
+  nhit->SetLineColor(kBlue);
+  nhitc->SetLineColor(kGreen);
+  hpur->SetLineColor(kBlue);
+  hpurc->SetLineColor(kGreen);
+  heff->SetLineColor(kBlue);
+  heffc->SetLineColor(kGreen);
+  tres->SetLineColor(kBlue);
+  tresc->SetLineColor(kGreen);
 
-  TH1F* time = new TH1F("time","BestTC Time;Average Cluster Time (ns)",100,0.0,1695.0);
-  _tcdiag->Project("time","besttc.time",_goodReco);
-  _tcdiag->Project("nhit","besttc.nhits",_goodReco);
-  _tcdiag->Project("ncehit","besttc.ncehits",_goodReco);
-  _tcdiag->Project("hpur","besttc.ncehits/besttc.nhits",_goodReco);
-  _tcdiag->Project("ecalo","besttc.ecalo",_goodReco);
+//  _tcdiag->Project("time","besttc.time",_goodReco&&_goodCENHits&&_goodCEReco);
+  _tcdiag->Project("tres","besttc.time-fmod(mcmidt0,1695)",_goodReco&&_goodCENHits&&_goodCEReco);
+  _tcdiag->Project("tresc","besttc.time-fmod(mcmidt0,1695)",_goodReco&&_goodCENHits&&_goodCEReco&&_goodCalo);
+  _tcdiag->Project("nhit","besttc.nhits",_goodReco&&_goodCENHits&&_goodCEReco);
+  _tcdiag->Project("nhitc","besttc.nhits",_goodReco&&_goodCENHits&&_goodCEReco&&_goodCalo);
+//  _tcdiag->Project("ncehit","besttc.ncehits",_goodReco&&_goodCENHits&&_goodCEReco);
+  _tcdiag->Project("hpur","besttc.ncehits/besttc.nhits",_goodReco&&_goodCENHits&&_goodCEReco);
+  _tcdiag->Project("hpurc","besttc.ncehits/besttc.nhits",_goodReco&&_goodCENHits&&_goodCEReco&&_goodCalo);
+//
+  _tcdiag->Project("heff","besttc.ncehits/ceclust.nhits",_goodReco&&_goodCENHits&&_goodCEReco);
+  _tcdiag->Project("heffc","besttc.ncehits/ceclust.nhits",_goodReco&&_goodCENHits&&_goodCEReco&&_goodCalo);
+//  _tcdiag->Project("ecalo","besttc.ecalo",_goodReco&&_goodCENHits&&_goodCEReco);
   _btccan = new TCanvas("btccan","BestTC",800,800);
+  TLegend* leg = new TLegend(0.7,0.7,0.9,0.9);
+  leg->AddEntry(nhit,"All TC","L");
+  leg->AddEntry(nhitc,"Calo TC","L");
   _btccan->Divide(2,2);
   _btccan->cd(1);
   nhit->Draw();
+  nhitc->Draw("same");
+  leg->Draw();
   _btccan->cd(2);
   hpur->Draw();
+  hpurc->Draw("same");
   _btccan->cd(3);
-  time->Draw();
+  heff->Draw();
+  heffc->Draw("same");
   _btccan->cd(4);
-  ecalo->Draw();
+  tres->Draw();
+  tresc->Draw("same");
+
 }
 
 void TimeClusterDiag::CE(){
   TH1F* nhitce = new TH1F("nhitce","N CE hits",100,-0.5,99.5);
   TH1F* timece = new TH1F("timece","CE Time;Average hit time (ns)",100,0.0,1695.0);
-  TH1F* dphice = new TH1F("dphice","#Phi extent of CE hits;#phi extent (rad)",100,0.0,1.5);
+  TH1F* dphice = new TH1F("dphice","#Phi extent of CE hits;#phi extent (rad)",100,0.0,6.3);
   TH1F* rmaxce = new TH1F("rmaxce","Max #Rho of CE hits;#rho max (mm)",100,300.0,800.0);
   TH1F* rmince = new TH1F("rmince","Min #Rho of CE hits;#rho max (mm)",100,300.0,800.0);
   _tcdiag->Project("timece","ceclust.time");
@@ -139,10 +171,10 @@ void TimeClusterDiag::CE(){
 }
 
 void TimeClusterDiag::time() {
-  TH1F* calodt1 = new TH1F("calodt1","Calo Cluster time - CE time, Disk 1;#Delta t (ns)",100,0.0,25.0);
-  TH1F* calodt2 = new TH1F("calodt2","Calo Cluster time - CE time, Disk 2;#Delta t (ns)",100,0.0,25.0);
-  _tcdiag->Project("calodt1","besttc.tcalo-ceclust.time",_goodCE+_goodReco+_goodCalo+_disk1);
-  _tcdiag->Project("calodt2","besttc.tcalo-ceclust.time",_goodCE+_goodReco+_goodCalo+_disk2);
+  TH1F* calodt1 = new TH1F("calodt1","Calo Cluster time - CE time, Disk 1;#Delta t (ns)",100,-15.0,15.0);
+  TH1F* calodt2 = new TH1F("calodt2","Calo Cluster time - CE time, Disk 2;#Delta t (ns)",100,-15.0,15.0);
+  _tcdiag->Project("calodt1","besttc.tcalo-mcmidt0",_goodCE+_goodReco+_goodCalo+_disk1);
+  _tcdiag->Project("calodt2","besttc.tcalo-mcmidt0",_goodCE+_goodReco+_goodCalo+_disk2);
 
   calodt1->Fit("gaus","qO");
   calodt2->Fit("gaus","qO");
@@ -151,8 +183,8 @@ void TimeClusterDiag::time() {
   hdtzp->SetStats(1);
   TH2F* hdtz = new TH2F("hdtz","Hit time - CE time vs z;z (mm);#Delta t (ns)",50,-1600,1600,50,-25,75);
   hdtz->SetStats(0);
-  _tcdiag->Project("hdtz","tchinfo._time - ceclust.time:tchinfo._z",_goodCE+_goodReco+_cehit);
-  _tcdiag->Project("hdtzp","tchinfo._time - ceclust.time:tchinfo._z",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("hdtz","tchinfo._time - mcmidt0:tchinfo._z",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("hdtzp","tchinfo._time - mcmidt0:tchinfo._z",_goodCE+_goodReco+_cehit);
   hdtzp->SetMarkerStyle(20);
   hdtzp->SetMarkerColor(kBlack);
 
@@ -161,8 +193,8 @@ void TimeClusterDiag::time() {
   htres->SetLineColor(kGreen);
 //  htres->SetStats(0);
   chtres->SetLineColor(kBlue);
-  _tcdiag->Project("htres","tchinfo._time -25.5 -ceclust.time",_goodCE+_goodReco+_cehit);
-  _tcdiag->Project("chtres","tchinfo._time -25.5 - tchinfo._z*0.0047 -ceclust.time",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("htres","tchinfo._time -22.5 - mcmidt0",_goodCE+_goodReco+_cehit);
+  _tcdiag->Project("chtres","tchinfo._time -22.5 - tchinfo._z*0.0047 -mcmidt0",_goodCE+_goodReco+_cehit);
 
   _tcan = new TCanvas("tcan","Time",800,800);
   _tcan->Divide(2,2);
@@ -193,8 +225,8 @@ void TimeClusterDiag::ctime() {
 
   TH1F* tcdtp = new TH1F("tcdtp","Time Cluster time - CE time pull",100,-20,20);
   TH1F* tcdtpc = new TH1F("tcdtpc","Time Cluster time - CE timepull",100,-20,20);
-  tcdt->SetLineColor(kGreen);
-  tcdtc->SetLineColor(kBlue);
+  tcdtp->SetLineColor(kGreen);
+  tcdtpc->SetLineColor(kBlue);
   _tcdiag->Project("tcdtp","(besttc.time-ceclust.time)/besttc.terr",_goodCE+_goodReco+(!_goodCalo));
   _tcdiag->Project("tcdtpc","(besttc.time-ceclust.time)/besttc.terr",_goodCE+_goodReco+_goodCalo);
 
@@ -212,6 +244,36 @@ void TimeClusterDiag::ctime() {
   tcdtpc->Fit("gaus");
   _ctcan->cd(4);
   tcdtp->Fit("gaus");
+}
+
+void TimeClusterDiag::HitTimeRes() {
+  TH1F* raw = new TH1F("raw","Combo Hit T0 Resolution;T0 (nsec)",100,-30.0,30);
+  TH1F* flt = new TH1F("flt","Combo Hit T0 Resolution;T0 (nsec)",100,-30.0,30);
+  TH1F* TOT = new TH1F("TOT","Combo Hit T0 Resolution;T0 (nsec)",100,-30.0,30);
+  raw->SetLineColor(kRed);
+  flt->SetLineColor(kGreen);
+  TOT->SetLineColor(kBlue);
+  raw->SetStats(0);
+  flt->SetStats(0);
+  TOT->SetStats(0);
+  _tcdiag->Project("raw","tchinfo._time - mcmidt0 - 22.5",_goodCE+_goodReco+_goodCEReco+_cehit);
+  _tcdiag->Project("flt","tchinfo._time -22.6 - tchinfo._z*0.00535 -mcmidt0",_goodCE+_goodReco+_goodCEReco+_cehit);
+  _tcdiag->Project("TOT","tchinfo._dt+besttc.time - mcmidt0",_goodCE+_goodReco+_goodCEReco+_cehit);
+  _hcan = new TCanvas("hcan","hcan",600,600);
+  _hcan->Divide(1,1);
+  _hcan->cd(1);
+  TOT->Draw();
+  raw->Draw("same");
+  flt->Draw("same");
+  TLegend* leg = new TLegend(0.6,0.7,0.9,0.9);
+  char cap[40];
+  snprintf(cap,40,"Raw Hit Time, RMS=%3.2f",raw->GetRMS());
+  leg->AddEntry(raw,cap,"L");
+  snprintf(cap,40,"Flt Corr Time, RMS=%3.2f",flt->GetRMS());
+  leg->AddEntry(flt,cap,"L");
+  snprintf(cap,40,"TOT+Flt Corr Time, RMS=%3.2f",TOT->GetRMS());
+  leg->AddEntry(TOT,cap,"L");
+  leg->Draw();
 }
   
 void TimeClusterDiag::save(const char* suffix) {
@@ -236,5 +298,9 @@ void TimeClusterDiag::save(const char* suffix) {
   if(_ctcan){
     cfname = string(_ctcan->GetName())+ss;
     _ctcan->SaveAs(cfname.c_str());
+  }
+  if(_hcan){
+    cfname = string(_hcan->GetName())+ss;
+    _hcan->SaveAs(cfname.c_str());
   }
 }

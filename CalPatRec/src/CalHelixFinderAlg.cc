@@ -117,7 +117,7 @@ namespace mu2e {
 
     HelixTraj ht(pvec,hcov);
 
-    Helix._helix = ht.clone();
+    Helix._helix = ht.clone();    
   }
 
 //-------------------------------------------------------------------------//
@@ -150,10 +150,11 @@ namespace mu2e {
     //    _maxDz            (pset.get<double>("maxdz",35.0)),
     _absMpDfDz        (pset.get<double>("mostProbableDfDz")),
     _dzOverHelPitchCut(pset.get<double>("dzOverHelPitchCut")),
-    _maxDfDz          (pset.get<double>("maxDfDz",0.01)),
+    _maxDfDz          (pset.get<double>("maxDfDz",0.1)),//0.01)),2018-10-11 gianipez test
     _minDfDz          (pset.get<double>("minDfDz",5e-04)),
     _sigmaPhi         (pset.get<double>("sigmaPhi")),
     _weightXY         (pset.get<double>("weightXY")),
+    _targetcon        (pset.get<int>   ("targetconsistent")),
     _weightZPhi       (pset.get<double>("weightZPhi")),
     _weight3D         (pset.get<double>("weight3D")),
     _maxXDPhi         (pset.get<double>("maxXDPhi",5.)),
@@ -958,7 +959,7 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
   bool CalHelixFinderAlg::doLinearFitPhiZ(CalHelixFinderData& Helix    ,
-					  HitInfo_t          SeedIndex,
+					  HitInfo_t           SeedIndex,
 					  int                 UseInteligentWeight,
 					  int                 DoCleanUp           ) {
 
@@ -1373,7 +1374,7 @@ namespace mu2e {
 	    panelz = &facez->panelZs[p];
 	    int  nhitsPerPanel  = panelz->nChHits();
 	    int  seedPanelIndex(0);
-	    if (nhitsPerPanel == 0)                                                            continue;
+	    if (nhitsPerPanel == 0)                                                            continue; //Could the error be here? 
 	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0) ) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
 
 	    for (int i=seedPanelIndex; i<nhitsPerPanel; ++i){   
@@ -1384,14 +1385,15 @@ namespace mu2e {
 	      phi      = z* Helix._dfdz + Helix._fz0;
 	      deltaPhi = hit->_hphi - phi;
 
-	      if (h < Helix.maxIndex()) {
+ 	      if (h < Helix.maxIndex()) {
 		Helix._diag.resid[h] = deltaPhi;
 		++h;
 	      }
+	    
 	      else {
 		printf (" ERROR: too many hits. Ignore \n");
 	      }
-	    }
+	    } //There seems to be an error here in where the brackets are placed. 
 	  }
 	}//end loop over the panels
       }//end loop pver the faces
@@ -2234,9 +2236,11 @@ namespace mu2e {
 //-------------------------------------------------------------------------------
 // add stopping target center with a position error of 100 mm/sqrt(12) ~ 30mm => wt = 1/900
 //-------------------------------------------------------------------------------
-    Helix._sxy.addPoint(0.,0.,1./900.);
-    Helix._nXYSh += 1;
-    Helix._nComboHits += 1;
+    if (_targetcon == 1){
+      Helix._sxy.addPoint(0.,0.,1./900.);
+      Helix._nXYSh += 1;
+      Helix._nComboHits += 1;
+    }
 
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doWeightedCircleFit] BEGIN: x0 = %8.3f y0 = %8.3f radius = %8.3f chi2dof = %8.3f\n",
@@ -2288,6 +2292,12 @@ namespace mu2e {
     HelCenter.SetX(Helix._sxy.x0());
     HelCenter.SetY(Helix._sxy.y0());
 
+    //2018-10-04: gianipez added the follwoing line to store the new valuse of circle center and radius in the Helix
+    Helix._center.SetX(Helix._sxy.x0());
+    Helix._center.SetY(Helix._sxy.y0());
+    Helix._radius  = Helix._sxy.radius();
+  
+    
     if (_debug > 5) {
       printf("[CalHelixFinderAlg::doWeightedCircleFit:END] : npt = %3.0f  chi2dof = %8.3f x0 = %8.3f y0 = %8.3f radius = %8.3f\n",
 	     Helix._sxy.qn(),Helix._sxy.chi2DofCircle(),HelCenter.x(),HelCenter.y(),Radius);
@@ -2691,6 +2701,7 @@ namespace mu2e {
       facez     = &Helix._oTracker[f];
       int  firstPanel(0);
       if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
+      if (isFaceUsed(Helix, facez))                continue;
       for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];//Helix._oTracker[p];
 	int  nhits          = panelz->nChHits();
@@ -3926,11 +3937,9 @@ void CalHelixFinderAlg::plotXY(int ISet) {
     int n = Helix._nFiltPoints;//_xyzp.size();
 
     printf("[CalHelixFinderAlg::printXYZP]-----------------------------------------------------------------------------------------\n");
-    printf("[CalHelixFinderAlg::printXYZP]     i index strawID   flag    Used     X         Y         Z      _debug: %5i nhits: %5i\n",_debug,n);
+    printf("[CalHelixFinderAlg::printXYZP]     f  p  i  shId index     X         Y         Z      _debug: %5i nhits: %5i\n",_debug,n);
     printf("[CalHelixFinderAlg::printXYZP]-----------------------------------------------------------------------------------------\n");
     
-    const vector<StrawHitIndex>& shIndices = Helix._timeCluster->hits();
-
     FaceZ_t*  facez(0);
     PanelZ_t* panelz(0);
     
@@ -3942,16 +3951,33 @@ void CalHelixFinderAlg::plotXY(int ISet) {
 
 
 	for (int i=0; i<nhitsPerPanel; ++i){   
-	  mu2e::ComboHit* pt = &Helix._chHitsToProcess[panelz->idChBegin + i];//panelz->_chHitsToProcess.at(i);
+	  int             index = panelz->idChBegin + i;
+	  mu2e::ComboHit* pt    = &Helix._chHitsToProcess[index];//panelz->_chHitsToProcess.at(i);
 
-	  int loc    = shIndices[i];	 // WRONG!!!! FIXME!
-    
-	  // const StrawHit& sh          = Helix.chcol()->at(loc);
 	  printf("[CalHelixFinderAlg::printXYZP] %5i %5i %5i   %08x   %2i %9.3f %9.3f %9.3f \n",
-		 i, loc,  pt->strawId().straw()/*sh.strawIndex().asInt()*/, *((int*) &pt->_flag), 0/*pt->use()FIXME!*/, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
+		 f, p, i, pt->strawId().straw(), index, pt->_pos.x(), pt->_pos.y(), pt->_pos.z());
 	}
       }
     }
+  }
+
+  bool CalHelixFinderAlg::isFaceUsed(CalHelixFinderData& Helix, FaceZ_t* facez){
+    int c = 0;
+    for (int p = 0; p < FaceZ_t::kNPanels; p++){
+      PanelZ_t* panelz = &facez->panelZs[p];
+      int  nhits = panelz->nChHits();
+      for (int i=0; i<nhits; ++i){   
+	int index = panelz->idChBegin + i;
+	if (Helix._hitsUsed[index] == 1){
+	  c++;
+	  break;
+	}
+      }
+      if (c >= 1) break;
+    }
+    
+    if (c > 0) return true;
+    else       return false; 
   }
 //-----------------------------------------------------------------------------
 //

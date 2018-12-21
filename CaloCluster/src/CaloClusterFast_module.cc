@@ -220,7 +220,7 @@ namespace mu2e {
          int      cluEnergy(seed->val_);
 	 double   xc = cal->crystal(seed->crId_).localPosition().x()*seed->val_;
          double   yc = cal->crystal(seed->crId_).localPosition().y()*seed->val_;
-         seed->val_ = 0; 
+         //seed->val_ = 0; 
          
          std::queue<int> crystalToVisit;
          for (const auto& nid : cal->neighbors(seed->crId_)) crystalToVisit.push(nid);

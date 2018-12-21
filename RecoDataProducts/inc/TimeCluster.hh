@@ -33,7 +33,7 @@ namespace mu2e {
     const XYZVec&          position   () const { return _pos; }
     const art::Ptr<CaloCluster>&      caloCluster() const { return _caloCluster; }
     int                               caloFastIdx() const { return _caloFastIdx; }
-
+    bool hasCaloCluster() const { return _caloCluster.isNonnull(); }
     std::vector<StrawHitIndex> _strawHitIdxs; // associated straw hits: can be empty
     TrkT0		       _t0;           // t0 and associated error
     XYZVec          _pos;          // position of the time cluster   

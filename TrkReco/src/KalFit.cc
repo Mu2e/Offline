@@ -23,8 +23,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CalorimeterGeom/inc/Calorimeter.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 // data
@@ -104,9 +102,8 @@ namespace mu2e
     _maxpull(pset.get<double>("maxPull",5)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
     // t0 parameters
-    _initt0(pset.get<bool>("initT0",true)),
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
-    _updatet0(pset.get<bool>("updateT0",true)),
+    _updatet0(pset.get<vector<bool>>("updateT0")),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
@@ -124,6 +121,7 @@ namespace mu2e
     _exup((extent)pset.get<int>("UpstreamExtent",noextension)),
     _exdown((extent)pset.get<int>("DownstreamExtent",noextension)),
     _mcTruth(pset.get<int>("mcTruth",0)),
+    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _bfield(0)
   {
 // set KalContext parameters
@@ -239,7 +237,8 @@ namespace mu2e
 	}
       }
       if(kseg == kalData.kalSeed->segments().end()){
-	std::cout << "Helix segment range doesn't cover flt0" << std::endl;
+	std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
+		  <<", Helix segment range doesn't cover flt0 = " << flt0 << std::endl;
 	kseg = kalData.kalSeed->segments().begin();
       }
       // create a trajectory from the seed. This shoudl be a general utility function that
@@ -278,9 +277,6 @@ namespace mu2e
       // create Kalman rep
       kalData.krep = new KalRep(htraj, thv, detinter, *this, kalData.kalSeed->particle(), t0, flt0);
       assert(kalData.krep != 0);
-      if(_initt0){
-	initT0(kalData);
-      }
       
       if (_debug > 0) printHits(kalData,"makeTrack_001");
 
@@ -430,7 +426,7 @@ namespace mu2e
       retval = krep->fit();
       if(! retval.success())break;
       // updates
-      if(_updatet0){
+      if(_updatet0[iter]){
 	updateT0(kalData);
         changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
       }
@@ -499,17 +495,21 @@ namespace mu2e
 
   void 
   KalFit::makeTrkCaloHit  (KalFitData& kalData, TrkCaloHit *&tch){
-    if (kalData.kalSeed->caloCluster().get() != 0){
-      HitT0 ht0;
-      ht0._t0    = kalData.kalSeed->caloCluster()->time();
-      ht0._t0err = 0.5;//dummy error FIXME!
-      
-      double fltlen(0);//dummy value FIXME! maybe I can use the dip angle from the kseed?
+    art::Ptr<CaloCluster> const& calo = kalData.kalSeed->caloCluster();
+    if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      Hep3Vector          cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e(
-		   kalData.kalSeed->caloCluster()->diskId(), kalData.kalSeed->caloCluster()->cog3Vector())); 
+      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
+      // estimate fltlen from pitch
+      double td = kalData.kalSeed->segments()[0].helix().tanDip();
+      double sd = td/sqrt(1.0+td*td);
+      double fltlen = cog.z()/sd - kalData.kalSeed->flt0();
+      // t0 represents the time the particle reached the sensor; estimate that
+      HitT0 ht0;
+      //ht0._t0 = kalData.t0._t0 + _ttcalc.timeOfFlightTimeOffset(cog.z()) + _ttcalc.caloClusterTimeOffset();
+      ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
+      ht0._t0err = _ttcalc.caloClusterTimeErr();
       
-      Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIX ME!
+      Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
       double      crystalHalfLength = ch->caloInfo().getDouble("crystalZLength")/2.;
       tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalHalfLength, clusterAxis, ht0, fltlen, _calHitW, _dtoffset);
     }
@@ -527,7 +527,7 @@ namespace mu2e
 
     if (Trk == NULL)  return;
 
-    printf("[KalFitHackNew::printHits] BEGIN called from %s _annealingStep:%i \n",Caller,_annealingStep);
+    printf("[KalFit::printHits] BEGIN called from %s _annealingStep:%i \n",Caller,_annealingStep);
     printf("---------------------------------------------------------------------------------");
     printf("-----------------------------------------------------\n");
       //      printf("%s",Prefix);
@@ -581,7 +581,7 @@ namespace mu2e
     printf("--------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
     printf("--------------------------------------------\n");
-    printf(" ih  SInd Flag      A     len         x        y        z      HitT     HitDt");
+    printf(" ih  SId  Flag      A     len         x        y        z      HitT     HitDt");
     printf(" Pl Pn  L  W     T0       Xs      Ys        Zs      resid  sigres");
     printf("   Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
     printf("--------------------------------------------------------------------");
@@ -598,61 +598,84 @@ namespace mu2e
 
     ihit = 0;
     for (int it=0; it<nhits; ++it) {
-      hit   = static_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
-      sh    = &hit->comboHit();
-      straw = &hit->straw();
+      hit   = dynamic_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
+      if(hit != 0){
+	sh    = &hit->comboHit();
+	straw = &hit->straw();
 
-      hit->hitPosition(pos);
+	hit->hitPosition(pos);
 
-      len   = hit->fltLen();
-      plen  = Trk->position(len);
+	len   = hit->fltLen();
+	plen  = Trk->position(len);
 
-      double mcdoca = _mcUtils->mcDoca(KRes.event,KRes.shDigiLabel.data(),straw);
+	double mcdoca = _mcUtils->mcDoca(KRes.event,KRes.shDigiLabel.data(),straw);
 
-      ihit += 1;
-      printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
-             ihit,
-             straw->id().asUint16(),
-             hit->hitFlag(),
-             hit->isActive(),
-             len,
-             //      hit->hitRms(),
-             plen.x(),plen.y(),plen.z(),
-             sh->time(), -1.//sh->dt()
-             );
+	ihit += 1;
+	printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
+	    ihit,
+	    straw->id().asUint16(),
+	    hit->hitFlag(),
+	    hit->isActive(),
+	    len,
+	    //      hit->hitRms(),
+	    plen.x(),plen.y(),plen.z(),
+	    sh->time(), -1.//sh->dt()
+	    );
 
-      printf(" %2i %2i %2i %2i",
-             straw->id().getPlane(),
-             straw->id().getPanel(),
-             straw->id().getLayer(),
-             straw->id().getStraw()
-             );
+	printf(" %2i %2i %2i %2i",
+	    straw->id().getPlane(),
+	    straw->id().getPanel(),
+	    straw->id().getLayer(),
+	    straw->id().getStraw()
+	    );
 
-      printf(" %8.3f",hit->hitT0().t0());
+	printf(" %8.3f",hit->hitT0().t0());
 
-      double res, sigres;
-      hit->resid(res, sigres, true);
+	double res, sigres;
+	bool hasres = hit->resid(res, sigres, true);
+	if(hasres) 
+	  printf(" %8.3f %8.3f %9.3f %7.3f %7.3f",
+	      pos.x(),
+	      pos.y(),
+	      pos.z(),
+	      res,
+	      sigres
+	      );
+	else
+	  printf(" %8.3f %8.3f %9.3f %7s %7s",
+	      pos.x(),
+	      pos.y(),
+	      pos.z(),
+	      "   -   ",
+	      "   -   "
+	      );
 
-      printf(" %8.3f %8.3f %9.3f %7.3f %7.3f",
-             pos.x(),
-             pos.y(),
-             pos.z(),
-             res,
-             sigres
-             );
+	if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
+	else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
+	else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
 
-      if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
-      else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
-      else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
-
-      printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",
-             mcdoca,
-             hit->totalErr(),
-             hit->hitErr(),
-             hit->t0Err(),
-             hit->penaltyErr(),
-             hit->temperature()*hit->driftVelocity()
-             );
+	printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",
+	    mcdoca,
+	    hit->totalErr(),
+	    hit->hitErr(),
+	    hit->t0Err(),
+	    hit->penaltyErr(),
+	    hit->temperature()*hit->driftVelocity()
+	    );
+      } else {
+	TrkCaloHit const* chit   = dynamic_cast<TrkCaloHit*> (KRes.krep->hitVector().at(it));
+	if(chit != 0){
+	  double res, sigres;
+	  bool hasres = chit->resid(res, sigres, true);
+	  cout << "TrkCaloHit, time = " << chit->time() << " hit T0 = " << chit->hitT0().t0()
+	    << "+-" << chit->hitT0().t0Err();
+	    if(hasres) 
+	      cout << " resid = " << res << "+-" <<sigres;
+	    else
+	      cout << " no residual";
+	    cout  << " hit error " << chit->hitErr() << endl;
+	}
+      }
     }
   }
 
@@ -967,71 +990,6 @@ namespace mu2e
   }
 
   void
-  KalFit::initT0(KalFitData&kalData) {
-    TrkT0 t0;
-    const CaloCluster* cl = kalData.caloCluster;
-    double          t0flt = kalData.krep->referenceTraj()->zFlight(0);//htraj.zFlight(0.0);
-    // get flight distance of z=0
-    // estimate the momentum at that point using the helix parameters.  This is
-    // assumed constant for this crude estimate
-    double loclen;
-    double fltlen(0.0);
-    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(kalData.krep->referenceTraj()->localTrajectory(fltlen,loclen));
-    double mom = TrkMomCalculator::vecMom(*htraj,bField(),t0flt).mag();
-    // compute the particle velocity
-    double vflt = kalData.krep->particleType().beta(mom)*CLHEP::c_light;
-
-    if (cl) {
-//-----------------------------------------------------------------------------
-// calculate the path length of the particle from the middle of the Tracker to the
-// calorimeter, cl->Z() is calculated wrt the tracker center
-// _dtoffset : global time offset between the tracker and the calorimeter, 
-//             think of an average cable delay
-//-----------------------------------------------------------------------------
-      const HelixTraj* hel  = kalData.helixTraj;
-      Hep3Vector       gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
-      Hep3Vector       tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-      double           path = tpos.z()/hel->sinDip();
-
-      t0._t0    =  cl->time() + _dtoffset - path/vflt;
-      t0._t0err = 1;
-      //set the new T0
-      kalData.krep->setT0(t0, t0flt);
-    }
-    else {
-      using namespace boost::accumulators;
-      // make an array of all the hit times, correcting for propagation delay
-      unsigned nind = kalData.krep->hitVector().size();
-      std::vector<double> times;
-      std::vector<double> timesweight;
-      times.reserve(nind);
-      timesweight.reserve(nind);
-
-      // use the reference trajectory, as that's what all the existing hits do
-      const TrkDifPieceTraj* reftraj = (kalData.krep->referenceTraj());
-      // loop over hits
-      double      htime(0);    
-      for(auto ith=kalData.krep->hitVector().begin(); ith!=kalData.krep->hitVector().end(); ++ith){
-	(*ith)->trackT0Time(htime, t0flt, reftraj, vflt);
-	times.push_back(htime);
-	timesweight.push_back((*ith)->t0Weight());
-      }
-
-      // find the median time
-      accumulator_set<double,stats<tag::weighted_variance >,double >         wmean;
-      //fill the accumulator using the weights
-      int nhits(times.size());
-      for (int i=0; i<nhits; ++i){
-	wmean(times.at(i), weight=timesweight.at(i));
-      }
-      t0._t0    = extract_result<tag::weighted_mean>(wmean);
-      t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nhits);
-      //set the new T0
-      kalData.krep->setT0(t0, t0flt);
-    }
-  }
-
-  void
   KalFit::updateCalT0(KalFitData& kalData){
 
     TrkT0 t0;
@@ -1086,35 +1044,33 @@ namespace mu2e
       double flt0(0.0);
       bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
       if(converged){
-        std::vector<double> hitt0; // store t0, to allow outlyer removal
-        std::vector<double> hitt0err;
+        std::vector<double> hitt0, hitt0err; // store t0, to allow outlyer removal
         size_t nhits = krep->hitVector().size();
         hitt0.reserve(nhits);
         hitt0err.reserve(nhits);
-        // loop over the hits
+        // loop over the hits and accumulate t0
         for(auto ihit=thv->begin(); ihit != thv->end(); ihit++){
           TrkHit* hit = *ihit;
-          if(hit->isActive() && hit->hasResidual()){
-            // find the residual, exluding this hits measurement
-            double resid,residerr;
-	    double pTime, doca;//propagation-time
-	    CLHEP::Hep3Vector trjDir(krep->traj().direction(hit->fltLen()));
-            if(krep->resid(hit,resid,residerr,true)){
-	      if (hit->signalPropagationTime(pTime, doca, resid, residerr, trjDir)){	      
-                // subtracting hitT0 makes this WRT the previous track t0
-                hitt0.push_back(hit->time() - pTime - hit->hitT0()._t0);
-                // assume residual error dominates
-                hitt0err.push_back(residerr);
-	      }
+          if(hit->isActive() ) {
+	    TrkT0 st0;
+	    if (hit->signalPropagationTime(st0 )){
+	      // subtracting hitT0 makes this WRT the previous track t0
+	      hitt0.push_back(hit->time() - st0._t0 - hit->hitT0()._t0);
+//	      TrkCaloHit* tch = dynamic_cast<TrkCaloHit*>(hit);
+//	      if(tch != 0){
+		// add temperature, as this isn't part of the geometric error
+//		hitt0err.push_back(sqrt(st0._t0err*st0._t0err + tch->temperature()*tch->temperature()));
+//	      else	
+		hitt0err.push_back(st0._t0err);// temperature is already part of the residual error
             }
           }
         }
         if(hitt0.size() >1){
           TrkT0 t0;
-          // find the median
-          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
-          med = std::for_each( hitt0.begin(), hitt0.end(), med );
-          t0._t0 = extract_result<tag::median>(med);
+          // find the median.  Why is this necessary?  Input t0 has very good precision < 2ns.
+//          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
+//          med = std::for_each( hitt0.begin(), hitt0.end(), med );
+//          t0._t0 = extract_result<tag::median>(med);
           // iterate an outlier search and linear fit until the set of used hits doesn't change
           bool changed(true);
           std::vector<bool> used(hitt0.size(),true);
@@ -1155,7 +1111,7 @@ namespace mu2e
   
   void
   KalFit::updateHitTimes(KalRep* krep) {
-  // compute the time the track came closest to the wire for each hit, starting from t0 and working out.
+  // compute the time the track came closest to the sensor for each hit, starting from t0 and working out.
   // this function allows for momentum change along the track.
   // find the bounding hits on either side of this
     TrkHitVector *thv = &(krep->hitVector());

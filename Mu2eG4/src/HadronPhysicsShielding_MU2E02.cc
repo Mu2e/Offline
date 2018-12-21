@@ -44,7 +44,7 @@
 #include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "HadronPhysicsShielding_MU2E02.hh"
+#include "Mu2eG4/inc/HadronPhysicsShielding_MU2E02.hh"
 
 #include "globals.hh"
 #include "G4ios.hh"

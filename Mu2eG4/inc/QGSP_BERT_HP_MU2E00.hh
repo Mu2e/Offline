@@ -60,7 +60,7 @@ public:
 private:
   enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
 };
-#include "QGSP_BERT_HP_MU2E00.icc"
+#include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.icc"
 
 // 2002 by J.P. Wellisch
 

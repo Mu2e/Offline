@@ -55,8 +55,8 @@ namespace mu2e
     explicit RobustHelixFit(fhicl::ParameterSet const&);
     virtual ~RobustHelixFit();
 
-    bool initCircle(RobustHelixFinderData& helixData);
-    void fitCircle(RobustHelixFinderData& helixData);
+    bool initCircle(RobustHelixFinderData& helixData, bool forceTargetCon);
+    void fitCircle(RobustHelixFinderData& helixData, bool forceTargetCon);
     bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
     void fitFZ(RobustHelixFinderData& helixData);
@@ -74,19 +74,19 @@ namespace mu2e
     void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
 
-    bool  targetcon()   {return _targetcon; }
+    //    bool  targetcon()   {return _targetcon; }
 
     const TTracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
-    void fitCircleMedian(RobustHelixFinderData& helixData);
+    void fitCircleMedian(RobustHelixFinderData& helixData, bool forceTargetCon);
     
     float lambdaMin()  { return _lmin; }
     float lambdaMax()  { return _lmax; }
 
   private:
 
-    void fitHelix(RobustHelixFinderData& helixData);
+    void fitHelix(RobustHelixFinderData& helixData, bool forceTargetCon);
     void fitCircleAGE(RobustHelixFinderData& helixData);
     void fitCircleMean(RobustHelixFinderData& helixData);
     void findAGE(RobustHelixFinderData  const& helixData, XYZVec const& center,float& rmed, float& age);
@@ -131,7 +131,7 @@ namespace mu2e
     float _minarea2; // minimum triangle area for triple (squared)
     float _lmin, _lmax; // range of lambda = dz/dphi
     bool _targetpoint; // use target as a point in the circle fit
-    bool _targetcon; // require consistency with target
+    //    bool _targetcon; // require consistency with target
     bool _targetinter; // require fit to intersect the target
     bool _tripler; // use triples to compute r
     bool _errrwt; // use hit errors to weight radius calculation 

@@ -7,8 +7,9 @@ physics.producers.generate.physics.elow : 70.0 // Mev
 physics.producers.generate.physics.ehi : 105.0 // Mev
 physics.filters.CaloShowerSimFilter : {
   module_type :CaloShowerSimFilter
-  particleTypes : [ 22  ]
-  MinEnergySum : 50.0
+  particleTypes : [ 22  ] # only phootons
+  MinParticleEnergy : 50.0
+  MinTotalEnergy : 10000.0 # disable
 }
 physics.TriggerPath : [ @sequence::Primary.GenAndG4,
   @sequence::CommonMC.DigiSim,

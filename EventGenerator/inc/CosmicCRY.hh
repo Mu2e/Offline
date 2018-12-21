@@ -22,6 +22,7 @@ namespace mu2e {
     public:
       CosmicCRY(art::Run& run, const SimpleConfig& config,
           CLHEP::HepRandomEngine& engine);
+      double getLiveTime();
 
       virtual void generate( GenParticleCollection&  );
 

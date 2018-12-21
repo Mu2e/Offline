@@ -750,8 +750,8 @@ namespace mu2e {
 	TwoLinePCA pcaMid(posMid, momMid.unit(), *mid, *w);
 
 	// Position along wire, from delta t.
-        float wdist, wderr;
-        bool vStatus = strawResponse->wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr);
+        float wdist, wderr,halfpv;
+        bool vStatus = strawResponse->wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr,halfpv);
         v=wdist;
         sigv=wderr;
         cout << "return status: " << vStatus << endl;

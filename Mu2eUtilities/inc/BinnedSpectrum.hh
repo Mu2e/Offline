@@ -50,21 +50,22 @@ namespace mu2e {
     }
 
     template<class Shape, typename... Args>
-    void initialize(double emin, double emax, double spectRes, Args... args) {
+    void initialize(double XMin, double XMax, double BinWidth, Args... args) {
 
-      if(!(spectRes > 0.) /*catches NaNs as well*/) {
+      if(!(BinWidth > 0.) /*catches NaNs as well*/) {
         throw cet::exception("BADCONFIG")
-          <<"BinnedSpectrum::initialize(): invalid spectRes = "<<spectRes<<"\n";
+          <<"BinnedSpectrum::initialize(): invalid binWidth = "<< BinWidth <<"\n";
       }
 
-      _binWidth = spectRes;
+      _binWidth = BinWidth;
 
       std::vector<double> pdf, abscissa;
 
       Shape s( std::forward<Args>(args)... );
-      for ( double step = emin ; step <= emax ; step += spectRes ) {
+      for ( double step = XMin ; step <= XMax ; step += _binWidth ) {	 
+
         abscissa.push_back( step );
-        pdf     .push_back( s.getWeight(step) );
+        pdf     .push_back( s.getWeight(step) ); 
       }
 
       assert( abscissa.size() == pdf.size() );
@@ -92,7 +93,10 @@ namespace mu2e {
   private:
 
     std::pair<std::vector<double>,std::vector<double>> _spectrum;
-    double _binWidth;
+
+    double _xmin;			// low and high limits 
+    double _xmax;
+    double _binWidth;			// assumed to be constant
     size_t _nBins;
 
   };

@@ -87,9 +87,12 @@ BEGIN_PROLOG
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
-	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-	PlotTimeSpectra : true
-      }
+        ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+        ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+	PlotTimeSpectra : false
+	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
+        T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+    }
 
   HD : {
 	module_type : HelixDiag
@@ -99,7 +102,7 @@ BEGIN_PROLOG
 	ComboHitCollection : "makePH"
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	PlotHelices : true
+	PlotHelices : false
 	SaveHelixFlag : ["HitsOK"]
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
   }
@@ -201,10 +204,12 @@ BEGIN_PROLOG
       @table::CaloCluster.producers
       @table::TrackCaloMatching.producers
       @table::CrvResponsePackage.producers
+
   # DIO weighting for flat spectrum electrons
       DIOWeight: {
 	module_type: DecayInOrbitWeight
-	inputModule: compressDigiMCs
+	weightingScheme : pol58
+	inputModule : compressDigiMCs
 	verbosityLevel: 1
       }
       # converts ProtonBunchIntensity object to EventWeight object
@@ -248,8 +253,8 @@ TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF,
                          @sequence::TrackCaloMatching.matching_dep_TRF ]
   # aggregate these for convenience
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
-			    @sequence::TrkAna.TrkRecoSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
+			    @sequence::TrkAna.TrkRecoSequence,
 		            @sequence::TrkCaloMatchSequence ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 				 @sequence::TrkAna.CrvRecoSequence ]

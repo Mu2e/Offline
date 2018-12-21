@@ -1,0 +1,38 @@
+           Release notes for Mu2e Offline software, v7_1_2a
+
+4) Sept 21, 2018 Rob Kutschke
+   - Tagged as v7_1_2a
+   - A tag on art_v2_11_01_branch
+   - This tags the version that will be used to run
+     a round of cosmic production for Yuri
+
+3) Sept 21, 2018 Rob Kutsckhe
+   - Changes made by Tomo, comments by Rob
+   - Updates in DAQ package for use with
+     the updated trigger prototype, which requires
+     are art v2_11_01
+      - DAQ/src/CaloPacketProducer_module.cc
+      - DAQ/src/CrvPacketProducer_module.cc
+      - DAQ/src/Mu2eProducer_module.cc
+      - DAQ/src/SConscript
+      - DAQ/src/TrkPacketProducer_module.cc
+      - DAQ/test/PacketProducerTest_RootInput.fcl
+
+2) Sept 21, 2018 Rob Kutsckhe
+   GeneralUtilities/inc/csv.h
+   GeneralUtilities/inc/csv_original.h
+   MCDataProducts/inc/PhysicalVolumeInfo.hh
+   RecoDataProducts/src/TrkExtTraj.cc
+   TrackerGeom/inc/Panel.hh
+     - The new comipiler is pickier about issuing warnings
+       about implicit type conversions that might be lossy.
+     - Inspect that it is safe to do so and make the type
+       conversions explicit
+     - For csv.h we had to use a pragma to disable
+       the test within a third party header
+
+1) Sept 21, 2018 Rob Kutsckhe
+   scripts/build/python/sconstruct_helper.py
+   setup.sh
+     - Update to use art v2_11_01 and gcc 7
+     - Switch from  --std=c++14 to --std=c++17

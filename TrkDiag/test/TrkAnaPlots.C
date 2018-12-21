@@ -122,9 +122,9 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   TCut rpitch = TCut(ctext);
   snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   TCut livegate = TCut(ctext);
-  TCut cosmic = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
+  TCut opa = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
   TCut rmomloose("de.mom>100.0");
-  TCut physics = rpitch+cosmic+livegate+rmomloose;
+  TCut physics = rpitch+opa+livegate+rmomloose;
 
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
   dscb->SetParName(0,"Norm");
@@ -175,9 +175,9 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   TCut rpitch = TCut(ctext);
   snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   TCut livegate = TCut(ctext);
-  TCut cosmic = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
+  TCut opa = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
   TCut rmomloose("de.mom>100.0");
-  TCut physics = rpitch+cosmic+livegate+rmomloose;
+  TCut physics = rpitch+opa+livegate+rmomloose;
 
   TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
   dscb->SetParName(0,"Norm");
@@ -241,7 +241,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 
 }
 
-void Acc(TTree* ta, int ngen,const char* file="") {
+void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   unsigned nbins(8);
   double bmax = nbins-0.5;
 
@@ -256,7 +256,7 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
   acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  acc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
   acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
 
@@ -267,7 +267,7 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
   racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  racc->GetXaxis()->SetBinLabel(ibin++,"Cosmic Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
   racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
   ibin = 0;
@@ -277,11 +277,13 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   // &&demcent.td>0.55&&demcent.td<1.05";
   //&&fmod(demcent.t0,1695.0)>500.0";
   TCut reco = "de.status>0";
-  TCut goodfit = "de.trkqual>0.4";
-  TCut livegate = "de.t0>500.0&&de.t0<1695";
+  char ctext[80];
+  snprintf(ctext,80,"de.trkqual>%f",tqcut);
+  TCut goodfit(ctext);
+  TCut livegate = "de.t0>700.0&&de.t0<1695";
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
-  TCut cosmic = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
-  TCut rmom = "de.mom>100.0";
+  TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
+  TCut rmom = "de.mom>103.85";
   TCut evtwt = "evtwt.PBIWeight";
   ta->Project("acc",binnames[ibin++],evtwt);
   ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
@@ -289,8 +291,8 @@ void Acc(TTree* ta, int ngen,const char* file="") {
   ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit));
   ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate));
   ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+cosmic));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+cosmic+rmom));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+opa));
+  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+opa+rmom));
 
   double all = acc->GetBinContent(1);
   double norm = ngen;
