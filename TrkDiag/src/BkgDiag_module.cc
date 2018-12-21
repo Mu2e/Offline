@@ -401,7 +401,7 @@ namespace mu2e
 	  art::Ptr<SimParticle> sppj = *jpp;
 	  if(sppj->genParticle().isNull()){
 	    // call the particles 'the same' if they are related and were produced near each other
-	    MCRelationship::relation rel = MCRelationship::relationship(sppi,sppj);
+	    MCRelationship rel(sppi,sppj);
 	    if(rel==MCRelationship::daughter || rel == MCRelationship::udaughter){
 	      spmap[sppi] = sppj;
 	      break;
@@ -503,7 +503,8 @@ namespace mu2e
     if(spmcp.isNonnull() && pptr.isNonnull()){
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       if(spp.isNonnull()){
-	shinfo._relation = MCRelationship::relationship(spp,pptr);
+	 MCRelationship rel(spp,pptr);
+	 shinfo._relation = rel._rel;  
       }
     }
   }

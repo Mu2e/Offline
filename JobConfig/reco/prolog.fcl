@@ -1,0 +1,36 @@
+//
+#
+#  Prolog for production reconstruction jobs
+#
+#include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkPatRec/fcl/prolog.fcl"
+BEGIN_PROLOG
+Reconstruction : {
+  producers : {
+    @table::TrkHitReco.producers
+    @table::Tracking.producers
+    @table::CaloReco.producers
+    @table::CaloCluster.producers
+    @table::TrackCaloMatching.producers
+    @table::CrvResponsePackage.producers
+  }
+  TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
+		     @sequence::Tracking.FindHelices,
+		     @sequence::Tracking.TPRDeM,
+		     @sequence::Tracking.TPRUeM,
+		     @sequence::Tracking.TPRDmuM,
+                     @sequence::Tracking.TPRDeP,
+                     @sequence::Tracking.TPRUeP,
+                     @sequence::Tracking.TPRDmuP ]
+
+    CaloRecoSequence : [ @sequence::CaloReco.Reco,
+			 @sequence::CaloCluster.Reco ]
+
+    TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
+                         @sequence::TrackCaloMatching.matching_dep_TRF ]
+ 
+    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
+
+ 
+}
+END_PROLOG

@@ -8,56 +8,62 @@ namespace mu2e
 {
   using std::vector;
 
-  MCRelationship::relation MCRelationship::relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) {
-    SPPtr ptr1, ptr2;
-    // should take the earlier of the 2 cluster times FIXME!
-    if(mcd1.stepPointMC(StrawEnd::cal).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawEnd::cal)->simParticle();
-    else if(mcd1.stepPointMC(StrawEnd::hv).isNonnull())
-      ptr1 = mcd1.stepPointMC(StrawEnd::hv)->simParticle();
-    if(mcd2.stepPointMC(StrawEnd::cal).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawEnd::cal)->simParticle();
-    else if(mcd2.stepPointMC(StrawEnd::hv).isNonnull())
-      ptr2 = mcd2.stepPointMC(StrawEnd::hv)->simParticle();
-    return relationship(ptr1,ptr2);
-  }
+  MCRelationship::MCRelationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2) :
+    MCRelationship(mcd1.earlyStepPointMC()->simParticle(),mcd2.earlyStepPointMC()->simParticle())
+  {}
 
-  MCRelationship::relation MCRelationship::relationship(SPPtr const& sppi,SPPtr const& sppj) {
-    if(sppi.isNull() || sppj.isNull()) return none;
-    if(sppi == sppj)return same;
-    SPPtr pi = sppi->originParticle().parent();
-    SPPtr pj = sppj->originParticle().parent();
+  MCRelationship::MCRelationship(StrawDigiMC const& mcd, SPPtr const& spp) :
+    MCRelationship(mcd.earlyStepPointMC()->simParticle(),spp)
+  {}
 
-    if(pi.isNonnull() && pi == sppj)return daughter;
-    if(pj.isNonnull() && pj == sppi)return mother;
-    if(pi.isNonnull() && pj.isNonnull()){
-      if( pi == pj)return sibling;
-      vector<SPPtr > pvi, pvj;
-      pvi.push_back(sppi);
-      pvj.push_back(sppj);
-      while(pi.isNonnull()){
-	pvi.push_back(pi);
-	pi = pi->originParticle().parent();
-      }
-      while(pj.isNonnull()){
-	pvj.push_back(pj);
-	pj = pj->originParticle().parent();
-      }
-      vector<art::Ptr<SimParticle> >::iterator ifnd;
-      ifnd = find(pvi.begin(),pvi.end(),sppj);
-      if(ifnd != pvi.end())return udaughter;
-      ifnd = find(pvj.begin(),pvj.end(),sppi);
-      if(ifnd != pvj.end())return umother;
-      for(size_t ii=0;ii<pvj.size();++ii){
-	ifnd = find(pvi.begin(),pvi.end(),pvj[ii]);
-	if(ifnd != pvi.end())return usibling;
-      }
-      for(size_t ii=0;ii<pvi.size();++ii){
-	ifnd = find(pvj.begin(),pvj.end(),pvi[ii]);
-	if(ifnd != pvj.end())return usibling;
+  MCRelationship::MCRelationship(SPPtr const& sppi,SPPtr const& sppj) : _rel(none) {
+    if(sppi.isNonnull() && sppj.isNonnull()){
+      if(sppi == sppj){
+	_rel= same;
+      } else {
+	SPPtr pi = sppi->originParticle().parent();
+	SPPtr pj = sppj->originParticle().parent();
+	if(pi.isNonnull() && pi == sppj){
+	  _rel = daughter;
+	} else if(pj.isNonnull() && pj == sppi) {
+	  _rel = mother;
+	} else if(pi.isNonnull() && pj.isNonnull()){
+	  if( pi == pj){
+	    _rel = sibling;
+	  } else {
+	    vector<SPPtr > pvi, pvj;
+	    pvi.push_back(sppi);
+	    pvj.push_back(sppj);
+	    while(pi.isNonnull()){
+	      pvi.push_back(pi);
+	      pi = pi->originParticle().parent();
+	    }
+	    while(pj.isNonnull()){
+	      pvj.push_back(pj);
+	      pj = pj->originParticle().parent();
+	    }
+	    if(find(pvi.begin(),pvi.end(),sppj) != pvi.end()){
+	      _rel = udaughter;
+	    } else if(find(pvj.begin(),pvj.end(),sppi) != pvj.end()){
+	      _rel = umother;
+	    } else {
+	      for(size_t ii=0;ii<pvj.size();++ii){
+		if(find(pvi.begin(),pvi.end(),pvj[ii]) != pvi.end()){
+		  _rel = usibling;
+		  break;
+		} 
+	      }
+	      for(size_t ii=0;ii<pvi.size();++ii){
+		if( find(pvj.begin(),pvj.end(),pvi[ii]) != pvj.end()){
+		  _rel = usibling;
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
       }
     }
-    return none;
   }
 }
  

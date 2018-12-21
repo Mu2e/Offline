@@ -751,7 +751,8 @@ namespace mu2e {
       hinfomc._proc = spp->originParticle().creationCode();
       if(spp->genParticle().isNonnull())
 	hinfomc._gen = spp->genParticle()->generatorId().id();
-      hinfomc._rel = MCRelationship::relationship(pspp,spp);
+      MCRelationship rel(pspp,spp);
+      hinfomc._rel = rel._rel;
       hinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
     }
   }

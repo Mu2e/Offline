@@ -334,6 +334,8 @@ namespace mu2e
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
+	  // add CaloCluster if present
+	  kseed._chit._cluster = hseed.caloCluster();
 	  // fill ptr to the helix seed
           auto hsH = event.getValidHandle(_hsToken);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);

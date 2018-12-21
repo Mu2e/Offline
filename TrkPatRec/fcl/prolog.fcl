@@ -21,15 +21,14 @@ TimeClusterFinder : {
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection : "CaloClusterFromProtoCluster"
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  # enable calorimeter cluster info in time clustering
   CaloClusterCollection : "CaloClusterFromProtoCluster"
+  UseCaloCluster : true
+  UseCaloClusterPosition : true
+  CaloClusterWeight : 10.0
   TestFlag : true
 }
-# stereo version
-STimeClusterFinder : {
-  @table::TimeClusterFinder
-  ComboHitCollection : "makeSTH"
-  StrawHitFlagCollection :"SflagBkgHits:ComboHits"
-}
+# helix finding
 RobustHelixFinder : {
     module_type		: RobustHelixFinder
     ComboHitCollection     : "makePH"
@@ -37,20 +36,12 @@ RobustHelixFinder : {
     TimeClusterCollection  : "TimeClusterFinder"
     HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
     HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-
     diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
 	mcTruth                                 : 0
     }
     
 }
-SRobustHelixFinder : {
-  @table::RobustHelixFinder
-   ComboHitCollection : "makeSTH"
-   TimeClusterCollection : "STimeClusterFinder"
-   HitSelectionBits : ["TimeDivision","Stereo"]
-}
 #same for trigger
-
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
 KFSeed : {
@@ -98,9 +89,10 @@ KFFinal : {
 # Extend downstream to the calorimeter by default
   DownstreamExtent	      : 3
   dtOffset                    : @local::TrackCaloMatching.DtOffset
-  strawHitT0Weight            : 1
-  caloHitT0Weight             : 10
-  mcTruth                         : 0
+  strawHitT0Weight            : 1 # unused? FIXME!
+  caloHitT0Weight             : 10 # unused? FIXME!
+  useTrkCaloHit               : true
+  mcTruth                     : 0
 }
 
 # Kalman fit configuration for the cprmode
@@ -372,8 +364,6 @@ Tracking : {
 # the following should be independently sourced FIXME!
     TimeClusterFinder  : @local::TimeClusterFinder
     HelixFinder  : @local::RobustHelixFinder
-    STimeClusterFinder  : @local::STimeClusterFinder
-    SHelixFinder  : @local::SRobustHelixFinder
 # now all the different track fits based on these inputs
 # First, seed fits
     KSFDeM	  : @local::KSFDeM
@@ -425,7 +415,6 @@ Tracking : {
 
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
-  SFindHelices : [ STimeClusterFinder, SHelixFinder ]
 
 # define standard outputs 
   Output : {

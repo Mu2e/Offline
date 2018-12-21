@@ -13,14 +13,21 @@ namespace mu2e
 {  
  // some convenient typedefs    
   typedef art::Ptr<SimParticle> SPPtr;
-  namespace MCRelationship {
+  struct MCRelationship {
     // values of relationship of 2 MC objects
     enum relation {none=-1,same,daughter,mother,sibling,udaughter,umother,usibling};
-
-// relationship information
-    relation relationship(SPPtr const& sppi,SPPtr const& sppj);
-//    static relation relationship(SimParticle const& spi,SimParticle const& spj);
-    relation relationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
-  }
+    relation _rel;
+    // convenience operators
+    bool operator ==(relation rval) const { return _rel == rval; }
+    bool operator !=(relation rval) const { return _rel != rval; }
+    // trivial constructor
+    MCRelationship(relation rval=none) : _rel(rval) {}
+    // construct from SimParticles
+    MCRelationship(SPPtr const& sppi,SPPtr const& sppj);
+    // construct from StrawDigiMCs
+    MCRelationship(StrawDigiMC const& mcd1, StrawDigiMC const& mcd2);
+    // from the mixture
+    MCRelationship(StrawDigiMC const& mcd, SPPtr const& spp);
+  };
 }
 #endif

@@ -38,6 +38,8 @@
  <class name="mu2e::SimParticleCollection"/>
  <class name="std::vector<art::Ptr<mu2e::SimParticle> >"/>
  <class name="art::Wrapper<mu2e::SimParticleCollection>"/>
+ <class name="std::pair<art::Ptr<mu2e::SimParticle>,Float_t>" />
+ <class name="std::vector<std::pair<art::Ptr<mu2e::SimParticle>,Float_t>>" />
 
  <class name="mu2e::SimParticleTimeMap" />
  <class name="std::pair<art::Ptr<mu2e::SimParticle>,double>" />
@@ -47,6 +49,7 @@
  <class name="mu2e::StepPointMCCollection"/>
  <class name="art::Ptr<mu2e::StepPointMC>"/>
  <class name="art::Wrapper<mu2e::StepPointMCCollection>"/>
+ <class name="std::vector<art::Ptr<mu2e::StepPointMC>>" />
 
  <class name="mu2e::PtrStepPointMCVector"/>
  <class name="mu2e::PtrStepPointMCVectorCollection"/>
@@ -142,6 +145,12 @@
  <class name="std::vector<art::Ptr<mu2e::CaloShowerSim> >" />
  <class name="art::Wrapper<mu2e::CaloShowerSimCollection>"/>
 
+ <class name="mu2e::CaloClusterMC" />
+ <class name="mu2e::CaloClusterMCCollection" />
+ <class name="art::Ptr<mu2e::CaloClusterMC>" />
+ <class name="std::pair<art::Ptr<mu2e::CaloClusterMC>,Float_t>" />
+ <class name="art::Wrapper<mu2e::CaloClusterMCCollection>"/>
+
  <class name="mu2e::CaloHitMCTruth"/>
  <class name="mu2e::CaloHitMCTruthCollection"/>
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
@@ -199,6 +208,12 @@
 
  <class name="art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo>" />
  <class name="art::Wrapper<art::Assns<mu2e::TrackSummary,mu2e::SimParticle,mu2e::TrackSummaryMatchInfo> >" />
+
+ <class name="mu2e::MCDigiRel"/>
+ <class name="mu2e::KalSeedMC"/>
+ <class name="mu2e::KalSeedMCCollection"/>
+ <class name="art::Wrapper<mu2e::KalSeedMCCollection>"/>
+
 
 <!--  ********* CRV  ********* -->
  <class name="mu2e::CrvPhotons" />
@@ -289,6 +304,9 @@
 
  <class name="art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits>" />
  <class name="art::Wrapper<art::Assns<mu2e::ExtMonFNALRawHit,mu2e::SimParticle,mu2e::ExtMonFNALHitTruthBits> >" />
+
+<!--   ******************Analysis ************************ -->
+ <class name="mu2e::MCRelationship"/>
 
 
 </lcgdict>
