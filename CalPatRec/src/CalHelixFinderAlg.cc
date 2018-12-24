@@ -1053,7 +1053,6 @@ namespace mu2e {
 
     for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
-      //      z         = facez->z;
       z         = Helix._zFace[f];
 
       int  firstPanel(0);
@@ -1136,7 +1135,6 @@ namespace mu2e {
 
       //loop over the nHitsMaxPerPanel hits closest to the helix prediction
       if (goodFaceHit.face < 0)                          continue;
-      //      panelz             = &facez->panelZs[goodFaceHit.panel];
       hit                = &Helix._chHitsToProcess[goodFaceHit.panelHitIndex];
 
       Helix._szphi.addPoint(z,hit->_hphi,hit->_zphiWeight);
@@ -1155,7 +1153,8 @@ namespace mu2e {
 	   (faceHitChi2 < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
 	                                                         //close to the starting one. update dfdz only if:
-	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
+	  // if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
+	  if ( ((Helix._szphi.dfdz()*_dfdzsign) > 0.) && //{                    // 1. the points browsed are more the half
 	       (dz >=_mindist ) ){
 	    dfdz  = Helix._szphi.dfdz();                     //    delta hits could have moved dfdz to negative value!
 	    phi0  = Helix._szphi.phi0();// + z*dfdz;                     // 2. and require dfdz to be positivie! scattered hits or
@@ -1229,13 +1228,10 @@ namespace mu2e {
 	}//end face loop
 
 	if ((iworst.panel >= 0) && (Helix._nZPhiSh > _minNHits)) {
-	  // facez   = &Helix._oTracker[iworst.face];
-	  // panelz  = &facez->panelZs [iworst.panel];
 	  hit     = &Helix._chHitsToProcess[iworst.panelHitIndex];
-	  //	  int index =  facez->evalUniqueHitIndex(iworst);
 	  Helix._hitsUsed[iworst.panelHitIndex] = 0;
 
-	  z   = Helix._zFace[iworst.face];// facez->z;
+	  z   = Helix._zFace[iworst.face];
 	  phi = hit->_hphi;
 
 	  Helix._szphi.removePoint(z, phi, hit->_zphiWeight);
@@ -1258,12 +1254,12 @@ namespace mu2e {
 
 	for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
 	  facez     = &Helix._oTracker[f];
-	  z         = Helix._zFace[f];//facez->z;
+	  z         = Helix._zFace[f];
 	  int  firstPanel(0);
 	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 	  for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
 	    panelz = &facez->panelZs[p];
-	    int       nhits  = panelz->nChHits();//fNHits;
+	    int       nhits  = panelz->nChHits();
 	    int       seedPanelIndex(0);
 	    if (nhits == 0)                                        continue;
 	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
