@@ -201,7 +201,6 @@ namespace mu2e {
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
     }
-
   }
 
   void TrackAnalysis::beginSubRun(const art::SubRun & subrun ) {

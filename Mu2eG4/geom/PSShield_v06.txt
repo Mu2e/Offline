@@ -82,8 +82,8 @@ int PSShield.nGrooves = 0;
 //     Target center      z = -6164.5
 double PSShield.zOffsetFromProductionTarget = -1693.5;
 
-bool PSShield.isVisible = true;
-bool PSShield.isSolid = false;
+bool PSShield.visible = true;
+bool PSShield.solid = false;
 
 int PSShield.verbosityLevel = 0;
 

@@ -43,22 +43,36 @@ namespace mu2e {
     private :
       art::InputTag input_;
       double kmax_;
+      int internalconversion_;
       int verbosityLevel_;
     public :
     RMCPhys(const fhicl::ParameterSet& pset)
       : input_(pset.get<std::string>("inputModule","compressDigiMCs") )
       , kmax_(pset.get<double>("kinematic_endpoint") )
-      , verbosityLevel_(pset.get<int>("verbosityLevel", 0 ) ) {}
+      , internalconversion_(pset.get<int>("internalConversion",0))
+      , verbosityLevel_(pset.get<int>("verbosityLevel", 0 ) ) { }
     double x;
     TF1 *RMCSpectrum = new TF1("RMC","(1-2*x+2*(x*x))*x*(1-x)*(1-x)",0,1);
     double norm = 1./RMCSpectrum->Integral(57./kmax_,1);
     double weight(const art::Event& evt) {
       auto genColl = evt.getValidHandle<GenParticleCollection>( input_ );
-      double energy = 0;
+      double energy = 2*.511; //add 2 electron masses;
       double wt = 0;
-      for ( const auto& i: *genColl ) {
-        if (i.pdgId() == 22 && i.generatorId().id() == 41 ) {
-          energy = i.momentum().e(); 
+      if (internalconversion_ > 0) {
+        for ( const auto& i: *genColl ) {
+          if (i.generatorId().id() ==  42) { //22-internalRPC, 41-RMC, 42-internalRMC
+            energy += i.momentum().e();
+            if (verbosityLevel_ ==1) {
+              std::cout << "Particle id:" << i.pdgId() << "& momentum: " << i.momentum().e() << std::endl;
+            }
+          }
+        } 
+      }
+      else {
+        for ( const auto& i: *genColl ) {
+          if (i.pdgId() == 22 && i.generatorId().id() == 41 ) {
+            energy = i.momentum().e(); 
+          }
         }
       }
       if (energy > kmax_) wt = 0;
@@ -67,9 +81,9 @@ namespace mu2e {
         wt = norm*(1-2*x+2*(x*x))*x*(1-x)*(1-x) ; //RMCSpectrum1;
       }
       if (verbosityLevel_ == 1) {
-      std::cout << "Norm: " << norm << std::endl;
-      std::cout << "Energy: " << energy << std::endl;
-      std::cout << "Weight:" << wt << std::endl;
+        std::cout << "Norm: " << norm << std::endl;
+        std::cout << "Energy: " << energy << std::endl;
+        std::cout << "Weight:" << wt << std::endl;
       
       }
       return wt;

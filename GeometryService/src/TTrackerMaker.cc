@@ -17,6 +17,8 @@
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "GeometryService/inc/G4GeometryOptions.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 
 #include <cmath>
 #include <iomanip>
@@ -305,15 +307,23 @@ namespace mu2e {
       _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
       _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
 
+      const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+      geomOptions->loadEntry( config, "ttrackerElectronicsKey",   "ttrackerSupport.electronics.key");
+      geomOptions->loadEntry( config, "ttrackerElectronicsShield","ttrackerSupport.electronics.key.shield");
+      _EBKeyVisible          = geomOptions->isVisible("ttrackerElectronicsKey");
+      _EBKeySolid            = geomOptions->isSolid("ttrackerElectronicsKey");
+      _EBKeyShieldVisible    = geomOptions->isVisible("ttrackerElectronicsShield");
+      _EBKeyShieldSolid      = geomOptions->isSolid("ttrackerElectronicsShield");
+
       _EBKeyHalfLength         = config.getDouble("ttrackerSupport.electronics.key.halfLength");
       _EBKeyShieldHalfLength   = config.getDouble("ttrackerSupport.electronics.key.shieldHalfLength");
       _EBKeyInnerRadius        = config.getDouble("ttrackerSupport.electronics.key.innerRadius");
       _EBKeyOuterRadius        = config.getDouble("ttrackerSupport.electronics.key.outerRadius");
       _EBKeyShiftFromPanelFace = config.getDouble("ttrackerSupport.electronics.key.shiftFromPanelFace");
-      _EBKeyVisible            = config.getBool(  "ttrackerSupport.electronics.key.visible");
-      _EBKeySolid              = config.getBool(  "ttrackerSupport.electronics.key.solid");
-      _EBKeyShieldVisible      = config.getBool(  "ttrackerSupport.electronics.key.shieldVisible");
-      _EBKeyShieldSolid        = config.getBool(  "ttrackerSupport.electronics.key.shieldSolid");
+      //_EBKeyVisible            = config.getBool(  "ttrackerSupport.electronics.key.visible");
+      //_EBKeySolid              = config.getBool(  "ttrackerSupport.electronics.key.solid");
+      //_EBKeyShieldVisible      = config.getBool(  "ttrackerSupport.electronics.key.shieldVisible");
+      //_EBKeyShieldSolid        = config.getBool(  "ttrackerSupport.electronics.key.shieldSolid");
       _EBKeyMaterial           = config.getString("ttrackerSupport.electronics.key.material");
       _EBKeyShieldMaterial     = config.getString("ttrackerSupport.electronics.key.shieldMaterial");
       _EBKeyPhiRange           = config.getDouble("ttrackerSupport.electronics.key.phiRange")*CLHEP::degree;
