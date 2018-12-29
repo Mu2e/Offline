@@ -38,8 +38,10 @@
 
 #include "globals.hh"
 
-#include "G4OpWLS.hh"
-#include "G4Cerenkov.hh"
+#include "G4OpWLSY11.hh"
+#include "G4OpWLSPSPPO.hh"
+#include "G4OpWLSPOPOP.hh"
+#include "G4CerenkovNew.hh"
 #include "G4Scintillation.hh"
 
 #include "G4OpMieHG.hh"
@@ -59,8 +61,10 @@ class WLSOpticalPhysics : public G4VPhysicsConstructor
     virtual void ConstructParticle();
     virtual void ConstructProcess();
 
-    G4OpWLS* GetWLSProcess() {return theWLSProcess;}
-    G4Cerenkov* GetCerenkovProcess() {return theCerenkovProcess;}
+    G4OpWLSY11* GetWLSY11Process() {return theWLSY11Process;}
+    G4OpWLSPSPPO* GetWLSPSPPOProcess() {return theWLSPSPPOProcess;}
+    G4OpWLSPOPOP* GetWLSPOPOPProcess() {return theWLSPOPOPProcess;}
+    G4CerenkovNew* GetCerenkovProcess() {return theCerenkovProcess;}
     G4Scintillation* GetScintillationProcess() {return theScintProcess;}
     G4OpAbsorption* GetAbsorptionProcess() {return theAbsorptionProcess;}
     G4OpRayleigh* GetRayleighScatteringProcess() {return theRayleighScattering;}
@@ -71,8 +75,10 @@ class WLSOpticalPhysics : public G4VPhysicsConstructor
 
 private:
 
-    G4OpWLS*             theWLSProcess;
-    G4Cerenkov*          theCerenkovProcess;
+    G4OpWLSY11*          theWLSY11Process;
+    G4OpWLSPSPPO*        theWLSPSPPOProcess;
+    G4OpWLSPOPOP*        theWLSPOPOPProcess;
+    G4CerenkovNew*       theCerenkovProcess;
     G4Scintillation*     theScintProcess;
     G4OpAbsorption*      theAbsorptionProcess;
     G4OpRayleigh*        theRayleighScattering;

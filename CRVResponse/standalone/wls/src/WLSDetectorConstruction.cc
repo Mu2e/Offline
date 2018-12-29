@@ -60,15 +60,16 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _holePolish = 0.;
  
   _barLength        = lengthOption*mm;
-  _barWidth         = 51.3*mm;
+//  _barWidth         = 51.3*mm;
+  _barWidth         = 49.4*mm;  //FIXME
   _barThickness     = 19.8*mm;
   _fiberSeparation  = 2.6*cm;
   _holeRadiusX      = 2.00*mm;
   _holeRadiusY      = 1.00*mm;
   _coatingThickness = 0.25*mm;
   _extrusionCornerRadius = 2.00*mm;
-  _fiberRadius      = 0.70*mm - 0.021*mm - 0.021*mm;
-  _clad1Radius      = 0.70*mm - 0.021*mm;
+  _fiberRadius      = 0.70*mm - 0.042*mm - 0.042*mm;
+  _clad1Radius      = 0.70*mm - 0.042*mm;
   _clad2Radius      = 0.70*mm;
   _sipmLength       = 1.*mm;
   _sipmRadius       = 0.70*mm;
@@ -82,14 +83,17 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _airGap              = 0.0*mm;
 #endif
 
+  _reflectorOption = reflectorOption;
   _reflectorAtPositiveSide = (reflectorOption==1?true:false);
   _reflectorAtNegativeSide = (reflectorOption==-1?true:false);
 
-  double xbinsTmp[17] = {-9.9, -8.5, -5.5, -2.5, -2.0, -1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 5.5, 8.5, 9.9};
-  double ybinsTmp[40] = {-25.65, -25.2, -24.7, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -5.5, -2.0, 2.0, 5.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.7, 25.2, 25.65};
+//use only the positive values of x (assuming symmetry) (0 is at the center)
+  double xbinsTmp[11] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 6.0, 9.0, 9.5, 9.9};
+//  double ybinsTmp[42] = {-25.65, -25.2, -24.7, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.7, 25.2, 25.65};  //FIXME
+  double ybinsTmp[42] = {-24.7, -24.25, -23.75, -22.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 22.5, 23.75, 24.25, 24.7};  //FIXME
 
-  for(int i=0; i<17; i++) _xbins.push_back(xbinsTmp[i]*mm); //16 bins
-  for(int i=0; i<40; i++) _ybins.push_back(ybinsTmp[i]*mm); //39 bins
+  for(int i=0; i<11; i++) _xbins.push_back(xbinsTmp[i]*mm); //10 bins
+  for(int i=0; i<42; i++) _ybins.push_back(ybinsTmp[i]*mm); //41 bins
 
   double halfLength = _barLength/2.0;
   int    nBinsMainSection = lrint((_barLength-600.0)/100.0);
@@ -101,14 +105,19 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   for(int i=1; i<=10; i++)               _zbins.push_back( halfLength*mm-300.0*mm+               25.0*mm*i);
   for(int i=1; i<=5;  i++)               _zbins.push_back( halfLength*mm- 50.0*mm+               10.0*mm*i);
 
-  for(int i=0; i<5; i++)  _betabins.push_back(0.62+0.38*i/4.0); //4 bins
+  double inverseBetaBins[6] = {2.20, 1.80, 1.64, 1.58, 1.24, 1.0};     //values of interest from the index of refraction of polystyrene
+  for(int i=0; i<6; i++)  _betabins.push_back(1.0/inverseBetaBins[i]); //5 bins
 
   _thetabins.push_back(0);                                                        //0
   for(int i=0; i<10; i++) _thetabins.push_back(CLHEP::pi/20.0+CLHEP::pi*i/10.0);  //1/20*pi ... 19/20*pi
   _thetabins.push_back(CLHEP::pi);                                                //pi    --> 11 bins
 
-  for(int i=0; i<7; i++)  _phibins.push_back(-CLHEP::pi+i*CLHEP::pi/3.0); //6 bins
-  for(int i=0; i<5; i++)  _rbins.push_back(_fiberRadius*i/4.0); //4 bins
+  _phibins.push_back(0);                                                      //0
+  for(int i=0; i<4; i++)  _phibins.push_back(CLHEP::pi/8.0+CLHEP::pi*i/4.0);  //1/8*pi ... 7/8*pi
+  _phibins.push_back(CLHEP::pi);                                              //pi    --> 5 bins
+                                                                              //don't need pi...2*pi due to symmetry
+
+  for(int i=0; i<6; i++)  _rbins.push_back(_fiberRadius*i/5.0); //5 bins
 
   _worldSizeX = _barThickness + 1.*cm;
   _worldSizeY = _barWidth + 1.*cm;
@@ -187,7 +196,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
                                                                         G4ThreeVector(0.0, _fiberSeparation/2.0, 0.0));
 
   G4LogicalVolume* logicScintillator = new G4LogicalVolume(solidScintillator2Hole,
-                                                           FindMaterial("Polystyrene"),
+                                                           FindMaterial("PolystyreneScint"),
                                                            "Scintillator");
 
   _physiScintillator = new G4PVPlacement(0,
@@ -243,21 +252,29 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   //--------------------------------------------------
 
   G4OpticalSurface* TiO2Surface = new G4OpticalSurface("TiO2Surface",
-                                                       glisur,
+                                                       unified,
                                                        ground,
                                                        dielectric_metal,
-                                                       _extrusionPolish);
+                                                       1.5);
 
   G4MaterialPropertiesTable* TiO2SurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_TiO2[11] =    {2.00*eV, 2.75*eV, 2.88*eV, 2.95*eV, 3.02*eV, 3.10*eV, 3.18*eV, 3.26*eV, 3.35*eV, 3.44*eV, 3.80*eV};
-  G4double refl_TiO2[11] = {0.91,    0.91,    0.90,    0.85,    0.69,    0.44,    0.27,    0.13,    0.08,    0.07,    0.07}; 
+  G4double p_TiO2[11] =    {2.00*eV, 2.75*eV, 2.88*eV, 2.95*eV, 3.02*eV, 3.10*eV, 3.18*eV, 3.26*eV, 3.35*eV, 3.44*eV, 15.75*eV};
+  G4double refl_TiO2[11] = {0.91,    0.91,    0.90,    0.85,    0.69,    0.44,    0.27,    0.13,    0.08,    0.07,    0.07}; //assume a constant value for energies > 3.44eV (most photons with these energies get absorbed and wave length shifted)
   G4double effi_TiO2[11] = {0,       0 ,      0,       0,       0,       0,       0,       0,       0,       0,       0};
-  for(int i=0; i<11; i++) refl_TiO2[i]=1.0-0.5*(1.0-refl_TiO2[i]);  //a higher reflectivities comparared to the numbers given by Anna 
+  for(int i=0; i<11; i++) refl_TiO2[i]=1.0-0.9*(1.0-refl_TiO2[i]);  //a higher reflectivities comparared to the numbers given by Anna 
                                                                     //improves the match between testbeam data and MC
 
-  TiO2SurfaceProperty -> AddProperty("REFLECTIVITY",p_TiO2,refl_TiO2,11);
-  TiO2SurfaceProperty -> AddProperty("EFFICIENCY",p_TiO2,effi_TiO2,11);
+  TiO2SurfaceProperty->AddProperty("REFLECTIVITY",p_TiO2,refl_TiO2,11);
+  TiO2SurfaceProperty->AddProperty("EFFICIENCY",p_TiO2,effi_TiO2,11);
+
+  G4double pp[2] = {2.00*eV, 15.75*eV};
+  G4double specularlobe[2] = {1.0, 1.0};
+  G4double specularspike[2] = {0.0, 0.0};
+  G4double backscatter[2] = {0.0, 0.0};
+  TiO2SurfaceProperty->AddProperty("SPECULARLOBECONSTANT",pp,specularlobe,2);
+  TiO2SurfaceProperty->AddProperty("SPECULARSPIKECONSTANT",pp,specularspike,2);
+  TiO2SurfaceProperty->AddProperty("BACKSCATTERCONSTANT",pp,backscatter,2);
 
   TiO2Surface -> SetMaterialPropertiesTable(TiO2SurfaceProperty);
 
@@ -317,7 +334,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* FiberGuideBarSurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_FiberGuideBar[2] = {2.00*eV, 3.80*eV};
+  G4double p_FiberGuideBar[2] = {2.00*eV, 15.75*eV};
   G4double refl_FiberGuideBar[2] = {_fiberGuideBarReflectivity,_fiberGuideBarReflectivity};
   G4double effi_FiberGuideBar[2] = {0, 0};
 
@@ -367,7 +384,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   G4VSolid* solidClad1 = new G4Tubs("Clad1",0.,_clad1Radius,_barLength/2.0+_fiberGuideBarLength,0.0*rad,twopi*rad);
 
   G4LogicalVolume* logicClad1 = new G4LogicalVolume(solidClad1,
-                                                    FindMaterial("Pethylene"),
+                                                    FindMaterial("PMMA"),
                                                     "Clad1");
 
   G4VPhysicalVolume *physiClad1=
@@ -387,7 +404,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
   G4VSolid* solidWLSfiber = new G4Tubs("WLSFiber",0.,_fiberRadius,_barLength/2.0+_fiberGuideBarLength,0.0*rad,twopi*rad);
 
   G4LogicalVolume* logicWLSfiber = new G4LogicalVolume(solidWLSfiber,
-                                                       FindMaterial("PMMA"),
+                                                       FindMaterial("PolystyreneFiber"),
                                                        "WLSFiber");
 
   G4VPhysicalVolume *physiWLSfiber=
@@ -452,27 +469,29 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* PhotonDetSurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_mppc[19] = {2.0*eV, 2.1*eV, 2.2*eV, 2.3*eV, 2.4*eV, 
+  G4double p_mppc[21] = {2.0*eV, 2.1*eV, 2.2*eV, 2.3*eV, 2.4*eV, 
                          2.5*eV, 2.6*eV, 2.7*eV, 2.8*eV, 2.9*eV, 
                          3.0*eV, 3.1*eV, 3.2*eV, 3.3*eV, 3.4*eV, 
-                         3.5*eV, 3.6*eV, 3.7*eV, 3.8*eV};
-  G4double refl_mppc[19];
-  for(int i=0; i<19; i++) refl_mppc[i]=_mppcReflectivity;
+                         3.5*eV, 3.6*eV, 3.7*eV, 3.8*eV, 3.9*eV,
+                       15.75*eV};
+  G4double refl_mppc[21];
+  for(int i=0; i<21; i++) refl_mppc[i]=_mppcReflectivity;
 
   //if a photon gets absorbed at a surface, it gets "detected" with the probability EFFICIENCY
   //(the status will be Detection) - see G4OpBoundaryProcess::DoAbsorption()
   //the probability to produce a PE is done by the SiPM simulation
-  G4double effi_mppc[19] = {0.602, 0.697, 0.784, 0.858, 0.933,
+  G4double effi_mppc[21] = {0.602, 0.697, 0.784, 0.858, 0.933,
                             0.970, 0.990, 1.000, 0.978, 0.958,
                             0.920, 0.871, 0.803, 0.709, 0.622,
-                            0.547, 0.398, 0.249, 0.100};
+                            0.547, 0.398, 0.249, 0.100, 0.000,
+                            0.000};
 
 #ifdef FIBERTEST
-  for(int i=0; i<19; i++) effi_mppc[i]=1.0;
+  for(int i=0; i<21; i++) effi_mppc[i]=1.0;
 #endif
 
-  PhotonDetSurfaceProperty -> AddProperty("REFLECTIVITY",p_mppc,refl_mppc,19);
-  PhotonDetSurfaceProperty -> AddProperty("EFFICIENCY",p_mppc,effi_mppc,19);
+  PhotonDetSurfaceProperty -> AddProperty("REFLECTIVITY",p_mppc,refl_mppc,21);
+  PhotonDetSurfaceProperty -> AddProperty("EFFICIENCY",p_mppc,effi_mppc,21);
 
   PhotonDetSurface -> SetMaterialPropertiesTable(PhotonDetSurfaceProperty);
  
@@ -487,7 +506,7 @@ G4VPhysicalVolume* WLSDetectorConstruction::ConstructDetector()
 
   G4MaterialPropertiesTable* ReflectorSurfaceProperty = new G4MaterialPropertiesTable();
 
-  G4double p_reflector[2] = {2.00*eV, 3.8*eV};
+  G4double p_reflector[2] = {2.00*eV, 15.75*eV};
   G4double refl_reflector[2] = {_reflectorReflectivity,_reflectorReflectivity};
   G4double effi_reflector[2] = {0.0, 0.0};  
   

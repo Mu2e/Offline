@@ -36,12 +36,12 @@ class WLSPrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     int                        _numberOfPhotons, _simType, _currentBin;
     bool                       _verbose;
-    G4PhysicsOrderedFreeVector _emissionIntegral[2];
-    G4MaterialPropertyVector*  _rindexFiber;
+    G4PhysicsOrderedFreeVector _emissionIntegral;
+    G4MaterialPropertyVector  *_rindexScintillator, *_rindexFiber;
     double                     _cerenkovEnergyMinScintillator, _cerenkovEnergyMaxScintillator;
     double                     _cerenkovEnergyMinFiber, _cerenkovEnergyMaxFiber;
     double                     _maxRIndexScintillator, _maxRIndexFiber;
-    double                     _yieldRatio;
+    double                     _scintillationDecayTime;
     bool                       _first;
 
     double                     _minBinX, _minBinY, _minBinZ, _minBinBeta, _minBinTheta, _minBinPhi, _minBinR;
