@@ -127,8 +127,7 @@ int main(int argc, char** argv)
     std::cout<<"-t simtype        Simulation type:"<<std::endl;
     std::cout<<"                  0  scintillation in scintillator"<<std::endl;
     std::cout<<"                  1  cerenkov in scintillator"<<std::endl;
-    std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
-    std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
+    std::cout<<"                  2  cerenkov in fiber"<<std::endl;
     std::cout<<"-l length option  Length of the scintillator counter in mm"<<std::endl;
     std::cout<<"-R reflector option"<<std::endl;
     std::cout<<"                  0  no reflector (default)"<<std::endl;
@@ -144,7 +143,7 @@ int main(int argc, char** argv)
     std::cout<<"-R reflector option"<<std::endl;
     std::cout<<"                  0  no reflector (default)"<<std::endl;
     std::cout<<"                 -1  reflector at negative side"<<std::endl;
-    std::cout<<"                  1  reflector at postiive side"<<std::endl;
+    std::cout<<"                  1  reflector at positive side"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
     std::cout<<"-r seed      seed for random number generator (default: 0)."<<std::endl;
     std::cout<<"-y pos       y coordinate of starting point in mm (default: 0 = center between fibers)."<<std::endl;
@@ -276,11 +275,12 @@ int main(int argc, char** argv)
     switch(simType)
     {
       case 0: //scintillation in scintillator
-      case 1: //Cerenkov in scintillator
               nBins=nZBins*nYBins*nXBins;
               break;
-      case 2: //Cerenkov in fiber 0
-      case 3: //Cerenkov in fiber 1
+      case 1: //Cerenkov in scintillator
+              nBins=nBetaBins*nZBins*nYBins*nXBins;
+              break;
+      case 2: //Cerenkov in fiber
               nBins=nZBins*nRBins*nPhiBins*nThetaBins*nBetaBins;
               break;
     }

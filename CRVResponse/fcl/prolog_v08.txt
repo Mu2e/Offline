@@ -8,8 +8,9 @@ BEGIN_PROLOG
       g4ModuleLabels            : ["*"]
       processNames              : ["*"]
       CRVSectors                : ["R1","R2","R3","R4","R5","L1","L2","T1","T2","T3","T4","E1","E2","U" ,"D1","D2","D3","D4","C1","C2","C3","C4"] //used only to match the vector entries below
+      reflectors                : [  0 , -1 ,  0 ,  0 ,  0 ,  0 ,  0 ,  1 ,  1 ,  0 ,  0 , -1 , -1 , 1  ,  0 ,  1 , -1 ,  0 ,  1 , -1 , -1 , -1 ]
       lookupTableFileNames      : ["CRVConditions/v4_1/LookupTable_4550_0",  //R1
-                                   "CRVConditions/v4_1/LookupTable_1045_-1", //R2
+                                   "CRVConditions/v4_1/LookupTable_1045_1",  //R2
                                    "CRVConditions/v4_1/LookupTable_3040_0",  //R3
                                    "CRVConditions/v4_1/LookupTable_4550_0",  //R4
                                    "CRVConditions/v4_1/LookupTable_3200_0",  //R5
@@ -19,29 +20,24 @@ BEGIN_PROLOG
                                    "CRVConditions/v4_1/LookupTable_6000_1",  //T2
                                    "CRVConditions/v4_1/LookupTable_6000_0",  //T3
                                    "CRVConditions/v4_1/LookupTable_6000_0",  //T4
-                                   "CRVConditions/v4_1/LookupTable_5000_-1", //E1
-                                   "CRVConditions/v4_1/LookupTable_5000_-1", //E2
+                                   "CRVConditions/v4_1/LookupTable_5000_1",  //E1
+                                   "CRVConditions/v4_1/LookupTable_5000_1",  //E2
                                    "CRVConditions/v4_1/LookupTable_6900_1",  //U
                                    "CRVConditions/v4_1/LookupTable_5700_0",  //D1
                                    "CRVConditions/v4_1/LookupTable_2370_1",  //D2
-                                   "CRVConditions/v4_1/LookupTable_2370_-1", //D3
+                                   "CRVConditions/v4_1/LookupTable_2370_1",  //D3
                                    "CRVConditions/v4_1/LookupTable_5700_0",  //D4
                                    "CRVConditions/v4_1/LookupTable_900_1",   //C1
-                                   "CRVConditions/v4_1/LookupTable_900_-1",  //C2
-                                   "CRVConditions/v4_1/LookupTable_2100_-1", //C3
-                                   "CRVConditions/v4_1/LookupTable_1550_-1"] //C4
-      scintillationYield                : 47000 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
+                                   "CRVConditions/v4_1/LookupTable_900_1",   //C2
+                                   "CRVConditions/v4_1/LookupTable_2100_1",  //C3
+                                   "CRVConditions/v4_1/LookupTable_1550_1"]  //C4
+      scintillationYield                : 49500 //for 68 PE/SiPM @ 1 m away from SiPM (Test beam June 2017)
                                                 //using the pulse height calibration, this value gives 45 PE/SiPM @ 1 m away from SiPM
       scintillationYieldVariation       : 0.2   //gaussian distribution with sigma equal to 20% of the mean
       scintillationYieldVariationCutoff : 0.4   //the scintillation yield variation is cut off at 40% below the mean
-      scintillatorBirksConstant : 0.126    //0.126 mm/Mev
-      scintillatorRatioFastSlow : 1.0      //100% fast
-      scintillatorDecayTimeFast : 3.0      //3.0 ns   //includes WLS component in the scintillator
-      scintillatorDecayTimeSlow : 100.0    //100.0 ns  //unknown, not used
-      fiberDecayTime            : 8.7      //8.7 ns
-      startTime                 : 400.0    //0.0 ns
-      visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
-      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      startTime                         : 400.0    //0.0 ns
+      visibleEnergyAdjustmentFileName   : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
+      timeOffsets                       : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
     }
     CrvSiPMCharges:
     {

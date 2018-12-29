@@ -248,7 +248,7 @@ int main()
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(40, 40, 14, 2.1, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
+  sim.SetSiPMConstants(40, 40, 13, 2.1, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
 
   sim.Simulate(photonTimes, SiPMresponseVector);
 
