@@ -140,7 +140,7 @@ namespace mu2e
 
         double startTime = floor(firstSiPMChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform
                                                                                                     //in multiples of the
-                                                                                                    //digitization period (12.58ns)
+                                                                                                    //digitization period (12.55ns)
 
         startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 

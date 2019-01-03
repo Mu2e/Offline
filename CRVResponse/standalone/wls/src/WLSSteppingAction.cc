@@ -5,6 +5,7 @@
 #include "G4TrackStatus.hh"
 #include "G4VPhysicalVolume.hh"
 
+#include "WLSDetectorConstruction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
 
@@ -191,11 +192,12 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
 
     if(PDGcode!=0)  //ignore optical photons
     {
+     int reflector = WLSDetectorConstruction::Instance()->GetReflectorOption();
       _crvPhotons->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
                             energyDepositedNonIonizing,
-                            trueStepLength);
+                            trueStepLength,0,reflector);
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {

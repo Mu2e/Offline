@@ -46,7 +46,7 @@ do
     -e REFLECTOR=$reflector \
     --memory=500MB \
     --disk=50MB \
-    --expected-lifetime=30h \
+    --expected-lifetime=48h \
     --resource-provides usage_model=OPPORTUNISTIC,DEDICATED \
     --group=mu2e \
     -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/wlsProduction \

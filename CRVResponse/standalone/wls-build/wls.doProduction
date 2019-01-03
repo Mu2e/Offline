@@ -12,9 +12,9 @@ setup ifdhc
 SIMTYPE=$(($PROCESS/2000))
 MINBIN=$(($PROCESS%2000*100))
 MAXBIN=$(($MINBIN+99))
-PHOTONS=200000
+PHOTONS=500000
 if [ $SIMTYPE -ge 2 ]; then
-  PHOTONS=4000
+  PHOTONS=10000
 fi
 
 # copy and run executable
