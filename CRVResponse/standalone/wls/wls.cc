@@ -15,6 +15,7 @@
 #include "WLSRunAction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
+#include "WLSStackingAction.hh"
 
 #include "G4StepLimiterPhysics.hh"
 #include "G4TransportationManager.hh"
@@ -240,11 +241,13 @@ int main(int argc, char** argv)
   WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
   WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  
                                                                        //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
+  WLSStackingAction* stackingAction = new WLSStackingAction();
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
+  runManager->SetUserAction(stackingAction);
   runManager->Initialize();
 
 /*

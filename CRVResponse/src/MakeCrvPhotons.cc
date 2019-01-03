@@ -16,7 +16,6 @@ void LookupConstants::Write(const std::string &filename)
 void LookupConstants::Read(std::ifstream &lookupfile)
 {
   lookupfile.read(reinterpret_cast<char*>(this),sizeof(LookupConstants));
-std::cout<<"AAAAA   "<<reflector<<std::endl;
 }
 
 void LookupCerenkov::WriteMap(std::map<double,double> &m, std::ofstream &o)
@@ -464,8 +463,9 @@ bool MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3
   if(distanceFiber1<=_LC.fiberRadius) {r=distanceFiber1; fiberNumber=1;}
   if(fiberNumber==-1) return false;
 
-  if(fiberNumber==0) phi=dir.angle(radiusVector0);  //angle returns between 0 and pi
-  if(fiberNumber==1) phi=dir.angle(radiusVector1);
+  CLHEP::Hep2Vector dir2D(dir.x(),dir.y());
+  if(fiberNumber==0) phi=dir2D.angle(radiusVector0);  //angle returns between 0 and pi
+  if(fiberNumber==1) phi=dir2D.angle(radiusVector1);
   return true;
 }
 

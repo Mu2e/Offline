@@ -346,7 +346,7 @@ int WLSPrimaryGeneratorAction::GenerateCerenkovPhotonsInFiber(G4Event *anEvent, 
 
   for(int i=0; i<generatedPhotons; i++) 
   {
-    //from G4Cerenkov::PostStepDoIt() under the simplification that the index of refaction is constant
+    //from G4Cerenkov::PostStepDoIt() 
     //as a simplification, the different index of refraction in the tiny sections of the cladding around the core is ignored.
     double BetaInverse=1.0/_maxBinBeta + G4UniformRand()*dBetaInverse;   
     if(BetaInverse>=_maxRIndexFiber) {i--; continue;}

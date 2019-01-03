@@ -4,6 +4,7 @@
 #include "G4EventManager.hh"
 #include "G4CerenkovNew.hh"
 #include "WLSSteppingAction.hh"
+#include "WLSStackingAction.hh"
 #include "WLSDetectorConstruction.hh"
 
 #include "Randomize.hh"
@@ -295,6 +296,8 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     for(int SiPM=0; SiPM<4; SiPM++) std::cout<<_histT[0][SiPM]->GetMean()<<"/"<<_histT[1][SiPM]->GetMean()<<"  ";
     std::cout<<std::endl;
   }
+
+  WLSStackingAction::Instance()->PrintStatus();
 }
 
 void WLSEventAction::Draw(const G4Event* evt) 
@@ -324,7 +327,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   sim.SetSiPMConstants(40, 40, 13, 2.1, 0, 1695, 13.3, 8.84e-14, probabilities, inactivePixels);
 
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform;
-  double digitizationInterval = 12.58; //ns
+  double digitizationInterval = 12.55; //ns
   double digitizationInterval2 = 1.0; //ns
   double noise = 4.0e-4;
   double pedestal = 100; //ADC
@@ -502,7 +505,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     delete[] t2;
     delete[] v2;
 
-//waveforms with 12.58 ns bin width
+//waveforms with 12.55 ns bin width
     unsigned int n = ADCs[SiPM].size();
     if(n==0) continue;
     double *t = new double[n];

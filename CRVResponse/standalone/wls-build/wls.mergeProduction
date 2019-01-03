@@ -1,27 +1,27 @@
 #!/bin/bash
 
-for length in "900" "1045" "1550" "2100" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
+#for length in "900" "1045" "1550" "2100" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
+for length in "3000"
+#for length in "2400" "4800"
 do
   declare -a reflectors=("0")
   if [ $length == "900" ]; then
-    reflectors[0]="-1"
-    reflectors[1]="1"
+    reflectors[0]="1"
   fi
   if [ $length == "1045" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "1550" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "2100" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "2370" ]; then
-    reflectors[0]="-1"
-    reflectors[1]="1"
+    reflectors[0]="1"
   fi
   if [ $length == "5000" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "6000" ]; then
     reflectors[1]="1"
@@ -35,15 +35,15 @@ do
 
     echo "Length "$length" Reflector "$reflector
 
-    S0=/pnfs/mu2e/scratch/outstage/ehrlich/tables_5.0/$length'_'$reflector/
+    S0=/pnfs/mu2e/scratch/outstage/ehrlich/tables_6.0/$length'_'$reflector/
     S1=LookupTable'_'$length'_'$reflector
 
     rm $S1
 
-    for PROCESS in {0..1949}   #650*3-1
+    for PROCESS in {0..5999}   #2000*3-1
     do
-      SIMTYPE=$(($PROCESS/650))
-      MINBIN=$(($PROCESS%650*200))
+      SIMTYPE=$(($PROCESS/2000))
+      MINBIN=$(($PROCESS%2000*100))
 
       printf -v MINBINTMP "%06d\n" $MINBIN
       S2=$S0/LookupTable'_'$SIMTYPE'_'$MINBINTMP
@@ -53,7 +53,7 @@ do
       cat $S2 >> $S1
     done
 
-    mv $S1 /pnfs/mu2e/scratch/outstage/ehrlich/LookupTables_v5.0/.
+    mv $S1 /pnfs/mu2e/scratch/outstage/ehrlich/LookupTables_v6.0/.
 
   done
 
