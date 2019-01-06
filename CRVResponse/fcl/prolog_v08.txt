@@ -51,7 +51,8 @@ BEGIN_PROLOG
                                        [19,18], [19,19], [19,20], [19,21],
                                        [20,18], [20,19], [20,20], [20,21],
                                        [21,18], [21,19], [21,20], [21,21] ]
-      overvoltage                  : 2.1        //V
+      photonMapFileName            : "CRVResponse/fcl/photonMap.root"
+      overvoltage                  : 3.0        //V
       timeConstant                 : 13.3       //ns  according to an Hamamatsu example with R_q=150kOhm --> tau=R_q*C=13.3ns
       capacitance                  : 8.84e-14   //F   capacitance of one pixel according to specs
       blindTime                    : 400.0      //ns
@@ -76,8 +77,8 @@ BEGIN_PROLOG
       singlePEWaveformPrecision    : 0.5    //0.5 ns
       singlePEWaveformStretchFactor: 1.047  //1.047 for singlePEWaveform_v3.txt //from comparison with testbeam data
       singlePEWaveformMaxTime      : 100    //100 ns
-      singlePEReferenceCharge      : 1.8564e-13  //1.8564e-13 C charge which was used to generate the above 1PE waveform
-                                                 //capacitance of one pixel (8.84e-14C) * overvoltage (2.1V)
+      singlePEReferenceCharge      : 2.652e-13  //2.652e-13 C charge which was used to generate the above 1PE waveform
+                                                //capacitance of one pixel (8.84e-14C) * overvoltage (3.0V)
       FEBtimeSpread                : 2.0    //2.0 ns
       minVoltage                   : 0.0275  //27.5mV (corresponds to 5.5PE)
       noise                        : 4.0e-4 //0.4mV

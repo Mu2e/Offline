@@ -18,7 +18,7 @@ class WLSEventAction : public G4UserEventAction
 
   public:
 
-    WLSEventAction(WLSSteppingAction::simulationMode mode, const std::string &singlePEWaveformFilename, 
+    WLSEventAction(WLSSteppingAction::simulationMode mode, const std::string &singlePEWaveformFilename, const std::string &photonMapFilename,  
                    int numberOfPhotons=-1, int simType=-1, unsigned int minBin=0, bool verbose=false);  
                    //numberOfPhotons, simType, minBin, currentBin, verbose is only needed for simulationMode::CreateLookupTables
     ~WLSEventAction();
@@ -45,6 +45,7 @@ class WLSEventAction : public G4UserEventAction
     int                     _numberOfPhotons, _simType; 
     unsigned int            _minBin, _currentBin;
     std::string             _singlePEWaveformFilename;
+    std::string             _photonMapFilename;
     bool                    _verbose;
 
     int                     _generatedPhotons;  //set by WLSPrimaryGeneratorAction

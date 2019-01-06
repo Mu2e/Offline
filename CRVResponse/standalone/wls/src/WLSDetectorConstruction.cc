@@ -60,9 +60,15 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _holePolish = 0.;
  
   _barLength        = lengthOption*mm;
-//  _barWidth         = 51.3*mm;
-  _barWidth         = 49.4*mm;  //FIXME
-  _barThickness     = 19.8*mm;
+#define TESTBEAM
+#ifndef TESTBEAM
+  _barThickness     = 19.78*mm;
+  _barWidth         = 51.34*mm;
+#else
+#pragma message "USING TESTBEAM"
+  _barThickness     = 19.8*mm;  //FIXME testbeam
+  _barWidth         = 49.4*mm;  //FIXME testbeam
+#endif
   _fiberSeparation  = 2.6*cm;
   _holeRadiusX      = 2.00*mm;
   _holeRadiusY      = 1.00*mm;
@@ -88,9 +94,14 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _reflectorAtNegativeSide = (reflectorOption==-1?true:false);
 
 //use only the positive values of x (assuming symmetry) (0 is at the center)
-  double xbinsTmp[11] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 6.0, 9.0, 9.5, 9.9};
-//  double ybinsTmp[42] = {-25.65, -25.2, -24.7, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.7, 25.2, 25.65};  //FIXME
-  double ybinsTmp[42] = {-24.7, -24.25, -23.75, -22.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 22.5, 23.75, 24.25, 24.7};  //FIXME
+#ifndef TESTBEAM
+  double xbinsTmp[11] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 6.0, 9.0, 9.5, 9.89};
+  double ybinsTmp[42] = {-25.67, -25.2, -24.7, -23.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 23.5, 24.7, 25.2, 25.67}; 
+#else
+#pragma message "USING TESTBEAM"
+  double xbinsTmp[11] = {0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 6.0, 9.0, 9.5, 9.9}; //FIXME testbeam
+  double ybinsTmp[42] = {-24.7, -24.25, -23.75, -22.5, -20.5, -17.5, -15.5, -15.0, -14.5, -14.0, -13.5, -13.0, -12.5, -12.0, -11.5, -11.0, -10.5, -8.5, -6.5, -4.5, -1.5, 1.5, 4.5, 6.5, 8.5, 10.5, 11.0, 11.5, 12.0, 12.5, 13.0, 13.5, 14.0, 14.5, 15.0, 15.5, 17.5, 20.5, 22.5, 23.75, 24.25, 24.7};  //FIXME testbeam
+#endif
 
   for(int i=0; i<11; i++) _xbins.push_back(xbinsTmp[i]*mm); //10 bins
   for(int i=0; i<42; i++) _ybins.push_back(ybinsTmp[i]*mm); //41 bins
