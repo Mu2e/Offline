@@ -21,7 +21,10 @@
 #include "G4ThreeVector.hh"
 #include <sstream>
 
-//#include <TNtuple.h>
+//#define PHOTONTEST
+#ifdef PHOTONTEST
+#include <TNtuple.h>
+#endif
 
 #include "G4LossTableManager.hh"
 #include "G4NistManager.hh"
@@ -46,14 +49,18 @@ WLSSteppingAction::WLSSteppingAction(simulationMode mode, const std::string &loo
     _crvPhotons->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
   }
 
-//  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ:x:y:time:angle"); //WLS fiber test
+#ifdef PHOTONTEST
+  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ:x:y:time:angle");
+#endif
   Reset();
 }
 
 WLSSteppingAction::~WLSSteppingAction()
 {
-//  _ntuple->SaveAs("CRVPhotons.root");  //WLS fiber test
-//  delete _ntuple;
+#ifdef PHOTONTEST
+  _ntuple->SaveAs("CRVPhotons.root");
+  delete _ntuple;
+#endif
 }
 
 void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
@@ -133,7 +140,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
          {
 //std::cout<<"DETECTION  "<<thePostPV->GetCopyNo()<<std::endl;
            //a photon reached a SiPM
-/*
+#ifdef PHOTONTEST
            _ntuple->Fill((float)(thePostPV->GetCopyNo()),
                                  theStep->GetTrack()->GetTotalEnergy(),
                                  theStep->GetTrack()->GetTrackLength(),
@@ -142,7 +149,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
                                  theStep->GetPostStepPoint()->GetPosition().y(), //WLS fiber test
                                  theStep->GetPostStepPoint()->GetGlobalTime(),
                                  theStep->GetPostStepPoint()->GetMomentum().unit().dot(CLHEP::Hep3Vector(0.0,0.0,1.0)));
-*/
+#endif
 
            //run through the list of parent photons to find the number of re-emissions
            int numberOfFiberEmissions=0;

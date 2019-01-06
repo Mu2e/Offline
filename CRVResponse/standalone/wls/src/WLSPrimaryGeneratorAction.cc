@@ -73,6 +73,7 @@ void WLSPrimaryGeneratorAction::BuildEmissionSpectrum()
   G4Material* scintillator = G4Material::GetMaterial("PolystyreneScint",true);
   G4MaterialPropertiesTable* scintillatorPropertiesTable = scintillator->GetMaterialPropertiesTable();
 
+  _scintillationRiseTime = scintillatorPropertiesTable->GetConstProperty("FASTSCINTILLATIONRISETIME");
   _scintillationDecayTime = scintillatorPropertiesTable->GetConstProperty("FASTTIMECONSTANT");
 
 //scintillation: build the emission integral
@@ -265,7 +266,15 @@ int WLSPrimaryGeneratorAction::GeneratePhotonsInScintillator(G4Event *anEvent, i
       double integratedProb = G4UniformRand()*integratedProbMax;
       photonEnergy = _emissionIntegral.GetEnergy(integratedProb);
 
-      startTime = -_scintillationDecayTime * log(G4UniformRand());
+      //from G4Scintillation::sample_time()
+      while(1)
+      {
+        double ran1 = G4UniformRand();
+        double ran2 = G4UniformRand();
+        startTime = -1.0*_scintillationDecayTime*std::log(1-ran1);
+        double tempvar = 1.0-std::exp(-1.0*startTime/_scintillationRiseTime);
+        if(ran2 <= tempvar) break;
+      }
     }
     else  //cerenkov
     {

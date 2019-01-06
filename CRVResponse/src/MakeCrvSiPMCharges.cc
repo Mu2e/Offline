@@ -9,8 +9,11 @@ Based on Paul Rubinov's C# code
 #include <iostream>
 #include <algorithm>
 
+//photon map gets created from the CRVPhoton.root file, which can be generated with the standalone program (in WLSSteppingAction)
+//in ROOT: CRVPhotons->Draw("x/0.05+20:(fabs(y)-13)/0.05+20>>photonMap(40,0,40,40,0,40)","","COLZ")
+
 //to get standalone version: compile with
-//g++ MakeCrvSiPMCharges.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMChargesStandalone
+//g++ MakeCrvSiPMCharges.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMChargesStandalone `root-config --cflags --glibs`
 
 namespace mu2eCrv
 {
@@ -40,6 +43,11 @@ std::pair<int,int> MakeCrvSiPMCharges::FindThermalNoisePixelId()
 
 std::pair<int,int> MakeCrvSiPMCharges::FindFiberPhotonsPixelId()
 {
+  double x,y;
+  _photonMap->GetRandom2(x,y);
+  return std::pair<int,int>(x,y);
+
+/*
   int x=0;
   int y=0;
   do
@@ -52,6 +60,7 @@ std::pair<int,int> MakeCrvSiPMCharges::FindFiberPhotonsPixelId()
   y+=_nPixelsY/2;
 
   return std::pair<int,int>(x,y);
+*/
 }
 
 bool MakeCrvSiPMCharges::IsInactivePixelId(const std::pair<int,int> &pixelId)
@@ -213,6 +222,15 @@ void MakeCrvSiPMCharges::Simulate(const std::vector<std::pair<double,size_t> > &
   } //while(1)
 }
 
+MakeCrvSiPMCharges::MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ, const std::string &photonMapFileName) :
+                                       _randFlat(randFlat), _randPoissonQ(randPoissonQ), _avalancheProbFullyChargedPixel(0) 
+{
+  _photonMapFile = new TFile(photonMapFileName.c_str());
+  if(_photonMapFile==NULL) throw std::logic_error("Could not open photon map file.");
+  _photonMap = (TH2F*)_photonMapFile->FindObjectAny("photonMap");
+  if(_photonMap==NULL) throw std::logic_error("Could not find photon map.");
+}
+
 }
 
 //sample program
@@ -247,8 +265,8 @@ int main()
   CLHEP::HepJamesRandom engine(1);
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
-  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(40, 40, 13, 2.1, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
+  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,"../fcl/photonMap.root");
+  sim.SetSiPMConstants(40, 40, 13, 3.0, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
 
   sim.Simulate(photonTimes, SiPMresponseVector);
 

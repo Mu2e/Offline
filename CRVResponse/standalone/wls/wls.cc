@@ -237,17 +237,18 @@ int main(int argc, char** argv)
                                                                        //posY, posZ has no effect in mode CreateLookupTables
   WLSRunAction* runAction = new WLSRunAction();
   std::string singlePEWaveformFilename="singlePEWaveform_v3.txt";
+  std::string photonMapFilename="photonMap.root";
   std::string visibleEnergyAdjustmentFilename="visibleEnergyAdjustment.txt";
-  WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
+  WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, photonMapFilename, n, simType, minBin, verbose); 
   WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  
                                                                        //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
-  WLSStackingAction* stackingAction = new WLSStackingAction();
+//  WLSStackingAction* stackingAction = new WLSStackingAction();
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
-  runManager->SetUserAction(stackingAction);
+//  runManager->SetUserAction(stackingAction);
   runManager->Initialize();
 
 /*

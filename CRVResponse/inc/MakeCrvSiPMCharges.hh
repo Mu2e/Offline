@@ -13,6 +13,9 @@ Based on Paul Rubinov's C# code
 #include <utility>
 #include "CLHEP/Random/Randomize.h"
 
+#include <TFile.h>
+#include <TH2F.h>
+
 namespace mu2eCrv
 {
 
@@ -95,11 +98,13 @@ namespace mu2eCrv
     CLHEP::RandPoissonQ &_randPoissonQ;
     double               _avalancheProbFullyChargedPixel;
 
+    TFile *_photonMapFile;
+    TH2F  *_photonMap;
+
     public:
 
-    MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ) :
-                         _randFlat(randFlat), _randPoissonQ(randPoissonQ), 
-                         _avalancheProbFullyChargedPixel(0) {}
+    MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ, const std::string &photonMapFileName);
+    ~MakeCrvSiPMCharges() {_photonMapFile->Close();}
 
     void SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage, 
                           double blindTime, double microBunchPeriod, double timeConstant, 

@@ -74,7 +74,7 @@ namespace mu2e
     _nPixelsX(pset.get<int>("nPixelsX")),                            //40
     _nPixelsY(pset.get<int>("nPixelsY")),                            //40
     _nPixelsRFiber(pset.get<int>("nPixelsRFiber")),                  //14
-    _overvoltage(pset.get<double>("overvoltage")),                   //2.1V
+    _overvoltage(pset.get<double>("overvoltage")),                   //3.0V
     _timeConstant(pset.get<double>("timeConstant")),                 //12.0ns
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
     _blindTime(pset.get<double>("blindTime")),                       //500ns

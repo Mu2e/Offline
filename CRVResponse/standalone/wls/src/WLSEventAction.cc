@@ -38,7 +38,7 @@
 
 WLSEventAction* WLSEventAction::_fgInstance = NULL;
 
-WLSEventAction::WLSEventAction(WLSSteppingAction::simulationMode mode, const std::string &singlePEWaveformFilename, 
+WLSEventAction::WLSEventAction(WLSSteppingAction::simulationMode mode, const std::string &singlePEWaveformFilename, const std::string &photonMapFilename,  
                                int numberOfPhotons, int simType, unsigned int minBin, bool verbose) : 
                                                                                          _mode(mode), 
                                                                                          _numberOfPhotons(numberOfPhotons), 
@@ -46,6 +46,7 @@ WLSEventAction::WLSEventAction(WLSSteppingAction::simulationMode mode, const std
                                                                                          _minBin(minBin), 
                                                                                          _currentBin(minBin), 
                                                                                          _singlePEWaveformFilename(singlePEWaveformFilename), 
+                                                                                         _photonMapFilename(photonMapFilename), 
                                                                                          _verbose(verbose)
                                //numberOfPhotons, simType, minBin, currentBin, verbose is only needed for simulationMode::CreateLookupTables
 {
@@ -297,7 +298,7 @@ void WLSEventAction::EndOfEventAction(const G4Event* evt)
     std::cout<<std::endl;
   }
 
-  WLSStackingAction::Instance()->PrintStatus();
+//  WLSStackingAction::Instance()->PrintStatus();
 }
 
 void WLSEventAction::Draw(const G4Event* evt) 
@@ -323,8 +324,8 @@ void WLSEventAction::Draw(const G4Event* evt)
   static CLHEP::RandFlat randFlat(engine);
   static CLHEP::RandGaussQ randGaussQ(engine);
   static CLHEP::RandPoissonQ randPoissonQ(engine);
-  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ);
-  sim.SetSiPMConstants(40, 40, 13, 2.1, 0, 1695, 13.3, 8.84e-14, probabilities, inactivePixels);
+  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,_photonMapFilename.c_str());
+  sim.SetSiPMConstants(40, 40, 13, 3.0, 0, 1695, 13.3, 8.84e-14, probabilities, inactivePixels);
 
   mu2eCrv::MakeCrvWaveforms makeCrvWaveform;
   double digitizationInterval = 12.55; //ns
@@ -333,7 +334,7 @@ void WLSEventAction::Draw(const G4Event* evt)
   double pedestal = 100; //ADC
   double calibrationFactor = 394.6; //ADC*ns/PE
   double calibrationFactorPulseHeight = 11.4; //ADC/PE
-  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.047, 100, 1.8564e-13);
+  makeCrvWaveform.LoadSinglePEWaveform(_singlePEWaveformFilename.c_str(), 0.5, 1.047, 100, 2.652e-13);
 
   mu2eCrv::MakeCrvDigis makeCrvDigis;
 
