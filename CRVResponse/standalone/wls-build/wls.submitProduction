@@ -4,8 +4,7 @@ echo "********************************************************************"
 echo "*    Did you copy the updated version of wls to wlsProduction?    *"
 echo "********************************************************************"
 
-#for length in "900" "1045" "1550" "2100" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
-for length in "900" "1045" "1550" "2100" "2370" "3040" 
+for length in "900" "1045" "1550" "2100" "2370" "3040" "3200" "4550" "5000" "5700" "6000" "6900" 
 do
   declare -a reflectors=("0")
   if [ $length == "900" ]; then
@@ -45,8 +44,8 @@ do
     -e LENGTH=$length \
     -e REFLECTOR=$reflector \
     --memory=500MB \
-    --disk=50MB \
-    --expected-lifetime=50h \
+    --disk=10MB \
+    --expected-lifetime=48h \
     --resource-provides usage_model=OPPORTUNISTIC,DEDICATED \
     --group=mu2e \
     -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/wlsProduction \

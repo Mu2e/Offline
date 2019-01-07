@@ -85,8 +85,6 @@ namespace mu2e
     CLHEP::RandGaussQ     _randGaussQ;
     CLHEP::RandPoissonQ   _randPoissonQ;
 
-    std::string _photonMapFileName;
-
     std::map<CRSScintillatorBarIndex,double>  _scintillationYieldAdjustments;
   };
 
@@ -110,8 +108,7 @@ namespace mu2e
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat(_engine),
     _randGaussQ(_engine),
-    _randPoissonQ(_engine),
-    _photonMapFileName(pset.get<std::string>("photonMapFileName"))
+    _randPoissonQ(_engine)
   {
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
@@ -150,7 +147,7 @@ namespace mu2e
       }
       if(tableLoaded) continue;
 
-      _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ, _photonMapFileName)));
+      _makeCrvPhotons.emplace_back(boost::shared_ptr<mu2eCrv::MakeCrvPhotons>(new mu2eCrv::MakeCrvPhotons(_randFlat, _randGaussQ, _randPoissonQ)));
       boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
       photonMaker->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
       photonMaker->SetScintillationYield(_scintillationYield);

@@ -60,7 +60,7 @@ WLSDetectorConstruction::WLSDetectorConstruction(double lengthOption, int reflec
   _holePolish = 0.;
  
   _barLength        = lengthOption*mm;
-#define TESTBEAM
+//#define TESTBEAM
 #ifndef TESTBEAM
   _barThickness     = 19.78*mm;
   _barWidth         = 51.34*mm;

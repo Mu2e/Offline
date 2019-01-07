@@ -66,6 +66,8 @@ namespace mu2e
     CLHEP::HepRandomEngine& _engine;
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
+
+    std::string _photonMapFileName;
   };
 
   CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset) :
@@ -81,7 +83,8 @@ namespace mu2e
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
-    _randPoissonQ{_engine}
+    _randPoissonQ{_engine},
+    _photonMapFileName(pset.get<std::string>("photonMapFileName"))
   {
     produces<CrvSiPMChargesCollection>();
     _probabilities._avalancheProbParam1 = pset.get<double>("AvalancheProbParam1");  //0.65
@@ -98,7 +101,7 @@ namespace mu2e
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
-    _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ));
+    _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ, _photonMapFileName));
     _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod,
                                             _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
