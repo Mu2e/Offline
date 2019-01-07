@@ -543,7 +543,7 @@ namespace mu2e {
 	  std::cout << "pdg_save.size() = " << pdg_save.size() << "  pdg_save.find(id) = " 
 		    << *(pdg_save.find(id)) << "  pdg_save.end() = " << *(pdg_save.end()) << std::endl;
 	  	} 
-	    if( pdg_save.size()>0 && pdg_save.find(pdgId) != pdg_save.end() )
+	    if( _save_all_pdg || pdg_save.size() == 0 || ( pdg_save.size()>0 && pdg_save.find(pdgId) != pdg_save.end()) )
 	      {
 		mass = pdt->particle(pdgId).ref().mass();
 
