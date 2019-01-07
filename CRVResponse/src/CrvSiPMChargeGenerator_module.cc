@@ -51,7 +51,6 @@ namespace mu2e
     double      _deadSiPMProbability;
     int         _nPixelsX;
     int         _nPixelsY;
-    int         _nPixelsRFiber;
     double      _overvoltage;
     double      _timeConstant;
     double      _capacitance;
@@ -75,7 +74,6 @@ namespace mu2e
     _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
     _nPixelsX(pset.get<int>("nPixelsX")),                            //40
     _nPixelsY(pset.get<int>("nPixelsY")),                            //40
-    _nPixelsRFiber(pset.get<int>("nPixelsRFiber")),                  //14
     _overvoltage(pset.get<double>("overvoltage")),                   //3.0V
     _timeConstant(pset.get<double>("timeConstant")),                 //12.0ns
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
@@ -102,7 +100,7 @@ namespace mu2e
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
     _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ, _photonMapFileName));
-    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod,
+    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _overvoltage, _blindTime, _microBunchPeriod,
                                             _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
 

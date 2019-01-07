@@ -46,21 +46,6 @@ std::pair<int,int> MakeCrvSiPMCharges::FindFiberPhotonsPixelId()
   double x,y;
   _photonMap->GetRandom2(x,y);
   return std::pair<int,int>(x,y);
-
-/*
-  int x=0;
-  int y=0;
-  do
-  {
-    x=_randFlat.fire(2*_nPixelsRFiber)-_nPixelsRFiber;
-    y=_randFlat.fire(2*_nPixelsRFiber)-_nPixelsRFiber;
-  } while(sqrt(x*x+y*y)>_nPixelsRFiber);
-
-  x+=_nPixelsX/2;
-  y+=_nPixelsY/2;
-
-  return std::pair<int,int>(x,y);
-*/
 }
 
 bool MakeCrvSiPMCharges::IsInactivePixelId(const std::pair<int,int> &pixelId)
@@ -139,14 +124,13 @@ double MakeCrvSiPMCharges::GetVoltage(const Pixel &pixel, double time)
   return v;
 }
 
-void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage,  
+void MakeCrvSiPMCharges::SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage,  
                                             double blindTime, double microBunchPeriod, double timeConstant, 
                                             double capacitance, ProbabilitiesStruct probabilities, 
                                             const std::vector<std::pair<int,int> > &inactivePixels)
 {
   _nPixelsX = nPixelsX;
   _nPixelsY = nPixelsY;
-  _nPixelsRFiber = nPixelsRFiber;
   _overvoltage = overvoltage;   //operating overvoltage = bias voltage - breakdown voltage
   _blindTime = blindTime;
   _microBunchPeriod = microBunchPeriod;
@@ -266,7 +250,7 @@ int main()
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
   mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,"../fcl/photonMap.root");
-  sim.SetSiPMConstants(40, 40, 13, 3.0, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
+  sim.SetSiPMConstants(40, 40, 3.0, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
 
   sim.Simulate(photonTimes, SiPMresponseVector);
 

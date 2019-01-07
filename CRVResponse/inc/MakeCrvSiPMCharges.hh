@@ -57,7 +57,6 @@ namespace mu2eCrv
   {
     int    _nPixelsX;
     int    _nPixelsY;
-    int    _nPixelsRFiber;
     double _overvoltage;      //in V  (operating overvoltage = bias voltage - breakdown voltage)
     double _blindTime;        //in ns
     double _microBunchPeriod; //in ns
@@ -106,7 +105,7 @@ namespace mu2eCrv
     MakeCrvSiPMCharges(CLHEP::RandFlat &randFlat, CLHEP::RandPoissonQ &randPoissonQ, const std::string &photonMapFileName);
     ~MakeCrvSiPMCharges() {_photonMapFile->Close();}
 
-    void SetSiPMConstants(int nPixelsX, int nPixelsY, int nPixelsRFiber, double overvoltage, 
+    void SetSiPMConstants(int nPixelsX, int nPixelsY, double overvoltage, 
                           double blindTime, double microBunchPeriod, double timeConstant, 
                           double capacitance, ProbabilitiesStruct probabilities,
                           const std::vector<std::pair<int,int> > &inactivePixels);
