@@ -464,8 +464,11 @@ void WLSEventAction::Draw(const G4Event* evt)
 
     hist[SiPM]->SetLineColor(kBlue);
     hist[SiPM]->GetXaxis()->SetTitle("t [ns]");
+    hist[SiPM]->GetXaxis()->SetTitleOffset(0.8);
+    hist[SiPM]->GetXaxis()->SetTitleSize(0.05);
     hist[SiPM]->GetYaxis()->SetTitle("Photons");
-    hist[SiPM]->GetYaxis()->SetTitleOffset(1.0);
+    hist[SiPM]->GetYaxis()->SetTitleOffset(0.8);
+    hist[SiPM]->GetYaxis()->SetTitleSize(0.05);
     hist[SiPM]->GetYaxis()->SetAxisColor(kBlue);
     hist[SiPM]->GetYaxis()->SetTitleColor(kBlue);
     hist[SiPM]->GetYaxis()->SetLabelColor(kBlue);
@@ -480,7 +483,7 @@ void WLSEventAction::Draw(const G4Event* evt)
       histSiPMResponse[SiPM]->Fill(siPMtimes[SiPM][j], siPMchargesInPEs[SiPM][j]*scaleSiPMResponse);
       totalPEs+=siPMchargesInPEs[SiPM][j];
     }
-    histSiPMResponse[SiPM]->SetLineColor(kOrange);
+    histSiPMResponse[SiPM]->SetLineColor(kOrange-6);
     histSiPMResponse[SiPM]->Draw("histsame");
 
 //waveforms with 1 ns bin width
@@ -566,6 +569,7 @@ void WLSEventAction::Draw(const G4Event* evt)
     axisVector.push_back(axis);
     axis->SetTitle("ADC");
     axis->SetTitleOffset(-0.5);
+    axis->SetTitleSize(0.05);
     axis->SetTitleColor(kRed);
     axis->SetLineColor(kRed);
     axis->SetLabelColor(kRed);
@@ -574,10 +578,11 @@ void WLSEventAction::Draw(const G4Event* evt)
     TGaxis *axisSiPMResponse = new TGaxis(maxTime,0,maxTime,histMax,0,histMax/scaleSiPMResponse,10,"+L");
     axisVector.push_back(axisSiPMResponse);
     axisSiPMResponse->SetTitle("SiPM charges [PE]");
-    axisSiPMResponse->SetTitleOffset(1.0);
-    axisSiPMResponse->SetTitleColor(kOrange);
-    axisSiPMResponse->SetLineColor(kOrange);
-    axisSiPMResponse->SetLabelColor(kOrange);
+    axisSiPMResponse->SetTitleOffset(0.85);
+    axisSiPMResponse->SetTitleSize(0.05);
+    axisSiPMResponse->SetTitleColor(kOrange-6);
+    axisSiPMResponse->SetLineColor(kOrange-6);
+    axisSiPMResponse->SetLabelColor(kOrange-6);
     axisSiPMResponse->Draw("same");
   }
 
