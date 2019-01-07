@@ -136,11 +136,6 @@ physics : {
         genCountLogger : {
             module_type : GenEventCountReader
         }
-        readVirtualDetector : {
-             module_type : ReadVirtualDetector
-             savePDG : [-2212]
-             saveVD  : [91,92]
-        }
         readAntiProtonSteps : {
              module_type : ReadAntiProtonSteps
              savePDG : [-2212]
