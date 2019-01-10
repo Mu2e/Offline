@@ -49,12 +49,15 @@ namespace mu2e{
 
   //================================================================
   void switchDecayOff(const fhicl::ParameterSet& pset) {
+
     std::vector<int> plist = pset.get<std::vector<int> >("physics.noDecay");
+    int diagLevel = pset.get<int>("debug.diagLevel",0);
+
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
     for( size_t i=0; i<plist.size(); ++i ) {
       int pdg = plist[i];
       G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
-      if( particle==nullptr ) {
+      if( particle==nullptr && diagLevel>-1 ) {
         G4cout << __func__ << " : cannot find particle pdgId=" << pdg << G4endl;
       } else {
         G4ProcessManager* pmanager = particle->GetProcessManager();
@@ -66,25 +69,31 @@ namespace mu2e{
             break;
           }
         }
-        if( decayProcess==nullptr ) {
+        if( decayProcess==nullptr && diagLevel>-1 ) {
           G4cout << __func__ << " : cannot find decay process for particle pdgId=" << pdg
                << " (" << particle->GetParticleName() << ")" << G4endl;
         } else {
           pmanager->RemoveProcess(decayProcess);
-          G4cout << __func__ << " : decay process is removed for particle pdgId=" << pdg
-               << " (" << particle->GetParticleName() << ")" << G4endl;
+          if (diagLevel>0) {
+            G4cout << __func__ << " : decay process is removed for particle pdgId=" << pdg
+                   << " (" << particle->GetParticleName() << ")" << G4endl;
+          }
         }
-        G4cout << __func__ << " : list of processes defined for particle pdgId=" << pdg
-             << " (" << particle->GetParticleName() << "):" << G4endl;
-        for( G4int j=0; j<pmanager->GetProcessListLength(); ++j )
-          G4cout << (*pVector)[j]->GetProcessName() << G4endl;
+        if (diagLevel>0) {
+          G4cout << __func__ << " : list of processes defined for particle pdgId=" << pdg
+                 << " (" << particle->GetParticleName() << "):" << G4endl;
+          for( G4int j=0; j<pmanager->GetProcessListLength(); ++j )
+            G4cout << (*pVector)[j]->GetProcessName() << G4endl;
+        }
       }
     }
 
   }
 
   void switchCaptureDModel(const fhicl::ParameterSet& pset) {
+
     std::string cDModel= pset.get<std::string>("physics.captureDModel");
+    int diagLevel = pset.get<int>("debug.diagLevel",0);
 
     // change muMinusCaptureAtRest deexcitation model to muMinusNuclearCapture
     // this is limited to muon minus only
@@ -94,7 +103,7 @@ namespace mu2e{
     }
 
     G4ParticleDefinition* particle = G4MuonMinus::MuonMinus();
-    if( particle==0 ) {
+    if( particle==0 && diagLevel>-1 ) {
       G4cout << __func__ << " : cannot find MuonMinus " << G4endl;
     } else {
       G4ProcessManager* pmanager = particle->GetProcessManager();
@@ -106,24 +115,30 @@ namespace mu2e{
           break;
         }
       }
-      if( muCapProcess==0 ) {
+      if( muCapProcess==0 && diagLevel>-1 ) {
         G4cout << __func__ << " : cannot find muMinusCaptureAtRest process for "
              << particle->GetParticleName() << G4endl;
       } else {
         pmanager->RemoveProcess(muCapProcess);
-        G4cout << __func__ << " : muMinusCaptureAtRest process is removed for "
-             << particle->GetParticleName() << G4endl;
+        if (diagLevel>0) {
+          G4cout << __func__ << " : muMinusCaptureAtRest process is removed for "
+                 << particle->GetParticleName() << G4endl;
+        }
         G4MuonMinusCapture* muProcess = new G4MuonMinusCapture(new G4MuMinusCapturePrecompound());
         G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
         ph->RegisterProcess(muProcess, particle);
         //        pmanager->AddRestProcess( muProcess );
-        G4cout << __func__ << " : added muMinusCaptureAtRest with muMinusNuclearCapture for "
-             << particle->GetParticleName() << G4endl;
+        if (diagLevel>0) {
+          G4cout << __func__ << " : added muMinusCaptureAtRest with muMinusNuclearCapture for "
+                 << particle->GetParticleName() << G4endl;
         }
-      G4cout  << __func__ << " : list of processes defined for "
-            << particle->GetParticleName() << " :" << G4endl;
-      for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
-        G4cout << (*pVector)[j]->GetProcessName() << G4endl;
+      }
+      if (diagLevel>0) {
+        G4cout  << __func__ << " : list of processes defined for "
+                << particle->GetParticleName() << " :" << G4endl;
+        for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
+          G4cout << (*pVector)[j]->GetProcessName() << G4endl;
+        }
       }
     }
   }
