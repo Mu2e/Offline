@@ -51,8 +51,8 @@ namespace mu2e {
     wasActivated = true;
 
     if (pset_->get<int>("debug.diagLevel",0)>0) {
-      G4cout << __func__
-             << " From ThreadId: " << G4Threading::G4GetThreadId() << G4endl;
+      G4cout << "Mu2eG4CustomizationPhysicsConstructor::"
+             << __func__ << " Called" << G4endl;
     }
 
     if(G4Threading::IsMasterThread()) {

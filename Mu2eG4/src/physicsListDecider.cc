@@ -44,7 +44,6 @@
 #include "Mu2eG4/inc/Shielding_MU2ER1.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
-#include "Mu2eG4/inc/setMinimumRangeCut.hh"
 
 //tmp arrangement
 #include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"

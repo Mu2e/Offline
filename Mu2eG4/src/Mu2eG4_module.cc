@@ -477,7 +477,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
       //  sequentialRM, masterRM, workerRM }
 
        G4cout << __func__
-              << " Before Initialize G4RunManagerType: "
+              << " Before Initialize(), G4RunManagerType: "
               << _runManager->GetRunManagerType() << G4endl;
     }
     // Initialize G4 for this run.
@@ -485,7 +485,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     if ( _rmvlevel > 0 ) {
        G4cout << __func__
-              << " After Initialize G4RunManagerType:  "
+              << " After Initialize(), G4RunManagerType:  "
               << _runManager->GetRunManagerType() << G4endl;
     }
 
