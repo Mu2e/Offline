@@ -17,6 +17,8 @@ namespace mu2e{
 
   void setMinimumRangeCut(const fhicl::ParameterSet& pset, G4VUserPhysicsList* mPL);
 
+  void setMinimumRangeCut(const fhicl::ParameterSet& pset);
+
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_setMinimumRangeCut_hh */

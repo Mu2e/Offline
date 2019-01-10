@@ -1,6 +1,8 @@
 // Special process to record track info before geant4 post step processes occurred
 //
 // Original author KL Genser
+// // C++ includes
+// #include <iostream>
 
 // Mu2e includes
 #include "Mu2eG4/inc/UserTrackInformation.hh"
@@ -38,6 +40,8 @@ namespace mu2e{
       G4cout << __func__
              << " particle "
              << trk.GetParticleDefinition()->GetParticleName()
+             << " totE deposit " << std::fixed << trk.GetStep()->GetTotalEnergyDeposit()
+             << " NonIonE deposit " << std::fixed << trk.GetStep()->GetNonIonizingEnergyDeposit()
              << " in " << trk.GetVolume()->GetName()
              << " material " << trk.GetMaterial()->GetName()
              << G4endl;

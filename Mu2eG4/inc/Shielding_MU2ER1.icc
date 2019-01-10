@@ -1,0 +1,77 @@
+// Physics list inheriting from Shielding using regions etc.
+// Original author K.L.Genser October 2018
+//
+
+// C++ includes
+#include <iostream>
+
+// Framework includes
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// G4 includes
+//#include "Shielding.hh"
+//#include "G4RegionStore.hh"
+//#include "G4Region.hh"
+#include "G4ProductionCuts.hh"
+#include "G4Threading.hh"
+
+// Mu2e includes
+#include "Mu2eG4/inc/Shielding_MU2ER1.hh"
+#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Mu2eG4/inc/setMinimumRangeCut.hh"
+
+namespace mu2e {
+
+  Shielding_MU2ER1::Shielding_MU2ER1(const fhicl::ParameterSet& pSet, G4int verbose,
+                                     G4String low_energy_neutron_model,
+                                     G4String HadrPhysVariant):
+    Shielding(verbose,low_energy_neutron_model,HadrPhysVariant),
+    pset(pSet)
+  {
+
+    // at this time Shielding constructor had been instatiated and we can add our
+    // customizations some of which are conditional based on pset content
+
+    RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&pset));
+
+  }
+
+  void Shielding_MU2ER1::SetCuts()
+  {
+    if (verboseLevel > 0){
+      G4cout << "Shielding_MU2ER1::SetCuts called"
+             << " From ThreadId: " << G4Threading::G4GetThreadId() << G4endl;
+    }
+    SetCutsWithDefault();
+    // the above calls  parent class SetCutsWithDefault, which calls 
+    // SetDefaultCutValue(defaultCutValue); *G4VUserPhysicsList::SetCuts()*;
+
+    // in principle we could move the code below to setMinimumRangeCut and pass
+    // G4VModularPhysicsList* to it (which would disabiguate setMinimumRangeCut)
+
+    double minRangeCut = pset.get<double>("physics.minRangeCut");
+    double protonProductionCut = pset.get<double>("physics.protonProductionCut");
+    mf::LogInfo("GEOM_MINRANGECUT")
+      << "Setting minRange cut to " << minRangeCut 
+      << ", protonProductionCut to " << protonProductionCut << " mm";
+    if (pset.get<int>("debug.diagLevel") > 0) {
+      G4cout << __func__ << " Setting gamma, e- and e+ production cut"
+             << " to " << minRangeCut << " mm and for proton to "
+             << protonProductionCut << " mm" << G4endl;
+    }
+    //setCutCmd equivalent:
+    SetDefaultCutValue(minRangeCut);
+    SetCutValue(protonProductionCut, "proton");
+
+    // Set the range cut for e+,e-,gamma (& proton)
+    // mainly used for regions now
+    setMinimumRangeCut(pset);
+
+    if (verboseLevel > 0) {
+      G4VUserPhysicsList::DumpCutValuesTable();  
+    }
+
+  }
+
+}

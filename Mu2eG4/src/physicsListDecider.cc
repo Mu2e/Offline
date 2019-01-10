@@ -41,6 +41,7 @@
 #if G4VERSION>4103
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
+#include "Mu2eG4/inc/Shielding_MU2ER1.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/setMinimumRangeCut.hh"
@@ -185,6 +186,11 @@ namespace mu2e{
       cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
 #endif
     }
+#if G4VERSION>4103
+    else if ( name == "Shielding_MU2ER1" ){
+      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset));
+    }
+#endif
 
     // General case
     else {

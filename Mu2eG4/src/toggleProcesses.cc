@@ -45,19 +45,17 @@
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 #include "fhiclcpp/ParameterSet.h"
 
-using namespace std;
-
 namespace mu2e{
 
   //================================================================
-  void switchDecayOff(const std::vector<int>& plist) {
-
+  void switchDecayOff(const fhicl::ParameterSet& pset) {
+    std::vector<int> plist = pset.get<std::vector<int> >("physics.noDecay");
     G4ParticleTable *theParticleTable = G4ParticleTable::GetParticleTable();
     for( size_t i=0; i<plist.size(); ++i ) {
       int pdg = plist[i];
       G4ParticleDefinition* particle = theParticleTable->FindParticle(pdg);
       if( particle==nullptr ) {
-        cout << "SwitchDecayOff: cannot find particle pdgId=" << pdg << endl;
+        G4cout << __func__ << " : cannot find particle pdgId=" << pdg << G4endl;
       } else {
         G4ProcessManager* pmanager = particle->GetProcessManager();
         G4ProcessVector * pVector  = pmanager->GetProcessList();
@@ -69,23 +67,24 @@ namespace mu2e{
           }
         }
         if( decayProcess==nullptr ) {
-          cout << "SwitchDecayOff: cannot find decay process for particle pdgId=" << pdg
-               << " (" << particle->GetParticleName() << ")" << endl;
+          G4cout << __func__ << " : cannot find decay process for particle pdgId=" << pdg
+               << " (" << particle->GetParticleName() << ")" << G4endl;
         } else {
           pmanager->RemoveProcess(decayProcess);
-          cout << "SwitchDecayOff: decay process is removed for particle pdgId=" << pdg
-               << " (" << particle->GetParticleName() << ")" << endl;
+          G4cout << __func__ << " : decay process is removed for particle pdgId=" << pdg
+               << " (" << particle->GetParticleName() << ")" << G4endl;
         }
-        cout << "SwitchDecayOff: list of processes defined for particle pdgId=" << pdg
-             << " (" << particle->GetParticleName() << "):" << endl;
+        G4cout << __func__ << " : list of processes defined for particle pdgId=" << pdg
+             << " (" << particle->GetParticleName() << "):" << G4endl;
         for( G4int j=0; j<pmanager->GetProcessListLength(); ++j )
-          cout << (*pVector)[j]->GetProcessName() << endl;
+          G4cout << (*pVector)[j]->GetProcessName() << G4endl;
       }
     }
 
   }
 
-  void switchCaptureDModel(std::string cDModel) {
+  void switchCaptureDModel(const fhicl::ParameterSet& pset) {
+    std::string cDModel= pset.get<std::string>("physics.captureDModel");
 
     // change muMinusCaptureAtRest deexcitation model to muMinusNuclearCapture
     // this is limited to muon minus only
@@ -96,7 +95,7 @@ namespace mu2e{
 
     G4ParticleDefinition* particle = G4MuonMinus::MuonMinus();
     if( particle==0 ) {
-      cout << "SwitchDecayOff: cannot find MuonMinus " << endl;
+      G4cout << __func__ << " : cannot find MuonMinus " << G4endl;
     } else {
       G4ProcessManager* pmanager = particle->GetProcessManager();
       G4ProcessVector * pVector  = pmanager->GetProcessList();
@@ -108,45 +107,37 @@ namespace mu2e{
         }
       }
       if( muCapProcess==0 ) {
-        cout << __func__ << " : cannot find muMinusCaptureAtRest process for "
-             << particle->GetParticleName() << endl;
+        G4cout << __func__ << " : cannot find muMinusCaptureAtRest process for "
+             << particle->GetParticleName() << G4endl;
       } else {
         pmanager->RemoveProcess(muCapProcess);
-        cout << __func__ << " : muMinusCaptureAtRest process is removed for " 
-             << particle->GetParticleName() << endl;
+        G4cout << __func__ << " : muMinusCaptureAtRest process is removed for "
+             << particle->GetParticleName() << G4endl;
         G4MuonMinusCapture* muProcess = new G4MuonMinusCapture(new G4MuMinusCapturePrecompound());
         G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
         ph->RegisterProcess(muProcess, particle);
         //        pmanager->AddRestProcess( muProcess );
-        cout << __func__ << " : added muMinusCaptureAtRest with muMinusNuclearCapture for " 
-             << particle->GetParticleName() << endl;
+        G4cout << __func__ << " : added muMinusCaptureAtRest with muMinusNuclearCapture for "
+             << particle->GetParticleName() << G4endl;
         }
-      cout  << __func__ << " : list of processes defined for " 
-            << particle->GetParticleName() << " :" << endl;
+      G4cout  << __func__ << " : list of processes defined for "
+            << particle->GetParticleName() << " :" << G4endl;
       for( G4int j=0; j<pmanager->GetProcessListLength(); ++j ) {
-        cout << (*pVector)[j]->GetProcessName() << endl;
+        G4cout << (*pVector)[j]->GetProcessName() << G4endl;
       }
     }
   }
 
-  void switchCaptureDModel(const fhicl::ParameterSet& pset) { 
-    std::string cDModel= pset.get<std::string>("physics.captureDModel");
-    switchCaptureDModel(cDModel);
-  }
-
-  void switchDecayOff(const fhicl::ParameterSet& pset) {
-    std::vector<int> plist = pset.get<std::vector<int> >("physics.noDecay");
-    switchDecayOff(plist);
-  }
-
-
   //================================================================
-  void addUserProcesses(const std::vector<std::string>& plist) {
+  void addUserProcesses(const fhicl::ParameterSet& pset) {
+    std::vector<std::string> plist = pset.get<std::vector<std::string> >("physics.addProcesses");
+
+    int diagLevel = pset.get<int>("debug.diagLevel",0);
 
     // search for process names, we assume process implies specific particle, for now
 
     // for ( const auto& elem : plist) {
-    //   std::cout << __func__ << " " << elem << std::endl;
+    //   G4cout << __func__ << " " << elem << G4endl;
     // }
 
     G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
@@ -169,25 +160,37 @@ namespace mu2e{
 
     // processes are owned by process managers
     if(gmumu) {
-      std::cout << __func__ << " adding GammaToMuPair process to gamma" << std::endl;
+      if (diagLevel>0) {
+        G4cout << __func__ << " adding GammaToMuPair process to gamma" << G4endl;
+      }
       G4GammaConversionToMuons* theGammaToMuMu = new G4GammaConversionToMuons();
       ph->RegisterProcess(theGammaToMuMu, gamma);
     }
     if(pmumu) {
-      std::cout << __func__ << " adding AnnihiToMuPair process to positron" << std::endl;
+      if (diagLevel>0) {
+        G4cout << __func__ << " adding AnnihiToMuPair process to positron" << G4endl;
+      }
       G4AnnihiToMuPair* thePosiToMuMu = new G4AnnihiToMuPair();
       ph->RegisterProcess(thePosiToMuMu, positron);
     }
     if(phad) {
-      std::cout << __func__ << " adding ee2hadr process to positron" << std::endl;
+      if (diagLevel>0) {
+        G4cout << __func__ << " adding ee2hadr process to positron" << G4endl;
+      }
       G4eeToHadrons* thePosiToHadrons = new G4eeToHadrons();
       ph->RegisterProcess(thePosiToHadrons, positron);
     }
 
     // special process to look at the track before post step interaction
     // fixme: make it a function guarded by pset flag and access to the stepping verbosity level
+
+    if (diagLevel>0) {
+      G4cout << __func__
+             << " adding Mu2eRecorderProcess to all G4ParticleTable particles" << G4endl;
+    }
+
     Mu2eRecorderProcess* rmp = new Mu2eRecorderProcess();
-    //    rmp->SetVerboseLevel(1);
+    rmp->SetVerboseLevel(pset.get<int>("debug.steppingVerbosityLevel",0)-1);
     G4ParticleTable* ptable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator* iter = ptable->GetIterator();
     iter->reset();
@@ -201,19 +204,12 @@ namespace mu2e{
     }
   }
 
-  void addUserProcesses(const fhicl::ParameterSet& pset) {
-    std::vector<std::string> plist = pset.get<std::vector<std::string> >("physics.addProcesses");
-    addUserProcesses(plist);
-  }
-
   void setMuHadLateralDisplacement(const fhicl::ParameterSet& pset) {
     if (pset.get<bool>("physics.setMuHadLateralDisplacement",false)) {
       G4EmParameters* params = G4EmParameters::Instance();
       params->SetMuHadLateralDisplacement(true);
     }
   }
-
-
 
   //================================================================
 } // end namespace mu2e

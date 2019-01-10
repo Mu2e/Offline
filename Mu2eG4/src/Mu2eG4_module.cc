@@ -22,7 +22,6 @@
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
-#include "Mu2eG4/inc/postG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
@@ -448,23 +447,17 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(pset_, _extMonFNALPixelSD, SensitiveDetectorHelpers,
+    ActionInitialization* actioninit = new ActionInitialization(pset_,
+                                                                _extMonFNALPixelSD, SensitiveDetectorHelpers,
                                                                 &_genEventBroker, &_physVolHelper,
                                                                 _use_G4MT, _nThreads, originInWorld,
                                                                 mu2elimits_,
-                                                                multiStagePars_.simParticleNumberOffset());
+                                                                multiStagePars_.simParticleNumberOffset()
+                                                                );
 
     //in MT mode, this is where BuildForMaster is called for master thread
     // in sequential mode, this is where Build() is called for main thread
     _runManager->SetUserInitialization(actioninit);
-
-    // setting tracking/stepping verbosity level; tracking manager
-    // sets stepping verbosity level as well;
-    G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
-    G4TrackingManager* tm  = rmk->GetTrackingManager();
-    tm->SetVerboseLevel(_tmvlevel);
-    G4SteppingManager* sm  = tm->GetSteppingManager();
-    sm->SetVerboseLevel(_smvlevel);
 
     _UI = G4UImanager::GetUIpointer();
 
@@ -477,17 +470,24 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     }
 
+    if ( _rmvlevel > 0 ) {
+
+      //  GetRunManagerType() returns an enum named RMType to indicate
+      //  what kind of RunManager it is. RMType is defined as {
+      //  sequentialRM, masterRM, workerRM }
+
+       G4cout << __func__
+              << " Before Initialize G4RunManagerType: "
+              << _runManager->GetRunManagerType() << G4endl;
+    }
     // Initialize G4 for this run.
     _runManager->Initialize();
 
-    // At this point G4 geometry and physics processes have been initialized.
-    // So it is safe to modify physics processes and to compute information
-    // that is derived from the G4 geometry or physics processes.
-
-    // Mu2e specific customizations that must be done after the call to Initialize.
-    postG4InitializeTasks(pset_,physicsList_);
-
-    _runManager->PhysicsHasBeenModified();
+    if ( _rmvlevel > 0 ) {
+       G4cout << __func__
+              << " After Initialize G4RunManagerType:  "
+              << _runManager->GetRunManagerType() << G4endl;
+    }
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
