@@ -44,16 +44,7 @@
 #include "Mu2eG4/inc/Shielding_MU2ER1.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
-
-//tmp arrangement
-#include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"
-#include "Mu2eG4/inc/QGSP_BERT_MU2E00.hh"
-#include "Mu2eG4/inc/Shielding_MU2E00.hh"
-#include "Mu2eG4/inc/Shielding_MU2E01.hh"
-#include "Mu2eG4/inc/Shielding_MU2E02.hh"
-#if G4VERSION<4099
-#include "Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.hh"
-#endif
+#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -63,6 +54,8 @@
 #include "G4VUserPhysicsList.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4ErrorPhysicsList.hh"
+#include "G4EmStandardPhysics_option4.hh"
+
 #if G4VERSION>4103
 #include "G4EmParameters.hh"
 #endif
@@ -134,68 +127,24 @@ namespace mu2e{
       return new G4ErrorPhysicsList(); 
     }
 
-#if G4VERSION<4099
-    else if ( name == "QGSP" ){
-      tmpPL = new QGSP();
-    }
-#endif
-
-    else if ( name == "QGSP_BERT_MU2E00" ){
-      tmpPL = new QGSP_BERT_MU2E00();
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
-      G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
-    }
-
-    else if ( name == "QGSP_BERT_HP_MU2E00" ){
-      tmpPL = new TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList>(pset);
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
-      G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
-    }
-
-    else if ( name == "Shielding_MU2E00" ){
-      tmpPL = new Shielding_MU2E00();
-#if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      G4cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
-#endif
-    }
-
-    else if ( name == "Shielding_MU2E01" ){
-      tmpPL = new TShielding_MU2E01<G4VModularPhysicsList>(pset);
-#if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
-#endif
-    }
-
-    else if ( name == "Shielding_MU2E02" ){
-      tmpPL = new TShielding_MU2E02<G4VModularPhysicsList>(pset);
-#if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
-#endif
-    }
-
-    else if ( name == "FTFP_BERT_PBAR_MU2E02" ){
-#if G4VERSION<4099
-      tmpPL = new TFTFP_BERT_PBAR_MU2E02<G4VModularPhysicsList>;
-#endif
-#if G4VERSION>4099
-      mf::LogError("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
-#endif
-    }
 #if G4VERSION>4103
     else if ( name == "Shielding_MU2ER1" ){
       tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset));
+    }
+
+    else if ( name == "Shielding_MU2ER1_EMZ" ){
+      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset));
+      tmpPL->ReplacePhysics(new G4EmStandardPhysics_option4(getDiagLevel(pset)));
     }
 #endif
 
     // General case
     else {
+
       G4PhysListFactory physListFactory;
       physListFactory.SetVerbose(getDiagLevel(pset));
       tmpPL = physListFactory.GetReferencePhysList(name);
+
     }
 
     if ( !tmpPL ){

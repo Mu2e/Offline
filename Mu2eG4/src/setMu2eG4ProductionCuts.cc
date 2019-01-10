@@ -79,11 +79,5 @@ namespace mu2e{
         }
       }
     }
-
-    if (verboseLevel > 0) {
-      mPL->DumpCutValuesTable();
-    }
-
   }
-
 }  // end namespace mu2e
