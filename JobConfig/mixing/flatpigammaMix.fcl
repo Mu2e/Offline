@@ -9,7 +9,7 @@ services: @local::Services.Sim
 physics : { 
   producers : {
     generate : {
-      module_type: StoppedParticleRPCGun
+      module_type: RPCGun
       verbosityLevel : 1
       physics : {
 	spectrumShape : flat

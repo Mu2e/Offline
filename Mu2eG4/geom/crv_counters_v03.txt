@@ -127,8 +127,8 @@ string          crs.scintillatorBarMaterialName  = "G4_POLYSTYRENE";
 string          crs.absorberMaterialName         = "G4_Al";
 string          crs.aluminumSheetMaterialName    = "G4_Al";
 
-bool   crs.vetoVisible    = true;
-bool   crs.vetoSolid      = true;
+bool   crs.veto.visible    = true;
+bool   crs.veto.solid      = true;
 int    crs.verbosityLevel = 0;
 
 vector<double>  crs.layerDirectionR1  =  {-1, 0, 0}; //0

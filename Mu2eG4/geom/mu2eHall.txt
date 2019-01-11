@@ -1,7 +1,7 @@
 string hall.insideMaterialName  = "G4_AIR";
 
-bool   hall.formalBoxVisible    = false;
-bool   hall.formalBoxSolid      = false;
+bool   hall.formalBox.visible    = false;
+bool   hall.formalBox.solid      = false;
 
 // The following is automatically produced by ProduceSimpleConfig
 

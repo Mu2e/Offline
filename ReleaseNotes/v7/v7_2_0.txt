@@ -1,4 +1,34 @@
            Release notes for Mu2e Offline software, v7_2_0
+11) gianipez December 10, 2018
+    added the option in the Trigger-generator script for producing and fcl 
+    compatible with the online environment
+      Trigger/scripts/genTriggerFcl.py
+    and improved diagnostic in		
+      Trigger/src/ReadTriggerInfo_module.cc
+    module that now includes also the info of the event proton bunch intensity
+    and the MC info of the Helices and the KalSeeds used to Trigger the events.
+
+10) genser December 10, 2018
+    Enhanced setting minRangeRegionCuts alowing it for any logical volume.
+    Use it with caution.
+      Mu2eG4/src/Mu2eWorld.cc
+    Fhicl example:
+
+physics.producers.g4run.physics.minRangeRegionCuts: {
+    CalorimeterMother      : 0.1
+    TrackerMother          : 0.001
+} // {RegionName : mm }
+
+
+9) genser December 3, 2018
+    Rewrote setting minRangeRegionCuts and added useEmOption4InTracker
+      Mu2eG4/fcl/prolog.fcl
+      Mu2eG4/inc/Mu2eWorld.hh
+      Mu2eG4/src/Mu2eWorld.cc
+      Mu2eG4/src/physicsListDecider.cc
+      Mu2eG4/src/setMinimumRangeCut.cc
+    Optimized the code using pset.is_empty()
+      Mu2eG4/src/setBirksConstant.cc
 
 8) genser November 26, 2018
     Added PhysicsHasBeenModified call

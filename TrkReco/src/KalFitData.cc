@@ -16,7 +16,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   KalFitData::KalFitData() {
     helixTraj   = NULL;
-    tpart       = TrkParticle::e_minus;        // 11
+    //    tpart       = TrkParticle::e_minus;        // 11
     fdir        = TrkFitDirection::downstream; // = 0
     chcol       = 0;
     // shpos       = 0;

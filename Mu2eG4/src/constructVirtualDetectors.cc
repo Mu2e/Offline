@@ -23,6 +23,7 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
@@ -54,14 +55,16 @@ namespace mu2e {
   void constructVirtualDetectors( const SimpleConfig& _config ){
 
     // Place virtual detectors
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "vd", "vd");
 
+    const bool vdIsVisible          = geomOptions->isVisible("vd"); 
+    const bool vdIsSolid            = geomOptions->isSolid("vd"); 
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("vd"); 
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("vd");
+    const bool placePV              = geomOptions->placePV("vd");
     int static const verbosityLevel = _config.getInt("vd.verbosityLevel",0);
 
-    bool const vdIsVisible         = _config.getBool("vd.visible",true);
-    bool const vdIsSolid           = _config.getBool("vd.solid",true);
-    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("vd.doSurfaceCheck",false);
-    bool const placePV             = true;
 
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;

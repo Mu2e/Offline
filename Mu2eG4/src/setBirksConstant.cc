@@ -27,27 +27,30 @@ namespace mu2e{
 
   void setBirksConstant(const fhicl::ParameterSet& pset) {
 
-    // in principle we could do it without this map and set values direcly from pset
-    std::map<std::string,double> birksConstsMap;
-
     const fhicl::ParameterSet& birksConstsPSet{
       pset.get<fhicl::ParameterSet>("physics.BirksConsts",fhicl::ParameterSet())};
 
-    const std::vector<std::string> matNames{birksConstsPSet.get_names()};
+    if (!birksConstsPSet.is_empty()) {
 
-    //    std::cout << __func__ << " matNames.size() " << matNames.size() << std::endl;
-    int verbosityLevel = pset.get<int>("debug.diagLevel",0);
+      const std::vector<std::string> matNames{birksConstsPSet.get_names()};
 
-    for(const auto& mat: matNames) {
-      birksConstsMap[mat] = birksConstsPSet.get<double>(mat);
+      int verbosityLevel = pset.get<int>("debug.diagLevel",0);
 
-      if ( verbosityLevel > 0) {
-	mf::LogInfo("PHYS")
-	  << "setting Birks constant for " <<  mat
-	  << " to " << birksConstsMap[mat] << " mm/MeV";
+      // in principle we could do it without this map and set values direcly from pset
+      std::map<std::string,double> birksConstsMap;
+
+      for(const auto& mat: matNames) {
+        birksConstsMap[mat] = birksConstsPSet.get<double>(mat);
+
+        if ( verbosityLevel > 0) {
+          mf::LogInfo("PHYS")
+            << "setting Birks constant for " <<  mat
+            << " to " << birksConstsMap[mat] << " mm/MeV";
+        }
+        G4Material *gmat = findMaterialOrThrow( mat );
+        gmat->GetIonisation()->SetBirksConstant(birksConstsMap[mat]*CLHEP::mm/CLHEP::MeV);
       }
-      G4Material *gmat = findMaterialOrThrow( mat );
-      gmat->GetIonisation()->SetBirksConstant(birksConstsMap[mat]*CLHEP::mm/CLHEP::MeV);
+
     }
 
   }

@@ -15,6 +15,11 @@ mu2eg4DefaultPhysics: {
     BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
     useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
+
+    // uncomment to activate the cuts per region; works for Geant4 "root"
+    // volumes which have Mother at the end of the name like in "CalorimeterMother"
+    // minRangeRegionCuts: { Calorimeter : 0.1 Tracker : 0.001 } // {RegionName : mm }
+
     protonProductionCut: 0.0 // mm
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
@@ -22,6 +27,8 @@ mu2eg4DefaultPhysics: {
     setMuHadLateralDisplacement: false // improves accuracy of boundary crossing for muons and hadrons
     modifyEMOption4: false // to set 115 MeV transition energy for the msc models when using _EMZ
     modifyEMOption0: false // to set 115 MeV transition energy for the msc models with "opt0"
+    useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
+                                 // does not seem to work all that well in geant4 10.4
     addProcesses: []
     captureDModel: ""
 

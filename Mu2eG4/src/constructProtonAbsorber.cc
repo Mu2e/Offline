@@ -75,6 +75,17 @@ namespace mu2e {
     // Fetch DS geometry
     GeomHandle<DetectorSolenoid> ds;
 
+
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "protonabsorber", "protonabsorber");
+
+    const bool pabsIsVisible       = geomOptions->isVisible("protonabsorber"); 
+    const bool pabsIsSolid         = geomOptions->isSolid("protonabsorber"); 
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("protonabsorber"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("protonabsorber"); 
+    const bool placePV             = geomOptions->placePV("protonabsorber"); 
+
+
     //**** Helical proton absorber ****//
     if ( _config.getBool("protonabsorber.isHelical", false) ) {
       if ( verbosityLevel > 0) cout << __func__ << " : Proton Absorber is Helical type" << endl;
@@ -120,7 +131,7 @@ namespace mu2e {
       if ( _config.getBool("protonabsorber.visible",true) ) {
         AntiLeakRegistry & reg = _helper->antiLeakRegistry();
         hpabs->SetVisibility( _config.getBool("protonabsorber.solid",true),
-                              _config.getBool("g4.forceAuxEdgeVisible",false),
+                              forceAuxEdgeVisible,
                               G4Color::Green(), reg);
       }
       
@@ -206,13 +217,6 @@ namespace mu2e {
       // proton absorber in DS2
       double pabs1Param[7] = { pabs1rIn0, pabs1rOut0, pabs1rIn1, pabs1rOut1, pabs1len*0.5,
                                0.0, 360.0*CLHEP::degree };
-      bool pabsIsVisible = _config.getBool("protonabsorber.visible",true);
-      bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
-
-      bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-      bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) ||
-	_config.getBool("protonAbsorber.doSurfaceCheck",false);
-      bool const placePV       = true;
 
       if ( verbosityLevel > 0 ) {
         mf::LogInfo log("GEOM");
@@ -329,13 +333,6 @@ namespace mu2e {
       G4ThreeVector pabs3Offset(0.0, 0.0, pabs3ZOffset);
       G4ThreeVector pabs4Offset(0.0, 0.0, pabs4ZOffset);
 
-      bool pabsIsVisible = _config.getBool("protonabsorber.visible",true);
-      bool pabsIsSolid   = _config.getBool("protonabsorber.solid",true);
-  
-      bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-      bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) 
-	|| _config.getBool("protonAbsorber.doSurfaceCheck",false);
-      bool const placePV       = true;
       // proton absorber in DS2
       if (pabs->isAvailable(0)) {
         double pabs1rIn0  = pabs->part(0).innerRadiusAtStart();

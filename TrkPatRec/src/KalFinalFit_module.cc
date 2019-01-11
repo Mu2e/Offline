@@ -226,26 +226,29 @@ namespace mu2e
       _data.tracks = krcol.get();
     }
 
-    _result.fitType     = 0;
+    _result.fitType     = 1;
     _result.event       = &event ;
     _result.chcol       = _chcol ;
     _result.shfcol      = _shfcol ;
-    _result.tpart       = _tpart ;
+    //    _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
 
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       KalSeed const& kseed(_kscol->at(ikseed));
       _result.kalSeed = & kseed;
+      //      _result.tpart   = kseed.particle();
 
       if (kseed.caloCluster()) _result.caloCluster = kseed.caloCluster().get();
 
       // only process fits which meet the requirements
       if(kseed.status().hasAllProperties(_goodseed)) {
 	// check the seed has the same basic parameters as this module expects
-	if(kseed.particle() != _tpart || kseed.fitDirection() != _fdir ) {
-	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: wrong particle or direction"<< endl;
-	}
+
+	// if(kseed.particle() != _tpart || kseed.fitDirection() != _fdir ) {
+	//   throw cet::exception("RECO")<<"mu2e::KalFinalFit: wrong particle or direction"<< endl;
+	// }
+
 	// seed should have at least 1 segment
 	if(kseed.segments().size() < 1){
 	  throw cet::exception("RECO")<<"mu2e::KalFinalFit: no segments"<< endl;
@@ -338,7 +341,8 @@ namespace mu2e
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
-	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),kseed.status());
 	  // reference the seed fit in this fit
 	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
 	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);

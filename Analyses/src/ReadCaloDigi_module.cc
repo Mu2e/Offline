@@ -571,7 +571,7 @@ namespace mu2e {
               if ( sim.fromGenerator() ){
 
                 GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-                if ( gen->generatorId() != GenId::conversionGun ){
+                if ( gen->generatorId().isConversion() ){
                   continue;
                 }
               }
@@ -893,7 +893,7 @@ namespace mu2e {
 	      }
 	    // if ( sim->fromGenerator() ){
 	    //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	    //   if ( gen->generatorId() == GenId::conversionGun ){
+	    //   if ( gen->generatorId().isConversion() ){
 	    // 	isConversion = 1;
 	    //   }
 	    // }

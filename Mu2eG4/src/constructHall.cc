@@ -13,8 +13,8 @@
 // Mu2e includes
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeneralUtilities/inc/OrientationResolver.hh"
-#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/NotchManager.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
@@ -52,7 +52,14 @@ namespace mu2e {
     GeomHandle<Mu2eHall> building;
 
     const auto& geoOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    
+    geoOptions->loadEntry( config, "hallFormalBox", "hall.formalBox" );
+    geoOptions->loadEntry( config, "HallAir", "hall" );
+    const bool isHallFormalBoxVisible = geoOptions->isVisible("hallFormalBox"); 
+    const bool isHallFormalBoxSolid   = geoOptions->isSolid("hallFormalBox"); 
+    const bool doSurfaceCheck         = geoOptions->doSurfaceCheck("HallAir"); 
+    const bool forceAuxEdgeVisible    = geoOptions->forceAuxEdgeVisible("HallAir"); 
+    const bool placePV                = geoOptions->placePV("HallAir");  
+
     // The formal hall volume
     VolumeInfo hallInfo = nestBox( "HallAir",
                                    world->hallFormalHalfSize(),
@@ -61,12 +68,12 @@ namespace mu2e {
                                    world->hallFormalCenterInWorld(),
                                    worldInfo,
                                    0,
-                                   config.getBool("hall.formalBoxVisible"),
+                                   isHallFormalBoxVisible,
                                    G4Colour::Red(),
-                                   config.getBool("hall.formalBoxSolid"),
-                                   geoOptions->forceAuxEdgeVisible( "HallAir" ),
-                                   geoOptions->placePV( "HallAir" ),
-                                   geoOptions->doSurfaceCheck( "HallAir" )
+                                   isHallFormalBoxSolid,
+                                   forceAuxEdgeVisible,
+                                   placePV,
+                                   doSurfaceCheck
                                    );
 
     // Rotation is static because rotations are not copied into G4.
@@ -78,15 +85,16 @@ namespace mu2e {
     NotchManager notchMgr;
     notchMgr.loadNotches(config);
 
-    constructSolids( hallInfo, building->getBldgSolids(), horizontalConcreteRotation, notchMgr );
-    constructSolids( hallInfo, building->getDirtSolids(), horizontalConcreteRotation, notchMgr );
+    constructSolids( config, hallInfo, building->getBldgSolids(), horizontalConcreteRotation, notchMgr );
+    constructSolids( config, hallInfo, building->getDirtSolids(), horizontalConcreteRotation, notchMgr );
 
     return hallInfo;
 
   }
 
   //================================================================================
-  void constructSolids( const VolumeInfo& hallInfo, 
+  void constructSolids( const SimpleConfig& config,
+                        const VolumeInfo& hallInfo, 
 			const std::map<std::string,ExtrudedSolid>& solidMap,
 			const CLHEP::HepRotation& rot,
 			const NotchManager& notchMgr) {
@@ -95,7 +103,11 @@ namespace mu2e {
     // Building and dirt volumes are extruded solids.
     //-----------------------------------------------------------------
     
-    const auto& geoOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    const auto& geoOptions         = art::ServiceHandle<GeometryService>()->geomOptions();
+    const bool doSurfaceCheck      = geoOptions->doSurfaceCheck("HallAir"); 
+    const bool forceAuxEdgeVisible = geoOptions->forceAuxEdgeVisible("HallAir"); 
+    const bool placePV             = geoOptions->placePV("HallAir"); 
+
     OrientationResolver* OR = new OrientationResolver();
 
     // Loop over all volumes in the map
@@ -103,6 +115,8 @@ namespace mu2e {
 
       const auto& volume = keyVolumePair.second;
       const auto& volName = keyVolumePair.first;
+      
+      geoOptions->loadEntry( config, volume.getName(), volume.getName() );
 
       if ( notchMgr.hasNotches( volName ) ) {
 	// First do volumes with notches
@@ -114,9 +128,9 @@ namespace mu2e {
 
 	// Make the main extruded solid from which notches will be subtracted
 	G4ExtrudedSolid* aVol = new G4ExtrudedSolid(tmpVol.name, 
-					   volume.getVertices(),
-					   volume.getYhalfThickness(),
-					   G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+					            volume.getVertices(),
+					            volume.getYhalfThickness(),
+					            G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
       
 	// Now loop over the notches and subtract them from above
 	// First, create the eventual solid
@@ -162,9 +176,9 @@ namespace mu2e {
 		      geoOptions->isVisible( volume.getName() ),
 		      G4Colour::Grey(),
 		      geoOptions->isSolid( volume.getName() ),
-		      geoOptions->forceAuxEdgeVisible( volume.getName() ),
-		      geoOptions->placePV( volume.getName() ),
-		      geoOptions->doSurfaceCheck( volume.getName() )
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck
 		      );
 
       } else {  // Now for walls without notches
@@ -187,9 +201,9 @@ namespace mu2e {
 		      geoOptions->isVisible( volume.getName() ),
 		      G4Colour::Grey(),
 		      geoOptions->isSolid( volume.getName() ),
-		      geoOptions->forceAuxEdgeVisible( volume.getName() ),
-		      geoOptions->placePV( volume.getName() ),
-		      geoOptions->doSurfaceCheck( volume.getName() )
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck
 		      );
 
       } // end else of if for has notches
