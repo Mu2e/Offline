@@ -1,0 +1,13 @@
+           Release notes for Mu2e Offline software, v7_2_2, under development
+
+2) genser, January 14, 2019
+
+   Enabled ShieldingM_MU2ER1, Shielding_MU2ER1, QGSP_BERT_MU2ER1 and
+   their _EMZ variants as a replacement for ShieldingM, Shielding,
+   QGSP_BERT physics lists plus all the customizations which were done
+   in postG4InitializeTasks, to make them compatible with the MT split
+   of the work between master and worker thresds
+
+1) genser, December 10, 2018
+    setMuHadLateralDisplacement to true
+      Mu2eG4/fcl/prolog.fcl

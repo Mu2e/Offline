@@ -76,8 +76,6 @@
 #include "G4HadronicProcessStore.hh"
 #include "G4RunManagerKernel.hh"
 #include "G4SDManager.hh"
-//#include "G4EventManager.hh"
-#include "G4Threading.hh"
 
 // C++ includes.
 #include <iostream>

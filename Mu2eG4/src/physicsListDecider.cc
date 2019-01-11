@@ -42,6 +42,7 @@
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
 #include "Mu2eG4/inc/Shielding_MU2ER1.hh"
+#include "Mu2eG4/inc/QGSP_BERT_MU2ER1.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
@@ -66,7 +67,9 @@
 using namespace std;
 
 namespace mu2e{
+
   namespace {
+
     std::string getPhysicsListName(const fhicl::ParameterSet& pset) {
       return pset.get<std::string>("physics.physicsListName");
     }
@@ -99,6 +102,16 @@ namespace mu2e{
     bool modifyEMOption0(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.modifyEMOption0",false);
     }
+    void checkAddEMZ(const fhicl::ParameterSet& pset,
+                     std::string name,
+                     G4VModularPhysicsList* tmpPL) {
+      if ( name.find("_EMZ") != std::string::npos ) {
+        if (getDiagLevel(pset)>0) {
+          G4cout << __func__ << " Using G4EmStandardPhysics_option4" << G4endl;
+        }
+        tmpPL->ReplacePhysics( new G4EmStandardPhysics_option4(getDiagLevel(pset)));
+      }
+    }
 #endif
 
   }
@@ -106,10 +119,11 @@ namespace mu2e{
   G4VUserPhysicsList* physicsListDecider(const fhicl::ParameterSet& pset) {
 
     G4VModularPhysicsList* tmpPL(nullptr);
+    G4VModularPhysicsList* tmpPLN(nullptr);
 
     const string name = getPhysicsListName(pset);
 
-    std::cout << __func__ << " invoked with " << name << std::endl;
+    getDiagLevel(pset)>-1 && G4cout << __func__ << " invoked with " << name << G4endl;
 
     // special cases
     if ( name  == "Minimal" ) {
@@ -128,26 +142,47 @@ namespace mu2e{
     }
 
 #if G4VERSION>4103
-    else if ( name == "Shielding_MU2ER1" ){
-      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset));
+
+    else if ( name.find("ShieldingM_MU2ER1") == 0 ){
+      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","M");
+      checkAddEMZ(pset,name,tmpPL);
     }
 
-    else if ( name == "Shielding_MU2ER1_EMZ" ){
-      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset));
-      tmpPL->ReplacePhysics(new G4EmStandardPhysics_option4(getDiagLevel(pset)));
+    else if ( name.find("Shielding_MU2ER1") == 0 ){
+      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","");
+      checkAddEMZ(pset,name,tmpPL);
     }
+
+    else if ( name.find("QGSP_BERT_MU2ER1") == 0 ){
+      tmpPL = new QGSP_BERT_MU2ER1(pset,getDiagLevel(pset));
+      checkAddEMZ(pset,name,tmpPL);
+    }
+
 #endif
 
     // General case
     else {
 
+      // disable standard Geant4 physics lists as Mu2e switchDecayOff
+      // and adding Mu2eRecorderProcess need to be done during
+      // initialization in the MT mode forcing the creatin of custom
+      // physics lists
+
       G4PhysListFactory physListFactory;
       physListFactory.SetVerbose(getDiagLevel(pset));
-      tmpPL = physListFactory.GetReferencePhysList(name);
+      tmpPLN = physListFactory.GetReferencePhysList(name);
 
     }
 
-    if ( !tmpPL ){
+    if ( tmpPL==nullptr && tmpPLN!=nullptr) {
+      throw cet::exception("G4CONTROL")
+        << "Unable to load physics list named: "
+        << name
+        << ". If a list like it is needed please take a look at, e.g. Shielding_MU2ER1"
+        << "\n as an implementation example where one inherits from "
+        << "a reference physics list and adds Mu2e customizations"
+        << "\n";
+    } else if ( tmpPL==nullptr ) {
       throw cet::exception("G4CONTROL")
         << "Unable to load physics list named: "
         << name
