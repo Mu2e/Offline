@@ -24,6 +24,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
@@ -50,14 +51,16 @@ namespace mu2e {
     int const verbosityLevel = _config.getInt("tsda.verbosityLevel",0);
     double tmpRin = _config.getDouble("tsda.rin",0.0)*CLHEP::mm;
 
-    // Extract information from the config file.
-    bool NAVisible             = _config.getBool("tsda.visible");
-    bool NASolid               = _config.getBool("tsda.solid");
 
-    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "tsda", "tsda");
 
+    bool const NAVisible           = geomOptions->isVisible("tsda"); 
+    bool const NASolid             = geomOptions->isSolid("tsda"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("tsda"); 
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("tsda"); 
+    const bool placePV             = geomOptions->placePV("tsda");  
+ 
     // Access to the G4HelperService.
     G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
 

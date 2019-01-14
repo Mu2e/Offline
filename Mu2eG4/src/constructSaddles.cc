@@ -19,6 +19,8 @@
 
 // etc...
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -62,12 +64,16 @@ namespace mu2e {
     OrientationResolver* OR = new OrientationResolver();
 
     // Get config info
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheckGL      = config.getBool("g4.doSurfaceCheck",false);
-    const bool doSurfaceCheckSO   = config.getBool("Saddles.doSurfaceCheck",false);
-    const bool doSurfaceCheck = (doSurfaceCheckGL || doSurfaceCheckSO);
-    const bool placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "saddle", "saddle");
 
+    const bool saddleIsVisible     = geomOptions->isVisible("saddle"); 
+    const bool saddleIsSolid       = geomOptions->isSolid("saddle");     
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("saddle"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("saddle"); 
+    const bool placePV             = geomOptions->placePV("saddle"); 
+    
+  
     //================================================================
     // OK, so in version 1, Saddles were just extruded boxes that,
     // when taken as a whole, looked like a bunch of saddles and
@@ -270,9 +276,9 @@ namespace mu2e {
 			  extShieldVol.centerInParent,
 			  parent.logical,
 			  0,
-			  config.getBool("Saddle.visible"),
+			  saddleIsVisible,
 			  G4Colour::Magenta(),
-			  config.getBool("Saddle.solid"),
+			  saddleIsSolid,
 			  forceAuxEdgeVisible,
 			  placePV,
 			  doSurfaceCheck);
@@ -297,9 +303,9 @@ namespace mu2e {
 			  extShieldVol.centerInParent,
 			  parent.logical,
 			  0,
-			  config.getBool("Saddle.visible"),
+			  saddleIsVisible,
 			  G4Colour::Magenta(),
-			  config.getBool("Saddle.solid"),
+			  saddleIsSolid,
 			  forceAuxEdgeVisible,
 			  placePV,
 			  doSurfaceCheck);

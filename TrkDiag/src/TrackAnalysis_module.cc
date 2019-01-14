@@ -201,7 +201,6 @@ namespace mu2e {
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
     }
-
   }
 
   void TrackAnalysis::beginSubRun(const art::SubRun & subrun ) {
@@ -387,6 +386,7 @@ namespace mu2e {
 	}
       }
     }
+
     if(deSP.isNonnull()){
       _kdiag.fillTrkInfoMC(deSP,deK,_demc);
       _kdiag.fillTrkInfoMCStep(deSP,_demcgen);

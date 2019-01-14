@@ -1,0 +1,56 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# generate 104.97 MeV electrons with radative Correction included
+# for more info DocDB 20844
+#------------------------------------------------------------------------------
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+process_name : CeMLeadingLogTest
+
+source       : { module_type : EmptyEvent } 
+
+services : {
+    message               : @local::default_message
+    TFileService          : { fileName        : "nts.user.ceMLeadingLog_test.xxx.000001.root" }
+    RandomNumberGenerator : { }
+
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"  }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"       }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"  }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : { @table::automaticSeeds
+	baseSeed         :  0
+	maxUniqueEngines :  20
+    }
+
+    TimeTracker : {
+	printSummary : true
+	dbOutput : {
+	    filename  : ""
+	    overwrite : false
+	}
+    }
+}
+services.scheduler.wantSummary: true
+
+physics : {
+    producers: {
+	generate              : { @table::EventGenerator.producers.ceMLeadingLog
+	    doHistograms              : true
+	}
+    }
+    
+    p1            : [ generate ] 
+
+    trigger_paths : [ p1 ]
+}
+#------------------------------------------------------------------------------
+# uncomment the next 2 lines if you want the DST file to be written out
+#-----------------------------------------------------------------------------
+#physics.out                               : [ detectorOutput ]
+#outputs.detectorOutput.SelectEvents       : [ p1 ]
+#outputs.detectorOutput.fileName           : "sim.user.ceLeadignLog_test.xxx.000001.art"
+
