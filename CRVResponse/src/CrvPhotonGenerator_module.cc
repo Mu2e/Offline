@@ -64,11 +64,6 @@ namespace mu2e
     double      _scintillationYield;
     double      _scintillationYieldVariation;
     double      _scintillationYieldVariationCutoff;
-    double      _scintillatorBirksConstant;
-    double      _scintillatorRatioFastSlow;
-    double      _scintillatorDecayTimeFast;
-    double      _scintillatorDecayTimeSlow;
-    double      _fiberDecayTime;
 
     double      _startTime;             //StepPoint times before this time will be ignored to reduce computation times
                                         //(in particular by ignoring hits during the beam flash).
@@ -97,11 +92,6 @@ namespace mu2e
     _scintillationYield(pset.get<double>("scintillationYield")),    //5000.0 photons per MeV
     _scintillationYieldVariation(pset.get<double>("scintillationYieldVariation")),    //20.0%
     _scintillationYieldVariationCutoff(pset.get<double>("scintillationYieldVariationCutoff")),    //20.0%
-    _scintillatorBirksConstant(pset.get<double>("scintillatorBirksConstant")), //0.126 mm/MeV
-    _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
-    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //3.0 ns, includes WLS components in the scintillator
-    _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
-    _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _visibleEnergyAdjustmentFileName(pset.get<std::string>("visibleEnergyAdjustmentFileName")),
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
