@@ -20,7 +20,7 @@ mu2eg4DefaultPhysics: {
     // minRangeRegionCuts: { CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }
 
     protonProductionCut: 0.0 // mm
-    physicsListName:  "ShieldingM"
+    physicsListName:  "ShieldingM_MU2ER1"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
 
