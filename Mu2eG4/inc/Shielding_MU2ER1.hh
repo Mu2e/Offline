@@ -1,6 +1,6 @@
 // Physics list inheriting from Shielding using regions etc.
 // Uses ShieldingM
-// Original author K.L. Genser October 2018
+// Original author K.L. Genser January 2019
 //
 #ifndef Mu2eG4_Shielding_MU2ER1_h
 #define Mu2eG4_Shielding_MU2ER1_h 1

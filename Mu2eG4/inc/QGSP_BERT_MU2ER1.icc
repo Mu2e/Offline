@@ -1,15 +1,10 @@
 // Physics list inheriting from QGSP_BERT using regions etc.
-// Original author K.L.Genser October 2018
+// Original author K.L.Genser January 2018
 //
-
-// C++ includes
-#include <iostream>
 
 // Framework includes
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-// G4 includes
 
 // Mu2e includes
 
