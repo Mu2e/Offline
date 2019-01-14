@@ -13,7 +13,7 @@ Based on Paul Rubinov's C# code
 //in ROOT: CRVPhotons->Draw("x/0.05+20:(fabs(y)-13)/0.05+20>>photonMap(40,0,40,40,0,40)","","COLZ")
 
 //to get standalone version: compile with
-//g++ MakeCrvSiPMCharges.cc -std=c++11 -I../inc -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMChargesStandalone `root-config --cflags --glibs`
+//g++ MakeCrvSiPMCharges.cc -std=c++11 -I../../ -I$CLHEP_INCLUDE_DIR -L$CLHEP_LIB_DIR -lCLHEP -DSiPMChargesStandalone `root-config --cflags --glibs`
 
 namespace mu2eCrv
 {
@@ -249,7 +249,7 @@ int main()
   CLHEP::HepJamesRandom engine(1);
   CLHEP::RandFlat randFlat(engine);
   CLHEP::RandPoissonQ randPoissonQ(engine);
-  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,"../fcl/photonMap.root");
+  mu2eCrv::MakeCrvSiPMCharges sim(randFlat,randPoissonQ,"/cvmfs/mu2e.opensciencegrid.org/DataFiles/CRVConditions/v6_0/photonMap.root");
   sim.SetSiPMConstants(40, 40, 3.0, 500, 1695, 12.0, 8.84e-14, probabilities, inactivePixels);
 
   sim.Simulate(photonTimes, SiPMresponseVector);
