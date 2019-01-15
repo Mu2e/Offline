@@ -219,12 +219,5 @@ namespace mu2e{
     }
   }
 
-  void setMuHadLateralDisplacement(const fhicl::ParameterSet& pset) {
-    if (pset.get<bool>("physics.setMuHadLateralDisplacement",false)) {
-      G4EmParameters* params = G4EmParameters::Instance();
-      params->SetMuHadLateralDisplacement(true);
-    }
-  }
-
   //================================================================
 } // end namespace mu2e

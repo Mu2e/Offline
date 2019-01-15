@@ -14,6 +14,8 @@
 // G4 includes
 #include "G4BuilderType.hh"
 #include "G4Threading.hh"
+#include "G4EmParameters.hh"
+
 // factory
 #include "G4PhysicsConstructorFactory.hh"
 //
@@ -63,9 +65,6 @@ namespace mu2e {
 
     }
 
-    // use more accurate boundary crossing algorithm for muons and hadrons
-    setMuHadLateralDisplacement(*pset_);
-
     // Switch off the decay of some particles
     switchDecayOff(*pset_);
 
@@ -74,6 +73,13 @@ namespace mu2e {
 
     // swap Bertini Cascade with Precompound model in G4MuonMinusCapture if requested
     switchCaptureDModel(*pset_);
+
+    // use more accurate boundary crossing algorithm for muons and hadrons
+    // place this late in the setup sequence to avoid a subsequent change
+    if (pset_->get<bool>("physics.setMuHadLateralDisplacement",false)) {
+      G4EmParameters* params = G4EmParameters::Instance();
+      params->SetMuHadLateralDisplacement(true);
+    }
 
   }
 
