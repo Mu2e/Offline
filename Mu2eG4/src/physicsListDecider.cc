@@ -106,10 +106,12 @@ namespace mu2e{
                      std::string name,
                      G4VModularPhysicsList* tmpPL) {
       if ( name.find("_EMZ") != std::string::npos ) {
+        // somehow RemovePhysics/RegisterPhysics works better than ReplacePhysics
+        tmpPL->RemovePhysics(("G4EmStandard"));
         if (getDiagLevel(pset)>0) {
           G4cout << __func__ << " Using G4EmStandardPhysics_option4" << G4endl;
         }
-        tmpPL->ReplacePhysics( new G4EmStandardPhysics_option4(getDiagLevel(pset)));
+        tmpPL->RegisterPhysics( new G4EmStandardPhysics_option4(getDiagLevel(pset)) );
       }
     }
 #endif
@@ -143,17 +145,17 @@ namespace mu2e{
 
 #if G4VERSION>4103
 
-    else if ( name.find("ShieldingM_MU2ER1") == 0 ){
+    else if ( name == "ShieldingM_MU2ER1" || name == "ShieldingM_MU2ER1_EMZ" ){
       tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","M");
       checkAddEMZ(pset,name,tmpPL);
     }
 
-    else if ( name.find("Shielding_MU2ER1") == 0 ){
+    else if ( name == "Shielding_MU2ER1"  || name == "Shielding_MU2ER1_EMZ"  ){
       tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","");
       checkAddEMZ(pset,name,tmpPL);
     }
 
-    else if ( name.find("QGSP_BERT_MU2ER1") == 0 ){
+    else if ( name == "QGSP_BERT_MU2ER1"  || name == "QGSP_BERT_MU2ER1_EMZ"   ){
       tmpPL = new QGSP_BERT_MU2ER1(pset,getDiagLevel(pset));
       checkAddEMZ(pset,name,tmpPL);
     }
@@ -163,10 +165,10 @@ namespace mu2e{
     // General case
     else {
 
-      // disable standard Geant4 physics lists as Mu2e switchDecayOff
-      // and adding Mu2eRecorderProcess need to be done during
-      // initialization in the MT mode forcing the creatin of custom
-      // physics lists
+      // disable standard Geant4 physics lists as setMu2eG4ProductionCuts,
+      // esp. the region specific cuts need to be done during
+      // initialization in the MT mode forcing the creation of a custom
+      // physics constructor and physics lists
 
       G4PhysListFactory physListFactory;
       physListFactory.SetVerbose(getDiagLevel(pset));
@@ -194,6 +196,16 @@ namespace mu2e{
 
     if (turnOffRadioactiveDecay(pset)) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
+    }
+
+    if ( turnOffRadioactiveDecay(pset) && turnOnRadioactiveDecay(pset) ) {
+      mf::LogError("Config") << "Inconsistent config";
+      G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
+      throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
+    }
+
+    if (turnOnRadioactiveDecay(pset)) {
+      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(getDiagLevel(pset)));
     }
 
 #if G4VERSION>4103
@@ -227,27 +239,18 @@ namespace mu2e{
     }
 #endif
 
-    if ( turnOffRadioactiveDecay(pset) && turnOnRadioactiveDecay(pset) ) {
-      mf::LogError("Config") << "Inconsistent config";
-      G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
-      throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
-    }
-
-    if (turnOnRadioactiveDecay(pset)) {
-      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(getDiagLevel(pset)));
-    }
-
     // Muon Spin and Radiative decays plus pion muons with spin
     if ( getDecayMuonsWithSpin(pset) ) {
 
       // requires spin tracking: G4ClassicalRK4WSpin
-      if ( getStepperName(pset) !=  "G4ClassicalRK4WSpin") {
+      if ( getStepperName(pset) != "G4ClassicalRK4WSpin" &&
+           getStepperName(pset) != "G4DormandPrince745WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
-        G4cout << "Error: DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper" << G4endl;
-        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper\n";
+        G4cout << "Error: DecayMuonsWithSpin requires enabling spin tracking" << G4endl;
+        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires enabling spin tracking\n";
       }
 
-      tmpPL-> RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(pset)));
+      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(pset)));
     }
 
     if (getDiagLevel(pset) > 0) tmpPL->DumpCutValuesTable();
