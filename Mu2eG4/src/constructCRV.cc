@@ -18,6 +18,7 @@
 #include "Mu2eG4/inc/constructCRV.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorShield.hh"
@@ -49,17 +50,19 @@ namespace mu2e
   {
     GeomHandle<CosmicRayShield> CosmicRayShieldGeomHandle;
 
-    G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
-    AntiLeakRegistry & reg = _helper.antiLeakRegistry();
-
-    bool scintillatorShieldVisible = _config.getBool("crs.vetoVisible",true);
-    bool scintillatorShieldDrawSolid = _config.getBool("crs.vetoSolid",true);
-
-    int  verbosityLevel = _config.getInt("crs.verbosityLevel",0);
-    bool forMARS        = _config.getBool("crs.forMARS",false);
-
-    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("crs.doSurfaceCheck",false);
+    G4Helper& _helper       = *(art::ServiceHandle<G4Helper>());
+    AntiLeakRegistry& reg   = _helper.antiLeakRegistry();
+    const auto& geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    
+    geomOptions->loadEntry( _config, "crsVeto", "crs.veto" );
+    const bool scintillatorShieldVisible   = geomOptions->isVisible("crsVeto"); 
+    const bool scintillatorShieldDrawSolid = geomOptions->isSolid("crsVeto"); 
+    const bool forceAuxEdgeVisible         = geomOptions->forceAuxEdgeVisible("crsVeto"); 
+    const bool doSurfaceCheck              = geomOptions->doSurfaceCheck("crsVeto"); 
+    //const bool placePV                     = geomOptions->placePV("crsVeto"); 
+    
+    int  verbosityLevel                    = _config.getInt("crs.verbosityLevel",0);
+    bool forMARS                           = _config.getBool("crs.forMARS",false);
 
     std::string hallAirMaterialName = _config.getString("hall.insideMaterialName");
 
