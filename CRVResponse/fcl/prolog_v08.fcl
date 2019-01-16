@@ -1,4 +1,4 @@
-//use with Mu2eG4/geom/crv_counters_v08.txt (e.g. CRVResponse/test/CRVResponse.fcl)
+//use with Mu2eG4/geom/crv_counters_v07.txt (e.g. CRVResponse/test/CRVResponse.fcl)
 
 BEGIN_PROLOG
 
