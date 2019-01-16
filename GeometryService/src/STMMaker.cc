@@ -27,6 +27,7 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "Mu2eHallGeom/inc/Mu2eHall.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 
 using namespace std;
 
@@ -295,6 +296,10 @@ namespace mu2e {
 
   void STMMaker::parseConfig( SimpleConfig const & _config ){
 
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "stmMagnetField", "stm.magnet.field");
+
+
     _verbosityLevel            = _config.getInt("stm.verbosityLevel",0);
     _stmZAllowed               = _config.getDouble("stm.z.allowed");
     
@@ -307,7 +312,8 @@ namespace mu2e {
     _magnetHoleHalfHeight      = _config.getDouble("stm.magnet.holeHalfHeight");    
     _magnetMaterial            = _config.getString("stm.magnet.material");
     _magnetField               = _config.getDouble("stm.magnet.field");
-    _magnetFieldVisible        = _config.getBool(  "stm.magnet.fieldVisible",false);
+    //_magnetFieldVisible        = _config.getBool(  "stm.magnet.fieldVisible",false);
+    _magnetFieldVisible        = geomOptions->isVisible("stmMagnetField");
     
     _FOVCollimatorBuild            = _config.getBool(  "stm.FOVcollimator.build");
     _FOVCollimatorMaterial         = _config.getString("stm.FOVcollimator.material");       

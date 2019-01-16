@@ -16,6 +16,8 @@
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
+#include "GeometryService/inc/GeometryService.hh"
 
 #include "TTrackerGeom/inc/TTracker.hh"
 
@@ -49,15 +51,19 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
 
   // Switches that affect the entire tracker
   _verbosityLevel(_config.getInt("ttracker.verbosityLevel",0)),
-  _doSurfaceCheck(_config.getBool("g4.doSurfaceCheck",false)||
-                  _config.getBool("ttracker.doSurfaceCheck",false)),
-  _forceAuxEdgeVisible(_config.getBool("g4.forceAuxEdgeVisible",false)),
 
   // Coordinate system transformation
   _offset(computeOffset()),
 
   // The value to be returned to the code that instantiates this object.
   _motherInfo(){
+
+  // Switches that affect the entire tracker
+    const auto geomOptions = art::ServiceHandle<mu2e::GeometryService>()->geomOptions();
+    geomOptions->loadEntry(config, "ttracker", "ttracker" );
+    _doSurfaceCheck      = geomOptions->doSurfaceCheck("ttracker");
+    _forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("ttracker");
+
 
   // Do the work.
   constructMother(); // Unchanged from "TDR" version
@@ -113,6 +119,11 @@ mu2e::ConstructTTrackerDetail5::constructMother(){
   static int const newPrecision = 8;
   static int const newWidth = 14;
 
+  const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+  geomOptions->loadEntry( _config, "ttrackerEnvelope", "ttracker.envelope" );
+  const bool  isEnvelopeVisible = geomOptions->isVisible("ttrackerEnvelope");
+  const bool  isEnvelopeSolid   = geomOptions->isSolid("ttrackerEnvelope");
+
   if (_verbosityLevel > 0) {
 
     int oldPrecision = cout.precision(newPrecision);
@@ -142,9 +153,9 @@ mu2e::ConstructTTrackerDetail5::constructMother(){
                           mother.position() - _ds3Vac.centerInWorld,
                           _ds3Vac,
                           0,
-                          _config.getBool("_ttracker.envelopeVisible",false),
+                          isEnvelopeVisible,
                           G4Colour::Blue(),
-                          _config.getBool("_ttracker.envelopeSolid",true),
+                          isEnvelopeSolid,
                           _forceAuxEdgeVisible,
                           place,
                           _doSurfaceCheck
@@ -180,7 +191,13 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
 
   SupportStructure const& sup = _ttracker.getSupportStructure();
 
-  bool ttrackerSupportSurfaceCheck = _config.getBool("ttrackerSupport.doSurfaceCheck",false);
+  const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+  geomOptions->loadEntry( _config, "ttrackerSupport", "ttracker.support" );
+  
+  const bool isSupportVisible = geomOptions->isVisible("ttrackerSupport");
+  const bool isSupportSolid   = geomOptions->isSolid("ttrackerSupport");
+  const bool doSurfaceCheck    = geomOptions->doSurfaceCheck("ttrackerSupport");
+
 
   // These rings are the same as TDR version
   for ( auto const& ring : sup.stiffRings() ){
@@ -202,12 +219,12 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
                                 ring.position()-_motherInfo.centerInWorld,
                                 _motherInfo,
                                 0,
-                                _config.getBool("ttracker.envelopeVisible",false),
+                                isSupportVisible,
                                 G4Colour::Red(),
-                                _config.getBool("ttracker.envelopeSolid",true),
+                                isSupportSolid,
                                 _forceAuxEdgeVisible,
                                 place,
-                                _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                                _doSurfaceCheck || doSurfaceCheck
                                 );
 
   } // end of loop over stiff support rings
@@ -239,12 +256,12 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
               sbeam.position()-_motherInfo.centerInWorld,
               _motherInfo,
               0,
-              _config.getBool("ttracker.envelopeVisible",false),
+              isSupportVisible,
               G4Colour::Cyan(),
-              _config.getBool("ttracker.envelopeSolid",true),
+              isSupportSolid,
               _forceAuxEdgeVisible,
               place,
-              _doSurfaceCheck || ttrackerSupportSurfaceCheck
+              _doSurfaceCheck || doSurfaceCheck
               );
 
   } // end of loop over support beam
@@ -283,12 +300,12 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
                   sbeam.position()-ttSSE.centerInWorld,
                   ttSSE,
                   0,
-                  _config.getBool("ttracker.envelopeVisible",false),
+                  isSupportVisible,
                   G4Colour::White(),
-                  _config.getBool("ttracker.envelopeSolid",true),
+                  isSupportSolid,
                   _forceAuxEdgeVisible,
                   place,
-                  _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                  _doSurfaceCheck || doSurfaceCheck
                   );
 
       if ( _verbosityLevel > 0 ) {
@@ -339,12 +356,12 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
                   sbeam.position()-ttSSE.centerInWorld,
                   ttSSE,
                   0,
-                  _config.getBool("ttracker.envelopeVisible",false),
+                  isSupportVisible,
                   ( sbeam.name().find("_c") != string::npos ) ? G4Colour::Yellow() : G4Colour::Green(),
-                  _config.getBool("ttracker.envelopeSolid",true),
+                  isSupportSolid,
                   _forceAuxEdgeVisible,
                   place,
-                  _doSurfaceCheck || ttrackerSupportSurfaceCheck
+                  _doSurfaceCheck || doSurfaceCheck
                   );
 
       if ( _verbosityLevel > 0 ) {
@@ -416,8 +433,12 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
   // built.
 
   TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
-  bool planeEnvelopeVisible      = _config.getBool("ttracker.planeEnvelopeVisible",false);
-  bool planeEnvelopeSolid        = _config.getBool("ttracker.planeEnvelopeSolid",true);
+  
+  const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+  geomOptions->loadEntry( _config, "ttrackerPlaneEnvelope", "ttracker.planeEnvelope" );
+  
+  const bool planeEnvelopeVisible = geomOptions->isVisible("ttrackerPlaneEnvelope");
+  const bool planeEnvelopeSolid   = geomOptions->isSolid("ttrackerPlaneEnvelope");
 
   G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
 
@@ -557,8 +578,10 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
   Panel const& panel(_ttracker.getPanel(PanelId(iPlane,iPanel,0)));
 
-  bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",false);
-  bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",true);
+  const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+  geomOptions->loadEntry( _config, "ttrackerPanelEnvelope", "ttracker.panelEnvelope" );
+  const bool panelEnvelopeVisible = geomOptions->isVisible("ttrackerPanelEnvelope");
+  const bool panelEnvelopeSolid   = geomOptions->isSolid("ttrackerPanelEnvelope");
 
   // Azimuth of the centerline of the panel envelope: panelCenterPhi
   // Upon construction and before placement, the panel envelope occupies [0,phiMax].
@@ -686,17 +709,19 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   Plane const& plane(_ttracker.getPlane(PlaneId(0,0,0)));
   Panel const& panel(_ttracker.getPanel(PanelId(0,0,0)));
 
-  bool panelEnvelopeVisible = _config.getBool("ttracker.panelEnvelopeVisible",
-					      false);
-  bool panelEnvelopeSolid   = _config.getBool("ttracker.panelEnvelopeSolid",
-					      true );
-  bool strawVisible          = _config.getBool("ttracker.strawVisible",false);
-  bool strawSolid            = _config.getBool("ttracker.strawSolid",true);
-  bool strawLayeringVisible  = _config.getBool("ttracker.strawLayeringVisible",
-					       false);
-  bool strawLayeringSolid    = _config.getBool("ttracker.strawLayeringSolid",
-					       false);
-  bool partialStraws         = _config.getBool("ttracker.partialStraws",false);
+  const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+  geomOptions->loadEntry( _config, "ttrackerPlaneEnvelope", "ttracker.planeEnvelope" );
+  geomOptions->loadEntry( _config, "ttrackerPanelEnvelope", "ttracker.panelEnvelope" );
+  geomOptions->loadEntry( _config, "ttrackerStraw", "ttracker.straw" );
+  geomOptions->loadEntry( _config, "ttrackerStrawLayering", "ttracker.strawLayering" );
+  const bool panelEnvelopeVisible = geomOptions->isVisible("ttrackerPanelEnvelope");
+  const bool panelEnvelopeSolid   = geomOptions->isSolid("ttrackerPanelEnvelope");
+  const bool strawVisible         = geomOptions->isVisible("ttrackerStraw");
+  const bool strawSolid           = geomOptions->isSolid("ttrackerStraw");
+  const bool strawLayeringVisible = geomOptions->isVisible("ttrackerStrawLayering");
+  const bool strawLayeringSolid   = geomOptions->isSolid("ttrackerStrawLayering");
+  
+  bool partialStraws              = _config.getBool("ttracker.partialStraws",false);
 
   // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
   // Upon construction and before placement, the panel envelope
@@ -966,9 +991,9 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // In the future, when we retire the ability to choose
   // v3 of the ttracker, we can simplify the support structure class.
   // ***************************************
-
-  bool supportVisible = _config.getBool("ttracker.supportVisible",false);
-  bool supportSolid   = _config.getBool("ttracker.supportSolid",true);
+  geomOptions->loadEntry( _config, "ttrackerSupport", "ttracker.support" );
+  bool supportVisible = geomOptions->isVisible("ttrackerSupport");
+  bool supportSolid   = geomOptions->isSolid("ttrackerSupport");
 
   // Many parts of the support structure are G4Tubs objects.
   G4Colour  lightBlue (0.0, 0.0, 0.75);
@@ -1225,9 +1250,10 @@ mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
   // keys are identical other than placement - so get required properties from plane 0, panel 0.
   // they are placed wrt to the panels; they could be constructed independently though
   //
-
-  bool keyVisible  = _config.getBool("ttrackerSupport.electronics.key.visible",true);
-  bool keySolid    = _config.getBool("ttrackerSupport.electronics.key.solid",false);
+  const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+  geomOptions->loadEntry( _config, "ttrackerElectronicsKey", "ttracker.electronicsKey" );
+  const bool keyVisible = geomOptions->isVisible("ttrackerElectronicsKey");
+  const bool keySolid   = geomOptions->isSolid("ttrackerElectronicsKey");
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.

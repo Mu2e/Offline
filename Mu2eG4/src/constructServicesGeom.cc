@@ -17,6 +17,8 @@
 
 // etc...
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
@@ -62,12 +64,18 @@ namespace mu2e {
     OrientationResolver* OR = new OrientationResolver();
 
     // Get config info
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheckG     = config.getBool("g4.doSurfaceCheck",false);
-    const bool doSurfaceCheckSer   = config.getBool("Services.doSurfaceCheck",false);
-    const bool doSurfaceCheck = ( doSurfaceCheckG || doSurfaceCheckSer );
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "services",       "services");
+    geomOptions->loadEntry( config, "electronicRack", "electronicRack");
+    geomOptions->loadEntry( config, "pipe",           "pipe");
 
-    const bool placePV             = true;
+    const bool electronicRackIsVisible = geomOptions->isVisible("electronicRack"); 
+    const bool electronicRackIsSolid   = geomOptions->isSolid("electronicRack"); 
+    const bool pipeIsVisible           = geomOptions->isVisible("pipe"); 
+    const bool pipeIsSolid             = geomOptions->isSolid("pipe"); 
+    const bool doSurfaceCheck          = geomOptions->doSurfaceCheck("services"); 
+    const bool forceAuxEdgeVisible     = geomOptions->forceAuxEdgeVisible("services"); 
+    const bool placePV                 = geomOptions->placePV("services");  
 
 
     // *******************************************************
@@ -151,9 +159,9 @@ namespace mu2e {
 				   pipePosInMu2e,
 				   parent,
 				   ip,
-				   config.getBool("Pipe.visible"),
+				   pipeIsVisible,
 				   G4Colour::Magenta(),
-				   config.getBool("Pipe.solid"),
+				   pipeIsSolid,
 				   forceAuxEdgeVisible,
 				   placePV,
 				   doSurfaceCheck);
@@ -165,9 +173,9 @@ namespace mu2e {
 				  pipePosInMu2e,
 				  parent.logical,
 				  ip,
-				  config.getBool("Pipe.visible"),
+				  pipeIsVisible,
 				  G4Colour::Magenta(),
-				  config.getBool("Pipe.solid"),
+				  pipeIsSolid,
 				  forceAuxEdgeVisible,
 				  placePV,
 				  doSurfaceCheck);
@@ -197,9 +205,9 @@ namespace mu2e {
 			findMaterialOrThrow(cMats[it][ic]),
 			0, tPosComp, motherLogVol,
 			ic,
-			config.getBool("Pipe.visible"),
+			pipeIsVisible,
 			G4Colour::Magenta(),
-			config.getBool("Pipe.solid"),
+			pipeIsSolid,
 			forceAuxEdgeVisible,
 			placePV,
 			doSurfaceCheck);
@@ -208,9 +216,9 @@ namespace mu2e {
 		      findMaterialOrThrow(cMats[it][ic]),
 		      0, posComp, motherLogVol,
 		      ic,
-		      config.getBool("Pipe.visible"),
+		      pipeIsVisible,
 		      G4Colour::Magenta(),
-		      config.getBool("Pipe.solid"),
+		      pipeIsSolid,
 		      forceAuxEdgeVisible,
 		      placePV,
 		      doSurfaceCheck);
@@ -257,9 +265,9 @@ namespace mu2e {
 		 itsRotatER, sitesER[i]-parent.centerInMu2e(),
 		 parent.logical,
 		 0,
-		 config.getBool("ElectronicRack.visible"),
+		 electronicRackIsVisible,
 		 G4Colour::Magenta(),
-		 config.getBool("ElectronicRack.solid"),
+		 electronicRackIsSolid,
 		 forceAuxEdgeVisible,
 		 placePV,
 		 doSurfaceCheck);
