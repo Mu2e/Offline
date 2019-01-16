@@ -30,15 +30,15 @@ string hall.wallMaterialName    = "G4_CONCRETE";
 string hall.ceilingMaterialName = "G4_CONCRETE"; 
 string hall.insideMaterialName  = "G4_AIR";
 
-bool   hall.formalBoxVisible        = false;
-bool   hall.formalBoxSolid          = false;
+bool   hall.formalBox.visible        = false;
+bool   hall.formalBox.solid          = false;
 
-bool   hall.floorVisible            = true;
-bool   hall.floorSolid              = true;
-bool   hall.ceilingVisible          = true;
-bool   hall.ceilingSolid            = false;
-bool   hall.wallsVisible            = true;
-bool   hall.wallsSolid              = false;
+bool   hall.floor.visible            = true;
+bool   hall.floor.solid              = true;
+bool   hall.ceiling.visible          = true;
+bool   hall.ceiling.solid            = false;
+bool   hall.walls.visible            = true;
+bool   hall.walls.solid              = false;
 
 // Beamline shielding slabs above concrete overburden
 int hall.beamlineSlabs.nSlabs = 4;

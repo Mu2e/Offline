@@ -736,7 +736,7 @@ namespace mu2e {
 	  SimParticle const& sim  = *simptr;
 	  if ( sim.fromGenerator() ){
 	    GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-	    if ( gen->generatorId() == GenId::conversionGun ){
+	    if ( gen->generatorId().isConversion()){
 	      isFromConversion = true;
 	      break;
 	    }

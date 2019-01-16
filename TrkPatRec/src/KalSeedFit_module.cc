@@ -100,6 +100,7 @@ namespace mu2e
     vector<double> _perr; // diagonal parameter errors to use in the fit
     Helicity _helicity; // cached value of helicity expected for this fit
     double _amsign; // cached sign of angular momentum WRT the z axis 
+    double _bz000;        // sign of the magnetic field at (0,0,0)
     HepSymMatrix _hcovar; // cache of parameter error covariance matrix
     // cache of event objects
     const ComboHitCollection* _chcol;
@@ -189,7 +190,8 @@ namespace mu2e
     CLHEP::Hep3Vector field = bfmgr->getBField(vpoint_mu2e);
     // helicity is a purely geometric quantity, however it's easiest
     // to determine it from the kinematics (angular momentum and Z momentum)
-    _amsign = copysign(1.0,-_tpart.charge()*field.z());
+    _bz000    = field.z();
+    _amsign   = copysign(1.0,-_tpart.charge()*_bz000);
     _helicity = Helicity(static_cast<float>(_fdir.dzdt()*_amsign));
   }
 
@@ -218,7 +220,7 @@ namespace mu2e
     _result.fitType     = 0;
     _result.event       = &event ;
     _result.chcol       = _chcol ;
-    _result.tpart       = _tpart ;
+    //    _result.tpart       = _tpart ;
     _result.fdir        = _fdir  ;
 
     // loop over the Helices
@@ -228,14 +230,27 @@ namespace mu2e
       
       if (hseed.caloCluster()) _result.caloCluster = hseed.caloCluster().get();
       _result.helixSeed = &hseed;
+//-----------------------------------------------------------------------------
+// 2018-12-08 PM : allow list of helices to contain helices of different 
+// helicities and corresponding to particles of opposite signs. Assume that the 
+// PDG particle coding scheme is used such that the particle and antiparticle 
+// PDG codes have opposite signs
+//-----------------------------------------------------------------------------
+      TrkParticle tpart(_tpart);
+      if   (_helicity == hseed.helix().helicity()) tpart = _tpart;
+      else {
+	TrkParticle::type t = (TrkParticle::type) (-(int) _tpart.particleType());
+	tpart = TrkParticle(t);
+      }
+      double amsign   = copysign(1.0,-tpart.charge()*_bz000);
 
       HepVector hpvec(HelixTraj::NHLXPRM);
       // verify the fit meets requirements and can be translated
       // to a fit trajectory.  This accounts for the physical particle direction
       // helicity.  This could be wrong due to FP effects, so don't treat it as an exception
       if(hseed.status().hasAllProperties(_seedflag) &&
-	 _helicity == hseed.helix().helicity() &&
-	 TrkUtilities::RobustHelix2Traj(hseed._helix,hpvec,_amsign)){
+	 //	 _helicity == hseed.helix().helicity() &&
+	 TrkUtilities::RobustHelix2Traj(hseed._helix,hpvec,amsign)){
 	HelixTraj hstraj(hpvec,_hcovar);
 	// update the covariance matrix
 	if(_debug > 1)
@@ -251,7 +266,8 @@ namespace mu2e
 	    hseed.hits().fillStrawHitIndices(event,ihit,tclust._strawHitIdxs);
 	}
 	// create a TrkDef; it should be possible to build a fit from the helix seed directly FIXME!
-	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
+	//	TrkDef seeddef(tclust,hstraj,_tpart,_fdir);
+	TrkDef seeddef(tclust,hstraj,tpart,_fdir);
 	// filter outliers; this doesn't use drift information, just straw positions
 	if(_foutliers)filterOutliers(seeddef);
 	const HelixTraj* htraj = &seeddef.helix();
@@ -261,7 +277,8 @@ namespace mu2e
 	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
 	double           helt0 = hseed.t0().t0();
 	
-	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
+	//	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
+	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, seedok);
 	auto hsH = event.getValidHandle(_hsToken);
 	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
@@ -322,7 +339,8 @@ namespace mu2e
 	  // convert the status into a FitFlag
 	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
-	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
+	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
+	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 	  // fill ptr to the helix seed
           auto hsH = event.getValidHandle(_hsToken);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);

@@ -55,20 +55,27 @@ namespace mu2e {
     bool const inGaragePosition = _config.getBool("inGaragePosition",false);
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-    geomOptions->loadEntry( _config, "DS"         , "ds"          );
-    geomOptions->loadEntry( _config, "DSCoil"     , "dsCoil"      );
-    geomOptions->loadEntry( _config, "DSRing"     , "dsRing"      );
-    geomOptions->loadEntry( _config, "DSSpacer"   , "dsSpacer"    );
-    geomOptions->loadEntry( _config, "DSSupport"  , "dsSupport"   );
-    geomOptions->loadEntry( _config, "DSThShield" , "dsThShield"  );
-    geomOptions->loadEntry( _config, "DSVacuum"   , "dsVacuum"    );
-    geomOptions->loadEntry( _config, "DSShielding", "dsShielding" );
+    geomOptions->loadEntry( _config, "ds"         , "ds"           );
+    geomOptions->loadEntry( _config, "dsCoil"     , "ds.coil"      );
+    geomOptions->loadEntry( _config, "dsRing"     , "ds.ring"      );
+    geomOptions->loadEntry( _config, "dsSpacer"   , "ds.spacer"    );
+    geomOptions->loadEntry( _config, "dsSupport"  , "ds.support"   );
+    geomOptions->loadEntry( _config, "dsThShield" , "ds.thShield"  );
+    geomOptions->loadEntry( _config, "dsVacuum"   , "ds.vacuum"    );
+    geomOptions->loadEntry( _config, "dsShielding", "ds.shielding" );
 
+    const bool isDSVisible         = geomOptions->isVisible("ds"); 
+    const bool isDSSolid           = geomOptions->isSolid("ds"); 
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("ds"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("ds"); 
+    const bool placePV             = geomOptions->placePV("ds"); 
+    
+    
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
     // Fetch DS geom. object
-   GeomHandle<DetectorSolenoid> ds;
+    GeomHandle<DetectorSolenoid> ds;
     CLHEP::Hep3Vector const & dsP ( ds->position() );
 
     // DS cryostat
@@ -85,7 +92,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "DS"
+	      "ds"
               );
     // ***
     // Lining for inner cryo shell - for test of shielding
@@ -100,7 +107,7 @@ namespace mu2e {
 		parent,
 		0,
 		G4Color::Magenta(),
-		"DS"
+		"ds"
 		);
     }
 
@@ -115,7 +122,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "DS"
+	      "ds"
               );
 
     // DNB (Lou) May 2017.  Making a vacuum volume inside the cryostat
@@ -134,7 +141,7 @@ namespace mu2e {
 		    findMaterialOrThrow("DSVacuum"),
 		    0, dsCryoVacMother.centerInParent,
 		    parent.logical, 0, G4Colour::White(),
-		    "DS" );
+		    "ds" );
 		    
 
     // - end walls
@@ -149,7 +156,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "DS"
+	      "ds"
               );
 
     G4ThreeVector dsDownEndWallPosition( dsP.x(), dsP.y(), 
@@ -162,7 +169,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "DS"
+	      "ds"
               );
 
     // - upstream face
@@ -182,7 +189,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Blue(),
-	      "DS"
+	      "ds"
               );
 
     // DS thermal shield
@@ -199,7 +206,7 @@ namespace mu2e {
               dsCryoVacMother,
               0,
               G4Color::Cyan(),
-	      "DSThShield"
+	      "dsThShield"
               );
 
     // - outer shield shell
@@ -213,7 +220,7 @@ namespace mu2e {
               dsCryoVacMother,
               0,
               G4Color::Cyan(),
-	      "DSThShield"
+	      "dsThShield"
               );
 
     // SKIPPING END WALLS OF THERMAL SHIELD
@@ -245,7 +252,7 @@ namespace mu2e {
                 dsCryoVacMother,
                 0,
                 G4Color::Green(),
-		"DSCoil"
+		"dsCoil"
                 );
     }
 
@@ -272,7 +279,7 @@ namespace mu2e {
 		  dsCryoVacMother,
 		  0,
 		  G4Color::Green(),
-		  "DSSpacer"
+		  "dsSpacer"
 		  );
       }
     }
@@ -290,7 +297,7 @@ namespace mu2e {
               dsCryoVacMother,
               0,
               G4Color::Blue(),
-	      "DSSupport"
+	      "dsSupport"
               );
 
 
@@ -324,7 +331,7 @@ namespace mu2e {
 				       ringRotat, 
 				       CLHEP::Hep3Vector(motherx,mothery,motherz) - _hallOriginInMu2e,
 				       parent, 0, G4Color::Blue(),
-				       "DSRing" );
+				       "dsRing" );
  
      std::ostringstream leftName;
       leftName << "DSleftSideRing" << iRing;
@@ -338,7 +345,7 @@ namespace mu2e {
 		motherVol,
 		0,
 		G4Color::Blue(),
-		"DSRing"
+		"dsRing"
 		);
 
       std::ostringstream centerName;
@@ -352,7 +359,7 @@ namespace mu2e {
 		motherVol,
 		0,
 		G4Color::Blue(),
-		"DSRing"
+		"dsRing"
 		);
 
       std::ostringstream rightName;
@@ -366,7 +373,7 @@ namespace mu2e {
 		motherVol,
 		0,
 		G4Color::Blue(),
-		"DSRing"
+		"dsRing"
 		);
 
     } // finished inserting Rings
@@ -401,7 +408,7 @@ namespace mu2e {
               parent,
               0,
               G4Colour::Green(),
-	      "DSVacuum"
+	      "dsVacuum"
               );
 
     VolumeInfo ds2VacInfo = 
@@ -413,7 +420,7 @@ namespace mu2e {
 		parent,
 		0,
 		G4Colour::Yellow(),
-		"DSVacuum"
+		"dsVacuum"
 		);
 
     // Polycone geometry allows for MBS to extend beyond solenoid
@@ -466,7 +473,7 @@ namespace mu2e {
 					      parent,
 					      0,
 					      G4Colour::Yellow(),
-					      "DSVacuum"
+					      "dsVacuum"
 					      );
 
     if ( inGaragePosition ) {
@@ -482,7 +489,7 @@ namespace mu2e {
 						parent,
 						0,
 						G4Colour::Yellow(),
-						"DSVacuum"
+						"dsVacuum"
 						);
     }
       
@@ -498,7 +505,7 @@ namespace mu2e {
                 dsShieldParent,
                 0,
                 G4Colour::Blue(),
-		"DSShielding"
+		"dsShielding"
                 );
 
     }
@@ -511,9 +518,6 @@ namespace mu2e {
     std::vector<double> uRailOutline = ds->uOutlineRail();
     std::vector<double> vRailOutline = ds->vOutlineRail();
 
-    const bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false)|| _config.getBool("ds.doSurfaceCheck",false);
-    const bool placePV             = true;
     CLHEP::HepRotation* nRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
     CLHEP::HepRotation* sRailRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
     sRailRotat->rotateY(180.0*CLHEP::degree);
@@ -523,8 +527,8 @@ namespace mu2e {
 		       uRailOutline, vRailOutline, 
 		       findMaterialOrThrow(ds->RailMaterial()),
 		       nRailRotat, ds->n2RailCenter(),
-		       ds2VacInfo.logical, 0, _config.getBool("ds.visible"),
-		       G4Colour::Blue(), _config.getBool("ds.solid"),
+		       ds2VacInfo.logical, 0, isDSVisible,
+		       G4Colour::Blue(), isDSSolid,
 		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
 
     VolumeInfo RailS2 = nestExtrudedSolid
@@ -532,8 +536,8 @@ namespace mu2e {
 		       uRailOutline, vRailOutline, 
 		       findMaterialOrThrow(ds->RailMaterial()),
 		       sRailRotat, ds->s2RailCenter(),
-		       ds2VacInfo.logical, 0, _config.getBool("ds.visible"),
-		       G4Colour::Blue(), _config.getBool("ds.solid"),
+		       ds2VacInfo.logical, 0, isDSVisible,
+		       G4Colour::Blue(), isDSSolid,
 		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
 
     // And now in DS3Vacuum
@@ -543,8 +547,8 @@ namespace mu2e {
  		       uRailOutline, vRailOutline, 
  		       findMaterialOrThrow(ds->RailMaterial()),
  		       nRailRotat, ds->n3RailCenter(),
- 		       dsShieldParent, 0, _config.getBool("ds.visible"),
- 		       G4Colour::Blue(), _config.getBool("ds.solid"),
+ 		       dsShieldParent, 0, isDSVisible,
+ 		       G4Colour::Blue(), isDSSolid,
  		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
 
      VolumeInfo RailS3 = nestExtrudedSolid
@@ -552,8 +556,8 @@ namespace mu2e {
  		       uRailOutline, vRailOutline, 
  		       findMaterialOrThrow(ds->RailMaterial()),
  		       sRailRotat, ds->s3RailCenter(),
- 		       dsShieldParent, 0, _config.getBool("ds.visible"),
- 		       G4Colour::Blue(), _config.getBool("ds.solid"),
+ 		       dsShieldParent, 0, isDSVisible,
+ 		       G4Colour::Blue(), isDSSolid,
  		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
     
      // Now put bearing blocks on rails
@@ -584,8 +588,8 @@ namespace mu2e {
 	   findMaterialOrThrow(ds->BBlockMaterial()),
 	   BBRotat, BBCenters2[iB2] - DS2Offset,
 	   ds2VacInfo.logical, 
-	   0, _config.getBool("ds.visible"),
-	   G4Colour::Blue(), _config.getBool("ds.solid"),
+	   0, isDSVisible,
+	   G4Colour::Blue(), isDSSolid,
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
        // Now add Couplers
        if (iB2 < nB2 - 2 && (cScheme == 0 || (cScheme == 1 && BBCenters2[iB2].x() > 0.0) || (cScheme == 2 && BBCenters2[iB2].x() < 0) ) ) {
@@ -605,8 +609,8 @@ namespace mu2e {
 		  BBRotat,
 		  cenCoupler - DS2Offset,
 		  ds2VacInfo.logical,
-		  0, _config.getBool("ds.visible"),
-		  G4Colour::Blue(), _config.getBool("ds.solid"),
+		  0, isDSVisible,
+		  G4Colour::Blue(), isDSSolid,
 		  forceAuxEdgeVisible, placePV, doSurfaceCheck );
 		  
        } // end of if for adding coupler if not last bearing block
@@ -624,8 +628,8 @@ namespace mu2e {
 	   uBBlockOutline, vBBlockOutline, 
 	   findMaterialOrThrow(ds->BBlockMaterial()),
 	   BBRotat, BBCenters3[iB3],
-	   dsShieldParent, 0, _config.getBool("ds.visible"),
-	   G4Colour::Blue(), _config.getBool("ds.solid"),
+	   dsShieldParent, 0, isDSVisible,
+	   G4Colour::Blue(), isDSSolid,
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
        // Now add Couplers
        if (iB3 < nB3 - 2 && (cScheme == 0 || (cScheme == 1 && BBCenters3[iB3].x() > 0.0) || (cScheme == 2 && BBCenters3[iB3].x() < 0) ) ) {
@@ -645,8 +649,8 @@ namespace mu2e {
 		  BBRotat,
 		  cenCoupler,
 		  dsShieldParent,
-		  0, _config.getBool("ds.visible"),
-		  G4Colour::Blue(), _config.getBool("ds.solid"),
+		  0, isDSVisible,
+		  G4Colour::Blue(), isDSSolid,
 		  forceAuxEdgeVisible, placePV, doSurfaceCheck );
 		  
        } // end of if for adding coupler if not last bearing block
@@ -665,8 +669,8 @@ namespace mu2e {
 	   uOutlineMBSS, vOutlineMBSS, 
 	   findMaterialOrThrow(ds->MBSSmaterial()),
 	   0, ds->MBSSlocation(),
-	   dsShieldParent, 0, _config.getBool("ds.visible"),
-	   G4Colour::Blue(), _config.getBool("ds.solid"),
+	   dsShieldParent, 0, isDSVisible,
+	   G4Colour::Blue(), isDSSolid,
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
      }  // end of if ( ds->hasMBSS() )
 
@@ -694,7 +698,7 @@ namespace mu2e {
 				      dsShieldParent,
 				      0,
 				      G4Color::Magenta(),
-				      "DS"
+				      "ds"
 				      );
 
 
@@ -717,7 +721,7 @@ namespace mu2e {
 					   dsShieldParent,
 					   0,
 					   G4Color::Magenta(),
-					   "DS"
+					   "ds"
 					   );
 
 	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(), 
@@ -736,7 +740,7 @@ namespace mu2e {
 					  dsShieldParent,
 					  0,
 					  G4Color::Magenta(),
-					  "DS"
+					  "ds"
 					  );
 
 	 // And last but not least the connector between the top of the Cal
@@ -757,7 +761,7 @@ namespace mu2e {
 					     dsShieldParent,
 					     0,
 					     G4Colour::Magenta(),
-					     "DS" );
+					     "ds" );
 
        } // end of if ( CableRunVersion > 1 )
      } // end of if ( ds->hasCableRunCal() )
@@ -780,7 +784,7 @@ namespace mu2e {
 				      dsShieldParent,
 				      0,
 				      G4Color::Magenta(),
-				      "DS"
+				      "ds"
 				      );
 
        // Now the second one
@@ -800,7 +804,7 @@ namespace mu2e {
 				    dsShieldParent,
 				    0,
 				    G4Color::Magenta(),
-				    "DS"
+				    "ds"
 				    );
 
        if ( ds->cableRunVersion() > 1 ) {
@@ -821,7 +825,7 @@ namespace mu2e {
 				       dsShieldParent,
 				       0,
 				       G4Color::Magenta(),
-				       "DS"
+				       "ds"
 				       );
 
 	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(), 
@@ -840,7 +844,7 @@ namespace mu2e {
 					dsShieldParent,
 					0,
 					G4Color::Magenta(),
-					"DS"
+					"ds"
 					);
 
 	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(), 
@@ -859,7 +863,7 @@ namespace mu2e {
 				       dsShieldParent,
 				       0,
 				       G4Color::Magenta(),
-				       "DS"
+				       "ds"
 				       );
 
 	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(), 
@@ -878,7 +882,7 @@ namespace mu2e {
 					 dsShieldParent,
 					 0,
 					 G4Color::Magenta(),
-					 "DS"
+					 "ds"
 					 );
 
        } // end of adding gap runs for trk cable runs
@@ -907,7 +911,7 @@ namespace mu2e {
 					      dsShieldParent,
 					      0,
 					      G4Color::Magenta(),
-					      "DS"
+					      "ds"
 					      );
 
 	 // Now make it a real pipe
@@ -921,7 +925,7 @@ namespace mu2e {
 		    DSPipeMother,
 		    0,
 		    G4Color::Magenta(),
-		    "DS"
+		    "ds"
 		    );
 
        } // End of loop over service pipes

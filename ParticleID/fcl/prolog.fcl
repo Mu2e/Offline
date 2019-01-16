@@ -18,9 +18,9 @@ ParticleID: {
 	    doDisplay         : false
 	}
 
-	AvikPID : { module_type:AvikPID
-	    trkPatRecDemModuleLabel : MergePatRecDem
-	    trkPatRecDmmModuleLabel : MergePatRecDmm
+	AvikPIDPar : { module_type:AvikPID
+	    trkPatRecDemModuleLabel : KFFDeMMergeHelixPar
+	    trkPatRecDmmModuleLabel : KFFDmuMMergeHelixPar
 	    EleDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
 	    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
 	    diagLevel               : 0 
@@ -36,6 +36,34 @@ ParticleID: {
 	    debugLevel              : 0
 	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
 	}
+
+	AvikPIDNewPar : { module_type:AvikPIDNew
+	    trkRecModuleLabel       : KFFDeMMergeHelixPar
+	    eleDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
+	    muoDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
+	    diagLevel               : 0 
+	    debugLevel              : 0
+	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
+	}
+
+	AvikPIDDar : { module_type:AvikPID
+	    trkPatRecDemModuleLabel : KFFDeMMergeHelixDar
+	    trkPatRecDmmModuleLabel : KFFDmuMMergeHelixDar
+	    EleDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
+	    MuoDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
+	    diagLevel               : 0 
+	    debugLevel              : 0
+	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
+	}
+
+	AvikPIDNewDar : { module_type:AvikPIDNew
+	    trkRecModuleLabel       : KFFDeMMergeHelixDar
+	    eleDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_ele_dedx.rtbl"
+	    muoDedxTemplateFile     : "ConditionsService/data/v5_7_9/pid_muo_dedx.rtbl"
+	    diagLevel               : 0 
+	    debugLevel              : 0
+	    DoubletAmbigResolver    : { @table::TrkReco.DoubletAmbigResolver }
+	}
     }
 }
 
@@ -43,23 +71,25 @@ ParticleID: { @table::ParticleID
 
     producers: {
 
-	AvikPID       : { @table::ParticleID.templates.AvikPID }
+	AvikPID        : { @table::ParticleID.templates.AvikPIDPar }
 
-	ParticleID    : { @table::ParticleID.templates.ParticleID }
-	ParticleIDDem : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDem fitparticle:11 }
-	ParticleIDDmm : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDmm fitparticle:13 }
+	ParticleID     : { @table::ParticleID.templates.ParticleID }
+	ParticleIDDeM  : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDem fitparticle:11 }
+	ParticleIDDmuM : { @table::ParticleID.templates.ParticleID fitterModuleLabel:MergePatRecDmm fitparticle:13 }
 
-	AvikPIDNew    : { @table::ParticleID.templates.AvikPIDNew }
+	AvikPIDNew     : { @table::ParticleID.templates.AvikPIDNewPar }
 
 	AvikPIDNewDem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDem }
 	AvikPIDNewDmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmm }
 	AvikPIDNewDep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDep }
 	AvikPIDNewDmp : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecDmp }
 
-	AvikPIDNewUem : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUem }
-	AvikPIDNewUmm : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmm }
-	AvikPIDNewUep : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUep }
-	AvikPIDNewUmp : { @table::ParticleID.templates.AvikPIDNew  trkRecModuleLabel : MergePatRecUmp }
+	AvikPIDNewDeMHPar   : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDeMHPar   }
+	AvikPIDNewDmuMHPar  : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDmuMHPar  }
+
+	AvikPIDNewDeMHDar   : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDeMHDar   }
+	AvikPIDNewDmuMHDar  : { @table::ParticleID.templates.AvikPIDNewPar  trkRecModuleLabel : KFFDmuMHDar  }
+
     }
 }
 

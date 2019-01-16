@@ -1,0 +1,29 @@
+#
+# Radiative Ce- spectrum, based on doc 7615 spectrum 
+#
+#include "JobConfig/primary/prolog.fcl"
+process_name: CePLeadingLog
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.CePLeadingLog
+    @table::Primary.producers
+  }
+  filters: { @table::Primary.filters }
+  analyzers: { @table::Primary.analyzers }
+  TriggerPath : @local::Primary.TriggerPath
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output :@local::Primary.Output
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+# customize the output
+services.TFileService.fileName: "nts.owner.CePLeadingLog.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CePLeadingLog.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
