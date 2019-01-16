@@ -1,4 +1,8 @@
-//use with Mu2eG4/geom/crv_counters_v07.txt (e.g. CRVResponse/test/CRVResponse.fcl)
+//Use with Mu2eG4/geom/crv_counters_v07.txt (e.g. CRVResponse/test/CRVResponse.fcl)
+//The geometry in Mu2eG4/geom/crv_counters_v07.txt uses a CRV counter cross section of 51.30mm x 19.80mm,
+//while the v6_0 lookup tables use a cross section of 51.34mm x 19.78mm.
+//The TiO2 coating of the CRV counters has a thickness of 0.25mm so that the active volume of the lookup table counters
+//is fully covered by the Offline counters.
 
 BEGIN_PROLOG
 
