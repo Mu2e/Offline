@@ -3,10 +3,15 @@ BEGIN_PROLOG
 DeadStraw : {
    verbose : 2
    useDb : false
-   deadPlanes : [9]
-   deadPanels : ["1_1","5_3"]
-   deadStraws : ["16_2_1","10_0_23"]
-   partlyDeadStraws : ["11_2_1 10.0","11_0_23 5.0"]
+   deadPlanes : []
+   deadPanels : []
+   deadStraws : []
+   partlyDeadStraws : []
+   # examples:
+   # deadPlanes : [9]
+   # deadPanels : ["1_1","5_3"]
+   # deadStraws : ["16_2_1","10_0_23"]
+   # partlyDeadStraws : ["11_2_1 10.0","11_0_23 5.0"]
 }
 
 StrawDrift : {

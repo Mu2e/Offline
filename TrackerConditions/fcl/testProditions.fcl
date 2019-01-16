@@ -8,12 +8,10 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 #include "Validation/fcl/prolog.fcl"
-#include "ProditionsService/fcl/prolog.fcl"
 
 process_name : ceSimReco
 
-service : {
-   all : {
+services : {
       message		    : @local::default_message
       GeometryService	    : @nil
       ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -26,7 +24,7 @@ service : {
       BTrkHelper : @local::BTrkHelperDefault
 
       DbService : {
-	 purpose :  "TEST"
+	 purpose :  "TRK_TEST"
 	 version :  "v1_0"
 	 dbName : "mu2e_conditions_prd"
 	 #textFile : ["table.txt"]
@@ -34,7 +32,6 @@ service : {
       }
       ProditionsService: @local::Proditions
 
-   }
 }
 
 source : {
