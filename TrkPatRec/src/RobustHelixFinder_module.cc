@@ -34,7 +34,6 @@
 
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "TrkReco/inc/Chi2HelixFit.hh"
 

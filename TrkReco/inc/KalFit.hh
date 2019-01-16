@@ -34,6 +34,7 @@
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
@@ -58,9 +59,9 @@ namespace mu2e
 // // create a fit object from a track definition
 //     void makeTrack(const ComboHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
-    void makeTrack(KalFitData&kalData);
+    void makeTrack(StrawResponse::cptr_t srep, KalFitData&kalData);
 // add a set of hits to an existing fit
-    void addHits(KalFitData&kalData, double maxchi);
+    void addHits(StrawResponse::cptr_t srep, KalFitData&kalData, double maxchi);
 // add materials to a track
     bool unweedHits(KalFitData&kalData, double maxchi);
 // KalContext interface
@@ -112,7 +113,8 @@ namespace mu2e
     bool fitable(KalSeed const& kseed);
     void initT0(KalFitData&kalData);
     
-    void makeTrkStrawHits  (KalFitData&kalData, TrkStrawHitVector& tshv );
+    void makeTrkStrawHits  (StrawResponse::cptr_t srep, 
+			    KalFitData&kalData, TrkStrawHitVector& tshv );
     void makeTrkCaloHit    (KalFitData&kalData, TrkCaloHit *&tch);
     void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial   (KalRep* krep);

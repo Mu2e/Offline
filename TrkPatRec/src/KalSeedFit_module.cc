@@ -24,6 +24,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
@@ -108,6 +110,8 @@ namespace mu2e
     KalFitData _result;
     const TTracker* _tracker;     // straw tracker geometry
 
+    ProditionsHandle<StrawResponse> _strawResponse_h;
+
     // diagnostic
     Data_t                                _data;
     std::unique_ptr<ModuleHistToolBase>   _hmanager;
@@ -190,6 +194,9 @@ namespace mu2e
   }
 
   void KalSeedFit::produce(art::Event& event ) {
+
+    auto srep = _strawResponse_h.getPtr(event.id());
+
     // create output collection
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     // event printout
@@ -292,7 +299,7 @@ namespace mu2e
 	//fill the KalFitData variable
 	_result.kalSeed = &kf;
 
-	_kfit.makeTrack(_result);
+	_kfit.makeTrack(srep,_result);
 
 	if(_debug > 1){
 	  if(_result.krep == 0)
@@ -306,7 +313,7 @@ namespace mu2e
 	    findMissingHits(_result);
 	    nrescued = _result.missingHits.size();
 	    if (nrescued > 0) {
-	      _kfit.addHits(_result, _maxAddChi);
+	      _kfit.addHits(srep,_result, _maxAddChi);
 	    }
 	  }
 

@@ -161,6 +161,9 @@ namespace mu2e {
 
     TMarker*  fMarker;
 
+    // Tracker conditions object.
+    ProditionsHandle<StrawResponse> strawResponse_h;
+
   public:
     explicit HitDisplay(fhicl::ParameterSet const& pset);
     virtual ~HitDisplay();
@@ -490,8 +493,7 @@ namespace mu2e {
 
     TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
 
-    // Tracker conditions object.
-    ConditionsHandle<StrawResponse> strawResponse("ignored");
+    auto const& strawResponse = strawResponse_h.get(Evt.id());
 
 //-----------------------------------------------------------------------------
 // get event data
@@ -750,8 +752,8 @@ namespace mu2e {
 	TwoLinePCA pcaMid(posMid, momMid.unit(), *mid, *w);
 
 	// Position along wire, from delta t.
-        float wdist, wderr,halfpv;
-        bool vStatus = strawResponse->wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr,halfpv);
+        double wdist, wderr,halfpv;
+        bool vStatus = strawResponse.wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr,halfpv);
         v=wdist;
         sigv=wderr;
         cout << "return status: " << vStatus << endl;
