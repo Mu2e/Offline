@@ -33,7 +33,7 @@ physics : {
 
         generate : {
 
-            module_type : StoppedParticleRPCGun
+            module_type : RPCGun
 
             pionStops   : {
                 inputFiles             : [ "nts.owner.pions-nts3.version.sequencer.root" ]

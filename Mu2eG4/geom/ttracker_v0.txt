@@ -40,20 +40,20 @@ double ttracker.manifoldYOffset      =    10.;
 double ttracker.panelPhi0           =     0.;
 
 
-bool   ttracker.envelopeVisible      =  true;
-bool   ttracker.envelopeSolid        =  false;
+bool   ttracker.envelope.visible      =  true;
+bool   ttracker.envelope.solid        =  false;
 
-bool   ttracker.planeEnvelopeVisible = true;
-bool   ttracker.planeEnvelopeSolid   = false;
+bool   ttracker.planeEnvelope.visible = true;
+bool   ttracker.planeEnvelope.solid   = false;
 
-bool   ttracker.supportVisible        = true;
-bool   ttracker.supportSolid          = false;
+bool   ttracker.support.visible        = true;
+bool   ttracker.support.solid          = false;
 
-bool   ttracker.panelEnvelopeVisible = true;
-bool   ttracker.panelEnvelopeSolid   = false;
+bool   ttracker.panelEnvelope.visible = true;
+bool   ttracker.panelEnvelope.solid   = false;
 
-bool   ttracker.strawVisible         =  false;
-bool   ttracker.strawSolid           =  false;
+bool   ttracker.straw.visible         =  false;
+bool   ttracker.straw.solid           =  false;
 
 vector<double> ttracker.manifoldHalfLengths  = { 37.5, 5.0, 2.5};  // mm
 vector<string> ttracker.strawMaterials       = { "Kapton", "StrawGas", "G4_W" };

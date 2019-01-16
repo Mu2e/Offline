@@ -88,7 +88,7 @@ namespace mu2e
 	for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
 	  if( imcdigi->wireEndTime(StrawEnd::cal) > _minCETime ) {
 	    if(imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
-		imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle()->generatorId().id() == GenId::conversionGun) ++ncehits;
+		imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle()->generatorId().isConversion()) ++ncehits;
 	  }
 	}
       }
