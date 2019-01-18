@@ -580,13 +580,13 @@ namespace mu2e
 //-----------------------------------------------------------------------------
     printf("--------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
-    printf("--------------------------------------------\n");
-    printf(" ih  SId  Flag      A     len         x        y        z      HitT     HitDt");
+    printf("-------------------------------------------------------------------------\n");
+    printf("  ih  SId  Flag      A     len         x        y        z      HitT     HitDt");
     printf(" Pl Pn  L  W     T0       Xs      Ys        Zs      resid  sigres");
-    printf("   Rdrift   mcdoca  totErr hitErr  t0Err penErr extErr\n");
-    printf("--------------------------------------------------------------------");
+    printf("   Rdrift   mcdoca  totErr rdrErr  t0Err penErr extErr  vinst\n");
+    printf("------------------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
-    printf("--------------------------------------------\n");
+    printf("---------------------------------------------------------------\n");
 
     mu2e::TrkStrawHit     *hit;
     Hep3Vector            pos;
@@ -598,7 +598,7 @@ namespace mu2e
 
     ihit = 0;
     for (int it=0; it<nhits; ++it) {
-      hit   = dynamic_cast<TrkStrawHit*> (KRes.krep->hitVector().at(it));
+      hit   = dynamic_cast<TrkStrawHit*> (Trk->hitVector().at(it));
       if(hit != 0){
 	sh    = &hit->comboHit();
 	straw = &hit->straw();
@@ -608,10 +608,10 @@ namespace mu2e
 	len   = hit->fltLen();
 	plen  = Trk->position(len);
 
-	double mcdoca = _mcUtils->mcDoca(KRes.event,KRes.shDigiLabel.data(),straw);
+	double mcdoca = _mcUtils->mcDoca(KRes.event,"not_used_any_more",straw);
 
 	ihit += 1;
-	printf("%3i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
+	printf("%4i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
 	    ihit,
 	    straw->id().asUint16(),
 	    hit->hitFlag(),
@@ -654,16 +654,17 @@ namespace mu2e
 	else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
 	else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
 
-	printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f\n",
-	    mcdoca,
-	    hit->totalErr(),
-	    hit->hitErr(),
-	    hit->t0Err(),
-	    hit->penaltyErr(),
-	    hit->temperature()*hit->driftVelocity()
+	printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f %6.4f\n",
+	       mcdoca,
+	       hit->totalErr(),
+	       hit->driftRadiusErr(),
+	       hit->t0Err(),
+	       hit->penaltyErr(),
+	       hit->temperature()*0.0625, // assume not changed
+	       hit->driftVelocity()
 	    );
       } else {
-	TrkCaloHit const* chit   = dynamic_cast<TrkCaloHit*> (KRes.krep->hitVector().at(it));
+	TrkCaloHit const* chit   = dynamic_cast<TrkCaloHit*> (Trk->hitVector().at(it));
 	if(chit != 0){
 	  double res, sigres;
 	  bool hasres = chit->resid(res, sigres, true);
