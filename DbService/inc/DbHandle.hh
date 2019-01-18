@@ -17,7 +17,7 @@ namespace mu2e {
     bool current(art::EventID const& eid);
     // return the table data, after fetching from db if necessary
     T const& get(art::EventID const& eid);
-    std::shared_ptr<const T> getPtr(art::EventID const& eid) const;
+    std::shared_ptr<const T> getPtr(art::EventID const& eid);
     // the unique identifier for the table contents
     int cid() const { return _liveTable.cid(); } 
     DbIoV const& iov() const { return _liveTable.iov(); } 
@@ -79,7 +79,7 @@ T const& mu2e::DbHandle<T>::get(art::EventID const& eid) {
 
 template <class T>
 std::shared_ptr<const T> mu2e::DbHandle<T>::getPtr(
-				art::EventID const& eid) const { 
+				art::EventID const& eid) { 
   get(eid); 
   return _table; 
 }

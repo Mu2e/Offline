@@ -347,6 +347,7 @@ mu2e::DbEngine::LockGuard::~LockGuard() {
 
 
 int mu2e::DbEngine::endJob() {
+  if(!_vcache) return 0;
   if(_verbose>0) {
     std::cout << "DbEngine::endJob" << std::endl;
     std::cout << "    Total time in reading DB: "<< _reader.totalTime() 
