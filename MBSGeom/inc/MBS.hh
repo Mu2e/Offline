@@ -47,6 +47,7 @@ namespace mu2e {
     Polycone const * getBSBSPtr()     const { return _pBSBSParams.get();     }
     Polycone const * getCLV2Ptr()     const { return _pCLV2Params.get();     }
     Tube     const * getCLV2ABSPtr()  const { return _pCLV2ABSParams.get();  }
+    Tube     const * getCalRingShieldPtr()  const { return _pCalShieldRingParams.get();  }
     int      const   getVersion()     const { return _Version;               }
 
     CLHEP::Hep3Vector const & originInMu2e() const { return _originInMu2e; };
@@ -98,6 +99,7 @@ namespace mu2e {
     std::unique_ptr<Polycone> _pBSBSParams; // Inner HDPE downstream
     std::unique_ptr<Polycone> _pCLV2Params; // HDPE end plug
     std::unique_ptr<Tube>     _pCLV2ABSParams;
+    std::unique_ptr<Tube>     _pCalShieldRingParams; //Shield to protect the calorimeter
 
     double _rMax;
     double _rMin;

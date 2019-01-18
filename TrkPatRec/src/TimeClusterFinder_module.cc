@@ -148,10 +148,10 @@ namespace mu2e {
     _useccpos          (pset.get<bool>(    "UseCaloClusterPosition",false)),
     _ccmine            (pset.get<float>(  "CaloClusterMinE",50.0)),
     _ccwt              (pset.get<float>(  "CaloClusterWeight",10.0)),
-    _tcMVA           (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
-    _tcCaloMVA           (pset.get<fhicl::ParameterSet>("ClusterCaloMVA",fhicl::ParameterSet())),
+    _tcMVA             (pset.get<fhicl::ParameterSet>("ClusterMVA",fhicl::ParameterSet())),
+    _tcCaloMVA         (pset.get<fhicl::ParameterSet>("ClusterCaloMVA",fhicl::ParameterSet())),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _npeak       (pset.get<int>("PeakWidth",1)) // # of bins
+    _npeak             (pset.get<int>("PeakWidth",1)) // # of bins
     {
       unsigned nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
       _timespec = TH1F("timespec","time spectrum",nbins,_tmin,_tmax);

@@ -24,6 +24,15 @@ TimeClusterFinder : {
   CaloClusterCollection : "CaloClusterFromProtoCluster"
   TestFlag : true
 }
+#version for mu @ p ~ 100 MeV/c tracks
+TimeClusterFinderMu : {
+    @table::TimeClusterFinder
+    T0Calculator : { 
+	StrawHitBeta : 0.7
+	CaloT0Offset : @local::TrackCaloMatching.DtOffset 
+    }
+}
+
 # stereo version
 STimeClusterFinder : {
   @table::TimeClusterFinder
@@ -42,6 +51,10 @@ RobustHelixFinder : {
 	mcTruth                                 : 0
     }
     
+}
+RobustHelixFinderMu : {
+  @table::RobustHelixFinder
+    TimeClusterCollection  : "TimeClusterFinderMu"
 }
 SRobustHelixFinder : {
   @table::RobustHelixFinder
@@ -199,22 +212,22 @@ KSFUeP.fitparticle	      : @local::Particle.eplus
 KSFUeP.fitdirection	      : @local::FitDir.upstream 
 # downstream mu minus
 KSFDmuM			      : @local::KSF
-KSFDmuM.SeedCollection     : "HelixFinder:Positive"
+KSFDmuM.SeedCollection     : "HelixFinderMu:Positive"
 KSFDmuM.fitparticle	      : @local::Particle.muminus
 KSFDmuM.fitdirection	      : @local::FitDir.downstream 
 # upstream mu minus
 KSFUmuM			      : @local::KSF
-KSFUmuM.SeedCollection     : "HelixFinder:Negative"
+KSFUmuM.SeedCollection     : "HelixFinderMu:Negative"
 KSFUmuM.fitparticle	      : @local::Particle.muminus
 KSFUmuM.fitdirection	      : @local::FitDir.upstream 
 # downstream mu plus
 KSFDmuP			      : @local::KSF
-KSFDmuP.SeedCollection     : "HelixFinder:Negative"
+KSFDmuP.SeedCollection     : "HelixFinderMu:Negative"
 KSFDmuP.fitparticle	      : @local::Particle.muplus
 KSFDmuP.fitdirection	      : @local::FitDir.downstream 
 # upstream mu plus
 KSFUmuP			      : @local::KSF
-KSFUmuP.SeedCollection     : "HelixFinder:Positive"
+KSFUmuP.SeedCollection     : "HelixFinderMu:Positive"
 KSFUmuP.fitparticle	      : @local::Particle.muplus
 KSFUmuP.fitdirection	      : @local::FitDir.upstream 
 # downstream pi minus
@@ -331,6 +344,8 @@ Tracking : {
 # the following should be independently sourced FIXME!
     TimeClusterFinder  : @local::TimeClusterFinder
     HelixFinder  : @local::RobustHelixFinder
+    TimeClusterFinderMu  : @local::TimeClusterFinderMu
+    HelixFinderMu  : @local::RobustHelixFinderMu
     STimeClusterFinder  : @local::STimeClusterFinder
     SHelixFinder  : @local::SRobustHelixFinder
 # now all the different track fits based on these inputs
@@ -407,10 +422,10 @@ Tracking.TPRUeM  : [ TimeClusterFinder, HelixFinder, KSFUeM, KFFUeM ]
 Tracking.TPRDeP  : [ TimeClusterFinder, HelixFinder, KSFDeP, KFFDeP ]
 Tracking.TPRUeP  : [ TimeClusterFinder, HelixFinder, KSFUeP, KFFUeP ]
 #muons
-Tracking.TPRDmuM  : [ TimeClusterFinder, HelixFinder, KSFDmuM, KFFDmuM ]
-Tracking.TPRUmuM  : [ TimeClusterFinder, HelixFinder, KSFUmuM, KFFUmuM ]
-Tracking.TPRDmuP  : [ TimeClusterFinder, HelixFinder, KSFDmuP, KFFDmuP ]
-Tracking.TPRUmuP  : [ TimeClusterFinder, HelixFinder, KSFUmuP, KFFUmuP ]
+Tracking.TPRDmuM  : [ TimeClusterFinderMu, HelixFinderMu, KSFDmuM, KFFDmuM ]
+Tracking.TPRUmuM  : [ TimeClusterFinderMu, HelixFinderMu, KSFUmuM, KFFUmuM ]
+Tracking.TPRDmuP  : [ TimeClusterFinderMu, HelixFinderMu, KSFDmuP, KFFDmuP ]
+Tracking.TPRUmuP  : [ TimeClusterFinderMu, HelixFinderMu, KSFUmuP, KFFUmuP ]
 #pions
 Tracking.TPRDpiM  : [ TimeClusterFinder, HelixFinder, KSFDpiM, KFFDpiM ]
 Tracking.TPRUpiM  : [ TimeClusterFinder, HelixFinder, KSFUpiM, KFFUpiM ]
