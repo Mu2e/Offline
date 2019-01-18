@@ -5,6 +5,7 @@
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/OptionalSequence.h"
 #include "art/Framework/Services/Registry/ServiceTable.h" 
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
@@ -32,6 +33,8 @@ namespace mu2e {
 	  Comment("list of text files containing override table data")};
       fhicl::Atom<int> verbose{Name("verbose"), 
 	  Comment("verbose flag, 0 to 10"),0};
+      fhicl::OptionalAtom<bool> fastStart{Name("fastStart"), 
+	  Comment("read the DB immedatiately, not on first use")};
     };
 
     // this line is required by art to allow the command line help print

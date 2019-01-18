@@ -51,11 +51,20 @@ namespace mu2e {
       _engine.addOverride(coll);
     }
 
-    // this prepares IOV infrastructure for efficient queries
-    if(_verbose>1) std::cout << "DbService::beginJob initializing engine "
-			     <<std::endl;
-    _engine.beginJob( DbId(_config.dbName()) , _version );
-    
+    _engine.setDbId( DbId(_config.dbName()) );
+    _engine.setVersion( _version );
+
+    // service will start calling the database at the first event,
+    // so the service can exist without the DB being contacted.  
+    // fastStart overrides this and starts reading the DB imediately.
+    bool fastStart;
+    _config.fastStart(fastStart);
+    if (fastStart) {
+      // this prepares IOV infrastructure for efficient queries
+      if(_verbose>1) std::cout << "DbService::beginJob initializing engine "
+			       <<std::endl;
+      _engine.beginJob();
+    }
 
 
   }

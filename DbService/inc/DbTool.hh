@@ -46,7 +46,7 @@ namespace mu2e {
     int printVersions(bool details=false);
     int printSet();
     int commitCalibration();
-    int commitCalibrationTable(DbTable::table_ptr const& ptr, 
+    int commitCalibrationTable(DbTable::cptr_t const& ptr, 
 			       bool qdr=false, bool admin=false);
     int commitCalibrationList(DbTableCollection const& coll,
 			      bool qdr=false, bool admin=false);

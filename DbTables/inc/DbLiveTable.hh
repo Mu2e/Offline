@@ -18,14 +18,14 @@ namespace mu2e {
   public:
 
     DbLiveTable(mu2e::DbIoV const& iov = mu2e::DbIoV(),
-		mu2e::DbTable::table_ptr const& table 
-		= mu2e::DbTable::table_ptr(),
+		mu2e::DbTable::cptr_t const& table 
+		= mu2e::DbTable::cptr_t(),
 		int tid = -1, int cid = -1
 		):_iov(iov),_table(table),_tid(tid),_cid(cid) { }
 
     mu2e::DbIoV const& iov() const {return _iov;}
     mu2e::DbTable const& table() const { return *_table; }
-    mu2e::DbTable::table_ptr const& table_ptr() const { return _table; }
+    mu2e::DbTable::cptr_t const& ptr() const { return _table; }
     int tid() const {return _tid;}
     int cid() const {return _cid;}
 
@@ -34,7 +34,7 @@ namespace mu2e {
 
   protected:
     mu2e::DbIoV _iov;
-    mu2e::DbTable::table_ptr _table;
+    mu2e::DbTable::cptr_t _table;
     int _tid;
     int _cid;
   };

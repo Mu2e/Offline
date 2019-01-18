@@ -124,7 +124,7 @@ int mu2e::DbReader::query(std::string& csv,
   return 0;
 }
 
-int mu2e::DbReader::fillTableByCid(DbTable::table_ncptr ptr, int cid) {
+int mu2e::DbReader::fillTableByCid(DbTable::ptr_t ptr, int cid) {
   std::string csv;
   std::string where="cid:eq:"+std::to_string(cid);
   int rc = query(csv,ptr->query(),ptr->dbname(),where);

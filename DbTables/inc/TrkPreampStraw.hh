@@ -13,6 +13,9 @@ namespace mu2e {
   class TrkPreampStraw : public DbTable {
   public:
 
+    typedef std::shared_ptr<TrkPreampStraw> ptr_t;
+    typedef std::shared_ptr<const TrkPreampStraw> cptr_t;
+
     class Row {
     public:
       Row(int index, float delay_hv, float delay_cal,

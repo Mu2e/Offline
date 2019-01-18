@@ -19,21 +19,24 @@ namespace mu2e {
   public:
 
     DbEngine():_verbose(0),_lockTotalTime(0) {}
-    int beginJob(DbId const& id, DbVersion const& version, 
-		 std::shared_ptr<DbValCache> vcache_ptr
-		    = std::shared_ptr<DbValCache>() );
+    // the big read of the IOV structure is done in beginJob
+    int beginJob();
     int endJob();
+    // these must be set before beginJob is called
+    void setDbId(DbId const& id) { _id = id; }
+    void setVersion(DbVersion const& version) { _version = version; } 
+    // this is optionally set before beginJob
+    void setCache(std::shared_ptr<DbValCache> vcache) { _vcache = vcache; }
     // these should only be called in single-threaded startup
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
     std::vector<int> gids() { return _gids; }
     void addOverride(DbTableCollection const& coll);
-    void setVersion(DbVersion const& version) { _version = version; }
     void setVerbose(int verbose = 0) { _verbose = verbose; }
-    // these are the only methods that can be called from threads
-    // after the single-threaded configuration
+    // these are the only methods that can be called from threads, 
+    // such as DbHandle, after the single-threaded configuration
     DbLiveTable update(int tid, uint32_t run, uint32_t subrun);
-    int tidByName(std::string const& name) const;
-    std::string nameByTid(int tid) const;
+    int tidByName(std::string const& name);
+    std::string nameByTid(int tid);
 
   private:
 

@@ -166,7 +166,7 @@ int mu2e::DbTool::commitCalibration() {
 // the list insert has the core function, so if a single table,
 // put it in a list
 
-int mu2e::DbTool::commitCalibrationTable(DbTable::table_ptr const& ptr, 
+int mu2e::DbTool::commitCalibrationTable(DbTable::cptr_t const& ptr, 
 					 bool qdr, bool admin) {
   DbTableCollection coll;
   coll.emplace_back(DbLiveTable(mu2e::DbIoV(),ptr));
@@ -192,7 +192,7 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
 
   int cid = -1;
   for(auto const& liveTable: coll) {
-    auto const& ptr = liveTable.table_ptr();
+    auto const& ptr = liveTable.ptr();
     int tid = -1;
     for(auto const& tr:_valcache.valTables().rows()) {
       if(tr.name()==ptr->name()) tid = tr.tid();
@@ -439,7 +439,9 @@ int mu2e::DbTool::printSet() {
 
   DbVersion version(args["purpose"],args["version"]);
   DbEngine engine;
-  engine.beginJob(_id,version);
+  engine.setDbId(_id);
+  engine.setVersion(version);
+  engine.beginJob();
   engine.setVerbose(_verbose);
   auto const& gids = engine.gids();
   auto const& gs = engine.valCache()->valGroups();

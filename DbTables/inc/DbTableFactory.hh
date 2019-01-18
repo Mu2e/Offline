@@ -7,7 +7,7 @@ namespace mu2e  {
 
   class DbTableFactory {
   public:
-    static mu2e::DbTable::table_ncptr newTable(std::string const& name);
+    static mu2e::DbTable::ptr_t newTable(std::string const& name);
   };
 
 }

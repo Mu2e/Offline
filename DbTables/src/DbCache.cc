@@ -1,16 +1,16 @@
 #include <algorithm>
 #include "DbTables/inc/DbCache.hh"
 
-void mu2e::DbCache::add(int cid, mu2e::DbTable::table_ptr const& ptr) { 
+void mu2e::DbCache::add(int cid, mu2e::DbTable::cptr_t const& ptr) { 
   _tables[cid] = ptr;
 }
 
-mu2e::DbTable::table_ptr mu2e::DbCache::get(int cid) {
+mu2e::DbTable::cptr_t mu2e::DbCache::get(int cid) {
   auto it = _tables.find(cid);
   if(it != _tables.end()) {
     return it->second;
   } else {
-    return mu2e::DbTable::table_ptr(nullptr);
+    return mu2e::DbTable::cptr_t(nullptr);
   }
 }
 
