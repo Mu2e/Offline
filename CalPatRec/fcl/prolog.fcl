@@ -191,8 +191,9 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
     }
-
-    # Kalman fit configuration for the cprmode
+#------------------------------------------------------------------------------
+# Kalman fit configuration for the doublet-based resolver fit
+#------------------------------------------------------------------------------
     CprKFFinal : {
 	debugLevel                              : 0
 	minnstraws                              : 15
@@ -218,29 +219,26 @@ CalPatRec : { @table::CalPatRec
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
-	#------------------------------------------------------------------------------
-	#  KalContext parameters  (there are more to define ! )
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  KalContext parameters  (there are more to define ! )
+#------------------------------------------------------------------------------
 	MinNDOF                                 : 10 # this means 15 hits min
-	#------------------------------------------------------------------------------
-	# ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	FixedAmbigResolver                      : {}
 	HitAmbigResolver                        : {}
 	PocaAmbigResolver                       : {}
 	PanelAmbigResolver                      : {}
-	#------------------------------------------------------------------------------
-	# doublet-based ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# doublet-based ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
-	fieldCorrection			    : true
-	#    scaleErrDoublet                         : 5.
-	#    minDriftDoublet                         : 0.3
-	#    deltaDriftDoublet                       : 0.3
-	#    maxDoubletChi2                          : 9
-	#   sigmaSlope                              : 0.025
+	fieldCorrection			        : true
 	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+	    strawDigiMCCollTag : "compressDigiMCs"
+	}
     }
 
 
@@ -300,7 +298,9 @@ CalPatRec : { @table::CalPatRec
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
 	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+	    strawDigiMCCollTag : "compressDigiMCs"
+	}
     }
 }
 #------------------------------------------------------------------------------
@@ -320,6 +320,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawDigiCollection                         : makeSD
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalSeedFit
+	    mcDigiCollTag                               : "dave,_it_is_used_only_when_debugging_MC._pasha"
 	    DtMaxMiss                                   : 55.
 	    MaxAddDoca                                  : 5.    # mm
 	    MaxAddChi                                   : 5.    # 3.5 used by unweedHits and addHits
@@ -330,7 +331,9 @@ CalPatRec : { @table::CalPatRec
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	    diagPlugin : { tool_type                    : "KalFinalFitDiag" 
 		mcTruth                                 : 0
-		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+		mcUtils : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
 	
@@ -421,7 +424,9 @@ CalPatRec : { @table::CalPatRec
 		printOTracker             : 0                     #
 		printShcol                : 0                     #
 		testOrder                 : 0                     #
-		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
+		mcUtils                   : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
 
@@ -578,7 +583,9 @@ CalPatRec : { @table::CalPatRec
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
 	    diagPlugin : { tool_type                    : "CalTimePeakFinderDiag" 
 		mcTruth                                 : 0 
-		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
 
@@ -598,7 +605,9 @@ CalPatRec : { @table::CalPatRec
 	    HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
 	    diagPlugin : { tool_type                    : "CalHelixFinderDiag"
 		mcTruth                                 : 0
-		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
     }
