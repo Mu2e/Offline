@@ -1429,8 +1429,9 @@ namespace mu2e {
     int pbarAbsTS3Version = pbarWindow.version();
     int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
 
+    if (verbosityLevel > 0){
     std::cout << "pbarWindow.shape() = " << pbarWindow.shape() << std::endl;
-
+    }
     if ( pbarAbsTS3Version == 1 ) {
       // -- vacuum wall
 
@@ -1718,9 +1719,9 @@ namespace mu2e {
 	pbarDiskInfo.name = "PbarAbsDisk";
 
 	if (verbosityLevel > 0) std::cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << std::endl; 
-
+	if (verbosityLevel > 1){
 	std::cout << " inside wedge or disk" << std::endl;
-
+	}
 	pbarDiskInfo.solid = new G4Tubs("PbarAbs_disk",
 					0.0 ,pbarWindow.diskRadius(),
 					pbarWindow.halfLength(),
@@ -1924,11 +1925,11 @@ namespace mu2e {
 	G4ThreeVector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
 	pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
 
-	if ( verbosityLevel > 0 ) {
-	  cout << __func__ << "coll1 halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << endl;
-	  cout << __func__ << "pbarTS1InHalfLength " << pbarTS1InHalfLength << endl;
-	  cout << __func__ << "pbarTS1InOffset " << pbarTS1InOffset << endl;
-	  cout << __func__ << "pbarTS1InPos " << pbarTS1InPos << endl;
+       	if ( verbosityLevel > 0 ) {
+	  cout << __func__ << " coll1 halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << endl;
+	  cout << __func__ << " pbarTS1InHalfLength " << pbarTS1InHalfLength << endl;
+	  cout << __func__ << " pbarTS1InOffset " << pbarTS1InOffset << endl;
+	  cout << __func__ << " pbarTS1InPos " << pbarTS1InPos << endl;
 	}
       }
       // mother volume set in block above
