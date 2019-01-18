@@ -525,8 +525,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFinder:Positive"
-	    calHelixFinderModuleLabel : "HelixFinder:Negative"
+	    trkHelixFinderModuleLabel : "HelixFinderMu:Positive"
+	    calHelixFinderModuleLabel : "HelixFinderMu:Negative"
 	}
 
 	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
@@ -580,6 +580,7 @@ CalPatRec : { @table::CalPatRec
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
+	    beta                                        : 1.0    # for muon reco needs to be changed
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
 	    diagPlugin : { tool_type                    : "CalTimePeakFinderDiag" 
 		mcTruth                                 : 0 
@@ -618,7 +619,9 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 CalPatRec: { @table::CalPatRec 
     producers : { @table::CalPatRec.producers
-	
+	DeltaFinderMu                  : { @table::CalPatRec.producers.DeltaFinder
+	    timePeakCollectionTag      : CalTimePeakFinderMu
+	}
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
 	    SeedCollection             : CalHelixFinderDeM
 	}
@@ -658,7 +661,8 @@ CalPatRec: { @table::CalPatRec
 	CalTrkFitDmm                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muminus 
 	    SeedCollection             : CalSeedFitDmm
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
+	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
+	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
 	}
 	CalTrkFitDep                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.eplus  
@@ -668,22 +672,32 @@ CalPatRec: { @table::CalPatRec
 	CalTrkFitDmp                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muplus 
 	    SeedCollection             : CalSeedFitDmp
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
+	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
+	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
 	}
     }
     
     filters : { @table::CalPatRec.filters
+	CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        } 
 	CalHelixFinderDeM              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
-	CalHelixFinderDmuM             : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muminus }
+	CalHelixFinderDmuM             : { @table::CalPatRec.filters.CalHelixFinder 
+	    fitparticle                   : @local::Particle.muminus 
+	    StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"
+	    TimeClusterCollectionLabel    : CalTimePeakFinderMu
+	}
 	CalHelixFinderDeP              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
-	CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muplus  }
+	CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder 
+	    fitparticle                   : @local::Particle.muplus 
+	    StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits" 
+	    TimeClusterCollectionLabel    : CalTimePeakFinderMu
+	}
     }
 }
 
-CalPatRec.reco     : [ CalTimePeakFinder, DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeM,  CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeP,  CalSeedFitDep, CalTrkFitDep ]
-CalPatRec.dmm_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuM, CalSeedFitDmm, CalTrkFitDmm ]
-CalPatRec.dmp_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuP, CalSeedFitDmp, CalTrkFitDmp ]
+CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDeM,  CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDeP,  CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.dmm_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmuM, CalSeedFitDmm, CalTrkFitDmm ]
+CalPatRec.dmp_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmuP, CalSeedFitDmp, CalTrkFitDmp ]
 
 END_PROLOG
