@@ -183,6 +183,15 @@ namespace mu2e {
       _wPoints = wPoints;
     }
 
+    // this is used to update values from the database
+    void setOffsets( std::vector<double> timeOffsetPanel,
+		     std::vector<double> timeOffsetStrawHV,
+		     std::vector<double> timeOffsetStrawCal ) {
+      _timeOffsetPanel = timeOffsetPanel;
+      _timeOffsetStrawHV = timeOffsetStrawHV;
+      _timeOffsetStrawCal = timeOffsetStrawCal;
+    }
+
   private:
     
     std::string _name;

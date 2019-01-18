@@ -183,4 +183,44 @@ namespace mu2e {
 
   } // end fromFcl
 
+  StrawElectronics::ptr_t StrawElectronicsMaker::fromDb(
+				   TrkDelayPanel::cptr_t tdp,
+				   TrkPreampRStraw::cptr_t tprs,
+				   TrkPreampStraw::cptr_t tps,
+				   TrkThresholdRStraw::cptr_t ttrs ) {
+    // initially fill from fcl to get all the constants
+    auto ptr = fromFcl();
+
+    // now overwrite with db values
+
+    vector<double> vthresh(2*StrawId::_nstraws);
+    for(size_t i=0; i<StrawId::_nstraws; i++) {
+      vthresh[2*i+StrawEnd::cal] = ttrs->rowAt(i).thresholdCal();
+      vthresh[2*i+StrawEnd::hv] = ttrs->rowAt(i).thresholdHv();
+    }
+    std::cout << "setting vthresh "<< vthresh[0]<< std::endl;
+    ptr->setvthresh(vthresh);
+
+
+    std::vector<double> timeOffsetPanel(StrawId::_nupanels);
+    std::vector<double> timeOffsetStrawHV(StrawId::_nstraws);
+    std::vector<double> timeOffsetStrawCal(StrawId::_nstraws);
+    for(size_t i=0; i<StrawId::_nupanels; i++) {
+      timeOffsetPanel[i] = tdp->rowAt(i).delay();
+    }
+    for(size_t i=0; i<StrawId::_nstraws; i++) {
+      timeOffsetStrawHV[i] = tprs->rowAt(i).delayHv();
+      timeOffsetStrawCal[i] = tprs->rowAt(i).delayCal();
+    }
+
+    ptr->setOffsets( timeOffsetPanel,
+		     timeOffsetStrawHV,
+		     timeOffsetStrawCal );
+
+    if(_config.verbose()>1) ptr->print(cout);
+
+    return ptr;
+
+  } // end fromDb
+
 }
