@@ -32,7 +32,7 @@ mu2e::DbTableCollection mu2e::DbUtil::readFile(std::string const& fn) {
   }
 
   mu2e::DbTableCollection coll;
-  mu2e::DbTable::table_ncptr current;
+  mu2e::DbTable::ptr_t current;
   mu2e::DbIoV iov;
   std::string line,csv;
   int ncom0=-1,ncom=0;

@@ -5,17 +5,14 @@
 #include "DbTables/inc/DbTableFactory.hh"
 
 
-int mu2e::DbEngine::beginJob(DbId const& id, DbVersion const& version, 
-			     std::shared_ptr<DbValCache> vcache_ptr) {
+int mu2e::DbEngine::beginJob() {
 
   _gids.clear();
   auto start_time = std::chrono::high_resolution_clock::now();
 
-  _id = id;
-  _version = version;
   _reader.setDbId(_id);
   _reader.setVerbose(_verbose);
-  if(vcache_ptr) { // existing data was passed in
+  if(_vcache) { // existing data was already set
     _reader.fillValTables(*_vcache);
   } else { // we have to create/fill it
     _vcache = std::make_shared<DbValCache>();
@@ -24,7 +21,7 @@ int mu2e::DbEngine::beginJob(DbId const& id, DbVersion const& version,
   DbValCache const& vcache = * _vcache;
 
   // if special name EMPTY, then everything remains empty
-  if(version.purpose()=="EMPTY") return 0;
+  if(_version.purpose()=="EMPTY") return 0;
 
   // drill down from the calibration version number
   // to the list of interval of validity
@@ -226,6 +223,9 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   LockGuard cacheLock(*this);
 
+  // fire up the IOV structure, if it is not already there
+  if(!_vcache) beginJob();
+
   // first look for table in override table list
   for(auto& oltab : _override) { // loop over override tables
     if(oltab.tid()==tid) { // if override table is the right type
@@ -241,7 +241,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   for(auto const& r : rows) {
     if(r.iov().inInterval(run,subrun)) {
-      DbTable::table_ptr ptr;
+      DbTable::cptr_t ptr;
       if(_cache.hasTable(r.cid())) {
 	// table was in cache, use it
 	ptr = _cache.get(r.cid());
@@ -274,7 +274,13 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
 }
 
-int mu2e::DbEngine::tidByName(std::string const& name) const {
+int mu2e::DbEngine::tidByName(std::string const& name) {
+
+  LockGuard cacheLock(*this);
+
+  // fire up the IOV structure, if it is not already there
+  if(!_vcache) beginJob();
+
   // tables known to the db
   if(_vcache) {
     for(auto const& r: _vcache->valTables().rows()) {
@@ -288,7 +294,13 @@ int mu2e::DbEngine::tidByName(std::string const& name) const {
   return -1;
 }
 
-std::string mu2e::DbEngine::nameByTid(int tid) const {
+std::string mu2e::DbEngine::nameByTid(int tid) {
+
+  LockGuard cacheLock(*this);
+
+  // fire up the IOV structure, if it is not already there
+  if(!_vcache) beginJob();
+
   for(auto const& r: _vcache->valTables().rows()) {
     if(r.tid()==tid) return r.name();
   }

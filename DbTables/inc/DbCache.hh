@@ -11,13 +11,13 @@ namespace mu2e {
   class DbCache {
   public:
 
-    typedef std::map<int,mu2e::DbTable::table_ptr> table_map;
+    typedef std::map<int,mu2e::DbTable::cptr_t> table_map;
 
-    void add(int cid, mu2e::DbTable::table_ptr const& ptr);
+    void add(int cid, mu2e::DbTable::cptr_t const& ptr);
 
     bool hasTable(int cid) { return _tables.find(cid)!=_tables.end(); }
     
-    mu2e::DbTable::table_ptr get(int cid);
+    mu2e::DbTable::cptr_t get(int cid);
 
     void clear() { _tables.clear(); }
     int purge(const size_t target=200000000);

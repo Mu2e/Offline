@@ -9,7 +9,7 @@
 #include "DbTables/inc/TrkPreampStraw.hh"
 #include "DbTables/inc/TrkThresholdRStraw.hh"
 
-mu2e::DbTable::table_ncptr mu2e::DbTableFactory::newTable(std::string const& name) {
+mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name=="TstCalib1") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TstCalib1());
   } else if (name=="TstCalib2") {

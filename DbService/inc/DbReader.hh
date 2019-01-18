@@ -23,7 +23,7 @@ namespace mu2e {
 	      const std::string& table, const std::string& where="",
 	      const std::string& order="");
 
-    int fillTableByCid(DbTable::table_ncptr ptr, int cid);
+    int fillTableByCid(DbTable::ptr_t ptr, int cid);
     int fillValTables(DbValCache& vcache);
 
     std::string& lastError() { return _lastError; }

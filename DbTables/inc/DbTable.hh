@@ -13,8 +13,8 @@ namespace mu2e {
   class DbTable {
   public:
 
-    typedef std::shared_ptr<const mu2e::DbTable> table_ptr;
-    typedef std::shared_ptr<mu2e::DbTable> table_ncptr;
+    typedef std::shared_ptr<mu2e::DbTable> ptr_t;
+    typedef std::shared_ptr<const mu2e::DbTable> cptr_t;
 
     DbTable(const char* name = "DbTable", 
 	    const char* dbname = "dne.dbtable", 

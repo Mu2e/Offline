@@ -13,6 +13,9 @@ namespace mu2e {
   class TrkThresholdRStraw : public DbTable {
   public:
 
+    typedef std::shared_ptr<TrkThresholdRStraw> ptr_t;
+    typedef std::shared_ptr<const TrkThresholdRStraw> cptr_t;
+
     class Row {
     public:
       Row(int index, float threshold_hv, float threshold_cal):

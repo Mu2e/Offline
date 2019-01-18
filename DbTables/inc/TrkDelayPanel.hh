@@ -13,6 +13,9 @@ namespace mu2e {
   class TrkDelayPanel : public DbTable {
   public:
 
+    typedef std::shared_ptr<TrkDelayPanel> ptr_t;
+    typedef std::shared_ptr<const TrkDelayPanel> cptr_t;
+
     class Row {
     public:
       Row(int index, float delay):_index(index),_delay(delay) {}
