@@ -2130,15 +2130,12 @@ namespace mu2e {
 // a straw man attempt to account for significantly different resolutions 
 // along the wire and in the drift direction
 //--------------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit,
-					     // const Hep3Vector& HitPos   ,
-					     // const Hep3Vector& StrawDir ,
-					     const XYZVec&        HelCenter,
-					     double               Radius   ) {
+  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit      ,
+					     const XYZVec&         HelCenter,
+					     double                Radius   ) {
 
-    // double    rs(2.5);   // straw radius, mm
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
+    //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
@@ -2151,7 +2148,6 @@ namespace mu2e {
     double costh2 = dxn*dxn/(dx*dx+dy*dy);
     double sinth2 = 1-costh2;
 
-    // double e2     = _ew*_ew*sinth2+rs*rs*costh2;
     double e2     = Hit.wireErr2()*sinth2+transErr2*costh2;
     double wt     = 1./e2;
                                                     // scale the weight for having chi2/ndof distribution peaking at 1
@@ -2163,16 +2159,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit,
-						// const XYZVec&  HitPos   ,
-						// const XYZVec&  StrawDir ,
-						const XYZVec&  HelCenter,
-						double             Radius   ,
-						int                Print    ,
-						const char*        Banner   ) {
-    // double    rs(2.5);  // straw radius, mm
+  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit      ,
+						const XYZVec&         HelCenter,
+						double                Radius   ,
+						int                   Print    ,
+						const char*           Banner   ) {
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
+    //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
@@ -2181,12 +2174,13 @@ namespace mu2e {
     double dx = x-HelCenter.x();
     double dy = y-HelCenter.y();
 
-    double dxn = dx*Hit._sdir.x()+dy*Hit._sdir.y();
-
-    double costh2  = dxn*dxn/(dx*dx+dy*dy);
+//-----------------------------------------------------------------------------
+// if dr(dx,dy) is orthogonal to the wire, costh = 1
+//-----------------------------------------------------------------------------
+    double dxn    = dx*Hit._sdir.x()+dy*Hit._sdir.y();
+    double costh2 = dxn*dxn/(dx*dx+dy*dy);
     double sinth2 = 1-costh2;
 
-    // double e2     = _ew*_ew*costh2+rs*rs*sinth2;
     double e2     = Hit.wireErr2()*costh2+transErr2*sinth2;
     double wt     = Radius*Radius/e2;
     wt           *= _weightZPhi;
