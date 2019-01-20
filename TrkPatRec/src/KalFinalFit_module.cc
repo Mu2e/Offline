@@ -164,7 +164,7 @@ namespace mu2e
     
     if (_diag != 0) {
       _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
-      fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("Fitter.DoubletAmbigResolver");
+      fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("KalFit.DoubletAmbigResolver");
       _data.dar               = new DoubletAmbigResolver(ps1,0,0,0);
       _data.listOfDoublets    = new std::vector<Doublet>;
     }
