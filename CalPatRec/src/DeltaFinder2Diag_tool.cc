@@ -110,7 +110,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    //    const StrawDigiMCCollection*          _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
     
@@ -537,7 +537,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	  _eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	  //	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	InitMcDiag();
 	associateMcTruth();
       }
@@ -890,7 +890,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	InitMcDiag();
 	associateMcTruth();
       }

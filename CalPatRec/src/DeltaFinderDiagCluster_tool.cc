@@ -86,7 +86,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    //    const StrawDigiMCCollection*          _listOfMcStrawHits;
     
     std::vector<McPart_t*>                _list_of_mc_particles; // list_of_particles with hits in the tracker
     std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart 
@@ -261,7 +261,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	associateMcTruth();
       }
     }
@@ -423,7 +423,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	//	InitMcDiag();
 	associateMcTruth();
       }
