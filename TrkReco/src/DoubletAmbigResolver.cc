@@ -1140,6 +1140,32 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
+// in the beginning of iteration set external hit errors to a constant
+//-----------------------------------------------------------------------------
+//   void AmbigResolver::initHitErrors(KalRep* krep) const {
+// // get hits and cast to TrkStrawHits
+//     TrkStrawHitVector tshv;
+//     convert(krep->hitVector(),tshv);
+//     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
+//       (*itsh)->setTemperature(_tmpErr);
+//     }
+//   }
+
+//-----------------------------------------------------------------------------
+// in the beginning of iteration set external hit errors to a constant
+//-----------------------------------------------------------------------------
+  void DoubletAmbigResolver::initHitErrors(KalRep* krep) const {
+// get hits and cast to TrkStrawHits
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh) {
+      double penalty = _tmpErr*0.0625;
+      (*itsh)->setPenalty    (penalty);
+      (*itsh)->setTemperature(0.2*penalty);
+    }
+  }
+
+//-----------------------------------------------------------------------------
 // build list of doublets and resolve the drift signs
 //-----------------------------------------------------------------------------
   bool DoubletAmbigResolver::resolveTrk(KalRep* KRep) const {

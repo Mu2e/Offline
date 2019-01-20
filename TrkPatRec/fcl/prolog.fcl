@@ -88,7 +88,7 @@ KFSeed : {
   dtOffset                        : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight                : 1
   caloHitT0Weight                 : 10
-  mcTruth                         : 0
+  printUtils                      : { @table::TrkReco.PrintUtils}
 }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
@@ -113,10 +113,10 @@ KFFinal : {
   dtOffset                    : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight            : 1
   caloHitT0Weight             : 10
-  mcTruth                         : 0
+  printUtils                  : { @table::TrkReco.PrintUtils }
 }
 
-# Kalman fit configuration for the cprmode
+# KalFit (Kalman fiter)  configuration for Doublet Ambig Resolver
 CprKFFinal : {
     debugLevel                              : 0
     minnstraws                              : 15
@@ -159,8 +159,7 @@ CprKFFinal : {
 #    deltaDriftDoublet                       : 0.3
 #    maxDoubletChi2                          : 9
 #   sigmaSlope                              : 0.025
-    mcTruth                                 : 1
-    mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+    printUtils                              : { @table::TrkReco.PrintUtils }
 }
 
 

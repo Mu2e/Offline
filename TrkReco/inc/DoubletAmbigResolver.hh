@@ -102,9 +102,11 @@ namespace mu2e {
 // make penalty error virtual ? penalty function depends on the drift radius
 //-----------------------------------------------------------------------------
     double penaltyError(double rdrift) const;
-					// update the hit state and the t0 value.
-    virtual bool resolveTrk(KalRep* KRes) const;
 
+					// update the hit state and the t0 value.
+    virtual bool resolveTrk   (KalRep* KRes) const;
+
+    virtual void initHitErrors(KalRep* krep) const ;
 
   };
 }

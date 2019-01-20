@@ -278,7 +278,7 @@ namespace mu2e
 	    // first, add back the hits on this track
 	  //	  _result.nunweediter = 0;
 	  _kfit.unweedHits(_result,_maxaddchi);
-	  if (_debug > 0) _kfit.printHits(_result,"CalTrkFit::produce after unweedHits");
+	  if (_debug > 0) _kfit.printUtils()->printTrack(&event,_result.krep,"banner+data+hits","CalTrkFit::produce after unweedHits");
 
 	  if (_cprmode){
 	    findMissingHits_cpr(_result);

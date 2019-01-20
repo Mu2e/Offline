@@ -671,7 +671,7 @@ namespace mu2e {
 	    // get the StrawDigi indices associated with this ComboHit
 	    std::vector<StrawDigiIndex> shids;
 	    _data->chcol->fillStrawDigiIndices(*(_data->event),ish,shids);
-	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,shids[0]);//ish);
+	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,shids[0]);//ish);
 	    //-----------------------------------------------------------------------------
 	    // search if this particle has already been registered
 	    //-----------------------------------------------------------------------------
@@ -1099,7 +1099,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);
@@ -1186,7 +1186,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);

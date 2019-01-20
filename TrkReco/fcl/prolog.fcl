@@ -85,5 +85,19 @@ TrkReco: {
 	minChi2Ratio                        : 0.2
 	maxHitChi                           : 5.    # 
     }
+
+#------------------------------------------------------------------------------
+# if mcTruth = 0, a dummy ("return-end") implementation of MC truth functions
+# is used with no MC dependence. 
+# to really use that, the McUtilsToolBase needs to be moved from Mu2eUtilities *FIXME*
+# into some 'Base' library with no MC dependencies
+#------------------------------------------------------------------------------
+    PrintUtils: {
+	strawHitCollTag    : "makeSH"
+	mcTruth            : 0 #
+	mcUtils            : { tool_type : "TrkPatRecMcUtils" 
+	    strawDigiMCCollTag : "compressDigiMCs"
+	}
+    }
 }
 END_PROLOG

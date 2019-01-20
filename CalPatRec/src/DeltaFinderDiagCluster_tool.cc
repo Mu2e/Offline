@@ -366,7 +366,7 @@ namespace mu2e {
 
 	    const StrawHit* sh            = hd->fHit;
 	    int i0                        = sh-sh0;
-	    const mu2e::SimParticle* simp = _mcUtils->getSimParticle(_listOfMcStrawHits,i0);
+	    const mu2e::SimParticle* simp = _mcUtils->getSimParticle(_data->event,i0);
 	    hcl._simp                     = simp;
 
 	    _list_of_hclusters[station][face][ip].push_back(hcl);
@@ -388,14 +388,14 @@ namespace mu2e {
 
 	    const StrawHit* sh           = hcl->_hits.front()->fHit;
 	    int i0                       = sh-sh0;
-	    const mu2e::SimParticle* mc0 = _mcUtils->getSimParticle(_listOfMcStrawHits,i0);
+	    const mu2e::SimParticle* mc0 = _mcUtils->getSimParticle(_data->event,i0);
 
 	    hcl->_unique = 1;
 
 	    for (int ih=1; ih<nhits; ih++) {
 	      const StrawHit* sh           = hcl->_hits[ih]->fHit;
 	      int i1                       = sh-sh0;
-	      const mu2e::SimParticle* mc1 = _mcUtils->getSimParticle(_listOfMcStrawHits,i1);
+	      const mu2e::SimParticle* mc1 = _mcUtils->getSimParticle(_data->event,i1);
 
 	      if (mc1 != mc0) {
 		hcl->_unique = 0;
@@ -466,7 +466,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);

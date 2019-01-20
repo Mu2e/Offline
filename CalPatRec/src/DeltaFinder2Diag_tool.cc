@@ -667,7 +667,7 @@ namespace mu2e {
 
 	    const StrawHit* sh           = hd->fHit;
 	    int ish                      = sh-sh0;
-	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,ish);
+	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,ish);
 	    //-----------------------------------------------------------------------------
 	    // search if this particle has already been registered
 	    //-----------------------------------------------------------------------------
@@ -1089,7 +1089,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);
@@ -1175,7 +1175,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);

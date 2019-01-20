@@ -192,7 +192,7 @@ CalPatRec : { @table::CalPatRec
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
     }
 #------------------------------------------------------------------------------
-# Kalman fit configuration for the doublet-based resolver fit
+# KalFit (kalman fitter) configuration for the doublet-based resolver
 #------------------------------------------------------------------------------
     CprKFFinal : {
 	debugLevel                              : 0
@@ -235,16 +235,13 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
 	fieldCorrection			        : true
-	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
-	    strawDigiMCCollTag : "compressDigiMCs"
-	}
+	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 
 
 
 #------------------------------------------------------------------------------
-# KalFitter(KalFitHackNew) configuration for the final track fit
+# KalFitter (KalFitHackNew) configuration for the final track fit
 #------------------------------------------------------------------------------
     KalFitter : {
 	debugLevel                              : 0
@@ -297,10 +294,7 @@ CalPatRec : { @table::CalPatRec
 	deltaDriftDoublet                       : 0.3
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
-	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
-	    strawDigiMCCollTag : "compressDigiMCs"
-	}
+	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 }
 #------------------------------------------------------------------------------
