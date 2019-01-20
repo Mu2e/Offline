@@ -2,6 +2,9 @@
 // diag mode: = 0 - most of the histograms
 //            = 1 - doca histograms
 ///////////////////////////////////////////////////////////////////////////////
+#include "TH2.h"
+#include "TH1.h"
+
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Matrix/Vector.h"
@@ -64,7 +67,7 @@ namespace mu2e {
     struct HitData_t {
       float  doca;
       float  mcdoca;
-      flaot  rdrift;
+      float  rdrift;
       float  dtCls;
     };
     
@@ -77,10 +80,10 @@ namespace mu2e {
     };
 
     struct Hist_t {
-      EventHist_t*   _event  [kNEventHistSets];
-      TrackHist_t*   _track  [kNTrackHistSets];
+      EventHist_t*   _event  [kNEventHistSets  ];
+      TrackHist_t*   _track  [kNTrackHistSets  ];
       DoubletHist_t* _doublet[kNDoubletHistSets];
-      HitHist_t*     _hit    [kNHitHistSets];
+      HitHist_t*     _hit    [kNHitHistSets    ];
     };
 
   protected:
@@ -150,9 +153,9 @@ namespace mu2e {
     
 //-----------------------------------------------------------------------------
   int KalFinalFitDiag::bookHitHistograms(HitHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->doca  = Dir->make<TH1F>("doca" ,"doca", 1000, -20.,  20 );
-    Hist->xdoca = Dir->make<TH1F>("doca" ,"doca", 1000, -20.,  20 );
-    Hist->dtCls = Dir->make<TH1F>("dtCls","dtCls; #Delta t = t_{calo-cluster}-t_{straw} - tof [ns]", 401, -200.5,  200.5 );
+    Hist->doca  = Dir->make<TH1F>("doca"  ,"doca" , 1000, -20.,  20 );
+    Hist->xdoca = Dir->make<TH1F>("xdoca" ,"xdoca", 1000, -20.,  20 );
+    Hist->dtCls = Dir->make<TH1F>("dtCls" ,"dtCls; #Delta t = t_{calo-cluster}-t_{straw} - tof [ns]", 401, -200.5,  200.5 );
     return 0;
   }
 
