@@ -7,15 +7,16 @@
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "TrackerGeom/inc/Straw.hh"
-#include "RecoDataProducts/inc/StrawHit.hh"
+// #include "TrackerGeom/inc/Straw.hh"
+// #include "RecoDataProducts/inc/StrawHit.hh"
 
 namespace mu2e {
 
-  class Straw;
-#ifndef MCDataProducts_StrawDigiMCCollection_hh
-  class StrawDigiMCCollection;
-#endif
+  //  class Straw;
+  class TrkStrawHit;
+// #ifndef MCDataProducts_StrawDigiMCCollection_hh
+//   //  class StrawDigiMCCollection;
+// #endif
   class SimParticle;
   
   class McUtilsToolBase {
@@ -27,14 +28,15 @@ namespace mu2e {
 // functions to be overloaded
 //-----------------------------------------------------------------------------
     virtual int    strawHitSimId(const art::Event* Event, int Index);
-    virtual double mcDoca       (const art::Event* Event, int Index, const Straw* Straw);
+    //    virtual double mcDoca       (const art::Event* Event, int Index, const Straw* Straw);
+    virtual double mcDoca       (const art::Event* Event, const TrkStrawHit* StrawHit);
 
     // virtual int    nGenHits     (const art::Event*         Event         , 
     // 				 fhicl::ParameterSet*      TimeOffsets   ,
     // 				 const StrawHitCollection* Shcol         );
 
-    virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event*    Event,
-							      const art::InputTag& Tag  );
+    // virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event*    Event,
+    // 							      const art::InputTag& Tag  );
 
     virtual const SimParticle* getSimParticle(const art::Event* Event, int IHit);
 

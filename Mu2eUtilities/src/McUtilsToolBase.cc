@@ -17,7 +17,8 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  double McUtilsToolBase::mcDoca(const art::Event* Event, int Index, const Straw* Straw) {
+//  double McUtilsToolBase::mcDoca(const art::Event* Event, int Index, const Straw* Straw) {
+  double McUtilsToolBase::mcDoca(const art::Event* Event, const TrkStrawHit* StrawHit) { 
     return -99.;
   }
 
@@ -30,11 +31,11 @@ namespace mu2e {
 //   }
 
   
-//-----------------------------------------------------------------------------
-  const StrawDigiMCCollection* McUtilsToolBase::getListOfMcStrawHits(const art::Event* Event,
-								     const art::InputTag& Tag) {
-    return NULL;
-  }
+// //-----------------------------------------------------------------------------
+//   const StrawDigiMCCollection* McUtilsToolBase::getListOfMcStrawHits(const art::Event* Event,
+// 								     const art::InputTag& Tag) {
+//     return NULL;
+//   }
 
 //-----------------------------------------------------------------------------
   const SimParticle* McUtilsToolBase::getSimParticle(const art::Event* Event, int IHit) {

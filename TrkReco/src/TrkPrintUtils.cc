@@ -162,7 +162,7 @@ namespace mu2e {
 	plen  = Trk->position(len);
 
 	int    sim_id = _mcUtils->strawHitSimId(AnEvent,loc);
-	double mcdoca = _mcUtils->mcDoca       (AnEvent,loc,straw);
+	double mcdoca = _mcUtils->mcDoca       (AnEvent,hit); // loc,straw);
 
 	ihit += 1;
 	printf("%4i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",

@@ -224,7 +224,7 @@ namespace mu2e {
 	    r.index[1] = k;
 	    calculateDoubletParameters(KRep,d,&r);
 
-	    chi2_d = d->Chi2Best();
+	    chi2_d = d->chi2Best();
 	    if (chi2_d < chi2_best) {
 	      chi2_best = chi2_d;
 	      bd        = *d;
@@ -478,6 +478,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // by construction, both hits are in the same panel, could be in the same or in
 // different layers
+// dx/dz[i] === dR/dZ of the track in the wire plane of the i-th hit
 //-----------------------------------------------------------------------------
     for (int i=0; i<2; i++) {
       hit      [i] = HitDoublet->fHit[R->index[i]];
@@ -485,20 +486,20 @@ namespace mu2e {
       R->rdrift[i] = hit[i]->driftRadius();
 
       R->spos  [i] = R->straw[i]->getMidPoint();
-      sdir  [i] = R->straw[i]->getDirection();
+      sdir     [i] = R->straw[i]->getDirection();
 
       phiPanel  = std::atan2(R->spos[i].y(),R->spos[i].x());
       rot.set(-phiPanel);
 
       R->sposr[i]  = rot*R->spos[i];
-      sdirr[i]  = rot*sdir[i];
+      sdirr   [i]  = rot*sdir[i];
 
       R->tpos [i] = HitDoublet->fTrkPos[R->index[i]];
-      tdir [i]    = HitDoublet->fTrkDir[R->index[i]];
+      tdir    [i] = HitDoublet->fTrkDir[R->index[i]];
 
       R->tposr[i] = rot*R->tpos[i];
-      tdirr[i]  = rot*tdir[i];
-      dxdz [i]  = tdirr[i].x()/tdirr[i].z();
+      tdirr[i]    = rot*tdir[i];
+      dxdz [i]    = tdirr[i].x()/tdirr[i].z();
     }
 //-----------------------------------------------------------------------------
 // choose the best combination of the drift signs - the one corresponding
@@ -511,9 +512,9 @@ namespace mu2e {
     findLines(R->sposr,R->rdrift,R->lineSlopes);
 
     for (int is=0; is<4; is++) {
-      dsl         = fabs(trkslope - R->lineSlopes[is]);
-      xdsl        = dsl/_sigmaSlope;
-      R->chi2[is] = xdsl*xdsl;
+      dsl              = fabs(trkslope - R->lineSlopes[is]);
+      xdsl             = dsl/_sigmaSlope;
+      R->chi2Slope[is] = xdsl*xdsl;
     }
 //-----------------------------------------------------------------------------
 // 2. add coordinate term, try to exclude both hits simultaneously
@@ -626,13 +627,19 @@ namespace mu2e {
       for (int is=0; is<4; is++) {
 //-----------------------------------------------------------------------------
 // chi2 contributions of this hit
+// error of the coordinate term is questionable - at initial iterations hits 
+// with small drift radius have smaller errors - doesn't make sense
 //-----------------------------------------------------------------------------
-	hpos[is][ih]    = spi[ih]+u[ih]*R->rdrift[ih]*_sign[is][ih];
-	//R->doca[is][ih] = (hpos[is][ih]-tpi[ih]).dot(u[ih]);
-	R->doca[is][ih] = static_cast<Hep3Vector>(hpos[is][ih]-tpi[ih]).dot(u[ih]);
-	sig             = sqrt(R->rdrift[ih]*R->rdrift[ih] +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
-	xdr[is][ih]     = R->doca[is][ih]/sig;
-	R->chi2[is]    += xdr[is][ih]*xdr[is][ih];
+	hpos[is][ih]     = spi[ih]+u[ih]*R->rdrift[ih]*_sign[is][ih];
+
+	R->doca[is][ih]  = static_cast<Hep3Vector>(hpos[is][ih]-tpi[ih]).dot(u[ih]);
+
+	// sig             = sqrt(R->rdrift[ih]*R->rdrift[ih] +0.1*0.1); // 2.5; // 1.; // before 2019-01-20
+	sig              = hit[ih]->totalErr(); 
+
+	xdr[is][ih]      = R->doca[is][ih]/sig;
+	R->chi2Coord[is] = xdr[is][ih]*xdr[is][ih];
+	R->chi2     [is] = R->chi2Slope[is]+R->chi2Coord[is];
       }
     }
 //-----------------------------------------------------------------------------
@@ -669,7 +676,9 @@ namespace mu2e {
     HitDoublet->fTrkDxDz     = trkslope;
     for (int is=0; is<4; is++) {
       HitDoublet->fDxDz[is]  = R->lineSlopes[is];
-      HitDoublet->fChi2[is]  = R->chi2[is];
+      HitDoublet->fChi2Slope[is]  = R->chi2Slope[is];
+      HitDoublet->fChi2Coord[is]  = R->chi2Coord[is];
+      HitDoublet->fChi2     [is]  = R->chi2     [is];
     }
 
     for (int i=0; i<2; i++) {
@@ -1062,7 +1071,7 @@ namespace mu2e {
 
 	    list.push_back(ad);
 
-	    chi2_d = ad.Chi2Best();
+	    chi2_d = ad.chi2Best();
 	    if (chi2_d < chi2_best) {
 	      jbest     = j;
 	      kbest     = k;

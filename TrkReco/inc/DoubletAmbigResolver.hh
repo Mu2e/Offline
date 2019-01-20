@@ -32,23 +32,25 @@ namespace mu2e {
       enum trajtype {reftraj=0};
 
     struct Data_t {
-      int               index[2];
-      int               ibest;
-      int               inext;
+      int                index[2];
+      int                ibest;
+      int                inext;
       
-      double            chi2min;
-      double            chi2next;
+      double             chi2min;
+      double             chi2next;
 
-      const mu2e::Straw *straw[2];
-      double            rdrift[2];
-      double            doca[4][2];
-      double            chi2[4];
-      double            trkslope;
-      double            lineSlopes[4];
-      CLHEP::Hep3Vector spos [2];
-      CLHEP::Hep3Vector sposr[2];
-      CLHEP::Hep3Vector tpos [2];
-      CLHEP::Hep3Vector tposr[2];
+      const mu2e::Straw* straw     [2];
+      double             rdrift    [2];
+      double             doca      [4][2];
+      double             chi2Slope [4];	// slope contribution to the total chi2
+      double             chi2Coord [4];	// coordinate contribution to the total chi2
+      double             chi2      [4];	// total chi2
+      double             trkslope;
+      double             lineSlopes[4];
+      CLHEP::Hep3Vector  spos      [2];
+      CLHEP::Hep3Vector  sposr     [2];
+      CLHEP::Hep3Vector  tpos      [2];
+      CLHEP::Hep3Vector  tposr     [2];
     };
 
   protected:

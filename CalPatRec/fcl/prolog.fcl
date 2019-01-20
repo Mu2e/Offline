@@ -323,11 +323,9 @@ CalPatRec : { @table::CalPatRec
 	    fitdirection                                : @local::FitDir.downstream
 	    KalFit                                      : { @table::CalPatRec.CprKFFinal }
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    diagPlugin : { tool_type                    : "KalFinalFitDiag" 
-		mcTruth                                 : 0
-		mcUtils : { tool_type : "TrkPatRecMcUtils" 
-		    strawDigiMCCollTag : "compressDigiMCs"
-		}
+	    diagPlugin : { tool_type  : "KalFinalFitDiag" 
+		mcTruth       : 0
+		mcUtils       : { @table::TrkReco.McUtils }
 	    }
 	}
 	

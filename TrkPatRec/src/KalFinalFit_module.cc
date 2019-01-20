@@ -158,7 +158,7 @@ namespace mu2e
     produces<KalSeedCollection>();
     produces<TrkQualCollection>();
 //-----------------------------------------------------------------------------
-// provide for interactive disanostics
+// provide for interactive diagnostics
 //-----------------------------------------------------------------------------
     _data.result    = &_result;
     
@@ -167,6 +167,9 @@ namespace mu2e
       fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("KalFit.DoubletAmbigResolver");
       _data.dar               = new DoubletAmbigResolver(ps1,0,0,0);
       _data.listOfDoublets    = new std::vector<Doublet>;
+      // histogram booking belongs to beginJob, KalFinalFit doesn't have it
+      art::ServiceHandle<art::TFileService> tfs;
+      _hmanager->bookHistograms(tfs);
     }
     else {
       _hmanager = std::make_unique<ModuleHistToolBase>();
@@ -224,6 +227,7 @@ namespace mu2e
       _data.eventNumber = event.event();
       _data.result = &_result;
       _data.tracks = krcol.get();
+      _data.kscol  = kscol.get();
     }
 
     _result.fitType     = 1;

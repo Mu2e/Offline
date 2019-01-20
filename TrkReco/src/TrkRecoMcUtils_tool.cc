@@ -11,6 +11,8 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 
+#include "BTrkData/inc/TrkStrawHit.hh"
+
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
@@ -25,7 +27,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
-#include "RecoDataProducts/inc/StrawHitCollection.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 
 #include "TrackerGeom/inc/Straw.hh"
 
@@ -33,8 +35,10 @@
 
 namespace mu2e {
 
-  class TrkPatRecMcUtils : public mu2e::McUtilsToolBase {
+  class TrkRecoMcUtils : public mu2e::McUtilsToolBase {
   protected:
+    std::string                   _comboHitCollTag;
+    const ComboHitCollection*     _chColl;
     std::string                   _strawDigiMCCollTag;
     const StrawDigiMCCollection*  _mcdigis;
     unsigned int                  _lastEvent;
@@ -43,8 +47,8 @@ namespace mu2e {
 
   public:
 
-    TrkPatRecMcUtils(const fhicl::ParameterSet& PSet);
-    ~TrkPatRecMcUtils();
+    TrkRecoMcUtils(const fhicl::ParameterSet& PSet);
+    ~TrkRecoMcUtils();
 
   public:
 
@@ -52,16 +56,16 @@ namespace mu2e {
 
     virtual int    strawHitSimId(const art::Event* Event, int Index) override;
 
-    virtual double mcDoca(const art::Event* Event, 
-			  int               Index, 
-			  const Straw*      Straw) override ;
+    virtual double mcDoca(const art::Event* Event, const TrkStrawHit* StrawHit) override; 
+			  // int               Index, 
+			  // const Straw*      Straw) override ;
 
     // virtual int    nGenHits(const art::Event*         Event      , 
     // 			    fhicl::ParameterSet*      TimeOffsets,
     // 			    const StrawHitCollection* Shcol      ) override;
 
-    virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event* Event,
-							      const art::InputTag& Tag) override;
+    // virtual const StrawDigiMCCollection* getListOfMcStrawHits(const art::Event* Event,
+    // 							      const art::InputTag& Tag) override;
     
     virtual const SimParticle* getSimParticle(const art::Event* Event, int HitIndex) override;
 
@@ -73,26 +77,31 @@ namespace mu2e {
   };
 
 //-----------------------------------------------------------------------------
-  TrkPatRecMcUtils::TrkPatRecMcUtils(const fhicl::ParameterSet& PSet) : 
+  TrkRecoMcUtils::TrkRecoMcUtils(const fhicl::ParameterSet& PSet) : 
+    _comboHitCollTag   { PSet.get<std::string>("comboHitCollTag"   ) },
     _strawDigiMCCollTag{ PSet.get<std::string>("strawDigiMCCollTag") }
   {
     _lastEvent   = -1;
     _mcdigis     = nullptr;
+    _chColl      = nullptr;
     _mbtime      = -1;
     //    _timeOffsets = new SimParticleTimeOffset(*TimeOffsets);
   }
 
 //-----------------------------------------------------------------------------
-  TrkPatRecMcUtils::~TrkPatRecMcUtils() {
+  TrkRecoMcUtils::~TrkRecoMcUtils() {
     //    delete _timeOffsets;
   }
 
 //-----------------------------------------------------------------------------
-  int TrkPatRecMcUtils::initEvent(const art::Event* Event) {
+  int TrkRecoMcUtils::initEvent(const art::Event* Event) {
     art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
     Event->getByLabel(_strawDigiMCCollTag,mcdigiH);
     if (mcdigiH.isValid()) _mcdigis = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
     else                   _mcdigis = NULL;
+
+    auto chcH = Event->getValidHandle<ComboHitCollection>(_comboHitCollTag);
+    _chColl   = chcH.product();
 
     //    _timeOffsets->updateMap(*Event);
     if (_mbtime < 0) {
@@ -105,7 +114,7 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  const StepPointMC* TrkPatRecMcUtils::getStepPointMC(int HitIndex) {
+  const StepPointMC* TrkRecoMcUtils::getStepPointMC(int HitIndex) {
     const StepPointMC* step(nullptr);
     if (_mcdigis) { 
       const mu2e::StrawDigiMC*  mcdigi = &_mcdigis->at(HitIndex);
@@ -123,7 +132,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // returns ID of the SimParticle corresponding to straw hit 'Index'
 //-----------------------------------------------------------------------------
-  int TrkPatRecMcUtils::strawHitSimId(const art::Event* Event, int HitIndex) {
+  int TrkRecoMcUtils::strawHitSimId(const art::Event* Event, int HitIndex) {
     int           simId(-1);
     
     if (Event->event() != _lastEvent) initEvent(Event);
@@ -138,21 +147,26 @@ namespace mu2e {
 // find MC truth DOCA in a given straw
 // start from finding the right vector of StepPointMC's
 //-----------------------------------------------------------------------------
-  double TrkPatRecMcUtils::mcDoca(const art::Event* Event, int HitIndex, const Straw* Straw) {
+  double TrkRecoMcUtils::mcDoca(const art::Event* Event, const TrkStrawHit* StrawHit) {
 
     double mcdoca(-99.0);
 
     if (Event->event() != _lastEvent) initEvent(Event);
 
-    const CLHEP::Hep3Vector* v1 = &Straw->getMidPoint();
+    const ComboHit* ch    = &StrawHit->comboHit();
+    const Straw*    straw = &StrawHit->straw();
+
+    const CLHEP::Hep3Vector* v1 = &straw->getMidPoint();
     HepPoint p1(v1->x(),v1->y(),v1->z());
 
-    const StepPointMC* step = getStepPointMC(HitIndex);
+    int hitIndex = ch-&_chColl->at(0);
+    
+    const StepPointMC* step = getStepPointMC(hitIndex);
 
     const CLHEP::Hep3Vector* v2 = &step->position();
     HepPoint    p2(v2->x(),v2->y(),v2->z());
 
-    TrkLineTraj trstraw(p1,Straw->getDirection()  ,0.,0.);
+    TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
     TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
 
     TrkPoca poca(trstep, 0., trstraw, 0.);
@@ -165,7 +179,7 @@ namespace mu2e {
 // //-----------------------------------------------------------------------------
 // // calculates N(MC hits) produced by the signal particle, SIM_ID = 1, with P > 100
 // //-----------------------------------------------------------------------------
-//   int TrkPatRecMcUtils::nGenHits(const art::Event*         Event         ,
+//   int TrkRecoMcUtils::nGenHits(const art::Event*         Event         ,
 // 				 fhicl::ParameterSet*      TimeOffsets   ,
 // 				 const StrawHitCollection* Shcol         ) {
 
@@ -217,14 +231,14 @@ namespace mu2e {
 //   }
 
 //-----------------------------------------------------------------------------
-  const StrawDigiMCCollection* TrkPatRecMcUtils::getListOfMcStrawHits(const art::Event* Event,const art::InputTag& Tag) {
-    auto handle = Event->getValidHandle<StrawDigiMCCollection>(Tag);
-    const StrawDigiMCCollection* coll = handle.product();
-    return coll;
-  }
+  // const StrawDigiMCCollection* TrkRecoMcUtils::getListOfMcStrawHits(const art::Event* Event,const art::InputTag& Tag) {
+  //   auto handle = Event->getValidHandle<StrawDigiMCCollection>(Tag);
+  //   const StrawDigiMCCollection* coll = handle.product();
+  //   return coll;
+  // }
 
 //-----------------------------------------------------------------------------
-  const SimParticle* TrkPatRecMcUtils::getSimParticle(const art::Event* Event, int HitIndex) {
+  const SimParticle* TrkRecoMcUtils::getSimParticle(const art::Event* Event, int HitIndex) {
 
     if (Event->event() != _lastEvent) initEvent(Event);
 
@@ -238,16 +252,16 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  int   TrkPatRecMcUtils::getID      (const SimParticle* Sim) { return Sim->id().asInt();  }
+  int   TrkRecoMcUtils::getID      (const SimParticle* Sim) { return Sim->id().asInt();  }
 
 //-----------------------------------------------------------------------------
-  int   TrkPatRecMcUtils::getPdgID   (const SimParticle* Sim) { return Sim->pdgId();  }
+  int   TrkRecoMcUtils::getPdgID   (const SimParticle* Sim) { return Sim->pdgId();  }
 
 //-----------------------------------------------------------------------------
-  float TrkPatRecMcUtils::getStartMom(const SimParticle* Sim) {
+  float TrkRecoMcUtils::getStartMom(const SimParticle* Sim) {
     CLHEP::HepLorentzVector const& p = Sim->startMomentum();
     return sqrt(p.x()*p.x()+p.y()*p.y()+p.z()*p.z());
   }
 
-  DEFINE_ART_CLASS_TOOL(TrkPatRecMcUtils)
+  DEFINE_ART_CLASS_TOOL(TrkRecoMcUtils)
 }

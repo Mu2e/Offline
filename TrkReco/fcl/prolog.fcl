@@ -9,6 +9,25 @@ BEGIN_PROLOG
 # may use a more careful optimization, but this is it for now
 #------------------------------------------------------------------------------
 TrkReco: {
+    McUtils : { tool_type : "TrkRecoMcUtils" 
+	comboHitCollTag    : "makeSH"
+	strawDigiMCCollTag : "compressDigiMCs"
+    }
+}
+
+TrkReco: { @table::TrkReco 
+#------------------------------------------------------------------------------
+# if mcTruth = 0, a dummy ("return-end") implementation of MC truth functions
+# is used with no MC dependence. 
+# to really use that, the McUtilsToolBase needs to be moved from Mu2eUtilities *FIXME*
+# into some 'Base' library with no MC dependencies
+#------------------------------------------------------------------------------
+    PrintUtils: {
+	strawHitCollTag    : "makeSH"
+	mcTruth            : 0 #
+	mcUtils            : { @table::TrkReco.McUtils } # defined on top of this file
+    }
+
     TTrobustHelixFit     : {
 	diagLevel      : 0
 	debugLevel     : 0
@@ -60,12 +79,8 @@ TrkReco: {
 	ntripleMax         : 500
 	
 	minArea            : 5000.0
-	
     }
     
-    
-    
-
     DoubletAmbigResolver : {
 	debugLevel                          : 0
 	HitMinDrift			    : 0.2
@@ -86,20 +101,6 @@ TrkReco: {
 	tempScale                           : 1.0
 	penaltyScale                        : 0.0
 	maxHitChi                           : 5.    # 
-    }
-
-#------------------------------------------------------------------------------
-# if mcTruth = 0, a dummy ("return-end") implementation of MC truth functions
-# is used with no MC dependence. 
-# to really use that, the McUtilsToolBase needs to be moved from Mu2eUtilities *FIXME*
-# into some 'Base' library with no MC dependencies
-#------------------------------------------------------------------------------
-    PrintUtils: {
-	strawHitCollTag    : "makeSH"
-	mcTruth            : 0 #
-	mcUtils            : { tool_type : "TrkPatRecMcUtils" 
-	    strawDigiMCCollTag : "compressDigiMCs"
-	}
     }
 }
 END_PROLOG
