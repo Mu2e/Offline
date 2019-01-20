@@ -1,3 +1,11 @@
+################################################################################
+#           HOW RUN THE TRIGGER-FCL GENERATOR SCRIPT                           #
+#------------------------------------------------------------------------------#
+# 1) 
+#
+#
+# 2) 
+
 import re
 import sys
 import string
@@ -5,6 +13,64 @@ import os
 from shutil import copyfile
 
 from argparse import ArgumentParser
+
+def appendEpilog(trig_path, output_file, project_name):
+
+    trk_filters_DeM = ['TCFilter', 'PosHelixFilter', 'DeMSeedFilter']
+    trk_filters_DeP = ['TCFilter', 'NegHelixFilter', 'DePSeedFilter']
+    trk_filters     = trk_filters_DeM
+
+    trk_alg     = "TPR"   
+    if "cpr" in trig_path:
+        trk_alg = "CPR"
+
+    if "DeP" in trig_path:
+        trk_filters = trk_filters_DeP
+
+    project_dir = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name
+
+    print project_dir
+#check if the dir with the subconfig files exists, otherwise create it
+    if os.path.exists(project_dir) == False:
+        os.makedirs(project_dir)
+
+    for i in range(0,len(trk_filters)):
+        filterName       = trk_alg+trk_filters[i]
+        subconfig_file   = project_dir + "/inputs/"+trig_path+"_"+filterName+ ".config"
+        subconfig_exists = os.path.isfile(subconfig_file)
+
+#if the file doesn't exist use the default
+        if subconfig_exists == False:
+            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/main_' + trig_path + "_"+ filterName + ".config"
+            
+        subconfig_file = open(subconfig_file,"r")
+
+#create the epilog file
+        epilog_fileName = project_name + '/' + trig_path +'_'+filterName+'.fcl'
+        epilog_file     = open(epilog_fileName,"a")
+
+#now read the sub-config file
+        for line in subconfig_file:
+            vec_varName  = []
+            vec_varValue = []
+            for t in line.split():
+                try:
+                    vec_varValue.append(float(t))
+                except ValueError:
+                    vec_varName.append(t)
+                    
+            if len(vec_varValue) == 1:
+                new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varValue[0])+ "\n")
+                epilog_file.write(new_line)
+            elif len(vec_varName) == 2:
+                new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varName[1])+ "\n")
+                epilog_file.write(new_line)
+        epilog_file.close()
+
+        epilog=("\n#include \""+epilog_fileName +"\"")
+        output_file.write(epilog)
+
+    return True
 
 parser = ArgumentParser()
 parser.add_argument("-c", "--config-file", dest="configfilename",
@@ -91,7 +157,7 @@ for line in fh:
             path_list += ", "+vec_path[0]+"_path"
     
         if isOnlineMode == False:
-            new_path= ("physics."+vec_path[0]+"_path"+" : [ @sequence::paths."+vec_path[0]+" ] \n") 
+            new_path= ("\nphysics."+vec_path[0]+"_path"+" : [ @sequence::paths."+vec_path[0]+" ] \n") 
         else:
             digi_path=""
             if 'tpr'  in vec_path[0] or 'cpr' in vec_path[0] or 'Sd' in vec_path[0]: 
@@ -100,9 +166,18 @@ for line in fh:
                 digi_path += "CaloDigiFromShower, "
             new_path= ("physics."+vec_path[0]+"_path"+" : [ "+ digi_path +"@sequence::paths."+vec_path[0]+" ] \n")
 
+#now append the epilog files for setting the filters in the path
+        
+        if "Seed" in vec_path[0]:
+            tmp_name     = args.outputfilename
+            fname_len    = len(tmp_name)-4
+            project_name = tmp_name[0:fname_len]
+            appendEpilog(str(vec_path[0]), new_file, project_name)
+
         new_file.write(new_path)
+
     else:
-        trigerOutput_line= ("physics.out : [ readTriggerInfo, triggerOutput ]"+" \n")
+        trigerOutput_line= ("\nphysics.out : [ readTriggerInfo, triggerOutput ]"+" \n")
         new_file.write(trigerOutput_line)
         hasFilteroutput=1
 
