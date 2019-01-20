@@ -71,6 +71,8 @@ namespace mu2e {
     double _deltaDriftDoublet;
     int    _excludeBothHits;            // when calculating residuals to choose the drift signs 
     double _minChi2Ratio;               // if chi2(best)/chi2(next) < _minChi2Ratio, doublet is "well measured"
+    double _tempScale;                  // 
+    double _penaltyScale;               // 
     double _maxHitChi;
 
     int    _sign[4][2];

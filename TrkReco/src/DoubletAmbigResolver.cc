@@ -49,6 +49,8 @@ namespace mu2e {
     _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet",  0.3  )),
     _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  ,  1    )),  // default:1
     _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     ,  0.3  )),
+    _tempScale        (PSet.get<double>("tempScale")),
+    _penaltyScale     (PSet.get<double>("penaltyScale")),
     _iter(Iter),
     _Final(Final)
   {
@@ -393,7 +395,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  if (ibest == 0) Hit->setAmbig( 1);
 	  else            Hit->setAmbig(-1);
-	  Hit->setPenalty(Hit->driftRadius()/(2*sqrt(3)));
+	  Hit->setPenalty(Hit->driftRadius()/sqrt(3));
 	}
       }
       if (_debugLevel > 0) {
@@ -898,6 +900,7 @@ namespace mu2e {
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
+//		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3.));
 		hit[i]->setPenalty(AmbigResolver::_tmpErr/2/sqrt(3));
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
@@ -951,7 +954,8 @@ namespace mu2e {
 		hit[i]->setAmbig (_sign[best_dd][i]);
 	      }
 	      else {
-		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3));
+		//		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3)); - tried...
+		hit[i]->setPenalty(fabs(r.rdrift[i]));
 		hit[i]->setAmbig(0);
 					// hit residual is large - try to disable?
 		hit[i]->setActivity(false);
@@ -1159,9 +1163,9 @@ namespace mu2e {
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh) {
-      double penalty = _tmpErr*0.0625;
+      double penalty = _tmpErr*0.0625*_penaltyScale;
       (*itsh)->setPenalty    (penalty);
-      (*itsh)->setTemperature(0.2*penalty);
+      (*itsh)->setTemperature(_tmpErr*_tempScale);
     }
   }
 

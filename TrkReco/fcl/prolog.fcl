@@ -83,6 +83,8 @@ TrkReco: {
 	deltaDriftDoublet                   : 0.3
 	excludeBothHits                     : 1
 	minChi2Ratio                        : 0.2
+	tempScale                           : 1.0
+	penaltyScale                        : 0.0
 	maxHitChi                           : 5.    # 
     }
 
