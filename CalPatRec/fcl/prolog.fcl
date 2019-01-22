@@ -191,8 +191,9 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
     }
-
-    # Kalman fit configuration for the cprmode
+#------------------------------------------------------------------------------
+# Kalman fit configuration for the doublet-based resolver fit
+#------------------------------------------------------------------------------
     CprKFFinal : {
 	debugLevel                              : 0
 	minnstraws                              : 15
@@ -218,29 +219,26 @@ CalPatRec : { @table::CalPatRec
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
-	#------------------------------------------------------------------------------
-	#  KalContext parameters  (there are more to define ! )
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+#  KalContext parameters  (there are more to define ! )
+#------------------------------------------------------------------------------
 	MinNDOF                                 : 10 # this means 15 hits min
-	#------------------------------------------------------------------------------
-	# ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	FixedAmbigResolver                      : {}
 	HitAmbigResolver                        : {}
 	PocaAmbigResolver                       : {}
 	PanelAmbigResolver                      : {}
-	#------------------------------------------------------------------------------
-	# doublet-based ambiguity resolver parameters
-	#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# doublet-based ambiguity resolver parameters
+#------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
-	fieldCorrection			    : true
-	#    scaleErrDoublet                         : 5.
-	#    minDriftDoublet                         : 0.3
-	#    deltaDriftDoublet                       : 0.3
-	#    maxDoubletChi2                          : 9
-	#   sigmaSlope                              : 0.025
+	fieldCorrection			        : true
 	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+	    strawDigiMCCollTag : "compressDigiMCs"
+	}
     }
 
 
@@ -300,7 +298,9 @@ CalPatRec : { @table::CalPatRec
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
 	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+	    strawDigiMCCollTag : "compressDigiMCs"
+	}
     }
 }
 #------------------------------------------------------------------------------
@@ -320,6 +320,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawDigiCollection                         : makeSD
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalSeedFit
+	    mcDigiCollTag                               : "dave,_it_is_used_only_when_debugging_MC._pasha"
 	    DtMaxMiss                                   : 55.
 	    MaxAddDoca                                  : 5.    # mm
 	    MaxAddChi                                   : 5.    # 3.5 used by unweedHits and addHits
@@ -330,7 +331,9 @@ CalPatRec : { @table::CalPatRec
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	    diagPlugin : { tool_type                    : "KalFinalFitDiag" 
 		mcTruth                                 : 0
-		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+		mcUtils : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
 	
@@ -421,7 +424,9 @@ CalPatRec : { @table::CalPatRec
 		printOTracker             : 0                     #
 		printShcol                : 0                     #
 		testOrder                 : 0                     #
-		mcUtils                   : { tool_type : "CalPatRecMcUtils" }
+		mcUtils                   : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
 
@@ -520,8 +525,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFinder:Positive"
-	    calHelixFinderModuleLabel : "HelixFinder:Negative"
+	    trkHelixFinderModuleLabel : "HelixFinderMu:Positive"
+	    calHelixFinderModuleLabel : "HelixFinderMu:Negative"
 	}
 
 	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
@@ -575,10 +580,13 @@ CalPatRec : { @table::CalPatRec
 	    minClusterSize                              : 2      # number of crystals
 	    minClusterTime                              : 500.   # ns
 	    pitchAngle                                  : 0.67   # mean pitch for CE
+	    beta                                        : 1.0    # for muon reco needs to be changed
 	    dtOffset                                    : @local::TrackCaloMatching.DtOffset
 	    diagPlugin : { tool_type                    : "CalTimePeakFinderDiag" 
 		mcTruth                                 : 0 
-		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
 
@@ -598,7 +606,9 @@ CalPatRec : { @table::CalPatRec
 	    HelixFinderAlg                              : { @table::CalPatRec.HelixFinderAlg }
 	    diagPlugin : { tool_type                    : "CalHelixFinderDiag"
 		mcTruth                                 : 0
-		mcUtils                                 : { tool_type : "CalPatRecMcUtils" }
+		mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
+		    strawDigiMCCollTag : "compressDigiMCs"
+		}
 	    }
 	}
     }
@@ -609,7 +619,9 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 CalPatRec: { @table::CalPatRec 
     producers : { @table::CalPatRec.producers
-	
+	DeltaFinderMu                  : { @table::CalPatRec.producers.DeltaFinder
+	    timePeakCollectionTag      : CalTimePeakFinderMu
+	}
 	CalSeedFitDem                  : { @table::CalPatRec.producers.CalSeedFit        
 	    SeedCollection             : CalHelixFinderDeM
 	}
@@ -649,7 +661,8 @@ CalPatRec: { @table::CalPatRec
 	CalTrkFitDmm                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muminus 
 	    SeedCollection             : CalSeedFitDmm
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
+	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
+	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
 	}
 	CalTrkFitDep                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.eplus  
@@ -659,22 +672,32 @@ CalPatRec: { @table::CalPatRec
 	CalTrkFitDmp                   : { @table::CalPatRec.producers.CalTrkFit 
 	    fitparticle                : @local::Particle.muplus 
 	    SeedCollection             : CalSeedFitDmp
-	    CalTimePeakModuleLabel     : CalTimePeakFinder
+	    CalTimePeakModuleLabel     : CalTimePeakFinderMu
+	    StrawHitFlagCollection     : "DeltaFinderMu:StrawHits"
 	}
     }
     
     filters : { @table::CalPatRec.filters
+	CalTimePeakFinderMu            : { @table::CalPatRec.filters.CalTimePeakFinder   beta: 0.7                        } 
 	CalHelixFinderDeM              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eminus  }
-	CalHelixFinderDmuM             : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muminus }
+	CalHelixFinderDmuM             : { @table::CalPatRec.filters.CalHelixFinder 
+	    fitparticle                   : @local::Particle.muminus 
+	    StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits"
+	    TimeClusterCollectionLabel    : CalTimePeakFinderMu
+	}
 	CalHelixFinderDeP              : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.eplus   }
-	CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder fitparticle: @local::Particle.muplus  }
+	CalHelixFinderDmuP             : { @table::CalPatRec.filters.CalHelixFinder 
+	    fitparticle                   : @local::Particle.muplus 
+	    StrawHitFlagCollectionLabel   : "DeltaFinderMu:ComboHits" 
+	    TimeClusterCollectionLabel    : CalTimePeakFinderMu
+	}
     }
 }
 
-CalPatRec.reco     : [ CalTimePeakFinder, DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeM,  CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeP,  CalSeedFitDep, CalTrkFitDep ]
-CalPatRec.dmm_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuM, CalSeedFitDmm, CalTrkFitDmm ]
-CalPatRec.dmp_reco : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuP, CalSeedFitDmp, CalTrkFitDmp ]
+CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDeM,  CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDeP,  CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.dmm_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmuM, CalSeedFitDmm, CalTrkFitDmm ]
+CalPatRec.dmp_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmuP, CalSeedFitDmp, CalTrkFitDmp ]
 
 END_PROLOG

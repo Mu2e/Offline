@@ -34,6 +34,8 @@
 namespace mu2e {
 
   class TrkPatRecMcUtils : public mu2e::McUtilsToolBase {
+  protected:
+    std::string   _strawDigiMCCollTag;
   public:
 
     TrkPatRecMcUtils(const fhicl::ParameterSet& PSet);
@@ -61,7 +63,9 @@ namespace mu2e {
   };
 
 //-----------------------------------------------------------------------------
-  TrkPatRecMcUtils::TrkPatRecMcUtils(const fhicl::ParameterSet& PSet) {
+  TrkPatRecMcUtils::TrkPatRecMcUtils(const fhicl::ParameterSet& PSet) : 
+    _strawDigiMCCollTag{ PSet.get<std::string>("strawDigiMCCollTag") }
+  {
   }
 
 //-----------------------------------------------------------------------------
@@ -78,29 +82,28 @@ namespace mu2e {
     static int    last_event(-1);
     //    static int    first_call( 1);
 
-    static const StrawDigiMCCollection*  listOfMCStrawHits(NULL);
+    const StrawDigiMCCollection*  mcdigis(NULL);
     
-
     double mcdoca(-99.0);
 
     int iev = Event->event();
 
     if (iev != last_event) {
       art::Handle<mu2e::StrawDigiMCCollection> mcdigiH;
-      Event->getByLabel(MCCollName,mcdigiH);
-      if (mcdigiH.isValid()) listOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
-      else                   listOfMCStrawHits = NULL;
+      Event->getByLabel(_strawDigiMCCollTag,mcdigiH);
+      if (mcdigiH.isValid()) mcdigis = (mu2e::StrawDigiMCCollection*) mcdigiH.product();
+      else                   mcdigis = NULL;
 
       last_event = iev;
     }
 
-    if (listOfMCStrawHits) { 
-      int nstraws = listOfMCStrawHits->size();
+    if (mcdigis) { 
+      int nstraws = mcdigis->size();
 
       const mu2e::StepPointMC* step(0);
 
       for (int i=0; i<nstraws; i++) {
-	const mu2e::StrawDigiMC*  mcdigi = &listOfMCStrawHits->at(i);
+	const mu2e::StrawDigiMC*  mcdigi = &mcdigis->at(i);
 
 	if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
 	  step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
@@ -142,15 +145,15 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int TrkPatRecMcUtils::nGenHits(const art::Event*         Event         ,
 				 fhicl::ParameterSet*      TimeOffsets   ,
-				 const char*               MCDigiCollName,
+				 const char*               MCDigiCollName,  // not used
 				 const StrawHitCollection* Shcol         ) {
 
     static int     last_event(-1);
     static int     first_call(1);
     static double  mbtime;
 
-    static SimParticleTimeOffset*                 timeOffsets(NULL);
-    static const StrawDigiMCCollection*  listOfMCStrawHits(NULL);
+    static SimParticleTimeOffset* timeOffsets(NULL);
+    const StrawDigiMCCollection*  mcdigis    (NULL);
 
     double  time_threshold(500.);
     int     n_gen_hits(  0 );
@@ -168,24 +171,23 @@ namespace mu2e {
     int iev = Event->event();
 
     if (iev != last_event) {
-      art::Handle<mu2e::StrawDigiMCCollection> mcptrHandle;
-      Event->getByLabel(MCDigiCollName,mcptrHandle);
-      if (mcptrHandle.isValid()) listOfMCStrawHits = (mu2e::StrawDigiMCCollection*) mcptrHandle.product();
-      else                       listOfMCStrawHits = NULL;
+      art::Handle<mu2e::StrawDigiMCCollection> mcptrH;
+      Event->getByLabel(_strawDigiMCCollTag,mcptrH);
+      if (mcptrH.isValid()) mcdigis = (mu2e::StrawDigiMCCollection*) mcptrH.product();
+      else                  mcdigis = NULL;
 
       timeOffsets->updateMap(*Event);
 
       last_event = iev;
     }
 
-    if (listOfMCStrawHits == NULL) return -1;
+    if (mcdigis == NULL) return -1;
 
     double  pEntrance(.0);
 
     int nhits = Shcol->size();
     for (int i=0; i<nhits; i++) {
-
-      const mu2e::StrawDigiMC* mcdigi = &listOfMCStrawHits->at(i);
+      const mu2e::StrawDigiMC* mcdigi = &mcdigis->at(i);
 
       const mu2e::StepPointMC   *step;
       if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
