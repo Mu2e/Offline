@@ -41,19 +41,11 @@
 #if G4VERSION>4103
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
+#include "Mu2eG4/inc/Shielding_MU2ER1.hh"
+#include "Mu2eG4/inc/QGSP_BERT_MU2ER1.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
-#include "Mu2eG4/inc/setMinimumRangeCut.hh"
-
-//tmp arrangement
-#include "Mu2eG4/inc/QGSP_BERT_HP_MU2E00.hh"
-#include "Mu2eG4/inc/QGSP_BERT_MU2E00.hh"
-#include "Mu2eG4/inc/Shielding_MU2E00.hh"
-#include "Mu2eG4/inc/Shielding_MU2E01.hh"
-#include "Mu2eG4/inc/Shielding_MU2E02.hh"
-#if G4VERSION<4099
-#include "Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.hh"
-#endif
+#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 
 // CLHEP includes
 #include "CLHEP/Units/SystemOfUnits.h"
@@ -63,6 +55,8 @@
 #include "G4VUserPhysicsList.hh"
 #include "G4RadioactiveDecayPhysics.hh"
 #include "G4ErrorPhysicsList.hh"
+#include "G4EmStandardPhysics_option4.hh"
+
 #if G4VERSION>4103
 #include "G4EmParameters.hh"
 #endif
@@ -73,7 +67,9 @@
 using namespace std;
 
 namespace mu2e{
+
   namespace {
+
     std::string getPhysicsListName(const fhicl::ParameterSet& pset) {
       return pset.get<std::string>("physics.physicsListName");
     }
@@ -106,6 +102,18 @@ namespace mu2e{
     bool modifyEMOption0(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.modifyEMOption0",false);
     }
+    void checkAddEMZ(const fhicl::ParameterSet& pset,
+                     std::string name,
+                     G4VModularPhysicsList* tmpPL) {
+      if ( name.find("_EMZ") != std::string::npos ) {
+        // somehow RemovePhysics/RegisterPhysics works better than ReplacePhysics
+        tmpPL->RemovePhysics(("G4EmStandard"));
+        if (getDiagLevel(pset)>0) {
+          G4cout << __func__ << " Using G4EmStandardPhysics_option4" << G4endl;
+        }
+        tmpPL->RegisterPhysics( new G4EmStandardPhysics_option4(getDiagLevel(pset)) );
+      }
+    }
 #endif
 
   }
@@ -113,10 +121,11 @@ namespace mu2e{
   G4VUserPhysicsList* physicsListDecider(const fhicl::ParameterSet& pset) {
 
     G4VModularPhysicsList* tmpPL(nullptr);
+    G4VModularPhysicsList* tmpPLN(nullptr);
 
     const string name = getPhysicsListName(pset);
 
-    std::cout << __func__ << " invoked with " << name << std::endl;
+    getDiagLevel(pset)>-1 && G4cout << __func__ << " invoked with " << name << G4endl;
 
     // special cases
     if ( name  == "Minimal" ) {
@@ -134,66 +143,48 @@ namespace mu2e{
       return new G4ErrorPhysicsList(); 
     }
 
-#if G4VERSION<4099
-    else if ( name == "QGSP" ){
-      tmpPL = new QGSP();
-    }
-#endif
+#if G4VERSION>4103
 
-    else if ( name == "QGSP_BERT_MU2E00" ){
-      tmpPL = new QGSP_BERT_MU2E00();
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
-      G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
+    else if ( name == "ShieldingM_MU2ER1" || name == "ShieldingM_MU2ER1_EMZ" ){
+      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","M");
+      checkAddEMZ(pset,name,tmpPL);
     }
 
-    else if ( name == "QGSP_BERT_HP_MU2E00" ){
-      tmpPL = new TQGSP_BERT_HP_MU2E00<G4VModularPhysicsList>(pset);
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified";
-      G4cout << "Warning: This Mu2e Physics List has not been certified" << G4endl;
+    else if ( name == "Shielding_MU2ER1"  || name == "Shielding_MU2ER1_EMZ"  ){
+      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","");
+      checkAddEMZ(pset,name,tmpPL);
     }
 
-    else if ( name == "Shielding_MU2E00" ){
-      tmpPL = new Shielding_MU2E00();
-#if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      G4cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << G4endl;
-#endif
+    else if ( name == "QGSP_BERT_MU2ER1"  || name == "QGSP_BERT_MU2ER1_EMZ"   ){
+      tmpPL = new QGSP_BERT_MU2ER1(pset,getDiagLevel(pset));
+      checkAddEMZ(pset,name,tmpPL);
     }
 
-    else if ( name == "Shielding_MU2E01" ){
-      tmpPL = new TShielding_MU2E01<G4VModularPhysicsList>(pset);
-#if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
 #endif
-    }
-
-    else if ( name == "Shielding_MU2E02" ){
-      tmpPL = new TShielding_MU2E02<G4VModularPhysicsList>(pset);
-#if G4VERSION>4099
-      mf::LogWarning("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
-#endif
-    }
-
-    else if ( name == "FTFP_BERT_PBAR_MU2E02" ){
-#if G4VERSION<4099
-      tmpPL = new TFTFP_BERT_PBAR_MU2E02<G4VModularPhysicsList>;
-#endif
-#if G4VERSION>4099
-      mf::LogError("PHYS") << "This Mu2e Physics List has not been certified for use with Geant4 v10+.";
-      cout << "Warning: This Mu2e Physics List has not been certified for use with Geant4 v10+." << endl;
-#endif
-    }
 
     // General case
     else {
+
+      // disable standard Geant4 physics lists as setMu2eG4ProductionCuts,
+      // esp. the region specific cuts need to be done during
+      // initialization in the MT mode forcing the creation of a custom
+      // physics constructor and physics lists
+
       G4PhysListFactory physListFactory;
       physListFactory.SetVerbose(getDiagLevel(pset));
-      tmpPL = physListFactory.GetReferencePhysList(name);
+      tmpPLN = physListFactory.GetReferencePhysList(name);
+
     }
 
-    if ( !tmpPL ){
+    if ( tmpPL==nullptr && tmpPLN!=nullptr) {
+      throw cet::exception("G4CONTROL")
+        << "Unable to load physics list named: "
+        << name
+        << ". If a list like it is needed please take a look at, e.g. Shielding_MU2ER1"
+        << "\n as an implementation example where one inherits from "
+        << "a reference physics list and adds Mu2e customizations"
+        << "\n";
+    } else if ( tmpPL==nullptr ) {
       throw cet::exception("G4CONTROL")
         << "Unable to load physics list named: "
         << name
@@ -205,6 +196,16 @@ namespace mu2e{
 
     if (turnOffRadioactiveDecay(pset)) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
+    }
+
+    if ( turnOffRadioactiveDecay(pset) && turnOnRadioactiveDecay(pset) ) {
+      mf::LogError("Config") << "Inconsistent config";
+      G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
+      throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
+    }
+
+    if (turnOnRadioactiveDecay(pset)) {
+      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(getDiagLevel(pset)));
     }
 
 #if G4VERSION>4103
@@ -238,27 +239,18 @@ namespace mu2e{
     }
 #endif
 
-    if ( turnOffRadioactiveDecay(pset) && turnOnRadioactiveDecay(pset) ) {
-      mf::LogError("Config") << "Inconsistent config";
-      G4cout << "Error: turnOnRadioactiveDecay & turnOffRadioactiveDecay on" << G4endl;
-      throw cet::exception("BADINPUT")<<" decide on turnOn/OffRadioactiveDecay\n";
-    }
-
-    if (turnOnRadioactiveDecay(pset)) {
-      tmpPL->RegisterPhysics(new G4RadioactiveDecayPhysics(getDiagLevel(pset)));
-    }
-
     // Muon Spin and Radiative decays plus pion muons with spin
     if ( getDecayMuonsWithSpin(pset) ) {
 
       // requires spin tracking: G4ClassicalRK4WSpin
-      if ( getStepperName(pset) !=  "G4ClassicalRK4WSpin") {
+      if ( getStepperName(pset) != "G4ClassicalRK4WSpin" &&
+           getStepperName(pset) != "G4DormandPrince745WSpin" ) {
         mf::LogError("Config") << "Inconsistent config";
-        G4cout << "Error: DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper" << G4endl;
-        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires G4ClassicalRK4WSpin stepper\n";
+        G4cout << "Error: DecayMuonsWithSpin requires enabling spin tracking" << G4endl;
+        throw cet::exception("BADINPUT")<<" DecayMuonsWithSpin requires enabling spin tracking\n";
       }
 
-      tmpPL-> RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(pset)));
+      tmpPL->RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(pset)));
     }
 
     if (getDiagLevel(pset) > 0) tmpPL->DumpCutValuesTable();

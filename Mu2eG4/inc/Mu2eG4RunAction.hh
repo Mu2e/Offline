@@ -15,12 +15,12 @@
 #include "G4Run.hh"
 #include "G4SDManager.hh"
 
-#include "CLHEP/Vector/ThreeVector.h"
+namespace fhicl { class ParameterSet; }
 
+namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
-    
-    
+
     class PhysicalVolumeHelper;
     class PhysicsProcessInfo;
     class TrackingAction;
@@ -31,7 +31,8 @@ namespace mu2e {
 class Mu2eG4RunAction : public G4UserRunAction
 {
   public:
-    Mu2eG4RunAction(const bool,
+    Mu2eG4RunAction(const fhicl::ParameterSet& pset,
+                    const bool,
                     CLHEP::Hep3Vector const&,
                     PhysicalVolumeHelper*,
                     PhysicsProcessInfo*,
@@ -40,33 +41,31 @@ class Mu2eG4RunAction : public G4UserRunAction
                     SensitiveDetectorHelper*,
                     ExtMonFNALPixelSD*
                     );
-    
+
     virtual ~Mu2eG4RunAction();
-    
+
     //methods
     virtual void BeginOfRunAction(const G4Run* aRun);
     virtual void EndOfRunAction(const G4Run* aRun);
-    
-    
-   private:
+
+  private:
     //data members
+
+    const fhicl::ParameterSet& pset_;
     const bool use_G4MT_;
     CLHEP::Hep3Vector const& originInWorld;
-    
+
     PhysicalVolumeHelper* _physVolHelper;
     PhysicsProcessInfo* _processInfo;
     TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
-    
+
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
     ExtMonFNALPixelSD* _extMonFNALPixelSD;
-    
+
     const bool standardMu2eDetector_;
-    
-    
+
 };
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_RunAction_hh */
-
-
