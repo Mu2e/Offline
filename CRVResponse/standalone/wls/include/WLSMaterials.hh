@@ -31,9 +31,9 @@ class WLSMaterials
     G4Material*        PVC;
 
     G4Material*        PMMA;
-    G4Material*        Pethylene;
     G4Material*        FPethylene;
-    G4Material*        Polystyrene;
+    G4Material*        PolystyreneFiber;
+    G4Material*        PolystyreneScint;
     G4Material*        Coating;
 };
 

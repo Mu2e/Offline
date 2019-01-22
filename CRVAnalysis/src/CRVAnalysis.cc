@@ -49,6 +49,8 @@ namespace mu2e
           MCInfo.emplace_back(true, 
                               simParticle->pdgId(), 
                               primaryParticle->pdgId(),
+                              primaryParticle->startMomentum().e(),
+                              primaryParticle->startPosition(),
                               clusterMC.GetEarliestHitPos(),
                               clusterMC.GetEarliestHitTime(),
                               clusterMC.GetTotalEnergyDeposited());

@@ -142,6 +142,14 @@ namespace mu2e {
     std::vector<CLHEP::Hep3Vector> _upPolyHoleCenters;
     std::vector<CLHEP::Hep3Vector> _downPolyHoleCenters;
 
+
+    //Calorimeter shield definitions
+    double _CalShieldRingInnerRadius;
+    double _CalShieldRingOuterRadius;
+    double _CalShieldRingHLength;
+    std::string _CalShieldRingMaterialName;
+    double _CalShieldRingZ;
+
   };
 
 }  //namespace mu2e

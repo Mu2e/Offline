@@ -17,13 +17,22 @@ namespace mu2eCrv
 struct LookupConstants
 {
   int    version1, version2;
+  int    reflector;
   double halfThickness, halfWidth, halfLength;
-  double speedOfLightFiber;
-  double rindexScintillator;
-  double rindexFiber;
-  double cerenkovEnergyIntervalScintillator;
-  double cerenkovEnergyIntervalFiber;
   double fiberSeparation, holeRadiusX, holeRadiusY, fiberRadius, scintillatorCornerRadius;
+  double scintillatorBirksConstant;
+  double WLSfiberDecayTime;
+  void Write(const std::string &filename);
+  void Read(std::ifstream &lookupfile);
+};
+
+//number of photons per mm for a given beta
+struct LookupCerenkov
+{
+  std::map<double,double> photonsScintillator;
+  std::map<double,double> photonsFiber;
+  void WriteMap(std::map<double,double> &m, std::ofstream &o);
+  void ReadMap(std::map<double,double> &m, std::ifstream &i);
   void Write(const std::string &filename);
   void Read(std::ifstream &lookupfile);
 };
@@ -42,30 +51,38 @@ struct LookupBinDefinitions
   void Write(const std::string &filename);
   void Read(std::ifstream &lookupfile);
 
-  unsigned int getNScintillatorBins();
-  unsigned int getNFiberBins();
+  unsigned int getNScintillatorScintillationBins();
+  unsigned int getNScintillatorCerenkovBins();
+  unsigned int getNFiberCerenkovBins();
 
   unsigned int findBin(const std::vector<double> &v, const double &x, bool &notFound);
-  int findScintillatorBin(double x, double y, double z);
-  int findFiberBin(double beta, double theta, double phi, double r, double z);
-  bool findScintillatorBinReverse(unsigned int bin, double &xbin, double &ybin, double &zbin);
-  bool findFiberBinReverse(unsigned int bin, double &betabin, double &thetabin, double &phibin, double &rbin, double &zbin);
+  int findScintillatorScintillationBin(double x, double y, double z);
+  int findScintillatorCerenkovBin(double x, double y, double z, double beta);
+  int findFiberCerenkovBin(double beta, double theta, double phi, double r, double z);
+
+  bool findScintillatorScintillationBinReverse(unsigned int bin, double &xbin, double &ybin, double &zbin);
+  bool findScintillatorCerenkovBinReverse(unsigned int bin, double &xbin, double &ybin, double &zbin, double &betabin);
+  bool findFiberCerenkovBinReverse(unsigned int bin, double &betabin, double &thetabin, double &phibin, double &rbin, double &zbin);
 };
 
 struct LookupBin
 {
-  static const int nTimeDelays=150;
-  static const int nFiberEmissions=15;
-  static const unsigned short probabilityScale=10000;  //still within unsigned short (2 bytes)
-  //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
-  //so that the probabilities can be stored as integers.
-  //therefore, the probability of 1 is stored as 10000.
+  static const int maxTimeDelays=150;
+  static const int maxFiberEmissions=10;
+  static const unsigned short probabilityScale=255;  //still within unsigned char (1 byte)
+  //the lookup tables encodes probabilities as probability*probabilityScale(255), 
+  //so that the probabilities can be stored as unsigned chars.
+  //therefore, the probability of 1 is stored as 255.
 
-  float arrivalProbability[4];
-  unsigned short timeDelays[4][nTimeDelays];
-  unsigned short fiberEmissions[4][nFiberEmissions];
+  //Lookup tables are created only for SiPM# 0 due to symmetry reasons
+  unsigned int binNumber;  //to check whether file was assembled correctly
+  float arrivalProbability;
+  std::vector<unsigned char> timeDelays;
+  std::vector<unsigned char> fiberEmissions;
+  void WriteVector(std::vector<unsigned char> &v, std::ofstream &o);
+  void ReadVector(std::vector<unsigned char> &v, std::ifstream &i);
   void Write(const std::string &filename);
-  void Read(std::ifstream &lookupfile);
+  void Read(std::ifstream &lookupfile, const unsigned int &i);
 };
 
 
@@ -90,41 +107,34 @@ class MakeCrvPhotons
                                       double energyDepositedTotal,
                                       double energyDepositedNonIonizing,
                                       double trueStepLength,
-                                      double scintillationYieldAdjustment=0);   //allows small random variations of the scintillation yield for individual counters
+                                      double scintillationYieldAdjustment=0,  //allows small random variations of the scintillation yield for individual counters
+                                      int reflector=0);
     int                       GetNumberOfPhotons(int SiPM);
     const std::vector<double> &GetArrivalTimes(int SiPM);
     void                      SetScintillationYield(double yield) {_scintillationYield=yield;}
-    void                      SetScintillatorBirksConstant(double birksConstant) {_scintillatorBirksConstant=birksConstant;}
-    void                      SetScintillatorRatioFastSlow(double ratio) {_scintillatorRatioFastSlow=ratio;}
-    void                      SetScintillatorDecayTimeFast(double decayTime) {_scintillatorDecayTimeFast=decayTime;}
-    void                      SetScintillatorDecayTimeSlow(double decayTime) {_scintillatorDecayTimeSlow=decayTime;}
-    void                      SetFiberDecayTime(double decayTime) {_fiberDecayTime=decayTime;}
 
   private:
 
     std::string               _fileName;
+    int                       _reflector;
 
     std::vector<double>       _arrivalTimes[4];
     double                    _scintillationYield;
-    double                    _scintillatorBirksConstant;
-    double                    _scintillatorRatioFastSlow;
-    double                    _scintillatorDecayTimeFast; 
-    double                    _scintillatorDecayTimeSlow; 
-    double                    _fiberDecayTime;
 
     LookupConstants           _LC;
+    LookupCerenkov            _LCerenkov;
     LookupBinDefinitions      _LBD;
-    std::vector<LookupBin>    _bins[4];
+    std::vector<LookupBin>    _bins[3];   //scintillation in scintillator (0), Cerenkov in scintillator (1), Cerenkov in fiber (2)
 
     CLHEP::RandFlat           &_randFlat;
     CLHEP::RandGaussQ         &_randGaussQ;
     CLHEP::RandPoissonQ       &_randPoissonQ;
 
     bool   IsInsideScintillator(const CLHEP::Hep3Vector &p);
-    int    IsInsideFiber(const CLHEP::Hep3Vector &p, double &r);
-    double GetRandomTime(const LookupBin *theBin, int SiPM, bool &overflow);
-    int    GetRandomFiberEmissions(const LookupBin *theBin, int SiPM, bool &overflow);
-    double GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval);
+    bool   IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3Vector &dir, double &r, double &phi);
+    double GetRandomTime(const LookupBin *theBin, bool &overflow);
+    int    GetRandomFiberEmissions(const LookupBin *theBin, bool &overflow);
+    double GetAverageNumberOfCerenkovPhotons(double beta, double charge, std::map<double,double> &photons);
     int    GetNumberOfPhotonsFromAverage(double average, int nSteps);
 
     double VisibleEnergyDeposition(int PDGcode, double stepLength,
