@@ -49,7 +49,7 @@ physics : {
 }
 
 // This loads faster than the default physics list
-physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT_MU2ER1"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0
