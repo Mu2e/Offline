@@ -5,6 +5,7 @@
 #include "G4TrackStatus.hh"
 #include "G4VPhysicalVolume.hh"
 
+#include "WLSDetectorConstruction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
 
@@ -16,11 +17,14 @@
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
 
-#include "G4ThreeVector.hh"
 #include "G4SystemOfUnits.hh"
+#include "G4ThreeVector.hh"
 #include <sstream>
 
+//#define PHOTONTEST
+#ifdef PHOTONTEST
 #include <TNtuple.h>
+#endif
 
 #include "G4LossTableManager.hh"
 #include "G4NistManager.hh"
@@ -45,14 +49,18 @@ WLSSteppingAction::WLSSteppingAction(simulationMode mode, const std::string &loo
     _crvPhotons->LoadVisibleEnergyAdjustmentTable(visibleEnergyAdjustmentFileName);
   }
 
-  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ:x:y:time:angle"); //WLS fiber test
+#ifdef PHOTONTEST
+  _ntuple = new TNtuple("CRVPhotons","CRVPhotons","SiPM:Energy:Length:StartZ:x:y:time:angle");
+#endif
   Reset();
 }
 
 WLSSteppingAction::~WLSSteppingAction()
 {
-  _ntuple->SaveAs("CRVPhotons.root");  //WLS fiber test
+#ifdef PHOTONTEST
+  _ntuple->SaveAs("CRVPhotons.root");
   delete _ntuple;
+#endif
 }
 
 void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
@@ -77,7 +85,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
   //create a list of fiber photons and their parents to find the number of re-emissions
   if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
   {
-    if(theStep->GetTrack()->GetCreatorProcess()->GetProcessName()=="OpWLS")
+    if(theStep->GetTrack()->GetCreatorProcess()->GetProcessName()=="OpWLSY11")
     {
       int trackID=theStep->GetTrack()->GetTrackID();
       int parentID=theStep->GetTrack()->GetParentID();
@@ -100,39 +108,30 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
       std::cout<<theStep->GetTrack()->GetParticleDefinition()->GetParticleName()<<std::endl;
     }
 */
+
 /*
-    if(theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()!=0)
+//    if(theStep->GetTrack()->GetParticleDefinition()->GetPDGEncoding()!=0)
     {
       std::cout<<theStep->GetTrack()->GetTrackID()<<"  "<<theStep->GetTrack()->GetParentID()<<"   ";
       std::cout<<theStep->GetTrack()->GetParticleDefinition()->GetParticleName()<<"   ";
       std::cout<<theStep->GetTrack()->GetTrackLength()<<"   "<<theStep->GetTrack()->GetTotalEnergy()<<"   ";
       std::cout<<theStep->GetPreStepPoint()->GetPosition()<<"   ";
       std::cout<<theStep->GetPostStepPoint()->GetPosition()<<"   ";
+      std::cout<<"       ";
+      if(theStep->GetPreStepPoint()->GetMaterial()!=NULL)
+      {
+        std::cout<<theStep->GetPreStepPoint()->GetMaterial()->GetName()<<"  ";
+      }
+      if(theStep->GetPostStepPoint()->GetMaterial()!=NULL)
+      {
+        std::cout<<theStep->GetPostStepPoint()->GetMaterial()->GetName()<<"  ";
+      }
+      if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
+      {
+        std::cout<<theStep->GetTrack()->GetCreatorProcess()->GetProcessName();
+      }
       std::cout<<std::endl;
     }
-*/
-/*
-    std::cout<<theStep->GetPreStepPoint()->GetStepStatus()<<"   ";
-    std::cout<<theStep->GetPostStepPoint()->GetStepStatus()<<"   ";
-    if(theStep->GetTrack()->GetCreatorProcess()!=NULL)
-    {
-      std::cout<<theStep->GetTrack()->GetCreatorProcess()->GetProcessName()<<"      ";
-    }
-    else std::cout<<"---       ";
-    if(theStep->GetPreStepPoint()->GetProcessDefinedStep())
-    {
-      std::cout<<theStep->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessName()<<"   ";
-      std::cout<<theStep->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessType()<<"   ";
-      std::cout<<theStep->GetPreStepPoint()->GetProcessDefinedStep()->GetProcessSubType()<<"      ";
-    }
-    else std::cout<<"---       ";
-    if(theStep->GetPostStepPoint()->GetProcessDefinedStep())
-    {
-      std::cout<<theStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName()<<"   ";
-      std::cout<<theStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessType()<<"   ";
-      std::cout<<theStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessSubType()<<"   "<<std::endl;
-    }
-    else std::cout<<"---    "<<std::endl;
 */
 
     if(theStatus==Detection)
@@ -141,6 +140,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
          {
 //std::cout<<"DETECTION  "<<thePostPV->GetCopyNo()<<std::endl;
            //a photon reached a SiPM
+#ifdef PHOTONTEST
            _ntuple->Fill((float)(thePostPV->GetCopyNo()),
                                  theStep->GetTrack()->GetTotalEnergy(),
                                  theStep->GetTrack()->GetTrackLength(),
@@ -149,6 +149,7 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
                                  theStep->GetPostStepPoint()->GetPosition().y(), //WLS fiber test
                                  theStep->GetPostStepPoint()->GetGlobalTime(),
                                  theStep->GetPostStepPoint()->GetMomentum().unit().dot(CLHEP::Hep3Vector(0.0,0.0,1.0)));
+#endif
 
            //run through the list of parent photons to find the number of re-emissions
            int numberOfFiberEmissions=0;
@@ -164,7 +165,6 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
              else break;
            }
            _fiberEmissions[thePostPV->GetCopyNo()].push_back(numberOfFiberEmissions);
-
            _arrivalTimes[thePostPV->GetCopyNo()].push_back(theStep->GetPostStepPoint()->GetGlobalTime());
          }
     }
@@ -189,35 +189,22 @@ void WLSSteppingAction::UserSteppingAction(const G4Step* theStep)
     {
       first=false;
 
-      //these constances are extracted from the G4Material
+      //these constants are extracted from the G4Material
       //in a real run, they would be provided by the fcl file
-      G4Material* scintillator = G4Material::GetMaterial("Polystyrene",true);
+      G4Material* scintillator = G4Material::GetMaterial("PolystyreneScint",true);
       G4MaterialPropertiesTable* scintillatorPropertiesTable = scintillator->GetMaterialPropertiesTable();
       double scintillationYield = scintillatorPropertiesTable->GetConstProperty("SCINTILLATIONYIELD");
-      double scintillatorBirksConstant = scintillator->GetIonisation()->GetBirksConstant();
-      double scintillatorRatioFastSlow = scintillatorPropertiesTable->GetConstProperty("YIELDRATIO");
-      double scintillatorDecayTimeFast = scintillatorPropertiesTable->GetConstProperty("FASTTIMECONSTANT");
-      double scintillatorDecayTimeSlow = scintillatorPropertiesTable->GetConstProperty("SLOWTIMECONSTANT");
-
-      G4Material* fiber = G4Material::GetMaterial("PMMA",true);
-      G4MaterialPropertiesTable* fiberPropertiesTable = fiber->GetMaterialPropertiesTable();
-      double fiberDecayTime = fiberPropertiesTable->GetConstProperty("WLSTIMECONSTANT");
-
       _crvPhotons->SetScintillationYield(scintillationYield);
-      _crvPhotons->SetScintillatorBirksConstant(scintillatorBirksConstant);
-      _crvPhotons->SetScintillatorRatioFastSlow(scintillatorRatioFastSlow);
-      _crvPhotons->SetScintillatorDecayTimeFast(scintillatorDecayTimeFast);
-      _crvPhotons->SetScintillatorDecayTimeSlow(scintillatorDecayTimeSlow);
-      _crvPhotons->SetFiberDecayTime(fiberDecayTime);
     }
 
     if(PDGcode!=0)  //ignore optical photons
     {
+     int reflector = WLSDetectorConstruction::Instance()->GetReflectorOption();
       _crvPhotons->MakePhotons(p1, p2, t1, t2,  
                             PDGcode, beta, charge,
                             energyDepositedTotal,
                             energyDepositedNonIonizing,
-                            trueStepLength);
+                            trueStepLength,0,reflector);
  
       for(int SiPM=0; SiPM<4; SiPM++)
       {

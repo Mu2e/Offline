@@ -58,7 +58,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes 
 
 #include "Mu2eG4/geom/TSdA_v01.txt"
-#include "Mu2eG4/geom/muonBeamStop_v04.txt"
+#include "Mu2eG4/geom/muonBeamStop_v05.txt"
 
 //#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor (deprecated)
 //#include "Mu2eG4/geom/STM_v01.txt" // (muon) stopping target monitor
