@@ -99,7 +99,7 @@ double pbar.coll1In.halfLength = 0.125;
 double pbar.coll1In.rOut = 160.0;
 double pbar.coll1In.offset = -140.02;       // distance to the TS1 entrance on +z.  It is implemented as distance to COL1, which shifted 40 mm, so shifted this as well.
 string pbar.coll1In.material1Name = "G4_Al";
-double pbar.coll1In.rOutRecord = 200.0;
+double pbar.coll1In.rOutRecord = 158.75;
 // Support structure for the upstream Pbar window in front of TS1 entrance
 int    pbar.coll1In.Version = 2; // 1 for just the window. 2 adds supports
 double pbar.coll1In.supportRIn = 158.75;    // support dimensions also apply
