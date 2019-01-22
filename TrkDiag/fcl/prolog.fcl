@@ -158,23 +158,6 @@ BEGIN_PROLOG
     fillTrkQualInfo : true
   }
 
-  TrackAnalysisFromKalSeed : {
-    module_type : TrackAnalysisFromKalSeed
-    KalFinalTagRoot : KFF
-    TrkQualTagRoot : TrkQual
-    KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
-    # change this if reading cosmic data or generating inline
-    TrkCaloDiag : @local::TrkCaloDiag
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
-    # want to keep track of the mean beam intensity that was assumed in the simulation
-    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    PBIWeightTag : "PBIWeight"
-    StrawDigiMCCollection : "compressDigiMCs"
-    SimParticleCollection : "compressDigiMCs"
-    VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-  } 
-
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
     producers : { @table::TrackCaloMatching.producers 
@@ -255,14 +238,6 @@ BEGIN_PROLOG
         @table::TrackAnalysis
         TrkParticle : -11
       }
-      TrkAnaKSNeg: {
-        @table::TrackAnalysisFromKalSeed
-        TrkParticle : 11
-      }
-      TrkAnaKSPos: {
-        @table::TrackAnalysisFromKalSeed
-        TrkParticle : -11
-      }
     }
   
     # diagnostic Reco sequences starting from digis
@@ -282,7 +257,7 @@ BEGIN_PROLOG
 
     CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 
-    EndSequence : [ TrkAnaNeg, TrkAnaPos, TrkAnaKSNeg, TrkAnaKSPos ]
+    EndSequence : [ TrkAnaNeg, TrkAnaPos ]
 
   }
 TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
