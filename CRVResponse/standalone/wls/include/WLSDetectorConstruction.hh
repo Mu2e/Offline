@@ -46,6 +46,8 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double GetHoleRadiusY()      {return _holeRadiusY;}
     double GetClad2Radius()      {return _clad2Radius;}
 
+    int    GetReflectorOption()  {return _reflectorOption;}
+
     std::vector<double> GetXBins() {return _xbins;}
     std::vector<double> GetYBins() {return _ybins;}
     std::vector<double> GetZBins() {return _zbins;}
@@ -88,6 +90,7 @@ class WLSDetectorConstruction : public G4VUserDetectorConstruction
     double _airGap;
     double _fiberGuideBarLength;
   
+    int    _reflectorOption;
     bool   _reflectorAtPositiveSide;
     bool   _reflectorAtNegativeSide;
 

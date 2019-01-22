@@ -7,8 +7,8 @@
 
 //================================================================
 // Visualization of magnetic field map regions
-bool visregions.innerFieldMaps.visible  = true;
-bool visregions.innerFieldMaps.solid    = true;
+bool visregions.innerFieldMaps.isVisible  = true;
+bool visregions.innerFieldMaps.isSolid    = true;
 string visregions.innerFieldMaps.material = "G4_AIR";
 
 // The color vectors should be non-empty and of the same size.  If
@@ -24,8 +24,8 @@ vector<double> visregions.innerFieldMaps.squashY = { -2, 2 };
 
 //================================================================
 // Visualization of magnetic field map regions
-bool visregions.outerFieldMaps.visible  = true;
-bool visregions.outerFieldMaps.solid    = true;
+bool visregions.outerFieldMaps.isVisible  = true;
+bool visregions.outerFieldMaps.isSolid    = true;
 string visregions.outerFieldMaps.material = "G4_AIR";
 
 // The color vectors should be non-empty and of the same size.  If
@@ -43,8 +43,8 @@ vector<double> visregions.outerFieldMaps.squashY = { -1, 1 };
 // Add a set of arbitrary boxes.
 // All coordinates are in mu2e system.
 
-bool visregions.boxes.visible = false;
-bool visregions.boxes.solid  =  true;
+bool visregions.boxes.isVisible = false;
+bool visregions.boxes.isSolid  =  true;
 
 // Material may affect how the box is shown in a viewer, thus make is configurable
 string visregions.boxes.material = "G4_AIR";

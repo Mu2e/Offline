@@ -71,9 +71,16 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    const bool placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentHole", "extMonFNAL."+collimator.name()+".alignmentHole" );    
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"alignmentPlug", "extMonFNAL."+collimator.name()+".alignmentPlug" );    
+    geomOptions->loadEntry( config, "extMonFNAL"+collimator.name()+"channel",       "extMonFNAL."+collimator.name()+".channel" );    
+    
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
+    const bool placePV              = geomOptions->placePV("extMonFNAL"); 
+
 
     // The G4 interface we use through finishNesting() applies
     // the backwards interpretation of rotations.  Be consistent
@@ -128,9 +135,9 @@ namespace mu2e {
                   CLHEP::Hep3Vector(0,0,0),
                   parent.logical,
                   0,
-                  config.getBool("extMonFNAL."+collimator.name()+".alignmentHole.visible"),
+                  geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentHole"),
                   G4Colour::Red(),//                  G4Colour::Cyan(),
-                  config.getBool("extMonFNAL."+collimator.name()+".alignmentHole.solid"),
+                  geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentHole"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
@@ -169,9 +176,9 @@ namespace mu2e {
                   CLHEP::Hep3Vector(0,0,0),
                   alignmentHole.logical,
                   0,
-                  config.getBool("extMonFNAL."+collimator.name()+".alignmentPlug.visible"),
+                  geomOptions->isVisible("extMonFNAL"+collimator.name()+"alignmentPlug"),
                   G4Colour(0.4, 0, 0), // G4Colour::Red(),
-                  config.getBool("extMonFNAL."+collimator.name()+".alignmentPlug.solid"),
+                  geomOptions->isSolid("extMonFNAL"+collimator.name()+"alignmentPlug"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
@@ -210,9 +217,9 @@ namespace mu2e {
                   CLHEP::Hep3Vector(0,0,0),
                   alignmentPlug.logical,
                   0,
-                  config.getBool("extMonFNAL."+collimator.name()+".channel.visible"),
+                  geomOptions->isVisible("extMonFNAL"+collimator.name()+"channel"),
                   G4Colour::Yellow(),
-                  config.getBool("extMonFNAL."+collimator.name()+".channel.solid"),
+                  geomOptions->isSolid("extMonFNAL"+collimator.name()+"channel"),
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck
@@ -230,12 +237,17 @@ namespace mu2e {
   {
     MaterialFinder materialFinder(config);
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    const bool placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
+    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetIron",     "extMonFNAL."+volNameSuffix+".magnet.iron" );  
+    geomOptions->loadEntry( config, "extMonFNAL"+volNameSuffix+"magnetAperture", "extMonFNAL."+volNameSuffix+".magnet.aperture" );  
+    
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
+    const bool placePV              = geomOptions->placePV("extMonFNAL"); 
 
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-
+    
     //----------------------------------------------------------------
     // finishNesting() uses the backwards interpretation of rotations
     CLHEP::HepRotation *magnetRotationInParentInv =
@@ -262,9 +274,9 @@ namespace mu2e {
                                           magnetRotationInParentInv,
                                           parentRotationInMu2e.inverse()*(mag.geometricCenterInMu2e() - parent.centerInMu2e()),
                                           parent, 0,
-                                          config.getBool("extMonFNAL."+volNameSuffix+".magnet.iron.visible"),
+                                          geomOptions->isVisible("extMonFNAL"+volNameSuffix+"magnetIron"),
                                           G4Colour::Magenta(),
-                                          config.getBool("extMonFNAL."+volNameSuffix+".magnet.iron.solid"),
+                                          geomOptions->isSolid("extMonFNAL"+volNameSuffix+"magnetIron"),
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
@@ -281,9 +293,9 @@ namespace mu2e {
                                         0,
                                         CLHEP::Hep3Vector(0, 0, 0),
                                         magnetIron.logical, 0,
-                                        config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
+                                        geomOptions->isVisible("extMonFNAL"+volNameSuffix+"magnetAperture"),
                                         G4Colour::Grey(),
-                                        config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.solid"),
+                                        geomOptions->isSolid("extMonFNAL"+volNameSuffix+"magnetAperture"),
                                         forceAuxEdgeVisible,
                                         placePV,
                                         doSurfaceCheck
@@ -310,9 +322,9 @@ namespace mu2e {
               0,
               CLHEP::Hep3Vector(0, 0, +apertureMarginOffset),
               magnetIron.logical, 0,
-              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
+              geomOptions->isVisible("extMonFNAL"+volNameSuffix+"magnetAperture"),
               G4Colour::Grey(),
-              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.solid"),
+              geomOptions->isSolid("extMonFNAL"+volNameSuffix+"magnetAperture"),
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
@@ -325,9 +337,9 @@ namespace mu2e {
               0,
               CLHEP::Hep3Vector(0, 0, -apertureMarginOffset),
               magnetIron.logical, 0,
-              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.visible"),
+              geomOptions->isVisible("extMonFNAL"+volNameSuffix+"magnetAperture"),
               G4Colour::Grey(),
-              config.getBool("extMonFNAL."+volNameSuffix+".magnet.aperture.solid"),
+              geomOptions->isSolid("extMonFNAL"+volNameSuffix+"magnetAperture"),
               forceAuxEdgeVisible,
               placePV,
               doSurfaceCheck
@@ -383,15 +395,19 @@ namespace mu2e {
                                          const CLHEP::HepRotation& mainParentRotationInMu2e,
                                          const SimpleConfig& config)
   {
-    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNAL", "extMonFNAL" );    
+    geomOptions->loadEntry( config, "coll2Shielding",         "extMonFNAL.collimator2.shielding" );  
+    geomOptions->loadEntry( config, "coll2ShieldingHVACduct", "extMonFNAL.collimator2.shieldingHVACduct" );  
+    
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
+    const bool placePV              = geomOptions->placePV("extMonFNAL");
 
     MaterialFinder materialFinder(config);
 
     GeomHandle<ProtonBeamDump> dump;
     GeomHandle<ExtMonFNALBuilding> emfb;
-
-    G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     
 
     static CLHEP::HepRotation shieldingRotationInMu2e = emfb->shieldingRotationInMu2e();
@@ -444,12 +460,12 @@ namespace mu2e {
     static CLHEP::HepRotation collimator2ParentRotationInMu2e = emfb->coll2ShieldingRotationInMu2e();
 
     VolumeInfo coll2Shielding("ExtMonFNALColl2Shielding",
-                            emfb->coll2ShieldingCenterInMu2e() - mainParent.centerInMu2e(),
-                            mainParent.centerInWorld);
+                              emfb->coll2ShieldingCenterInMu2e() - mainParent.centerInMu2e(),
+                              mainParent.centerInWorld);
 
     coll2Shielding.solid = new G4ExtrudedSolid(coll2Shielding.name, emfb->coll2ShieldingOutline(),
-                                             emfb->roomInsideFullHeight()/2.0,
-                                             G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
+                                               emfb->roomInsideFullHeight()/2.0,
+                                               G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
 
     finishNesting(coll2Shielding,
                   materialFinder.get("extMonFNAL.room.wall.materialName"),
@@ -459,10 +475,10 @@ namespace mu2e {
                   0,
                   geomOptions->isVisible( "coll2Shielding" ),
                   G4Colour::Red() ,
-                    geomOptions->isSolid( "coll2Shielding" ),
-                    geomOptions->forceAuxEdgeVisible( "coll2Shielding" ),
-                    geomOptions->placePV( "coll2Shielding" ),
-                    geomOptions->doSurfaceCheck( "coll2Shielding" )
+                  geomOptions->isSolid( "coll2Shielding" ),
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
                   );
 
 
@@ -474,15 +490,15 @@ namespace mu2e {
     G4Tubs *holeCylinder = new G4Tubs( "holeCylinder", 0.0, emfb->HVACductRadius(), emfb->HVACductHalfLength(), 0.0, CLHEP::twopi );
 
     VolumeInfo HVACduct("coll2ShieldingHVACduct",
-                             collimator2ParentRotationInMu2e*(emfb->HVACductCenterInMu2e() - emfb->coll2ShieldingCenterInMu2e()),
-                             coll2Shielding.centerInWorld);
+                        collimator2ParentRotationInMu2e*(emfb->HVACductCenterInMu2e() - emfb->coll2ShieldingCenterInMu2e()),
+                        coll2Shielding.centerInWorld);
 
     HVACduct.solid = new G4IntersectionSolid(HVACduct.name,
-                                                  coll2Shielding.solid,
-                                                  holeCylinder,
-                                                  ductrot,
-                                                  HVACduct.centerInParent
-                                                  );
+                                             coll2Shielding.solid,
+                                             holeCylinder,
+                                             ductrot,
+                                             HVACduct.centerInParent
+                                             );
 
     finishNesting(HVACduct,
                   materialFinder.get("hall.insideMaterialName"),
@@ -493,9 +509,9 @@ namespace mu2e {
                   geomOptions->isVisible( "coll2ShieldingHVACduct" ),
                   G4Colour::G4Colour::Cyan(),
                   geomOptions->isSolid( "coll2ShieldingHVACduct" ),
-                  geomOptions->forceAuxEdgeVisible( "coll2ShieldingHVACduct" ),
-                  geomOptions->placePV( "coll2ShieldingHVACduct" ),
-                  geomOptions->doSurfaceCheck( "coll2ShieldingHVACduct" )
+                  forceAuxEdgeVisible,
+                  placePV,
+                  doSurfaceCheck
                   );
 
     //----------------------------------------------------------------
@@ -519,7 +535,7 @@ namespace mu2e {
                                   config);
 
     // Test
-    if(false) {
+    if (false) {
       G4Helper* _helper = &(*(art::ServiceHandle<G4Helper>()));
       const VolumeInfo& hall = _helper->locateVolInfo("HallAir");
       VolumeInfo test("emfMagnettest", emfb->filterMagnet().geometricCenterInMu2e() - hall.centerInMu2e(), hall.centerInWorld);

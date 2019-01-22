@@ -68,12 +68,12 @@ namespace mu2e {
   {
 
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-       geomOptions->loadEntry( config, "calorimeterOutline", "calorimeter.outline" );
+       geomOptions->loadEntry( config, "calorimeterEnvelope", "calorimeter.envelope");
 
-       const bool isCalorimeterVisible = geomOptions->isVisible("calorimeterOutline"); 
-       const bool isCalorimeterSolid   = geomOptions->isSolid("calorimeterOutline"); 
-       const bool forceEdge            = config.getBool("g4.forceEdge",false);
-       const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
+       const bool isCalorimeterVisible = geomOptions->isVisible("calorimeterEnvelope"); 
+       const bool isCalorimeterSolid   = geomOptions->isSolid("calorimeterEnvelope"); 
+       const bool forceEdge            = geomOptions->forceAuxEdgeVisible("calorimeterEnvelope"); 
+       const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("calorimeterEnvelope");
        const int  verbosityLevel       = config.getInt("calorimeter.verbosityLevel",1);
 
        MaterialFinder materialFinder(config);
@@ -216,8 +216,8 @@ namespace mu2e {
 
        const bool isPipeVisible          = geomOptions->isVisible("calorimeterPipe"); 
        const bool isPipeSolid            = geomOptions->isSolid("calorimeterPipe"); 
-       const bool forceEdge              = config.getBool("g4.forceEdge",false);
-       const bool doSurfaceCheck         = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
+       const bool forceEdge              = geomOptions->forceAuxEdgeVisible("calorimeterPipe"); 
+       const bool doSurfaceCheck         = geomOptions->doSurfaceCheck("calorimeterPipe");
        const int  verbosityLevel         = config.getInt("calorimeter.verbosityLevel",1);
        G4VPhysicalVolume* pv;
 
@@ -333,16 +333,16 @@ namespace mu2e {
        AntiLeakRegistry & reg = _helper.antiLeakRegistry();
        
        const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-       geomOptions->loadEntry( config, "calorimeterCase", "calorimeter.case" );
+       geomOptions->loadEntry( config, "calorimeterCase",    "calorimeter.case" );
        geomOptions->loadEntry( config, "calorimeterCrystal", "calorimeter.crystal" );
 
-       const bool isDiskVisible       = geomOptions->isVisible("calorimeterCase"); 
-       const bool isDiskSolid         = geomOptions->isSolid("calorimeterCase"); 
-       const bool isCrystalVisible    = geomOptions->isVisible("calorimeterCrystal"); 
-       const bool isCrystalSolid      = geomOptions->isSolid("calorimeterCrystal");        
-       const bool forceEdge           = config.getBool("g4.forceEdge",false);
-       const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
-       const int  verbosityLevel      = config.getInt("calorimeter.verbosityLevel",1);
+       const bool isDiskVisible        = geomOptions->isVisible("calorimeterCase"); 
+       const bool isDiskSolid          = geomOptions->isSolid("calorimeterCase"); 
+       const bool isCrystalVisible     = geomOptions->isVisible("calorimeterCrystal"); 
+       const bool isCrystalSolid       = geomOptions->isSolid("calorimeterCrystal");        
+       const bool forceEdge            = geomOptions->forceAuxEdgeVisible("calorimeterCase"); 
+       const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("calorimeterCase");
+       const int  verbosityLevel       = config.getInt("calorimeter.verbosityLevel",1);
        G4VPhysicalVolume* pv;
 
        G4Material* vacuumMaterial     = materialFinder.get("calorimeter.vacuumMaterial");
@@ -525,8 +525,8 @@ namespace mu2e {
 
        const bool isROVisible        = geomOptions->isVisible("calorimeterRO"); 
        const bool isROSolid          = geomOptions->isSolid("calorimeterRO"); 
-       const bool forceEdge          = config.getBool("g4.forceEdge",false);
-       const bool doSurfaceCheck     = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
+       const bool forceEdge          = geomOptions->forceAuxEdgeVisible("calorimeterRO"); 
+       const bool doSurfaceCheck     = geomOptions->doSurfaceCheck("calorimeterRO");
        const int  verbosityLevel     = config.getInt("calorimeter.verbosityLevel",1);
 
        G4Material* vacuumMaterial    = materialFinder.get("calorimeter.vacuumMaterial");
@@ -773,9 +773,9 @@ namespace mu2e {
        const bool isCrateBoardVisible  = geomOptions->isVisible("calorimeterCrateBoard"); 
        const bool isCrateSolid         = geomOptions->isSolid("calorimeterCrate"); 
        const bool isCrateBoardSolid    = geomOptions->isSolid("calorimeterCrateBoard"); 
-       const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
+       const bool forceEdge            = geomOptions->forceAuxEdgeVisible("calorimeterCrate"); 
+       const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("calorimeterCrate");
        const int  verbosityLevel       = config.getInt("calorimeter.verbosityLevel",1);
-       const bool forceEdge            = config.getBool("g4.forceEdge",false);
 
 
        G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
@@ -887,8 +887,7 @@ namespace mu2e {
        geomOptions->loadEntry( config, "calorimeterCrate", "calorimeter.crate" );
 
        const bool isCrateVisible  = geomOptions->isVisible("calorimeterCrate"); 
-       //const bool isCrateVisible  = config.getBool("calorimeter.crateVisible",false);
-       const bool doSurfaceCheck  = config.getBool("g4.doSurfaceCheck",false) || config.getBool("calorimeter.doSurfaceCheck",false);
+       const bool doSurfaceCheck  = geomOptions->doSurfaceCheck("calorimeterCrate");
        const int  verbosityLevel  = config.getInt("calorimeter.verbosityLevel",1);
 
        G4Material* vacuumMaterial = materialFinder.get("calorimeter.vacuumMaterial");

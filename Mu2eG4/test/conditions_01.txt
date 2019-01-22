@@ -54,7 +54,7 @@ string calorimeter.pulseHistName = "h_waveform";
 
 
 //CRV digi parameters
-double crv.digitizationPeriod = 12.58; //ns
+double crv.digitizationPeriod = 12.55; //ns
 
 //CRV calibration parameters 
 //This is only a placeholder. In the future, these values need to be a function of time and SiPM number.

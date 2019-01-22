@@ -59,7 +59,9 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     UseHitMVA              : false
     MinMVA                 : 0.1
     
-    RobustHelixFit       : @local::TrkReco.TTrobustHelixFit
+    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit
+	maxzsep : 275.	
+    }
     #    Chi2HelixFit         : 
     #	T0Calculator         : 
     T0Shift              : 4.0

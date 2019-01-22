@@ -47,9 +47,9 @@ namespace mu2e {
     // increase the processing time
     const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible( "PSShield" );
     const bool doSurfaceCheck      = geomOptions->doSurfaceCheck     ( "PSShield" );
-    const bool placePV             = geomOptions->placePV            ( "PSShield" );
     const bool isVisible           = geomOptions->isVisible          ( "PSShield" );
     const bool isSolid             = geomOptions->isSolid            ( "PSShield" );
+    const bool placePV             = geomOptions->placePV            ( "PSShield" );
 
 
     const int version              = hrs->version();

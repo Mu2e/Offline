@@ -155,6 +155,7 @@ BEGIN_PROLOG
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
+    fillTrkQualInfo : true
   }
 
   TrackAnalysisFromKalSeed : {
