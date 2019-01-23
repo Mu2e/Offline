@@ -163,7 +163,6 @@
  <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
  <class name="mu2e::KalSegment"/>
- <class name="mu2e::TrkCaloHitSeed"/>
  <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
  <class name="std::vector<mu2e::TrkCaloHitSeed>"/>
  <class name="std::vector<mu2e::TrkStraw>"/>
