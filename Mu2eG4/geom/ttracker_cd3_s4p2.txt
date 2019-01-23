@@ -157,8 +157,8 @@ double ttrackerSupport.electronics.key.shiftFromPanelFace = 12.15; //unused for 
                                                                    // the bords are in the panel center
 bool   ttrackerSupport.electronics.key.visible          = true;
 bool   ttrackerSupport.electronics.key.solid            = true;
-bool   ttrackerSupport.electronics.key.shieldVisible    = true;
-bool   ttrackerSupport.electronics.key.shieldSolid      = true;
+bool   ttrackerSupport.electronics.key.shield.visible    = true;
+bool   ttrackerSupport.electronics.key.shield.solid      = true;
 string ttrackerSupport.electronics.key.material         = "G10"; // board material
 string ttrackerSupport.electronics.key.shieldMaterial   = "DSVacuum"; // shield board material
 double ttrackerSupport.electronics.key.phiRange         = 9.;    // degrees; centered at the panel center phi
@@ -171,16 +171,16 @@ int    ttracker.pnlDraw  =   -1;
 //
 bool   ttracker.drawAxes = false;
 //
-bool   ttracker.envelopeVisible      =  true;
-bool   ttracker.envelopeSolid        =  false;
-bool   ttracker.planeEnvelopeVisible = true;
-bool   ttracker.planeEnvelopeSolid   = false;
-bool   ttracker.supportVisible        = true;
-bool   ttracker.supportSolid          = false;
-bool   ttracker.panelEnvelopeVisible = true;
-bool   ttracker.panelEnvelopeSolid   = false;
-bool   ttracker.strawVisible         =  false;
-bool   ttracker.strawSolid           =  false;
+bool   ttracker.envelope.visible      =  true;
+bool   ttracker.envelope.solid        =  false;
+bool   ttracker.planeEnvelope.visible = true;
+bool   ttracker.planeEnvelope.solid   = false;
+bool   ttracker.support.visible        = true;
+bool   ttracker.support.solid          = false;
+bool   ttracker.panelEnvelope.visible = true;
+bool   ttracker.panelEnvelope.solid   = false;
+bool   ttracker.straw.visible         =  false;
+bool   ttracker.straw.solid           =  false;
 
 //
 // This tells emacs to view this file in c++ mode.

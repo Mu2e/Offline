@@ -15,18 +15,18 @@ process_name : TrkAnaDigisCRV
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloCrvRecoSequence ]
 physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
 physics.analyzers.TrkAnaPos.AnalyzeCRV : true
-physics.analyzers.TrkAnaKSNeg.AnalyzeCRV : true
-physics.analyzers.TrkAnaKSPos.AnalyzeCRV : true
+#physics.analyzers.TrkAnaKSNeg.AnalyzeCRV : true
+#physics.analyzers.TrkAnaKSPos.AnalyzeCRV : true
 
 physics.analyzers.TrkAnaNeg.fillTrkQualInfo : true
 physics.analyzers.TrkAnaPos.fillTrkQualInfo : true
-physics.analyzers.TrkAnaKSNeg.fillTrkQualInfo : true
-physics.analyzers.TrkAnaKSPos.fillTrkQualInfo : true
+#physics.analyzers.TrkAnaKSNeg.fillTrkQualInfo : true
+#physics.analyzers.TrkAnaKSPos.fillTrkQualInfo : true
 
 physics.analyzers.TrkAnaNeg.diagLevel : 2
 physics.analyzers.TrkAnaPos.diagLevel : 2
-physics.analyzers.TrkAnaKSNeg.diagLevel : 2
-physics.analyzers.TrkAnaKSPos.diagLevel : 2
+#physics.analyzers.TrkAnaKSNeg.diagLevel : 2
+#physics.analyzers.TrkAnaKSPos.diagLevel : 2
 
 # update labels to read compressed output from MDC2018
 physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"

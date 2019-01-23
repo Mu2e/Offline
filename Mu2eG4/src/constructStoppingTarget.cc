@@ -25,7 +25,9 @@
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -50,9 +52,15 @@ namespace mu2e {
     VolumeInfo constructStoppingTarget( VolumeInfo   const& parent,
                                       SimpleConfig const& config ){
 
-    const bool forceAuxEdgeVisible  = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck       = config.getBool("g4.doSurfaceCheck",false);
-    const bool placePV              = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "stoppingTarget", "stoppingTarget");
+
+    const bool stoppingTargetIsVisible = geomOptions->isVisible("stoppingTarget"); 
+    const bool stoppingTargetIsSolid   = geomOptions->isSolid("stoppingTarget"); 
+    const bool forceAuxEdgeVisible     = geomOptions->forceAuxEdgeVisible("stoppingTarget"); 
+    const bool doSurfaceCheck          = geomOptions->doSurfaceCheck("stoppingTarget"); 
+    const bool placePV                 = geomOptions->placePV("stoppingTarget"); 
+
 
     int verbosity(config.getInt("stoppingTarget.verbosity",0));
 
@@ -133,12 +141,12 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
-        if (!config.getBool("stoppingTarget.visible",true)) {
+        if (!stoppingTargetIsVisible) {
           foilInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Magenta()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("stoppingTarget.solid",true));
+          visAtt->SetForceSolid(stoppingTargetIsSolid);
           foilInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils
@@ -243,12 +251,12 @@ namespace mu2e {
 
         doSurfaceCheck && checkForOverlaps( pv, config, verbosity>0);
 
-        if (!config.getBool("stoppingTarget.visible",true)) {
+        if (!stoppingTargetIsVisible) {
           supportStructureInfo.logical->SetVisAttributes(G4VisAttributes::Invisible);
         } else {
           G4VisAttributes* visAtt = reg.add(G4VisAttributes(true, G4Colour::Blue()));
           visAtt->SetForceAuxEdgeVisible(config.getBool("g4.forceAuxEdgeVisible",false));
-          visAtt->SetForceSolid(config.getBool("stoppingTarget.solid",true));
+          visAtt->SetForceSolid(stoppingTargetIsSolid);
           supportStructureInfo.logical->SetVisAttributes(visAtt);
         }
       }// target foils support structures

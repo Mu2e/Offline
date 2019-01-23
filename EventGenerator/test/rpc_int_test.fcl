@@ -80,4 +80,4 @@ services.TFileService.fileName            : "nts.user.rpc_int_test.xxx.000001.ro
 # uncomment to avoid waisting time on the initialization of detailed neutron 
 # cross sections - that shouldn't affect the CE simulation 
 #------------------------------------------------------------------------------
-physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT_MU2ER1"

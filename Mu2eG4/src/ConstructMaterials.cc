@@ -1071,6 +1071,14 @@ namespace mu2e {
                       density, kStateGas, temperature, pressure);
     }
 
+    //Material for the MBS ring to protect the calorimeter
+    mat = uniqueMaterialOrThrow( "MBSCalShieldRing" );
+    {
+      //Shield is 90% tungsten 10% copper and 18 g/cm^3 
+      G4Material* MBSCalShieldRing = new G4Material( mat.name, 18.0*CLHEP::g/CLHEP::cm3, 2);
+      MBSCalShieldRing->AddElement( getElementOrThrow("W"),  90.0*CLHEP::perCent);
+      MBSCalShieldRing->AddElement( getElementOrThrow("Cu"), 10.0*CLHEP::perCent);
+    }
 
     // Completed constructing Mu2e specific materials, first function.
     // Now second function for Mu2e specific materials.

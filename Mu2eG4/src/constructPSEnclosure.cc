@@ -6,7 +6,9 @@
 
 #include "ProductionSolenoidGeom/inc/PSEnclosure.hh"
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
+#include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeomPrimitives/inc/Cone.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
@@ -28,12 +30,22 @@ namespace mu2e {
     GeomHandle<PSEnclosure> pse;
     GeomHandle<PSVacuum> psv;
 
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible",false);
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck",false) 
-      || config.getBool("ps.doSurfaceCheck",false);
-    const bool placePV             = true;
-    const int  verbosityLevel      = config.getInt("PSEnclosure.verbosityLevel",0);
     CLHEP::Hep3Vector extraOffset(0.,0.,pse->getExtraOffset());
+
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "psEnclosure", "psEnclosure");
+    geomOptions->loadEntry( config, "psEnclosureVacuum", "psEnclosure.vacuum");
+
+    const bool PSIsVisible         = geomOptions->isVisible("psEnclosure"); 
+    const bool PSVacuumIsVisible   = geomOptions->isVisible("psEnclosureVacuum"); 
+    const bool PSIsSolid           = geomOptions->isSolid("psEnclosure"); 
+    const bool PSVacuumIsSolid     = geomOptions->isSolid("psEnclosureVacuum"); 
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("psEnclosure"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("psEnclosure"); 
+    const bool placePV             = geomOptions->placePV("psEnclosure"); 
+    const int  verbosityLevel      = config.getInt("PSEnclosure.verbosityLevel",0);
+
+
 
     //----------------------------------------------------------------
     std::string sName = "PSEnclosureShell";
@@ -53,9 +65,9 @@ namespace mu2e {
 		+ extraOffset,
 		parent,
 		0,
-	       config.getBool("PSEnclosure.visible"),
+	       PSIsVisible,
 	       G4Colour::Blue(),
-	       config.getBool("PSEnclosure.solid"),
+	       PSIsSolid,
 	       forceAuxEdgeVisible,
 	       placePV,
 	       doSurfaceCheck
@@ -70,9 +82,9 @@ namespace mu2e {
 	       pse->shell().originInMu2e() - parent.centerInMu2e(),
 	       parent,
 	       0,
-	       config.getBool("PSEnclosure.visible"),
+	       PSIsVisible,
 	       G4Colour::Blue(),
-	       config.getBool("PSEnclosure.solid"),
+	       PSIsSolid,
 	       forceAuxEdgeVisible,
 	       placePV,
 	       doSurfaceCheck
@@ -94,9 +106,9 @@ namespace mu2e {
                                          pse->endPlate().originInMu2e() - parent.centerInMu2e() + extraOffset,
                                          parent,
                                          0,
-                                         config.getBool("PSEnclosure.visible"),
+                                         PSIsVisible,
                                          G4Colour::Blue(),
-                                         config.getBool("PSEnclosure.solid"),
+                                         PSIsSolid,
                                          forceAuxEdgeVisible,
                                          placePV,
                                          doSurfaceCheck
@@ -135,9 +147,9 @@ namespace mu2e {
                vacCenter - endPlate.centerInMu2e(),
                endPlate,
                0,
-               config.getBool("PSEnclosure.vacuum.visible"),
+               PSVacuumIsVisible,
                G4Colour::Black(),
-               config.getBool("PSEnclosure.vacuum.solid"),
+               PSVacuumIsSolid,
                forceAuxEdgeVisible,
                placePV,
                doSurfaceCheck
@@ -154,9 +166,9 @@ namespace mu2e {
                pse->windows()[i].originInMu2e() - parent.centerInMu2e() + extraOffset,
                parent,
                0,
-               config.getBool("PSEnclosure.visible"),
+               PSIsVisible,
                G4Colour::Grey(),
-               config.getBool("PSEnclosure.solid"),
+               PSIsSolid,
                forceAuxEdgeVisible,
                placePV,
                doSurfaceCheck

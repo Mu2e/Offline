@@ -232,8 +232,15 @@ namespace mu2e{
 
 
       if ( decayTable->entries() != 1 ){
+
+        G4cout
+          << __func__ << " : expected to find only one entry in the decay table for " << parent
+          << " (" << particle->GetParticleName() << ")\n"
+          << "Number found: " << decayTable->entries() << "\n";
+        decayTable->DumpInfo();
+
         throw cet::exception("G4")
-          << "customizeChargedPionDecay: expected to find only one entry in the decay table for " << parent
+          << __func__ << " : expected to find only one entry in the decay table for " << parent
           << " (" << particle->GetParticleName() << ")\n"
           << "Number found: " << decayTable->entries() << "\n";
       }

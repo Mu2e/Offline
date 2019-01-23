@@ -19,8 +19,6 @@ namespace mu2e{
 
   void addUserProcesses( const fhicl::ParameterSet& pset);
 
-  void setMuHadLateralDisplacement(const fhicl::ParameterSet& pset);
-
 }  // end namespace mu2e
 
 #endif /* Mu2eG4_toggleProcesses_hh */
