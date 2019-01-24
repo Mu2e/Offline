@@ -59,7 +59,7 @@ CalPatRec : { @table::CalPatRec
 #	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002
+	minDfDz                                 : 0.002    
 	sigmaPhi                                : 0.1636  # radians
 	targetconsistent                        : 0
 	weightXY                                : 1.11      #0.4527
@@ -190,6 +190,7 @@ CalPatRec : { @table::CalPatRec
 # initialization might require
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 #------------------------------------------------------------------------------
 # KalFit (kalman fitter) configuration for the doublet-based resolver
