@@ -499,19 +499,30 @@ namespace mu2e
     if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
-      // estimate fltlen from pitch
-      double td = kalData.kalSeed->segments()[0].helix().tanDip();
-      double sd = td/sqrt(1.0+td*td);
-      double fltlen = cog.z()/sd - kalData.kalSeed->flt0();
       // t0 represents the time the particle reached the sensor; estimate that
       HitT0 ht0;
       //ht0._t0 = kalData.t0._t0 + _ttcalc.timeOfFlightTimeOffset(cog.z()) + _ttcalc.caloClusterTimeOffset();
       ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
       ht0._t0err = _ttcalc.caloClusterTimeErr();
       
-      Hep3Vector const& clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
-      double      crystalHalfLength = ch->caloInfo().getDouble("crystalZLength")/2.;
-      tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalHalfLength, clusterAxis, ht0, fltlen, _calHitW, _dtoffset);
+      Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
+      double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
+      // move position to front of crystal
+      cog.setZ(cog.z()-crystalLength);
+      // estimate fltlen from pitch; take the last segment
+      HelixVal const& hval = kalData.kalSeed->segments().back().helix();
+      double td = hval.tanDip();
+      double sd = td/sqrt(1.0+td*td);
+      double fltlen = (cog.z()- hval.z0() + 0.5*crystalLength)/sd;// - kalData.kalSeed->flt0();
+      // test
+//      double tlen = fltlen*sqrt(1.0-sd*sd);
+//      double hx = (1.0/hval.omega())*(sin(hval.phi0()+hval.omega()*tlen)-sin(hval.phi0())) - hval.d0()*sin(hval.phi0());
+//      double hy = (-1.0/hval.omega())*(cos(hval.phi0()+hval.omega()*tlen)-cos(hval.phi0())) + hval.d0()*cos(hval.phi0());
+//      double hz = hval.z0() + hval.tanDip()*tlen;
+//      Hep3Vector hpos(hx,hy,hz);
+//      cout << "cog pos   " << cog << endl << "helix pos " << hpos << endl;
+
+      tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _dtoffset);
     }
   }
 
