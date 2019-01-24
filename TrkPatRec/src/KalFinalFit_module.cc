@@ -334,7 +334,7 @@ namespace mu2e
 	  fflag.merge(TrkFitFlag::kalmanOK);
 	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
 	  // reference the seed fit in this fit
 	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
 	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
