@@ -23,6 +23,8 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "DataProducts/inc/Helicity.hh"
+
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BField/BField.hh"
@@ -115,6 +117,7 @@ namespace mu2e {
     HelixTraj*                            _helTraj;
     CalHelixFinderAlg                     _hfinder;	
     CalHelixFinderData                    _hfResult;
+    std::vector<mu2e::Helicity>           _hels; // helicity values to fit
 
     double                                _bz0;
     const TTracker*                       _tracker     ; // straw tracker geometry
@@ -155,6 +158,7 @@ namespace mu2e {
     
     int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
     
+    void pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best);
   };
 }
 #endif
