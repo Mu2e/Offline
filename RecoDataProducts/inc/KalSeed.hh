@@ -38,6 +38,7 @@ namespace mu2e {
     HitT0 const& t0() const { return _t0; }
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
+    bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     art::Ptr<HelixSeed> const& helix() const { return _helix; }
     art::Ptr<KalSeed> const& kalSeed() const { return _kal; }
