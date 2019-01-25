@@ -135,7 +135,7 @@ namespace mu2e {
     void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
     void countHits(StrawHitFlagCollection const& shfC);
-    const KalRep* findBestTrack(KalRepPtrCollection const& kcol);
+    const KalRep* findBestTrack(KalRepPtrCollection const& kcol, size_t& i_element);
     void resetBranches();
     void fillMCInfo(const KalRep* deK);
     void findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
@@ -149,7 +149,6 @@ namespace mu2e {
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
     void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
-    void findBestTrkQualMatch(const TrkQualCollection& tqcol, const KalRep* deK, TrkQual& tqual);
   };
 
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
@@ -270,7 +269,8 @@ namespace mu2e {
     // find Track-cluster matching data
     _cdiag.findData(event);
     // find the best track
-    const KalRep* deK = findBestTrack(deC);
+    size_t i_element = 0; // keep track of which KalRep we are looking at
+    const KalRep* deK = findBestTrack(deC, i_element);
     if(deK != 0 || _pempty) {
       // reset
       resetBranches();
@@ -308,11 +308,15 @@ namespace mu2e {
 	art::Handle<TrkQualCollection> trkQualHandle;
 	event.getByLabel(_tqtag, trkQualHandle);
 	if (trkQualHandle.isValid()) {
-	  TrkQual i_tqual;
-	  findBestTrkQualMatch(*trkQualHandle, deK, i_tqual);
-	  _deti._trkqual = i_tqual.MVAOutput();
+	  const TrkQualCollection& tqcol = *trkQualHandle;
+	  if (i_element >= tqcol.size()) {
+	    throw cet::exception("TrackAnalysis") << "TrkQualCollection element (" << i_element << ") is invalid base on collection size (" << tqcol.size() << ")" << std::endl;
+	  }
+
+	  TrkQual tqual = tqcol.at(i_element);
+	  _deti._trkqual = tqual.MVAOutput();
 	  if (_filltrkqual) {
-	    fillTrkQualInfo(i_tqual, _trkQualInfo);
+	    fillTrkQualInfo(tqual, _trkQualInfo);
 	  }
 	}
 	else {
@@ -334,10 +338,11 @@ namespace mu2e {
     }
   }
 
-  const KalRep* TrackAnalysis::findBestTrack(KalRepPtrCollection const& kcol) {
+  const KalRep* TrackAnalysis::findBestTrack(KalRepPtrCollection const& kcol, size_t& i_element) {
     _tcnt._nde = kcol.size();
 // if there aren't any tracks return 0
     const KalRep* deK(0);
+    size_t counter = 0;
     for(auto kptr : kcol ){
       const KalRep* krep = kptr.get();
       if(deK == 0) {
@@ -349,8 +354,10 @@ namespace mu2e {
 // compute the hit overlap fraction
 	  _tcnt._ndeo  = _tcomp.nOverlap(krep,deK);
 	  deK = krep;
+	  i_element = counter;
 	}
       }
+      ++counter;
     }
     return deK;
   }
@@ -536,16 +543,6 @@ namespace mu2e {
       trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
     }
     trkqualInfo._trkqual = tqual.MVAOutput();
-  }
-
-  void TrackAnalysis::findBestTrkQualMatch(const TrkQualCollection& tqcol, const KalRep* deK, TrkQual& tqual) {
-    int n_active_krep_hits = deK->nActive();
-    for (const auto& i_tqual : tqcol) {
-      if ( i_tqual[TrkQual::nactive] == n_active_krep_hits) {
-	tqual = i_tqual;
-	break;
-      }
-    }
   }
 }  // end namespace mu2e
 
