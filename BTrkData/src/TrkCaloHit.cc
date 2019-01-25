@@ -18,20 +18,19 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, Hep3Vector &caloClusterPos,
-			 double crystalHalfLength, Hep3Vector const& clusterAxis,
+  TrkCaloHit::TrkCaloHit(CaloCluster const& caloCluster, Hep3Vector const& caloClusterPos,
+			 double crystalLength, Hep3Vector const& clusterAxis,
 			 const HitT0& hitt0,double fltlen, double timeWeight, double dtoffset) :
     _caloCluster(caloCluster),
     _dtoffset(dtoffset),
     _hitErr(10.0)  // transverse cluster resolution this should come from data FIXME!!
   {
 
-    caloClusterPos.setZ(caloClusterPos.z() + crystalHalfLength);
 
-// the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
+// the hit trajectory is defined as a line segment directed along the cluster axis 
     _hittraj = new TrkLineTraj(HepPoint(caloClusterPos.x(), caloClusterPos.y(), caloClusterPos.z()),
-			       clusterAxis, -crystalHalfLength, crystalHalfLength);
-    setHitLen(crystalHalfLength);
+			       clusterAxis, 0.0, crystalLength);
+    setHitLen(0.5*crystalLength); // approximpate
     setFltLen(fltlen);
 // compute initial hit t0
     setHitT0(hitt0);
