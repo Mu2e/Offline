@@ -189,11 +189,6 @@ KFF : {
   AddHitBackgroundBits	      : []
   ZSavePositions : [-1631.11, -1522.0, 0.0, 1522.0 ]
 }
-# Track qulaity module
-TrkQual : {
-  module_type : TrackQuality
-  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
-}
 
 # seed Fit configuration for specific particles
 #  First, downstream electrons
@@ -266,25 +261,17 @@ KFFDeM.SeedCollection      : "KSFDeM"
 KFFDeM.fitparticle	      : @local::Particle.eminus
 KFFDeM.fitdirection	      : @local::FitDir.downstream 
 
-TrkQualDeM			      : @local::TrkQual
-TrkQualDeM.KalSeedCollection       : "KFFDeM"
-
 # upstream electrons
 KFFUeM			      : @local::KFF
 KFFUeM.SeedCollection      : "KSFUeM"
 KFFUeM.fitparticle	      : @local::Particle.eminus
 KFFUeM.fitdirection	      : @local::FitDir.upstream 
 
-TrkQualUeM			      : @local::TrkQual
-TrkQualUeM.KalSeedCollection       : "KFFUeM"
 #  downstream positrons
 KFFDeP			      : @local::KFF
 KFFDeP.SeedCollection      : "KSFDeP"
 KFFDeP.fitparticle	      : @local::Particle.eplus
 KFFDeP.fitdirection	      : @local::FitDir.downstream 
-
-TrkQualDeP			      : @local::TrkQual
-TrkQualDeP.KalSeedCollection       : "KFFDeP"
 
 # upstream positrons
 KFFUeP			      : @local::KFF
@@ -292,72 +279,54 @@ KFFUeP.SeedCollection      : "KSFUeP"
 KFFUeP.fitparticle	      : @local::Particle.eplus
 KFFUeP.fitdirection	      : @local::FitDir.upstream 
 
-TrkQualUeP			      : @local::TrkQual
-TrkQualUeP.KalSeedCollection       : "KFFUeP"
 # downstream mu minus
 KFFDmuM			      : @local::KFF
 KFFDmuM.SeedCollection     : "KSFDmuM"
 KFFDmuM.fitparticle	      : @local::Particle.muminus
 KFFDmuM.fitdirection	      : @local::FitDir.downstream 
 
-TrkQualDmuM			      : @local::TrkQual
-TrkQualDmuM.KalSeedCollection       : "KFFDmuM"
 # upstream mu minus
 KFFUmuM			      : @local::KFF
 KFFUmuM.SeedCollection     : "KSFUmuM"
 KFFUmuM.fitparticle	      : @local::Particle.muminus
 KFFUmuM.fitdirection	      : @local::FitDir.upstream 
 
-TrkQualUmuM			      : @local::TrkQual
-TrkQualUmuM.KalSeedCollection       : "KFFUmuM"
 # downstream mu plus
 KFFDmuP			      : @local::KFF
 KFFDmuP.SeedCollection     : "KSFDmuP"
 KFFDmuP.fitparticle	      : @local::Particle.muplus
 KFFDmuP.fitdirection	      : @local::FitDir.downstream 
 
-TrkQualDmuP			      : @local::TrkQual
-TrkQualDmuP.KalSeedCollection       : "KFFDmuP"
 # upstream mu plus
 KFFUmuP			      : @local::KFF
 KFFUmuP.SeedCollection     : "KSFUmuP"
 KFFUmuP.fitparticle	      : @local::Particle.muplus
 KFFUmuP.fitdirection	      : @local::FitDir.upstream
 
-TrkQualUmuP			      : @local::TrkQual
-TrkQualUmuP.KalSeedCollection       : "KFFUmuP"
 # downstream pi minus
 KFFDpiM			      : @local::KFF
 KFFDpiM.SeedCollection     : "KSFDpiM"
 KFFDpiM.fitparticle	      : @local::Particle.piminus
 KFFDpiM.fitdirection	      : @local::FitDir.downstream 
 
-TrkQualDpiM			      : @local::TrkQual
-TrkQualDpiM.KalSeedCollection       : "KFFDpiM"
 # upstream pi minus
 KFFUpiM			      : @local::KFF
 KFFUpiM.SeedCollection     : "KSFUpiM"
 KFFUpiM.fitparticle	      : @local::Particle.piminus
 KFFUpiM.fitdirection	      : @local::FitDir.upstream 
 
-TrkQualUpiM			      : @local::TrkQual
-TrkQualUpiM.KalSeedCollection       : "KFFUpiM"
 # downstream pi plus
 KFFDpiP			      : @local::KFF
 KFFDpiP.SeedCollection     : "KSFDpiP"
 KFFDpiP.fitparticle	      : @local::Particle.piplus
 KFFDpiP.fitdirection	      : @local::FitDir.downstream 
 
-TrkQualDpiP			      : @local::TrkQual
-TrkQualDpiP.KalSeedCollection       : "KFFDpiP"
 # upstream pi plus
 KFFUpiP			      : @local::KFF
 KFFUpiP.SeedCollection     : "KSFUpiP"
 KFFUpiP.fitparticle	      : @local::Particle.piplus
 KFFUpiP.fitdirection	      : @local::FitDir.upstream
 
-TrkQualUpiP			      : @local::TrkQual
-TrkQualUpiP.KalSeedCollection       : "KFFUpiP"
 
 MHFinalFitDeM                : @local::KFF
 MHFinalFitDeM.SeedCollection : MHSeedFitDem
@@ -416,19 +385,6 @@ Tracking : {
     KFFUpiM	  : @local::KFFUpiM
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
-# Track Quality
-    TrkQualDeM	  : @local::TrkQualDeM
-    TrkQualUeM	  : @local::TrkQualUeM
-    TrkQualDeP	  : @local::TrkQualDeP
-    TrkQualUeP	  : @local::TrkQualUeP
-    TrkQualDmuM	  : @local::TrkQualDmuM
-    TrkQualUmuM	  : @local::TrkQualUmuM
-    TrkQualDmuP	  : @local::TrkQualDmuP
-    TrkQualUmuP	  : @local::TrkQualUmuP
-    TrkQualDpiM	  : @local::TrkQualDpiM
-    TrkQualUpiM	  : @local::TrkQualUpiM
-    TrkQualDpiP	  : @local::TrkQualDpiP
-    TrkQualUpiP	  : @local::TrkQualUpiP
   
 # configuration for using the sequence with MergeHelix
     MHFinalFitDeM	  : @local::MHFinalFitDeM
@@ -463,19 +419,19 @@ Tracking : {
   }
 }
 # production sequences for tracking specific paricles; first electrons
-Tracking.TPRDeM  : [ TimeClusterFinder, HelixFinder, KSFDeM, KFFDeM, TrkQualDeM ]
-Tracking.TPRUeM  : [ TimeClusterFinder, HelixFinder, KSFUeM, KFFUeM, TrkQualUeM ]
-Tracking.TPRDeP  : [ TimeClusterFinder, HelixFinder, KSFDeP, KFFDeP, TrkQualDeP ]
-Tracking.TPRUeP  : [ TimeClusterFinder, HelixFinder, KSFUeP, KFFUeP, TrkQualUeP ]
+Tracking.TPRDeM  : [ TimeClusterFinder, HelixFinder, KSFDeM, KFFDeM ]
+Tracking.TPRUeM  : [ TimeClusterFinder, HelixFinder, KSFUeM, KFFUeM ]
+Tracking.TPRDeP  : [ TimeClusterFinder, HelixFinder, KSFDeP, KFFDeP ]
+Tracking.TPRUeP  : [ TimeClusterFinder, HelixFinder, KSFUeP, KFFUeP ]
 #muons
-Tracking.TPRDmuM  : [ TimeClusterFinderMu, HelixFinderMu, KSFDmuM, KFFDmuM, TrkQualDmuM ]
-Tracking.TPRUmuM  : [ TimeClusterFinderMu, HelixFinderMu, KSFUmuM, KFFUmuM, TrkQualUmuM ]
-Tracking.TPRDmuP  : [ TimeClusterFinderMu, HelixFinderMu, KSFDmuP, KFFDmuP, TrkQualDmuP ]
-Tracking.TPRUmuP  : [ TimeClusterFinderMu, HelixFinderMu, KSFUmuP, KFFUmuP, TrkQualUmuP ]
+Tracking.TPRDmuM  : [ TimeClusterFinderMu, HelixFinderMu, KSFDmuM, KFFDmuM ]
+Tracking.TPRUmuM  : [ TimeClusterFinderMu, HelixFinderMu, KSFUmuM, KFFUmuM ]
+Tracking.TPRDmuP  : [ TimeClusterFinderMu, HelixFinderMu, KSFDmuP, KFFDmuP ]
+Tracking.TPRUmuP  : [ TimeClusterFinderMu, HelixFinderMu, KSFUmuP, KFFUmuP ]
 #pions
-Tracking.TPRDpiM  : [ TimeClusterFinderPi, HelixFinderPi, KSFDpiM, KFFDpiM, TrkQualDpiM ]
-Tracking.TPRUpiM  : [ TimeClusterFinderPi, HelixFinderPi, KSFUpiM, KFFUpiM, TrkQualUpiM ]
-Tracking.TPRDpiP  : [ TimeClusterFinderPi, HelixFinderPi, KSFDpiP, KFFDpiP, TrkQualDpiP ]
-Tracking.TPRUpiP  : [ TimeClusterFinderPi, HelixFinderPi, KSFUpiP, KFFUpiP, TrkQualUpiP ]
+Tracking.TPRDpiM  : [ TimeClusterFinderPi, HelixFinderPi, KSFDpiM, KFFDpiM ]
+Tracking.TPRUpiM  : [ TimeClusterFinderPi, HelixFinderPi, KSFUpiM, KFFUpiM ]
+Tracking.TPRDpiP  : [ TimeClusterFinderPi, HelixFinderPi, KSFDpiP, KFFDpiP ]
+Tracking.TPRUpiP  : [ TimeClusterFinderPi, HelixFinderPi, KSFUpiP, KFFUpiP ]
 
 END_PROLOG
