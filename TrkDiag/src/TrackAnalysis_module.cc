@@ -35,6 +35,7 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 // diagnostics
 #include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkComp.hh"
@@ -47,6 +48,7 @@
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -314,6 +316,16 @@ namespace mu2e {
 	  }
 
 	  TrkQual tqual = tqcol.at(i_element);
+	  int n_krep_active_hits = deK->nActive();
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(deK);
+	  if (tch != 0) {
+	    --n_krep_active_hits; // nactive in TrkQual does not include the TrkCaloHit
+	  }
+	  int n_tqual_active_hits = tqual[TrkQual::nactive];
+	  if (n_krep_active_hits != n_tqual_active_hits) {
+	    throw cet::exception("TrackAnalysis") << "TrkQual nactive (" << n_tqual_active_hits << ") does not match KalRep nactive (" << n_krep_active_hits << ")" << std::endl;
+	  }
+
 	  _deti._trkqual = tqual.MVAOutput();
 	  if (_filltrkqual) {
 	    fillTrkQualInfo(tqual, _trkQualInfo);
