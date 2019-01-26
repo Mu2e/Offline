@@ -1,0 +1,20 @@
+#
+#  Simple test of finding the MC primary in an event
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TestFindMCPrimary
+source : { module_type : RootInput }
+services : @local::Services.Core
+physics : {
+  producers : {
+    FindMCPrimary : @local::CommonMC.FindMCPrimary
+  }
+}
+physics.TriggerPath : [ "FindMCPrimary" ]
+physics.EndPath : []
+physics.producers.FindMCPrimary.debugLevel : 2
+services.TFileService.fileName: "nts.owner.TestFindMCPrimary.version.sequencer.root"

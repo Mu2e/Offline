@@ -11,6 +11,7 @@
  <class name="mu2e::PDGCode"/>
  <class name="mu2e::GenId"/>
  <class name="mu2e::GenParticle"/>
+ <class name="art::Wrapper<mu2e::GenParticle>"/>
  <class name="art::Ptr<mu2e::GenParticle>"/>
  <class name="mu2e::GenParticleCollection"/>
  <class name="mu2e::GenParticleCollections"/>
