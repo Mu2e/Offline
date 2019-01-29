@@ -21,8 +21,8 @@ namespace mu2e
 {
   class TrkCaloHit : public TrkHit {
   public:
-    TrkCaloHit(const CaloCluster& caloCluster, CLHEP::Hep3Vector &caloClusterPos,
-	       double crystalHalfLength,  CLHEP::Hep3Vector const& clusterAxis,
+    TrkCaloHit(CaloCluster const& caloCluster, CLHEP::Hep3Vector const& caloClusterPos,
+	       double crystalLength,  CLHEP::Hep3Vector const& clusterAxis,
 	       const HitT0& trkt0, double fltlen, double timeWeight, double _dtoffset);
     virtual ~TrkCaloHit();
 //  implementation of TrkHit interface

@@ -36,8 +36,8 @@ CommonTrk.helix_reco_De   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDeM,
 			      TimeClusterFinder, HelixFinder, MHFinderTprDe    ,
 			      MHFinderDe ]
 
-CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDmuM, CalHelixFinderDmuP,  MHFinderCprDmu, 
-			      TimeClusterFinder, HelixFinder, MHFinderTprDmu    ,
+CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmuM, CalHelixFinderDmuP,  MHFinderCprDmu, 
+			      TimeClusterFinderMu, HelixFinderMu, MHFinderTprDmu    ,
 			      MHFinderDmu ]
 #------------------------------------------------------------------------------
 # by default, write out two lists of tracks corresponding to two different 

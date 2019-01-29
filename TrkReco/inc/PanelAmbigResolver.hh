@@ -48,6 +48,7 @@ namespace mu2e {
 	// parameters
 	double _minsep; // minimum chisquared separation between best solution and the rest to consider a panel resolved
 	double _inactivepenalty; // chisquared penalty for an inactive hit
+	double _nullpenalty; // chisquared penalty for a null ambiguity hit
 	double _penaltyres; // resolution term to add to hits if ambiguity/activity can't be resolved
 	double _trkpenaltyres; // resolution term to add to track
 	double _nullerr2; // additional error (squared) for hits with null ambiguity

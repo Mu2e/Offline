@@ -50,23 +50,13 @@ namespace mu2e {
     const StrawHitFlagCollection*     shfcol;         //
     std::string                       shDigiLabel;    // 
 
-    //    TrkParticle                       tpart;   // krep already has this info 
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
 
     const HelixSeed*                  helixSeed;      //
     const KalSeed*                    kalSeed;        // 
-    //    TrkT0                             t0;             // estimate of the track t0
     HelixTraj*                        helixTraj;      // initial parameterization of the track
-    // std::vector<StrawHitIndex>*       hitIndices;     // list of hit indices, updates during the fit
-    // std::vector<StrawHitIndex>*       savedHits;      // list of hit indices, updates during the fit
-
-    //    TrkErrCode                        fit;            // error code from last fit
-    //    unsigned                          nt0iter;        // number of times t0 was iterated
     unsigned                          nweediter;      // number of iterations on hit weeding
-    //    unsigned                          nunweediter;    // number of iterations on hit unweeding
-    //    std::vector <Doublet>             listOfDoublets; // list of hist multiplets
-    //    int                               nrescued;       // N rescued hits
     std::vector<MissingHit_t>         missingHits; 
     int                               fitType;        // 0:seed 1:final
 //-----------------------------------------------------------------------------
@@ -75,13 +65,9 @@ namespace mu2e {
     KalFitData();
     ~KalFitData();
 
-    //    void    removeFailed() { if(fit.failure()) deleteTrack(); }
     void    deleteTrack ();
     KalRep* stealTrack  ();
     void    init        ();
-
-    //    int                               nHelixHits     () { return helixSeed->hits().size(); }
-
   };
 
 } 

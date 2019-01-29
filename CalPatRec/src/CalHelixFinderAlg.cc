@@ -1053,7 +1053,6 @@ namespace mu2e {
 
     for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
-      //      z         = facez->z;
       z         = Helix._zFace[f];
 
       int  firstPanel(0);
@@ -1136,7 +1135,6 @@ namespace mu2e {
 
       //loop over the nHitsMaxPerPanel hits closest to the helix prediction
       if (goodFaceHit.face < 0)                          continue;
-      //      panelz             = &facez->panelZs[goodFaceHit.panel];
       hit                = &Helix._chHitsToProcess[goodFaceHit.panelHitIndex];
 
       Helix._szphi.addPoint(z,hit->_hphi,hit->_zphiWeight);
@@ -1155,7 +1153,8 @@ namespace mu2e {
 	   (faceHitChi2 < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
 	                                                         //close to the starting one. update dfdz only if:
-	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
+	  // if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
+	  if ( ((Helix._szphi.dfdz()*_dfdzsign) > 0.) && //{                    // 1. the points browsed are more the half
 	       (dz >=_mindist ) ){
 	    dfdz  = Helix._szphi.dfdz();                     //    delta hits could have moved dfdz to negative value!
 	    phi0  = Helix._szphi.phi0();// + z*dfdz;                     // 2. and require dfdz to be positivie! scattered hits or
@@ -1229,13 +1228,10 @@ namespace mu2e {
 	}//end face loop
 
 	if ((iworst.panel >= 0) && (Helix._nZPhiSh > _minNHits)) {
-	  // facez   = &Helix._oTracker[iworst.face];
-	  // panelz  = &facez->panelZs [iworst.panel];
 	  hit     = &Helix._chHitsToProcess[iworst.panelHitIndex];
-	  //	  int index =  facez->evalUniqueHitIndex(iworst);
 	  Helix._hitsUsed[iworst.panelHitIndex] = 0;
 
-	  z   = Helix._zFace[iworst.face];// facez->z;
+	  z   = Helix._zFace[iworst.face];
 	  phi = hit->_hphi;
 
 	  Helix._szphi.removePoint(z, phi, hit->_zphiWeight);
@@ -1258,12 +1254,12 @@ namespace mu2e {
 
 	for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
 	  facez     = &Helix._oTracker[f];
-	  z         = Helix._zFace[f];//facez->z;
+	  z         = Helix._zFace[f];
 	  int  firstPanel(0);
 	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 	  for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
 	    panelz = &facez->panelZs[p];
-	    int       nhits  = panelz->nChHits();//fNHits;
+	    int       nhits  = panelz->nChHits();
 	    int       seedPanelIndex(0);
 	    if (nhits == 0)                                        continue;
 	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
@@ -2130,15 +2126,12 @@ namespace mu2e {
 // a straw man attempt to account for significantly different resolutions 
 // along the wire and in the drift direction
 //--------------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit,
-					     // const Hep3Vector& HitPos   ,
-					     // const Hep3Vector& StrawDir ,
-					     const XYZVec&        HelCenter,
-					     double               Radius   ) {
+  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit      ,
+					     const XYZVec&         HelCenter,
+					     double                Radius   ) {
 
-    // double    rs(2.5);   // straw radius, mm
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
+    //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
@@ -2151,7 +2144,6 @@ namespace mu2e {
     double costh2 = dxn*dxn/(dx*dx+dy*dy);
     double sinth2 = 1-costh2;
 
-    // double e2     = _ew*_ew*sinth2+rs*rs*costh2;
     double e2     = Hit.wireErr2()*sinth2+transErr2*costh2;
     double wt     = 1./e2;
                                                     // scale the weight for having chi2/ndof distribution peaking at 1
@@ -2163,16 +2155,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit,
-						// const XYZVec&  HitPos   ,
-						// const XYZVec&  StrawDir ,
-						const XYZVec&  HelCenter,
-						double             Radius   ,
-						int                Print    ,
-						const char*        Banner   ) {
-    // double    rs(2.5);  // straw radius, mm
+  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit      ,
+						const XYZVec&         HelCenter,
+						double                Radius   ,
+						int                   Print    ,
+						const char*           Banner   ) {
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
+    //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
@@ -2181,12 +2170,13 @@ namespace mu2e {
     double dx = x-HelCenter.x();
     double dy = y-HelCenter.y();
 
-    double dxn = dx*Hit._sdir.x()+dy*Hit._sdir.y();
-
-    double costh2  = dxn*dxn/(dx*dx+dy*dy);
+//-----------------------------------------------------------------------------
+// if dr(dx,dy) is orthogonal to the wire, costh = 1
+//-----------------------------------------------------------------------------
+    double dxn    = dx*Hit._sdir.x()+dy*Hit._sdir.y();
+    double costh2 = dxn*dxn/(dx*dx+dy*dy);
     double sinth2 = 1-costh2;
 
-    // double e2     = _ew*_ew*costh2+rs*rs*sinth2;
     double e2     = Hit.wireErr2()*costh2+transErr2*sinth2;
     double wt     = Radius*Radius/e2;
     wt           *= _weightZPhi;

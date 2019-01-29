@@ -341,11 +341,13 @@ namespace mu2e
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
 	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
+	  // add CaloCluster if present
+	  kseed._chit._cluster = hseed.caloCluster();
 	  // fill ptr to the helix seed
           auto hsH = event.getValidHandle(_hsToken);
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
-	  TrkUtilities::fillHitSeeds(_result.krep,kseed._hits);
+	  TrkUtilities::fillStrawHitSeeds(_result.krep,kseed._hits);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
 	  kseed._chisq = _result.krep->chisq();
 	  // use the default consistency calculation, as t0 is not fit here

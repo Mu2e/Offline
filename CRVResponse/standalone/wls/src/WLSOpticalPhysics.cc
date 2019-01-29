@@ -41,7 +41,9 @@
 WLSOpticalPhysics::WLSOpticalPhysics(G4bool toggle)
     : G4VPhysicsConstructor("Optical")
 {
-  theWLSProcess                = NULL;
+  theWLSY11Process             = NULL;
+  theWLSPSPPOProcess           = NULL;
+  theWLSPOPOPProcess           = NULL;
   theScintProcess              = NULL;
   theCerenkovProcess           = NULL;
   theBoundaryProcess           = NULL;
@@ -71,12 +73,15 @@ void WLSOpticalPhysics::ConstructProcess()
     G4cout << "WLSOpticalPhysics:: Add Optical Physics Processes"
            << G4endl;
 
-  theWLSProcess = new G4OpWLS();
+  theWLSY11Process   = new G4OpWLSY11();
+  theWLSPSPPOProcess = new G4OpWLSPSPPO();
+  theWLSPOPOPProcess = new G4OpWLSPOPOP();
 
   theScintProcess = new G4Scintillation();
   theScintProcess->SetTrackSecondariesFirst(true);
+  theScintProcess->SetFiniteRiseTime(true);
 
-  theCerenkovProcess = new G4Cerenkov();
+  theCerenkovProcess = new G4CerenkovNew();
   theCerenkovProcess->SetMaxNumPhotonsPerStep(300);
   theCerenkovProcess->SetTrackSecondariesFirst(true);
 
@@ -103,9 +108,13 @@ void WLSOpticalPhysics::ConstructProcess()
   pManager->AddDiscreteProcess(theBoundaryProcess);
 
   //theWLSProcess->UseTimeProfile("delta");
-  theWLSProcess->UseTimeProfile("exponential");
+  theWLSY11Process->UseTimeProfile("exponential");
+  theWLSPSPPOProcess->UseTimeProfile("exponential");
+  theWLSPOPOPProcess->UseTimeProfile("exponential");
 
-  pManager->AddDiscreteProcess(theWLSProcess);
+  pManager->AddDiscreteProcess(theWLSY11Process);
+  pManager->AddDiscreteProcess(theWLSPSPPOProcess);
+  pManager->AddDiscreteProcess(theWLSPOPOPProcess);
 
 //gets set by the material properties
 //  theScintProcess->SetScintillationYieldFactor(1.);
