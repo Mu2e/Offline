@@ -42,6 +42,7 @@ namespace mu2e {
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
+      virtual void deleteCutsData() override;
 
     protected:
       explicit IOHelper(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& mu2elimits)
@@ -92,6 +93,15 @@ namespace mu2e {
                                                          steppingOutputName_);
         }
     }
+      
+    //temporary for MT HPC work, until art3 is integrated
+    void IOHelper::deleteCutsData(){
+        if(steppingOutput_) {
+            steppingOutput_ = nullptr;
+        }
+    }
+      
+      
       
         
     void IOHelper::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
@@ -147,6 +157,7 @@ namespace mu2e {
       virtual void declareProducts(art::EDProducer *parent) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
+      virtual void deleteCutsData() override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
       explicit Union(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
@@ -216,6 +227,13 @@ namespace mu2e {
               cut->insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
           }
       }
+      
+    void Union::deleteCutsData(){
+          IOHelper::deleteCutsData();
+          for(auto& cut: cuts_) {
+            cut->deleteCutsData();
+          }
+    }
 
 
     //================================================================
@@ -230,6 +248,7 @@ namespace mu2e {
       virtual void declareProducts(art::EDProducer *parent) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
+      virtual void deleteCutsData() override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
       explicit Intersection(const fhicl::ParameterSet& pset, const Mu2eG4ResourceLimits& lim);
@@ -299,6 +318,13 @@ namespace mu2e {
         for(auto& cut: cuts_) {
             cut->insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
         }
+    }
+      
+    void Intersection::deleteCutsData(){
+          IOHelper::deleteCutsData();
+          for(auto& cut: cuts_) {
+              cut->deleteCutsData();
+          }
     }
 
 
