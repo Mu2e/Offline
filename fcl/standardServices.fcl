@@ -2,6 +2,7 @@
 # This file defines some standard configurations for services
 #
 
+#include "DbService/fcl/prolog.fcl"
 #include "ProditionsService/fcl/prolog.fcl"
 #include "BTrkHelper/fcl/prolog.fcl"
 
@@ -40,6 +41,8 @@ Services : {
     GeometryService	    : { inputFile : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
     GlobalConstantsService  : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    DbService : @local::DbEmpty
+    ProditionsService: @local::Proditions
   }
 
   SimOnly   : {
