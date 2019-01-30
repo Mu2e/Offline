@@ -32,7 +32,6 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 #include "TrkReco/inc/KalFitData.hh"
@@ -99,8 +98,6 @@ namespace mu2e
     double _maxadddoca, _maxaddchi;
     TrkParticle _tpart; // particle type being searched for
     TrkFitDirection _fdir;  // fit direction in search
-    // trkqual calculation
-    std::unique_ptr<MVATools> _trkqualmva;
     // event objects
     const ComboHitCollection* _chcol;
     const StrawHitFlagCollection* _shfcol;
@@ -117,7 +114,6 @@ namespace mu2e
     bool findData(const art::Event& e);
     void findMissingHits(KalFitData&kalData);
     void findMissingHits_cpr(KalFitData&kalData);
-    void fillTrkQual(KalSeed const& kseed, TrkQual& trkqual);
 
     // flow diagnostic
   };
@@ -145,18 +141,12 @@ namespace mu2e
     _kfit(pset.get<fhicl::ParameterSet>("KalFit", {})),
     _result()
   {
-    auto mvapset = pset.get<fhicl::ParameterSet>("TrkQualMVA", {});
-    mvapset.put<string>("MVAWeights",pset.get<string>("TrkQualWeights", "TrkDiag/test/TrkQual.weights.xml"));
-    _trkqualmva.reset(new MVATools(mvapset));
-    _trkqualmva->initMVA();
-    if(_debug>0)_trkqualmva->showMVA();
 
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
     produces<AlgorithmIDCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
-    produces<TrkQualCollection>();
 //-----------------------------------------------------------------------------
 // provide for interactive diagnostics
 //-----------------------------------------------------------------------------
@@ -210,7 +200,6 @@ namespace mu2e
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
     unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
-    unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
     art::ProductID kalRepsID(getProductID<KalRepCollection>());
@@ -345,8 +334,11 @@ namespace mu2e
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
+	  TrkFitFlag fflag(kseed.status());
+	  fflag.merge(TrkFitFlag::kalmanOK);
+	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),kseed.status());
+	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
 	  // reference the seed fit in this fit
 	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
 	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
@@ -355,14 +347,19 @@ namespace mu2e
 	  // fill with new information
 	  fseed._t0 = krep->t0();
 	  fseed._flt0 = krep->flt0();
-	  fseed._status.merge(TrkFitFlag::kalmanOK);
 	  // global fit information
 	  fseed._chisq = krep->chisq();
 	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
-	  fseed._fitcon =  ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
-	  if(krep->fitStatus().success()==1) fseed._status.merge(TrkFitFlag::kalmanConverged);
-	  TrkUtilities::fillHitSeeds(krep,fseed._hits);
+	  fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
+	  TrkUtilities::fillStrawHitSeeds(krep,fseed._hits);
 	  TrkUtilities::fillStraws(krep,fseed._straws);
+	  // see if there's a TrkCaloHit
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
+	  if(tch != 0){
+	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	    // set the Ptr using the helix: this could be more direct FIXME!
+	    fseed._chit._cluster = fseed._helix->caloCluster();
+	  }
 	  // sample the fit at the requested z positions.  Need options here to define a set of
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
@@ -380,10 +377,6 @@ namespace mu2e
 	  }
 	  // save KalSeed for this track
 	  kscol->push_back(fseed);
-	  // compute TrkQual for this track and save it
-	  TrkQual trkqual;
-	  fillTrkQual(fseed,trkqual);
-	  tqcol->push_back(trkqual);
 	} else {// fit failure
 	  _result.deleteTrack();
 	  //	  delete krep;
@@ -397,7 +390,6 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
-    event.put(move(tqcol));
     event.put(move(algs));
     event.put(move(shfcol));
   }
@@ -631,68 +623,6 @@ namespace mu2e
 	  }
 	}
       }
-    }
-  }
-
-  void KalFinalFit::fillTrkQual(KalSeed const& kseed, TrkQual& trkqual) {
-    static StrawHitFlag active(StrawHitFlag::active);
-    static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
-    if(kseed.status().hasAllProperties(goodfit)){
-      std::vector<TrkStrawHitSeed> const& hits = kseed.hits();
-      unsigned nactive(0), ndouble(0), nnull(0);
-      for(auto ihit = hits.begin(); ihit != hits.end(); ++ihit){
-        if(ihit->flag().hasAllProperties(active)){
-          ++nactive;
-          if(ihit->ambig()==0)++nnull;
-          // look at the adjacent hits; if they are in the same panel, this is a double
-          auto jhit = ihit; ++jhit;
-          auto hhit = ihit; --hhit;
-          if( (jhit != hits.end() &&
-               jhit->flag().hasAllProperties(active) &&
-               jhit->strawId().getPlane() == ihit->strawId().getPlane() &&
-               jhit->strawId().getPanel() == ihit->strawId().getPanel() ) ||
-              (hhit >= hits.begin() &&
-               hhit->flag().hasAllProperties(active) &&
-               hhit->strawId().getPlane() == ihit->strawId().getPlane() &&
-               hhit->strawId().getPanel() == ihit->strawId().getPanel() )
-              ) {
-            ++ndouble;
-          }
-        }
-      }
-
-      trkqual[TrkQual::nactive] = nactive;
-      trkqual[TrkQual::factive] = (float)nactive/(float)hits.size();  // Fraction of active hits
-      trkqual[TrkQual::log10fitcon] = kseed.fitConsistency() > FLT_MIN ? log10(kseed.fitConsistency()) : -50.0; // fit chisquared consistency
-      trkqual[TrkQual::t0err] = kseed.t0().t0Err();  // estimated t0 error
-      trkqual[TrkQual::fdouble] = (float)ndouble/(float)nactive;  // fraction of double hits (2 or more in 1 panel)
-      trkqual[TrkQual::fnullambig] = (float)nnull/(float)nactive;  // fraction of hits with null ambiguity
-      trkqual[TrkQual::fstraws] = (float)kseed.straws().size()/(float)nactive;  // fraction of straws to hits
-
-      // find the fit segment that best matches the location for testing the quality
-      std::vector<KalSegment> const& ksegs = kseed.segments();
-      auto bestkseg = ksegs.begin();
-      for(auto ikseg = ksegs.begin(); ikseg != ksegs.end(); ++ikseg){
-        HelixVal const& hel = ikseg->helix();
-        // check for a segment whose range includes z=0.  There should be a better way of doing this, FIXME
-        double sind = hel.tanDip()/sqrt(1.0+hel.tanDip()*hel.tanDip());
-        if(hel.z0()+sind*ikseg->fmin() < 0.0 && hel.z0()+sind*ikseg->fmax() > 0.0){
-          bestkseg = ikseg;
-          break;
-        }
-      }
-      if(bestkseg != ksegs.end()){
-        trkqual[TrkQual::momerr] = bestkseg->momerr(); // estimated momentum error
-        trkqual[TrkQual::d0] = bestkseg->helix().d0(); // d0 value
-        trkqual[TrkQual::rmax] = bestkseg->helix().d0()+2.0/bestkseg->helix().omega(); // maximum radius of fit
-        // calculate the MVA
-        trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values()));
-        trkqual.setMVAStatus(TrkQual::calculated);
-      } else {
-        trkqual.setMVAStatus(TrkQual::filled);
-      }
-    } else {
-      trkqual.setMVAStatus(TrkQual::failed);
     }
   }
 }// mu2e

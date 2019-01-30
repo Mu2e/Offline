@@ -141,7 +141,7 @@ namespace mu2e
     CrvCoincidenceCollection::const_iterator iter;
     for(iter=crvCoincidenceCollection->begin(); iter!=crvCoincidenceCollection->end(); iter++)
     {
-      int crvSectorType = iter->GetCrvSectorType();
+      int crvSectorType = std::abs(iter->GetCrvSectorType());
       const std::vector<art::Ptr<CrvRecoPulse> > &crvRecoPulses = iter->GetCrvRecoPulses();
       for(size_t i=0; i<crvRecoPulses.size(); i++)
       {

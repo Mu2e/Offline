@@ -50,7 +50,7 @@ BEGIN_PROLOG
       deadSiPMProbability          : 0.01
       nPixelsX                     : 40
       nPixelsY                     : 40
-      nPixelsRFiber                : 14
+      nPixelsRFiber                : 13
       inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
                                        [19,18], [19,19], [19,20], [19,21],
                                        [20,18], [20,19], [20,20], [20,21],

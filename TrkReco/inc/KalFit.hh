@@ -131,7 +131,6 @@ namespace mu2e
 			    TrkHitVector::reverse_iterator& ilow,
 			    TrkHitVector::iterator& ihigh);
     
-    void findTrkCaloHit    (KalRep*krep, TrkCaloHit*tch);
   };
 }
 #endif

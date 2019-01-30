@@ -20,30 +20,6 @@
 #include "THStack.h"
 
 
-Double_t crystalball (Double_t *x, Double_t *par) {
-  // par[0] : norm
-  // par[1] : x0
-  // par[2] : sigma
-  // par[3] : n
-  // par[4] : alpha
-  // par[5] : fraction of exponential tail
-  // par[6] : tail exponential lambda
-
-  double dx = x[0]-par[1];
-  if ( dx/fabs(par[2]) > -1.*par[4]) {
-    double g = par[0]*TMath::Gaus(x[0], par[1], par[2]);
-//    double g2 = par[5]*par[0]*TMath::Gaus(x[0], par[1], par[6]);
-//    return g1+g2;
-    double e = par[0]*par[5]*dx*exp(-(dx)/par[6])/(par[6]*par[6]);
-    return g+e;
-  }
-  else {
-    double A = pow(par[3]/fabs(par[4]), par[3])*exp(-0.5*par[4]*par[4]);
-    double B = par[3]/fabs(par[4]) - fabs(par[4]);
-    return par[0]*A*pow(B-dx/fabs(par[2]), -1.*par[3]);
-  }
-}
-
 
 // The following is from Alexx Perloff, JetMetaAnalysis
 double fnc_dscb(double*xx,double*pp) {
@@ -402,3 +378,402 @@ void wpull(TTree* ta) {
 
 }
 
+void Ambig(TTree* ta) {
+  gStyle->SetOptStat(1111);
+
+  TCut ghit("detshmc._rel==0");
+  TCut delta("detshmc._rel>0");
+  TCut bkg("detshmc._rel<0");
+  TCut gambig("detshmc._ambig==_ambig");
+  TCut bambig("detshmc._ambig!=_ambig&&_ambig!=0");
+  TCut nambig("detsh._ambig==0");
+  TCut active("detsh._active>0");
+// apply requested cuts
+
+  TCut goodtrk("de.status>0&&de.trkqual>0.4");
+
+
+  TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
+  TH1F* rdn = new TH1F("rdn","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
+  TH1F* rdb = new TH1F("rdb","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
+  TH1F* rda = new TH1F("rda","Drift radius;true radius (mm)",100,0.0,2.7);
+  TH1F* rdd = new TH1F("rdd","Drift radius;true radius (mm)",100,0.0,2.7);
+  TH1F* rdf = new TH1F("rdf","Drift radius;true radius (mm)",100,0.0,2.7);
+  TH1F* rdi = new TH1F("rdi","Drift radius;true radius (mm)",100,0.0,2.7);
+  rdg->SetLineColor(kGreen);
+  rdn->SetLineColor(kBlue);
+  rdb->SetLineColor(kRed);
+  rda->SetLineColor(kBlack);
+  rdi->SetLineColor(kCyan);
+  rdd->SetLineColor(kOrange);
+  rdf->SetLineColor(kYellow);
+  rdg->SetStats(0);
+  rdn->SetStats(0);
+//  rdb->SetStats(0);
+  rdi->SetStats(0);
+  rda->SetStats(0);
+  rdd->SetStats(0);
+  rdf->SetStats(0);
+  rdg->Sumw2();
+  rdn->Sumw2();
+  rdb->Sumw2();
+  rda->Sumw2();
+  rdd->Sumw2();
+  rdf->Sumw2();
+
+  ta->Project("rdg","detshmc._dist",goodtrk+active+gambig+ghit);
+  ta->Project("rdn","detshmc._dist",goodtrk+active+nambig+ghit);
+  ta->Project("rdb","detshmc._dist",goodtrk+active+bambig+ghit);
+  ta->Project("rda","detshmc._dist",goodtrk+active);
+  ta->Project("rdi","detshmc._dist",goodtrk+ghit+(!active));
+  ta->Project("rdd","detshmc._dist",goodtrk+active+delta);
+  ta->Project("rdf","detshmc._dist",goodtrk+active+bkg);
+  Double_t ntotal = rda->GetEntries();
+  Double_t nright = rdg->GetEntries();
+  Double_t nneutral = rdn->GetEntries();
+  Double_t nwrong = rdb->GetEntries();
+  Double_t ndelta = rdd->GetEntries();
+  Double_t nbkg = rdf->GetEntries();
+  Double_t ninact = rdi->GetEntries();
+  TH1F* rdgr = new TH1F(*rdg);
+  TH1F* rdnr = new TH1F(*rdn);
+  TH1F* rdbr = new TH1F(*rdb);
+  rdgr->Divide(rda);
+  rdnr->Divide(rda);
+  rdbr->Divide(rda);
+
+  TH1F* momres0 = new TH1F("momres0","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
+  TH1F* momres1 = new TH1F("momres1","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
+  TH1F* momres2 = new TH1F("momres2","Momentum resolution at start of tracker;p_{reco}-p_{true}(MeV/c)",151,-4,4);
+  momres0->SetLineColor(kBlack);
+  momres1->SetMarkerColor(kCyan);
+  momres1->SetMarkerStyle(4);
+  momres2->SetMarkerColor(kOrange);
+  momres2->SetMarkerStyle(5);
+  ta->Project("momres0","de.mom-demcent.mom",goodtrk);
+  ta->Project("momres1","de.mom-demcent.mom",goodtrk&&"de.status==1");
+  ta->Project("momres2","de.mom-demcent.mom",goodtrk&&"de.status==2");
+
+  TH1F* afg = new TH1F("afg","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
+  TH1F* afn = new TH1F("afn","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c):hit fraction",41,-4,4);
+  TH1F* afb = new TH1F("afb","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
+  TH1F* afa = new TH1F("afa","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
+  afg->SetStats(0);
+  afn->SetStats(0);
+  afb->SetStats(0);
+  afa->SetStats(0);
+  afg->SetLineColor(kGreen);
+  afn->SetLineColor(kBlue);
+  afb->SetLineColor(kRed);
+  afg->Sumw2();
+  afn->Sumw2();
+  afb->Sumw2();
+  afa->Sumw2();
+  ta->Project("afg","de.mom-demcent.mom",goodtrk+active+gambig);
+  ta->Project("afn","de.mom-demcent.mom",goodtrk+active+nambig);
+  ta->Project("afb","de.mom-demcent.mom",goodtrk+active+bambig);
+  ta->Project("afa","de.mom-demcent.mom",goodtrk+active);
+  afg->Divide(afa);
+  afn->Divide(afa);
+  afb->Divide(afa);
+  afg->SetMinimum(0.0);
+  afg->SetMaximum(1.1);
+
+  TCanvas* ambigcan = new TCanvas("ambigcan","Hit Ambiguity",1200,800);
+  ambigcan->Divide(2,2);
+
+
+  ambigcan->cd(1);
+  rda->Draw();
+  rdi->Draw("same");
+  rdd->Draw("same");
+  rdf->Draw("same");
+  TLegend* drleg = new TLegend(0.15,0.15,0.55,0.5);
+  char dtitle[100];
+  snprintf(dtitle,100,"%4.0f Active hits",ntotal);
+  drleg->AddEntry(rda,dtitle,"l");
+  snprintf(dtitle,100,"%4.4f Delta-ray hits",ndelta/ntotal);
+  drleg->AddEntry(rdd,dtitle,"l");
+  snprintf(dtitle,100,"%4.4f Inactive good hits",ninact/ntotal);
+  drleg->AddEntry(rdi,dtitle,"l");
+  snprintf(dtitle,100,"%4.4f Background hits",nbkg/ntotal);
+  drleg->AddEntry(rdf,dtitle,"l");
+  drleg->Draw();
+
+  ambigcan->cd(2);
+
+  rdgr->Draw();
+  rdnr->Draw("same");
+  rdbr->Draw("same");
+
+  TLegend* leg = new TLegend(0.4,0.35,0.9,0.6);
+  char title[80];
+  snprintf(title,80,"Correct ambiguity %4.3f",nright/ntotal);
+  leg->AddEntry(rdgr,title,"l");
+  snprintf(title,80,"Null ambiguity %4.3f",nneutral/ntotal);
+  leg->AddEntry(rdnr,title,"l");
+  snprintf(title,80,"Incorrect ambiguity %4.3f",nwrong/ntotal);
+  leg->AddEntry(rdbr,title,"l");
+  leg->Draw();
+
+  ambigcan->cd(3);
+  double integral = momres0->GetEntries()*momres0->GetBinWidth(1);
+  TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,1.5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+  dscb->SetParameters(integral,0.0,0.15,1.0,4.5,1.2,10.0);
+  dscb->SetNpx(1000);
+  dscb->SetParLimits(3,0.0,50.0);
+  dscb->SetParLimits(4,1.0,50.0);
+  dscb->SetParLimits(5,0.0,50.0);
+  dscb->SetParLimits(6,1.0,50.0);
+
+  gPad->SetLogy();
+  momres0->Fit("dscb","LIR");
+  momres1->Draw("psame");
+  momres2->Draw("psame");
+  TLegend* mleg = new TLegend(0.13,0.6,0.43,0.85);
+  snprintf(title,80,"%4.0f All Fits",momres0->GetEntries());
+  mleg->AddEntry(momres0,title,"l");
+  snprintf(title,80,"%4.0f Converged Fits",momres1->GetEntries());
+  mleg->AddEntry(momres1,title,"p");
+  snprintf(title,80,"%4.0f Unconverged Fits",momres2->GetEntries());
+  mleg->AddEntry(momres2,title,"p");
+  mleg->Draw();
+
+
+  ambigcan->cd(4);
+  afg->Draw();
+  afn->Draw("same");
+  afb->Draw("same");
+  TLegend* fleg = new TLegend(0.16,0.35,0.625,0.6);
+  fleg->AddEntry(afg,"Correct Ambiguity","l");
+  fleg->AddEntry(afn,"No Ambiguity","l");
+  fleg->AddEntry(afb,"Incorrect Ambiguity","l");
+  fleg->Draw();
+
+  ambigcan->cd(0);
+
+}
+
+void Resid(TTree* ta) {
+
+  TCut delta("detshmc._proc==17");
+  TCut primary("detshmc._gen==2");
+  TCut gambig("detshmc._ambig==detsh._ambig&&detsh._ambig!=0");
+  TCut bambig("detshmc._ambig!=detsh._ambig&&detsh._ambig!=0");
+  TCut nambig("detsh._ambig==0");
+  TCut active("de.status==1 && detsh._active>0");
+  TCut reco("de.status>0");
+  TCut mcsel("demcent.mom>100.0");
+
+  TH1F* rdg = new TH1F("rdg","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
+  TH1F* rdb = new TH1F("rdb","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
+  TH1F* rdn = new TH1F("rdn","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
+  rdg->SetLineColor(kBlue);
+  rdb->SetLineColor(kRed);
+  rdn->SetLineColor(kGreen);
+  rdg->SetStats(0);
+  rdb->SetStats(0);
+  rdn->SetStats(0);
+
+  TH1F* rpullg = new TH1F("rpullg","Correct Ambiguity Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpullb = new TH1F("rpullb","Incorrect Ambiguity Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpulln = new TH1F("rpulln","No Assigned Ambiguity Residual Pull;Pull;N hits",100,-6,6);
+  TH1F* rpulld = new TH1F("rpulld","#delta-ray Residual Pull;Pull;N hits",100,-6,6);
+  rpullg->SetLineColor(kBlue);
+  rpullb->SetLineColor(kRed);
+  rpulln->SetLineColor(kGreen);
+  rpulld->SetLineColor(kCyan);
+
+  ta->Project("rdg","detshmc._dist",reco+mcsel+active+gambig+primary);
+  ta->Project("rdb","detshmc._dist",reco+mcsel+active+bambig+primary);
+  ta->Project("rdn","detshmc._dist",reco+mcsel+active+nambig+primary);
+
+  ta->Project("rpullg","detsh._resid/detsh._residerr",reco+mcsel+active+gambig+primary);
+  ta->Project("rpullb","detsh._resid/detsh._residerr",reco+mcsel+active+bambig+primary);
+  ta->Project("rpulln","detsh._resid/detsh._residerr",reco+mcsel+active+nambig+primary);
+  ta->Project("rpulld","detsh._resid/detsh._residerr",reco+mcsel+active+delta);
+
+  TCanvas* residcan = new TCanvas("residcan","Residuals",1200,800);
+  residcan->Divide(2,1);
+  residcan->cd(1);
+  rdg->Draw();
+  rdb->Draw("same");
+  rdn->Draw("same");
+
+  TLegend* leg = new TLegend(0.3,0.3,0.8,0.5);
+  leg->AddEntry(rpullg,"Correct ambiguity","l");
+  leg->AddEntry(rpullb,"Incorrect ambiguity","l");
+  leg->AddEntry(rpulln,"No ambiguity assigned","l");
+  leg->Draw();
+
+  TPad* ppad = dynamic_cast<TPad*>(residcan->cd(2));
+  ppad->Divide(1,4);
+  ppad->cd(1);
+  rpullg->Fit("gaus");
+  ppad->cd(2);
+  rpullb->Fit("gaus");
+  ppad->cd(3);
+  rpulln->Fit("gaus");
+  ppad->cd(4);
+  rpulld->Fit("gaus");
+
+  residcan->cd(0);
+
+}
+
+void Con(TTree* ta) {
+  TCut mcsel("demcent.mom>100.0");
+
+  TH1F* con1 = new TH1F("con1","#chi^{2} fit consistency",500,0.0,1.0);
+  TH1F* con2 = new TH1F("con2","#chi^{2} fit consistency",500,0.0,1.0);
+  TH1F* lcon1 = new TH1F("lcon1","log_{10}(#chi^{2}) fit consistency",100,-10,0);
+  TH1F* lcon2 = new TH1F("lcon2","log_{10}(#chi^{2}) fit consistency",100,-10,0);
+  con1->SetLineColor(kBlue);
+  con2->SetLineColor(kRed);
+  lcon1->SetLineColor(kBlue);
+  lcon2->SetLineColor(kRed);
+
+  ta->Project("con1","de.con",mcsel+"de.status==1");
+  ta->Project("con2","de.con",mcsel+"de.status==2");
+  ta->Project("lcon1","log10(de.con)",mcsel+"de.status==1");
+  ta->Project("lcon2","log10(de.con)",mcsel+"de.status==2");
+
+  TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
+  fcan->Clear();
+  fcan->Divide(1,2);
+  fcan->cd(1);
+  con1->Draw();
+  con2->Draw("same");
+  fcan->cd(2);
+  lcon1->Draw();
+  lcon2->Draw("same");
+
+  TLegend* leg = new TLegend(0.1,0.6,0.4,0.8);
+  leg->AddEntry(con1,"Fully Converged Fit","l");
+  leg->AddEntry(con2,"Unconverged Fit","l");
+  leg->Draw();
+
+}
+
+void TrkQualRes(TTree* ta,double tqcut) {
+  TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
+  TH1F* badf = new TH1F("badf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
+  goodf->SetLineColor(kGreen);
+  goodf->SetLineWidth(2);
+  goodf->SetFillColor(kGreen);
+  goodf->SetFillStyle(3004);
+  badf->SetLineColor(kMagenta);
+  badf->SetFillColor(kMagenta);
+  badf->SetLineWidth(2);
+  badf->SetFillStyle(3005);
+  goodf->SetStats(0);
+  badf->SetStats(0);
+  char tqcutgc[40];
+  char tqcutbc[40];
+  snprintf(tqcutgc,40,"de.trkqual>%f",tqcut);
+  snprintf(tqcutbc,40,"de.trkqual<%f",tqcut);
+  TCut tqcutg(tqcutgc);
+  TCut tqcutb(tqcutbc);
+  TCut reco("de.status>0");
+  TCut mcsel("demcent.mom>100.0");
+  ta->Project("goodf","de.mom-demcent.mom",reco+mcsel+tqcutg);
+  ta->Project("badf","de.mom-demcent.mom",reco+mcsel+tqcutb);
+  badf->Scale(goodf->GetEntries()/badf->GetEntries());
+  TCanvas* tqcan = new TCanvas("tqcan","TrkQual",1000,800);
+  goodf->Draw();
+  badf->Draw("same");
+
+  double gmax = goodf->GetMaximum();
+  int gbin1 = goodf->FindFirstBinAbove(0.5*gmax);
+  int gbin2 = goodf->FindLastBinAbove(0.5*gmax);
+  double gfwhm = goodf->GetBinCenter(gbin2) - goodf->GetBinCenter(gbin1);
+
+  double bmax = badf->GetMaximum();
+  int bbin1 = badf->FindFirstBinAbove(0.5*bmax);
+  int bbin2 = badf->FindLastBinAbove(0.5*bmax);
+  double bfwhm = badf->GetBinCenter(bbin2) - badf->GetBinCenter(bbin1);
+
+  char ltitle[40];
+
+  TLegend* leg = new TLegend(0.55,0.6,0.9,0.9);
+  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutgc,1000.0*gfwhm);
+  leg->AddEntry(goodf,ltitle,"F");
+  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutbc,1000.0*bfwhm);
+  leg->AddEntry(badf,ltitle,"F");
+  leg->Draw();
+}
+
+void StrawMat(TTree* ta) {
+  TH1F* naddmat = new TH1F("naddmat","N Added Straws",30,-0.5,29.5);
+  TH2F* matvshit = new TH2F("matvshit","N Straw vs N Hits",100,-0.5,99.5,100,-0.5,99.5);
+  TH1F* addmatfrac = new TH1F("addmatfrac","Fraction of Added Straws",100,-0.01,0.5);
+  addmatfrac->SetStats(0);
+  matvshit->SetStats(0);
+
+  TH1F* lofracres = new TH1F("lofracres","Momentum Resolution;Reco - True Mom. (MeV/c)",100,-2,2);
+  TH1F* hifracres = new TH1F("hifracres","Momentum Resolution;Reco - True Mom. (MeV/c)",100,-2,2);
+  lofracres->SetStats(0);
+  hifracres->SetStats(0);
+  lofracres->SetLineColor(kRed);
+  hifracres->SetLineColor(kBlack);
+
+  TH1F* hitdoca = new TH1F("hitdoca","DOCA to Wire;DOCA (mm)",100,-0.05,2.65);
+  TH1F* adddoca = new TH1F("adddoca","DOCA to Wire;DOCA (mm)",100,-0.05,2.65);
+  hitdoca->SetStats(0);
+  hitdoca->SetLineColor(kRed);
+  adddoca->SetStats(0);
+  adddoca->SetLineColor(kBlue);
+
+  TH1F* hitstraw = new TH1F("hitstraw","Straw Number;straw #",100,-0.5,99.5);
+  TH1F* addstraw = new TH1F("addstraw","Straw number;straw #",100,-0.5,99.5);
+  hitstraw->SetStats(0);
+  hitstraw->SetLineColor(kRed);
+  addstraw->SetStats(0);
+  addstraw->SetLineColor(kBlue);
+
+  ta->Project("addmatfrac","(de.nmatactive-de.nactive)/de.nmatactive","de.status>0");
+  ta->Project("matvshit","de.nmatactive:de.nactive","de.status>0");
+  ta->Project("naddmat","de.nmatactive-de.nactive","de.status>0");
+  ta->Project("adddoca","detsm._doca","de.status>0&&detsm._active&&(!detsm._thita)");
+  ta->Project("hitdoca","detsm._doca","de.status>0&&detsm._thita");
+  ta->Project("addstraw","detsm._straw","de.status>0&&detsm._active&&(!detsm._thita)");
+  ta->Project("hitstraw","detsm._straw","de.status>0&&detsm._thita");
+
+  ta->Project("lofracres","de.mom-demcent.mom","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive<0.1");
+  ta->Project("hifracres","de.mom-demcent.mom","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive>0.1");
+
+  TLegend* leg = new TLegend(0.6,0.7,0.9,.9);
+  leg->AddEntry(hitdoca,"Hit Straw","L");
+  leg->AddEntry(adddoca,"Added Straw","L");
+
+  TCanvas* mcan = new TCanvas("mcan","mcan",1200,800);
+  mcan->Divide(3,2);
+  mcan->cd(1);
+  matvshit->Draw("colorz");
+  mcan->cd(2);
+  naddmat->Draw();
+  mcan->cd(3);
+  addmatfrac->Draw();
+  mcan->cd(4);
+  hitdoca->Draw();
+  adddoca->Draw("same");
+  leg->Draw();
+  mcan->cd(5);
+  hitstraw->Draw();
+  addstraw->Draw("same");
+  leg->Draw();
+  mcan->cd(6);
+  lofracres->Draw();
+  hifracres->Draw("same");
+  TLegend* mleg = new TLegend(0.6,0.7,0.9,0.9);
+  mleg->AddEntry(lofracres,"N_{added}/N<0.1","L");
+  mleg->AddEntry(hifracres,"N_{added}/N>0.1","L");
+  mleg->Draw();
+}

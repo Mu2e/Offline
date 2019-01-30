@@ -112,6 +112,7 @@ namespace mu2e {
       // accessors
       art::ProductID const& parent() const { return _parent; }
       bool sorted() const { return _sorted; }
+      uint16_t nStrawHits() const;
     private:
       // reference back to the input ComboHit collection this one references
       // This can be used to chain back to the original StrawHit indices

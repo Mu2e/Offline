@@ -90,6 +90,7 @@ physics :
     CrvTest : 
     {
       module_type                 : CRVTest
+      crvStepsModuleLabel         : "g4run"
       crvSiPMChargesModuleLabel   : "CrvSiPMCharges"
       crvRecoPulsesModuleLabel    : "CrvRecoPulses"
       genParticleModuleLabel      : "generate" 

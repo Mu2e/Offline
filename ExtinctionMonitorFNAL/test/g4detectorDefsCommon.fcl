@@ -106,7 +106,7 @@ outputs: {
    dump: { module_type: DataProductDump }
 }
 
-physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT_MU2ER1"
 
 //----------------------------------------------------------------
 services.SeedService.baseSeed         :  0
