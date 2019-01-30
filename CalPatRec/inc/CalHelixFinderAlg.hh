@@ -48,7 +48,7 @@ namespace mu2e {
     const Calorimeter*         _calorimeter;
 
     //    const CalTimePeak*         fTimePeak;
-    const TimeCluster*         fTimeCluster; //needed for debugging
+    //    const TimeCluster*         fTimeCluster; //needed for debugging
     
     double                     fCaloTime;
     double                     fCaloX;   
@@ -221,12 +221,13 @@ namespace mu2e {
 
     int   isHitUsed(int index);
 
-    void fillXYZP                     (CalHelixFinderData& Helix);
+    void fillFaceOrderedHits          (CalHelixFinderData& Helix);
     // void filterDist                   (CalHelixFinderData& Helix);
     void filterUsingPatternRecognition(CalHelixFinderData& Helix);
-    bool findHelix                    (CalHelixFinderData& Helix);
+    void setCaloCluster               (CalHelixFinderData& Helix);
+    bool fitHelix                     (CalHelixFinderData& Helix);
     // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
-    bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
+    bool findHelix                    (CalHelixFinderData& Helix);
     int  findDfDz                     (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
     int  findDfDz_1                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
     int  findDfDz_2                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);

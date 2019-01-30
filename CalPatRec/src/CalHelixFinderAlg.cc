@@ -87,7 +87,7 @@ namespace mu2e {
     // omega is the inverse transverse radius of the particle's circular motion.
     // It is signed by the particle angular momentum about the cirle center.
     // This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
-    double amsign = copysign(1.0,-Helix._tpart.charge()*bz());
+    double amsign = Helix._helicity == Helicity::poshel ? 1 : -1;//copysign(1.0,-Helix._tpart.charge()*bz());
     pvec[HelixTraj::omegaIndex] = amsign/radius;
     // phi0 is the azimuthal angle of the particle velocity vector at the point
     // of closest approach to the origin.  It's sign also depends on the angular
@@ -203,23 +203,43 @@ namespace mu2e {
     return _bz;
   }
 
+  void CalHelixFinderAlg::setCaloCluster(CalHelixFinderData& Helix) {
+    //check presence of a cluster
+    const CaloCluster* cl = Helix._timeCluster->caloCluster().get();
+    if (cl == NULL){
+      fCaloTime = -9999.;
+      fCaloX    = -9999.;
+      fCaloY    = -9999.;
+      fCaloZ    = -9999.;
+      return;
+    }
+    //fill the calorimeter cluster info
+    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    Hep3Vector  tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    fCaloTime        = cl->time();
+    fCaloX           = tpos.x();
+    fCaloY           = tpos.y();
+    fCaloZ           = tpos.z();
+  }
+
+
 //-----------------------------------------------------------------------------
 //2016-12-26 gianipez added the following function to make CalHelixFinderAlg compatible with TimeCluster obj
 //-----------------------------------------------------------------------------
-  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix, const TimeCluster* TimePeak) {
+  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix) {
 
-    fTimeCluster = TimePeak;
+    // fTimeCluster = TimePeak;
     //check presence of a cluster
-    const CaloCluster* cl = TimePeak->caloCluster().get();
-    if (cl == NULL)   return false;
+    // const CaloCluster* cl = TimePeak->caloCluster().get();
+    // if (cl == NULL)   return false;
 
-    //fill the calorimeter cluster info
-    Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
-    Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-    fCaloTime = cl->time();
-    fCaloX    = tpos.x();
-    fCaloY    = tpos.y();
-    fCaloZ    = tpos.z();
+    // //fill the calorimeter cluster info
+    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    // Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    // fCaloTime = cl->time();
+    // fCaloX    = tpos.x();
+    // fCaloY    = tpos.y();
+    // fCaloZ    = tpos.z();
 //-----------------------------------------------------------------------------
 //  compute the allowed radial range for this fit
 //-----------------------------------------------------------------------------
@@ -229,8 +249,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  particle charge, field, and direction affect the pitch range
 //-----------------------------------------------------------------------------
-    _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
-
+    _dfdzsign = Helix._helicity == Helicity::poshel ? 1 : -1;// copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
+    
     _smax     = _dfdzsign/(_rmax*_tdmax);
     _smin     = _dfdzsign/(_rmin*_tdmin);
 
@@ -238,7 +258,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // call down
 //-----------------------------------------------------------------------------
-    bool retval = findHelix(Helix);
+    bool retval = fitHelix(Helix);
 
     return retval;
   }
@@ -246,10 +266,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // called internally; in the diagnostics mode save several states of _xyzp
 //-----------------------------------------------------------------------------
-  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix) {
+  bool CalHelixFinderAlg::fitHelix(CalHelixFinderData& Helix) {
     bool retval(false);
 					// initialize internal array of hits, print if requested
-    fillXYZP(Helix);
+    //    fillXYZP(Helix); //2019-01-18: gianipez moved this into the CalHelixFinder_module to exploit the helicity loop-search
 //-----------------------------------------------------------------------------
 // 2014-11-09 gianipez: reset the track candidate parameters if a new time peak is used!
 // so the previous candidate should not be compared to the new one at this level
@@ -285,7 +305,8 @@ namespace mu2e {
     else if ((Helix._nXYSh < _minNHits) || (Helix._sxy.chi2DofCircle() > _chi2xyMax)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,3); // xy reconstruction failure
     }
-    else if ((Helix._nZPhiSh < _minNHits) || (Helix._szphi.chi2DofLine() > _chi2zphiMax)) {
+    else if ((Helix._nZPhiSh < _minNHits) || (Helix._szphi.chi2DofLine() > _chi2zphiMax) ||
+	     (fabs(Helix._szphi.dfdz()) < _minDfDz) || (fabs(Helix._szphi.dfdz()) > _maxDfDz)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
     }
     else {
@@ -1506,7 +1527,12 @@ namespace mu2e {
 // same stereohitposition
 // points in filled array are ordered in Z coordinate
 //-------------------------------------------------------------------------
-  void CalHelixFinderAlg::fillXYZP(CalHelixFinderData& Helix) {
+  void CalHelixFinderAlg::fillFaceOrderedHits(CalHelixFinderData& Helix) {
+
+//-----------------------------------------------------------------------------
+// set the CaloCluster of CalHelixFinderAlg: this info is stored in the TimeCluster
+//-----------------------------------------------------------------------------     
+    setCaloCluster(Helix);
 
     static const double pi(M_PI);
     static const double twopi(2*pi);
@@ -1562,18 +1588,6 @@ namespace mu2e {
 
 
     for (unsigned i=0; i<ordChCol.size(); ++i) {
-      // loc          = shIndices[i];	 // index in chcol of i-th timecluster hit
-      // flag         = Helix.shfcol()->at(loc);
-      // //-----------------------------------------------------------------------------
-      // // select hits: don't reuse straw hits
-      // //-----------------------------------------------------------------------------
-      // int good_hit = flag.hasAllProperties(_hsel  );
-      // int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
-      // int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
-
-      // if (good_hit && (! bkg_hit) && (! used_hit)) {
-
-      // 	const ComboHit& ch          = Helix.chcol()->at(loc);
       ComboHit& ch = ordChCol[i];
 
       cx.Station                 = ch.strawId().station();//straw.id().getStation();

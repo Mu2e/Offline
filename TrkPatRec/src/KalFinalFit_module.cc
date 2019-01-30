@@ -158,15 +158,18 @@ namespace mu2e
     produces<KalSeedCollection>();
     produces<TrkQualCollection>();
 //-----------------------------------------------------------------------------
-// provide for interactive disanostics
+// provide for interactive diagnostics
 //-----------------------------------------------------------------------------
     _data.result    = &_result;
     
     if (_diag != 0) {
       _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
-      fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("Fitter.DoubletAmbigResolver");
+      fhicl::ParameterSet ps1 = pset.get<fhicl::ParameterSet>("KalFit.DoubletAmbigResolver");
       _data.dar               = new DoubletAmbigResolver(ps1,0,0,0);
       _data.listOfDoublets    = new std::vector<Doublet>;
+      // histogram booking belongs to beginJob, KalFinalFit doesn't have it
+      art::ServiceHandle<art::TFileService> tfs;
+      _hmanager->bookHistograms(tfs);
     }
     else {
       _hmanager = std::make_unique<ModuleHistToolBase>();
@@ -224,6 +227,7 @@ namespace mu2e
       _data.eventNumber = event.event();
       _data.result = &_result;
       _data.tracks = krcol.get();
+      _data.kscol  = kscol.get();
     }
 
     _result.fitType     = 1;
@@ -278,7 +282,7 @@ namespace mu2e
 	    // first, add back the hits on this track
 	  //	  _result.nunweediter = 0;
 	  _kfit.unweedHits(_result,_maxaddchi);
-	  if (_debug > 0) _kfit.printHits(_result,"CalTrkFit::produce after unweedHits");
+	  if (_debug > 0) _kfit.printUtils()->printTrack(&event,_result.krep,"banner+data+hits","CalTrkFit::produce after unweedHits");
 
 	  if (_cprmode){
 	    findMissingHits_cpr(_result);

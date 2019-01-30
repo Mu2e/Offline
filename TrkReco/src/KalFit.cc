@@ -34,6 +34,7 @@
 // BaBar
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalBend.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
 #include "BTrk/KalmanTrack/KalMaterial.hh"
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
@@ -59,9 +60,6 @@
 #include <string>
 #include <memory>
 #include <set>
-//art
-#include "art/Utilities/ToolMacros.h"
-#include "art/Utilities/make_tool.h"
 
 using namespace std;
 using CLHEP::Hep3Vector;
@@ -120,7 +118,6 @@ namespace mu2e
     _resolveAfterWeeding(pset.get<bool>("ResolveAfterWeeding",false)),
     _exup((extent)pset.get<int>("UpstreamExtent",noextension)),
     _exdown((extent)pset.get<int>("DownstreamExtent",noextension)),
-    _mcTruth(pset.get<int>("mcTruth",0)),
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _bfield(0)
   {
@@ -145,6 +142,9 @@ namespace mu2e
     _maxpardif[0] = _maxpardif[1] = pset.get<double>("MaxParameterDifference",1.0);
 
     _mindof = pset.get<double>("MinNDOF",10);
+
+    _printUtils = new TrkPrintUtils(pset.get<fhicl::ParameterSet>("printUtils",fhicl::ParameterSet()));
+
     // this config belongs in the BField integrator, FIXME!!!
     _bintconfig._maxRange = pset.get<double>("BFieldIntMaxRange",1.0e5); // 100 m
     _bintconfig._intTolerance = pset.get<double>("BFieldIntTol",0.01); // 10 KeV
@@ -194,24 +194,6 @@ namespace mu2e
       else
         throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
-
-    // //DEBUG GIANIPEZ
-    // if (_ambigstrategy[niter-1] == doubletambig) {
-    //   int Final(0);
-    //   AmbigResolver* ar = new DoubletAmbigResolver(doubletPset,_herr[niter-1],niter,Final);
-    //   _ambigresolver.push_back(ar);
-    // }
-    
-//-----------------------------------------------------------------------------
-// print routine
-//-----------------------------------------------------------------------------
-//    _mcTruth = pset.get <int >("mcTruth"); 
-
-    if (_mcTruth != 0) {
-      fhicl::ParameterSet ps = pset.get<fhicl::ParameterSet>("mcUtils");
-      _mcUtils = art::make_tool  <McUtilsToolBase>(ps);
-    }
-    else               _mcUtils = std::make_unique<McUtilsToolBase>();
   }
 
   KalFit::~KalFit(){
@@ -278,7 +260,11 @@ namespace mu2e
       kalData.krep = new KalRep(htraj, thv, detinter, *this, kalData.kalSeed->particle(), t0, flt0);
       assert(kalData.krep != 0);
       
-      if (_debug > 0) printHits(kalData,"makeTrack_001");
+      if (_debug > 0) {
+	char msg[100];
+	sprintf(msg,"makeTrack_001 annealing step: %2i",_annealingStep);
+	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
+      }
 
 // initialize history list
       kalData.krep->addHistory(TrkErrCode(),"KalFit creation");
@@ -516,171 +502,6 @@ namespace mu2e
   }
 
 
-//-----------------------------------------------------------------------------
-// '*' in front of the hit drift radius: the hit drift sign is not defined
-//     and the drift ambiguity has been set to 0
-// '?': the drift sign determined by the resolver is different from the MC truth
-//-----------------------------------------------------------------------------
-  void 
-  KalFit::printHits(KalFitData& KRes, const char* Caller) {
-    const KalRep* Trk  = KRes.krep;
-
-    if (Trk == NULL)  return;
-
-    printf("[KalFit::printHits] BEGIN called from %s _annealingStep:%i \n",Caller,_annealingStep);
-    printf("---------------------------------------------------------------------------------");
-    printf("-----------------------------------------------------\n");
-      //      printf("%s",Prefix);
-    printf("  TrkID       Address    N  NA      P       pT     costh    T0      T0Err   Omega");
-    printf("      D0       Z0      Phi0   TanDip    Chi2    FCons\n");
-    printf("---------------------------------------------------------------------------------");
-    printf("-----------------------------------------------------\n");
-
-    Hep3Vector trk_mom;
-
-    double h1_fltlen = Trk->firstHit()->kalHit()->hit()->fltLen() - 10;
-    trk_mom          = Trk->momentum(h1_fltlen);
-    double mom       = trk_mom.mag();
-    double pt        = trk_mom.perp();
-    double costh     = trk_mom.cosTheta();
-    double chi2      = Trk->chisq();
-    int    nhits     = Trk->hitVector().size();
-    int    nact      = Trk->nActive();
-    double t0        = Trk->t0().t0();
-    double t0err     = Trk->t0().t0Err();
-//-----------------------------------------------------------------------------
-// in all cases define momentum at lowest Z - ideally, at the tracker entrance
-//-----------------------------------------------------------------------------
-    double s1     = Trk->firstHit()->kalHit()->hit()->fltLen();
-    double s2     = Trk->lastHit ()->kalHit()->hit()->fltLen();
-    double s      = std::min(s1,s2);
-
-    double d0     = Trk->helix(s).d0();
-    double z0     = Trk->helix(s).z0();
-    double phi0   = Trk->helix(s).phi0();
-    double omega  = Trk->helix(s).omega();
-    double tandip = Trk->helix(s).tanDip();
-
-    double fit_consistency = Trk->chisqConsistency().consistency();
-    int q         = Trk->charge();
-
-    printf("%5i %16p %3i %3i %8.3f %7.3f %8.4f %7.3f %7.4f",
-	   -1,
-	   Trk,
-	   nhits,
-	   nact,
-	   q*mom,pt,costh,t0,t0err
-	   );
-
-    printf(" %8.5f %8.3f %8.3f %8.4f %7.4f",omega,d0,z0,phi0,tandip
-	   );
-    printf(" %8.3f %10.3e\n",chi2,fit_consistency);
-//-----------------------------------------------------------------------------
-// print detailed information about the track hits
-//-----------------------------------------------------------------------------
-    printf("--------------------------------------------------------------------");
-    printf("----------------------------------------------------------------");
-    printf("-------------------------------------------------------------------------\n");
-    printf("  ih  SId  Flag      A     len         x        y        z      HitT     HitDt");
-    printf(" Pl Pn  L  W     T0       Xs      Ys        Zs      resid  sigres");
-    printf("   Rdrift   mcdoca  totErr rdrErr  t0Err penErr extErr  vinst\n");
-    printf("------------------------------------------------------------------------------");
-    printf("----------------------------------------------------------------");
-    printf("---------------------------------------------------------------\n");
-
-    mu2e::TrkStrawHit     *hit;
-    Hep3Vector            pos;
-    const mu2e::ComboHit  *sh;
-    const mu2e::Straw     *straw;
-    int                   ihit;
-    double                len;
-    HepPoint              plen;
-
-    ihit = 0;
-    for (int it=0; it<nhits; ++it) {
-      hit   = dynamic_cast<TrkStrawHit*> (Trk->hitVector().at(it));
-      if(hit != 0){
-	sh    = &hit->comboHit();
-	straw = &hit->straw();
-
-	hit->hitPosition(pos);
-
-	len   = hit->fltLen();
-	plen  = Trk->position(len);
-
-	double mcdoca = _mcUtils->mcDoca(KRes.event,"not_used_any_more",straw);
-
-	ihit += 1;
-	printf("%4i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
-	    ihit,
-	    straw->id().asUint16(),
-	    hit->hitFlag(),
-	    hit->isActive(),
-	    len,
-	    //      hit->hitRms(),
-	    plen.x(),plen.y(),plen.z(),
-	    sh->time(), -1.//sh->dt()
-	    );
-
-	printf(" %2i %2i %2i %2i",
-	    straw->id().getPlane(),
-	    straw->id().getPanel(),
-	    straw->id().getLayer(),
-	    straw->id().getStraw()
-	    );
-
-	printf(" %8.3f",hit->hitT0().t0());
-
-	double res, sigres;
-	bool hasres = hit->resid(res, sigres, true);
-	if(hasres) 
-	  printf(" %8.3f %8.3f %9.3f %7.3f %7.3f",
-	      pos.x(),
-	      pos.y(),
-	      pos.z(),
-	      res,
-	      sigres
-	      );
-	else
-	  printf(" %8.3f %8.3f %9.3f %7s %7s",
-	      pos.x(),
-	      pos.y(),
-	      pos.z(),
-	      "   -   ",
-	      "   -   "
-	      );
-
-	if      (hit->ambig()       == 0) printf(" * %6.3f",hit->driftRadius());
-	else if (hit->ambig()*mcdoca > 0) printf("   %6.3f",hit->driftRadius()*hit->ambig());
-	else                              printf(" ? %6.3f",hit->driftRadius()*hit->ambig());
-
-	printf("  %7.3f  %6.3f %6.3f %6.3f %6.3f %6.3f %6.4f\n",
-	       mcdoca,
-	       hit->totalErr(),
-	       hit->driftRadiusErr(),
-	       hit->t0Err(),
-	       hit->penaltyErr(),
-	       hit->temperature()*0.0625, // assume not changed
-	       hit->driftVelocity()
-	    );
-      } else {
-	TrkCaloHit const* chit   = dynamic_cast<TrkCaloHit*> (Trk->hitVector().at(it));
-	if(chit != 0){
-	  double res, sigres;
-	  bool hasres = chit->resid(res, sigres, true);
-	  cout << "TrkCaloHit, time = " << chit->time() << " hit T0 = " << chit->hitT0().t0()
-	    << "+-" << chit->hitT0().t0Err();
-	    if(hasres) 
-	      cout << " resid = " << res << "+-" <<sigres;
-	    else
-	      cout << " no residual";
-	    cout  << " hit error " << chit->hitErr() << endl;
-	}
-      }
-    }
-  }
-
-
   void
   KalFit::makeMaterials(TrkStrawHitVector const& tshv, HelixTraj const& htraj,std::vector<DetIntersection>& detinter) {
   // fetcth the DetectorModel
@@ -888,7 +709,7 @@ namespace mu2e
       if (_debug > 0) {
 	char msg[200];
         sprintf(msg,"KalFit::weedHits Iteration = %2i success = %i",iter,fitstat.success());
-        printHits(kalData,msg);
+	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
       }
       
       // Recursively iterate
@@ -922,7 +743,7 @@ namespace mu2e
 	if (_debug > 0) {
 	  char msg[200];
 	  sprintf(msg,"KalFit::unweedHits Iteration = %2i success = %i",last,fitstat.success());
-	  printHits(kalData,msg);
+	  _printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
 	}
       }
     }

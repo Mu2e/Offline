@@ -39,8 +39,8 @@ namespace mu2e {
 // struct defining the Kalman fit inputs and output
 // an internal CalPatRec data structure
 // KalFitData doesn't own any pointers, '_krep' is handled in the pattern 
-// recognition modules, so, in principle, no need to delete it here
-// otherwise, a deletion of the list of KalFitDatas (a data product) resutls in a crash
+// recognition modules, so, no need to delete it here
+// otherwise, deletion of the list of KalFitData's (a data product) results in a crash
 //-----------------------------------------------------------------------------
   struct KalFitData {
     const art::Event*                 event;

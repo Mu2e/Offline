@@ -172,14 +172,15 @@ namespace mu2e {
     void     updateT0(RobustHelixFinderData& helixData);
     bool     updateStereo(RobustHelixFinderData& helixData);
     unsigned hitCount(RobustHelixFinderData& helixData);
+    void     pickBestHelix      (std::vector<HelixSeed>& HelVec, int &Index_best);
     void     fillFaceOrderedHits(RobustHelixFinderData& helixData);
-    void     fillGoodHits(RobustHelixFinderData& helixData);
-    void     fitHelix(RobustHelixFinderData& helixData);
-    void     fitChi2Helix(RobustHelixFinderData& helixData);
-    void     refitHelix(RobustHelixFinderData& helixData);
-    void     findMissingHits(RobustHelixFinderData& helixData);
-    void     fillPluginDiag(RobustHelixFinderData& helixData, int helCounter);
-    void     updateChi2HelixInfo    (RobustHelixFinderData& helixData);
+    void     fillGoodHits       (RobustHelixFinderData& helixData);
+    void     fitHelix           (RobustHelixFinderData& helixData);
+    void     fitChi2Helix       (RobustHelixFinderData& helixData);
+    void     refitHelix         (RobustHelixFinderData& helixData);
+    void     findMissingHits    (RobustHelixFinderData& helixData);
+    void     fillPluginDiag     (RobustHelixFinderData& helixData, int helCounter);
+    void     updateChi2HelixInfo(RobustHelixFinderData& helixData);
     void     updateHelixXYInfo  (RobustHelixFinderData& helixData);
     void     updateHelixZPhiInfo(RobustHelixFinderData& helixData);
     void     searchWorstHitXY   (RobustHelixFinderData& helixData, HitInfo_t& hitInfo);
@@ -353,6 +354,8 @@ namespace mu2e {
 	unsigned    helCounter(0);
 	HelixSeed   helixSeed_from_fitCircle = _hfResult._hseed;
 
+	std::vector<HelixSeed>          helix_seed_vec;
+      
 	for(auto const& hel : _hels ) {
 	  // tentatively put a copy with the specified helicity in the appropriate output vector
 	  RobustHelixFinderData tmpResult(_hfResult);
@@ -369,9 +372,11 @@ namespace mu2e {
 	  if (tmpResult._hseed.status().hasAnyProperty(_saveflag)){
 	    //fill the hits in the HelixSeedCollection
 	    fillGoodHits(tmpResult);
+	    
+	    helix_seed_vec.push_back(tmpResult._hseed);
 
-	    HelixSeedCollection* hcol = helcols[hel].get();
-	    hcol->push_back(tmpResult._hseed);
+	    // HelixSeedCollection* hcol = helcols[hel].get();
+	    // hcol->push_back(tmpResult._hseed);
 
 	    if (_diag > 0) {
 	      fillPluginDiag(tmpResult, helCounter);
@@ -379,6 +384,16 @@ namespace mu2e {
 	  }
 	  ++helCounter;
 	}//end loop over the helicity
+
+	if (helix_seed_vec.size() == 0)                       continue;
+
+	int    index_best(-1);
+	pickBestHelix(helix_seed_vec, index_best);
+	Helicity hel_best = helix_seed_vec[index_best]._helix._helicity;
+
+	HelixSeedCollection* hcol = helcols[hel_best].get();
+	hcol->push_back(helix_seed_vec[index_best]);
+
       }	
       
     }
@@ -389,7 +404,70 @@ namespace mu2e {
       event.put(std::move(helcols[hel]),Helicity::name(hel));
     }
   }
+//--------------------------------------------------------------------------------
+// function to select the best Helix among the results of the two helicity hypo
+//--------------------------------------------------------------------------------
+  void  RobustHelixFinder::pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best){
+    if (HelVec.size() == 1) {
+      Index_best = 0;
+      return;
+    }
+    
+    const HelixSeed           *h1, *h2;
+    const ComboHitCollection  *tlist, *clist;
+    int                        nh1, nh2;
 
+    h1     = &HelVec[0];
+//------------------------------------------------------------------------------
+// check if an AlgorithmID collection has been created by the process
+//-----------------------------------------------------------------------------
+    tlist  = &h1->hits();
+    nh1    = tlist->size();
+
+    h2     = &HelVec[1];
+//-----------------------------------------------------------------------------
+// at Mu2e, 2 helices with different helicity could be duplicates of each other
+//-----------------------------------------------------------------------------
+    clist  = &h2->hits();
+    nh2    = clist->size();
+//-----------------------------------------------------------------------------
+// pick the helix with the largest number of hits
+//-----------------------------------------------------------------------------
+    if (nh2 > nh1) {
+//-----------------------------------------------------------------------------
+// h2 is a winner, no need to save h1
+//-----------------------------------------------------------------------------
+      Index_best = 1;
+      return;
+    }
+    else if (nh1 > nh2){
+//-----------------------------------------------------------------------------
+// h1 is a winner, mark h2 in hope that it will be OK, continue looping
+//-----------------------------------------------------------------------------
+      Index_best = 0;
+      return;
+    }
+    
+//-----------------------------------------------------------------------------
+// in case they have the exact amount of hits, pick the one with better chi2dZphi
+//-----------------------------------------------------------------------------
+    if (nh1 == nh2) {
+      float   chi2dZphi_h1 = h1->helix().chi2dZPhi();
+      float   chi2dZphi_h2 = h2->helix().chi2dZPhi();
+      if (chi2dZphi_h1 < chi2dZphi_h2){
+	Index_best = 0;
+	return;
+      }else {
+	Index_best = 1;
+	return;      
+      }
+    }
+
+  }
+
+//--------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------
   void RobustHelixFinder::fillGoodHits(RobustHelixFinderData& helixData){
     
     ComboHit*     hit(0);

@@ -59,7 +59,7 @@ CalPatRec : { @table::CalPatRec
 #	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
-	minDfDz                                 : 0.002
+	minDfDz                                 : 0.002    
 	sigmaPhi                                : 0.1636  # radians
 	targetconsistent                        : 0
 	weightXY                                : 1.11      #0.4527
@@ -190,9 +190,10 @@ CalPatRec : { @table::CalPatRec
 # initialization might require
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 #------------------------------------------------------------------------------
-# Kalman fit configuration for the doublet-based resolver fit
+# KalFit (kalman fitter) configuration for the doublet-based resolver
 #------------------------------------------------------------------------------
     CprKFFinal : {
 	debugLevel                              : 0
@@ -235,16 +236,13 @@ CalPatRec : { @table::CalPatRec
 #------------------------------------------------------------------------------
 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
 	fieldCorrection			        : true
-	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
-	    strawDigiMCCollTag : "compressDigiMCs"
-	}
+	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 
 
 
 #------------------------------------------------------------------------------
-# KalFitter(KalFitHackNew) configuration for the final track fit
+# KalFitter (KalFitHackNew) configuration for the final track fit
 #------------------------------------------------------------------------------
     KalFitter : {
 	debugLevel                              : 0
@@ -297,10 +295,7 @@ CalPatRec : { @table::CalPatRec
 	deltaDriftDoublet                       : 0.3
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
-	mcTruth                                 : 1
-	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
-	    strawDigiMCCollTag : "compressDigiMCs"
-	}
+	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 }
 #------------------------------------------------------------------------------
@@ -329,11 +324,9 @@ CalPatRec : { @table::CalPatRec
 	    fitdirection                                : @local::FitDir.downstream
 	    KalFit                                      : { @table::CalPatRec.CprKFFinal }
 	    TimeOffsets                                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	    diagPlugin : { tool_type                    : "KalFinalFitDiag" 
-		mcTruth                                 : 0
-		mcUtils : { tool_type : "TrkPatRecMcUtils" 
-		    strawDigiMCCollTag : "compressDigiMCs"
-		}
+	    diagPlugin : { tool_type  : "KalFinalFitDiag" 
+		mcTruth       : 0
+		mcUtils       : { @table::TrkReco.McUtils }
 	    }
 	}
 	

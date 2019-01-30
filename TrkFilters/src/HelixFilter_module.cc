@@ -15,6 +15,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 // data
 #include "RecoDataProducts/inc/HelixSeed.hh"
+#include "DataProducts/inc/Helicity.hh"
 // mu2e
 #include "Mu2eUtilities/inc/HelixTool.hh"
 using namespace CLHEP;
@@ -38,8 +39,9 @@ namespace mu2e
 
   private:
     art::InputTag _hsTag;
-    bool _hascc; // Calo Cluster
-    int _minnstrawhits;
+    bool   _hascc; // Calo Cluster
+    int    _hel;
+    int    _minnstrawhits;
     double _minmom, _maxmom;
     double _maxpT;
     double _minpT;
@@ -59,6 +61,7 @@ namespace mu2e
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
     _hsTag(pset.get<art::InputTag>("HelixSeedCollection","PosHelixFinder")),
     _hascc(pset.get<bool>("RequireCaloCluster",false)),
+    _hel(pset.get<int>("Helicity")),
     _minnstrawhits(pset.get<int>("MinNStrawHits",15)),
     _minmom(pset.get<double>("MinMomentum",70.0)),
     _maxmom(pset.get<double>("MaxMomentum",120.0)),
@@ -98,6 +101,9 @@ namespace mu2e
     for(auto ihs = hscol->begin();ihs != hscol->end(); ++ihs) {
       auto const& hs = *ihs;
       
+      //check the helicity
+      if (!(hs.helix().helicity() == Helicity(_hel)))        continue;
+
       HelixTool helTool(&hs, 3);
       // compute the helix momentum.  Note this is in units of mm!!!
       float hmom       = hs.helix().momentum()*mm2MeV;
