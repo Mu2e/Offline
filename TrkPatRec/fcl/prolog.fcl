@@ -115,6 +115,7 @@ KFFinal : {
   strawHitT0Weight            : 1 # unused? FIXME!
   caloHitT0Weight             : 10 # unused? FIXME!
   useTrkCaloHit               : true
+  t0window                    : 4.0
   mcTruth                     : 0
 }
 
