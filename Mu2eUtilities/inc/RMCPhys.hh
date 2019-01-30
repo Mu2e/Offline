@@ -56,7 +56,7 @@ namespace mu2e {
     double norm = 1./RMCSpectrum->Integral(57./kmax_,1);
     double weight(const art::Event& evt) {
       auto genColl = evt.getValidHandle<GenParticleCollection>( input_ );
-      double energy = 2*.511; //add 2 electron masses;
+      double energy = 0;
       double wt = 0;
       if (internalconversion_ > 0) {
         for ( const auto& i: *genColl ) {
