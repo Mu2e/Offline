@@ -41,12 +41,19 @@ def appendEpilog(trig_path, output_file, project_name):
 
 #if the file doesn't exist use the default
         if subconfig_exists == False:
-            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/main_' + trig_path + "_"+ filterName + ".config"
+#            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/main_' + trig_path + "_"+ filterName + ".config"
+            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + ".config"
             
         subconfig_file = open(subconfig_file,"r")
 
+#check if the subdir for the epilog file exists, otherwise create it
+        epilog_subdir      = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name + '/' + trig_path
+        if os.path.exists(epilog_subdir) == False:
+            os.makedirs(epilog_subdir)
+        print epilog_subdir
+
 #create the epilog file
-        epilog_fileName = project_name + '/' + trig_path +'_'+filterName+'.fcl'
+        epilog_fileName = project_name + '/' + trig_path +'/'+filterName+'.fcl'
         epilog_file     = open(epilog_fileName,"a")
 
 #now read the sub-config file
