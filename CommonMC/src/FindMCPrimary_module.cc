@@ -77,9 +77,7 @@ namespace mu2e {
       if(pgps.size() == 2 && pgps[0]->generatorId() == pgps[1]->generatorId() &&
 	  (pgps[0]->generatorId() == GenId::InternalRPC ||
 	   pgps[0]->generatorId() == GenId::InternalRMC ) ) {
-	// double -check the positions
-//	if( (!pgps[0]->position().isNear(pgps[1]->position()),1e-3) ||
-//	IsNear not working??!?!?!
+	// double -check consistency
 	if(fabs(pgps[0]->time() - pgps[1]->time()) > 1e-6)
 	  throw cet::exception("Simulation")<<"FindMCPrimary: RMC/RPC origins don't match" << std::endl;
 	// Add the 4vectors of the 2 consistuent electrons

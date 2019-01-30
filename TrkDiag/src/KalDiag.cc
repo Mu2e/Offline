@@ -3,6 +3,7 @@
 //
 #include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkTools.hh"
 //geometry
@@ -404,6 +405,25 @@ namespace mu2e
     tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 // cannot count correlations with other hits in this function; set to false
     tshinfo._dhit = tshinfo._dactive = false;
+  }
+
+  void KalDiag::fillCaloHitInfo(const TrkCaloHit* tch, TrkCaloHitInfo& tchinfo) const {
+    tchinfo._active = tch->isActive();  
+    tchinfo._did = tch->caloCluster().diskId();
+    tchinfo._trklen = tch->fltLen();
+    tchinfo._clen = tch->hitLen();
+    HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
+    tchinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z());
+    if(tch->hasResidual())
+      tchinfo._doca = tch->poca().doca();
+    else
+      tchinfo._doca = -100.0;
+    tchinfo._t0 = tch->hitT0().t0();
+    tchinfo._t0err = tch->hitT0().t0Err();
+    tchinfo._ct = tch->caloCluster().time();
+    tchinfo._edep = tch->caloCluster().energyDep();
+    Hep3Vector tdir = tch->trkTraj()->direction(tchinfo._trklen);
+    tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0));
   }
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, const KalRep* krep,

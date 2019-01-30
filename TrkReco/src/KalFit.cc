@@ -1136,7 +1136,6 @@ namespace mu2e
       double tflt = krep->transitTime(flt0, flt1);
 // update the time in the TrkT0 object
       hitt0._t0 += tflt;
-      //      (*ihit)->updateHitT0(hitt0);
       (*ihit)->setHitT0(hitt0);
 // update the reference flightlength
       flt0 = flt1;
@@ -1149,7 +1148,6 @@ namespace mu2e
       double flt1 = hit->fltLen();
       double tflt = krep->transitTime(flt0, flt1);
       hitt0._t0 += tflt;
-      //      (*ihit)->updateHitT0(hitt0);
       (*ihit)->setHitT0(hitt0);
       flt0 = flt1;
     }
