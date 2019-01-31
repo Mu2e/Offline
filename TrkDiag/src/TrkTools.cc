@@ -41,7 +41,6 @@ namespace mu2e {
 	  }
 	}
       }
-      //      std::cout << "AE: ndactive hits = " << ndactive << std::endl;
     }
     
     void fillHitCount(StrawHitFlagCollection const& shfC, HitCount& hitcount) {

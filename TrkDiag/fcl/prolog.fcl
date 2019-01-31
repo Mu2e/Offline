@@ -181,6 +181,24 @@ BEGIN_PROLOG
   TrackCaloMatching.matching_dem_TRF : [ TrackCaloIntersectionTRFDem, TrackCaloMatchingTRFDem ]
   TrackCaloMatching.matching_dep_TRF : [ TrackCaloIntersectionTRFDep, TrackCaloMatchingTRFDep ]
 
+  # Track qulaity module
+  TrkQual : {
+  	  module_type : TrackQuality
+  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
+  }
+  TrkQualDeM		       : @local::TrkQual
+  TrkQualDeM.KalSeedCollection : "KFFDeM"
+  TrkQualUeM		       : @local::TrkQual
+  TrkQualUeM.KalSeedCollection : "KFFUeM"
+  TrkQualDmuM		       : @local::TrkQual
+  TrkQualDmuM.KalSeedCollection : "KFFDmuM"
+  TrkQualDeP		       : @local::TrkQual
+  TrkQualDeP.KalSeedCollection : "KFFDeP"
+  TrkQualUeP		       : @local::TrkQual
+  TrkQualUeP.KalSeedCollection : "KFFUeP"
+  TrkQualDmuP		       : @local::TrkQual
+  TrkQualDmuP.KalSeedCollection : "KFFDmuP"
+
   TrkDiag : {
     analyzers : {
       TCD : @local::TCD
@@ -227,6 +245,13 @@ BEGIN_PROLOG
         internalConversion : 1
         verbosityLevel : 0
       }
+
+      TrkQualDeM : @local::TrkQualDeM
+      TrkQualUeM : @local::TrkQualUeM
+      TrkQualDeP : @local::TrkQualDeP
+      TrkQualUeP : @local::TrkQualUeP
+      TrkQualDmuM : @local::TrkQualDmuM
+      TrkQualDmuP : @local::TrkQualDmuP
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
@@ -245,12 +270,12 @@ BEGIN_PROLOG
 
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.FindHelices,
-		     @sequence::Tracking.TPRDeM,
-		     @sequence::Tracking.TPRUeM,
-		     @sequence::Tracking.TPRDmuM,
-                     @sequence::Tracking.TPRDeP,
-                     @sequence::Tracking.TPRUeP,
-                     @sequence::Tracking.TPRDmuP ]
+		     @sequence::Tracking.TPRDeM, TrkQualDeM,
+		     @sequence::Tracking.TPRUeM, TrkQualUeM,
+		     @sequence::Tracking.TPRDmuM, TrkQualDmuM,
+                     @sequence::Tracking.TPRDeP, TrkQualDeP,
+                     @sequence::Tracking.TPRUeP, TrkQualUeP,
+                     @sequence::Tracking.TPRDmuP, TrkQualDmuP ]
 
     CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
