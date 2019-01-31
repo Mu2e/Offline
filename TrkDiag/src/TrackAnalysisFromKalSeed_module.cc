@@ -48,11 +48,11 @@
 #include "TrkDiag/inc/TrkComp.hh"
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkCount.hh"
-#include "TrkDiag/inc/TrkCaloDiag.hh"
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/TrkTools.hh"
@@ -114,9 +114,6 @@ namespace mu2e {
     KalDiag _kdiag;
     // track comparator
     TrkComp _tcomp;
-    // calorimeter diagnostics
-    TrkCaloDiag _cdiag;
-    TrkCaloInfo _dec;
     // main TTree
     TTree* _trkana;
     // general event info branch
@@ -131,6 +128,7 @@ namespace mu2e {
     TrkInfo _deti, _ueti, _dmti;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
+    TrkCaloHitInfo _detch;
     std::vector<TrkStrawMatInfo> _detsm;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
@@ -160,9 +158,6 @@ namespace mu2e {
     void fillTrkInfoMCStep(Hep3Vector const& mom, Hep3Vector const& pos, double charge, TrkInfoMCStep& trkinfomcstep) const;
     void fillMCInfo(const KalSeed& kseed, bool track_found);
 
-    void findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
-	const KalSeed& dekseed, 
-	TrackClusterMatchCollection::const_iterator& itcm);
     bool findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& uekseed);
     bool findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& dmukseed);
     // CRV info
@@ -190,7 +185,6 @@ namespace mu2e {
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
-    _cdiag(_spart,_sdir,pset.get<fhicl::ParameterSet>("TrkCaloDiag",fhicl::ParameterSet())),
     _trkana(0),
     _meanPBI(0.0),
     _strawDigiMCTag(pset.get<art::InputTag>("StrawDigiMCCollection", "")),
@@ -214,13 +208,13 @@ namespace mu2e {
 // optionally add detailed branches
     if(_diag > 1){
       _trkana->Branch("detsh",&_detsh);
+      _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
       _trkana->Branch("detsm",&_detsm);
     }
 // add branches for other tracks
     _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
     _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
 // calorimeter information for the downstream electron track
-    _trkana->Branch("dec.",&_dec,TrkCaloInfo::leafnames().c_str());
 // CRV info
    if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
 // optionally add MC truth branches
@@ -235,7 +229,6 @@ namespace mu2e {
     }
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
-      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
     }
   }
 
@@ -290,8 +283,6 @@ namespace mu2e {
     art::Handle<KalSeedCollection> dmH;
     event.getByLabel(_dmtag,dmH);
     KalSeedCollection const& dmC = *dmH;
-    // find Track-cluster matching data
-    _cdiag.findData(event);
     // reset
     resetBranches();
 
@@ -311,15 +302,8 @@ namespace mu2e {
 	TrkTools::fillTrkInfo(dekseed,_deti);
 	if(_diag > 1){
 	  TrkTools::fillHitInfo(dekseed, _detsh); //TODO
+	  TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
 	  TrkTools::fillMatInfo(dekseed, _detsm); //TODO
-	}
-	// fill calorimeter information. First find the best matching cluster
-	if(_cdiag.caloMatchHandle().isValid()){
-	  TrackClusterMatchCollection const& tcmc = *_cdiag.caloMatchHandle();
-	  TrackClusterMatchCollection::const_iterator itcm = tcmc.end();
-	  findBestClusterMatch(tcmc,dekseed,itcm);
-	  if(itcm != tcmc.end())
-	    _cdiag.fillCaloInfo(*itcm,_dec);
 	}
 	// look for a matching upstream electron track
 	KalSeed uekseed;
@@ -446,7 +430,7 @@ namespace mu2e {
       fillMCSteps(KalDiag::trackerExit, downstream, cet::map_vector_key(deSP.key()), _demcxit);
       //      if(_diag > 1 && deK != 0) {
 // MC truth hit information
-//	_kdiag.fillHitInfoMC(deSP, deK, _detshmc);
+//	_kdiag.fillHitInfoMC(deSP, deK, _detshmc); // TODO
 //      }
     } 
   }
@@ -489,26 +473,6 @@ namespace mu2e {
     _wtinfo.setWeights(weights);
   }
 
-  void TrackAnalysisFromKalSeed::findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
-  const KalSeed& kseed, 
-  TrackClusterMatchCollection::const_iterator& itcm) {
-    _tcnt._ndec = 0;
-    /*
-    itcm = tcmc.end();
-    // for now pick highest-energy cluster.  This should match to the track or sum, FIXME!!
-    double emin(-1.0);
-    for( auto jtcm= tcmc.begin(); jtcm != tcmc.end(); ++jtcm ) {
-      if(jtcm->textrapol()->trk().get() == krep){
-	++_tcnt._ndec; // count number of matched clusters
-	if(jtcm->caloCluster()->energyDep() > emin){
-	  itcm = jtcm;
-	  emin = jtcm->caloCluster()->energyDep(); 
-	}
-      }
-    }
-    */
-  }
-
   void TrackAnalysisFromKalSeed::resetBranches() {
   // reset structs
     _einfo.reset();
@@ -517,7 +481,6 @@ namespace mu2e {
     _deti.reset();
     _ueti.reset();
     _dmti.reset();
-    _dec.reset();
     _demc.reset();
     _uemc.reset();
     _dmmc.reset();
@@ -528,6 +491,7 @@ namespace mu2e {
     _wtinfo.reset();
     _trkqualTest.reset();
     _trkQualInfo.reset();
+    _detch.reset();
     // clear vectors
     _detsh.clear();
     _detsm.clear();
