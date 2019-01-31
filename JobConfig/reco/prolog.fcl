@@ -1,4 +1,3 @@
-//
 #
 #  Prolog for production reconstruction jobs
 #
@@ -11,11 +10,10 @@ Reconstruction : {
     @table::Tracking.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
-    @table::TrackCaloMatching.producers
     @table::CrvResponsePackage.producers
   }
+# reconstruct multiple types of tracks.  
   TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM,
 		     @sequence::Tracking.TPRUeM,
 		     @sequence::Tracking.TPRDmuM,

@@ -269,7 +269,6 @@ BEGIN_PROLOG
     EventWeightSequence : [ PBIWeight ]
 
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-		     @sequence::Tracking.FindHelices,
 		     @sequence::Tracking.TPRDeM, TrkQualDeM,
 		     @sequence::Tracking.TPRUeM, TrkQualUeM,
 		     @sequence::Tracking.TPRDmuM, TrkQualDmuM,
