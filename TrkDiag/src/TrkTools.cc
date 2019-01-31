@@ -76,7 +76,7 @@ namespace mu2e {
       trkinfo._fitcon = kseed.fitConsistency();
       //    trkinfo._radlen = krep->radiationFraction(); // TODO
       //trkinfo._firstflt = // TODO
-      //trkinfo._lastflt = // TODOa
+      //trkinfo._lastflt = // TODO
       //    trkinfo._startvalid = krep->startValidRange();  // TODO
       //    trkinfo._endvalid = krep->endValidRange();  // TODO
       //    trkinfo._nmat = nmat;  // TODO
@@ -200,6 +200,36 @@ namespace mu2e {
 	}
 	*/
 	tminfos.push_back(tminfo);
+      }
+    }
+
+    void fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo ) {
+
+      if (kseed.hasCaloCluster()) {
+	const TrkCaloHitSeed& tch = kseed.caloHit();
+
+	tchinfo._active = tch.flag().hasAllProperties(StrawHitFlag::active);
+	tchinfo._did = tch.caloCluster()->diskId();
+	tchinfo._trklen = tch.trkLen();
+	tchinfo._clen = tch.hitLen();
+	/*
+	  HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
+	  tchinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z()); //TODO
+	*/
+	if(tch.flag().hasAllProperties(StrawHitFlag::doca)) {
+	  tchinfo._doca = tch.clusterAxisDOCA();
+	}
+	else {
+	  tchinfo._doca = -100.0;
+	}
+	tchinfo._t0 = tch.t0().t0();
+	tchinfo._t0err = tch.t0().t0Err();
+	tchinfo._ct = tch.caloCluster()->time();
+	tchinfo._edep = tch.caloCluster()->energyDep();
+	/*
+	  Hep3Vector tdir = tch->trkTraj()->direction(tchinfo._trklen);
+	  tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0)); // TODO
+	*/
       }
     }
   }

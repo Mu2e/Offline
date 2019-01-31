@@ -53,6 +53,7 @@
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/TrkTools.hh"
@@ -131,6 +132,7 @@ namespace mu2e {
     TrkInfo _deti, _ueti, _dmti;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
+    TrkCaloHitInfo _detch;
     std::vector<TrkStrawMatInfo> _detsm;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
@@ -214,6 +216,7 @@ namespace mu2e {
 // optionally add detailed branches
     if(_diag > 1){
       _trkana->Branch("detsh",&_detsh);
+      _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
       _trkana->Branch("detsm",&_detsm);
     }
 // add branches for other tracks
@@ -235,7 +238,6 @@ namespace mu2e {
     }
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
-      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
     }
   }
 
@@ -311,6 +313,7 @@ namespace mu2e {
 	TrkTools::fillTrkInfo(dekseed,_deti);
 	if(_diag > 1){
 	  TrkTools::fillHitInfo(dekseed, _detsh); //TODO
+	  TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
 	  TrkTools::fillMatInfo(dekseed, _detsm); //TODO
 	}
 	// fill calorimeter information. First find the best matching cluster
@@ -446,7 +449,7 @@ namespace mu2e {
       fillMCSteps(KalDiag::trackerExit, downstream, cet::map_vector_key(deSP.key()), _demcxit);
       //      if(_diag > 1 && deK != 0) {
 // MC truth hit information
-//	_kdiag.fillHitInfoMC(deSP, deK, _detshmc);
+//	_kdiag.fillHitInfoMC(deSP, deK, _detshmc); // TODO
 //      }
     } 
   }
@@ -528,6 +531,7 @@ namespace mu2e {
     _wtinfo.reset();
     _trkqualTest.reset();
     _trkQualInfo.reset();
+    _detch.reset();
     // clear vectors
     _detsh.clear();
     _detsm.clear();
