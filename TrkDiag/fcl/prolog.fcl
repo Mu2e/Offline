@@ -245,6 +245,13 @@ BEGIN_PROLOG
         internalConversion : 1
         verbosityLevel : 0
       }
+      dioLLWeight : { module_type : BinnedSpectrumWeight
+      		      genParticleTag : "compressDigiMCs"
+		      genParticlePdgId : 11
+		      genParticleGenId : dioTail
+		      spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+		      BinCenter : false
+      }
 
       TrkQualDeM : @local::TrkQualDeM
       TrkQualUeM : @local::TrkQualUeM
