@@ -8,27 +8,144 @@ Reconstruction : {
   producers : {
     @table::TrkHitReco.producers
     @table::Tracking.producers
+    @table::CalPatRec.producers
     @table::CaloReco.producers
     @table::CaloCluster.producers
     @table::CrvResponsePackage.producers
+    # instantiate explicit helix merger modules: this should be in TrkReco/prolog FIXME!
+    # NB: positive here refers to helicity, not charge!
+    MHDeM : {
+      @table::CalPatRec.producers.MergeHelixFinder
+      trkHelixFinderModuleLabel    : "HelixFindere:Positive"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDeM"
+    }
+    MHDeP : {
+      @table::CalPatRec.producers.MergeHelixFinder
+      trkHelixFinderModuleLabel    : "HelixFindere:Negative"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDeP"
+    }
+    MHDmuM : {
+      @table::CalPatRec.producers.MergeHelixFinder
+      trkHelixFinderModuleLabel    : "HelixFinderMu:Positive"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDmuM"
+    }
+    MHDmuP : {
+      @table::CalPatRec.producers.MergeHelixFinder
+      trkHelixFinderModuleLabel    : "HelixFinderMu:Negative"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDmuP"
+    }
+    MHSFDeM : {
+      @table::CalPatRec.producers.MHSeedFit
+      SeedCollection             : MHDeM
+    }
+    MHSFDeP : {
+      @table::CalPatRec.producers.MHSeedFit
+      SeedCollection             : MHDeM
+    }
+    MHSFDmuM : {
+      @table::CalPatRec.producers.MHSeedFit
+      SeedCollection             : MHDmuM
+    }
+    MHSFDmuP : {
+      @table::CalPatRec.producers.MHSeedFit
+      SeedCollection             : MHDmuM
+    }
+    MHFFDeM : { 
+      @table::KFFDeM
+      SeedCollection : MHSFDeM
+    }
+
+    MHFFDeP :  {
+      @table::KFFDeP
+      SeedCollection : MHSFDeP
+    }
+
+    MHFFDmuM : { 
+      @table::KFFDmuM
+      SeedCollection : MHSFDmuM
+    }
+#
+    MHFFDmuP : {
+      @table::KFFDmuP
+      SeedCollection : MHSFDmuP
+    }
+  }
+  
+  filters : {
+# why is CalPatRec implemented as filters??
+    @table::CalPatRec.filters
   }
 # reconstruct multiple types of tracks.  
   TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-		     @sequence::Tracking.TPRDeM,
-		     @sequence::Tracking.TPRUeM,
-		     @sequence::Tracking.TPRDmuM,
-                     @sequence::Tracking.TPRDeP,
-                     @sequence::Tracking.TPRUeP,
-                     @sequence::Tracking.TPRDmuP ]
+  # TrkPatRec for downstream and upstream e and mu
+		      TimeClusterFindere, HelixFindere,
+		      TimeClusterFinderMu, HelixFinderMu,
+  # CalPatRec for downstream e and mu .  Note CalPatRec uses 2 modules, TrkPatRec only one
+		      CalTimePeakFinder, CalHelixFinderDeM, CalHelixFinderDeP, 
+		      CalTimePeakFinderMu, CalHelixFinderDmuM, CalHelixFinderDmuP,
+   # merge downstream helices
+		      MHDeM, MHDeP,
+		      MHDmuM, MHDmuP,
+   # seed fits: merged downstream, TPR upstream
+		      MHSFDeM, MHSFDeP,
+		      MHSFDmuM, MHSFDmuP, 		      
+		      KSFUeM, KSFUeP, 
+		      KSFUmuM, KSFUmuP,
+   # final fits:
+   		      MHFFDeM, MHFFDeP,
+		      MHFFDmuM, MHFFDmuM,
+		      KFFUeM, KFFUeP,
+		      KFFUmuM, KFFUmuM
+		    ]
 
-    CaloRecoSequence : [ @sequence::CaloReco.Reco,
+# other sequences
+  CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
 
-    TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
-                         @sequence::TrackCaloMatching.matching_dep_TRF ]
+#    TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
+#                         @sequence::TrackCaloMatching.matching_dep_TRF ]
  
-    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
+  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
+  CrvMCMatchSequence : [ CrvCoincidenceClusterMatchMC ]
+# put it together
 
- 
+#define output products 
+# Calo and CRV should be defined elswehere, FIXME!
+# add MC info FIXME!
+ # define reco products to keep
+  ToKeep : [@sequence::Tracking.Output.Digis,
+	    @sequence::Tracking.Output.Tracks,
+	    @sequence::Tracking.Output.MCDigis,
+	    @sequence::Tracking.Output.MCHits,
+	    @sequence::Tracking.Output.MCTracks,
+	    "keep mu2e::CaloDigis_*_*_*",
+	    "keep mu2e::CaloClusters_*_*_*",
+	    "keep mu2e::CrvDigis_*_*_*",
+	    "keep mu2e::CrvCoincidenceClusters_*_*_*",
+#	    @sequence::CaloReco.Output,
+#	    @sequence::CRVReco.Output,
+	    # add trigger output products FIXME!
+#	    @sequence::TriggerReco.Output,
+	    "keep mu2e::StatusG4_*_*_*",
+            "keep art::TriggerResults_*_*_*",
+	    "keep mu2e::EventWindowMarker_*_*_*",
+	    "keep *_genCounter_*_*",
+	    "keep mu2e::EventWeight_*_*_*",
+	    "keep mu2e::ProtonBunchIntensity_*_*_*" ]
 }
+# must define this outside the brackets due to internal dependence
+Reconstruction.RecoPath : [ @sequence::Reconstruction.CaloRecoSequence,
+  @sequence::Reconstruction.TrkRecoSequence,
+  @sequence::Reconstruction.CrvRecoSequence ]
+# define trigger path FIXME!
+Reconstruction.Output : {
+  module_type : RootOutput
+  SelectEvents : [ RecoPath ]
+  fileName    : @nil
+  outputCommands : [ "drop *_*_*_*",
+#  outputCommands : [ "keep *_*_*_*",
+  @sequence::Reconstruction.ToKeep ]
+}
+
+
 END_PROLOG

@@ -386,31 +386,23 @@ KFFUpiP			      : {
 # Final fit of merged Helices : these depend on CalPatRec
 
 MHFinalFitDeM                : { 
-  @table::KFF
+  @table::KFFDeM
   SeedCollection : MHSeedFitDem
-  fitparticle	: @local::Particle.eminus
-  fitdirection	: @local::FitDir.downstream 
 }
 
 MHFinalFitDeP                :  {
-  @table::KFF
+  @table::KFFDeP
   SeedCollection : MHSeedFitDep
-  fitparticle	      : @local::Particle.eplus
-  fitdirection	      : @local::FitDir.downstream 
 }
 
 MHFinalFitDmuM               : { 
-  @table::KFF
-  eedCollection : MHSeedFitDmm
-  fitparticle	      : @local::Particle.muminus
-  fitdirection	      : @local::FitDir.downstream 
+  @table::KFFDmuM
+  SeedCollection : MHSeedFitDmm
 }
 #
 MHFinalFitDmuP                :  {
-  @table::KFF
+  @table::KFFDmuP
   SeedCollection : MHSeedFitDmp
-  fitparticle	 : @local::Particle.muplus
-  fitdirection	 : @local::FitDir.downstream 
 }
 
 # Declare a table with all the modules needed for track reconstruction
@@ -451,6 +443,7 @@ Tracking : {
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
 # configuration for using the sequence with MergeHelix
+# Only downstream: upstream can't be seeded by a cluster!
     MHFinalFitDeM	  : @local::MHFinalFitDeM
     MHFinalFitDeP	  : @local::MHFinalFitDeP
     MHFinalFitDmuM        : @local::MHFinalFitDmuM
@@ -462,20 +455,20 @@ Tracking : {
   Output : {
     Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
     Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
-	 "keep mu2e::StrawHitPositions_MakeStereoHits_*_*",
+	 "keep mu2e::ComboHitCollection_*_*_*",
 	  "keep mu2e::StrawHits_*_*_*"	]
 
-    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_*_*_*",
-	  "keep mu2e::TrkQualDetailmu2e::MVAStructs_*_*_*",
+    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_ComboHits_*",
+	 "keep mu2e::ComboHitCollection_makePH_*_*",
 	  "keep mu2e::KalSeeds_*_*_*",
 	   "keep mu2e::HelixSeeds_*_*_*",
 	    "keep mu2e::TimeClusters_*_*_*" ]
 
     MCTracks : ["keep mu2e::GenParticles_*_*_*",
-		"keep mu2e::SimParticlesmv_*_*_*" ]
-    MCDigis : ["keep mu2e::StrawDigiMCs_makeSD_*_*"]
-    MCHits : [ "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
-	      "keep mu2e::StepPointMCs_detectorFilter_virtualdetector_*"]
+		"keep mu2e::SimParticles_*_*_*" ]
+    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+	      "keep mu2e::StepPointMCs_*_virtualdetector_*"]
 
   }
 }
