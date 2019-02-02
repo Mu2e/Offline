@@ -3,6 +3,8 @@
 #
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "CommonMC/fcl/prolog.fcl"
+#
 BEGIN_PROLOG
 Reconstruction : {
   producers : {
@@ -64,11 +66,13 @@ Reconstruction : {
       @table::KFFDmuM
       SeedCollection : MHSFDmuM
     }
-#
+    
     MHFFDmuP : {
       @table::KFFDmuP
       SeedCollection : MHSFDmuP
     }
+    # MC specific: this should be separated FIXME!
+    FindMCPrimary : { @table::CommonMC.FindMCPrimary }
   }
   
   filters : {
@@ -131,12 +135,14 @@ Reconstruction : {
 	    "keep mu2e::EventWindowMarker_*_*_*",
 	    "keep *_genCounter_*_*",
 	    "keep mu2e::EventWeight_*_*_*",
-	    "keep mu2e::ProtonBunchIntensity_*_*_*" ]
+	    "keep mu2e::ProtonBunchIntensity_*_*_*",
+	    "keep *_FindMCPrimary_*_*" ]
 }
 # must define this outside the brackets due to internal dependence
 Reconstruction.RecoPath : [ @sequence::Reconstruction.CaloRecoSequence,
   @sequence::Reconstruction.TrkRecoSequence,
-  @sequence::Reconstruction.CrvRecoSequence ]
+  @sequence::Reconstruction.CrvRecoSequence ,
+  FindMCPrimary ]
 # define trigger path FIXME!
 Reconstruction.Output : {
   module_type : RootOutput
