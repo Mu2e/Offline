@@ -389,10 +389,19 @@ namespace mu2e {
 
 	int    index_best(-1);
 	pickBestHelix(helix_seed_vec, index_best);
-	Helicity hel_best = helix_seed_vec[index_best]._helix._helicity;
 
-	HelixSeedCollection* hcol = helcols[hel_best].get();
-	hcol->push_back(helix_seed_vec[index_best]);
+	if ( (index_best>=0) && (index_best < 2) ){
+	  Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+	  HelixSeedCollection*  hcol     = helcols[hel_best].get();
+	  hcol->push_back(helix_seed_vec[index_best]);
+	} else if (index_best == 2){//both helices need to be saved
+	
+	  for (unsigned k=0; k<_hels.size(); ++k){
+	    Helicity              hel   = helix_seed_vec[k]._helix._helicity;
+	    HelixSeedCollection*  hcol  = helcols[hel].get();
+	    hcol->push_back(helix_seed_vec[k]);
+	  }
+	}	
 
       }	
       

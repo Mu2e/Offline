@@ -91,7 +91,7 @@ TrkFilters : {
 	
 	CPRPosHelixFilter : {
 	    module_type : HelixFilter
-	    HelixSeedCollection : "TTCalHelixFinderDem"
+	    HelixSeedCollection : "TTCalHelixFinderDe:Positive"
 	    Helicity            : 1
 	    MinNStrawHits       : 15   
 	    MinMomentum         : 80.  
@@ -106,7 +106,7 @@ TrkFilters : {
 	}
 	CPRNegHelixFilter : {
 	    module_type : HelixFilter
-	    HelixSeedCollection : "TTCalHelixFinderDep"
+	    HelixSeedCollection : "TTCalHelixFinderDe:Negative"
 	    Helicity            : -1
 	    MinNStrawHits       : 15   
 	    MinMomentum         : 60.  
@@ -317,10 +317,10 @@ TrkFilters : {
 
 	#calo-seeded tracking
 	cprDeMSeed : [ CPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDem, CPRPosHelixFilter,
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDe, CPRPosHelixFilter,
 		       TTCalSeedFitDem, CPRDeMSeedFilter, CPRDeMSeedPrescale ]
 	cprDePSeed : [ CPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDep, CPRNegHelixFilter, 
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDe, CPRNegHelixFilter, 
 		       TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
 
 	#fast tracking sequences that uses the calorimeter-time selection to reduce the number of TimeClusters and also the number of hits processed by the Delta-ray 

@@ -67,7 +67,14 @@ namespace mu2e {
     consumes<ComboHitCollection>(_shLabel);
     consumes<StrawHitFlagCollection>(_shfLabel);
     consumes<TimeClusterCollection>(_timeclLabel);
-    produces<HelixSeedCollection>();
+
+    std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
+    for(auto hv : helvals) {
+      Helicity hel(hv);
+      _hels.push_back(hel);
+      produces<HelixSeedCollection>(Helicity::name(hel));
+    }
+    //    produces<HelixSeedCollection>();
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
@@ -76,13 +83,7 @@ namespace mu2e {
 
     _data.shLabel     = _shLabel;
     _data.timeOffsets = _timeOffsets;
-
-    std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
-    for(auto hv : helvals) {
-      Helicity hel(hv);
-      _hels.push_back(hel);
-    }
-
+   
     if (_debugLevel != 0) _printfreq = 1;
 
     if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
@@ -244,14 +245,21 @@ namespace mu2e {
     //    CalHelixFinderData      hf_result;
                                         // diagnostic info
     _data.event     = &event;
-    _data.nseeds[0] = 0;
-    _data.nseeds[1] = 0;
+    // _data.nseeds[0] = 0;
+    // _data.nseeds[1] = 0;
     _iev            = event.id().event();
     int   nGoodTClusterHits(0);
 
     if ((_debugLevel > 0) && (_iev%_printfreq) == 0) printf("[%s] : START event number %8i\n", oname,_iev);
 
-    unique_ptr<HelixSeedCollection>    outseeds(new HelixSeedCollection);
+    std::map<Helicity,unique_ptr<HelixSeedCollection>> helcols;
+    int counter(0);
+    for( auto const& hel : _hels) {
+      helcols[hel] = unique_ptr<HelixSeedCollection>(new HelixSeedCollection());
+      _data.nseeds [counter] = 0;
+      ++counter;
+    }
+    //    unique_ptr<HelixSeedCollection>    outseeds(new HelixSeedCollection);
 //-----------------------------------------------------------------------------
 // find the data
 //-----------------------------------------------------------------------------
@@ -324,10 +332,23 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // fill seed information
 //-----------------------------------------------------------------------------
-//      initHelixSeed(helix_seed_vec[index_best], _hfResult);
-      helix_seed_vec[index_best]._status.merge(TrkFitFlag::helixOK);
-      outseeds->push_back(helix_seed_vec[index_best]);
+      if ( (index_best>=0) && (index_best < 2) ){
+	Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+	HelixSeedCollection*  hcol     = helcols[hel_best].get();
+	helix_seed_vec[index_best]._status.merge(TrkFitFlag::helixOK);
+	hcol->push_back(helix_seed_vec[index_best]);
+      } else if (index_best == 2){//both helices need to be saved
+	
+	for (unsigned k=0; k<_hels.size(); ++k){
+	  helix_seed_vec[k]._status.merge(TrkFitFlag::helixOK);
+	  Helicity              hel_best = helix_seed_vec[k]._helix._helicity;
+	  HelixSeedCollection*  hcol     = helcols[hel_best].get();
+	  hcol->push_back(helix_seed_vec[k]);
+	}
+      }
 
+      // helix_seed_vec[index_best]._status.merge(TrkFitFlag::helixOK);
+      // outseeds->push_back(helix_seed_vec[index_best]);
       if (_diagLevel > 0) {
 //--------------------------------------------------------------------------------
 // fill diagnostic information
@@ -418,8 +439,12 @@ namespace mu2e {
 // put reconstructed tracks into the event record
 //-----------------------------------------------------------------------------
   END:;
-    int    nseeds = outseeds->size();
-    event.put(std::move(outseeds));
+    int    nseeds(0);// = outseeds->size();
+    for(auto const& hel : _hels ) {
+      nseeds += helcols[hel]->size();
+      event.put(std::move(helcols[hel]),Helicity::name(hel));
+    }   
+    // event.put(std::move(outseeds));
 //-----------------------------------------------------------------------------
 // filtering
 //-----------------------------------------------------------------------------
@@ -555,8 +580,9 @@ namespace mu2e {
     
     const HelixSeed           *h1, *h2;
     const ComboHitCollection  *tlist, *clist;
-    int                        nh1, nh2;
-
+    int                        nh1, nh2, natc(0);
+    const mu2e::HelixHit      *hitt, *hitc;
+    
     h1     = &HelVec[0];
 //------------------------------------------------------------------------------
 // check if an AlgorithmID collection has been created by the process
@@ -570,38 +596,64 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     clist  = &h2->hits();
     nh2    = clist->size();
+
 //-----------------------------------------------------------------------------
-// pick the helix with the largest number of hits
+// check the number of common hits
 //-----------------------------------------------------------------------------
-    if (nh2 > nh1) {
+    for (int k=0; k<nh1; ++k){ 
+      hitt = &tlist->at(k);
+      for (int l=0; l<nh2; l++){ 
+	hitc = &clist->at(l);
+	if (hitt->index() == hitc->index()) {
+	  natc += 1;
+	  break;
+	}
+      }
+    }
+
+
+    if ((natc > nh1/2.) || (natc > nh2/2.)) {
+
+ //-----------------------------------------------------------------------------
+ // pick the helix with the largest number of hits
+ //-----------------------------------------------------------------------------
+      if (nh2 > nh1) {
 //-----------------------------------------------------------------------------
 // h2 is a winner, no need to save h1
 //-----------------------------------------------------------------------------
-      Index_best = 1;
-      return;
-    }
-    else if (nh1 > nh2){
+	Index_best = 1;
+	return;
+      }
+      else if (nh1 > nh2){
 //-----------------------------------------------------------------------------
 // h1 is a winner, mark h2 in hope that it will be OK, continue looping
 //-----------------------------------------------------------------------------
-      Index_best = 0;
-      return;
-    }
-    
+	Index_best = 0;
+	return;
+      }
 //-----------------------------------------------------------------------------
 // in case they have the exact amount of hits, pick the one with better chi2dZphi
 //-----------------------------------------------------------------------------
-    if (nh1 == nh2) {
-      float   chi2dZphi_h1 = h1->helix().chi2dZPhi();
-      float   chi2dZphi_h2 = h2->helix().chi2dZPhi();
-      if (chi2dZphi_h1 < chi2dZphi_h2){
-	Index_best = 0;
-	return;
-      }else {
-	Index_best = 1;
-	return;      
+      if (nh1 == nh2) {
+	float   chi2dZphi_h1 = h1->helix().chi2dZPhi();
+	float   chi2dZphi_h2 = h2->helix().chi2dZPhi();
+	if (chi2dZphi_h1 < chi2dZphi_h2){
+	  Index_best = 0;
+	  return;
+	}else {
+	  Index_best = 1;
+	  return;      
+	}
       }
+    }else {
+//-----------------------------------------------------------------------------
+// this is the case where we consider the two helices independent, so we want
+// to store both
+//-----------------------------------------------------------------------------
+      Index_best  = 2;
+      return;
     }
+
 
   }
   
