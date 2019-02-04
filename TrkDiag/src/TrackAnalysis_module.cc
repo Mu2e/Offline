@@ -274,12 +274,14 @@ namespace mu2e {
     KalRepPtrCollection const& dmC = *dmH;
     // find Track-cluster matching data
     _cdiag.findData(event);
+
+    // reset
+    resetBranches();
+
     // find the best track
     size_t i_element = 0; // keep track of which KalRep we are looking at
     const KalRep* deK = findBestTrack(deC, i_element);
     if(deK != 0 || _pempty) {
-      // reset
-      resetBranches();
       // setup KalDiag.
       if(_fillmc)_kdiag.findMCData(event);
       // fill basic event information
