@@ -85,54 +85,57 @@ CalPatRec : { @table::CalPatRec
 	dfdzErr                                 : 0.1
     }
 #------------------------------------------------------------------------------
-# KalFitHack configuration for the final track fit
+# KalFitHack configuration for the KFF fits 
+# I don't think it is used, CalTrkFit is using CPRKFFinal
+# first comment out, one month later - remove
 #------------------------------------------------------------------------------
-    KalFitHack : {
-	debugLevel                              : 0
-	materialCorrection                      : true
-	mingap					: 1.0
-	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
-	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
-	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
-	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
-	# did Dave mean that? 
-	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
-	initT0					: true
-	updateT0				: [ false, true, true, true, true, true, true, true, true ]
-	T0UpdateMode                            : 1
-	HitAmbigPenalty 			: false
-	HitMinDrift				: 0.2
-	DivergeFlt                              : 1000.
-	RdriftMinusDocaTol                      : 1.
-	ZeroDriftPenalty 			: 0.05
-	Neutralize 				: true
-	#------------------------------------------------------------------------------
-	#  KalContext parameters  (there are more to define ! )
-	#------------------------------------------------------------------------------
-	MinNDOF                                 : 10 # this means 15 hits min
-	#------------------------------------------------------------------------------
-	# ambiguity resolver parameters
-	#------------------------------------------------------------------------------
-	FixedAmbigResolver                      : {}
-	HitAmbigResolver                        : {}
-	PocaAmbigResolver                       : {}
-	PanelAmbigResolver                      : {}
-	#------------------------------------------------------------------------------
-	# doublet-based ambiguity resolver parameters
-	#------------------------------------------------------------------------------
-	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
-	fieldCorrection				: true
-	maxhitchi                               : 3.5
-	dtOffset                                : @local::TrackCaloMatching.DtOffset
-	scaleErrDoublet                         : 5.
-	#	iLoopUseDoublets                        : 9
-	minDriftDoublet                         : 0.3
-	deltaDriftDoublet                       : 0.3
-	sigmaSlope                              : 0.025
-	makeStrawHitModuleLabel                 : makeSH
-    }
+#     KalFitHack : {
+# 	debugLevel                              : 0
+# 	materialCorrection                      : true
+# 	mingap					: 1.0
+# 	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
+# 	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
+# 	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
+# 	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
+# 	# did Dave mean that? 
+# 	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
+# 	initT0					: true
+# 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
+# 	T0UpdateMode                            : 1
+# 	HitAmbigPenalty 			: false
+# 	HitMinDrift				: 0.2
+# 	DivergeFlt                              : 1000.
+# 	RdriftMinusDocaTol                      : 1.
+# 	ZeroDriftPenalty 			: 0.05
+# 	Neutralize 				: true
+# #------------------------------------------------------------------------------
+# #  KalContext parameters  (there are more to define ! )
+# #------------------------------------------------------------------------------
+# 	MinNDOF                                 : 10 # this means 15 hits min
+# #------------------------------------------------------------------------------
+# # ambiguity resolver parameters
+# #------------------------------------------------------------------------------
+# 	FixedAmbigResolver                      : {}
+# 	HitAmbigResolver                        : {}
+# 	PocaAmbigResolver                       : {}
+# 	PanelAmbigResolver                      : {}
+# #------------------------------------------------------------------------------
+# # doublet-based ambiguity resolver parameters
+# #------------------------------------------------------------------------------
+# 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+# 	fieldCorrection				: true
+# 	maxhitchi                               : 3.5
+# 	dtOffset                                : @local::TrackCaloMatching.DtOffset
+# 	scaleErrDoublet                         : 5.
+# 	#	iLoopUseDoublets                        : 9
+# 	minDriftDoublet                         : 0.3
+# 	deltaDriftDoublet                       : 0.3
+# 	sigmaSlope                              : 0.025
+# 	makeStrawHitModuleLabel                 : makeSH
+#     }
 #------------------------------------------------------------------------------
-# SeedFitter(SeedFitHackNew) configuration for the final track fit: NOT USED ANYMORE
+# SeedFitter(SeedFitHackNew) configuration for the final track fit
+# referenced by CalSeedFitter configurations below
 #------------------------------------------------------------------------------
     KalSeedFitter : {
 	debugLevel                        : 0
@@ -164,16 +167,6 @@ CalPatRec : { @table::CalPatRec
 	caloHitT0Weight                   : 10
 	
 	DivergeFlt                        : 1000.            #  default: 1000.
-#	RdriftMinusDocaTol                      : 1.
-#	daveMode                                : 0
-#------------------------------------------------------------------------------
-# shouldn't be used during the seed fit, only during the hit-based fit 
-#------------------------------------------------------------------------------
-#	scaleErrDoublet                         : 1.
-#	minDriftDoublet                         : 0.3
-#	deltaDriftDoublet                       : 0.3
-#	maxDoubletChi2                          : -1    # not used !
-#	sigmaSlope                              : 0.025
 #------------------------------------------------------------------------------
 #  parameters of KalContext 
 #------------------------------------------------------------------------------
@@ -238,66 +231,63 @@ CalPatRec : { @table::CalPatRec
 	fieldCorrection			        : true
 	printUtils                              : { @table::TrkReco.PrintUtils }
     }
-
-
-
-#------------------------------------------------------------------------------
-# KalFitter (KalFitHackNew) configuration for the final track fit
-#------------------------------------------------------------------------------
-    KalFitter : {
-	debugLevel                              : 0
-	minnstraws                              : 15
-	MaximumMaterialFlightDifference         : 1000 # mm separation in flightlength
-	materialCorrection                      : true
-	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
-	maxhitchi                               : 5. # 3.5
-	maxDriftPull                            : 10.
-	maxweed                                 : 10
-	mingap					: 1.0
-	makeStrawHitModuleLabel                 : makeSH
-	removeFailedFits                        : false
-	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
-	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
-	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
-	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
-	# not used t0ErrorFactor                           : 1.2                # scale ?
-	minT0DOCA                               : -0.2               # 
-	t0window                                : 2.5
-	dtOffset                                : @local::TrackCaloMatching.DtOffset
-	# did Dave mean that? 
-	updateT0				: [ false, true, true, true, true, true, true, true, true ]
-	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
-	HitAmbigPenalty 			: false
-	HitMinDrift				: 0.2
-	DivergeFlt                              : 1000.
-	RdriftMinusDocaTol                      : 1.
-	daveMode                                : 0
-	ZeroDriftPenalty 			: 0.05
-	Neutralize 				: true
-#------------------------------------------------------------------------------
-#  KalContext parameters  (there are more to define ! )
-#------------------------------------------------------------------------------
-	MinNDOF                                 : 10 # this means 15 hits min
-#------------------------------------------------------------------------------
-# ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	FixedAmbigResolver                      : {}
-	HitAmbigResolver                        : {}
-	PocaAmbigResolver                       : {}
-	PanelAmbigResolver                      : {}
-#------------------------------------------------------------------------------
-# doublet-based ambiguity resolver parameters
-#------------------------------------------------------------------------------
-	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
-	fieldCorrection				: true
-	scaleErrDoublet                         : 5.
-	minDriftDoublet                         : 0.3
-	deltaDriftDoublet                       : 0.3
-	maxDoubletChi2                          : 9
-	sigmaSlope                              : 0.025
-	printUtils                              : { @table::TrkReco.PrintUtils }
-    }
-}
+} 
+# #------------------------------------------------------------------------------
+# # KalFitter configuration for the final track fit.  *** IS IT still USED ? - grep doesn't find anything
+# #------------------------------------------------------------------------------
+#     KalFitter : {
+# 	debugLevel                              : 0
+# 	minnstraws                              : 15
+# 	MaximumMaterialFlightDifference         : 1000 # mm separation in flightlength
+# 	materialCorrection                      : true
+# 	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
+# 	maxhitchi                               : 5. # 3.5
+# 	maxDriftPull                            : 10.
+# 	maxweed                                 : 10
+# 	mingap					: 1.0
+# 	makeStrawHitModuleLabel                 : makeSH
+# 	removeFailedFits                        : false
+# 	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
+# 	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
+# 	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
+# 	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
+# 	# not used t0ErrorFactor                           : 1.2                # scale ?
+# 	minT0DOCA                               : -0.2               # 
+# 	t0window                                : 2.5
+# 	dtOffset                                : @local::TrackCaloMatching.DtOffset
+# 	# did Dave mean that? 
+# 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
+# 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
+# 	HitAmbigPenalty 			: false
+# 	HitMinDrift				: 0.2
+# 	DivergeFlt                              : 1000.
+# 	RdriftMinusDocaTol                      : 1.
+# 	daveMode                                : 0
+# 	ZeroDriftPenalty 			: 0.05
+# 	Neutralize 				: true
+# #------------------------------------------------------------------------------
+# #  KalContext parameters  (there are more to define ! )
+# #------------------------------------------------------------------------------
+# 	MinNDOF                                 : 10 # this means 15 hits min
+# #------------------------------------------------------------------------------
+# # ambiguity resolver parameters
+# #------------------------------------------------------------------------------
+# 	FixedAmbigResolver                      : {}
+# 	HitAmbigResolver                        : {}
+# 	PocaAmbigResolver                       : {}
+# 	PanelAmbigResolver                      : {}
+# #------------------------------------------------------------------------------
+# # doublet-based ambiguity resolver parameters
+# #------------------------------------------------------------------------------
+# 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+# 	fieldCorrection				: true
+# 	scaleErrDoublet                         : 5.
+# 	minDriftDoublet                         : 0.3
+# 	deltaDriftDoublet                       : 0.3
+# 	maxDoubletChi2                          : 9
+# 	sigmaSlope                              : 0.025
+# 	printUtils                              : { @table::TrkReco.PrintUtils }
+#     }
 #------------------------------------------------------------------------------
 #  module
 #------------------------------------------------------------------------------
@@ -337,35 +327,37 @@ CalPatRec : { @table::CalPatRec
 	    cprHelixCollTag    : "CalHelixFinder"
 	}
 
-	MergePatRec : { module_type:MergePatRec
-	    diagLevel                    : 0
-	    debugLevel                   : 0
-	    trkPatRecModuleLabel         : KFFDeM
-	    calPatRecModuleLabel         : CalTrkFit
-	    KalDiag                      : { @table::KalDiagDirect
-		FillMCInfo               : false
-	    }  # clone from  TrkRecFit
-
-	    DoubletAmbigResolver         : { @table::TrkReco.DoubletAmbigResolver }
-
-	    trkPatRecMVA                 : {
-		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
-		MVAType                  : 0
-		trkQualHist              : "CalPatRec/data/v5_7_7/tpr_qual_logfcons_2_exp.tab"
-		minTrkQual               : 0.4
-	    }
-
-	    calPatRecMVA                 : {
-		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
-		MVAType                  : 0
-		trkQualHist              : "CalPatRec/data/v5_7_7/cpr_qual_logfcons_1_lin.tab"
-		minTrkQual               : 0.65
-	    }
+#------------------------------------------------------------------------------
+# is not used any more, ignore
+#------------------------------------------------------------------------------
+# 	MergePatRec : { module_type:MergePatRec
+# 	    diagLevel                    : 0
+# 	    debugLevel                   : 0
+# 	    trkPatRecModuleLabel         : KFFDeM
+# 	    calPatRecModuleLabel         : CalTrkFit
+# 	    KalDiag                      : { @table::KalDiagDirect
+# 		FillMCInfo               : false
+# 	    }  # clone from  TrkRecFit
+# 
+# 	    DoubletAmbigResolver         : { @table::TrkReco.DoubletAmbigResolver }
 #------------------------------------------------------------------------------
 # distributions for the ANN training variable
 #------------------------------------------------------------------------------
-	}
-
+# 	    trkPatRecMVA                 : {
+# 		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
+# 		MVAType                  : 0
+# 		trkQualHist              : "CalPatRec/data/v5_7_7/tpr_qual_logfcons_2_exp.tab"
+# 		minTrkQual               : 0.4
+# 	    }
+# 
+# 	    calPatRecMVA                 : {
+# 		MVAWeights               : "CalPatRec/data/v5_7_7/MLP_weights_logfcons_1_lin.xml"
+# 		MVAType                  : 0
+# 		trkQualHist              : "CalPatRec/data/v5_7_7/cpr_qual_logfcons_1_lin.tab"
+# 		minTrkQual               : 0.65
+# 	    }
+#	}
+#------------------------------------------------------------------------------
 	DeltaFinder : { module_type:DeltaFinder
 	    comboHitCollectionTag         : makePH                # input coll
 	    strawHitCollectionTag         : makeSH                # input coll
@@ -532,24 +524,24 @@ CalPatRec : { @table::CalPatRec
 	    calHelixFinderModuleLabel : MHFinderCprDmu
 	}
 
-	MergePatRecCpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFit    }
-	MergePatRecTpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
-
-	MergePatRecCprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDem }
-	MergePatRecTprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
-
-	MergePatRecCprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDep }
-	MergePatRecTprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
-
-	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
-	MergePatRecDpp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDpP  calPatRecModuleLabel: none         }
-	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
-	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: CalTrkFitDep }
-	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }
-	MergePatRecUem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeM  calPatRecModuleLabel: none         }
-	MergePatRecUmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuM calPatRecModuleLabel: none         }
-	MergePatRecUep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeP  calPatRecModuleLabel: none         }
-	MergePatRecUmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuP calPatRecModuleLabel: none         }
+# 	MergePatRecCpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFit    }
+# 	MergePatRecTpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
+# 
+# 	MergePatRecCprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDem }
+# 	MergePatRecTprDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: none         }
+# 
+# 	MergePatRecCprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFitDep }
+# 	MergePatRecTprDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: none         }
+# 
+# 	MergePatRecDem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeM  calPatRecModuleLabel: CalTrkFitDem }
+# 	MergePatRecDpp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDpP  calPatRecModuleLabel: none         }
+# 	MergePatRecDmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuM calPatRecModuleLabel: CalTrkFitDmm }
+# 	MergePatRecDep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDeP  calPatRecModuleLabel: CalTrkFitDep }
+# 	MergePatRecDmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFDmuP calPatRecModuleLabel: none         }
+# 	MergePatRecUem : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeM  calPatRecModuleLabel: none         }
+# 	MergePatRecUmm : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuM calPatRecModuleLabel: none         }
+# 	MergePatRecUep : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUeP  calPatRecModuleLabel: none         }
+# 	MergePatRecUmp : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: KFFUmuP calPatRecModuleLabel: none         }
     }
 
     filters : { 

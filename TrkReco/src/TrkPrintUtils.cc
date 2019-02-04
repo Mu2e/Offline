@@ -66,12 +66,12 @@ namespace mu2e {
     int    nhits = Trk->hitVector().size();
 
     if ((opt == "") || (opt.find("banner") != kNotFound)) {
-      printf("---------------------------------------------------------------------------------");
-      printf("-----------------------------------------------------\n");
+      printf("-----------------------------------------------------------------------------------------");
+      printf("-----------------------------------------------------------------\n");
       printf("  TrkID       Address    N  NA      P       pT     momerr  costh    T0      T0Err   Omega");
-      printf("      D0       Z0      Phi0   TanDip    Chi2    FCons\n");
-      printf("---------------------------------------------------------------------------------");
-      printf("-----------------------------------------------------\n");
+      printf("      D0       Z0       Phi0   TanDip    Chi2  MeanRes      FCons\n");
+      printf("-----------------------------------------------------------------------------------------");
+      printf("-----------------------------------------------------------------\n");
     }
 
     if ((opt == "") || (opt.find("data") != kNotFound)) {
@@ -112,6 +112,23 @@ namespace mu2e {
       double fit_consistency = Trk->chisqConsistency().consistency();
       int q         = Trk->charge();
 
+      double sr2 (0);
+
+      for (int i=0; i<nhits; ++i) {
+	const TrkStrawHit* hit = dynamic_cast<TrkStrawHit*> (Trk->hitVector().at(i));
+	if ((hit == nullptr) || (! hit->isActive())) continue;
+//------------------------------------------------------------------------------
+// this is an active track straw hit
+//-----------------------------------------------------------------------------
+	double res, sigres;
+	bool hasres = hit->resid(res, sigres, true);
+	if (hasres) {
+	  sr2 += res*res;
+	}
+      }
+
+      double mean_res = sqrt(sr2/nactive);
+
       printf("%5i %16p %3i %3i %8.3f %7.3f  %8.4f %8.4f %7.3f %7.4f",
 	     -1,
 	     Trk,
@@ -122,7 +139,7 @@ namespace mu2e {
       
       printf(" %8.5f %8.3f %8.3f %8.4f %7.4f",omega,d0,z0,phi0,tandip
 	     );
-      printf(" %8.3f %10.3e\n",chi2,fit_consistency);
+      printf(" %8.3f %7.4f %10.3e\n",chi2,mean_res,fit_consistency);
     }
 
     if (opt.find("hits") == kNotFound) return;
@@ -139,10 +156,10 @@ namespace mu2e {
     printf("----------------------------------------------------------------");
     printf("------------------------------------------------------------------------\n");
 
-    mu2e::TrkStrawHit     *hit;
+    TrkStrawHit          *hit;
     CLHEP::Hep3Vector     pos;
-    const mu2e::ComboHit  *sh;
-    const mu2e::Straw     *straw;
+    const ComboHit        *sh;
+    const Straw           *straw;
     int                   ihit;
     double                len;
     HepPoint              plen;
