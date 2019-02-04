@@ -1,0 +1,5 @@
+# fixes
+physics.filters.CalHelixFinderDeM.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
+physics.filters.CalHelixFinderDeP.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
+physics.filters.CalHelixFinderDmuM.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
+physics.filters.CalHelixFinderDmuP.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"

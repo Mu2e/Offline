@@ -21,6 +21,10 @@
  <class name="mu2e::GenSimParticleLink" />
  <class name="art::Wrapper<mu2e::GenSimParticleLink>"/>
 
+ <class name="mu2e::PrimaryParticle"/>
+ <class name="art::Wrapper<mu2e::PrimaryParticle>"/>
+ <class name="art::Ptr<mu2e::PrimaryParticle>"/>
+ 
  <class name="mu2e::GenEventCount"/>
  <class name="art::Wrapper<mu2e::GenEventCount>"/>
 
