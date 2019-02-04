@@ -36,4 +36,9 @@
  <class name="std::vector<mu2e::ComboHitInfo>" />
  <class name="mu2e::ComboHitInfoMC" />
  <class name="std::vector<mu2e::ComboHitInfoMC>" />
+ <class name="mu2e::TrkInfo" />
+ <class name="mu2e::TrkCaloHitInfo" />
+ <class name="std::vector<mu2e::TrkCaloHitInfo>" />
+ <class name="mu2e::TrkInfoMC" />
+ <class name="mu2e::TrkInfoMCStep" />
 </lcgdict>
