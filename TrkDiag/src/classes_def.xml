@@ -41,4 +41,6 @@
  <class name="std::vector<mu2e::TrkCaloHitInfo>" />
  <class name="mu2e::TrkInfoMC" />
  <class name="mu2e::TrkInfoMCStep" />
+ <class name="mu2e::TrkQualInfo" />
+ <class name="mu2e::EventWeightInfo" />
 </lcgdict>

@@ -25,7 +25,7 @@ namespace mu2e {
     void fillHitCount(const StrawHitFlagCollection& flags, HitCount& hitcount);
     void fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo);
 
-    void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos );
+    void fillHitInfo(const KalSeed& kseed, const ComboHitCollection& chits, std::vector<TrkStrawHitInfo>& tshinfos );
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos );
     void fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo );
   }

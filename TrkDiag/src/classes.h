@@ -16,3 +16,5 @@
 #include "CRVAnalysis/inc/CrvHitInfoMC.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
+#include "TrkDiag/inc/TrkQualInfo.hh"
+#include "TrkDiag/inc/EventWeightInfo.hh"
