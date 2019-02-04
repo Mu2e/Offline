@@ -301,7 +301,7 @@ namespace mu2e {
 
     // find the best track
     KalSeed dekseed, uekseed, dmukseed;
-    bool deK, ueK, dmK; // bool to store whether this track was found
+    bool deK = false, ueK = false, dmK = false; // bool to store whether this track was found
     TrkQual tqual;
     deK = findBestTrack(deC, dekseed, tqcol, tqual);
     if(deK != 0 || _pempty) {
