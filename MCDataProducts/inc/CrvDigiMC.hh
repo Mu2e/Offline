@@ -52,6 +52,6 @@ namespace mu2e
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     int                            _SiPMNumber; 
   };
+  typedef std::vector<mu2e::CrvDigiMC> CrvDigiMCCollection;
 }
-
 #endif /* MCDataProducts_CrvDigiMC_hh */

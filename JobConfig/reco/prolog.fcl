@@ -73,6 +73,7 @@ Reconstruction : {
     }
     # MC specific: this should be separated FIXME!
     FindMCPrimary : { @table::CommonMC.FindMCPrimary }
+    SelectRecoMC : { @table::CommonMC.SelectRecoMC }
   }
   
   filters : {
@@ -136,13 +137,14 @@ Reconstruction : {
 	    "keep *_genCounter_*_*",
 	    "keep mu2e::EventWeight_*_*_*",
 	    "keep mu2e::ProtonBunchIntensity_*_*_*",
-	    "keep *_FindMCPrimary_*_*" ]
+	    "keep *_FindMCPrimary_*_*",
+	    "keep *_SelectRecoMC_*_*" ]
 }
 # must define this outside the brackets due to internal dependence
 Reconstruction.RecoPath : [ @sequence::Reconstruction.CaloRecoSequence,
   @sequence::Reconstruction.TrkRecoSequence,
   @sequence::Reconstruction.CrvRecoSequence ,
-  FindMCPrimary ]
+  FindMCPrimary, SelectRecoMC ]
 # define trigger path FIXME!
 Reconstruction.Output : {
   module_type : RootOutput
