@@ -104,7 +104,7 @@ namespace mu2e {
     // now find the SimParticles associated with these GenParticles.  There is no forwards map,
     // so I just have to exhaustively search
     PrimaryParticle::SPPV simps;
-    for(auto igp=gpc.begin(); igp != gpc.end(); ++igp) {
+    for(auto igp : pgps ) {
       // find the index for this iterator
       size_t gpindex = std::distance(gpc.begin(),igp);
       // create a ptr for this GenParticle
