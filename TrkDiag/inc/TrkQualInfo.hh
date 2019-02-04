@@ -9,7 +9,7 @@ namespace mu2e
 {
 // general information about a track
   struct TrkQualInfo {
-    Double_t _trkqualvars[TrkQualDetail::n_vars];      // consistency between the longitudinal position from the fit with the previous time division measurement
+    Double_t _trkqualvars[TrkQualDetail::n_vars];
     Double_t _trkqual;
 
     TrkQualInfo() { reset(); }

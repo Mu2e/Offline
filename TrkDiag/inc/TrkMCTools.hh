@@ -10,6 +10,8 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include <vector>
 #include <functional>
@@ -59,8 +61,12 @@ namespace mu2e {
     void findMCSteps(const StepPointMCCollection& mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids, std::vector<MCStepItr>& steps);
 
     // count types of hits and digis
-    void countHits(const KalSeed& kseed, art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, int& nactive, int& nhits, int& ngood, int& nambig);
-    void countDigis(art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, int& ndigi, int& digigood);
+    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig);
+    void countDigis(const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& ndigi, int& digigood);
+
+    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
+    void fillHitInfoMCNoTime(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, TrkStrawHitInfoMC& tshinfomc);
+    void fillHitInfoMC(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, const SimParticleTimeOffset& toff, TrkStrawHitInfoMC& tshinfomc);
   }
 }
 

@@ -5,6 +5,11 @@
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
+
+#include "TrackerGeom/inc/Tracker.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include <map>
 
 namespace mu2e {
@@ -133,43 +138,99 @@ namespace mu2e {
       sort(steps.begin(),steps.end(),timecomp());
     }
 
-    void countHits(const KalSeed& kseed, art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, int& nactive, int& nhits, int& ngood, int& nambig) {
+    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig) {
       nactive = 0; nhits = 0; ngood = 0; nambig = 0;
       static StrawHitFlag active(StrawHitFlag::active);
-      //      Hep3Vector mcmomvec = spp->startMomentum();
-      //      double mcmom = mcmomvec.mag();
+
       for(const auto& ihit : kseed.hits()) {
 	StrawDigiMC const& mcdigi = mcdigis.at(ihit.index());
-	StrawEnd itdc;
-	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
 	if(spp == spmcp->simParticle()){
 	  ++nhits;
+	  if(spmcp->momentum().mag()/spp->startMomentum().mag() > mingood) {
+	    ++ngood;
+	  }
+
 	  // easiest way to get MC ambiguity is through info object
-	  /*	  TrkStrawHitInfoMC tshinfomc;
-	  fillHitInfoMC(spp,mcdigi,tsh->straw(),tshinfomc);
-	  // count hits with at least givien fraction of the original momentum as 'good'
-	  if(tshinfomc._mom/mcmom > _mingood )++trkinfomc._ngood;
-	  */
+	  TrkStrawHitInfoMC tshinfomc;
+	  fillHitInfoMCNoTime(mcdigi,spp,tshinfomc);
+
 	  if(ihit.flag().hasAllProperties(active)){
 	    ++nactive;
-	    // count hits with correct left-right iguity
-	    //	    if(tsh->ambig()*tshinfomc._ambig > 0)++trkinfomc._nambig;
+	    // count hits with correct left-right ambiguity
+	    if(ihit.ambig()*tshinfomc._ambig > 0) {
+	      ++nambig;
+	    }
 	  }
 	}
       }      
     }
 
-    void countDigis(art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, int& ndigi, int& ndigigood) {
+    void countDigis(const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& ndigi, int& ndigigood) {
       ndigi = 0; ndigigood = 0;
       for(auto imcd = mcdigis.begin(); imcd !=mcdigis.end();++imcd){
 	if( imcd->stepPointMC(StrawEnd::cal)->simParticle() == spp){
 	  ndigi++;
-	  /*	  if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/spp->startMomentum().mag() > _mingood) {
-		  ndigigood++;
+	  if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/spp->startMomentum().mag() > mingood) {
+	    ndigigood++;
 	  }
-	  */
 	}
       }
+    }
+
+    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
+      tshinfomcs.clear();
+      // use TDC channel 0 to define the MC match
+      for(const auto& ihit : kseed.hits()) {
+	TrkStrawHitInfoMC tshinfomc;
+
+	StrawDigiMC const& mcdigi = mcdigis.at(ihit.index());
+	fillHitInfoMC(mcdigi, pspp, toff, tshinfomc);
+  
+	tshinfomcs.push_back(tshinfomc);
+      }
+    }
+
+    void fillHitInfoMC(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, const SimParticleTimeOffset& toff, TrkStrawHitInfoMC& tshinfomc) {
+      // create MC info and fill
+      fillHitInfoMCNoTime(mcdigi, pspp, tshinfomc);
+
+      StrawEnd itdc = StrawEnd::cal;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      tshinfomc._t0 = toff.timeWithOffsetsApplied(*spmcp);
+    }
+
+    void fillHitInfoMCNoTime(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, TrkStrawHitInfoMC& tshinfomc) {
+      StrawEnd itdc = StrawEnd::cal;
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      const Tracker& tracker = getTrackerOrThrow();
+
+      tshinfomc._ht = mcdigi.wireEndTime(itdc);
+      tshinfomc._pdg = spp->pdgId();
+      tshinfomc._proc = spp->originParticle().creationCode();
+      tshinfomc._edep = mcdigi.energySum();
+      tshinfomc._gen = -1;
+      if(spp->genParticle().isNonnull()) {
+	tshinfomc._gen = spp->genParticle()->generatorId().id();
+      }
+      MCRelationship rel(pspp,spp);
+      tshinfomc._rel = rel._rel;
+      // find the step midpoint
+      const Straw& straw = tracker.getStraw(mcdigi.strawId());
+      CLHEP::Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
+      CLHEP::Hep3Vector dir = spmcp->momentum().unit();
+      tshinfomc._mom = spmcp->momentum().mag();
+      tshinfomc._r =spmcp->position().perp();
+      tshinfomc._phi =spmcp->position().phi();
+      CLHEP::Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
+      double dperp = mcperp.dot(mcsep);
+      tshinfomc._dist = fabs(dperp);
+      tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
+      // use 2-line POCA here
+      TwoLinePCA pca(spmcp->position(),dir,straw.getMidPoint(),straw.getDirection());
+      tshinfomc._len = pca.s2();
+      tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
     }
   }
 }

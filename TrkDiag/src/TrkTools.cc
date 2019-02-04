@@ -5,6 +5,9 @@
 #include "TrkDiag/inc/TrkTools.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 
+#include "TrackerGeom/inc/Tracker.hh"
+#include "GeometryService/inc/getTrackerOrThrow.hh"
+
 namespace mu2e {
   namespace TrkTools {
     void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig) {
@@ -19,11 +22,7 @@ namespace mu2e {
 	    ++nnullambig;
 	  }
 	}
-	  /*	  if (ihit->nStrawHits()>=2) {
-	    ++ndactive;
-	  }
-	  */
-	  //	  std::cout << "AE: ihit->nStrawHits() = " << ihit->nStrawHits() << std::endl;
+
 	const auto& jhit = ihit+1;
 	const auto& hhit = ihit-1;
 	if( (jhit != hits.end() &&
@@ -74,26 +73,39 @@ namespace mu2e {
       trkinfo._chisq = kseed.chisquared();
       trkinfo._fitcon = kseed.fitConsistency();
       //    trkinfo._radlen = krep->radiationFraction(); // TODO
-      //trkinfo._firstflt = // TODO
-      //trkinfo._lastflt = // TODO
+
+      // Loop through the KalSegments
+      double firstflt = 9999999;
+      double lastflt = -9999999;
+      for (const auto& kseg : kseed.segments()) {
+	if (kseg.fmin() < firstflt) {
+	  firstflt = kseg.fmin();
+	}
+	if (kseg.fmax() > lastflt) {
+	  lastflt = kseg.fmax();
+	}
+      }
+      trkinfo._firstflt = firstflt; // TODO (don't match original TrkAna exactly)
+      trkinfo._lastflt = lastflt; // TODO (don't match original TrkAna exactly)
       //    trkinfo._startvalid = krep->startValidRange();  // TODO
       //    trkinfo._endvalid = krep->endValidRange();  // TODO
-      //    trkinfo._nmat = nmat;  // TODO
+      trkinfo._nmat = kseed.straws().size();  // TODO (this isn't correct)
       //    trkinfo._nmatactive = nmatactive; // TODO
       //    trkinfo._nbend = nbend; // TODO
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
       trkinfo._ent._fitmomerr = kseg.momerr();
-      //trkinfo.fltlen = ; //TODO
+      //      trkinfo._ent._fltlen = ; //TODO
       trkinfo._ent._fitpar = kseg.helix();
-      //    trkinfo._ent._fitparerr = kseg.covar(); //TODO
+      //      trkinfo._ent._fitparerr = kseg.covar(); //TODO
     }
 
-    void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos ) {
+    void fillHitInfo(const KalSeed& kseed, const ComboHitCollection& chits, std::vector<TrkStrawHitInfo>& tshinfos ) {
       tshinfos.clear();
       // loop over hits
 
       static StrawHitFlag active(StrawHitFlag::active);
+      const Tracker& tracker = getTrackerOrThrow();
       for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
 	TrkStrawHitInfo tshinfo;
 
@@ -102,8 +114,8 @@ namespace mu2e {
 	tshinfo._panel = ihit->strawId().panel();
 	tshinfo._layer = ihit->strawId().layer();
 	tshinfo._straw = ihit->strawId().straw();
+
 	/*
-	tshinfo._edep = ihit->comboHit().energyDep();
 	// kludge CLHEP problem
 	HepPoint hpos = ihit->hitTraj()->position(ihit->hitLen());
 	tshinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z());
@@ -114,34 +126,44 @@ namespace mu2e {
 	} else {
 	  tshinfo._resid = tshinfo._residerr = -1000.;
 	}
-	tshinfo._rdrift = ihit->driftRadius();
-	tshinfo._rdrifterr = ihit->driftRadiusErr();
-	tshinfo._wdist = ihit->comboHit().wireDist();
-	tshinfo._werr = ihit->comboHit().wireRes();
-	double rstraw = ihit->straw().getRadius();
-	tshinfo._dx = sqrt(max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
-	tshinfo._trklen = ihit->fltLen();
+	*/
+	tshinfo._rdrift = ihit->driftRad();
+	tshinfo._rdrifterr = ihit->radialErr();
+	
+	double rstraw = tracker.getStraw(ihit->strawId()).getRadius();
+	tshinfo._dx = std::sqrt(std::max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
+	
+	tshinfo._trklen = ihit->trkLen();
 	tshinfo._hlen = ihit->hitLen();
+	/*
 	Hep3Vector tdir = ihit->trkTraj()->direction(tshinfo._trklen);
 	tshinfo._wdot = tdir.dot(ihit->straw().getDirection());
 	// for now approximate the local bfield direction as the z axis FIXME!!
 	tshinfo._bdot = tdir.z();
-	tshinfo._t0 = ihit->hitT0()._t0;
+	*/
+	tshinfo._t0 = ihit->t0().t0();
+	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
+	/*
 	// include signal propagation time correction
 	tshinfo._ht = ihit->time()-ihit->signalTime();
-	//    tshinfo._dt = ihit->comboHit().dt();
+	*/
 	tshinfo._ambig = ihit->ambig();
-	tshinfo._driftend = ihit->comboHit().driftEnd();
-	tshinfo._tdrift = ihit->driftTime();
-	//    tshinfo._totcal = ihit->comboHit().TOT(StrawEnd::cal);
-	//    tshinfo._tothv = ihit->comboHit().TOT(StrawEnd::hv);
+	/*
 	if(ihit->hasResidual())
 	  tshinfo._doca = ihit->poca().doca();
 	else
 	  tshinfo._doca = -100.0;
 	tshinfo._exerr = ihit->driftVelocity()*ihit->temperature();
 	tshinfo._penerr = ihit->penaltyErr();
-	tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
+	*/
+	const ComboHit& chit = chits.at(ihit->index());	
+	tshinfo._edep = chit.energyDep();
+	tshinfo._wdist = chit.wireDist();
+	tshinfo._werr = chit.wireRes();	
+	tshinfo._driftend = chit.driftEnd();
+	tshinfo._tdrift = chit.driftTime();
+
+	/*
 	// cannot count correlations with other hits in this function; set to false
 	tshinfo._dhit = tshinfo._dactive = false;
 	
@@ -160,6 +182,8 @@ namespace mu2e {
 	  }
 	}
 	*/
+
+
 	tshinfos.push_back(tshinfo);
       }
     }
@@ -181,16 +205,16 @@ namespace mu2e {
 	  if(delem != 0){
 	    retval = true;
 	    // KalMaterial info
-	    tminfo._active = kmat->isActive();
-	    tminfo._dp = kmat->momFraction();
-	    tminfo._radlen = kmat->radiationFraction();
-	    tminfo._sigMS = kmat->deflectRMS();
+	    tminfo._active = kmat->isActive(); // TODO
+	    tminfo._dp = kmat->momFraction(); // TODO
+	    tminfo._radlen = kmat->radiationFraction(); // TODO
+	    tminfo._sigMS = kmat->deflectRMS(); // TODO
 	    // DetIntersection info
 	    const DetIntersection& dinter = kmat->detIntersection();
-	    tminfo._thit = (dinter.thit != 0);
-	    tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive());
-	    tminfo._doca = dinter.dist;
-	    tminfo._tlen = dinter.pathlen;
+	    tminfo._thit = (dinter.thit != 0); // TODO
+	    tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive()); // TODO
+	    tminfo._doca = dinter.dist; // TODO
+	    tminfo._tlen = dinter.pathlen; // TODO
 	    // straw information
 	    Straw const* straw = delem->straw();
 	    
