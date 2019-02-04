@@ -302,7 +302,6 @@ namespace mu2e {
 	TrkTools::fillTrkInfo(dekseed,_deti);
 	if(_diag > 1){
 	  TrkTools::fillHitInfo(dekseed, _detsh); //TODO
-	  TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
 	  TrkTools::fillMatInfo(dekseed, _detsm); //TODO
 	}
 	// look for a matching upstream electron track
@@ -316,6 +315,10 @@ namespace mu2e {
 	bool dmK = findMuonTrack(dmC,dekseed, dmukseed);
 	if(dmK != 0){
 	  TrkTools::fillTrkInfo(dmukseed,_dmti);
+	}
+	if (dekseed.hasCaloCluster()) {
+	  TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
+	  _tcnt._ndec = 1; // only 1 possible calo hit at the moment
 	}
 
 	art::Handle<TrkQualCollection> trkQualHandle;
