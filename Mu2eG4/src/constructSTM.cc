@@ -1231,7 +1231,7 @@ namespace mu2e {
                                       0x0,
                                       stmDet2CanPositionInParent,
                                       parentInfo,
-                                      0,
+                                      1,
                                       STMisVisible,
                                       G4Color::Red(),
                                       STMisSolid,
