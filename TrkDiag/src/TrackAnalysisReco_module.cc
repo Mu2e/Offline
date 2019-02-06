@@ -38,7 +38,6 @@
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
-#include "BTrk/TrkBase/TrkParticle.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
@@ -73,11 +72,11 @@ namespace mu2e {
 // Need this for the BaBar headers.
   using CLHEP::Hep3Vector;
 
-  class TrackAnalysisFromKalSeed : public art::EDAnalyzer {
+  class TrackAnalysisReco : public art::EDAnalyzer {
 
   public:
-    explicit TrackAnalysisFromKalSeed(fhicl::ParameterSet const& pset);
-    virtual ~TrackAnalysisFromKalSeed() { }
+    explicit TrackAnalysisReco(fhicl::ParameterSet const& pset);
+    virtual ~TrackAnalysisReco() { }
 
     void beginJob();
     void beginSubRun(const art::SubRun & subrun ) override;
@@ -89,18 +88,15 @@ namespace mu2e {
     // upstream electrons are used to identify cosmic background events
     // downstream muons are used in PID.  PID information should be analyzed
     // in a dedicated module FIXME!
-    std::string _trkanaroot;
     art::InputTag _detag;
     art::InputTag _uetag;
     art::InputTag _dmtag;
-    std::string _tqroot;
-    art::InputTag _tqtag;
+    art::InputTag _detqtag;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
     //TrkCaloMatchingParameters FitDirection and Track Particle
     TrkFitDirection _sdir;
-    TrkParticle _spart;
     // CRV info
     std::string _crvCoincidenceModuleLabel;
     std::string _crvCoincidenceMCModuleLabel;
@@ -129,6 +125,7 @@ namespace mu2e {
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _comboHitTag;
+    art::InputTag _strawHitFlagTag;
     TrkCaloHitInfo _detch;
     std::vector<TrkStrawMatInfo> _detsm;
     // MC truth branches
@@ -169,14 +166,15 @@ namespace mu2e {
     void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   };
 
-  TrackAnalysisFromKalSeed::TrackAnalysisFromKalSeed(fhicl::ParameterSet const& pset):
+  TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
-    _trkanaroot(pset.get<std::string>("KalFinalTagRoot") ),
-    _tqroot(pset.get<std::string>("TrkQualTagRoot") ),
+    _detag( pset.get<art::InputTag>("DeTag", art::InputTag()) ),
+    _uetag( pset.get<art::InputTag>("UeTag", art::InputTag()) ),
+    _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
+    _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
-    _spart((TrkParticle::type)(pset.get<int>("TrkParticle"))),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
     _crvCoincidenceMCModuleLabel(pset.get<string>("CrvCoincidenceMCModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
@@ -190,6 +188,7 @@ namespace mu2e {
     _trkana(0),
     _meanPBI(0.0),
     _comboHitTag(pset.get<art::InputTag>("ComboHitCollection", "")),
+    _strawHitFlagTag(pset.get<art::InputTag>("StrawHitFlagCollection", "")),
     _strawDigiMCTag(pset.get<art::InputTag>("StrawDigiMCCollection", "")),
     _simParticleTag(pset.get<art::InputTag>("SimParticleCollection", "")),
     _vdStepPointMCTag(pset.get<art::InputTag>("VDStepPointMCCollection", "")),
@@ -197,7 +196,7 @@ namespace mu2e {
   {
   }
 
-  void TrackAnalysisFromKalSeed::beginJob( ){
+  void TrackAnalysisReco::beginJob( ){
     art::ServiceHandle<art::TFileService> tfs;
 // create TTree
     _trkana=tfs->make<TTree>("trkana","track analysis");
@@ -236,7 +235,7 @@ namespace mu2e {
     }
   }
 
-  void TrackAnalysisFromKalSeed::beginSubRun(const art::SubRun & subrun ) {
+  void TrackAnalysisReco::beginSubRun(const art::SubRun & subrun ) {
     // mean number of protons on target
     art::Handle<ProtonBunchIntensity> PBIHandle;
     subrun.getByLabel(_meanPBItag, PBIHandle);
@@ -244,7 +243,7 @@ namespace mu2e {
       _meanPBI = PBIHandle->intensity();
   }
 
-  void TrackAnalysisFromKalSeed::analyze(const art::Event& event) {
+  void TrackAnalysisReco::analyze(const art::Event& event) {
     // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
       std::vector<art::Handle<EventWeight> > eventWeightHandles;
@@ -266,20 +265,13 @@ namespace mu2e {
     }
     _toff.updateMap(event); //update time maps
 
-    // Decide TrackTags from fit particle (muon collection matches electron charge )
-    std::string chargename = _spart.charge() > 0.0 ? "P" : "M";
-    _detag = _trkanaroot + "D" + _spart.name().substr(0,1) + chargename;
-    _uetag = _trkanaroot + "U" + _spart.name().substr(0,1) + chargename;
-    _dmtag = _trkanaroot + "D" + "mu" + chargename; //dm branch is always used for muons
-    _tqtag = _tqroot + "D" + _spart.name().substr(0,1) + chargename;
-
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalSeedCollection> deH;
     event.getByLabel(_detag,deH);
     // std::cout << _detag << std::endl; //teste
     KalSeedCollection const& deC = *deH;
     art::Handle<StrawHitFlagCollection> shfH;
-    event.getByLabel(_detag,shfH);
+    event.getByLabel(_strawHitFlagTag,shfH);
     StrawHitFlagCollection const& shfC = *shfH;
     art::Handle<ComboHitCollection> comboHitHandle;
     event.getByLabel(_comboHitTag, comboHitHandle);
@@ -293,7 +285,7 @@ namespace mu2e {
     KalSeedCollection const& dmC = *dmH;
     // TrkQualCollection
     art::Handle<TrkQualCollection> trkQualHandle;
-    event.getByLabel(_tqtag, trkQualHandle);
+    event.getByLabel(_detqtag, trkQualHandle);
     TrkQualCollection const& tqcol = *trkQualHandle;
 
     // reset
@@ -349,13 +341,13 @@ namespace mu2e {
     }
   }
 
-  void TrackAnalysisFromKalSeed::findMCData(const art::Event& event) {
+  void TrackAnalysisReco::findMCData(const art::Event& event) {
     event.getByLabel(_strawDigiMCTag, _strawDigiMCHandle);
     event.getByLabel(_simParticleTag, _simParticleHandle);
     event.getByLabel(_vdStepPointMCTag, _vdStepPointMCHandle);
   }
 
-  bool TrackAnalysisFromKalSeed::findBestTrack(KalSeedCollection const& kcol, KalSeed& kseed, TrkQualCollection const& tqcol, TrkQual& tqual) {
+  bool TrackAnalysisReco::findBestTrack(KalSeedCollection const& kcol, KalSeed& kseed, TrkQualCollection const& tqcol, TrkQual& tqual) {
     _tcnt._nde = kcol.size();
     // find the higest momentum track
     // TODO: should be finding the most "signal-like" track
@@ -372,7 +364,7 @@ namespace mu2e {
     return track_found;
   }
 
-  bool TrackAnalysisFromKalSeed::findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& uekseed) {
+  bool TrackAnalysisReco::findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& uekseed) {
     _tcnt._nue = kcol.size();
     // loop over upstream tracks and pick the best one (closest to momentum) that's earlier than the downstream track
     bool track_found = false;
@@ -393,7 +385,7 @@ namespace mu2e {
     return track_found;
   }
 
-  bool TrackAnalysisFromKalSeed::findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& dmukseed) {
+  bool TrackAnalysisReco::findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& dmukseed) {
     _tcnt._ndm = kcol.size();
     bool track_found = false;
 // loop over muon tracks and pick the one with the largest hit overlap
@@ -410,7 +402,7 @@ namespace mu2e {
     return track_found;
   }
 
-  void TrackAnalysisFromKalSeed::fillMCInfo(const KalSeed& kseed, bool track_found) {
+  void TrackAnalysisReco::fillMCInfo(const KalSeed& kseed, bool track_found) {
   // for now MC truth is only for the DE track.  Maybe we need MC truth on other tracks too?  FIXME!
     art::Ptr<SimParticle> deSP;
     if (track_found) {
@@ -443,7 +435,7 @@ namespace mu2e {
     } 
   }
 
-  void TrackAnalysisFromKalSeed::fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir,
+  void TrackAnalysisReco::fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir,
   SimParticle::key_type id, TrkInfoMCStep& tmcs) {
     std::vector<MCStepItr> steps;
     TrkMCTools::findMCSteps(*_vdStepPointMCHandle,id,_kdiag.VDids(tpos),steps);
@@ -456,7 +448,7 @@ namespace mu2e {
     }
   }
 
-  void TrackAnalysisFromKalSeed::fillEventInfo( const art::Event& event) {
+  void TrackAnalysisReco::fillEventInfo( const art::Event& event) {
     // fill basic event information
     _einfo._eventid = event.event();
     _einfo._runid = event.run();
@@ -481,7 +473,7 @@ namespace mu2e {
     _wtinfo.setWeights(weights);
   }
 
-  void TrackAnalysisFromKalSeed::resetBranches() {
+  void TrackAnalysisReco::resetBranches() {
   // reset structs
     _einfo.reset();
     _hcnt.reset();
@@ -509,7 +501,7 @@ namespace mu2e {
   }
 
 
-  void TrackAnalysisFromKalSeed::fillTrkInfoMC(art::Ptr<SimParticle> spp, const KalSeed& kseed,TrkInfoMC& trkinfomc) const {
+  void TrackAnalysisReco::fillTrkInfoMC(art::Ptr<SimParticle> spp, const KalSeed& kseed,TrkInfoMC& trkinfomc) const {
     // basic information
     if(spp->genParticle().isNonnull()) {
       trkinfomc._gen = spp->genParticle()->generatorId().id();
@@ -540,7 +532,7 @@ namespace mu2e {
     trkinfomc._ndigigood = ndigigood;
   }
 
-  void TrackAnalysisFromKalSeed::fillTrkInfoMCStep(art::Ptr<SimParticle> spp, TrkInfoMCStep& trkinfomcstep) const {
+  void TrackAnalysisReco::fillTrkInfoMCStep(art::Ptr<SimParticle> spp, TrkInfoMCStep& trkinfomcstep) const {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     GeomHandle<DetectorSystem> det;
     trkinfomcstep._time = _toff.totalTimeOffset(spp) + spp->startGlobalTime();
@@ -551,7 +543,7 @@ namespace mu2e {
     fillTrkInfoMCStep(mom,pos,charge,trkinfomcstep);
   }
 
-  void TrackAnalysisFromKalSeed::fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const {
+  void TrackAnalysisReco::fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const {
     GlobalConstantsHandle<ParticleDataTable> pdt;
     GeomHandle<DetectorSystem> det;
     trkinfomcstep._time = _toff.timeWithOffsetsApplied(*imcs);
@@ -562,7 +554,7 @@ namespace mu2e {
     fillTrkInfoMCStep(mom,pos,charge,trkinfomcstep);
   }
 
-  void TrackAnalysisFromKalSeed::fillTrkInfoMCStep(Hep3Vector const& mom, Hep3Vector const& pos, double charge, TrkInfoMCStep& trkinfomcstep) const {
+  void TrackAnalysisReco::fillTrkInfoMCStep(Hep3Vector const& mom, Hep3Vector const& pos, double charge, TrkInfoMCStep& trkinfomcstep) const {
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
 
@@ -578,7 +570,7 @@ namespace mu2e {
   }
 
 
-  void TrackAnalysisFromKalSeed::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
+  void TrackAnalysisReco::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
     int n_trkqual_vars = TrkQual::n_vars;
     for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
       TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
@@ -590,5 +582,5 @@ namespace mu2e {
 
 // Part of the magic that makes this class a module.
 // create an instance of the module.  It also registers
-using mu2e::TrackAnalysisFromKalSeed;
-DEFINE_ART_MODULE(TrackAnalysisFromKalSeed);
+using mu2e::TrackAnalysisReco;
+DEFINE_ART_MODULE(TrackAnalysisReco);
