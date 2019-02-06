@@ -63,6 +63,7 @@ namespace mu2e {
       trkinfo._t0 = kseed.t0().t0();
       trkinfo._t0err = kseed.t0().t0Err();
       //    trkinfo._ndof = krep->nDof(); // TODO
+
       unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
       countHits(kseed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
       trkinfo._nhits = nhits;
@@ -70,9 +71,23 @@ namespace mu2e {
       trkinfo._ndouble = ndouble;
       trkinfo._ndactive = ndactive;
       trkinfo._nnullambig = nnullambig;
+
       trkinfo._chisq = kseed.chisquared();
       trkinfo._fitcon = kseed.fitConsistency();
       //    trkinfo._radlen = krep->radiationFraction(); // TODO
+
+      for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
+	if(ihit->flag().hasAllProperties(StrawHitFlag::active)) {
+	  trkinfo._firstflt = ihit->trkLen();
+	  break;
+	}
+      }
+      for(std::vector<TrkStrawHitSeed>::const_reverse_iterator ihit=kseed.hits().rbegin(); ihit != kseed.hits().rend(); ++ihit) {
+	if(ihit->flag().hasAllProperties(StrawHitFlag::active)) {
+	  trkinfo._lastflt = ihit->trkLen();
+	  break;
+	}
+      }
 
       // Loop through the KalSegments
       double firstflt = 9999999;
@@ -85,17 +100,15 @@ namespace mu2e {
 	  lastflt = kseg.fmax();
 	}
       }
-      trkinfo._firstflt = firstflt; // TODO (doesn't match original TrkAna exactly)
-      trkinfo._lastflt = lastflt; // TODO (doesn't match original TrkAna exactly)
-      //    trkinfo._startvalid = krep->startValidRange();  // TODO
-      //    trkinfo._endvalid = krep->endValidRange();  // TODO
+      trkinfo._startvalid = firstflt;//krep->startValidRange();  // TODO
+      trkinfo._endvalid = lastflt;//krep->endValidRange();  // TODO
       trkinfo._nmat = kseed.straws().size();  // TODO (this isn't correct)
       //    trkinfo._nmatactive = nmatactive; // TODO
       //    trkinfo._nbend = nbend; // TODO
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
       trkinfo._ent._fitmomerr = kseg.momerr();
-      //      trkinfo._ent._fltlen = kseg.fmin(); //TODO
+      trkinfo._ent._fltlen = kseg.fmin(); //TODO
       trkinfo._ent._fitpar = kseg.helix();
       //      trkinfo._ent._fitparerr = kseg.covar(); //TODO
     }
