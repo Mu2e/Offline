@@ -85,8 +85,8 @@ namespace mu2e {
 	  lastflt = kseg.fmax();
 	}
       }
-      trkinfo._firstflt = firstflt; // TODO (don't match original TrkAna exactly)
-      trkinfo._lastflt = lastflt; // TODO (don't match original TrkAna exactly)
+      trkinfo._firstflt = firstflt; // TODO (doesn't match original TrkAna exactly)
+      trkinfo._lastflt = lastflt; // TODO (doesn't match original TrkAna exactly)
       //    trkinfo._startvalid = krep->startValidRange();  // TODO
       //    trkinfo._endvalid = krep->endValidRange();  // TODO
       trkinfo._nmat = kseed.straws().size();  // TODO (this isn't correct)
@@ -95,7 +95,7 @@ namespace mu2e {
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
       trkinfo._ent._fitmomerr = kseg.momerr();
-      //      trkinfo._ent._fltlen = ; //TODO
+      //      trkinfo._ent._fltlen = kseg.fmin(); //TODO
       trkinfo._ent._fitpar = kseg.helix();
       //      trkinfo._ent._fitparerr = kseg.covar(); //TODO
     }
@@ -118,11 +118,11 @@ namespace mu2e {
 	/*
 	// kludge CLHEP problem
 	HepPoint hpos = ihit->hitTraj()->position(ihit->hitLen());
-	tshinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z());
+	tshinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z()); // TODO
 	double resid,residerr;
 	if(ihit->resid(resid,residerr,_uresid)){
-	  tshinfo._resid = resid;
-	  tshinfo._residerr = residerr;
+	  tshinfo._resid = resid; // TODO
+	  tshinfo._residerr = residerr; // TODO
 	} else {
 	  tshinfo._resid = tshinfo._residerr = -1000.;
 	}
@@ -137,52 +137,44 @@ namespace mu2e {
 	tshinfo._hlen = ihit->hitLen();
 	/*
 	Hep3Vector tdir = ihit->trkTraj()->direction(tshinfo._trklen);
-	tshinfo._wdot = tdir.dot(ihit->straw().getDirection());
+	tshinfo._wdot = tdir.dot(ihit->straw().getDirection()); // TODO
 	// for now approximate the local bfield direction as the z axis FIXME!!
-	tshinfo._bdot = tdir.z();
+	tshinfo._bdot = tdir.z(); // TODO
 	*/
 	tshinfo._t0 = ihit->t0().t0();
 	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
 	/*
 	// include signal propagation time correction
-	tshinfo._ht = ihit->time()-ihit->signalTime();
+	tshinfo._ht = ihit->time()-ihit->signalTime(); // TODO
 	*/
 	tshinfo._ambig = ihit->ambig();
 	/*
 	if(ihit->hasResidual())
-	  tshinfo._doca = ihit->poca().doca();
+	  tshinfo._doca = ihit->poca().doca(); // TODO
 	else
 	  tshinfo._doca = -100.0;
-	tshinfo._exerr = ihit->driftVelocity()*ihit->temperature();
-	tshinfo._penerr = ihit->penaltyErr();
+	tshinfo._exerr = ihit->driftVelocity()*ihit->temperature(); // TODO
+	tshinfo._penerr = ihit->penaltyErr(); // TODO
 	*/
 	const ComboHit& chit = chits.at(ihit->index());	
 	tshinfo._edep = chit.energyDep();
 	tshinfo._wdist = chit.wireDist();
 	tshinfo._werr = chit.wireRes();	
 	tshinfo._driftend = chit.driftEnd();
-	tshinfo._tdrift = chit.driftTime();
+	tshinfo._tdrift = chit.driftTime(); // TODO
 
-	/*
-	// cannot count correlations with other hits in this function; set to false
-	tshinfo._dhit = tshinfo._dactive = false;
-	
+
 	// count correlations with other TSH
-	for(auto jhit=tshv.begin(); jhit != ihit; ++jhit){
-	  const TrkStrawHit* otsh = *jhit;
-	  if(otsh != 0){
-	    if(tshinfo._plane ==  otsh->straw().id().getPlane() &&
-	       tshinfo._panel == otsh->straw().id().getPanel() ){
-	      tshinfo._dhit = true;
-	      if(otsh->isActive()){
-		tshinfo._dactive = true;
-		break;
-	      }
+	for(std::vector<TrkStrawHitSeed>::const_iterator jhit=kseed.hits().begin(); jhit != ihit; ++jhit) {
+	  if(tshinfo._plane ==  jhit->strawId().plane() &&
+	     tshinfo._panel == jhit->strawId().panel() ){
+	    tshinfo._dhit = true;
+	    if (jhit->flag().hasAllProperties(active)) {
+	      tshinfo._dactive = true;
+	      break;
 	    }
 	  }
 	}
-	*/
-
 
 	tshinfos.push_back(tshinfo);
       }
@@ -206,22 +198,19 @@ namespace mu2e {
 	    retval = true;
 	    // KalMaterial info
 	    tminfo._active = kmat->isActive(); // TODO
-	    tminfo._dp = kmat->momFraction(); // TODO
-	    tminfo._radlen = kmat->radiationFraction(); // TODO
+	*/
+	tminfo._dp = i_straw.pfrac(); // TODO
+	tminfo._radlen = i_straw.radLen(); // TODO
+	    /*
 	    tminfo._sigMS = kmat->deflectRMS(); // TODO
 	    // DetIntersection info
 	    const DetIntersection& dinter = kmat->detIntersection();
 	    tminfo._thit = (dinter.thit != 0); // TODO
 	    tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive()); // TODO
-	    tminfo._doca = dinter.dist; // TODO
-	    tminfo._tlen = dinter.pathlen; // TODO
-	    // straw information
-	    Straw const* straw = delem->straw();
-	    
-	    tminfos.push_back(tminfo);
-	  }
-	}
-	*/
+	    */
+	tminfo._doca = i_straw.doca();//dinter.dist; // TODO
+	tminfo._tlen = i_straw.trkLen();//dinter.pathlen; // TODO
+
 	tminfos.push_back(tminfo);
       }
     }
@@ -235,10 +224,8 @@ namespace mu2e {
 	tchinfo._did = tch.caloCluster()->diskId();
 	tchinfo._trklen = tch.trkLen();
 	tchinfo._clen = tch.hitLen();
-	/*
-	  HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
-	  tchinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z()); //TODO
-	*/
+	//	  HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
+	tchinfo._poca = tch.caloCluster()->cog3Vector();//XYZVec(hpos.x(),hpos.y(),hpos.z()); //TODO
 	if(tch.flag().hasAllProperties(StrawHitFlag::doca)) {
 	  tchinfo._doca = tch.clusterAxisDOCA();
 	}
@@ -249,10 +236,9 @@ namespace mu2e {
 	tchinfo._t0err = tch.t0().t0Err();
 	tchinfo._ct = tch.caloCluster()->time();
 	tchinfo._edep = tch.caloCluster()->energyDep();
-	/*
-	  Hep3Vector tdir = tch->trkTraj()->direction(tchinfo._trklen);
-	  tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0)); // TODO
-	*/
+	//	  Hep3Vector tdir = tch->trkTraj()->direction(tchinfo._trklen);
+	//tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0)); // TODO
+
       }
     }
   }
