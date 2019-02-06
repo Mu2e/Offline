@@ -12,6 +12,9 @@
 
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "DataProducts/inc/IndexMap.hh"
+#include "MCDataProducts/inc/CrvDigiMC.hh"
+#include "MCDataProducts/inc/CaloShowerSim.hh"
 
 using namespace std;
 
@@ -23,6 +26,17 @@ namespace mu2e {
 
     SimParticleTimeOffset _oldTOff;
     SimParticleTimeOffset _newTOff;
+
+    art::InputTag _strawDigiMCIndexMapTag;
+    IndexMap _strawDigiMCIndexMap;
+
+    art::InputTag _oldCrvDigiMCTag;
+    art::InputTag _newCrvDigiMCTag;
+    art::InputTag _crvDigiMCIndexMapTag;
+    IndexMap _crvDigiMCIndexMap;
+
+    art::InputTag _oldCaloShowerSimTag;
+    art::InputTag _newCaloShowerSimTag;
 
   public:
     explicit CompressDigiMCsCheck(const fhicl::ParameterSet& pset);
@@ -36,15 +50,30 @@ namespace mu2e {
     , _newStrawDigiMCTag(pset.get<art::InputTag>("newStrawDigiMCTag"))
     , _oldTOff(pset.get<fhicl::ParameterSet>("OldTimeOffsets", {}))
     , _newTOff(pset.get<fhicl::ParameterSet>("NewTimeOffsets", {}))
+    , _strawDigiMCIndexMapTag(pset.get<art::InputTag>("strawDigiMCIndexMapTag", ""))
+    , _oldCrvDigiMCTag(pset.get<art::InputTag>("oldCrvDigiMCTag"))
+    , _newCrvDigiMCTag(pset.get<art::InputTag>("newCrvDigiMCTag"))
+    , _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", ""))
+    , _oldCaloShowerSimTag(pset.get<art::InputTag>("oldCaloShowerSimTag"))
+    , _newCaloShowerSimTag(pset.get<art::InputTag>("newCaloShowerSimTag"))
   {  }
 
   //================================================================
   void CompressDigiMCsCheck::analyze(const art::Event& event) {
+
+    ////////////////////////////////////
+    // Check StrawDigiMCs
     art::Handle<StrawDigiMCCollection> oldStrawDigiMCHandle;
     event.getByLabel(_oldStrawDigiMCTag, oldStrawDigiMCHandle);
 
     art::Handle<StrawDigiMCCollection> newStrawDigiMCHandle;
     event.getByLabel(_newStrawDigiMCTag, newStrawDigiMCHandle);
+
+    if (_strawDigiMCIndexMapTag != "") {
+      art::Handle<IndexMap> strawDigiMCIndexMapHandle;
+      event.getByLabel(_strawDigiMCIndexMapTag, strawDigiMCIndexMapHandle);
+      _strawDigiMCIndexMap = *strawDigiMCIndexMapHandle;
+    }
 
     if (oldStrawDigiMCHandle.isValid() && newStrawDigiMCHandle.isValid()) {
       const auto& oldStrawDigiMCs = *oldStrawDigiMCHandle;
@@ -56,13 +85,23 @@ namespace mu2e {
       unsigned int n_old_straw_digi_mcs = oldStrawDigiMCs.size();
       unsigned int n_new_straw_digi_mcs = newStrawDigiMCs.size();
 
-      if (n_old_straw_digi_mcs != n_new_straw_digi_mcs) {
+      // Only check for this if we haven't reduced the number of StrawDigiMCs
+      if (_strawDigiMCIndexMapTag == "" && n_old_straw_digi_mcs != n_new_straw_digi_mcs) {
 	throw cet::exception("CompressDigiMCsCheck") << "Number of old and new StrawDigiMCs do not match" << std::endl;
       }
       
-      for (unsigned int i_digi_mc = 0; i_digi_mc < n_old_straw_digi_mcs; ++i_digi_mc) {
-	const auto& i_oldStrawDigiMC = oldStrawDigiMCs.at(i_digi_mc);
-	const auto& i_newStrawDigiMC = newStrawDigiMCs.at(i_digi_mc);
+      for (unsigned int i_old_digi_mc = 0; i_old_digi_mc < n_old_straw_digi_mcs; ++i_old_digi_mc) {
+	const auto& i_oldStrawDigiMC = oldStrawDigiMCs.at(i_old_digi_mc);
+	unsigned int i_new_digi_mc = i_old_digi_mc;
+	if (_strawDigiMCIndexMapTag != "") {
+	  if (_strawDigiMCIndexMap.checkInMap(i_old_digi_mc)) {
+	    i_new_digi_mc = _strawDigiMCIndexMap.getCondensedIndex(i_old_digi_mc);
+	  }
+	  else {
+	    continue; // to next old digi MC, since this one was compressed out...
+	  }
+	}
+	const auto& i_newStrawDigiMC = newStrawDigiMCs.at(i_new_digi_mc);
 	
 	const auto& i_oldStepPointMC = *(i_oldStrawDigiMC.stepPointMC(StrawEnd::hv));
 	const auto& i_newStepPointMC = *(i_newStrawDigiMC.stepPointMC(StrawEnd::hv));
@@ -86,7 +125,103 @@ namespace mu2e {
 	double old_time = _oldTOff.timeWithOffsetsApplied(i_oldStepPointMC);
 	double new_time = _newTOff.timeWithOffsetsApplied(i_newStepPointMC);
 	if (std::fabs(old_time - new_time) > 1e-5) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match" << std::endl;
+	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
+	}
+      }
+    }
+
+    //////////////////////////////////////
+    // Check CrvDigiMCs
+    art::Handle<CrvDigiMCCollection> oldCrvDigiMCHandle;
+    event.getByLabel(_oldCrvDigiMCTag, oldCrvDigiMCHandle);
+
+    art::Handle<CrvDigiMCCollection> newCrvDigiMCHandle;
+    event.getByLabel(_newCrvDigiMCTag, newCrvDigiMCHandle);
+
+    if (_crvDigiMCIndexMapTag != "") {
+      art::Handle<IndexMap> crvDigiMCIndexMapHandle;
+      event.getByLabel(_crvDigiMCIndexMapTag, crvDigiMCIndexMapHandle);
+      _crvDigiMCIndexMap = *crvDigiMCIndexMapHandle;
+    }
+
+    if (oldCrvDigiMCHandle.isValid() && newCrvDigiMCHandle.isValid()) {
+      const auto& oldCrvDigiMCs = *oldCrvDigiMCHandle;
+      const auto& newCrvDigiMCs = *newCrvDigiMCHandle;
+
+      _oldTOff.updateMap(event);
+      _newTOff.updateMap(event);
+
+      unsigned int n_old_crv_digi_mcs = oldCrvDigiMCs.size();
+      unsigned int n_new_crv_digi_mcs = newCrvDigiMCs.size();
+
+      // Only check for this if we haven't reduced the number of CrvDigiMCs (e.g. in digi production)
+      if (_crvDigiMCIndexMapTag == "" && n_old_crv_digi_mcs != n_new_crv_digi_mcs) {
+	throw cet::exception("CompressDigiMCsCheck") << "Number of old and new CrvDigiMCs do not match" << std::endl;
+      }
+      
+      for (unsigned int i_old_digi_mc = 0; i_old_digi_mc < n_old_crv_digi_mcs; ++i_old_digi_mc) {
+	const auto& i_oldCrvDigiMC = oldCrvDigiMCs.at(i_old_digi_mc);
+	unsigned int i_new_digi_mc = i_old_digi_mc;
+	if (_crvDigiMCIndexMapTag != "") {
+	  if (_crvDigiMCIndexMap.checkInMap(i_old_digi_mc)) {
+	    i_new_digi_mc = _crvDigiMCIndexMap.getCondensedIndex(i_old_digi_mc);
+	  }
+	  else {
+	    continue; // to next old digi MC, since this one was compressed out...
+	  }
+	}
+	const auto& i_newCrvDigiMC = newCrvDigiMCs.at(i_new_digi_mc);
+	
+	const auto& i_oldStepPointMC = *(*i_oldCrvDigiMC.GetStepPoints().begin());
+	const auto& i_newStepPointMC = *(*i_newCrvDigiMC.GetStepPoints().begin());
+	
+	const auto& i_old_digi_mc_barIndex = i_oldCrvDigiMC.GetScintillatorBarIndex();
+	const auto& i_new_digi_mc_barIndex = i_newCrvDigiMC.GetScintillatorBarIndex();
+	if (i_old_digi_mc_barIndex != i_new_digi_mc_barIndex) {
+	  throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's ScintillatorBarIndexs do not match" << std::endl;
+	}
+	
+	const auto& i_old_step_barIndex = i_oldStepPointMC.barIndex();
+	const auto& i_new_step_barIndex = i_newStepPointMC.barIndex();
+	if (i_old_step_barIndex != i_new_step_barIndex) {
+	  throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's StepPointMC's BarIndexs do not match" << std::endl;
+	}
+	
+	if (i_new_step_barIndex != i_new_digi_mc_barIndex) {
+	  throw cet::exception("CompressDigiMCsCheck") << "New CrvDigiMC's BarIndex is inconsistent with its StepPointMC's BarIndex" << std::endl;
+	}
+	
+	double old_time = _oldTOff.timeWithOffsetsApplied(i_oldStepPointMC);
+	double new_time = _newTOff.timeWithOffsetsApplied(i_newStepPointMC);
+	if (std::fabs(old_time - new_time) > 1e-5) {
+	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (CrvDigiMC)" << std::endl;
+	}
+      }
+    }
+
+
+    //////////////////////////////////////
+    // Check CaloShowerSims
+    art::Handle<CaloShowerSimCollection> oldCaloShowerSimHandle;
+    event.getByLabel(_oldCaloShowerSimTag, oldCaloShowerSimHandle);
+
+    art::Handle<CaloShowerSimCollection> newCaloShowerSimHandle;
+    event.getByLabel(_newCaloShowerSimTag, newCaloShowerSimHandle);
+
+    if (oldCaloShowerSimHandle.isValid() && newCaloShowerSimHandle.isValid()) {
+      const auto& oldCaloShowerSims = *oldCaloShowerSimHandle;
+      const auto& newCaloShowerSims = *newCaloShowerSimHandle;
+
+      unsigned int n_old_calo_shower_sims = oldCaloShowerSims.size();
+      for (unsigned int i_old_calo_shower_sim = 0; i_old_calo_shower_sim < n_old_calo_shower_sims; ++i_old_calo_shower_sim) {
+	unsigned int i_new_calo_shower_sim = i_old_calo_shower_sim;
+	const auto& i_oldCaloShowerSim = oldCaloShowerSims.at(i_old_calo_shower_sim);
+	const auto& i_newCaloShowerSim = newCaloShowerSims.at(i_new_calo_shower_sim);
+
+	const auto& i_oldCaloShowerStepPtr = *(i_oldCaloShowerSim.caloShowerSteps().begin());
+	const auto& i_newCaloShowerStepPtr = *(i_newCaloShowerSim.caloShowerSteps().begin());
+	if (i_oldCaloShowerStepPtr->momentumIn() != i_newCaloShowerStepPtr->momentumIn()) {
+	  throw cet::exception("CompressDigiMCsCheck") << "Old and new CaloShowerStepPtrs do not match" << std::endl;
 	}
       }
     }

@@ -91,6 +91,46 @@ DigiCompression : {
 	newStrawDigiMCTag : "compressDigiMCs"
 	OldTimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+	newCaloShowerSimTag : "compressDigiMCs"
+	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
+	newCrvDigiMCTag : "compressDigiMCs"
+    }
+
+    CaloFix : {
+	module_type : FixCaloShowerStepPtrs
+	caloShowerStepTags : [ "compressDigiMCs" ]
+	caloShowerSimTag : "compressDigiMCs"
+	caloShowerStepROTag : "compressDigiMCs"
+    }
+
+
+    Reco : {
+      module_type : CompressDigiMCs
+      strawDigiMCTag : "compressDigiMCs"
+      crvDigiMCTag : "compressDigiMCs"
+      simParticleTags : [ "compressDigiMCs" ]
+      extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
+      timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+      caloShowerStepTags : [ "compressDigiMCs" ]
+      caloShowerSimTag : "compressDigiMCs"
+      caloShowerStepROTag : "compressDigiMCs"
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+    }
+
+    RecoCheck : {
+      module_type : CompressDigiMCsCheck
+      oldStrawDigiMCTag : "compressDigiMCs"
+      newStrawDigiMCTag : "compressRecoMCs"
+      OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+      NewTimeOffsets : { inputs : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ] }
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
+      oldCrvDigiMCTag : "compressDigiMCs"
+      newCrvDigiMCTag : "compressRecoMCs"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      oldCaloShowerSimTag : "compressDigiMCs"
+      newCaloShowerSimTag : "compressRecoMCs"
     }
 }
 

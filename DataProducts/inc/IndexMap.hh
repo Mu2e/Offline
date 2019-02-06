@@ -29,6 +29,15 @@ namespace mu2e {
       return _theMap.at(full);
     }
 
+    bool checkInMap(const FullIndex& full) {
+      if (_theMap.find(full) != _theMap.end()) {
+	return true;
+      }
+      else {
+	return false;
+      }
+    }
+
     // Print the information found in this hit.
     void print( std::ostream& ost, bool doEndl ) const {
 
