@@ -13,15 +13,19 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e 
+#include "DataProducts/inc/VirtualDetectorId.hh"
+#include "DataProducts/inc/IndexMap.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
-#include "DataProducts/inc/IndexMap.hh"
+#include "MCDataProducts/inc/KalSeedMC.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+#include "TrkDiag/inc/TrkMCTools.hh"
 #include <vector>
 #include <memory>
 #include <iostream>
@@ -48,15 +52,32 @@ namespace mu2e {
 	Comment("CrvDigiMCCollection producer")};
       fhicl::Sequence<std::string> KFFInstances { Name("KFFInstances"),
 	Comment("KalFinalFit Module Instances")};
+      fhicl::Atom<art::InputTag> VDSPC { Name("VDSPCollection"),
+	Comment("Virtual Detector StepPointMC collection"),"*_virtualdetector_*_*"};
+      fhicl::Sequence<int> VDIDS { Name("VDIds"),
+	Comment("Virtual Detector Ids"),  
+	{ VirtualDetectorId::TT_FrontHollow,
+	  VirtualDetectorId::TT_FrontPA,
+	  VirtualDetectorId::TT_Mid,
+	  VirtualDetectorId::TT_MidInner,
+	  VirtualDetectorId::TT_Back,
+	  VirtualDetectorId::EMC_Disk_0_SurfIn,
+	  VirtualDetectorId::EMC_Disk_0_SurfOut,
+	  VirtualDetectorId::EMC_Disk_1_SurfIn,
+	  VirtualDetectorId::EMC_Disk_1_SurfOut } };
     };
     using Parameters = art::EDProducer::Table<Config>;
     explicit SelectRecoMC(const Parameters& conf);
     void produce(art::Event& evt) override;
 
   private:
+  // utility functions
+    void fillKalSeedMC(KalSeed const& seed, StrawDigiMCCollection const& sdmcc,
+	StepPointMCCollection const& vdspc, PrimaryParticle const& pp, KalSeedMC& mcseed);
     int _debug;
-    art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc;
-    std::vector<std::string> _kff; 
+    art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc;
+    std::vector<std::string> _kff;
+    std::vector<int> _vdids;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -65,7 +86,9 @@ namespace mu2e {
     _ccc(config().CCC()),
     _crvccc(config().CrvCCC()),
     _sdmcc(config().SDMCC()),
-    _crvdmcc(config().CRVDMCC())
+    _crvdmcc(config().CRVDMCC()),
+    _vdspc(config().VDSPC()),
+    _vdids(config().VDIDS())
   {
     consumes<PrimaryParticle>(_pp);
     consumesMany<KalSeedCollection>();
@@ -73,6 +96,8 @@ namespace mu2e {
     consumes<CrvCoincidenceClusterCollection>(_crvccc);
     produces <IndexMap>("StrawDigiMCMap"); 
     produces <IndexMap>("CrvDigiMCMap"); 
+    produces <KalSeedMCCollection>(); 
+    produces <KalSeedMCAssns>();
     if(_debug > 0){
       std::cout << "Using KalSeed collections from ";
       for (auto const& kff : _kff)
@@ -91,10 +116,17 @@ namespace mu2e {
     auto const& crvccc = *crvccch;
     auto crvdmcch = event.getValidHandle<CrvDigiMCCollection>(_crvdmcc);
     auto const& crvdmcc = *crvdmcch;
+    auto vdspch = event.getValidHandle<StepPointMCCollection>(_vdspc);
+    auto const& vdspc = *vdspch;
+    // some things needed for creating Ptrs before the collection is in the event
+    auto KalSeedMCCollectionPID = getProductID<KalSeedMCCollection>();
+    auto KalSeedMCCollectionGetter = event.productGetter(KalSeedMCCollectionPID);
 // create output; these are pruned collections containing only
 // products related to the reconstruction output or the event primary
     std::unique_ptr<IndexMap> sdmcim(new IndexMap);
     std::unique_ptr<IndexMap> crvdmcim(new IndexMap);
+    std::unique_ptr<KalSeedMCCollection> ksmcc(new KalSeedMCCollection);
+    std::unique_ptr<KalSeedMCAssns> ksmca(new KalSeedMCAssns);
     // straw hit (indices) that are referenced by the tracks
     std::set<StrawHitIndex> shindices;
     // CaloClusters that are referenced by the tracks
@@ -108,11 +140,20 @@ namespace mu2e {
       // loop over the KalSeeds and the hits inside them
       for(auto const& seedh : seedhs) {
 	auto const& seedc = *seedh;
-	for(auto const& seed : seedc) {
+	for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
+	  auto const& seed = *iseed;
 	  if(seed.hasCaloCluster())caloclusters.insert(seed.caloCluster());
 	  for( auto const& tsh : seed.hits() ) {
 	    shindices.insert(tsh.index());
 	  }
+// create the KalSeedMC for this reco seed
+	  KalSeedMC mcseed;
+	  fillKalSeedMC(seed,sdmcc,vdspc,pp,mcseed);
+	  ksmcc->push_back(mcseed);
+	  // fill the Assns; this needs Ptrs
+	  auto mcseedp = art::Ptr<KalSeedMC>(KalSeedMCCollectionPID,ksmcc->size()-1,KalSeedMCCollectionGetter);
+	  auto seedp = art::Ptr<KalSeed>(seedh,std::distance(seedc.begin(),iseed));
+	  ksmca->addSingle(seedp,mcseedp);
 	} 
       }
     }
@@ -142,6 +183,7 @@ namespace mu2e {
 	}
       }
     }
+
     // fill the StrawIndex map with the complete list of indices.  Note that std::set has kept these
     // sorted for us, nice!
     StrawHitIndex shcount(0);
@@ -172,6 +214,65 @@ namespace mu2e {
     // put output in event
     event.put(std::move(sdmcim),"StrawDigiMCMap");
     event.put(std::move(crvdmcim),"CrvDigiMCMap");
+    event.put(std::move(ksmcc));
+  }
+
+  void SelectRecoMC::fillKalSeedMC(KalSeed const& seed, 
+    StrawDigiMCCollection const& sdmcc,
+    StepPointMCCollection const& vdspc,
+    PrimaryParticle const& pp,
+    KalSeedMC& mcseed) {
+  // find the associated SimParticles for this KalSeed
+    std::vector<TrkMCTools::spcount> spcc;
+    TrkMCTools::findMCTrk(seed,spcc,sdmcc);
+    // find all the StepPointMCs associated with the primary particle
+    if(spcc.size()>0){
+    // create a stub for the primary particle
+      auto const& pspc = spcc.front();
+      SimPartStub pstub(pspc._spp);
+      // these should be in the constructor: requires moving spcount declaration FIXME!
+      pstub._nhits = pspc._count;
+      pstub._nactive = pspc._acount;
+      // no matching to true CaloCluster yet FIXME!
+      // find the relationship with the primary particle (s).  Choose the closest
+      for(auto const& spp : pp.primarySimParticles()) {
+	MCRelationship prel(pspc._spp,spp);
+	if(prel > pstub._rel) pstub._rel = prel;
+      }
+      mcseed._simps.push_back(pstub);
+    // create stubs for the rest of the associated particles.  These refrence the primary
+    // particle of this seed
+      for(size_t isp=1;isp < spcc.size(); ++isp){
+	auto const& spc = spcc[isp];
+	SimPartStub stub(spc._spp);
+	stub._nhits = spc._count;
+	stub._nactive = spc._acount;
+	stub._rel = MCRelationship(spc._spp,pspc._spp);
+	mcseed._simps.push_back(pstub);
+      }
+// now find matching VD hits and record their info too
+      for(auto const& vdsp : vdspc ) {
+	if(vdsp.simParticle() == pspc._spp){
+	  if(_debug > 1) std::cout << "Found matching VD StepPoint position" 
+	  << vdsp.position() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
+	  mcseed._vdsteps.push_back(VDStep(vdsp));
+	}
+      }
+    // find the SimParticle referenced by individual hits
+      for(auto const& hit : seed.hits() ) {
+	int spref(-1);
+	auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
+	for (size_t isp =0; isp < mcseed.simParticles().size(); ++isp) {
+	  auto const& sp = mcseed.simParticle(isp);
+	  if(sdmc.earlyStepPointMC()->simParticle() == sp._simptr){
+	    spref = isp;
+	    break;
+	  }
+	}
+	// record the reference
+	mcseed._digisimps.push_back(spref);
+      }
+    }
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectRecoMC)

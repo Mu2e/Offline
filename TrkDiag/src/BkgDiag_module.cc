@@ -504,7 +504,7 @@ namespace mu2e
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       if(spp.isNonnull()){
 	 MCRelationship rel(spp,pptr);
-	 shinfo._relation = rel._rel;  
+	 shinfo._relation = rel.relationship();  
       }
     }
   }
