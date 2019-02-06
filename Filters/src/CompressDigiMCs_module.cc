@@ -39,6 +39,7 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
+#include "DataProducts/inc/IndexMap.hh"
 
 namespace mu2e {
   class CompressDigiMCs;
@@ -150,6 +151,11 @@ private:
   InstanceLabel _trackerOutputInstanceLabel;
   InstanceLabel _crvOutputInstanceLabel;
   std::vector<InstanceLabel> _newStepPointMCInstances;
+
+  art::InputTag _strawDigiMCIndexMapTag;
+  mu2e::IndexMap _strawDigiMCIndexMap;
+  art::InputTag _crvDigiMCIndexMapTag;
+  mu2e::IndexMap _crvDigiMCIndexMap;
 };
 
 
@@ -163,7 +169,9 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _caloShowerSimTag(pset.get<art::InputTag>("caloShowerSimTag")),
     _caloShowerStepROTag(pset.get<art::InputTag>("caloShowerStepROTag")),
     _trackerOutputInstanceLabel(pset.get<std::string>("trackerOutputInstanceLabel", "tracker")),
-    _crvOutputInstanceLabel(pset.get<std::string>("crvOutputInstanceLabel", "CRV"))
+    _crvOutputInstanceLabel(pset.get<std::string>("crvOutputInstanceLabel", "CRV")),
+    _strawDigiMCIndexMapTag(pset.get<art::InputTag>("strawDigiMCIndexMapTag", "")),
+    _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", ""))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -183,7 +191,12 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   produces<GenParticleCollection>();
 
   for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
-    produces<SimParticleTimeMap>( (*i_tag).label() );
+    if ( (*i_tag).instance() == "") {
+      produces<SimParticleTimeMap>( (*i_tag).label() ); // in the case where we have two time maps from different modules
+    }
+    else {
+      produces<SimParticleTimeMap>( (*i_tag).instance() ); // in the case where we have two time maps from the same module (e.g. a first stage compression)
+    }
   }
 
   produces<CaloShowerStepCollection>();
@@ -248,23 +261,55 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     _newSimParticleTimeMaps.push_back(std::unique_ptr<SimParticleTimeMap>(new SimParticleTimeMap));
   }
 
+  // If we've been given IndexMap tags, then use those
+  if (_strawDigiMCIndexMapTag != "") {
+    art::Handle<mu2e::IndexMap> indexMapHandle;
+    event.getByLabel(_strawDigiMCIndexMapTag, indexMapHandle);
+    _strawDigiMCIndexMap = *indexMapHandle;
+  }
+  if (_crvDigiMCIndexMapTag != "") {
+    art::Handle<mu2e::IndexMap> indexMapHandle;
+    event.getByLabel(_crvDigiMCIndexMapTag, indexMapHandle);
+    _crvDigiMCIndexMap = *indexMapHandle;
+  }
+
   event.getByLabel(_strawDigiMCTag, _strawDigiMCsHandle);
   const auto& strawDigiMCs = *_strawDigiMCsHandle;
-  for (const auto& i_strawDigiMC : strawDigiMCs) {
-    copyStrawDigiMC(i_strawDigiMC);
+  for (size_t i = 0; i < strawDigiMCs.size(); ++i) {
+    const auto& i_strawDigiMC = strawDigiMCs.at(i);
+    mu2e::FullIndex full_i = i;
+    bool in_index_map = false;
+    if (_strawDigiMCIndexMapTag != "") {
+      in_index_map = _strawDigiMCIndexMap.checkInMap(full_i);
+    }
+    if (_strawDigiMCIndexMapTag == "" || in_index_map) {
+      copyStrawDigiMC(i_strawDigiMC);
+    }
   }
-  if (strawDigiMCs.size() != _newStrawDigiMCs->size()) {
+
+  // Only check for this if we are not reducing the number of StrawDigiMCs
+  if (_strawDigiMCIndexMapTag == "" && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
     throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match (" 
 					    << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
   }
   
+  
   if (_crvDigiMCTag != "") {
     event.getByLabel(_crvDigiMCTag, _crvDigiMCsHandle);
     const auto& crvDigiMCs = *_crvDigiMCsHandle;
-    for (const auto& i_crvDigiMC : crvDigiMCs) {
-      copyCrvDigiMC(i_crvDigiMC);
+    for (size_t i = 0; i < crvDigiMCs.size(); ++i) {
+      const auto& i_crvDigiMC = crvDigiMCs.at(i);
+      mu2e::FullIndex full_i = i;
+      bool in_index_map = false;
+      if (_crvDigiMCIndexMapTag != "") {
+	in_index_map = _crvDigiMCIndexMap.checkInMap(full_i);
+      }
+      if (_crvDigiMCIndexMapTag == "" || in_index_map) {
+	copyCrvDigiMC(i_crvDigiMC);
+      }
     }
-    if (crvDigiMCs.size() != _newCrvDigiMCs->size()) {
+    // Only check for this if we are not reducing the number of CrvDigiMCs
+    if (_crvDigiMCIndexMapTag == "" && crvDigiMCs.size() != _newCrvDigiMCs->size()) {
       throw cet::exception("CompressDigiMCs") << "The number of CrvDigiMCs before and after compression does not match (" 
 					      << crvDigiMCs.size() << " != " << _newCrvDigiMCs->size() << ")" << std::endl;
     }
@@ -423,7 +468,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
   for (std::vector<art::InputTag>::const_iterator i_tag = _timeMapTags.begin(); i_tag != _timeMapTags.end(); ++i_tag) {
     size_t i_element = i_tag - _timeMapTags.begin();
-    event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
+    if ( (*i_tag).instance() == "") {
+      event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).label());
+    }
+    else {
+      event.put(std::move(_newSimParticleTimeMaps.at(i_element)), (*i_tag).instance());
+    }
   }
 
   event.put(std::move(_newCaloShowerSteps));
@@ -486,7 +536,7 @@ art::Ptr<mu2e::CaloShowerStep> mu2e::CompressDigiMCs::copyCaloShowerStep(const m
 
     _newCaloShowerSteps->push_back(new_calo_shower_step);
 
-    return art::Ptr<mu2e::CaloShowerStep>(_newCaloShowerStepsPID, _newCaloShowerSteps->size(), _newCaloShowerStepGetter);
+    return art::Ptr<mu2e::CaloShowerStep>(_newCaloShowerStepsPID, _newCaloShowerSteps->size()-1, _newCaloShowerStepGetter);
   }
   else {
     return art::Ptr<CaloShowerStep>();
