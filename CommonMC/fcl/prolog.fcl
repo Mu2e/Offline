@@ -37,6 +37,7 @@ CommonMC: {
     CrvDigiMCCollection : "compressDigiMCs"
     KFFInstances  : ["MHFDeM", "MHFDeP", "MHFDmuM", "MHFDmuP",
     "KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
+    VDSPCollection : "compressDigiMCs:virtualdetector"
   }
 }
 CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]

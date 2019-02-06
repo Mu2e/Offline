@@ -53,19 +53,8 @@ namespace mu2e {
       fhicl::Sequence<std::string> KFFInstances { Name("KFFInstances"),
 	Comment("KalFinalFit Module Instances")};
       fhicl::Atom<art::InputTag> VDSPC { Name("VDSPCollection"),
-	Comment("Virtual Detector StepPointMC collection"),"*_virtualdetector_*_*"};
-      fhicl::Sequence<int> VDIDS { Name("VDIds"),
-	Comment("Virtual Detector Ids"),  
-	{ VirtualDetectorId::TT_FrontHollow,
-	  VirtualDetectorId::TT_FrontPA,
-	  VirtualDetectorId::TT_Mid,
-	  VirtualDetectorId::TT_MidInner,
-	  VirtualDetectorId::TT_Back,
-	  VirtualDetectorId::EMC_Disk_0_SurfIn,
-	  VirtualDetectorId::EMC_Disk_0_SurfOut,
-	  VirtualDetectorId::EMC_Disk_1_SurfIn,
-	  VirtualDetectorId::EMC_Disk_1_SurfOut } };
-    };
+	Comment("Virtual Detector StepPointMC collection")};
+   };
     using Parameters = art::EDProducer::Table<Config>;
     explicit SelectRecoMC(const Parameters& conf);
     void produce(art::Event& evt) override;
@@ -77,7 +66,6 @@ namespace mu2e {
     int _debug;
     art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc;
     std::vector<std::string> _kff;
-    std::vector<int> _vdids;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -88,7 +76,7 @@ namespace mu2e {
     _sdmcc(config().SDMCC()),
     _crvdmcc(config().CRVDMCC()),
     _vdspc(config().VDSPC()),
-    _vdids(config().VDIDS())
+    _kff(config().KFFInstances())
   {
     consumes<PrimaryParticle>(_pp);
     consumesMany<KalSeedCollection>();
@@ -215,6 +203,7 @@ namespace mu2e {
     event.put(std::move(sdmcim),"StrawDigiMCMap");
     event.put(std::move(crvdmcim),"CrvDigiMCMap");
     event.put(std::move(ksmcc));
+    event.put(std::move(ksmca));
   }
 
   void SelectRecoMC::fillKalSeedMC(KalSeed const& seed, 

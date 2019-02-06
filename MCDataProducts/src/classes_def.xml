@@ -226,6 +226,10 @@
  <class name="art::Ptr<mu2e::KalSeedMC>"/>
  <class name="art::Wrapper<mu2e::KalSeedMCCollection>"/>
  <class name="mu2e::KalSeedMCAssns"/>
+ <class name="art::Assns<mu2e::KalSeed,mu2e::KalSeedMC,void>"/>
+ <class name="art::Assns<mu2e::KalSeedMC,mu2e::KalSeed,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::KalSeedMC,mu2e::KalSeed,void>>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::KalSeed,mu2e::KalSeedMC,void>>"/>
  <class name="art::Wrapper<mu2e::KalSeedMCAssns>"/>
 
 <!--  ********* CRV  ********* -->
