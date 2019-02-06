@@ -118,19 +118,21 @@ namespace mu2e {
     // straw hit (indices) that are referenced by the tracks
     std::set<StrawHitIndex> shindices;
     // CaloClusters that are referenced by the tracks
-    std::set<art::Ptr<CaloCluster> > caloclusters;
+//    std::set<art::Ptr<CaloCluster> > caloclusters;
     // loop over input KalFinalFit products
     for (auto const& kff : _kff) {
     // get all products from this
       art::ModuleLabelSelector kffsel(kff);
       std::vector< art::Handle<KalSeedCollection> > seedhs;
       event.getMany<KalSeedCollection>(kffsel, seedhs);
+      if(_debug > 1) std::cout << "Found " << seedhs.size() << " collections from module " << kff << std::endl;
       // loop over the KalSeeds and the hits inside them
       for(auto const& seedh : seedhs) {
 	auto const& seedc = *seedh;
+	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << kff << std::endl;
 	for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
 	  auto const& seed = *iseed;
-	  if(seed.hasCaloCluster())caloclusters.insert(seed.caloCluster());
+//	  if(seed.hasCaloCluster())caloclusters.insert(seed.caloCluster());
 	  for( auto const& tsh : seed.hits() ) {
 	    shindices.insert(tsh.index());
 	  }

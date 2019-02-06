@@ -30,14 +30,6 @@ CommonMC: {
   SelectRecoMC : {
     module_type : SelectRecoMC
     debugLevel : 0
-    PrimaryParticle : "FindMCPrimary"
-    CaloClusterCollection : "CaloClusterFromProtoCluster"
-    CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
-    StrawDigiMCCollection : "compressDigiMCs"
-    CrvDigiMCCollection : "compressDigiMCs"
-    KFFInstances  : ["MHFDeM", "MHFDeP", "MHFDmuM", "MHFDmuP",
-    "KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
-    VDSPCollection : "compressDigiMCs:virtualdetector"
   }
 }
 CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
