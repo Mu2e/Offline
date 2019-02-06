@@ -89,7 +89,7 @@ namespace mu2e {
     }
 
 
-    void findMCTrk(const KalSeed& kseed,art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis) {
+    void findMCTrk(const KalSeed& kseed,art::Ptr<SimParticle>& spp, StrawDigiMCCollection const& mcdigis) {
       static art::Ptr<SimParticle> nullvec;
       spp = nullvec;
       std::vector<spcount> sct;
@@ -98,29 +98,28 @@ namespace mu2e {
 	spp = sct[0]._spp;
     }
 
-    void findMCTrk(const KalSeed& kseed,std::vector<spcount>& sct, const StrawDigiMCCollection& mcdigis) {
+    void findMCTrk(const KalSeed& kseed,std::vector<spcount>& sct, StrawDigiMCCollection const& mcdigis) {
       sct.clear();
       // find the SimParticles which contributed hits.
       // loop through the straw hits from the track
       static StrawHitFlag active(StrawHitFlag::active);
       for(const auto& i_hit : kseed.hits()) {
 	// loop over the hits and find the associated steppoints
-	if(i_hit.flag().hasAllProperties(active)){
-	  StrawDigiMC const& mcdigi = mcdigis.at(i_hit.index());
-	  StrawEnd itdc;
-	  art::Ptr<SimParticle> spp = mcdigi.stepPointMC(itdc)->simParticle();
-	  // see if this particle has already been found; if so, increment, if not, add it
-	  bool found(false);
-	  for(size_t isp=0;isp<sct.size();++isp){
-	    // count direct daughter/parent as part the same particle
-	    if(sct[isp]._spp == spp ){
-	      found = true;
-	      sct[isp].append(spp);
-	      break;
-	    }
+	bool isactive = i_hit.flag().hasAllProperties(active);
+	StrawDigiMC const& mcdigi = mcdigis.at(i_hit.index());
+	StrawEnd itdc;
+	art::Ptr<SimParticle> spp = mcdigi.stepPointMC(itdc)->simParticle();
+	// see if this particle has already been found; if so, increment, if not, add it
+	bool found(false);
+	for(size_t isp=0;isp<sct.size();++isp){
+	  // count direct daughter/parent as part the same particle
+	  if(sct[isp]._spp == spp ){
+	    found = true;
+	    sct[isp].append(spp,isactive);
+	    break;
 	  }
-	  if(!found)sct.push_back(spp);
 	}
+	if(!found)sct.push_back(spcount(spp,isactive));
       }
       // sort by # of contributions
       sort(sct.begin(),sct.end(),spcountcomp());
@@ -215,7 +214,7 @@ namespace mu2e {
 	tshinfomc._gen = spp->genParticle()->generatorId().id();
       }
       MCRelationship rel(pspp,spp);
-      tshinfomc._rel = rel._rel;
+      tshinfomc._rel = rel.relationship();
       // find the step midpoint
       const Straw& straw = tracker.getStraw(mcdigi.strawId());
       CLHEP::Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();

@@ -22,7 +22,7 @@ namespace mu2e {
     private:
       GenParticle _genp; // primary particle 
       SPPV _simps; // associated SimParticles (can be >1)
-
+// should also record the VD steps associated with the primaries FIXME!
   };
 
   inline std::ostream& operator<<(std::ostream& ost, const PrimaryParticle& pp ){

@@ -459,7 +459,7 @@ namespace mu2e
     if(spp->genParticle().isNonnull())
       tshinfomc._gen = spp->genParticle()->generatorId().id();
     MCRelationship rel(pspp,spp);
-    tshinfomc._rel = rel._rel;
+    tshinfomc._rel = rel.relationship();
     // find the step midpoint
     Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
     Hep3Vector dir = spmcp->momentum().unit();

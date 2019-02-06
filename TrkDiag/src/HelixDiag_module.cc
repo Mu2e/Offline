@@ -752,7 +752,7 @@ namespace mu2e {
       if(spp->genParticle().isNonnull())
 	hinfomc._gen = spp->genParticle()->generatorId().id();
       MCRelationship rel(pspp,spp);
-      hinfomc._rel = rel._rel;
+      hinfomc._rel = rel.relationship();
       hinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
     }
   }

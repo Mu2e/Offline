@@ -235,7 +235,7 @@ namespace mu2e
 	  ComboHitInfoMC chimc;
 	  StrawDigiMC const& mcd = _mcdigis->at(shi);
 	  MCRelationship rel(mcd,mcd1);
-	  chimc._rel = rel._rel;
+	  chimc._rel = rel.relationship();
 	  _chinfomc.push_back(chimc);
 	  // find average MC properties
 	  _mcpos += XYZVec(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());

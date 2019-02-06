@@ -393,7 +393,7 @@ namespace mu2e {
 	    tchi._mcgen = sp->genParticle()->generatorId().id();
 	  if(primary.isNonnull()){
 	    MCRelationship rel(primary,sp);
-	    tchi._mcrel = rel._rel; 
+	    tchi._mcrel = rel.relationship();
 	  }
 	}
       }

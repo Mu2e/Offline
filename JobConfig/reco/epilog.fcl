@@ -3,3 +3,5 @@ physics.filters.CalHelixFinderDeM.StrawHitFlagCollectionLabel : "FlagBkgHits:Com
 physics.filters.CalHelixFinderDeP.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
 physics.filters.CalHelixFinderDmuM.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
 physics.filters.CalHelixFinderDmuP.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
+# temporary
+physics.producers.SelectRecoMC.debugLevel : 2

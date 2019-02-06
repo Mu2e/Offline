@@ -1,40 +1,65 @@
 #ifndef MCDataProducts_KalSeedMC_hh
 #define MCDataProducts_KalSeedMC_hh
-///
-//  MC truth analog to a KalSeed (Kalman fit track)
 //
-#include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/MCRelationship.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/CaloClusterMC.hh"
+//  MC truth match to a KalSeed (Kalman fit track)
+//  Original Author: Dave Brown (LBNL) 5 Feb. 2019
+//
+#include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
+#include "DataProducts/inc/PDGCode.hh"
+#include "DataProducts/inc/XYZVec.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 #include <Rtypes.h>
 #include <utility>
 #include <vector>
 
 namespace mu2e {
 // define some structs and types
-  struct MCDigiRel {
-    int _sindex; // index into TrkStrawHitSeed of KalSeed, -1 if the associated digi wasn't used in the track fit
-    art::Ptr<StrawDigiMC> _mcd; // associated DigiMC
-    MCRelationship _prel; // relationship of this digiMC to the primary particle
+  // small stub of SimParticle for quick reference to basic information, plus summarize genealogy
+  struct SimPartStub {
+    typedef art::Ptr<SimParticle> SPPtr;
+    PDGCode::type _pdg; // code of this particle
+    ProcessCode _proc; // particle creation process
+    MCRelationship _rel; // relationship of this particle to its primary
+    uint16_t _nhits; // number of associated StrawHits
+    uint16_t _nactive; // number of associated active hits
+    float _ecalo; // Associated calorimeter cluster energy
+    SPPtr _simptr; // pointer to the full SimParticle
+    SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0), _ecalo(0.0) {}
+    // partial constructor from a SimParticle;
+    SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
+    _proc(spp->creationCode()), _rel(MCRelationship::none),
+    _nhits(0), _nactive(0), _ecalo(0.0),
+    _simptr(spp) {}
   };
-  typedef std::pair<SPPtr,Float_t> SPW; // Sim Particle weighted by the fraction of active diAgis
-  typedef art::Ptr<CaloClusterMC> CCMCPtr;
-  typedef std::pair<CCMCPtr,Float_t >CCW; // calo cluster weighted by primary energy fraction
-  typedef art::Ptr<StepPointMC> SPP; // used only for virual detectors
-  struct KalSeedMC {
-    SPW const& primaryParticle() const { return _parts.size() > 0 ? _parts[0] : _nullptr; }
-    SPW const& simParticle(size_t index) const { return _parts.at(index); }
-// data products
-    std::vector<SPW> _parts; // particles associated with digis on this track, sorted by fraction of active track hits p
-    std::vector<MCDigiRel> _mcdigis; // digi MC information for digis associated with this track
-    // StepPoints sampled at the virtual detectors
-    std::vector<SPP> _vds;
-    CCW _calo; // MC truth of associated calorimeter cluster, with weight to primary
-   // null ptr to satisfy interface
-    static SPW _nullptr;
+  // sampled pair of momentum and position (tracker system) of the primary matched particle
+  // These come from the virtual detectors
+  struct VDStep {
+    XYZVec _pos;
+    XYZVec _mom;
+    double _time;
+    VirtualDetectorId _vdid;
+    VDStep() : _time(0.0) {}
+    VDStep(StepPointMC const& vdstep) : _pos(Geom::toXYZVec(vdstep.position())),
+    _mom(Geom::toXYZVec(vdstep.momentum())),
+    _time(vdstep.time()),
+    _vdid(vdstep.virtualDetectorId()) {}
   };
-  typedef std::vector<mu2e::KalSeedMC> KalSeedMCCollection;
+
+  struct KalSeedMC { 
+    SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
+    std::vector<SimPartStub> const& simParticles() const { return _simps; }
+    // data products
+    std::vector<SimPartStub> _simps; // associated sim particles, and their relationship
+    std::vector<int16_t> _digisimps; // reference into sim particles for each TrkStrawHitSeed
+    std::vector<VDStep> _vdsteps; // sampling of true momentum and position from VDS
+  };
+  typedef std::vector<KalSeedMC> KalSeedMCCollection;
+  typedef art::Assns<KalSeed,KalSeedMC> KalSeedMCAssns;
 }
 #endif
