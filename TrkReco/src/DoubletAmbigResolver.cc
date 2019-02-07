@@ -49,6 +49,8 @@ namespace mu2e {
     _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet",  0.3  )),
     _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  ,  1    )),  // default:1
     _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     ,  0.3  )),
+    _tempScale        (PSet.get<double>("tempScale")),
+    _penaltyScale     (PSet.get<double>("penaltyScale")),
     _iter(Iter),
     _Final(Final)
   {
@@ -222,7 +224,7 @@ namespace mu2e {
 	    r.index[1] = k;
 	    calculateDoubletParameters(KRep,d,&r);
 
-	    chi2_d = d->Chi2Best();
+	    chi2_d = d->chi2Best();
 	    if (chi2_d < chi2_best) {
 	      chi2_best = chi2_d;
 	      bd        = *d;
@@ -393,7 +395,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  if (ibest == 0) Hit->setAmbig( 1);
 	  else            Hit->setAmbig(-1);
-	  Hit->setPenalty(Hit->driftRadius()/(2*sqrt(3)));
+	  Hit->setPenalty(Hit->driftRadius()/sqrt(3));
 	}
       }
       if (_debugLevel > 0) {
@@ -476,6 +478,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // by construction, both hits are in the same panel, could be in the same or in
 // different layers
+// dx/dz[i] === dR/dZ of the track in the wire plane of the i-th hit
 //-----------------------------------------------------------------------------
     for (int i=0; i<2; i++) {
       hit      [i] = HitDoublet->fHit[R->index[i]];
@@ -483,20 +486,20 @@ namespace mu2e {
       R->rdrift[i] = hit[i]->driftRadius();
 
       R->spos  [i] = R->straw[i]->getMidPoint();
-      sdir  [i] = R->straw[i]->getDirection();
+      sdir     [i] = R->straw[i]->getDirection();
 
       phiPanel  = std::atan2(R->spos[i].y(),R->spos[i].x());
       rot.set(-phiPanel);
 
       R->sposr[i]  = rot*R->spos[i];
-      sdirr[i]  = rot*sdir[i];
+      sdirr   [i]  = rot*sdir[i];
 
       R->tpos [i] = HitDoublet->fTrkPos[R->index[i]];
-      tdir [i]    = HitDoublet->fTrkDir[R->index[i]];
+      tdir    [i] = HitDoublet->fTrkDir[R->index[i]];
 
       R->tposr[i] = rot*R->tpos[i];
-      tdirr[i]  = rot*tdir[i];
-      dxdz [i]  = tdirr[i].x()/tdirr[i].z();
+      tdirr[i]    = rot*tdir[i];
+      dxdz [i]    = tdirr[i].x()/tdirr[i].z();
     }
 //-----------------------------------------------------------------------------
 // choose the best combination of the drift signs - the one corresponding
@@ -509,9 +512,9 @@ namespace mu2e {
     findLines(R->sposr,R->rdrift,R->lineSlopes);
 
     for (int is=0; is<4; is++) {
-      dsl         = fabs(trkslope - R->lineSlopes[is]);
-      xdsl        = dsl/_sigmaSlope;
-      R->chi2[is] = xdsl*xdsl;
+      dsl              = fabs(trkslope - R->lineSlopes[is]);
+      xdsl             = dsl/_sigmaSlope;
+      R->chi2Slope[is] = xdsl*xdsl;
     }
 //-----------------------------------------------------------------------------
 // 2. add coordinate term, try to exclude both hits simultaneously
@@ -624,13 +627,19 @@ namespace mu2e {
       for (int is=0; is<4; is++) {
 //-----------------------------------------------------------------------------
 // chi2 contributions of this hit
+// error of the coordinate term is questionable - at initial iterations hits 
+// with small drift radius have smaller errors - doesn't make sense
 //-----------------------------------------------------------------------------
-	hpos[is][ih]    = spi[ih]+u[ih]*R->rdrift[ih]*_sign[is][ih];
-	//R->doca[is][ih] = (hpos[is][ih]-tpi[ih]).dot(u[ih]);
-	R->doca[is][ih] = static_cast<Hep3Vector>(hpos[is][ih]-tpi[ih]).dot(u[ih]);
-	sig             = sqrt(R->rdrift[ih]*R->rdrift[ih] +0.1*0.1); // 2.5; // 1.; // hit[ih]->hitRms();
-	xdr[is][ih]     = R->doca[is][ih]/sig;
-	R->chi2[is]    += xdr[is][ih]*xdr[is][ih];
+	hpos[is][ih]     = spi[ih]+u[ih]*R->rdrift[ih]*_sign[is][ih];
+
+	R->doca[is][ih]  = static_cast<Hep3Vector>(hpos[is][ih]-tpi[ih]).dot(u[ih]);
+
+	// sig             = sqrt(R->rdrift[ih]*R->rdrift[ih] +0.1*0.1); // 2.5; // 1.; // before 2019-01-20
+	sig              = hit[ih]->totalErr(); 
+
+	xdr[is][ih]      = R->doca[is][ih]/sig;
+	R->chi2Coord[is] = xdr[is][ih]*xdr[is][ih];
+	R->chi2     [is] = R->chi2Slope[is]+R->chi2Coord[is];
       }
     }
 //-----------------------------------------------------------------------------
@@ -667,7 +676,9 @@ namespace mu2e {
     HitDoublet->fTrkDxDz     = trkslope;
     for (int is=0; is<4; is++) {
       HitDoublet->fDxDz[is]  = R->lineSlopes[is];
-      HitDoublet->fChi2[is]  = R->chi2[is];
+      HitDoublet->fChi2Slope[is]  = R->chi2Slope[is];
+      HitDoublet->fChi2Coord[is]  = R->chi2Coord[is];
+      HitDoublet->fChi2     [is]  = R->chi2     [is];
     }
 
     for (int i=0; i<2; i++) {
@@ -898,6 +909,7 @@ namespace mu2e {
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
+//		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3.));
 		hit[i]->setPenalty(AmbigResolver::_tmpErr/2/sqrt(3));
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
@@ -951,7 +963,8 @@ namespace mu2e {
 		hit[i]->setAmbig (_sign[best_dd][i]);
 	      }
 	      else {
-		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3));
+		//		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3)); - tried...
+		hit[i]->setPenalty(fabs(r.rdrift[i]));
 		hit[i]->setAmbig(0);
 					// hit residual is large - try to disable?
 		hit[i]->setActivity(false);
@@ -1058,7 +1071,7 @@ namespace mu2e {
 
 	    list.push_back(ad);
 
-	    chi2_d = ad.Chi2Best();
+	    chi2_d = ad.chi2Best();
 	    if (chi2_d < chi2_best) {
 	      jbest     = j;
 	      kbest     = k;
@@ -1136,6 +1149,32 @@ namespace mu2e {
 	  }
 	}
       }
+    }
+  }
+
+//-----------------------------------------------------------------------------
+// in the beginning of iteration set external hit errors to a constant
+//-----------------------------------------------------------------------------
+//   void AmbigResolver::initHitErrors(KalRep* krep) const {
+// // get hits and cast to TrkStrawHits
+//     TrkStrawHitVector tshv;
+//     convert(krep->hitVector(),tshv);
+//     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh){
+//       (*itsh)->setTemperature(_tmpErr);
+//     }
+//   }
+
+//-----------------------------------------------------------------------------
+// in the beginning of iteration set external hit errors to a constant
+//-----------------------------------------------------------------------------
+  void DoubletAmbigResolver::initHitErrors(KalRep* krep) const {
+// get hits and cast to TrkStrawHits
+    TrkStrawHitVector tshv;
+    convert(krep->hitVector(),tshv);
+    for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh) {
+      double penalty = _tmpErr*0.0625*_penaltyScale;
+      (*itsh)->setPenalty    (penalty);
+      (*itsh)->setTemperature(_tmpErr*_tempScale);
     }
   }
 

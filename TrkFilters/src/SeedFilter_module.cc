@@ -13,6 +13,10 @@
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
+#include "RecoDataProducts/inc/TrkFitDirection.hh"
+// BTrk
+#include "BTrk/TrkBase/TrkParticle.hh"
+
 using namespace CLHEP;
 // c++
 #include <string>
@@ -32,22 +36,26 @@ namespace mu2e
     virtual bool endRun( art::Run& run ) override;
 
   private:
-    art::InputTag _ksTag;
-    bool _hascc; // Calo Cluster
-    double     _minfitcons;
-    unsigned   _minnhits;
-    double     _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
-    double     _minD0, _maxD0; // impact parameter limits
-    double     _minT0;
-    TrkFitFlag _goods; // helix fit flag
-    int _debug;
+    art::InputTag   _ksTag;
+    bool            _hascc; // Calo Cluster
+    TrkParticle     _tpart; // particle type being searched for
+    TrkFitDirection _fdir;  // fit direction in search
+    double          _minfitcons;
+    unsigned        _minnhits;
+    double          _minmom, _maxmom, _mintdip, _maxtdip, _maxchi2dof, _maxmomerr;
+    double          _minD0, _maxD0; // impact parameter limits
+    double          _minT0;
+    TrkFitFlag      _goods; // helix fit flag
+    int             _debug;
     // counters
-    unsigned _nevt, _npass;
+    unsigned        _nevt, _npass;
   };
 
   SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
     _ksTag     (pset.get<art::InputTag>("KalSeedCollection","KSFDeM")),
     _hascc     (pset.get<bool>("RequireCaloCluster",false)),
+    _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle"))),
+    _fdir      ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
     _minfitcons(pset.get<double>("MinFitCons",-1.)),   //not used by default
     _minnhits  (pset.get<unsigned>("MinNHits",15)),
     _minmom    (pset.get<double>("MinMomentum",40.0)),
@@ -76,6 +84,9 @@ namespace mu2e
     // loop over the collection: if any pass the selection, pass this event
     for(auto iks = kscol->begin(); iks != kscol->end(); ++iks) {
       auto const& ks = *iks;
+      //check particle type and fitdirection
+      if ( (ks.particle() != _tpart) || (ks.fitDirection() != _fdir))       continue;
+
       // I should not be calculating NDOF here, this should be in an adapter, FIXME!!
       unsigned nactive(0);
       for(auto const& ish : ks.hits())
