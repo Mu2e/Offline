@@ -17,7 +17,7 @@ physics :
 {
   producers : @local::Reconstruction.producers
   filters : @local::Reconstruction.filters
-  analyzers:  { RecoCheck: @local::DigiCompression.RecoCheck }
+  analyzers: @local::Reconstruction.analyzers
   RecoPath : [ @sequence::Reconstruction.RecoPath ]
   EndPath : [ Output, RecoCheck  ]
 

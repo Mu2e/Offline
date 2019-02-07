@@ -77,20 +77,47 @@ Reconstruction : {
     SelectRecoMC : { @table::CommonMC.SelectRecoMC }
 
     # calo fix: only need for MDC2018e and earlier
-    CaloFix : { @table::DigiCompression.CaloFix }
+    CaloFix : { @table::DigiCompression.CaloFix 
+      	caloShowerStepTags : [ "compressDigiMCs" ]
+	caloShowerSimTag : "compressDigiMCs"
+	caloShowerStepROTag : "compressDigiMCs"
+    }
 
     # Compresion
     compressRecoMCs : { @table::DigiCompression.Reco
-		     caloShowerStepTags : [ "CaloFix" ]
-		     caloShowerSimTag : "CaloFix"
-		     caloShowerStepROTag : "CaloFix"
-		   }
+      strawDigiMCTag : "compressDigiMCs"
+      crvDigiMCTag : "compressDigiMCs"
+      simParticleTags : [ "compressDigiMCs" ]
+      extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
+      timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+      caloShowerStepTags : [ "CaloFix" ]
+      caloShowerSimTag : "CaloFix"
+      caloShowerStepROTag : "CaloFix"
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+    }
   }
   
   filters : {
 # why is CalPatRec implemented as filters??
     @table::CalPatRec.filters
   }
+
+  analyzers : {
+    RecoCheck : { @table::DigiCompression.RecoCheck
+      oldStrawDigiMCTag : "compressDigiMCs"
+      newStrawDigiMCTag : "compressRecoMCs"
+      OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+      NewTimeOffsets : { inputs : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ] }
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
+      oldCrvDigiMCTag : "compressDigiMCs"
+      newCrvDigiMCTag : "compressRecoMCs"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      oldCaloShowerSimTag : "CaloFix"
+      newCaloShowerSimTag : "compressRecoMCs"
+    }
+  }
+
 # reconstruct multiple types of tracks.  
   TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
   # TrkPatRec for downstream and upstream e and mu
