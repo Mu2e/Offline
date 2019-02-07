@@ -41,7 +41,18 @@ namespace mu2e {
 	}
       }
     }
-    
+
+    void countStraws(const std::vector<TrkStraw>& straws, unsigned& nmat, unsigned& nmatactive, double& radlen) {
+      nmat = 0; nmatactive = 0; radlen = 0.0;
+      for (std::vector<TrkStraw>::const_iterator i_straw = straws.begin(); i_straw != straws.end(); ++i_straw) {
+	++nmat;
+	if (i_straw->active()) {
+	  ++nmatactive;
+	  radlen += i_straw->radLen();
+	}	
+      }
+    }    
+
     void fillHitCount(StrawHitFlagCollection const& shfC, HitCount& hitcount) {
       hitcount._nsh = shfC.size();
       for(const auto& shf : shfC) {
@@ -74,7 +85,6 @@ namespace mu2e {
 
       trkinfo._chisq = kseed.chisquared();
       trkinfo._fitcon = kseed.fitConsistency();
-      //    trkinfo._radlen = krep->radiationFraction(); // TODO
 
       for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
 	if(ihit->flag().hasAllProperties(StrawHitFlag::active)) {
@@ -102,8 +112,15 @@ namespace mu2e {
       }
       trkinfo._startvalid = firstflt;//krep->startValidRange();  // TODO
       trkinfo._endvalid = lastflt;//krep->endValidRange();  // TODO
-      trkinfo._nmat = kseed.straws().size();  // TODO (this isn't correct)
-      //    trkinfo._nmatactive = nmatactive; // TODO
+
+
+      unsigned int nmat(-1), nmatactive(-1);
+      double radlen(-1);
+      countStraws(kseed.straws(), nmat, nmatactive, radlen);
+      trkinfo._nmat = nmat;
+      trkinfo._nmatactive = nmatactive;
+      trkinfo._radlen = radlen; // TODO
+
       //    trkinfo._nbend = nbend; // TODO
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
@@ -204,16 +221,10 @@ namespace mu2e {
 	tminfo._panel = i_straw.straw().getPanel();
 	tminfo._layer = i_straw.straw().getLayer();
 	tminfo._straw = i_straw.straw().getStraw();
-	/*	if(isite->kalMaterial() != 0){
-	  TrkStrawMatInfo tminfo;
-	  const DetStrawElem* delem = dynamic_cast<const DetStrawElem*>(kmat->detElem());
-	  if(delem != 0){
-	    retval = true;
-	    // KalMaterial info
-	    tminfo._active = kmat->isActive(); // TODO
-	*/
-	tminfo._dp = i_straw.pfrac(); // TODO
-	tminfo._radlen = i_straw.radLen(); // TODO
+
+	tminfo._active = i_straw.active(); // TODO
+	tminfo._dp = i_straw.pfrac();
+	tminfo._radlen = i_straw.radLen();
 	    /*
 	    tminfo._sigMS = kmat->deflectRMS(); // TODO
 	    // DetIntersection info
@@ -221,8 +232,8 @@ namespace mu2e {
 	    tminfo._thit = (dinter.thit != 0); // TODO
 	    tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive()); // TODO
 	    */
-	tminfo._doca = i_straw.doca();//dinter.dist; // TODO
-	tminfo._tlen = i_straw.trkLen();//dinter.pathlen; // TODO
+	tminfo._doca = i_straw.doca();
+	tminfo._tlen = i_straw.trkLen();
 
 	tminfos.push_back(tminfo);
       }
