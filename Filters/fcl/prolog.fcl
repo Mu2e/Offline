@@ -99,38 +99,38 @@ DigiCompression : {
 
     CaloFix : {
 	module_type : FixCaloShowerStepPtrs
-	caloShowerStepTags : [ "compressDigiMCs" ]
-	caloShowerSimTag : "compressDigiMCs"
-	caloShowerStepROTag : "compressDigiMCs"
+	caloShowerStepTags : [ "" ]
+	caloShowerSimTag : ""
+	caloShowerStepROTag : ""
     }
 
 
     Reco : {
       module_type : CompressDigiMCs
-      strawDigiMCTag : "compressDigiMCs"
-      crvDigiMCTag : "compressDigiMCs"
-      simParticleTags : [ "compressDigiMCs" ]
-      extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
-      timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-      caloShowerStepTags : [ "compressDigiMCs" ]
-      caloShowerSimTag : "compressDigiMCs"
-      caloShowerStepROTag : "compressDigiMCs"
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      strawDigiMCTag : ""
+      crvDigiMCTag : ""
+      simParticleTags : [ "" ]
+      extraStepPointMCTags : [ "" ]
+      timeMapTags : [ "" ]
+      caloShowerStepTags : [ "" ]
+      caloShowerSimTag : ""
+      caloShowerStepROTag : ""
+      strawDigiMCIndexMapTag : ""
+      crvDigiMCIndexMapTag : ""
     }
 
     RecoCheck : {
       module_type : CompressDigiMCsCheck
-      oldStrawDigiMCTag : "compressDigiMCs"
-      newStrawDigiMCTag : "compressRecoMCs"
-      OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
-      NewTimeOffsets : { inputs : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ] }
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
-      oldCrvDigiMCTag : "compressDigiMCs"
-      newCrvDigiMCTag : "compressRecoMCs"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
-      oldCaloShowerSimTag : "compressDigiMCs"
-      newCaloShowerSimTag : "compressRecoMCs"
+      oldStrawDigiMCTag : ""
+      newStrawDigiMCTag : ""
+      OldTimeOffsets : { inputs : [ "" ] }
+      NewTimeOffsets : { inputs : [ "" ] }
+      strawDigiMCIndexMapTag : ""
+      oldCrvDigiMCTag : ""
+      newCrvDigiMCTag : ""
+      crvDigiMCIndexMapTag : ""
+      oldCaloShowerSimTag : ""
+      newCaloShowerSimTag : ""
     }
 }
 

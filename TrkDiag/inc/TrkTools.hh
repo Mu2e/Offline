@@ -20,6 +20,7 @@ namespace mu2e {
   namespace TrkTools {
     // count different hit types
     void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig);
+    void countStraws(const std::vector<TrkStraw>& straws, unsigned& nmat, unsigned& nmatactive, double& radlen);
 
     // fill various Info structs
     void fillHitCount(const StrawHitFlagCollection& flags, HitCount& hitcount);
