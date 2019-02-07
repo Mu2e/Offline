@@ -50,6 +50,7 @@
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/EventInfo.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"

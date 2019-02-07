@@ -106,7 +106,7 @@ namespace mu2e {
       tstraws.clear();
       // get material sites from the KalRep
       for(auto isite : krep->siteList()){
-	if(isite->isActive()  && isite->kalMaterial() != 0) {
+	if(isite->kalMaterial() != 0) {
 	  const KalMaterial* kmat = isite->kalMaterial();
 	  const DetStrawElem* detstraw = dynamic_cast<const DetStrawElem*>(kmat->detElem());
 	  if(detstraw != 0){
@@ -119,7 +119,8 @@ namespace mu2e {
 	      poca.flt2(),  // not stored in KalMaterial, FIXME!
 	      kmat->detIntersection().pathLength(),
 	      kmat->radiationFraction(),
-	      kmat->momFraction());
+	      kmat->momFraction(),
+	      isite->isActive() );
 	    tstraws.push_back(tstraw);
 	  }
 	}

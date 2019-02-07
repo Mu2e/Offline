@@ -4,6 +4,7 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
+#include "Filters/fcl/prolog.fcl"
 #
 BEGIN_PROLOG
 Reconstruction : {
@@ -74,6 +75,16 @@ Reconstruction : {
     # MC specific: this should be separated FIXME!
     FindMCPrimary : { @table::CommonMC.FindMCPrimary }
     SelectRecoMC : { @table::CommonMC.SelectRecoMC }
+
+    # calo fix: only need for MDC2018e and earlier
+    CaloFix : { @table::DigiCompression.CaloFix }
+
+    # Compresion
+    compressRecoMCs : { @table::DigiCompression.Reco
+		     caloShowerStepTags : [ "CaloFix" ]
+		     caloShowerSimTag : "CaloFix"
+		     caloShowerStepROTag : "CaloFix"
+		   }
   }
   
   filters : {
@@ -120,9 +131,10 @@ Reconstruction : {
  # define reco products to keep
   ToKeep : [@sequence::Tracking.Output.Digis,
 	    @sequence::Tracking.Output.Tracks,
-	    @sequence::Tracking.Output.MCDigis,
-	    @sequence::Tracking.Output.MCHits,
-	    @sequence::Tracking.Output.MCTracks,
+#	    @sequence::Tracking.Output.MCDigis,
+#	    @sequence::Tracking.Output.MCHits,
+#	    @sequence::Tracking.Output.MCTracks,
+	    "keep *_compressRecoMCs_*_*",
 	    "keep mu2e::CaloDigis_*_*_*",
 	    "keep mu2e::CaloClusters_*_*_*",
 	    "keep mu2e::CrvDigis_*_*_*",
@@ -141,10 +153,12 @@ Reconstruction : {
 	    "keep *_SelectRecoMC_*_*" ]
 }
 # must define this outside the brackets due to internal dependence
-Reconstruction.RecoPath : [ @sequence::Reconstruction.CaloRecoSequence,
+Reconstruction.RecoPath : [ CaloFix,
+  @sequence::Reconstruction.CaloRecoSequence,
   @sequence::Reconstruction.TrkRecoSequence,
   @sequence::Reconstruction.CrvRecoSequence ,
-  FindMCPrimary, SelectRecoMC ]
+  FindMCPrimary, SelectRecoMC,
+  compressRecoMCs ]
 # define trigger path FIXME!
 Reconstruction.Output : {
   module_type : RootOutput
