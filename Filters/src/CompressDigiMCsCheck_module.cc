@@ -171,30 +171,32 @@ namespace mu2e {
 	  }
 	}
 	const auto& i_newCrvDigiMC = newCrvDigiMCs.at(i_new_digi_mc);
+
+	if (i_oldCrvDigiMC.GetStepPoints().size() > 0 && i_newCrvDigiMC.GetStepPoints().size()>0) {
+	  const auto& i_oldStepPointMC = *(*i_oldCrvDigiMC.GetStepPoints().begin());
+	  const auto& i_newStepPointMC = *(*i_newCrvDigiMC.GetStepPoints().begin());
 	
-	const auto& i_oldStepPointMC = *(*i_oldCrvDigiMC.GetStepPoints().begin());
-	const auto& i_newStepPointMC = *(*i_newCrvDigiMC.GetStepPoints().begin());
+	  const auto& i_old_digi_mc_barIndex = i_oldCrvDigiMC.GetScintillatorBarIndex();
+	  const auto& i_new_digi_mc_barIndex = i_newCrvDigiMC.GetScintillatorBarIndex();
+	  if (i_old_digi_mc_barIndex != i_new_digi_mc_barIndex) {
+	    throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's ScintillatorBarIndexs do not match" << std::endl;
+	  }
 	
-	const auto& i_old_digi_mc_barIndex = i_oldCrvDigiMC.GetScintillatorBarIndex();
-	const auto& i_new_digi_mc_barIndex = i_newCrvDigiMC.GetScintillatorBarIndex();
-	if (i_old_digi_mc_barIndex != i_new_digi_mc_barIndex) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's ScintillatorBarIndexs do not match" << std::endl;
-	}
+	  const auto& i_old_step_barIndex = i_oldStepPointMC.barIndex();
+	  const auto& i_new_step_barIndex = i_newStepPointMC.barIndex();
+	  if (i_old_step_barIndex != i_new_step_barIndex) {
+	    throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's StepPointMC's BarIndexs do not match" << std::endl;
+	  }
 	
-	const auto& i_old_step_barIndex = i_oldStepPointMC.barIndex();
-	const auto& i_new_step_barIndex = i_newStepPointMC.barIndex();
-	if (i_old_step_barIndex != i_new_step_barIndex) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new CrvDigiMC's StepPointMC's BarIndexs do not match" << std::endl;
-	}
+	  if (i_new_step_barIndex != i_new_digi_mc_barIndex) {
+	    throw cet::exception("CompressDigiMCsCheck") << "New CrvDigiMC's BarIndex is inconsistent with its StepPointMC's BarIndex" << std::endl;
+	  }
 	
-	if (i_new_step_barIndex != i_new_digi_mc_barIndex) {
-	  throw cet::exception("CompressDigiMCsCheck") << "New CrvDigiMC's BarIndex is inconsistent with its StepPointMC's BarIndex" << std::endl;
-	}
-	
-	double old_time = _oldTOff.timeWithOffsetsApplied(i_oldStepPointMC);
-	double new_time = _newTOff.timeWithOffsetsApplied(i_newStepPointMC);
-	if (std::fabs(old_time - new_time) > 1e-5) {
-	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (CrvDigiMC)" << std::endl;
+	  double old_time = _oldTOff.timeWithOffsetsApplied(i_oldStepPointMC);
+	  double new_time = _newTOff.timeWithOffsetsApplied(i_newStepPointMC);
+	  if (std::fabs(old_time - new_time) > 1e-5) {
+	    throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (CrvDigiMC)" << std::endl;
+	  }
 	}
       }
     }
