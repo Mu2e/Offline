@@ -13,6 +13,7 @@
 #include "RecoDataProducts/inc/TrkStraw.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "RecoDataProducts/inc/TrkCaloHitSeed.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -127,19 +128,21 @@ namespace mu2e {
       }
     }
 
-    void fillStrawHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds) {
+    void fillStrawHitSeeds(const KalRep* krep,ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds) {
       // extract the TkrStrawHits from the KalRep
       TrkStrawHitVector tshv;
       convert(krep->hitVector(),tshv);
       // loop over the TrkStrawHits and convert them
       for(auto tsh : tshv ) {
+      // find the associated ComboHit
+	auto const& chit = chits.at(tsh->index());
 	// set the flag according to the status of this hit
-	StrawHitFlag hflag;
+	StrawHitFlag hflag = chit.flag();
 	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
+	TrkStrawHitSeed seedhit(tsh->index(),tsh->straw().id(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+	    tsh->driftRadius(), tsh->driftTime(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
 	hitseeds.push_back(seedhit);
       }
     }
@@ -305,6 +308,14 @@ namespace mu2e {
 
     double chisqConsistency(const KalRep* krep) {
       return ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
+    }
+
+    unsigned countBends(const KalRep* krep) {
+      unsigned nbend(0);
+      for(auto isite : krep->siteList()){
+	if(isite->kalBend() != 0) ++nbend;
+      }
+      return nbend;
     }
 
     const TrkCaloHit* findTrkCaloHit(const KalRep* krep){

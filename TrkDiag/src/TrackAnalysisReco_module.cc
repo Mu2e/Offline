@@ -125,7 +125,6 @@ namespace mu2e {
     TrkInfo _deti, _ueti, _dmti;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
-    art::InputTag _comboHitTag;
     art::InputTag _strawHitFlagTag;
     TrkCaloHitInfo _detch;
     std::vector<TrkStrawMatInfo> _detsm;
@@ -188,7 +187,6 @@ namespace mu2e {
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _trkana(0),
     _meanPBI(0.0),
-    _comboHitTag(pset.get<art::InputTag>("ComboHitCollection", "")),
     _strawHitFlagTag(pset.get<art::InputTag>("StrawHitFlagCollection", "")),
     _strawDigiMCTag(pset.get<art::InputTag>("StrawDigiMCCollection", "")),
     _simParticleTag(pset.get<art::InputTag>("SimParticleCollection", "")),
@@ -274,9 +272,6 @@ namespace mu2e {
     art::Handle<StrawHitFlagCollection> shfH;
     event.getByLabel(_strawHitFlagTag,shfH);
     StrawHitFlagCollection const& shfC = *shfH;
-    art::Handle<ComboHitCollection> comboHitHandle;
-    event.getByLabel(_comboHitTag, comboHitHandle);
-    ComboHitCollection const& comboHits = *comboHitHandle;
     // find downstream muons and upstream electrons
     art::Handle<KalSeedCollection> ueH;
     event.getByLabel(_uetag,ueH);
@@ -314,7 +309,7 @@ namespace mu2e {
 	TrkTools::fillTrkInfo(dekseed,_deti);
 	_deti._trkqual = tqual.MVAOutput();
 	if(_diag > 1){
-	  TrkTools::fillHitInfo(dekseed, comboHits, _detsh); //TODO
+	  TrkTools::fillHitInfo(dekseed, _detsh); //TODO
 	  TrkTools::fillMatInfo(dekseed, _detsm); //TODO
 	}
 	if(ueK != 0){

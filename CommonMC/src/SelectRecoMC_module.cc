@@ -253,9 +253,9 @@ namespace mu2e {
       for(auto const& hit : seed.hits() ) {
 	int spref(-1);
 	auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
-	for (size_t isp =0; isp < mcseed.simParticles().size(); ++isp) {
-	  auto const& sp = mcseed.simParticle(isp);
-	  if(sdmc.earlyStepPointMC()->simParticle() == sp._simptr){
+	for(size_t isp=1;isp < spcc.size(); ++isp){
+	  auto const& spc = spcc[isp];
+	  if(sdmc.earlyStepPointMC()->simParticle() == spc._spp){
 	    spref = isp;
 	    break;
 	  }

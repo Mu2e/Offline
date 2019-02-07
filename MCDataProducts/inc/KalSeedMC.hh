@@ -29,13 +29,11 @@ namespace mu2e {
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
     float _ecalo; // Associated calorimeter cluster energy
-    SPPtr _simptr; // pointer to the full SimParticle
     SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0), _ecalo(0.0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0), _ecalo(0.0),
-    _simptr(spp) {}
+    _nhits(0), _nactive(0), _ecalo(0.0) {}
   };
   // sampled pair of momentum and position (tracker system) of the primary matched particle
   // These come from the virtual detectors

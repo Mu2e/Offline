@@ -113,7 +113,7 @@ namespace mu2e {
       //      trkinfo._ent._fitparerr = kseg.covar(); //TODO
     }
 
-    void fillHitInfo(const KalSeed& kseed, const ComboHitCollection& chits, std::vector<TrkStrawHitInfo>& tshinfos ) {
+    void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos ) {
       tshinfos.clear();
       // loop over hits
 
@@ -169,12 +169,11 @@ namespace mu2e {
 	tshinfo._exerr = ihit->driftVelocity()*ihit->temperature(); // TODO
 	tshinfo._penerr = ihit->penaltyErr(); // TODO
 	*/
-	const ComboHit& chit = chits.at(ihit->index());	
-	tshinfo._edep = chit.energyDep();
-	tshinfo._wdist = chit.wireDist();
-	tshinfo._werr = chit.wireRes();	
-	tshinfo._driftend = chit.driftEnd();
-	tshinfo._tdrift = chit.driftTime(); // TODO
+	tshinfo._edep = ihit->energyDep();
+	tshinfo._wdist = ihit->wireDist();
+	tshinfo._werr = ihit->wireRes();	
+	tshinfo._driftend = ihit->driftEnd();
+	tshinfo._tdrift = ihit->driftTime(); // TODO
 
 
 	// count correlations with other TSH

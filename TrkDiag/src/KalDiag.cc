@@ -242,12 +242,22 @@ namespace mu2e
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     bool first(false);
+    tinfo._nhits = tshv.size();
+    tinfo._nactive = tinfo._ndouble = tinfo._ndactive = tinfo._nnullambig = 0;
     for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
       const TrkStrawHit* tsh = *ihit;
-      if(tsh != 0 && tsh->isActive()){
-	if(!first){
+      if(tsh != 0 ){
+	if(tsh->isActive() && !first){
 	  first = true;
 	  tinfo._firstflt = tsh->fltLen();
+	}
+	if(tsh->isActive())tinfo._nactive++;
+	if(tsh->ambig()==0)tinfo._nnullambig++;
+	auto jhit = ihit; jhit++;
+	if(jhit != tshv.end() && tsh->straw().id().uniquePanel() ==
+	  (*jhit)->straw().id().uniquePanel()){
+	    tinfo._ndouble++;
+	    if(tsh->isActive())tinfo._ndactive++;
 	}
       }
     }
@@ -258,16 +268,7 @@ namespace mu2e
       }
     }
 
-    std::vector<TrkStrawHitSeed> hits;
-    TrkUtilities::fillStrawHitSeeds(krep, hits);
-    unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
-    TrkTools::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
-    tinfo._nhits = nhits;
-    tinfo._nactive = nactive;
-    tinfo._ndouble = ndouble;
-    tinfo._ndactive = ndactive;
-    tinfo._nnullambig = nnullambig;
-  }
+ }
 
   void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const {
     trkfitinfo._fltlen = fltlen;
