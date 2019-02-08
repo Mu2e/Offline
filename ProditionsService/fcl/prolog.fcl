@@ -7,6 +7,6 @@ Proditions : {
    strawPhysics : @local::StrawPhysics
    strawElectronics : @local::StrawElectronics
    strawResponse : @local::StrawResponse
-   verbose : 1
+   verbose : 0
 }
 END_PROLOG

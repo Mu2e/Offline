@@ -26,7 +26,7 @@ namespace mu2e {
       // lock access to the data, will release when this method returns
       LockGuard lock(*this);
 
-      std::cout << "in cache useDb =  "<< _useDb<< std::endl;
+      if(_verbose>1) std::cout << "in cache useDb =  "<< _useDb<< std::endl;
       // delayed construction here so that the handles
       // inside the service can reference the service 
       if(_useDb && !_tdp_p) {
@@ -64,7 +64,7 @@ namespace mu2e {
       // see if this combination of tables is in the cache
       auto p = find(cids);
 
-      if(_verbose>0) {
+      if(_verbose>1) {
 	if(!p) {
 	  std::cout<< "making new StrawElectronics from cids=";
 	} else {
@@ -96,6 +96,8 @@ namespace mu2e {
     int _verbose;
     bool _useDb;
 
+    // these handles are not default constructed
+    // so the db can be completely turned off
     std::unique_ptr<DbHandle<TrkDelayPanel>> _tdp_p;
     std::unique_ptr<DbHandle<TrkPreampRStraw>> _tprs_p;
     std::unique_ptr<DbHandle<TrkPreampStraw>> _tps_p;

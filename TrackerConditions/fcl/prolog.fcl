@@ -1,7 +1,7 @@
 BEGIN_PROLOG
 
 DeadStraw : {
-   verbose : 2
+   verbose : 0
    useDb : false
    deadPlanes : []
    deadPanels : []
@@ -15,7 +15,7 @@ DeadStraw : {
 }
 
 StrawDrift : {
-   verbose : 2
+   verbose : 0
    useDb : false
    wireVoltage : 1400
    phiBins : 20
@@ -27,7 +27,7 @@ StrawDrift : {
 }
 
 StrawPhysics : {
-   verbose : 2
+   verbose : 0
    useDb : false
    meanFreePath : 0.357
    ionizedElectronKE : 0.0
@@ -51,8 +51,8 @@ StrawPhysics : {
 
 
 StrawElectronics : {
-   verbose : 2
-   useDb : true
+   verbose : 0
+   useDb : false
 
    defaultThresholddVdI : 1.1e7
    thresholddVdI : []
@@ -120,7 +120,7 @@ StrawElectronics : {
 }
 
 StrawResponse : {
-   verbose : 2
+   verbose : 0
    useDb : false
 
    // KeV

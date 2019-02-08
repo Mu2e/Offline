@@ -10,7 +10,8 @@ namespace mu2e {
   class StrawDriftCache : public ProditionsCache {
   public: 
     StrawDriftCache(StrawDriftConfig const& config):
-      _name("StrawDrift"),_maker(config) {}
+      _name("StrawDrift"),_maker(config),
+      _verbose(config.verbose()),_useDb(config.useDb()) {}
 
     std::string const& name() const { return _name; }
 
@@ -27,13 +28,13 @@ namespace mu2e {
       //s.insert(_c1_h.cid());
       auto p = find(s);
       if(!p) {
-	std::cout<< "making new StrawDrift " << std::endl;
+	if(_verbose>1) std::cout<< "making new StrawDrift " << std::endl;
 	p = _maker.fromFcl();
 	//p = _maker.fromDb(c1);
 	//p->addCids(s);
 	push(p);
       } else {
-	std::cout<< "found StrawDrift in cache " << std::endl;
+	if(_verbose>1) std::cout<< "found StrawDrift in cache " << std::endl;
       }
 
       return std::make_tuple(p,iov);
@@ -42,6 +43,8 @@ namespace mu2e {
   private:
     std::string _name;
     StrawDriftMaker _maker;
+    int _verbose;
+    bool _useDb;
 
   };
 };

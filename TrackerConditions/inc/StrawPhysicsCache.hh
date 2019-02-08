@@ -11,7 +11,8 @@ namespace mu2e {
   class StrawPhysicsCache : public ProditionsCache {
   public: 
     StrawPhysicsCache(StrawPhysicsConfig const& config):
-      _name("StrawPhysics"),_maker(config) {}
+      _name("StrawPhysics"),_maker(config),
+      _verbose(config.verbose()),_useDb(config.useDb()) {}
 
     std::string const& name() const { return _name; }
 
@@ -34,13 +35,13 @@ namespace mu2e {
       s.merge(set_t(sd->getCids()));
       auto p = find(s);
       if(!p) {
-	std::cout<< "making new StrawPhysics " << std::endl;
+	if(_verbose>1) std::cout<< "making new StrawPhysics " << std::endl;
 	p = _maker.fromFcl(sd);
 	//p = _maker.fromDb(sd);
 	p->addCids(s);
 	push(p);
       } else {
-	std::cout<< "found StrawPhysics in cache " << std::endl;
+	if(_verbose>1) std::cout<< "found StrawPhysics in cache " << std::endl;
       }
 
       return std::make_tuple(p,iov);
@@ -49,6 +50,11 @@ namespace mu2e {
   private:
     std::string _name;
     StrawPhysicsMaker _maker;
+    int _verbose;
+    bool _useDb;
+
+    // this handle is not default constructed
+    // so to not create a dependency loop on construction
     std::unique_ptr<ProditionsHandle<StrawDrift> > _strawDrift_p;
   };
 };
