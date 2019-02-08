@@ -26,6 +26,8 @@
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include <vector>
 #include <memory>
 #include <iostream>
@@ -242,11 +244,14 @@ namespace mu2e {
 	mcseed._simps.push_back(pstub);
       }
 // now find matching VD hits and record their info too
+      GeomHandle<DetectorSystem> det;
       for(auto const& vdsp : vdspc ) {
 	if(vdsp.simParticle() == pspc._spp){
 	  if(_debug > 1) std::cout << "Found matching VD StepPoint position" 
 	  << vdsp.position() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
-	  mcseed._vdsteps.push_back(VDStep(vdsp));
+	  VDStep vdstep(vdsp);
+	  vdstep._pos = det->toDetector(Geom::Hep3Vec(vdstep._pos)); // convert to detector coords for analysis
+	  mcseed._vdsteps.push_back(vdstep);
 	}
       }
     // find the SimParticle referenced by individual hits
