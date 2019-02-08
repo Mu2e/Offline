@@ -217,9 +217,11 @@
 <!-- track MC info and matching -->
 
  <class name="mu2e::SimPartStub"/>
+ <class name="mu2e::TrkStrawHitMC"/>
  <class name="mu2e::VDStep"/>
  <class name="mu2e::KalSeedMC"/>
  <class name="std::vector<mu2e::SimPartStub>"/>
+ <class name="std::vector<mu2e::TrkStrawHitMC>"/>
  <class name="std::vector<mu2e::VDStep>"/>
  <class name="std::vector<int16_t>"/>
  <class name="mu2e::KalSeedMCCollection"/>

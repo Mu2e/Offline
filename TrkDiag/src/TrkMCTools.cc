@@ -115,8 +115,7 @@ namespace mu2e {
 	// loop over the hits and find the associated steppoints
 	bool isactive = i_hit.flag().hasAllProperties(active);
 	StrawDigiMC const& mcdigi = mcdigis.at(i_hit.index());
-	StrawEnd itdc;
-	art::Ptr<SimParticle> spp = mcdigi.stepPointMC(itdc)->simParticle();
+	art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
 	// see if this particle has already been found; if so, increment, if not, add it
 	bool found(false);
 	for(size_t isp=0;isp<sct.size();++isp){
@@ -175,17 +174,10 @@ namespace mu2e {
 
     void countDigis(const KalSeedMC& kseedmc, int& ndigi, int& ndigigood) {
       ndigi = 0; ndigigood = 0;
-      for(const auto& i_digiSP : kseedmc._digisimps) {
+      for(const auto& i_tshmc : kseedmc._tshmcs) {
       	++ndigi;
-	if (i_digiSP == -1) {
-	  if (kseedmc.simParticle(i_digiSP+1)._rel == MCRelationship::same) {
-	    ++ndigigood;
-	  }
-	}
-	else {
-	  if (kseedmc.simParticle(i_digiSP)._rel == MCRelationship::same) {
-	    ++ndigigood;
-	  }
+	if (kseedmc.simParticle(i_tshmc._spindex)._rel == MCRelationship::same) {
+	  ++ndigigood;
 	}
       }
     }
@@ -232,7 +224,7 @@ namespace mu2e {
       trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + genParticle.momentum().py()*genParticle.momentum().py() + genParticle.momentum().pz()*genParticle.momentum().pz()); // TODO
       GeomHandle<DetectorSystem> det;
       trkinfomcstep._pos = det->toDetector(genParticle.position()); // TODO
-
+      /*
       CLHEP::HepVector parvec(5,0);
       double hflt(0.0);
       HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
@@ -240,6 +232,7 @@ namespace mu2e {
       double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
       TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
       trkinfomcstep._hpar = helixpar(parvec);       // TODO
+      */
     }
 
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const VirtualDetectorId::enum_type& vid) {
@@ -272,13 +265,7 @@ namespace mu2e {
 
     void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
       tshinfomcs.clear();
-      for (const auto& i_sim : kseedmc._simps) {
-	std::cout << "AE: " << i_sim._pdg << ", " << i_sim._proc << ", " << i_sim._rel.relationship() << ", " << i_sim._nhits << ", " << i_sim._nactive << std::endl;
-      }
-      for (const auto& i_digi : kseedmc._digisimps) {
-	std::cout << "AE: " << i_digi << std::endl;
-      }
-      for(const auto& i_digi : kseedmc._digisimps) {
+      for(const auto& i_tshmc : kseedmc._tshmcs) {
       	TrkStrawHitInfoMC tshinfomc;
 
 	//	tshinfomc._t0 = toff.timeWithOffsetsApplied(*spmcp); // TODO
@@ -290,12 +277,7 @@ namespace mu2e {
 	//	if(spp->genParticle().isNonnull()) {
 	//	  tshinfomc._gen = spp->genParticle()->generatorId().id();
 	//	}
-	if (i_digi == -1) {
-	  tshinfomc._rel = kseedmc.simParticle(i_digi+1)._rel.relationship(); // TODO
-	}
-	else {
-	  tshinfomc._rel = kseedmc.simParticle(i_digi)._rel.relationship(); // TODO
-	}
+	tshinfomc._rel = kseedmc.simParticle(i_tshmc._spindex)._rel.relationship(); // TODO
 	  
 	/*	// find the step midpoint
 	const Straw& straw = tracker.getStraw(mcdigi.strawId());
