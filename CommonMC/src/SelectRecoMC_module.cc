@@ -4,6 +4,7 @@
 //  to the MC primary object.
 //
 // Original author: David Brown (LBNL) Feb 2019
+// art
 #include "fhiclcpp/types/Atom.h"
 #include "canvas/Utilities/InputTag.h"
 #include "canvas/Persistency/Common/Ptr.h"
@@ -12,7 +13,7 @@
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-// mu2e 
+// mu2e data products
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "DataProducts/inc/IndexMap.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
@@ -25,7 +26,10 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
+// Utilities
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+// C++
 #include <vector>
 #include <memory>
 #include <iostream>
@@ -54,10 +58,12 @@ namespace mu2e {
 	Comment("KalFinalFit Module Instances")};
       fhicl::Atom<art::InputTag> VDSPC { Name("VDSPCollection"),
 	Comment("Virtual Detector StepPointMC collection")};
+      fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"),
+	Comment("Sim Particle Time Offset Maps")};
    };
-    using Parameters = art::EDProducer::Table<Config>;
-    explicit SelectRecoMC(const Parameters& conf);
-    void produce(art::Event& evt) override;
+   using Parameters = art::EDProducer::Table<Config>;
+   explicit SelectRecoMC(const Parameters& conf);
+   void produce(art::Event& evt) override;
 
   private:
   // utility functions
@@ -66,6 +72,7 @@ namespace mu2e {
     int _debug;
     art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc;
     std::vector<std::string> _kff;
+    SimParticleTimeOffset _toff;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -76,7 +83,8 @@ namespace mu2e {
     _sdmcc(config().SDMCC()),
     _crvdmcc(config().CRVDMCC()),
     _vdspc(config().VDSPC()),
-    _kff(config().KFFInstances())
+    _kff(config().KFFInstances()),
+    _toff(config().SPTO())
   {
     consumes<PrimaryParticle>(_pp);
     consumesMany<KalSeedCollection>();
@@ -95,6 +103,8 @@ namespace mu2e {
 
 
   void SelectRecoMC::produce(art::Event& event) {
+// update the time maps
+      _toff.updateMap(event);
 //  Find the inputs: the MC primary object
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
@@ -246,22 +256,29 @@ namespace mu2e {
 	if(vdsp.simParticle() == pspc._spp){
 	  if(_debug > 1) std::cout << "Found matching VD StepPoint position" 
 	  << vdsp.position() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
-	  mcseed._vdsteps.push_back(VDStep(vdsp));
+	  VDStep vds(vdsp.position(),// convert to DetectorCoordinates FIXME!
+	    vdsp.momentum() ,
+	    _toff.timeWithOffsetsApplied(vdsp),
+	    vdsp.virtualDetectorId());
+	  mcseed._vdsteps.push_back(vds);
 	}
       }
     // find the SimParticle referenced by individual hits
       for(auto const& hit : seed.hits() ) {
 	int spref(-1);
 	auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
-	for(size_t isp=1;isp < spcc.size(); ++isp){
+	for(size_t isp=0;isp < spcc.size(); ++isp){
 	  auto const& spc = spcc[isp];
 	  if(sdmc.earlyStepPointMC()->simParticle() == spc._spp){
 	    spref = isp;
 	    break;
 	  }
 	}
+	if(spref < 0)throw cet::exception("Reco")<<"mu2e::SelectRecoMC: missing index"<< std::endl;
 	// record the reference
-	mcseed._digisimps.push_back(spref);
+	TrkStrawHitMC tshmc;
+	tshmc._spindex = spref;
+	mcseed._tshmcs.push_back(tshmc);
       }
     }
   }

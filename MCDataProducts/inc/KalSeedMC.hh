@@ -38,23 +38,35 @@ namespace mu2e {
   // sampled pair of momentum and position (tracker system) of the primary matched particle
   // These come from the virtual detectors
   struct VDStep {
-    XYZVec _pos;
+    XYZVec _pos;  // postion in DETECTOR COORDINATES
     XYZVec _mom;
     double _time;
     VirtualDetectorId _vdid;
     VDStep() : _time(0.0) {}
-    VDStep(StepPointMC const& vdstep) : _pos(Geom::toXYZVec(vdstep.position())),
-    _mom(Geom::toXYZVec(vdstep.momentum())),
-    _time(vdstep.time()),
-    _vdid(vdstep.virtualDetectorId()) {}
+    VDStep(CLHEP::Hep3Vector const& pos,CLHEP::Hep3Vector const& mom, double time, VirtualDetectorId const& vdid) :
+      
+      _pos(Geom::toXYZVec(pos)),
+    _mom(Geom::toXYZVec(mom)),
+    _time(time),
+    _vdid(vdid) {}
+  };
+//
+// MC information for TrackStrawHits on this fit
+  struct TrkStrawHitMC {
+    int16_t simPartStubIndex() const { return _spindex; }
+    int16_t _spindex; // index into the associated SimPartStub of this DigiMC
   };
 
   struct KalSeedMC { 
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
+    std::vector<TrkStrawHitMC> const & trkStrawHitMC() const { return _tshmcs; }
+    TrkStrawHitMC const& trkStrawHitMC(size_t index) const { return _tshmcs.at(index); }
+    SimPartStub const& simParticle(TrkStrawHitMC const& tshmc) const { return simParticle(tshmc.simPartStubIndex()); }
+    std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }
     // data products
     std::vector<SimPartStub> _simps; // associated sim particles, and their relationship
-    std::vector<int16_t> _digisimps; // reference into sim particles for each TrkStrawHitSeed
+    std::vector<TrkStrawHitMC> _tshmcs;  // MC info for each TrkStrawHitSeed
     std::vector<VDStep> _vdsteps; // sampling of true momentum and position from VDS
   };
   typedef std::vector<KalSeedMC> KalSeedMCCollection;

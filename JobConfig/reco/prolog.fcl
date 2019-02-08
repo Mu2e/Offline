@@ -74,8 +74,10 @@ Reconstruction : {
     }
     # MC specific: this should be separated FIXME!
     FindMCPrimary : { @table::CommonMC.FindMCPrimary }
-    SelectRecoMC : { @table::CommonMC.SelectRecoMC }
-
+    SelectRecoMC : { 
+      @table::CommonMC.SelectRecoMC 
+      TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+    }
     # calo fix: only need for MDC2018e and earlier
     CaloFix : { @table::DigiCompression.CaloFix 
       	caloShowerStepTags : [ "compressDigiMCs" ]
@@ -180,7 +182,8 @@ Reconstruction : {
 	    "keep *_SelectRecoMC_*_*" ]
 }
 # must define this outside the brackets due to internal dependence
-Reconstruction.RecoPath : [ CaloFix,
+Reconstruction.RecoPath : [
+  CaloFix,
   @sequence::Reconstruction.CaloRecoSequence,
   @sequence::Reconstruction.TrkRecoSequence,
   @sequence::Reconstruction.CrvRecoSequence ,

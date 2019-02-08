@@ -107,8 +107,7 @@ namespace mu2e {
 	// loop over the hits and find the associated steppoints
 	bool isactive = i_hit.flag().hasAllProperties(active);
 	StrawDigiMC const& mcdigi = mcdigis.at(i_hit.index());
-	StrawEnd itdc;
-	art::Ptr<SimParticle> spp = mcdigi.stepPointMC(itdc)->simParticle();
+	art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
 	// see if this particle has already been found; if so, increment, if not, add it
 	bool found(false);
 	for(size_t isp=0;isp<sct.size();++isp){
