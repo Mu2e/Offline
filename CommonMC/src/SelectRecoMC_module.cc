@@ -239,7 +239,7 @@ namespace mu2e {
 	stub._nhits = spc._count;
 	stub._nactive = spc._acount;
 	stub._rel = MCRelationship(spc._spp,pspc._spp);
-	mcseed._simps.push_back(pstub);
+	mcseed._simps.push_back(stub);
       }
 // now find matching VD hits and record their info too
       for(auto const& vdsp : vdspc ) {
