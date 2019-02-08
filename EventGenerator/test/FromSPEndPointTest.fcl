@@ -10,34 +10,7 @@ source: {
     maxEvents: -1
 }
 
-services: {
-
-    message: @local::default_message
-   
-    TFileService :
-    {
-      fileName      : "TestSP.root"
-    }
-
-    RandomNumberGenerator : { }
-
-    GeometryService :
-    {
-      inputFile : "Mu2eG4/geom/geom_common.txt"
-    }
-
-    ConditionsService :
-    {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-    }
-
-    GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-
-    G4Helper : { }
-
-    SeedService: @local::automaticSeeds
-
-}
+services : @local::Services.Sim
 
 physics: {
 
@@ -89,6 +62,7 @@ outputs:
 }
 
 
+services.TFileService.fileName : "TestSP.root"
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
 physics.producers.makeSH2.g4ModuleLabel    :  g4run2
