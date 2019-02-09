@@ -284,6 +284,19 @@ namespace mu2e {
 	// record the reference
 	TrkStrawHitMC tshmc;
 	tshmc._spindex = spref;
+	tshmc._energySum = sdmc.energySum();
+	const auto& mcstep = *(sdmc.stepPointMC(StrawEnd::cal));
+	tshmc._pos = mcstep.position();
+	tshmc._mom = mcstep.momentum();
+	tshmc._time = _toff.timeWithOffsetsApplied(mcstep);
+	tshmc._wireEndTime = sdmc.wireEndTime(StrawEnd::cal);
+	tshmc._strawId = sdmc.strawId();
+	auto simPtr = mcstep.simParticle();
+	while (simPtr->parent().isNonnull()) {
+	  simPtr = simPtr->parent();
+	}
+	tshmc._gen = simPtr->genParticle()->generatorId().id();
+	tshmc._xtalk = mcstep.strawId() != sdmc.strawId();
 	mcseed._tshmcs.push_back(tshmc);
       }
     }

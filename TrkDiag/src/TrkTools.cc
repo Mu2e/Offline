@@ -23,21 +23,11 @@ namespace mu2e {
 	  }
 	}
 
-	const auto& jhit = ihit+1;
-	const auto& hhit = ihit-1;
-	if( (jhit != hits.end() &&
-	     jhit->flag().hasAllProperties(active) &&
-	     jhit->strawId().getPlane() == ihit->strawId().getPlane() &&
-	     jhit->strawId().getPanel() == ihit->strawId().getPanel() ) ||
-	    (hhit >= hits.begin() &&
-	     hhit->flag().hasAllProperties(active) &&
-	     hhit->strawId().getPlane() == ihit->strawId().getPlane() &&
-	     hhit->strawId().getPanel() == ihit->strawId().getPanel() )
-	    ) {
-	  ++ndouble;
-	  if (ihit->flag().hasAllProperties(StrawHitFlag::active)) {
-	    ++ndactive;
-	  }
+	auto jhit = ihit; jhit++;
+	if(jhit != hits.end() && ihit->strawId().uniquePanel() ==
+	   jhit->strawId().uniquePanel()){
+	    ++ndouble;
+	    if(ihit->flag().hasAllProperties(active)) { ++ndactive; }
 	}
       }
     }
@@ -49,7 +39,7 @@ namespace mu2e {
 	if (i_straw->active()) {
 	  ++nmatactive;
 	  radlen += i_straw->radLen();
-	}	
+	}
       }
     }    
 
@@ -85,6 +75,7 @@ namespace mu2e {
 
       trkinfo._chisq = kseed.chisquared();
       trkinfo._fitcon = kseed.fitConsistency();
+      trkinfo._nbend = kseed.nBend();
 
       for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
 	if(ihit->flag().hasAllProperties(StrawHitFlag::active)) {
@@ -103,6 +94,7 @@ namespace mu2e {
       double firstflt = 9999999;
       double lastflt = -9999999;
       for (const auto& kseg : kseed.segments()) {
+	//	std::cout << "AE: min = " << kseg.fmin() << ", max = " << kseg.fmax() << std::endl;
 	if (kseg.fmin() < firstflt) {
 	  firstflt = kseg.fmin();
 	}
@@ -121,13 +113,14 @@ namespace mu2e {
       trkinfo._nmatactive = nmatactive;
       trkinfo._radlen = radlen; // TODO
 
-      //    trkinfo._nbend = nbend; // TODO
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
       trkinfo._ent._fitmomerr = kseg.momerr();
       trkinfo._ent._fltlen = kseg.fmin(); //TODO
       trkinfo._ent._fitpar = kseg.helix();
-      //      trkinfo._ent._fitparerr = kseg.covar(); //TODO
+      CLHEP::HepSymMatrix pcov;
+      kseg.covar().symMatrix(pcov);
+      trkinfo._ent._fitparerr = helixpar(pcov);
     }
 
     void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos ) {
@@ -221,7 +214,7 @@ namespace mu2e {
 	tminfo._layer = i_straw.straw().getLayer();
 	tminfo._straw = i_straw.straw().getStraw();
 
-	tminfo._active = i_straw.active(); // TODO
+	tminfo._active = i_straw.active();
 	tminfo._dp = i_straw.pfrac();
 	tminfo._radlen = i_straw.radLen();
 	    /*
@@ -263,6 +256,15 @@ namespace mu2e {
 	//tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0)); // TODO
 
       }
+    }
+
+    void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
+      int n_trkqual_vars = TrkQual::n_vars;
+      for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
+	TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
+	trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
+      }
+      trkqualInfo._trkqual = tqual.MVAOutput();
     }
   }
 }
