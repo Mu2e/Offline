@@ -15,10 +15,11 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
+#include "MCDataProducts/inc/KalSeedMC.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -49,6 +50,7 @@
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
+#include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/TrkTools.hh"
@@ -66,6 +68,7 @@ using namespace std;
 namespace mu2e {
 // Need this for the BaBar headers.
   using CLHEP::Hep3Vector;
+  typedef KalSeedCollection::const_iterator KSCIter;
 
   class TrackAnalysisReco : public art::EDAnalyzer {
 
@@ -99,7 +102,7 @@ namespace mu2e {
     bool _fillmc, _pempty, _crv, _filltrkqual;
     int _diag;
     // analysis parameters
-    double _minReflectTime; // minimum time for a track to reflect in the gradient
+    double _minReflectTime, _maxReflectTime; // minimum and maximum time for a track to reflect in the gradient
     // track comparator
     TrkComp _tcomp;
     // main TTree
@@ -118,13 +121,12 @@ namespace mu2e {
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _strawHitFlagTag;
     TrkCaloHitInfo _detch;
+    CaloClusterInfoMC _detchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
-    art::Handle<PrimaryParticle> _primaryParticleHandle;
-    art::InputTag _kalSeedMCTag;
-    art::Handle<KalSeedMCCollection> _kalSeedMCHandle;
+    art::InputTag _kalSeedMCTag, _caloClusterMCTag;
     // detailed MC truth for the signal candidate
     TrkInfoMCStep _demcgen;
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
@@ -133,13 +135,13 @@ namespace mu2e {
     TrkQualInfo _trkQualInfo;
     TrkQualTestInfo _trkqualTest;
     // helper functions
-    void findMCData(const art::Event& event);
     void fillEventInfo(const art::Event& event);
-    bool findBestTrack(KalSeedCollection const& kcol, KalSeed& kseed, TrkQualCollection const& tqcol, TrkQual& tqual);
+//    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
-
-    bool findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& uekseed);
-    bool findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& dmukseed);
+    KSCIter findBestRecoTrack(KalSeedCollection const& kcol);
+    KSCIter findPrimaryTrack(KalSeedCollection const& kcol,KalSeedMCAssns const& ksassn);
+    KSCIter findUpstreamTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
+    KSCIter findMuonTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
@@ -163,11 +165,13 @@ namespace mu2e {
     _filltrkqual(pset.get<bool>("fillTrkQualInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
+    _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
     _trkana(0),
     _meanPBI(0.0),
     _strawHitFlagTag(pset.get<art::InputTag>("StrawHitFlagCollection", "")),
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
-    _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCCollection", ""))
+    _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
+    _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", ""))
   {
   }
 
@@ -183,10 +187,11 @@ namespace mu2e {
     _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
     _trkana->Branch("de.",&_deti,TrkInfo::leafnames().c_str());
+    //
+    _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
 // optionally add detailed branches
     if(_diag > 1){
       _trkana->Branch("detsh",&_detsh);
-      _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
       _trkana->Branch("detsm",&_detsm);
     }
 // add branches for other tracks
@@ -203,6 +208,7 @@ namespace mu2e {
       _trkana->Branch("demcmid",&_demcmid,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
+      _trkana->Branch("detchmc",&_detchmc,CaloClusterInfoMC::leafnames().c_str());
       if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
     }
     if (_filltrkqual) {
@@ -258,130 +264,145 @@ namespace mu2e {
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_detqtag, trkQualHandle);
     TrkQualCollection const& tqcol = *trkQualHandle;
-
+// MC data
+    art::Handle<PrimaryParticle> pph;
+    art::Handle<KalSeedMCAssns> ksmcah;
+    art::Handle<CaloClusterMCAssns> ccmcah;
+    if(_fillmc) { // get MC product collections
+      event.getByLabel(_primaryParticleTag,pph);
+      event.getByLabel(_kalSeedMCTag,ksmcah);
+      event.getByLabel(_caloClusterMCTag,ccmcah);
+    }
     // reset
     resetBranches();
-
-    // find the best track
-    KalSeed dekseed, uekseed, dmukseed;
-    bool deK = false, ueK = false, dmK = false; // bool to store whether this track was found
-    TrkQual tqual;
-    deK = findBestTrack(deC, dekseed, tqcol, tqual);
-    if(deK != 0 || _pempty) {
-      // find everything we want
-      if (deK != 0) {
-	ueK = findUpstreamTrack(ueC,dekseed, uekseed);
-	dmK = findMuonTrack(dmC,dekseed, dmukseed);
+    // find the best tracks
+    auto idekseed = findBestRecoTrack(deC);
+    // if(_fillmc)idekseed = findPrimaryTrack(deC,*ksmcah);
+    // process the best track
+    if (idekseed != deC.end()) {
+      auto const&  dekseed = *idekseed;
+      TrkTools::fillTrkInfo(dekseed,_deti);
+      if(_diag > 1){
+	TrkTools::fillHitInfo(dekseed, _detsh); //TODO
+	TrkTools::fillMatInfo(dekseed, _detsm); //TODO
       }
-      if(_fillmc) { // get MC product collections
-	findMCData(event);
+      // upstream and muon tracks
+      auto iuekseed = findUpstreamTrack(ueC,dekseed);
+      if(iuekseed != ueC.end()) TrkTools::fillTrkInfo(*iuekseed,_ueti);
+      auto idmukseed = findMuonTrack(dmC,dekseed);
+      if(idmukseed != dmC.end()) TrkTools::fillTrkInfo(*idmukseed,_dmti);
+      // calorimeter info
+      if (dekseed.hasCaloCluster()) {
+	TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
+	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
       }
-
-      // now fill out everything
-      fillEventInfo(event);
-      TrkTools::fillHitCount(shfC, _hcnt);
-      if(deK != 0){
-	TrkTools::fillTrkInfo(dekseed,_deti);
+      if (_filltrkqual) {
+	auto const& tqual = tqcol.at(std::distance(deC.begin(),idekseed));
 	_deti._trkqual = tqual.MVAOutput();
-	if(_diag > 1){
-	  TrkTools::fillHitInfo(dekseed, _detsh); //TODO
-	  TrkTools::fillMatInfo(dekseed, _detsm); //TODO
-	}
-	if(ueK != 0){
-	  TrkTools::fillTrkInfo(uekseed,_ueti);
-	}
-	if(dmK != 0){
-	  TrkTools::fillTrkInfo(dmukseed,_dmti);
-	}
-	if (dekseed.hasCaloCluster()) {
-	  TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
-	  _tcnt._ndec = 1; // only 1 possible calo hit at the moment
-	}
-	if (_filltrkqual) {
-	  TrkTools::fillTrkQualInfo(tqual, _trkQualInfo);
-	}
+	TrkTools::fillTrkQualInfo(tqual, _trkQualInfo);
       }
       // fill mC info associated with this track
-      if(_fillmc && deK != 0) { // TODO we want MC information when we don't have a track
-	const KalSeedMC& dekseedmc = *((*_kalSeedMCHandle).begin());
-	TrkMCTools::fillTrkInfoMC(dekseedmc, dekseed, _demc);
-	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, VirtualDetectorId::TT_FrontHollow); // TODO
-	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, VirtualDetectorId::TT_Mid); // TODO
-	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, VirtualDetectorId::TT_Back); // TODO
+      if(_fillmc ) { 
+	// use Assns interface to find the associated KalSeedMC; this is unfortunately
+	// very complicated as everything must be recast as ptrs
+	auto dekptr = art::Ptr<KalSeed>(deH,std::distance(deC.begin(),idekseed));
+	for(auto iksmca = ksmcah->begin(); iksmca!= ksmcah->end(); iksmca++){
+	  if(iksmca->first == dekptr) {
+	    auto const& dekseedmc = *(iksmca->second);
 
-	const PrimaryParticle& primary = *_primaryParticleHandle;
-	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary); // TODO
-	if (_diag>1) {
-	  TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc); // TODO
+	    TrkMCTools::fillTrkInfoMC(dekseedmc, dekseed, _demc);
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, VirtualDetectorId::TT_FrontHollow); // TODO
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, VirtualDetectorId::TT_Mid); // TODO
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, VirtualDetectorId::TT_Back); // TODO
+
+	    const PrimaryParticle& primary = *pph;
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary); // TODO
+	    if (_diag>1) {
+	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc); // TODO
+	    }
+	    break;
+	  }
+	}
+	if (dekseed.hasCaloCluster()) {
+	  // fill MC truth of the associated CaloCluster 
+	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
+	    if(iccmca->first == dekseed.caloCluster()){
+	      auto const& ccmc = *(iccmca->second);
+	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_detchmc);
+
+	      break;
+	    }
+	  }
 	}
       }
-
+    }
+    if(idekseed != deC.end() || _pempty) {
+      // fill general event information
+      fillEventInfo(event);
+      TrkTools::fillHitCount(shfC, _hcnt);
+      // TODO we want MC information when we don't have a track
       // fill CRV info
       if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);
-
       // fill this row in the TTree
       _trkana->Fill();
     }
   }
 
-  void TrackAnalysisReco::findMCData(const art::Event& event) {
-    event.getByLabel(_primaryParticleTag, _primaryParticleHandle);
-    event.getByLabel(_kalSeedMCTag, _kalSeedMCHandle);
-  }
-
-  bool TrackAnalysisReco::findBestTrack(KalSeedCollection const& kcol, KalSeed& kseed, TrkQualCollection const& tqcol, TrkQual& tqual) {
+  KSCIter TrackAnalysisReco::findBestRecoTrack(KalSeedCollection const& kcol) {
+    KSCIter retval = kcol.end();
     _tcnt._nde = kcol.size();
-    // find the higest momentum track
-    // TODO: should be finding the most "signal-like" track
+    // find the higest momentum track; should be making some quality cuts too FIXME!
     double max_momentum = -9999;
-    bool track_found = false;
-    for(size_t i_trk = 0; i_trk < kcol.size(); ++i_trk) {
-      const KalSeed& i_kseed = kcol.at(i_trk);
-      if (i_kseed.segments().begin()->mom() > max_momentum) {
-	kseed = i_kseed; // currently takes the first track
-	tqual = tqcol.at(i_trk);
-	track_found = true;
+    for(auto i_kseed=kcol.begin(); i_kseed != kcol.end(); ++i_kseed) {
+      auto const& kseed = *i_kseed; 
+      if (kseed.segments().begin()->mom() > max_momentum) {
+	retval = i_kseed;
       }
     }
-    return track_found;
+    return retval;
   }
 
-  bool TrackAnalysisReco::findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& uekseed) {
+  // find the track most associated with the MC true primary FIXME!
+  KSCIter TrackAnalysisReco::findPrimaryTrack( KalSeedCollection const& kcol,
+      KalSeedMCAssns const& mcassns) {
+    return kcol.end();
+  }
+
+  KSCIter TrackAnalysisReco::findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed) {
+    KSCIter retval = kcol.end();
     _tcnt._nue = kcol.size();
     // loop over upstream tracks and pick the best one (closest to momentum) that's earlier than the downstream track
-    bool track_found = false;
     double demom = dekseed.segments().begin()->mom();
     double closest_momentum = 0;
-    for(auto i_kseed : kcol) {
-      if(i_kseed.t0().t0() < dekseed.t0().t0() - _minReflectTime){
-	double this_ue_momentum = i_kseed.segments().begin()->mom();
+    for(auto i_kseed=kcol.begin(); i_kseed != kcol.end(); i_kseed++) {
+      if(i_kseed->t0().t0() < dekseed.t0().t0() - _minReflectTime &&
+	i_kseed->t0().t0() > dekseed.t0().t0() - _maxReflectTime) {
+	double this_ue_momentum = i_kseed->segments().begin()->mom();
 // choose the upstream track whose parameters best match the downstream track.
 // Currently compare momentum at the tracker center, this should be done at the tracker entrance
 // and should compare more parameters FIXME!
 	if( fabs(this_ue_momentum-demom) < fabs(closest_momentum-demom)) {
-	  uekseed = i_kseed;
-	  track_found = true;
+	  retval = i_kseed;
 	}
       }
     }
-    return track_found;
+    return retval;
   }
 
-  bool TrackAnalysisReco::findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& dmukseed) {
+  KSCIter TrackAnalysisReco::findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed) {
+    KSCIter retval = kcol.end();
     _tcnt._ndm = kcol.size();
-    bool track_found = false;
 // loop over muon tracks and pick the one with the largest hit overlap
     unsigned maxnover(0);
-    for(auto i_kseed : kcol) {
-      unsigned nover = _tcomp.nOverlap(i_kseed,dekseed);
+    for(auto i_kseed = kcol.begin(); i_kseed != kcol.end(); i_kseed++) {
+      unsigned nover = _tcomp.nOverlap(*i_kseed,dekseed);
       if(nover > maxnover){
 	maxnover = nover;
-	dmukseed = i_kseed;
-	track_found = true;
+	retval = i_kseed;
       }
     }
     _tcnt._ndmo = maxnover;
-    return track_found;
+    return retval;
   }
 
   void TrackAnalysisReco::fillEventInfo( const art::Event& event) {
@@ -428,7 +449,8 @@ namespace mu2e {
     _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
-    // clear vectors
+    _detchmc.reset();
+// clear vectors
     _detsh.clear();
     _detsm.clear();
     _detshmc.clear();

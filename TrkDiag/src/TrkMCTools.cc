@@ -382,5 +382,15 @@ namespace mu2e {
       tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
     }
     */
+    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc) {
+      ccimc._nsim = ccmc.energyDeposits().size();
+      ccimc._etot = ccmc.totalEnergyDeposit();
+      ccimc._tavg = ccmc.averageTime();
+      if(ccmc.energyDeposits().size() > 0){
+	auto const& primary = ccmc.energyDeposits().front();
+	ccimc._eprimary = primary.energyDeposit();
+	ccimc._tprimary = primary.time();
+      }
+    }
   }
 }

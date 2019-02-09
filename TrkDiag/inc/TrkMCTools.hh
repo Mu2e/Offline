@@ -12,6 +12,7 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
@@ -77,6 +78,8 @@ namespace mu2e {
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const VirtualDetectorId::enum_type& vid);
     void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
+
+    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc);
 
     //    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
     //    void fillHitInfoMCNoTime(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, TrkStrawHitInfoMC& tshinfomc);

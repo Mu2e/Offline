@@ -17,12 +17,18 @@ namespace mu2e {
     art::Ptr<SimParticle> _simp; // sim particle
     float _edep; // energy deposited by this particle in this cluster
     float _time; // average time of the energy deposition by this particle; includes all offsets!
+    // should include an energy-weighted position FIXME!
   };
     
   struct CaloClusterMC {
+    std::vector<CaloMCEDep> const& energyDeposits() const { return _edeps; }
+    float totalEnergyDeposit() const { return _edep; }
+    float averageTime() const { return _time; }
+    
     std::vector<CaloMCEDep> _edeps; // energy contributions from individual SimParticles, sorted by contribution
     float _edep; // total edep
     float _time; // energy-weighted time average, including all offsets!
+    // should include an energy-weighted position FIXME!
   };
   typedef std::vector<mu2e::CaloClusterMC> CaloClusterMCCollection;
   typedef art::Assns<CaloCluster,CaloClusterMC> CaloClusterMCAssns;
