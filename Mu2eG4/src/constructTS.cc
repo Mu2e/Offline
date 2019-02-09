@@ -181,7 +181,7 @@ namespace mu2e {
       G4cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << G4endl;
       G4cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() <<","  
            << strsec->getGlobal().z() + strsec->getHalfLength() << "]" << G4endl;
-      G4cout << __func__ << " TS1(in)  rotation      : " << strsec->getRotation() << G4endl;
+      G4cout << __func__ << " TS1(in)  rotation      : " << *(strsec->getRotation()) << G4endl;
      }
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT );
@@ -207,7 +207,7 @@ namespace mu2e {
 
     if ( verbosityLevel > 0) {
       G4cout << __func__ << " TS1(out) OffsetInMu2e  : " << strsec->getGlobal()   << G4endl;
-      G4cout << __func__ << " TS1(out) rotation      : " << strsec->getRotation() << G4endl;
+      G4cout << __func__ << " TS1(out) rotation      : " << *(strsec->getRotation()) << G4endl;
     }
     
     // Build downstream partial end wall of TS1
@@ -405,7 +405,7 @@ namespace mu2e {
 
     if ( verbosityLevel > 0) {
       G4cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << G4endl;
-      G4cout << __func__ << " TS3  rotation     : " << strsec->getRotation() << G4endl;
+      G4cout << __func__ << " TS3  rotation     : " << *(strsec->getRotation()) << G4endl;
     }
 
     // Put in the insulating vacuum, which will serve as the mother volume
@@ -573,7 +573,7 @@ namespace mu2e {
    
     if ( verbosityLevel > 0) {
       G4cout << __func__ << " TS5  OffsetInMu2e : " << strsec->getGlobal()   << G4endl;
-      G4cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << G4endl;
+      G4cout << __func__ << " TS5  rotation     : " << *(strsec->getRotation()) << G4endl;
     }
 
 
@@ -1103,6 +1103,17 @@ namespace mu2e {
 
     coll31Info.name = "Coll31";
     coll32Info.name = "Coll32";
+
+    if ( verbosityLevel > 0 ) {
+      CLHEP::Hep3Vector parentPosW    = _helper->locateVolInfo("TS3Vacuum").centerInWorld;
+      CLHEP::Hep3Vector parentPosM    = _helper->locateVolInfo("TS3Vacuum").centerInMu2e();
+      G4cout << __func__ << " Coll31 OffsetInW     : " << coll31.getLocal() + parentPosW << G4endl;
+      G4cout << __func__ << " Coll31 OffsetInMu2e  : " << coll31.getLocal() + parentPosM << G4endl;
+      G4cout << __func__ << " Coll31 Extent        :[ " << coll31.getLocal().z() - coll31.halfLength() + parentPosM.z() <<","
+           << coll31.getLocal().z() + coll31.halfLength()  + parentPosM.z() << "]" << G4endl;
+      G4cout << __func__ << " ts innerRadius      : " << ts.innerRadius() << G4endl;
+      G4cout << __func__ << " coll31 outerRadius  : " << coll31.rOut()    << G4endl;
+     }
 
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
                                        0, coll31.rOut(), coll31.halfLength()-2.*vdHalfLength,
