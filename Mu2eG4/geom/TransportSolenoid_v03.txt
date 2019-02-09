@@ -174,6 +174,7 @@ string ts.coll1.material1Name = "G4_GRAPHITE_POROUS";
 string ts.coll1.material2Name = "BronzeC608";
 string ts.coll1.material3Name = "BronzeC608";
 
+double ts.coll3.outerRadius      = 243.0;
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
 string ts.coll3.materialName     = "BronzeC608";

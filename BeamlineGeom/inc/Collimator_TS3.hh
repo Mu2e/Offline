@@ -22,6 +22,8 @@ namespace mu2e {
     CollimatorTS3(double halfZ, CLHEP::Hep3Vector origin) :  
       Collimator( halfZ, origin) {}
 
+    double      rOut() const { return _rOut; }
+
     double      hole()             const { return _hole;             }
     double      holeRadius()       const { return _holeRadius;       }
     double      holeHalfHeight()   const { return _holeHalfHeight;   }
@@ -39,6 +41,8 @@ namespace mu2e {
     std::string material()           const { return _material; }
 
   private:
+
+    double _rOut;
 
     double _hole;
     double _holeRadius;

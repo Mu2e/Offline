@@ -1034,7 +1034,7 @@ namespace mu2e {
 	      "TSColl"
               );
 
-    double tmpRout = ts.innerRadius();
+    double tmpRout = coll1.rOut();
     if ( coll1.rIn4() > 1.0 ) tmpRout = coll1.rIn4();
 
     TubsParams coll1Param2 ( coll1.rIn3(),  tmpRout, coll1.halfLength()-2.*vdHalfLength);
@@ -1050,9 +1050,9 @@ namespace mu2e {
 	      "TSColl"
               );
 
-    if ( coll1.rIn4() > 1.0 && coll1.rOu4() > coll1.rIn4() ) {
+    if ( coll1.rIn4() > 1.0 && coll1.rOut() > coll1.rIn4() ) {
       // Make the sheath
-      TubsParams coll1Param3 ( coll1.rIn4(),  coll1.rOu4(), coll1.halfLength()-2.*vdHalfLength);
+      TubsParams coll1Param3 ( coll1.rIn4(),  coll1.rOut(), coll1.halfLength()-2.*vdHalfLength);
       nestTubs( "Coll13",
 		coll1Param3,
 		findMaterialOrThrow( coll1.material3() ),
@@ -1105,11 +1105,11 @@ namespace mu2e {
     coll32Info.name = "Coll32";
 
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
-                                       0, ts.innerRadius(), coll31.halfLength()-2.*vdHalfLength,
+                                       0, coll31.rOut(), coll31.halfLength()-2.*vdHalfLength,
                                        0.0, CLHEP::twopi );
 
     G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
-                                       0, ts.innerRadius(), coll32.halfLength()-2.*vdHalfLength,
+                                       0, coll32.rOut(), coll32.halfLength()-2.*vdHalfLength,
                                        0.0, CLHEP::twopi );
 
     coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
@@ -1212,7 +1212,7 @@ namespace mu2e {
 	      "TSColl"
             );
 
-    TubsParams coll32InRecordParam ( 0,  ts.innerRadius(), vdHalfLength );
+    TubsParams coll32InRecordParam ( 0,  coll32.rOut(), vdHalfLength );
     G4ThreeVector coll32InRecordTrans( coll32.getLocal().x(),
                                        coll32.getLocal().y(),
                                        coll32.getLocal().z() - coll32.halfLength() - vdHalfLength );
@@ -1574,7 +1574,7 @@ namespace mu2e {
 
       // Now make the actual support
       G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
-					  0, ts.innerRadius(), hDz,
+					  0, coll31.rOut(), hDz,
 					  0.0, CLHEP::twopi );
 
       supportInfo.solid = new G4SubtractionSolid("pBarTS3Support",
@@ -1691,8 +1691,8 @@ namespace mu2e {
 	std::cout << __func__ <<"inside version " << pbarAbsTS3Version << std::endl;
       }
       // =============== Now Version 3 of pbarAbs in TS3! ==============
-      // Get collimators
-      TransportSolenoid const& ts = bl.getTS();
+      // Get collimators (we use the coll31 info)
+      CollimatorTS3 const& coll31  = bl.getTS().getColl31();
       // First, construct hole; make it slightly longer than the support
       double hDz = config.getDouble("pbar.support.innerHalflength")* CLHEP::mm;
 
@@ -1703,7 +1703,7 @@ namespace mu2e {
       // Now make the actual support
       G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
 					  pbarWindow.diskRadius(), 
-					  ts.innerRadius(), hDz,
+					  coll31.rOut(), hDz,
 					  0.0, CLHEP::twopi );
 
       supportInfo.solid = support_mother;
@@ -2246,7 +2246,7 @@ namespace mu2e {
       CollimatorTS3 const& coll31 = ts.getColl31();
 
       double pbarTS31HalfLength = config.getDouble("pbar.coll31In.halfLength", 0.05);
-      double pbarTS31Params[5]  = { 0.0, ts.innerRadius(), pbarTS31HalfLength, 0.0, CLHEP::twopi };
+      double pbarTS31Params[5]  = { 0.0, coll31.rOut(), pbarTS31HalfLength, 0.0, CLHEP::twopi };
       double pbarTS31Offset = config.getDouble("pbar.coll31In.offset", 1.0);
 
       CLHEP::Hep3Vector pbarTS31Pos = coll31.getLocal();

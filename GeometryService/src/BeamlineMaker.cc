@@ -506,6 +506,7 @@ namespace mu2e {
     coll32._holeDisplacement = coll31._holeDisplacement  = c.getDouble("ts.coll3.holeDisplacement",0.);
     coll32._rotationAngle    = coll31._rotationAngle     = c.getDouble("ts.coll3.rotationAngle",0.);
     coll32._material         = coll31._material          = c.getString("ts.coll3.materialName");
+    coll32._rOut             = coll31._rOut              = c.getDouble("ts.coll3.outerRadius");
 
     // For studies of flash mitigation, building a "flashblock", also known
     // as "Rick's" (Coleman) "Tooth"
