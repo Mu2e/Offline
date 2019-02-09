@@ -155,6 +155,12 @@
  <class name="art::Ptr<mu2e::CaloClusterMC>" />
  <class name="std::pair<art::Ptr<mu2e::CaloClusterMC>,Float_t>" />
  <class name="art::Wrapper<mu2e::CaloClusterMCCollection>"/>
+ <class name="mu2e::CaloMCEDep" />
+ <class name="std::vector<mu2e::CaloMCEDep>" />
+ <class name="art::Assns<mu2e::CaloCluster,mu2e::CaloClusterMC,void>"/>
+ <class name="art::Assns<mu2e::CaloClusterMC,mu2e::CaloCluster,void>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CaloClusterMC,mu2e::CaloCluster,void>>"/>
+ <class name="art::Wrapper<art::Assns<mu2e::CaloCluster,mu2e::CaloClusterMC,void>>"/>
 
  <class name="mu2e::CaloHitMCTruth"/>
  <class name="mu2e::CaloHitMCTruthCollection"/>

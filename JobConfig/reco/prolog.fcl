@@ -76,6 +76,8 @@ Reconstruction : {
     FindMCPrimary : { @table::CommonMC.FindMCPrimary }
     SelectRecoMC : { 
       @table::CommonMC.SelectRecoMC 
+       CSSCollection : "compressDigiMCs"
+       CaloClusterMCDTime : 5.0
       TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
     }
     # calo fix: only need for MDC2018e and earlier
@@ -190,7 +192,7 @@ Reconstruction.RecoPath : [
   FindMCPrimary, SelectRecoMC,
   compressRecoMCs ]
 # define trigger path FIXME!
-Reconstruction.Output : {
+  Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil

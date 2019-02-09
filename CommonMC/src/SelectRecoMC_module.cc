@@ -21,6 +21,7 @@
 #include "MCDataProducts/inc/CaloShowerSim.hh"
 #include "MCDataProducts/inc/CrvDigiMC.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
@@ -60,6 +61,11 @@ namespace mu2e {
 	Comment("Virtual Detector StepPointMC collection")};
       fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"),
 	Comment("Sim Particle Time Offset Maps")};
+      fhicl::Atom<art::InputTag> CSSC { Name("CSSCollection"),
+	Comment("CaloShowerSim collection")};
+      fhicl::Atom<double> CCMCDT { Name("CaloClusterMCDTime"),
+	Comment("Max time difference between CaloCluster and CaloShowerSim for MC match")};
+ 
    };
    using Parameters = art::EDProducer::Table<Config>;
    explicit SelectRecoMC(const Parameters& conf);
@@ -69,10 +75,12 @@ namespace mu2e {
   // utility functions
     void fillKalSeedMC(KalSeed const& seed, StrawDigiMCCollection const& sdmcc,
 	StepPointMCCollection const& vdspc, PrimaryParticle const& pp, KalSeedMC& mcseed);
+    void fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc, CaloClusterMC& ccmc);
     int _debug;
-    art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc;
+    art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc, _cssc;
     std::vector<std::string> _kff;
     SimParticleTimeOffset _toff;
+    double _ccmcdt;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -83,8 +91,10 @@ namespace mu2e {
     _sdmcc(config().SDMCC()),
     _crvdmcc(config().CRVDMCC()),
     _vdspc(config().VDSPC()),
+    _cssc(config().CSSC()),
     _kff(config().KFFInstances()),
-    _toff(config().SPTO())
+    _toff(config().SPTO()),
+    _ccmcdt(config().CCMCDT())
   {
     consumes<PrimaryParticle>(_pp);
     consumesMany<KalSeedCollection>();
@@ -94,6 +104,8 @@ namespace mu2e {
     produces <IndexMap>("CrvDigiMCMap"); 
     produces <KalSeedMCCollection>(); 
     produces <KalSeedMCAssns>();
+    produces <CaloClusterMCCollection>(); 
+    produces <CaloClusterMCAssns>();
     if(_debug > 0){
       std::cout << "Using KalSeed collections from ";
       for (auto const& kff : _kff)
@@ -116,19 +128,25 @@ namespace mu2e {
     auto const& crvdmcc = *crvdmcch;
     auto vdspch = event.getValidHandle<StepPointMCCollection>(_vdspc);
     auto const& vdspc = *vdspch;
+    auto cssch = event.getValidHandle<CaloShowerSimCollection>(_cssc);
+    auto const& cssc = *cssch;
     // some things needed for creating Ptrs before the collection is in the event
     auto KalSeedMCCollectionPID = getProductID<KalSeedMCCollection>();
     auto KalSeedMCCollectionGetter = event.productGetter(KalSeedMCCollectionPID);
+    auto CaloClusterMCCollectionPID = getProductID<CaloClusterMCCollection>();
+    auto CaloClusterMCCollectionGetter = event.productGetter(CaloClusterMCCollectionPID);
 // create output; these are pruned collections containing only
 // products related to the reconstruction output or the event primary
     std::unique_ptr<IndexMap> sdmcim(new IndexMap);
     std::unique_ptr<IndexMap> crvdmcim(new IndexMap);
     std::unique_ptr<KalSeedMCCollection> ksmcc(new KalSeedMCCollection);
     std::unique_ptr<KalSeedMCAssns> ksmca(new KalSeedMCAssns);
-    // straw hit (indices) that are referenced by the tracks
+    std::unique_ptr<CaloClusterMCCollection> ccmcc(new CaloClusterMCCollection);
+    std::unique_ptr<CaloClusterMCAssns> ccmca(new CaloClusterMCAssns);
+     // straw hit (indices) that are referenced by the tracks
     std::set<StrawHitIndex> shindices;
-    // CaloClusters that are referenced by the tracks
-//    std::set<art::Ptr<CaloCluster> > caloclusters;
+    // CaloClusters referenced by the tracks
+    std::set<art::Ptr<CaloCluster> > ccptrs;
     // loop over input KalFinalFit products
     for (auto const& kff : _kff) {
     // get all products from this
@@ -142,7 +160,7 @@ namespace mu2e {
 	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << kff << std::endl;
 	for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
 	  auto const& seed = *iseed;
-//	  if(seed.hasCaloCluster())caloclusters.insert(seed.caloCluster());
+	  // keep track of digi indices
 	  for( auto const& tsh : seed.hits() ) {
 	    shindices.insert(tsh.index());
 	  }
@@ -154,6 +172,8 @@ namespace mu2e {
 	  auto mcseedp = art::Ptr<KalSeedMC>(KalSeedMCCollectionPID,ksmcc->size()-1,KalSeedMCCollectionGetter);
 	  auto seedp = art::Ptr<KalSeed>(seedh,std::distance(seedc.begin(),iseed));
 	  ksmca->addSingle(seedp,mcseedp);
+	  // record the CaloCluster MC truth for this seed (if any)
+	  if(seed.hasCaloCluster())ccptrs.insert(seed.caloCluster());
 	} 
       }
     }
@@ -206,6 +226,16 @@ namespace mu2e {
 	crvindices.insert(std::distance(crvdmcc.begin(),icrv));
       }
     }
+    // fill CaloClusters
+    for(auto const& ccptr : ccptrs) {
+      CaloClusterMC ccmc;
+      fillCaloClusterMC(*ccptr,cssc,ccmc);
+      // save and create the assn
+      ccmcc->push_back(ccmc);
+      auto ccmcp = art::Ptr<CaloClusterMC>(CaloClusterMCCollectionPID,ccmcc->size()-1,CaloClusterMCCollectionGetter);
+      ccmca->addSingle(ccptr,ccmcp);
+    }
+
     // Fill CrvIndex map
     uint16_t crvcount(0);
     for(auto crvindex : crvindices) crvdmcim->addElement(crvindex,crvcount++);
@@ -216,6 +246,8 @@ namespace mu2e {
     event.put(std::move(crvdmcim),"CrvDigiMCMap");
     event.put(std::move(ksmcc));
     event.put(std::move(ksmca));
+    event.put(std::move(ccmcc));
+    event.put(std::move(ccmca));
   }
 
   void SelectRecoMC::fillKalSeedMC(KalSeed const& seed, 
@@ -281,6 +313,60 @@ namespace mu2e {
 	mcseed._tshmcs.push_back(tshmc);
       }
     }
+  }
+
+  void SelectRecoMC::fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc, CaloClusterMC& ccmc){
+// struct for sorting MC energy deposits, largest first
+    struct esort : public std::binary_function <CaloMCEDep, CaloMCEDep, bool> {
+      bool operator() (CaloMCEDep a, CaloMCEDep b) { return a._edep > b._edep; }
+    };
+ //  keep track of energy contributions
+    std::vector<CaloMCEDep> edeps;
+  // loop over the crystal hits in this cluster
+    for(auto const& cchptr : cc.caloCrystalHitsPtrVector()){
+      // look for matches in the CaloShowerSimCollection: this is approximate, as the fundamental connectoion back
+      // to CaloDigis is missing FIXME!
+      for(auto const& css : cssc) {
+	if(css.crystalId() == cchptr->id()){
+	// compare times
+	  double csstime = css.time() + _toff.totalTimeOffset(css.sim());
+	  if(fabs(csstime-cchptr->time()) < _ccmcdt) {
+	    // match: see if an entry for this SimParticle already exists
+	    bool found(false);
+	    for(auto& edep : edeps) {
+	      if(css.sim() == edep.sim()){
+// add in the energy; average the time
+		float te = edep.energyDeposit()*edep.time() + csstime*css.energyMC();
+		edep._edep += css.energyMC();
+		edep._time = te/edep.energyDeposit();
+		found = true;
+		break;
+	      }
+	    }
+	    if(!found){
+// add a new element
+	      CaloMCEDep edep;
+	      edep._simp = css.sim();
+	      edep._edep = css.energyMC();
+	      edep._time = csstime;
+	      edeps.push_back(edep);
+	    }
+	  }
+	}
+      }
+    }
+// sort
+    std::sort(edeps.begin(),edeps.end(),esort());
+// fill the CaloClusterMC object
+    ccmc._edep = 0.0;
+    ccmc._time = 0.0;
+    ccmc._edeps.reserve(edeps.size());
+    for(auto& edep : edeps) {
+      ccmc._edeps.push_back(edep);
+      ccmc._edep += edep.energyDeposit();
+      ccmc._time += edep.time()*edep.energyDeposit();
+    }
+    ccmc._time /= ccmc._edep;
   }
 }
 DEFINE_ART_MODULE(mu2e::SelectRecoMC)
