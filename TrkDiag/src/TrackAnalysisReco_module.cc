@@ -18,12 +18,6 @@
 #include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
-#include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -34,6 +28,7 @@
 
 // ROOT incldues
 #include "Rtypes.h"
+#include "TTree.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -45,7 +40,6 @@
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 // diagnostics
-#include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkComp.hh"
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkCount.hh"
@@ -106,9 +100,6 @@ namespace mu2e {
     int _diag;
     // analysis parameters
     double _minReflectTime; // minimum time for a track to reflect in the gradient
-    double _mingood; // minimum fraction of momentum that classes a digi as good
-    // Kalman fit diagnostics
-    KalDiag _kdiag;
     // track comparator
     TrkComp _tcomp;
     // main TTree
@@ -130,14 +121,11 @@ namespace mu2e {
     std::vector<TrkStrawMatInfo> _detsm;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
-    art::InputTag _strawDigiMCTag;
-    art::Handle<StrawDigiMCCollection> _strawDigiMCHandle;
-    art::InputTag _simParticleTag;
-    art::Handle<SimParticleCollection> _simParticleHandle;
-    art::InputTag _vdStepPointMCTag;
-    art::Handle<StepPointMCCollection> _vdStepPointMCHandle;
+    art::InputTag _primaryParticleTag;
+    art::Handle<PrimaryParticle> _primaryParticleHandle;
+    art::InputTag _kalSeedMCTag;
+    art::Handle<KalSeedMCCollection> _kalSeedMCHandle;
     // detailed MC truth for the signal candidate
-    SimParticleTimeOffset _toff;
     TrkInfoMCStep _demcgen;
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
     std::vector<TrkStrawHitInfoMC> _detshmc;
@@ -146,16 +134,9 @@ namespace mu2e {
     TrkQualTestInfo _trkqualTest;
     // helper functions
     void findMCData(const art::Event& event);
-    void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
     bool findBestTrack(KalSeedCollection const& kcol, KalSeed& kseed, TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
-    void fillTrkInfoMC(art::Ptr<SimParticle> spp, const KalSeed& kseed,TrkInfoMC& trkinfomc) const;
-
-    void fillTrkInfoMCStep(art::Ptr<SimParticle> spp, TrkInfoMCStep& trkinfomcstep) const;
-    void fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const;
-    void fillTrkInfoMCStep(Hep3Vector const& mom, Hep3Vector const& pos, double charge, TrkInfoMCStep& trkinfomcstep) const;
-    void fillMCInfo(const KalSeed& kseed, bool track_found);
 
     bool findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& uekseed);
     bool findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed, KalSeed& dmukseed);
@@ -163,7 +144,6 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
-    void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   };
 
   TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
@@ -183,15 +163,11 @@ namespace mu2e {
     _filltrkqual(pset.get<bool>("fillTrkQualInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
-    _mingood(pset.get<double>("MinimumGoodMomentumFraction",0.9)),
-    _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
     _trkana(0),
     _meanPBI(0.0),
     _strawHitFlagTag(pset.get<art::InputTag>("StrawHitFlagCollection", "")),
-    _strawDigiMCTag(pset.get<art::InputTag>("StrawDigiMCCollection", "")),
-    _simParticleTag(pset.get<art::InputTag>("SimParticleCollection", "")),
-    _vdStepPointMCTag(pset.get<art::InputTag>("VDStepPointMCCollection", "")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
+    _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
+    _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCCollection", ""))
   {
   }
 
@@ -262,7 +238,6 @@ namespace mu2e {
 	_trkana->Branch("evtwt",&_wtinfo,_wtinfo.leafnames(labels).c_str());
       }
     }
-    _toff.updateMap(event); //update time maps
 
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalSeedCollection> deH;
@@ -323,11 +298,23 @@ namespace mu2e {
 	  _tcnt._ndec = 1; // only 1 possible calo hit at the moment
 	}
 	if (_filltrkqual) {
-	  fillTrkQualInfo(tqual, _trkQualInfo);
+	  TrkTools::fillTrkQualInfo(tqual, _trkQualInfo);
 	}
       }
       // fill mC info associated with this track
-      if(_fillmc) fillMCInfo(dekseed, deK); 
+      if(_fillmc && deK != 0) { // TODO we want MC information when we don't have a track
+	const KalSeedMC& dekseedmc = *((*_kalSeedMCHandle).begin());
+	TrkMCTools::fillTrkInfoMC(dekseedmc, dekseed, _demc);
+	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, VirtualDetectorId::TT_FrontHollow); // TODO
+	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, VirtualDetectorId::TT_Mid); // TODO
+	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, VirtualDetectorId::TT_Back); // TODO
+
+	const PrimaryParticle& primary = *_primaryParticleHandle;
+	TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary); // TODO
+	if (_diag>1) {
+	  TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc); // TODO
+	}
+      }
 
       // fill CRV info
       if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);
@@ -338,9 +325,8 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::findMCData(const art::Event& event) {
-    event.getByLabel(_strawDigiMCTag, _strawDigiMCHandle);
-    event.getByLabel(_simParticleTag, _simParticleHandle);
-    event.getByLabel(_vdStepPointMCTag, _vdStepPointMCHandle);
+    event.getByLabel(_primaryParticleTag, _primaryParticleHandle);
+    event.getByLabel(_kalSeedMCTag, _kalSeedMCHandle);
   }
 
   bool TrackAnalysisReco::findBestTrack(KalSeedCollection const& kcol, KalSeed& kseed, TrkQualCollection const& tqcol, TrkQual& tqual) {
@@ -398,52 +384,6 @@ namespace mu2e {
     return track_found;
   }
 
-  void TrackAnalysisReco::fillMCInfo(const KalSeed& kseed, bool track_found) {
-  // for now MC truth is only for the DE track.  Maybe we need MC truth on other tracks too?  FIXME!
-    art::Ptr<SimParticle> deSP;
-    if (track_found) {
-      TrkMCTools::findMCTrk(kseed, deSP, *_strawDigiMCHandle);
-    } else if(_simParticleHandle.isValid()) { 
-      // assume the 1st primary particle is the CE.  FIXME!!!
-      const auto& simParticles = *_simParticleHandle;
-      for ( auto isp = simParticles.begin(); isp != simParticles.end(); ++isp ){
-    	if (isp->second.isSecondary()){
-	  if (isp->second.parent()->isPrimary()){
-	    deSP = isp->second.parent();
-	    break;
-	  }
-	}
-      }
-    }
-    if(deSP.isNonnull()){
-      fillTrkInfoMC(deSP,kseed,_demc);
-      fillTrkInfoMCStep(deSP,_demcgen);
-      
-      // find virtual detector steps where the particle crosses the tracker at fixed points
-      static TrkFitDirection downstream;
-      fillMCSteps(KalDiag::trackerEnt, downstream, cet::map_vector_key(deSP.key()), _demcent);
-      fillMCSteps(KalDiag::trackerMid, downstream, cet::map_vector_key(deSP.key()), _demcmid);
-      fillMCSteps(KalDiag::trackerExit, downstream, cet::map_vector_key(deSP.key()), _demcxit);
-      if(_diag > 1 && track_found != 0) {
-	// MC truth hit information
-	TrkMCTools::fillHitInfoMCs(kseed, deSP, *_strawDigiMCHandle, _toff, _detshmc);
-      }
-    } 
-  }
-
-  void TrackAnalysisReco::fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir,
-  SimParticle::key_type id, TrkInfoMCStep& tmcs) {
-    std::vector<MCStepItr> steps;
-    TrkMCTools::findMCSteps(*_vdStepPointMCHandle,id,_kdiag.VDids(tpos),steps);
-    // if there are more than 1 crossing take the first one pointing in the specified direction
-    for(auto istep = steps.begin(); istep != steps.end();++istep){
-      if(std::signbit((*istep)->momentum().z()) == std::signbit(fdir.dzdt())){
-	fillTrkInfoMCStep(*istep,tmcs);
-	break;
-      }
-    }
-  }
-
   void TrackAnalysisReco::fillEventInfo( const art::Event& event) {
     // fill basic event information
     _einfo._eventid = event.event();
@@ -496,84 +436,6 @@ namespace mu2e {
     _crvinfomc.clear();
   }
 
-
-  void TrackAnalysisReco::fillTrkInfoMC(art::Ptr<SimParticle> spp, const KalSeed& kseed,TrkInfoMC& trkinfomc) const {
-    // basic information
-    if(spp->genParticle().isNonnull()) {
-      trkinfomc._gen = spp->genParticle()->generatorId().id();
-    }
-    trkinfomc._pdg = spp->pdgId();
-    trkinfomc._proc = spp->originParticle().creationCode();
-    art::Ptr<SimParticle> pp = spp->originParticle().parent();
-    if(pp.isNonnull()){
-      trkinfomc._ppdg = pp->pdgId();
-      trkinfomc._pproc = pp->originParticle().creationCode();
-      trkinfomc._pmom = pp->startMomentum().vect().mag();
-      if(pp->genParticle().isNonnull()) {
-	trkinfomc._pgen = pp->genParticle()->generatorId().id();
-      }
-    }
-    // fill track-specific  MC info
-    int nactive = -1, nhits = -1, ngood = -1, nambig = -1;
-    TrkMCTools::countHits(kseed, spp, *_strawDigiMCHandle, _mingood, nactive, nhits, ngood, nambig);
-    trkinfomc._nactive = nactive;
-    trkinfomc._nhits = nhits;
-    trkinfomc._ngood = ngood;
-    trkinfomc._nambig = nambig;
-
-
-    int ndigi = -1, ndigigood = -1;
-    TrkMCTools::countDigis(spp, *_strawDigiMCHandle, _mingood, ndigi, ndigigood);
-    trkinfomc._ndigi = ndigi;
-    trkinfomc._ndigigood = ndigigood;
-  }
-
-  void TrackAnalysisReco::fillTrkInfoMCStep(art::Ptr<SimParticle> spp, TrkInfoMCStep& trkinfomcstep) const {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    GeomHandle<DetectorSystem> det;
-    trkinfomcstep._time = _toff.totalTimeOffset(spp) + spp->startGlobalTime();
-    double charge = pdt->particle(spp->pdgId()).ref().charge();
-    Hep3Vector mom = spp->startMomentum();
-    // need to transform into the tracker coordinate system
-    Hep3Vector pos = det->toDetector(spp->startPosition());
-    fillTrkInfoMCStep(mom,pos,charge,trkinfomcstep);
-  }
-
-  void TrackAnalysisReco::fillTrkInfoMCStep(MCStepItr const& imcs, TrkInfoMCStep& trkinfomcstep) const {
-    GlobalConstantsHandle<ParticleDataTable> pdt;
-    GeomHandle<DetectorSystem> det;
-    trkinfomcstep._time = _toff.timeWithOffsetsApplied(*imcs);
-    double charge = pdt->particle(imcs->simParticle()->pdgId()).ref().charge();
-    Hep3Vector mom = imcs->momentum();
-    // need to transform into the tracker coordinate system
-    Hep3Vector pos = det->toDetector(imcs->position());
-    fillTrkInfoMCStep(mom,pos,charge,trkinfomcstep);
-  }
-
-  void TrackAnalysisReco::fillTrkInfoMCStep(Hep3Vector const& mom, Hep3Vector const& pos, double charge, TrkInfoMCStep& trkinfomcstep) const {
-    GeomHandle<BFieldManager> bfmgr;
-    GeomHandle<DetectorSystem> det;
-
-    trkinfomcstep._mom = mom.mag();
-    trkinfomcstep._pos = pos;
-    double hflt(0.0);
-    HepVector parvec(5,0);
-    static Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
-    static double bz = bfmgr->getBField(vpoint_mu2e).z();
-    HepPoint ppos(pos.x(),pos.y(),pos.z());
-    TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
-    trkinfomcstep._hpar = helixpar(parvec);
-  }
-
-
-  void TrackAnalysisReco::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
-    int n_trkqual_vars = TrkQual::n_vars;
-    for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
-      TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
-      trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
-    }
-    trkqualInfo._trkqual = tqual.MVAOutput();
-  }
 }  // end namespace mu2e
 
 // Part of the magic that makes this class a module.

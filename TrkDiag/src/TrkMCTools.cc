@@ -10,6 +10,14 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
+
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+
 #include <map>
 
 namespace mu2e {
@@ -136,7 +144,7 @@ namespace mu2e {
       sort(steps.begin(),steps.end(),timecomp());
     }
 
-    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig) {
+    /*    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig) {
       nactive = 0; nhits = 0; ngood = 0; nambig = 0;
       static StrawHitFlag active(StrawHitFlag::active);
 
@@ -163,20 +171,163 @@ namespace mu2e {
 	}
       }      
     }
+    */
 
-    void countDigis(const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& ndigi, int& ndigigood) {
-      ndigi = 0; ndigigood = 0;
-      for(auto imcd = mcdigis.begin(); imcd !=mcdigis.end();++imcd){
-	if( imcd->stepPointMC(StrawEnd::cal)->simParticle() == spp){
-	  ndigi++;
-	  if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/spp->startMomentum().mag() > mingood) {
-	    ndigigood++;
+    void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& ndigigood, int& ngood, int& nambig) {
+      ndigi = 0; ndigigood = 0, ngood = 0, nambig = 0;
+      for (const auto& i_sim : kseedmc.simParticles()) {
+	std::cout << "AE: " << i_sim._pdg << ", " << i_sim._proc << ", " << i_sim._nhits << " " << i_sim._nactive << std::endl;
+	//	ndigi += i_sim._nactive; // number of digis that are active from all sources
+      }
+      
+      for(size_t i_digi = 0; i_digi < kseedmc._tshmcs.size(); ++i_digi) {
+	const auto& i_tshmc = kseedmc._tshmcs.at(i_digi);
+
+	if (kseedmc.simParticle(i_tshmc._spindex)._rel == MCRelationship::same) {
+	  ++ndigi;
+
+	  ++ndigigood;
+
+	  //	  if(spmcp->momentum().mag()/spp->startMomentum().mag() > mingood) {
+	  //	  ++ngood;
+	  // }
+
+	  // easiest way to get MC ambiguity is through info object
+	  TrkStrawHitInfoMC tshinfomc;
+	  fillHitInfoMC(kseedmc,tshinfomc,i_tshmc);  
+
+	  const auto& ihit = kseed.hits().at(i_digi);
+	  if(ihit.ambig()*tshinfomc._ambig > 0) {
+	    ++nambig;
 	  }
 	}
       }
     }
 
-    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, TrkInfoMC& trkinfomc) {
+      // basic information
+      for (const auto& i_simPartStub : kseedmc.simParticles()) {
+	if (i_simPartStub._rel == MCRelationship::same) { // this is the PrimaryParticle
+	  //	  if(spp->genParticle().isNonnull()) {
+	  //	    trkinfomc._gen = spp->genParticle()->generatorId().id(); // TODO from PrimaryParticle?
+	  //	  }
+	  trkinfomc._pdg = i_simPartStub._pdg;
+	  trkinfomc._proc = i_simPartStub._proc;
+	  trkinfomc._nhits = i_simPartStub._nhits; // number of hits from the primary particle
+	  trkinfomc._nactive = i_simPartStub._nactive; // number of active hits from the primary particle
+	}
+	else if (i_simPartStub._rel == MCRelationship::mother) { // this is the parent of the PrimaryParticle
+	  trkinfomc._ppdg = i_simPartStub._pdg;
+	  trkinfomc._pproc = i_simPartStub._proc;
+	  //	  trkinfomc._pmom = pp->startMomentum().vect().mag(); // TODO
+	  //	  if(pp->genParticle().isNonnull()) {
+	  //	    trkinfomc._pgen = pp->genParticle()->generatorId().id(); // TODO
+	  //	  }
+	}
+      }
+
+      int ndigi = -1, ndigigood = -1, ngood = -1, nambig = -1;
+      TrkMCTools::countDigis(kseedmc, kseed, ndigi, ndigigood, ngood, nambig);
+      trkinfomc._ndigi = ndigi; // TODO
+      trkinfomc._ndigigood = ndigigood; // TODO
+      trkinfomc._ngood = ngood; // TODO
+      trkinfomc._nambig = nambig; // TODO
+    }
+
+    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const PrimaryParticle& primary) {
+
+      const auto& genParticle = primary.primary();
+
+      trkinfomcstep._time = genParticle.time(); // TODO
+      trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + genParticle.momentum().py()*genParticle.momentum().py() + genParticle.momentum().pz()*genParticle.momentum().pz());
+      GeomHandle<DetectorSystem> det;
+      trkinfomcstep._pos = det->toDetector(genParticle.position());
+
+      GeomHandle<BFieldManager> bfmgr;
+      GlobalConstantsHandle<ParticleDataTable> pdt;      
+      static CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
+      static double bz = bfmgr->getBField(vpoint_mu2e).z();
+
+      CLHEP::HepVector parvec(5,0);
+      double hflt(0.0);
+      HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
+      CLHEP::Hep3Vector mom = genParticle.momentum().vect();
+      double charge = pdt->particle(genParticle.pdgId()).ref().charge();
+      TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
+      trkinfomcstep._hpar = helixpar(parvec);
+    }
+
+    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const VirtualDetectorId::enum_type& vid) {
+
+      GeomHandle<BFieldManager> bfmgr;
+      GeomHandle<DetectorSystem> det;
+      GlobalConstantsHandle<ParticleDataTable> pdt;
+      static CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
+      static double bz = bfmgr->getBField(vpoint_mu2e).z();
+
+      const auto& mcsteps = kseedmc._vdsteps;
+      for (const auto& i_mcstep : mcsteps) {
+	if (i_mcstep._vdid == vid) {
+	  trkinfomcstep._time = i_mcstep._time;
+	  trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
+	  trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
+
+	  CLHEP::HepVector parvec(5,0);
+	  double hflt(0.0);
+	  HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
+	  CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
+	  double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
+	  TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
+	  trkinfomcstep._hpar = helixpar(parvec);
+
+	  break; // only do one step, don't want to keep overwriting
+	}
+      }
+    }
+
+    void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
+      tshinfomcs.clear();
+
+      for(const auto& i_tshmc : kseedmc._tshmcs) {
+      	TrkStrawHitInfoMC tshinfomc;
+	fillHitInfoMC(kseedmc, tshinfomc, i_tshmc);
+      	tshinfomcs.push_back(tshinfomc);
+      }
+    }
+
+    void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc) {
+      const Tracker& tracker = getTrackerOrThrow();
+
+      const SimPartStub& simPart = kseedmc.simParticle(tshmc._spindex);
+      tshinfomc._t0 = tshmc._time;
+      tshinfomc._ht = tshmc._wireEndTime;
+      tshinfomc._pdg = simPart._pdg;
+      tshinfomc._proc = simPart._proc;
+
+      tshinfomc._edep = tshmc._energySum;
+      tshinfomc._gen = tshmc._gen;
+      tshinfomc._rel = simPart._rel.relationship();
+	  
+      tshinfomc._mom = std::sqrt(tshmc._mom.mag2());
+	
+      // find the step midpoint
+      const Straw& straw = tracker.getStraw(tshmc._strawId);
+      CLHEP::Hep3Vector mcsep = Geom::Hep3Vec(tshmc._pos)-straw.getMidPoint();
+      CLHEP::Hep3Vector dir = Geom::Hep3Vec(tshmc._mom.unit());
+      tshinfomc._r = Geom::Hep3Vec(tshmc._pos).perp();
+      tshinfomc._phi = Geom::Hep3Vec(tshmc._pos).phi();
+      CLHEP::Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
+      double dperp = mcperp.dot(mcsep);
+      tshinfomc._dist = fabs(dperp);
+      tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
+      // use 2-line POCA here
+      TwoLinePCA pca(Geom::Hep3Vec(tshmc._pos),dir,straw.getMidPoint(),straw.getDirection());
+      tshinfomc._len = pca.s2();
+      tshinfomc._xtalk = tshmc._xtalk;
+    }
+
+
+    /*    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
       tshinfomcs.clear();
       // use TDC channel 0 to define the MC match
       for(const auto& ihit : kseed.hits()) {
@@ -230,5 +381,6 @@ namespace mu2e {
       tshinfomc._len = pca.s2();
       tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
     }
+    */
   }
 }

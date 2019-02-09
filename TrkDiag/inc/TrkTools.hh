@@ -7,12 +7,14 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
 
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawMatInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
+#include "TrkDiag/inc/TrkQualInfo.hh"
 
 #include <vector>
 #include <functional>
@@ -29,6 +31,8 @@ namespace mu2e {
     void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos );
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos );
     void fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo );
+
+    void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   }
 }
 

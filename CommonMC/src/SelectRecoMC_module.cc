@@ -30,6 +30,9 @@
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
+
 // C++
 #include <vector>
 #include <memory>
@@ -284,14 +287,17 @@ namespace mu2e {
 	mcseed._simps.push_back(stub);
       }
 // now find matching VD hits and record their info too
+      GeomHandle<DetectorSystem> det;
       for(auto const& vdsp : vdspc ) {
 	if(vdsp.simParticle() == pspc._spp){
 	  if(_debug > 1) std::cout << "Found matching VD StepPoint position" 
 	  << vdsp.position() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
-	  VDStep vds(vdsp.position(),// convert to DetectorCoordinates FIXME!
+
+	  VDStep vds(det->toDetector(vdsp.position()),// convert to DetectorCoordinates FIXME!
 	    vdsp.momentum() ,
 	    _toff.timeWithOffsetsApplied(vdsp),
 	    vdsp.virtualDetectorId());
+
 	  mcseed._vdsteps.push_back(vds);
 	}
       }
@@ -310,6 +316,19 @@ namespace mu2e {
 	// record the reference
 	TrkStrawHitMC tshmc;
 	tshmc._spindex = spref;
+	tshmc._energySum = sdmc.energySum();
+	const auto& mcstep = *(sdmc.stepPointMC(StrawEnd::cal));
+	tshmc._pos = mcstep.position();
+	tshmc._mom = mcstep.momentum();
+	tshmc._time = _toff.timeWithOffsetsApplied(mcstep);
+	tshmc._wireEndTime = sdmc.wireEndTime(StrawEnd::cal);
+	tshmc._strawId = sdmc.strawId();
+	auto simPtr = mcstep.simParticle();
+	while (simPtr->parent().isNonnull()) {
+	  simPtr = simPtr->parent();
+	}
+	tshmc._gen = simPtr->genParticle()->generatorId().id();
+	tshmc._xtalk = mcstep.strawId() != sdmc.strawId();
 	mcseed._tshmcs.push_back(tshmc);
       }
     }
