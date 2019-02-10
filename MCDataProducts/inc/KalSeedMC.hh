@@ -11,6 +11,7 @@
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
@@ -25,6 +26,7 @@ namespace mu2e {
     typedef art::Ptr<SimParticle> SPPtr;
     PDGCode::type _pdg; // code of this particle
     ProcessCode _proc; // particle creation process
+    GenId _gid; // generator code
     MCRelationship _rel; // relationship of this particle to its primary
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
@@ -33,7 +35,10 @@ namespace mu2e {
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0), _ecalo(0.0) {}
+    _nhits(0), _nactive(0), _ecalo(0.0) {
+    // dig down to the GenParticle
+      if(spp->genParticle().isNonnull()) _gid = spp->genParticle()->generatorId().id();
+    }
   };
   // sampled pair of momentum and position (tracker system) of the primary matched particle
   // These come from the virtual detectors

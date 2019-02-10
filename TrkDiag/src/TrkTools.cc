@@ -7,6 +7,7 @@
 
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/getTrackerOrThrow.hh"
+#include <cmath>
 
 namespace mu2e {
   namespace TrkTools {
@@ -236,17 +237,15 @@ namespace mu2e {
       }
     }
 
-    void fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo ) {
-
+    void fillCaloHitInfo(const KalSeed& kseed, 	Calorimeter const& calo, TrkCaloHitInfo& tchinfo) {
       if (kseed.hasCaloCluster()) {
-	const TrkCaloHitSeed& tch = kseed.caloHit();
+	auto const& tch = kseed.caloHit();
+	auto const& cc = tch.caloCluster();
 
 	tchinfo._active = tch.flag().hasAllProperties(StrawHitFlag::active);
-	tchinfo._did = tch.caloCluster()->diskId();
+	tchinfo._did = cc->diskId();
 	tchinfo._trklen = tch.trkLen();
 	tchinfo._clen = tch.hitLen();
-	//	  HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
-	tchinfo._poca = tch.caloCluster()->cog3Vector();//XYZVec(hpos.x(),hpos.y(),hpos.z()); //TODO  X and Y are correct, Z needs a coordinate transform plus the hit length
     
 	if(tch.flag().hasAllProperties(StrawHitFlag::doca)) {
 	  tchinfo._doca = tch.clusterAxisDOCA();
@@ -256,11 +255,18 @@ namespace mu2e {
 	}
 	tchinfo._t0 = tch.t0().t0();
 	tchinfo._t0err = tch.t0().t0Err();
-	tchinfo._ct = tch.caloCluster()->time();
-	tchinfo._edep = tch.caloCluster()->energyDep();
-	//	  Hep3Vector tdir = tch->trkTraj()->direction(tchinfo._trklen);
-	//tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0)); // TODO
-
+	tchinfo._ct = cc->time();
+	tchinfo._edep = cc->energyDep();
+	// transform cog to tracker coordinates; requires 2 steps.  This is at the front
+	// of the disk
+	XYZVec cpos = Geom::toXYZVec(calo.geomUtil().mu2eToTracker(calo.geomUtil().diskToMu2e(cc->diskId(),cc->cog3Vector())));
+	// add the cluster length (relative to the front face)
+	cpos.SetZ(cpos.z() + tch.hitLen());
+	tchinfo._poca = cpos;
+	// get the segment at the end, and use that to compute the direction dot product (crystal is always along z)
+	auto const& cseg = kseed.segments().back();
+	float td = cseg.helix().tanDip();
+	tchinfo._cdot = std::copysign(1.0/sqrt(1.0+td*td),td);
       }
     }
 

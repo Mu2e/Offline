@@ -39,7 +39,7 @@ physics :
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
        CrvDigiMCCollection : "compressDigiMCs"
-       KFFInstances  : ["MHFFDeM", "MHFFDeP", "MHFFDmuM", "MHFFDmuP",
+       KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
 "KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
       VDSPCollection : "compressDigiMCs:virtualdetector"
     }
@@ -57,8 +57,7 @@ physics.TrkAnaTriggerPath : [ CaloFix,
   FindMCPrimary, SelectRecoMC ]
 physics.TrkAnaEndPath : [ TrkAnaReco, genCountLogger ]
 
-# You can add detailed (hit) information to the TTree by setting diagLevel to 2
-physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.producers.SelectRecoMC.debugLevel : 1
 
 services.TFileService.fileName: "nts.owner.trkanareco.version.sequencer.root"
 physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"

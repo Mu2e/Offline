@@ -9,6 +9,8 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
 
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
@@ -30,8 +32,7 @@ namespace mu2e {
 
     void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos );
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos );
-    void fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo );
-
+    void fillCaloHitInfo(const KalSeed& kseed, Calorimeter const& calo, TrkCaloHitInfo& tchinfo );
     void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   }
 }

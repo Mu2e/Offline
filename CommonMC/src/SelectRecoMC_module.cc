@@ -80,7 +80,8 @@ namespace mu2e {
   // utility functions
     void fillKalSeedMC(KalSeed const& seed, StrawDigiMCCollection const& sdmcc,
 	StepPointMCCollection const& vdspc, PrimaryParticle const& pp, KalSeedMC& mcseed);
-    void fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc, CaloClusterMC& ccmc);
+    void fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc,
+      PrimaryParticle const& pp, CaloClusterMC& ccmc);
     int _debug;
     art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc, _cssc;
     std::vector<std::string> _kff;
@@ -235,7 +236,7 @@ namespace mu2e {
     // fill CaloClusters
     for(auto const& ccptr : ccptrs) {
       CaloClusterMC ccmc;
-      fillCaloClusterMC(*ccptr,cssc,ccmc);
+      fillCaloClusterMC(*ccptr,cssc,pp,ccmc);
       // save and create the assn
       ccmcc->push_back(ccmc);
       auto ccmcp = art::Ptr<CaloClusterMC>(CaloClusterMCCollectionPID,ccmcc->size()-1,CaloClusterMCCollectionGetter);
@@ -337,8 +338,10 @@ namespace mu2e {
     }
   }
 
-  void SelectRecoMC::fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc, CaloClusterMC& ccmc){
-// struct for sorting MC energy deposits, largest first
+  void SelectRecoMC::fillCaloClusterMC(CaloCluster const& cc,
+      CaloShowerSimCollection const& cssc,PrimaryParticle const& pp, 
+      CaloClusterMC& ccmc){
+    // struct for sorting MC energy deposits, largest first
     struct esort : public std::binary_function <CaloMCEDep, CaloMCEDep, bool> {
       bool operator() (CaloMCEDep a, CaloMCEDep b) { return a._edep > b._edep; }
     };
@@ -375,6 +378,12 @@ namespace mu2e {
 	      edep._simp = css.sim();
 	      edep._edep = css.energyMC();
 	      edep._time = csstime;
+	      // try all primary particle SimParticles, and keep the one with the best
+	      // relationship
+	      for(auto const& spp : pp.primarySimParticles()){
+		MCRelationship mcr(spp,css.sim());
+		if(mcr > edep._rel)edep._rel = mcr;
+	      }
 	      edeps.push_back(edep);
 	    }
 	  }

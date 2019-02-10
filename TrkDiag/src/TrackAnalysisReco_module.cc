@@ -13,6 +13,7 @@
 
 // Mu2e includes
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
@@ -20,6 +21,7 @@
 #include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -222,7 +224,9 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
-    // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
+  // get conditions/geometry objects
+    mu2e::GeomHandle<mu2e::Calorimeter> caloh;
+  // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
       std::vector<art::Handle<EventWeight> > eventWeightHandles;
       event.getManyByType(eventWeightHandles);
@@ -290,7 +294,7 @@ namespace mu2e {
       if(idmukseed != dmC.end()) TrkTools::fillTrkInfo(*idmukseed,_dmti);
       // calorimeter info
       if (dekseed.hasCaloCluster()) {
-	TrkTools::fillCaloHitInfo(dekseed, _detch); // TODO
+	TrkTools::fillCaloHitInfo(dekseed, *caloh,  _detch); // TODO
 	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
       }
       if (_filltrkqual) {
@@ -300,10 +304,12 @@ namespace mu2e {
       }
       // fill mC info associated with this track
       if(_fillmc ) { 
-	// use Assns interface to find the associated KalSeedMC; this is unfortunately
-	// very complicated as everything must be recast as ptrs
+	const PrimaryParticle& primary = *pph;
+	// use Assns interface to find the associated KalSeedMC; this uses ptrs
 	auto dekptr = art::Ptr<KalSeed>(deH,std::distance(deC.begin(),idekseed));
+	std::cout << "KalSeedMCMatch has " << ksmcah->size() << " entries" << std::endl;
 	for(auto iksmca = ksmcah->begin(); iksmca!= ksmcah->end(); iksmca++){
+	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
 
@@ -312,7 +318,6 @@ namespace mu2e {
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, VirtualDetectorId::TT_Mid); // TODO
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, VirtualDetectorId::TT_Back); // TODO
 
-	    const PrimaryParticle& primary = *pph;
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary); // TODO
 	    if (_diag>1) {
 	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc); // TODO

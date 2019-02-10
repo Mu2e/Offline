@@ -6,6 +6,7 @@
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include <vector>
 #include <utility>
@@ -15,6 +16,7 @@ namespace mu2e {
     float energyDeposit() const { return _edep; }
     float time() const { return _time; }
     art::Ptr<SimParticle> _simp; // sim particle
+    MCRelationship _rel; // relationship of this particle to its primary
     float _edep; // energy deposited by this particle in this cluster
     float _time; // average time of the energy deposition by this particle; includes all offsets!
     // should include an energy-weighted position FIXME!

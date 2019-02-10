@@ -204,26 +204,17 @@ namespace mu2e {
       }
     }
 
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, TrkInfoMC& trkinfomc) {
-      // basic information
-      for (const auto& i_simPartStub : kseedmc.simParticles()) {
-	if (i_simPartStub._rel == MCRelationship::same) { // this is the PrimaryParticle
-	  //	  if(spp->genParticle().isNonnull()) {
-	  //	    trkinfomc._gen = spp->genParticle()->generatorId().id(); // TODO from PrimaryParticle?
-	  //	  }
-	  trkinfomc._pdg = i_simPartStub._pdg;
-	  trkinfomc._proc = i_simPartStub._proc;
-	  trkinfomc._nhits = i_simPartStub._nhits; // number of hits from the primary particle
-	  trkinfomc._nactive = i_simPartStub._nactive; // number of active hits from the primary particle
-	}
-	else if (i_simPartStub._rel == MCRelationship::mother) { // this is the parent of the PrimaryParticle
-	  trkinfomc._ppdg = i_simPartStub._pdg;
-	  trkinfomc._pproc = i_simPartStub._proc;
-	  //	  trkinfomc._pmom = pp->startMomentum().vect().mag(); // TODO
-	  //	  if(pp->genParticle().isNonnull()) {
-	  //	    trkinfomc._pgen = pp->genParticle()->generatorId().id(); // TODO
-	  //	  }
-	}
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, 
+    TrkInfoMC& trkinfomc) {
+      // use the primary match of the track
+      if(kseedmc.simParticles().size() > 0){
+	auto const& simp = kseedmc.simParticles().front();
+	trkinfomc._gen = simp._gid.id();
+	trkinfomc._pdg = simp._pdg;
+	trkinfomc._proc = simp._proc;
+	trkinfomc._nhits = simp._nhits; // number of hits from the primary particle
+	trkinfomc._nactive = simp._nactive; // number of active hits from the primary particle
+	trkinfomc._prel = simp._rel.relationship(); // relationship of the track primary to the event primary
       }
 
       int ndigi = -1, ndigigood = -1, ngood = -1, nambig = -1;
@@ -382,7 +373,8 @@ namespace mu2e {
       tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
     }
     */
-    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc) {
+    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, 
+      CaloClusterInfoMC& ccimc) {
       ccimc._nsim = ccmc.energyDeposits().size();
       ccimc._etot = ccmc.totalEnergyDeposit();
       ccimc._tavg = ccmc.averageTime();
@@ -390,6 +382,7 @@ namespace mu2e {
 	auto const& primary = ccmc.energyDeposits().front();
 	ccimc._eprimary = primary.energyDeposit();
 	ccimc._tprimary = primary.time();
+	ccimc._prel = primary._rel.relationship();
       }
     }
   }
