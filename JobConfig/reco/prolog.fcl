@@ -77,8 +77,18 @@ Reconstruction : {
     SelectRecoMC : { 
       @table::CommonMC.SelectRecoMC 
        CSSCollection : "compressDigiMCs"
-       CaloClusterMCDTime : 5.0
-      TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+       CaloClusterMCDTime : 2.0
+       CaloMinE : 1.0
+       TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+#debugLevel : 2
+       PrimaryParticle : "FindMCPrimary"
+       CaloClusterCollection : "CaloClusterFromProtoCluster"
+       CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+       StrawDigiMCCollection : "compressDigiMCs"
+       CrvDigiMCCollection : "compressDigiMCs"
+       KFFInstances  : ["MHFFDeM", "MHFFDeP", "MHFFDmuM", "MHFFDmuP",
+"KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
+      VDSPCollection : "compressDigiMCs:virtualdetector"
     }
     # calo fix: only need for MDC2018e and earlier
     CaloFix : { @table::DigiCompression.CaloFix 

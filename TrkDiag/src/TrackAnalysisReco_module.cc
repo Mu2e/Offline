@@ -93,8 +93,6 @@ namespace mu2e {
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
-    //TrkCaloMatchingParameters FitDirection and Track Particle
-    TrkFitDirection _sdir;
     // CRV info
     std::string _crvCoincidenceModuleLabel;
     std::string _crvCoincidenceMCModuleLabel;
@@ -156,7 +154,6 @@ namespace mu2e {
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
-    _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
     _crvCoincidenceMCModuleLabel(pset.get<string>("CrvCoincidenceMCModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),

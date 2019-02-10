@@ -1,0 +1,68 @@
+#
+#  This script runs the TrackAnalsys module to create a prototype track-based analysis TTree.  For example:
+#  > mu2e --config TrkDiag/test/TrkAnaDigis.fcl --source-list (your files) --TFile TrkAna.root --nevts=100
+# will process 100 events from (your files).
+#
+# David Brown (LBNL) 13 July 2016
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaDigis
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::TrkAna.producers
+    # calo fix: only need for MDC2018e and earlier
+    CaloFix : { @table::DigiCompression.CaloFix 
+      	caloShowerStepTags : [ "compressDigiMCs" ]
+	caloShowerSimTag : "compressDigiMCs"
+	caloShowerStepROTag : "compressDigiMCs"
+    }
+    FindMCPrimary : { @table::CommonMC.FindMCPrimary }
+    SelectRecoMC : { 
+      @table::CommonMC.SelectRecoMC 
+       CSSCollection : "compressDigiMCs"
+       CaloClusterMCDTime : 2.0
+       CaloMinE : 1.0
+       TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+#debugLevel : 2
+       PrimaryParticle : "FindMCPrimary"
+       CaloClusterCollection : "CaloClusterFromProtoCluster"
+       CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
+       StrawDigiMCCollection : "compressDigiMCs"
+       CrvDigiMCCollection : "compressDigiMCs"
+       KFFInstances  : ["MHFFDeM", "MHFFDeP", "MHFFDmuM", "MHFFDmuP",
+"KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
+      VDSPCollection : "compressDigiMCs:virtualdetector"
+    }
+  }
+  analyzers :  {
+    @table::TrkAna.analyzers
+    @table::TrkDiag.analyzers
+  }
+}
+
+physics.TrkAnaTriggerPath : [ CaloFix, 
+  @sequence::TrkAna.CaloRecoSequence,
+  @sequence::TrkAna.TrkRecoSequence, 
+  @sequence::TrkAna.CrvRecoSequence,
+  FindMCPrimary, SelectRecoMC ]
+physics.TrkAnaEndPath : [ TrkAnaReco, genCountLogger ]
+
+# You can add detailed (hit) information to the TTree by setting diagLevel to 2
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+
+services.TFileService.fileName: "nts.owner.trkanareco.version.sequencer.root"
+physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+
+#physics.producers.SelectRecoMC.debugLevel : 3
+

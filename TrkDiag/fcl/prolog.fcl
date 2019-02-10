@@ -157,7 +157,27 @@ BEGIN_PROLOG
     PBIWeightTag : "PBIWeight"
     fillTrkQualInfo : true
   }
-
+# Analysis from reco output: beta protype!
+# DeM only for now
+  TrackAnalysisReco : {
+    module_type : TrackAnalysisReco
+    DeTag : "KFFDeM"
+    UeTag : "KFFUeM"
+    DmuTag : "KFFDmuM"
+    DeTrkQualTag : "TrkQualDeM"
+    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
+    PBIWeightTag : "PBIWeight"
+    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
+    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
+    FillMCInfo : true
+    ProcessEmptyEvents : false
+    AnalyzeCRV : true
+    fillTrkQualInfo : true
+    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+    PrimaryParticleTag : "FindMCPrimary"
+    KalSeedMCAssns : "SelectRecoMC"
+    CaloClusterMCAssns : "SelectRecoMC"
+  }
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
     producers : { @table::TrackCaloMatching.producers 
@@ -270,6 +290,7 @@ BEGIN_PROLOG
         @table::TrackAnalysis
         TrkParticle : -11
       }
+      TrkAnaReco : @local::TrackAnalysisReco
     }
   
     # diagnostic Reco sequences starting from digis

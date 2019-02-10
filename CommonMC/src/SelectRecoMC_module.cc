@@ -68,6 +68,8 @@ namespace mu2e {
 	Comment("CaloShowerSim collection")};
       fhicl::Atom<double> CCMCDT { Name("CaloClusterMCDTime"),
 	Comment("Max time difference between CaloCluster and CaloShowerSim for MC match")};
+      fhicl::Atom<double> CCMCE { Name("CaloMinE"),
+	Comment("Min CaloShowerSim MC energy to include")};
  
    };
    using Parameters = art::EDProducer::Table<Config>;
@@ -83,7 +85,7 @@ namespace mu2e {
     art::InputTag _pp, _ccc, _crvccc, _sdmcc, _crvdmcc, _vdspc, _cssc;
     std::vector<std::string> _kff;
     SimParticleTimeOffset _toff;
-    double _ccmcdt;
+    double _ccmcdt, _ccmce;
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -97,7 +99,8 @@ namespace mu2e {
     _cssc(config().CSSC()),
     _kff(config().KFFInstances()),
     _toff(config().SPTO()),
-    _ccmcdt(config().CCMCDT())
+    _ccmcdt(config().CCMCDT()),
+    _ccmce(config().CCMCE())
   {
     consumes<PrimaryParticle>(_pp);
     consumesMany<KalSeedCollection>();
@@ -345,10 +348,14 @@ namespace mu2e {
     for(auto const& cchptr : cc.caloCrystalHitsPtrVector()){
       // look for matches in the CaloShowerSimCollection: this is approximate, as the fundamental connectoion back
       // to CaloDigis is missing FIXME!
+      // Must truncate tiny energy deposts as the CaloShowerSim compression sometimes fails!
       for(auto const& css : cssc) {
-	if(css.crystalId() == cchptr->id()){
+	if(css.energyMC() > _ccmce && css.crystalId() == cchptr->id()){
 	// compare times
-	  double csstime = css.time() + _toff.totalTimeOffset(css.sim());
+	  double csstime = css.time();
+	  if(_debug > 2) std::cout << "Matching CaloShowerSim crystal id " << css.crystalId()
+	    << " MCenergy " << css.energyMC() << " time " << csstime 
+	    << " calohit time " << cchptr->time() << std::endl;
 	  if(fabs(csstime-cchptr->time()) < _ccmcdt) {
 	    // match: see if an entry for this SimParticle already exists
 	    bool found(false);

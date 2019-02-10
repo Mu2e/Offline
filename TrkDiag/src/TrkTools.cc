@@ -59,14 +59,19 @@ namespace mu2e {
 
 
     void fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo) {
-      //    trkinfo._status = kseed.status(); //TODO
+      if(kseed.status().hasAllProperties(TrkFitFlag::kalmanConverged))
+	trkinfo._status = 1;
+      else if(kseed.status().hasAllProperties(TrkFitFlag::kalmanOK))
+	trkinfo._status = 2;
+      else
+	trkinfo._status = -1;
       trkinfo._pdg = kseed.particle().particleType();
       trkinfo._t0 = kseed.t0().t0();
       trkinfo._t0err = kseed.t0().t0Err();
-      //    trkinfo._ndof = krep->nDof(); // TODO
 
       unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
       countHits(kseed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
+      trkinfo._ndof = nactive -5;
       trkinfo._nhits = nhits;
       trkinfo._nactive = nactive;
       trkinfo._ndouble = ndouble;
@@ -241,7 +246,8 @@ namespace mu2e {
 	tchinfo._trklen = tch.trkLen();
 	tchinfo._clen = tch.hitLen();
 	//	  HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
-	tchinfo._poca = tch.caloCluster()->cog3Vector();//XYZVec(hpos.x(),hpos.y(),hpos.z()); //TODO
+	tchinfo._poca = tch.caloCluster()->cog3Vector();//XYZVec(hpos.x(),hpos.y(),hpos.z()); //TODO  X and Y are correct, Z needs a coordinate transform plus the hit length
+    
 	if(tch.flag().hasAllProperties(StrawHitFlag::doca)) {
 	  tchinfo._doca = tch.clusterAxisDOCA();
 	}

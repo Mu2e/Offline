@@ -4,13 +4,3 @@ physics.filters.CalHelixFinderDeP.StrawHitFlagCollectionLabel : "FlagBkgHits:Com
 physics.filters.CalHelixFinderDmuM.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
 physics.filters.CalHelixFinderDmuP.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
 # temporary
-physics.producers.SelectRecoMC.debugLevel : 2
-physics.producers.SelectRecoMC.PrimaryParticle : "FindMCPrimary"
-physics.producers.SelectRecoMC.CaloClusterCollection : "CaloClusterFromProtoCluster"
-physics.producers.SelectRecoMC.CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
-physics.producers.SelectRecoMC.StrawDigiMCCollection : "compressDigiMCs"
-physics.producers.SelectRecoMC.CrvDigiMCCollection : "compressDigiMCs"
-physics.producers.SelectRecoMC.KFFInstances  : ["MHFFDeM", "MHFFDeP", "MHFFDmuM", "MHFFDmuP",
-"KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
-physics.producers.SelectRecoMC.VDSPCollection : "compressDigiMCs:virtualdetector"
-

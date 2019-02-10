@@ -55,7 +55,7 @@ namespace mu2e
       _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:con/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
+    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
      return leaves;
     }
   };
