@@ -35,8 +35,6 @@ namespace mu2e {
 
   class Panel{
 
-    friend class Plane;
-    friend class TTracker;
     friend class TTrackerMaker;
 
   public:

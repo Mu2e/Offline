@@ -13,13 +13,6 @@ namespace mu2e {
 
   class StrawId{
 
-    friend class Tracker;
-    friend class TTracker;
-    friend class TTrackerMaker;
-    friend class Plane;
-    friend class Panel;
-    friend class StrawSD;
-
     private:
       //  data member is a short
       uint16_t _sid;

@@ -36,7 +36,7 @@ namespace mu2e {
 
   class TTracker: public Tracker{
 
-    friend class TTrackerMaker;
+        friend class TTrackerMaker;
 
   public:
 

@@ -26,7 +26,6 @@ namespace mu2e {
 
   class Station{
 
-    friend class TTracker;
     friend class TTrackerMaker;
 
   public:
