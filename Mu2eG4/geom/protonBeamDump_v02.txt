@@ -48,17 +48,17 @@ string protonBeamDump.material.core  = "G4_Fe";
 string protonBeamDump.material.shielding = "ShieldingConcrete";
 string protonBeamDump.material.air = "G4_AIR";
 
-bool   protonBeamDump.dirt.isVisible = true;
-bool   protonBeamDump.dirt.isSolid   = false;
+bool   protonBeamDump.dirt.visible = true;
+bool   protonBeamDump.dirt.solid   = false;
 
-bool   protonBeamDump.core.isVisible = true;
-bool   protonBeamDump.core.isSolid   = true;
-bool   protonBeamDump.shielding.isVisible = true;
-bool   protonBeamDump.shielding.isSolid   = false;
-bool   protonBeamDump.mouth.isVisible = true;
-bool   protonBeamDump.mouth.isSolid   = false;
-bool   protonBeamDump.neutronCave.isVisible = true;
-bool   protonBeamDump.neutronCave.isSolid   = false;
+bool   protonBeamDump.core.visible = true;
+bool   protonBeamDump.core.solid   = true;
+bool   protonBeamDump.shielding.visible = true;
+bool   protonBeamDump.shielding.solid   = false;
+bool   protonBeamDump.mouth.visible = true;
+bool   protonBeamDump.mouth.solid   = false;
+bool   protonBeamDump.neutronCave.visible = true;
+bool   protonBeamDump.neutronCave.solid   = false;
 
 int protonBeamDump.verbosityLevel = 0;
 

@@ -17,20 +17,6 @@ double acceleratorParams.limitingHalfWidth = 125.  ; // ns, ""
 string acceleratorParams.potPulse  = "ConditionsService/data/potTimingDistribution_20160511.txt";
 string acceleratorParams.acDipole  = "ConditionsService/data/acDipoleTransmissionFunction_20160511.txt";
 
-double MinDriftRadiusResolution = 0.2; // mm
-double MaxDriftRadiusResolution = 0.2; // mm
-double DriftRadiusResolutionRadius = -1.0; // mm
-double DriftVelocity = 0.0625; // mm/nsec
-
-
-// uncoment to enable non "null operation" e2a conversion
-// double EdepToAmpl = 1.0;
-// double AmplRes    = 0.01;
-
-double Crosstalk = 0.02;
-
-double minT0DOCA = -0.2;//FIX ME! note: this valua allows to use all the StrawHit expects...
-
 // ExtMonFNAL clock timing.  1694/68 = 24.9118
 int extMonFNAL.numClockTicksPerDebuncherPeriod = 68;
 
@@ -68,7 +54,7 @@ string calorimeter.pulseHistName = "h_waveform";
 
 
 //CRV digi parameters
-double crv.digitizationPeriod = 12.58; //ns
+double crv.digitizationPeriod = 12.55; //ns
 
 //CRV calibration parameters 
 //This is only a placeholder. In the future, these values need to be a function of time and SiPM number.

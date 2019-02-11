@@ -109,6 +109,7 @@ namespace mu2e {
 
     double           _pitchAngle;
     double           _sinPitch;
+    double           _beta;
 					// outlier cuts
 //-----------------------------------------------------------------------------
 // cache of event objects

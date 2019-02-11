@@ -16,6 +16,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeomPrimitives/inc/PolyconsParams.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/constructMSTM.hh"
@@ -61,13 +62,17 @@ namespace mu2e {
 
     MaterialFinder materialFinder(_config);
 
-    bool forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV       = true;
-
-    int const verbosityLevel = _config.getInt("mstm.verbosityLevel",0);
-    const bool mstmVisible   = _config.getBool("mstm.visible", true );
-    const bool mstmSolid     = _config.getBool("mstm.solid",   false);
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "mstm", "mstm" );
+    geomOptions->loadEntry( _config, "mstmMagnetField", "mstm.magnet.field" );
+    
+    int const verbosityLevel            = _config.getInt("mstm.verbosityLevel",0);
+    const bool ismstmVisible            = geomOptions->isVisible("mstm"); 
+    const bool ismstmSolid              = geomOptions->isSolid("mstm"); 
+    const bool ismstmMagnetFieldVisible = geomOptions->isVisible("mstmMagnetField"); 
+    const bool forceAuxEdgeVisible      = geomOptions->forceAuxEdgeVisible("mstm"); 
+    const bool doSurfaceCheck           = geomOptions->doSurfaceCheck("mstm");
+    const bool placePV                  = geomOptions->placePV("mstm");
     
     if ( verbosityLevel > 0 ) {
       std::cout << __func__ << " Constructing MSTM..." << std::endl;
@@ -132,9 +137,9 @@ namespace mu2e {
                                         mstmMotherPositionInParent, //mstmMotherPositionInMu2e,
                                         parent,
                                         0,
-                                        mstmVisible,
+                                        ismstmVisible,
                                         G4Color::Gray(),
-                                        mstmSolid,
+                                        ismstmSolid,
                                         forceAuxEdgeVisible,
                                         placePV,
                                         doSurfaceCheck
@@ -197,9 +202,9 @@ namespace mu2e {
                   mstmUpStreamWallPositionInMother, 
                   mstmMotherInfo.logical, 
                   0,
-                  _config.getBool("mstm.visible"),
+                  ismstmVisible,
                   G4Colour::Magenta(),
-                  _config.getBool("mstm.solid"),
+                  ismstmSolid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
@@ -228,9 +233,9 @@ namespace mu2e {
                                                   mstmDnStreamWallPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  mstmVisible,
+                                                  ismstmVisible,
                                                   G4Color::Magenta(),
-                                                  mstmSolid,
+                                                  ismstmSolid,
                                                   forceAuxEdgeVisible,
                                                   placePV,
                                                   doSurfaceCheck
@@ -262,9 +267,9 @@ namespace mu2e {
                                                   mstmBeamLeftWallPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  mstmVisible,
+                                                  ismstmVisible,
                                                   G4Color::Magenta(),
-                                                  mstmSolid,
+                                                  ismstmSolid,
                                                   forceAuxEdgeVisible,
                                                   placePV,
                                                   doSurfaceCheck
@@ -295,9 +300,9 @@ namespace mu2e {
                                                   mstmBeamRightWallPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  mstmVisible,
+                                                  ismstmVisible,
                                                   G4Color::Magenta(),
-                                                  mstmSolid,
+                                                  ismstmSolid,
                                                   forceAuxEdgeVisible,
                                                   placePV,
                                                   doSurfaceCheck
@@ -325,9 +330,9 @@ namespace mu2e {
                                                   mstmCeilingWallPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  mstmVisible,
+                                                  ismstmVisible,
                                                   G4Color::Magenta(),
-                                                  mstmSolid,
+                                                  ismstmSolid,
                                                   forceAuxEdgeVisible,
                                                   placePV,
                                                   doSurfaceCheck
@@ -372,9 +377,9 @@ namespace mu2e {
                   mstmMagnetPositionInMother, 
                   mstmMotherInfo.logical,
                   0,
-                  _config.getBool("mstm.visible"),
+                  ismstmVisible,
                   G4Colour::Magenta(),
-                  _config.getBool("mstm.solid"),
+                  ismstmSolid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
@@ -391,9 +396,9 @@ namespace mu2e {
                                                   mstmMagnetPositionInMother,
                                                   mstmMotherInfo,
                                                   0,
-                                                  _config.getBool("mstm.magnet.fieldVisible"),            //magnet visible
+                                                  ismstmMagnetFieldVisible,            //magnet visible
                                                   G4Color::Blue(),
-                                                  false,           //mstmSolid (this is just a field, not a solid)
+                                                  false,           //ismstmSolid (this is just a field, not a solid)
                                                   forceAuxEdgeVisible,
                                                   placePV,         //must be true
                                                   doSurfaceCheck
@@ -463,9 +468,9 @@ namespace mu2e {
                                          G4ThreeVector(0.0,0.0,0.0), //we put the pipe centered on the magnetic field
                                          mstmMagneticFieldBoxInfo, //mstmMotherInfo,
                                          0,
-                                         mstmVisible,
+                                         ismstmVisible,
                                          G4Color::Red(),
-                                         mstmSolid,
+                                         ismstmSolid,
                                          forceAuxEdgeVisible,
                                          placePV,
                                          doSurfaceCheck
@@ -478,9 +483,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0,2.0*(mstmPipe0UpStrWindowHalfLength-mstmPipe0DnStrWindowHalfLength)),
                                             mstmPipe0Info,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Yellow(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -493,9 +498,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0,-1.0*mstmPipe0HalfLength + mstmPipe0UpStrWindowHalfLength),
                                             mstmPipe0Info,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Red(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -508,9 +513,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0, mstmPipe0HalfLength - mstmPipe0DnStrWindowHalfLength),
                                             mstmPipe0Info,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Red(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -566,9 +571,9 @@ namespace mu2e {
                   mstmColl1PositionInMother,
                   mstmMotherInfo.logical,
                   0,
-                  _config.getBool("mstm.visible"),
+                  ismstmVisible,
                   G4Colour::Magenta(),
-                  _config.getBool("mstm.solid"),
+                  ismstmSolid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
@@ -606,9 +611,9 @@ namespace mu2e {
 						  mstmShutterSegmentPositionInMother,
 						  mstmMotherInfo,
 						  0,
-						  mstmVisible,
+						  ismstmVisible,
 						  G4Color::Yellow(), //Gray
-						  mstmSolid,
+						  ismstmSolid,
 						  forceAuxEdgeVisible,
 						  placePV,
 						  doSurfaceCheck
@@ -666,9 +671,9 @@ namespace mu2e {
                   mstmColl2PositionInMother,
                   mstmMotherInfo.logical,
                   0,
-                  _config.getBool("mstm.visible"),
+                  ismstmVisible,
                   G4Colour::Magenta(),
-                  _config.getBool("mstm.solid"),
+                  ismstmSolid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
@@ -706,9 +711,9 @@ namespace mu2e {
                                          mstmPipe1PositionInMother,
                                          mstmMotherInfo,
                                          0,
-                                         mstmVisible,
+                                         ismstmVisible,
                                          G4Color::Red(),
-                                         mstmSolid,
+                                         ismstmSolid,
                                          forceAuxEdgeVisible,
                                          placePV,
                                          doSurfaceCheck
@@ -721,9 +726,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0,2.0*(mstmPipe1UpStrWindowHalfLength-mstmPipe1DnStrWindowHalfLength)),
                                             mstmPipe1Info,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Yellow(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -736,9 +741,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0,-1.0*mstmPipe1HalfLength + mstmPipe1UpStrWindowHalfLength),
                                             mstmPipe1Info,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Red(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -751,9 +756,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0, mstmPipe1HalfLength - mstmPipe1DnStrWindowHalfLength),
                                             mstmPipe1Info,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Red(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -807,9 +812,9 @@ namespace mu2e {
                   mstmColl3PositionInMother, /*  should is be mstmColl3PositionInMu2e ??? */
                   mstmMotherInfo.logical,
                   0,
-                  _config.getBool("mstm.visible"),
+                  ismstmVisible,
                   G4Colour::Magenta(),
-                  _config.getBool("mstm.solid"),
+                  ismstmSolid,
                   forceAuxEdgeVisible,
                   placePV,
                   doSurfaceCheck);
@@ -846,9 +851,9 @@ namespace mu2e {
                                          mstmCanPositionInMother,
                                          mstmMotherInfo,
                                          0,
-                                         mstmVisible,
+                                         ismstmVisible,
                                          G4Color::Green(),
-                                         mstmSolid,
+                                         ismstmSolid,
                                          forceAuxEdgeVisible,
                                          placePV,
                                          doSurfaceCheck
@@ -861,9 +866,9 @@ namespace mu2e {
                                                 zeroVector + G4ThreeVector(0.0,0.0,2.0*(mstmCanUpStrWindowHalfLength-mstmCanDnStrWindowHalfLength)),
                                                 mstmCanInfo,
                                                 0,
-                                                mstmVisible,
+                                                ismstmVisible,
                                                 G4Color::Yellow(),
-                                                mstmSolid,
+                                                ismstmSolid,
                                                 forceAuxEdgeVisible,
                                                 placePV,
                                                 doSurfaceCheck
@@ -876,9 +881,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0,-1.0*mstmCanHalfLength + mstmCanUpStrWindowHalfLength),
                                             mstmCanInfo,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Green(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -891,9 +896,9 @@ namespace mu2e {
                                             zeroVector + G4ThreeVector(0.0,0.0, mstmCanHalfLength - mstmCanDnStrWindowHalfLength),
                                             mstmCanInfo,
                                             0,
-                                            mstmVisible,
+                                            ismstmVisible,
                                             G4Color::Green(),
-                                            mstmSolid,
+                                            ismstmSolid,
                                             forceAuxEdgeVisible,
                                             placePV,
                                             doSurfaceCheck
@@ -927,9 +932,9 @@ namespace mu2e {
                                       zeroVector,   //mstmCrystalPositionInMother,
                                       mstmCanGasInfo,  //Put the Crystal in the gas=vacuum inside the can
                                       0,
-                                      mstmVisible,
+                                      ismstmVisible,
                                       G4Color::Red(),
-                                      mstmSolid,
+                                      ismstmSolid,
                                       forceAuxEdgeVisible,
                                       placePV,
                                       doSurfaceCheck

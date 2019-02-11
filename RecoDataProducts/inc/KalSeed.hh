@@ -7,6 +7,7 @@
 // mu2e
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
+#include "RecoDataProducts/inc/TrkCaloHitSeed.hh"
 #include "RecoDataProducts/inc/TrkStraw.hh"
 #include "RecoDataProducts/inc/KalSegment.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -26,18 +27,19 @@ namespace mu2e {
       _tpart(tpart), _fdir(fdir), _status(status), _t0(t0), _flt0(static_cast<Float_t>(flt0)),
       _chisq(-1.0), _fitcon(-1.0) {}
 
-
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitDirection() const { return _fdir; }
     std::vector<TrkStrawHitSeed> const& hits() const { return _hits;}
+    TrkCaloHitSeed const& caloHit() const { return _chit; }
     std::vector<TrkStraw> const& straws() const { return _straws;}
     std::vector<KalSegment> const& segments() const { return _segments; }
     TrkFitFlag const& status() const { return _status; }
     Float_t flt0() const { return _flt0; }
-    TrkT0 const& t0() const { return _t0; }
+    HitT0 const& t0() const { return _t0; }
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
-    art::Ptr<CaloCluster> const& caloCluster() const { return _helix->caloCluster(); }
+    bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
+    art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     art::Ptr<HelixSeed> const& helix() const { return _helix; }
     art::Ptr<KalSeed> const& kalSeed() const { return _kal; }
 
@@ -45,7 +47,7 @@ namespace mu2e {
     TrkParticle			    _tpart; // particle assumed for this fit
     TrkFitDirection	      	    _fdir; // direction in which this particle was fit
     TrkFitFlag			    _status; // status of this fit
-    TrkT0			    _t0; // track t0
+    HitT0			    _t0; // track t0; Time particle crosses z=0
     Float_t			    _flt0; // flight distance where the track crosses the tracker midplane (z=0)
     Float_t			    _chisq; // fit chisquared value
     Float_t			    _fitcon; // fit consistency
@@ -55,13 +57,13 @@ namespace mu2e {
     std::vector<KalSegment>	    _segments; // segments of the Kalman filter fit result
     std::vector<TrkStrawHitSeed>    _hits; // hit seeds for all the hits used in this fit
     std::vector<TrkStraw>	    _straws; // straws interesected by this fit
+    TrkCaloHitSeed		    _chit;  // CaloCluster-based hit.  If it has no CaloCluster, this is unused
     // add content for BField correction information FIXME!
     // 
-    // referenced content.  Eventually this should be replaced with external associations to avoid ambiguities
+    // referenced content.
     //
     art::Ptr<HelixSeed>             _helix; // associated Helix Seed (for seed fits); can be null
     art::Ptr<KalSeed>               _kal; // associated Kalman Seed (for final fits); can be null
-    // add direct CaloCluster reference??
   };
   typedef std::vector<mu2e::KalSeed> KalSeedCollection;
 }

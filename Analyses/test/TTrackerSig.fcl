@@ -27,33 +27,7 @@ source :
 #  maxEvents : 100
 }
 
-services :
-{
-  message : @local::default_message
-
-  TFileService :
-  {
-    fileName      : "TTSig.root"
-  }
-
-  RandomNumberGenerator : { }
-
-  //GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-  GeometryService   : { inputFile : "myConfigsTT/geom_tt3.txt" }
-  
-  ConditionsService :
-  {
-     conditionsfile : "Mu2eG4/test/conditions_01.txt"
-  }
-  
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-  
-  G4Helper : { }
-  
-  SeedService: @local::automaticSeeds
-
-
-} # close of services block
+services : @local::Services.SimAndReco
 
 physics :
 {
@@ -149,5 +123,7 @@ physics.producers.makeSH.maxFullPrint : 0
 physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"
 physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
+services.TFileService.fileName : "TTSig.root"
+services.GeometryService.inputFile : "myConfigsTT/geom_tt3.txt"
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20

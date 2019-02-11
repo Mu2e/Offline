@@ -1,0 +1,32 @@
+//
+// Namespace for collecting tools used in TrkDiag tree filling
+// Original author: A. Edmonds (November 2018)
+//
+#ifndef TrkDiag_TrkTools_hh
+#define TrkDiag_TrkTools_hh
+#include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/StrawHitFlag.hh"
+
+#include "TrkDiag/inc/HitCount.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
+#include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkStrawMatInfo.hh"
+
+#include <vector>
+#include <functional>
+namespace mu2e {
+  namespace TrkTools {
+    // count different hit types
+    void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig);
+
+    // fill various Info structs
+    void fillHitCount(const StrawHitFlagCollection& flags, HitCount& hitcount);
+    void fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo);
+
+    void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos );
+    void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos );
+  }
+}
+
+#endif

@@ -87,7 +87,7 @@ namespace mu2e {
     // omega is the inverse transverse radius of the particle's circular motion.
     // It is signed by the particle angular momentum about the cirle center.
     // This CANNOT be deduced geometrically, so must be supplied as an ad-hoc assumption
-    double amsign = copysign(1.0,-Helix._tpart.charge()*bz());
+    double amsign = Helix._helicity == Helicity::poshel ? 1 : -1;//copysign(1.0,-Helix._tpart.charge()*bz());
     pvec[HelixTraj::omegaIndex] = amsign/radius;
     // phi0 is the azimuthal angle of the particle velocity vector at the point
     // of closest approach to the origin.  It's sign also depends on the angular
@@ -140,43 +140,42 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::CalHelixFinderAlg(fhicl::ParameterSet const& pset) :
-    _diag             (pset.get<int>   ("diagLevel"        )),
-    _debug            (pset.get<int>   ("debugLevel"       )),
-    _debug2           (pset.get<int>   ("debugLevel2"      )),
-    _hsel             (pset.get<vector<string> >("HelixFitSelectionBits"  )),
-    _bkgsel           (pset.get<vector<string> >("BackgroundSelectionBits")),
-    _maxElectronHitEnergy(pset.get<double>("maxElectronHitEnergy")),
-    _minNHits         (pset.get<int>   ("minNHit"          )),
-    //    _maxDz            (pset.get<double>("maxdz",35.0)),
-    _absMpDfDz        (pset.get<double>("mostProbableDfDz")),
-    _dzOverHelPitchCut(pset.get<double>("dzOverHelPitchCut")),
-    _maxDfDz          (pset.get<double>("maxDfDz",0.1)),//0.01)),2018-10-11 gianipez test
-    _minDfDz          (pset.get<double>("minDfDz",5e-04)),
-    _sigmaPhi         (pset.get<double>("sigmaPhi")),
-    _weightXY         (pset.get<double>("weightXY")),
-    _targetcon        (pset.get<int>   ("targetconsistent")),
-    _weightZPhi       (pset.get<double>("weightZPhi")),
-    _weight3D         (pset.get<double>("weight3D")),
-    _maxXDPhi         (pset.get<double>("maxXDPhi",5.)),
-    _maxPanelToHelixDPhi(pset.get<double>("maxPanelToHelixDPhi",1.309)),// 75 degrees
-    _distPatRec       (pset.get<double>("distPatRec")),
-    _mindist          (pset.get<double>("mindist",500.0)),
-    _pmin             (pset.get<double>("minP",50.0)),
-    _pmax             (pset.get<double>("maxP",150.0)),
-    _tdmin            (pset.get<double>("minAbsTanDip",0.3)),
-    _tdmax            (pset.get<double>("maxAbsTanDip",2.0)),
-    _xyweights        (pset.get<bool>  ("xyWeights",false)),
-    _zweights         (pset.get<bool>  ("zWeights",false)),
-    _filter           (pset.get<bool>  ("filter",true)),
-    _plotall          (pset.get<bool>  ("plotall",false)),
-    _usetarget        (pset.get<bool>  ("usetarget",true)),
-    _bz               (0.0),
-    _nHitsMaxPerPanel      (pset.get<int>("nHitsMaxPerPanel"     )),
-    _hitChi2Max            (pset.get<double>("hitChi2Max"         )),
-    _chi2xyMax             (pset.get<double>("chi2xyMax")),
-    _chi2zphiMax           (pset.get<double>("chi2zphiMax")),
-    _chi2hel3DMax          (pset.get<double>("chi2hel3DMax")),
-    _dfdzErr               (pset.get<double>("dfdzErr")){
+    _diag               (pset.get<int>           ("diagLevel"              )),
+    _debug              (pset.get<int>           ("debugLevel"             )),
+    _debug2             (pset.get<int>           ("debugLevel2"            )),
+    _hsel               (pset.get<vector<string>>("HelixFitSelectionBits"  )),
+    _bkgsel             (pset.get<vector<string>>("BackgroundSelectionBits")),
+    _maxHitEnergy       (pset.get<double>        ("maxElectronHitEnergy"   )),
+    _minNHits           (pset.get<int>           ("minNHit"                )),
+    _absMpDfDz          (pset.get<double>        ("mostProbableDfDz"       )),
+    _dzOverHelPitchCut  (pset.get<double>        ("dzOverHelPitchCut"      )),
+    _maxDfDz            (pset.get<double>        ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
+    _minDfDz            (pset.get<double>        ("minDfDz"                )),
+    _sigmaPhi           (pset.get<double>        ("sigmaPhi"               )),
+    _weightXY           (pset.get<double>        ("weightXY"               )),
+    _targetcon          (pset.get<int>           ("targetconsistent"       )),
+    _weightZPhi         (pset.get<double>        ("weightZPhi"             )),
+    _weight3D           (pset.get<double>        ("weight3D"               )),
+    _maxXDPhi           (pset.get<double>        ("maxXDPhi"               )),
+    _maxPanelToHelixDPhi(pset.get<double>        ("maxPanelToHelixDPhi"    )), // 75 degrees
+    _distPatRec         (pset.get<double>        ("distPatRec"             )),
+    _mindist            (pset.get<double>        ("mindist"                )),
+    _pmin               (pset.get<double>        ("minP"                   )),
+    _pmax               (pset.get<double>        ("maxP"                   )),
+    _tdmin              (pset.get<double>        ("minAbsTanDip"           )),
+    _tdmax              (pset.get<double>        ("maxAbsTanDip"           )),
+    _xyweights          (pset.get<bool>          ("xyWeights"              )),
+    _zweights           (pset.get<bool>          ("zWeights"               )),
+    _filter             (pset.get<bool>          ("filter"                 )),
+    _plotall            (pset.get<bool>          ("plotall"                )),
+    _usetarget          (pset.get<bool>          ("usetarget"              )),
+    _bz                 (0.0),
+    _nHitsMaxPerPanel   (pset.get<int>           ("nHitsMaxPerPanel"       )),
+    _hitChi2Max         (pset.get<double>        ("hitChi2Max"             )),
+    _chi2xyMax          (pset.get<double>        ("chi2xyMax"              )),
+    _chi2zphiMax        (pset.get<double>        ("chi2zphiMax"            )),
+    _chi2hel3DMax       (pset.get<double>        ("chi2hel3DMax"           )),
+    _dfdzErr            (pset.get<double>        ("dfdzErr"                )){
 
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
@@ -204,23 +203,43 @@ namespace mu2e {
     return _bz;
   }
 
+  void CalHelixFinderAlg::setCaloCluster(CalHelixFinderData& Helix) {
+    //check presence of a cluster
+    const CaloCluster* cl = Helix._timeCluster->caloCluster().get();
+    if (cl == NULL){
+      fCaloTime = -9999.;
+      fCaloX    = -9999.;
+      fCaloY    = -9999.;
+      fCaloZ    = -9999.;
+      return;
+    }
+    //fill the calorimeter cluster info
+    Hep3Vector  gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    Hep3Vector  tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    fCaloTime        = cl->time();
+    fCaloX           = tpos.x();
+    fCaloY           = tpos.y();
+    fCaloZ           = tpos.z();
+  }
+
+
 //-----------------------------------------------------------------------------
 //2016-12-26 gianipez added the following function to make CalHelixFinderAlg compatible with TimeCluster obj
 //-----------------------------------------------------------------------------
-  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix, const TimeCluster* TimePeak) {
+  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix) {
 
-    fTimeCluster = TimePeak;
+    // fTimeCluster = TimePeak;
     //check presence of a cluster
-    const CaloCluster* cl = TimePeak->caloCluster().get();
-    if (cl == NULL)   return false;
+    // const CaloCluster* cl = TimePeak->caloCluster().get();
+    // if (cl == NULL)   return false;
 
-    //fill the calorimeter cluster info
-    Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
-    Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-    fCaloTime = cl->time();
-    fCaloX    = tpos.x();
-    fCaloY    = tpos.y();
-    fCaloZ    = tpos.z();
+    // //fill the calorimeter cluster info
+    // Hep3Vector         gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
+    // Hep3Vector         tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
+    // fCaloTime = cl->time();
+    // fCaloX    = tpos.x();
+    // fCaloY    = tpos.y();
+    // fCaloZ    = tpos.z();
 //-----------------------------------------------------------------------------
 //  compute the allowed radial range for this fit
 //-----------------------------------------------------------------------------
@@ -230,8 +249,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //  particle charge, field, and direction affect the pitch range
 //-----------------------------------------------------------------------------
-    _dfdzsign = copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
-
+    _dfdzsign = Helix._helicity == Helicity::poshel ? 1 : -1;// copysign(1.0,-Helix._tpart.charge()*Helix._fdir.dzdt()*bz());
+    
     _smax     = _dfdzsign/(_rmax*_tdmax);
     _smin     = _dfdzsign/(_rmin*_tdmin);
 
@@ -239,7 +258,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // call down
 //-----------------------------------------------------------------------------
-    bool retval = findHelix(Helix);
+    bool retval = fitHelix(Helix);
 
     return retval;
   }
@@ -247,10 +266,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // called internally; in the diagnostics mode save several states of _xyzp
 //-----------------------------------------------------------------------------
-  bool CalHelixFinderAlg::findHelix(CalHelixFinderData& Helix) {
+  bool CalHelixFinderAlg::fitHelix(CalHelixFinderData& Helix) {
     bool retval(false);
 					// initialize internal array of hits, print if requested
-    fillXYZP(Helix);
+    //    fillXYZP(Helix); //2019-01-18: gianipez moved this into the CalHelixFinder_module to exploit the helicity loop-search
 //-----------------------------------------------------------------------------
 // 2014-11-09 gianipez: reset the track candidate parameters if a new time peak is used!
 // so the previous candidate should not be compared to the new one at this level
@@ -286,7 +305,8 @@ namespace mu2e {
     else if ((Helix._nXYSh < _minNHits) || (Helix._sxy.chi2DofCircle() > _chi2xyMax)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,3); // xy reconstruction failure
     }
-    else if ((Helix._nZPhiSh < _minNHits) || (Helix._szphi.chi2DofLine() > _chi2zphiMax)) {
+    else if ((Helix._nZPhiSh < _minNHits) || (Helix._szphi.chi2DofLine() > _chi2zphiMax) ||
+	     (fabs(Helix._szphi.dfdz()) < _minDfDz) || (fabs(Helix._szphi.dfdz()) > _maxDfDz)) {
       Helix._fit = TrkErrCode(TrkErrCode::fail,4); // phi-z reconstruction failure
     }
     else {
@@ -1054,7 +1074,6 @@ namespace mu2e {
 
     for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
       facez     = &Helix._oTracker[f];
-      //      z         = facez->z;
       z         = Helix._zFace[f];
 
       int  firstPanel(0);
@@ -1137,7 +1156,6 @@ namespace mu2e {
 
       //loop over the nHitsMaxPerPanel hits closest to the helix prediction
       if (goodFaceHit.face < 0)                          continue;
-      //      panelz             = &facez->panelZs[goodFaceHit.panel];
       hit                = &Helix._chHitsToProcess[goodFaceHit.panelHitIndex];
 
       Helix._szphi.addPoint(z,hit->_hphi,hit->_zphiWeight);
@@ -1156,7 +1174,8 @@ namespace mu2e {
 	   (faceHitChi2 < 2.)){
 	if ( (fabs(dfdz - Helix._szphi.dfdz()) < 8.e-4) ){//  || //require that the new value of dfdz is
 	                                                         //close to the starting one. update dfdz only if:
-	  if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
+	  // if ( (Helix._szphi.dfdz() > 0.) && //{                    // 1. the points browsed are more the half
+	  if ( ((Helix._szphi.dfdz()*_dfdzsign) > 0.) && //{                    // 1. the points browsed are more the half
 	       (dz >=_mindist ) ){
 	    dfdz  = Helix._szphi.dfdz();                     //    delta hits could have moved dfdz to negative value!
 	    phi0  = Helix._szphi.phi0();// + z*dfdz;                     // 2. and require dfdz to be positivie! scattered hits or
@@ -1230,13 +1249,10 @@ namespace mu2e {
 	}//end face loop
 
 	if ((iworst.panel >= 0) && (Helix._nZPhiSh > _minNHits)) {
-	  // facez   = &Helix._oTracker[iworst.face];
-	  // panelz  = &facez->panelZs [iworst.panel];
 	  hit     = &Helix._chHitsToProcess[iworst.panelHitIndex];
-	  //	  int index =  facez->evalUniqueHitIndex(iworst);
 	  Helix._hitsUsed[iworst.panelHitIndex] = 0;
 
-	  z   = Helix._zFace[iworst.face];// facez->z;
+	  z   = Helix._zFace[iworst.face];
 	  phi = hit->_hphi;
 
 	  Helix._szphi.removePoint(z, phi, hit->_zphiWeight);
@@ -1259,12 +1275,12 @@ namespace mu2e {
 
 	for (int f=SeedIndex.face; f<StrawId::_ntotalfaces; ++f){
 	  facez     = &Helix._oTracker[f];
-	  z         = Helix._zFace[f];//facez->z;
+	  z         = Helix._zFace[f];
 	  int  firstPanel(0);
 	  if (f == SeedIndex.face) firstPanel = SeedIndex.panel;
 	  for (int p=firstPanel; p<FaceZ_t::kNPanels; ++p){
 	    panelz = &facez->panelZs[p];
-	    int       nhits  = panelz->nChHits();//fNHits;
+	    int       nhits  = panelz->nChHits();
 	    int       seedPanelIndex(0);
 	    if (nhits == 0)                                        continue;
 	    if ( (f == SeedIndex.face) && (p==SeedIndex.panel) && (SeedIndex.panelHitIndex >=0)) seedPanelIndex = SeedIndex.panelHitIndex - panelz->idChBegin;  
@@ -1493,7 +1509,7 @@ namespace mu2e {
 // 	  const Straw*            straw = &_tracker->getStraw(sh->strawId());
 // 	  const StrawHitPosition* shp   = &Helix.shpos()->at(loc);
 //       
-// 	  if (sh->energyDep() > _maxElectronHitEnergy)         continue;
+// 	  if (sh->energyDep() > _maxHitEnergy)         continue;
 // 
 // 	  int       layerId  = straw->id().getLayer();
 // 	  float     sigw     = shp->posRes(StrawHitPosition::wire);
@@ -1511,7 +1527,12 @@ namespace mu2e {
 // same stereohitposition
 // points in filled array are ordered in Z coordinate
 //-------------------------------------------------------------------------
-  void CalHelixFinderAlg::fillXYZP(CalHelixFinderData& Helix) {
+  void CalHelixFinderAlg::fillFaceOrderedHits(CalHelixFinderData& Helix) {
+
+//-----------------------------------------------------------------------------
+// set the CaloCluster of CalHelixFinderAlg: this info is stored in the TimeCluster
+//-----------------------------------------------------------------------------     
+    setCaloCluster(Helix);
 
     static const double pi(M_PI);
     static const double twopi(2*pi);
@@ -1547,7 +1568,7 @@ namespace mu2e {
       if (good_hit && (! bkg_hit) && (! used_hit)) {
 	const ComboHit& ch  = Helix.chcol()->at(loc);
 
-	if (ch.energyDep() > _maxElectronHitEnergy)         continue;
+	if (ch.energyDep() > _maxHitEnergy)                 continue;
 
 	//skip the hit if it doesn't rely on the semi-plane where the calo-lcuster is
 	if (_filter) {
@@ -1567,18 +1588,6 @@ namespace mu2e {
 
 
     for (unsigned i=0; i<ordChCol.size(); ++i) {
-      // loc          = shIndices[i];	 // index in chcol of i-th timecluster hit
-      // flag         = Helix.shfcol()->at(loc);
-      // //-----------------------------------------------------------------------------
-      // // select hits: don't reuse straw hits
-      // //-----------------------------------------------------------------------------
-      // int good_hit = flag.hasAllProperties(_hsel  );
-      // int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
-      // int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
-
-      // if (good_hit && (! bkg_hit) && (! used_hit)) {
-
-      // 	const ComboHit& ch          = Helix.chcol()->at(loc);
       ComboHit& ch = ordChCol[i];
 
       cx.Station                 = ch.strawId().station();//straw.id().getStation();
@@ -2131,15 +2140,12 @@ namespace mu2e {
 // a straw man attempt to account for significantly different resolutions 
 // along the wire and in the drift direction
 //--------------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit,
-					     // const Hep3Vector& HitPos   ,
-					     // const Hep3Vector& StrawDir ,
-					     const XYZVec&        HelCenter,
-					     double               Radius   ) {
+  double  CalHelixFinderAlg::calculateWeight(const mu2e::ComboHit& Hit      ,
+					     const XYZVec&         HelCenter,
+					     double                Radius   ) {
 
-    // double    rs(2.5);   // straw radius, mm
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
+    //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
@@ -2152,7 +2158,6 @@ namespace mu2e {
     double costh2 = dxn*dxn/(dx*dx+dy*dy);
     double sinth2 = 1-costh2;
 
-    // double e2     = _ew*_ew*sinth2+rs*rs*costh2;
     double e2     = Hit.wireErr2()*sinth2+transErr2*costh2;
     double wt     = 1./e2;
                                                     // scale the weight for having chi2/ndof distribution peaking at 1
@@ -2164,16 +2169,13 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit,
-						// const XYZVec&  HitPos   ,
-						// const XYZVec&  StrawDir ,
-						const XYZVec&  HelCenter,
-						double             Radius   ,
-						int                Print    ,
-						const char*        Banner   ) {
-    // double    rs(2.5);  // straw radius, mm
+  double  CalHelixFinderAlg::calculatePhiWeight(const mu2e::ComboHit& Hit      ,
+						const XYZVec&         HelCenter,
+						double                Radius   ,
+						int                   Print    ,
+						const char*           Banner   ) {
     double    transErr = 5./sqrt(12.);
-    //scale the error based on the number of the strawHits that are within teh mu2e::ComboHit
+    //scale the error based on the number of the strawHits that are within the mu2e::ComboHit
     if (Hit.nStrawHits() > 1) transErr *= 1.5;
     double    transErr2 = transErr*transErr;
 
@@ -2182,12 +2184,13 @@ namespace mu2e {
     double dx = x-HelCenter.x();
     double dy = y-HelCenter.y();
 
-    double dxn = dx*Hit._sdir.x()+dy*Hit._sdir.y();
-
-    double costh2  = dxn*dxn/(dx*dx+dy*dy);
+//-----------------------------------------------------------------------------
+// if dr(dx,dy) is orthogonal to the wire, costh = 1
+//-----------------------------------------------------------------------------
+    double dxn    = dx*Hit._sdir.x()+dy*Hit._sdir.y();
+    double costh2 = dxn*dxn/(dx*dx+dy*dy);
     double sinth2 = 1-costh2;
 
-    // double e2     = _ew*_ew*costh2+rs*rs*sinth2;
     double e2     = Hit.wireErr2()*costh2+transErr2*sinth2;
     double wt     = Radius*Radius/e2;
     wt           *= _weightZPhi;

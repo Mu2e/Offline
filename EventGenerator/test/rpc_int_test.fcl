@@ -9,51 +9,58 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-#include "Stntuple/fcl/prolog.fcl"
-
 BEGIN_PROLOG
-  pdgCode    : @local::Particle.eminus
   bgHitFiles : @nil
 END_PROLOG
 
-#include "Stntuple/fcl/templates.fcl"
-
 process_name : RpcIntTest
 
-source       : { module_type : EmptyEvent   }
-# source       : { module_type : RootInput   }
+#------------------------------------------------------------------------------
+# services section
+#------------------------------------------------------------------------------
+services : {
+    message               : @local::default_message
+    TFileService          : { fileName        : "nts._USER_._DATASET_._DSCONF_.sequencer.root" }
+    RandomNumberGenerator : { }
 
-outputs      : { @table::Stntuple.outputs   }
-producers    : { @table::Stntuple.producers }
-filters      : { @table::Stntuple.filters   }
-paths        : { @table::Stntuple.paths     }
+    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"   }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
+    BTrkHelper             : @local::BTrkHelperDefault
+    G4Helper               : { }
+    SeedService            : { @table::automaticSeeds
+	baseSeed         :  0
+	maxUniqueEngines :  20
+    }
+
+    TimeTracker : {
+	printSummary : true
+	dbOutput : {
+	    filename  : ""
+	    overwrite : false
+	}
+    }
+}
+services.scheduler.wantSummary: true
+
+source    : { module_type : EmptyEvent   }
+
+producers : { 
+    @table::EventGenerator.producers 
+    @table::Mu2eG4.producers
+}
 
 physics : {
     producers: { @table::producers 
-	generate              : { module_type:StoppedParticleIntConvGun
-	    physics: {
-		spectrumShape         : "Bistirlich"    # could also be "flat"
-#		spectrumShape         : "flat"
-		elow                  : 1.5
-#		elow                  : 100.0
-		ehi                   : 140.1
-		spectrumResolution    : 0.1 # hopefully, in MeV
+	generate              : { @table::producers.StoppedParticleRPCGun
+	    doHistograms      : true
+	    physics: { @table::producers.StoppedParticleRPCGun.physics
+		generateIntConversion : 1
 	    }
-	    pionStops                 : {
-		inputFiles            : ["mergedMuonStops/nts.mu2e.pion-DS-TGTstops.MDC2018a.001002_00000000.root"]
-		averageNumRecordsToUse: 500000
-		treeName              : "stoppedPionDumper/stops"
-		branchName            : "stops"
-		verbosityLevel        : 0
-	    }
-	    doHistograms              : true
 	}
     }
     
-    @table::paths
-    
     p1            : [ generate ] 
-
 
     trigger_paths : [ p1 ]
 
@@ -73,5 +80,4 @@ services.TFileService.fileName            : "nts.user.rpc_int_test.xxx.000001.ro
 # uncomment to avoid waisting time on the initialization of detailed neutron 
 # cross sections - that shouldn't affect the CE simulation 
 #------------------------------------------------------------------------------
-physics.producers.g4run.physics.physicsListName : "QGSP_BERT"
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
+physics.producers.g4run.physics.physicsListName : "QGSP_BERT_MU2ER1"

@@ -492,7 +492,7 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
                           nSteps
                           );
 
-    if (trackingVerbosityLevel > 0 ) {
+    if (trackingVerbosityLevel > 0) {
       G4int prec = G4cout.precision(15);
       G4cout << __func__
              << " particle "

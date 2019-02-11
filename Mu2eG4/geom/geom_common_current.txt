@@ -82,6 +82,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 //CRV counters
 #include "Mu2eG4/geom/crv_counters_v07.txt"
 
+
 //-------------------------------------------
 // Magnetic field
 //-------------------------------------------
@@ -141,6 +142,12 @@ bool   vd.solid          = false;
 
 // // VD right in front of a hall wall
 // double vd.ExtMonCommonPlane.z = -11999.99;
+
+
+//---------------------------------------
+// Region visualization
+//---------------------------------------
+#include "Mu2eG4/geom/visualization_regions.txt"
 
 
 //

@@ -87,7 +87,7 @@ namespace mu2e {
 // used for defining only the UserRunAction for the master thread
     void ActionInitialization::BuildForMaster() const
     {
-        SetUserAction( new Mu2eG4MasterRunAction(_physVolHelper, &physicsProcessInfoVector) );
+      SetUserAction( new Mu2eG4MasterRunAction(pset_, _physVolHelper, &physicsProcessInfoVector) );
     }
     
     
@@ -120,7 +120,7 @@ namespace mu2e {
         TrackingAction* trackingAction = new TrackingAction(pset_, steppingAction, stageOffset, trajectoryControl_, mu2elimits_);
         SetUserAction(trackingAction);
         
-        SetUserAction( new Mu2eG4RunAction(use_G4MT_, originInWorld, _physVolHelper,
+        SetUserAction( new Mu2eG4RunAction(pset_, use_G4MT_, originInWorld, _physVolHelper,
                                            physics_Process_Info, trackingAction, steppingAction,
                                            sensitive_Detector_Helper, _extMonFNALPixelSD) );
 

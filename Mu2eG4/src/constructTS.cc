@@ -1451,7 +1451,9 @@ namespace mu2e {
     int pbarAbsTS3Version = pbarWindow.version();
     int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
 
-    G4cout << "pbarWindow.shape() = " << pbarWindow.shape() << G4endl;
+    if (verbosityLevel > 0){
+      G4cout << "pbarWindow.shape() = " << pbarWindow.shape() << G4endl;
+    }
 
     if ( pbarAbsTS3Version == 1 ) {
       // -- vacuum wall
@@ -1739,9 +1741,12 @@ namespace mu2e {
 	VolumeInfo pbarDiskInfo;
 	pbarDiskInfo.name = "PbarAbsDisk";
 
-      if (verbosityLevel > 0) G4cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << G4endl; 
-
-	G4cout << " inside wedge or disk" << G4endl;
+        if (verbosityLevel > 0) {
+          G4cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << G4endl; 
+          if (verbosityLevel > 1){
+            G4cout << " inside wedge or disk" << G4endl;
+          }
+        }
 
 	pbarDiskInfo.solid = new G4Tubs("PbarAbs_disk",
 					  0.0 ,pbarWindow.diskRadius(),
@@ -1954,6 +1959,7 @@ namespace mu2e {
           G4cout << __func__ << " pbarTS1InPos " << pbarTS1InPos << G4endl;
         }
       }
+
       // mother volume set in block above
 
       // Here we put in the actual window - true in all versions

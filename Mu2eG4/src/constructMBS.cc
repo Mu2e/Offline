@@ -35,6 +35,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "MBSGeom/inc/MBS.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -81,13 +82,16 @@ namespace mu2e {
     Tube const & pCalShieldRingParams  = *mbsgh.getCalRingShieldPtr();
 
 
-    bool const MBSisVisible        = _config.getBool("mbs.visible",true);
-    bool const MBSisSolid          = _config.getBool("mbs.solid", false);
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "mbs", "mbs" );
+
+    const bool MBSisVisible        = geomOptions->isVisible("mbs"); 
+    const bool MBSisSolid          = geomOptions->isSolid("mbs"); 
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("mbs"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("mbs"); 
+    const bool placePV             = geomOptions->placePV("mbs"); 
     int  const verbosityLevel      = _config.getInt("mbs.verbosityLevel", 0);
 
-    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("mbs.doSurfaceCheck",false);
-    bool const placePV             = true;
 
 
     // Access to the G4HelperService.

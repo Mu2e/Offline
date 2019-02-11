@@ -48,7 +48,7 @@ namespace mu2e {
     const Calorimeter*         _calorimeter;
 
     //    const CalTimePeak*         fTimePeak;
-    const TimeCluster*         fTimeCluster; //needed for debugging
+    //    const TimeCluster*         fTimeCluster; //needed for debugging
     
     double                     fCaloTime;
     double                     fCaloX;   
@@ -83,7 +83,7 @@ namespace mu2e {
     // int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
-    double               _maxElectronHitEnergy;
+    double               _maxHitEnergy; // 
     int                  _minNHits;     // minimum # of hits for a helix candidate
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
@@ -221,12 +221,13 @@ namespace mu2e {
 
     int   isHitUsed(int index);
 
-    void fillXYZP                     (CalHelixFinderData& Helix);
+    void fillFaceOrderedHits          (CalHelixFinderData& Helix);
     // void filterDist                   (CalHelixFinderData& Helix);
     void filterUsingPatternRecognition(CalHelixFinderData& Helix);
-    bool findHelix                    (CalHelixFinderData& Helix);
+    void setCaloCluster               (CalHelixFinderData& Helix);
+    bool fitHelix                     (CalHelixFinderData& Helix);
     // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
-    bool findHelix                    (CalHelixFinderData& Helix, const TimeCluster* TimePeak );
+    bool findHelix                    (CalHelixFinderData& Helix);
     int  findDfDz                     (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
     int  findDfDz_1                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
     int  findDfDz_2                   (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);

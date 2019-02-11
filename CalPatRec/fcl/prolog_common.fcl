@@ -1,0 +1,54 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# everything related to merging moves here, included types
+#------------------------------------------------------------------------------
+BEGIN_PROLOG
+
+# KSFDeMH      : 
+# KSFDmuMH     : 
+# 
+# KFFDeMHPar   : { @table::KFFDeM                             SeedCollection : KSFDeMH  }
+# KFFDeMHDar   : { @table::CalPatRec.producers.CalTrkFitDem   SeedCollection : KSFDeMH  }
+# 
+# KFFDmuMHPar  : 
+# KFFDmuMHDar  : 
+
+CommonTrk                : {
+    producers : {
+#------------------------------------------------------------------------------
+# track fit, downstream electron hypothesis
+#------------------------------------------------------------------------------
+	KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  }
+	KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH     }
+	KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH     }
+#------------------------------------------------------------------------------
+# track fit, downstream muon hypothesis
+#------------------------------------------------------------------------------
+	KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu }
+	KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH    }
+	KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH    }
+    }
+}
+#------------------------------------------------------------------------------
+# helix reconstruction: put downstream electron and positron helices together
+#------------------------------------------------------------------------------
+CommonTrk.helix_reco_De   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDe, MHFinderCprDe, 
+			      TimeClusterFinder, HelixFinder, MHFinderTprDe    ,
+			      MHFinderDe ]
+
+CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, MHFinderCprDmu, 
+			      TimeClusterFinderMu, HelixFinderMu, MHFinderTprDmu    ,
+			      MHFinderDmu ]
+#------------------------------------------------------------------------------
+# by default, write out two lists of tracks corresponding to two different 
+# ambiguity resolvers
+#------------------------------------------------------------------------------
+CommonTrk.reco_DeMHPar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar  ]
+CommonTrk.reco_DeMHDar   : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHDar  ]
+CommonTrk.reco_DeMH      : [ @sequence::CommonTrk.helix_reco_De , KSFDeMH , KFFDeMHPar,  KFFDeMHDar  ]
+
+CommonTrk.reco_DmuMHPar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar ]
+CommonTrk.reco_DmuMHDar  : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHDar ]
+CommonTrk.reco_DmuMH     : [ @sequence::CommonTrk.helix_reco_Dmu, KSFDmuMH, KFFDmuMHPar, KFFDmuMHDar ]
+
+END_PROLOG

@@ -152,6 +152,7 @@ namespace mu2e {
     , useEmOption4InTracker_(_config.getBool("g4.useEmOption4InTracker",false))
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
+    _g4VerbosityLevel = _config.getInt("g4.diagLevel", 0);
   }
 
   Mu2eWorld::Mu2eWorld(const fhicl::ParameterSet& pset,
@@ -174,6 +175,7 @@ namespace mu2e {
     , useEmOption4InTracker_(pset.get<bool>("physics.useEmOption4InTracker",false))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
+    _g4VerbosityLevel = pset.get<int>("debug.diagLevel");
   }
 
 
@@ -419,16 +421,24 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
-    if ( _verbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
+    if ( _g4VerbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
       delete _rhs; // FIXME: avoid the delete
       _rhs  = new G4Mag_SpinEqRhs(_field);
       _stepper = new G4ClassicalRK4(_rhs, 12);
-      if ( _verbosityLevel > 0) {
+      if ( _g4VerbosityLevel > 0) {
         cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin "
              << "and used G4ClassicalRK4 with Spin" << endl;
+      }
+    } else if ( g4stepperName_  == "G4DormandPrince745WSpin" ) {
+      delete _rhs; // FIXME: avoid the delete
+      _rhs  = new G4Mag_SpinEqRhs(_field);
+      _stepper = new G4DormandPrince745(_rhs, 12);
+      if ( _g4VerbosityLevel > 0) {
+        cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4DormandPrince745WSpin "
+             << "and used G4DormandPrince745 with Spin" << endl;
       }
     } else if ( g4stepperName_  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
@@ -448,7 +458,7 @@ namespace mu2e {
 #endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
-      if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
+      if ( _g4VerbosityLevel > -1 ) cout << "Using default G4SimpleRunge stepper" << endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,g4StepMinimum_,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -503,7 +513,7 @@ namespace mu2e {
     _propInField->SetMaxLoopCount(g4MaxIntSteps_);
 
 
-    if ( _verbosityLevel > 0 ) {
+    if ( _g4VerbosityLevel > 0 ) {
       cout << __func__ << " Stepper precision parameters: " << endl;
       cout << __func__ << " g4epsilonMin        " << _manager->GetMinimumEpsilonStep() << endl;
       cout << __func__ << " g4epsilonMax        " << _manager->GetMaximumEpsilonStep() << endl;
@@ -527,7 +537,7 @@ namespace mu2e {
       art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
     for ( auto v : vols ){
       v->logical->SetUserLimits( stepLimit );
-      if(_verbosityLevel > 0)  {
+      if(_g4VerbosityLevel > 0)  {
         std::cout<<"Activated step limit for volume "<<v->logical->GetName() <<std::endl;
       }
     }
@@ -567,7 +577,7 @@ namespace mu2e {
     // limits.  For now that is not necessary.
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
-    if(_verbosityLevel > 0) {
+    if(_g4VerbosityLevel > 0) {
       std::cout<<"Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<std::endl;
     }
 
@@ -960,13 +970,7 @@ namespace mu2e {
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from constructMSTM
-            if (LVname.find("mstmCrystal") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(STMDetSD);
-            }
-
-            //from constructSTM, will pick up stmDet1 and stmDet2
-            if (LVname.find("stmDet") != std::string::npos) {
+            if ( LVname == "stmDet1" || LVname == "stmDet2" ){
               (*pos)->SetSensitiveDetector(STMDetSD);
             }
         }//for

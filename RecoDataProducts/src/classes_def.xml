@@ -160,9 +160,11 @@
  <class name="mu2e::TrkFitDirection"/>
  <class name="TrkParticle"/>   <!-- BTrk -->
  <class name="mu2e::TrkStrawHitSeed"/>
+ <class name="mu2e::TrkCaloHitSeed"/>
  <class name="mu2e::TrkStraw"/>
  <class name="mu2e::KalSegment"/>
  <class name="std::vector<mu2e::TrkStrawHitSeed>"/>
+ <class name="std::vector<mu2e::TrkCaloHitSeed>"/>
  <class name="std::vector<mu2e::TrkStraw>"/>
  <class name="std::vector<mu2e::KalSegment>"/>
 

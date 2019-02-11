@@ -93,6 +93,9 @@ namespace mu2e {
     TNtuple* _ntup;
     TNtuple* _detntup;
 
+    // Tracker conditions object.
+    ProditionsHandle<StrawResponse> strawResponse_h;
+
   };
 
   ReadStrawHit::ReadStrawHit(fhicl::ParameterSet const& pset):
@@ -232,7 +235,7 @@ namespace mu2e {
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " ReadStrawHit: PtrStepPointMCVectorCollection _simModuleLabel: " << _simModuleLabel << endl;
 
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    auto const& srep = strawResponse_h.get(evt.id());
 
     // Fill histograms
     _hNHits->Fill(hits.size());
@@ -288,8 +291,8 @@ namespace mu2e {
       const CLHEP::Hep3Vector sdir   = str.getDirection();
 
       // calculate the hit position
-      float dw, dwerr, halfpv;
-      srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
+      double dw, dwerr, halfpv;
+      srep.wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
       CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
 
       // we may also need the truth hit position, do we need another function?

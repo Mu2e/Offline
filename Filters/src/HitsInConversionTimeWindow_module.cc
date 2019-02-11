@@ -399,7 +399,7 @@ namespace mu2e {
     }
     GenParticle const& gen(gens.at(0));
 
-    if ( gen.generatorId().id() != GenId::conversionGun ){
+    if ( !gen.generatorId().isConversion() ){
       throw cet::exception("RANGE")
         << "HitsInConversionTimeWindow_module::findConversionGenParticle: unexpected generator type: "
         << gen.generatorId()

@@ -16,7 +16,6 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -36,6 +35,7 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 // diagnostics
 #include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkComp.hh"
@@ -46,6 +46,9 @@
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/TrkQualInfo.hh"
+#include "TrkDiag/inc/TrkQualTestInfo.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -83,6 +86,8 @@ namespace mu2e {
     art::InputTag _detag;
     art::InputTag _uetag;
     art::InputTag _dmtag;
+    std::string _tqroot;
+    art::InputTag _tqtag;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
@@ -93,7 +98,7 @@ namespace mu2e {
     std::string _crvCoincidenceModuleLabel;
     std::string _crvCoincidenceMCModuleLabel;
     // analysis options
-    bool _fillmc, _pempty, _crv;
+    bool _fillmc, _pempty, _crv, _filltrkqual;
     int _diag;
     // analysis parameters
     double _minReflectTime; // minimum time for a track to reflect in the gradient
@@ -125,11 +130,14 @@ namespace mu2e {
     TrkInfoMCStep _demcgen;
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
     std::vector<TrkStrawHitInfoMC> _detshmc;
+    // test trkqual variable branches
+    TrkQualInfo _trkQualInfo;
+    TrkQualTestInfo _trkqualTest;
     // helper functions
     void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
     void countHits(StrawHitFlagCollection const& shfC);
-    const KalRep* findBestTrack(KalRepPtrCollection const& kcol);
+    const KalRep* findBestTrack(KalRepPtrCollection const& kcol, size_t& i_element);
     void resetBranches();
     void fillMCInfo(const KalRep* deK);
     void findBestClusterMatch(TrackClusterMatchCollection const& tcmc,
@@ -141,11 +149,14 @@ namespace mu2e {
     int _ncrv;
     std::vector<CrvHitInfoReco> _crvinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
+    // TestTrkQual
+    void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   };
 
   TrackAnalysis::TrackAnalysis(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
     _trkanaroot(pset.get<std::string>("KalFinalTagRoot") ),
+    _tqroot(pset.get<std::string>("TrkQualTagRoot") ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _sdir((TrkFitDirection::FitDirection)(pset.get<int>("TrkFitDirection", TrkFitDirection::downstream))),
@@ -155,6 +166,7 @@ namespace mu2e {
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
+    _filltrkqual(pset.get<bool>("fillTrkQualInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _kdiag(pset.get<fhicl::ParameterSet>("KalDiag",fhicl::ParameterSet())),
@@ -202,6 +214,10 @@ namespace mu2e {
       if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
     }
 
+    if (_filltrkqual) {
+      _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
+      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
+    }
   }
 
   void TrackAnalysis::beginSubRun(const art::SubRun & subrun ) {
@@ -237,6 +253,7 @@ namespace mu2e {
     _detag = _trkanaroot + "D" + _spart.name().substr(0,1) + chargename;
     _uetag = _trkanaroot + "U" + _spart.name().substr(0,1) + chargename;
     _dmtag = _trkanaroot + "D" + "mu" + chargename; //dm branch is always used for muons
+    _tqtag = _tqroot + "D" + _spart.name().substr(0,1) + chargename;
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalRepPtrCollection> deH;
     event.getByLabel(_detag,deH);
@@ -255,7 +272,8 @@ namespace mu2e {
     // find Track-cluster matching data
     _cdiag.findData(event);
     // find the best track
-    const KalRep* deK = findBestTrack(deC);
+    size_t i_element = 0; // keep track of which KalRep we are looking at
+    const KalRep* deK = findBestTrack(deC, i_element);
     if(deK != 0 || _pempty) {
       // reset
       resetBranches();
@@ -289,6 +307,34 @@ namespace mu2e {
 	if(dmK != 0){
 	  _kdiag.fillTrkInfo(dmK,_dmti);
 	}
+
+	art::Handle<TrkQualCollection> trkQualHandle;
+	event.getByLabel(_tqtag, trkQualHandle);
+	if (trkQualHandle.isValid()) {
+	  const TrkQualCollection& tqcol = *trkQualHandle;
+	  if (i_element >= tqcol.size()) {
+	    throw cet::exception("TrackAnalysis") << "TrkQualCollection element (" << i_element << ") is invalid base on collection size (" << tqcol.size() << ")" << std::endl;
+	  }
+
+	  TrkQual tqual = tqcol.at(i_element);
+	  int n_krep_active_hits = deK->nActive();
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(deK);
+	  if (tch != 0) {
+	    --n_krep_active_hits; // nactive in TrkQual does not include the TrkCaloHit
+	  }
+	  int n_tqual_active_hits = tqual[TrkQual::nactive];
+	  if (n_krep_active_hits != n_tqual_active_hits) {
+	    throw cet::exception("TrackAnalysis") << "TrkQual nactive (" << n_tqual_active_hits << ") does not match KalRep nactive (" << n_krep_active_hits << ")" << std::endl;
+	  }
+
+	  _deti._trkqual = tqual.MVAOutput();
+	  if (_filltrkqual) {
+	    fillTrkQualInfo(tqual, _trkQualInfo);
+	  }
+	}
+	else {
+	  throw cet::exception("TrackAnalysis") << "TrkQualCollection not found with InputTag " << _tqtag << std::endl;
+	}
       }
       // fill mC info associated with this track
       if(_fillmc) fillMCInfo(deK);
@@ -305,10 +351,11 @@ namespace mu2e {
     }
   }
 
-  const KalRep* TrackAnalysis::findBestTrack(KalRepPtrCollection const& kcol) {
+  const KalRep* TrackAnalysis::findBestTrack(KalRepPtrCollection const& kcol, size_t& i_element) {
     _tcnt._nde = kcol.size();
 // if there aren't any tracks return 0
     const KalRep* deK(0);
+    size_t counter = 0;
     for(auto kptr : kcol ){
       const KalRep* krep = kptr.get();
       if(deK == 0) {
@@ -320,8 +367,10 @@ namespace mu2e {
 // compute the hit overlap fraction
 	  _tcnt._ndeo  = _tcomp.nOverlap(krep,deK);
 	  deK = krep;
+	  i_element = counter;
 	}
       }
+      ++counter;
     }
     return deK;
   }
@@ -387,6 +436,7 @@ namespace mu2e {
 	}
       }
     }
+
     if(deSP.isNonnull()){
       _kdiag.fillTrkInfoMC(deSP,deK,_demc);
       _kdiag.fillTrkInfoMCStep(deSP,_demcgen);
@@ -489,12 +539,23 @@ namespace mu2e {
     _demcmid.reset();
     _demcxit.reset();
     _wtinfo.reset();
+    _trkqualTest.reset();
+    _trkQualInfo.reset();
     // clear vectors
     _detsh.clear();
     _detsm.clear();
     _detshmc.clear();
     _crvinfo.clear();
     _crvinfomc.clear();
+  }
+
+  void TrackAnalysis::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
+    int n_trkqual_vars = TrkQual::n_vars;
+    for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
+      TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
+      trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
+    }
+    trkqualInfo._trkqual = tqual.MVAOutput();
   }
 }  // end namespace mu2e
 

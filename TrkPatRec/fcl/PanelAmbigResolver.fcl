@@ -19,7 +19,7 @@ PanelAmbig  : {
     inactivePenalty		: 16.0
     PenaltyResolution		: 0.25
     TrackPenaltyResolution	: 0.5
-    NullAmbigPenalty		: 0.0
+    NullHitPenalty		: 0.5
     MaximumHitU			: 8.0
   }
 
