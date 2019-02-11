@@ -206,7 +206,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from a track seed
 //-----------------------------------------------------------------------------
-  void KalFit::makeTrack(KalFitData& kalData){
+  void KalFit::makeTrack(StrawResponse::cptr_t srep, KalFitData& kalData){
 // test if fitable
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
@@ -236,7 +236,7 @@ namespace mu2e
       kalData.helixTraj = &htraj;
       // create the hits
       TrkStrawHitVector tshv;
-      makeTrkStrawHits(kalData, tshv);
+      makeTrkStrawHits(srep,kalData, tshv);
       
    // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
@@ -279,7 +279,7 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(KalFitData&kalData, double maxchi) {
+  void KalFit::addHits(StrawResponse::cptr_t srep, KalFitData&kalData, double maxchi) {
   //2017-05-02: Gianipez. In this function inten
   // fetcth the DetectorModel
    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
@@ -312,7 +312,7 @@ namespace mu2e
 // update the time in the TrkT0 object
         hitt0._t0 += tflt;  // FIXME!!! assumes beta=1
 // create the hit object.  Assume we're at the last iteration over added error
-        TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,istraw,hitt0,hflt,
+        TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,istraw,hitt0,hflt,
 					      _maxpull,_strHitW );
         assert(trkhit != 0);
 	trkhit->setTemperature(_herr.back()); // give this hit the final annealing temperature
@@ -453,7 +453,8 @@ namespace mu2e
   }
 
   void
-  KalFit::makeTrkStrawHits(KalFitData& kalData, TrkStrawHitVector& tshv ) {
+  KalFit::makeTrkStrawHits(StrawResponse::cptr_t srep,
+			   KalFitData& kalData, TrkStrawHitVector& tshv ) {
 
     std::vector<TrkStrawHitSeed>const hseeds = kalData.kalSeed->hits();
     HelixTraj const htraj = *kalData.helixTraj;
@@ -463,7 +464,7 @@ namespace mu2e
       size_t index = ths.index();
       const ComboHit& strawhit(kalData.chcol->at(index));
       const Straw& straw = _tracker->getStraw(strawhit.strawId());
-      TrkStrawHit* trkhit = new TrkStrawHit(strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
+      TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
 					    _maxpull,_strHitW);
       assert(trkhit != 0);
       // set the initial ambiguity

@@ -19,143 +19,11 @@
 using namespace std;
 namespace mu2e {
   using namespace TrkTypes;
-  double StrawElectronics::_pC_per_uA_ns(1000.0); // unit conversion from pC/ns to microAmp.
 
-  StrawElectronics::StrawElectronics(fhicl::ParameterSet const& pset) :
-    _dVdI{pset.get<vector<double> >("thresholddVdI",vector<double>(96,pset.get<double>("DefaultThresholddVdI",1.1e7))),
-      pset.get<vector<double> >("adcdVdI",vector<double>(96,pset.get<double>("DefaultAdcdVdI",2.11e4)))}, // mVolt/uAmps (transimpedance gain)
-    _tdeadAnalog(pset.get<double>("DeadTimeAnalog",100.0)), // nsec dead after threshold crossing (pulse baseline restoration time)
-    _tdeadDigital(pset.get<double>("DeadTimeDigital",100.0)), // nsec dead after threshold crossing (electronics processing time)
-    _vsat(pset.get<double>("SaturationVoltage",90.0)), // mVolt
-    _vthresh(pset.get<vector<double> >("DiscriminatorThreshold",
-          vector<double>(192,pset.get<double>("DefaultDiscriminatorThreshold",12.0)))), //mVolt, post amplification
-    _snoise(pset.get<double>("StrawNoise",2.8)), // mvolt
-    _analognoise{pset.get<double>("thresholdAnalogNoise",0.95), //mVolt
-      pset.get<double>("adcAnalogNoise",3.0)},
-    _ADCLSB(pset.get<double>("ADCLSB",0.3662)), //mVolt
-    _maxADC(pset.get<int>("maxADC",4095)),
-    _nADCpre(pset.get<unsigned>("nADCPresamples",5)),
-    _ADCPeriod(pset.get<double>("ADCPeriod",20.0)), // nsec
-    _ADCOffset(pset.get<double>("ADCOffset",2.0)), // nsec
-    _maxtsep(pset.get<unsigned>("MaxThreshTimeSeparation",2)), // ADC clock ticks
-    _TDCLSB(pset.get<double>("TDCLSB",0.03125)),  // nsec
-    _maxTDC(pset.get<unsigned>("maxTDC",65535)), // 16 bits
-    _TOTLSB(pset.get<double>("TOTLSB",4.0)), //ns
-    _maxTOT(pset.get<unsigned>("maxTOT",15)),
-    _tdcResolution(pset.get<double>("TDCResolution",0.1)), // ns
-    _electronicsTimeDelay(pset.get<double>("ElectronicsTimeDelay",0.0)), // nsec
-    _ewMarkerROCJitter(pset.get<double>("EventWindowMarkerROCJitter",0.5)), // ps (jitter per panel per microbuncH)
-    _flashStart(pset.get<double>("FlashStart",1695.0)), //nsec
-    _flashEnd(pset.get<double>("FlashEnd",500.0)), // nsec
-    _responseBins(pset.get<int>("ResponseBins",10000)),
-    _sampleRate(pset.get<double>("SampleRate",10.0)), // ghz
-    _saturationSampleFactor(pset.get<int>("SaturationSampleFactor",50)),
-    _preampPoles(pset.get<vector<double> >("PreampPoles",vector<double>{160.,7.})),
-    _preampZeros(pset.get<vector<double> >("PreampZeros",vector<double>{0.2})),
-    _adcPoles(pset.get<vector<double> >("ADCPoles",vector<double>{6.24137023,4.6,30.0, 6.24})),
-    _adcZeros(pset.get<vector<double> >("ADCZeros",vector<double>{0.72343156})),
-    _preampToAdc1Poles(pset.get<vector<double> >("PreampToAdc1Poles",vector<double>{6.24137032,30.0})),
-    _preampToAdc1Zeros(pset.get<vector<double> >("PreampToAdc1Zeros",vector<double>{0.72343156})),
-    _preampToAdc2Poles(pset.get<vector<double> >("PreampToAdc2Poles",vector<double>{4.6, 6.24})),
-    _preampToAdc2Zeros(pset.get<vector<double> >("PreampToAdc2Zeros",vector<double>{})),
-    _wireDistances(pset.get<vector<double> >("WireDistances",vector<double>{0.0,1200.0})),
-    _currentMeans(pset.get<vector<double> >("CurrentMeans",vector<double>{0.0,1.29})),
-    _currentNormalizations(pset.get<vector<double> >("CurrentNormalizations",vector<double>{1.0,1.0})),
-    _currentSigmas(pset.get<vector<double> >("CurrentSigmas",vector<double>{2.2,3.0})),
-    _currentT0s(pset.get<vector<double> >("CurrentT0s",vector<double>{4.7, 8.2})),
-    _clusterLookbackTime(pset.get<double>("ClusterLookbackTime",5.0)),
-    _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
-    _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
-    _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawCal",vector<double>(96,0)))
-    {
-      _flashStartTDC = tdcResponse(_flashStart); // tdcResponse takes care of offsets, etc.
-      _flashEndTDC = tdcResponse(_flashEnd); 
-      _ADCped.resize(96,0);
-      for (int i=0;i<96;i++){
-	double avgThresh = (_vthresh[i*2+0] + _vthresh[i*2+1])/2.;
-	_ADCped[i] = (ADCValue) ((_maxADC+1)/2. - avgThresh/_ADCLSB * 20);
-      }
-      _ttrunc[thresh] = (_responseBins/2)/_sampleRate;
-      _ttrunc[adc] = (_responseBins/2)/_sampleRate;
+  void StrawElectronics::calculateResponse(std::vector<double> const& poles, 
+		std::vector<double> const& zeros, std::vector<double> const& input, 
+		std::vector<double> &response) {
 
-      // precompute ion drift current pulses
-      _currentImpulse = std::vector<double>(_responseBins,0);
-      _currentImpulse[_responseBins/2] = 1;
-      _preampToAdc2Response = std::vector<double>(_responseBins,0);
-      calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_currentImpulse,_preampToAdc2Response);
-
-      for (size_t ai=0;ai<_wireDistances.size();ai++){
-	_wPoints.push_back(WireDistancePoint(_wireDistances[ai],_currentMeans[ai],_currentNormalizations[ai],_currentSigmas[ai],_currentT0s[ai]));
-	_wPoints[ai]._currentPulse = std::vector<double>(_responseBins,0);
-	double integral = 0;
-	for (int i=0;i<_responseBins;i++){
-	  double t_gaus = (i-_responseBins/2)/_sampleRate;
-	  double val_gaus = 1/sqrt(TMath::TwoPi()*_wPoints[ai]._sigma*_wPoints[ai]._sigma)*exp(-((t_gaus-_wPoints[ai]._mean)*(t_gaus-_wPoints[ai]._mean))/(2*_wPoints[ai]._sigma*_wPoints[ai]._sigma));
-	  for (int j=0;j<_responseBins-i;j++){
-	    double t_tail = j/_sampleRate;
-	    double val = val_gaus / (t_tail + _wPoints[ai]._t0);
-	    _wPoints[ai]._currentPulse[i+j] += val;
-	    integral += val;
-	  }
-	}
-	for (int i=0;i<_responseBins;i++){
-	  // correct for sampleRate so that calculateResponse peak is independent of it
-	  // this combined with pC_per_uA_ns is the unit transform from pC to uA
-	  _wPoints[ai]._currentPulse[i] /= _sampleRate * _pC_per_uA_ns;
-	  _wPoints[ai]._currentPulse[i] /= 4.615; // normalization for 1/(t+t0)
-	  _wPoints[ai]._currentPulse[i] *= _wPoints[ai]._normalization;
-	}
-
-	// calculate parameters for transfer function
-	_wPoints[ai]._preampResponse = std::vector<double>(_responseBins,0);
-	_wPoints[ai]._adcResponse = std::vector<double>(_responseBins,0);
-	_wPoints[ai]._preampToAdc1Response = std::vector<double>(_responseBins,0);
-	calculateResponse(_preampPoles,_preampZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampResponse);
-	calculateResponse(_adcPoles,_adcZeros,_wPoints[ai]._currentPulse,_wPoints[ai]._adcResponse);
-	calculateResponse(_preampToAdc1Poles,_preampToAdc1Zeros,_wPoints[ai]._currentPulse,_wPoints[ai]._preampToAdc1Response);
-
-	// now set other parameters
-	_wPoints[ai]._tmax[thresh] = 0;
-	_wPoints[ai]._linmax[thresh] = 0;
-	_wPoints[ai]._tmax[adc] = 0;
-	_wPoints[ai]._linmax[adc] = 0;
-	double preampToAdc1Max = 0;
-	for (int i=0;i<_responseBins;i++){
-	  if (_wPoints[ai]._preampResponse[i] > _wPoints[ai]._linmax[thresh]){
-	    _wPoints[ai]._linmax[thresh] = _wPoints[ai]._preampResponse[i];
-	    _wPoints[ai]._tmax[thresh] = (-_responseBins/2 + i)/_sampleRate;
-	  }
-	  if (_wPoints[ai]._adcResponse[i] > _wPoints[ai]._linmax[adc]){
-	    _wPoints[ai]._linmax[adc] = _wPoints[ai]._adcResponse[i];
-	    _wPoints[ai]._tmax[adc] = (-_responseBins/2 + i)/_sampleRate;
-	  }
-	  if (_wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
-	    preampToAdc1Max = _wPoints[ai]._preampToAdc1Response[i];
-	}
-
-	// normalize preampToAdc1Response to match preampResponse
-	for (int i=0;i<_responseBins;i++){
-	  _wPoints[ai]._preampToAdc1Response[i] *= _wPoints[ai]._linmax[thresh]/preampToAdc1Max;
-	}
-      }
-
-      // normalize preampToAdc2Response to match adcResponse
-      std::vector<double> preampToAdc2test(_responseBins,0);
-      calculateResponse(_preampToAdc2Poles,_preampToAdc2Zeros,_wPoints[0]._preampToAdc1Response,preampToAdc2test);
-      double preampToAdc2Max = 0;
-      for (int i=0;i<_responseBins;i++){
-	if (preampToAdc2test[i] > preampToAdc2Max)
-	  preampToAdc2Max = preampToAdc2test[i];
-      }
-      for (int i=0;i<_responseBins;i++){
-	_preampToAdc2Response[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
-	preampToAdc2test[i] *= _wPoints[0]._linmax[adc]/preampToAdc2Max;
-      }
-    }
-
-  StrawElectronics::~StrawElectronics() {}
-
-  void StrawElectronics::calculateResponse(std::vector<double> &poles, std::vector<double> &zeros, std::vector<double> &input, std::vector<double> &response) {
     std::vector<double> za;
     std::vector<double> pa;
     for (size_t i=0;i<poles.size();i++){
@@ -367,6 +235,106 @@ namespace mu2e {
 	return val*val*val*val*val; break;
       default:
 	return 0.0; break;
+    }
+  }
+
+  void StrawElectronics::print(std::ostream& os) const {
+    os << endl << "StrawElectronics parameters: "  << std::endl;
+    for(size_t i=0; i<_dVdI.size(); i++) {
+      auto const& aa = _dVdI[i];
+      string ss = string("dVdI[") + to_string(i) + string("]");
+      printVector(os,ss,aa);
+    }
+
+    os << "ttrunc["<<_ttrunc.size()<<"] = ";
+    for(auto x: _ttrunc) os << x << " " ;
+    os << endl;
+
+    os << "tdeadAnalog = " << _tdeadAnalog << endl;
+    os << "tdeadDigital = " << _tdeadDigital << endl;
+    os << "vsat = " << _vsat << endl;
+    printVector(os,"vthresh",_vthresh);
+    os << "snoise = " << _snoise << endl;
+
+    os << "analognoise["<<_analognoise.size()<<"] = ";
+    for(auto x: _analognoise) os << x << " " ;
+    os << endl;
+
+    os << "ADCLSB = " << _ADCLSB << endl;
+    os << "maxADC = " << _maxADC << endl;
+
+    os << "ADCped ("<<_ADCped.size()<<") = ";
+    for(auto x: _ADCped) os << x << " " ;
+    os << endl;
+
+    os << "nADCpre = " << _nADCpre << endl;
+    os << "ADCPeriod = " << _ADCPeriod << endl;
+    os << "ADCOffset = " << _ADCOffset << endl;
+    os << "maxtsep = " << _maxtsep << endl;
+    os << "TCoince = " << _TCoince << endl;
+    os << "maxTDC = " << _maxTDC << endl;
+    os << "maxTOT = " << _maxTOT << endl;
+    os << "tdcResolution = " << _tdcResolution << endl;
+    os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
+    os << "ewMarkerROCJitter = " << _ewMarkerROCJitter << endl;
+    os << "flashStart = " << _flashStart << endl;
+    os << "flashEnd = " << _flashEnd << endl;
+    os << "flashClockSpeed = " << _flashClockSpeed << endl;
+    os << "flashStartTDC = " << _flashStartTDC << endl;
+    os << "flashEndTDC = " << _flashEndTDC << endl;
+    os << "responseBins = " << _responseBins << endl;
+    os << "sampleRate = " << _sampleRate << endl;
+    os << "saturationSampleFactor = " << _saturationSampleFactor << endl;
+    printVector(os,"preampPoles",_preampPoles);          
+    printVector(os,"preampZeros",_preampZeros);
+    printVector(os,"adcPoles",_adcPoles);
+    printVector(os,"adcZeros",_adcZeros);
+    printVector(os,"preampToAdc1Poles",_preampToAdc1Poles);
+    printVector(os,"preampToAdc1Zeros",_preampToAdc1Zeros);
+    printVector(os,"preampToAdc2Poles",_preampToAdc2Poles);
+    printVector(os,"preampToAdc2Zeros",_preampToAdc2Zeros);
+    printVector(os,"wireDistances",_wireDistances);
+    printVector(os,"currentMeans",_currentMeans);
+    printVector(os,"currentNormalizations",_currentNormalizations);
+    printVector(os,"currentSigmas",_currentSigmas);
+    printVector(os,"currentT0s",_currentT0s);
+    printVector(os,"currentImpulse",_currentImpulse);
+    printVector(os,"preampToAdc2Response",_preampToAdc2Response);  
+    if( _wPoints.size()>0) {
+      size_t i = _wPoints.size()/2;
+      os << "wPoints midpoint entry ("<<i<<") : " << endl;
+      os << "   distance = " << _wPoints[i]._distance << endl;
+      os << "   mean = " << _wPoints[i]._mean << endl;
+      os << "   normalization = " << _wPoints[i]._normalization << endl;
+      os << "   sigma = " << _wPoints[i]._sigma << endl;
+      os << "   t0 = " << _wPoints[i]._t0 << endl;
+      os << "   tmax = " << _wPoints[i]._tmax[0] << " " 
+	 << _wPoints[i]._tmax[1] << endl;
+      os << "   linmax = " << _wPoints[i]._linmax[0] << " " 
+	 << _wPoints[i]._linmax[1] << endl;
+      printVector(os,"   currentPulse",_wPoints[i]._currentPulse);
+      printVector(os,"   preampResponse",_wPoints[i]._preampResponse);
+      printVector(os,"   adcResponse",_wPoints[i]._adcResponse);
+      printVector(os,"   preampToAdc1Response",_wPoints[i]._preampToAdc1Response);
+    }
+    os << "clusterLookbackTime = " << _clusterLookbackTime << endl;
+    printVector(os,"timeOffsetPanel",_timeOffsetPanel);
+    printVector(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
+    printVector(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
+
+  }
+
+  void StrawElectronics::printVector(std::ostream& os, std::string const& name, 
+				    std::vector<double> const& a) const {
+    size_t n = a.size();
+    if(n<=4) {
+      os << name << " ("<<n<<") = ";
+      for(auto x : a) os << x << " ";
+      os << endl;
+    } else {
+      os << name <<" ("<<n<<") = " 
+	 << a[0] << " " << a[1] << " ... " 
+	 << a[n-2] << " " << a[n-1] << endl;
     }
   }
 

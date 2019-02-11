@@ -142,8 +142,9 @@ namespace mu2e {
        Float_t returnValue = 0.0;
        if (time > 0.0)
        {
+	 const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
 	 static const double norm = _srep.currentToVoltage(StrawElectronics::adc)*
-	 pow(_srep.fallTime(StrawElectronics::adc),-2)/StrawElectronics::_pC_per_uA_ns;
+	 pow(_srep.fallTime(StrawElectronics::adc),-2)/pC_per_uA_ns;
 	 returnValue = time*norm*exp(-time/_srep.fallTime(StrawElectronics::adc));
        }
        return returnValue;
@@ -154,7 +155,8 @@ namespace mu2e {
     // need to fix the normalization FIXME!!!
     Float_t PeakFitFunction::convolvedSinglePeak(const Double_t time, const Double_t sigma) const
     {
-        static const double norm = _srep.currentToVoltage(StrawElectronics::adc)/StrawElectronics::_pC_per_uA_ns;
+	const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
+        static const double norm = _srep.currentToVoltage(StrawElectronics::adc)/pC_per_uA_ns;
         Float_t returnValue = 0.0;
 
         if (sigma <= 0.0)

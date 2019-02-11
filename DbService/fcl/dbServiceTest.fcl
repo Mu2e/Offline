@@ -1,0 +1,32 @@
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : dbTest
+
+services : {
+   message : @local::mf_interactive
+
+   DbService : {
+      purpose :  "TEST"
+      version :  "v1_0"
+      dbName : "mu2e_conditions_prd"
+      #textFile : ["table.txt"]
+      verbose : 1
+   }
+
+}
+
+source: { module_type: RootInput }
+
+physics :{
+   analyzers: {
+      dbTestModule : {
+	 module_type : DbServiceTest
+      }   
+   }
+  ana       : [ dbTestModule ]
+  end_paths : [ ana ]
+
+}
+
+
