@@ -57,7 +57,7 @@ namespace mu2e {
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  
     // fastStart overrides this and starts reading the DB imediately.
-    bool fastStart;
+    bool fastStart = false;
     _config.fastStart(fastStart);
     if (fastStart) {
       // this prepares IOV infrastructure for efficient queries
