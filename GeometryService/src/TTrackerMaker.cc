@@ -8,9 +8,6 @@
 #include "CLHEP/Vector/RotationY.h"
 #include "CLHEP/Vector/RotationZ.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "Alignment/inc/AlignmentMap.hh"
-#include "Alignment/inc/AlignmentObj.hh"
-#include "Alignment/inc/AlignmentService.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "TTrackerGeom/inc/TTracker.hh"
 #include "GeometryService/inc/TTrackerMaker.hh"
@@ -40,10 +37,6 @@ namespace mu2e {
   // from arguments.
   TTrackerMaker::TTrackerMaker( SimpleConfig const& config){
     parseConfig(config);
-
-    // Determine if Alignment is being used and set up
-    myAlignMap = NULL;
-    if( useAlignment) myAlignMap = art::ServiceHandle<AlignmentService>()->alignmentMap();
 
     buildIt( );
 
@@ -133,7 +126,6 @@ namespace mu2e {
 
   void TTrackerMaker::parseConfig( const SimpleConfig& config ){
 
-    useAlignment        = config.getBool("hasAlignment",false);
     _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
     _ttVersion          = config.getInt("TTrackerVersion",3);
 
@@ -639,18 +631,7 @@ namespace mu2e {
 
     double planeDeltaZ = choosePlaneSpacing(ipln);
 
-    // Handle Alignment
-    std::ostringstream tmpName;
-    tmpName << "ttPlane" << ipln;
-    std::string tmpNameS(tmpName.str());
-    AlignmentObj tmpObj;
-    if ( NULL != myAlignMap ) tmpObj = myAlignMap->find(tmpNameS);
-    CLHEP::Hep3Vector alignTranslate(0,0,0);
-    if ( tmpObj.isValid() ) {
-      alignTranslate = tmpObj.displacement();
-    }
-
-    CLHEP::Hep3Vector origin( alignTranslate.x(), alignTranslate.y(), _z0+planeDeltaZ+alignTranslate.z());
+    CLHEP::Hep3Vector origin( 0.0, 0.0, _z0+planeDeltaZ);
 
     auto& planes = _tt->_planes;
 

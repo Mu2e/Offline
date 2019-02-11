@@ -636,19 +636,6 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   //  pnlName << "Panel_" << std::setfill('0') << std::setw(2) << iPlane << "_"
   //	  << std::setw(1) << iPanel;
 
-  // *****************************************
-  // Here we will get Alignment information
-  // AlignmentMap* alignMap = art::ServiceHandle<AlignmentService>()->alignmentMap();
-  // AlignmentSequence tmpSeq = AlignMap->find(panel.name());
-  // unsigned long time = 0; // Need a way to get time?
-  // CLHEP::Hep3Vector alignTrans(0,0,0);
-  // rotation here
-  // if ( tmpSeq.isValid() ) {
-  //    alignTrans = tmpSeq.getAlignment(time).diplacement();
-  //    rotation here
-  // }
-  // Now modify the position vector and rotation with the Alignment info
-  // *********************************************************
 
   int baseCopyNo = iPlane * _ttracker.getPlane(0).nPanels();
 
