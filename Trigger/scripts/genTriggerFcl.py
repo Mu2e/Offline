@@ -49,7 +49,8 @@ def appendEpilog(trig_path, output_file, project_name):
         epilog_fileName  = ""
         if subconfig_exists == False:
 #            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + ".config"
-            epilog_fileName = 'Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + '.fcl' 
+#            epilog_fileName = 'Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + '.fcl' 
+            epilog_fileName = 'Trigger_epilogs/' + trig_path + "/main_"+ filterName + '.fcl' 
         else:
             subconfig_file = open(subconfig_file,"r")
 
