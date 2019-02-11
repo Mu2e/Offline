@@ -16,16 +16,18 @@ from argparse import ArgumentParser
 
 def appendEpilog(trig_path, output_file, project_name):
 
-    trk_filters_DeM = ['TCFilter', 'PosHelixFilter', 'DeMSeedFilter']
-    trk_filters_DeP = ['TCFilter', 'NegHelixFilter', 'DePSeedFilter']
-    trk_filters     = trk_filters_DeM
+    # trk_filters_DeM = ['DeMTCFilter', 'DeMHSFilter', 'DeMTSFilter']
+    # trk_filters_DeP = ['DePTCFilter', 'DePHSFilter', 'DePTSFilter']
+    # trk_filters     = trk_filters_DeM
+    trk_filters = ['TCFilter', 'HSFilter', 'TSFilter']
+    # trk_alg     = "tpr"   
+    # if "cpr" in trig_path:
+    #     trk_alg = "cpr"
+        
+    trk_alg = trig_path
 
-    trk_alg     = "TPR"   
-    if "cpr" in trig_path:
-        trk_alg = "CPR"
-
-    if "DeP" in trig_path:
-        trk_filters = trk_filters_DeP
+    # if "DeP" in trig_path:
+    #     trk_filters = trk_filters_DeP
 
     project_dir = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name
 
@@ -36,43 +38,48 @@ def appendEpilog(trig_path, output_file, project_name):
 
     for i in range(0,len(trk_filters)):
         filterName       = trk_alg+trk_filters[i]
-        subconfig_file   = project_dir + "/inputs/"+trig_path+"_"+filterName+ ".config"
-        subconfig_exists = os.path.isfile(subconfig_file)
+        if os.path.exists(project_dir) == False:
+            os.makedirs(project_dir)
 
+        project_subdir   = project_dir + "/"+trig_path
+        subconfig_file   = project_subdir +"/"+filterName+ ".config"
+
+        subconfig_exists = os.path.isfile(subconfig_file)
 #if the file doesn't exist use the default
+        epilog_fileName  = ""
         if subconfig_exists == False:
-#            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/main_' + trig_path + "_"+ filterName + ".config"
-            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + ".config"
-            
-        subconfig_file = open(subconfig_file,"r")
+#            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + ".config"
+            epilog_fileName = 'Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + '.fcl' 
+        else:
+            subconfig_file = open(subconfig_file,"r")
 
 #check if the subdir for the epilog file exists, otherwise create it
-        epilog_subdir      = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name + '/' + trig_path
-        if os.path.exists(epilog_subdir) == False:
-            os.makedirs(epilog_subdir)
-        print epilog_subdir
+            epilog_subdir      = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name + '/' + trig_path
+            if os.path.exists(epilog_subdir) == False:
+                os.makedirs(epilog_subdir)
+                print epilog_subdir
 
 #create the epilog file
-        epilog_fileName = project_name + '/' + trig_path +'/'+filterName+'.fcl'
-        epilog_file     = open(epilog_fileName,"a")
+                epilog_fileName = project_name + '/' + trig_path +'/'+filterName+'.fcl'
+                epilog_file     = open(epilog_fileName,"a")
 
 #now read the sub-config file
-        for line in subconfig_file:
-            vec_varName  = []
-            vec_varValue = []
-            for t in line.split():
-                try:
-                    vec_varValue.append(float(t))
-                except ValueError:
-                    vec_varName.append(t)
-                    
-            if len(vec_varValue) == 1:
-                new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varValue[0])+ "\n")
-                epilog_file.write(new_line)
-            elif len(vec_varName) == 2:
-                new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varName[1])+ "\n")
-                epilog_file.write(new_line)
-        epilog_file.close()
+                for line in subconfig_file:
+                    vec_varName  = []
+                    vec_varValue = []
+                    for t in line.split():
+                        try:
+                            vec_varValue.append(float(t))
+                        except ValueError:
+                            vec_varName.append(t)
+                            
+                            if len(vec_varValue) == 1:
+                                new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varValue[0])+ "\n")
+                                epilog_file.write(new_line)
+                            elif len(vec_varName) == 2:
+                                new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varName[1])+ "\n")
+                                epilog_file.write(new_line)
+                                epilog_file.close()
 
         epilog=("\n#include \""+epilog_fileName +"\"")
         output_file.write(epilog)
@@ -103,15 +110,15 @@ trig_paths = [
     #path for selecting events with large ammount of strawDigis
     "largeSdCount",
     #path for the calorimeter only trigger
-    "caloOnly",
+    "caloMVACE",
     #path for calorimeter cosmic muon calibration
-    "caloCosmicMuon",
+    "caloCalibCosmic",
     #paths for TrkPatRec downstream e- and e+
-    "tprDeMSeed",
-    "tprDePSeed",
+    "tprSeedDeM",
+    "tprSeedDeP",
     #paths for CalPatRec downstream e- and e+
-    "cprDeMSeed",
-    "cprDePSeed"
+    "cprSeedDeM",
+    "cprSeedDeP"
     ]
 
 trig_prolog_files = [

@@ -140,7 +140,7 @@ physics : {
     
 #    out           : [ readTriggerInfo ]
     
-    out           : [ readTriggerInfo ]
+    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 

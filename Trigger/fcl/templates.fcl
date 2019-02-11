@@ -200,8 +200,8 @@ Trigger : {
 	    SelectEvents : [ unbiased_path, 
 			     minimumbiasSdCount_path,
 			     largeSdCount_path,
-			     caloOnly_path,
-			     tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
+			     caloMVACE_path,
+			     tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
 #	    Compressionlevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -231,7 +231,7 @@ Trigger : {
 	rootoutTrkDem : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dem.root"
-	    SelectEvents : [ tprDeMSeed_path, cprDeMSeed_path ]
+	    SelectEvents : [ tprSeedDeM_path, cprSeedDeM_path ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -241,7 +241,7 @@ Trigger : {
 	rootoutTrkDep : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dep.root"
-	    SelectEvents : [ tprDeP_path, cprDePSeed_path ]
+	    SelectEvents : [ tprDeP_path, cprSeedDeP_path ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
