@@ -175,10 +175,6 @@ namespace mu2e {
 
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& ndigigood, int& ngood, int& nambig) {
       ndigi = 0; ndigigood = 0, ngood = 0, nambig = 0;
-      for (const auto& i_sim : kseedmc.simParticles()) {
-	std::cout << "AE: " << i_sim._pdg << ", " << i_sim._proc << ", " << i_sim._nhits << " " << i_sim._nactive << std::endl;
-	//	ndigi += i_sim._nactive; // number of digis that are active from all sources
-      }
       
       for(size_t i_digi = 0; i_digi < kseedmc._tshmcs.size(); ++i_digi) {
 	const auto& i_tshmc = kseedmc._tshmcs.at(i_digi);
@@ -230,7 +226,9 @@ namespace mu2e {
       const auto& genParticle = primary.primary();
 
       trkinfomcstep._time = genParticle.time(); // TODO
-      trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + genParticle.momentum().py()*genParticle.momentum().py() + genParticle.momentum().pz()*genParticle.momentum().pz());
+      trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + 
+				     genParticle.momentum().py()*genParticle.momentum().py() + 
+				     genParticle.momentum().pz()*genParticle.momentum().pz());
       GeomHandle<DetectorSystem> det;
       trkinfomcstep._pos = det->toDetector(genParticle.position());
 
