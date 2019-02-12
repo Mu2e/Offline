@@ -104,11 +104,14 @@ Reconstruction : {
       simParticleTags : [ "compressDigiMCs" ]
       extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
       timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-      caloShowerStepTags : [ "CaloFix" ]
-      caloShowerSimTag : "CaloFix"
-      caloShowerStepROTag : "CaloFix"
+#      caloShowerStepTags : [ "CaloFix" ]
+#      caloShowerSimTag : "CaloFix"
+#      caloShowerStepROTag : "CaloFix"
+      caloClusterMCTag : "SelectRecoMC"
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      keepAllGenParticles : false
+      crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
     }
   }
   
@@ -191,7 +194,9 @@ Reconstruction : {
 	    "keep mu2e::EventWeight_*_*_*",
 	    "keep mu2e::ProtonBunchIntensity_*_*_*",
 	    "keep *_FindMCPrimary_*_*",
-	    "keep *_SelectRecoMC_*_*" ]
+	    "keep *_SelectRecoMC_*_*",
+	    "keep *_FlagBkgHits_StrawHits_*",
+	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
 }
 # must define this outside the brackets due to internal dependence
 Reconstruction.RecoPath : [
@@ -199,6 +204,7 @@ Reconstruction.RecoPath : [
   @sequence::Reconstruction.CaloRecoSequence,
   @sequence::Reconstruction.TrkRecoSequence,
   @sequence::Reconstruction.CrvRecoSequence ,
+  @sequence::Reconstruction.CrvMCMatchSequence ,
   FindMCPrimary, SelectRecoMC,
   compressRecoMCs ]
 # define trigger path FIXME!

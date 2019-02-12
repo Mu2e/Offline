@@ -168,7 +168,8 @@ BEGIN_PROLOG
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
+#    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
+    CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
