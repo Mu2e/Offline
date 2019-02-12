@@ -144,20 +144,11 @@ namespace mu2e {
 	  int op = co.Panel;
 
 	  int       stationId = os;
-	  int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//CalHelixFinderData::kNFaces;
-	  //	  int       panelId   = op;// + faceId*CalHelixFinderData::kNPanelsPerFace;
-	  //  FaceZ_t*  fz        = &_hfResult._oTracker[faceId];
-	  //	  fz->z               = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	  int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
 	  _hfResult._zFace[faceId] = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-
-	  //	  PanelZ_t* pz        = &fz->panelZs[op];//_hfResult._oTracker[panelId];
-
-	  //	  pz->fPanel = panel;
 	  //-----------------------------------------------------------------------------
 	  // panel caches phi of its center and the z
 	  //-----------------------------------------------------------------------------
-	  // pz->phi    = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
-	  // pz->fNHits = 0;
 	  _hfResult._phiPanel[faceId*FaceZ_t::kNPanels + op] = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
 	}	
       }
@@ -168,12 +159,7 @@ namespace mu2e {
       printf("//     Face      Panel       PHI       Z        //\n");
       printf("//----------------------------------------------//\n");
 
-      //      FaceZ_t*        facez(0);
-      //      PanelZ_t*       panelz(0);
-
       for (int f=0; f<StrawId::_ntotalfaces; ++f){
-	//	facez     = &_hfResult._oTracker[f];
-	//	double z  = facez->z;
 	float z  =_hfResult._zFace[f];
 	for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	  float  phi = _hfResult._phiPanel[f*FaceZ_t::kNPanels + p];
