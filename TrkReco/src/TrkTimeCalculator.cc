@@ -42,7 +42,7 @@ namespace mu2e
     _shBeta(pset.get<double>("StrawHitBeta",1.)),
     _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
     _caloT0Offset(pset.get<double>("CaloT0Offset",-0.4)), // nanoseconds
-    _caloT0Err(pset.get<double>("CaloTimeErr",0.8)) // nanoseconds
+    _caloT0Err(pset.get<double>("CaloTimeErr",0.5)) // nanoseconds
     { }
 
   TrkTimeCalculator::~TrkTimeCalculator() {}

@@ -123,10 +123,14 @@ KFFinal : {
   ambiguityStrategy           : @local::PanelAmbig.Strategy
 # Extend downstream to the calorimeter by default
   DownstreamExtent	      : 3
+  # the following is redundant with the TrkTimeCalculator offset FIXME!
   dtOffset                    : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight            : 1 # unused? FIXME!
   caloHitT0Weight             : 10 # unused? FIXME!
   caloHitError                : 15.0 # mm 
+  T0Calculator  : { 
+    CaloTimeErr : 0.5
+  }
   useTrkCaloHit               : true
   t0window                    : 4.0
   mcTruth                     : 0
