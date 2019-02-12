@@ -154,7 +154,7 @@ namespace mu2e {
      if(tch->isActive())hflag.merge(StrawHitFlag::active);
      if(tch->poca().status().success())hflag.merge(StrawHitFlag::doca);
       caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
-	  tch->poca().doca(), tch->hitErr(), hflag);
+	  tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(), hflag);
     }
 
   // compute the overlap between 2 clusters 

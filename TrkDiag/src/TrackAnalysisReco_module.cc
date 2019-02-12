@@ -127,6 +127,8 @@ namespace mu2e {
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
     art::InputTag _kalSeedMCTag, _caloClusterMCTag;
+    std::vector<int> _entvids, _midvids, _xitvids;
+
     // detailed MC truth for the signal candidate
     TrkInfoMCStep _demcgen;
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
@@ -172,6 +174,11 @@ namespace mu2e {
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
     _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", ""))
   {
+    _midvids.push_back(VirtualDetectorId::TT_Mid);
+    _midvids.push_back(VirtualDetectorId::TT_MidInner);
+    _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
+    _entvids.push_back(VirtualDetectorId::TT_FrontPA);
+    _xitvids.push_back(VirtualDetectorId::TT_Back);
   }
 
   void TrackAnalysisReco::beginJob( ){
@@ -314,9 +321,9 @@ namespace mu2e {
 	    auto const& dekseedmc = *(iksmca->second);
 
 	    TrkMCTools::fillTrkInfoMC(dekseedmc, dekseed, _demc);
-	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, VirtualDetectorId::TT_FrontHollow); // TODO
-	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, VirtualDetectorId::TT_Mid); // TODO
-	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, VirtualDetectorId::TT_Back); // TODO
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
 
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary); // TODO
 	    if (_diag>1) {

@@ -101,6 +101,7 @@ KFSeed : {
   dtOffset                        : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight                : 1
   caloHitT0Weight                 : 10
+  caloHitError                    : 15.0 # mm 
   mcTruth                         : 0
 }
 
@@ -109,7 +110,6 @@ KFFinal : {
   materialCorrection          : true
   fieldCorrection	      : true
   initT0		      : false
-  useTrkCaloHit               : false
   ResolveAfterWeeding	      : false
   # time external error, assuming s drift velocity of 62.5 #mu m / ns
 #  hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
@@ -126,6 +126,7 @@ KFFinal : {
   dtOffset                    : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight            : 1 # unused? FIXME!
   caloHitT0Weight             : 10 # unused? FIXME!
+  caloHitError                : 15.0 # mm 
   useTrkCaloHit               : true
   t0window                    : 4.0
   mcTruth                     : 0

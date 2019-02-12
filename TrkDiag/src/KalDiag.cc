@@ -421,10 +421,9 @@ namespace mu2e
       tchinfo._doca = -100.0;
     tchinfo._t0 = tch->hitT0().t0();
     tchinfo._t0err = tch->hitT0().t0Err();
-    tchinfo._ct = tch->caloCluster().time();
+    tchinfo._ct = tch->time() - tch->timeOffset();
+    tchinfo._cterr = tch->timeErr();
     tchinfo._edep = tch->caloCluster().energyDep();
-    Hep3Vector tdir = tch->trkTraj()->direction(tchinfo._trklen);
-    tchinfo._cdot = tdir.dot(Hep3Vector(0.0,0.0,1.0));
   }
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, const KalRep* krep,

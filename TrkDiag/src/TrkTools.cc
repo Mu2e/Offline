@@ -253,20 +253,19 @@ namespace mu2e {
 	else {
 	  tchinfo._doca = -100.0;
 	}
+	// add the propagation time offsetA
 	tchinfo._t0 = tch.t0().t0();
 	tchinfo._t0err = tch.t0().t0Err();
-	tchinfo._ct = cc->time();
+	tchinfo._ct = tch.time(); // time used to constrain T0 by this hit: includes the 'propagation time' offset
+	tchinfo._cterr = tch.timeErr();
 	tchinfo._edep = cc->energyDep();
 	// transform cog to tracker coordinates; requires 2 steps.  This is at the front
 	// of the disk
 	XYZVec cpos = Geom::toXYZVec(calo.geomUtil().mu2eToTracker(calo.geomUtil().diskToMu2e(cc->diskId(),cc->cog3Vector())));
-	// add the cluster length (relative to the front face)
-	cpos.SetZ(cpos.z() + tch.hitLen());
+	// move to the front face and 
+	// add the cluster length (relative to the front face).  crystal size should come from geom FIXME!
+	cpos.SetZ(cpos.z() -200.0 + tch.hitLen());
 	tchinfo._poca = cpos;
-	// get the segment at the end, and use that to compute the direction dot product (crystal is always along z)
-	auto const& cseg = kseed.segments().back();
-	float td = cseg.helix().tanDip();
-	tchinfo._cdot = std::copysign(1.0/sqrt(1.0+td*td),td);
       }
     }
 

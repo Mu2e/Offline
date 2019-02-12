@@ -248,7 +248,8 @@ namespace mu2e {
       trkinfomcstep._hpar = helixpar(parvec);
     }
 
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const VirtualDetectorId::enum_type& vid) {
+    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,
+      std::vector<int> const& vids) {
 
       GeomHandle<BFieldManager> bfmgr;
       GeomHandle<DetectorSystem> det;
@@ -258,20 +259,22 @@ namespace mu2e {
 
       const auto& mcsteps = kseedmc._vdsteps;
       for (const auto& i_mcstep : mcsteps) {
-	if (i_mcstep._vdid == vid) {
-	  trkinfomcstep._time = i_mcstep._time;
-	  trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
-	  trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
+	for(auto vid : vids) {
+	  if (i_mcstep._vdid == vid) {
+	    trkinfomcstep._time = i_mcstep._time;
+	    trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
+	    trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
 
-	  CLHEP::HepVector parvec(5,0);
-	  double hflt(0.0);
-	  HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
-	  CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
-	  double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
-	  TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
-	  trkinfomcstep._hpar = helixpar(parvec);
+	    CLHEP::HepVector parvec(5,0);
+	    double hflt(0.0);
+	    HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
+	    CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
+	    double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
+	    TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
+	    trkinfomcstep._hpar = helixpar(parvec);
 
-	  break; // only do one step, don't want to keep overwriting
+	    break; // only do one step, don't want to keep overwriting
+	  }
 	}
       }
     }

@@ -16,18 +16,17 @@ namespace mu2e
     Float_t _clen;    // length along the crystal from the front face
     Float_t _doca;	// DOCA of this hit
     Float_t _t0, _t0err;  // Estimated time the particle passed the POCA of this hit (and error).  Note this is mass hypothesis dependent
-    Float_t _ct;    // reconstructed time (including drift time) of the associated cluster
-    Float_t _cdot;    // dot-product of the track direction at POCA with the crystal axi
+    Float_t _ct, _cterr;    // reconstructed time (including propagation time)
     Float_t _edep;    // reconstructed crystal energy deposition
     TrkCaloHitInfo() : _active(false),_did(-1),
     _trklen(-1000.0), _clen(-1000.0),
     _doca(-1000.0), _t0(-1000.0), _t0err(-1000.0),
-    _ct(-1000.0), _cdot(-1000.0), _edep(-1000.0)  {}
+    _ct(-1000.0), _cterr(-1000.0), _edep(-1000.0)  {}
     void reset() { *this = TrkCaloHitInfo(); }
     static std::string const& leafnames() { 
       static const std::string leaves = 
 	std::string("active/I:disk/I:POCAx/F:POCAy/F:POCAz/F:") +
-	std::string("trklen/F:clen/F:doca/F:t0/F:t0err/F:ctime/F:cdot/F:edep/F");
+	std::string("trklen/F:clen/F:doca/F:t0/F:t0err/F:ctime/F:cterr/F:edep/F");
       return leaves;
     }
   };
