@@ -144,6 +144,10 @@ namespace mu2e
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
     TH1F _hphi;
     unsigned _ntripleMin, _ntripleMax;
+    unsigned _initFZNBins;
+    float    _initFZMinL, _initFZMaxL, _initFZStepL;
+    unsigned _fitFZNBins;
+    float    _fitFZMinL, _fitFZMaxL, _fitFZStepL;
   };
 }
 #endif

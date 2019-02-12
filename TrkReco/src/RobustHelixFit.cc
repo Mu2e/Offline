@@ -89,7 +89,15 @@ namespace mu2e
     _rwind(pset.get<float>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
     _ntripleMin(pset.get<unsigned>("ntripleMin",5)),
-    _ntripleMax(pset.get<unsigned>("ntripleMax",500))
+    _ntripleMax(pset.get<unsigned>("ntripleMax",500)),
+    _initFZNBins(pset.get<unsigned>("initFZNBins",25)),
+    _initFZMinL(pset.get<float>("initFZMinLambda",30.)),
+    _initFZMaxL(pset.get<float>("initFZMaxLambda",530.)),
+    _initFZStepL(pset.get<float>("initFZStepLambda",20.)),
+    _fitFZNBins(pset.get<unsigned>("fitFZNBins",125)),
+    _fitFZMinL(pset.get<float>("fitFZMinLambda",10.)),
+    _fitFZMaxL(pset.get<float>("fitFZMaxLambda",510.)),
+    _fitFZStepL(pset.get<float>("fitFZStepLambda",4.))
   {
     float minarea(pset.get<float>("minArea",5000.0));
     _minarea2 = minarea*minarea;
@@ -287,11 +295,11 @@ namespace mu2e
     ComboHit*      hitP1(0), *hitP2(0);
     uint16_t       facezF1(0), facezF2(0);
     int            nHits(HelixData._chHitsToProcess.size());
-    float          minX(30);
-    float          maxX(530);
-    float          stepX(20);
-    int            hist[25] = {0};
-    int            nbins(25);
+    // float          minX(30);
+    // float          maxX(530);
+    // float          stepX(20);
+    int            hist[_initFZNBins] = {0};
+    // int            nbins(25);
     int            wg      = 1;
     unsigned       counter = 0;
     int            dbin_min(2); // doesn't allow to fill in two consecutive iterations two bins close to each other
@@ -330,13 +338,13 @@ namespace mu2e
 		   counter, dzdphisign, dphiloop, dphi_n, dz, lambda);
 	  }
 	  
-	  if (lambda*dzdphisign >= maxX) {
+	  if (lambda*dzdphisign >= _initFZMaxL) {
 	    continue;
-	  }else if (lambda*dzdphisign <= minX){
+	  }else if (lambda*dzdphisign <= _initFZMinL){
 	    break;
 	  }
 	  
-	  bin = (lambda*dzdphisign-minX)/stepX;
+	  bin = (lambda*dzdphisign-_initFZMinL)/_initFZStepL;
 	  if ( (bin_last > 0) && (bin_last - bin <= dbin_min))          continue; 
 
 	  if (_debug > 0) {
@@ -360,18 +368,16 @@ namespace mu2e
     //-----------------------------------------------------------------------------
     // the 'histogram' is filled, find a peak
     //-----------------------------------------------------------------------------
-    //    int ixmax = int(maxX-minX/stepX);
-
-    double swmax(0), sw, xmp(0);
+    float swmax(0), sw, xmp(0);
 
     if (_debug > 0) {
       printf("[RobustHelixFinder::initFZ:PEAK_SEARCH]   dzdphisign   counter  ix   hist[ix]   sw\n");
     }
     
-    for (int ix=0; ix<nbins-2; ix++) {
+    for (unsigned ix=0; ix<_initFZNBins-2; ix++) {
       sw = (hist[ix]+hist[ix+1]+hist[ix+2]);
       if (sw > swmax) { 
-	xmp = minX + (stepX*(ix+0.5)*hist[ix] + stepX*(ix+1+0.5)*hist[ix+1]+ stepX*(ix+2+0.5)*hist[ix+2])/sw;
+	xmp = _initFZMinL + (_initFZStepL*(ix+0.5)*hist[ix] + _initFZStepL*(ix+1+0.5)*hist[ix+1]+ _initFZStepL*(ix+2+0.5)*hist[ix+2])/sw;
 	swmax = sw;
       }
       if (_debug > 0) {
@@ -721,11 +727,11 @@ namespace mu2e
     else if (rhel.helicity()._value == Helicity::poshel) {
       dzdphisign = 1.;
     }
-    float          minX(10);
-    float          maxX(510);//500
-    float          stepX(4); //10
-    int            hist[125] = {0};// 49
-    int            nbins(125);     // 49
+    // float          minX(10);
+    // float          maxX(510);//500
+    // float          stepX(4); //10
+    int            hist[_fitFZNBins] = {0};// 49
+    // int            nbins(125);     // 49
 
     //iterate over lambda and loop resolution
     unsigned niter(0);
@@ -742,7 +748,7 @@ namespace mu2e
 	int            counter = 0;
 
 	//reset the array
-	for (int i=0; i<nbins; ++i) hist[i]=0;
+	for (unsigned i=0; i<_fitFZNBins; ++i) hist[i]=0;
 
 	for (int f1=0; f1<nHits-1; ++f1){
 	  hitP1 = &HelixData._chHitsToProcess[f1];
@@ -762,11 +768,11 @@ namespace mu2e
 	    float lambda = dz/dphi;
 	    if(goodLambda(rhel.helicity(),lambda)){
 	      
-	      int bin = (lambda*dzdphisign-minX)/stepX;
-	      if (lambda*dzdphisign >= maxX) {
+	      int bin = (lambda*dzdphisign-_fitFZMinL)/_fitFZStepL;
+	      if (lambda*dzdphisign >= _fitFZMaxL) {
 		continue;
 	      }
-	      else if (lambda*dzdphisign <= minX){
+	      else if (lambda*dzdphisign <= _fitFZMinL){
 		break;
 	      }
 	      hist[bin] += wg;
@@ -778,23 +784,23 @@ namespace mu2e
 	}//end first loop over faces
 
 	//	rhel._lambda = extract_result<tag::weighted_median>(accf);
-	double swmax(0), sw(0), xmp(0);
-	int    binsToIntegrate(10);
+	float       swmax(0), sw(0), xmp(0);
+	unsigned    binsToIntegrate(10);
 	if (_debug > 0) {
 	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   dzdphisign   counter  ix   hist[ix]   sw\n");
 	}
-	for (int ix=0; ix<nbins-binsToIntegrate; ix++) {
+	for (unsigned ix=0; ix<_fitFZNBins-binsToIntegrate; ix++) {
 	  sw  = 0;
-	  for (int l=0; l<binsToIntegrate; ++l){
+	  for (unsigned l=0; l<binsToIntegrate; ++l){
 	    sw += hist[ix+l];
 	  }
 	  if (sw > swmax) { 
 	    xmp = 0;
-	    for (int l=0; l<binsToIntegrate; ++l){
-	      xmp = xmp + stepX*(ix + l + 0.5)*hist[ix+l];
+	    for (unsigned l=0; l<binsToIntegrate; ++l){
+	      xmp = xmp + _fitFZStepL*(ix + l + 0.5)*hist[ix+l];
 	    }
 	    xmp  /= sw;
-	    xmp  += minX;
+	    xmp  += _fitFZMinL;
 	    swmax = sw;
 	  }
 	  if (_debug > 0) {
