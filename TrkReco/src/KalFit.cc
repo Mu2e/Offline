@@ -1,4 +1,4 @@
-//
+ //
 // Class to perform BaBar Kalman fit
 // Original author: Dave Brown LBNL 2012
 //
@@ -372,9 +372,15 @@ namespace mu2e
     TrkErrCode fitstat;
     for(size_t iherr=0;iherr < _herr.size(); ++iherr) {
       fitstat = fitIteration(kalData,iherr);
-      if(_debug > 0) cout << "Iteration " << iherr 
-      << " NDOF = " << kalData.krep->nDof() 
-      << " Fit Status = " <<  fitstat << endl;
+      if(_debug > 0) { 
+	cout << "Iteration " << iherr 
+	     << " NDOF = " << kalData.krep->nDof() 
+	     << " Fit Status = " <<  fitstat << endl;
+
+	char msg[200];
+        sprintf(msg,"KalFit::fitTrack Iteration = %2li success = %i",iherr,fitstat.success());
+	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
+      }
       if(!fitstat.success())break;
     }
     return fitstat;

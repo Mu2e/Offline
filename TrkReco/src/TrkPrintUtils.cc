@@ -12,6 +12,7 @@
 #include "BTrk/TrkBase/HelixParams.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 //CLHEP
 
 #include "CLHEP/Vector/ThreeVector.h"
@@ -65,12 +66,12 @@ namespace mu2e {
     int    nhits = Trk->hitVector().size();
 
     if ((opt == "") || (opt.find("banner") != kNotFound)) {
-      printf("---------------------------------------------------------------------------------");
-      printf("-----------------------------------------------------\n");
-      printf("  TrkID       Address    N  NA      P       pT     costh    T0      T0Err   Omega");
-      printf("      D0       Z0      Phi0   TanDip    Chi2    FCons\n");
-      printf("---------------------------------------------------------------------------------");
-      printf("-----------------------------------------------------\n");
+      printf("-----------------------------------------------------------------------------------------");
+      printf("-----------------------------------------------------------------\n");
+      printf("  TrkID       Address    N  NA      P       pT     momerr  costh    T0      T0Err   Omega");
+      printf("      D0       Z0       Phi0   TanDip    Chi2  MeanRes      FCons\n");
+      printf("-----------------------------------------------------------------------------------------");
+      printf("-----------------------------------------------------------------\n");
     }
 
     if ((opt == "") || (opt.find("data") != kNotFound)) {
@@ -80,6 +81,15 @@ namespace mu2e {
       trk_mom          = Trk->momentum(h1_fltlen);
       double mom       = trk_mom.mag();
       double pt        = trk_mom.perp();
+
+      BbrVectorErr      merr   = Trk->momentumErr(h1_fltlen);
+      CLHEP::Hep3Vector momdir = trk_mom.unit();
+
+      CLHEP::HepVector momvec(3);
+      for (int i=0; i<3; i++) momvec[i] = momdir[i];
+    
+      double momerr    = sqrt(merr.covMatrix().similarity(momvec));
+
       double costh     = trk_mom.cosTheta();
       double chi2      = Trk->chisq();
       int    nhits     = Trk->hitVector().size();
@@ -102,37 +112,54 @@ namespace mu2e {
       double fit_consistency = Trk->chisqConsistency().consistency();
       int q         = Trk->charge();
 
-      printf("%5i %16p %3i %3i %8.3f %7.3f %8.4f %7.3f %7.4f",
+      double sr2 (0);
+
+      for (int i=0; i<nhits; ++i) {
+	const TrkStrawHit* hit = dynamic_cast<TrkStrawHit*> (Trk->hitVector().at(i));
+	if ((hit == nullptr) || (! hit->isActive())) continue;
+//------------------------------------------------------------------------------
+// this is an active track straw hit
+//-----------------------------------------------------------------------------
+	double res, sigres;
+	bool hasres = hit->resid(res, sigres, true);
+	if (hasres) {
+	  sr2 += res*res;
+	}
+      }
+
+      double mean_res = sqrt(sr2/nactive);
+
+      printf("%5i %16p %3i %3i %8.3f %7.3f  %8.4f %8.4f %7.3f %7.4f",
 	     -1,
 	     Trk,
 	     nhits,
 	     nactive,
-	     q*mom,pt,costh,t0,t0err
+	     q*mom,pt,momerr,costh,t0,t0err
 	     );
       
       printf(" %8.5f %8.3f %8.3f %8.4f %7.4f",omega,d0,z0,phi0,tandip
 	     );
-      printf(" %8.3f %10.3e\n",chi2,fit_consistency);
+      printf(" %8.3f %7.4f %10.3e\n",chi2,mean_res,fit_consistency);
     }
 
     if (opt.find("hits") == kNotFound) return;
 //-----------------------------------------------------------------------------
 // print detailed information about the track hits
 //-----------------------------------------------------------------------------
-    printf("--------------------------------------------------------------------");
+    printf("----------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
-    printf("-------------------------------------------------------------------------\n");
-    printf("  ih  SId  Flag      A     len         x        y        z      HitT     HitDt");
-    printf(" Pl Pn  L  W     T0       Xs      Ys        Zs      resid  sigres");
-    printf("   Rdrift   mcdoca  totErr rdrErr  t0Err penErr extErr  vinst\n");
-    printf("------------------------------------------------------------------------------");
+    printf("------------------------------------------------------------------------\n");
+    printf("  ih  SId     Flag    A    len         x        y        z      HitT  ");
+    printf(" Pl Pn L  W     T0       Xs      Ys        Zs      resid  sigres");
+    printf("   Rdrift   mcdoca  totErr rdrErr  t0Err penErr extErr  vinst      simID\n");
+    printf("----------------------------------------------------------------------");
     printf("----------------------------------------------------------------");
-    printf("---------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------------\n");
 
-    mu2e::TrkStrawHit     *hit;
+    TrkStrawHit          *hit;
     CLHEP::Hep3Vector     pos;
-    const mu2e::ComboHit  *sh;
-    const mu2e::Straw     *straw;
+    const ComboHit        *sh;
+    const Straw           *straw;
     int                   ihit;
     double                len;
     HepPoint              plen;
@@ -165,17 +192,17 @@ namespace mu2e {
 	double mcdoca = _mcUtils->mcDoca       (AnEvent,hit); // loc,straw);
 
 	ihit += 1;
-	printf("%4i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f %7.3f",
+	printf("%4i %5i 0x%08x %1i %9.3f %8.3f %8.3f %9.3f %8.3f",
 	    ihit,
 	    straw->id().asUint16(),
 	    hit->hitFlag(),
 	    hit->isActive(),
 	    len,
 	    plen.x(),plen.y(),plen.z(),
-	    sh->time(), -1.
+	    sh->time()
 	    );
 
-	printf(" %2i %2i %2i %2i",
+	printf(" %2i %2i %1i %2i",
 	    straw->id().getPlane(),
 	    straw->id().getPanel(),
 	    straw->id().getLayer(),
