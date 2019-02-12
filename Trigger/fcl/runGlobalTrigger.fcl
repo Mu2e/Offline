@@ -101,7 +101,7 @@ physics : {
     analyzers : {  
 
 	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 35
+	    nFilters      : 70
 	    nTrackTriggers: 5
 	    SelecEvents   : [ unbiased_path, 
 			      minimumbiasSdCount_path,
@@ -138,8 +138,9 @@ physics : {
     #merger of the TriggerInfo
     zzTrigIfnoMerger_path        : [ triggerInfoMerger ] 
     
-#    out           : [ readTriggerInfo ]
+#    out           : [ triggerOutput ]
     
+
     out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }

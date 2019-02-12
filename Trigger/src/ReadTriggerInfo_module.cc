@@ -35,6 +35,7 @@
 #include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
@@ -211,6 +212,7 @@ namespace mu2e {
     int             _nTrackTrig;
     int             _nCaloTrig;
     int             _nCaloCalibTrig;
+    art::InputTag   _trigAlgTag;
     art::InputTag   _sdMCTag;
     art::InputTag   _sdTag;
     art::InputTag   _chTag;    
@@ -249,10 +251,11 @@ namespace mu2e {
   ReadTriggerInfo::ReadTriggerInfo(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset), 
     _diagLevel     (pset.get<int>   ("diagLevel", 0)),
-    _nMaxTrig      (pset.get<size_t>("nFilters", 50)),
+    _nMaxTrig      (pset.get<size_t>("nFilters", 70)),
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
     _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
+    _trigAlgTag    (pset.get<art::InputTag>("triggerAlgMerger"     , "triggerInfoMerger")),
     _sdMCTag       (pset.get<art::InputTag>("strawDigiMCCollection", "compressDigiMCs")),
     _sdTag         (pset.get<art::InputTag>("strawDigiCollection"  , "makeSD")),
     _chTag         (pset.get<art::InputTag>("comboHitCollection"   , "TTmakeSH")),
@@ -301,6 +304,8 @@ namespace mu2e {
 
     Hist._hTrigInfo[10]  = trigInfoDir.make<TH1F>("hTrigInfo_unique_all", "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._hTrigInfo[11]  = trigInfoDir.make<TH1F>("hTrigInfo_unique"    , "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
+    Hist._hTrigInfo[15]  = trigInfoDir.make<TH1F>("hTrigInfo_paths"     , "Rejection of all the Trigger paths"         , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
 
 
     Hist._h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map from all filters"   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
@@ -687,7 +692,15 @@ namespace mu2e {
 
     std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
     event.getManyByType(hTrigInfoVec);
-    
+
+    //get the TriggerAlg from the Event
+    art::Handle<mu2e::TriggerAlg> trigAlgH;
+    event.getByLabel(_trigAlgTag, trigAlgH);
+    const mu2e::TriggerAlg*       trigAlg(0);
+    if (trigAlgH.isValid()){
+      trigAlg = trigAlgH.product();
+    }
+
     //get the strawDigiMC truth if present
     art::Handle<mu2e::StrawDigiMCCollection> mcdH;
     event.getByLabel(_sdMCTag, mcdH);
@@ -722,6 +735,16 @@ namespace mu2e {
     if (cdH.isValid()) {
       cdCol = cdH.product();
     }
+
+    if (trigAlg != 0) {
+      if (trigAlg->hasAnyProperty(TriggerAlg::caloCalibCosmic)) _sumHist._hTrigInfo[15]->Fill(0.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::caloMVACE))       _sumHist._hTrigInfo[15]->Fill(1);
+      if (trigAlg->hasAnyProperty(TriggerAlg::tprSeedDeM))      _sumHist._hTrigInfo[15]->Fill(2.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::tprSeedDeP))      _sumHist._hTrigInfo[15]->Fill(3.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::cprSeedDeM))      _sumHist._hTrigInfo[15]->Fill(4.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::cprSeedDeP))      _sumHist._hTrigInfo[15]->Fill(5.);
+    }
+
     
     //fill the general occupancy histogram
     fillOccupancyInfo   (_nTrackTrig+_nCaloTrig, sdCol, cdCol, _occupancyHist);
