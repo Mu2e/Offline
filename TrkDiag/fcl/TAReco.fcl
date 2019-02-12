@@ -9,6 +9,7 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
+#include "JobConfig/reco/prolog.fcl"
 
 process_name : TrkAnaDigis
 
@@ -19,49 +20,31 @@ services : @local::Services.Reco
 physics :
 {
   producers : {
-    @table::TrkAna.producers
-    # calo fix: only need for MDC2018e and earlier
-    CaloFix : { @table::DigiCompression.CaloFix 
-      	caloShowerStepTags : [ "compressDigiMCs" ]
-	caloShowerSimTag : "compressDigiMCs"
-	caloShowerStepROTag : "compressDigiMCs"
-    }
-    FindMCPrimary : { @table::CommonMC.FindMCPrimary }
-    SelectRecoMC : { 
-      @table::CommonMC.SelectRecoMC 
-       CSSCollection : "compressDigiMCs"
-       CaloClusterMCDTime : 2.0
-       CaloMinE : 1.0
-       TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-#debugLevel : 2
-       PrimaryParticle : "FindMCPrimary"
-       CaloClusterCollection : "CaloClusterFromProtoCluster"
-       CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
-       StrawDigiMCCollection : "compressDigiMCs"
-       CrvDigiMCCollection : "compressDigiMCs"
-       KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
-"KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
-      VDSPCollection : "compressDigiMCs:virtualdetector"
-    }
+    @table::Reconstruction.producers
+    TrkQualDeM : @local::TrkQualDeM
   }
-  analyzers :  {
+  filters : @local::Reconstruction.filters
+  analyzers: {
+    @table::Reconstruction.analyzers
     @table::TrkAna.analyzers
-    @table::TrkDiag.analyzers
   }
+#  RecoPath : [ @sequence::Reconstruction.RecoPath ]
+  RecoPath : [ @sequence::Reconstruction.RecoPath, TrkQualDeM ]
+  EndPath : [ RecoCheck, TrkAnaReco  ]
 }
+# use TrkPatRec
+physics.producers.KSFDeM.SeedCollection : "HelixFindere:Positive"
+physics.producers.KSFDeP.SeedCollection : "HelixFindere:Negative"
+physics.producers.KSFDmuM.SeedCollection : "HelixFinderMu:Positive"
+physics.producers.KSFDmuP.SeedCollection : "HelixFinderMu:Negative"
 
-physics.TrkAnaTriggerPath : [ CaloFix, 
-  @sequence::TrkAna.CaloRecoSequence,
-  @sequence::TrkAna.TrkRecoSequence, 
-  @sequence::TrkAna.CrvRecoSequence,
-  FindMCPrimary, SelectRecoMC ]
-physics.TrkAnaEndPath : [ TrkAnaReco, genCountLogger ]
-
-physics.producers.SelectRecoMC.debugLevel : 1
+#physics.producers.SelectRecoMC.debugLevel : 1
 
 services.TFileService.fileName: "nts.owner.trkanareco.version.sequencer.root"
 physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
 physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 
+#include "JobConfig/reco/epilog.fcl"
+#
 #physics.producers.SelectRecoMC.debugLevel : 3
 

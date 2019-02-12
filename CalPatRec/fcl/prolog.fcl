@@ -162,7 +162,8 @@ CalPatRec : { @table::CalPatRec
 	dtOffset                          : @local::TrackCaloMatching.DtOffset
 	strawHitT0Weight                  : 1
 	caloHitT0Weight                   : 10
-	
+        caloHitError                    : 15.0 # mm 
+		
 	DivergeFlt                        : 1000.            #  default: 1000.
 #	RdriftMinusDocaTol                      : 1.
 #	daveMode                                : 0
@@ -216,6 +217,7 @@ CalPatRec : { @table::CalPatRec
 	useTrkCaloHit                           : false
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
+	caloHitError				: 15.0 # mm 
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
@@ -301,7 +303,8 @@ CalPatRec : { @table::CalPatRec
 	mcUtils                                 : { tool_type : "TrkPatRecMcUtils" 
 	    strawDigiMCCollTag : "compressDigiMCs"
 	}
-    }
+	caloHitError                    : 15.0 # mm 
+      }
 }
 #------------------------------------------------------------------------------
 #  module
