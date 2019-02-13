@@ -38,7 +38,9 @@ namespace mu2e
 
     bool                                HasMCInfo() const                {return _hasMCInfo;}
     const std::vector<PulseInfo>       &GetPulses() const                {return _pulses;}
+    std::vector<PulseInfo>             &GetModifiablePulses()            {return _pulses;} // so we can update SimPtrs during compression
     const art::Ptr<SimParticle>        &GetMostLikelySimParticle() const {return _mostLikelySimParticle;}
+    void          SetMostLikelySimParticle(art::Ptr<SimParticle> simPtr) { _mostLikelySimParticle = simPtr; } // so we can update SimPtrs during compression
     double                              GetTotalEnergyDeposited() const  {return _totalEnergyDeposited;}
     double                              GetEarliestHitTime() const       {return _earliestHitTime;}
     const CLHEP::Hep3Vector            &GetEarliestHitPos() const        {return _earliestHitPos;}

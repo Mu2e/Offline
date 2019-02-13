@@ -55,7 +55,7 @@ namespace mu2e
       _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:con/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
+    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
      return leaves;
     }
   };
@@ -70,10 +70,11 @@ namespace mu2e
     Int_t _pdg, _gen, _proc; // true PDG code, generator code, and process code of the primary particle
     Int_t _ppdg, _pgen, _pproc; // PDG code, generator code and process code of the parent particle of the primary particle
     Float_t _pmom; // true initial momentum of the parent of the primary particle
+    Int_t _prel; // relationship if this tracks primary particle to the event primary
     TrkInfoMC() { reset(); }
-    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _pgen = _pproc = -1; _pmom=-1.0; }
+    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _pgen = _pproc = -1; _pmom=-1.0; _prel = -1; }
     static std::string leafnames() { static std::string leaves; leaves =
-      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:pgen/I:pproc/I:pmom/F");
+      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:pgen/I:pproc/I:pmom/F:prel/I");
       return leaves;
     }
   };

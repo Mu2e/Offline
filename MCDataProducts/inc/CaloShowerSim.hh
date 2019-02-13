@@ -61,7 +61,7 @@ namespace mu2e {
             double        energyMC_;
             double        pIn_;
    };
-
+   typedef std::vector<mu2e::CaloShowerSim> CaloShowerSimCollection;
 } 
 
 #endif

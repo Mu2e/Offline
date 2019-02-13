@@ -27,6 +27,7 @@ int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hCCdisk = tfs.make<TH1D>( "CCdisk","Calo Disk",2,-0.5,1.5);
   _hCCEoverP = tfs.make<TH1D>( "CCEoverP","Calo E Over Track P",100,0.0,1.5);
   _hCCDt0 = tfs.make<TH1D>( "CCDt0","Calo t0 - Track t0",100,-1.0,25.0);
+  _hCCDt = tfs.make<TH1D>( "CCDt","Calo time residual",100,-5.0,5.0);
   _hCCDOCA = tfs.make<TH1D>("CCDOCA","Calo DOCA to Track",100,-100.0,100.0);
   _hCChlen = tfs.make<TH1D>("CChlen","Calo POCA Depth",100,-100.0,500.0);
   _hCCtlen = tfs.make<TH1D>("CCtlen","Calo POCA Track Length",100,1000.0,5000.0);
@@ -50,7 +51,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(2.0);
+  _hVer->Fill(3.0);
 
   // p of highest momentum electron SimParticle with good tanDip
   double p_mc = mcTrkP(event);
@@ -140,6 +141,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
       double p = ss.mom();
       _hCCEoverP->Fill(ks.caloCluster()->energyDep()/p);
       _hCCDt0->Fill(chs.t0().t0()-t0);
+      _hCCDt->Fill(chs.caloCluster()->time()-chs.t0().t0());
       _hCCDOCA->Fill(chs.clusterAxisDOCA());
       _hCChlen->Fill(chs.hitLen());
       _hCCtlen->Fill(chs.trkLen());

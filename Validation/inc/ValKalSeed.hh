@@ -46,6 +46,7 @@ namespace mu2e {
     TH1D* _hCCdisk;
     TH1D* _hCCEoverP;
     TH1D* _hCCDt0;
+    TH1D* _hCCDt;
     TH1D* _hCCDOCA;
     TH1D* _hCChlen;
     TH1D* _hCCtlen;
