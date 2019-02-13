@@ -7,19 +7,4 @@
 //
 // Original author G. Pezzullo & G. Tassielli
 //
-
-
-#ifndef RecoDataProducts_CaloClusterCollection_hh
-#define RecoDataProducts_CaloClusterCollection_hh
-
-
-
-#include <vector>
-
 #include "RecoDataProducts/inc/CaloCluster.hh"
-
-namespace mu2e {
-  typedef std::vector<mu2e::CaloCluster> CaloClusterCollection;
-}
-
-#endif /* RecoDataProducts_CaloClusterCollection_hh */

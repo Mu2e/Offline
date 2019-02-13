@@ -11,7 +11,7 @@ double DAQParams.t0 = 700.;
 
 // Accelerator parameters
 double acceleratorParams.deBuncherPeriod   = 1695. ; // ns
-double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1
+//double acceleratorParams.intrinsicExt      = 1.64e-5; // S. Werkema, docdb-4044-v1  No longer used!  comes from pulses below
 double acceleratorParams.limitingHalfWidth = 125.  ; // ns, "" 
 
 string acceleratorParams.potPulse  = "ConditionsService/data/potTimingDistribution_20160511.txt";

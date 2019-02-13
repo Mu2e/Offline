@@ -26,7 +26,10 @@
 #include "DataProducts/inc/ExtMonFNALModuleId.hh"
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "DataProducts/inc/ExtMonFNALPixelId.hh"
+
+// General
 #include "DataProducts/inc/IndexMap.hh"
+#include "DataProducts/inc/VirtualDetectorId.hh"
 
 // trigger
 #include "DataProducts/inc/EventWindowMarker.hh"

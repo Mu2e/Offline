@@ -11,6 +11,7 @@
 #include "TrkDiag/inc/helixpar.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawMatInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 // data
@@ -32,6 +33,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // Mu2e tracking
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 #include "TrkReco/inc/TrkDef.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -97,6 +99,7 @@ namespace mu2e
 // hit information
     void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos) const;
     void fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const;
+    void fillCaloHitInfo(const TrkCaloHit* tsh,TrkCaloHitInfo& tshinfo) const;
     void fillMatInfo(const KalRep* krep, std::vector<TrkStrawMatInfo>& hitinfos) const;
     bool fillMatInfo(const KalMaterial* ,TrkStrawMatInfo& tshinfo) const;
     void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc) const;

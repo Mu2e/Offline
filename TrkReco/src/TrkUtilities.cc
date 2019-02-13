@@ -13,6 +13,7 @@
 #include "RecoDataProducts/inc/TrkStraw.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "RecoDataProducts/inc/TrkCaloHitSeed.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"
@@ -106,7 +107,7 @@ namespace mu2e {
       tstraws.clear();
       // get material sites from the KalRep
       for(auto isite : krep->siteList()){
-	if(isite->isActive()  && isite->kalMaterial() != 0) {
+	if(isite->kalMaterial() != 0) {
 	  const KalMaterial* kmat = isite->kalMaterial();
 	  const DetStrawElem* detstraw = dynamic_cast<const DetStrawElem*>(kmat->detElem());
 	  if(detstraw != 0){
@@ -119,26 +120,29 @@ namespace mu2e {
 	      poca.flt2(),  // not stored in KalMaterial, FIXME!
 	      kmat->detIntersection().pathLength(),
 	      kmat->radiationFraction(),
-	      kmat->momFraction());
+	      kmat->momFraction(),
+	      isite->isActive() );
 	    tstraws.push_back(tstraw);
 	  }
 	}
       }
     }
 
-    void fillStrawHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds) {
+    void fillStrawHitSeeds(const KalRep* krep,ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds) {
       // extract the TkrStrawHits from the KalRep
       TrkStrawHitVector tshv;
       convert(krep->hitVector(),tshv);
       // loop over the TrkStrawHits and convert them
       for(auto tsh : tshv ) {
+      // find the associated ComboHit
+	auto const& chit = chits.at(tsh->index());
 	// set the flag according to the status of this hit
-	StrawHitFlag hflag;
+	StrawHitFlag hflag = chit.flag();
 	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-	TrkStrawHitSeed seedhit(tsh->index(), tsh->straw().id(),
+	TrkStrawHitSeed seedhit(tsh->index(),tsh->straw().id(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag);
+	    tsh->driftRadius(), tsh->driftTime(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
 	hitseeds.push_back(seedhit);
       }
     }
@@ -150,7 +154,7 @@ namespace mu2e {
      if(tch->isActive())hflag.merge(StrawHitFlag::active);
      if(tch->poca().status().success())hflag.merge(StrawHitFlag::doca);
       caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
-	  tch->poca().doca(), tch->hitErr(), hflag);
+	  tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(), hflag);
     }
 
   // compute the overlap between 2 clusters 
@@ -304,6 +308,14 @@ namespace mu2e {
 
     double chisqConsistency(const KalRep* krep) {
       return ChisqConsistency(krep->chisq(),krep->nDof()-1).significanceLevel();
+    }
+
+    unsigned countBends(const KalRep* krep) {
+      unsigned nbend(0);
+      for(auto isite : krep->siteList()){
+	if(isite->kalBend() != 0) ++nbend;
+      }
+      return nbend;
     }
 
     const TrkCaloHit* findTrkCaloHit(const KalRep* krep){

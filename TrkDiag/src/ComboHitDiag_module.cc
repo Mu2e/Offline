@@ -234,7 +234,8 @@ namespace mu2e
 	for(auto shi : shids) {
 	  ComboHitInfoMC chimc;
 	  StrawDigiMC const& mcd = _mcdigis->at(shi);
-	  chimc._rel = MCRelationship::relationship(mcd,mcd1);
+	  MCRelationship rel(mcd,mcd1);
+	  chimc._rel = rel.relationship();
 	  _chinfomc.push_back(chimc);
 	  // find average MC properties
 	  _mcpos += XYZVec(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());

@@ -84,12 +84,12 @@ namespace mu2e
     unsigned _maxweed;
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
+    double _caloHitErr; // spatial error to use for TrkCaloHit
     std::vector<bool> _updatet0; // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
-    double _dtoffset;
     double _strHitW, _calHitW;//weight used to evaluate the initial track T0
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
@@ -122,7 +122,6 @@ namespace mu2e
     void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial   (KalRep* krep);
     bool unweedBestHit     (KalFitData&kalData, double maxchi);
-    void updateCalT0       (KalFitData&kalData);
     TrkErrCode fitTrack    (KalFitData&kalData);
     void updateHitTimes    (KalRep* krep); 
     double zFlight         (KalRep* krep,double pz);

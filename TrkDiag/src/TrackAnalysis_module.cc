@@ -35,6 +35,7 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "TrkReco/inc/TrkUtilities.hh"
 #include "BTrkData/inc/TrkCaloHit.hh"
 // diagnostics
 #include "TrkDiag/inc/KalDiag.hh"
@@ -45,10 +46,10 @@
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
-#include "TrkReco/inc/TrkUtilities.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -123,6 +124,8 @@ namespace mu2e {
     TrkInfo _deti, _ueti, _dmti;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
+//    std::vector<TrkCaloHitInfo> _detch;
+    TrkCaloHitInfo _detch;
     std::vector<TrkStrawMatInfo> _detsm;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
@@ -191,6 +194,7 @@ namespace mu2e {
 // optionally add detailed branches
     if(_diag > 1){
       _trkana->Branch("detsh",&_detsh);
+      _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
       _trkana->Branch("detsm",&_detsm);
     }
 // add branches for other tracks
@@ -271,12 +275,14 @@ namespace mu2e {
     KalRepPtrCollection const& dmC = *dmH;
     // find Track-cluster matching data
     _cdiag.findData(event);
+
+    // reset
+    resetBranches();
+
     // find the best track
     size_t i_element = 0; // keep track of which KalRep we are looking at
     const KalRep* deK = findBestTrack(deC, i_element);
     if(deK != 0 || _pempty) {
-      // reset
-      resetBranches();
       // setup KalDiag.
       if(_fillmc)_kdiag.findMCData(event);
       // fill basic event information
@@ -287,6 +293,10 @@ namespace mu2e {
 	_kdiag.fillTrkInfo(deK,_deti);
 	if(_diag > 1){
 	  _kdiag.fillHitInfo(deK, _detsh);
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(deK);
+	  if(tch != 0){
+	    _kdiag.fillCaloHitInfo(tch, _detch);
+	  }
 	  _kdiag.fillMatInfo(deK, _detsm);
 	}
 	// fill calorimeter information. First find the best matching cluster
@@ -541,6 +551,7 @@ namespace mu2e {
     _wtinfo.reset();
     _trkqualTest.reset();
     _trkQualInfo.reset();
+    _detch.reset();
     // clear vectors
     _detsh.clear();
     _detsm.clear();

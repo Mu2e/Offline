@@ -162,7 +162,8 @@ CalPatRec : { @table::CalPatRec
 	dtOffset                          : @local::TrackCaloMatching.DtOffset
 	strawHitT0Weight                  : 1
 	caloHitT0Weight                   : 10
-	
+        caloHitError                    : 15.0 # mm 
+		
 	DivergeFlt                        : 1000.            #  default: 1000.
 #	RdriftMinusDocaTol                      : 1.
 #	daveMode                                : 0
@@ -217,6 +218,7 @@ CalPatRec : { @table::CalPatRec
 	useTrkCaloHit                           : false
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
+	caloHitError				: 15.0 # mm 
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
@@ -295,6 +297,7 @@ CalPatRec : { @table::CalPatRec
 	deltaDriftDoublet                       : 0.3
 	maxDoubletChi2                          : 9
 	sigmaSlope                              : 0.025
+	caloHitError                            : 15.0 # mm 
 	printUtils                              : { @table::TrkReco.PrintUtils }
     }
 }
@@ -333,7 +336,7 @@ CalPatRec : { @table::CalPatRec
 	MergeHelixFinder : { module_type:MergeHelixFinder	
 	    diagLevel                    : 0
 	    debugLevel                   : 0
-	    trkHelixFinderModuleLabel    : "HelixFinder:Positive"
+	    trkHelixFinderModuleLabel    : "HelixFindere:Positive"
 	    cprHelixCollTag              : "CalHelixFinder:Positive"
 	}
 
@@ -503,8 +506,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFinder:Positive"
-	    calHelixFinderModuleLabel : "HelixFinder:Negative"
+	    trkHelixFinderModuleLabel : "HelixFindere:Positive"
+	    calHelixFinderModuleLabel : "HelixFindere:Negative"
 	}
 
 	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 

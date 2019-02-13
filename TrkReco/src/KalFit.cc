@@ -101,11 +101,11 @@ namespace mu2e
     _maxweed(pset.get<unsigned>("maxweed",10)),
     // t0 parameters
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
+    _caloHitErr(pset.get<double>("caloHitError")),
     _updatet0(pset.get<vector<bool>>("updateT0")),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
-    _dtoffset(pset.get<double>("dtOffset")),
     _strHitW(pset.get<double>("strawHitT0Weight")),
     _calHitW(pset.get<double>("caloHitT0Weight")),
     //
@@ -488,7 +488,6 @@ namespace mu2e
       Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
       // t0 represents the time the particle reached the sensor; estimate that
       HitT0 ht0;
-      //ht0._t0 = kalData.t0._t0 + _ttcalc.timeOfFlightTimeOffset(cog.z()) + _ttcalc.caloClusterTimeOffset();
       ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
       ht0._t0err = _ttcalc.caloClusterTimeErr();
       
@@ -508,8 +507,7 @@ namespace mu2e
 //      double hz = hval.z0() + hval.tanDip()*tlen;
 //      Hep3Vector hpos(hx,hy,hz);
 //      cout << "cog pos   " << cog << endl << "helix pos " << hpos << endl;
-
-      tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _dtoffset);
+      tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _caloHitErr, _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset());
     }
   }
 
@@ -823,48 +821,6 @@ namespace mu2e
     return 0;
   }
 
-  void
-  KalFit::updateCalT0(KalFitData& kalData){
-
-    TrkT0 t0;
-    double mom, vflt, path, t0flt, flt0(0.0);
-
-    KalRep* krep   = kalData.krep;
-    bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
-
-    // get helix from kalrep
-
-    const CaloCluster* cl = kalData.caloCluster;
-
-    HelixTraj trkHel(krep->helix(flt0).params(),krep->helix(flt0).covariance());
-
-                                        // get flight distance of z=0
-    t0flt = trkHel.zFlight(0.0);
-
-    if (converged) {
-//-----------------------------------------------------------------------------
-// estimate the momentum at that point using the helix parameters.
-// This is assumed constant for this crude estimate
-// compute the particle velocity
-//-----------------------------------------------------------------------------
-      mom  = TrkMomCalculator::vecMom(trkHel,bField(),t0flt).mag();
-      vflt = krep->particleType().beta(mom)*CLHEP::c_light;
-//-----------------------------------------------------------------------------
-// path length of the particle from the middle of the Tracker to the  calorimeter
-// set dummy error value
-//-----------------------------------------------------------------------------
-      Hep3Vector gpos = _calorimeter->geomUtil().diskToMu2e(cl->diskId(),cl->cog3Vector());
-      Hep3Vector tpos = _calorimeter->geomUtil().mu2eToTracker(gpos);
-
-      path      = tpos.z()/trkHel.sinDip();
-      t0._t0    = cl->time() + _dtoffset - path/vflt;
-      t0._t0err = 1.;
-
-      krep->setT0(t0,flt0);
-      updateHitTimes(krep);
-    }
-  }
-
 
   bool
   KalFit::updateT0(KalFitData& kalData){
@@ -958,7 +914,6 @@ namespace mu2e
       double tflt = krep->transitTime(flt0, flt1);
 // update the time in the TrkT0 object
       hitt0._t0 += tflt;
-      //      (*ihit)->updateHitT0(hitt0);
       (*ihit)->setHitT0(hitt0);
 // update the reference flightlength
       flt0 = flt1;
@@ -971,7 +926,6 @@ namespace mu2e
       double flt1 = hit->fltLen();
       double tflt = krep->transitTime(flt0, flt1);
       hitt0._t0 += tflt;
-      //      (*ihit)->updateHitT0(hitt0);
       (*ihit)->setHitT0(hitt0);
       flt0 = flt1;
     }

@@ -355,15 +355,9 @@ namespace mu2e
 	  fseed._chisq = krep->chisq();
 	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
 	  fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-	  TrkUtilities::fillStrawHitSeeds(krep,fseed._hits);
+	  fseed._nbend = TrkUtilities::countBends(krep);
+	  TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
 	  TrkUtilities::fillStraws(krep,fseed._straws);
-	  // see if there's a TrkCaloHit
-	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
-	  if(tch != 0){
-	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
-	    // set the Ptr using the helix: this could be more direct FIXME!
-	    fseed._chit._cluster = fseed._helix->caloCluster();
-	  }
 	  // sample the fit at the requested z positions.  Need options here to define a set of
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
@@ -376,6 +370,21 @@ namespace mu2e
 	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
 	    // fill the segment
 	    KalSegment kseg;
+	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    fseed._segments.push_back(kseg);
+	  }
+	  // see if there's a TrkCaloHit
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
+	  if(tch != 0){
+	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	    // set the Ptr using the helix: this could be more direct FIXME!
+	    fseed._chit._cluster = fseed._helix->caloCluster();
+	    // create a helix segment at the TrkCaloHit
+	    KalSegment kseg;
+	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	    BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
+	    double locflt(0.0);
+	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
 	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
 	    fseed._segments.push_back(kseg);
 	  }

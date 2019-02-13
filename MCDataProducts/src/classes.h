@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollections.hh"
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
+#include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
 #include "MCDataProducts/inc/GenEventCount.hh"
 
@@ -59,13 +60,14 @@
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/CaloDigiMCCollection.hh"
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
-#include "RecoDataProducts/inc/CaloCluster.hh"
+#include "MCDataProducts/inc/CaloClusterMC.hh"
 // straws
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 // tracking 
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"
+#include "MCDataProducts/inc/KalSeedMC.hh"
 
 // CRV
 #include "MCDataProducts/inc/CrvPhotonsCollection.hh"
@@ -81,5 +83,6 @@
 #include "MCDataProducts/inc/ExtMonFNALRecoClusterTruthAssn.hh"
 #include "MCDataProducts/inc/ExtMonFNALPatRecTruthAssns.hh"
 
-
+// Analysis
+#include "MCDataProducts/inc/MCRelationship.hh"
 
