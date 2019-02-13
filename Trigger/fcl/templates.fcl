@@ -36,6 +36,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::unbiased_evt_sf
 	    triggerAlg        : ["Unbiased"]
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#prescaler for the standard strawDigi occupancy filter
@@ -43,6 +44,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::sDCount_evt_sf
 	    triggerAlg        : ["MinBiasSrawDigiCount"]
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	SDCountPrescale      : {
@@ -50,6 +52,7 @@ Trigger : {
 	    nPrescale         : @local::sDCount_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["MinBiasSrawDigiCount"]
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#prescaler for the strawDigi large-occupancy filter
@@ -57,6 +60,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::largeSDCount_evt_sf
 	    triggerAlg        : ["LargeStrawDigiCount"]
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	LargeSDCountPrescale      : {
@@ -64,6 +68,7 @@ Trigger : {
 	    nPrescale         : @local::largeSDCount_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["LargeStrawDigiCount"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#filters based on the strawDigi occupancy:
@@ -106,6 +111,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::cDCount_evt_sf
 	    triggerAlg        : ["MinBiasCaloDigiCount"]	    	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	CDCountPrescale      : {
@@ -113,12 +119,15 @@ Trigger : {
 	    nPrescale         : @local::cDCount_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["MinBiasCaloDigiCount"]	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#prescaler for the strawDigi large-occupancy filter
 	LargeCDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::largeCDCount_evt_sf
+	    triggerAlg        : ["LargeCaloDigiCount"]	    	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	LargeCDCountPrescale      : {
@@ -126,6 +135,7 @@ Trigger : {
 	    nPrescale         : @local::largeCDCount_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["LargeCaloDigiCount"]	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#filters based on the strawDigi occupancy:

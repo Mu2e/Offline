@@ -330,23 +330,27 @@ TrkFilters : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
 	    triggerAlg    : ["TprTimeClusterDeM"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprTimeClusterDeMPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale : 1000
 	    useFilteredEvents : true
 	    triggerAlg    : ["TprTimeClusterDeM"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    	    
 	}
 	tprTimeClusterDePEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
 	    triggerAlg    : ["TprTimeClusterDeP"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprTimeClusterDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale : 1000
 	    useFilteredEvents : true
 	    triggerAlg    : ["TprTimeClusterDeP"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#filters for the paths where decision is made using the HelixSeed
@@ -354,34 +358,40 @@ TrkFilters : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
 	    triggerAlg    : ["TprHelixDeM"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDeMPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
 	    triggerAlg        : ["TprHelixDeM"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	tprHelixDePEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
 	    triggerAlg    : ["TprHelixDeP"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixDePPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
 	    triggerAlg        : ["TprHelixDeP"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	tprHelixIPADeMEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale     : 1
 	    triggerAlg    : ["TprHelixIPADeM"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	tprHelixIPADeMPrescale : {
 	    module_type : PrescaleEvent
 	    useFilteredEvents : true
 	    nPrescale         : 300
 	    triggerAlg        : ["TprHelixIPADeM"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	#filters for the paths where decision is made using the TrackSeed
@@ -389,6 +399,7 @@ TrkFilters : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::tprSeedDeM_evt_sf 
 	    triggerAlg        : ["TprSeedDeM"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprSeedDeMPrescale : {
@@ -396,18 +407,21 @@ TrkFilters : {
 	    nPrescale         : @local::tprSeedDeM_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["TprSeedDeM"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	tprSeedDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::tprSeedDeP_evt_sf
 	    triggerAlg        : ["TprSeedDeP"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprSeedDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::tprSeedDeP_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["TprSeedDeP"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	#follow the prescaler filters for Tpr Track sequences
@@ -415,6 +429,7 @@ TrkFilters : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::cprSeedDeM_evt_sf
 	    triggerAlg        : ["CprSeedDeM"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	cprSeedDeMPrescale : {
@@ -422,18 +437,21 @@ TrkFilters : {
 	    nPrescale         : @local::cprSeedDeM_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["CprSeedDeM"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	cprSeedDePEventPrescale: {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::cprSeedDeP_evt_sf
 	    triggerAlg        : ["CprSeedDeP"]	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	cprSeedDePPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::cprSeedDeP_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["CprSeedDeP"]	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
     }

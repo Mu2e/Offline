@@ -205,6 +205,7 @@ CaloFilters : { @table::CaloFilters
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::caloMVACE_evt_sf
 	    triggerAlg        : ["CaloMVACE"]	    	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloMVACEPrescale : {
@@ -212,6 +213,7 @@ CaloFilters : { @table::CaloFilters
 	    nPrescale         : @local::caloMVACE_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["CaloMVACE"]	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	caloMixedEventPrescale : {
@@ -219,6 +221,7 @@ CaloFilters : { @table::CaloFilters
 	    nPrescale         : 1
 #	    nPrescale         : @local::caloMixed_evt_sf
 	    triggerAlg        : ["CaloMVAMixedCE"]	    	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloMixedPrescale : {
@@ -227,12 +230,14 @@ CaloFilters : { @table::CaloFilters
 #	    nPrescale         : @local::caloMixed_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["CaloMVAMixedCE"]	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 	
 	caloCalibCosmicEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : @local::caloCalibCosmic_evt_sf
 	    triggerAlg        : ["CaloCalibCosmic"]	    	    
+	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	caloCalibCosmicPrescale : {
@@ -240,12 +245,14 @@ CaloFilters : { @table::CaloFilters
 	    nPrescale         : @local::caloCalibCosmic_sf
 	    useFilteredEvents : true
 	    triggerAlg        : ["CaloCalibCosmic"]	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	caloLHCEEventPrescale : {
 	    module_type : PrescaleEvent
 #	    nPrescale         : @local::caloLHCE_evt_sf
 	    nPrescale         : 1
+	    triggerFlag   : ["PrescaleRandom"]	    
 	    triggerAlg        : ["CaloLHCE"]	    	    
 	}
 	
@@ -255,6 +262,7 @@ CaloFilters : { @table::CaloFilters
 	    nPrescale         : 1 
 	    useFilteredEvents : true
 	    triggerAlg        : ["CaloLHCE"]	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
 	

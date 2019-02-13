@@ -19,6 +19,7 @@
 #include "ConditionsService/inc/AcceleratorParams.hh"
 
 //Dataproducts
+#include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
@@ -87,12 +88,15 @@ namespace mu2e {
     for (size_t i=0; i<hTrigInfoVec.size(); ++i){
       hTrigInfo = hTrigInfoVec.at(i);
       if (!hTrigInfo.isValid())             continue;
-      TriggerInfo trigInfo  = *(hTrigInfo.product());
-      //      const TriggerFlag  flag      = trigInfo->triggerBits();
-      TriggerAlg  alg       = trigInfo.triggerAlgBits();
+      TriggerInfo trigInfo     = *(hTrigInfo.product());
+      const TriggerFlag  *flag  = &trigInfo.triggerBits();
 
-      trigInfoCol->push_back(trigInfo);
-      trigAlg->merge(alg);
+      if (flag->hasAnyProperty(TriggerFlag::prescaleGoodEvents)){
+	TriggerAlg  alg          = trigInfo.triggerAlgBits();
+	
+	trigInfoCol->push_back(trigInfo);
+	trigAlg->merge(alg);
+      }
     }
 
     event.put(std::move(trigInfoCol));
