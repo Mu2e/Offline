@@ -18,6 +18,13 @@ namespace mu2e {
     HepTransform( CLHEP::Hep3Vector & disp, CLHEP::HepRotation & rot ) :
       _displacement(disp),
       _rotation(rot) {}
+    HepTransform( double dx, double dy, double dz,  
+		  double rx, double ry, double rz):
+      _displacement(dx,dy,dz) {
+      _rotation.rotateX(rx);
+      _rotation.rotateX(ry);
+      _rotation.rotateX(rz);
+    }
 
     CLHEP::Hep3Vector  displacement() const { return _displacement;}
     CLHEP::HepRotation rotation()     const { return _rotation;    }

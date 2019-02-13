@@ -49,9 +49,9 @@ namespace mu2e {
       int ilay = -1;
       double iang = -36000;
 
-      cout << __func__ << " (_tt->_allStraws2).size(), TTracker::_nttstraws, _tt->_nStraws "
+      cout << __func__ << " (_tt->_allStraws2).size(), StrawId::_nustraws, _tt->_nStraws "
            << fixed << setw(6) << _tt->_allStraws2.size()
-           << fixed << setw(6) << TTracker::_nttstraws
+           << fixed << setw(6) << StrawId::_nustraws
            << fixed << setw(6) << _tt->_nStraws
            << endl;
 
@@ -885,7 +885,7 @@ namespace mu2e {
     // Get additional bookkeeping info.
 
     // array type containers of straws and pointers, ttracker ones
-    array<Straw,TTracker::_nttstraws>& allStraws2  = _tt->_allStraws2;
+    array<Straw,StrawId::_nustraws>& allStraws2  = _tt->_allStraws2;
     array<Straw const*,TTracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
     // panel ones
     array<Straw const*, StrawId::_nstraws>& panelStraws2_p = panel._straws2_p;
