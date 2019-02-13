@@ -126,23 +126,8 @@ outputs: {
 #------------------------------------------------------------------------------
 # services  section
 #------------------------------------------------------------------------------
-services : {
+services : @local::Services.SimAndReco
 
-    message               : @local::default_message
-    TFileService          : { fileName : "genReco.hist" }
-    RandomNumberGenerator : { }
-
-    # Mu2e services
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-       baseSeed            :  0
-       maxUniqueEngines    :  20
-    }
-}
 #------------------------------------------------------------------------------
 # specify modules
 #------------------------------------------------------------------------------
@@ -228,6 +213,11 @@ physics : {
 #------------------------------------------------------------------------------
 # print per event timing for ::event entry points
 # services.Timing: { }
+
+
+services.TFileService.fileName : "genReco.hist"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20
 
 # Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output
 physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]

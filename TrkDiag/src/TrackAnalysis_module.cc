@@ -217,6 +217,7 @@ namespace mu2e {
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
     }
+
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
       //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());

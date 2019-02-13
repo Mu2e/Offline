@@ -3,6 +3,7 @@
 #
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
+#include "CalPatRec/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
 #include "Filters/fcl/prolog.fcl"
 #
@@ -20,22 +21,22 @@ Reconstruction : {
     MHDeM : {
       @table::CalPatRec.producers.MergeHelixFinder
       trkHelixFinderModuleLabel    : "HelixFindere:Positive"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDeM"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDe:Positive"
     }
     MHDeP : {
       @table::CalPatRec.producers.MergeHelixFinder
       trkHelixFinderModuleLabel    : "HelixFindere:Negative"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDeP"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDe:Negative"
     }
     MHDmuM : {
       @table::CalPatRec.producers.MergeHelixFinder
       trkHelixFinderModuleLabel    : "HelixFinderMu:Positive"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDmuM"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDmu:Positive"
     }
     MHDmuP : {
       @table::CalPatRec.producers.MergeHelixFinder
       trkHelixFinderModuleLabel    : "HelixFinderMu:Negative"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDmuP"
+      calHelixFinderModuleLabel	 : "CalHelixFinderDmu:Negative"
     }
     KSFDeM : {
       @table::CalPatRec.producers.MHSeedFit
@@ -116,7 +117,7 @@ Reconstruction : {
   }
   
   filters : {
-# why is CalPatRec implemented as filters??
+# why are CalPatRec reconstruction modules implemented as filters????
     @table::CalPatRec.filters
   }
 
@@ -141,8 +142,8 @@ Reconstruction : {
 		      TimeClusterFindere, HelixFindere,
 		      TimeClusterFinderMu, HelixFinderMu,
   # CalPatRec for downstream e and mu .  Note CalPatRec uses 2 modules, TrkPatRec only one
-		      CalTimePeakFinder, CalHelixFinderDeM, CalHelixFinderDeP, 
-		      CalTimePeakFinderMu, CalHelixFinderDmuM, CalHelixFinderDmuP,
+		      CalTimePeakFinder, CalHelixFinderDe,
+		      CalTimePeakFinderMu, CalHelixFinderDmu,
    # merge downstream helices
 		      MHDeM, MHDeP,
 		      MHDmuM, MHDmuP,

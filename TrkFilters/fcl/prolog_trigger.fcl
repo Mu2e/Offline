@@ -27,6 +27,7 @@ TrkFilters : {
 	TPRPosHelixFilter : {
 	    module_type : HelixFilter
 	    HelixSeedCollection : "TThelixFinder:Positive"
+	    Helicity            : 1
 	    MinNStrawHits       : 15   
 	    MinMomentum         : 70.  
 	    MaxMomentum         : 120. 
@@ -41,6 +42,7 @@ TrkFilters : {
 	FTPRPosHelixFilter : { 
 	    module_type : HelixFilter
 	    HelixSeedCollection : "TTfastHelixFinder:Positive"
+	    Helicity            : 1
 	    MinNStrawHits       : 15  
 	    MinMomentum         : 70. 
 	    MaxMomentum         : 120.
@@ -57,6 +59,7 @@ TrkFilters : {
 	TPRNegHelixFilter : {
 	    module_type : HelixFilter
 	    HelixSeedCollection : "TThelixFinder:Negative"
+	    Helicity            : -1
 	    MinNStrawHits       : 15   
 	    MinMomentum         : 60.  
 	    MaxMomentum         : 140. 
@@ -72,6 +75,7 @@ TrkFilters : {
 	FTPRNegHelixFilter : {
 	    module_type : HelixFilter
 	    HelixSeedCollection : "TTfastHelixFinder:Negative"
+	    Helicity            : -1
 	    MinNStrawHits       : 15  
 	    MinMomentum         : 60. 
 	    MaxMomentum         : 140.
@@ -87,7 +91,8 @@ TrkFilters : {
 	
 	CPRPosHelixFilter : {
 	    module_type : HelixFilter
-	    HelixSeedCollection : "TTCalHelixFinderDem"
+	    HelixSeedCollection : "TTCalHelixFinderDe:Positive"
+	    Helicity            : 1
 	    MinNStrawHits       : 15   
 	    MinMomentum         : 80.  
 	    MaxMomentum         : 140. 
@@ -101,7 +106,8 @@ TrkFilters : {
 	}
 	CPRNegHelixFilter : {
 	    module_type : HelixFilter
-	    HelixSeedCollection : "TTCalHelixFinderDep"
+	    HelixSeedCollection : "TTCalHelixFinderDe:Negative"
+	    Helicity            : -1
 	    MinNStrawHits       : 15   
 	    MinMomentum         : 60.  
 	    MaxMomentum         : 140. 
@@ -117,6 +123,8 @@ TrkFilters : {
 	TPRDeMSeedFilter : {
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTKSFDeM"
+	    fitparticle       : @local::Particle.eminus
+	    fitdirection      : @local::FitDir.downstream 
 	    MinNStrawHits     : 15   
 	    MinMomentum       : 80.      
 	    MaxMomentum       : 200.     #don't apply cut
@@ -128,6 +136,8 @@ TrkFilters : {
 	FTPRDeMSeedFilter : { 
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTFKSFDeM"
+	    fitparticle       : @local::Particle.eminus
+	    fitdirection      : @local::FitDir.downstream 
 	    MinNStrawHits     : 15
 	    MinMomentum       : 80.      
 	    MaxMomentum       : 200.     #don't apply cut
@@ -141,6 +151,8 @@ TrkFilters : {
 	CPRDeMSeedFilter : {
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTCalSeedFitDem"    
+	    fitparticle       : @local::Particle.eminus
+	    fitdirection      : @local::FitDir.downstream 
 	    MinNStrawHits     : 15   
 	    MinMomentum       : 80.      
 	    MaxMomentum       : 200.     #don't apply cut
@@ -157,6 +169,8 @@ TrkFilters : {
 	TPRDePSeedFilter : {
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTKSFDeP"
+	    fitparticle       : @local::Particle.eplus
+	    fitdirection      : @local::FitDir.downstream 
 	    MinNStrawHits     : 15  
 	    MinMomentum       : 70.      
 	    MaxMomentum       : 110.     #don't apply cut
@@ -168,6 +182,8 @@ TrkFilters : {
 	FTPRDePSeedFilter : { 
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTFKSFDeP"
+	    fitparticle       : @local::Particle.eplus
+	    fitdirection      : @local::FitDir.downstream 
 	    MinNStrawHits     : 15
 	    MinMomentum       : 70.      
 	    MaxMomentum       : 110.     #don't apply cut
@@ -180,6 +196,8 @@ TrkFilters : {
 	CPRDePSeedFilter : {
 	    module_type : SeedFilter
 	    KalSeedCollection : "TTCalSeedFitDep"    
+	    fitparticle       : @local::Particle.eplus
+	    fitdirection      : @local::FitDir.downstream 
 	    MinNStrawHits     : 15   
 	    MinMomentum       : 70.      
 	    MaxMomentum       : 110.     #don't apply cut
@@ -299,10 +317,10 @@ TrkFilters : {
 
 	#calo-seeded tracking
 	cprDeMSeed : [ CPRDeMSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDem, CPRPosHelixFilter,
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDe, CPRPosHelixFilter,
 		       TTCalSeedFitDem, CPRDeMSeedFilter, CPRDeMSeedPrescale ]
 	cprDePSeed : [ CPRDePSeedEventPrescale, TrackSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDep, CPRNegHelixFilter, 
+		       TTCalTimePeakFinder, CPRTCFilter, TTCalHelixFinderDe, CPRNegHelixFilter, 
 		       TTCalSeedFitDep, CPRDePSeedFilter, CPRDePSeedPrescale ]
 
 	#fast tracking sequences that uses the calorimeter-time selection to reduce the number of TimeClusters and also the number of hits processed by the Delta-ray 
