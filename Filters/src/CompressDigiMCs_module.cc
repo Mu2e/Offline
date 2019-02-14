@@ -582,12 +582,18 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
     if (old_step_point.isAvailable()) {
       newTriggerStepPtr[i_end] = copyStepPointMC( *old_step_point, _trackerOutputInstanceLabel );
     }
+    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+      newTriggerStepPtr[i_end] = old_step_point;
+    }
   }
   
   std::vector<art::Ptr<StepPointMC> > newWaveformStepPtrs;
   for (const auto& i_step_mc : old_straw_digi_mc.stepPointMCs()) {
     if (i_step_mc.isAvailable()) {
       newWaveformStepPtrs.push_back(copyStepPointMC(*i_step_mc, _trackerOutputInstanceLabel));
+    }
+    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+      newWaveformStepPtrs.push_back(i_step_mc);
     }
   }
   
@@ -602,6 +608,9 @@ void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc
   for (const auto& i_step_mc : old_crv_digi_mc.GetStepPoints()) {
     if (i_step_mc.isAvailable()) {
       newStepPtrs.push_back(copyStepPointMC(*i_step_mc, _crvOutputInstanceLabel));
+    }
+    else { // this is a null Ptr but it should be added anyway to keep consistency (expected for CrvDigis)
+      newStepPtrs.push_back(i_step_mc);
     }
   }
 
