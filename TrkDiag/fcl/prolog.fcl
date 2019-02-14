@@ -175,7 +175,8 @@ BEGIN_PROLOG
     AnalyzeCRV : true
     fillTrkQualInfo : true
     StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-    PrimaryParticleTag : "FindMCPrimary"
+#    PrimaryParticleTag : "FindMCPrimary"
+    PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
   }

@@ -113,6 +113,7 @@ Reconstruction : {
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
       keepAllGenParticles : false
       crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
+      primaryParticleTag : "FindMCPrimary"
     }
   }
   
