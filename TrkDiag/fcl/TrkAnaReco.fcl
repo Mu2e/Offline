@@ -11,28 +11,16 @@ services : @local::Services.Reco
 
 physics :
 {
-  producers : {
-    TrkQualDeM : { @table::TrkQualDeM }
-    PBIWeight : { 
-      module_type : PBIWeight
-      PBITag : "protonBunchIntensity"
-      meanPBITag : "protonBunchIntensity:MeanIntensity"
-    }
-  }
-  analyzers :  {
-    genCountLogger: { module_type: GenEventCountReader }
-  }
+  producers : { @table::TrkAnaReco.producers }
+  analyzers : { @table::TrkAnaReco.analyzers }
 }
 
-physics.producers.TrkQualDeM.KalSeedCollection : "KFFDeM"
-physics.analyzers.TrkAnaRecoNeg : { @table::TrackAnalysisReco }
+physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence ]
+physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 
-physics.TrkAnaTrigPath : [ PBIWeight, TrkQualDeM ]
-physics.TrkAnaEndPath : [ genCountLogger, TrkAnaRecoNeg ]
+# for hit level diagnostics, set diagLevel to 2
+physics.analyzers.TrkAnaReco.diagLevel : 1
+physics.analyzers.TrkAnaReco.FillMCInfo : true
+physics.analyzers.TrkAnaReco.AnalyzeCRV : true
 
-physics.analyzers.TrkAnaRecoNeg.diagLevel : 2
-#physics.analyzers.TrkAnaRecoPos.diagLevel : 2
-physics.analyzers.TrkAnaRecoNeg.FillMCInfo : true
-#physics.analyzers.TrkAnaRecoPos.FillMCInfo : true
-physics.analyzers.TrkAnaRecoNeg.AnalyzeCRV : true
-#physics.analyzers.TrkAnaRecoPos.AnalyzeCRV : true
+services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"
