@@ -12,6 +12,7 @@
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include <vector>
 #include <iostream>
 #include <string>
@@ -31,6 +32,8 @@ namespace mu2e {
 	  Comment("SimParticle collection")};
 	fhicl::Sequence<std::string> genIDs { Name("PrimaryGenIds"),
 	  Comment("Generator IDs of potential Primary Particles")};
+	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"),
+	  Comment("Sim Particle Time Offset Maps")};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit FindMCPrimary(const Parameters& conf);
@@ -39,13 +42,15 @@ namespace mu2e {
     private:
       int _debug;
       art::InputTag _gpc, _spc;
+      SimParticleTimeOffset _toff;
       std::vector<int> _pgenids; 
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
     _debug(config().debug()),
     _gpc(config().genPC()),
-    _spc(config().simPC())
+    _spc(config().simPC()),
+    _toff(config().SPTO())
   {
     consumes<GenParticleCollection>(_gpc);
     consumes<SimParticleCollection>(_spc);
@@ -59,6 +64,8 @@ namespace mu2e {
 
 
   void FindMCPrimary::produce(art::Event& event) {
+    // update the time maps
+    _toff.updateMap(event);
     // create output: by default, this is null
     GenParticle pgp(PDGCode::null, GenId::unknown,CLHEP::Hep3Vector(),
 	CLHEP::HepLorentzVector(), 0.0,0.0);
@@ -122,6 +129,10 @@ namespace mu2e {
     // check consistency
     if(pgps.size() != simps.size())
       throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle <-> SimParticle inconsistency" << std::endl;
+    // update the time of the Primary gen particle to take into account the offets.  Otherwise it has
+    // no meaning.  Using either of the SimParticles should give the same answer.
+    double offtime = pgp.time() + _toff.totalTimeOffset(simps.front());
+    pgp = GenParticle(pgp.pdgId(),pgp.generatorId(),pgp.position(),pgp.momentum(),offtime, pgp.properTime());
     // create output object
     PrimaryParticle pp(pgp, simps);
     // put in event

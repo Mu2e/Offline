@@ -167,30 +167,17 @@ namespace mu2e {
 	/*
 	Hep3Vector tdir = ihit->trkTraj()->direction(tshinfo._trklen);
 	tshinfo._wdot = tdir.dot(ihit->straw().getDirection()); // TODO
-	// for now approximate the local bfield direction as the z axis FIXME!!
-	tshinfo._bdot = tdir.z(); // TODO
 	*/
 	tshinfo._t0 = ihit->t0().t0();
 	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
-	/*
-	// include signal propagation time correction
-	tshinfo._ht = ihit->time()-ihit->signalTime(); // TODO
-	*/
+	tshinfo._ht = ihit->driftTime() + ihit->signalTime() + ihit->t0().t0();
 	tshinfo._ambig = ihit->ambig();
-	/*
-	if(ihit->hasResidual())
-	  tshinfo._doca = ihit->poca().doca(); // TODO
-	else
-	  tshinfo._doca = -100.0;
-	tshinfo._exerr = ihit->driftVelocity()*ihit->temperature(); // TODO
-	tshinfo._penerr = ihit->penaltyErr(); // TODO
-	*/
+	tshinfo._doca = ihit->wireDOCA();
 	tshinfo._edep = ihit->energyDep();
 	tshinfo._wdist = ihit->wireDist();
 	tshinfo._werr = ihit->wireRes();	
 	tshinfo._driftend = ihit->driftEnd();
-	tshinfo._tdrift = ihit->driftTime(); // TODO
-
+	tshinfo._tdrift = ihit->driftTime(); 
 
 	// count correlations with other TSH
 	for(std::vector<TrkStrawHitSeed>::const_iterator jhit=kseed.hits().begin(); jhit != ihit; ++jhit) {
@@ -210,9 +197,8 @@ namespace mu2e {
 
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos ) {
       tminfos.clear();
-      // loop over sites, pick out the materials
-      
-      for(const auto& i_straw : kseed.straws()) { // TODO this isn't the correct thing to loop over
+     // loop over straws (material) 
+      for(const auto& i_straw : kseed.straws()) { 
 	TrkStrawMatInfo tminfo;
 
 	tminfo._plane = i_straw.straw().getPlane();
@@ -225,10 +211,6 @@ namespace mu2e {
 	tminfo._radlen = i_straw.radLen();
 	    /*
 	    tminfo._sigMS = kmat->deflectRMS(); // TODO
-	    // DetIntersection info
-	    const DetIntersection& dinter = kmat->detIntersection();
-	    tminfo._thit = (dinter.thit != 0); // TODO
-	    tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive()); // TODO
 	    */
 	tminfo._doca = i_straw.doca();
 	tminfo._tlen = i_straw.trkLen();

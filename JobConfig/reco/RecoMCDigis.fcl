@@ -18,7 +18,7 @@ physics :
   producers : @local::Reconstruction.producers
   filters : @local::Reconstruction.filters
   analyzers: @local::Reconstruction.analyzers
-  RecoPath : [ @sequence::Reconstruction.RecoPath ]
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
   EndPath : [ Output, RecoCheck  ]
 
 }
@@ -31,7 +31,7 @@ outputs : {
 #
 # the following need to be overwritten for the specific channel
 services.TFileService.fileName: "nts.owner.RecoMC.version.sequencer.root"
-outputs.Output.fileName: "rec.owner.RecoMC.version.sequencer.art"
+outputs.Output.fileName: "mcs.owner.RecoMC.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 

@@ -22,21 +22,26 @@ physics :
   producers : {
     @table::Reconstruction.producers
     TrkQualDeM : @local::TrkQualDeM
-  }
+    PBIWeight : { 
+      module_type : PBIWeight
+      PBITag : "protonBunchIntensity"
+      meanPBITag : "protonBunchIntensity:MeanIntensity"
+    }
+}
   filters : @local::Reconstruction.filters
   analyzers: {
     @table::Reconstruction.analyzers
     @table::TrkAna.analyzers
   }
 #  RecoPath : [ @sequence::Reconstruction.RecoPath ]
-  RecoPath : [ @sequence::Reconstruction.RecoPath, TrkQualDeM ]
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath, TrkQualDeM, PBIWeight ]
   EndPath : [ RecoCheck, TrkAnaReco  ]
 }
 # use TrkPatRec
-physics.producers.KSFDeM.SeedCollection : "HelixFindere:Positive"
-physics.producers.KSFDeP.SeedCollection : "HelixFindere:Negative"
-physics.producers.KSFDmuM.SeedCollection : "HelixFinderMu:Positive"
-physics.producers.KSFDmuP.SeedCollection : "HelixFinderMu:Negative"
+physics.producers.KSFDeM.SeedCollection : "HelixFinderDe:Positive"
+physics.producers.KSFDeP.SeedCollection : "HelixFinderDe:Negative"
+physics.producers.KSFDmuM.SeedCollection : "HelixFinderDmu:Positive"
+physics.producers.KSFDmuP.SeedCollection : "HelixFinderDmu:Negative"
 
 #physics.producers.SelectRecoMC.debugLevel : 1
 
