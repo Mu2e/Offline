@@ -42,6 +42,7 @@
 #include "DataProducts/inc/IndexMap.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
+#include "MCDataProducts/inc/PrimaryParticle.hh"
 
 namespace mu2e {
   class CompressDigiMCs;
@@ -105,6 +106,7 @@ public:
   void keepSimParticle(const art::Ptr<SimParticle>& sim_ptr);
   void copyCaloClusterMC(const mu2e::CaloClusterMC& old_calo_cluster_mc);
   void copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClusterMC& old_crv_coinc_cluster_mc);
+  void copyPrimaryParticle(const mu2e::PrimaryParticle& old_primary_particle);
 
 private:
 
@@ -168,6 +170,9 @@ private:
   art::InputTag _crvCoincClusterMCTag;
   art::Handle<CrvCoincidenceClusterMCCollection> _crvCoincClusterMCsHandle;
   std::unique_ptr<CrvCoincidenceClusterMCCollection> _newCrvCoincClusterMCs;
+  art::InputTag _primaryParticleTag;
+  art::Handle<PrimaryParticle> _primaryParticleHandle;
+  std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
 };
 
 
@@ -186,7 +191,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", "")),
     _caloClusterMCTag(pset.get<art::InputTag>("caloClusterMCTag", "")),
     _keepAllGenParticles(pset.get<bool>("keepAllGenParticles", true)),
-    _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", ""))
+    _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", "")),
+    _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", ""))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -225,6 +231,9 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   }
   if (_crvCoincClusterMCTag != "") {
     produces<CrvCoincidenceClusterMCCollection>();
+  }
+  if (_primaryParticleTag != "") {
+    produces<PrimaryParticle>();
   }
 }
 
@@ -307,6 +316,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_crvCoincClusterMCTag != "") {
     event.getByLabel(_crvCoincClusterMCTag, _crvCoincClusterMCsHandle);
     _newCrvCoincClusterMCs = std::unique_ptr<CrvCoincidenceClusterMCCollection>(new CrvCoincidenceClusterMCCollection);
+  }
+  // If we have a PrimaryParticle, use that
+  if (_primaryParticleTag != "") {
+    event.getByLabel(_primaryParticleTag, _primaryParticleHandle);
+    _newPrimaryParticle = std::unique_ptr<PrimaryParticle>(new PrimaryParticle);
   }
 
 
@@ -400,6 +414,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     for (const auto& i_crvCoincClusterMC : crvCoincClusterMCs) {
       copyCrvCoincClusterMC(i_crvCoincClusterMC);
     }
+  }
+
+  // Optional primary particles
+  if (_primaryParticleTag != "") {
+    const auto& primaryParticle = *_primaryParticleHandle;
+    copyPrimaryParticle(primaryParticle);
   }
   
   // Get the hits from the virtualdetector
@@ -536,6 +556,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       i_crvCoincClusterMC.SetMostLikelySimParticle(newSimPtr);
     }
   }
+  // Update PrimaryParticle if needs be
+  if (_primaryParticleTag != "") {
+    for (auto& i_simPartPtr : _newPrimaryParticle->modifySimParticles()) {
+      i_simPartPtr = remap.at(i_simPartPtr);
+    }
+  }
 
   // Now add everything to the event
   for (const auto& i_instance : _newStepPointMCInstances) {
@@ -569,6 +595,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_crvCoincClusterMCTag != "") {
     event.put(std::move(_newCrvCoincClusterMCs));
   }
+  if (_primaryParticleTag != "") {
+    event.put(std::move(_newPrimaryParticle));
+  }
 }
 
 void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
@@ -582,12 +611,18 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
     if (old_step_point.isAvailable()) {
       newTriggerStepPtr[i_end] = copyStepPointMC( *old_step_point, _trackerOutputInstanceLabel );
     }
+    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+      newTriggerStepPtr[i_end] = old_step_point;
+    }
   }
   
   std::vector<art::Ptr<StepPointMC> > newWaveformStepPtrs;
   for (const auto& i_step_mc : old_straw_digi_mc.stepPointMCs()) {
     if (i_step_mc.isAvailable()) {
       newWaveformStepPtrs.push_back(copyStepPointMC(*i_step_mc, _trackerOutputInstanceLabel));
+    }
+    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+      newWaveformStepPtrs.push_back(i_step_mc);
     }
   }
   
@@ -602,6 +637,9 @@ void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc
   for (const auto& i_step_mc : old_crv_digi_mc.GetStepPoints()) {
     if (i_step_mc.isAvailable()) {
       newStepPtrs.push_back(copyStepPointMC(*i_step_mc, _crvOutputInstanceLabel));
+    }
+    else { // this is a null Ptr but it should be added anyway to keep consistency (expected for CrvDigis)
+      newStepPtrs.push_back(i_step_mc);
     }
   }
 
@@ -677,6 +715,15 @@ void mu2e::CompressDigiMCs::copyCrvCoincClusterMC(const mu2e::CrvCoincidenceClus
 
   CrvCoincidenceClusterMC new_crv_coinc_cluster_mc(old_crv_coinc_cluster_mc);
   _newCrvCoincClusterMCs->push_back(new_crv_coinc_cluster_mc);
+}
+
+void mu2e::CompressDigiMCs::copyPrimaryParticle(const mu2e::PrimaryParticle& old_primary_particle) {
+
+  for (const auto& i_simPart : old_primary_particle.primarySimParticles()) {
+    keepSimParticle(i_simPart);
+  }
+
+  *_newPrimaryParticle = old_primary_particle;
 }
 
 art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::StepPointMC& old_step, const InstanceLabel& instance) {
