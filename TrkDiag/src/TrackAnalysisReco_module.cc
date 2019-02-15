@@ -314,9 +314,9 @@ namespace mu2e {
 	const PrimaryParticle& primary = *pph;
 	// use Assns interface to find the associated KalSeedMC; this uses ptrs
 	auto dekptr = art::Ptr<KalSeed>(deH,std::distance(deC.begin(),idekseed));
-	std::cout << "KalSeedMCMatch has " << ksmcah->size() << " entries" << std::endl;
+	//	std::cout << "KalSeedMCMatch has " << ksmcah->size() << " entries" << std::endl;
 	for(auto iksmca = ksmcah->begin(); iksmca!= ksmcah->end(); iksmca++){
-	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
+	//	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
 

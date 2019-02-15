@@ -73,6 +73,9 @@ namespace mu2e {
       unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
       countHits(kseed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
       trkinfo._ndof = nactive -5;
+      if (kseed.hasCaloCluster()) {
+	++trkinfo._ndof;
+      }
       trkinfo._nhits = nhits;
       trkinfo._nactive = nactive;
       trkinfo._ndouble = ndouble;
@@ -122,7 +125,6 @@ namespace mu2e {
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
       trkinfo._ent._fitmomerr = kseg.momerr();
-      trkinfo._ent._fltlen = kseg.fmin(); //TODO
       trkinfo._ent._fitpar = kseg.helix();
       CLHEP::HepSymMatrix pcov;
       kseg.covar().symMatrix(pcov);
@@ -167,8 +169,6 @@ namespace mu2e {
 	/*
 	Hep3Vector tdir = ihit->trkTraj()->direction(tshinfo._trklen);
 	tshinfo._wdot = tdir.dot(ihit->straw().getDirection()); // TODO
-	// for now approximate the local bfield direction as the z axis FIXME!!
-	tshinfo._bdot = tdir.z(); // TODO
 	*/
 	tshinfo._t0 = ihit->t0().t0();
 	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
@@ -182,14 +182,13 @@ namespace mu2e {
 	  tshinfo._doca = ihit->poca().doca(); // TODO
 	else
 	  tshinfo._doca = -100.0;
-	tshinfo._exerr = ihit->driftVelocity()*ihit->temperature(); // TODO
-	tshinfo._penerr = ihit->penaltyErr(); // TODO
 	*/
+	tshinfo._doca = ihit->wireDOCA();
 	tshinfo._edep = ihit->energyDep();
 	tshinfo._wdist = ihit->wireDist();
 	tshinfo._werr = ihit->wireRes();	
 	tshinfo._driftend = ihit->driftEnd();
-	tshinfo._tdrift = ihit->driftTime(); // TODO
+	tshinfo._tdrift = ihit->driftTime();
 
 
 	// count correlations with other TSH
@@ -212,7 +211,7 @@ namespace mu2e {
       tminfos.clear();
       // loop over sites, pick out the materials
       
-      for(const auto& i_straw : kseed.straws()) { // TODO this isn't the correct thing to loop over
+      for(const auto& i_straw : kseed.straws()) {
 	TrkStrawMatInfo tminfo;
 
 	tminfo._plane = i_straw.straw().getPlane();
@@ -223,13 +222,7 @@ namespace mu2e {
 	tminfo._active = i_straw.active();
 	tminfo._dp = i_straw.pfrac();
 	tminfo._radlen = i_straw.radLen();
-	    /*
-	    tminfo._sigMS = kmat->deflectRMS(); // TODO
-	    // DetIntersection info
-	    const DetIntersection& dinter = kmat->detIntersection();
-	    tminfo._thit = (dinter.thit != 0); // TODO
-	    tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive()); // TODO
-	    */
+
 	tminfo._doca = i_straw.doca();
 	tminfo._tlen = i_straw.trkLen();
 

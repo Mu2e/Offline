@@ -144,37 +144,8 @@ namespace mu2e {
       sort(steps.begin(),steps.end(),timecomp());
     }
 
-    /*    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig) {
-      nactive = 0; nhits = 0; ngood = 0; nambig = 0;
-      static StrawHitFlag active(StrawHitFlag::active);
-
-      for(const auto& ihit : kseed.hits()) {
-	StrawDigiMC const& mcdigi = mcdigis.at(ihit.index());
-	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
-	if(spp == spmcp->simParticle()){
-	  ++nhits;
-	  if(spmcp->momentum().mag()/spp->startMomentum().mag() > mingood) {
-	    ++ngood;
-	  }
-
-	  // easiest way to get MC ambiguity is through info object
-	  TrkStrawHitInfoMC tshinfomc;
-	  fillHitInfoMCNoTime(mcdigi,spp,tshinfomc);
-
-	  if(ihit.flag().hasAllProperties(active)){
-	    ++nactive;
-	    // count hits with correct left-right ambiguity
-	    if(ihit.ambig()*tshinfomc._ambig > 0) {
-	      ++nambig;
-	    }
-	  }
-	}
-      }      
-    }
-    */
-
-    void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& ndigigood, int& ngood, int& nambig) {
-      ndigi = 0; ndigigood = 0, ngood = 0, nambig = 0;
+    void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& ndigigood, int& nambig) {
+      ndigi = 0; ndigigood = 0, nambig = 0;
       
       for(size_t i_digi = 0; i_digi < kseedmc._tshmcs.size(); ++i_digi) {
 	const auto& i_tshmc = kseedmc._tshmcs.at(i_digi);
@@ -213,11 +184,10 @@ namespace mu2e {
 	trkinfomc._prel = simp._rel.relationship(); // relationship of the track primary to the event primary
       }
 
-      int ndigi = -1, ndigigood = -1, ngood = -1, nambig = -1;
-      TrkMCTools::countDigis(kseedmc, kseed, ndigi, ndigigood, ngood, nambig);
+      int ndigi = -1, ndigigood = -1, nambig = -1;
+      TrkMCTools::countDigis(kseedmc, kseed, ndigi, ndigigood, nambig);
       trkinfomc._ndigi = ndigi; // TODO
       trkinfomc._ndigigood = ndigigood; // TODO
-      trkinfomc._ngood = ngood; // TODO
       trkinfomc._nambig = nambig; // TODO
     }
 
