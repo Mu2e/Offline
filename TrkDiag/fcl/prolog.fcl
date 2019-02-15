@@ -323,6 +323,7 @@ TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF,
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
 			    @sequence::TrkAna.TrkRecoSequence,
+			    @sequence::TrkAna.TrkQualSequence,
 		            @sequence::TrkCaloMatchSequence ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 				 @sequence::TrkAna.CrvRecoSequence ]
