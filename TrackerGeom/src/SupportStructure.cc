@@ -1,5 +1,5 @@
 //
-// A model for the TTracker supports described in Mu2e-doc-888-v5 (current as of Dec, 2012).
+// A model for the Tracker supports described in Mu2e-doc-888-v5 (current as of Dec, 2012).
 //
 //  $Id: SupportStructure.cc,v 1.3 2014/01/06 20:50:40 kutschke Exp $
 //  $Author: kutschke $
@@ -8,7 +8,7 @@
 //  Original author Rob Kutschke
 //
 
-#include "TTrackerGeom/inc/SupportStructure.hh"
+#include "TrackerGeom/inc/SupportStructure.hh"
 #include <iostream>
 
 namespace mu2e {

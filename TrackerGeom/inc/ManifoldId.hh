@@ -1,5 +1,5 @@
-#ifndef TTrackerGeom_ManifoldId_hh
-#define TTrackerGeom_ManifoldId_hh
+#ifndef TrackerGeom_ManifoldId_hh
+#define TrackerGeom_ManifoldId_hh
 
 #include <ostream>
 
@@ -53,4 +53,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif /* TTrackerGeom_ManifoldId_hh */
+#endif /* TrackerGeom_ManifoldId_hh */

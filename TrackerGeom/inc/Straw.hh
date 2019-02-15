@@ -22,7 +22,7 @@ namespace mu2e {
 
   class Straw{
 
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 

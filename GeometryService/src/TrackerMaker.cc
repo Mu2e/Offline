@@ -1,5 +1,5 @@
 //
-// Construct and return a TTracker.
+// Construct and return a Tracker.
 //
 // Original author Rob Kutschke
 //
@@ -9,8 +9,8 @@
 #include "CLHEP/Vector/RotationZ.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "GeometryService/inc/TTrackerMaker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
+#include "GeometryService/inc/TrackerMaker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -35,7 +35,7 @@ namespace mu2e {
 
   // Constructor that gets information from the config file instead of
   // from arguments.
-  TTrackerMaker::TTrackerMaker( SimpleConfig const& config){
+  TrackerMaker::TrackerMaker( SimpleConfig const& config){
     parseConfig(config);
 
     buildIt( );
@@ -124,7 +124,7 @@ namespace mu2e {
 
   }
 
-  void TTrackerMaker::parseConfig( const SimpleConfig& config ){
+  void TrackerMaker::parseConfig( const SimpleConfig& config ){
 
     _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
     _ttVersion          = config.getInt("TTrackerVersion",3);
@@ -142,7 +142,7 @@ namespace mu2e {
                << " please make sure it is intended " << endl;
       } else {
         cout << __func__
-             << " Inconsistent TTracker parameters: "
+             << " Inconsistent Tracker parameters: "
              << " ttracker.numPlanes !=  StrawId::_nplanes "
              << _numPlanes << " != " << StrawId::_nplanes
              << " please double check and act accordingly " << endl;
@@ -152,7 +152,7 @@ namespace mu2e {
     _panelsPerPlane    = config.getInt("ttracker.panelsPerPlane");
     if ( _panelsPerPlane != StrawId::_npanels ){
       cout << __func__
-           << " Inconsistent TTracker parameters: "
+           << " Inconsistent Tracker parameters: "
            << " ttracker.numPlanes !=  StrawId::_npanels "
            << _panelsPerPlane << " != " << StrawId::_npanels
            << " please double check and act accordingly " << endl;
@@ -161,7 +161,7 @@ namespace mu2e {
     _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
     if ( _layersPerPanel != StrawId::_nlayers ){
       cout << __func__
-           << " Inconsistent TTracker parameters: "
+           << " Inconsistent Tracker parameters: "
            << " ttracker.numPlanes !=  StrawId::_nlayers "
            << _layersPerPanel << " != " << StrawId::_nlayers
            << " please double check and act accordingly " << endl;
@@ -171,7 +171,7 @@ namespace mu2e {
     _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
     if ( _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold != StrawId::_nstraws ){
       cout << __func__
-           << " Inconsistent TTracker parameters: "
+           << " Inconsistent Tracker parameters: "
            << " ttracker.strawsPerManifold*ttracker.manifoldsPerEnd*ttracker.layersPerPanel !=  StrawId::_nstraws "
            << _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold
            << " != " << StrawId::_nstraws
@@ -334,7 +334,7 @@ namespace mu2e {
 
     if ( _numPlanes%2 != 0 ) {
       throw cet::exception("GEOM")  << "_numPlanes = " << _numPlanes
-                                    << ": Current TTracker geometry assumes even number of planes  \n";
+                                    << ": Current Tracker geometry assumes even number of planes  \n";
     }
     _numStations = _numPlanes/_planesPerStation;
 
@@ -444,11 +444,11 @@ namespace mu2e {
         _panelBaseRotations.push_back(  345.*CLHEP::degree);
       } else {
         throw cet::exception("GEOM")
-          << "Unrecognized rotation pattern in TTrackerMaker. \n";
+          << "Unrecognized rotation pattern in TrackerMaker. \n";
       }
     } else {
       throw cet::exception("GEOM")
-        << "Unrecognized rotation pattern in TTrackerMaker. \n";
+        << "Unrecognized rotation pattern in TrackerMaker. \n";
     }
 
     // Parts of the algorithm require that the Aseet style tracker is built
@@ -468,7 +468,7 @@ namespace mu2e {
     _manifoldXEdgeExcessSpace = 0.0;
     _manifoldZEdgeExcessSpace = 0.0;
 
-  } // end TTrackerMaker::parseConfig
+  } // end TrackerMaker::parseConfig
 
   // void lptest( const Layer& lay){
   //   cout << lay.id() << " |  "
@@ -493,13 +493,13 @@ namespace mu2e {
   //        << endl;
   // }
 
-  void TTrackerMaker::buildIt(){
+  void TrackerMaker::buildIt(){
 
     // as the array has constant size, we need a straw counter during construction
     _strawTrckrConstrCount = -1; // first straw will be at 0
 
-    // Make an empty TTracker.
-    _tt = unique_ptr<TTracker>(new TTracker());
+    // Make an empty Tracker.
+    _tt = unique_ptr<Tracker>(new Tracker());
     _tt->_nPlanes = _numPlanes;
     _tt->_nStraws = _numPlanes *
       StrawId::_npanels *
@@ -577,7 +577,7 @@ namespace mu2e {
     finalCheck();
 
     if ( _verbosityLevel > 0 ) {
-      cout << "TTracker Support Structure: \n" << _tt->_supportStructure << endl;
+      cout << "Tracker Support Structure: \n" << _tt->_supportStructure << endl;
     }
 
     // Test the forAll methods.
@@ -585,23 +585,23 @@ namespace mu2e {
     //_tt->forAllPlanes( plntest);
     //_tt->forAllLayers( positionTest);
 
-  } //end TTrackerMaker::buildIt.
+  } //end TrackerMaker::buildIt.
 
-  void TTrackerMaker::makeMother(){
+  void TrackerMaker::makeMother(){
 
     _tt->_mother = PlacedTubs ( "TrackerMother",
                                 TubsParams( _motherRIn, _motherROut, _motherHalfLength),
                                 CLHEP::Hep3Vector( _xCenter, 0., _motherZ0),
                                 _envelopeMaterial );
 
-  } //end TTrackerMaker::makeMother
+  } //end TrackerMaker::makeMother
 
   // In the present code the straw positions are computed using the manifold information.
   // The channel position is computed using the SupportStructure information.  These two
   // must be self consistent.  Relatively soon the manifold information will be removed
   // and they will be replaced with the support structure information.
   // For now, check for self-consistency.
-  void TTrackerMaker::finalCheck( ){
+  void TrackerMaker::finalCheck( ){
 
     // Only do this test for the new model(s).
 
@@ -624,7 +624,7 @@ namespace mu2e {
   }
 
 
-  void TTrackerMaker::makePlane( StrawId planeId ){
+  void TrackerMaker::makePlane( StrawId planeId ){
 
     //std::cout << "->->-> makePlane\n";
     int ipln = planeId.getPlane();
@@ -688,7 +688,7 @@ namespace mu2e {
 //std::cout << "<-<-<- makePlane\n";
   }
 
-  void TTrackerMaker::makePanel( const PanelId& pnlId, Plane& plane ){
+  void TrackerMaker::makePanel( const PanelId& pnlId, Plane& plane ){
 //std::cout << "->->-> makePanel\n";
 
     plane._panels.at(pnlId.getPanel()) = Panel(pnlId);
@@ -843,7 +843,7 @@ namespace mu2e {
 
     // make EBkey
 
-    // need to decide how to apply the rotation; it seems it is deferred to ConstructTTrackerTDR
+    // need to decide how to apply the rotation; it seems it is deferred to ConstructTrackerTDR
     // let's do it the same way it is done for the panels
 
     // panel._EBKeys = PlacedTubs("EBKey",
@@ -875,7 +875,7 @@ namespace mu2e {
 //std::cout << "<-<-<- makePanel\n";
   }  // makePanel
 
-  void TTrackerMaker::makeLayer ( const StrawId& layId, Panel& panel ){
+  void TrackerMaker::makeLayer ( const StrawId& layId, Panel& panel ){
 //std::cout << "->->-> makeLayer\n";
 
     // Make an empty layer object.
@@ -886,10 +886,10 @@ namespace mu2e {
 
     // array type containers of straws and pointers, ttracker ones
     array<Straw,StrawId::_nustraws>& allStraws2  = _tt->_allStraws2;
-    array<Straw const*,TTracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
+    array<Straw const*,Tracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
     // panel ones
     array<Straw const*, StrawId::_nstraws>& panelStraws2_p = panel._straws2_p;
-    array<bool,TTracker::_maxRedirect>& strawExists2 = _tt->_strawExists2;
+    array<bool,Tracker::_maxRedirect>& strawExists2 = _tt->_strawExists2;
     // straws per panel
     constexpr int spp = StrawId::_nstraws;
 
@@ -902,7 +902,7 @@ namespace mu2e {
     // Is layer zero closest to the straw or farthest from it.
     int factor = ( _layerZPattern == 0 ) ? ilay : (_layersPerPanel - ilay - 1);
 
-    //    cout << "Debugging TTrackerMaker ilay: " << ilay << endl;
+    //    cout << "Debugging TrackerMaker ilay: " << ilay << endl;
 
     // Start to populate the layer.
     // layer._nStraws      = _manifoldsPerEnd*_strawsPerManifold; // not really used
@@ -945,7 +945,7 @@ namespace mu2e {
       for ( int istr=0; istr<_strawsPerManifold; ++istr ){
         listraw +=2;
 
-        // layers with fewer straws would complicate StrawSD, constructTTrackerv, TTrackerMaker
+        // layers with fewer straws would complicate StrawSD, constructTrackerv, TrackerMaker
 
         // Construct straw midpoint in its base position in the
         // coord system of the plane envelope.
@@ -1018,12 +1018,12 @@ namespace mu2e {
     }
 
 //std::cout << "<-<-<- makeLayer\n";
-  } // end TTrackerMaker::makeLayer
+  } // end TrackerMaker::makeLayer
 
 
 // ======= Station view makers ============
 
-  void TTrackerMaker::makeStation( StationId stationId ){
+  void TrackerMaker::makeStation( StationId stationId ){
 
     int ist = stationId;
     int ipln1 = _planesPerStation*ist; // _planesPerStation is/has to be 2
@@ -1053,7 +1053,7 @@ namespace mu2e {
   // The straw length depends only on the manifold number.
   // See Mu2e-doc-??? for the algorithm.
 
-  void TTrackerMaker::computeStrawHalfLengths(){
+  void TrackerMaker::computeStrawHalfLengths(){
 
     // we use resize as we will set specific straw parameters using a priori known straw numbers
 
@@ -1091,9 +1091,9 @@ namespace mu2e {
 
     }
 
-  } // end TTrackerMaker::computeStrawHalfLengths
+  } // end TrackerMaker::computeStrawHalfLengths
 
-  void TTrackerMaker::makeDetails(){
+  void TrackerMaker::makeDetails(){
 
     computeStrawHalfLengths();
 
@@ -1119,9 +1119,9 @@ namespace mu2e {
           );
     }
 
-  } // end TTrackerMaker::makeDetails
+  } // end TrackerMaker::makeDetails
 
-  void TTrackerMaker::computeLayerSpacingAndShift(){
+  void TrackerMaker::computeLayerSpacingAndShift(){
 
     _layerHalfSpacing = (_layersPerPanel<=1) ? 0.0 :
       sqrt(3.0*(square(_strawOuterRadius)+_strawOuterRadius*_strawGap+0.25*square(_strawGap)))*0.5;
@@ -1129,7 +1129,7 @@ namespace mu2e {
 
   }
 
-  void TTrackerMaker::computeManifoldEdgeExcessSpace(){
+  void TrackerMaker::computeManifoldEdgeExcessSpace(){
 
     // Computes space between first/last straw and edge of manifold
 
@@ -1151,7 +1151,7 @@ namespace mu2e {
   }
 
   // Compute the spacing for the given plane.
-  double TTrackerMaker::choosePlaneSpacing( int ipln ) const {
+  double TrackerMaker::choosePlaneSpacing( int ipln ) const {
 
 
     if ( _spacingPattern == 0 ) {
@@ -1169,11 +1169,11 @@ namespace mu2e {
     }
 
     throw cet::exception("GEOM")
-      << "Unrecognized separation pattern in TTrackerMaker. \n";
+      << "Unrecognized separation pattern in TrackerMaker. \n";
 
   }
 
-  double TTrackerMaker::findFirstPlaneZ0() const{
+  double TrackerMaker::findFirstPlaneZ0() const{
 
     if ( _spacingPattern == 0 ) {
       return _planeSpacing*double(_numPlanes-1)/2.0;
@@ -1185,14 +1185,14 @@ namespace mu2e {
     }
     else {
       throw cet::exception("GEOM")
-        << "Unrecognized separation pattern in TTrackerMaker. \n";
+        << "Unrecognized separation pattern in TrackerMaker. \n";
     }
     return 0.0;
   }
 
 
   // Identify the neighbour straws for all straws in the tracker
-  void TTrackerMaker::identifyNeighbourStraws() {
+  void TrackerMaker::identifyNeighbourStraws() {
 
     for (auto& straw : _tt->_allStraws2) {
 
@@ -1315,7 +1315,7 @@ namespace mu2e {
 
   } // identifyNeighborStraws
 
-  void TTrackerMaker::makeSupportStructure(){
+  void TrackerMaker::makeSupportStructure(){
 
     SupportStructure& sup  = _tt->_supportStructure;
     _tt->_panelZOffset = _panelZOffset;
@@ -1336,7 +1336,7 @@ namespace mu2e {
     {
       if ( _numPlanes%2 !=0 ){
         throw cet::exception("GEOM")
-          << "TTrackerMaker::makeSupportStructure expected an even number of planes. Saw " << _numPlanes << " planes.\n";
+          << "TrackerMaker::makeSupportStructure expected an even number of planes. Saw " << _numPlanes << " planes.\n";
       }
 
       // From upstream end of most upstream station to the downstream end of the most downstream station.
@@ -1655,8 +1655,8 @@ namespace mu2e {
       double dz = _innerRingHalfLength-_coverHalfLength;
       if ( _ttVersion > 3 ) dz = -dz;
       TubsParams coverTubs( _innerRingOuterRadius, _outerRingInnerRadius, _coverHalfLength,0., _panelPhi);
-      sup._coverUpstream   = PlacedTubs( "TTrackerSupportCoverUpstream",   coverTubs, CLHEP::Hep3Vector(0.,0.,-dz), _coverMaterial );
-      sup._coverDownstream = PlacedTubs( "TTrackerSupportCoverDownstream", coverTubs, CLHEP::Hep3Vector(0.,0., dz), _coverMaterial );
+      sup._coverUpstream   = PlacedTubs( "TrackerSupportCoverUpstream",   coverTubs, CLHEP::Hep3Vector(0.,0.,-dz), _coverMaterial );
+      sup._coverDownstream = PlacedTubs( "TrackerSupportCoverDownstream", coverTubs, CLHEP::Hep3Vector(0.,0., dz), _coverMaterial );
     }
 
     { // Gas volume
@@ -1690,7 +1690,7 @@ namespace mu2e {
 
 
   // This needs to know the z positions of the support rings
-  void TTrackerMaker::makeThinSupportRings(){
+  void TrackerMaker::makeThinSupportRings(){
     SupportStructure& sup  = _tt->_supportStructure;
 
     TubsParams thinRingTubs ( _endRingInnerRadius, _outerRingOuterRadius, _midRingHalfLength,
@@ -1722,7 +1722,7 @@ namespace mu2e {
   }
 
   // Create all of the Tubs objects needed for G4 to describe a straw.
-  void TTrackerMaker::makeStrawTubs(){
+  void TrackerMaker::makeStrawTubs(){
     std::vector<StrawDetail>& details = _tt->_strawDetails;
 
     for ( std::vector<StrawDetail>::iterator i=details.begin();
@@ -1742,8 +1742,8 @@ namespace mu2e {
     }
   }
 
-  // Envelope that holds one plane ("TTrackerPlaneEnvelope")
-  void TTrackerMaker::computePlaneEnvelope(){
+  // Envelope that holds one plane ("TrackerPlaneEnvelope")
+  void TrackerMaker::computePlaneEnvelope(){
 
     if ( _supportModel == SupportModel::simple ){
       double halfThick = _tt->_supportParams.halfThickness() +
@@ -1772,14 +1772,14 @@ namespace mu2e {
       } // end of if on version in assigning plane envelope params
     }else{
       throw cet::exception("GEOM")
-        << "Unknown value of _supportModel in TTrackerMaker::computePlaneEnvelopeParams "
+        << "Unknown value of _supportModel in TrackerMaker::computePlaneEnvelopeParams "
         << _supportModel
         << "\n";
     }
   }
 
-  // Envelope that holds the full TTracker ("TrackerMother")
-  void TTrackerMaker::computeTrackerEnvelope(){
+  // Envelope that holds the full Tracker ("TrackerMother")
+  void TrackerMaker::computeTrackerEnvelope(){
 
     if ( _supportModel == SupportModel::simple ){
 
@@ -1807,15 +1807,15 @@ namespace mu2e {
     } else{
 
       throw cet::exception("GEOM")
-        << "Unknown value of _supportModel in TTrackerMaker::computeTrackerEnvelopeParams "
+        << "Unknown value of _supportModel in TrackerMaker::computeTrackerEnvelopeParams "
         << _supportModel
         << "\n";
     }
 
-  } //end TTrackerMaker::computeTrackerEvnvelopeParams
+  } //end TrackerMaker::computeTrackerEvnvelopeParams
 
 
-  void TTrackerMaker::recomputeHalfLengths(){
+  void TrackerMaker::recomputeHalfLengths(){
 
     // This code is only valid for the model detailedv0.
     if ( _supportModel != SupportModel::detailedv0 ) {
@@ -1859,7 +1859,7 @@ namespace mu2e {
     }
     if ( nBad > 0 ){
       throw cet::exception("GEOM")
-        << "TTRackerMaker::recomputeHalfLengths: patterm of _detailIndex is not as expected."
+        << "TRackerMaker::recomputeHalfLengths: patterm of _detailIndex is not as expected."
         << "\n";
     }
 
@@ -1987,7 +1987,7 @@ namespace mu2e {
     }
     if ( nShort > 0 ){
       throw cet::exception("GEOM")
-        << "TTRackerMaker::recomputeHalfLengths: some straws are too short.\n"
+        << "TRackerMaker::recomputeHalfLengths: some straws are too short.\n"
         << "Probably the answer is to deepen the channel."
         << "\n";
     }
@@ -2019,9 +2019,9 @@ namespace mu2e {
       straw._detailIndex = idx;
     }
 
-  } //end TTrackerMaker::recomputeHalfLengths
+  } //end TrackerMaker::recomputeHalfLengths
   double
-  TTrackerMaker::panelRotation(int ipnl,int ipln) const {
+  TrackerMaker::panelRotation(int ipnl,int ipln) const {
     if ( _rotationPattern == 5 ){
       int jplane = ipln%4;
       int jpln   = ipnl + jplane*_panelsPerPlane;
@@ -2037,7 +2037,7 @@ namespace mu2e {
   }
 
   double
-  TTrackerMaker::panelZSide(int ipanel, int iplane) const {
+  TrackerMaker::panelZSide(int ipanel, int iplane) const {
 
     // Even panels are upstream.
     if ( _panelZPattern == 0 ){
@@ -2055,7 +2055,7 @@ namespace mu2e {
 
   // made inside the panel
   // void
-  // TTrackerMaker::makePanelEBKey(int ipanel, int iplane) {
+  // TrackerMaker::makePanelEBKey(int ipanel, int iplane) {
   // }
 
 } // namespace mu2e

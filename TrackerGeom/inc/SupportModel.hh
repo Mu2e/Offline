@@ -1,7 +1,7 @@
-#ifndef TTrackerGeom_SupportModel_hh
-#define TTrackerGeom_SupportModel_hh
+#ifndef TrackerGeom_SupportModel_hh
+#define TrackerGeom_SupportModel_hh
 //
-// Enum-matched-to-String class for defining which version of the TTracker
+// Enum-matched-to-String class for defining which version of the Tracker
 // support structure is to be used.
 //
 //   $Id: SupportModel.hh,v 1.1 2013/01/07 03:54:28 kutschke Exp $

@@ -12,7 +12,6 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -24,7 +23,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TFile.h"
 #include "TNtuple.h"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -89,7 +87,7 @@ namespace mu2e {
     
   private:
     
-    void doTTracker(art::Event const& evt);
+    void doTracker(art::Event const& evt);
     
     // Diagnostic level
     int _diagLevel;
@@ -211,7 +209,7 @@ namespace mu2e {
 
     }
     
-    doTTracker(evt);
+    doTracker(evt);
     
   } // end of analyze
   
@@ -236,7 +234,7 @@ namespace mu2e {
 	 << endl;
   }
   
-  void TTSig::doTTracker(art::Event const& evt) {
+  void TTSig::doTracker(art::Event const& evt) {
     
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
@@ -635,7 +633,7 @@ namespace mu2e {
     
     delete [] tntpArray;
     
-  } // end of doTTracker
+  } // end of doTracker
   
 }
 

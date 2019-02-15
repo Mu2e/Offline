@@ -1,5 +1,5 @@
 //
-// TTracker Pattern Recognition based on Robust Helix Fit
+// Tracker Pattern Recognition based on Robust Helix Fit
 //
 // $Id: RobustHelixFinder_module.cc,v 1.2 2014/08/30 12:19:38 tassiell Exp $
 // $Author: tassiell $
@@ -28,8 +28,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 
 #include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "BTrk/BaBar/BaBar.hh"
@@ -246,8 +245,8 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
-    const TTracker* tracker = th.get();
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    const Tracker* tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
 

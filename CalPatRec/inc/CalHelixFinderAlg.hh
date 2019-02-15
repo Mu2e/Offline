@@ -34,7 +34,7 @@ namespace fhicl {
 
 namespace mu2e {
   class Calorimeter;
-  class TTracker;
+  class Tracker;
 //-----------------------------------------------------------------------------
 // output struct
 //-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    const TTracker*            _tracker;
+    const Tracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
     //    const CalTimePeak*         fTimePeak;
@@ -241,7 +241,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // setters
 //-----------------------------------------------------------------------------
-    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
 //-----------------------------------------------------------------------------
 // diagnostics

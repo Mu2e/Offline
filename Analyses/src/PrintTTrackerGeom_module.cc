@@ -1,11 +1,11 @@
 //
-// Print the information about the TTracker
+// Print the information about the Tracker
 //
 // Original author Rob Kutschke
 //
 
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -43,7 +43,7 @@ namespace mu2e {
 
   void PrintTTrackerGeom::beginRun(const art::Run& run){
 
-    TTracker const& tracker(*GeomHandle<TTracker>());
+    Tracker const& tracker(*GeomHandle<Tracker>());
 
     cout << "Tracker: " << tracker.nPlanes() << endl;
     for ( auto const& pln : tracker.getPlanes() ){

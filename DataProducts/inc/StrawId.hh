@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_StrawId_hh
-#define TrackerGeom_StrawId_hh
+#ifndef DataProducts_StrawId_hh
+#define DataProducts_StrawId_hh
 //
 // Identifier of one straw in a tracker.
 // Original author Rob Kutschke
@@ -209,4 +209,4 @@ namespace mu2e {
                            const StrawId& s );
 
 }
-#endif /* TrackerGeom_StrawId_hh */
+#endif /* DataProducts_StrawId_hh */

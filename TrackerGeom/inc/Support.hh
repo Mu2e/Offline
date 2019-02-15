@@ -1,8 +1,8 @@
-#ifndef TTrackerGeom_Support_hh
-#define TTrackerGeom_Support_hh
+#ifndef TrackerGeom_Support_hh
+#define TrackerGeom_Support_hh
 
 //
-// Describe the properites of a support for the TTracker.
+// Describe the properites of a support for the Tracker.
 //
 //
 //  $Id: Support.hh,v 1.5 2012/03/30 15:13:35 gandr Exp $
@@ -62,4 +62,4 @@ namespace mu2e {
 
 }
 
-#endif /* TTrackerGeom_Support_hh */
+#endif /* TrackerGeom_Support_hh */

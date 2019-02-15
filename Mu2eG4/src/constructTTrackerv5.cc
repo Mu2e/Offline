@@ -1,5 +1,5 @@
 //
-// Free function to construct version 5 of the TTracker
+// Free function to construct version 5 of the Tracker
 //
 // Original author David N. Brown (Louisville), Nov 2017, based on
 // previous versions by KLG and RKK.
@@ -8,15 +8,15 @@
 // Notes
 //
 // 1)  The v5 in this function name says that this is the third way we
-//     have implemented a single TTracker design in G4.  It does not refer
-//     to alternate designs of the TTracker.
+//     have implemented a single Tracker design in G4.  It does not refer
+//     to alternate designs of the Tracker.
 //
 //     This version makes logical mother volumes per plane and per
 //     panel and places panels in plane and straws in panel
 //     This version places individual panels and planes, in order to 
 //     work with alignment.
 //
-// 2) This function can build the TTracker designs described in:
+// 2) This function can build the Tracker designs described in:
 //      Mu2eG4/test/ttracker_v2.txt   - Adjust spacings to match Mu2e-doc-888-v2.
 //      and beyond
 //
@@ -39,7 +39,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
@@ -62,8 +62,8 @@ namespace mu2e{
   VolumeInfo constructTTrackerv5( VolumeInfo const& ds3Vac,
                                   SimpleConfig const& config ){
 
-    // Master geometry for the TTracker.
-    //    TTracker const & ttracker = *(GeomHandle<TTracker>());
+    // Master geometry for the Tracker.
+    //    Tracker const & tracker = *(GeomHandle<Tracker>());
 
     // The more detailed version has its own function.
     ConstructTTrackerDetail5 tt(ds3Vac, config);

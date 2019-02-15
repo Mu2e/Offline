@@ -1,5 +1,5 @@
 //
-// Enum-matched-to-String class for defining which version of the TTracker
+// Enum-matched-to-String class for defining which version of the Tracker
 // support structure is to be used.
 //
 //   $Id: SupportModel.cc,v 1.1 2013/01/07 03:54:28 kutschke Exp $
@@ -9,7 +9,7 @@
 // Contact person, Rob Kutschke
 //
 
-#include "TTrackerGeom/inc/SupportModel.hh"
+#include "TrackerGeom/inc/SupportModel.hh"
 
 namespace mu2e {
 

@@ -1,5 +1,5 @@
 //
-// example Plugin to read TTracker PlaneSupport Detectors data and create ntuples
+// example Plugin to read Tracker PlaneSupport Detectors data and create ntuples
 //
 //  $Id: ReadTTrackerDSDetectors_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
 //  $Author: genser $
@@ -20,7 +20,7 @@
 // Mu2e includes
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -135,15 +135,12 @@ namespace mu2e {
 
     art::ServiceHandle<GeometryService> geom;
 
-    if (!geom->hasElement<TTracker>()) 
+    if (!geom->hasElement<Tracker>()) 
       {
         mf::LogError("Geom")
-          << "Skipping ReadTTrackerDSDetectors::analyze due to lack of ttracker\n";
+          << "Skipping ReadTTrackerDSDetectors::analyze due to lack of tracker\n";
         return;
       }
-
-    // Master geometry for the TTracker.
-    //    TTracker const & ttracker = *(GeomHandle<TTracker>());
 
     // Access detector geometry information
 

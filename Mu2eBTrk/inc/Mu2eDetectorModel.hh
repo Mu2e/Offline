@@ -21,12 +21,12 @@
 #include <string>
 
 namespace mu2e {
-  class TTracker;
+  class Tracker;
   
   class Mu2eDetectorModel : public Detector  {
     public:
 // construct with parameter set.  Ignored for now
-      Mu2eDetectorModel(fhicl::ParameterSet const& pset, TTracker const& tt);
+      Mu2eDetectorModel(fhicl::ParameterSet const& pset, Tracker const& tt);
       virtual ~Mu2eDetectorModel();
 // given a straw, or index, find the associated element.  This will throw
 // if no match is found

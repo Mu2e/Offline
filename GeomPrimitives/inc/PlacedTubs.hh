@@ -1,5 +1,5 @@
-#ifndef TTrackerGeom_PlacedTubs_hh
-#define TTrackerGeom_PlacedTubs_hh
+#ifndef GeometryPrimitives_PlacedTubs_hh
+#define GeometryPrimitives_PlacedTubs_hh
 //
 //  Properties needed to create a Geant4 tube section object:
 //   - Shape parameters of the TUBS
@@ -80,4 +80,4 @@ namespace mu2e {
 
 }
 
-#endif /* TTrackerGeom_PlacedTubs_hh */
+#endif /* GeomPrimitives_PlacedTubs_hh */

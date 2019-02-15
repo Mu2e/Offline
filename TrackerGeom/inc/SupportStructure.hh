@@ -1,8 +1,8 @@
-#ifndef TTrackerGeom_SupportStructure_hh
-#define TTrackerGeom_SupportStructure_hh
+#ifndef TrackerGeom_SupportStructure_hh
+#define TrackerGeom_SupportStructure_hh
 
 //
-// A model for the TTracker support structure described in Mu2e-doc-888-v5
+// A model for the Tracker support structure described in Mu2e-doc-888-v5
 // (current as of Dec, 2012).
 //
 //  $Id: SupportStructure.hh,v 1.2 2014/01/06 20:50:40 kutschke Exp $
@@ -22,7 +22,7 @@ namespace mu2e {
 
   class SupportStructure{
 
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 
@@ -106,4 +106,4 @@ namespace mu2e {
 
 }
 
-#endif /* TTrackerGeom_SupportStructure_hh */
+#endif /* TrackerGeom_SupportStructure_hh */

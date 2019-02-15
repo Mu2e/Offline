@@ -1,5 +1,5 @@
-#ifndef TTrackerGeom_Station_hh
-#define TTrackerGeom_Station_hh
+#ifndef TrackerGeom_Station_hh
+#define TrackerGeom_Station_hh
 //
 // Hold information about one station in a tracker.
 //
@@ -15,18 +15,18 @@
 #include <iostream>
 
 // Mu2e includes
-#include "TTrackerGeom/inc/StationId.hh"
+#include "TrackerGeom/inc/StationId.hh"
 #include "TrackerGeom/inc/Plane.hh"
 
 // CLHEP includes
 
 namespace mu2e {
 
-  class TTracker;
+  class Tracker;
 
   class Station{
 
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 
@@ -55,7 +55,7 @@ namespace mu2e {
     std::string name( std::string const& base ) const;
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const TTracker& tracker ) const;
+    void fillPointers ( const Tracker& tracker ) const;
 
   protected:
 
@@ -71,4 +71,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif /* TTrackerGeom_Station_hh */
+#endif /* TrackerGeom_Station_hh */

@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_PanelId_hh
-#define TrackerGeom_PanelId_hh
+#ifndef DataProducts_PanelId_hh
+#define DataProducts_PanelId_hh
 
 //
 // Identifier for a panel.
@@ -15,4 +15,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif /* TrackerGeom_PanelId_hh */
+#endif /* DataProducts_PanelId_hh */

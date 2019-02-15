@@ -1,7 +1,7 @@
-#ifndef GeometryService_TTrackerMaker_hh
-#define GeometryService_TTrackerMaker_hh
+#ifndef GeometryService_TrackerMaker_hh
+#define GeometryService_TrackerMaker_hh
 //
-// Construct and return a TTracker.
+// Construct and return a Tracker.
 //
 // Original author Rob Kutschke
 //
@@ -10,28 +10,28 @@
 #include <string>
 #include <vector>
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "DataProducts/inc/LayerId.hh"
 #include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/Plane.hh"
-#include "TTrackerGeom/inc/Station.hh"
+#include "TrackerGeom/inc/Station.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
 namespace mu2e {
 
   class SimpleConfig;
-  class TTracker;
+  class Tracker;
 
-  class TTrackerMaker{
+  class TrackerMaker{
 
   public:
 
-    TTrackerMaker( SimpleConfig const& config );
+    TrackerMaker( SimpleConfig const& config );
 
     // Use compiler-generated copy c'tor, copy assignment, and d'tor
 
-    std::unique_ptr<TTracker> getTTrackerPtr() { return std::move(_tt); }
+    std::unique_ptr<Tracker> getTrackerPtr() { return std::move(_tt); }
 
   private:
 
@@ -86,7 +86,7 @@ namespace mu2e {
     double _motherZ0;                // Mother volume is centered on the DS axis; the z of the center is NOT
                                      // necessarily the same as the center of the instrumented region of the tracker.
 
-    // Basic parameters needed to describe the TTracker.
+    // Basic parameters needed to describe the Tracker.
     uint16_t    _numPlanes;                   // Number of planes.
     uint16_t    _panelsPerPlane;              // Number of panels in one plane.
     uint16_t    _layersPerPanel;              // Number of layers in one panel
@@ -139,7 +139,7 @@ namespace mu2e {
     std::vector<double> _panelZSide;
     double _planerot; // hack to make redundant information self-consistent
 
-    std::unique_ptr<TTracker> _tt;
+    std::unique_ptr<Tracker> _tt;
 
     // Derived parameters.
 
@@ -275,4 +275,4 @@ namespace mu2e {
 
 }  //namespace mu2e
 
-#endif /* GeometryService_TTrackerMaker_hh */
+#endif /* GeometryService_TrackerMaker_hh */

@@ -18,7 +18,7 @@
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -112,7 +112,7 @@ namespace mu2e {
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
 
-    mu2e::GeomHandle<mu2e::TTracker> th;
+    mu2e::GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;

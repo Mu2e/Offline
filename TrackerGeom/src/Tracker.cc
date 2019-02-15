@@ -1,21 +1,21 @@
 //
-// Geometry and identifier info about an TTracker.
+// Geometry and identifier info about an Tracker.
 //
 //
-// $Id: TTracker.cc,v 1.8 2013/01/07 04:01:16 kutschke Exp $
+// $Id: Tracker.cc,v 1.8 2013/01/07 04:01:16 kutschke Exp $
 // $Author: kutschke $
 // $Date: 2013/01/07 04:01:16 $
 //
 // Original author Rob Kutschke
 //
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 
 namespace mu2e {
 
-  void TTracker::fillPointers () const{
+  void Tracker::fillPointers () const{
     for ( size_t i=0; i<_nPlanes; ++i){
       _planes[i].fillPointers(*this);
     }

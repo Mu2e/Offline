@@ -32,7 +32,7 @@
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -168,7 +168,7 @@ namespace mu2e {
     ++ncalls;
 
     // Geometry info for the Tracker.
-    const TTracker& tracker = *GeomHandle<TTracker>();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     // Get the persistent data about the StrawHits.
 

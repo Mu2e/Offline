@@ -21,7 +21,7 @@
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
 #include "G4RunManager.hh"
@@ -40,9 +40,9 @@ namespace mu2e {
 
    art::ServiceHandle<GeometryService> geom;
 
-    if ( !geom->hasElement<TTracker>() ) {
+    if ( !geom->hasElement<Tracker>() ) {
       throw cet::exception("GEOM")
-        << "Expected T Tracker but did not find it.\n";
+        << "Expected Tracker but did not find it.\n";
     } 
     else {
       _TrackerVersion = config.getInt("TTrackerVersion",3);

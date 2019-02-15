@@ -1,5 +1,5 @@
 //
-// TTracker time cluster diagnostics
+// Tracker time cluster diagnostics
 //
 // Original author D. Brown and G. Tassielli
 //

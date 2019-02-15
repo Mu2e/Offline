@@ -1,10 +1,10 @@
-#ifndef TTrackerGeom_Manifold_hh
-#define TTrackerGeom_Manifold_hh
+#ifndef TrackerGeom_Manifold_hh
+#define TrackerGeom_Manifold_hh
 
 #include <vector>
 //#include <string>
 
-#include "TTrackerGeom/inc/ManifoldId.hh"
+#include "TrackerGeom/inc/ManifoldId.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -49,4 +49,4 @@ namespace mu2e {
 
 } // end namespace mu2e
 
-#endif /* TTrackerGeom_Manifold_hh */
+#endif /* TrackerGeom_Manifold_hh */

@@ -20,8 +20,7 @@
 #include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
@@ -156,8 +155,7 @@ namespace mu2e {
   {
       if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
-      const Tracker& tracker = getTrackerOrThrow();
-      const TTracker& tt(*GeomHandle<TTracker>());
+      const Tracker& tt(*GeomHandle<Tracker>());
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
       auto const& srep = _strawResponse_h.get(event.id());
@@ -247,7 +245,7 @@ namespace mu2e {
 	float tot = tots[eend.end()];
 	// filter on specific ionization FIXME!
 	// filter based on composite e/P separation FIXME!
-	const Straw& straw  = tracker.getStraw( digi.strawId() );
+	const Straw& straw  = tt.getStraw( digi.strawId() );
 	double dw, dwerr;
 	double dt = times[StrawEnd::cal] - times[StrawEnd::hv];
         double halfpv;

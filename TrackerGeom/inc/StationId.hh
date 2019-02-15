@@ -1,5 +1,5 @@
-#ifndef TTrackerGeom_StationId_hh
-#define TTrackerGeom_StationId_hh
+#ifndef TrackerGeom_StationId_hh
+#define TrackerGeom_StationId_hh
 
 // Station identifier.
 // If set to -1, then the station is not defined.
@@ -17,4 +17,4 @@ namespace mu2e {
 
 }
 
-#endif /* TTrackerGeom_StationId_hh */
+#endif /* TrackerGeom_StationId_hh */

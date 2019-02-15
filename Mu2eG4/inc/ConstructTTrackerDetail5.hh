@@ -19,7 +19,7 @@ namespace mu2e {
   class SimpleConfig;
   class G4Helper;
   class AntiLeakRegistry;
-  class TTracker;
+  class Tracker;
 
   class ConstructTTrackerDetail5 {
 
@@ -83,7 +83,7 @@ namespace mu2e {
     G4Helper&          _helper;
     AntiLeakRegistry & _reg;
 
-    TTracker const& _ttracker;
+    Tracker const& _tracker;
 
     int  _verbosityLevel;
     bool _doSurfaceCheck;

@@ -18,8 +18,7 @@
 #include "art/Utilities/make_tool.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -109,7 +108,7 @@ namespace mu2e
     // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
     KalFit _kfit;
     KalFitData _result;
-    const TTracker* _tracker;     // straw tracker geometry
+    const Tracker* _tracker;     // straw tracker geometry
 
     ProditionsHandle<StrawResponse> _strawResponse_h;
 
@@ -174,7 +173,7 @@ namespace mu2e
     // calculate the helicity
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
-    GeomHandle<mu2e::TTracker> th;
+    GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
 
     ///_data.tracker     = th.get();
@@ -407,7 +406,7 @@ namespace mu2e
     double flt0 = mydef.helix().zFlight(0.0);
     mydef.helix().getInfo(flt0,tposp,tdir);
     // tracker and conditions
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
     const vector<StrawHitIndex>& indices = mydef.strawHitIndices();
     vector<StrawHitIndex> goodhits;
     for(unsigned ihit=0;ihit<indices.size();++ihit){

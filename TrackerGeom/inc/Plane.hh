@@ -26,7 +26,7 @@ namespace mu2e {
 
   class Plane{
 
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 

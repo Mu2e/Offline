@@ -1,5 +1,5 @@
 //
-// Diagnostics on virtual detectors related to the TTracker.
+// Diagnostics on virtual detectors related to the Tracker.
 //
 //  $Id: TTVirtDebug_module.cc,v 1.1 2013/12/20 20:05:12 kutschke Exp $
 //  $Author: kutschke $
@@ -70,7 +70,7 @@ namespace mu2e {
       VirtualDetectorId::TT_Mid,         VirtualDetectorId::TT_MidInner,  // 11, 12
       VirtualDetectorId::TT_FrontHollow, VirtualDetectorId::TT_FrontPA,   // 13, 14
       VirtualDetectorId::TT_Back,                                         // 15 Back (downstream) face of the tracker.
-      VirtualDetectorId::TT_OutSurf,     VirtualDetectorId::TT_InSurf,    // 22-23:   external and internal surface of the TTracker envelope
+      VirtualDetectorId::TT_OutSurf,     VirtualDetectorId::TT_InSurf,    // 22-23:   external and internal surface of the Tracker envelope
     };
 
     for ( int id: vds ){
@@ -101,7 +101,7 @@ namespace mu2e {
       VirtualDetectorId::TT_Mid,         VirtualDetectorId::TT_MidInner,  // 11, 12
       VirtualDetectorId::TT_FrontHollow, VirtualDetectorId::TT_FrontPA,   // 13, 14
       VirtualDetectorId::TT_Back,                                         // 15 Back (downstream) face of the tracker.
-      VirtualDetectorId::TT_OutSurf,     VirtualDetectorId::TT_InSurf,    // 22-23:   external and internal surface of the TTracker envelope
+      VirtualDetectorId::TT_OutSurf,     VirtualDetectorId::TT_InSurf,    // 22-23:   external and internal surface of the Tracker envelope
     };
 
     for ( size_t i=0; i<hits->size(); ++i ){

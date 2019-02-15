@@ -35,7 +35,7 @@
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -420,10 +420,10 @@ namespace mu2e {
     if ( _config.getBool("hasTTracker",false)  ) {
 
 
-      // placing virtual detectors in the middle of the ttracker
+      // placing virtual detectors in the middle of the tracker
 
-      // check if ttracker exists and if the number of planes
-      // ttracker.numPlanes is even is done in VirtualDetectorMaker
+      // check if tracker exists and if the number of planes
+      // tracker.numPlanes is even is done in VirtualDetectorMaker
 
       vdId = VirtualDetectorId::TT_Mid;
       if( vdg->exist(vdId) ) {
@@ -433,12 +433,12 @@ namespace mu2e {
         }
 
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.mother().tubsParams().outerRadius();
-        double irvd = ttracker.mother().tubsParams().innerRadius();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        double orvd = tracker.mother().tubsParams().outerRadius();
+        double irvd = tracker.mother().tubsParams().innerRadius();
 
-        if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
-          auto const& beams =  ttracker.getSupportStructure().beamBody();
+        if ( tracker.getSupportModel() == SupportModel::detailedv0 ) {
+          auto const& beams =  tracker.getSupportStructure().beamBody();
           if ( beams.empty() ){
             throw cet::exception("GEOM")
               << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
@@ -481,8 +481,8 @@ namespace mu2e {
             cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
           }
 
-          // VD TT_MidInner is placed inside the ttracker at the same z position as
-          // VD TT_Mid but from radius 0 to the inner radius of the ttracker
+          // VD TT_MidInner is placed inside the tracker at the same z position as
+          // VD TT_Mid but from radius 0 to the inner radius of the tracker
           // mother volume. However, its mother volume is DS3Vacuum
           // which has a different offset. We will use the global offset
           // here (!) as DS is not in the geometry service yet
@@ -521,8 +521,8 @@ namespace mu2e {
       }
 
       // placing virtual detectors TT_FrontHollow, TT_FrontPA in front
-      // of the ttracker (in the proton absorber region); check if
-      // ttracker exist is done in VirtualDetectorMaker
+      // of the tracker (in the proton absorber region); check if
+      // tracker exist is done in VirtualDetectorMaker
 
       if (    _config.getBool("hasProtonAbsorber",false)
               && !_config.getBool("protonabsorber.isHelical", false)
@@ -543,8 +543,8 @@ namespace mu2e {
           }
 
           // the radius of tracker mother
-          TTracker const & ttracker = *(GeomHandle<TTracker>());
-          double orvd = ttracker.mother().tubsParams().outerRadius();
+          Tracker const & tracker = *(GeomHandle<Tracker>());
+          double orvd = tracker.mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -769,8 +769,8 @@ namespace mu2e {
           }
 
           // the radius of tracker mother
-          TTracker const & ttracker = *(GeomHandle<TTracker>());
-          double orvd = ttracker.mother().tubsParams().outerRadius();
+          Tracker const & tracker = *(GeomHandle<Tracker>());
+          double orvd = tracker.mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -815,8 +815,8 @@ namespace mu2e {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
         }
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.mother().tubsParams().outerRadius();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        double orvd = tracker.mother().tubsParams().outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
         if ( verbosityLevel > 0) {
@@ -861,8 +861,8 @@ namespace mu2e {
         }
 
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        TubsParams const& motherParams = ttracker.mother().tubsParams();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        TubsParams const& motherParams = tracker.mother().tubsParams();
         double orvd = motherParams.outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -877,7 +877,7 @@ namespace mu2e {
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        // the detector is on the outer surface of the ttracker envelope
+        // the detector is on the outer surface of the tracker envelope
         // it is thin cylinder, NOT a thin disk
         TubsParams  vdParamsTTrackerOutSurf(orvd,orvd+2.*vdHalfLength,motherParams.zHalfLength());
 
@@ -910,8 +910,8 @@ namespace mu2e {
         }
 
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        TubsParams const& motherParams = ttracker.mother().tubsParams();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        TubsParams const& motherParams = tracker.mother().tubsParams();
         double irvd = motherParams.innerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -926,7 +926,7 @@ namespace mu2e {
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        // the detector is on the inner surface of the ttracker envelope
+        // the detector is on the inner surface of the tracker envelope
         // it is thin cylinder, NOT a thin disk
         TubsParams  vdParamsTTrackerInSurf(irvd-2.*vdHalfLength,irvd,motherParams.zHalfLength());
 

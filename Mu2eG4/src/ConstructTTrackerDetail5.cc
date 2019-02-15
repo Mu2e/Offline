@@ -1,5 +1,5 @@
 //
-// Class to construct a modern (Nov 2017) version of the TTracker with
+// Class to construct a modern (Nov 2017) version of the Tracker with
 // more details than in the recent past.
 //
 // Based on Original by Rob Kutschke and Krzysztof Genser
@@ -19,7 +19,7 @@
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "G4Colour.hh"
 #include "G4Material.hh"
@@ -47,7 +47,7 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
   _helper(*art::ServiceHandle<G4Helper>()),
   _reg(_helper.antiLeakRegistry()),
 
-  _ttracker(*GeomHandle<TTracker>()),
+  _tracker(*GeomHandle<Tracker>()),
 
   // Switches that affect the entire tracker
   _verbosityLevel(_config.getInt("ttracker.verbosityLevel",0)),
@@ -102,7 +102,7 @@ namespace mu2e {
 // coordinate system of the mother.
 CLHEP::Hep3Vector
 mu2e::ConstructTTrackerDetail5::computeOffset(){
-  return CLHEP::Hep3Vector(0., 0., _ttracker.z0()-_ttracker.mother().position().z() );
+  return CLHEP::Hep3Vector(0., 0., _tracker.z0()-_tracker.mother().position().z() );
 }
 // *****************************************************
 
@@ -114,7 +114,7 @@ void
 mu2e::ConstructTTrackerDetail5::constructMother(){
 
   // Parameters of the new style mother volume ( replaces the envelope volume ).
-  PlacedTubs const& mother = _ttracker.mother();
+  PlacedTubs const& mother = _tracker.mother();
 
   static int const newPrecision = 8;
   static int const newWidth = 14;
@@ -144,7 +144,7 @@ mu2e::ConstructTTrackerDetail5::constructMother(){
   }
 
   // All mother/envelope volumes are made of this material.
-  G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
 
   _motherInfo = nestTubs( "TrackerMother",
                           mother.tubsParams(),
@@ -182,14 +182,14 @@ mu2e::ConstructTTrackerDetail5::constructMother(){
 // ************************
 // Construct Main Supports
 // Unfortunately, the term "support" has been multiply susbscribed
-// in the TTracker world.  Here, it means the upstream and downstream
+// in the Tracker world.  Here, it means the upstream and downstream
 // stiffening rings and inner brass rings.  The other meaning, farther
 // below, is of the rings holding the straws.
 // ************************
 void
 mu2e::ConstructTTrackerDetail5::constructMainSupports(){
 
-  SupportStructure const& sup = _ttracker.getSupportStructure();
+  SupportStructure const& sup = _tracker.getSupportStructure();
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
   geomOptions->loadEntry( _config, "ttrackerSupport", "ttracker.support" );
@@ -432,7 +432,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
   // Here is where the support material for each plane has historically been
   // built.
 
-  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
+  TubsParams planeEnvelopeParams = _tracker.getPlaneEnvelopeParams();
   
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
   geomOptions->loadEntry( _config, "ttrackerPlaneEnvelope", "ttracker.planeEnvelope" );
@@ -440,11 +440,11 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
   const bool planeEnvelopeVisible = geomOptions->isVisible("ttrackerPlaneEnvelope");
   const bool planeEnvelopeSolid   = geomOptions->isSolid("ttrackerPlaneEnvelope");
 
-  G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
 
   double dPhiPanel = panelHalfAzimuth();
 
-  for ( int ipln=0; ipln<_ttracker.nPlanes(); ++ipln ){
+  for ( int ipln=0; ipln<_tracker.nPlanes(); ++ipln ){
 
     if ( plnDraw > -1 && ipln > plnDraw ) continue;
 
@@ -453,7 +453,7 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
       cout << __func__ << " working on plane:   " << ipln << endl;
     }
 
-    const Plane& plane = _ttracker.getPlane(ipln);
+    const Plane& plane = _tracker.getPlane(ipln);
 
     if (!plane.exists()) continue;
     if (_verbosityLevel > 0 ) {
@@ -572,11 +572,11 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   // and electronics associated with what we actually construct and call
   // a "panel."
 
-  TubsParams panEnvParams = _ttracker.getPanelEnvelopeParams();
-  //  SupportStructure const& sup     = _ttracker.getSupportStructure();
+  TubsParams panEnvParams = _tracker.getPanelEnvelopeParams();
+  //  SupportStructure const& sup     = _tracker.getSupportStructure();
 
   // Panels are identical other than placement - so get required properties from plane 0, panel 0.
-  Panel const& panel(_ttracker.getPanel(PanelId(iPlane,iPanel,0)));
+  Panel const& panel(_tracker.getPanel(PanelId(iPlane,iPanel,0)));
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
   geomOptions->loadEntry( _config, "ttrackerPanelEnvelope", "ttracker.panelEnvelope" );
@@ -626,7 +626,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
          << endl;
   }
 
-  G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
 
   // *****************
   // Here we make the envelope for everything in one panel, including
@@ -637,7 +637,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   //	  << std::setw(1) << iPanel;
 
 
-  int baseCopyNo = iPlane * _ttracker.getPlane(0).nPanels();
+  int baseCopyNo = iPlane * _tracker.getPlane(0).nPanels();
 
   VolumeInfo pnl0Info = nestTubs( panel.name("Panel"),
                                   panEnvParams,
@@ -688,13 +688,13 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // all of the panels in all of the planes in all the world.
 
 
-  //  TubsParams planeEnvelopeParams = _ttracker.getPlaneEnvelopeParams();
-  SupportStructure const& sup     = _ttracker.getSupportStructure();
+  //  TubsParams planeEnvelopeParams = _tracker.getPlaneEnvelopeParams();
+  SupportStructure const& sup     = _tracker.getSupportStructure();
 
   // Straw Panels are identical other than placement - so get required
   // properties from plane 0, panel 0.
-  Plane const& plane(_ttracker.getPlane(PlaneId(0,0,0)));
-  Panel const& panel(_ttracker.getPanel(PanelId(0,0,0)));
+  Plane const& plane(_tracker.getPlane(PlaneId(0,0,0)));
+  Panel const& panel(_tracker.getPanel(PanelId(0,0,0)));
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
   geomOptions->loadEntry( _config, "ttrackerPlaneEnvelope", "ttracker.planeEnvelope" );
@@ -735,8 +735,8 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   //                          0.,
   //                          phiMax);
 
-  TubsParams panEnvParams = _ttracker.getPanelEnvelopeParams();
-  double zCorrection = panEnvParams.zHalfLength() - _ttracker.panelOffset();
+  TubsParams panEnvParams = _tracker.getPanelEnvelopeParams();
+  double zCorrection = panEnvParams.zHalfLength() - _tracker.panelOffset();
 
   if (_verbosityLevel>0) {
     cout << __func__
@@ -756,7 +756,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
 
   G4Material* envelopeMaterial = findMaterialOrThrow(
-						_ttracker.envelopeMaterial());
+						_tracker.envelopeMaterial());
 
   VolumeInfo spnl0Info = nestTubs( "StrawPanelEnvelope",
                                   panEnvParams,
@@ -777,7 +777,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // For straws on the upstream side of the support, the sign of the
   // X rotation was chosen to put the z axis of the straw volume to be
   // positive when going clockwise; this is the same convention used
-  // within the TTracker class.  For straws on the downstream side of
+  // within the Tracker class.  For straws on the downstream side of
   // the support, the z axis of the straw volume is positive when going
   // counter-clockwise.  This won't be important since we never work
   // in the straw-local coordinates within G4.
@@ -973,7 +973,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // A lot of this code is taken from the original preparePlaneSupports
   // function.  Many of the pieces here have an "upstream"
   // and "downstream" versions because of the way the code
-  // for v3 of the TTracker was developed.  We only need one
+  // for v3 of the Tracker was developed.  We only need one
   // or the other for v5, so arbitrarily choose downstream.
   // In the future, when we retire the ability to choose
   // v3 of the ttracker, we can simplify the support structure class.
@@ -1244,7 +1244,7 @@ mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.
-  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
+  Panel const& panel(_tracker.getPanel(StrawId(0,0,0)));
 
   TubsParams  keyParams  = keyItself ? panel.getEBKeyParams() : panel.getEBKeyShieldParams();
 
@@ -1321,7 +1321,7 @@ mu2e::ConstructTTrackerDetail5::constructAxes(){
   int isSolid(true);
   int edgeVisible(true);
 
-  G4Material* envelopeMaterial = findMaterialOrThrow(_ttracker.envelopeMaterial());
+  G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
 
   // A box marking the x-axis.
   double halfDimX[3];
@@ -1409,20 +1409,20 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
   // are outside the planes
   // we somehow need to avoid the overlaps
 
-  Plane const& pln = _ttracker.getPlane(ipln);
+  Plane const& pln = _tracker.getPlane(ipln);
   // to get the key info from the base panel
-  Panel const& panel(_ttracker.getPanel(StrawId(0,0,0)));
+  Panel const& panel(_tracker.getPanel(StrawId(0,0,0)));
 
   // to prevent the overlaps
-  SupportStructure const& sup = _ttracker.getSupportStructure();
+  SupportStructure const& sup = _tracker.getSupportStructure();
 
   int pnlDraw = _config.getInt ("ttracker.pnlDraw",-1);
 
   // Assume all planes have the same number of panels.
-  int baseCopyNo = ipln * _ttracker.getPlane(0).nPanels();
+  int baseCopyNo = ipln * _tracker.getPlane(0).nPanels();
 
   // The panel will be placed in the middle of the channel.
-  //  PlacedTubs const& chanUp(_ttracker.getSupportStructure().innerChannelUpstream());
+  //  PlacedTubs const& chanUp(_tracker.getSupportStructure().innerChannelUpstream());
 
   // Place the panel envelope into the plane envelope, one placement per panel.
   for ( int ipnl=0; ipnl<pln.nPanels(); ++ipnl){
@@ -1432,15 +1432,15 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
     //if ( pnlDraw > -1  && ipnl%2 == 0 ) continue;
 
     // Choose a representative straw from this  (plane,panel).
-    Straw const& straw = _ttracker.getStraw( StrawId(ipln,ipnl,0) );
+    Straw const& straw = _tracker.getStraw( StrawId(ipln,ipnl,0) );
 
     // Azimuth of the midpoint of the wire.
     CLHEP::Hep3Vector const& mid = straw.getMidPoint();
     double phimid = mid.phi();
     if ( phimid < 0 ) phimid += 2.*M_PI;
 
-    //    double theZOffset = _ttracker.panelOffset();
-    double theZOffset = _ttracker.getPanelEnvelopeParams().zHalfLength();
+    //    double theZOffset = _tracker.panelOffset();
+    double theZOffset = _tracker.getPanelEnvelopeParams().zHalfLength();
 
     // Is this panel on the front(+) or back(-) face of the plane?
     double sign   = ((mid.z() - pln.origin().z())>0. ? 1.0 : -1.0 );
@@ -1649,7 +1649,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 double
 mu2e::ConstructTTrackerDetail5::panelHalfAzimuth(){
 
-  SupportStructure const& sup     = _ttracker.getSupportStructure();
+  SupportStructure const& sup     = _tracker.getSupportStructure();
   return sup.panelPhiRange()/2.0;
 
 }
