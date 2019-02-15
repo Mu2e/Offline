@@ -355,6 +355,7 @@ namespace mu2e {
       Hist._hHelInfo[i][4] = helInfoDir.make<TH1F>(Form("hChi2dXY_%i"  , i), "Helix #chi^{2}_{xy}/ndof;#chi^{2}_{xy}/ndof"      , 100, 0, 50);
       Hist._hHelInfo[i][5] = helInfoDir.make<TH1F>(Form("hChi2dZPhi_%i", i), "Helix #chi^{2}_{z#phi}/ndof;#chi^{2}_{z#phi}/ndof", 100, 0, 50);
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
+      Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
 
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
@@ -951,9 +952,9 @@ namespace mu2e {
 	while(mother->hasParent()) mother = mother->parent();
 	sim = mother.operator ->();
 	int      pdgM   = sim->pdgId();
-	double   pXMC   = step->momentum().x();
-	double   pYMC   = step->momentum().y();
-	double   pZMC   = step->momentum().z();
+	double   pXMC   = simptr->startMomentum().x();
+	double   pYMC   = simptr->startMomentum().y();
+	double   pZMC   = simptr->startMomentum().z();
 	double   mass(-1.);//  = part->Mass();
 	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
 	mass   = pdt->particle(pdg).ref().mass();
@@ -968,7 +969,6 @@ namespace mu2e {
 	origin.SetY(sp->y());
 	origin.SetZ(sp->z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
-	// trackSeed->fOrigin1.SetXYZT(sp->x(),sp->y(),sp->z(),simptr->startGlobalTime());
 	double pz     = sqrt(p*p - pt*pt);
 
 	//now fill the MC histograms
@@ -991,7 +991,11 @@ namespace mu2e {
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
-    int        nsh       = (int)HSeed->hits().size();
+    int        nch       = (int)HSeed->hits().size();
+    int        nsh(0);
+    for (int i=0; i<nch; ++i) {
+      nsh += HSeed->hits().at(i).nStrawHits();
+    }
     float      mm2MeV    = (3./10.)*_bz0;
 
     double     p         = HSeed->helix().momentum()*mm2MeV;
@@ -1000,6 +1004,7 @@ namespace mu2e {
     double     pt        = HSeed->helix().radius()*mm2MeV;
     double     d0        = HSeed->helix().rcent() - HSeed->helix().radius();
     double     clE(-1.);
+    double     lambda    = fabs(HSeed->helix().lambda());
     if (HSeed->caloCluster()) clE = HSeed->caloCluster()->energyDep();
 
     Hist._hHelInfo[HelTrigIndex][0]->Fill(p);
@@ -1009,13 +1014,14 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][4]->Fill(chi2dXY);
     Hist._hHelInfo[HelTrigIndex][5]->Fill(chi2dZPhi);
     Hist._hHelInfo[HelTrigIndex][6]->Fill(clE);
+    Hist._hHelInfo[HelTrigIndex][7]->Fill(lambda);
 
      //add the MC info if available
     if (_mcdigis) {
       //      const mu2e::ComboHit*    hit(0);
       std::vector<int>         hits_simp_id, hits_simp_index, hits_simp_z;
 
-      for (int j=0; j<nsh; ++j){
+      for (int j=0; j<nch; ++j){
 	std::vector<StrawDigiIndex> shids;
 	HSeed->hits().fillStrawDigiIndices((*_event),j,shids);	
 	//	hit            = &HSeed->hits().at(j);

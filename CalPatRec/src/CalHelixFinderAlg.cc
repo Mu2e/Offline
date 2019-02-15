@@ -2025,12 +2025,13 @@ namespace mu2e {
 
 	  //compare tripletHelix with bestTripletHelix
 	  //2019-02-08: gianipez chanceg the logic;
-	  // if (( TmpHelix._nStrawHits >  Helix._nStrawHits) ||
-	  //     ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2))) {
-	  int   deltaNSh = TmpHelix._nStrawHits -  Helix._nStrawHits;
-	  if ( ( deltaNSh >=  _minDeltaNShPatRec)  ||
-	       ( deltaNSh>=0 && (deltaNSh-_minDeltaNShPatRec < 0) && (TmpHelix._helixChi2 < Helix._helixChi2)) ||
-	       ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2)) ) {
+	  //2019-02-15: gianipez put the old logic back. FIXME!
+	  if (( TmpHelix._nStrawHits >  Helix._nStrawHits) ||
+	      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2))) {
+	  // int   deltaNSh = TmpHelix._nStrawHits -  Helix._nStrawHits;
+	  // if ( ( deltaNSh >=  _minDeltaNShPatRec)  ||
+	  //      ( deltaNSh>=0 && (deltaNSh-_minDeltaNShPatRec < 0) && (TmpHelix._helixChi2 < Helix._helixChi2)) ||
+	  //      ((TmpHelix._nStrawHits == Helix._nStrawHits) && (TmpHelix._helixChi2 < Helix._helixChi2)) ) {
 	    Helix = TmpHelix;
 	  }
 	  if (_debug > 5) {
