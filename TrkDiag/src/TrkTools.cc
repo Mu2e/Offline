@@ -73,6 +73,9 @@ namespace mu2e {
       unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
       countHits(kseed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
       trkinfo._ndof = nactive -5;
+      if (kseed.hasCaloCluster()) {
+	++trkinfo._ndof;
+      }
       trkinfo._nhits = nhits;
       trkinfo._nactive = nactive;
       trkinfo._ndouble = ndouble;
@@ -122,7 +125,6 @@ namespace mu2e {
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
       trkinfo._ent._fitmomerr = kseg.momerr();
-      trkinfo._ent._fltlen = kseg.fmin(); //TODO
       trkinfo._ent._fitpar = kseg.helix();
       CLHEP::HepSymMatrix pcov;
       kseg.covar().symMatrix(pcov);
@@ -172,12 +174,18 @@ namespace mu2e {
 	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
 	tshinfo._ht = ihit->driftTime() + ihit->signalTime() + ihit->t0().t0();
 	tshinfo._ambig = ihit->ambig();
+	/*
+	if(ihit->hasResidual())
+	  tshinfo._doca = ihit->poca().doca(); // TODO
+	else
+	  tshinfo._doca = -100.0;
+	*/
 	tshinfo._doca = ihit->wireDOCA();
 	tshinfo._edep = ihit->energyDep();
 	tshinfo._wdist = ihit->wireDist();
 	tshinfo._werr = ihit->wireRes();	
 	tshinfo._driftend = ihit->driftEnd();
-	tshinfo._tdrift = ihit->driftTime(); 
+	tshinfo._tdrift = ihit->driftTime();
 
 	// count correlations with other TSH
 	for(std::vector<TrkStrawHitSeed>::const_iterator jhit=kseed.hits().begin(); jhit != ihit; ++jhit) {
@@ -197,8 +205,9 @@ namespace mu2e {
 
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos ) {
       tminfos.clear();
-     // loop over straws (material) 
-      for(const auto& i_straw : kseed.straws()) { 
+      // loop over sites, pick out the materials
+      
+      for(const auto& i_straw : kseed.straws()) {
 	TrkStrawMatInfo tminfo;
 
 	tminfo._plane = i_straw.straw().getPlane();

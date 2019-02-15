@@ -271,7 +271,7 @@ namespace mu2e
  }
 
   void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const {
-    trkfitinfo._fltlen = fltlen;
+    //    trkfitinfo._fltlen = fltlen;
     // find momentum and parameters
     double loclen(0.0);
     const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
@@ -387,7 +387,7 @@ namespace mu2e
     Hep3Vector tdir = tsh->trkTraj()->direction(tshinfo._trklen);
     tshinfo._wdot = tdir.dot(tsh->straw().getDirection());
     // for now approximate the local bfield direction as the z axis FIXME!!
-    tshinfo._bdot = tdir.z();
+    //    tshinfo._bdot = tdir.z();
     tshinfo._t0 = tsh->hitT0()._t0;
     // include signal propagation time correction
     tshinfo._ht = tsh->time()-tsh->signalTime();
@@ -401,8 +401,8 @@ namespace mu2e
       tshinfo._doca = tsh->poca().doca();
     else
       tshinfo._doca = -100.0;
-    tshinfo._exerr = tsh->driftVelocity()*tsh->temperature();
-    tshinfo._penerr = tsh->penaltyErr();
+    //    tshinfo._exerr = tsh->driftVelocity()*tsh->temperature();
+    //    tshinfo._penerr = tsh->penaltyErr();
     tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 // cannot count correlations with other hits in this function; set to false
     tshinfo._dhit = tshinfo._dactive = false;
@@ -491,10 +491,10 @@ namespace mu2e
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
     }
-    Hep3Vector mcmomvec = spp->startMomentum();
-    double mcmom = mcmomvec.mag();
+    //    Hep3Vector mcmomvec = spp->startMomentum();
+    //    double mcmom = mcmomvec.mag();
     // fill track-specific  MC info
-    mcinfo._nactive = mcinfo._nhits = mcinfo._ngood = mcinfo._nambig = 0;
+    mcinfo._nactive = mcinfo._nhits = mcinfo._nambig = 0;
     if(krep != 0){
       TrkStrawHitVector tshv;
       convert(krep->hitVector(),tshv);
@@ -510,7 +510,7 @@ namespace mu2e
 	    TrkStrawHitInfoMC tshinfomc;
 	    fillHitInfoMC(spp,mcdigi,tsh->straw(),tshinfomc);
 	    // count hits with at least givien fraction of the original momentum as 'good'
-	    if(tshinfomc._mom/mcmom > _mingood )++mcinfo._ngood;
+	    //	    if(tshinfomc._mom/mcmom > _mingood )++mcinfo._ngood;
 	    if(tsh->isActive()){
 	      ++mcinfo._nactive;
 	    // count hits with correct left-right iguity
@@ -553,11 +553,11 @@ namespace mu2e
       tminfo._active = kmat->isActive();
       tminfo._dp = kmat->momFraction();
       tminfo._radlen = kmat->radiationFraction();
-      tminfo._sigMS = kmat->deflectRMS();
+      //      tminfo._sigMS = kmat->deflectRMS();
       // DetIntersection info
       const DetIntersection& dinter = kmat->detIntersection();
-      tminfo._thit = (dinter.thit != 0);
-      tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive());
+      //      tminfo._thit = (dinter.thit != 0);
+      //      tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive());
       tminfo._doca = dinter.dist;
       tminfo._tlen = dinter.pathlen;
       // straw information

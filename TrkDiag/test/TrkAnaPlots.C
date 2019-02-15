@@ -119,8 +119,9 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
   TCut final = reco+goodfit;
-  TCut evtwt = "evtwt.PBIWeight";
-  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
+//  TCut evtwt = "evtwt.PBIWeight";
+//  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
+  ta->Project("momresp","de.mom-demcgen.mom",final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
@@ -172,8 +173,9 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  TCut evtwt = "evtwt.PBIWeight";
-  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+ // TCut evtwt = "evtwt.PBIWeight";
+//  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+  ta->Project("momres","de.mom-demcent.mom",final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
@@ -260,7 +262,8 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
   TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>103.85";
-  TCut evtwt = "evtwt.PBIWeight";
+//  TCut evtwt = "evtwt.PBIWeight";
+  TCut evtwt = "";
   ta->Project("acc",binnames[ibin++],evtwt);
   ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
   ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco));
@@ -378,7 +381,7 @@ void wpull(TTree* ta) {
 
 }
 
-void Ambig(TTree* ta) {
+void Ambig(TTree* ta,const char* file="") {
   gStyle->SetOptStat(1111);
 
   TCut ghit("detshmc._rel==0");
@@ -390,7 +393,7 @@ void Ambig(TTree* ta) {
   TCut active("detsh._active>0");
 // apply requested cuts
 
-  TCut goodtrk("de.status>0&&de.trkqual>0.4");
+  TCut goodtrk("de.status>0&&de.nactive>20&&");
 
 
   TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
@@ -558,7 +561,7 @@ void Ambig(TTree* ta) {
   fleg->Draw();
 
   ambigcan->cd(0);
-
+  if(strcmp(file,"")!=0)ambigcan->SaveAs(file);
 }
 
 void Resid(TTree* ta) {
@@ -777,3 +780,145 @@ void StrawMat(TTree* ta) {
   mleg->AddEntry(hifracres,"N_{added}/N>0.1","L");
   mleg->Draw();
 }
+
+void TrkCaloHit(TTree* ta) {
+  TCut goodtrkcalo("de.trkqual>0.6&&detch.active");
+  TCut disk0("detch.disk==0");
+  TCut disk1("detch.disk==1");
+  TH1F* clen0 = new TH1F("clen0","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,-700,900);
+  TH1F* clen1 = new TH1F("clen1","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,-700,900);
+  TH1F* cdoca0 = new TH1F("cdoca0","TrkCaloHit DOCA;DOCA (mm)",200,-250,700);
+  TH1F* cdoca1 = new TH1F("cdoca1","TrkCaloHit DOCA;DOCA (mm)",200,-250,700);
+  TH2F* cld0 = new TH2F("cld0","TrkCaloHit DOCA vs Depth, Disk 0;Depth (mm);DOCA (mm)",100,-700,900,50,-250,700);
+  TH2F* cld1 = new TH2F("cld1","TrkCaloHit DOCA vs Depth, Disk 1;Depth (mm);DOCA (mm)",100,-700,900,50,-250,700);
+  TH1F* cdt = new TH1F("ddt","Extrapolated Track Time - CaloCluster Time",100,-5,5);
+  clen0->SetLineColor(kRed);
+  clen1->SetLineColor(kBlue);
+  cdoca0->SetLineColor(kRed);
+  cdoca1->SetLineColor(kBlue);
+  clen0->SetStats(0);
+  clen1->SetStats(1);
+  cdoca0->SetStats(0);
+  cdoca1->SetStats(1);
+  cld0->SetStats(0);
+  cld1->SetStats(1);
+ 
+  ta->Project("clen0","detch.clen",goodtrkcalo&&disk0);
+  ta->Project("clen1","detch.clen",goodtrkcalo&&disk1);
+  ta->Project("cdoca0","detch.doca",goodtrkcalo&&disk0);
+  ta->Project("cdoca1","detch.doca",goodtrkcalo&&disk1);
+
+  ta->Project("cld0","detch.doca:detch.clen",goodtrkcalo&&disk0);
+  ta->Project("cld1","detch.doca:detch.clen",goodtrkcalo&&disk1);
+  TLegend* tchleg = new TLegend(0.5,0.7,0.9,0.9);
+  tchleg->AddEntry(clen0,"Disk 0","L");
+  tchleg->AddEntry(clen1,"Disk 1","L");
+
+  TCanvas* tchcan = new TCanvas("tchcan","TrkCaloHit",800,800);
+  tchcan->Divide(2,2);
+  tchcan->cd(1);
+  gPad->SetLogy();
+  clen0->Draw();
+  clen1->Draw("same");
+  tchcan->cd(2);
+  gPad->SetLogy();
+  cdoca0->Draw();
+  cdoca1->Draw("same");
+  tchleg->Draw();
+  tchcan->cd(3);
+  gPad->SetLogz();
+  cld0->Draw("colorz");
+  tchcan->cd(4);
+  gPad->SetLogz();
+  cld1->Draw("colorz");
+  TCut goodclen("detch.clen>0&&detch.clen<150.0");
+  TCut badclen("detch.clen>150.0&&detch.clen<250.0");
+//  TH1F* rad0g = new TH1F("rad0g","Cluster Radius, Disk 0",100,380,630);
+//  TH1F* rad0b = new TH1F("rad0b","Cluster Radius, Disk 0",100,380,630);
+//  ta->Project("rad0g","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&goodclen);
+//  ta->Project("rad0b","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&badclen);
+  TH2F* rad0 = new TH2F("RvD0","Cluster Radius vs TrkCaloHit Depth, Disk 0;Depth (mm);Radius (mm)",100,0,300,100,360,650);
+  TH2F* rad1 = new TH2F("RvD1","Cluster Radius vs TrkCaloHit Depth, Disk 1;Depth (mm);Radius (mm)",100,0,300,100,360,650);
+  rad0->SetStats(0);
+  rad1->SetStats(0);
+  ta->Project("RvD0","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk0);
+  ta->Project("RvD1","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk1);
+  TCanvas* tchrcan = new TCanvas("tchrcan","TrkCaloHit Radius", 800, 800);
+  tchrcan->Divide(1,2);
+  tchrcan->cd(1);
+  gPad->SetLogz();
+  rad0->Draw("colorz");
+  tchrcan->cd(2);
+  gPad->SetLogz();
+  rad1->Draw("colorz");
+  
+}
+
+void TrkCaloHitMC(TTree* ta) {
+  TCut goodtrkcalo("de.trkqual>0.6&&detch.active");
+  TCut disk0("detch.disk==0");
+  TCut disk1("detch.disk==1");
+
+  TH1F* clen0m = new TH1F("clen0m","TrkCaloHit POCA Crystal Depth, Disk 0;Depth(mm)",200,-700,900);
+  TH1F* clen0n = new TH1F("clen0n","TrkCaloHit POCA Crystal Depth, Disk 0;Depth(mm)",200,-700,900);
+  TH1F* clen1m = new TH1F("clen1m","TrkCaloHit POCA Crystal Depth, Disk 1;Depth(mm)",200,-700,900);
+  TH1F* clen1n = new TH1F("clen1n","TrkCaloHit POCA Crystal Depth, Disk 1;Depth(mm)",200,-700,900);
+  TH1F* cdoca0m = new TH1F("cdoca0m","TrkCaloHit DOCA, Disk 0;DOCA (mm)",200,-250,700);
+  TH1F* cdoca0n = new TH1F("cdoca0n","TrkCaloHit DOCA, Disk 0;DOCA (mm)",200,-250,700);
+  TH1F* cdoca1m = new TH1F("cdoca1m","TrkCaloHit DOCA, Disk 1;DOCA (mm)",200,-250,700);
+  TH1F* cdoca1n = new TH1F("cdoca1n","TrkCaloHit DOCA, Disk 1;DOCA (mm)",200,-250,700);
+  clen0m->SetLineColor(kBlack);
+  clen0n->SetLineColor(kCyan);
+  clen1m->SetLineColor(kBlack);
+  clen1n->SetLineColor(kCyan);
+  cdoca0m->SetLineColor(kBlack);
+  cdoca0n->SetLineColor(kCyan);
+  cdoca1m->SetLineColor(kBlack);
+  cdoca1n->SetLineColor(kCyan);
+//
+  clen0m->SetStats(0);
+  clen0n->SetStats(0);
+  clen1m->SetStats(0);
+  clen1n->SetStats(0);
+  cdoca0m->SetStats(0);
+  cdoca0n->SetStats(0);
+  cdoca1m->SetStats(0);
+  cdoca1n->SetStats(0);
+
+  TCut tcm("detchmc.prel>=0");
+  TCut tcn("detchmc.prel<0");
+  ta->Project("clen0m","detch.clen",goodtrkcalo&&disk0&&tcm);
+  ta->Project("clen0n","detch.clen",goodtrkcalo&&disk0&&tcn);
+  ta->Project("clen1m","detch.clen",goodtrkcalo&&disk1&&tcm);
+  ta->Project("clen1n","detch.clen",goodtrkcalo&&disk1&&tcn);
+
+  ta->Project("cdoca0m","detch.doca",goodtrkcalo&&disk0&&tcm);
+  ta->Project("cdoca0n","detch.doca",goodtrkcalo&&disk0&&tcn);
+  ta->Project("cdoca1m","detch.doca",goodtrkcalo&&disk1&&tcm);
+  ta->Project("cdoca1n","detch.doca",goodtrkcalo&&disk1&&tcn);
+
+  TLegend* tchmcleg = new TLegend(0.5,0.7,0.9,0.9);
+  tchmcleg->AddEntry(clen0m,"Trk-Calo MC Match","L");
+  tchmcleg->AddEntry(clen0n,"No MC Match","L");
+
+  TCanvas* tchmc = new TCanvas("tchmc","TrkCaloHitMC",800,800);
+  tchmc->Divide(2,2);
+  tchmc->cd(1);
+  gPad->SetLogy();
+  clen0m->Draw();
+  clen0n->Draw("same");
+  tchmc->cd(2);
+  gPad->SetLogy();
+  clen1m->Draw();
+  clen1n->Draw("same");
+  tchmcleg->Draw();
+  tchmc->cd(3);
+  gPad->SetLogy();
+  cdoca0m->Draw();
+  cdoca0n->Draw("same");
+  tchmc->cd(4);
+  gPad->SetLogy();
+  cdoca1m->Draw();
+  cdoca1n->Draw("same");
+}
+

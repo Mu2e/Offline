@@ -298,13 +298,16 @@ BEGIN_PROLOG
     # diagnostic Reco sequences starting from digis
     EventWeightSequence : [ PBIWeight ]
 
+    TrkQualSequence : [ TrkQualDeM, TrkQualUeM, TrkQualDmuM,
+    		      	TrkQualDeP, TrkQualUeP, TrkQualDmuP ]
+
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-		     @sequence::Tracking.TPRDeM, TrkQualDeM,
-		     @sequence::Tracking.TPRUeM, TrkQualUeM,
-		     @sequence::Tracking.TPRDmuM, TrkQualDmuM,
-                     @sequence::Tracking.TPRDeP, TrkQualDeP,
-                     @sequence::Tracking.TPRUeP, TrkQualUeP,
-                     @sequence::Tracking.TPRDmuP, TrkQualDmuP ]
+		     @sequence::Tracking.TPRDeM,
+		     @sequence::Tracking.TPRUeM,
+		     @sequence::Tracking.TPRDmuM,
+                     @sequence::Tracking.TPRDeP,
+                     @sequence::Tracking.TPRUeP,
+                     @sequence::Tracking.TPRDmuP ]
 
     CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
@@ -320,8 +323,29 @@ TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF,
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
 			    @sequence::TrkAna.TrkRecoSequence,
+			    @sequence::TrkAna.TrkQualSequence,
 		            @sequence::TrkCaloMatchSequence ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 				 @sequence::TrkAna.CrvRecoSequence ]
+
+TrkAnaReco : {
+   producers: {
+      PBIWeight : @local::TrkAna.producers.PBIWeight
+      TrkQualDeM : @local::TrkAna.producers.TrkQualDeM
+      TrkQualUeM : @local::TrkAna.producers.TrkQualUeM
+      TrkQualDeP : @local::TrkAna.producers.TrkQualDeP
+      TrkQualUeP : @local::TrkAna.producers.TrkQualUeP
+      TrkQualDmuM : @local::TrkAna.producers.TrkQualDmuM
+      TrkQualDmuP : @local::TrkAna.producers.TrkQualDmuP
+   }
+
+   analyzers : {
+      TrkAnaReco : @local::TrkAna.analyzers.TrkAnaReco
+      genCountLogger : @local::TrkAna.analyzers.genCountLogger
+   }
+
+   TrigSequence : [ PBIWeight, TrkQualDeM ]
+   EndSequence : [ TrkAnaReco, genCountLogger ]
+}
 
 END_PROLOG
