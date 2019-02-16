@@ -19,8 +19,11 @@ physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 
 # for hit level diagnostics, set diagLevel to 2
-physics.analyzers.TrkAnaReco.diagLevel : 1
-physics.analyzers.TrkAnaReco.FillMCInfo : true
-physics.analyzers.TrkAnaReco.AnalyzeCRV : true
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaNeg.FillMCInfo : true
+physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+physics.analyzers.TrkAnaPos.diagLevel : 1
+physics.analyzers.TrkAnaPos.FillMCInfo : true
+physics.analyzers.TrkAnaPos.AnalyzeCRV : true
 
 services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"
