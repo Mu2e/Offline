@@ -370,7 +370,7 @@ namespace mu2e
 	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
 	    // fill the segment
 	    KalSegment kseg;
-	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    TrkUtilities::fillSegment(*htraj,momerr,locflt-fltlen,kseg);
 	    fseed._segments.push_back(kseg);
 	  }
 	  // see if there's a TrkCaloHit
@@ -385,7 +385,7 @@ namespace mu2e
 	    BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
 	    double locflt(0.0);
 	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
-	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
 	    fseed._segments.push_back(kseg);
 	  }
 	  // save KalSeed for this track

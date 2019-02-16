@@ -33,7 +33,7 @@ namespace mu2e {
     TrkCaloHitSeed const& caloHit() const { return _chit; }
     std::vector<TrkStraw> const& straws() const { return _straws;}
     std::vector<KalSegment> const& segments() const { return _segments; }
-    // find the nearest segment to a given flightlength
+    // find the nearest segment to a given GLOBAL flightlength
     std::vector<KalSegment>::const_iterator nearestSegment(float fltlen)  const;
     TrkFitFlag const& status() const { return _status; }
     Float_t flt0() const { return _flt0; }

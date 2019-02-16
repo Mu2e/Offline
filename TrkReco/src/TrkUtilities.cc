@@ -89,9 +89,10 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg) {
+    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg) {
       kseg._fmin = htraj.lowRange();
       kseg._fmax = htraj.hiRange();
+      kseg._dflt = dflt;
       kseg._helix = htraj.parameters()->parameter();
       kseg._hcov = htraj.parameters()->covariance();
       kseg._mom = momerr.mag();

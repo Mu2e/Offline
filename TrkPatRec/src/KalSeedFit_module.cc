@@ -84,6 +84,7 @@ namespace mu2e
     int _diag;
     int _printfreq;
     bool _saveall;
+    bool _checkhelicity;
     // event object tags
     art::ProductToken<ComboHitCollection> const _shToken;
     art::ProductToken<HelixSeedCollection> const _hsToken;
@@ -128,6 +129,7 @@ namespace mu2e
     _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
     _saveall(pset.get<bool>("saveall",false)),
+    _checkhelicity(pset.get<bool>("CheckHelicity",true)),
     _shToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _hsToken{consumes<HelixSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
     _seedflag(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
@@ -237,8 +239,8 @@ namespace mu2e
 // PDG codes have opposite signs
 //-----------------------------------------------------------------------------
       TrkParticle tpart(_tpart);
-      if   (_helicity == hseed.helix().helicity()) tpart = _tpart;
-      else {
+      if(_helicity != hseed.helix().helicity()) {
+	if(_checkhelicity) throw cet::exception("RECO")<<"mu2e::KalSeedFit: helicity doesn't match configuration" << endl;
 	TrkParticle::type t = (TrkParticle::type) (-(int) _tpart.particleType());
 	tpart = TrkParticle(t);
       }
@@ -305,7 +307,7 @@ namespace mu2e
 	  KalSegment kseg;
 	  // sample the momentum at this point
 	  BbrVectorErr momerr;// = krep->momentumErr(krep->flt0());
-	  TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	  TrkUtilities::fillSegment(*htraj,momerr,0.0,kseg);
 	  kf._segments.push_back(kseg);
 	} else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
@@ -360,7 +362,7 @@ namespace mu2e
 	    KalSegment kseg;
 	    // sample the momentum at this point
 	    BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
-	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    TrkUtilities::fillSegment(*htraj,momerr,locflt-_result.krep->flt0(),kseg);
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
 	    kscol->push_back(kseed);

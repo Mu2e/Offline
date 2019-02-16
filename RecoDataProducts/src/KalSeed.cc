@@ -5,11 +5,13 @@ namespace mu2e {
     auto retval = segments().end();
     float dmin(std::numeric_limits<float>::max());
     for(auto ikseg = segments().begin(); ikseg !=segments().end(); ikseg++) {
-      if(ikseg->fmin() < fltlen && ikseg->fmax() > fltlen) {
+    // limits are kept in LOCAL flight legnth
+      float lflt = ikseg->localFlt(fltlen);
+      if(ikseg->fmin() < lflt && ikseg->fmax() > lflt) {
 	retval = ikseg;
 	break;
       }
-      float dist = std::min(fabs(ikseg->fmin()-fltlen),fabs(ikseg->fmax()-fltlen));
+      float dist = std::min(fabs(ikseg->fmin()-lflt),fabs(ikseg->fmax()-lflt));
       if(dist < dmin){
 	dmin = dist;
 	retval = ikseg;

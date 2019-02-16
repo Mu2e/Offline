@@ -14,6 +14,7 @@ namespace mu2e {
     Helicity(int ival) { _value = static_cast<helicity>( (ival > 0) - (ival < 0) ); }
     Helicity(float val) { _value = val != 0.0 ? static_cast<helicity>(copysign(1.0,val)) : unknown; }
     bool operator == (Helicity const& other) const { return _value == other._value; }
+    bool operator != (Helicity const& other) const { return !(operator ==(other)); }
     bool operator < (Helicity const& other) const { return _value < other._value; }
     helicity _value;
     static const char* name(Helicity const& h) {
