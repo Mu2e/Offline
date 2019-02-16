@@ -38,11 +38,12 @@ namespace mu2e
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _avgDriftTime(pset.get<double>("AverageDriftTime",22.5)), 
     _useTOTdrift(pset.get<bool>("UseTOTDrift",true)),
-    _shDtDz(pset.get<double>("StrawHitInversVelocity",0.00534)), // ns/mm
-    _shBeta(pset.get<double>("StrawHitBeta",1.)),
+    _pitch(pset.get<double>("AveragePitch",0.62)),// note this can be signed!
+    _invBeta(1.0/pset.get<double>("ParticleBeta",1.)),
     _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
+    _caloZOffset(pset.get<double>("CaloClusterZOffset",-120.0)), // WRT downstream face (mm)
     _caloT0Offset(pset.get<double>("CaloT0Offset",-0.4)), // nanoseconds
-    _caloT0Err(pset.get<double>("CaloTimeErr",0.8)) // nanoseconds
+    _caloT0Err(pset.get<double>("CaloTimeErr",0.5)) // nanoseconds
     { }
 
   TrkTimeCalculator::~TrkTimeCalculator() {}
@@ -55,7 +56,8 @@ namespace mu2e
   }
 
   double TrkTimeCalculator::timeOfFlightTimeOffset(double hitz) const {
-    return hitz*_shDtDz*_fdir.dzdt();
+    static double invclight = 0.003336; // This value should come from conditions FIXME!!!  
+    return hitz*_invBeta*invclight*_fdir.dzdt();
   }
 
   double TrkTimeCalculator::strawHitTime(StrawHit const& sh, StrawHitPosition const& shp) {
@@ -72,7 +74,7 @@ namespace mu2e
   double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskId(), cc.cog3Vector())); 
-    return cc.time() - timeOfFlightTimeOffset(cog.z()) + caloClusterTimeOffset();
+    return cc.time() - timeOfFlightTimeOffset(cog.z()+_caloZOffset) + caloClusterTimeOffset();
   }
 
 }

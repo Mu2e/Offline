@@ -28,6 +28,7 @@
 
 // C++ includes
 #include <ostream>
+#include <vector>
 
 namespace mu2e {
 
@@ -109,7 +110,7 @@ namespace mu2e {
         << " )";
     return ost;
   }
-
+  typedef std::vector<mu2e::GenParticle> GenParticleCollection;
 }
 
 #endif /* MCDataProducts_GenParticle_hh */

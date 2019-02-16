@@ -24,6 +24,7 @@ namespace mu2e {
   class TimeCluster;
   class TrkCaloHit;
   class TrkCaloHitSeed;
+  class ComboHitCollection;
   typedef std::vector<StrawHitIndex> SHIV;
   namespace TrkUtilities {
   // convert the robust helix format into the BaBar format HelixTraj.  This requires
@@ -34,7 +35,7 @@ namespace mu2e {
     // create a KalSegment (helix segment) from a HelixTraj
     void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
-    void fillStrawHitSeeds(const KalRep* krep, std::vector<TrkStrawHitSeed>& hitseeds);
+    void fillStrawHitSeeds(const KalRep* krep, ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds);
     void fillCaloHitSeed(const TrkCaloHit* chit, TrkCaloHitSeed& caloseed);
     void fillStraws(const KalRep* krep, std::vector<TrkStraw>& straws);
     // compute overlap between 2 time clusters
@@ -46,6 +47,7 @@ namespace mu2e {
     // compute the flightlength for a given z position
     //    double zFlight(TrkDifPieceTraj const& ptraj, double pz);
     double chisqConsistency(const KalRep* krep);
+    unsigned countBends(const KalRep* krep);
     const TrkCaloHit* findTrkCaloHit(const KalRep* krep);
   }
 }

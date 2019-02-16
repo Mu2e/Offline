@@ -25,7 +25,7 @@ namespace mu2e {
     KalSeed() :  _flt0(0), _chisq(0.0), _fitcon(0.0) {}
     KalSeed(TrkParticle tpart,TrkFitDirection fdir,TrkT0 const& t0, double flt0, TrkFitFlag const& status) :
       _tpart(tpart), _fdir(fdir), _status(status), _t0(t0), _flt0(static_cast<Float_t>(flt0)),
-      _chisq(-1.0), _fitcon(-1.0) {}
+      _chisq(-1.0), _fitcon(-1.0), _nbend(0) {}
 
     TrkParticle const& particle() const { return _tpart; }
     TrkFitDirection const& fitDirection() const { return _fdir; }
@@ -33,11 +33,15 @@ namespace mu2e {
     TrkCaloHitSeed const& caloHit() const { return _chit; }
     std::vector<TrkStraw> const& straws() const { return _straws;}
     std::vector<KalSegment> const& segments() const { return _segments; }
+    // find the nearest segment to a given flightlength
+    std::vector<KalSegment>::const_iterator nearestSegment(float fltlen)  const;
     TrkFitFlag const& status() const { return _status; }
     Float_t flt0() const { return _flt0; }
     HitT0 const& t0() const { return _t0; }
     Float_t chisquared() const { return _chisq; }
     Float_t fitConsistency() const { return _fitcon; }
+    UInt_t nBend() const { return _nbend; }
+    bool hasCaloCluster() const { return _chit.caloCluster().isNonnull(); }
     art::Ptr<CaloCluster> const& caloCluster() const { return _chit.caloCluster(); }
     art::Ptr<HelixSeed> const& helix() const { return _helix; }
     art::Ptr<KalSeed> const& kalSeed() const { return _kal; }
@@ -50,6 +54,7 @@ namespace mu2e {
     Float_t			    _flt0; // flight distance where the track crosses the tracker midplane (z=0)
     Float_t			    _chisq; // fit chisquared value
     Float_t			    _fitcon; // fit consistency
+    UInt_t			    _nbend; // # of field corrections
     //
     // contained content substructure.
     //

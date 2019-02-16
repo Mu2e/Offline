@@ -72,6 +72,7 @@ if [ -n "$BASEREPO" ]; then
   export MU2E_SATELLITE_RELEASE=$SATSCRIPTDIR
   export MU2E_SEARCH_PATH=`dropit -p $MU2E_SEARCH_PATH -sf $MU2E_SATELLITE_RELEASE`
   export FHICL_FILE_PATH=`dropit -p $FHICL_FILE_PATH -sf $MU2E_SATELLITE_RELEASE`
+  export CET_PLUGIN_PATH=`dropit -p $CET_PLUGIN_PATH -sf $MU2E_SATELLITE_RELEASE/lib`
   export LD_LIBRARY_PATH=`dropit -p $LD_LIBRARY_PATH -sf $MU2E_SATELLITE_RELEASE/lib`
   export PYTHONPATH=`dropit -p $PYTHONPATH -sf $MU2E_SATELLITE_RELEASE/scripts/build/python`
   export PATH=`dropit -p $PATH -sf $MU2E_SATELLITE_RELEASE/bin`
@@ -102,7 +103,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e17:+${build}
-export MU2E_ART_SQUALIFIER=s73
+export MU2E_ART_SQUALIFIER=s74
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -117,7 +118,7 @@ fi
 export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
-setup -B art v2_11_05 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_12_00 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
@@ -127,7 +128,7 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_10 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_02_11 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
 
@@ -149,6 +150,7 @@ export MU2E_SEARCH_PATH=$MU2E_BASE_RELEASE:$MU2E_DATA_PATH
 # Search path for fcl files (overwrites any path from products above)
 export FHICL_FILE_PATH=${MU2E_BASE_RELEASE}
 # other paths needed to run from this release
+export CET_PLUGIN_PATH=`dropit -p $CET_PLUGIN_PATH -sf $MU2E_BASE_RELEASE/lib`
 export LD_LIBRARY_PATH=`dropit -p $LD_LIBRARY_PATH -sf $MU2E_BASE_RELEASE/lib`
 export PYTHONPATH=`dropit -p $PYTHONPATH -sf $MU2E_BASE_RELEASE/scripts/build/python`
 export PATH=`dropit -p $PATH -sf $MU2E_BASE_RELEASE/bin`

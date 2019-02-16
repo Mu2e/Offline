@@ -92,31 +92,8 @@ event_builder: {
 # The ART code
 ######################################################################
 
-services : @local::Services.Reco
-
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "trig.root" }
-
-    RandomNumberGenerator : { }
-
-    TimeTracker : {
-	#	dbOutput : {
-	#	    filename : "ReadDigis.db"
-	#	    overwrite : true
-	#	}
-    }
-
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }    
-}
-
+#services : @local::Services.Reco
+services : @local::Services.SimAndReco
 
 producers    : { @table::Trigger.producers }
 filters      : { @table::Trigger.filters   }
@@ -216,6 +193,9 @@ source:
     resume_after_timeout: true
 }
 
+services.TFileService.fileName : "trig.root"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20
 services.scheduler.wantSummary: true
 
 process_name: Driver

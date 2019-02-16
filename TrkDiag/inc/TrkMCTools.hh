@@ -10,6 +10,13 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
+#include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
+#include "TrkDiag/inc/CaloClusterInfoMC.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+#include "MCDataProducts/inc/KalSeedMC.hh"
+#include "BTrk/BbrGeom/HepPoint.h"
+#include "MCDataProducts/inc/PrimaryParticle.hh"
 
 #include <vector>
 #include <functional>
@@ -32,16 +39,19 @@ namespace mu2e {
     /////////////////////////////
     // Track Level Utilities
     struct spcount {
-      spcount() : _count(0) {}
-      spcount(art::Ptr<SimParticle> const& spp) : _spp(spp), _count(1) {}
-      void append(art::Ptr<SimParticle> const& sp) { if(sp == _spp)++_count; }
+      spcount() : _count(0), _acount(0) {}
+      spcount(art::Ptr<SimParticle> const& spp,bool active) : _spp(spp), _count(1), _acount(0) {
+	if(active)_acount =1; }
+      void append(art::Ptr<SimParticle> const& sp,bool active) { if(sp == _spp){
+	++_count; if(active)++_acount; } }
       bool operator ==(art::Ptr<SimParticle> const& sp) const { return _spp == sp; }
       art::Ptr<SimParticle> _spp;
-      unsigned _count;
+      unsigned _count; // counts all hits
+      unsigned _acount; // counts active 
     };
-
+// sort by active hits
     struct spcountcomp : public std::binary_function <spcount, spcount, bool> {
-      bool operator() (spcount a, spcount b) { return a._count > b._count; }
+      bool operator() (spcount a, spcount b) { return a._acount > b._acount; }
     };
 
     typedef StepPointMCCollection::const_iterator MCStepItr;
@@ -59,8 +69,21 @@ namespace mu2e {
     void findMCSteps(const StepPointMCCollection& mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids, std::vector<MCStepItr>& steps);
 
     // count types of hits and digis
-    void countHits(const KalSeed& kseed, art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, int& nactive, int& nhits, int& ngood, int& nambig);
-    void countDigis(art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, int& ndigi, int& digigood);
+    //    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig);
+    void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& digigood, int& ngood);
+
+    // fill various info structs
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, TrkInfoMC& trkinfomc);
+    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const PrimaryParticle& primary);
+    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,std::vector<int> const& vids);
+    void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
+    void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
+
+    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc);
+
+    //    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
+    //    void fillHitInfoMCNoTime(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, TrkStrawHitInfoMC& tshinfomc);
+    //    void fillHitInfoMC(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, const SimParticleTimeOffset& toff, TrkStrawHitInfoMC& tshinfomc);
   }
 }
 

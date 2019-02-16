@@ -970,13 +970,7 @@ namespace mu2e {
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from constructMSTM
-            if (LVname.find("mstmCrystal") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(STMDetSD);
-            }
-
-            //from constructSTM, will pick up stmDet1 and stmDet2
-            if (LVname.find("stmDet") != std::string::npos) {
+            if ( LVname == "stmDet1" || LVname == "stmDet2" ){
               (*pos)->SetSensitiveDetector(STMDetSD);
             }
         }//for

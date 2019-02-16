@@ -3,6 +3,7 @@
 //
 #include "TrkDiag/inc/KalDiag.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkTools.hh"
 //geometry
@@ -241,12 +242,22 @@ namespace mu2e
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
     bool first(false);
+    tinfo._nhits = tshv.size();
+    tinfo._nactive = tinfo._ndouble = tinfo._ndactive = tinfo._nnullambig = 0;
     for(auto ihit=tshv.begin(); ihit != tshv.end(); ++ihit) {
       const TrkStrawHit* tsh = *ihit;
-      if(tsh != 0 && tsh->isActive()){
-	if(!first){
+      if(tsh != 0 ){
+	if(tsh->isActive() && !first){
 	  first = true;
 	  tinfo._firstflt = tsh->fltLen();
+	}
+	if(tsh->isActive())tinfo._nactive++;
+	if(tsh->ambig()==0)tinfo._nnullambig++;
+	auto jhit = ihit; jhit++;
+	if(jhit != tshv.end() && tsh->straw().id().uniquePanel() ==
+	  (*jhit)->straw().id().uniquePanel()){
+	    tinfo._ndouble++;
+	    if(tsh->isActive())tinfo._ndactive++;
 	}
       }
     }
@@ -257,19 +268,10 @@ namespace mu2e
       }
     }
 
-    std::vector<TrkStrawHitSeed> hits;
-    TrkUtilities::fillStrawHitSeeds(krep, hits);
-    unsigned int nhits(-1), nactive(-1), ndouble(-1), ndactive(-1), nnullambig(-1);
-    TrkTools::countHits(hits, nhits, nactive, ndouble, ndactive, nnullambig);
-    tinfo._nhits = nhits;
-    tinfo._nactive = nactive;
-    tinfo._ndouble = ndouble;
-    tinfo._ndactive = ndactive;
-    tinfo._nnullambig = nnullambig;
-  }
+ }
 
   void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const {
-    trkfitinfo._fltlen = fltlen;
+    //    trkfitinfo._fltlen = fltlen;
     // find momentum and parameters
     double loclen(0.0);
     const TrkSimpTraj* ltraj = krep->localTrajectory(fltlen,loclen);
@@ -308,8 +310,7 @@ namespace mu2e
 	// loop over the hits and find the associated steppoints
 	if(tsh != 0 && tsh->isActive()){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
-	  StrawEnd itdc;
-	  art::Ptr<SimParticle> spp = mcdigi.stepPointMC(itdc)->simParticle();
+	  art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
 // see if this particle has already been found; if so, increment, if not, add it
 	  bool found(false);
 	  for(size_t isp=0;isp<sct.size();++isp){
@@ -385,7 +386,7 @@ namespace mu2e
     Hep3Vector tdir = tsh->trkTraj()->direction(tshinfo._trklen);
     tshinfo._wdot = tdir.dot(tsh->straw().getDirection());
     // for now approximate the local bfield direction as the z axis FIXME!!
-    tshinfo._bdot = tdir.z();
+    //    tshinfo._bdot = tdir.z();
     tshinfo._t0 = tsh->hitT0()._t0;
     // include signal propagation time correction
     tshinfo._ht = tsh->time()-tsh->signalTime();
@@ -399,11 +400,29 @@ namespace mu2e
       tshinfo._doca = tsh->poca().doca();
     else
       tshinfo._doca = -100.0;
-    tshinfo._exerr = tsh->driftVelocity()*tsh->temperature();
-    tshinfo._penerr = tsh->penaltyErr();
+    //    tshinfo._exerr = tsh->driftVelocity()*tsh->temperature();
+    //    tshinfo._penerr = tsh->penaltyErr();
     tshinfo._t0err = tsh->t0Err()/tsh->driftVelocity();
 // cannot count correlations with other hits in this function; set to false
     tshinfo._dhit = tshinfo._dactive = false;
+  }
+
+  void KalDiag::fillCaloHitInfo(const TrkCaloHit* tch, TrkCaloHitInfo& tchinfo) const {
+    tchinfo._active = tch->isActive();  
+    tchinfo._did = tch->caloCluster().diskId();
+    tchinfo._trklen = tch->fltLen();
+    tchinfo._clen = tch->hitLen();
+    HepPoint hpos = tch->hitTraj()->position(tch->hitLen());
+    tchinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z());
+    if(tch->hasResidual())
+      tchinfo._doca = tch->poca().doca();
+    else
+      tchinfo._doca = -100.0;
+    tchinfo._t0 = tch->hitT0().t0();
+    tchinfo._t0err = tch->hitT0().t0Err();
+    tchinfo._ct = tch->time() - tch->timeOffset();
+    tchinfo._cterr = tch->timeErr();
+    tchinfo._edep = tch->caloCluster().energyDep();
   }
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, const KalRep* krep,
@@ -425,13 +444,10 @@ namespace mu2e
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw,
     TrkStrawHitInfoMC& tshinfomc) const {
-    // use TDC channel 0 to define the MC match
-    StrawEnd itdc;
-    art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+    art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     // create MC info and fill
     tshinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
-    tshinfomc._ht = mcdigi.wireEndTime(itdc);
     tshinfomc._pdg = spp->pdgId();
     tshinfomc._proc = spp->originParticle().creationCode();
     tshinfomc._edep = mcdigi.energySum();
@@ -439,21 +455,21 @@ namespace mu2e
     if(spp->genParticle().isNonnull())
       tshinfomc._gen = spp->genParticle()->generatorId().id();
     MCRelationship rel(pspp,spp);
-    tshinfomc._rel = rel._rel;
+    tshinfomc._rel = rel.relationship();
     // find the step midpoint
     Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
     Hep3Vector dir = spmcp->momentum().unit();
     tshinfomc._mom = spmcp->momentum().mag();
-    tshinfomc._r =spmcp->position().perp();
-    tshinfomc._phi =spmcp->position().phi();
+    tshinfomc._cpos = mcdigi.clusterPosition(mcdigi.earlyEnd());
+    tshinfomc._len = mcsep.dot(straw.getDirection());
     Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
     double dperp = mcperp.dot(mcsep);
+    tshinfomc._twdot = dir.dot(straw.getDirection());
     tshinfomc._dist = fabs(dperp);
     tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
     // use 2-line POCA here
     TwoLinePCA pca(spmcp->position(),dir,straw.getMidPoint(),straw.getDirection());
-    tshinfomc._len = pca.s2();
-    tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
+    tshinfomc._doca = pca.dca();
   }
 
   void KalDiag::fillTrkInfoMC(art::Ptr<SimParticle> const&  spp,const KalRep* krep,
@@ -471,10 +487,10 @@ namespace mu2e
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
     }
-    Hep3Vector mcmomvec = spp->startMomentum();
-    double mcmom = mcmomvec.mag();
+    //    Hep3Vector mcmomvec = spp->startMomentum();
+    //    double mcmom = mcmomvec.mag();
     // fill track-specific  MC info
-    mcinfo._nactive = mcinfo._nhits = mcinfo._ngood = mcinfo._nambig = 0;
+    mcinfo._nactive = mcinfo._nhits = mcinfo._nambig = 0;
     if(krep != 0){
       TrkStrawHitVector tshv;
       convert(krep->hitVector(),tshv);
@@ -482,15 +498,14 @@ namespace mu2e
 	const TrkStrawHit* tsh = *ihit;
 	if(tsh != 0){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
-	  StrawEnd itdc;
-	  art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	  art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
 	  if(spp == spmcp->simParticle()){
 	    ++mcinfo._nhits;
 	    // easiest way to get MC ambiguity is through info object
 	    TrkStrawHitInfoMC tshinfomc;
 	    fillHitInfoMC(spp,mcdigi,tsh->straw(),tshinfomc);
 	    // count hits with at least givien fraction of the original momentum as 'good'
-	    if(tshinfomc._mom/mcmom > _mingood )++mcinfo._ngood;
+	    //	    if(tshinfomc._mom/mcmom > _mingood )++mcinfo._ngood;
 	    if(tsh->isActive()){
 	      ++mcinfo._nactive;
 	    // count hits with correct left-right iguity
@@ -533,11 +548,11 @@ namespace mu2e
       tminfo._active = kmat->isActive();
       tminfo._dp = kmat->momFraction();
       tminfo._radlen = kmat->radiationFraction();
-      tminfo._sigMS = kmat->deflectRMS();
+      //      tminfo._sigMS = kmat->deflectRMS();
       // DetIntersection info
       const DetIntersection& dinter = kmat->detIntersection();
-      tminfo._thit = (dinter.thit != 0);
-      tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive());
+      //      tminfo._thit = (dinter.thit != 0);
+      //      tminfo._thita = (dinter.thit != 0 && dinter.thit->isActive());
       tminfo._doca = dinter.dist;
       tminfo._tlen = dinter.pathlen;
       // straw information
@@ -687,8 +702,7 @@ namespace mu2e
     unsigned nstrs = mcData()._mcdigis->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawDigiMC const& mcdigi = mcData()._mcdigis->at(istr);
-      StrawEnd itdc;
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       bool conversion = (spp->genParticle().isNonnull() && spp->genParticle()->generatorId().isConversion() && spmcp->momentum().mag()>90.0);
       if(conversion){

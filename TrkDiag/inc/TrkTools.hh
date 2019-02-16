@@ -7,11 +7,16 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/TrkQual.hh"
+
+#include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "TrkDiag/inc/HitCount.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawMatInfo.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
+#include "TrkDiag/inc/TrkQualInfo.hh"
 
 #include <vector>
 #include <functional>
@@ -19,6 +24,7 @@ namespace mu2e {
   namespace TrkTools {
     // count different hit types
     void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig);
+    void countStraws(const std::vector<TrkStraw>& straws, unsigned& nmat, unsigned& nmatactive, double& radlen);
 
     // fill various Info structs
     void fillHitCount(const StrawHitFlagCollection& flags, HitCount& hitcount);
@@ -26,6 +32,8 @@ namespace mu2e {
 
     void fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos );
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos );
+    void fillCaloHitInfo(const KalSeed& kseed, Calorimeter const& calo, TrkCaloHitInfo& tchinfo );
+    void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
   }
 }
 
