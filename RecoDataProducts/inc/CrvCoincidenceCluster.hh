@@ -43,6 +43,7 @@ namespace mu2e
     int                                  _PEs;
     std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
   };
+  typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }
 
 #endif /* RecoDataProducts_CrvCoincidenceCluster_hh */

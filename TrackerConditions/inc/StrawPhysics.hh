@@ -4,12 +4,6 @@
 // StrawPhysics collects the electronics response behavior of a Mu2e straw in
 // several functions and parameters
 //
-// $Id: StrawPhysics.hh,v 1.2 2014/03/08 00:55:21 brownd Exp $
-// $Author: brownd $
-// $Date: 2014/03/08 00:55:21 $
-//
-// Original author David Brown, LBNL
-//
 
 // C++ includes
 #include <iostream>
@@ -21,17 +15,48 @@
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandFlat.h"
 // Mu2e includes
-#include "Mu2eInterfaces/inc/ConditionsEntity.hh"
+#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "TrackerConditions/inc/StrawDrift.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 
 namespace mu2e {
-  class StrawPhysics : virtual public ConditionsEntity {
+  class StrawPhysics : virtual public ProditionsEntity {
   public:
-    // construct from parameters
-    StrawPhysics(fhicl::ParameterSet const& pset);
-    virtual ~StrawPhysics();
+    typedef std::shared_ptr<StrawPhysics> ptr_t;
+    typedef std::shared_ptr<const StrawPhysics> cptr_t;
+
+    StrawPhysics():_name("StrawPhysics") {}
+    StrawPhysics(
+		 std::vector<double> EIonize,
+		 double meanpath, double eKin, double Qe,
+		 std::vector<double> intNProb,
+		 double gasgain, double polyaA,
+		 double gslope, unsigned nggauss, double vprop,
+		 double NAverage,
+		 double EAverage,
+		 std::vector<double> cdpoly,
+		 std::vector<double> dtvar,
+		 bool nonlindrift, double bz,
+		 StrawDrift::cptr_t strawDrift) :
+      _name("StrawPhysics"),
+      _EIonize(EIonize),
+      _meanpath(meanpath),  _eKin(eKin), _Qe(Qe),
+      _intNProb(intNProb),
+      _gasgain(gasgain), _polyaA(polyaA),
+      _gslope(gslope), _nggauss(nggauss), _vprop(vprop),
+      _NAverage(NAverage),
+      _EAverage(EAverage),
+      _cdpoly(cdpoly),
+      _dtvar(dtvar),
+      _nonlindrift(nonlindrift), _bz(bz),
+      _strawDrift(strawDrift) {}
+    
+    virtual ~StrawPhysics() {}
+
+    std::string const& name() const { return _name; }
+
     // models.  Note these are different from the corresponding
     // functions used in reconstruction, as those can be wire-
     // dependent and have emergent properties
@@ -51,10 +76,11 @@ namespace mu2e {
     double meanElectronEnergy() const { return _EAverage; }
     double meanElectronCount() const { return _NAverage; }
     void print(std::ostream& os) const;
-  private:
-    void initializeStrawDrift() const;
 
-    StrawDrift *_strawDrift;
+  private:
+
+    std::string _name;
+
     std::vector<double> _EIonize; // cumulative energy to create N ionization electrons (MeV)
     double _meanpath; // mean free path (mm)
     double _eKin; // average kinetic energy of ioniztion electrons (MeV)
@@ -72,12 +98,10 @@ namespace mu2e {
     // parameters describing cluster DtoT
     std::vector<double> _cdpoly;
     std::vector<double> _dtvar; // variance depencence on drift time
-    std::string _driftFile;
-    float _wirevoltage; //JB
-    int _phiBins;
-    int _dIntegrationBins;
     bool _nonlindrift;
     double _bz;
+
+    StrawDrift::cptr_t _strawDrift;
   };
 }
 #endif

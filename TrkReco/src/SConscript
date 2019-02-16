@@ -99,7 +99,8 @@ helper.make_dict_and_map( [
         'cetlib',
         'cetlib_except',
         'CLHEP',
-        'Core'
+        'Core',
+        'boost_system'
     ] )
 
 

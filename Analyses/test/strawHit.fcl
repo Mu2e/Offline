@@ -11,16 +11,7 @@ source : {
   maxEvents   : 5
 }
 
-services : {
-
-  message               : @local::default_message
-  TFileService          : { fileName : "strawHit.root" }
-
-  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-
-}
+services : @local::Services.Core
 
 physics : {
 
@@ -48,3 +39,5 @@ physics : {
   end_paths      : [e1]
 
 }
+
+services.TFileService.fileName : "strawHit.root"

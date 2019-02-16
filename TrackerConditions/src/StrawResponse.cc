@@ -1,115 +1,21 @@
-//
-// Reconstruction functions for straws
-// Original author David Brown, LBNL
-//
+
 #include "TrackerConditions/inc/StrawResponse.hh"
-// data products
 #include <math.h>
 #include <algorithm>
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
-
-#include "BFieldGeom/inc/BFieldManager.hh"
-#include "BTrk/BField/BField.hh"
-#include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/GeomHandle.hh"
-#include "CLHEP/Matrix/Vector.h"
-
 
 using namespace std;
+
 namespace mu2e {
-  StrawResponse::StrawResponse(fhicl::ParameterSet const& pset) :
-    _strawDrift(new StrawDrift()),
-    _edep(pset.get<vector<float> >("EDep",
-	  vector<float>{0.214044 , 0.311385 , 0.405932 , 0.503041 , 0.601217 , 0.700171 , 0.799435 , 0.898859 , 0.998941 , 1.09876 , 1.19853 , 1.29892 , 1.39884 , 1.49879 , 1.59901 , 1.69917 , 1.799 , 1.8992 , 1.99935 , 2.09929 , 2.19977 , 2.29964 , 2.39963 , 2.49954 , 2.59964 , 2.70024 , 2.79984 , 2.89971 , 3.00015 , 3.10025 , 3.20018 , 3.3004 , 3.40047 , 3.50056 , 3.60085 , 3.70057 , 3.80023 , 3.89995 , 3.99972 , 4.1001 , 4.19994 , 4.29969 , 4.39939 , 4.49958 , 4.59949 , 4.70012 , 4.79972 , 4.89955 , 5.00006 , 5.09999 , 5.19956 , 5.29984 , 5.39941 , 5.49948 , 5.59953 , 5.69931 , 5.79903 , 5.89868 , 5.9986 , 6.09881 , 6.19851 , 6.29715 , 6.39709 , 6.49732 , 6.5966 , 6.69613 , 6.79413 , 7.11646 })), //KeV
-    _halfvp(pset.get<vector<float> >("HalfPropVelocity",
-	  vector<float>{78.2426 , 77.959 , 79.6768 , 81.9859 , 84.0565 , 85.7715 , 87.4105 , 88.9116 , 90.3429 , 91.6604 , 92.789 , 93.8731 , 94.9901 , 95.8371 , 96.7258 , 97.7119 , 98.4066 , 99.1643 , 100.082 , 100.903 , 101.591 , 102.627 , 103.56 , 104.628 , 105.924 , 106.967 , 108.189 , 108.931 , 109.836 , 110.911 , 112.013 , 113.362 , 114.558 , 116.156 , 117.553 , 119.312 , 120.478 , 121.325 , 122.056 , 122.498 , 122.872 , 123.221 , 123.242 , 123.056 , 122.908 , 122.972 , 122.926 , 123.092 , 122.91 , 123.313 , 123.347 , 123.571 , 123.815 , 124.01 , 124.2 , 124.678 , 124.802 , 124.926 , 125.056 , 125.349 , 125.687 , 126.092 , 125.699 , 125.636 , 125.562 , 125.487 , 123.53 , 118.477 })), // mm/ns 
-    _central(pset.get<float>("CentralWirePos",65.0)), // mm
-    _centres(pset.get<vector<float> >("TDCentralRes",
-	  vector<float>{76.2103 , 66.2778 , 58.3431 , 53.2878 , 49.9309 , 47.1836 , 45.13 , 42.9479 , 41.208 , 39.6033 , 38.1616 , 37.1039 , 35.9969 , 35.0815 , 34.0823 , 33.4877 , 32.9431 , 32.3805 , 32.071 , 31.4614 , 31.2776 , 30.635 , 30.1217 , 29.7487 , 29.1309 , 28.4732 , 28.1865 , 27.6331 , 27.5013 , 27.0485 , 26.4937 , 25.9912 , 25.5595 , 25.0649 , 24.0109 , 23.1914 , 22.2386 , 21.7544 , 21.3721 , 21.0055 , 20.5813 , 20.1229 , 20.2912 , 20.615 , 20.4152 , 20.6086 , 20.6452 , 20.6372 , 20.6297 , 20.4731 , 20.401 , 20.174 , 20.2679 , 20.3807 , 20.1217 , 19.7474 , 19.8524 , 19.8093 , 19.8447 , 19.8788 , 19.5326 , 19.1781 , 19.7947 , 19.3696 , 18.6408 , 18.0923 , 18.1123 , 21.371 })),
-    _resslope(pset.get<vector<float> >("TDResSlope",
-	  vector<float>{0.0160651 , 0.023741 , 0.0421304 , 0.0537863 , 0.0633849 , 0.0697326 , 0.0725653 , 0.0736391 , 0.0746531 , 0.0745937 , 0.0750631 , 0.0738193 , 0.0740473 , 0.0761049 , 0.0785487 , 0.0783369 , 0.0802156 , 0.081579 , 0.0815734 , 0.0830998 , 0.0824664 , 0.0847393 , 0.0857842 , 0.0846082 , 0.0866494 , 0.0879027 , 0.0883831 , 0.0917368 , 0.0909706 , 0.0899623 , 0.0899677 , 0.0890875 , 0.0888003 , 0.0865446 , 0.0847627 , 0.0794976 , 0.0802735 , 0.0797023 , 0.0798181 , 0.0750883 , 0.073853 , 0.0751729 , 0.0737468 , 0.071133 , 0.0698957 , 0.0661819 , 0.0642328 , 0.0635607 , 0.0623173 , 0.0606496 , 0.0574217 , 0.0562718 , 0.0532419 , 0.0510767 , 0.0493828 , 0.0472257 , 0.0447443 , 0.0425958 , 0.0419509 , 0.0391222 , 0.0372135 , 0.0399352 , 0.0340117 , 0.0375563 , 0.0368355 , 0.052548 , 0.0649657 , 0.168875 })),
-    _totdtime(pset.get<vector<float> >("TOTDriftTime",
-          vector<float>{25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  25.0,  
-          41.2,  33.4,  21.9,  17.4,  14.5,  13.1,  12.9,  11.2,  13.1,  12.9,  
-          40.8,  37.2,  23.0,  15.8,  13.0,  10.7,  10.1,  12.1,  11.0,  16.7,  
-          39.3,  36.7,  29.7,  17.5,  11.7,  9.6,  9.5,  8.6,  14.0,  10.4,  
-          37.8,  34.1,  31.5,  27.7,  21.0,  13.1,  8.5,  7.5,  7.9,  8.4,  
-          34.4,  29.9,  27.7,  27.2,  27.1,  27.1,  27.8,  26.5,  15.5,  7.2,  
-          33.1,  24.7,  22.7,  22.1,  22.6,  23.8,  25.7,  27.3,  27.4,  25.9,  
-          23.9,  20.2,  18.5,  17.7,  17.9,  18.5,  19.6,  21.1,  22.3,  22.5,  
-          25.0,  15.2,  14.4,  14.3,  14.3,  14.2,  15.0,  15.8,  16.5,  17.6,  
-          12.7,  12.3,  11.7,  11.4,  11.2,  11.1,  11.4,  11.7,  12.3,  12.9,  
-          23.9,  9.6,  8.7,  8.7,  8.5,  8.6,  8.8,  8.4,  8.9,  9.6,  
-          9.1,  9.1,  7.0,  5.9,  5.8,  6.5,  6.4,  6.2,  6.5,  6.9,  
-          1.9,  1.9,  5.0,  4.2,  3.8,  5.0,  4.7,  4.3,  5.2,  5.0,  
-          5.5,  5.5,  5.5,  0.6,  1.2,  2.3,  4.8,  2.4,  5.5,  2.7,  
-          3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  3.0,  
-          12.0,  12.0,  12.0,  12.0,  12.0,  12.0,  12.0,  12.0, 12.0,  12.0 })),
-    _usederr(pset.get<bool>("UseDriftErrorCalibration",true)),
-    _derr(pset.get<vector<float> >("DriftErrorParameters",vector<float>{
-	  0.363559, 0.362685, 0.359959, 0.349385, 0.336731, 0.321784, 0.302363, 0.282691, 0.268223, 0.252673, 0.238557, 0.229172, 0.2224, 0.219224, 0.217334, 0.212797, 0.210303, 0.209876, 0.208739, 0.207411, 0.208738, 0.209646, 0.210073, 0.207101, 0.20431, 0.203994, 0.202931, 0.19953, 0.196999, 0.194559, 0.191766, 0.187725, 0.185959, 0.181423, 0.17848, 0.171357, 0.171519, 0.168422, 0.161338, 0.156641, 0.151196, 0.146546, 0.144069, 0.139858, 0.135838, 0.13319, 0.132159, 0.130062, 0.123545, 0.120212})),
-    _wbuf(pset.get<float>("WireLengthBuffer",2.0)), //sigma
-    _slfac(pset.get<float>("StrawLengthFactor",0.9)),
-    _errfac(pset.get<float>("ErrorFactor",1.0)),
-    _driftFile(pset.get<string>("DriftFile","TrackerConditions/data/E2v.tbl")),
-    _wirevoltage(pset.get<double>("WireVoltage",1400)),
-    _phiBins(pset.get<int>("DriftPhiBins",20)),
-    _dIntegrationBins(pset.get<int>("DriftIntegrationBins",50)),
-    _usenonlindrift(pset.get<bool>("UseNonLinearDrift",true)),
-    _lindriftvel(pset.get<double>("LinearDriftVelocity",0.0625)), // mm/ns, only used if nonlindrift==0
-    _rres_min(pset.get<double>("MinDriftRadiusResolution",0.2)), //mm
-    _rres_max(pset.get<double>("MaxDriftRadiusResolution",0.2)), //mm
-    _rres_rad(pset.get<double>("DriftRadiusResolutionRadius",-1)), //mm
-    _mint0doca(pset.get<double>("minT0DOCA", -0.2)), //FIXME should be moved to a reconstruction configuration 
-    _t0shift(pset.get<double>("t0shift",4.0)), //FIXME should be average slewing?
-
-    _pmpEnergyScale(pset.get<vector<double> >("peakMinusPedestalEnergyScale",vector<double>(96,0.0042))), // fudge factor for peak minus pedestal energy method
-    _timeOffsetPanel(pset.get<vector<double> >("TimeOffsetPanel",vector<double>(240,0))),
-    _timeOffsetStrawHV(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0))),
-    _timeOffsetStrawCal(pset.get<vector<double> >("TimeOffsetStrawHV",vector<double>(96,0)))
-    {
-      _strawele = ConditionsHandle<StrawElectronics>("ignored");
-      _strawphys = ConditionsHandle<StrawPhysics>("ignored");
-
-      _electronicsTimeDelay = pset.get<double>("ElectronicsTimeDelay",_strawele->electronicsTimeDelay());
-      _gasGain = pset.get<double>("GasGain",_strawphys->strawGain());
-      _analognoise[StrawElectronics::thresh] = pset.get<double>("thresholdAnalogNoise",_strawele->analogNoise(StrawElectronics::thresh));
-      _analognoise[StrawElectronics::adc] = pset.get<double>("adcAnalogNoise",_strawele->analogNoise(StrawElectronics::adc));
-      _dVdI[StrawElectronics::thresh] = pset.get<double>("thresholddVdI",_strawele->currentToVoltage(StrawId(0,0,0),StrawElectronics::thresh));
-      _dVdI[StrawElectronics::adc] = pset.get<double>("adcdVdI",_strawele->currentToVoltage(StrawId(0,0,0),StrawElectronics::adc));
-      _vsat = pset.get<double>("SaturationVoltage",_strawele->saturationVoltage()); // mVolt
-      _ADCped = pset.get<unsigned>("ADCPedestal",_strawele->ADCPedestal(StrawId(0,0,0)));
-
-
-    _pmpEnergyScaleAvg = 0;
-      for (size_t i=0;i<_pmpEnergyScale.size();i++)
-        _pmpEnergyScaleAvg += _pmpEnergyScale[i];
-      _pmpEnergyScaleAvg /= (double) _pmpEnergyScale.size();
-
-    }
-
-  StrawResponse::~StrawResponse(){}
-
-  void StrawResponse::initializeStrawDrift() const
-  {
-    GeomHandle<BFieldManager> bfmgr;
-    GeomHandle<DetectorSystem> det;
-    CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
-    CLHEP::Hep3Vector b0 = bfmgr->getBField(vpoint_mu2e);
-    float Bz = b0.z();
-    _strawDrift->Initialize(_driftFile, _wirevoltage, _phiBins, _dIntegrationBins, Bz);
-  }
 
 
   // simple line interpolation, this should be a utility function, FIXME!
-  float StrawResponse::PieceLine(std::vector<float> const& xvals, std::vector<float> const& yvals, float xval){
-    float yval;
+  double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
+    double yval;
     if(xvals.size() != yvals.size() || xvals.size() < 2)
       std::cout << "size error " << std::endl;
     int imax = int(xvals.size()-1);
     // approximate constant binning to get initial guess
-    float xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
+    double xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
     int ibin = min(imax,max(0,int(floor((xval-xvals.front())/xbin))));
     // scan to exact bin
     while(ibin > 0 && xval < xvals[ibin])
@@ -117,7 +23,7 @@ namespace mu2e {
     while(ibin < imax && xval > xvals[ibin])
       ++ibin;
     // interpolate
-    float slope(0.0);
+    double slope(0.0);
     if(ibin >= 0 && ibin < imax){
       yval = yvals[ibin];
       int jbin = ibin+1;
@@ -135,10 +41,9 @@ namespace mu2e {
     return yval;
   }
 
-  double StrawResponse::driftDistanceToTime(StrawId strawId, double ddist, double phi) const {
+  double StrawResponse::driftDistanceToTime(StrawId strawId, 
+				double ddist, double phi) const {
     if(_usenonlindrift){
-      if (!_strawDrift->isInitialized())
-        initializeStrawDrift();
       return _strawDrift->D2T(ddist,phi);
     }
     else{
@@ -146,10 +51,9 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftTimeToDistance(StrawId strawId, double dtime, double phi) const {
+  double StrawResponse::driftTimeToDistance(StrawId strawId, 
+				 double dtime, double phi) const {
     if(_usenonlindrift){
-      if (!_strawDrift->isInitialized())
-        initializeStrawDrift();
       return _strawDrift->T2D(dtime,phi);
     }
     else{
@@ -157,21 +61,21 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftInstantSpeed(StrawId strawId, double doca, double phi) const {
+  double StrawResponse::driftInstantSpeed(StrawId strawId, 
+				 double doca, double phi) const {
     if(_usenonlindrift){
-      if (!_strawDrift->isInitialized())
-        initializeStrawDrift();
       return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
       return _lindriftvel;
     }
   }
 
-  double StrawResponse::driftDistanceError(StrawId strawId, double ddist, double phi, float DOCA) const {
+  double StrawResponse::driftDistanceError(StrawId strawId, 
+		      double ddist, double phi, double DOCA) const {
     if(useDriftError()){
       // maximum drift is the straw radius.  should come from conditions FIXME!
-      static float rstraw(2.5);
-      float doca = std::min(fabs(DOCA),rstraw);
+      static double rstraw(2.5);
+      double doca = std::min(fabs(DOCA),rstraw);
       size_t idoca = std::min(_derr.size()-1,size_t(floor(_derr.size()*(doca/rstraw))));
       return _derr[idoca];
     }else{
@@ -183,16 +87,17 @@ namespace mu2e {
     }
   }
 
-  double StrawResponse::driftDistanceOffset(StrawId strawId, double ddist, double phi, float DOCA) const {
+  double StrawResponse::driftDistanceOffset(StrawId strawId, double ddist, double phi, double DOCA) const {
     // fixme
     return 0;
   }
 
-  bool StrawResponse::wireDistance(Straw const& straw, float edep, float dt, float& wdist, float& wderr, float &halfpv) const {
+  bool StrawResponse::wireDistance(Straw const& straw, double edep, 
+	   double dt, double& wdist, double& wderr, double &halfpv) const {
     bool retval(true);
-    float slen = straw.getHalfLength();
+    double slen = straw.getHalfLength();
     // convert edep from Mev to KeV (should be standardized, FIXME!)
-    float kedep = 1000.0*edep;
+    double kedep = 1000.0*edep;
     halfpv = halfPropV(straw.id(),kedep);
     wdist = halfpv*(dt);
     wderr = wpRes(kedep,fabs(wdist));
@@ -207,25 +112,31 @@ namespace mu2e {
     return retval;
   }
 
-  float StrawResponse::halfPropV(StrawId strawId, float kedep) const {
+  double StrawResponse::halfPropV(StrawId strawId, double kedep) const {
     return PieceLine(_edep,_halfvp,kedep);
   }
 
-  float StrawResponse::wpRes(float kedep,float wlen) const {
+  double StrawResponse::wpRes(double kedep,double wlen) const {
   // central resolution depends on edep
-    float tdres = PieceLine(_edep,_centres,kedep);
+    double tdres = PieceLine(_edep,_centres,kedep);
     if( wlen > _central){
     // outside the central region the resolution depends linearly on the distance
     // along the wire.  The slope of that also depends on edep
-      float wslope = PieceLine(_edep,_resslope,kedep);
+      double wslope = PieceLine(_edep,_resslope,kedep);
       tdres += (wlen-_central)*wslope;
     }
     return tdres;
   }
 
-  void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, TrkTypes::TDCTimes &times, const StrawId &id) const {
-    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawele->tdcLSB() - _electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawHV[id.getStraw()];
-    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawele->tdcLSB() - _electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] + _timeOffsetStrawCal[id.getStraw()];
+  void StrawResponse::calibrateTimes(TrkTypes::TDCValues const& tdc, 
+	       TrkTypes::TDCTimes &times, const StrawId &id) const {
+    double electronicsTimeDelay = _strawElectronics->electronicsTimeDelay();
+    times[StrawEnd::hv] = tdc[StrawEnd::hv]*_strawElectronics->tdcLSB() 
+      - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] 
+      + _timeOffsetStrawHV[id.getStraw()];
+    times[StrawEnd::cal] = tdc[StrawEnd::cal]*_strawElectronics->tdcLSB() 
+      - electronicsTimeDelay + _timeOffsetPanel[id.getPanel()] 
+      + _timeOffsetStrawCal[id.getStraw()];
   }
  
 
@@ -236,7 +147,8 @@ namespace mu2e {
       return _vsat;
   }
 
-  double StrawResponse::driftTime(Straw const& straw, float tot, float edep) const {
+  double StrawResponse::driftTime(Straw const& straw, 
+			      double tot, double edep) const {
     // straw is present in case of eventual calibration
     size_t totbin = (size_t) (tot/4.);
     size_t ebin = (size_t) (edep/0.00025);
@@ -247,16 +159,64 @@ namespace mu2e {
     return _totdtime[totbin*10+ebin];
   }
 
-  double StrawResponse::pathLength(Straw const& straw, float tot) const {
+  double StrawResponse::pathLength(Straw const& straw, double tot) const {
   // needs to be implemented, FIXME!!
     return 5.0;
   }
   
-//  double StrawResponse::pathLength(StrawHit const& strawhit, double theta) const {
-//    double dtime = driftTime(strawhit);
-//    double ddist = min(driftTimeToDistance(strawhit.strawId(), dtime, 0),2.5);
-//    double perp_dist = sqrt(pow(2.5,2)-pow(ddist,2));
-//    return perp_dist / sin(theta);
-//  }
-     
+  void StrawResponse::print(std::ostream& os) const {
+    os << endl << "StrawResponse parameters: "  << std::endl;
+
+    printVector(os,"edep",_edep);
+    printVector(os,"halfvp",_halfvp);
+    os << "central = " << _central << endl;
+    printVector(os,"centres",_centres);
+    printVector(os,"resslope",_resslope);
+    printVector(os,"totdtime",_totdtime);
+    os << "usederr = " << _usederr << endl;
+    printVector(os,"derr",_derr);
+    os << "wbuf = " << _wbuf << endl;
+    os << "slfac = " << _slfac << endl;
+    os << "errfac = " << _errfac << endl;
+    os << "usenonlindrift = " << _usenonlindrift << endl;
+    os << "lindriftvel = " << _lindriftvel << endl;
+    os << "rres_min = " << _rres_min << endl;
+    os << "rres_max = " << _rres_max << endl;
+    os << "mint0doca = " << _mint0doca << endl;
+    os << "t0shift = " << _t0shift << endl;
+    printVector(os,"pmpEnergyScale",_pmpEnergyScale);
+    printVector(os,"timeOffsetPanel",_timeOffsetPanel);
+    printVector(os,"timeOffsetStrawHV",_timeOffsetStrawHV);
+    printVector(os,"timeOffsetStrawCal",_timeOffsetStrawCal);
+    os << "electronicsTimeDelay = " << _electronicsTimeDelay << endl;
+    os << "gasGain = " << _gasGain << endl;
+
+    os << "analognoise["<<_analognoise.size()<<"] = ";
+    for(auto x: _analognoise) os << x << " " ;
+    os << endl;
+
+    os << "dVdI["<<_dVdI.size()<<"] = ";
+    for(auto x: _dVdI) os << x << " " ;
+    os << endl;
+
+    os << "vsat = " << _vsat << endl;
+    os << "ADCped = " << _ADCped << endl;
+    os << "pmpEnergyScaleAvg = " << _pmpEnergyScaleAvg << endl;
+
+  }
+
+  void StrawResponse::printVector(std::ostream& os, std::string const& name, 
+				  std::vector<double> const& a) const {
+    size_t n = a.size();
+    if(n<=4) {
+      os << name << " ("<<n<<") = ";
+      for(auto x : a) os << x << " ";
+      os << endl;
+    } else {
+      os << name <<" ("<<n<<") = " 
+	 << a[0] << " " << a[1] << " ... " 
+	 << a[n-2] << " " << a[n-1] << endl;
+    }
+  }
+
 }

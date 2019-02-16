@@ -166,7 +166,8 @@ CalPatRec : { @table::CalPatRec
 	dtOffset                          : @local::TrackCaloMatching.DtOffset
 	strawHitT0Weight                  : 1
 	caloHitT0Weight                   : 10
-	
+        caloHitError                    : 15.0 # mm 
+		
 	DivergeFlt                        : 1000.            #  default: 1000.
 #------------------------------------------------------------------------------
 #  parameters of KalContext 
@@ -211,6 +212,7 @@ CalPatRec : { @table::CalPatRec
 	useTrkCaloHit                           : false
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
+	caloHitError				: 15.0 # mm 
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
@@ -232,63 +234,68 @@ CalPatRec : { @table::CalPatRec
 	fieldCorrection			        : true
 	printUtils                              : { @table::TrkReco.PrintUtils }
     }
-} 
-# #------------------------------------------------------------------------------
-# # KalFitter configuration for the final track fit.  *** IS IT still USED ? - grep doesn't find anything
-# #------------------------------------------------------------------------------
-#     KalFitter : {
-# 	debugLevel                              : 0
-# 	minnstraws                              : 15
-# 	MaximumMaterialFlightDifference         : 1000 # mm separation in flightlength
-# 	materialCorrection                      : true
-# 	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
-# 	maxhitchi                               : 5. # 3.5
-# 	maxDriftPull                            : 10.
-# 	maxweed                                 : 10
-# 	mingap					: 1.0
-# 	makeStrawHitModuleLabel                 : makeSH
-# 	removeFailedFits                        : false
-# 	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
-# 	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
-# 	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
-# 	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
-# 	# not used t0ErrorFactor                           : 1.2                # scale ?
-# 	minT0DOCA                               : -0.2               # 
-# 	t0window                                : 2.5
-# 	dtOffset                                : @local::TrackCaloMatching.DtOffset
-# 	# did Dave mean that? 
-# 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
-# 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
-# 	HitAmbigPenalty 			: false
-# 	HitMinDrift				: 0.2
-# 	DivergeFlt                              : 1000.
-# 	RdriftMinusDocaTol                      : 1.
-# 	daveMode                                : 0
-# 	ZeroDriftPenalty 			: 0.05
-# 	Neutralize 				: true
-# #------------------------------------------------------------------------------
-# #  KalContext parameters  (there are more to define ! )
-# #------------------------------------------------------------------------------
-# 	MinNDOF                                 : 10 # this means 15 hits min
-# #------------------------------------------------------------------------------
-# # ambiguity resolver parameters
-# #------------------------------------------------------------------------------
-# 	FixedAmbigResolver                      : {}
-# 	HitAmbigResolver                        : {}
-# 	PocaAmbigResolver                       : {}
-# 	PanelAmbigResolver                      : {}
-# #------------------------------------------------------------------------------
-# # doublet-based ambiguity resolver parameters
-# #------------------------------------------------------------------------------
-# 	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
-# 	fieldCorrection				: true
-# 	scaleErrDoublet                         : 5.
-# 	minDriftDoublet                         : 0.3
-# 	deltaDriftDoublet                       : 0.3
-# 	maxDoubletChi2                          : 9
-# 	sigmaSlope                              : 0.025
-# 	printUtils                              : { @table::TrkReco.PrintUtils }
-#     }
+
+
+
+
+#------------------------------------------------------------------------------
+# KalFitter (KalFitHackNew) configuration for the final track fit
+#------------------------------------------------------------------------------
+    KalFitter : {
+	debugLevel                              : 0
+	minnstraws                              : 15
+	MaximumMaterialFlightDifference         : 1000 # mm separation in flightlength
+	materialCorrection                      : true
+	weedhits                                : [ true , true , true , true, true , true , true , true, true ]
+	maxhitchi                               : 5. # 3.5
+	maxDriftPull                            : 10.
+	maxweed                                 : 10
+	mingap					: 1.0
+	makeStrawHitModuleLabel                 : makeSH
+	removeFailedFits                        : false
+	ambiguityStrategy    			: [ 4    , 4    , 4    , 4   , 4    , 4    , 4    , 4   , 4    ]
+	AddMaterial		                : [ false, false, false, true, false, false, false, true, true ]
+	hiterr 					: [ 80.  , 24.  , 8.   , 4.  , 2.   , 0.8  , 0.0  , 0.0 , 0.0  ]
+	t0Tolerance				: [ 2.0  , 1.0  , 1.0  , 1.0 , 0.5  , 0.5  , 0.2  , 0.2 , 0.1  ]
+	# not used t0ErrorFactor                           : 1.2                # scale ?
+	minT0DOCA                               : -0.2               # 
+	t0window                                : 2.5
+	dtOffset                                : @local::TrackCaloMatching.DtOffset
+	# did Dave mean that? 
+	updateT0				: [ false, true, true, true, true, true, true, true, true ]
+	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
+	HitAmbigPenalty 			: false
+	HitMinDrift				: 0.2
+	DivergeFlt                              : 1000.
+	RdriftMinusDocaTol                      : 1.
+	daveMode                                : 0
+	ZeroDriftPenalty 			: 0.05
+	Neutralize 				: true
+#------------------------------------------------------------------------------
+#  KalContext parameters  (there are more to define ! )
+#------------------------------------------------------------------------------
+	MinNDOF                                 : 10 # this means 15 hits min
+#------------------------------------------------------------------------------
+# ambiguity resolver parameters
+#------------------------------------------------------------------------------
+	FixedAmbigResolver                      : {}
+	HitAmbigResolver                        : {}
+	PocaAmbigResolver                       : {}
+	PanelAmbigResolver                      : {}
+#------------------------------------------------------------------------------
+# doublet-based ambiguity resolver parameters
+#------------------------------------------------------------------------------
+	DoubletAmbigResolver                    : { @table::TrkReco.DoubletAmbigResolver }
+	fieldCorrection				: true
+	scaleErrDoublet                         : 5.
+	minDriftDoublet                         : 0.3
+	deltaDriftDoublet                       : 0.3
+	maxDoubletChi2                          : 9
+	sigmaSlope                              : 0.025
+	caloHitError                            : 15.0 # mm 
+	printUtils                              : { @table::TrkReco.PrintUtils }
+    }
+}
 #------------------------------------------------------------------------------
 #  module
 #------------------------------------------------------------------------------
@@ -324,7 +331,7 @@ CalPatRec : { @table::CalPatRec
 	MergeHelixFinder : { module_type:MergeHelixFinder	
 	    diagLevel                    : 0
 	    debugLevel                   : 0
-	    trkHelixFinderModuleLabel    : "HelixFinder:Positive"
+	    trkHelixFinderModuleLabel    : "HelixFindere:Positive"
 	    cprHelixCollTag              : "CalHelixFinder:Positive"
 	}
 
@@ -496,8 +503,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFinder:Positive"
-	    calHelixFinderModuleLabel : "HelixFinder:Negative"
+	    trkHelixFinderModuleLabel : "HelixFindere:Positive"
+	    calHelixFinderModuleLabel : "HelixFindere:Negative"
 	}
 
 	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 

@@ -55,26 +55,9 @@ source :
 		       "drop *mu2e::TriggerInfo_*_*_*"]
 }
 # we don't need any simulation services for this job
-services : @local::Services.Reco
+#services : @local::Services.Reco
 
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "globalTrigger.root" }
-
-    RandomNumberGenerator : { }
-    #   Timing                : { }
-
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }
-    
-}
+services : @local::Services.SimAndReco
 
 # timing information
 services.TimeTracker : {
@@ -148,6 +131,10 @@ physics : {
 outputs : {
     @table::outputs
 }
+
+services.TFileService.fileName : "globalTrigger.root"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20
 
 
 

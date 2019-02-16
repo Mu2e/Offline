@@ -50,8 +50,10 @@ namespace mu2e {
         istringstream span(v[1]);
         span >> panel;
       }
-      istringstream sstr(v[2]);
-      sstr >> straw;
+      if ( v.size() >= 3){
+	istringstream sstr(v[2]);
+	sstr >> straw;
+      }
       return StrawId(plane,panel,straw);
     }
 

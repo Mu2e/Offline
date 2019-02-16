@@ -13,7 +13,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "GeometryService/inc/getTrackerOrThrow.hh"
@@ -113,8 +113,9 @@ namespace mu2e
     // helper functions
     bool findData(const art::Event& e);
     void findMissingHits(KalFitData&kalData);
-    void findMissingHits_cpr(KalFitData&kalData);
+    void findMissingHits_cpr(StrawResponse::cptr_t srep, KalFitData&kalData);
 
+    ProditionsHandle<StrawResponse> _strawResponse_h;
     // flow diagnostic
   };
 
@@ -188,6 +189,9 @@ namespace mu2e
 
 
   void KalFinalFit::produce(art::Event& event ) {
+
+    auto srep = _strawResponse_h.getPtr(event.id());
+
     // event printout
     _iev=event.id().event();
     if(_debug > 0 && (_iev%_printfreq)==0)cout<<"KalFinalFit: event="<<_iev<<endl;
@@ -252,7 +256,7 @@ namespace mu2e
 
 	// _kfit.makeTrack(_shcol,kseed,krep);
 	_result.init();
-	_kfit.makeTrack(_result);
+	_kfit.makeTrack(srep,_result);
 
 	// KalRep *krep = _result.stealTrack();
 
@@ -274,13 +278,13 @@ namespace mu2e
 	  if (_debug > 0) _kfit.printUtils()->printTrack(&event,_result.krep,"banner+data+hits","CalTrkFit::produce after unweedHits");
 
 	  if (_cprmode){
-	    findMissingHits_cpr(_result);
+	    findMissingHits_cpr(srep,_result);
 	  }else {
 	    findMissingHits(_result);
 	  }
 
 	  if(_result.missingHits.size() > 0){
-	    _kfit.addHits(_result,_maxaddchi);
+	    _kfit.addHits(srep,_result,_maxaddchi);
 	  }else if (_cprmode){
 	    int last_iteration  = -1;
 	    _kfit.fitIteration(_result,last_iteration);
@@ -351,15 +355,9 @@ namespace mu2e
 	  fseed._chisq = krep->chisq();
 	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
 	  fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-	  TrkUtilities::fillStrawHitSeeds(krep,fseed._hits);
+	  fseed._nbend = TrkUtilities::countBends(krep);
+	  TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
 	  TrkUtilities::fillStraws(krep,fseed._straws);
-	  // see if there's a TrkCaloHit
-	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
-	  if(tch != 0){
-	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
-	    // set the Ptr using the helix: this could be more direct FIXME!
-	    fseed._chit._cluster = fseed._helix->caloCluster();
-	  }
 	  // sample the fit at the requested z positions.  Need options here to define a set of
 	  // standard points, or to sample each unique segment on the fit FIXME!
 	  for(auto zpos : _zsave) {
@@ -372,6 +370,21 @@ namespace mu2e
 	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
 	    // fill the segment
 	    KalSegment kseg;
+	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    fseed._segments.push_back(kseg);
+	  }
+	  // see if there's a TrkCaloHit
+	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
+	  if(tch != 0){
+	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	    // set the Ptr using the helix: this could be more direct FIXME!
+	    fseed._chit._cluster = fseed._helix->caloCluster();
+	    // create a helix segment at the TrkCaloHit
+	    KalSegment kseg;
+	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	    BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
+	    double locflt(0.0);
+	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
 	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
 	    fseed._segments.push_back(kseg);
 	  }
@@ -417,7 +430,7 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 //
 //-----------------------------------------------------------------------------
-  void KalFinalFit::findMissingHits_cpr(KalFitData& KRes) {
+  void KalFinalFit::findMissingHits_cpr(StrawResponse::cptr_t srep, KalFitData& KRes) {
 
     const char* oname = "KalFinalFit::findMissingHits_cpr";
 
@@ -512,11 +525,8 @@ namespace mu2e
 
 	  double      rdrift;//, hit_error(0.2);
 
-	  TrkStrawHit hit(sh,straw,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
+	  TrkStrawHit hit(srep,sh,straw,istr,hitt0,hflt,1.,1.);//hit_error,1.,_maxadddoca,1.);
 	  
-	  ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-	  //	  ConditionsHandle<TrackerCalibrations> tcal("ignored");
-
 	  double tdrift=hit.time()-hit.hitT0()._t0;
 
 	  //	  tcal->TimeToDistance(straw.index(),tdrift,tdir,t2d);
