@@ -13,14 +13,15 @@
 #include <functional>
 namespace mu2e {
   struct TrkStrawHitSeed {
-    TrkStrawHitSeed() : _index(0), _trklen(0), _hitlen(0), _rdrift(0), _tdrift(0), _dtime(0), _stime(0), _wdoca(0), _rerr(0), _ambig(0), _edep(0), _wdist(0), _werr(0) {}
+    TrkStrawHitSeed() : _index(0), _trklen(0), _hitlen(0), _rdrift(0), _dtime(0), _stime(0), _htime(0),
+      _wdoca(0), _rerr(0), _ambig(0), _edep(0), _wdist(0), _werr(0) {}
     // construct from the information
-    TrkStrawHitSeed(StrawHitIndex index, StrawId const& strawid, TrkT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
-	Float_t tdrift, Float_t stime,
+    TrkStrawHitSeed(StrawHitIndex index, TrkT0 const& t0, Float_t trklen, Float_t hitlen, Float_t rdrift,
+	Float_t stime,
 	Float_t wdoca, Int_t ambig, Float_t rerr, StrawHitFlag const& flag, ComboHit const& chit) :
-      _index(index), _sid(strawid), _t0(t0), _trklen(trklen),
-      _hitlen(hitlen), _rdrift(rdrift), _tdrift(tdrift),
-      _dtime(chit.driftTime()), _stime(stime),
+      _index(index), _sid(chit.strawId()), _t0(t0), _trklen(trklen),
+      _hitlen(hitlen), _rdrift(rdrift),
+      _dtime(chit.driftTime()), _stime(stime),_htime(chit.time()),
       _wdoca(wdoca), _rerr(rerr), _ambig(ambig), 
       _edep(chit.energyDep()),_wdist(chit.wireDist()), _werr(chit.wireRes()), _end(chit.driftEnd()), 
       _flag(flag)  {}
@@ -30,9 +31,9 @@ namespace mu2e {
     HitT0 const&  t0() const { return _t0; }
     Float_t	trkLen() const { return _trklen; }
     Float_t	hitLen() const { return _hitlen; }
-    Float_t	driftRad() const { return _rdrift; }
-    Float_t	driftTime() const { return _tdrift; }
+    Float_t	driftRadius() const { return _rdrift; }
     Float_t	signalTime() const { return _stime; }
+    Float_t	hitTime() const { return _htime; }
     Float_t	TOTDriftTime() const { return _dtime; }
     Float_t	wireDOCA() const { return _wdoca; }
     Float_t	radialErr() const { return _rerr; }
@@ -49,9 +50,9 @@ namespace mu2e {
     Float_t	    _trklen;	  // Length from the nominal track start to the POCA of this hit
     Float_t	    _hitlen;	  // Length from the straw center to the POCA of this hit
     Float_t	    _rdrift;	  // drift radius for this hit
-    Float_t	    _tdrift;	  // drift time for this hit
     Float_t	    _dtime;	  // drift time from TOT for this hit
     Float_t	    _stime;	  // signal propagation time for this hit, to the nearest end
+    Float_t	    _htime;	  // measured time for this hit 
     Float_t	    _wdoca;	  // DOCA from the track to the wire, signed by the angular momentum WRT the wire
     Float_t	    _rerr;	  // intrinsic radial error
     Int_t	    _ambig;	  // LR ambiguity assigned to this hit

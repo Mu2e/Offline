@@ -102,6 +102,20 @@ Reconstruction : {
 # why are CalPatRec reconstruction modules implemented as filters????
 # This could have unexpected downstream consequences FIXME!
     @table::CalPatRec.filters
+    # reco filter
+    RecoFilter : {
+      module_type   : RecoMomFilter
+      KalFinalTagRoot : ""
+      TrkTags : [ "KFFDeM", "KFFDeP", 
+	          "KFFUeM", "KFFUeP", 
+		  "KFFDmuM", "KFFDmuP", 
+	          "KFFUmuM", "KFFUmuP"
+		]
+      MomentumCutoff : [ 90.0, 80.0,
+			 80.0, 80.0,
+			 90.0, 80.0,
+			 80.0, 80.0 ]
+    }
   }
 
   analyzers : {
@@ -228,7 +242,8 @@ Reconstruction.RecoPath : [
 # Full reco path with MC
 Reconstruction.RecoMCPath : [
   @sequence::Reconstruction.RecoPath,
-  @sequence::Reconstruction.RecoMCSequence
+  @sequence::Reconstruction.RecoMCSequence,
+  RecoFilter
 ]
 #
 Reconstruction.Output : {

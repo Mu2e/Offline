@@ -139,6 +139,7 @@ namespace mu2e {
       const Tracker& tracker = getTrackerOrThrow();
       for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
 	TrkStrawHitInfo tshinfo;
+	auto const& straw = tracker.getStraw(ihit->strawId());
 
 	tshinfo._active = ihit->flag().hasAllProperties(active);
 	tshinfo._plane = ihit->strawId().plane();
@@ -146,46 +147,35 @@ namespace mu2e {
 	tshinfo._layer = ihit->strawId().layer();
 	tshinfo._straw = ihit->strawId().straw();
 
-	/*
-	// kludge CLHEP problem
-	HepPoint hpos = ihit->hitTraj()->position(ihit->hitLen());
-	tshinfo._poca = XYZVec(hpos.x(),hpos.y(),hpos.z()); // TODO
-	double resid,residerr;
-	if(ihit->resid(resid,residerr,_uresid)){
-	  tshinfo._resid = resid; // TODO
-	  tshinfo._residerr = residerr; // TODO
-	} else {
-	  tshinfo._resid = tshinfo._residerr = -1000.;
+	// find nearest segment
+	auto ikseg = kseed.nearestSegment(ihit->trkLen());
+	if(ikseg != kseed.segments().end()){
+	  XYZVec dir;
+	  ikseg->helix().direction(ihit->trkLen(),dir);
+	  auto tdir = Geom::Hep3Vec(dir);
+	  tshinfo._wdot = tdir.dot(straw.getDirection());
 	}
-	*/
-	tshinfo._rdrift = ihit->driftRad();
+	tshinfo._residerr = ihit->radialErr();
+	// note; the following is the BIASED residual FIXME!
+	tshinfo._resid = ihit->driftRadius()-ihit->wireDOCA()*ihit->ambig();
+	tshinfo._rdrift = ihit->driftRadius();
 	tshinfo._rdrifterr = ihit->radialErr();
-	
-	double rstraw = tracker.getStraw(ihit->strawId()).getRadius();
+
+	double rstraw = straw.getRadius();
 	tshinfo._dx = std::sqrt(std::max(0.0,rstraw*rstraw-tshinfo._rdrift*tshinfo._rdrift));
 	
 	tshinfo._trklen = ihit->trkLen();
 	tshinfo._hlen = ihit->hitLen();
-	/*
-	Hep3Vector tdir = ihit->trkTraj()->direction(tshinfo._trklen);
-	tshinfo._wdot = tdir.dot(ihit->straw().getDirection()); // TODO
-	*/
 	tshinfo._t0 = ihit->t0().t0();
 	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
-	tshinfo._ht = ihit->driftTime() + ihit->signalTime() + ihit->t0().t0();
+	tshinfo._ht = ihit->hitTime();
 	tshinfo._ambig = ihit->ambig();
-	/*
-	if(ihit->hasResidual())
-	  tshinfo._doca = ihit->poca().doca(); // TODO
-	else
-	  tshinfo._doca = -100.0;
-	*/
 	tshinfo._doca = ihit->wireDOCA();
 	tshinfo._edep = ihit->energyDep();
 	tshinfo._wdist = ihit->wireDist();
 	tshinfo._werr = ihit->wireRes();	
 	tshinfo._driftend = ihit->driftEnd();
-	tshinfo._tdrift = ihit->driftTime();
+	tshinfo._tdrift = ihit->hitTime() - ihit->signalTime() - ihit->t0().t0();
 
 	// count correlations with other TSH
 	for(std::vector<TrkStrawHitSeed>::const_iterator jhit=kseed.hits().begin(); jhit != ihit; ++jhit) {

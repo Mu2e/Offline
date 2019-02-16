@@ -45,8 +45,8 @@ namespace mu2e {
     double distanceToMid(StrawEnd strawend) const;
     art::Ptr<StepPointMC> const&  stepPointMC(StrawEnd strawend) const { return _stepMC[strawend]; }
     std::vector<art::Ptr<StepPointMC> > const& stepPointMCs() const { return _stepMCs; }
-    art::Ptr<StepPointMC> const&  earlyStepPointMC() const {
-      return (_wetime[0] < _wetime[1]) ? _stepMC[0] : _stepMC[1]; }
+    StrawEnd earlyEnd() const { return (_wetime[StrawEnd::cal] < _wetime[StrawEnd::hv]) ?  StrawEnd::cal : StrawEnd::hv; }
+    art::Ptr<StepPointMC> const&  earlyStepPointMC() const { return stepPointMC(earlyEnd()); }
 
     double energySum() const;// sum of all MC true energy deposited
     // energy sum of particle that triggered the discriminator

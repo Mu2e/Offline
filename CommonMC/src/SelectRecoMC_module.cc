@@ -32,6 +32,8 @@
 #include "TrkDiag/inc/TrkMCTools.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 
 // C++
 #include <vector>
@@ -87,6 +89,9 @@ namespace mu2e {
     std::vector<std::string> _kff;
     SimParticleTimeOffset _toff;
     double _ccmcdt, _ccmce;
+    // cache
+    double _mbtime; // period of 1 microbunch
+
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
@@ -122,8 +127,10 @@ namespace mu2e {
 
 
   void SelectRecoMC::produce(art::Event& event) {
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    _mbtime = accPar->deBuncherPeriod;
 // update the time maps
-      _toff.updateMap(event);
+    _toff.updateMap(event);
 //  Find the inputs: the MC primary object
     auto pph = event.getValidHandle<PrimaryParticle>(_pp);
     auto const& pp = *pph;
@@ -321,19 +328,12 @@ namespace mu2e {
 	// record the reference
 	TrkStrawHitMC tshmc;
 	tshmc._spindex = spref;
-	tshmc._energySum = sdmc.energySum();
-	const auto& mcstep = *(sdmc.stepPointMC(StrawEnd::cal));
-	tshmc._pos = mcstep.position();
+	tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
+	const auto& mcstep = *(sdmc.earlyStepPointMC());
+	tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
 	tshmc._mom = mcstep.momentum();
-	tshmc._time = _toff.timeWithOffsetsApplied(mcstep);
-	tshmc._wireEndTime = sdmc.wireEndTime(StrawEnd::cal);
+	tshmc._time = fmod(_toff.timeWithOffsetsApplied(mcstep),_mbtime);
 	tshmc._strawId = sdmc.strawId();
-	auto simPtr = mcstep.simParticle();
-	while (simPtr->parent().isNonnull()) {
-	  simPtr = simPtr->parent();
-	}
-	tshmc._gen = simPtr->genParticle()->generatorId().id();
-	tshmc._xtalk = mcstep.strawId() != sdmc.strawId();
 	mcseed._tshmcs.push_back(tshmc);
       }
     }

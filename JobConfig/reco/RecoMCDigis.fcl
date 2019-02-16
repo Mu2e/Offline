@@ -28,6 +28,7 @@ outputs : {
 }
 
 #include "JobConfig/reco/epilog.fcl"
+outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel
 services.TFileService.fileName: "nts.owner.RecoMC.version.sequencer.root"

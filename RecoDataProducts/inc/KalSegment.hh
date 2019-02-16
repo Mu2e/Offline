@@ -9,6 +9,8 @@
 #define RecoDataProducts_KalSegment_HH
 #include <Rtypes.h>
 #include "RecoDataProducts/inc/HelixVal.hh"
+#include "DataProducts/inc/XYZVec.hh"
+
 namespace mu2e {
   struct KalSegment {
     KalSegment() : _fmin(0.0), _fmax(-1.0), _mom(-1.0), _momerr(-1.0) {}
@@ -18,7 +20,7 @@ namespace mu2e {
     HelixCov const& covar() const { return _hcov; }
     Float_t mom() const { return _mom; }
     Float_t momerr() const { return _momerr; }
-
+    void mom(float fltlen, XYZVec& momvec) const { helix().direction(fltlen,momvec); momvec *= mom(); }
     Float_t _fmin, _fmax; // Flight lengths along the helix for which this segment is valid.
     // These are distance along the trajectory measured from its reference origin
     HelixVal _helix; // helix valid for this segment

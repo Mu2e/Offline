@@ -261,90 +261,31 @@ namespace mu2e {
       const Tracker& tracker = getTrackerOrThrow();
 
       const SimPartStub& simPart = kseedmc.simParticle(tshmc._spindex);
-      tshinfomc._t0 = tshmc._time;
-      tshinfomc._ht = tshmc._wireEndTime;
       tshinfomc._pdg = simPart._pdg;
       tshinfomc._proc = simPart._proc;
-
-      tshinfomc._edep = tshmc._energySum;
-      tshinfomc._gen = tshmc._gen;
+      tshinfomc._gen = simPart._gid.id();
       tshinfomc._rel = simPart._rel.relationship();
-	  
+      tshinfomc._t0 = tshmc._time;
+      tshinfomc._edep = tshmc._energySum;
       tshinfomc._mom = std::sqrt(tshmc._mom.mag2());
+      tshinfomc._cpos  = tshmc._cpos; 
 	
       // find the step midpoint
       const Straw& straw = tracker.getStraw(tshmc._strawId);
-      CLHEP::Hep3Vector mcsep = Geom::Hep3Vec(tshmc._pos)-straw.getMidPoint();
-      CLHEP::Hep3Vector dir = Geom::Hep3Vec(tshmc._mom.unit());
-      tshinfomc._r = Geom::Hep3Vec(tshmc._pos).perp();
-      tshinfomc._phi = Geom::Hep3Vec(tshmc._pos).phi();
-      CLHEP::Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
+      CLHEP::Hep3Vector mcsep = Geom::Hep3Vec(tshmc._cpos)-straw.getMidPoint();
+      tshinfomc._len = mcsep.dot(straw.getDirection());
+      CLHEP::Hep3Vector mdir = Geom::Hep3Vec(tshmc._mom.unit());
+      CLHEP::Hep3Vector mcperp = (mdir.cross(straw.getDirection())).unit();
       double dperp = mcperp.dot(mcsep);
+      tshinfomc._twdot = mdir.dot(straw.getDirection());
       tshinfomc._dist = fabs(dperp);
       tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
       // use 2-line POCA here
-      TwoLinePCA pca(Geom::Hep3Vec(tshmc._pos),dir,straw.getMidPoint(),straw.getDirection());
-      tshinfomc._len = pca.s2();
-      tshinfomc._xtalk = tshmc._xtalk;
+      TwoLinePCA pca(Geom::Hep3Vec(tshmc._cpos),mdir,straw.getMidPoint(),straw.getDirection());
+      tshinfomc._doca = pca.dca();
     }
 
-
-    /*    void fillHitInfoMCs(const KalSeed& kseed, const art::Ptr<SimParticle>& pspp, const StrawDigiMCCollection& mcdigis, const SimParticleTimeOffset& toff, std::vector<TrkStrawHitInfoMC>& tshinfomcs) {
-      tshinfomcs.clear();
-      // use TDC channel 0 to define the MC match
-      for(const auto& ihit : kseed.hits()) {
-	TrkStrawHitInfoMC tshinfomc;
-
-	StrawDigiMC const& mcdigi = mcdigis.at(ihit.index());
-	fillHitInfoMC(mcdigi, pspp, toff, tshinfomc);
-  
-	tshinfomcs.push_back(tshinfomc);
-      }
-    }
-
-    void fillHitInfoMC(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, const SimParticleTimeOffset& toff, TrkStrawHitInfoMC& tshinfomc) {
-      // create MC info and fill
-      fillHitInfoMCNoTime(mcdigi, pspp, tshinfomc);
-
-      StrawEnd itdc = StrawEnd::cal;
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-      tshinfomc._t0 = toff.timeWithOffsetsApplied(*spmcp);
-    }
-
-    void fillHitInfoMCNoTime(const StrawDigiMC& mcdigi, const art::Ptr<SimParticle>& pspp, TrkStrawHitInfoMC& tshinfomc) {
-      StrawEnd itdc = StrawEnd::cal;
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      const Tracker& tracker = getTrackerOrThrow();
-
-      tshinfomc._ht = mcdigi.wireEndTime(itdc);
-      tshinfomc._pdg = spp->pdgId();
-      tshinfomc._proc = spp->originParticle().creationCode();
-      tshinfomc._edep = mcdigi.energySum();
-      tshinfomc._gen = -1;
-      if(spp->genParticle().isNonnull()) {
-	tshinfomc._gen = spp->genParticle()->generatorId().id();
-      }
-      MCRelationship rel(pspp,spp);
-      tshinfomc._rel = rel.relationship();
-      // find the step midpoint
-      const Straw& straw = tracker.getStraw(mcdigi.strawId());
-      CLHEP::Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
-      CLHEP::Hep3Vector dir = spmcp->momentum().unit();
-      tshinfomc._mom = spmcp->momentum().mag();
-      tshinfomc._r =spmcp->position().perp();
-      tshinfomc._phi =spmcp->position().phi();
-      CLHEP::Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
-      double dperp = mcperp.dot(mcsep);
-      tshinfomc._dist = fabs(dperp);
-      tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
-      // use 2-line POCA here
-      TwoLinePCA pca(spmcp->position(),dir,straw.getMidPoint(),straw.getDirection());
-      tshinfomc._len = pca.s2();
-      tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
-    }
-    */
-    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, 
+   void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, 
       CaloClusterInfoMC& ccimc) {
       ccimc._nsim = ccmc.energyDeposits().size();
       ccimc._etot = ccmc.totalEnergyDeposit();

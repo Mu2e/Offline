@@ -310,8 +310,7 @@ namespace mu2e
 	// loop over the hits and find the associated steppoints
 	if(tsh != 0 && tsh->isActive()){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
-	  StrawEnd itdc;
-	  art::Ptr<SimParticle> spp = mcdigi.stepPointMC(itdc)->simParticle();
+	  art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
 // see if this particle has already been found; if so, increment, if not, add it
 	  bool found(false);
 	  for(size_t isp=0;isp<sct.size();++isp){
@@ -445,13 +444,10 @@ namespace mu2e
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw,
     TrkStrawHitInfoMC& tshinfomc) const {
-    // use TDC channel 0 to define the MC match
-    StrawEnd itdc;
-    art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+    art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     // create MC info and fill
     tshinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
-    tshinfomc._ht = mcdigi.wireEndTime(itdc);
     tshinfomc._pdg = spp->pdgId();
     tshinfomc._proc = spp->originParticle().creationCode();
     tshinfomc._edep = mcdigi.energySum();
@@ -464,16 +460,16 @@ namespace mu2e
     Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
     Hep3Vector dir = spmcp->momentum().unit();
     tshinfomc._mom = spmcp->momentum().mag();
-    tshinfomc._r =spmcp->position().perp();
-    tshinfomc._phi =spmcp->position().phi();
+    tshinfomc._cpos = mcdigi.clusterPosition(mcdigi.earlyEnd());
+    tshinfomc._len = mcsep.dot(straw.getDirection());
     Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
     double dperp = mcperp.dot(mcsep);
+    tshinfomc._twdot = dir.dot(straw.getDirection());
     tshinfomc._dist = fabs(dperp);
     tshinfomc._ambig = dperp > 0 ? -1 : 1; // follow TrkPoca convention
     // use 2-line POCA here
     TwoLinePCA pca(spmcp->position(),dir,straw.getMidPoint(),straw.getDirection());
-    tshinfomc._len = pca.s2();
-    tshinfomc._xtalk = spmcp->strawId() != mcdigi.strawId();
+    tshinfomc._doca = pca.dca();
   }
 
   void KalDiag::fillTrkInfoMC(art::Ptr<SimParticle> const&  spp,const KalRep* krep,
@@ -502,8 +498,7 @@ namespace mu2e
 	const TrkStrawHit* tsh = *ihit;
 	if(tsh != 0){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
-	  StrawEnd itdc;
-	  art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+	  art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
 	  if(spp == spmcp->simParticle()){
 	    ++mcinfo._nhits;
 	    // easiest way to get MC ambiguity is through info object
@@ -707,8 +702,7 @@ namespace mu2e
     unsigned nstrs = mcData()._mcdigis->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawDigiMC const& mcdigi = mcData()._mcdigis->at(istr);
-      StrawEnd itdc;
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       bool conversion = (spp->genParticle().isNonnull() && spp->genParticle()->generatorId().isConversion() && spmcp->momentum().mag()>90.0);
       if(conversion){

@@ -58,15 +58,17 @@ namespace mu2e {
 // MC information for TrackStrawHits on this fit
   struct TrkStrawHitMC {
     int16_t simPartStubIndex() const { return _spindex; }
+    StrawId const& strawid() const { return _strawId; }
+    float energySum() const { return _energySum; }
+    float stepTime() const { return _time; }
+    XYZVec const& clusterPosition() const { return _cpos; }
+    XYZVec const& particleMomentum() const { return _mom; }
     int16_t _spindex; // index into the associated SimPartStub of this DigiMC
-    double _energySum; // sum of all MC true energy deposited
-    XYZVec _pos; // in WORLD coordinates
-    XYZVec _mom; // momentum of particle at point where digi created
-    double _time; // with time maps applied
-    double _wireEndTime; // the time that the signal fires TDC
     StrawId _strawId; // the ID of the straw that was hit
-    int _gen; // generator ID
-    bool _xtalk; // flag if this was a cross-talk hit
+    float _energySum; // sum of all MC true energy deposited by trigger particles
+    float _time; // time of trigger StepPoint with time maps applied, wrapped to the beam
+    XYZVec _cpos; // trigger cluster position in detector coordinates
+    XYZVec _mom; // momentum of particle at point where digi created
   };
 
   struct KalSeedMC { 
