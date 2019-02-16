@@ -516,6 +516,7 @@ Tracking : {
     Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
 #	 "keep mu2e::ComboHitCollection_makePH_*_*",
 	  "keep mu2e::KalSeeds_KFF*_*_*" ]
+#	  "keep mu2e::KalSeeds_*_*_*",
 #	   "keep mu2e::HelixSeeds_*_*_*",
 #	    "keep mu2e::TimeClusters_*_*_*" ]
 
