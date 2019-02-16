@@ -211,17 +211,11 @@ namespace mu2e
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
       double flt0 = kalData.kalSeed->flt0();
-      auto kseg = kalData.kalSeed->segments().end();
-      for(auto iseg= kalData.kalSeed->segments().begin(); iseg != kalData.kalSeed->segments().end(); ++iseg){
-	if(iseg->fmin() <= flt0 && iseg->fmax() > flt0){
-	  kseg = iseg;
-	  break;
-	}
-      }
-      if(kseg == kalData.kalSeed->segments().end()){
+      auto kseg = kalData.kalSeed->nearestSegment(flt0);
+      if(kseg->fmin() > kseg->localFlt(flt0) ||
+	kseg->fmax() < kseg->localFlt(flt0) ){
 	std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
 		  <<", Helix segment range doesn't cover flt0 = " << flt0 << std::endl;
-	kseg = kalData.kalSeed->segments().begin();
       }
       // create a trajectory from the seed. This shoudl be a general utility function that
       // can work with multi-segment seeds FIXME!

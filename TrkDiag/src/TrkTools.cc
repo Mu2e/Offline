@@ -104,11 +104,11 @@ namespace mu2e {
       double lastflt = -9999999;
       for (const auto& kseg : kseed.segments()) {
 	//	std::cout << "AE: min = " << kseg.fmin() << ", max = " << kseg.fmax() << std::endl;
-	if (kseg.fmin() < firstflt) {
-	  firstflt = kseg.fmin();
+	if (kseg.globalFlt(kseg.fmin()) < firstflt) {
+	  firstflt = kseg.globalFlt(kseg.fmin());
 	}
-	if (kseg.fmax() > lastflt) {
-	  lastflt = kseg.fmax();
+	if (kseg.globalFlt(kseg.fmax()) > lastflt) {
+	  lastflt = kseg.globalFlt(kseg.fmax());
 	}
       }
       trkinfo._startvalid = firstflt;//krep->startValidRange();  // TODO
@@ -151,7 +151,7 @@ namespace mu2e {
 	auto ikseg = kseed.nearestSegment(ihit->trkLen());
 	if(ikseg != kseed.segments().end()){
 	  XYZVec dir;
-	  ikseg->helix().direction(ihit->trkLen(),dir);
+	  ikseg->helix().direction(ikseg->localFlt(ihit->trkLen()),dir);
 	  auto tdir = Geom::Hep3Vec(dir);
 	  tshinfo._wdot = tdir.dot(straw.getDirection());
 	}
@@ -247,6 +247,11 @@ namespace mu2e {
 	// add the cluster length (relative to the front face).  crystal size should come from geom FIXME!
 	cpos.SetZ(cpos.z() -200.0 + tch.hitLen());
 	tchinfo._poca = cpos;
+	// find the nearest segment
+	auto ikseg = kseed.nearestSegment(tch.trkLen());
+	if(ikseg != kseed.segments().end()){
+	  ikseg->mom(ikseg->localFlt(tch.trkLen()),tchinfo._mom);
+	}
       }
     }
 
