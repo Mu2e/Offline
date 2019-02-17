@@ -41,21 +41,25 @@ Reconstruction : {
     KSFDeM : {
       @table::Tracking.producers.KSFDeM
       SeedCollection             : MHDeM
+      AlgorithmIDCollection      : MHDeM
     }
     KSFDeP : {
       @table::Tracking.producers.KSFDeP
       SeedCollection             : MHDeP
+      AlgorithmIDCollection      : MHDeP
     }
     KSFDmuM : {
       @table::Tracking.producers.KSFDmuM
       SeedCollection             : MHDmuM
+      AlgorithmIDCollection      : MHDmuM
     }
     KSFDmuP : {
       @table::Tracking.producers.KSFDmuP
       SeedCollection             : MHDmuP
+      AlgorithmIDCollection      : MHDmuP
     }
     # Implicit TrkPatRec config for Final Fits and upstream fits (no merging)
-    # MC specific: this should be separated FIXME!
+    # MC specific: this should be in a separate fcl file FIXME!
     FindMCPrimary : { 
       @table::CommonMC.FindMCPrimary
       TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]

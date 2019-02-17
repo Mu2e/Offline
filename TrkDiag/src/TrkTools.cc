@@ -66,6 +66,11 @@ namespace mu2e {
 	trkinfo._status = 2;
       else
 	trkinfo._status = -1;
+      if(kseed.status().hasAllProperties(TrkFitFlag::CPR))
+	trkinfo._alg = 1;
+      else
+	trkinfo._alg = 0;
+
       trkinfo._pdg = kseed.particle().particleType();
       trkinfo._t0 = kseed.t0().t0();
       trkinfo._t0err = kseed.t0().t0Err();

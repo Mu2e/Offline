@@ -339,7 +339,8 @@ namespace mu2e
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
 	  TrkFitFlag fflag(kseed.status());
-	  fflag.merge(TrkFitFlag::kalmanOK);
+	  fflag.merge(TrkFitFlag::KFF);
+	  if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
 	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
 	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);

@@ -27,6 +27,7 @@ namespace mu2e
 // general information about a track
   struct TrkInfo {
     Int_t _status; // Kalman fit status
+    Int_t _alg; // pat. rec. algorithm
     Int_t _pdg;   // PDG code of particle assumed in fit
     Int_t _nhits;     // # hits associated to this track
     Int_t _ndof;      // number of degrees of freedom in the fit
@@ -47,6 +48,7 @@ namespace mu2e
     TrkInfo() { reset(); }
     void reset() { 
       _status = -1000;
+      _alg=0;
       _pdg = 0;
       _nhits = _nactive = _ndouble = _ndactive = _nnullambig = _nmat = _nmatactive = _nbend = _ndof = -1;
       _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
@@ -55,7 +57,7 @@ namespace mu2e
       _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("status/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
+    std::string("status/I:alg/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
      return leaves;
     }
   };

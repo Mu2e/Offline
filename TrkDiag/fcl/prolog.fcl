@@ -346,12 +346,13 @@ TrkAnaReco : {
       TrkAnaPos : { @table::TrackAnalysisReco
   	      	    DeTag : "KFFDeP"
   		    UeTag : "KFFUeP"
-  		    DmuTag : "KFFDmuP" }
+  		    DmuTag : "KFFDmuP"
+		    DeTrkQualTag : "TrkQualDeP" }
 
       genCountLogger : @local::TrkAna.analyzers.genCountLogger
    }
 
-   TrigSequence : [ PBIWeight, TrkQualDeM ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP  ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }
 

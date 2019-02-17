@@ -37,6 +37,8 @@
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
+// Diagnostic data objects
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkPatRec/inc/KalSeedFit_types.hh"
 // BaBar
@@ -88,6 +90,7 @@ namespace mu2e
     // event object tags
     art::ProductToken<ComboHitCollection> const _shToken;
     art::ProductToken<HelixSeedCollection> const _hsToken;
+    art::ProductToken<AlgorithmIDCollection> const _aidToken;
     TrkFitFlag _seedflag; // helix fit flag
     unsigned _minnhits; // minimum # of hits
     double _maxdoca;      // outlier cut
@@ -103,9 +106,11 @@ namespace mu2e
     double _amsign; // cached sign of angular momentum WRT the z axis 
     double _bz000;        // sign of the magnetic field at (0,0,0)
     HepSymMatrix _hcovar; // cache of parameter error covariance matrix
+    TrkFitFlag  _ksf; // default fit flag
     // cache of event objects
-    const ComboHitCollection* _chcol;
-    const HelixSeedCollection * _hscol;
+    const ComboHitCollection *_chcol;
+    const HelixSeedCollection *_hscol;
+    const AlgorithmIDCollection *_aidcol;
     // ouptut collections
     // Kalman fitter.  This will be configured for a least-squares fit (no material or BField corrections).
     KalFit _kfit;
@@ -132,6 +137,7 @@ namespace mu2e
     _checkhelicity(pset.get<bool>("CheckHelicity",true)),
     _shToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _hsToken{consumes<HelixSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
+    _aidToken{mayConsume<AlgorithmIDCollection>(pset.get<art::InputTag>("AlgorithmIDCollection","none"))},
     _seedflag(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
     _minnhits(pset.get<unsigned>("MinNHits",10)),
     _maxdoca(pset.get<double>("MaxDoca",40.0)),
@@ -143,6 +149,7 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
+    _ksf(TrkFitFlag::KSF),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _result()
   {
@@ -210,6 +217,13 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::KalSeedFit: data missing or incomplete"<< endl;
     }
+    // find Algorithm ID Collection: may not exist
+    art::Handle<AlgorithmIDCollection> aidH{};
+    event.getByToken(_aidToken,aidH);
+    if(aidH.isValid())
+      _aidcol = aidH.product();
+    else
+      _aidcol = 0;
 
     if (_diag){
       _data.event  = &event;
@@ -273,14 +287,13 @@ namespace mu2e
 	// filter outliers; this doesn't use drift information, just straw positions
 	if(_foutliers)filterOutliers(seeddef);
 	const HelixTraj* htraj = &seeddef.helix();
-	TrkFitFlag       seedok(TrkFitFlag::seedOK);//FIX ME! is there a bettere flag?
 	double           flt0  = htraj->zFlight(0.0);
 	double           mom   = TrkMomCalculator::vecMom(*htraj, _kfit.bField(), flt0).mag();
 	double           vflt  = seeddef.particle().beta(mom)*CLHEP::c_light;
 	double           helt0 = hseed.t0().t0();
 	
 	//	KalSeed kf(_tpart,_fdir, hseed.t0(), flt0, seedok);
-	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, seedok);
+	KalSeed kf(tpart,_fdir, hseed.t0(), flt0, _ksf);
 	auto hsH = event.getValidHandle(_hsToken);
 	kf._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	// extract the hits from the rep and put the hitseeds into the KalSeed
@@ -339,10 +352,9 @@ namespace mu2e
 	  //	  KalRep *krep = _result.stealTrack();
 
 	  // convert the status into a FitFlag
-	  TrkFitFlag seedok(TrkFitFlag::seedOK);
 	  // create a KalSeed object from this fit, recording the particle and fit direction
 	  //	  KalSeed kseed(_tpart,_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
-	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),seedok);
+	  KalSeed kseed(_result.krep->particleType(),_fdir,_result.krep->t0(),_result.krep->flt0(),_ksf);
 	  // add CaloCluster if present
 	  kseed._chit._cluster = hseed.caloCluster();
 	  // fill ptr to the helix seed
@@ -350,7 +362,13 @@ namespace mu2e
 	  kseed._helix = art::Ptr<HelixSeed>(hsH,iseed);
 	  // extract the hits from the rep and put the hitseeds into the KalSeed
 	  TrkUtilities::fillStrawHitSeeds(_result.krep,*_chcol,kseed._hits);
+	  if(_result.krep->fitStatus().success())kseed._status.merge(TrkFitFlag::seedOK);
+	  if(_result.krep->fitStatus().success()==1)kseed._status.merge(TrkFitFlag::seedConverged);
 	  if(kseed._hits.size() >= _minnhits)kseed._status.merge(TrkFitFlag::hitsOK);
+	  if(_aidcol != 0 && _aidcol->at(iseed).BestID() == AlgorithmID::CalPatRecBit)
+	    kseed._status.merge(TrkFitFlag::CPR);
+	  else
+	    kseed._status.merge(TrkFitFlag::TPR);
 	  kseed._chisq = _result.krep->chisq();
 	  // use the default consistency calculation, as t0 is not fit here
 	  kseed._fitcon = _result.krep->chisqConsistency().significanceLevel();
