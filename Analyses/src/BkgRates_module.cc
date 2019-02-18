@@ -13,7 +13,6 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -25,7 +24,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TFile.h"
 #include "TNtuple.h"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -195,7 +193,7 @@ namespace mu2e {
 
       art::ServiceHandle<art::TFileService> tfs;
 
-      if (geom->hasElement<TTracker>()) {
+      if (geom->hasElement<Tracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
                                             "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       } 
@@ -212,7 +210,7 @@ namespace mu2e {
 
     if (_doStoppingTarget) doStoppingTarget(evt);
 
-    if (geom->hasElement<TTracker>()) {
+    if (geom->hasElement<Tracker>()) {
       doTracker(evt, _skipEvent);
     }
     doCalorimeter(evt, _skipEvent);
@@ -240,7 +238,7 @@ namespace mu2e {
 
     if (skip) return;
 
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);

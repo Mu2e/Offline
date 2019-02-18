@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_ExtMonFNALChipId_hh
-#define TrackerGeom_ExtMonFNALChipId_hh
+#ifndef DataProducts_ExtMonFNALChipId_hh
+#define DataProducts_ExtMonFNALChipId_hh
 
 // Identifier of a silicon chip in Mu2e ExtMonFNAL detector.
 //
@@ -53,4 +53,4 @@ namespace mu2e {
   std::ostream& operator<<( std::ostream& os, const ExtMonFNALChipId& id);
 
 }
-#endif /* TrackerGeom_ExtMonFNALChipId_hh */
+#endif /* DataProducts_ExtMonFNALChipId_hh */

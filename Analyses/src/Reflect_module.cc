@@ -18,7 +18,6 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "GeometryService/inc/DetectorSystem.hh"

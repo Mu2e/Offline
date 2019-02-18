@@ -10,7 +10,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
@@ -43,7 +43,7 @@ namespace mu2e {
     // based on the voltage input
     
     //define the wire and straw radius in mm
-    GeomHandle<TTracker> tracker;
+    GeomHandle<Tracker> tracker;
     //12.5 um in mm
     double wireradius = tracker->getStraw(StrawId(0,0,0)).getDetail().wireRadius(); 
     //2.5 mm in mm

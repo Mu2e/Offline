@@ -6,7 +6,7 @@
 
 // Mu2e includes.
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
@@ -111,7 +111,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
   static int ncalls(0);
   ++ncalls;
 
-  const TTracker& tracker = *GeomHandle<TTracker>();
+  const Tracker& tracker = *GeomHandle<Tracker>();
 
   auto const& hits = *evt.getValidHandle<StrawHitCollection>( _hitsTag );
   if ( _diagLevel > 1 ) {

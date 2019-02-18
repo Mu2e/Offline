@@ -8,8 +8,7 @@
 #include "TrkDiag/inc/TrkTools.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -33,7 +32,6 @@
 #include "DataProducts/inc/VirtualDetectorId.hh"
 // Utilities
 // tracker
-#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 // BaBar

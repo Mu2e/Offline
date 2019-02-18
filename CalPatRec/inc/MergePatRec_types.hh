@@ -13,7 +13,7 @@ namespace fhicl {
 };
 
 namespace mu2e {
-  class TTracker;
+  class Tracker;
 
   namespace MergePatRecTypes {
 //-----------------------------------------------------------------------------
@@ -21,7 +21,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     struct Data_t {
       const art::Event*       event;
-      const TTracker*         tracker;
+      const Tracker*          tracker;
       const KalRepPtrCollection*    list_of_kreps_tpr;
       const KalRepPtrCollection*    list_of_kreps_cpr;
       const KalSeedCollection*      list_of_kseed_tpr;

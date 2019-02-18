@@ -4,9 +4,9 @@
 // Original author David Brown, LBNL
 //
 // Mu2e includes
+#include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 // Framework includes.
@@ -57,7 +57,7 @@ namespace mu2e {
   double StrawDigiMC::driftDistance(StrawEnd strawend) const {
     double retval = -100.0;
     if(!_stepMC[strawend].isNull()){
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
       // use the MC true sid, not the straws sid (digi could be from x-talk)
       Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawId());
       retval = (_cpos[strawend] - straw.getMidPoint()).perp(straw.getDirection());
@@ -68,7 +68,7 @@ namespace mu2e {
   double StrawDigiMC::distanceToMid(StrawEnd strawend) const {
     double retval = -100.0;
     if(!_stepMC[strawend].isNull()){
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
       Straw const& straw = tracker.getStraw(_stepMC[strawend]->strawId());
       retval =  (_cpos[strawend] - straw.getMidPoint()).dot(straw.getDirection());
     }

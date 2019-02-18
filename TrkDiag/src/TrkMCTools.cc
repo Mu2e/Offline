@@ -8,7 +8,6 @@
 #include "MCDataProducts/inc/MCRelationship.hh"
 
 #include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 
@@ -288,7 +287,7 @@ namespace mu2e {
     }
 
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc) {
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
 
       const SimPartStub& simPart = kseedmc.simParticle(tshmc._spindex);
       tshinfomc._t0 = tshmc._time;
@@ -345,7 +344,7 @@ namespace mu2e {
       StrawEnd itdc = StrawEnd::cal;
       art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>;
 
       tshinfomc._ht = mcdigi.wireEndTime(itdc);
       tshinfomc._pdg = spp->pdgId();

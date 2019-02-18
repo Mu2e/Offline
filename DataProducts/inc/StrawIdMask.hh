@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_StrawIdMask_hh
-#define TrackerGeom_StrawIdMask_hh
+#ifndef DataProducts_StrawIdMask_hh
+#define DataProducts_StrawIdMask_hh
 //
 //  Specify a subset of StrawId fields, and provide a set of
 //  accessors accordingly

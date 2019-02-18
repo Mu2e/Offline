@@ -25,7 +25,7 @@ namespace mu2e
 {
 
   class Calorimeter;
-  class TTracker;
+  class Tracker;
 
   // simple struct to keep track of azimuth/radius projection
   struct FZ 
@@ -71,12 +71,12 @@ namespace mu2e
     float evalWeightXY  (const ComboHit& Hit, XYVec& Center);
     float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
 
-    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
 
     //    bool  targetcon()   {return _targetcon; }
 
-    const TTracker*            _tracker;
+    const Tracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
     void fitCircleMedian(RobustHelixFinderData& helixData, bool forceTargetCon);

@@ -24,7 +24,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -96,7 +96,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool CalTimePeakFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
+    mu2e::GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;

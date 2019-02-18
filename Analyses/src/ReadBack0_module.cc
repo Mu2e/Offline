@@ -23,7 +23,7 @@
 
 // Mu2e includes.
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 
@@ -70,7 +70,7 @@ namespace mu2e {
     TNtuple* _ntup;
 
     // Partition the per event work into two steps.
-    void doTTracker(const art::Event& event);
+    void doTracker(const art::Event& event);
     void doCalorimeter(const art::Event& event);
 
   };
@@ -115,7 +115,7 @@ namespace mu2e {
   // For each event, look at tracker hits and calorimeter hits.
   void ReadBack0::analyze(const art::Event& event) {
 
-    doTTracker(event);
+    doTracker(event);
     doCalorimeter(event);
 
   }
@@ -124,15 +124,15 @@ namespace mu2e {
 
   }
 
-  void ReadBack0::doTTracker(const art::Event& event){
+  void ReadBack0::doTracker(const art::Event& event){
 
     // Get a handle to the hits created by G4.
     art::Handle<StepPointMCCollection> hitsHandle;
     event.getByLabel("g4run","tracker",hitsHandle);
     StepPointMCCollection const& hits = *hitsHandle;
 
-    // Get a handle to the TTracker geometry.
-    GeomHandle<TTracker> tracker;
+    // Get a handle to the Tracker geometry.
+    GeomHandle<Tracker> tracker;
 
     // Fill histogram with number of hits per event.
     _hNstraw->Fill(hits.size());
@@ -172,7 +172,7 @@ namespace mu2e {
 
     } // end loop over hits.
 
-  } // end doTTracker
+  } // end doTracker
 
 }  // end namespace mu2e
 

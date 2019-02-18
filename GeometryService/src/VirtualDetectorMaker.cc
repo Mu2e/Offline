@@ -30,7 +30,7 @@
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoidShielding.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -197,31 +197,31 @@ namespace mu2e {
 
 
 
-      if (c.getBool("hasTTracker",false)){
+      if (c.getBool("hasTracker",false)){
 
         ostringstream vdName(VirtualDetectorId::name(VirtualDetectorId::TT_Mid));
 
-        if(c.getInt("ttracker.numPlanes")%2!=0){
+        if(c.getInt("tracker.numPlanes")%2!=0){
           throw cet::exception("GEOM")
             << "This virtual detector " << vdName.str()
-            << " can only be placed if the TTracker has an even number of planes \n";
+            << " can only be placed if the Tracker has an even number of planes \n";
         }
 
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        Hep3Vector ttOffset(-solenoidOffset,0.,ttracker.z0());
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        Hep3Vector ttOffset(-solenoidOffset,0.,tracker.z0());
 
-        // VD TT_Mid is placed inside the ttracker mother volume in the
-        // middle of the ttracker shifted by the half length of vd
-        // VD TT_MidInner is placed inside the ttracker at the same z position as
-        // VD TT_Mid but from radius 0 to the inner radius of the ttracker
+        // VD TT_Mid is placed inside the tracker mother volume in the
+        // middle of the tracker shifted by the half length of vd
+        // VD TT_MidInner is placed inside the tracker at the same z position as
+        // VD TT_Mid but from radius 0 to the inner radius of the tracker
         // mother volume. However, its mother volume is DS3Vacuum
         // which has a different offset. We will use the global offset
         // here (!) as DS is not in the geometry service yet
 
 
         Hep3Vector vdTTMidOffset(0.,0.,0.);
-	// Version 4 adds brass rings in TTracker, have to move vd to the side
-	if ( c.getBool("TTrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
+	// Version 4 adds brass rings in Tracker, have to move vd to the side
+	if ( c.getBool("TrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
                                  ttOffset, 0, vdTTMidOffset);
@@ -238,24 +238,24 @@ namespace mu2e {
         //       }
 
         // Global position is in Mu2e coordinates; local position in the detector system.
-        double zFrontGlobal = ttracker.mother().position().z()-ttracker.mother().tubsParams().zHalfLength()-vdHL;
-        double zBackGlobal  = ttracker.mother().position().z()+ttracker.mother().tubsParams().zHalfLength()+vdHL;
-        double zFrontLocal  = zFrontGlobal - ttracker.z0();
-        double zBackLocal   = zBackGlobal  - ttracker.z0();
+        double zFrontGlobal = tracker.mother().position().z()-tracker.mother().tubsParams().zHalfLength()-vdHL;
+        double zBackGlobal  = tracker.mother().position().z()+tracker.mother().tubsParams().zHalfLength()+vdHL;
+        double zFrontLocal  = zFrontGlobal - tracker.z0();
+        double zBackLocal   = zBackGlobal  - tracker.z0();
 
         Hep3Vector vdTTFrontOffset(0.,
                                    0.,
                                    zFrontLocal);
 
-        // VD TT_FrontHollow is placed outside the ttracker mother
-        // volume in front of the ttracker "outside" of the proton
+        // VD TT_FrontHollow is placed outside the tracker mother
+        // volume in front of the tracker "outside" of the proton
         // absorber
 
 
         // formally VD TT_FrontHollow, TT_FrontPA are placed in DS3Vacuum, but it is a
         // complicated subtraction volume, so we pretend to place them in
-        // the TTracker and rely on the global offsets in the mu2e
-        // detector frame (note that their local offsets are wrt TTracker)
+        // the Tracker and rely on the global offsets in the mu2e
+        // detector frame (note that their local offsets are wrt Tracker)
 
         vd->addVirtualDetector( VirtualDetectorId::TT_FrontHollow,
                                  ttOffset,
@@ -282,9 +282,9 @@ namespace mu2e {
                                  vdTTBackOffset);
 
         // these next two detectors are also thin, but they are not disks but cylinders
-        // placed on the inner and outer surface of the ttracker envelope
+        // placed on the inner and outer surface of the tracker envelope
 
-        Hep3Vector vdTTOutSurfOffset(0.,0.,ttracker.mother().position().z()-ttracker.z0());
+        Hep3Vector vdTTOutSurfOffset(0.,0.,tracker.mother().position().z()-tracker.z0());
 
         vd->addVirtualDetector( VirtualDetectorId::TT_OutSurf,
                                  ttOffset, 0, vdTTOutSurfOffset);
