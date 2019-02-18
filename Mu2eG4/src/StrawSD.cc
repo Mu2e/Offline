@@ -73,18 +73,18 @@ namespace mu2e {
       _nStrawsPerPanel = panel.nStraws();
       _nStrawsPerPlane = plane.nPanels() * _nStrawsPerPanel;
 
-      _TrackerVersion = config.getInt("TTrackerVersion",3);
+      _TrackerVersion = config.getInt("TrackerVersion",3);
 
       _npanels  = StrawId::_npanels;
       _panelsft = StrawId::_panelsft;
       _planesft = StrawId::_planesft;
 
-      _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
+      _verbosityLevel = max(verboseLevel,config.getInt("tracker.verbosityLevel",0)); // Geant4 SD verboseLevel
       _supportModel   = tracker->getSupportModel();
 
       if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
-          << "Expected TTrackerVersion >= 3 but found " << _TrackerVersion <<endl;
+          << "Expected TrackerVersion >= 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 
@@ -344,7 +344,7 @@ namespace mu2e {
     G4ThreeVector localZUnit(0.,0.,1.);
     G4ThreeVector worldZUnit = toWorld.TransformAxis(localZUnit);
 
-    // make sure it works with the constructTTrackerv3
+    // make sure it works with the constructTrackerv3
     //    int copy = touchableHandle->GetCopyNumber();
     int copy = sid.asUint16();
 

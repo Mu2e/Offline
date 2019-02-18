@@ -417,7 +417,7 @@ namespace mu2e {
         }
     }
 
-    if ( _config.getBool("hasTTracker",false)  ) {
+    if ( _config.getBool("hasTracker",false)  ) {
 
 
       // placing virtual detectors in the middle of the tracker
@@ -455,16 +455,16 @@ namespace mu2e {
             " z, r : " << zvd << ", " << irvd << " " << orvd << endl;
         }
 
-        TubsParams vdParamsTTracker(irvd,orvd,vdHalfLength);
+        TubsParams vdParamsTracker(irvd,orvd,vdHalfLength);
 
         VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
 
         CLHEP::Hep3Vector vdPos = vdg->getGlobal(vdId)-parent.centerInMu2e();
         //        cout << "foo: TT_Mid: " << vdPos << " " << vdg->getLocal(vdId) << endl;
-        //        cout << "foo: TT_Mid: " << vdParamsTTracker << endl;
+        //        cout << "foo: TT_Mid: " << vdParamsTracker << endl;
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParamsTTracker, downstreamVacuumMaterial, 0,
+                                  vdParamsTracker, downstreamVacuumMaterial, 0,
                                   vdPos,
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -489,7 +489,7 @@ namespace mu2e {
 
           // we need to take into account the "overlap" with the TT_InSurf
 
-          TubsParams vdParamsTTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
+          TubsParams vdParamsTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
 	  std::string theDS3("DS3Vacuum");
 	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
           VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
@@ -503,10 +503,10 @@ namespace mu2e {
           }
 
           //        cout << "foo: TT_MidInner: " << vdLocalOffset         << endl;
-          //        cout << "foo: TT_MidInner: " << vdParamsTTrackerInner << endl;
+          //        cout << "foo: TT_MidInner: " << vdParamsTrackerInner << endl;
 
           VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                    vdParamsTTrackerInner, downstreamVacuumMaterial, 0,
+                                    vdParamsTrackerInner, downstreamVacuumMaterial, 0,
                                     vdLocalOffset,
                                     parent,
                                     vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -566,14 +566,14 @@ namespace mu2e {
           VolumeInfo vdFullInfo;
           vdFullInfo.name = VirtualDetector::volumeName(vdId) + "_FULL";
 
-          TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+          TubsParams  vdParamsTrackerFrontFull(0.,orvd,vdHalfLength);
 
           vdFullInfo.solid = new G4Tubs(vdFullInfo.name,
-                                        vdParamsTTrackerFrontFull.innerRadius(),
-                                        vdParamsTTrackerFrontFull.outerRadius(),
-                                        vdParamsTTrackerFrontFull.zHalfLength(),
-                                        vdParamsTTrackerFrontFull.phi0(),
-                                        vdParamsTTrackerFrontFull.phiMax());
+                                        vdParamsTrackerFrontFull.innerRadius(),
+                                        vdParamsTrackerFrontFull.outerRadius(),
+                                        vdParamsTrackerFrontFull.zHalfLength(),
+                                        vdParamsTrackerFrontFull.phi0(),
+                                        vdParamsTrackerFrontFull.phiMax());
 
           if ( verbosityLevel > 0) {
             cout << __func__ << " constructing " <<  vdFullInfo.name << endl;
@@ -784,12 +784,12 @@ namespace mu2e {
 
           G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-          TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+          TubsParams  vdParamsTrackerFrontFull(0.,orvd,vdHalfLength);
 
           //          cout << "foo: TT_Front: " << vdLocalOffset             << endl;
-          //          cout << "foo: TT_Front: " << vdParamsTTrackerFrontFull << endl;
+          //          cout << "foo: TT_Front: " << vdParamsTrackerFrontFull << endl;
           VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                       vdParamsTTrackerFrontFull,
+                                       vdParamsTrackerFrontFull,
                                        downstreamVacuumMaterial,
                                        0,
                                        vdLocalOffset,
@@ -830,13 +830,13 @@ namespace mu2e {
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        TubsParams  vdParamsTTrackerBackFull(0.,orvd,vdHalfLength);
+        TubsParams  vdParamsTrackerBackFull(0.,orvd,vdHalfLength);
 
         //        cout << "foo: TT_Back: " << vdLocalOffset    << endl;
-        //        cout << "foo: TT_Back: " << vdParamsTTrackerBackFull << endl;
+        //        cout << "foo: TT_Back: " << vdParamsTrackerBackFull << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsTTrackerBackFull,
+                                     vdParamsTrackerBackFull,
                                      downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
@@ -879,13 +879,13 @@ namespace mu2e {
 
         // the detector is on the outer surface of the tracker envelope
         // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsTTrackerOutSurf(orvd,orvd+2.*vdHalfLength,motherParams.zHalfLength());
+        TubsParams  vdParamsTrackerOutSurf(orvd,orvd+2.*vdHalfLength,motherParams.zHalfLength());
 
         //        cout << "foo: TT_OutSurf: " << vdLocalOffset         << endl;
-        //        cout << "foo: TT_OutSurf: " << vdParamsTTrackerOutSurf << endl;
+        //        cout << "foo: TT_OutSurf: " << vdParamsTrackerOutSurf << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsTTrackerOutSurf,
+                                     vdParamsTrackerOutSurf,
                                      downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
@@ -928,13 +928,13 @@ namespace mu2e {
 
         // the detector is on the inner surface of the tracker envelope
         // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsTTrackerInSurf(irvd-2.*vdHalfLength,irvd,motherParams.zHalfLength());
+        TubsParams  vdParamsTrackerInSurf(irvd-2.*vdHalfLength,irvd,motherParams.zHalfLength());
 
         //        cout << "foo: TT_InSurf: " << vdLocalOffset         << endl;
-        //        cout << "foo: TT_InSurf: " << vdParamsTTrackerInSurf << endl;
+        //        cout << "foo: TT_InSurf: " << vdParamsTrackerInSurf << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsTTrackerInSurf,
+                                     vdParamsTrackerInSurf,
                                      downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
@@ -951,142 +951,7 @@ namespace mu2e {
 
       }
 
-    } // end hasTTracker
-    else if ( _config.getBool("hasITracker",false) && _config.getBool("itracker.VirtualDetect",false) ) {
-
-      VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
-
-      double tModInRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetInnerRadius();
-      double tModOtRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetOuterRadius();
-      double tModDz   = (static_cast<G4Tubs*>(trckrParent.solid))->GetZHalfLength();
-
-
-      vdId = VirtualDetectorId::IT_VD_InSurf;
-      if( vdg->exist(vdId) ) {
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        // the radius of tracker mother
-        double irvd = tModInRd; //envelopeParams.innerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << irvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
-
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
-
-        // the detector is on the inner surface of the tracker envelope
-        // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsITrackerInSurf(irvd-2.*vdHalfLength,irvd,tModDz);
-
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsITrackerInSurf,
-                                     downstreamVacuumMaterial,
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId,
-                                     vdIsVisible,
-                                     G4Color::Red(),
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      }
-
-      vdId = VirtualDetectorId::IT_VD_EndCap_Front;
-      if( vdg->exist(vdId) ) {
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        // the radius of tracker mother
-        double irvd = tModInRd; //envelopeParams.innerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << irvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
-
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,-(tModDz+vdHalfLength));
-
-        // the detector is on the inner surface of the tracker envelope
-        // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
-
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsITrackerInSurf,
-                                     downstreamVacuumMaterial,
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId,
-                                     vdIsVisible,
-                                     G4Color::Red(),
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      }
-
-      vdId = VirtualDetectorId::IT_VD_EndCap_Back;
-      if( vdg->exist(vdId) ) {
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        // the radius of tracker mother
-        double irvd = tModInRd; //envelopeParams.innerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << irvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
-
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,(tModDz+vdHalfLength));
-
-        // the detector is on the inner surface of the tracker envelope
-        // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
-
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsITrackerInSurf,
-                                     downstreamVacuumMaterial,
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId,
-                                     vdIsVisible,
-                                     G4Color::Red(),
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      }
-
-    } // end hasITracker
+    } // end hasTracker
 
     vdId = VirtualDetectorId::EMFC1Entrance;
     if( vdg->exist(vdId) ) {

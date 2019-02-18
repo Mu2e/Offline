@@ -6,10 +6,6 @@
 #  - Write event data to an output file
 #  - Save state of random numbers to the event-data output file
 #
-# $Id: TTrackerSig.fcl,v 1.2 2014/01/15 17:15:33 tassiell Exp $
-# $Author: tassiell $
-# $Date: 2014/01/15 17:15:33 $
-#
 # Original author Gianni Onorato.
 
 #include "fcl/minimalMessageService.fcl"
@@ -17,7 +13,7 @@
 #include "fcl/standardServices.fcl"
 
 # Give this process a name.
-process_name : TTrackerSig
+process_name : TrackerSig
 
 # Start each new event with an empty event.
 source :
@@ -63,9 +59,9 @@ physics :
   analyzers:
   {
 
-    tTSig:
+    tSig:
     {
-      module_type         : TTSig
+      module_type         : TSig
       diagLevel           : -1
       makerModuleLabel    : makeSH
       elextractModuleLabel: extractElData
@@ -92,7 +88,7 @@ physics :
          extractElData
        ]
   e1 : [ 
-         tTSig
+         tSig
          #outfile 
        ]
 
@@ -108,7 +104,7 @@ outputs:
   outfile : 
   {
     module_type    : RootOutput
-    fileName       : "TTSig_bkg.root"
+    fileName       : "TSig_bkg.root"
     fastCloning    : false
     outputCommands : ['keep *_*_*_*'
                 #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
@@ -123,7 +119,7 @@ physics.producers.makeSH.maxFullPrint : 0
 physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"
 physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
-services.TFileService.fileName : "TTSig.root"
+services.TFileService.fileName : "TSig.root"
 services.GeometryService.inputFile : "myConfigsTT/geom_tt3.txt"
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20

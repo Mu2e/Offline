@@ -1,7 +1,7 @@
 //
 // example Plugin to read Tracker PlaneSupport Detectors data and create ntuples
 //
-//  $Id: ReadTTrackerDSDetectors_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
+//  $Id: ReadTrackerDSDetectors_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
 //  $Author: genser $
 //  $Date: 2013/10/21 20:44:04 $
 //
@@ -49,11 +49,11 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  class ReadTTrackerDSDetectors : public art::EDAnalyzer {
+  class ReadTrackerDSDetectors : public art::EDAnalyzer {
   public:
 
-    explicit ReadTTrackerDSDetectors(fhicl::ParameterSet const& pset);
-    virtual ~ReadTTrackerDSDetectors() {}
+    explicit ReadTrackerDSDetectors(fhicl::ParameterSet const& pset);
+    virtual ~ReadTrackerDSDetectors() {}
 
     virtual void beginJob();
     void analyze(const art::Event& e);
@@ -82,7 +82,7 @@ namespace mu2e {
 
   };
 
-  ReadTTrackerDSDetectors::ReadTTrackerDSDetectors(fhicl::ParameterSet const& pset) : 
+  ReadTrackerDSDetectors::ReadTrackerDSDetectors(fhicl::ParameterSet const& pset) : 
     art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
@@ -92,12 +92,12 @@ namespace mu2e {
     _hNsdDet(0),
     _hNsdDetH(0),
     _nttsdd(0),
-    _sddStepPoints(pset.get<string>("sddStepPoints","ttrackerDS"))
+    _sddStepPoints(pset.get<string>("sddStepPoints","trackerDS"))
   {}
 
  
 
-  void ReadTTrackerDSDetectors::beginJob(){
+  void ReadTrackerDSDetectors::beginJob(){
 
     // Get access to the TFile service.
 
@@ -118,12 +118,12 @@ namespace mu2e {
                                   "g4bl_time");
   }
 
-  void ReadTTrackerDSDetectors::analyze(const art::Event& event) {
+  void ReadTrackerDSDetectors::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
 
     if (_diagLevel>1 ) {
-      cout << "ReadTTrackerDSDetectors::" << __func__ 
+      cout << "ReadTrackerDSDetectors::" << __func__ 
            << setw(4) << " called for event "  
            << event.id().event()
            << " hitMakerModuleLabel "
@@ -138,7 +138,7 @@ namespace mu2e {
     if (!geom->hasElement<Tracker>()) 
       {
         mf::LogError("Geom")
-          << "Skipping ReadTTrackerDSDetectors::analyze due to lack of tracker\n";
+          << "Skipping ReadTrackerDSDetectors::analyze due to lack of tracker\n";
         return;
       }
 
@@ -152,7 +152,7 @@ namespace mu2e {
     if (!hitsHandle.isValid() ) {
 
       mf::LogError("Hits")
-        << " Skipping ReadTTrackerDSDetectors::analyze due to problems with hits\n";
+        << " Skipping ReadTrackerDSDetectors::analyze due to problems with hits\n";
       return;
     }
 
@@ -161,7 +161,7 @@ namespace mu2e {
     unsigned int const nhits = hits.size();
 
     if (_diagLevel>0 && nhits>0 ) {
-      cout << "ReadTTrackerDSDetectors::" << __func__ 
+      cout << "ReadTrackerDSDetectors::" << __func__ 
            << " Number of SDD hits: " <<setw(4) 
            << nhits
            << endl;
@@ -224,7 +224,7 @@ namespace mu2e {
       _nttsdd->Fill(nt);
 
       if ( _nAnalyzed < _maxFullPrint){
-        cout <<  "ReadTTrackerDSDetectors::" << __func__ 
+        cout <<  "ReadTrackerDSDetectors::" << __func__ 
              << ": SDD hit: "
              << setw(8) << event.id().event() << " | "
              << setw(4) << hit.volumeId()     << " | "
@@ -242,5 +242,5 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-using mu2e::ReadTTrackerDSDetectors;
-DEFINE_ART_MODULE(ReadTTrackerDSDetectors);
+using mu2e::ReadTrackerDSDetectors;
+DEFINE_ART_MODULE(ReadTrackerDSDetectors);

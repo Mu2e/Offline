@@ -40,7 +40,7 @@ bool g4.doSurfaceCheck    = false;
 // bool protonAbsorber.doSurfaceCheck = true;
 // bool mbs.doSurfaceCheck = true;
 // *** The Tracker and Calorimeter
-// bool ttracker.doSurfaceCheck = true;
+// bool tracker.doSurfaceCheck = true;
 // bool calorimeter.doSurfaceCheck = true;
 
 // *** CRV

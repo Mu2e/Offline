@@ -1,7 +1,7 @@
 //
 // Diagnostics on virtual detectors related to the Tracker.
 //
-//  $Id: TTVirtDebug_module.cc,v 1.1 2013/12/20 20:05:12 kutschke Exp $
+//  $Id: TVirtDebug_module.cc,v 1.1 2013/12/20 20:05:12 kutschke Exp $
 //  $Author: kutschke $
 //  $Date: 2013/12/20 20:05:12 $
 //
@@ -30,12 +30,12 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e {
 
-  class TTVirtDebug : public art::EDAnalyzer {
+  class TVirtDebug : public art::EDAnalyzer {
   public:
 
     typedef vector<int> Vint;
 
-    explicit TTVirtDebug(fhicl::ParameterSet const& pset);
+    explicit TVirtDebug(fhicl::ParameterSet const& pset);
 
     void beginRun( const art::Run& r);
     void analyze(const art::Event& e);
@@ -54,7 +54,7 @@ namespace mu2e {
 
   };
 
-  TTVirtDebug::TTVirtDebug(fhicl::ParameterSet const& pset) :
+  TVirtDebug::TVirtDebug(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset),
     _vdStepPoints(StepInstanceName(StepInstanceName::virtualdetector).name()),
     _nAnalyzed(0),
@@ -63,7 +63,7 @@ namespace mu2e {
   {}
 
 
-  void TTVirtDebug::beginRun(const art::Run& run) {
+  void TVirtDebug::beginRun(const art::Run& run) {
     GeomHandle<VirtualDetector> vdg;
 
     static std::set<int> vds = {
@@ -87,7 +87,7 @@ namespace mu2e {
 
   }
 
-  void TTVirtDebug::analyze(const art::Event& event) {
+  void TVirtDebug::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
 
@@ -130,4 +130,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::TTVirtDebug);
+DEFINE_ART_MODULE(mu2e::TVirtDebug);

@@ -1,7 +1,7 @@
 //
 // A module to study background rates in the detector subsystems.
 //
-// $Id: TTSig_module.cc,v 1.3 2014/09/03 15:51:18 knoepfel Exp $
+// $Id: TSig_module.cc,v 1.3 2014/09/03 15:51:18 knoepfel Exp $
 // $Author: knoepfel $
 // $Date: 2014/09/03 15:51:18 $
 //
@@ -51,10 +51,10 @@ using namespace std;
 
 namespace mu2e {
   
-  class TTSig : public art::EDAnalyzer {
+  class TSig : public art::EDAnalyzer {
   public:
     
-    explicit TTSig(fhicl::ParameterSet const& pset):
+    explicit TSig(fhicl::ParameterSet const& pset):
       art::EDAnalyzer(pset),
       _diagLevel(pset.get<int>("diagLevel",0)),
       _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
@@ -74,9 +74,9 @@ namespace mu2e {
       _totalcputime(0),
       _totalrealtime(0)
     {
-      cout << "Module TTSig is starting" << endl;
+      cout << "Module TSig is starting" << endl;
     }
-    virtual ~TTSig() {
+    virtual ~TSig() {
     }
     virtual void beginJob();
     virtual void endJob();
@@ -133,10 +133,10 @@ namespace mu2e {
     
   };
   
-  void TTSig::beginJob( ) {
+  void TSig::beginJob( ) {
   }
 
-  void TTSig::analyze(art::Event const& evt ) {
+  void TSig::analyze(art::Event const& evt ) {
     
     ++_nAnalyzed;
     
@@ -151,7 +151,7 @@ namespace mu2e {
     if ( g4Status.status() > 1 ) {
       ++_nBadG4Status;
       mf::LogError("G4")
-	<< "Aborting TTSig::analyze due to G4 status\n"
+	<< "Aborting TSig::analyze due to G4 status\n"
 	<< g4Status;
       return;
     }
@@ -159,7 +159,7 @@ namespace mu2e {
     if (g4Status.overflowSimParticles()) {
       ++_nOverflow;
       mf::LogError("G4")
-	<< "Aborting TTSig::analyze due to overflow of particles\n"
+	<< "Aborting TSig::analyze due to overflow of particles\n"
 	<< g4Status;
       return;
     }
@@ -167,7 +167,7 @@ namespace mu2e {
     if (g4Status.nKilledStepLimit() > 0) {
       ++_nKilled;
       mf::LogError("G4")
-	<< "Aborting TTSig::analyze due to nkilledStepLimit reached\n"
+	<< "Aborting TSig::analyze due to nkilledStepLimit reached\n"
 	<< g4Status;
       return;
     }
@@ -213,28 +213,28 @@ namespace mu2e {
     
   } // end of analyze
   
-  void TTSig::endJob() {
+  void TSig::endJob() {
     
     wirestxt->close();
     delete wirestxt;
     
-    cout << "TTSig::endJob Number of events skipped "
+    cout << "TSig::endJob Number of events skipped "
 	 << "due to G4 completion status: "
 	 << _nBadG4Status
-	 << "\nTTSig::endJob Number of overflow events "
+	 << "\nTSig::endJob Number of overflow events "
 	 << "due to too many particles in G4: "
 	 << _nOverflow
-	 << "\nTTSig::endJob Number of events with killed particles "
+	 << "\nTSig::endJob Number of events with killed particles "
 	 << "due to too many steps in G4: "
 	 << _nKilled
-	 << "\nTTSig::endJob total CpuTime "
+	 << "\nTSig::endJob total CpuTime "
 	 << _totalcputime
-	 << "\nTTSig::endJob total RealTime "
+	 << "\nTSig::endJob total RealTime "
 	 << _totalrealtime
 	 << endl;
   }
   
-  void TTSig::doTracker(art::Event const& evt) {
+  void TSig::doTracker(art::Event const& evt) {
     
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
@@ -637,6 +637,6 @@ namespace mu2e {
   
 }
 
-using mu2e::TTSig;
-DEFINE_ART_MODULE(TTSig);
+using mu2e::TSig;
+DEFINE_ART_MODULE(TSig);
 

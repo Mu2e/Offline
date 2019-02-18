@@ -197,11 +197,11 @@ namespace mu2e {
 
 
 
-      if (c.getBool("hasTTracker",false)){
+      if (c.getBool("hasTracker",false)){
 
         ostringstream vdName(VirtualDetectorId::name(VirtualDetectorId::TT_Mid));
 
-        if(c.getInt("ttracker.numPlanes")%2!=0){
+        if(c.getInt("tracker.numPlanes")%2!=0){
           throw cet::exception("GEOM")
             << "This virtual detector " << vdName.str()
             << " can only be placed if the Tracker has an even number of planes \n";
@@ -221,7 +221,7 @@ namespace mu2e {
 
         Hep3Vector vdTTMidOffset(0.,0.,0.);
 	// Version 4 adds brass rings in Tracker, have to move vd to the side
-	if ( c.getBool("TTrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
+	if ( c.getBool("TrackerHasBrassRings",false) ) vdTTMidOffset.setZ(10.1);
 
         vd->addVirtualDetector( VirtualDetectorId::TT_Mid,
                                  ttOffset, 0, vdTTMidOffset);

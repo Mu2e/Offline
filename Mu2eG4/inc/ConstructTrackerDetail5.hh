@@ -1,7 +1,7 @@
-#ifndef Mu2eG4_ConstructTTrackerDetail5_hh
-#define Mu2eG4_ConstructTTrackerDetail5_hh
+#ifndef Mu2eG4_ConstructTrackerDetail5_hh
+#define Mu2eG4_ConstructTrackerDetail5_hh
 //
-// Class to construct the detailed version of the TTracker as of Nov 2017
+// Class to construct the detailed version of the Tracker as of Nov 2017
 //
 //
 // Based on Original code by Rob Kutschke and Krzysztof Genser
@@ -21,10 +21,10 @@ namespace mu2e {
   class AntiLeakRegistry;
   class Tracker;
 
-  class ConstructTTrackerDetail5 {
+  class ConstructTrackerDetail5 {
 
   public:
-    ConstructTTrackerDetail5( VolumeInfo   const& ds3Vac,
+    ConstructTrackerDetail5( VolumeInfo   const& ds3Vac,
                               SimpleConfig const& config );
 
     VolumeInfo motherInfo() { return _motherInfo; }
@@ -95,7 +95,7 @@ namespace mu2e {
     // Information about the mother volume.
     VolumeInfo _motherInfo;
 
-  }; // end class ConstructTTrackerDetail5
+  }; // end class ConstructTrackerDetail5
 
 } // end namespace mu2e
 

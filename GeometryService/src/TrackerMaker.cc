@@ -126,86 +126,86 @@ namespace mu2e {
 
   void TrackerMaker::parseConfig( const SimpleConfig& config ){
 
-    _verbosityLevel     = config.getInt("ttracker.verbosityLevel",0);
-    _ttVersion          = config.getInt("TTrackerVersion",3);
+    _verbosityLevel     = config.getInt("tracker.verbosityLevel",0);
+    _ttVersion          = config.getInt("TrackerVersion",3);
 
-    _motherRIn        = config.getDouble("ttracker.mother.rIn"        )*CLHEP::mm;
-    _motherROut       = config.getDouble("ttracker.mother.rOut"       )*CLHEP::mm;
-    _motherHalfLength = config.getDouble("ttracker.mother.halfLength" )*CLHEP::mm;
-    _motherZ0         = config.getDouble("ttracker.mother.z0"         )*CLHEP::mm;
-    _numPlanes         = config.getInt("ttracker.numPlanes");
+    _motherRIn        = config.getDouble("tracker.mother.rIn"        )*CLHEP::mm;
+    _motherROut       = config.getDouble("tracker.mother.rOut"       )*CLHEP::mm;
+    _motherHalfLength = config.getDouble("tracker.mother.halfLength" )*CLHEP::mm;
+    _motherZ0         = config.getDouble("tracker.mother.z0"         )*CLHEP::mm;
+    _numPlanes         = config.getInt("tracker.numPlanes");
     if ( _numPlanes != StrawId::_nplanes ){
       if ( StrawId::_nplanes == 40 && _numPlanes == 36 ) {
         _verbosityLevel > -1 &&
-          cout << __func__ << " Running with ttracker.numPlanes !=  StrawId::_nplanes "
+          cout << __func__ << " Running with tracker.numPlanes !=  StrawId::_nplanes "
                << _numPlanes << " != " << StrawId::_nplanes
                << " please make sure it is intended " << endl;
       } else {
         cout << __func__
              << " Inconsistent Tracker parameters: "
-             << " ttracker.numPlanes !=  StrawId::_nplanes "
+             << " tracker.numPlanes !=  StrawId::_nplanes "
              << _numPlanes << " != " << StrawId::_nplanes
              << " please double check and act accordingly " << endl;
         throw cet::exception("GEOM") << "See above for the message from " << __func__;
       }
     }
-    _panelsPerPlane    = config.getInt("ttracker.panelsPerPlane");
+    _panelsPerPlane    = config.getInt("tracker.panelsPerPlane");
     if ( _panelsPerPlane != StrawId::_npanels ){
       cout << __func__
            << " Inconsistent Tracker parameters: "
-           << " ttracker.numPlanes !=  StrawId::_npanels "
+           << " tracker.numPlanes !=  StrawId::_npanels "
            << _panelsPerPlane << " != " << StrawId::_npanels
            << " please double check and act accordingly " << endl;
       throw cet::exception("GEOM") << "See above for the message from " << __func__;
     }
-    _layersPerPanel    = config.getInt("ttracker.layersPerPanel");
+    _layersPerPanel    = config.getInt("tracker.layersPerPanel");
     if ( _layersPerPanel != StrawId::_nlayers ){
       cout << __func__
            << " Inconsistent Tracker parameters: "
-           << " ttracker.numPlanes !=  StrawId::_nlayers "
+           << " tracker.numPlanes !=  StrawId::_nlayers "
            << _layersPerPanel << " != " << StrawId::_nlayers
            << " please double check and act accordingly " << endl;
       throw cet::exception("GEOM") << "See above for the message from " << __func__;
     }
-    _manifoldsPerEnd    = config.getInt("ttracker.manifoldsPerEnd");
-    _strawsPerManifold  = config.getInt("ttracker.strawsPerManifold");
+    _manifoldsPerEnd    = config.getInt("tracker.manifoldsPerEnd");
+    _strawsPerManifold  = config.getInt("tracker.strawsPerManifold");
     if ( _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold != StrawId::_nstraws ){
       cout << __func__
            << " Inconsistent Tracker parameters: "
-           << " ttracker.strawsPerManifold*ttracker.manifoldsPerEnd*ttracker.layersPerPanel !=  StrawId::_nstraws "
+           << " tracker.strawsPerManifold*tracker.manifoldsPerEnd*tracker.layersPerPanel !=  StrawId::_nstraws "
            << _manifoldsPerEnd*_layersPerPanel*_strawsPerManifold
            << " != " << StrawId::_nstraws
            << " please double check and act accordingly " << endl;
       throw cet::exception("GEOM") << "See above for the message from " << __func__;
    }
-    _rotationPattern    = config.getInt("ttracker.rotationPattern");
-    _panelZPattern      = config.getInt("ttracker.panelZPattern");
-    _layerZPattern      = config.getInt("ttracker.layerZPattern");
-    _spacingPattern     = config.getInt("ttracker.spacingPattern");
-    _innermostLayer     = config.getInt("ttracker.innermostLayer");
+    _rotationPattern    = config.getInt("tracker.rotationPattern");
+    _panelZPattern      = config.getInt("tracker.panelZPattern");
+    _layerZPattern      = config.getInt("tracker.layerZPattern");
+    _spacingPattern     = config.getInt("tracker.spacingPattern");
+    _innermostLayer     = config.getInt("tracker.innermostLayer");
 
-    _planePadding      = config.getDouble("ttracker.planePadding",0.5)*CLHEP::mm;
-    _panelPadding      = config.getDouble("ttracker.panelPadding",0.25)*CLHEP::mm;
+    _planePadding      = config.getDouble("tracker.planePadding",0.5)*CLHEP::mm;
+    _panelPadding      = config.getDouble("tracker.panelPadding",0.25)*CLHEP::mm;
 
-    _oddStationRotation   =  config.getDouble("ttracker.oddStationRotation")*CLHEP::degree;
-    _zCenter              =  config.getDouble("ttracker.z0")*CLHEP::mm;
+    _oddStationRotation   =  config.getDouble("tracker.oddStationRotation")*CLHEP::degree;
+    _zCenter              =  config.getDouble("tracker.z0")*CLHEP::mm;
     _xCenter              = -config.getDouble("mu2e.solenoidOffset")*CLHEP::mm;
-    _envelopeInnerRadius  =  config.getDouble("ttracker.envelopeInnerRadius")*CLHEP::mm;
-    _rInnermostWire       =  config.getDouble("ttracker.rInnermostWire")*CLHEP::mm;
-    _strawOuterRadius     =  config.getDouble("ttracker.strawOuterRadius")*CLHEP::mm;
-    _strawWallThickness   =  config.getDouble("ttracker.strawWallThickness")*CLHEP::mm;
-    _strawGap             =  config.getDouble("ttracker.strawGap")*CLHEP::mm;
-    _planeSpacing        =  config.getDouble("ttracker.planeSpacing")*CLHEP::mm;
-    _planeHalfSeparation =  config.getDouble("ttracker.planeHalfSeparation")*CLHEP::mm;
+    _envelopeInnerRadius  =  config.getDouble("tracker.envelopeInnerRadius")*CLHEP::mm;
+    _rInnermostWire       =  config.getDouble("tracker.rInnermostWire")*CLHEP::mm;
+    _strawOuterRadius     =  config.getDouble("tracker.strawOuterRadius")*CLHEP::mm;
+    _strawWallThickness   =  config.getDouble("tracker.strawWallThickness")*CLHEP::mm;
+    _strawGap             =  config.getDouble("tracker.strawGap")*CLHEP::mm;
+    _planeSpacing        =  config.getDouble("tracker.planeSpacing")*CLHEP::mm;
+    _planeHalfSeparation =  config.getDouble("tracker.planeHalfSeparation")*CLHEP::mm;
 
-    _outerSupportRadius   =  config.getDouble("ttracker.outerSupportRadius")*CLHEP::mm;
-    _innerSupportRadius   =  config.getDouble("ttracker.innerSupportRadius")*CLHEP::mm;
-    _supportHalfThickness =  config.getDouble("ttracker.supportHalfThickness")*CLHEP::mm;
-    _wireRadius           =  config.getDouble("ttracker.wireRadius")*CLHEP::mm;
-    _manifoldYOffset      =  config.getDouble("ttracker.manifoldYOffset")*CLHEP::mm;
+    _outerSupportRadius   =  config.getDouble("tracker.outerSupportRadius")*CLHEP::mm;
+    _innerSupportRadius   =  config.getDouble("tracker.innerSupportRadius")*CLHEP::mm;
+    _supportHalfThickness =  config.getDouble("tracker.supportHalfThickness")*CLHEP::mm;
+    _wireRadius           =  config.getDouble("tracker.wireRadius")*CLHEP::mm;
+    _manifoldYOffset      =  config.getDouble("tracker.manifoldYOffset")*CLHEP::mm;
     _virtualDetectorHalfLength = config.getDouble("vd.halfLength")*CLHEP::mm;
 
-    config.getVectorInt("ttracker.nonExistingPlanes", _nonExistingPlanes,  vector<int>() );
+    config.getVectorInt("tracker.nonExistingPlanes", _nonExistingPlanes,  vector<int>() );
 
     _verbosityLevel > 0 && _nonExistingPlanes.size()>0 &&
       cout << __func__ << " inactive planes : f/l   "
@@ -213,122 +213,122 @@ namespace mu2e {
            << _nonExistingPlanes.back()
            << endl;
 
-    config.getVectorDouble("ttracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
+    config.getVectorDouble("tracker.manifoldHalfLengths", _manifoldHalfLengths, 3);
     for ( size_t i=0; i<_manifoldHalfLengths.size(); ++i ){
       _manifoldHalfLengths.at(i) *= CLHEP::mm;
     }
 
-    config.getVectorString("ttracker.strawMaterials", _strawMaterials, 3);
+    config.getVectorString("tracker.strawMaterials", _strawMaterials, 3);
 
-    _envelopeMaterial = config.getString("ttracker.mat.vacuum");
-    _supportMaterial = config.getString("ttracker.mat.support");
+    _envelopeMaterial = config.getString("tracker.mat.vacuum");
+    _supportMaterial = config.getString("tracker.mat.support");
 
-    _passivationMargin        =  config.getDouble("ttracker.passivationMargin")*CLHEP::mm;
+    _passivationMargin        =  config.getDouble("tracker.passivationMargin")*CLHEP::mm;
 
     // For the detailv0 support model there are lots of extra parameters.
-    _supportModel = SupportModel( config.getString("ttrackerSupport.model","simple"));
+    _supportModel = SupportModel( config.getString("trackerSupport.model","simple"));
     if ( _supportModel == SupportModel::detailedv0 ) {
-      _endRingOuterRadius      = config.getDouble( "ttrackerSupport.endRing.outerRadius" );
-      _endRingInnerRadius      = config.getDouble( "ttrackerSupport.endRing.innerRadius" );
-      _endRingHalfLength       = config.getDouble( "ttrackerSupport.endRing.halfLength"  );
-      _endRingZOffset          = config.getDouble( "ttrackerSupport.endRing.zOffset"     );
-      _endRingMaterial         = config.getString( "ttrackerSupport.endRing.material"    );
+      _endRingOuterRadius      = config.getDouble( "trackerSupport.endRing.outerRadius" );
+      _endRingInnerRadius      = config.getDouble( "trackerSupport.endRing.innerRadius" );
+      _endRingHalfLength       = config.getDouble( "trackerSupport.endRing.halfLength"  );
+      _endRingZOffset          = config.getDouble( "trackerSupport.endRing.zOffset"     );
+      _endRingMaterial         = config.getString( "trackerSupport.endRing.material"    );
 
-      _hasDownRing    = config.getBool( "ttrackerSupport.downRing.build",false);
+      _hasDownRing    = config.getBool( "trackerSupport.downRing.build",false);
       if ( _hasDownRing ) {
-	_downRingOuterRadius      = config.getDouble( "ttrackerSupport.downRing.outerRadius" );
-	_downRingInnerRadius      = config.getDouble( "ttrackerSupport.downRing.innerRadius" );
-	_downRingHalfLength       = config.getDouble( "ttrackerSupport.downRing.halfLength"  );
-	_downRingZOffset          = config.getDouble( "ttrackerSupport.downRing.zOffset"     );
-	_downRingMaterial         = config.getString( "ttrackerSupport.downRing.material"    );
+	_downRingOuterRadius      = config.getDouble( "trackerSupport.downRing.outerRadius" );
+	_downRingInnerRadius      = config.getDouble( "trackerSupport.downRing.innerRadius" );
+	_downRingHalfLength       = config.getDouble( "trackerSupport.downRing.halfLength"  );
+	_downRingZOffset          = config.getDouble( "trackerSupport.downRing.zOffset"     );
+	_downRingMaterial         = config.getString( "trackerSupport.downRing.material"    );
       }
 
-      config.getVectorInt( "ttrackerSupport.midRing.slot", _midRingSlot );
-      _midRingHalfLength       = config.getDouble(    "ttrackerSupport.midRing.halfLength" );
-      _midRingPhi0 = config.getDouble( "ttrackerSupport.midRing.Phi0",180.0)*CLHEP::degree;
-      _midRingdPhi = config.getDouble( "ttrackerSupport.midRing.dPhi",180.0)*CLHEP::degree;
-      _midRingMaterial = config.getString( "ttrackerSupport.midRing.material", "StainlessSteel316");
+      config.getVectorInt( "trackerSupport.midRing.slot", _midRingSlot );
+      _midRingHalfLength       = config.getDouble(    "trackerSupport.midRing.halfLength" );
+      _midRingPhi0 = config.getDouble( "trackerSupport.midRing.Phi0",180.0)*CLHEP::degree;
+      _midRingdPhi = config.getDouble( "trackerSupport.midRing.dPhi",180.0)*CLHEP::degree;
+      _midRingMaterial = config.getString( "trackerSupport.midRing.material", "StainlessSteel316");
       // support beams;
       // fixme use vectors to contain them all (e.g. vector<SupportBeamParams>)
 
-      config.getVectorDouble( "ttrackerSupport.beam0.phiRange", _beam0_phiRange );
-      _beam0_innerRadius     = config.getDouble( "ttrackerSupport.beam0.innerRadius" );
-      _beam0_outerRadius     = config.getDouble( "ttrackerSupport.beam0.outerRadius" );
-      _beam0_material        = config.getString( "ttrackerSupport.beam0.material" );
+      config.getVectorDouble( "trackerSupport.beam0.phiRange", _beam0_phiRange );
+      _beam0_innerRadius     = config.getDouble( "trackerSupport.beam0.innerRadius" );
+      _beam0_outerRadius     = config.getDouble( "trackerSupport.beam0.outerRadius" );
+      _beam0_material        = config.getString( "trackerSupport.beam0.material" );
 
-      config.getVectorDouble( "ttrackerSupport.beam1.phiRange", _beam1_phiRange );
-      config.getVectorDouble( "ttrackerSupport.beam1.phiSpans", _beam1_phiSpans );
-      config.getVectorDouble( "ttrackerSupport.beam1.servicePhi0s", _beam1_servicePhi0s );
-      config.getVectorDouble( "ttrackerSupport.beam1.servicePhiEnds", _beam1_servicePhiEnds );
-      _beam1_innerRadius = config.getDouble( "ttrackerSupport.beam1.innerRadius" );
-      _beam1_midRadius1  = config.getDouble( "ttrackerSupport.beam1.midRadius1" );
-      _beam1_midRadius2  = config.getDouble( "ttrackerSupport.beam1.midRadius2" );
-      _beam1_outerRadius = config.getDouble( "ttrackerSupport.beam1.outerRadius" );
-      _beam1_material    = config.getString( "ttrackerSupport.beam1.material" );
-      config.getVectorDouble( "ttrackerSupport.beam1.serviceOuterRadii", _beam1_serviceOuterRadii );
-      config.getVectorString( "ttrackerSupport.beam1.serviceMaterials", _beam1_serviceMaterials );
-      config.getVectorDouble( "ttrackerSupport.beam1.serviceCovRelThickness", _beam1_serviceCovRelThickness );
-      config.getVectorString( "ttrackerSupport.beam1.serviceMaterialsCov", _beam1_serviceMaterialsCov );
+      config.getVectorDouble( "trackerSupport.beam1.phiRange", _beam1_phiRange );
+      config.getVectorDouble( "trackerSupport.beam1.phiSpans", _beam1_phiSpans );
+      config.getVectorDouble( "trackerSupport.beam1.servicePhi0s", _beam1_servicePhi0s );
+      config.getVectorDouble( "trackerSupport.beam1.servicePhiEnds", _beam1_servicePhiEnds );
+      _beam1_innerRadius = config.getDouble( "trackerSupport.beam1.innerRadius" );
+      _beam1_midRadius1  = config.getDouble( "trackerSupport.beam1.midRadius1" );
+      _beam1_midRadius2  = config.getDouble( "trackerSupport.beam1.midRadius2" );
+      _beam1_outerRadius = config.getDouble( "trackerSupport.beam1.outerRadius" );
+      _beam1_material    = config.getString( "trackerSupport.beam1.material" );
+      config.getVectorDouble( "trackerSupport.beam1.serviceOuterRadii", _beam1_serviceOuterRadii );
+      config.getVectorString( "trackerSupport.beam1.serviceMaterials", _beam1_serviceMaterials );
+      config.getVectorDouble( "trackerSupport.beam1.serviceCovRelThickness", _beam1_serviceCovRelThickness );
+      config.getVectorString( "trackerSupport.beam1.serviceMaterialsCov", _beam1_serviceMaterialsCov );
 
 
-      _panelPhi  = config.getDouble("ttrackerSupport.phiCoverage",120.0)*CLHEP::degree;
-      _dphiRibs = config.getDouble("ttrackerSupport.dphiRibs",27.0)*CLHEP::degree;
-      _ribHalfAngle = config.getDouble("ttrackerSupport.ribHalfAngle",1.0)*CLHEP::degree;
+      _panelPhi  = config.getDouble("trackerSupport.phiCoverage",120.0)*CLHEP::degree;
+      _dphiRibs = config.getDouble("trackerSupport.dphiRibs",27.0)*CLHEP::degree;
+      _ribHalfAngle = config.getDouble("trackerSupport.ribHalfAngle",1.0)*CLHEP::degree;
 
-      _innerRingInnerRadius    = config.getDouble( "ttrackerSupport.innerRing.innerRadius" );
-      _innerRingOuterRadius    = config.getDouble( "ttrackerSupport.innerRing.outerRadius" );
-      _innerRingHalfLength     = config.getDouble( "ttrackerSupport.innerRing.halfLength"  );
-      _innerRingMaterial       = config.getString( "ttrackerSupport.innerRing.material"    );
+      _innerRingInnerRadius    = config.getDouble( "trackerSupport.innerRing.innerRadius" );
+      _innerRingOuterRadius    = config.getDouble( "trackerSupport.innerRing.outerRadius" );
+      _innerRingHalfLength     = config.getDouble( "trackerSupport.innerRing.halfLength"  );
+      _innerRingMaterial       = config.getString( "trackerSupport.innerRing.material"    );
 
-      _centerPlateHalfLength   = config.getDouble( "ttrackerSupport.centerPlate.halfLength" );
-      _centerPlateMaterial     = config.getString( "ttrackerSupport.centerPlate.material"   );
+      _centerPlateHalfLength   = config.getDouble( "trackerSupport.centerPlate.halfLength" );
+      _centerPlateMaterial     = config.getString( "trackerSupport.centerPlate.material"   );
 
-      _outerRingInnerRadius    = config.getDouble( "ttrackerSupport.outerRing.innerRadius" );
-      _outerRingOuterRadius    = config.getDouble( "ttrackerSupport.outerRing.outerRadius" );
-      _outerRingMaterial       = config.getString( "ttrackerSupport.outerRing.material"    );
+      _outerRingInnerRadius    = config.getDouble( "trackerSupport.outerRing.innerRadius" );
+      _outerRingOuterRadius    = config.getDouble( "trackerSupport.outerRing.outerRadius" );
+      _outerRingMaterial       = config.getString( "trackerSupport.outerRing.material"    );
 
-      _coverHalfLength          = config.getDouble( "ttrackerSupport.cover.halfLength"           );
-      _coverMaterial            = config.getString( "ttrackerSupport.cover.material"             );
-      _electronicsG10HalfLength = config.getDouble( "ttrackerSupport.electronics.g10.halfLength" );
-      _electronicsG10Material   = config.getString( "ttrackerSupport.electronics.g10.material"   );
-      _electronicsCuHhalfLength = config.getDouble( "ttrackerSupport.electronics.cu.halfLength"  );
-      _electronicsCuMaterial    = config.getString( "ttrackerSupport.electronics.cu.material"    );
-      _channelZOffset           = config.getDouble( "ttrackerSupport.channel.zOffset"            );
-      _panelZOffset             = config.getDouble( "ttrackerSupport.panel.zOffset", 0.0 );
-      _channelDepth             = config.getDouble( "ttrackerSupport.channel.depth"              );
-      _channelMaterial          = config.getString( "ttrackerSupport.channel.material"           );
-      _electronicsSpaceMaterial = config.getString( "ttrackerSupport.electronicsSpace.material"  );
+      _coverHalfLength          = config.getDouble( "trackerSupport.cover.halfLength"           );
+      _coverMaterial            = config.getString( "trackerSupport.cover.material"             );
+      _electronicsG10HalfLength = config.getDouble( "trackerSupport.electronics.g10.halfLength" );
+      _electronicsG10Material   = config.getString( "trackerSupport.electronics.g10.material"   );
+      _electronicsCuHhalfLength = config.getDouble( "trackerSupport.electronics.cu.halfLength"  );
+      _electronicsCuMaterial    = config.getString( "trackerSupport.electronics.cu.material"    );
+      _channelZOffset           = config.getDouble( "trackerSupport.channel.zOffset"            );
+      _panelZOffset             = config.getDouble( "trackerSupport.panel.zOffset", 0.0 );
+      _channelDepth             = config.getDouble( "trackerSupport.channel.depth"              );
+      _channelMaterial          = config.getString( "trackerSupport.channel.material"           );
+      _electronicsSpaceMaterial = config.getString( "trackerSupport.electronicsSpace.material"  );
 
       const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-      geomOptions->loadEntry( config, "ttrackerElectronicsKey",   "ttrackerSupport.electronics.key");
-      geomOptions->loadEntry( config, "ttrackerElectronicsShield","ttrackerSupport.electronics.key.shield");
-      _EBKeyVisible          = geomOptions->isVisible("ttrackerElectronicsKey");
-      _EBKeySolid            = geomOptions->isSolid("ttrackerElectronicsKey");
-      _EBKeyShieldVisible    = geomOptions->isVisible("ttrackerElectronicsShield");
-      _EBKeyShieldSolid      = geomOptions->isSolid("ttrackerElectronicsShield");
+      geomOptions->loadEntry( config, "trackerElectronicsKey",   "trackerSupport.electronics.key");
+      geomOptions->loadEntry( config, "trackerElectronicsShield","trackerSupport.electronics.key.shield");
+      _EBKeyVisible          = geomOptions->isVisible("trackerElectronicsKey");
+      _EBKeySolid            = geomOptions->isSolid("trackerElectronicsKey");
+      _EBKeyShieldVisible    = geomOptions->isVisible("trackerElectronicsShield");
+      _EBKeyShieldSolid      = geomOptions->isSolid("trackerElectronicsShield");
 
-      _EBKeyHalfLength         = config.getDouble("ttrackerSupport.electronics.key.halfLength");
-      _EBKeyShieldHalfLength   = config.getDouble("ttrackerSupport.electronics.key.shieldHalfLength");
-      _EBKeyInnerRadius        = config.getDouble("ttrackerSupport.electronics.key.innerRadius");
-      _EBKeyOuterRadius        = config.getDouble("ttrackerSupport.electronics.key.outerRadius");
-      _EBKeyShiftFromPanelFace = config.getDouble("ttrackerSupport.electronics.key.shiftFromPanelFace");
-      //_EBKeyVisible            = config.getBool(  "ttrackerSupport.electronics.key.visible");
-      //_EBKeySolid              = config.getBool(  "ttrackerSupport.electronics.key.solid");
-      //_EBKeyShieldVisible      = config.getBool(  "ttrackerSupport.electronics.key.shieldVisible");
-      //_EBKeyShieldSolid        = config.getBool(  "ttrackerSupport.electronics.key.shieldSolid");
-      _EBKeyMaterial           = config.getString("ttrackerSupport.electronics.key.material");
-      _EBKeyShieldMaterial     = config.getString("ttrackerSupport.electronics.key.shieldMaterial");
-      _EBKeyPhiRange           = config.getDouble("ttrackerSupport.electronics.key.phiRange")*CLHEP::degree;
-      _EBKeyPhiExtraRotation   = config.getDouble("ttrackerSupport.electronics.key.phiExtraRotation")*CLHEP::degree;
+      _EBKeyHalfLength         = config.getDouble("trackerSupport.electronics.key.halfLength");
+      _EBKeyShieldHalfLength   = config.getDouble("trackerSupport.electronics.key.shieldHalfLength");
+      _EBKeyInnerRadius        = config.getDouble("trackerSupport.electronics.key.innerRadius");
+      _EBKeyOuterRadius        = config.getDouble("trackerSupport.electronics.key.outerRadius");
+      _EBKeyShiftFromPanelFace = config.getDouble("trackerSupport.electronics.key.shiftFromPanelFace");
+      //_EBKeyVisible            = config.getBool(  "trackerSupport.electronics.key.visible");
+      //_EBKeySolid              = config.getBool(  "trackerSupport.electronics.key.solid");
+      //_EBKeyShieldVisible      = config.getBool(  "trackerSupport.electronics.key.shieldVisible");
+      //_EBKeyShieldSolid        = config.getBool(  "trackerSupport.electronics.key.shieldSolid");
+      _EBKeyMaterial           = config.getString("trackerSupport.electronics.key.material");
+      _EBKeyShieldMaterial     = config.getString("trackerSupport.electronics.key.shieldMaterial");
+      _EBKeyPhiRange           = config.getDouble("trackerSupport.electronics.key.phiRange")*CLHEP::degree;
+      _EBKeyPhiExtraRotation   = config.getDouble("trackerSupport.electronics.key.phiExtraRotation")*CLHEP::degree;
 
-      _wallOuterMetalThickness  = config.getDouble("ttracker.straw.wallOuterMetal.thickness")*CLHEP::mm;
-      _wallInnerMetal1Thickness = config.getDouble("ttracker.straw.wallInnerMetal1.thickness")*CLHEP::mm;
-      _wallInnerMetal2Thickness = config.getDouble("ttracker.straw.wallInnerMetal2.thickness")*CLHEP::mm;
-      _wirePlateThickness       = config.getDouble("ttracker.straw.wirePlate.thickness")*CLHEP::mm;
-      _wallOuterMetalMaterial   = config.getString("ttracker.straw.wallOuterMetal.material");
-      _wallInnerMetal1Material  = config.getString("ttracker.straw.wallInnerMetal1.material");
-      _wallInnerMetal2Material  = config.getString("ttracker.straw.wallInnerMetal2.material");
-      _wirePlateMaterial        = config.getString("ttracker.straw.wirePlate.material");
+      _wallOuterMetalThickness  = config.getDouble("tracker.straw.wallOuterMetal.thickness")*CLHEP::mm;
+      _wallInnerMetal1Thickness = config.getDouble("tracker.straw.wallInnerMetal1.thickness")*CLHEP::mm;
+      _wallInnerMetal2Thickness = config.getDouble("tracker.straw.wallInnerMetal2.thickness")*CLHEP::mm;
+      _wirePlateThickness       = config.getDouble("tracker.straw.wirePlate.thickness")*CLHEP::mm;
+      _wallOuterMetalMaterial   = config.getString("tracker.straw.wallOuterMetal.material");
+      _wallInnerMetal1Material  = config.getString("tracker.straw.wallInnerMetal1.material");
+      _wallInnerMetal2Material  = config.getString("tracker.straw.wallInnerMetal2.material");
+      _wirePlateMaterial        = config.getString("tracker.straw.wirePlate.material");
 
     }
 
@@ -338,7 +338,7 @@ namespace mu2e {
     }
     _numStations = _numPlanes/_planesPerStation;
 
-    //string ttracker.mat.manifold  = "G4_Al";  // Placeholder.
+    //string tracker.mat.manifold  = "G4_Al";  // Placeholder.
 
     // Also define some parameters that may become variable some day.
     _panelBaseRotations.clear();
@@ -457,7 +457,7 @@ namespace mu2e {
       if ( _numPlanes%2 == 1 ){
         throw cet::exception("GEOM")
           << "Aseet style tracker requires 2 planes per station.\n"
-          << "So ttracker.numPlanes must be even.  It was: "
+          << "So tracker.numPlanes must be even.  It was: "
           << _numPlanes
           << "\n";
       }
@@ -884,7 +884,7 @@ namespace mu2e {
 
     // Get additional bookkeeping info.
 
-    // array type containers of straws and pointers, ttracker ones
+    // array type containers of straws and pointers, tracker ones
     array<Straw,StrawId::_nustraws>& allStraws2  = _tt->_allStraws2;
     array<Straw const*,Tracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
     // panel ones
@@ -1324,11 +1324,11 @@ namespace mu2e {
     TubsParams endRingTubs( _endRingInnerRadius, _endRingOuterRadius, _endRingHalfLength);
 
     //    TubsParams midRingTubs ( _endRingInnerRadius, _endRingOuterRadius, _midRingHalfLength);
-    sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
+    sup._stiffRings.push_back(PlacedTubs ( "TrackerEndRingUpstream",   endRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter-_endRingZOffset), _endRingMaterial ));
 
     if ( _hasDownRing ) {
       TubsParams downRingTubs( _downRingInnerRadius, _downRingOuterRadius, _downRingHalfLength);
-      sup._stiffRings.push_back(PlacedTubs ( "TTrackerEndRingDownstream",
+      sup._stiffRings.push_back(PlacedTubs ( "TrackerEndRingDownstream",
 					     downRingTubs, CLHEP::Hep3Vector( _xCenter, 0., _zCenter + _downRingZOffset),
 					     _downRingMaterial ));
     }
@@ -1368,7 +1368,7 @@ namespace mu2e {
 
       // top beam is no longer there
 
-      std::ostringstream bos("TTrackerSupportBeam_",std::ios_base::ate); // to write at the end
+      std::ostringstream bos("TrackerSupportBeam_",std::ios_base::ate); // to write at the end
       bos << std::setfill('0') << std::setw(2);
 
       // supportBeamParams.insert(std::pair<std::string,
@@ -1409,7 +1409,7 @@ namespace mu2e {
 
         for (size_t ssbeam = 0; ssbeam != nssbeams; ++ssbeam) {
 
-          bos.str("TTrackerSupportBeam_");
+          bos.str("TrackerSupportBeam_");
           bos << std::setw(1) << ibeam << ssbeam;
 
           if ( _verbosityLevel > 0 ) {
@@ -1446,7 +1446,7 @@ namespace mu2e {
 
           size_t ssbeam = 1;
 
-          bos.str("TTrackerSupportServiceEnvelope_");
+          bos.str("TrackerSupportServiceEnvelope_");
           bos << std::setw(1) << ibeam << ssbeam;
 
           if ( _verbosityLevel > 0 ) {
@@ -1485,7 +1485,7 @@ namespace mu2e {
           // the span of this service section
           double deltaPhi0 = _beam1_servicePhiEnds[sservice] - _beam1_servicePhi0s[sservice];
 
-          bos.str("TTrackerSupportServiceSectionEnvelope_");
+          bos.str("TrackerSupportServiceSectionEnvelope_");
           bos << std::setw(1) << ibeam << sservice;
 
           if ( _verbosityLevel > 0 ) {
@@ -1494,7 +1494,7 @@ namespace mu2e {
 
           std::string boses =  bos.str();
 
-          bos.str("TTrackerSupportService_");
+          bos.str("TrackerSupportService_");
           bos << std::setw(1) << ibeam << sservice << "_";
 
           std::string boss =  bos.str();
@@ -1623,20 +1623,20 @@ namespace mu2e {
       TubsParams centerPlateTubs( _innerRingOuterRadius, _outerRingOuterRadius, _centerPlateHalfLength,0., _panelPhi);
       CLHEP::Hep3Vector centerSpot(0.,0.,0.);
       if ( _ttVersion > 3) centerSpot.set(0.,0.,_innerRingHalfLength - _centerPlateHalfLength );
-      sup._centerPlate = PlacedTubs( "TTrackerSupportCenterPlate", centerPlateTubs, centerSpot, _centerPlateMaterial);
+      sup._centerPlate = PlacedTubs( "TrackerSupportCenterPlate", centerPlateTubs, centerSpot, _centerPlateMaterial);
     }
 
     { // This is the inner ring
       TubsParams innerRingTubs( _innerRingInnerRadius, _innerRingOuterRadius, _innerRingHalfLength,0., _panelPhi);
-      sup._innerRing = PlacedTubs( "TTrackerSupportInnerRing", innerRingTubs, CLHEP::Hep3Vector(0.,0.,0), _innerRingMaterial );
+      sup._innerRing = PlacedTubs( "TrackerSupportInnerRing", innerRingTubs, CLHEP::Hep3Vector(0.,0.,0), _innerRingMaterial );
     }
 
     { // This is the channel info for the inner ring
       double outerRadius        = _innerRingInnerRadius + _channelDepth;
       double channelHalfLength  = (_layerHalfSpacing-_strawOuterRadius) + 2.*_strawOuterRadius;
       TubsParams innerChannelTubs( _innerRingInnerRadius, outerRadius, channelHalfLength, 0., _panelPhi );
-      sup._innerChannelUpstream   = PlacedTubs( "TTrackerSupportInnerChannelUpstream",   innerChannelTubs, CLHEP::Hep3Vector(0.,0.,-_channelZOffset+_panelZOffset), _envelopeMaterial );
-      sup._innerChannelDownstream = PlacedTubs( "TTrackerSupportInnerChannelDownstream", innerChannelTubs, CLHEP::Hep3Vector(0.,0., _channelZOffset-_panelZOffset), _envelopeMaterial );
+      sup._innerChannelUpstream   = PlacedTubs( "TrackerSupportInnerChannelUpstream",   innerChannelTubs, CLHEP::Hep3Vector(0.,0.,-_channelZOffset+_panelZOffset), _envelopeMaterial );
+      sup._innerChannelDownstream = PlacedTubs( "TrackerSupportInnerChannelDownstream", innerChannelTubs, CLHEP::Hep3Vector(0.,0., _channelZOffset-_panelZOffset), _envelopeMaterial );
     }
 
     { // This is the Outer ring
@@ -1647,8 +1647,8 @@ namespace mu2e {
 	dz = -_centerPlateHalfLength;
       }
       TubsParams outerRingTubs( _outerRingInnerRadius, _outerRingOuterRadius, halfLength,0.0, _panelPhi);
-      sup._outerRingUpstream   = PlacedTubs ( "TTrackerSupportOuterRingUpstream",   outerRingTubs, CLHEP::Hep3Vector(0.,0.,-dz), _outerRingMaterial );
-      sup._outerRingDownstream = PlacedTubs ( "TTrackerSupportOuterRingDownstream", outerRingTubs, CLHEP::Hep3Vector(0.,0., dz), _outerRingMaterial );
+      sup._outerRingUpstream   = PlacedTubs ( "TrackerSupportOuterRingUpstream",   outerRingTubs, CLHEP::Hep3Vector(0.,0.,-dz), _outerRingMaterial );
+      sup._outerRingDownstream = PlacedTubs ( "TrackerSupportOuterRingDownstream", outerRingTubs, CLHEP::Hep3Vector(0.,0., dz), _outerRingMaterial );
     }
 
     { // Cover plate
@@ -1668,21 +1668,21 @@ namespace mu2e {
       }
 
       TubsParams gasTubs( _innerRingOuterRadius, _outerRingInnerRadius, halfLength, 0., _panelPhi );
-      sup._gasUpstream   = PlacedTubs ( "TTrackerSupportGasUpstream",  gasTubs, CLHEP::Hep3Vector(0.,0.,-dz), _electronicsSpaceMaterial );
-      sup._gasDownstream = PlacedTubs ( "TTrackerSupportGasDownstream", gasTubs, CLHEP::Hep3Vector(0.,0., dz), _electronicsSpaceMaterial );
+      sup._gasUpstream   = PlacedTubs ( "TrackerSupportGasUpstream",  gasTubs, CLHEP::Hep3Vector(0.,0.,-dz), _electronicsSpaceMaterial );
+      sup._gasDownstream = PlacedTubs ( "TrackerSupportGasDownstream", gasTubs, CLHEP::Hep3Vector(0.,0., dz), _electronicsSpaceMaterial );
     }
 
     // Positions for the next two are in the coordinates of the electronics space.
     { // G10 (now just "Electronics" )
       TubsParams g10Tubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsG10HalfLength, 0., _panelPhi );
-      sup._g10Upstream   = PlacedTubs ( "TTrackerSupportElecG10Upstream",   g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
-      sup._g10Downstream = PlacedTubs ( "TTrackerSupportElecG10Downstream", g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
+      sup._g10Upstream   = PlacedTubs ( "TrackerSupportElecG10Upstream",   g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
+      sup._g10Downstream = PlacedTubs ( "TrackerSupportElecG10Downstream", g10Tubs, CLHEP::Hep3Vector(0.,0.,-_electronicsG10HalfLength), _electronicsG10Material );
     }
 
     {
       TubsParams cuTubs( _innerRingOuterRadius, _outerRingInnerRadius, _electronicsCuHhalfLength, 0., _panelPhi);
-      sup._cuUpstream   = PlacedTubs ( "TTrackerSupportElecCuUpstream",   cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
-      sup._cuDownstream = PlacedTubs ( "TTrackerSupportElecCuDownstream", cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
+      sup._cuUpstream   = PlacedTubs ( "TrackerSupportElecCuUpstream",   cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
+      sup._cuDownstream = PlacedTubs ( "TrackerSupportElecCuDownstream", cuTubs, CLHEP::Hep3Vector(0.,0.,_electronicsCuHhalfLength), _electronicsCuMaterial);
     }
 
   } // end of makeSupportStructure()

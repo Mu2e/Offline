@@ -232,7 +232,7 @@ namespace mu2e {
     const StoppingTarget& target = *tmptgt.get();
     addDetector(std::move(tmptgt));
 
-    if (_config->getBool("hasTTracker",false)){
+    if (_config->getBool("hasTracker",false)){
       TrackerMaker ttm( *_config );
       addDetector( ttm.getTrackerPtr() );
     }

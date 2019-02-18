@@ -20,10 +20,10 @@ using namespace std;
 
 namespace mu2e {
 
-  class PrintTTrackerGeom : public art::EDAnalyzer {
+  class PrintTrackerGeom : public art::EDAnalyzer {
   public:
 
-    explicit PrintTTrackerGeom(fhicl::ParameterSet const& pset);
+    explicit PrintTrackerGeom(fhicl::ParameterSet const& pset);
 
     void analyze(const art::Event& e) override;
 
@@ -34,14 +34,14 @@ namespace mu2e {
 
   };
 
-  PrintTTrackerGeom::PrintTTrackerGeom(fhicl::ParameterSet const& pset ):
+  PrintTrackerGeom::PrintTrackerGeom(fhicl::ParameterSet const& pset ):
     EDAnalyzer(pset),
     _diagLevel(pset.get<int>("diagLevel",0)){
   }
 
-  void PrintTTrackerGeom::analyze(const art::Event& ){}
+  void PrintTrackerGeom::analyze(const art::Event& ){}
 
-  void PrintTTrackerGeom::beginRun(const art::Run& run){
+  void PrintTrackerGeom::beginRun(const art::Run& run){
 
     Tracker const& tracker(*GeomHandle<Tracker>());
 
@@ -105,4 +105,4 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::PrintTTrackerGeom);
+DEFINE_ART_MODULE(mu2e::PrintTrackerGeom);

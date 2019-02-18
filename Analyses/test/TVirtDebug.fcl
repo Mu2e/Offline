@@ -1,15 +1,12 @@
 #
-# Look at hits in the virtual detectors related to the TTTracker
+# Look at hits in the virtual detectors related to the Tracker
 #
-# $Id: TTVirtDebug.fcl,v 1.1 2013/12/20 20:05:12 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2013/12/20 20:05:12 $
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 
 # Give this job a name.
-process_name : TTVirtDebug
+process_name : TVirtDebug
 
 # Start form an empty source
 source : {
@@ -31,16 +28,16 @@ physics : {
 
   analyzers:  {
 
-    ttvirtdebug:
+    tvirtdebug:
     {
-      module_type            : TTVirtDebug
+      module_type            : TVirtDebug
       g4ModuleLabel          : g4run
       maxFullPrint           : 201
     }
 
   }
 
-  e1 : [ttvirtdebug]
+  e1 : [tvirtdebug]
 
   end_paths      : [e1]
 

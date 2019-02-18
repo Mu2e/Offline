@@ -34,8 +34,8 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/constructTTracker.hh"
-#include "Mu2eG4/inc/ConstructTTrackerDetail5.hh"
+#include "Mu2eG4/inc/constructTracker.hh"
+#include "Mu2eG4/inc/ConstructTrackerDetail5.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
@@ -59,17 +59,17 @@ using namespace std;
 
 namespace mu2e{
 
-  VolumeInfo constructTTrackerv5( VolumeInfo const& ds3Vac,
+  VolumeInfo constructTrackerv5( VolumeInfo const& ds3Vac,
                                   SimpleConfig const& config ){
 
     // Master geometry for the Tracker.
     //    Tracker const & tracker = *(GeomHandle<Tracker>());
 
     // The more detailed version has its own function.
-    ConstructTTrackerDetail5 tt(ds3Vac, config);
+    ConstructTrackerDetail5 tt(ds3Vac, config);
     return tt.motherInfo();
     // Temporary until I can do more...
 
-  } // end of constructTTrackerv5
+  } // end of constructTrackerv5
 
 } // end namespace mu2e

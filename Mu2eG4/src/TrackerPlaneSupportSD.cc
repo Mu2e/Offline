@@ -1,7 +1,7 @@
 //
-// Define a sensitive detector for TTrackerPlaneSupport
+// Define a sensitive detector for TrackerPlaneSupport
 //
-// $Id: TTrackerPlaneSupportSD.cc,v 1.6 2013/08/28 05:58:17 gandr Exp $
+// $Id: TrackerPlaneSupportSD.cc,v 1.6 2013/08/28 05:58:17 gandr Exp $
 // $Author: gandr $
 // $Date: 2013/08/28 05:58:17 $
 //
@@ -15,7 +15,7 @@
 #include "cetlib_except/exception.h"
 
 // Mu2e includes
-#include "Mu2eG4/inc/TTrackerPlaneSupportSD.hh"
+#include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -32,11 +32,11 @@ using namespace std;
 
 namespace mu2e {
 
-  TTrackerPlaneSupportSD::TTrackerPlaneSupportSD(G4String name, SimpleConfig const & config ):
+  TrackerPlaneSupportSD::TrackerPlaneSupportSD(G4String name, SimpleConfig const & config ):
     Mu2eSensitiveDetector(name,config)
   {
 
-    SetVerboseLevel(config.getInt("ttracker.verbosityLevel",0));
+    SetVerboseLevel(config.getInt("tracker.verbosityLevel",0));
 
    art::ServiceHandle<GeometryService> geom;
 
@@ -45,15 +45,15 @@ namespace mu2e {
         << "Expected Tracker but did not find it.\n";
     } 
     else {
-      _TrackerVersion = config.getInt("TTrackerVersion",3);
+      _TrackerVersion = config.getInt("TrackerVersion",3);
       if ( _TrackerVersion < 3) {
-        throw cet::exception("TTrackerPlaneSupportSD")
-          << "Expected TTrackerVersion >= 3 but found " << _TrackerVersion <<endl;
+        throw cet::exception("TrackerPlaneSupportSD")
+          << "Expected TrackerVersion >= 3 but found " << _TrackerVersion <<endl;
       }
     }
   }
 
-  G4bool TTrackerPlaneSupportSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
+  G4bool TrackerPlaneSupportSD::ProcessHits(G4Step* aStep,G4TouchableHistory*){
 
     _currentSize += 1;
 
@@ -78,8 +78,8 @@ namespace mu2e {
     G4Event const* event = G4RunManager::GetRunManager()->GetCurrentEvent();
 
 
-    // we take here the numbering from TTrackerPlaneEnvelope
-    // (not TTrackerPlaneSupport which is always 0)
+    // we take here the numbering from TrackerPlaneEnvelope
+    // (not TrackerPlaneSupport which is always 0)
 
     G4int en = event->GetEventID();
     G4int ti = aStep->GetTrack()->GetTrackID();
@@ -90,30 +90,30 @@ namespace mu2e {
 
     if (verboseLevel > 1) {
 
-      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging history depth " <<
+      cout << "TrackerPlaneSupportSD::" << __func__ << " Debugging history depth " <<
         setw(4) << touchableHandle->GetHistoryDepth() << endl;
 
-      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging copy n 0 1 2 3 4 " <<
+      cout << "TrackerPlaneSupportSD::" << __func__ << " Debugging copy n 0 1 2 3 4 " <<
         setw(4) << touchableHandle->GetCopyNumber(0) <<
         setw(4) << touchableHandle->GetCopyNumber(1) <<
         setw(4) << touchableHandle->GetCopyNumber(2) <<
         setw(4) << touchableHandle->GetCopyNumber(3) <<
         setw(4) << touchableHandle->GetCopyNumber(4) << endl;
 
-      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging PV Name Mother Name " <<
+      cout << "TrackerPlaneSupportSD::" << __func__ << " Debugging PV Name Mother Name " <<
         touchableHandle->GetVolume(0)->GetName() << " " <<
         touchableHandle->GetVolume(1)->GetName() << " " <<
         touchableHandle->GetVolume(2)->GetName() << " " <<
         touchableHandle->GetVolume(3)->GetName() << " " <<
         touchableHandle->GetVolume(4)->GetName() << endl;
 
-      cout << "TTrackerPlaneSupportSD::" << __func__ 
+      cout << "TrackerPlaneSupportSD::" << __func__ 
            << " Debugging hit info event track copyn replican: " <<
         setw(4) << en << " " <<
         setw(4) << ti << " " <<
         setw(4) << cn << endl;
 
-      cout << "TTrackerPlaneSupportSD::" << __func__ << " Debugging _TrackerVersion: " << 
+      cout << "TrackerPlaneSupportSD::" << __func__ << " Debugging _TrackerVersion: " << 
         _TrackerVersion << endl;
 
     }
@@ -141,9 +141,9 @@ namespace mu2e {
                             ));
 
     if (verboseLevel >0) {
-      cout << "TTrackerPlaneSupportSD::" << __func__ << " Event " << setw(4) <<
+      cout << "TrackerPlaneSupportSD::" << __func__ << " Event " << setw(4) <<
         G4RunManager::GetRunManager()->GetCurrentEvent()->GetEventID() <<
-        " TTrackerPlaneSupport " << 
+        " TrackerPlaneSupport " << 
         touchableHandle->GetVolume(1)->GetName() << " " <<
         setw(4) << touchableHandle->GetVolume(1)->GetCopyNo() <<
         " hit at: " << aStep->GetPreStepPoint()->GetPosition() - _mu2eOrigin << endl;

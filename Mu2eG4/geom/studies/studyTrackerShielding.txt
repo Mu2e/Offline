@@ -4,7 +4,7 @@
 //
 
 #include "Mu2eG4/geom/geom_common_current.txt"
-#include "Mu2eG4/geom/ttracker_v4.txt"
+#include "Mu2eG4/geom/tracker_v4.txt"
 
 // All dimensions specified here are full dimensions, not half lengths, etc
 bool   ts.useFlashBlockUp          = true;

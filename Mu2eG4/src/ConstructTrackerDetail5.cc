@@ -11,7 +11,7 @@
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
-#include "Mu2eG4/inc/ConstructTTrackerDetail5.hh"
+#include "Mu2eG4/inc/ConstructTrackerDetail5.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/nestBox.hh"
@@ -37,7 +37,7 @@
 
 using namespace std;
 
-mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds3Vac,
+mu2e::ConstructTrackerDetail5::ConstructTrackerDetail5( VolumeInfo   const& ds3Vac,
                                                           SimpleConfig const& config ):
   // References to arguments
   _ds3Vac(ds3Vac),
@@ -50,7 +50,7 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
   _tracker(*GeomHandle<Tracker>()),
 
   // Switches that affect the entire tracker
-  _verbosityLevel(_config.getInt("ttracker.verbosityLevel",0)),
+  _verbosityLevel(_config.getInt("tracker.verbosityLevel",0)),
 
   // Coordinate system transformation
   _offset(computeOffset()),
@@ -60,9 +60,9 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
 
   // Switches that affect the entire tracker
     const auto geomOptions = art::ServiceHandle<mu2e::GeometryService>()->geomOptions();
-    geomOptions->loadEntry(config, "ttracker", "ttracker" );
-    _doSurfaceCheck      = geomOptions->doSurfaceCheck("ttracker");
-    _forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("ttracker");
+    geomOptions->loadEntry(config, "tracker", "tracker" );
+    _doSurfaceCheck      = geomOptions->doSurfaceCheck("tracker");
+    _forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("tracker");
 
 
   // Do the work.
@@ -71,7 +71,7 @@ mu2e::ConstructTTrackerDetail5::ConstructTTrackerDetail5( VolumeInfo   const& ds
   constructPlanes(); // Much different from "TDR" version <==
 
   // Debugging only.
-  if ( _config.getBool("ttracker.drawAxes",false) ) {
+  if ( _config.getBool("tracker.drawAxes",false) ) {
     constructAxes();
   }
 
@@ -89,7 +89,7 @@ namespace mu2e {
     bool const noSurfaceCheck(false);
     bool const doSurfaceCheck(true);
     G4RotationMatrix * noRotation(nullptr);
-    string trackerEnvelopeName("TTrackerPlaneEnvelope");
+    string trackerEnvelopeName("TrackerPlaneEnvelope");
 
 
   } // end anonymous namespace
@@ -101,7 +101,7 @@ namespace mu2e {
 // Compute the offset that moves positions in the tracker coordinate system to positions in the
 // coordinate system of the mother.
 CLHEP::Hep3Vector
-mu2e::ConstructTTrackerDetail5::computeOffset(){
+mu2e::ConstructTrackerDetail5::computeOffset(){
   return CLHEP::Hep3Vector(0., 0., _tracker.z0()-_tracker.mother().position().z() );
 }
 // *****************************************************
@@ -111,7 +111,7 @@ mu2e::ConstructTTrackerDetail5::computeOffset(){
 // Construct the TTracker Mother
 // *****************************
 void
-mu2e::ConstructTTrackerDetail5::constructMother(){
+mu2e::ConstructTrackerDetail5::constructMother(){
 
   // Parameters of the new style mother volume ( replaces the envelope volume ).
   PlacedTubs const& mother = _tracker.mother();
@@ -120,9 +120,9 @@ mu2e::ConstructTTrackerDetail5::constructMother(){
   static int const newWidth = 14;
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-  geomOptions->loadEntry( _config, "ttrackerEnvelope", "ttracker.envelope" );
-  const bool  isEnvelopeVisible = geomOptions->isVisible("ttrackerEnvelope");
-  const bool  isEnvelopeSolid   = geomOptions->isSolid("ttrackerEnvelope");
+  geomOptions->loadEntry( _config, "trackerEnvelope", "tracker.envelope" );
+  const bool  isEnvelopeVisible = geomOptions->isVisible("trackerEnvelope");
+  const bool  isEnvelopeSolid   = geomOptions->isSolid("trackerEnvelope");
 
   if (_verbosityLevel > 0) {
 
@@ -187,16 +187,16 @@ mu2e::ConstructTTrackerDetail5::constructMother(){
 // below, is of the rings holding the straws.
 // ************************
 void
-mu2e::ConstructTTrackerDetail5::constructMainSupports(){
+mu2e::ConstructTrackerDetail5::constructMainSupports(){
 
   SupportStructure const& sup = _tracker.getSupportStructure();
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-  geomOptions->loadEntry( _config, "ttrackerSupport", "ttracker.support" );
+  geomOptions->loadEntry( _config, "trackerSupport", "tracker.support" );
   
-  const bool isSupportVisible = geomOptions->isVisible("ttrackerSupport");
-  const bool isSupportSolid   = geomOptions->isSolid("ttrackerSupport");
-  const bool doSurfaceCheck    = geomOptions->doSurfaceCheck("ttrackerSupport");
+  const bool isSupportVisible = geomOptions->isVisible("trackerSupport");
+  const bool isSupportSolid   = geomOptions->isSolid("trackerSupport");
+  const bool doSurfaceCheck    = geomOptions->doSurfaceCheck("trackerSupport");
 
 
   // These rings are the same as TDR version
@@ -269,8 +269,8 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
   // here construct the supportServices
 
   VolumeInfo serviceVI;
-  VolumeInfo& ttSSE1 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_11");
-  VolumeInfo& ttSSE2 = _helper.locateVolInfo("TTrackerSupportServiceEnvelope_21");
+  VolumeInfo& ttSSE1 = _helper.locateVolInfo("TrackerSupportServiceEnvelope_11");
+  VolumeInfo& ttSSE2 = _helper.locateVolInfo("TrackerSupportServiceEnvelope_21");
 
   // each subsection has en envelope; creating them first
 
@@ -279,7 +279,7 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
     // placing the services in the right envelope
     VolumeInfo& ttSSE = ( sbeam.name().find("eSectionEnvelope_1") != string::npos ) ? ttSSE1 : ttSSE2;
 
-    if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
+    if ( sbeam.name().find("TrackerSupportServiceSectionEnvelope_") != string::npos ) {
 
       if ( _verbosityLevel > 0 ) {
         cout << __func__
@@ -326,13 +326,13 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
 
     // placing the services in the right envelope
 
-    std::string stf = "TTrackerSupportService_";
+    std::string stf = "TrackerSupportService_";
 
     size_t stfp = sbeam.name().find(stf);
 
     if ( stfp != string::npos ) {
 
-      std::string sse = "TTrackerSupportServiceSectionEnvelope_" + sbeam.name().substr(stfp+stf.size(),2);
+      std::string sse = "TrackerSupportServiceSectionEnvelope_" + sbeam.name().substr(stfp+stf.size(),2);
 
       VolumeInfo& ttSSE =  _helper.locateVolInfo(sse);
 
@@ -381,7 +381,7 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
   if ( _verbosityLevel > 0 ) {
     for ( auto const& sbeam : sup.beamServices() ) {
       // prinitnt the final mass per Service Section envelope
-      if ( sbeam.name().find("TTrackerSupportServiceSectionEnvelope_") != string::npos ) {
+      if ( sbeam.name().find("TrackerSupportServiceSectionEnvelope_") != string::npos ) {
 
         VolumeInfo& ttSSE =  _helper.locateVolInfo(sbeam.name());
 
@@ -410,10 +410,10 @@ mu2e::ConstructTTrackerDetail5::constructMainSupports(){
 // is representated in G4 as two independent planes.
 // **********************************************************
 void
-mu2e::ConstructTTrackerDetail5::constructPlanes(){
+mu2e::ConstructTrackerDetail5::constructPlanes(){
 
   // If the following is set, turns on detailed drawing of the "named" planes
-  int plnDraw(_config.getInt("ttracker.plnDraw",-1));
+  int plnDraw(_config.getInt("tracker.plnDraw",-1));
 
   // Build logical volume heirarchy for a single panel.  <==
   // Historically this only considered a panel as the location of straws
@@ -435,10 +435,10 @@ mu2e::ConstructTTrackerDetail5::constructPlanes(){
   TubsParams planeEnvelopeParams = _tracker.getPlaneEnvelopeParams();
   
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-  geomOptions->loadEntry( _config, "ttrackerPlaneEnvelope", "ttracker.planeEnvelope" );
+  geomOptions->loadEntry( _config, "trackerPlaneEnvelope", "tracker.planeEnvelope" );
   
-  const bool planeEnvelopeVisible = geomOptions->isVisible("ttrackerPlaneEnvelope");
-  const bool planeEnvelopeSolid   = geomOptions->isSolid("ttrackerPlaneEnvelope");
+  const bool planeEnvelopeVisible = geomOptions->isVisible("trackerPlaneEnvelope");
+  const bool planeEnvelopeSolid   = geomOptions->isSolid("trackerPlaneEnvelope");
 
   G4Material* envelopeMaterial = findMaterialOrThrow(_tracker.envelopeMaterial());
 
@@ -557,7 +557,7 @@ namespace mu2e {
 // ************************
 
 mu2e::VolumeInfo
-mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
+mu2e::ConstructTrackerDetail5::preparePanel(const int& iPlane,
 					     const int& iPanel,
 					     VolumeInfo& thePlane,
 					     VolumeInfo& strawPanel,
@@ -579,9 +579,9 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
   Panel const& panel(_tracker.getPanel(PanelId(iPlane,iPanel,0)));
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-  geomOptions->loadEntry( _config, "ttrackerPanelEnvelope", "ttracker.panelEnvelope" );
-  const bool panelEnvelopeVisible = geomOptions->isVisible("ttrackerPanelEnvelope");
-  const bool panelEnvelopeSolid   = geomOptions->isSolid("ttrackerPanelEnvelope");
+  geomOptions->loadEntry( _config, "trackerPanelEnvelope", "tracker.panelEnvelope" );
+  const bool panelEnvelopeVisible = geomOptions->isVisible("trackerPanelEnvelope");
+  const bool panelEnvelopeSolid   = geomOptions->isSolid("trackerPanelEnvelope");
 
   // Azimuth of the centerline of the panel envelope: panelCenterPhi
   // Upon construction and before placement, the panel envelope occupies [0,phiMax].
@@ -678,7 +678,7 @@ mu2e::ConstructTTrackerDetail5::preparePanel(const int& iPlane,
 
 
 mu2e::VolumeInfo
-mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
+mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
  // ************************
   // Now we put in the Straws!
@@ -697,18 +697,18 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   Panel const& panel(_tracker.getPanel(PanelId(0,0,0)));
 
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-  geomOptions->loadEntry( _config, "ttrackerPlaneEnvelope", "ttracker.planeEnvelope" );
-  geomOptions->loadEntry( _config, "ttrackerPanelEnvelope", "ttracker.panelEnvelope" );
-  geomOptions->loadEntry( _config, "ttrackerStraw", "ttracker.straw" );
-  geomOptions->loadEntry( _config, "ttrackerStrawLayering", "ttracker.strawLayering" );
-  const bool panelEnvelopeVisible = geomOptions->isVisible("ttrackerPanelEnvelope");
-  const bool panelEnvelopeSolid   = geomOptions->isSolid("ttrackerPanelEnvelope");
-  const bool strawVisible         = geomOptions->isVisible("ttrackerStraw");
-  const bool strawSolid           = geomOptions->isSolid("ttrackerStraw");
-  const bool strawLayeringVisible = geomOptions->isVisible("ttrackerStrawLayering");
-  const bool strawLayeringSolid   = geomOptions->isSolid("ttrackerStrawLayering");
+  geomOptions->loadEntry( _config, "trackerPlaneEnvelope", "tracker.planeEnvelope" );
+  geomOptions->loadEntry( _config, "trackerPanelEnvelope", "tracker.panelEnvelope" );
+  geomOptions->loadEntry( _config, "trackerStraw", "tracker.straw" );
+  geomOptions->loadEntry( _config, "trackerStrawLayering", "tracker.strawLayering" );
+  const bool panelEnvelopeVisible = geomOptions->isVisible("trackerPanelEnvelope");
+  const bool panelEnvelopeSolid   = geomOptions->isSolid("trackerPanelEnvelope");
+  const bool strawVisible         = geomOptions->isVisible("trackerStraw");
+  const bool strawSolid           = geomOptions->isSolid("trackerStraw");
+  const bool strawLayeringVisible = geomOptions->isVisible("trackerStrawLayering");
+  const bool strawLayeringSolid   = geomOptions->isSolid("trackerStrawLayering");
   
-  bool partialStraws              = _config.getBool("ttracker.partialStraws",false);
+  bool partialStraws              = _config.getBool("tracker.partialStraws",false);
 
   // Azimuth of the centerline of a the panel enveleope: panelCenterPhi
   // Upon construction and before placement, the panel envelope
@@ -851,7 +851,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
       bool edgeVisible(true);
 
       // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
-      VolumeInfo strawVol =  nestTubs( straw.name("TTrackerStrawGas_"),
+      VolumeInfo strawVol =  nestTubs( straw.name("TrackerStrawGas_"),
                                        detail.getOuterTubsParams(),
                                        findMaterialOrThrow(detail.gasMaterialName()),
                                        panelRotation,
@@ -868,7 +868,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
       // Wall has 4 layers; the three metal layers sit inside the plastic layer.
       // The plastic layer sits inside the gas.
-      VolumeInfo wallVol =  nestTubs( straw.name("TTrackerStrawWall_"),
+      VolumeInfo wallVol =  nestTubs( straw.name("TrackerStrawWall_"),
                                       detail.wallMother(),
                                       findMaterialOrThrow(detail.wallMaterialName()),
                                       noRotation,
@@ -884,7 +884,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                       );
 
 
-      VolumeInfo outerMetalVol =  nestTubs( straw.name("TTrackerStrawWallOuterMetal_"),
+      VolumeInfo outerMetalVol =  nestTubs( straw.name("TrackerStrawWallOuterMetal_"),
                                             detail.wallOuterMetal(),
                                             findMaterialOrThrow(detail.wallOuterMetalMaterialName()),
                                             noRotation,
@@ -900,7 +900,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                             );
 
 
-      VolumeInfo innerMetal1Vol =  nestTubs( straw.name("TTrackerStrawWallInnerMetal1_"),
+      VolumeInfo innerMetal1Vol =  nestTubs( straw.name("TrackerStrawWallInnerMetal1_"),
                                              detail.wallInnerMetal1(),
                                              findMaterialOrThrow(detail.wallInnerMetal1MaterialName()),
                                              noRotation,
@@ -915,7 +915,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                              _doSurfaceCheck
                                              );
 
-      VolumeInfo innerMetal2Vol =  nestTubs( straw.name("TTrackerStrawWallInnerMetal2_"),
+      VolumeInfo innerMetal2Vol =  nestTubs( straw.name("TrackerStrawWallInnerMetal2_"),
                                              detail.wallInnerMetal2(),
                                              findMaterialOrThrow(detail.wallInnerMetal2MaterialName()),
                                              noRotation,
@@ -930,7 +930,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                              _doSurfaceCheck
                                              );
 
-      VolumeInfo wireVol =  nestTubs( straw.name("TTrackerWireCore_"),
+      VolumeInfo wireVol =  nestTubs( straw.name("TrackerWireCore_"),
                                       detail.wireMother(),
                                       findMaterialOrThrow(detail.wireCoreMaterialName()),
                                       noRotation,
@@ -945,7 +945,7 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
                                       _doSurfaceCheck
                                       );
 
-      VolumeInfo platingVol =  nestTubs( straw.name("TTrackerWirePlate_"),
+      VolumeInfo platingVol =  nestTubs( straw.name("TrackerWirePlate_"),
                                          detail.wirePlate(),
                                          findMaterialOrThrow(detail.wirePlateMaterialName()),
                                          noRotation,
@@ -976,11 +976,11 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
   // for v3 of the Tracker was developed.  We only need one
   // or the other for v5, so arbitrarily choose downstream.
   // In the future, when we retire the ability to choose
-  // v3 of the ttracker, we can simplify the support structure class.
+  // v3 of the tracker, we can simplify the support structure class.
   // ***************************************
-  geomOptions->loadEntry( _config, "ttrackerSupport", "ttracker.support" );
-  bool supportVisible = geomOptions->isVisible("ttrackerSupport");
-  bool supportSolid   = geomOptions->isSolid("ttrackerSupport");
+  geomOptions->loadEntry( _config, "trackerSupport", "tracker.support" );
+  bool supportVisible = geomOptions->isVisible("trackerSupport");
+  bool supportSolid   = geomOptions->isSolid("trackerSupport");
 
   // Many parts of the support structure are G4Tubs objects.
   G4Colour  lightBlue (0.0, 0.0, 0.75);
@@ -1227,20 +1227,20 @@ mu2e::ConstructTTrackerDetail5::prepareStrawPanel() {
 
 
 mu2e::VolumeInfo
-mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
+mu2e::ConstructTrackerDetail5::prepareEBKey(bool keyItself){
 
   // the keys and their shields are almost the same; the boolean decides which one to make
 
   // place they keys in the addPannels...; use different mother volume, i.e. tracker mother
-  // write the corresponding TTrackeMaker code first
+  // write the corresponding TrackeMaker code first
 
   // keys are identical other than placement - so get required properties from plane 0, panel 0.
   // they are placed wrt to the panels; they could be constructed independently though
   //
   const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
-  geomOptions->loadEntry( _config, "ttrackerElectronicsKey", "ttracker.electronicsKey" );
-  const bool keyVisible = geomOptions->isVisible("ttrackerElectronicsKey");
-  const bool keySolid   = geomOptions->isSolid("ttrackerElectronicsKey");
+  geomOptions->loadEntry( _config, "trackerElectronicsKey", "tracker.electronicsKey" );
+  const bool keyVisible = geomOptions->isVisible("trackerElectronicsKey");
+  const bool keySolid   = geomOptions->isSolid("trackerElectronicsKey");
 
   // Internally all keys are the same.
   // Create one logical volume for now, do not place it.
@@ -1306,7 +1306,7 @@ mu2e::ConstructTTrackerDetail5::prepareEBKey(bool keyItself){
 // For debugging graphically, add three boxes that are aligned with the coordinate axes,
 // on the tracker axis, just downstream of the tracker.
 void
-mu2e::ConstructTTrackerDetail5::constructAxes(){
+mu2e::ConstructTrackerDetail5::constructAxes(){
 
   double blockWidth(20.);
   double blockLength(100.);
@@ -1397,7 +1397,7 @@ mu2e::ConstructTTrackerDetail5::constructAxes(){
 // Here panels get added to plane
 // ******************************
 void
-mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
+mu2e::ConstructTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 						   int ipln,
 						   VolumeInfo& plane,
 						   VolumeInfo& baseEBKey,
@@ -1416,7 +1416,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
   // to prevent the overlaps
   SupportStructure const& sup = _tracker.getSupportStructure();
 
-  int pnlDraw = _config.getInt ("ttracker.pnlDraw",-1);
+  int pnlDraw = _config.getInt ("tracker.pnlDraw",-1);
 
   // Assume all planes have the same number of panels.
   int baseCopyNo = ipln * _tracker.getPlane(0).nPanels();
@@ -1647,7 +1647,7 @@ mu2e::ConstructTTrackerDetail5::addPanelsAndEBKeys(VolumeInfo& baseStrawPanel,
 
 
 double
-mu2e::ConstructTTrackerDetail5::panelHalfAzimuth(){
+mu2e::ConstructTrackerDetail5::panelHalfAzimuth(){
 
   SupportStructure const& sup     = _tracker.getSupportStructure();
   return sup.panelPhiRange()/2.0;
@@ -1655,7 +1655,7 @@ mu2e::ConstructTTrackerDetail5::panelHalfAzimuth(){
 }
 
 
-double mu2e::ConstructTTrackerDetail5::getWithinZeroTwoPi (double phi0) {
+double mu2e::ConstructTrackerDetail5::getWithinZeroTwoPi (double phi0) {
   phi0 = fmod(phi0,2.*M_PI);
   if ( phi0<0. ) {
     phi0 += 2.*M_PI;
@@ -1663,7 +1663,7 @@ double mu2e::ConstructTTrackerDetail5::getWithinZeroTwoPi (double phi0) {
   return phi0;
 }
 
-double mu2e::ConstructTTrackerDetail5::diffWithinZeroTwoPi (double phi1, double phi2) {
+double mu2e::ConstructTrackerDetail5::diffWithinZeroTwoPi (double phi1, double phi2) {
   phi1 = getWithinZeroTwoPi(phi1);
   phi2 = getWithinZeroTwoPi(phi2);
   double diff = fabs(phi1 - phi2);
