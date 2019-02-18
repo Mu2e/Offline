@@ -75,11 +75,14 @@ namespace mu2e {
     double _minChi2Ratio;               // if chi2(best)/chi2(next) < _minChi2Ratio, doublet is "well measured"
     double _tempScale;                  // 
     double _penaltyScale;               // 
+    int    _useMeanResidual;            // as a penalty, if _meanResidual is defined
+    double _maxMeanResidual;            // max mean residual - can't make it very large
     double _maxHitChi;
 
     int    _sign[4][2];
     int    _iter;                       // iteration
     int	   _Final;                      // final iteration
+    double _meanResidual;               // mean residual (est) for active hits on a track
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------

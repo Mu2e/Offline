@@ -28,10 +28,13 @@ namespace mu2e {
 					     int                        Iter,
 					     int			Final) :
     AmbigResolver(extErr),
-    _debugLevel  (PSet.get<int>   ("debugLevel"      ,0        )),
-    _mindrift    (PSet.get<double>("HitMinDrift"     ,0.2      )),
-    _zeropenalty (PSet.get<double>("ZeroDriftPenalty",0.2      )),
-    _penalty     (PSet.get<bool>  ("HitAmbigPenalty" ,false    )),
+    _debugLevel  (PSet.get<int>   ("debugLevel"      )),
+    _mindrift    (PSet.get<double>("HitMinDrift"     )),
+    _zeropenalty (PSet.get<double>("ZeroDriftPenalty")),
+    _penalty     (PSet.get<bool>  ("HitAmbigPenalty" )),
+//-----------------------------------------------------------------------------
+// not sure what the next four numbers are
+//-----------------------------------------------------------------------------
     _expnorm     (PSet.get<double>("HitExpNorm"      ,0.03907  )),
     _lambda      (PSet.get<double>("HitLambda"       ,0.1254   )),
     _offset      (PSet.get<double>("HitOffset"       ,0.073    )),
@@ -42,15 +45,17 @@ namespace mu2e {
 // as doublet reconstruction is used in several places, need to be able to
 // create the ambig resolver w/o specifying any numbers in the talk to's
 //-----------------------------------------------------------------------------
-    _sigmaSlope       (PSet.get<double>("sigmaSlope"       ,  0.025)),
-    _maxDoubletChi2   (PSet.get<double>("maxDoubletChi2"   , 10.   )),
-    _scaleErrDoublet  (PSet.get<double>("scaleErrDoublet"  ,  5.   )),
-    _minDriftDoublet  (PSet.get<double>("minDriftDoublet"  ,  0.3  )),
-    _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet",  0.3  )),
-    _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  ,  1    )),  // default:1
-    _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     ,  0.3  )),
-    _tempScale        (PSet.get<double>("tempScale")),
-    _penaltyScale     (PSet.get<double>("penaltyScale")),
+    _sigmaSlope       (PSet.get<double>("sigmaSlope"       )),
+    _maxDoubletChi2   (PSet.get<double>("maxDoubletChi2"   )),
+    _scaleErrDoublet  (PSet.get<double>("scaleErrDoublet"  )),
+    _minDriftDoublet  (PSet.get<double>("minDriftDoublet"  )),
+    _deltaDriftDoublet(PSet.get<double>("deltaDriftDoublet")),
+    _excludeBothHits  (PSet.get<int>   ("excludeBothHits"  )),             // default:1
+    _minChi2Ratio     (PSet.get<double>("minChi2Ratio"     )),
+    _tempScale        (PSet.get<double>("tempScale"        )),
+    _penaltyScale     (PSet.get<double>("penaltyScale"     )),
+    _useMeanResidual  (PSet.get<double>("useMeanResidual"  )),
+    _maxMeanResidual  (PSet.get<double>("maxMeanResidual"  )),
     _iter(Iter),
     _Final(Final)
   {
@@ -323,13 +328,16 @@ namespace mu2e {
   void DoubletAmbigResolver::resolveSingleHit(KalRep*            Krep,
 					      mu2e::TrkStrawHit* Hit ) const {
 
-    double                     doca[2], xbest, xnext;
+    double                     doca[2], xbest, xnext, perr;
     std::vector<TrkStrawHit*>  hits;
 
     Straw const& straw = Hit->straw();
 
     const Hep3Vector& wdir = straw.getDirection();
     const Hep3Vector& wmid = straw.getMidPoint();
+
+    if (_useMeanResidual) perr = _meanResidual;
+    else                  perr = fabs(Hit->driftRadius()/sqrt(3));
 //-----------------------------------------------------------------------------
 // calculate residuals for two hit positions corresponding to two different
 // drift signs
@@ -386,7 +394,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	if (_Final == 0) {
 	  //	  Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
-	  Hit->setPenalty(Hit->driftRadius()/sqrt(3));
+	  Hit->setPenalty(perr);
 	  Hit->setAmbig(0);
 	}
 	else {
@@ -395,7 +403,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	  if (ibest == 0) Hit->setAmbig( 1);
 	  else            Hit->setAmbig(-1);
-	  Hit->setPenalty(Hit->driftRadius()/sqrt(3));
+	  Hit->setPenalty(perr);
 	}
       }
       if (_debugLevel > 0) {
@@ -416,7 +424,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
       printf(" ***** DoubletAmbigResolver::resolveSingleHit warning: cant determine POCA\n");
       //      Hit->setTemperature(Hit->driftRadius()/Hit->driftVelocity());
-      Hit->setPenalty(fabs(Hit->driftRadius()));
+      Hit->setPenalty(perr);
       Hit->setAmbig(0);
     }
 
@@ -500,6 +508,15 @@ namespace mu2e {
       R->tposr[i] = rot*R->tpos[i];
       tdirr[i]    = rot*tdir[i];
       dxdz [i]    = tdirr[i].x()/tdirr[i].z();
+    }
+//-----------------------------------------------------------------------------
+// 2019-02-03 PM : hope, this is temporary: make sure that the two hits are different! 
+// today it is not given
+//-----------------------------------------------------------------------------
+    if (hit[0] == hit[1]) {
+      printf(" ERROR detected in DoubletAmbigResolver::calculateDoubletParameters: doublet with two identical hits. BAIL out\n");
+      R->ibest = -1;
+      return -1;
     }
 //-----------------------------------------------------------------------------
 // choose the best combination of the drift signs - the one corresponding
@@ -693,8 +710,14 @@ namespace mu2e {
 // define hit drift sign in case the two best chi2's are close
 //-----------------------------------------------------------------------------
   void DoubletAmbigResolver::defineHitDriftSign(mu2e::TrkStrawHit* Hit, int I, Data_t* R) const {
+    double perr;
 
-    double err = fabs(R->rdrift[I]);
+//-----------------------------------------------------------------------------
+// initialize the penalty error
+//-----------------------------------------------------------------------------
+    if (_useMeanResidual) perr = _meanResidual;
+    else                  perr = fabs(R->rdrift[I]);  // do we need 1./sqrt(3) here?
+
     if (_sign[R->ibest][I] == _sign[R->inext][I]) {
 //-----------------------------------------------------------------------------
 // both the 'best' and 'next' chi2s correspond to the same drift sign of hit 'i'
@@ -719,7 +742,7 @@ namespace mu2e {
 // all 4 chi2s are "of the same order", nothing to fish
 //-----------------------------------------------------------------------------
 	Hit->setAmbig  (0  );
-	Hit->setPenalty(err);
+	Hit->setPenalty(perr);
       }
     }
     else {
@@ -728,7 +751,7 @@ namespace mu2e {
 // of this hit. Can't choose, assign large error
 //-----------------------------------------------------------------------------
       Hit->setAmbig  (0  );
-      Hit->setPenalty(err);
+      Hit->setPenalty(perr);
     }
   }
 
@@ -752,7 +775,17 @@ namespace mu2e {
     r.index[0] = Index0;
     r.index[1] = Index1;
 
-    calculateDoubletParameters(KRep,HitDoublet,&r);
+    int rc = calculateDoubletParameters(KRep,HitDoublet,&r);
+    if (rc < 0) {
+//-----------------------------------------------------------------------------
+// an error detected, bail out
+//-----------------------------------------------------------------------------
+      HitDoublet->fHit[Index0]->setAmbig(0);
+      HitDoublet->fHit[Index0]->setPenalty(1.e5);
+      HitDoublet->fHit[Index1]->setAmbig(0);
+      HitDoublet->fHit[Index1]->setPenalty(1.e5);
+      return;
+    }
 //-----------------------------------------------------------------------------
 // create an array with the straw hit indices within a multiplet
 //-----------------------------------------------------------------------------
@@ -791,7 +824,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	      if (_Final == 0) {
 		hit[i]->setAmbig(0);
-		hit[i]->setPenalty(r.rdrift[i]);
+		if (_useMeanResidual) hit[i]->setPenalty(_meanResidual);
+		else                  hit[i]->setPenalty(r.rdrift[i]);
 	      }
 	      else {
 		hit[i]->setAmbig(_sign[r.ibest][i]);
@@ -801,7 +835,7 @@ namespace mu2e {
 	}
 	else {
 //-----------------------------------------------------------------------------
-// the chi2 is large, consider hits individually
+// the chi2 is large, consider hits individually:
 // however, the chi2 may be large because of one of the hit times being misreconstructed,
 // while the other hit drift sign still could be reconstructed
 //-----------------------------------------------------------------------------
@@ -872,7 +906,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // don't have to make a decision, scale of uncertainty is defined by the radius
 //-----------------------------------------------------------------------------
-	      hit[i]->setPenalty(fabs(r.rdrift[i]));
+	      if (_useMeanResidual) hit[i]->setPenalty(_meanResidual);
+	      else                  hit[i]->setPenalty(fabs(r.rdrift[i]));
 	      hit[i]->setAmbig(0);
 	    }
 	    else {
@@ -885,7 +920,8 @@ namespace mu2e {
 	      }
 	      else {
 		hit[i]->setAmbig(0);
-		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3.));
+		if (_useMeanResidual) hit[i]->setPenalty(_meanResidual);
+		else                  hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3.));
 	      }
 	    }
 	  }
@@ -909,8 +945,8 @@ namespace mu2e {
 // 2015-04-15 P.Murat: for well-resolved doublets it may be possible to decide
 //                     in all cases - need to check
 //-----------------------------------------------------------------------------
-//		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3.));
-		hit[i]->setPenalty(AmbigResolver::_tmpErr/2/sqrt(3));
+		if (_useMeanResidual) hit[i]->setPenalty(_meanResidual);
+		else                  hit[i]->setPenalty(AmbigResolver::_tmpErr/2/sqrt(3));
 		hit[i]->setAmbig (_sign[r.ibest][i]);
 	      }
 	    }
@@ -963,8 +999,9 @@ namespace mu2e {
 		hit[i]->setAmbig (_sign[best_dd][i]);
 	      }
 	      else {
-		//		hit[i]->setPenalty(fabs(r.rdrift[i])/sqrt(3)); - tried...
-		hit[i]->setPenalty(fabs(r.rdrift[i]));
+		if (_useMeanResidual) hit[i]->setPenalty(_meanResidual);
+		else                  hit[i]->setPenalty(fabs(r.rdrift[i]));
+
 		hit[i]->setAmbig(0);
 					// hit residual is large - try to disable?
 		hit[i]->setActivity(false);
@@ -1136,7 +1173,8 @@ namespace mu2e {
 	      else {
 		if (_Final == 0) {
 		  hit->setAmbig(0);
-		  hit->setPenalty(fabs(rdrift));
+		  if (_useMeanResidual) hit->setPenalty(_meanResidual);
+		  else                  hit->setPenalty(fabs(rdrift));
 		}
 		else {
 //-----------------------------------------------------------------------------
@@ -1166,16 +1204,37 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
 // in the beginning of iteration set external hit errors to a constant
+// also calculate mean residual over the trajectory
 //-----------------------------------------------------------------------------
   void DoubletAmbigResolver::initHitErrors(KalRep* krep) const {
+    double res, sigres, sr2(0);
+    int    na(0);
+
 // get hits and cast to TrkStrawHits
     TrkStrawHitVector tshv;
     convert(krep->hitVector(),tshv);
+					// mark uninitialized;
+
+    double penalty = _tmpErr*0.0625*_penaltyScale;
+
     for (auto itsh=tshv.begin();itsh!=tshv.end(); ++itsh) {
-      double penalty = _tmpErr*0.0625*_penaltyScale;
       (*itsh)->setPenalty    (penalty);
       (*itsh)->setTemperature(_tmpErr*_tempScale);
+      if ((*itsh)->isActive()) {
+	bool hasres = (*itsh)->resid(res, sigres, true);
+	if (hasres) {
+	  sr2 += res*res;
+	  na += 1;
+	}
+      }
     }
+//-----------------------------------------------------------------------------
+// 10 is a random number with the meaning of "more than one hit"
+//-----------------------------------------------------------------------------
+    DoubletAmbigResolver* dar = (DoubletAmbigResolver*) this;
+
+    if (na > 10) dar->_meanResidual = min(sqrt(sr2/na),_maxMeanResidual);
+    else         dar->_meanResidual = _maxMeanResidual;                   // mm
   }
 
 //-----------------------------------------------------------------------------

@@ -117,7 +117,7 @@ TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
 # This should be divided into sim, reco FIXME!
 TprTrigger : {
     producers : {
-	TPRFetchDigis : { module_type:PrefetchData
+	tprFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
 	    mcDiag                        : true
 
@@ -180,10 +180,5 @@ TprTrigger : {
 		   "keep mu2e::TimeClusters_*_*_*" ]
     }
 }
-# production sequences for tracking specific paricles; first downstream moving electrons
-#electrons
-# TprTrigger.TPRDeM : [ @sequence::TrkTrigger.TTfindHelices, TTKSFDeM]
-#positrons
-# TprTrigger.TPRDeP : [ @sequence::TrkTrigger.TTfindHelices, TTKSFDeP]
 
 END_PROLOG
