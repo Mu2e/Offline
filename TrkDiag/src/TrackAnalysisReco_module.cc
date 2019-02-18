@@ -364,8 +364,10 @@ namespace mu2e {
     double max_momentum = -9999;
     for(auto i_kseed=kcol.begin(); i_kseed != kcol.end(); ++i_kseed) {
       auto const& kseed = *i_kseed; 
-      if (kseed.segments().begin()->mom() > max_momentum) {
+      double this_momentum = kseed.segments().begin()->mom();
+      if (this_momentum > max_momentum) {
 	retval = i_kseed;
+	max_momentum = this_momentum;
       }
     }
     return retval;
