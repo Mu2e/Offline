@@ -54,15 +54,12 @@ namespace mu2e {
   class RPCGun : public art::EDProducer {
     fhicl::ParameterSet psphys_;
 
-    double elow_; // BinnedSpectrum does not store emin and emax reliably
-    double ehi_;
     BinnedSpectrum spectrum_;
-    static BinnedSpectrum parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                             double *elow,
-                                             double *ehi);
 
     int                 verbosityLevel_;
     int                 generateInternalConversion_;
+    bool applySurvivalProbability_;
+    double survivalProbScaling_;
 
     double              czmin_;
     double              czmax_;
@@ -98,11 +95,11 @@ namespace mu2e {
   //================================================================
   RPCGun::RPCGun(const fhicl::ParameterSet& pset)
     : psphys_(pset.get<fhicl::ParameterSet>("physics"))
-    , elow_()
-    , ehi_()
-    , spectrum_                  (parseSpectrumShape(psphys_, &elow_, &ehi_))
+    , spectrum_                  (BinnedSpectrum(psphys_))
     , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))
     , generateInternalConversion_{psphys_.get<int>("generateIntConversion", 0)}
+    , applySurvivalProbability_  (psphys_.get<bool>("ApplySurvivalProb",false))
+    , survivalProbScaling_       (psphys_.get<double>("SurvivalProbScaling",1))
     , czmin_                     (pset.get<double>("czmin" , -1.0))
     , czmax_                     (pset.get<double>("czmax" ,  1.0))
     , phimin_                    (pset.get<double>("phimin",  0. ))
@@ -147,38 +144,25 @@ namespace mu2e {
   }
 
   //================================================================
-  BinnedSpectrum
-  RPCGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                                 double *elow,
-                                                 double *ehi)
-  {
-    BinnedSpectrum res;
-
-    const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
-    if (spectrumShape == "Bistirlich") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<PionCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution") );
-    }
-    else if (spectrumShape == "flat") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat );
-    }
-    else {
-      throw cet::exception("BADCONFIG")
-        << "StoppedParticlePionGun: unknown spectrum shape "<<spectrumShape<<"\n";
-    }
-
-    return res;
-  }
-
-  //================================================================
   void RPCGun::produce(art::Event& event) {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
 
-    const auto& stop = stops_.fire();
+    IO::StoppedParticleTauNormF stop;
+    if (applySurvivalProbability_){
+      while (true){
+        const auto& tstop = stops_.fire();
+        double weight = exp(-tstop.tauNormalized);
+        double rand = randomFlat_.fire();
+        if (weight > rand){
+          stop = tstop;
+          break;
+        }
+      }
+    }else{
+      const auto& tstop = stops_.fire();
+      stop = tstop;
+    }
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
@@ -230,7 +214,7 @@ namespace mu2e {
 
   //================================================================
   double RPCGun::generateEnergy() {
-    return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
+    return spectrum_.sample(randSpectrum_.fire());
   }
 
   //================================================================

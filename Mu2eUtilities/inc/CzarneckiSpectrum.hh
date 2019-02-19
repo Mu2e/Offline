@@ -30,6 +30,7 @@ namespace mu2e {
   private:
 
     const Table<2> _table;
+    double _halfBinWidth;
 
     double interpolate(const double E,
                        const TableRow<2>& row_after, 

@@ -59,13 +59,7 @@ namespace mu2e {
     SpectrumVar spectrumVariable_;
     static SpectrumVar parseSpectrumVar(const std::string& name);
 
-    double elow_; // BinnedSpectrum does not store emin and emax reliably
-    double ehi_;
     BinnedSpectrum spectrum_;
-    static BinnedSpectrum parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                             PDGCode::type pdgId,
-                                             double *elow,
-                                             double *ehi);
     
     GenId genId_;
       
@@ -96,9 +90,7 @@ namespace mu2e {
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
     , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
-    , elow_()
-    , ehi_()
-    , spectrum_(parseSpectrumShape(psphys_, pdgId_, &elow_, &ehi_))
+    , spectrum_(BinnedSpectrum(psphys_))
     , genId_(GenId::findByName(psphys_.get<std::string>("genId", "StoppedParticleReactionGun")))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
@@ -155,57 +147,6 @@ namespace mu2e {
     throw cet::exception("BADCONFIG")<<"StoppedParticleReactionGunN: unknown spectrum variable "<<name<<"\n";
   }
 
-  //================================================================
-  BinnedSpectrum
-  StoppedParticleReactionGunN::parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                                 PDGCode::type pdgId,
-                                                 double *elow,
-                                                 double *ehi)
-  {
-    BinnedSpectrum res;
-
-    const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
-    if (spectrumShape == "Czarnecki") {
-      const double mass(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId).ref().mass().value());
-      *elow = psphys.get<double>("elow", mass);
-      *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
-      res.initialize< CzarneckiSpectrum >(*elow, *ehi, psphys.get<double>("spectrumResolution"));
-    }
-    else if (spectrumShape == "flat") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat );
-    }
-    else if (spectrumShape == "CeEndpoint") {
-      // A simple kludge: ignore the random distribution by setting elow=ehi=eConversion
-      res.initialize<SimpleSpectrum>(0., 1., 1., SimpleSpectrum::Spectrum::Flat );
-      *elow = *ehi = GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy();
-    }
-    else if (spectrumShape == "ejectedProtons") {
-      *elow = 0.;
-      *ehi = 105.; // cut off at muon mass
-      double spectrumRes = (*ehi - *elow)/psphys.get<unsigned>("nbins");
-      res.initialize<EjectedProtonSpectrum>(*elow, *ehi, spectrumRes);
-    }
-    else if (spectrumShape == "tabulated") {
-        // assume that tabulated are the bin centers
-        res.initialize(loadTable<2>( ConfigFileLookupPolicy()( psphys.get<std::string>("spectrumFileName"))) );
-        *elow = res.getAbscissa(0);
-        *ehi  = res.getAbscissa(res.getNbins()-1) + res.getBinWidth();
-        if(psphys.get<bool>("BinCenter", false)){
-            *elow -= res.getBinWidth()/2;
-            *ehi  -= res.getBinWidth()/2;
-        }
-        if(*elow < 0.0) throw cet::exception("BADCONFIG")
-            << "StoppedParticleReactionGun: negative energy endpoint "<< *elow <<"\n";
-    }
-    else {
-      throw cet::exception("BADCONFIG")
-        << "StoppedParticleReactionGunN: unknown spectrum shape "<<spectrumShape<<"\n";
-    }
-
-    return res;
-  }
 
   //================================================================
   void StoppedParticleReactionGunN::produce(art::Event& event) {
@@ -260,7 +201,7 @@ namespace mu2e {
 
   //================================================================
   double StoppedParticleReactionGunN::generateEnergy() {
-    double res = elow_ + (ehi_ - elow_)*randSpectrum_.fire();
+    double res = spectrum_.sample(randSpectrum_.fire());
     if(res < 0.0)
         throw cet::exception("BADE")<<"StoppedParticleReactionGun: negative energy "<< res <<"\n";
     switch(spectrumVariable_) {
