@@ -156,13 +156,15 @@ namespace mu2e {
     std::vector<crvhit> crvHitVector; // Vector of trk hit digi data
 
 
-    for(CrvDigiCollection::const_iterator iter=hits_CRV.begin();
-        iter!=hits_CRV.end(); iter++) {
+    for(CrvDigiCollection::const_iterator iter=hits_CRV.begin(); iter!=hits_CRV.end(); iter++) {
 
 	  const CrvDigi &crvDigi = *iter;
+
+	  // Note: The sipmID used in the packets is a global ID incremented across all
+	  // sipms while the SiPMNumber is an index from 0 to 3 for the 4 SiPMs on an
+	  // individual scintillator bar
 	  const CRSScintillatorBarIndex &barIndex = crvDigi.GetScintillatorBarIndex();
 	  int SiPM = crvDigi.GetSiPMNumber();
-
 	  size_t sipmID = barIndex.asInt()*4 + SiPM;
 
 	  // 15 ROCs total
@@ -175,7 +177,6 @@ namespace mu2e {
 
 	  // ROC ID, counting from 0, across all (for the CRV)
 	  size_t globalROCID = sipmID / number_of_sipms_per_roc;
-	  
 	  size_t rocID = globalROCID % number_of_rocs_per_dtc;
 	  size_t dtcID = dtc_id(globalROCID / number_of_rocs_per_dtc);	  
 	  
@@ -247,123 +248,173 @@ namespace mu2e {
 	}
       }
 
-      if (curHitVector.size() == 0) {
-	// No hits, so just fill a header packet and no data packets
-	std::vector<adc_t> curDataBlock;
-	// Add the header packet to the DataBlock (leaving including a placeholder for
-	// the number of packets in the DataBlock);
-	adc_t null_adc = 0;
-	// First 16 bits of header (reserved values)
-	curDataBlock.push_back(null_adc);
-	// Second 16 bits of header (ROC ID, packet type):
-	adc_t curROCID = rocID; // 4 bit ROC ID
-	adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
-	headerPacketType <<= 4; // Shift left by 4
-	adc_t secondEntry = (curROCID | headerPacketType);
-	secondEntry = (secondEntry | (1 << 15)); // valid bit
-	curDataBlock.push_back(secondEntry);
-	// Third 16 bits of header (number of data packets is 0)
-	curDataBlock.push_back(null_adc);
-	// Fourth through sixth 16 bits of header (timestamp)
-	uint64_t timestamp = eventNum;
-	curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
-	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
-	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	
-	// Seventh 16 bits of header (data packet format version and status)
-	adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
-	adc_t formatVersion = (5 << 8); // Using 5 for now
-	curDataBlock.push_back(formatVersion + status);
 
-	// Eighth 16 bits of header (EVB Mode | SYSID | DTCID)
-	adc_t evbMode = (0 << 8);
-	adc_t sysID = (2 << 6) & 0x00C0;
-	adc_t curDTCID = dtcID & 0x003F;
-	curDataBlock.push_back(evbMode + sysID + curDTCID);
-	
-	// Fill in the byte count field of the header packet
-	adc_t numBytes = 16; // Just the header packet
-	curDataBlock[0] = numBytes;
-	
-	// Create mu2e::DataBlock and add to the collection
-	DataBlock theBlock(DataBlock::CRV, evt.id(), dtcID, curDataBlock);
-	dtcPackets->push_back(theBlock);
-	
-      } else {
-	for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
-	  // Generate a DataBlock for the current hit
-	  crvhit curHit = curHitVector[curHitIdx];
-	  
-	  std::vector<adc_t> curDataBlock;
-	  // Add the header packet to the DataBlock (leaving including a placeholder for
-	  // the number of packets in the DataBlock);
-	  adc_t null_adc = 0;
-	  // First 16 bits of header (reserved values)
-	  curDataBlock.push_back(null_adc);
-	  // Second 16 bits of header (ROC ID, packet type):
-	  adc_t curROCID = rocID; // 4 bit ROC ID
-	  adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
-	  headerPacketType <<= 4; // Shift left by 4
-	  adc_t secondEntry = (curROCID | headerPacketType);
-	  secondEntry = (secondEntry | (1 << 15)); // valid bit
-	  curDataBlock.push_back(secondEntry);
-	  // Third 16 bits of header (number of data packets is 0)
-	  curDataBlock.push_back(null_adc);
-	  // Fourth through sixth 16 bits of header (timestamp)
-	  uint64_t timestamp = eventNum;
-	  curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
-	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
-	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	  
-	  // Seventh 16 bits of header (data packet format version and status)
-	  adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
-	  adc_t formatVersion = (5 << 8); // Using 5 for now
-	  curDataBlock.push_back(formatVersion + status);
+      //////////////////////////////////////////////////////////////
+      // Generate a DataBlock for all the hits on the current ROC
+      //////////////////////////////////////////////////////////////
 
-	  // Eighth 16 bits of header (EVB Mode | SYSID | DTCID)
-	  adc_t evbMode = (0 << 8);
-	  adc_t sysID = (2 << 6) & 0x00C0;
-	  adc_t curDTCID = dtcID & 0x003F;
-	  curDataBlock.push_back(evbMode + sysID + curDTCID);
-	  
-	  // Create a vector of adc_t values corresponding to
-	  // the content of CRV data packets.
-	  std::vector<adc_t> packetVector;
-	  
-	  // Fill the data packets:	  
-	  packetVector.push_back((adc_t)(curHit.sipmID));
-	  packetVector.push_back((adc_t)(curHit.time));
-	  packetVector.push_back((adc_t)(curHit.recoDigiSamples));
-	  for(size_t sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx++) {
-	      adc_t scaledVal = static_cast<adc_t>(curHit.waveform[sampleIdx]);
-	      packetVector.push_back(scaledVal);
-	  }
 
-	  // Pad any empty space in the last packet with 0s
-	  size_t padding_slots = 8 - ((curHit.recoDigiSamples - 5) % 8);
-	  if (padding_slots < 8) {
-	    for (size_t i = 0; i < padding_slots; i++) {
-	      packetVector.push_back((adc_t)0);
-	    }
-	  }
-	  
-	  // Fill in the number of data packets entry in the header packet
-	  adc_t numDataPackets = static_cast<adc_t>(packetVector.size() / 8);
-	  curDataBlock[2] = numDataPackets;
-	  
-	  // Fill in the byte count field of the header packet
-	  adc_t numBytes = (numDataPackets + 1) * 16;
-	  curDataBlock[0] = numBytes;
-	  
-	  // Append the data packets after the header packet in the DataBlock
-	  curDataBlock.insert(curDataBlock.end(), packetVector.begin(), packetVector.end());
-	  
-	  // Create mu2e::DataBlock and add to the collection
-	  //	  DataBlock theBlock(DataBlock::CAL, uniqueID, dtcID, curDataBlock);
-	  DataBlock theBlock(DataBlock::CRV, evt.id(), dtcID, curDataBlock);
-	  dtcPackets->push_back(theBlock);
-	} // Done looping over hits for this DTC/ROC pair	
+      // First calculate the total number of 16 bit fields and 
+      // payload packets needed in the DataBlock
+      
+      size_t numFields = 8; // Number of 16 bit fields needed in the DataBlock
+      // numFields starts at 8 because we will always have a ROC status packet
+      for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
+	size_t curNumSamples = curHitVector[curHitIdx].recoDigiSamples;
+	numFields += 2 + curNumSamples/2;
+	if(curNumSamples % 2 != 0) {
+	  numFields += 1;
+	}
+	// Two additional 16 bit fields are needed for the SiPM ID, hit time, and num
+	// samples for each hit
       }
+      adc_t numPayloadPackets = numFields/8;
+      if(numFields%8 != 0) {
+	numPayloadPackets += 1;
+      }
+      
+      
+      
+      std::vector<adc_t> curDataBlock;
+
+      /////////////////////////////////////////////
+      // Add the header packet to the DataBlock
+      /////////////////////////////////////////////
+      
+      // First 16 bits of header (num bytes in DataBlock, including the header and ROC status packets)
+      adc_t numBytes = (numPayloadPackets + 1) * 16;
+      curDataBlock.push_back(numBytes);
+      // Second 16 bits of header (ROC ID, packet type):
+      adc_t curROCID = rocID; // 4 bit ROC ID
+      adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
+      headerPacketType <<= 4; // Shift left by 4
+      adc_t secondEntry = (curROCID | headerPacketType);
+      secondEntry = (secondEntry | (1 << 15)); // valid bit
+      curDataBlock.push_back(secondEntry);
+      // Third 16 bits of header (number of data packets)
+      curDataBlock.push_back(numPayloadPackets);
+      // Fourth through sixth 16 bits of header (timestamp)
+      uint64_t timestamp = eventNum;
+      curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
+      curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
+      curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
+      
+      // Seventh 16 bits of header (data packet format version and status)
+      adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
+      adc_t formatVersion = (5 << 8); // Using 5 for now
+      curDataBlock.push_back(formatVersion + status);
+      
+      // Eighth 16 bits of header (EVB Mode | SYSID | DTCID)
+      adc_t evbMode = (0 << 8);
+      adc_t sysID = (2 << 6) & 0x00C0;
+      adc_t curDTCID = dtcID & 0x003F;
+      curDataBlock.push_back(evbMode + sysID + curDTCID);
+      
+      
+      
+      /////////////////////////////////////////////////
+      // Add the ROC status packet to the DataBlock
+      /////////////////////////////////////////////////
+
+      std::vector<adc_t> statusPacketVector;
+
+      // First 16 bits contain the controller ID and packet type
+      adc_t packetType = 0x0006;
+      // Since the simulation doesn't currently support mapping of sipms to ROCs, we'll
+      // just use the global ROC ID as the controller ID:
+      adc_t controllerID = dtcID * number_of_rocs_per_dtc + rocID;
+      curDataBlock.push_back(controllerID << 8 | packetType << 4);
+
+      // Second 16 bits are the controller event word count (including the ROC status packet
+      // and hits, but not the data header packet
+      curDataBlock.push_back(numBytes - 16);
+
+      // The third and fourth 16 bits contain flags indicating which FEBs are connected to
+      // the ROC. This is not yet available in simulation so we'll just set them all to true:
+      curDataBlock.push_back(0x00FF); // The upper 8 bits are reserved
+      curDataBlock.push_back(0xFFFF);
+
+      // The fifth 16 bits are reserved
+      curDataBlock.push_back(0x0000);
+
+      // The sixth 16 bits contain a count of how many times the CRV data has been pulled during
+      // this supercycle. For now, we'll just set it to 0:
+      curDataBlock.push_back(0x0000);
+
+      // The seventh 16 bits are reserved
+      curDataBlock.push_back(0x0000);
+
+      // The eighth 16 bits contain an as yet undefined event type (we'll set it to 0) and a logical
+      // or of various error bits. Since FEB errors are not implemented in the simulation, we'll set
+      // all the error bits to 0:
+      adc_t errors = 0x00;
+      adc_t eventType = 0x00;
+      curDataBlock.push_back(eventType << 8 | errors);
+      
+
+      // Append the status packets after the header packet in the DataBlock
+      curDataBlock.insert(curDataBlock.end(), statusPacketVector.begin(), statusPacketVector.end());
+      
+      
+      
+      ////////////////////////////////////////////////////////////////////////////
+      // Generate the rest of the DataBlock based on all the hits from this ROC
+      ////////////////////////////////////////////////////////////////////////////      
+
+      // Create a vector of adc_t values corresponding to
+      // the content of CRV data payload packets.
+      std::vector<adc_t> packetVector;
+      for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
+	
+	crvhit curHit = curHitVector[curHitIdx];
+	
+	// Fill the data packets:	  
+	packetVector.push_back((adc_t)(curHit.sipmID));
+	
+	adc_t hitTime = (adc_t)(curHit.time) & 0x03FF;
+	adc_t hitSamples = (adc_t)(curHit.recoDigiSamples) << 10;
+	// Make sure the number of hits fits in 6 bits
+	if (curHit.recoDigiSamples>64 - 1) throw cet::exception("DATA") 
+	     << " Number of samples (" << curHit.recoDigiSamples
+	     << ") is too large to fit in 6 bits" << std::endl;
+	
+	packetVector.push_back(hitSamples | hitTime);
+
+	for(size_t sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx+=2) {
+	  adc_t scaledVal0 = static_cast<adc_t>(curHit.waveform[sampleIdx]) & 0x00FF;
+	  adc_t scaledVal1 = 0x0000;
+	  if(curHit.recoDigiSamples%2==0 || sampleIdx+1 < curHit.recoDigiSamples) {
+	    scaledVal1 = static_cast<adc_t>(curHit.waveform[sampleIdx+1]) << 8;
+	  }
+	  packetVector.push_back(scaledVal1 | scaledVal0);
+	}
+	
+      } // Done looping over hits for this DTC/ROC pair
+      
+	// Pad any empty space in the last packet with 0s
+      size_t padding_slots = 8 - (numFields % 8);
+      if (padding_slots < 8) {
+	for (size_t i = 0; i < padding_slots; i++) {
+	  packetVector.push_back((adc_t)0);
+	}
+      }
+      
+      //// Fill in the number of data packets entry in the header packet
+      //adc_t numDataPackets = static_cast<adc_t>(packetVector.size() / 8);
+      //curDataBlock[2] = numDataPackets;
+      
+      //// Fill in the byte count field of the header packet
+      //adc_t numBytes = (numDataPackets + 1) * 16;
+      //curDataBlock[0] = numBytes;
+      
+      // Append the data packets after the header packet in the DataBlock
+      curDataBlock.insert(curDataBlock.end(), packetVector.begin(), packetVector.end());
+      
+      // Create mu2e::DataBlock and add to the collection
+      //	  DataBlock theBlock(DataBlock::CAL, uniqueID, dtcID, curDataBlock);
+      DataBlock theBlock(DataBlock::CRV, evt.id(), dtcID, curDataBlock);
+      dtcPackets->push_back(theBlock);
+
 
     } // Done looping of DTC/ROC pairs
 

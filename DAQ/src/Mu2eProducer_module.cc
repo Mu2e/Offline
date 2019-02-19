@@ -1,8 +1,6 @@
 // ======================================================================
 //
 // Mu2eProducer_plugin:  Add tracker/cal data products to the event
-// At the moment this only adds tracker StrawDigi DataProducts to the
-// Art event.
 //
 // ======================================================================
 
