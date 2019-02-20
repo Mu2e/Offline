@@ -588,54 +588,49 @@ void Mu2eG4::produce(art::Event& event) {
     //    std::cout << "in produce, printing the Stash Sim Particle info " << std::endl;
     //    _StashForEventData.printInfo(stashInstanceToStore);
 
+    
+    std::unique_ptr<SimParticleCollection> simsToCheck = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
+    
+    if (simsToCheck == nullptr) {
+        numExcludedEvents++;
+    } else {
 
-    if (_use_G4MT)
-    {
-        
-        //now move the data into the art::Event IFF the event has passed the StepPointMomentumFilter inside Mu2eG4EventAction
-        //if event has not passed, the ptr to the SimParticleCollection will be null
-        
-        std::unique_ptr<SimParticleCollection> simsToCheck = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
-        
-        if (simsToCheck == nullptr) {
-            numExcludedEvents++;
-        }
-        else {
+        if (_use_G4MT)
+        {
+            //now move the data into the art::Event IFF the event has passed the StepPointMomentumFilter inside Mu2eG4EventAction
+            //if event has not passed, the ptr to the SimParticleCollection will be null
             event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
-            
             ReseatPtrsAndMoveDataToArtEvent(event, simProductGetter, std::move(simsToCheck));
-            
             _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
             _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
+        
         }
+        else//in sequential mode, there isn't any need to reseat the ptrs, since there is no GenParticleCollections object
+        {
         
- 
-    }
-    else//in sequential mode, there isn't any need to reseat the ptrs, since there is no GenParticleCollections object
-    {
+            event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
+            event.put(std::move(std::move(simsToCheck)));
         
-        event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
-        event.put(std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore)));
+            if(!timeVDtimes_.empty()) {
+                event.put(std::move(_StashForEventData.getTVDHits(stashInstanceToStore)),_StashForEventData.getTVDName(stashInstanceToStore));
+            }
         
-        if(!timeVDtimes_.empty()) {
-            event.put(std::move(_StashForEventData.getTVDHits(stashInstanceToStore)),_StashForEventData.getTVDName(stashInstanceToStore));
-        }
+            if(trajectoryControl_.produce()) {
+                event.put(std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore)));
+            }
         
-        if(trajectoryControl_.produce()) {
-            event.put(std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore)));
-        }
+            if(multiStagePars_.multiStage()) {
+                event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
+            }
         
-        if(multiStagePars_.multiStage()) {
-            event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
-        }
+            if(SensitiveDetectorHelpers[_masterThreadIndex].extMonPixelsEnabled()) {
+                event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
+            }
         
-        if(SensitiveDetectorHelpers[_masterThreadIndex].extMonPixelsEnabled()) {
-            event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
-        }
-        
-        _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
-        _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
-    }//sequential
+            _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
+            _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
+        }//sequential
+    }//simsToCheck !=nullptr
 
     //increment the instance of the EventStash to store
     stashInstanceToStore++;
