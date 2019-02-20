@@ -308,7 +308,7 @@ namespace mu2e {
     for (size_t index=0;index< tccol.size();++index) {
       const auto& tclust = tccol[index];
       HelixSeed hseed;
-
+      hseed._status.merge(TrkFitFlag::TPR);
       //clear the variables in hfResult
       _hfResult.clearTempVariables();
 

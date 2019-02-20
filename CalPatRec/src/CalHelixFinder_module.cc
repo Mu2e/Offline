@@ -442,6 +442,11 @@ namespace mu2e {
     int    nseeds(0);// = outseeds->size();
     for(auto const& hel : _hels ) {
       nseeds += helcols[hel]->size();
+	// set the flag here: This should be set on initialization FIXME!
+      for(auto & helix : *helcols[hel] ) {
+	helix._status.merge(TrkFitFlag::CPR);
+      }
+
       event.put(std::move(helcols[hel]),Helicity::name(hel));
     }   
     // event.put(std::move(outseeds));
