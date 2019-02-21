@@ -8,7 +8,9 @@
 
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
-
+#include "RecoDataProducts/inc/StraightTrack.hh" 
+#include "RecoDataProducts/inc/StraightTrackSeed.hh"
+#include "RecoDataProducts/inc/KalmanTrack.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"

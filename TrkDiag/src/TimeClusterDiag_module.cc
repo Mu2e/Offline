@@ -252,11 +252,13 @@ namespace mu2e {
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	++nce;
 	_ceclust._pos += ch.pos();
+	
 	_ceclust._time +=  _ttcalc.comboHitTime(ch);
       }
     }
     _ceclust._pos /= nce;
     _ceclust._time /= nce;
+    
     // 2nd pass to get extents {
     double cphi = _ceclust._pos.phi();
     for(unsigned ich=0; ich<nstrs;++ich){
@@ -264,6 +266,9 @@ namespace mu2e {
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	++_ceclust._nce;
 	XYZVec cpos = ch.pos();
+	_ceclust._mcposx += ch.pos().x();// S. Middleton
+	_ceclust._mcposy += ch.pos().y();// S Middleton
+	_ceclust._mcposy += ch.pos().z();// S Middleton
 	float hrho = sqrt(cpos.Perp2());
 	double hphi = cpos.phi();
 	float dphi = fabs(Angles::deltaPhi(hphi,cphi));
@@ -420,6 +425,9 @@ namespace mu2e {
     tcinfo._time  = tp._t0._t0;
     tcinfo._terr  = tp._t0._t0err;
     tcinfo._pos	  = tp._pos;
+    tcinfo._posx = tp._pos.x();//S Middleton
+    tcinfo._posy = tp._pos.y();// S Middleton
+    tcinfo._posz = tp._pos.z(); //S  Middleton
     // calo info if available
     if(tp._caloCluster.isNonnull()){
       tcinfo._ecalo = tp._caloCluster->energyDep();

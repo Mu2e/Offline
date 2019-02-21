@@ -1,4 +1,3 @@
-//
 // Class to describe a combination of Straw Hits
 //
 // Original author David Brown

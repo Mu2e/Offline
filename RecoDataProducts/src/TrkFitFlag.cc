@@ -36,6 +36,9 @@ namespace mu2e {
       bitnames[std::string("HelixConverged")]           = bit_to_mask(helixConverged);
       bitnames[std::string("SeedConverged")]              = bit_to_mask(seedConverged);
       bitnames[std::string("KalmanConverged")]              = bit_to_mask(kalmanConverged);
+      bitnames[std::string("StraightTrackOK")]              = bit_to_mask(StraightTrackOK);
+      bitnames[std::string("StraightTrackConverged")]              = bit_to_mask(StraightTrackConverged);
+      bitnames[std::string("StraightTrackInit")]              = bit_to_mask(StraightTrackInit);
     }
     return bitnames;
   }

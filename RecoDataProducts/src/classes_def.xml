@@ -17,6 +17,8 @@
 
 <lcgdict>
  <class name="mu2e::StrawHit"/>
+ <class name="mu2e::StraightTrackSeed"/>
+ <class name="mu2e::StraightTrackSeedCollection"/>
  <class name="mu2e::StrawHitCollection"/>
  <class name="mu2e::CaloRecoDigi"/>
  <class name="mu2e::CaloRecoDigiCollection"/>
@@ -91,6 +93,8 @@
  <class name="mu2e::AlgorithmID"/>
  <class name="mu2e::AlgorithmIDCollection"/>
 
+ <class name="art::Ptr<mu2e::StraightTrackSeed>"/>
+
  <class name="art::Ptr<mu2e::CaloHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
  <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
@@ -137,6 +141,7 @@
  <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/>
 
  <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
+ <class name="art::Wrapper<mu2e::StraightTrackSeedCollection>"/>
 
  <class name="mu2e::TriggerFlagDetail"/>
  <class name="mu2e::TriggerFlag"/>

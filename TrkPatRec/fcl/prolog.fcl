@@ -19,11 +19,23 @@ TimeClusterFinder : {
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   TestFlag : true
-
+  //maxdPhi : 10.0 
+  //RefineClusters : false
+  //PrefilterCluster : false
     maxElectronHitEnergy          : 0.0035                # means: use all hits
     minimumTime                   : 500.                  # ns
     maximumTime                   : 1750.                 # ns
 }
+
+TimeClusterFinderCosmics : {
+  @table::TimeClusterFinder
+  
+  maxdPhi : 1.5 //10.0 
+  RefineClusters : true// false
+  PrefilterCluster : true //false
+  
+}
+
 # stereo version
 STimeClusterFinder : {
   @table::TimeClusterFinder
@@ -43,12 +55,25 @@ RobustHelixFinder : {
     }
     
 }
+
+StraightTrackFinder : {
+    module_type		: StraightTrackFinder
+    ComboHitCollection     : "makePH"
+    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    StraightTrackSeedCollection  :"StraightTrackFinder"
+    diagPlugin : { tool_type                    : "StraightTrackFinderDiag"
+    }
+                                    
+}
+    
 SRobustHelixFinder : {
   @table::RobustHelixFinder
    ComboHitCollection : "makeSTH"
    TimeClusterCollection : "STimeClusterFinder"
    HitSelectionBits : ["TimeDivision","Stereo"]
 }
+
 #same for trigger
 TTtimeClusterFinder : {
   module_type               : TimeClusterFinder
@@ -65,6 +90,14 @@ TTrobustHelixFinder : {
    HelixStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
    HelixNonStereoHitMVA : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
 }
+
+TTstraightFinder : {
+   module_type		: StraightTrackFinder
+   ComboHitCollection : "TTflagBkgHits"
+   TimeClusterCollection : "TTtimeClusterFinder"
+   
+}
+
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
 KFSeed : {
@@ -387,6 +420,8 @@ Tracking : {
   producers : {
 # the following should be independently sourced FIXME!
     TimeClusterFinder  : @local::TimeClusterFinder
+    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
+    StraightTrackFinder  : @local::StraightTrackFinder
     HelixFinder  : @local::RobustHelixFinder
     STimeClusterFinder  : @local::STimeClusterFinder
     SHelixFinder  : @local::SRobustHelixFinder
@@ -423,12 +458,16 @@ Tracking : {
     producers : {
       TTtimeClusterFinder  : @local::TTtimeClusterFinder
       TThelixFinder        : @local::TTrobustHelixFinder
+      TTstraightFinder        : @local::TTstraightFinder
       TTKSFDeM	           : @local::TTKSFDeM
       TTKSFDeP	           : @local::TTKSFDeP
       TTKFFDeM             : @local::TTKFFDeM
       TTKFFDeP             : @local::TTKFFDeP
     }
   }
+
+#production sequence to find straight track
+FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ]
 
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
@@ -455,6 +494,8 @@ Tracking : {
 
   }
 }
+#Straight Cosmic Muon:
+#Tracking.FindCosmicStraights   : [ TimeClusterFinderCosmics, StraightTrackFinder ]
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ TimeClusterFinder, HelixFinder, KSFDeM, KFFDeM ]
 Tracking.TPRUeM  : [ TimeClusterFinder, HelixFinder, KSFUeM, KFFUeM ]

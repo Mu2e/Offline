@@ -52,12 +52,27 @@ namespace {
   struct TimePeakMVA
   {
     vector<Float_t> _pars;
-    Float_t& _dt;
+    Float_t& _dt; //Float_t&
     Float_t& _dphi;
     Float_t& _rho;
-    // should add number of hits in the cluster FIXME!!!
-    TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]) {}
+ 
+    
+    TimePeakMVA() : _pars(3,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2])  {}
   };
+
+/*
+struct TimePeakMVA
+  {
+    vector<Float_t> _pars;
+    Float_t& _dt; //Float_t&
+    Float_t& _dphi;
+    Float_t& _rho;
+    Int_t _nhits; 
+    
+    TimePeakMVA() : _pars(4,0.0), _dt(_pars[0]), _dphi(_pars[1]), _rho(_pars[2]), _nhits(_pars[3])  {}
+  };
+
+*/
 
 
   struct meanAccumulator
@@ -137,7 +152,7 @@ namespace mu2e {
     _hsel              (pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg              (pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
     _maxdt             (pset.get<float>(  "DtMax",30.0)),
-    _minnhits          (pset.get<unsigned>("MinNHits",10)),
+    _minnhits          (pset.get<unsigned>("MinNHits",5)),
     _minpeakmva        (pset.get<float>(  "MinTimePeakMVA",0.2)),
     _maxpeakdt         (pset.get<float>(  "MaxTimePeakDeltat",25.0)),
     _maxdPhi           (pset.get<float>(  "MaxdPhi",1.5)),
@@ -178,7 +193,7 @@ namespace mu2e {
   //--------------------------------------------------------------------------------------------------------------
   void TimeClusterFinder::produce(art::Event & event ){
     _iev = event.id().event();
-
+  
     if (_debug > 0 && (_iev%_printfreq)==0) std::cout<<"TimeClusterFinder: event="<<_iev<<std::endl;
 
     auto const& chH = event.getValidHandle(_chToken);
@@ -225,20 +240,25 @@ namespace mu2e {
     switch (_algo ) {
       case peak : default:
         findPeaks(tctimes);
+	
         break;
       case scan :
         scanPeaks(tctimes);
         break;
     }
     for (auto tctime: tctimes) {
+      
       if(_debug > 1) std::cout << "Peak Time " << tctime  << std::endl;
       TimeCluster tc;
       tc._t0 = TrkT0(tctime,1.0);
       for(size_t istr=0; istr<_chcol->size(); ++istr) {
+	
         if ((!_testflag) || goodHit((*_shfcol)[istr])) {
+	  
           ComboHit const& ch =(*_chcol)[istr];
           float time = _ttcalc.comboHitTime(ch);
           if (fabs(time-tctime) < _maxdt){
+	   
             tc._strawHitIdxs.push_back(StrawHitIndex(istr));
             tc._nsh += ch.nStrawHits();
           }
@@ -246,15 +266,18 @@ namespace mu2e {
       }
 
       if (_usecc) addCaloCluster(tc);
-
+      
       initCluster(tc);
-      if (_refine && tc.nStrawHits() >= _minnhits) refineCluster(tc);
-
+      
+      if (_refine && tc.nStrawHits() >= _minnhits) refineCluster(tc); //loosing here
+      
       if (tc.nStrawHits() >= _minnhits) {
+        
         bool overl(false);
         for (auto itc = tccol.begin(); itc < tccol.end(); ++itc)
         {
           if (TrkUtilities::overlap(tc,*itc) < _maxover) continue;
+          
           if (tc.nStrawHits() > itc->nStrawHits())
           {
             tccol.erase(itc);
@@ -268,7 +291,7 @@ namespace mu2e {
       }
       //std::cout<<"Collection size final"<<tc._strawHitIdxs.size()<<std::endl;
     }
-    // debug test of histogram
+    // Histograms are printed here....
     if (_debug > 2) {
       art::ServiceHandle<art::TFileService> tfs;
       TH1F* tspec = tfs->make<TH1F>(_timespec);
@@ -284,9 +307,11 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------------------------------
   void TimeClusterFinder::fillTimeSpectrum() {
+    
     _timespec.Reset();
     for (unsigned istr=0; istr<_chcol->size();++istr) {
       if (_testflag && !goodHit((*_shfcol)[istr])) continue;
+      
       ComboHit const& ch = (*_chcol)[istr];
       // if (ch.energyDep() > _maxElectronHitEnergy)         continue;
       // if ( (ch.time() < _minT) || (ch.time() > _maxT) )  continue;
@@ -339,6 +364,7 @@ namespace mu2e {
 
   //--------------------------------------------------------------------------------------------------------------
   void TimeClusterFinder::initCluster(TimeCluster& tc) {
+     
     // use medians to initialize robustly
     accumulator_set<float, stats<tag::min > > tmin;
     accumulator_set<float, stats<tag::max > > tmax;
@@ -349,6 +375,7 @@ namespace mu2e {
     for(auto ish :tc._strawHitIdxs) {
       if (_testflag && !goodHit((*_shfcol)[ish])) continue;
       ComboHit const& ch = (*_chcol)[ish];
+      
       // if (ch.energyDep() > _maxElectronHitEnergy)         continue;
       // if ( (ch.time() < _minT) || (ch.time() > _maxT) )  continue;
       unsigned nsh = ch.nStrawHits();
@@ -382,22 +409,29 @@ namespace mu2e {
 
   void TimeClusterFinder::refineCluster(TimeCluster& tc)
   {
-    tc._nsh = 0;
-
+    
+    //tc._nsh = 0; S Middleton
+    
+    
     float pphi = polyAtan2(tc._pos.y(), tc._pos.x());//(tc._pos.phi());
     float ptime(tc._t0.t0());
-
+    //std::cout<<tc._pos.y()<< tc._pos.x()<< tc._t0.t0()<<std::endl;
     bool enoughhits(true);
+    
     bool changed(true);
     if (_preFilter) {
+      
+      
       //prefilter one after another
       while (enoughhits && changed) {
         changed = false;
+	
         int iworst(-1);
         float maxadPhi(0);
         float worstphi(0),sumphi(0), sumt(0);
         unsigned nhits(0);
         for (size_t ips=0; ips<tc._strawHitIdxs.size(); ++ips) {
+	   
           unsigned ish = tc._strawHitIdxs[ips];
           ComboHit const& ch = (*_chcol)[ish];
           unsigned nsh = ch.nStrawHits();
@@ -410,6 +444,7 @@ namespace mu2e {
           if (adphi > maxadPhi) {iworst=ips; maxadPhi=adphi; worstphi=phi;}
         }
         if (maxadPhi>_maxdPhi){
+          
           changed = true;
 // remove the worst hit
           std::swap(tc._strawHitIdxs[iworst],tc._strawHitIdxs.back());
@@ -428,6 +463,7 @@ namespace mu2e {
     // mva filtering
     changed = true;
     while (enoughhits && changed) {
+     
       changed = false;
       size_t iworst(0);
       float worstmva(100.0);
@@ -435,6 +471,7 @@ namespace mu2e {
       float sumphi(0), sumt(0);
       unsigned nhits(0);
       for (size_t ips=0;ips<tc._strawHitIdxs.size();++ips) {
+	
         unsigned ish = tc._strawHitIdxs[ips];
         ComboHit const& ch = (*_chcol)[ish];
         unsigned nsh = ch.nStrawHits();
@@ -448,40 +485,56 @@ namespace mu2e {
 
         _pmva._dt = time - ptime;
         _pmva._dphi = dphi;
-        _pmva._rho = rho; // change this to use radius^2 FIXME!
+        _pmva._rho = rho; // SMiddleton, change this to use radius^2 FIXME!
+	//_pmva._nhits = nsh;//added by Sophie (check)
 
         float mvaout = _peakMVA.evalMVA(_pmva._pars);
         if (mvaout < worstmva) {
+	  
           worstmva = mvaout;
           worstphi = phi;
           iworst = ips;
         }
         nhits += nsh;
+	
       }
-
+      
       if (worstmva < _minpeakmva) {
+	
         changed = true;
         std::swap(tc._strawHitIdxs[iworst],tc._strawHitIdxs.back());
         ComboHit const& ch = (*_chcol)[tc._strawHitIdxs.back()];
+	
         unsigned nsh = ch.nStrawHits();
         nhits -= nsh;
         sumphi -= nsh * worstphi;
         sumt -= nsh *_ttcalc.comboHitTime(ch);
         tc._strawHitIdxs.pop_back();
+	
       }
-      enoughhits = nhits >= _minnhits;
+      enoughhits = nhits >= _minnhits;//SMiddleton-remove reaches 15...
+      
       pphi  = sumphi/float(nhits);
       ptime = sumt/float(nhits);
     }
-
-    if(enoughhits){
+    
+    
+    if(enoughhits){//SMiddleton
+      
       // final pass: hard cut on dt
+      
       std::vector<size_t> toremove;
       accumulator_set<float, stats<tag::weighted_mean >,unsigned > facc;
+      
       accumulator_set<float, stats<tag::weighted_variance(lazy)>, unsigned > terr;
+      
       accumulator_set<float, stats<tag::weighted_mean >,unsigned > racc;
+      
       accumulator_set<float, stats<tag::weighted_mean >,unsigned > zacc;
+      
+      //LOOSING HERE!
       for(size_t ips=0;ips<tc._strawHitIdxs.size();++ips) {
+	
         unsigned ish = tc._strawHitIdxs[ips];
         ComboHit const& ch = (*_chcol)[ish];
         unsigned nsh = ch.nStrawHits();
@@ -491,6 +544,7 @@ namespace mu2e {
         float rho = sqrtf(ch.pos().Perp2());
         Angles::deltaPhi(phi,pphi);
         if (fabs(dt) < _maxpeakdt) {
+	  
           terr(time,weight=nsh);
           facc(phi,weight=nsh);
           racc(rho,weight=nsh);
@@ -500,9 +554,10 @@ namespace mu2e {
           toremove.push_back(ips);
         }
       }
-
+      
       for (auto irm=toremove.rbegin();irm!=toremove.rend();++irm)
       {
+	
         std::swap(tc._strawHitIdxs[*irm],tc._strawHitIdxs.back());
         tc._strawHitIdxs.pop_back();
       }
@@ -513,7 +568,8 @@ namespace mu2e {
       float prho = extract_result<tag::weighted_mean>(racc);
       float zpos = extract_result<tag::weighted_mean>(zacc);
       tc._pos = XYZVec(prho*cos(pphi),prho*sin(pphi),zpos);
-    }
+      
+    }//SMiddleton
     //if (_debug > 0) std::cout<<"final time "<<tc._t0._t0<<std::endl;
   }
 

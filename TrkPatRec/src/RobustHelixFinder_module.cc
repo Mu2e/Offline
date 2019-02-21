@@ -378,7 +378,7 @@ namespace mu2e {
 	  }
 	  ++helCounter;
 	}//end loop over the helicity
-      }	
+      }	//end circle ok
       
     }
     // put final collections into event 
@@ -961,13 +961,11 @@ namespace mu2e {
       _hfResult._chHitsWPos.push_back(XYWVec(hhit.pos(),  of, hhit.nStrawHits()));
 
       int       stationId = os;
-      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//RobustHelixFinderData::kNFaces;
-      // int       panelId   = op + faceId*RobustHelixDataFinderData::kNPanelsPerFace;
+      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//
       FaceZ_t* fz        = &HelixData._oTracker[faceId];
       PanelZ_t*pz        = &fz->panelZs[op];
 
-      //	pz->_chHitsToProcess.push_back(hhit);//[fz->fNHits] = hhit;
-      //	pz->fNHits  = pz->fNHits + 1;
+      
       if (pz->idChBegin < 0 ){
 	pz->idChBegin = _hfResult._chHitsToProcess.size() - 1;
 	pz->idChEnd   = _hfResult._chHitsToProcess.size();	
@@ -986,7 +984,7 @@ namespace mu2e {
 	printf("[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() );
       }
 	
-      // if (pz->nChHits() > PanelZ_t::kNMaxPanelHits) printf("[RobustHelixDataFinderAlg::fillFaceOrderedHits] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
+      
       ++nFiltComboHits;
       nFiltStrawHits += ch.nStrawHits();
       //      }

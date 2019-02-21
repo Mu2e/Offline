@@ -82,13 +82,17 @@ BEGIN_PROLOG
 	module_type : TimeClusterDiag
 	StrawDigiMCCollection : "compressDigiMCs"
 	ComboHitCollection : "makePH"
+	MinimumCEHits : 1
 	UseFlagCollection : true
+	MinNHits : 1
+	//TestFlag : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
 	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
 	PlotTimeSpectra : true
+	TimeClusterCollection : TimeClusterFinder //S. Middleton
       }
 
   HD : {
@@ -114,6 +118,50 @@ BEGIN_PROLOG
 	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 	}
   }
+  
+  CosmicAnalysis : {
+	module_type : CosmicAnalyzer
+	ComboHitCollection : "makePH"
+	TimeClusterCollection : TimeClusterFinderCosmics
+        StraightTrackSeedCollection : StraightTrackFinder
+	StrawDigiMCCollection : "compressDigiMCs"
+	TimeOffsets : {
+	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	}
+  }
+
+CosmicFitDisplay : {
+	module_type : CosmicFitDisplay
+	ComboHitCollection : "makeSH"
+        _chtag : "makeSH"
+        _tctag : TimeClusterFinderCosmics
+        _sttag : StraightTrackFinder
+        doDisplay            : true
+	TimeClusterCollection : TimeClusterFinderCosmics
+        StraightTrackSeedCollection : StraightTrackFinder
+        
+  }
+
+CosmicMuonInfo : {
+	module_type : CosmicMuonInfo
+	strawDigisTag   : "makeSD"
+	strawHitsTag    : "makeSH"
+	panelHitsTag    : "makePH"
+	strawDigiMCsTag : "compressDigiMCs"
+	caloDigisTag    : "CaloDigiFromShower"
+	diagLevel       : 0
+	filterCuts      : {
+	pmin          : 200. # MeV/c set low 
+	pmax          : 1000000. # MeV/c currnetly not using 
+	minStrawDigis :   10  # Minimum number of digis made by the primary muon
+	minPlanes     :    3  # Minimum number of planes hit by the muon track
+	minBackground :    0  # Make > 0 to select events with background digis
+	maxBackground : 9999  # Make a small number to limit digis not from the muon
+	  }
+}
+        
+        
+ 
 
 # track trigger path
   TTTCD : {
@@ -146,6 +194,7 @@ BEGIN_PROLOG
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
+    
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
@@ -179,6 +228,8 @@ BEGIN_PROLOG
     analyzers : {
       TCD : @local::TCD
       CHD : @local::CHD
+      CosmicAnalysis : @local::CosmicAnalysis
+      CosmicFitDisplay : @local::CosmicFitDisplay
       SHD : @local::SHD
       HD : @local::HD
       TRD : @local::TRD
@@ -188,11 +239,14 @@ BEGIN_PROLOG
       TTHD : @local::TTHD
       BD : @local::BD
     }
+     filters : {
+	CosmicMuonInfo: @local::CosmicMuonInfo
+     }
   }
 
 # aggregate the prolog to produce the stanard analysis chain
   TrkAna : {
-
+    
     producers : {
       @table::TrkHitReco.producers
       @table::Tracking.producers
@@ -222,6 +276,7 @@ BEGIN_PROLOG
         @table::TrackAnalysis
         TrkParticle : -11
       }
+     
     }
   
     # diagnostic Reco sequences starting from digis
@@ -240,7 +295,7 @@ BEGIN_PROLOG
 
     CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
 
-    EndSequence : [ TrkAnaNeg, TrkAnaPos ]
+    EndSequence : [ TrkAnaNeg, TrkAnaPos ]//added
 
   }
 TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
