@@ -101,6 +101,20 @@ mu2e::FixCaloShowerStepPtrs::FixCaloShowerStepPtrs(fhicl::ParameterSet const & p
 
 void mu2e::FixCaloShowerStepPtrs::produce(art::Event & event)
 {
+
+  // Check to see if this collection has the bug
+  _newCaloShowerSims = std::unique_ptr<CaloShowerSimCollection>(new CaloShowerSimCollection);
+  event.getByLabel(_caloShowerSimTag, _caloShowerSimsHandle);
+  const auto& caloShowerSims = *_caloShowerSimsHandle;
+  bool bug_found = true;
+  for (const auto& i_caloShowerSim : caloShowerSims) {
+    if(i_caloShowerSim.sim().key()==0) {
+      bug_found = false;
+      break;
+    }
+  }
+
+
   // Implementation of required member function here.
   CaloShowerStepRemap caloShowerStepRemap;
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
@@ -110,27 +124,39 @@ void mu2e::FixCaloShowerStepPtrs::produce(art::Event & event)
     const auto& oldCaloShowerSteps = event.getValidHandle<CaloShowerStepCollection>(*i_tag);
     art::ProductID i_product_id = oldCaloShowerSteps.id();
     _oldCaloShowerStepGetter[i_product_id] = event.productGetter(i_product_id);
-
+      
     for (CaloShowerStepCollection::const_iterator i_caloShowerStep = oldCaloShowerSteps->begin(); i_caloShowerStep != oldCaloShowerSteps->end(); ++i_caloShowerStep) {
       art::Ptr<mu2e::CaloShowerStep> oldShowerStepPtr(i_product_id,  i_caloShowerStep - oldCaloShowerSteps->begin()+1, _oldCaloShowerStepGetter[i_product_id]);
-      art::Ptr<mu2e::CaloShowerStep> newShowerStepPtr = copyCaloShowerStep(*i_caloShowerStep);
-      caloShowerStepRemap[oldShowerStepPtr] = newShowerStepPtr;
+      if (bug_found) {
+	art::Ptr<mu2e::CaloShowerStep> newShowerStepPtr = copyCaloShowerStep(*i_caloShowerStep);
+	caloShowerStepRemap[oldShowerStepPtr] = newShowerStepPtr;
+      }
+      else {
+	_newCaloShowerSteps->push_back(*i_caloShowerStep);
       //      std::cout << "AE: " << oldShowerStepPtr << " --> " << newShowerStepPtr << std::endl;
+      }
     }
-  }
+  }    
 
-  _newCaloShowerSims = std::unique_ptr<CaloShowerSimCollection>(new CaloShowerSimCollection);
-  event.getByLabel(_caloShowerSimTag, _caloShowerSimsHandle);
-  const auto& caloShowerSims = *_caloShowerSimsHandle;
   for (const auto& i_caloShowerSim : caloShowerSims) {
-    copyCaloShowerSim(i_caloShowerSim, caloShowerStepRemap);
+    if (bug_found) {
+      copyCaloShowerSim(i_caloShowerSim, caloShowerStepRemap);
+    }
+    else {
+      _newCaloShowerSims->push_back(i_caloShowerSim);
+    }
   }
 
   _newCaloShowerStepROs = std::unique_ptr<CaloShowerStepROCollection>(new CaloShowerStepROCollection);
   event.getByLabel(_caloShowerStepROTag, _caloShowerStepROsHandle);
   const auto& caloShowerStepROs = *_caloShowerStepROsHandle;
   for (const auto& i_caloShowerStepRO : caloShowerStepROs) {
-    copyCaloShowerStepRO(i_caloShowerStepRO, caloShowerStepRemap);
+    if (bug_found) {
+      copyCaloShowerStepRO(i_caloShowerStepRO, caloShowerStepRemap);
+    }
+    else {
+      _newCaloShowerStepROs->push_back(i_caloShowerStepRO);
+    }
   }
     
   event.put(std::move(_newCaloShowerSteps));
