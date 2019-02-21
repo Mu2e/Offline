@@ -484,6 +484,16 @@ namespace mu2e
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
     }
+
+    art::Ptr<SimParticle> sp = spp;
+    // find the first parent which comes from a generator
+    while(sp->genParticle().isNull() && sp->parent().isNonnull()){
+      sp = sp->parent();
+    }
+    if(sp->genParticle().isNonnull()){
+      mcinfo._prpdg = sp->genParticle()->pdgId();
+    }
+
     Hep3Vector mcmomvec = spp->startMomentum();
     double mcmom = mcmomvec.mag();
     // fill track-specific  MC info
