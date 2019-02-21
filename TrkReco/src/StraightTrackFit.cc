@@ -194,20 +194,14 @@ StraightTrack* StraightTrackFit::refineFit(StraightTrackFinderData& trackData,  
 		      double terr_mag = hitP->transRes(); //hit minor error axis
 		      XYZVec major_axis = werr_mag*wdir;
 		      XYZVec minor_axis = terr_mag*wtdir;
-		      
-		      //Current graident (XY):
-		      double mx = track->get_m_0();
-		      double mz = track->get_m_1();
-		      //Get Initial Track Direction:
-		      XYZVec track_dir(1., mx, mz);
-		      //double hit_error = sqrt(major_axis.Cross(track_dir).mag2()+minor_axis.Cross(track_dir).mag2());
+		    
 	      
 		      ma.push_back(major_axis);
 		      mi.push_back(minor_axis); 
               } 
   
-	  //LeastSquaresFitter::xyz_fit( x, y, err, track, cov_x);
-	  UpdateFitErrors(x,y,z, err, track, cov_x, ma, mi);
+	  
+	     UpdateFitErrors(x,y,z, err, track, cov_x, ma, mi);
       
      } 
 
@@ -341,44 +335,54 @@ StraightTrack* StraightTrackFit::refineFit(StraightTrackFinderData& trackData,  
 */
 void StraightTrackFit::UpdateFitErrors(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> err, StraightTrack* track,TMatrixD cov_x, std::vector<XYZVec> major,std::vector<XYZVec> minor){
 
-    bool errors_converged = false;
+    for(int i=0; i< static_cast<int>(x.size()); i++){
+	bool errors_converged = false;
+        //Get Hit Error:
+	XYZVec major_axis = major[i];
+	XYZVec minor_axis = minor[i];
+	if(_diag >0){
+        	std::cout<<"Starting error : "<<i<<" "<<err[i]<<std::endl;
+        }
+	while(errors_converged==false){
+	        
+		
+		//Get Current Track informations:
+		XYZVec updated_track_dir( track->get_m_0(), 1., track->get_m_1());
 
-    //y=1 XYZVec updated_track_dir( track->get_m_0(), 1., track->get_m_1());
-    XYZVec updated_track_dir( track->get_m_0(), track->get_m_1(), track->get_m_2());       
-    for(int i=0; i< static_cast<int>(err.size()); i++){
-	while(errors_converged!=true){
-		//Get Hit Error:
-		XYZVec major_axis = major[i];
-		XYZVec minor_axis = minor[i];
-		double hit_error = sqrt(major_axis.Cross(updated_track_dir).mag2()+minor_axis.Cross(updated_track_dir).mag2());
-		//Update error:
-		double d_error = 0.;
-             
+                //Getting hit errors:
+                double hit_error = sqrt(major_axis.Cross(updated_track_dir).mag2()+minor_axis.Cross(updated_track_dir).mag2());
+		
+		//Update Error:
+		double d_error =0;
+               
 		if (hit_error > err[i]){
 			d_error = sqrt((hit_error - err[i])*(hit_error - err[i]));
 		        err[i] = hit_error; 
-			
+			if(_diag>0){
+				std::cout<<" Error changed to : "<<err[i]<<std::endl;
+			}
 		}
-		
-        	if( d_error < 0.0001){ 
-           		
+		if(_diag>0){
+			std::cout<<" Changed in errors of "<<d_error<<std::endl;
+		}
+        	if( d_error < 0.1){ 
+			if(_diag>0){
+           			std::cout<<"Considered converged ..."<<std::endl;
+			}
            		errors_converged = true;
-        }//end converged?
-    }//end while
-//refit:
-       if (_dim==3){
-	      	LeastSquaresFitter::xyz_fit( x, y,z, err, track, cov_x);
-	      }
-       if (_dim==2){
-	        LeastSquaresFitter::xy_fit( x, y, err, track, cov_x);
-	      }
+                }
+    
+                //Refit with Updated Error:
+	       if (_dim==3){
+		      	LeastSquaresFitter::xyz_fit( x, y,z, err, track, cov_x);
+		      }
+	       if (_dim==2){
+			LeastSquaresFitter::xy_fit( x, y, err, track, cov_x);
+		      }
 
-        
+       }//end while 
     }//end for
-    
-    
-    //return track;
-
+ 
 }//end update
 
 void StraightTrackFit::add_drift(StraightTrackFinderData& trackData){

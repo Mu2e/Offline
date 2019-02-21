@@ -81,8 +81,7 @@ namespace LeastSquaresFitter {
           
 	} // ~linear_fit
 
-void xyz_fit( const std::vector<double> &_x, const std::vector<double> &_y,const std::vector<double> &_z,
-		        const std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance) { 
+void xyz_fit( const std::vector<double> &_x, const std::vector<double> &_y,const std::vector<double> &_z,const std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance) { 
 	  
 	  
 	  // Set up the matrices
@@ -157,42 +156,21 @@ void xyz_fit( const std::vector<double> &_x, const std::vector<double> &_y,const
 	  for(int i=0; i< n_points; i++){
 	  	line->set_fit_residuals(C[i][0]);
 
-		double fit_error = Y[i][0]*sqrt(((V_p[0][0])*(V_p[0][0]))+((V_p[1][1])*(V_p[1][1]))+((V_p[2][2])*(V_p[2][2])));
-		
-		line->set_fit_residual_errors(sqrt((_err[i]*_err[i]]) + (fit_error*fit_error)));
+		double fit_error = sqrt((((V_p[0][0])*(V_p[0][0]))/(P[0][0]*P[0][0]))+(((V_p[1][1])*(V_p[1][1]))/(P[1][0]*P[1][0]))+(((V_p[2][2])*(V_p[2][2]))/(P[2][0]*P[2][0])));
+		std::cout<<" Fit Error "<<fit_error<<std::endl;
+		line->set_fit_residual_errors(sqrt((_err[i]*_err[i]) + (fit_error*fit_error)));
 	   }
 	  TMatrixD Ct(C);
 	  Ct.T();
 	  TMatrixD result(Ct * V_m * C);
 	  line->set_chisq(result[0][0]);
+         
 	  line->set_chisq_dof(result[0][0] / n_points);
 	  
          
           
 	} // ~linear_fit
-/*
-void Plot_Fit(const std::vector<double> &_x, const std::vector<double> &_y, StraightTrack* line){
-	TCanvas* c1=new TCanvas(); 
-        TH2D* Event_Display = new TH2D("Event_Display", "Event_Display", 50,-1000., 1000., 50, -1000., 1000.);
-        TGraph* hits = new TGraph(_x.size());
-        TF1* fit = new TF1("fit", "[0]*x+[1]", -1000.,1000.);
-        c1->Draw();
-        
-	for (int i = 0; i < static_cast<int>(_x.size()); ++i) {
-            hits->SetPoint(i, _x[i], _y[i]);
-        }
-        
-        
-	fit->SetParameter(0,  line->get_m_0());
-	fit->SetParameter(1,line->get_c_0());
-        Event_Display->Draw("same");
-	hits->SetMarkerSize(20);
-        hits->Draw("Psame");
-	fit->Draw("same");
-	c1->Update();
-        c1->SaveAs("new_event.root");
-}
-*/
+
 
 
 /*

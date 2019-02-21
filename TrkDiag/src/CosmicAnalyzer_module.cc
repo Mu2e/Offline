@@ -152,7 +152,7 @@ namespace mu2e
         _cosmic_analysis->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
         _cosmic_analysis->Branch("StatonsCrossedInEvent", &_n_stations, "StationsCrossedInEvent/I");
         _cosmic_analysis->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I");
-	_cosmic_analysis->Branch("c0", &_c, "c/F");
+       _cosmic_analysis->Branch("c0", &_c, "c/F");
        _cosmic_analysis->Branch("c0_error", &_c_err, "c0_error/F");
        _cosmic_analysis->Branch("m0_error", &_m_0_err, "m0_error/F");
        _cosmic_analysis->Branch("m1_error", &_m_1_err, "m1_error/F");
@@ -160,14 +160,11 @@ namespace mu2e
        _cosmic_analysis->Branch("m1", &_m1, "m1/F");
        _cosmic_analysis->Branch("hit_time", &_hit_time, "hit_time/F");
        _cosmic_analysis->Branch("hit_drit_time", &_hit_drift_time, "hit_drift_time/F");
-	
        _cosmic_analysis->Branch("cluster_time", &_cluster_time, "cluster_time/F");
         
-
-
         //Extra histograms for Fit Diags:
-        _chisq_plot = tfs->make<TH1F>("chisq_plot","chisq_plot" ,100,0, 10);
-	_chisq_ndf_plot = tfs->make<TH1F>("chisq_ndf_plot","chisq_ndf_plot" ,100,0, 0.1);
+        _chisq_plot = tfs->make<TH1F>("chisq_plot","chisq_plot" ,50,0, 10);
+	_chisq_ndf_plot = tfs->make<TH1F>("chisq_ndf_plot","chisq_ndf_plot" ,20,0, 0.5);
 	_chisq_plot->GetXaxis()->SetTitle("#Chi^{2}");
 	_chisq_ndf_plot->GetXaxis()->SetTitle("#Chi^{2}/N");
 	
@@ -292,18 +289,7 @@ namespace mu2e
 			//XYZVec cpos = chit.pos() - chit.wireDist()*chit.wdir();
 		        _hit_time = chit.time();
 			_hit_drift_time = chit.driftTime();
-			double x_hit = chit.pos().x();
-			//double y_hit = chit.pos().y();
-			double z_hit = chit.pos().z();
-			//double r_hit = sqrt(x_hit*x_hit+y_hit*y_hit+z_hit*z_hit);
-
-               //-----------Fit Errors & Residuals------------------//
-			double y_fit =st.get_m_1()*z_hit+st.get_m_0()*x_hit+st.get_c_0(); 
-			//double y_fit =st.get_m_2()*z_hit+st.get_m_0()*x_hit+st.get_m_1()*y_hit+st.get_c_0();
 			
-			//double dy = y_fit - y_hit;
-			//double residual = (dy/(sqrt((st.get_m_0()*st.get_m_0())+(st.get_m_1()*st.get_m_1())+(st.get_m_2()*st.get_m_2()))));
-			//double residual = (dy/(sqrt(1+(st.get_m_0()*st.get_m_0())+(st.get_m_1()*st.get_m_1()))));//y=1,
 
 			double werr_mag = chit.wireRes(); //hit major error axis 
       			double terr_mag = chit.transRes(); //hit minor error axis 
@@ -311,29 +297,24 @@ namespace mu2e
       			XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
 			XYZVec major_axis = werr_mag*wdir;
       			XYZVec minor_axis = terr_mag*wtdir;
-	       
+	                
       			
+			 //double hit_error = sqrt((major_axis.Dot(track_dir)*major_axis.Dot(track_dir)))+(minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
 			double hit_error = sqrt(major_axis.Cross(track_dir).mag2()+minor_axis.Cross(track_dir).mag2());
-			double fit_error = y_fit*sqrt(((st.get_m_0_err()/st.get_m_0())*(st.get_m_0_err()/st.get_m_0()))+((st.get_m_1_err()/st.get_m_1())*(st.get_m_1_err()/st.get_m_1()))+((st.get_c_0_err()/st.get_c_0())*(st.get_c_0_err()/st.get_c_0())));
 			
-                        double residual_error = sqrt((hit_error*hit_error) + (fit_error*fit_error)); 	
 	        
 		//-----------Fill Hist Details:----------//
 			
-			//if(pull !=0 && residual !=0){
-		                
-				std::vector<double> fit_residuals = st.get_fit_residuals();
-				
-				for(size_t i=0; i< st.get_fit_residuals().size();i++){
-				    double pull = fit_residuals[i]/residual_error;
-		                    _total_residuals_XY->Fill(fit_residuals[i]);
+			
+			for(size_t i=0; i< st.get_fit_residuals().size();i++)			{
+				    double pull = st.get_fit_residuals()[i]/st.get_fit_residual_errors()[i];
+		                    _total_residuals_XY->Fill(st.get_fit_residuals()[i]);
 			            _total_pulls_XY->Fill(pull);
 				    _pull_v_cosine_XY->Fill( wdir.Dot(track_dir), pull);
-			            std::cout<<" Residuals from Fit...."<<fit_residuals[i]<<std::endl;
-                                }
+			            
+                          }
 		                _hiterrs_XY->Fill(hit_error);
-                        	
-			//}
+            
 			
 	
 		//------------MC INFO------------------//
@@ -384,11 +365,11 @@ namespace mu2e
                 }
                 else{
 			int N_polar_bins = _mc_phi_angle->GetNbinsX();
-			for(int n=5;n<N_polar_bins-3; n++){
-				//double bin_center = _mc_phi_angle->GetBinCenter(n);
+			for(int n=1;n<N_polar_bins; n++){
+				
 				double frac_recon = _fit_phi_angle->GetBinContent(n)/ _mc_phi_angle->GetBinContent(n);
 				_reco_eff_v_angle->SetBinContent(n,frac_recon);
-				//std::cout<<n<<bin_center<<" , "<<_fit_phi_angle->GetBinContent(n)<<" "<< _mc_phi_angle->GetBinContent(n)<<" "<<frac_recon<<std::endl;
+				
 		}//end reco eff calc
       }//end analyze
 
