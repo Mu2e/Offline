@@ -60,7 +60,7 @@ simulation.default.mod.g4run.TrajectoryControl: @local::mu2eg4NoTrajectories
 simulation.default.mod.g4run.ResourceLimits.maxSimParticleCollectionSize: 100000
 
 timeSimulation : {
-   beam: {
+   all: {
       mod : {
 	 @table::CommonMC.producers
       }
