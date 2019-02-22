@@ -33,7 +33,7 @@ physics : {
 	generate              : {  module_type:StoppedMuonRMCGun
 	    physics: {
 		rhoInternal           : 1. # 0.0071
-		spectrumShape         : "ClosureApprox"    # could also be "flat"
+		spectrumShape         : "RMC"    # could also be "flat"
 #		spectrumShape         : "flat"
 		elow                  : 1.5
 #		elow                  : 100.0

@@ -34,6 +34,9 @@ namespace mu2e {
       double ehi  = psphys.get<double>("ehi");
       this->initialize<SimpleSpectrum>(elow, ehi, ehi-elow, SimpleSpectrum::Spectrum::Flat );
     }
+    else if (spectrumShape == "monoenergetic") {
+      this->initialize(psphys.get<double>("ehi"));
+    }
     else if (spectrumShape == "CeEndpoint") {
       // think this is total energy
       double endpoint = psphys.get<double>("ehi", GlobalConstantsHandle<PhysicsParams>()->getEndpointEnergy());

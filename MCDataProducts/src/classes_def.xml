@@ -30,6 +30,11 @@
 
  <class name="mu2e::GenParticleSPMHistory" />
  <class name="art::Wrapper<mu2e::GenParticleSPMHistory>"/>
+  
+ <class name="mu2e::FixedTimeMap"/>
+ <class name="art::Wrapper<mu2e::FixedTimeMap>" />
+
+
 
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>
