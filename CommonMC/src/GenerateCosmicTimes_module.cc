@@ -53,7 +53,7 @@ namespace mu2e {
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , offsetToTracker_(pset.get<bool>("offsetToTracker", true))
     , tmin_(pset.get<double>("tmin", 700))
-    , tmax_(pset.get<double>("tmax", 1695))
+    , tmax_(pset.get<double>("tmax", 1705))
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
   {
     std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
@@ -80,7 +80,7 @@ namespace mu2e {
     event.getManyByType(colls);
 
     art::Handle<std::vector<mu2e::StepPointMC>> spHndl;
-    bool gotIt = event.getByLabel("detectorFilter:tracker", spHndl);
+    bool gotIt = event.getByLabel(hitsInputTag_, spHndl);
     double firstTrackerHit = 0;
     if(gotIt && offsetToTracker_){
       std::vector<mu2e::StepPointMC> stepPoints = *spHndl;
