@@ -153,18 +153,18 @@ physics:
     largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
     
     #path for the calorimeter only trigger
-    calo_only_path               : [ CaloDigiFromShower, @sequence::paths.caloOnly   ]
+    caloMVACE_path               : [ CaloDigiFromShower, @sequence::paths.caloMVACE   ]
  
     #path for calorimeter cosmic muon calibration
-    caloCosmicMuon_path          : [ CaloDigiFromShower, @sequence::paths.caloCosmicMuon   ]
+    caloCosmicMuon_path          : [ CaloDigiFromShower, @sequence::paths.caloCalibCosmic   ]
 
     #paths for TrkPatRec downstream e- and e+
-    tpr_dem_path                 : [ makeSD,  @sequence::paths.tprDeMSeed                          ]
-    tpr_dep_path                 : [ makeSD,  @sequence::paths.tprDePSeed                          ]
+    tprSeedDeM_path                 : [ makeSD,  @sequence::paths.tprSeedDeM                          ]
+    tprSeedDeP_path                 : [ makeSD,  @sequence::paths.tprSeedDeP                          ]
 
     #paths for CalPatRec downstream e- and e+
-    cpr_dem_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprDeMSeed       ]
-    cpr_dep_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprDePSeed       ]
+    cprSeedDeM_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeM       ]
+    cprSeedDeP_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeP       ]
     
     
 
