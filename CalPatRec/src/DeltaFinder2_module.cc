@@ -926,10 +926,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // make sure the two straws do intersect
 //-----------------------------------------------------------------------------
-	      if (fabs(res.t1) >= straw1->getHalfLength())    continue;
+	      if (fabs(res.t1) >= straw1->halfLength())    continue;
 
 	      const Straw* straw2              = hd2->fStraw;
-	      if (fabs(res.t2) >= straw2->getHalfLength())    continue;
+	      if (fabs(res.t2) >= straw2->halfLength())    continue;
 //-----------------------------------------------------------------------------
 // both StrawHit's are required to be close enough to the intersection point
 //-----------------------------------------------------------------------------

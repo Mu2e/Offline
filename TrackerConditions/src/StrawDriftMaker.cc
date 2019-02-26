@@ -45,9 +45,9 @@ namespace mu2e {
     //define the wire and straw radius in mm
     GeomHandle<Tracker> tracker;
     //12.5 um in mm
-    double wireradius = tracker->getStraw(StrawId(0,0,0)).getDetail().wireRadius(); 
+    double wireradius = tracker->wireRadius(); 
     //2.5 mm in mm
-    double strawradius = tracker->getStraw(StrawId(0,0,0)).getDetail().outerRadius(); 
+    double strawradius = tracker->strawOuterRadius(); 
     
     // calculate the distances that correspond to the efields 
     // listed in the table (fix units!!)

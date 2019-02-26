@@ -254,10 +254,8 @@ namespace mu2e {
       double s = w.dot(pos-mid);
       CLHEP::Hep3Vector point = pos - (mid + s*w);
 
-      StrawDetail const& strawDetail = straw.getDetail();
-
-      double normPointMag = point.mag()/strawDetail.innerRadius();
-      double normS = s/straw.getHalfLength();
+      double normPointMag = point.mag()/tracker.strawInnerRadius();
+      double normS = s/straw.halfLength();
 
       if ( diagLevel_ > 1 &&  nProcessed_< maxFullPrint_ ){
 

@@ -191,7 +191,7 @@ namespace mu2e {
             ","<<lid.getLayer()<<
             ","<<did <<
             ","<<secid.getPanel()<<
-            ","<<str.getHalfLength()<<
+            ","<<str.halfLength()<<
             ","<<vec3j.getX()<<
             ","<<vec3j.getY()<<
             ","<<vec3j.getZ()<<
@@ -205,7 +205,7 @@ namespace mu2e {
           detnt[1]  = lid;
           detnt[2]  = did;
           detnt[3]  = secid;
-          detnt[4]  = str.getHalfLength();
+          detnt[4]  = str.halfLength();
           detnt[5]  = vec3j.getX();
           detnt[6]  = vec3j.getY();
           detnt[7]  = vec3j.getZ();
@@ -279,7 +279,7 @@ namespace mu2e {
       int did = sid.getPlane();
       int secid = sid.getPanel();
 
-      double fracDist = SDtruth.distanceToMid(StrawEnd::cal)/str.getHalfLength();
+      double fracDist = SDtruth.distanceToMid(StrawEnd::cal)/str.halfLength();
 
       // Use MC truth data
       _hDriftTime->Fill(0.0);
@@ -303,7 +303,7 @@ namespace mu2e {
       nt[1]  = lid;
       nt[2]  = did;
       nt[3]  = secid;
-      nt[4]  = str.getHalfLength();
+      nt[4]  = str.halfLength();
       nt[5]  = smidp.getX();
       nt[6]  = smidp.getY();
       nt[7]  = smidp.getZ();
