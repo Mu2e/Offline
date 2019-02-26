@@ -2,6 +2,7 @@
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
+#include "CommonMC/fcl/prolog.fcl"
 
 BEGIN_PROLOG
   HitMakerBlindTime      : 500. # ns
@@ -32,7 +33,7 @@ CaloShowerStepROFromShowerStep :
 {
     module_type                 : CaloShowerStepROFromShowerStep
     caloCrystalShowerInputs     : [ "CaloShowerStepFromStepPt:calorimeter" ]
-    TimeOffsets                 : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+    TimeOffsets                 : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     blindTime                   : @local::HitMakerBlindTime
     caloLRUCorrection           : true
     caloBirksCorrection         : true

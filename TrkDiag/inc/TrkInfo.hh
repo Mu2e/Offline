@@ -68,12 +68,12 @@ namespace mu2e
     Int_t _ngood; // number of true hits on the track that were generated before catastrophic brehmstrahlung
     Int_t _nambig; // number of true hits where the reconstruction assigned the correct left-right ambiguity
     Int_t _pdg, _gen, _proc; // true PDG code, generator code, and process code of the primary particle
-    Int_t _ppdg, _pgen, _pproc; // PDG code, generator code and process code of the parent particle of the primary particle
+    Int_t _ppdg, _prpdg, _pgen, _pproc; // PDG code, generator code and process code of the parent particle of the primary particle
     Float_t _pmom; // true initial momentum of the parent of the primary particle
     TrkInfoMC() { reset(); }
-    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _pgen = _pproc = -1; _pmom=-1.0; }
+    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _ngood = _nambig = _pdg = _gen  = _proc = _ppdg = _prpdg = _pgen = _pproc = -1; _pmom=-1.0; }
     static std::string leafnames() { static std::string leaves; leaves =
-      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:pgen/I:pproc/I:pmom/F");
+      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:ngood/I:nambig/I:pdg/I:gen/I:proc/I:ppdg/I:prpdg/I:pgen/I:pproc/I:pmom/F");
       return leaves;
     }
   };

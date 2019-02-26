@@ -1,4 +1,5 @@
 //use with Mu2eG4/geom/crv_counters_v07.txt (e.g. CRVResponse/test/CRVResponse_v07.fcl)
+#include "CommonMC/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -41,7 +42,7 @@ BEGIN_PROLOG
       fiberDecayTime            : 8.7      //8.7 ns
       startTime                 : 400.0    //0.0 ns
       visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
-      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ]  }
     }
     CrvSiPMCharges:
     {
@@ -138,7 +139,7 @@ BEGIN_PROLOG
       module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
       crvWaveformsModuleLabel                : "CrvWaveforms"
-      timeOffsets                            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      timeOffsets                            : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
 
 
