@@ -1,0 +1,38 @@
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaReco
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    TrkQualDeM : { @table::TrkQualDeM }
+    PBIWeight : { 
+      module_type : PBIWeight
+      PBITag : "protonBunchIntensity"
+      meanPBITag : "protonBunchIntensity:MeanIntensity"
+    }
+  }
+  analyzers :  {
+    genCountLogger: { module_type: GenEventCountReader }
+  }
+}
+
+physics.producers.TrkQualDeM.KalSeedCollection : "KFFDeM"
+physics.analyzers.TrkAnaRecoNeg : { @table::TrackAnalysisReco }
+
+physics.TrkAnaTrigPath : [ PBIWeight, TrkQualDeM ]
+physics.TrkAnaEndPath : [ genCountLogger, TrkAnaRecoNeg ]
+
+physics.analyzers.TrkAnaRecoNeg.diagLevel : 2
+#physics.analyzers.TrkAnaRecoPos.diagLevel : 2
+physics.analyzers.TrkAnaRecoNeg.FillMCInfo : true
+#physics.analyzers.TrkAnaRecoPos.FillMCInfo : true
+physics.analyzers.TrkAnaRecoNeg.AnalyzeCRV : true
+#physics.analyzers.TrkAnaRecoPos.AnalyzeCRV : true

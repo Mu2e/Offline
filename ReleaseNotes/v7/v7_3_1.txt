@@ -1,0 +1,14 @@
+           Release notes for Mu2e Offline software, v7_3_1
+
+2) Feb 6, 2019 kutscke
+   First release of: Filters/src/StepPointFilter_module.cc
+   This modules selects events with a minimum number of StepPointMCs
+   in the named data product.
+
+1) Feb 5, 2019 kutschke
+   STM sensitive detector code
+     - The sensitive detector now only looks at the crystals
+       rather than the crystals plus support infrastructure
+     - The two crystals now have unique G4 copy numbers;
+       previously they were both 0.
+

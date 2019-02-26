@@ -8,6 +8,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "fhiclcpp/ParameterSet.h"
 //#include "BFieldGeom/inc/BFieldManager.hh"
@@ -40,6 +41,7 @@ namespace mu2e
     art::InputTag _clTag;
     int           _minncrystalhits;
     double        _minenergy, _maxenergy;
+    TriggerAlg    _trigAlg;
     int           _debug;
     // counters
     unsigned _nevt, _npass;
@@ -50,6 +52,7 @@ namespace mu2e
     _minncrystalhits(pset.get<int>          ("MinNCrystalHits")),
     _minenergy      (pset.get<double>       ("MinEnergy")), //MeV
     _maxenergy      (pset.get<double>       ("MaxEnergy")), //MeV
+    _trigAlg(pset.get<std::vector<std::string> >("triggerAlg")),
     _debug          (pset.get<int>          ("debugLevel")),
     _nevt(0), _npass(0)
   {
@@ -92,6 +95,7 @@ namespace mu2e
         ++_npass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::caloCalib);
+	triginfo->_triggerAlgBits.merge(_trigAlg);
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(clcol->begin(),icl);

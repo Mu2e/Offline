@@ -51,8 +51,8 @@ vector<double> ts.zRing = {-2934, -859.3, 0, 0, 0, 0, 859.3, 2934};
 vector<double> ts.thetaRing = {0, 45, 90, 90, 90, 90, 45, 0}; // degrees yrot
 
 int  ts.cryo.verbosityLevel = 0.;
-bool ts.cryo.isVisible = true;
-bool ts.cryo.isSolid   = false;
+bool ts.cryo.visible = true;
+bool ts.cryo.solid   = false;
 
 // TS polylining option
 bool   ts.polyliner.Up.build     = false;
@@ -60,14 +60,14 @@ bool   ts.polyliner.Down.build   = false;
 string ts.polyliner.materialName = "G4_POLYETHYLENE";
 double ts.polyliner.rIn          = 210.; 
 double ts.polyliner.rOut         = 247.;
-bool   ts.polyliner.isVisible      = true;
-bool   ts.polyliner.isSolid        = true;
+bool   ts.polyliner.visible      = true;
+bool   ts.polyliner.solid        = true;
 
 // Pbar Absorber
 // Pbar absorber at TS3 center, disk always built, wedge optional plus
 int    pbar.version = 2;
-bool   pbar.isVisible = true;
-bool   pbar.isSolid   = false;
+bool   pbar.visible = true;
+bool   pbar.solid   = false;
 int    pbar.verbosityLevel = 0;
 double pbar.halfLength = 82.0e-03;// 100.0e-3; // 0.06->0.1
 string pbar.Type       = "wedge"; // "disk"
@@ -142,8 +142,8 @@ double pbar.coll31In.halfLength = 0.001;
 double pbar.coll31In.offset = 1.0;      // distance to the TS3 coll31 entrance plane
 
 // Collimators
-bool   ts.coll.isVisible        = true;
-bool   ts.coll.isSolid          = false;
+bool   ts.coll.visible        = true;
+bool   ts.coll.solid          = false;
 int    ts.coll.verbosityLevel = 0;
 
 // Offsets of collimators wrt parent volumes (TS straight sections)
@@ -204,8 +204,8 @@ double ts.coll.Flange.Radius1 = 270.0;
 double ts.coll.Flange.Radius2 = 290.0;
 
 // Muon degrader
-bool muondegrader.isVisible = true;
-bool muondegrader.isSolid   = false;
+bool muondegrader.visible = true;
+bool muondegrader.solid   = false;
 bool muondegrader.build   = false;
 int  muondegrader.verbosityLevel = 0;
 string muondegrader.materialName = "Polyethylene0020";
@@ -215,8 +215,8 @@ vector<double> muondegrader.DZT = { 50.0, 30.0, 10.0};
 vector<double> muondegrader.Phi = {0.5,0.2,0.2};
 
 // Coils
-bool ts.coils.isVisible = true;
-bool ts.coils.isSolid   = false;
+bool ts.coils.visible = true;
+bool ts.coils.solid   = false;
 int  ts.coils.verbosityLevel = 0;
 string ts.coils.material = "SCCable";
 

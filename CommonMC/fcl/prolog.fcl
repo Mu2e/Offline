@@ -28,6 +28,21 @@ CommonMC: {
   }
   TimeMaps : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
   TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
+  TimeMaps : [ protonTimeMap, muonTimeMap ]
+  TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary ]
+  FindMCPrimary : {
+    module_type : FindMCPrimary
+    debugLevel : 0
+    GenParticles : "compressDigiMCs"
+    SimParticles : "compressDigiMCs"
+    PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
+	"cosmicDYB", "CosmicCRY", 
+	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
+  }
+  SelectRecoMC : {
+    module_type : SelectRecoMC
+    debugLevel : 0
+  }
 }
 CommonMC.DigiSim : [ @sequence::CommonMC.TimeMaps, EWMProducer ]
 CommonMC.PrimaryDigiSim : [ @sequence::CommonMC.TimeMapsPrimary, EWMProducer ]

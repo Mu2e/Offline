@@ -17,7 +17,7 @@
 #include "ConditionsService/inc/CalorimeterPhysicalConstants.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -733,8 +733,7 @@ namespace mu2e {
     if (_diagLevel > 2){   std::cout << "checking disk locations " << _firstDiskZ << " " <<  _secondDiskZ << std::endl;}
 
     //Get handle to the tracker
-    if( ! geom->hasElement<TTracker>() ) return;
-    //       TTracker const & tracker = *(GeomHandle<TTracker>());
+    if( ! geom->hasElement<Tracker>() ) return;
 	
     art::Handle<TrkCaloMatchCollection>  trkCaloMatchHandle;
     event.getByLabel(_trkCaloMatchModuleLabel, trkCaloMatchHandle);
@@ -1257,8 +1256,6 @@ namespace mu2e {
     numberOfTracks = _nTrk;
     if (_diagLevel>3){std::cout << "ntracks = " << _nTrk << std::endl;}
     //--------------------------  Do tracker hits  --------------------------------
-
-    //   const Tracker& tracker = getTrackerOrThrow();
 
     art::Handle<mu2e::StrawHitCollection> strawhitsH;
     if (event.getByLabel(_shLabel,strawhitsH)) {

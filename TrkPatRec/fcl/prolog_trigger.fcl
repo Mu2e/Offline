@@ -59,7 +59,9 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     UseHitMVA              : false
     MinMVA                 : 0.1
     
-    RobustHelixFit       : @local::TrkReco.TTrobustHelixFit
+    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit
+	maxzsep : 275.	
+    }
     #    Chi2HelixFit         : 
     #	T0Calculator         : 
     T0Shift              : 4.0
@@ -115,7 +117,7 @@ TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
 # This should be divided into sim, reco FIXME!
 TprTrigger : {
     producers : {
-	TPRFetchDigis : { module_type:PrefetchData
+	tprFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
 	    mcDiag                        : true
 
@@ -137,8 +139,18 @@ TprTrigger : {
 
 	TTtimeClusterFinder  : @local::TTtimeClusterFinder
 	TThelixFinder        : @local::TTrobustHelixFinder
+	TTfastHelixFinder    : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTDeltaFinder"
+	    TimeClusterCollection : "TTfastTimeClusterFinder"
+	}
 	TTKSFDeM	     : @local::TTKSFDeM
 	TTKSFDeP	     : @local::TTKSFDeP
+	TTFKSFDeM	     : { @table::TTKSFDeM
+	    SeedCollection : "TTfastHelixFinder:Positive"
+	}
+	TTFKSFDeP	     : { @table::TTKSFDeP 
+	    SeedCollection : "TTfastHelixFinder:Negative"
+	}
 	TTKFFDeM             : @local::TTKFFDeM
 	TTKFFDeP             : @local::TTKFFDeP
     }
@@ -168,10 +180,5 @@ TprTrigger : {
 		   "keep mu2e::TimeClusters_*_*_*" ]
     }
 }
-# production sequences for tracking specific paricles; first downstream moving electrons
-#electrons
-# TprTrigger.TPRDeM : [ @sequence::TrkTrigger.TTfindHelices, TTKSFDeM]
-#positrons
-# TprTrigger.TPRDeP : [ @sequence::TrkTrigger.TTfindHelices, TTKSFDeP]
 
 END_PROLOG

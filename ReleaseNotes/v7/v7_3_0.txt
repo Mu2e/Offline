@@ -1,0 +1,12 @@
+           Release notes for Mu2e Offline software, v7_3_0
+
+1) Jan 22, 2019 brownd
+    Add functionality intended to support production reconstruction.
+    Fix code and scripts for calorimeter cluster time constraint in the Kalman track fit.
+    Update configuration and parameters for hit error assignment in TrkPatRec
+2)  Jan 22, 2019 edmonds
+    Add module to fill TrkAna trees from KalSeed objects: still in development 
+
+3) Jan 31, 2019 rlc
+    move to art v2_12_00, adding shuffling input module
+

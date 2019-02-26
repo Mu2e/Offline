@@ -85,7 +85,7 @@ namespace mu2e {
             bool                     isSplit_;    
 
    };
-
+  typedef std::vector<mu2e::CaloCluster> CaloClusterCollection;
 } 
 
 #endif 

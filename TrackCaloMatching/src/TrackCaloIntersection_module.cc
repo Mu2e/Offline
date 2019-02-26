@@ -95,7 +95,7 @@ namespace mu2e {
     explicit TrackCaloIntersection(fhicl::ParameterSet const& pset):
       _trkterToken{consumes<KalRepPtrCollection>(pset.get<std::string>("fitterModuleLabel"))},
       _downstream(pset.get<bool>("downstream")),
-      _diagLevel(pset.get<int>("diagLevel",0)),
+      _diagLevel(pset.get<int>("diagLevel")),
       _pathStep(pset.get<double>("pathStep")),
       _tolerance(pset.get<double>("tolerance")),
       _checkExit(pset.get<bool>("checkExit")),

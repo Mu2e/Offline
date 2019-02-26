@@ -55,7 +55,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -160,6 +160,9 @@ namespace mu2e {
     const mu2e::KalRepCollection*  fDem;
 
     TMarker*  fMarker;
+
+    // Tracker conditions object.
+    ProditionsHandle<StrawResponse> strawResponse_h;
 
   public:
     explicit HitDisplay(fhicl::ParameterSet const& pset);
@@ -485,13 +488,12 @@ namespace mu2e {
     printf("[%s] RUN: %10i EVENT: %10i\n",name,Evt.run(),Evt.event());
 
     // Geometry of tracker envelope.
-    GeomHandle<TTracker> ttHandle;
-    const TTracker* tracker = ttHandle.get();
+    GeomHandle<Tracker> tHandle;
+    const Tracker* tracker = tHandle.get();
 
     TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
 
-    // Tracker conditions object.
-    ConditionsHandle<StrawResponse> strawResponse("ignored");
+    auto const& strawResponse = strawResponse_h.get(Evt.id());
 
 //-----------------------------------------------------------------------------
 // get event data
@@ -734,7 +736,7 @@ namespace mu2e {
 	  SimParticle const& sim  = *simptr;
 	  if ( sim.fromGenerator() ){
 	    GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-	    if ( gen->generatorId() == GenId::conversionGun ){
+	    if ( gen->generatorId().isConversion()){
 	      isFromConversion = true;
 	      break;
 	    }
@@ -750,8 +752,8 @@ namespace mu2e {
 	TwoLinePCA pcaMid(posMid, momMid.unit(), *mid, *w);
 
 	// Position along wire, from delta t.
-        float wdist, wderr,halfpv;
-        bool vStatus = strawResponse->wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr,halfpv);
+        double wdist, wderr,halfpv;
+        bool vStatus = strawResponse.wireDistance( *straw, hit->energyDep(), hit->dt(), wdist, wderr,halfpv);
         v=wdist;
         sigv=wderr;
         cout << "return status: " << vStatus << endl;

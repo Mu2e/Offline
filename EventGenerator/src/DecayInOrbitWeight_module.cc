@@ -103,13 +103,15 @@ namespace mu2e {
 
     double weight(-1.);
     for ( const auto& i: *genColl ) {
-      const double energy = i.momentum().e();
+      if (i.generatorId() == GenId::dioTail) {
+	const double energy = i.momentum().e();
       
-      if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy ); 
-      else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy ); 
-      else {
-        throw cet::exception("MODEL")
-          << "Wrong or not allowed DIO energy spectrum";
+	if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy ); 
+	else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy ); 
+	else {
+	  throw cet::exception("MODEL")
+	    << "Wrong or not allowed DIO energy spectrum";
+	}
       }
     }
 

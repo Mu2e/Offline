@@ -15,8 +15,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root
 #include "TMath.h"
 #include "TH1F.h"
@@ -229,7 +228,7 @@ namespace mu2e
 
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
     static const double rstraw = tracker.getStraw(StrawId(0,0,0)).getRadius();
     unsigned nstrs = _chcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){

@@ -10,24 +10,39 @@
 
 BEGIN_PROLOG
 #prescale factor for the unbiased trigger
-UnbiasedFilters_evt_sf  : 500
+unbiased_evt_sf        : 500
+#prescale factors for the strawDigi count filter
+sDCount_evt_sf         : 500
+sDCount_sf             : 1
+#prescale factors for the "large" strawDigi counter filter
+largeSDCount_evt_sf    : 500
+largeSDCount_sf        : 1
+#prescale factors for the caloDigi count filter
+cDCount_evt_sf         : 500
+cDCount_sf             : 1
+#prescale factors for the "large" caloDigi counter filter
+largeCDCount_evt_sf    : 500
+largeCDCount_sf        : 1
 #prescale factor for the calorimeter-only trigger
-CaloOnly_evt_sf         : 1
-CaloOnly_sf             : 1
+caloOnly_evt_sf        : 1
+caloOnly_sf            : 1
+#prescale factor for the calorimeter cosmic muon calibration
+caloCosmicMuon_evt_sf  : 1
+caloCosmicMuon_sf      : 1
 #prescale factor fot the tracker-only track triggers
 # downstream e-
-TPRDeMSeedFilter_evt_sf : 1
-TPRDeMSeedFilter_sf     : 1
+tprDeMSeed_evt_sf      : 1
+tprDeMSeed_sf          : 1
 # downstream e+
-TPRDePSeedFilter_evt_sf : 1
-TPRDePSeedFilter_sf     : 1
+tprDePSeed_evt_sf      : 1
+tprDePSeed_sf          : 1
 #prescale factor fot the calo-seeded track triggers
 # downstream e-
-CPRDeMSeedFilter_evt_sf : 1
-CPRDeMSeedFilter_sf     : 1
+cprDeMSeed_evt_sf      : 1
+cprDeMSeed_sf          : 1
 # downstream e+
-CPRDePSeedFilter_evt_sf : 1
-CPRDePSeedFilter_sf     : 1
+cprDePSeed_evt_sf      : 1
+cprDePSeed_sf          : 1
 END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"
@@ -77,31 +92,8 @@ event_builder: {
 # The ART code
 ######################################################################
 
-services : @local::Services.Reco
-
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "trig.root" }
-
-    RandomNumberGenerator : { }
-
-    TimeTracker : {
-	#	dbOutput : {
-	#	    filename : "ReadDigis.db"
-	#	    overwrite : true
-	#	}
-    }
-
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }    
-}
-
+#services : @local::Services.Reco
+services : @local::Services.SimAndReco
 
 producers    : { @table::Trigger.producers }
 filters      : { @table::Trigger.filters   }
@@ -137,7 +129,7 @@ physics:
     
     analyzers : {  
 	
-	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
 	    nFilters      : 25
 	    SelecEvents   : [ unbiased_path, 
 			      minimumbiasSdCount_path,
@@ -161,19 +153,22 @@ physics:
     largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
     
     #path for the calorimeter only trigger
-    calo_only_path               : [ CaloDigiFromShower, @sequence::paths.caloOnly   ]
+    caloMVACE_path               : [ CaloDigiFromShower, @sequence::paths.caloMVACE   ]
+ 
+    #path for calorimeter cosmic muon calibration
+    caloCosmicMuon_path          : [ CaloDigiFromShower, @sequence::paths.caloCalibCosmic   ]
 
     #paths for TrkPatRec downstream e- and e+
-    tpr_dem_path   : [ makeSD,  @sequence::paths.tprDeMSeed                          ]
-    tpr_dep_path   : [ makeSD,  @sequence::paths.tprDePSeed                          ]
+    tprSeedDeM_path                 : [ makeSD,  @sequence::paths.tprSeedDeM                          ]
+    tprSeedDeP_path                 : [ makeSD,  @sequence::paths.tprSeedDeP                          ]
 
     #paths for CalPatRec downstream e- and e+
-    cpr_dem_path   : [ makeSD, CaloDigiFromShower, @sequence::paths.cprDeMSeed       ]
-    cpr_dep_path   : [ makeSD, CaloDigiFromShower, @sequence::paths.cprDePSeed       ]
+    cprSeedDeM_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeM       ]
+    cprSeedDeP_path                 : [ makeSD, CaloDigiFromShower, @sequence::paths.cprSeedDeP       ]
     
     
 
-    e2: [ ReadTriggerInfo ]
+    e2: [ readTriggerInfo ]
 
     end_paths: [ e2 ]
 
@@ -198,6 +193,9 @@ source:
     resume_after_timeout: true
 }
 
+services.TFileService.fileName : "trig.root"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20
 services.scheduler.wantSummary: true
 
 process_name: Driver

@@ -115,6 +115,14 @@ namespace mu2e
         }
 
 
+  const double CosmicCRY::getLiveTime() {
+    return _cryGen->timeSimulated();
+  }
+
+  const double CosmicCRY::getShowerSumEnergy() {
+    return _showerSumEnergy;
+  }
+
   void CosmicCRY::generate( GenParticleCollection& genParts )
   {
     // Ref point, need to be here so that geometry info can be obtained
@@ -159,7 +167,9 @@ namespace mu2e
     _cryGen->genEvent(secondaries);
 
     double secondPtot = 0.;
+    _showerSumEnergy = 0.;
 
+    std::ostringstream oss;
     for (unsigned j=0; j<secondaries->size(); j++) {
       CRYParticle* secondary = (*secondaries)[j];
 
@@ -167,8 +177,10 @@ namespace mu2e
       const HepPDT::ParticleData& p_data = pdt->particle(secondary->PDGid()).ref();
       double mass = p_data.mass().value(); // in MeV
 
+      
       double ke = secondary->ke(); // MeV by default in CRY
       double totalE = ke + mass;
+      _showerSumEnergy += totalE;
       double totalP = safeSqrt(totalE * totalE - mass * mass);
 
       secondPtot += totalP;
@@ -210,7 +222,7 @@ namespace mu2e
               secondary->t() - _cryGen->timeSimulated()));
 
       if (_verbose > 1) {
-        std::cout << "Secondary " << j 
+        oss << "Secondary " << j 
           << ": " << CRYUtils::partName(secondary->id()) 
           << " (pdgId " << secondary->PDGid() << ")"
           << ", kinetic energy " << secondary->ke()  << " MeV"
@@ -228,13 +240,16 @@ namespace mu2e
           << ", mass: " << mass
           << ", mom: " << totalP
           << ", mom dir.: " << secondary->u() <<", " << secondary->v()
-          << ", " << secondary->w()
-          << std::endl;
+          << ", " << secondary->w() << "\n";
 
-        // std::cout <<  genParts.back() << std::endl;
       }
 
       delete secondary;
+    }
+
+    if (_verbose > 1) {
+      oss << "Total E: " << _showerSumEnergy;
+      mf::LogInfo("CosmicCRY") << oss.str();
     }
 
     delete secondaries;

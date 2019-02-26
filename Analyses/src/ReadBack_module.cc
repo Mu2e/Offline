@@ -12,7 +12,6 @@
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -31,7 +30,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TNtuple.h"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
@@ -167,7 +166,7 @@ namespace mu2e {
     int _nBadG4Status;
 
     // Examine various parts of the event.
-    void doTTracker         ( const art::Event& event );
+    void doTracker         ( const art::Event& event );
     void doCalorimeter      ( const art::Event& event );
     void doStoppingTarget   ( const art::Event& event );
     void doCRV              ( const art::Event& event );
@@ -357,8 +356,8 @@ namespace mu2e {
 
     // Call code appropriate for the tracker that is installed in this job.
     art::ServiceHandle<GeometryService> geom;
-    if( geom->hasElement<TTracker>() ){
-      doTTracker(event);
+    if( geom->hasElement<Tracker>() ){
+      doTracker(event);
     }
 
     if (geom->hasElement<Calorimeter>() )doCalorimeter(event);
@@ -471,11 +470,11 @@ namespace mu2e {
 
   }
 
-  void ReadBack::doTTracker(const art::Event& event){
+  void ReadBack::doTracker(const art::Event& event){
 
     // Get a reference to one of the L or T trackers.
     // Throw exception if not successful.
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     // Get a ValidHandle to the generated particles.
     auto gens = event.getValidHandle<GenParticleCollection>(_gensTag);
@@ -587,7 +586,7 @@ namespace mu2e {
         throw cet::exception("GEOM") << __func__
                                      << " Hit " << pos
                                      << " ouside the straw " << straw.id()
-                                     << " inconsistent ttracker geometry file? "
+                                     << " inconsistent tracker geometry file? "
                                      << "; radial difference: "
                                      << point.mag()/strawDetail.innerRadius() - 1.
                                      << ", longitudinal difference: "
@@ -755,7 +754,7 @@ namespace mu2e {
       }
     }
 
-  } // end doTTracker
+  } // end doTracker
 
   // Count how many of this straw's nearest neighbours are hit.
   // If we have enough hits per event, it will make sense to make

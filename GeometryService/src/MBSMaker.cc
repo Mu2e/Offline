@@ -501,6 +501,17 @@ namespace mu2e {
                     _CLV2InnerRadii.at(0)-0.01, //outer radius of the plug is the same as the inner radius of the hole, leave a 10 micron gap
                     _CLV2AbsHLength));
       }    
+      //Shield at upstream end of the MBS to protect the Calorimeter
+      if (_MBSVersion == 6 ){  
+        CLHEP::Hep3Vector _CalShieldRingOffsetInMu2e  = _MBSMOffsetInMu2e + 
+	  CLHEP::Hep3Vector(0.0,0.0,_CalShieldRingZ);        
+        mbs._pCalShieldRingParams = std::unique_ptr<Tube>
+          (new Tube(_CalShieldRingMaterialName,
+                    _CalShieldRingOffsetInMu2e,
+                    _CalShieldRingInnerRadius, 
+                    _CalShieldRingOuterRadius,
+                    _CalShieldRingHLength));
+      }    
         
     } // end of Version 2 - specific constructor
   } // end of constructor for MBSMaker
@@ -627,7 +638,15 @@ namespace mu2e {
 	tempLoc+=moveIt;
 	_downPolyHoleCenters.push_back(tempLoc);
       }
-
+      
+    }
+    //Get parameters for the Calorimeter shield
+    if(_MBSVersion == 6) {
+      _CalShieldRingInnerRadius     = _config.getDouble("mbs.CalShieldRingInnerRadius");
+      _CalShieldRingOuterRadius     = _config.getDouble("mbs.CalShieldRingOuterRadius");
+      _CalShieldRingHLength         = _config.getDouble("mbs.CalShieldRingHLength");
+      _CalShieldRingMaterialName    = _config.getString("mbs.CalShieldRingMaterialName");
+      _CalShieldRingZ               = _config.getDouble("mbs.CalShieldRingZRelCnt");
     }
 
   } // end parConfig function

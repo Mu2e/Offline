@@ -38,7 +38,6 @@
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -571,7 +570,7 @@ namespace mu2e {
               if ( sim.fromGenerator() ){
 
                 GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-                if ( gen->generatorId() != GenId::conversionGun ){
+                if ( gen->generatorId().isConversion() ){
                   continue;
                 }
               }
@@ -893,7 +892,7 @@ namespace mu2e {
 	      }
 	    // if ( sim->fromGenerator() ){
 	    //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	    //   if ( gen->generatorId() == GenId::conversionGun ){
+	    //   if ( gen->generatorId().isConversion() ){
 	    // 	isConversion = 1;
 	    //   }
 	    // }

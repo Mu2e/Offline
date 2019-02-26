@@ -19,58 +19,52 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  CalHelixFinderData::CalHelixFinderData(const CalHelixFinderData& Data) {
-    _timeCluster    = Data._timeCluster;
-    _timeClusterPtr = Data._timeClusterPtr;
-					// the only pointer owned 
-    if (Data._helix) _helix = Data._helix->clone();
-    else             _helix = NULL;
+  // CalHelixFinderData::CalHelixFinderData(const CalHelixFinderData& Data) {
+  //   _timeCluster    = Data._timeCluster;
+  //   _timeClusterPtr = Data._timeClusterPtr;
+  // 					// the only pointer owned 
+  //   if (Data._helix) _helix = Data._helix->clone();
+  //   else             _helix = NULL;
+  //   _helicity       = Data._helicity;
+    
+  //   _chHitsToProcess= Data._chHitsToProcess;
+  //   _zFace          = Data._zFace;
+  //   _phiPanel       = Data._phiPanel;
 
-    _chHitsToProcess= Data._chHitsToProcess;
-    _zFace          = Data._zFace;
-    _phiPanel       = Data._phiPanel;
+  //   _goodhits       = Data._goodhits;
+  //   _tpart          = Data._tpart;
+  //   _fdir           = Data._fdir;
+  //   _chcol          = Data._chcol;
 
-    _goodhits       = Data._goodhits;
-    _tpart          = Data._tpart;
-    _fdir           = Data._fdir;
-    _chcol          = Data._chcol;
-    // _shpos          = Data._shpos;
-    _shfcol         = Data._shfcol;
-    _fit            = Data._fit;
-    _sxy            = Data._sxy;
-    _szphi          = Data._szphi;
-    _center         = Data._center;
-    _radius         = Data._radius;
-    //    _chi2           = Data._chi2;
-    // _sxyw           = Data._sxyw;
-    // _cw             = Data._cw;
-    // _rw             = Data._rw;
-    // _chi2w          = Data._chi2w;
-    _dfdz           = Data._dfdz;
-    _fz0            = Data._fz0;
-    _diag           = Data._diag;
+  //   _shfcol         = Data._shfcol;
+  //   _fit            = Data._fit;
+  //   _sxy            = Data._sxy;
+  //   _szphi          = Data._szphi;
+  //   _center         = Data._center;
+  //   _radius         = Data._radius;
+
+  //   _dfdz           = Data._dfdz;
+  //   _fz0            = Data._fz0;
+  //   _diag           = Data._diag;
     
 
-    _nXYSh          = Data._nXYSh;
-    _nZPhiSh        = Data._nZPhiSh;
-    _nStrawHits     = Data._nStrawHits;
-    _nComboHits     = Data._nComboHits;
-    _nFiltPoints    = Data._nFiltPoints;
-    _nFiltStrawHits = Data._nFiltStrawHits;
+  //   _nXYSh          = Data._nXYSh;
+  //   _nZPhiSh        = Data._nZPhiSh;
+  //   _nStrawHits     = Data._nStrawHits;
+  //   _nComboHits     = Data._nComboHits;
+  //   _nFiltPoints    = Data._nFiltPoints;
+  //   _nFiltStrawHits = Data._nFiltStrawHits;
 
-    _helixChi2      = Data._helixChi2;
+  //   _helixChi2      = Data._helixChi2;
 
-    _seedIndex      = Data._seedIndex;
-    _candIndex      = Data._candIndex;
+  //   _seedIndex      = Data._seedIndex;
+  //   _candIndex      = Data._candIndex;
 
-    //copy the info relative to the  panels
-    // for (int p=0; p<kNTotalPanels; ++p){
-    //   _oTracker[p] = Data._oTracker[p];//PanelZ_t(Data._oTracker[p]);
-    // }    
-    _oTracker       = Data._oTracker;
+  //   //copy the info relative to the  panels
+  //   _oTracker       = Data._oTracker;
 
-    _hitsUsed       = Data._hitsUsed;
-  }
+  //   _hitsUsed       = Data._hitsUsed;
+  // }
 
 //-----------------------------------------------------------------------------
   CalHelixFinderData::~CalHelixFinderData() {
@@ -154,6 +148,59 @@ namespace mu2e {
     _hitsUsed =  {0};
   }
 
+ void CalHelixFinderData::clearTimeClusterInfo() {
+
+    _timeCluster    = NULL;
+    _timeClusterPtr = art::Ptr<TimeCluster>();
+
+    _chHitsToProcess.clear();
+
+    _nFiltPoints    = 0;
+    _nFiltStrawHits = 0;
+    
+    //clear the panel-based structure
+    for (int f=0; f<StrawId::_ntotalfaces; ++f) {
+      FaceZ_t*  facez  = &_oTracker[f];
+      facez->bestFaceHit = -1;
+      facez->idChBegin   = -1;
+      facez->idChEnd     = -1;
+
+      for (int p=0; p<FaceZ_t::kNPanels; ++p) {
+	PanelZ_t* panelz = &facez->panelZs[p];
+	panelz->idChBegin = -1;
+	panelz->idChEnd   = -1;
+      }
+    }
+
+    _hitsUsed =  {0};
+  }
+
+void CalHelixFinderData::clearHelixInfo() {
+
+    _goodhits.clear();
+    
+    _fit.setFailure(1,"failure");
+    
+    _sxy.clear();
+    _szphi.clear();
+
+    _radius = -1.;
+          
+    _dfdz = -1.e6;
+    _fz0  = -1.e6;
+
+    _nXYSh       = 0;
+    _nZPhiSh     = 0;
+
+    _nStrawHits  = 0;
+    _nComboHits  = 0;
+
+    _helixChi2   = 1e10;
+
+    _seedIndex   = HitInfo_t();
+    _candIndex   = HitInfo_t();
+
+  }
 //-----------------------------------------------------------------------------
 // don't clear the diagnostics part.
 //-----------------------------------------------------------------------------

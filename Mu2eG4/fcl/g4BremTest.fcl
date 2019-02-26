@@ -28,19 +28,7 @@ source : {
   maxEvents : 10
 }
 
-services : {
-
-  message               : @local::default_message
-  TFileService          : { fileName : "rhbob_g4BremTest.root" }
-  RandomNumberGenerator : { }
-
-  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-  G4Helper               : { }
-  SeedService            : @local::automaticSeeds
-
-}
+services : @local::Services.Sim
 
 physics : {
 
@@ -115,6 +103,9 @@ outputs: {
   }
 
 }
+
+
+services.TFileService.fileName : "rhbob_g4BremTest.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0

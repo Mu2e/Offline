@@ -51,7 +51,7 @@ CprTrigger : { @table::CprTrigger
     producers : { 
 #	@table::CaloClusterFast.producers
 
-	CPRFetchDigis : { module_type:PrefetchData
+	cprFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
 	    mcDiag                        : true
 
@@ -70,13 +70,21 @@ CprTrigger : { @table::CprTrigger
 	    comboHitCollectionTag         : TTmakePH # MakeStereoHits
 	}
 
+	TTDeltaFinder : { @table::CalPatRec.producers.DeltaFinder
+	    comboHitCollectionTag         : TTmakePH                # input coll
+	    strawHitCollectionTag         : TTmakeSH                # input coll
+	    timePeakCollectionTag         : TTfastTimeClusterFinder
+	    writeStrawHits                : 0
+	    filter                        : 1
+	}
+
 #------------------------------------------------------------------------------
 # default configuration: DEM
 # CalPatRec, so far, has been validated only for e- 
 #------------------------------------------------------------------------------
 	TTCalSeedFit : { @table::CalPatRec.producers.CalSeedFit
 	    ComboHitCollection          : TTmakeSH			 
-	    SeedCollection              : TTCalHelixFinder
+	    SeedCollection              : "TTCalHelixFinder:Positive"
 	}
 	
 	TTCalTrkFit  : { @table::CalPatRec.producers.CalTrkFit
@@ -90,6 +98,19 @@ CprTrigger : { @table::CprTrigger
 #------------------------------------------------------------------------------
 # new modules
 #------------------------------------------------------------------------------
+	TTfastTimeClusterFinder      : { @table::CalPatRec.filters.CalTimePeakFinder
+	    useAsFilter                                 : 0
+	    StrawHitCollectionLabel                     : TTmakePH          
+	    StrawHitFlagCollectionLabel                 : ShouldNotBeUsed
+	    caloClusterModuleLabel                      : CaloClusterFast
+	    HitSelectionBits                            : ["EnergySelection","TimeSelection"] 
+	    BackgroundSelectionBits                     : ["Background"] 
+	    minClusterEnergy                            : 50.    # MeV
+	    minClusterSize                              : 2      # number of crystals
+	    minClusterTime                              : 500.   # ns
+	}
+
+
 	TTCalTimePeakFinder          : { @table::CalPatRec.filters.CalTimePeakFinder
 	    useAsFilter                                 : 0
 	    StrawHitCollectionLabel                     : TTmakePH          
@@ -121,19 +142,19 @@ CprTrigger: { @table::CprTrigger
     producers : { @table::CprTrigger.producers
 	
 	TTCalSeedFitDem                : { @table::CprTrigger.producers.TTCalSeedFit        
-	    SeedCollection             : TTCalHelixFinderDem
+	    SeedCollection             : "TTCalHelixFinderDe:Positive"
 	}
 	TTCalSeedFitDmm                  : { @table::CprTrigger.producers.TTCalSeedFit 
 	    fitparticle                : @local::Particle.muminus
-	    SeedCollection             : TTCalHelixFinderDmm
+	    SeedCollection             : "TTCalHelixFinderDm:Positive"
 	}
 	TTCalSeedFitDep                  : { @table::CprTrigger.producers.TTCalSeedFit 
 	    fitparticle                : @local::Particle.eplus  
-	    SeedCollection             : TTCalHelixFinderDep
+	    SeedCollection             : "TTCalHelixFinderDe:Negative"
 	}
 	TTCalSeedFitDmp                  : { @table::CprTrigger.producers.TTCalSeedFit 
 	    fitparticle                : @local::Particle.muplus
-	    SeedCollection             : TTCalHelixFinderDmp
+	    SeedCollection             : "TTCalHelixFinderDm:Negative"
 	}
 	
 	TTCalTrkFitDem                 : { @table::CprTrigger.producers.TTCalTrkFit
@@ -145,21 +166,21 @@ CprTrigger: { @table::CprTrigger
     }
     
     filters : { @table::CprTrigger.filters
-	TTCalHelixFinderDem              : { @table::CprTrigger.filters.TTCalHelixFinder    }
-	TTCalHelixFinderDmm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
-	TTCalHelixFinderDep              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.eplus   }
-	TTCalHelixFinderDmp              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muplus  }
+	TTCalHelixFinderDe              : { @table::CprTrigger.filters.TTCalHelixFinder    }
+	TTCalHelixFinderDm              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muminus }
+	# TTCalHelixFinderDep              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.eplus   }
+	# TTCalHelixFinderDmp              : { @table::CprTrigger.filters.TTCalHelixFinder    fitparticle: @local::Particle.muplus  }
     }
     
     sequences : {
-	# production sequence to find helicse
+	# production sequence to find helices
 	findHelices     : [ TTtimeClusterFinder, TThelixFinder ]
 	# production sequence to find TrackSeeds
-	KSFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDem, TTCalSeedFitDem ]
-	KSFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDep, TTCalSeedFitDep ]
+	KSFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDem ]
+	KSFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDep ]
 	# production sequence to find KalReps
-	KFFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDem, TTCalSeedFitDem, TTCalTrkFitDem ]
-	KFFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDep, TTCalSeedFitDep, TTCalTrkFitDep ]	
+	KFFDeM          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDem, TTCalTrkFitDem ]
+	KFFDeP          : [ TTCalTimePeakFinder, TTCalHelixFinderDe, TTCalSeedFitDep, TTCalTrkFitDep ]	
     }
 }
 

@@ -1,0 +1,23 @@
+#include "Mu2eG4/geom/geom_common.txt"
+#include "Mu2eG4/geom/TransportSolenoid_v04.txt"
+int pbar.version = 4;
+int pbar.verbosityLevel    = 3;
+string pbar.Type = "wedge";
+string pbar.materialName = "G4_Al";
+double pbar.halfLength = 1270.0e-04; //0.254 mm full thickness
+int    pbarwedge.nStrips              = 6;
+double pbarwedge.width                = 304.6; // mm (1 foot)
+//these are same as TransportSolenoid_v04.txt but just trying to save you looking
+// this is how this works: the first strip is 173 mm, 2nd is 146, and so forth, with thicknesses as specified.  
+// the strip thicknesses correspond to the same-number strip.
+// then the whole thing is "lifted" in the software
+//vector<double> pbarwedge.stripThicknesses       = { 0.0635, 0.0635, 0.0635,0.00000001, 0.00000001, 0.00000001}; // mm
+//vector<double> pbarwedge.stripHeights = {173, 146, 113, 79, 46, 13}; // mm
+int    pbarwedge.nStrips              = 3;
+vector<double> pbarwedge.stripThicknesses       = { 0.0635,0.0635,0.0635}; // mm
+//vector<double> pbarwedge.stripThicknesses       = { 0.127,0.127,0.127}; // mm
+vector<double> pbarwedge.stripHeights = {115, 69, 23}; // mm
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

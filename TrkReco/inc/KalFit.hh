@@ -33,7 +33,9 @@
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "Mu2eUtilities/inc/McUtilsToolBase.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrkReco/inc/TrkPrintUtils.hh"
+
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
@@ -58,9 +60,9 @@ namespace mu2e
 // // create a fit object from a track definition
 //     void makeTrack(const ComboHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
-    void makeTrack(KalFitData&kalData);
+    void makeTrack(StrawResponse::cptr_t srep, KalFitData&kalData);
 // add a set of hits to an existing fit
-    void addHits(KalFitData&kalData, double maxchi);
+    void addHits(StrawResponse::cptr_t srep, KalFitData&kalData, double maxchi);
 // add materials to a track
     bool unweedHits(KalFitData&kalData, double maxchi);
 // KalContext interface
@@ -70,9 +72,10 @@ namespace mu2e
     void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
     
     TrkErrCode fitIteration(KalFitData& kalData,int iter); 
-    void       printHits   (KalFitData& kalData, const char* Caller);
     bool       weedHits    (KalFitData& kalData, int    iter);
     bool       updateT0    (KalFitData& kalData);
+
+    TrkPrintUtils*  printUtils() { return _printUtils; }
   private:
     // iteration-independent configuration parameters
     int _debug;		    // debug level
@@ -81,12 +84,12 @@ namespace mu2e
     unsigned _maxweed;
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
+    double _caloHitErr; // spatial error to use for TrkCaloHit
     std::vector<bool> _updatet0; // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
-    double _dtoffset;
     double _strHitW, _calHitW;//weight used to evaluate the initial track T0
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
@@ -101,23 +104,24 @@ namespace mu2e
     extent _exdown;
     const mu2e::Tracker*             _tracker;     // straw tracker geometry
     const mu2e::Calorimeter*         _calorimeter;
-    int                              _mcTruth;
-    std::unique_ptr<McUtilsToolBase> _mcUtils;
     int    _annealingStep;
     TrkTimeCalculator _ttcalc;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
+
+    TrkPrintUtils*  _printUtils;
+
   // helper functions
     bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);
     void initT0(KalFitData&kalData);
     
-    void makeTrkStrawHits  (KalFitData&kalData, TrkStrawHitVector& tshv );
+    void makeTrkStrawHits  (StrawResponse::cptr_t srep, 
+			    KalFitData&kalData, TrkStrawHitVector& tshv );
     void makeTrkCaloHit    (KalFitData&kalData, TrkCaloHit *&tch);
     void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
     unsigned addMaterial   (KalRep* krep);
     bool unweedBestHit     (KalFitData&kalData, double maxchi);
-    void updateCalT0       (KalFitData&kalData);
     TrkErrCode fitTrack    (KalFitData&kalData);
     void updateHitTimes    (KalRep* krep); 
     double zFlight         (KalRep* krep,double pz);
@@ -128,7 +132,6 @@ namespace mu2e
 			    TrkHitVector::reverse_iterator& ilow,
 			    TrkHitVector::iterator& ihigh);
     
-    void findTrkCaloHit    (KalRep*krep, TrkCaloHit*tch);
   };
 }
 #endif

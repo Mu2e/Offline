@@ -1,0 +1,125 @@
+# Configuration file for BkgRatesCounter
+#  - Generate events including of background processes.
+#  - Run these through G4.
+#  - No event display.
+#  - Form StrawHits from StepPointMC objects
+#  - Write event data to an output file
+#  - Save state of random numbers to the event-data output file
+#
+# Original author Gianni Onorato.
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+# Give this process a name.
+process_name : TrackerSig
+
+# Start each new event with an empty event.
+source :
+{
+#  module_type : EmptyEvent
+  module_type : RootInput
+#  maxEvents : 100
+}
+
+services : @local::Services.SimAndReco
+
+physics :
+{
+  producers:
+  {
+    # Generate the event
+    generate: @local::generate
+
+    # Run G4 and add hits to the event
+    g4run : @local::g4run
+
+    # Form StrawHits (SH).
+    makeSH : @local::makeSH
+
+    randomsaver : @local::randomsaver
+
+    # Look at the hits from G4.
+    extractElData:
+    {
+      module_type          : ExtractElectronsData
+      generatorModuleLabel : generate
+      g4ModuleLabel        : g4run
+      makerModuleLabel     : makeSH
+      #trackerStepPoints    : tracker
+      #minEnergyDep         : 0.0001
+      #minHits              : 5
+      #doDisplay            : true
+      #clickToAdvance       : false
+    }
+
+  }
+
+  analyzers:
+  {
+
+    tSig:
+    {
+      module_type         : TSig
+      diagLevel           : -1
+      makerModuleLabel    : makeSH
+      elextractModuleLabel: extractElData
+      maxFullPrint        : 0
+      # g4ModuleLabel     : g4run
+      minimumEnergyTracker: 0.000
+      minimumEnergyCalo   : 0.000
+      vdStepPoints        : virtualdetector
+    }
+
+    eventdisplay:
+    {
+      module_type     : EventDisplay
+      g4ModuleLabel   : "g4run"
+    }
+
+
+  }
+
+  p1 : [ 
+         #generate ,
+         #g4run ,
+         #makeSH ,
+         extractElData
+       ]
+  e1 : [ 
+         tSig
+         #outfile 
+       ]
+
+
+  trigger_paths  : [p1]
+  end_paths      : [e1]
+
+}
+
+outputs:
+{
+  # Define the output file.
+  outfile : 
+  {
+    module_type    : RootOutput
+    fileName       : "TSig_bkg.root"
+    fastCloning    : false
+    outputCommands : ['keep *_*_*_*'
+                #   , 'drop mu2ePointTrajectoryMapVector_*_*_*'
+                #   , 'drop mu2eSimParticles_*_*_*'
+                   # Uncomment the above line to reduce file size.
+                     ]  
+  }
+}
+
+physics.producers.makeSH.diagLevel : -1
+physics.producers.makeSH.maxFullPrint : 0
+physics.producers.generate.inputfile : "Mu2eG4/test/genconfig_01.txt"
+physics.producers.g4run.diagLevel : 2
+//physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
+services.TFileService.fileName : "TSig.root"
+services.GeometryService.inputFile : "myConfigsTT/geom_tt3.txt"
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

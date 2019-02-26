@@ -29,49 +29,7 @@ source :
   maxEvents : 100
 }
 
-services :
-{
-   message : @local::default_message
-   
-   TFileService :
-   {
-      fileName      : "NeutronRates.root"
-   }
-
-   RandomNumberGenerator : { }
-
-   GeometryService :
-   {
-      inputFile : "Mu2eG4/test/geom_cosmic.txt"
-   }
-
-   ConditionsService :
-   {
-      conditionsfile : "Mu2eG4/test/conditions_01.txt"
-   }
-
-   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-
-   G4Helper : { }
-
-   # Uncomment to enable per module timing
-   # Timing :
-   # {
-      #   useJobReport : true 
-      # }
-
-   # Uncomment to enable memory use profiling
-   # SimpleMemoryCheck :
-   # {
-      #   oncePerEventMode : false 
-      #   showMallocInfo   : ignoreTotal 
-      #   ignoreTotal      : 5 
-      # }
-
-   # Uncomment to enable trace printout to show what the framework calls when.
-   # Tracer : { } 
-
-} # close of services block
+services : @local::Services.SimAndReco
 
 physics :
 {
@@ -157,3 +115,7 @@ outputs:
 
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
+services.TFileService.fileName : "NeutronRates.root"
+services.GeometryService.inputFile : "Mu2eG4/test/geom_cosmic.txt"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20

@@ -91,6 +91,46 @@ DigiCompression : {
 	newStrawDigiMCTag : "compressDigiMCs"
 	OldTimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
 	NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
+	newCaloShowerSimTag : "compressDigiMCs"
+	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
+	newCrvDigiMCTag : "compressDigiMCs"
+    }
+
+    CaloFix : {
+	module_type : FixCaloShowerStepPtrs
+	caloShowerStepTags : [ "" ]
+	caloShowerSimTag : ""
+	caloShowerStepROTag : ""
+    }
+
+
+    Reco : {
+      module_type : CompressDigiMCs
+      strawDigiMCTag : ""
+      crvDigiMCTag : ""
+      simParticleTags : [ "" ]
+      extraStepPointMCTags : [ "" ]
+      timeMapTags : [ "" ]
+      caloShowerStepTags : [ "" ]
+      caloShowerSimTag : ""
+      caloShowerStepROTag : ""
+      strawDigiMCIndexMapTag : ""
+      crvDigiMCIndexMapTag : ""
+    }
+
+    RecoCheck : {
+      module_type : CompressDigiMCsCheck
+      oldStrawDigiMCTag : ""
+      newStrawDigiMCTag : ""
+      OldTimeOffsets : { inputs : [ "" ] }
+      NewTimeOffsets : { inputs : [ "" ] }
+      strawDigiMCIndexMapTag : ""
+      oldCrvDigiMCTag : ""
+      newCrvDigiMCTag : ""
+      crvDigiMCIndexMapTag : ""
+      oldCaloShowerSimTag : ""
+      newCaloShowerSimTag : ""
     }
 }
 
