@@ -18,10 +18,9 @@
 #include "DataProducts/inc/threevec.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrkDiag/inc/KalDiag.hh"
@@ -106,7 +105,7 @@ namespace mu2e {
 
   void StrawEnergy::analyze(const art::Event& event) {
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     art::Handle<StrawHitCollection> pdataHandle;
     event.getByLabel(_makerModuleLabel,pdataHandle);

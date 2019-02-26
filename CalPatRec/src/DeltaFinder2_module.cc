@@ -13,7 +13,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // root 
 #include "TVector2.h"
@@ -103,7 +103,7 @@ namespace mu2e {
     const TimeClusterCollection*        _tpeakcol;
     StrawHitFlagCollection*             _bkgfcol;  // output collection
 
-    const TTracker*                     _tracker;
+    const Tracker*                      _tracker;
     const DiskCalorimeter*              _calorimeter;
 
     float                               _tdbuff; // following Dave - time division buffer
@@ -215,7 +215,7 @@ namespace mu2e {
 // create a Z-ordered map of the tracker
 //-----------------------------------------------------------------------------
   void DeltaFinder2::beginRun(art::Run& aRun) {
-    mu2e::GeomHandle<mu2e::TTracker> ttHandle;
+    mu2e::GeomHandle<mu2e::Tracker> ttHandle;
     _tracker      = ttHandle.get();
     _data.tracker = _tracker;
     

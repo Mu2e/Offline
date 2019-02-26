@@ -14,7 +14,7 @@
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
-#include "TTrackerGeom/inc/SupportModel.hh"
+#include "TrackerGeom/inc/SupportModel.hh"
 
 // Art includes
 #include "canvas/Persistency/Provenance/ProductID.h"

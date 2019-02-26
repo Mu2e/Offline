@@ -35,9 +35,9 @@ double ExtShieldDownstream.detecHoleZ = 32007.0;
 // Put MBS in garage position
 double mbs.MBSCZ              = 29273.0;
 
-// Put TTracker in garage
-double ttracker.mother.z0          =  24175.0;  // Garage position only
-double ttracker.z0                   = 24171.0; // Garage position only
+// Put Tracker in garage
+double tracker.mother.z0          =  24175.0;  // Garage position only
+double tracker.z0                   = 24171.0; // Garage position only
 
 
 // Put Crystal calorimeter in garage

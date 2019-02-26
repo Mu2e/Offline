@@ -24,7 +24,7 @@
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "art/Utilities/ToolMacros.h"

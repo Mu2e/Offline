@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_LayerId_hh
-#define TrackerGeom_LayerId_hh
+#ifndef DataProducts_LayerId_hh
+#define DataProducts_LayerId_hh
 
 //
 // Identifier of one layer in a tracker.
@@ -16,4 +16,4 @@ namespace mu2e {
 
 } //namespace mu2e
 
-#endif /* TrackerGeom_LayerId_hh */
+#endif /* DataProducts_LayerId_hh */

@@ -1,6 +1,6 @@
 
 #include "Validation/inc/ValStrawHit.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 
 int mu2e::ValStrawHit::declare(art::TFileDirectory tfs) {
@@ -23,7 +23,7 @@ int mu2e::ValStrawHit::fill(const mu2e::StrawHitCollection & coll,
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
 
-  const Tracker& tracker = mu2e::getTrackerOrThrow();
+  const mu2e::Tracker& tracker = *GeomHandle<mu2e::Tracker>();
 
   _hN->Fill(coll.size()); 
   _hN2->Fill(coll.size()); 

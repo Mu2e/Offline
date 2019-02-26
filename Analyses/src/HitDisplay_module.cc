@@ -55,7 +55,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -488,8 +488,8 @@ namespace mu2e {
     printf("[%s] RUN: %10i EVENT: %10i\n",name,Evt.run(),Evt.event());
 
     // Geometry of tracker envelope.
-    GeomHandle<TTracker> ttHandle;
-    const TTracker* tracker = ttHandle.get();
+    GeomHandle<Tracker> tHandle;
+    const Tracker* tracker = tHandle.get();
 
     TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
 

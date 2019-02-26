@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_ExtMonFNALPixelDenseId_hh
-#define TrackerGeom_ExtMonFNALPixelDenseId_hh
+#ifndef DataProducts_ExtMonFNALPixelDenseId_hh
+#define DataProducts_ExtMonFNALPixelDenseId_hh
 
 // Sequential number of a silicon pixel in Mu2e ExtMonFNAL detector.
 // Zero based.
@@ -44,4 +44,4 @@ namespace mu2e {
   }
 
 }
-#endif /* TrackerGeom_ExtMonFNALPixelDenseId_hh */
+#endif /* DataProducts_ExtMonFNALPixelDenseId_hh */

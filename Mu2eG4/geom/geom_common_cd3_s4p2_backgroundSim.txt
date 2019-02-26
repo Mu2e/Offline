@@ -15,7 +15,7 @@
 
 #include "Mu2eG4/geom/geom_common_cd3_s4p2.txt"
 
-vector<int> ttracker.nonExistingPlanes = {};
+vector<int> tracker.nonExistingPlanes = {};
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

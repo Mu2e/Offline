@@ -201,7 +201,9 @@ Reconstruction : {
 	    "keep *_FindMCPrimary_*_*",
 	    "keep *_SelectRecoMC_*_*",
 	    "keep *_FlagBkgHits_StrawHits_*",
-	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
+	    "keep *_CrvCoincidenceClusterMatchMC_*_*",
+#	    "keep mu2e::TriggerInfoCollection",
+	    "keep mu2e::TriggerAlg" ]
 }
 # must define some things outside the brackets due to internal dependence
 #

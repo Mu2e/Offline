@@ -124,9 +124,9 @@ bool protonabsorber.visible  = false;
 bool neutronabsorber.visible = false;
 bool mbs.visible             = false;
 
-bool ttracker.envelopeVisible       = false;
-bool ttracker.planeEnvelopeVisible = false;
-bool ttracker.supportVisible        = false;
+bool tracker.envelopeVisible       = false;
+bool tracker.planeEnvelopeVisible = false;
+bool tracker.supportVisible        = false;
 
 // More tweaks
 

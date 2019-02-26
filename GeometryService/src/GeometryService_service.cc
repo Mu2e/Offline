@@ -24,7 +24,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eHallMaker.hh"
 #include "GeometryService/inc/TSdAMaker.hh"
-#include "GeometryService/inc/TTrackerMaker.hh"
+#include "GeometryService/inc/TrackerMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
 #include "GeometryService/src/DetectorSystemMaker.hh"
@@ -57,7 +57,7 @@
 #include "ServicesGeom/inc/ElectronicRack.hh"
 #include "GeometryService/inc/ElectronicRackMaker.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -232,9 +232,9 @@ namespace mu2e {
     const StoppingTarget& target = *tmptgt.get();
     addDetector(std::move(tmptgt));
 
-    if (_config->getBool("hasTTracker",false)){
-      TTrackerMaker ttm( *_config );
-      addDetector( ttm.getTTrackerPtr() );
+    if (_config->getBool("hasTracker",false)){
+      TrackerMaker ttm( *_config );
+      addDetector( ttm.getTrackerPtr() );
     }
 
     if(_config->getBool("hasMBS",false)){
@@ -308,8 +308,8 @@ namespace mu2e {
   void GeometryService::checkTrackerConfig(){
     int ntrackers(0);
     string allTrackers;
-    if ( _config->getBool("hasTTracker",false) ) {
-      allTrackers += " TTracker";
+    if ( _config->getBool("hasTracker",false) ) {
+      allTrackers += " Tracker";
       ++ntrackers;
     }
     if ( ntrackers > 1 ){

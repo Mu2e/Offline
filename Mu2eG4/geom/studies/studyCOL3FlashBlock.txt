@@ -29,14 +29,14 @@ string ts.flashBlockDn.Material    = "CollCu"; //
 // 2. stiffener ring made out of C943 bronze
 // 3. manifold material - C360 brass
 //-----------------------------------------------------------------------------
-double ttrackerSupport.electronics.cu.halfLength   =  0.01;
-string ttrackerSupport.electronics.cu.material     =  "G4_AIR";
+double trackerSupport.electronics.cu.halfLength   =  0.01;
+string trackerSupport.electronics.cu.material     =  "G4_AIR";
 
-string ttrackerSupport.endRing.material            = "BronzeC943";
+string trackerSupport.endRing.material            = "BronzeC943";
 
-string ttrackerSupport.centerPlate.material        = "BrassC360";
-string ttrackerSupport.cover.material              = "BrassC360";
-string ttrackerSupport.innerRing.material          = "BrassC360"; // default:"TrackerManifold"
+string trackerSupport.centerPlate.material        = "BrassC360";
+string trackerSupport.cover.material              = "BrassC360";
+string trackerSupport.innerRing.material          = "BrassC360"; // default:"TrackerManifold"
 
 
 

@@ -4,7 +4,7 @@
 //
 // Class to hold information about the properties of each type of straw.
 // We need different types of straws for the different lengths of
-// straws in the TTracker.
+// straws in the Tracker.
 //
 //
 // $Id: StrawDetail.hh,v 1.10 2013/03/26 23:28:23 kutschke Exp $
@@ -23,7 +23,7 @@ namespace mu2e {
 
   class StrawDetail{
 
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
     StrawDetail():

@@ -42,8 +42,7 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
@@ -55,7 +54,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "TrackerGeom/inc/Tracker.hh"
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBarDetail.hh"

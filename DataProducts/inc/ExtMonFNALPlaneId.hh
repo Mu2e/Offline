@@ -1,6 +1,6 @@
 
-#ifndef TrackerGeom_ExtMonFNALPlaneId_hh
-#define TrackerGeom_ExtMonFNALPlaneId_hh
+#ifndef DataProducts_ExtMonFNALPlaneId_hh
+#define DataProducts_ExtMonFNALPlaneId_hh
 
 #include <ostream>
 
@@ -42,4 +42,4 @@ namespace mu2e {
     return os<<id.plane();
   }
 }
-#endif /* TrackerGeom_ExtMonFNALPlaneId_hh */
+#endif /* DataProducts_ExtMonFNALPlaneId_hh */

@@ -20,7 +20,7 @@
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 

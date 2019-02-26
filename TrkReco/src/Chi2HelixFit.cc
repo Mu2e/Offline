@@ -10,7 +10,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 

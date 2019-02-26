@@ -5,8 +5,8 @@
 #include "TrkDiag/inc/TrkTools.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 
+#include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include <cmath>
 
 namespace mu2e {
@@ -143,7 +143,7 @@ namespace mu2e {
       // loop over hits
 
       static StrawHitFlag active(StrawHitFlag::active);
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
       for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
 	TrkStrawHitInfo tshinfo;
 	auto const& straw = tracker.getStraw(ihit->strawId());

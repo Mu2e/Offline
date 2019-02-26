@@ -1,0 +1,16 @@
+           Release notes for Mu2e Offline software, v7_3_3, under development
+
+2) 2/18/19 rlc
+   Change all TTracker to Tracker.  A user is most likely
+   to be disrupted if they use personal geometry files that contain
+   "ttracker" - these can be updated with:
+   sed -i 's/ttracker/tracker/g' *.txt
+   Also the names of geometry volumes change from "TTracker*"
+   to "Tracker*".
+
+1) 2/11/19 rlc
+   clean up and re-organize several things in preparation
+   for database-based alignment.  remove Alignment directory.
+   Create GeneralUtilities HepTransform to hold alignments.
+
+

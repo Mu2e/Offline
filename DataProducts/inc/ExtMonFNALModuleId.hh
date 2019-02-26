@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_ExtMonFNALModuleId_hh
-#define TrackerGeom_ExtMonFNALModuleId_hh
+#ifndef DataProducts_ExtMonFNALModuleId_hh
+#define DataProducts_ExtMonFNALModuleId_hh
 
 // Author Evan Schiewe
 
@@ -43,4 +43,4 @@ namespace mu2e {
              <<","<<id.number();
   }
 }
-#endif /* TrackerGeom_ExtMonFNALModuleId_hh */
+#endif /* DataProducts_ExtMonFNALModuleId_hh */

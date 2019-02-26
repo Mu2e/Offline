@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_ExtMonFNALModuleDenseId_hh
-#define TrackerGeom_ExtMonFNALModuleDenseId_hh
+#ifndef DataProducts_ExtMonFNALModuleDenseId_hh
+#define DataProducts_ExtMonFNALModuleDenseId_hh
 
 // Sequential number of a silicon module in Mu2e ExtMonFNAL detector.
 // Zero based.
@@ -44,4 +44,4 @@ namespace mu2e {
   }
 
 }
-#endif /* TrackerGeom_ExtMonFNALModuleDenseId_hh */
+#endif /* DataProducts_ExtMonFNALModuleDenseId_hh */

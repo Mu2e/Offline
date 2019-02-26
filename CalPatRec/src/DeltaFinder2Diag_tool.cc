@@ -19,7 +19,7 @@
 
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 

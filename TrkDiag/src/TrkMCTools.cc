@@ -8,7 +8,6 @@
 #include "MCDataProducts/inc/MCRelationship.hh"
 
 #include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 
@@ -258,7 +257,7 @@ namespace mu2e {
     }
 
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc) {
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
 
       const SimPartStub& simPart = kseedmc.simParticle(tshmc._spindex);
       tshinfomc._pdg = simPart._pdg;
@@ -285,8 +284,7 @@ namespace mu2e {
       tshinfomc._doca = pca.dca();
     }
 
-   void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, 
-      CaloClusterInfoMC& ccimc) {
+    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc) {
       ccimc._nsim = ccmc.energyDeposits().size();
       ccimc._etot = ccmc.totalEnergyDeposit();
       ccimc._tavg = ccmc.averageTime();
