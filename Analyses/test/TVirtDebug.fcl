@@ -1,0 +1,45 @@
+#
+# Look at hits in the virtual detectors related to the Tracker
+#
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+
+# Give this job a name.
+process_name : TVirtDebug
+
+# Start form an empty source
+source : {
+  module_type : RootInput
+  fileNames   : [ "data_03.root" ]
+  maxEvents : -1
+}
+
+services : {
+   message      : @local::default_message
+   TFileService : { fileName : "readback.root" }
+
+   GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt"     }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"     }
+   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+}
+
+physics : {
+
+  analyzers:  {
+
+    tvirtdebug:
+    {
+      module_type            : TVirtDebug
+      g4ModuleLabel          : g4run
+      maxFullPrint           : 201
+    }
+
+  }
+
+  e1 : [tvirtdebug]
+
+  end_paths      : [e1]
+
+}
+

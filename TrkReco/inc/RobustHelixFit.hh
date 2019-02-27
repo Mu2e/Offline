@@ -25,7 +25,7 @@ namespace mu2e
 {
 
   class Calorimeter;
-  class TTracker;
+  class Tracker;
 
   // simple struct to keep track of azimuth/radius projection
   struct FZ 
@@ -71,12 +71,12 @@ namespace mu2e
     float evalWeightXY  (const ComboHit& Hit, XYVec& Center);
     float evalWeightZPhi(const ComboHit& Hit, XYVec& Center, float Radius);
 
-    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
 
     //    bool  targetcon()   {return _targetcon; }
 
-    const TTracker*            _tracker;
+    const Tracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
     void fitCircleMedian(RobustHelixFinderData& helixData, bool forceTargetCon);
@@ -113,7 +113,8 @@ namespace mu2e
     unsigned _minnhit; // minimum # of hits to work with
     float _minxyresid; // minimum distance used in the circle fit to be clusterized. units are mm
     float _lambda0,_lstep,_minlambda; // parameters for AGE center determination
-    float _mindfdz, _maxdfdz;//paramters use for findDfDz function
+    float _mindfdz, _maxdfdz;//parameters use for findDfDz function
+    int   _nLoopsdfdz;//parameter for number of loops included in DfDz fit
     unsigned _nphibins; // # of bins in histogram for phi at z intercept
     float _phifactor; // range factr for phi z intercept histogram 
     unsigned _minnphi; // minimum # of entries in max bin of phi intercept histogram 
@@ -143,6 +144,10 @@ namespace mu2e
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
     TH1F _hphi;
     unsigned _ntripleMin, _ntripleMax;
+    unsigned _initFZNBins;
+    float    _initFZMinL, _initFZMaxL, _initFZStepL;
+    unsigned _fitFZNBins;
+    float    _fitFZMinL, _fitFZMaxL, _fitFZStepL;
   };
 }
 #endif

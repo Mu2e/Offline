@@ -334,7 +334,7 @@ namespace mu2e
     unsigned npexp(0),np(0),nphits(0);
     for(unsigned ip = ipmin; ip <= ipmax; ++ip)
       {
-        npexp++; // should use TTracker to see if plane is physically present FIXME!
+        npexp++; // should use Tracker to see if plane is physically present FIXME!
         if (hitplanes[ip]> 0)++np;
         nphits += hitplanes[ip];
       }

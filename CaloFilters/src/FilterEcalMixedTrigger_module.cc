@@ -38,6 +38,9 @@
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
+#include "RecoDataProducts/inc/TriggerAlg.hh"
+#include "RecoDataProducts/inc/TriggerInfo.hh"
+
 
 // Root includes
 #include "TDirectory.h"
@@ -89,6 +92,7 @@ namespace mu2e {
   private:
 
     int _diagLevel;
+    TriggerAlg    _trigAlg;
 
     std::string _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -235,7 +239,7 @@ namespace mu2e {
 
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
     _diagLevel(pset.get<int>("diagLevel",0)),
-
+    _trigAlg(pset.get<std::vector<std::string> >("triggerAlg")),
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
@@ -259,6 +263,8 @@ namespace mu2e {
     _step                       (pset.get<float>("step",10)),
     _nProcessed(0)  
   { 
+    produces<TriggerInfo>();
+
     _MVAmethod= _MVAMethodLabel + " method"; 
     //
     _ecalMVAcutB[0]=(_ecalMVAhighcut0-_ecalMVApivotcut0)/(395.-_MVArpivot); // high cut is at r=395 mm
@@ -322,6 +328,7 @@ namespace mu2e {
   }
 
   bool FilterEcalMixedTrigger::filter(art::Event& event) {
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
 
     if (_step==0) return false;
 
@@ -727,11 +734,25 @@ namespace mu2e {
 	  }
 	}
 	if (_rpeak>_MVArpivot){
-	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) return true;
+	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) {
+	    //FIX ME!!!!
+	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
+	    triginfo->_triggerAlgBits.merge(_trigAlg);
+	    event.put(std::move(triginfo));
+    	    return true;
+	  }
 	}
 	else{
 	  mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
-	  if (_mixedMVA>mixedMVAcut) return true;
+	  if (_mixedMVA>mixedMVAcut) {
+	    //FIX ME!!!!
+	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
+	    triginfo->_triggerAlgBits.merge(_trigAlg);
+	    event.put(std::move(triginfo));	    
+	    return true;
+	  }
 	}
       }
     }

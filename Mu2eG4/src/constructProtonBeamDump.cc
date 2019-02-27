@@ -67,12 +67,14 @@ namespace mu2e {
     MaterialFinder materialFinder(config);
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "ProtonBeamDumpFront"    , "protonBeamDump.front");
+    geomOptions->loadEntry( config, "ProtonBeamDumpBack"     , "protonBeamDump.back");
     geomOptions->loadEntry( config, "ProtonBeamDumpDirt"     , "protonBeamDump.dirt"       );
     geomOptions->loadEntry( config, "ProtonBeamDumpShielding", "protonBeamDump.shielding"  );
     geomOptions->loadEntry( config, "ProtonBeamDumpCore"     , "protonBeamDump.core"       );
     geomOptions->loadEntry( config, "ProtonBeamDumpMouth"    , "protonBeamDump.mouth"      );
     geomOptions->loadEntry( config, "ProtonBeamNeutronCave"  , "protonBeamDump.neutronCave");
-
+  
 
     static CLHEP::HepRotation shieldingRot(CLHEP::HepRotation::IDENTITY);
     shieldingRot.rotateX( 90*CLHEP::degree);

@@ -45,6 +45,8 @@ namespace mu2e {
     int                 fHitIndex  [2];	        // indices of the used pair of hits 
     double              fTrkDxDz;	        // track dx/dz in the local panel frame
     double              fDxDz      [kMaxNComb]; // combinations
+    double              fChi2Slope [kMaxNComb]; // 
+    double              fChi2Coord [kMaxNComb]; // 
     double              fChi2      [kMaxNComb]; // 
     int                 fIBest;		        // best combination
     int                 fINext;		        // next best combination
@@ -64,7 +66,9 @@ namespace mu2e {
     
     ~Doublet();
 
-    double Chi2Best() const { return fChi2[fIBest]; }
+    double chi2Best     () const { return fChi2     [fIBest]; }
+    double chi2SlopeBest() const { return fChi2Slope[fIBest]; }
+    double chi2CoordBest() const { return fChi2Coord[fIBest]; }
     
     void addStrawHit(CLHEP::Hep3Vector trkdir,
 		     CLHEP::Hep3Vector trkpos,

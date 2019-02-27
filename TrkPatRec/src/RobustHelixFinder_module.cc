@@ -1,5 +1,5 @@
 //
-// TTracker Pattern Recognition based on Robust Helix Fit
+// Tracker Pattern Recognition based on Robust Helix Fit
 //
 // $Id: RobustHelixFinder_module.cc,v 1.2 2014/08/30 12:19:38 tassiell Exp $
 // $Author: tassiell $
@@ -28,13 +28,11 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 
 #include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
-#include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "TrkReco/inc/Chi2HelixFit.hh"
 
@@ -81,6 +79,10 @@ namespace {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
+  // comparison functor for sorting byuniquePanel ID
+  struct panelcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
+  };
   struct HelixHitMVA
   {
     std::vector <float> _pars,_pars2;
@@ -172,14 +174,15 @@ namespace mu2e {
     void     updateT0(RobustHelixFinderData& helixData);
     bool     updateStereo(RobustHelixFinderData& helixData);
     unsigned hitCount(RobustHelixFinderData& helixData);
+    void     pickBestHelix      (std::vector<HelixSeed>& HelVec, int &Index_best);
     void     fillFaceOrderedHits(RobustHelixFinderData& helixData);
-    void     fillGoodHits(RobustHelixFinderData& helixData);
-    void     fitHelix(RobustHelixFinderData& helixData);
-    void     fitChi2Helix(RobustHelixFinderData& helixData);
-    void     refitHelix(RobustHelixFinderData& helixData);
-    void     findMissingHits(RobustHelixFinderData& helixData);
-    void     fillPluginDiag(RobustHelixFinderData& helixData, int helCounter);
-    void     updateChi2HelixInfo    (RobustHelixFinderData& helixData);
+    void     fillGoodHits       (RobustHelixFinderData& helixData);
+    void     fitHelix           (RobustHelixFinderData& helixData);
+    void     fitChi2Helix       (RobustHelixFinderData& helixData);
+    void     refitHelix         (RobustHelixFinderData& helixData);
+    void     findMissingHits    (RobustHelixFinderData& helixData);
+    void     fillPluginDiag     (RobustHelixFinderData& helixData, int helCounter);
+    void     updateChi2HelixInfo(RobustHelixFinderData& helixData);
     void     updateHelixXYInfo  (RobustHelixFinderData& helixData);
     void     updateHelixZPhiInfo(RobustHelixFinderData& helixData);
     void     searchWorstHitXY   (RobustHelixFinderData& helixData, HitInfo_t& hitInfo);
@@ -246,8 +249,8 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
-    const TTracker* tracker = th.get();
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    const Tracker* tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
@@ -353,6 +356,8 @@ namespace mu2e {
 	unsigned    helCounter(0);
 	HelixSeed   helixSeed_from_fitCircle = _hfResult._hseed;
 
+	std::vector<HelixSeed>          helix_seed_vec;
+      
 	for(auto const& hel : _hels ) {
 	  // tentatively put a copy with the specified helicity in the appropriate output vector
 	  RobustHelixFinderData tmpResult(_hfResult);
@@ -369,9 +374,11 @@ namespace mu2e {
 	  if (tmpResult._hseed.status().hasAnyProperty(_saveflag)){
 	    //fill the hits in the HelixSeedCollection
 	    fillGoodHits(tmpResult);
+	    
+	    helix_seed_vec.push_back(tmpResult._hseed);
 
-	    HelixSeedCollection* hcol = helcols[hel].get();
-	    hcol->push_back(tmpResult._hseed);
+	    // HelixSeedCollection* hcol = helcols[hel].get();
+	    // hcol->push_back(tmpResult._hseed);
 
 	    if (_diag > 0) {
 	      fillPluginDiag(tmpResult, helCounter);
@@ -379,6 +386,25 @@ namespace mu2e {
 	  }
 	  ++helCounter;
 	}//end loop over the helicity
+
+	if (helix_seed_vec.size() == 0)                       continue;
+
+	int    index_best(-1);
+	pickBestHelix(helix_seed_vec, index_best);
+
+	if ( (index_best>=0) && (index_best < 2) ){
+	  Helicity              hel_best = helix_seed_vec[index_best]._helix._helicity;
+	  HelixSeedCollection*  hcol     = helcols[hel_best].get();
+	  hcol->push_back(helix_seed_vec[index_best]);
+	} else if (index_best == 2){//both helices need to be saved
+	
+	  for (unsigned k=0; k<_hels.size(); ++k){
+	    Helicity              hel   = helix_seed_vec[k]._helix._helicity;
+	    HelixSeedCollection*  hcol  = helcols[hel].get();
+	    hcol->push_back(helix_seed_vec[k]);
+	  }
+	}	
+
       }	
       
     }
@@ -389,7 +415,70 @@ namespace mu2e {
       event.put(std::move(helcols[hel]),Helicity::name(hel));
     }
   }
+//--------------------------------------------------------------------------------
+// function to select the best Helix among the results of the two helicity hypo
+//--------------------------------------------------------------------------------
+  void  RobustHelixFinder::pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best){
+    if (HelVec.size() == 1) {
+      Index_best = 0;
+      return;
+    }
+    
+    const HelixSeed           *h1, *h2;
+    const ComboHitCollection  *tlist, *clist;
+    int                        nh1, nh2;
 
+    h1     = &HelVec[0];
+//------------------------------------------------------------------------------
+// check if an AlgorithmID collection has been created by the process
+//-----------------------------------------------------------------------------
+    tlist  = &h1->hits();
+    nh1    = tlist->size();
+
+    h2     = &HelVec[1];
+//-----------------------------------------------------------------------------
+// at Mu2e, 2 helices with different helicity could be duplicates of each other
+//-----------------------------------------------------------------------------
+    clist  = &h2->hits();
+    nh2    = clist->size();
+//-----------------------------------------------------------------------------
+// pick the helix with the largest number of hits
+//-----------------------------------------------------------------------------
+    if (nh2 > nh1) {
+//-----------------------------------------------------------------------------
+// h2 is a winner, no need to save h1
+//-----------------------------------------------------------------------------
+      Index_best = 1;
+      return;
+    }
+    else if (nh1 > nh2){
+//-----------------------------------------------------------------------------
+// h1 is a winner, mark h2 in hope that it will be OK, continue looping
+//-----------------------------------------------------------------------------
+      Index_best = 0;
+      return;
+    }
+    
+//-----------------------------------------------------------------------------
+// in case they have the exact amount of hits, pick the one with better chi2dZphi
+//-----------------------------------------------------------------------------
+    if (nh1 == nh2) {
+      float   chi2dZphi_h1 = h1->helix().chi2dZPhi();
+      float   chi2dZphi_h2 = h2->helix().chi2dZPhi();
+      if (chi2dZphi_h1 < chi2dZphi_h2){
+	Index_best = 0;
+	return;
+      }else {
+	Index_best = 1;
+	return;      
+      }
+    }
+
+  }
+
+//--------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------
   void RobustHelixFinder::fillGoodHits(RobustHelixFinderData& helixData){
     
     ComboHit*     hit(0);
@@ -931,7 +1020,7 @@ namespace mu2e {
 	ordChCol.push_back(ComboHit(ch));
       }
     }
-    std::sort(ordChCol.begin(), ordChCol.end(),zcomp());
+    std::sort(ordChCol.begin(), ordChCol.end(),panelcomp());//zcomp());
 
 
     if (_debug>0){

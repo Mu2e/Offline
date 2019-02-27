@@ -5,19 +5,37 @@
 
 
 <lcgdict>
+
+ <class name="std::vector<cet::map_vector_key>"/>
+ <class name="boost::array<double,5>"/>
+
+
+<!--  ********* straws  ********* -->
  <class name="mu2e::StrawEnd"/>
  <class name="mu2e::StrawId"/>
  <class name="mu2e::StrawIdMask"/>
  <class name="mu2e::LayerId"/>
  <class name="mu2e::PanelId"/>
+
+<!--  ********* tracker  ********* -->
  <class name="mu2e::Helicity"/>
+ <class name="mu2e::IndexMap"/>
+ <class name="art::Wrapper<mu2e::IndexMap>"/>
+ <class name="mu2e::VirtualDetectorId"/>
+
+<!--  ********* CRV  ********* -->
+ <class name="mu2e::CRSScintillatorBarIndex"/>
+
+<!--  ********* ExtMon  ********* -->
  <class name="mu2e::ExtMonFNALModuleId"/>
  <class name="mu2e::ExtMonFNALChipId"/>
  <class name="mu2e::ExtMonFNALPixelId"/>
-<!-- <class name="mu2e::ExtMonFNAL::ExtMon"/> -->
- <class name="std::vector<cet::map_vector_key>"/>
- <class name="mu2e::CRSScintillatorBarIndex"/>
 
+<!--  ********* trigger  ********* -->
+ <class name="mu2e::EventWindowMarker" />
+ <class name="art::Wrapper<mu2e::EventWindowMarker>"/>
+
+<!--  ********* CLHEP  ********* -->
  <class name="std::vector<CLHEP::Hep2Vector>" />
 
  <class name="CLHEP::HepRotation"/>
@@ -27,11 +45,5 @@
 
  <class name="HepGeom::Transform3D"/>
 
- <class name="boost::array<double,5>"/>
- <class name="boost::array<unsigned char,20>"/>
- <class name="mu2e::IndexMap"/>
- <class name="art::Wrapper<mu2e::IndexMap>"/>
 
- <class name="mu2e::EventWindowMarker" />
- <class name="art::Wrapper<mu2e::EventWindowMarker>"/>
 </lcgdict>

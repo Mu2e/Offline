@@ -6,7 +6,7 @@
 
 // Mu2e includes.
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
@@ -67,6 +67,7 @@ namespace mu2e {
     TH1F* _hTDivOK         = nullptr;
     TNtuple* _ntup         = nullptr;
 
+    ProditionsHandle<StrawResponse> _strawResponse_h;
   };
 
 } // end of namespace mu2e
@@ -110,7 +111,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
   static int ncalls(0);
   ++ncalls;
 
-  const TTracker& tracker = *GeomHandle<TTracker>();
+  const Tracker& tracker = *GeomHandle<Tracker>();
 
   auto const& hits = *evt.getValidHandle<StrawHitCollection>( _hitsTag );
   if ( _diagLevel > 1 ) {
@@ -118,6 +119,8 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
   }
   _hNHits->Fill(hits.size());
   _hNHits1->Fill(hits.size());
+
+  auto const& srep = _strawResponse_h.get(evt.id());
 
   // Counter for number of hits on each wire.
   std::map<StrawId,int> nhperwire;
@@ -145,9 +148,8 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
 
     // Calculate the hit position; it's a point on the wire
     // (for now wire is modeled as a straight line).
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    float dw, dwerr, halfpv;
-    bool td = srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
+    double dw, dwerr, halfpv;
+    bool td = srep.wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
     _hTDivOK->Fill( td );
 
     // Fractional length along the wire.

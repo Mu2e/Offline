@@ -1,5 +1,5 @@
 //
-// TTracker time cluster diagnostics
+// Tracker time cluster diagnostics
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -391,8 +391,10 @@ namespace mu2e {
 	  tchi._mcproc = sp->creationCode();
 	  if(sp->genParticle().isNonnull())
 	    tchi._mcgen = sp->genParticle()->generatorId().id();
-	  if(primary.isNonnull())
-	    tchi._mcrel = MCRelationship::relationship(primary,sp);
+	  if(primary.isNonnull()){
+	    MCRelationship rel(primary,sp);
+	    tchi._mcrel = rel.relationship();
+	  }
 	}
       }
       _tchinfo.push_back(tchi);

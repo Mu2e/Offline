@@ -10,12 +10,12 @@
 #include "BTrk/DetectorModel/DetMaterial.hh"
 #include "BTrk/MatEnv/MatDBInfo.hh"
 #include "cetlib_except/coded_exception.h"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 namespace mu2e {
  
-  Mu2eDetectorModel::Mu2eDetectorModel(fhicl::ParameterSet const& pset, TTracker const& ttracker) :
+  Mu2eDetectorModel::Mu2eDetectorModel(fhicl::ParameterSet const& pset, Tracker const& tracker) :
     _strawtype(0), 
     _gasmatname(pset.get<string>("StrawGasMaterialName","straw-gas")),
     _wallmatname(pset.get<string>("StrawWallMaterialName","straw-wall")),
@@ -49,9 +49,9 @@ namespace mu2e {
 // construct the type.  This is reused by all straws
     _strawtype = new DetStrawType(gasmat,wallmat,wiremat,offset,tol,rfrac);
 // loop over Planes
-    // for(auto plane : ttracker.getPlanes()){ // tmp till we process cd3
-    for ( size_t i=0; i!= ttracker.nPlanes(); ++i){
-      const auto& plane = ttracker.getPlane(i);
+    // for(auto plane : tracker.getPlanes()){ // tmp till we process cd3
+    for ( size_t i=0; i!= tracker.nPlanes(); ++i){
+      const auto& plane = tracker.getPlane(i);
   // loop over panels
       for(auto& panel : plane.getPanels()){
   // loop over straws

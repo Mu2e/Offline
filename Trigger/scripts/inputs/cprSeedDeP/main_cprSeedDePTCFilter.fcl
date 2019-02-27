@@ -1,0 +1,4 @@
+physics.filters.cprSeedDePTCFilter.requireCaloCluster : false
+physics.filters.cprSeedDePTCFilter.minNHits : 10.0
+physics.filters.cprSeedDePTCFilter.minTime : 500.0
+physics.filters.cprSeedDePTCFilter.maxTime : 1695.0

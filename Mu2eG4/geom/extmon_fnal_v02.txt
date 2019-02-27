@@ -51,7 +51,7 @@ double         extMonFNAL.angleH = 0.0302; //radians
 double         extMonFNAL.entranceAngleV = 0.1653; //radians
 
 bool extMonFNAL.collimator1.alignmentHole.visible = true;
-bool extMonFNAL.collimator1.alignmentHole.solid = false;
+bool extMonFNAL.collimator1.alignmentHole.issolid = false;
 bool extMonFNAL.collimator1.alignmentPlug.visible = true;
 bool extMonFNAL.collimator1.alignmentPlug.solid = false;
 bool extMonFNAL.collimator1.channel.visible = true;
@@ -252,15 +252,18 @@ string         extMonFNAL.room.wall.materialName  = "ShieldingConcrete";
 bool extMonFNAL.collimator2.shielding.visible = true;
 bool extMonFNAL.collimator2.shielding.solid = false;
 
-bool           extMonFNAL.sensorPlaneVisible   = true;
-bool           extMonFNAL.sensorPlaneSolid     = true;
+bool extMonFNAL.collimator2.shieldingHVACduct.visible = true;
+bool extMonFNAL.collimator2.shieldingHVACduct.solid = false;
 
-bool           extMonFNAL.moduleVisible        = true;
-bool           extMonFNAL.moduleSolid          = true;
+bool           extMonFNAL.sensorPlane.visible   = true;
+bool           extMonFNAL.sensorPlane.solid     = true;
+
+bool           extMonFNAL.module.visible        = true;
+bool           extMonFNAL.module.solid          = true;
 
 // no longer needed with addition of plane and module classes
-// bool           extMonFNAL.readoutPlaneVisible   = true;
-// bool           extMonFNAL.readoutPlaneSolid     = true;
+// bool           extMonFNAL.readoutPlane.visible   = true;
+// bool           extMonFNAL.readoutPlane.solid     = true;
 
 int            extMonFNAL.verbosityLevel = 3;
 int            extMonFNAL.sd.verbosityLevel = 0;

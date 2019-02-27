@@ -23,25 +23,25 @@ cDCount_sf             : 1
 largeCDCount_evt_sf    : 500
 largeCDCount_sf        : 1
 #prescale factor for the calorimeter-only trigger
-caloOnly_evt_sf        : 1
-caloOnly_sf            : 1
+caloMVACE_evt_sf        : 1
+caloMVACE_sf            : 1
 #prescale factor for the calorimeter cosmic muon calibration
-caloCosmicMuon_evt_sf  : 1
-caloCosmicMuon_sf      : 1
+caloCalibCosmic_evt_sf  : 1
+caloCalibCosmic_sf      : 1
 #prescale factor fot the tracker-only track triggers
 # downstream e-
-tprDeMSeed_evt_sf      : 1
-tprDeMSeed_sf          : 1
+tprSeedDeM_evt_sf      : 1
+tprSeedDeM_sf          : 1
 # downstream e+
-tprDePSeed_evt_sf      : 1
-tprDePSeed_sf          : 1
+tprSeedDeP_evt_sf      : 1
+tprSeedDeP_sf          : 1
 #prescale factor fot the calo-seeded track triggers
 # downstream e-
-cprDeMSeed_evt_sf      : 1
-cprDeMSeed_sf          : 1
+cprSeedDeM_evt_sf      : 1
+cprSeedDeM_sf          : 1
 # downstream e+
-cprDePSeed_evt_sf      : 1
-cprDePSeed_sf          : 1
+cprSeedDeP_evt_sf      : 1
+cprSeedDeP_sf          : 1
 END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"
@@ -53,26 +53,9 @@ source :
     module_type : RootInput
 }
 # we don't need any simulation services for this job
-services : @local::Services.Reco
+# services : @local::Services.Reco
 
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "globalTrigger.root" }
-
-    RandomNumberGenerator : { }
-    #   Timing                : { }
-
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }
-    
-}
+services : @local::Services.SimAndReco
 
 # timing information
 services.TimeTracker : {
@@ -98,13 +81,13 @@ physics : {
  
     analyzers : {  
 
-	ReadTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
 	    nFilters      : 35
 	}
 	
     }
 
-    out       : [ ReadTriggerInfo ]
+    out       : [ readTriggerInfo ]
     end_paths : [ out ]
 }
 
@@ -113,4 +96,6 @@ outputs : {
 }
 
 
-
+services.TFileService.fileName : "globalTrigger.root"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20

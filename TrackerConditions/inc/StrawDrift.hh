@@ -1,27 +1,23 @@
-// Original author Jason Bono
-//Feb 2018
-
-
 #ifndef TrackerConditions_StrawDrift_hh
 #define TrackerConditions_StrawDrift_hh
+
+//
+// A conditions entity to hold a model of straw drift 
+// (velocity as a function of field or distance)
+// and provide it though various accessors
+//
+
+
 #include <iostream>
 #include <vector>
 #include <string>
 #include "TrackerConditions/inc/Types.hh"
+#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 
 namespace mu2e {
-  class StrawDrift {
+  class StrawDrift : public ProditionsEntity {
   public:
-    StrawDrift() : _initialized(false){};
-    ~StrawDrift(){};
-  
-    void Initialize(std::string filename, float wirevoltage, int phiBins, int dIntegrationBins, float Bz);
-
-    struct point { //filled by the field/velocity file read in
-      float eField;
-      float instVel;
-    };
 
     struct D2Tinfo{//the info here forms the basis of d2t and t2d
       float gamma;
@@ -31,33 +27,51 @@ namespace mu2e {
       float distance;
       float instantaneousSpeed; //needed later for error calculations
     };
-    
-    double GetAverageSpeed(double dist); //grabs the average nominal drift speed (phi = 0)
-    double GetInstantSpeedFromT(double time); // (at phi = 0)
-    double GetInstantSpeedFromD(double dist); // (at phi = 0)
 
-    double GetGammaFromT(double time, double phi);
-    double GetGammaFromD(double dist, double phi);
-    double GetEffectiveSpeed(double dist, double phi); //grabs the lorentz corrected radial component of avg speed
-    double D2T(double dist, double phi);
-    double T2D(double time, double phi);
+    typedef std::shared_ptr<StrawDrift> ptr_t;
+    typedef std::shared_ptr<const StrawDrift> cptr_t;
 
-    bool isInitialized(){return _initialized;};
-    
+    StrawDrift():_name("StrawDrift") {}
+    StrawDrift( std::vector<D2Tinfo> D2Tinfos, std::vector<float> distances,
+                std::vector<float> instantSpeeds, std::vector<float> averageSpeeds,
+		int phiBins ) : _name("StrawDrift"),
+      _D2Tinfos(D2Tinfos),  _distances(distances), 
+      _instantSpeeds(instantSpeeds), _averageSpeeds(averageSpeeds),
+      _phiBins(phiBins) {}
+
+    virtual ~StrawDrift() {}
+
+    double GetAverageSpeed(double dist) const; // avg nom. drift speed (phi = 0)
+    double GetInstantSpeedFromT(double time) const; // (at phi = 0)
+    double GetInstantSpeedFromD(double dist) const; // (at phi = 0)
+    double GetGammaFromT(double time, double phi) const;
+    double GetGammaFromD(double dist, double phi) const;
+    // the lorentz corrected radial component of avg speed
+    double GetEffectiveSpeed(double dist, double phi) const; 
+    double D2T(double dist, double phi) const;
+    double T2D(double time, double phi) const;
+
+    void print(std::ostream& os) const;
+    std::string const& name() const { return _name; }
+
   private:
-    double ConstrainAngle(double phi);
+    std::string _name;
 
-    bool _initialized;
-    
+    // fold into first quadrant assuming the function
+    // has x-z and y-z plane symmetry
+    double ConstrainAngle(double phi) const;
+    // find distance bin
+    size_t lowerDistanceBin(double dist) const;
+
     // 2-D array in distance and phi 
-    std::vector<D2Tinfo> D2Tinfos;
+    std::vector<D2Tinfo> _D2Tinfos;
     
     // 1-D array of speed with distance
-    std::vector<float> distances;
-    std::vector<float> instantSpeeds; // the instantaneous "nominal" speed
-    std::vector<float> averageSpeeds; // the average "nominal" speed
-
-    int _phiBins;
+    std::vector<float> _distances; // distances between points in the model
+    std::vector<float> _instantSpeeds; // the instantaneous "nominal" speed
+    std::vector<float> _averageSpeeds; // the average "nominal" speed
+    
+    size_t _phiBins;
     
   };
 }

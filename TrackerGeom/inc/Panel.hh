@@ -35,9 +35,7 @@ namespace mu2e {
 
   class Panel{
 
-    friend class Plane;
-    friend class TTracker;
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 
@@ -85,7 +83,7 @@ namespace mu2e {
     // Mid-point position of the average (over the layers) of the primary
     // straws, and (collective) straw direction.
     // (The primary straw of each layer is the straw used to establish position.
-    //  In the TTracker the primary straw is the innermost straw.)
+    //  In the Tracker the primary straw is the innermost straw.)
     // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }

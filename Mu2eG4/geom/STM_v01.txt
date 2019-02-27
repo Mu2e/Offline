@@ -136,7 +136,7 @@ double stm.magnet.halfHeight     =  228.6;  // 1m high magnet
 double stm.magnet.holeHalfHeight =  177.8;  // 12 inch high hole
 double stm.magnet.holeHalfWidth  =   95.0;  // this must be larger than stm.pipe.rOut
 double stm.magnet.field          =    0.051;  // Tesla (510 Gauss)
-bool   stm.magnet.fieldVisible   = false;
+bool   stm.magnet.field.visible   = false;
 
 //Support (Table) on which to put the sweeper magnet and field-of-view collimator
 bool   stm.magnet.stand.build          = true;

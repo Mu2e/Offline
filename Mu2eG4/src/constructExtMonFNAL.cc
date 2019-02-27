@@ -17,6 +17,7 @@
 #include "G4Helper/inc/AntiLeakRegistry.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -52,9 +53,15 @@ namespace mu2e {
                                      const SimpleConfig& config
                                      )
   {
-    bool const forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    bool const doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    bool const placePV             = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNAL",            "extMonFNAL" );
+    geomOptions->loadEntry( config, "extMonFNALStackMother", "extMonFNAL.stackMother" );
+    
+    bool const isStackMotherVisible = geomOptions->isVisible("extMonFNALStackMother"); 
+    bool const isStackMotherSolid   = geomOptions->isSolid("extMonFNALStackMother"); 
+    bool const forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("extMonFNAL"); 
+    bool const doSurfaceCheck       = geomOptions->doSurfaceCheck("extMonFNAL"); 
+    bool const placePV              = geomOptions->placePV("extMonFNAL"); 
 
     MaterialFinder materialFinder(config);
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
@@ -93,9 +100,9 @@ namespace mu2e {
                                           stackRefPointInRoom,
                                           parent,
                                           0,
-                                          config.getBool("extMonFNAL.stackMotherVisible"),
+                                          isStackMotherVisible,
                                           G4Colour::Magenta(),
-                                          config.getBool("extMonFNAL.stackMotherSolid"),
+                                          isStackMotherSolid,
                                           forceAuxEdgeVisible,
                                           placePV,
                                           doSurfaceCheck
@@ -117,9 +124,12 @@ namespace mu2e {
     if(true) {
 
       const int verbosityLevel = config.getInt("vd.verbosityLevel");
+      const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+      geomOptions->loadEntry( config, "vd", "vd");
 
-      bool vdIsVisible         = config.getBool("vd.visible");
-      bool vdIsSolid           = config.getBool("vd.solid");
+      const bool vdIsVisible = geomOptions->isVisible("vd"); 
+      const bool vdIsSolid   = geomOptions->isSolid("vd"); 
+
 
       MaterialFinder materialFinder(config);
       GeomHandle<DetectorSolenoid> ds;
@@ -200,6 +210,11 @@ namespace mu2e {
                                  ) 
   {
     
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "extMonFNALSensorPlane", "extMonFNAL.sensorPlane" );
+    bool const isSensorPlaneVisible = geomOptions->isVisible("extMonFNALSensorPlane"); 
+    bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane"); 
+
     for(unsigned iplane = 0; iplane < stack.nplanes(); ++iplane) {
       std::vector<double> hs;
       config.getVectorDouble("extMonFNAL.planeHalfSize", hs);
@@ -218,9 +233,9 @@ namespace mu2e {
                                   offset,
                                   mother,
                                   iplane + stack.planeNumberOffset(),
-                                  config.getBool("extMonFNAL.sensorPlaneVisible"),
+                                  isSensorPlaneVisible,
                                   G4Colour::Magenta(),
-                                  config.getBool("extMonFNAL.sensorPlaneSolid"),
+                                  isSensorPlaneSolid,
                                   forceAuxEdgeVisible,
                                   placePV,
                                   doSurfaceCheck
@@ -251,6 +266,11 @@ namespace mu2e {
                                   bool const placePV
                                )
     {
+      const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+      geomOptions->loadEntry( config, "extMonFNALModule", "extMonFNAL.module" );
+      bool const isModuleVisible = geomOptions->isVisible("extMonFNALModule"); 
+      bool const isModuleSolid   = geomOptions->isSolid("extMonFNALModule"); 
+      
       unsigned nmodules = stack.planes()[iplane].module_zoffset().size();
       for(unsigned imodule = 0; imodule < nmodules; ++imodule) {
         
@@ -280,9 +300,9 @@ namespace mu2e {
                                      soffset,
                                      mother,
                                      copyno,
-                                     config.getBool("extMonFNAL.moduleVisible"),
+                                     isModuleVisible,
                                      G4Colour::Red(),
-                                     config.getBool("extMonFNAL.moduleSolid"),
+                                     isModuleSolid,
                                      forceAuxEdgeVisible,
                                      placePV,
                                      doSurfaceCheck
@@ -304,9 +324,9 @@ namespace mu2e {
                                     coffset0,
                                     mother,
                                     (iplane*nmodules + imodule + stack.planeNumberOffset()),
-                                    config.getBool("extMonFNAL.moduleVisible"),
+                                    isModuleVisible,
                                     G4Colour::Red(),
-                                    config.getBool("extMonFNAL.moduleSolid"),
+                                    isModuleSolid,
                                     forceAuxEdgeVisible,
                                     placePV,
                                     doSurfaceCheck
@@ -322,9 +342,9 @@ namespace mu2e {
                                     coffset1,
                                     mother,
                                     (iplane*nmodules + imodule + stack.planeNumberOffset()),
-                                    config.getBool("extMonFNAL.moduleVisible"),
+                                    isModuleVisible,
                                     G4Colour::Red(),
-                                    config.getBool("extMonFNAL.moduleSolid"),
+                                    isModuleSolid,
                                     forceAuxEdgeVisible,
                                     placePV,
                                     doSurfaceCheck
@@ -343,11 +363,14 @@ namespace mu2e {
   {
     const int verbosityLevel = config.getInt("vd.verbosityLevel");
 
-    bool vdIsVisible         = config.getBool("vd.visible");
-    bool vdIsSolid           = config.getBool("vd.solid");
-    bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    bool const placePV       = true;
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "virtualDetector", "vd" );
+    
+    bool const vdIsVisible          = geomOptions->isVisible("virtualDetector"); 
+    bool const vdIsSolid            = geomOptions->isSolid("virtualDetector"); 
+    bool const forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("virtualDetector"); 
+    bool const doSurfaceCheck       = geomOptions->doSurfaceCheck("virtualDetector"); 
+    bool const placePV              = geomOptions->placePV("virtualDetector"); 
 
     GeomHandle<DetectorSolenoid> ds;
     G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());
@@ -411,13 +434,16 @@ namespace mu2e {
                      const VolumeInfo& parent,
                      const SimpleConfig& config)
   {
+    
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( config, "virtualDetector", "vd" );
+    
+    bool const vdIsVisible          = geomOptions->isVisible("virtualDetector"); 
+    bool const vdIsSolid            = geomOptions->isSolid("virtualDetector"); 
+    bool const forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("virtualDetector"); 
+    bool const doSurfaceCheck       = geomOptions->doSurfaceCheck("virtualDetector"); 
+    bool const placePV              = geomOptions->placePV("virtualDetector"); 
     const int verbosityLevel = config.getInt("vd.verbosityLevel");
-    const bool forceAuxEdgeVisible = config.getBool("g4.forceAuxEdgeVisible");
-    const bool doSurfaceCheck      = config.getBool("g4.doSurfaceCheck");
-    const bool placePV             = true;
-
-    bool vdIsVisible         = config.getBool("vd.visible");
-    bool vdIsSolid           = config.getBool("vd.solid");
 
     GeomHandle<DetectorSolenoid> ds;
     G4Material* vacuumMaterial     = findMaterialOrThrow(ds->insideMaterial());

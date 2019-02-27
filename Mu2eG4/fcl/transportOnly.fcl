@@ -14,19 +14,7 @@ source : {
   maxEvents : 1000
 }
 
-services : {
-
-  message               : @local::default_message
-  TFileService          : { fileName : "transportOnly.root" }
-  RandomNumberGenerator : { }
-
-  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-  BTrkHelper             : @local::BTrkHelperDefault
-  G4Helper               : { }
-  SeedService            : @local::automaticSeeds
-}
+services : @local::Services.SimAndReco
 
 physics : {
 
@@ -59,12 +47,12 @@ physics : {
       maxFullPrint           : 201
     }
 
-    # Look at the hits from TTrackerPlaneSupport Sensitive Detectors
+    # Look at the hits from TrackerPlaneSupport Sensitive Detectors
     checksdd: {
-      module_type          : ReadTTrackerDSDetectors
+      module_type          : ReadTrackerDSDetectors
       diagLevel            : 0
       hitMakerModuleLabel  : g4run
-      sddStepPoints        : ttrackerDS
+      sddStepPoints        : trackerDS
       maxFullPrint         : 201
     }
     # Look at the hits from virtualdetectors
@@ -99,6 +87,8 @@ physics.producers.g4run.physics.physicsListName: "Minimal"
 physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 #physics.producers.g4run.SDConfig.enableSD     : @erase
 #physics.producers.g4run.SDConfig.enableAllSDs     : true
+
+services.TFileService.fileName : "transportOnly.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0

@@ -27,6 +27,7 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 // #include "art/Framework/Core/EDAnalyzer.h"
@@ -96,6 +97,7 @@ namespace mu2e {
     double                  _minClEnergy, _clEStep;
     double                  _minRDist   , _rDistStep;
     vector<double>          _minLH;
+    TriggerAlg              _trigAlg;
 
   //Histograms need to load the templates for the signal and background hypothesis
     TH1F*       _signalHist1D[2][kN1DVar];
@@ -128,7 +130,8 @@ namespace mu2e {
     _clEStep                     (pset.get<double>        ("ClusterEnergyStep"    ,   10.)),   // MeV
     _minRDist                    (pset.get<double>        ("MinClusterRadialDist" ,  350.)),   // mm
     _rDistStep                   (pset.get<double>        ("ClusterRadialDistStep",   50.)),   // mm
-    _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})){   // likelihood threshold
+    _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})),   // likelihood threshold
+    _trigAlg                     (pset.get<std::vector<std::string> >("triggerAlg")){
 
     produces<TriggerInfo>();
 
@@ -421,6 +424,7 @@ namespace mu2e {
 	++_nPass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	triginfo->_triggerAlgBits.merge(_trigAlg);
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);

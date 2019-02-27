@@ -24,6 +24,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 
 #include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
+#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -58,6 +59,7 @@ namespace mu2e {
   private:
 
     int _diagLevel;
+    TriggerAlg    _trigAlg;
 
     std::string                _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -101,12 +103,12 @@ namespace mu2e {
   };
 
   FilterEcalMVATrigger::FilterEcalMVATrigger(fhicl::ParameterSet const& pset):
-    _diagLevel(pset.get<int>("diagLevel",0)),
-
-    _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
-    _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")),  
-    _weightsfile               (pset.get<string>("weightsfile")),
-    _TOFF (pset.get<float>("TimeOFFSET",22.5)),
+    _diagLevel                  (pset.get<int>("diagLevel",0)),
+    _trigAlg                    (pset.get<std::vector<std::string> >("triggerAlg")),
+    _MVAMethodLabel             (pset.get<std::string>("MVAMethod","BDT")), 
+    _caloTrigSeedModuleLabel    (pset.get<std::string>("caloTrigSeedModuleLabel")),  
+    _weightsfile                (pset.get<string>("weightsfile")),
+    _TOFF                       (pset.get<float>("TimeOFFSET",22.5)),
     _MVAhighcut0                (pset.get<float>("MVAhighcut0",0.5)),
     _MVArpivot0                 (pset.get<float>("MVArpivot0",445.)),
     _MVApivotcut0               (pset.get<float>("MVApivotcut0",0.2)),
@@ -201,6 +203,7 @@ namespace mu2e {
 	  if (_MVA>_MVAlowcut[disk]) {
 	    retval = true;
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    triginfo->_triggerAlgBits.merge(_trigAlg);
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    break;
@@ -211,6 +214,7 @@ namespace mu2e {
 	  if (_MVA>MVAcut) {
 	    retval = true;
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    triginfo->_triggerAlgBits.merge(_trigAlg);
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    break;

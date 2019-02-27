@@ -13,8 +13,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // root
 #include "TVector2.h"
@@ -90,6 +89,8 @@ namespace mu2e {
     float                               _maxDriftTime;
     float                               _maxStrawDt;
     float                               _maxDtDs;              // low-P electron travel time between two stations
+    int                                 _writeStrawHits;
+    int                                 _filter;
 
     int                                 _debugLevel;
     int                                 _diagLevel;
@@ -102,7 +103,7 @@ namespace mu2e {
     const TimeClusterCollection*        _tpeakcol;
     StrawHitFlagCollection*             _bkgfcol;  // output collection
 
-    const TTracker*                     _tracker;
+    const Tracker*                      _tracker;
     const DiskCalorimeter*              _calorimeter;
 
     float                               _tdbuff; // following Dave - time division buffer
@@ -183,6 +184,8 @@ namespace mu2e {
     _maxDriftTime          (pset.get<float>        ("maxDriftTime"                 )),
     _maxStrawDt            (pset.get<float>        ("maxStrawDt"                   )),
     _maxDtDs               (pset.get<float>        ("maxDtDs"                      )),
+    _writeStrawHits        (pset.get<int>          ("writeStrawHits"               )),
+    _filter                (pset.get<int>          ("filter"                       )),
 
     _debugLevel            (pset.get<int>          ("debugLevel"                   )),
     _diagLevel             (pset.get<int>          ("diagLevel"                    )),
@@ -191,7 +194,8 @@ namespace mu2e {
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
 
     produces<StrawHitFlagCollection>("ComboHits");
-    produces<StrawHitFlagCollection>("StrawHits");
+    if(_writeStrawHits == 1) produces<StrawHitFlagCollection>("StrawHits");
+    if (_filter) produces<ComboHitCollection>();
 
     _testOrderPrinted = 0;
     _tdbuff           = 80.; // mm ... abit less than 1 ns
@@ -212,8 +216,8 @@ namespace mu2e {
 // create a Z-ordered map of the tracker
 //-----------------------------------------------------------------------------
   void DeltaFinder::beginRun(art::Run& aRun) {
-    mu2e::GeomHandle<mu2e::TTracker> ttHandle;
-    _tracker      = ttHandle.get();
+    mu2e::GeomHandle<mu2e::Tracker> tHandle;
+    _tracker      = tHandle.get();
     _data.tracker = _tracker;
 
     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
@@ -631,22 +635,40 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
 //-----------------------------------------------------------------------------
-    auto shH = Event.getValidHandle<StrawHitCollection>(_shToken);
-    const StrawHitCollection* shcol  = shH.product();
-    // first, copy over the original flags
-    unsigned nsh = shcol->size();
-    std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
-    std::vector<std::vector<StrawHitIndex> > shids;
-    _chcol->fillStrawHitIndices(Event,shids);
-    for(size_t ich = 0;ich < _chcol->size();++ich) {
-      StrawHitFlag flag = bkgfcol->at(ich);
-      flag.merge((*_chcol)[ich].flag());
-      for(auto ish : shids[ich])
-        (*shfcol)[ish] = flag;
+    if(_writeStrawHits == 1){
+      auto shH = Event.getValidHandle<StrawHitCollection>(_shToken);
+      const StrawHitCollection* shcol = shH.product();
+      // first, copy over the original flags
+      unsigned nsh = shcol->size();
+      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
+      std::vector<std::vector<StrawHitIndex> > shids;
+      _chcol->fillStrawHitIndices(Event,shids);
+      for(size_t ich = 0;ich < _chcol->size();++ich) {
+    	StrawHitFlag flag = bkgfcol->at(ich);
+    	flag.merge((*_chcol)[ich].flag());
+    	for(auto ish : shids[ich])
+    	  (*shfcol)[ish] = flag;
+      }
+
+      Event.put(std::move(shfcol),"StrawHits");
     }
-
-    Event.put(std::move(shfcol),"StrawHits");
-
+//-----------------------------------------------------------------------------
+// create the collection of StrawHitFlag for the StrawHitCollection
+//-----------------------------------------------------------------------------
+    if (_filter == 1){
+      auto chcol = std::make_unique<ComboHitCollection>();
+      chcol->reserve(nch);
+      // same parent as the original collection
+      chcol->setParent(_chcol->parent());
+      for(int ich=0;ich < nch; ++ich){
+        StrawHitFlag const& flag = bkgfcol->at(ich);
+        if(!flag.hasAnyProperty(StrawHitFlag::bkg)) {
+          chcol->push_back((*_chcol)[ich]);
+          chcol->back()._flag.merge(flag);
+        }
+      }
+      Event.put(std::move(chcol));
+    }
 //-----------------------------------------------------------------------------
 // finally, put the output flag collection into the event
 //-----------------------------------------------------------------------------

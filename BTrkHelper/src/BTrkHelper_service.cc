@@ -18,7 +18,7 @@
 #include "ConditionsService/inc/ConditionsService.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "BTrk/BaBar/ExternalInfo.hh"
 
@@ -49,10 +49,10 @@ mu2e::BTrkHelper::beginRun(art::Run const &) {
 
   // For now we assume that the geometry does not change over the course of a job.
   // FIXME: later on allow geometry to change.
-  // FIXME: do we want to remove compile time dependence on TTracker and Mu2eDetectorModel
+  // FIXME: do we want to remove compile time dependence on Tracker and Mu2eDetectorModel
   //        by holding Mu2eDetectorModel as pointer to a base class and by using factory function?
   if ( detectorModel_.get() == nullptr ){
-    GeomHandle<TTracker> tt;
+    GeomHandle<Tracker> tt;
     detectorModel_ = std::make_unique<Mu2eDetectorModel>( detectorModelPSet_, *tt );
   }
 }
