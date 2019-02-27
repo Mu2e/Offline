@@ -200,7 +200,7 @@ Reconstruction : {
 	    "keep *_FlagBkgHits_StrawHits_*",
 	    "keep *_CrvCoincidenceClusterMatchMC_*_*",
 #	    "keep mu2e::TriggerInfoCollection",
-	    "keep mu2e::TriggerAlg" ]
+	    "keep mu2e::*_TriggerAlg_*_*" ]
 }
 # must define some things outside the brackets due to internal dependence
 #
