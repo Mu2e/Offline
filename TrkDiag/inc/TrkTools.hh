@@ -17,6 +17,7 @@
 #include "TrkDiag/inc/TrkStrawMatInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
+#include "TrkDiag/inc/HelixInfo.hh"
 
 #include <vector>
 #include <functional>
@@ -34,6 +35,7 @@ namespace mu2e {
     void fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos );
     void fillCaloHitInfo(const KalSeed& kseed, Calorimeter const& calo, TrkCaloHitInfo& tchinfo );
     void fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo);
+    void fillHelixInfo(const KalSeed& kseed, double bz0, HelixInfo& hinfo); 
   }
 }
 

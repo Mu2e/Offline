@@ -25,6 +25,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // #include "CalPatRec/inc/KalFitResult.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -430,7 +431,7 @@ namespace mu2e {
       nseeds += helcols[hel]->size();
 	// set the flag here: This should be set on initialization FIXME!
       for(auto & helix : *helcols[hel] ) {
-	helix._status.merge(TrkFitFlag::CPR);
+	helix._status.merge(TrkFitFlag::CPRHelix);
       }
 
       event.put(std::move(helcols[hel]),Helicity::name(hel));

@@ -2,6 +2,7 @@
 #  Prolog for production reconstruction jobs
 #
 #include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
@@ -19,24 +20,20 @@ Reconstruction : {
     # instantiate explicit helix merger modules: this should be in TrkReco/prolog FIXME!
     # NB: positive here refers to helicity, not charge!
     MHDeM : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFinderDe:Positive"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDe:Positive"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDe:Positive", "CalHelixFinderDe:Positive" ]
     }
     MHDeP : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFinderDe:Negative"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDe:Negative"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDe:Negative", "CalHelixFinderDe:Negative" ]
     }
     MHDmuM : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFinderDmu:Positive"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDmu:Positive"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDmu:Positive" , "CalHelixFinderDmu:Positive" ]
     }
     MHDmuP : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFinderDmu:Negative"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDmu:Negative"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDmu:Negative", "CalHelixFinderDmu:Negative" ]
     }
     KSFDeM : {
       @table::Tracking.producers.KSFDeM

@@ -88,7 +88,7 @@ namespace mu2e {
     StrawIdMask _mask; // mask for valid StrawId fields
     StrawEnd _tend; // end used to define time measruement
   };
-//  typedef std::vector<mu2e::ComboHit> ComboHitCollection;
+  // ComboHitCollection is a non-trivial subclass of vector which includes navigation of nested ComboHits
   class ComboHitCollection : public std::vector<mu2e::ComboHit> {
     public:
       ComboHitCollection(bool sorted=false) : _sorted(sorted) {}

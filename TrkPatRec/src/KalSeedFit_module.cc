@@ -28,6 +28,7 @@
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
+#include "TrkReco/inc/TrkDef.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"

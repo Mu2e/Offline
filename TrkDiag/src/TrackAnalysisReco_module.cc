@@ -13,6 +13,8 @@
 
 // Mu2e includes
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
@@ -55,6 +57,7 @@
 #include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
+#include "TrkDiag/inc/HelixInfo.hh"
 #include "TrkDiag/inc/TrkTools.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 // CRV info
@@ -99,8 +102,10 @@ namespace mu2e {
     std::string _crvCoincidenceModuleLabel;
     std::string _crvCoincidenceMCModuleLabel;
     // analysis options
-    bool _fillmc, _pempty, _crv, _filltrkqual;
+    bool _fillmc, _pempty, _crv, _helices, _filltrkqual;
     int _diag;
+    // momentum analyzer
+    double _bz0;
     // analysis parameters
     double _minReflectTime, _maxReflectTime; // minimum and maximum time for a track to reflect in the gradient
     // track comparator
@@ -146,6 +151,7 @@ namespace mu2e {
     KSCIter findMuonTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
+    HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // TestTrkQual
   };
@@ -163,6 +169,7 @@ namespace mu2e {
     _fillmc(pset.get<bool>("FillMCInfo",true)),
     _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
+    _helices(pset.get<bool>("FillHelixInfo",false)),
     _filltrkqual(pset.get<bool>("fillTrkQualInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
@@ -206,6 +213,8 @@ namespace mu2e {
 // calorimeter information for the downstream electron track
 // CRV info
    if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
+   // helix info
+   if(_helices) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
 // optionally add MC truth branches
     if(_fillmc){
       _trkana->Branch("demc",&_demc,TrkInfoMC::leafnames().c_str());
@@ -228,6 +237,11 @@ namespace mu2e {
     subrun.getByLabel(_meanPBItag, PBIHandle);
     if(PBIHandle.isValid())
       _meanPBI = PBIHandle->intensity();
+    // get bfield
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    _bz0 = bfmgr->getBField(vpoint_mu2e).z();
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
@@ -294,6 +308,7 @@ namespace mu2e {
 	TrkTools::fillHitInfo(dekseed, _detsh); //TODO
 	TrkTools::fillMatInfo(dekseed, _detsm); //TODO
       }
+      if(_helices)TrkTools::fillHelixInfo(dekseed, _bz0, _hinfo);
       // upstream and muon tracks
       auto iuekseed = findUpstreamTrack(ueC,dekseed);
       if(iuekseed != ueC.end()) TrkTools::fillTrkInfo(*iuekseed,_ueti);
@@ -449,6 +464,7 @@ namespace mu2e {
     _deti.reset();
     _ueti.reset();
     _dmti.reset();
+    _hinfo.reset();
     _demc.reset();
     _uemc.reset();
     _dmmc.reset();

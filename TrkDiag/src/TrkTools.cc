@@ -14,8 +14,7 @@ namespace mu2e {
     void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig) {
       nhits = 0; nactive = 0; ndouble = 0; ndactive = 0; nnullambig = 0;
       static StrawHitFlag active(StrawHitFlag::active);
-      //      for (const auto& i_hit : hits) {
-      for (std::vector<TrkStrawHitSeed>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
+      for (auto ihit = hits.begin(); ihit != hits.end(); ++ihit) {
 	++nhits;
 	if (ihit->flag().hasAllProperties(active)) {
 	  ++nactive;
@@ -23,7 +22,6 @@ namespace mu2e {
 	    ++nnullambig;
 	  }
 	}
-
 	auto jhit = ihit; jhit++;
 	if(jhit != hits.end() && ihit->strawId().uniquePanel() ==
 	   jhit->strawId().uniquePanel()){
@@ -66,9 +64,9 @@ namespace mu2e {
 	trkinfo._status = 2;
       else
 	trkinfo._status = -1;
-      if(kseed.status().hasAllProperties(TrkFitFlag::CPR))
+      if(kseed.status().hasAllProperties(TrkFitFlag::CPRHelix))
 	trkinfo._alg = 1;
-      else if(kseed.status().hasAllProperties(TrkFitFlag::TPR))
+      else if(kseed.status().hasAllProperties(TrkFitFlag::TPRHelix))
 	trkinfo._alg = 0;
       else
 	trkinfo._alg = -1;
@@ -269,6 +267,35 @@ namespace mu2e {
 	trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
       }
       trkqualInfo._trkqual = tqual.MVAOutput();
+    }
+
+    void fillHelixInfo(const KalSeed& kseed, double bz0, HelixInfo& hinfo) {
+      // navigate down to the HelixSeed
+      auto hhh = kseed.helix();
+      if(hhh.isNull() && kseed.kalSeed().isNonnull())
+	hhh = kseed.kalSeed()->helix();
+      if(hhh.isNonnull()){
+      // count hits, active and not
+	for(size_t ihit=0;ihit < hhh->hits().size(); ihit++){
+	  auto const& hh = hhh->hits()[ihit];
+	  hinfo._nch++;
+	  hinfo._nsh += hh.nStrawHits();
+	  if(!hh.flag().hasAnyProperty(StrawHitFlag::outlier)){
+	    hinfo._ncha++;
+	    hinfo._nsha += hh.nStrawHits();
+	  }
+	  if( hhh->status().hasAllProperties(TrkFitFlag::TPRHelix))
+	    hinfo._flag = 1;
+	  else if( hhh->status().hasAllProperties(TrkFitFlag::CPRHelix))
+	    hinfo._flag = 2;
+	  hinfo._t0err = hhh->t0().t0Err();
+	  hinfo._mom = 0.299792*hhh->helix().momentum()*bz0; //FIXME!
+	  hinfo._chi2xy = hhh->helix().chi2dXY();
+	  hinfo._chi2fz = hhh->helix().chi2dZPhi();
+	  if(hhh->caloCluster().isNonnull())
+	    hinfo._ecalo  = hhh->caloCluster()->energyDep();
+	}
+      }
     }
   }
 }

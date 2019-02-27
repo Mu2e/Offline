@@ -441,11 +441,6 @@ namespace mu2e
   }
 
   bool
-  KalFit::fitable(TrkDef const& tdef){
-    return tdef.strawHitIndices().size() >= _minnstraws;
-  }
-
-  bool
   KalFit::fitable(KalSeed const& kseed){
     return kseed.segments().size() > 0 && kseed.hits().size() >= _minnstraws;
   }

@@ -32,7 +32,6 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "BTrk/BaBar/BaBar.hh"
-#include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "TrkReco/inc/Chi2HelixFit.hh"
 
@@ -311,7 +310,7 @@ namespace mu2e {
     for (size_t index=0;index< tccol.size();++index) {
       const auto& tclust = tccol[index];
       HelixSeed hseed;
-      hseed._status.merge(TrkFitFlag::TPR);
+      hseed._status.merge(TrkFitFlag::TPRHelix);
       //clear the variables in hfResult
       _hfResult.clearTempVariables();
 
