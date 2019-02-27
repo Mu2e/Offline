@@ -417,7 +417,7 @@ namespace mu2e
       if(! retval.success())break;
       // updates
       if(_updatet0[iter]){
-	updateT0(kalData);
+	updateT0(kalData, iter);
         changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
       }
       // drop outliers
@@ -826,7 +826,7 @@ namespace mu2e
 
 
   bool
-  KalFit::updateT0(KalFitData& kalData){
+  KalFit::updateT0(KalFitData& kalData, int iter){
     KalRep* krep = kalData.krep;
     using namespace boost::accumulators;
     TrkHitVector *thv = &(krep->hitVector());
@@ -843,8 +843,16 @@ namespace mu2e
         hitt0err.reserve(nhits);
         // loop over the hits and accumulate t0
         for(auto ihit=thv->begin(); ihit != thv->end(); ihit++){
-          TrkHit* hit = *ihit;
-          if(hit->isActive() ) {
+          TrkHit*      hit   = *ihit;
+	  bool         trkShAmbigOK(true);
+	  if (_ambigstrategy[iter] != 0) {
+	    TrkStrawHit* trkSh = dynamic_cast<TrkStrawHit*>(*ihit);
+	    if (trkSh !=0){
+	      if (trkSh->ambig() == 0) 
+		trkShAmbigOK = false;
+	    }
+	  }
+          if(hit->isActive() && trkShAmbigOK) {
 	    TrkT0 st0;
 	    if (hit->signalPropagationTime(st0 )){
 	      // subtracting hitT0 makes this WRT the previous track t0

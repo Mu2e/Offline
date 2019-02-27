@@ -73,7 +73,7 @@ namespace mu2e
     
     TrkErrCode fitIteration(KalFitData& kalData,int iter); 
     bool       weedHits    (KalFitData& kalData, int    iter);
-    bool       updateT0    (KalFitData& kalData);
+    bool       updateT0    (KalFitData& kalData, int    iter);
 
     TrkPrintUtils*  printUtils() { return _printUtils; }
   private:

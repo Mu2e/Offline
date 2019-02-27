@@ -77,6 +77,8 @@ namespace mu2e {
     void saveBest(HelixSeedCollection* HelixColl, const HelixSeed* Helix, 
 		  art::Event& AnEvent, const art::Provenance* Prov, 
 		  int Index, AlgorithmIDCollection* AidColl);
+    
+    void checkPresenceOfDuplicates(HelixSeedCollection* HelixColl, std::vector<int> &IndexToSkip);
 
   private:
     unsigned         _iev;
@@ -113,6 +115,67 @@ namespace mu2e {
   void MergeHelixFinder::beginRun(art::Run& ) {
   }
   
+//-----------------------------------------------------------------------------
+// search within the collection the presence of duplicates
+//-----------------------------------------------------------------------------
+  void MergeHelixFinder::checkPresenceOfDuplicates(HelixSeedCollection* HelixColl, std::vector<int> &IndexToSkip){
+    int    nHel = HelixColl->size();
+    int    nh1(0), nh2(0), natc(0);
+    
+    const HelixSeed          *h1(0), *h2(0);
+    const ComboHitCollection *list1(0), *list2(0);
+    const mu2e::HelixHit     *hitt, *hitc;
+
+    for (int i=0; i<nHel; ++i){
+      h1    = &HelixColl->at(i);
+      list1 = &h1->hits();
+      nh1   = list1->size();
+      natc  = 0;
+
+      for (int j=i+1; j<nHel; ++j){
+	h2    = &HelixColl->at(j);
+	list2 = &h2->hits();
+	nh2   = list2->size();
+	
+	for (int k=0; k<nh1; ++k){
+	  hitt = &list1->at(k);
+	  for (int l=0; l<nh2; l++){ 
+	    hitc = &list2->at(l);
+	    if (hitt->index() == hitc->index()) {
+	      natc += 1;
+	      break;
+	    }
+	  }
+	}
+//-----------------------------------------------------------------------------
+// if > 50% of the helix hits are common, it unlikely to be an "independent" object
+// logic of the choice: 
+// 1. take the track which has more hits
+// 2. if two helices have the same number of hits, pending future studies, 
+//    the choose CalPatRec one
+//-----------------------------------------------------------------------------
+	if ((natc > nh1/2.) || (natc > nh2/2.)) {
+	  //-----------------------------------------------------------------------------
+	  // for one of the two helices, the number of shared hits > 50%
+	  //-----------------------------------------------------------------------------
+	  if (nh2 > nh1) {
+	    //-----------------------------------------------------------------------------
+	    // h2 is a winner, no need to save h1
+	    //-----------------------------------------------------------------------------
+	    IndexToSkip.push_back(i);
+	    break;
+	  }
+	  else {
+	    //-----------------------------------------------------------------------------
+	    // h1 is a winner, mark h2 in hope that it will be OK, continue looping
+	    //-----------------------------------------------------------------------------
+	    IndexToSkip.push_back(j);
+	  }
+	}
+	
+      }//end loop over j
+    }//end loop over i
+  }
 
 //-----------------------------------------------------------------------------
 // algorithm collections are unnamed
@@ -196,12 +259,21 @@ namespace mu2e {
       flag[1][i] = 1;
     }
 
+    std::vector<int>         helixToSkip0, helixToSkip1;
+
+    checkPresenceOfDuplicates(hcoll[0], helixToSkip0);
+    checkPresenceOfDuplicates(hcoll[1], helixToSkip1);
+
     const HelixSeed          *h1, *h2;
     const ComboHitCollection *tlist, *clist;
     int                       nh1, nh2, natc;
     const mu2e::HelixHit     *hitt, *hitc;
 
     for (int i1=0; i1<nhel[0]; i1++) {
+      std::vector<int>::iterator it1;
+      it1 = find(helixToSkip0.begin(), helixToSkip0.end(), i1);
+      if (it1 != helixToSkip0.end())                  continue;
+
       h1     = &hcoll[0]->at(i1);
 //------------------------------------------------------------------------------
 // check if an AlgorithmID collection has been created by the process
@@ -211,6 +283,10 @@ namespace mu2e {
       natc         = 0;
 
       for (int i2=0; i2<nhel[1]; i2++) {
+	std::vector<int>::iterator it2;
+	it2 = find(helixToSkip1.begin(), helixToSkip1.end(), i2);
+	if (it2 != helixToSkip1.end())                  continue;
+
 	h2 = &hcoll[1]->at(i2);
 //-----------------------------------------------------------------------------
 // at Mu2e, 2 helices with different helicity could be duplicates of each other
