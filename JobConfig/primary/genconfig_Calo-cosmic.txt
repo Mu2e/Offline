@@ -16,8 +16,7 @@ double cosmicDYB.muEMax = 500e3;
 double cosmicDYB.dx     = 1328;
 double cosmicDYB.dy     = 1328;
 double cosmicDYB.dz     = 1578;
-double cosmicDYB.tMin   =  400;
-double cosmicDYB.tMax   = 1705;
+
 // midpoint of the calo disks
 vector<double> cosmicDYB.productionCenterInMu2e = {-3904,0,12631};
 

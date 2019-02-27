@@ -18,7 +18,6 @@ double cosmicDYB.dx     = 10000;
 double cosmicDYB.dy     = 0;
 double cosmicDYB.dz     = 20000;
 double cosmicDYB.direction = "Negative_y";
-double cosmicDYB.constTime = 800;
 vector<double> cosmicDYB.productionCenterInMu2e = {-3904,0,10200};
 
 //
