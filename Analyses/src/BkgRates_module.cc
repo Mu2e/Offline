@@ -330,7 +330,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector HitPoint = stMidPoint3 + (v/stDirection3.mag())*stDirection3;
       const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
 
-      if (fabs(v) > str.getHalfLength()) {
+      if (fabs(v) > str.halfLength()) {
         if (_diagLevel > 0) cout << "Position along the wire bigger than halflength" << endl;
       }
 
@@ -344,7 +344,7 @@ namespace mu2e {
 
 
       CLHEP::Hep3Vector const& strDir = str.direction();
-      double strRadius = str.getRadius();
+      double strRadius = tracker.strawOuterRadius();
       bool foundTrack = false;
       if ( haveSimPart ) {
 	for (size_t j = 0; j < mcptr.size(); ++j) {
