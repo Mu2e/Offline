@@ -70,6 +70,21 @@ fi
 #================================================================
 optdb=$(dirname $0)/.buildopts
 
+## We want to allow modifications of build config only when buildopts
+## is called from the base release directory and not from a satellite.
+assert_writes_allowed() {
+    # Get the physical path to .buildopts
+    CONFDIR=`dirname $(readlink -f $optdb)`
+    if [[ $(/bin/pwd) != $CONFDIR ]]; then
+        (
+            echo "Error: modifying build options must be done from the top of the base Offline directory."
+            echo "       Base release: $CONFDIR"
+            echo "       You  are  in: $(/bin/pwd)"
+        ) >& 2
+        exit 2
+    fi
+}
+
 ## mu2e_getopt <keyword> <default_value>
 mu2e_getopt() {
     keyword="$1"
@@ -85,6 +100,7 @@ mu2e_setopt() {
     keyword="$1"
     value="$2"
     ##echo "# verbose: setting $keyword to $value" >&2
+    assert_writes_allowed
     grep -v ^"$keyword" $optdb > $optdb.$$ 2>/dev/null
     echo "$keyword=$value" >> $optdb.$$
     /bin/mv -f $optdb.$$ $optdb
@@ -94,6 +110,7 @@ mu2e_setopt() {
 mu2e_resetopt() {
     keyword="$1"
     ##echo "# verbose: resetting $keyword" >&2
+    assert_writes_allowed
     grep -v ^"$keyword" $optdb > $optdb.$$ 2>/dev/null
     /bin/mv -f $optdb.$$ $optdb
 }
@@ -134,6 +151,7 @@ while [[ x"$1" != x  ]]; do
 
     if [[ $matched == 0 ]]; then
         if [[ $1 == --reset ]]; then
+            assert_writes_allowed
             /bin/rm -f $optdb
         else
             echo "ERROR: unrecognized option $1.  Try $0 --help" >&2
