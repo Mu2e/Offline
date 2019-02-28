@@ -116,7 +116,7 @@ tr_align *plane_tr * plane_align * panel_in_plane * panel_align * nom_str_at_r=0
 	    Hep3Vector pdif = aligned_straw - straw.getMidPoint();
 	    Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
 	    if(straw.id().uniquePanel()>0 && straw.id().uniquePanel()<3) {
-	      cout << "ALIGNDEBUG "<<straw.id().name()<< " " << pdif.mag() << " " 
+	      cout << "ALIGNDEBUG "<<straw.id()<< " " << pdif.mag() << " " 
 		   << ddif.mag() << endl;
 	    }
 
