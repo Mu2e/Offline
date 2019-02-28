@@ -27,7 +27,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
@@ -144,7 +143,6 @@ namespace mu2e
 
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
-    produces<AlgorithmIDCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
 //-----------------------------------------------------------------------------
@@ -201,7 +199,6 @@ namespace mu2e
     // create output
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
-    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
@@ -322,18 +319,6 @@ namespace mu2e
 	  KalRep *krep = _result.stealTrack();
 	  krcol->push_back(krep);
 
-	  // save the alorithm bit
-	  int best(1),mask(1);
-	  if (_cprmode==0) {
-	    best = AlgorithmID::TrkPatRecBit;
-	    mask = 1 << AlgorithmID::TrkPatRecBit;
-	  } else if (_cprmode==1) {
-	    best = AlgorithmID::CalPatRecBit;
-	    mask = 1 << AlgorithmID::CalPatRecBit;
-	  }
-	  algs->push_back(AlgorithmID(best,mask));
-
-
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
@@ -403,7 +388,6 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
-    event.put(move(algs));
     event.put(move(shfcol));
   }
   

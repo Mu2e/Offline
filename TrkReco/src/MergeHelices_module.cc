@@ -12,6 +12,7 @@
 #include "art/Framework/Principal/Handle.h"
 // mu2e data products
 #include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/TimeCluster.hh"
 // utilities
 #include "TrkReco/inc/TrkUtilities.hh"
 // C++
@@ -75,11 +76,16 @@ namespace mu2e {
   {
     consumesMany<HelixSeedCollection>    ();
     produces<HelixSeedCollection>    ();
+    produces<TimeClusterCollection>    ();
   }
 
   void MergeHelices::produce(art::Event& event) {
   // create output
     std::unique_ptr<HelixSeedCollection> mhels(new HelixSeedCollection);
+    std::unique_ptr<TimeClusterCollection> tcs(new TimeClusterCollection);
+    // needed for creating Ptrs
+    auto TimeClusterCollectionPID = getProductID<TimeClusterCollection>();
+    auto TimeClusterCollectionGetter = event.productGetter(TimeClusterCollectionPID);
     // loop over helix products and flatten the helix collections into a single collection
     std::set<const HelixSeed*> hseeds;
     for (auto const& hf : _hfs) {
@@ -112,11 +118,19 @@ namespace mu2e {
       if(jhel == hseeds.end())ihel++;
     }
     // now hseeds contains only pointers to unique and best helices: use them to 
-    // create the output, which must be deep-copy
+    // create the output, which must be deep-copy, including the time cluster
     for(auto ihel = hseeds.begin(); ihel != hseeds.end(); ihel++){
-      mhels->push_back(**ihel);
+      // copy the time cluster first
+      tcs->push_back(*(*ihel)->timeCluster());
+      // create a Ptr to the new TimeCluster
+      auto tcptr = art::Ptr<TimeCluster>(TimeClusterCollectionPID,tcs->size()-1,TimeClusterCollectionGetter);
+      // copy the Helix Seed and point its TimeCluster to the copy
+      HelixSeed hs(**ihel);
+      hs._timeCluster = tcptr;
+      mhels->push_back(hs);
     }
     event.put(std::move(mhels));
+    event.put(std::move(tcs));
   }
 
   MergeHelices::HelixComp MergeHelices::compareHelices(art::Event const& evt,

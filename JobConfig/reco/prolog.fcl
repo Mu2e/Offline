@@ -176,19 +176,23 @@ Reconstruction : {
 # separate MC info FIXME!
  # define reco products to keep
   ToKeep : [@sequence::Tracking.Output.Digis,
-	    @sequence::Tracking.Output.Tracks,
-#	    @sequence::Tracking.Output.MCDigis,
-#	    @sequence::Tracking.Output.MCHits,
-#	    @sequence::Tracking.Output.MCTracks,
+	    # replace with a subset of digis
+	    "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+	    "keep mu2e::KalSeeds_KFF*_*_*",
+	    "keep mu2e::KalSeeds_KSF*_*_*",
+	    "keep mu2e::HelixSeeds_MH*_*_*",
+	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep *_compressRecoMCs_*_*",
 	    "keep mu2e::CaloDigis_*_*_*",
 	    "keep mu2e::CaloClusters_*_*_*",
 	    "keep mu2e::CrvDigis_*_*_*",
 	    "keep mu2e::CrvCoincidenceClusters_*_*_*",
+	  # add precursors for Calo and Crv?  FIXME!
 #	    @sequence::CaloReco.Output,
 #	    @sequence::CRVReco.Output,
 	    # add trigger output products FIXME!
-#	    @sequence::TriggerReco.Output,
+#	    "keep mu2e::TriggerInfoCollection",
+#	    "keep mu2e::*_TriggerAlg_*_*",
 	    "keep mu2e::StatusG4_*_*_*",
             "keep art::TriggerResults_*_*_*",
 	    "keep mu2e::EventWindowMarker_*_*_*",
@@ -198,9 +202,7 @@ Reconstruction : {
 	    "keep *_FindMCPrimary_*_*",
 	    "keep *_SelectRecoMC_*_*",
 	    "keep *_FlagBkgHits_StrawHits_*",
-	    "keep *_CrvCoincidenceClusterMatchMC_*_*",
-#	    "keep mu2e::TriggerInfoCollection",
-	    "keep mu2e::*_TriggerAlg_*_*" ]
+	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
 }
 # must define some things outside the brackets due to internal dependence
 #
