@@ -225,22 +225,26 @@ namespace mu2e {
       static double bz = bfmgr->getBField(vpoint_mu2e).z();
 
       const auto& mcsteps = kseedmc._vdsteps;
+      double dmin = FLT_MAX;
       for (const auto& i_mcstep : mcsteps) {
 	for(auto vid : vids) {
 	  if (i_mcstep._vdid == vid) {
-	    trkinfomcstep._time = i_mcstep._time;
-	    trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
-	    trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
+	    // take the earliest time if there are >1; this avoids picking up
+	    // the albedo track from the calorimeter which can re-enter the tracker
+	    if(i_mcstep._time < dmin){
+	      dmin = i_mcstep._time;
+	      trkinfomcstep._time = i_mcstep._time;
+	      trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
+	      trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
 
-	    CLHEP::HepVector parvec(5,0);
-	    double hflt(0.0);
-	    HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
-	    CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
-	    double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
-	    TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
-	    trkinfomcstep._hpar = helixpar(parvec);
-
-	    break; // only do one step, don't want to keep overwriting
+	      CLHEP::HepVector parvec(5,0);
+	      double hflt(0.0);
+	      HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
+	      CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
+	      double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
+	      TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
+	      trkinfomcstep._hpar = helixpar(parvec);
+	    }
 	  }
 	}
       }
@@ -250,7 +254,7 @@ namespace mu2e {
       tshinfomcs.clear();
 
       for(const auto& i_tshmc : kseedmc._tshmcs) {
-      	TrkStrawHitInfoMC tshinfomc;
+	TrkStrawHitInfoMC tshinfomc;
 	fillHitInfoMC(kseedmc, tshinfomc, i_tshmc);
       	tshinfomcs.push_back(tshinfomc);
       }
