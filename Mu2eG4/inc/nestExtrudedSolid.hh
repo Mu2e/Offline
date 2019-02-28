@@ -1,13 +1,8 @@
 #ifndef Mu2eG4_nestExtrudedSolid_hh
 #define Mu2eG4_nestExtrudedSolid_hh
 //
-// Free function to create and place a new G4ExtrudedSolid inside a logical volume.
-//
-// $Id: nestExtrudedSolid.hh,v 1.6 2013/06/28 19:51:12 wieschie Exp $
-// $Author: wieschie $
-// $Date: 2013/06/28 19:51:12 $
-//
-// Original author Rob Kutschke
+// Free function to create and place a new G4ExtrudedSolid inside a
+// logical volume.
 //
 
 #include <string>
@@ -32,15 +27,15 @@ namespace mu2e {
 
   VolumeInfo nestExtrudedSolid( std::string const& name,
                                 double hz,
-                                std::vector<double> &x,
-                                std::vector<double> &y,
+                                std::vector<double> const& x,
+                                std::vector<double> const& y,
                                 G4Material* material,
                                 G4RotationMatrix const* rot,
-                                const G4ThreeVector& offset,
+                                G4ThreeVector const& offset,
                                 G4LogicalVolume* parent,
                                 int copyNo,
                                 bool const isVisible,
-                                G4Colour const color,
+                                G4Colour const& color,
                                 bool const forceSolid,
                                 bool const forceAuxEdgeVisible,
                                 bool const placePV,
@@ -51,22 +46,52 @@ namespace mu2e {
   // using VolumeInfo object for the parameters.
   VolumeInfo nestExtrudedSolid (std::string const& name,
                                 double hz,
-                                std::vector<double> &x,
-                                std::vector<double> &y,
+                                std::vector<double> const& x,
+                                std::vector<double> const& y,
                                 G4Material* material,
                                 G4RotationMatrix const* rot,
-                                const G4ThreeVector& offset,
+                                G4ThreeVector const& offset,
                                 VolumeInfo const & parent,
                                 int copyNo,
                                 bool const isVisible,
-                                G4Colour const color,
+                                G4Colour const& color,
+                                bool const forceSolid,
+                                bool const forceAuxEdgeVisible,
+                                bool const placePV,
+                                bool const doSurfaceCheck
+                                );
+  // same with lookupToken
+  VolumeInfo nestExtrudedSolid (std::string const& name,
+                                double hz,
+                                std::vector<double> const& x,
+                                std::vector<double> const& y,
+                                G4Material* material,
+                                G4RotationMatrix const* rot,
+                                G4ThreeVector const& offset,
+                                VolumeInfo const & parent,
+                                int copyNo,
+                                G4Colour const& color,
+                                std::string const& lookupToken
+                                );
+
+  // Using VolumeInfo object and the zsections version of the solid constructor
+  VolumeInfo nestExtrudedSolid (std::string const& name,
+                                std::vector<G4TwoVector> const& polygon,
+                                std::vector<G4ExtrudedSolid::ZSection> const& zsections,
+                                G4Material* material,
+                                G4RotationMatrix const* rot,
+                                G4ThreeVector const& offset,
+                                VolumeInfo const& parent,
+                                int copyNo,
+                                bool const isVisible,
+                                G4Colour const& color,
                                 bool const forceSolid,
                                 bool const forceAuxEdgeVisible,
                                 bool const placePV,
                                 bool const doSurfaceCheck
                                 );
 
-  // Using VolumeInfo object and the zsections version of the solid constructor
+  // same with lookupToken
   VolumeInfo nestExtrudedSolid (std::string const& name,
                                 const std::vector<G4TwoVector>& polygon,
                                 const std::vector<G4ExtrudedSolid::ZSection>& zsections,
@@ -75,12 +100,42 @@ namespace mu2e {
                                 const G4ThreeVector& offset,
                                 VolumeInfo const & parent,
                                 int copyNo,
+                                G4Colour const& color,
+                                std::string const& lookupToken
+                                );
+
+  // using VolumeInfo object for the parameters and full set of G4ExtrudedSolid params
+  VolumeInfo nestExtrudedSolid (std::string const& name,
+                                std::vector<G4TwoVector> const& polygon,
+                                G4double hz,
+                                G4TwoVector const& offset1, G4double scale1,
+                                G4TwoVector const& offset2, G4double scale2,
+                                G4Material* material,
+                                G4RotationMatrix const* rot,
+                                G4ThreeVector const& offset,
+                                VolumeInfo const & parent,
+                                int copyNo,
                                 bool const isVisible,
-                                G4Colour const color,
+                                G4Colour const& color,
                                 bool const forceSolid,
                                 bool const forceAuxEdgeVisible,
                                 bool const placePV,
                                 bool const doSurfaceCheck
+                                );
+
+  // using VolumeInfo object for the parameters and full set of G4ExtrudedSolid params
+  VolumeInfo nestExtrudedSolid (std::string const& name,
+                                std::vector<G4TwoVector> polygon,
+                                G4double hz,
+                                G4TwoVector offset1, G4double scale1,
+                                G4TwoVector offset2, G4double scale2,
+                                G4Material* material,
+                                G4RotationMatrix const* rot,
+                                const G4ThreeVector& offset,
+                                VolumeInfo const & parent,
+                                int copyNo,
+                                G4Colour const& color,
+                                std::string const& lookupToken
                                 );
 
 }
