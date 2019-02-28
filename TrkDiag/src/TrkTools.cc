@@ -116,8 +116,8 @@ namespace mu2e {
 	  lastflt = kseg.globalFlt(kseg.fmax());
 	}
       }
-      trkinfo._startvalid = firstflt;//krep->startValidRange();  // TODO
-      trkinfo._endvalid = lastflt;//krep->endValidRange();  // TODO
+      trkinfo._startvalid = firstflt;
+      trkinfo._endvalid = lastflt;
 
 
       unsigned int nmat(-1), nmatactive(-1);
@@ -125,7 +125,7 @@ namespace mu2e {
       countStraws(kseed.straws(), nmat, nmatactive, radlen);
       trkinfo._nmat = nmat;
       trkinfo._nmatactive = nmatactive;
-      trkinfo._radlen = radlen; // TODO
+      trkinfo._radlen = radlen;
 
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
@@ -213,9 +213,6 @@ namespace mu2e {
 	tminfo._active = i_straw.active();
 	tminfo._dp = i_straw.pfrac();
 	tminfo._radlen = i_straw.radLen();
-	    /*
-	    tminfo._sigMS = kmat->deflectRMS(); // TODO
-	    */
 	tminfo._doca = i_straw.doca();
 	tminfo._tlen = i_straw.trkLen();
 

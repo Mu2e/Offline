@@ -185,16 +185,16 @@ namespace mu2e {
 
       int ndigi = -1, ndigigood = -1, nambig = -1;
       TrkMCTools::countDigis(kseedmc, kseed, ndigi, ndigigood, nambig);
-      trkinfomc._ndigi = ndigi; // TODO
-      trkinfomc._ndigigood = ndigigood; // TODO
-      trkinfomc._nambig = nambig; // TODO
+      trkinfomc._ndigi = ndigi;
+      trkinfomc._ndigigood = ndigigood;
+      trkinfomc._nambig = nambig;
     }
 
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const PrimaryParticle& primary) {
 
       const auto& genParticle = primary.primary();
 
-      trkinfomcstep._time = genParticle.time(); // TODO
+      trkinfomcstep._time = genParticle.time();
       trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + 
 				     genParticle.momentum().py()*genParticle.momentum().py() + 
 				     genParticle.momentum().pz()*genParticle.momentum().pz());
