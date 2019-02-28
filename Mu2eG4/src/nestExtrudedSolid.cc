@@ -161,8 +161,8 @@ namespace mu2e {
   //=======================================================================================
 
   VolumeInfo nestExtrudedSolid(std::string const& name,
-                               const std::vector<G4TwoVector>& polygon,
-                               const std::vector<G4ExtrudedSolid::ZSection>& zsections,
+                               std::vector<G4TwoVector> const& polygon,
+                               std::vector<G4ExtrudedSolid::ZSection> const& zsections,
                                G4Material* material,
                                G4RotationMatrix const* rot,
                                G4ThreeVector const& offset,
@@ -197,8 +197,8 @@ namespace mu2e {
   //=======================================================================================
 
   VolumeInfo nestExtrudedSolid(std::string const& name,
-                               const std::vector<G4TwoVector>& polygon,
-                               const std::vector<G4ExtrudedSolid::ZSection>& zsections,
+                               std::vector<G4TwoVector> const& polygon,
+                               std::vector<G4ExtrudedSolid::ZSection> const& zsections,
                                G4Material* material,
                                G4RotationMatrix const* rot,
                                G4ThreeVector const& offset,
