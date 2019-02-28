@@ -1,4 +1,5 @@
 #include "TrackerConditions/fcl/prolog.fcl"
+
 BEGIN_PROLOG
 
 Proditions : {
@@ -7,6 +8,8 @@ Proditions : {
    strawPhysics : @local::StrawPhysics
    strawElectronics : @local::StrawElectronics
    strawResponse : @local::StrawResponse
-   verbose : 0
+   alignedTracker : @local::AlignedTracker
+   verbose : 2
 }
+
 END_PROLOG

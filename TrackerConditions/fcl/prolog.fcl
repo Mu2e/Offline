@@ -1,5 +1,10 @@
 BEGIN_PROLOG
 
+AlignedTracker : {
+   verbose : 2
+   useDb : false
+}
+
 DeadStraw : {
    verbose : 0
    useDb : false
