@@ -67,9 +67,9 @@ namespace mu2e
       //Some Diag histograms:
       TH1F* _chisq_plot;
       TH1F* _chisq_ndf_plot;
-      TH1F* _total_residuals_XY;
-      TH1F* _total_pulls_XY;
-      TH1F* _hiterrs_XY;
+      TH1F* _total_residuals;
+      TH1F* _total_pulls;
+      TH1F* _hiterrs;
       TH1F* _fit_phi_angle;
       TH1F* _fit_theta_angle;
       TH1F* _reco_eff_v_angle;
@@ -169,17 +169,17 @@ namespace mu2e
 	_chisq_ndf_plot->GetXaxis()->SetTitle("#Chi^{2}/N");
 	
         
-        _total_residuals_XY = tfs->make<TH1F>("Residuals ","Residuals " ,100,-100,100);
-	_total_residuals_XY->GetXaxis()->SetTitle("Residual  [mm]");
-	_total_residuals_XY->SetStats();
+        _total_residuals = tfs->make<TH1F>("Residuals ","Residuals " ,50,-100,100);
+	_total_residuals->GetXaxis()->SetTitle("Residual  [mm]");
+	_total_residuals->SetStats();
 
-	_total_pulls_XY = tfs->make<TH1F>("Pull ","Pull " ,100,-1, 1);
-	_total_pulls_XY->GetXaxis()->SetTitle("Pull ");
-	_total_pulls_XY->SetStats();
-
-        _hiterrs_XY = tfs->make<TH1F>("hiterr","hiterr" ,100,0, 1000);
-	_hiterrs_XY->GetXaxis()->SetTitle("Total Hit Error [mm]");
-	_hiterrs_XY->SetStats();
+	_total_pulls = tfs->make<TH1F>("Pull ","Pull " ,25,-1, 1);
+	_total_pulls->GetXaxis()->SetTitle("Pull ");
+	_total_pulls->SetStats();
+       
+        _hiterrs = tfs->make<TH1F>("hiterr","hiterr" ,10,0, 100);
+	_hiterrs->GetXaxis()->SetTitle("Total Hit Error [mm]");
+	_hiterrs->SetStats();
         
         _pull_v_cosine_XY = tfs->make<TH2F>("pull v cos XY","pull v cos" ,100,-1,1, 100, -4,4);
 	_pull_v_cosine_XY->GetXaxis()->SetTitle("cosine");
@@ -298,22 +298,20 @@ namespace mu2e
 			XYZVec major_axis = werr_mag*wdir;
       			XYZVec minor_axis = terr_mag*wtdir;
 	                
-      			
-			 //double hit_error = sqrt((major_axis.Dot(track_dir)*major_axis.Dot(track_dir)))+(minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
-			double hit_error = sqrt(major_axis.Cross(track_dir).mag2()+minor_axis.Cross(track_dir).mag2());
+			double hit_error = sqrt(major_axis.Dot(track_dir)*major_axis.Dot(track_dir)+minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
 			
 	        
 		//-----------Fill Hist Details:----------//
 			
 			
 			for(size_t i=0; i< st.get_fit_residuals().size();i++)			{
-				    double pull = st.get_fit_residuals()[i]/st.get_fit_residual_errors()[i];
-		                    _total_residuals_XY->Fill(st.get_fit_residuals()[i]);
-			            _total_pulls_XY->Fill(pull);
+				    double pull = st.get_fit_residuals()[ich]/st.get_fit_residual_errors()[i];
+		                    _total_residuals->Fill(st.get_fit_residuals()[i]);
+			            _total_pulls->Fill(pull);
 				    _pull_v_cosine_XY->Fill( wdir.Dot(track_dir), pull);
 			            
                           }
-		                _hiterrs_XY->Fill(hit_error);
+		                _hiterrs->Fill(hit_error);
             
 			
 	

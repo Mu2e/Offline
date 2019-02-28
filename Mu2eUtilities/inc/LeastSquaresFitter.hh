@@ -17,7 +17,12 @@ using namespace mu2e;
 
 namespace LeastSquaresFitter{
   	void xy_fit(const std::vector<double> &_x,  const std::vector<double> &_y,const std::vector<double> &_y_err, StraightTrack* line, TMatrixD& covariance);
-	void xyz_fit(const std::vector<double> &_x,  const std::vector<double> &_y,const std::vector<double> &_z, const std::vector<double> &_z_err, StraightTrack* line, TMatrixD& covariance);
+
+	void xyz_fit(int _nCoeffs, const std::vector<double> &_x,  const std::vector<double> &_y,const std::vector<double> &_z, const std::vector<double> &_z_err, StraightTrack* line, TMatrixD& covariance);
+
+	void full_fit( int _nCoeffs, const std::vector<std::vector<double>> point_i, const std::vector<std::vector<double>> point_j, const std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance);
+
+	void chi2_constrained_fit( int _nCoeffs, const std::vector<std::vector<double>> point_i, const std::vector<vector<double>> point_j, std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance);
         
         
 

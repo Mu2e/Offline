@@ -30,9 +30,9 @@ TimeClusterFinder : {
 TimeClusterFinderCosmics : {
   @table::TimeClusterFinder
   
-  maxdPhi : 1.5 //10.0 
-  RefineClusters : true// false
-  PrefilterCluster : true //false
+  maxdPhi : 10.0 
+  RefineClusters : false
+  PrefilterCluster : false
   
 }
 

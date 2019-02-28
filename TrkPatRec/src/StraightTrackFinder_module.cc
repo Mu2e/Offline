@@ -86,7 +86,7 @@ namespace mu2e{
     virtual void produce(art::Event& event );
   private:
   //config parameters:
-    int				        n_TC_fails;
+    
     int 				_diag,_debug;
     int                                 _printfreq;
     int 				_minnsh; // minimum # of strawHits to work wit
@@ -122,7 +122,7 @@ namespace mu2e{
 
 //Constructor:
  StraightTrackFinder::StraightTrackFinder(fhicl::ParameterSet const& pset) :
-    n_TC_fails  (pset.get<int>("n_TC_fails", 0)),
+   
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
@@ -187,7 +187,7 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
 //                  Should produce ST seed Collection      //
 //----------------------------------------------------------*/
   void StraightTrackFinder::produce(art::Event& event ) {
-     if (_debug != 0) std::cout<<"Producing ST in  Finder..."<<std::endl;
+     if (_debug != 0) std::cout<<"Producing Straight Track in  Finder..."<<std::endl;
      //Create output collection - this is collection of straght track seeds:
      unique_ptr<StraightTrackSeedCollection> seed_col(new StraightTrackSeedCollection());
      unsigned    STCounter(0);
@@ -217,11 +217,11 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
     _stResult._chcol  = &chcol; 
     _stResult._tccol  = &tccol;
    
-    std::cout<<"Number of Time Peaks...: "<<tccol.size()<<std::endl;
+    //std::cout<<"Number of Time Peaks...: "<<tccol.size()<<std::endl;
     // create initial tracks from time clusters:
 
     for (size_t index=0;index< tccol.size();++index) {
-      if(tccol.size()==0)		continue;
+     
       int   nGoodTClusterHits(0);
       //get the t cluster
       const auto& tclust = tccol[index];
@@ -250,7 +250,7 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
 Ensure good clusters used 
 //------------------------- FITTING STAGE 2 a:---------------------------*/
      
-     // if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
+      if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
 /*------------------------- FITTING STAGE 2 b :---------------------------//
 Ensure enough straw hits used
 //------------------------- FITTING STAGE 2 a:---------------------------*/
@@ -258,21 +258,18 @@ Ensure enough straw hits used
 	 std::cout<<"#filtered SHits"<<_stResult._nFiltStrawHits<<"  Minimum allowed: "<<_minnsh<<std::endl;
       }
       
-      
      
       if (_stResult._nFiltStrawHits < _minnsh)                  continue;
       
       _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
-      if(event.id().event() ==14 || event.id().event() ==78 || event.id().event() ==121){
-	std::cout<< "hits ok"<<std::endl;
-      }
+      
       if (_diag) _stResult._diag.StraightTrackFitCounter = 0;
  /*------------------------- FITTING STAGE 3 :---------------------------//
  initial ST Pat Rec.. Call the "Fit" function and apply to the StraightTrackData 
 //------------------------- FITTING STAGE 3 :---------------------------*/
       
       _tfit.BeginFit(_stResult);
-      
+     
       //Fill in diagnostics:
        if (_diag) {
 	_stResult._diag.nShFitXY = _stResult._nXYSh;
@@ -283,11 +280,14 @@ Ensure enough straw hits used
 	
 	      //tentatively store as a temporary result
 	      StraightTrackFinderData tmpResult(_stResult);
-	      
-
- /*------------------------- FITTING STAGE 4 :---------------------------//
-Fill Seed Info into StraightTrackFinder_seed
+/*------------------------- FITTING STAGE 4 :---------------------------//
+Check Init Fit...(?)
 //------------------------- FITTING STAGE 4 :---------------------------*/
+	     // FitTrack(tmpResult);
+	  
+ /*------------------------- FITTING STAGE 5 :---------------------------//
+Fill Seed Info into StraightTrackFinder_seed
+//------------------------- FITTING STAGE 5 :---------------------------*/
 	  
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
@@ -311,7 +311,7 @@ put into event data
 //---------------------------------------------------------------------*/
     }//end loop
   event.put(std::move(seed_col));    //here - more to add to event?
-  std::cout<<"TC fails" << n_TC_fails<<std::endl;
+ 
   }//end produce
 
 
@@ -420,6 +420,35 @@ int  StraightTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboH
 
     return ngoodhits;
   } 
+
+ /*void StraightTrackFinder::FitTrack(StraightTrackFinderData& trackData){
+	unsigned xyniter(0);
+	//_tfit.Init()
+	//_tfit.fitChi2();
+	while (trackData._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK) && xyniter < _maxniter) {
+     
+      ++xyniter;
+      } 
+      if (trackData._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK)) {
+      	if (xyniter < _maxniter){
+		trackData._tseed._status.merge(TrkFitFlag::StriaghtTrackConverged);
+        else{
+		trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
+	}
+     }//TODO add different flag to differentiate
+     updateChi2Info(trackData);
+     
+     if (_tfit.goodTrack(trackData._tseed.track())) {
+	updateT0(trackData);
+	trackData._tseed._status.merge(TrkFitFlag::StraightTrackConverged);
+     }
+     else{
+	trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
+	}
+
+}
+*/
+
 ///////////////////////////////////////////////////
 }//end mu2e namespace
 using mu2e::StraightTrackFinder;
