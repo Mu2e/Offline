@@ -23,7 +23,7 @@ namespace mu2e {
 
     std::vector<std::vector<double>> Initialize_Cov_Mat(int i, int j, int sizei, int sizej);
     // Accessors:
-    int get_dim() const {return _dim;}
+    //int get_dim() const {return _dim;}
     int get_N() const { return _Nhits;}
     double get_c_0() const { return _c_0; }
     double get_c_0_err() const { return _c_0_err; }
@@ -49,7 +49,7 @@ namespace mu2e {
     // Modiffiers:
     void clear();
 
-    void set_dim(int dim){_dim = dim;}
+    //void set_dim(int dim){_dim = dim;}
     void set_N(int N){_Nhits = N;}
 
     void set_c_0(double c_0) { _c_0 = c_0; }
@@ -80,7 +80,7 @@ double element){ _cov_mat[r][c] = element;}
     
     
   private:
-    int _dim;
+    //int _dim;
     int _Nhits;
     double _c_0;
     double _c_0_err;

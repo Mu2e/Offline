@@ -35,6 +35,13 @@
 #include "TrkReco/inc/StraightTrackFinderData.hh"
 #include "TrkReco/inc/TrkFaceData.hh"
 
+//For Drift:
+#include "TrkReco/inc/PanelAmbigResolver.hh"
+#include "TrkReco/inc/PanelStateIterator.hh"
+
+// Mu2e BaBar
+#include "BTrkData/inc/TrkStrawHit.hh"
+
 //CLHEP:
 
 #include "CLHEP/Units/PhysicalConstants.h"
@@ -62,6 +69,8 @@
 
 using namespace std;
 using namespace ROOT::Math::VectorUtil;
+using CLHEP::Hep3Vector;
+using CLHEP::HepVector;
 
 namespace{
     //create a compare struct to allow height ordering of the hits in an event. The highest hit will then seed the "cosmic" track....
@@ -116,7 +125,7 @@ namespace mu2e{
     void     OrderHitsY(StraightTrackFinderData& TrackData); //Order in height
     void     fillGoodHits(StraightTrackFinderData& TrackData);//apply "good" cut
     int     goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);//select "good" time clusters
-    
+
  
 };//end private
 
@@ -267,7 +276,7 @@ Ensure enough straw hits used
  /*------------------------- FITTING STAGE 3 :---------------------------//
  initial ST Pat Rec.. Call the "Fit" function and apply to the StraightTrackData 
 //------------------------- FITTING STAGE 3 :---------------------------*/
-      
+      //DriftCorrection(_stResult); //calcualte drift circles
       _tfit.BeginFit(_stResult);
      
       //Fill in diagnostics:
@@ -294,6 +303,7 @@ Fill Seed Info into StraightTrackFinder_seed
 		      //fille the hits in the seed collection
 		      fillGoodHits(tmpResult);
 		      StraightTrackSeedCollection* col = seed_col.get();
+		      //TODO - refit here to get outliers removed and optimization
 		      col->push_back(tmpResult._tseed);
                       
               }//end "saveflag"
@@ -394,8 +404,6 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
   }//end order function
 
   
-  
-
 
 
 /*--------------- GOOD HITS TIME CLUSTER ---------------------//

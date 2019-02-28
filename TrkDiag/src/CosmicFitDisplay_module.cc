@@ -36,7 +36,9 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+//Mu2e Tracker Geom:
 #include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/StrawDetail.hh"
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
@@ -117,6 +119,7 @@ namespace mu2e
       void plot2d(const art::Event& evt);
       void plot3d(const art::Event& evt);
       void improved_event3D(const art::Event& evt);
+      std::vector<double> GetMaxAndMin(std::vector<double> myvector);
     };
     CosmicFitDisplay::CosmicFitDisplay(fhicl::ParameterSet const& pset) :
 	art::EDAnalyzer(pset),
@@ -157,16 +160,16 @@ namespace mu2e
 
 
       void CosmicFitDisplay::analyze(const art::Event& event) {
-        plot3d( event);
+        plot2d( event);
         
       }//End Analyze 
 
 
+  
       void CosmicFitDisplay::plot2d(const art::Event& event){
-        // find data in event
-        //findData(event);
-        _evt = event.id().event();  // add event id
-        //get combo hits
+        
+        _evt = event.id().event();  
+       
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
         auto Tracks  = event.getValidHandle<StraightTrackSeedCollection>( _sttag );
 
@@ -178,12 +181,14 @@ namespace mu2e
         ms.reserve(Tracks->size());
         cs.reserve(Tracks->size());
         chi_dof.reserve(Tracks->size());
+
         // loop over combo hits
         for(auto const& chit : *comboHits){
         x.push_back(chit.pos().x());
         y.push_back(chit.pos().y());
         z.push_back(chit.pos().z());
         }
+
         //loop over tracks:
         for(auto const& track: *Tracks){
         ms.push_back(track._track.get_m_0());
@@ -194,9 +199,12 @@ namespace mu2e
         }
         
         GeomHandle<TTracker> ttracker;
-
-        // Annulus of a cylinder that bounds the tracker
+        std::vector<StrawDetail> straw_details = ttracker->getStrawDetails();
+        // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(ttracker->getInnerTrackerEnvelopeParams());
+	double const straw_radius = straw_details.at(0).outerRadius();; 
+        
+
         if (doDisplay_) {
               std::cout << "Run: " << event.id().run()
            << "  Subrun: " << event.id().subRun()
@@ -204,15 +212,13 @@ namespace mu2e
               TLine  line, fit_to_track;
 	      TArc   arc;
               TPolyMarker poly;
-              //TArc straw;
-              //TBox plane;
 	      TBox   box;
 	      TText  text;
 	      
 	      arc.SetFillStyle(0);
 	      //straw.SetFillStyle(0);
 	      poly.SetMarkerStyle(2);
-	      poly.SetMarkerSize(0.65);
+	      poly.SetMarkerSize(straw_radius);
 	      //poly.SetMarkerColor(kBlue);
 
 	      canvas_->SetTitle("foo title");
@@ -228,6 +234,8 @@ namespace mu2e
 	      arc.SetLineColor(kBlack);
 	      arc.DrawArc(0.,0., envelope.outerRadius());
 	      arc.DrawArc(0.,0., envelope.innerRadius());
+
+	     
               
 	      xyplot->GetYaxis()->SetTitleOffset(1.25);
 	      xyplot->SetTitle( "y vs x;(mm);(mm)");
@@ -256,7 +264,7 @@ namespace mu2e
  	   
               
 	      if(ms.size() > 0){
-		//float = z_mean = std::accumulate( z.begin(), z.end(), 0.0/ z.size());
+		
 		double tx1 = x[0];
 		double tx2 = x[x.size()-1];
 		double ty1 = ms[0]*tx1+cs[0];
@@ -267,7 +275,6 @@ namespace mu2e
         	stringstream chi_info;
 		
                 chi_info<< chi_dof[0];
-		//const char* str_line_info = line_info.str().c_str();
                 const char* str_chi_info = chi_info.str().c_str();
 	       
                 leg->AddEntry("" ,str_chi_info,  "");
@@ -280,17 +287,14 @@ namespace mu2e
              auto zplot = pad->DrawFrame(-plotLimits*2.,-plotLimits,plotLimits*2.,plotLimits);
              box.SetLineColor(kBlack);
              box.SetFillStyle(0);
-
              double zlimit{envelope.zHalfLength()};
              box.SetLineStyle(1);
              box.DrawBox( -zlimit, -envelope.outerRadius(), zlimit,  envelope.outerRadius() );
              box.SetLineStyle(2);
              box.DrawBox( -zlimit, -envelope.innerRadius(), zlimit,  envelope.innerRadius() );
              box.SetLineStyle(1);
-
              zplot->GetYaxis()->SetTitleOffset(1.25);
-             zplot->SetTitle( "Track Fit y v z ;z (mm);y (mm)");
-            
+             zplot->SetTitle( "Track Fit y v z ;z (mm);y (mm)");  
              poly.SetMarkerColor(kRed);
              for ( auto const& chit : *comboHits ){
 		auto const& p = chit.pos();
@@ -298,11 +302,13 @@ namespace mu2e
 		auto const& s = chit.wireRes();
                 double a = sqrt((chit.pos().x()*chit.pos().x())+(chit.pos().y()*chit.pos().y()));
 		
+
                 if ( chit.pos().y() < 0 ) a = -1*a;
 		r.push_back(a);
 		double z0{p.z()};
 		double y0{p.y()};
 		poly.DrawPolyMarker( 1, &z0, &y0 );
+		arc.DrawArc(p.z(),p.y(),straw_radius);
 		double z1 = p.z()+s*w.z();
         	double z2 = p.z()-s*w.z();
         	double y1 = p.y()+s*w.y();
@@ -329,22 +335,33 @@ namespace mu2e
 	      */
               pad = canvas_->cd(3);
               pad->Clear();
-	      auto res = pad->DrawFrame(-50.,0.,50,10.);
-              res->GetYaxis()->SetTitleOffset(1.25);
-              res->SetTitle( "y residual per hit; Residual (mm) ;# hits");
+              
+	      double max_z = GetMaxAndMin(z)[0];
+	      double max_y = GetMaxAndMin(y)[0];
+	      double min_z = GetMaxAndMin(z)[1];
+	      double min_y = GetMaxAndMin(y)[1];
+	      
+	      auto zoom = pad->DrawFrame(min_z,min_y,max_z,max_y);
+
+              zoom->GetYaxis()->SetTitleOffset(1.25);
+              zoom->SetTitle( "trakc zoom; Residual (mm) ;# hits");
+	      poly.SetMarkerStyle(4);
+	      poly.SetMarkerSize(straw_radius);
               if(ms.size() > 0){
 		      for ( auto const& chit : *comboHits ){
-			double x_hit = chit.pos().x();
-			double y_hit = chit.pos().y();
-			//double hit_error = sqrt((chit.wireRes()*chit.wdir().x()*chit.wireRes()*chit.wdir().x()) +chit.wireRes()*chit.wdir().y()*chit.wireRes()*chit.wdir().y());
-			//double x_fit = x_hit;
-			double y_fit =ms[0]*x_hit+cs[0];
-			double residual = ((y_hit-y_fit));
-			double residual_error = 1;
-		        double pull = residual/residual_error;
-                        
-			res->Fill(pull);
-    
+			auto const& p = chit.pos();
+			auto const& w = chit.wdir();
+			auto const& s = chit.wireRes();
+			
+		        double z0{p.z()};
+			double y0{p.y()};
+			poly.DrawPolyMarker( 1, &z0, &y0 );
+			arc.DrawArc(p.z(),p.y(),straw_radius);
+    			double z1 = p.z()+s*w.z();
+        		double z2 = p.z()-s*w.z();
+        		double y1 = p.y()+s*w.y();
+        		double y2 = p.y()-s*w.y();
+			line.DrawLine( z1, y1, z2, y2);
 		      }
    
 	      }
@@ -615,6 +632,30 @@ _evt = event.id().event();  // add event id
       }
    }
 
+   std::vector<double> CosmicFitDisplay::GetMaxAndMin(std::vector<double> myvector){
+	std::vector<double> MaxAndMin;
+	double first = myvector[0];
+    	double smallest = first;
+	double biggest = first;
+    	for (unsigned i=0; i<  myvector.size(); ++i){ 
+	double element = myvector[i];
+        if (element< smallest) {
+            smallest = element;
+         }
+    	}
+	for (unsigned i=0; i<  myvector.size(); ++i){ 
+	double element = myvector[i];
+         if (element> biggest) {
+            biggest = element;
+         }
+    	}
+    MaxAndMin.push_back(biggest);
+    MaxAndMin.push_back(smallest);
+    return MaxAndMin;
+	}
+
+   
+	
 }//End Namespace Mu2e
 
 using mu2e::CosmicFitDisplay;

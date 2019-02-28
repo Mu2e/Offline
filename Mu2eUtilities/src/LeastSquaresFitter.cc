@@ -81,6 +81,28 @@ namespace LeastSquaresFitter {
 	  line->set_chisq(result[0][0]);
 	  line->set_chisq_dof(result[0][0] / n_points);
 	  
+
+	  for(int j=0; j< static_cast<int>(_x.size()); j++){
+	  	//(_x[i]*P[1][0]+P[0][0])*
+                //TMatrixD D(V_m - A*V_p*At);
+		//double fit_error = sqrt(D[i][i]*D[i][i]);
+		//double hit_error = V_m[i][i];
+
+		//double err_m_term = (_x[i]*P[1][0])*(_x[i]*P[1][0])*(((V_p[1][1])/(P[1][0]*P[1][0])));
+	        //double err_m_term_1=(_x[i]*P[1][0])*(_x[i]*P[1][0])*(V_m[i][i]/_x[i])*(V_m[i][i]/_x[i]);
+		//double cross_term = 2*sqrt((((V_p[1][1]))/(P[1][0]*P[1][0]))+(((V_m[i][i]/_x[i])*(V_m[i][i]/_x[i]))))*(_x[i]*P[1][0])*sqrt(V_p[0][0]);
+		//double c_term = V_p[0][0];
+		 
+	 	//double fit_error =sqrt((V_p[0][0]) + (_x[i]*P[1][0])*(_x[i]*P[1][0])*(((V_p[1][1])/(P[1][0]*P[1][0]))+((V_m[i][i]/_x[i])*(V_m[i][i]/_x[i]))));
+		//double residual_error = sqrt(fit_error*fit_error + hit_error*hit_error);
+	        //double residual_error = sqrt(err_m_term+err_m_term_1+cross_term+c_term + hit_error*hit_error);
+		
+		double residual_error = 1/sqrt(V_m[j][j]);
+		line->set_fit_residuals(C[j][0]);
+		std::cout<<" res err  = " <<C[j][0]<< " / "<<residual_error<< " = "<<C[j][0]/residual_error<<std::endl;
+		line->set_fit_residual_errors(residual_error);
+		
+	   }
           
 	} // ~linear_fit
 
@@ -91,8 +113,9 @@ void xyz_fit( int _nCoeffs, const std::vector<double> &_measured_i, const std::v
 	  
 	  // Set up the matrices
           // Number of hits (N):
-	  int n_points = static_cast<int>(_measured_i.size());  
-          int n_values = 1;
+	  int n_points = static_cast<int>(_measured_i.size());
+	  line->set_N(n_points);  
+          int n_values = 1; //here maping to one dependent varibale (e.g. y)
 
 	  // Represents the functional form A (design matrix) is (NP x NCoeff) matrix:
 	  TMatrixD A(n_points, _nCoeffs);    
@@ -167,44 +190,30 @@ void xyz_fit( int _nCoeffs, const std::vector<double> &_measured_i, const std::v
           
 	  line->set_c_0_err(sqrt(V_p[0][0]));
 	  line->set_m_0_err(sqrt(V_p[1][1]));
-	  std::cout<<line->get_m_0_err()<<std::endl;
           line->set_m_1_err(sqrt(V_p[2][2]));
       
 	  //Extract Chi 2 Info:
 	  line->set_chisq(result[0][0]);
 	  line->set_chisq_dof(result[0][0] / n_points);
 
-
-          //Constrain Fit here:
-
-	  //
 	 double sum_of_squares = 0;
-
+         
 	 for(int i=0; i< n_points; i++){
-		sum_of_squares += C[i][0]*C[i][0]/(n_points-1);
+		sum_of_squares += C[i][0]*C[i][0];
 	
           }
 	  line->set_fit_residual_errors(sqrt(sum_of_squares));
+
 	  for(int i=0; i< n_points; i++){
 	  	
-
-		//double fit_error = sqrt((((V_p[0][0])*(V_p[0][0]))/(P[0][0]*P[0][0]))+(((V_p[1][1])*(V_p[1][1]))/(P[1][0]*P[1][0]))+(((V_p[2][2])*(V_p[2][2]))/(P[2][0]*P[2][0])));
-	        V_m.Invert(det); 
-		try {
-    	            V_m.Invert(det); 
-    
-  	         } catch (exception& exc) {
-    
-		    std::stringstream message;
-		    message << "cannot fit due to singular matrix error on inversion!" << std::endl;
-                }             
+      
 		
-                TMatrixD D(V_m - A*V_p*At);
+                //TMatrixD D(V_m - A*V_p*At);
 		//double fit_error = sqrt(D[i][i]*D[i][i]);
-		//std::cout<<" Fit Error "<<D[i][i]<<std::endl;
 		
-		line->set_fit_residuals(C[i][0]); //scale to number of CHs in track? /n works
-		//line->set_fit_residual_errors(sqrt((_err[i]*_err[i]) + (fit_error*fit_error)));
+		
+		line->set_fit_residuals(C[i][0]);//C[i][0]/sqrt(sum_of_squares)); //scale to number of CHs in track? /n works
+		
 		
 	   }
 
@@ -214,138 +223,89 @@ void xyz_fit( int _nCoeffs, const std::vector<double> &_measured_i, const std::v
           
 	} // ~linear_fit
 
-/*------------full fit for constrained chi-squared fit ---------*/
-void full_fit( int _nCoeffs, const std::vector<std::vector<double>> point_i, const std::vector<std::vector<double>> point_j, const std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance) { 
-	  
-	  /*
-	  // Set up the matrices
-          // Number of hits (N):
-	  int n_points = static_cast<int>(point_i[0].size());  
-          int n_values = static_cast<int>(point_j[0].size());
+std::vector <double> Means(std::vector<std::vector<double> > values, std::vector<double> weights) {
+  if (values.size() < 1) {
+    throw "No input values" ;
+  }
+  if (values[0].size() < 1) {
+    throw"Dimension < 1" ;
+  }
+  if (weights.size() != values.size()) {
+    weights = std::vector<double>(values.size(), 1.);
+  }
+  size_t npoints     = values.size();
+  size_t dim         = values[0].size();
+  std::vector<double>    means(dim, 0);
+  double             totalWeight = 0;
+  for (size_t x = 0; x < npoints; x++) {
+    totalWeight += weights[x];
+  }
+  std::vector<double> normalized_weights;
+  for (size_t x = 0; x < npoints; x++) {
+    normalized_weights.push_back(weights[x] / totalWeight);
+  }
 
-	  // Represents the functional form A (design matrix) is (NP x NCoeff) matrix:
-	  TMatrixD A(n_points, _nCoeffs);  
+  double mean;
+  for (size_t i = 0; i < dim; ++i) {
+    mean = 0.;
+    for (size_t x = 0; x < npoints; ++x) {
+      mean += values[x][i] * normalized_weights[x];
+    }
+    means[i+1] = mean;
+  }
+
+  return means;
+}
+
+//For 1D list of values:
+double Mean(std::vector<double>  values, std::vector<double> weights) {
   
-	  // Covariance matrix of measurements ( NP x NP) matrix :                
-	  TMatrixD V_m(n_points, n_points);
-    
-	  //Set up Y (value matrix) as a (NP x NV) matrix, Y is the predicted value i.e. the one you are estimating :        
-	  TMatrixD Y(n_points, n_values); 
-                    
-          //Fill A and Z:
-	  for (int i = 0; i < static_cast<int>(point_i.size()); ++i) {
-            //Fill first column with 1's:
-	    A[i][0] = 1;
-	    //Fill second column with x_i:
-	    A[i][1] = point_i[0];
-	    //Fill third column with y_i:
-            A[i][2] = _measured_k[i];
-           
-            //Get Coverience matrix on measurement from calculated hit-error:
-	    V_m[i][i] = (_err[i] * _err[i]);
-            
-	    //Fill Value Matrix:
-	    Y[i][0] = point_j[i];
-	    
-            
-	  }
+  if (weights.size() != values.size()) {
+    weights = std::vector<double>(values.size(), 1.);
+  }
+  size_t npoints     = values.size();
+ 
+  double  totalWeight = 0;
+  for (size_t x = 0; x < npoints; x++) {
+    totalWeight += weights[x];
+  }
+  std::vector<double> normalized_weights;
+  for (size_t x = 0; x < npoints; x++) {
+    normalized_weights.push_back(weights[x] / totalWeight);
+  }
 
-	  // Perform the inversions and multiplications which make up the least squares fit
-	  double* det = NULL; 
-	  // Invert in place - ( NP x NP) matrix                  
-	  V_m.Invert(det);                      
-	  
-           // Copy A to At- retain A
-	  TMatrixD At(A);                      
-	  
-	  // Transpose At (leaving A unchanged) - At is ( _nCoeffs x NP) matrix:
-	  At.T();
-	  // The covariance matrix of the parameters of model(inv)  - Vp is (_nCoeffs x _nCoeffs) matrix F2:                         
-	  TMatrixD V_p(At * V_m * A);           
-         
-          //Invert V_p:
-          try {
-    	       V_p.Invert(det); 
-    
-  	   } catch (exception& exc) {
-    
-		    std::stringstream message;
-		    message << "cannot fit due to singular matrix error on inversion!" << std::endl;
-          }                     
-	  //FY is a NCoeff x NV matrix:
-	  TMatrixD FY(_nCoeffs,n_values);
-	  FY = At * V_m * Y;
+  double mean;
+  
+   mean = 0.;
+   for (size_t x = 0; x < npoints; ++x) {
+   mean += values[x] * normalized_weights[x];
+   }
+   
 
-	  covariance = V_p;
-          // The least sqaures estimate of the parameters - P is a (_nCoeffs x NV) matrix:
-	  TMatrixD P(V_p * FY );       
-          
-          
-	  //Calculate the residuals:
-	  TMatrixD C(Y - (A * P));
+  return mean;
+}
 
-          // Calculate the fit chisq
-	  TMatrixD Ct(C);
-	  Ct.T();
-	  TMatrixD result(Ct * V_m * C);
-          
-	  // Extract the Fit Parameters
-	  line->set_c_0(P[0][0]);        
-	  line->set_m_0(P[1][0]);  
-	  line->set_m_1(P[2][0]);
-	  //Extract Covarience Parameters:
-          
-	  line->set_c_0_err(sqrt(V_p[0][0]));
-	  line->set_m_0_err(sqrt(V_p[1][1]));
-	  std::cout<<line->get_m_0_err()<<std::endl;
-          line->set_m_1_err(sqrt(V_p[2][2]));
-      
-	  //Extract Chi 2 Info:
-	  line->set_chisq(result[0][0]);
-	  line->set_chisq_dof(result[0][0] / n_points);
 
-	 double sum_of_squares = 0;
 
-	 for(int i=0; i< n_points; i++){
-		sum_of_squares += C[i][0]*C[i][0]/(n_points-1);
-	
-          }
-	  line->set_fit_residual_errors(sqrt(sum_of_squares));
-	  for(int i=0; i< n_points; i++){
-	  	
-	        V_m.Invert(det); 
-		try {
-    	            V_m.Invert(det); 
-    
-  	         } catch (exception& exc) {
-    
-		    std::stringstream message;
-		    message << "cannot fit due to singular matrix error on inversion!" << std::endl;
-                }             
-		
-                TMatrixD D(V_m - A*V_p*At);
-		//double fit_error = sqrt(D[i][i]*D[i][i]);
-		//std::cout<<" Fit Error "<<D[i][i]<<std::endl;
-		
-		line->set_fit_residuals(C[i][0]); //scale to number of CHs in track? /n works
-		
-		
-	   }
-
-          
-	  
-         
-          */
-	} // ~linear_fit
 
 
 /*------------full fit for constrained chi-squared fit ---------*/
-void chi2_constrained_fit( int _nCoeffs, const std::vector<std::vector<double>> point_i, const std::vector<std::vector<double>> point_j, std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance) { 
-	  
-	  
-         
+void minimise_chisq( int _nCoeffs, const std::vector<std::vector<double>> measurement, std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance) { 
+        
           
-	} // ~linear_fit
+	
+
+
+
+
+
+} // ~linear_fit
+
+
+
+
+
+
 /*
 void circle_fit(const double R_res_cut,  std::vector<double> &_x,  std::vector<double> &_y, TF2 &circle, CircleFit &Circle, TMatrixD& covariance){
 // Number of measurements:

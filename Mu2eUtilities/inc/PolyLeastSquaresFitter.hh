@@ -22,10 +22,9 @@ namespace PolyLeastSquaresFitter {
           void Fit(std::vector< std::vector<double> >& points, std::vector< std::vector<double> >& values,int polynomialOrder, std::vector<double>& weights,TMatrixD point_errors);
    
 	  std::vector<int> VecIndex(int index, int nInputVariables);
-	  std::vector<int> PowIndex(int index, int nInputVariables);
 	
 	  void SetCoeffs(int pointDim, TMatrixD& coeff);
-	  //TMatrixD GetCoefficientsMatrix() const ();
+	  TMatrixD GetCoefficientsMatrix ();
           void PrintCoefficientsMatrix();
           double*  MakePolynomialVector(const double* point, double* polyVector, int pointdim, int ncoeffs);
           int Factorial(int val); 

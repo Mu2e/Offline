@@ -9,7 +9,7 @@ using namespace std;
 
 namespace mu2e{
 	StraightTrack::StraightTrack() {
-          _dim = 3;
+          //_dim = 3;
 	  _Nhits = 0;
 	  _c_0 = 0.0;
 	  _c_0_err = 0.0;
@@ -26,7 +26,7 @@ namespace mu2e{
 	}
 
 	StraightTrack::StraightTrack(double c_0,  double m_0, double m_1, double m_2) {
-	  _dim = 3;
+	  //_dim = 3;
 	  _Nhits = 0;
 	  _c_0 = c_0;
 	  _c_0_err = 0.0;
@@ -42,7 +42,7 @@ namespace mu2e{
 	}
 
 	StraightTrack::StraightTrack(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err, double m_1, double m_1_err, double m_2, double m_2_err, double chisq, double chisq_dof) {
-          _dim = 3;
+          //_dim = 3;
 	  _Nhits = N;
 	  _c_0 = c_0;
 	  _c_0_err = c_0_err;
@@ -66,7 +66,7 @@ namespace mu2e{
 	StraightTrack::~StraightTrack() {}
 
 	void StraightTrack::clear() {
-	  _dim = 3;
+	  //_dim = 3;
 	  _Nhits = 0;
 	  _c_0 = 0.0;
 	  _c_0_err = 0.0;
@@ -78,12 +78,13 @@ namespace mu2e{
 	  _m_2_err = 0.0;
 	  _chisq = 0.0;
 	  _chisq_dof = 0.0;
-	  _fit_residuals.push_back(0.0);
-	  _fit_residual_errors.push_back(0.0);
+	  _fit_residuals.erase(_fit_residuals.begin(),_fit_residuals.end());
+	  _fit_residual_errors.erase(_fit_residual_errors.begin(),_fit_residual_errors.end());
+	  
 	}
         
 	void StraightTrack::set_parameters(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err, double m_1, double m_1_err, double m_2, double m_2_err, double chisq, double chisq_dof, std::vector<double> fit_residual, std::vector<double> fit_residual_error) {
-	  _dim = dim;
+	  //_dim = dim;
 	  _Nhits = N;
 	  _c_0 = c_0;
 	  _c_0_err = c_0_err;

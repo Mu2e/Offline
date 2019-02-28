@@ -66,6 +66,16 @@ StraightTrackFinder : {
     }
                                     
 }
+
+CosmicTrackFinder : {
+    module_type		: CosmicTrackFinder
+    ComboHitCollection     : "makePH"
+    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    CosmicTrackSeedCollection  :"CosmicTrackFinder"
+    
+                                    
+}
     
 SRobustHelixFinder : {
   @table::RobustHelixFinder
@@ -422,6 +432,7 @@ Tracking : {
     TimeClusterFinder  : @local::TimeClusterFinder
     TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
     StraightTrackFinder  : @local::StraightTrackFinder
+    CosmicTrackFinder  : @local::CosmicTrackFinder
     HelixFinder  : @local::RobustHelixFinder
     STimeClusterFinder  : @local::STimeClusterFinder
     SHelixFinder  : @local::SRobustHelixFinder
@@ -467,8 +478,8 @@ Tracking : {
   }
 
 #production sequence to find straight track
-FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ]
-
+FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ] //old fit routine
+FindCosmics : [ TimeClusterFinderCosmics, CosmicTrackFinder ]
 # production sequence to find helices
   FindHelices : [ TimeClusterFinder, HelixFinder ]
   SFindHelices : [ STimeClusterFinder, SHelixFinder ]

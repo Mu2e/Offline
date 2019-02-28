@@ -16,6 +16,7 @@
 
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
+#include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StraightTrack.hh"
 #include "RecoDataProducts/inc/StraightTrackSeed.hh"
 
@@ -45,16 +46,25 @@ namespace mu2e
 
                 bool initStraightTrack(StraightTrackFinderData& TrackData);
                 StraightTrack* InitLine(const ComboHit *FirstP1, const ComboHit *LastP2,StraightTrack* line);
+                //Step 1: Begin Fit- initializes the fit routine:
                 void BeginFit(StraightTrackFinderData& TrackData);
                 
-                void Fit(StraightTrackFinderData& trackData, double chi2); 
-                void FitChi2(StraightTrackFinderData& trackData);
-                StraightTrack* refineFit(StraightTrackFinderData& trackData,StraightTrack* track, int WeightMode);
+                //Step 2: RunFitChi2-holds the functions to find initial line, update, refine and add in drift
+                void RunFitChi2(StraightTrackFinderData& trackData);
+		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
+		StraightTrack* FitAll(StraightTrackFinderData& trackData,StraightTrack* track, int WeightMode);
+		
+		void MulitpleTrackResolver(StraightTrackFinderData& trackData,StraightTrack* track);
+
+		std::vector<double> Optimize(StraightTrackFinderData& trackData, StraightTrack* track, std::vector<std::vector<double>> all_hit_list);
                 
                 void UpdateFitErrors(std::vector<double> x, std::vector<double> y,std::vector<double> z, std::vector<double> err, StraightTrack* track,TMatrixD cov_x, std::vector<XYZVec> maj,std::vector<XYZVec> min);
+
                 bool goodTrack(StraightTrack* track);
-               
-		void add_drift(StraightTrackFinderData& trackData);
+                float pointToLineDCA(StraightTrack* track, StrawHit hit);
+		void DriftCorrection(StraightTrackFinderData& trackData);
+		StraightTrack* Hough2D(StraightTrackFinderData& trackData);
+
                 float evalWeightXY  (const ComboHit& Hit, const StraightTrack& track);
                 const TTracker*            _tracker;
     		void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
@@ -71,13 +81,15 @@ namespace mu2e
 		int _diag;
     		int _debug;		    // debug level
                 StrawHitFlag _useflag, _dontuseflag;
+	        int _minresid;
     		int      _minnsh;  // minimum # of StrawHits
-    		//unsigned _minnhit; // minimum # of hits to work with
-    		float _minxyresid; // minimum distance used in the track fit to be clusterized. units are mm
+    		unsigned _minCHHits; // minimum # of CH hits - should be at least 2 for fit to work....
+		unsigned _n_outliers; //number of significant outliers/number of hits in track....helps with multiplicity(?)
+    		float _maxresid; // max allowed pull which a hit can have to be classed as "good"
     		unsigned _maxniter; // maxium # of iterations to global minimum   
-                //float _minzsep, _maxzsep; // Z separation of points for pitch estimate
+                
     		float _maxdxy; // maximum distance in hits after fit
-    		float _maxchi2xy;
+    		float _maxchi2; //maximum allowed chi2
 		
     
   };//end Fit class

@@ -1,71 +1,50 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh"
-//#include "TMatrixD.h"
+
+#include <vector>
+
 using namespace std;
 
 namespace mu2e{
+
 	CosmicTrack::CosmicTrack() {
-          
-	  _Nhits = 0;
-	  _c = 0.0;
-	  _c_err = 0.0;
-	  _m = 0.0;
-	  _m_err = 0.0;
-	  _chisq = 0.0;
-	  _chisq_dof = 0.0;
-          
-	}
+          	_Nhits = 0;
 
-	CosmicTrack::CosmicTrack(double c, double m) {
+    		_par1=0.;
+   		_par2=0.;
+    		_par3=0.;
+    		_par4=0.;
+
+    		XYZVec _track_parameters(0,0,0);
+    		XYZVec _track_equation(0,0,0);//r(t) expression
+
+    		XYZVec _track_direction(0,0,0);//the "gradient" term
+    		XYZVec _track_point0(0,0,0);//the "starting point" in fit line
+
+   		_chisq=0;
+    		_chisq_dof=0; 
+
+   
 	  
-	  _Nhits = 0;
-	  _c = c;
-	  _c_err = 0.0;
-	  _m = m;
-	  _m_err = 0.0;
-	  _chisq = 0.0;
-	  _chisq_dof = 0.0;
-          
-	}
-
-	CosmicTrack::CosmicTrack(int N, double c, double c_err, double m, double m_err,double chisq, double chisq_dof) {
- 
-	  _Nhits = N;
-	  _c = c;
-	  _c_err = c_err;
-	  _m = m;
-	  _m_err = m_err;
-	  _chisq = chisq;
-	  _chisq_dof = chisq_dof;
-          
-        }
+	 }
 
 	// Destructor
 	CosmicTrack::~CosmicTrack() {}
 
 	void CosmicTrack::clear() {
-	
+	  _par1 = 0.;
+   	  _par2 = 0.;
+          _par3 = 0.;
+          _par4 = 0.;
+
 	  _Nhits = 0;
-	  _c = 0.0;
-	  _c_err = 0.0;
-	  _m = 0.0;
-	  _m_err = 0.0;
-	  _chisq = 0.0;
-	  _chisq_dof = 0.0;
+	  
+	  _fit_residuals.erase(_fit_residuals.begin(),_fit_residuals.end());
+	  _fit_residual_errors.erase(_fit_residual_errors.begin(),_fit_residual_errors.end());
 	  
 	}
+	
+     
 
-	void CosmicTrack::set_parameters(int N, double c, double c_err, double m, double m_err,double chisq, double chisq_dof) {
-	 
-	  _Nhits = N;
-	  _c = c;
-	  _c_err = c_err;
-	  _m = m;
-	  _m_err = m_err;
-	  _chisq = chisq;
-	  _chisq_dof = chisq_dof;
-	  
-	 
-
-	}
+	
 }
 

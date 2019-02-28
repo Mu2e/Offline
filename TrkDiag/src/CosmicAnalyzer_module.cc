@@ -169,7 +169,7 @@ namespace mu2e
 	_chisq_ndf_plot->GetXaxis()->SetTitle("#Chi^{2}/N");
 	
         
-        _total_residuals = tfs->make<TH1F>("Residuals ","Residuals " ,50,-100,100);
+        _total_residuals = tfs->make<TH1F>("Residuals ","Residuals " ,200,-200,200);
 	_total_residuals->GetXaxis()->SetTitle("Residual  [mm]");
 	_total_residuals->SetStats();
 
@@ -305,8 +305,9 @@ namespace mu2e
 			
 			
 			for(size_t i=0; i< st.get_fit_residuals().size();i++)			{
-				    double pull = st.get_fit_residuals()[ich]/st.get_fit_residual_errors()[i];
-		                    _total_residuals->Fill(st.get_fit_residuals()[i]);
+				    
+				    double pull = st.get_fit_residuals()[ich]/st.get_fit_residual_errors()[ich];
+		                    _total_residuals->Fill(st.get_fit_residuals()[ich]);
 			            _total_pulls->Fill(pull);
 				    _pull_v_cosine_XY->Fill( wdir.Dot(track_dir), pull);
 			            
