@@ -305,8 +305,8 @@ namespace mu2e {
       auto const&  dekseed = *idekseed;
       TrkTools::fillTrkInfo(dekseed,_deti);
       if(_diag > 1){
-	TrkTools::fillHitInfo(dekseed, _detsh); //TODO
-	TrkTools::fillMatInfo(dekseed, _detsm); //TODO
+	TrkTools::fillHitInfo(dekseed, _detsh);
+	TrkTools::fillMatInfo(dekseed, _detsm);
       }
       if(_helices)TrkTools::fillHelixInfo(dekseed, _bz0, _hinfo);
       // upstream and muon tracks
@@ -316,7 +316,7 @@ namespace mu2e {
       if(idmukseed != dmC.end()) TrkTools::fillTrkInfo(*idmukseed,_dmti);
       // calorimeter info
       if (dekseed.hasCaloCluster()) {
-	TrkTools::fillCaloHitInfo(dekseed, *caloh,  _detch); // TODO
+	TrkTools::fillCaloHitInfo(dekseed, *caloh,  _detch);
 	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
       }
       if (_filltrkqual) {
@@ -340,9 +340,9 @@ namespace mu2e {
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
 
-	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary); // TODO
+	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary);
 	    if (_diag>1) {
-	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc); // TODO
+	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc);
 	    }
 	    break;
 	  }
