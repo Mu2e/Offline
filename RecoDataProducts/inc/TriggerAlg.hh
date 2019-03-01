@@ -13,8 +13,8 @@ namespace mu2e {
     typedef unsigned int mask_type;
 
     enum bit_type {unbiased            , 
-		   minBiasSrawDigiCount, largeStrawDigiCount, 
-		   minBiasCaloDigiCount, largeCaloDigiCount ,
+		   minBiasStrawDigiCount, largeStrawDigiCount, 
+		   minBiasCaloDigiCount , largeCaloDigiCount ,
 		   caloMVACE           , caloMVAPhoton     , 
 		   caloMVAMixedCE      ,
 		   caloLHCE            , caloLHPhoton       , 

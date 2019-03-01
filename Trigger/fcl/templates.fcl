@@ -43,7 +43,7 @@ Trigger : {
 	minimumbiasSDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
-	    triggerAlg        : ["MinBiasSrawDigiCount"]
+	    triggerAlg        : ["MinBiasStrawDigiCount"]
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
@@ -51,7 +51,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerAlg        : ["MinBiasSrawDigiCount"]
+	    triggerAlg        : ["MinBiasStrawDigiCount"]
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -98,7 +98,7 @@ Trigger : {
 	    caloDigiCollection  : notUSed		  
 	    useStrawDigi        : true			  
 	    useCaloDigi         : false			  
-	    triggerAlg          : ["MinBiasSrawDigiCount"]	    
+	    triggerAlg          : ["MinBiasStrawDigiCount"]	    
 	    minNStrawDigi       : 500   		  
 	    maxNStrawDigi       : 10000			  
 	    minNCaloDigi        : -1			  
@@ -200,7 +200,7 @@ Trigger : {
 	minimumbiasCDCount : [ minimumbiasCDCountEventPrescale, minimumbiasCDCountFilter, minimumbiasCDCountPrescale]
 
 	#filter to select events with large occupancy in the tracker
-	largeCDCount       : [ LargeCDCountEventPrescale, LargeCDCountFilter, LargeCDCountPrescale]
+	largeCDCount       : [ largeCDCountEventPrescale, largeCDCountFilter, largeCDCountPrescale]
     }
     
     outputs: {

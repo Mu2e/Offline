@@ -1,7 +1,7 @@
 physics.filters.minimumbiasSDCountPrescale.caloDigiCollection  : notUSed		  
 physics.filters.minimumbiasSDCountPrescale.useStrawDigi        : true			  
 physics.filters.minimumbiasSDCountPrescale.useCaloDigi         : false			  
-physics.filters.minimumbiasSDCountPrescale.triggerAlg          : ["MinBiasSrawDigiCount"]
+physics.filters.minimumbiasSDCountPrescale.triggerAlg          : ["MinBiasStrawDigiCount"]
 physics.filters.minimumbiasSDCountPrescale.minNStrawDigi       : 500   		  
 physics.filters.minimumbiasSDCountPrescale.maxNStrawDigi       : 10000			  
 physics.filters.minimumbiasSDCountPrescale.minNCaloDigi        : -1			  
