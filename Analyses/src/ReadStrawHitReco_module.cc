@@ -144,7 +144,7 @@ void mu2e::ReadStrawHitReco::analyze(art::Event const& evt) {
     _hPanelNumber->Fill(pnno);
     _hPlaneNumber->Fill(plno);
 
-    double halfLen                  = str.getHalfLength();
+    double halfLen                  = str.halfLength();
 
     // Calculate the hit position; it's a point on the wire
     // (for now wire is modeled as a straight line).

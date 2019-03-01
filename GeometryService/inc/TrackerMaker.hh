@@ -71,7 +71,7 @@ namespace mu2e {
 
     // An ugly hack for the detailed support structure; must be called after all
     // straws have been created.
-    void recomputeHalfLengths();
+    //void recomputeHalfLengths();
 
     // Some final self-consistency checks.
     void finalCheck();
@@ -87,7 +87,6 @@ namespace mu2e {
                                      // necessarily the same as the center of the instrumented region of the tracker.
 
     // Basic parameters needed to describe the Tracker.
-    uint16_t    _numPlanes;                   // Number of planes.
     uint16_t    _panelsPerPlane;              // Number of panels in one plane.
     uint16_t    _layersPerPanel;              // Number of layers in one panel
     int    _manifoldsPerEnd;             // Number of manifolds along one end of the wires in a layer. 48 = 96/2
@@ -147,11 +146,11 @@ namespace mu2e {
     int _nStrawsToReserve;
 
     // Lengths of straws indexed by manifold, from innermost radius, outwards.
-    std::vector<double> _strawHalfLengths;
+    std::array<double,StrawId::_nstraws> _strawHalfLengths;
 
     // Same for the active length of the straw.
     // This is only valid for SupportModel==simple
-    std::vector<double> _strawActiveHalfLengths;
+    std::array<double,StrawId::_nstraws> _strawActiveHalfLengths;
 
     // // panel box half lengths
     // std::vector<double> _panelBoxHalfLengths;

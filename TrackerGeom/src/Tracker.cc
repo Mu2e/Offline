@@ -16,8 +16,8 @@ using namespace std;
 namespace mu2e {
 
   void Tracker::fillPointers () const{
-    for ( size_t i=0; i<_nPlanes; ++i){
-      _planes[i].fillPointers(*this);
+    for ( size_t i=0; i<StrawId::_nplanes; ++i){
+      _planes[i].fillPointers(this);
     }
   }
 

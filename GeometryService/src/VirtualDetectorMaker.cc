@@ -201,7 +201,7 @@ namespace mu2e {
 
         ostringstream vdName(VirtualDetectorId::name(VirtualDetectorId::TT_Mid));
 
-        if(c.getInt("tracker.numPlanes")%2!=0){
+        if(StrawId::_nplanes%2!=0){
           throw cet::exception("GEOM")
             << "This virtual detector " << vdName.str()
             << " can only be placed if the Tracker has an even number of planes \n";

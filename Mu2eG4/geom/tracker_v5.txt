@@ -29,14 +29,12 @@ int    tracker.panelZPattern        =     1;    // Controls up/down stream choic
 int    tracker.layerZPattern        =     1;    // Which straw layer is closest to the base plate.
 
 // basic geometry numbers
-int    tracker.panelsPerPlane      =   6;
+// numerology is taken from StrawId class
 int    tracker.spacingPattern              =   1;
-int    tracker.layersPerPanel             =   2;
 int    tracker.strawsPerManifold           =   1;
 int    tracker.manifoldsPerEnd             =   48;
-int    tracker.numPlanes                  =    36;
 int    tracker.rotationPattern             =   5;
-// by default, 18 slots of 20 are filled
+// do not build some planes
 vector<int> tracker.nonExistingPlanes = {  };
 
 // angles and spacings

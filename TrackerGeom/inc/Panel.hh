@@ -114,7 +114,7 @@ namespace mu2e {
     double             getEBKeyPhiExtraRotation() const { return _EBKeyPhiExtraRotation; }
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker& tracker ) const;
+    void fillPointers ( const Tracker* tracker ) const;
 
 #ifndef __CINT__
     /*
