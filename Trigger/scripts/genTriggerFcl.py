@@ -17,12 +17,12 @@ from argparse import ArgumentParser
 
 def appendEpilog(trig_path, output_file, project_name):
 
-    trk_filters     = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter','Prescale']
-    helix_filters   = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'Prescale']
-    tc_filters      = ['EventPrescale','SDCountFilter','TCFilter',  'Prescale']
-    calo_filters    = ['EventPrescale','Filter'       , 'Prescale']
-    unbiase_filters = ['Prescale']
-    minbias_filters = ['EventPrescale','Filter'       , 'Prescale']
+    trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter','Prescale']
+    helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'Prescale']
+    tc_filters       = ['EventPrescale','SDCountFilter','TCFilter', 'Prescale']
+    calo_filters     = ['EventPrescale','CDCountFilter','Filter'  , 'Prescale']
+    unbiased_filters = ['Prescale']
+    minbias_filters  = ['EventPrescale','Filter'       , 'Prescale']
 
     filters     = []
 
