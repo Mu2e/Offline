@@ -265,7 +265,7 @@ bool           extMonFNAL.module.solid          = true;
 // bool           extMonFNAL.readoutPlane.visible   = true;
 // bool           extMonFNAL.readoutPlane.solid     = true;
 
-int            extMonFNAL.verbosityLevel = 3;
+int            extMonFNAL.verbosityLevel = 0;
 int            extMonFNAL.sd.verbosityLevel = 0;
 
 // This tells emacs to view this file in c++ mode.

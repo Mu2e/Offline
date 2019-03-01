@@ -277,13 +277,7 @@ namespace mu2e {
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
       addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
-
-    //std::unique_ptr<ExtMonFNAL::ExtMon> tmpextmon(ExtMonFNAL::ExtMonMaker::make(*_config,emfb));    
-//Suspect
-    //const ExtMonFNAL::ExtMon& extmon = *tmpextmon.get();
-    //addDetector(std::move(tmpextmon));
     
-    //addDetector(ExtMonFNALMuonIDMaker::make(*_config, extmon));    
 
 
     if(_config->getBool("hasVirtualDetector",false)){
