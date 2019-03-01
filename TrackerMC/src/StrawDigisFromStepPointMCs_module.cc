@@ -532,7 +532,7 @@ namespace mu2e {
             // or in dead regions of the straw
             double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
 
-            if(wpos <  straw.getDetail().activeHalfLength() &&
+            if(wpos <  straw.activeHalfLength() &&
                deadStraw.isAlive(sid,wpos) &&
                steps[ispmc].ionizingEdep() > _minstepE){
               // create ptr to MC truth, used for references
@@ -709,7 +709,7 @@ namespace mu2e {
       // Compute the vector from the cluster to the wire
       Hep3Vector cpos = cluster._pos-straw.getMidPoint();
       // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
-      double dd = min(cpos.perp(straw.getDirection()),straw.getDetail().innerRadius());
+      double dd = min(cpos.perp(straw.getDirection()),straw.innerRadius());
       // sample the gain for this cluster
       double gain = strawphys.clusterGain(_randgauss, _randflat, cluster._ne);
       wireq._charge = cluster._charge*(gain);
@@ -727,7 +727,7 @@ namespace mu2e {
 	  StrawPhysics const& strawphys, Straw const& straw,
           WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
       // compute distance to the appropriate end
-      double wlen = straw.getDetail().halfLength(); // use the full length, not the active length
+      double wlen = straw.halfLength(); // use the full length, not the active length
       // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
       if(end == StrawEnd::hv)
         weq._wdist = wlen - wireq._wpos;
@@ -1167,7 +1167,7 @@ namespace mu2e {
       if(pdt->particle(step.simParticle()->pdgId()).isValid()){
         charge = pdt->particle(step.simParticle()->pdgId()).ref().charge();
       }
-      static const double r2 = straw.getDetail().innerRadius()*straw.getDetail().innerRadius();
+      static const double r2 = straw.innerRadius()*straw.innerRadius();
       // decide how we step; straight or helix, depending on the Pt
       Hep3Vector const& mom = step.momentum();
       Hep3Vector mdir = mom.unit();

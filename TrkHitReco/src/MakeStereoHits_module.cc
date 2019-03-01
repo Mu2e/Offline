@@ -290,8 +290,8 @@ namespace mu2e {
       const Tracker& tt(*GeomHandle<Tracker>());
       // establihit the extent of a panel using the longest straw (0)
       Straw const& straw = tt.getStraw(StrawId(0,0,0));
-      float phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
-      float phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
+      float phi0 = (straw.getMidPoint()-straw.halfLength()*straw.getDirection()).phi();
+      float phi1 = (straw.getMidPoint()+straw.halfLength()*straw.getDirection()).phi();
       float lophi = std::min(phi0,phi1);
       float hiphi = std::max(phi0,phi1);
       float phiwidth = hiphi-lophi;
