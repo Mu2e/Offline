@@ -195,11 +195,9 @@ namespace mu2e {
       const auto& genParticle = primary.primary();
 
       trkinfomcstep._time = genParticle.time();
-      trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + 
-				     genParticle.momentum().py()*genParticle.momentum().py() + 
-				     genParticle.momentum().pz()*genParticle.momentum().pz());
+      trkinfomcstep._mom = Geom::toXYZVec(genParticle.momentum());
       GeomHandle<DetectorSystem> det;
-      trkinfomcstep._pos = det->toDetector(genParticle.position());
+      trkinfomcstep._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
 
       GeomHandle<BFieldManager> bfmgr;
       GlobalConstantsHandle<ParticleDataTable> pdt;      
@@ -208,7 +206,7 @@ namespace mu2e {
 
       CLHEP::HepVector parvec(5,0);
       double hflt(0.0);
-      HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
+      HepPoint ppos(trkinfomcstep._pos.x(), trkinfomcstep._pos.y(), trkinfomcstep._pos.z());
       CLHEP::Hep3Vector mom = genParticle.momentum().vect();
       double charge = pdt->particle(genParticle.pdgId()).ref().charge();
       TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
@@ -234,12 +232,12 @@ namespace mu2e {
 	    if(i_mcstep._time < dmin){
 	      dmin = i_mcstep._time;
 	      trkinfomcstep._time = i_mcstep._time;
-	      trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
+	      trkinfomcstep._mom = Geom::Hep3Vec(i_mcstep._mom);
 	      trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
 
 	      CLHEP::HepVector parvec(5,0);
 	      double hflt(0.0);
-	      HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
+	      HepPoint ppos(trkinfomcstep._pos.x(), trkinfomcstep._pos.y(), trkinfomcstep._pos.z());
 	      CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
 	      double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
 	      TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);

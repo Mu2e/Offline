@@ -11,7 +11,6 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
-#include "DataProducts/inc/threevec.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"

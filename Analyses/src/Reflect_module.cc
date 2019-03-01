@@ -24,7 +24,7 @@
 // data
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 // ROOT incldues
 #include "TTree.h"
 #include "TH1F.h"
@@ -81,7 +81,7 @@ namespace mu2e {
     TrkInfo _utrkinfo, _dtrkinfo;
     TrkInfoMC _mcinfo;
     TrkInfoMCStep _umcinfo,_dmcinfo;
-    threevec _opos, _omom, _ppos, _pmom, _pppos;
+    XYZVec _opos, _omom, _ppos, _pmom, _pppos;
     Int_t _ppdg;
     Float_t _ot0, _pt0;
     Int_t _uextnpa,_dextnpa,_uextnst,_dextnst;
@@ -285,14 +285,14 @@ namespace mu2e {
     _reflect->Branch("mc",&_mcinfo,TrkInfoMC::leafnames().c_str());
     _reflect->Branch("umc",&_umcinfo,TrkInfoMCStep::leafnames().c_str());
     _reflect->Branch("dmc",&_dmcinfo,TrkInfoMCStep::leafnames().c_str());
-    _reflect->Branch("opos",&_opos,threevec::leafnames().c_str());
-    _reflect->Branch("omom",&_omom,threevec::leafnames().c_str());
+    _reflect->Branch("opos",&_opos,Geom::XYZnames().c_str());
+    _reflect->Branch("omom",&_omom,Geom::XYZnames().c_str());
     _reflect->Branch("ot0",&_ot0,"ot0/F");
     _reflect->Branch("ppdg",&_ppdg,"ppdg/I");
-    _reflect->Branch("ppos",&_ppos,threevec::leafnames().c_str());
-    _reflect->Branch("pmom",&_pmom,threevec::leafnames().c_str());
+    _reflect->Branch("ppos",&_ppos,Geom::XYZnames().c_str());
+    _reflect->Branch("pmom",&_pmom,Geom::XYZnames().c_str());
     _reflect->Branch("pt0",&_pt0,"pt0/F");
-    _reflect->Branch("pppos",&_pppos,threevec::leafnames().c_str());
+    _reflect->Branch("pppos",&_pppos,Geom::XYZnames().c_str());
     if(_extrapolate){
       _reflect->Branch("uextnPA",&_uextnpa,"uextnpa/I");
       _reflect->Branch("dextnPA",&_dextnpa,"dextnpa/I");

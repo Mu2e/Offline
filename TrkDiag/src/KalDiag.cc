@@ -670,8 +670,8 @@ namespace mu2e
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
 
-    mcstepinfo._mom = mom.mag();
-    mcstepinfo._pos = pos;
+    mcstepinfo._mom = Geom::toXYZVec(mom);
+    mcstepinfo._pos = Geom::toXYZVec(pos);
     double hflt(0.0);
     HepVector parvec(5,0);
     static Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));

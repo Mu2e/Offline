@@ -6,7 +6,7 @@
 // 
 #ifndef TrkInfo_HH
 #define TrkInfo_HH
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "TrkDiag/inc/helixpar.hh"
 #include "Rtypes.h"
 namespace mu2e
@@ -82,16 +82,17 @@ namespace mu2e
 //  MC information about a particle for a specific point/time
   struct TrkInfoMCStep {
     Float_t _time;  // time of this step
-    Float_t _mom;   // momentum at the start of this step
-    threevec _pos;  // particle position at the start of this step
+    XYZVec _mom;   // momentum at the start of this step
+    XYZVec _pos;  // particle position at the start of this step
     helixpar _hpar; // helix parameters corresponding to the particle position and momentum assuming the nominal BField
     TrkInfoMCStep() { reset(); }
-    void reset() { _time = _mom = -1; _pos.reset(); _hpar.reset(); }
+    void reset() { _time = -1; _mom=XYZVec(); _pos = XYZVec(); _hpar.reset(); }
     static std::string leafnames() { static std::string leaves; leaves =
-      std::string("t0/F:mom/F:")+threevec::leafnames() +std::string(":")+helixpar::leafnames();
+      std::string("t0/F:")+Geom::XYZnames("mom") + std::string(":") + Geom::XYZnames("pos") + std::string(":")+helixpar::leafnames();
       return leaves;
     }
   };
+
   //MC information for DIOBrem study
   struct MCPart {
     Int_t _pdg;
