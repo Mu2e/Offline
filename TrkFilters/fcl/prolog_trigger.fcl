@@ -337,7 +337,7 @@ TrkFilters : {
 	    nPrescale : 1000
 	    useFilteredEvents : true
 	    triggerAlg    : ["TprTimeClusterDeM"]	    
-	    triggerFlag       : ["PrescaleGoodEvents"]	    	    
+	    triggerFlag   : ["PrescaleGoodEvents"]	    	    
 	}
 	tprTimeClusterDePEventPrescale : {
 	    module_type : PrescaleEvent
@@ -397,14 +397,14 @@ TrkFilters : {
 	#filters for the paths where decision is made using the TrackSeed
 	tprSeedDeMEventPrescale: {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::tprSeedDeM_evt_sf 
+	    nPrescale         : 1 
 	    triggerAlg        : ["TprSeedDeM"]	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	tprSeedDeMPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::tprSeedDeM_sf
+	    nPrescale         : 1
 	    useFilteredEvents : true
 	    triggerAlg        : ["TprSeedDeM"]	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
@@ -412,13 +412,13 @@ TrkFilters : {
 
 	tprSeedDePEventPrescale: {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::tprSeedDeP_evt_sf
+	    nPrescale         : 1
 	    triggerAlg        : ["TprSeedDeP"]	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}	
 	tprSeedDePPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::tprSeedDeP_sf
+	    nPrescale         : 1 
 	    useFilteredEvents : true
 	    triggerAlg        : ["TprSeedDeP"]	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
@@ -427,14 +427,14 @@ TrkFilters : {
 	#follow the prescaler filters for Tpr Track sequences
 	cprSeedDeMEventPrescale: {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::cprSeedDeM_evt_sf
+	    nPrescale         : 1 
 	    triggerAlg        : ["CprSeedDeM"]	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
 	cprSeedDeMPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::cprSeedDeM_sf
+	    nPrescale         : 1 
 	    useFilteredEvents : true
 	    triggerAlg        : ["CprSeedDeM"]	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
@@ -442,13 +442,13 @@ TrkFilters : {
 
 	cprSeedDePEventPrescale: {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::cprSeedDeP_evt_sf
+	    nPrescale         : 1 
 	    triggerAlg        : ["CprSeedDeP"]	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	cprSeedDePPrescale : {
 	    module_type : PrescaleEvent
-	    nPrescale         : @local::cprSeedDeP_sf
+	    nPrescale         : 1 
 	    useFilteredEvents : true
 	    triggerAlg        : ["CprSeedDeP"]	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
@@ -461,36 +461,36 @@ TrkFilters : {
 	# #trkpatrec tracking
 	tprTimeClusterDeM    : [ tprTimeClusterDeMEventPrescale, tprTimeClusterDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprTimeClusterDeMTCFilter,  tprTimeClusterDeMPrescale  ]
+				 TTtimeClusterFinder, tprTimeClusterDeMTCFilter,  tprTimeClusterDeMPrescale, triggerInfoMerger ]
 	tprTimeClusterDeP    : [ tprTimeClusterDePEventPrescale, tprTimeClusterDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprTimeClusterDePTCFilter,  tprTimeClusterDePPrescale  ]
+				 TTtimeClusterFinder, tprTimeClusterDePTCFilter,  tprTimeClusterDePPrescale, triggerInfoMerger ]
 
 	tprHelixDeM          : [ tprHelixDeMEventPrescale, tprHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, tprDeMHelixFilter, tprDeMHelixPrescale   ]
+				 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, tprDeMHelixFilter, tprDeMHelixPrescale , triggerInfoMerger ]
 	tprHelixDeP          : [ tprDePHelixEventPrescale, tprDePHelixSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, tprHelixDePHSFilter, tprHelixDePPrescale   ]
+				 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, tprHelixDePHSFilter, tprHelixDePPrescale , triggerInfoMerger ]
 
 	tprSeedDeM           : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMPrescale ]
+				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMPrescale, triggerInfoMerger ]
 	tprSeedDeP           : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePPrescale ]
+				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePPrescale, triggerInfoMerger ]
 	#   calibration with DIO-Michel form Inner Proton Absorber
 	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, tprHelixIPADeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixIPADeMTCFilter, TThelixFinder, tprHelixIPADeMHSFilter, tprHelixIPADeMPrescale   ]
+				 TTtimeClusterFinder, tprHelixIPADeMTCFilter, TThelixFinder, tprHelixIPADeMHSFilter, tprHelixIPADeMPrescale , triggerInfoMerger ]
 	
 	#calo-seeded tracking
 	cprSeedDeM           : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
 				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, cprSeedDeMHSFilter,
-				 TTCalSeedFitDem, cprSeedDeMTSFilter, cprSeedDeMPrescale ]
+				 TTCalSeedFitDem, cprSeedDeMTSFilter, cprSeedDeMPrescale, triggerInfoMerger ]
 	cprSeedDeP           : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, cprSeedDePHSFilter, 
-				 TTCalSeedFitDep, cprSeedDePTSFilter, cprSeedDePPrescale ]
+				 TTCalSeedFitDep, cprSeedDePTSFilter, cprSeedDePPrescale, triggerInfoMerger ]
 	
 	#fast tracking sequences that uses the calorimeter-time selection to reduce the number of TimeClusters and also the number of hits processed by the Delta-ray 
 	#removal algorithm
@@ -505,7 +505,7 @@ TrkFilters : {
 	tprKalDeM  : [ @sequence::CaloClusterTrigger.Reco,
 		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
 		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, 
-		       TTKSFDeM, tprSeedDeMTSFilter, TTKFFDeM, tprSeedDeMKFFilter ]
+		       TTKSFDeM, tprSeedDeMTSFilter, TTKFFDeM, tprSeedDeMKFFilter, triggerInfoMerger ]
 	# add sequences for upstream, calibration, ...  FIXME!
     }
 }
