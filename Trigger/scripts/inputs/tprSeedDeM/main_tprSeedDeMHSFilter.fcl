@@ -1,3 +1,4 @@
+physics.filters.tprSeedDeMHSFilter.helicity      : 1
 physics.filters.tprSeedDeMHSFilter.minNStrawHits : 15.0
 physics.filters.tprSeedDeMHSFilter.minMomentum   : 70.0
 physics.filters.tprSeedDeMHSFilter.maxMomentum   : 120.0
@@ -8,3 +9,4 @@ physics.filters.tprSeedDeMHSFilter.maxD0         : 300.0
 physics.filters.tprSeedDeMHSFilter.minD0         : -150.0
 physics.filters.tprSeedDeMHSFilter.minAbsLambda  : 140.0
 physics.filters.tprSeedDeMHSFilter.maxAbsLambda  : 300.0
+physics.filters.tprSeedDeMHSFilter.triggerAlg    : ["TprSeedDeM"]

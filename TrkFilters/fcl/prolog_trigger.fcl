@@ -58,17 +58,17 @@ TrkFilters : {
 	tprHelixIPADeMHSFilter : {
 	    module_type : HelixFilter
 	    helixSeedCollection : "TThelixFinder:Positive"
-	    helicity            : 1
-	    minNStrawHits       : 15   
-	    minMomentum         : 30.  
-	    maxMomentum         : 70. 
-	    minPt               : 0    
-	    maxChi2XY           : 8.   
-	    maxChi2PhiZ         : 8.   
-	    maxD0               : 500. 
-	    minD0               : 200.
-	    minAbsLambda        : 40. 
-	    maxAbsLambda        : 80. 
+	    helicity            : 1		    
+	    minNStrawHits       : 15   		    
+	    minMomentum         : 30.  		    
+	    maxMomentum         : 70. 		    
+	    minPt               : 0    		    
+	    maxChi2XY           : 8.   		    
+	    maxChi2PhiZ         : 8.   		    
+	    maxD0               : 500. 		    
+	    minD0               : 200.		    
+	    minAbsLambda        : 40. 		    
+	    maxAbsLambda        : 80. 		    
 	    triggerAlg          : ["TprHelixIPADeM"]	    
 	}
 
@@ -125,7 +125,7 @@ TrkFilters : {
 	tprSeedDeMTSFilter : {
 	    module_type : SeedFilter
 	    kalSeedCollection : "TTKSFDeM"
-	    fitparticle       : @local::Particle.eminus
+	    fitparticle       : @local::Particle.eminus	 
 	    fitdirection      : @local::FitDir.downstream 
 	    minNStrawHits     : 15   
 	    minMomentum       : 80.      
@@ -312,13 +312,13 @@ TrkFilters : {
 	    module_type : DigiFilter
 	    strawDigiCollection : makeSD
 	    caloDigiCollection  : notUsed
-	    useStrawDigi        : true
-	    useCaloDigi         : false
-	    minNStrawDigi       : 10 
-	    maxNStrawDigi       : 10000
-	    minNCaloDigi        : -1
-	    maxNCaloDigi        : -1
-	    maxCaloEnergy       : -1
+	    useStrawDigi        : true	 
+	    useCaloDigi         : false	 
+	    minNStrawDigi       : 10 	 
+	    maxNStrawDigi       : 10000	 
+	    minNCaloDigi        : -1	 
+	    maxNCaloDigi        : -1	 
+	    maxCaloEnergy       : -1      
 	    triggerAlg          : ["CprSeedDeP"]	    
 	}
 	

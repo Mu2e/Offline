@@ -1,0 +1,4 @@
+physics.filters.caloMVACEPrescale.nPrescale    : 10000
+physics.filters.caloMVACEPrescale.useFilteredEvents : true
+physics.filters.caloMVACEPrescale.triggerAlg   : ["CaloMVACE"]
+physics.filters.caloMVACEPrescale.triggerFlag  : ["PrescaleGoodEvents"]

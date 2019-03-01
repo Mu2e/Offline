@@ -17,10 +17,32 @@ from argparse import ArgumentParser
 
 def appendEpilog(trig_path, output_file, project_name):
 
-    trk_filters = ['EventPrescale','TCFilter', 'HSFilter', 'TSFilter','Prescale']
-        
+    trk_filters     = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter','Prescale']
+    helix_filters   = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'Prescale']
+    tc_filters      = ['EventPrescale','SDCountFilter','TCFilter',  'Prescale']
+    calo_filters    = ['EventPrescale','Filter'       , 'Prescale']
+    unbiase_filters = ['Prescale']
+    minbias_filters = ['EventPrescale','Filter'       , 'Prescale']
+
+    filters     = []
+
+#undestand which kind of trigger path are we dealing with
+    if "Seed" in trig_path:
+        filters = trk_filters
+    elif "Helix" in trig_path:
+        filters = helix_filters
+    elif "TimeCluster" in trig_path:
+        filters = tc_filters
+    elif "calo" in trig_path:
+        filters = calo_filters
+    elif "unbiased" in trig_path:
+        filters = unbiased_filters
+    elif "Count" in trig_path:
+        filters = minbias_filters
+
     trk_alg     = trig_path
 
+#create the directory where to fill all the sub-epilog files
     project_dir = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name
 
     print project_dir
@@ -36,8 +58,10 @@ def appendEpilog(trig_path, output_file, project_name):
 
     is_first = True
 
-    for i in range(0,len(trk_filters)):
-        filterName       = trk_alg+trk_filters[i]
+#    for i in range(0,len(trk_filters)):
+#        filterName       = trk_alg+trk_filters[i]
+    for i in range(0,len(filters)):
+        filterName       = trk_alg+filters[i]
         if os.path.exists(project_dir) == False:
             os.makedirs(project_dir)
 
@@ -207,11 +231,8 @@ for line in fh:
 
 #now append the epilog files for setting the filters in the path
         
-        if "Seed" in vec_path[0]:
-            # tmp_name     = args.outputfilename
-            # fname_len    = len(tmp_name)-4
-            # project_name = tmp_name[0:fname_len]
-            appendEpilog(str(vec_path[0]), new_epilog, project_name)
+#        if "Seed" in vec_path[0]:
+        appendEpilog(str(vec_path[0]), new_epilog, project_name)
 
         new_epilog.write(new_path)
 

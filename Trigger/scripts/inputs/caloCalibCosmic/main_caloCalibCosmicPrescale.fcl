@@ -1,0 +1,4 @@
+physics.filters.caloCalibCosmicPrescale.nPrescale         : 10000
+physics.filters.caloCalibCosmicPrescale.useFilteredEvents : true
+physics.filters.caloCalibCosmicPrescale.triggerAlg        : ["CaloCalibCosmic"]
+physics.filters.caloCalibCosmicPrescale.triggerFlag       : ["PrescaleGoodEvents"]

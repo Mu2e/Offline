@@ -1,0 +1,4 @@
+physics.filters.caloLHCEPrescale.nPrescale    : 1
+physics.filters.caloLHCEPrescale.useFilteredEvents : true
+physics.filters.caloLHCEPrescale.triggerAlg   : ["CaloLHCE"]
+physics.filters.caloLHCEPrescale.triggerFlag  : ["PrescaleGoodEvents"]

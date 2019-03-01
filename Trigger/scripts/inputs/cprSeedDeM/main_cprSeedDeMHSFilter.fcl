@@ -1,3 +1,5 @@
+physics.filters.cprSeedDeMHSFilter.fitparticle   : @local::Particle.eminus	 
+physics.filters.cprSeedDeMHSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.cprSeedDeMHSFilter.minNStrawHits : 15.0
 physics.filters.cprSeedDeMHSFilter.minMomentum   : 80.0
 physics.filters.cprSeedDeMHSFilter.maxMomentum   : 140.0
@@ -8,3 +10,4 @@ physics.filters.cprSeedDeMHSFilter.maxD0         : 350.0
 physics.filters.cprSeedDeMHSFilter.minD0         : -350.0
 physics.filters.cprSeedDeMHSFilter.minAbsLambda  : 140.0
 physics.filters.cprSeedDeMHSFilter.maxAbsLambda  : 330.0
+physics.filters.cprSeedDeMHSFilter.triggerAlg    : ["CprSeedDeM"]
