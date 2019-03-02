@@ -18,7 +18,7 @@ source :
 # we don't need any simulation services for this job
 # services : @local::Services.Reco
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 
 # timing information
 services.TimeTracker : {
@@ -60,5 +60,3 @@ outputs : {
 
 
 services.TFileService.fileName : "globalTrigger.root"
-services.SeedService.baseSeed : 0
-services.SeedService.maxUniqueEngines : 20

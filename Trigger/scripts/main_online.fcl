@@ -57,7 +57,7 @@ event_builder: {
 
 #services : @local::Services.Reco
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 
 
 producers    : { @table::Trigger.producers }
@@ -95,7 +95,7 @@ physics:
     analyzers : {  
 	
 	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 35
+	    nFilters      : 70
 	}
 	
     }
@@ -127,8 +127,6 @@ source:
 }
 
 services.TFileService.fileName : "trig.root"
-services.SeedService.baseSeed : 0
-services.SeedService.maxUniqueEngines : 20
 services.scheduler.wantSummary: true
 
 process_name: Driver
