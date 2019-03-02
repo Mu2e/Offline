@@ -81,7 +81,9 @@ namespace mu2e {
   private:
   // utility functions
     void fillKalSeedMC(KalSeed const& seed, StrawDigiMCCollection const& sdmcc,
-	StepPointMCCollection const& vdspc, PrimaryParticle const& pp, KalSeedMC& mcseed);
+	StepPointMCCollection const& vdspc, PrimaryParticle const& pp, KalSeedMC& mcseed,
+	std::set<StrawHitIndex>& shindices);
+
     void fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc,
       PrimaryParticle const& pp, CaloClusterMC& ccmc);
     int _debug;
@@ -174,13 +176,9 @@ namespace mu2e {
 	if(_debug > 1) std::cout << "Found " << seedc.size() << " seeds from collection " << kff << std::endl;
 	for(auto iseed=seedc.begin(); iseed!=seedc.end(); ++iseed){
 	  auto const& seed = *iseed;
-	  // keep track of digi indices
-	  for( auto const& tsh : seed.hits() ) {
-	    shindices.insert(tsh.index());
-	  }
-// create the KalSeedMC for this reco seed
+	  // create the KalSeedMC for this reco seed.  This also fills the indices
 	  KalSeedMC mcseed;
-	  fillKalSeedMC(seed,sdmcc,vdspc,pp,mcseed);
+	  fillKalSeedMC(seed,sdmcc,vdspc,pp,mcseed,shindices);
 	  ksmcc->push_back(mcseed);
 	  // fill the Assns; this needs Ptrs
 	  auto mcseedp = art::Ptr<KalSeedMC>(KalSeedMCCollectionPID,ksmcc->size()-1,KalSeedMCCollectionGetter);
@@ -217,7 +215,6 @@ namespace mu2e {
 	}
       }
     }
-
     // fill the StrawIndex map with the complete list of indices.  Note that std::set has kept these
     // sorted for us, nice!
     StrawHitIndex shcount(0);
@@ -268,8 +265,9 @@ namespace mu2e {
     StrawDigiMCCollection const& sdmcc,
     StepPointMCCollection const& vdspc,
     PrimaryParticle const& pp,
-    KalSeedMC& mcseed) {
-  // find the associated SimParticles for this KalSeed
+    KalSeedMC& mcseed,
+    std::set<StrawHitIndex>& shindices) {
+// find the associated SimParticles for this KalSeed
     std::vector<TrkMCTools::spcount> spcc;
     TrkMCTools::findMCTrk(seed,spcc,sdmcc);
     // find all the StepPointMCs associated with the primary particle
@@ -315,6 +313,8 @@ namespace mu2e {
       }
     // find the SimParticle referenced by individual hits
       for(auto const& hit : seed.hits() ) {
+	// keep digi indices for these
+	shindices.insert(hit.index());
 	int spref(-1);
 	auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
 	for(size_t isp=0;isp < spcc.size(); ++isp){
@@ -335,6 +335,38 @@ namespace mu2e {
 	tshmc._time = fmod(_toff.timeWithOffsetsApplied(mcstep),_mbtime);
 	tshmc._strawId = sdmc.strawId();
 	mcseed._tshmcs.push_back(tshmc);
+      }
+// add in TrkStrawHitMC objects for digiMC objects not used in the fit but that come
+// from the particles that did provide hits
+      for( size_t idmc=0;idmc < sdmcc.size(); idmc++){
+	auto const& sdmc = sdmcc[idmc];
+	for(size_t isp=0;isp < spcc.size(); ++isp){
+	  auto const& spc = spcc[isp];
+	  if(sdmc.earlyStepPointMC()->simParticle() == spc._spp){
+	    // search to see if the associated digi is already on the track
+	    bool used(false);
+	    for(auto const& hit : seed.hits() ) {
+	      if(idmc == hit.index()){
+		used = true;
+		break;
+	      }
+	    }
+	    if(!used){
+	      // record the reference
+	      TrkStrawHitMC tshmc;
+	      tshmc._spindex = isp;
+	      tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
+	      const auto& mcstep = *(sdmc.earlyStepPointMC());
+	      tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
+	      tshmc._mom = mcstep.momentum();
+	      tshmc._time = fmod(_toff.timeWithOffsetsApplied(mcstep),_mbtime);
+	      tshmc._strawId = sdmc.strawId();
+	      mcseed._tshmcs.push_back(tshmc);
+	      // keep digi indices for these; this makes sure the DigiMC objects are kept
+	      shindices.insert(idmc);
+	    }
+	  }
+	}
       }
     }
   }

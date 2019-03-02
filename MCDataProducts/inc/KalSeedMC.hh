@@ -30,11 +30,12 @@ namespace mu2e {
     MCRelationship _rel; // relationship of this particle to its primary
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
+    XYZVec _mom; // initial momentum 
     SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
     _proc(spp->creationCode()), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0){
+    _nhits(0), _nactive(0), _mom(Geom::toXYZVec(spp->startMomentum())){
     // dig down to the GenParticle
       if(spp->genParticle().isNonnull()) _gid = spp->genParticle()->generatorId().id();
     }

@@ -21,8 +21,6 @@ double cosmicDYB.dx     = 0;
 double cosmicDYB.dy     = 1795;
 double cosmicDYB.dz     = 2499;
 
-double cosmicDYB.constTime = 800;
-
 // only generate one octant: just -x side of +z
 string cosmicDYB.direction = "Negative_x";
 double cosmicDYB.muPhiMin = 1.571;

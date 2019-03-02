@@ -485,8 +485,15 @@ namespace mu2e
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
     }
-    //    Hep3Vector mcmomvec = spp->startMomentum();
-    //    double mcmom = mcmomvec.mag();
+
+    art::Ptr<SimParticle> sp = spp;
+    // find the first parent which comes from a generator
+    while(sp->genParticle().isNull() && sp->parent().isNonnull()){
+      sp = sp->parent();
+    }
+
+    Hep3Vector mcmomvec = spp->startMomentum();
+    double mcmom = mcmomvec.mag();
     // fill track-specific  MC info
     mcinfo._nactive = mcinfo._nhits = mcinfo._nambig = 0;
     if(krep != 0){
@@ -502,8 +509,6 @@ namespace mu2e
 	    // easiest way to get MC ambiguity is through info object
 	    TrkStrawHitInfoMC tshinfomc;
 	    fillHitInfoMC(spp,mcdigi,tsh->straw(),tshinfomc);
-	    // count hits with at least givien fraction of the original momentum as 'good'
-	    //	    if(tshinfomc._mom/mcmom > _mingood )++mcinfo._ngood;
 	    if(tsh->isActive()){
 	      ++mcinfo._nactive;
 	    // count hits with correct left-right iguity
@@ -519,7 +524,7 @@ namespace mu2e
     for(auto imcd = _mcdata._mcdigis->begin(); imcd !=_mcdata._mcdigis->end();++imcd){
       if( imcd->stepPointMC(StrawEnd::cal)->simParticle() == spp){
 	mcinfo._ndigi++;
-	if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/spp->startMomentum().mag() > _mingood)
+	if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/mcmom > _mingood)
 	  mcinfo._ndigigood++;
       }
     }

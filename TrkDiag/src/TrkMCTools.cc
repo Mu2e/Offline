@@ -144,27 +144,28 @@ namespace mu2e {
     }
 
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& ndigigood, int& nambig) {
+      static double mingood = 0.9; // this is clumsy!
       ndigi = 0; ndigigood = 0, nambig = 0;
-      
+      // find the first segment momentum as reference
+      double simmom = 1.0;
+      if(kseedmc.simParticles().size()>0)
+	simmom = sqrt(kseedmc.simParticles().front()._mom.mag2());
       for(size_t i_digi = 0; i_digi < kseedmc._tshmcs.size(); ++i_digi) {
-	const auto& i_tshmc = kseedmc._tshmcs.at(i_digi);
+	const auto& tshmc = kseedmc._tshmcs.at(i_digi);
 
-	if (kseedmc.simParticle(i_tshmc._spindex)._rel == MCRelationship::same) {
+	if (kseedmc.simParticle(tshmc._spindex)._rel == MCRelationship::same) {
 	  ++ndigi;
-
-	  ++ndigigood;
-
-	  //	  if(spmcp->momentum().mag()/spp->startMomentum().mag() > mingood) {
-	  //	  ++ngood;
-	  // }
+	  if(sqrt(tshmc.particleMomentum().mag2())/simmom > mingood)	  ++ndigigood;
 
 	  // easiest way to get MC ambiguity is through info object
 	  TrkStrawHitInfoMC tshinfomc;
-	  fillHitInfoMC(kseedmc,tshinfomc,i_tshmc);  
-
-	  const auto& ihit = kseed.hits().at(i_digi);
-	  if(ihit.ambig()*tshinfomc._ambig > 0) {
-	    ++nambig;
+	  fillHitInfoMC(kseedmc,tshinfomc,tshmc);  
+	  // the MCDigi list can be longer than the # of TrkStrawHits in the seed:
+	  if(i_digi < kseed.hits().size()){ 
+	    const auto& ihit = kseed.hits().at(i_digi);
+	    if(ihit.ambig()*tshinfomc._ambig > 0) {
+	      ++nambig;
+	    }
 	  }
 	}
       }

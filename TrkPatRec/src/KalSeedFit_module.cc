@@ -424,7 +424,7 @@ namespace mu2e
       CLHEP::Hep3Vector hdir = straw.getDirection();
       // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
       HepPoint spt(hpos.x(),hpos.y(),hpos.z());
-      TrkLineTraj htraj(spt,hdir,-straw.getHalfLength(),straw.getHalfLength());
+      TrkLineTraj htraj(spt,hdir,-straw.halfLength(),straw.halfLength());
       // estimate flightlength along track.  This assumes a constant BField!!!
       double fltlen = (hpos.z()-tposp.z())/tdir.z();
       HepPoint tp = mydef.helix().position(fltlen);

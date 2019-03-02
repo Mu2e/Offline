@@ -535,7 +535,7 @@ namespace mu2e
     StrawFlightComp strawcomp(_maxmatfltdiff);
     std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
 // loop over Planes
-    double strawradius = tracker.strawRadius();
+    double strawradius = tracker.strawOuterRadius();
     unsigned nadded(0);
     // for(auto const& plane : tracker.getPlanes()){
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
