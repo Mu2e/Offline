@@ -306,5 +306,9 @@
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
  <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
 
+<!--  ********* general reco ********* -->
+
+ <class name="mu2e::RecoCount"/>
+ <class name="art::Wrapper<mu2e::RecoCount>"/>
 
 </lcgdict>

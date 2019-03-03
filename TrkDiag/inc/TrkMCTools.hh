@@ -40,6 +40,7 @@ namespace mu2e {
     // Track Level Utilities
     struct spcount {
       spcount() : _count(0), _acount(0) {}
+      spcount(art::Ptr<SimParticle> const& spp) : _spp(spp), _count(0), _acount(0) {}
       spcount(art::Ptr<SimParticle> const& spp,bool active) : _spp(spp), _count(1), _acount(0) {
 	if(active)_acount =1; }
       void append(art::Ptr<SimParticle> const& sp,bool active) { if(sp == _spp){
@@ -63,7 +64,7 @@ namespace mu2e {
     // find associated sim particles to a track.  The first returns a hit-weighted vector of
     // all particles, the second just the one with the most hits
     void findMCTrk(const KalSeed& kseed, art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis);
-    void findMCTrk(const KalSeed& kseed, std::vector<spcount>& sct, const StrawDigiMCCollection& mcdigis);
+    void findMCTrk(const KalSeed& kseed, std::vector<spcount>& sct, const StrawDigiMCCollection& mcdigis,bool saveall=false);
 
     // find steps associated with a given SimParticle ID
     void findMCSteps(const StepPointMCCollection& mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids, std::vector<MCStepItr>& steps);

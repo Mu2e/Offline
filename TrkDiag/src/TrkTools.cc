@@ -4,6 +4,7 @@
 //
 #include "TrkDiag/inc/TrkTools.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
+#include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -43,19 +44,27 @@ namespace mu2e {
     }    
 
     void fillHitCount(StrawHitFlagCollection const& shfC, HitCount& hitcount) {
-      hitcount._nsh = shfC.size();
+      hitcount._nsd = shfC.size();
       for(const auto& shf : shfC) {
 	if(shf.hasAllProperties(StrawHitFlag::energysel))++hitcount._nesel;
 	if(shf.hasAllProperties(StrawHitFlag::radsel))++hitcount._nrsel;
 	if(shf.hasAllProperties(StrawHitFlag::timesel))++hitcount._ntsel;
 	if(shf.hasAllProperties(StrawHitFlag::bkg))++hitcount._nbkg;
-	if(shf.hasAllProperties(StrawHitFlag::stereo))++hitcount._nster;
-	if(shf.hasAllProperties(StrawHitFlag::tdiv))++hitcount._ntdiv;
 	if(shf.hasAllProperties(StrawHitFlag::trksel))++hitcount._ntpk;
-	if(shf.hasAllProperties(StrawHitFlag::elecxtalk))++hitcount._nxt;
       }
     }
 
+    void fillHitCount(RecoCount const& nrec, HitCount& hitcount) {
+      hitcount._nsd = nrec._nstrawdigi;
+      hitcount._ncd = nrec._ncalodigi;
+      hitcount._ncc = nrec._ncaloclust;
+      hitcount._ncrvd = nrec._ncrvdigi;
+      hitcount._nesel = nrec._nshfesel;
+      hitcount._nrsel = nrec._nshfrsel;
+      hitcount._ntsel = nrec._nshftsel;
+      hitcount._nbkg = nrec._nshfbkg;
+      hitcount._ntpk = nrec._nshftpk;
+    }
 
     void fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo) {
       if(kseed.status().hasAllProperties(TrkFitFlag::kalmanConverged))

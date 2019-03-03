@@ -105,27 +105,42 @@ namespace mu2e {
 	spp = sct[0]._spp;
     }
 
-    void findMCTrk(const KalSeed& kseed,std::vector<spcount>& sct, StrawDigiMCCollection const& mcdigis) {
+    void findMCTrk(const KalSeed& kseed,std::vector<spcount>& sct, StrawDigiMCCollection const& mcdigis, bool saveall) {
       sct.clear();
       // find the SimParticles which contributed hits.
       // loop through the straw hits from the track
       static StrawHitFlag active(StrawHitFlag::active);
-      for(const auto& i_hit : kseed.hits()) {
+      for(const auto& tshs : kseed.hits()) {
 	// loop over the hits and find the associated steppoints
-	bool isactive = i_hit.flag().hasAllProperties(active);
-	StrawDigiMC const& mcdigi = mcdigis.at(i_hit.index());
+	bool isactive = tshs.flag().hasAllProperties(active);
+	StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
 	art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
 	// see if this particle has already been found; if so, increment, if not, add it
 	bool found(false);
-	for(size_t isp=0;isp<sct.size();++isp){
-	  // count direct daughter/parent as part the same particle
-	  if(sct[isp]._spp == spp ){
+	for(auto& spc : sct ) {
+	  if(spc._spp == spp ){
 	    found = true;
-	    sct[isp].append(spp,isactive);
+	    spc.append(spp,isactive);
 	    break;
 	  }
 	}
 	if(!found)sct.push_back(spcount(spp,isactive));
+      }
+      if(saveall){
+	// add the SimParticles that contributed non-trigger energy.  These have 0 count
+	for(const auto& tshs : kseed.hits()) {
+	  StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
+	  for(auto const& spmc : mcdigi.stepPointMCs()){
+	    bool found(false);
+	    for(auto& spc : sct ) {
+	      if(spc._spp == spmc->simParticle() ){
+		found = true;
+		break;
+	      }
+	    }
+	    if(!found)sct.push_back(spcount(spmc->simParticle()));
+	  }
+	}
       }
       // sort by # of contributions
       sort(sct.begin(),sct.end(),spcountcomp());

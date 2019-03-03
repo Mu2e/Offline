@@ -20,7 +20,6 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
-#include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // Framework includes.
@@ -94,6 +93,8 @@ namespace mu2e {
     art::InputTag _uetag;
     art::InputTag _dmtag;
     art::InputTag _detqtag;
+    // reco count module
+    art::InputTag _rctag;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
@@ -161,6 +162,7 @@ namespace mu2e {
     _uetag( pset.get<art::InputTag>("UeTag", art::InputTag()) ),
     _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
+    _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -175,7 +177,6 @@ namespace mu2e {
     _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
     _trkana(0),
     _meanPBI(0.0),
-    _strawHitFlagTag(pset.get<art::InputTag>("StrawHitFlagCollection", "")),
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
     _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", ""))
@@ -271,9 +272,6 @@ namespace mu2e {
     event.getByLabel(_detag,deH);
     // std::cout << _detag << std::endl; //teste
     KalSeedCollection const& deC = *deH;
-    art::Handle<StrawHitFlagCollection> shfH;
-    event.getByLabel(_strawHitFlagTag,shfH);
-    StrawHitFlagCollection const& shfC = *shfH;
     // find downstream muons and upstream electrons
     art::Handle<KalSeedCollection> ueH;
     event.getByLabel(_uetag,ueH);
@@ -281,6 +279,9 @@ namespace mu2e {
     art::Handle<KalSeedCollection> dmH;
     event.getByLabel(_dmtag,dmH);
     KalSeedCollection const& dmC = *dmH;
+    // general reco counts
+    auto rch = event.getValidHandle<RecoCount>(_rctag);
+    auto const& rc = *rch;
     // TrkQualCollection
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_detqtag, trkQualHandle);
@@ -362,7 +363,7 @@ namespace mu2e {
     if(idekseed != deC.end() || _pempty) {
       // fill general event information
       fillEventInfo(event);
-      TrkTools::fillHitCount(shfC, _hcnt);
+      TrkTools::fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
       // fill CRV info
       if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);

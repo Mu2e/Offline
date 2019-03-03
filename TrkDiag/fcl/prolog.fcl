@@ -313,6 +313,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     UeTag : "KFFUeM"
     DmuTag : "KFFDmuM"
     DeTrkQualTag : "TrkQualDeM"
+    RecoCountTag : "SelectRecoMC"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
@@ -322,7 +323,8 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     ProcessEmptyEvents : false
     AnalyzeCRV : true
     fillTrkQualInfo : true
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+#    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
+    StrawHitFlagCollection : "SelectRecoMC"
 #    PrimaryParticleTag : "FindMCPrimary"
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"

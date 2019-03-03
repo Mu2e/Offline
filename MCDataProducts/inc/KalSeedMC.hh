@@ -58,13 +58,15 @@ namespace mu2e {
 //
 // MC information for TrackStrawHits on this fit
   struct TrkStrawHitMC {
-    int16_t simPartStubIndex() const { return _spindex; }
+    StrawHitIndex strawDigiMCIndex() const { return _sdmcindex; }
+    StrawHitIndex simPartStubIndex() const { return _spindex; }
     StrawId const& strawid() const { return _strawId; }
     float energySum() const { return _energySum; }
     float stepTime() const { return _time; }
     XYZVec const& clusterPosition() const { return _cpos; }
     XYZVec const& particleMomentum() const { return _mom; }
-    int16_t _spindex; // index into the associated SimPartStub of this DigiMC
+    StrawHitIndex _sdmcindex; // index into the original StrawDigiMC collection
+    StrawHitIndex _spindex; // index into the associated SimPartStub of this DigiMC
     StrawId _strawId; // the ID of the straw that was hit
     float _energySum; // sum of all MC true energy deposited by trigger particles
     float _time; // time of trigger StepPoint with time maps applied, wrapped to the beam
@@ -75,10 +77,9 @@ namespace mu2e {
   struct KalSeedMC { 
     SimPartStub const& simParticle(size_t index=0) const { return _simps.at(index); }
     std::vector<SimPartStub> const& simParticles() const { return _simps; }
-    std::vector<TrkStrawHitMC> const & trkStrawHitMC() const { return _tshmcs; }
+    std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }
     TrkStrawHitMC const& trkStrawHitMC(size_t index) const { return _tshmcs.at(index); }
     SimPartStub const& simParticle(TrkStrawHitMC const& tshmc) const { return simParticle(tshmc.simPartStubIndex()); }
-    std::vector<TrkStrawHitMC> const & trkStrawHitMCs() const { return _tshmcs; }
     // data products
     std::vector<SimPartStub> _simps; // associated sim particles, and their relationship
     std::vector<TrkStrawHitMC> _tshmcs;  // MC info for each TrkStrawHitSeed

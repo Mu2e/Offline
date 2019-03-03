@@ -66,9 +66,14 @@ Reconstruction : {
        CSSCollection : "compressDigiMCs"
        CaloClusterMCDTime : 2.0
        CaloMinE : 1.0
+       SaveEnergySteps : false
+       SaveUnusedDigiMCs : true
        TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-#debugLevel : 2
        PrimaryParticle : "FindMCPrimary"
+       StrawDigiCollection : "makeSD"
+       StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
+       CaloDigiCollection : "CaloDigiFromShower"
+       CrvDigiCollection : "CrvDigi"
        CaloClusterCollection : "CaloClusterFromProtoCluster"
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
@@ -91,8 +96,8 @@ Reconstruction : {
       extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
       timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
       caloClusterMCTag : "SelectRecoMC"
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
       crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
       primaryParticleTag : "FindMCPrimary"
@@ -125,10 +130,10 @@ Reconstruction : {
       newStrawDigiMCTag : "compressRecoMCs"
       OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
       NewTimeOffsets : { inputs : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ] }
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       oldCaloShowerSimTag : "CaloFix"
       newCaloShowerSimTag : "compressRecoMCs"
     }
@@ -175,21 +180,19 @@ Reconstruction : {
 # Calo and CRV should be defined elswehere, FIXME!
 # separate MC info FIXME!
  # define reco products to keep
-  ToKeep : [@sequence::Tracking.Output.Digis,
-	    # replace with a subset of digis
-	    "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+  ToKeep : [
+#           "keep mu2e::StrawDigis_*_*_*",
+#	    "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep *_compressRecoMCs_*_*",
-	    "keep mu2e::CaloDigis_*_*_*",
+#	    "keep mu2e::CaloDigis_*_*_*",
 	    "keep mu2e::CaloClusters_*_*_*",
-	    "keep mu2e::CrvDigis_*_*_*",
+#	    "keep mu2e::CrvDigis_*_*_*",
 	    "keep mu2e::CrvCoincidenceClusters_*_*_*",
 	  # add precursors for Calo and Crv?  FIXME!
-#	    @sequence::CaloReco.Output,
-#	    @sequence::CRVReco.Output,
 	    # add trigger output products FIXME!
 #	    "keep mu2e::TriggerInfoCollection",
 #	    "keep mu2e::*_TriggerAlg_*_*",
@@ -201,7 +204,7 @@ Reconstruction : {
 	    "keep mu2e::ProtonBunchIntensity_*_*_*",
 	    "keep *_FindMCPrimary_*_*",
 	    "keep *_SelectRecoMC_*_*",
-	    "keep *_FlagBkgHits_StrawHits_*",
+#	    "keep *_FlagBkgHits_StrawHits_*",
 	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
 }
 # must define some things outside the brackets due to internal dependence
