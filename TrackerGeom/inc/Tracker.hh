@@ -56,7 +56,11 @@ namespace mu2e {
           << "Expect configuration with 2 layers per panel\n";
     }  // TODO: insert proper initializer list, starting w/ base class
 
-    // Use compiler-generated copy c'tor, copy assignment, and d'tor
+    // Need to be able to copy, but this has internal
+    // pointers, so needs a deep copy, but can except default dtor
+
+    // copy constructor
+    Tracker(const Tracker& other);
 
     std::string const& name() const { return _name; }
 
@@ -309,6 +313,14 @@ namespace mu2e {
     std::array<bool,Tracker::_maxRedirect> _strawExists2;
 
     // =============== NewTracker Private Objects End ==============
+
+
+  private:
+    // copying is complex
+    // prevent these from being generated or used
+    Tracker& operator=(const Tracker& other);
+    Tracker(Tracker&& other) noexcept; // move constructor
+    Tracker& operator=(Tracker&& other) noexcept; // move assignment
 
   };
 

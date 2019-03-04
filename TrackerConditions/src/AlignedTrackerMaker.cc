@@ -18,7 +18,8 @@ namespace mu2e {
     GeomHandle<Tracker> trk_h;
 
     // make shared_ptr to a copy of the GeomHandle Tracker object
-    // made via copy constructor
+    // made via copy constructor.  AlignedTracker leaves the 
+    // nominal Geometry untouched.
     Tracker::ptr_t  ptr = std::make_shared<Tracker>(*trk_h);
 
     if ( _config.verbose() > 0 ) {
@@ -34,33 +35,6 @@ namespace mu2e {
 			  TrkAlignPlane::cptr_t   tapl_p,
 			  TrkAlignPanel::cptr_t   tapa_p ) {
 
-    /*
-1) create straw centers along the x axis, 
- with inner most straw at x=0, direction pointing along +y
-1a) apply panel alignment rotation in this basis
-as a right-handed rotation about x, then y, then z
-from db delta values du, dv, dw
-where u=x, v=y, w=z.  using u,v,w empahsizes that
-these are not the experiment coordinates for the panel
->>> straw position and direction
-1b) apply panel alignment postion, in this basis
- using db values du dv and dw
-2) apply the nominal geometry transformaton to put
-  the panel in the plane: push it out the x axis, tweak the z,
-  rotate about the z axis.
-2a) apply the panel alignment rotion in this basis
-from db delta values rx, ry, rz
-2b) apply the panel offset in this basis
-from db delta values dx, dy, dz
-3) apply the nominal transformation to place the
- plane in the tracker - shift along z
-2a) apply the detector alignment rotion in this basis
-from db delta values rx, ry, rz
-2b) apply the detector offset in this basis
-from db delta values dx, dy, dz
-
-tr_align *plane_tr * plane_align * panel_in_plane * panel_align * nom_str_at_r=0
-     */
 
     // get standard geometry
     auto ptr = fromFcl();
@@ -112,6 +86,10 @@ tr_align *plane_tr * plane_align * panel_in_plane * panel_align * nom_str_at_r=0
 
 	    Hep3Vector aligned_straw = panel_temp*straw_to_panel;
 	    Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
+
+	    // aligned straw position inserted in the Tracker object
+	    straw._c = aligned_straw;
+	    straw._w = aligned_straw_dir;
 
 	    Hep3Vector pdif = aligned_straw - straw.getMidPoint();
 	    Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
