@@ -73,7 +73,8 @@ namespace mu2e {
 	  HepTransform panel_temp = plane_temp * panel_to_plane * align_panel;
 
 	  for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-	    auto& straw = panel.getStraw(istr);
+	    // need to const cast so we can update geometry - fixme
+	    Straw& straw = const_cast<Straw &>(panel.getStraw(istr));
   
 	    // how to place the straw in the panel
 	    double dx = straw.getMidPoint().perp() 
@@ -88,6 +89,7 @@ namespace mu2e {
 	    Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
 
 	    // aligned straw position inserted in the Tracker object
+	    //we need to go the long way to get non-const access
 	    straw._c = aligned_straw;
 	    straw._w = aligned_straw_dir;
 
