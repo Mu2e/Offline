@@ -57,6 +57,8 @@ namespace mu2e {
       fhicl::Atom<bool> saveEnergySteps{ Name("SaveEnergySteps"),
 	Comment("Save all StepPoints that contributed energy to a StrawDigi"), false};
       fhicl::Atom<bool> saveUnused{ Name("SaveUnusedDigiMCs"),
+	Comment("Save StrawDigiMCs from particles used in any fit"), true};
+      fhicl::Atom<bool> saveAllUnused{ Name("SaveAllUnusedDigiMCs"),
 	Comment("Save all StrawDigiMCs from particles used in any fit"), false};
       fhicl::Atom<art::InputTag> PP { Name("PrimaryParticle"),
 	Comment("PrimaryParticle producer")};
@@ -109,7 +111,7 @@ namespace mu2e {
        PrimaryParticle const& pp, CaloClusterMC& ccmc);
    void fillStrawHitCounts(StrawHitFlagCollection const& shfc, RecoCount& nrec);
    int _debug;
-   bool _saveallenergy, _saveunused;
+   bool _saveallenergy, _saveunused, _saveallunused;
    art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc, _cssc;
    std::vector<std::string> _kff;
    SimParticleTimeOffset _toff;
@@ -122,7 +124,8 @@ namespace mu2e {
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
     _debug(config().debug()),
     _saveallenergy(config().saveEnergySteps()),
-    _saveunused(config().saveEnergySteps()),
+    _saveunused(config().saveUnused()),
+    _saveallunused(config().saveAllUnused()),
     _pp(config().PP()),
     _ccc(config().CCC()),
     _crvccc(config().CrvCCC()),
@@ -399,7 +402,9 @@ namespace mu2e {
   void SelectRecoMC::fillUnusedTSHMC( SPCC const& spcc,
       StrawDigiMCCollection const& sdmcc,
       KalSeedMC& mcseed) {
-    for(size_t isp=0; isp < spcc.size(); ++isp){
+    // either keep hits only from the primary or from all contributing
+    size_t ispmax = _saveallunused? spcc.size() : 1;
+    for(size_t isp=0; isp < ispmax; ++isp){
       auto const& spc = spcc[isp];
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
 	auto const& sdmc = sdmcc[isdmc];

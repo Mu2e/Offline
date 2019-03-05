@@ -4,7 +4,6 @@
 //
 #include "TrkDiag/inc/TrkTools.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
-#include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -181,7 +180,7 @@ namespace mu2e {
 	tshinfo._trklen = ihit->trkLen();
 	tshinfo._hlen = ihit->hitLen();
 	tshinfo._t0 = ihit->t0().t0();
-	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
+	tshinfo._t0err = ihit->t0().t0Err();
 	tshinfo._ht = ihit->hitTime();
 	tshinfo._ambig = ihit->ambig();
 	tshinfo._doca = ihit->wireDOCA();
@@ -190,6 +189,10 @@ namespace mu2e {
 	tshinfo._werr = ihit->wireRes();	
 	tshinfo._driftend = ihit->driftEnd();
 	tshinfo._tdrift = ihit->hitTime() - ihit->signalTime() - ihit->t0().t0();
+	auto const& wiredir = straw.getDirection();
+	auto const& mid = straw.getMidPoint();
+	CLHEP::Hep3Vector hpos = mid + wiredir*ihit->hitLen();
+	tshinfo._poca = Geom::toXYZVec(hpos);
 
 	// count correlations with other TSH
 	for(std::vector<TrkStrawHitSeed>::const_iterator jhit=kseed.hits().begin(); jhit != ihit; ++jhit) {

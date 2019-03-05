@@ -68,6 +68,7 @@ Reconstruction : {
        CaloMinE : 1.0
        SaveEnergySteps : false
        SaveUnusedDigiMCs : true
+       SaveAllUnusedDigiMCs : false
        TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
        PrimaryParticle : "FindMCPrimary"
        StrawDigiCollection : "makeSD"
