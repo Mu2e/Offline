@@ -13,6 +13,8 @@
 #include "TrackerConditions/inc/StrawElectronicsCache.hh"
 #include "TrackerConditions/inc/StrawResponseCache.hh"
 #include "TrackerConditions/inc/AlignedTrackerCache.hh"
+#include "TrackerConditions/inc/Mu2eMaterialCache.hh"
+#include "TrackerConditions/inc/Mu2eDetectorCache.hh"
 
 using namespace std;
 
@@ -39,6 +41,10 @@ namespace mu2e {
     _caches[src->name()] = src;
     auto atc = std::make_shared<mu2e::AlignedTrackerCache>(_config.alignedTracker());
     _caches[atc->name()] = atc;
+    auto mmc = std::make_shared<mu2e::Mu2eMaterialCache>(_config.mu2eMaterial());
+    _caches[mmc->name()] = mmc;
+    auto mdc = std::make_shared<mu2e::Mu2eDetectorCache>(_config.mu2eDetector());
+    _caches[mdc->name()] = mdc;
 
     if( _config.verbose()>0) {
       cout << "Proditions built caches:" << endl;

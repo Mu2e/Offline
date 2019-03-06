@@ -9,6 +9,8 @@ Proditions : {
    strawElectronics : @local::StrawElectronics
    strawResponse : @local::StrawResponse
    alignedTracker : @local::AlignedTracker
+   mu2eMaterial : @local::Mu2eMaterial
+   mu2eDetector : @local::Mu2eDetector
    verbose : 2
 }
 

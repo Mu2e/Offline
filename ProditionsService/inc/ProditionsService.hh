@@ -27,6 +27,8 @@
 #include "TrackerConditions/inc/StrawElectronicsConfig.hh"
 #include "TrackerConditions/inc/StrawResponseConfig.hh"
 #include "TrackerConditions/inc/AlignedTrackerConfig.hh"
+#include "TrackerConditions/inc/Mu2eMaterialConfig.hh"
+#include "TrackerConditions/inc/Mu2eDetectorConfig.hh"
 
 
 namespace mu2e {
@@ -58,6 +60,13 @@ namespace mu2e {
       fhicl::Table<AlignedTrackerConfig> alignedTracker{
 	  Name("alignedTracker"), 
 	  Comment("Tracker alignment in reco code") };
+      fhicl::Table<Mu2eMaterialConfig> mu2eMaterial{
+	  Name("mu2eMaterial"), 
+	  Comment("Mu2e material for BTrk") };
+      fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
+	  Name("mu2eDetector"), 
+	  Comment("Mu2e detector model for BTrk") };
+
     };
 
     // this line is required by art to allow the command line help print
