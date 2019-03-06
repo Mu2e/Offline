@@ -206,27 +206,16 @@ namespace mu2e {
       trkinfomc._nambig = nambig;
     }
 
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const PrimaryParticle& primary) {
+    void fillGenInfo(const KalSeedMC& kseedmc, GenInfo& geninfo, const PrimaryParticle& primary) {
 
       const auto& genParticle = primary.primary();
 
-      trkinfomcstep._time = genParticle.time();
-      trkinfomcstep._mom = Geom::toXYZVec(genParticle.momentum());
+      geninfo._pdg = genParticle.pdgId();
+      geninfo._gen = genParticle.generatorId().id();
+      geninfo._time = genParticle.time();
+      geninfo._mom = Geom::toXYZVec(genParticle.momentum());
       GeomHandle<DetectorSystem> det;
-      trkinfomcstep._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
-
-      GeomHandle<BFieldManager> bfmgr;
-      GlobalConstantsHandle<ParticleDataTable> pdt;      
-      static CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
-      static double bz = bfmgr->getBField(vpoint_mu2e).z();
-
-      CLHEP::HepVector parvec(5,0);
-      double hflt(0.0);
-      HepPoint ppos(trkinfomcstep._pos.x(), trkinfomcstep._pos.y(), trkinfomcstep._pos.z());
-      CLHEP::Hep3Vector mom = genParticle.momentum().vect();
-      double charge = pdt->particle(genParticle.pdgId()).ref().charge();
-      TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
-      trkinfomcstep._hpar = helixpar(parvec);
+      geninfo._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
     }
 
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,

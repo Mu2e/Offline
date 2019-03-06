@@ -48,6 +48,7 @@
 #include "TrkDiag/inc/TrkCount.hh"
 #include "TrkDiag/inc/EventInfo.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
+#include "TrkDiag/inc/GenInfo.hh"
 #include "TrkDiag/inc/EventWeightInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
@@ -135,7 +136,7 @@ namespace mu2e {
     std::vector<int> _entvids, _midvids, _xitvids;
 
     // detailed MC truth for the signal candidate
-    TrkInfoMCStep _demcgen;
+    GenInfo _demcgen;
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
@@ -218,7 +219,7 @@ namespace mu2e {
 // optionally add MC truth branches
     if(_fillmc){
       _trkana->Branch("demc",&_demc,TrkInfoMC::leafnames().c_str());
-      _trkana->Branch("demcgen",&_demcgen,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch("demcgen",&_demcgen,GenInfo::leafnames().c_str());
       _trkana->Branch("demcent",&_demcent,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcmid",&_demcmid,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
@@ -340,7 +341,7 @@ namespace mu2e {
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
 
-	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcgen, primary);
+	    TrkMCTools::fillGenInfo(dekseedmc, _demcgen, primary);
 	    if (_diag>1) {
 	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc);
 	    }

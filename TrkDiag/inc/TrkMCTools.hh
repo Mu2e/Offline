@@ -11,6 +11,7 @@
 
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
+#include "TrkDiag/inc/GenInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -75,7 +76,7 @@ namespace mu2e {
 
     // fill various info structs
     void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, TrkInfoMC& trkinfomc);
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const PrimaryParticle& primary);
+    void fillGenInfo(const KalSeedMC& kseedmc, GenInfo& geninfo, const PrimaryParticle& primary);
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,std::vector<int> const& vids);
     void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);

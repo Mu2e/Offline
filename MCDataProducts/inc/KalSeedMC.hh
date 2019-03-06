@@ -37,7 +37,12 @@ namespace mu2e {
     _proc(spp->creationCode()), _rel(MCRelationship::none),
     _nhits(0), _nactive(0), _mom(Geom::toXYZVec(spp->startMomentum())){
     // dig down to the GenParticle
-      if(spp->genParticle().isNonnull()) _gid = spp->genParticle()->generatorId().id();
+      auto simPtr = spp;
+      while (simPtr->genParticle().isNull()) {
+	simPtr = simPtr->parent();
+      }
+      _gid = simPtr->genParticle()->generatorId();
+      //      if(spp->genParticle().isNonnull()) _gid = spp->genParticle()->generatorId().id();
     }
   };
   // sampled pair of momentum and position (tracker system) of the primary matched particle

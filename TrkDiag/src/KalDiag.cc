@@ -477,14 +477,14 @@ namespace mu2e
       mcinfo._gen = spp->genParticle()->generatorId().id();
     mcinfo._pdg = spp->pdgId();
     mcinfo._proc = spp->originParticle().creationCode();
-    art::Ptr<SimParticle> pp = spp->originParticle().parent();
+    /*    art::Ptr<SimParticle> pp = spp->originParticle().parent();
     if(pp.isNonnull()){
       mcinfo._ppdg = pp->pdgId();
       mcinfo._pproc = pp->originParticle().creationCode();
       mcinfo._pmom = pp->startMomentum().vect().mag();
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
-    }
+	}*/
 
     art::Ptr<SimParticle> sp = spp;
     // find the first parent which comes from a generator
