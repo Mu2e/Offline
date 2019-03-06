@@ -29,8 +29,8 @@ namespace mu2e {
       }
       auto & strawDrift_h = *_strawDrift_p;
 
-      auto iov = strawDrift_h.iov();
       auto sd = strawDrift_h.getPtr(eid);
+      auto iov = strawDrift_h.iov();
       ProditionsEntity::set_t s;
       s.merge(set_t(sd->getCids()));
       auto p = find(s);

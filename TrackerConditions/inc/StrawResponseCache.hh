@@ -35,7 +35,7 @@ namespace mu2e {
       ProditionsEntity::set_t s = sd->getCids();
 
       auto se = strawElectronics_h.getPtr(eid);
-      iov.overlap(strawDrift_h.iov());
+      iov.overlap(strawElectronics_h.iov());
       s.merge(set_t(se->getCids()));
 
       auto sp = strawPhysics_h.getPtr(eid);
