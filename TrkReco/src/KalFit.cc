@@ -1,4 +1,4 @@
-//
+ //
 // Class to perform BaBar Kalman fit
 // Original author: Dave Brown LBNL 2012
 //
@@ -18,7 +18,6 @@
 #include "BTrkHelper/inc/BTrkHelper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
@@ -28,7 +27,6 @@
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 // tracker
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 // BaBar
@@ -372,9 +370,15 @@ namespace mu2e
     TrkErrCode fitstat;
     for(size_t iherr=0;iherr < _herr.size(); ++iherr) {
       fitstat = fitIteration(kalData,iherr);
-      if(_debug > 0) cout << "Iteration " << iherr 
-      << " NDOF = " << kalData.krep->nDof() 
-      << " Fit Status = " <<  fitstat << endl;
+      if(_debug > 0) { 
+	cout << "Iteration " << iherr 
+	     << " NDOF = " << kalData.krep->nDof() 
+	     << " Fit Status = " <<  fitstat << endl;
+
+	char msg[200];
+        sprintf(msg,"KalFit::fitTrack Iteration = %2li success = %i",iherr,fitstat.success());
+	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
+      }
       if(!fitstat.success())break;
     }
     return fitstat;
@@ -534,20 +538,19 @@ namespace mu2e
   unsigned KalFit::addMaterial(KalRep* krep) {
     _debug>3 && std::cout << __func__ << " called " << std::endl;
     unsigned retval(0);
-// TTracker geometry
-    // const Tracker& tracker = getTrackerOrThrow();
-    const TTracker& ttracker = dynamic_cast<const TTracker&>(*_tracker);
+// Tracker geometry
+    const Tracker& tracker = *_tracker;
 // fetcth the DetectorModel
     Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // storage of potential straws
     StrawFlightComp strawcomp(_maxmatfltdiff);
     std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
 // loop over Planes
-    double strawradius = ttracker.strawRadius();
+    double strawradius = tracker.strawOuterRadius();
     unsigned nadded(0);
-    // for(auto const& plane : ttracker.getPlanes()){
-    for ( size_t i=0; i!= ttracker.nPlanes(); ++i){
-      const auto& plane = ttracker.getPlane(i);
+    // for(auto const& plane : tracker.getPlanes()){
+    for ( size_t i=0; i!= tracker.nPlanes(); ++i){
+      const auto& plane = tracker.getPlane(i);
        _debug>3 && std::cout << __func__ << " plane " << plane.id() << std::endl;
       // if (!(plane.exists())) continue;
       // # of straws in a panel

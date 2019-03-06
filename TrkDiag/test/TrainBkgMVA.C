@@ -1,5 +1,5 @@
 // This script trains the MVAs used to flag background (Compton)
-// electron hits in the TTracker.  It processes the root files created by
+// electron hits in the Tracker.  It processes the root files created by
 // running the track reconstruction sequence with the following fcl parameter set:
 // physics.producers.FlagBkgHits.diagLevel : 1
 // physics.producers.FlagBkgHits.StereoHitMVACut : -1.0

@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_PlaneId_hh
-#define TrackerGeom_PlaneId_hh
+#ifndef DataProducts_PlaneId_hh
+#define DataProducts_PlaneId_hh
 
 //
 // Original author Rob Kutschke
@@ -13,4 +13,4 @@ namespace mu2e {
 
 }
 
-#endif /* TrackerGeom_PlaneId_hh */
+#endif /* DataProducts_PlaneId_hh */

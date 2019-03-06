@@ -22,7 +22,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -183,7 +183,7 @@ namespace mu2e {
     const StrawHitFlagCollection*               _shfcol;
     const StrawDigiMCCollection*                _mcdigis;
 
-    const TTracker*                             _tracker;
+    const Tracker*                              _tracker;
     int                                         _eventNum;
     int                                         _nsh;
 
@@ -377,7 +377,7 @@ namespace mu2e {
 //----Get data------------------------------------------------------------------------------------------------
   void DeltaFinderAna::beginRun(art::Run& aRun) {
 
-    mu2e::GeomHandle<mu2e::TTracker> ttHandle;
+    mu2e::GeomHandle<mu2e::Tracker> ttHandle;
     _tracker = ttHandle.get();
 
   }

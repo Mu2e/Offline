@@ -34,7 +34,7 @@ namespace fhicl {
 
 namespace mu2e {
   class Calorimeter;
-  class TTracker;
+  class Tracker;
 //-----------------------------------------------------------------------------
 // output struct
 //-----------------------------------------------------------------------------
@@ -44,7 +44,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
-    const TTracker*            _tracker;
+    const Tracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
     //    const CalTimePeak*         fTimePeak;
@@ -71,6 +71,20 @@ namespace mu2e {
     struct SaveResults_t {
       //      std::vector<CalHelixPoint> _xyzp;    // points with used flags
       CalHelixFinderData         _helix;   // helix, found at this stage
+    };
+    
+    struct PhiZFitInfo_t     {
+      HitInfo_t          seedIndex;	     
+      double             dfdz;
+      double             phi0;      
+      int                faceId;	     
+      double             weight;	     
+      int                useInteligentWeight;
+      double             dz;		     
+      double             zlast;		     
+      int                nPointsRemoved;     
+      int                doCleanUp;	     
+      const char*        banner;             
     };
 
     SaveResults_t        _results[6];      // diagnostic buffers
@@ -107,6 +121,8 @@ namespace mu2e {
 					// squared distance requed bewtween a straw hit and its predicted 
 					// position used in the patter recognition procedure
     double               _distPatRec;
+    int                  _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
+                                              //the findTrack function to set the new Helix
 
     double               _mindist;       // minimum distance between points used in circle initialization
     double               _pmin, _pmax;   // range of total momentum
@@ -172,6 +188,8 @@ namespace mu2e {
 				int                      Print    , 
 				const char*              Banner=NULL);
 
+    void   resolve2PiAmbiguity (ComboHit* Hit, XYZVec& Center, double &Phi_ref, double &DPhi);
+
     //calculates the residual along the radial direction of the helix-circle
     double calculateRadialDist (const XYZVec& HitPos, 
 				const XYZVec& HelCenter, 
@@ -181,29 +199,50 @@ namespace mu2e {
 				    const XYZVec& p2,
                                     const XYZVec& p3,
 				    XYZVec&       Center, 
-				    double&                  Radius,
-                                    double&                  Phi0, 
-				    double&                  TanLambda);
+				    double&       Radius,
+                                    double&       Phi0, 
+				    double&       TanLambda);
 
-				    // CalHelixFinderData&      mytrk,
-                                    // bool                     cleanPattern=false);
-
-    static double deltaPhi   (double phi1, double phi2);
+    void   countUsedHits           (CalHelixFinderData& Helix,
+				    HitInfo_t           SeedIndex,
+				    int&                NComboHits, 
+				    int&                NPoints);
+    static double deltaPhi         (double phi1, double phi2);
 
    // returns the index of the hit which provides the highest contribute to the chi2
     void   cleanUpWeightedCircleFit(CalHelixFinderData& Helix,
-				    HitInfo_t          SeedIndex,
-				    HitInfo_t&         Iworst);
+				    HitInfo_t           SeedIndex,
+				    HitInfo_t&          Iworst);
 
     bool   doLinearFitPhiZ          (CalHelixFinderData& Helix, 
-				     HitInfo_t          SeedIndex, 
+				     HitInfo_t           SeedIndex, 
 				     int                 UseInteligentWeight=0, 
 				     int                 DoCleanUp =1);
 
+    void   addCaloClusterToFitPhiZ  (CalHelixFinderData& Helix);
+
+    void   findGoodFaceHitInFitPhiZ (CalHelixFinderData& Helix,
+				     PhiZFitInfo_t&      phiZInfo,
+				     HitInfo_t&          GoodHit,
+				     float&              HitChi2);
+
+    void   findWorstChi2HitInFitPhiZ(CalHelixFinderData& Helix,
+				     PhiZFitInfo_t&      phiZInfo,
+				     HitInfo_t&          WorstHit,
+				     double&             HitChi2);
+
+
+    void   findWorstResidHitInFitPhiZ(CalHelixFinderData& Helix,
+				      PhiZFitInfo_t&      phiZInfo,
+				      HitInfo_t&          WorstHit,
+				      double&             HitChi2);
+
+    // void   doCleanUpFitPhiZ         (CalHelixFinderData& Helix,
+    // 				     );
    //perfoms the weighted circle fit, update the helix parameters (HelicCenter, Radius) and
     // fills the vector Weights which holds the calculated weights of the hits
     void   doWeightedCircleFit     (CalHelixFinderData& Helix,
-				    HitInfo_t          SeedIndex,
+				    HitInfo_t           SeedIndex,
 				    XYZVec&             HelCenter, 
 				    double&             Radius, 
 				    int                 Print=0, 
@@ -221,11 +260,11 @@ namespace mu2e {
 
     int   isHitUsed(int index);
 
-    void fillFaceOrderedHits          (CalHelixFinderData& Helix);
+    void  fillFaceOrderedHits          (CalHelixFinderData& Helix);
     // void filterDist                   (CalHelixFinderData& Helix);
-    void filterUsingPatternRecognition(CalHelixFinderData& Helix);
-    void setCaloCluster               (CalHelixFinderData& Helix);
-    bool fitHelix                     (CalHelixFinderData& Helix);
+    void  filterUsingPatternRecognition(CalHelixFinderData& Helix);
+    void  setCaloCluster               (CalHelixFinderData& Helix);
+    bool  fitHelix                     (CalHelixFinderData& Helix);
     // bool findHelix                    (CalHelixFinderData& Helix, const CalTimePeak* TimePeak);
     bool findHelix                    (CalHelixFinderData& Helix);
     int  findDfDz                     (CalHelixFinderData& Helix, HitInfo_t SeedIndex, int  Diag_flag=0);
@@ -241,7 +280,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // setters
 //-----------------------------------------------------------------------------
-    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
 //-----------------------------------------------------------------------------
 // diagnostics

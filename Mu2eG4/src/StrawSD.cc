@@ -3,7 +3,7 @@
 // This version does not use G4HCofThisEvent etc...
 // Framwork DataProducts are used instead
 //
-// This version only works for the TTracker.  It also allows that the tracker may not
+// This version only works for the Tracker.  It also allows that the tracker may not
 // be centered in its mother volume.
 //
 // Original author Rob Kutschke
@@ -23,7 +23,7 @@
 #include "Mu2eG4/inc/Mu2eG4UserHelpers.hh"
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
@@ -58,33 +58,33 @@ namespace mu2e {
 
     art::ServiceHandle<GeometryService> geom;
 
-    if ( !geom->hasElement<TTracker>() ) {
+    if ( !geom->hasElement<Tracker>() ) {
       throw cet::exception("GEOM")
         << "Expected one of Trackers but did not find it.\n";
     }
 
-    if ( geom->hasElement<TTracker>() ) {
+    if ( geom->hasElement<Tracker>() ) {
 
-      GeomHandle<TTracker> ttracker;
+      GeomHandle<Tracker> tracker;
 
-      const Plane& plane = ttracker->getPlane(0);
+      const Plane& plane = tracker->getPlane(0);
       const Panel& panel = plane.getPanel(0);
 
       _nStrawsPerPanel = panel.nStraws();
       _nStrawsPerPlane = plane.nPanels() * _nStrawsPerPanel;
 
-      _TrackerVersion = config.getInt("TTrackerVersion",3);
+      _TrackerVersion = config.getInt("TrackerVersion",3);
 
       _npanels  = StrawId::_npanels;
       _panelsft = StrawId::_panelsft;
       _planesft = StrawId::_planesft;
 
-      _verbosityLevel = max(verboseLevel,config.getInt("ttracker.verbosityLevel",0)); // Geant4 SD verboseLevel
-      _supportModel   = ttracker->getSupportModel();
+      _verbosityLevel = max(verboseLevel,config.getInt("tracker.verbosityLevel",0)); // Geant4 SD verboseLevel
+      _supportModel   = tracker->getSupportModel();
 
       if ( _TrackerVersion < 3 ) {
         throw cet::exception("StrawSD")
-          << "Expected TTrackerVersion >= 3 but found " << _TrackerVersion <<endl;
+          << "Expected TrackerVersion >= 3 but found " << _TrackerVersion <<endl;
         // esp take a look at the detectorOrigin calculation
       }
 
@@ -195,7 +195,7 @@ namespace mu2e {
 
       // if (_verbosityLevel>3) {
 
-      //   GeomHandle<TTracker> ttracker;
+      //   GeomHandle<Tracker> tracker;
       //   // print out info based on the old StrawID etc... first
       //   cout << __func__ <<  " sid, panelNumber, panelNumberShifted, planeNumber, planeNumberShifted, sid, sid2 : "
       //        << setw(6) << sid.asUint16()
@@ -204,7 +204,7 @@ namespace mu2e {
       //        << setw(6) << planeNumber
       //        << setw(6) << planeNumberShifted;
       //   // print out info based on the StrawID etc...
-      //   const Straw& straw2 = ttracker->getStraw(sid);
+      //   const Straw& straw2 = tracker->getStraw(sid);
       //   cout << setw(7) << straw2.id()
       //        << endl;
       // }
@@ -253,8 +253,8 @@ namespace mu2e {
       // checking if the Geant4 and Geometry Service straw positions agree
 
       art::ServiceHandle<GeometryService> geom;
-      GeomHandle<TTracker> ttracker;
-      const Straw& straw = ttracker->getStraw(sid);
+      GeomHandle<Tracker> tracker;
+      const Straw& straw = tracker->getStraw(sid);
 
       // will compare straw.getMidPoint() with the straw position according to Geant4
 
@@ -271,7 +271,7 @@ namespace mu2e {
 
       if ( _verbosityLevel>4 || diffMag>tolerance) {
 
-        const Plane& plane = ttracker->getPlane(straw.id().getPlane());
+        const Plane& plane = tracker->getPlane(straw.id().getPlane());
         const Panel& panel = plane.getPanel(straw.id().getPanel());
 
         cout << __func__ << " straw info: event track panel plane straw id: " <<
@@ -303,7 +303,7 @@ namespace mu2e {
 
         if (diffMag>tolerance) {
           throw cet::exception("GEOM")
-            << "Inconsistent Straw Positions; incorrect ttracker Geant4 construction?" << endl;
+            << "Inconsistent Straw Positions; incorrect tracker Geant4 construction?" << endl;
         }
       }
     }
@@ -344,13 +344,13 @@ namespace mu2e {
     G4ThreeVector localZUnit(0.,0.,1.);
     G4ThreeVector worldZUnit = toWorld.TransformAxis(localZUnit);
 
-    // make sure it works with the constructTTrackerv3
+    // make sure it works with the constructTrackerv3
     //    int copy = touchableHandle->GetCopyNumber();
     int copy = sid.asUint16();
 
     /*
     int eventNo = event->GetEventID();
-    // Works for both TTracker.
+    // Works for both Tracker.
     printf ( "Addhit: %4d %4d %6d %3d %3d | %10.2f %10.2f %10.2f | %10.2f %10.2f %10.2f | %10.7f %10.7f\n",
     eventNo,  _collection->size(), copy,
     aStep->IsFirstStepInVolume(), aStep->IsLastStepInVolume(),
@@ -360,12 +360,12 @@ namespace mu2e {
     fflush(stdout);
     */
 
-    // Reconstruction Geometry for the TTracker.
+    // Reconstruction Geometry for the Tracker.
     art::ServiceHandle<GeometryService> geom;
-    if ( geom->hasElement<TTracker>() ) {
+    if ( geom->hasElement<Tracker>() ) {
 
-      GeomHandle<TTracker> ttracker;
-      const Straw& straw = ttracker->getStraw(StrawId(copy));
+      GeomHandle<Tracker> tracker;
+      const Straw& straw = tracker->getStraw(StrawId(copy));
       G4ThreeVector mid  = straw.getMidPoint();
       G4ThreeVector w    = straw.getDirection();
 
@@ -415,7 +415,7 @@ namespace mu2e {
   G4ThreeVector StrawSD::GetTrackerOrigin() {
 
     art::ServiceHandle<GeometryService> geom;
-    if ( geom->hasElement<TTracker>() ) {
+    if ( geom->hasElement<Tracker>() ) {
       GeomHandle<DetectorSystem> det;
       CLHEP::Hep3Vector val = det->toMu2e(CLHEP::Hep3Vector());
       if (_verbosityLevel>1) {
@@ -425,7 +425,7 @@ namespace mu2e {
     }
 
     throw cet::exception("GEOM")
-      << "StrawSD::GetTrackerOrigin this version only supports the TTracker.\n";
+      << "StrawSD::GetTrackerOrigin this version only supports the Tracker.\n";
   }
 
 } //namespace mu2e

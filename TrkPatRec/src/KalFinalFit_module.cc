@@ -16,9 +16,8 @@
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
@@ -177,7 +176,7 @@ namespace mu2e
   }
 //-----------------------------------------------------------------------------
   void KalFinalFit::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
+    mu2e::GeomHandle<mu2e::Tracker> th;
     _data.tracker     = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
@@ -592,7 +591,7 @@ namespace mu2e
     //clear the array
     kalData.missingHits.clear();
 
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
     //  Trajectory info
     Hep3Vector tdir;
     HepPoint tpos;
@@ -613,7 +612,7 @@ namespace mu2e
 	    CLHEP::Hep3Vector hdir = straw.getDirection();
 	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
 	    HepPoint spt(hpos.x(),hpos.y(),hpos.z());
-	    TrkLineTraj htraj(spt,hdir,-straw.getHalfLength(),straw.getHalfLength());
+	    TrkLineTraj htraj(spt,hdir,-straw.halfLength(),straw.halfLength());
 	    // estimate flightlength along track.  This assumes a constant BField!!!
 	    double fltlen = (hpos.z()-tpos.z())/tdir.z();
 	    // estimate hit length

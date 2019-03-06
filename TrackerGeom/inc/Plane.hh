@@ -26,8 +26,7 @@ namespace mu2e {
 
   class Plane{
 
-    friend class TTracker;
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 
@@ -78,7 +77,7 @@ namespace mu2e {
     std::string name( std::string const& base ) const;
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker& tracker ) const;
+    void fillPointers ( const Tracker* tracker ) const;
 
     bool exists() const {
       return _exists;

@@ -18,7 +18,6 @@ double cosmicDYB.muThMin = 0.523;  //30 degrees
 double cosmicDYB.dx     = 0;
 double cosmicDYB.dy     = 1000;
 double cosmicDYB.dz     = 11500;
-double cosmicDYB.constTime = 800;
 string cosmicDYB.direction = "Positive_x";
 vector<double> cosmicDYB.productionCenterInMu2e = {-6418.6,2500.0,8250.0};  //x: -3904.0-2514.6=-6418.6
 

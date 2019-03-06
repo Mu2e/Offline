@@ -18,10 +18,9 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
@@ -288,11 +287,11 @@ namespace mu2e {
     if(!init){
       init = true;
       // initialize
-      const TTracker& tt(*GeomHandle<TTracker>());
+      const Tracker& tt(*GeomHandle<Tracker>());
       // establihit the extent of a panel using the longest straw (0)
       Straw const& straw = tt.getStraw(StrawId(0,0,0));
-      float phi0 = (straw.getMidPoint()-straw.getHalfLength()*straw.getDirection()).phi();
-      float phi1 = (straw.getMidPoint()+straw.getHalfLength()*straw.getDirection()).phi();
+      float phi0 = (straw.getMidPoint()-straw.halfLength()*straw.getDirection()).phi();
+      float phi1 = (straw.getMidPoint()+straw.halfLength()*straw.getDirection()).phi();
       float lophi = std::min(phi0,phi1);
       float hiphi = std::max(phi0,phi1);
       float phiwidth = hiphi-lophi;

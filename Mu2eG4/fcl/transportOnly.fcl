@@ -47,12 +47,12 @@ physics : {
       maxFullPrint           : 201
     }
 
-    # Look at the hits from TTrackerPlaneSupport Sensitive Detectors
+    # Look at the hits from TrackerPlaneSupport Sensitive Detectors
     checksdd: {
-      module_type          : ReadTTrackerDSDetectors
+      module_type          : ReadTrackerDSDetectors
       diagLevel            : 0
       hitMakerModuleLabel  : g4run
-      sddStepPoints        : ttrackerDS
+      sddStepPoints        : trackerDS
       maxFullPrint         : 201
     }
     # Look at the hits from virtualdetectors

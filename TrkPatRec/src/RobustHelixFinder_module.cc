@@ -1,5 +1,5 @@
 //
-// TTracker Pattern Recognition based on Robust Helix Fit
+// Tracker Pattern Recognition based on Robust Helix Fit
 //
 // $Id: RobustHelixFinder_module.cc,v 1.2 2014/08/30 12:19:38 tassiell Exp $
 // $Author: tassiell $
@@ -28,8 +28,7 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 
 #include "TrkReco/inc/TrkTimeCalculator.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "BTrk/BaBar/BaBar.hh"
@@ -80,6 +79,10 @@ namespace {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
+  // comparison functor for sorting byuniquePanel ID
+  struct panelcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
+    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
+  };
   struct HelixHitMVA
   {
     std::vector <float> _pars,_pars2;
@@ -246,8 +249,8 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
-    const TTracker* tracker = th.get();
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    const Tracker* tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
@@ -1017,7 +1020,7 @@ namespace mu2e {
 	ordChCol.push_back(ComboHit(ch));
       }
     }
-    std::sort(ordChCol.begin(), ordChCol.end(),zcomp());
+    std::sort(ordChCol.begin(), ordChCol.end(),panelcomp());//zcomp());
 
 
     if (_debug>0){

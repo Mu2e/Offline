@@ -51,7 +51,7 @@ CprTrigger : { @table::CprTrigger
     producers : { 
 #	@table::CaloClusterFast.producers
 
-	CPRFetchDigis : { module_type:PrefetchData
+	cprFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
 	    mcDiag                        : true
 

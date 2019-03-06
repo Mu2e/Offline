@@ -35,6 +35,7 @@
 #include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
@@ -211,6 +212,7 @@ namespace mu2e {
     int             _nTrackTrig;
     int             _nCaloTrig;
     int             _nCaloCalibTrig;
+    art::InputTag   _trigAlgTag;
     art::InputTag   _sdMCTag;
     art::InputTag   _sdTag;
     art::InputTag   _chTag;    
@@ -249,10 +251,11 @@ namespace mu2e {
   ReadTriggerInfo::ReadTriggerInfo(fhicl::ParameterSet const& pset) :
     art::EDAnalyzer(pset), 
     _diagLevel     (pset.get<int>   ("diagLevel", 0)),
-    _nMaxTrig      (pset.get<size_t>("nFilters", 50)),
+    _nMaxTrig      (pset.get<size_t>("nFilters", 70)),
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
     _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
+    _trigAlgTag    (pset.get<art::InputTag>("triggerAlgMerger"     , "triggerInfoMerger")),
     _sdMCTag       (pset.get<art::InputTag>("strawDigiMCCollection", "compressDigiMCs")),
     _sdTag         (pset.get<art::InputTag>("strawDigiCollection"  , "makeSD")),
     _chTag         (pset.get<art::InputTag>("comboHitCollection"   , "TTmakeSH")),
@@ -302,6 +305,8 @@ namespace mu2e {
     Hist._hTrigInfo[10]  = trigInfoDir.make<TH1F>("hTrigInfo_unique_all", "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._hTrigInfo[11]  = trigInfoDir.make<TH1F>("hTrigInfo_unique"    , "Events found only by each Trig path"        , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
 
+    Hist._hTrigInfo[15]  = trigInfoDir.make<TH1F>("hTrigInfo_paths"     , "Rejection of all the Trigger paths"         , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
+
 
     Hist._h2DTrigInfo[0] = trigInfoDir.make<TH2F>("h2DTrigInfo_map_all" , "Trigger correlation map from all filters"   , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));       
     Hist._h2DTrigInfo[1] = trigInfoDir.make<TH2F>("h2DTrigInfo_map"     , "Trigger correlation map"                    , (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5), (_nMaxTrig+2), -0.5, (_nMaxTrig+1.5));   
@@ -350,6 +355,7 @@ namespace mu2e {
       Hist._hHelInfo[i][4] = helInfoDir.make<TH1F>(Form("hChi2dXY_%i"  , i), "Helix #chi^{2}_{xy}/ndof;#chi^{2}_{xy}/ndof"      , 100, 0, 50);
       Hist._hHelInfo[i][5] = helInfoDir.make<TH1F>(Form("hChi2dZPhi_%i", i), "Helix #chi^{2}_{z#phi}/ndof;#chi^{2}_{z#phi}/ndof", 100, 0, 50);
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
+      Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
 
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
@@ -687,7 +693,15 @@ namespace mu2e {
 
     std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
     event.getManyByType(hTrigInfoVec);
-    
+
+    //get the TriggerAlg from the Event
+    art::Handle<mu2e::TriggerAlg> trigAlgH;
+    event.getByLabel(_trigAlgTag, trigAlgH);
+    const mu2e::TriggerAlg*       trigAlg(0);
+    if (trigAlgH.isValid()){
+      trigAlg = trigAlgH.product();
+    }
+
     //get the strawDigiMC truth if present
     art::Handle<mu2e::StrawDigiMCCollection> mcdH;
     event.getByLabel(_sdMCTag, mcdH);
@@ -722,6 +736,16 @@ namespace mu2e {
     if (cdH.isValid()) {
       cdCol = cdH.product();
     }
+
+    if (trigAlg != 0) {
+      if (trigAlg->hasAnyProperty(TriggerAlg::caloCalibCosmic)) _sumHist._hTrigInfo[15]->Fill(0.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::caloMVACE))       _sumHist._hTrigInfo[15]->Fill(1);
+      if (trigAlg->hasAnyProperty(TriggerAlg::tprSeedDeM))      _sumHist._hTrigInfo[15]->Fill(2.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::tprSeedDeP))      _sumHist._hTrigInfo[15]->Fill(3.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::cprSeedDeM))      _sumHist._hTrigInfo[15]->Fill(4.);
+      if (trigAlg->hasAnyProperty(TriggerAlg::cprSeedDeP))      _sumHist._hTrigInfo[15]->Fill(5.);
+    }
+
     
     //fill the general occupancy histogram
     fillOccupancyInfo   (_nTrackTrig+_nCaloTrig, sdCol, cdCol, _occupancyHist);
@@ -928,9 +952,9 @@ namespace mu2e {
 	while(mother->hasParent()) mother = mother->parent();
 	sim = mother.operator ->();
 	int      pdgM   = sim->pdgId();
-	double   pXMC   = step->momentum().x();
-	double   pYMC   = step->momentum().y();
-	double   pZMC   = step->momentum().z();
+	double   pXMC   = simptr->startMomentum().x();
+	double   pYMC   = simptr->startMomentum().y();
+	double   pZMC   = simptr->startMomentum().z();
 	double   mass(-1.);//  = part->Mass();
 	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
 	mass   = pdt->particle(pdg).ref().mass();
@@ -945,7 +969,6 @@ namespace mu2e {
 	origin.SetY(sp->y());
 	origin.SetZ(sp->z());
 	double origin_r = sqrt(origin.x()*origin.x() + origin.y()*origin.y());
-	// trackSeed->fOrigin1.SetXYZT(sp->x(),sp->y(),sp->z(),simptr->startGlobalTime());
 	double pz     = sqrt(p*p - pt*pt);
 
 	//now fill the MC histograms
@@ -968,7 +991,11 @@ namespace mu2e {
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
 
-    int        nsh       = (int)HSeed->hits().size();
+    int        nch       = (int)HSeed->hits().size();
+    int        nsh(0);
+    for (int i=0; i<nch; ++i) {
+      nsh += HSeed->hits().at(i).nStrawHits();
+    }
     float      mm2MeV    = (3./10.)*_bz0;
 
     double     p         = HSeed->helix().momentum()*mm2MeV;
@@ -977,6 +1004,7 @@ namespace mu2e {
     double     pt        = HSeed->helix().radius()*mm2MeV;
     double     d0        = HSeed->helix().rcent() - HSeed->helix().radius();
     double     clE(-1.);
+    double     lambda    = fabs(HSeed->helix().lambda());
     if (HSeed->caloCluster()) clE = HSeed->caloCluster()->energyDep();
 
     Hist._hHelInfo[HelTrigIndex][0]->Fill(p);
@@ -986,13 +1014,14 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][4]->Fill(chi2dXY);
     Hist._hHelInfo[HelTrigIndex][5]->Fill(chi2dZPhi);
     Hist._hHelInfo[HelTrigIndex][6]->Fill(clE);
+    Hist._hHelInfo[HelTrigIndex][7]->Fill(lambda);
 
      //add the MC info if available
     if (_mcdigis) {
       //      const mu2e::ComboHit*    hit(0);
       std::vector<int>         hits_simp_id, hits_simp_index, hits_simp_z;
 
-      for (int j=0; j<nsh; ++j){
+      for (int j=0; j<nch; ++j){
 	std::vector<StrawDigiIndex> shids;
 	HSeed->hits().fillStrawDigiIndices((*_event),j,shids);	
 	//	hit            = &HSeed->hits().at(j);

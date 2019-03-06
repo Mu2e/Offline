@@ -73,7 +73,7 @@ namespace mu2e {
   using namespace CalTimePeakFinderTypes;
   
   class Calorimeter;
-  class TTracker;
+  class Tracker;
   class ModuleHistToolBase; 
   
   class CalTimePeakFinder: public art::EDFilter {
@@ -122,7 +122,7 @@ namespace mu2e {
 
     double                                _dtoffset;
 
-    const TTracker*                       _tracker;     // straw tracker geometry
+    const Tracker*                        _tracker;     // straw tracker geometry
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
 
     const CaloCluster*                     cl;

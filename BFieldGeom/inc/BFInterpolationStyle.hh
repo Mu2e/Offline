@@ -1,5 +1,5 @@
-#ifndef TTrackerGeom_BFInterpolationStyle_hh
-#define TTrackerGeom_BFInterpolationStyle_hh
+#ifndef BFieldGeom_BFInterpolationStyle_hh
+#define BFieldGeom_BFInterpolationStyle_hh
 //
 // Enum-matched-to-String class for defining how to do interpolation
 // within a magnetic field map.

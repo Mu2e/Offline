@@ -201,7 +201,6 @@ mainlib = helper.make_mainlib ( [
         'mu2e_ProductionTargetGeom',
         'mu2e_ProtonBeamDumpGeom',
         'mu2e_StoppingTargetGeom',
-        'mu2e_TTrackerGeom',
         'mu2e_TrackerGeom',
         'mu2e_GeomPrimitives',
         'mu2e_GlobalConstantsService',

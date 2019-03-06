@@ -18,7 +18,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
@@ -41,8 +40,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // data
 #include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "TrackCaloMatching/inc/TrackClusterMatch.hh"
@@ -945,8 +943,6 @@ namespace mu2e {
 
 
        //--------------------------  Do tracker hits  --------------------------------
-
-       //   const Tracker& tracker = getTrackerOrThrow();
 
     art::Handle<mu2e::StrawHitCollection> strawhitsH;
     if (event.getByLabel(_shLabel,strawhitsH)) {

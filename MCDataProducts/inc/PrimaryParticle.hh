@@ -18,6 +18,7 @@ namespace mu2e {
 	_genp(genp), _simps(simps) {}
       GenParticle const& primary () const { return _genp; }
       SPPV const& primarySimParticles() const { return _simps; }
+      SPPV& modifySimParticles() { return _simps; }
 
     private:
       GenParticle _genp; // primary particle 

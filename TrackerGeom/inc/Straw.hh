@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include "TrackerGeom/inc/StrawDetail.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 
@@ -16,17 +15,11 @@
 
 namespace mu2e {
 
-  // Forward declarations.
   class Tracker;
-
 
   class Straw{
 
-    friend class Layer;
-    friend class Panel;
-    friend class Plane;
-    friend class TTracker;
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 
@@ -38,8 +31,6 @@ namespace mu2e {
     // Constructor using wire tangents.
     Straw( const StrawId& id,
            const CLHEP::Hep3Vector& c,
-           const StrawDetail* detail,
-           int    detailIndex,
            double wtx = 0.,
            double wty = 0.
            );
@@ -47,8 +38,6 @@ namespace mu2e {
     // Constructor using wire unit vector.
     Straw( const StrawId& id,
            const CLHEP::Hep3Vector& c,
-           const StrawDetail* detail,
-           int detailIndex,
            CLHEP::Hep3Vector const& t
            );
 
@@ -60,10 +49,6 @@ namespace mu2e {
 
 
     const StrawId& id() const { return _id;}
-
-    int detailIndex() const { return _detailIndex;}
-
-    const StrawDetail& getDetail() const { return *_detail;}
 
     // Navigation, normally within a panel:
 
@@ -85,38 +70,21 @@ namespace mu2e {
     virtual  const CLHEP::Hep3Vector& getDirection() const { return _w;}
     const CLHEP::Hep3Vector& direction() const { return _w;}
 
-    // Return G4TUBS parameters outer volume for this straw - gas volume.
-    TubsParams getOuterTubsParams() const{
-      return _detail->getOuterTubsParams();
-    }
+    // outer radius
+    virtual double getRadius() const;
 
-    // Return G4TUBS parameters for the straw skin.
-    TubsParams getWallTubsParams() const{
-      return _detail->getWallTubsParams();
-    }
+    virtual double innerRadius() const;
 
-    // Return G4TUBS parameters for the wire.
-    TubsParams getWireTubsParams() const{
-      return _detail->getWireTubsParams();
-    }
-
-    // Straw Radius
-    virtual double getRadius() const {
-      return _detail->outerRadius();
-    }
-
-    // Straw Thickness
-    virtual double getThickness() const {
-      return _detail->thickness();
-    }
+    virtual double  getThickness() const;
 
     // Half length
-    virtual double getHalfLength() const {
-      return _detail->halfLength();
-    }
+    virtual double halfLength() const;
+
+    // active length is a little smaller
+    virtual double activeHalfLength() const;
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker& tracker ) const;
+    void fillPointers ( const Tracker* tracker ) const;
 
     int hack;
     bool operator==(const Straw other) const {
@@ -136,14 +104,12 @@ namespace mu2e {
     // Mid-point of the straw.
     CLHEP::Hep3Vector _c;
 
-    // Detailed description of a straw.
-    mutable const StrawDetail* _detail;
-    int _detailIndex;
-
     // Unit vector along the wire direction.
     // Need to add unit vectors along local u and v also.
     // Use Euler angle convention from G4.
     CLHEP::Hep3Vector _w;
+
+    mutable const Tracker* _tracker;
 
     // Nearest neighbours.
     std::vector<StrawId>    _nearestById;

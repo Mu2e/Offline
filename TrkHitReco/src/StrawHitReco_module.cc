@@ -20,8 +20,7 @@
 #include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
@@ -156,8 +155,7 @@ namespace mu2e {
   {
       if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
-      const Tracker& tracker = getTrackerOrThrow();
-      const TTracker& tt(*GeomHandle<TTracker>());
+      const Tracker& tt(*GeomHandle<Tracker>());
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
       auto const& srep = _strawResponse_h.get(event.id());
@@ -247,15 +245,15 @@ namespace mu2e {
 	float tot = tots[eend.end()];
 	// filter on specific ionization FIXME!
 	// filter based on composite e/P separation FIXME!
-	const Straw& straw  = tracker.getStraw( digi.strawId() );
+	const Straw& straw  = tt.getStraw( digi.strawId() );
 	double dw, dwerr;
 	double dt = times[StrawEnd::cal] - times[StrawEnd::hv];
         double halfpv;
 	// get distance along wire from the straw center and it's estimated error
 	bool td = srep.wireDistance(straw,energy,dt, dw,dwerr,halfpv);
-        float propd = straw.getHalfLength()+dw;
+        float propd = straw.halfLength()+dw;
         if (eend == StrawEnd(StrawEnd::hv))
-          propd = straw.getHalfLength()-dw;
+          propd = straw.halfLength()-dw;
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
 	// create combo hit
 	static const XYZVec _zdir(0.0,0.0,1.0);

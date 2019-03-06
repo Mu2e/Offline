@@ -295,7 +295,8 @@ namespace mu2e {
       for(auto const& vdsp : vdspc ) {
 	if(vdsp.simParticle() == pspc._spp){
 	  if(_debug > 1) std::cout << "Found matching VD StepPoint position" 
-	  << vdsp.position() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
+	  << vdsp.position() << " momentum " << vdsp.momentum() 
+	  << " time " << vdsp.time() << " VDID = " << vdsp.virtualDetectorId() << std::endl;
 
 	  VDStep vds(det->toDetector(vdsp.position()),// convert to DetectorCoordinates FIXME!
 	    vdsp.momentum() ,

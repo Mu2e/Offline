@@ -18,7 +18,7 @@
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 // #include "CalPatRec/inc/KalFitResultNew.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
