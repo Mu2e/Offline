@@ -1,0 +1,3 @@
+physics.filters.tprHelixIPADeMEventPrescale.nPrescale    : 1
+physics.filters.tprHelixIPADeMEventPrescale.triggerAlg   : ["TprHelixIPADeM"]
+physics.filters.tprHelixIPADeMEventPrescale.triggerFlag  : ["PrescaleRandom"]

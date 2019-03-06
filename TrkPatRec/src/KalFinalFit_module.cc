@@ -300,7 +300,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
-	  if (_cprmode)	_kfit.updateT0(_result);
+	  int last_iteration  = -1;
+	  if (_cprmode)	_kfit.updateT0(_result, last_iteration);
 
 	  // warning about 'fit current': this is not an error
 	  if(!_result.krep->fitCurrent()){
@@ -463,7 +464,9 @@ namespace mu2e
 	double            zhit = hpos.z();
 
 	for (std::vector<TrkHit*>::iterator it=krep->hitVector().begin(); it!=krep->hitVector().end(); it++) {
-	  tsh = static_cast<TrkStrawHit*> (*it);
+	  //	  tsh = static_cast<TrkStrawHit*> (*it);
+	  tsh = dynamic_cast<TrkStrawHit*> (*it);
+	  if (tsh ==0)                  continue;
 	  int tsh_index = tsh->index();
 	  if (tsh_index == istr) {
 	    found = true;

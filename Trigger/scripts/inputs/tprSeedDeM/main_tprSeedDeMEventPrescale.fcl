@@ -1,0 +1,3 @@
+physics.filters.tprSeedDeMEventPrescale.nPrescale    : 1
+physics.filters.tprSeedDeMEventPrescale.triggerAlg   : ["TprSeedDeM"]
+physics.filters.tprSeedDeMEventPrescale.triggerFlag  : ["PrescaleRandom"]

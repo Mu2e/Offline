@@ -10,34 +10,58 @@ import re
 import sys
 import string
 import os
+import shutil
 from shutil import copyfile
 
 from argparse import ArgumentParser
 
 def appendEpilog(trig_path, output_file, project_name):
 
-    # trk_filters_DeM = ['DeMTCFilter', 'DeMHSFilter', 'DeMTSFilter']
-    # trk_filters_DeP = ['DePTCFilter', 'DePHSFilter', 'DePTSFilter']
-    # trk_filters     = trk_filters_DeM
-    trk_filters = ['TCFilter', 'HSFilter', 'TSFilter']
-    # trk_alg     = "tpr"   
-    # if "cpr" in trig_path:
-    #     trk_alg = "cpr"
-        
-    trk_alg = trig_path
+    trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter','Prescale']
+    helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'Prescale']
+    tc_filters       = ['EventPrescale','SDCountFilter','TCFilter', 'Prescale']
+    calo_filters     = ['EventPrescale','CDCountFilter','Filter'  , 'Prescale']
+    unbiased_filters = ['Prescale']
+    minbias_filters  = ['EventPrescale','Filter'       , 'Prescale']
 
-    # if "DeP" in trig_path:
-    #     trk_filters = trk_filters_DeP
+    filters     = []
 
+#undestand which kind of trigger path are we dealing with
+    if "Seed" in trig_path:
+        filters = trk_filters
+    elif "Helix" in trig_path:
+        filters = helix_filters
+    elif "TimeCluster" in trig_path:
+        filters = tc_filters
+    elif "calo" in trig_path:
+        filters = calo_filters
+    elif "unbiased" in trig_path:
+        filters = unbiased_filters
+    elif "Count" in trig_path:
+        filters = minbias_filters
+
+    trk_alg     = trig_path
+
+#create the directory where to fill all the sub-epilog files
     project_dir = os.environ["MU2E_BASE_RELEASE"] +"/"+ project_name
 
     print project_dir
 #check if the dir with the subconfig files exists, otherwise create it
     if os.path.exists(project_dir) == False:
-        os.makedirs(project_dir)
+        #os.makedirs(project_dir)
+        project_name = 'TriggerEpilogs'
+        project_dir  = os.environ["MU2E_BASE_RELEASE"] +"/TriggerEpilogs"
 
-    for i in range(0,len(trk_filters)):
-        filterName       = trk_alg+trk_filters[i]
+    #create the sub-epilog file
+    sub_epilog_name = project_name + "/" + trig_path + ".fcl"
+    sub_epilog_file = open(sub_epilog_name,"a")
+
+    is_first = True
+
+#    for i in range(0,len(trk_filters)):
+#        filterName       = trk_alg+trk_filters[i]
+    for i in range(0,len(filters)):
+        filterName       = trk_alg+filters[i]
         if os.path.exists(project_dir) == False:
             os.makedirs(project_dir)
 
@@ -50,7 +74,12 @@ def appendEpilog(trig_path, output_file, project_name):
         if subconfig_exists == False:
 #            subconfig_file = os.environ["MU2E_BASE_RELEASE"]+'/Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + ".config"
 #            epilog_fileName = 'Trigger/scripts/inputs/' + trig_path + "/main_"+ filterName + '.fcl' 
-            epilog_fileName = 'Trigger_epilogs/' + trig_path + "/main_"+ filterName + '.fcl' 
+            epilog_fileName = project_name + "/" + trig_path + "/main_"+ filterName + '.fcl' 
+            dirDefault      = 'Trigger/scripts/inputs/' + trig_path
+            dirDest         = project_name + "/" + trig_path
+            if is_first == True: 
+                shutil.copytree(dirDefault, dirDest)
+                is_first = False
         else:
             subconfig_file = open(subconfig_file,"r")
 
@@ -61,7 +90,7 @@ def appendEpilog(trig_path, output_file, project_name):
                 print epilog_subdir
 
 #create the epilog file
-                epilog_fileName = project_name + '/' + trig_path +'/'+filterName+'.fcl'
+                epilog_fileName = project_name + '/' + trig_path +'/'+ filterName+'.fcl'
                 epilog_file     = open(epilog_fileName,"a")
 
 #now read the sub-config file
@@ -83,7 +112,12 @@ def appendEpilog(trig_path, output_file, project_name):
                                 epilog_file.close()
 
         epilog=("\n#include \""+epilog_fileName +"\"")
-        output_file.write(epilog)
+        print epilog
+
+        sub_epilog_file.write(epilog)
+    
+    sub_epilog=("\n#include \""+sub_epilog_name+"\"")
+    output_file.write(sub_epilog)
 
     return True
 
@@ -144,6 +178,20 @@ path_list = ""
 
 hasFilteroutput=0
 
+tmp_name     = args.outputfilename
+fname_len    = len(tmp_name)-4
+project_name = tmp_name[0:fname_len]
+project_dir  = os.environ["MU2E_BASE_RELEASE"] + "/" + project_name
+
+if os.path.exists(project_dir) == False:
+    project_name = "TriggerEpilogs"
+    project_dir  = os.environ["MU2E_BASE_RELEASE"] +"/" + project_name
+    os.makedirs(project_dir)
+
+new_epilog   = project_name + "/" + "allPaths.fcl"
+
+new_epilog   = open(new_epilog, "a");
+
 for line in fh:
     vec_path     = []
     vec_prescale = []
@@ -183,38 +231,38 @@ for line in fh:
 
 #now append the epilog files for setting the filters in the path
         
-        if "Seed" in vec_path[0]:
-            tmp_name     = args.outputfilename
-            fname_len    = len(tmp_name)-4
-            project_name = tmp_name[0:fname_len]
-            appendEpilog(str(vec_path[0]), new_file, project_name)
+#        if "Seed" in vec_path[0]:
+        appendEpilog(str(vec_path[0]), new_epilog, project_name)
 
-        new_file.write(new_path)
+        new_epilog.write(new_path)
 
     else:
         trigerOutput_line= ("\nphysics.out : [ readTriggerInfo, triggerOutput ]"+" \n")
-        new_file.write(trigerOutput_line)
+        new_epilog.write(trigerOutput_line)
         hasFilteroutput=1
 
 
-    if vec_path[0] != "triggerOutput":
-        if len(vec_prescale) == 1:
-            new_line= ("physics.filters."+str(vec_path[0])+"Prescale.nPrescale"+" : "+ str(vec_prescale[0])+" \n \n")
-            new_file.write(new_line)
-        elif len(vec_prescale) == 2:
-            new_line= ("physics.filters."+str(vec_path[0])+"Prescale.nPrescale"+" : "+ str(vec_prescale[0])+" \n")
-            new_file.write(new_line)
+    # if vec_path[0] != "triggerOutput":
+    #     if len(vec_prescale) == 1:
+    #         new_line= ("physics.filters."+str(vec_path[0])+"Prescale.nPrescale"+" : "+ str(vec_prescale[0])+" \n \n")
+    #         new_epilog.write(new_line)
+    #     elif len(vec_prescale) == 2:
+    #         new_line= ("physics.filters."+str(vec_path[0])+"Prescale.nPrescale"+" : "+ str(vec_prescale[0])+" \n")
+    #         new_epilog.write(new_line)
             
-            new_line= ("physics.filters."+str(vec_path[0])+"EventPrescale.nPrescale"+" : "+ str(vec_prescale[1])+" \n \n")
-            new_file.write(new_line)
+    #         new_line= ("physics.filters."+str(vec_path[0])+"EventPrescale.nPrescale"+" : "+ str(vec_prescale[1])+" \n \n")
+    #         new_epilog.write(new_line)
 
-new_file.write("\n")
+new_epilog.write("\n")
        
 analyzer_line= ("physics.analyzers.readTriggerInfo.SelectEvents : [ "+path_list+" ]"+" \n")
-new_file.write(analyzer_line)
+new_epilog.write(analyzer_line)
 
 if hasFilteroutput == 1:
     triggerOutput_line= ("outputs.triggerOutput.SelectEvents : [ "+path_list+" ]"+" \n")
-    new_file.write(triggerOutput_line)
-        
+    new_epilog.write(triggerOutput_line)
+
+new_epilog.close()
+
+new_file.write("\n#include \"TriggerEpilogs/allPaths.fcl\"\n")
 new_file.close()
