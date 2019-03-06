@@ -13,6 +13,7 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
+#include "DataProducts/inc/Helicity.hh"
 
 #include "TrkReco/inc/TrkFaceData.hh"
 
@@ -92,18 +93,20 @@ namespace mu2e {
       float    straw_mean_radius;
       float    chi2d_helix;
 
+      int      nLoops;
+      float    meanHitRadialDist;
     };
     
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
 
     HelixTraj*                        _helix;
+    Helicity                          _helicity;
 
-    // std::vector<HitInfo_t>           _goodhits;
-    std::vector<int>                 _goodhits;
+    std::vector<int>                  _goodhits;
 
-    HitInfo_t                        _seedIndex;
-    HitInfo_t                        _candIndex;
+    HitInfo_t                         _seedIndex;
+    HitInfo_t                         _candIndex;
 
     int                               _nStrawHits;      
     int                               _nComboHits;    
@@ -171,7 +174,7 @@ namespace mu2e {
     CalHelixFinderData();
     ~CalHelixFinderData();
 
-    CalHelixFinderData(const CalHelixFinderData& Data);
+    // CalHelixFinderData(const CalHelixFinderData& Data);
 
     // CalHelixFinderData& operator =(CalHelixFinderData const& other);
 
@@ -189,6 +192,8 @@ namespace mu2e {
     void          orderID           (ChannelID* X, ChannelID* O);
 
     void          print(const char* Title);
+    void          clearTimeClusterInfo();
+    void          clearHelixInfo();
     void          clearTempVariables();
     void          clearResults();
 

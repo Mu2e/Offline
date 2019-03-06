@@ -2,6 +2,9 @@
 // diag mode: = 0 - most of the histograms
 //            = 1 - doca histograms
 ///////////////////////////////////////////////////////////////////////////////
+#include "TH2.h"
+#include "TH1.h"
+
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Matrix/Vector.h"
@@ -13,7 +16,7 @@
 
 #include "BTrkData/inc/TrkStrawHit.hh"
 
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 #include "TrkPatRec/inc/KalFinalFit_types.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
@@ -21,7 +24,7 @@
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "art/Utilities/ToolMacros.h"
@@ -55,25 +58,32 @@ namespace mu2e {
 
     struct DoubletHist_t {
       TH1F*  dSlope;
-      TH1F*  chi2b ;
-      TH1F*  chi2r ;
+      TH1F*  chi2bc;   // coordinate part of the best chi2
+      TH1F*  chi2bs;   // angular part of the best chi2
+      TH1F*  chi2b ;   // best chi2
+      TH1F*  chi2r ;   // chi2_best/chi2_next
     };
 
     struct HitData_t {
       float  doca;
+      float  mcdoca;
+      float  rdrift;
       float  dtCls;
     };
     
     struct HitHist_t {
       TH1F*  doca;
+      TH1F*  xdoca;                // doca/hit_error
+      TH2F*  doca_vs_mcdoca;
+      TH2F*  rdrift_vs_mcdoca;
       TH1F*  dtCls;
     };
 
     struct Hist_t {
-      EventHist_t*   _event  [kNEventHistSets];
-      TrackHist_t*   _track  [kNTrackHistSets];
+      EventHist_t*   _event  [kNEventHistSets  ];
+      TrackHist_t*   _track  [kNTrackHistSets  ];
       DoubletHist_t* _doublet[kNDoubletHistSets];
-      HitHist_t*     _hit    [kNHitHistSets];
+      HitHist_t*     _hit    [kNHitHistSets    ];
     };
 
   protected:
@@ -123,9 +133,11 @@ namespace mu2e {
     
 //-----------------------------------------------------------------------------
   int KalFinalFitDiag::bookDoubletHistograms(DoubletHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->dSlope = Dir->make<TH1F>("dslope", "Delta Slope",200, -1,   1);
-    Hist->chi2b  = Dir->make<TH1F>("chi2b" , "chi2(best)",200,  0, 200);
-    Hist->chi2r  = Dir->make<TH1F>("chi2r" , "chi2R (best/next)  OS",200,  0, 1);
+    Hist->dSlope = Dir->make<TH1F>("dslope", "Delta Slope"          , 200, -1,   1);
+    Hist->chi2b  = Dir->make<TH1F>("chi2b" , "chi2(best)"           , 200,  0, 200);
+    Hist->chi2bc = Dir->make<TH1F>("chi2bc", "chi2_coord(best)"     , 200,  0, 200);
+    Hist->chi2bs = Dir->make<TH1F>("chi2bs", "chi2_slope(best)"     , 200,  0, 200);
+    Hist->chi2r  = Dir->make<TH1F>("chi2r" , "chi2R (best/next)  OS", 200,  0,   1);
     
     return 0;
   }
@@ -141,8 +153,9 @@ namespace mu2e {
     
 //-----------------------------------------------------------------------------
   int KalFinalFitDiag::bookHitHistograms(HitHist_t* Hist, art::TFileDirectory* Dir) {
-    Hist->doca  = Dir->make<TH1F>("doca" ,"doca", 1000, -20.,  20 );
-    Hist->dtCls = Dir->make<TH1F>("dtCls","dtCls; #Delta t = t_{calo-cluster}-t_{straw} - tof [ns]", 401, -200.5,  200.5 );
+    Hist->doca  = Dir->make<TH1F>("doca"  ,"doca" , 1000, -20.,  20 );
+    Hist->xdoca = Dir->make<TH1F>("xdoca" ,"xdoca", 1000, -20.,  20 );
+    Hist->dtCls = Dir->make<TH1F>("dtCls" ,"dtCls; #Delta t = t_{calo-cluster}-t_{straw} - tof [ns]", 401, -200.5,  200.5 );
     return 0;
   }
 
@@ -193,9 +206,9 @@ namespace mu2e {
     for (int i=0; i<kNDoubletHistSets; i++) book_doublet_histset[i] = 0;
 
     book_doublet_histset[ 0] = 1;		// OS 
-    book_doublet_histset[ 1] = 1;		// OS + MC truth
+    book_doublet_histset[ 1] = 1;		// OS, correct assignment of the drift directions 
     book_doublet_histset[ 2] = 1;		// SS
-    book_doublet_histset[ 3] = 1;		// SS + MC truth
+    book_doublet_histset[ 3] = 1;		// SS, correct assignment of the drift directions 
 
     for (int i=0; i<kNDoubletHistSets; i++) {
       if (book_doublet_histset[i] != 0) {
@@ -244,11 +257,16 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int KalFinalFitDiag::fillDoubletHistograms(DoubletHist_t* Hist, Doublet* D) {
     
-    float chi2b = D->Chi2Best();
-    float chi2r = chi2b/D->fChi2[D->fINext];
+    float chi2b  = D->chi2Best      ();
+    float chi2bc = D->chi2CoordBest();
+    float chi2bs = D->chi2SlopeBest();
+    float chi2r  = chi2b/D->fChi2[D->fINext];
 
     Hist->dSlope->Fill(D->bestDxDzRes());
-    Hist->chi2b ->Fill(chi2b);
+    Hist->chi2b ->Fill(chi2b  );
+    Hist->chi2bc->Fill(chi2bc);
+    Hist->chi2bs->Fill(chi2bs);
+
     Hist->chi2r ->Fill(chi2r);
     
     return 0;
@@ -280,7 +298,7 @@ namespace mu2e {
     for (int i=0; i<ntrk; i++) {
 //-----------------------------------------------------------------------------
 // fill track-level histograms, a track doesn't necessarily have to be successfully
-// reconstructions
+// reconstructed
 //-----------------------------------------------------------------------------
       CLHEP::Hep3Vector        tdir;
       HepPoint                 tpos;
@@ -293,19 +311,20 @@ namespace mu2e {
       krep->traj().getInfo(0.0,tpos,tdir);
 					          // loop over track hits
       int nhits = krep->hitVector().size();
-
-      //get the calorimeter cluster from the KalSeed
+//-----------------------------------------------------------------------------
+// get the calorimeter cluster from the KalSeed
+//-----------------------------------------------------------------------------
       double             z_cls(-99999), time_cls(-9999);
       double             pitchAngle(0.67);//FIX ME! that should be parsed from the fcl
       double             meanDriftTime = 1.25/0.06;// half straw tube radius / drift velocity
-      const CaloCluster* cluster(0);
-      cluster = _data->kscol->at(i).caloCluster().get();
+
+      const CaloCluster* cluster = _data->kscol->at(i).caloCluster().get();
 
       if (cluster != 0)  {
 	CLHEP::Hep3Vector gpos        = _data->calorimeter->geomUtil().diskToMu2e(cluster->diskId(),cluster->cog3Vector());
 	CLHEP::Hep3Vector cog_cluster = _data->calorimeter->geomUtil().mu2eToTracker(gpos);
-	z_cls    = cog_cluster.z();//z-coordinate of the cluster in the tracker coordinate frame
-	
+
+	z_cls    = cog_cluster.z(); // z-coordinate of the cluster in the tracker coordinate frame
 	time_cls = cluster->time();
       }
 
@@ -318,7 +337,7 @@ namespace mu2e {
 	const CLHEP::Hep3Vector& hdir = straw.getDirection();
 
 	bool               found(false);
-
+	
 	for (auto it=hot_l.begin(); it<hot_l.end(); it++) {
 	  hit = static_cast<const mu2e::TrkStrawHit*> (*it);
 	  if (!hit->isActive()) continue;
@@ -328,25 +347,26 @@ namespace mu2e {
 	    break;
 	  }
 	}
-	  
-	// convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
-	
+//-----------------------------------------------------------------------------	  
+// convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
+// estimate flight length along track.  This assumes a constant BField!!!
+//-----------------------------------------------------------------------------	
 	HepPoint          spt(hpos.x(),hpos.y(),hpos.z());
 	TrkLineTraj       htraj(spt,hdir,-20,20);
 
-	// estimate flightlength along track.  This assumes a constant BField!!!
-	
-	double           fltlen = (hpos.z()-tpos.z())/tdir.z();
-	TrkPoca          hitpoca(krep->traj(),fltlen,htraj,0.0);
+	double  fltlen = (hpos.z()-tpos.z())/tdir.z();
+	TrkPoca hitpoca(krep->traj(),fltlen,htraj,0.0);
 
 	hitData.doca = hitpoca.doca();
-	
-	//estiamte the time residual between the straw-hit and the calcorimeter cluster taking into account the tof and mean-rift time
-	double           dt(-9999.);
+//-----------------------------------------------------------------------------	
+// estimate the time residual between the straw hit and the calorimeter cluster 
+// taking into account the hit TOF and mean drift time
+//-----------------------------------------------------------------------------
+	double           dt(-9999.), z_straw, time, tof;
 	if (cluster != 0){
-	  double           z_straw = hpos.z();
-	  double           time    = sh->time();
-	  double           tof     = (z_cls - z_straw)/sin(pitchAngle)/CLHEP::c_light;
+	  z_straw = hpos.z();
+	  time    = sh->time();
+	  tof     = (z_cls - z_straw)/sin(pitchAngle)/CLHEP::c_light;
 	  dt      = time_cls - (time + tof - meanDriftTime);
 	}
 	
@@ -362,6 +382,11 @@ namespace mu2e {
 
       Doublet* d;
       int nd = _data->listOfDoublets->size();
+
+      double mcdoca[2];
+//-----------------------------------------------------------------------------
+// doublet stores TrkStrawHit's
+//-----------------------------------------------------------------------------
       for (int i=0; i<nd; i++) {
 	d = &_data->listOfDoublets->at(i);
 	if (d->fNStrawHits == 2) {
@@ -369,22 +394,29 @@ namespace mu2e {
 	  int same_sign = d->isSameSign();
 	  int a0        = d->fHit[0]->ambig();
 	  int a1        = d->fHit[1]->ambig();
+
+	  mcdoca[0]     = _mcUtils->mcDoca(_data->event,d->fHit[0]);
+	  mcdoca[1]     = _mcUtils->mcDoca(_data->event,d->fHit[1]);
 	  
-	  bool h1_ok = ((a0 != 0) && (a0*d->fMcDoca[0] > 0));
-	  bool h2_ok = ((a1 != 0) && (a1*d->fMcDoca[1] > 0));
+	  // bool h1_ok = ((a0 != 0) && (a0*d->fMcDoca[0] > 0));
+	  // bool h2_ok = ((a1 != 0) && (a1*d->fMcDoca[1] > 0));
 	  
-	  if   (same_sign) {
-	    fillDoubletHistograms(_hist._doublet[2],d);
-	    if (h1_ok && h2_ok) fillDoubletHistograms(_hist._doublet[3],d);
+	  bool h1_ok = ((a0 != 0) && (a0*mcdoca[0] > 0));
+	  bool h2_ok = ((a1 != 0) && (a1*mcdoca[1] > 0));
+
+	  if   (! same_sign) {
+					// OS doublet
+	    fillDoubletHistograms(_hist._doublet[0],d);
+	    if (h1_ok && h2_ok) fillDoubletHistograms(_hist._doublet[1],d);
 	  }
 	  else {
-	    fillDoubletHistograms(_hist._doublet[0],d);
-	    if (h1_ok && h2_ok) fillDoubletHistograms(_hist._doublet[0],d);
+					// SS doublet
+	    fillDoubletHistograms(_hist._doublet[2],d);
+	    if (h1_ok && h2_ok) fillDoubletHistograms(_hist._doublet[3],d);
 	  }
 	}
       }
     }
-
     return 0;
   }
 

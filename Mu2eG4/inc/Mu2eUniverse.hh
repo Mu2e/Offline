@@ -63,6 +63,7 @@ namespace mu2e {
     G4Helper * _helper;
 
     int  _verbosityLevel;
+    int  _g4VerbosityLevel; // for non geometry related printouts
 
   };
 

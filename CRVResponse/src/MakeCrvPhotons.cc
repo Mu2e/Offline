@@ -1,4 +1,4 @@
-#include "MakeCrvPhotons.hh"
+#include "CRVResponse/inc/MakeCrvPhotons.hh"
 
 #include <sstream>
 
@@ -18,6 +18,41 @@ void LookupConstants::Read(std::ifstream &lookupfile)
   lookupfile.read(reinterpret_cast<char*>(this),sizeof(LookupConstants));
 }
 
+void LookupCerenkov::WriteMap(std::map<double,double> &m, std::ofstream &o)
+{
+  size_t n=m.size();
+  o.write(reinterpret_cast<char*>(&n),sizeof(size_t));
+  for(std::map<double,double>::const_iterator iter=m.begin(); iter!=m.end(); iter++)
+  {
+    o.write(reinterpret_cast<const char*>(&iter->first),sizeof(double));
+    o.write(reinterpret_cast<const char*>(&iter->second),sizeof(double));
+  }
+}
+void LookupCerenkov::ReadMap(std::map<double,double> &m, std::ifstream &i)
+{
+  size_t n;
+  i.read(reinterpret_cast<char*>(&n),sizeof(size_t));
+  double d1,d2;
+  for(size_t j=0; j<n; j++)
+  {
+    i.read(reinterpret_cast<char*>(&d1),sizeof(double));
+    i.read(reinterpret_cast<char*>(&d2),sizeof(double));
+    m[d1]=d2;
+  }
+}
+void LookupCerenkov::Write(const std::string &filename)
+{
+  std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
+  WriteMap(photonsScintillator,lookupfile);
+  WriteMap(photonsFiber,lookupfile);
+  lookupfile.close();
+}
+void LookupCerenkov::Read(std::ifstream &lookupfile)
+{
+  ReadMap(photonsScintillator,lookupfile);
+  ReadMap(photonsFiber,lookupfile);
+}
+
 void LookupBinDefinitions::WriteVector(std::vector<double> &v, std::ofstream &o)
 {
   size_t n=v.size();
@@ -28,16 +63,10 @@ void LookupBinDefinitions::ReadVector(std::vector<double> &v, std::ifstream &i)
 {
   size_t n;
   i.read(reinterpret_cast<char*>(&n),sizeof(size_t));
-/*
-  double d[n];
-  i.read(reinterpret_cast<char*>(d),sizeof(double)*n);
-  v.assign(d,d+n);
-*/
   double *d=new double[n];
   i.read(reinterpret_cast<char*>(d),sizeof(double)*n);
   v.assign(d,d+n);
   delete [] d;
-//  i.read(reinterpret_cast<char*>(v.data()),sizeof(double)*n);
 }
 void LookupBinDefinitions::Write(const std::string &filename)
 {
@@ -62,14 +91,22 @@ void LookupBinDefinitions::Read(std::ifstream &lookupfile)
   ReadVector(rBins,lookupfile);
 }
 
-unsigned int LookupBinDefinitions::getNScintillatorBins()
+unsigned int LookupBinDefinitions::getNScintillatorScintillationBins()
 {
   unsigned int nXBins = xBins.size()-1;
   unsigned int nYBins = yBins.size()-1;
   unsigned int nZBins = zBins.size()-1;
   return nXBins*nYBins*nZBins;
 }
-unsigned int LookupBinDefinitions::getNFiberBins()
+unsigned int LookupBinDefinitions::getNScintillatorCerenkovBins()
+{
+  unsigned int nXBins = xBins.size()-1;
+  unsigned int nYBins = yBins.size()-1;
+  unsigned int nZBins = zBins.size()-1;
+  unsigned int nBetaBins = betaBins.size()-1;
+  return nXBins*nYBins*nZBins*nBetaBins;
+}
+unsigned int LookupBinDefinitions::getNFiberCerenkovBins()
 {
   unsigned int nBetaBins = betaBins.size()-1;
   unsigned int nThetaBins = thetaBins.size()-1;
@@ -81,17 +118,14 @@ unsigned int LookupBinDefinitions::getNFiberBins()
 
 unsigned int LookupBinDefinitions::findBin(const std::vector<double> &v, const double &x, bool &notFound)
 {
-  for(unsigned int i=1; i<v.size(); i++)
+  for(size_t i=1; i<v.size(); i++)
   {
-    if(v[i]>=x)
-    {
-      if(v[i-1]<=x) return(i-1);
-    }
+    if(v[i-1]<=x && v[i]>=x) return(i-1);
   }
   notFound=true;
   return(-1);
 }
-int LookupBinDefinitions::findScintillatorBin(double x, double y, double z)
+int LookupBinDefinitions::findScintillatorScintillationBin(double x, double y, double z)
 {
   bool notFound=false;
   unsigned int xBin=findBin(xBins,x,notFound);
@@ -103,7 +137,21 @@ int LookupBinDefinitions::findScintillatorBin(double x, double y, double z)
   unsigned int nZBins = zBins.size()-1;
   return(zBin + yBin*nZBins + xBin*nYBins*nZBins);
 }
-int LookupBinDefinitions::findFiberBin(double beta, double theta, double phi, double r, double z)
+int LookupBinDefinitions::findScintillatorCerenkovBin(double x, double y, double z, double beta)
+{
+  bool notFound=false;
+  unsigned int xBin=findBin(xBins,x,notFound);
+  unsigned int yBin=findBin(yBins,y,notFound);
+  unsigned int zBin=findBin(zBins,z,notFound);
+  unsigned int betaBin=findBin(betaBins,beta,notFound);
+  if(notFound) return(-1);
+
+  unsigned int nYBins = yBins.size()-1;
+  unsigned int nZBins = zBins.size()-1;
+  unsigned int nBetaBins = betaBins.size()-1;
+  return(betaBin + zBin*nBetaBins + yBin*nZBins*nBetaBins + xBin*nYBins*nZBins*nBetaBins);
+}
+int LookupBinDefinitions::findFiberCerenkovBin(double beta, double theta, double phi, double r, double z)
 {
   bool notFound=false;
   unsigned int betaBin=findBin(betaBins,beta,notFound);
@@ -119,9 +167,9 @@ int LookupBinDefinitions::findFiberBin(double beta, double theta, double phi, do
   unsigned int nZBins = zBins.size()-1;
   return(zBin + rBin*nZBins + phiBin*nRBins*nZBins + thetaBin*nPhiBins*nRBins*nZBins + betaBin*nThetaBins*nPhiBins*nRBins*nZBins);
 }
-bool LookupBinDefinitions::findScintillatorBinReverse(unsigned int bin, double &xbin, double &ybin, double &zbin)
+bool LookupBinDefinitions::findScintillatorScintillationBinReverse(unsigned int bin, double &xbin, double &ybin, double &zbin)
 {
-  if(bin>=getNScintillatorBins()) return false;
+  if(bin>=getNScintillatorScintillationBins()) return false;
 
   int nXBins=xBins.size()-1;   //e.g. 3 bins need 4 entries in the vector (for 3 bin boundaries)
   int nYBins=yBins.size()-1;
@@ -131,9 +179,23 @@ bool LookupBinDefinitions::findScintillatorBinReverse(unsigned int bin, double &
   zbin = bin % nZBins;
   return true;
 }
-bool LookupBinDefinitions::findFiberBinReverse(unsigned int bin, double &betabin, double &thetabin, double &phibin, double &rbin, double &zbin)
+bool LookupBinDefinitions::findScintillatorCerenkovBinReverse(unsigned int bin, double &xbin, double &ybin, double &zbin, double &betabin)
 {
-  if(bin>=getNFiberBins()) return false;
+  if(bin>=getNScintillatorCerenkovBins()) return false;
+
+  int nXBins=xBins.size()-1;   //e.g. 3 bins need 4 entries in the vector (for 3 bin boundaries)
+  int nYBins=yBins.size()-1;
+  int nZBins=zBins.size()-1;
+  int nBetaBins=betaBins.size()-1;
+  xbin = (bin / (nBetaBins*nZBins*nYBins)) % nXBins;
+  ybin = (bin / nBetaBins*nZBins) % nYBins;
+  zbin = (bin / nBetaBins) % nZBins;
+  betabin = bin % nBetaBins;
+  return true;
+}
+bool LookupBinDefinitions::findFiberCerenkovBinReverse(unsigned int bin, double &betabin, double &thetabin, double &phibin, double &rbin, double &zbin)
+{
+  if(bin>=getNFiberCerenkovBins()) return false;
 
   int nZBins=zBins.size()-1;
   int nBetaBins=betaBins.size()-1;
@@ -148,19 +210,39 @@ bool LookupBinDefinitions::findFiberBinReverse(unsigned int bin, double &betabin
   return true;
 }
 
+void LookupBin::WriteVector(std::vector<unsigned char> &v, std::ofstream &o)
+{
+  size_t n=v.size();
+  o.write(reinterpret_cast<char*>(&n),sizeof(size_t));
+  o.write(reinterpret_cast<char*>(v.data()),sizeof(unsigned char)*v.size());
+}
+void LookupBin::ReadVector(std::vector<unsigned char> &v, std::ifstream &i)
+{
+  size_t n;
+  i.read(reinterpret_cast<char*>(&n),sizeof(size_t));
+  unsigned char *d=new unsigned char[n];
+  i.read(reinterpret_cast<char*>(d),sizeof(unsigned char)*n);
+  v.assign(d,d+n);
+  delete [] d;
+}
 void LookupBin::Write(const std::string &filename)
 {
+  //Lookup tables are created only for SiPM# 0 due to symmetry reasons
   std::ofstream lookupfile(filename,std::ios::binary|std::ios::app);
-  lookupfile.write(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
-  lookupfile.write(reinterpret_cast<char*>(timeDelays),sizeof(unsigned short)*4*nTimeDelays);
-  lookupfile.write(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
+  lookupfile.write(reinterpret_cast<char*>(&binNumber),sizeof(unsigned int));
+  lookupfile.write(reinterpret_cast<char*>(&arrivalProbability),sizeof(float));
+  WriteVector(timeDelays, lookupfile);
+  WriteVector(fiberEmissions, lookupfile);
   lookupfile.close();
 }
-void LookupBin::Read(std::ifstream &lookupfile)
+void LookupBin::Read(std::ifstream &lookupfile, const unsigned int &i)
 {
-  lookupfile.read(reinterpret_cast<char*>(arrivalProbability),sizeof(float)*4);
-  lookupfile.read(reinterpret_cast<char*>(timeDelays),sizeof(unsigned short)*4*nTimeDelays);
-  lookupfile.read(reinterpret_cast<char*>(fiberEmissions),sizeof(unsigned short)*4*nFiberEmissions);
+  //Lookup tables are created only for SiPM# 0 due to symmetry reasons
+  lookupfile.read(reinterpret_cast<char*>(&binNumber),sizeof(unsigned int));
+  lookupfile.read(reinterpret_cast<char*>(&arrivalProbability),sizeof(float));
+  ReadVector(timeDelays, lookupfile);
+  ReadVector(fiberEmissions, lookupfile);
+  if(i!=binNumber) throw std::logic_error("Corrupt lookup table.");
 }
 
 void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
@@ -170,24 +252,25 @@ void MakeCrvPhotons::LoadLookupTable(const std::string &filename)
   if(!lookupfile.good()) throw std::logic_error("Could not open lookup table file "+filename);
 
   _LC.Read(lookupfile);
-  if(_LC.version1<4) throw std::logic_error("This version of Offline expects a lookup table version 4.0 or higher.");
+  if(_LC.version1!=6) throw std::logic_error("This version of Offline expects a lookup table version 6.x.");
+  if(_LC.reflector!=0 && _LC.reflector!=1) throw std::logic_error("Lookup tables can have either no reflector, or a reflector on the +z side.");
 
+  _LCerenkov.Read(lookupfile);
   _LBD.Read(lookupfile);
 
-  unsigned int nScintillatorBins = _LBD.getNScintillatorBins();
-  unsigned int nFiberBins = _LBD.getNFiberBins();
+  unsigned int nScintillatorScintillationBins = _LBD.getNScintillatorScintillationBins();
+  unsigned int nScintillatorCerenkovBins      = _LBD.getNScintillatorCerenkovBins();
+  unsigned int nFiberCerenkovBins             = _LBD.getNFiberCerenkovBins();
 
-  //0...scintillationInScintillator, 1...cerenkovInScintillator 2...cerenkovInFiber0, 3...cerenkovInFiber1
-  _bins[0].resize(nScintillatorBins);
-  _bins[1].resize(nScintillatorBins);
-  _bins[2].resize(nFiberBins);
-  _bins[3].resize(nFiberBins);
+  //0...scintillationInScintillator, 1...cerenkovInScintillator 2...cerenkovInFiber
+  _bins[0].resize(nScintillatorScintillationBins);
+  _bins[1].resize(nScintillatorCerenkovBins);
+  _bins[2].resize(nFiberCerenkovBins);
 
   std::cout<<"Reading CRV lookup tables "<<filename<<" ... "<<std::flush;
-  for(unsigned int i=0; i<nScintillatorBins; i++) _bins[0][i].Read(lookupfile);
-  for(unsigned int i=0; i<nScintillatorBins; i++) _bins[1][i].Read(lookupfile);
-  for(unsigned int i=0; i<nFiberBins; i++) _bins[2][i].Read(lookupfile);
-  for(unsigned int i=0; i<nFiberBins; i++) _bins[3][i].Read(lookupfile);
+  for(unsigned int i=0; i<nScintillatorScintillationBins; i++) _bins[0][i].Read(lookupfile,i);
+  for(unsigned int i=0; i<nScintillatorCerenkovBins; i++)      _bins[1][i].Read(lookupfile,i);
+  for(unsigned int i=0; i<nFiberCerenkovBins; i++)             _bins[2][i].Read(lookupfile,i);
   std::cout<<"Done."<<std::endl;
 
   lookupfile.close();
@@ -197,122 +280,138 @@ MakeCrvPhotons::~MakeCrvPhotons()
 {
 }
 
-void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStart,   //they need to be points
-                          const CLHEP::Hep3Vector &stepEnd,            //local to the CRV bar
+void MakeCrvPhotons::MakePhotons(const CLHEP::Hep3Vector &stepStartTmp,   //they need to be points
+                          const CLHEP::Hep3Vector &stepEndTmp,            //local to the CRV bar
                           double timeStart, double timeEnd,
                           int PDGcode, double beta, double charge,
                           double energyDepositedTotal,
                           double energyDepositedNonIonizing,
                           double trueTotalStepLength,   //may be longer than stepEnd-stepStart due to scattering 
                                                         //is needed for the visible energy adjustment, and for the Cerenkov photons
-                          double scintillationYieldAdjustment)
+                          double scintillationYieldAdjustment,
+                          int    reflector)
 {
+  if(_LC.reflector!=0 && reflector==0) throw std::logic_error("Expected a lookup table without reflector.");
+  if(_LC.reflector==0 && reflector==1) throw std::logic_error("Expected a lookup table with reflector.");
+
   for(int SiPM=0; SiPM<4; SiPM++) _arrivalTimes[SiPM].clear();
 
   //coordinates are in local coordinates of the scintillator (x:thickness, y:width, z:length)
-  const CLHEP::Hep3Vector distanceVector = stepEnd-stepStart;
-  double totalStepLength = distanceVector.mag();
-  double theta = distanceVector.theta();  //0...+pi
-  double phi = distanceVector.phi();      //-pi...+pi
-
-
-  double precision=0.1; //mm
-  int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
-
-  double energy = VisibleEnergyDeposition(PDGcode, trueTotalStepLength, energyDepositedTotal, energyDepositedNonIonizing);
-  double avgNPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*energy;
-  double avgNPhotonsCerenkovInScintillator 
-         = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexScintillator, 
-                                             _LC.cerenkovEnergyIntervalScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
-  double avgNPhotonsCerenkovInFiber 
-         = GetAverageNumberOfCerenkovPhotons(beta, charge, _LC.rindexFiber, 
-                                             _LC.cerenkovEnergyIntervalFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
-
-  int nPhotonsScintillationPerStep          = GetNumberOfPhotonsFromAverage(avgNPhotonsScintillation,nSteps);
-  int nPhotonsCerenkovInScintillatorPerStep = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInScintillator,nSteps);
-  int nPhotonsCerenkovInFiberPerStep        = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInFiber,nSteps);
-
-  for(int step=0; step<nSteps; step++)
+  CLHEP::Hep3Vector stepStart[4];
+  CLHEP::Hep3Vector stepEnd[4];
+  //local start/end positions for all for SiPMs derived from the symmetries of the counter,
+  //because lookup tables are stored only for SiPM #0.
+  for(int SiPM=0; SiPM<4; SiPM++)
   {
-    double stepFraction = (step+0.5)/nSteps;
-    CLHEP::Hep3Vector p = stepStart + distanceVector*stepFraction;  //start position of photons
-    double t = timeStart + (timeEnd-timeStart)*stepFraction;
-
-    bool isInScintillator = IsInsideScintillator(p);
-    double r=0;  //distance from fiber center for fiber tables
-    int fiber = IsInsideFiber(p,r);  //-1 means not in fiber
-
-    const LookupBin *scintillationBin=NULL;
-    const LookupBin *cerenkovBin=NULL;
-    int nPhotonsScintillation=0;
-    int nPhotonsCerenkov=0;
-    if(isInScintillator)
+    stepStart[SiPM] = stepStartTmp;
+    stepEnd[SiPM]   = stepEndTmp;
+    if(reflector==-1)
     {
-      int binNumber=_LBD.findScintillatorBin(p.x(),p.y(),p.z());
-      if(binNumber>=0)
-      {
-        scintillationBin = &_bins[0][binNumber];   //lookup table number for scintillation in scintillator is 0
-        cerenkovBin      = &_bins[1][binNumber];   //lookup table number for cerenkov in scintillator is 1
-        nPhotonsScintillation = nPhotonsScintillationPerStep;
-        nPhotonsCerenkov      = nPhotonsCerenkovInScintillatorPerStep;
-      }
-      else continue;  //bin wasn't found
+      stepStart[SiPM].setZ(-stepStart[SiPM].z());
+      stepEnd[SiPM].setZ(-stepEnd[SiPM].z());
     }
-    else if(fiber>=0)
+  }
+  stepStart[1].setZ(-stepStart[1].z());
+  stepStart[2].setY(-stepStart[2].y());
+  stepStart[3].setZ(-stepStart[3].z());
+  stepStart[3].setY(-stepStart[3].y());
+  stepEnd[1].setZ(-stepEnd[1].z());
+  stepEnd[2].setY(-stepEnd[2].y());
+  stepEnd[3].setZ(-stepEnd[3].z());
+  stepEnd[3].setY(-stepEnd[3].y());
+
+  for(int SiPM=0; SiPM<4; SiPM++)
+  {
+    //there are only lookup tables without reflector or with reflector on the +z side (i.e. at SiPMs #1 and #3)
+    if(reflector!=0 && (SiPM==1 || SiPM==3)) continue;
+
+    const CLHEP::Hep3Vector distanceVector = stepEnd[SiPM]-stepStart[SiPM];
+    double totalStepLength = distanceVector.mag();
+    double theta = distanceVector.theta();  //0...+pi
+
+    double precision=0.1; //mm
+    int    nSteps=std::max(static_cast<int>(totalStepLength/precision),1);
+
+    double energy = VisibleEnergyDeposition(PDGcode, trueTotalStepLength, energyDepositedTotal, energyDepositedNonIonizing);
+    double avgNPhotonsScintillation = (_scintillationYield+scintillationYieldAdjustment)*energy;
+    double avgNPhotonsCerenkovInScintillator 
+           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsScintillator)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
+    double avgNPhotonsCerenkovInFiber 
+           = GetAverageNumberOfCerenkovPhotons(beta, charge, _LCerenkov.photonsFiber)*trueTotalStepLength;  //use the true path, since it  may be longer due to scattering
+
+    int nPhotonsScintillationPerStep          = GetNumberOfPhotonsFromAverage(avgNPhotonsScintillation,nSteps);
+    int nPhotonsCerenkovInScintillatorPerStep = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInScintillator,nSteps);
+    int nPhotonsCerenkovInFiberPerStep        = GetNumberOfPhotonsFromAverage(avgNPhotonsCerenkovInFiber,nSteps);
+
+    for(int step=0; step<nSteps; step++)
     {
-      int binNumber=_LBD.findFiberBin(beta,theta,phi,r,p.z());
-      if(binNumber>=0)
+      double stepFraction = (step+0.5)/nSteps;
+      double t = timeStart + (timeEnd-timeStart)*stepFraction;
+      CLHEP::Hep3Vector p = stepStart[SiPM] + distanceVector*stepFraction;  //local start position of photons
+
+      bool isInScintillator = IsInsideScintillator(p);
+      double r=0;  //distance from fiber center for fiber tables
+      double phi=0;  //angle w.r.t. the radius vector from the fiber center to the point in the 2D cross section plane 
+                     //0...+pi due to symmetry
+      bool isInFiber = IsInsideFiber(p,distanceVector, r,phi);
+
+      const LookupBin *scintillationBin=NULL;
+      const LookupBin *cerenkovBin=NULL;
+      int nPhotonsScintillation=0;
+      int nPhotonsCerenkov=0;
+      if(isInScintillator)
       {
-        cerenkovBin = &_bins[fiber+2][binNumber];   //lookup table number for cerenkov in fiber is fiber number+2
-        nPhotonsCerenkov = nPhotonsCerenkovInFiberPerStep;
+        int binNumberS=_LBD.findScintillatorScintillationBin(fabs(p.x()),p.y(),p.z());  //use only positive x values due to symmetry in x
+        if(binNumberS>=0)
+        {
+          scintillationBin = &_bins[0][binNumberS];   //lookup table number for scintillation in scintillator is 0
+          nPhotonsScintillation = nPhotonsScintillationPerStep;
+        }
+        int binNumberC=_LBD.findScintillatorCerenkovBin(fabs(p.x()),p.y(),p.z(),beta);  //use only positive x values due to symmetry in x
+        if(binNumberC>=0)
+        {
+          cerenkovBin = &_bins[1][binNumberC];   //lookup table number for cerenkov in scintillator is 1
+          nPhotonsCerenkov = nPhotonsCerenkovInScintillatorPerStep;
+        }
       }
-      else continue;  //bin wasn't found
-    }
-
-    //loop over all photons created at this point
-    int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
-    for(int i=0; i<nPhotons; i++)
-    {
-      //get the right bin
-      const LookupBin *theBin=cerenkovBin;
-      if(i<nPhotonsScintillation) theBin=scintillationBin;
-      if(theBin==NULL) continue;  //this can't actually happen
-
-      //loop over all SiPMs
-      for(int SiPM=0; SiPM<4; SiPM++)
+      else if(isInFiber)
       {
+        int binNumber=_LBD.findFiberCerenkovBin(beta,theta,phi,r,p.z());
+        if(binNumber>=0)
+        {
+          cerenkovBin = &_bins[2][binNumber];   //lookup table number for cerenkov in fiber is 2
+          nPhotonsCerenkov = nPhotonsCerenkovInFiberPerStep;
+        }
+      }
+
+      //loop over all photons created at this point
+      int nPhotons = nPhotonsScintillation + nPhotonsCerenkov;
+      for(int i=0; i<nPhotons; i++)
+      {
+        //get the right bin
+        const LookupBin *theBin=cerenkovBin;
+        if(i<nPhotonsScintillation) theBin=scintillationBin;
+        if(theBin==NULL) continue;  //this can't actually happen
+
         //photon arrival probability at SiPM
-        double probability = theBin->arrivalProbability[SiPM];
+        double probability = theBin->arrivalProbability;
         if(_randFlat.fire()<=probability)  //a photon arrives at the SiPM --> calculate arrival time
         {
           //start time of photons
           double arrivalTime = t;
 
-          //add straigt line travel time (between the z component of the photon start position and the edge of the scintillator)
-          double zScintillatorEnd=(SiPM%2==0?-_LC.halfLength:_LC.halfLength);
-          double straightLineTravelTime=fabs(p.z()-zScintillatorEnd)/_LC.speedOfLightFiber;
-          arrivalTime+=straightLineTravelTime;
-
           //add fiber decay times depending on the number of emissions
           bool overflow=false;
-          int nEmissions = GetRandomFiberEmissions(theBin,SiPM,overflow);
+          int nEmissions = GetRandomFiberEmissions(theBin,overflow);
           if(overflow) continue;  //don't include photons which arrive very late. they are spread out, and can be ignored
-          for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_fiberDecayTime*log(_randFlat.fire());
-
-          //add scintillation decay time
-          if(i<nPhotonsScintillation)  //for scintillation in scintillator
-          {
-            if(_randFlat.fire()<=_scintillatorRatioFastSlow)
-              arrivalTime+=-_scintillatorDecayTimeFast*log(_randFlat.fire());
-            else
-              arrivalTime+=-_scintillatorDecayTimeSlow*log(_randFlat.fire());
-          }
+          for(int iEmission=0; iEmission<nEmissions; iEmission++) arrivalTime+=-_LC.WLSfiberDecayTime*log(_randFlat.fire());
 
           //add additional time delay due to the photons bouncing around
-          arrivalTime+=GetRandomTime(theBin,SiPM,overflow);
+          arrivalTime+=GetRandomTime(theBin,overflow);
           if(overflow) continue;  //don't include photons which arrive very late. they are spread out, and can be ignored
 
-          _arrivalTimes[SiPM].push_back(arrivalTime); //don't include photons which arrive very late. they are spread out, and can be ignored
+          if(reflector!=-1) _arrivalTimes[SiPM].push_back(arrivalTime);
+          else _arrivalTimes[SiPM+1].push_back(arrivalTime);
 
         }// if a photon was created
       }//loop over all SiPMs
@@ -347,50 +446,63 @@ bool MakeCrvPhotons::IsInsideScintillator(const CLHEP::Hep3Vector &p)
   return true;
 }
 
-int MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, double &r)
+bool MakeCrvPhotons::IsInsideFiber(const CLHEP::Hep3Vector &p, const CLHEP::Hep3Vector &dir, double &r, double &phi)
 {
+  if(fabs(p.z())>=_LC.halfLength) return false;
+
   CLHEP::Hep2Vector p2D(p.x(), p.y());
   CLHEP::Hep2Vector fiber0(0.0, -_LC.fiberSeparation/2.0);
   CLHEP::Hep2Vector fiber1(0.0, _LC.fiberSeparation/2.0);
-  double distanceFiber0=(p2D-fiber0).mag();
-  double distanceFiber1=(p2D-fiber1).mag();
-  if(distanceFiber0<=_LC.fiberRadius) {r=distanceFiber0; return 0;}
-  if(distanceFiber1<=_LC.fiberRadius) {r=distanceFiber1; return 1;}
-  return -1;
+  CLHEP::Hep2Vector radiusVector0=p2D-fiber0;  //radius vector from fiber0 center to p2D
+  CLHEP::Hep2Vector radiusVector1=p2D-fiber1;  //radius vector from fiber1 center to p2D
+  double distanceFiber0=radiusVector0.mag();
+  double distanceFiber1=radiusVector1.mag();
+
+  int fiberNumber=-1;
+  if(distanceFiber0<=_LC.fiberRadius) {r=distanceFiber0; fiberNumber=0;}
+  if(distanceFiber1<=_LC.fiberRadius) {r=distanceFiber1; fiberNumber=1;}
+  if(fiberNumber==-1) return false;
+
+  CLHEP::Hep2Vector dir2D(dir.x(),dir.y());
+  if(fiberNumber==0) phi=dir2D.angle(radiusVector0);  //angle returns between 0 and pi
+  if(fiberNumber==1) phi=dir2D.angle(radiusVector1);
+  return true;
 }
 
-double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin, int SiPM, bool &overflow)
+double MakeCrvPhotons::GetRandomTime(const LookupBin *theBin, bool &overflow)
 {
   //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
   //so that the probabilities can be stored as integers.
   //therefore, the probability of 1 is stored as 10000.
   double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
-  int timeDelay=0;
-  for(; timeDelay<LookupBin::nTimeDelays; timeDelay++)
+  size_t timeDelay=0;
+  size_t maxTimeDelay=theBin->timeDelays.size();
+  for(; timeDelay<maxTimeDelay; timeDelay++)
   {
-    sumProb+=theBin->timeDelays[SiPM][timeDelay];
+    sumProb+=theBin->timeDelays[timeDelay];
     if(rand<=sumProb) break;
   }
-  if(timeDelay>=LookupBin::nTimeDelays-1) overflow=true; else overflow=false;
+  if(rand>sumProb) overflow=true; else overflow=false;
 
   return timeDelay;
 }
 
-int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin, int SiPM, bool &overflow)
+int MakeCrvPhotons::GetRandomFiberEmissions(const LookupBin *theBin, bool &overflow)
 {
   //the lookup tables encodes probabilities as probability*probabilityScale(10000), 
   //so that the probabilities can be stored as integers.
   //therefore, the probability of 1 is stored as 10000.
   double rand=_randFlat.fire()*LookupBin::probabilityScale;
   double sumProb=0;
-  int emissions=0;
-  for(; emissions<LookupBin::nFiberEmissions; emissions++)
+  size_t emissions=0;
+  size_t maxEmissions=theBin->fiberEmissions.size();
+  for(; emissions<maxEmissions; emissions++)
   {
-    sumProb+=theBin->fiberEmissions[SiPM][emissions];
+    sumProb+=theBin->fiberEmissions[emissions];
     if(rand<=sumProb) break;
   }
-  if(emissions>=LookupBin::nFiberEmissions-1) overflow=true; else overflow=false;
+  if(rand>sumProb) overflow=true; else overflow=false;
 
   return emissions;
 }
@@ -421,17 +533,33 @@ const std::vector<double> &MakeCrvPhotons::GetArrivalTimes(int SiPM)
 }
 
 //average number of cerenkov photons per millimeter
-double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double charge, double rindex, double cerenkovEnergyInterval) 
-{ 
-  const double Rfact = 369.81/(CLHEP::eV * CLHEP::cm); //from G4Cerenkov::GetAverageNumberOfPhotons() 
+double MakeCrvPhotons::GetAverageNumberOfCerenkovPhotons(double beta, double charge, std::map<double,double> &photons)
+{
+  if(charge==0) return 0;
 
-  if(beta<=1.0/rindex) return(0);  //particle too slow -> no Cerenkov radiation
+  bool first=true;
+  double prevBeta=0;
+  double prevNumberPhotons=0;
+  std::map<double,double>::const_iterator i;
+  for(i=photons.begin(); i!=photons.end(); i++)
+  {
+    if(beta<=i->first)
+    {
+      if(first) return 0; //this shouldn't happen
+      double numberPhotons=prevNumberPhotons+(i->second-prevNumberPhotons)/(i->first-prevBeta)*(beta-prevBeta);
+      numberPhotons*=fabs(charge/eplus);
+      return numberPhotons;
+    }
+    if(first)
+    {
+      prevBeta=i->first;
+      prevNumberPhotons=i->second;
+      first=false;
+    }
+  }
+  return photons.rbegin()->second*fabs(charge/eplus); //this shouldn't happen
+} 
 
-  double n = 1.0 - 1.0/(rindex*rindex*beta*beta);
-  n *= Rfact * charge/eplus * charge/eplus * cerenkovEnergyInterval;
-
-  return n;		
-}
 
 //this mimics G4EmSaturation::VisibleEnergyDeposition
 //but assumes that nloss/(protonRange/chargesq) is small enough so that it can be approximated as 0
@@ -449,7 +577,7 @@ double MakeCrvPhotons::VisibleEnergyDeposition(int PDGcode, double stepLength,
     if(evis>0)
     {
       double correctionFactor=FindVisibleEnergyAdjustmentFactor(energyDepositedTotal);
-      evis /= (1.0 + _scintillatorBirksConstant*correctionFactor);
+      evis /= (1.0 + _LC.scintillatorBirksConstant*correctionFactor);
     }
   }
   else 
@@ -469,7 +597,7 @@ double MakeCrvPhotons::VisibleEnergyDeposition(int PDGcode, double stepLength,
     // continues energy loss
     if(eloss > 0.0) 
     { 
-      eloss /= (1.0 + _scintillatorBirksConstant*eloss/stepLength); 
+      eloss /= (1.0 + _LC.scintillatorBirksConstant*eloss/stepLength); 
     }
 
     evis = eloss + nloss;

@@ -1,4 +1,4 @@
-#include "MakeCrvPhotons.hh"
+#include "CRVResponse/inc/MakeCrvPhotons.hh"
 
 #include <TStyle.h>
 #include <TMarker.h>
@@ -23,11 +23,10 @@ void MakeCrvPhotons::DrawHistograms()
   {
     double y=(_LBD.yBins[iy-1]+_LBD.yBins[iy])/2.0;
     double z=(_LBD.zBins[iz-1]+_LBD.zBins[iz])/2.0;
-    int i=_LBD.findScintillatorBin(0.0,y,z);
+    int i=_LBD.findScintillatorScintillationBin(0.0,y,z);
     if(i<0) continue;
     const LookupBin &bin = _bins[0][i];
-    float p = bin.arrivalProbability[0];
-//    float p = bin.arrivalProbability[1];  //for 5000mm long counters with mirror on the negative side
+    float p = bin.arrivalProbability;
     if(!std::isnan(p)) h1.Fill(y,z,p);
   }
 
@@ -56,10 +55,10 @@ void MakeCrvPhotons::DrawHistograms()
     for(unsigned int iz=1; iz<_LBD.zBins.size(); iz++)
     {
       double z=(_LBD.zBins[iz-1]+_LBD.zBins[iz])/2.0;
-      int i=_LBD.findScintillatorBin(x,0.0,z);
+      int i=_LBD.findScintillatorScintillationBin(x,0.0,z);
       if(i<0) continue;
       const LookupBin &bin = _bins[0][i];
-      float p = bin.arrivalProbability[0];
+      float p = bin.arrivalProbability;
       if(!std::isnan(p)) h2Tmp->Fill(z,p);
     }
     h2Tmp->Draw("same");

@@ -41,13 +41,13 @@ double stm.z.allowed = 863.6;
 
 //STM may have two detectors
 bool   stm.det1.build                     = true;
-double stm.det1.material                  = "G4_Ge";
+string stm.det1.material                  = "G4_Ge";
 double stm.det1.rIn                       =   0.0;
 double stm.det1.rOut                      =  45.0;
 double stm.det1.xoffset                   =  50.0; //45mm = 1.77 inches
 double stm.det1.halfLength                =  40.0;
-double stm.det1.can.material              = "G4_Al";
-double stm.det1.can.gas                   = "G4_Galactic"; // ~vacuum
+string stm.det1.can.material              = "G4_Al";
+string stm.det1.can.gas                   = "G4_Galactic"; // ~vacuum
 double stm.det1.can.rIn                   =  46.5;
 double stm.det1.can.rOut                  =  47.5; //47.5mm radius is for the 3.75in OD can from Ortec
 double stm.det1.can.UpStrSpace            = 100.0;  // z=10cm space between this and previous element
@@ -56,13 +56,13 @@ string stm.det1.can.UpStrWindowMaterial   = "G4_Al";
 double stm.det1.can.UpStrWindowHalfLength =   0.5; //Standard Al window is 1mm thick
 
 bool   stm.det2.build                     = true;
-double stm.det2.material                  = "G4_Ge";
+string stm.det2.material                  = "G4_Ge";
 double stm.det2.rIn                       =   0.0;
 double stm.det2.rOut                      =  45.0;
 double stm.det2.xoffset                   = -50.0; //45mm = 1.77 inches
 double stm.det2.halfLength                =  40.0;
-double stm.det2.can.material              = "G4_Al";
-double stm.det2.can.gas                   = "G4_Galactic"; // ~vacuum
+string stm.det2.can.material              = "G4_Al";
+string stm.det2.can.gas                   = "G4_Galactic"; // ~vacuum
 double stm.det2.can.rIn                   =  46.5;
 double stm.det2.can.rOut                  =  47.5; //47.5mm radius is for the 3.75in OD can from Ortec
 double stm.det2.can.UpStrSpace            = 100.0;  // z=10cm space between this and previous element
@@ -78,7 +78,7 @@ double stm.SScollimator.halfWidth         =  215.9; //
 double stm.SScollimator.halfHeight        =  228.6; // 
 double stm.SScollimator.halfLength        =   76.2; // 76.2mm = 3 inch halflength 
 bool   stm.SScollimator.liner.build       =  true; //
-double stm.SScollimator.liner.material    =  "G4_W"; 
+string stm.SScollimator.liner.material    =  "G4_W"; 
 double stm.SScollimator.liner.halfWidth   =  105.0; // 
 double stm.SScollimator.liner.halfHeight  =   55.0; // 
 double stm.SScollimator.liner.halfLength  =   76.2; // 
@@ -104,7 +104,7 @@ double stm.FOVcollimator.halfWidth              =  205.9; // same width as magne
 double stm.FOVcollimator.halfHeight             =  218.6; // same height as magnet
 double stm.FOVcollimator.halfLength             =  225.0; // 12 inches thick = 6 inch halfLength
 bool   stm.FOVcollimator.liner.build            =  true;
-double stm.FOVcollimator.liner.material         =  "Polyethylene096"; 
+string stm.FOVcollimator.liner.material         =  "Polyethylene096"; 
 double stm.FOVcollimator.liner.cutOutHalfLength =  150.0;
 double stm.FOVcollimator.liner.halfWidth        =  100.0; // 
 double stm.FOVcollimator.liner.halfHeight       =  100.0; // 
@@ -136,7 +136,7 @@ double stm.magnet.halfHeight     =  228.6;  // 1m high magnet
 double stm.magnet.holeHalfHeight =  177.8;  // 12 inch high hole
 double stm.magnet.holeHalfWidth  =   95.0;  // this must be larger than stm.pipe.rOut
 double stm.magnet.field          =    0.051;  // Tesla (510 Gauss)
-bool   stm.magnet.fieldVisible   = false;
+bool   stm.magnet.field.visible   = false;
 
 //Support (Table) on which to put the sweeper magnet and field-of-view collimator
 bool   stm.magnet.stand.build          = true;

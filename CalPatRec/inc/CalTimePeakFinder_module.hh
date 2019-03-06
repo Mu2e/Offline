@@ -30,7 +30,7 @@ namespace art {
 
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
@@ -73,7 +73,7 @@ namespace mu2e {
   using namespace CalTimePeakFinderTypes;
   
   class Calorimeter;
-  class TTracker;
+  class Tracker;
   class ModuleHistToolBase; 
   
   class CalTimePeakFinder: public art::EDFilter {
@@ -109,6 +109,7 @@ namespace mu2e {
 
     double           _pitchAngle;
     double           _sinPitch;
+    double           _beta;
 					// outlier cuts
 //-----------------------------------------------------------------------------
 // cache of event objects
@@ -121,7 +122,7 @@ namespace mu2e {
 
     double                                _dtoffset;
 
-    const TTracker*                       _tracker;     // straw tracker geometry
+    const Tracker*                        _tracker;     // straw tracker geometry
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
 
     const CaloCluster*                     cl;

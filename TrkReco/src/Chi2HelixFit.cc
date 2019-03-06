@@ -10,7 +10,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
@@ -61,27 +61,27 @@ namespace mu2e
   Chi2HelixFit::~Chi2HelixFit()
   {}
 
-  bool Chi2HelixFit::initChi2Circle(RobustHelixFinderData& HelixData) {
+  bool Chi2HelixFit::initChi2Circle(RobustHelixFinderData& HelixData, bool TargetCon) {
     bool retval(false);
 
-    fitChi2CircleMedian(HelixData);
+    fitChi2CircleMedian(HelixData, TargetCon);
     retval = HelixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK);
     return retval;
   }
 
-  void Chi2HelixFit::fitChi2Circle(RobustHelixFinderData& HelixData) {
+  void Chi2HelixFit::fitChi2Circle(RobustHelixFinderData& HelixData, bool TargetCon) {
     HelixData._hseed._status.clear(TrkFitFlag::circleOK);
 
     // if required, initialize
     bool init(false);
     if (!HelixData._hseed._status.hasAllProperties(TrkFitFlag::circleInit)) {
       init = true;
-      if (initChi2Circle(HelixData))
+      if (initChi2Circle(HelixData, TargetCon))
 	HelixData._hseed._status.merge(TrkFitFlag::circleInit);
       else
 	return;
     }
-    if (!init) fitChi2CircleMedian(HelixData);
+    if (!init) fitChi2CircleMedian(HelixData, TargetCon);
   }
 
 //----------------------------------------------------------------------------------------
@@ -526,17 +526,17 @@ namespace mu2e
 
 
   // simple median fit.  No initialization required
-  void Chi2HelixFit::fitChi2CircleMedian(RobustHelixFinderData& HelixData) 
+  void Chi2HelixFit::fitChi2CircleMedian(RobustHelixFinderData& HelixData, bool TargetCon) 
   {
-    _rhfit->fitCircleMedian(HelixData);
+    _rhfit->fitCircleMedian(HelixData, false);
     HelixData._hseed._status.clear(TrkFitFlag::circleOK);
       
     //first perform the chi2 fit assuming all hits have same error
-    refineFitXY(HelixData,0);
+    refineFitXY(HelixData, TargetCon, 0);
     
     //now that radius and center are more accurate, repeat the fit using the orientation of the hit
     //to estimate more accurately the expected uncertanty
-    refineFitXY(HelixData);
+    refineFitXY(HelixData, TargetCon);
     
     RobustHelix* rhel = &HelixData._hseed._helix;
 
@@ -554,10 +554,10 @@ namespace mu2e
     }
   }
   
-  void  Chi2HelixFit::refineFitXY(RobustHelixFinderData&HelixData, int WeightMode){
+  void  Chi2HelixFit::refineFitXY(RobustHelixFinderData&HelixData, bool Targetcon, int WeightMode){
 
     ::LsqSums4 sxy;
-    if (_rhfit->targetcon()) {
+    if (Targetcon) {
       if (WeightMode == 1) 
 //-------------------------------------------------------------------------------
 // add stopping target center with a position error of 100 mm/sqrt(12) ~ 30mm => wt = 1/900
@@ -667,7 +667,7 @@ namespace mu2e
 	  
       HelixData._sxy   = sxy;
       HelixData._nXYSh = nXYSh;
-      if (_rhfit->targetcon()) {
+      if (Targetcon) {
 	HelixData._nXYCh = sxy.qn() - 1;
       }else {
 	HelixData._nXYCh = sxy.qn();      
@@ -736,7 +736,7 @@ namespace mu2e
     float  fcent  = polyAtan2(dy, dx);
     float  dphi   = deltaPhi(helixData._hseed._helix._fz0+amsign*halfpi,fcent);
 
-       helixData._hseed._helix._fz0 = fcent - halfpi*amsign - dphi;
+    helixData._hseed._helix._fz0 = fcent - halfpi*amsign - dphi;
     //    helixData._hseed._helix._fz0 = deltaPhi(0.0, helixData._hseed._helix._fz0);
   }
 

@@ -1,0 +1,35 @@
+// Physics list inheriting from QGSP_BERT using regions etc.
+// Original author K.L.Genser January 2018
+//
+
+// Framework includes
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// Mu2e includes
+
+#include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
+#include "Mu2eG4/inc/setMu2eG4ProductionCuts.hh"
+
+namespace mu2e {
+
+  QGSP_BERT_MU2ER1::QGSP_BERT_MU2ER1(const fhicl::ParameterSet& pSet, G4int verbose):
+    QGSP_BERT(verbose),
+    pset(pSet)
+  {
+
+    // at this time QGSP_BERT constructor had been instatiated and we can add our
+    // customizations some of which are conditional based on pset content
+
+    RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&pset));
+
+  }
+
+  void QGSP_BERT_MU2ER1::SetCuts()
+  {
+
+    setMu2eG4ProductionCuts(pset, this);
+
+  }
+
+}

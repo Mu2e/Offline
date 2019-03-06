@@ -69,9 +69,10 @@ namespace mu2e {
   class TrackCaloMatching : public art::EDProducer {
   private:
 
-    art::ProductToken<KalRepPtrCollection> const _fitterToken;
-    art::ProductToken<CaloClusterCollection> const _caloClusterToken;
+    art::ProductToken<KalRepPtrCollection>        const _fitterToken;
+    art::ProductToken<CaloClusterCollection>      const _caloClusterToken;
     art::ProductToken<TrkCaloIntersectCollection> const _trkToCaloExtrapolToken;
+
     int             _debugLevel;
 
     double          _minClusterEnergy;      //
@@ -87,7 +88,7 @@ namespace mu2e {
 
     double          _chi2e, _chi2t, _chi2u, _chi2v;
 
-    // no offset in Y ?
+					    // no offset in Y ?
     double          _solenoidOffSetX;
     double          _solenoidOffSetZ;
 
@@ -97,23 +98,25 @@ namespace mu2e {
   public:
 
     explicit TrackCaloMatching(fhicl::ParameterSet const& pset):
-      _fitterToken{consumes<KalRepPtrCollection>(pset.get<string>("fitterModuleLabel"))},
-      _caloClusterToken{consumes<CaloClusterCollection>(pset.get<std::string>("caloClusterModuleLabel", "makeCaloCluster"))},
-      _trkToCaloExtrapolToken{consumes<TrkCaloIntersectCollection>(pset.get<std::string>("trkToCaloExtrapolModuleLabel", "TrackCaloIntersection"))},
-      _debugLevel             (pset.get<int>   ("debugLevel"     )),
-      _minClusterEnergy      (pset.get<double>("minClusterEnergy")),
-      _maxDeltaT             (pset.get<double>("maxDeltaT"       )),
+
+      _fitterToken           {consumes<KalRepPtrCollection>       (pset.get<string>     ("fitterModuleLabel"           ))},
+      _caloClusterToken      {consumes<CaloClusterCollection>     (pset.get<std::string>("caloClusterModuleLabel"      ))},
+      _trkToCaloExtrapolToken{consumes<TrkCaloIntersectCollection>(pset.get<std::string>("trkToCaloExtrapolModuleLabel"))},
+
+      _debugLevel            (pset.get<int>   ("debugLevel"          )),
+      _minClusterEnergy      (pset.get<double>("minClusterEnergy"    )),
+      _maxDeltaT             (pset.get<double>("maxDeltaT"           )),
       _meanInteractionDepth  (pset.get<double>("meanInteractionDepth")),
-      _dtOffset              (pset.get<double>("dtOffset"        )),
-      _sigmaE                (pset.get<double>("sigmaE"          )),
-      _sigmaT                (pset.get<double>("sigmaT"          )),
-      _sigmaU                (pset.get<double>("sigmaU"          )),
-      _sigmaV                (pset.get<double>("sigmaV"          )),
-      _firstEvent(true)
+      _dtOffset              (pset.get<double>("dtOffset"            )),
+      _sigmaE                (pset.get<double>("sigmaE"              )),
+      _sigmaT                (pset.get<double>("sigmaT"              )),
+      _sigmaU                (pset.get<double>("sigmaU"              )),
+      _sigmaV                (pset.get<double>("sigmaV"              )),
+      _firstEvent            (true)
     {
-      //-----------------------------------------------------------------------------
-      // Tell the framework what we make.
-      //-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Tell the framework what we make.
+//-----------------------------------------------------------------------------
       produces<TrackClusterMatchCollection>();
     }
 
@@ -194,15 +197,15 @@ namespace mu2e {
     art::ServiceHandle<GeometryService> geom;
     GeomHandle<Calorimeter> cg;
 
-    auto const& trksHandle = evt.getValidHandle(_fitterToken);
+    auto const& trjExtrapols        = evt.getValidHandle(_trkToCaloExtrapolToken);
+    int const   nex                 = trjExtrapols->size();
+
+    auto const& trksHandle          = evt.getValidHandle(_fitterToken);
     const KalRepPtrCollection* trks = trksHandle.product();
-    int const ntracks = trks->size();
+    int  const  ntracks             = trks->size();
 
-    auto const& caloClusters = evt.getValidHandle(_caloClusterToken);
-    int const nclusters = caloClusters->size();
-
-    auto const& trjExtrapols = evt.getValidHandle(_trkToCaloExtrapolToken);
-    int const nex = trjExtrapols->size();
+    auto const& caloClusters        = evt.getValidHandle(_caloClusterToken);
+    int  const  nclusters           = caloClusters->size();
 
     if (_debugLevel > 2) {
       printf("%s: Event Number : %8i ntracks: %2i nclusters: %4i nex: %2i\n",

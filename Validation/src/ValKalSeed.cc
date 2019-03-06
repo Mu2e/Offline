@@ -6,24 +6,31 @@
 int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hVer = tfs.make<TH1D>( "Ver", "Version Number", 101, -0.5, 100.0);
   _hN = tfs.make<TH1D>( "NSeed", "N KalSeed", 11, -0.5, 10.0);
-  _hNStraw = tfs.make<TH1D>( "NHit", "N Straw", 101, -0.5, 100.0);
+  _hNStraw = tfs.make<TH1D>( "NHit", "N Hits", 101, -0.5, 100.0);
   _hNSeg = tfs.make<TH1D>( "NSeg", "N KalSegment", 21, -0.5, 20.0);
-  _hStatus = tfs.make<TH1D>( "Status", "Status", 32, -0.5, 31.0);
+  _hStatus = tfs.make<TH1D>( "Status", "Status", 32, -0.5, 31.5);
   _hflt0 = tfs.make<TH1D>( "flt0", "flt0", 100, -1200.0, 1200.0);
   _ht0 = tfs.make<TH1D>( "t0", "t0", 100, 400.0, 1800.0);
-  _hchi2 = tfs.make<TH1D>( "Chi2N", "Chi2/DOF", 100, 0.0, 100.0);
+  _hchi2 = tfs.make<TH1D>( "Chi2N", "Chi2/DOF", 100, 0.0, 20.0);
   _hhasCal = tfs.make<TH1D>( "hasCal", "CalCluster attached", 2, -0.5, 1.5);
   _hfitCon = tfs.make<TH1D>( "FitConn", "Fit CL", 100, 0.0, 1.0);
   _hp = tfs.make<TH1D>( "p", "p", 100, 0., 110.);
   _hpce = tfs.make<TH1D>( "pce", "p CE", 100, 95.0, 110.);
+  _hpcep = tfs.make<TH1D>( "pcep", "p CE+", 100, 82.0, 97.);
   _hpe = tfs.make<TH1D>( "pe", "p error", 100, 0.0, 1.0);
   _hD0 = tfs.make<TH1D>( "d0", "d0", 100, -100., 100.);
   _hPhi0 = tfs.make<TH1D>( "phi0", "phi0", 100, -M_PI, M_PI);
   _hOmega = tfs.make<TH1D>( "omega", "omega", 100, -0.02, 0.02);
   _hZ0 = tfs.make<TH1D>( "Z0", "Z0", 100, -1000.0, 1000.0);
   _hTan = tfs.make<TH1D>( "tanDip", "tanDip", 100, -1.8, 1.8);
-
   _hCuts = tfs.make<TH1D>( "Cuts", "Cut series", 8, 0.5, 8.5);
+  _hCCdisk = tfs.make<TH1D>( "CCdisk","Calo Disk",2,-0.5,1.5);
+  _hCCEoverP = tfs.make<TH1D>( "CCEoverP","Calo E Over Track P",100,0.0,1.5);
+  _hCCDt0 = tfs.make<TH1D>( "CCDt0","Calo t0 - Track t0",100,-1.0,25.0);
+  _hCCDt = tfs.make<TH1D>( "CCDt","Calo time residual",100,-5.0,5.0);
+  _hCCDOCA = tfs.make<TH1D>("CCDOCA","Calo DOCA to Track",100,-100.0,100.0);
+  _hCChlen = tfs.make<TH1D>("CChlen","Calo POCA Depth",100,-100.0,500.0);
+  _hCCtlen = tfs.make<TH1D>("CCtlen","Calo POCA Track Length",100,1000.0,5000.0);
   int ibin=1;
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"All CE"); // bin 1, first visible
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
@@ -44,8 +51,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(0.0);
-
+  _hVer->Fill(3.0);
 
   // p of highest momentum electron SimParticle with good tanDip
   double p_mc = mcTrkP(event);
@@ -56,7 +62,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   _hN->Fill(coll.size()); 
   for(auto const& ks : coll) {
-    _hNStraw->Fill(ks.straws().size());
+    _hNStraw->Fill(ks.hits().size());
     _hNSeg->Fill(ks.segments().size());
     const TrkFitFlag& tff = ks.status();
 
@@ -72,8 +78,8 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     _hflt0->Fill(ks.flt0());
     double t0 = ks.t0().t0();
     _ht0->Fill(t0);
-    _hchi2->Fill(ks.chisquared());
-    int q = (ks.caloCluster().isNull()?0:1);
+    _hchi2->Fill(ks.chisquared()/std::max(1.0,double(ks.hits().size()-5)));
+    int q = ks.hasCaloCluster();
     _hhasCal->Fill(q);
     _hfitCon->Fill(ks.fitConsistency());
 
@@ -87,6 +93,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
       double p = ss.mom();
       _hp->Fill(ss.mom());
       _hpce->Fill(ss.mom());
+      _hpcep->Fill(ss.mom());
       _hpe->Fill(ss.momerr());
       _hD0->Fill(h.d0());
       _hPhi0->Fill(h.phi0());
@@ -125,6 +132,20 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
 
     }
+    // associated cluster info
+    if(ks.hasCaloCluster()){
+      auto const& chs = ks.caloHit();
+      _hCCdisk->Fill(chs.caloCluster()->diskId());
+    // get momentum from the last segment
+      auto const& ss = ks.segments().back(); //KalSegment
+      double p = ss.mom();
+      _hCCEoverP->Fill(ks.caloCluster()->energyDep()/p);
+      _hCCDt0->Fill(chs.t0().t0()-t0);
+      _hCCDt->Fill(chs.caloCluster()->time()-chs.t0().t0());
+      _hCCDOCA->Fill(chs.clusterAxisDOCA());
+      _hCChlen->Fill(chs.hitLen());
+      _hCCtlen->Fill(chs.trkLen());
+    }
     
   }
   return 0;
@@ -147,12 +168,12 @@ double mu2e::ValKalSeed::mcTrkP(art::Event const& event) {
       // the earliest stage this simparticle appears
       auto const& opart = part.originParticle(); //mu2e::SimParticle
       auto const& gptr = opart.genParticle(); //art::Ptr<GenParticle> 
-      if(part.pdgId()==11 && gptr.isNonnull()) { // e- pointing to GenParticle
-	cea.push_back(part.id());
+      // e- associated with a GenParticle
+      if(part.pdgId()==11 && gptr.isNonnull()) { 
+	cea.push_back(sp.first);
       }
     }
   }
-
   // now loop over all StepPointMC's and look for a step
   // at the virtual front of the tracker which points to the SimParticle
 

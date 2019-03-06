@@ -21,7 +21,7 @@
 class TrkDifTraj;
 class KalRep;
 
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 namespace mu2e {
 
@@ -32,23 +32,25 @@ namespace mu2e {
       enum trajtype {reftraj=0};
 
     struct Data_t {
-      int               index[2];
-      int               ibest;
-      int               inext;
+      int                index[2];
+      int                ibest;
+      int                inext;
       
-      double            chi2min;
-      double            chi2next;
+      double             chi2min;
+      double             chi2next;
 
-      const mu2e::Straw *straw[2];
-      double            rdrift[2];
-      double            doca[4][2];
-      double            chi2[4];
-      double            trkslope;
-      double            lineSlopes[4];
-      CLHEP::Hep3Vector spos [2];
-      CLHEP::Hep3Vector sposr[2];
-      CLHEP::Hep3Vector tpos [2];
-      CLHEP::Hep3Vector tposr[2];
+      const mu2e::Straw* straw     [2];
+      double             rdrift    [2];
+      double             doca      [4][2];
+      double             chi2Slope [4];	// slope contribution to the total chi2
+      double             chi2Coord [4];	// coordinate contribution to the total chi2
+      double             chi2      [4];	// total chi2
+      double             trkslope;
+      double             lineSlopes[4];
+      CLHEP::Hep3Vector  spos      [2];
+      CLHEP::Hep3Vector  sposr     [2];
+      CLHEP::Hep3Vector  tpos      [2];
+      CLHEP::Hep3Vector  tposr     [2];
     };
 
   protected:
@@ -71,11 +73,16 @@ namespace mu2e {
     double _deltaDriftDoublet;
     int    _excludeBothHits;            // when calculating residuals to choose the drift signs 
     double _minChi2Ratio;               // if chi2(best)/chi2(next) < _minChi2Ratio, doublet is "well measured"
+    double _tempScale;                  // 
+    double _penaltyScale;               // 
+    int    _useMeanResidual;            // as a penalty, if _meanResidual is defined
+    double _maxMeanResidual;            // max mean residual - can't make it very large
     double _maxHitChi;
 
     int    _sign[4][2];
     int    _iter;                       // iteration
     int	   _Final;                      // final iteration
+    double _meanResidual;               // mean residual (est) for active hits on a track
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
@@ -102,9 +109,11 @@ namespace mu2e {
 // make penalty error virtual ? penalty function depends on the drift radius
 //-----------------------------------------------------------------------------
     double penaltyError(double rdrift) const;
-					// update the hit state and the t0 value.
-    virtual bool resolveTrk(KalRep* KRes) const;
 
+					// update the hit state and the t0 value.
+    virtual bool resolveTrk   (KalRep* KRes) const;
+
+    virtual void initHitErrors(KalRep* krep) const ;
 
   };
 }

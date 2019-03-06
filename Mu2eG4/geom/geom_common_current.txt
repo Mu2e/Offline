@@ -58,7 +58,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/stoppingTargetHoles_DOE_review_2017.txt" // 37 foil muon stopping target with holes 
 
 #include "Mu2eG4/geom/TSdA_v01.txt"
-#include "Mu2eG4/geom/muonBeamStop_v04.txt"
+#include "Mu2eG4/geom/muonBeamStop_v05.txt"
 
 //#include "Mu2eG4/geom/MSTM_v01.txt" // muon stopping target monitor (deprecated)
 //#include "Mu2eG4/geom/STM_v01.txt" // (muon) stopping target monitor
@@ -74,13 +74,14 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/protonBeamDump_v03.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
-#include "Mu2eG4/geom/ttracker_v5.txt"
+#include "Mu2eG4/geom/tracker_v5.txt"
 
 // Crystal calorimeter
 #include "Mu2eG4/geom/calorimeter_CsI.txt"
 
 //CRV counters
 #include "Mu2eG4/geom/crv_counters_v07.txt"
+
 
 //-------------------------------------------
 // Magnetic field
@@ -141,6 +142,12 @@ bool   vd.solid          = false;
 
 // // VD right in front of a hall wall
 // double vd.ExtMonCommonPlane.z = -11999.99;
+
+
+//---------------------------------------
+// Region visualization
+//---------------------------------------
+#include "Mu2eG4/geom/visualization_regions.txt"
 
 
 //

@@ -5,7 +5,7 @@
 #include "TH1.h"
 
 #include <vector>
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 
@@ -16,7 +16,7 @@ namespace art {
 namespace mu2e {
   
   class KalFitData;
-  class TTracker;
+  class Tracker;
   class Calorimeter;
   class DoubletAmbigResolver;
 
@@ -24,7 +24,7 @@ namespace mu2e {
   
     struct Data_t {
       const art::Event*     event;
-      const TTracker*       tracker;
+      const Tracker*       tracker;
       const Calorimeter*    calorimeter;
       fhicl::ParameterSet*  timeOffsets;
 

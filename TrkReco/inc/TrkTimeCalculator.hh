@@ -42,8 +42,8 @@ namespace mu2e
       // access the offsets
       double timeOfFlightTimeOffset(double hitz) const; // z position in the tracker frame!!!
       double strawHitTimeErr() const { return _shErr; }
-      double caloClusterTimeOffset(int diskId) const; // depends on which 
-      double caloClusterTimeErr(int diskId) const; // depends on which 
+      double caloClusterTimeOffset() const { return _caloT0Offset; }
+      double caloClusterTimeErr() const { return _caloT0Err; }
       // calculate the t0 for a straw hit. This assumes an average drift time (deprecated)
       double strawHitTime(StrawHit const& sh, StrawHitPosition const& shp);
       // same for a ComboHit
@@ -57,12 +57,11 @@ namespace mu2e
       TrkFitDirection _fdir; // fit direction.  This is used to make z-dependent time shifts
       double _avgDriftTime;  // average time offset for straw hits
       bool _useTOTdrift;
-      double _shSlope; // dv/dv_z for straw hits
+      double _shDtDz;  // dt/dz for straw hits
       double _shBeta;  // beta of the particle-hypothesis used
       double _shErr;
-      double _shDtDz;  // dt/dz for straw hits
-      double _caloT0Offset[2]; // time offsets for downstream particls in the 2 disks
-      double _caloT0Err[2]; // time offsets errors for downstream particls in the 2 disks
+      double _caloT0Offset; // time offsets for downstream particls in the calorimeter
+      double _caloT0Err; // time resolution 
   };
 }
 #endif

@@ -8,18 +8,18 @@
 
 namespace mu2e {
 
-   struct TriggerFlagDetail 
-   {
-       typedef unsigned int mask_type;
+  struct TriggerFlagDetail 
+  {
+    typedef unsigned int mask_type;
 
-       enum bit_type {prescaleRandom=0, hitCluster, helix, track,  caloCluster=12, AnotherTrigger};
+    enum bit_type {prescaleRandom=0, prescaleGoodEvents, strawDigis, caloDigis, hitCluster, helix, track,  caloCluster=12, caloTrigSeed, caloCalib, AnotherTrigger};
 
-       static const std::string& typeName();
-       static const std::map<std::string,mask_type>& bitNames();
-       static mask_type bit_to_mask(bit_type b) {return 1<<b;}
-   };
+    static const std::string& typeName();
+    static const std::map<std::string,mask_type>& bitNames();
+    static mask_type bit_to_mask(bit_type b) {return 1<<b;}
+  };
 
-   typedef BitMap<TriggerFlagDetail> TriggerFlag;
+  typedef BitMap<TriggerFlagDetail> TriggerFlag;
 
 }
 

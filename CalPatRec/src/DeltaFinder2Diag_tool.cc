@@ -19,7 +19,7 @@
 
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 
@@ -110,7 +110,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    //    const StrawDigiMCCollection*          _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
     
@@ -537,7 +537,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	  _eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	  //	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	InitMcDiag();
 	associateMcTruth();
       }
@@ -667,7 +667,7 @@ namespace mu2e {
 
 	    const StrawHit* sh           = hd->fHit;
 	    int ish                      = sh-sh0;
-	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,ish);
+	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,ish);
 	    //-----------------------------------------------------------------------------
 	    // search if this particle has already been registered
 	    //-----------------------------------------------------------------------------
@@ -890,7 +890,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	InitMcDiag();
 	associateMcTruth();
       }
@@ -1089,7 +1089,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);
@@ -1175,7 +1175,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);

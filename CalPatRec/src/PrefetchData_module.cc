@@ -9,8 +9,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -40,7 +39,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "GeneralUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 using namespace std; 
 using CLHEP::Hep3Vector;
 

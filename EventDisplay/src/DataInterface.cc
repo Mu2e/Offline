@@ -4,7 +4,7 @@
 // $Date: 2014/09/10 07:40:38 $
 //
 using namespace std;
-#include "DataInterface.h"
+#include "EventDisplay/src/DataInterface.h"
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/Rotation.h"
@@ -24,7 +24,6 @@ using namespace std;
 #include "EventDisplay/src/dict_classes/EventDisplayViewSetup.h"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "HepPID/ParticleName.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
@@ -40,7 +39,6 @@ using namespace std;
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTraj.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
 #include "StoppingTargetGeom/inc/TargetFoil.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -222,13 +220,13 @@ void DataInterface::fillGeometry()
   const mu2e::SimpleConfig &config = geom->config();
   _detSysOrigin = mu2e::GeomHandle<mu2e::DetectorSystem>()->getOrigin();
 
-  if(geom->hasElement<mu2e::TTracker>())
+  if(geom->hasElement<mu2e::Tracker>())
   {
 //Straws
-    mu2e::GeomHandle<mu2e::TTracker> ttracker;
-    const auto& allStraws = ttracker->getAllStraws();
+    mu2e::GeomHandle<mu2e::Tracker> tracker;
+    const auto& allStraws = tracker->getAllStraws();
     // for(const auto & elem : allStraws)
-    for (size_t i = 0; i<ttracker->nStraws(); ++i)
+    for (size_t i = 0; i<tracker->nStraws(); ++i)
     {
       // const mu2e::Straw& s = elem;
       const mu2e::Straw& s = allStraws[i];
@@ -240,7 +238,7 @@ void DataInterface::fillGeometry()
       double theta = d.theta();
       double phi = d.phi();
 //      double r = s.getRadius();
-      double l = s.getHalfLength();
+      double l = s.halfLength();
       int idStraw =  s.id().getStraw();
       int idLayer =  s.id().getLayer();
       int idPanel =  s.id().getPanel();
@@ -259,15 +257,15 @@ void DataInterface::fillGeometry()
     }
 
 //Support Structure
-    double innerRadius=ttracker->getSupportParams().innerRadius();
-    double outerRadius=ttracker->getSupportParams().outerRadius();
-    double zHalfLength=ttracker->getInnerTrackerEnvelopeParams().zHalfLength();
+    double innerRadius=tracker->getSupportParams().innerRadius();
+    double outerRadius=tracker->getSupportParams().outerRadius();
+    double zHalfLength=tracker->getInnerTrackerEnvelopeParams().zHalfLength();
     findBoundaryP(_trackerMinmax, outerRadius, outerRadius, zHalfLength);
     findBoundaryP(_trackerMinmax, -outerRadius, -outerRadius, -zHalfLength);
 
     char c[200];
     boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-    sprintf(c,"TTracker Support Structure");
+    sprintf(c,"Tracker Support Structure");
     info->setName(c);
     info->setText(0,c);
     sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);
@@ -284,12 +282,12 @@ void DataInterface::fillGeometry()
     _supportstructures.push_back(shape);
 
 //Envelope
-    innerRadius=ttracker->getInnerTrackerEnvelopeParams().innerRadius();
-    outerRadius=ttracker->getInnerTrackerEnvelopeParams().outerRadius();
-    zHalfLength=ttracker->getInnerTrackerEnvelopeParams().zHalfLength();
+    innerRadius=tracker->getInnerTrackerEnvelopeParams().innerRadius();
+    outerRadius=tracker->getInnerTrackerEnvelopeParams().outerRadius();
+    zHalfLength=tracker->getInnerTrackerEnvelopeParams().zHalfLength();
 
     boost::shared_ptr<ComponentInfo> infoEnvelope(new ComponentInfo());
-    sprintf(c,"TTracker Envelope");
+    sprintf(c,"Tracker Envelope");
     infoEnvelope->setName(c);
     infoEnvelope->setText(0,c);
     sprintf(c,"Inner Radius %.f mm  Outer Radius %.f mm",innerRadius/CLHEP::mm,outerRadius/CLHEP::mm);

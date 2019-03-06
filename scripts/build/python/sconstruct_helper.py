@@ -79,6 +79,7 @@ def cppPath(mu2eOpts):
         os.environ['ARTDAQ_CORE_INC'],
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
+        os.environ['POSTGRESQL_INC']
         ]
 
     if mu2eOpts['satellite']:
@@ -108,6 +109,7 @@ def libPath(mu2eOpts):
         os.environ['XERCESCROOT']+'/lib',
         os.environ['TBB_LIB'],
         os.environ['GSL_LIB'],
+        os.environ['POSTGRESQL_LIBRARIES']
         ]
 
     if mu2eOpts['satellite']:
@@ -119,7 +121,7 @@ def libPath(mu2eOpts):
 # These are given to scons using its Evironment.MergeFlags call.
 def mergeFlags(mu2eOpts):
     build = mu2eOpts['build']
-    flags = ['-std=c++14','-Wall','-Wno-unused-local-typedefs','-g',
+    flags = ['-std=c++17','-Wall','-Wno-unused-local-typedefs','-g',
              '-Werror','-Wl,--no-undefined','-gdwarf-2',
              '-Werror=return-type','-Winit-self','-Woverloaded-virtual']
     if build == 'prof':

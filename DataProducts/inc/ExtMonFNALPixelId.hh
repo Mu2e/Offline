@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_ExtMonFNALPixelId_hh
-#define TrackerGeom_ExtMonFNALPixelId_hh
+#ifndef DataProducts_ExtMonFNALPixelId_hh
+#define DataProducts_ExtMonFNALPixelId_hh
 
 // Identifier of a silicon pixel in Mu2e ExtMonFNAL detector.
 //
@@ -55,4 +55,4 @@ namespace mu2e {
   std::ostream& operator<<( std::ostream& os, const ExtMonFNALPixelId& id);
 
 }
-#endif /* TrackerGeom_ExtMonFNALPixelId_hh */
+#endif /* DataProducts_ExtMonFNALPixelId_hh */

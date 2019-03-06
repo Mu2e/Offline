@@ -1,4 +1,5 @@
 //use with Mu2eG4/geom/crv_counters_v07.txt (e.g. CRVResponse/test/CRVResponse_v07.fcl)
+#include "CommonMC/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -41,7 +42,7 @@ BEGIN_PROLOG
       fiberDecayTime            : 8.7      //8.7 ns
       startTime                 : 400.0    //0.0 ns
       visibleEnergyAdjustmentFileName : "CRVResponse/fcl/visibleEnergyAdjustment.txt"
-      timeOffsets               : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
+      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ]  }
     }
     CrvSiPMCharges:
     {
@@ -50,7 +51,7 @@ BEGIN_PROLOG
       deadSiPMProbability          : 0.01
       nPixelsX                     : 40
       nPixelsY                     : 40
-      nPixelsRFiber                : 14
+      nPixelsRFiber                : 13
       inactivePixels               : [ [18,18], [18,19], [18,20], [18,21],
                                        [19,18], [19,19], [19,20], [19,21],
                                        [20,18], [20,19], [20,20], [20,21],
@@ -128,18 +129,17 @@ BEGIN_PROLOG
       maxDistance                    : 1000 //mm
       maxTimeDifference              : 100  //ns
       crvCoincidenceCheckModuleLabel : "CrvCoincidence"
-      crvWaveformsModuleLabel        : "CrvWaveforms"
       timeWindowStart                : 500  //ns
       timeWindowEnd                  : 1750 //ns
       deadTimeWindowStartMargin      : 0    //ns
       deadTimeWindowEndMargin        : 125  //ns
     }
-    CrvCoincidenceClusterSummarizer:
+    CrvCoincidenceClusterMatchMC:
     {
-      module_type                            : CrvCoincidenceClusterSummarizer
+      module_type                            : CrvCoincidenceClusterMatchMC
       crvCoincidenceClusterFinderModuleLabel : "CrvCoincidenceClusterFinder"
-      crvWaveformsModuleLabel                : "compressDigiMCs" // Was CrvWaveforms
-      timeOffsets                            : { inputs : [ "CompressDigiMCs:protonTimeMap", "CompressDigiMCs:muonTimeMap" ] } // Was [ protonTimeMap, muonTimeMap ]
+      crvWaveformsModuleLabel                : "CrvWaveforms"
+      timeOffsets                            : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
 
 
@@ -154,9 +154,9 @@ CrvResponsePackage :
      CrvRecoPulses               : @local::CrvRecoPulses
      CrvCoincidence              : @local::CrvCoincidence
      CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
-     CrvCoincidenceClusterSummarizer : @local::CrvCoincidenceClusterSummarizer
+     CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
    }
-   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterSummarizer ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 }
 
 CrvDAQPackage : 

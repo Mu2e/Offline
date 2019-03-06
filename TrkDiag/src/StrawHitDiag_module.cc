@@ -15,8 +15,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root
 #include "TMath.h"
 #include "TH1F.h"
@@ -66,6 +65,7 @@ namespace mu2e
       Float_t _shlen, _slen;
       Float_t _edep;
       Float_t _time[2], _tot[2];
+      Float_t _correcttime, _ctime, _dtime, _ptime;
       Float_t _rho;
       Int_t _mcnsteps;
       Int_t _mcpdg,_mcgen,_mcproc, _mcid;
@@ -163,6 +163,10 @@ namespace mu2e
     _shdiag->Branch("slen",&_slen,"slen/F");
     _shdiag->Branch("edep",&_edep,"edep/F");
     _shdiag->Branch("time",&_time,"tcal/F:thv/F");
+    _shdiag->Branch("ctime",&_ctime,"ctime/F");
+    _shdiag->Branch("dtime",&_dtime,"dtime/F");
+    _shdiag->Branch("ptime",&_ptime,"ptime/F");
+    _shdiag->Branch("correcttime",&_correcttime,"correcttime/F");
     _shdiag->Branch("tot",&_tot,"totcal/F:tothv/F");
     _shdiag->Branch("rho",&_rho,"rho/F");
     _shdiag->Branch("sid",&_sid,"sid/I");
@@ -224,7 +228,7 @@ namespace mu2e
 
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
     static const double rstraw = tracker.getStraw(StrawId(0,0,0)).getRadius();
     unsigned nstrs = _chcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
@@ -243,9 +247,13 @@ namespace mu2e
 	_time[iend] = sh.time(_end[iend]);
 	_tot[iend] = sh.TOT(_end[iend]);
       }
+      _correcttime = ch.correctedTime();
+      _ctime = ch.time();
+      _dtime = ch.driftTime();
+      _ptime = ch.propTime();
       _shp = ch.posCLHEP();
       _shlen =(ch.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
-      _slen = straw.getHalfLength();
+      _slen = straw.halfLength();
       _stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
       _tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
       _esel = shf.hasAllProperties(StrawHitFlag::energysel);
@@ -319,7 +327,7 @@ namespace mu2e
           Hep3Vector cdir = (cpos-straw.getMidPoint());
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           _mccphi[iend] = cdir.theta();
-          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.getDetail().innerRadius());
+          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.innerRadius());
 	}
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());

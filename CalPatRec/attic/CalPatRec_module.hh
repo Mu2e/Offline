@@ -46,7 +46,7 @@ namespace art {
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrkPatRec/inc/TrkHitFilter.hh"
 #include "CalPatRec/inc/CalTimePeak.hh"
-#include "RecoDataProducts/inc/Doublet.hh"
+#include "BTrkData/inc/Doublet.hh"
 
 #include "TROOT.h"
 #include "TFolder.h"

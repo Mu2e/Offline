@@ -73,6 +73,7 @@ namespace mu2e
       Float_t _wres; // estimated error along this direction
       Float_t _tres; // estimated error perpendicular to this direction
       Float_t _time; // Average time for these
+      Float_t _correcttime, _dtime, _ptime;
       Float_t _edep; // average energy deposit for these
       Float_t _qual; // quality of combination
       Float_t _dz; // z extent
@@ -130,6 +131,9 @@ namespace mu2e
       _chdiag->Branch("wres",&_wres,"wres/F");
       _chdiag->Branch("tres",&_tres,"tres/F");
       _chdiag->Branch("time",&_time,"time/F");
+      _chdiag->Branch("correcttime",&_correcttime,"correcttime/F");
+      _chdiag->Branch("dtime",&_time,"dtime/F");
+      _chdiag->Branch("ptime",&_time,"ptime/F");
       _chdiag->Branch("edep",&_edep,"edep/F");
       _chdiag->Branch("qual",&_qual,"qual/F");
       _chdiag->Branch("dz",&_dz,"dz/F");
@@ -188,6 +192,9 @@ namespace mu2e
       _wres = ch.wireRes();
       _tres = ch.transRes();
       _time = ch.time();
+      _correcttime = ch.correctedTime();
+      _dtime = ch.driftTime();
+      _ptime = ch.propTime();
       _edep = ch.energyDep();
       _qual = ch.qual();
       StrawHitFlag flag;
@@ -278,6 +285,9 @@ namespace mu2e
 	  chimc._mcposx = spmcp->position().x();
 	  chimc._mcposy = spmcp->position().y();
 	  chimc._mcposz = spmcp->position().z();
+
+	  MCRelationship rel(mcd,mcd1);
+	  chimc._rel = rel.relationship();
 	  _chinfomc.push_back(chimc);
 	  // find average MC properties
 	  _mcpos += XYZVec(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());

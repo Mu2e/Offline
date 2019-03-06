@@ -87,6 +87,10 @@ namespace mu2e {
 
       TH1F*  resid   [2];
       TH1F*  rwdot   [2];
+      
+      TH1F*  nLoops  [2];
+      TH1F*  nHitsLoopFailed[2];
+      TH1F*  chRadialDist[2];
     };
 
   protected:
@@ -238,6 +242,15 @@ namespace mu2e {
     _hist.rwdot[0]     = Tfs->make<TH1F>("rwdot_Neg" , "helix hit rwdot, Neg"               , 200,   -2., 2.);
     _hist.rwdot[1]     = Tfs->make<TH1F>("rwdot_Pos" , "helix hit rwdot, Pos"               , 200,   -2., 2.);
  
+    _hist.nLoops[0]     = Tfs->make<TH1F>("nLoops_Neg" , "helix  nLoops, Neg"               , 7,   -0.5, 6.5);
+    _hist.nLoops[1]     = Tfs->make<TH1F>("nLoops_Pos" , "helix  nLoops, Pos"               , 7,   -0.5, 6.5);
+ 
+    _hist.nHitsLoopFailed[0]     = Tfs->make<TH1F>("nHitsLoopFailed_Neg" , "helix  nHitsLoopFailed, Neg", 21,   -0.5, 20.5);
+    _hist.nHitsLoopFailed[1]     = Tfs->make<TH1F>("nHitsLoopFailed_Pos" , "helix  nHitsLoopFailed, Pos", 21,   -0.5, 20.5);
+ 
+    _hist.chRadialDist[0]     = Tfs->make<TH1F>("meanHitRadialDist_Neg" , "helix hit meanHitRadialDist, Neg"               , 60,   100, 700.);
+    _hist.chRadialDist[1]     = Tfs->make<TH1F>("meanHitRadialDist_Pos" , "helix hit meanHitRadialDist, Pos"               , 60,   100, 700.);
+ 
     return 0;
   }
 
@@ -328,6 +341,12 @@ namespace mu2e {
 	for (int j=0; j<_data->nXYCh[k][i];++j){
 	  _hist.rwdot[k]->Fill(_data->hitRWDot[k][i][j]);
 	  _hist.resid[k]->Fill(_data->hitDr   [k][i][j]);
+	}
+	
+	if (_data->nZPhiSh[k][i] >= 15){
+	  _hist.nLoops       [k] ->Fill(_data->nLoops[k][i]);
+	  _hist.nHitsLoopFailed       [k] ->Fill(_data->nHitsLoopFailed[k][i]);
+	  _hist.chRadialDist [k] ->Fill(_data->meanHitRadialDist[k][i]);
 	}
 	
       }

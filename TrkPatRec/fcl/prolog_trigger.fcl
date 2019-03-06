@@ -1,0 +1,184 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+#include "TrkPatRec/fcl/Particle.fcl"
+#include "TrkPatRec/fcl/PanelAmbigResolver.fcl" 
+#include "TrkPatRec/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+# this should go in a general file FIXME!!
+FitDir : {
+    downstream : 0
+    upstream : 1
+}
+
+TTtimeClusterFinder : { @table::TimeClusterFinder
+    ComboHitCollection     : "TTflagBkgHits"
+    CaloClusterCollection  : "CaloClusterFast"
+    StrawHitFlagCollection : "none"
+    TestFlag               : false
+}
+
+TTrobustHelixFinder : { @table::RobustHelixFinder
+    ComboHitCollection    : "TTflagBkgHits"
+    TimeClusterCollection : "TTtimeClusterFinder"
+    HitSelectionBits      : ["TimeDivision"]
+    HitBackgroundBits     : ["Background"]
+#    HelixStereoHitMVA     : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+#    HelixNonStereoHitMVA  : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+    
+    diagLevel        : 0
+    debugLevel       : 0
+    reducedchi2      : 0
+    printFrequency   : 101
+    PrefilterHits    : true
+    UpdateStereoHits : false
+    minNStrawHits    : 10
+    minNHit          : 5
+    MaxChi2dXY       : 5.0
+    MaxChi2dZPhi     : 5.0
+    MaxHitPhiChi2    : 25.
+    MaxRadiusDiff    : 100.
+    MaxRPull         : 5.0
+
+    targetconsistent_init  : true
+    targetconsistent       : false
+    RPullScaleF            : 1.0
+    MaxPhiHitSeparation    : 1.0
+    SaveHelixFlag          : ["HelixOK"]
+    MaxIterations          : 10
+    CenterRadialResolution : 20.0
+    CenterPerpResolution   : 12.
+    MaxWireDistance        : 200.0
+    MaxTransDistance       : 80.0
+    MaxChisquared          : 25.
+    MaxRWDot               : 1.0
+    MinRadiusErr           : 20.0
+    UseHitMVA              : false
+    MinMVA                 : 0.1
+    
+    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit
+	maxzsep : 275.	
+    }
+    #    Chi2HelixFit         : 
+    #	T0Calculator         : 
+    T0Shift              : 4.0
+
+    UpdateStereo         : false
+}
+# pattern recognition internals
+# Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
+
+# same for trigger
+TTKSF : { @table::KSF
+    ComboHitCollection	      : "TTmakeSH"
+    SeedCollection	      : "TThelixFinder:Positive"
+}
+# Final Kalman fit, including material and magnetic inhomogeneity effects
+TTKFF : { @table::KFF
+    ComboHitCollection	      : "TTmakeSH"
+    SeedCollection	      : "TTkalSeedFit"
+}
+
+# seed Fit configuration for specific particles
+#  First, downstream electrons
+TTKSFDeM                      : @local::TTKSF
+TTKSFDeM.ComboHitCollection   : "TTmakeSH"
+TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+TTKSFDeM.fitparticle	      : @local::Particle.eminus
+TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
+
+TTKSFDeP                      : @local::TTKSF
+TTKSFDeP.ComboHitCollection   : "TTmakeSH"
+TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+TTKSFDeP.fitparticle	      : @local::Particle.eplus
+TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
+
+# Final Fit configuration for specific particles
+#  First, downstream electrons
+TTKFFDeM		      : @local::KFF
+TTKFFDeM.SeedCollection       : "TTKSFDeM"
+TTKFFDeM.fitparticle	      : @local::Particle.eminus
+TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
+TTKFFDeM.ComboHitCollection	: "TTmakeSH"
+TTKFFDeM.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+
+#  downstream positrons
+TTKFFDeP		      : @local::KFF
+TTKFFDeP.SeedCollection       : "TTKSFDeP"
+TTKFFDeP.fitparticle	      : @local::Particle.eplus
+TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
+TTKFFDeP.ComboHitCollection	: "TTmakeSH"
+TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+
+# Declare a table with all the modules needed for track reconstruction
+# This should be divided into sim, reco FIXME!
+TprTrigger : {
+    producers : {
+	tprFetchDigis : { module_type:PrefetchData
+	    debugLevel                    : 0
+	    mcDiag                        : true
+
+	    fetchCaloDigis                : 1
+	    fetchStrawDigis               : 1
+	    fetchStrawHits                : 0
+	    fetchStrawHitFlags            : 0
+	    fetchStrawHitPositions        : 0
+	    fetchComboHits                : 0
+
+	    caloDigiCollectionTag         : CaloDigiFromShower
+	    strawDigiCollection           : makeSD
+	    strawHitCollectionTag         : TTmakeSH
+	    strawHitPositionCollectionTag : TTmakeSH
+	    strawHitFlagCollectionTag     : TTmakeSH
+	    comboHitCollectionTag         : TTmakePH # MakeStereoHits
+	}
+
+
+	TTtimeClusterFinder  : @local::TTtimeClusterFinder
+	TThelixFinder        : @local::TTrobustHelixFinder
+	TTfastHelixFinder    : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTDeltaFinder"
+	    TimeClusterCollection : "TTfastTimeClusterFinder"
+	}
+	TTKSFDeM	     : @local::TTKSFDeM
+	TTKSFDeP	     : @local::TTKSFDeP
+	TTFKSFDeM	     : { @table::TTKSFDeM
+	    SeedCollection : "TTfastHelixFinder:Positive"
+	}
+	TTFKSFDeP	     : { @table::TTKSFDeP 
+	    SeedCollection : "TTfastHelixFinder:Negative"
+	}
+	TTKFFDeM             : @local::TTKFFDeM
+	TTKFFDeP             : @local::TTKFFDeP
+    }
+
+    sequences : {
+	# production sequence to find helicse
+	findHelices     : [ TTtimeClusterFinder, TThelixFinder ]
+	# production sequence to find TrackSeeds
+	KSFDeM          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeM ]
+	KSFDeP          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeP ]
+	# production sequence to find KalReps
+	KFFDeM          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeM, TTKFFDeM ]
+	KFFDeP          : [ TTtimeClusterFinder, TThelixFinder, TTKSFDeP, TTKFFDeP ]
+    }
+    
+    # define standard outputs 
+    Output : {
+	Digis  : [ "keep mu2e::StrawDigis_*_*_*" ]
+	Hits   : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+		   "keep mu2e::StrawHitPositions_MakeStereoHits_*_*",
+		   "keep mu2e::StrawHits_*_*_*"	]
+	
+	Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_*_*_*",
+		   "keep mu2e::TrkQualDetailmu2e::MVAStructs_*_*_*",
+		   "keep mu2e::KalSeeds_*_*_*",
+		   "keep mu2e::HelixSeeds_*_*_*",
+		   "keep mu2e::TimeClusters_*_*_*" ]
+    }
+}
+
+END_PROLOG

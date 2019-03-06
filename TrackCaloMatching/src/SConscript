@@ -41,7 +41,7 @@ helper.make_plugins( [
     'mu2e_RecoDataProducts',
     'mu2e_MCDataProducts',
     'mu2e_CalorimeterGeom',
-    'mu2e_TTrackerGeom',
+    'mu2e_TrackerGeom',
     'mu2e_ConfigTools',
     'mu2e_Mu2eInterfaces',
     babarlibs,
@@ -76,7 +76,8 @@ helper.make_dict_and_map( [
     'CLHEP',
     'cetlib',
     'cetlib_except',
-    'Core'
+    'Core',
+    'boost_system'
     ] )
 
 # This tells emacs to view this file in python mode.

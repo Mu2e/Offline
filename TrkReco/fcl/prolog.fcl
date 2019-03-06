@@ -9,6 +9,78 @@ BEGIN_PROLOG
 # may use a more careful optimization, but this is it for now
 #------------------------------------------------------------------------------
 TrkReco: {
+    McUtils : { tool_type : "TrkRecoMcUtils" 
+	comboHitCollTag    : "makeSH"
+	strawDigiMCCollTag : "compressDigiMCs"
+    }
+}
+
+TrkReco: { @table::TrkReco 
+#------------------------------------------------------------------------------
+# if mcTruth = 0, a dummy ("return-end") implementation of MC truth functions
+# is used with no MC dependence. 
+# to really use that, the McUtilsToolBase needs to be moved from Mu2eUtilities *FIXME*
+# into some 'Base' library with no MC dependencies
+#------------------------------------------------------------------------------
+    PrintUtils: {
+	strawHitCollTag    : "makeSH"
+	mcTruth            : 0 #
+	mcUtils            : { @table::TrkReco.McUtils } # defined on top of this file
+    }
+
+    TTrobustHelixFit     : {
+	diagLevel      : 0
+	debugLevel     : 0
+	CircleInitType : 0     # 0=median, 1=mean
+	CircleFitType  : 0     # 0=median, 1=mean
+	DontUseFlag    : ["Outlier"]
+	minNStrawHits  : 10
+	minNHit        : 5
+	minXYResid     : 5.
+
+	lambda0        : 0.1
+	lstep          : 0.01
+	
+	minlambda          : 0.001
+	minDfDz            : 0.002 
+	maxDfDz            : 0.01
+	NPhiHistBins       : 25
+	PhiHistRangeFactor : 1.2
+	MinNPhi            : 2
+	maxniter           : 100
+	minzsep            : 100.0
+	maxzsep            : 500.0
+	mindphi            : 0.5
+	maxdphi            : 2.5
+	sigmaPhi           : 0.49
+	mindist            : 100.0
+	maxdist            : 500.0
+
+	maxdxy             : 100.0
+	maxXDPhi           : 5.0
+	minR               : 100.
+	maxR               : 320.
+	minCenterR         : 100.0
+	maxCenterR         : 700.0
+	
+	minAbsLambda       : 10.0
+	maxAbsLambda       : 700.0
+
+	targetintersect    : false
+	TripleRadius       : false
+	HitErrorWeight     : false
+	UseCaloCluster     : false
+	CaloClusterWeight  : 10.0
+
+	targetradius       : 100.0
+	trackerradius      : 700.0
+	RadiusWindow       : 10.0
+	ntripleMin         : 5
+	ntripleMax         : 500
+	
+	minArea            : 5000.0
+    }
+    
     DoubletAmbigResolver : {
 	debugLevel                          : 0
 	HitMinDrift			    : 0.2
@@ -26,7 +98,11 @@ TrkReco: {
 	deltaDriftDoublet                   : 0.3
 	excludeBothHits                     : 1
 	minChi2Ratio                        : 0.2
+	tempScale                           : 0.5
+	penaltyScale                        : 0.4
 	maxHitChi                           : 5.    # 
+	useMeanResidual                     : 0     # default: dont use
+	maxMeanResidual                     : 0.8
     }
 }
 END_PROLOG

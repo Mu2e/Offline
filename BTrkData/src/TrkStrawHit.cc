@@ -14,11 +14,7 @@
 #include "BTrk/TrkBase/TrkHit.hh"
 //
 #include "CLHEP/Vector/ThreeVector.h"
-// conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
 
-#include "TrkReco/inc/TrkUtilities.hh"
 #include "cetlib_except/coded_exception.h"
 #include <algorithm>
 
@@ -27,9 +23,11 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkStrawHit::TrkStrawHit(const ComboHit& strawhit  , const Straw& straw    , StrawHitIndex index,
-			   const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull, 
+  TrkStrawHit::TrkStrawHit(StrawResponse::cptr_t strawResponse,
+			   const ComboHit& strawhit  , const Straw& straw    , StrawHitIndex index,
+			   const TrkT0&    hitt0     , double       fltlen   , double maxdriftpull,
 			   double          timeWeight) :
+    _strawResponse(strawResponse),
     _combohit(strawhit),
     _straw(straw),
     _index(index),
@@ -41,12 +39,11 @@ namespace mu2e
 // make sure this ComboHit represents only a single straw hit
     if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)
       throw cet::exception("RECO")<<"mu2e::TrkStrawHit: ComboHit > 1 StrawHit"<< endl;
-    // The StrawResponse should be passsed in from outside FIXME! 
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    // The StrawResponse should be passsed in from outside FIXME!
     Hep3Vector const& wiredir = straw.getDirection();
     Hep3Vector const& mid = straw.getMidPoint();
     // cache the propagation velocity: this depends just on the pulseheight
-    _vprop = 2.0*srep->halfPropV(_combohit.strawId(),1000.0*_combohit.energyDep()); // edep in KeV, FIXME!
+    _vprop = 2.0*_strawResponse->halfPropV(_combohit.strawId(),1000.0*_combohit.energyDep()); // edep in KeV, FIXME!
     // initialize wire position using time difference
     _wpos = mid +_combohit.wireDist()*wiredir;
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
@@ -78,62 +75,63 @@ namespace mu2e
   TrkStrawHit::driftTime() const {
     return comboHit().time() - _stime - hitT0()._t0;
   }
-
-  bool
-  TrkStrawHit::signalPropagationTime(double &PropTime, double &Doca      , 
-				     double Resid    , double &ResidError, 
-				     CLHEP::Hep3Vector TrajDirection){
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
-    // convert this to a distance to the wire
-    double driftRadius = _rdrift;
-    Doca = (Resid + driftRadius*_iamb);
-    if(_iamb == 0)
-      Doca = fabs(Doca);
-    else
-      Doca *= _iamb;
-    // restrict the range, symmetrically to avoid bias
-    double rad       = _straw.getRadius();
-    double mint0doca = srep->Mint0doca(); 
-    if(Doca > mint0doca && Doca < rad-mint0doca){
-      // translate the DOCA into a time
-      Hep3Vector tperp = TrajDirection - TrajDirection.dot(straw().getDirection())*straw().getDirection();
-      double phi = tperp.theta(); 
-      double tdrift = srep->driftDistanceToTime(_combohit.strawId(), Doca, phi);
-      double vdrift = srep->driftInstantSpeed(_combohit.strawId(),Doca, phi);
-      PropTime    = tdrift + _stime;
-      ResidError /= vdrift;
-      return true;
-    } else {
-      PropTime = 0;
-      return false;
-    }
-  }
   
-  void 
+  bool TrkStrawHit::signalPropagationTime( TrkT0& t0 ){
+// propagation includes drift and signal propagation along the wire.  First, compute the drift
+// time from the distance of closest approach
+// correct this for the most recent fit, excluding the effect of this hit on the fit
+    double resid, residerr;
+    bool retval = this->resid(resid,residerr,true);
+    if(retval ) {
+      double doca;
+    // 0-ambig hit residual is WRT the wire
+      if(_iamb == 0)
+	doca = fabs(resid);
+      else
+	doca = _rdrift + _iamb*resid;
+    // restrict the range, symmetrically to avoid bias
+      double rad       = _straw.getRadius();
+      double mint0doca = _strawResponse->Mint0doca(); 
+      if(doca > mint0doca && doca < rad-mint0doca){
+	// compute phi WRT BField for lorentz drift.
+	CLHEP::Hep3Vector trjDir(parentRep()->traj().direction(fltLen()));
+	Hep3Vector tperp = trjDir - trjDir.dot(straw().getDirection())*straw().getDirection();
+	double phi = tperp.theta();   // This assumes B along z, FIXME!
+	// translate the DOCA into a time
+	double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), doca, phi);
+	double vdrift = _strawResponse->driftInstantSpeed(_combohit.strawId(),doca, phi);
+	t0._t0 = tdrift + _stime;
+	t0._t0err = residerr/vdrift;// instantaneous velocity to translate the error on the residual
+      } else {
+	retval = false;
+      }
+    }
+    return retval;
+  }
+
+  void
   TrkStrawHit::trackT0Time(double &Htime, double T0flt, const TrkDifPieceTraj* Ptraj, double Vflt){
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
     // compute the flightlength to this hit from z=0 (can be negative)
     double pz   = _wpos.z();
     double hflt = Ptraj->zFlight(pz) - T0flt;
     // Use this to estimate the time for the track to reaches this hit from z=0
     double tprop = hflt/Vflt;
     // estimate signal propagation time on the wire assuming the middle (average)
-    double vwire = srep->halfPropV(_combohit.strawId(),comboHit().energyDep()*1000.)*2;
-    double teprop = _straw.getHalfLength()/vwire;
+    double vwire = _strawResponse->halfPropV(_combohit.strawId(),comboHit().energyDep()*1000.)*2;
+    double teprop = _straw.halfLength()/vwire;
     // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
     // when the track crossed Z=0
     // assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
     // for crude estimates, we only need 1 d2t function
     CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
     double phi = 0; // FIXME should default phi be 0?
-    double tdrift = srep->driftDistanceToTime(_combohit.strawId(), 0.5*straw().getRadius(), phi);
+    double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), 0.5*straw().getRadius(), phi);
     Htime = _combohit.time() - tprop - teprop - tdrift;
   }
 
 
   void
   TrkStrawHit::updateDrift() {
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
 // deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
 // compute the drift time
     double tdrift = driftTime();
@@ -142,11 +140,11 @@ namespace mu2e
 // convert time to distance.  This computes the intrinsic drift radius error as well
 
    Hep3Vector tperp = tdir - tdir.dot(straw().getDirection())*straw().getDirection();
-   _phi = tperp.theta(); 
-   _rdrift = srep->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
-   _vdriftinst = srep->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
-   double vdriftconst = srep->driftConstantSpeed();
-   _rdrifterr = srep->driftDistanceError(_combohit.strawId(),_rdrift,_phi,fabs(poca().doca()));
+   _phi = tperp.theta();
+   _rdrift = _strawResponse->driftTimeToDistance(_combohit.strawId(),tdrift,_phi);
+   _vdriftinst = _strawResponse->driftInstantSpeed(_combohit.strawId(),fabs(poca().doca()),_phi);
+   double vdriftconst = _strawResponse->driftConstantSpeed();
+   _rdrifterr = _strawResponse->driftDistanceError(_combohit.strawId(),_rdrift,_phi,fabs(poca().doca()));
 
 // Propogate error in t0, using local drift velocity
     double rt0err = hitT0()._t0err*_vdriftinst;
@@ -181,20 +179,20 @@ namespace mu2e
     if( poca().status().success()){
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:
-	  _stime = (straw().getHalfLength()+hitLen())/_vprop;
+	  _stime = (straw().halfLength()+hitLen())/_vprop;
 	  break;
 	case StrawEnd::hv:
-	  _stime = (straw().getHalfLength()-hitLen())/_vprop;
+	  _stime = (straw().halfLength()-hitLen())/_vprop;
 	  break;
       }
     } else {
 // if we're missing poca information, use time division instead
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:
-	  _stime = (straw().getHalfLength()+timeDiffDist())/_vprop;
+	  _stime = (straw().halfLength()+timeDiffDist())/_vprop;
 	  break;
 	case StrawEnd::hv:
-	  _stime = (straw().getHalfLength()-timeDiffDist())/_vprop;
+	  _stime = (straw().halfLength()-timeDiffDist())/_vprop;
 	  break;
       }
     }

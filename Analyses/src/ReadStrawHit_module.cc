@@ -32,7 +32,7 @@
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
@@ -92,6 +92,9 @@ namespace mu2e {
     TH1F* _hG4StepRelTimes;
     TNtuple* _ntup;
     TNtuple* _detntup;
+
+    // Tracker conditions object.
+    ProditionsHandle<StrawResponse> strawResponse_h;
 
   };
 
@@ -165,7 +168,7 @@ namespace mu2e {
     ++ncalls;
 
     // Geometry info for the Tracker.
-    const TTracker& tracker = *GeomHandle<TTracker>();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     // Get the persistent data about the StrawHits.
 
@@ -188,7 +191,7 @@ namespace mu2e {
             ","<<lid.getLayer()<<
             ","<<did <<
             ","<<secid.getPanel()<<
-            ","<<str.getHalfLength()<<
+            ","<<str.halfLength()<<
             ","<<vec3j.getX()<<
             ","<<vec3j.getY()<<
             ","<<vec3j.getZ()<<
@@ -202,7 +205,7 @@ namespace mu2e {
           detnt[1]  = lid;
           detnt[2]  = did;
           detnt[3]  = secid;
-          detnt[4]  = str.getHalfLength();
+          detnt[4]  = str.halfLength();
           detnt[5]  = vec3j.getX();
           detnt[6]  = vec3j.getY();
           detnt[7]  = vec3j.getZ();
@@ -232,7 +235,7 @@ namespace mu2e {
       << __func__ << " getting data by getByLabel: label, instance, result " << std::endl
       << " ReadStrawHit: PtrStepPointMCVectorCollection _simModuleLabel: " << _simModuleLabel << endl;
 
-    ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+    auto const& srep = strawResponse_h.get(evt.id());
 
     // Fill histograms
     _hNHits->Fill(hits.size());
@@ -276,7 +279,7 @@ namespace mu2e {
       int did = sid.getPlane();
       int secid = sid.getPanel();
 
-      double fracDist = SDtruth.distanceToMid(StrawEnd::cal)/str.getHalfLength();
+      double fracDist = SDtruth.distanceToMid(StrawEnd::cal)/str.halfLength();
 
       // Use MC truth data
       _hDriftTime->Fill(0.0);
@@ -288,8 +291,8 @@ namespace mu2e {
       const CLHEP::Hep3Vector sdir   = str.getDirection();
 
       // calculate the hit position
-      float dw, dwerr;
-      srep->wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr);
+      double dw, dwerr, halfpv;
+      srep.wireDistance(str,hit.energyDep(),hit.dt(),dw,dwerr,halfpv);
       CLHEP::Hep3Vector pos = str.getMidPoint()+dw*str.getDirection();
 
       // we may also need the truth hit position, do we need another function?
@@ -300,7 +303,7 @@ namespace mu2e {
       nt[1]  = lid;
       nt[2]  = did;
       nt[3]  = secid;
-      nt[4]  = str.getHalfLength();
+      nt[4]  = str.halfLength();
       nt[5]  = smidp.getX();
       nt[6]  = smidp.getY();
       nt[7]  = smidp.getZ();

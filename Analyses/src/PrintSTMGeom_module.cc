@@ -12,7 +12,7 @@
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "StoppingTargetGeom/inc/StoppingTarget.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
 #include "STMGeom/inc/STM.hh"
@@ -292,7 +292,7 @@ namespace mu2e {
 
     }
 
-    // TTracker const& tracker(*GeomHandle<TTracker>());
+    // Tracker const& tracker(*GeomHandle<Tracker>());
     // cout << "Tracker: " << tracker.nDevices() << endl;
     // for ( auto const& dev : tracker.getDevices() ){
     //   for ( auto const& sec : dev.getSectors() ){

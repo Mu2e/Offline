@@ -1,44 +1,304 @@
 #ifndef TrackerGeom_Tracker_hh
 #define TrackerGeom_Tracker_hh
 //
-// Pure virtual base class that is used by the TTracker and was used
-// by the LTracker, which has since been removed.
+// Hold all geometry and identifier information about
+// a Tracker.  This is intended as a "data only"
+// class.
 //
 // Original author Rob Kutschke
 //
 
-#include <deque>
-#include <array>
 #include <vector>
+#include <array>
+#include <limits>
+//#include <iomanip>
+//#include <iostream>
+
+#include "cetlib_except/exception.h"
+
 
 #include "Mu2eInterfaces/inc/Detector.hh"
-#include "TrackerGeom/inc/Straw.hh"
+#include "TrackerGeom/inc/Manifold.hh"
+#include "TrackerGeom/inc/Support.hh"
+#include "TrackerGeom/inc/SupportModel.hh"
+#include "TrackerGeom/inc/SupportStructure.hh"
+
+#include "TrackerGeom/inc/Plane.hh"
+#include "DataProducts/inc/PanelId.hh"
+#include "GeomPrimitives/inc/TubsParams.hh"
+#include "GeomPrimitives/inc/PlacedTubs.hh"
+#include "TrackerGeom/inc/Station.hh"
 
 namespace mu2e {
 
-  class Tracker: virtual public Detector{
+  class Tracker : public Detector {
+
+        friend class TrackerMaker;
 
   public:
-    // No constructor on purpose.
-    virtual ~Tracker(){}
 
-    // Compiler generated copy and assignment constructors
-    // should be OK.
+    constexpr static uint16_t _maxRedirect =
+      ((StrawId::_nplanes -1) << StrawId::_planesft) +
+      ((StrawId::_npanels -1) << StrawId::_panelsft) +
+      StrawId::_nstraws;
 
-    // Check for legal identifiers; add these later.
-    //virtual isLegal(PlaneId d) const = 0;
-    //virtual bool isLegal(const PanelId pnlid) const = 0;
-    //vitrual bool isLegal(const LayerId layid ) const = 0;
-    //virtual bool isLegal(const StrawId strid) const =0;
-    constexpr static int _nttstraws = StrawId::_nplanes *
-                                      StrawId::_npanels *
-                                      StrawId::_nstraws;
+    // =============== NewTracker Public Objects End   ==============
 
-    virtual const Straw& getStraw ( const StrawId strid ) const=0;
-    virtual const std::array<Straw,_nttstraws>& getAllStraws() const=0;
-    virtual const std::vector<StrawDetail>& getStrawDetails() const=0;
-    virtual uint16_t nPlanes() const=0;
-    virtual uint16_t nStraws() const=0;
+    Tracker(){
+      if (StrawId::_nlayers != 2)
+        throw cet::exception("GEOM")
+          << "Expect configuration with 2 layers per panel\n";
+    }  // TODO: insert proper initializer list, starting w/ base class
+
+    // Use compiler-generated copy c'tor, copy assignment, and d'tor
+
+    void fillPointers () const;
+
+    double rOut() const { return _rOut;}
+    double z0()   const { return _z0;}
+    double zHalfLength() const;
+
+    double strawInnerRadius() const{ return _strawInnerRadius; }
+    double strawOuterRadius() const{ return _strawOuterRadius; }
+    double strawWallThickness() const{ return _strawWallThickness; }
+    double outerMetalThickness() const{ return _outerMetalThickness; }
+    double innerMetal1Thickness() const{ return _innerMetal1Thickness; }
+    double innerMetal2Thickness() const{ return _innerMetal2Thickness; }
+    double wireRadius()           const { return _wireRadius; }
+    double wirePlateThickness()   const { return _wirePlateThickness; }
+
+    std::string const& wallMaterialName()            const{ return _wallMaterialName; }
+    std::string const& wallCoreMaterialName()        const{ return  wallMaterialName();  }
+    std::string const& wallOuterMetalMaterialName()  const{ return _outerMetalMaterial;  }
+    std::string const& wallInnerMetal1MaterialName() const{ return _innerMetal1Material; }
+    std::string const& wallInnerMetal2MaterialName() const{ return _innerMetal2Material; }
+    std::string const& gasMaterialName()             const{ return _gasMaterialName; }
+    std::string const& wireMaterialName()            const{ return _wireMaterialName; }
+    std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
+    std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
+
+    // istraw is StrawId::straw()
+    double getStrawHalfLength(int istraw) const { return _strawHalfLengths[istraw];}
+    double getStrawActiveHalfLength(int istraw) const { return _strawActiveHalfLengths[istraw];}
+
+    std::string const& envelopeMaterial() const { return _envelopeMaterial; }
+
+    // Check for legal identifiers. (for what decays to StrawId)
+    bool isLegal(const StrawId strid) const{
+       return strid.valid();
+    }
+
+    // Accessors
+    uint16_t nPlanes() const{
+      return StrawId::_nplanes;
+    }
+
+    uint16_t nStraws() const { return StrawId::_nstraws; }
+
+    const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
+      return _planes;
+    }
+
+    const std::vector<double>& getManifoldHalfLengths () const{
+      return _manifoldHalfLengths;
+    }
+
+    double panelOffset() const { return _panelZOffset; }
+
+    int nStations() const{
+      return _stations.size();
+    }
+
+    const std::vector<Station>& getStations() const{
+      return _stations;
+    }
+
+    const Station& getStation ( StationId id) const{
+      return _stations.at(id);
+    }
+
+    const std::array<Straw,StrawId::_nustraws>& getAllStraws() const
+    {return _allStraws2;}
+
+    SupportModel getSupportModel() const{
+      return _supportModel;
+    }
+
+    const Support& getSupportParams () const{
+      return _supportParams;
+    }
+
+    const SupportStructure& getSupportStructure() const{
+      return _supportStructure;
+    }
+
+
+    TubsParams getPlaneEnvelopeParams() const{
+      return _planeEnvelopeParams;
+    }
+
+    TubsParams getPanelEnvelopeParams() const{
+      return _panelEnvelopeParams;
+    }
+
+    const TubsParams& getInnerTrackerEnvelopeParams() const{
+      return _innerTrackerEnvelopeParams;
+    }
+
+    PlacedTubs mother() const{
+      return _mother;
+    }
+
+    // =============== NewTracker Accessors Start ==============
+
+    const Straw& getStraw( const StrawId id) const{
+      return *(_allStraws2_p.at(id.asUint16()));
+    }
+
+    const Plane& getPlane( const StrawId id ) const{
+      return _planes.at(id.getPlane());
+    }
+
+    const Plane& getPlane( uint16_t n ) const{
+      return _planes.at(n);
+    }
+
+    const Panel& getPanel ( const StrawId id ) const{
+      return _planes.at(id.getPlane()).getPanel(id);
+    }
+
+    bool strawExists( StrawId const id) const{
+      // return _allStraws2_p.at(id.asUint16()) != nullptr;
+      return _strawExists2.at(id.asUint16());
+    }
+
+    // =============== NewTracker Accessors End   ==============
+
+#ifndef __CINT__
+
+    // Loop over all straws and call F.
+    // F can be a class with an operator() or a free function.
+    template <class F>
+    inline void forAllStraws ( F& f) const{
+      for ( const auto& plane : _planes ) {
+        plane.forAllStraws(f);
+      }
+    }
+
+    template <class F>
+    inline void forAllPanels ( F& f) const{
+      for ( const auto& plane : _planes ) {
+        plane.forAllPanels(f);
+      }
+    }
+
+    template <class F>
+    inline void forAllPlanes ( F& f) const{
+      for ( const auto& plane : _planes ) {
+        f(plane);
+      }
+    }
+
+#endif
+
+
+  protected:
+
+    // Position of the center of the tracker, in the Mu2e coordinate system.
+    double _z0;
+
+    // Outer radius of a logical volume that will just contain the entire tracker.
+    double _rOut;
+
+    // All envelope volumes are made of this.
+    std::string _envelopeMaterial;
+
+    // An Tracker is made of two planes, sides and vanes.
+    // std::vector<Plane> _planes;
+
+    // An alternative viewpoint:
+    // A Tracker is made of a collection of Stations.
+    std::vector<Station> _stations;
+
+    double _strawInnerRadius;
+    double _strawOuterRadius;
+    double _strawWallThickness;
+    double _outerMetalThickness;
+    double _innerMetal1Thickness;
+    double _innerMetal2Thickness;
+    double _wireRadius;
+    double _wirePlateThickness;
+
+    std::string _wallMaterialName;
+    std::string _outerMetalMaterial;
+    std::string _innerMetal1Material;
+    std::string _innerMetal2Material;
+    std::string _gasMaterialName;
+    std::string _wireMaterialName;
+    std::string _wirePlateMaterial;
+
+    // Lengths of straws indexed by manifold, from innermost radius, outwards.
+    std::array<double,StrawId::_nstraws> _strawHalfLengths;
+
+    // Same for the active length of the straw.
+    // This is only valid for SupportModel==simple
+    std::array<double,StrawId::_nstraws> _strawActiveHalfLengths;
+
+    // Deprecated: part of the ancient MECO Tracker design.
+    // A few vestiges not yet removed.
+    std::vector<Manifold> _allManifolds;
+
+    // Outer envelope that holds the new style support structure.
+    PlacedTubs _mother;
+
+    // The envelope that holds all of the planes in the tracker,
+    // including the plane supports.
+    TubsParams _innerTrackerEnvelopeParams;
+
+    // The envelope that holds all of the pieces in one plane, including supports.
+    TubsParams _planeEnvelopeParams;
+
+    // Ditto for Panel
+    TubsParams _panelEnvelopeParams;
+
+    // Which level of detail is present in the model of the support structure?
+    SupportModel _supportModel;
+
+    // All supports are the same shape; only relevant for _supportModel=="simple"
+    Support _supportParams;
+    double _panelZOffset; // introduced for version 5
+
+    // A more detailed model of the supports; again each plane has identical supports.
+    // only relevant for _supportModel == "detailedv0".
+    SupportStructure _supportStructure;
+
+    // All manifolds are the same shape.
+    // Deprecated: these will go away soon.
+    std::vector<double> _manifoldHalfLengths;
+
+    // Inner radius of inside edge of innermost straw.
+    double _envelopeInnerRadius;
+
+    // presence info for each straw.
+    //    std::vector<bool> _strawExists;
+
+    // =============== NewTracker Private Objects Start ==============
+
+    // Dense array.
+    std::array<Plane,StrawId::_nplanes> _planes;
+
+    // Dense array.
+    std::array<Straw,StrawId::_nustraws> _allStraws2;
+
+    // Sparse array: designed for indexing by StrawId.
+    // For all legal entries in StrawId, this points to a straw in _straws2;
+    // All other entries are null.
+    std::array<Straw const*,Tracker::_maxRedirect> _allStraws2_p;
+
+    // Another sparse array
+    std::array<bool,Tracker::_maxRedirect> _strawExists2;
+
+    // =============== NewTracker Private Objects End ==============
 
   };
 

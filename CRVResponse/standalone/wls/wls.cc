@@ -15,6 +15,7 @@
 #include "WLSRunAction.hh"
 #include "WLSEventAction.hh"
 #include "WLSSteppingAction.hh"
+#include "WLSStackingAction.hh"
 
 #include "G4StepLimiterPhysics.hh"
 #include "G4TransportationManager.hh"
@@ -127,8 +128,7 @@ int main(int argc, char** argv)
     std::cout<<"-t simtype        Simulation type:"<<std::endl;
     std::cout<<"                  0  scintillation in scintillator"<<std::endl;
     std::cout<<"                  1  cerenkov in scintillator"<<std::endl;
-    std::cout<<"                  2  cerenkov in fiber 0"<<std::endl;
-    std::cout<<"                  3  cerenkov in fiber 1"<<std::endl;
+    std::cout<<"                  2  cerenkov in fiber"<<std::endl;
     std::cout<<"-l length option  Length of the scintillator counter in mm"<<std::endl;
     std::cout<<"-R reflector option"<<std::endl;
     std::cout<<"                  0  no reflector (default)"<<std::endl;
@@ -144,7 +144,7 @@ int main(int argc, char** argv)
     std::cout<<"-R reflector option"<<std::endl;
     std::cout<<"                  0  no reflector (default)"<<std::endl;
     std::cout<<"                 -1  reflector at negative side"<<std::endl;
-    std::cout<<"                  1  reflector at postiive side"<<std::endl;
+    std::cout<<"                  1  reflector at positive side"<<std::endl;
     std::cout<<"-n events    Number of events to simulate (default 1000)."<<std::endl;
     std::cout<<"-r seed      seed for random number generator (default: 0)."<<std::endl;
     std::cout<<"-y pos       y coordinate of starting point in mm (default: 0 = center between fibers)."<<std::endl;
@@ -237,15 +237,18 @@ int main(int argc, char** argv)
                                                                        //posY, posZ has no effect in mode CreateLookupTables
   WLSRunAction* runAction = new WLSRunAction();
   std::string singlePEWaveformFilename="singlePEWaveform_v3.txt";
+  std::string photonMapFilename="photonMap.root";
   std::string visibleEnergyAdjustmentFilename="visibleEnergyAdjustment.txt";
-  WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, n, simType, minBin, verbose); 
+  WLSEventAction* eventAction = new WLSEventAction(mode, singlePEWaveformFilename, photonMapFilename, n, simType, minBin, verbose); 
   WLSSteppingAction* steppingAction = new WLSSteppingAction(mode, lookupFilename, visibleEnergyAdjustmentFilename);  
                                                                        //lookupFilename not needed in modes CreateLookupTables, and UseGeantOnly
+//  WLSStackingAction* stackingAction = new WLSStackingAction();
 
   runManager->SetUserAction(generator);
   runManager->SetUserAction(runAction);
   runManager->SetUserAction(eventAction);
   runManager->SetUserAction(steppingAction);
+//  runManager->SetUserAction(stackingAction);
   runManager->Initialize();
 
 /*
@@ -276,11 +279,12 @@ int main(int argc, char** argv)
     switch(simType)
     {
       case 0: //scintillation in scintillator
-      case 1: //Cerenkov in scintillator
               nBins=nZBins*nYBins*nXBins;
               break;
-      case 2: //Cerenkov in fiber 0
-      case 3: //Cerenkov in fiber 1
+      case 1: //Cerenkov in scintillator
+              nBins=nBetaBins*nZBins*nYBins*nXBins;
+              break;
+      case 2: //Cerenkov in fiber
               nBins=nZBins*nRBins*nPhiBins*nThetaBins*nBetaBins;
               break;
     }

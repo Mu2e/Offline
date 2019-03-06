@@ -20,8 +20,14 @@ physics : {
   }
   filters: { @table::Primary.filters }
   analyzers: { @table::Primary.analyzers }
-# enable CRV digis
-  TriggerPath : [ @sequence::Primary.TriggerPath ]
+# Trigger on calorimeter.  Include CRV
+    TriggerPath : [ @sequence::Primary.GenAndG4,
+    @sequence::CommonMC.DigiSim,
+    @sequence::CaloDigiMC.DigiSim,
+    CaloFilter,
+    @sequence::TrackerMC.DigiSim,
+    @sequence::CrvDAQPackage.CrvResponseSequence,
+    compressDigiMCs ]
   EndPath : @local::Primary.EndPath
 }
 outputs : { 
@@ -33,10 +39,11 @@ outputs : {
 #include "JobConfig/primary/epilog.fcl"
 # update the maximum # of particles
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
+physics.filters.CaloFilter.MinParticleEnergy : 20.0
+physics.filters.CaloFilter.MinTotalEnergy : 50.0
+physics.filters.CaloFilter.particleTypes : [-11,11,-13,13]
 # customize the output
 services.TFileService.fileName: "nts.owner.Calo-cosmic.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.Calo-cosmic.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-# require a lot of hits: we want reflections
-physics.filters.DigiFilter.MinNDigis : 60
 

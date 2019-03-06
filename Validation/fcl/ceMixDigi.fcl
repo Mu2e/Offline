@@ -6,7 +6,7 @@ source.firstRun: 1002
 source.firstSubRun: 0
 source.maxEvents: 10
 services.SeedService.policy:  autoIncrement
-services.SeedService.maxUniqueEngines: 30
+services.SeedService.maxUniqueEngines: 35
 services.SeedService.baseSeed: 53589261
 services.scheduler.wantSummary: true
 services.TimeTracker.printSummary: true

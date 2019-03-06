@@ -35,14 +35,12 @@ namespace mu2e {
 
   class Panel{
 
-    friend class Plane;
-    friend class TTracker;
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
 
   public:
 
-    Panel():_id(PanelId()){}
-    Panel( const PanelId& id ):_id(id){}
+    Panel():_id(PanelId()),_straws2_p(){}
+    Panel( const PanelId& id ):_id(id),_straws2_p(){}
 
     // Accept the compiler generated destructor, copy constructor and assignment operators
 
@@ -76,7 +74,7 @@ namespace mu2e {
         return *(_straws2_p.at((strid2.asUint16() & StrawId::_strawmsk)));
       } else {
         std::ostringstream msg;
-        msg << __func__ << " Inconsistent straw/panel request " 
+        msg << __func__ << " Inconsistent straw/panel request "
             << strid2 << " / " << _id << std::endl;
         throw cet::exception("RANGE") << msg.str();
       }
@@ -85,7 +83,7 @@ namespace mu2e {
     // Mid-point position of the average (over the layers) of the primary
     // straws, and (collective) straw direction.
     // (The primary straw of each layer is the straw used to establish position.
-    //  In the TTracker the primary straw is the innermost straw.)
+    //  In the Tracker the primary straw is the innermost straw.)
     // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
@@ -116,7 +114,7 @@ namespace mu2e {
     double             getEBKeyPhiExtraRotation() const { return _EBKeyPhiExtraRotation; }
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker& tracker ) const;
+    void fillPointers ( const Tracker* tracker ) const;
 
 #ifndef __CINT__
     /*

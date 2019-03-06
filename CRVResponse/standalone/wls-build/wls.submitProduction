@@ -8,24 +8,22 @@ for length in "900" "1045" "1550" "2100" "2370" "3040" "3200" "4550" "5000" "570
 do
   declare -a reflectors=("0")
   if [ $length == "900" ]; then
-    reflectors[0]="-1"
-    reflectors[1]="1"
+    reflectors[0]="1"
   fi
   if [ $length == "1045" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "1550" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "2100" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "2370" ]; then
-    reflectors[0]="-1"
-    reflectors[1]="1"
+    reflectors[0]="1"
   fi
   if [ $length == "5000" ]; then
-    reflectors[0]="-1"
+    reflectors[0]="1"
   fi
   if [ $length == "6000" ]; then
     reflectors[1]="1"
@@ -39,21 +37,21 @@ do
 
     echo "Length "$length" Reflector "$reflector
 
-    mkdir /pnfs/mu2e/scratch/outstage/ehrlich/tables_4.1_out/$length'_'$reflector
+    mkdir /pnfs/mu2e/scratch/outstage/ehrlich/tables_6.0/$length'_'$reflector
 
     jobsub_submit \
-    -N $((550*4)) \
+    -N $((2000*3)) \
     -e LENGTH=$length \
     -e REFLECTOR=$reflector \
     --memory=500MB \
-    --disk=50MB \
-    --expected-lifetime=30h \
+    --disk=10MB \
+    --expected-lifetime=48h \
     --resource-provides usage_model=OPPORTUNISTIC,DEDICATED \
     --group=mu2e \
-    -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wlsProduction \
-    -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v3.txt \
-    -f dropbox:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt \
-    file:///mu2e/app/users/ehrlich/work_githead/Offline/CRVResponse/standalone/wls-build/wls.doProduction
+    -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/wlsProduction \
+    -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/singlePEWaveform_v3.txt \
+    -f dropbox:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/visibleEnergyAdjustment.txt \
+    file:///mu2e/app/users/ehrlich/work_MDC2018/Offline/CRVResponse/standalone/wls-build/wls.doProduction
 
   done
 done

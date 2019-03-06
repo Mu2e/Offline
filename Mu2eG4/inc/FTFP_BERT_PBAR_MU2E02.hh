@@ -59,7 +59,7 @@ public:
 private:
   enum {ok = CompileTimeConstraints::IsA<T, G4VModularPhysicsList>::ok };
 };
-#include "FTFP_BERT_PBAR_MU2E02.icc"
+#include "Mu2eG4/inc/FTFP_BERT_PBAR_MU2E02.icc"
 typedef TFTFP_BERT_PBAR_MU2E02<G4VModularPhysicsList> FTFP_BERT_PBAR_MU2E02;
 
 #endif

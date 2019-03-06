@@ -21,6 +21,7 @@
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "STMGeom/inc/STM.hh"
 #include "STMGeom/inc/PermanentMagnet.hh"
 #include "STMGeom/inc/SupportTable.hh"
@@ -72,13 +73,15 @@ namespace mu2e {
     GeDetector      const & pSTMDetector2Params            = *stmgh.getSTMDetector2Ptr();
     ShieldPipe      const & pSTMShieldPipeParams           = *stmgh.getSTMShieldPipePtr(); 
     
-    bool const STMisVisible        = _config.getBool("stm.visible",true);
-    bool const STMisSolid          = _config.getBool("stm.solid", false);
-    int  const verbosityLevel      = _config.getInt("stm.verbosityLevel", 0);
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "stm", "stm");
 
-    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false);
-    bool const placePV             = true;
+    const bool STMisVisible        = geomOptions->isVisible("stm"); 
+    const bool STMisSolid          = geomOptions->isSolid("stm"); 
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("stm"); 
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("stm"); 
+    const bool placePV             = geomOptions->placePV("stm"); 
+    int  const verbosityLevel      = _config.getInt("stm.verbosityLevel", 0);
     
     const G4ThreeVector zeroVector(0.,0.,0.);
 
@@ -613,9 +616,9 @@ namespace mu2e {
                     stmFOVCollPositionInParent1,
                     parentInfo.logical,
                     0,
-                    true,
+                    STMisVisible,
                     G4Colour::Magenta(),
-                    false,
+                    STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
@@ -625,9 +628,9 @@ namespace mu2e {
                     stmFOVCollPositionInParent2,
                     parentInfo.logical,
                     0,
-                    true,
+                    STMisVisible,
                     G4Colour::Magenta(),
-                    false,
+                    STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
@@ -637,9 +640,9 @@ namespace mu2e {
                     stmFOVCollPositionInParent3,
                     parentInfo.logical,
                     0,
-                    true,
+                    STMisVisible,
                     G4Colour::Magenta(),
-                    false,
+                    STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
@@ -650,9 +653,9 @@ namespace mu2e {
                     stmFOVCollPositionInParent4,
                     parentInfo.logical,
                     0,
-                    true,
+                    STMisVisible,
                     G4Colour::Magenta(),
-                    false,
+                    STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
@@ -671,9 +674,9 @@ namespace mu2e {
                     stmFOVCollAbsorberPositionInParent,
                     parentInfo.logical,
                     0,
-                    true,
+                    STMisVisible,
                     G4Colour::Magenta(),
-                    false,
+                    STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
@@ -944,9 +947,9 @@ namespace mu2e {
                     stmSSCollPositionInParent1,
                     parentInfo.logical,
                     0,
-                    true,
+                    STMisVisible,
                     G4Colour::Magenta(),
-                    false,
+                    STMisSolid,
                     forceAuxEdgeVisible,
                     placePV,
                     doSurfaceCheck);
@@ -957,9 +960,9 @@ namespace mu2e {
                       stmSSCollPositionInParent2,
                       parentInfo.logical,
                       0,
-                      true,
+                      STMisVisible,
                       G4Colour::Magenta(),
-                      false,
+                      STMisSolid,
                       forceAuxEdgeVisible,
                       placePV,
                       doSurfaceCheck);
@@ -1228,7 +1231,7 @@ namespace mu2e {
                                       0x0,
                                       stmDet2CanPositionInParent,
                                       parentInfo,
-                                      0,
+                                      1,
                                       STMisVisible,
                                       G4Color::Red(),
                                       STMisSolid,

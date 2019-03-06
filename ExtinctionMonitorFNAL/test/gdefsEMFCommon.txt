@@ -38,9 +38,9 @@ bool protonabsorber.visible  = false;
 bool mbs.visible             = false;
 bool vd.visible              = true;
 
-bool ttracker.envelopeVisible       = false;
-bool ttracker.planeEnvelopeVisible = false;
-bool ttracker.supportVisible        = false;
+bool tracker.envelopeVisible       = false;
+bool tracker.planeEnvelopeVisible = false;
+bool tracker.supportVisible        = false;
 
 //----------------------------------------------------------------
 //// Write mu2e geometry into a GDML file

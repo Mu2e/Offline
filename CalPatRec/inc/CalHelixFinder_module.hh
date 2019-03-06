@@ -23,6 +23,8 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "DataProducts/inc/Helicity.hh"
+
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BField/BField.hh"
@@ -73,7 +75,7 @@ namespace mu2e {
   using namespace CalHelixFinderTypes;
 
   class Calorimeter;
-  class TTracker;
+  class Tracker;
   class ModuleHistToolBase;
 
   class CalHelixFinder : public art::EDFilter {
@@ -115,8 +117,10 @@ namespace mu2e {
     HelixTraj*                            _helTraj;
     CalHelixFinderAlg                     _hfinder;	
     CalHelixFinderData                    _hfResult;
+    std::vector<mu2e::Helicity>           _hels; // helicity values to fit
 
-    const TTracker*                       _tracker     ; // straw tracker geometry
+    double                                _bz0;
+    const Tracker*                        _tracker     ; // straw tracker geometry
     const Calorimeter*                    _calorimeter ; // cached pointer to the calorimeter geometry
 //-----------------------------------------------------------------------------
 // diagnostics 
@@ -154,6 +158,7 @@ namespace mu2e {
     
     int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
     
+    void pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best);
   };
 }
 #endif

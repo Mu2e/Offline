@@ -1,0 +1,45 @@
+#
+# Print some information about the Tracker.
+#
+#
+# $Id: printTrackerGeom.fcl,v 1.1 2013/12/20 20:05:53 kutschke Exp $
+# $Author: kutschke $
+# $Date: 2013/12/20 20:05:53 $
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+
+
+process_name : PrintTracker
+
+source : {
+  module_type : EmptyEvent
+  maxEvents   : 1
+}
+
+services : {
+  message : @local::default_message
+
+# GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
+  GeometryService        : { inputFile      : "gtest1.txt"                         }
+  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+
+}
+
+physics : {
+
+  analyzers :  {
+
+    printT : {
+      module_type          : PrintTrackerGeom
+    }
+
+  }
+
+  e1 : [printT]
+
+  end_paths      : [e1]
+
+}
+

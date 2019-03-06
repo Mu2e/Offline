@@ -9,6 +9,7 @@ physics.producers.generate.guns[0].multiplicity: -1
 physics.producers.generate.guns[0].halfSize : [ 15, 15, 0 ]
 
 //physics.producers.g4run.visualization.initMacro : "ExtinctionMonitorFNAL/test/vis_extMonFNALDetector.mac"
+//physics.producers.g4run.debug.writeGDML: true
 
 outputs.FullOutput.fileName    : "dataG4SingleProtons.art"
 services.TFileService.fileName : "histG4SingleProtons.root"

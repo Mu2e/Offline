@@ -71,56 +71,6 @@ SflagBkgHits : {
   ComboHitCollection : "makeSTH"
 }
 
-# now trigger-specific versions; these make deep copies
-TTmakeSH : {
-  module_type : StrawHitReco
-  FilterHits : true
-  WriteStrawHitCollection : false
-  EventWindowMarkerLabel : "EWMProducer"
-}
-# combine hits in a panel
-TTmakePH : {
-  module_type : CombineStrawHits
-  TestFlag : false
-  TestRadius : true
-  ComboHitCollection : "TTmakeSH"
-}
-# stereo version: defer the radius test
-TTSmakePH : {
-  @table::TTmakePH
-  TestRadius : false
-}
-# combine panel hits in a station
-TTmakeSTH : {
-  @table::makeSTH
-  TestFlag : false
-  ComboHitCollection : "TTSmakePH"
-}
-TTflagBkgHits : {
-  module_type : FlagBkgHits
-  ComboHitCollection : "TTmakePH"
-  StrawHitCollection : "TTmakeSH"
-  BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
-  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  TLTClusterer : { @table::TLTClusterer 
-		  TestFlag : false}
-  TNTClusterer : { @table::TNTClusterer
-		  TestFlag : false}
-  # use TNTClusterer
-  Clusterer : 2
-  FilterOutput : true
-  FlagComboHits : true
-  FlagStrawHits : false 
-  ComboHitCollection : "TTmakePH"
-  BkgMVA : {
-    MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
-  }
-}
-# stereo versions
-TTSflagBkgHits : {
-  @table::TTflagBkgHits
-  ComboHitCollection : TTSmakePH
-}
 # combine together
 TrkHitReco : {
     producers : { 
@@ -130,18 +80,11 @@ TrkHitReco : {
 	makeSTH            : { @table::makeSTH            }
 	FlagBkgHits		  : { @table::FlagBkgHits            }
 	SflagBkgHits		  : { @table::SflagBkgHits            }
-	# track trigger modules
-	TTmakeSH            : { @table::TTmakeSH              }
-	TTmakePH            : { @table::TTmakePH            }
-	TTmakeSTH            : { @table::TTmakeSTH            }
-	TTflagBkgHits		  : { @table::TTflagBkgHits            }
     }
 # sequences
 # production sequence to prepare hits for tracking
   PrepareHits : [ makeSH, makePH, FlagBkgHits ]
   SPrepareHits : [ makeSH, makePH, makeSTH, SflagBkgHits ]
-  TTprepareHits : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
-  TTSprepareHits : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
 }
 
 END_PROLOG

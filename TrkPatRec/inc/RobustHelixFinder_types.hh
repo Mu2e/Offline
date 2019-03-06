@@ -85,6 +85,12 @@ namespace mu2e {
       int     nXYCh    [kMaxHelicities][kMaxSeeds];
       int     nZPhiCh  [kMaxHelicities][kMaxSeeds];
 
+      int     nLoops   [kMaxHelicities][kMaxSeeds];
+
+      float   meanHitRadialDist [kMaxHelicities][kMaxSeeds];
+
+      int     nHitsLoopFailed [kMaxHelicities][kMaxSeeds];
+
       int maxSeeds() { return kMaxSeeds; }
       
     };

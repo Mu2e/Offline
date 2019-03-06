@@ -1,0 +1,23 @@
+
+#include "Validation/fcl/ceSimReco.fcl"
+
+services : @local::Services.SimAndReco
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
+
+# histogram file
+services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
+# art file 
+outputs.fullOutput.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# use the geometry on the head
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
+
+# chose what database calibrations to use
+services.DbService.purpose : "TRK_TEST"
