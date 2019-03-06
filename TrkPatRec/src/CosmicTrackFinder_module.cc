@@ -2,7 +2,7 @@
 // The purpose of this module is to fit to field-off cosmic tracks. These shall be utilised for the internal alignment of the trackers.
 // $Id: CosmicTrackFinder_module.cc
 // $Author: S.middleton
-// $Date: Nov. 2018 $
+// $Date: Feb 2019 $
 
 
 // ART:
@@ -145,7 +145,7 @@ namespace mu2e{
     _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
 _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
     _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
-    _tfit        (pset.get<fhicl::ParameterSet>("StraightTrackFit",fhicl::ParameterSet())), 
+    _tfit        (pset.get<fhicl::ParameterSet>("CosmicTrackFit",fhicl::ParameterSet())), 
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     _t0shift     (pset.get<float>("T0Shift",4.0)),//TODO:use
     _outlier     (StrawHitFlag::outlier)//, //TODO:check

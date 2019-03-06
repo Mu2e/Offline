@@ -57,7 +57,7 @@ namespace LeastSquaresFitter {
 	  // Invert in place           
 	  V_p.Invert(det);                      
 	  covariance = V_p;
-          //line->set_cov(V_p);
+         
 	  //  Find the least sqaures estimate of the parameters, P is (2 x 1) matix of c and m:
 	  TMatrixD P(V_p * At * V_m * Y);       
           
@@ -83,23 +83,10 @@ namespace LeastSquaresFitter {
 	  
 
 	  for(int j=0; j< static_cast<int>(_x.size()); j++){
-	  	//(_x[i]*P[1][0]+P[0][0])*
-                //TMatrixD D(V_m - A*V_p*At);
-		//double fit_error = sqrt(D[i][i]*D[i][i]);
-		//double hit_error = V_m[i][i];
-
-		//double err_m_term = (_x[i]*P[1][0])*(_x[i]*P[1][0])*(((V_p[1][1])/(P[1][0]*P[1][0])));
-	        //double err_m_term_1=(_x[i]*P[1][0])*(_x[i]*P[1][0])*(V_m[i][i]/_x[i])*(V_m[i][i]/_x[i]);
-		//double cross_term = 2*sqrt((((V_p[1][1]))/(P[1][0]*P[1][0]))+(((V_m[i][i]/_x[i])*(V_m[i][i]/_x[i]))))*(_x[i]*P[1][0])*sqrt(V_p[0][0]);
-		//double c_term = V_p[0][0];
-		 
-	 	//double fit_error =sqrt((V_p[0][0]) + (_x[i]*P[1][0])*(_x[i]*P[1][0])*(((V_p[1][1])/(P[1][0]*P[1][0]))+((V_m[i][i]/_x[i])*(V_m[i][i]/_x[i]))));
-		//double residual_error = sqrt(fit_error*fit_error + hit_error*hit_error);
-	        //double residual_error = sqrt(err_m_term+err_m_term_1+cross_term+c_term + hit_error*hit_error);
-		
+	
 		double residual_error = 1/sqrt(V_m[j][j]);
 		line->set_fit_residuals(C[j][0]);
-		std::cout<<" res err  = " <<C[j][0]<< " / "<<residual_error<< " = "<<C[j][0]/residual_error<<std::endl;
+		
 		line->set_fit_residual_errors(residual_error);
 		
 	   }

@@ -41,7 +41,7 @@ namespace mu2e{
          
 	}
 
-	StraightTrack::StraightTrack(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err, double m_1, double m_1_err, double m_2, double m_2_err, double chisq, double chisq_dof) {
+	StraightTrack::StraightTrack(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err,double m_1, double m_1_err, double m_2, double m_2_err, double chisq, double chisq_dof, std::bitset<32ul> leftHit, std::bitset<32ul> rightHit, std::vector<double> _fit_residual, std::vector<double> _fit_residual_error) {
           //_dim = 3;
 	  _Nhits = N;
 	  _c_0 = c_0;
@@ -83,7 +83,7 @@ namespace mu2e{
 	  
 	}
         
-	void StraightTrack::set_parameters(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err, double m_1, double m_1_err, double m_2, double m_2_err, double chisq, double chisq_dof, std::vector<double> fit_residual, std::vector<double> fit_residual_error) {
+	void StraightTrack::set_parameters(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err,double m_1, double m_1_err, double m_2, double m_2_err, double chisq, double chisq_dof, std::bitset<32ul> leftHit, std::bitset<32ul> rightHit, std::vector<double> fit_residual, std::vector<double> fit_residual_error) {
 	  //_dim = dim;
 	  _Nhits = N;
 	  _c_0 = c_0;
