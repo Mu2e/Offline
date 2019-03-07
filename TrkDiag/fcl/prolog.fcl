@@ -82,27 +82,17 @@ BEGIN_PROLOG
 	module_type : TimeClusterDiag
 	StrawDigiMCCollection : "compressDigiMCs"
 	ComboHitCollection : "makePH"
-	MinimumCEHits : 1
 	UseFlagCollection : true
-	MinNHits : 1
-	//TestFlag : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
-
-	PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-	PlotTimeSpectra : true
-	TimeClusterCollection : TimeClusterFinder //S. Middleton
-      }
-
         ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
         ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
 	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
         T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
     }
-
 
   HD : {
 	module_type : HelixDiag
@@ -169,9 +159,7 @@ CosmicMuonInfo : {
 	  }
 }
         
-        
- 
-
+     
 # track trigger path
   TTTCD : {
 	@table::TCD
@@ -204,12 +192,8 @@ CosmicMuonInfo : {
     KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
     # change this if reading cosmic data or generating inline
     TrkCaloDiag : @local::TrkCaloDiag
-   
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterSummarizer"
-
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
     CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
-
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
@@ -294,14 +278,14 @@ CosmicMuonInfo : {
       TTHD : @local::TTHD
       BD : @local::BD
     }
-     filters : {
+    filters : {
 	CosmicMuonInfo: @local::CosmicMuonInfo
      }
   }
 
 # aggregate the prolog to produce the stanard analysis chain
   TrkAna : {
-    
+
     producers : {
       @table::TrkHitReco.producers
       @table::Tracking.producers
@@ -355,9 +339,7 @@ CosmicMuonInfo : {
         @table::TrackAnalysis
         TrkParticle : -11
       }
-
       TrkAnaReco : @local::TrackAnalysisReco
-
     }
   
     # diagnostic Reco sequences starting from digis
@@ -376,7 +358,7 @@ CosmicMuonInfo : {
 
     CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
 
-    EndSequence : [ TrkAnaNeg, TrkAnaPos ]//added
+    EndSequence : [ TrkAnaNeg, TrkAnaPos ]
 
   }
 TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 

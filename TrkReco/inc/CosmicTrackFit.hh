@@ -47,7 +47,7 @@ namespace mu2e
     		virtual ~CosmicTrackFit();
 
                 bool initCosmicTrack(CosmicTrackFinderData& TrackData);
-                StraightTrack* InitLine(const ComboHit *FirstP1, const ComboHit *LastP2,StraightTrack* line);
+                CosmicTrack* InitLine(const ComboHit *FirstP1, const ComboHit *LastP2, CosmicTrack* line);
                 //Step 1: Begin Fit- initializes the fit routine:
                 void BeginFit(CosmicTrackFinderData& TrackData);
                 

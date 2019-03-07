@@ -76,7 +76,7 @@ namespace mu2e
   /*-------------Init Line-------------------------//
  Makes basic estimate of a line y=mx+c style with Cosmic line between first and last points on plane
   //----------------------------------------------*/
-  StraightTrack* CosmicTrackFit::InitLine(const ComboHit *FirstP1, const ComboHit *LastP1,StraightTrack* line) {
+  CosmicTrack* CosmicTrackFit::InitLine(const ComboHit *FirstP1, const ComboHit *LastP1,CosmicTrack* line) {
       
       XYVec Pos_Start = (XYVec(FirstP1->pos().x(),FirstP1->pos().y()));
       XYVec Pos_End = (XYVec(LastP1->pos().x(),LastP1->pos().y()));
@@ -121,9 +121,14 @@ namespace mu2e
 //   Refits and adjusts track fit paramters by weights//
 //------------------------------------------------------------------*/
 void CosmicTrackFit::RunFitChi2(CosmicTrackFinderData& TrackData) {   
-    
-    CosmicTrack* track = &TrackData._tseed._track; 
-    
+    int  nHits(TrackData._chHitsToProcess.size());
+    ComboHit*     firstPt(0), *lastPt(0) ;
+    Track* track = &TrackData._tseed._track; 
+    //Get rough estimate of track direction:
+    firstPt = &TrackData._chHitsToProcess[0];
+    lastPt = &TrackData._chHitsToProcess[nHits];
+    track = InitLine(firstPt, lastPt,track);
+    // might use later- set initial value high so it becomes best fit..
    //first perform the chi2 fit assuming all hits have same weight
    CosmicTrack* all_hits_track = FitAll(TrackData, track, 0);
    //TODO Optimization Step here
