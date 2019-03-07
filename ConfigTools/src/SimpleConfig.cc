@@ -435,6 +435,24 @@ namespace mu2e {
     return def;
   }
 
+  CLHEP::Hep2Vector SimpleConfig::getHep2Vector ( const std::string& name ) const{
+    vector<double> tmp;
+    getVectorDouble(name,tmp,2);
+    CLHEP::Hep2Vector val( tmp[0], tmp[1]);
+    return val;
+  }
+
+  CLHEP::Hep2Vector SimpleConfig::getHep2Vector ( const std::string& name,
+                                                  const CLHEP::Hep2Vector& def ) const{
+    if ( hasName(name) ) {
+      vector<double> tmp;
+      getVectorDouble(name,tmp,2);
+      CLHEP::Hep2Vector val( tmp[0], tmp[1]);
+      return val;
+    }
+    return def;
+  }
+
 
   /**
    * Return the record as a formatted string.

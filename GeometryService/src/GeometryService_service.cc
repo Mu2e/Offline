@@ -83,6 +83,8 @@
 #include "STMGeom/inc/STM.hh"
 #include "GeometryService/inc/STMMaker.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
+#include "GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 
 using namespace std;
 
@@ -273,12 +275,16 @@ namespace mu2e {
     addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
+      addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
+    
+
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
       
+    
     if(_config->getBool("hasBFieldManager",false)){
       std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_config, beamline).getBFieldConfig() );
       BFieldManagerMaker bfmgr(*bfc);

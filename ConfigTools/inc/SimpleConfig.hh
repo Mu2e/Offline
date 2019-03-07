@@ -36,6 +36,7 @@
 
 // CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Vector/TwoVector.h"
 
 // Mu2e includes
 
@@ -240,6 +241,23 @@ namespace mu2e {
      */
     CLHEP::Hep3Vector getHep3Vector ( const std::string& name,
                                       const CLHEP::Hep3Vector& def ) const;
+
+    /**
+     * Get a specified parameter as a CLHEP::Hep2Vector.
+     * It is specified in the input files as vector<double> of length 2.
+     *
+     * @return the value of the parameter as CLHEP::Hep2Vector.
+     */
+    CLHEP::Hep2Vector getHep2Vector ( const std::string& name ) const;
+
+    /**
+     * Get a specified parameter as a CLHEP::Hep2Vector.
+     * It is specified in the input files as vector<double> of length 2.
+     *
+     * @return the value of the parameter as a CLHEP::Hep2Vector.
+     */
+    CLHEP::Hep2Vector getHep2Vector ( const std::string& name,
+                                      const CLHEP::Hep2Vector& def ) const;
 
     /**
      * Return the requested record as a formatted string.
