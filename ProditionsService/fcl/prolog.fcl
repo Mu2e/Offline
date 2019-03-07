@@ -11,7 +11,7 @@ Proditions : {
    alignedTracker : @local::AlignedTracker
    mu2eMaterial : @local::Mu2eMaterial
    mu2eDetector : @local::Mu2eDetector
-   verbose : 2
+   verbose : 0
 }
 
 END_PROLOG

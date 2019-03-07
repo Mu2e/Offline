@@ -50,7 +50,6 @@ namespace mu2e {
       ProditionsEntity::set_t s;
       s.merge(set_t(mm->getCids()));
       s.merge(set_t(tr->getCids()));
-
       // see if it is in cache
       auto p = find(s);
       if(!p) { // if not, make it
@@ -58,6 +57,7 @@ namespace mu2e {
 	// since we do not have explicit db dependence
 	// we can't differentiate on the useDb flag..
 	p = _maker.fromFcl(mm,tr);
+	p->addCids(s);
 	push(p);
       } else {
 	if(_verbose>1) std::cout<< "found Mu2eDetector in cache " << std::endl;

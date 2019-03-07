@@ -4,8 +4,11 @@
 #include "DbService/inc/DbEngine.hh"
 #include "DbTables/inc/DbTableFactory.hh"
 
+using namespace std;
 
 int mu2e::DbEngine::beginJob() {
+
+  if(_verbose>5) cout << "DbEngine::beginJob start" << endl;
 
   _gids.clear();
   auto start_time = std::chrono::high_resolution_clock::now();
@@ -21,7 +24,11 @@ int mu2e::DbEngine::beginJob() {
   DbValCache const& vcache = * _vcache;
 
   // if special name EMPTY, then everything remains empty
-  if(_version.purpose()=="EMPTY") return 0;
+  if(_version.purpose()=="EMPTY") {
+    if(_verbose>5) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
+			<< endl;
+    return 0;
+  }
 
   // drill down from the calibration version number
   // to the list of interval of validity
@@ -38,7 +45,7 @@ int mu2e::DbEngine::beginJob() {
 
   if(pid<0) {
     throw cet::exception("DBENGINE_BAD_PURPOSE") 
-      << " DbEngine::beginJob calibraiotn purpose string not found in the DB: " 
+      << " DbEngine::beginJob calibration purpose string not found in the DB: " 
       << _version.purpose() << "\n";
   }
 
@@ -145,6 +152,7 @@ int mu2e::DbEngine::beginJob() {
 
   
   // make the list of tables in this purpose/version
+  if(_verbose>5) cout << "DbEngine::beginJob make table list" << endl;
   _lookup.clear();
   auto const& tls = vcache.valTableLists();
   for(auto const& r : tls.rows()) {
@@ -154,6 +162,7 @@ int mu2e::DbEngine::beginJob() {
   }
 
   // now fill the rows of _lookup
+  if(_verbose>5) cout << "DbEngine::beginJob make _lookup" << endl;
 
   // take the list of groups and loop over the grouplists
   // which gives IOVs for a group 
@@ -175,6 +184,7 @@ int mu2e::DbEngine::beginJob() {
 
   // if override tables were already loaded, fill tid now
   // that we have the val structure
+  if(_verbose>5) cout << "DbEngine::beginJob fillOverrideTid" << endl;
   fillOverrideTid();
 
   if( _verbose>9 ) {
@@ -214,6 +224,8 @@ int mu2e::DbEngine::beginJob() {
 	     << beginJobTime.count()*1.0e-6<<" s" << std::endl;
   }
 
+  if(_verbose>5) cout << "DbEngine::beginJob end" << endl;
+
   return 0;
 }
 
@@ -224,13 +236,21 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
   LockGuard cacheLock(*this);
 
   // fire up the IOV structure, if it is not already there
-  if(!_vcache) beginJob();
+  if(!_vcache) {
+    if(_verbose>5) cout << "DbEngine update calling beginJob"  <<endl;
+    beginJob();
+  }
+
+  if(_verbose>9) cout << "DbEngine::update "
+		      << tid << " " << run << " " << subrun << endl;
 
   // first look for table in override table list
   for(auto& oltab : _override) { // loop over override tables
     if(oltab.tid()==tid) { // if override table is the right type
       if(oltab.iov().inInterval(run,subrun)) { // and in valid interval
 	auto dblt = oltab;
+	if(_verbose>9) cout << "DbEngine::update table found " 
+			    << dblt.table().name() << "in overrides " << endl;
 	return dblt;
       }
     }
@@ -323,10 +343,16 @@ void mu2e::DbEngine::fillOverrideTid() {
     // if an override table was unknown to the db, we can still use it,
     // by giving it a fakeTid
     if(tid<0) {
-      tid = fakeTid++;
+      tid = fakeTid;
       _overrideTids[lt.table().name()] = fakeTid;
+      if(_verbose>9) cout << "DbEngine::fillOverrideTid assigning "
+			  << fakeTid << " to " << lt.table().name() << endl;
+    } else {
+      if(_verbose>9) cout << "DbEngine::fillOverrideTid found tid "
+			  << tid << " for " << lt.table().name() << endl;
     }
     lt.setTid(tid);
+    fakeTid++;
   }
   return;
 }

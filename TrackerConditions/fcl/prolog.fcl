@@ -1,6 +1,6 @@
 BEGIN_PROLOG
 Mu2eMaterial : {
-   verbose : 2
+   verbose : 0
    #  Location of dictionary files for the material model.
    elements  : "TrackerConditions/data/ElementsList.data"
    isotopes  : "TrackerConditions/data/IsotopesList.data"
@@ -15,12 +15,12 @@ Mu2eMaterial : {
 }
 
 Mu2eDetector : {
-   verbose : 2
+   verbose : 0
    useDb : false
 }
 
 AlignedTracker : {
-   verbose : 2
+   verbose : 0
    useDb : false
 }
 

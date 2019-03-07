@@ -24,7 +24,7 @@ namespace mu2e {
 
     if ( _config.verbose() > 0 ) {
       cout << "AlignedTrackerMaker::fromFcl made Tracker with nStraws = " 
-	   << ptr->nStraws() << endl; 
+	   << ptr->nStraws() << endl;
     }
 
     return ptr;
@@ -67,6 +67,7 @@ namespace mu2e {
 	  Hep3Vector dv = panel.straw0MidPoint() 
                      - plane_to_tracker.displacement();
 	  double rz = dv.phi();
+
 	  HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
 	  
 	  // make an intermediate multiplication
@@ -83,29 +84,26 @@ namespace mu2e {
 			  - panel.straw0MidPoint() ).z();
 
 	    Hep3Vector straw_to_panel = Hep3Vector(dx,0.0,dz);
-	    Hep3Vector straw_dir = straw.direction();
+	    Hep3Vector straw_dir = Hep3Vector(0.0,1.0,0.0);
 
 	    Hep3Vector aligned_straw = panel_temp*straw_to_panel;
 	    Hep3Vector aligned_straw_dir = panel_temp.rotation()*straw_dir;
 
 	    // aligned straw position inserted in the Tracker object
 	    //we need to go the long way to get non-const access
-	    straw._c = aligned_straw;
-	    straw._w = aligned_straw_dir;
 
 	    Hep3Vector pdif = aligned_straw - straw.getMidPoint();
 	    Hep3Vector ddif = aligned_straw_dir - straw.getDirection();
-	    if(straw.id().uniquePanel()>0 && straw.id().uniquePanel()<3) {
-	      cout << "ALIGNDEBUG "<<straw.id()<< " " << pdif.mag() << " " 
-		   << ddif.mag() << endl;
-	    }
+
+	    straw._c = aligned_straw;
+	    straw._w = aligned_straw_dir;
 
 	  } // station loop
 	} // station loop
       } // station loop
     } // station loop
 
-    return fromFcl();
+    return ptr;
   }
 
 } // namespace mu2e

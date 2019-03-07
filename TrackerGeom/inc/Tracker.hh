@@ -105,7 +105,7 @@ namespace mu2e {
       return StrawId::_nplanes;
     }
 
-    uint16_t nStraws() const { return StrawId::_nstraws; }
+    uint16_t nStraws() const { return StrawId::_nustraws; }
 
     const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
       return _planes;

@@ -33,6 +33,7 @@ namespace mu2e {
       if(!p) {
 	if(_verbose>1) std::cout<< "making new Mu2eMaterial " << std::endl;
 	p = _maker.fromFcl();
+	p->addCids(s);
 	push(p);
       } else {
 	if(_verbose>1) std::cout<< "found Mu2eMaterial in cache " << std::endl;
