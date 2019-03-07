@@ -181,22 +181,16 @@ Reconstruction : {
 # Calo and CRV should be defined elswehere, FIXME!
 # separate MC info FIXME!
  # define reco products to keep
-  ToKeep : [
-#           "keep mu2e::StrawDigis_*_*_*",
-#	    "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+  ToKeep : [ "drop *_*_*_*",
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep *_compressRecoMCs_*_*",
-#	    "keep mu2e::CaloDigis_*_*_*",
 	    "keep mu2e::CaloClusters_*_*_*",
-#	    "keep mu2e::CrvDigis_*_*_*",
 	    "keep mu2e::CrvCoincidenceClusters_*_*_*",
 	  # add precursors for Calo and Crv?  FIXME!
-	    # add trigger output products FIXME!
-#	    "keep mu2e::TriggerInfoCollection",
-#	    "keep mu2e::*_TriggerAlg_*_*",
+	    "keep mu2e::TriggerAlgDetailmu2e::BitMap_triggerInfoMerger_*_*",
 	    "keep mu2e::StatusG4_*_*_*",
             "keep art::TriggerResults_*_*_*",
 	    "keep mu2e::EventWindowMarker_*_*_*",
@@ -205,7 +199,6 @@ Reconstruction : {
 	    "keep mu2e::ProtonBunchIntensity_*_*_*",
 	    "keep *_FindMCPrimary_*_*",
 	    "keep *_SelectRecoMC_*_*",
-#	    "keep *_FlagBkgHits_StrawHits_*",
 	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
 }
 # must define some things outside the brackets due to internal dependence
@@ -259,8 +252,8 @@ Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil
-  outputCommands : [ "drop *_*_*_*",
-#  outputCommands : [ "keep *_*_*_*",
+#  outputCommands : [ "drop *_*_*_*",
+  outputCommands : [ "keep *_*_*_*",
   @sequence::Reconstruction.ToKeep ]
 }
 
