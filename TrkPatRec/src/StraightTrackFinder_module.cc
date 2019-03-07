@@ -25,7 +25,7 @@
 #include "RecoDataProducts/inc/StraightTrackSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrkReco/inc/StraightTrackFit.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 
 //utils:
@@ -186,8 +186,8 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
     {
       std::cout << "BEGINNING STRAIGHT TRACK FINDING... " << std::endl;
     }
-   mu2e::GeomHandle<mu2e::TTracker> th;
-   const TTracker* tracker = th.get();
+   mu2e::GeomHandle<mu2e::Tracker> th;
+   const Tracker* tracker = th.get();
    _tfit.setTracker  (tracker);
    }
 

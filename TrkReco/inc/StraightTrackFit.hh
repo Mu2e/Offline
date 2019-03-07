@@ -37,7 +37,7 @@
 #include "TMatrixD.h"
 namespace mu2e 
 {
-    class TTracker;
+    class Tracker;
     class StraightTrackFit
     {
      public:
@@ -66,8 +66,8 @@ namespace mu2e
 		StraightTrack* Hough2D(StraightTrackFinderData& trackData);
 
                 float evalWeightXY  (const ComboHit& Hit, const StraightTrack& track);
-                const TTracker*            _tracker;
-    		void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+                const Tracker*            _tracker;
+    		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
                 
 		
 	private:

@@ -281,7 +281,7 @@ namespace mu2e
 	for(auto shi : shids) {
 	  ComboHitInfoMC chimc;
 	  StrawDigiMC const& mcd = _mcdigis->at(shi);
-	  chimc._rel = MCRelationship::relationship(mcd,mcd1);
+	  //chimc._rel = MCRelationship::relationship(mcd,mcd1);
 	  chimc._mcposx = spmcp->position().x();
 	  chimc._mcposy = spmcp->position().y();
 	  chimc._mcposz = spmcp->position().z();

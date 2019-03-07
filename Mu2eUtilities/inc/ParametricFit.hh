@@ -7,7 +7,7 @@
 //ROOT
 
 #include "Math/VectorUtil.h"
-#include "RecoDataProducts/inc/XYZVec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/StraightTrack.hh"
 #include "RecoDataProducts/inc/DriftCircle.hh"
@@ -28,8 +28,9 @@ namespace ParametricFit{
 
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca, bool finiteLine);
        
-	vector<mu2e::StraightTrack*> Calculate2DLineFits(std::vector<mu2e::DriftCircle> circles, double pValCut, long LR);
-        void Construct3DTrack(StraightTrack* xyLineFit, StraightTrack* zrLineFit, CosmicTrack* track);
+	//vector<mu2e::StraightTrack*> Calculate2DLineFits(std::vector<mu2e::DriftCircle> circles, double pValCut, long LR);
+        
+       void Construct3DTrack(StraightTrack* xyLineFit, StraightTrack* zrLineFit, CosmicTrack* track);
 
 	}
 

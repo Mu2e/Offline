@@ -39,7 +39,7 @@
 #include "TMatrixD.h"
 namespace mu2e 
 {
-    class TTracker;
+    class Tracker;
     class CosmicTrackFit
     {
      public:
@@ -67,8 +67,8 @@ namespace mu2e
 		
 
                 float evalWeightXY  (const ComboHit& Hit, const CosmicTrack& track);
-                const TTracker*            _tracker;
-    		void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+                const Tracker*            _tracker;
+    		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
                 
 		
 	private:

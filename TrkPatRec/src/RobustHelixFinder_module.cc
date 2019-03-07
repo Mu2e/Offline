@@ -28,11 +28,13 @@
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 
 #include "TrkReco/inc/TrkTimeCalculator.hh"
+//#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "BTrk/BaBar/BaBar.hh"
 #include "TrkReco/inc/TrkDef.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "TrkReco/inc/Chi2HelixFit.hh"
 
@@ -79,10 +81,6 @@ namespace {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   };
 
-  // comparison functor for sorting byuniquePanel ID
-  struct panelcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
-    bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1.strawId().uniquePanel() < p2.strawId().uniquePanel(); }
-  };
   struct HelixHitMVA
   {
     std::vector <float> _pars,_pars2;
@@ -387,9 +385,6 @@ namespace mu2e {
 	  ++helCounter;
 	}//end loop over the helicity
 
-      }	//end circle ok
-
-
 	if (helix_seed_vec.size() == 0)                       continue;
 
 	int    index_best(-1);
@@ -409,7 +404,6 @@ namespace mu2e {
 	}	
 
       }	
-
       
     }
     // put final collections into event 
@@ -1024,7 +1018,7 @@ namespace mu2e {
 	ordChCol.push_back(ComboHit(ch));
       }
     }
-    std::sort(ordChCol.begin(), ordChCol.end(),panelcomp());//zcomp());
+    std::sort(ordChCol.begin(), ordChCol.end(),zcomp());
 
 
     if (_debug>0){
@@ -1059,11 +1053,13 @@ namespace mu2e {
       _hfResult._chHitsWPos.push_back(XYWVec(hhit.pos(),  of, hhit.nStrawHits()));
 
       int       stationId = os;
-      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//
+      int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;//RobustHelixFinderData::kNFaces;
+      // int       panelId   = op + faceId*RobustHelixDataFinderData::kNPanelsPerFace;
       FaceZ_t* fz        = &HelixData._oTracker[faceId];
       PanelZ_t*pz        = &fz->panelZs[op];
 
-      
+      //	pz->_chHitsToProcess.push_back(hhit);//[fz->fNHits] = hhit;
+      //	pz->fNHits  = pz->fNHits + 1;
       if (pz->idChBegin < 0 ){
 	pz->idChBegin = _hfResult._chHitsToProcess.size() - 1;
 	pz->idChEnd   = _hfResult._chHitsToProcess.size();	
@@ -1082,7 +1078,7 @@ namespace mu2e {
 	printf("[RobustHelixFinder::FillHits] %4i %6i %10i %10.3f %10.3f %10.3f\n", nFiltComboHits, faceId, op, ch.pos().x(), ch.pos().y(), ch.pos().z() );
       }
 	
-      
+      // if (pz->nChHits() > PanelZ_t::kNMaxPanelHits) printf("[RobustHelixDataFinderAlg::fillFaceOrderedHits] number of hits with the panel exceed the limit: NHits =  %i MaxNHits = %i\n", pz->fNHits, PanelZ_t::kNMaxPanelHits);
       ++nFiltComboHits;
       nFiltStrawHits += ch.nStrawHits();
       //      }

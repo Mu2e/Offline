@@ -1,4 +1,6 @@
 //S Middleton 2019
+//Description: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment
+
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/StraightTrack.hh"
@@ -22,14 +24,16 @@ namespace ParametricFit{
 	    return tMin;
 
        }
+
       double LRAmbig(XYZVec& point, XYZVec& line_starting_point, XYZVec& line_end_point, double& dca, bool finiteLine){
         
 	   XYZVec closestPointOnLine;
 	   PointToLineCA( point, line_starting_point, line_end_point, closestPointOnLine, finiteLine);
-	double LorR = doca > 0.0 ? 1.0 : -1.0;
+	double LorR = dca > 0.0 ? 1.0 : -1.0;
 
 	return LorR;
       }
+
 	void PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point, XYZVec& closestPointOnLine, bool finite){
 
            double tMin = GettMin(point, starting_point, end_point);
@@ -151,7 +155,7 @@ namespace ParametricFit{
          return success;
 
 }  
-
+/*
 StraightTrack Calculate2DLineFits(std::vector<ComboHits> list_of_hits, std::vector<double> hit_errors, double pValCut)
 {
     StraightTrack cal2DLines;
@@ -176,12 +180,13 @@ StraightTrack Calculate2DLineFits(std::vector<ComboHits> list_of_hits, std::vect
     double sigXX   =  Sx2 - (Sx*Sx); 
     double sigXY   = Sxy - Sx*Sy; 
     double sigYY   = Sy2 - Sy*Sy; 
-    chi2  = sigYY()*sigXX() - sigXY()*sigXY();
+    double chi2  = sigYY()*sigXX() - sigXY()*sigXY();
     // Number of LR combinations (2^N or 1 if using truth)
     int nLRCombos = pow(2,nHits);
+
 }
 
-
+*/
 
 /*-------Convert the 2 fits into full track fit---------*/
 //make a 3D comsic track from the 2 2D lines found from above

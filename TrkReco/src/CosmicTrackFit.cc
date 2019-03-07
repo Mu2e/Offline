@@ -8,7 +8,7 @@
 #include "TrkReco/inc/CosmicTrackFit.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/DriftCircle.hh"
@@ -198,7 +198,7 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
 
       //TODO : iterative error routine from UpdateErrors function ==> re-parameterise
       resid =  DOCA; 
-      track.set_fit_residuals(DOCA);
+      track->set_fit_residuals(DOCA);
 	if(resid > minResid){ 
        	    hitP1->_flag.merge(StrawHitFlag::outlier);  
          }

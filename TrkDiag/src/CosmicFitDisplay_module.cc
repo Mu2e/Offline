@@ -37,8 +37,8 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 //Mu2e Tracker Geom:
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "TrackerGeom/inc/StrawDetail.hh"
+#include "TrackerGeom/inc/Tracker.hh"
+#include "TrackerGeom/inc/Straw.hh"
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
@@ -198,11 +198,11 @@ namespace mu2e
 	chi_dof.push_back(track._track.get_chisq_dof());
         }
         
-        GeomHandle<TTracker> ttracker;
-        std::vector<StrawDetail> straw_details = ttracker->getStrawDetails();
+        GeomHandle<Tracker> tracker;
+        //Straw& straw_details = tracker->getStraw(id);
         // Annulus of a cylinder that bounds the tracker/straw info:
-        TubsParams envelope(ttracker->getInnerTrackerEnvelopeParams());
-	double const straw_radius = straw_details.at(0).outerRadius();; 
+        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+	//double const straw_radius = straw_details.at(0).getRadius();; 
         
 
         if (doDisplay_) {
@@ -217,8 +217,8 @@ namespace mu2e
 	      
 	      arc.SetFillStyle(0);
 	      //straw.SetFillStyle(0);
-	      poly.SetMarkerStyle(2);
-	      poly.SetMarkerSize(straw_radius);
+	      //poly.SetMarkerStyle(2);
+	      //poly.SetMarkerSize(straw_radius);
 	      //poly.SetMarkerColor(kBlue);
 
 	      canvas_->SetTitle("foo title");
@@ -308,7 +308,7 @@ namespace mu2e
 		double z0{p.z()};
 		double y0{p.y()};
 		poly.DrawPolyMarker( 1, &z0, &y0 );
-		arc.DrawArc(p.z(),p.y(),straw_radius);
+		//arc.DrawArc(p.z(),p.y(),straw_radius);
 		double z1 = p.z()+s*w.z();
         	double z2 = p.z()-s*w.z();
         	double y1 = p.y()+s*w.y();
@@ -346,7 +346,7 @@ namespace mu2e
               zoom->GetYaxis()->SetTitleOffset(1.25);
               zoom->SetTitle( "trakc zoom; Residual (mm) ;# hits");
 	      poly.SetMarkerStyle(4);
-	      poly.SetMarkerSize(straw_radius);
+	      //poly.SetMarkerSize(straw_radius);
               if(ms.size() > 0){
 		      for ( auto const& chit : *comboHits ){
 			auto const& p = chit.pos();
@@ -356,7 +356,7 @@ namespace mu2e
 		        double z0{p.z()};
 			double y0{p.y()};
 			poly.DrawPolyMarker( 1, &z0, &y0 );
-			arc.DrawArc(p.z(),p.y(),straw_radius);
+			//arc.DrawArc(p.z(),p.y(),straw_radius);
     			double z1 = p.z()+s*w.z();
         		double z2 = p.z()-s*w.z();
         		double y1 = p.y()+s*w.y();
@@ -401,10 +401,10 @@ namespace mu2e
         //get combo hits
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
         auto Tracks  = event.getValidHandle<StraightTrackSeedCollection>( _sttag );
-        GeomHandle<TTracker> ttracker;
+        GeomHandle<Tracker> tracker;
 
         // Annulus of a cylinder that bounds the tracker
-        TubsParams envelope(ttracker->getInnerTrackerEnvelopeParams());
+        TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
 
 
 	// Create arrays for x,y,z:
@@ -558,10 +558,10 @@ namespace mu2e
           TGeoRotation *rot = new TGeoRotation("rot",0,90,0.);
           rot->RegisterYourself();
 
-          GeomHandle<TTracker> ttracker;
+          GeomHandle<Tracker> tracker;
  
           // Annulus of a cylinder that bounds the tracker
-          TubsParams envelope(ttracker->getInnerTrackerEnvelopeParams());
+          TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
           
 	  // Draw the frame for the cylinders in plot:
           double zlimit{envelope.zHalfLength()};
@@ -569,8 +569,8 @@ namespace mu2e
           double R_max{envelope.outerRadius()};
          
           
-          TGeoVolume *tracker = geom->MakeTube("tracker", Vacuum, R_min, R_max, zlimit);
-	   tracker->SetLineColor(kViolet);
+          TGeoVolume *tr = geom->MakeTube("tr", Vacuum, R_min, R_max, zlimit);
+	   tr->SetLineColor(kViolet);
 
 _evt = event.id().event();  // add event id
 
@@ -611,7 +611,7 @@ _evt = event.id().event();  // add event id
 
 
            //Add Node
-	   top->AddNode(tracker,1, rot);
+	   top->AddNode(tr,1, rot);
           
 
           //Close the geometry

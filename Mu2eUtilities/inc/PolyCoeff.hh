@@ -15,15 +15,9 @@ namespace mu2e {
   class PolyCoeff{
   
 	public:
-     
-      PolyCoeff(std::vector<int> inVariablesByVector,
-                                            int outVariable, double coefficient){}
-      
+      PolyCoeff(std::vector<int> inVariablesByVector,int outVariable, double coefficient){}
       std::vector<int> InVariables() const {return _inVarByVec;}
-
-      int OutVariable() const {return _outVar;}
-
-      
+      int OutVariable() const {return _outVar;}   
       double Coefficient() const {return _coefficient;}
 
       
@@ -46,8 +40,8 @@ namespace mu2e {
      
     private:
       std::vector<int> _inVarByVec;
-      int              _outVar;
-      double           _coefficient;
+      int              _outVar = 0;
+      double           _coefficient = 0.;
   };
 
        

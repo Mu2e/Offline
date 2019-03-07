@@ -19,7 +19,7 @@ TimeClusterFinder : {
   ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  //CaloClusterCollection : "CaloClusterFromProtoCluster"
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
   # enable calorimeter cluster info in time clustering
   CaloClusterCollection : "CaloClusterFromProtoCluster"
@@ -27,67 +27,17 @@ TimeClusterFinder : {
   UseCaloClusterPosition : true
   CaloClusterWeight : 10.0
   TestFlag : true
-  //maxdPhi : 10.0 
-  //RefineClusters : false
-  //PrefilterCluster : false
-    maxElectronHitEnergy          : 0.0035                # means: use all hits
-    minimumTime                   : 500.                  # ns
-    maximumTime                   : 1750.                 # ns
 }
 
+#cosmics:
 TimeClusterFinderCosmics : {
   @table::TimeClusterFinder
-  
-  maxdPhi : 10.0 
+  //CaloClusterCollection : "CaloClusterFromProtoCluster"
+  maxdPhi : 10.0
   RefineClusters : false
   PrefilterCluster : false
-  
-}
-
-# stereo version
-STimeClusterFinder : {
-  @table::TimeClusterFinder
-  ComboHitCollection : "makeSTH"
-  StrawHitFlagCollection :"SflagBkgHits:ComboHits"
-
-}
-# specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
-# note these are helicity-independent
-TimeClusterFindere : {
-    @table::TimeClusterFinder
-    T0Calculator : {
-      StrawHitBeta : 1.0
-      CaloT0Offset : @local::TrackCaloMatching.DtOffset 
-    }
-}
-TimeClusterFinderMu : {
-    @table::TimeClusterFinder
-    T0Calculator : {
-      StrawHitBeta : 0.7
-      CaloT0Offset : @local::TrackCaloMatching.DtOffset 
-    }
-}
-TimeClusterFinderPi : {
-    @table::TimeClusterFinder
-    T0Calculator : {
-      StrawHitBeta : 0.6
-      CaloT0Offset : @local::TrackCaloMatching.DtOffset 
-    }
-
-}
-
-# helix finding.  Search for both helicities
-RobustHelixFinder : {
-    module_type		: RobustHelixFinder
-    ComboHitCollection     : "makePH"
-    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
-    TimeClusterCollection  : "TimeClusterFinder"
-    HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
-    HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-    diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
-	mcTruth                                 : 0
-    }
-    
+  UseCaloCluster : false
+  UseCaloClusterPosition : false
 }
 
 StraightTrackFinder : {
@@ -111,21 +61,44 @@ CosmicTrackFinder : {
                                     
 }
     
-SRobustHelixFinder : {
-  @table::RobustHelixFinder
-   ComboHitCollection : "makeSTH"
-   TimeClusterCollection : "STimeClusterFinder"
-   HitSelectionBits : ["TimeDivision","Stereo"]
+
+# specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
+# note these are helicity-independent
+TimeClusterFindere : {
+    @table::TimeClusterFinder
+    T0Calculator : {
+      StrawHitBeta : 1.0
+      CaloT0Offset : @local::TrackCaloMatching.DtOffset 
+    }
+}
+TimeClusterFinderMu : {
+    @table::TimeClusterFinder
+    T0Calculator : {
+      StrawHitBeta : 0.7
+      CaloT0Offset : @local::TrackCaloMatching.DtOffset 
+    }
+}
+TimeClusterFinderPi : {
+    @table::TimeClusterFinder
+    T0Calculator : {
+      StrawHitBeta : 0.6
+      CaloT0Offset : @local::TrackCaloMatching.DtOffset 
+    }
 }
 
-#same for trigger
-TTtimeClusterFinder : {
-  module_type               : TimeClusterFinder
-  PeakCleanMVA : { MVAWeights : "TrkPatRec/test/TimePeak.weights.xml" }
-  ComboHitCollection : "TTflagBkgHits"
-  StrawHitFlagCollection : "none"
-  TestFlag : false
-
+# helix finding.  Search for both helicities
+RobustHelixFinder : {
+    module_type		: RobustHelixFinder
+    ComboHitCollection     : "makePH"
+    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+    TimeClusterCollection  : "TimeClusterFinder"
+    HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
+    HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
+    diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
+	mcTruth                                 : 0
+    }
+    
+}
 RobustHelixFindere : {
   @table::RobustHelixFinder
     TimeClusterCollection  : "TimeClusterFindere"
@@ -138,14 +111,6 @@ RobustHelixFinderPi : {
   @table::RobustHelixFinder
     TimeClusterCollection  : "TimeClusterFinderPi"
 }
-
-TTstraightFinder : {
-   module_type		: StraightTrackFinder
-   ComboHitCollection : "TTflagBkgHits"
-   TimeClusterCollection : "TTtimeClusterFinder"
-   
-}
-
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
 KFSeed : {
@@ -483,16 +448,10 @@ MHFinalFitDmuP                :  {
 # Declare a table with all the modules needed for track reconstruction
 Tracking : {
   producers : {
-
-# the following should be independently sourced FIXME!
-    TimeClusterFinder  : @local::TimeClusterFinder
+    TimeClusterFindere  : @local::TimeClusterFindere
     TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
     StraightTrackFinder  : @local::StraightTrackFinder
     CosmicTrackFinder  : @local::CosmicTrackFinder
-    HelixFinder  : @local::RobustHelixFinder
-    STimeClusterFinder  : @local::STimeClusterFinder
-    SHelixFinder  : @local::SRobustHelixFinder
-    TimeClusterFindere  : @local::TimeClusterFindere
     HelixFindere  : @local::RobustHelixFindere
     TimeClusterFinderMu  : @local::TimeClusterFinderMu
     HelixFinderMu  : @local::RobustHelixFinderMu
@@ -526,28 +485,6 @@ Tracking : {
     KFFUpiM	  : @local::KFFUpiM
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
-  }
-  # now for triggering
-  TrkTrigger : {
-    producers : {
-      TTtimeClusterFinder  : @local::TTtimeClusterFinder
-      TThelixFinder        : @local::TTrobustHelixFinder
-      TTstraightFinder        : @local::TTstraightFinder
-      TTKSFDeM	           : @local::TTKSFDeM
-      TTKSFDeP	           : @local::TTKSFDeP
-      TTKFFDeM             : @local::TTKFFDeM
-      TTKFFDeP             : @local::TTKFFDeP
-    }
-  }
-
-#production sequence to find straight track
-FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ] //old fit routine
-FindCosmics : [ TimeClusterFinderCosmics, CosmicTrackFinder ]
-# production sequence to find helices
-  FindHelices : [ TimeClusterFinder, HelixFinder ]
-  SFindHelices : [ STimeClusterFinder, SHelixFinder ]
-  TTfindHelices : [ TTtimeClusterFinder, TThelixFinder ]
-
 # configuration for using the sequence with MergeHelix
 # Only downstream: upstream can't be seeded by a cluster!
     MHFinalFitDeM	  : @local::MHFinalFitDeM
@@ -578,8 +515,10 @@ FindCosmics : [ TimeClusterFinderCosmics, CosmicTrackFinder ]
 
   }
 }
-#Straight Cosmic Muon:
-#Tracking.FindCosmicStraights   : [ TimeClusterFinderCosmics, StraightTrackFinder ]
+#production sequence to find straight track
+Tracking.FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ] //old fit routine
+Tracking.FindCosmics : [ TimeClusterFinderCosmics, CosmicTrackFinder ]
+
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ TimeClusterFindere, HelixFindere, KSFDeM, KFFDeM ]
 Tracking.TPRUeM  : [ TimeClusterFindere, HelixFindere, KSFUeM, KFFUeM ]

@@ -560,9 +560,9 @@ namespace mu2e {
     //tcinfo._time  = tp._t0._t0;
     //tcinfo._terr  = tp._t0._t0err;
     //tcinfo._pos	  = tp._pos;
-    tcinfo._posx = tp._pos.x();//S Middleton
-    tcinfo._posy = tp._pos.y();// S Middleton
-    tcinfo._posz = tp._pos.z(); //S  Middleton
+    tcinfo._posx = tc._pos.x();//S Middleton
+    tcinfo._posy = tc._pos.y();// S Middleton
+    tcinfo._posz = tc._pos.z(); //S  Middleton
 
     tcinfo._nhits = tc.nStrawHits();
     tcinfo._time  = tc._t0._t0;

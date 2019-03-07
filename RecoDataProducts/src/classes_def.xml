@@ -5,15 +5,17 @@
 <!--  -->
 
 <lcgdict>
- <class name="mu2e::StrawHit"/>
- <class name="mu2e::StraightTrackSeed"/>
- <class name="mu2e::StraightTrackSeedCollection"/>
- <class name="mu2e::CosmicTrackSeed"/>
- <class name="mu2e::CosmicTrackSeedCollection"/>
- <class name="mu2e::StrawHitCollection"/>
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 
+<class name="mu2e::StraightTrackSeed"/>
+ <class name="mu2e::StraightTrackSeedCollection"/>
+ <class name="mu2e::CosmicTrackSeed"/>
+ <class name="mu2e::CosmicTrackSeedCollection"/>
+<class name="art::Ptr<mu2e::StraightTrackSeed>"/>
+ <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
+<class name="art::Wrapper<mu2e::StraightTrackSeedCollection>"/>
+ <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
 <!--  ********* calorimeter  ********* -->
  <class name="mu2e::CaloDigi"/>
  <class name="mu2e::CaloDigiCollection"/>
@@ -190,6 +192,7 @@
  <class name="std::vector<art::Ptr<mu2e::AlgorithmID> >"/>
  <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
 
+ 
  <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> >" />
  <class name="std::pair<art::Ptr<mu2e::TrackSummary>,art::Ptr<mu2e::KalRepPtr> >" />
  <class name="std::vector<std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::TrackSummary> > >" />
@@ -229,64 +232,11 @@
 
  <class name="mu2e::AvikPIDNewProduct" />
  <class name="mu2e::AvikPIDNewProductCollection" />
- <class name="mu2e::AlgorithmID"/>
- <class name="mu2e::AlgorithmIDCollection"/>
-
- <class name="art::Ptr<mu2e::StraightTrackSeed>"/>
- <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
-
- <class name="art::Ptr<mu2e::CaloHit>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
- <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloCrystalHit> >"/>
- <class name="art::Ptr<mu2e::CaloProtoCluster>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloProtoCluster> >"/>
- <class name="art::Ptr<mu2e::CaloCluster>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloCluster> >"/>
- <class name="art::Ptr<mu2e::CaloTrigSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloTrigSeed> >"/>
- <class name="art::Ptr<mu2e::CaloRecoDigi>"/>
- <class name="std::vector<art::Ptr<mu2e::CaloRecoDigi> >"/>
-
- <class name="art::Ptr<mu2e::ExtMonUCITofHit>"/>
- <class name="std::vector<art::Ptr<mu2e::ExtMonUCITofHit> >"/>
- <class name="art::Ptr<mu2e::StrawHit>"/>
- <class name="std::vector<art::Ptr<mu2e::StrawHit> >"/>
- <class name="art::Ptr<mu2e::ComboHit>"/>
- <class name="art::Ptr<mu2e::HelixHit>"/>
- <class name="std::vector<art::Ptr<mu2e::ComboHit> >"/>
- <class name="std::vector<art::Ptr<mu2e::HelixHit> >"/>
- <class name="art::Ptr<mu2e::StrawHitFlag>"/>
- <class name="std::vector<art::Ptr<mu2e::StrawHitFlag> >"/>
- <class name="art::Ptr<mu2e::TimeCluster>"/>
- <class name="std::vector<art::Ptr<mu2e::TimeCluster> >"/>
- <class name="std::multimap<unsigned long int, art::Ptr<mu2e::StrawHit> >"/>
- <class name="art::Ptr<mu2e::HelixVal>"/>
- <class name="art::Ptr<mu2e::HelixCov>"/>
-<!--  <class name="std::vector<art::Ptr<mu2e::HelixVal> >"/> -->
- <class name="art::Ptr<mu2e::TrackSeed>"/>
- <class name="std::vector<art::Ptr<mu2e::TrackSeed> >"/>
- <class name="art::Ptr<mu2e::TrkExtTrajPoint>" />
- <class name="std::vector<mu2e::TrkExtTrajPoint>" />
- <class name="art::Ptr<mu2e::TrkExtTraj>" />
- <class name="std::vector<mu2e::TrkExtTraj>" />
- <class name="art::Ptr<mu2e::TrkCaloIntersect>" />
- <class name="std::vector<mu2e::TrkCaloIntersect>" />
- <class name="art::Ptr<mu2e::TrkCaloMatch>" />
- <class name="std::vector<mu2e::TrkCaloMatch>" />
- <class name="art::Ptr<mu2e::PIDProduct>" />
- <class name="art::Ptr<mu2e::AvikPIDProduct>" />
-
  <class name="art::Ptr<mu2e::AvikPIDNewProduct>" />
  <class name="art::Wrapper<mu2e::AvikPIDNewProductCollection>" />
 
- <class name="art::Wrapper<mu2e::AlgorithmIDCollection>"/>
- <class name="art::Wrapper<mu2e::StraightTrackSeedCollection>"/>
- <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
-
  <class name="std::pair<art::Ptr<mu2e::KalRepPtr>,art::Ptr<mu2e::CaloCluster> >" />
  <class name="std::pair<art::Ptr<mu2e::CaloCluster>,art::Ptr<mu2e::KalRepPtr> >" />
-
 
  <class name="art::Assns<mu2e::KalRepPtr,mu2e::CaloCluster, mu2e::TrackCaloMatchInfo>" />
  <class name="art::Assns<mu2e::CaloCluster,mu2e::KalRepPtr, mu2e::TrackCaloMatchInfo>" />
@@ -354,13 +304,7 @@
 
  <class name="mu2e::TriggerFlagDetail"/>
  <class name="mu2e::TriggerFlag"/>
- <class name="mu2e::TriggerAlgDetail"/>
- <class name="art::Wrapper<mu2e::TriggerAlgDetail>"/>
- <class name="mu2e::TriggerAlg"/>
- <class name="art::Ptr<mu2e::TriggerAlg>"/>
- <class name="art::Wrapper<mu2e::TriggerAlg>"/>
  <class name="mu2e::TriggerInfo"/>
- <class name="art::Ptr<mu2e::TriggerInfo>"/>
  <class name="mu2e::TriggerInfoCollection" /> 
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
  <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
