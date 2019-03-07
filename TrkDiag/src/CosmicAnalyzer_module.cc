@@ -171,7 +171,7 @@ namespace mu2e
         //find time clusters:
     	_ntc = _tccol->size();
         _nch = _chcol->size();
-      
+        
         for(size_t itc=0; itc<_tccol->size();++itc){
 		TimeCluster tc = (*_tccol)[itc];
         	_cluster_time =  tc._t0._t0;
@@ -186,27 +186,28 @@ namespace mu2e
                 
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
-
+			
                 //-----------Fill diag details:----------//
                         _nhits = chit.nStrawHits();
                         _nsh = chit.nStrawHits();
+                       
                         panels.push_back(chit.strawId().panel());
 		        planes.push_back(chit.strawId().plane());
 			stations.push_back(chit.strawId().station());
-
+			
 		//-----------Hit details:---------------//
 			//XYZVec cpos = chit.pos() - chit.wireDist()*chit.wdir();
 		        _hit_time = chit.time();
 			_hit_drift_time = chit.driftTime();
 			XYZVec track_dir = st.get_track_direction();
-
+			
 			double werr_mag = chit.wireRes(); //hit major error axis 
       			double terr_mag = chit.transRes(); //hit minor error axis 
 			XYZVec const& wdir = chit.wdir();//direction along wire
       			XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
 			XYZVec major_axis = werr_mag*wdir;
       			XYZVec minor_axis = terr_mag*wtdir;
-	                
+	               
 			double hit_error = sqrt(major_axis.Dot(track_dir)*major_axis.Dot(track_dir)+minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
 			
 	        
@@ -214,27 +215,27 @@ namespace mu2e
 			
 			
 			for(size_t i=0; i< st.get_fit_residuals().size();i++)			{
-				    
-				    double pull = st.get_fit_residuals()[ich]/st.get_fit_residual_errors()[ich];
+				   
+				    //double pull = st.get_fit_residuals()[ich]/st.get_fit_residual_errors()[ich];
 		                    _total_residuals->Fill(st.get_fit_residuals()[ich]);
-			            _total_pulls->Fill(pull);
+			           // _total_pulls->Fill(pull);
 				    
 			            
                           }
 		                _hiterrs->Fill(hit_error);
-            
+            		
 			
                 //----------------Get panels/planes/stations per track:------------------//
                 _n_panels = std::set<double>( panels.begin(), panels.end() ).size();
 		_n_planes = std::set<double>( planes.begin(), planes.end() ).size();
 		_n_stations = std::set<double>( stations.begin(), stations.end() ).size();
 
-                
+               
 	 		 
 		}//endS ST
 	        
       }//end analyze
-
+     
       _cosmic_analysis->Fill();
       }
 
