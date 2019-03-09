@@ -12,10 +12,6 @@
 #include <string>
 #include <cmath>
 
-// Straight Tracks:
-#include "TrkReco/inc/StraightTrackFit.hh"
-#include "TrkPatRec/inc/StraightTrackFinder_types.hh"
-#include "TrkReco/inc/StraightTrackFinderData.hh"
 //Mu2e Data Prods:
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
@@ -427,7 +423,7 @@ namespace mu2e
         for(auto const& track: *Tracks){
         mx.push_back(track._track.get_m_0());
         c0.push_back(track._track.get_c_0());
-	mz.push_back(track._track.get_m_1());
+	//mz.push_back(track._track.get_m_1());
         }
         
         //If Diag:
@@ -600,7 +596,7 @@ _evt = event.id().event();  // add event id
           for(auto const& track: *Tracks){
              mx.push_back(track._track.get_m_0());
              c0.push_back(track._track.get_c_0());
-	     mz.push_back(track._track.get_m_1());
+	    // mz.push_back(track._track.get_m_1());
           }
         
         //If Diag:

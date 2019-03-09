@@ -16,6 +16,7 @@
 //Least Squares Fitter:
 #include "Mu2eUtilities/inc/LeastSquaresFitter.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "Mu2eUtilities/inc/BuildMatrixSums.hh"
 //For Drift:
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PanelStateIterator.hh"
@@ -76,18 +77,20 @@ namespace mu2e
   /*-------------Init Line-------------------------//
  Makes basic estimate of a line y=mx+c style with Cosmic line between first and last points on plane
   //----------------------------------------------*/
-  CosmicTrack* CosmicTrackFit::InitLine(const ComboHit *FirstP1, const ComboHit *LastP1,CosmicTrack* line) {
+  XYZVec CosmicTrackFit::InitLineDirection(const ComboHit *ch0, const ComboHit *chN,CosmicTrack* line) {
+
+     
+      double track_length = sqrt((chN->pos().x()- ch0->pos().x())*(chN->pos().x()- ch0->pos().x()) + (chN->pos().y()- ch0->pos().y())*(chN->pos().y()- ch0->pos().y()) +(chN->pos().z()- ch0->pos().z())*(chN->pos().z()- ch0->pos().z()));
+
+      XYZVec track_dir((chN->pos().x() - ch0->pos().x())/track_length,(chN->pos().y() - ch0->pos().y())/track_length, (chN->pos().z() - ch0->pos().z())/track_length);
       
-      XYVec Pos_Start = (XYVec(FirstP1->pos().x(),FirstP1->pos().y()));
-      XYVec Pos_End = (XYVec(LastP1->pos().x(),LastP1->pos().y()));
-      line->set_m_0(( Pos_End.x() - Pos_Start.x()) / (Pos_End.y() - Pos_Start.y() ));
+      //XYVec Pos_Start = (XYVec(FirstP1->pos().x(),FirstP1->pos().y()));
+      //XYVec Pos_End = (XYVec(LastP1->pos().x(),LastP1->pos().y()));
+      //line->set_m_0(( Pos_End.x() - Pos_Start.x()) / (Pos_End.y() - Pos_Start.y() ));
       
-      line->set_c_0(Pos_Start.x() - ( Pos_Start.y() * line->get_m_0()) );
-      if(_debug>0){
-	      
-	      std::cout<<"initialized line .."<<line->get_m_0()<<"  "<<line->get_c_0()<<std::endl;
-      }
-      return line;
+      //line->set_c_0(Pos_Start.x() - ( Pos_Start.y() * line->get_m_0()) );
+      
+      return track_dir;
     } 
 
  //--------------Fit-----------------//
@@ -109,8 +112,7 @@ namespace mu2e
 	TrackData._tseed._status.merge(TrkFitFlag::StraightTrackInit);
       else
 	return;
-    }
-    
+    } 
     //Start Chi2 Fitting:
     if (!init)RunFitChi2(TrackData);
   }
@@ -121,22 +123,13 @@ namespace mu2e
 //   Refits and adjusts track fit paramters by weights//
 //------------------------------------------------------------------*/
 void CosmicTrackFit::RunFitChi2(CosmicTrackFinderData& TrackData) {   
-    int  nHits(TrackData._chHitsToProcess.size());
-    ComboHit*     firstPt(0), *lastPt(0) ;
-    Track* track = &TrackData._tseed._track; 
-    //Get rough estimate of track direction:
-    firstPt = &TrackData._chHitsToProcess[0];
-    lastPt = &TrackData._chHitsToProcess[nHits];
-    track = InitLine(firstPt, lastPt,track);
-    // might use later- set initial value high so it becomes best fit..
+   CosmicTrack* track = &TrackData._tseed._track; 
    //first perform the chi2 fit assuming all hits have same weight
    CosmicTrack* all_hits_track = FitAll(TrackData, track, 0);
    //TODO Optimization Step here
     //if track is "good" add to list of good tracks:
    if (goodTrack(all_hits_track)) TrackData._tseed._status.merge(TrkFitFlag::StraightTrackOK);  
 
-
-  
 }
 
 
@@ -144,25 +137,20 @@ void CosmicTrackFit::RunFitChi2(CosmicTrackFinderData& TrackData) {
 //       Refines the fit in and updates chi2 information      //
 //---------------------------------------------------------------*/
 CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, int WeightMode){
-
-     
+    ::BuildMatrixSums S;
+    //double resid;
     size_t nHits (trackData._chHitsToProcess.size());
     CosmicTrack* track = &trackData._tseed._track; 
     
-    ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
-    ComboHit* chN = &trackData._chHitsToProcess[nHits];
-    XYZVec FirstPoint(ch0->pos().x(), ch0->pos().y(), ch0->pos().z());
-    XYZVec LastPoint(chN->pos().x(), chN->pos().y(), chN->pos().z());
+    const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
+    const ComboHit* chN = &trackData._chHitsToProcess[nHits];
+    XYZVec FirstPoint(ch0->pos().x(),ch0->pos().y(),ch0->pos().z());
+    XYZVec LastPoint(chN->pos().x(),chN->pos().y(),chN->pos().z());
 
-    float      resid;
-    //float      chi2 = 0;
-    int        minNReducedChi2Points(15);//TODO: Optimi
-    int        nUsedHits  = 0;
-    
+    XYZVec track_dir = InitLineDirection(ch0, chN, track);
+ 
     int        nXYSh(0);
     ComboHit*     hitP1(0);
-    
-    std::vector<XYZVec> ma, mi;
     
     //loop over hits
     for (size_t f1=1; f1<nHits-1; ++f1){
@@ -170,62 +158,34 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
       if (!use(*hitP1) )    continue;
 
       XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
-
-      double track_length = sqrt((chN->pos().x()- ch0->pos().x())*(chN->pos().x()- ch0->pos().x()) + (chN->pos().y()- ch0->pos().y())*(chN->pos().y()- ch0->pos().y()) +(chN->pos().z()- ch0->pos().z())*(chN->pos().z()- ch0->pos().z()));
-
-      XYZVec track_dir((hitP1->pos().x() - ch0->pos().x())/track_length,(hitP1->pos().y() - ch0->pos().y())/track_length, (hitP1->pos().z() - ch0->pos().z())/track_length); 
-
-      double POCA;
-      //get minimum distance from this point to line through start and end points:
-      double tMin = ParametricFit::GettMin(point, FirstPoint, LastPoint);
-      cout<<"Minimum t for point "<<f1<<" is "<<tMin<<std::endl;
-      double DOCA = ParametricFit::PointToLineDCA(point, FirstPoint, LastPoint, POCA , true);
-      cout<<"DOCA for point "<<f1<<" is "<<DOCA<<std::endl;
-
-      //For Error Ellipses:
-      XYZVec const& wdir = hitP1->wdir();//direction along wire
-      XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
-      double werr_mag = hitP1->wireRes(); //hit major error axis 
-      double terr_mag = hitP1->transRes(); //hit minor error axis
-      XYZVec major_axis = werr_mag*wdir;
-      XYZVec minor_axis = terr_mag*wtdir;
-  
-      float      minResid(_minresid);
-      if (WeightMode == 0 ) minResid = _maxd;
-      
-      ma.push_back(major_axis);
-      mi.push_back(minor_axis); 
+      XYZVec major_axis =  ParametricFit::MajorAxis(hitP1, track_dir);
+      XYZVec minor_axis =  ParametricFit::MinorAxis(hitP1, track_dir);
+      double errX =  ParametricFit::HitErrorX(hitP1, major_axis, minor_axis, track_dir);
+      double errY =  ParametricFit::HitErrorY(hitP1, major_axis, minor_axis, track_dir);
+      S.addPoint(f1, point, track_dir, errX, errY);
+      TMatrix P = S.GetAlphaX();
+      std::cout<<P[0][0]<<"  "<<P[1][0]<<std::endl;
+      // 1) Get X error (DONE)
+      // 2) Fill X sums (DONE)
+      // 3) Get Y error (DONE)
+      // 4) Fill Y sums (DONE)
+      // 5) Iterate Errors
+      //....... Minimize chi2
+      // 6) Set Cosmic Track Parameters as output
  
-      //Get Hit Error:
-      double hit_error = sqrt(major_axis.Dot(track_dir)*major_axis.Dot(track_dir)+minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
+       //float      minResid(_minresid);
+      //if (WeightMode == 0 ) minResid = _maxd;
+      //if(resid > minResid){ 
+       //	    hitP1->_flag.merge(StrawHitFlag::outlier);  
+       //  }
 	
-      std::cout<<"hit error for point "<<f1<<" is "<<hit_error<<std::endl;
-
-      //TODO : iterative error routine from UpdateErrors function ==> re-parameterise
-      resid =  DOCA; 
-      track->set_fit_residuals(DOCA);
-	if(resid > minResid){ 
-       	    hitP1->_flag.merge(StrawHitFlag::outlier);  
-         }
-      
-	 //remove the outlier flag
-	 hitP1->_flag.clear(StrawHitFlag::outlier);
-
-	 //increase the StawaHit counter
-	 nXYSh += hitP1->nStrawHits();
-
+	// hitP1->_flag.clear(StrawHitFlag::outlier);
+	
+	nXYSh += hitP1->nStrawHits();
       }
-	    
-    
- 
-    //if we collected enough points update the results
-    if (nUsedHits  > minNReducedChi2Points && nXYSh >= _minnsh){
-
-      //flag as StraightTRackOK
-     } 
-    //Update Errors
     return track;
   }
+
 
 
 
@@ -235,46 +195,28 @@ void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track){
 }
 
 
-void CosmicTrackFit::UpdateFitErrors(std::vector<double> x, std::vector<double> y, std::vector<double> z, std::vector<double> err, StraightTrack* track,TMatrixD cov_x, std::vector<XYZVec> major,std::vector<XYZVec> minor){
+void CosmicTrackFit::UpdateFitErrors( std::vector<XYZVec> HitVec, std::vector<double> err, CosmicTrack* track, std::vector<XYZVec> major_axis,std::vector<XYZVec> minor_axis){
 
-    for(int i=0; i< static_cast<int>(x.size()); i++){
+    for(int i=0; i< static_cast<int>(HitVec.size()); i++){
 	bool errors_converged = false;
-        //Get Hit Error:
-	XYZVec major_axis = major[i];
-	XYZVec minor_axis = minor[i];
-	if(_diag >0){
-        	std::cout<<"Starting error : "<<i<<" "<<err[i]<<std::endl;
-        }
+        
 	while(errors_converged==false){
-	        
-		
+
 		//Get Current Track informations:
-		XYZVec updated_track_dir( track->get_m_0(), 1., track->get_m_1());
+		XYZVec updated_track_dir = track->get_track_direction();
 
                 //Getting hit errors:
-                double hit_error = sqrt(major_axis.Dot(updated_track_dir)*major_axis.Dot(updated_track_dir)+minor_axis.Dot(updated_track_dir)*minor_axis.Dot(updated_track_dir));
+                double hit_error = sqrt(major_axis[i].Dot(updated_track_dir)*major_axis[i].Dot(updated_track_dir)+minor_axis[i].Dot(updated_track_dir)*minor_axis[i].Dot(updated_track_dir));
 		
 		//Update Error:
 		double d_error =0;
-               
 		if (hit_error > err[i]){
 			d_error = sqrt((hit_error - err[i])*(hit_error - err[i]));
-		        err[i] = hit_error; 
-			if(_diag>0){
-				std::cout<<" Error changed to : "<<err[i]<<std::endl;
-			}
-		}
-		if(_diag>0){
-			std::cout<<" Changed in errors of "<<d_error<<std::endl;
+		        err[i] = hit_error; 	
 		}
         	if( d_error < 0.1){ 
-			if(_diag>0){
-           			std::cout<<"Considered converged ..."<<std::endl;
-			}
            		errors_converged = true;
-                }
-    
-             
+                }         
        }//end while 
     }//end for
  

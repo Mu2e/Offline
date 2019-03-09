@@ -15,7 +15,7 @@ namespace mu2e {
 
     // Constructors
     StraightTrack();
-    StraightTrack(double c_0, double m_0, double m_1, double m_2);
+    StraightTrack(double c_0, double m_0);
     StraightTrack( int N, double c_0, double c_0_err, double m_0, double m_0_err,double chisq, double chisq_dof, std::vector<double> fit_residual, std::vector<double> fit_residual_error);
 
     // Destructor
@@ -60,12 +60,12 @@ namespace mu2e {
 double element){ _cov_mat[r][c] = element;}
     
 
-    void set_parameters(int dim, int N, double c_0, double c_0_err, double m_0, double m_0_err,double chisq, double chisq_dof,std::vector<double> fit_residual, std::vector<double> fit_residual_error);
+    void set_parameters(int N, double c_0, double c_0_err, double m_0, double m_0_err,double chisq, double chisq_dof,std::vector<double> fit_residual, std::vector<double> fit_residual_error);
 
     
     
   private:
-    //int _dim;
+
     int _Nhits;
     double _c_0;
     double _c_0_err;

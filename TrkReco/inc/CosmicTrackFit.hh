@@ -47,7 +47,7 @@ namespace mu2e
     		virtual ~CosmicTrackFit();
 
                 bool initCosmicTrack(CosmicTrackFinderData& TrackData);
-                CosmicTrack* InitLine(const ComboHit *FirstP1, const ComboHit *LastP2, CosmicTrack* line);
+                XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN,CosmicTrack* line);
                 //Step 1: Begin Fit- initializes the fit routine:
                 void BeginFit(CosmicTrackFinderData& TrackData);
                 
@@ -58,8 +58,7 @@ namespace mu2e
 		
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 
-		
-                void UpdateFitErrors(std::vector<double> x, std::vector<double> y,std::vector<double> z, std::vector<double> err, StraightTrack* track,TMatrixD cov_x, std::vector<XYZVec> maj,std::vector<XYZVec> min);
+                void UpdateFitErrors( std::vector<XYZVec> HitVec, std::vector<double> err, CosmicTrack* track, std::vector<XYZVec> major_axis,std::vector<XYZVec> minor_axis);
 
                 bool goodTrack(CosmicTrack* track);
                 float pointToLineDCA(CosmicTrack* track, StrawHit hit);

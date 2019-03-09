@@ -172,35 +172,20 @@ void xyz_fit( int _nCoeffs, const std::vector<double> &_measured_i, const std::v
 	  // Extract the Fit Parameters
 	  line->set_c_0(P[0][0]);        
 	  line->set_m_0(P[1][0]);  
-	  line->set_m_1(P[2][0]);
+	  //line->set_m_1(P[2][0]);
 	  //Extract Covarience Parameters:
           
 	  line->set_c_0_err(sqrt(V_p[0][0]));
 	  line->set_m_0_err(sqrt(V_p[1][1]));
-          line->set_m_1_err(sqrt(V_p[2][2]));
+          //line->set_m_1_err(sqrt(V_p[2][2]));
       
 	  //Extract Chi 2 Info:
 	  line->set_chisq(result[0][0]);
 	  line->set_chisq_dof(result[0][0] / n_points);
 
-	 double sum_of_squares = 0;
-         
-	 for(int i=0; i< n_points; i++){
-		sum_of_squares += C[i][0]*C[i][0];
-	
-          }
-	  line->set_fit_residual_errors(sqrt(sum_of_squares));
-
 	  for(int i=0; i< n_points; i++){
 	  	
-      
-		
-                //TMatrixD D(V_m - A*V_p*At);
-		//double fit_error = sqrt(D[i][i]*D[i][i]);
-		
-		
-		line->set_fit_residuals(C[i][0]);//C[i][0]/sqrt(sum_of_squares)); //scale to number of CHs in track? /n works
-		
+		line->set_fit_residuals(C[i][0]);
 		
 	   }
 
@@ -272,115 +257,4 @@ double Mean(std::vector<double>  values, std::vector<double> weights) {
   return mean;
 }
 
-
-
-
-
-/*------------full fit for constrained chi-squared fit ---------*/
-void minimise_chisq( int _nCoeffs, const std::vector<std::vector<double>> measurement, std::vector<double> &_err, StraightTrack* line, TMatrixD& covariance) { 
-        
-          
-	
-
-
-
-
-
-} // ~linear_fit
-
-
-
-
-
-
-/*
-void circle_fit(const double R_res_cut,  std::vector<double> &_x,  std::vector<double> &_y, TF2 &circle, CircleFit &Circle, TMatrixD& covariance){
-// Number of measurements:
-  int n_points = static_cast<int>(_x.size()); 
-//Functional form now has 3 columns:
-  TMatrixD A(n_points, 3); 
-// Covariance matrix of measurements:                     
-  TMatrixD C(n_points, n_points);  
-//Kappa of circle:           
-  TMatrixD K(n_points, 1); 
-  for (int i = 0; i < static_cast<int>(_x.size()); ++i) {  
-	//Get x and y position of hits
-  	double x_i = x[i];
-  	double y_i = y[i];
-	//Do the maths:
-  	A[i][0] = (x_i * x_i) + (y_i * y_i);
-  	A[i][1] = x_i;
-  	A[i][2] = y_i;
-  	float dif = 1.;//WHAT IS THIS?
-  	C[i][i] = (dif*dif);
-  	K[i][0] = 1.;
-        }
-
-// Build the least squares fit:
-  double* det = NULL; 
-// Invert the measurement covariance matrix:            
-  C.Invert(det);  
-//Transpose A (but A still remains as used later):               
-  TMatrixD At(A);                  
-  At.T(); 
-// The covariance matrix of the parameters of model (inv)                         
-  TMatrixD V_p(At * C * A);      
-  V_p.Invert(det);  
-// The least sqaures estimate of the parameters                           
-  TMatrixD P(V_p * At * C * K);  
-
-// Extract the fit parameters
-  double alpha, beta, gamma;
-  alpha = P[0][0];
-  beta = P[1][0];
-  gamma = P[2][0];
-
-// Convert the linear parameters into the circle center and radius
-  double x0, y0, R;
-  x0 = (-1*beta) / (2 * alpha);
-  y0 = (-1*gamma) / (2 * alpha);
-  if (((4 * alpha) + (beta * beta) + (gamma * gamma)) < 0){
-    R = 0;
-  }
-  else{
-    R = sqrt((4 * alpha) + (beta * beta) + (gamma * gamma)) / (2 * alpha);
-  }
-// Transform the covariance matrix to the same basis
-  TMatrixD jacobian(3, 3);
-  jacobian(0, 0) = beta / (2.0*alpha*alpha);
-  jacobian(0, 1) = -1.0 / (2.0*alpha);
-  jacobian(1, 0) = gamma / (2.0*alpha*alpha);
-  jacobian(1, 2) = -1.0 / (2.0*alpha);
-  jacobian(2, 0) = (-1.0/(2.0*alpha)) * (((beta*beta + gamma*gamma) / (2.0*alpha)) + 1) /sqrt(((beta*beta + gamma*gamma) / 4.0) + alpha);
-  jacobian(2, 1) = (beta/(4.0*alpha*alpha)) /sqrt(((beta*beta + gamma*gamma)/(4.0*alpha*alpha)) + (1.0/alpha));
-  jacobian(2, 2) = (gamma/(4.0*alpha*alpha)) /sqrt(((beta*beta + gamma*gamma)/(4.0*alpha*alpha)) + (1.0/alpha));
-  TMatrixD jacobianT(3, 3);
-  jacobianT.Transpose(jacobian);
-
-  covariance = jacobian * V_p * jacobianT;
-
-  R = fabs(R);
-
-  if (R > R_res_cut){ //R_res_cut = tracker radius (look up)
-     return false; 
-  }
-
-//Set circle parameters:
-  circle.set_x0(x0);
-  circle.set_y0(y0);
-  circle.set_R(R);
-  circle.set_alpha(alpha);
-  circle.set_beta(beta);
-  circle.set_gamma(gamma);
-
-  // Calculate the fit chisq
-  TMatrixD Z(K - (A * P));
-  TMatrixD Zt(Z);
-  Zt.T();
-  TMatrixD result(Zt * C * Z);
-  double chi2 = result[0][0];
-  //circle.set_chisq(chi2);       // Left unreduced (not dividing by NDF)
- 
-}//end circle fit
-*/
 }//ends namespace

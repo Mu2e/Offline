@@ -2,6 +2,7 @@
 //Description: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment
 
 #include "Mu2eUtilities/inc/ParametricFit.hh"
+
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/StraightTrack.hh"
 #include "RecoDataProducts/inc/DriftCircle.hh"
@@ -69,17 +70,7 @@ namespace ParametricFit{
 		return parellel;
 
 	} 
-        
-	double GetResidual(){
- 		return 0.;
-	}
-
-	/*
-	CosmicTrack ConstructTrack(){
-	
-	}
-
-	*/
+     
 	
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint,bool finiteLine)
 	{
@@ -155,6 +146,70 @@ namespace ParametricFit{
          return success;
 
 }  
+
+/*-----------------------------Initial Error Estimate------------------------------//
+//    Calculate major and minor error ellipse axes and find projected error for hit//
+//---------------------------------------------------------------------------------*/
+XYZVec MajorAxis(ComboHit* Hit, XYZVec track_dir){
+      XYZVec const& wdir = Hit->wdir();//direction along wire
+      double werr_mag = Hit->wireRes(); //hit major error axis 
+      XYZVec major_axis = werr_mag*wdir;
+      //double hit_error = sqrt(major_axis.Dot(track_dir)*major_axis.Dot(track_dir)+minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
+      return major_axis;
+}
+
+XYZVec MinorAxis(ComboHit* Hit, XYZVec track_dir){
+      //For Error Ellipses:
+      XYZVec const& wdir = Hit->wdir();//direction along wire
+      XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire 
+      double terr_mag = Hit->transRes(); //hit minor error axis
+      XYZVec minor_axis = terr_mag*wtdir;
+      return minor_axis;
+}
+
+/*--------------------------Hit Errors in X' and Y' ------------------------------//
+The initial track is found and its direction. z' becomes the parametric variable and the fit factorizes into 2 2-D fits, with intercept and slopes (A0, A1 and B0, B1) along x' and y' respectively.  You have to project the hits and their error ellipses onto x' and y'. The following 2 equations do this:
+
+sigma_x' = sqrt(sigma_Maj^2(x'.Maj)^2 + sigma_min^2(x'.Min)^2) i.e. sum or squares of error projections on to x' axis (same for y')
+----------------------------------------------------------------------------------*/
+
+double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir){
+	XYZVec x_track( track_dir.x(),0,0);
+        double sigma_w_squared = major_axis.Mag2();
+        double sigma_v_squared = minor_axis.Mag2();
+	double sigma_x_track = sqrt(sigma_w_squared*pow((x_track.Dot(major_axis.Unit())),2)+sigma_v_squared*pow((x_track.Dot(minor_axis.Unit())),2));
+ 	return sigma_x_track;
+}
+
+double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir){
+	XYZVec y_track(0, track_dir.y(), 0);
+        double sigma_w_squared = major_axis.Mag2();
+        double sigma_v_squared = minor_axis.Mag2();
+	double sigma_y_track = sqrt(sigma_w_squared*pow((y_track.Dot(major_axis.Unit())),2)+sigma_v_squared*pow((y_track.Dot(minor_axis.Unit())),2));
+ 	return sigma_y_track;
+}
+
+
+
+
+/*
+
+double ResidualErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir){
+
+	
+
+}*/
+
+
+/*---------------------------------Get 2D line ----------------------------------//
+Each 2D line has 2 parameters A_0 and A_1 for x and B_0 and B_1 for y. 
+A chi2 = sum of (A0+A1zi) - hi.zi / error_i^2  = 0
+Can build 3 matrices for x' and 3 for y'. See documentation for details but alpha = gamma^-1 . beta where alpha are a given 2D 2 parameters.....
+--------------------------------------------------------------------------------*/
+
+
+
+
 /*
 StraightTrack Calculate2DLineFits(std::vector<ComboHits> list_of_hits, std::vector<double> hit_errors, double pValCut)
 {

@@ -7,6 +7,8 @@
 //ROOT
 
 #include "Math/VectorUtil.h"
+#include "TMatrix.h"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/StraightTrack.hh"
@@ -27,10 +29,18 @@ namespace ParametricFit{
 	  XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine, bool finiteLine);
 
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca, bool finiteLine);
-       
-	//vector<mu2e::StraightTrack*> Calculate2DLineFits(std::vector<mu2e::DriftCircle> circles, double pValCut, long LR);
-        
-       void Construct3DTrack(StraightTrack* xyLineFit, StraightTrack* zrLineFit, CosmicTrack* track);
+        XYZVec MajorAxis(ComboHit* Hit, XYZVec track_dir);
+
+	XYZVec MinorAxis(ComboHit* Hit, XYZVec track_dir);
+
+	double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir);
+        double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir);
+	
+	double Get2DParameter(int i, TMatrixD alpha);	
+
+	TMatrixD GetGamma(double G00, double Gij, double G11);
+
+	TMatrixD GetBeta(double	b0,double b1);
 
 	}
 
