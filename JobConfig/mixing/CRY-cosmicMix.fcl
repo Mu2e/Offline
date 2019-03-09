@@ -1,7 +1,6 @@
 # 
 # Simulate digis using CRY StepPoints
 #
-# Yuri Oksuzian, 2019
 #include "JobConfig/mixing/prolog.fcl"
 
 # Give this job a name.
@@ -36,10 +35,11 @@ outputs: { Output : @local::Mixing.Output }
 # final configuration
 #
 #include "JobConfig/mixing/epilog.fcl"
-#physics.producers.g4run  : @erase
+physics.producers.g4run  : @erase
 # a few patches for these files
-physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter"]
-physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector"]
+physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter",
+  @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector" ]
 # use the same times for primary particles when mixing
 physics.producers.cosmicTimeMap.InputTimeMaps : [@sequence::Mixing.cosmicTimeMaps]
 #
