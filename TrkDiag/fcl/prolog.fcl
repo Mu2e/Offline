@@ -155,7 +155,6 @@ BEGIN_PROLOG
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
-    fillTrkQualInfo : true
   }
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
@@ -317,16 +316,13 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-#    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
-    fillTrkQualInfo : true
-#    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
     StrawHitFlagCollection : "SelectRecoMC"
-#    PrimaryParticleTag : "FindMCPrimary"
     PrimaryParticleTag : "compressRecoMCs"
+    TriggerBitsTag : "triggerInfoMerger"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
   }
