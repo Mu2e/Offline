@@ -134,7 +134,7 @@ namespace mu2e {
     CaloClusterInfoMC _detchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
-    TBits _trigbits;
+    unsigned _trigbits;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
@@ -221,7 +221,7 @@ namespace mu2e {
     _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
     _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
 // trigger info.  Actual names should come from the BeginRun object FIXME
-    if(_filltrig)_trkana->Branch("trigger","TBits",&_trigbits);
+    if(_filltrig)_trkana->Branch("trigbits",&_trigbits,"trigbits/I");
 // calorimeter information for the downstream electron track
 // CRV info
    if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
@@ -476,10 +476,13 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::fillTriggerBits(TriggerAlg const& trigbits) {
-    _trigbits.ResetAllBits();
+    _trigbits = 0;
     for(size_t ibit=0;ibit < 32; ++ibit){
-      if(trigbits.hasAllProperties(static_cast<TriggerAlg::bit_type>(ibit)))
-	_trigbits.SetBitNumber(ibit);
+      TriggerAlg mask(static_cast<TriggerAlg::bit_type>(ibit));
+      if(trigbits.hasAnyProperty(mask)){
+//	cout << "Found trigger bit " << ibit << " set" << endl;
+	_trigbits |= 1 << ibit;
+      }
     }
   }
 
