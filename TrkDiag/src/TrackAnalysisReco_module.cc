@@ -476,6 +476,7 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::fillTriggerBits(TriggerAlg const& trigbits) {
+    _trigbits.ResetAllBits();
     for(size_t ibit=0;ibit < 32; ++ibit){
       if(trigbits.hasAllProperties(static_cast<TriggerAlg::bit_type>(ibit)))
 	_trigbits.SetBitNumber(ibit);
