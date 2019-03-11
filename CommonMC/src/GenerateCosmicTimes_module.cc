@@ -52,8 +52,8 @@ namespace mu2e {
     : _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , offsetToTracker_(pset.get<bool>("offsetToTracker", true))
-    , tmin_(pset.get<double>("tmin", 700))
-    , tmax_(pset.get<double>("tmax", 1705))
+    , tmin_(pset.get<double>("tmin"))
+    , tmax_(pset.get<double>("tmax"))
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
   {
     std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());

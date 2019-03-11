@@ -14,6 +14,8 @@ CommonMC: {
     { 
 	module_type : GenerateCosmicTimes
 	hitsInputTag: "detectorFilter:tracker"
+	tmin : 500
+	tmax : 1705
     }
 # time maps for primaries in inline mixing jobs
     protonTimeMapPrimary: { module_type : GenerateProtonTimes }
@@ -22,6 +24,8 @@ CommonMC: {
     { 
 	module_type : GenerateCosmicTimes
 	hitsInputTag: "detectorFilter:tracker"
+     	tmin : 500
+	tmax : 1705
     }
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
