@@ -88,7 +88,12 @@ namespace mu2e
         , _vertical(false)
         , _projectToEnvelope(config.getBool("cosmicCRY.projectToEnvelope", false))
         , _geomInfoObtained(false)
-
+        , _targetBoxXmin(config.getDouble("cosmicCRY.targetBoxXmin", -1000))
+        , _targetBoxXmax(config.getDouble("cosmicCRY.targetBoxXmax", 1000))
+        , _targetBoxYmin(config.getDouble("cosmicCRY.targetBoxYmin", -1000))
+        , _targetBoxYmax(config.getDouble("cosmicCRY.targetBoxYmax", 1000))
+        , _targetBoxZmin(config.getDouble("cosmicCRY.targetBoxZmin", -1000))
+        , _targetBoxZmax(config.getDouble("cosmicCRY.targetBoxZmax", 1000))
         {
           _cryDataPath = std::string(std::getenv("CRYDATAPATH"));
           if( _cryDataPath.length() == 0) 
@@ -135,12 +140,26 @@ namespace mu2e
 
       // slightly smaller box to avoid rounding error problem if any
       double deltaX = 1; // mm
-      _envXmin = worldGeom->mu2eOriginInWorld().x() - worldGeom->halfLengths()[0] + deltaX;
-      _envXmax = worldGeom->mu2eOriginInWorld().x() + worldGeom->halfLengths()[0] - deltaX;
-      _envYmin = env->ymin() + deltaX;
-      _envYmax = env->ymax() - deltaX;
-      _envZmin = worldGeom->mu2eOriginInWorld().z() - worldGeom->halfLengths()[2] + deltaX;
-      _envZmax = worldGeom->mu2eOriginInWorld().z() + worldGeom->halfLengths()[2] - deltaX;
+      // _targetBoxXmin = env->xmin() + deltaX;
+      // _targetBoxXmax = env->xmax() - deltaX;
+      // _targetBoxYmin = env->ymin() + deltaX;
+      // _targetBoxYmax = env->ymax() - deltaX;
+      // _targetBoxZmin = env->zmin() + deltaX;
+      // _targetBoxZmax = env->zmax() - deltaX;
+
+      _worldXmin = worldGeom->mu2eOriginInWorld().x() - worldGeom->halfLengths()[0] + deltaX;
+      _worldXmax = worldGeom->mu2eOriginInWorld().x() + worldGeom->halfLengths()[0] - deltaX;
+      _worldYmin = worldGeom->mu2eOriginInWorld().y() - worldGeom->halfLengths()[1] + deltaX;
+      _worldYmax = worldGeom->mu2eOriginInWorld().y() + worldGeom->halfLengths()[1] - deltaX;
+      _worldZmin = worldGeom->mu2eOriginInWorld().z() - worldGeom->halfLengths()[2] + deltaX;
+      _worldZmax = worldGeom->mu2eOriginInWorld().z() + worldGeom->halfLengths()[2] - deltaX;
+
+      mf::LogInfo("CosmicCRY") << "Target box: " << _targetBoxXmin << ", " << 
+        _targetBoxXmax << ", " << _targetBoxYmin << ", " << _targetBoxYmax << 
+        ", " << _targetBoxZmin << ", " << _targetBoxZmax;
+      mf::LogInfo("CosmicCRY") << "World: " << _worldXmin << ", " << 
+        _worldXmax << ", " << _worldYmin << ", " << _worldYmax << ", " 
+        << _worldZmin << ", " << _worldZmax;
 
       if (_refPointChoice == "TRACKER") 
         _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
@@ -177,7 +196,7 @@ namespace mu2e
       const HepPDT::ParticleData& p_data = pdt->particle(secondary->PDGid()).ref();
       double mass = p_data.mass().value(); // in MeV
 
-      
+
       double ke = secondary->ke(); // MeV by default in CRY
       double totalE = ke + mass;
       _showerSumEnergy += totalE;
@@ -197,20 +216,22 @@ namespace mu2e
       if (_projectToEnvelope) {
         // Moving the CRY particle around: find all intersections with Mu2e
         // envelope, then set the position at the *first* intersection
-        _envIntersections.clear();
-        calIntersections(position, mom4.vect());
+        _targetBoxIntersections.clear();
+        calIntersections(position, mom4.vect(),
+            _targetBoxIntersections, _targetBoxXmin, _targetBoxXmax,
+            _targetBoxYmin, _targetBoxYmax, _targetBoxZmin, _targetBoxZmax);
 
-        if (_envIntersections.size() > 0) {
+        if (_targetBoxIntersections.size() > 0) {
           int idx = 0;
-          double highestY = _envIntersections.at(idx).y();
-          for (unsigned i = 0; i < _envIntersections.size(); ++i) {
-            if (_envIntersections.at(i).y() > highestY) {
+          double highestY = _targetBoxIntersections.at(idx).y();
+          for (unsigned i = 0; i < _targetBoxIntersections.size(); ++i) {
+            if (_targetBoxIntersections.at(i).y() > highestY) {
               idx = i;
-              highestY = _envIntersections.at(idx).y();
+              highestY = _targetBoxIntersections.at(idx).y();
             }
           }
 
-          position = _envIntersections.at(idx);
+          position = _targetBoxIntersections.at(idx);
           genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
                 GenId::cosmicCRY, position, mom4,
                 secondary->t() - _cryGen->timeSimulated()));
@@ -301,56 +322,57 @@ namespace mu2e
     _setupString.append(oss.str());
   }
 
-  void CosmicCRY::calIntersections(Hep3Vector orig, Hep3Vector dir)
-  {
-    // roof: _envYmax, _envXmin, _envXmax, _envZmin, _envZmax
+  void CosmicCRY::calIntersections(Hep3Vector orig, Hep3Vector dir,
+      std::vector<CLHEP::Hep3Vector> intersections, double xMin, double xMax,
+      double yMin, double yMax, double zMin, double zMax) {
+    // roof: _targetBoxYmax, _targetBoxXmin, _targetBoxXmax, _targetBoxZmin, _targetBoxZmax
     // skip projection if the particle goes parallely to the plane
     if (dir.y() != 0.) {
-      double t = (_envYmax - orig.y()) / dir.y();
+      double t = (yMax - orig.y()) / dir.y();
       double x1 = dir.x() * t + orig.x();
       double z1 = dir.z() * t + orig.z();
-      if (pointInBox(x1, z1, _envXmin, _envZmin, _envXmax, _envZmax)) {
-        _envIntersections.push_back(Hep3Vector(x1, _envYmax, z1));
+      if (pointInBox(x1, z1, xMin, zMin, xMax, zMax)) {
+        _targetBoxIntersections.push_back(Hep3Vector(x1, yMax, z1));
       }
     }
 
-    //east: _envZmin, _envXmin, _envXmax, _envZmin, _envZmax
+    //east: zMin, xMin, xMax, yMin, yMax
     if (dir.z() != 0.) {
-      double t = (_envZmin - orig.z()) / dir.z();
+      double t = (zMin - orig.z()) / dir.z();
       double x1 = dir.x() * t + orig.x();
       double y1 = dir.y() * t + orig.y();
-      if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
-        _envIntersections.push_back(Hep3Vector(x1, y1, _envZmin));
+      if (pointInBox(x1, y1, xMin, yMin, xMax, yMax)) {
+        _targetBoxIntersections.push_back(Hep3Vector(x1, y1, zMin));
       }
     }
 
-    //west: _envZmax, _envXmin, _envXmax, _envZmin, _envZmax
+    //west: zMax, xMin, xMax, yMin, yMax
     if (dir.z() != 0.) {
-      double t = (_envZmax - orig.z()) / dir.z();
+      double t = (zMax - orig.z()) / dir.z();
       double x1 = dir.x() * t + orig.x();
       double y1 = dir.y() * t + orig.y();
-      if (pointInBox(x1, y1, _envXmin, _envYmin, _envXmax, _envYmax)) {
-        _envIntersections.push_back(Hep3Vector(x1, y1, _envZmax));
+      if (pointInBox(x1, y1, xMin, yMin, xMax, yMax)) {
+        _targetBoxIntersections.push_back(Hep3Vector(x1, y1, zMax));
       }
     }
 
-    //south: _envXmin, _envYmin, _envYmax, _envZmin, _envZmax
+    //south: xMin, yMin, yMax, zMin, zMax
     if (dir.x() != 0.) {
-      double t = (_envXmin - orig.x()) / dir.x();
+      double t = (xMin - orig.x()) / dir.x();
       double z1 = dir.z() * t + orig.z();
       double y1 = dir.y() * t + orig.y();
-      if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
-        _envIntersections.push_back(Hep3Vector(_envXmin, y1, z1));
+      if (pointInBox(z1, y1, zMin, yMin, zMax, yMax)) {
+        _targetBoxIntersections.push_back(Hep3Vector(xMin, y1, z1));
       }
     }
 
-    //north: _envXmax, _envYmin, _envYmax, _envZmin, _envZmax
+    //north: xMax, yMin, yMax, zMin, zMax
     if (dir.x() != 0.) {
-      double t = (_envXmax - orig.x()) / dir.x();
+      double t = (xMax - orig.x()) / dir.x();
       double z1 = dir.z() * t + orig.z();
       double y1 = dir.y() * t + orig.y();
-      if (pointInBox(z1, y1, _envZmin, _envYmin, _envZmax, _envYmax)) {
-        _envIntersections.push_back(Hep3Vector(_envXmax, y1, z1));
+      if (pointInBox(z1, y1, zMin, yMin, zMax, yMax)) {
+        _targetBoxIntersections.push_back(Hep3Vector(xMax, y1, z1));
       }
     }
 

@@ -7,6 +7,12 @@ string cosmicCRY.refPoint = "CALO";
 double cosmicCRY.refY0 = 20000; // 20 meter above nominal beam height
 
 bool cosmicCRY.projectToEnvelope = true;
+double cosmicCRY.targetBoxXmin =  -29960.6;
+double cosmicCRY.targetBoxXmax =  31787.6;
+double cosmicCRY.targetBoxYmin = -3531.2;
+double cosmicCRY.targetBoxYmax = 15366.4;
+double cosmicCRY.targetBoxZmin = -35359.6;
+double cosmicCRY.targetBoxZmax = 47265.6;
 
 // Enable all particles by default
 bool cosmicCRY.returnMuons = true;
