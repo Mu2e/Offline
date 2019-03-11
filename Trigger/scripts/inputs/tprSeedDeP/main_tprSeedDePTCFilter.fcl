@@ -2,4 +2,3 @@ physics.filters.tprSeedDePTCFilter.requireCaloCluster : false
 physics.filters.tprSeedDePTCFilter.minNHits : 10.0
 physics.filters.tprSeedDePTCFilter.minTime : 500.0
 physics.filters.tprSeedDePTCFilter.maxTime : 1695.0
-physics.filters.tprSeedDePTCFilter.triggerAlg   : ["TprSeedDeP"]

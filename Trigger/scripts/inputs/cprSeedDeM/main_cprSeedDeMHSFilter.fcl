@@ -10,4 +10,3 @@ physics.filters.cprSeedDeMHSFilter.maxD0         : 350.0
 physics.filters.cprSeedDeMHSFilter.minD0         : -350.0
 physics.filters.cprSeedDeMHSFilter.minAbsLambda  : 140.0
 physics.filters.cprSeedDeMHSFilter.maxAbsLambda  : 330.0
-physics.filters.cprSeedDeMHSFilter.triggerAlg    : ["CprSeedDeM"]

@@ -6,5 +6,4 @@ physics.filters.tprHelixIPADeMSDCountFilter.maxNStrawDigi       : 10000
 physics.filters.tprHelixIPADeMSDCountFilter.minNCaloDigi        : -1	 
 physics.filters.tprHelixIPADeMSDCountFilter.maxNCaloDigi        : -1	 
 physics.filters.tprHelixIPADeMSDCountFilter.maxCaloEnergy       : -1     
-physics.filters.tprHelixIPADeMSDCountFilter.triggerAlg          : ["TprHelixIPADeM"]
 

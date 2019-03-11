@@ -78,6 +78,7 @@
 // trigger
 #include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerAlg.hh"
+#include "RecoDataProducts/inc/TriggerAlgMap.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 

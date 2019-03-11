@@ -21,6 +21,7 @@
 //Dataproducts
 #include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerAlg.hh"
+#include "RecoDataProducts/inc/TriggerAlgMap.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "TH1F.h"
@@ -45,18 +46,28 @@ namespace mu2e {
 
   private:
     int    _diagLevel;
-
+    std::vector<std::string> _trigAlgNames;
     // diagnostic
     TH1F*  _maxiter;
 
+    TriggerAlgMap _trigMap;
   };
 
   TriggerInfoMerger::TriggerInfoMerger(fhicl::ParameterSet const& pset) :
-    _diagLevel(pset.get<int>("diagLevel",0))
+    _diagLevel   (pset.get<int>           ("diagLevel",0)),
+    _trigAlgNames(pset.get<std::vector<std::string>>("trigAlgNames"))
   {
     produces<TriggerInfoCollection>();
     produces<TriggerAlg>();
+    produces<TriggerAlgMap>();
 
+    for (unsigned i=0; i<_trigAlgNames.size(); ++i){
+      TriggerAlgDetail::bit_type trigAlgBit = static_cast<mu2e::TriggerAlgDetail::bit_type>(i);
+      TriggerAlg trigAlg; 
+      trigAlg.merge(trigAlgBit);
+      _trigMap[_trigAlgNames[i]] = trigAlg; 
+    }
+    
     if (_diagLevel > 0) std::cout << "In TriggerInfoMerger constructor " << std::endl;
   }
 
@@ -67,9 +78,22 @@ namespace mu2e {
       art::ServiceHandle<art::TFileService> tfs;
       _maxiter   = tfs->make<TH1F>( "maxiter",  "ADC max",16,-0.5,15.5 );
     }
+    
+    //print the triggerMap
+    printf("[TriggerInfoMerger::beginJob] //-----------------------------//\n");
+    printf("[TriggerInfoMerger::beginJob] //  TrigBit          path      //\n");
+    printf("[TriggerInfoMerger::beginJob] //-----------------------------//\n");
+    
+    for (auto const &trigLine :_trigMap){
+      std::string                trigPath = trigLine.first;
+      TriggerAlg    trigAlg  = trigLine.second;
+      std::string                trigBit  = trigAlg.stringRep();
+      printf("[TriggerInfoMerger::beginJob]     %s      %s    \n", trigBit.c_str(), trigPath.c_str());
+    }
+    printf("[TriggerInfoMerger::beginJob] //-----------------------------//\n");
   }
 
-  void TriggerInfoMerger::beginRun(art::Run& run){ }
+  void TriggerInfoMerger::beginRun(art::Run& run){}
 
   //------------------------------------------------------------------------------------------
   void TriggerInfoMerger::produce(art::Event& event)
@@ -79,6 +103,13 @@ namespace mu2e {
     //create the output collections
     std::unique_ptr<TriggerInfoCollection> trigInfoCol(new TriggerInfoCollection);
     std::unique_ptr<TriggerAlg>            trigAlg    (new TriggerAlg);
+    std::unique_ptr<TriggerAlgMap>         trigMap    (new TriggerAlgMap);
+
+    //fill the triggerMap
+    for (auto const &trigLine :_trigMap){
+      std::string   trigPath = trigLine.first;
+      trigMap->insert(std::pair<std::string, TriggerAlg>(trigPath,trigLine.second));
+    }
 
     std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
     event.getManyByType(hTrigInfoVec);
@@ -101,6 +132,7 @@ namespace mu2e {
 
     event.put(std::move(trigInfoCol));
     event.put(std::move(trigAlg));
+    event.put(std::move(trigMap));
   }
 
 

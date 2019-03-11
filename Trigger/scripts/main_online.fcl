@@ -60,16 +60,12 @@ event_builder: {
 services : @local::Services.Reco
 
 
-producers    : { @table::Trigger.producers }
-filters      : { @table::Trigger.filters   }
-analyzers    : { @table::Trigger.analyzers }
 paths        : { @table::Trigger.paths     }
-outputs      : { @table::Trigger.outputs   }
 
 physics:
 {
     
-    producers : { @table::producers 
+    producers : { @table::Trigger.producers 
 
 	makeSD:
 	{
@@ -90,11 +86,11 @@ physics:
 	
     }
     
-    filters   : { @table::filters }
+    filters   : { @table::Trigger.filters }
     
-    analyzers : {  
+    analyzers : {  @table::Trigger.analyzers
 	
-	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
 	    nFilters      : 70
 	}
 	
@@ -109,7 +105,7 @@ physics:
 
 outputs:
 {
-    @table::outputs
+    @table::Trigger.outputs
     
     out1:
     {

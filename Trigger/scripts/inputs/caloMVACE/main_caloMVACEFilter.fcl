@@ -11,4 +11,3 @@ physics.filters.caloMVACEFilter.MVArpivot1              : 445 # mm
 physics.filters.caloMVACEFilter.MVApivotcut1            : 0.1						    
 physics.filters.caloMVACEFilter.MVAlowcut1              : 0.0						      
 physics.filters.caloMVACEFilter.downscale500factor      : 1						    
-physics.filters.caloMVACEFilter.triggerAlg              : ["CaloMVACE"]	                                    

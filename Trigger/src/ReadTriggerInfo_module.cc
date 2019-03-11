@@ -36,6 +36,7 @@
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TriggerAlg.hh"
+#include "RecoDataProducts/inc/TriggerAlgMap.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
@@ -701,7 +702,14 @@ namespace mu2e {
     if (trigAlgH.isValid()){
       trigAlg = trigAlgH.product();
     }
-
+    //get the TriggerAlgMap to associate the TriggerAlg to the string
+    art::Handle<mu2e::TriggerAlgMap> trigMapH;
+    event.getByLabel(_trigAlgTag, trigMapH);
+    const mu2e::TriggerAlgMap*    trigMap(0);
+    if (trigMapH.isValid()){
+      trigMap = trigMapH.product();
+    }
+    
     //get the strawDigiMC truth if present
     art::Handle<mu2e::StrawDigiMCCollection> mcdH;
     event.getByLabel(_sdMCTag, mcdH);
@@ -737,13 +745,19 @@ namespace mu2e {
       cdCol = cdH.product();
     }
 
+    std::vector<std::string>   trigNames = {"caloCalibCosmic","caloMVACE", "tprSeedDeM", "tprSeedDeP", "cprSeedDeM", "cprSeedDeP"};
     if (trigAlg != 0) {
-      if (trigAlg->hasAnyProperty(TriggerAlg::caloCalibCosmic)) _sumHist._hTrigInfo[15]->Fill(0.);
-      if (trigAlg->hasAnyProperty(TriggerAlg::caloMVACE))       _sumHist._hTrigInfo[15]->Fill(1);
-      if (trigAlg->hasAnyProperty(TriggerAlg::tprSeedDeM))      _sumHist._hTrigInfo[15]->Fill(2.);
-      if (trigAlg->hasAnyProperty(TriggerAlg::tprSeedDeP))      _sumHist._hTrigInfo[15]->Fill(3.);
-      if (trigAlg->hasAnyProperty(TriggerAlg::cprSeedDeM))      _sumHist._hTrigInfo[15]->Fill(4.);
-      if (trigAlg->hasAnyProperty(TriggerAlg::cprSeedDeP))      _sumHist._hTrigInfo[15]->Fill(5.);
+      for (unsigned i=0; i<6; ++i){
+	if (trigMap->find(trigNames[i]) != trigMap->end()) 
+	  if (trigAlg->hasAnyProperty(trigMap->find(trigNames[i])->second) ) _sumHist._hTrigInfo[15]->Fill((double)i);
+      }
+      
+      // if (trigAlg->hasAnyProperty(trigMap["caloCalibCosmic"]) _sumHist._hTrigInfo[15]->Fill(0.);
+      // if (trigAlg->hasAnyProperty(trigMap["caloMVACE"])       _sumHist._hTrigInfo[15]->Fill(1);
+      // if (trigAlg->hasAnyProperty(trigMap["tprSeedDeM"])      _sumHist._hTrigInfo[15]->Fill(2.);
+      // if (trigAlg->hasAnyProperty(trigMap["tprSeedDeP"])      _sumHist._hTrigInfo[15]->Fill(3.);
+      // if (trigAlg->hasAnyProperty(trigMap["cprSeedDeM"])      _sumHist._hTrigInfo[15]->Fill(4.);
+      // if (trigAlg->hasAnyProperty(trigMap["cprSeedDeP"])      _sumHist._hTrigInfo[15]->Fill(5.);
     }
 
     

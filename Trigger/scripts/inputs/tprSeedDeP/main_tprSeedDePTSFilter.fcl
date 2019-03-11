@@ -7,4 +7,3 @@ physics.filters.tprSeedDePTSFilter.maxChi2DOF    : 20.0
 physics.filters.tprSeedDePTSFilter.maxMomErr     : 10.0
 physics.filters.tprSeedDePTSFilter.minD0         : -200.0
 physics.filters.tprSeedDePTSFilter.maxD0         : 200.0
-physics.filters.tprSeedDePTSFilter.triggerAlg    : ["TprSeedDeP"]

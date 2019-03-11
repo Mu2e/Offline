@@ -1,3 +1,2 @@
 physics.filters.minimumbiasSDCountEventPrescale.nPrescale    : 10000
-physics.filters.minimumbiasSDCountEventPrescale.triggerAlg   : ["MinBiasStrawDigiCount"]
 physics.filters.minimumbiasSDCountEventPrescale.triggerFlag  : ["PrescaleRandom"]

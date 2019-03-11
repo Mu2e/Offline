@@ -1,3 +1,2 @@
 physics.filters.minimumbiasCDCountEventPrescale.nPrescale    : 10000
-physics.filters.minimumbiasCDCountEventPrescale.triggerAlg   : ["MinBiasCaloDigiCount"]
 physics.filters.minimumbiasCDCountEventPrescale.triggerFlag  : ["PrescaleRandom"]
