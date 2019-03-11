@@ -1,0 +1,53 @@
+// This file contains the common part of job configuration for stage 3
+// cosmic ray simulations.  It is included by top level files
+// (like cosmic_s3_target1.fcl), which define output file names.
+//
+// Yuri Oksuzian, 2019
+#include "JobConfig/primary/prolog.fcl"
+
+# Give this job a name.
+process_name: cosmics3
+
+source:{ module_type: RootInput}
+services: @local::Services.Sim
+
+physics : { 
+  producers : {
+    generate: {module_type : EventGenerator}
+    @table::Primary.producers
+  }
+  filters  : {@table::Primary.filters}
+  analyzers: {@table::Primary.analyzers}
+# enable CRV digis
+  TriggerPath: [@sequence::CommonMC.DigiSim,
+  		@sequence::CaloDigiMC.DigiSim,
+  	        @sequence::TrackerMC.DigiSim,
+  		@sequence::CrvDAQPackage.CrvResponseSequence,
+  		compressDigiMCs]
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     # drop StepPoints from calorimeter
+     outputCommands : @local::DigiCompression.OutputCommands
+  }
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+#  Allow 'infinite' momentum
+physics.producers.g4run  : @erase
+physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter"]
+physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector"]
+
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+
+

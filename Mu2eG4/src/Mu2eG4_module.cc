@@ -530,6 +530,9 @@ void Mu2eG4::beginSubRun(art::SubRun& sr)
 // Create one G4 event and copy its output to the art::event.
 void Mu2eG4::produce(art::Event& event) {
 
+    if (_use_G4MT && event.id().event() == 1) std::cout << "\n*-*-*-*-*-*- You are running "
+       << dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->GetNumberOfThreads() << " threads. -*-*-*-*-*-*\n" << std::endl;
+
     //confirm that IF we are running in MT mode we do not have inputs from previous simulation stages
     //otherwsie, throw an exception
     if (_use_G4MT) {

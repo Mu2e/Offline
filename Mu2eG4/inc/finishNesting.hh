@@ -28,11 +28,11 @@ namespace mu2e {
   void finishNesting(VolumeInfo& info,
                      G4Material* material,
                      G4RotationMatrix const* rot,
-                     G4ThreeVector const & offset,
+                     G4ThreeVector const& offset,
                      G4LogicalVolume* parent,
                      int copyNo,
                      bool const isVisible,
-                     G4Colour const color,
+                     G4Colour const& color,
                      bool const forceSolid,
                      bool const forceAuxEdgeVisible,
                      bool const placePV,
@@ -45,11 +45,11 @@ namespace mu2e {
   inline void finishNesting(VolumeInfo& info,
                             G4Material* material,
                             G4RotationMatrix const* rot,
-                            G4ThreeVector const & offset,
+                            G4ThreeVector const& offset,
                             G4LogicalVolume* parent,
                             int copyNo,
-                            G4Colour const color,
-                            std::string const & lookupToken = "",
+                            G4Colour const& color,
+                            std::string const& lookupToken = "",
                             bool const verbose = false
                             ) 
   {

@@ -565,10 +565,8 @@ namespace mu2e {
       // The simulated particle that made this hit.
       int trackId = hit.simParticle().key();
 
-      StrawDetail const& strawDetail = straw.getDetail();
-
-      double normPointMag = point.mag()/strawDetail.innerRadius();
-      double normS = s/straw.getHalfLength();
+      double normPointMag = point.mag()/tracker.strawInnerRadius();
+      double normS = s/straw.halfLength();
 
       if ( _diagLevel > 1 ){
         cout << __func__
@@ -588,9 +586,9 @@ namespace mu2e {
                                      << " ouside the straw " << straw.id()
                                      << " inconsistent tracker geometry file? "
                                      << "; radial difference: "
-                                     << point.mag()/strawDetail.innerRadius() - 1.
+                                     << point.mag()/tracker.strawInnerRadius() - 1.
                                      << ", longitudinal difference: "
-                                     << std::abs(s)/straw.getHalfLength() - 1.
+                                     << std::abs(s)/straw.halfLength() - 1.
                                      << "; tolerance : "
                                      << _strawHitPositionTolerance
                                      << endl;
@@ -648,7 +646,7 @@ namespace mu2e {
       _hzHit->Fill(pos.z());
 
       _hDriftDist->Fill(pca.dca());
-      _hDriftDistW->Fill(pca.dca()/strawDetail.innerRadius());
+      _hDriftDistW->Fill(pca.dca()/tracker.strawInnerRadius());
 
       _hStepLength->Fill( hit.stepLength() );
 

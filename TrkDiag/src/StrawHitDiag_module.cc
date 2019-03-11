@@ -253,7 +253,7 @@ namespace mu2e
       _ptime = ch.propTime();
       _shp = ch.posCLHEP();
       _shlen =(ch.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
-      _slen = straw.getHalfLength();
+      _slen = straw.halfLength();
       _stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
       _tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
       _esel = shf.hasAllProperties(StrawHitFlag::energysel);
@@ -327,7 +327,7 @@ namespace mu2e
           Hep3Vector cdir = (cpos-straw.getMidPoint());
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           _mccphi[iend] = cdir.theta();
-          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.getDetail().innerRadius());
+          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.innerRadius());
 	}
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());
