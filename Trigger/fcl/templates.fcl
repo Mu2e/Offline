@@ -208,8 +208,8 @@ Trigger : {
 	    module_type: RootOutput
 	    fileName: "filteredOutput.root"
 	    SelectEvents : [ unbiased_path, 
-			     minimumbiasSdCount_path,
-			     largeSdCount_path,
+			     minimumbiasSDCount_path,
+			     largeSDCount_path,
 			     caloMVACE_path,
 			     tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
 #	    Compressionlevel: 0
