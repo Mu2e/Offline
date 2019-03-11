@@ -145,10 +145,6 @@ namespace mu2e {
     // check consistency
     if(pgps.size() != simps.size())
       throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle <-> SimParticle inconsistency" << std::endl;
-    // update the time of the Primary gen particle to take into account the offets.  Otherwise it has
-    // no meaning.  Using either of the SimParticles should give the same answer.
-    double offtime = pgp.time() + _toff.totalTimeOffset(simps.front());
-    pgp = GenParticle(pgp.pdgId(),pgp.generatorId(),pgp.position(),pgp.momentum(),offtime, pgp.properTime());
     // create output object
     PrimaryParticle pp(pgp, simps);
     // put in event
