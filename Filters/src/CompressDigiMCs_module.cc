@@ -43,6 +43,7 @@
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 
 namespace mu2e {
   class CompressDigiMCs;
@@ -173,6 +174,11 @@ private:
   art::InputTag _primaryParticleTag;
   art::Handle<PrimaryParticle> _primaryParticleHandle;
   std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
+
+  // other optional parameters
+  art::InputTag _mcTrajectoryTag;
+  art::Handle<MCTrajectoryCollection> _mcTrajectoriesHandle;
+  std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
 };
 
 
@@ -192,7 +198,8 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _caloClusterMCTag(pset.get<art::InputTag>("caloClusterMCTag", "")),
     _keepAllGenParticles(pset.get<bool>("keepAllGenParticles", true)),
     _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", "")),
-    _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", ""))
+    _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", "")),
+    _mcTrajectoryTag(pset.get<art::InputTag>("mcTrajectoryTag", ""))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -234,6 +241,9 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   }
   if (_primaryParticleTag != "") {
     produces<PrimaryParticle>();
+  }
+  if (_mcTrajectoryTag != "") {
+    produces<MCTrajectoryCollection>();
   }
 }
 
@@ -321,6 +331,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_primaryParticleTag != "") {
     event.getByLabel(_primaryParticleTag, _primaryParticleHandle);
     _newPrimaryParticle = std::unique_ptr<PrimaryParticle>(new PrimaryParticle);
+  }
+  // If we want to keep MC trajectories
+  if (_mcTrajectoryTag != "") {
+    event.getByLabel(_mcTrajectoryTag, _mcTrajectoriesHandle);
+    _newMCTrajectories = std::unique_ptr<MCTrajectoryCollection>(new MCTrajectoryCollection);
   }
 
 
@@ -562,6 +577,15 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       i_simPartPtr = remap.at(i_simPartPtr);
     }
   }
+  // Create new MC Trajectory collection
+  if (_mcTrajectoryTag != "") {
+    for (const auto& i_mcTrajectory : *_mcTrajectoriesHandle) {
+      art::Ptr<SimParticle> oldSimPtr = i_mcTrajectory.first;
+      if (remap.find(oldSimPtr) != remap.end()) {
+	_newMCTrajectories->insert(std::pair<art::Ptr<SimParticle>, mu2e::MCTrajectory>(remap.at(oldSimPtr), i_mcTrajectory.second));
+      }
+    }
+  }
 
   // Now add everything to the event
   for (const auto& i_instance : _newStepPointMCInstances) {
@@ -597,6 +621,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   }
   if (_primaryParticleTag != "") {
     event.put(std::move(_newPrimaryParticle));
+  }
+  if (_mcTrajectoryTag != "") {
+    event.put(std::move(_newMCTrajectories));
   }
 }
 
