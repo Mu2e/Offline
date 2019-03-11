@@ -59,9 +59,6 @@ event_builder: {
 
 services : @local::Services.Reco
 
-
-paths        : { @table::Trigger.paths     }
-
 physics:
 {
     

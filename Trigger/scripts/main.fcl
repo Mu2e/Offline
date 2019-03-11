@@ -31,8 +31,6 @@ services.TimeTracker : {
 
 services.scheduler.wantSummary: true
 
-paths        : { @table::Trigger.paths     }
-
 physics : {
     producers : { @table::Trigger.producers }
 
