@@ -31,20 +31,14 @@ services.TimeTracker : {
 
 services.scheduler.wantSummary: true
 
-producers    : { @table::Trigger.producers }
-filters      : { @table::Trigger.filters   }
-analyzers    : { @table::Trigger.analyzers }
-paths        : { @table::Trigger.paths     }
-outputs      : { @table::Trigger.outputs   }
-
 physics : {
-    producers : { @table::producers }
+    producers : { @table::Trigger.producers }
 
-    filters   : { @table::filters }
+    filters   : { @table::Trigger.filters }
  
-    analyzers : {  
+    analyzers : { @table::Trigger.analyzers 
 
-	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
 	    nFilters      : 35
 	}
 	
@@ -54,9 +48,7 @@ physics : {
     end_paths : [ out ]
 }
 
-outputs : {
-    @table::outputs
-}
+outputs : {  @table::Trigger.outputs }
 
 
 services.TFileService.fileName : "globalTrigger.root"

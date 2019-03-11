@@ -6,4 +6,3 @@ physics.filters.caloCalibCosmicCDCountFilter.maxNStrawDigi       : -1
 physics.filters.caloCalibCosmicCDCountFilter.minNCaloDigi        : 2		    
 physics.filters.caloCalibCosmicCDCountFilter.maxNCaloDigi        : 10000		    
 physics.filters.caloCalibCosmicCDCountFilter.maxCaloEnergy       : -1		    
-physics.filters.caloCalibCosmicCDCountFilter.triggerAlg          : ["CaloCalibCosmic"]	    

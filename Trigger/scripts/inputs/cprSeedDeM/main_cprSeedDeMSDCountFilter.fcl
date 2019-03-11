@@ -6,5 +6,4 @@ physics.filters.cprSeedDeMSDCountFilter.maxNStrawDigi       : 10000
 physics.filters.cprSeedDeMSDCountFilter.minNCaloDigi        : -1	 
 physics.filters.cprSeedDeMSDCountFilter.maxNCaloDigi        : -1	 
 physics.filters.cprSeedDeMSDCountFilter.maxCaloEnergy       : -1     
-physics.filters.cprSeedDeMSDCountFilter.triggerAlg          : ["CprSeedDeM"]
 

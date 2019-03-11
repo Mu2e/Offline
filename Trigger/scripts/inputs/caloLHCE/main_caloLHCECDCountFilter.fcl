@@ -6,4 +6,3 @@ physics.filters.caloLHCECDCountFilter.maxNStrawDigi       : -1
 physics.filters.caloLHCECDCountFilter.minNCaloDigi        : 2		    
 physics.filters.caloLHCECDCountFilter.maxNCaloDigi        : 10000		    
 physics.filters.caloLHCECDCountFilter.maxCaloEnergy       : -1		    
-physics.filters.caloLHCECDCountFilter.triggerAlg          : ["CaloLHCE"]	    

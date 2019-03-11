@@ -15,7 +15,7 @@ from shutil import copyfile
 
 from argparse import ArgumentParser
 
-def appendEpilog(trig_path, output_file, project_name):
+def appendEpilog(trig_path, output_file, project_name, trig_path_counter):
 
     trk_filters      = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'TSFilter','Prescale']
     helix_filters    = ['EventPrescale','SDCountFilter','TCFilter', 'HSFilter', 'Prescale']
@@ -110,6 +110,10 @@ def appendEpilog(trig_path, output_file, project_name):
                                 new_line   =("physics.filters."+filterName+"."+str(vec_varName[0])+" : "+str(vec_varName[1])+ "\n")
                                 epilog_file.write(new_line)
                                 epilog_file.close()
+        # set the TriggerAlg using the trig_path_counter
+        epilog_file     = open(epilog_fileName,"a")
+        trigAlg_line    = ("physics.filters."+filterName+".triggerAlg        " + " : [" + "\"Trig"+str(trig_path_counter) + "\" ] \n")
+        epilog_file.write(trigAlg_line)
 
         epilog=("\n#include \""+epilog_fileName +"\"")
         print epilog
@@ -175,6 +179,7 @@ copyfile(input_file, new_file)
 new_file = open(new_file,"a")
 
 path_list = ""
+trig_list = ""
 
 hasFilteroutput=0
 
@@ -189,8 +194,11 @@ if os.path.exists(project_dir) == False:
     os.makedirs(project_dir)
 
 new_epilog   = project_name + "/" + "allPaths.fcl"
-
 new_epilog   = open(new_epilog, "a");
+
+#we need a counter for associating the trig bits
+#with a given string in the TriggerInfoMerger module
+trigger_path_counter= 0
 
 for line in fh:
     vec_path     = []
@@ -216,32 +224,34 @@ for line in fh:
 
         if path_list == "":
             path_list += vec_path[0]+"_path"
+            trig_list += "\""+vec_path[0]+"\""
         else:
             path_list += ", "+vec_path[0]+"_path"
+            trig_list += ", "+"\""+vec_path[0]+"\""
     
         if isOnlineMode == False:
-            new_path= ("\nphysics."+vec_path[0]+"_path"+" : [ @sequence::paths."+vec_path[0]+" ] \n") 
+            new_path= ("\nphysics."+vec_path[0]+"_path"+" : [ @sequence::Trigger.paths."+vec_path[0]+" ] \n") 
         else:
             digi_path=""
             if 'tpr'  in vec_path[0] or 'cpr' in vec_path[0] or 'Sd' in vec_path[0]: 
                 digi_path += "makeSD, "
             if 'calo' in vec_path[0] or 'cpr' in vec_path[0] or 'Cd' in vec_path[0]: 
                 digi_path += "CaloDigiFromShower, "
-            new_path= ("physics."+vec_path[0]+"_path"+" : [ "+ digi_path +"@sequence::paths."+vec_path[0]+" ] \n")
+            new_path= ("physics."+vec_path[0]+"_path"+" : [ "+ digi_path +"@sequence::Trigger.paths."+vec_path[0]+" ] \n")
 
 #now append the epilog files for setting the filters in the path
         
 #        if "Seed" in vec_path[0]:
-        appendEpilog(str(vec_path[0]), new_epilog, project_name)
+        appendEpilog(str(vec_path[0]), new_epilog, project_name, trigger_path_counter)
 
         new_epilog.write(new_path)
 
     else:
         trigerOutput_line= ("\nphysics.out : [ readTriggerInfo, triggerOutput ]"+" \n")
-        new_epilog.write(trigerOutput_line)
+        new_file.write(trigerOutput_line)
         hasFilteroutput=1
 
-
+    trigger_path_counter = trigger_path_counter + 1
     # if vec_path[0] != "triggerOutput":
     #     if len(vec_prescale) == 1:
     #         new_line= ("physics.filters."+str(vec_path[0])+"Prescale.nPrescale"+" : "+ str(vec_prescale[0])+" \n \n")
@@ -254,15 +264,20 @@ for line in fh:
     #         new_epilog.write(new_line)
 
 new_epilog.write("\n")
+new_epilog.close()
        
+new_file.write("\n#include \"TriggerEpilogs/allPaths.fcl\"\n")
+
 analyzer_line= ("physics.analyzers.readTriggerInfo.SelectEvents : [ "+path_list+" ]"+" \n")
-new_epilog.write(analyzer_line)
+new_file.write(analyzer_line)
+
+trigInfoMerger_line = ("physics.producers.triggerInfoMerger.trigAlgNames : [ "+trig_list+" ]"+" \n")
+new_file.write(trigInfoMerger_line)
 
 if hasFilteroutput == 1:
     triggerOutput_line= ("outputs.triggerOutput.SelectEvents : [ "+path_list+" ]"+" \n")
-    new_epilog.write(triggerOutput_line)
+    new_file.write(triggerOutput_line)
 
-new_epilog.close()
+#new_epilog.close()
 
-new_file.write("\n#include \"TriggerEpilogs/allPaths.fcl\"\n")
 new_file.close()

@@ -1,7 +1,6 @@
 physics.filters.largeCDCountPrescale.strawDigiCollection : notUSed		  
 physics.filters.largeCDCountPrescale.useStrawDigi        : false			  
 physics.filters.largeCDCountPrescale.useCaloDigi         : true			  
-physics.filters.largeCDCountPrescale.triggerAlg          : ["LargeBiasCaloDigiCount"]
 physics.filters.largeCDCountPrescale.minNStrawDigi       : -1   		  
 physics.filters.largeCDCountPrescale.maxNStrawDigi       : -1			  
 physics.filters.largeCDCountPrescale.minNCaloDigi        : 5000 
