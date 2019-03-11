@@ -82,11 +82,6 @@ namespace mu2e {
     ptr->_strawtype = std::make_unique<DetStrawType>(
 			     gasmat,wallmat,wiremat,offset,tol,rfrac);
 
-    if ( _config.verbose() > 0 ) {
-      cout << "Mu2eMaterial constructed with: "<< endl;
-      ptr->print(cout);
-    }
-
     return ptr;
   }
 

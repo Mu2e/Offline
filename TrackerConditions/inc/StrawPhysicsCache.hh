@@ -40,6 +40,9 @@ namespace mu2e {
 	//p = _maker.fromDb(sd);
 	p->addCids(s);
 	push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       } else {
 	if(_verbose>1) std::cout<< "found StrawPhysics in cache " << std::endl;
       }

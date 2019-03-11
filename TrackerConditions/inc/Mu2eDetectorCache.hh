@@ -59,6 +59,9 @@ namespace mu2e {
 	p = _maker.fromFcl(mm,tr);
 	p->addCids(s);
 	push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       } else {
 	if(_verbose>1) std::cout<< "found Mu2eDetector in cache " << std::endl;
       }

@@ -83,6 +83,9 @@ namespace mu2e {
 	}
         p->addCids(cids);
         push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       }
 
       return std::make_tuple(p,iov);

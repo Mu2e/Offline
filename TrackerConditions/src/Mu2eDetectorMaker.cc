@@ -36,10 +36,6 @@ namespace mu2e {
       }
     }
 
-    if ( _config.verbose() > 0 ) {
-      ptr->print(cout);
-    }
-
     return ptr;
   }
 

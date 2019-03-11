@@ -75,8 +75,8 @@ StrawPhysics : {
 
 
 StrawElectronics : {
-   verbose : 0
-   useDb : false
+   verbose : 2
+   useDb : true
 
    defaultThresholddVdI : 1.1e7
    thresholddVdI : []
