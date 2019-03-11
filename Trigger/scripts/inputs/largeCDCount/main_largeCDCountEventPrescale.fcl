@@ -1,3 +1,2 @@
 physics.filters.largeCDCountEventPrescale.nPrescale    : 10000
-physics.filters.largeCDCountEventPrescale.triggerAlg   : ["LargeCaloDigiCount"]
 physics.filters.largeCDCountEventPrescale.triggerFlag  : ["PrescaleRandom"]

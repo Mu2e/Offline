@@ -742,7 +742,8 @@ namespace mu2e {
     double    phiVec[30], zVec[30], weight(0);
 
     // np        = _xyzp.size();
-    nstations = _tracker->nStations();
+    int       nPlanesPerStation(2);
+    nstations = StrawId::_nplanes/nPlanesPerStation;//_tracker->nStations();
 
     for (int i=0; i<nstations; i++) {
       phiVec[i] = 0;
@@ -1560,7 +1561,6 @@ namespace mu2e {
 
     int     size           = Helix._timeCluster->nhits();
     int     nFiltPoints(0), nFiltStrawHits(0);
-    // int nTotalStations = _tracker->nStations();
     //--------------------------------------------------------------------------------
     // if (Helix.shpos() != 0) {
     int loc;
@@ -1640,7 +1640,6 @@ namespace mu2e {
       FaceZ_t*  fz        = &Helix._oTracker[faceId];
       PanelZ_t* pz        = &fz->panelZs[op];
 	
-      //	if ((os < 0) || (os >= FaceZ_t::kNStations     )) printf(" >>> ERROR: wrong station number: %i\n",os);
       if ((of < 0) || (of >  StrawId::_nfaces*FaceZ_t::kNPlanesPerStation  )) printf(" >>> ERROR: wrong face    number: %i\n",of);
       if ((op < 0) || (op >= FaceZ_t::kNPanels )) printf(" >>> ERROR: wrong panel   number: %i\n",op);
 

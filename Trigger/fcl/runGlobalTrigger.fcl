@@ -121,10 +121,10 @@ physics : {
     #merger of the TriggerInfo
 #    zzTrigIfnoMerger_path        : [ triggerInfoMerger ] 
     
-    out           : [ readTriggerInfo ]
+#    out           : [ readTriggerInfo ]
     
 
-#    out           : [ readTriggerInfo, triggerOutput ]
+    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 

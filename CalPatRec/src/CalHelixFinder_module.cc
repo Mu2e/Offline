@@ -123,39 +123,34 @@ namespace mu2e {
     _hfinder.setCalorimeter(_calorimeter);
 
     ChannelID cx, co;
-    // int       nTotalStations = _tracker->nStations();
+    int       nPlanesPerStation(2);
+    for (int ipl=0; ipl<_tracker->nPlanes(); ipl++) {
+      const Plane*  pln = &_tracker->getPlane(ipl);
+      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+	const Panel* panel = &pln->getPanel(ipn);
+	int face;
+	if (panel->id().getPanel() % 2 == 0) face = 0;
+	else                                 face = 1;
+	cx.Station = ipl/nPlanesPerStation;//ist;
+	cx.Plane   = ipl % nPlanesPerStation;
+	cx.Face    = face;
+	cx.Panel   = ipn;
+	//	    cx.Layer   = il;
+	_hfResult.orderID (&cx, &co);
+	int os = co.Station; 
+	int of = co.Face;
+	int op = co.Panel;
 
-    for (int ist=0; ist<_tracker->nStations(); ist++) {
-      const Station* st = &_tracker->getStation(ist);
-
-      for (int ipl=0; ipl<st->nPlanes(); ipl++) {
-	const Plane* pln = &st->getPlane(ipl);
-	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
-	  const Panel* panel = &pln->getPanel(ipn);
-	  int face;
-	  if (panel->id().getPanel() % 2 == 0) face = 0;
-	  else                                 face = 1;
-	  cx.Station = ist;
-	  cx.Plane   = ipl;
-	  cx.Face    = face;
-	  cx.Panel   = ipn;
-	  //	    cx.Layer   = il;
-	  _hfResult.orderID (&cx, &co);
-	  int os = co.Station; 
-	  int of = co.Face;
-	  int op = co.Panel;
-
-	  int       stationId = os;
-	  int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
-	  _hfResult._zFace[faceId] = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	  //-----------------------------------------------------------------------------
-	  // panel caches phi of its center and the z
-	  //-----------------------------------------------------------------------------
-	  _hfResult._phiPanel[faceId*FaceZ_t::kNPanels + op] = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
-	}	
-      }
+	int       stationId = os;
+	int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
+	_hfResult._zFace[faceId] = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	//-----------------------------------------------------------------------------
+	// panel caches phi of its center and the z
+	//-----------------------------------------------------------------------------
+	_hfResult._phiPanel[faceId*FaceZ_t::kNPanels + op] = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
+      }	
     }
-
+	   
     if (_debugLevel > 10){
       printf("//----------------------------------------------//\n");
       printf("//     Face      Panel       PHI       Z        //\n");

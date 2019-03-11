@@ -31,6 +31,7 @@
 
 // ROOT incldues
 #include "Rtypes.h"
+#include "TBits.h"
 #include "TTree.h"
 
 // BaBar includes
@@ -42,6 +43,7 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+#include "RecoDataProducts/inc/TriggerAlg.hh"
 // diagnostics
 #include "TrkDiag/inc/TrkComp.hh"
 #include "TrkDiag/inc/HitCount.hh"
@@ -96,6 +98,8 @@ namespace mu2e {
     art::InputTag _detqtag;
     // reco count module
     art::InputTag _rctag;
+    // trigger bits tag
+    art::InputTag _trigbitstag;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
@@ -103,7 +107,7 @@ namespace mu2e {
     std::string _crvCoincidenceModuleLabel;
     std::string _crvCoincidenceMCModuleLabel;
     // analysis options
-    bool _fillmc, _pempty, _crv, _helices, _filltrkqual;
+    bool _fillmc, _pempty, _crv, _helices, _filltrkqual, _filltrig;
     int _diag;
     // momentum analyzer
     double _bz0;
@@ -129,6 +133,8 @@ namespace mu2e {
     TrkCaloHitInfo _detch;
     CaloClusterInfoMC _detchmc;
     std::vector<TrkStrawMatInfo> _detsm;
+    // trigger information
+    unsigned _trigbits;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
@@ -144,6 +150,7 @@ namespace mu2e {
     TrkQualTestInfo _trkqualTest;
     // helper functions
     void fillEventInfo(const art::Event& event);
+    void fillTriggerBits(TriggerAlg const& trigbits);
 //    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
     KSCIter findBestRecoTrack(KalSeedCollection const& kcol);
@@ -164,15 +171,17 @@ namespace mu2e {
     _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
+    _trigbitstag( pset.get<art::InputTag>("TriggerBitsTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
     _crvCoincidenceMCModuleLabel(pset.get<string>("CrvCoincidenceMCModuleLabel")),
     _fillmc(pset.get<bool>("FillMCInfo",true)),
-    _pempty(pset.get<bool>("ProcessEmptyEvents",true)),
+    _pempty(pset.get<bool>("ProcessEmptyEvents",false)),
     _crv(pset.get<bool>("AnalyzeCRV",false)),
     _helices(pset.get<bool>("FillHelixInfo",false)),
-    _filltrkqual(pset.get<bool>("fillTrkQualInfo",false)),
+    _filltrkqual(pset.get<bool>("FillTrkQualInfo",true)),
+    _filltrig(pset.get<bool>("FillTriggerInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
@@ -211,6 +220,8 @@ namespace mu2e {
 // add branches for other tracks
     _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
     _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
+// trigger info.  Actual names should come from the BeginRun object FIXME
+    if(_filltrig)_trkana->Branch("trigbits",&_trigbits,"trigbits/I");
 // calorimeter information for the downstream electron track
 // CRV info
    if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
@@ -287,7 +298,14 @@ namespace mu2e {
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_detqtag, trkQualHandle);
     TrkQualCollection const& tqcol = *trkQualHandle;
-// MC data
+    // trigger information
+    if(_filltrig){
+      art::Handle<TriggerAlg> trigbitsH;
+      event.getByLabel(_trigbitstag, trigbitsH);
+      TriggerAlg const& trigbits = *trigbitsH;
+      fillTriggerBits(trigbits);
+    }
+    // MC data
     art::Handle<PrimaryParticle> pph;
     art::Handle<KalSeedMCAssns> ksmcah;
     art::Handle<CaloClusterMCAssns> ccmcah;
@@ -455,6 +473,17 @@ namespace mu2e {
       weights.push_back(weight);
     }
     _wtinfo.setWeights(weights);
+  }
+
+  void TrackAnalysisReco::fillTriggerBits(TriggerAlg const& trigbits) {
+    _trigbits = 0;
+    for(size_t ibit=0;ibit < 32; ++ibit){
+      TriggerAlg mask(static_cast<TriggerAlg::bit_type>(ibit));
+      if(trigbits.hasAnyProperty(mask)){
+//	cout << "Found trigger bit " << ibit << " set" << endl;
+	_trigbits |= 1 << ibit;
+      }
+    }
   }
 
   void TrackAnalysisReco::resetBranches() {

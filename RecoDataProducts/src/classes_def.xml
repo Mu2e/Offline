@@ -300,6 +300,9 @@
  <class name="mu2e::TriggerAlg"/>
  <class name="art::Ptr<mu2e::TriggerAlg>"/>
  <class name="art::Wrapper<mu2e::TriggerAlg>"/>
+ <class name="mu2e::TriggerAlgMap"/>
+ <class name="art::Ptr<mu2e::TriggerAlgMap>"/>
+ <class name="art::Wrapper<mu2e::TriggerAlgMap>"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="art::Ptr<mu2e::TriggerInfo>"/>
  <class name="mu2e::TriggerInfoCollection" /> 

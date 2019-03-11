@@ -6,4 +6,3 @@ physics.filters.caloLHCEFilter.ClusterEnergyStep      : 10.
 physics.filters.caloLHCEFilter.MinClusterRadialDist   : 350.  			   
 physics.filters.caloLHCEFilter.ClusterRadialDistStep  : 50.   			   
 physics.filters.caloLHCEFilter.MinLikelihoodCut       : [ 41.44, 10.36]                           		    
-physics.filters.caloLHCEFilter.triggerAlg             : ["CaloLHCE"]	                                    

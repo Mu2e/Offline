@@ -1,3 +1,2 @@
 physics.filters.largeSDCountEventPrescale.nPrescale    : 10000
-physics.filters.largeSDCountEventPrescale.triggerAlg   : ["LargeStrawDigiCount"]
 physics.filters.largeSDCountEventPrescale.triggerFlag  : ["PrescaleRandom"]
