@@ -62,7 +62,7 @@ namespace mu2e {
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
       bool _vertical;
 
-      bool _projectToEnvelope;
+      bool _projectToTargetBox;
 
       bool _geomInfoObtained;
       double _targetBoxXmin;
@@ -85,9 +85,10 @@ namespace mu2e {
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
       void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir,
-          std::vector<CLHEP::Hep3Vector> intersections,
+          std::vector<CLHEP::Hep3Vector> &intersections,
           double xMin, double xMax, double yMin, double yMax, double zMin, double zMax);
       bool pointInBox(double x, double y, double x0, double y0, double x1, double z1);
+      double distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v);
 
       void createSetupString();
   };  // CosmicCRY

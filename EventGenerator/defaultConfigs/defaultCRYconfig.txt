@@ -6,7 +6,8 @@ int cosmicCRY.verbose = 0;
 string cosmicCRY.refPoint = "CALO";
 double cosmicCRY.refY0 = 20000; // 20 meter above nominal beam height
 
-bool cosmicCRY.projectToEnvelope = true;
+bool cosmicCRY.projectToTargetBox = true;
+// default values are from the Mu2eEnvelop
 double cosmicCRY.targetBoxXmin =  -29960.6;
 double cosmicCRY.targetBoxXmax =  31787.6;
 double cosmicCRY.targetBoxYmin = -3531.2;
