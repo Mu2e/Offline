@@ -16,7 +16,11 @@ namespace mu2e {
   public: 
     Mu2eMaterialCache(Mu2eMaterialConfig const& config):
       _name("Mu2eMaterial"),_maker(config),
-      _verbose(config.verbose()) {}
+      _verbose(config.verbose()) {  
+      // force a fake update so BTrk TrkParticle 
+      // is working when modules are created
+      update(art::EventID(1,0,0));
+    }
 
     std::string const& name() const { return _name; }
 
