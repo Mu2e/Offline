@@ -76,13 +76,27 @@ int mu2e::DbReader::query(std::string& csv,
     if(_verbose>5) std::cout << "DbReader start perform with itry="<<itry << std::endl;
     _curl_ret = curl_easy_perform(_curl_handle);
     _lastError = curl_easy_strerror(_curl_ret);
+
+    int http_code = 0;
+    curl_easy_getinfo (_curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
+
     if (_curl_ret == CURLE_OK) {
       if(_verbose>5) {
-	std::cout << "DbReader curlOutput=" << _result.reply << std::endl;
-	std::cout << "DbReader return code=" << _lastError << std::endl;
+	std::cout << "DbReader curlOutput=";
+	std::size_t iend = _result.reply.size();
+	if(_verbose>9 || iend<400) {
+	  std::cout << _result.reply << std::endl;
+	} else {
+	  std::cout << _result.reply.substr(0,200) << std::endl;
+	  std::cout << " ... " << std::endl;
+	  std::cout << _result.reply.substr(iend-200,200) << std::endl;
+	}
+	std::cout << "DbReader return code=" << _lastError 
+		  << "   http code: " << http_code << std::endl;
       }
     } else {
-      if(_verbose>0) std::cout << "DbReader lastError=" << _lastError << std::endl;
+      if(_verbose>0) std::cout << "DbReader lastError=" << _lastError 
+			       << "   http code: " << http_code << std::endl;
     }
     //curl_easy_cleanup(_curl_handle);
     itry++;

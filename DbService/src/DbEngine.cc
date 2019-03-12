@@ -15,6 +15,7 @@ int mu2e::DbEngine::beginJob() {
 
   _reader.setDbId(_id);
   _reader.setVerbose(_verbose);
+  _reader.setTimeVerbose(_verbose);
   if(_vcache) { // existing data was already set
     _reader.fillValTables(*_vcache);
   } else { // we have to create/fill it
