@@ -248,7 +248,7 @@ for line in fh:
 
     else:
         trigerOutput_line= ("\nphysics.out : [ readTriggerInfo, triggerOutput ]"+" \n")
-        new_file.write(trigerOutput_line)
+        new_epilog.write(trigerOutput_line)
         hasFilteroutput=1
 
     trigger_path_counter = trigger_path_counter + 1
@@ -264,20 +264,18 @@ for line in fh:
     #         new_epilog.write(new_line)
 
 new_epilog.write("\n")
-new_epilog.close()
        
-new_file.write("\n#include \"TriggerEpilogs/allPaths.fcl\"\n")
-
 analyzer_line= ("physics.analyzers.readTriggerInfo.SelectEvents : [ "+path_list+" ]"+" \n")
-new_file.write(analyzer_line)
+new_epilog.write(analyzer_line)
 
 trigInfoMerger_line = ("physics.producers.triggerInfoMerger.trigAlgNames : [ "+trig_list+" ]"+" \n")
-new_file.write(trigInfoMerger_line)
+new_epilog.write(trigInfoMerger_line)
 
 if hasFilteroutput == 1:
     triggerOutput_line= ("outputs.triggerOutput.SelectEvents : [ "+path_list+" ]"+" \n")
-    new_file.write(triggerOutput_line)
+    new_epilog.write(triggerOutput_line)
 
-#new_epilog.close()
+new_epilog.close()
 
+new_file.write("\n#include \"TriggerEpilogs/allPaths.fcl\"\n")
 new_file.close()
