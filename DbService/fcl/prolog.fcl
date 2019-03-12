@@ -5,7 +5,7 @@ DbEmpty : {
    version :  "v2_0"
    dbName : "mu2e_conditions_prd"
    #textFile : ["table.txt"]
-   verbose : 1
+   verbose : 0
 }
 
 END_PROLOG
