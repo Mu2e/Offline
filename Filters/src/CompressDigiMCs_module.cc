@@ -179,6 +179,12 @@ private:
   art::InputTag _mcTrajectoryTag;
   art::Handle<MCTrajectoryCollection> _mcTrajectoriesHandle;
   std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
+
+  // For CrvDigiMCs, there's a chance that the same StepPointMC will go into multiple CrvDigiMCs
+  // This module didn't take this into account initially and so the same StepPointMC was being written out multiple times
+  // This std::set is used to make sure that this doesn't happen
+  std::set<art::Ptr<StepPointMC> > _crvStepPointMCsSeen;
+  std::map<art::Ptr<StepPointMC>, art::Ptr<StepPointMC> > _crvStepPointMCsMap;
 };
 
 
@@ -362,6 +368,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   
   
   if (_crvDigiMCTag != "") {
+    _crvStepPointMCsSeen.clear();
+    _crvStepPointMCsMap.clear();
+
     event.getByLabel(_crvDigiMCTag, _crvDigiMCsHandle);
     const auto& crvDigiMCs = *_crvDigiMCsHandle;
     for (size_t i = 0; i < crvDigiMCs.size(); ++i) {
@@ -663,7 +672,14 @@ void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc
   std::vector<art::Ptr<StepPointMC> > newStepPtrs;
   for (const auto& i_step_mc : old_crv_digi_mc.GetStepPoints()) {
     if (i_step_mc.isAvailable()) {
-      newStepPtrs.push_back(copyStepPointMC(*i_step_mc, _crvOutputInstanceLabel));
+      if (_crvStepPointMCsSeen.insert(i_step_mc).second == true) { // if we have inserted this StepPointMCPtrs (i.e. it hasn't already been seen)
+	art::Ptr<StepPointMC> newStepPtr = copyStepPointMC(*i_step_mc, _crvOutputInstanceLabel);
+	newStepPtrs.push_back(newStepPtr);
+	_crvStepPointMCsMap[i_step_mc] = newStepPtr;
+      }
+      else {
+	newStepPtrs.push_back(_crvStepPointMCsMap.at(i_step_mc));
+      }
     }
     else { // this is a null Ptr but it should be added anyway to keep consistency (expected for CrvDigis)
       newStepPtrs.push_back(i_step_mc);
