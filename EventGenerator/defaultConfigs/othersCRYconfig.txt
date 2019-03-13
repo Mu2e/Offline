@@ -8,8 +8,16 @@ double cosmicCRY.refY0 = 0; // 0 meter above nominal beam height
 
 bool cosmicCRY.projectToEnvelope = true;
 
-// Enable all particles but muons
-bool cosmicCRY.returnMuons = false;
+// histogram settings
+bool cosmicCRY.doHistograms = true;
+double cosmicCRY.muCosThMin = 0.00366518;
+double cosmicCRY.muCosThMax = 1.0;
+double cosmicCRY.muEMin = 0.5e3;
+double cosmicCRY.muEMax = 5000e3;
+bool cosmicCRY.saveTree = false;
+
+// Enable all particles by default
+bool cosmicCRY.returnMuons = true;
 bool cosmicCRY.returnNeutrons = true;
 bool cosmicCRY.returnProtons = true;
 bool cosmicCRY.returnGammas = true;

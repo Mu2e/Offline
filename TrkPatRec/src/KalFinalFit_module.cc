@@ -15,6 +15,7 @@
 // conditions
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -115,6 +116,7 @@ namespace mu2e
     void findMissingHits_cpr(StrawResponse::cptr_t srep, KalFitData&kalData);
 
     ProditionsHandle<StrawResponse> _strawResponse_h;
+    ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
     // flow diagnostic
   };
 
@@ -190,6 +192,7 @@ namespace mu2e
   void KalFinalFit::produce(art::Event& event ) {
 
     auto srep = _strawResponse_h.getPtr(event.id());
+    auto detmodel = _mu2eDetector_h.getPtr(event.id());
 
     // event printout
     _iev=event.id().event();
@@ -255,7 +258,7 @@ namespace mu2e
 
 	// _kfit.makeTrack(_shcol,kseed,krep);
 	_result.init();
-	_kfit.makeTrack(srep,_result);
+	_kfit.makeTrack(srep,detmodel,_result);
 
 	// KalRep *krep = _result.stealTrack();
 
@@ -283,10 +286,10 @@ namespace mu2e
 	  }
 
 	  if(_result.missingHits.size() > 0){
-	    _kfit.addHits(srep,_result,_maxaddchi);
+	    _kfit.addHits(srep,detmodel,_result,_maxaddchi);
 	  }else if (_cprmode){
 	    int last_iteration  = -1;
-	    _kfit.fitIteration(_result,last_iteration);
+	    _kfit.fitIteration(detmodel,_result,last_iteration);
 	  }
 	  if(_debug > 1)
 	    cout << "AddHits Fit result " << _result.krep->fitStatus()
@@ -612,7 +615,7 @@ namespace mu2e
 	    CLHEP::Hep3Vector hdir = straw.getDirection();
 	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
 	    HepPoint spt(hpos.x(),hpos.y(),hpos.z());
-	    TrkLineTraj htraj(spt,hdir,-straw.getHalfLength(),straw.getHalfLength());
+	    TrkLineTraj htraj(spt,hdir,-straw.halfLength(),straw.halfLength());
 	    // estimate flightlength along track.  This assumes a constant BField!!!
 	    double fltlen = (hpos.z()-tpos.z())/tdir.z();
 	    // estimate hit length

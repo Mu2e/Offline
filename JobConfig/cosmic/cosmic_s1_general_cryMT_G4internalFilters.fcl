@@ -3,8 +3,8 @@
 physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/othersCRYconfig.txt"
 physics.producers.generate.module_type  : CRYEventGeneratorN
 physics.producers.generate.stashSize    : 1000
-physics.producers.g4run.runinMTMode     : false
-physics.producers.g4run.numberOfThreads : 10
+physics.producers.g4run.runinMTMode     : true
+physics.producers.g4run.numberOfThreads : 2
 
 physics.producers.g4run.G4InteralFiltering   : true
 physics.producers.g4run.errorOnFailureToPut : false

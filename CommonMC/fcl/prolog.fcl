@@ -28,8 +28,6 @@ CommonMC: {
   }
   TimeMaps : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
   TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
-  TimeMaps : [ protonTimeMap, muonTimeMap ]
-  TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary ]
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0
