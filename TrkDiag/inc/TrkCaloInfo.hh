@@ -8,7 +8,7 @@
 // 
 #ifndef TrkCaloInfo_HH
 #define TrkCaloInfo_HH
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "Rtypes.h"
 #include <string>
 namespace mu2e
@@ -29,25 +29,25 @@ namespace mu2e
     Float_t _eclust; // cluster energy
     Float_t _tclust; // cluster time
     Int_t _section; // cluster section
-    threevec _cpos; // calorimeter cluster position
-    threevec _tpos; // extrapolated track position near calorimeter cluster
-    threevec _tdir; // extrapolated track position near calorimeter cluster
+    XYZVec _cpos; // calorimeter cluster position
+    XYZVec _tpos; // extrapolated track position near calorimeter cluster
+    XYZVec _tdir; // extrapolated track position near calorimeter cluster
     Float_t _ttrk; // track time at intersection point
     static string leafnames() { 
       static string leaves;
       leaves = 
       string("dt/F:du/F:dv/F:ds/F:ep/F:uvchisq/F:tchisq/F:dtllr/F:epllr/F:") + // matching info
       string("eclust/F:tclust/F:section/I:") + // cluster information
-      threevec::leafnames("cpos").c_str() + string(":") +
-      threevec::leafnames("tpos").c_str() + string(":") +
-      threevec::leafnames("tdir").c_str() + string(":") +
+      Geom::XYZnames("cpos").c_str() + string(":") +
+      Geom::XYZnames("tpos").c_str() + string(":") +
+      Geom::XYZnames("tdir").c_str() + string(":") +
       string("ttrk/F");
       return leaves;
     }
 
     void reset() {
       _dt = _du = _dv = _ds = _ep = _uvChisq = _tChisq = _dtllr = _epllr = _eclust = _tclust = _ttrk = 0.0;
-      _cpos = _tpos = _tdir = threevec();
+      _cpos = _tpos = _tdir = XYZVec();
     }
   };
 }

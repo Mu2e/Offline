@@ -11,21 +11,15 @@ namespace mu2e {
   struct TriggerAlgDetail 
   {
     typedef unsigned int mask_type;
-
-    enum bit_type {unbiased            , 
-		   minBiasSrawDigiCount, largeStrawDigiCount, 
-		   minBiasCaloDigiCount, largeCaloDigiCount ,
-		   caloMVACE           , caloMVAPhoton     , 
-		   caloMVAMixedCE      ,
-		   caloLHCE            , caloLHPhoton       , 
-		   caloCalibCosmic     , caloCalibLaser     ,
-		   tprTimeClusterDeM   , tprTimeClusterDeP  ,  
-		   tprHelixDeM         , tprHelixDeP        ,  
-		   tprSeedDeM          , tprSeedDeP         ,  
-		   cprTimeClusterDeM   , cprTimeClusterDeP  ,  
-		   cprHelixDeM         , cprHelixDeP        ,  
-		   cprSeedDeM          , cprSeedDeP         ,  
-		   tprHelixIPADeM      , tprHelixIPADeP};
+    
+    enum bit_type { trig0,  trig1,   trig2,  trig3,
+		    trig4,  trig5,   trig6,  trig7,
+		    trig8,  trig9,  trig10, trig11,
+		    trig12, trig13, trig14, trig15,
+		    trig16, trig17, trig18, trig19,
+		    trig20, trig21, trig22, trig23,
+		    trig24, trig25, trig26, trig27,
+		    trig28, trig29, trig30, trig31 };
 
     static const std::string& typeName();
     static const std::map<std::string,mask_type>& bitNames();

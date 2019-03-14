@@ -89,9 +89,10 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg) {
+    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg) {
       kseg._fmin = htraj.lowRange();
       kseg._fmax = htraj.hiRange();
+      kseg._dflt = dflt;
       kseg._helix = htraj.parameters()->parameter();
       kseg._hcov = htraj.parameters()->covariance();
       kseg._mom = momerr.mag();
@@ -140,9 +141,11 @@ namespace mu2e {
 	StrawHitFlag hflag = chit.flag();
 	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-	TrkStrawHitSeed seedhit(tsh->index(),tsh->straw().id(),
+	// fill the seed.  I have to protect the class from TrkStrawHit to avoid a circular dependency, FIXME!
+	TrkStrawHitSeed seedhit(tsh->index(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->driftTime(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
+	    tsh->driftRadius(), tsh->signalTime(),
+	    tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
 	hitseeds.push_back(seedhit);
       }
     }

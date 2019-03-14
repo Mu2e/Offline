@@ -57,9 +57,10 @@ namespace mu2e
       TrkFitDirection _fdir; // fit direction.  This is used to make z-dependent time shifts
       double _avgDriftTime;  // average time offset for straw hits
       bool _useTOTdrift;
-      double _shDtDz;  // dt/dz for straw hits
-      double _shBeta;  // beta of the particle-hypothesis used
+      double _pitch; // average pitch of the track =cos(polar angle).
+      double _invBeta;  // 1/beta of the particle-hypothesis used
       double _shErr;
+      double _caloZOffset; // location of shower max WRT COG Z position
       double _caloT0Offset; // time offsets for downstream particls in the calorimeter
       double _caloT0Err; // time resolution 
   };

@@ -16,33 +16,38 @@ namespace mu2e {
      static std::map<std::string,mask_type> bitnames;
      if (bitnames.size()==0)
      {
-         bitnames[std::string("Unbiased")]             = bit_to_mask(unbiased);
-         bitnames[std::string("MinBiasSrawDigiCount")] = bit_to_mask(minBiasSrawDigiCount);
-         bitnames[std::string("LargeStrawDigiCount")]  = bit_to_mask(largeStrawDigiCount);
-         bitnames[std::string("MinBiasCaloDigiCount")] = bit_to_mask(minBiasCaloDigiCount);
-         bitnames[std::string("LargeCaloDigiCount")]   = bit_to_mask(largeCaloDigiCount);
-         bitnames[std::string("CaloMVACE")]            = bit_to_mask(caloMVACE);
-         bitnames[std::string("CaloMVAMixedCE")]       = bit_to_mask(caloMVAMixedCE);
-         bitnames[std::string("CaloMVAPhoton")]        = bit_to_mask(caloMVAPhoton);
-         bitnames[std::string("CaloLHCE")]             = bit_to_mask(caloLHCE);
-         bitnames[std::string("CaloLHPhoton")]         = bit_to_mask(caloLHPhoton);
-         bitnames[std::string("CaloCalibCosmic")]      = bit_to_mask(caloCalibCosmic);
-         bitnames[std::string("CaloCalibLaser")]       = bit_to_mask(caloCalibLaser);
-         bitnames[std::string("TprTimeClusterDeM")]    = bit_to_mask(tprTimeClusterDeM);
-         bitnames[std::string("TprTimeClusterDeP")]    = bit_to_mask(tprTimeClusterDeP);
-         bitnames[std::string("TprHelixDeM")]          = bit_to_mask(tprHelixDeM);
-         bitnames[std::string("TprHelixDeP")]          = bit_to_mask(tprHelixDeP);
-         bitnames[std::string("TprSeedDeM")]           = bit_to_mask(tprSeedDeM);
-         bitnames[std::string("TprSeedDeP")]           = bit_to_mask(tprSeedDeP);
-         bitnames[std::string("CprTimeClusterDeM")]    = bit_to_mask(cprTimeClusterDeM);
-         bitnames[std::string("CprTimeClusterDeP")]    = bit_to_mask(cprTimeClusterDeP);
-         bitnames[std::string("CprHelixDeM")]          = bit_to_mask(cprHelixDeM);
-         bitnames[std::string("CprHelixDeP")]          = bit_to_mask(cprHelixDeP);
-         bitnames[std::string("CprSeedDeM")]           = bit_to_mask(cprSeedDeM);
-         bitnames[std::string("CprSeedDeP")]           = bit_to_mask(cprSeedDeP);
-         bitnames[std::string("TprHelixIPADeM")]       = bit_to_mask(tprHelixIPADeM);
-         bitnames[std::string("TprHelixIPADeP")]       = bit_to_mask(tprHelixIPADeP);
-     }
+         bitnames[std::string("Trig0")]   = bit_to_mask(trig0);
+         bitnames[std::string("Trig1")]   = bit_to_mask(trig1);
+         bitnames[std::string("Trig2")]   = bit_to_mask(trig2);
+         bitnames[std::string("Trig3")]   = bit_to_mask(trig3);
+         bitnames[std::string("Trig4")]   = bit_to_mask(trig4);
+         bitnames[std::string("Trig5")]   = bit_to_mask(trig5);
+         bitnames[std::string("Trig6")]   = bit_to_mask(trig6);
+         bitnames[std::string("Trig7")]   = bit_to_mask(trig7);
+         bitnames[std::string("Trig8")]   = bit_to_mask(trig8);
+         bitnames[std::string("Trig9")]   = bit_to_mask(trig9);
+	 bitnames[std::string("Trig10")]  = bit_to_mask(trig10);
+         bitnames[std::string("Trig11")]  = bit_to_mask(trig11);
+         bitnames[std::string("Trig12")]  = bit_to_mask(trig12);
+         bitnames[std::string("Trig13")]  = bit_to_mask(trig13);
+         bitnames[std::string("Trig14")]  = bit_to_mask(trig14);
+         bitnames[std::string("Trig15")]  = bit_to_mask(trig15);
+         bitnames[std::string("Trig16")]  = bit_to_mask(trig16);
+         bitnames[std::string("Trig17")]  = bit_to_mask(trig17);
+         bitnames[std::string("Trig18")]  = bit_to_mask(trig18);
+         bitnames[std::string("Trig19")]  = bit_to_mask(trig19);
+	 bitnames[std::string("Trig20")]  = bit_to_mask(trig20);
+         bitnames[std::string("Trig21")]  = bit_to_mask(trig21);
+         bitnames[std::string("Trig22")]  = bit_to_mask(trig22);
+         bitnames[std::string("Trig23")]  = bit_to_mask(trig23);
+         bitnames[std::string("Trig24")]  = bit_to_mask(trig24);
+         bitnames[std::string("Trig25")]  = bit_to_mask(trig25);
+         bitnames[std::string("Trig26")]  = bit_to_mask(trig26);
+         bitnames[std::string("Trig27")]  = bit_to_mask(trig27);
+         bitnames[std::string("Trig28")]  = bit_to_mask(trig28);
+         bitnames[std::string("Trig30")]  = bit_to_mask(trig30);
+         bitnames[std::string("Trig31")]  = bit_to_mask(trig31);
+       }
      return bitnames;
   }
 

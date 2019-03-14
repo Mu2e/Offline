@@ -1,0 +1,2 @@
+physics.filters.largeCDCountEventPrescale.nPrescale    : 10000
+physics.filters.largeCDCountEventPrescale.triggerFlag  : ["PrescaleRandom"]

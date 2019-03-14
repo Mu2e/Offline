@@ -1,0 +1,2 @@
+physics.filters.caloLHCEEventPrescale.nPrescale    : 1
+physics.filters.caloLHCEEventPrescale.triggerFlag  : ["PrescaleRandom"]

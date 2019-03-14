@@ -28,7 +28,6 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
@@ -146,7 +145,6 @@ namespace mu2e
 
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
-    produces<AlgorithmIDCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
 //-----------------------------------------------------------------------------
@@ -204,7 +202,6 @@ namespace mu2e
     // create output
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
-    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
@@ -306,7 +303,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
-	  if (_cprmode)	_kfit.updateT0(_result);
+	  int last_iteration  = -1;
+	  if (_cprmode)	_kfit.updateT0(_result, last_iteration);
 
 	  // warning about 'fit current': this is not an error
 	  if(!_result.krep->fitCurrent()){
@@ -325,23 +323,12 @@ namespace mu2e
 	  KalRep *krep = _result.stealTrack();
 	  krcol->push_back(krep);
 
-	  // save the alorithm bit
-	  int best(1),mask(1);
-	  if (_cprmode==0) {
-	    best = AlgorithmID::TrkPatRecBit;
-	    mask = 1 << AlgorithmID::TrkPatRecBit;
-	  } else if (_cprmode==1) {
-	    best = AlgorithmID::CalPatRecBit;
-	    mask = 1 << AlgorithmID::CalPatRecBit;
-	  }
-	  algs->push_back(AlgorithmID(best,mask));
-
-
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
 	  TrkFitFlag fflag(kseed.status());
-	  fflag.merge(TrkFitFlag::kalmanOK);
+	  fflag.merge(TrkFitFlag::KFF);
+	  if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
 	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
 	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
@@ -372,7 +359,7 @@ namespace mu2e
 	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
 	    // fill the segment
 	    KalSegment kseg;
-	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    TrkUtilities::fillSegment(*htraj,momerr,locflt-fltlen,kseg);
 	    fseed._segments.push_back(kseg);
 	  }
 	  // see if there's a TrkCaloHit
@@ -387,7 +374,7 @@ namespace mu2e
 	    BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
 	    double locflt(0.0);
 	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
-	    TrkUtilities::fillSegment(*htraj,momerr,kseg);
+	    TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
 	    fseed._segments.push_back(kseg);
 	  }
 	  // save KalSeed for this track
@@ -405,7 +392,6 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
-    event.put(move(algs));
     event.put(move(shfcol));
   }
   
@@ -481,7 +467,9 @@ namespace mu2e
 	double            zhit = hpos.z();
 
 	for (std::vector<TrkHit*>::iterator it=krep->hitVector().begin(); it!=krep->hitVector().end(); it++) {
-	  tsh = static_cast<TrkStrawHit*> (*it);
+	  //	  tsh = static_cast<TrkStrawHit*> (*it);
+	  tsh = dynamic_cast<TrkStrawHit*> (*it);
+	  if (tsh ==0)                  continue;
 	  int tsh_index = tsh->index();
 	  if (tsh_index == istr) {
 	    found = true;

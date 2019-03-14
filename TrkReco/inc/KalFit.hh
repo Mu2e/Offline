@@ -29,7 +29,6 @@
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrkData/inc/TrkCaloHit.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "TrkReco/inc/TrkDef.hh"
 #include "TrkReco/inc/AmbigResolver.hh"
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
@@ -59,7 +58,6 @@ namespace mu2e
 
     virtual ~KalFit();
 // // create a fit object from a track definition
-//     void makeTrack(const ComboHitCollection* shcol, TrkDef& tdef, KalRep*& kres);
 // create a fit object from  a track seed, 
     void makeTrack(StrawResponse::cptr_t srep, 
 		   Mu2eDetector::cptr_t detmodel,
@@ -78,7 +76,7 @@ namespace mu2e
     TrkErrCode fitIteration(Mu2eDetector::cptr_t detmodel,
 			    KalFitData& kalData,int iter); 
     bool       weedHits    (KalFitData& kalData, int    iter);
-    bool       updateT0    (KalFitData& kalData);
+    bool       updateT0    (KalFitData& kalData, int    iter);
 
     TrkPrintUtils*  printUtils() { return _printUtils; }
   private:
@@ -117,7 +115,6 @@ namespace mu2e
     TrkPrintUtils*  _printUtils;
 
   // helper functions
-    bool fitable(TrkDef const& tdef);
     bool fitable(KalSeed const& kseed);
     void initT0(KalFitData&kalData);
     

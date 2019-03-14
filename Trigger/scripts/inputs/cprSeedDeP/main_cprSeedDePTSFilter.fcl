@@ -1,3 +1,5 @@
+physics.filters.cprSeedDePTSFilter.fitparticle   : @local::Particle.eplus 
+physics.filters.cprSeedDePTSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.cprSeedDePTSFilter.minNStrawHits : 15.0
 physics.filters.cprSeedDePTSFilter.minMomentum   : 70.0
 physics.filters.cprSeedDePTSFilter.maxMomentum   : 110.0

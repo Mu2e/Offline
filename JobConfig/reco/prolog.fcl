@@ -2,6 +2,7 @@
 #  Prolog for production reconstruction jobs
 #
 #include "TrkHitReco/fcl/prolog.fcl"
+#include "TrkReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "CalPatRec/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
@@ -19,70 +20,61 @@ Reconstruction : {
     # instantiate explicit helix merger modules: this should be in TrkReco/prolog FIXME!
     # NB: positive here refers to helicity, not charge!
     MHDeM : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFindere:Positive"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDe:Positive"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDe:Positive", "CalHelixFinderDe:Positive" ]
     }
     MHDeP : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFindere:Negative"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDe:Negative"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDe:Negative", "CalHelixFinderDe:Negative" ]
     }
     MHDmuM : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFinderMu:Positive"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDmu:Positive"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDmu:Positive" , "CalHelixFinderDmu:Positive" ]
     }
     MHDmuP : {
-      @table::CalPatRec.producers.MergeHelixFinder
-      trkHelixFinderModuleLabel    : "HelixFinderMu:Negative"
-      calHelixFinderModuleLabel	 : "CalHelixFinderDmu:Negative"
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderDmu:Negative", "CalHelixFinderDmu:Negative" ]
     }
     KSFDeM : {
-      @table::CalPatRec.producers.MHSeedFit
+      @table::Tracking.producers.KSFDeM
       SeedCollection             : MHDeM
+      AlgorithmIDCollection      : MHDeM
     }
     KSFDeP : {
-      @table::CalPatRec.producers.MHSeedFit
-      SeedCollection             : MHDeM
+      @table::Tracking.producers.KSFDeP
+      SeedCollection             : MHDeP
+      AlgorithmIDCollection      : MHDeP
     }
     KSFDmuM : {
-      @table::CalPatRec.producers.MHSeedFit
+      @table::Tracking.producers.KSFDmuM
       SeedCollection             : MHDmuM
+      AlgorithmIDCollection      : MHDmuM
     }
     KSFDmuP : {
-      @table::CalPatRec.producers.MHSeedFit
-      SeedCollection             : MHDmuM
+      @table::Tracking.producers.KSFDmuP
+      SeedCollection             : MHDmuP
+      AlgorithmIDCollection      : MHDmuP
     }
-    KFFDeM : { 
-      @table::KFFDeM
-      SeedCollection : KSFDeM
+    # Implicit TrkPatRec config for Final Fits and upstream fits (no merging)
+    # MC specific: this should be in a separate fcl file FIXME!
+    FindMCPrimary : { 
+      @table::CommonMC.FindMCPrimary
+      TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
     }
-
-    KFFDeP :  {
-      @table::KFFDeP
-      SeedCollection : KSFDeP
-    }
-
-    KFFDmuM : { 
-      @table::KFFDmuM
-      SeedCollection : KSFDmuM
-    }
-    
-    KFFDmuP : {
-      @table::KFFDmuP
-      SeedCollection : KSFDmuP
-    }
-    # MC specific: this should be separated FIXME!
-    FindMCPrimary : { @table::CommonMC.FindMCPrimary }
     SelectRecoMC : { 
       @table::CommonMC.SelectRecoMC 
        CSSCollection : "compressDigiMCs"
        CaloClusterMCDTime : 2.0
        CaloMinE : 1.0
+       SaveEnergySteps : false
+       SaveUnusedDigiMCs : true
+       SaveAllUnusedDigiMCs : false
        TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-#debugLevel : 2
        PrimaryParticle : "FindMCPrimary"
+       StrawDigiCollection : "makeSD"
+       StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
+       CaloDigiCollection : "CaloDigiFromShower"
+       CrvDigiCollection : "CrvDigi"
        CaloClusterCollection : "CaloClusterFromProtoCluster"
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
@@ -92,12 +84,11 @@ Reconstruction : {
       VDSPCollection : "compressDigiMCs:virtualdetector"
     }
     # calo fix: only need for MDC2018e and earlier
-    CaloFix : { @table::DigiCompression.CaloFix 
+    CaloMCFix : { @table::DigiCompression.CaloFix 
       	caloShowerStepTags : [ "compressDigiMCs" ]
 	caloShowerSimTag : "compressDigiMCs"
 	caloShowerStepROTag : "compressDigiMCs"
     }
-
     # Compresion
     compressRecoMCs : { @table::DigiCompression.Reco
       strawDigiMCTag : "compressDigiMCs"
@@ -105,12 +96,9 @@ Reconstruction : {
       simParticleTags : [ "compressDigiMCs" ]
       extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
       timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-#      caloShowerStepTags : [ "CaloFix" ]
-#      caloShowerSimTag : "CaloFix"
-#      caloShowerStepROTag : "CaloFix"
       caloClusterMCTag : "SelectRecoMC"
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       keepAllGenParticles : false
       crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
       primaryParticleTag : "FindMCPrimary"
@@ -119,7 +107,22 @@ Reconstruction : {
   
   filters : {
 # why are CalPatRec reconstruction modules implemented as filters????
+# This could have unexpected downstream consequences FIXME!
     @table::CalPatRec.filters
+    # reco filter
+    RecoFilter : {
+      module_type   : RecoMomFilter
+      KalFinalTagRoot : ""
+      TrkTags : [ "KFFDeM", "KFFDeP", 
+	          "KFFUeM", "KFFUeP", 
+		  "KFFDmuM", "KFFDmuP", 
+	          "KFFUmuM", "KFFUmuP"
+		]
+      MomentumCutoff : [ 90.0, 80.0,
+			 80.0, 80.0,
+			 90.0, 80.0,
+			 80.0, 80.0 ]
+    }
   }
 
   analyzers : {
@@ -128,67 +131,66 @@ Reconstruction : {
       newStrawDigiMCTag : "compressRecoMCs"
       OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
       NewTimeOffsets : { inputs : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ] }
-      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMCMap"
+      strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"
-      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMCMap"
+      crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       oldCaloShowerSimTag : "CaloFix"
       newCaloShowerSimTag : "compressRecoMCs"
     }
   }
-
-# reconstruct multiple types of tracks.  
-  TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-  # TrkPatRec for downstream and upstream e and mu
-		      TimeClusterFindere, HelixFindere,
-		      TimeClusterFinderMu, HelixFinderMu,
-  # CalPatRec for downstream e and mu .  Note CalPatRec uses 2 modules, TrkPatRec only one
-		      CalTimePeakFinder, CalHelixFinderDe,
-		      CalTimePeakFinderMu, CalHelixFinderDmu,
-   # merge downstream helices
-		      MHDeM, MHDeP,
-		      MHDmuM, MHDmuP,
-   # seed fits: merged downstream, TPR upstream
-		      KSFDeM, KSFDeP,
-		      KSFDmuM, KSFDmuP, 		      
-		      KSFUeM, KSFUeP, 
-		      KSFUmuM, KSFUmuP,
-   # final fits:
-   		      KFFDeM, KFFDeP,
-		      KFFDmuM, KFFDmuM,
-		      KFFUeM, KFFUeP,
-		      KFFUmuM, KFFUmuM
-		    ]
-
-# other sequences
+# reconstruct multiple types of tracks.  These are separate sequences to allow granular execution
+# Downstream electron sequence (plus and minus), using merged helices
+  DeSequence : [
+    TimeClusterFinderDe, HelixFinderDe,  # TrkPatRec
+    CalTimePeakFinder, CalHelixFinderDe,  # CalPatRec
+    MHDeM, MHDeP, # helix merging
+    KSFDeM, KSFDeP, # Seed fit (chisquared, no drift)
+    KFFDeM, KFFDeP # final Kalman filter fit
+  ]
+# Upstream electron sequence (plus and minus): TrkPatRec only
+  UeSequence : [
+    TimeClusterFinderUe, HelixFinderUe,   
+    KSFUeM, KSFUeP, # Seed fit (chisquared, no drift)
+    KFFUeM, KFFUeP # final Kalman filter fit
+  ]
+# Downstream muon sequence (plus and minus)
+  DmuSequence : [
+    TimeClusterFinderDmu, HelixFinderDmu,  # TrkPatRec
+    CalTimePeakFinderMu, CalHelixFinderDmu,  # CalPatRec
+    MHDmuM, MHDmuP, # helix merging
+    KSFDmuM, KSFDmuP, # Seed fit (chisquared, no drift)
+    KFFDmuM, KFFDmuP # final Kalman filter fit
+  ]
+# Upstream muon sequence (plus and minus)
+  UmuSequence : [
+    TimeClusterFinderUmu, HelixFinderUmu,   
+    KSFUmuM, KSFUmuP, # Seed fit (chisquared, no drift)
+    KFFUmuM, KFFUmuP # final Kalman filter fit
+  ]
+# Other sequences
   CaloRecoSequence : [ @sequence::CaloReco.Reco,
-			 @sequence::CaloCluster.Reco ]
-
+			@sequence::CaloCluster.Reco ]
 #    TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
 #                         @sequence::TrackCaloMatching.matching_dep_TRF ]
- 
   CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder ]
-  CrvMCMatchSequence : [ CrvCoincidenceClusterMatchMC ]
-# put it together
+# full MC sequence
+  RecoMCSequence :  [ CaloMCFix, FindMCPrimary,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
 
 #define output products 
 # Calo and CRV should be defined elswehere, FIXME!
-# add MC info FIXME!
+# separate MC info FIXME!
  # define reco products to keep
-  ToKeep : [@sequence::Tracking.Output.Digis,
-	    @sequence::Tracking.Output.Tracks,
-#	    @sequence::Tracking.Output.MCDigis,
-#	    @sequence::Tracking.Output.MCHits,
-#	    @sequence::Tracking.Output.MCTracks,
+  ToKeep : [ "drop *_*_*_*",
+	    "keep mu2e::KalSeeds_KFF*_*_*",
+	    "keep mu2e::KalSeeds_KSF*_*_*",
+	    "keep mu2e::HelixSeeds_MH*_*_*",
+	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep *_compressRecoMCs_*_*",
-	    "keep mu2e::CaloDigis_*_*_*",
 	    "keep mu2e::CaloClusters_*_*_*",
-	    "keep mu2e::CrvDigis_*_*_*",
 	    "keep mu2e::CrvCoincidenceClusters_*_*_*",
-#	    @sequence::CaloReco.Output,
-#	    @sequence::CRVReco.Output,
-	    # add trigger output products FIXME!
-#	    @sequence::TriggerReco.Output,
+	  # add precursors for Calo and Crv?  FIXME!
+	    "keep mu2e::TriggerAlgDetailmu2e::BitMap_triggerInfoMerger_*_*",
 	    "keep mu2e::StatusG4_*_*_*",
             "keep art::TriggerResults_*_*_*",
 	    "keep mu2e::EventWindowMarker_*_*_*",
@@ -197,25 +199,61 @@ Reconstruction : {
 	    "keep mu2e::ProtonBunchIntensity_*_*_*",
 	    "keep *_FindMCPrimary_*_*",
 	    "keep *_SelectRecoMC_*_*",
-	    "keep *_FlagBkgHits_StrawHits_*",
 	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
 }
-# must define this outside the brackets due to internal dependence
+# must define some things outside the brackets due to internal dependence
+#
+# Aggregate to a full TrkRecoSequence (depends on CaloRecoSequence)
+Reconstruction.TrkRecoSequence : [
+    @sequence::TrkHitReco.PrepareHits, # Track hit
+    @sequence::Reconstruction.DeSequence,
+    @sequence::Reconstruction.UeSequence,
+    @sequence::Reconstruction.DmuSequence,
+    @sequence::Reconstruction.UmuSequence
+]
+#
+# Define paths; this allows for granularity in jobs without
+# any performance cost, since the same module instances are used.
+Reconstruction.DePath : [
+  @sequence::TrkHitReco.PrepareHits, # Track hit
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
+  @sequence::Reconstruction.DeSequence # tracking
+]
+Reconstruction.UePath : [
+  @sequence::TrkHitReco.PrepareHits, # Track hit
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
+  @sequence::Reconstruction.UeSequence # tracking
+]
+Reconstruction.DmuPath : [
+  @sequence::TrkHitReco.PrepareHits, # Track hit
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
+  @sequence::Reconstruction.DmuSequence # tracking
+]
+Reconstruction.UmuPath : [
+  @sequence::TrkHitReco.PrepareHits, # Track hit
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
+  @sequence::Reconstruction.UmuSequence # tracking
+]
+
+# Full reconstruction Path
 Reconstruction.RecoPath : [
-  CaloFix,
-  @sequence::Reconstruction.CaloRecoSequence,
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
   @sequence::Reconstruction.TrkRecoSequence,
-  @sequence::Reconstruction.CrvRecoSequence ,
-  @sequence::Reconstruction.CrvMCMatchSequence ,
-  FindMCPrimary, SelectRecoMC,
-  compressRecoMCs ]
-# define trigger path FIXME!
-  Reconstruction.Output : {
+  @sequence::Reconstruction.CrvRecoSequence 
+]
+# Full reco path with MC
+Reconstruction.RecoMCPath : [
+  @sequence::Reconstruction.RecoPath,
+  @sequence::Reconstruction.RecoMCSequence,
+  RecoFilter
+]
+#
+Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil
-  outputCommands : [ "drop *_*_*_*",
-#  outputCommands : [ "keep *_*_*_*",
+#  outputCommands : [ "drop *_*_*_*",
+  outputCommands : [ "keep *_*_*_*",
   @sequence::Reconstruction.ToKeep ]
 }
 

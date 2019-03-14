@@ -34,7 +34,6 @@
 // Mu2e tracking
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrkData/inc/TrkCaloHit.hh"
-#include "TrkReco/inc/TrkDef.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 

@@ -7,24 +7,24 @@
 #ifndef TrkStrawHitInfoMC_HH
 #define TrkStrawHitInfoMC_HH
 #include "Rtypes.h"
+#include "DataProducts/inc/XYZVec.hh"
 namespace mu2e 
 {
    struct TrkStrawHitInfoMC {
     Int_t _pdg, _gen, _proc; // PDG particle code, generator code and process code of the particle which caused the electronics to cross threshold in simulation
     Int_t _rel; // relationship (same, mother, daughter, sibling, unrelated) of this particle to the particle generating most of the hits on this track
     Float_t _t0;  // true time this particle passed closest to this wire
-    Float_t _ht;  // true time this particle's signal reach the electronics (includes true drift time)
-    Float_t _dist;  // true transverse distance between the particle trajectory and the wire
-    Float_t _len;   // true distance from the straw center to the Point of Minimum Transverse Distance (PMTD)
-    Float_t _edep;  // true energy deposited by this particle in the straw gas
-    Float_t _mom;   // true particle momentum at the PMTD
-    Float_t _r, _phi; // polar coordinates of the PMTD
+    Float_t _dist;  // true transverse distance between the cluster and the wire
+    Float_t _doca;  // true transverse distance at POCA of the particle to the wire
+    Float_t _len;   // true distance from the cluster to the straw center
+    Float_t _edep;  // true energy deposit sum by trigger particles in the straw gas
+    Float_t _mom;   // true particle momentum at the POCA
+    Float_t _twdot; // dot product between track and wire directions
+    XYZVec _cpos; // threshold cluster position 
     Int_t _ambig;   // true left-right ambiguity = true angular momentum sign of the particle WRT the wire
-    Bool_t _xtalk;  // whether or not this hit was caused by cross-talk of a real signal.
     TrkStrawHitInfoMC() : _pdg(-1), _gen(-1), _proc(-1), 
-    _t0(-1000.0), _ht(-1000.0), _dist(-1000.0), _len(-1000.0),
-    _edep(-1000.0),_r(-1000.0),_phi(-1000.0),
-    _ambig(-100), _xtalk(false) {}
+    _t0(-1000.0),  _dist(-1000.0), _doca(-1000.0), _len(-1000.0),
+    _edep(-1000.0), _mom(-1000.0), _twdot(-1000.0), _ambig(-100) {}
   };
 }
 #endif

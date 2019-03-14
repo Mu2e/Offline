@@ -7,43 +7,6 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 
-BEGIN_PROLOG
-#prescale factor for the unbiased trigger
-unbiased_evt_sf        : 500
-#prescale factors for the strawDigi count filter
-sDCount_evt_sf         : 500
-sDCount_sf             : 1
-#prescale factors for the "large" strawDigi counter filter
-largeSDCount_evt_sf    : 500
-largeSDCount_sf        : 1
-#prescale factors for the caloDigi count filter
-cDCount_evt_sf         : 500
-cDCount_sf             : 1
-#prescale factors for the "large" caloDigi counter filter
-largeCDCount_evt_sf    : 500
-largeCDCount_sf        : 1
-#prescale factor for the calorimeter-only trigger
-caloMVACE_evt_sf        : 1
-caloMVACE_sf            : 1
-#prescale factor for the calorimeter cosmic muon calibration
-caloCalibCosmic_evt_sf  : 1
-caloCalibCosmic_sf      : 1
-#prescale factor fot the tracker-only track triggers
-# downstream e-
-tprSeedDeM_evt_sf      : 1
-tprSeedDeM_sf          : 1
-# downstream e+
-tprSeedDeP_evt_sf      : 1
-tprSeedDeP_sf          : 1
-#prescale factor fot the calo-seeded track triggers
-# downstream e-
-cprSeedDeM_evt_sf      : 1
-cprSeedDeM_sf          : 1
-# downstream e+
-cprSeedDeP_evt_sf      : 1
-cprSeedDeP_sf          : 1
-END_PROLOG
-
 #include "Trigger/fcl/templates.fcl"
 
 process_name : globalTrigger
@@ -55,7 +18,7 @@ source :
 # we don't need any simulation services for this job
 # services : @local::Services.Reco
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 
 # timing information
 services.TimeTracker : {
@@ -68,20 +31,14 @@ services.TimeTracker : {
 
 services.scheduler.wantSummary: true
 
-producers    : { @table::Trigger.producers }
-filters      : { @table::Trigger.filters   }
-analyzers    : { @table::Trigger.analyzers }
-paths        : { @table::Trigger.paths     }
-outputs      : { @table::Trigger.outputs   }
-
 physics : {
-    producers : { @table::producers }
+    producers : { @table::Trigger.producers }
 
-    filters   : { @table::filters }
+    filters   : { @table::Trigger.filters }
  
-    analyzers : {  
+    analyzers : { @table::Trigger.analyzers 
 
-	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
+	readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
 	    nFilters      : 35
 	}
 	
@@ -91,11 +48,7 @@ physics : {
     end_paths : [ out ]
 }
 
-outputs : {
-    @table::outputs
-}
+outputs : {  @table::Trigger.outputs }
 
 
 services.TFileService.fileName : "globalTrigger.root"
-services.SeedService.baseSeed : 0
-services.SeedService.maxUniqueEngines : 20

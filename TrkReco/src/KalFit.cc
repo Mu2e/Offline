@@ -211,17 +211,11 @@ namespace mu2e
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
       double flt0 = kalData.kalSeed->flt0();
-      auto kseg = kalData.kalSeed->segments().end();
-      for(auto iseg= kalData.kalSeed->segments().begin(); iseg != kalData.kalSeed->segments().end(); ++iseg){
-	if(iseg->fmin() <= flt0 && iseg->fmax() > flt0){
-	  kseg = iseg;
-	  break;
-	}
-      }
-      if(kseg == kalData.kalSeed->segments().end()){
+      auto kseg = kalData.kalSeed->nearestSegment(flt0);
+      if(kseg->fmin() > kseg->localFlt(flt0) ||
+	kseg->fmax() < kseg->localFlt(flt0) ){
 	std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
 		  <<", Helix segment range doesn't cover flt0 = " << flt0 << std::endl;
-	kseg = kalData.kalSeed->segments().begin();
       }
       // create a trajectory from the seed. This shoudl be a general utility function that
       // can work with multi-segment seeds FIXME!
@@ -419,7 +413,7 @@ namespace mu2e
       if(! retval.success())break;
       // updates
       if(_updatet0[iter]){
-	updateT0(kalData);
+	updateT0(kalData, iter);
         changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
       }
       // drop outliers
@@ -446,11 +440,6 @@ namespace mu2e
     if(!krep->fitCurrent())
       retval = krep->fit();
     return retval;
-  }
-
-  bool
-  KalFit::fitable(TrkDef const& tdef){
-    return tdef.strawHitIndices().size() >= _minnstraws;
   }
 
   bool
@@ -826,7 +815,7 @@ namespace mu2e
 
 
   bool
-  KalFit::updateT0(KalFitData& kalData){
+  KalFit::updateT0(KalFitData& kalData, int iter){
     KalRep* krep = kalData.krep;
     using namespace boost::accumulators;
     TrkHitVector *thv = &(krep->hitVector());
@@ -843,8 +832,16 @@ namespace mu2e
         hitt0err.reserve(nhits);
         // loop over the hits and accumulate t0
         for(auto ihit=thv->begin(); ihit != thv->end(); ihit++){
-          TrkHit* hit = *ihit;
-          if(hit->isActive() ) {
+          TrkHit*      hit   = *ihit;
+	  bool         trkShAmbigOK(true);
+	  if (_ambigstrategy[iter] != 0) {
+	    TrkStrawHit* trkSh = dynamic_cast<TrkStrawHit*>(*ihit);
+	    if (trkSh !=0){
+	      if (trkSh->ambig() == 0) 
+		trkShAmbigOK = false;
+	    }
+	  }
+          if(hit->isActive() && trkShAmbigOK) {
 	    TrkT0 st0;
 	    if (hit->signalPropagationTime(st0 )){
 	      // subtracting hitT0 makes this WRT the previous track t0
