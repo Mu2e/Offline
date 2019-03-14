@@ -47,7 +47,6 @@ namespace mu2e {
 	   << " dead straws" << endl;
     }
 
-    if ( _config.verbose() > 1 ) ptr->print(cout);
     
     return ptr;
   }

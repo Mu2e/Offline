@@ -33,6 +33,7 @@
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
 #include "TrkReco/inc/TrkPrintUtils.hh"
 
 //CLHEP
@@ -58,9 +59,12 @@ namespace mu2e
     virtual ~KalFit();
 // // create a fit object from a track definition
 // create a fit object from  a track seed, 
-    void makeTrack(StrawResponse::cptr_t srep, KalFitData&kalData);
+    void makeTrack(StrawResponse::cptr_t srep, 
+		   Mu2eDetector::cptr_t detmodel,
+		   KalFitData&kalData);
 // add a set of hits to an existing fit
-    void addHits(StrawResponse::cptr_t srep, KalFitData&kalData, double maxchi);
+    void addHits(StrawResponse::cptr_t srep, Mu2eDetector::cptr_t detmodel, 
+		 KalFitData&kalData, double maxchi);
 // add materials to a track
     bool unweedHits(KalFitData&kalData, double maxchi);
 // KalContext interface
@@ -69,7 +73,8 @@ namespace mu2e
     void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
     void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
     
-    TrkErrCode fitIteration(KalFitData& kalData,int iter); 
+    TrkErrCode fitIteration(Mu2eDetector::cptr_t detmodel,
+			    KalFitData& kalData,int iter); 
     bool       weedHits    (KalFitData& kalData, int    iter);
     bool       updateT0    (KalFitData& kalData, int    iter);
 
@@ -116,10 +121,12 @@ namespace mu2e
     void makeTrkStrawHits  (StrawResponse::cptr_t srep, 
 			    KalFitData&kalData, TrkStrawHitVector& tshv );
     void makeTrkCaloHit    (KalFitData&kalData, TrkCaloHit *&tch);
-    void makeMaterials     (TrkStrawHitVector const&, HelixTraj const& htraj, std::vector<DetIntersection>& dinter);
-    unsigned addMaterial   (KalRep* krep);
+    void makeMaterials     ( Mu2eDetector::cptr_t detmodel,
+			     TrkStrawHitVector const&, HelixTraj const& htraj, 
+			     std::vector<DetIntersection>& dinter);
+    unsigned addMaterial   (Mu2eDetector::cptr_t detmodel, KalRep* krep);
     bool unweedBestHit     (KalFitData&kalData, double maxchi);
-    TrkErrCode fitTrack    (KalFitData&kalData);
+    TrkErrCode fitTrack    (Mu2eDetector::cptr_t detmodel, KalFitData&kalData);
     void updateHitTimes    (KalRep* krep); 
     double zFlight         (KalRep* krep,double pz);
     double extendZ         (extent ex);

@@ -40,6 +40,9 @@ namespace mu2e {
 
   private:
 
+    //the following has to be mutable because BTrk holds this
+    //with a const pointer
+
     // Handle to the full particle data table.
     // Guaranteed valid throughout the job.
     mutable GlobalConstantsHandle<ParticleDataTable> pdt_;

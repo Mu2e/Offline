@@ -25,6 +25,8 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/Mu2eMaterial.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
@@ -115,6 +117,8 @@ namespace mu2e
     const Tracker* _tracker;     // straw tracker geometry
 
     ProditionsHandle<StrawResponse> _strawResponse_h;
+    ProditionsHandle<Mu2eMaterial> _mu2eMaterial_h;
+    ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
 
     // diagnostic
     Data_t                                _data;
@@ -175,12 +179,14 @@ namespace mu2e
 
   KalSeedFit::~KalSeedFit(){}
 
-  void KalSeedFit::beginRun(art::Run& ){
+  void KalSeedFit::beginRun(art::Run& run){
     // calculate the helicity
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
     GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
+    // initialize the BTrk material and particle models
+    _mu2eMaterial_h.get(run.id());
 
     ///_data.tracker     = th.get();
 
@@ -203,6 +209,7 @@ namespace mu2e
   void KalSeedFit::produce(art::Event& event ) {
 
     auto srep = _strawResponse_h.getPtr(event.id());
+    auto detmodel = _mu2eDetector_h.getPtr(event.id());
 
     // create output collection
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
@@ -319,7 +326,7 @@ namespace mu2e
 	//fill the KalFitData variable
 	_result.kalSeed = &kf;
 
-	_kfit.makeTrack(srep,_result);
+	_kfit.makeTrack(srep,detmodel,_result);
 
 	if(_debug > 1){
 	  if(_result.krep == 0)
@@ -333,7 +340,7 @@ namespace mu2e
 	    findMissingHits(_result);
 	    nrescued = _result.missingHits.size();
 	    if (nrescued > 0) {
-	      _kfit.addHits(srep,_result, _maxAddChi);
+	      _kfit.addHits(srep,detmodel,_result, _maxAddChi);
 	    }
 	  }
 

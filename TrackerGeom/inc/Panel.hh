@@ -31,11 +31,10 @@
 
 namespace mu2e {
 
-  class Tracker;
-
   class Panel{
 
     friend class TrackerMaker;
+    friend class Tracker; // needed for deep copy
 
   public:
 

@@ -68,8 +68,6 @@ namespace mu2e {
 	  gasGain, analognoise, dVdI, vsat, ADCped,
 	 pmpEnergyScaleAvg );
 
-    if(_config.verbose()>1) ptr->print(cout);
-
     return ptr;
   }
      

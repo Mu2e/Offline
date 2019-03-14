@@ -4,7 +4,6 @@
 
 #include "DbService/fcl/prolog.fcl"
 #include "ProditionsService/fcl/prolog.fcl"
-#include "BTrkHelper/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -51,9 +50,9 @@ Services : {
     G4Helper: {}
   }
 
-  RecoOnly  : {
-    BTrkHelper : @local::BTrkHelperDefault
-  }
+  #RecoOnly : {
+  #}
+
 }
 # aggregate to make complete sets that can be used to fully configure common jobs
 Services.Sim	    : {
@@ -63,13 +62,13 @@ Services.Sim	    : {
 
 Services.Reco	    : {
   @table::Services.Core
-  @table::Services.RecoOnly
+  #@table::Services.RecoOnly
 }
 
 Services.SimAndReco : {
   @table::Services.Core
   @table::Services.SimOnly
-  @table::Services.RecoOnly
+  #@table::Services.RecoOnly
 }
 
 END_PROLOG
