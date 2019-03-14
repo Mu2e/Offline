@@ -9,7 +9,7 @@
 #include "TrkReco/inc/CosmicTrackFit.hh"
 #include "TrkPatRec/inc/CosmicTrackFinder_types.hh"
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
-
+#include "Mu2eUtilities/inc/ParametricFit.hh"
 //Mu2e Data Prods:
 #include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
@@ -70,7 +70,7 @@ namespace mu2e
       TH1F* _total_residuals;
       TH1F* _total_pulls;
       TH1F* _hiterrs;
-      
+      TH1F* _fiterrs;
       // add event id
       Int_t _evt; 
 
@@ -141,24 +141,29 @@ namespace mu2e
        _cosmic_analysis->Branch("cluster_time", &_cluster_time, "cluster_time/F");
         
         //Extra histograms for Fit Diags:
-        _chisq_plot = tfs->make<TH1F>("chisq_plot","chisq_plot" ,50,0, 10);
+        _chisq_plot = tfs->make<TH1F>("chisq_plot","chisq_plot" ,100,0, 100);
 	_chisq_ndf_plot = tfs->make<TH1F>("chisq_ndf_plot","chisq_ndf_plot" ,20,0, 0.5);
 	_chisq_plot->GetXaxis()->SetTitle("#Chi^{2}");
 	_chisq_ndf_plot->GetXaxis()->SetTitle("#Chi^{2}/N");
 	
         
-        _total_residuals = tfs->make<TH1F>("Residuals ","Residuals " ,20,-50,50);
+        _total_residuals = tfs->make<TH1F>("Residuals ","Residuals " ,50,-200,200);
 	_total_residuals->GetXaxis()->SetTitle("Residual  [mm]");
 	_total_residuals->SetStats();
 
-	_total_pulls = tfs->make<TH1F>("Pull ","Pull " ,25,-1, 1);
+	_total_pulls = tfs->make<TH1F>("Pull ","Pull " ,50,-1, 1);
 	_total_pulls->GetXaxis()->SetTitle("Pull ");
 	_total_pulls->SetStats();
        
-        _hiterrs = tfs->make<TH1F>("hiterr","hiterr" ,10,0, 100);
-	_hiterrs->GetXaxis()->SetTitle("Total Hit Error [mm]");
+        _hiterrs = tfs->make<TH1F>("hiterr","hiterr" ,100,0, 100);
+	_hiterrs->GetXaxis()->SetTitle("Hit Error in Track Frame [mm]");
 	_hiterrs->SetStats();
-        
+	
+	_fiterrs = tfs->make<TH1F>("fiterr","fiterr" ,100,0, 100);
+	_fiterrs->GetXaxis()->SetTitle("Fit Error [mm]");
+	_fiterrs->SetStats();
+	
+	
         
         }
       }
@@ -183,7 +188,16 @@ namespace mu2e
 		CosmicTrack st = sts._track;
 		//TrkFitFlag const& status = sts._status;
 		std::vector<int> panels, planes, stations;
-                
+                _chisq_plot->Fill(st.get_chisq());
+                //-----------Fill Hist Details:----------//
+		
+		for(size_t i=0; i< st.get_hit_errorsTotal().size();i++){
+		    double pull = st.get_fit_residuals()[i]/st.get_fit_residual_errors()[i];
+                    _total_residuals->Fill(st.get_fit_residuals()[i]);             
+	            _total_pulls->Fill(pull);
+		    _hiterrs->Fill(st.get_hit_errorsTotal()[i]);
+	            _fiterrs->Fill(st.get_fit_residual_errors()[i]);
+                  }
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
 			
@@ -196,42 +210,16 @@ namespace mu2e
 			stations.push_back(chit.strawId().station());
 			
 		//-----------Hit details:---------------//
-			//XYZVec cpos = chit.pos() - chit.wireDist()*chit.wdir();
+			
 		        _hit_time = chit.time();
 			_hit_drift_time = chit.driftTime();
-			XYZVec track_dir = st.get_track_direction();
 			
-			double werr_mag = chit.wireRes(); //hit major error axis 
-      			double terr_mag = chit.transRes(); //hit minor error axis 
-			XYZVec const& wdir = chit.wdir();//direction along wire
-      			XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire
-			XYZVec major_axis = werr_mag*wdir;
-      			XYZVec minor_axis = terr_mag*wtdir;
-	               
-			double hit_error = sqrt(major_axis.Dot(track_dir)*major_axis.Dot(track_dir)+minor_axis.Dot(track_dir)*minor_axis.Dot(track_dir));
-			
-	        
-		//-----------Fill Hist Details:----------//
-			
-			
-			for(size_t i=0; i< st.get_fit_residuals().size();i++)			{
-				   
-				    //double pull = st.get_fit_residuals()[ich]/st.get_fit_residual_errors()[ich];
-		                    _total_residuals->Fill(st.get_fit_residuals()[ich]);
-			           // _total_pulls->Fill(pull);
-				    
-			            
-                          }
-		                _hiterrs->Fill(hit_error);
-            		
-			
+		    
                 //----------------Get panels/planes/stations per track:------------------//
                 _n_panels = std::set<double>( panels.begin(), panels.end() ).size();
 		_n_planes = std::set<double>( planes.begin(), planes.end() ).size();
 		_n_stations = std::set<double>( stations.begin(), stations.end() ).size();
-
-               
-	 		 
+	 
 		}//endS ST
 	        
       }//end analyze

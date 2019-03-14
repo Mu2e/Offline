@@ -8,7 +8,7 @@ class BuildMatrixSums {
 protected:
   double betaX00, betaX10, gammaX00, gammaX01, gammaX11;
   double betaY00, betaY10, gammaY00, gammaY01, gammaY11;
-
+  double deltaX, deltaY;
 public:
   BuildMatrixSums();
   BuildMatrixSums(const BuildMatrixSums& Sums);
@@ -27,6 +27,11 @@ public:
   TMatrixD GetAlphaY();
   TMatrixD GetGammaY();
   TMatrixD GetBetaY();
+
+  double GetChi2X();
+  double GetChi2Y();
+  double GetTotalChi2();
+
 
 };
 
