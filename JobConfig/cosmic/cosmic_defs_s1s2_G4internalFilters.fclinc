@@ -146,7 +146,7 @@ physics :
 
          SDConfig: 
          {
-            enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]  // activate just the explicitly listed SDs
+            enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]  // activate just the explicitly listed SDs
             TimeVD: { times: [] }
 
             cutMomentumMin       : 45. // MeV/c
