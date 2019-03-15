@@ -1,7 +1,7 @@
 #include "JobConfig/cosmic/cosmic_defs_s1s2.fclinc"
 
-physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/othersCRYconfig.txt"
-physics.producers.generate.module_type  : CRYEventGeneratorN
+physics.producers.generate.inputFile    : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
+physics.producers.generate.module_type  : CRYEventGenerator
 physics.producers.generate.stashSize    : 1000
 physics.producers.g4run.runinMTMode     : true
 physics.producers.g4run.numberOfThreads : 10

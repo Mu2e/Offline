@@ -65,21 +65,20 @@ namespace mu2e
   CosmicCRY::CosmicCRY( art::Run& run,
       const SimpleConfig& config, CLHEP::HepRandomEngine & engine )
     : _verbose(config.getInt("cosmicCRY.verbose", 0) )
-      , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
-      , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
-      , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
-      , _returnGammas( config.getBool("cosmicCRY.returnGammas", true))
-      , _returnElectrons( config.getBool("cosmicCRY.returnElectrons", true))
-      , _returnPions( config.getBool("cosmicCRY.returnPions", true))
-      , _returnKaons( config.getBool("cosmicCRY.returnKaons", true))
-
-      , _month(config.getInt("cosmicCRY.month", 6))
+        , _returnMuons( config.getBool("cosmicCRY.returnMuons", true))
+        , _returnNeutrons( config.getBool("cosmicCRY.returnNeutrons", true))
+        , _returnProtons( config.getBool("cosmicCRY.returnProtons", true))
+        , _returnGammas( config.getBool("cosmicCRY.returnGammas", true))
+        , _returnElectrons( config.getBool("cosmicCRY.returnElectrons", true))
+        , _returnPions( config.getBool("cosmicCRY.returnPions", true))
+        , _returnKaons( config.getBool("cosmicCRY.returnKaons", true))
+        , _month(config.getInt("cosmicCRY.month", 6))
         , _day(config.getInt("cosmicCRY.day", 21))
         , _year(config.getInt("cosmicCRY.year", 2020))
         , _latitude( config.getDouble("cosmicCRY.latitude", 41.8))
         , _altitude( config.getInt("cosmicCRY.altitude", 0))
         , _subboxLength( config.getDouble("cosmicCRY.subboxLength", 100.))
-
+        , _maxShowerEn( config.getDouble("cosmicCRY.maxShowerEn", 1E6))
         , _setupString("")
         , _refY0(config.getDouble("cosmicCRY.refY0", 20000.))
         , _refPointChoice(config.getString("cosmicCRY.refPoint", "UNDEFINED"))
@@ -117,6 +116,7 @@ namespace mu2e
 
           _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
           _m2mm = CLHEP::m / CLHEP::mm;
+	  _numEvents=0;
         }
 
 
@@ -126,6 +126,10 @@ namespace mu2e
 
   const double CosmicCRY::getShowerSumEnergy() {
     return _showerSumEnergy;
+  }
+
+  const unsigned long long int CosmicCRY::getNumEvents() {
+    return _numEvents;
   }
 
   void CosmicCRY::generate( GenParticleCollection& genParts )
@@ -174,6 +178,7 @@ namespace mu2e
       _geomInfoObtained = true;
     }
 
+<<<<<<< HEAD
     // Getting CRY particles
     std::vector<CRYParticle*> *secondaries = new std::vector<CRYParticle*>;
     _cryGen->genEvent(secondaries);
@@ -236,44 +241,118 @@ namespace mu2e
                   secondary->t() - _cryGen->timeSimulated()));
           }
         }
-      }
-      else
-        genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
-              GenId::cosmicCRY, position, mom4,
-              secondary->t() - _cryGen->timeSimulated()));
+=======
+    bool passed = false;
+    // Getting CRY particles. Generate secondaries until you find one that intersects with the projected box
+    while(!passed){
+      std::vector<CRYParticle*> *secondaries = new std::vector<CRYParticle*>;
+      _cryGen->genEvent(secondaries);
+      _numEvents++;
 
+      double secondPtot = 0.;
+      _showerSumEnergy = 0.;
+
+      std::ostringstream oss;
+      for (unsigned j=0; j<secondaries->size(); j++) {
+	CRYParticle* secondary = (*secondaries)[j];
+
+	GlobalConstantsHandle<ParticleDataTable> pdt;
+	const HepPDT::ParticleData& p_data = pdt->particle(secondary->PDGid()).ref();
+	double mass = p_data.mass().value(); // in MeV
+
+
+	double ke = secondary->ke(); // MeV by default in CRY
+	double totalE = ke + mass;
+	_showerSumEnergy += totalE;
+	double totalP = safeSqrt(totalE * totalE - mass * mass);
+	
+	secondPtot += totalP;
+	
+	// Change coordinate system since y points upward, z points along
+	// the beam line; which make cry(xyz) -> mu2e(zxy), uvw -> mu2e(zxy)
+	Hep3Vector position(
+			    secondary->y() * _m2mm + _cosmicReferencePointInMu2e.x(),
+			    secondary->z() * _m2mm + _cosmicReferencePointInMu2e.y(),
+			    secondary->x() * _m2mm + _cosmicReferencePointInMu2e.z()); // to mm
+	HepLorentzVector mom4(totalP*secondary->v(), totalP*secondary->w(),
+			      totalP*secondary->u(), totalE);
+
+	if (_projectToTargetBox) {
+	  // Moving the CRY particle around: first find all intersections with
+	  // the target box, if there is any then find closest intersection with
+	  // world box
+	  _targetBoxIntersections.clear();
+	  calIntersections(position, mom4.vect(),
+			   _targetBoxIntersections, _targetBoxXmin, _targetBoxXmax,
+			   _targetBoxYmin, _targetBoxYmax, _targetBoxZmin, _targetBoxZmax);
+
+	  if (_targetBoxIntersections.size() > 0) {
+	  // if (_targetBoxIntersections.size() == 0) {
+	    _worldIntersections.clear();
+	    calIntersections(position, mom4.vect(), _worldIntersections,
+			     _worldXmin, _worldXmax, _worldYmin, _worldYmax, _worldZmin, _worldZmax);
+
+	    if (_worldIntersections.size() > 0) {
+	      int idx = 0;
+	      double closestDistance = distance(_worldIntersections.at(0), position);
+	      for (unsigned i = 0; i < _worldIntersections.size(); ++i) {
+		if (distance(_worldIntersections.at(i), position) < closestDistance) {
+		  idx = i;
+		  closestDistance = _targetBoxIntersections.at(idx).y();
+		}
+	      }
+	      
+	      Hep3Vector projectedPos = _worldIntersections.at(idx);
+	      // genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+	      // 				     GenId::cosmicCRY, position, mom4,
+	      // 				     secondary->t() - _cryGen->timeSimulated()));
+	      genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+	      				     GenId::cosmicCRY, projectedPos, mom4,
+	      				     secondary->t() - _cryGen->timeSimulated()));
+	    }
+	  }
+	}
+	else
+	  genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
+					 GenId::cosmicCRY, position, mom4,
+					 secondary->t() - _cryGen->timeSimulated()));
+
+	if (_verbose > 1) {
+	  oss << "Secondary " << j 
+	      << ": " << CRYUtils::partName(secondary->id()) 
+	      << " (pdgId " << secondary->PDGid() << ")"
+	      << ", kinetic energy " << secondary->ke()  << " MeV"
+	      << ", position " 
+	      << "(" << secondary->x()
+	      << ", " << secondary->y()
+	      << ", " << secondary->z()
+	      << ") m"
+	      << ", position at world boundaries" 
+	      << "("  << position.x()
+	      << ", " << position.y()
+	      << ", " << position.z()
+	      << ") m"
+	      << ", time " << secondary->t() << " sec"
+	      << ", mass: " << mass
+	      << ", mom: " << totalP
+	      << ", mom dir.: " << secondary->u() <<", " << secondary->v()
+	      << ", " << secondary->w() << "\n";
+	  
+	}
+	delete secondary;
+>>>>>>> 685b3ae5d55e744848a7f92e7d87f442a550f94f
+      }
+  
       if (_verbose > 1) {
-        oss << "Secondary " << j 
-          << ": " << CRYUtils::partName(secondary->id()) 
-          << " (pdgId " << secondary->PDGid() << ")"
-          << ", kinetic energy " << secondary->ke()  << " MeV"
-          << ", position " 
-          << "(" << secondary->x()
-          << ", " << secondary->y()
-          << ", " << secondary->z()
-          << ") m"
-          << ", position at world boundaries" 
-          << "("  << position.x()
-          << ", " << position.y()
-          << ", " << position.z()
-          << ") m"
-          << ", time " << secondary->t() << " sec"
-          << ", mass: " << mass
-          << ", mom: " << totalP
-          << ", mom dir.: " << secondary->u() <<", " << secondary->v()
-          << ", " << secondary->w() << "\n";
+	oss << "Total E: " << _showerSumEnergy;
+	mf::LogInfo("CosmicCRY") << oss.str();
+      }    
+      delete secondaries;
 
-      }
+      if(_showerSumEnergy<_maxShowerEn && genParts.size()>0)
+	passed = true;
 
-      delete secondary;
     }
-
-    if (_verbose > 1) {
-      oss << "Total E: " << _showerSumEnergy;
-      mf::LogInfo("CosmicCRY") << oss.str();
-    }
-
-    delete secondaries;
   }
 
   void CosmicCRY::createSetupString()

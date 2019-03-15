@@ -24,6 +24,7 @@ namespace mu2e {
           CLHEP::HepRandomEngine& engine);
       const double getLiveTime();
       const double getShowerSumEnergy();
+      const unsigned long long int getNumEvents();
 
       virtual void generate( GenParticleCollection&  );
 
@@ -49,6 +50,7 @@ namespace mu2e {
       double _latitude;
       int _altitude;
       double _subboxLength;
+      double _maxShowerEn;
 
       std::string _setupString;
       std::string _cryDataPath;
@@ -81,6 +83,7 @@ namespace mu2e {
       double _GeV2MeV;
       double _m2mm;
       double _showerSumEnergy;
+      unsigned long long int _numEvents;
 
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
