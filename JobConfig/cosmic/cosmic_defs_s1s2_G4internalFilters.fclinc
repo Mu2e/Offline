@@ -259,6 +259,7 @@ outputs:
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_protonabsorber_*",
          "keep *_detectorFilter_*_*",
          "keep *_compressPV_*_*"
       ]
