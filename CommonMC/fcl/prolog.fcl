@@ -14,7 +14,7 @@ CommonMC: {
     { 
 	module_type : GenerateCosmicTimes
 	hitsInputTag: "detectorFilter:tracker"
-	tmin : 500
+	tmin : 450
 	tmax : 1705
     }
 # time maps for primaries in inline mixing jobs
