@@ -7,15 +7,6 @@ string cosmicCRY.refPoint = "TRACKER";
 double cosmicCRY.refY0 = 20000; // 15.4 meter above nominal beam height - at the surface
 
 bool cosmicCRY.projectToTargetBox = true;
-<<<<<<< HEAD
-// default values are from the Mu2eEnvelop
-double cosmicCRY.targetBoxXmin =  -29960.6;
-double cosmicCRY.targetBoxXmax =  31787.6;
-double cosmicCRY.targetBoxYmin = -3531.2;
-double cosmicCRY.targetBoxYmax = 15366.4;
-double cosmicCRY.targetBoxZmin = -35359.6;
-double cosmicCRY.targetBoxZmax = 47265.6;
-=======
 
 double cosmicCRY.targetBoxXmin =-10000;
 double cosmicCRY.targetBoxXmax =  3000;
@@ -25,7 +16,6 @@ double cosmicCRY.targetBoxYmax =  5000;
 
 double cosmicCRY.targetBoxZmin = -5000;
 double cosmicCRY.targetBoxZmax = 21000;
->>>>>>> 685b3ae5d55e744848a7f92e7d87f442a550f94f
 
 // Enable all particles by default
 bool cosmicCRY.returnMuons = true;
