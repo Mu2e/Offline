@@ -2,8 +2,11 @@
 #define TrackerGeom_Tracker_hh
 //
 // Hold all geometry and identifier information about
-// a Tracker.  This is intended as a "data only"
-// class.
+// a Tracker.  This is intended as a "data only" class.
+//
+// An un-aligned version can be made by GeometryService
+// and an aligned verison can be made by ProditionsService
+// by copying then adding alignment to the GeometryService version
 //
 // Original author Rob Kutschke
 //
@@ -11,13 +14,13 @@
 #include <vector>
 #include <array>
 #include <limits>
-//#include <iomanip>
-//#include <iostream>
+#include <string>
 
 #include "cetlib_except/exception.h"
 
 
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "TrackerGeom/inc/Manifold.hh"
 #include "TrackerGeom/inc/Support.hh"
 #include "TrackerGeom/inc/SupportModel.hh"
@@ -31,11 +34,14 @@
 
 namespace mu2e {
 
-  class Tracker : public Detector {
+  class Tracker : public Detector, public ProditionsEntity {
 
         friend class TrackerMaker;
 
   public:
+
+    typedef std::shared_ptr<Tracker> ptr_t;
+    typedef std::shared_ptr<const Tracker> cptr_t;
 
     constexpr static uint16_t _maxRedirect =
       ((StrawId::_nplanes -1) << StrawId::_planesft) +
@@ -44,13 +50,19 @@ namespace mu2e {
 
     // =============== NewTracker Public Objects End   ==============
 
-    Tracker(){
+    Tracker():_name("AlignedTracker") {
       if (StrawId::_nlayers != 2)
         throw cet::exception("GEOM")
           << "Expect configuration with 2 layers per panel\n";
     }  // TODO: insert proper initializer list, starting w/ base class
 
-    // Use compiler-generated copy c'tor, copy assignment, and d'tor
+    // Need to be able to copy, but this has internal
+    // pointers, so needs a deep copy, but can except default dtor
+
+    // copy constructor
+    Tracker(const Tracker& other);
+
+    std::string const& name() const { return _name; }
 
     void fillPointers () const;
 
@@ -93,7 +105,7 @@ namespace mu2e {
       return StrawId::_nplanes;
     }
 
-    uint16_t nStraws() const { return StrawId::_nstraws; }
+    uint16_t nStraws() const { return StrawId::_nustraws; }
 
     const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
       return _planes;
@@ -204,6 +216,8 @@ namespace mu2e {
 
   protected:
 
+    std::string _name;
+
     // Position of the center of the tracker, in the Mu2e coordinate system.
     double _z0;
 
@@ -299,6 +313,14 @@ namespace mu2e {
     std::array<bool,Tracker::_maxRedirect> _strawExists2;
 
     // =============== NewTracker Private Objects End ==============
+
+
+  private:
+    // copying is complex
+    // prevent these from being generated or used
+    Tracker& operator=(const Tracker& other);
+    Tracker(Tracker&& other) noexcept; // move constructor
+    Tracker& operator=(Tracker&& other) noexcept; // move assignment
 
   };
 

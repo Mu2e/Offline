@@ -28,8 +28,6 @@
 //#include "RecoDataProducts/inc/TimeCluster.hh"
 
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
-
 #include "CalPatRec/inc/DeltaFinder2_types.hh"
 
 // #include "CalPatRec/inc/LsqSums2.hh"

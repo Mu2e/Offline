@@ -29,8 +29,8 @@ namespace mu2e {
       }
       auto & strawDrift_h = *_strawDrift_p;
 
-      auto iov = strawDrift_h.iov();
       auto sd = strawDrift_h.getPtr(eid);
+      auto iov = strawDrift_h.iov();
       ProditionsEntity::set_t s;
       s.merge(set_t(sd->getCids()));
       auto p = find(s);
@@ -40,6 +40,9 @@ namespace mu2e {
 	//p = _maker.fromDb(sd);
 	p->addCids(s);
 	push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       } else {
 	if(_verbose>1) std::cout<< "found StrawPhysics in cache " << std::endl;
       }

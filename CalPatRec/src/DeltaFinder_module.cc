@@ -28,7 +28,6 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
 
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 

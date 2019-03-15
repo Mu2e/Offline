@@ -13,9 +13,7 @@
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "Mu2eBTrk/inc/BaBarMu2eField.hh"
-#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 //geometry
-#include "BTrkHelper/inc/BTrkHelper.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -24,6 +22,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 // tracker
@@ -204,22 +203,19 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from a track seed
 //-----------------------------------------------------------------------------
-  void KalFit::makeTrack(StrawResponse::cptr_t srep, KalFitData& kalData){
+  void KalFit::makeTrack(StrawResponse::cptr_t srep, 
+			 Mu2eDetector::cptr_t detmodel,
+			 KalFitData& kalData){
+
 // test if fitable
     if(fitable(*kalData.kalSeed)){
       // find the segment at the 0 flight
       double flt0 = kalData.kalSeed->flt0();
-      auto kseg = kalData.kalSeed->segments().end();
-      for(auto iseg= kalData.kalSeed->segments().begin(); iseg != kalData.kalSeed->segments().end(); ++iseg){
-	if(iseg->fmin() <= flt0 && iseg->fmax() > flt0){
-	  kseg = iseg;
-	  break;
-	}
-      }
-      if(kseg == kalData.kalSeed->segments().end()){
+      auto kseg = kalData.kalSeed->nearestSegment(flt0);
+      if(kseg->fmin() > kseg->localFlt(flt0) ||
+	kseg->fmax() < kseg->localFlt(flt0) ){
 	std::cout << "FitType: "<< kalData.fitType<<", number 0f segments = "<<kalData.kalSeed->segments().size()
 		  <<", Helix segment range doesn't cover flt0 = " << flt0 << std::endl;
-	kseg = kalData.kalSeed->segments().begin();
       }
       // create a trajectory from the seed. This shoudl be a general utility function that
       // can work with multi-segment seeds FIXME!
@@ -238,7 +234,7 @@ namespace mu2e
       
    // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
-      if(_matcorr)makeMaterials(tshv,*kalData.helixTraj,detinter);
+      if(_matcorr)makeMaterials(detmodel, tshv,*kalData.helixTraj,detinter);
    // Create the BaBar hit list, and fill it with these hits.  The BaBar list takes ownership
       // We should use the TrkHit vector everywhere, FIXME!
       std::vector<TrkHit*> thv(0);
@@ -267,7 +263,7 @@ namespace mu2e
 // initialize history list
       kalData.krep->addHistory(TrkErrCode(),"KalFit creation");
 // now fit
-      TrkErrCode fitstat = fitTrack(kalData);
+      TrkErrCode fitstat = fitTrack(detmodel,kalData);
       kalData.krep->addHistory(fitstat,"KalFit fit");
 // extend the fit
       if(fitstat.success()){
@@ -277,10 +273,9 @@ namespace mu2e
     }
   }
 
-  void KalFit::addHits(StrawResponse::cptr_t srep, KalFitData&kalData, double maxchi) {
+  void KalFit::addHits(StrawResponse::cptr_t srep, Mu2eDetector::cptr_t detmodel,
+		       KalFitData&kalData, double maxchi) {
   //2017-05-02: Gianipez. In this function inten
-  // fetcth the DetectorModel
-   Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // there must be a valid Kalman fit to add hits to
    KalRep* krep = kalData.krep;
    
@@ -336,7 +331,7 @@ namespace mu2e
         if(chi > maxchi || (!trkhit->isPhysical(maxchi)))
           trkhit->setActivity(false);
    // find the DetElem associated this straw
-        const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
+        const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
 // see if this KalRep already has a KalMaterial with this element: if not, add it
         bool hasmat(false);
         std::vector<const KalMaterial*> kmats;
@@ -360,16 +355,16 @@ namespace mu2e
         }
       }
 // refit the last iteration of the track
-      TrkErrCode fitstat = fitIteration(kalData,_herr.size()-1);
+      TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
       krep->addHistory(fitstat,"AddHits");
     }
   }
 //
-  TrkErrCode KalFit::fitTrack(KalFitData&kalData) {
+  TrkErrCode KalFit::fitTrack(Mu2eDetector::cptr_t detmodel, KalFitData&kalData) {
     // loop over external hit errors, ambiguity assignment, t0 toleratnce
     TrkErrCode fitstat;
     for(size_t iherr=0;iherr < _herr.size(); ++iherr) {
-      fitstat = fitIteration(kalData,iherr);
+      fitstat = fitIteration(detmodel,kalData,iherr);
       if(_debug > 0) { 
 	cout << "Iteration " << iherr 
 	     << " NDOF = " << kalData.krep->nDof() 
@@ -386,7 +381,8 @@ namespace mu2e
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
-  TrkErrCode KalFit::fitIteration(KalFitData&kalData, int iter) {
+  TrkErrCode KalFit::fitIteration(Mu2eDetector::cptr_t detmodel,
+				  KalFitData&kalData, int iter) {
 
     if (iter == -1) iter =  _herr.size()-1;
     _annealingStep = iter;//used in the printHits routine
@@ -429,7 +425,7 @@ namespace mu2e
       // find missing materials
       unsigned nmat(0);
       if(_addmaterial[iter]){
-	nmat = addMaterial(krep);
+	nmat = addMaterial(detmodel,krep);
         changed |= nmat>0;
       }
       if(_debug > 1) std::cout << "Inner iteration " << niter << " changed = "
@@ -444,11 +440,6 @@ namespace mu2e
     if(!krep->fitCurrent())
       retval = krep->fit();
     return retval;
-  }
-
-  bool
-  KalFit::fitable(TrkDef const& tdef){
-    return tdef.strawHitIndices().size() >= _minnstraws;
   }
 
   bool
@@ -517,13 +508,13 @@ namespace mu2e
 
 
   void
-  KalFit::makeMaterials(TrkStrawHitVector const& tshv, HelixTraj const& htraj,std::vector<DetIntersection>& detinter) {
-  // fetcth the DetectorModel
-    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
+  KalFit::makeMaterials( Mu2eDetector::cptr_t detmodel,
+			 TrkStrawHitVector const& tshv, HelixTraj const& htraj,
+			 std::vector<DetIntersection>& detinter) {
     // loop over strawhits and extract the straws
     for (auto trkhit : tshv) {
    // find the DetElem associated this straw
-      const DetStrawElem* strawelem = detmodel.strawElem(trkhit->straw());
+      const DetStrawElem* strawelem = detmodel->strawElem(trkhit->straw());
       // create intersection object for this element; it includes all materials
       DetIntersection strawinter;
       strawinter.delem = strawelem;
@@ -535,13 +526,11 @@ namespace mu2e
     }
   }
 
-  unsigned KalFit::addMaterial(KalRep* krep) {
+  unsigned KalFit::addMaterial(Mu2eDetector::cptr_t detmodel, KalRep* krep) {
     _debug>3 && std::cout << __func__ << " called " << std::endl;
     unsigned retval(0);
 // Tracker geometry
     const Tracker& tracker = *_tracker;
-// fetcth the DetectorModel
-    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
 // storage of potential straws
     StrawFlightComp strawcomp(_maxmatfltdiff);
     std::set<StrawFlight,StrawFlightComp> matstraws(strawcomp);
@@ -639,7 +628,7 @@ namespace mu2e
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto const& strawflt : matstraws){
-      const DetStrawElem* strawelem = detmodel.strawElem(strawflt._id);
+      const DetStrawElem* strawelem = detmodel->strawElem(strawflt._id);
       DetIntersection strawinter;
       strawinter.delem = strawelem;
       strawinter.pathlen = strawflt._flt;

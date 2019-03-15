@@ -155,30 +155,6 @@ BEGIN_PROLOG
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
-    fillTrkQualInfo : true
-  }
-# Analysis from reco output: beta protype!
-# DeM only for now
-  TrackAnalysisReco : {
-    module_type : TrackAnalysisReco
-    DeTag : "KFFDeM"
-    UeTag : "KFFUeM"
-    DmuTag : "KFFDmuM"
-    DeTrkQualTag : "TrkQualDeM"
-    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    PBIWeightTag : "PBIWeight"
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-#    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
-    CrvCoincidenceMCModuleLabel : "compressRecoMCs"
-    FillMCInfo : true
-    ProcessEmptyEvents : false
-    AnalyzeCRV : true
-    fillTrkQualInfo : true
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-#    PrimaryParticleTag : "FindMCPrimary"
-    PrimaryParticleTag : "compressRecoMCs"
-    KalSeedMCAssns : "SelectRecoMC"
-    CaloClusterMCAssns : "SelectRecoMC"
   }
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
@@ -206,7 +182,7 @@ BEGIN_PROLOG
   # Track qulaity module
   TrkQual : {
   	  module_type : TrackQuality
-  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
+  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQualCalo.weights.xml" }
   }
   TrkQualDeM		       : @local::TrkQual
   TrkQualDeM.KalSeedCollection : "KFFDeM"
@@ -292,19 +268,21 @@ BEGIN_PROLOG
         @table::TrackAnalysis
         TrkParticle : -11
       }
-      TrkAnaReco : @local::TrackAnalysisReco
     }
   
     # diagnostic Reco sequences starting from digis
     EventWeightSequence : [ PBIWeight ]
 
+    TrkQualSequence : [ TrkQualDeM, TrkQualUeM, TrkQualDmuM,
+    		      	TrkQualDeP, TrkQualUeP, TrkQualDmuP ]
+
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-		     @sequence::Tracking.TPRDeM, TrkQualDeM,
-		     @sequence::Tracking.TPRUeM, TrkQualUeM,
-		     @sequence::Tracking.TPRDmuM, TrkQualDmuM,
-                     @sequence::Tracking.TPRDeP, TrkQualDeP,
-                     @sequence::Tracking.TPRUeP, TrkQualUeP,
-                     @sequence::Tracking.TPRDmuP, TrkQualDmuP ]
+		     @sequence::Tracking.TPRDeM,
+		     @sequence::Tracking.TPRUeM,
+		     @sequence::Tracking.TPRDmuM,
+                     @sequence::Tracking.TPRDeP,
+                     @sequence::Tracking.TPRUeP,
+                     @sequence::Tracking.TPRDmuP ]
 
     CaloRecoSequence : [ @sequence::CaloReco.Reco,
 			 @sequence::CaloCluster.Reco ]
@@ -320,8 +298,60 @@ TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF,
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
 			    @sequence::TrkAna.CaloRecoSequence,
 			    @sequence::TrkAna.TrkRecoSequence,
+			    @sequence::TrkAna.TrkQualSequence,
 		            @sequence::TrkCaloMatchSequence ]
 TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 				 @sequence::TrkAna.CrvRecoSequence ]
+
+
+# Analysis from reco output: beta protype!
+# DeM only for now
+  TrackAnalysisReco : {
+    module_type : TrackAnalysisReco
+    DeTag : "KFFDeM"
+    UeTag : "KFFUeM"
+    DmuTag : "KFFDmuM"
+    DeTrkQualTag : "TrkQualDeM"
+    RecoCountTag : "SelectRecoMC"
+    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
+    PBIWeightTag : "PBIWeight"
+    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
+    CrvCoincidenceMCModuleLabel : "compressRecoMCs"
+    FillMCInfo : true
+    ProcessEmptyEvents : false
+    AnalyzeCRV : true
+    StrawHitFlagCollection : "SelectRecoMC"
+    PrimaryParticleTag : "compressRecoMCs"
+    TriggerBitsTag : "triggerInfoMerger"
+    KalSeedMCAssns : "SelectRecoMC"
+    CaloClusterMCAssns : "SelectRecoMC"
+  }
+
+TrkAnaReco : {
+
+   producers: {
+      PBIWeight : @local::TrkAna.producers.PBIWeight
+      TrkQualDeM : @local::TrkAna.producers.TrkQualDeM
+      TrkQualUeM : @local::TrkAna.producers.TrkQualUeM
+      TrkQualDeP : @local::TrkAna.producers.TrkQualDeP
+      TrkQualUeP : @local::TrkAna.producers.TrkQualUeP
+      TrkQualDmuM : @local::TrkAna.producers.TrkQualDmuM
+      TrkQualDmuP : @local::TrkAna.producers.TrkQualDmuP
+   }
+
+   analyzers : {
+      TrkAnaNeg : { @table::TrackAnalysisReco }
+      TrkAnaPos : { @table::TrackAnalysisReco
+  	      	    DeTag : "KFFDeP"
+  		    UeTag : "KFFUeP"
+  		    DmuTag : "KFFDmuP"
+		    DeTrkQualTag : "TrkQualDeP" }
+
+      genCountLogger : @local::TrkAna.analyzers.genCountLogger
+   }
+
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP  ]
+   EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
+}
 
 END_PROLOG

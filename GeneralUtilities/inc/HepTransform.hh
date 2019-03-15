@@ -22,8 +22,8 @@ namespace mu2e {
 		  double rx, double ry, double rz):
       _displacement(dx,dy,dz) {
       _rotation.rotateX(rx);
-      _rotation.rotateX(ry);
-      _rotation.rotateX(rz);
+      _rotation.rotateY(ry);
+      _rotation.rotateZ(rz);
     }
 
     CLHEP::Hep3Vector  displacement() const { return _displacement;}

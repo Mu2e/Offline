@@ -34,6 +34,7 @@
 #include "TVector2.h"
 
 #include "RecoDataProducts/inc/HelixSeed.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 

@@ -255,8 +255,10 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
       command = "INSERT INTO "+ptr->dbname()+"(cid,"+ptr->query()
 	+") VALUES ("+std::to_string(cid)+","+cline+");";
       rc = _sql.execute(command,result);
-      std::cout << command << std::endl;
-      std::cout << result << std::endl;
+      if(_verbose>9) {
+	std::cout << command << std::endl;
+	std::cout << result << std::endl;
+      }
       if(rc!=0) return rc;
     }
 
@@ -1028,16 +1030,21 @@ int mu2e::DbTool::commitVersion() {
     std::cout << "commit-version: --list [LID or LIST] is required "<<std::endl;
     return 1;
   }
-  int major=stoi(args["major"]);
-  if(args["major"].empty() || major<0 || major>1000) {
+
+  int major = -1;
+  if(args["major"].size()>0) major = stoi(args["major"]);
+  if(major<0 || major>1000) {
     std::cout << "commit-version: --major [INT] is required "<<std::endl;
     return 1;
   }
-  int minor = stoi(args["minor"]);
-  if(args["minor"].empty() || minor<0 || minor>1000) {
+
+  int minor = -1;
+  if(args["minor"].size()>0) minor = stoi(args["minor"]);
+  if(minor<0 || minor>1000) {
     std::cout << "commit-version: --minor [INT] is required "<<std::endl;
     return 1;
   }
+
   if(args["comment"].empty()) {
     std::cout << "commit-version: --comment is required "<<std::endl;
     return 1;

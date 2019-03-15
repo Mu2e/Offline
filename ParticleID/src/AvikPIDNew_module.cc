@@ -52,9 +52,10 @@
 #include "ParticleID/inc/PIDUtilities.hh"
 #include "RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
 
-#include "BTrkHelper/inc/BTrkHelper.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
+
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -84,6 +85,8 @@ namespace mu2e {
     string _eleDedxTemplateFile;
     string _muoDedxTemplates;
     string _muoDedxTemplateFile;
+
+    ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
 
     TrkParticle     _tpart;
     TrkFitDirection _fdir;
@@ -861,8 +864,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void AvikPIDNew::produce(art::Event& event) {
 
-  // fetcth the DetectorModel
-    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
+    auto detmodel = _mu2eDetector_h.getPtr(event.id());
 
     art::Handle<mu2e::KalRepPtrCollection> handle;
 
@@ -948,7 +950,7 @@ namespace mu2e {
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
 	  const Straw* straw = &hit->straw();
-          const DetStrawElem* strawelem = detmodel.strawElem(*straw);
+          const DetStrawElem* strawelem = detmodel->strawElem(*straw);
           path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
           gaspaths.push_back(path);
           edeps.push_back(hit->comboHit().energyDep());
