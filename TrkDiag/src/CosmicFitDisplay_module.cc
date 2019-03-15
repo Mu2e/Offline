@@ -23,8 +23,8 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 
-#include "RecoDataProducts/inc/StraightTrack.hh"
-#include "RecoDataProducts/inc/StraightTrackSeed.hh"
+#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
@@ -123,7 +123,7 @@ namespace mu2e
 	_mcdiag		(pset.get<bool>("MCdiag",true)),
 	_chtag		(pset.get<art::InputTag>("ComboHitCollection")),
 	_tctag		(pset.get<art::InputTag>("TimeClusterCollection")),
-	_sttag		(pset.get<art::InputTag>("StraightTrackSeedCollection")),
+	_sttag		(pset.get<art::InputTag>("CosmicTrackSeedCollection")),
 	doDisplay_(pset.get<bool>("doDisplay",false)),
         clickToAdvance_(pset.get<bool>("clickToAdvance",false))
         {}
@@ -167,17 +167,18 @@ namespace mu2e
         _evt = event.id().event();  
        
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
-        auto Tracks  = event.getValidHandle<StraightTrackSeedCollection>( _sttag );
+        auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
 
-        std::vector<double> x, y, z,r, ms, m_err, cs, c_err, chi_dof;
+        std::vector<double> x, y, z, a0, a1, b0,b1;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());
-	r.reserve(comboHits->size());
-        ms.reserve(Tracks->size());
-        cs.reserve(Tracks->size());
-        chi_dof.reserve(Tracks->size());
-
+	
+        a0.reserve(Tracks->size());
+        a1.reserve(Tracks->size());
+        b0.reserve(Tracks->size());
+        b1.reserve(Tracks->size());
+        
         // loop over combo hits
         for(auto const& chit : *comboHits){
         x.push_back(chit.pos().x());
@@ -187,11 +188,10 @@ namespace mu2e
 
         //loop over tracks:
         for(auto const& track: *Tracks){
-        ms.push_back(track._track.get_m_0());
-        cs.push_back(track._track.get_c_0());
-	m_err.push_back(track._track.get_m_0_err());
-        c_err.push_back(track._track.get_c_0_err());
-	chi_dof.push_back(track._track.get_chisq_dof());
+        a0.push_back(track._track.get_track_parameters()[0]);
+        a1.push_back(track._track.get_track_parameters()[1]);
+        b0.push_back(track._track.get_track_parameters()[2]);
+        b1.push_back(track._track.get_track_parameters()[3]);
         }
         
         GeomHandle<Tracker> tracker;
@@ -231,8 +231,6 @@ namespace mu2e
 	      arc.DrawArc(0.,0., envelope.outerRadius());
 	      arc.DrawArc(0.,0., envelope.innerRadius());
 
-	     
-              
 	      xyplot->GetYaxis()->SetTitleOffset(1.25);
 	      xyplot->SetTitle( "y vs x;(mm);(mm)");
 
@@ -246,7 +244,7 @@ namespace mu2e
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();
 			double x0{p.x()};
-			double y0{p.y()};
+			double y0{p.z()};
                         //double z0{p.z()};
 			poly.DrawPolyMarker( 1, &x0, &y0 );
 		        
@@ -259,109 +257,17 @@ namespace mu2e
       	      }
  	   
               
-	      if(ms.size() > 0){
+	      if(a1.size() > 0){
 		
-		double tx1 = x[0];
-		double tx2 = x[x.size()-1];
-		double ty1 = ms[0]*tx1+cs[0];
-		double ty2 =ms[0]*tx2+cs[0];
+		double tx1 = z[0];
+		double tx2 = z[z.size()-1];
+		double ty1 = a1[0]*tx1+a0[0];
+		double ty2 =a1[0]*tx2+a0[0];
 		fit_to_track.DrawLine( tx1, ty1, tx2, ty2);
-		TLegend *leg = new TLegend(0.1,0.7,0.3,0.9);
-        	leg->AddEntry("#Chi^{2}/N = ", "#Chi^{2}/N =",  "");
-        	stringstream chi_info;
-		
-                chi_info<< chi_dof[0];
-                const char* str_chi_info = chi_info.str().c_str();
-	       
-                leg->AddEntry("" ,str_chi_info,  "");
-                leg->Draw("same");       
+		 
 
               }
-         
-             pad = canvas_->cd(2);
-             pad->Clear();
-             auto zplot = pad->DrawFrame(-plotLimits*2.,-plotLimits,plotLimits*2.,plotLimits);
-             box.SetLineColor(kBlack);
-             box.SetFillStyle(0);
-             double zlimit{envelope.zHalfLength()};
-             box.SetLineStyle(1);
-             box.DrawBox( -zlimit, -envelope.outerRadius(), zlimit,  envelope.outerRadius() );
-             box.SetLineStyle(2);
-             box.DrawBox( -zlimit, -envelope.innerRadius(), zlimit,  envelope.innerRadius() );
-             box.SetLineStyle(1);
-             zplot->GetYaxis()->SetTitleOffset(1.25);
-             zplot->SetTitle( "Track Fit y v z ;z (mm);y (mm)");  
-             poly.SetMarkerColor(kRed);
-             for ( auto const& chit : *comboHits ){
-		auto const& p = chit.pos();
-		auto const& w = chit.wdir();
-		auto const& s = chit.wireRes();
-                double a = sqrt((chit.pos().x()*chit.pos().x())+(chit.pos().y()*chit.pos().y()));
-		
-
-                if ( chit.pos().y() < 0 ) a = -1*a;
-		r.push_back(a);
-		double z0{p.z()};
-		double y0{p.y()};
-		poly.DrawPolyMarker( 1, &z0, &y0 );
-		//arc.DrawArc(p.z(),p.y(),straw_radius);
-		double z1 = p.z()+s*w.z();
-        	double z2 = p.z()-s*w.z();
-        	double y1 = p.y()+s*w.y();
-        	double y2 = p.y()-s*w.y();
-		line.DrawLine( z1, y1, z2, y2);
-		//for(int i = 0; i< number_of_straws; i++){
-	        //straw.SetLineColor(kGreen);
-	        //straw.DrawArc(straw_centre_x, straw_centre_y,straw_radius);
-	      
-              //}
-              }
-              /*
-              if(ms.size() > 0){
-		
-		double tr1 = z[0];
-		double tr2 = z[z.size()-1];
-		double tz1 = ms[0]*tr1+cs[0];
-		double tz2 =ms[0]*tr2+cs[0];
-		fit_to_track.DrawLine( tr1, tz1, tr2, tz2);
-		
-                        
-
-              }
-	      */
-              pad = canvas_->cd(3);
-              pad->Clear();
-              
-	      double max_z = GetMaxAndMin(z)[0];
-	      double max_y = GetMaxAndMin(y)[0];
-	      double min_z = GetMaxAndMin(z)[1];
-	      double min_y = GetMaxAndMin(y)[1];
-	      
-	      auto zoom = pad->DrawFrame(min_z,min_y,max_z,max_y);
-
-              zoom->GetYaxis()->SetTitleOffset(1.25);
-              zoom->SetTitle( "trakc zoom; Residual (mm) ;# hits");
-	      poly.SetMarkerStyle(4);
-	      //poly.SetMarkerSize(straw_radius);
-              if(ms.size() > 0){
-		      for ( auto const& chit : *comboHits ){
-			auto const& p = chit.pos();
-			auto const& w = chit.wdir();
-			auto const& s = chit.wireRes();
-			
-		        double z0{p.z()};
-			double y0{p.y()};
-			poly.DrawPolyMarker( 1, &z0, &y0 );
-			//arc.DrawArc(p.z(),p.y(),straw_radius);
-    			double z1 = p.z()+s*w.z();
-        		double z2 = p.z()-s*w.z();
-        		double y1 = p.y()+s*w.y();
-        		double y2 = p.y()-s*w.y();
-			line.DrawLine( z1, y1, z2, y2);
-		      }
-   
-	      }
-              
+             
               ostringstream title;
  
 
@@ -396,7 +302,7 @@ namespace mu2e
 
         //get combo hits
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
-        auto Tracks  = event.getValidHandle<StraightTrackSeedCollection>( _sttag );
+        auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
         GeomHandle<Tracker> tracker;
 
         // Annulus of a cylinder that bounds the tracker
@@ -404,14 +310,15 @@ namespace mu2e
 
 
 	// Create arrays for x,y,z:
-	std::vector<double> x, y, z,r, mx, mz, c0;
+	std::vector<double> x, y, z, a0, a1, b0, b1;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());
 
-        mx.reserve(Tracks->size());
-	mz.reserve(Tracks->size());
-        c0.reserve(Tracks->size());
+        a1.reserve(Tracks->size());
+	b1.reserve(Tracks->size());
+        a0.reserve(Tracks->size());
+        b0.reserve(Tracks->size());
        
         // loop over combo hits
         for(auto const& chit : *comboHits){
@@ -421,8 +328,10 @@ namespace mu2e
         }
         //loop over tracks:
         for(auto const& track: *Tracks){
-        mx.push_back(track._track.get_m_0());
-        c0.push_back(track._track.get_c_0());
+        a1.push_back(track._track.get_track_parameters()[1]);
+        a0.push_back(track._track.get_track_parameters()[0]);
+        b1.push_back(track._track.get_track_parameters()[3]);
+        b0.push_back(track._track.get_track_parameters()[2]);
 	//mz.push_back(track._track.get_m_1());
         }
         
@@ -493,15 +402,15 @@ namespace mu2e
               
               poly3D.Draw("same");
 
-	      if(mx.size() > 0 && mz.size() > 0){
+	      if(a1.size() > 0 && b1.size() > 0){
 	      	TPolyLine3D *Track = new TPolyLine3D;
                 Track->SetLineColor(kBlue);
                 double tx1 = x[0];
 	        double tx2 = x[x.size()-1];
 		double tz1 = z[0];
 	        double tz2 = z[z.size()-1];
-		double ty1 = mz[0]*tz1+mx[0]*tx1+c0[0];
-		double ty2 =mz[0]*tz2+mx[0]*tx2+c0[0];
+		double ty1 = b1[0]*tz1+b0[0]*tx1+a0[0];
+		double ty2 =a1[0]*tz2+a0[0]*tx2+b0[0];
 		Track->SetPoint(0, tx1, ty1, tz1);
 		Track->SetNextPoint(tx2, ty2, tz2);
 		Track->Draw("same");
@@ -572,20 +481,20 @@ _evt = event.id().event();  // add event id
 
             //get combo hits
            auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
-           auto Tracks  = event.getValidHandle<StraightTrackSeedCollection>( _sttag );
+           auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
         
 
 
 	   // Create arrays for x,y,z:
-	   std::vector<double> x, y, z,r, mx, mz, c0;
+	   std::vector<double> x, y, z,a0,a1,b0,b1;
            x.reserve(comboHits->size());
            y.reserve(comboHits->size());
            z.reserve(comboHits->size());
 
-          mx.reserve(Tracks->size());
-	  mz.reserve(Tracks->size());
-          c0.reserve(Tracks->size());
-       
+          a1.reserve(Tracks->size());
+	  b1.reserve(Tracks->size());
+          a0.reserve(Tracks->size());
+          b0.reserve(Tracks->size());
           // loop over combo hits
           for(auto const& chit : *comboHits){
              x.push_back(chit.pos().x());
@@ -594,9 +503,11 @@ _evt = event.id().event();  // add event id
           }
           //loop over tracks:
           for(auto const& track: *Tracks){
-             mx.push_back(track._track.get_m_0());
-             c0.push_back(track._track.get_c_0());
-	    // mz.push_back(track._track.get_m_1());
+             a1.push_back(track._track.get_track_parameters()[1]);
+             a0.push_back(track._track.get_track_parameters()[0]);
+             
+	     b1.push_back(track._track.get_track_parameters()[3]);
+             b1.push_back(track._track.get_track_parameters()[2]);
           }
         
         //If Diag:

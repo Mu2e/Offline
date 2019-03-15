@@ -12,10 +12,10 @@ namespace mu2e{
 	CosmicTrack::CosmicTrack() {
           	_Nhits = 0;
 
-    		_par1=0.;
-   		_par2=0.;
-    		_par3=0.;
-    		_par4=0.;
+    		_a0=0.;
+   		_a1=0.;
+    		_b0=0.;
+    		_b1=0.;
 		_Sagitta = 0.;
    		XYZVec _track_parameters(0,0,0);
     		XYZVec _track_equation(0,0,0);//r(t) expression
@@ -38,18 +38,21 @@ namespace mu2e{
 	CosmicTrack::~CosmicTrack() {}
 
 	void CosmicTrack::clear() {
-	  _par1 = 0.;
-   	  _par2 = 0.;
-          _par3 = 0.;
-          _par4 = 0.;
+	  _a0 = 0.;
+   	  _a1 = 0.;
+          _b0 = 0.;
+          _b1 = 0.;
 
 	  _Nhits = 0;
           _Sagitta = 0 ;
           
 	  _hit_errorsTotal.erase(_hit_errorsTotal.begin(),_hit_errorsTotal.end());
 	  
-	  _fit_residuals.erase(_fit_residuals.begin(),_fit_residuals.end());
-	  _fit_residual_errors.erase(_fit_residual_errors.begin(),_fit_residual_errors.end());
+	  _fit_residualsX.erase(_fit_residualsX.begin(),_fit_residualsX.end());
+	  _fit_residual_errorsX.erase(_fit_residual_errorsX.begin(),_fit_residual_errorsX.end());
+	  
+	  _fit_residualsY.erase(_fit_residualsY.begin(),_fit_residualsY.end());
+	  _fit_residual_errorsY.erase(_fit_residual_errorsY.begin(),_fit_residual_errorsY.end());
 	  
 	}
 	

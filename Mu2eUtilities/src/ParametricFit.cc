@@ -75,10 +75,8 @@ namespace ParametricFit{
  	XYZVec gradient = lineEndPoint - lineStartPoint;  
   	double t = ( x - lineStartPoint.x() ) / gradient.x();
 
-
   	//Use t to get all point coords
   	outputPoint.SetXYZ( x , lineStartPoint.y()+(gradient.y()*t) , lineStartPoint.z()+(gradient.z()*t));
-
   	return outputPoint;
 
 	}
@@ -168,6 +166,7 @@ sigma_x' = sqrt(sigma_Maj^2(x'.Maj)^2 + sigma_min^2(x'.Min)^2) i.e. sum or squar
 ----------------------------------------------------------------------------------*/
 
 double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir){
+	
 	XYZVec track_x(track_dir.x(),0,0);
 	XYZVec unit = track_x.Unit();
 	//XYZVec x_track( track_dir.x(),0,0);
@@ -182,9 +181,10 @@ double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec tra
 
 double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir){
 	XYZVec y_track(0, track_dir.y(), 0);
+	XYZVec unit = y_track.Unit();
         double sigma_w_squared = major_axis.Mag2();
         double sigma_v_squared = minor_axis.Mag2();
-	double sigma_y_track = sqrt(sigma_w_squared*pow((y_track.Unit().Dot(major_axis.Unit())),2)+sigma_v_squared*pow((y_track.Unit().Dot(minor_axis.Unit())),2));
+	double sigma_y_track = sqrt(sigma_w_squared*pow((unit.Dot(major_axis.Unit())),2)+sigma_v_squared*pow((unit.Dot(minor_axis.Unit())),2));
  	return sigma_y_track;
 }
 
@@ -208,18 +208,24 @@ int GetDOCASign(XYZVec track_dir, XYZVec point){
 	return sign;
 
 }
-double GetResidual(double A0, double A1, double B0, double B1, XYZVec track_dir, XYZVec point){
-
+double GetResidualX(double A0, double A1 ,XYZVec track_dir, XYZVec point){
 	XYZVec track_x(track_dir.x(),0,0);
-	XYZVec track_y(0, track_dir.y(),0);
-	XYZVec track_z(0,0, track_dir.z());
-	double resid_x = point.Dot(track_x.Unit()) - A0 - A1*point.z();
-	
-	double resid_y = point.Dot(track_y.Unit()) - B0 - B1*point.z();
-	std::cout<<" Resid "<<resid_x<<" "<<resid_y<<" "<<sqrt(pow(resid_x,2)+pow(resid_y,2))<<std::endl;
+	double resid_x = A0 + A1*point.z()-point.Dot(track_x.Unit());	
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 	
 }
+
+double GetResidualY( double B0, double B1, XYZVec track_dir, XYZVec point){
+	XYZVec track_y(0, track_dir.y(),0);	
+	double resid_y = B0 +B1*point.z()-point.Dot(track_y.Unit()) ;
+	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
+	
+}
+
+double GetTotalResidual(double resid_x,double resid_y){
+	return resid_x+resid_y;
+}
+
 double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec track_direction, XYZVec& point, double DOCA){
         XYZVec track_x(track_direction.x(),0,0);
         double R = DOCA;

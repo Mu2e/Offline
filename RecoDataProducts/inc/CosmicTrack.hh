@@ -31,7 +31,7 @@ namespace mu2e {
     // Constructors
     CosmicTrack();
     
-    CosmicTrack(double par_1, double par_2, double par_3, double par_4) : _par1(par_1), _par2(par_2), _par3(par_3), _par4(par_4){};
+    CosmicTrack(double par_1, double par_2, double par_3, double par_4) : _a0(par_1), _a1(par_2), _b0(par_3), _b1(par_4){};
 
     CosmicTrack(std::vector<double> track_parameters) : _track_parameters(track_parameters){};
 
@@ -62,8 +62,10 @@ namespace mu2e {
     //curvature and momentum info
     double GetSagitta(){return _Sagitta;}
     //residuals info
-    std::vector<double> get_fit_residuals() const { return _fit_residuals; }
-    std::vector<double> get_fit_residual_errors() const { return _fit_residual_errors; }
+    std::vector<double> get_fit_residualsX() const { return _fit_residualsX; }
+    std::vector<double> get_fit_residual_errorsX() const { return _fit_residual_errorsX; }
+    std::vector<double> get_fit_residualsY() const { return _fit_residualsY; }
+    std::vector<double> get_fit_residual_errorsY() const { return _fit_residual_errorsY; }
     //hit errors info
     std::vector<double> get_hit_errorsX() const{ return _hit_errorsX;}
     std::vector<double> get_hit_errorsY() const{ return _hit_errorsY;}
@@ -72,15 +74,15 @@ namespace mu2e {
     // Modiffiers:
     void clear();
     void set_N(int N){_Nhits = N;}
-    void set_parameters(double par1,double par2, double par3, double par4){ 
-	_par1=par1;
-	_par2=par2;
-	_par3=par3;
-	_par4=par4;
-        _track_parameters.push_back(par1);
-        _track_parameters.push_back(par2);
-	_track_parameters.push_back(par3);
-	_track_parameters.push_back(par4);
+    void set_parameters(double a0,double a1, double b0, double b1){ 
+	_a0=a0;
+	_a1=a1;
+	_b0=b0;
+	_b1=b1;
+        _track_parameters.push_back(a0);
+        _track_parameters.push_back(a1);
+	_track_parameters.push_back(b0);
+	_track_parameters.push_back(b1);
 
 	}
     void set_parameters(unsigned para_ID, double par){
@@ -94,8 +96,11 @@ namespace mu2e {
     void set_chisq(double chisq) { _chisq = chisq; }
     void set_mom(XYZVec mom){_track_mommentum=mom;} 
 
-    void set_fit_residuals(double residual) { _fit_residuals.push_back(residual); }
-    void set_fit_residual_errors(double residual_err) { _fit_residual_errors.push_back(residual_err); }
+    void set_fit_residualsX(double residual) { _fit_residualsX.push_back(residual); }
+    void set_fit_residual_errorsX(double residual_err) { _fit_residual_errorsX.push_back(residual_err); }
+    
+    void set_fit_residualsY(double residual) { _fit_residualsY.push_back(residual); }
+    void set_fit_residual_errorsY(double residual_err) { _fit_residual_errorsY.push_back(residual_err); }
     
     void set_hit_errorsX(double hit_errorX){_hit_errorsX.push_back(hit_errorX);}
     void set_hit_errorsY(double hit_errorY){_hit_errorsY.push_back(hit_errorY);}
@@ -107,10 +112,10 @@ namespace mu2e {
     
     int _Nhits;
 
-    double _par1; //a0
-    double _par2; //a1
-    double _par3; //b0
-    double _par4; //b1
+    double _a0; //a0
+    double _a1; //a1
+    double _b0; //b0
+    double _b1; //b1
 
     std::vector<double> _track_parameters; //FIXME NEED TO BE 4D vector.....
 
@@ -125,8 +130,11 @@ namespace mu2e {
     double _chisq;
     double _chisq_dof;
 
-    std::vector<double> _fit_residuals;
-    std::vector<double> _fit_residual_errors;
+    std::vector<double> _fit_residualsX;
+    std::vector<double> _fit_residual_errorsX;
+    std::vector<double> _fit_residualsY;
+    std::vector<double> _fit_residual_errorsY;
+    
     std::vector<double> _hit_errorsX;
     std::vector<double> _hit_errorsY;
     std::vector<double> _hit_errorsTotal;

@@ -42,6 +42,7 @@ namespace mu2e
 {
   CosmicTrackFit::CosmicTrackFit(fhicl::ParameterSet const& pset) :
     _dim(pset.get<int>("dimension",3)),
+    _Npara(pset.get<int>("Npara",4)),
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
@@ -50,7 +51,7 @@ namespace mu2e
     _minCHHits(pset.get<unsigned>("minCHHits",2)),
     _n_outliers(pset.get<float>("_n_outliers",0.5)),
     _maxresid(pset.get<float>("maxresid",200)),
-    _maxniter(pset.get<unsigned>("maxniter",100)),
+    _maxniter(pset.get<unsigned>("maxniter",10)),
     //_minzsep(pset.get<float>("minzsep",stationwidth)),//at least 2 planes
     //_maxzsep(pset.get<float>("maxzsep",???)), //resolutiom limiter..(?)
     _maxd(pset.get<float>("maxd",1000.0)),//max distance between hits at start of fit
@@ -124,16 +125,22 @@ void CosmicTrackFit::RunFitChi2(CosmicTrackFinderData& TrackData) {
     //if track is "good" add to list of good tracks:
    if (goodTrack(all_hits_track)) TrackData._tseed._status.merge(TrkFitFlag::StraightTrackOK);  
 
-}
+}TH1F* hit_errors = new TH1F("Hit Total Errors","Hit Total Errors", 100, 0,100);
+TH1F* resX = new TH1F("resX","resX", 100,-300,300);
+TH1F* resY =   new TH1F("resY","resY", 100,-300,300);
+TH1F* pullX = new TH1F("pullX","pullX", 100,-1,1);
+TH1F* pullY =   new TH1F("pullY","pullY", 100,-1,1);
+TH1F* chi2 = new TH1F("chi2", "chi2", 100, 0, 5000);
 
 /*---------------Refine Fit ------ ----------------//
 //    Refines the fit in and updates chi2 information   //
 //-----------------------------------------------*/
 CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, int WeightMode){
     ::BuildMatrixSums S;
-    
+    S.clear();
     //double resid = 10;
     size_t nHits (trackData._chHitsToProcess.size());
+    int DOF = nHits - _Npara;
     CosmicTrack* track = &trackData._tseed._track; 
     
     const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
@@ -147,7 +154,7 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
     HitInfo_t  indexBestComboHit;
     //float      minResid(_minresid);
     //if (WeightMode == 0 ) minResid = _maxd;
-    for (size_t f1=0; f1<nHits; ++f1){  
+    for (size_t f1=0; f1<nHits+1; ++f1){  
       hitP1 = &trackData._chHitsToProcess[f1];
       if (!use(*hitP1) )    continue;
       XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
@@ -158,31 +165,87 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
       
       S.addPoint(f1, point, track_dir, errX, errY);
     }//end intial hit loop
-     //Store Initial Fit Parameters:
-     cosmictrack->set_parameters(S.GetAlphaX()[0][0],S.GetAlphaX()[1][0], S.GetAlphaX()[0][0], S.GetAlphaX()[1][0]);
-     cosmictrack->set_chisq(S.GetTotalChi2());
-     //loop again over hits:
-     for (size_t f1=0; f1<nHits; ++f1){
-     	     hitP1 = &trackData._chHitsToProcess[f1];
-      if (!use(*hitP1) )    continue;
-     	     std::cout<<" Point "<<f1<<" of "<<nHits<<std::endl;
-	     TMatrix Px = S.GetAlphaX();
-	     TMatrix Py = S.GetAlphaY();
-	     XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
-	     std::cout<<" x "<<hitP1->pos().x()<<" y "<<hitP1->pos().y()<<" z "<<hitP1->pos().z()<<std::endl;
-	      XYZVec major_axis =  ParametricFit::MajorAxis(hitP1, track_dir);
-	      XYZVec minor_axis =  ParametricFit::MinorAxis(hitP1, track_dir);
-	      double errX =  ParametricFit::HitErrorX(hitP1, major_axis, minor_axis, track_dir);
-	      //double errY =  ParametricFit::HitErrorY(hitP1, major_axis, minor_axis, track_dir);
-	      double hit_error =  ParametricFit::TotalHitError(hitP1, major_axis, minor_axis, track_dir);
-	     cosmictrack->set_hit_errorsTotal(errX);
-	     cosmictrack->set_fit_residual_errors(hit_error);
-	     double R = ParametricFit::GetResidual(Px[0][0],Px[1][0], Py[0][0], Py[1][0], track_dir, point);
-	     cosmictrack->set_fit_residuals(R);
-     }
     
+     //Store Initial Fit Parameters:
+     cosmictrack->set_parameters(S.GetAlphaX()[0][0],S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
+     XYZVec updated_track_direction(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1); 
+     cosmictrack->set_track_direction(updated_track_direction);
+     
+     
+     //loop again over hits:
+     
+     for (size_t f1=0; f1<nHits+1; ++f1){
+     	      hitP2 = &trackData._chHitsToProcess[f1];
+      	      if (!use(*hitP2) )    continue;     	   
+	      XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());
+	      std::cout<<" Point "<<f1<<" of "<<nHits<<std::endl;
+	      XYZVec major_axis =  ParametricFit::MajorAxis(hitP2, track_dir);
+	      XYZVec minor_axis =  ParametricFit::MinorAxis(hitP2, track_dir);
+	      double errX =  ParametricFit::HitErrorX(hitP2, major_axis, minor_axis, track_dir);
+	      double errY =  ParametricFit::HitErrorY(hitP2, major_axis, minor_axis, track_dir);
+	      double hit_error =  ParametricFit::TotalHitError(hitP2, major_axis, minor_axis, track_dir);
+	     
+	      double Rx = ParametricFit::GetResidualX(S.GetAlphaX()[0][0],S.GetAlphaX()[1][0], track_dir, point);
+	      double Ry = ParametricFit::GetResidualY(S.GetAlphaY()[0][0], S.GetAlphaY()[1][0], track_dir, point);
+	     
+	      hit_errors->Fill(hit_error);
+	      resX->Fill(Rx);
+	      resY->Fill(Ry);
+	      pullX->Fill(Rx/errX);
+	      pullY->Fill(Ry/errY);
+	      cosmictrack->set_fit_residualsX(Rx);
+	      cosmictrack->set_fit_residualsY(Ry);
+	      std::cout<<" Res " << Rx<<" "<<Ry<<" "<<std::endl;
+	     /*
+	     //iterate errors:
+	     unsigned ninter(0);
+	     bool errors_converged = false;
+	     //S.clear();
+	     while(ninter < _maxniter && errors_converged==false){
+		ninter +=1;
+		
+		//Get Current Track informations:
+		XYZVec updated_track_dir(0,0,1);//cosmictrack->get_track_direction();
+
+                //Getting hit errors:
+                double new_hit_errorX = ParametricFit::HitErrorX(hitP1, major_axis, minor_axis, updated_track_dir);
+                double new_hit_errorY = ParametricFit::HitErrorY(hitP1, major_axis, minor_axis, updated_track_dir);
+		
+		//Update Error:
+		double d_errorX =0;
+		if (new_hit_errorX > errX){
+			d_errorX = sqrt(pow(new_hit_errorX - errX,2));
+		        errX = new_hit_errorX; 	
+		}
+		
+		double d_errorY =0;
+		if (new_hit_errorY > errY){
+			d_errorY = sqrt(pow((new_hit_errorY - errY),2));
+		        errY = new_hit_errorY; 	
+		}
+        	if( d_errorX < 0.1 && d_errorY < 0.1 ){ 
+           		errors_converged = true;
+                } 
+                S.removePoint(f1, point, old_track_dir, errX, errY);  
+                S.addPoint(f1, point, updated_track_dir, new_hit_errorX, new_hit_errorY);
+                
+	     	//cosmictrack->set_track_direction(new_track_direction);
+	     }//end while
+	     
+	     */
+	     
+	     
+     }
+    cosmictrack->set_chisq(S.GetTotalChi2());
+    chi2->Fill(S.GetTotalChi2()/DOF);
+    hit_errors->SaveAs("Combined Hit Error");
+    resX->SaveAs("resX");
+    resY->SaveAs("resY");
+    pullX->SaveAs("pullX");
+    pullY->SaveAs("pullY");
+    chi2->SaveAs("chi2");
     //set final parameters here
-   //resid = R;
+    //resid = R;
       //nXYSh += hitP1->nStrawHits(); 
       //if(resid > minResid){ 
        	    //hitP1->_flag.merge(StrawHitFlag::outlier); 

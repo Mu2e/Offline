@@ -67,8 +67,10 @@ namespace mu2e
       //Some Diag histograms:
       TH1F* _chisq_plot;
       TH1F* _chisq_ndf_plot;
-      TH1F* _total_residuals;
-      TH1F* _total_pulls;
+      TH1F* _total_residualsX;
+      TH1F* _total_pullsX;
+      TH1F* _total_residualsY;
+      TH1F* _total_pullsY;
       TH1F* _hiterrs;
       TH1F* _fiterrs;
       // add event id
@@ -147,13 +149,21 @@ namespace mu2e
 	_chisq_ndf_plot->GetXaxis()->SetTitle("#Chi^{2}/N");
 	
         
-        _total_residuals = tfs->make<TH1F>("Residuals ","Residuals " ,50,-200,200);
-	_total_residuals->GetXaxis()->SetTitle("Residual  [mm]");
-	_total_residuals->SetStats();
+        _total_residualsX = tfs->make<TH1F>("Residuals X ","Residuals X " ,50,-200,200);
+	_total_residualsX->GetXaxis()->SetTitle("Residual X [mm]");
+	_total_residualsX->SetStats();
+	
+	_total_residualsY = tfs->make<TH1F>("Residuals Y","Residuals Y " ,50,-200,200);
+	_total_residualsY->GetXaxis()->SetTitle("Residual Y [mm]");
+	_total_residualsY->SetStats();
 
-	_total_pulls = tfs->make<TH1F>("Pull ","Pull " ,50,-1, 1);
-	_total_pulls->GetXaxis()->SetTitle("Pull ");
-	_total_pulls->SetStats();
+	_total_pullsX = tfs->make<TH1F>("Pull X","Pull X" ,50,-1, 1);
+	_total_pullsX->GetXaxis()->SetTitle("Pull X");
+	_total_pullsX->SetStats();
+	
+	_total_pullsY = tfs->make<TH1F>("Pull Y","Pull Y" ,50,-1, 1);
+	_total_pullsY->GetXaxis()->SetTitle("Pull Y");
+	_total_pullsY->SetStats();
        
         _hiterrs = tfs->make<TH1F>("hiterr","hiterr" ,100,0, 100);
 	_hiterrs->GetXaxis()->SetTitle("Hit Error in Track Frame [mm]");
@@ -191,12 +201,21 @@ namespace mu2e
                 _chisq_plot->Fill(st.get_chisq());
                 //-----------Fill Hist Details:----------//
 		
-		for(size_t i=0; i< st.get_hit_errorsTotal().size();i++){
-		    double pull = st.get_fit_residuals()[i]/st.get_fit_residual_errors()[i];
-                    _total_residuals->Fill(st.get_fit_residuals()[i]);             
-	            _total_pulls->Fill(pull);
+		for(size_t i=0; i< st.get_hit_errorsTotal().size()+1;i++){
+		   
+		    //X"
+		    double pullX = st.get_fit_residualsX()[i]/st.get_fit_residual_errorsX()[i];
+                    _total_residualsX->Fill(st.get_fit_residualsX()[i]);             
+	            _total_pullsX->Fill(pullX);
+	            
+	            //Y:
+	            double pullY = st.get_fit_residualsY()[i]/st.get_fit_residual_errorsY()[i];
+                    _total_residualsY->Fill(st.get_fit_residualsY()[i]);             
+	            _total_pullsY->Fill(pullY);
+	            
+	             //Total:
 		    _hiterrs->Fill(st.get_hit_errorsTotal()[i]);
-	            _fiterrs->Fill(st.get_fit_residual_errors()[i]);
+	            //_fiterrs->Fill(st.get_fit_residual_errors()[i]);
                   }
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];

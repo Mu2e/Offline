@@ -41,7 +41,8 @@ namespace ParametricFit{
         
         int GetDOCASign(XYZVec track_dir, XYZVec point);
        
-        double GetResidual(double A0, double A1, double B0, double B1, XYZVec track_dir, XYZVec point);
+        double GetResidualX(double A0, double A1, XYZVec track_dir, XYZVec point);
+        double GetResidualY( double B0, double B1, XYZVec track_dir, XYZVec point);
         
 	double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec track_direction, XYZVec& POCA, double DOCA);
 

@@ -134,10 +134,10 @@ CosmicFitDisplay : {
 	ComboHitCollection : "makeSH"
         _chtag : "makeSH"
         _tctag : TimeClusterFinderCosmics
-        _sttag : StraightTrackFinder
+        _sttag : CosmicTrackFinder
         doDisplay            : true
 	TimeClusterCollection : TimeClusterFinderCosmics
-        StraightTrackSeedCollection : StraightTrackFinder
+        CosmicTrackSeedCollection : CosmicTrackFinder
         
   }
 

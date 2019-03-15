@@ -78,6 +78,7 @@ namespace mu2e
     		void setOutlier(ComboHit&) const;
                 float hitWeight(ComboHit const& hhit) const;
                 int _dim; //dimensions of fit
+                int _Npara;
 		int _diag;
     		int _debug;		    // debug level
                 StrawHitFlag _useflag, _dontuseflag;
