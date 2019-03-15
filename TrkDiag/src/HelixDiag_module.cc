@@ -761,6 +761,9 @@ namespace mu2e {
     bool retval(false);
     GeomHandle<DetectorSystem> det;
     GlobalConstantsHandle<ParticleDataTable> pdt;
+    double charge = pdt->particle(pspp->pdgId()).ref().charge();
+    Hep3Vector pos;
+    Hep3Vector mom;
   // find the earliest step associated with this particle passing the tracker midplane
     cet::map_vector_key trkid = pspp->id();
     auto jmc = _vdmcsteps->end();
@@ -775,14 +778,28 @@ namespace mu2e {
     }
     if(jmc != _vdmcsteps->end()){
       // get momentum and position from this point
-      _mcmom = jmc->momentum().mag();
-      _mcpz = jmc->momentum().z();
-      Hep3Vector pos = det->toDetector(jmc->position());
-      double charge = pdt->particle(pspp->pdgId()).ref().charge();
-      TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
+      mom = jmc->momentum();
+      pos = det->toDetector(jmc->position());
       retval = true;
     } else {
-      _mcmom = _mcpz = -1.0;
+    // no vd steps: try to fill from the tracker StepPoints
+      for(auto imcd = _mcdigis->begin();imcd != _mcdigis->end(); ++imcd){
+	auto const& stepptr = imcd->stepPointMC(imcd->earlyEnd());
+	if(stepptr->simParticle() == pspp){
+	  mom = stepptr->momentum();
+	  pos = stepptr->position();
+	  retval = true;
+	  break;
+	}
+      }
+    }
+    if(retval){
+      _mcmom = mom.mag();
+      _mcpz = mom.z();
+      TrkUtilities::RobustHelixFromMom(pos,mom,charge,_bz0,_mch);
+    } else {
+      _mcmom = -1.0;
+      _mcpz = 0.0;
       _mch = RobustHelix();
     }
     return retval;
