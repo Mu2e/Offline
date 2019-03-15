@@ -2,4 +2,4 @@
 #patch around missing IPA StepPoints (will be fixed at some point)
 physics.producers.compressRecoMCs.extraStepPointMCTags : [ "compressDigiMCs:virtualdetector" ]
 # also compress MCTrajectories: this will be standard at some point
-physics.producers.compressDigiMCs.mcTrajectoryTag : "detectorFilter"
+physics.producers.compressRecoMCs.mcTrajectoryTag : "compressDigiMCs"

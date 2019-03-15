@@ -49,7 +49,10 @@ physics.filters.DigiFilter.StrawDigiMCCollection : "makeSDPrimary"
 physics.filters.DigiFilter.MinParticleMom : 70.0
 physics.filters.DigiFilter.MaxParticleMom : 200.0
 physics.filters.DigiFilter.MinNDigis : 15
-
+# allow all charged particles
+physics.filters.DigiFilter.particleTypes : [ 11, -11, 13, -13, 211, -211, 321, -321, 2212, -2212 ]
+# compress MCTrajectories
+physics.producers.compressDigiMCs.mcTrajectoryTag : "detectorFilter"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 services.TFileService.fileName       : "nts.owner.CRY-cosmic-general-mix.version.sequencer.root"
