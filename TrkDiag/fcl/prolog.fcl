@@ -322,7 +322,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     AnalyzeCRV : true
     StrawHitFlagCollection : "SelectRecoMC"
     PrimaryParticleTag : "compressRecoMCs"
-    TriggerBitsTag : "triggerInfoMerger"
+#    TriggerBitsTag : "triggerInfoMerger"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
   }
