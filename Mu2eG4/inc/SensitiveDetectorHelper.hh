@@ -60,6 +60,10 @@ namespace mu2e {
       void insertSDDataIntoStash(int position_to_insert,
                                  EventStash* stash_for_event_data);
       
+      //filter the event data here to cut down on Stash size and execution time
+      bool filterStepPointMomentum();
+      bool filterTrackerStepPoints();
+      
       // Query the same info
       bool enabled(StepInstanceName::enum_type instance) const;
 
@@ -121,6 +125,12 @@ namespace mu2e {
       bool extMonPixelsEnabled_;
       
       int  verbosityLevel_;
+
+      // minimum momentum of a hit in a StepPtMCColl and minimum # hits in Tracker
+      // to put event into art::Event
+      double cutMomentumMin_;
+      size_t minTrackerStepPoints_;
+      std::vector<std::string> stepInstancesForMomentumCut_;
 
   };
 
