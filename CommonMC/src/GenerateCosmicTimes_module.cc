@@ -81,10 +81,13 @@ namespace mu2e {
 
     art::Handle<std::vector<mu2e::StepPointMC>> spHndl;
     bool gotIt = event.getByLabel(hitsInputTag_, spHndl);
+    
     double firstTrackerHit = 0;
-    if(gotIt && offsetToTracker_){
+    if(gotIt && offsetToTracker_ && spHndl->size() > 0){
+      firstTrackerHit = FLT_MAX;
       std::vector<mu2e::StepPointMC> stepPoints = *spHndl;
-      firstTrackerHit = stepPoints.at(0).time();
+      for (auto const& spmc : stepPoints) 
+	if(spmc.time() < firstTrackerHit) firstTrackerHit = spmc.time();
     }
 
     // Generate and record offsets for all primaries
