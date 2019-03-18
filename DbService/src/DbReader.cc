@@ -1,11 +1,15 @@
 #include <unistd.h>
 #include <iostream>
 #include <iomanip>
+#include <ctime>
 #include "cetlib_except/exception.h"
 #include "DbService/inc/DbReader.hh"
 #include "DbService/inc/DbCurl.hh"
 
-mu2e::DbReader::DbReader(const DbId& id):_id(id),_maxTries(10),
+
+using namespace std;
+
+mu2e::DbReader::DbReader(const DbId& id):_id(id),_timeout(3600),
 		_totalTime(0),_removeHeader(true),_abortOnFail(true),
 		_useCache(true),_verbose(0),_timeVerbose(0) {
 
@@ -61,17 +65,35 @@ int mu2e::DbReader::query(std::string& csv,
   //http://dbdata0vm.fnal.gov:9091/QE/mu2e/dev/app/SQ/query?t=testt&c=*&dbname=mu2e_conditions_dev
 
 
-  if(_verbose>3) std::cout << "DbReader url="<<url << std::endl;
+  if(_verbose>3) {
+    time_t mtime;
+    time(&mtime);
+    struct tm *mtm = localtime(&mtime);
+    std::cout << "DbReader "
+	      << setfill('0') << setw(2) << mtm->tm_mon+1 << "/"
+	      << setw(2) << mtm->tm_mday << "/"
+	      << setw(2) << mtm->tm_year%100 << " "
+	      << setw(2) << mtm->tm_hour << ":"
+	      << setw(2) << mtm->tm_min << ":"
+	      << setw(2) << mtm->tm_sec 
+	      <<" url="<<url << std::endl;
+  }
   curl_easy_setopt(_curl_handle, CURLOPT_URL, url.c_str());
   // return an error when the http header returns an error (like bad gateway)
   curl_easy_setopt(_curl_handle, CURLOPT_FAILONERROR, 1L);
 
-  uint itry = 0;
   auto start_time = std::chrono::high_resolution_clock::now();
   _curl_ret = CURLE_RECV_ERROR;
 
-  while(_curl_ret != CURLE_OK && itry < _maxTries) {
-    if(itry>0) sleep(itry);
+  // I am forced to use random numbers for time to retry - initialize
+  srandom( start_time.time_since_epoch().count()%RAND_MAX );
+
+  int itry=0;
+  int nsec = 0;
+  while(_curl_ret != CURLE_OK && nsec < _timeout) {
+    if(itry>0) {
+      sleep( ((double)random()/(double)RAND_MAX) * (1 << itry)  );
+    }
     _result.reply.clear();
     if(_verbose>5) std::cout << "DbReader start perform with itry="<<itry << std::endl;
     _curl_ret = curl_easy_perform(_curl_handle);
@@ -80,7 +102,7 @@ int mu2e::DbReader::query(std::string& csv,
     int http_code = 0;
     curl_easy_getinfo (_curl_handle, CURLINFO_RESPONSE_CODE, &http_code);
 
-    if (_curl_ret == CURLE_OK) {
+    if (_curl_ret == CURLE_OK && http_code == 200) {
       if(_verbose>5) {
 	std::cout << "DbReader curlOutput=";
 	std::size_t iend = _result.reply.size();
@@ -98,7 +120,10 @@ int mu2e::DbReader::query(std::string& csv,
       if(_verbose>0) std::cout << "DbReader lastError=" << _lastError 
 			       << "   http code: " << http_code << std::endl;
     }
-    //curl_easy_cleanup(_curl_handle);
+
+    auto try_time = std::chrono::high_resolution_clock::now();
+    nsec = ( std::chrono::duration_cast<std::chrono::seconds>(try_time - start_time) ).count();
+
     itry++;
   }
 
