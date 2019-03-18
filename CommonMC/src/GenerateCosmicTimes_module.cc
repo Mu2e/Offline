@@ -81,8 +81,10 @@ namespace mu2e {
 
     art::Handle<std::vector<mu2e::StepPointMC>> spHndl;
     bool gotIt = event.getByLabel(hitsInputTag_, spHndl);
-    double firstTrackerHit = FLT_MAX;
-    if(gotIt && offsetToTracker_){
+    
+    double firstTrackerHit = 0;
+    if(gotIt && offsetToTracker_ && spHndl->size() > 0){
+      firstTrackerHit = FLT_MAX;
       std::vector<mu2e::StepPointMC> stepPoints = *spHndl;
       for (auto const& spmc : stepPoints) 
 	if(spmc.time() < firstTrackerHit) firstTrackerHit = spmc.time();
