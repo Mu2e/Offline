@@ -17,30 +17,42 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "MCDataProducts/inc/StatusG4.hh"
 
+using namespace std;
+
 namespace mu2e {
 
   //================================================================
-  class FilterCRYOut : public art::EDFilter {
-      art::InputTag input_;
+  class FilterOutEmptyEvents : public art::EDFilter {
       int numpassedEvents_ = 0;
   public:
-    explicit FilterCRYOut(const fhicl::ParameterSet& pset);
+      struct Config {
+          fhicl::Atom<string> inputModuleLabel{fhicl::Name("input"), "g4run"};
+      };
+      
+      using Parameters = art::EDFilter::Table<Config>;
+
+  private:
+      
+      string _inputModuleLabel;
+      
+  public:
+    explicit FilterOutEmptyEvents(Parameters const& config);
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
   };
-
+    
   //================================================================
-  FilterCRYOut::FilterCRYOut(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("input","g4un"))
+  FilterOutEmptyEvents::FilterOutEmptyEvents(Parameters const& config)
+    : _inputModuleLabel(config().inputModuleLabel())
   {}
-
+    
   //================================================================
-  bool FilterCRYOut::filter(art::Event& event) {
+  bool FilterOutEmptyEvents::filter(art::Event& event) {
       
       bool passed = false;
       
       art::Handle<StatusG4> StatusG4Handle;
-      event.getByLabel(input_,StatusG4Handle);
+      event.getByLabel(_inputModuleLabel,StatusG4Handle);
 
       //auto ih = event.getHandle(token_);
       
@@ -53,9 +65,9 @@ namespace mu2e {
   }
 
   //================================================================
-  void FilterCRYOut::endJob() {
+  void FilterOutEmptyEvents::endJob() {
     std::ostringstream os;
-    os << "FilterCRYOut_module summary:\n";
+    os << "FilterOutEmptyEvents_module summary:\n";
     os << "    " << numpassedEvents_ << " events passed \n";
 
     mf::LogInfo("Summary")<<os.str();
@@ -64,4 +76,4 @@ namespace mu2e {
   //================================================================
 } // namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::FilterCRYOut);
+DEFINE_ART_MODULE(mu2e::FilterOutEmptyEvents);
