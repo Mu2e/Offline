@@ -90,9 +90,12 @@ int mu2e::DbReader::query(std::string& csv,
 
   int itry=0;
   int nsec = 0;
+  double sleep_time = 0.0;
   while(_curl_ret != CURLE_OK && nsec < _timeout) {
     if(itry>0) {
-      sleep( ((double)random()/(double)RAND_MAX) * (1 << itry)  );
+      double st = ((double)random()/(double)RAND_MAX) * (1 << itry);
+      sleep( st );
+      sleep_time += st;
     }
     _result.reply.clear();
     if(_verbose>5) std::cout << "DbReader start perform with itry="<<itry << std::endl;
@@ -134,7 +137,10 @@ int mu2e::DbReader::query(std::string& csv,
   if(_timeVerbose>3) {
     std::cout<<"DbReader::query took " <<
       std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s " 
-	     << "to read " << table << std::endl;
+	     << "to read " << table 
+	     << " on try " << itry << " with " 
+	     << std::setprecision(6) << sleep_time << " s sleeping"
+	     << std::endl;
   }
 
   if (_curl_ret != CURLE_OK) {
