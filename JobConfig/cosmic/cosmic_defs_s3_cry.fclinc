@@ -42,6 +42,9 @@ outputs : {
 physics.producers.g4run  : @erase
 physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter"]
 physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector"]
+physics.producers.cosmicTimeMap.tmin: 800
+physics.producers.cosmicTimeMap.tmax: 805
+
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 
