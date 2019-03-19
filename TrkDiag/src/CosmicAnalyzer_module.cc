@@ -200,23 +200,21 @@ namespace mu2e
 		std::vector<int> panels, planes, stations;
                 _chisq_plot->Fill(st.get_chisq());
                 //-----------Fill Hist Details:----------//
-		
-		for(size_t i=0; i< st.get_hit_errorsTotal().size()+1;i++){
-		   
-		    //X"
+		for(size_t i=0; i< st.get_hit_errorsTotal().size();i++){
+		    _hiterrs->Fill(st.get_hit_errorsTotal()[i]);
+		}
+		for(size_t i=0; i< st.get_fit_residualsX().size();i++){
 		    double pullX = st.get_fit_residualsX()[i]/st.get_fit_residual_errorsX()[i];
                     _total_residualsX->Fill(st.get_fit_residualsX()[i]);             
 	            _total_pullsX->Fill(pullX);
-	            
-	            //Y:
+	        }
+	        for(size_t i=0; i< st.get_fit_residualsY().size();i++){
 	            double pullY = st.get_fit_residualsY()[i]/st.get_fit_residual_errorsY()[i];
                     _total_residualsY->Fill(st.get_fit_residualsY()[i]);             
 	            _total_pullsY->Fill(pullY);
+	        }   
 	            
-	             //Total:
-		    _hiterrs->Fill(st.get_hit_errorsTotal()[i]);
-	            //_fiterrs->Fill(st.get_fit_residual_errors()[i]);
-                  }
+                 
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
 			

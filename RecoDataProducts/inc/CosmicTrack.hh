@@ -42,26 +42,27 @@ namespace mu2e {
 
     std::vector<std::vector<double>> Initialize_Cov_Mat(int i, int j, int sizei, int sizej);
 
-    // Accessors:
-    //Number or hits in track
+ //---------------Accessors:--------------//
     int get_N() const { return _Nhits;}
-    //Chi^2 info
     double get_chisq() const { return _chisq; }
     double get_chisq_dof() const { return _chisq_dof; }
-    //track parameter info
+    
     std::vector<double> get_track_parameters() const { return _track_parameters; } 
     
-    double get_parameter(unsigned para_ID){ 
+    double get_parameter(unsigned para_ID) const { 
 	if(_track_parameters.size() >=para_ID){
 		return _track_parameters.at(para_ID);
 	}throw "Error: parameter list not long enough";
      }
      
-    XYZVec get_track_equation(){return _track_equation;}
-    XYZVec get_track_direction(){ return _track_direction;}
-    //curvature and momentum info
-    double GetSagitta(){return _Sagitta;}
-    //residuals info
+    XYZVec get_track_equation() const{return _track_equation;}
+    XYZVec get_track_direction() const{return _track_direction;}
+    XYZVec getXPrime() const { return _XPrime;}
+    XYZVec getYPrime() const { return _YPrime;}
+    XYZVec getZPrime() const { return _ZPrime;}
+    
+    double GetSagitta() const {return _Sagitta;}
+    
     std::vector<double> get_fit_residualsX() const { return _fit_residualsX; }
     std::vector<double> get_fit_residual_errorsX() const { return _fit_residual_errorsX; }
     std::vector<double> get_fit_residualsY() const { return _fit_residualsY; }
@@ -70,9 +71,13 @@ namespace mu2e {
     std::vector<double> get_hit_errorsX() const{ return _hit_errorsX;}
     std::vector<double> get_hit_errorsY() const{ return _hit_errorsY;}
     std::vector<double> get_hit_errorsTotal() const{ return _hit_errorsTotal;}
+//---------------------------------------//  
     
-    // Modiffiers:
-    void clear();
+     void clear();
+     
+     
+//-------------Modiffiers---------------//
+   
     void set_N(int N){_Nhits = N;}
     void set_parameters(double a0,double a1, double b0, double b1){ 
 	_a0=a0;
@@ -93,9 +98,12 @@ namespace mu2e {
 	
     }
     void set_track_direction(XYZVec direction){_track_direction = direction;}
+    void setXPrime(XYZVec XPrime){ _XPrime = XPrime;}
+    void setYPrime(XYZVec YPrime){ _YPrime = YPrime;}
+    void setZPrime(XYZVec ZPrime){_ZPrime = ZPrime;}
+    
     void set_chisq(double chisq) { _chisq = chisq; }
     void set_mom(XYZVec mom){_track_mommentum=mom;} 
-
     void set_fit_residualsX(double residual) { _fit_residualsX.push_back(residual); }
     void set_fit_residual_errorsX(double residual_err) { _fit_residual_errorsX.push_back(residual_err); }
     
@@ -125,8 +133,12 @@ namespace mu2e {
     XYZVec _track_equation;//r(t) expression
     XYZVec _track_direction;//the "gradient" term
     XYZVec _track_point0;//the "starting point" in fit line
-    
   
+    //Get Track Co-ordinate System:
+    XYZVec _XPrime;
+    XYZVec _YPrime;
+    XYZVec _ZPrime;
+    
     double _chisq;
     double _chisq_dof;
 

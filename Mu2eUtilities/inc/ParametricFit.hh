@@ -29,15 +29,20 @@ namespace ParametricFit{
 	  XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
 
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
-        XYZVec MajorAxis(ComboHit* Hit, XYZVec track_dir);
+        XYZVec MajorAxis(ComboHit* Hit);
 
-	XYZVec MinorAxis(ComboHit* Hit, XYZVec track_dir);
+	XYZVec MinorAxis(ComboHit* Hit);
+	XYZVec GetXPrime(XYZVec track_dir);
+	XYZVec GetYPrime(XYZVec OrthX, XYZVec YPrime);
+	XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
+	XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
+	
+	void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
+	double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime);
 
-	double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir);
-
-        double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir);
+        double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec YPrime);
         
-        double TotalHitError(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec track_dir);
+        double TotalHitError(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime, XYZVec YPrime);
         
         int GetDOCASign(XYZVec track_dir, XYZVec point);
        

@@ -562,7 +562,7 @@ namespace mu2e
 //-------------------------------------------------------------------------------
 // add stopping target center with a position error of 100 mm/sqrt(12) ~ 30mm => wt = 1/900
 //-------------------------------------------------------------------------------
-	sxy.addPoint(0.,0.,1./900.);
+	sxy.addPoint (0.,0.,1./900.);
       else{
 	float wtTarget=1.;
 	sxy.addPoint(0.,0.,wtTarget);

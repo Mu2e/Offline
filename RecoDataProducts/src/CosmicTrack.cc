@@ -46,6 +46,7 @@ namespace mu2e{
 	  _Nhits = 0;
           _Sagitta = 0 ;
           
+          
 	  _hit_errorsTotal.erase(_hit_errorsTotal.begin(),_hit_errorsTotal.end());
 	  
 	  _fit_residualsX.erase(_fit_residualsX.begin(),_fit_residualsX.end());

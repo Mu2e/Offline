@@ -48,56 +48,50 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
   deltaY = S.deltaY;
 }
 
-void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec track_direction, double errX, double errY){
-        std::cout<<"Building Sums "<<std::endl;
-        XYZVec track_y(0,track_direction.y(),0);
-        XYZVec track_x(track_direction.x(),0,0);
-	//For BetaX:
-	std::cout<<"Point "<<point_i.x()<<" "<<point_i.y()<<" "<<point_i.z()<<std::endl;
-	betaX00 += point_i.Dot(track_x.Unit())/pow(errX,2);
-        betaX10 += point_i.z()*point_i.Dot(track_x.Unit())/pow(errX,2);
-        std::cout<<"Betas X "<<betaX00<<" "<<betaX10<<std::endl;
+void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, double errX, double errY){
+        
+	betaX00 += point_i.Dot(XPrime)/pow(errX,2);
+        betaX10 += point_i.z()*point_i.Dot(XPrime.Unit())/pow(errX,2);
+        
 	//For GammaX:
 	gammaX00 +=pow(1/errX,2);
         gammaX01  += point_i.z()/pow(errX,2);
 	gammaX11 += pow(point_i.z(),2) /pow(errX,2);
-	std::cout<<"Gammas X "<<gammaX00<<" "<<gammaX01<<" "<<gammaX11<<" "<<std::endl;
+	
 	//For BetaY:
-	betaY00 += point_i.Dot(track_y.Unit())/pow(errY,2);
-        betaY10 += point_i.z()*point_i.Dot(track_y.Unit())/pow(errY,2);
-        std::cout<<"Betas Y "<<betaY00<<" "<<betaY10<<std::endl;
+	betaY00 += point_i.Dot(YPrime)/pow(errY,2);
+        betaY10 += point_i.z()*point_i.Dot(YPrime)/pow(errY,2);
+    
 	//For GammaX:
 	gammaY00 +=pow(1/errY,2);
         gammaY01  += point_i.z()/pow(errY,2);
 	gammaY11 += pow(point_i.z(),2) /pow(errY,2);
-	std::cout<<"Gammas Y "<<gammaY00<<" "<<gammaY01<<" "<<gammaY11<<" "<<std::endl;
+	
         //Deltas:
-        deltaX += pow(point_i.Dot(track_x.Unit()),2)/pow(errX,2);
-	deltaY += pow(point_i.Dot(track_y.Unit()),2)/pow(errY,2);
+        deltaX += pow(point_i.Dot(XPrime),2)/pow(errX,2);
+	deltaY += pow(point_i.Dot(YPrime),2)/pow(errY,2);
   
 }
 
-void BuildMatrixSums::removePoint(XYZVec point_i, XYZVec track_direction, double errX, double errY){
+void BuildMatrixSums::removePoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, double errX, double errY){
 	
-        XYZVec track_y(0,track_direction.y(),0);
-        XYZVec track_x(track_direction.x(),0,0);
 	//For BetaX
-	betaX00 -= point_i.Dot(track_x.Unit())/pow(errX,2);
-        betaX10 -= point_i.z()*point_i.Dot(track_x.Unit())/pow(errX,2);
+	betaX00 -= point_i.Dot(XPrime)/pow(errX,2);
+        betaX10 -= point_i.z()*point_i.Dot(XPrime)/pow(errX,2);
 	//For GammaX:
 	gammaX00 -=pow(1/errX,2);
         gammaX01  -= point_i.z()/pow(errX,2);
 	gammaX11 -= pow(point_i.z(),2) /pow(errX,2);
 	//For BetaY:
-	betaY00 -= point_i.Dot(track_y.Unit())/pow(errY,2);
-        betaY10 -= point_i.z()*point_i.Dot(track_y.Unit())/pow(errY,2);
+	betaY00 -= point_i.Dot(YPrime)/pow(errY,2);
+        betaY10 -= point_i.z()*point_i.Dot(YPrime)/pow(errY,2);
 	//For GammaY:
 	gammaY00 -=pow(1/errY,2);
         gammaY01  -= point_i.z()/pow(errY,2);
 	gammaY11 -= pow(point_i.z(),2) /pow(errY,2);
         //Deltas:
-        deltaX -= pow(point_i.Dot(track_x.Unit()),2)/pow(errX,2);
-	deltaY -= pow(point_i.Dot(track_y.Unit()),2)/pow(errY,2);
+        deltaX -= pow(point_i.Dot(XPrime),2)/pow(errX,2);
+	deltaY -= pow(point_i.Dot(YPrime),2)/pow(errY,2);
   
   
 }
@@ -194,7 +188,7 @@ double BuildMatrixSums::GetChi2X(){
         Gammat.T(); 
 
 	TMatrixD chi2X(DeltaX-(Betat*Gammat*BetaX));
-	std::cout<<"Chi X "<<chi2X[0][0]<<std::endl;
+	//std::cout<<"Chi X "<<chi2X[0][0]<<std::endl;
 	return chi2X[0][0];
 }
 
@@ -219,14 +213,14 @@ double BuildMatrixSums::GetChi2Y(){
         Gammat.T(); 
 	
 	TMatrixD chi2Y(DeltaY-(Betat*Gammat*BetaY));
-	std::cout<<"Chi Y "<<chi2Y[0][0]<<std::endl;
+	//std::cout<<"Chi Y "<<chi2Y[0][0]<<std::endl;
 	return chi2Y[0][0];
 }
 
 double BuildMatrixSums::GetTotalChi2(){
 	double chi2X = GetChi2X();
         double chi2Y = GetChi2Y();
-        std::cout<<"Total "<<chi2X+chi2Y<<std::endl;
+        //std::cout<<"Total "<<chi2X+chi2Y<<std::endl;
         return chi2Y+chi2X;
 }
 

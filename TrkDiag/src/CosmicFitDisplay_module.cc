@@ -168,8 +168,10 @@ namespace mu2e
        
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
         auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
-
-        std::vector<double> x, y, z, a0, a1, b0,b1;
+        
+        
+        std::vector<double> x, y, z, a0, a1, b0, b1;
+        std::vector<XYZVec> xprimes, yprimes, zprimes;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());
@@ -178,29 +180,33 @@ namespace mu2e
         a1.reserve(Tracks->size());
         b0.reserve(Tracks->size());
         b1.reserve(Tracks->size());
-        
-        // loop over combo hits
-        for(auto const& chit : *comboHits){
-        x.push_back(chit.pos().x());
-        y.push_back(chit.pos().y());
-        z.push_back(chit.pos().z());
-        }
-
         //loop over tracks:
         for(auto const& track: *Tracks){
+        std::cout<<"filling track info.."<<std::endl;
+        xprimes.push_back(track._track.getXPrime());
+        yprimes.push_back(track._track.getYPrime());
+        zprimes.push_back(track._track.getZPrime());
         a0.push_back(track._track.get_track_parameters()[0]);
         a1.push_back(track._track.get_track_parameters()[1]);
         b0.push_back(track._track.get_track_parameters()[2]);
         b1.push_back(track._track.get_track_parameters()[3]);
         }
         
-        GeomHandle<Tracker> tracker;
-        //Straw& straw_details = tracker->getStraw(id);
+        // loop over combo hits
+        for(auto const& chit : *comboHits){
+        std::cout<<"filling hit info.."<<std::endl;
+        x.push_back(chit.pos().x());
+        y.push_back(chit.pos().y());
+        z.push_back(chit.pos().z());
+        }
+
+        
+        GeomHandle<Tracker> tracker;   
         // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        //Straw& straw_details = tracker->getStraw(id);
 	//double const straw_radius = straw_details.at(0).getRadius();; 
         
-
         if (doDisplay_) {
               std::cout << "Run: " << event.id().run()
            << "  Subrun: " << event.id().subRun()
@@ -210,7 +216,7 @@ namespace mu2e
               TPolyMarker poly;
 	      TBox   box;
 	      TText  text;
-	      
+	      std::cout<<"doing display..."<<std::endl;
 	      arc.SetFillStyle(0);
 	      //straw.SetFillStyle(0);
 	      //poly.SetMarkerStyle(2);
@@ -237,28 +243,29 @@ namespace mu2e
 	      line.SetLineColor(kRed);
 	      fit_to_track.SetLineColor(kBlue);
 	      poly.SetMarkerColor(kRed);
-              
+              std::cout<<"number of tracks"<<xprimes.size()<<std::endl;
               for ( auto const& chit : *comboHits ){
-                        
+                        std::cout<<"looping..."<<std::endl;
 			auto const& p = chit.pos();
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();
-			double x0{p.x()};
-			double y0{p.z()};
-                        //double z0{p.z()};
-			poly.DrawPolyMarker( 1, &x0, &y0 );
+			
+			double x0prime{(p.Dot(xprimes[0]))} ;
+			double y0prime{(p.Dot(yprimes[0]))};
+                        
+			poly.DrawPolyMarker( 1, &x0prime, &y0prime );
 		        
-			double x1 = p.x()+s*w.x();
-			double x2 = p.x()-s*w.x();
-			double y1 = p.y()+s*w.y();
-			double y2 = p.y()-s*w.y();
+			double x1 = p.Dot(xprimes[0])+s*w.Dot(xprimes[0]);
+			double x2 = p.Dot(xprimes[0])-s*w.Dot(xprimes[0]);
+			double y1 = p.Dot(yprimes[0])+s*w.Dot(yprimes[0]);
+			double y2 = p.Dot(yprimes[0])-s*w.Dot(yprimes[0]);
 			line.DrawLine( x1, y1, x2, y2);
                   
       	      }
  	   
               
 	      if(a1.size() > 0){
-		
+		std::cout<<"fit info...."<<std::endl;
 		double tx1 = z[0];
 		double tx2 = z[z.size()-1];
 		double ty1 = a1[0]*tx1+a0[0];
@@ -270,15 +277,13 @@ namespace mu2e
              
               ostringstream title;
  
-
               title << "Run: " << event.id().run()
               << "  Subrun: " << event.id().subRun()
               << "  Event: " << event.id().event()<<".root";
 
-          
               text.SetTextAlign(11);
               text.DrawTextNDC( 0., 0.01, title.str().c_str() );
-              
+              std::cout<<"drawing.."<<std::endl;
               canvas_->Modified();
               canvas_->Update();
               canvas_->SaveAs(title.str().c_str());
