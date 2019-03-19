@@ -35,52 +35,52 @@ TimeClusterFinder : {
 # note these are helicity-independent
 TimeClusterFinderDe : {
   @table::TimeClusterFinder
+  AveragePitch : 0.6 # signed
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 1.0
-    fitdirection : @local::FitDir.downstream
   }
 }
 TimeClusterFinderUe : {
   @table::TimeClusterFinder
+  AveragePitch : -0.6
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 1.0
-    fitdirection : @local::FitDir.upstream
   }
 }
 # muons
 TimeClusterFinderDmu : {
   @table::TimeClusterFinder
+  AveragePitch : 0.6
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 0.7
-    fitdirection : @local::FitDir.downstream
   }
 }
 TimeClusterFinderUmu : {
   @table::TimeClusterFinder
+  AveragePitch : -0.6
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 0.7
-    fitdirection : @local::FitDir.upstream
   }
 }
 # pions
 TimeClusterFinderDpi : {
   @table::TimeClusterFinder
+  AveragePitch : 0.6
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 0.6
-    fitdirection : @local::FitDir.downstream
   }
 }
 TimeClusterFinderUpi : {
   @table::TimeClusterFinder
+  AveragePitch : -0.6
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 0.6
-    fitdirection : @local::FitDir.upstream
   }
 }
 
@@ -94,7 +94,6 @@ RobustHelixFinder : {
     diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
 	mcTruth                                 : 0
     }
-    
 }
 RobustHelixFinderDe : {
   @table::RobustHelixFinder
