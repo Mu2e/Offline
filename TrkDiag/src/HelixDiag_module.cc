@@ -85,14 +85,15 @@ namespace mu2e {
       art::InputTag   _shfTag;
       art::InputTag _mcdigisTag;
       art::InputTag _vdmcstepsTag;
+      art::InputTag _primaryTag;
       // cache of event objects
       const ComboHitCollection* _chcol;
       const HelixSeedCollection* _hscol;
       const StrawHitFlagCollection*	  _shfcol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
+      const PrimaryParticle* _primary;
       // reco offsets
-      TrkTimeCalculator			_ttcalc;
       // mc time offsets
       SimParticleTimeOffset _toff;
       // Virtual Detector IDs
@@ -155,7 +156,7 @@ namespace mu2e {
     _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
+    _primaryTag(pset.get<art::InputTag>("PrimaryMCParticle")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     if(_diag > 0){
@@ -241,7 +242,6 @@ namespace mu2e {
 	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
 	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
 	_helixConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
-	art::Ptr<SimParticle> pspp;
 	_nused = 0;
 	std::vector<StrawDigiIndex> sdis;
 	for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
@@ -249,17 +249,25 @@ namespace mu2e {
 	  hhits.fillStrawDigiIndices(evt,ihh,sdis);
 	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_nused += hhit.nStrawHits();
 	}
+	art::Ptr<SimParticle> pspp;
 	if(_mcdiag) {
+	  _nprimary = 0; _pdg = -1; _proc = -1; _gen = -1;
+	  for( auto spp : _primary->primarySimParticles()){
+	    int count(0);
+	    for(auto sdi : sdis) {
+	      if((*_mcdigis)[sdi].earlyStepPointMC()->simParticle() == spp)count++;
+	    }
+	    if(count > _nprimary){
+	      _nprimary = count;
+	      pspp = spp;
+	    }
+	  }
 	  // get information about the primary particle (produced most hits)
-	  _nprimary = TrkMCTools::primaryParticle(pspp,sdis,_mcdigis);
 	  if(_nprimary >= _minnprimary){
-	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
 	    _pdg = pspp->pdgId();
 	    _proc = pspp->originParticle().creationCode();
-	    if(pspp->genParticle().isNonnull())
-	      _gen = pspp->genParticle()->generatorId().id();
-	    else
-	      _gen = -1;
+	    _gen = _primary->primary().generatorId().id();
+	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
 	    // fill MC true helix parameters
 	    _mchelixOK = fillMCHelix(pspp);
 	    _mct0 = 0.0;
@@ -371,6 +379,7 @@ namespace mu2e {
     _hscol = 0;
     _mcdigis = 0;
     _vdmcsteps = 0;
+    _primary = 0;
 // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
     _chcol = chH.product();
@@ -383,6 +392,8 @@ namespace mu2e {
       _vdmcsteps = mcstepsH.product();
       // update time offsets
       _toff.updateMap(evt);
+      auto pph = evt.getValidHandle<PrimaryParticle>(_primaryTag);
+      _primary = pph.product();
     }
     if(_useshfcol){
       auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);

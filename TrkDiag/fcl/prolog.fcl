@@ -103,7 +103,7 @@ BEGIN_PROLOG
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	PlotHelices : false
-	SaveHelixFlag : ["HitsOK"]
+	InclusivePlotFlagBits : ["HitsOK"]
 	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
   }
 
