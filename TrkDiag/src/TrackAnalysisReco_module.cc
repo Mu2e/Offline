@@ -28,6 +28,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "canvas/Persistency/Common/TriggerResults.h"
+#include "art/Framework/Services/System/TriggerNamesService.h"
 
 // ROOT incldues
 #include "Rtypes.h"
@@ -43,7 +45,6 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 // diagnostics
 #include "TrkDiag/inc/TrkComp.hh"
 #include "TrkDiag/inc/HitCount.hh"
@@ -98,8 +99,10 @@ namespace mu2e {
     art::InputTag _detqtag;
     // reco count module
     art::InputTag _rctag;
-    // trigger bits tag
-    art::InputTag _trigbitstag;
+    //process name is needed to get the service used for navigate the Trigger results
+    std::string _processName;
+    //list of the TriggerPaths we want to trace in the ntuple
+    std::vector<std::string>  _trigPaths;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
@@ -150,7 +153,7 @@ namespace mu2e {
     TrkQualTestInfo _trkqualTest;
     // helper functions
     void fillEventInfo(const art::Event& event);
-    void fillTriggerBits(TriggerAlg const& trigbits);
+    void fillTriggerBits(const art::Event& event); //TriggerAlg const& trigbits);
 //    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
     KSCIter findBestRecoTrack(KalSeedCollection const& kcol);
@@ -171,7 +174,9 @@ namespace mu2e {
     _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
-    _trigbitstag( pset.get<art::InputTag>("TriggerBitsTag", art::InputTag()) ),
+    //    _trigbitstag( pset.get<art::InputTag>("TriggerBitsTag", art::InputTag()) ),
+    _processName(pset.get<std::string>("processName")),
+    _trigPaths  (pset.get<std::vector<std::string>>("triggerPathsList")),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -300,10 +305,10 @@ namespace mu2e {
     TrkQualCollection const& tqcol = *trkQualHandle;
     // trigger information
     if(_filltrig){
-      art::Handle<TriggerAlg> trigbitsH;
-      event.getByLabel(_trigbitstag, trigbitsH);
-      TriggerAlg const& trigbits = *trigbitsH;
-      fillTriggerBits(trigbits);
+      // art::Handle<TriggerAlg> trigbitsH;
+      // event.getByLabel(_trigbitstag, trigbitsH);
+      // TriggerAlg const& trigbits = *trigbitsH;
+      fillTriggerBits(event);//trigbits);
     }
     // MC data
     art::Handle<PrimaryParticle> pph;
@@ -475,15 +480,33 @@ namespace mu2e {
     _wtinfo.setWeights(weights);
   }
 
-  void TrackAnalysisReco::fillTriggerBits(TriggerAlg const& trigbits) {
+  void TrackAnalysisReco::fillTriggerBits(const art::Event& event) {//TriggerAlg const& trigbits) {
+    //get the TriggerResult
+    art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};//FIXME! in art3 we can use the "current_process" variable
+    auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
+    const art::TriggerResults*trigResults = trigResultsH.product();
+
+    //get the map we need to navigate the Trigger results
+    art::ServiceHandle<art::TriggerNamesService> trigNS;
+
     _trigbits = 0;
-    for(size_t ibit=0;ibit < 32; ++ibit){
-      TriggerAlg mask(static_cast<TriggerAlg::bit_type>(ibit));
-      if(trigbits.hasAnyProperty(mask)){
-//	cout << "Found trigger bit " << ibit << " set" << endl;
-	_trigbits |= 1 << ibit;
+    for(size_t i=0; _trigPaths.size(); ++i){
+      string&path = _trigPaths.at(i);
+      if (trigNS->findTrigPath(path)>=0) {
+	size_t trigId = trigNS->findTrigPath(path);
+	if (trigResults->accept(trigId)) {
+// //	cout << "Found trigger bit " << i << " set" << endl;
+	  _trigbits |= 1 << i;
+	}
       }
     }
+//     for(size_t ibit=0;ibit < 32; ++ibit){
+//       TriggerAlg mask(static_cast<TriggerAlg::bit_type>(ibit));
+//       if(trigbits.hasAnyProperty(mask)){
+// //	cout << "Found trigger bit " << ibit << " set" << endl;
+// 	_trigbits |= 1 << ibit;
+//       }
+//     }
   }
 
   void TrackAnalysisReco::resetBranches() {

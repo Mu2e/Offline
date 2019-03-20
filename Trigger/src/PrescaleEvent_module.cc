@@ -16,7 +16,6 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include <memory>
@@ -49,7 +48,7 @@ namespace mu2e
     bool         useFilteredEvts_;
     int          _debug;
     TriggerFlag  _trigFlag;
-    TriggerAlg   _trigAlg;
+    std::string  _trigPath;
     unsigned     _nevt, _npass;
 
   };
@@ -59,7 +58,7 @@ namespace mu2e
       useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)), 
       _debug          (p.get<int>     ("debugLevel",0)), 
       _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),
-      _trigAlg        (p.get<std::vector<std::string> >("triggerAlg")),
+      _trigPath       (p.get<std::string>("triggerPath")),
       _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -77,7 +76,7 @@ namespace mu2e
       ++_npass;
       //      trigInfo->_triggerBits.merge(TriggerFlag::prescaleRandom);
       trigInfo->_triggerBits.merge(_trigFlag);
-      trigInfo->_triggerAlgBits.merge(_trigAlg);
+      trigInfo->_triggerPath = _trigPath;
       retval = true;
     }
     e.put(std::move(trigInfo));

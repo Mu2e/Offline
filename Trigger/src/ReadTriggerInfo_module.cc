@@ -18,6 +18,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
+#include "canvas/Persistency/Common/TriggerResults.h"
+#include "art/Framework/Services/System/TriggerNamesService.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -35,8 +37,6 @@
 #include "RecoDataProducts/inc/CaloTrigSeed.hh"
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
-#include "RecoDataProducts/inc/TriggerAlgMap.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawDigi.hh"
@@ -208,23 +208,24 @@ namespace mu2e {
 
   private:
 
-    int             _diagLevel;
-    size_t          _nMaxTrig;    
-    int             _nTrackTrig;
-    int             _nCaloTrig;
-    int             _nCaloCalibTrig;
-    art::InputTag   _trigAlgTag;
-    art::InputTag   _sdMCTag;
-    art::InputTag   _sdTag;
-    art::InputTag   _chTag;    
-    art::InputTag   _cdTag;
-    art::InputTag   _evtWeightTag;
-    double          _duty_cycle;
+    int                       _diagLevel;
+    size_t                    _nMaxTrig;    
+    int                       _nTrackTrig;
+    int                       _nCaloTrig;
+    int                       _nCaloCalibTrig;
+    std::vector<std::string>  _trigPaths;
+    art::InputTag             _trigAlgTag;
+    art::InputTag             _sdMCTag;
+    art::InputTag             _sdTag;
+    art::InputTag             _chTag;    
+    art::InputTag             _cdTag;
+    art::InputTag             _evtWeightTag;
+    double                    _duty_cycle;
 
-    int             _nProcess;
-    int             _numEvents;    
-    double          _bz0;
-    double          _nPOT;
+    int                       _nProcess;
+    int                       _numEvents;    
+    double                    _bz0;
+    double                    _nPOT;
     
     std::vector<trigInfo_>    _trigAll;	     
     std::vector<trigInfo_>    _trigFinal;    
@@ -256,7 +257,7 @@ namespace mu2e {
     _nTrackTrig    (pset.get<size_t>("nTrackTriggers", 4)),
     _nCaloTrig     (pset.get<size_t>("nCaloTriggers", 4)),
     _nCaloCalibTrig(pset.get<size_t>("nCaloCalibTriggers", 4)),
-    _trigAlgTag    (pset.get<art::InputTag>("triggerAlgMerger"     , "triggerInfoMerger")),
+    _trigPaths     (pset.get<std::vector<std::string>>("triggerPathsList")),
     _sdMCTag       (pset.get<art::InputTag>("strawDigiMCCollection", "compressDigiMCs")),
     _sdTag         (pset.get<art::InputTag>("strawDigiCollection"  , "makeSD")),
     _chTag         (pset.get<art::InputTag>("comboHitCollection"   , "TTmakeSH")),
@@ -695,19 +696,21 @@ namespace mu2e {
     std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
     event.getManyByType(hTrigInfoVec);
 
-    //get the TriggerAlg from the Event
-    art::Handle<mu2e::TriggerAlg> trigAlgH;
-    event.getByLabel(_trigAlgTag, trigAlgH);
-    const mu2e::TriggerAlg*       trigAlg(0);
-    if (trigAlgH.isValid()){
-      trigAlg = trigAlgH.product();
-    }
-    //get the TriggerAlgMap to associate the TriggerAlg to the string
-    art::Handle<mu2e::TriggerAlgMap> trigMapH;
-    event.getByLabel(_trigAlgTag, trigMapH);
-    const mu2e::TriggerAlgMap*    trigMap(0);
-    if (trigMapH.isValid()){
-      trigMap = trigMapH.product();
+    //get the TriggerResult
+    art::InputTag const tag{"TriggerResults::globalTrigger"};//FIXME! in art3 we can use the "current_process" variable
+    auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
+    const art::TriggerResults*trigResults = trigResultsH.product();
+
+    //get the map we need to navigate the Trigger results
+    art::ServiceHandle<art::TriggerNamesService> trigNS;
+
+    //    vector<string> trig_paths = {"caloCalibCosmic_path","caloMVACE_path", "tprSeedDeM_path", "tprSeedDeP_path", "cprSeedDeM_path", "cprSeedDeP_path"};
+    for (unsigned int i=0; i< _trigPaths.size(); ++i){
+      string&path = _trigPaths.at(i);
+      if (trigNS->findTrigPath(path)>=0) {
+	size_t trigId = trigNS->findTrigPath(path);
+	if (trigResults->accept(trigId)) _sumHist._hTrigInfo[15]->Fill((double)i);
+      }
     }
     
     //get the strawDigiMC truth if present
@@ -745,20 +748,13 @@ namespace mu2e {
       cdCol = cdH.product();
     }
 
-    std::vector<std::string>   trigNames = {"caloCalibCosmic","caloMVACE", "tprSeedDeM", "tprSeedDeP", "cprSeedDeM", "cprSeedDeP"};
-    if (trigAlg != 0) {
-      for (unsigned i=0; i<6; ++i){
-	if (trigMap->find(trigNames[i]) != trigMap->end()) 
-	  if (trigAlg->hasAnyProperty(trigMap->find(trigNames[i])->second) ) _sumHist._hTrigInfo[15]->Fill((double)i);
-      }
-      
-      // if (trigAlg->hasAnyProperty(trigMap["caloCalibCosmic"]) _sumHist._hTrigInfo[15]->Fill(0.);
-      // if (trigAlg->hasAnyProperty(trigMap["caloMVACE"])       _sumHist._hTrigInfo[15]->Fill(1);
-      // if (trigAlg->hasAnyProperty(trigMap["tprSeedDeM"])      _sumHist._hTrigInfo[15]->Fill(2.);
-      // if (trigAlg->hasAnyProperty(trigMap["tprSeedDeP"])      _sumHist._hTrigInfo[15]->Fill(3.);
-      // if (trigAlg->hasAnyProperty(trigMap["cprSeedDeM"])      _sumHist._hTrigInfo[15]->Fill(4.);
-      // if (trigAlg->hasAnyProperty(trigMap["cprSeedDeP"])      _sumHist._hTrigInfo[15]->Fill(5.);
-    }
+    // std::vector<std::string>   trigNames = {"caloCalibCosmic","caloMVACE", "tprSeedDeM", "tprSeedDeP", "cprSeedDeM", "cprSeedDeP"};
+    // if (trigAlg != 0) {
+    //   for (unsigned i=0; i<6; ++i){
+    // 	if (trigMap->find(trigNames[i]) != trigMap->end()) 
+    // 	  if (trigAlg->hasAnyProperty(trigMap->find(trigNames[i])->second) ) _sumHist._hTrigInfo[15]->Fill((double)i);
+    //   }
+    // }
 
     
     //fill the general occupancy histogram
