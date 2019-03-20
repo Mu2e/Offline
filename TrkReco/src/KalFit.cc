@@ -566,7 +566,8 @@ namespace mu2e
       double rmax = sn.perp()+2*strawradius;
       if(rho > rmin && rho < rmax){
   // loop over panels
-        for(auto const& panel : plane.getPanels()){
+        for(auto panel_p : plane.getPanels()){
+	  auto const& panel = *panel_p;
           if (_debug>4) {
             std::cout << __func__ << " panel " << panel.id() << std::endl;
             std::cout << __func__ << " printing all straws in layer 0 " << std::endl;

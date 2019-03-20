@@ -14,7 +14,6 @@
 #include "DataProducts/inc/LayerId.hh"
 #include "TrackerGeom/inc/Panel.hh"
 #include "TrackerGeom/inc/Plane.hh"
-#include "TrackerGeom/inc/Station.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 
@@ -53,8 +52,6 @@ namespace mu2e {
     void computePlaneEnvelope();
 
     void identifyNeighbourStraws();
-
-    void makeStation( StationId stationId );
 
     // Do the work of constructing it.
     void buildIt();
@@ -170,10 +167,6 @@ namespace mu2e {
 
     // Z Location of the first plane.
     double _z0;
-
-    // planes per station has to be 2
-    constexpr static int _planesPerStation = 2;
-    int _numStations;
 
     // The detailed description of the complete support structure
     SupportModel _supportModel;

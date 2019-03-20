@@ -465,7 +465,6 @@ mu2e::ConstructTrackerDetail5::constructPlanes(){
     CLHEP::Hep3Vector plnPosition = plane.origin() + _offset;
 
     if ( _verbosityLevel > 1 ){
-      cout << "Debugging -plane.rotation(): " << -plane.rotation() << " " << endl;
       cout << "Debugging plane.origin():    " << plane.origin() << " " << endl;
       cout << "Debugging position in mother: " << plnPosition << endl;
     }
@@ -590,6 +589,7 @@ mu2e::ConstructTrackerDetail5::preparePanel(const int& iPlane,
   if (_verbosityLevel>0) {
     cout << __func__
          << " preparing panel: "
+         << panel.id()
          << " panelCenterPhi "
          << panelCenterPhi/M_PI*180.
          << " panel.boxRzAngle "
