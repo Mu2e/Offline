@@ -176,6 +176,16 @@ namespace mu2e {
       return _strawExists2.at(id.asUint16());
     }
 
+    // Return G4TUBS parameters for straws, includes
+    // wire, gas and straw materials.
+    TubsParams strawOuterTubsParams(StrawId const& id) const;
+    TubsParams strawWallMother(StrawId const& id) const;
+    TubsParams strawWallOuterMetal(StrawId const& id)  const;
+    TubsParams strawWallInnerMetal1(StrawId const& id) const;
+    TubsParams strawWallInnerMetal2(StrawId const& id) const;
+    TubsParams strawWireMother(StrawId const& id) const;
+    TubsParams strawWirePlate(StrawId const& id) const;
+ 
   protected:
 
     std::string _name;

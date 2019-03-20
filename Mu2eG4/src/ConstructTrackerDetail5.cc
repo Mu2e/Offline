@@ -834,11 +834,11 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
       int copyNo=straw.id().asUint16();
       bool edgeVisible(true);
-      double hlen = straw.halfLength();
 
-      // The enclosing volume for the straw is made of gas.  The walls and the wire will be placed inside.
+      // The enclosing volume for the straw is made of gas.  
+      // The walls and the wire will be placed inside.
       VolumeInfo strawVol =  nestTubs( straw.name("TrackerStrawGas_"),
-                                       TubsParams ( 0., _tracker.strawOuterRadius(), hlen ),
+                                       _tracker.strawOuterTubsParams(straw.id()),
                                        findMaterialOrThrow(_tracker.gasMaterialName()),
                                        panelRotation,
                                        mid,
@@ -855,7 +855,7 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
       // Wall has 4 layers; the three metal layers sit inside the plastic layer.
       // The plastic layer sits inside the gas.
       VolumeInfo wallVol =  nestTubs( straw.name("TrackerStrawWall_"),
-                                      TubsParams( _tracker.strawInnerRadius(), _tracker.strawOuterRadius(), hlen),
+                                      _tracker.strawWallMother(straw.id()),
                                       findMaterialOrThrow(_tracker.wallMaterialName()),
                                       noRotation,
                                       zeroVector,
@@ -870,10 +870,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
                                       );
 
 
-      double rIn  = _tracker.strawOuterRadius() - _tracker.outerMetalThickness();
-      double rOut = _tracker.strawOuterRadius();
       VolumeInfo outerMetalVol =  nestTubs( straw.name("TrackerStrawWallOuterMetal_"),
-                                            TubsParams( rIn, rOut, hlen),
+                                            _tracker.strawWallOuterMetal(straw.id()),
                                             findMaterialOrThrow(_tracker.wallOuterMetalMaterialName()),
                                             noRotation,
                                             zeroVector,
@@ -888,10 +886,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
                                             );
 
 
-      rIn  = _tracker.strawInnerRadius() + _tracker.innerMetal2Thickness();
-      rOut = rIn + _tracker.innerMetal1Thickness();
       VolumeInfo innerMetal1Vol =  nestTubs( straw.name("TrackerStrawWallInnerMetal1_"),
-					     TubsParams(  rIn, rOut, hlen ),
+					     _tracker.strawWallInnerMetal1(straw.id()),
                                              findMaterialOrThrow(_tracker.wallInnerMetal1MaterialName()),
                                              noRotation,
                                              zeroVector,
@@ -906,10 +902,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
                                              );
 
 
-      rIn  = _tracker.strawInnerRadius();
-      rOut = rIn + _tracker.innerMetal2Thickness();
       VolumeInfo innerMetal2Vol =  nestTubs( straw.name("TrackerStrawWallInnerMetal2_"),
-					     TubsParams(  rIn, rOut, hlen ),
+					     _tracker.strawWallInnerMetal2(straw.id()),
                                              findMaterialOrThrow(_tracker.wallInnerMetal2MaterialName()),
                                              noRotation,
                                              zeroVector,
@@ -925,7 +919,7 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
 
 
       VolumeInfo wireVol =  nestTubs( straw.name("TrackerWireCore_"),
-				      TubsParams( 0.0, _tracker.wireRadius(), hlen ),
+				      _tracker.strawWireMother(straw.id()),
                                       findMaterialOrThrow(_tracker.wireCoreMaterialName()),
                                       noRotation,
                                       zeroVector,
@@ -940,11 +934,8 @@ mu2e::ConstructTrackerDetail5::prepareStrawPanel() {
                                       );
 
 
-
-      rIn = _tracker.wireRadius() - _tracker.wirePlateThickness();
-      rOut = _tracker.wireRadius();
       VolumeInfo platingVol =  nestTubs( straw.name("TrackerWirePlate_"),
-					 TubsParams(  rIn, rOut, hlen ),
+					 _tracker.strawWirePlate(straw.id()),
                                          findMaterialOrThrow(_tracker.wirePlateMaterialName()),
                                          noRotation,
                                          zeroVector,

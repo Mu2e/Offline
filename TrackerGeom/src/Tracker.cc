@@ -97,4 +97,39 @@ namespace mu2e {
     }
   }
 
+  TubsParams Tracker::strawOuterTubsParams(StrawId const& id) const {
+    return TubsParams ( 0., strawOuterRadius(), getStrawHalfLength(id.straw()) );
+  }
+  TubsParams Tracker::strawWallMother(StrawId const& id)      const {
+    return TubsParams( strawInnerRadius(), 
+		       strawOuterRadius(), getStrawHalfLength(id.straw()) );
+  }
+  TubsParams Tracker::strawWallOuterMetal(StrawId const& id)  const {
+    double rIn = strawOuterRadius() - outerMetalThickness();
+    return TubsParams( rIn, strawOuterRadius() , 
+		       getStrawHalfLength(id.straw()) );
+  }
+  TubsParams Tracker::strawWallInnerMetal1(StrawId const& id) const {
+    double rIn  = strawInnerRadius() + innerMetal2Thickness();
+    double rOut = rIn + innerMetal1Thickness();
+    return TubsParams (rIn,rOut,
+		       getStrawHalfLength(id.straw()));
+  }
+  TubsParams Tracker::strawWallInnerMetal2(StrawId const& id) const {
+    double rIn  = strawInnerRadius();
+    double rOut = rIn + innerMetal2Thickness();
+    return TubsParams (rIn,rOut,
+		       getStrawHalfLength(id.straw()));
+  }
+  TubsParams Tracker::strawWireMother(StrawId const& id) const {
+    return TubsParams (0.,wireRadius(),
+		       getStrawHalfLength(id.straw()));
+  }
+  TubsParams Tracker::strawWirePlate(StrawId const& id) const {
+    double rIn = wireRadius() - wirePlateThickness();
+    double rOut = wireRadius();
+    return TubsParams (rIn,rOut,
+		       getStrawHalfLength(id.straw()));
+  }
+
 } // namespace mu2e
