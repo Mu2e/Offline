@@ -32,13 +32,12 @@ namespace mu2e {
     // A free function, returning void, that takes a const Plane& as an argument.
     typedef void (*PlaneFunction)( const Plane& s);
 
-    Plane():_id(PlaneId()),_rotation(0.),_origin(),_panels(),_exists(true){}
+    Plane():_id(PlaneId()),_origin(),_panels(),_exists(true){}
 
     explicit Plane( const PlaneId& id,
             CLHEP::Hep3Vector const& origin = CLHEP::Hep3Vector(0.,0.,0.),
-            double rotation = 0., bool exists = true ):
+            bool exists = true ):
       _id(id),
-      _rotation(rotation),
       _origin(origin),
       _exists(exists) {
     }
@@ -48,28 +47,26 @@ namespace mu2e {
     // Accessors
     const PlaneId&  id()  const { return _id;}
 
-    double rotation() const { return _rotation; }
-
     const CLHEP::Hep3Vector & origin() const { return _origin; }
 
     int nPanels() const{
       return _panels.size();
     }
 
-    const std::array<Panel,StrawId::_npanels>& getPanels () const{
+    const std::array<Panel const*,StrawId::_npanels>& getPanels () const{
       return _panels;
     }
 
     const Panel& getPanel ( int n) const {
-      return _panels.at(n);
+      return *_panels.at(n);
     }
 
     const Panel& getPanel ( const PanelId& pnlid ) const{
-      return _panels.at(pnlid.getPanel());
+      return *_panels.at(pnlid.getPanel());
     }
 
     const Straw& getStraw ( const StrawId& strid ) const{
-      return _panels.at(strid.getPanel()).getStraw(strid);
+      return _panels.at(strid.getPanel())->getStraw(strid);
     }
 
     // Formatted string embedding the id of the panel.
@@ -82,32 +79,12 @@ namespace mu2e {
       return _exists;
     }
 
-#ifndef __CINT__
-
-    // Loop over all straws and call F.
-    // F can be a class with an operator() or a free function.
-    template <class F>
-    inline void forAllStraws ( F& f) const{
-      for ( const auto& panel : _panels ){
-        panel.forAllStraws(f);
-      }
-    }
-
-    template <class F>
-    inline void forAllPanels ( F& f) const{
-      for ( const auto& panel : _panels ) {
-        f(panel);
-      }
-    }
-
-#endif
 
   protected:
 
     PlaneId             _id;
-    double              _rotation;
     CLHEP::Hep3Vector   _origin;
-    std::array<Panel,StrawId::_npanels> _panels;
+    std::array<Panel const*,StrawId::_npanels> _panels;
     bool                _exists;
   };
 
