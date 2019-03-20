@@ -186,8 +186,38 @@ namespace mu2e {
       }
     }
 
+    void primaryRelation(PrimaryParticle const& primary,
+	StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,
+	art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel) {
+      // reset
+      primarysim = art::Ptr<SimParticle>();
+      nprimary = 0;
+      mcrel = MCRelationship();
+      // loop over primary sim particles
+      for( auto spp : primary.primarySimParticles()){
+	unsigned count(0);
+	art::Ptr<SimParticle> sp;
+	for(auto sdi : indices) {
+	// find relation of this digi to the primary
+	  MCRelationship prel(spp,sdmccol.at(sdi).earlyStepPointMC()->simParticle());
+	  // count the highest relationship for these digis
+	  if(prel == mcrel)
+	    count++;
+	  else if(prel > mcrel){
+	    mcrel = prel;
+	    count = 1;
+	    sp = sdmccol.at(sdi).earlyStepPointMC()->simParticle();
+	  }
+	}
+	if(count > nprimary){
+	  nprimary = count;
+	  primarysim = sp;
+	}
+      }
+    }
+
     void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, 
-    TrkInfoMC& trkinfomc) {
+	TrkInfoMC& trkinfomc) {
       // use the primary match of the track
       if(kseedmc.simParticles().size() > 0){
 	auto const& simp = kseedmc.simParticles().front();

@@ -69,7 +69,7 @@ namespace mu2e {
       StrawHitFlag _dontuseflag;
       bool _mcdiag, _mcsel, _useshfcol;
       StrawHitFlag  _hsel, _hbkg;
-      int _minnprimary; // minimum # Primary hits to make plots
+      unsigned _minnprimary; // minimum # Primary hits to make plots
       int _mcgen; // MC generator code of primary
       double _targetradius;
       bool _plot;
@@ -119,8 +119,9 @@ namespace mu2e {
       Bool_t _circleConverged, _phizConverged, _helixConverged;
       Float_t _tct0, _tct0err, _ht0, _ht0err;
       RobustHelix _rhel;
-      Int_t _nhits, _nused, _nprimary, _npused, _nptot;
-      Int_t _pdg, _gen, _proc;
+      Int_t _nhits, _nused, _npused, _nptot;
+      unsigned _nprimary;
+      Int_t _pdg, _gen, _proc, _prel;
       vector<HelixHitInfo> _hhinfo;
       vector<HelixHitInfoMC> _hhinfomc;
       RobustHelix _mch;
@@ -139,7 +140,7 @@ namespace mu2e {
     _useshfcol		(pset.get<bool>("UseFlagCollection")),
     _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
-    _minnprimary(pset.get<int>("MinimumPrimaryHits",8)),
+    _minnprimary(pset.get<unsigned>("MinimumPrimaryHits",8)),
     _mcgen(pset.get<int>("MCGeneratorCode",2)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
@@ -156,7 +157,7 @@ namespace mu2e {
     _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _primaryTag(pset.get<art::InputTag>("PrimaryMCParticle")),
+    _primaryTag(pset.get<art::InputTag>("PrimaryParticleTag","FindMCPrimary")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     if(_diag > 0){
@@ -185,12 +186,13 @@ namespace mu2e {
 	_hdiag->Branch("mch",&_mch);
 	_hdiag->Branch("mcmom",&_mcmom,"mcmom/F");
 	_hdiag->Branch("mcpz",&_mcpz,"mcpz/F");
-	_hdiag->Branch("nprimary",&_nprimary,"nprimary/I");
+	_hdiag->Branch("nprimary",&_nprimary,"nprimary/i");
 	_hdiag->Branch("nptot",&_nptot,"nptot/I");
 	_hdiag->Branch("npused",&_npused,"npused/I");
 	_hdiag->Branch("pdg",&_pdg,"pdg/I");
 	_hdiag->Branch("gen",&_gen,"gen/I");
 	_hdiag->Branch("proc",&_proc,"proc/I");
+	_hdiag->Branch("prel",&_prel,"prel/I");
       }
       if(_diag > 1){
 	_hdiag->Branch("hh",&_hhinfo);
@@ -251,23 +253,17 @@ namespace mu2e {
 	}
 	art::Ptr<SimParticle> pspp;
 	if(_mcdiag) {
-	  _nprimary = 0; _pdg = -1; _proc = -1; _gen = -1;
-	  for( auto spp : _primary->primarySimParticles()){
-	    int count(0);
-	    for(auto sdi : sdis) {
-	      if((*_mcdigis)[sdi].earlyStepPointMC()->simParticle() == spp)count++;
-	    }
-	    if(count > _nprimary){
-	      _nprimary = count;
-	      pspp = spp;
-	    }
-	  }
+	  _nprimary = 0; _pdg = -1; _proc = -1; _gen = -1; _prel = -1;
 	  // get information about the primary particle (produced most hits)
+	  MCRelationship mcrel;
+	  TrkMCTools::primaryRelation(*_primary, *_mcdigis,sdis,
+	  pspp, _nprimary, mcrel);
 	  if(_nprimary >= _minnprimary){
 	    _pdg = pspp->pdgId();
 	    _proc = pspp->originParticle().creationCode();
 	    _gen = _primary->primary().generatorId().id();
 	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
+	    _prel = mcrel.relationship();
 	    // fill MC true helix parameters
 	    _mchelixOK = fillMCHelix(pspp);
 	    _mct0 = 0.0;

@@ -15,26 +15,35 @@ physics.producers.KSFDeM.KalFit.maxAddChi : 10
 physics.producers.KSFDeM.KalFit.rescueHits : true
 physics.producers.KSFDeM.ParameterErrors : [20.0, 0.1, 0.01, 20.0, 0.1]
 # find low-momentum helices 
-#physics.producers.HelixFinderDe.minNHit : 40
-#physics.producers.HelixFinderDe.RobustHelixFit.targetconsistent : false
-#physics.producers.HelixFinderDe.RobustHelixFit.minCenterR : 000
-##physics.producers.HelixFinderDe.RobustHelixFit.maxCenterR : 1000
-#physics.producers.HelixFinderDe.RobustHelixFit.minR : 10
-#physics.producers.HelixFinderDe.RobustHelixFit.maxR : 300
-#physics.producers.HelixFinderDe.RobustHelixFit.minAbsLambda : 0
-#physics.producers.HelixFinderDe.RobustHelixFit.maxAbsLambda : 1000
-#physics.producers.HelixFinderDe.RobustHelixFit.mindist : 50
-#physics.producers.HelixFinderDe.RobustHelixFit.minzsep : 50
-# allow low-energy clusters
-#physics.producers.TimeClusterFinderDe.CaloClusterMinE : 30
-physics.producers.TimeClusterFinderDe.UseCaloCluster : false 
-physics.producers.TimeClusterFinderDe.CaloClusterMinE : 30
+physics.producers.HelixFinderDe.targetconsistent_init : false
+physics.producers.HelixFinderDe.targetconsistent : false
+physics.producers.HelixFinderDe.RobustHelixFit.minCenterR : 300
+physics.producers.HelixFinderDe.RobustHelixFit.maxCenterR : 500
+physics.producers.HelixFinderDe.RobustHelixFit.minR : 100
+physics.producers.HelixFinderDe.RobustHelixFit.maxR : 200
+physics.producers.HelixFinderDe.RobustHelixFit.minAbsLambda : 50
+physics.producers.HelixFinderDe.RobustHelixFit.maxAbsLambda : 150
+physics.producers.HelixFinderDe.RobustHelixFit.minzsep : 40
+physics.producers.HelixFinderDe.RobustHelixFit.maxzsep : 200
+physics.producers.HelixFinderDe.RobustHelixFit.mindist : 50
+physics.producers.HelixFinderDe.RobustHelixFit.maxdist : 250
+physics.producers.HelixFinderDe.RobustHelixFit.minArea : 800
+##physics.producers.HelixFinderDe.minNHit : 40
+physics.producers.TimeClusterFinderDe.UseCaloCluster : true
+physics.producers.TimeClusterFinderDe.CaloClusterMinE : 10
+physics.producers.TimeClusterFinderDe.AveragePitch : 0.5
 # turn off the rest
 physics.producers.TimeClusterFinderDmu.ymin : 1e7
 physics.producers.TimeClusterFinderUe.ymin : 1e7
 physics.producers.TimeClusterFinderUmu.ymin : 1e7
-# TPR only for now
+# primary finding
+physics.producers.FindMCPrimary.SinglePrimary : true
+# TPR downstream electrons only for now
 physics.producers.MHDeM.HelixFinders : ["HelixFinderDe:Positive"]
 physics.producers.MHDeP.HelixFinders : []
 physics.producers.MHDmuM.HelixFinders : []
 physics.producers.MHDmuP.HelixFinders : []
+# output filter update
+physics.filters.RecoFilter.TrkTags : [ "KFFDeM" ]
+physics.filters.RecoFilter.MomentumCutoff : [40.0]
+
