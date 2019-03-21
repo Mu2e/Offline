@@ -28,7 +28,7 @@ physics :
     @table::Reconstruction.analyzers
     @table::Trigger.analyzers
   }
-  RecoPath : [ @sequence::Reconstruction.RecoMCPath , triggerInfoMerger]
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
   EndPath : [ Output, RecoCheck  ]
 }
 
