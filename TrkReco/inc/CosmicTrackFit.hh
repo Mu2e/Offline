@@ -82,10 +82,11 @@ namespace mu2e
 		int _diag;
     		int _debug;		    // debug level
                 StrawHitFlag _useflag, _dontuseflag;
-	        int _minresid;
-    		int      _minnsh;  // minimum # of StrawHits
+	        unsigned _minresid;
+    		unsigned      _minnsh;  // minimum # of StrawHits
     		unsigned _minCHHits; // minimum # of CH hits - should be at least 2 for fit to work....
 		unsigned _n_outliers; //number of significant outliers/number of hits in track....helps with multiplicity(?)
+		float _D_error; //error change below which we consider track "converged"
     		float _maxresid; // max allowed pull which a hit can have to be classed as "good"
     		unsigned _maxniter; // maxium # of iterations to global minimum   
                 

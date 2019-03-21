@@ -44,8 +44,10 @@ namespace mu2e {
 
  //---------------Accessors:--------------//
     int get_N() const { return _Nhits;}
-    double get_chisq() const { return _chisq; }
-    double get_chisq_dof() const { return _chisq_dof; }
+    double get_finalchisq() const { return _finalchisq; }
+    double get_finalchisq_dof() const { return _finalchisq_dof; }
+    double get_initchisq() const { return _initchisq; }
+    double get_initchisq_dof() const { return _initchisq_dof; }
     
     std::vector<double> get_track_parameters() const { return _track_parameters; } 
     
@@ -57,20 +59,31 @@ namespace mu2e {
      
     XYZVec get_track_equation() const{return _track_equation;}
     XYZVec get_track_direction() const{return _track_direction;}
+    XYZVec get_track_position() const{return _track_position;}
+    
     XYZVec getXPrime() const { return _XPrime;}
     XYZVec getYPrime() const { return _YPrime;}
     XYZVec getZPrime() const { return _ZPrime;}
     
     double GetSagitta() const {return _Sagitta;}
     
-    std::vector<double> get_fit_residualsX() const { return _fit_residualsX; }
-    std::vector<double> get_fit_residual_errorsX() const { return _fit_residual_errorsX; }
-    std::vector<double> get_fit_residualsY() const { return _fit_residualsY; }
-    std::vector<double> get_fit_residual_errorsY() const { return _fit_residual_errorsY; }
+    std::vector<double> get_init_fit_residualsX() const { return _initfit_residualsX; }
+    std::vector<double> get_final_fit_residualsX() const { return _finalfit_residualsX; }
+    std::vector<double> get_init_fit_residual_errorsX() const { return _initfit_residual_errorsX; }
+    std::vector<double> get_final_fit_residual_errorsX() const { return _finalfit_residual_errorsX; }
+    
+    std::vector<double> get_final_fit_residualsY() const { return _finalfit_residualsY; }
+    std::vector<double> get_final_fit_residual_errorsY() const { return _finalfit_residual_errorsY; }  
+    std::vector<double> get_init_fit_residualsY() const { return _initfit_residualsY; }
+    std::vector<double> get_init_fit_residual_errorsY() const { return _initfit_residual_errorsY; }
     //hit errors info
     std::vector<double> get_hit_errorsX() const{ return _hit_errorsX;}
     std::vector<double> get_hit_errorsY() const{ return _hit_errorsY;}
-    std::vector<double> get_hit_errorsTotal() const{ return _hit_errorsTotal;}
+    std::vector<double> get_final_hit_errorsTotal() const{ return _finalhit_errorsTotal;}
+    
+    std::vector<double> get_init_hit_errorsTotal() const{ return _inithit_errorsTotal;}
+    
+    std::vector<int> get_iter(){return _niters;}
 //---------------------------------------//  
     
      void clear();
@@ -98,24 +111,36 @@ namespace mu2e {
 	
     }
     void set_track_direction(XYZVec direction){_track_direction = direction;}
+    void set_track_position(double x, double y , double z){_track_position.SetXYZ(x,y,z);}
+    
     void setXPrime(XYZVec XPrime){ _XPrime = XPrime;}
     void setYPrime(XYZVec YPrime){ _YPrime = YPrime;}
     void setZPrime(XYZVec ZPrime){_ZPrime = ZPrime;}
     
-    void set_chisq(double chisq) { _chisq = chisq; }
+    void set_initchisq_dof(double initchisq_dof) { _initchisq_dof = initchisq_dof; }
+    void set_finalchisq_dof(double finalchisq_dof) { _finalchisq_dof = finalchisq_dof; }
+    
     void set_mom(XYZVec mom){_track_mommentum=mom;} 
-    void set_fit_residualsX(double residual) { _fit_residualsX.push_back(residual); }
-    void set_fit_residual_errorsX(double residual_err) { _fit_residual_errorsX.push_back(residual_err); }
     
-    void set_fit_residualsY(double residual) { _fit_residualsY.push_back(residual); }
-    void set_fit_residual_errorsY(double residual_err) { _fit_residual_errorsY.push_back(residual_err); }
+    void set_init_fit_residualsX(double residual) { _initfit_residualsX.push_back(residual); }
+    void set_final_fit_residualsX(double residual) { _finalfit_residualsX.push_back(residual); }
+    void set_init_fit_residual_errorsX(double residual_err) { _initfit_residual_errorsX.push_back(residual_err); }
+    void set_final_fit_residual_errorsX(double residual_err) { _finalfit_residual_errorsX.push_back(residual_err); }
     
+    void set_init_fit_residualsY(double residual) { _initfit_residualsY.push_back(residual); }
+    void set_final_fit_residualsY(double residual) { _finalfit_residualsY.push_back(residual); }  
+    void set_init_fit_residual_errorsY(double residual_err) { _initfit_residual_errorsY.push_back(residual_err); }
+    void set_final_fit_residual_errorsY(double residual_err) { _finalfit_residual_errorsY.push_back(residual_err); }
+     
     void set_hit_errorsX(double hit_errorX){_hit_errorsX.push_back(hit_errorX);}
     void set_hit_errorsY(double hit_errorY){_hit_errorsY.push_back(hit_errorY);}
-    void set_hit_errorsTotal(double hit_errorTotal){_hit_errorsTotal.push_back(hit_errorTotal);}
+    
+    void set_init_hit_errorsTotal(double hit_errorTotal){_inithit_errorsTotal.push_back(hit_errorTotal);}
+    void set_final_hit_errorsTotal(double hit_errorTotal){_finalhit_errorsTotal.push_back(hit_errorTotal);}
     
     void set_cov(int r, int c, double element){ _cov_mat[r][c] = element;}
     
+    void set_niter(int iter){_niters.push_back(iter);}
   private:
     
     int _Nhits;
@@ -132,26 +157,40 @@ namespace mu2e {
     
     XYZVec _track_equation;//r(t) expression
     XYZVec _track_direction;//the "gradient" term
-    XYZVec _track_point0;//the "starting point" in fit line
+    XYZVec _track_position;//the "starting point" in fit line
   
     //Get Track Co-ordinate System:
     XYZVec _XPrime;
     XYZVec _YPrime;
     XYZVec _ZPrime;
     
-    double _chisq;
-    double _chisq_dof;
+    double _finalchisq;
+    double _finalchisq_dof;
+    
+    double _initchisq;
+    double _initchisq_dof;
 
-    std::vector<double> _fit_residualsX;
-    std::vector<double> _fit_residual_errorsX;
-    std::vector<double> _fit_residualsY;
-    std::vector<double> _fit_residual_errorsY;
+    std::vector<double> _initfit_residualsX;
+    std::vector<double> _initfit_residual_errorsX;
+    std::vector<double> _initfit_residualsY;
+    std::vector<double> _initfit_residual_errorsY;
+    
+    std::vector<double> _finalfit_residualsX;
+    std::vector<double> _finalfit_residual_errorsX;
+    std::vector<double> _finalfit_residualsY;
+    std::vector<double> _finalfit_residual_errorsY;
+    
+    std::vector<double> _inithit_errorsTotal;
+    std::vector<double> _finalhit_errorsTotal;
+    
     
     std::vector<double> _hit_errorsX;
     std::vector<double> _hit_errorsY;
-    std::vector<double> _hit_errorsTotal;
     
     std::vector<std::vector<double> > _cov_mat;
+    
+    std::vector<int> _niters;
+    double _total_change;
 
     bool set_chosenOne;
    

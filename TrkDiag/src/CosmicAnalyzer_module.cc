@@ -65,14 +65,23 @@ namespace mu2e
       TTree* _cosmic_analysis;
 
       //Some Diag histograms:
-      TH1F* _chisq_plot;
-      TH1F* _chisq_ndf_plot;
-      TH1F* _total_residualsX;
-      TH1F* _total_pullsX;
-      TH1F* _total_residualsY;
-      TH1F* _total_pullsY;
-      TH1F* _hiterrs;
-      TH1F* _fiterrs;
+     
+      TH1F* _chisq_ndf_plot_init;
+      TH1F* _total_residualsX_init;
+      TH1F* _total_pullsX_init;
+      TH1F* _total_residualsY_init;
+      TH1F* _total_pullsY_init;
+      TH1F* _hiterrs_init;
+      
+      TH1F* _niters;
+      
+      TH1F* _chisq_ndf_plot_final;
+      TH1F* _total_residualsX_final;
+      TH1F* _total_pullsX_final;
+      TH1F* _total_residualsY_final;
+      TH1F* _total_pullsY_final;
+      TH1F* _hiterrs_final;
+    
       // add event id
       Int_t _evt; 
 
@@ -97,7 +106,7 @@ namespace mu2e
       Float_t _hit_time, _hit_drift_time, _cluster_time;
 	
       //Flags:
-
+	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
       //offsets for MC
       SimParticleTimeOffset _toff;
 
@@ -141,40 +150,64 @@ namespace mu2e
        _cosmic_analysis->Branch("hit_time", &_hit_time, "hit_time/F");
        _cosmic_analysis->Branch("hit_drit_time", &_hit_drift_time, "hit_drift_time/F");
        _cosmic_analysis->Branch("cluster_time", &_cluster_time, "cluster_time/F");
-        
+       _cosmic_analysis->Branch("hitsOK",&_hitsOK,"hitsOK/B");
+       _cosmic_analysis->Branch("StraightTrackInit",&_StraightTrackInit,"StraightTrackInit/B");
+       _cosmic_analysis->Branch("StraightTrackOK",&_StraightTrackOK,"StraightTrackOK/B");
+       _cosmic_analysis->Branch("StraightTrackConverged",&_StraightTrackConverged,"StraightTrackConverged/B");
         //Extra histograms for Fit Diags:
-        _chisq_plot = tfs->make<TH1F>("chisq_plot","chisq_plot" ,100,0, 100);
-	_chisq_ndf_plot = tfs->make<TH1F>("chisq_ndf_plot","chisq_ndf_plot" ,20,0, 0.5);
-	_chisq_plot->GetXaxis()->SetTitle("#Chi^{2}");
-	_chisq_ndf_plot->GetXaxis()->SetTitle("#Chi^{2}/N");
-	
-        
-        _total_residualsX = tfs->make<TH1F>("Residuals X ","Residuals X " ,50,-200,200);
-	_total_residualsX->GetXaxis()->SetTitle("Residual X [mm]");
-	_total_residualsX->SetStats();
-	
-	_total_residualsY = tfs->make<TH1F>("Residuals Y","Residuals Y " ,50,-200,200);
-	_total_residualsY->GetXaxis()->SetTitle("Residual Y [mm]");
-	_total_residualsY->SetStats();
-
-	_total_pullsX = tfs->make<TH1F>("Pull X","Pull X" ,50,-1, 1);
-	_total_pullsX->GetXaxis()->SetTitle("Pull X");
-	_total_pullsX->SetStats();
-	
-	_total_pullsY = tfs->make<TH1F>("Pull Y","Pull Y" ,50,-1, 1);
-	_total_pullsY->GetXaxis()->SetTitle("Pull Y");
-	_total_pullsY->SetStats();
        
-        _hiterrs = tfs->make<TH1F>("hiterr","hiterr" ,100,0, 100);
-	_hiterrs->GetXaxis()->SetTitle("Hit Error in Track Frame [mm]");
-	_hiterrs->SetStats();
+	_chisq_ndf_plot_init = tfs->make<TH1F>("init chisq_ndf_plot","init chisq_ndf_plot" ,50,0, 500);
+	_chisq_ndf_plot_init->GetXaxis()->SetTitle("Init. #Chi^{2}/N");
 	
-	_fiterrs = tfs->make<TH1F>("fiterr","fiterr" ,100,0, 100);
-	_fiterrs->GetXaxis()->SetTitle("Fit Error [mm]");
-	_fiterrs->SetStats();
 	
+	_chisq_ndf_plot_final = tfs->make<TH1F>("final chisq_ndf_plot","final chisq_ndf_plot" ,50,0,500);
+	_chisq_ndf_plot_final->GetXaxis()->SetTitle("Final #Chi^{2}/N");
 	
         
+        _total_residualsX_init = tfs->make<TH1F>("Initial Residuals X'' ","Initial Residuals X'' " ,50,-500,500);
+	_total_residualsX_init->GetXaxis()->SetTitle("Initial Residual X'' [mm]");
+	_total_residualsX_init->SetStats();
+	
+	_total_residualsY_init = tfs->make<TH1F>("Initial Residuals Y''","Initial Residuals Y'' " ,50,-500,500);
+	_total_residualsY_init->GetXaxis()->SetTitle("Initial Residual Y'' [mm]");
+	_total_residualsY_init->SetStats();
+
+	_total_pullsX_init = tfs->make<TH1F>("Initial Pull X","Initial Pull X''" ,50,-10, 10);
+	_total_pullsX_init->GetXaxis()->SetTitle("Pull X");
+	_total_pullsX_init->SetStats();
+	
+	_total_pullsY_init = tfs->make<TH1F>("Initial Pull Y''","Initial Pull Y''" ,50,-10, 10);
+	_total_pullsY_init->GetXaxis()->SetTitle("Initial Pull Y");
+	_total_pullsY_init->SetStats();
+       
+        _hiterrs_init = tfs->make<TH1F>("Initial Total Hit Error","Initial Total Hit Error" ,50,0, 100);
+	_hiterrs_init->GetXaxis()->SetTitle("Initial Hit Error in Track Frame [mm]");
+	_hiterrs_init->SetStats();
+	
+	 _total_residualsX_final = tfs->make<TH1F>("Final Residuals X'' ","Final Residuals X'' " ,50,-500,500);
+	_total_residualsX_final->GetXaxis()->SetTitle("Residual X'' [mm]");
+	_total_residualsX_final->SetStats();
+	
+	_total_residualsY_final = tfs->make<TH1F>("Final Residuals Y''","Fi nalResiduals Y''" ,50,-500,500);
+	_total_residualsY_final->GetXaxis()->SetTitle("Final Residual Y'' [mm]");
+	_total_residualsY_final->SetStats();
+
+	_total_pullsX_final = tfs->make<TH1F>("Final Pull X''","Final Pull X''" ,50,-10, 10);
+	_total_pullsX_final->GetXaxis()->SetTitle("Final Pull X''");
+	_total_pullsX_final->SetStats();
+	
+	_total_pullsY_final = tfs->make<TH1F>("Final Pull Y''","Finla Pull Y''" ,50,-10, 10);
+	_total_pullsY_final->GetXaxis()->SetTitle("Final Pull Y''");
+	_total_pullsY_final->SetStats();
+       
+        _hiterrs_final = tfs->make<TH1F>("Final Total Hit Error","Final Total Hit Error" ,50,0, 100);
+	_hiterrs_final->GetXaxis()->SetTitle("Hit Error in Track Frame [mm]");
+	_hiterrs_final->SetStats();
+	
+	_niters  = tfs->make<TH1F>("Number of Iterations Unitl Converged","Number of Iterations Unitl Converged" ,100,0, 100);
+	_niters->GetXaxis()->SetTitle("Number of Iterations Unitl Converged");
+	_niters->SetStats();
+	
         }
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
@@ -198,30 +231,55 @@ namespace mu2e
 		CosmicTrack st = sts._track;
 		//TrkFitFlag const& status = sts._status;
 		std::vector<int> panels, planes, stations;
-                _chisq_plot->Fill(st.get_chisq());
+                _chisq_ndf_plot_init->Fill(st.get_initchisq_dof());
+                _chisq_ndf_plot_final->Fill(st.get_finalchisq_dof());
+                for(size_t i=0; i< st.get_iter().size();i++){
+                    _niters->Fill(st.get_iter()[i]);
+                }
                 //-----------Fill Hist Details:----------//
-		for(size_t i=0; i< st.get_hit_errorsTotal().size();i++){
-		    _hiterrs->Fill(st.get_hit_errorsTotal()[i]);
+		for(size_t i=0; i< st.get_init_hit_errorsTotal().size();i++){
+		    _hiterrs_init->Fill(st.get_init_hit_errorsTotal()[i]);
 		}
-		for(size_t i=0; i< st.get_fit_residualsX().size();i++){
-		    double pullX = st.get_fit_residualsX()[i]/st.get_fit_residual_errorsX()[i];
-                    _total_residualsX->Fill(st.get_fit_residualsX()[i]);             
-	            _total_pullsX->Fill(pullX);
+		for(size_t i=0; i< st.get_init_fit_residualsX().size();i++){
+		    double pullX = st.get_init_fit_residualsX()[i]/st.get_init_fit_residual_errorsX()[i];
+                    _total_residualsX_init->Fill(st.get_init_fit_residualsX()[i]);             
+	            _total_pullsX_init->Fill(pullX);
 	        }
-	        for(size_t i=0; i< st.get_fit_residualsY().size();i++){
-	            double pullY = st.get_fit_residualsY()[i]/st.get_fit_residual_errorsY()[i];
-                    _total_residualsY->Fill(st.get_fit_residualsY()[i]);             
-	            _total_pullsY->Fill(pullY);
+	        for(size_t i=0; i< st.get_init_fit_residualsY().size();i++){
+	            double pullY = st.get_init_fit_residualsY()[i]/st.get_init_fit_residual_errorsY()[i];
+                    _total_residualsY_init->Fill(st.get_init_fit_residualsY()[i]);             
+	            _total_pullsY_init->Fill(pullY);
 	        }   
-	            
-                 
+	         
+	        
+                //-----------Fill Hist Details:----------//
+		for(size_t i=0; i< st.get_final_hit_errorsTotal().size();i++){
+		    _hiterrs_final->Fill(st.get_final_hit_errorsTotal()[i]);
+		}
+		for(size_t i=0; i< st.get_final_fit_residualsX().size();i++){
+		    double pullX = st.get_final_fit_residualsX()[i]/st.get_final_fit_residual_errorsX()[i];
+                    _total_residualsX_final->Fill(st.get_final_fit_residualsX()[i]);             
+	            _total_pullsX_final->Fill(pullX);
+	        }
+	        for(size_t i=0; i< st.get_final_fit_residualsY().size();i++){
+	            double pullY = st.get_final_fit_residualsY()[i]/st.get_final_fit_residual_errorsY()[i];
+                    _total_residualsY_final->Fill(st.get_final_fit_residualsY()[i]);             
+	            _total_pullsY_final->Fill(pullY);
+	        }   
+	        for(auto const& tseed : *_coscol) {   
+                	TrkFitFlag const& status = tseed._status;
+                	_hitsOK = status.hasAllProperties(TrkFitFlag::hitsOK);
+                	_StraightTrackOK = status.hasAllProperties(TrkFitFlag::StraightTrackOK);
+                	_StraightTrackConverged = status.hasAllProperties(TrkFitFlag::StraightTrackConverged);
+                	_StraightTrackInit = status.hasAllProperties(TrkFitFlag::StraightTrackInit);
+        	}
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
 			
                 //-----------Fill diag details:----------//
                         _nhits = chit.nStrawHits();
                         _nsh = chit.nStrawHits();
-                       
+                        
                         panels.push_back(chit.strawId().panel());
 		        planes.push_back(chit.strawId().plane());
 			stations.push_back(chit.strawId().station());

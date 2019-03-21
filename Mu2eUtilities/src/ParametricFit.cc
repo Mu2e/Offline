@@ -191,13 +191,14 @@ XYZVec GetYPrime(XYZVec OrthX, XYZVec track_dir){
 }
 
 XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
-	double theta = atan2(ZPrime.y(),ZPrime.z()) ;
+	
+	double theta = atan(XPrime.y()/YPrime.y()); //enforces that X''Dot Y = 0
 	XYZVec XDoublePrime = cos(theta)*(XPrime) -1*sin(theta)*(YPrime);
 	return XDoublePrime.Unit();
 }
 
 XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
-	double theta = atan2(ZPrime.y(),ZPrime.z()) ;
+	double theta = atan(XPrime.y()/YPrime.y());
 	XYZVec YDoublePrime = cos(theta)*(YPrime) +sin(theta)*(XPrime);
 	return YDoublePrime.Unit();
 }

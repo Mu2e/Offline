@@ -282,7 +282,7 @@ Ensure enough straw hits used
       //Fill in diagnostics:
        if (_diag) {
 	_stResult._diag.nShFitXY = _stResult._nXYSh;
-	_stResult._diag.nChFitXY = _stResult._tseed._track.get_chisq_dof();
+	_stResult._diag.nChFitXY = _stResult._tseed._track.get_finalchisq_dof();
       } //end "diag"
     
       if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK)) { 
