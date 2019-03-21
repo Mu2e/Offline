@@ -148,6 +148,7 @@ namespace mu2e {
     const Plane& getPlane( uint16_t n ) const{
       return _planes.at(n);
     }
+
     std::array<Plane,StrawId::_nplanes> const& getPlanes() const {
       return _planes;
     }
@@ -155,22 +156,15 @@ namespace mu2e {
     const Panel& getPanel( const StrawId id ) const{
       return _panels.at(id.uniquePanel());
     }
-    const Panel& getPanel( uint16_t n ) const{
-      return _panels.at(n);
-    }
-    std::array<Panel,StrawId::_nupanels> const& getPanels() const {
-      return _panels;
-    }
 
     const Straw& getStraw( const StrawId id) const{
       return *(_allStraws_p.at(id.asUint16()));
     }
-    const Straw& getStraw( uint16_t ind ) const{
-      return _allStraws.at(ind);
-    }
+
     std::array<Straw,StrawId::_nustraws> const& getStraws() const{
       return _allStraws;
     }
+
     bool strawExists( StrawId const id) const{
       // return _allStraws_p.at(id.asUint16()) != nullptr;
       return _strawExists2.at(id.asUint16());
@@ -185,7 +179,7 @@ namespace mu2e {
     TubsParams strawWallInnerMetal2(StrawId const& id) const;
     TubsParams strawWireMother(StrawId const& id) const;
     TubsParams strawWirePlate(StrawId const& id) const;
- 
+
   protected:
 
     std::string _name;
