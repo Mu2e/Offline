@@ -146,8 +146,8 @@ namespace mu2e
       double deltaX = 1; // mm
       _worldXmin = worldGeom->mu2eOriginInWorld().x() - worldGeom->halfLengths()[0] + deltaX;
       _worldXmax = worldGeom->mu2eOriginInWorld().x() + worldGeom->halfLengths()[0] - deltaX;
-      _worldYmin = worldGeom->mu2eOriginInWorld().y() - worldGeom->halfLengths()[1] + deltaX;
-      _worldYmax = worldGeom->mu2eOriginInWorld().y() + worldGeom->halfLengths()[1] - deltaX;
+      _worldYmin = env->ymin() + deltaX;
+      _worldYmax = env->ymax() - deltaX;
       _worldZmin = worldGeom->mu2eOriginInWorld().z() - worldGeom->halfLengths()[2] + deltaX;
       _worldZmax = worldGeom->mu2eOriginInWorld().z() + worldGeom->halfLengths()[2] - deltaX;
 

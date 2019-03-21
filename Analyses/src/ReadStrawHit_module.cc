@@ -173,7 +173,7 @@ namespace mu2e {
     // Get the persistent data about the StrawHits.
 
     if (ncalls==1){
-      const auto & allstraws = tracker.getAllStraws();
+      const auto & allstraws = tracker.getStraws();
       float detnt[11];
       // for ( const auto & str : allstraws)
       for (size_t i = 0; i<tracker.nStraws(); ++i)

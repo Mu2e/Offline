@@ -47,7 +47,8 @@ namespace mu2e {
 
     cout << "Tracker: " << tracker.nPlanes() << endl;
     for ( auto const& pln : tracker.getPlanes() ){
-      for ( auto const& pnl : pln.getPanels() ){
+      for ( auto const& pnlp : pln.getPanels() ){
+	auto const& pnl = *pnlp;
         StrawId sid( pnl.id() ); // first straw id is equal to its panel id
         Straw const& straw = pnl.getStraw(sid);
         double phi  = straw.direction().phi();
@@ -64,7 +65,7 @@ namespace mu2e {
 
     if ( _diagLevel == 0 ) return;
 
-    auto const& straws = tracker.getAllStraws();
+    auto const& straws = tracker.getStraws();
     cout << "Straws: " << straws.size() << "  " << StrawId::_end << endl;
     size_t n(0);
     for ( Straw const& straw : straws ){
