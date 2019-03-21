@@ -47,7 +47,7 @@ physics.producers.cosmicTimeMap.InputTimeMaps : [@sequence::Mixing.cosmicTimeMap
 #
 physics.filters.DigiFilter.StrawDigiMCCollection : "makeSDPrimary"
 physics.filters.DigiFilter.MinParticleMom : 70.0
-physics.filters.DigiFilter.MaxParticleMom : 250.0
+physics.filters.DigiFilter.MaxParticleMom : 200.0
 physics.filters.DigiFilter.MinNDigis : 15
 # allow all particles
 physics.filters.DigiFilter.particleTypes : [ ]  

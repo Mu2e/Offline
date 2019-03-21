@@ -21,7 +21,6 @@ namespace mu2e {
     _z0 = other._z0;
     _rOut = other._rOut;
     _envelopeMaterial = other._envelopeMaterial;
-    _stations = other._stations;
     _strawInnerRadius = other._strawInnerRadius;
     _strawOuterRadius = other._strawOuterRadius;
     _strawWallThickness = other._strawWallThickness;
@@ -51,76 +50,86 @@ namespace mu2e {
     _manifoldHalfLengths = other._manifoldHalfLengths;
     _envelopeInnerRadius = other._envelopeInnerRadius;
     _planes = other._planes;
-    _allStraws2 = other._allStraws2;
-    _allStraws2_p = other._allStraws2_p;
+    _panels = other._panels;
+    _allStraws = other._allStraws;
+    _allStraws_p = other._allStraws_p;
     _strawExists2 = other._strawExists2;
 
-    // now need to reseat a lot of pointers
+    // now need to complete deep copy by
+    // reseating a lot of pointers
 
-    // reseat the non-dense Straw* array
-    for(size_t i=0; i<_allStraws2_p.size(); i++ ) {
-      _allStraws2_p[i] = &_allStraws2[0] + 
-	      (other._allStraws2_p[i] - &other._allStraws2[0]);
-    }
-
-    // there are actually two copies of Planes and Panels
-    // one held by Stations and one held by Tracker
-    // update the Station ones first
-    for(size_t istation=0; istation<_stations.size(); istation++) {
-      Station station = _stations[istation];
-      Station const& ostation = other._stations[istation];
-
-      for(size_t iplane=0; iplane<station._planes.size(); iplane++) {
-	Plane& plane = station._planes[iplane];
-	plane.fillPointers(this);
-	Plane const& oplane = ostation._planes[iplane];
-
-	for(size_t ipanel=0; ipanel<plane._panels.size(); ipanel++) {
-	  Panel panel = plane._panels[ipanel];
-	  Panel const& opanel = oplane._panels[ipanel];
-
-	  for(size_t i=0; i<panel._straws2_p.size(); i++ ) {
-	    panel._straws2_p[i] = &_allStraws2[0] + 
-	      (opanel._straws2_p[i] - &other._allStraws2[0]);
-	  } // straws
-
-	} // panels
-
-      } // planes
-
-    } // stations
-
-    // Now update the Planes and Panels held by Tracker
+    // update the Plane's pointers to its Panels
+    // and the Panel's pointers to its Straws
     for(size_t iplane=0; iplane<_planes.size(); iplane++) {
       Plane& plane = _planes[iplane];
       plane.fillPointers(this);
       Plane const& oplane = other._planes[iplane];
 
       for(size_t ipanel=0; ipanel<plane._panels.size(); ipanel++) {
-	Panel panel = plane._panels[ipanel];
-	Panel const& opanel = oplane._panels[ipanel];
+	Panel panel = *( plane._panels[ipanel] );
+	Panel const& opanel = *( oplane._panels[ipanel] );
+
+	plane._panels[ipanel] = &_panels[0] + 
+	    (oplane._panels[ipanel] - &other._panels[0]);
 
 	for(size_t i=0; i<panel._straws2_p.size(); i++ ) {
-	  panel._straws2_p[i] = &_allStraws2[0] + 
-	    (opanel._straws2_p[i] - &other._allStraws2[0]);
+	  panel._straws2_p[i] = &_allStraws[0] + 
+	    (opanel._straws2_p[i] - &other._allStraws[0]);
 	} // straws
 
       } // panels
 
     } // planes
 
-  }
 
-  /*
-  Tracker& Tracker::operator=(const Tracker& other) {
-    return *this = Tracker(other);
+    // reseat the non-dense Straw* array
+    for(size_t i=0; i<_allStraws_p.size(); i++ ) {
+      _allStraws_p[i] = &_allStraws[0] + 
+	      (other._allStraws_p[i] - &other._allStraws[0]);
+    }
+
+
   }
-  */
 
   void Tracker::fillPointers () const{
     for ( size_t i=0; i<StrawId::_nplanes; ++i){
       _planes[i].fillPointers(this);
     }
+  }
+
+  TubsParams Tracker::strawOuterTubsParams(StrawId const& id) const {
+    return TubsParams ( 0., strawOuterRadius(), getStrawHalfLength(id.straw()) );
+  }
+  TubsParams Tracker::strawWallMother(StrawId const& id)      const {
+    return TubsParams( strawInnerRadius(), 
+		       strawOuterRadius(), getStrawHalfLength(id.straw()) );
+  }
+  TubsParams Tracker::strawWallOuterMetal(StrawId const& id)  const {
+    double rIn = strawOuterRadius() - outerMetalThickness();
+    return TubsParams( rIn, strawOuterRadius() , 
+		       getStrawHalfLength(id.straw()) );
+  }
+  TubsParams Tracker::strawWallInnerMetal1(StrawId const& id) const {
+    double rIn  = strawInnerRadius() + innerMetal2Thickness();
+    double rOut = rIn + innerMetal1Thickness();
+    return TubsParams (rIn,rOut,
+		       getStrawHalfLength(id.straw()));
+  }
+  TubsParams Tracker::strawWallInnerMetal2(StrawId const& id) const {
+    double rIn  = strawInnerRadius();
+    double rOut = rIn + innerMetal2Thickness();
+    return TubsParams (rIn,rOut,
+		       getStrawHalfLength(id.straw()));
+  }
+  TubsParams Tracker::strawWireMother(StrawId const& id) const {
+    return TubsParams (0.,wireRadius(),
+		       getStrawHalfLength(id.straw()));
+  }
+  TubsParams Tracker::strawWirePlate(StrawId const& id) const {
+    double rIn = wireRadius() - wirePlateThickness();
+    double rOut = wireRadius();
+    return TubsParams (rIn,rOut,
+		       getStrawHalfLength(id.straw()));
   }
 
 } // namespace mu2e

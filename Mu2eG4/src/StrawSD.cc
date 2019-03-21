@@ -290,7 +290,6 @@ namespace mu2e {
           //          ", panel.boxOffset " << panel.boxOffset() <<
           ", plane.origin "    << plane.origin() <<
           ", panel.boxRzAngle " << panel.boxRzAngle()/M_PI*180. <<
-          ", plane.rotation "  << plane.rotation() <<
           endl;
 
         cout << __func__ << " straw pos G4  "
