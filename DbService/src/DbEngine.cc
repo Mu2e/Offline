@@ -9,6 +9,7 @@ using namespace std;
 int mu2e::DbEngine::beginJob() {
 
   if(_verbose>5) cout << "DbEngine::beginJob start" << endl;
+  _initialized = true;  // true no matter when we return
 
   _gids.clear();
   auto start_time = std::chrono::high_resolution_clock::now();
@@ -16,6 +17,41 @@ int mu2e::DbEngine::beginJob() {
   _reader.setDbId(_id);
   _reader.setVerbose(_verbose);
   _reader.setTimeVerbose(_verbose);
+
+
+  // this is used to assign nominal tid's and cid's to tables that
+  // are read in through a file, and are not declared in the database
+  int fakeTid = 10000;
+  int fakeCid = 1000000;
+
+  // if special name EMPTY, then everything remains empty
+  if(_version.purpose()=="EMPTY") {
+    // there won't be any real tid's so
+    // assign nominal tid's to file-based tables
+    for(auto& lt: _override) {
+      if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
+	if(_verbose>5) {
+	  cout << "DbEngine::beginRun assigning TID "
+	       << fakeTid << " to " << lt.table().name() << endl;
+	}
+	_overrideTids[lt.table().name()] = fakeTid;
+	fakeTid++;
+      }
+      int mytid = _overrideTids[lt.table().name()];
+      if(_verbose>5) {
+	cout << "DbEngine::beginRun assigning override CID "
+	     << fakeCid << " and TID " << mytid << " to " << lt.table().name() << endl;
+      }
+      lt.setTid(mytid);
+      lt.setCid(fakeCid); // assign fake cid to label this data
+      fakeCid++;
+    }
+    
+    if(_verbose>1) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
+			<< endl;
+    return 0;
+  }
+
   if(_vcache) { // existing data was already set
     _reader.fillValTables(*_vcache);
   } else { // we have to create/fill it
@@ -23,16 +59,6 @@ int mu2e::DbEngine::beginJob() {
     _reader.fillValTables(*_vcache);
   }
   DbValCache const& vcache = * _vcache;
-
-  // if special name EMPTY, then everything remains empty
-  if(_version.purpose()=="EMPTY") {
-    if(_verbose>5) cout << "DbEngine::beginJob exit early, purpose=EMPTY" 
-			<< endl;
-    return 0;
-  }
-
-  // drill down from the calibration version number
-  // to the list of interval of validity
 
   // confirm purpose string and find its pid
   auto const& purposes = vcache.valPurposes();
@@ -183,10 +209,35 @@ int mu2e::DbEngine::beginJob() {
     }
   }
 
-  // if override tables were already loaded, fill tid now
-  // that we have the val structure
-  if(_verbose>5) cout << "DbEngine::beginJob fillOverrideTid" << endl;
-  fillOverrideTid();
+  // if file-based override tables were loaded, 
+  // fill tid now.  If the table is known to the database,
+  // then use that tid, but if it is not, we need to assign
+  // a nominal tid so it can be accessed
+  for(auto& lt: _override) {
+    int mytid = -1;
+    for(auto const& r: _vcache->valTables().rows()) {
+      if(r.name()==lt.table().name()) mytid = r.tid();
+    }
+    if(mytid<0) {
+      if(_overrideTids.find(lt.table().name()) == _overrideTids.end()) {
+	if(_verbose>5) {
+	  cout << "DbEngine::beginRun assigning TID "
+	       << fakeTid << " to " << lt.table().name() << endl;
+	}
+	_overrideTids[lt.table().name()] = fakeTid;
+	fakeTid++;
+      }
+      mytid = _overrideTids[lt.table().name()];
+    }
+    if(_verbose>5) {
+      cout << "DbEngine::beginRun assigning override CID "
+	   << fakeCid << " and TID " << mytid 
+	   << " to " << lt.table().name() << endl;
+    }
+    lt.setTid(mytid);
+    lt.setCid(fakeCid); // assign fake cid to label this data
+    fakeCid++;
+  }
 
   if( _verbose>9 ) {
     std::cout << "DbEngine::beginRun results of lookup" << std::endl;
@@ -246,8 +297,11 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 		      << tid << " " << run << " " << subrun << endl;
 
   // first look for table in override table list
-  for(auto& oltab : _override) { // loop over override tables
-    if(oltab.tid()==tid) { // if override table is the right type
+  // loop over override tables
+  for(size_t iover=0; iover<_override.size(); iover++) {
+    auto& oltab = _override[iover];
+    int otid = _overrideTids[oltab.table().name()];
+    if(otid==tid) { // if override table is the right type
       if(oltab.iov().inInterval(run,subrun)) { // and in valid interval
 	auto dblt = oltab;
 	if(_verbose>9) cout << "DbEngine::update table found " 
@@ -332,30 +386,11 @@ std::string mu2e::DbEngine::nameByTid(int tid) {
 }
 
 void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
-  for(auto const& c : coll) _override.emplace_back(c); 
-  fillOverrideTid();
-}
-
-void mu2e::DbEngine::fillOverrideTid() {
-  int fakeTid = 10000;
-  _overrideTids.clear();
-  for(auto& lt: _override) {
-    int tid = tidByName(lt.table().name());
-    // if an override table was unknown to the db, we can still use it,
-    // by giving it a fakeTid
-    if(tid<0) {
-      tid = fakeTid;
-      _overrideTids[lt.table().name()] = fakeTid;
-      if(_verbose>9) cout << "DbEngine::fillOverrideTid assigning "
-			  << fakeTid << " to " << lt.table().name() << endl;
-    } else {
-      if(_verbose>9) cout << "DbEngine::fillOverrideTid found tid "
-			  << tid << " for " << lt.table().name() << endl;
-    }
-    lt.setTid(tid);
-    fakeTid++;
+  if(_initialized) {
+    throw cet::exception("DBENGINE_LATE_OVERRIDE") << 
+      "DbEngine::addOverride engine already initialized\n";
   }
-  return;
+  for(auto const& c : coll) _override.emplace_back(c); 
 }
 
 mu2e::DbEngine::LockGuard::LockGuard(DbEngine& engine):_engine(engine) {

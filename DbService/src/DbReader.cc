@@ -77,6 +77,7 @@ int mu2e::DbReader::query(std::string& csv,
 	      << setw(2) << mtm->tm_min << ":"
 	      << setw(2) << mtm->tm_sec 
 	      <<" url="<<url << std::endl;
+    std::cout << setfill(' ');
   }
   curl_easy_setopt(_curl_handle, CURLOPT_URL, url.c_str());
   // return an error when the http header returns an error (like bad gateway)
