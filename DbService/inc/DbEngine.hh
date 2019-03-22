@@ -1,7 +1,7 @@
 #ifndef DbService_DbEngine_hh
 #define DbService_DbEngine_hh
 
-#include <mutex>
+#include <shared_mutex>
 #include <chrono>
 
 #include "DbService/inc/DbReader.hh"
@@ -18,7 +18,8 @@ namespace mu2e {
   class DbEngine {
   public:
 
-    DbEngine():_verbose(0),_initialized(false),_lockTotalTime(0) {}
+    DbEngine():_verbose(0),_initialized(false),
+	       _lockWaitTime(0),_lockTime(0) {}
     // the big read of the IOV structure is done in beginJob
     int beginJob();
     int endJob();
@@ -52,14 +53,10 @@ namespace mu2e {
       int _cid;
     };
 
-    // private class to make sure that when the update 
-    // method exits, the lock is released
-    class LockGuard {
-      DbEngine& _engine;
-    public:
-      LockGuard(DbEngine& engine);
-      ~LockGuard();
-    };
+    // call beginRun on first use, if needed
+    void lazyBeginJob();
+    // find a table cid in the fast lookup structure
+    Row findTable(int tid, uint32_t run, uint32_t subrun);
 
 
     DbId _id;
@@ -77,10 +74,10 @@ namespace mu2e {
     std::map<std::string,int> _overrideTids;
 
     // lock for threaded access
-    std::mutex _lock;
+    mutable std::shared_mutex _mutex;
     // count the time locked
-    std::chrono::high_resolution_clock::time_point _lockTime;
-    std::chrono::microseconds _lockTotalTime;
+    std::chrono::microseconds _lockWaitTime;
+    std::chrono::microseconds _lockTime;
     
   };
 }

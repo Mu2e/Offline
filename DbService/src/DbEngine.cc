@@ -285,18 +285,14 @@ int mu2e::DbEngine::beginJob() {
 mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run, 
 					 uint32_t subrun) {
 
-  LockGuard cacheLock(*this);
-
-  // fire up the IOV structure, if it is not already there
-  if(!_vcache) {
-    if(_verbose>5) cout << "DbEngine update calling beginJob"  <<endl;
-    beginJob();
-  }
+  lazyBeginJob(); // initialize if needed
 
   if(_verbose>9) cout << "DbEngine::update "
 		      << tid << " " << run << " " << subrun << endl;
 
   // first look for table in override table list
+  // this data never changes, so no need to lock
+
   // loop over override tables
   for(size_t iover=0; iover<_override.size(); iover++) {
     auto& oltab = _override[iover];
@@ -311,50 +307,108 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
     }
   }
 
-  // now go over the list from the database
-  auto const& rows = _lookup[tid];
+  // this will hold the table in the end
+  DbTable::cptr_t ptr;
+  int cid = -1;
+  DbIoV iov;
 
-  for(auto const& r : rows) {
-    if(r.iov().inInterval(run,subrun)) {
-      DbTable::cptr_t ptr;
-      if(_cache.hasTable(r.cid())) {
-	// table was in cache, use it
-	ptr = _cache.get(r.cid());
-      } else { // need to read table
+  // try to read the table
+  {
+    std::shared_lock lock(_mutex); // shared read lock
+    auto row = findTable(tid, run, subrun);
+    cid = row.cid();
+    iov = row.iov();
+    if(_cache.hasTable(row.cid())) ptr = _cache.get(row.cid());
+  } // read lock goes out of scope
+
+  // if no cid now, then table can't be found - have to stop
+  if(cid<0) {
+    auto const& tabledef = _vcache->valTables().row(tid);
+    throw cet::exception("DBENGINE_UPDATE_FAILED") 
+      << " DbEngine::update failed to find table " << tabledef.name() 
+      << " for run:subrun "<<run<<":"<<subrun<<"\n";
+  }
+
+  // if it wasn't found in cache, try to read from database
+  if(! ptr ) {
+    auto stime = std::chrono::high_resolution_clock::now();
+    std::unique_lock lock(_mutex); // write lock
+    auto mtime = std::chrono::high_resolution_clock::now();
+    auto dt = std::chrono::duration_cast<std::chrono::microseconds>
+                                               ( mtime - stime );
+    _lockWaitTime += dt;
+    
+    // have to check if some other thread loaded it 
+    // since the above read attempt
+    if(_cache.hasTable(cid)) {
+      ptr = _cache.get(cid);
+    } else {
+      auto const& tabledef = _vcache->valTables().row(tid);
+      // this makes the memory
+      auto ncptr = DbTableFactory::newTable(tabledef.name());
+      // the actual http read
+      int rc = _reader.fillTableByCid(ncptr,cid);
+
+      // reader does not abort, so do it here
+      if(rc!=0) {
 	auto const& tabledef = _vcache->valTables().row(tid);
-	auto ncptr = DbTableFactory::newTable(tabledef.name());
-	_reader.fillTableByCid(ncptr,r.cid());
-	ptr = std::const_pointer_cast<const mu2e::DbTable,mu2e::DbTable>(ncptr);
-	_cache.add(r.cid(),ptr);
-      }
-      // this code handles the case where an override takes effect
-      // in the middle of a database IOV
-      DbIoV temp = r.iov();
-      for(auto& oltab : _override) { // loop over override tables
-	if(oltab.tid()==tid) { // if override is the right type
-	  temp.subtract(oltab.iov());
-	}
+	throw cet::exception("DBENGINE_UPDATE_FAILED") 
+	  << " DbEngine::update failed to find table " << tabledef.name() 
+	  << " for run:subrun "<<run<<":"<<subrun
+	  <<", cid ="<< cid 
+	  <<", rc ="<< rc << "\n";
       }
 
-      auto dblt = DbLiveTable( temp, ptr, tid, r.cid() );
-      return dblt;
+      // make it const
+      ptr = std::const_pointer_cast<const mu2e::DbTable,mu2e::DbTable>(ncptr);
+      // push to cache
+      _cache.add(cid,ptr);
+    }
 
-    } // loop over IOV
-  } // loop over tids
+    auto etime = std::chrono::high_resolution_clock::now();
+    dt = std::chrono::duration_cast<std::chrono::microseconds>
+                                          ( etime - mtime );
+    _lockTime += dt;
 
-  auto const& tabledef = _vcache->valTables().row(tid);
-  throw cet::exception("DBENGINE_UPDATE_FAILED") 
-    << " DbEngine::update failed to find table " << tabledef.name() 
-    << " for run:subrun "<<run<<":"<<subrun<<"\n";
+  } // write lock goes out of scope
+
+
+  // this code handles the case where an override takes effect
+  // in the middle of a database IOV - remove the override
+  // table interval from the database table's interval
+  for(auto& oltab : _override) { // loop over override tables
+    if(oltab.tid()==tid) { // if override is the right type
+      iov.subtract(oltab.iov());
+    }
+  }
+  
+  auto dblt = DbLiveTable( iov, ptr, tid, cid );
+
+  return dblt;
 
 }
 
+// find a table by cid in the fast lookup structure
+// can only be called inside a read lock
+mu2e::DbEngine::Row mu2e::DbEngine::findTable(
+			    int tid, uint32_t run, uint32_t subrun) {
+  auto const& rows = _lookup[tid];
+  for(auto const& r : rows) {
+    if(r.iov().inInterval(run,subrun)) {
+      return r;
+    }
+  } // loop over Rows for table type
+  
+  return DbEngine::Row(DbIoV(),-1); // not found
+}
+
+
+
 int mu2e::DbEngine::tidByName(std::string const& name) {
 
-  LockGuard cacheLock(*this);
+  lazyBeginJob(); // initialize if needed
 
-  // fire up the IOV structure, if it is not already there
-  if(!_vcache) beginJob();
+  std::shared_lock lock(_mutex); // shared read lock
 
   // tables known to the db
   if(_vcache) {
@@ -371,10 +425,10 @@ int mu2e::DbEngine::tidByName(std::string const& name) {
 
 std::string mu2e::DbEngine::nameByTid(int tid) {
 
-  LockGuard cacheLock(*this);
+  lazyBeginJob(); // initialize if needed
 
-  // fire up the IOV structure, if it is not already there
-  if(!_vcache) beginJob();
+  std::shared_lock lock(_mutex); // shared read lock
+
 
   for(auto const& r: _vcache->valTables().rows()) {
     if(r.tid()==tid) return r.name();
@@ -393,19 +447,36 @@ void mu2e::DbEngine::addOverride(DbTableCollection const& coll) {
   for(auto const& c : coll) _override.emplace_back(c); 
 }
 
-mu2e::DbEngine::LockGuard::LockGuard(DbEngine& engine):_engine(engine) {
-  _engine._lock.lock();
-  _engine._lockTime = std::chrono::high_resolution_clock::now();
-}
+void mu2e::DbEngine::lazyBeginJob() {
 
-mu2e::DbEngine::LockGuard::~LockGuard() {
-  auto end_time = std::chrono::high_resolution_clock::now();
-  auto delta = std::chrono::duration_cast<std::chrono::microseconds>
-                                        (end_time - _engine._lockTime);
-  _engine._lockTotalTime += delta;
-  _engine._lock.unlock();
-}
+  {
+    // check if initialized
+    std::shared_lock lock(_mutex); // shared read lock
+    if(_initialized) return;
+  }
 
+  // need to call beginRun, read lock out of scope, destroyed
+  auto stime = std::chrono::high_resolution_clock::now();
+  std::unique_lock lock(_mutex); // write lock
+  auto mtime = std::chrono::high_resolution_clock::now();
+  auto dt = std::chrono::duration_cast<std::chrono::microseconds>
+                                               ( mtime - stime );
+  _lockWaitTime += dt;
+
+  // if another thread initialized since the above check
+  if(_initialized) return;
+  
+  beginJob();
+
+  auto etime = std::chrono::high_resolution_clock::now();
+  dt = std::chrono::duration_cast<std::chrono::microseconds>
+                                               ( etime - mtime );
+  _lockTime += dt;
+
+  // write lock destroyed on return
+
+  return;
+}
 
 
 int mu2e::DbEngine::endJob() {
@@ -414,7 +485,10 @@ int mu2e::DbEngine::endJob() {
     std::cout << "DbEngine::endJob" << std::endl;
     std::cout << "    Total time in reading DB: "<< _reader.totalTime() 
 	      <<" s" << std::endl;
-    std::cout << "    Total time in locks: "<< _lockTotalTime.count()*1.0e-6
+    std::cout << "    Total time waiting for locks: "
+	      << _lockWaitTime.count()*1.0e-6
+	      <<" s" << std::endl;
+    std::cout << "    Total time in locks: "<< _lockTime.count()*1.0e-6
 	      <<" s" << std::endl;
     std::cout << "    cache memory   : "<<_cache.size()<<" b" << std::endl;
     std::cout << "    valcache memory: "<<_vcache->size()<<" b" << std::endl;
