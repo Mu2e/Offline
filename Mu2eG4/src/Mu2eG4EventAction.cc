@@ -74,14 +74,14 @@ namespace mu2e {
         _processInfo(phys_process_info),
         _artEvent(),
         _stashForEventData(),
-        eventNumberInProcess(-1)
+        eventNumberInProcess(-1),
+        _g4InternalFiltering(pset.get<bool>("G4InteralFiltering",false))
         {
             /*if (G4Threading::G4GetThreadId()<= 0){
                 std::cout << "From EventAction" << std::endl;
                 G4SDManager* SDman = G4SDManager::GetSDMpointer();
                 SDman->ListTree();
             }*/
-        
         }
     
 Mu2eG4EventAction::~Mu2eG4EventAction()
@@ -196,37 +196,75 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         }
         else
         {
-            //we don't need a lock here because each thread accesses a different element of the stash
-            _stashForEventData->insertData(eventNumberInProcess,
-                                           std::move(g4stat),
-                                           std::move(simParticles));
-        
-        
-            if(!timeVDtimes_.empty()) {
-                _stashForEventData->insertTVDHits(eventNumberInProcess, std::move(tvdHits), _tvdOutputName.name());
+            bool event_passes = false;
+            
+            //if internal G4 filtering is turned OFF, event passes
+            //otherwise event must pass the StepPoints momentum and Tracker StepPoints filters
+            if (_g4InternalFiltering) {
+                if (_sensitiveDetectorHelper->filterStepPointMomentum() && _sensitiveDetectorHelper->filterTrackerStepPoints()) {
+                    event_passes = true;
+                    //std::cout << "WE ARE FILTERING AND THIS EVENT HAS PASSED: " << _artEvent->event() << std::endl;
+                }
+            } else {
+                event_passes = true;
+                //std::cout << "WE ARE *NOT* FILTERING AND THIS EVENT HAS PASSED: " << _artEvent->event() << std::endl;
             }
-        
-            if(trajectoryControl_.produce()) {
-                _stashForEventData->insertMCTrajectoryCollection(eventNumberInProcess, std::move(mcTrajectories));
-            }
-        
-        
-            if(multiStagePars_.multiStage()) {
-                _stashForEventData->insertSimsRemapping(eventNumberInProcess, std::move(simsRemap));
-            }
-        
-        
-            if(_sensitiveDetectorHelper->extMonPixelsEnabled()) {
-                _stashForEventData->insertExtMonFNALSimHits(eventNumberInProcess, std::move(extMonFNALHits));
-            }
-        
-            _sensitiveDetectorHelper->insertSDDataIntoStash(eventNumberInProcess,_stashForEventData);
-    
-            _stackingCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
-            _steppingCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
-            _commonCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
-        
-        }
+            
+            
+            if (event_passes) {
+                
+                //we don't need a lock here because each thread accesses a different element of the stash
+                _stashForEventData->insertData(eventNumberInProcess,
+                                               std::move(g4stat),
+                                               std::move(simParticles));
+                
+                
+                if(!timeVDtimes_.empty()) {
+                    _stashForEventData->insertTVDHits(eventNumberInProcess, std::move(tvdHits), _tvdOutputName.name());
+                }
+                
+                if(trajectoryControl_.produce()) {
+                    _stashForEventData->insertMCTrajectoryCollection(eventNumberInProcess, std::move(mcTrajectories));
+                }
+                
+                if(multiStagePars_.multiStage()) {
+                    _stashForEventData->insertSimsRemapping(eventNumberInProcess, std::move(simsRemap));
+                }
+                
+                if(_sensitiveDetectorHelper->extMonPixelsEnabled()) {
+                    _stashForEventData->insertExtMonFNALSimHits(eventNumberInProcess, std::move(extMonFNALHits));
+                }
+                
+                _sensitiveDetectorHelper->insertSDDataIntoStash(eventNumberInProcess,_stashForEventData);
+                
+                _stackingCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
+                _steppingCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
+                _commonCuts->insertCutsDataIntoStash(eventNumberInProcess,_stashForEventData);
+                
+            }//event_passes cuts
+            else {
+                
+                //g4stat = StatusG4();
+                simParticles = nullptr;
+                tvdHits = nullptr;
+                mcTrajectories = nullptr;
+                simsRemap = nullptr;
+                extMonFNALHits = nullptr;
+                
+                _stashForEventData->insertData(eventNumberInProcess,
+                                               std::move(g4stat),
+                                               nullptr);
+                
+                //there is no need to clear SD data here, since it is done in the call to
+                //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
+                
+                //CLEAR OUT THE STEPPING CUTS
+                _stackingCuts->deleteCutsData();
+                _steppingCuts->deleteCutsData();
+                _commonCuts->deleteCutsData();
+                
+            }//else put NULL ptrs into the stash
+        }//event number accounting is correct, add data to stash if it passes the filter
     
     }
     

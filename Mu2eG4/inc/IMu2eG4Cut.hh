@@ -67,6 +67,9 @@ namespace mu2e {
       // put data into the stash
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) = 0;
       
+      // delete data if we don't need it
+      virtual void deleteCutsData() = 0;
+      
       // Put the data products into the event.
       //virtual void put(art::Event& event) = 0;
       

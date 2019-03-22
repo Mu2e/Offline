@@ -37,6 +37,7 @@ namespace mu2e {
       constexpr static uint16_t _npanels = 6; // number of panels per plane
       constexpr static uint16_t _nfaces = 2; // number of faces in a plane
       constexpr static uint16_t _nplanes = 36; // number of planes
+      constexpr static uint16_t _nstations = _nplanes/2; // number of stations
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
       constexpr static uint16_t _nustraws = _nupanels* _nstraws; // number of unique straws
       constexpr static uint16_t _ntotalfaces = StrawId::_nfaces*StrawId::_nplanes;

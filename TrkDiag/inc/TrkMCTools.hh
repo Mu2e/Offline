@@ -71,7 +71,6 @@ namespace mu2e {
     void findMCSteps(const StepPointMCCollection& mcsteps, cet::map_vector_key const& trkid, std::vector<int> const& vids, std::vector<MCStepItr>& steps);
 
     // count types of hits and digis
-    //    void countHits(const KalSeed& kseed, const art::Ptr<SimParticle>& spp, const StrawDigiMCCollection& mcdigis, const double& mingood, int& nactive, int& nhits, int& ngood, int& nambig);
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& digigood, int& ngood);
 
     // fill various info structs
@@ -81,6 +80,10 @@ namespace mu2e {
     void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
     void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc);
+    // find relationship of a set of StrawDigis to the primary particle in the event
+    void primaryRelation(PrimaryParticle const& primary,
+	StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,
+	art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel);
 
   }
 }

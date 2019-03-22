@@ -99,6 +99,7 @@ physics :
       genCountLogger: 
       { 
          module_type: GenEventCountReader 
+         SelectEvents: ["trigFilter"]
       }
 
       collectionSizes: 
@@ -107,9 +108,15 @@ physics :
          useModuleLabel: true 
          useInstanceName: true 
          useProcessName: false
+         SelectEvents: ["trigFilter"]
       }
 
-      statusG4: { module_type: StatusG4Analyzer input: g4run }
+      statusG4:
+      {
+        module_type: StatusG4Analyzer
+        input: g4run
+        SelectEvents: ["trigFilter"]
+      }
    }
 
    producers: 
@@ -132,7 +139,7 @@ physics :
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
 	 TrajectoryControl: @local::mu2eg4DefaultTrajectories 
          debug: @local::mu2eg4DefaultDebug
-         visualization: @local::mu2eg4NoVisualization
+         visualization: @local::mu2eg4NoVisualization         
 
          generatorModuleLabel: generate
          MultiStageParameters: {} // this is the first stage
@@ -141,6 +148,10 @@ physics :
          {
             enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]  // activate just the explicitly listed SDs
             TimeVD: { times: [] }
+
+            cutMomentumMin       : 45. // MeV/c
+            inputs               : [ tracker ]
+            minTrackerStepPoints : 15
          }
 
          Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
@@ -184,11 +195,11 @@ physics :
 
    filters: 
    {
-      stepPointMomentumFilter: 
+
+      emptyEventFilter:
       {
-        module_type: FilterStepPointMomentum
-        inputs : [ "g4run:tracker" ]
-        cutMomentumMin: 45. // MeV/c to accommodate muons decaying into electrons with a momentum of 80 MeV/c
+        module_type: FilterOutEmptyEvents
+        input: "g4run"
       }
 
       cosmicFilter: 
@@ -200,11 +211,6 @@ physics :
          mcTrajectoryInputs : [ "g4run" ]
          numSimParticleCollections : 1
          vetoDaughters: []
-      }
-
-      trackerStepPointFilter : 
-      {
-         module_type : TrackerStepPointFilter 
       }
 
       detectorFilter:
@@ -232,8 +238,8 @@ physics :
       }
    }
 
-   trigFilter     : [generate, genCounter, g4run, g4consistent, stepPointMomentumFilter, cosmicFilter, trackerStepPointFilter, detectorFilter, compressPV]
-   g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
+   trigFilter     : [generate, genCounter, g4run, emptyEventFilter, g4consistent, cosmicFilter, detectorFilter, compressPV]
+   g4StatusFilter : [generate, genCounter, g4run, emptyEventFilter, "!g4status", compressPVFull ]
    trigger_paths  : [trigFilter, g4StatusFilter]
 
    outputs: [truncatedEvtsOutput, filteredOutput]
@@ -253,6 +259,7 @@ outputs:
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_protonabsorber_*",
          "keep *_detectorFilter_*_*",
          "keep *_compressPV_*_*"
       ]
@@ -276,10 +283,8 @@ outputs:
 
 }
 
-
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 physics.producers.g4run.physics.minRangeRegionCuts: { CalorimeterMother : 0.1 TrackerMother : 0.001 }
-
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 1000000
 
 // Limit the amount of "Begin processing the ... record" messages

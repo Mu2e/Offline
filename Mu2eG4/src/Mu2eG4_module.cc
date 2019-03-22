@@ -118,7 +118,7 @@ namespace mu2e {
         
         //we need this for MT mode before art-MT is available
         //it fixes the bookkeeping on the art::Ptrs which was messed up by the introduction of the GenParticleStash
-        void ReseatPtrsAndMoveDataToArtEvent( art::Event& evt, art::EDProductGetter const* sim_prod_getter );
+        void ReseatPtrsAndMoveDataToArtEvent( art::Event& evt, art::EDProductGetter const* sim_prod_getter, std::unique_ptr<SimParticleCollection> sims_to_store );
         
         void DoVisualizationFromMacro();
 
@@ -206,6 +206,7 @@ namespace mu2e {
 
         //used in testing code
         //int event_counter = 0;
+        int numExcludedEvents = 0;
 
   }; // end G4 header
 
@@ -587,42 +588,54 @@ void Mu2eG4::produce(art::Event& event) {
 
     }//end if stash is empty, simulate events
 
-    //now move the data into the art::Event
-    event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
-    
+
     //testing stuff ********************************
     //    std::cout << "in produce, printing the Stash Sim Particle info " << std::endl;
     //    _StashForEventData.printInfo(stashInstanceToStore);
 
+    
+    std::unique_ptr<SimParticleCollection> simsToCheck = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
+    
+    if (simsToCheck == nullptr) {
+        numExcludedEvents++;
+    } else {
 
-    if (_use_G4MT)
-    {
-        ReseatPtrsAndMoveDataToArtEvent(event, simProductGetter);
-    }
-    else//in sequential mode, there isn't any need to reseat the ptrs, since there is no GenParticleCollections object
-    {
+        if (_use_G4MT)
+        {
+            //now move the data into the art::Event IFF the event has passed the StepPointMomentumFilter inside Mu2eG4EventAction
+            //if event has not passed, the ptr to the SimParticleCollection will be null
+            event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
+            ReseatPtrsAndMoveDataToArtEvent(event, simProductGetter, std::move(simsToCheck));
+            _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
+            _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
         
-        event.put(std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore)));
-        
-        if(!timeVDtimes_.empty()) {
-            event.put(std::move(_StashForEventData.getTVDHits(stashInstanceToStore)),_StashForEventData.getTVDName(stashInstanceToStore));
         }
+        else//in sequential mode, there isn't any need to reseat the ptrs, since there is no GenParticleCollections object
+        {
         
-        if(trajectoryControl_.produce()) {
-            event.put(std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore)));
-        }
+            event.put(std::move(_StashForEventData.getG4Status(stashInstanceToStore)));
+            event.put(std::move(std::move(simsToCheck)));
         
-        if(multiStagePars_.multiStage()) {
-            event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
-        }
+            if(!timeVDtimes_.empty()) {
+                event.put(std::move(_StashForEventData.getTVDHits(stashInstanceToStore)),_StashForEventData.getTVDName(stashInstanceToStore));
+            }
         
-        if(SensitiveDetectorHelpers[_masterThreadIndex].extMonPixelsEnabled()) {
-            event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
-        }
-    }//sequential
-
-    _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
-    _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
+            if(trajectoryControl_.produce()) {
+                event.put(std::move(_StashForEventData.getMCTrajCollection(stashInstanceToStore)));
+            }
+        
+            if(multiStagePars_.multiStage()) {
+                event.put(std::move(_StashForEventData.getSimParticleRemap(stashInstanceToStore)));
+            }
+        
+            if(SensitiveDetectorHelpers[_masterThreadIndex].extMonPixelsEnabled()) {
+                event.put(std::move(_StashForEventData.getExtMonFNALSimHitCollection(stashInstanceToStore)));
+            }
+        
+            _StashForEventData.putSensitiveDetectorData(stashInstanceToStore, event, simProductGetter);
+            _StashForEventData.putCutsData(stashInstanceToStore, event, simProductGetter);
+        }//sequential
+    }//simsToCheck !=nullptr
 
     //increment the instance of the EventStash to store
     stashInstanceToStore++;
@@ -639,6 +652,8 @@ void Mu2eG4::produce(art::Event& event) {
 void Mu2eG4::endRun(art::Run & run){
 
         BeamOnEndRun();
+    
+        G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
 
 }
 
@@ -781,7 +796,7 @@ void Mu2eG4::BeamOnEndRun(){
     }
 }//BeamOnEndRun
     
-void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGetter const* sim_prod_getter){
+void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGetter const* sim_prod_getter, std::unique_ptr<SimParticleCollection> sims_to_store){
     
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
@@ -789,9 +804,9 @@ void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGett
     }
     
     //put the SimParticleCollection into the event
-    std::unique_ptr<SimParticleCollection> tempSims = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
+    //std::unique_ptr<SimParticleCollection> tempSims = std::move(_StashForEventData.getSimPartCollection(stashInstanceToStore));
     
-    for ( SimParticleCollection::iterator i=tempSims->begin(); i!=tempSims->end(); ++i )
+    for ( SimParticleCollection::iterator i=sims_to_store->begin(); i!=sims_to_store->end(); ++i )
     {
         SimParticle& sim = i->second;
         
@@ -820,7 +835,7 @@ void Mu2eG4::ReseatPtrsAndMoveDataToArtEvent(art::Event& evt, art::EDProductGett
         
     }//for (SimParticleCollection::iterator...
     
-    evt.put(std::move(tempSims));
+    evt.put(std::move(sims_to_store));
 
     
     if(!timeVDtimes_.empty()) {

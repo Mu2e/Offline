@@ -252,8 +252,8 @@ Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil
-#  outputCommands : [ "drop *_*_*_*",
-  outputCommands : [ "keep *_*_*_*",
+  outputCommands : [ "drop *_*_*_*",
+#  outputCommands : [ "keep *_*_*_*",
   @sequence::Reconstruction.ToKeep ]
 }
 

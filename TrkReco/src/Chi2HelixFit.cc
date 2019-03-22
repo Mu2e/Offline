@@ -109,7 +109,7 @@ namespace mu2e
     int       nstations, nhits[30], nstations_with_hits(0);
     float     phiVec[30], zVec[30], weight(0);
     
-    nstations = _tracker->nStations();//RobustHelixFinderData::kNStations;
+    nstations = StrawId::_nstations;//RobustHelixFinderData::kNStations;
 
     for (int i=0; i<nstations; i++) {
       phiVec[i] = 0;
