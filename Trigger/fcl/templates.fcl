@@ -20,10 +20,6 @@ Trigger : {
 	@table::TprTrigger.producers
 	@table::CprTrigger.producers
 	
-	triggerInfoMerger : { 
-	    module_type : TriggerInfoMerger
-	}
-	
     }
 
     filters : {
@@ -35,7 +31,7 @@ Trigger : {
 	unbiasedPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000 
-	    triggerAlg        : ["Unbiased"]
+	    triggerPath        : "unbiased"
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -43,7 +39,7 @@ Trigger : {
 	minimumbiasSDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
-	    triggerAlg        : ["MinBiasStrawDigiCount"]
+	    triggerPath        : "minBiasStrawDigiCount"
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
@@ -51,7 +47,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerAlg        : ["MinBiasStrawDigiCount"]
+	    triggerPath        : "minBiasStrawDigiCount"
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -59,7 +55,7 @@ Trigger : {
 	largeSDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
-	    triggerAlg        : ["LargeStrawDigiCount"]
+	    triggerPath        : "largeStrawDigiCount"
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
@@ -67,7 +63,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
 	    useFilteredEvents : true
-	    triggerAlg        : ["LargeStrawDigiCount"]	    
+	    triggerPath        : "largeStrawDigiCount"	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -82,7 +78,7 @@ Trigger : {
 	    caloDigiCollection  : notUsed
 	    useStrawDigi        : true
 	    useCaloDigi         : false
-	    triggerAlg          : ["LargeStrawDigiCount"]	    
+	    triggerPath          : "largeStrawDigiCount"	    
 	    minNStrawDigi       : 10000 
 	    maxNStrawDigi       : 1000000 
 	    minNCaloDigi        : -1
@@ -98,7 +94,7 @@ Trigger : {
 	    caloDigiCollection  : notUSed		  
 	    useStrawDigi        : true			  
 	    useCaloDigi         : false			  
-	    triggerAlg          : ["MinBiasStrawDigiCount"]	    
+	    triggerPath          : "minBiasStrawDigiCount"	    
 	    minNStrawDigi       : 500   		  
 	    maxNStrawDigi       : 10000			  
 	    minNCaloDigi        : -1			  
@@ -110,7 +106,7 @@ Trigger : {
 	minimumbiasCDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
-	    triggerAlg        : ["MinBiasCaloDigiCount"]	    	    
+	    triggerPath        : "minBiasCaloDigiCount"	    	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
@@ -118,7 +114,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerAlg        : ["MinBiasCaloDigiCount"]	    	    
+	    triggerPath        : "minBiasCaloDigiCount"	    	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -126,7 +122,7 @@ Trigger : {
 	largeCDCountEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 10000
-	    triggerAlg        : ["LargeCaloDigiCount"]	    	    
+	    triggerPath        : "largeCaloDigiCount"	    	    
 	    triggerFlag   : ["PrescaleRandom"]	    
 	}
 	
@@ -134,7 +130,7 @@ Trigger : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1 
 	    useFilteredEvents : true
-	    triggerAlg        : ["LargeCaloDigiCount"]	    	    
+	    triggerPath        : "largeCaloDigiCount"	    	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
@@ -149,7 +145,7 @@ Trigger : {
 	    caloDigiCollection  : CaloDigiFromShower
 	    useStrawDigi        : false
 	    useCaloDigi         : true
-	    triggerAlg         : ["LargeCaloDigiCount"]	    	    	    
+	    triggerPath         : "largeCaloDigiCount"	    	    	    
 	    minNStrawDigi       : -1
 	    maxNStrawDigi       : -1 
 	    minNCaloDigi        : 5000 	 
@@ -165,7 +161,7 @@ Trigger : {
 	    caloDigiCollection  : CaloDigiFromShower
 	    useStrawDigi        : false
 	    useCaloDigi         : true
-	    triggerAlg          : ["MinBiasCaloDigiCount"]	    	    	    
+	    triggerPath          : "minBiasCaloDigiCount"	    	    	    
 	    minNStrawDigi       : -1    
 	    maxNStrawDigi       : -1
 	    minNCaloDigi        : 200

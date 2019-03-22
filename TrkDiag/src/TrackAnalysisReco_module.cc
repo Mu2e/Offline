@@ -28,6 +28,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "canvas/Persistency/Common/TriggerResults.h"
+#include "art/Framework/Services/System/TriggerNamesService.h"
 
 // ROOT incldues
 #include "Rtypes.h"
@@ -43,7 +45,6 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 // diagnostics
 #include "TrkDiag/inc/TrkComp.hh"
 #include "TrkDiag/inc/HitCount.hh"
@@ -98,8 +99,8 @@ namespace mu2e {
     art::InputTag _detqtag;
     // reco count module
     art::InputTag _rctag;
-    // trigger bits tag
-    art::InputTag _trigbitstag;
+    //list of the triggerIds to track 
+    std::vector<unsigned> _trigids;
     // event-weighting modules
     art::InputTag _meanPBItag;
     art::InputTag _PBIwtTag;
@@ -108,7 +109,7 @@ namespace mu2e {
     std::string _crvCoincidenceMCModuleLabel;
     // analysis options
     bool _fillmc, _pempty, _crv, _helices, _filltrkqual, _filltrig;
-    int _diag;
+    int _diag, _debug;
     // momentum analyzer
     double _bz0;
     // analysis parameters
@@ -150,7 +151,7 @@ namespace mu2e {
     TrkQualTestInfo _trkqualTest;
     // helper functions
     void fillEventInfo(const art::Event& event);
-    void fillTriggerBits(TriggerAlg const& trigbits);
+    void fillTriggerBits(const art::Event& event,std::string const& process);
 //    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
     KSCIter findBestRecoTrack(KalSeedCollection const& kcol);
@@ -171,7 +172,6 @@ namespace mu2e {
     _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
-    _trigbitstag( pset.get<art::InputTag>("TriggerBitsTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -183,6 +183,7 @@ namespace mu2e {
     _filltrkqual(pset.get<bool>("FillTrkQualInfo",true)),
     _filltrig(pset.get<bool>("FillTriggerInfo",false)),
     _diag(pset.get<int>("diagLevel",1)),
+    _debug(pset.get<int>("debugLevel",0)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
     _trkana(0),
@@ -254,6 +255,17 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+    //get the map we need to navigate the Trigger results
+    if(_filltrig){
+      art::ServiceHandle<art::TriggerNamesService> trigNS;
+      std::vector<std::string> const& names = trigNS->getTrigPaths();
+      for(auto const& name : names){
+	unsigned trigId = trigNS->findTrigPath(name);
+	cout << "Trigger Path " << name << " has ID " << trigId << endl;
+	_trigids.push_back(trigId);
+      }
+    }
+
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
@@ -282,6 +294,8 @@ namespace mu2e {
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
     art::Handle<KalSeedCollection> deH;
     event.getByLabel(_detag,deH);
+    // get the provenance from this for trigger processing
+    std::string const& process = deH.provenance()->processName();
     // std::cout << _detag << std::endl; //teste
     KalSeedCollection const& deC = *deH;
     // find downstream muons and upstream electrons
@@ -300,10 +314,7 @@ namespace mu2e {
     TrkQualCollection const& tqcol = *trkQualHandle;
     // trigger information
     if(_filltrig){
-      art::Handle<TriggerAlg> trigbitsH;
-      event.getByLabel(_trigbitstag, trigbitsH);
-      TriggerAlg const& trigbits = *trigbitsH;
-      fillTriggerBits(trigbits);
+      fillTriggerBits(event,process);
     }
     // MC data
     art::Handle<PrimaryParticle> pph;
@@ -475,19 +486,22 @@ namespace mu2e {
     _wtinfo.setWeights(weights);
   }
 
-  void TrackAnalysisReco::fillTriggerBits(TriggerAlg const& trigbits) {
-    _trigbits = 0;
-    for(size_t ibit=0;ibit < 32; ++ibit){
-      TriggerAlg mask(static_cast<TriggerAlg::bit_type>(ibit));
-      if(trigbits.hasAnyProperty(mask)){
-//	cout << "Found trigger bit " << ibit << " set" << endl;
-	_trigbits |= 1 << ibit;
+  void TrackAnalysisReco::fillTriggerBits(const art::Event& event,std::string const& process) {
+    //get the TriggerResult from the process that created the KalFinalFit downstream collection
+    art::InputTag const tag{Form("TriggerResults::%s", process.c_str())};
+    auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
+    const art::TriggerResults* trigResults = trigResultsH.product();
+    if(_debug > 0)cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines" << endl;
+    for(size_t id=0;id < trigResults->size(); ++id){
+      if (trigResults->accept(id)) {
+	if(_debug > 0)cout << "Found trigger bit " << id << " set" << endl;
+	_trigbits |= 1 << id;
       }
     }
   }
 
   void TrackAnalysisReco::resetBranches() {
-  // reset structs
+    // reset structs
     _einfo.reset();
     _hcnt.reset();
     _tcnt.reset();
