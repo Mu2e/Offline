@@ -35,7 +35,7 @@ TimeClusterFinder : {
 # note these are helicity-independent
 TimeClusterFinderDe : {
   @table::TimeClusterFinder
-  AveragePitch : 0.6 # signed
+  AveragePitch : 0.63 # signed
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 1.0
@@ -43,7 +43,7 @@ TimeClusterFinderDe : {
 }
 TimeClusterFinderUe : {
   @table::TimeClusterFinder
-  AveragePitch : -0.6
+  AveragePitch : -0.63
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 1.0
@@ -52,7 +52,7 @@ TimeClusterFinderUe : {
 # muons
 TimeClusterFinderDmu : {
   @table::TimeClusterFinder
-  AveragePitch : 0.6
+  AveragePitch : 0.63
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 0.7
@@ -60,7 +60,7 @@ TimeClusterFinderDmu : {
 }
 TimeClusterFinderUmu : {
   @table::TimeClusterFinder
-  AveragePitch : -0.6
+  AveragePitch : -0.63
   T0Calculator : {
     @table::TimeCalculator
     StrawHitBeta : 0.7
@@ -69,18 +69,18 @@ TimeClusterFinderUmu : {
 # pions
 TimeClusterFinderDpi : {
   @table::TimeClusterFinder
-  AveragePitch : 0.6
+  AveragePitch : 0.63
   T0Calculator : {
     @table::TimeCalculator
-    StrawHitBeta : 0.6
+    StrawHitBeta : 0.63
   }
 }
 TimeClusterFinderUpi : {
   @table::TimeClusterFinder
-  AveragePitch : -0.6
+  AveragePitch : -0.63
   T0Calculator : {
     @table::TimeCalculator
-    StrawHitBeta : 0.6
+    StrawHitBeta : 0.63
   }
 }
 
