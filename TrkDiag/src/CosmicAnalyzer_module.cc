@@ -72,7 +72,10 @@ namespace mu2e
       TH1F* _total_residualsY_init;
       TH1F* _total_pullsY_init;
       TH1F* _hiterrs_init;
-      
+      TH1F* _a1;
+      TH1F* _b1;
+      TH1F* _a0;
+      TH1F* _b0;
       TH1F* _niters;
       
       TH1F* _chisq_ndf_plot_final;
@@ -81,7 +84,9 @@ namespace mu2e
       TH1F* _total_residualsY_final;
       TH1F* _total_pullsY_final;
       TH1F* _hiterrs_final;
-    
+      TH2F* _chi2_v_angle;
+      TH2F* _chi2_v_NHits;
+      TH2F* _chi2_v_length;
       // add event id
       Int_t _evt; 
 
@@ -156,27 +161,26 @@ namespace mu2e
        _cosmic_analysis->Branch("StraightTrackConverged",&_StraightTrackConverged,"StraightTrackConverged/B");
         //Extra histograms for Fit Diags:
        
-	_chisq_ndf_plot_init = tfs->make<TH1F>("init chisq_ndf_plot","init chisq_ndf_plot" ,50,0, 500);
+	_chisq_ndf_plot_init = tfs->make<TH1F>("init chisq_ndf_plot","init chisq_ndf_plot" ,200,0, 1000);
 	_chisq_ndf_plot_init->GetXaxis()->SetTitle("Init. #Chi^{2}/N");
 	
-	
-	_chisq_ndf_plot_final = tfs->make<TH1F>("final chisq_ndf_plot","final chisq_ndf_plot" ,50,0,500);
+	_chisq_ndf_plot_final = tfs->make<TH1F>("final chisq_ndf_plot","final chisq_ndf_plot" ,200,0,1000);
 	_chisq_ndf_plot_final->GetXaxis()->SetTitle("Final #Chi^{2}/N");
 	
         
-        _total_residualsX_init = tfs->make<TH1F>("Initial Residuals X'' ","Initial Residuals X'' " ,50,-500,500);
+        _total_residualsX_init = tfs->make<TH1F>("Initial Residuals X'' ","Initial Residuals X'' " ,200,-1000,1000);
 	_total_residualsX_init->GetXaxis()->SetTitle("Initial Residual X'' [mm]");
 	_total_residualsX_init->SetStats();
 	
-	_total_residualsY_init = tfs->make<TH1F>("Initial Residuals Y''","Initial Residuals Y'' " ,50,-500,500);
+	_total_residualsY_init = tfs->make<TH1F>("Initial Residuals Y''","Initial Residuals Y'' " ,200,-1000,1000);
 	_total_residualsY_init->GetXaxis()->SetTitle("Initial Residual Y'' [mm]");
 	_total_residualsY_init->SetStats();
 
-	_total_pullsX_init = tfs->make<TH1F>("Initial Pull X","Initial Pull X''" ,50,-10, 10);
+	_total_pullsX_init = tfs->make<TH1F>("Initial Pull X","Initial Pull X''" ,200,-50, 50);
 	_total_pullsX_init->GetXaxis()->SetTitle("Pull X");
 	_total_pullsX_init->SetStats();
 	
-	_total_pullsY_init = tfs->make<TH1F>("Initial Pull Y''","Initial Pull Y''" ,50,-10, 10);
+	_total_pullsY_init = tfs->make<TH1F>("Initial Pull Y''","Initial Pull Y''" ,200,-50, 50);
 	_total_pullsY_init->GetXaxis()->SetTitle("Initial Pull Y");
 	_total_pullsY_init->SetStats();
        
@@ -184,29 +188,58 @@ namespace mu2e
 	_hiterrs_init->GetXaxis()->SetTitle("Initial Hit Error in Track Frame [mm]");
 	_hiterrs_init->SetStats();
 	
-	 _total_residualsX_final = tfs->make<TH1F>("Final Residuals X'' ","Final Residuals X'' " ,50,-500,500);
+	 _total_residualsX_final = tfs->make<TH1F>("Final Residuals X'' #chi^{2}/dof all ","Final Residuals X''#chi^{2}/dof all  " ,200,-1000,1000);
 	_total_residualsX_final->GetXaxis()->SetTitle("Residual X'' [mm]");
 	_total_residualsX_final->SetStats();
 	
-	_total_residualsY_final = tfs->make<TH1F>("Final Residuals Y''","Fi nalResiduals Y''" ,50,-500,500);
+	_total_residualsY_final = tfs->make<TH1F>("Final Residuals Y''#chi^{2}/dof all ","Fi nalResiduals Y'' #chi^{2}/dof all " ,200,-1000,1000);
 	_total_residualsY_final->GetXaxis()->SetTitle("Final Residual Y'' [mm]");
 	_total_residualsY_final->SetStats();
 
-	_total_pullsX_final = tfs->make<TH1F>("Final Pull X''","Final Pull X''" ,50,-10, 10);
+	_total_pullsX_final = tfs->make<TH1F>("Final Pull X'' #chi^{2}/dof all ","Final Pull X''#chi^{2}/dof all " ,200,-50, 50);
 	_total_pullsX_final->GetXaxis()->SetTitle("Final Pull X''");
 	_total_pullsX_final->SetStats();
 	
-	_total_pullsY_final = tfs->make<TH1F>("Final Pull Y''","Finla Pull Y''" ,50,-10, 10);
+	_total_pullsY_final = tfs->make<TH1F>("Final Pull Y''#chi^{2}/dof all ","Finla Pull Y''#chi^{2}/dof all " ,200,-50, 50);
 	_total_pullsY_final->GetXaxis()->SetTitle("Final Pull Y''");
 	_total_pullsY_final->SetStats();
        
-        _hiterrs_final = tfs->make<TH1F>("Final Total Hit Error","Final Total Hit Error" ,50,0, 100);
+        _hiterrs_final = tfs->make<TH1F>("Final Total Hit Error #chi^{2}/dof all ","Final Total Hit Error #chi^{2}/dof all " ,50,0, 100);
 	_hiterrs_final->GetXaxis()->SetTitle("Hit Error in Track Frame [mm]");
 	_hiterrs_final->SetStats();
 	
-	_niters  = tfs->make<TH1F>("Number of Iterations Unitl Converged","Number of Iterations Unitl Converged" ,100,0, 100);
+	_a0 = tfs->make<TH1F>("Track Parameter A0 #chi^{2}/dof all ","Track Parameter A0 #chi^{2}/dof all " ,50,-1000, 1000);
+	_a0->GetXaxis()->SetTitle("Track Parameter A0");
+	_a0->SetStats();
+	
+	_b0 = tfs->make<TH1F>("Track Parameter B0 #chi^{2}/dof all ","Track Parameter B0 #chi^{2}/dof all " ,50,-1000, 1000);
+	_b0->GetXaxis()->SetTitle("Track Parameter B0");
+	_b0->SetStats();
+	
+	
+	_a1 = tfs->make<TH1F>("Track Parameter A1 #chi^{2}/dof all ","Track Parameter A1 #chi^{2}/dof all " ,100,-10, 10);
+	_a1->GetXaxis()->SetTitle("Track Parameter A1");
+	_a1->SetStats();
+	
+	_b1 = tfs->make<TH1F>("Track Parameter B1 #chi^{2}/dof all ","Track Parameter B1 #chi^{2}/dof all " ,100,-10, 10);
+	_b1->GetXaxis()->SetTitle("Track Parameter B1");
+	_b1->SetStats();
+	
+	_niters  = tfs->make<TH1F>("Number of Iterations Unitl Converged #chi^{2}/dof all ","Number of Iterations Unitl Converged #chi^{2}/dof all " ,100,0, 100);
 	_niters->GetXaxis()->SetTitle("Number of Iterations Unitl Converged");
 	_niters->SetStats();
+	
+	_chi2_v_angle  = tfs->make<TH2F>("chi2 v angle #chi^{2}/dof all ","chi2 v angle #chi^{2}/dof all " ,50, 0, 10, 100,0, 3.1415/2);
+	_chi2_v_angle->GetYaxis()->SetTitle("Angle");
+	_chi2_v_angle->SetStats();
+	
+	_chi2_v_NHits  = tfs->make<TH2F>("chi2 v nhits #chi^{2}/dof all ","chi2 v nits #chi^{2}/dof all " ,50, 0, 10, 50,0, 50);
+	_chi2_v_NHits ->GetYaxis()->SetTitle("Nhits");
+	_chi2_v_NHits ->SetStats();
+	
+	_chi2_v_length = tfs->make<TH2F>("chi2 v track length #chi^{2}/dof all ","chi2 v track length #chi^{2}/dof all " ,100, 0, 1000, 100, 0, 10);
+	_chi2_v_length ->GetYaxis()->SetTitle("total length/[mm]");
+	_chi2_v_length ->SetStats();
 	
         }
       }
@@ -233,6 +266,16 @@ namespace mu2e
 		std::vector<int> panels, planes, stations;
                 _chisq_ndf_plot_init->Fill(st.get_initchisq_dof());
                 _chisq_ndf_plot_final->Fill(st.get_finalchisq_dof());
+                double angle = st.getZPrime().Theta();
+                _chi2_v_angle->Fill(st.get_finalchisq_dof(),angle);
+                _chi2_v_NHits ->Fill( st.get_finalchisq_dof(), st.get_N());
+                _chi2_v_length ->Fill( st.get_finalchisq_dof(),st.get_track_length());
+               
+                _a1->Fill(st.get_track_parameters()[1]);
+                _b1->Fill(st.get_track_parameters()[3]);
+                _a0->Fill(st.get_track_parameters()[0]);
+                _b0->Fill(st.get_track_parameters()[2]);
+               
                 for(size_t i=0; i< st.get_iter().size();i++){
                     _niters->Fill(st.get_iter()[i]);
                 }

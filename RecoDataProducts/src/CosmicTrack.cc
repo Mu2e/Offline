@@ -21,33 +21,46 @@ namespace mu2e{
     		XYZVec _track_equation(0,0,0);//r(t) expression
     		XYZVec _track_direction(0,0,0);//the "gradient" term
     		XYZVec _track_position(0,0,0);//the "starting point" in fit line
-
+		XYZVec _initial_track_direction(0,0,0);
    		_initchisq=0;
     		_initchisq_dof=0; 
 		_finalchisq=0;
-    		_finalchisq_dof=0; 
-   	
-   		
+    		_finalchisq_dof=0; 	
 	 }
     
 	double GetSagitta(){
-		//TODO ADD MATHS HERE
+		
 		return 1.;
 	}
 
 	// Destructor
 	CosmicTrack::~CosmicTrack() {}
 
-	void CosmicTrack::clear() {
+	void CosmicTrack::clear_parameters() {
+	  _a0 = 0.; //a0
+          _a1 = 0.; //a1
+          _b0 = 0.; //b0
+          _b1 = 0.; //b1 
+          _track_parameters.erase(_track_parameters.begin(), _track_parameters.end());
+          
+	}
+
+	void CosmicTrack::clear_all() {
 	  _a0 = 0.;
    	  _a1 = 0.;
           _b0 = 0.;
           _b1 = 0.;
-
+          _track_parameters.erase(_track_parameters.begin(), _track_parameters.end());
+          
 	  _Nhits = 0;
           _Sagitta = 0 ;
           
-          
+          _finalchisq = 0;
+    	  _finalchisq_dof = 0;
+    
+    	  _initchisq = 0;
+    	  _initchisq_dof = 0;
+    
 	  _inithit_errorsTotal.erase(_inithit_errorsTotal.begin(),_inithit_errorsTotal.end());
 	  _finalhit_errorsTotal.erase(_finalhit_errorsTotal.begin(),_finalhit_errorsTotal.end());
 	  
@@ -64,6 +77,8 @@ namespace mu2e{
 	  _finalfit_residual_errorsY.erase(_finalfit_residual_errorsY.begin(),_finalfit_residual_errorsY.end());
 	  
 	  _niters.erase(_niters.begin(),_niters.end());
+	  
+	  
 	  
 	}
 	

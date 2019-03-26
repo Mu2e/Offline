@@ -16,35 +16,36 @@ namespace mu2e {
 
   class CosmicTrackFit;
 
-  namespace CosmicTrackFinderTypes {
+  namespace CosmicTrackFinderTypes{
   
     struct Data_t {
       const art::Event*               event;
       fhicl::ParameterSet*            timeOffsets;
-      enum {kMaxSeeds = 100, kMaxNHits = 500 };//TODO 1-->100 ?
-      int     nseeds   [2]; // 0:all, 1:nhits > nhitsMin; assume nseeds <= 100
+      enum {kMaxSeeds = 1000, kMaxNHits = 10 };
+      int     nseeds ; 
       int     nTimePeaks;               // number of time peaks (input)
       
       int     nChPPanel[kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
       int     nChHits[kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
       int     ntclhits [kMaxSeeds]; //number of time cluster hits for each seed
-      int     nhits    [kMaxSeeds]; //number of hits for each seed
-      double  chi2XY   [kMaxSeeds];
+      size_t  nhits    [kMaxSeeds]; //number of hits for each seed
+      int     ninters  [kMaxSeeds];  
       double  chi2d_track[kMaxSeeds]; //chi-squared of fit for each tracl seed
-      int     xyniter  [kMaxSeeds];
-      int     niter    [kMaxSeeds];
-      int     nShFitXY [kMaxSeeds];
-      int     nChFitXY [kMaxSeeds];
+      int     niters    [kMaxSeeds];
+      int     nShFit [kMaxSeeds];
+      int     nChFit [kMaxSeeds];
       int     good     [kMaxSeeds];
       int     nXYSh    [kMaxSeeds];
       int     nXYCh    [kMaxSeeds];
       //for chi2 fitting:
-      int     nshsxy_0    [kMaxSeeds];
-     
-      double  chi2dsxy_0  [kMaxSeeds];
-                  
-     
-
+      double  hit_residualX[kMaxSeeds][kMaxNHits];
+      double  hit_errorX [kMaxSeeds][kMaxNHits];
+      double  hit_residualY[kMaxSeeds][kMaxNHits];
+      double  hit_errorY [kMaxSeeds][kMaxNHits];
+        
+      int     nsh    [kMaxSeeds];
+      double  chi2  [kMaxSeeds];
+            
       int maxSeeds() { return kMaxSeeds; }
     };
    

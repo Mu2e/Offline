@@ -262,14 +262,14 @@ int GetDOCASign(XYZVec track_dir, XYZVec point){
 }
 double GetResidualX(double A0, double A1 ,XYZVec XPrime, XYZVec point){
 	
-	double resid_x = A0 + A1*point.z()-point.Dot(XPrime.Unit());	
+	double resid_x = A0 + A1*point.z()-point.Dot(XPrime);	
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 	
 }
 
 double GetResidualY( double B0, double B1, XYZVec YPrime, XYZVec point){
 	
-	double resid_y = B0 +B1*point.z()-point.Dot(YPrime.Unit()) ;
+	double resid_y = B0 +B1*point.z()-point.Dot(YPrime) ;
 	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 	
 }

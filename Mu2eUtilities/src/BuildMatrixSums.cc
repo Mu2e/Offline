@@ -75,24 +75,26 @@ void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPri
 
 void BuildMatrixSums::removePoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, double errX, double errY){
 	
-	//For BetaX
 	betaX00 -= point_i.Dot(XPrime)/pow(errX,2);
-        betaX10 -= point_i.z()*point_i.Dot(XPrime)/pow(errX,2);
+        betaX10 -= point_i.z()*point_i.Dot(XPrime.Unit())/pow(errX,2);
+        
 	//For GammaX:
 	gammaX00 -=pow(1/errX,2);
-        gammaX01  -= point_i.z()/pow(errX,2);
+        gammaX01 -= point_i.z()/pow(errX,2);
 	gammaX11 -= pow(point_i.z(),2) /pow(errX,2);
+	
 	//For BetaY:
 	betaY00 -= point_i.Dot(YPrime)/pow(errY,2);
         betaY10 -= point_i.z()*point_i.Dot(YPrime)/pow(errY,2);
-	//For GammaY:
+    
+	//For GammaX:
 	gammaY00 -=pow(1/errY,2);
-        gammaY01  -= point_i.z()/pow(errY,2);
+        gammaY01 -= point_i.z()/pow(errY,2);
 	gammaY11 -= pow(point_i.z(),2) /pow(errY,2);
+	
         //Deltas:
         deltaX -= pow(point_i.Dot(XPrime),2)/pow(errX,2);
 	deltaY -= pow(point_i.Dot(YPrime),2)/pow(errY,2);
-  
   
 }
 

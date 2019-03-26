@@ -13,8 +13,8 @@ namespace mu2e {
 // CosmicTrackFinderData
 //-------------construct:----------------------------------
   CosmicTrackFinderData::CosmicTrackFinderData() {
-    _chHitsToProcess.reserve(kNMaxChHits);
-    _chHitsWPos     .reserve(kNMaxChHits);
+    _chHitsToProcess.reserve(kNMaxChHits); //Hits
+    _chHitsWPos     .reserve(kNMaxChHits); //Wires
   }
 
 
@@ -64,20 +64,11 @@ Orders the channels. Starts by finding the face of the X channel (i.e. the origi
 
     _nStrawHits = 0;
     _nComboHits = 0;
-    
-    
-    
+   
     _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
 
-    _nXYSh       = 0;
-
-
-    _nStrawHits  = 0;
-    _nComboHits  = 0;
-
-    _nFiltComboHits = 0;
-    _nFiltStrawHits = 0;
+    
     //clear the panel-based structure
     for (int f=0; f<StrawId::_ntotalfaces; ++f) {
       FaceZ_t* facez = &_oTracker[f];
@@ -99,12 +90,9 @@ Orders the channels. Starts by finding the face of the X channel (i.e. the origi
 //-----------------------------------------------------------------------------
    void CosmicTrackFinderData::clearResults() {
 
-    // _goodhits.clear();
-    
-    //_sxy.clear();
-    
-   
-    _nXYSh       = 0;
+    _S.clear();
+    _nFiltComboHits = 0;
+    _nFiltStrawHits = 0;
     _nStrawHits  = 0;
     _nComboHits  = 0;
    }

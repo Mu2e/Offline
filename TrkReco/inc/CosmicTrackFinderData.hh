@@ -14,7 +14,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh" //CHANGE SEED
-
+#include "Mu2eUtilities/inc/BuildMatrixSums.hh"
 #include "TrkReco/inc/TrkFaceData.hh"
 
 #include "Math/VectorUtil.h"
@@ -63,51 +63,42 @@ namespace mu2e {
     };
 
     struct Diag_t {
-      
-    
-      int       nShFitXY;
-      int       nChFitXY;
+   
+      int       nShFit; //after fit
+      int       nChFit; //after fit
 
       int       nChPPanel;
       int       nChHits;
 
-      float    resid[kMaxResidIndex];
-      float    dist [kMaxResidIndex];
-      float    dz   [kMaxResidIndex];
+      float    hit_residualX[kMaxResidIndex];
+      float    hit_residualY[kMaxResidIndex];
+      float    hit_pullX[kMaxResidIndex];
+      float    hit_pullY[kMaxResidIndex];
       
-      int      nXYCh;
+      //float    dz   [kMaxResidIndex];
       
-      
+      float    recon_eff;
       int      CosmicTrackFitCounter;
-      float    chi2dXY;
+      float    chi2d_track;
       
-      int       nshsxy_0; 
-      float    chi2dsxy_0;
-
-      int       xyniter;
-      int       niter;
-     
+      unsigned      niters;    
     };
-    
-    
+   
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
-
     const art::Event*                 event;
-   
-    CosmicTrackSeed                         _tseed;
-    
+    CosmicTrackSeed                   _tseed;
     int                               _nStrawHits;      
     int                               _nComboHits;    
-    int                               _nXYSh;
-    int                               _nXYCh; 
+    int                               _nXYSh; //SH at start
+    int                               _nXYCh; //CH at start
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster filtering 
     //const CosmicTrackSeedCollection*         _stcol;
     const ComboHitCollection*         _chcol;
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;
-    //const StrawHitFlagCollection*     _shfcol;
+    ::BuildMatrixSums         _S;
 
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming

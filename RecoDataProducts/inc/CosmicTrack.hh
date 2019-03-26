@@ -57,9 +57,11 @@ namespace mu2e {
 	}throw "Error: parameter list not long enough";
      }
      
+    double get_track_length() const {return _track_length;}
     XYZVec get_track_equation() const{return _track_equation;}
     XYZVec get_track_direction() const{return _track_direction;}
     XYZVec get_track_position() const{return _track_position;}
+    XYZVec get_initial_track_direction() const{ return _initial_track_direction;}
     
     XYZVec getXPrime() const { return _XPrime;}
     XYZVec getYPrime() const { return _YPrime;}
@@ -86,12 +88,13 @@ namespace mu2e {
     std::vector<int> get_iter(){return _niters;}
 //---------------------------------------//  
     
-     void clear();
-     
+     void clear_all(); //clears track info and diagnostics
+     void clear_parameters(); //clears just track info
      
 //-------------Modiffiers---------------//
    
     void set_N(int N){_Nhits = N;}
+    void set_track_length(double length) { _track_length = length; }
     void set_parameters(double a0,double a1, double b0, double b1){ 
 	_a0=a0;
 	_a1=a1;
@@ -112,6 +115,7 @@ namespace mu2e {
     }
     void set_track_direction(XYZVec direction){_track_direction = direction;}
     void set_track_position(double x, double y , double z){_track_position.SetXYZ(x,y,z);}
+    void set_initial_track_direction(XYZVec direction){_initial_track_direction = direction;}
     
     void setXPrime(XYZVec XPrime){ _XPrime = XPrime;}
     void setYPrime(XYZVec YPrime){ _YPrime = YPrime;}
@@ -151,14 +155,14 @@ namespace mu2e {
     double _b1; //b1
 
     std::vector<double> _track_parameters; //FIXME NEED TO BE 4D vector.....
-
+    double _track_length;
     double _Sagitta;//TODO
     XYZVec _track_mommentum;//TODO
     
     XYZVec _track_equation;//r(t) expression
     XYZVec _track_direction;//the "gradient" term
     XYZVec _track_position;//the "starting point" in fit line
-  
+    XYZVec _initial_track_direction; // the first estimate of the line
     //Get Track Co-ordinate System:
     XYZVec _XPrime;
     XYZVec _YPrime;
@@ -169,6 +173,7 @@ namespace mu2e {
     
     double _initchisq;
     double _initchisq_dof;
+    
 
     std::vector<double> _initfit_residualsX;
     std::vector<double> _initfit_residual_errorsX;

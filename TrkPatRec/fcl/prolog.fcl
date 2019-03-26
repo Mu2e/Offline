@@ -57,7 +57,9 @@ CosmicTrackFinder : {
     ComboHitFlagCollection : "FlagBkgHits:ComboHits"
     TimeClusterCollection  : "TimeClusterFinderCosmics"
     CosmicTrackSeedCollection  :"CosmicTrackFinder"
-    
+    diagPlugin : { tool_type                    : "CosmicTrackFinderDiag"
+    mcTruth                                 : 0
+    }
                                     
 }
     

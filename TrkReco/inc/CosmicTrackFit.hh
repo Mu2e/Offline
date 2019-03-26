@@ -14,6 +14,10 @@
 #include "fhiclcpp/ParameterSet.h"
 #endif/*__GCCXML__*/
 
+//Mu2e Cosmics:
+#include "TrkPatRec/inc/CosmicTrackFinder_types.hh"
+#include "TrkReco/inc/CosmicTrackFinderData.hh"
+
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -46,15 +50,15 @@ namespace mu2e
                 explicit CosmicTrackFit(fhicl::ParameterSet const&);
     		virtual ~CosmicTrackFit();
 
-                bool initCosmicTrack(CosmicTrackFinderData& TrackData);
+                bool initCosmicTrack(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN,CosmicTrack* line);
                 //Step 1: Begin Fit- initializes the fit routine:
-                void BeginFit(CosmicTrackFinderData& TrackData);
+                void BeginFit(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 
                 //Step 2: RunFitChi2-holds the functions to find initial line, update, refine and add in drift
-                void RunFitChi2(CosmicTrackFinderData& trackData);
+                void RunFitChi2(CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
-		CosmicTrack* FitAll(CosmicTrackFinderData& trackData,CosmicTrack* track, int WeightMode);
+		CosmicTrack* FitAll(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
 		
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 
@@ -89,7 +93,7 @@ namespace mu2e
 		float _D_error; //error change below which we consider track "converged"
     		float _maxresid; // max allowed pull which a hit can have to be classed as "good"
     		unsigned _maxniter; // maxium # of iterations to global minimum   
-                
+		float _maxpull; //maximum allowed hit pull (res/reserror)                
     		float _maxd; // maximum distance in hits to begin fit
 		float _maxDOCA; //max allowed DOCA to allow hit into fit
     		float _maxchi2; //maximum allowed chi2

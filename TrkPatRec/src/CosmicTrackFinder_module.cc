@@ -98,10 +98,12 @@ namespace mu2e{
     
     int 				_diag,_debug;
     int                                 _printfreq;
-    int 				_minnsh; // minimum # of strawHits to work wit
+    int 				_minnsh; // minimum # of strawHits in CH
+    int 				_minnch; // minimum # of ComboHits for viable fit
     TrkFitFlag				_saveflag;//write tracks that satisfy these flags
-    unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting TODO:USE This
+    unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting 
     int 				_minNHitsTimeCluster; //min number of hits in a viable time cluster
+  
     
     //Collection lists:
     art::ProductToken<ComboHitCollection> const _chToken;
@@ -110,7 +112,7 @@ namespace mu2e{
 
     //Define straw hit falgs
     StrawHitFlag  _hsel, _hbkg;
-    TH1F* _niter, _chi2dXY;;
+    TH1F* _chi2dXY;;
     //Define Track Fits
     CosmicTrackFit     _tfit;
     TrkTimeCalculator _ttcalc;
@@ -121,9 +123,9 @@ namespace mu2e{
     CosmicTrackFinderTypes::Data_t      _data;
     CosmicTrackFinderData               _stResult;
     
-    
     void     OrderHitsY(CosmicTrackFinderData& TrackData); //Order in height
     void     fillGoodHits(CosmicTrackFinderData& TrackData);//apply "good" cut
+    void     fillPluginDiag(CosmicTrackFinderData& TrackData);
     int     goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);//select "good" time clusters
 
  
@@ -132,10 +134,11 @@ namespace mu2e{
 //Constructor:
  CosmicTrackFinder::CosmicTrackFinder(fhicl::ParameterSet const& pset) :
    
-    _diag        (pset.get<int>("diagLevel",0)),
+    _diag        (pset.get<int>("diagLevel",1)),
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
-    _minnsh      (pset.get<int>("minNStrawHits",4)),
+    _minnsh      (pset.get<int>("minNStrawHits",2)),
+    _minnch      (pset.get<int>("minNComboHits",4)),
     _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"StraightTrackOK"})),
     _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
    _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
@@ -151,14 +154,12 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
     _outlier     (StrawHitFlag::outlier)//, //TODO:check
    {
     produces<CosmicTrackSeedCollection>();
-    if (_debug != 0) _printfreq = 1;
+    if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
     else    _hmanager = std::make_unique<ModuleHistToolBase>();
  }
 
 //Destructor:
  CosmicTrackFinder::~CosmicTrackFinder(){}
- 
-
 
 /* ------------------------Begin JOb--------------------------//
 //         Sets Up Historgram Book For Diag Plots            //
@@ -170,7 +171,7 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
 
     if (_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      _niter = tfs->make<TH1F>( "niter" , "Number of Fit in XY Iteraions",201,-0.5,200.5);
+      //_niter = tfs->make<TH1F>( "niter" , "Number of Fit in XY Iteraions",201,-0.5,200.5);
       
       _hmanager->bookHistograms(tfs);
     }
@@ -208,7 +209,6 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
       } //end "if"
       
      //fill in collection lists
-     
      auto const& chH = event.getValidHandle(_chToken);
      const ComboHitCollection& chcol(*chH);
 
@@ -217,7 +217,7 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
      
      
     _data.event       = &event;
-    _data.nseeds[0] = 0;
+    _data.nseeds += 1;
     
     
     //ensure all data types present. Fill data...
@@ -226,16 +226,17 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
     _stResult._chcol  = &chcol; 
     _stResult._tccol  = &tccol;
    
-    //std::cout<<"Number of Time Peaks...: "<<tccol.size()<<std::endl;
     // create initial tracks from time clusters:
-
     for (size_t index=0;index< tccol.size();++index) {
-     
+      
       int   nGoodTClusterHits(0);
       //get the t cluster
       const auto& tclust = tccol[index];
       // ensure only good clusters will be used for fit:
       nGoodTClusterHits     = goodHitsTimeCluster(tclust,chcol );
+/*------------------------- FITTING STAGE :---------------------------//
+Ensure good clusters used 
+//------------------------- FITTING STAGE---------------------------*/
       if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
       
       // create a place for the seed:
@@ -250,80 +251,75 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
       _stResult._tseed._thits.setParent(chcol.parent());
       _stResult._tseed._t0          = tclust._t0;
       _stResult._tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
- /*------------------------- FITTING STAGE 1 :---------------------------//
+ /*------------------------- FITTING STAGE :---------------------------//
  Order hits in terms of height 
-//------------------------- FITTING STAGE 1 :---------------------------*/
+//------------------------- FITTING STAGE  ---------------------------*/
       OrderHitsY(_stResult); 
       
-/*------------------------- FITTING STAGE 2 a :---------------------------//
-Ensure good clusters used 
-//------------------------- FITTING STAGE 2 a:---------------------------*/
-     
-      if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
-/*------------------------- FITTING STAGE 2 b :---------------------------//
+/*------------------------- FITTING STAGE  ---------------------------//
 Ensure enough straw hits used
-//------------------------- FITTING STAGE 2 a:---------------------------*/
+//------------------------- FITTING STAGE ---------------------------*/
       if (_debug != 0){
 	 std::cout<<"#filtered SHits"<<_stResult._nFiltStrawHits<<"  Minimum allowed: "<<_minnsh<<std::endl;
       }
       
-     
+      if (_stResult._nFiltComboHits < _minnch ) 			continue;
       if (_stResult._nFiltStrawHits < _minnsh)                  continue;
-      
+      _stResult._nStrawHits = _stResult._nFiltStrawHits;
+      _stResult._nComboHits = _stResult._nFiltComboHits;
       _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
       
       if (_diag) _stResult._diag.CosmicTrackFitCounter = 0;
- /*------------------------- FITTING STAGE 3 :---------------------------//
+ /*------------------------- FITTING STAGE  :---------------------------//
  initial ST Pat Rec.. Call the "Fit" function and apply to the CosmicTrackData 
-//------------------------- FITTING STAGE 3 :---------------------------*/
+//------------------------- FITTING STAGE  :---------------------------*/
       //DriftCorrection(_stResult); //calcualte drift circles
-      _tfit.BeginFit(_stResult);
-     
+      _tfit.BeginFit(_stResult, _data);
+
       //Fill in diagnostics:
        if (_diag) {
-	_stResult._diag.nShFitXY = _stResult._nXYSh;
-	_stResult._diag.nChFitXY = _stResult._tseed._track.get_finalchisq_dof();
+	_stResult._diag.nShFit = _stResult._nXYSh;
+	_stResult._diag.nChFit = _stResult._nXYCh;
+	
       } //end "diag"
     
       if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK)) { 
-	
+	       std::vector<CosmicTrackSeed>          track_seed_vec;
 	      //tentatively store as a temporary result
 	      CosmicTrackFinderData tmpResult(_stResult);
-/*------------------------- FITTING STAGE 4 :---------------------------//
-Check Init Fit...(?)
-//------------------------- FITTING STAGE 4 :---------------------------*/
-	     // FitTrack(tmpResult);
-	  
- /*------------------------- FITTING STAGE 5 :---------------------------//
+
+ /*------------------------- FITTING STAGE  :---------------------------//
 Fill Seed Info into CosmicTrackFinder_seed
-//------------------------- FITTING STAGE 5 :---------------------------*/
+//------------------------- FITTING STAGE  :---------------------------*/
 	  
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
 		      //fille the hits in the seed collection
 		      fillGoodHits(tmpResult);
+		      track_seed_vec.push_back(tmpResult._tseed);
+		      if (_diag > 0) {
+	      		fillPluginDiag(tmpResult);
+	    	      }
 		      CosmicTrackSeedCollection* col = seed_col.get();
 		      //TODO - refit here to get outliers removed and optimization
+		      if (track_seed_vec.size() == 0)     continue;
 		      col->push_back(tmpResult._tseed);
                       
               }//end "saveflag"
       }//end "track ok" criteria
-/*------------------------- FITTING STAGE 6 ----------------------------//
+/*------------------------- FITTING STAGE  ----------------------------//
 Fill Diagnostic Info.
 //---------------------------------------------------------------------*/
-      if (_diag > 0) {//TODO:Add these into stresult
-            _hmanager->fillHistograms(&_data);
-            
-       } //end "diag"
+      if (_diag > 0) _hmanager->fillHistograms(&_data);
+        
        ++STCounter;
-/*------------------------- FITTING STAGE 7 ----------------------------//
+/*------------------------- FITTING STAGE  ----------------------------//
 put into event data 
 //---------------------------------------------------------------------*/
     }//end loop
   event.put(std::move(seed_col));    //here - more to add to event?
- 
+  
   }//end produce
-
 
 /*---------------------------Get GOOD HITS-----------------------//
 //  Asks if an outlier  - removes if so  - is this necessary for cosmics  //
@@ -403,7 +399,27 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
     TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
   }//end order function
 
+  void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
+    
+    int loc = _data.nseeds;
+    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
+    
+      _data.nChPPanel[loc] = trackData._diag.nChPPanel;
+      _data.nChHits[loc] = trackData._diag.nChHits;
+      int nhits          = trackData._tseed._thits.size();
+      _data.ntclhits[loc] = trackData._timeCluster->hits().size();
+      _data.nhits[loc] = nhits;
+      _data.nShFit[loc] = trackData._diag.nShFit;
+      _data.nChFit[loc] = trackData._diag.nChFit;
+      _data.niters[loc] = trackData._diag.niters;
+      for (int i=0; i<trackData._diag.nChFit; ++i) {
+        std::cout<<"residuals "<<_data.hit_residualX[loc][i]<<std::endl;
+	std::cout<<" residuals "<<_data.hit_residualY[loc][i]<<std::endl;
+	_data.hit_residualX[loc][i] = trackData._diag.hit_residualX[i];
+	_data.hit_residualY[loc][i] = trackData._diag.hit_residualY[i];
+    }
   
+}
 
 
 /*--------------- GOOD HITS TIME CLUSTER ---------------------//
