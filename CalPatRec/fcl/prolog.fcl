@@ -331,7 +331,7 @@ CalPatRec : { @table::CalPatRec
 	MergeHelixFinder : { module_type:MergeHelixFinder	
 	    diagLevel                    : 0
 	    debugLevel                   : 0
-	    trkHelixFinderModuleLabel    : "HelixFindere:Positive"
+	    trkHelixFinderModuleLabel    : "HelixFinderDe:Positive"
 	    cprHelixCollTag              : "CalHelixFinder:Positive"
 	}
 
@@ -503,8 +503,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFindere:Positive"
-	    calHelixFinderModuleLabel : "HelixFindere:Negative"
+	    trkHelixFinderModuleLabel : "HelixFinderDe:Positive"
+	    calHelixFinderModuleLabel : "HelixFinderDe:Negative"
 	}
 
 	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 
@@ -518,8 +518,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFinderMu:Positive"
-	    calHelixFinderModuleLabel : "HelixFinderMu:Negative"
+	    trkHelixFinderModuleLabel : "HelixFinderDmu:Positive"
+	    calHelixFinderModuleLabel : "HelixFinderDmu:Negative"
 	}
 
 	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
@@ -687,9 +687,9 @@ CalPatRec: { @table::CalPatRec
     }
 }
 
-CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDe,  CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDe,  CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDep, CalTrkFitDep ]
 CalPatRec.dmm_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDmm, CalTrkFitDmm ]
 CalPatRec.dmp_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDmp, CalTrkFitDmp ]
 
