@@ -107,6 +107,7 @@ namespace mu2e {
     void beginSubRun(art::SubRun &sr) override;
 
         fhicl::ParameterSet pset_;
+
         Mu2eG4ResourceLimits mu2elimits_;
         Mu2eG4TrajectoryControl trajectoryControl_;
         Mu2eG4MultiStageParameters multiStagePars_;
@@ -191,8 +192,8 @@ namespace mu2e {
         G4double _systemElapsed;
         G4double _userElapsed;
 
-        const bool standardMu2eDetector_;
-        G4ThreeVector originInWorld;
+        const bool    _standardMu2eDetector;
+        G4ThreeVector _originInWorld;
 
         std::vector< SensitiveDetectorHelper > SensitiveDetectorHelpers;
 
@@ -254,7 +255,7 @@ Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
     _realElapsed(0.),
     _systemElapsed(0.),
     _userElapsed(0.),
-    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
+    _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     _masterThreadIndex(_use_G4MT ? _nThreads : 0),
     _StashForEventData(pSet),
     stashInstanceToStore(-1)
@@ -375,12 +376,12 @@ void Mu2eG4::beginRun( art::Run &run){
 
     //since the cuts used by the individual threads, do we need to do this?
     if ( ncalls == 1 ) {
-      stackingCuts_->finishConstruction(originInWorld);
-      steppingCuts_->finishConstruction(originInWorld);
-      commonCuts_->finishConstruction(originInWorld);
+      stackingCuts_->finishConstruction(_originInWorld);
+      steppingCuts_->finishConstruction(_originInWorld);
+      commonCuts_->finishConstruction  (_originInWorld);
 
         //can only be run in single-threaded mode
-      if( _checkFieldMap>0 && !(_use_G4MT)) generateFieldMap(originInWorld,_checkFieldMap);
+      if( _checkFieldMap>0 && !(_use_G4MT)) generateFieldMap(_originInWorld,_checkFieldMap);
 
       if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
     }
@@ -395,10 +396,6 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
         dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfThreads(_nThreads);
     }
 
-    if (standardMu2eDetector_) {
-      geom.addWorldG4(*GeomHandle<Mu2eHall>());
-    }
-
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
       logInfo << "Initializing Geant4 for " << run.id()
@@ -410,22 +407,30 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // Create user actions and register them with G4.
     G4VUserDetectorConstruction* allMu2e;
 
-    //as mentioned above, we give the last element to the Master thread to setup the InstanceMap in the ctor of the SDH class
-    if (standardMu2eDetector_) {
-        allMu2e =
-          (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex))  ),
-                                       std::make_unique<ConstructMaterials>(pset_)) );
+    // as mentioned above, we give the last element to the Master thread to setup the InstanceMap in the ctor of the SDH class
+    
+    if (_standardMu2eDetector) {
+      geom.addWorldG4(*GeomHandle<Mu2eHall>());
+
+      allMu2e = 
+     	(new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex))  ),
+     				   std::make_unique<ConstructMaterials>(pset_)) );
+    
+      _originInWorld = (GeomHandle<WorldG4>())->mu2eOriginInWorld();
     }
     else {
-        allMu2e =
-        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex)) ),
-                                            std::make_unique<ConstructMaterials>(pset_)) );
+      allMu2e =
+	(new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(SensitiveDetectorHelpers.at(_masterThreadIndex)) ),
+					std::make_unique<ConstructMaterials>(pset_)) );
+
+      // non-Mu2e detector: the system origin os set to (0.,0.,0.); do not use geometry service for that
+      _originInWorld = G4ThreeVector(0.0,0.0,0.0);
     }
 
 
     // in the non Mu2e detector we are working in the system with the
     // origin set to 0.,0.,0. and do not use geometry service for that
-    originInWorld = (!standardMu2eDetector_) ? G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+    //    originInWorld = (!_standardMu2eDetector) ? G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
 
     preG4InitializeTasks(pset_);
@@ -448,7 +453,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     ActionInitialization* actioninit = new ActionInitialization(pset_,
                                                                 _extMonFNALPixelSD, SensitiveDetectorHelpers,
                                                                 &_genEventBroker, &_physVolHelper,
-                                                                _use_G4MT, _nThreads, originInWorld,
+                                                                _use_G4MT, _nThreads, _originInWorld,
                                                                 mu2elimits_,
                                                                 multiStagePars_.simParticleNumberOffset()
                                                                 );
