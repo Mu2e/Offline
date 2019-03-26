@@ -209,7 +209,7 @@ CalPatRec : { @table::CalPatRec
 	t0window                                : 2.5
 	dtOffset                                : @local::TrackCaloMatching.DtOffset
 	# did Dave mean that? 
-	useTrkCaloHit                           : false
+	useTrkCaloHit                           : true
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
 	caloHitError				: 15.0 # mm 
@@ -508,8 +508,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "CalHelixFinder:Positive"
-	    calHelixFinderModuleLabel : "CalHelixFinder:Negative"
+	    trkHelixFinderModuleLabel : "CalHelixFinderDe:Positive"
+	    calHelixFinderModuleLabel : "CalHelixFinderDe:Negative"
 	}
 
 	MHFinderDe   : { @table::CalPatRec.producers.MergeHelixFinder 

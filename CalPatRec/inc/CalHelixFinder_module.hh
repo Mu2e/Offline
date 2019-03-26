@@ -37,7 +37,6 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"

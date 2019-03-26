@@ -12,6 +12,7 @@ namespace mu2e
     Int_t _active;   // is this hit used in the track?
     Int_t _did; // disk ID
     XYZVec _poca; // Position of Point Of Closest Approach (POCA)
+    XYZVec _mom; // Track momentum vector at Point Of Closest Approach (POCA)
     Float_t _trklen;	// distance along the helix of the POCA for this hit
     Float_t _clen;    // length along the crystal from the front face
     Float_t _doca;	// DOCA of this hit
@@ -25,7 +26,7 @@ namespace mu2e
     void reset() { *this = TrkCaloHitInfo(); }
     static std::string const& leafnames() { 
       static const std::string leaves = 
-	std::string("active/I:disk/I:POCAx/F:POCAy/F:POCAz/F:") +
+	std::string("active/I:disk/I:POCAx/F:POCAy/F:POCAz/F:momx/F:momy/F:momz/F:") +
 	std::string("trklen/F:clen/F:doca/F:t0/F:t0err/F:ctime/F:cterr/F:edep/F");
       return leaves;
     }

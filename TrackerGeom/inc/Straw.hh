@@ -20,6 +20,7 @@ namespace mu2e {
   class Straw{
 
     friend class TrackerMaker;
+    friend class AlignedTrackerMaker;
 
   public:
 

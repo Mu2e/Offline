@@ -33,6 +33,7 @@ namespace mu2e
   };
 
  
+   typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;
 
 }
 

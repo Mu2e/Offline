@@ -9,8 +9,6 @@
 #include "BTrk/TrkBase/TrkHit.hh"
 //
 #include "CLHEP/Vector/ThreeVector.h"
-// conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include <algorithm>
 
 using namespace std;

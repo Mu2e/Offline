@@ -3,8 +3,6 @@
 // 
 #ifndef TrkQualTestInfo_HH
 #define TrkQualTestInfo_HH
-#include "DataProducts/inc/threevec.hh"
-#include "TrkDiag/inc/helixpar.hh"
 #include "Rtypes.h"
 namespace mu2e
 {

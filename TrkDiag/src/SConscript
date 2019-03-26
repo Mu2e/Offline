@@ -86,6 +86,7 @@ helper.make_plugins( [
    'art_Framework_Services_Optional',
    'art_Framework_Services_Optional_TFileService_service',
    'art_Framework_Services_Optional_RandomNumberGenerator_service',
+   'art_Framework_Services_System_TriggerNamesService_service',                       
    'art_Persistency_Common',
    'art_Persistency_Provenance',
    'art_Utilities',

@@ -38,7 +38,6 @@ namespace art {
 #include "BTrk/BField/BFieldFixed.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"

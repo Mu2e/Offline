@@ -1,0 +1,3 @@
+physics.filters.minimumbiasCDCountPrescale.nPrescale    : 10000
+physics.filters.minimumbiasCDCountPrescale.useFilteredEvents : true
+physics.filters.minimumbiasCDCountPrescale.triggerFlag  : ["PrescaleGoodEvents"]

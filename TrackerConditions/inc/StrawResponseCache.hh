@@ -35,7 +35,7 @@ namespace mu2e {
       ProditionsEntity::set_t s = sd->getCids();
 
       auto se = strawElectronics_h.getPtr(eid);
-      iov.overlap(strawDrift_h.iov());
+      iov.overlap(strawElectronics_h.iov());
       s.merge(set_t(se->getCids()));
 
       auto sp = strawPhysics_h.getPtr(eid);
@@ -49,6 +49,9 @@ namespace mu2e {
 	//p = _maker.fromDb(..);
 	p->addCids(s);
 	push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       } else {
 	if(_verbose>1) std::cout<< "found StrawResponse in cache " << std::endl;
       }

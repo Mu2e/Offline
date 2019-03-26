@@ -224,7 +224,7 @@ void DataInterface::fillGeometry()
   {
 //Straws
     mu2e::GeomHandle<mu2e::Tracker> tracker;
-    const auto& allStraws = tracker->getAllStraws();
+    const auto& allStraws = tracker->getStraws();
     // for(const auto & elem : allStraws)
     for (size_t i = 0; i<tracker->nStraws(); ++i)
     {

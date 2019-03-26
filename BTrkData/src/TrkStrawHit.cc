@@ -132,7 +132,6 @@ namespace mu2e
 
   void
   TrkStrawHit::updateDrift() {
-// deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
 // compute the drift time
     double tdrift = driftTime();
 // find the track direction at this hit

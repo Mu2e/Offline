@@ -41,7 +41,6 @@
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
 
 #include <algorithm>
 #include <cmath>

@@ -295,16 +295,15 @@
 
  <class name="mu2e::TriggerFlagDetail"/>
  <class name="mu2e::TriggerFlag"/>
- <class name="mu2e::TriggerAlgDetail"/>
- <class name="art::Wrapper<mu2e::TriggerAlgDetail>"/>
- <class name="mu2e::TriggerAlg"/>
- <class name="art::Ptr<mu2e::TriggerAlg>"/>
- <class name="art::Wrapper<mu2e::TriggerAlg>"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="art::Ptr<mu2e::TriggerInfo>"/>
  <class name="mu2e::TriggerInfoCollection" /> 
  <class name="art::Wrapper<mu2e::TriggerInfo>"/>
  <class name="art::Wrapper<mu2e::TriggerInfoCollection>"/>
 
+<!--  ********* general reco ********* -->
+
+ <class name="mu2e::RecoCount"/>
+ <class name="art::Wrapper<mu2e::RecoCount>"/>
 
 </lcgdict>

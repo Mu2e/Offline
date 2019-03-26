@@ -33,7 +33,7 @@ namespace mu2e {
   // create a robust helix from raw particle informaiton.  This is useful for MC comparison
     void RobustHelixFromMom(CLHEP::Hep3Vector const& pos, CLHEP::Hep3Vector const& mom, double charge, double Bz, RobustHelix& helix);
     // create a KalSegment (helix segment) from a HelixTraj
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg);
+    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg);
     // create HitSeeds from the TrkStrawHits in a KalRep
     void fillStrawHitSeeds(const KalRep* krep, ComboHitCollection const& chits, std::vector<TrkStrawHitSeed>& hitseeds);
     void fillCaloHitSeed(const TrkCaloHit* chit, TrkCaloHitSeed& caloseed);
