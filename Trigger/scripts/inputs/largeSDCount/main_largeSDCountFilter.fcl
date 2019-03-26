@@ -1,0 +1,8 @@
+physics.filters.largeSDCountPrescale.caloDigiCollection  : notUSed		  
+physics.filters.largeSDCountPrescale.useStrawDigi        : true			  
+physics.filters.largeSDCountPrescale.useCaloDigi         : false			  
+physics.filters.largeSDCountPrescale.minNStrawDigi       : 500   		  
+physics.filters.largeSDCountPrescale.maxNStrawDigi       : 10000			  
+physics.filters.largeSDCountPrescale.minNCaloDigi        : -1			  
+physics.filters.largeSDCountPrescale.maxNCaloDigi        : -1			  
+physics.filters.largeSDCountPrescale.maxCaloEnergy       : -1                      

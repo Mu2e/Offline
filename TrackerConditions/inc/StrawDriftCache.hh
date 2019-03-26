@@ -33,6 +33,9 @@ namespace mu2e {
 	//p = _maker.fromDb(c1);
 	//p->addCids(s);
 	push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       } else {
 	if(_verbose>1) std::cout<< "found StrawDrift in cache " << std::endl;
       }

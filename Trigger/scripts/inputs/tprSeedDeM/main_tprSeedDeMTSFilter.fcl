@@ -1,3 +1,5 @@
+physics.filters.tprSeedDeMTSFilter.fitparticle   : @local::Particle.eminus	 
+physics.filters.tprSeedDeMTSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.tprSeedDeMTSFilter.minNStrawHits : 15.0
 physics.filters.tprSeedDeMTSFilter.minMomentum   : 80.0
 physics.filters.tprSeedDeMTSFilter.maxMomentum   : 200.0

@@ -40,26 +40,23 @@ namespace mu2e
       // sophisticated z correction
       void updateT0(HelixSeed& hs, StrawHitCollection const& shcol);
       // access the offsets
-      double timeOfFlightTimeOffset(double hitz) const; // z position in the tracker frame!!!
+      double timeOfFlightTimeOffset(double hitz,double pitch) const; // z position in the tracker frame!!!
       double strawHitTimeErr() const { return _shErr; }
       double caloClusterTimeOffset() const { return _caloT0Offset; }
       double caloClusterTimeErr() const { return _caloT0Err; }
-      // calculate the t0 for a straw hit. This assumes an average drift time (deprecated)
-      double strawHitTime(StrawHit const& sh, StrawHitPosition const& shp);
       // same for a ComboHit
-      double comboHitTime(ComboHit const& ch);
+      double comboHitTime(ComboHit const& ch,double pitch);
       // calculate the t0 for a calo cluster.
-      double caloClusterTime(CaloCluster const& cc) const;
+      double caloClusterTime(CaloCluster const& cc,double pitch) const;
     private:
     // helper functions
       int _debug;
 //      StrawHitFlag _useflag, _dontuseflag;// flags for which hits to use
-      TrkFitDirection _fdir; // fit direction.  This is used to make z-dependent time shifts
       double _avgDriftTime;  // average time offset for straw hits
       bool _useTOTdrift;
-      double _shDtDz;  // dt/dz for straw hits
-      double _shBeta;  // beta of the particle-hypothesis used
+      double _beta;  // beta of the particle-hypothesis used
       double _shErr;
+      double _caloZOffset; // location of shower max WRT COG Z position
       double _caloT0Offset; // time offsets for downstream particls in the calorimeter
       double _caloT0Err; // time resolution 
   };

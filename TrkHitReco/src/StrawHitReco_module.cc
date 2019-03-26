@@ -278,6 +278,7 @@ namespace mu2e {
 	ch._mask = _mask;
 	ch._flag = flag;
 	if (td) ch._flag.merge(StrawHitFlag::tdiv);
+	ch._tend = eend;
 	if(!_filter && _flagXT){
 	  //buffer large hit for cross-talk analysis
 	  size_t iplane       = straw.id().getPlane();

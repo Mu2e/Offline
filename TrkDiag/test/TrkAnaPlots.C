@@ -88,7 +88,7 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
 // cuts
   TCut reco("de.status>0");
   char ctext[80];
-  snprintf(ctext,80,"de.trkqual>%f",tqcut);
+  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
   TCut goodfit(ctext);
   double tdlow(0.57735027);
   double tdhigh(1.0);
@@ -119,8 +119,9 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
   TCut final = reco+goodfit;
-  TCut evtwt = "evtwt.PBIWeight";
-  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
+//  TCut evtwt = "evtwt.PBIWeight";
+//  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
+  ta->Project("momresp","de.mom-demcgen.mom",final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
@@ -141,7 +142,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 // cuts
   TCut reco("de.status>0");
   char ctext[80];
-  snprintf(ctext,80,"de.trkqual>%f",tqcut);
+  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
   TCut goodfit(ctext);
   double tdlow(0.57735027);
   double tdhigh(1.0);
@@ -172,8 +173,9 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = reco+goodfit+physics;
-  TCut evtwt = "evtwt.PBIWeight";
-  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+ // TCut evtwt = "evtwt.PBIWeight";
+//  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+  ta->Project("momres","de.mom-demcent.mom",final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
@@ -254,13 +256,14 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   //&&fmod(demcent.t0,1695.0)>500.0";
   TCut reco = "de.status>0";
   char ctext[80];
-  snprintf(ctext,80,"de.trkqual>%f",tqcut);
+  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
   TCut goodfit(ctext);
   TCut livegate = "de.t0>700.0&&de.t0<1695";
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
   TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>103.85";
-  TCut evtwt = "evtwt.PBIWeight";
+//  TCut evtwt = "evtwt.PBIWeight";
+  TCut evtwt = "";
   ta->Project("acc",binnames[ibin++],evtwt);
   ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
   ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco));
@@ -378,7 +381,7 @@ void wpull(TTree* ta) {
 
 }
 
-void Ambig(TTree* ta) {
+void Ambig(TTree* ta,const char* file="") {
   gStyle->SetOptStat(1111);
 
   TCut ghit("detshmc._rel==0");
@@ -390,7 +393,7 @@ void Ambig(TTree* ta) {
   TCut active("detsh._active>0");
 // apply requested cuts
 
-  TCut goodtrk("de.status>0&&de.trkqual>0.4");
+  TCut goodtrk("de.status>0&&de.nactive>20&&");
 
 
   TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
@@ -558,7 +561,7 @@ void Ambig(TTree* ta) {
   fleg->Draw();
 
   ambigcan->cd(0);
-
+  if(strcmp(file,"")!=0)ambigcan->SaveAs(file);
 }
 
 void Resid(TTree* ta) {
@@ -677,8 +680,8 @@ void TrkQualRes(TTree* ta,double tqcut) {
   badf->SetStats(0);
   char tqcutgc[40];
   char tqcutbc[40];
-  snprintf(tqcutgc,40,"de.trkqual>%f",tqcut);
-  snprintf(tqcutbc,40,"de.trkqual<%f",tqcut);
+  snprintf(tqcutgc,40,"detrkqual.trkqual>%f",tqcut);
+  snprintf(tqcutbc,40,"detrkqual.trkqual<%f",tqcut);
   TCut tqcutg(tqcutgc);
   TCut tqcutb(tqcutbc);
   TCut reco("de.status>0");
@@ -776,4 +779,328 @@ void StrawMat(TTree* ta) {
   mleg->AddEntry(lofracres,"N_{added}/N<0.1","L");
   mleg->AddEntry(hifracres,"N_{added}/N>0.1","L");
   mleg->Draw();
+}
+
+void TrkCaloHit(TTree* ta) {
+  TCut goodtrkcalo("detrkqual.trkqual>0.6&&detch.active");
+  TCut disk0("detch.disk==0");
+  TCut disk1("detch.disk==1");
+  TH1F* clen0 = new TH1F("clen0","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,0,350);
+  TH1F* clen1 = new TH1F("clen1","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,0,350);
+  TH1F* cdoca0 = new TH1F("cdoca0","TrkCaloHit DOCA;DOCA (mm)",200,-150,150);
+  TH1F* cdoca1 = new TH1F("cdoca1","TrkCaloHit DOCA;DOCA (mm)",200,-150,150);
+  TH1F* cdt0 = new TH1F("cdt0","TrkCaloHit #Delta t;TCH t_{0} - CaloCluster Time",100,-5,5);
+  TH1F* cdt1 = new TH1F("cdt1","TrkCaloHit #Delta t;TCH t_{0} - CaloCluster Time",100,-5,5);
+  TH1F* ep0 = new TH1F("ep0","TrkCaloHit E/P",100,0.1,1.1);
+  TH1F* ep1 = new TH1F("ep1","TrkCaloHit E/P",100,0.1,1.1);
+  TH1F* tdir0 = new TH1F("tdir0","Track Direction at POCA;#hat{t}#bullet#hat{#rho}",100,-1.0,1.0);
+  TH1F* tdir1 = new TH1F("tdir1","Track Direction at POCA;#hat{t}#bullet#hat{#rho}",100,-1.0,1.0);
+  TH1F* pr0 = new TH1F("pr0","POCA Radius;Transverse Radius (mm)",100,360,650);
+  TH1F* pr1 = new TH1F("pr1","POCA Radius;Transverse Radius (mm)",100,360,650);
+
+  clen0->SetLineColor(kRed);
+  clen1->SetLineColor(kBlue);
+  cdoca0->SetLineColor(kRed);
+  cdoca1->SetLineColor(kBlue);
+  cdt0->SetLineColor(kRed);
+  cdt1->SetLineColor(kBlue);
+  ep0->SetLineColor(kRed);
+  ep1->SetLineColor(kBlue);
+  tdir0->SetLineColor(kRed);
+  tdir1->SetLineColor(kBlue);
+  pr0->SetLineColor(kRed);
+  pr1->SetLineColor(kBlue);
+
+//  clen0->SetStats(0);
+  clen1->SetStats(0);
+//  cdoca0->SetStats(0);
+  cdoca1->SetStats(0);
+//  cdt0->SetStats(0);
+  cdt1->SetStats(0);
+//  ep0->SetStats(0);
+  ep1->SetStats(0);
+//  tdir0->SetStats(0);
+  tdir1->SetStats(0);
+//  pr0->SetStats(0);
+  pr1->SetStats(0);
+ 
+  ta->Project("clen0","detch.clen",goodtrkcalo&&disk0);
+  ta->Project("clen1","detch.clen",goodtrkcalo&&disk1);
+  ta->Project("cdoca0","detch.doca",goodtrkcalo&&disk0);
+  ta->Project("cdoca1","detch.doca",goodtrkcalo&&disk1);
+  ta->Project("cdt0","detch.t0-detch.ctime",goodtrkcalo&&disk0);
+  ta->Project("cdt1","detch.t0-detch.ctime",goodtrkcalo&&disk1);
+  ta->Project("ep0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
+  ta->Project("ep1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
+  ta->Project("tdir0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
+  ta->Project("tdir1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
+  ta->Project("pr0","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
+  ta->Project("pr1","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
+
+  
+  TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
+  tchleg->AddEntry(clen0,"Disk 0","L");
+  tchleg->AddEntry(clen1,"Disk 1","L");
+
+  TCanvas* tchcan = new TCanvas("tchcan","TrkCaloHit",800,600);
+  tchcan->Divide(3,2);
+  tchcan->cd(1);
+  clen0->Draw();
+  clen1->Draw("same");
+  tchleg->Draw();
+  tchcan->cd(2);
+  cdoca0->Draw();
+  cdoca1->Draw("same");
+  tchcan->cd(3);
+  cdt0->Draw();
+  cdt1->Draw("same");
+  tchcan->cd(4);
+  ep0->Draw();
+  ep1->Draw("same");
+  tchcan->cd(5);
+  tdir0->Draw();
+  tdir1->Draw("same");
+  tchcan->cd(6);
+  pr0->Draw();
+  pr1->Draw("same");
+  
+
+  TCut goodclen("detch.clen>0&&detch.clen<150.0");
+  TCut badclen("detch.clen>150.0&&detch.clen<250.0");
+//  TH1F* rad0g = new TH1F("rad0g","Cluster Radius, Disk 0",100,380,630);
+//  TH1F* rad0b = new TH1F("rad0b","Cluster Radius, Disk 0",100,380,630);
+//  ta->Project("rad0g","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&goodclen);
+//  ta->Project("rad0b","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&badclen);
+  TH2F* rad0 = new TH2F("rad0","POCA Radius vs Crystal Depth, Disk 0;Depth (mm);Radius (mm)",100,0,300,100,360,650);
+  TH2F* rad1 = new TH2F("rad1","POCA Radius vs Crystal Depth, Disk 1;Depth (mm);Radius (mm)",100,0,300,100,360,650);
+  TH2F* dot0 = new TH2F("dot0","Track Direction vs Crystal Depth, Disk 0;Depth (mm);#hat{t}#bullet#hat{#rho}",100,0,300,100,-1,1);
+  TH2F* dot1 = new TH2F("dot1","Track Direction vs Crystal Depth, Disk 1;Depth (mm);#hat{t}#bullet#hat{#rho}",100,0,300,100,-1,1);
+  TH2F* dotr0 = new TH2F("dotr0","Track Direction vs POCA Radius, Disk 0;Radius (mm);#hat{t}#bullet#hat{#rho}",100,360,650,100,-1,1);
+  TH2F* dotr1 = new TH2F("dotr1","Track Direction vs POCA Radius, Disk 1;Radius (mm);#hat{t}#bullet#hat{#rho}",100,360,650,100,-1,1);
+  TH2F* doca0 = new TH2F("doca0","DOCA vs Crystal Depth, Disk 0;Depth (mm);DOCA (mm)",100,0,300,100,-100,100);
+  TH2F* doca1 = new TH2F("doca1","DOCA vs Crystal Depth, Disk 1;Depth (mm);DOCA(mm)",100,0,300,100,-100,100);
+  TH2F* eopd0 = new TH2F("eopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,0,300,100,0.3,1.1);
+  TH2F* eopd1 = new TH2F("eopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,0,300,100,0.3,1.1);
+  TH2F* eopdir0 = new TH2F("eopdir0","E/P vs Track Direction, Disk 0;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.3,1.1);
+  TH2F* eopdir1 = new TH2F("eopdir1","E/P vs Track Direction, Disk 1;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.3,1.1);
+  TH2F* eopr0 = new TH2F("eopr0","E/P vs POCA Radius, Disk 0;Radius (mm);E/P",100,360,650,100,0.3,1.1);
+  TH2F* eopr1 = new TH2F("eopr1","E/P vs POCA Radius, Disk 1;Radius (mm);E/P",100,360,650,100,0.3,1.1);
+  rad0->SetStats(0);
+  rad1->SetStats(0);
+  dot0->SetStats(0);
+  dot1->SetStats(0);
+  eopd0->SetStats(0);
+  eopd1->SetStats(0);
+  eopdir0->SetStats(0);
+  eopdir1->SetStats(0);
+  eopr0->SetStats(0);
+  eopr1->SetStats(0);
+  ta->Project("rad0","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk0);
+  ta->Project("rad1","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk1);
+  ta->Project("dot0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
+  ta->Project("dot1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
+  ta->Project("dotr0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
+  ta->Project("dotr1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
+  ta->Project("eopd0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
+  ta->Project("eopd1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
+  ta->Project("eopdir0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
+  ta->Project("eopdir1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
+  ta->Project("eopr0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
+  ta->Project("eopr1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
+  ta->Project("doca0","detch.doca:detch.clen",goodtrkcalo&&disk0);
+  ta->Project("doca1","detch.doca:detch.clen",goodtrkcalo&&disk1);
+  TCanvas* tch0can = new TCanvas("tch0can","TrkCaloHit Disk 0", 1000, 800);
+  tch0can->Divide(3,2);
+  tch0can->cd(1);
+  gPad->SetLogz();
+  rad0->Draw("colorz");
+  tch0can->cd(2);
+  gPad->SetLogz();
+  dot0->Draw("colorz");
+  tch0can->cd(3);
+  gPad->SetLogz();
+  eopd0->Draw("colorz");
+  tch0can->cd(4);
+  gPad->SetLogz();
+  doca0->Draw("colorz");
+  tch0can->cd(5);
+  gPad->SetLogz();
+  eopdir0->Draw("colorz");
+  tch0can->cd(6);
+  gPad->SetLogz();
+  eopr0->Draw("colorz");
+
+  TCanvas* tch1can = new TCanvas("tch1can","TrkCaloHit Disk 1", 1000, 800);
+  tch1can->Divide(3,2);
+  tch1can->cd(1);
+  gPad->SetLogz();
+  rad1->Draw("colorz");
+  tch1can->cd(2);
+  gPad->SetLogz();
+  dot1->Draw("colorz");
+  tch1can->cd(3);
+  gPad->SetLogz();
+  eopd1->Draw("colorz");
+  tch1can->cd(4);
+  gPad->SetLogz();
+  doca1->Draw("colorz");
+  tch1can->cd(5);
+  gPad->SetLogz();
+  eopdir1->Draw("colorz");
+  tch1can->cd(6);
+  gPad->SetLogz();
+  eopr1->Draw("colorz");
+
+}
+
+void TrkCaloHitMC(TTree* ta) {
+  TCut goodtrkcalo("detrkqual.trkqual>0.6&&detch.active");
+  TCut disk0("detch.disk==0");
+  TCut disk1("detch.disk==1");
+
+  TH1F* clen0m = new TH1F("clen0m","TrkCaloHit POCA Crystal Depth, Disk 0;Depth(mm)",200,-700,900);
+  TH1F* clen0n = new TH1F("clen0n","TrkCaloHit POCA Crystal Depth, Disk 0;Depth(mm)",200,-700,900);
+  TH1F* clen1m = new TH1F("clen1m","TrkCaloHit POCA Crystal Depth, Disk 1;Depth(mm)",200,-700,900);
+  TH1F* clen1n = new TH1F("clen1n","TrkCaloHit POCA Crystal Depth, Disk 1;Depth(mm)",200,-700,900);
+  TH1F* cdoca0m = new TH1F("cdoca0m","TrkCaloHit DOCA, Disk 0;DOCA (mm)",200,-250,700);
+  TH1F* cdoca0n = new TH1F("cdoca0n","TrkCaloHit DOCA, Disk 0;DOCA (mm)",200,-250,700);
+  TH1F* cdoca1m = new TH1F("cdoca1m","TrkCaloHit DOCA, Disk 1;DOCA (mm)",200,-250,700);
+  TH1F* cdoca1n = new TH1F("cdoca1n","TrkCaloHit DOCA, Disk 1;DOCA (mm)",200,-250,700);
+  clen0m->SetLineColor(kBlack);
+  clen0n->SetLineColor(kCyan);
+  clen1m->SetLineColor(kBlack);
+  clen1n->SetLineColor(kCyan);
+  cdoca0m->SetLineColor(kBlack);
+  cdoca0n->SetLineColor(kCyan);
+  cdoca1m->SetLineColor(kBlack);
+  cdoca1n->SetLineColor(kCyan);
+//
+  clen0m->SetStats(0);
+  clen0n->SetStats(0);
+  clen1m->SetStats(0);
+  clen1n->SetStats(0);
+  cdoca0m->SetStats(0);
+  cdoca0n->SetStats(0);
+  cdoca1m->SetStats(0);
+  cdoca1n->SetStats(0);
+
+  TCut tcm("detchmc.prel>=0");
+  TCut tcn("detchmc.prel<0");
+  ta->Project("clen0m","detch.clen",goodtrkcalo&&disk0&&tcm);
+  ta->Project("clen0n","detch.clen",goodtrkcalo&&disk0&&tcn);
+  ta->Project("clen1m","detch.clen",goodtrkcalo&&disk1&&tcm);
+  ta->Project("clen1n","detch.clen",goodtrkcalo&&disk1&&tcn);
+
+  ta->Project("cdoca0m","detch.doca",goodtrkcalo&&disk0&&tcm);
+  ta->Project("cdoca0n","detch.doca",goodtrkcalo&&disk0&&tcn);
+  ta->Project("cdoca1m","detch.doca",goodtrkcalo&&disk1&&tcm);
+  ta->Project("cdoca1n","detch.doca",goodtrkcalo&&disk1&&tcn);
+
+  TLegend* tchmcleg = new TLegend(0.5,0.7,0.9,0.9);
+  tchmcleg->AddEntry(clen0m,"Trk-Calo MC Match","L");
+  tchmcleg->AddEntry(clen0n,"No MC Match","L");
+
+  TCanvas* tchmc = new TCanvas("tchmc","TrkCaloHitMC",800,800);
+  tchmc->Divide(2,2);
+  tchmc->cd(1);
+  gPad->SetLogy();
+  clen0m->Draw();
+  clen0n->Draw("same");
+  tchmc->cd(2);
+  gPad->SetLogy();
+  clen1m->Draw();
+  clen1n->Draw("same");
+  tchmcleg->Draw();
+  tchmc->cd(3);
+  gPad->SetLogy();
+  cdoca0m->Draw();
+  cdoca0n->Draw("same");
+  tchmc->cd(4);
+  gPad->SetLogy();
+  cdoca1m->Draw();
+  cdoca1n->Draw("same");
+}
+
+void t0(TTree* ta) {
+  TCut goodtrkcalo("detrkqual.trkqual>0.6&&detch.active");
+  TCut goodtrknocalo("detrkqual.trkqual>0.6&&!detch.active");
+  TCut disk0("detch.disk==0");
+  TCut disk1("detch.disk==1");
+  TH1F* t00 = new TH1F("t00","Track Fit t_{0} Resolution, TrkCaloHit;t_{0} reco - t_{0} MC (ns)",100,-5,5);
+  TH1F* t01 = new TH1F("t01","Track Fit t_{0} Resolution, NoTrkCaloHit;t_{0} reco - t_{0} MC (ns)",100,-5,5);
+//  t00->SetStats(0);
+//  t01->SetStats(0);
+//  t00->SetLineColor(kRed);
+//  t01->SetLineColor(kBlue);
+  ta->Project("t00","de.t0-fmod(demcmid.t0,1695)",goodtrkcalo);
+  ta->Project("t01","de.t0-fmod(demcmid.t0,1695)",goodtrknocalo);
+  TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
+  tchleg->AddEntry(t00,"TrkCaloHit","L");
+  tchleg->AddEntry(t01,"No TrkCaloHit","L");
+  TCanvas* t0can = new TCanvas("t0can","t0can",600,400);
+  t0can->Divide(2,1);
+  t0can->cd(1);
+  t00->Draw();
+  t0can->cd(2);
+  t01->Draw();
+}
+
+void Eff(TTree* ta, unsigned norm, double plo, double phi) {
+  TH1F* allrec = new TH1F("allrec","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* tqrec = new TH1F("tqrec","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* tprtrig = new TH1F("tprtrig","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* cprtrig = new TH1F("cprtrig","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* trktrig = new TH1F("trktrig","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* cctrig = new TH1F("cctrig","Reco Rate vs generated momentum",100,plo,phi);
+
+  TCut goodtrk("detrkqual.trkqual>0.4");
+  TCut tprdem("(trigbits&0x200)==0x200");
+  TCut cprdem("(trigbits&0x8)==0x8");
+  TCut trkdem("(trigbits&0x208)>0");
+  TCut cc("(trigbits&0x4)==0x4");
+ 
+
+  allrec->SetStats(0);
+  tqrec->SetStats(0);
+  tprtrig->SetStats(0);
+  cprtrig->SetStats(0);
+  trktrig->SetStats(0);
+  cctrig->SetStats(0);
+
+  allrec->SetLineColor(kBlue);
+  tqrec->SetLineColor(kRed);
+  tprtrig->SetLineColor(kGreen);
+  cprtrig->SetLineColor(kOrange);
+  trktrig->SetLineColor(kCyan);
+  cctrig->SetLineColor(kBlack);
+  ta->Project("allrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)");
+  ta->Project("tqrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk);
+  ta->Project("tprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&tprdem);
+  ta->Project("cprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&cprdem);
+  ta->Project("trktrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&trkdem);
+  ta->Project("cctrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&cc);
+
+  // scale by the absolute normalization
+  double scalefac =100.0/norm;
+  allrec->Scale(scalefac);
+  tqrec->Scale(scalefac);
+  tprtrig->Scale(scalefac);
+  cprtrig->Scale(scalefac);
+  trktrig->Scale(scalefac);
+  cctrig->Scale(scalefac);
+  TCanvas* eff = new TCanvas("eff","Efficiency",600,600);
+  allrec->Draw("h");
+  tqrec->Draw("hsame");
+  trktrig->Draw("hsame");
+  tprtrig->Draw("hsame");
+  cprtrig->Draw("hsame");
+  cctrig->Draw("hsame");
+  TLegend* leg = new TLegend(0.1,0.6,0.5,0.9);
+  leg->AddEntry(allrec,"All Reco","l");
+  leg->AddEntry(tqrec,"TrkQual>0.4","l");
+  leg->AddEntry(trktrig,"Track Triger","l");
+  leg->AddEntry(tprtrig,"TrackPatRec Triger","l");
+  leg->AddEntry(cprtrig,"CalPatRec Triger","l");
+  leg->AddEntry(cctrig,"CaloCluster Triger","l");
+  leg->Draw();
 }

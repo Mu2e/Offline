@@ -1,0 +1,8 @@
+physics.filters.caloCalibCosmicCDCountFilter.strawDigiCollection : notUSed	    
+physics.filters.caloCalibCosmicCDCountFilter.useStrawDigi        : false		    
+physics.filters.caloCalibCosmicCDCountFilter.useCaloDigi         : true		    
+physics.filters.caloCalibCosmicCDCountFilter.minNStrawDigi       : -1		    
+physics.filters.caloCalibCosmicCDCountFilter.maxNStrawDigi       : -1		    
+physics.filters.caloCalibCosmicCDCountFilter.minNCaloDigi        : 2		    
+physics.filters.caloCalibCosmicCDCountFilter.maxNCaloDigi        : 10000		    
+physics.filters.caloCalibCosmicCDCountFilter.maxCaloEnergy       : -1		    

@@ -11,7 +11,6 @@
 // mu2e
 // data
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 // c++
 #include <iostream>
@@ -33,7 +32,7 @@ namespace mu2e
     bool          _hascc; // Calo Cluster
     unsigned      _minnhits;
     double        _mintime, _maxtime;
-    TriggerAlg    _trigAlg;
+    std::string   _trigPath;
     int           _debug;
     // counters
     unsigned _nevt, _npass;
@@ -45,7 +44,7 @@ namespace mu2e
     _minnhits(pset.get<unsigned>("minNHits",11)),
     _mintime(pset.get<double>("minTime",500.0)),
     _maxtime(pset.get<double>("maxTime",1695.0)) ,
-    _trigAlg(pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath(pset.get<std::string>("triggerPath")),
     _debug(pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -73,7 +72,7 @@ namespace mu2e
         ++_npass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::hitCluster);
-	triginfo->_triggerAlgBits.merge(_trigAlg);
+	triginfo->_triggerPath = _trigPath;
         // associate to the hit cluster which triggers.  Note there may be other hit clusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(tccol->begin(),itc);

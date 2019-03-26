@@ -57,7 +57,7 @@ source :
 # we don't need any simulation services for this job
 #services : @local::Services.Reco
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 
 # timing information
 services.TimeTracker : {
@@ -87,8 +87,8 @@ physics : {
 	    nFilters      : 70
 	    nTrackTriggers: 5
 	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSdCount_path,
-			      largeSdCount_path,
+			      minimumbiasSDCount_path,
+			      largeSDCount_path,
 			      caloMVACE_path,
 			      tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
 	}
@@ -99,10 +99,10 @@ physics : {
     unbiased_path                : [ @sequence::paths.unbiased                         ]
     
     #minimum bias filters
-    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount               ]
+    minimumbiasSDCount_path      : [ @sequence::paths.minimumbiasSDCount               ]
 
     #path for selecting events with large ammount of strawDigis
-    largeSdCount_path            : [ @sequence::paths.largeSdCount                     ]
+    largeSDCount_path            : [ @sequence::paths.largeSDCount                     ]
 
     #path for the calorimeter only trigger
     caloMVACE_path               : [ fetchCaloDigis, @sequence::paths.caloMVACE        ]
@@ -118,13 +118,11 @@ physics : {
     cprSeedDeM_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeM        ]
     cprSeedDeP_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeP        ]
     
-    #merger of the TriggerInfo
-    zzTrigIfnoMerger_path        : [ triggerInfoMerger ] 
     
-    out           : [ readTriggerInfo ]
+#    out           : [ readTriggerInfo ]
     
 
-#    out           : [ readTriggerInfo, triggerOutput ]
+    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 
@@ -133,8 +131,6 @@ outputs : {
 }
 
 services.TFileService.fileName : "globalTrigger.root"
-services.SeedService.baseSeed : 0
-services.SeedService.maxUniqueEngines : 20
 
 
 

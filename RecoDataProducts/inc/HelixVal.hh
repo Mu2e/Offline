@@ -7,6 +7,7 @@
 
 // Mu2e
 #include "DataProducts/inc/Helicity.hh"
+#include "DataProducts/inc/XYZVec.hh"
 // BTrk
 #include "BTrk/TrkBase/HelixParams.hh"
 // CLHEP
@@ -28,12 +29,19 @@ namespace mu2e {
     Float_t omega() const { return _pars[HelixParams::omegaIndex]; }
     Float_t z0() const { return _pars[HelixParams::z0Index]; }
     Float_t tanDip() const { return _pars[HelixParams::tanDipIndex]; }
+    float cosDip() const { return 1.0/sqrt(1.0 + tanDip()*tanDip()); }
+    float sinDip() const { return tanDip()*cosDip(); }
+    // simple geometric functions; can't do momentum as we don't know BField here
+    void position(float fltlen,XYZVec& pos) const; 
+    void direction(float fltlen,XYZVec& pos) const; 
+    float phi(float fltlen) const; // local azimuthal angle 
 
     Float_t& d0() { return _pars[HelixParams::d0Index]; }
     Float_t& phi0() { return _pars[HelixParams::phi0Index]; }
     Float_t& omega() { return _pars[HelixParams::omegaIndex]; }
     Float_t& z0() { return _pars[HelixParams::z0Index]; }
     Float_t& tanDip() { return _pars[HelixParams::tanDipIndex]; }
+
 // convert to CLHEP.
     void hepVector(CLHEP::HepVector& pvec) const;
 // this should really be a HepVector, or whatever algebraic vector class we use, FIXME!

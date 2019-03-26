@@ -8,7 +8,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
@@ -47,7 +46,7 @@ namespace mu2e
     double          _minD0, _maxD0; // impact parameter limits
     double          _minT0;
     TrkFitFlag      _goods; // helix fit flag
-    TriggerAlg      _trigAlg;
+    std::string     _trigPath;
     int             _debug;
     // counters
     unsigned        _nevt, _npass;
@@ -70,7 +69,7 @@ namespace mu2e
     _maxD0     (pset.get<double>("maxD0", 200.)),
     _minT0     (pset.get<double>("minT0", 0.)),
     _goods     (pset.get<vector<string> >("seedFitFlag",vector<string>{"SeedOK"})),
-    _trigAlg   (pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath  (pset.get<std::string>("triggerPath")),
     _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -112,6 +111,7 @@ namespace mu2e
 	++_npass;
 	// Fill the trigger info object
 	triginfo->_triggerBits.merge(TriggerFlag::track);
+	triginfo->_triggerPath = _trigPath;
 	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
 	// but filtering is by event!
 	size_t index = std::distance(kscol->begin(),iks);
