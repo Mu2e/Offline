@@ -27,7 +27,8 @@ namespace mu2e {
     // simple functions that can be derived from the data members
     // scalar 'momentum' in units of mm
     float momentum() const { return sqrt(_radius*_radius+_lambda*_lambda); }
-    float pitch() const { return _lambda/sqrt(_radius*_radius+_lambda*_lambda); }
+    // the following is signed by Pz (pitch = dz/dL)
+    float pitch() const { return copysign(1.0,_radius)*_lambda/sqrt(_radius*_radius+_lambda*_lambda); }
     Helicity helicity() const { return _helicity; }
     float centerx() const { return _rcent*cos(_fcent); }
     float centery() const { return _rcent*sin(_fcent); }

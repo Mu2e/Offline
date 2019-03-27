@@ -9,3 +9,5 @@ physics.filters.tprSeedDePHSFilter.maxD0 : 300.0
 physics.filters.tprSeedDePHSFilter.minD0 : -150.0
 physics.filters.tprSeedDePHSFilter.minAbsLambda : 100.0
 physics.filters.tprSeedDePHSFilter.maxAbsLambda : 330.0
+physics.filters.tprSeedDePHSFilter.minNLoops     : 0
+physics.filters.tprSeedDePHSFilter.maxNLoops     : 30

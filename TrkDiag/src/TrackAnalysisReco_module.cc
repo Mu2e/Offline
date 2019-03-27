@@ -29,7 +29,6 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/TriggerResults.h"
-#include "art/Framework/Services/System/TriggerNamesService.h"
 
 // ROOT incldues
 #include "Rtypes.h"
@@ -42,6 +41,7 @@
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
+#include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
@@ -222,7 +222,7 @@ namespace mu2e {
     _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
     _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
 // trigger info.  Actual names should come from the BeginRun object FIXME
-    if(_filltrig)_trkana->Branch("trigbits",&_trigbits,"trigbits/I");
+    if(_filltrig)_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
 // calorimeter information for the downstream electron track
 // CRV info
    if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
@@ -255,17 +255,6 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
-    //get the map we need to navigate the Trigger results
-    if(_filltrig){
-      art::ServiceHandle<art::TriggerNamesService> trigNS;
-      std::vector<std::string> const& names = trigNS->getTrigPaths();
-      for(auto const& name : names){
-	unsigned trigId = trigNS->findTrigPath(name);
-	cout << "Trigger Path " << name << " has ID " << trigId << endl;
-	_trigids.push_back(trigId);
-      }
-    }
-
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
@@ -491,13 +480,19 @@ namespace mu2e {
     art::InputTag const tag{Form("TriggerResults::%s", process.c_str())};
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults* trigResults = trigResultsH.product();
-    if(_debug > 0)cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines" << endl;
+    _trigbits = 0;
     for(size_t id=0;id < trigResults->size(); ++id){
       if (trigResults->accept(id)) {
-	if(_debug > 0)cout << "Found trigger bit " << id << " set" << endl;
 	_trigbits |= 1 << id;
       }
     }
+    if(_debug > 0){
+      cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines"
+      << " trigger bits word " << _trigbits << endl;
+      TriggerResultsNavigator tnav(trigResults);
+      tnav.print();
+    }
+    
   }
 
   void TrackAnalysisReco::resetBranches() {

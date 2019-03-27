@@ -51,6 +51,8 @@ namespace mu2e
     double        _mind0;
     double        _maxlambda;
     double        _minlambda;
+    int           _maxnloops;
+    double        _minnloops;
     double        _bz0;
     TrkFitFlag    _goodh; // helix fit flag
     std::string   _trigPath;
@@ -73,6 +75,8 @@ namespace mu2e
     _mind0        (pset.get<double>("minD0", -200.)),
     _maxlambda    (pset.get<double>("maxAbsLambda",350.)),
     _minlambda    (pset.get<double>("minAbsLambda",150.)),
+    _maxnloops    (pset.get<double>("maxNLoops",30.)),
+    _minnloops    (pset.get<double>("minNLoops",0.)),
     _goodh        (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
     _trigPath     (pset.get<std::string>("triggerPath")),
     _debug        (pset.get<int>   ("debugLevel",0)),
@@ -115,21 +119,25 @@ namespace mu2e
       float chi2PhiZ   = hs.helix().chi2dZPhi();
       float d0         = hs.helix().rcent() - hs.helix().radius();
       float lambda     = std::fabs(hs.helix().lambda());
-
+      int   nLoops     = helTool.nLoops();
+      
       if(_debug > 2){
         cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
 	  nstrawhits >= _minnstrawhits &&
-          hpT >= _minpT &&
-	  chi2XY <= _maxchi2XY &&
-	  chi2PhiZ <= _maxchi2PhiZ &&
-	  d0 <= _maxd0 &&
-	  d0 >= _mind0 &&
-	  lambda <= _maxlambda &&
-	  lambda >= _minlambda &&
-          hmom > _minmom && hmom < _maxmom) {
+          hpT        >= _minpT &&
+	  chi2XY     <= _maxchi2XY &&
+	  chi2PhiZ   <= _maxchi2PhiZ &&
+	  d0         <= _maxd0 &&
+	  d0         >= _mind0 &&
+	  lambda     <= _maxlambda &&
+	  lambda     >= _minlambda &&
+	  nLoops     <= _maxnloops &&
+	  nLoops     >= _minnloops &&
+          hmom       >= _minmom    && 
+	  hmom       <= _maxmom) {
         retval = true;
         ++_npass;
         // Fill the trigger info object

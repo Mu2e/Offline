@@ -22,6 +22,8 @@
 #include "art/Framework/Services/System/TriggerNamesService.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
+
 #include "messagefacility/MessageLogger/MessageLogger.h"
 // #include "canvas/Utilities/InputTag.h"
 #include "BFieldGeom/inc/BFieldManager.hh"
@@ -58,6 +60,8 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
+//Utilities
+#include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 
 //ROOT
 #include "TH1F.h"
@@ -700,18 +704,24 @@ namespace mu2e {
     art::InputTag const tag{"TriggerResults::globalTrigger"};//FIXME! in art3 we can use the "current_process" variable
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
-
-    //get the map we need to navigate the Trigger results
-    art::ServiceHandle<art::TriggerNamesService> trigNS;
-
-    //    vector<string> trig_paths = {"caloCalibCosmic_path","caloMVACE_path", "tprSeedDeM_path", "tprSeedDeP_path", "cprSeedDeM_path", "cprSeedDeP_path"};
+    TriggerResultsNavigator   trigNavig(trigResults);
+    
+    //    trigNavig.print();
     for (unsigned int i=0; i< _trigPaths.size(); ++i){
       string&path = _trigPaths.at(i);
-      if (trigNS->findTrigPath(path)>=0) {
-	size_t trigId = trigNS->findTrigPath(path);
-	if (trigResults->accept(trigId)) _sumHist._hTrigInfo[15]->Fill((double)i);
-      }
+      if (trigNavig.accept(path)) _sumHist._hTrigInfo[15]->Fill((double)i);
     }
+  
+    //get the map we need to navigate the Trigger results
+    //    art::ServiceHandle<art::TriggerNamesService> trigNS;
+
+    // for (unsigned int i=0; i< _trigPaths.size(); ++i){
+    //   string&path = _trigPaths.at(i);
+    //   if (trigNS->findTrigPath(path)>=0) {
+    // 	size_t trigId = trigNS->findTrigPath(path);
+    // 	if (trigResults->accept(trigId)) _sumHist._hTrigInfo[15]->Fill((double)i);
+    //   }
+    // }
     
     //get the strawDigiMC truth if present
     art::Handle<mu2e::StrawDigiMCCollection> mcdH;
