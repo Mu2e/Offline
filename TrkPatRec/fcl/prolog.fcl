@@ -243,6 +243,7 @@ KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
+  CaloClusterCollection       : "CaloClusterFromProtoCluster"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []

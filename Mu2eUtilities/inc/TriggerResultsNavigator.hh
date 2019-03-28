@@ -37,8 +37,8 @@ namespace mu2e {
       }
     }
     
-      // Trigger path information for the current process
-      size_t
+    // Trigger path information for the current process
+    size_t
       size() const
     {
       return _trigPathsNames.size();

@@ -65,18 +65,20 @@ namespace mu2e
 // add a set of hits to an existing fit
     void addHits(StrawResponse::cptr_t srep, Mu2eDetector::cptr_t detmodel, 
 		 KalFitData&kalData, double maxchi);
+    void addTrkCaloHit(KalFitData&kalData);
 // add materials to a track
-    bool unweedHits(KalFitData&kalData, double maxchi);
+    bool unweedHits      (KalFitData&kalData, double maxchi);
 // KalContext interface
     virtual const TrkVolume* trkVolume(trkDirection trkdir) const ;
     BField const& bField() const;
     void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
     void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
     
-    TrkErrCode fitIteration(Mu2eDetector::cptr_t detmodel,
-			    KalFitData& kalData,int iter); 
-    bool       weedHits    (KalFitData& kalData, int    iter);
-    bool       updateT0    (KalFitData& kalData, int    iter);
+    TrkErrCode fitIteration  (Mu2eDetector::cptr_t detmodel,
+			      KalFitData& kalData,int iter); 
+    bool       weedHits      (KalFitData& kalData, int    iter);
+    bool       updateT0      (KalFitData& kalData, int    iter);
+    bool       weedTrkCaloHit(KalFitData& kalData, int    iter);
 
     TrkPrintUtils*  printUtils() { return _printUtils; }
   private:
@@ -85,6 +87,7 @@ namespace mu2e
     double _maxhitchi;	    // maximum hit chi when adding or weeding
     double _maxpull;   // maximum pull in TrkHit 
     unsigned _maxweed;
+    unsigned _maxweedtch;
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
     double _caloHitErr; // spatial error to use for TrkCaloHit
@@ -93,6 +96,10 @@ namespace mu2e
     double _t0errfac;	    // fudge factor for the calculated t0 error
     double _mint0doca;	    // minimum doca for t0 calculation.  Note this is a SIGNED QUANTITITY
     double _t0nsig;	    // # of sigma to include when selecting hits for t0
+    double _mindocatch, _maxdocatch; //minimum and maximum value of the TrkCaloHit DOCA
+    double _mindepthtch, _maxdepthtch; //minimum and maximum value of the TrkCaloHit depth within the crystals
+    double _maxtchdt; //maximum time window allowed to match a CaloCluster with the Track
+    double _mintchenergy;//minimum energy of the TrkCaloHit to be considered
     double _strHitW, _calHitW;//weight used to evaluate the initial track T0
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material

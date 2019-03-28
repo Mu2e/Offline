@@ -96,6 +96,7 @@ namespace mu2e
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
     _maxpull(pset.get<double>("maxPull",5)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
+    _maxweedtch(pset.get<unsigned>("maxweedtch",1)),
     // t0 parameters
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
     _caloHitErr(pset.get<double>("caloHitError")),
@@ -103,6 +104,12 @@ namespace mu2e
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
+    _mindocatch(pset.get<double>("mindocatch",-100.)),
+    _maxdocatch(pset.get<double>("maxdocatch", 50.)),
+    _mindepthtch(pset.get<double>("mindepthtch", 0.)),
+    _maxdepthtch(pset.get<double>("maxdepthtch", 300.)),
+    _maxtchdt(pset.get<double>("maxtchdt", 10.)),//ns
+    _mintchenergy(pset.get<double>("mintchEnergy", 10.)),//MeV
     _strHitW(pset.get<double>("strawHitT0Weight")),
     _calHitW(pset.get<double>("caloHitT0Weight")),
     //
@@ -400,6 +407,7 @@ namespace mu2e
     TrkErrCode retval = TrkErrCode::succeed;
 
     KalRep* krep =  kalData.krep;
+    bool    flagMaterialAdded(false);
 
     while(retval.success() && changed && ++niter < maxIterations()){
 //-----------------------------------------------------------------------------
@@ -427,7 +435,17 @@ namespace mu2e
       if(_addmaterial[iter]){
 	nmat = addMaterial(detmodel,krep);
         changed |= nmat>0;
+	if (!flagMaterialAdded) flagMaterialAdded=true;
       }
+
+      //weed the TrkCaloHit AFTER we included the material corrections 
+      // in the fit (we need to wait one iteration to allow the fitter to include
+      // the material corrections)
+      if ( (nmat == 0) && flagMaterialAdded && (kalData.nweedtchiter < _maxweedtch)){
+	weedTrkCaloHit(kalData, iter);
+      }
+
+      
       if(_debug > 1) std::cout << "Inner iteration " << niter << " changed = "
 	<< changed << " t0 old " << oldt0 << " new " << krep->t0()._t0 
 	<< " nmat = " << nmat << endl;
@@ -787,6 +805,119 @@ namespace mu2e
 	// Recursively iterate
         retval |= unweedBestHit(kalData, maxchi);
       }
+    }
+    return retval;
+  }
+
+  void
+  KalFit::addTrkCaloHit(KalFitData&kalData){
+    KalRep*  krep = kalData.krep;
+    double   minFOM(1e10), value(0);
+    const CaloCluster*cl(0);
+    TrkCaloHit* tchFinal(0);
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    double   crystalLength = ch->caloInfo().getDouble("crystalZLength");
+     
+    unsigned nClusters = kalData.caloClusterCol->size();
+    const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+    double   flt0 = krep->flt0();
+
+    for (unsigned i=0; i<nClusters; ++i){
+      cl    = &kalData.caloClusterCol->at(i);
+      if (cl->energyDep() < _mintchenergy) continue;
+      double      hflt(0.0);
+      Hep3Vector  cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cl->diskId(), cl->cog3Vector())); 
+      // move position to front of crystal
+      cog.setZ(cog.z()-crystalLength);
+      //evaluate the flight length at the z of the calorimeter cluster + half crystallength
+      TrkHelixUtils::findZFltlen(*reftraj, (cog.z()+0.5*crystalLength),hflt);
+      //evaluate the transittime using the full trajectory
+      double      tflt = krep->transitTime(flt0, hflt);
+      double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
+
+      //check the compatibility of the track and time within a given time window
+      if (fabs(dt) > _maxtchdt)        continue;
+      
+      //we need to create a TrkCaloHit to evaluate the doca
+      HitT0 ht0;
+      ht0._t0    = cl->time() + _ttcalc.caloClusterTimeOffset();
+      ht0._t0err = _ttcalc.caloClusterTimeErr();
+
+      Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
+
+      TrkCaloHit* tch = new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
+				       ht0, hflt,
+				       _calHitW, _caloHitErr, 
+				       _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset());
+      //evaluate the doca
+      TrkPoca poca(krep->traj(),hflt,*tch->hitTraj(),0.0);
+      value = poca.doca();
+      if (fabs(value) < minFOM && (value <= _maxdocatch) && (value >= _mindocatch)) {
+	tchFinal = tch;
+	minFOM   = value;
+      } else {
+	delete tch;
+      }
+    }
+    
+    if (tchFinal == 0)  return;
+    
+    //add the TrkCaloHit
+    krep->addHit(tchFinal);
+  }
+
+
+  bool
+  KalFit::weedTrkCaloHit(KalFitData& kalData, int iter) {
+    // check if the TrkCaloHit residuals is within a given limit
+    KalRep* krep = kalData.krep;
+    bool    retval(false);
+    //    double  worst = -1.;
+    TrkCaloHit   *worsthit = 0;
+    TrkHitVector *thv      = &(krep->hitVector());
+    
+    for (auto ihit=thv->begin();ihit!=thv->end(); ++ihit){
+      TrkCaloHit*hit = dynamic_cast<TrkCaloHit*>(*ihit);
+      if (hit == 0)     continue;
+      if (hit->isActive()) {
+	//evaluate the doca
+	double  doca  = hit->poca().doca();
+	//evaluate the crystal depth
+	double  depth = hit->hitLen();
+        if( (doca  < _mindocatch ) || (doca  > _maxdocatch) ||
+	    (depth < _mindepthtch) || (depth > _maxdepthtch)) {
+	  worsthit = hit;
+	  break;
+        }
+      }
+    }
+
+    if (iter == -1) iter = _ambigresolver.size()-1;
+
+    if(0 != worsthit){
+      retval = true;
+      worsthit->setActivity(false);
+      worsthit->setFlag(TrkHit::weededHit);
+      if (_resolveAfterWeeding) {
+//-----------------------------------------------------------------------------
+// _resolveAfterWeeding=0 makes changes in the logic fully reversible
+//-----------------------------------------------------------------------------
+        _ambigresolver[iter]->resolveTrk(krep);
+      }
+      TrkErrCode fitstat = krep->fit();
+      krep->addHistory(fitstat, "HitWeed");
+      
+      if (_debug > 0) {
+	char msg[200];
+        sprintf(msg,"KalFit::weedTrkCaloHit Iteration = %2i success = %i",iter,fitstat.success());
+	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
+      }
+      
+      // // Recursively iterate
+      // kalData.nweedtchiter++;
+      // if (fitstat.success() && kalData.nweedtchiter < _maxweedtch) {
+      //   retval |= weedTrkCaloHit(kalData,iter);
+      // }
     }
     return retval;
   }
