@@ -1104,3 +1104,38 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi) {
   leg->AddEntry(cctrig,"CaloCluster Triger","l");
   leg->Draw();
 }
+void PlotIPA(TTree* ta) {
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  TH1F* trkqual = new TH1F("trkqual","TrkQual",103,-0.01,1.01);
+  TH1F* mom = new TH1F("mom","Reco Momentum;P_{reco} (MeV/c)",100,40,56);
+  TH1F* momres = new TH1F("momres","Momentum Resolution;P_{reco} - P_{MC} (MeV/c)",100,-5.0,5.0);
+  TH1F* nactive = new TH1F("nactive","N Active Straw Hits",121,-0.5,120.5);
+  trkqual->SetStats(0);
+  ta->Project("trkqual","de.trkqual");
+  ta->Project("mom","de.mom","de.trkqual>0.4");
+  ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.trkqual>0.4");
+  ta->Project("nactive","de.nactive","de.trkqual>0.4");
+  TCanvas* ipacan = new TCanvas("ipacan","ipacan",800,800);
+  ipacan->Divide(2,2);
+  ipacan->cd(1);
+  trkqual->Draw();
+  ipacan->cd(2);
+  nactive->Draw();
+  ipacan->cd(3);
+  mom->Draw();
+  ipacan->cd(4);
+  gPad->SetLogy();
+  double integral = momres->GetEntries()*momres->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
+  TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+  dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
+  momres->Fit("dscb","RQ");
+}
