@@ -441,7 +441,7 @@ namespace mu2e
       //weed the TrkCaloHit AFTER we included the material corrections 
       // in the fit (we need to wait one iteration to allow the fitter to include
       // the material corrections)
-      if ( (nmat == 0) && flagMaterialAdded && (kalData.nweedtchiter < _maxweedtch)){
+      if ( _useTrkCaloHit && (nmat == 0) && flagMaterialAdded && (kalData.nweedtchiter < _maxweedtch)){
 	weedTrkCaloHit(kalData, iter);
       }
 
@@ -832,7 +832,7 @@ namespace mu2e
       //evaluate the flight length at the z of the calorimeter cluster + half crystallength
       TrkHelixUtils::findZFltlen(*reftraj, (cog.z()+0.5*crystalLength),hflt);
       //evaluate the transittime using the full trajectory
-      double      tflt = krep->transitTime(flt0, hflt);
+      double      tflt = krep->t0()._t0 + krep->transitTime(flt0, hflt);
       double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
 
       //check the compatibility of the track and time within a given time window
@@ -919,6 +919,8 @@ namespace mu2e
       //   retval |= weedTrkCaloHit(kalData,iter);
       // }
     }
+
+    kalData.nweedtchiter++;
     return retval;
   }
 

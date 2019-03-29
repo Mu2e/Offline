@@ -91,7 +91,6 @@ namespace mu2e
     art::ProductToken<KalSeedCollection> const _ksToken;
     art::ProductToken<CaloClusterCollection> const _clToken;
     // flags
-    int          _useTrkCaloHit;
     StrawHitFlag _addsel;
     StrawHitFlag _addbkg;
     TrkFitFlag _goodseed;
@@ -137,7 +136,6 @@ namespace mu2e
     _shfToken{consumes<StrawHitFlagCollection>(_shfTag)},
     _ksToken{consumes<KalSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
     _clToken{consumes<CaloClusterCollection>(pset.get<art::InputTag>("CaloClusterCollection"))},
-    _useTrkCaloHit(pset.get<int>("UseTrkCaloHit", 1)),
     _addsel(pset.get<vector<string>>("AddHitSelectionBits", vector<string>{})),
     _addbkg(pset.get<vector<string>>("AddHitBackgroundBits", vector<string>{})),
     _goodseed(pset.get<vector<string>>("GoodKalSeedFitBits", vector<string>{})),
@@ -233,7 +231,7 @@ namespace mu2e
     _result.event          = &event ;
     _result.chcol          = _chcol ;
     _result.shfcol         = _shfcol ;
-    if (_useTrkCaloHit) _result.caloClusterCol = _clCol;
+    if (_kfit.useTrkCaloHit()) _result.caloClusterCol = _clCol;
     //    _result.tpart       = _tpart ;
     _result.fdir           = _fdir  ;
 
@@ -290,7 +288,7 @@ namespace mu2e
 	    findMissingHits(_result);
 	  }
 	  //check the presence of a TrkCaloHit; if it's not present, add it
-	  if (_useTrkCaloHit && !hasTrkCaloHit(_result)){
+	  if (_kfit.useTrkCaloHit() && !hasTrkCaloHit(_result)){
 	    _kfit.addTrkCaloHit(_result);
 	  }
 
@@ -424,7 +422,7 @@ namespace mu2e
     } else {
       _shfcol = 0;
     }
-    if(_useTrkCaloHit == 1){
+    if(_kfit.useTrkCaloHit() == 1){
       auto clH = evt.getValidHandle(_clToken);
       _clCol = clH.product();
     }

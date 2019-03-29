@@ -80,6 +80,7 @@ namespace mu2e
     bool       updateT0      (KalFitData& kalData, int    iter);
     bool       weedTrkCaloHit(KalFitData& kalData, int    iter);
 
+    bool       useTrkCaloHit() const { return _useTrkCaloHit;}
     TrkPrintUtils*  printUtils() { return _printUtils; }
   private:
     // iteration-independent configuration parameters
@@ -89,7 +90,7 @@ namespace mu2e
     unsigned _maxweed;
     unsigned _maxweedtch;
     bool _initt0;	    // initialize t0?
-    bool _useTrkCaloHit;    //use the TrkCaloHit to initialize the t0?
+    bool _useTrkCaloHit;    //use the TrkCaloHit 
     double _caloHitErr; // spatial error to use for TrkCaloHit
     std::vector<bool> _updatet0; // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
