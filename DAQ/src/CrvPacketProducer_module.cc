@@ -204,7 +204,7 @@ namespace mu2e {
 
 	      outputStream << curHit.sipmID << "\t";
 	      outputStream << curHit.time << "\t";
-	      outputStream << curHit.recoDigiSamples << "\t";
+	      //	      outputStream << curHit.recoDigiSamples << "\t";
 	      for(size_t j = 0; j<curHit.waveform.size(); j++) {
 		outputStream << curHit.waveform[j];
 		if(j<curHit.waveform.size()-1) {

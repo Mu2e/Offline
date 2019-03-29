@@ -241,7 +241,7 @@ void
 	    std::cout << cc.DBV_startTDC(pos,i) << " ";
 	    for(size_t j=0; j<mu2e::CrvDigi::NSamples; j++) {
 	      std::cout << cc.DBV_ADCs(pos,i)[j];
-	      if(i<mu2e::CrvDigi::NSamples-1) {
+	      if(j<mu2e::CrvDigi::NSamples-1) {
 		std::cout << " ";
 	      }
 	    }
