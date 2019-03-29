@@ -23,8 +23,6 @@
 
 #include <string>
 
-#include "trace.h"
-
 #include <memory>
 
 namespace art {
@@ -66,7 +64,7 @@ CrvProducer::CrvProducer(fhicl::ParameterSet const& pset)
   : EDProducer( )
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCRV_(pset.get<int>("parseCRV",1))
-  , crvFragmentsTag_{"daq:crv"}
+  , crvFragmentsTag_(pset.get<art::InputTag>("crvTag","daq:crv"))
 {
   produces<EventNumber_t>(); 
   produces<mu2e::CrvDigiCollection>();
@@ -256,9 +254,7 @@ void
   } // Close loop over fragments
 
   if( diagLevel_ > 0 ) {
-    TRACE( 11, "mu2e::CrvProducer::produce exiting eventNumber=%d / timestamp=%d", (int)(event.event()), eventNumber );
     std::cout << "mu2e::CrvProducer::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
-
   }
 
   event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t( eventNumber )));

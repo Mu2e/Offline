@@ -11,20 +11,16 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-//#include "canvas/Utilities/Exception.h"
 #include "mu2e-artdaq-core/Overlays/ArtFragmentReader.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 #include "TrackerConditions/inc/Types.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
-//#include "TrackerConditions/inc/Types.hh"
 
 #include <iostream>
 
 #include <string>
-
-#include "trace.h"
 
 #include <memory>
 
@@ -70,8 +66,8 @@ Mu2eProducer::Mu2eProducer(fhicl::ParameterSet const& pset)
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCAL_(pset.get<int>("parseCAL",1))
   , parseTRK_(pset.get<int>("parseTRK",1))
-  , trkFragmentsTag_{"daq:trk"}
-  , caloFragmentsTag_{"daq:calo"}
+  , trkFragmentsTag_(pset.get<art::InputTag>("trkTag","daq:trk"))
+  , caloFragmentsTag_(pset.get<art::InputTag>("caloTag","daq:calo"))
 {
   produces<EventNumber_t>(); 
   produces<mu2e::StrawDigiCollection>();
@@ -86,7 +82,6 @@ void
 {
 
   art::EventNumber_t eventNumber = event.event();
-  //  art::EventNumber_t eventNumber = 0;
 
   auto trkFragments = event.getValidHandle<artdaq::Fragments>(trkFragmentsTag_);
   auto calFragments = event.getValidHandle<artdaq::Fragments>(caloFragmentsTag_);
@@ -383,7 +378,6 @@ void
   //  }  // Close loop over the TRK and CAL collections
 
   if( diagLevel_ > 0 ) {
-    TRACE( 11, "mu2e::Mu2eProducer::produce exiting eventNumber=%d / timestamp=%d", (int)(event.event()), eventNumber );
     std::cout << "mu2e::Mu2eProducer::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
 
   }
