@@ -1043,5 +1043,64 @@ void t0(TTree* ta) {
   t00->Draw();
   t0can->cd(2);
   t01->Draw();
-  
+}
+
+void Eff(TTree* ta, unsigned norm, double plo, double phi) {
+  TH1F* allrec = new TH1F("allrec","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* tqrec = new TH1F("tqrec","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* tprtrig = new TH1F("tprtrig","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* cprtrig = new TH1F("cprtrig","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* trktrig = new TH1F("trktrig","Reco Rate vs generated momentum",100,plo,phi);
+  TH1F* cctrig = new TH1F("cctrig","Reco Rate vs generated momentum",100,plo,phi);
+
+  TCut goodtrk("detrkqual.trkqual>0.4");
+  TCut tprdem("(trigbits&0x200)==0x200");
+  TCut cprdem("(trigbits&0x8)==0x8");
+  TCut trkdem("(trigbits&0x208)>0");
+  TCut cc("(trigbits&0x4)==0x4");
+ 
+
+  allrec->SetStats(0);
+  tqrec->SetStats(0);
+  tprtrig->SetStats(0);
+  cprtrig->SetStats(0);
+  trktrig->SetStats(0);
+  cctrig->SetStats(0);
+
+  allrec->SetLineColor(kBlue);
+  tqrec->SetLineColor(kRed);
+  tprtrig->SetLineColor(kGreen);
+  cprtrig->SetLineColor(kOrange);
+  trktrig->SetLineColor(kCyan);
+  cctrig->SetLineColor(kBlack);
+  ta->Project("allrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)");
+  ta->Project("tqrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk);
+  ta->Project("tprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&tprdem);
+  ta->Project("cprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&cprdem);
+  ta->Project("trktrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&trkdem);
+  ta->Project("cctrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&cc);
+
+  // scale by the absolute normalization
+  double scalefac =100.0/norm;
+  allrec->Scale(scalefac);
+  tqrec->Scale(scalefac);
+  tprtrig->Scale(scalefac);
+  cprtrig->Scale(scalefac);
+  trktrig->Scale(scalefac);
+  cctrig->Scale(scalefac);
+  TCanvas* eff = new TCanvas("eff","Efficiency",600,600);
+  allrec->Draw("h");
+  tqrec->Draw("hsame");
+  trktrig->Draw("hsame");
+  tprtrig->Draw("hsame");
+  cprtrig->Draw("hsame");
+  cctrig->Draw("hsame");
+  TLegend* leg = new TLegend(0.1,0.6,0.5,0.9);
+  leg->AddEntry(allrec,"All Reco","l");
+  leg->AddEntry(tqrec,"TrkQual>0.4","l");
+  leg->AddEntry(trktrig,"Track Triger","l");
+  leg->AddEntry(tprtrig,"TrackPatRec Triger","l");
+  leg->AddEntry(cprtrig,"CalPatRec Triger","l");
+  leg->AddEntry(cctrig,"CaloCluster Triger","l");
+  leg->Draw();
 }

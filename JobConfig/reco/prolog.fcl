@@ -118,10 +118,11 @@ Reconstruction : {
 		  "KFFDmuM", "KFFDmuP", 
 	          "KFFUmuM", "KFFUmuP"
 		]
-      MomentumCutoff : [ 90.0, 80.0,
-			 80.0, 80.0,
-			 90.0, 80.0,
-			 80.0, 80.0 ]
+		# // set low cutoffs
+      MomentumCutoff : [ 60.0, 60.0,
+			 60.0, 60.0,
+			 60.0, 60.0,
+			 60.0, 60.0 ]
     }
   }
 

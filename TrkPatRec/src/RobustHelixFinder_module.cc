@@ -497,7 +497,6 @@ namespace mu2e {
       HelixTool helTool(&helixData._hseed, 3);
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
-      helixData._diag.nHitsLoopFailed   = helTool.nHitsLoopFailed();
     }
   }
 
