@@ -1,10 +1,10 @@
 #include <unistd.h>
 #include <iostream>
 #include <iomanip>
-#include <ctime>
 #include "cetlib_except/exception.h"
 #include "DbService/inc/DbReader.hh"
 #include "DbService/inc/DbCurl.hh"
+#include "DbTables/inc/DbUtil.hh"
 
 
 using namespace std;
@@ -66,18 +66,9 @@ int mu2e::DbReader::query(std::string& csv,
 
 
   if(_verbose>3) {
-    time_t mtime;
-    time(&mtime);
-    struct tm *mtm = localtime(&mtime);
-    std::cout << "DbReader "
-	      << setfill('0') << setw(2) << mtm->tm_mon+1 << "/"
-	      << setw(2) << mtm->tm_mday << "/"
-	      << setw(2) << mtm->tm_year%100 << " "
-	      << setw(2) << mtm->tm_hour << ":"
-	      << setw(2) << mtm->tm_min << ":"
-	      << setw(2) << mtm->tm_sec 
-	      <<" url="<<url << std::endl;
-    std::cout << setfill(' ');
+    std::string time = DbUtil::timeString();
+    std::cout << "DbReader " << time 
+	      <<"  url="<<url << std::endl;
   }
   curl_easy_setopt(_curl_handle, CURLOPT_URL, url.c_str());
   // return an error when the http header returns an error (like bad gateway)
@@ -135,9 +126,11 @@ int mu2e::DbReader::query(std::string& csv,
   _lastTime = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
   _totalTime += _lastTime;
 
-  if(_timeVerbose>3) {
-    std::cout<<"DbReader::query took " <<
-      std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s " 
+  if(_timeVerbose>3 || _verbose>3) {
+    std::string time = DbUtil::timeString();
+
+    std::cout<<"DbReader "<< time << " "
+	     << std::setprecision(6) << _lastTime.count()*1.0e-6 <<" s " 
 	     << "to read " << table 
 	     << " on try " << itry << " with " 
 	     << std::setprecision(6) << sleep_time << " s sleeping"

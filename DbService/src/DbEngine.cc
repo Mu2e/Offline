@@ -287,7 +287,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   lazyBeginJob(); // initialize if needed
 
-  if(_verbose>9) cout << "DbEngine::update "
+  if(_verbose>9) cout << "DbEngine::update call "
 		      << tid << " " << run << " " << subrun << endl;
 
   // first look for table in override table list
@@ -301,7 +301,7 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
       if(oltab.iov().inInterval(run,subrun)) { // and in valid interval
 	auto dblt = oltab;
 	if(_verbose>9) cout << "DbEngine::update table found " 
-			    << dblt.table().name() << "in overrides " << endl;
+			    << dblt.table().name() << " in overrides " << endl;
 	return dblt;
       }
     }
