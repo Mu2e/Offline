@@ -25,7 +25,7 @@ physics : {
 
       includeTracker : 1
       includeCalorimeter : 1
-      includeCosmicRayVeto: 0
+      includeCosmicRayVeto: 1
       includeDMAHeaders: 1
       # Cosmic ray veto module is currently incomplete
 
@@ -58,7 +58,7 @@ outputs:  {
 #		      "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
 #                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
 #                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
-##                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*",
+#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
 #                     ]
   }
 }
