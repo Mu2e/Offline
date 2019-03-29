@@ -29,7 +29,6 @@
 // Mu2e includes.
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-//#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "DAQDataProducts/inc/DataBlockCollection.hh"
@@ -104,6 +103,9 @@ private:
 
   int _includeDMAHeaders;
 
+  // Set to 1 to save packet data to a binary file
+  int _generateBinaryFile;
+
   // Diagnostics level.
   int _diagLevel;
 
@@ -131,12 +133,16 @@ AggregateDAQOutput::AggregateDAQOutput(fhicl::ParameterSet const& pset):
   _includeCalorimeter(pset.get<int>("includeCalorimeter",1)),
   _includeCosmicRayVeto(pset.get<int>("includeCosmicRayVeto",0)),
   _includeDMAHeaders(pset.get<int>("includeDMAHeaders",1)),
+  _generateBinaryFile(pset.get<int>("generateBinaryFile",1)),
   _diagLevel(pset.get<int>("diagLevel",0)),
   _maxFullPrint(pset.get<int>("maxFullPrint",5))
 {
   produces<mu2e::DataBlock::timestamp>();
   produces< std::vector<mu2e::DataBlock::adc_t> >();
-  outputStream.open(_outputFile, std::ios::out | std::ios::binary);
+
+  if(_generateBinaryFile == 1) {
+    outputStream.open(_outputFile, std::ios::out | std::ios::binary);
+  }
 }
 
 void AggregateDAQOutput::beginJob(){
@@ -147,14 +153,21 @@ void AggregateDAQOutput::beginJob(){
 	      << std::endl;
   }
 
-  if ( _includeDMAHeaders == 0 ) {
-    std::cout << "WARNING: Not including DMA headers" << std::endl;
+  if ( _generateBinaryFile == 0) {
+    std::cout << "WARNING: Not generating binary file" << std::endl;
+  }
+
+  if ( _includeDMAHeaders == 0 && _generateBinaryFile == 1) {
+    std::cout << "WARNING: Not including DMA headers in binary file" << std::endl;
   }
 }
 
 void AggregateDAQOutput::endJob(){
-  flushBuffer();
-  outputStream.close();
+
+  if( _generateBinaryFile == 1 ) {
+    flushBuffer();
+    outputStream.close();
+  }
 
   if(_generateTimestampTable) {
     std::ofstream tsTableStream;
@@ -394,6 +407,10 @@ void AggregateDAQOutput::produce(Event & evt) {
   std::vector<mu2e::DataBlock::adc_t> masterVector;
   std::vector<mu2e::DataBlock::adc_t> DMABlockVector;
 
+  std::vector<mu2e::DataBlock::adc_t> headerlessMasterVector;
+  std::vector<mu2e::DataBlock::adc_t> headerlessDMABlockVector;
+
+
   for(size_t collectionIdx = 0; collectionIdx<collectionsByDTC.size(); collectionIdx++) {
     mu2e::DataBlockCollection datablocks = collectionsByDTC[collectionIdx];
     for(size_t dataBlockIdx = 0; dataBlockIdx<datablocks.size(); dataBlockIdx++) {
@@ -403,6 +420,7 @@ void AggregateDAQOutput::produce(Event & evt) {
 	  atBeginningOfDMABlock = false;
 
 	  DMABlockVector.clear();
+	  headerlessDMABlockVector.clear();
 	  
 	  curDataBlockCount = 0;
 
@@ -426,6 +444,7 @@ void AggregateDAQOutput::produce(Event & evt) {
 	curDataBlock.setTimestamp(ts); // Overwrite the timestamp
 	for(size_t adcNum = 0; adcNum < curDataBlock.size(); adcNum++) {
 	  DMABlockVector.push_back(curDataBlock[adcNum]);
+	  headerlessDMABlockVector.push_back(curDataBlock[adcNum]);
 	}
 	curDMABlockByteCount += curDataBlock.size() * 2; 
 	curDataBlockCount++;
@@ -448,6 +467,7 @@ void AggregateDAQOutput::produce(Event & evt) {
 	  }
 
 	  masterVector.insert(masterVector.end(), DMABlockVector.begin(), DMABlockVector.end());
+	  headerlessMasterVector.insert(headerlessMasterVector.end(), headerlessDMABlockVector.begin(), headerlessDMABlockVector.end());
 	  curDMABlockIdx++;
 
 	  atBeginningOfDMABlock = true;
@@ -461,18 +481,20 @@ void AggregateDAQOutput::produce(Event & evt) {
 
 
   // Write all values, including superblock header and DMA header values, to output buffer
-  for ( size_t idx=0; idx<masterVector.size(); idx++ ) {
-    if(outputBuffer.size()>= _bufferSize) {
+  if( _generateBinaryFile == 1) {
+    for ( size_t idx=0; idx<masterVector.size(); idx++ ) {
+      if(outputBuffer.size()>= _bufferSize) {
 	flushBuffer();
+      }
+      outputBuffer.push_back(masterVector[idx]);
     }
-    outputBuffer.push_back(masterVector[idx]);
   }
 
   numEventsProcessed += 1;
 
   // Store the timestamp and DataBlockCollection in the event
   evt.put(std::unique_ptr<mu2e::DataBlock::timestamp>(new mu2e::DataBlock::timestamp( ts )));
-  evt.put(std::make_unique< std::vector<mu2e::DataBlock::adc_t> >(masterVector));
+  evt.put(std::make_unique< std::vector<mu2e::DataBlock::adc_t> >(headerlessMasterVector));
 
 
 } // end of ::produce

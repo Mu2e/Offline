@@ -30,6 +30,8 @@ physics : {
       # Cosmic ray veto module is currently incomplete
 
       generateTimestampTable : 1
+
+      generateBinaryFile : 1
       
       outputFile      : "DTC_packets.bin"
       maxDMABlockSize : 32000
