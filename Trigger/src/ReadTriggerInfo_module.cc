@@ -227,8 +227,7 @@ namespace mu2e {
     art::InputTag             _evtWeightTag;
     double                    _duty_cycle;
 
-    int                       _nProcess;
-    int                       _numEvents;    
+    float                     _nProcess;
     double                    _bz0;
     double                    _nPOT;
     
@@ -269,8 +268,7 @@ namespace mu2e {
     _cdTag         (pset.get<art::InputTag>("caloDigiCollection"   , "CaloDigiFromShower")),
     _evtWeightTag  (pset.get<art::InputTag>("protonBunchIntensity" , "protonBunchIntensity")),
     _duty_cycle    (pset.get<float> ("dutyCycle", 1.)),
-    _nProcess(0), 
-    _numEvents(0)
+    _nProcess      (pset.get<float> ("nEventsProcessed", 1.))
   {
     _trigAll.      resize(_nMaxTrig);	     
     _trigFinal.    resize(_nMaxTrig);    
@@ -448,7 +446,6 @@ namespace mu2e {
   void ReadTriggerInfo::endJob(){
 
     //set hitograms' titles
-
     //Helix
     for (int i=0; i<_nTrackTrig; ++i){
       for (int j=0; j<kNHelixTrigVar; ++j){
@@ -622,7 +619,7 @@ namespace mu2e {
 
       labels_by_rate.push_back(_trigFinal[i].label);
 
-      double  eff   = nEvents/(double)_nProcess;
+      double  eff   = nEvents/_nProcess;
       double  rate  = mean_mb_rate*eff;
       _sumHist._hTrigBDW[0]->GetXaxis()->SetBinLabel(index+1, _trigFinal[i].label.c_str());
       _sumHist._hTrigBDW[1]->GetXaxis()->SetBinLabel(index+1, _trigFinal[i].label.c_str());
@@ -662,7 +659,7 @@ namespace mu2e {
       if (std::strcmp(label_ref, label) != 0)      continue;
       
       for (int k=0; k<nLabels; ++k){
-	label_ref = VecLabels.at(k).c_str();
+       	label_ref = VecLabels.at(k).c_str();
 	for (int j=0; j<nbins; ++j){
 	  if (j == i)      break;
 	  label =   _sumHist._h2DTrigInfo[1]->GetYaxis()->GetBinLabel(j+1);
@@ -672,9 +669,7 @@ namespace mu2e {
       }
       break;
     }
-    
-    
-    
+
   }
 
   //================================================================
@@ -690,8 +685,6 @@ namespace mu2e {
 
   void ReadTriggerInfo::analyze(const art::Event& event) {
 
-    ++_nProcess;
-
     //get the number of POT
     _nPOT  = -1.;
     art::Handle<ProtonBunchIntensity> evtWeightH;
@@ -701,6 +694,7 @@ namespace mu2e {
     }
 
     std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
+    
     event.getManyByType(hTrigInfoVec);
 
     //get the TriggerResult
@@ -785,13 +779,11 @@ namespace mu2e {
       //fill the Global Trigger bits info
       findTrigIndex(_trigAll, moduleLabel, index_all);
       _trigAll[index_all].label  = moduleLabel;
-      //      if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	//      }
 
       findTrigIndex(_trigFinal, moduleLabel, index);
       if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	_trigFinal[index].label  = moduleLabel;
-	_trigFinal[index].counts = _trigFinal[index].counts + 1;
+	_trigFinal[index].label    = moduleLabel;
+	_trigFinal[index].counts   = _trigFinal[index].counts + 1;
 	_trigAll[index_all].counts = _trigAll[index_all].counts + 1;
 	trigFlagAll_index.push_back(index_all);
       }
