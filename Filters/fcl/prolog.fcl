@@ -49,10 +49,13 @@ DigiCompressionTags : {
 DigiCompression : {
   # redefine TimeMaps
     TimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+    # for legacy data sets
+    NoCosmicTimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 }
 
 RecoCompression : {
     TimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
+    NoCosmicTimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ]
 }
 
 DigiCompression : {
