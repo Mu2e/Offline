@@ -152,8 +152,8 @@ CosmicMuonInfo : {
 	filterCuts      : {
 	pmin          : 200. # MeV/c set low 
 	pmax          : 1000000. # MeV/c currnetly not using 
-	minStrawDigis :   10  # Minimum number of digis made by the primary muon
-	minPlanes     :    3  # Minimum number of planes hit by the muon track
+	minStrawDigis :    2  # Minimum number of digis made by the primary muon //10
+	minPlanes     :    2  # Minimum number of planes hit by the muon track//3
 	minBackground :    0  # Make > 0 to select events with background digis
 	maxBackground : 9999  # Make a small number to limit digis not from the muon
 	  }

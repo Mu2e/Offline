@@ -4,7 +4,6 @@
 // $Author: S.middleton
 // $Date: Feb 2019 $
 
-
 // ART:
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
@@ -27,36 +26,29 @@
 #include "TrkReco/inc/CosmicTrackFit.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
-
 //utils:
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 //Track Fitting Headers:
 #include "TrkPatRec/inc/CosmicTrackFinder_types.hh"
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
 #include "TrkReco/inc/TrkFaceData.hh"
-
 //For Drift:
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PanelStateIterator.hh"
-
 // Mu2e BaBar
 #include "BTrkData/inc/TrkStrawHit.hh"
 
 //CLHEP:
-
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "CLHEP/Matrix/Vector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
-
 
 //ROOT: 
 #include "TH1F.h"
 #include "TH2F.h"
 #include "Math/VectorUtil.h"
 #include "TVector2.h"
-
 //C++:
-
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -217,9 +209,9 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
      
      
     _data.event       = &event;
-    _data.nseeds += 1;
     
     
+    std::cout<<" neseed "<<_data.nseeds<<std::endl;
     //ensure all data types present. Fill data...
    
     _data.nTimePeaks  = tccol.size();
@@ -282,7 +274,7 @@ Ensure enough straw hits used
 	_stResult._diag.nChFit = _stResult._nXYCh;
 	
       } //end "diag"
-    
+      
       if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK)) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
 	      //tentatively store as a temporary result
@@ -291,7 +283,7 @@ Ensure enough straw hits used
  /*------------------------- FITTING STAGE  :---------------------------//
 Fill Seed Info into CosmicTrackFinder_seed
 //------------------------- FITTING STAGE  :---------------------------*/
-	  
+	     _data.nseeds += 1;
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
 		      //fille the hits in the seed collection
@@ -432,12 +424,8 @@ int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHit
     double     minT(500.), maxT(2000.);// TODO: Check Where do these come from?
     for (int i=0; i<nhits; ++i){
       int          index   = TCluster.hits().at(i);
-      
-      ComboHit     sh      = chcol .at(index);
-      
-      
+      ComboHit     sh      = chcol .at(index); 
       if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
-
       // ++ngoodhits;
       ngoodhits += sh.nStrawHits();
     }

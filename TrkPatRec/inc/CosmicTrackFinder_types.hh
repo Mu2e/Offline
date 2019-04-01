@@ -23,6 +23,8 @@ namespace mu2e {
       fhicl::ParameterSet*            timeOffsets;
       enum {kMaxSeeds = 1000, kMaxNHits = 10 };
       int     nseeds ; 
+      int     npasses ;
+      int     chi2numbers ;
       int     nTimePeaks;               // number of time peaks (input)
       
       int     nChPPanel[kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster

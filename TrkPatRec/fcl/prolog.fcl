@@ -40,16 +40,15 @@ TimeClusterFinderCosmics : {
   UseCaloClusterPosition : false
 }
 
-StraightTrackFinder : {
-    module_type		: StraightTrackFinder
-    ComboHitCollection     : "makePH"
-    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
-    TimeClusterCollection  : "TimeClusterFinderCosmics"
-    StraightTrackSeedCollection  :"StraightTrackFinder"
-    diagPlugin : { tool_type                    : "StraightTrackFinderDiag"
-    }
-                                    
-}
+//StraightTrackFinder : {
+//    module_type		: StraightTrackFinder
+//    ComboHitCollection     : "makePH"
+//    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+//    TimeClusterCollection  : "TimeClusterFinderCosmics"
+//    StraightTrackSeedCollection  :"StraightTrackFinder"
+//    diagPlugin : { tool_type                    : "StraightTrackFinderDiag"
+//    }                                   
+//}
 
 CosmicTrackFinder : {
     module_type		: CosmicTrackFinder
@@ -452,7 +451,7 @@ Tracking : {
   producers : {
     TimeClusterFindere  : @local::TimeClusterFindere
     TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
-    StraightTrackFinder  : @local::StraightTrackFinder
+    //StraightTrackFinder  : @local::StraightTrackFinder
     CosmicTrackFinder  : @local::CosmicTrackFinder
     HelixFindere  : @local::RobustHelixFindere
     TimeClusterFinderMu  : @local::TimeClusterFinderMu
@@ -518,7 +517,7 @@ Tracking : {
   }
 }
 #production sequence to find straight track
-Tracking.FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ] //old fit routine
+//Tracking.FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ] //old fit routine
 Tracking.FindCosmics : [ TimeClusterFinderCosmics, CosmicTrackFinder ]
 
 # production sequences for tracking specific paricles; first electrons

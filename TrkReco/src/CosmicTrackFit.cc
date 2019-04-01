@@ -61,7 +61,7 @@ namespace mu2e
     _minnsh(pset.get<unsigned>("minNStrawHits",2)),
     _minCHHits(pset.get<unsigned>("minCHHits",4)),
     _n_outliers(pset.get<unsigned>("_n_outliers",5)),
-    _D_error(pset.get<float>("Derror",0.01)),
+    _D_error(pset.get<float>("Derror",0.0001)),
     _maxresid(pset.get<float>("maxresid",500)),
     _maxniter(pset.get<unsigned>("maxniter",1000)),
     _maxpull(pset.get<double>("maxPull",5)),
@@ -100,11 +100,19 @@ namespace mu2e
       XYZVec track(tx,ty,tz);
       return track.Unit();
     } 
-
- //--------------Fit-----------------//
+    
+    XYZVec CosmicTrackFit::LineDirection(double a1, double b1, const ComboHit *ch0, const ComboHit *chN) {
+     
+      double tx = a1*(chN->pos().z() - ch0->pos().z());
+      double ty = b1*(chN->pos().z() - ch0->pos().z());
+      double tz = chN->pos().z() - ch0->pos().z();
+      
+      XYZVec track(tx,ty,tz);
+      return track.Unit();
+    } 
+//--------------Fit-----------------//
 //Top call to Fitting routines....
 //-------------------------------------------// 
-
   void CosmicTrackFit::BeginFit(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics){
       if(_debug>0){
       	std::cout<<" Beginning Fit ..." << std::endl;
@@ -124,8 +132,6 @@ namespace mu2e
     //Start Chi2 Fitting:
     if (!init)RunFitChi2(TrackData, diagnostics);
   }
-
-
 /*------------------------------Chi 2 Fit----------------------------//
 //   Adds Chi-2 optimization to fitting routine //
 //   Refits and adjusts track fit paramters by weights//
@@ -133,24 +139,27 @@ namespace mu2e
 void CosmicTrackFit::RunFitChi2(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics) {   
    CosmicTrack* track = &TrackData._tseed._track; 
    //first perform the chi2 fit assuming all hits have same weight
-   CosmicTrack* all_hits_track = FitAll(TrackData, track, diagnostics);
-   
+   FitAll(TrackData, track, diagnostics);
     //if track is "good" add to list of good tracks:
-   if (goodTrack(all_hits_track)) TrackData._tseed._status.merge(TrkFitFlag::StraightTrackOK);  
+    //if (goodTrack(all_hits_track)) 
+   TrackData._tseed._status.merge(TrkFitFlag::StraightTrackOK);  
    //tag track as "converged" if it reaches this point in routine
-   TrackData._tseed._status.merge(TrkFitFlag::StraightTrackConverged);
-   TrackData._diag.CosmicTrackFitCounter += 1;
+   
+   TrackData._diag.CosmicTrackFitCounter += 1;//label as having a track
+   diagnostics.npasses +=1;//totsl number of tracks
+   std::cout<<"passes all cuts "<<diagnostics.npasses<<std::endl;
 }
+
+
 
 /*---------------Refine Fit ------ ----------------//
 //    Refines the fit in and updates chi2 information   //
 //-----------------------------------------------*/
-CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, CosmicTrackFinderTypes::Data_t& diagnostics){
-
+void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, CosmicTrackFinderTypes::Data_t& diagnostics){
+    std::cout<<" -------------------------------"<<std::endl;
     ::BuildMatrixSums S, S_init;
     
-    unsigned        nXYSh(0); 
-    unsigned        n_outliers(0);
+    unsigned        n_outliers(0), nhits_passed(0);
     ComboHit   *hitP1(0), *hitP2(0); 
     size_t nHits (trackData._chHitsToProcess.size());
     //Get initial seed:
@@ -164,83 +173,90 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
     XYZVec ZPrime = InitLineDirection(ch0, chN, cosmictrack); //Z'=track direction
     cosmictrack->set_initial_track_direction(ZPrime);
     cosmictrack->set_track_direction(ZPrime);
-    std::cout<<"Initial Track Direction: "<<ZPrime<<std::endl;
     XYZVec XPrime = ParametricFit::GetXPrime(ZPrime);
-    XYZVec YPrime = ParametricFit::GetYPrime(XPrime, ZPrime);
-    ParametricFit::TestConditions(XPrime, YPrime, ZPrime);
+    XYZVec YPrime = ParametricFit::GetYPrime(XPrime, ZPrime);   
     XYZVec XDoublePrime = ParametricFit::GetXDoublePrime(XPrime, YPrime, ZPrime);
     XYZVec YDoublePrime = ParametricFit::GetYDoublePrime(XPrime, YPrime, ZPrime);
-  
+    
     //First loop to update track information and hit error estimate
     for (size_t f1=0; f1<nHits+1; ++f1){  
+      
       hitP1 = &trackData._chHitsToProcess[f1];   
-      if (!use(*hitP1) )    continue;
-      nXYSh += hitP1->nStrawHits();
+      if (!use_hit(*hitP1) && hitP1->nStrawHits() < _minnsh)  continue;  
       XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
       XYZVec major_axis =  ParametricFit::MajorAxis(hitP1);
       XYZVec minor_axis =  ParametricFit::MinorAxis(hitP1);
       double errX =  ParametricFit::HitErrorX(hitP1, major_axis, minor_axis, XDoublePrime);
       double errY =  ParametricFit::HitErrorY(hitP1, major_axis, minor_axis, YDoublePrime);
-      S.addPoint(f1, point, XDoublePrime, YDoublePrime, errX, errY); //S will be  updated
-      S_init.addPoint(f1, point, XDoublePrime, YDoublePrime, errX, errY);//S_init is store for reference
+      
+      S.addPoint(f1, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY); //S will be  updated
+      S_init.addPoint(f1, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY);//S_init is store for reference
       
     }
+     std::cout<<"passed first cut "<<nhits_passed<<std::endl;
      //Get first estimate of track parameters
      int DOF = (nHits - _Npara);
-     cosmictrack->set_initchisq_dof(S_init.GetTotalChi2()/abs(DOF)); 
+  
      double a0 = S_init.GetAlphaX()[0][0];
      double a1 = S_init.GetAlphaX()[1][0];
      double b0 = S_init.GetAlphaY()[0][0];
      double b1 = S_init.GetAlphaY()[1][0];
      
-    
-     
+     cosmictrack->set_initchisq_dof(S_init.GetTotalChi2()/abs(DOF)); 
+     std::cout<<"Initial Parameters"<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<std::endl;
+     cosmictrack->set_initial_parameters(a0,a1,b0,b1);
      cosmictrack->set_parameters(a0,a1,b0,b1);
-     XYZVec updated_track_direction(a1, b1, 1); 
+     XYZVec updated_track_direction(a1, b1, 1);  
      cosmictrack->set_track_direction(updated_track_direction.Unit());
+     
+     XYZVec init_XDoublePrime = XDoublePrime;
+     XYZVec init_YDoublePrime = YDoublePrime;
+     XYZVec init_ZPrime = ZPrime;
      //second loop to update errors and iterate:
      for (size_t f2=0; f2<nHits+1; ++f2){
-     	      if(isnan(cosmictrack->get_track_direction().Mag2()) == true) continue;
+     	      if(isnan(cosmictrack->get_track_direction().Mag2()) == true) continue;     
      	      hitP2 = &trackData._chHitsToProcess[f2];
-      	      if (!use(*hitP2) && nXYSh < _minnsh )    continue;    
+      	      if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;
+      	      // Store axes for later:
+              
+	      //std::cout<<"Initial ZPrime"<<ZPrime<<std::endl;
       	      //Get error axes again: 	   
 	      XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());
 	      XYZVec major_axis =  ParametricFit::MajorAxis(hitP2);
       	      XYZVec minor_axis =  ParametricFit::MinorAxis(hitP2);
       	      double errX =  ParametricFit::HitErrorX(hitP2, major_axis, minor_axis, XDoublePrime);
       	      double errY =  ParametricFit::HitErrorY(hitP2, major_axis, minor_axis, YDoublePrime);
-	      double hit_error =  ParametricFit::TotalHitError(hitP2, major_axis, minor_axis, XDoublePrime, YDoublePrime);
+	      double hit_error =  ParametricFit::TotalHitError(hitP2, major_axis, minor_axis, XDoublePrime,YDoublePrime);
 	      //Get initial residuals and store for analysis later:
-	      double Rx = ParametricFit::GetResidualX(a0,a1, XDoublePrime, point);
-	      double Ry = ParametricFit::GetResidualY(b0, b1, YDoublePrime, point); 
+	      
+	      double Rx = ParametricFit::GetResidualX(a0,a1, init_XDoublePrime, point);
+	      double Ry = ParametricFit::GetResidualY(b0, b1, init_YDoublePrime, point);
+	       
 	      cosmictrack->set_init_hit_errorsTotal(hit_error);
 	      cosmictrack->set_init_fit_residual_errorsX(errX);
 	      cosmictrack->set_init_fit_residual_errorsY(errY);
 	      cosmictrack->set_init_fit_residualsX(Rx);
 	      cosmictrack->set_init_fit_residualsY(Ry);
-	      // Store axes for later:
-              XYZVec init_XDoublePrime = XDoublePrime;
-	      XYZVec init_YDoublePrime = YDoublePrime;
+	      
 	     //iterate errors:
 	     unsigned niter(0);
 	     bool errors_converged = false;
 	     while(niter < _maxniter && errors_converged==false){
-	        
+	        	        
 		niter +=1;
-	
+		std::cout<<"++++++++++++++++++++++"<<std::endl;
 		std::cout<<"Hit : "<<f2<<" Iteration: "<<niter<<std::endl;
-		std::cout<<"Previous : "<<cosmictrack->get_track_direction()<<std::endl;
+		
 		//To begin remove point which is being evaluated:
 		if (niter == 1){
-			S.removePoint(f2, point, init_XDoublePrime, init_YDoublePrime, errX, errY );
+			S.removePoint(f2, point, init_XDoublePrime, init_YDoublePrime, init_ZPrime, errX, errY );
 		}
 		else{
-			S.removePoint(f2, point, XDoublePrime, YDoublePrime, errX, errY );
+			S.removePoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY );
 		}
 		//Define a place to store error/track information from previous iteration:
     		XYZVec previous_XDoublePrime = XDoublePrime;
 	    	XYZVec previous_YDoublePrime = YDoublePrime;
-	    	//XYZVec previous_ZPrime = ZPrime;
 	    	
 		//Store errors from previous iteration:
 		double previous_hit_errorX = errX;
@@ -255,45 +271,49 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
     		//Get error projections on current axes:
     		errX = ParametricFit::HitErrorX(hitP2, major_axis, minor_axis, XDoublePrime);
                 errY = ParametricFit::HitErrorY(hitP2, major_axis, minor_axis, YDoublePrime);
-    		
+    		if(isnan(errX) == true || isnan(errY)==true) continue;	
 		//Define error change
-		double d_errorX = 0;//sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
-		double d_errorY = 0;//sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
+		double d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
+		double d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
 		std::cout<<" errors X "<<errX<<" previous "<<previous_hit_errorX<<" errors Y "<<errY<<" previous "<<previous_hit_errorY<<std::endl;
+		
 		//If new error in X is worse than old X error but Y is better update fit as:		
 		if (abs(errX) > abs(previous_hit_errorX) && abs(errY) <= abs(previous_hit_errorY)){
-			d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
-			//d_errorY = 0;
+			//d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
+			d_errorY = 0;
 		        YDoublePrime = previous_YDoublePrime;
 		        errY = previous_hit_errorY;
-                	S.addPoint(f2, point, XDoublePrime, YDoublePrime, errX, errY);	
+                	S.addPoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY);
+                	std::cout<<" errX worse "<<std::endl;	
 		}
 		
 		//If new error in Y is worse than old X error but X is better update fit as:
 		if (abs(errY) > abs(previous_hit_errorY) && abs(errX) <= abs(previous_hit_errorX)){
-			d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
-			//d_errorX = 0;
+			//d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
+			d_errorX = 0;
 		        XDoublePrime = previous_XDoublePrime;
 		        errX = previous_hit_errorX;
-                	S.addPoint(f2, point, XDoublePrime, YDoublePrime, errX, errY );	
+                	S.addPoint(f2, point, XDoublePrime, YDoublePrime,ZPrime, errX, errY );	
+                	std::cout<<" errY worse "<<std::endl;
 		}	
 		
 		//If both worse then update fit as:
 		if(abs(errX) > abs(previous_hit_errorX) && abs(errY) > abs(previous_hit_errorY)){
-		        d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
-			d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
-			S.addPoint(f2, point, XDoublePrime, YDoublePrime, errX, errY );
-			
+		        //d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
+			//d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
+			S.addPoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY );
+			std::cout<<" both worse "<<std::endl;
 		}
 		//If neither is better add back in the old value and return to previous track information
 		if(abs(errX) <= abs(previous_hit_errorX) && abs(errY) <= abs(previous_hit_errorY)){
-			//d_errorX = 0;
-			//d_errorY = 0;
+			d_errorX = 0;
+			d_errorY = 0;
 			errX = previous_hit_errorX;
 			errY = previous_hit_errorY;
 			XDoublePrime = previous_XDoublePrime;
 			YDoublePrime = previous_YDoublePrime;
-			S.addPoint(f2, point, XDoublePrime, YDoublePrime, errX, errY);
+			S.addPoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY);
+			std::cout<<" errY and X same "<<std::endl;
 		}
 		
 		//If the change is small stop iteration and claim track is converged:
@@ -302,44 +322,54 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
            		errors_converged = true;
 			cosmictrack->set_niter(niter);
                 } 
-                
+                if( (errors_converged == false && niter == _maxniter)){
+                        cosmictrack->add_outlier(hitP2);
+                 }
                 //if never converges just remove this point but not the track it could be an odd outlier:
                 if( (errors_converged == false && niter == _maxniter)){
+                       
                 	nHits -=1;
                 	hitP2->_flag.merge(StrawHitFlag::outlier);
                 	n_outliers +=1;
                 	continue;
-                }
-               	
+                	
+                }    	
+                if(n_outliers > _n_outliers) continue;
                 //update the track fit information before next iteration:
-                XYZVec new_track_direction(S.GetAlphaX()[1][0],S.GetAlphaY()[1][0],1);//Relative to Z'
-                new_track_direction = new_track_direction.Unit();
-	     	ZPrime.SetXYZ(new_track_direction.X(),new_track_direction.Y(), new_track_direction.Z());
+                XYZVec new_track_direction(S.GetAlphaX()[1][0],S.GetAlphaY()[1][0],1);//Relative to Z' 
+                ZPrime = new_track_direction.Unit();                
+	     	//ZPrime.SetXYZ(new_track_direction.X(),new_track_direction.Y(), new_track_direction.Z());
 	     	cosmictrack->setXPrime(XDoublePrime);
     		cosmictrack->setYPrime(YDoublePrime);
     		cosmictrack->setZPrime(ZPrime);
-    		
-	     }
-	         if(nHits < _minCHHits) continue;
-	         if(track_length > _maxd) continue;
+	       }
+	        if(nHits < _minCHHits) continue;
+	        
 	     	//Update stored track information
 	     	double a0 = S.GetAlphaX()[0][0];
      		double a1 = S.GetAlphaX()[1][0];
      		double b0 = S.GetAlphaY()[0][0];
      		double b1 = S.GetAlphaY()[1][0];
-     		
-	        double newRx = ParametricFit::GetResidualX(a0,a1, XDoublePrime, point);
+     		cosmictrack->clear_parameters();
+     		cosmictrack->set_parameters(a0,a1,b0,b1);
+     		/*
+     		std::cout<<"Final XDoublePrime"<<XDoublePrime<<std::endl;
+     		std::cout<<"Final YDoublePrime"<<YDoublePrime<<std::endl;
+     		std::cout<<"Final ZPrime"<<ZPrime<<std::endl;
+     		std::cout<<"Final para"<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<std::endl;
+     		std::cout<<"NOut"<<n_outliers<<std::endl;
+     		*/
+	        double newRx = ParametricFit::GetResidualX(a0,a1, XDoublePrime,  point);
 	        double newRy = ParametricFit::GetResidualY(b0, b1, YDoublePrime, point);
 	        hit_error =  ParametricFit::TotalHitError(hitP2, major_axis, minor_axis, XDoublePrime, YDoublePrime);   
-	        
-	      	std::cout<<" Final parameters "<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<std::endl;
 	        //cut on residuals of hit:
 	        if(newRx > _maxresid || newRy > _maxresid){ 
-		  hitP2->_flag.merge(StrawHitFlag::outlier); 
+		  hitP2->_flag.merge(StrawHitFlag::outlier);
+		  cosmictrack->add_outlier(hitP2);
 		  n_outliers +=1;
+		  
 		 } 
 	        
-		if(n_outliers > _n_outliers) continue;
 		//Set Track Details:
 		cosmictrack->set_track_length(track_length);
 		cosmictrack->set_final_hit_errorsTotal(hit_error);
@@ -348,13 +378,11 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
 	      	cosmictrack->set_final_fit_residualsX(newRx);
 	      	cosmictrack->set_final_fit_residualsY(newRy);
 	      	cosmictrack->set_track_direction(ZPrime);
-	      	cosmictrack->set_track_position(a0,b0,0);
-	      	cosmictrack->set_parameters(a0,a1,b0,b1);
+	      	cosmictrack->set_track_position(a0,b0,0); 	
     		cosmictrack->set_N(nHits);
     		DOF = (nHits - _Npara); 
-    		cosmictrack->set_finalchisq_dof(S.GetTotalChi2()/abs(DOF));
+   		
     		//New Diag Framwork (In progress)
-    		/*
     		diagnostics.nhits[diagnostics.nseeds-1] =nHits;
     		diagnostics.chi2d_track[diagnostics.nseeds-1] = S.GetTotalChi2()/abs(DOF);
     		diagnostics.hit_residualX[diagnostics.nseeds-1][f2]=(newRx);
@@ -362,18 +390,18 @@ CosmicTrack* CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTra
     		diagnostics.hit_errorX[diagnostics.nseeds-1][f2]=(errX);
     		diagnostics.hit_errorY[diagnostics.nseeds-1][f2] = (errY);
     		diagnostics.nChFit[diagnostics.nseeds-1]= +1;
-    		*/
+    		
     }//end second loop
-    
-    std::cout<<"change in chi2 "<<S_init.GetTotalChi2()/abs(DOF)<<" "<<S.GetTotalChi2()/abs(DOF)<<"  "<<S.GetTotalChi2()/abs(DOF)-S_init.GetTotalChi2()/abs(DOF)<<std::endl;
-    DriftCorrection(trackData);
-    
-    S.clear();
-    return cosmictrack;
+    cosmictrack->set_finalchisq_dof(S.GetTotalChi2()/abs(DOF));
+    cosmictrack->set_finalchisq_dofY(S.GetChi2Y()/abs(DOF));
+    cosmictrack->set_finalchisq_dofX(S.GetChi2X()/abs(DOF));
+    diagnostics.chi2numbers +=1;
+    trackData._tseed._status.merge(TrkFitFlag::StraightTrackConverged);
+    std::cout<<"chi2 number"<<diagnostics.chi2numbers<<std::endl;
+    //DriftCorrection(trackData);   
+    //S.clear();
+    //return cosmictrack;
   }
-
-
-
 
 void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track){
 	//if track has a significant amount of tracks with large chi2 and those large values are all similar...and resiudals within range of each other, this coule mean a second track....check for this although unlikely with cosmics....
@@ -382,21 +410,22 @@ void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track){
 
 bool CosmicTrackFit::goodTrack(CosmicTrack* track)
   { 
-
     if(track->get_finalchisq_dof() < _maxchi2) return true;
     else return false;
 
   }
 
-/*--------------USE HIT?---------------------------//
+/*--------------USE? ---------------------------//
 //          Checks if flag                        //
 //------------------------------------------------*/
-bool CosmicTrackFit::use(const ComboHit& thit) const 
+bool CosmicTrackFit::use_hit(const ComboHit& thit) const 
   {
     return (!thit._flag.hasAnyProperty(_dontuseflag));
   }
-
-
+bool CosmicTrackFit::use_track(double track_length) const 
+  {
+     return (track_length > _maxd) ? false : true ;
+  }
  /*--------Drift Correction-------*/
 void CosmicTrackFit::DriftCorrection(CosmicTrackFinderData& trackData){
 	//Find SH in CH with smallest distance from wire centre, then need to find relative sign of that SH doca value. Then we know which side of wire the track approached. Then add on/minus off to z this distance
@@ -412,7 +441,7 @@ void CosmicTrackFit::DriftCorrection(CosmicTrackFinderData& trackData){
          //XYZVec LastPoint(chN->pos().x(),chN->pos().y(),chN->pos().z());
          for (size_t f1=0; f1<nHits+1; ++f1){  
       		hitP1 = &trackData._chHitsToProcess[f1];
-      		if (!use(*hitP1) )    continue;
+      		if (!use_hit(*hitP1) )    continue;
       		//XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
       	        straw     = &_tracker->getStraw(hitP1->strawId());
       		const CLHEP::Hep3Vector& wpos = straw->getMidPoint();

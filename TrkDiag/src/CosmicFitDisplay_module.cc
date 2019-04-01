@@ -52,6 +52,7 @@
 #include "TLegend.h"
 #include "TTree.h"
 #include "TH2D.h"
+#include "TF1.h"
 #include "TH3D.h"
 #include "Rtypes.h"
 #include "TApplication.h"
@@ -166,8 +167,8 @@ namespace mu2e
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
         auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
         
-        std::vector<double> x, y, z, a0, a1, b0, b1;
-        std::vector<XYZVec> xprimes, yprimes, zprimes, initial_track_direction;
+        std::vector<double> x, y, z, rawx, rawy, rawz, zinit, out_x, out_y, out_z, a0, a1, b0, b1;
+        std::vector<XYZVec> xprimes, yprimes, zprimes;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());
@@ -176,27 +177,61 @@ namespace mu2e
         a1.reserve(Tracks->size());
         b0.reserve(Tracks->size());
         b1.reserve(Tracks->size());
+        
         //loop over tracks:
         for(auto const& track: *Tracks){
-      
-        xprimes.push_back(track._track.getXPrime());
-        yprimes.push_back(track._track.getYPrime());
-        zprimes.push_back(track._track.getZPrime());
-        initial_track_direction.push_back(track._track.get_initial_track_direction() );
-        a0.push_back(track._track.get_track_parameters()[0]);
-        a1.push_back(track._track.get_track_parameters()[1]);
-        b0.push_back(track._track.get_track_parameters()[2]);
-        b1.push_back(track._track.get_track_parameters()[3]);
+		xprimes.push_back(track._track.getXPrime());
+		yprimes.push_back(track._track.getYPrime());
+		zprimes.push_back(track._track.getZPrime());
+		
+		if(track._track.get_track_parameters().size()!= 0){
+			if(isnan(track._track.get_track_parameters()[0]) == true && isnan(track._track.get_track_parameters()[1]) == true && isnan(track._track.get_track_parameters()[2]) == true && isnan(track._track.get_track_parameters()[3]) == true) continue;
+			a0.push_back(track._track.get_track_parameters()[0]);
+			a1.push_back(track._track.get_track_parameters()[1]);
+			b0.push_back(track._track.get_track_parameters()[2]);
+			b1.push_back(track._track.get_track_parameters()[3]);
+			
+	       	    }
         }
-        if(xprimes.size() >0){
+      if(xprimes.size() >0){
         // loop over combo hits
         for(auto const& chit : *comboHits){
-      
-        x.push_back(chit.pos().Dot(xprimes[0]));
-        y.push_back(chit.pos().Dot(yprimes[0]));
-        z.push_back(chit.pos().Dot(zprimes[0]));
+		x.push_back(chit.pos().Dot(xprimes[0]));
+		y.push_back(chit.pos().Dot(yprimes[0]));
+		z.push_back(chit.pos().Dot(zprimes[0]));
+		rawx.push_back(chit.pos().x());
+		rawy.push_back(chit.pos().y());
+		rawz.push_back(chit.pos().z());
+		
         }
-
+        for(auto const& track: *Tracks){
+               	size_t n_outliers = track._track.get_outliers().size();
+		for(size_t o =0; o< n_outliers;o++){
+			ComboHit* hit = track._track.get_outliers()[o];
+			out_x.push_back(hit->pos().Dot(xprimes[0]));
+			out_y.push_back(hit->pos().Dot(yprimes[0]));
+			out_z.push_back(hit->pos().Dot(zprimes[0]));
+					
+		}
+        }
+        /*
+      double minz = *std::min_element(z.begin(), z.end());
+      double maxz = *std::max_element(z.begin(), z.end());
+     
+      double minx = *std::min_element(x.begin(), x.end());
+      double maxx = *std::max_element(x.begin(), x.end());
+      double miny = *std::min_element(y.begin(), y.end());
+      double maxy = *std::max_element(y.begin(), y.end());
+      
+      double minrawz = *std::min_element(rawz.begin(), rawz.end());
+      double maxrawz = *std::max_element(rawz.begin(), rawz.end());
+     
+      double minrawx = *std::min_element(rawx.begin(), rawx.end());
+      double maxrawx = *std::max_element(rawx.begin(), rawx.end());
+      double minrawy = *std::min_element(rawy.begin(), rawy.end());
+      double maxrawy = *std::max_element(rawy.begin(), rawy.end());
+      */
+      double plotLimits(1500.);
         GeomHandle<Tracker> tracker;   
         // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
@@ -207,105 +242,174 @@ namespace mu2e
               std::cout << "Run: " << event.id().run()
            << "  Subrun: " << event.id().subRun()
            << "  Event: " << event.id().event()<<std::endl;
-              TLine  error_line, fit_to_track, initial_fit_to_track;
+              TLine  error_line, out_line, fit_to_trackxprime, fit_to_trackyprime;
 	      TArc   arc;
-              TPolyMarker poly;
+              TPolyMarker poly, out;
 	      TBox   box;
-	      TText  text;
-	     
+	      TText  text;     
 	      arc.SetFillStyle(0);
 	      //straw.SetFillStyle(0);
 	      //poly.SetMarkerStyle(2);
 	      //poly.SetMarkerSize(straw_radius);
 	      //poly.SetMarkerColor(kBlue);
-
 	      canvas_->SetTitle("foo title");
 	      auto pad = canvas_->cd(1);
 	      pad->Clear();
 	      canvas_->SetTitle("bar title");
-
-	      // Draw the frame for the y vs x plot.
-	      double plotLimits(1500.);
-	      auto xzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-
+	      
+	      auto xzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);//pad->DrawFrame(minz-100,minx-100, maxz+100, maxx+100);
 	      xzplot->GetYaxis()->SetTitleOffset(1.25);
 	      xzplot->SetTitle( "X'' vs Z'; Z'(mm);X''(mm)");
-
 	      error_line.SetLineColor(kRed);
-	      fit_to_track.SetLineColor(kBlue);
-	      initial_fit_to_track.SetLineColor(kGreen);
+	      fit_to_trackxprime.SetLineColor(kYellow);
+	      fit_to_trackxprime.SetLineColor(kGreen);
 	      poly.SetMarkerColor(kRed);
-              
-              for ( auto const& chit : *comboHits ){
-                       
+	      poly.SetMarkerSize(3);
+	      poly.SetMarkerStyle(5);
+              out.SetMarkerColor(kBlue);
+              out.SetMarkerStyle(5);
+              out.SetMarkerSize(3);
+              for ( auto const& chit : *comboHits ){ 
 			auto const& p = chit.pos();	
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();			
 			double x0prime{(p.Dot(xprimes[0]))} ;
+			
 			double z0prime{(p.Dot(zprimes[0]))};                      
 			poly.DrawPolyMarker( 1, &z0prime, &x0prime );
-		        
 			double x1 = p.Dot(xprimes[0])+s*w.Dot(xprimes[0]);
 			double x2 = p.Dot(xprimes[0])-s*w.Dot(xprimes[0]);
 			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
 			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
 			error_line.DrawLine( z1, x1, z2, x2);
               }
+              for(size_t o =0; o<out_x.size(); o++){
+              		
+              	        double x0prime{out_x[o]} ;
+			double z0prime{out_z[o]};                      
+			out.DrawPolyMarker( 1, &z0prime, &x0prime ); 
+              	        //out_line.DrawLine(Oz1, Ox1, Oz2, Ox2);	
+              }
 	      if(a1.size() > 0){
 		
-		double tz1 = z[0];
-		double tz2 = z[z.size()-1];
-		double tx1 = a1[0]*tz1+a0[0];
-		double tx2 = a1[0]*tz2+a0[0];
-		fit_to_track.DrawLine( tz1, tx1, tz2, tx2);
-		double ix1 = x[0] + initial_track_direction[0].x()*tz1;
-		double ix2 = x[x.size()-1] + initial_track_direction[0].x()*tz1;
-		initial_fit_to_track.DrawLine( tz1, ix1, tz2, ix2);
-		
+		TF1 *trackline_xprime = new TF1("line", "[0]+[1]*x", -plotLimits,plotLimits);
+		trackline_xprime->SetParameter(0, a0[0]);
+		trackline_xprime->SetParameter(1, a1[0]);
+		trackline_xprime->SetLineColor(6);
+		trackline_xprime->Draw("same");
+		/*
+		double tz1 = minrawz;
+	        double tz2 = maxrawz;
+	        double tx1 = a1[0]*tz1+a0[0];
+	        double tx2 = a1[0]*tz2+a0[0];
+                fit_to_trackxprime.DrawLine( tz1, tx1, tx2, tx2);
+                */
               }  
-              
               pad = canvas_->cd(2);
-	      pad->Clear();
-	      
+	      pad->Clear();   
+	      //auto yzplot = pad->DrawFrame(minz-100,miny-100, maxz+100, maxy+100);//pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
 	      auto yzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-
 	      yzplot->GetYaxis()->SetTitleOffset(1.25);
 	      yzplot->SetTitle( "Y'' vs Z'; Z'(mm);Y''(mm)");
 
-	      error_line.SetLineColor(kRed);
-	      fit_to_track.SetLineColor(kBlue);
-	      poly.SetMarkerColor(kRed);
-              
-              for ( auto const& chit : *comboHits ){
-                        
+              for ( auto const& chit : *comboHits ){                      
 			auto const& p = chit.pos();
-			
 			auto const& w = chit.wdir();
-			auto const& s = chit.wireRes();
-			
+			auto const& s = chit.wireRes();	
 			double y0prime{(p.Dot(yprimes[0]))} ;
-			double z0prime{(p.Dot(zprimes[0]))};
-                        
-			poly.DrawPolyMarker( 1, &z0prime, &y0prime );
-		        
+			double z0prime{(p.Dot(zprimes[0]))};          
+			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
 			double y1 = p.Dot(yprimes[0])+s*w.Dot(yprimes[0]);
 			double y2 = p.Dot(yprimes[0])-s*w.Dot(yprimes[0]);
 			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
 			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
 			error_line.DrawLine( z1, y1, z2, y2);
               }
-	      if(a1.size() > 0){
+	      if(b1.size() > 0){
+	      
+		TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",-plotLimits,plotLimits);
+		trackline_yprime->SetParameter(0, b0[0]);
+		trackline_yprime->SetParameter(1, b1[0]);
+		trackline_yprime->SetLineColor(6);
+		trackline_yprime->Draw("same");
+		/*
+		double tz1 = min;
+	        double tz2 = maxrawz;
+	        double ty1 = b1[0]*tz1+b0[0];
+	        double ty2 = b1[0]*tz2+b0[0];
+                fit_to_trackyprime.DrawLine( tz1, ty1, tz2, ty2);
+	        */
+              } 
+              for(auto const& track: *Tracks){
+               	size_t n_outliers = track._track.get_outliers().size();
+		for(size_t o =0; o< n_outliers;o++){ 
+              		ComboHit* hit = track._track.get_outliers()[o];
+              		auto const& p = hit->pos();
+			auto const& w = hit->wdir();
+			auto const& s = hit->wireRes();
+              	        double y0prime{(p.Dot(yprimes[0]))} ;
+			double z0prime{(p.Dot(zprimes[0]))}; 
+			//poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
+			double Ox1 = p.Dot(yprimes[0])+s*w.Dot(yprimes[0]);
+			double Ox2 = p.Dot(yprimes[0])-s*w.Dot(yprimes[0]);
+			double Oz1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
+			double Oz2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);                      
+			out.DrawPolyMarker( 1, &z0prime, &y0prime ); 
+              	        out_line.DrawLine(Oz1, Ox1, Oz2, Ox2);
+              	        }	
+              }         
+              pad = canvas_->cd(3);
+	      pad->Clear();   
+	      auto rawxzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits); //pad->DrawFrame(minrawz-100, minrawx-100, maxrawz+100, maxrawx+100);//pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
+	      rawxzplot->GetYaxis()->SetTitleOffset(1.25);
+	      rawxzplot->SetTitle( "X vs Z; Z(mm);X(mm)");
+	      for ( auto const& chit : *comboHits ){                      
+			auto const& p = chit.pos();
+			auto const& w = chit.wdir();
+			auto const& s = chit.wireRes();	
+			double y0prime{p.x()} ;
+			double z0prime{p.z()};          
+			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
+			double y1 = p.x()+s*w.x();
+			double y2 = p.x()-s*w.x();
+			double z1 = p.z()+s*w.z();
+			double z2 = p.z()-s*w.z();
+			error_line.DrawLine( z1, y1, z2, y2);
+              }
+              /*
+              TF1 *trackline_x = new TF1("line", "[0]+[1]*x",  minrawz, maxrawz);
+	      trackline_x->SetParameter(0, a0[0]*xprimes[0].x());
+	      trackline_x->SetParameter(1, a1[0]);
+	      trackline_x->SetLineColor(6);
+	      trackline_x->Draw("same");
+              */
 		
-		double tz1 = z[0];
-		double tz2 = z[z.size()-1];
-		double ty1 = b1[0]*tz1+b0[0];
-		double ty2 = b1[0]*tz2+b0[0];
-		fit_to_track.DrawLine( tz1, ty1, tz2, ty2);
-		double iy1 = y[0] + initial_track_direction[0].y()*tz1;
-		double iy2 = y[y.size()-1] + initial_track_direction[0].y()*tz1;
-		initial_fit_to_track.DrawLine( tz1, iy1, tz2, iy2);
-              }  
-                        
+	      pad = canvas_->cd(4);
+	      pad->Clear();   
+	      auto rawyzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);//pad->DrawFrame(minrawz-100, minrawy-100, maxrawz+100, maxrawy+100);
+	      rawyzplot->GetYaxis()->SetTitleOffset(1.25);
+	      rawyzplot->SetTitle( "Y vs Z; Z(mm);Y(mm)");
+	      for ( auto const& chit : *comboHits ){                      
+			auto const& p = chit.pos();
+			auto const& w = chit.wdir();
+			auto const& s = chit.wireRes();	
+			double y0prime{p.y()} ;
+			double z0prime{p.z()};          
+			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
+			double y1 = p.y()+s*w.y();
+			double y2 = p.y()-s*w.y();
+			double z1 = p.z()+s*w.z();
+			double z2 = p.z()-s*w.z();
+			error_line.DrawLine( z1, y1, z2, y2);
+              }
+	      /*
+	      TF1 *trackline_y = new TF1("line", "[0]+[1]*x", minrawz, maxrawz);
+	      trackline_y->SetParameter(0,b0[0]);
+	      trackline_y->SetParameter(1, b1[0]);
+	      trackline_y->SetLineColor(6);
+	      trackline_y->Draw("same");
+	      */
+                
               ostringstream title;
               title << "Run: " << event.id().run()
               << "  Subrun: " << event.id().subRun()
@@ -313,7 +417,7 @@ namespace mu2e
 
               text.SetTextAlign(11);
               text.DrawTextNDC( 0., 0.01, title.str().c_str() );
-              std::cout<<"drawing.."<<std::endl;
+              
               canvas_->Modified();
               canvas_->Update();
               canvas_->SaveAs(title.str().c_str());
@@ -369,6 +473,7 @@ namespace mu2e
         y.push_back(chit.pos().y());
         z.push_back(chit.pos().z());
         }
+     
         if (doDisplay_) {
               std::cout << "Run: " << event.id().run()
            << "  Subrun: " << event.id().subRun()
@@ -396,12 +501,10 @@ namespace mu2e
 	      xyzplot->SetMarkerColor(kRed);
 	      xyzplot->SetStats(0);
 	      xyzplot->Draw();
-	      
               TTUBE *Tube = new TTUBE("","","", envelope.innerRadius(), envelope.outerRadius(), zlimit);
               Tube->SetFillColor(18);
 	      Tube->SetLineColor(18);
-	      Tube->Draw();
-	      
+	      Tube->Draw();     
 	      poly3D.SetMarkerStyle(2);
 	      poly3D.SetMarkerSize(0.65);
 	      poly3D.SetMarkerColor(kRed);
@@ -410,9 +513,6 @@ namespace mu2e
 	                TPolyLine3D *errors = new TPolyLine3D;
 			errors->SetLineColor(kRed);
                         auto const& p = chit.pos();
-			//double xdoubleprime{p.Dot(xprimes[0])};
-		        //double ydoubleprime{p.Dot(yprimes[0])};
-                        //double zprime{p.Dot(zprimes[0])};
                         auto const& w = chit.wdir();
 		        auto const& s = chit.wireRes();
 			double x1 = p.x()+s*w.x();
@@ -421,7 +521,7 @@ namespace mu2e
         		double z2 = p.z()-s*w.z();
         		double y1 = p.y()+s*w.y();
         		double y2 = p.y()-s*w.y();
-			poly3D.SetPoint(index, p.x(), p.y(),p.x() );
+			poly3D.SetPoint(index, p.x(), p.y(),p.z() );
 			errors->SetPoint(0, x1,y1,z1);
 			errors->SetNextPoint(x2,y2,z2);
 		        index+=1;
@@ -433,24 +533,17 @@ namespace mu2e
 	      	TPolyLine3D *InitTrack = new TPolyLine3D;
                 Track->SetLineColor(kBlue);
                 InitTrack->SetLineColor(kGreen);  
-		double tz1 = z[0];
-	        double tz2 = z[z.size()-1];
-	        std::cout<<"Starting Point "<<tz1<<" Ending point "<<tz2<<std::endl;
+		double tz1 = -1500;//z[0];
+	        double tz2 = 1500;//z[z.size()-1];
+	       
 	        double tx1 = a0[0] + a1[0]*tz1;
 	        double tx2 = a0[0] + a1[0]*tz2;
 		double ty1 = b0[0] + b1[0]*tz1;//b1[0]*tz1+b0[0]*tx1+a0[0];
-		double ty2 = b0[0] + b1[0]*tz2; //a1[0]*tz2+a0[0]*tx2+b0[0];
-		double ix1 = x[0] + initial_track_direction[0].x()*tz1;
-		double ix2 = x[x.size()-1] + initial_track_direction[0].x()*tz1;
-		double iy1 = y[0] + initial_track_direction[0].y()*tz1;
-		double iy2 = y[y.size()-1] + initial_track_direction[0].y()*tz1;
-		
+		double ty2 = b0[0] + b1[0]*tz2; //a1[0]*tz2+a0[0]*tx2+b0[0];	
 		Track->SetPoint(0, tx1, ty1, tz1);
 		Track->SetNextPoint(tx2, ty2, tz2);
-		InitTrack->SetPoint(0, ix1, iy1, tz1);
-		InitTrack->SetNextPoint(ix2, iy2, tz2);
 		Track->Draw("same");
-		InitTrack->Draw("same");
+		
 	      }
 
 	      canvas_->Update();
@@ -516,20 +609,20 @@ namespace mu2e
         b1.push_back(track._track.get_track_parameters()[3]);
         b0.push_back(track._track.get_track_parameters()[2]);	
         }
-        
+         
         if(xprimes.size() >0){
         for(auto const& chit : *comboHits){
-        std::cout<<" P x,y,z "<<chit.pos()<<std::endl;
-        std::cout<<" X'' "<<xprimes[0]<<std::endl;
-        std::cout<<" Y'' "<<yprimes[0]<<std::endl;
-        std::cout<<" Z' "<<zprimes[0]<<std::endl;
-        std::cout<<" P x''"<< chit.pos().Dot(xprimes[0])<<std::endl;
-        std::cout<<" P y''"<<chit.pos().Dot(yprimes[0])<<std::endl;
-        std::cout<<" P z''"<< chit.pos().Dot(zprimes[0])<<std::endl;
+        
         x.push_back(chit.pos().Dot(xprimes[0]));
         y.push_back(chit.pos().Dot(yprimes[0]));
         z.push_back(chit.pos().z());
         }
+        double minz = *std::min_element(z.begin(), z.end());
+      double maxz = *std::max_element(z.begin(), z.end());
+      double minx = *std::min_element(x.begin(), x.end());
+      double maxx = *std::max_element(x.begin(), x.end());
+      double miny = *std::min_element(y.begin(), y.end());
+      double maxy = *std::max_element(y.begin(), y.end());
         if (doDisplay_) {
               std::cout << "Run: " << event.id().run()
            << "  Subrun: " << event.id().subRun()
@@ -539,14 +632,14 @@ namespace mu2e
 	      TPolyMarker3D poly3D;
               
 	      // Draw the frame for the cylinders in plot:
-	      double plotLimits(1000.);
-              double zlimit{envelope.zHalfLength()};
+	      //double plotLimits(1000.);
+              //double zlimit{envelope.zHalfLength()};
               //Create Pad:
               auto pad = canvas_;
               pad->Clear();
 	      canvas_->Draw();
 
-	      TH3D *xyzplot =new TH3D("XYZ","XYZ",1,-plotLimits,plotLimits,1,-plotLimits,plotLimits,1,-zlimit,zlimit);
+	      TH3D *xyzplot =new TH3D("XYZ","XYZ",1,minz-1500,maxz+1500,1,-miny-1500,maxy+1500,1, minx-1500, maxx+1500);
               
 	      xyzplot->GetYaxis()->SetTitleOffset(1.5);
               xyzplot->GetXaxis()->SetTitleOffset(1.5);
@@ -591,31 +684,22 @@ namespace mu2e
               poly3D.Draw("same");
 	      if(a1.size() > 0 && b1.size() > 0){
 	      	TPolyLine3D *Track = new TPolyLine3D;
-	      	TPolyLine3D *InitTrack = new TPolyLine3D;
                 Track->SetLineColor(kBlue);
-                InitTrack->SetLineColor(kGreen);  
-		double tz1 = z[0];
-	        double tz2 = z[z.size()-1];
-	        std::cout<<"Starting Point "<<tz1<<" Ending point "<<tz2<<std::endl;
+                
+		double tz1 = minz;
+	        double tz2 = maxz;
+	       
 	        double tx1 = a0[0]+ a1[0]*tz1;
 	        double tx2 = a0[0] + a1[0]*tz2;
-		double ty1 = b0[0] + b1[0]*tz1;//b1[0]*tz1+b0[0]*tx1+a0[0];
-		double ty2 = b0[0] + b1[0]*tz2; //a1[0]*tz2+a0[0]*tx2+b0[0];
-		double ix1 = x[0] + initial_track_direction[0].x()*tz1;
-		double ix2 = x[x.size()-1] + initial_track_direction[0].x()*tz1;
-		double iy1 = y[0] + initial_track_direction[0].y()*tz1;
-		double iy2 = y[y.size()-1] + initial_track_direction[0].y()*tz1;
+		double ty1 = b0[0] + b1[0]*tz1;
+		double ty2 = b0[0] + b1[0]*tz2; 
 		
 		Track->SetPoint(0, tz1, ty1, tx1);
 		Track->SetNextPoint(tz2, ty2, tx2);
-		InitTrack->SetPoint(0, tz1, iy1, ix1);
-		InitTrack->SetNextPoint(tz2, iy2, ix2);
 		Track->Draw("same");
-		InitTrack->Draw("same");
+		
 	      }
-
 	      canvas_->Update();
-
               //END 3D
               ostringstream title;
  

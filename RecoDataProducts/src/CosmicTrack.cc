@@ -1,23 +1,23 @@
 //S. Middleton, Feb 2019
 #include "RecoDataProducts/inc/CosmicTrack.hh"
-
-
 #include <vector>
 
 using namespace std;
-
 namespace mu2e{
 
 
 	CosmicTrack::CosmicTrack() {
           	_Nhits = 0;
-
     		_a0=0.;
    		_a1=0.;
     		_b0=0.;
     		_b1=0.;
+    		_inita0=0.;
+		_inita1=0.;
+		_initb0=0.;
+		_initb1=0.;
 		_Sagitta = 0.;
-   		XYZVec _track_parameters(0,0,0);
+		
     		XYZVec _track_equation(0,0,0);//r(t) expression
     		XYZVec _track_direction(0,0,0);//the "gradient" term
     		XYZVec _track_position(0,0,0);//the "starting point" in fit line
@@ -29,7 +29,6 @@ namespace mu2e{
 	 }
     
 	double GetSagitta(){
-		
 		return 1.;
 	}
 
@@ -40,7 +39,7 @@ namespace mu2e{
 	  _a0 = 0.; //a0
           _a1 = 0.; //a1
           _b0 = 0.; //b0
-          _b1 = 0.; //b1 
+          _b1 = 0.; //b1  
           _track_parameters.erase(_track_parameters.begin(), _track_parameters.end());
           
 	}
@@ -50,7 +49,12 @@ namespace mu2e{
    	  _a1 = 0.;
           _b0 = 0.;
           _b1 = 0.;
+          _inita0=0.;
+	  _inita1=0.;
+          _initb0=0.;
+          _initb1=0.;
           _track_parameters.erase(_track_parameters.begin(), _track_parameters.end());
+          _initial_track_parameters.erase(_initial_track_parameters.begin(), _initial_track_parameters.end());
           
 	  _Nhits = 0;
           _Sagitta = 0 ;
@@ -78,7 +82,7 @@ namespace mu2e{
 	  
 	  _niters.erase(_niters.begin(),_niters.end());
 	  
-	  
+	  _outliers.erase(_outliers.begin(),_outliers.end());
 	  
 	}
 	

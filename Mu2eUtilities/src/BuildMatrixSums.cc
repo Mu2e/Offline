@@ -48,54 +48,56 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
   deltaY = S.deltaY;
 }
 
-void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, double errX, double errY){
-        
-	betaX00 += point_i.Dot(XPrime)/pow(errX,2);
-        betaX10 += point_i.z()*point_i.Dot(XPrime.Unit())/pow(errX,2);
+void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
+       
+        //if(errX == 0) errX=1;
+        //if(errY ==0) errY =1;
+	betaX00 += point_i.Dot(XPrime)*(1/pow(errX,2));
+        betaX10 += point_i.z()*point_i.Dot(XPrime)*(1/pow(errX,2));
         
 	//For GammaX:
-	gammaX00 +=pow(1/errX,2);
-        gammaX01  += point_i.z()/pow(errX,2);
-	gammaX11 += pow(point_i.z(),2) /pow(errX,2);
+	gammaX00 +=1/pow(errX,2);
+        gammaX01  += point_i.z()*(1/pow(errX,2));
+	gammaX11 += pow(point_i.z(),2)*(1/pow(errX,2));
 	
 	//For BetaY:
 	betaY00 += point_i.Dot(YPrime)/pow(errY,2);
         betaY10 += point_i.z()*point_i.Dot(YPrime)/pow(errY,2);
     
 	//For GammaX:
-	gammaY00 +=pow(1/errY,2);
-        gammaY01  += point_i.z()/pow(errY,2);
-	gammaY11 += pow(point_i.z(),2) /pow(errY,2);
+	gammaY00 +=1/pow(errY,2);
+        gammaY01  += point_i.z()*(1/pow(errY,2));
+	gammaY11 += pow(point_i.z(),2)*(1 /pow(errY,2));
 	
         //Deltas:
-        deltaX += pow(point_i.Dot(XPrime),2)/pow(errX,2);
-	deltaY += pow(point_i.Dot(YPrime),2)/pow(errY,2);
+        deltaX += pow(point_i.Dot(XPrime),2)*(1/pow(errX,2));
+	deltaY += pow(point_i.Dot(YPrime),2)*(1/pow(errY,2));
   
 }
 
-void BuildMatrixSums::removePoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, double errX, double errY){
-	
-	betaX00 -= point_i.Dot(XPrime)/pow(errX,2);
-        betaX10 -= point_i.z()*point_i.Dot(XPrime.Unit())/pow(errX,2);
+void BuildMatrixSums::removePoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime, double errX, double errY){
+	//if(errX == 0) errX=1;
+        //if(errY ==0) errY =1;
+	betaX00 -= point_i.Dot(XPrime)*(1/pow(errX,2));
+        betaX10 -= point_i.z()*point_i.Dot(XPrime)*(1/pow(errX,2));
         
 	//For GammaX:
-	gammaX00 -=pow(1/errX,2);
-        gammaX01 -= point_i.z()/pow(errX,2);
-	gammaX11 -= pow(point_i.z(),2) /pow(errX,2);
+	gammaX00 -=1/pow(errX,2);
+        gammaX01 -= point_i.z()*(1/pow(errX,2));
+	gammaX11 -= pow(point_i.z(),2)*(1/pow(errX,2));
 	
 	//For BetaY:
-	betaY00 -= point_i.Dot(YPrime)/pow(errY,2);
-        betaY10 -= point_i.z()*point_i.Dot(YPrime)/pow(errY,2);
+	betaY00 -= point_i.Dot(YPrime)*(1/pow(errY,2));
+        betaY10 -= point_i.z()*point_i.Dot(YPrime)*(1/pow(errY,2));
     
 	//For GammaX:
-	gammaY00 -=pow(1/errY,2);
-        gammaY01 -= point_i.z()/pow(errY,2);
-	gammaY11 -= pow(point_i.z(),2) /pow(errY,2);
+	gammaY00 -=1/pow(errY,2);
+        gammaY01 -= point_i.z()*(1/pow(errY,2));
+	gammaY11 -= pow(point_i.z(),2)*(1/pow(errY,2));
 	
         //Deltas:
-        deltaX -= pow(point_i.Dot(XPrime),2)/pow(errX,2);
-	deltaY -= pow(point_i.Dot(YPrime),2)/pow(errY,2);
-  
+        deltaX -= pow(point_i.Dot(XPrime),2)*(1/pow(errX,2));
+	deltaY -= pow(point_i.Dot(YPrime),2)*(1/pow(errY,2));
 }
 
 
@@ -112,6 +114,7 @@ TMatrixD BuildMatrixSums::GetGammaX(){
 	Gamma[1][0] = gammaX01;
 	Gamma[0][1] = gammaX01;
 	Gamma[1][1] = gammaX11;
+	//std::cout<<"gamma "<<gammaX00<<" "<<gammaX01<<" "<<gammaX11<<std::endl;
 	return Gamma;
 }
 
@@ -119,6 +122,7 @@ TMatrixD BuildMatrixSums::GetBetaX(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaX00;
 	Beta[1][0] = betaX10;
+	//std::cout<<"Beta "<<betaX00<<" "<<betaX10<<std::endl;
 	return Beta;
 }
 
@@ -145,6 +149,7 @@ TMatrixD BuildMatrixSums::GetGammaY(){
 	Gamma[1][0] = gammaY01;
 	Gamma[0][1] = gammaY01;
 	Gamma[1][1] = gammaY11;
+	//std::cout<<"gamma "<<gammaY00<<" "<<gammaY01<<" "<<gammaY11<<std::endl;
 	return Gamma;
 }
 
@@ -152,6 +157,7 @@ TMatrixD BuildMatrixSums::GetBetaY(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaY00;
 	Beta[1][0] = betaY10;
+	//std::cout<<"Beta "<<betaY00<<" "<<betaY10<<std::endl;
 	return Beta;
 }
 
@@ -168,6 +174,7 @@ TMatrixD BuildMatrixSums::GetAlphaY(){
 		    message << "Error in Alpha : Cannot fit due to singular matrix error on inversion!" << std::endl;
           } 
         TMatrixD Alpha(Gamma*Beta);
+        //std::cout<<"alpha "<<Alpha[0][0]<<" "<<Alpha[1][0]<<" "<<Alpha[1][1]<<std::endl;
 	return Alpha;
 }
 

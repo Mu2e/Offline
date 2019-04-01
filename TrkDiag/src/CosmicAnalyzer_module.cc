@@ -79,6 +79,8 @@ namespace mu2e
       TH1F* _niters;
       
       TH1F* _chisq_ndf_plot_final;
+      TH1F* _chisq_ndf_plot_finalX;
+      TH1F* _chisq_ndf_plot_finalY;
       TH1F* _total_residualsX_final;
       TH1F* _total_pullsX_final;
       TH1F* _total_residualsY_final;
@@ -107,7 +109,7 @@ namespace mu2e
       Int_t _n_panels; // # panels
       Int_t _n_stations; // # stations
       Int_t _n_planes; // # stations
-
+      int n_analyze =0;
       Float_t _hit_time, _hit_drift_time, _cluster_time;
 	
       //Flags:
@@ -167,7 +169,12 @@ namespace mu2e
 	_chisq_ndf_plot_final = tfs->make<TH1F>("final chisq_ndf_plot","final chisq_ndf_plot" ,200,0,1000);
 	_chisq_ndf_plot_final->GetXaxis()->SetTitle("Final #Chi^{2}/N");
 	
-        
+	_chisq_ndf_plot_finalX = tfs->make<TH1F>("final chisq_ndf_plot X''","final chisq_ndf_plot X''" ,200,0,1000);
+	_chisq_ndf_plot_finalX->GetXaxis()->SetTitle("Final X '' #Chi^{2}/N");
+	
+        _chisq_ndf_plot_finalY = tfs->make<TH1F>("final chisq_ndf_plot Y''","final chisq_ndf_plot Y''" ,200,0,1000);
+	_chisq_ndf_plot_finalY->GetXaxis()->SetTitle("Final Y '' #Chi^{2}/N");
+	
         _total_residualsX_init = tfs->make<TH1F>("Initial Residuals X'' ","Initial Residuals X'' " ,200,-1000,1000);
 	_total_residualsX_init->GetXaxis()->SetTitle("Initial Residual X'' [mm]");
 	_total_residualsX_init->SetStats();
@@ -229,7 +236,7 @@ namespace mu2e
 	_niters->GetXaxis()->SetTitle("Number of Iterations Unitl Converged");
 	_niters->SetStats();
 	
-	_chi2_v_angle  = tfs->make<TH2F>("chi2 v angle #chi^{2}/dof all ","chi2 v angle #chi^{2}/dof all " ,50, 0, 10, 100,0, 3.1415/2);
+	_chi2_v_angle  = tfs->make<TH2F>("chi2 v angle #chi^{2}/dof all ","chi2 v angle #chi^{2}/dof all " ,1000, 0, 1000, 100,0, 3.1415);
 	_chi2_v_angle->GetYaxis()->SetTitle("Angle");
 	_chi2_v_angle->SetStats();
 	
@@ -237,8 +244,8 @@ namespace mu2e
 	_chi2_v_NHits ->GetYaxis()->SetTitle("Nhits");
 	_chi2_v_NHits ->SetStats();
 	
-	_chi2_v_length = tfs->make<TH2F>("chi2 v track length #chi^{2}/dof all ","chi2 v track length #chi^{2}/dof all " ,100, 0, 1000, 100, 0, 10);
-	_chi2_v_length ->GetYaxis()->SetTitle("total length/[mm]");
+	_chi2_v_length = tfs->make<TH2F>("Res Y'' v hit number  ","chi2 v hit number  " ,100, 0, 100, 100, 0, 20);
+	_chi2_v_length ->GetYaxis()->SetTitle("res Y'' [mm]");
 	_chi2_v_length ->SetStats();
 	
         }
@@ -260,16 +267,22 @@ namespace mu2e
 	}
         //loop over tracks"
         for(size_t ist = 0;ist < _coscol->size(); ++ist){
+        	n_analyze+=1;
+        	std::cout<<"number analyzed "<<n_analyze<<std::endl;
         	CosmicTrackSeed sts =(*_coscol)[ist];
 		CosmicTrack st = sts._track;
 		//TrkFitFlag const& status = sts._status;
 		std::vector<int> panels, planes, stations;
                 _chisq_ndf_plot_init->Fill(st.get_initchisq_dof());
                 _chisq_ndf_plot_final->Fill(st.get_finalchisq_dof());
-                double angle = st.getZPrime().Theta();
+                
+                _chisq_ndf_plot_finalX->Fill(st.get_finalchisq_dofX());
+                _chisq_ndf_plot_finalY->Fill(st.get_finalchisq_dofY());
+                
+                double angle =st.getZPrime().Theta();
                 _chi2_v_angle->Fill(st.get_finalchisq_dof(),angle);
                 _chi2_v_NHits ->Fill( st.get_finalchisq_dof(), st.get_N());
-                _chi2_v_length ->Fill( st.get_finalchisq_dof(),st.get_track_length());
+                
                
                 _a1->Fill(st.get_track_parameters()[1]);
                 _b1->Fill(st.get_track_parameters()[3]);
@@ -278,6 +291,7 @@ namespace mu2e
                
                 for(size_t i=0; i< st.get_iter().size();i++){
                     _niters->Fill(st.get_iter()[i]);
+                    
                 }
                 //-----------Fill Hist Details:----------//
 		for(size_t i=0; i< st.get_init_hit_errorsTotal().size();i++){
@@ -287,6 +301,7 @@ namespace mu2e
 		    double pullX = st.get_init_fit_residualsX()[i]/st.get_init_fit_residual_errorsX()[i];
                     _total_residualsX_init->Fill(st.get_init_fit_residualsX()[i]);             
 	            _total_pullsX_init->Fill(pullX);
+	            
 	        }
 	        for(size_t i=0; i< st.get_init_fit_residualsY().size();i++){
 	            double pullY = st.get_init_fit_residualsY()[i]/st.get_init_fit_residual_errorsY()[i];
@@ -308,6 +323,7 @@ namespace mu2e
 	            double pullY = st.get_final_fit_residualsY()[i]/st.get_final_fit_residual_errorsY()[i];
                     _total_residualsY_final->Fill(st.get_final_fit_residualsY()[i]);             
 	            _total_pullsY_final->Fill(pullY);
+	            _chi2_v_length ->Fill(i,st.get_final_fit_residualsY()[i]);
 	        }   
 	        for(auto const& tseed : *_coscol) {   
                 	TrkFitFlag const& status = tseed._status;

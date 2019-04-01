@@ -143,6 +143,7 @@ namespace ParametricFit{
 XYZVec MajorAxis(ComboHit* Hit){
       XYZVec const& wdir = Hit->wdir();//direction along wire
       double werr_mag = Hit->wireRes(); //hit major error axis 
+      std::cout<<"major wdir"<<wdir<<" major mag "<<werr_mag<<std::endl;
       XYZVec major_axis = werr_mag*wdir;
       return major_axis;
 }
@@ -152,6 +153,7 @@ XYZVec MinorAxis(ComboHit* Hit){
       XYZVec const& wdir = Hit->wdir();//direction along wire
       XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire 
       double terr_mag = Hit->transRes(); //hit minor error axis
+      std::cout<<"minor wdir"<<wdir<<" major mag "<<terr_mag<<std::endl;
       XYZVec minor_axis = terr_mag*wtdir;
       return minor_axis;
 }
@@ -193,52 +195,43 @@ XYZVec GetYPrime(XYZVec OrthX, XYZVec track_dir){
 XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	
 	double theta = atan(XPrime.y()/YPrime.y()); //enforces that X''Dot Y = 0
+	std::cout<<"theta"<<theta<<std::endl;
 	XYZVec XDoublePrime = cos(theta)*(XPrime) -1*sin(theta)*(YPrime);
 	return XDoublePrime.Unit();
 }
 
 XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	double theta = atan(XPrime.y()/YPrime.y());
+	
 	XYZVec YDoublePrime = cos(theta)*(YPrime) +sin(theta)*(XPrime);
 	return YDoublePrime.Unit();
 }
 
 void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 
+	std::cout<<XPrime.y()<<"x'y"<<std::endl;
+	std::cout<<XPrime.Dot(ZPrime)<<"x'z' "<<std::endl;;
+	std::cout<<YPrime.Dot(XPrime) <<"y'x'"<<std::endl;
+	std::cout<<(YPrime.Dot(ZPrime))<<"y'z'"<<std::endl;
 	
-	if(XPrime.y() !=0){
-		std::cout<<"x'y ! = 0"<<std::endl;
-	}
-	if(XPrime.Dot(ZPrime) !=0){
-		std::cout<<"x'z' ! = 0"<<std::endl;;
-	}
-	if(YPrime.Dot(XPrime) !=0){
-		std::cout<<"y'x' ! = 0"<<std::endl;
-	}
-	if(YPrime.Dot(ZPrime) !=0){
-		std::cout<<"y'z' ! = 0"<<std::endl;
-	}
 }
 
 double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime){
-	
-	//XYZVec track_x(track_dir.x(),0,0);
-	//XYZVec track_x = GetXPrime(track_dir);
-	XYZVec unit = XPrime;//.Unit();//.Unit();
-	//XYZVec x_track( track_dir.x(),0,0);
+
         double sigma_w_squared = major_axis.Mag2();
         double sigma_v_squared = minor_axis.Mag2();
-	double sigma_x_track = sqrt(sigma_w_squared*pow(unit.Dot(major_axis.Unit()),2)+sigma_v_squared*pow(unit.Dot(minor_axis.Unit()),2));
+	double sigma_x_track = sqrt(sigma_w_squared*pow(XPrime.Dot(major_axis.Unit()),2)+sigma_v_squared*pow(XPrime.Dot(minor_axis.Unit()),2));
+	
+	std::cout<<"minor "<<minor_axis<<"major "<<major_axis<<std::endl;
  	return sigma_x_track;
 }
  
 
 double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec YPrime){
 	
-	XYZVec unit = YPrime;//.Unit();
         double sigma_w_squared = major_axis.Mag2();
         double sigma_v_squared = minor_axis.Mag2();
-	double sigma_y_track = sqrt(sigma_w_squared*pow((unit.Dot(major_axis.Unit())),2)+sigma_v_squared*pow((unit.Dot(minor_axis.Unit())),2));
+	double sigma_y_track = sqrt(sigma_w_squared*pow((YPrime.Dot(major_axis.Unit())),2)+sigma_v_squared*pow((YPrime.Dot(minor_axis.Unit())),2));
  	return sigma_y_track;
 }
 
