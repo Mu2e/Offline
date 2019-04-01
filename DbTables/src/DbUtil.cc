@@ -1,6 +1,9 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
+#include <ctime>
+#include <iostream>
+#include <iomanip>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -251,3 +254,18 @@ std::string mu2e::DbUtil::sqlLine(std::string const& line) {
   return clean;
 }
 
+// ****************************************************************
+// return current local time as a formatted string
+std::string mu2e::DbUtil::timeString() {
+    time_t mtime;
+    time(&mtime);
+    struct tm *mtm = localtime(&mtime);
+    std::ostringstream ss;
+    ss << std::setfill('0') << std::setw(2) << mtm->tm_mon+1 << "/"
+       << std::setw(2) << mtm->tm_mday << "/"
+       << std::setw(2) << mtm->tm_year%100 << " "
+       << std::setw(2) << mtm->tm_hour << ":"
+       << std::setw(2) << mtm->tm_min << ":"
+       << std::setw(2) << mtm->tm_sec ;
+    return ss.str();
+}

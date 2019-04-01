@@ -35,31 +35,61 @@ Reconstruction : {
       @table::TrkReco.producers.MergeHelices
       HelixFinders : [ "HelixFinderDmu:Negative", "CalHelixFinderDmu:Negative" ]
     }
+    # run helix merging on upstream, even though there is only one input collection,
+    # as the merging also suppresses duplicates
+    MHUeM : {
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderUe:Negative" ]
+    }
+    MHUeP : {
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderUe:Positive" ]
+    }
+    MHUmuM : {
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderUmu:Negative" ]
+    }
+    MHUmuP : {
+      @table::TrkReco.producers.MergeHelices
+      HelixFinders : [ "HelixFinderUmu:Positive" ]
+    }
     KSFDeM : {
       @table::Tracking.producers.KSFDeM
       SeedCollection             : MHDeM
-      AlgorithmIDCollection      : MHDeM
     }
     KSFDeP : {
       @table::Tracking.producers.KSFDeP
       SeedCollection             : MHDeP
-      AlgorithmIDCollection      : MHDeP
     }
     KSFDmuM : {
       @table::Tracking.producers.KSFDmuM
       SeedCollection             : MHDmuM
-      AlgorithmIDCollection      : MHDmuM
     }
     KSFDmuP : {
       @table::Tracking.producers.KSFDmuP
       SeedCollection             : MHDmuP
-      AlgorithmIDCollection      : MHDmuP
+    }
+    KSFUeM : {
+      @table::Tracking.producers.KSFUeM
+      SeedCollection             : MHUeM
+    }
+    KSFUeP : {
+      @table::Tracking.producers.KSFUeP
+      SeedCollection             : MHUeP
+    }
+    KSFUmuM : {
+      @table::Tracking.producers.KSFUmuM
+      SeedCollection             : MHUmuM
+    }
+    KSFUmuP : {
+      @table::Tracking.producers.KSFUmuP
+      SeedCollection             : MHUmuP
     }
     # Implicit TrkPatRec config for Final Fits and upstream fits (no merging)
     # MC specific: this should be in a separate fcl file FIXME!
     FindMCPrimary : { 
       @table::CommonMC.FindMCPrimary
-      TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+      TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
     }
     SelectRecoMC : { 
       @table::CommonMC.SelectRecoMC 
@@ -69,7 +99,7 @@ Reconstruction : {
        SaveEnergySteps : false
        SaveUnusedDigiMCs : true
        SaveAllUnusedDigiMCs : false
-       TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+       TimeOffsets : [ @sequence::DigiCompression.TimeMaps ]
        PrimaryParticle : "FindMCPrimary"
        StrawDigiCollection : "makeSD"
        StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
@@ -79,8 +109,12 @@ Reconstruction : {
        CrvCoincidenceClusterCollection : "CrvCoincidenceClusterFinder"
        StrawDigiMCCollection : "compressDigiMCs"
        CrvDigiMCCollection : "compressDigiMCs"
+       EventWindowMarker : "EWMProducer"
+       ProtonBunchIntensity : "protonBunchIntensity"
        KFFInstances  : ["KFFDeM", "KFFDeP", "KFFDmuM", "KFFDmuP",
-"KFFUeM", "KFFUeP", "KFFUmuM", "KDDUmuP" ]
+		     "KFFUeM", "KFFUeP", "KFFUmuM", "KFFUmuP" ]
+       MHInstances  : ["MHDeM", "MHDeP", "MHDmuM", "MHDmuP",
+		     "MHUeM", "MHUeP", "MHUmuM", "MHUmuP" ]
       VDSPCollection : "compressDigiMCs:virtualdetector"
     }
     # calo fix: only need for MDC2018e and earlier
@@ -95,7 +129,7 @@ Reconstruction : {
       crvDigiMCTag : "compressDigiMCs"
       simParticleTags : [ "compressDigiMCs" ]
       extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
-      timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+      timeMapTags : [ @sequence::DigiCompression.TimeMaps ]
       caloClusterMCTag : "SelectRecoMC"
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
@@ -118,19 +152,21 @@ Reconstruction : {
 		  "KFFDmuM", "KFFDmuP", 
 	          "KFFUmuM", "KFFUmuP"
 		]
-      MomentumCutoff : [ 90.0, 80.0,
-			 80.0, 80.0,
-			 90.0, 80.0,
-			 80.0, 80.0 ]
+		# // set low cutoffs
+      MomentumCutoff : [ 60.0, 60.0,
+			 60.0, 60.0,
+			 60.0, 60.0,
+			 60.0, 60.0 ]
     }
   }
 
   analyzers : {
-    RecoCheck : { @table::DigiCompression.RecoCheck
+    RecoCheck : { 
+      @table::DigiCompression.RecoCheck
       oldStrawDigiMCTag : "compressDigiMCs"
       newStrawDigiMCTag : "compressRecoMCs"
-      OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
-      NewTimeOffsets : { inputs : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap" ] }
+      OldTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+      NewTimeOffsets : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
       strawDigiMCIndexMapTag : "SelectRecoMC:StrawDigiMap"
       oldCrvDigiMCTag : "compressDigiMCs"
       newCrvDigiMCTag : "compressRecoMCs"
@@ -151,6 +187,7 @@ Reconstruction : {
 # Upstream electron sequence (plus and minus): TrkPatRec only
   UeSequence : [
     TimeClusterFinderUe, HelixFinderUe,   
+    MHUeM, MHUeP, # helix merging
     KSFUeM, KSFUeP, # Seed fit (chisquared, no drift)
     KFFUeM, KFFUeP # final Kalman filter fit
   ]
@@ -165,6 +202,7 @@ Reconstruction : {
 # Upstream muon sequence (plus and minus)
   UmuSequence : [
     TimeClusterFinderUmu, HelixFinderUmu,   
+    MHUmuM, MHUmuP, # helix merging
     KSFUmuM, KSFUmuP, # Seed fit (chisquared, no drift)
     KFFUmuM, KFFUmuP # final Kalman filter fit
   ]
@@ -182,24 +220,16 @@ Reconstruction : {
 # separate MC info FIXME!
  # define reco products to keep
   ToKeep : [ "drop *_*_*_*",
+	    "keep *_genCounter_*_*",
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
+	    "keep mu2e::CaloClusters_CaloClusterFromProtoCluster_*_*",
+            "keep art::TriggerResults_*_*_*Trig",
+            "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
 	    "keep *_compressRecoMCs_*_*",
-	    "keep mu2e::CaloClusters_*_*_*",
-	    "keep mu2e::CrvCoincidenceClusters_*_*_*",
-	  # add precursors for Calo and Crv?  FIXME!
-	    "keep mu2e::TriggerAlgDetailmu2e::BitMap_triggerInfoMerger_*_*",
-	    "keep mu2e::StatusG4_*_*_*",
-            "keep art::TriggerResults_*_*_*",
-	    "keep mu2e::EventWindowMarker_*_*_*",
-	    "keep *_genCounter_*_*",
-	    "keep mu2e::EventWeight_*_*_*",
-	    "keep mu2e::ProtonBunchIntensity_*_*_*",
-	    "keep *_FindMCPrimary_*_*",
-	    "keep *_SelectRecoMC_*_*",
-	    "keep *_CrvCoincidenceClusterMatchMC_*_*" ]
+	    "keep *_SelectRecoMC_*_*" ]
 }
 # must define some things outside the brackets due to internal dependence
 #

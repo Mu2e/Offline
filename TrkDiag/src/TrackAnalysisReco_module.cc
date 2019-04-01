@@ -20,6 +20,7 @@
 #include "MCDataProducts/inc/EventWeight.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // Framework includes.
@@ -99,6 +100,8 @@ namespace mu2e {
     art::InputTag _detqtag;
     // reco count module
     art::InputTag _rctag;
+    // CaloCrystal Ptr map
+    art::InputTag _cchmtag;
     //list of the triggerIds to track 
     std::vector<unsigned> _trigids;
     // event-weighting modules
@@ -155,7 +158,6 @@ namespace mu2e {
 //    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
     KSCIter findBestRecoTrack(KalSeedCollection const& kcol);
-    KSCIter findPrimaryTrack(KalSeedCollection const& kcol,KalSeedMCAssns const& ksassn);
     KSCIter findUpstreamTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
     KSCIter findMuonTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
     // CRV info
@@ -172,6 +174,7 @@ namespace mu2e {
     _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
+    _cchmtag( pset.get<art::InputTag>("CaloCrystalHitMapTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -286,14 +289,18 @@ namespace mu2e {
     // get the provenance from this for trigger processing
     std::string const& process = deH.provenance()->processName();
     // std::cout << _detag << std::endl; //teste
-    KalSeedCollection const& deC = *deH;
+    auto const& deC = *deH;
     // find downstream muons and upstream electrons
     art::Handle<KalSeedCollection> ueH;
     event.getByLabel(_uetag,ueH);
-    KalSeedCollection const& ueC = *ueH;
+    auto const& ueC = *ueH;
     art::Handle<KalSeedCollection> dmH;
     event.getByLabel(_dmtag,dmH);
-    KalSeedCollection const& dmC = *dmH;
+    auto const& dmC = *dmH;
+    art::Handle<CaloCrystalHitRemapping> cchmH;
+    event.getByLabel(_cchmtag,cchmH);
+    auto const& cchmap = *cchmH;
+
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_rctag);
     auto const& rc = *rch;
@@ -318,7 +325,6 @@ namespace mu2e {
     resetBranches();
     // find the best tracks
     auto idekseed = findBestRecoTrack(deC);
-    // if(_fillmc)idekseed = findPrimaryTrack(deC,*ksmcah);
     // process the best track
     if (idekseed != deC.end()) {
       auto const&  dekseed = *idekseed;
@@ -337,6 +343,24 @@ namespace mu2e {
       if (dekseed.hasCaloCluster()) {
 	TrkTools::fillCaloHitInfo(dekseed, *caloh,  _detch);
 	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
+	// test
+	if(_debug>0){
+	  auto const& tch = dekseed.caloHit();
+	  auto const& cc = tch.caloCluster();
+	  for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
+	    // map the crystal ptr to the reduced collection
+	    auto ifnd = cchmap.find(cchptr);
+	    if(ifnd != cchmap.end()){
+	      auto const& scchptr = ifnd->second;
+	      if(scchptr.isNonnull())
+		std::cout << "CaloCrystalHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
+	      else
+		std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
+	    } else {
+	      cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	    }
+	  }
+	}
       }
       if (_filltrkqual) {
 	auto const& tqual = tqcol.at(std::distance(deC.begin(),idekseed));
@@ -405,12 +429,6 @@ namespace mu2e {
       }
     }
     return retval;
-  }
-
-  // find the track most associated with the MC true primary FIXME!
-  KSCIter TrackAnalysisReco::findPrimaryTrack( KalSeedCollection const& kcol,
-      KalSeedMCAssns const& mcassns) {
-    return kcol.end();
   }
 
   KSCIter TrackAnalysisReco::findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed) {

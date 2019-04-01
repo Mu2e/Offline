@@ -51,7 +51,7 @@ physics.analyzers.TrkAnaNeg.AnalyzeCRV : false
 
 services.TFileService.fileName: "nts.owner.trkanareco.version.sequencer.root"
 physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
-physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.TimeMaps ]
 
 # turn off filtering
 #include "JobConfig/reco/epilog.fcl"

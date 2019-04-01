@@ -58,6 +58,8 @@ namespace mu2e {
     int commitPurpose();
     int commitVersion();
 
+    int testUrl();
+
     int prettyTable(std::string title, std::string csv);
     int prettyColumns(std::vector<std::string> titles,
 		      std::vector<std::vector<std::string> > entries);
