@@ -32,7 +32,10 @@
  <class name="std::vector<art::Ptr<mu2e::CaloCrystalHit> >"/>
  <class name="mu2e::CaloCrystalHitCollection"/>
  <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
+ <class name="std::map<art::Ptr<mu2e::CaloCrystalHit>, art::Ptr<mu2e::CaloCrystalHit>>"/>
+ <class name="mu2e::CaloCrystalHitRemapping"/>
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloCrystalHitRemapping>"/>
 
  <class name="mu2e::CaloProtoCluster"/>
  <class name="art::Ptr<mu2e::CaloProtoCluster>"/>

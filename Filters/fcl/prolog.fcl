@@ -47,6 +47,16 @@ DigiCompressionTags : {
 }
 
 DigiCompression : {
+  # redefine TimeMaps
+    TimeMaps : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap" ]
+}
+
+RecoCompression : {
+    TimeMaps : [ "compressRecoMCs:protonTimeMap", "compressRecoMCs:muonTimeMap", "compressRecoMCs:cosmicTimeMap" ]
+}
+
+DigiCompression : {
+  @table::DigiCompression
 
     # for primary only jobs
     Primary : {
@@ -89,8 +99,8 @@ DigiCompression : {
 	module_type : CompressDigiMCsCheck
 	oldStrawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
 	newStrawDigiMCTag : "compressDigiMCs"
-	OldTimeOffsets : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	OldTimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps  ] }
+	NewTimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
 	oldCaloShowerSimTag : @local::DigiCompressionTags.commonCaloShowerSimTag
 	newCaloShowerSimTag : "compressDigiMCs"
 	oldCrvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag

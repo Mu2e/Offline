@@ -313,9 +313,10 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     DmuTag : "KFFDmuM"
     DeTrkQualTag : "TrkQualDeM"
     RecoCountTag : "SelectRecoMC"
+    CaloCrystalHitMapTag : "SelectRecoMC"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    PBIWeightTag : "PBIWeight"
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
+    PBIWeightTag : "SelectRecoMC"
+    CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
     ProcessEmptyEvents : false

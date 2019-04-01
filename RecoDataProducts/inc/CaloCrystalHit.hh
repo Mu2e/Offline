@@ -6,7 +6,7 @@
 #include "canvas/Persistency/Common/Ptr.h"
 
 #include <vector>
-
+#include <map>
 
 namespace mu2e {
 
@@ -48,7 +48,10 @@ namespace mu2e {
 	 std::vector<art::Ptr<CaloRecoDigi> > _recoCaloDigis;
 
   };
-
+  // collections, etc
+  //
+   typedef std::vector<mu2e::CaloCrystalHit> CaloCrystalHitCollection;
+   typedef std::map<art::Ptr<CaloCrystalHit>,art::Ptr<CaloCrystalHit> > CaloCrystalHitRemapping;
 
 }
 
