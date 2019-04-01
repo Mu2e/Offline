@@ -31,7 +31,7 @@ namespace mu2e {
     double totalTime() { return _totalTime.count()*1.0e-6; } // seconds
 
     void setDbId(DbId id) { _id = id; }
-    void setMaxTries(int max=10) { _maxTries = max; }
+    void setTimeout(float timeout=3600) { _timeout = timeout; }
     void setAbortOnFail(bool aof=true) { _abortOnFail = aof; }
     void setUseCache(bool uc=true) { _useCache = uc; }
     void setVerbose(int verbose) { _verbose=verbose; }
@@ -43,7 +43,7 @@ namespace mu2e {
     CURL *_curl_handle;
     CURLcode _curl_ret;
     DbQueryResult _result;
-    uint _maxTries;
+    float _timeout; // in s
     std::chrono::microseconds _lastTime;
     std::chrono::microseconds _totalTime;
     std::string _lastError;
