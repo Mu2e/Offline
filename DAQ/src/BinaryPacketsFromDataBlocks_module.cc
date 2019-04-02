@@ -39,22 +39,22 @@
 #include <stdexcept>
 
 namespace art {
-  class AggregateDAQOutput;
+  class BinaryPacketsFromDataBlocks;
 }
 
-using art::AggregateDAQOutput;
+using art::BinaryPacketsFromDataBlocks;
 
 //--------------------------------------------------------------------
 
-class art::AggregateDAQOutput
+class art::BinaryPacketsFromDataBlocks
  : public EDProducer
 {
 
 public:
 
   // --- C'tor/d'tor:
-  explicit AggregateDAQOutput(fhicl::ParameterSet const& pset);
-  virtual ~AggregateDAQOutput() { }
+  explicit BinaryPacketsFromDataBlocks(fhicl::ParameterSet const& pset);
+  virtual ~BinaryPacketsFromDataBlocks() { }
 
   // --- Production:
   virtual void produce( Event & );
@@ -112,11 +112,11 @@ private:
   // Limit on number of events for which there will be full printout.
   int _maxFullPrint;
 
-}; // AggregateDAQOutput
+}; // BinaryPacketsFromDataBlocks
 
 // ======================================================================
 
-AggregateDAQOutput::AggregateDAQOutput(fhicl::ParameterSet const& pset):
+BinaryPacketsFromDataBlocks::BinaryPacketsFromDataBlocks(fhicl::ParameterSet const& pset):
   EDProducer( ),
   _outputFile                     (pset.get<std::string>("outputFile","DTC_packets.bin")),
   _maxDMABlockSize                (pset.get<size_t>("maxDMABlockSize",32000)), // Maximum size in bytes of a DMA block
@@ -145,9 +145,9 @@ AggregateDAQOutput::AggregateDAQOutput(fhicl::ParameterSet const& pset):
   }
 }
 
-void AggregateDAQOutput::beginJob(){
+void BinaryPacketsFromDataBlocks::beginJob(){
   if ( _diagLevel > 0 ) {
-    std::cout << "AggregateDAQOutput Diaglevel: "
+    std::cout << "BinaryPacketsFromDataBlocks Diaglevel: "
          << _diagLevel << " "
          << _maxFullPrint
 	      << std::endl;
@@ -162,7 +162,7 @@ void AggregateDAQOutput::beginJob(){
   }
 }
 
-void AggregateDAQOutput::endJob(){
+void BinaryPacketsFromDataBlocks::endJob(){
 
   if( _generateBinaryFile == 1 ) {
     flushBuffer();
@@ -190,7 +190,7 @@ void AggregateDAQOutput::endJob(){
   }
 
   if (_diagLevel > 0) {
-    std::cout << "AggregateDAQOutput: "
+    std::cout << "BinaryPacketsFromDataBlocks: "
 	   << "Finished writing "
 	   << numWordsWritten
 	   << " words from "
@@ -202,7 +202,7 @@ void AggregateDAQOutput::endJob(){
 
 }
 
-std::vector<mu2e::DataBlock::adc_t> AggregateDAQOutput::generateDMABlockHeader(size_t theCount) const {
+std::vector<mu2e::DataBlock::adc_t> BinaryPacketsFromDataBlocks::generateDMABlockHeader(size_t theCount) const {
 
   uint64_t byteCount = theCount;
 
@@ -215,7 +215,7 @@ std::vector<mu2e::DataBlock::adc_t> AggregateDAQOutput::generateDMABlockHeader(s
   return header;
 }
 
-std::vector<mu2e::DataBlock::adc_t> AggregateDAQOutput::generateEventByteHeader(size_t theCount) const {
+std::vector<mu2e::DataBlock::adc_t> BinaryPacketsFromDataBlocks::generateEventByteHeader(size_t theCount) const {
 
   uint64_t byteCount = theCount;
 
@@ -228,7 +228,7 @@ std::vector<mu2e::DataBlock::adc_t> AggregateDAQOutput::generateEventByteHeader(
   return header;
 }
 
-void AggregateDAQOutput::flushBuffer() {
+void BinaryPacketsFromDataBlocks::flushBuffer() {
 
   for(size_t idx = 0; idx<outputBuffer.size(); idx++) {
     outputStream.write(reinterpret_cast<const char *>(&(outputBuffer[idx])), sizeof(mu2e::DataBlock::adc_t));
@@ -239,7 +239,7 @@ void AggregateDAQOutput::flushBuffer() {
   outputBuffer.clear();
 }
 
-void AggregateDAQOutput::produce(Event & evt) {
+void BinaryPacketsFromDataBlocks::produce(Event & evt) {
   
   bool tsTableEntryRecorded = false;
 
@@ -255,7 +255,7 @@ void AggregateDAQOutput::produce(Event & evt) {
     mu2e::DataBlockCollection const& trk_datablocks = gblTresult ? *trkDataBlockHandle : mu2e::DataBlockCollection();
 
     if ( _diagLevel > 1 ) {
-      std::cout << "AggregateDAQOutput: Total number of tracker DataBlocks = " << trk_datablocks.size() << std::endl;
+      std::cout << "BinaryPacketsFromDataBlocks: Total number of tracker DataBlocks = " << trk_datablocks.size() << std::endl;
     }
     
     theCollections.push_back(trk_datablocks);
@@ -269,7 +269,7 @@ void AggregateDAQOutput::produce(Event & evt) {
     mu2e::DataBlockCollection const& calo_datablocks = gblCresult ? *caloDataBlockHandle : mu2e::DataBlockCollection();
 
     if ( _diagLevel > 1 ) {
-      std::cout << "AggregateDAQOutput: Total number of calorimeter DataBlocks = " << calo_datablocks.size() << std::endl;
+      std::cout << "BinaryPacketsFromDataBlocks: Total number of calorimeter DataBlocks = " << calo_datablocks.size() << std::endl;
     }
 
     theCollections.push_back(calo_datablocks);
@@ -283,7 +283,7 @@ void AggregateDAQOutput::produce(Event & evt) {
     mu2e::DataBlockCollection const& crv_datablocks = gblVresult ? *crvDataBlockHandle : mu2e::DataBlockCollection();
 
     if ( _diagLevel > 1 ) {
-      std::cout << "AggregateDAQOutput: Total number of cosmic ray veto DataBlocks = " << crv_datablocks.size() << std::endl;
+      std::cout << "BinaryPacketsFromDataBlocks: Total number of cosmic ray veto DataBlocks = " << crv_datablocks.size() << std::endl;
     }
 
     theCollections.push_back(crv_datablocks);
@@ -502,6 +502,6 @@ void AggregateDAQOutput::produce(Event & evt) {
 
 // ======================================================================
 
-DEFINE_ART_MODULE(AggregateDAQOutput);
+DEFINE_ART_MODULE(BinaryPacketsFromDataBlocks);
 
 // ======================================================================

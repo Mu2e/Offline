@@ -1,6 +1,6 @@
 // ======================================================================
 //
-// CrvProducer_plugin:  Add CRV data products to the event
+// CrvDigisFromFragments_plugin:  Add CRV data products to the event
 //
 // ======================================================================
 
@@ -26,14 +26,14 @@
 #include <memory>
 
 namespace art {
-  class CrvProducer;
+  class CrvDigisFromFragments;
 }
 
-using art::CrvProducer;
+using art::CrvDigisFromFragments;
 
 // ======================================================================
 
-class art::CrvProducer
+class art::CrvDigisFromFragments
   : public EDProducer
 {
 
@@ -43,8 +43,8 @@ public:
   using adc_t = mu2e::ArtFragmentReader::adc_t;
   
   // --- C'tor/d'tor:
-  explicit  CrvProducer(fhicl::ParameterSet const& pset);
-  virtual  ~CrvProducer()  { }
+  explicit  CrvDigisFromFragments(fhicl::ParameterSet const& pset);
+  virtual  ~CrvDigisFromFragments()  { }
 
   // --- Production:
   virtual void produce( Event & );
@@ -56,11 +56,11 @@ private:
 
   art::InputTag crvFragmentsTag_;
 
-};  // CrvProducer
+};  // CrvDigisFromFragments
 
 // ======================================================================
 
-CrvProducer::CrvProducer(fhicl::ParameterSet const& pset)
+CrvDigisFromFragments::CrvDigisFromFragments(fhicl::ParameterSet const& pset)
   : EDProducer( )
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCRV_(pset.get<int>("parseCRV",1))
@@ -73,7 +73,7 @@ CrvProducer::CrvProducer(fhicl::ParameterSet const& pset)
 // ----------------------------------------------------------------------
 
 void
-  CrvProducer::
+  CrvDigisFromFragments::
   produce( Event & event )
 {
 
@@ -254,7 +254,7 @@ void
   } // Close loop over fragments
 
   if( diagLevel_ > 0 ) {
-    std::cout << "mu2e::CrvProducer::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
+    std::cout << "mu2e::CrvDigisFromFragments::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
   }
 
   event.put(std::unique_ptr<EventNumber_t>(new EventNumber_t( eventNumber )));
@@ -266,6 +266,6 @@ void
 
 // ======================================================================
 
-DEFINE_ART_MODULE(CrvProducer)
+DEFINE_ART_MODULE(CrvDigisFromFragments)
 
 // ======================================================================
