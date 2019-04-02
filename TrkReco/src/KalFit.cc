@@ -213,15 +213,15 @@ namespace mu2e
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     
     _nCaloDisks = ch->nDisk();
-    
+    double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
     for (unsigned i=0; i<_nCaloDisks; ++i){
       CLHEP::Hep3Vector pos(ch->disk(i).geomInfo().frontFaceCenter());
       pos = ch->geomUtil().mu2eToTracker(pos);
       
-      _zmincalo.push_back(pos.z());
-      _zmaxcalo.push_back(pos.z()+ch->disk(i).geomInfo().size().z());
-      _rmincalo.push_back(ch->disk(i).geomInfo().innerEnvelopeR());
-      _rmaxcalo.push_back(ch->disk(i).geomInfo().outerEnvelopeR());
+      _zmincalo[i] = (pos.z());
+      _zmaxcalo[i] = (pos.z()+crystalLength);
+      _rmincalo[i] = (ch->disk(i).geomInfo().innerEnvelopeR());
+      _rmaxcalo[i] = (ch->disk(i).geomInfo().outerEnvelopeR());
     }
   }
 
