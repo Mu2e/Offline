@@ -111,6 +111,7 @@ namespace mu2e
     _maxdepthtch(pset.get<double>("maxdepthtch", 300.)),
     _maxtchdt(pset.get<double>("maxtchdt", 5.)),//ns
     _mintchenergy(pset.get<double>("mintchEnergy", 10.)),//MeV
+    _mintchtrkpath(pset.get<double>("mintchTrkPath", 1.)),//mm
     _strHitW(pset.get<double>("strawHitT0Weight")),
     _calHitW(pset.get<double>("caloHitT0Weight")),
     //
@@ -869,8 +870,8 @@ namespace mu2e
     int      trkToCaloDiskId(-1);
     double   trkInCaloFlt(0);
     findCaloDiskFromTrack(kalData, trkToCaloDiskId, trkInCaloFlt);
-    if (trkToCaloDiskId < 0)    return;//the Track doesn't intercept the calorimeter
-  
+    if (trkToCaloDiskId < 0)              return;//the Track doesn't intercept the calorimeter
+    if (trkInCaloFlt    < _mintchtrkpath) return;//FIX ME! should we check the second disk in case the track-path in the first is too small?
     KalRep*  krep = kalData.krep;
     double   minFOM(1e10), value(0);
     const CaloCluster*cl(0);
