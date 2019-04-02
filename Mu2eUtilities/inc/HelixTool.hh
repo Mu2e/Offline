@@ -69,7 +69,7 @@ namespace mu2e {
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
 
     // Accessors
-    int    nLoops           () const { return _nLoops;            }
+    float  nLoops           () const { return _nLoops;            }
     int    nMinHitsLoop     () const { return _nMinHitsLoop;      }
     float  meanHitRadialDist() const { return _meanHitRadialDist; }
     float  d0               () const { return _d0;                }
@@ -80,7 +80,7 @@ namespace mu2e {
     const HelixSeed* _hel;
     int        _nMinHitsLoop;
 
-    int        _nLoops;
+    float      _nLoops;
     int        _nStrawHits;
     float      _meanHitRadialDist;
     float      _d0;

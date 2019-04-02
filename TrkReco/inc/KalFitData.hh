@@ -52,11 +52,13 @@ namespace mu2e {
 
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
+    const CaloClusterCollection*      caloClusterCol;    //
 
     const HelixSeed*                  helixSeed;      //
     const KalSeed*                    kalSeed;        // 
     HelixTraj*                        helixTraj;      // initial parameterization of the track
     unsigned                          nweediter;      // number of iterations on hit weeding
+    unsigned                          nweedtchiter;   // number of iterations on TrkCaloHit weeding
     std::vector<MissingHit_t>         missingHits; 
     int                               fitType;        // 0:seed 1:final
 //-----------------------------------------------------------------------------
