@@ -194,6 +194,7 @@ namespace mu2e
     //    _data.calorimeter = ch.get();
     //    _kfit.setCalorimeter (ch.get());
     _kfit.setTracker     (_tracker);
+    _kfit.setCaloGeom();
 
     // change coordinates to mu2e
     CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);

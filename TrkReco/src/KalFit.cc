@@ -109,7 +109,7 @@ namespace mu2e
     _maxdocatch(pset.get<double>("maxdocatch", 50.)),
     _mindepthtch(pset.get<double>("mindepthtch", 0.)),
     _maxdepthtch(pset.get<double>("maxdepthtch", 300.)),
-    _maxtchdt(pset.get<double>("maxtchdt", 10.)),//ns
+    _maxtchdt(pset.get<double>("maxtchdt", 5.)),//ns
     _mintchenergy(pset.get<double>("mintchEnergy", 10.)),//MeV
     _strHitW(pset.get<double>("strawHitT0Weight")),
     _calHitW(pset.get<double>("caloHitT0Weight")),
@@ -200,6 +200,16 @@ namespace mu2e
         throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
     
+  }
+
+  KalFit::~KalFit(){
+    for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
+      delete _ambigresolver[iambig];
+    }
+    delete _bfield;
+  }
+
+  void KalFit::setCaloGeom(){
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     
     _nCaloDisks = ch->nDisk();
@@ -215,12 +225,6 @@ namespace mu2e
     }
   }
 
-  KalFit::~KalFit(){
-    for(size_t iambig=0;iambig<_ambigresolver.size();++iambig){
-      delete _ambigresolver[iambig];
-    }
-    delete _bfield;
-  }
 
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from a track seed

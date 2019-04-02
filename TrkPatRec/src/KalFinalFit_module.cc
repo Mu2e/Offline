@@ -189,6 +189,8 @@ namespace mu2e
     
     _kfit.setCalorimeter (_data.calorimeter);
     _kfit.setTracker     (_data.tracker);
+    
+    _kfit.setCaloGeom();
   }
 
 

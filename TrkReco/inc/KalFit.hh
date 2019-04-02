@@ -73,6 +73,7 @@ namespace mu2e
     BField const& bField() const;
     void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
     void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
+    void setCaloGeom();
     
     void       findCaloDiskFromTrack(KalFitData& kalData, int& trkToCaloDiskId, double&trkInCaloFlt);
 
@@ -84,6 +85,7 @@ namespace mu2e
 
     bool       useTrkCaloHit() const { return _useTrkCaloHit;}
     TrkPrintUtils*  printUtils() { return _printUtils; }
+
   private:
     // iteration-independent configuration parameters
     int _debug;		    // debug level
@@ -150,7 +152,6 @@ namespace mu2e
     void findBoundingHits  (KalRep* krep, double flt0,
 			    TrkHitVector::reverse_iterator& ilow,
 			    TrkHitVector::iterator& ihigh);
-    
   };
 }
 #endif
