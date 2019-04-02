@@ -99,6 +99,7 @@ namespace mu2e
     _maxweedtch(pset.get<unsigned>("maxweedtch",1)),
     // t0 parameters
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
+    _nCaloExtrapolSteps(pset.get<float>("nCaloExtrapolSteps", 100)),
     _caloHitErr(pset.get<double>("caloHitError")),
     _updatet0(pset.get<vector<bool>>("updateT0")),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
@@ -197,6 +198,20 @@ namespace mu2e
         _ambigresolver.push_back(ar);
       else
         throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
+    }
+    
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    
+    _nCaloDisks = ch->nDisk();
+    
+    for (unsigned i=0; i<_nCaloDisks; ++i){
+      CLHEP::Hep3Vector pos(ch->disk(i).geomInfo().frontFaceCenter());
+      pos = ch->geomUtil().mu2eToTracker(pos);
+      
+      _zmincalo.push_back(pos.z());
+      _zmaxcalo.push_back(pos.z()+ch->disk(i).geomInfo().size().z());
+      _rmincalo.push_back(ch->disk(i).geomInfo().innerEnvelopeR());
+      _rmaxcalo.push_back(ch->disk(i).geomInfo().outerEnvelopeR());
     }
   }
 
@@ -437,14 +452,6 @@ namespace mu2e
         changed |= nmat>0;
 	if (!flagMaterialAdded) flagMaterialAdded=true;
       }
-
-      //weed the TrkCaloHit AFTER we included the material corrections 
-      // in the fit (we need to wait one iteration to allow the fitter to include
-      // the material corrections)
-      if ( _useTrkCaloHit && (nmat == 0) && flagMaterialAdded && (kalData.nweedtchiter < _maxweedtch)){
-	weedTrkCaloHit(kalData, iter);
-      }
-
       
       if(_debug > 1) std::cout << "Inner iteration " << niter << " changed = "
 	<< changed << " t0 old " << oldt0 << " new " << krep->t0()._t0 
@@ -809,8 +816,59 @@ namespace mu2e
     return retval;
   }
 
+//--------------------------------------------------------------------------------
+// This function uses the KalRep for searching for the calorimeter disk where 
+// the track is supposed to impact
+//--------------------------------------------------------------------------------
+  void       
+  KalFit::findCaloDiskFromTrack(KalFitData& kalData, int& trkToCaloDiskId, double& caloFlt){
+    KalRep*krep = kalData.krep;
+    const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+    float  zExtrapolStep  = (_zmaxcalo[0] - _zmincalo[0])/(float)_nCaloExtrapolSteps;
+
+    //initialize the output values
+    trkToCaloDiskId = -1;
+    caloFlt         = 0;
+
+    float  fltIn(0), fltOut(0);
+    for (unsigned i=0; i<_nCaloDisks; ++i){
+      for (unsigned j=0; j<_nCaloExtrapolSteps; ++j){
+	double flt(0);
+	double zCaloExtrap = _zmincalo[i] + j*zExtrapolStep;
+	TrkHelixUtils::findZFltlen(*reftraj, zCaloExtrap, flt);
+	HepPoint pos    = krep->referenceTraj()->position(flt);
+	float    radius = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
+	if ( (radius >= _rmincalo[i]) && (radius <= _rmaxcalo[i])){
+	  if (trkToCaloDiskId<0) {
+	    trkToCaloDiskId = i;
+	    fltIn           = flt;
+	  }else {
+	    fltOut = flt;
+	    i      = _nCaloDisks;	  
+	    break;
+	  }
+	} 
+      }//end loop over the z-steps
+    }//end loop over tghe disks   
+    
+    if (trkToCaloDiskId >= 0)  caloFlt = fltOut - fltIn;
+  }
+
+
+//--------------------------------------------------------------------------------
+// This function loops over the CaloClusterCollection to search for a Cluster
+// compatible with the Track. If the Cluster energy was below the threshold, 
+// no Cluster was added in the TimeClusterFinder module
+//--------------------------------------------------------------------------------
   void
-  KalFit::addTrkCaloHit(KalFitData&kalData){
+  KalFit::addTrkCaloHit( Mu2eDetector::cptr_t detmodel, KalFitData& kalData){
+    //extrapolate the track to the calorimeter region 
+    //to understand on which disk the track is supposed to impact
+    int      trkToCaloDiskId(-1);
+    double   trkInCaloFlt(0);
+    findCaloDiskFromTrack(kalData, trkToCaloDiskId, trkInCaloFlt);
+    if (trkToCaloDiskId < 0)    return;//the Track doesn't intercept the calorimeter
+  
     KalRep*  krep = kalData.krep;
     double   minFOM(1e10), value(0);
     const CaloCluster*cl(0);
@@ -821,18 +879,22 @@ namespace mu2e
     unsigned nClusters = kalData.caloClusterCol->size();
     const TrkDifPieceTraj* reftraj = krep->referenceTraj();
     double   flt0 = krep->flt0();
-
+    double   tflt(0);
+    if (trkToCaloDiskId){
+      //evaluate the flight length at the z of the calorimeter cluster + half crystallength
+      TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[trkToCaloDiskId]+0.5*crystalLength),tflt);
+      //evaluate the transittime using the full trajectory
+      tflt = krep->t0()._t0 + krep->transitTime(flt0, tflt);
+    }
+     
     for (unsigned i=0; i<nClusters; ++i){
       cl    = &kalData.caloClusterCol->at(i);
+      if (cl->diskId() != trkToCaloDiskId) continue;
       if (cl->energyDep() < _mintchenergy) continue;
-      double      hflt(0.0);
+      // double      hflt(0.0);
       Hep3Vector  cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cl->diskId(), cl->cog3Vector())); 
-      // move position to front of crystal
+      // // move position to front of crystal
       cog.setZ(cog.z()-crystalLength);
-      //evaluate the flight length at the z of the calorimeter cluster + half crystallength
-      TrkHelixUtils::findZFltlen(*reftraj, (cog.z()+0.5*crystalLength),hflt);
-      //evaluate the transittime using the full trajectory
-      double      tflt = krep->t0()._t0 + krep->transitTime(flt0, hflt);
       double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
 
       //check the compatibility of the track and time within a given time window
@@ -846,11 +908,11 @@ namespace mu2e
       Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
 
       TrkCaloHit* tch = new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
-				       ht0, hflt,
+				       ht0, tflt,
 				       _calHitW, _caloHitErr, 
 				       _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset());
       //evaluate the doca
-      TrkPoca poca(krep->traj(),hflt,*tch->hitTraj(),0.0);
+      TrkPoca poca(krep->traj(),tflt,*tch->hitTraj(),0.0);
       value = poca.doca();
       if (fabs(value) < minFOM && (value <= _maxdocatch) && (value >= _mindocatch)) {
 	tchFinal = tch;
@@ -864,6 +926,10 @@ namespace mu2e
     
     //add the TrkCaloHit
     krep->addHit(tchFinal);
+
+    TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
+    krep->addHistory(fitstat,"AddHits");
+ 
   }
 
 
@@ -913,11 +979,6 @@ namespace mu2e
 	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
       }
       
-      // // Recursively iterate
-      // kalData.nweedtchiter++;
-      // if (fitstat.success() && kalData.nweedtchiter < _maxweedtch) {
-      //   retval |= weedTrkCaloHit(kalData,iter);
-      // }
     }
 
     kalData.nweedtchiter++;

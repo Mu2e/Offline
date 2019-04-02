@@ -65,7 +65,7 @@ namespace mu2e
 // add a set of hits to an existing fit
     void addHits(StrawResponse::cptr_t srep, Mu2eDetector::cptr_t detmodel, 
 		 KalFitData&kalData, double maxchi);
-    void addTrkCaloHit(KalFitData&kalData);
+    void addTrkCaloHit(Mu2eDetector::cptr_t detmodel, KalFitData&kalData);
 // add materials to a track
     bool unweedHits      (KalFitData&kalData, double maxchi);
 // KalContext interface
@@ -74,11 +74,13 @@ namespace mu2e
     void setCalorimeter  (const Calorimeter*         Cal    ) { _calorimeter = Cal;     }
     void setTracker      (const Tracker*             Tracker) { _tracker     = Tracker; }
     
+    void       findCaloDiskFromTrack(KalFitData& kalData, int& trkToCaloDiskId, double&trkInCaloFlt);
+
     TrkErrCode fitIteration  (Mu2eDetector::cptr_t detmodel,
 			      KalFitData& kalData,int iter); 
     bool       weedHits      (KalFitData& kalData, int    iter);
     bool       updateT0      (KalFitData& kalData, int    iter);
-    bool       weedTrkCaloHit(KalFitData& kalData, int    iter);
+    bool       weedTrkCaloHit(KalFitData& kalData, int    iter=-1);
 
     bool       useTrkCaloHit() const { return _useTrkCaloHit;}
     TrkPrintUtils*  printUtils() { return _printUtils; }
@@ -91,6 +93,7 @@ namespace mu2e
     unsigned _maxweedtch;
     bool _initt0;	    // initialize t0?
     bool _useTrkCaloHit;    //use the TrkCaloHit 
+    float  _nCaloExtrapolSteps;
     double _caloHitErr; // spatial error to use for TrkCaloHit
     std::vector<bool> _updatet0; // update t0 ieach iteration?
     std::vector<double> _t0tol;  // convergence tolerance for t0
@@ -119,6 +122,10 @@ namespace mu2e
     TrkTimeCalculator _ttcalc;
 // relay access to BaBar field: this should come from conditions, FIXME!!!
     mutable BField* _bfield;
+ 
+// parameters needed for evaluating the expected track impact point in the calorimeter
+    unsigned _nCaloDisks;
+    std::vector<float> _zmaxcalo, _zmincalo, _rmaxcalo, _rmincalo;
 
     TrkPrintUtils*  _printUtils;
 

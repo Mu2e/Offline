@@ -288,8 +288,9 @@ namespace mu2e
 	    findMissingHits(_result);
 	  }
 	  //check the presence of a TrkCaloHit; if it's not present, add it
-	  if (_kfit.useTrkCaloHit() && !hasTrkCaloHit(_result)){
-	    _kfit.addTrkCaloHit(_result);
+	  if (_kfit.useTrkCaloHit() ){
+	    if (!hasTrkCaloHit(_result)) _kfit.addTrkCaloHit(detmodel, _result);
+	    if ( hasTrkCaloHit(_result)) _kfit.weedTrkCaloHit(_result);
 	  }
 
 	  if(_result.missingHits.size() > 0){
