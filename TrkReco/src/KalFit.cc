@@ -845,16 +845,14 @@ namespace mu2e
 	if ( (radius >= _rmincalo[i]) && (radius <= _rmaxcalo[i])){
 	  if (trkToCaloDiskId<0) {
 	    trkToCaloDiskId = i;
-	    fltIn           = flt;
+	    fltIn  = flt;
 	  }else {
 	    fltOut = flt;
-	    i      = _nCaloDisks;	  
-	    break;
 	  }
 	} 
       }//end loop over the z-steps
+      if (trkToCaloDiskId>=0) break;
     }//end loop over tghe disks   
-    
     if (trkToCaloDiskId >= 0)  caloFlt = fltOut - fltIn;
   }
 
@@ -883,12 +881,12 @@ namespace mu2e
     unsigned nClusters = kalData.caloClusterCol->size();
     const TrkDifPieceTraj* reftraj = krep->referenceTraj();
     double   flt0 = krep->flt0();
-    double   tflt(0);
-    if (trkToCaloDiskId){
+    double   tflt(0), flt(0);
+    if (trkToCaloDiskId>=0){
       //evaluate the flight length at the z of the calorimeter cluster + half crystallength
-      TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[trkToCaloDiskId]+0.5*crystalLength),tflt);
+      TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[trkToCaloDiskId]+0.5*crystalLength),flt);
       //evaluate the transittime using the full trajectory
-      tflt = krep->t0()._t0 + krep->transitTime(flt0, tflt);
+      tflt = krep->t0()._t0 + krep->transitTime(flt0, flt);
     }
      
     for (unsigned i=0; i<nClusters; ++i){
