@@ -107,6 +107,7 @@ namespace mu2e
     double _mindepthtch, _maxdepthtch; //minimum and maximum value of the TrkCaloHit depth within the crystals
     double _maxtchdt; //maximum time window allowed to match a CaloCluster with the Track
     double _mintchenergy;//minimum energy of the TrkCaloHit to be considered
+    double _mintchtrkpath;//minimum track path length allowed when doing the track extrapolation to the calorimeter
     double _strHitW, _calHitW;//weight used to evaluate the initial track T0
     unsigned _minnstraws;   // minimum # staws for fit
     double _maxmatfltdiff; // maximum difference in track flightlength to separate to intersections of the same material
