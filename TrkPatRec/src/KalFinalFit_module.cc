@@ -206,6 +206,8 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::KalFinalFit: data missing or incomplete"<< endl;
     }
+    // find the cluster handle (again).  This is inefficient and hard to follow FIXME!
+    auto clH = event.getValidHandle(_clToken);
     // create output
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
@@ -242,8 +244,12 @@ namespace mu2e
       KalSeed const& kseed(_kscol->at(ikseed));
       _result.kalSeed = & kseed;
       //      _result.tpart   = kseed.particle();
-
-      if (kseed.caloCluster()) _result.caloCluster = kseed.caloCluster().get();
+      // create a Ptr for possible added CaloCluster
+      art::Ptr<CaloCluster> ccPtr;
+      if (kseed.caloCluster()){
+	_result.caloCluster = kseed.caloCluster().get(); // should not be using KalFitData as a common block FIXME!
+	ccPtr = kseed.caloCluster(); // remember the Ptr for creating the TrkCaloHitSeed and KalSeed Ptr
+      }
 
       // only process fits which meet the requirements
       if(kseed.status().hasAllProperties(_goodseed)) {
@@ -291,7 +297,13 @@ namespace mu2e
 	  }
 	  //check the presence of a TrkCaloHit; if it's not present, add it
 	  if (_kfit.useTrkCaloHit() ){
-	    if (!hasTrkCaloHit(_result)) _kfit.addTrkCaloHit(detmodel, _result);
+	    if (!hasTrkCaloHit(_result)){
+	      int icc = _kfit.addTrkCaloHit(detmodel, _result);
+	      if(icc >=0){
+	      // set the CaloCluster Ptr for the TrkCaloHitSeed.
+		ccPtr = art::Ptr<CaloCluster>(clH,(size_t)icc);	
+	      }
+	    }
 	    if ( hasTrkCaloHit(_result)) _kfit.weedTrkCaloHit(_result);
 	  }
 
@@ -380,7 +392,7 @@ namespace mu2e
 	  if(tch != 0){
 	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
 	    // set the Ptr using the helix: this could be more direct FIXME!
-	    fseed._chit._cluster = fseed._helix->caloCluster();
+	    fseed._chit._cluster = ccPtr;
 	    // create a helix segment at the TrkCaloHit
 	    KalSegment kseg;
 	    // sample the momentum at this flight.  This belongs in a separate utility FIXME

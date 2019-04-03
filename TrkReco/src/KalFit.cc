@@ -863,78 +863,83 @@ namespace mu2e
 // compatible with the Track. If the Cluster energy was below the threshold, 
 // no Cluster was added in the TimeClusterFinder module
 //--------------------------------------------------------------------------------
-  void
-  KalFit::addTrkCaloHit( Mu2eDetector::cptr_t detmodel, KalFitData& kalData){
+  int
+  KalFit::addTrkCaloHit( Mu2eDetector::cptr_t detmodel, KalFitData& kalData) {
+    int retval(-1);
     //extrapolate the track to the calorimeter region 
     //to understand on which disk the track is supposed to impact
     int      trkToCaloDiskId(-1);
     double   trkInCaloFlt(0);
     findCaloDiskFromTrack(kalData, trkToCaloDiskId, trkInCaloFlt);
-    if (trkToCaloDiskId < 0)              return;//the Track doesn't intercept the calorimeter
-    if (trkInCaloFlt    < _mintchtrkpath) return;//FIX ME! should we check the second disk in case the track-path in the first is too small?
-    KalRep*  krep = kalData.krep;
-    double   minFOM(1e10);
-    const CaloCluster*cl(0);
-    std::unique_ptr<TrkCaloHit> tchFinal;
-    mu2e::GeomHandle<mu2e::Calorimeter> ch;
-    double   crystalLength = ch->caloInfo().getDouble("crystalZLength");
-     
-    unsigned nClusters = kalData.caloClusterCol->size();
-    const TrkDifPieceTraj* reftraj = krep->referenceTraj();
-    double   flt0 = krep->flt0();
-    double   tflt(0), flt(0);
-    if (trkToCaloDiskId>=0){
-      //evaluate the flight length at the z of the calorimeter cluster + half crystallength
-      TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[trkToCaloDiskId]+0.5*crystalLength),flt);
-      //evaluate the transittime using the full trajectory
-      tflt = krep->t0()._t0 + krep->transitTime(flt0, flt);
-    }
-     
-    for (unsigned i=0; i<nClusters; ++i){
-      cl    = &kalData.caloClusterCol->at(i);
-      if (cl->diskId() != trkToCaloDiskId) continue;
-      if (cl->energyDep() < _mintchenergy) continue;
-      // double      hflt(0.0);
-      Hep3Vector  cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cl->diskId(), cl->cog3Vector())); 
-      // // move position to front of crystal
-      cog.setZ(cog.z()-crystalLength);
-      double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
+    if (trkToCaloDiskId >= 0 &&  //the Track doesn't intercept the calorimeter
+	trkInCaloFlt > _mintchtrkpath) { //FIX ME! should we check the second disk in case the track-path in the first is too small?
+      KalRep*  krep = kalData.krep;
+      double   minFOM(1e10);
+      const CaloCluster*cl(0);
+      std::unique_ptr<TrkCaloHit> tchFinal;
+      mu2e::GeomHandle<mu2e::Calorimeter> ch;
+      double   crystalLength = ch->caloInfo().getDouble("crystalZLength");
 
-      //check the compatibility of the track and time within a given time window
-      if (fabs(dt) > _maxtchdt)        continue;
-      
-      //we need to create a TrkCaloHit to evaluate the doca
-      HitT0 ht0;
-      ht0._t0    = cl->time() + _ttcalc.caloClusterTimeOffset();
-      ht0._t0err = _ttcalc.caloClusterTimeErr();
+      unsigned nClusters = kalData.caloClusterCol->size();
+      const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+      double   flt0 = krep->flt0();
+      double   tflt(0), flt(0);
+      if (trkToCaloDiskId>=0){
+	//evaluate the flight length at the z of the calorimeter cluster + half crystallength
+	TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[trkToCaloDiskId]+0.5*crystalLength),flt);
+	//evaluate the transittime using the full trajectory
+	tflt = krep->t0()._t0 + krep->transitTime(flt0, flt);
+      }
 
-      Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
-      // construct a temporary TrkCaloHit.  This is just to be able to call POCA
-      TrkLineTraj hitTraj(HepPoint(cog.x(), cog.y(), cog.z()),
-			       clusterAxis, 0.0, crystalLength);
-      //evaluate the doca
-      TrkPoca poca(krep->traj(),flt,hitTraj,0.5*crystalLength);
-      double doca = poca.doca();
-      double depth = poca.flt2(); 
-      if( doca  > _mindocatch  && doca  < _maxdocatch &&
-	  depth > _mindepthtch && depth < _maxdepthtch &&
-	  fabs(doca) < minFOM) {
+      for (unsigned icc=0; icc<nClusters; ++icc){ 
+	cl    = &kalData.caloClusterCol->at(icc);
+	if (cl->diskId() != trkToCaloDiskId ||
+	    cl->energyDep() < _mintchenergy) continue;
+	// double      hflt(0.0);
+	Hep3Vector  cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cl->diskId(), cl->cog3Vector())); 
+	// // move position to front of crystal
+	cog.setZ(cog.z()-crystalLength);
+	double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
+
+	//check the compatibility of the track and time within a given time window
+	if (fabs(dt) > _maxtchdt)        continue;
+
+	//we need to create a TrkCaloHit to evaluate the doca
+	HitT0 ht0;
+	ht0._t0    = cl->time() + _ttcalc.caloClusterTimeOffset();
+	ht0._t0err = _ttcalc.caloClusterTimeErr();
+
+	Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
+	// construct a temporary TrkCaloHit.  This is just to be able to call POCA
+	TrkLineTraj hitTraj(HepPoint(cog.x(), cog.y(), cog.z()),
+	    clusterAxis, 0.0, crystalLength);
+	//evaluate the doca
+	TrkPoca poca(krep->traj(),flt,hitTraj,0.5*crystalLength);
+	double doca = poca.doca();
+	double depth = poca.flt2(); 
+	if( doca  > _mindocatch  && doca  < _maxdocatch &&
+	    depth > _mindepthtch && depth < _maxdepthtch &&
+	    fabs(doca) < minFOM) {
 	  tchFinal.reset(new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
-	    ht0, poca.flt1(),
-	    _calHitW, _caloHitErr, 
-	    _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
-	  minFOM   = doca;
+		ht0, poca.flt1(),
+		_calHitW, _caloHitErr, 
+		_ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
+	  minFOM   = doca; // this should be some combination of energy, DOCA, etc FIXME!
+	  retval = icc;
+	}
+      }
+
+      if (tchFinal != 0) { 
+
+	//add the TrkCaloHit
+	krep->addHit(tchFinal.release());
+
+	TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
+	krep->addHistory(fitstat,"AddHits");
       }
     }
-    
-    if (tchFinal == 0)  return;
-    
-    //add the TrkCaloHit
-    krep->addHit(tchFinal.release());
+    return retval;
 
-    TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
-    krep->addHistory(fitstat,"AddHits");
- 
   }
 
 
