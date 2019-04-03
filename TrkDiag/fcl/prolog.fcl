@@ -53,7 +53,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	UseFlagCollection : true
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
   
@@ -62,7 +62,7 @@ BEGIN_PROLOG
     StrawDigiMCCollection : "compressDigiMCs"
     VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
     TimeOffsets : {
-      inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] 
+      inputs : [ @sequence::DigiCompression.TimeMaps ]
     }
   }
 
@@ -72,7 +72,7 @@ BEGIN_PROLOG
 	ComboHitFlag : false
 	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] 
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
 
@@ -86,7 +86,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
-	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
         ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
         ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
@@ -104,7 +104,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	PlotHelices : false
 	InclusivePlotFlagBits : ["HitsOK"]
-	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
   }
 
   CHD : {
@@ -114,7 +114,7 @@ BEGIN_PROLOG
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
 
@@ -313,16 +313,16 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     DmuTag : "KFFDmuM"
     DeTrkQualTag : "TrkQualDeM"
     RecoCountTag : "SelectRecoMC"
+    CaloCrystalHitMapTag : "SelectRecoMC"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    PBIWeightTag : "PBIWeight"
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
+    PBIWeightTag : "SelectRecoMC"
+    CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
     ProcessEmptyEvents : false
-    AnalyzeCRV : true
+    AnalyzeCRV : false
     StrawHitFlagCollection : "SelectRecoMC"
     PrimaryParticleTag : "compressRecoMCs"
-#    TriggerBitsTag : "triggerInfoMerger"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
   }

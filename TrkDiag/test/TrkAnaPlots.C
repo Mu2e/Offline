@@ -1045,26 +1045,42 @@ void t0(TTree* ta) {
   t01->Draw();
 }
 
-void Eff(TTree* ta, unsigned norm, double plo, double phi) {
-  TH1F* allrec = new TH1F("allrec","Reco Rate vs generated momentum",100,plo,phi);
-  TH1F* tqrec = new TH1F("tqrec","Reco Rate vs generated momentum",100,plo,phi);
-  TH1F* tprtrig = new TH1F("tprtrig","Reco Rate vs generated momentum",100,plo,phi);
-  TH1F* cprtrig = new TH1F("cprtrig","Reco Rate vs generated momentum",100,plo,phi);
-  TH1F* trktrig = new TH1F("trktrig","Reco Rate vs generated momentum",100,plo,phi);
-  TH1F* cctrig = new TH1F("cctrig","Reco Rate vs generated momentum",100,plo,phi);
+void Eff(TTree* ta, unsigned norm, double plo, double phi, int q=-1) {
+  TH1F* allrec = new TH1F("allrec","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* tqrec = new TH1F("tqrec","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* t0rec = new TH1F("t0rec","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* tprtrig = new TH1F("tprtrig","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* cprtrig = new TH1F("cprtrig","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* trktrig = new TH1F("trktrig","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* alltrig = new TH1F("alltrig","Reco Fraction vs Generated Momentum",100,plo,phi);
+  TH1F* cctrig = new TH1F("cctrig","Reco Fraction vs Generated Momentum",100,plo,phi);
 
-  TCut goodtrk("detrkqual.trkqual>0.4");
-  TCut tprdem("(trigbits&0x200)==0x200");
-  TCut cprdem("(trigbits&0x8)==0x8");
-  TCut trkdem("(trigbits&0x208)>0");
+  TCut t0cut("de.t0>700");
+  TCut goodfit("detrkqual.trkqual>0.4");
+
   TCut cc("(trigbits&0x4)==0x4");
- 
+  // trigger depends on sign
+  TCut goodtpr, goodcpr, goodtrk, goodtrig;
+  if(q <0){
+    // electrons
+    goodtpr = TCut("(trigbits&0x200)==0x200");
+    goodcpr = TCut("(trigbits&0x8)==0x8");
+    goodtrk = TCut("(trigbits&0x208)>0");
+    goodtrig = TCut("(trigbits&0x20C)>0");
+  } else {
+    // positrons
+    goodtpr = TCut("(trigbits&0x400)==0x400");
+    goodcpr = TCut("(trigbits&0x10)==0x10");
+    goodtrk = TCut("(trigbits&0x410)>0");
+    goodtrig = TCut("(trigbits&0x414)>0");
+  }
 
   allrec->SetStats(0);
   tqrec->SetStats(0);
   tprtrig->SetStats(0);
   cprtrig->SetStats(0);
   trktrig->SetStats(0);
+  alltrig->SetStats(0);
   cctrig->SetStats(0);
 
   allrec->SetLineColor(kBlue);
@@ -1072,13 +1088,15 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi) {
   tprtrig->SetLineColor(kGreen);
   cprtrig->SetLineColor(kOrange);
   trktrig->SetLineColor(kCyan);
-  cctrig->SetLineColor(kBlack);
+  alltrig->SetLineColor(kBlack);
+  cctrig->SetLineColor(kYellow);
   ta->Project("allrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)");
-  ta->Project("tqrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk);
-  ta->Project("tprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&tprdem);
-  ta->Project("cprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&cprdem);
-  ta->Project("trktrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&trkdem);
-  ta->Project("cctrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodtrk&&cc);
+  ta->Project("tqrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit);
+  ta->Project("tprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtpr);
+  ta->Project("cprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodcpr);
+  ta->Project("trktrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtrk);
+  ta->Project("alltrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtrig);
+  ta->Project("cctrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&cc);
 
   // scale by the absolute normalization
   double scalefac =100.0/norm;
@@ -1087,20 +1105,60 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi) {
   tprtrig->Scale(scalefac);
   cprtrig->Scale(scalefac);
   trktrig->Scale(scalefac);
+  alltrig->Scale(scalefac);
   cctrig->Scale(scalefac);
-  TCanvas* eff = new TCanvas("eff","Efficiency",600,600);
+  TCanvas* effcan = new TCanvas("effcan","Efficiency",600,600);
   allrec->Draw("h");
   tqrec->Draw("hsame");
+  alltrig->Draw("hsame");
   trktrig->Draw("hsame");
   tprtrig->Draw("hsame");
   cprtrig->Draw("hsame");
+  alltrig->Draw("hsame");
   cctrig->Draw("hsame");
   TLegend* leg = new TLegend(0.1,0.6,0.5,0.9);
   leg->AddEntry(allrec,"All Reco","l");
   leg->AddEntry(tqrec,"TrkQual>0.4","l");
-  leg->AddEntry(trktrig,"Track Triger","l");
-  leg->AddEntry(tprtrig,"TrackPatRec Triger","l");
-  leg->AddEntry(cprtrig,"CalPatRec Triger","l");
-  leg->AddEntry(cctrig,"CaloCluster Triger","l");
+  leg->AddEntry(alltrig,"All Trigger","l");
+  leg->AddEntry(trktrig,"Track Trigger","l");
+  leg->AddEntry(tprtrig,"TrackPatRec Trigger","l");
+  leg->AddEntry(cprtrig,"CalPatRec Trigger","l");
+  leg->AddEntry(cctrig,"CaloCluster Trigger","l");
   leg->Draw();
+}
+
+void PlotIPA(TTree* ta) {
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  TH1F* trkqual = new TH1F("trkqual","TrkQual",103,-0.01,1.01);
+  TH1F* mom = new TH1F("mom","Reco Momentum;P_{reco} (MeV/c)",100,40,56);
+  TH1F* momres = new TH1F("momres","Momentum Resolution;P_{reco} - P_{MC} (MeV/c)",100,-5.0,5.0);
+  TH1F* nactive = new TH1F("nactive","N Active Straw Hits",121,-0.5,120.5);
+  trkqual->SetStats(0);
+  ta->Project("trkqual","de.trkqual");
+  ta->Project("mom","de.mom","de.trkqual>0.4");
+  ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.trkqual>0.4");
+  ta->Project("nactive","de.nactive","de.trkqual>0.4");
+  TCanvas* ipacan = new TCanvas("ipacan","ipacan",800,800);
+  ipacan->Divide(2,2);
+  ipacan->cd(1);
+  trkqual->Draw();
+  ipacan->cd(2);
+  nactive->Draw();
+  ipacan->cd(3);
+  mom->Draw();
+  ipacan->cd(4);
+  gPad->SetLogy();
+  double integral = momres->GetEntries()*momres->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
+  TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+  dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
+  momres->Fit("dscb","RQ");
 }

@@ -873,9 +873,9 @@ namespace mu2e
     if (trkToCaloDiskId < 0)              return;//the Track doesn't intercept the calorimeter
     if (trkInCaloFlt    < _mintchtrkpath) return;//FIX ME! should we check the second disk in case the track-path in the first is too small?
     KalRep*  krep = kalData.krep;
-    double   minFOM(1e10), value(0);
+    double   minFOM(1e10);
     const CaloCluster*cl(0);
-    TrkCaloHit* tchFinal(0);
+    std::unique_ptr<TrkCaloHit> tchFinal;
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     double   crystalLength = ch->caloInfo().getDouble("crystalZLength");
      
@@ -909,19 +909,21 @@ namespace mu2e
       ht0._t0err = _ttcalc.caloClusterTimeErr();
 
       Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
-
-      TrkCaloHit* tch = new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
-				       ht0, tflt,
-				       _calHitW, _caloHitErr, 
-				       _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset());
+      // construct a temporary TrkCaloHit.  This is just to be able to call POCA
+      TrkLineTraj hitTraj(HepPoint(cog.x(), cog.y(), cog.z()),
+			       clusterAxis, 0.0, crystalLength);
       //evaluate the doca
-      TrkPoca poca(krep->traj(),tflt,*tch->hitTraj(),0.0);
-      value = poca.doca();
-      if (fabs(value) < minFOM && (value <= _maxdocatch) && (value >= _mindocatch)) {
-	tchFinal = tch;
-	minFOM   = value;
-      } else {
-	delete tch;
+      TrkPoca poca(krep->traj(),flt,hitTraj,0.5*crystalLength);
+      double doca = poca.doca();
+      double depth = poca.flt2(); 
+      if( doca  > _mindocatch  && doca  < _maxdocatch &&
+	  depth > _mindepthtch && depth < _maxdepthtch &&
+	  fabs(doca) < minFOM) {
+	  tchFinal.reset(new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
+	    ht0, poca.flt1(),
+	    _calHitW, _caloHitErr, 
+	    _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
+	  minFOM   = doca;
       }
     }
     
@@ -930,8 +932,8 @@ namespace mu2e
     kalData.diag.added = 1;
     
     //add the TrkCaloHit
-    krep->addHit(tchFinal);
-    
+    krep->addHit(tchFinal.release());
+
     TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
     krep->addHistory(fitstat,"AddHits");
  

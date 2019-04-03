@@ -39,6 +39,7 @@
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // C++
+#include <array>
 
 namespace mu2e 
 {
@@ -130,7 +131,7 @@ namespace mu2e
  
 // parameters needed for evaluating the expected track impact point in the calorimeter
     unsigned _nCaloDisks;
-    std::array<double,2> _zmaxcalo, _zmincalo, _rmaxcalo, _rmincalo;
+    std::array<float,2> _zmaxcalo, _zmincalo, _rmaxcalo, _rmincalo;
 
     TrkPrintUtils*  _printUtils;
 

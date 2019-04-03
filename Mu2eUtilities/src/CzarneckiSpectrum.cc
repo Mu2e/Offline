@@ -28,11 +28,17 @@ namespace mu2e {
   CzarneckiSpectrum::CzarneckiSpectrum() :
     _table ( loadTable<2>( ConfigFileLookupPolicy()( "ConditionsService/data/czarnecki_"+
                                                      GlobalConstantsHandle<PhysicsParams>()->getStoppingTargetMaterial()+".tbl" ) ) )
-  {}
+  {
+    _halfBinWidth = (_table.getRow(1).first - _table.getRow(0).first)/2.;
+  }
 
   double CzarneckiSpectrum::getWeight(double E) const {
 
-    const unsigned iRow = _table.getLowerBoundRowIndex( E );
+    // FIXME remove bin centering
+    // assume E is bin center, but table is listing bin left edge
+    double E_leftedge = E - _halfBinWidth;
+
+    const unsigned iRow = _table.getLowerBoundRowIndex( E_leftedge );
 
     double weight       = _table( iRow ) ;
     if ( iRow == _table.getNrows()-1 || iRow == 0 ) return weight;
@@ -41,8 +47,8 @@ namespace mu2e {
     auto const & row_before = _table.getRow( iRow-1 );
     auto const & row_after  = _table.getRow( iRow+1 );
 
-    weight = interpolate( E, row_after, row, row_before );
-    if ( weight < 0 ) weight = interpolateE5 ( E, row );
+    weight = interpolate( E_leftedge, row_after, row, row_before );
+    if ( weight < 0 ) weight = interpolateE5 ( E_leftedge, row );
 
     return weight;
   }

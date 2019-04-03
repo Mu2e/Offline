@@ -34,5 +34,3 @@ outputs.Output.SelectEvents : [ "RecoPath" ]
 services.TFileService.fileName: "nts.owner.RecoMC.version.sequencer.root"
 outputs.Output.fileName: "mcs.owner.RecoMC.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
-
-

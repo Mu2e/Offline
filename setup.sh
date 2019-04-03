@@ -3,7 +3,7 @@
 #
 # Original author Rob Kutschke
 #
-#
+# 
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it." >&2
