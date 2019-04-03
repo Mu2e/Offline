@@ -926,15 +926,54 @@ namespace mu2e
     }
     
     if (tchFinal == 0)  return;
+
+    kalData.diag.added = 1;
     
     //add the TrkCaloHit
     krep->addHit(tchFinal);
-
+    
     TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
     krep->addHistory(fitstat,"AddHits");
  
   }
 
+  void 
+  KalFit::fillTchDiag(KalFitData& kalData){
+    KalRep* krep = kalData.krep;
+    TrkHitVector *thv      = &(krep->hitVector());    
+    
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    double   crystalLength = ch->caloInfo().getDouble("crystalZLength");
+ 
+    const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+    double   flt0 = krep->flt0();
+
+    //evaluate the track-path length in the calorimeter
+    int      trkToCaloDiskId(-1);
+    double   trkInCaloFlt(0);
+    findCaloDiskFromTrack(kalData, trkToCaloDiskId, trkInCaloFlt);
+ 
+    for (auto ihit=thv->begin();ihit!=thv->end(); ++ihit){
+      TrkCaloHit*hit = dynamic_cast<TrkCaloHit*>(*ihit);
+      if (hit == 0)     continue;
+      if (hit->isActive()) {
+	//evaluate the flight length at the z of the calorimeter cluster + half crystallength
+	unsigned    diskId = hit->caloCluster().diskId();
+	double      flt(0);
+	TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[diskId]+0.5*crystalLength),flt);
+	//evaluate the transittime using the full trajectory
+	double      tflt = krep->t0()._t0 + krep->transitTime(flt0, flt);
+ 	double      dt   = hit->caloCluster().time() + _ttcalc.caloClusterTimeOffset() - tflt;
+
+	kalData.diag.diskId   = diskId;
+	kalData.diag.depth    = hit->hitLen();
+	kalData.diag.dt       = dt;
+	kalData.diag.trkPath  = trkToCaloDiskId == (int)diskId ? trkInCaloFlt : -9999;
+	kalData.diag.energy   = hit->caloCluster().energyDep();
+	kalData.diag.doca     = hit->poca().doca();
+      } 
+    }
+  }
 
   bool
   KalFit::weedTrkCaloHit(KalFitData& kalData, int iter) {

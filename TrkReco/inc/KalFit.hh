@@ -84,6 +84,8 @@ namespace mu2e
     bool       weedTrkCaloHit(KalFitData& kalData, int    iter=-1);
 
     bool       useTrkCaloHit() const { return _useTrkCaloHit;}
+    void       fillTchDiag(KalFitData& kalData);
+
     TrkPrintUtils*  printUtils() { return _printUtils; }
 
   private:
