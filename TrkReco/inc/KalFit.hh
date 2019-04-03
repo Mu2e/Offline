@@ -58,6 +58,7 @@ namespace mu2e
 #endif/*__GCCXML__*/
 
     virtual ~KalFit();
+    // all functions using the KalFitData 'common block' need to be re-engineered FIXME!
 // // create a fit object from a track definition
 // create a fit object from  a track seed, 
     void makeTrack(StrawResponse::cptr_t srep, 
@@ -66,7 +67,8 @@ namespace mu2e
 // add a set of hits to an existing fit
     void addHits(StrawResponse::cptr_t srep, Mu2eDetector::cptr_t detmodel, 
 		 KalFitData&kalData, double maxchi);
-    void addTrkCaloHit(Mu2eDetector::cptr_t detmodel, KalFitData&kalData);
+    // return value is the index of the cluster (if added)  
+    int addTrkCaloHit(Mu2eDetector::cptr_t detmodel, KalFitData&kalData);
 // add materials to a track
     bool unweedHits      (KalFitData&kalData, double maxchi);
 // KalContext interface
