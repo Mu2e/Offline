@@ -73,6 +73,8 @@ namespace{
     struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
     bool operator()(mu2e::ComboHit const& p1, mu2e::ComboHit const& p2) { return p1._pos.z() < p2._pos.z(); }
   }; //end zcomp
+  
+  
 
 }//end namespace
 
@@ -88,7 +90,7 @@ namespace mu2e{
   private:
   //config parameters:
     
-    int 				_diag,_debug;
+    int 				_diag,_mcdiag, _debug;
     int                                 _printfreq;
     int 				_minnsh; // minimum # of strawHits in CH
     int 				_minnch; // minimum # of ComboHits for viable fit
@@ -100,8 +102,7 @@ namespace mu2e{
     //Collection lists:
     art::ProductToken<ComboHitCollection> const _chToken;
     art::ProductToken<TimeClusterCollection> const _tcToken;
-    
-
+    art::ProductToken<StrawDigiMCCollection> const _mcToken;
     //Define straw hit falgs
     StrawHitFlag  _hsel, _hbkg;
     TH1F* _chi2dXY;;
@@ -118,7 +119,7 @@ namespace mu2e{
     void     OrderHitsY(CosmicTrackFinderData& TrackData); //Order in height
     void     fillGoodHits(CosmicTrackFinderData& TrackData);//apply "good" cut
     void     fillPluginDiag(CosmicTrackFinderData& TrackData);
-    int     goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);//select "good" time clusters
+    int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);//select "good" time clusters
 
  
 };//end private
@@ -127,6 +128,7 @@ namespace mu2e{
  CosmicTrackFinder::CosmicTrackFinder(fhicl::ParameterSet const& pset) :
    
     _diag        (pset.get<int>("diagLevel",1)),
+    _mcdiag      (pset.get<int>("mcdiagLevel",1)),
     _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
     _minnsh      (pset.get<int>("minNStrawHits",2)),
@@ -134,16 +136,15 @@ namespace mu2e{
     _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"StraightTrackOK"})),
     _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
    _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
-   
-    
     _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
-_hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
+    _mcToken{consumes<StrawDigiMCCollection>(pset.get<art::InputTag>("StrawDigiMCCollection"))},
+    _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
     _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
     _tfit        (pset.get<fhicl::ParameterSet>("CosmicTrackFit",fhicl::ParameterSet())), 
     _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<float>("T0Shift",4.0)),//TODO:use
-    _outlier     (StrawHitFlag::outlier)//, //TODO:check
+    _t0shift     (pset.get<float>("T0Shift",4.0)),
+    _outlier     (StrawHitFlag::outlier)//, 
    {
     produces<CosmicTrackSeedCollection>();
     if (_diag != 0) _hmanager = art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
@@ -163,11 +164,9 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
 
     if (_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;
-      //_niter = tfs->make<TH1F>( "niter" , "Number of Fit in XY Iteraions",201,-0.5,200.5);
-      
+      //_niter = tfs->make<TH1F>( "niter" , "Number of Fit in XY Iteraions",201,-0.5,200.5);  
       _hmanager->bookHistograms(tfs);
-    }
-   
+    } 
   }
 /* ------------------------Begin Run--------------------------//
 //                   sets up the tracker                     //
@@ -194,7 +193,7 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
      unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
      unsigned    STCounter(0);
      
-
+     _stResult.clearMCVariables();
      int _iev=event.id().event();
       if (_debug > 0){
           std::cout<<"ST Finder Event #"<<_iev<<std::endl;
@@ -207,17 +206,23 @@ _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector
      auto const& tcH = event.getValidHandle(_tcToken);
      const TimeClusterCollection& tccol(*tcH);
      
-     
+     if(_mcdiag>0){
+     	 
+           auto const& mcdH = event.getValidHandle(_mcToken);
+           const StrawDigiMCCollection& mccol(*mcdH);
+           _stResult._mccol =  &mccol;
+           
+           for(size_t imc=0; imc<mccol.size(); imc++){
+                StrawDigiMC digi = mccol[imc];
+           	_stResult._mcDigisToProcess.push_back(digi);
+           }
+           
+        }
     _data.event       = &event;
-    
-    
-    std::cout<<" neseed "<<_data.nseeds<<std::endl;
-    //ensure all data types present. Fill data...
-   
     _data.nTimePeaks  = tccol.size();
     _stResult._chcol  = &chcol; 
     _stResult._tccol  = &tccol;
-   
+    
     // create initial tracks from time clusters:
     for (size_t index=0;index< tccol.size();++index) {
       
@@ -255,8 +260,8 @@ Ensure enough straw hits used
 	 std::cout<<"#filtered SHits"<<_stResult._nFiltStrawHits<<"  Minimum allowed: "<<_minnsh<<std::endl;
       }
       
-      if (_stResult._nFiltComboHits < _minnch ) 			continue;
-      if (_stResult._nFiltStrawHits < _minnsh)                  continue;
+      if (_stResult._nFiltComboHits < _minnch ) 	continue;
+      if (_stResult._nFiltStrawHits < _minnsh)          continue;
       _stResult._nStrawHits = _stResult._nFiltStrawHits;
       _stResult._nComboHits = _stResult._nFiltComboHits;
       _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
@@ -265,7 +270,39 @@ Ensure enough straw hits used
  /*------------------------- FITTING STAGE  :---------------------------//
  initial ST Pat Rec.. Call the "Fit" function and apply to the CosmicTrackData 
 //------------------------- FITTING STAGE  :---------------------------*/
-      //DriftCorrection(_stResult); //calcualte drift circles
+      
+      if(_mcdiag > 0 && _stResult._chHitsToProcess.size() > 0){
+           XYZVec first, last;
+           
+	     for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) {  
+	                   
+           	std::vector<StrawDigiIndex> shids;           	
+           	 ComboHit const& chit = _stResult._chHitsToProcess.at(ich);
+           	std::cout<<chit.nCombo()<<" "<<chit.nStrawHits() <<std::endl;
+           	if (chit.nCombo() >  chit.nStrawHits() ) continue;
+                _stResult._chHitsToProcess.fillStrawDigiIndices(event,ich,shids);               
+                std::cout<<_stResult._mccol->size()<<" "<<shids[0]<<std::endl;
+                StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);              
+                art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(StrawEnd::cal);
+                //_stResult._mcDigisToProcess.push_back(mcd1);               
+                std::cout<<"CHY : "<<chit.pos().y()<<std::endl;
+	        std::cout<<"Digi Y : "<<spmcp->position().y()<<std::endl;
+	        
+		if(ich ==0){
+			first = _tfit.MCInitHit(mcd1) ; 
+		}
+		if(ich == _stResult._chHitsToProcess.size()-1){
+			last = _tfit.MCInitHit(mcd1); 
+		}                    
+	     }
+	     std::cout<<"1 "<<first<<" "<<last<<std::endl;
+	     _tfit.MCDirection(first, last, _stResult); 
+	     
+	     
+	     }
+	     
+	
+	     
       _tfit.BeginFit(_stResult, _data);
 
       //Fill in diagnostics:
@@ -331,7 +368,7 @@ put into event data
 
   }//end fill good function
 
-
+  
 
   /*--------------Order Hits------------------------//
   // Need to organise tracks so that the hits in one XY plane are seeded from above. This will invlove ordering in terms of wire "Y" position. 
@@ -360,6 +397,7 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
     }//end loop
     //sort hits (here in y..need to reconsider for cosmics, should be "height")
     if (_debug != 0) std::cout<<"Number of ComboHits: "<<ordChCol.size()<<std::endl;
+    
     std::sort(ordChCol.begin(), ordChCol.end(),ycomp());
     
     
@@ -367,6 +405,7 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
     for (unsigned i=0; i<ordChCol.size(); ++i) {
       
       ComboHit& ch = ordChCol[i];
+      std::cout<<"Ordered hits"<<ordChCol[i].pos().y()<<std::endl;
       //Add ordered hits back to the CosmicTrackFinder Result:
       ComboHit hit(ch);
       _stResult._chHitsToProcess.push_back(hit);
@@ -387,9 +426,14 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
       nFiltStrawHits += ch.nStrawHits();
       
     }//end for loop
+  
     TrackData._nFiltComboHits = nFiltComboHits;  //ComboHit counter
     TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
   }//end order function
+  
+  
+  
+  
 
   void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
     

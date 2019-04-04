@@ -99,6 +99,8 @@ namespace mu2e {
     
     std::vector<int> get_iter(){return _niters;}
     std::vector<ComboHit*> get_outliers()const {return _outliers;}
+    
+    XYZVec getMCDirection() { return _MCDirection;}
 //---------------------------------------//  
     
      void clear_all(); //clears track info and diagnostics
@@ -179,35 +181,37 @@ namespace mu2e {
     void add_outlier(ComboHit* hit){_outliers.push_back(hit);}
     
     void set_niter(int iter){_niters.push_back(iter);}
+    
+    void setMCDirection(XYZVec direction){ _MCDirection = direction;}
   private:
     
     int _Nhits;
-
+    //Parameters:
     double _a0; //a0
     double _a1; //a1
     double _b0; //b0
     double _b1; //b1
-    
+    //Initial Estimates:
     double _inita0; //a0
     double _inita1; //a1
     double _initb0; //b0
     double _initb1;
-
+    //Track info:
     std::vector<double> _track_parameters; //FIXME NEED TO BE 4D vector.....
     std::vector<double> _initial_track_parameters; 
     double _track_length;
     double _Sagitta;//TODO
     XYZVec _track_mommentum;//TODO
-    
+   
     XYZVec _track_equation;//r(t) expression
     XYZVec _track_direction;//the "gradient" term
     XYZVec _track_position;//the "starting point" in fit line
     XYZVec _initial_track_direction; // the first estimate of the line
-    //Get Track Co-ordinate System:
+    //Track Co-ordinate System:
     XYZVec _XPrime;
     XYZVec _YPrime;
     XYZVec _ZPrime;
-    
+    //Diagnostics:
     double _finalchisq;
     double _finalchisq_dof;
     
@@ -247,7 +251,8 @@ namespace mu2e {
     std::vector<ComboHit*> _outliers;
     
     std::vector<int> _niters;
-    
+    //MC Info:
+     XYZVec _MCDirection;
   };
 }
 

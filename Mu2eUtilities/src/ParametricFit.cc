@@ -143,7 +143,7 @@ namespace ParametricFit{
 XYZVec MajorAxis(ComboHit* Hit){
       XYZVec const& wdir = Hit->wdir();//direction along wire
       double werr_mag = Hit->wireRes(); //hit major error axis 
-      std::cout<<"major wdir"<<wdir<<" major mag "<<werr_mag<<std::endl;
+      //std::cout<<"major wdir"<<wdir<<" major mag "<<werr_mag<<std::endl;
       XYZVec major_axis = werr_mag*wdir;
       return major_axis;
 }
@@ -153,7 +153,7 @@ XYZVec MinorAxis(ComboHit* Hit){
       XYZVec const& wdir = Hit->wdir();//direction along wire
       XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire 
       double terr_mag = Hit->transRes(); //hit minor error axis
-      std::cout<<"minor wdir"<<wdir<<" major mag "<<terr_mag<<std::endl;
+      //std::cout<<"minor wdir"<<wdir<<" major mag "<<terr_mag<<std::endl;
       XYZVec minor_axis = terr_mag*wtdir;
       return minor_axis;
 }
@@ -195,7 +195,7 @@ XYZVec GetYPrime(XYZVec OrthX, XYZVec track_dir){
 XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	
 	double theta = atan(XPrime.y()/YPrime.y()); //enforces that X''Dot Y = 0
-	std::cout<<"theta"<<theta<<std::endl;
+	//std::cout<<"theta"<<theta<<std::endl;
 	XYZVec XDoublePrime = cos(theta)*(XPrime) -1*sin(theta)*(YPrime);
 	return XDoublePrime.Unit();
 }
@@ -222,7 +222,7 @@ double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPr
         double sigma_v_squared = minor_axis.Mag2();
 	double sigma_x_track = sqrt(sigma_w_squared*pow(XPrime.Dot(major_axis.Unit()),2)+sigma_v_squared*pow(XPrime.Dot(minor_axis.Unit()),2));
 	
-	std::cout<<"minor "<<minor_axis<<"major "<<major_axis<<std::endl;
+	//std::cout<<"minor "<<minor_axis<<"major "<<major_axis<<std::endl;
  	return sigma_x_track;
 }
  
@@ -296,7 +296,19 @@ double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec ZPrime, XYZ
 	return sigma_R;
 }
 
+//-----------------MC Diagnotics--------------------//
 
+void GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec point){
+	double resid_x = A0 + A1*point.z()-point.Dot(MCTrackDirection);	
+	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
+
+}
+
+void GetMCResidualY(double B0, double B1, XYZVec MCTrackDirection, XYZVec point){
+	double resid_y = B0 + B1*point.z()-point.Dot(MCTrackDirection);	
+	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
+
+}
 /*-------Convert the 2 fits into full track fit---------*/
 //make a 3D comsic track from the 2 2D lines found from above
    void Construct3DTrack(StraightTrack* xyLineFit, StraightTrack* zrLineFit, CosmicTrack* track) {

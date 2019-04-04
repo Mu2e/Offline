@@ -8,6 +8,12 @@
 #include "TrkReco/inc/CosmicTrackFit.hh"
 #include "TrkPatRec/inc/CosmicTrackFinder_types.hh"
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
+//MC:
+// art
+#include "canvas/Persistency/Common/Ptr.h"
+// MC data
+#include "MCDataProducts/inc/SimParticle.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
@@ -159,10 +165,11 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
     std::cout<<" -------------------------------"<<std::endl;
     ::BuildMatrixSums S, S_init;
     
-    unsigned        n_outliers(0), nhits_passed(0);
+    unsigned        n_outliers(0);//nhits_passed(0);
     ComboHit   *hitP1(0), *hitP2(0); 
     size_t nHits (trackData._chHitsToProcess.size());
     //Get initial seed:
+    std::cout<<"number of digis "<<trackData._mcDigisToProcess.size()<<std::endl;
     const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
     const ComboHit* chN = &trackData._chHitsToProcess[nHits+1];
     XYZVec FirstPoint(ch0->pos().x(),ch0->pos().y(),ch0->pos().z());
@@ -170,7 +177,8 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
     double track_length = sqrt(pow(chN->pos().x()-ch0->pos().x(),2)+pow(chN->pos().y()-ch0->pos().y(),2+pow(chN->pos().z()-ch0->pos().z(),2)));
     
     //Get Track Basis:
-    XYZVec ZPrime = InitLineDirection(ch0, chN, cosmictrack); //Z'=track direction
+    XYZVec ZPrime = cosmictrack->getMCDirection();//InitLineDirection(ch0, chN, cosmictrack); //Z'=track direction
+    std::cout<<"Reco direction"<<InitLineDirection(ch0, chN, cosmictrack)<<std::endl;
     cosmictrack->set_initial_track_direction(ZPrime);
     cosmictrack->set_track_direction(ZPrime);
     XYZVec XPrime = ParametricFit::GetXPrime(ZPrime);
@@ -193,7 +201,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
       S_init.addPoint(f1, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY);//S_init is store for reference
       
     }
-     std::cout<<"passed first cut "<<nhits_passed<<std::endl;
+     
      //Get first estimate of track parameters
      int DOF = (nHits - _Npara);
   
@@ -203,7 +211,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
      double b1 = S_init.GetAlphaY()[1][0];
      
      cosmictrack->set_initchisq_dof(S_init.GetTotalChi2()/abs(DOF)); 
-     std::cout<<"Initial Parameters"<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<std::endl;
+     //std::cout<<"Initial Parameters"<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<std::endl;
      cosmictrack->set_initial_parameters(a0,a1,b0,b1);
      cosmictrack->set_parameters(a0,a1,b0,b1);
      XYZVec updated_track_direction(a1, b1, 1);  
@@ -244,8 +252,8 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
 	     while(niter < _maxniter && errors_converged==false){
 	        	        
 		niter +=1;
-		std::cout<<"++++++++++++++++++++++"<<std::endl;
-		std::cout<<"Hit : "<<f2<<" Iteration: "<<niter<<std::endl;
+		//std::cout<<"++++++++++++++++++++++"<<std::endl;
+		//std::cout<<"Hit : "<<f2<<" Iteration: "<<niter<<std::endl;
 		
 		//To begin remove point which is being evaluated:
 		if (niter == 1){
@@ -275,7 +283,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
 		//Define error change
 		double d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
 		double d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
-		std::cout<<" errors X "<<errX<<" previous "<<previous_hit_errorX<<" errors Y "<<errY<<" previous "<<previous_hit_errorY<<std::endl;
+		//std::cout<<" errors X "<<errX<<" previous "<<previous_hit_errorX<<" errors Y "<<errY<<" previous "<<previous_hit_errorY<<std::endl;
 		
 		//If new error in X is worse than old X error but Y is better update fit as:		
 		if (abs(errX) > abs(previous_hit_errorX) && abs(errY) <= abs(previous_hit_errorY)){
@@ -284,7 +292,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
 		        YDoublePrime = previous_YDoublePrime;
 		        errY = previous_hit_errorY;
                 	S.addPoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY);
-                	std::cout<<" errX worse "<<std::endl;	
+                	//std::cout<<" errX worse "<<std::endl;	
 		}
 		
 		//If new error in Y is worse than old X error but X is better update fit as:
@@ -294,7 +302,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
 		        XDoublePrime = previous_XDoublePrime;
 		        errX = previous_hit_errorX;
                 	S.addPoint(f2, point, XDoublePrime, YDoublePrime,ZPrime, errX, errY );	
-                	std::cout<<" errY worse "<<std::endl;
+                	
 		}	
 		
 		//If both worse then update fit as:
@@ -302,7 +310,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
 		        //d_errorX = sqrt(pow(abs(errX) - abs(previous_hit_errorX),2));
 			//d_errorY = sqrt(pow((abs(errY) - abs(previous_hit_errorY)),2));
 			S.addPoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY );
-			std::cout<<" both worse "<<std::endl;
+			
 		}
 		//If neither is better add back in the old value and return to previous track information
 		if(abs(errX) <= abs(previous_hit_errorX) && abs(errY) <= abs(previous_hit_errorY)){
@@ -313,12 +321,12 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
 			XDoublePrime = previous_XDoublePrime;
 			YDoublePrime = previous_YDoublePrime;
 			S.addPoint(f2, point, XDoublePrime, YDoublePrime, ZPrime, errX, errY);
-			std::cout<<" errY and X same "<<std::endl;
+			
 		}
 		
 		//If the change is small stop iteration and claim track is converged:
         	if( (d_errorX) < _D_error && (d_errorY) < _D_error ){ 
-        		std::cout<<"Converged!!!"<<std::endl;
+        		
            		errors_converged = true;
 			cosmictrack->set_niter(niter);
                 } 
@@ -352,13 +360,7 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
      		double b1 = S.GetAlphaY()[1][0];
      		cosmictrack->clear_parameters();
      		cosmictrack->set_parameters(a0,a1,b0,b1);
-     		/*
-     		std::cout<<"Final XDoublePrime"<<XDoublePrime<<std::endl;
-     		std::cout<<"Final YDoublePrime"<<YDoublePrime<<std::endl;
-     		std::cout<<"Final ZPrime"<<ZPrime<<std::endl;
-     		std::cout<<"Final para"<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<std::endl;
-     		std::cout<<"NOut"<<n_outliers<<std::endl;
-     		*/
+     		
 	        double newRx = ParametricFit::GetResidualX(a0,a1, XDoublePrime,  point);
 	        double newRy = ParametricFit::GetResidualY(b0, b1, YDoublePrime, point);
 	        hit_error =  ParametricFit::TotalHitError(hitP2, major_axis, minor_axis, XDoublePrime, YDoublePrime);   
@@ -397,11 +399,43 @@ void CosmicTrackFit::FitAll(CosmicTrackFinderData& trackData,  CosmicTrack* cosm
     cosmictrack->set_finalchisq_dofX(S.GetChi2X()/abs(DOF));
     diagnostics.chi2numbers +=1;
     trackData._tseed._status.merge(TrkFitFlag::StraightTrackConverged);
-    std::cout<<"chi2 number"<<diagnostics.chi2numbers<<std::endl;
+    
+    std::cout<<"MC Direction saved as "<<cosmictrack->getMCDirection()<<std::endl;
     //DriftCorrection(trackData);   
     //S.clear();
     //return cosmictrack;
   }
+  
+XYZVec CosmicTrackFit::MCInitHit(StrawDigiMC mcdigi){
+	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
+	double mcposx0 = spmcp->position().x();
+	double mcposy0 = spmcp->position().y();
+	double mcposz0 = spmcp->position().z();
+	XYZVec first(mcposx0, mcposy0, mcposz0);
+        return first;
+}
+
+XYZVec CosmicTrackFit::MCFinalHit(StrawDigiMC mcdigi){
+	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
+	double mcposxN = spmcp->position().x();
+	double mcposyN = spmcp->position().y();
+	double mcposzN = spmcp->position().z();
+	XYZVec last(mcposxN, mcposyN, mcposzN);
+        return last;
+}
+
+
+void CosmicTrackFit::MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData){ //int hitN, int N, CosmicTrackFinderData& trackData, StrawDigiMC mcdigi){
+        std::cout<<"getting mc..."<<std::endl;
+      //CosmicTrack* cosmictrack = &trackData._tseed._track; 
+      double tx = last.x() - first.x();
+      double ty = last.y() - first.y();
+      double tz = last.z() - first.z();       
+      XYZVec track(tx,ty,tz);
+      trackData._tseed._track.setMCDirection(track.Unit());
+      
+        
+}
 
 void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track){
 	//if track has a significant amount of tracks with large chi2 and those large values are all similar...and resiudals within range of each other, this coule mean a second track....check for this although unlikely with cosmics....

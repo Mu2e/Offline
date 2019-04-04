@@ -60,7 +60,9 @@ namespace mu2e
                 void RunFitChi2(CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
 		void FitAll(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
-		
+		XYZVec MCInitHit(StrawDigiMC mcdigi);
+		XYZVec MCFinalHit(StrawDigiMC mcdigi);
+		void MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData);
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 
                 void UpdateFitErrors( std::vector<XYZVec> HitVec, std::vector<double> err, CosmicTrack* track, std::vector<XYZVec> major_axis,std::vector<XYZVec> minor_axis);

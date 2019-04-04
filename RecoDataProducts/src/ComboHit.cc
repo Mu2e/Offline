@@ -94,14 +94,15 @@ namespace mu2e {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-      if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
-	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
+      //if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
+	//throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
       // if not, it is the bottom and references StrawHits; fill the index vector with the content
       shids.push_back(ch.index(0));
     }
   }
 
   void ComboHitCollection::fillStrawHitIndices(art::Event const& event, uint16_t chindex, vector<StrawHitIndex>& shids) const {
+    std::cout<<"Filling indices"<<chindex<<std::endl;
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
     if(_parent.isValid()){
@@ -119,8 +120,8 @@ namespace mu2e {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-      if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
-	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
+      //if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
+	//throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
       // if not, it is the bottom and the combo hit index is the same as the StrawHit index
       shids.push_back(chindex);
     }

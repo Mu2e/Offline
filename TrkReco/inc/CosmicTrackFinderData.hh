@@ -12,7 +12,7 @@
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-
+#include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh" //CHANGE SEED
 #include "Mu2eUtilities/inc/BuildMatrixSums.hh"
 #include "TrkReco/inc/TrkFaceData.hh"
@@ -21,8 +21,6 @@
 #include "Math/Vector2D.h"
 //c++
 #include <array>
-
-//class HelixTraj;
 
 using namespace ROOT::Math::VectorUtil;
 
@@ -98,6 +96,7 @@ namespace mu2e {
     const ComboHitCollection*         _chcol;
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;
+    const StrawDigiMCCollection*      _mccol;
     ::BuildMatrixSums         _S;
 
 //-----------------------------------------------------------------------------
@@ -108,9 +107,9 @@ namespace mu2e {
 // structure used to organize the strawHits for the pattern recognition
 //-----------------------------------------------------------------------------
     std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;//array of faces, length of number of faces
-    std::vector<ComboHit>                                _chHitsToProcess;
+    ComboHitCollection                                _chHitsToProcess;
     std::vector<XYWVec>                                  _chHitsWPos;
-    
+    std::vector<StrawDigiMC>				_mcDigisToProcess;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------
@@ -126,6 +125,7 @@ namespace mu2e {
     void          orderID           (ChannelID* X, ChannelID* O);
     void          deleteTrack ();
     void          print(const char* Title);
+    void          clearMCVariables();
     void          clearTempVariables();
     void          clearResults();
 
