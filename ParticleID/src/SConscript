@@ -44,6 +44,7 @@ libs =  [
     'Minuit',
     'boost_filesystem',
     'boost_system',
+    'pthread'
     ]
 
 mainlib = helper.make_mainlib ( libs )
