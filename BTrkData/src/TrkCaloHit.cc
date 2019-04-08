@@ -46,7 +46,17 @@ namespace mu2e
 
   double
   TrkCaloHit::time() const{
-    return caloCluster().time();
+  // correct for the light propagation time.
+  // light propagation velocity should come from configuration FIXME!
+    static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
+    double tlight =0.0;
+    if(poca().status().success()){
+// electronics is at the back,
+//  Note too that the crystal position is shifted by 50mm, FIXME!
+      double clen = 250.0-std::min(250.0,std::max(50.0,poca().flt2()));
+      tlight = clen/vlprop;
+    }
+    return caloCluster().time() - tlight;
   }
 
   TrkErrCode
