@@ -45,6 +45,7 @@
 // BaBar
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 // Mu2e BaBar
@@ -103,6 +104,7 @@ namespace mu2e
     TrkFitDirection _fdir;  // fit direction in search
     vector<double> _perr; // diagonal parameter errors to use in the fit
     Helicity _helicity; // cached value of helicity expected for this fit
+    double _upz, _downz; // z positions to extend the segment
     double _amsign; // cached sign of angular momentum WRT the z axis 
     double _bz000;        // sign of the magnetic field at (0,0,0)
     HepSymMatrix _hcovar; // cache of parameter error covariance matrix
@@ -149,6 +151,8 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
+    _upz(pset.get<double>("UpstreamZ",-1500)),
+    _downz(pset.get<double>("DownstreamZ",1500)),
     _ksf(TrkFitFlag::KSF),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _result()
@@ -317,6 +321,17 @@ namespace mu2e
 	  // sample the momentum at this point
 	  BbrVectorErr momerr;// = krep->momentumErr(krep->flt0());
 	  TrkUtilities::fillSegment(*htraj,momerr,0.0,kseg);
+	  // extend the segment
+	  double upflt, downflt;
+	  TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
+	  TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
+	  if(_fdir == TrkFitDirection::downstream){
+	    kseg._fmin = upflt;
+	    kseg._fmax = downflt;
+	  } else {
+	    kseg._fmax = upflt;
+	    kseg._fmin = downflt;
+	  } 
 	  kf._segments.push_back(kseg);
 	} else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
