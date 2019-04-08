@@ -321,17 +321,6 @@ namespace mu2e
 	  // sample the momentum at this point
 	  BbrVectorErr momerr;// = krep->momentumErr(krep->flt0());
 	  TrkUtilities::fillSegment(*htraj,momerr,0.0,kseg);
-	  // extend the segment
-	  double upflt, downflt;
-	  TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
-	  TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
-	  if(_fdir == TrkFitDirection::downstream){
-	    kseg._fmin = upflt;
-	    kseg._fmax = downflt;
-	  } else {
-	    kseg._fmax = upflt;
-	    kseg._fmin = downflt;
-	  } 
 	  kf._segments.push_back(kseg);
 	} else {
 	  throw cet::exception("RECO")<<"mu2e::KalSeedFit: Can't extract helix traj from seed fit" << endl;
@@ -391,6 +380,17 @@ namespace mu2e
 	    // sample the momentum at this point
 	    BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
 	    TrkUtilities::fillSegment(*htraj,momerr,locflt-_result.krep->flt0(),kseg);
+	    // extend the segment
+	    double upflt, downflt;
+	    TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
+	    TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
+	    if(_fdir == TrkFitDirection::downstream){
+	      kseg._fmin = upflt;
+	      kseg._fmax = downflt;
+	    } else {
+	      kseg._fmax = upflt;
+	      kseg._fmin = downflt;
+	    } 
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
 	    kscol->push_back(kseed);
