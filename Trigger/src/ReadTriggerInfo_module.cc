@@ -62,6 +62,7 @@
 
 //Utilities
 #include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Mu2eUtilities/inc/HelixTool.hh"
 
 //ROOT
 #include "TH1F.h"
@@ -226,8 +227,7 @@ namespace mu2e {
     art::InputTag             _evtWeightTag;
     double                    _duty_cycle;
 
-    int                       _nProcess;
-    int                       _numEvents;    
+    float                     _nProcess;
     double                    _bz0;
     double                    _nPOT;
     
@@ -268,8 +268,7 @@ namespace mu2e {
     _cdTag         (pset.get<art::InputTag>("caloDigiCollection"   , "CaloDigiFromShower")),
     _evtWeightTag  (pset.get<art::InputTag>("protonBunchIntensity" , "protonBunchIntensity")),
     _duty_cycle    (pset.get<float> ("dutyCycle", 1.)),
-    _nProcess(0), 
-    _numEvents(0)
+    _nProcess      (pset.get<float> ("nEventsProcessed", 1.))
   {
     _trigAll.      resize(_nMaxTrig);	     
     _trigFinal.    resize(_nMaxTrig);    
@@ -326,14 +325,15 @@ namespace mu2e {
   //--------------------------------------------------------------------------------//
   void     ReadTriggerInfo::bookTrackInfoHist        (art::ServiceHandle<art::TFileService> & Tfs, trackInfoHist_         &Hist){
     for (int i=0; i<_nTrackTrig; ++i){
-      art::TFileDirectory trkInfoDir  = Tfs->mkdir(Form("trk_%i",i));
-      Hist._hTrkInfo[i][0] = trkInfoDir.make<TH1F>(Form("hP_%i"    , i), "Track Momentum; p[MeV/c]", 400, 0, 200);
-      Hist._hTrkInfo[i][1] = trkInfoDir.make<TH1F>(Form("hPt_%i"   , i), "Track Pt; p_{t} [MeV/c]", 400, 0, 200);
-      Hist._hTrkInfo[i][2] = trkInfoDir.make<TH1F>(Form("hNSh_%i"  , i), "N-StrawHits; nStrawHits", 101, -0.5, 100.5);
-      Hist._hTrkInfo[i][3] = trkInfoDir.make<TH1F>(Form("hD0_%i"   , i), "Track impact parameter; d0 [mm]", 801, -400.5, 400.5);
-      Hist._hTrkInfo[i][4] = trkInfoDir.make<TH1F>(Form("hChi2d_%i", i), "Track #chi^{2}/ndof;#chi^{2}/ndof", 100, 0, 50);
-      Hist._hTrkInfo[i][5] = trkInfoDir.make<TH1F>(Form("hClE_%i"  , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
-      
+      art::TFileDirectory trkInfoDir  = Tfs->mkdir(Form("trk_%i", i));
+      Hist._hTrkInfo[i][0] = trkInfoDir.make<TH1F>(Form("hP_%i"     , i), "Track Momentum; p[MeV/c]", 400, 0, 200);
+      Hist._hTrkInfo[i][1] = trkInfoDir.make<TH1F>(Form("hPt_%i"    , i), "Track Pt; p_{t} [MeV/c]", 400, 0, 200);
+      Hist._hTrkInfo[i][2] = trkInfoDir.make<TH1F>(Form("hNSh_%i"   , i), "N-StrawHits; nStrawHits", 101, -0.5, 100.5);
+      Hist._hTrkInfo[i][3] = trkInfoDir.make<TH1F>(Form("hD0_%i"    , i), "Track impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hTrkInfo[i][4] = trkInfoDir.make<TH1F>(Form("hChi2d_%i" , i), "Track #chi^{2}/ndof;#chi^{2}/ndof", 100, 0, 50);
+      Hist._hTrkInfo[i][5] = trkInfoDir.make<TH1F>(Form("hClE_%i"   , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
+      Hist._hTrkInfo[i][6] = trkInfoDir.make<TH1F>(Form("hNLoops_%i", i), "Helix nLoops", 500, 0, 50);
+
       Hist._hTrkInfo[i][10] = trkInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
       Hist._hTrkInfo[i][11] = trkInfoDir.make<TH1F>(Form("hPtMC_%i", i), "MC Track Pt @ tracker front; p_{t} [MeV/c]" , 400, 0, 200);
       Hist._hTrkInfo[i][12] = trkInfoDir.make<TH1F>(Form("hPzMC_%i", i), "MC Track Pt @ tracker front; p_{t} [MeV/c]" , 400, 0, 200);
@@ -362,6 +362,7 @@ namespace mu2e {
       Hist._hHelInfo[i][5] = helInfoDir.make<TH1F>(Form("hChi2dZPhi_%i", i), "Helix #chi^{2}_{z#phi}/ndof;#chi^{2}_{z#phi}/ndof", 100, 0, 50);
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
       Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops", 500, 0, 50);
 
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
@@ -445,7 +446,6 @@ namespace mu2e {
   void ReadTriggerInfo::endJob(){
 
     //set hitograms' titles
-
     //Helix
     for (int i=0; i<_nTrackTrig; ++i){
       for (int j=0; j<kNHelixTrigVar; ++j){
@@ -619,7 +619,7 @@ namespace mu2e {
 
       labels_by_rate.push_back(_trigFinal[i].label);
 
-      double  eff   = nEvents/(double)_nProcess;
+      double  eff   = nEvents/_nProcess;
       double  rate  = mean_mb_rate*eff;
       _sumHist._hTrigBDW[0]->GetXaxis()->SetBinLabel(index+1, _trigFinal[i].label.c_str());
       _sumHist._hTrigBDW[1]->GetXaxis()->SetBinLabel(index+1, _trigFinal[i].label.c_str());
@@ -659,7 +659,7 @@ namespace mu2e {
       if (std::strcmp(label_ref, label) != 0)      continue;
       
       for (int k=0; k<nLabels; ++k){
-	label_ref = VecLabels.at(k).c_str();
+       	label_ref = VecLabels.at(k).c_str();
 	for (int j=0; j<nbins; ++j){
 	  if (j == i)      break;
 	  label =   _sumHist._h2DTrigInfo[1]->GetYaxis()->GetBinLabel(j+1);
@@ -669,9 +669,7 @@ namespace mu2e {
       }
       break;
     }
-    
-    
-    
+
   }
 
   //================================================================
@@ -687,8 +685,6 @@ namespace mu2e {
 
   void ReadTriggerInfo::analyze(const art::Event& event) {
 
-    ++_nProcess;
-
     //get the number of POT
     _nPOT  = -1.;
     art::Handle<ProtonBunchIntensity> evtWeightH;
@@ -698,30 +694,19 @@ namespace mu2e {
     }
 
     std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
+    
     event.getManyByType(hTrigInfoVec);
 
     //get the TriggerResult
-    art::InputTag const tag{"TriggerResults::globalTrigger"};//FIXME! in art3 we can use the "current_process" variable
+    art::InputTag const tag{"TriggerResults::globalTrigger"};                     //FIXME! in art3 we can use the "current_process" variable
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
     TriggerResultsNavigator   trigNavig(trigResults);
     
-    //    trigNavig.print();
     for (unsigned int i=0; i< _trigPaths.size(); ++i){
       string&path = _trigPaths.at(i);
       if (trigNavig.accept(path)) _sumHist._hTrigInfo[15]->Fill((double)i);
     }
-  
-    //get the map we need to navigate the Trigger results
-    //    art::ServiceHandle<art::TriggerNamesService> trigNS;
-
-    // for (unsigned int i=0; i< _trigPaths.size(); ++i){
-    //   string&path = _trigPaths.at(i);
-    //   if (trigNS->findTrigPath(path)>=0) {
-    // 	size_t trigId = trigNS->findTrigPath(path);
-    // 	if (trigResults->accept(trigId)) _sumHist._hTrigInfo[15]->Fill((double)i);
-    //   }
-    // }
     
     //get the strawDigiMC truth if present
     art::Handle<mu2e::StrawDigiMCCollection> mcdH;
@@ -794,13 +779,11 @@ namespace mu2e {
       //fill the Global Trigger bits info
       findTrigIndex(_trigAll, moduleLabel, index_all);
       _trigAll[index_all].label  = moduleLabel;
-      //      if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	//      }
 
       findTrigIndex(_trigFinal, moduleLabel, index);
       if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	_trigFinal[index].label  = moduleLabel;
-	_trigFinal[index].counts = _trigFinal[index].counts + 1;
+	_trigFinal[index].label    = moduleLabel;
+	_trigFinal[index].counts   = _trigFinal[index].counts + 1;
 	_trigAll[index_all].counts = _trigAll[index_all].counts + 1;
 	trigFlagAll_index.push_back(index_all);
       }
@@ -887,6 +870,7 @@ namespace mu2e {
 
   void   ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*KSeed, trackInfoHist_   &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
+    HelixTool helTool(KSeed->helix().get());
 
     int                nsh = (int)KSeed->hits().size();
     KalSegment const& fseg = KSeed->segments().front();
@@ -898,6 +882,7 @@ namespace mu2e {
     double     d0    = fseg.helix().d0();
     double     clE(-1.);
     if (KSeed->caloCluster()) clE = KSeed->caloCluster()->energyDep();
+    double     nLoops    = helTool.nLoops();
 
     Hist._hTrkInfo[TrkTrigIndex][0]->Fill(p);
     Hist._hTrkInfo[TrkTrigIndex][1]->Fill(pt);
@@ -905,7 +890,8 @@ namespace mu2e {
     Hist._hTrkInfo[TrkTrigIndex][3]->Fill(d0);
     Hist._hTrkInfo[TrkTrigIndex][4]->Fill(chi2d);
     Hist._hTrkInfo[TrkTrigIndex][5]->Fill(clE);
-    
+    Hist._hTrkInfo[TrkTrigIndex][6]->Fill(nLoops);
+
     //add the MC info if available
     if (_mcdigis) {
       const mu2e::ComboHit*    hit(0), *hit_0(0);
@@ -1010,6 +996,7 @@ namespace mu2e {
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
+    HelixTool helTool(HSeed);
 
     int        nch       = (int)HSeed->hits().size();
     int        nsh(0);
@@ -1026,6 +1013,7 @@ namespace mu2e {
     double     clE(-1.);
     double     lambda    = fabs(HSeed->helix().lambda());
     if (HSeed->caloCluster()) clE = HSeed->caloCluster()->energyDep();
+    double     nLoops    = helTool.nLoops();
 
     Hist._hHelInfo[HelTrigIndex][0]->Fill(p);
     Hist._hHelInfo[HelTrigIndex][1]->Fill(pt);
@@ -1035,6 +1023,7 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][5]->Fill(chi2dZPhi);
     Hist._hHelInfo[HelTrigIndex][6]->Fill(clE);
     Hist._hHelInfo[HelTrigIndex][7]->Fill(lambda);
+    Hist._hHelInfo[HelTrigIndex][8]->Fill(nLoops);
 
      //add the MC info if available
     if (_mcdigis) {
