@@ -136,6 +136,7 @@ Reconstruction : {
       keepAllGenParticles : false
       crvCoincClusterMCTag : "CrvCoincidenceClusterMatchMC"
       primaryParticleTag : "FindMCPrimary"
+      rekeySimParticleCollection : false
     }
   }
   

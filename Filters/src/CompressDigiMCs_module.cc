@@ -174,6 +174,7 @@ private:
   art::InputTag _primaryParticleTag;
   art::Handle<PrimaryParticle> _primaryParticleHandle;
   std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
+  bool _rekeySimParticleCollection;
 
   // other optional parameters
   art::InputTag _mcTrajectoryTag;
@@ -205,6 +206,7 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _keepAllGenParticles(pset.get<bool>("keepAllGenParticles", true)),
     _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", "")),
     _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", "")),
+    _rekeySimParticleCollection(pset.get<bool>("rekeySimParticleCollection", true)),
     _mcTrajectoryTag(pset.get<art::InputTag>("mcTrajectoryTag", ""))
 {
   // Call appropriate produces<>() functions here.
@@ -475,13 +477,22 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     art::ProductID i_product_id = oldSimParticles.id();
     SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
     keep_size += _simParticlesToKeep[i_product_id].size();
-    compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
-				  simPartSelector, *_newSimParticles, keyRemap);
+    if (_rekeySimParticleCollection) {
+      compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
+				    simPartSelector, *_newSimParticles, keyRemap);
+    }
+    else {
+      compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
+				    simPartSelector, *_newSimParticles);
+    }
 
     // Fill out the SimParticleRemapping
     for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
       cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
-      cet::map_vector_key newKey = keyRemap->at(oldKey);
+      cet::map_vector_key newKey = oldKey;
+      if (_rekeySimParticleCollection) {
+	newKey = keyRemap->at(oldKey);
+      }
       remap[i_keptSimPart] = art::Ptr<SimParticle>(_newSimParticlesPID, newKey.asUint(), _newSimParticleGetter);
     }
   }
