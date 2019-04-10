@@ -489,6 +489,9 @@ namespace mu2e
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
       sh        = &kalData.chcol->at(hit_index);
+      if (sh->flag().hasAnyProperty(StrawHitFlag::dead)) {
+	continue;
+      }
       straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();

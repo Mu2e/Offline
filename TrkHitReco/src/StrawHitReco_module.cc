@@ -15,6 +15,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // conditions
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
@@ -22,6 +23,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/DeadStraw.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
 #include "TrkHitReco/inc/PeakFitRoot.hh"
@@ -86,6 +88,8 @@ namespace mu2e {
        float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
        float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
     ProditionsHandle<StrawResponse> _strawResponse_h;
+    ProditionsHandle<DeadStraw> _deadStraw_h;
+
 
  };
 
@@ -188,9 +192,16 @@ namespace mu2e {
       largeHits.reserve(sdcol.size());
       largeHitPanels.reserve(sdcol.size());
 
+      DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
+
       for (size_t isd=0;isd<sdcol.size();++isd) {
 	const StrawDigi& digi = sdcol[isd];
+
 	StrawHitFlag flag;
+	if (deadStraw.isDead(digi.strawId())) {
+	  flag.merge(StrawHitFlag::dead);
+	}
+
 	// start by reconstructing the times
 	TDCTimes times;
 	srep.calibrateTimes(digi.TDC(),times,digi.strawId());
