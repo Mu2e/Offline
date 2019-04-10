@@ -46,11 +46,13 @@ namespace ParametricFit{
         
         int GetDOCASign(XYZVec track_dir, XYZVec point);
        
-        double GetResidualX(double A0, double A1, XYZVec track_dir, XYZVec point);
-        double GetResidualY( double B0, double B1, XYZVec track_dir, XYZVec point);
+        double GetResidualX(double A0, double A1, XYZVec axes, XYZVec track_dir, XYZVec point);
+        double GetResidualY( double B0, double B1, XYZVec axes, XYZVec track_dir, XYZVec point);
         
 	double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec track_direction, XYZVec& POCA, double DOCA);
-
+        
+        double GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec X, XYZVec point);
+        double GetMCResidualY(double A0, double A1, XYZVec MCTrackDirection, XYZVec Y, XYZVec point);
 	double Get2DParameter(int i, TMatrixD alpha);	
 
 	TMatrixD GetGamma(double G00, double Gij, double G11);

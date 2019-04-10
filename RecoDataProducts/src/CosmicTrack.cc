@@ -80,6 +80,9 @@ namespace mu2e{
 	  _finalfit_residualsY.erase(_finalfit_residualsY.begin(),_finalfit_residualsY.end());
 	  _finalfit_residual_errorsY.erase(_finalfit_residual_errorsY.begin(),_finalfit_residual_errorsY.end());
 	  
+	  _res_MC_X.erase(_res_MC_X.begin(), _res_MC_X.end());
+	  _res_MC_Y.erase(_res_MC_Y.begin(), _res_MC_Y.end());
+	  
 	  _niters.erase(_niters.begin(),_niters.end());
 	  
 	  _outliers.erase(_outliers.begin(),_outliers.end());

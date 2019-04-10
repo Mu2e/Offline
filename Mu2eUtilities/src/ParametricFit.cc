@@ -180,29 +180,26 @@ XYZVec GetXPrime(XYZVec track_dir){
     		return Ax < Az ? XYZVec(0, -track_dir.z(), track_dir.y()).Unit() : XYZVec(-track_dir.y(), track_dir.x(), 0).Unit();
     	} else {
     		return Ay < Az ? XYZVec(track_dir.z(), 0, -track_dir.x()).Unit() : XYZVec(-track_dir.y(), track_dir.x(), 0).Unit();
-    	} 
-    	
-    
-	
+    	} 	
 } 
 
 XYZVec GetYPrime(XYZVec OrthX, XYZVec track_dir){
-	XYZVec OrthY = OrthX.Cross(track_dir); //perp to x' and z'
+	XYZVec OrthY = OrthX.Cross(-1*track_dir); //perp to x' and z'
         return OrthY.Unit();
 
 }
 
 XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	
-	double theta = atan(XPrime.y()/YPrime.y()); //enforces that X''Dot Y = 0
-	//std::cout<<"theta"<<theta<<std::endl;
+	double theta = atan2(XPrime.y(),YPrime.y()); //enforces that X''Dot Y = 0
+	//std::cout<<"Theta "<<theta<<std::endl;
 	XYZVec XDoublePrime = cos(theta)*(XPrime) -1*sin(theta)*(YPrime);
 	return XDoublePrime.Unit();
 }
 
 XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
-	double theta = atan(XPrime.y()/YPrime.y());
-	
+	double theta = atan2(XPrime.y(),YPrime.y());
+	//std::cout<<"Theta "<<theta<<std::endl;
 	XYZVec YDoublePrime = cos(theta)*(YPrime) +sin(theta)*(XPrime);
 	return YDoublePrime.Unit();
 }
@@ -253,16 +250,16 @@ int GetDOCASign(XYZVec track_dir, XYZVec point){
 	return sign;
 
 }
-double GetResidualX(double A0, double A1 ,XYZVec XPrime, XYZVec point){
+double GetResidualX(double A0, double A1 ,XYZVec XPrime, XYZVec ZPrime, XYZVec point){
 	
-	double resid_x = A0 + A1*point.z()-point.Dot(XPrime);	
+	double resid_x = A0 + A1*(point.Dot(ZPrime))-point.Dot(XPrime);	
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 	
 }
 
-double GetResidualY( double B0, double B1, XYZVec YPrime, XYZVec point){
+double GetResidualY( double B0, double B1, XYZVec YPrime, XYZVec ZPrime, XYZVec point){
 	
-	double resid_y = B0 +B1*point.z()-point.Dot(YPrime) ;
+	double resid_y = B0 +(B1*(point.Dot(ZPrime))-point.Dot(YPrime) );
 	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 	
 }
@@ -298,14 +295,18 @@ double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec ZPrime, XYZ
 
 //-----------------MC Diagnotics--------------------//
 
-void GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec point){
-	double resid_x = A0 + A1*point.z()-point.Dot(MCTrackDirection);	
+double GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec MCX, XYZVec point){
+	
+	double resid_x = A0 + A1*point.Dot(MCTrackDirection)-point.Dot(MCX);	
+
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 
 }
 
-void GetMCResidualY(double B0, double B1, XYZVec MCTrackDirection, XYZVec point){
-	double resid_y = B0 + B1*point.z()-point.Dot(MCTrackDirection);	
+double GetMCResidualY(double B0, double B1, XYZVec MCTrackDirection, XYZVec MCY, XYZVec point){
+
+	double resid_y = B0 + B1*point.Dot(MCTrackDirection)-point.Dot(MCY);	
+	
 	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 
 }

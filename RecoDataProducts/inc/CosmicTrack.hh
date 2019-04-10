@@ -79,8 +79,13 @@ namespace mu2e {
     XYZVec getYPrime() const { return _YPrime;}
     XYZVec getZPrime() const { return _ZPrime;}
     
-    double GetSagitta() const {return _Sagitta;}
+    XYZVec getinitXPrime() const { return _initXPrime;}
+    XYZVec getinitYPrime() const { return _initYPrime;}
+    XYZVec getinitZPrime() const { return _initZPrime;}
     
+    double GetSagitta() const {return _Sagitta;}
+    std::vector<double> get_MC_residualX() const {return _res_MC_X;}
+    std::vector<double> get_MC_residualY() const {return _res_MC_Y;}
     std::vector<double> get_init_fit_residualsX() const { return _initfit_residualsX; }
     std::vector<double> get_final_fit_residualsX() const { return _finalfit_residualsX; }
     std::vector<double> get_init_fit_residual_errorsX() const { return _initfit_residual_errorsX; }
@@ -149,6 +154,10 @@ namespace mu2e {
     void setYPrime(XYZVec YPrime){ _YPrime = YPrime;}
     void setZPrime(XYZVec ZPrime){_ZPrime = ZPrime;}
     
+     void setinitXPrime(XYZVec XPrime){ _initXPrime = XPrime;}
+    void setinitYPrime(XYZVec YPrime){ _initYPrime = YPrime;}
+    void setinitZPrime(XYZVec ZPrime){_initZPrime = ZPrime;}
+    
     void set_initchisq_dof(double initchisq_dof) { _initchisq_dof = initchisq_dof; }
     void set_finalchisq_dof(double finalchisq_dof) { _finalchisq_dof = finalchisq_dof; }
     
@@ -158,7 +167,10 @@ namespace mu2e {
     void set_initchisq_dofY(double initchisq_dofY) { _initchisq_dofY = initchisq_dofY; }
     void set_finalchisq_dofY(double finalchisq_dofY) { _finalchisq_dofY = finalchisq_dofY; }
     
-    void set_mom(XYZVec mom){_track_mommentum=mom;} 
+    void set_mom(XYZVec mom){_track_mommentum=mom;}
+     
+    void set_MC_residualX(double resX){_res_MC_X.push_back(resX);}
+    void set_MC_residualY(double resY){_res_MC_Y.push_back(resY);}
     
     void set_init_fit_residualsX(double residual) { _initfit_residualsX.push_back(residual); }
     void set_final_fit_residualsX(double residual) { _finalfit_residualsX.push_back(residual); }
@@ -211,6 +223,10 @@ namespace mu2e {
     XYZVec _XPrime;
     XYZVec _YPrime;
     XYZVec _ZPrime;
+    //Track Co-ordinate System:
+    XYZVec _initXPrime;
+    XYZVec _initYPrime;
+    XYZVec _initZPrime;
     //Diagnostics:
     double _finalchisq;
     double _finalchisq_dof;
@@ -252,7 +268,10 @@ namespace mu2e {
     
     std::vector<int> _niters;
     //MC Info:
-     XYZVec _MCDirection;
+    XYZVec _MCDirection;
+    std::vector<double> _res_MC_X;
+    std::vector<double> _res_MC_Y;
+     
   };
 }
 

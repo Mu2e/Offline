@@ -18,7 +18,7 @@ BuildMatrixSums::BuildMatrixSums(const BuildMatrixSums& S) {
 BuildMatrixSums::~BuildMatrixSums() {
 }
 void BuildMatrixSums::clear(){
-  
+  std::cout<<"Clear...ing"<<std::endl;
   betaX00 = 0;
   betaX10 = 0;
   gammaX00 = 0;
@@ -33,7 +33,7 @@ void BuildMatrixSums::clear(){
   deltaY = 0;
 }
 void BuildMatrixSums::init(const BuildMatrixSums& S) {
-  
+   std::cout<<"init...."<<std::endl;
   betaX00 = S.betaX00;
   betaX10 = S.betaX10;
   gammaX00 = S.gammaX00;
@@ -49,55 +49,56 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
 }
 
 void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
-       
+	 
         //if(errX == 0) errX=1;
         //if(errY ==0) errY =1;
 	betaX00 += point_i.Dot(XPrime)*(1/pow(errX,2));
-        betaX10 += point_i.z()*point_i.Dot(XPrime)*(1/pow(errX,2));
+        betaX10 += point_i.Dot(ZPrime)*point_i.Dot(XPrime)*(1/pow(errX,2));
         
 	//For GammaX:
 	gammaX00 +=1/pow(errX,2);
-        gammaX01  += point_i.z()*(1/pow(errX,2));
-	gammaX11 += pow(point_i.z(),2)*(1/pow(errX,2));
+        gammaX01  += point_i.Dot(ZPrime)*(1/pow(errX,2));
+	gammaX11 += pow(point_i.Dot(ZPrime),2)*(1/pow(errX,2));
 	
 	//For BetaY:
 	betaY00 += point_i.Dot(YPrime)/pow(errY,2);
-        betaY10 += point_i.z()*point_i.Dot(YPrime)/pow(errY,2);
+        betaY10 += point_i.Dot(ZPrime)*point_i.Dot(YPrime)/pow(errY,2);
     
 	//For GammaX:
 	gammaY00 +=1/pow(errY,2);
-        gammaY01  += point_i.z()*(1/pow(errY,2));
-	gammaY11 += pow(point_i.z(),2)*(1 /pow(errY,2));
+        gammaY01  += point_i.Dot(ZPrime)*(1/pow(errY,2));
+	gammaY11 += pow(point_i.Dot(ZPrime),2)*(1 /pow(errY,2));
 	
         //Deltas:
         deltaX += pow(point_i.Dot(XPrime),2)*(1/pow(errX,2));
 	deltaY += pow(point_i.Dot(YPrime),2)*(1/pow(errY,2));
-  
+	
 }
 
 void BuildMatrixSums::removePoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime, double errX, double errY){
 	//if(errX == 0) errX=1;
         //if(errY ==0) errY =1;
 	betaX00 -= point_i.Dot(XPrime)*(1/pow(errX,2));
-        betaX10 -= point_i.z()*point_i.Dot(XPrime)*(1/pow(errX,2));
+        betaX10 -= point_i.Dot(ZPrime)*point_i.Dot(XPrime)*(1/pow(errX,2));
         
 	//For GammaX:
 	gammaX00 -=1/pow(errX,2);
-        gammaX01 -= point_i.z()*(1/pow(errX,2));
-	gammaX11 -= pow(point_i.z(),2)*(1/pow(errX,2));
+        gammaX01 -= point_i.Dot(ZPrime)*(1/pow(errX,2));
+	gammaX11 -= pow(point_i.Dot(ZPrime),2)*(1/pow(errX,2));
 	
 	//For BetaY:
-	betaY00 -= point_i.Dot(YPrime)*(1/pow(errY,2));
-        betaY10 -= point_i.z()*point_i.Dot(YPrime)*(1/pow(errY,2));
+	betaY00 -= point_i.Dot(YPrime)/pow(errY,2);
+        betaY10 -= point_i.Dot(ZPrime)*point_i.Dot(YPrime)/pow(errY,2);
     
 	//For GammaX:
 	gammaY00 -=1/pow(errY,2);
-        gammaY01 -= point_i.z()*(1/pow(errY,2));
-	gammaY11 -= pow(point_i.z(),2)*(1/pow(errY,2));
+        gammaY01 -= point_i.Dot(ZPrime)*(1/pow(errY,2));
+	gammaY11 -= pow(point_i.Dot(ZPrime),2)*(1 /pow(errY,2));
 	
         //Deltas:
         deltaX -= pow(point_i.Dot(XPrime),2)*(1/pow(errX,2));
 	deltaY -= pow(point_i.Dot(YPrime),2)*(1/pow(errY,2));
+	 
 }
 
 

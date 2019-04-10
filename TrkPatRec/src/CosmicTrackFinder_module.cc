@@ -290,9 +290,11 @@ Ensure enough straw hits used
 	        
 		if(ich ==0){
 			first = _tfit.MCInitHit(mcd1) ; 
+			std::cout<<"first"<<first<<" "<<chit<<std::endl;
 		}
 		if(ich == _stResult._chHitsToProcess.size()-1){
-			last = _tfit.MCInitHit(mcd1); 
+			last = _tfit.MCFinalHit(mcd1); 
+			std::cout<<"last"<<last<<" "<<chit<<std::endl;
 		}                    
 	     }
 	     std::cout<<"1 "<<first<<" "<<last<<std::endl;

@@ -52,7 +52,8 @@ namespace mu2e
 
                 bool initCosmicTrack(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN,CosmicTrack* line);
-                XYZVec LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN);
+                XYZVec LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN, XYZVec ZPrime);
+                XYZVec GetTrackDirection(double a1, double b1, std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime);
                 //Step 1: Begin Fit- initializes the fit routine:
                 void BeginFit(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 
@@ -60,6 +61,7 @@ namespace mu2e
                 void RunFitChi2(CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
 		void FitAll(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
+		void FitXYZ(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
 		XYZVec MCInitHit(StrawDigiMC mcdigi);
 		XYZVec MCFinalHit(StrawDigiMC mcdigi);
 		void MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData);
@@ -86,8 +88,9 @@ namespace mu2e
     		void setOutlier(ComboHit&) const;
                 float hitWeight(ComboHit const& hhit) const;
                 int _dim; //dimensions of fit
-                int _Npara;
+                unsigned _Npara;
 		int _diag;
+		int _mcdiag;
     		int _debug;		    // debug level
                 StrawHitFlag _useflag, _dontuseflag;
 	        unsigned _minresid;

@@ -50,6 +50,7 @@
 // ROOT incldues
 
 #include "TLegend.h"
+#include "TLatex.h"
 #include "TTree.h"
 #include "TH2D.h"
 #include "TF1.h"
@@ -151,7 +152,7 @@ namespace mu2e
       int window_size_x(1300);
       int window_size_y(600);
       canvas_ = tfs->make<TCanvas>(name,title,window_size_x,window_size_y);
-      canvas_->Divide(2,2);
+      canvas_->Divide(2,3);
         
       }
 
@@ -163,20 +164,37 @@ namespace mu2e
       void CosmicFitDisplay::plot2d(const art::Event& event){
         
         _evt = event.id().event();  
-       
+        
         auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
         auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
         
-        std::vector<double> x, y, z, rawx, rawy, rawz, zinit, out_x, out_y, out_z, a0, a1, b0, b1;
-        std::vector<XYZVec> xprimes, yprimes, zprimes;
+        std::vector<double> pullsx, pullsy, x, y, z, rawx, rawy, rawz, xinit, yinit, zinit, out_x, out_y, out_z, a0, a1, b0, b1,a0init, a1init, b0init, b1init, chi_dof_XDoublePrimeZPrime, chi_dof_YDoublePrimeZPrime, initchi_dof_YDoublePrimeZPrime, initchi_dof_XDoublePrimeZPrime;
+        
+        std::vector<XYZVec> xprimes, yprimes, zprimes, xprimesinit,  yprimesinit,  zprimesinit;
         x.reserve(comboHits->size());
         y.reserve(comboHits->size());
         z.reserve(comboHits->size());
-	
+        
+	xinit.reserve(comboHits->size());
+        yinit.reserve(comboHits->size());
+        zinit.reserve(comboHits->size());
+        
+        pullsx.reserve(comboHits->size());
+        pullsy.reserve(comboHits->size());
+        
         a0.reserve(Tracks->size());
         a1.reserve(Tracks->size());
         b0.reserve(Tracks->size());
         b1.reserve(Tracks->size());
+        chi_dof_XDoublePrimeZPrime.reserve(Tracks->size());
+        chi_dof_YDoublePrimeZPrime.reserve(Tracks->size());
+        
+        initchi_dof_XDoublePrimeZPrime.reserve(Tracks->size());
+        initchi_dof_YDoublePrimeZPrime.reserve(Tracks->size());
+        a0init.reserve(Tracks->size());
+        a1init.reserve(Tracks->size());
+        b0init.reserve(Tracks->size());
+        b1init.reserve(Tracks->size());
         
         //loop over tracks:
         for(auto const& track: *Tracks){
@@ -184,13 +202,30 @@ namespace mu2e
 		yprimes.push_back(track._track.getYPrime());
 		zprimes.push_back(track._track.getZPrime());
 		
+		xprimesinit.push_back(track._track.getinitXPrime());
+		yprimesinit.push_back(track._track.getinitYPrime());
+		zprimesinit.push_back(track._track.getinitZPrime());
+		
 		if(track._track.get_track_parameters().size()!= 0){
 			if(isnan(track._track.get_track_parameters()[0]) == true && isnan(track._track.get_track_parameters()[1]) == true && isnan(track._track.get_track_parameters()[2]) == true && isnan(track._track.get_track_parameters()[3]) == true) continue;
 			a0.push_back(track._track.get_track_parameters()[0]);
 			a1.push_back(track._track.get_track_parameters()[1]);
 			b0.push_back(track._track.get_track_parameters()[2]);
 			b1.push_back(track._track.get_track_parameters()[3]);
+			a0init.push_back(track._track.get_initial_track_parameters()[0]);
+			a1init.push_back(track._track.get_initial_track_parameters()[1]);
+			b0init.push_back(track._track.get_initial_track_parameters()[2]);
+			b1init.push_back(track._track.get_initial_track_parameters()[3]);
+			std::cout<<"Chi2 display"<<track._track.get_finalchisqX()<<std::endl;
+			chi_dof_XDoublePrimeZPrime.push_back(track._track.get_finalchisq_dofX());
+			chi_dof_YDoublePrimeZPrime.push_back(track._track.get_finalchisq_dofY());
 			
+			initchi_dof_XDoublePrimeZPrime.push_back(track._track.get_initchisq_dofX());
+			initchi_dof_YDoublePrimeZPrime.push_back(track._track.get_initchisq_dofY());
+			for(size_t i = 0 ; i < track._track.get_init_fit_residualsX().size(); i++ ){
+				pullsx.push_back(track._track.get_init_fit_residualsX()[i]/track._track.get_init_fit_residual_errorsX()[i]);
+				pullsy.push_back(track._track.get_init_fit_residualsY()[i]/track._track.get_init_fit_residual_errorsY()[i]);
+			}
 	       	    }
         }
       if(xprimes.size() >0){
@@ -199,30 +234,32 @@ namespace mu2e
 		x.push_back(chit.pos().Dot(xprimes[0]));
 		y.push_back(chit.pos().Dot(yprimes[0]));
 		z.push_back(chit.pos().Dot(zprimes[0]));
+		xinit.push_back(chit.pos().Dot(xprimesinit[0]));
+		yinit.push_back(chit.pos().Dot(yprimesinit[0]));
+		zinit.push_back(chit.pos().Dot(zprimesinit[0]));
 		rawx.push_back(chit.pos().x());
 		rawy.push_back(chit.pos().y());
 		rawz.push_back(chit.pos().z());
 		
         }
-        for(auto const& track: *Tracks){
-               	size_t n_outliers = track._track.get_outliers().size();
-		for(size_t o =0; o< n_outliers;o++){
-			ComboHit* hit = track._track.get_outliers()[o];
-			out_x.push_back(hit->pos().Dot(xprimes[0]));
-			out_y.push_back(hit->pos().Dot(yprimes[0]));
-			out_z.push_back(hit->pos().Dot(zprimes[0]));
-					
-		}
-        }
-        /*
+        
+      
       double minz = *std::min_element(z.begin(), z.end());
       double maxz = *std::max_element(z.begin(), z.end());
-     
+      
       double minx = *std::min_element(x.begin(), x.end());
       double maxx = *std::max_element(x.begin(), x.end());
       double miny = *std::min_element(y.begin(), y.end());
       double maxy = *std::max_element(y.begin(), y.end());
       
+      double minzinit = *std::min_element(zinit.begin(), zinit.end());
+      double maxzinit = *std::max_element(zinit.begin(), zinit.end());
+      
+      double minxinit = *std::min_element(xinit.begin(), xinit.end());
+      double maxxinit = *std::max_element(xinit.begin(), xinit.end());
+      double minyinit = *std::min_element(yinit.begin(), yinit.end());
+      double maxyinit = *std::max_element(yinit.begin(), yinit.end());
+    
       double minrawz = *std::min_element(rawz.begin(), rawz.end());
       double maxrawz = *std::max_element(rawz.begin(), rawz.end());
      
@@ -230,13 +267,10 @@ namespace mu2e
       double maxrawx = *std::max_element(rawx.begin(), rawx.end());
       double minrawy = *std::min_element(rawy.begin(), rawy.end());
       double maxrawy = *std::max_element(rawy.begin(), rawy.end());
-      */
-      double plotLimits(1500.);
+      
         GeomHandle<Tracker> tracker;   
         // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
-        //Straw& straw_details = tracker->getStraw(id);
-	//double const straw_radius = straw_details.at(0).getRadius();; 
         
         if (doDisplay_) {
               std::cout << "Run: " << event.id().run()
@@ -248,76 +282,90 @@ namespace mu2e
 	      TBox   box;
 	      TText  text;     
 	      arc.SetFillStyle(0);
-	      //straw.SetFillStyle(0);
-	      //poly.SetMarkerStyle(2);
-	      //poly.SetMarkerSize(straw_radius);
-	      //poly.SetMarkerColor(kBlue);
+	      
 	      canvas_->SetTitle("foo title");
 	      auto pad = canvas_->cd(1);
 	      pad->Clear();
 	      canvas_->SetTitle("bar title");
 	      
-	      auto xzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);//pad->DrawFrame(minz-100,minx-100, maxz+100, maxx+100);
+	      auto xzplot = pad->DrawFrame(minz-100,minx-100, maxz+100, maxx+150);
 	      xzplot->GetYaxis()->SetTitleOffset(1.25);
-	      xzplot->SetTitle( "X'' vs Z'; Z'(mm);X''(mm)");
-	      error_line.SetLineColor(kRed);
+	      xzplot->SetTitle( "Final Iteration Fit X'' vs Z'; Z'(mm);X''(mm)");
+	      
 	      fit_to_trackxprime.SetLineColor(kYellow);
 	      fit_to_trackxprime.SetLineColor(kGreen);
-	      poly.SetMarkerColor(kRed);
+	      
 	      poly.SetMarkerSize(3);
 	      poly.SetMarkerStyle(5);
-              out.SetMarkerColor(kBlue);
-              out.SetMarkerStyle(5);
-              out.SetMarkerSize(3);
-              for ( auto const& chit : *comboHits ){ 
+             
+              int ihit =0;
+              for ( auto const& chit : *comboHits ){
+              		ihit +=1;
+              		if (ihit == 10) {
+              			ihit = ihit+1;
+              		}
+              		if (ihit == 13) {
+              			ihit = 29;
+              		}  
 			auto const& p = chit.pos();	
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();			
 			double x0prime{(p.Dot(xprimes[0]))} ;
-			
+			poly.SetMarkerColor(ihit);
+			error_line.SetLineColor(ihit);
 			double z0prime{(p.Dot(zprimes[0]))};                      
 			poly.DrawPolyMarker( 1, &z0prime, &x0prime );
 			double x1 = p.Dot(xprimes[0])+s*w.Dot(xprimes[0]);
 			double x2 = p.Dot(xprimes[0])-s*w.Dot(xprimes[0]);
 			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
 			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
+			TLatex latex;
+			stringstream pulls;
+                	pulls<<pullsx[ihit-1];
+			const char* str_pulls = pulls.str().c_str();
+		   	latex.SetTextSize(0.05);
+		   	latex.SetTextAlign(13);  //align at top
+		   	latex.DrawLatex(z0prime, x0prime+10,str_pulls);
+		   
 			error_line.DrawLine( z1, x1, z2, x2);
               }
-              for(size_t o =0; o<out_x.size(); o++){
-              		
-              	        double x0prime{out_x[o]} ;
-			double z0prime{out_z[o]};                      
-			out.DrawPolyMarker( 1, &z0prime, &x0prime ); 
-              	        //out_line.DrawLine(Oz1, Ox1, Oz2, Ox2);	
-              }
+              
 	      if(a1.size() > 0){
 		
-		TF1 *trackline_xprime = new TF1("line", "[0]+[1]*x", -plotLimits,plotLimits);
+		TF1 *trackline_xprime = new TF1("line", "[0]+[1]*x", minz,maxz);
 		trackline_xprime->SetParameter(0, a0[0]);
 		trackline_xprime->SetParameter(1, a1[0]);
 		trackline_xprime->SetLineColor(6);
 		trackline_xprime->Draw("same");
-		/*
-		double tz1 = minrawz;
-	        double tz2 = maxrawz;
-	        double tx1 = a1[0]*tz1+a0[0];
-	        double tx2 = a1[0]*tz2+a0[0];
-                fit_to_trackxprime.DrawLine( tz1, tx1, tx2, tx2);
-                */
+		TLegend *leg = new TLegend(0.1,0.8,0.3,0.9);
+        	leg->AddEntry("#Chi^{2}/N = ", "#Chi^{2}/N =",  "");
+        	stringstream chi_info;
+                chi_info<< chi_dof_XDoublePrimeZPrime[0];
+                const char* str_chi_info = chi_info.str().c_str();
+                leg->AddEntry("" ,str_chi_info,  "");
+                leg->Draw("same");  
               }  
               pad = canvas_->cd(2);
 	      pad->Clear();   
-	      //auto yzplot = pad->DrawFrame(minz-100,miny-100, maxz+100, maxy+100);//pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
-	      auto yzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
+	      auto yzplot = pad->DrawFrame(minz-100,miny-100, maxz+100, maxy+150);
 	      yzplot->GetYaxis()->SetTitleOffset(1.25);
-	      yzplot->SetTitle( "Y'' vs Z'; Z'(mm);Y''(mm)");
-
-              for ( auto const& chit : *comboHits ){                      
+	      yzplot->SetTitle( "Final Iteration Fit Y'' vs Z'; Z'(mm);Y''(mm)");
+	      ihit = 0;
+              for ( auto const& chit : *comboHits ){ 
+              		ihit+=1;   
+              		if (ihit == 10) {
+              			ihit = ihit+1;
+              		}      
+              		if (ihit == 13) {
+              			ihit = 29;
+              		}              
 			auto const& p = chit.pos();
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();	
 			double y0prime{(p.Dot(yprimes[0]))} ;
-			double z0prime{(p.Dot(zprimes[0]))};          
+			double z0prime{(p.Dot(zprimes[0]))};  
+			poly.SetMarkerColor(ihit);  
+			error_line.SetLineColor(ihit);      
 			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
 			double y1 = p.Dot(yprimes[0])+s*w.Dot(yprimes[0]);
 			double y2 = p.Dot(yprimes[0])-s*w.Dot(yprimes[0]);
@@ -326,89 +374,179 @@ namespace mu2e
 			error_line.DrawLine( z1, y1, z2, y2);
               }
 	      if(b1.size() > 0){
-	      
-		TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",-plotLimits,plotLimits);
+	        
+		TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",minz,maxz);
 		trackline_yprime->SetParameter(0, b0[0]);
 		trackline_yprime->SetParameter(1, b1[0]);
 		trackline_yprime->SetLineColor(6);
 		trackline_yprime->Draw("same");
-		/*
-		double tz1 = min;
-	        double tz2 = maxrawz;
-	        double ty1 = b1[0]*tz1+b0[0];
-	        double ty2 = b1[0]*tz2+b0[0];
-                fit_to_trackyprime.DrawLine( tz1, ty1, tz2, ty2);
-	        */
+		TLegend *leg = new TLegend(0.1,0.8,0.2,0.9);
+        	leg->AddEntry("#Chi^{2}/N ", "#Chi^{2}/N",  "");
+        	stringstream chi_info;
+                chi_info<< chi_dof_YDoublePrimeZPrime[0];
+                const char* str_chi_info = chi_info.str().c_str();
+                leg->AddEntry("" ,str_chi_info,  "");
+                leg->Draw("same"); 
+		
               } 
-              for(auto const& track: *Tracks){
-               	size_t n_outliers = track._track.get_outliers().size();
-		for(size_t o =0; o< n_outliers;o++){ 
-              		ComboHit* hit = track._track.get_outliers()[o];
-              		auto const& p = hit->pos();
-			auto const& w = hit->wdir();
-			auto const& s = hit->wireRes();
-              	        double y0prime{(p.Dot(yprimes[0]))} ;
-			double z0prime{(p.Dot(zprimes[0]))}; 
-			//poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
-			double Ox1 = p.Dot(yprimes[0])+s*w.Dot(yprimes[0]);
-			double Ox2 = p.Dot(yprimes[0])-s*w.Dot(yprimes[0]);
-			double Oz1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
-			double Oz2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);                      
-			out.DrawPolyMarker( 1, &z0prime, &y0prime ); 
-              	        out_line.DrawLine(Oz1, Ox1, Oz2, Ox2);
-              	        }	
-              }         
+              
               pad = canvas_->cd(3);
 	      pad->Clear();   
-	      auto rawxzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits); //pad->DrawFrame(minrawz-100, minrawx-100, maxrawz+100, maxrawx+100);//pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);
+	      auto xzplot_init = pad->DrawFrame(minzinit-100,minxinit-100, maxzinit+100, maxxinit+150);
+	      xzplot_init->GetYaxis()->SetTitleOffset(1.25);
+	      xzplot_init->SetTitle( "Initial Fit (chi 2 min) X'' vs Z'; Z'(mm);X''(mm)");
+	      ihit = 0;
+              for ( auto const& chit : *comboHits ){ 
+              		ihit+=1;          
+              		if (ihit == 10) {
+              			ihit = ihit+1;
+              		}        
+              		if (ihit == 13) {
+              			ihit = 29;
+              		}     
+			auto const& p = chit.pos();
+			auto const& w = chit.wdir();
+			auto const& s = chit.wireRes();	
+			double x0primeinit{(p.Dot(xprimesinit[0]))} ;
+			double z0primeinit{(p.Dot(zprimesinit[0]))};  
+			poly.SetMarkerColor(ihit);  
+			error_line.SetLineColor(ihit);      
+			poly.DrawPolyMarker( 1, &z0primeinit, &x0primeinit );        
+			double x1 = p.Dot(xprimesinit[0])+s*w.Dot(xprimesinit[0]);
+			double x2 = p.Dot(xprimesinit[0])-s*w.Dot(xprimesinit[0]);
+			double z1 = p.Dot(zprimesinit[0])+s*w.Dot(zprimesinit[0]);
+			double z2 = p.Dot(zprimesinit[0])-s*w.Dot(zprimesinit[0]);
+			error_line.DrawLine( z1, x1, z2, x2);
+              }
+	      if(a1.size() > 0){
+	        
+		TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",minzinit,maxzinit);
+		trackline_yprime->SetParameter(0, a0init[0]);
+		trackline_yprime->SetParameter(1, a1init[0]);
+		trackline_yprime->SetLineColor(6);
+		trackline_yprime->Draw("same");
+		TLegend *leg = new TLegend(0.1,0.8,0.2,0.9);
+        	leg->AddEntry("#Chi^{2}/N = ", "#Chi^{2}/N =",  "");
+        	stringstream chi_info;
+                chi_info<< initchi_dof_XDoublePrimeZPrime[0];
+                const char* str_chi_info = chi_info.str().c_str();
+                leg->AddEntry("" ,str_chi_info,  "");
+                leg->Draw("same"); 
+		
+              } 
+              
+              pad = canvas_->cd(4);
+	      pad->Clear();   
+	      auto yzplot_init = pad->DrawFrame(minzinit-100,minyinit-100, maxzinit+100, maxyinit+150);
+	      yzplot_init->GetYaxis()->SetTitleOffset(1.25);
+	      yzplot_init->SetTitle( "Initial (chi 2 min) Fit Y'' vs Z'; Z'(mm);Y''(mm)");
+	      ihit = 0;
+              for ( auto const& chit : *comboHits ){ 
+              		ihit+=1;  
+              		if (ihit == 10) {
+              			ihit = ihit+1;
+              		}      
+              		if (ihit == 13) {
+              			ihit = 29;
+              		}               
+			auto const& p = chit.pos();
+			auto const& w = chit.wdir();
+			auto const& s = chit.wireRes();	
+			double y0prime{(p.Dot(yprimesinit[0]))} ;
+			double z0prime{(p.Dot(zprimesinit[0]))};  
+			poly.SetMarkerColor(ihit);  
+			error_line.SetLineColor(ihit);      
+			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
+			double y1 = p.Dot(yprimesinit[0])+s*w.Dot(yprimesinit[0]);
+			double y2 = p.Dot(yprimesinit[0])-s*w.Dot(yprimesinit[0]);
+			double z1 = p.Dot(zprimesinit[0])+s*w.Dot(zprimesinit[0]);
+			double z2 = p.Dot(zprimesinit[0])-s*w.Dot(zprimesinit[0]);
+			error_line.DrawLine( z1, y1, z2, y2);
+              }
+	      if(b1.size() > 0){
+	        
+		TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",minzinit,maxzinit);
+		trackline_yprime->SetParameter(0, b0init[0]);
+		trackline_yprime->SetParameter(1, b1init[0]);
+		trackline_yprime->SetLineColor(6);
+		trackline_yprime->Draw("same");
+		TLegend *leg = new TLegend(0.1,0.8,0.2,0.9);
+        	leg->AddEntry("#Chi^{2}/N = ", "#Chi^{2}/N =",  "");
+        	stringstream chi_info;
+                chi_info<< initchi_dof_YDoublePrimeZPrime[0];
+                const char* str_chi_info = chi_info.str().c_str();
+                leg->AddEntry("" ,str_chi_info,  "");
+                leg->Draw("same"); 
+              } 
+              
+              pad = canvas_->cd(5);
+	      pad->Clear();   
+	      auto rawxzplot = pad->DrawFrame(minrawz-100,minrawx-100, maxrawz+100, maxrawx+100);
 	      rawxzplot->GetYaxis()->SetTitleOffset(1.25);
-	      rawxzplot->SetTitle( "X vs Z; Z(mm);X(mm)");
-	      for ( auto const& chit : *comboHits ){                      
+	      rawxzplot->SetTitle( "Raw Hits X vs Z; Z(mm);X(mm)");
+	      ihit = 0;
+	      for ( auto const& chit : *comboHits ){      
+	      		ihit +=1;      
+	      		if (ihit == 10) {
+              			ihit = ihit+1;
+              		}  
+              		if (ihit == 13) {
+              			ihit = 29;
+              		}         
 			auto const& p = chit.pos();
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();	
 			double y0prime{p.x()} ;
-			double z0prime{p.z()};          
+			double z0prime{p.z()};       
+			poly.SetMarkerColor(ihit);   
 			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
 			double y1 = p.x()+s*w.x();
 			double y2 = p.x()-s*w.x();
 			double z1 = p.z()+s*w.z();
 			double z2 = p.z()-s*w.z();
+			error_line.SetLineColor(ihit);
 			error_line.DrawLine( z1, y1, z2, y2);
               }
-              /*
+              
               TF1 *trackline_x = new TF1("line", "[0]+[1]*x",  minrawz, maxrawz);
 	      trackline_x->SetParameter(0, a0[0]*xprimes[0].x());
 	      trackline_x->SetParameter(1, a1[0]);
 	      trackline_x->SetLineColor(6);
 	      trackline_x->Draw("same");
-              */
+              
 		
-	      pad = canvas_->cd(4);
+	      pad = canvas_->cd(6);
 	      pad->Clear();   
-	      auto rawyzplot = pad->DrawFrame(-plotLimits,-plotLimits,plotLimits,plotLimits);//pad->DrawFrame(minrawz-100, minrawy-100, maxrawz+100, maxrawy+100);
+	      auto rawyzplot = pad->DrawFrame(minrawz-100,minrawy-100, maxrawz+100, maxrawy+100);//-plotLimits,-plotLimits,plotLimits,plotLimits);//pad->DrawFrame(minrawz-100, minrawy-100, maxrawz+100, maxrawy+100);
 	      rawyzplot->GetYaxis()->SetTitleOffset(1.25);
-	      rawyzplot->SetTitle( "Y vs Z; Z(mm);Y(mm)");
-	      for ( auto const& chit : *comboHits ){                      
+	      rawyzplot->SetTitle( "Raw Hits Y vs Z; Z(mm);Y(mm)");
+	      ihit=0;
+	      for ( auto const& chit : *comboHits ){                
+	      		ihit +=1;     
+	      		if (ihit == 10) {
+              			ihit = ihit+1;
+              		} 
 			auto const& p = chit.pos();
 			auto const& w = chit.wdir();
 			auto const& s = chit.wireRes();	
 			double y0prime{p.y()} ;
-			double z0prime{p.z()};          
+			double z0prime{p.z()};    
+			poly.SetMarkerColor(ihit);       
 			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
 			double y1 = p.y()+s*w.y();
 			double y2 = p.y()-s*w.y();
 			double z1 = p.z()+s*w.z();
 			double z2 = p.z()-s*w.z();
+			error_line.SetLineColor(ihit);
 			error_line.DrawLine( z1, y1, z2, y2);
               }
-	      /*
+	      
 	      TF1 *trackline_y = new TF1("line", "[0]+[1]*x", minrawz, maxrawz);
 	      trackline_y->SetParameter(0,b0[0]);
 	      trackline_y->SetParameter(1, b1[0]);
 	      trackline_y->SetLineColor(6);
 	      trackline_y->Draw("same");
-	      */
+	      
                 
               ostringstream title;
               title << "Run: " << event.id().run()
