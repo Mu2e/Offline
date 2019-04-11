@@ -67,6 +67,7 @@ helper.make_plugins( [ mainlib,
                        'xerces-c',
                        'boost_filesystem',
                        'boost_system',
+                       'pthread'
                        ] )
 
 # this tells emacs to view this file in python mode.
