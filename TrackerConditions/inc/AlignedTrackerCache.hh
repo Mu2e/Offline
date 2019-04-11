@@ -22,32 +22,35 @@ namespace mu2e {
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
-      _tatr_p = std::make_unique<DbHandle<TrkAlignTracker>>();
-      _tapl_p = std::make_unique<DbHandle<TrkAlignPlane>>();
-      _tapa_p = std::make_unique<DbHandle<TrkAlignPanel>>();
+      if(_useDb) {
+	_tatr_p = std::make_unique<DbHandle<TrkAlignTracker>>();
+	_tapl_p = std::make_unique<DbHandle<TrkAlignPlane>>();
+	_tapa_p = std::make_unique<DbHandle<TrkAlignPanel>>();
+      }
     }
 
     set_t makeSet(art::EventID const& eid) {
       // get the tables up to date
-      _tatr_p->get(eid);
-      _tapl_p->get(eid);
-      _tapa_p->get(eid);
       ProditionsEntity::set_t cids;
-      cids.insert(_tatr_p->cid());
-      cids.insert(_tapl_p->cid());
-      cids.insert(_tapa_p->cid());
+      if(_useDb) {
+	_tatr_p->get(eid);
+	_tapl_p->get(eid);
+	_tapa_p->get(eid);
+	cids.insert(_tatr_p->cid());
+	cids.insert(_tapl_p->cid());
+	cids.insert(_tapa_p->cid());
+      }
       return cids;
     }
 
     DbIoV makeIov(art::EventID const& eid) {
       DbIoV iov;
       iov.setMax(); // start with full IOV range
-      iov.overlap(_tatr_p->iov());
-      iov.overlap(_tapl_p->iov());
-      iov.overlap(_tapa_p->iov());
-      iov.overlap(_tatr_p->iov());
-      iov.overlap(_tapl_p->iov());
-      iov.overlap(_tapa_p->iov());
+      if(_useDb) {
+	iov.overlap(_tatr_p->iov());
+	iov.overlap(_tapl_p->iov());
+	iov.overlap(_tapa_p->iov());
+      }
       return iov;
     }
 

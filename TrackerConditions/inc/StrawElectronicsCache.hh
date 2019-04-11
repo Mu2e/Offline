@@ -20,10 +20,12 @@ namespace mu2e {
       _useDb(config.useDb()),_maker(config) {}
 
     void initialize() {
-      _tdp_p  = std::make_unique<DbHandle<TrkDelayPanel>>();
-      _tprs_p = std::make_unique<DbHandle<TrkPreampRStraw>>();
-      _tps_p  = std::make_unique<DbHandle<TrkPreampStraw>>();
-      _ttrs_p = std::make_unique<DbHandle<TrkThresholdRStraw>>();
+      if(_useDb) {
+	_tdp_p  = std::make_unique<DbHandle<TrkDelayPanel>>();
+	_tprs_p = std::make_unique<DbHandle<TrkPreampRStraw>>();
+	_tps_p  = std::make_unique<DbHandle<TrkPreampStraw>>();
+	_ttrs_p = std::make_unique<DbHandle<TrkThresholdRStraw>>();
+      }
     }
     
     set_t makeSet(art::EventID const& eid) {
