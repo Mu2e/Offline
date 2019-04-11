@@ -323,9 +323,8 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 
   // if no cid now, then table can't be found - have to stop
   if(cid<0) {
-    auto const& tabledef = _vcache->valTables().row(tid);
     throw cet::exception("DBENGINE_UPDATE_FAILED") 
-      << " DbEngine::update failed to find table " << tabledef.name() 
+      << " DbEngine::update failed to find tid " << tid
       << " for run:subrun "<<run<<":"<<subrun<<"\n";
   }
 
@@ -392,13 +391,14 @@ mu2e::DbLiveTable mu2e::DbEngine::update(int tid, uint32_t run,
 // can only be called inside a read lock
 mu2e::DbEngine::Row mu2e::DbEngine::findTable(
 			    int tid, uint32_t run, uint32_t subrun) {
-  auto const& rows = _lookup[tid];
-  for(auto const& r : rows) {
-    if(r.iov().inInterval(run,subrun)) {
-      return r;
-    }
-  } // loop over Rows for table type
-  
+  auto iter = _lookup.find(tid);
+  if(iter!=_lookup.end()) { // if the IOV structure includes this tid
+    for(auto const& r : iter->second) { // find which iov is appropriate
+      if(r.iov().inInterval(run,subrun)) {
+	return r; // return iov and cid in a Row
+      }
+    } // loop over Rows for table type
+  }  
   return DbEngine::Row(DbIoV(),-1); // not found
 }
 
