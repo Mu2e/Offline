@@ -8,6 +8,7 @@
 #define TrkInfo_HH
 #include "DataProducts/inc/XYZVec.hh"
 #include "TrkDiag/inc/helixpar.hh"
+#include "MCDataProducts/inc/MCRelationship.hh"
 #include "Rtypes.h"
 namespace mu2e
 {
@@ -71,11 +72,11 @@ namespace mu2e
     Int_t _pdg, _gen, _proc; // true PDG code, generator code, and process code of the primary particle
     //    Int_t _ppdg, _pgen, _pproc; // PDG code, generator code and process code of the parent particle of the primary particle
     //    Float_t _pmom; // true initial momentum of the parent of the primary particle
-    Int_t _prel; // relationship if this tracks primary particle to the event primary
+    MCRelationship _prel; // relationship if this tracks primary particle to the event primary
     TrkInfoMC() { reset(); }
-    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _nambig = _pdg = _gen  = _proc = _prel = -1; }
+    void reset() { _ndigi = _ndigigood = _nactive = _nhits = _nambig = _pdg = _gen  = _proc= -1; _prel = MCRelationship(); }
     static std::string leafnames() { static std::string leaves; leaves =
-      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:nambig/I:pdg/I:gen/I:proc/I:prel/I");
+      std::string("ndigi/I:ndigigood/I:nhits/I:nactive/I:nambig/I:pdg/I:gen/I:proc/I:prel/B:prem/B");
       return leaves;
     }
   };
