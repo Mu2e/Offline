@@ -102,6 +102,8 @@ namespace mu2e {
     art::InputTag _rctag;
     // CaloCrystal Ptr map
     art::InputTag _cchmtag;
+    // SimParticleCollection Tag
+    art::InputTag _spctag;
     //list of the triggerIds to track 
     std::vector<unsigned> _trigids;
     // event-weighting modules
@@ -146,7 +148,7 @@ namespace mu2e {
     std::vector<int> _entvids, _midvids, _xitvids;
 
     // detailed MC truth for the signal candidate
-    GenInfo _demcgen;
+    GenInfo _demcgen, _demcpri; // generator and 'primary' information
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
@@ -175,6 +177,7 @@ namespace mu2e {
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
     _cchmtag( pset.get<art::InputTag>("CaloCrystalHitMapTag", art::InputTag()) ),
+    _spctag( pset.get<art::InputTag>("SimParticleCollectionTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -235,6 +238,7 @@ namespace mu2e {
     if(_fillmc){
       _trkana->Branch("demc",&_demc,TrkInfoMC::leafnames().c_str());
       _trkana->Branch("demcgen",&_demcgen,GenInfo::leafnames().c_str());
+      _trkana->Branch("demcpri",&_demcpri,GenInfo::leafnames().c_str());
       _trkana->Branch("demcent",&_demcent,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcmid",&_demcmid,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
@@ -300,7 +304,10 @@ namespace mu2e {
     art::Handle<CaloCrystalHitRemapping> cchmH;
     event.getByLabel(_cchmtag,cchmH);
     auto const& cchmap = *cchmH;
-
+    art::Handle<SimParticleCollection> spcH;
+    if(_fillmc){
+      event.getByLabel(_spctag,spcH);
+    }
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_rctag);
     auto const& rc = *rch;
@@ -382,8 +389,9 @@ namespace mu2e {
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
-
-	    TrkMCTools::fillGenInfo(dekseedmc, _demcgen, primary);
+	    // construct a Ptr from Handle and key
+	    art::Ptr<SimParticle> trkprimary(spcH,dekseedmc.simParticles().front()._spkey.asUint());
+	    TrkMCTools::fillGenInfo(trkprimary, _demcgen, _demcpri, primary);
 	    if (_diag>1) {
 	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc);
 	    }
@@ -526,6 +534,7 @@ namespace mu2e {
     _uemc.reset();
     _dmmc.reset();
     _demcgen.reset();
+    _demcpri.reset();
     _demcent.reset();
     _demcmid.reset();
     _demcxit.reset();

@@ -511,6 +511,11 @@ namespace mu2e
     if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
+      if(_debug > 0){
+	std::cout << "Cluster COG (disk) " << calo->cog3Vector() << std::endl
+	<< "Cluster COG (Mu2e) " << ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector()) << std::endl
+	<<" Cluster COG (Det ) " << cog << std::endl; 
+      }
       // t0 represents the time the particle reached the sensor; estimate that
       HitT0 ht0;
       ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();

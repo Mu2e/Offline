@@ -314,6 +314,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     DeTrkQualTag : "TrkQualDeM"
     RecoCountTag : "SelectRecoMC"
     CaloCrystalHitMapTag : "SelectRecoMC"
+    SimParticleCollectionTag : "compressRecoMCs"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "SelectRecoMC"

@@ -15,6 +15,7 @@
 #include "EventDisplay/src/ContentSelector.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Mu2eBTrk/inc/ParticleInfo.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>
@@ -92,6 +93,8 @@ class DataInterface
   bool _showNeutrons;
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
+
+  std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
   void createGeometryManager();
   void removeAllComponents();
