@@ -15,6 +15,7 @@
 #include "MCDataProducts/inc/MCRelationship.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "art/Framework/Principal/Handle.h"
 #include "cetlib/map_vector.h"
 #include <Rtypes.h>
 #include <utility>
@@ -25,6 +26,7 @@ namespace mu2e {
   // small stub of SimParticle for quick reference to basic information, plus summarize genealogy
   struct SimPartStub {
     typedef art::Ptr<SimParticle> SPPtr;
+    typedef art::Handle<SimParticleCollection> SPCH;
     PDGCode::type _pdg; // code of this particle
     ProcessCode _proc; // particle creation process
     GenId _gid; // generator code
@@ -33,6 +35,8 @@ namespace mu2e {
     uint16_t _nactive; // number of associated active hits
     XYZVec _mom; // initial momentum 
     cet::map_vector_key _spkey; // key to the SimParticle
+    // construct a Ptr from Handle and key
+    SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
     SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),

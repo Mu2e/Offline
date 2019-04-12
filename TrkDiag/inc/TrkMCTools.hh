@@ -14,7 +14,6 @@
 #include "TrkDiag/inc/GenInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/CaloClusterInfoMC.hh"
-#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
@@ -74,8 +73,10 @@ namespace mu2e {
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& digigood, int& ngood);
 
     // fill various info structs
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, TrkInfoMC& trkinfomc);
-    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary, GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary);
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, art::Ptr<SimParticle>const& trkprimary,
+      const KalSeed& kseed, TrkInfoMC& trkinfomc);
+    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary,
+	GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary);
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,std::vector<int> const& vids);
     void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
