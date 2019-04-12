@@ -75,6 +75,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
   createNewEntries<mu2e::KalRepCollection>(_hitOnTrackVector, event, "KalRep", newEntries, 3);
+  createNewEntries<mu2e::KalSeedCollection>(_kalSeedHitVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_hitEntries)
   {
@@ -131,6 +132,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
   createNewEntries<mu2e::KalRepCollection>(_trkRecoTrkVector, event, "KalRep", newEntries, 2);
   createNewEntries<mu2e::TrkExtTrajCollection>(_trkExtTrajVector, event, "TrkExtTraj", newEntries, 3);
+  createNewEntries<mu2e::KalSeedCollection>(_kalSeedTrkVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_trackEntries)
   {
@@ -235,6 +237,9 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
     case 3 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) return(nullptr);
              if(index>=static_cast<int>(_hitOnTrackVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_hitOnTrackVector[index].product()));
+    case 4 : if(typeid(CollectionType)!=typeid(mu2e::KalSeedCollection)) return(nullptr);
+             if(index>=static_cast<int>(_kalSeedHitVector.size())) return(nullptr);
+             return(reinterpret_cast<const CollectionType*>(_kalSeedHitVector[index].product()));
 //Note about the use of reinterpret_cast: While it is generally unsafe to use it, in this case it is Ok.
 //the typeid check makes that the program advances to the line with the reinterpret_cast ONLY if the
 //type of the vector element and the CollectionType are identical. The compiler doesn't see this, the compiler
@@ -249,6 +254,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
 template const mu2e::KalRepCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalRepCollection>() const;
+template const mu2e::KalSeedCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
 
 template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
@@ -330,6 +336,11 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
                to_return.push_back(reinterpret_cast<const CollectionType*>(_trkExtTrajVector[index].product()));
                v.push_back(t);
                break;
+      case 4 : if(typeid(CollectionType)!=typeid(mu2e::KalSeedCollection)) break;
+               if(index>=static_cast<int>(_kalSeedTrkVector.size())) break;
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_kalSeedTrkVector[index].product()));
+               v.push_back(t);
+               break;
     };
   }
   return(to_return);
@@ -337,6 +348,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
 template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::KalRepCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalRepCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(std::vector<trackInfoStruct> &v) const;
+template std::vector<const mu2e::KalSeedCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalSeedCollection>(std::vector<trackInfoStruct> &v) const;
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
 {
