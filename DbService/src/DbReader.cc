@@ -14,22 +14,6 @@ mu2e::DbReader::DbReader(const DbId& id):_id(id),_timeout(3600),
 		_useCache(true),_verbose(0),_timeVerbose(0) {
 
   curl_global_init(CURL_GLOBAL_ALL);
-  _curl_handle = curl_easy_init();
-
-  if (!_curl_handle) {
-    throw cet::exception("DBREADER_FAILED_CURL_INIT") << 
-      "DbReader failed to initialize curl" <<"\n";
-  }
-
-  // send all data to this function
-  curl_easy_setopt(_curl_handle, CURLOPT_WRITEFUNCTION, mu2e::curlWriteCallback);
-  // we pass our 'response' struct to the callback function
-  curl_easy_setopt(_curl_handle, CURLOPT_WRITEDATA, (void *)&_result);
-  // some servers don't like requests that are made without a user-agent 
-  // field, so we provide one
-  curl_easy_setopt(_curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-  // Enable redirection
-  curl_easy_setopt(_curl_handle, CURLOPT_FOLLOWLOCATION, 1);
 }
 
 mu2e::DbReader::~DbReader() {
@@ -63,6 +47,25 @@ int mu2e::DbReader::query(std::string& csv,
   }
 
   //http://dbdata0vm.fnal.gov:9091/QE/mu2e/dev/app/SQ/query?t=testt&c=*&dbname=mu2e_conditions_dev
+
+
+
+  _curl_handle = curl_easy_init();
+
+  if (!_curl_handle) {
+    throw cet::exception("DBREADER_FAILED_CURL_INIT") << 
+      "DbReader failed to initialize curl" <<"\n";
+  }
+
+  // send all data to this function
+  curl_easy_setopt(_curl_handle, CURLOPT_WRITEFUNCTION, mu2e::curlWriteCallback);
+  // we pass our 'response' struct to the callback function
+  curl_easy_setopt(_curl_handle, CURLOPT_WRITEDATA, (void *)&_result);
+  // some servers don't like requests that are made without a user-agent 
+  // field, so we provide one
+  curl_easy_setopt(_curl_handle, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+  // Enable redirection
+  curl_easy_setopt(_curl_handle, CURLOPT_FOLLOWLOCATION, 1);
 
 
   if(_verbose>3) {
@@ -159,6 +162,9 @@ int mu2e::DbReader::query(std::string& csv,
       csv = csv.substr(firstN+1, csv.size()-firstN-1);
     }
   }
+
+  // forced to drop handle every time
+  curl_easy_cleanup(_curl_handle);
 
   return 0;
 }

@@ -16,29 +16,20 @@ namespace mu2e {
   class StrawElectronicsCache : public ProditionsCache {
   public: 
     StrawElectronicsCache(StrawElectronicsConfig const& config):
-      _name("StrawElectronics"),_maker(config),
-      _verbose(config.verbose()),_useDb(config.useDb()) {}
+      ProditionsCache("StrawElectronics",config.verbose()),
+      _useDb(config.useDb()),_maker(config) {}
 
-    std::string const& name() const { return _name; }
-
-    ProditionsCache::ret_t update(art::EventID const& eid) {
-
-      // lock access to the data, will release when this method returns
-      LockGuard lock(*this);
-
-      // delayed construction here so that the handles
-      // inside the service can reference the service 
-      if(_useDb && !_tdp_p) {
+    void initialize() {
+      if(_useDb) {
 	_tdp_p  = std::make_unique<DbHandle<TrkDelayPanel>>();
 	_tprs_p = std::make_unique<DbHandle<TrkPreampRStraw>>();
 	_tps_p  = std::make_unique<DbHandle<TrkPreampStraw>>();
 	_ttrs_p = std::make_unique<DbHandle<TrkThresholdRStraw>>();
       }
-
-      // figure out what versions of tables are needed
+    }
+    
+    set_t makeSet(art::EventID const& eid) {
       ProditionsEntity::set_t cids;
-      DbIoV iov;
-      iov.setMax(); // start with full IOV range
       if(_useDb) { // use fcl config, overwrite part from DB
 	// get the tables up to date
 	_tdp_p->get(eid);
@@ -50,54 +41,42 @@ namespace mu2e {
 	cids.insert(_tprs_p->cid());
 	cids.insert(_tps_p->cid());
 	cids.insert(_ttrs_p->cid());
+      }
+      return cids;
+    }
+    
+    DbIoV makeIov(art::EventID const& eid) {
+      DbIoV iov;
+      iov.setMax(); // start with full IOV range
+      if(_useDb) { // use fcl config, overwrite part from DB
+	// get the tables up to date
+	_tdp_p->get(eid);
+	_tprs_p->get(eid);
+	_tps_p->get(eid);
+	_ttrs_p->get(eid);
 	// restrict the valid range ot the overlap
 	iov.overlap(_tdp_p->iov());
 	iov.overlap(_tprs_p->iov());
 	iov.overlap(_tps_p->iov());
 	iov.overlap(_ttrs_p->iov());
       }
-      // here we would add dependence and IOV restrictions from 
-      // other services this depends on
-      // cids.insert(c1.getCids().begin(),c1.getCids().end());
-
-      // see if this combination of tables is in the cache
-      auto p = find(cids);
-
-      if(_verbose>1) {
-	if(!p) {
-	  std::cout<< "making new StrawElectronics from cids=";
-	} else {
-	  std::cout<< "found StrawElectronics in cache with cids=";
-	}
-	for(auto x : cids) std::cout << x << " ";
-	std::cout << std::endl;
+      return iov;
+    }
+    
+    ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
+      if(_useDb) {
+	return _maker.fromDb( _tdp_p->getPtr(eid),
+			      _tprs_p->getPtr(eid), 
+			      _tps_p->getPtr(eid),
+			      _ttrs_p->getPtr(eid) );
+      } else {
+	return _maker.fromFcl();
       }
-
-      if(!p) {
-	if(_useDb) {
-	  p = _maker.fromDb( _tdp_p->getPtr(eid),
-			     _tprs_p->getPtr(eid), 
-			     _tps_p->getPtr(eid),
-			     _ttrs_p->getPtr(eid) );
-        } else {
-	  p = _maker.fromFcl();
-	}
-        p->addCids(cids);
-        push(p);
-
-	if(_verbose>2) p->print(std::cout);
-
-      }
-
-
-      return std::make_tuple(p,iov);
-}
-
+    }
+    
   private:
-    std::string _name;
-    StrawElectronicsMaker _maker;
-    int _verbose;
     bool _useDb;
+    StrawElectronicsMaker _maker;
 
     // these handles are not default constructed
     // so the db can be completely turned off
