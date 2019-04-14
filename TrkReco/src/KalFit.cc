@@ -912,7 +912,7 @@ namespace mu2e
 	Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
 	// construct a temporary TrkCaloHit.  This is just to be able to call POCA
 	TrkLineTraj hitTraj(HepPoint(cog.x(), cog.y(), cog.z()),
-	    clusterAxis, 0.0, crystalLength);
+			    clusterAxis, 0.0, crystalLength);
 	//evaluate the doca
 	TrkPoca poca(krep->traj(),flt,hitTraj,0.5*crystalLength);
 	double doca = poca.doca();
@@ -921,9 +921,9 @@ namespace mu2e
 	    depth > _mindepthtch && depth < _maxdepthtch &&
 	    fabs(doca) < minFOM) {
 	  tchFinal.reset(new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
-		ht0, poca.flt1(),
-		_calHitW, _caloHitErr, 
-		_ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
+					ht0, poca.flt1(),
+					_calHitW, _caloHitErr, 
+					_ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
 	  minFOM   = doca; // this should be some combination of energy, DOCA, etc FIXME!
 	  retval = icc;
 	}
@@ -938,17 +938,8 @@ namespace mu2e
 	krep->addHistory(fitstat,"AddHits");
       }
     }
-<<<<<<< HEAD
-    
-    if (tchFinal == 0)  return;
 
-    kalData.diag.added = 1;
-    
-    //add the TrkCaloHit
-    krep->addHit(tchFinal.release());
-=======
     return retval;
->>>>>>> MDC2018
 
   }
 
