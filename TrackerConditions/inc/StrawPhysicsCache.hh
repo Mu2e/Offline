@@ -11,50 +11,30 @@ namespace mu2e {
   class StrawPhysicsCache : public ProditionsCache {
   public: 
     StrawPhysicsCache(StrawPhysicsConfig const& config):
-      _name("StrawPhysics"),_maker(config),
-      _verbose(config.verbose()),_useDb(config.useDb()) {}
+      ProditionsCache("StrawPhysics",config.verbose()),
+      _useDb(config.useDb()),_maker(config) {}
 
-    std::string const& name() const { return _name; }
+    //    std::string const& name() const { return _name; }
 
-    ProditionsCache::ret_t update(art::EventID const& eid) {
 
-      // lock access to the data, will release when this method returns
-      LockGuard lock(*this);
-
-      // these have to be created on first use because we can't 
-      // create them in the constructor since this object
-      // is created before the service is done creation.
-       if(!_strawDrift_p) {
-	_strawDrift_p = std::make_unique<ProditionsHandle<StrawDrift> >();
-      }
-      auto & strawDrift_h = *_strawDrift_p;
-
-      auto sd = strawDrift_h.getPtr(eid);
-      auto iov = strawDrift_h.iov();
-      ProditionsEntity::set_t s;
-      s.merge(set_t(sd->getCids()));
-      auto p = find(s);
-      if(!p) {
-	if(_verbose>1) std::cout<< "making new StrawPhysics " << std::endl;
-	p = _maker.fromFcl(sd);
-	//p = _maker.fromDb(sd);
-	p->addCids(s);
-	push(p);
-
-	if(_verbose>2) p->print(std::cout);
-
-      } else {
-	if(_verbose>1) std::cout<< "found StrawPhysics in cache " << std::endl;
-      }
-
-      return std::make_tuple(p,iov);
+    void initialize() {
+      _strawDrift_p = std::make_unique<ProditionsHandle<StrawDrift> >();
+    }
+    set_t makeSet(art::EventID const& eid) {
+     return _strawDrift_p->get(eid).getCids();
+    }
+    DbIoV makeIov(art::EventID const& eid) {
+      _strawDrift_p->get(eid); // make sure it is current
+      return _strawDrift_p->iov();
+    }
+    ProditionsEntity::ptr makeEntity(art::EventID const& eid) {
+      auto sd = _strawDrift_p->getPtr(eid);
+      return _maker.fromFcl(sd);
     }
 
   private:
-    std::string _name;
-    StrawPhysicsMaker _maker;
-    int _verbose;
     bool _useDb;
+    StrawPhysicsMaker _maker;
 
     // this handle is not default constructed
     // so to not create a dependency loop on construction
