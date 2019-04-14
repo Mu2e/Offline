@@ -20,7 +20,7 @@ namespace mu2e
 			 double crystalLength, Hep3Vector const& clusterAxis,
 			 const HitT0& hitt0,double fltlen, double timeWeight,
 			 double hiterr, double terr, double dtoffset) :
-    _caloCluster(caloCluster),
+    _caloCluster(caloCluster), _clen(crystalLength),
     _dtoffset(dtoffset),
     _hitErr(hiterr) , _tErr(terr)
   {
@@ -51,9 +51,8 @@ namespace mu2e
     static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
     double tlight =0.0;
     if(poca().status().success()){
-// electronics is at the back,
-//  Note too that the crystal position is shifted by 50mm, FIXME!
-      double clen = 250.0-std::min(250.0,std::max(50.0,poca().flt2()));
+// time for light to get to SIPMs at the back of the crystals, bounded by crystal length
+      double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
       tlight = clen/vlprop;
     }
     return caloCluster().time() - tlight;

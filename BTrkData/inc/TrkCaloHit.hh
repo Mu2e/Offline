@@ -50,6 +50,7 @@ namespace mu2e
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
 
     const CaloCluster& _caloCluster;
+    double	       _clen; // crystal length
     double             _dtoffset;
     TrkLineTraj*       _hittraj;
     double             _hitErr; // geometric error on the cluster transverse position for POCA calculation

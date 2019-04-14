@@ -105,7 +105,7 @@ namespace mu2e
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
-    _mindocatch(pset.get<double>("mindocatch",-100.)),
+    _mindocatch(pset.get<double>("mindocatch",-50.)),
     _maxdocatch(pset.get<double>("maxdocatch", 50.)),
     _mindepthtch(pset.get<double>("mindepthtch",-50.)),
     _maxdepthtch(pset.get<double>("maxdepthtch",250.)),
