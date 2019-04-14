@@ -18,6 +18,7 @@
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
@@ -52,6 +53,8 @@ class ContentSelector
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
   std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
   std::vector<art::Handle<mu2e::KalRepCollection> > _hitOnTrackVector; //Hits on Tracks are stored inside of KalRep
+  std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedTrkVector;
+  std::vector<art::Handle<mu2e::KalSeedCollection> > _kalSeedHitVector;
   std::vector<art::Handle<mu2e::TrkExtTrajCollection> > _trkExtTrajVector;
   art::Handle<mu2e::PhysicalVolumeInfoCollection> _physicalVolumes;
   art::Handle<mu2e::PhysicalVolumeInfoMultiCollection> _physicalVolumesMulti;

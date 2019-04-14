@@ -80,6 +80,7 @@
 
  <class name="std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>"/>
  <class name="mu2e::GenElHitData"/>
+ <class name="std::pair<unsigned long,mu2e::GenElHitData>"/>
  <class name="std::map<unsigned long,mu2e::GenElHitData>"/>
  <class name="mu2e::VisibleGenElTrack"/>
  <class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>

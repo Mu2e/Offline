@@ -15,6 +15,8 @@
 #include "MCDataProducts/inc/MCRelationship.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
+#include "art/Framework/Principal/Handle.h"
+#include "cetlib/map_vector.h"
 #include <Rtypes.h>
 #include <utility>
 #include <vector>
@@ -24,6 +26,7 @@ namespace mu2e {
   // small stub of SimParticle for quick reference to basic information, plus summarize genealogy
   struct SimPartStub {
     typedef art::Ptr<SimParticle> SPPtr;
+    typedef art::Handle<SimParticleCollection> SPCH;
     PDGCode::type _pdg; // code of this particle
     ProcessCode _proc; // particle creation process
     GenId _gid; // generator code
@@ -31,18 +34,20 @@ namespace mu2e {
     uint16_t _nhits; // number of associated StrawHits
     uint16_t _nactive; // number of associated active hits
     XYZVec _mom; // initial momentum 
+    cet::map_vector_key _spkey; // key to the SimParticle
+    // construct a Ptr from Handle and key
+    SPPtr simParticle(SPCH spcH) const { return SPPtr(spcH,_spkey.asUint()); }
     SimPartStub() : _pdg(PDGCode::null), _nhits(0), _nactive(0) {}
     // partial constructor from a SimParticle;
     SimPartStub(SPPtr const& spp)  : _pdg(spp->pdgId()),
-    _proc(spp->creationCode()), _rel(MCRelationship::none),
-    _nhits(0), _nactive(0), _mom(Geom::toXYZVec(spp->startMomentum())){
+    _proc(spp->creationCode()), _gid(GenId::unknown), _rel(MCRelationship::none),
+    _nhits(0), _nactive(0), _mom(Geom::toXYZVec(spp->startMomentum())), _spkey(spp.key()){
     // dig down to the GenParticle
       auto simPtr = spp;
-      while (simPtr->genParticle().isNull()) {
+      while (simPtr->genParticle().isNull() && simPtr->parent().isNonnull()) {
 	simPtr = simPtr->parent();
       }
-      _gid = simPtr->genParticle()->generatorId();
-      //      if(spp->genParticle().isNonnull()) _gid = spp->genParticle()->generatorId().id();
+      if(simPtr->genParticle().isNonnull())_gid = simPtr->genParticle()->generatorId();
     }
   };
   // sampled pair of momentum and position (tracker system) of the primary matched particle

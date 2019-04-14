@@ -216,8 +216,8 @@ namespace mu2e {
       }
     }
 
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, 
-	TrkInfoMC& trkinfomc) {
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, art::Ptr<SimParticle>const& trkprimary,
+      const KalSeed& kseed, TrkInfoMC& trkinfomc) {
       // use the primary match of the track
       if(kseedmc.simParticles().size() > 0){
 	auto const& simp = kseedmc.simParticles().front();
@@ -226,7 +226,7 @@ namespace mu2e {
 	trkinfomc._proc = simp._proc;
 	trkinfomc._nhits = simp._nhits; // number of hits from the primary particle
 	trkinfomc._nactive = simp._nactive; // number of active hits from the primary particle
-	trkinfomc._prel = simp._rel.relationship(); // relationship of the track primary to the event primary
+	trkinfomc._prel = simp._rel; // relationship of the track primary to the event primary
       }
 
       int ndigi = -1, ndigigood = -1, nambig = -1;
@@ -234,22 +234,47 @@ namespace mu2e {
       trkinfomc._ndigi = ndigi;
       trkinfomc._ndigigood = ndigigood;
       trkinfomc._nambig = nambig;
+      // fill the origin information of this SimParticle
+      GeomHandle<DetectorSystem> det;
+      trkinfomc._otime = trkprimary->startGlobalTime(); // this doesn't include time offsets FIXME!!
+      trkinfomc._opos = Geom::toXYZVec(det->toDetector(trkprimary->startPosition()));
+      trkinfomc._omom = Geom::toXYZVec(trkprimary->startMomentum());
     }
 
-    void fillGenInfo(const KalSeedMC& kseedmc, GenInfo& geninfo, const PrimaryParticle& primary) {
-
-      const auto& genParticle = primary.primary();
-
-      geninfo._pdg = genParticle.pdgId();
-      geninfo._gen = genParticle.generatorId().id();
-      geninfo._time = genParticle.time();
-      geninfo._mom = Geom::toXYZVec(genParticle.momentum());
+    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary, 
+      GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary) {
       GeomHandle<DetectorSystem> det;
-      geninfo._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
+
+// fill primary info from the primary GenParticle
+      const auto& genParticle = primary.primary();
+      priinfo._pdg = genParticle.pdgId();
+      priinfo._gen = genParticle.generatorId().id();
+      priinfo._time = genParticle.time(); // doesn't include offsets FIXME!
+      priinfo._mom = Geom::toXYZVec(genParticle.momentum());
+      priinfo._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
+      // go through the SimParticles of this primary, and find the one most related to the
+      // downstream fit (KalSeedMC)
+      auto bestprimarysp = primary.primarySimParticles().front();
+      MCRelationship bestrel;
+      for(auto const& spp : primary.primarySimParticles()){
+	MCRelationship mcrel(spp,trkprimary);
+	if(mcrel > bestrel){
+	  bestrel = mcrel;
+	  bestprimarysp = spp;
+	}
+      }
+      const auto& gp = bestprimarysp->genParticle();
+      if(gp.isNonnull()){
+	geninfo._pdg = gp->pdgId();
+	geninfo._gen = gp->generatorId().id();
+	geninfo._time = gp->time(); // doesn't include offsets FIXME!
+	geninfo._mom = Geom::toXYZVec(gp->momentum());
+	geninfo._pos = Geom::toXYZVec(det->toDetector(gp->position()));
+      }
     }
 
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,
-      std::vector<int> const& vids) {
+	std::vector<int> const& vids) {
 
       GeomHandle<BFieldManager> bfmgr;
       GeomHandle<DetectorSystem> det;
@@ -300,7 +325,7 @@ namespace mu2e {
       tshinfomc._pdg = simPart._pdg;
       tshinfomc._proc = simPart._proc;
       tshinfomc._gen = simPart._gid.id();
-      tshinfomc._rel = simPart._rel.relationship();
+      tshinfomc._rel = simPart._rel;
       tshinfomc._t0 = tshmc._time;
       tshinfomc._edep = tshmc._energySum;
       tshinfomc._mom = std::sqrt(tshmc._mom.mag2());
@@ -329,7 +354,7 @@ namespace mu2e {
 	auto const& primary = ccmc.energyDeposits().front();
 	ccimc._eprimary = primary.energyDeposit();
 	ccimc._tprimary = primary.time();
-	ccimc._prel = primary._rel.relationship();
+	ccimc._prel = primary._rel;
       }
     }
   }

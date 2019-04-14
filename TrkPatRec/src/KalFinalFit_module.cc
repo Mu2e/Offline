@@ -489,6 +489,9 @@ namespace mu2e
 // 2015-02-11 change the selection bit for searching for missed hits
 //----------------------------------------------------------------------
       ComboHit const& sh    = _chcol->at(istr);
+      if (sh.flag().hasAnyProperty(StrawHitFlag::dead)) {
+	continue;
+      }
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
@@ -636,6 +639,9 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       if(_shfcol->at(istr).hasAllProperties(_addsel)&& !_shfcol->at(istr).hasAnyProperty(_addbkg)){
 	ComboHit const& sh = _chcol->at(istr);
+	if (sh.flag().hasAnyProperty(StrawHitFlag::dead)) {
+	  continue;
+	}
 	if(fabs(_chcol->at(istr).time()-krep->t0()._t0) < _maxdtmiss) {
 	  // make sure we haven't already used this hit
 	  vector<TrkStrawHit*>::iterator ifnd = find_if(tshv.begin(),tshv.end(),FindTrkStrawHit(sh));

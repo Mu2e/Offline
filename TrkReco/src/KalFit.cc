@@ -1,4 +1,4 @@
- //
+//
 // Class to perform BaBar Kalman fit
 // Original author: Dave Brown LBNL 2012
 //
@@ -105,10 +105,10 @@ namespace mu2e
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
-    _mindocatch(pset.get<double>("mindocatch",-100.)),
+    _mindocatch(pset.get<double>("mindocatch",-50.)),
     _maxdocatch(pset.get<double>("maxdocatch", 50.)),
-    _mindepthtch(pset.get<double>("mindepthtch", 0.)),
-    _maxdepthtch(pset.get<double>("maxdepthtch", 300.)),
+    _mindepthtch(pset.get<double>("mindepthtch",-50.)),
+    _maxdepthtch(pset.get<double>("maxdepthtch",250.)),
     _maxtchdt(pset.get<double>("maxtchdt", 5.)),//ns
     _mintchenergy(pset.get<double>("mintchEnergy", 10.)),//MeV
     _mintchtrkpath(pset.get<double>("mintchTrkPath", 1.)),//mm
@@ -510,7 +510,12 @@ namespace mu2e
     art::Ptr<CaloCluster> const& calo = kalData.kalSeed->caloCluster();
     if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
+      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()));
+      if(_debug > 0){
+	std::cout << "Cluster COG (disk) " << calo->cog3Vector() << std::endl
+	<< "Cluster COG (Mu2e) " << ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()) << std::endl
+	<<" Cluster COG (Det ) " << cog << std::endl; 
+      }
       // t0 represents the time the particle reached the sensor; estimate that
       HitT0 ht0;
       ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
@@ -518,8 +523,6 @@ namespace mu2e
       
       Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
       double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
-      // move position to front of crystal
-      cog.setZ(cog.z()-crystalLength);
       // estimate fltlen from pitch; take the last segment
       HelixVal const& hval = kalData.kalSeed->segments().back().helix();
       double td = hval.tanDip();
@@ -896,9 +899,7 @@ namespace mu2e
 	if (cl->diskId() != trkToCaloDiskId ||
 	    cl->energyDep() < _mintchenergy) continue;
 	// double      hflt(0.0);
-	Hep3Vector  cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cl->diskId(), cl->cog3Vector())); 
-	// // move position to front of crystal
-	cog.setZ(cog.z()-crystalLength);
+	Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( cl->diskId(), cl->cog3Vector()));
 	double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
 
 	//check the compatibility of the track and time within a given time window

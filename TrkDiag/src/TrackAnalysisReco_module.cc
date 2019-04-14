@@ -43,6 +43,7 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
@@ -102,6 +103,8 @@ namespace mu2e {
     art::InputTag _rctag;
     // CaloCrystal Ptr map
     art::InputTag _cchmtag;
+    // SimParticleCollection Tag
+    art::InputTag _spctag;
     //list of the triggerIds to track 
     std::vector<unsigned> _trigids;
     // event-weighting modules
@@ -146,7 +149,7 @@ namespace mu2e {
     std::vector<int> _entvids, _midvids, _xitvids;
 
     // detailed MC truth for the signal candidate
-    GenInfo _demcgen;
+    GenInfo _demcgen, _demcpri; // generator and 'primary' information
     TrkInfoMCStep _demcent, _demcmid, _demcxit;
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
@@ -164,8 +167,9 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
-    // TestTrkQual
-  };
+    // SimParticle timing offset
+    SimParticleTimeOffset _toff;
+};
 
   TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
@@ -175,6 +179,7 @@ namespace mu2e {
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
     _cchmtag( pset.get<art::InputTag>("CaloCrystalHitMapTag", art::InputTag()) ),
+    _spctag( pset.get<art::InputTag>("SimParticleCollectionTag", art::InputTag()) ),
     _meanPBItag( pset.get<art::InputTag>("MeanBeamIntensity",art::InputTag()) ),
     _PBIwtTag( pset.get<art::InputTag>("PBIWeightTag",art::InputTag()) ),
     _crvCoincidenceModuleLabel(pset.get<string>("CrvCoincidenceModuleLabel")),
@@ -193,7 +198,8 @@ namespace mu2e {
     _meanPBI(0.0),
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
-    _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", ""))
+    _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", "")),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
@@ -235,6 +241,7 @@ namespace mu2e {
     if(_fillmc){
       _trkana->Branch("demc",&_demc,TrkInfoMC::leafnames().c_str());
       _trkana->Branch("demcgen",&_demcgen,GenInfo::leafnames().c_str());
+      _trkana->Branch("demcpri",&_demcpri,GenInfo::leafnames().c_str());
       _trkana->Branch("demcent",&_demcent,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcmid",&_demcmid,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
@@ -261,6 +268,8 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
+  // update timing maps
+    _toff.updateMap(event);
   // get conditions/geometry objects
     mu2e::GeomHandle<mu2e::Calorimeter> caloh;
   // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
@@ -300,7 +309,10 @@ namespace mu2e {
     art::Handle<CaloCrystalHitRemapping> cchmH;
     event.getByLabel(_cchmtag,cchmH);
     auto const& cchmap = *cchmH;
-
+    art::Handle<SimParticleCollection> spcH;
+    if(_fillmc){
+      event.getByLabel(_spctag,spcH);
+    }
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_rctag);
     auto const& rc = *rch;
@@ -377,13 +389,19 @@ namespace mu2e {
 	//	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
-
-	    TrkMCTools::fillTrkInfoMC(dekseedmc, dekseed, _demc);
+	    // primary associated SimParticle
+	    auto trkprimary = dekseedmc.simParticle().simParticle(spcH);
+	    TrkMCTools::fillTrkInfoMC(dekseedmc, trkprimary, dekseed, _demc);
+	    double ttoff = _toff.totalTimeOffset(trkprimary); // kludge fix FIXME!
+	    _demc._otime += ttoff; 
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
+	    TrkMCTools::fillGenInfo(trkprimary, _demcgen, _demcpri, primary);
+	    // times must be fixed FIXME!
+	    _demcpri._time += ttoff;
+	    _demcgen._time += ttoff;
 
-	    TrkMCTools::fillGenInfo(dekseedmc, _demcgen, primary);
 	    if (_diag>1) {
 	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc);
 	    }
@@ -526,6 +544,7 @@ namespace mu2e {
     _uemc.reset();
     _dmmc.reset();
     _demcgen.reset();
+    _demcpri.reset();
     _demcent.reset();
     _demcmid.reset();
     _demcxit.reset();
