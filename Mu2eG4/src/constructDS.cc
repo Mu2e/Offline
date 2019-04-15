@@ -764,6 +764,291 @@ namespace mu2e {
 					     "ds" );
 
        } // end of if ( CableRunVersion > 1 )
+       
+       //Add cabling outside IFB and add panels representing cables exiting IFB Seal
+       if ( ds->cableRunVersion() > 2 ) {
+	 //Defining the outter circular arc for the calorimeter cabling
+	 TubsParams  calIFBCableRun1Params ( ds->calR1CableRunIFB(),
+					     ds->calR2CableRunIFB(),
+					     ds->zHLCableRunIFB(),
+					     ds->calPhi0CableRunIFB()*CLHEP::degree,
+					     ds->calDPhiCableRunIFB()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector calIFBCableRunLoc( 0.0, 0.0, ds->zCCableRunIFB() );
+	 
+	 VolumeInfo icrTmp1 = nestTubs( "CalIFBCableRun1",
+					calIFBCableRun1Params,
+					findMaterialOrThrow(ds->materialCableRunIFB()),
+					0,
+					calIFBCableRunLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+				       
+				       
+	 TubsParams  calIFBCableRun2Params ( ds->calR1CableRunIFB(),
+					     ds->calR2CableRunIFB(),
+					     ds->zHLCableRunIFB(),
+					     (180.0 - ds->calPhi0CableRunIFB()
+					      - ds->calDPhiCableRunIFB())*CLHEP::degree,
+					     ds->calDPhiCableRunIFB()*CLHEP::degree);
+
+	 VolumeInfo icrTmp2 = nestTubs( "CalIFBCableRun2",
+					calIFBCableRun2Params,
+					findMaterialOrThrow(ds->materialCableRunIFB()),
+					0,
+					calIFBCableRunLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+
+	 //Add radial components of calorimeter outside cabling
+	 CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 turn->rotateZ(-ds->calPhiECableRunIFB()*CLHEP::degree);
+
+	 double calIFBCableRunEnd[] = { (ds->calR2CableRunIFB() - ds->calREndCableRunIFB())/2.,
+					ds->calEndWCableRunIFB()/2.,
+					ds->zHLCableRunIFB()};
+	 CLHEP::Hep3Vector calIFBCableRunEndLoc1( (ds->calR2CableRunIFB() + ds->calREndCableRunIFB())/2.,
+						 0.0, ds->zCCableRunIFB() );
+
+	 calIFBCableRunEndLoc1.rotateZ(ds->calPhiECableRunIFB()*CLHEP::degree);
+
+	 VolumeInfo iceTmp1 = nestBox( "CalIFBCableRunEnd1",
+				       calIFBCableRunEnd,
+				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       turn,
+				       calIFBCableRunEndLoc1,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 CLHEP::HepRotation * turn2 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 turn2->rotateZ((ds->calPhiECableRunIFB()-180.)*CLHEP::degree);
+
+	 CLHEP::Hep3Vector calIFBCableRunEndLoc2( (ds->calR2CableRunIFB() + ds->calREndCableRunIFB())/2.,
+						 0.0, ds->zCCableRunIFB() );
+
+	 calIFBCableRunEndLoc2.rotateZ((180.-ds->calPhiECableRunIFB())*CLHEP::degree);
+
+	 VolumeInfo iceTmp2 = nestBox( "CalIFBCableRunEnd2",
+				       calIFBCableRunEnd,
+				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       turn2,
+				       calIFBCableRunEndLoc2,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 //Define panels on either side of exit of DS representing cables leaving
+	 TubsParams  calIFBCableExit1Params ( ds->calPR1CableRunIFB(),
+					      ds->calPR2CableRunIFB(),
+					      ds->calPZHLCableRunIFB(),
+					      ds->calPPhi0CableRunIFB()*CLHEP::degree,
+					      ds->calPDPhiCableRunIFB()*CLHEP::degree);
+	 TubsParams  calIFBCableExit2Params ( ds->calPR1CableRunIFB(),
+					      ds->calPR2CableRunIFB(),
+					      ds->calPZHLCableRunIFB(),
+					      (180.-ds->calPPhi0CableRunIFB()
+					       -ds->calPDPhiCableRunIFB())*CLHEP::degree,
+					      ds->calPDPhiCableRunIFB()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector calIFBCablePInLoc( 0.0, 0.0, ds->calPZInCableRunIFB() );
+	 CLHEP::Hep3Vector calIFBCablePOutLoc( 0.0, 0.0, ds->calPZOutCableRunIFB() );
+	 
+	 VolumeInfo icpTmp1 = nestTubs( "CalIFBCablePanelIn1",
+					calIFBCableExit1Params,
+					findMaterialOrThrow(ds->calPMatCableRunIFB()),
+					0,
+					calIFBCablePInLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 VolumeInfo icpTmp2 = nestTubs( "CalIFBCablePanelPOut1",
+					calIFBCableExit1Params,
+					findMaterialOrThrow(ds->calPMatCableRunIFB()),
+					0,
+					calIFBCablePOutLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 VolumeInfo icpTmp3 = nestTubs( "CalIFBCablePanelIn2",
+					calIFBCableExit2Params,
+					findMaterialOrThrow(ds->calPMatCableRunIFB()),
+					0,
+					calIFBCablePInLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 VolumeInfo icpTmp4 = nestTubs( "CalIFBCablePanelPOut2",
+					calIFBCableExit2Params,
+					findMaterialOrThrow(ds->calPMatCableRunIFB()),
+					0,
+					calIFBCablePOutLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+
+	 //Define circular arcs for Tracker cabling exiting DS
+	 TubsParams  trkIFBCableRun1Params ( ds->trkR1CableRunIFB(),
+					     ds->trkR2CableRunIFB(),
+					     ds->zHLCableRunIFB(),
+					     ds->trkPhi0CableRunIFB()*CLHEP::degree,
+					     ds->trkDPhiCableRunIFB()*CLHEP::degree);
+
+	 
+	 VolumeInfo icrTmp3 = nestTubs( "TrkIFBCableRun1",
+					trkIFBCableRun1Params,
+					findMaterialOrThrow(ds->materialCableRunIFB()),
+					0,
+					calIFBCableRunLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+
+	 TubsParams  trkIFBCableRun2Params ( ds->trkR1CableRunIFB(),
+					     ds->trkR2CableRunIFB(),
+					     ds->zHLCableRunIFB(),
+					     (180.0 - ds->trkPhi0CableRunIFB()
+					      - ds->trkDPhiCableRunIFB())*CLHEP::degree,
+					     ds->trkDPhiCableRunIFB()*CLHEP::degree);
+
+	 VolumeInfo icrTmp4 = nestTubs( "TrkIFBCableRun2",
+					trkIFBCableRun2Params,
+					findMaterialOrThrow(ds->materialCableRunIFB()),
+					0,
+					calIFBCableRunLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 
+	 //Define radial components of Tracker cabling exiting DS
+	 CLHEP::HepRotation * turn3 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 turn3->rotateZ(-ds->trkPhiECableRunIFB()*CLHEP::degree);
+
+	 double trkIFBCableRunEnd[] = { 0.,
+					ds->trkEndWCableRunIFB()/2.,
+					ds->zHLCableRunIFB()};
+	 //use width and radius of cable runs to find x length to not intesect
+	 trkIFBCableRunEnd[0] = sqrt(pow(ds->calR1CableRunIFB(),2)-pow(trkIFBCableRunEnd[1],2)) - 5.;
+	 //half length is half the distance between initial R and intersect point
+	 trkIFBCableRunEnd[0] =  (trkIFBCableRunEnd[0] - ds->trkREndCableRunIFB())/2.;
+	 if(trkIFBCableRunEnd[0] < 0.) 	 trkIFBCableRunEnd[0] = 0.;
+
+	 CLHEP::Hep3Vector trkIFBCableRunEndLoc1( ds->trkREndCableRunIFB() + trkIFBCableRunEnd[0],
+						 0.0, ds->zCCableRunIFB() );
+
+	 trkIFBCableRunEndLoc1.rotateZ(ds->trkPhiECableRunIFB()*CLHEP::degree);
+
+	 VolumeInfo iceTmp3 = nestBox( "TrkIFBCableRunEnd1",
+				       trkIFBCableRunEnd,
+				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       turn3,
+				       trkIFBCableRunEndLoc1,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 CLHEP::HepRotation * turn4 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	 turn4->rotateZ((ds->trkPhiECableRunIFB()-180.)*CLHEP::degree);
+
+	 CLHEP::Hep3Vector trkIFBCableRunEndLoc2( ds->trkREndCableRunIFB() + trkIFBCableRunEnd[0],
+						 0.0, ds->zCCableRunIFB() );
+
+	 trkIFBCableRunEndLoc2.rotateZ((180.-ds->trkPhiECableRunIFB())*CLHEP::degree);
+
+	 VolumeInfo iceTmp4 = nestBox( "TrkIFBCableRunEnd2",
+				       trkIFBCableRunEnd,
+				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       turn4,
+				       trkIFBCableRunEndLoc2,
+				       dsShieldParent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 //Define panels on either side of exit of DS representing cables leaving for tracker
+	 TubsParams  trkIFBCableExit1Params ( ds->trkPR1CableRunIFB(),
+					      ds->trkPR2CableRunIFB(),
+					      ds->trkPZHLCableRunIFB(),
+					      ds->trkPPhi0CableRunIFB()*CLHEP::degree,
+					      ds->trkPDPhiCableRunIFB()*CLHEP::degree);
+	 TubsParams  trkIFBCableExit2Params ( ds->trkPR1CableRunIFB(),
+					      ds->trkPR2CableRunIFB(),
+					      ds->trkPZHLCableRunIFB(),
+					      (180.-ds->trkPPhi0CableRunIFB()
+					       -ds->trkPDPhiCableRunIFB())*CLHEP::degree,
+					      ds->trkPDPhiCableRunIFB()*CLHEP::degree);
+
+	 CLHEP::Hep3Vector trkIFBCablePInLoc( 0.0, 0.0, ds->trkPZInCableRunIFB() );
+	 CLHEP::Hep3Vector trkIFBCablePOutLoc( 0.0, 0.0, ds->trkPZOutCableRunIFB() );
+	 
+	 VolumeInfo icpTmp5 = nestTubs( "TrkIFBCablePanelIn1",
+					trkIFBCableExit1Params,
+					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
+					0,
+					trkIFBCablePInLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 VolumeInfo icpTmp6 = nestTubs( "TrkIFBCablePanelPOut1",
+					trkIFBCableExit1Params,
+					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
+					0,
+					trkIFBCablePOutLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 VolumeInfo icpTmp7 = nestTubs( "TrkIFBCablePanelIn2",
+					trkIFBCableExit2Params,
+					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
+					0,
+					trkIFBCablePInLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+	 VolumeInfo icpTmp8 = nestTubs( "TrkIFBCablePanelPOut2",
+					trkIFBCableExit2Params,
+					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
+					0,
+					trkIFBCablePOutLoc,
+					dsShieldParent,
+					0,
+					G4Color::Magenta(),
+					"ds"
+					);
+
+
+       } // end of if ( CableRunVersion > 2 )
      } // end of if ( ds->hasCableRunCal() )
 
      if ( ds->hasCableRunTrk() ) {

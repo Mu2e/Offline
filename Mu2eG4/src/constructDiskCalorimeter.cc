@@ -983,8 +983,8 @@ namespace mu2e {
 
 	     G4Tubs* ccr1Tub = new G4Tubs("caloCableRun1TrkTub",crRin, crRout, crateHalfLength - 5.0,phi01, dPhi);
 	     G4Tubs* ccr2Tub = new G4Tubs("caloCableRun2TrkTub",crRin, crRout,crateHalfLength - 5.0,phi02, dPhi);
-             G4LogicalVolume* ccr1TubLog = caloBuildLogical(ccr1Tub, cableMaterial, "caloccr1TubLog",isCrateVisible,G4Color::Yellow(),0,0);
-             G4LogicalVolume* ccr2TubLog = caloBuildLogical(ccr2Tub, cableMaterial, "caloccr2TubLog",isCrateVisible,G4Color::Yellow(),0,0);
+             G4LogicalVolume* ccr1TubLog = caloBuildLogical(ccr1Tub, cableMaterial, "caloCableRun1TrkTub",isCrateVisible,G4Color::Yellow(),0,0);
+             G4LogicalVolume* ccr2TubLog = caloBuildLogical(ccr2Tub, cableMaterial, "caloCableRun2TrkTub",isCrateVisible,G4Color::Yellow(),0,0);
 
 	     CLHEP::Hep3Vector trkCableRunLoc(0.0,0.0,0.0);
 	     G4RotationMatrix ccrRot = G4RotationMatrix();
