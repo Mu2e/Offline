@@ -195,6 +195,11 @@ namespace mu2e {
       ds->_zCCableRunCal     = c.getDouble("ds.CableRunCal.zC"  );
       ds->_phi0CableRunCal   = c.getDouble("ds.CableRunCal.phi0");
       ds->_materialCableRunCal = c.getString("ds.CableRunCal.material");
+
+      ds->_rCableRunCalCoreFract   = c.getDouble("ds.CableRunCalCore.RadiusFraction");
+      ds->_rdCableRunCalCoreFract  = c.getDouble("ds.CableRunCalCore.dRadiusFraction");
+      ds->_dPhiCableRunCalFract    = c.getDouble("ds.CableRunCalCore.dPhiFraction");
+      ds->_materialCableRunCalCore = c.getString("ds.CableRunCalCore.material");
     }
     if ( ds->_hasCableRunTrk ) {
       ds->_lengthCableRunTrk = c.getDouble("ds.CableRunTrk.length");
@@ -204,6 +209,11 @@ namespace mu2e {
       ds->_zCCableRunTrk     = c.getDouble("ds.CableRunTrk.zC"  );
       ds->_phi0CableRunTrk   = c.getDouble("ds.CableRunTrk.phi0");
       ds->_materialCableRunTrk = c.getString("ds.CableRunTrk.material");
+
+      ds->_rCableRunTrkCoreFract    = c.getDouble("ds.CableRunTrkCore.RadiusFraction");
+      ds->_rdCableRunTrkCoreFract   = c.getDouble("ds.CableRunTrkCore.dRadiusFraction");
+      ds->_dPhiCableRunTrkCoreFract = c.getDouble("ds.CableRunTrkCore.dPhiFraction");
+      ds->_materialCableRunTrkCore  = c.getString("ds.CableRunTrkCore.material");
     }
   
     // Service pipes
@@ -219,7 +229,6 @@ namespace mu2e {
       ds->_servicePipeYC = c.getDouble("ds.servicePipeYC");
       c.getVectorDouble("ds.servicePipeXCs",ds->_servicePipeXCs);
     } 
-
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");

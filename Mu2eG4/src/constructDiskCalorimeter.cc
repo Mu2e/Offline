@@ -16,6 +16,8 @@
 // 
 //
 
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
@@ -942,6 +944,9 @@ namespace mu2e {
         
  	if (config.getBool("ds.hasCableRunCal",false))
         {
+
+          //const DetectorSolenoid& ds = *(GeomHandle<DetectorSolenoid>());
+
              double crRin  = config.getDouble("ds.CableRunCal.Rin")*CLHEP::mm;
 	     double crRout = config.getDouble("ds.CableRunCal.Rout")*CLHEP::mm;
 	     if ( config.getInt("ds.CableRun.version",1) > 1 ) {
