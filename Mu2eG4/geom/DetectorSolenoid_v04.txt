@@ -186,14 +186,27 @@ double    ds.CableRunCal.Rout      = 640.0; // 906.0;  // Not well specified?
 double    ds.CableRunCal.dPhi      = 13.0; // degrees
 double    ds.CableRunCal.zC        = 15475.0; //15400 + 150/2
 double    ds.CableRunCal.phi0      = 83.5; // degrees
-string    ds.CableRunCal.material  = "Electronics"; // 
+string    ds.CableRunCal.material  = "Electronics"; //
+
+// Optical "core" placed in the "Cable"
+double    ds.CableRunCalCore.RadiusFraction  = 0.5; // TBD
+double    ds.CableRunCalCore.dRadiusFraction = 0.25; // TBD
+double    ds.CableRunCalCore.dPhiFraction    = 0.5; // TBD
+string    ds.CableRunCalCore.material        = "G4_SILICON_DIOXIDE"; // TBC
+
 double    ds.CableRunTrk.length    = 1943; //1919 + 150/2 mm - actually halflength
 double    ds.CableRunTrk.Rin       = 820.0;  
 double    ds.CableRunTrk.Rout      = 850.0;
 double    ds.CableRunTrk.dPhi      = 20.7; // degrees
 double    ds.CableRunTrk.zC        = 15155.0; // 15131 + 150/2
 double    ds.CableRunTrk.phi0      = 194.5; // degrees
-string    ds.CableRunTrk.material  = "Electronics"; // 
+string    ds.CableRunTrk.material  = "Electronics"; //
+
+// Optical "core" placed in the "Cable"
+double    ds.CableRunTrkCore.RadiusFraction  = 0.25; // TBD
+double    ds.CableRunTrkCore.dRadiusFraction = 0.5; // TBD
+double    ds.CableRunTrkCore.dPhiFraction    = 0.5; // TBD
+string    ds.CableRunTrkCore.material        = "G4_SILICON_DIOXIDE"; // TBC
 
 //Cabling At Outside of IFB
 double    ds.CableRunIFB.CalR1     =  1250.5;

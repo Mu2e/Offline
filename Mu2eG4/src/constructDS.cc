@@ -700,18 +700,22 @@ namespace mu2e {
 				      "ds"
 				      );
 
-       // "Fibre Core"
-       placeTubeCore ( "CalCableRunCore",
-                       ds->rCableRunCalCoreFract(),
-                       ds->rdCableRunCalCoreFract(),
-                       ds->dPhiCableRunCalFract(),
-                       ds->materialCableRunCalCore(),
-                       G4Color::Yellow(),
-                       ccrTemp,
-                       calCableRunParams,
-                       "ds",
-                       _config
-                       );
+       if ( ds->cableRunVersion() > 2 ) {
+
+         // "Fibre Core"
+         placeTubeCore ( "CalCableRunCore",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         ccrTemp,
+                         calCableRunParams,
+                         "ds",
+                         _config
+                         );
+
+       }
 
        if ( ds->cableRunVersion() > 1 ) {
 
@@ -735,18 +739,22 @@ namespace mu2e {
 					   "ds"
 					   );
 
-         // "Fibre Core"
-         placeTubeCore ( "CalCableRunUpGap1Core",
-                         ds->rCableRunCalCoreFract(),
-                         ds->rdCableRunCalCoreFract(),
-                         ds->dPhiCableRunCalFract(),
-                         ds->materialCableRunCalCore(),
-                         G4Color::Yellow(),
-                         ccrTempUG1,
-                         upCalCableRunParm1,
-                         "ds",
-                         _config
-                         );
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "CalCableRunUpGap1Core",
+                           ds->rCableRunCalCoreFract(),
+                           ds->rdCableRunCalCoreFract(),
+                           ds->dPhiCableRunCalFract(),
+                           ds->materialCableRunCalCore(),
+                           G4Color::Yellow(),
+                           ccrTempUG1,
+                           upCalCableRunParm1,
+                           "ds",
+                           _config
+                           );
+
+         }
 
 	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(),
 					 ds->upROutCableRunCal(),
@@ -767,18 +775,22 @@ namespace mu2e {
 					  "ds"
 					  );
 
-         // "Fibre Core"
-         placeTubeCore ( "CalCableRunUpGap2Core",
-                         ds->rCableRunCalCoreFract(),
-                         ds->rdCableRunCalCoreFract(),
-                         ds->dPhiCableRunCalFract(),
-                         ds->materialCableRunCalCore(),
-                         G4Color::Yellow(),
-                         ccrTmpUG2,
-                         upCalCableRunParm2,
-                         "ds",
-                         _config
-                         );
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "CalCableRunUpGap2Core",
+                           ds->rCableRunCalCoreFract(),
+                           ds->rdCableRunCalCoreFract(),
+                           ds->dPhiCableRunCalFract(),
+                           ds->materialCableRunCalCore(),
+                           G4Color::Yellow(),
+                           ccrTmpUG2,
+                           upCalCableRunParm2,
+                           "ds",
+                           _config
+                           );
+
+         }
 
 	 // And last but not least the connector between the top of the Cal
 	 // and the top of the MBS
@@ -1109,18 +1121,22 @@ namespace mu2e {
 				      "ds"
 				      );
 
-       // "Fibre Core"
-       placeTubeCore ( "TrkCableRun1Core",
-                       ds->rCableRunTrkCoreFract(),
-                       ds->rdCableRunTrkCoreFract(),
-                       ds->dPhiCableRunCalFract(),
-                       ds->materialCableRunTrkCore(),
-                       G4Color::Yellow(),
-                       tcrTmp1,
-                       trkCableRun1Params,
-                       "ds",
-                       _config
-                       );
+       if ( ds->cableRunVersion() > 2 ) {
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkCableRun1Core",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunCalFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         tcrTmp1,
+                         trkCableRun1Params,
+                         "ds",
+                         _config
+                         );
+
+       }
 
        // Now the second one
        TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(),
@@ -1142,18 +1158,22 @@ namespace mu2e {
 				    "ds"
 				    );
 
-       // "Fibre Core"
-       placeTubeCore ( "TrkCableRun2Core",
-                       ds->rCableRunTrkCoreFract(),
-                       ds->rdCableRunTrkCoreFract(),
-                       ds->dPhiCableRunCalFract(),
-                       ds->materialCableRunTrkCore(),
-                       G4Color::Yellow(),
-                       tcrTmp2,
-                       trkCableRun2Params,
-                       "ds",
-                       _config
-                       );
+       if ( ds->cableRunVersion() > 2 ) {
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkCableRun2Core",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunCalFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         tcrTmp2,
+                         trkCableRun2Params,
+                         "ds",
+                         _config
+                         );
+
+       }
 
        if ( ds->cableRunVersion() > 1 ) {
 	 // Now the part between the Calorimeter Disks
@@ -1176,18 +1196,22 @@ namespace mu2e {
 				       "ds"
 				       );
 
-         // "Fibre Core"
-         placeTubeCore ( "TrkCableRunGap1Core",
-                         ds->rCableRunTrkCoreFract(),
-                         ds->rdCableRunTrkCoreFract(),
-                         ds->dPhiCableRunCalFract(),
-                         ds->materialCableRunTrkCore(),
-                         G4Color::Yellow(),
-                         tcrTmpG1,
-                         upTrkCableRunParm1,
-                         "ds",
-                         _config
-                         );
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap1Core",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG1,
+                           upTrkCableRunParm1,
+                           "ds",
+                           _config
+                           );
+
+         }
 
 	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(),
 					  ds->rOutCableRunTrk(),
@@ -1208,18 +1232,22 @@ namespace mu2e {
 					"ds"
 					);
 
-         // "Fibre Core"
-         placeTubeCore ( "TrkCableRunGap1aCore",
-                         ds->rCableRunTrkCoreFract(),
-                         ds->rdCableRunTrkCoreFract(),
-                         ds->dPhiCableRunCalFract(),
-                         ds->materialCableRunTrkCore(),
-                         G4Color::Yellow(),
-                         tcrTmpG1a,
-                         upTrkCableRunParm1a,
-                         "ds",
-                         _config
-                         );
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap1aCore",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG1a,
+                           upTrkCableRunParm1a,
+                           "ds",
+                           _config
+                           );
+
+         }
 
 	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(),
 					 ds->rOutCableRunTrk(),
@@ -1240,18 +1268,22 @@ namespace mu2e {
 				       "ds"
 				       );
 
-         // "Fibre Core"
-         placeTubeCore ( "TrkCableRunGap2Core",
-                         ds->rCableRunTrkCoreFract(),
-                         ds->rdCableRunTrkCoreFract(),
-                         ds->dPhiCableRunCalFract(),
-                         ds->materialCableRunTrkCore(),
-                         G4Color::Yellow(),
-                         tcrTmpG2,
-                         upTrkCableRunParm2,
-                         "ds",
-                         _config
-                         );
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap2Core",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG2,
+                           upTrkCableRunParm2,
+                           "ds",
+                           _config
+                           );
+
+         }
 
 	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(),
 					  ds->rOutCableRunTrk(),
@@ -1272,18 +1304,22 @@ namespace mu2e {
 					 "ds"
 					 );
 
-         // "Fibre Core"
-         placeTubeCore ( "TrkCableRunGap2aCore",
-                         ds->rCableRunTrkCoreFract(),
-                         ds->rdCableRunTrkCoreFract(),
-                         ds->dPhiCableRunCalFract(),
-                         ds->materialCableRunTrkCore(),
-                         G4Color::Yellow(),
-                         tcrTmpG2a,
-                         upTrkCableRunParm2a,
-                         "ds",
-                         _config
-                         );
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap2aCore",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG2a,
+                           upTrkCableRunParm2a,
+                           "ds",
+                           _config
+                           );
+
+         }
 
        } // end of adding gap runs for trk cable runs
      } // end of if ( ds->hasCableRunTrk() )
@@ -1409,7 +1445,6 @@ namespace mu2e {
                                     lookupToken
                                     );
 
-    // to be removed ?
     int const verbosityLevel = config.getInt("ds.verbosityLevel",0);
     if (verbosityLevel > 0) {
       G4cout << __func__ << " parent params: " << parentParams << G4endl;
