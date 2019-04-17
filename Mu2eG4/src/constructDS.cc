@@ -454,8 +454,10 @@ namespace mu2e {
       dss->getVPSPendFlange()->outerRadius(),
       dss->getVPSPendFlange()->innerRadius(),
       dss->getIFBmain()->outerRadius(),
-      dss->getIFBendPlug()->outerRadius(),
-      dss->getIFBendPlug()->outerRadius()
+      // dss->getIFBendPlug()->outerRadius(),
+      // dss->getIFBendPlug()->outerRadius()
+      (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius(),
+      (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius()
     };
 
     assert( tmp_zPlanesDs3.size() == tmp_rOuterDs3.size() );
