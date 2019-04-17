@@ -108,6 +108,13 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(caloHitLabel, lh1);
   _subFrame->AddFrame(caloHitBox, lh1);
 
+  TGLabel *crvHitLabel  = new TGLabel(_subFrame, "CRV Hits");
+  TGComboBox *crvHitBox = new TGComboBox(_subFrame,13);
+  crvHitBox->Associate(this);
+  crvHitBox->Resize(250,20);
+  _subFrame->AddFrame(crvHitLabel, lh1);
+  _subFrame->AddFrame(crvHitBox, lh1);
+
   TGLabel *trackLabel  = new TGLabel(_subFrame, "Tracks");
   TGListBox *trackBox = new TGListBox(_subFrame,12);
   trackBox->Associate(this);
@@ -116,7 +123,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackLabel, lh1);
   _subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, 
+  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,  
                                                                           _g4ModuleLabel, _physicalVolumesMultiLabel));
 
   TGHorizontalFrame *subFrameView1   = new TGHorizontalFrame(_subFrame,300,15);
@@ -633,6 +640,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   _dataInterface->fillEvent(_contentSelector);
   _dataInterface->useHitColors(_useHitColors, _whiteBackground);
   _dataInterface->useTrackColors(_contentSelector, _useTrackColors, _whiteBackground);
+  _dataInterface->makeCrvScintillatorBarsVisible(_showCRV);
 
   updateTimeIntervalFields();
   updateHitLegend(_useHitColors);
@@ -1017,6 +1025,7 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
 
   case kCM_COMBOBOX : if(param1==10) fillEvent();
                       if(param1==11) fillEvent();
+                      if(param1==13) fillEvent();
                       break;
   case kCM_LISTBOX : if(param1==12) fillEvent();
                      break;
