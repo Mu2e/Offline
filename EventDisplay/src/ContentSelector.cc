@@ -130,7 +130,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
 //CRV Hit Selection
   newEntries.clear();
   newEntries.push_back(nothingSelected);
-  createNewEntries<mu2e::CrvRecoPulseCollection>(_crvRecoPulseVector, event, "CrvRecePulse", newEntries, 1);
+  createNewEntries<mu2e::CrvRecoPulseCollection>(_crvRecoPulseVector, event, "CrvRecoPulse", newEntries, 1);
 
   if(newEntries!=_crvHitEntries)
   {

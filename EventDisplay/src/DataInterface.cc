@@ -363,29 +363,35 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->caloInfo().getDouble("crystalXYLength")/2.0;
-    double crystalHalflength = calo->caloInfo().getDouble("crystalZLength")/2.0;
 
+    double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
+    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
+    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
+    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
 
-    int crystalIdOffset=0;
+    double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
+    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;    
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;    
+    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;    
+    double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
+    double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
+
+    int icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
     {
-      const CLHEP::Hep3Vector& diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
-      double innerRadius = calo->disk(idisk).geomInfo().size()[0];
-      double outerRadius = calo->disk(idisk).geomInfo().size()[1];
-      double diskHalflength = calo->disk(idisk).geomInfo().size()[2];
+      const CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
 
-      findBoundaryP(_calorimeterMinmax, diskPos.x()+outerRadius, diskPos.y()+innerRadius, diskPos.z()+diskHalflength);
-      findBoundaryP(_calorimeterMinmax, diskPos.x()-outerRadius, diskPos.y()-outerRadius, diskPos.z()-diskHalflength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()+diskOuterRailOut, diskPos.y()+diskOuterRailOut, diskPos.z()+diskCaseDZLength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()-diskOuterRailOut, diskPos.y()-diskOuterRailOut, diskPos.z()-diskCaseDZLength);
 
       boost::shared_ptr<ComponentInfo> diskInfo(new ComponentInfo());
       std::string c=Form("Disk %i",idisk);
       diskInfo->setName(c.c_str());
       diskInfo->setText(0,c.c_str());
       diskInfo->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",diskPos.x(),diskPos.y(),diskPos.z()));
-      diskInfo->setText(2,Form("Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",outerRadius,innerRadius,2.0*diskHalflength));
+      diskInfo->setText(2,Form("Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",diskOuterRailOut,diskInnerRingIn,2.0*diskCaseDZLength));
       boost::shared_ptr<Cylinder> calodisk(new Cylinder(diskPos.x(),diskPos.y(),diskPos.z(),  0,0,0,
-                                                        diskHalflength, innerRadius, outerRadius, NAN,
+                                                        diskCaseDZLength, diskInnerRingIn, diskOuterRailOut, NAN,
                                                         _geometrymanager, _topvolume, _mainframe, diskInfo, true));
       calodisk->makeGeometryVisible(true);
       _components.push_back(calodisk);
@@ -394,24 +400,24 @@ void DataInterface::fillGeometry()
       int nCrystalInThisDisk = calo->disk(idisk).nCrystals();
       for(int ic=0; ic<nCrystalInThisDisk; ic++)
       {
-        int id=crystalIdOffset+ic;
-	const CLHEP::Hep3Vector &pos = calo->crystal(crystalIdOffset+ic).position()-_detSysOrigin;
+        const CLHEP::Hep3Vector crystalPosition = calo->disk(idisk).crystal(ic).localPosition() + diskPos;
+        //constructDiskCalorimeter subtracts wrapperDZ from the z coordinate of these position, since they were meant for Geant4, 
+        //where the "z position of [the] hexagon is their base, not their center"
+        //since this Hexagon class in the event display uses the center as a reference for the position, wrapperDZ does not need to be subtracted
 
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-        std::string c=Form("Disk %i, Crystal %i",idisk,id);
+        std::string c=Form("Disk %i, Crystal %i",idisk,ic);
         info->setName(c.c_str());
         info->setText(0,c.c_str());
-        info->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",pos.x(),pos.y(),pos.z()+crystalHalflength));
-        info->setText(2,Form("Size: %.f mm, Thickness: %.f mm",rmax,2.0*crystalHalflength));
-        //these position were meant for Geant4, where the "z position of [the] hexagon is their base, not their center"
-        //since this Hexagon class uses the center as a reference for, crystalHalflength needs to be added
-        boost::shared_ptr<Hexagon> shape(new Hexagon(pos.x(),pos.y(),pos.z()+crystalHalflength,
-                                                     rmax,crystalHalflength,360, NAN,
+        info->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",crystalPosition.x(),crystalPosition.y(),crystalPosition.z()));
+        info->setText(2,Form("XYSize: %.f mm, Thickness: %.f mm",2.0*wrapperDXY,2.0*wrapperDZ));
+        boost::shared_ptr<Hexagon> shape(new Hexagon(crystalPosition.x(),crystalPosition.y(),crystalPosition.z(),
+                                                     wrapperDXY,wrapperDZ,360, NAN,
                                                      _geometrymanager, _topvolume, _mainframe, info, true));
         _components.push_back(shape);
-        _crystals[id]=shape;
+        _crystals[icrystal]=shape;
+        icrystal++;
       }
-      crystalIdOffset +=nCrystalInThisDisk;
     }
   }
 
