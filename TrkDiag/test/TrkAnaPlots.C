@@ -885,6 +885,10 @@ void TrkCaloHit(TTree* ta) {
   TH2F* eopdir1 = new TH2F("eopdir1","E/P vs Track Direction, Disk 1;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.1);
   TH2F* eopr0 = new TH2F("eopr0","E/P vs POCA Radius, Disk 0;Radius (mm);E/P",100,360,650,100,0.0,1.1);
   TH2F* eopr1 = new TH2F("eopr1","E/P vs POCA Radius, Disk 1;Radius (mm);E/P",100,360,650,100,0.0,1.1);
+
+  TProfile* peopd0 = new TProfile("peopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,0.0,1.1);
+  TProfile* peopd1 = new TProfile("peopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,0.0,1.1);
+ 
   rad0->SetStats(0);
   rad1->SetStats(0);
   dot0->SetStats(0);
@@ -909,6 +913,10 @@ void TrkCaloHit(TTree* ta) {
   ta->Project("eopr1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
   ta->Project("doca0","detch.doca:detch.clen",goodtrkcalo&&disk0);
   ta->Project("doca1","detch.doca:detch.clen",goodtrkcalo&&disk1);
+
+  ta->Project("peopd0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
+  ta->Project("peopd1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
+
   TCanvas* tch0can = new TCanvas("tch0can","TrkCaloHit Disk 0", 1000, 800);
   tch0can->Divide(3,2);
   tch0can->cd(1);
@@ -920,6 +928,7 @@ void TrkCaloHit(TTree* ta) {
   tch0can->cd(3);
   gPad->SetLogz();
   eopd0->Draw("colorz");
+  peopd0->Draw("same");
   tch0can->cd(4);
   gPad->SetLogz();
   doca0->Draw("colorz");
@@ -941,6 +950,7 @@ void TrkCaloHit(TTree* ta) {
   tch1can->cd(3);
   gPad->SetLogz();
   eopd1->Draw("colorz");
+  peopd1->Draw("same");
   tch1can->cd(4);
   gPad->SetLogz();
   doca1->Draw("colorz");
