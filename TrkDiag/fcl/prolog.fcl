@@ -326,6 +326,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
+    TimeOffsets         :  { inputs : [ @sequence::RecoCompression.TimeMaps ] }
   }
 
 TrkAnaReco : {

@@ -43,6 +43,7 @@
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
@@ -166,8 +167,9 @@ namespace mu2e {
     std::vector<CrvHitInfoReco> _crvinfo;
     HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
-    // TestTrkQual
-  };
+    // SimParticle timing offset
+    SimParticleTimeOffset _toff;
+};
 
   TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
@@ -196,7 +198,8 @@ namespace mu2e {
     _meanPBI(0.0),
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
-    _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", ""))
+    _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", "")),
+    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
@@ -265,6 +268,8 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
+  // update timing maps
+    _toff.updateMap(event);
   // get conditions/geometry objects
     mu2e::GeomHandle<mu2e::Calorimeter> caloh;
   // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
@@ -384,14 +389,19 @@ namespace mu2e {
 	//	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
-
-	    TrkMCTools::fillTrkInfoMC(dekseedmc, dekseed, _demc);
+	    // primary associated SimParticle
+	    auto trkprimary = dekseedmc.simParticle().simParticle(spcH);
+	    TrkMCTools::fillTrkInfoMC(dekseedmc, trkprimary, dekseed, _demc);
+	    double ttoff = _toff.totalTimeOffset(trkprimary); // kludge fix FIXME!
+	    _demc._otime += ttoff; 
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    TrkMCTools::fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
-	    // construct a Ptr from Handle and key
-	    art::Ptr<SimParticle> trkprimary(spcH,dekseedmc.simParticles().front()._spkey.asUint());
 	    TrkMCTools::fillGenInfo(trkprimary, _demcgen, _demcpri, primary);
+	    // times must be fixed FIXME!
+	    _demcpri._time += ttoff;
+	    _demcgen._time += ttoff;
+
 	    if (_diag>1) {
 	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc);
 	    }

@@ -216,8 +216,8 @@ namespace mu2e {
       }
     }
 
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, 
-	TrkInfoMC& trkinfomc) {
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, art::Ptr<SimParticle>const& trkprimary,
+      const KalSeed& kseed, TrkInfoMC& trkinfomc) {
       // use the primary match of the track
       if(kseedmc.simParticles().size() > 0){
 	auto const& simp = kseedmc.simParticles().front();
@@ -234,16 +234,23 @@ namespace mu2e {
       trkinfomc._ndigi = ndigi;
       trkinfomc._ndigigood = ndigigood;
       trkinfomc._nambig = nambig;
+      // fill the origin information of this SimParticle
+      GeomHandle<DetectorSystem> det;
+      trkinfomc._otime = trkprimary->startGlobalTime(); // this doesn't include time offsets FIXME!!
+      trkinfomc._opos = Geom::toXYZVec(det->toDetector(trkprimary->startPosition()));
+      trkinfomc._omom = Geom::toXYZVec(trkprimary->startMomentum());
     }
 
-    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary, GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary) {
+    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary, 
+      GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary) {
+      GeomHandle<DetectorSystem> det;
+
 // fill primary info from the primary GenParticle
       const auto& genParticle = primary.primary();
       priinfo._pdg = genParticle.pdgId();
       priinfo._gen = genParticle.generatorId().id();
-      priinfo._time = genParticle.time();
+      priinfo._time = genParticle.time(); // doesn't include offsets FIXME!
       priinfo._mom = Geom::toXYZVec(genParticle.momentum());
-      GeomHandle<DetectorSystem> det;
       priinfo._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
       // go through the SimParticles of this primary, and find the one most related to the
       // downstream fit (KalSeedMC)
@@ -260,9 +267,8 @@ namespace mu2e {
       if(gp.isNonnull()){
 	geninfo._pdg = gp->pdgId();
 	geninfo._gen = gp->generatorId().id();
-	geninfo._time = gp->time();
+	geninfo._time = gp->time(); // doesn't include offsets FIXME!
 	geninfo._mom = Geom::toXYZVec(gp->momentum());
-	GeomHandle<DetectorSystem> det;
 	geninfo._pos = Geom::toXYZVec(det->toDetector(gp->position()));
       }
     }

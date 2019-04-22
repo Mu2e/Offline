@@ -139,6 +139,13 @@ void DataInterface::updateComponents(double time, boost::shared_ptr<ContentSelec
     (*driftradius)->setFilter(_minTime, _maxTime);
     (*driftradius)->update(time);
   }
+
+  std::vector<boost::shared_ptr<Cube> >::const_iterator crvhit;
+  for(crvhit=_crvhits.begin(); crvhit!=_crvhits.end(); crvhit++)
+  {
+    (*crvhit)->setFilter(_minTime, _maxTime);
+    (*crvhit)->update(time);
+  }
 }
 
 void DataInterface::getFilterValues(unsigned int &minPoints, double &minTime, double &maxTime, double &minMomentum,
@@ -356,29 +363,35 @@ void DataInterface::fillGeometry()
   if(geom->hasElement<mu2e::DiskCalorimeter>())
   {
     mu2e::GeomHandle<mu2e::DiskCalorimeter> calo;
-    double rmax = calo->caloInfo().getDouble("crystalXYLength")/2.0;
-    double crystalHalflength = calo->caloInfo().getDouble("crystalZLength")/2.0;
 
+    double diskCaseDZLength      = calo->caloInfo().getDouble("diskCaseZLength")/2.0;
+    double diskInnerRingIn       = calo->caloInfo().getDouble("diskInnerRingIn");
+    double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
+    double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
 
-    int crystalIdOffset=0;
+    double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
+    double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;    
+    double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;    
+    double wrapperHalfThick      = calo->caloInfo().getDouble("wrapperThickness")/2.0;    
+    double wrapperDXY            = crystalDXY + 2.0*wrapperHalfThick;
+    double wrapperDZ             = crystalDZ + 2.0*crystalFrameDZ;
+
+    int icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
     {
-      const CLHEP::Hep3Vector& diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
-      double innerRadius = calo->disk(idisk).geomInfo().size()[0];
-      double outerRadius = calo->disk(idisk).geomInfo().size()[1];
-      double diskHalflength = calo->disk(idisk).geomInfo().size()[2];
+      const CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
 
-      findBoundaryP(_calorimeterMinmax, diskPos.x()+outerRadius, diskPos.y()+innerRadius, diskPos.z()+diskHalflength);
-      findBoundaryP(_calorimeterMinmax, diskPos.x()-outerRadius, diskPos.y()-outerRadius, diskPos.z()-diskHalflength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()+diskOuterRailOut, diskPos.y()+diskOuterRailOut, diskPos.z()+diskCaseDZLength);
+      findBoundaryP(_calorimeterMinmax, diskPos.x()-diskOuterRailOut, diskPos.y()-diskOuterRailOut, diskPos.z()-diskCaseDZLength);
 
       boost::shared_ptr<ComponentInfo> diskInfo(new ComponentInfo());
       std::string c=Form("Disk %i",idisk);
       diskInfo->setName(c.c_str());
       diskInfo->setText(0,c.c_str());
       diskInfo->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",diskPos.x(),diskPos.y(),diskPos.z()));
-      diskInfo->setText(2,Form("Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",outerRadius,innerRadius,2.0*diskHalflength));
+      diskInfo->setText(2,Form("Outer radius: %.f mm, Inner radius: %.f mm, Thickness: %.f mm",diskOuterRailOut,diskInnerRingIn,2.0*diskCaseDZLength));
       boost::shared_ptr<Cylinder> calodisk(new Cylinder(diskPos.x(),diskPos.y(),diskPos.z(),  0,0,0,
-                                                        diskHalflength, innerRadius, outerRadius, NAN,
+                                                        diskCaseDZLength, diskInnerRingIn, diskOuterRailOut, NAN,
                                                         _geometrymanager, _topvolume, _mainframe, diskInfo, true));
       calodisk->makeGeometryVisible(true);
       _components.push_back(calodisk);
@@ -387,24 +400,24 @@ void DataInterface::fillGeometry()
       int nCrystalInThisDisk = calo->disk(idisk).nCrystals();
       for(int ic=0; ic<nCrystalInThisDisk; ic++)
       {
-        int id=crystalIdOffset+ic;
-	const CLHEP::Hep3Vector &pos = calo->crystal(crystalIdOffset+ic).position()-_detSysOrigin;
+        const CLHEP::Hep3Vector crystalPosition = calo->disk(idisk).crystal(ic).localPosition() + diskPos;
+        //constructDiskCalorimeter subtracts wrapperDZ from the z coordinate of these position, since they were meant for Geant4, 
+        //where the "z position of [the] hexagon is their base, not their center"
+        //since this Hexagon class in the event display uses the center as a reference for the position, wrapperDZ does not need to be subtracted
 
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-        std::string c=Form("Disk %i, Crystal %i",idisk,id);
+        std::string c=Form("Disk %i, Crystal %i",idisk,ic);
         info->setName(c.c_str());
         info->setText(0,c.c_str());
-        info->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",pos.x(),pos.y(),pos.z()+crystalHalflength));
-        info->setText(2,Form("Size: %.f mm, Thickness: %.f mm",rmax,2.0*crystalHalflength));
-        //these position were meant for Geant4, where the "z position of [the] hexagon is their base, not their center"
-        //since this Hexagon class uses the center as a reference for, crystalHalflength needs to be added
-        boost::shared_ptr<Hexagon> shape(new Hexagon(pos.x(),pos.y(),pos.z()+crystalHalflength,
-                                                     rmax,crystalHalflength,360, NAN,
+        info->setText(1,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",crystalPosition.x(),crystalPosition.y(),crystalPosition.z()));
+        info->setText(2,Form("XYSize: %.f mm, Thickness: %.f mm",2.0*wrapperDXY,2.0*wrapperDZ));
+        boost::shared_ptr<Hexagon> shape(new Hexagon(crystalPosition.x(),crystalPosition.y(),crystalPosition.z(),
+                                                     wrapperDXY,wrapperDZ,360, NAN,
                                                      _geometrymanager, _topvolume, _mainframe, info, true));
         _components.push_back(shape);
-        _crystals[id]=shape;
+        _crystals[icrystal]=shape;
+        icrystal++;
       }
-      crystalIdOffset +=nCrystalInThisDisk;
     }
   }
 
@@ -507,23 +520,23 @@ void DataInterface::fillGeometry()
           for (int ib = 0; ib < nBars; ++ib)
           {
             mu2e::CRSScintillatorBar const & bar = layer.getBar(ib);
+            int index = bar.index().asInt();
             CLHEP::Hep3Vector barOffset = bar.getPosition() - _detSysOrigin;
             double x=barOffset.x();
             double y=barOffset.y();
             double z=barOffset.z();
 
             boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
-            std::string c=Form("CRV Scintillator %s %i %i %i",shieldName.c_str(),im,il,ib);
+            std::string c=Form("CRV Scintillator %s  module %i  layer %i  bar %i  (index %i)",shieldName.c_str(),im,il,ib, index);
             info->setName(c.c_str());
             info->setText(0,c.c_str());
             info->setText(1,Form("Dimension x: %.f mm, y: %.f mm, z: %.f mm",2.0*dx/CLHEP::mm,2.0*dy/CLHEP::mm,2.0*dz/CLHEP::mm));
             info->setText(2,Form("Center at x: %.f mm, y: %.f mm, z: %.f mm",x/CLHEP::mm,y/CLHEP::mm,z/CLHEP::mm));
-            info->setText(3," ");
 
             boost::shared_ptr<Cube> shape(new Cube(x,y,z,  dx,dy,dz,  0, 0, 0, NAN,
                                                    _geometrymanager, _topvolume, _mainframe, info, true));
             _components.push_back(shape);
-            _crvscintillatorbars.push_back(shape);
+            _crvscintillatorbars[index]=(shape);
           }
         }
       }
@@ -581,10 +594,10 @@ void DataInterface::makeOtherStructuresVisible(bool visible)
 
 void DataInterface::makeCrvScintillatorBarsVisible(bool visible)
 {
-  std::vector<boost::shared_ptr<Cube> >::const_iterator crvbars;
+  std::map<int, boost::shared_ptr<Cube> >::const_iterator crvbars;
   for(crvbars=_crvscintillatorbars.begin(); crvbars!=_crvscintillatorbars.end(); crvbars++)
   {
-    (*crvbars)->makeGeometryVisible(visible);
+    crvbars->second->makeGeometryVisible(visible);
   }
 
   //tracks and straws don't have to be pushed into the foreground if the structure is removed
@@ -603,6 +616,12 @@ void DataInterface::toForeground()
   for(crystal=_crystals.begin(); crystal!=_crystals.end(); crystal++)
   {
     crystal->second->toForeground();
+  }
+
+  std::map<int,boost::shared_ptr<Cube> >::const_iterator crvbar;
+  for(crvbar=_crvscintillatorbars.begin(); crvbar!=_crvscintillatorbars.end(); crvbar++)
+  {
+    crvbar->second->toForeground();
   }
 
   std::vector<boost::shared_ptr<Track> >::const_iterator track;
@@ -657,6 +676,20 @@ void DataInterface::useHitColors(bool hitcolors, bool whitebackground)
       (*driftradius)->setColor(color);
     }
     else (*driftradius)->setColor(whitebackground?1:0);
+  }
+  std::vector<boost::shared_ptr<Cube> >::const_iterator crvhit;
+  for(crvhit=_crvhits.begin(); crvhit!=_crvhits.end(); crvhit++)
+  {
+    double time=(*crvhit)->getStartTime();
+    if(hitcolors)
+    {
+      int color=TMath::FloorNint(20.0*(time-mint)/(maxt-mint));
+      if(color>=20) color=19;
+      if(color<=0 || std::isnan(color)) color=0;
+      color+=2000;
+      (*crvhit)->setColor(color);
+    }
+    else (*crvhit)->setColor(whitebackground?1:0);
   }
 }
 
@@ -776,9 +809,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         else
         {
-          straw->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
-          straw->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
-          straw->second->getComponentInfo()->expandLine(3,trackid,"");
+          straw->second->getComponentInfo()->expandLine(1,Form("%gns",time/CLHEP::ns));
+          straw->second->getComponentInfo()->expandLine(2,Form("%geV",energy/CLHEP::eV));
+          straw->second->getComponentInfo()->expandLine(3,Form("%i",trackid));
         }
       }
     }
@@ -813,9 +846,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         else
         {
-          straw->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
-          straw->second->getComponentInfo()->expandLine(2,energy/CLHEP::eV,"eV");
-          straw->second->getComponentInfo()->expandLine(3,dt/CLHEP::ns,"ns");
+          straw->second->getComponentInfo()->expandLine(1,Form("%gns",time/CLHEP::ns));
+          straw->second->getComponentInfo()->expandLine(2,Form("%geV",energy/CLHEP::eV));
+          straw->second->getComponentInfo()->expandLine(3,Form("%gns",dt/CLHEP::ns));
         }
       }
     }
@@ -876,9 +909,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
               }
               else
               {
-                straw->second->getComponentInfo()->expandLine(1,hitT0/CLHEP::ns,"ns");
-                straw->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
-                straw->second->getComponentInfo()->expandLine(3,strawtime/CLHEP::ns,"ns");
+                straw->second->getComponentInfo()->expandLine(1,Form("%gns",hitT0/CLHEP::ns));
+                straw->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
+                straw->second->getComponentInfo()->expandLine(3,Form("%gns",strawtime/CLHEP::ns));
               }
 
               const boost::shared_ptr<std::string> strawname=straw->second->getComponentInfo()->getName();
@@ -927,7 +960,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           }
           else
           {
-            straw->second->getComponentInfo()->expandLine(1,time/CLHEP::ns,"ns");
+            straw->second->getComponentInfo()->expandLine(1,Form("%gns",time/CLHEP::ns));
           }
         }
       }
@@ -962,9 +995,9 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         else
         {
-          crystal->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
-          crystal->second->getComponentInfo()->expandLine(3,energy/CLHEP::eV,"eV");
-          crystal->second->getComponentInfo()->expandLine(4,trackid,"");
+          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
+          crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
+          crystal->second->getComponentInfo()->expandLine(4,Form("%i",trackid));
         }
       }
     }
@@ -995,8 +1028,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         else
         {
-          crystal->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
-          crystal->second->getComponentInfo()->expandLine(3,energy/CLHEP::eV,"eV");
+          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
+          crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
         }
       }
     }
@@ -1036,13 +1069,46 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
         }
         else
         {
-          crystal->second->getComponentInfo()->expandLine(2,time/CLHEP::ns,"ns");
-          crystal->second->getComponentInfo()->expandLine(3,energy/CLHEP::eV,"eV");
-          crystal->second->getComponentInfo()->expandLine(4,roid,"");
+          crystal->second->getComponentInfo()->expandLine(2,Form("%gns",time/CLHEP::ns));
+          crystal->second->getComponentInfo()->expandLine(3,Form("%geV",energy/CLHEP::eV));
+          crystal->second->getComponentInfo()->expandLine(4,Form("%i",roid));
         }
       }
     }
   }
+
+
+//CRV reco pulses
+  const mu2e::CrvRecoPulseCollection *crvRecoPulses=contentSelector->getSelectedCrvHitCollection<mu2e::CrvRecoPulseCollection>();
+  if(crvRecoPulses!=nullptr)
+  {
+    for(size_t i=0; i<crvRecoPulses->size(); i++)
+    {
+      const mu2e::CrvRecoPulse &recoPulse = crvRecoPulses->at(i);
+      int    index = recoPulse.GetScintillatorBarIndex().asInt();
+      int    sipm  = recoPulse.GetSiPMNumber();
+      double time  = recoPulse.GetPulseTime();
+      int    PEs   = recoPulse.GetPEs();
+
+      std::map<int,boost::shared_ptr<Cube> >::iterator crvbar=_crvscintillatorbars.find(index);
+      if(crvbar!=_crvscintillatorbars.end() && !std::isnan(time))
+      {
+        double previousStartTime=crvbar->second->getStartTime();
+        if(std::isnan(previousStartTime))
+        {
+          findBoundaryT(_hitsTimeMinmax, time);  //is it Ok to exclude all following hits from the time window?
+          crvbar->second->setStartTime(time);
+          crvbar->second->getComponentInfo()->setText(3,"Reco pulse SiPM0 PEs/time: ");
+          crvbar->second->getComponentInfo()->setText(4,"Reco pulse SiPM1 PEs/time: ");
+          crvbar->second->getComponentInfo()->setText(5,"Reco pulse SiPM2 PEs/time: ");
+          crvbar->second->getComponentInfo()->setText(6,"Reco pulse SiPM3 PEs/time: ");
+          _crvhits.push_back(crvbar->second);
+        }
+        crvbar->second->getComponentInfo()->expandLine(sipm+3,Form("%i/%gns",PEs,time/CLHEP::ns));
+      }
+    }
+  }
+
 
   unsigned int physicalVolumeEntries=0;
   const mu2e::PhysicalVolumeInfoCollection *physicalVolumes=contentSelector->getPhysicalVolumeInfoCollection();
@@ -1112,7 +1178,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
           daughter!=particle.daughters().end();
           daughter++)
       {
-        info->expandLine(4,(*daughter)->id().asInt(),"");
+        info->expandLine(4,Form("%lu",(*daughter)->id().asInt()));
       }
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
                                                particleid, trackclass, trackclassindex, e1,
@@ -1397,7 +1463,7 @@ void DataInterface::removeNonGeometryComponents()
   std::vector<boost::shared_ptr<Straw> >::const_iterator hit;
   for(hit=_hits.begin(); hit!=_hits.end(); hit++)
   {
-    for(int i=1; i<5; i++) (*hit)->getComponentInfo()->removeLine(i);  //keep first line
+    for(int i=1; i<7; i++) (*hit)->getComponentInfo()->removeLine(i);  //keep first line
     (*hit)->getComponentInfo()->getHistVector().clear();
     (*hit)->setHitNumber(-1);
     (*hit)->setStartTime(NAN);
@@ -1406,14 +1472,23 @@ void DataInterface::removeNonGeometryComponents()
   std::vector<boost::shared_ptr<VirtualShape> >::const_iterator crystalhit;
   for(crystalhit=_crystalhits.begin(); crystalhit!=_crystalhits.end(); crystalhit++)
   {
-    for(int i=1; i<5; i++) (*crystalhit)->getComponentInfo()->removeLine(i); //keep first line
+    for(int i=1; i<7; i++) (*crystalhit)->getComponentInfo()->removeLine(i); //keep first line
     (*crystalhit)->getComponentInfo()->getHistVector().clear();
     (*crystalhit)->setStartTime(NAN);
     (*crystalhit)->start();
   }
+  std::vector<boost::shared_ptr<Cube> >::const_iterator crvhit;
+  for(crvhit=_crvhits.begin(); crvhit!=_crvhits.end(); crvhit++)
+  {
+    for(int i=1; i<7; i++) (*crvhit)->getComponentInfo()->removeLine(i); //keep first line
+    (*crvhit)->getComponentInfo()->getHistVector().clear();
+    (*crvhit)->setStartTime(NAN);
+    (*crvhit)->start();
+  }
 
   _hits.clear();
   _crystalhits.clear();
+  _crvhits.clear();
   _tracks.clear();  //will call the d'tors of all tracks, since they aren't used anywhere anymore
   _driftradii.clear(); //will call the d'tors of all driftradii, since they aren't used anywhere anymore
 
@@ -1425,8 +1500,10 @@ void DataInterface::removeAllComponents()
   _components.clear();
   _straws.clear();
   _crystals.clear();
+  _crvscintillatorbars.clear();
   _hits.clear();
   _crystalhits.clear();
+  _crvhits.clear();
   _tracks.clear();
   _driftradii.clear();
   _supportstructures.clear();
