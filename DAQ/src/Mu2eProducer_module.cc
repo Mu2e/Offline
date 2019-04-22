@@ -17,10 +17,10 @@
 #include "mu2e-artdaq-core/Overlays/ArtFragmentReader.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
-//#include "TrackerConditions/inc/Types.hh"
+//#include "DataProducts/inc/TrkTypes.hh"
 
 #include <iostream>
 

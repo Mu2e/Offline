@@ -10,9 +10,7 @@
 #include <ostream>
 
 // Mu2e includes
-#include "TrackCaloMatching/inc/TrkToCaloExtrapol.hh"
-#include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/GeomHandle.hh"
+#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 #include "BTrk/BbrGeom/BbrPointErr.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
@@ -67,7 +65,6 @@ namespace mu2e {
   }
 
   double TrkToCaloExtrapol::pathLenghtEntranceErr() const{
-    art::ServiceHandle<GeometryService> geom;
 
     double errTanDip2 = _trk->helix(_pathLengthEntrance).covariance()(5,5);
     double TanDip     = _trk->helix(_pathLengthEntrance).tanDip();
@@ -135,8 +132,9 @@ namespace mu2e {
 
     //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
-    double fltlen = firsthit->fltLen();
+    //const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
+    //double fltlen = firsthit->fltLen();
+    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
     //std::cout<<" TrkToCaloExtrapol-> fltlen = "<<fltlen<<std::endl;
 
     return _trk->momentum(fltlen);
@@ -148,9 +146,10 @@ namespace mu2e {
     //   const KalRep* kalrepc = dynamic_cast<const KalRep*>( ((*_trk.get()) ));//->getRep(PdtPid::electron)) );
     //KalRep* kalrep = const_cast<KalRep *> ( kalrepc);
 
-    const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
+    //const TrkStrawHit* firsthit = dynamic_cast<const TrkStrawHit*>( _trk->firstHit()->kalHit()->hit() );
 
-    double fltlen = firsthit->fltLen();
+    //double fltlen = firsthit->fltLen();
+    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
 
     return _trk->momentumErr(fltlen);
   }
