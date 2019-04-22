@@ -54,6 +54,8 @@
 #include "RecoDataProducts/inc/AvikPIDProductCollection.hh"
 #include "RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
+#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"

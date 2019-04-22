@@ -110,6 +110,8 @@ namespace mu2e {
     return ost;
   }
 
+ typedef std::vector<mu2e::TrkToCaloExtrapol> TrkToCaloExtrapolCollection;
+
 } // namespace mu2e
 
 #endif /* TrackCaloMatching_TrkToCaloExtrapol_hh */

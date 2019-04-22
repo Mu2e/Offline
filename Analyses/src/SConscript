@@ -18,7 +18,6 @@ extrarootlibs = [ 'Geom' ]
 mainlib = helper.make_mainlib ( [] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrackCaloMatching',
                        'mu2e_TrkExt',
                        'mu2e_TrkDiag',
                        'mu2e_BTrkData',
