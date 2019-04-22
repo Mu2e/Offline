@@ -153,7 +153,7 @@ namespace mu2e {
 
     double rCableRunCalCoreFract()     const { return _rCableRunCalCoreFract; }
     double rdCableRunCalCoreFract()    const { return _rdCableRunCalCoreFract; }
-    double dPhiCableRunCalFract()      const { return _dPhiCableRunCalFract; }
+    double dPhiCableRunCalCoreFract()  const { return _dPhiCableRunCalCoreFract; }
     std::string materialCableRunCalCore()   const { return _materialCableRunCalCore; }
 
     bool hasCableRunTrk()              const { return _hasCableRunTrk; }
@@ -352,7 +352,7 @@ namespace mu2e {
     std::string         _materialCableRunCal;
     double              _rCableRunCalCoreFract;
     double              _rdCableRunCalCoreFract;
-    double              _dPhiCableRunCalFract;
+    double              _dPhiCableRunCalCoreFract;
     std::string         _materialCableRunCalCore;
 
     bool                _hasCableRunTrk;

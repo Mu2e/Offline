@@ -680,7 +680,7 @@ namespace mu2e {
 
      if ( ds->hasCableRunCal() ) {
 
-
+       // fixme check if one should use  ds->cableRunVersion() > 1
        TubsParams  calCableRunParams  ( ds->rInCableRunCal(),
 					ds->rOutCableRunCal(),
 					ds->lengthCableRunCal(),
@@ -706,7 +706,7 @@ namespace mu2e {
          placeTubeCore ( "CalCableRunCore",
                          ds->rCableRunCalCoreFract(),
                          ds->rdCableRunCalCoreFract(),
-                         ds->dPhiCableRunCalFract(),
+                         ds->dPhiCableRunCalCoreFract(),
                          ds->materialCableRunCalCore(),
                          G4Color::Yellow(),
                          ccrTemp,
@@ -745,7 +745,7 @@ namespace mu2e {
            placeTubeCore ( "CalCableRunUpGap1Core",
                            ds->rCableRunCalCoreFract(),
                            ds->rdCableRunCalCoreFract(),
-                           ds->dPhiCableRunCalFract(),
+                           ds->dPhiCableRunCalCoreFract(),
                            ds->materialCableRunCalCore(),
                            G4Color::Yellow(),
                            ccrTempUG1,
@@ -781,7 +781,7 @@ namespace mu2e {
            placeTubeCore ( "CalCableRunUpGap2Core",
                            ds->rCableRunCalCoreFract(),
                            ds->rdCableRunCalCoreFract(),
-                           ds->dPhiCableRunCalFract(),
+                           ds->dPhiCableRunCalCoreFract(),
                            ds->materialCableRunCalCore(),
                            G4Color::Yellow(),
                            ccrTmpUG2,
@@ -811,6 +811,89 @@ namespace mu2e {
 					     0,
 					     G4Colour::Magenta(),
 					     "ds" );
+
+
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           // similar to placeTubeCore below but
+           // using PolyconsParams
+
+           std::vector<double> coreInnerRadii;
+           coreInnerRadii.reserve(rins.size());
+           std::vector<double> coreOuterRadii;
+           coreOuterRadii.reserve(rins.size());
+
+           // loop over rins, routs
+
+           for (  std::vector<double>::size_type i=0; i !=rins.size() ; ++i ) {
+
+             double coreCenterRadius = routs[i] -
+               ( routs[i] - rins[i] ) * ds->rCableRunCalCoreFract();
+             // 0 -> rOut; 1 -> rIn; 0.5 -> (rIn + rOut)/2;
+
+             double coreRadialHalfExtent =
+               ( routs[i] - rins[i] ) * 0.5 *
+               ds->rdCableRunCalCoreFract();
+
+             coreInnerRadii.push_back( coreCenterRadius - coreRadialHalfExtent );
+             coreOuterRadii.push_back( coreCenterRadius + coreRadialHalfExtent );
+
+             if ( coreInnerRadii[i] < rins[i] ||
+                  coreOuterRadii[i] > routs[i] ) {
+
+               throw cet::exception("GEOM") << __func__
+                                            << " inconsitent cable core parameters: "
+                                            << i << ": "
+                                            << coreInnerRadii[i]
+                                            << ", "
+                                            << coreOuterRadii[i]
+                                            << "\n";
+
+             }
+
+           }
+
+           // angular myPars are multiplied by CLHEP::degree already
+
+           double coreCenterPhi = myPars.phi0() + 0.5 * myPars.phiTotal();
+           double coreAngularHalfExtent = myPars.phiTotal() * ds->dPhiCableRunCalCoreFract() * 0.5;
+           double corePhi0 = coreCenterPhi - coreAngularHalfExtent;
+           double coreDeltaPhi = 2.0 * coreAngularHalfExtent;
+
+           if ( corePhi0 < myPars.phi0() ) {
+
+             throw cet::exception("GEOM") << __func__
+                                          << " inconsitent cable core parameters: "
+                                          << corePhi0
+                                          << ", "
+                                          << coreDeltaPhi
+                                          << "\n";
+
+           }
+
+           PolyconsParams cableRunCoreParams (zs, coreInnerRadii, coreOuterRadii,
+                                              corePhi0,
+                                              coreDeltaPhi );
+
+           VolumeInfo ccrTmpFCore = nestPolycone ( "calCableRunFallCore",
+                                                   cableRunCoreParams,
+                                                   findMaterialOrThrow(ds->materialCableRunCalCore()),
+                                                   0,
+                                                   G4ThreeVector(0,0,0),
+                                                   ccrTmpF,
+                                                   0,
+                                                   G4Colour::Yellow(),
+                                                   "ds" );
+
+           if (verbosityLevel > -1) {
+             G4cout << __func__ << " parent params: " << myPars << G4endl;
+             G4cout << __func__ << " core   name:   " << "calCableRunFallCore" << G4endl;
+             G4cout << __func__ << " core   params: " << cableRunCoreParams << G4endl;
+             // checkForOverlaps( ccrTmpFCore.physical, _config, verbosityLevel>0);
+           }
+
+         }
 
        } // end of if ( CableRunVersion > 1 )
        
@@ -1127,7 +1210,7 @@ namespace mu2e {
          placeTubeCore ( "TrkCableRun1Core",
                          ds->rCableRunTrkCoreFract(),
                          ds->rdCableRunTrkCoreFract(),
-                         ds->dPhiCableRunCalFract(),
+                         ds->dPhiCableRunCalCoreFract(),
                          ds->materialCableRunTrkCore(),
                          G4Color::Yellow(),
                          tcrTmp1,
@@ -1164,7 +1247,7 @@ namespace mu2e {
          placeTubeCore ( "TrkCableRun2Core",
                          ds->rCableRunTrkCoreFract(),
                          ds->rdCableRunTrkCoreFract(),
-                         ds->dPhiCableRunCalFract(),
+                         ds->dPhiCableRunCalCoreFract(),
                          ds->materialCableRunTrkCore(),
                          G4Color::Yellow(),
                          tcrTmp2,
@@ -1202,7 +1285,7 @@ namespace mu2e {
            placeTubeCore ( "TrkCableRunGap1Core",
                            ds->rCableRunTrkCoreFract(),
                            ds->rdCableRunTrkCoreFract(),
-                           ds->dPhiCableRunCalFract(),
+                           ds->dPhiCableRunCalCoreFract(),
                            ds->materialCableRunTrkCore(),
                            G4Color::Yellow(),
                            tcrTmpG1,
@@ -1238,7 +1321,7 @@ namespace mu2e {
            placeTubeCore ( "TrkCableRunGap1aCore",
                            ds->rCableRunTrkCoreFract(),
                            ds->rdCableRunTrkCoreFract(),
-                           ds->dPhiCableRunCalFract(),
+                           ds->dPhiCableRunCalCoreFract(),
                            ds->materialCableRunTrkCore(),
                            G4Color::Yellow(),
                            tcrTmpG1a,
@@ -1274,7 +1357,7 @@ namespace mu2e {
            placeTubeCore ( "TrkCableRunGap2Core",
                            ds->rCableRunTrkCoreFract(),
                            ds->rdCableRunTrkCoreFract(),
-                           ds->dPhiCableRunCalFract(),
+                           ds->dPhiCableRunCalCoreFract(),
                            ds->materialCableRunTrkCore(),
                            G4Color::Yellow(),
                            tcrTmpG2,
@@ -1310,7 +1393,7 @@ namespace mu2e {
            placeTubeCore ( "TrkCableRunGap2aCore",
                            ds->rCableRunTrkCoreFract(),
                            ds->rdCableRunTrkCoreFract(),
-                           ds->dPhiCableRunCalFract(),
+                           ds->dPhiCableRunCalCoreFract(),
                            ds->materialCableRunTrkCore(),
                            G4Color::Yellow(),
                            tcrTmpG2a,
@@ -1376,14 +1459,48 @@ namespace mu2e {
                        double dPhiFraction,
                        const std::string & material,
                        const G4Colour & color,
-                       const VolumeInfo& parent,
+                       const VolumeInfo & parent,
                        const TubsParams & parentParams,
                        const std::string &  lookupToken,
                        const SimpleConfig & config
                        ) {
 
-    // calculating the fibre parameters based on the the cable run
-    // size and their parameters relative to the cable run itself
+    int const verbosityLevel = config.getInt("ds.verbosityLevel",0);
+    TubsParams cableRunCoreParams =
+      calculateTubeCoreParams(parentParams,
+                              radiusFract,
+                              radiusDFract,
+                              dPhiFraction,
+                              verbosityLevel);
+
+    VolumeInfo tempCore = nestTubs( name,
+                                    cableRunCoreParams,
+                                    findMaterialOrThrow(material),
+                                    nullptr,
+                                    CLHEP::Hep3Vector(),
+                                    parent,
+                                    0,
+                                    color,
+                                    lookupToken
+                                    );
+
+    if (verbosityLevel > 0) {
+      G4cout << __func__ << " parent params: " << parentParams << G4endl;
+      G4cout << __func__ << " core   name:   " << name << G4endl;
+      G4cout << __func__ << " core   params: " << cableRunCoreParams << G4endl;
+      // checkForOverlaps( tempCore.physical, config, verbosityLevel>0);
+    }
+
+  }
+
+  TubsParams calculateTubeCoreParams (const TubsParams& parentParams,
+                                      double radiusFract,
+                                      double radiusDFract,
+                                      double dPhiFraction,
+                                      int verbosityLevel) {
+
+    // calculating the core parameters based on the the parent tube
+    // sizes and the core parameters relative to the tube itself
 
     // radial
 
@@ -1412,8 +1529,8 @@ namespace mu2e {
 
     // angular (parent angular params are multiplied by CLHEP::degree already)
 
-    double coreCenterPhi = parentParams.phi0() + 0.5 * parentParams.phiMax();
-    double coreAngularHalfExtent = parentParams.phiMax() * dPhiFraction * 0.5;
+    double coreCenterPhi = parentParams.phi0() + 0.5 * parentParams.phiTotal();
+    double coreAngularHalfExtent = parentParams.phiTotal() * dPhiFraction * 0.5;
     double corePhi0 = coreCenterPhi - coreAngularHalfExtent;
     double coreDeltaPhi = 2.0 * coreAngularHalfExtent;
 
@@ -1428,30 +1545,11 @@ namespace mu2e {
 
     }
 
-    TubsParams cableRunCoreParams ( coreInnerRadius,
-                                    coreOuterRadius,
-                                    parentParams.zHalfLength(),
-                                    corePhi0,
-                                    coreDeltaPhi );
-
-    VolumeInfo tempCore = nestTubs( name,
-                                    cableRunCoreParams,
-                                    findMaterialOrThrow(material),
-                                    nullptr,
-                                    CLHEP::Hep3Vector(),
-                                    parent,
-                                    0,
-                                    color,
-                                    lookupToken
-                                    );
-
-    int const verbosityLevel = config.getInt("ds.verbosityLevel",0);
-    if (verbosityLevel > 0) {
-      G4cout << __func__ << " parent params: " << parentParams << G4endl;
-      G4cout << __func__ << " core   name:   " << name << G4endl;
-      G4cout << __func__ << " core   params: " << cableRunCoreParams << G4endl;
-      checkForOverlaps( tempCore.physical, config, verbosityLevel);
-    }
+    return TubsParams( coreInnerRadius,
+                       coreOuterRadius,
+                       parentParams.zHalfLength(),
+                       corePhi0,
+                       coreDeltaPhi );
 
   }
 

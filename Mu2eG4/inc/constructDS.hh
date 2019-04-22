@@ -35,6 +35,12 @@ namespace mu2e {
                        const SimpleConfig & config // to be removed?
                        );
 
+  TubsParams calculateTubeCoreParams (const TubsParams& parentParams,
+                                      double radiusFract,
+                                      double radiusDFract,
+                                      double dPhiFraction,
+                                      int verbosityLevel=0);
+
 }
 
 #endif /* Mu2eG4_constructDS_hh */

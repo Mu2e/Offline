@@ -54,6 +54,19 @@ namespace mu2e {
 
   };
 
+  inline std::ostream& operator<<(std::ostream& ost,
+                                  const PolyconsParams& pp ){
+    ost << "(";
+    for (  std::vector<double>::size_type i=0; i !=pp.zPlanes().size() ; ++i ) {
+        ost << pp.zPlanes()[i] << ", "
+            << pp.rInner()[i]  << ", "
+            << pp.rOuter()[i]  << "; ";
+    }
+    ost << pp.phi0()   << " "
+        << pp.phiTotal() << " )";
+    return ost;
+  }
+
 }
 
 #endif /* GeomPrimitives_PolyconsParams_hh */

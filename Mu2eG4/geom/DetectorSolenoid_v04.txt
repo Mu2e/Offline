@@ -203,8 +203,8 @@ double    ds.CableRunTrk.phi0      = 194.5; // degrees
 string    ds.CableRunTrk.material  = "Electronics"; //
 
 // Optical "core" placed in the "Cable"
-double    ds.CableRunTrkCore.RadiusFraction  = 0.25; // TBD
-double    ds.CableRunTrkCore.dRadiusFraction = 0.5; // TBD
+double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // TBD
+double    ds.CableRunTrkCore.dRadiusFraction = 0.25; // TBD
 double    ds.CableRunTrkCore.dPhiFraction    = 0.5; // TBD
 string    ds.CableRunTrkCore.material        = "G4_SILICON_DIOXIDE"; // TBC
 

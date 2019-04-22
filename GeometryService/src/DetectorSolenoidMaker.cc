@@ -152,10 +152,10 @@ namespace mu2e {
 	ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
       }
       if ( ds->_cableRunVersion > 2 ) {
-        ds->_rCableRunCalCoreFract   = c.getDouble("ds.CableRunCalCore.RadiusFraction");
-        ds->_rdCableRunCalCoreFract  = c.getDouble("ds.CableRunCalCore.dRadiusFraction");
-        ds->_dPhiCableRunCalFract    = c.getDouble("ds.CableRunCalCore.dPhiFraction");
-        ds->_materialCableRunCalCore = c.getString("ds.CableRunCalCore.material");
+        ds->_rCableRunCalCoreFract    = c.getDouble("ds.CableRunCalCore.RadiusFraction");
+        ds->_rdCableRunCalCoreFract   = c.getDouble("ds.CableRunCalCore.dRadiusFraction");
+        ds->_dPhiCableRunCalCoreFract = c.getDouble("ds.CableRunCalCore.dPhiFraction");
+        ds->_materialCableRunCalCore  = c.getString("ds.CableRunCalCore.material");
 
 	ds->_calR1CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR1");
 	ds->_calR2CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR2");
