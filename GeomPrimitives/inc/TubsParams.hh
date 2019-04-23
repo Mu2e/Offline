@@ -54,6 +54,7 @@ namespace mu2e {
     double zHalfLength()  const { return data_[2]; }
     double phi0()         const { return data_[3]; }
     double phiMax()       const { return data_[4]; }
+    double phiTotal()     const { return data_[4]; }
 
     double const * data() const { return data_.data(); }
 

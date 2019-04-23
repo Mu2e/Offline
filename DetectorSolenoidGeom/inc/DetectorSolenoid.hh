@@ -150,6 +150,12 @@ namespace mu2e {
     double phi0CableRunCal()           const { return _phi0CableRunCal; }
     double dPhiCableRunCal()           const { return _dPhiCableRunCal; }
     double zCCableRunCal()             const { return _zCCableRunCal; }
+
+    double rCableRunCalCoreFract()     const { return _rCableRunCalCoreFract; }
+    double rdCableRunCalCoreFract()    const { return _rdCableRunCalCoreFract; }
+    double dPhiCableRunCalCoreFract()  const { return _dPhiCableRunCalCoreFract; }
+    std::string materialCableRunCalCore()   const { return _materialCableRunCalCore; }
+
     bool hasCableRunTrk()              const { return _hasCableRunTrk; }
     std::string trkCableRunMaterial()  const { return _materialCableRunTrk; }
     double rInCableRunTrk()            const { return _rInCableRunTrk; }
@@ -194,6 +200,11 @@ namespace mu2e {
     double zHLCableRunIFB()            const { return _zHLCableRunIFB     ;}
     std::string materialCableRunIFB()  const { return _materialCableRunIFB;}
     double zCCableRunIFB()             const { return _zCCableRunIFB      ;}
+
+    double rCableRunTrkCoreFract()     const { return _rCableRunTrkCoreFract; }
+    double rdCableRunTrkCoreFract()    const { return _rdCableRunTrkCoreFract; }
+    double dPhiCableRunTrkCoreFract()  const { return _dPhiCableRunTrkCoreFract; }
+    std::string materialCableRunTrkCore()   const { return _materialCableRunTrkCore; }
 
     // Services pipes along bottom of DS
     bool   hasServicePipes()           const { return _hasServicePipes; }
@@ -339,6 +350,11 @@ namespace mu2e {
     double              _phi0CableRunCal;
     double              _dPhiCableRunCal;
     std::string         _materialCableRunCal;
+    double              _rCableRunCalCoreFract;
+    double              _rdCableRunCalCoreFract;
+    double              _dPhiCableRunCalCoreFract;
+    std::string         _materialCableRunCalCore;
+
     bool                _hasCableRunTrk;
     double              _lengthCableRunTrk;
     double              _rInCableRunTrk;
@@ -347,6 +363,12 @@ namespace mu2e {
     double              _phi0CableRunTrk;
     double              _dPhiCableRunTrk;
     std::string         _materialCableRunTrk;
+
+    double              _rCableRunTrkCoreFract;
+    double              _rdCableRunTrkCoreFract;
+    double              _dPhiCableRunTrkCoreFract;
+    std::string         _materialCableRunTrkCore;
+
     //Cabling outside IFB
     double              _calR1CableRunIFB   ;
     double              _calR2CableRunIFB   ;
@@ -384,7 +406,6 @@ namespace mu2e {
     double              _zHLCableRunIFB     ;
     std::string         _materialCableRunIFB;
     double              _zCCableRunIFB      ;
-
 
     // Service pipes
     bool                  _hasServicePipes;

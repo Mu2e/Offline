@@ -27,6 +27,7 @@
 #include "Mu2eG4/inc/nestExtrudedSolid.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
+#include "Mu2eG4/inc/checkForOverlaps.hh"
 
 // G4 includes
 #include "G4ThreeVector.hh"
@@ -64,13 +65,13 @@ namespace mu2e {
     geomOptions->loadEntry( _config, "dsVacuum"   , "ds.vacuum"    );
     geomOptions->loadEntry( _config, "dsShielding", "ds.shielding" );
 
-    const bool isDSVisible         = geomOptions->isVisible("ds"); 
-    const bool isDSSolid           = geomOptions->isSolid("ds"); 
-    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("ds"); 
-    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("ds"); 
-    const bool placePV             = geomOptions->placePV("ds"); 
-    
-    
+    const bool isDSVisible         = geomOptions->isVisible("ds");
+    const bool isDSSolid           = geomOptions->isSolid("ds");
+    const bool forceAuxEdgeVisible = geomOptions->forceAuxEdgeVisible("ds");
+    const bool doSurfaceCheck      = geomOptions->doSurfaceCheck("ds");
+    const bool placePV             = geomOptions->placePV("ds");
+
+
     // Fetch parent (hall) position
     G4ThreeVector _hallOriginInMu2e = parent.centerInMu2e();
 
@@ -92,7 +93,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "ds"
+              "ds"
               );
     // ***
     // Lining for inner cryo shell - for test of shielding
@@ -100,15 +101,15 @@ namespace mu2e {
     // ***
     if ( ds->hasInnerLining() ) { // only if specifically enabled
       nestTubs( "DSInnerCryoLining",
-		TubsParams( ds->rIn1()-ds->innerLiningThickness(),ds->rIn1(),ds->halfLength()-2.*ds->endWallHalfLength()),
-		findMaterialOrThrow(ds->innerLiningMaterial()),
-		0,
-		dsInnerCryoPosition-_hallOriginInMu2e,
-		parent,
-		0,
-		G4Color::Magenta(),
-		"ds"
-		);
+                TubsParams( ds->rIn1()-ds->innerLiningThickness(),ds->rIn1(),ds->halfLength()-2.*ds->endWallHalfLength()),
+                findMaterialOrThrow(ds->innerLiningMaterial()),
+                0,
+                dsInnerCryoPosition-_hallOriginInMu2e,
+                parent,
+                0,
+                G4Color::Magenta(),
+                "ds"
+                );
     }
 
     // - outer cryo shell
@@ -122,31 +123,30 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "ds"
+              "ds"
               );
 
     // DNB (Lou) May 2017.  Making a vacuum volume inside the cryostat
     G4Tubs * dsCryoVacTub = new G4Tubs( "DSCryoVacuumTube",
-					ds->rIn2(), ds->rOut1(),
-					ds->halfLength() - 2.*ds->endWallHalfLength(),
-					0.0, 360.0*CLHEP::degree);
+                                        ds->rIn2(), ds->rOut1(),
+                                        ds->halfLength() - 2.*ds->endWallHalfLength(),
+                                        0.0, 360.0*CLHEP::degree);
 
     CLHEP::Hep3Vector dsCryoVacLocationInMu2e( dsP.x(), dsP.y(), dsP.z() );
     VolumeInfo dsCryoVacMother( "DSCryoVacuumRegion",
-				dsCryoVacLocationInMu2e - _hallOriginInMu2e,
-				parent.centerInWorld );
+                                dsCryoVacLocationInMu2e - _hallOriginInMu2e,
+                                parent.centerInWorld );
     dsCryoVacMother.solid = dsCryoVacTub;
-				
+
     finishNesting ( dsCryoVacMother,
-		    findMaterialOrThrow("DSVacuum"),
-		    0, dsCryoVacMother.centerInParent,
-		    parent.logical, 0, G4Colour::White(),
-		    "ds" );
-		    
+                    findMaterialOrThrow("DSVacuum"),
+                    0, dsCryoVacMother.centerInParent,
+                    parent.logical, 0, G4Colour::White(),
+                    "ds" );
 
     // - end walls
     TubsParams    dsEndWallParams    ( ds->rIn2(), ds->rOut1(), ds->endWallHalfLength() );
-    G4ThreeVector dsUpEndWallPosition( dsP.x(), dsP.y(), 
+    G4ThreeVector dsUpEndWallPosition( dsP.x(), dsP.y(),
                                        dsP.z() - ds->halfLength() + ds->endWallHalfLength());
     nestTubs( "DSUpEndWallShell",
               dsEndWallParams,
@@ -156,10 +156,10 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "ds"
+              "ds"
               );
 
-    G4ThreeVector dsDownEndWallPosition( dsP.x(), dsP.y(), 
+    G4ThreeVector dsDownEndWallPosition( dsP.x(), dsP.y(),
                                          dsP.z() + ds->halfLength() - ds->endWallHalfLength());
     nestTubs( "DSDownEndWallShell",
               dsEndWallParams,
@@ -169,7 +169,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Magenta(),
-	      "ds"
+              "ds"
               );
 
     // - upstream face
@@ -189,7 +189,7 @@ namespace mu2e {
               parent,
               0,
               G4Color::Blue(),
-	      "ds"
+              "ds"
               );
 
     // DS thermal shield
@@ -206,7 +206,7 @@ namespace mu2e {
               dsCryoVacMother,
               0,
               G4Color::Cyan(),
-	      "dsThShield"
+              "dsThShield"
               );
 
     // - outer shield shell
@@ -220,7 +220,7 @@ namespace mu2e {
               dsCryoVacMother,
               0,
               G4Color::Cyan(),
-	      "dsThShield"
+              "dsThShield"
               );
 
     // SKIPPING END WALLS OF THERMAL SHIELD
@@ -229,19 +229,19 @@ namespace mu2e {
     // DS coils
     G4Material* dsCoilMaterial;
     for ( int i(0); i < ds->nCoils() ; i++ ) {
-      TubsParams coilParams( ds->coil_rIn(), 
+      TubsParams coilParams( ds->coil_rIn(),
                              ds->coil_rOut().at(i),
                              ds->coil_zLength().at(i)*0.5 );
       if ( ds->coilVersion() == 1 ) {
-	dsCoilMaterial = findMaterialOrThrow( ds->coil_material() );
+        dsCoilMaterial = findMaterialOrThrow( ds->coil_material() );
       } else {
-	dsCoilMaterial = findMaterialOrThrow( ds->coil_materials().at(i) );
+        dsCoilMaterial = findMaterialOrThrow( ds->coil_materials().at(i) );
       }
 
-      G4ThreeVector coilPosition( dsP.x(), dsP.y(), 
-                                  ds->coil_zPosition().at(i) + coilParams.zHalfLength()); 
+      G4ThreeVector coilPosition( dsP.x(), dsP.y(),
+                                  ds->coil_zPosition().at(i) + coilParams.zHalfLength());
 
-      ostringstream coilname;
+      std::ostringstream coilname;
       coilname << "DSCoil_" << i+1;
 
       nestTubs( coilname.str(),
@@ -252,7 +252,7 @@ namespace mu2e {
                 dsCryoVacMother,
                 0,
                 G4Color::Green(),
-		"dsCoil"
+                "dsCoil"
                 );
     }
 
@@ -260,27 +260,27 @@ namespace mu2e {
     if ( ds->coilVersion() > 1 ) {  // spacers added to version 2 and up
       G4Material* dsSpacerMaterial = findMaterialOrThrow( ds->spacer_material() );
       for ( int i(0); i < ds->nSpacers() ; i++ ) {
-	TubsParams spacerParams( ds->spacer_rIn(), 
-				 ds->spacer_rOut().at(i),
-				 ds->spacer_zLength().at(i)*0.5 );
+        TubsParams spacerParams( ds->spacer_rIn(),
+                                 ds->spacer_rOut().at(i),
+                                 ds->spacer_zLength().at(i)*0.5 );
 
-	G4ThreeVector spacerPosition( dsP.x(), dsP.y(), 
-				      ds->spacer_zPosition().at(i) 
-				      + spacerParams.zHalfLength()); 
+        G4ThreeVector spacerPosition( dsP.x(), dsP.y(),
+                                      ds->spacer_zPosition().at(i)
+                                      + spacerParams.zHalfLength());
 
-	ostringstream spacername;
-	spacername << "DSSpacer_" << i+1;
-	
-	nestTubs( spacername.str(),
-		  spacerParams,
-		  dsSpacerMaterial,
-		  0,
-		  spacerPosition-dsCryoVacLocationInMu2e,
-		  dsCryoVacMother,
-		  0,
-		  G4Color::Green(),
-		  "dsSpacer"
-		  );
+        ostringstream spacername;
+        spacername << "DSSpacer_" << i+1;
+
+        nestTubs( spacername.str(),
+                  spacerParams,
+                  dsSpacerMaterial,
+                  0,
+                  spacerPosition-dsCryoVacLocationInMu2e,
+                  dsCryoVacMother,
+                  0,
+                  G4Color::Green(),
+                  "dsSpacer"
+                  );
       }
     }
 
@@ -297,7 +297,7 @@ namespace mu2e {
               dsCryoVacMother,
               0,
               G4Color::Blue(),
-	      "dsSupport"
+              "dsSupport"
               );
 
 
@@ -313,68 +313,67 @@ namespace mu2e {
     std::vector<double> xr = ds->xRing();
     std::vector<double> yr = ds->yRing();
     std::vector<double> zr = ds->zRing();
-    
+
     for ( unsigned int iRing = 0; iRing < xr.size(); iRing++ ) {
 
       // Let's build a mother volume first
       std::ostringstream ringMotherName;
       ringMotherName << "DSRingMother" << iRing;
-      CLHEP::HepRotation* ringRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 
       double motherx = xr[iRing];
       double mothery = yr[iRing];
       double motherz = zr[iRing];
 
       VolumeInfo motherVol = nestTubs( ringMotherName.str(),
-				       TubsParams( rirs, rors, trs + lr/2.0 ),
-				       findMaterialOrThrow("G4_AIR"),
-				       ringRotat, 
-				       CLHEP::Hep3Vector(motherx,mothery,motherz) - _hallOriginInMu2e,
-				       parent, 0, G4Color::Blue(),
-				       "dsRing" );
- 
-     std::ostringstream leftName;
+                                       TubsParams( rirs, rors, trs + lr/2.0 ),
+                                       findMaterialOrThrow("G4_AIR"),
+                                       nullptr,
+                                       CLHEP::Hep3Vector(motherx,mothery,motherz) - _hallOriginInMu2e,
+                                       parent, 0, G4Color::Blue(),
+                                       "dsRing" );
+
+      std::ostringstream leftName;
       leftName << "DSleftSideRing" << iRing;
 
 
       nestTubs( leftName.str(),
-		TubsParams( rirs, rors, trs/2.0 ),
-		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(0.0,0.0,-lr/2.0-trs/2.0),
-		motherVol,
-		0,
-		G4Color::Blue(),
-		"dsRing"
-		);
+                TubsParams( rirs, rors, trs/2.0 ),
+                ringMaterial,
+                nullptr,
+                CLHEP::Hep3Vector(0.0,0.0,-lr/2.0-trs/2.0),
+                motherVol,
+                0,
+                G4Color::Blue(),
+                "dsRing"
+                );
 
       std::ostringstream centerName;
       centerName << "DScenterRing" << iRing;
 
       nestTubs( centerName.str(),
-		TubsParams( rir, ror, lr/2.0 ),
-		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(0.0,0.0,0.0),
-		motherVol,
-		0,
-		G4Color::Blue(),
-		"dsRing"
-		);
+                TubsParams( rir, ror, lr/2.0 ),
+                ringMaterial,
+                nullptr,
+                CLHEP::Hep3Vector(0.0,0.0,0.0),
+                motherVol,
+                0,
+                G4Color::Blue(),
+                "dsRing"
+                );
 
       std::ostringstream rightName;
       rightName << "DSrightSideRing" << iRing;
 
       nestTubs( rightName.str(),
-		TubsParams( rirs, rors, trs/2.0 ),
-		ringMaterial,
-                ringRotat,
-		CLHEP::Hep3Vector(0.0,0.0,lr/2.0+trs/2.0),
-		motherVol,
-		0,
-		G4Color::Blue(),
-		"dsRing"
-		);
+                TubsParams( rirs, rors, trs/2.0 ),
+                ringMaterial,
+                nullptr,
+                CLHEP::Hep3Vector(0.0,0.0,lr/2.0+trs/2.0),
+                motherVol,
+                0,
+                G4Color::Blue(),
+                "dsRing"
+                );
 
     } // finished inserting Rings
 
@@ -385,16 +384,16 @@ namespace mu2e {
     TubsParams ds2VacParams    ( 0.            , ds->rIn1(), ds->vac_halfLengthDs2()   );
 
     // Compute/set positions of vacuum volumes in Mu2e coordinates.
-    // - DS position is fixed by TS torus radius, and half lengths of 
+    // - DS position is fixed by TS torus radius, and half lengths of
     //   front face, DS1, and TS5
     double ds1Z0     = dsFrontZ0 + ds->frontHalfLength() + ds->vac_halfLengthDs1();
     double ds2Z0     = ds->vac_zLocDs23Split() - ds->vac_halfLengthDs2();
     //    double ds2HalfLength     = _config.getDouble("ds2.halfLength");
-    
+
     if ( verbosityLevel > 0 ) {
-      cout << __func__ << " DS2 vacuum extent: " 
-           << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , " 
-           << ds->vac_zLocDs23Split() << " ] " << endl;
+      G4cout << __func__ << " DS2 vacuum extent: "
+           << " [ " << ds2Z0 - ds->vac_halfLengthDs2() << " , "
+           << ds->vac_zLocDs23Split() << " ] " << G4endl;
     }
 
     G4ThreeVector ds1Position( dsP.x(), dsP.y(), ds1Z0 );
@@ -408,34 +407,34 @@ namespace mu2e {
               parent,
               0,
               G4Colour::Green(),
-	      "dsVacuum"
+              "dsVacuum"
               );
 
-    VolumeInfo ds2VacInfo = 
+    VolumeInfo ds2VacInfo =
       nestTubs( "DS2Vacuum",
-		ds2VacParams,
-		vacuumMaterial,
-		0,
-		ds2Position-_hallOriginInMu2e,
-		parent,
-		0,
-		G4Colour::Yellow(),
-		"dsVacuum"
-		);
+                ds2VacParams,
+                vacuumMaterial,
+                0,
+                ds2Position-_hallOriginInMu2e,
+                parent,
+                0,
+                G4Colour::Yellow(),
+                "dsVacuum"
+                );
 
     // Polycone geometry allows for MBS to extend beyond solenoid
     // physical boundaries
-    
+
     GeomHandle<DetectorSolenoidShielding> dss;
 
     // Define polycone parameters
-    vector<double> tmp_zPlanesDs3 = { 
-      ds->vac_zLocDs23Split(), 
+    vector<double> tmp_zPlanesDs3 = {
+      ds->vac_zLocDs23Split(),
       dss->getVPSPmain()->zBegin(),
       dss->getVPSPCryoSeal()->zBegin(),
       dss->getVPSPCryoSeal()->zEnd(),
       dss->getVPSPCryoSeal()->zEnd(),
-      dss->getVPSPendSeal()->zBegin(), 
+      dss->getVPSPendSeal()->zBegin(),
       dss->getVPSPendSeal()->zBegin(),
       dss->getVPSPendFlange()->zEnd(),
       dss->getVPSPendFlange()->zEnd(),
@@ -466,17 +465,17 @@ namespace mu2e {
 
     PolyconsParams    ds3PolyParams    ( tmp_zPlanesDs3, tmp_rInnerDs3, tmp_rOuterDs3 );
     CLHEP::Hep3Vector ds3positionInMu2e( dsP.x(), dsP.y(), 0.);
-    
+
     VolumeInfo dsShieldParent = nestPolycone( "DS3Vacuum",
-					      ds3PolyParams,
-					      vacuumMaterial,
-					      0,
-					      ds3positionInMu2e - parent.centerInMu2e(),
-					      parent,
-					      0,
-					      G4Colour::Yellow(),
-					      "dsVacuum"
-					      );
+                                              ds3PolyParams,
+                                              vacuumMaterial,
+                                              0,
+                                              ds3positionInMu2e - parent.centerInMu2e(),
+                                              parent,
+                                              0,
+                                              G4Colour::Yellow(),
+                                              "dsVacuum"
+                                              );
 
     if ( inGaragePosition ) {
       double zOffGarage = _config.getDouble("garage.zOffset",14000.0);
@@ -484,17 +483,17 @@ namespace mu2e {
       G4Material*  airMaterial = findMaterialOrThrow( _config.getString("hall.insideMaterialName","G4_AIR") );
 
       VolumeInfo dsShieldParent = nestPolycone( "garageFakeDS3Vacuum",
-						ds3PolyParams,
-						airMaterial,
-						0,
-						ds3positionInMu2e - parent.centerInMu2e() + relPosFake,
-						parent,
-						0,
-						G4Colour::Yellow(),
-						"dsVacuum"
-						);
+                                                ds3PolyParams,
+                                                airMaterial,
+                                                0,
+                                                ds3positionInMu2e - parent.centerInMu2e() + relPosFake,
+                                                parent,
+                                                0,
+                                                G4Colour::Yellow(),
+                                                "dsVacuum"
+                                                );
     }
-      
+
 
     // Construct shielding downstream of DS
     for ( const auto & shield : dss->getTubes() ) {
@@ -507,7 +506,7 @@ namespace mu2e {
                 dsShieldParent,
                 0,
                 G4Colour::Blue(),
-		"dsShielding"
+                "dsShielding"
                 );
 
     }
@@ -526,28 +525,28 @@ namespace mu2e {
 
     VolumeInfo RailN2 = nestExtrudedSolid
                      ( "NorthRailDS2", ds->lengthRail2()/2.0*CLHEP::mm,
-		       uRailOutline, vRailOutline, 
-		       findMaterialOrThrow(ds->RailMaterial()),
-		       nRailRotat, ds->n2RailCenter(),
-		       ds2VacInfo.logical, 0, isDSVisible,
-		       G4Colour::Blue(), isDSSolid,
-		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
+                       uRailOutline, vRailOutline,
+                       findMaterialOrThrow(ds->RailMaterial()),
+                       nRailRotat, ds->n2RailCenter(),
+                       ds2VacInfo.logical, 0, isDSVisible,
+                       G4Colour::Blue(), isDSSolid,
+                       forceAuxEdgeVisible, placePV, doSurfaceCheck );
 
     VolumeInfo RailS2 = nestExtrudedSolid
                      ( "SouthRailDS2", ds->lengthRail2()/2.0*CLHEP::mm,
-		       uRailOutline, vRailOutline, 
-		       findMaterialOrThrow(ds->RailMaterial()),
-		       sRailRotat, ds->s2RailCenter(),
-		       ds2VacInfo.logical, 0, isDSVisible,
-		       G4Colour::Blue(), isDSSolid,
-		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
+                       uRailOutline, vRailOutline,
+                       findMaterialOrThrow(ds->RailMaterial()),
+                       sRailRotat, ds->s2RailCenter(),
+                       ds2VacInfo.logical, 0, isDSVisible,
+                       G4Colour::Blue(), isDSSolid,
+                       forceAuxEdgeVisible, placePV, doSurfaceCheck );
 
     // And now in DS3Vacuum
 
      VolumeInfo RailN3 = nestExtrudedSolid
                       ( "NorthRailDS3", ds->lengthRail3()/2.0*CLHEP::mm,
- 		       uRailOutline, vRailOutline, 
- 		       findMaterialOrThrow(ds->RailMaterial()),
+                       uRailOutline, vRailOutline,
+                       findMaterialOrThrow(ds->RailMaterial()),
  		       nRailRotat, ds->n3RailCenter(),
  		       dsShieldParent, 0, isDSVisible,
  		       G4Colour::Blue(), isDSSolid,
@@ -555,13 +554,13 @@ namespace mu2e {
 
      VolumeInfo RailS3 = nestExtrudedSolid
                       ( "SouthRailDS3", ds->lengthRail3()/2.0*CLHEP::mm,
- 		       uRailOutline, vRailOutline, 
+ 		       uRailOutline, vRailOutline,
  		       findMaterialOrThrow(ds->RailMaterial()),
  		       sRailRotat, ds->s3RailCenter(),
  		       dsShieldParent, 0, isDSVisible,
  		       G4Colour::Blue(), isDSSolid,
  		       forceAuxEdgeVisible, placePV, doSurfaceCheck );
-    
+
      // Now put bearing blocks on rails
      // D. No. Brown, Jan 2016
      // First in DS2Vacuum region
@@ -586,10 +585,10 @@ namespace mu2e {
        sstm << "BearingBlock_DS2_" << iB2+1;
        VolumeInfo BBlock2 = nestExtrudedSolid
 	 ( sstm.str().c_str(), lenBB2,
-	   uBBlockOutline, vBBlockOutline, 
+	   uBBlockOutline, vBBlockOutline,
 	   findMaterialOrThrow(ds->BBlockMaterial()),
 	   BBRotat, BBCenters2[iB2] - DS2Offset,
-	   ds2VacInfo.logical, 
+	   ds2VacInfo.logical,
 	   0, isDSVisible,
 	   G4Colour::Blue(), isDSSolid,
 	   forceAuxEdgeVisible, placePV, doSurfaceCheck );
@@ -598,12 +597,12 @@ namespace mu2e {
 	 coupleCounter++;
 	 std::stringstream couplerName;
 	 couplerName << "Coupler_DS2_" << coupleCounter;
-	 double lenCoupler = BBCenters2[iB2+2].z() - BBCenters2[iB2].z() 
-	   - 2.*lenBB2 - 0.2; // The 0.2 is to avoid accidental overlaps. 
+	 double lenCoupler = BBCenters2[iB2+2].z() - BBCenters2[iB2].z()
+	   - 2.*lenBB2 - 0.2; // The 0.2 is to avoid accidental overlaps.
 	 // The 2.* is because lenBB2 is actually halfLength
 	 CLHEP::Hep3Vector cenCoupler( (BBCenters2[iB2] + BBCenters2[iB2+2] )*0.5 + CLHEP::Hep3Vector(0.0,yCoupler,0.0));
-	 std::vector<double> halfDims = { widCoupler/2.0, 
-					  hCoupler/2.0, 
+	 std::vector<double> halfDims = { widCoupler/2.0,
+					  hCoupler/2.0,
 					  lenCoupler/2.0 };
 	 nestBox( couplerName.str(),
 		  halfDims,
@@ -614,7 +613,7 @@ namespace mu2e {
 		  0, isDSVisible,
 		  G4Colour::Blue(), isDSSolid,
 		  forceAuxEdgeVisible, placePV, doSurfaceCheck );
-		  
+		
        } // end of if for adding coupler if not last bearing block
      }
 
@@ -627,7 +626,7 @@ namespace mu2e {
 
        VolumeInfo BBlock3 = nestExtrudedSolid
 	 ( sstm.str().c_str(), lenBB3,
-	   uBBlockOutline, vBBlockOutline, 
+	   uBBlockOutline, vBBlockOutline,
 	   findMaterialOrThrow(ds->BBlockMaterial()),
 	   BBRotat, BBCenters3[iB3],
 	   dsShieldParent, 0, isDSVisible,
@@ -638,12 +637,12 @@ namespace mu2e {
 	 coupleCounter++;
 	 std::stringstream couplerName;
 	 couplerName << "Coupler_DS3_" << coupleCounter;
-	 double lenCoupler = BBCenters3[iB3+2].z() - BBCenters3[iB3].z() 
+	 double lenCoupler = BBCenters3[iB3+2].z() - BBCenters3[iB3].z()
 	   - 2.*lenBB3 - 0.2; // The 0.2 is to avoid accidental overlaps.
 	 // The 2.* is because lenBB3 is actually halfLength
 	 CLHEP::Hep3Vector cenCoupler( (BBCenters3[iB3] + BBCenters3[iB3+2] )*0.5 + CLHEP::Hep3Vector(0.0,yCoupler,0.0));
-	 std::vector<double> halfDims = { widCoupler/2.0, 
-					  hCoupler/2.0, 
+	 std::vector<double> halfDims = { widCoupler/2.0,
+					  hCoupler/2.0,
 					  lenCoupler/2.0 };
 	 nestBox( couplerName.str(),
 		  halfDims,
@@ -654,10 +653,10 @@ namespace mu2e {
 		  0, isDSVisible,
 		  G4Colour::Blue(), isDSSolid,
 		  forceAuxEdgeVisible, placePV, doSurfaceCheck );
-		  
+		
        } // end of if for adding coupler if not last bearing block
 
- 
+
      }
 
 
@@ -668,7 +667,7 @@ namespace mu2e {
        std::vector<double> vOutlineMBSS = ds->vOutlineMBSS();
        VolumeInfo MBSS = nestExtrudedSolid
 	 ( "MBSSphericalSupport", ds->lengthMBSS()/2.0*CLHEP::mm,
-	   uOutlineMBSS, vOutlineMBSS, 
+	   uOutlineMBSS, vOutlineMBSS,
 	   findMaterialOrThrow(ds->MBSSmaterial()),
 	   0, ds->MBSSlocation(),
 	   dsShieldParent, 0, isDSVisible,
@@ -683,9 +682,9 @@ namespace mu2e {
 
      if ( ds->hasCableRunCal() ) {
 
-
-       TubsParams  calCableRunParams  ( ds->rInCableRunCal(), 
-					ds->rOutCableRunCal(), 
+       // fixme check if one should use  ds->cableRunVersion() > 1
+       TubsParams  calCableRunParams  ( ds->rInCableRunCal(),
+					ds->rOutCableRunCal(),
 					ds->lengthCableRunCal(),
 					ds->phi0CableRunCal()*CLHEP::degree,
 					ds->dPhiCableRunCal()*CLHEP::degree);
@@ -703,12 +702,28 @@ namespace mu2e {
 				      "ds"
 				      );
 
+       if ( ds->cableRunVersion() > 2 ) {
+
+         // "Fibre Core"
+         placeTubeCore ( "CalCableRunCore",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         ccrTemp,
+                         calCableRunParams,
+                         "ds",
+                         _config
+                         );
+
+       }
 
        if ( ds->cableRunVersion() > 1 ) {
 
 	 // Now the part between the Calorimeter Disks
-	 TubsParams  upCalCableRunParm1( ds->upRInCableRunCal(), 
-					 ds->upROutCableRunCal(), 
+	 TubsParams  upCalCableRunParm1( ds->upRInCableRunCal(),
+					 ds->upROutCableRunCal(),
 					 ds->upHL1CableRunCal(),
 					 ds->phi0CableRunCal()*CLHEP::degree,
 					 ds->dPhiCableRunCal()*CLHEP::degree);
@@ -726,14 +741,31 @@ namespace mu2e {
 					   "ds"
 					   );
 
-	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(), 
-					 ds->upROutCableRunCal(), 
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "CalCableRunUpGap1Core",
+                           ds->rCableRunCalCoreFract(),
+                           ds->rdCableRunCalCoreFract(),
+                           ds->dPhiCableRunCalCoreFract(),
+                           ds->materialCableRunCalCore(),
+                           G4Color::Yellow(),
+                           ccrTempUG1,
+                           upCalCableRunParm1,
+                           "ds",
+                           _config
+                           );
+
+         }
+
+	 TubsParams  upCalCableRunParm2( ds->upRInCableRunCal(),
+					 ds->upROutCableRunCal(),
 					 ds->upHL2CableRunCal(),
 					 ds->phi0CableRunCal()*CLHEP::degree,
 					 ds->dPhiCableRunCal()*CLHEP::degree);
 
 	 CLHEP::Hep3Vector upCalCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
-	 
+	
 	 VolumeInfo ccrTmpUG2 = nestTubs( "CalCableRunUpGap2",
 					  upCalCableRunParm2,
 					  findMaterialOrThrow(ds->calCableRunMaterial()),
@@ -745,6 +777,23 @@ namespace mu2e {
 					  "ds"
 					  );
 
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "CalCableRunUpGap2Core",
+                           ds->rCableRunCalCoreFract(),
+                           ds->rdCableRunCalCoreFract(),
+                           ds->dPhiCableRunCalCoreFract(),
+                           ds->materialCableRunCalCore(),
+                           G4Color::Yellow(),
+                           ccrTmpUG2,
+                           upCalCableRunParm2,
+                           "ds",
+                           _config
+                           );
+
+         }
+
 	 // And last but not least the connector between the top of the Cal
 	 // and the top of the MBS
 	 // Implement this as a Polycone
@@ -754,7 +803,7 @@ namespace mu2e {
 	 PolyconsParams myPars( zs, rins, routs,
 				ds->phi0CableRunCal()*CLHEP::degree,
 				ds->dPhiCableRunCal()*CLHEP::degree );
-	 
+	
 	 VolumeInfo ccrTmpF = nestPolycone ( "calCableRunFall",
 					     myPars,
 					     findMaterialOrThrow(ds->calCableRunMaterial()),
@@ -764,6 +813,89 @@ namespace mu2e {
 					     0,
 					     G4Colour::Magenta(),
 					     "ds" );
+
+
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           // similar to placeTubeCore below but
+           // using PolyconsParams
+
+           std::vector<double> coreInnerRadii;
+           coreInnerRadii.reserve(rins.size());
+           std::vector<double> coreOuterRadii;
+           coreOuterRadii.reserve(rins.size());
+
+           // loop over rins, routs
+
+           for (  std::vector<double>::size_type i=0; i !=rins.size() ; ++i ) {
+
+             double coreCenterRadius = routs[i] -
+               ( routs[i] - rins[i] ) * ds->rCableRunCalCoreFract();
+             // 0 -> rOut; 1 -> rIn; 0.5 -> (rIn + rOut)/2;
+
+             double coreRadialHalfExtent =
+               ( routs[i] - rins[i] ) * 0.5 *
+               ds->rdCableRunCalCoreFract();
+
+             coreInnerRadii.push_back( coreCenterRadius - coreRadialHalfExtent );
+             coreOuterRadii.push_back( coreCenterRadius + coreRadialHalfExtent );
+
+             if ( coreInnerRadii[i] < rins[i] ||
+                  coreOuterRadii[i] > routs[i] ) {
+
+               throw cet::exception("GEOM") << __func__
+                                            << " inconsitent cable core parameters: "
+                                            << i << ": "
+                                            << coreInnerRadii[i]
+                                            << ", "
+                                            << coreOuterRadii[i]
+                                            << "\n";
+
+             }
+
+           }
+
+           // angular myPars are multiplied by CLHEP::degree already
+
+           double coreCenterPhi = myPars.phi0() + 0.5 * myPars.phiTotal();
+           double coreAngularHalfExtent = myPars.phiTotal() * ds->dPhiCableRunCalCoreFract() * 0.5;
+           double corePhi0 = coreCenterPhi - coreAngularHalfExtent;
+           double coreDeltaPhi = 2.0 * coreAngularHalfExtent;
+
+           if ( corePhi0 < myPars.phi0() ) {
+
+             throw cet::exception("GEOM") << __func__
+                                          << " inconsitent cable core parameters: "
+                                          << corePhi0
+                                          << ", "
+                                          << coreDeltaPhi
+                                          << "\n";
+
+           }
+
+           PolyconsParams cableRunCoreParams (zs, coreInnerRadii, coreOuterRadii,
+                                              corePhi0,
+                                              coreDeltaPhi );
+
+           VolumeInfo ccrTmpFCore = nestPolycone ( "calCableRunFallCore",
+                                                   cableRunCoreParams,
+                                                   findMaterialOrThrow(ds->materialCableRunCalCore()),
+                                                   0,
+                                                   G4ThreeVector(0,0,0),
+                                                   ccrTmpF,
+                                                   0,
+                                                   G4Colour::Yellow(),
+                                                   "ds" );
+
+           if (verbosityLevel > -1) {
+             G4cout << __func__ << " parent params: " << myPars << G4endl;
+             G4cout << __func__ << " core   name:   " << "calCableRunFallCore" << G4endl;
+             G4cout << __func__ << " core   params: " << cableRunCoreParams << G4endl;
+             // checkForOverlaps( ccrTmpFCore.physical, _config, verbosityLevel>0);
+           }
+
+         }
 
        } // end of if ( CableRunVersion > 1 )
        
@@ -1055,8 +1187,8 @@ namespace mu2e {
 
      if ( ds->hasCableRunTrk() ) {
 
-       TubsParams  trkCableRun1Params ( ds->rInCableRunTrk(), 
-					ds->rOutCableRunTrk(), 
+       TubsParams  trkCableRun1Params ( ds->rInCableRunTrk(),
+					ds->rOutCableRunTrk(),
 					ds->lengthCableRunTrk(),
 					ds->phi0CableRunTrk()*CLHEP::degree,
 					ds->dPhiCableRunTrk()*CLHEP::degree);
@@ -1074,9 +1206,26 @@ namespace mu2e {
 				      "ds"
 				      );
 
+       if ( ds->cableRunVersion() > 2 ) {
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkCableRun1Core",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         tcrTmp1,
+                         trkCableRun1Params,
+                         "ds",
+                         _config
+                         );
+
+       }
+
        // Now the second one
-       TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(), 
-					ds->rOutCableRunTrk(), 
+       TubsParams  trkCableRun2Params ( ds->rInCableRunTrk(),
+					ds->rOutCableRunTrk(),
 					ds->lengthCableRunTrk(),
 					(180.0 - ds->phi0CableRunTrk()
 					 - ds->dPhiCableRunTrk())
@@ -1094,10 +1243,27 @@ namespace mu2e {
 				    "ds"
 				    );
 
+       if ( ds->cableRunVersion() > 2 ) {
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkCableRun2Core",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         tcrTmp2,
+                         trkCableRun2Params,
+                         "ds",
+                         _config
+                         );
+
+       }
+
        if ( ds->cableRunVersion() > 1 ) {
 	 // Now the part between the Calorimeter Disks
-	 TubsParams  upTrkCableRunParm1( ds->rInCableRunTrk(), 
-					 ds->rOutCableRunTrk(), 
+	 TubsParams  upTrkCableRunParm1( ds->rInCableRunTrk(),
+					 ds->rOutCableRunTrk(),
 					 ds->upHL1CableRunCal(),
 					 ds->phi0CableRunTrk()*CLHEP::degree,
 					 ds->dPhiCableRunTrk()*CLHEP::degree);
@@ -1115,8 +1281,25 @@ namespace mu2e {
 				       "ds"
 				       );
 
-	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(), 
-					  ds->rOutCableRunTrk(), 
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap1Core",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalCoreFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG1,
+                           upTrkCableRunParm1,
+                           "ds",
+                           _config
+                           );
+
+         }
+
+	 TubsParams  upTrkCableRunParm1a( ds->rInCableRunTrk(),
+					  ds->rOutCableRunTrk(),
 					  ds->upHL1CableRunCal(),
 					  (180.0 - ds->phi0CableRunTrk()
 					   - ds->dPhiCableRunTrk())
@@ -1134,14 +1317,31 @@ namespace mu2e {
 					"ds"
 					);
 
-	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(), 
-					 ds->rOutCableRunTrk(), 
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap1aCore",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalCoreFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG1a,
+                           upTrkCableRunParm1a,
+                           "ds",
+                           _config
+                           );
+
+         }
+
+	 TubsParams  upTrkCableRunParm2( ds->rInCableRunTrk(),
+					 ds->rOutCableRunTrk(),
 					 ds->upHL2CableRunCal(),
 					 ds->phi0CableRunTrk()*CLHEP::degree,
 					 ds->dPhiCableRunTrk()*CLHEP::degree);
 
 	 CLHEP::Hep3Vector upTrkCableRunLoc2( 0.0, 0.0,ds->upZC2CableRunCal());
-	 
+	
 	 VolumeInfo tcrTmpG2=nestTubs( "TrkCableRunGap2",
 				       upTrkCableRunParm2,
 				       findMaterialOrThrow(ds->trkCableRunMaterial()),
@@ -1153,8 +1353,25 @@ namespace mu2e {
 				       "ds"
 				       );
 
-	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(), 
-					  ds->rOutCableRunTrk(), 
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap2Core",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalCoreFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG2,
+                           upTrkCableRunParm2,
+                           "ds",
+                           _config
+                           );
+
+         }
+
+	 TubsParams  upTrkCableRunParm2a( ds->rInCableRunTrk(),
+					  ds->rOutCableRunTrk(),
 					  ds->upHL2CableRunCal(),
 					  (180.0 - ds->phi0CableRunTrk()
 					   - ds->dPhiCableRunTrk())
@@ -1172,11 +1389,28 @@ namespace mu2e {
 					 "ds"
 					 );
 
+         if ( ds->cableRunVersion() > 2 ) {
+
+           // "Fibre Core"
+           placeTubeCore ( "TrkCableRunGap2aCore",
+                           ds->rCableRunTrkCoreFract(),
+                           ds->rdCableRunTrkCoreFract(),
+                           ds->dPhiCableRunCalCoreFract(),
+                           ds->materialCableRunTrkCore(),
+                           G4Color::Yellow(),
+                           tcrTmpG2a,
+                           upTrkCableRunParm2a,
+                           "ds",
+                           _config
+                           );
+
+         }
+
        } // end of adding gap runs for trk cable runs
      } // end of if ( ds->hasCableRunTrk() )
 
      if ( ds->hasServicePipes() ) {
-       TubsParams pipeMomParms( 0.0, 
+       TubsParams pipeMomParms( 0.0,
 				ds->servicePipeROut(),
 				ds->servicePipeHalfLength());//default phi,dphi
        TubsParams pipeSelfParms(ds->servicePipeRIn(),
@@ -1208,7 +1442,7 @@ namespace mu2e {
 		    pipeSelfParms,
 		    findMaterialOrThrow(ds->servicePipeMaterial()),
 		    0,
-		    CLHEP::Hep3Vector(0,0,0),
+		    CLHEP::Hep3Vector(),
 		    DSPipeMother,
 		    0,
 		    G4Color::Magenta(),
@@ -1219,5 +1453,106 @@ namespace mu2e {
      } // end of if ( ds->hasServicePipes() )
 
   } // end of Mu2eWorld::constructDS;
+
+  // limited utility function to place the core tube in a tube
+  void placeTubeCore ( const std::string & name,
+                       double radiusFract,
+                       double radiusDFract,
+                       double dPhiFraction,
+                       const std::string & material,
+                       const G4Colour & color,
+                       const VolumeInfo & parent,
+                       const TubsParams & parentParams,
+                       const std::string &  lookupToken,
+                       const SimpleConfig & config
+                       ) {
+
+    int const verbosityLevel = config.getInt("ds.verbosityLevel",0);
+    TubsParams cableRunCoreParams =
+      calculateTubeCoreParams(parentParams,
+                              radiusFract,
+                              radiusDFract,
+                              dPhiFraction,
+                              verbosityLevel);
+
+    VolumeInfo tempCore = nestTubs( name,
+                                    cableRunCoreParams,
+                                    findMaterialOrThrow(material),
+                                    nullptr,
+                                    CLHEP::Hep3Vector(),
+                                    parent,
+                                    0,
+                                    color,
+                                    lookupToken
+                                    );
+
+    if (verbosityLevel > 0) {
+      G4cout << __func__ << " parent params: " << parentParams << G4endl;
+      G4cout << __func__ << " core   name:   " << name << G4endl;
+      G4cout << __func__ << " core   params: " << cableRunCoreParams << G4endl;
+      // checkForOverlaps( tempCore.physical, config, verbosityLevel>0);
+    }
+
+  }
+
+  TubsParams calculateTubeCoreParams (const TubsParams& parentParams,
+                                      double radiusFract,
+                                      double radiusDFract,
+                                      double dPhiFraction,
+                                      int verbosityLevel) {
+
+    // calculating the core parameters based on the the parent tube
+    // sizes and the core parameters relative to the tube itself
+
+    // radial
+
+    double coreCenterRadius = parentParams.outerRadius() -
+      ( parentParams.outerRadius() - parentParams.innerRadius() ) * radiusFract;
+    // 0 -> rOut; 1 -> rIn; 0.5 -> (rIn + rOut)/2;
+
+    double coreRadialHalfExtent =
+      ( parentParams.outerRadius() - parentParams.innerRadius() ) * 0.5 *
+      radiusDFract;
+
+    double coreInnerRadius = coreCenterRadius - coreRadialHalfExtent;
+    double coreOuterRadius = coreCenterRadius + coreRadialHalfExtent;
+
+    if ( coreInnerRadius < parentParams.innerRadius() ||
+         coreOuterRadius > parentParams.outerRadius() ) {
+
+      throw cet::exception("GEOM") << __func__
+                                   << " inconsitent cable core parameters: "
+                                   << coreInnerRadius
+                                   << ", "
+                                   << coreOuterRadius
+                                   << "\n";
+
+    }
+
+    // angular (parent angular params are multiplied by CLHEP::degree already)
+
+    double coreCenterPhi = parentParams.phi0() + 0.5 * parentParams.phiTotal();
+    double coreAngularHalfExtent = parentParams.phiTotal() * dPhiFraction * 0.5;
+    double corePhi0 = coreCenterPhi - coreAngularHalfExtent;
+    double coreDeltaPhi = 2.0 * coreAngularHalfExtent;
+
+    if ( corePhi0 < parentParams.phi0() ) {
+
+      throw cet::exception("GEOM") << __func__
+                                   << " inconsitent cable core parameters: "
+                                   << corePhi0
+                                   << ", "
+                                   << coreDeltaPhi
+                                   << "\n";
+
+    }
+
+    return TubsParams( coreInnerRadius,
+                       coreOuterRadius,
+                       parentParams.zHalfLength(),
+                       corePhi0,
+                       coreDeltaPhi );
+
+  }
 
 }
