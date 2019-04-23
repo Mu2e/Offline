@@ -103,6 +103,7 @@ Reconstruction : {
        PrimaryParticle : "FindMCPrimary"
        StrawDigiCollection : "makeSD"
        StrawHitFlagCollection : "FlagBkgHits:StrawHits" 
+       ComboHitCollection : "makeSH" 
        CaloDigiCollection : "CaloDigiFromShower"
        CrvDigiCollection : "CrvDigi"
        CaloClusterCollection : "CaloClusterFromProtoCluster"

@@ -35,6 +35,7 @@
 #include "Rtypes.h"
 #include "TBits.h"
 #include "TTree.h"
+#include "TProfile.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -124,6 +125,7 @@ namespace mu2e {
     TrkComp _tcomp;
     // main TTree
     TTree* _trkana;
+    TProfile* _tht; // profile plot of track hit times: just an example
     // general event info branch
     double _meanPBI;
     EventInfo _einfo;
@@ -194,7 +196,7 @@ namespace mu2e {
     _debug(pset.get<int>("debugLevel",0)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
-    _trkana(0),
+    _trkana(0), _tht(0),
     _meanPBI(0.0),
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
@@ -212,6 +214,7 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 // create TTree
     _trkana=tfs->make<TTree>("trkana","track analysis");
+    _tht=tfs->make<TProfile>("tht","Track Hit Time Profile",RecoCount::_nshtbins,-25.0,1725.0);
 // add event info branch
     _trkana->Branch("evtinfo.",&_einfo,EventInfo::leafnames().c_str());
 // hit counting branch
@@ -316,6 +319,11 @@ namespace mu2e {
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_rctag);
     auto const& rc = *rch;
+    for(size_t ibin=0;ibin < rc._nshtbins; ++ibin){
+      float time = rc._shthist.binMid(ibin);
+      float count  = rc._shthist.binContents(ibin);
+      _tht->Fill(time,count);
+    }
     // TrkQualCollection
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_detqtag, trkQualHandle);
