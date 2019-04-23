@@ -24,7 +24,7 @@
 #include <boost/iostreams/filter/bzip2.hpp>
 #include <boost/iostreams/filter/gzip.hpp>
 #include <boost/regex.hpp>
-#include "boost_fix/iostreams/filtering_stream.hpp"
+#include "boost/iostreams/filtering_stream.hpp"
 
 // Framework includes
 #include "canvas/Utilities/Exception.h"

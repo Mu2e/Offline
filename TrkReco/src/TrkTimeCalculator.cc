@@ -10,12 +10,6 @@
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
-// boost
-#include <boost/accumulators/accumulators.hpp>
-#include "boost_fix/accumulators/statistics/stats.hpp"
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // root
@@ -27,7 +21,6 @@
 #include <cmath>
 using CLHEP::Hep3Vector;
 using namespace std;
-using namespace boost::accumulators;
 namespace mu2e
 {
 

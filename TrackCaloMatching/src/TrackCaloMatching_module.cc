@@ -28,7 +28,7 @@
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 

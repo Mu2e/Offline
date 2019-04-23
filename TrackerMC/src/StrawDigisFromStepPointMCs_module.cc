@@ -32,7 +32,7 @@
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 // data
 #include "DataProducts/inc/EventWindowMarker.hh"
 #include "DataProducts/inc/StrawId.hh"

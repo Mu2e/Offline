@@ -9,7 +9,7 @@
 #include <vector>
 #include <array>
 #include "TrackerGeom/inc/Straw.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
