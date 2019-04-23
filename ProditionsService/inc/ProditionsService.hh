@@ -21,6 +21,7 @@
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 
+#include "TrackerConditions/inc/FullReadoutStrawConfig.hh"
 #include "TrackerConditions/inc/DeadStrawConfig.hh"
 #include "TrackerConditions/inc/StrawDriftConfig.hh"
 #include "TrackerConditions/inc/StrawPhysicsConfig.hh"
@@ -42,6 +43,9 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       fhicl::Atom<int> verbose{Name("verbose"),
 	  Comment("verbosity 0 or 1"),0};
+      fhicl::Table<FullReadoutStrawConfig> fullReadoutStraw{
+	  Name("fullReadoutStraw"), 
+	  Comment("Straws with no time window in readout") };
       fhicl::Table<DeadStrawConfig> deadStraw{
 	  Name("deadStraw"), 
 	  Comment("Dead Straw List by Plane, Panel and Straw") };
