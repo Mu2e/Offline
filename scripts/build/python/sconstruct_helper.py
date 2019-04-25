@@ -61,6 +61,7 @@ def cppPath(mu2eOpts):
     path = [
         mu2eOpts["primaryBase"],
         os.environ['ART_INC'],
+        os.environ['ART_ROOT_IO_INC'],
         os.environ['CANVAS_INC'],
         os.environ['BTRK_INC'],
         os.environ['MESSAGEFACILITY_INC'],
@@ -93,6 +94,7 @@ def libPath(mu2eOpts):
     path = [
         mu2eOpts['primaryBase']+'/lib',
         os.environ['ART_LIB'],
+        os.environ['ART_ROOT_IO_LIB'],
         os.environ['CANVAS_LIB'],
         os.environ['BTRK_LIB'],
         os.environ['MU2E_ARTDAQ_CORE_LIB'],
