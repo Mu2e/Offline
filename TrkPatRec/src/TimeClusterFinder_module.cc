@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // Mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"

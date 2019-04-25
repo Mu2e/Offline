@@ -12,7 +12,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "SeedService/inc/SeedService.hh"
 #include "cetlib_except/exception.h"
 // conditions

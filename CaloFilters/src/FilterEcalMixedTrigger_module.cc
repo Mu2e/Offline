@@ -2,7 +2,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"

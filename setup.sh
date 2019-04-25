@@ -3,7 +3,7 @@
 #
 # Original author Rob Kutschke
 #
-# 
+#
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it." >&2
@@ -67,7 +67,7 @@ if [ -n "$BASEREPO" ]; then
   source $BASEREPO/setup.sh
 
   # this file
-  SATSCRIPTDIR=`dirname $(readlink -f $BASH_SOURCE)` 
+  SATSCRIPTDIR=`dirname $(readlink -f $BASH_SOURCE)`
   # Add the satellite release to path variables.
   export MU2E_SATELLITE_RELEASE=$SATSCRIPTDIR
   export MU2E_SEARCH_PATH=`dropit -p $MU2E_SEARCH_PATH -sf $MU2E_SATELLITE_RELEASE`
@@ -82,7 +82,7 @@ if [ -n "$BASEREPO" ]; then
       echo "WARNING - buildopts will be taken from the base release, "
       echo "        in partial checkout your local buildopts is ignored"
   fi
-  # items below were defined by the base release 
+  # items below were defined by the base release
   # source setup.sh, so exit now
   return 0
 
@@ -103,7 +103,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e17:+${build}
-export MU2E_ART_SQUALIFIER=s79
+export MU2E_ART_SQUALIFIER=s82
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -118,27 +118,28 @@ fi
 export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
-setup -B art v2_12_01 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v3_02_04 -q${MU2E_UPS_QUALIFIERS}
+setup -B art_root_io v1_00_04 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
-  setup -B geant4 v4_10_4_p02a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}${MU2E_G4_MT_QUALIFIER}${MU2E_G4_EXTRA_QUALIFIER}
+  setup -B geant4 v4_10_4_p03a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}${MU2E_G4_MT_QUALIFIER}${MU2E_G4_EXTRA_QUALIFIER}
 else
   setup -B xerces_c v3_2_0a   -q${MU2E_UPS_QUALIFIERS}
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_14 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_02_20 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01h -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_14  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_15  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7k  -q${MU2E_UPS_QUALIFIERS}
-setup -B gsl v2_4  -q${build}
+setup -B gsl v2_5  -q${build}
 
 # The build system.
-setup -B scons v3_0_1  -q p2714b
+setup -B scons v3_0_5  -q p2715a
 
 # The debugger
 setup -B gdb v8_1
@@ -161,4 +162,4 @@ export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_BASE_RELEASE`
 export PACKAGE_SOURCE=${MU2E_BASE_RELEASE}
 export BUILD_BASE=${MU2E_BASE_RELEASE}
 
-# 
+#

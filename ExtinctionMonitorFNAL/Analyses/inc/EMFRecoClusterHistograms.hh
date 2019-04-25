@@ -13,7 +13,7 @@
 
 #include "boost/noncopyable.hpp"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRecoClusterCollection.hh"
 

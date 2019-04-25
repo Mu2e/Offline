@@ -12,7 +12,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"

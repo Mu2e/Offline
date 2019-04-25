@@ -32,8 +32,8 @@
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "EventGenerator/inc/PiCaptureEffects.hh"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "SeedService/inc/SeedService.hh"
 

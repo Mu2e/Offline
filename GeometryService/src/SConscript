@@ -65,7 +65,7 @@ helper.make_plugins( [
     'art_Persistency_Common',
     'art_Persistency_Provenance',
     'art_Framework_Services_Registry',
-    'art_Framework_Services_Optional',
+    'art_root_io_tfile_support',
     'art_Utilities',
     'canvas',
     'MF_MessageLogger',

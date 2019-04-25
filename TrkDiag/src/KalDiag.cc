@@ -19,7 +19,7 @@
 // services
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // data
 #include "art/Framework/Principal/Event.h"
 #include "BTrkData/inc/TrkStrawHit.hh"

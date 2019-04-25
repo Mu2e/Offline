@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"

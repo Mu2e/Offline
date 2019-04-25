@@ -57,7 +57,7 @@
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/ClusterOnTrackPrecisionTool.hh"
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/LinearRegression.hh"
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "TH1D.h"

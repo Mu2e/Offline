@@ -14,7 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"

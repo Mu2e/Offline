@@ -3,7 +3,7 @@
 #define ValStrawHitFlag_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "TH1D.h"
 #include <string>

@@ -10,8 +10,8 @@
 
 #include "CaloReco/inc/FixedFastProcessor.hh"
 #include "CaloReco/inc/CaloPulseCache.hh"
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h" 
+#include "art_root_io/TFileService.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 

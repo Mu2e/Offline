@@ -11,8 +11,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Utilities/InputTag.h"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "ParticleID/inc/PIDLogLRatio.hh"

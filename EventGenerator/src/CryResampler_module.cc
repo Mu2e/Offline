@@ -27,7 +27,7 @@
 
 #include "TTree.h"
 #include "TFile.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
