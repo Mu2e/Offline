@@ -13,10 +13,9 @@
 // Half length of DS1 has been adjusted such that given an assumed
 // rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
 // DS is at 3239 mm, consistent with CDR.
-// NOTE 4 (04/29/19): Must use Pipe_v04.txt to avoid overlapping versions of cabling
-// outside the IFB
-
-
+//
+// NOTE 4 (04/29/19): Use Pipe_v04.txt to avoid overlap of old
+// implementation of cabling outside IFB
 
 double ds.rIn.in             =  950.;
 double ds.rIn.out            =  969.05; //970.;
@@ -225,14 +224,14 @@ double    ds.CableRunIFB.CalPR2    =  1000.0;
 double    ds.CableRunIFB.CalPPhi0  =   112.5; 
 double    ds.CableRunIFB.CalPDPhi  =    45.0;
 double    ds.CableRunIFB.CalPZIn   = 17155.0;
-double    ds.CableRunIFB.CalPZHL   =    50.0;
-double    ds.CableRunIFB.CalPZOut  = 17375.0;
+double    ds.CableRunIFB.CalPZHL   =    45.0;
+double    ds.CableRunIFB.CalPZOut  = 17370.0;
 string    ds.CableRunIFB.CalPMat   = "Electronics";
 
 double    ds.CableRunIFB.TrkR1     =  1159.0;
 double    ds.CableRunIFB.TrkR2     =  1249.5;
-double    ds.CableRunIFB.TrkPhi0   =   205.0;
-double    ds.CableRunIFB.TrkDPhi   =    64.5;
+double    ds.CableRunIFB.TrkPhi0   =   207.6; // 205 + sin^-1(90.5/2/1000.5)
+double    ds.CableRunIFB.TrkDPhi   =    61.9;
 double    ds.CableRunIFB.TrkREnd   =  1000.5;
 double    ds.CableRunIFB.TrkEndW   =    90.5;
 double    ds.CableRunIFB.TrkPhiE   =   205.0;
@@ -241,13 +240,13 @@ double    ds.CableRunIFB.TrkPR2    =  1000.0;
 double    ds.CableRunIFB.TrkPPhi0  =   184.5; 
 double    ds.CableRunIFB.TrkPDPhi  =    45.0;
 double    ds.CableRunIFB.TrkPZIn   = 17155.0;
-double    ds.CableRunIFB.TrkPZHL   =    50.0;
-double    ds.CableRunIFB.TrkPZOut  = 17375.0;
+double    ds.CableRunIFB.TrkPZHL   =    45.0;
+double    ds.CableRunIFB.TrkPZOut  = 17370.0;
 string    ds.CableRunIFB.TrkPMat   = "Electronics";
 
-double    ds.CableRunIFB.ZHL       = 50.; // 4 inches thick --> 2 inch half length
+double    ds.CableRunIFB.ZHL       = 45.; // 4 inches thick --> 2 inch half length
 string    ds.CableRunIFB.Material  = "Electronics";
-double    ds.CableRunIFB.ZC        = 17375.;
+double    ds.CableRunIFB.ZC        = 17370.;
 
 // Service pipes along bottom of DS
 bool      ds.hasServicePipes       = true;
