@@ -781,8 +781,10 @@ void StrawMat(TTree* ta) {
   mleg->Draw();
 }
 
-void TrkCaloHit(TTree* ta) {
-  TCut goodtrkcalo("detrkqual.trkqual>0.6&&detch.active");
+void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
+  char cstring[100];
+  snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&demc.pdg==%i",tqcut,pdg);
+  TCut goodtrkcalo(cstring);
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
   TH1F* clen0 = new TH1F("clen0","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,-50,250);
