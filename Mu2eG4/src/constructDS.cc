@@ -943,11 +943,14 @@ namespace mu2e {
 	 //Add radial components of calorimeter outside cabling
 	 CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	 turn->rotateZ(-ds->calPhiECableRunIFB()*CLHEP::degree);
-
-	 double calIFBCableRunEnd[] = { (ds->calR2CableRunIFB() - ds->calREndCableRunIFB())/2.,
-					ds->calEndWCableRunIFB()/2.,
+	 //add a buffer so box doesn't go beyond the radius of the track cable ring
+	 double rend0  = ds->calR2CableRunIFB();
+	 double boxwidth = ds->calEndWCableRunIFB();
+	 double deltar = sqrt(rend0*rend0 - boxwidth*boxwidth/4.);
+	 double calIFBCableRunEnd[] = { (deltar - ds->calREndCableRunIFB())/2.,
+					boxwidth/2.,
 					ds->zHLCableRunIFB()};
-	 CLHEP::Hep3Vector calIFBCableRunEndLoc1( (ds->calR2CableRunIFB() + ds->calREndCableRunIFB())/2.,
+	 CLHEP::Hep3Vector calIFBCableRunEndLoc1( (deltar + ds->calREndCableRunIFB())/2.,
 						 0.0, ds->zCCableRunIFB() );
 
 	 calIFBCableRunEndLoc1.rotateZ(ds->calPhiECableRunIFB()*CLHEP::degree);
@@ -966,7 +969,7 @@ namespace mu2e {
 	 CLHEP::HepRotation * turn2 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	 turn2->rotateZ((ds->calPhiECableRunIFB()-180.)*CLHEP::degree);
 
-	 CLHEP::Hep3Vector calIFBCableRunEndLoc2( (ds->calR2CableRunIFB() + ds->calREndCableRunIFB())/2.,
+	 CLHEP::Hep3Vector calIFBCableRunEndLoc2( (deltar + ds->calREndCableRunIFB())/2.,
 						 0.0, ds->zCCableRunIFB() );
 
 	 calIFBCableRunEndLoc2.rotateZ((180.-ds->calPhiECableRunIFB())*CLHEP::degree);

@@ -13,6 +13,10 @@
 // Half length of DS1 has been adjusted such that given an assumed
 // rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
 // DS is at 3239 mm, consistent with CDR.
+// NOTE 4 (04/29/19): Must use Pipe_v04.txt to avoid overlapping versions of cabling
+// outside the IFB
+
+
 
 double ds.rIn.in             =  950.;
 double ds.rIn.out            =  969.05; //970.;
