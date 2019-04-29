@@ -125,24 +125,24 @@ setup -B art_root_io v1_00_04 -q${MU2E_UPS_QUALIFIERS}
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
   setup -B geant4 v4_10_4_p03a -q${MU2E_UPS_QUALIFIERS}${MU2E_G4_GRAPHICS_QUALIFIER}${MU2E_G4_MT_QUALIFIER}${MU2E_G4_EXTRA_QUALIFIER}
 else
-  setup -B xerces_c v3_2_0a   -q${MU2E_UPS_QUALIFIERS}
+  setup -B xerces_c v3_2_2   -q${MU2E_UPS_QUALIFIERS}
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_20 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_02_21 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
 
 setup -B heppdt   v3_04_01h -q${MU2E_UPS_QUALIFIERS}
-setup -B BTrk   v1_02_15  -q${MU2E_UPS_QUALIFIERS}
-setup -B cry   v1_7k  -q${MU2E_UPS_QUALIFIERS}
+setup -B BTrk   v1_02_16  -q${MU2E_UPS_QUALIFIERS}
+setup -B cry   v1_7m  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_5  -q${build}
 
 # The build system.
 setup -B scons v3_0_5  -q p2715a
 
 # The debugger
-setup -B gdb v8_1
+setup -B gdb v8_2_1
 
 # satellite releases run this setup, then add itself to the following
 
