@@ -107,8 +107,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e17:+${build}
-#export MU2E_ART_SQUALIFIER=s74
-export MU2E_ART_SQUALIFIER=s73
+export MU2E_ART_SQUALIFIER=s79
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -123,7 +122,7 @@ fi
 export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
-setup -B art v2_11_05 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_12_01 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
@@ -133,7 +132,6 @@ else
 fi
 
 # Get access to raw data formats.
-#setup -B mu2e_artdaq_core v1_02_18 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 setup -B mu2e_artdaq_core v1_02_19 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.

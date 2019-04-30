@@ -72,8 +72,10 @@ namespace mu2e {
       art::Ptr<SimParticle> const& sp = step->simParticle();
       CLHEP::Hep3Vector const& mom = step->momentum(); // cast to 3-vector
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << mom.mag() << std::endl;
-      auto pdgfnd = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId());
-      if(pdgfnd != pdgs_.end() && mom.mag() > minpmom_ && mom.mag() < maxpmom_ ){
+      bool goodpdg(true);
+      if(pdgs_.size() > 0)
+	goodpdg = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId()) != pdgs_.end();
+      if(goodpdg && mom.mag() > minpmom_ && mom.mag() < maxpmom_ ){
 	auto mapfnd = pmap.find(sp);
 	if(mapfnd == pmap.end()) 
 	  pmap[sp] = 1;

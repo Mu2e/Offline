@@ -177,8 +177,6 @@ namespace mu2e {
     
     ptr->setPreampToAdc2Response(preampToAdc2Response);
 
-    if(_config.verbose()>1) ptr->print(cout);
-
     return ptr;
 
   } // end fromFcl
@@ -198,7 +196,7 @@ namespace mu2e {
       vthresh[2*i+StrawEnd::cal] = ttrs->rowAt(i).thresholdCal();
       vthresh[2*i+StrawEnd::hv] = ttrs->rowAt(i).thresholdHv();
     }
-    std::cout << "setting vthresh "<< vthresh[0]<< std::endl;
+
     ptr->setvthresh(vthresh);
 
 
@@ -216,8 +214,6 @@ namespace mu2e {
     ptr->setOffsets( timeOffsetPanel,
 		     timeOffsetStrawHV,
 		     timeOffsetStrawCal );
-
-    if(_config.verbose()>1) ptr->print(cout);
 
     return ptr;
 

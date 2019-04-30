@@ -118,7 +118,7 @@ namespace mu2e
     double tprop = hflt/Vflt;
     // estimate signal propagation time on the wire assuming the middle (average)
     double vwire = _strawResponse->halfPropV(_combohit.strawId(),comboHit().energyDep()*1000.)*2;
-    double teprop = _straw.getHalfLength()/vwire;
+    double teprop = _straw.halfLength()/vwire;
     // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
     // when the track crossed Z=0
     // assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
@@ -132,7 +132,6 @@ namespace mu2e
 
   void
   TrkStrawHit::updateDrift() {
-// deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
 // compute the drift time
     double tdrift = driftTime();
 // find the track direction at this hit
@@ -179,20 +178,20 @@ namespace mu2e
     if( poca().status().success()){
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:
-	  _stime = (straw().getHalfLength()+hitLen())/_vprop;
+	  _stime = (straw().halfLength()+hitLen())/_vprop;
 	  break;
 	case StrawEnd::hv:
-	  _stime = (straw().getHalfLength()-hitLen())/_vprop;
+	  _stime = (straw().halfLength()-hitLen())/_vprop;
 	  break;
       }
     } else {
 // if we're missing poca information, use time division instead
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:
-	  _stime = (straw().getHalfLength()+timeDiffDist())/_vprop;
+	  _stime = (straw().halfLength()+timeDiffDist())/_vprop;
 	  break;
 	case StrawEnd::hv:
-	  _stime = (straw().getHalfLength()-timeDiffDist())/_vprop;
+	  _stime = (straw().halfLength()-timeDiffDist())/_vprop;
 	  break;
       }
     }

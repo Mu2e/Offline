@@ -5,7 +5,6 @@
 //
 
 #include "TrkDiag/inc/TrkCaloDiag.hh"
-
 namespace mu2e 
 {  
 
@@ -53,16 +52,16 @@ namespace mu2e
     tcinfo._eclust = cluster->energyDep();
     tcinfo._tclust = cluster->time();
     tcinfo._section = cluster->diskId();
-    tcinfo._cpos = threevec(cluster->cog3Vector());
+    tcinfo._cpos = Geom::toXYZVec(cluster->cog3Vector());
 // track information at intersection point.  Don't use this as there's an
 // additional fltlen added for the depth (59mm).
 //  KalRep const* krep = tcm.textrapol()->trk()  
 //    double ipath = tcinfo.textrapol()->pathLengthEntrance();	       
-//    tcinfo._tpos = threevec(krep.position(ipath); 
-//    tcinfo._tdir = threevec(krep.direction(ipath);
+//    tcinfo._tpos = Geom::toXYZVec(krep.position(ipath); 
+//    tcinfo._tdir = Geom::toXYZVec(krep.direction(ipath);
 //    tcinfo._ttrk = krel.arrivalTime(ipath);
-    tcinfo._tpos = threevec(tcm.xtrk(),tcm.ytrk(),tcm.ztrk());
-    tcinfo._tdir = threevec(tcm.nx(),tcm.ny(),tcm.nz());
+    tcinfo._tpos = Geom::toXYZVec(CLHEP::Hep3Vector(tcm.xtrk(),tcm.ytrk(),tcm.ztrk()));
+    tcinfo._tdir = Geom::toXYZVec(CLHEP::Hep3Vector(tcm.nx(),tcm.ny(),tcm.nz()));
     tcinfo._ttrk = tcm.ttrk();
   }
 

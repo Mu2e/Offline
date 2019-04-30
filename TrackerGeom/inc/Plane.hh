@@ -22,11 +22,10 @@
 
 namespace mu2e {
 
-  class Tracker;
-
   class Plane{
 
     friend class TrackerMaker;
+    friend class Tracker; // needed for deep copy
 
   public:
 
@@ -77,7 +76,7 @@ namespace mu2e {
     std::string name( std::string const& base ) const;
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker& tracker ) const;
+    void fillPointers ( const Tracker* tracker ) const;
 
     bool exists() const {
       return _exists;

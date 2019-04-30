@@ -26,7 +26,6 @@ namespace mu2e {
       // lock access to the data, will release when this method returns
       LockGuard lock(*this);
 
-      if(_verbose>1) std::cout << "in cache useDb =  "<< _useDb<< std::endl;
       // delayed construction here so that the handles
       // inside the service can reference the service 
       if(_useDb && !_tdp_p) {
@@ -85,7 +84,11 @@ namespace mu2e {
 	}
         p->addCids(cids);
         push(p);
+
+	if(_verbose>2) p->print(std::cout);
+
       }
+
 
       return std::make_tuple(p,iov);
 }

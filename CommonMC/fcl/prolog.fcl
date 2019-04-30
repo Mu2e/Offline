@@ -9,15 +9,29 @@ CommonMC: {
   producers: {
 # time maps
     protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
+    muonTimeMap:   { module_type : GenerateMuonLife }
+    cosmicTimeMap: 
+    { 
+	module_type : GenerateCosmicTimes
+	hitsInputTag: "detectorFilter:tracker"
+	tmin : 450
+	tmax : 1705
+    }
 # time maps for primaries in inline mixing jobs
     protonTimeMapPrimary: { module_type : GenerateProtonTimes }
-    muonTimeMapPrimary: { module_type : GenerateMuonLife }
+    muonTimeMapPrimary:   { module_type : GenerateMuonLife }
+    cosmicTimeMapPrimary: 
+    { 
+	module_type : GenerateCosmicTimes
+	hitsInputTag: "detectorFilter:tracker"
+     	tmin : 450
+	tmax : 1705
+    }
 # Event window marker
     EWMProducer : { module_type : EventWindowMarkerProducer }
   }
-  TimeMaps : [ protonTimeMap, muonTimeMap ]
-  TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary ]
+  TimeMaps : [ protonTimeMap, muonTimeMap, cosmicTimeMap ]
+  TimeMapsPrimary : [ protonTimeMapPrimary, muonTimeMapPrimary, cosmicTimeMapPrimary ]
   FindMCPrimary : {
     module_type : FindMCPrimary
     debugLevel : 0

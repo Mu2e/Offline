@@ -16,8 +16,6 @@ double cosmicDYB.muEMax = 500e3;
 double cosmicDYB.dx     = 1328;
 double cosmicDYB.dy     = 1328;
 double cosmicDYB.dz     = 5450;
-double cosmicDYB.tMin   =  400;
-double cosmicDYB.tMax   = 1705;
 
 vector<double> cosmicDYB.productionCenterInMu2e = {-3904,0,8689};
 

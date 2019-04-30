@@ -2,8 +2,11 @@
 #define TrackerGeom_Tracker_hh
 //
 // Hold all geometry and identifier information about
-// a Tracker.  This is intended as a "data only"
-// class.
+// a Tracker.  This is intended as a "data only" class.
+//
+// An un-aligned version can be made by GeometryService
+// and an aligned verison can be made by ProditionsService
+// by copying then adding alignment to the GeometryService version
 //
 // Original author Rob Kutschke
 //
@@ -11,13 +14,13 @@
 #include <vector>
 #include <array>
 #include <limits>
-//#include <iomanip>
-//#include <iostream>
+#include <string>
 
 #include "cetlib_except/exception.h"
 
 
 #include "Mu2eInterfaces/inc/Detector.hh"
+#include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "TrackerGeom/inc/Manifold.hh"
 #include "TrackerGeom/inc/Support.hh"
 #include "TrackerGeom/inc/SupportModel.hh"
@@ -25,18 +28,20 @@
 
 #include "TrackerGeom/inc/Plane.hh"
 #include "DataProducts/inc/PanelId.hh"
-#include "TrackerGeom/inc/StrawDetail.hh"
 #include "GeomPrimitives/inc/TubsParams.hh"
 #include "GeomPrimitives/inc/PlacedTubs.hh"
 #include "TrackerGeom/inc/Station.hh"
 
 namespace mu2e {
 
-  class Tracker : public Detector {
+  class Tracker : public Detector, public ProditionsEntity {
 
         friend class TrackerMaker;
 
   public:
+
+    typedef std::shared_ptr<Tracker> ptr_t;
+    typedef std::shared_ptr<const Tracker> cptr_t;
 
     constexpr static uint16_t _maxRedirect =
       ((StrawId::_nplanes -1) << StrawId::_planesft) +
@@ -45,13 +50,19 @@ namespace mu2e {
 
     // =============== NewTracker Public Objects End   ==============
 
-    Tracker(){
+    Tracker():_name("AlignedTracker") {
       if (StrawId::_nlayers != 2)
         throw cet::exception("GEOM")
           << "Expect configuration with 2 layers per panel\n";
     }  // TODO: insert proper initializer list, starting w/ base class
 
-    // Use compiler-generated copy c'tor, copy assignment, and d'tor
+    // Need to be able to copy, but this has internal
+    // pointers, so needs a deep copy, but can except default dtor
+
+    // copy constructor
+    Tracker(const Tracker& other);
+
+    std::string const& name() const { return _name; }
 
     void fillPointers () const;
 
@@ -59,9 +70,28 @@ namespace mu2e {
     double z0()   const { return _z0;}
     double zHalfLength() const;
 
-    double strawRadius() const{
-      return getStraw(StrawId(0,0,0)).getDetail().outerRadius();
-    }
+    double strawInnerRadius() const{ return _strawInnerRadius; }
+    double strawOuterRadius() const{ return _strawOuterRadius; }
+    double strawWallThickness() const{ return _strawWallThickness; }
+    double outerMetalThickness() const{ return _outerMetalThickness; }
+    double innerMetal1Thickness() const{ return _innerMetal1Thickness; }
+    double innerMetal2Thickness() const{ return _innerMetal2Thickness; }
+    double wireRadius()           const { return _wireRadius; }
+    double wirePlateThickness()   const { return _wirePlateThickness; }
+
+    std::string const& wallMaterialName()            const{ return _wallMaterialName; }
+    std::string const& wallCoreMaterialName()        const{ return  wallMaterialName();  }
+    std::string const& wallOuterMetalMaterialName()  const{ return _outerMetalMaterial;  }
+    std::string const& wallInnerMetal1MaterialName() const{ return _innerMetal1Material; }
+    std::string const& wallInnerMetal2MaterialName() const{ return _innerMetal2Material; }
+    std::string const& gasMaterialName()             const{ return _gasMaterialName; }
+    std::string const& wireMaterialName()            const{ return _wireMaterialName; }
+    std::string const& wireCoreMaterialName()        const{ return  wireMaterialName();  }
+    std::string const& wirePlateMaterialName()       const{ return _wirePlateMaterial;   }
+
+    // istraw is StrawId::straw()
+    double getStrawHalfLength(int istraw) const { return _strawHalfLengths[istraw];}
+    double getStrawActiveHalfLength(int istraw) const { return _strawActiveHalfLengths[istraw];}
 
     std::string const& envelopeMaterial() const { return _envelopeMaterial; }
 
@@ -72,11 +102,10 @@ namespace mu2e {
 
     // Accessors
     uint16_t nPlanes() const{
-      // return StrawId::_nplanes;
-      return _nPlanes; // tmp till we process cd3
+      return StrawId::_nplanes;
     }
 
-    uint16_t nStraws() const { return _nStraws; } // tmp till we process cd3
+    uint16_t nStraws() const { return StrawId::_nustraws; }
 
     const std::array<Plane,StrawId::_nplanes>& getPlanes() const{
       return _planes;
@@ -102,10 +131,6 @@ namespace mu2e {
 
     const std::array<Straw,StrawId::_nustraws>& getAllStraws() const
     {return _allStraws2;}
-
-    const std::vector<StrawDetail>& getStrawDetails() const{
-      return _strawDetails;
-    }
 
     SupportModel getSupportModel() const{
       return _supportModel;
@@ -167,31 +192,22 @@ namespace mu2e {
     // F can be a class with an operator() or a free function.
     template <class F>
     inline void forAllStraws ( F& f) const{
-      // for ( const auto& plane : _planes ) { // fixme: should be used after cd3 is processed
-      //   plane.forAllStraws(f);
-      // }
-      for ( size_t i=0; i<_nPlanes; ++i){
-        _planes[i].forAllStraws(f);
+      for ( const auto& plane : _planes ) {
+        plane.forAllStraws(f);
       }
     }
 
     template <class F>
     inline void forAllPanels ( F& f) const{
-      // for ( const auto& plane : _planes ) {
-      //   plane.forAllPanels(f);
-      // }
-      for ( size_t i=0; i<_nPlanes; ++i){
-        _planes[i].forAllPanels(f);
+      for ( const auto& plane : _planes ) {
+        plane.forAllPanels(f);
       }
     }
 
     template <class F>
     inline void forAllPlanes ( F& f) const{
-      // for ( const auto& plane : _planes ) {
-      //   f(plane);
-      // }
-      for ( size_t i=0; i<_nPlanes; ++i){
-        f(_planes[i]);
+      for ( const auto& plane : _planes ) {
+        f(plane);
       }
     }
 
@@ -199,6 +215,8 @@ namespace mu2e {
 
 
   protected:
+
+    std::string _name;
 
     // Position of the center of the tracker, in the Mu2e coordinate system.
     double _z0;
@@ -209,9 +227,6 @@ namespace mu2e {
     // All envelope volumes are made of this.
     std::string _envelopeMaterial;
 
-    // Detailed info about each type of straw.
-    std::vector<StrawDetail> _strawDetails;
-
     // An Tracker is made of two planes, sides and vanes.
     // std::vector<Plane> _planes;
 
@@ -219,8 +234,29 @@ namespace mu2e {
     // A Tracker is made of a collection of Stations.
     std::vector<Station> _stations;
 
-    // There will be pointers to the objects in this container.
-    //    std::deque<Straw>  _allStraws;
+    double _strawInnerRadius;
+    double _strawOuterRadius;
+    double _strawWallThickness;
+    double _outerMetalThickness;
+    double _innerMetal1Thickness;
+    double _innerMetal2Thickness;
+    double _wireRadius;
+    double _wirePlateThickness;
+
+    std::string _wallMaterialName;
+    std::string _outerMetalMaterial;
+    std::string _innerMetal1Material;
+    std::string _innerMetal2Material;
+    std::string _gasMaterialName;
+    std::string _wireMaterialName;
+    std::string _wirePlateMaterial;
+
+    // Lengths of straws indexed by manifold, from innermost radius, outwards.
+    std::array<double,StrawId::_nstraws> _strawHalfLengths;
+
+    // Same for the active length of the straw.
+    // This is only valid for SupportModel==simple
+    std::array<double,StrawId::_nstraws> _strawActiveHalfLengths;
 
     // Deprecated: part of the ancient MECO Tracker design.
     // A few vestiges not yet removed.
@@ -260,8 +296,6 @@ namespace mu2e {
     // presence info for each straw.
     //    std::vector<bool> _strawExists;
 
-    uint16_t _nPlanes; // fixme tmp till we process cd3
-    uint16_t _nStraws; // fixme tmp till we process cd3
     // =============== NewTracker Private Objects Start ==============
 
     // Dense array.
@@ -279,6 +313,14 @@ namespace mu2e {
     std::array<bool,Tracker::_maxRedirect> _strawExists2;
 
     // =============== NewTracker Private Objects End ==============
+
+
+  private:
+    // copying is complex
+    // prevent these from being generated or used
+    Tracker& operator=(const Tracker& other);
+    Tracker(Tracker&& other) noexcept; // move constructor
+    Tracker& operator=(Tracker&& other) noexcept; // move assignment
 
   };
 

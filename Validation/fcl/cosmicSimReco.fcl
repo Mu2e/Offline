@@ -21,6 +21,7 @@ physics : {
    producers: {
       @table::generation.cosmic.mod
       @table::simulation.default.mod
+      @table::timeSimulation.all.mod
       @table::digis.crv.mod
       @table::reco.crv.mod
    }
@@ -34,6 +35,7 @@ physics : {
       @sequence::generation.cosmic.seq , 
       @sequence::simulation.default.seq , 
       @sequence::cosmicFilter.seq ,
+      @sequence::timeSimulation.all.seq , 
       @sequence::digis.crv.seq , 
       @sequence::reco.crv.seq
    ]
@@ -53,13 +55,17 @@ outputs: {
       [ 
          "keep *_*_*_*",
 	 "drop mu2e::SimParticlemv_g4run_*_*",
-	 "drop mu2e::StepPointMCs_g4run_CRV_*"
+	 "drop mu2e::StepPointMCs_g4run_CRV_*",
+	 "drop *_protonTimeMap_*_*",
+	 "drop *_muonTimeMap_*_*"
       ]
     }
 }
 
-# don't use time simulation
-physics.producers.CrvPhotons.timeOffsets.inputs : []
+# generate the cosmics at one time
+physics.producers.cosmicTimeMap.tmin : 800
+physics.producers.cosmicTimeMap.tmax : 800
+
 # Larger range cut for the first stage - OK for CRV itself
 physics.producers.g4run.physics.minRangeCut : 1.0 // mm
 

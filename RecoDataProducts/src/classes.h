@@ -78,7 +78,10 @@
 // trigger
 #include "RecoDataProducts/inc/TriggerFlag.hh"
 #include "RecoDataProducts/inc/TriggerAlg.hh"
+#include "RecoDataProducts/inc/TriggerAlgMap.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
+// general reco
+#include "RecoDataProducts/inc/RecoCount.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

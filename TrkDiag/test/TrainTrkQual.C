@@ -177,8 +177,11 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
   // tail is defined as the high-side tail
   TCut bkg = goodfit + goodmom + goodpitch + badmomres;
   if(calo) {
-    signal += TCut("dec.eclust>50");
-    bkg += TCut("dec.eclust>50");
+    signal += TCut("detch.active");
+    bkg += TCut("detch.active");
+  } else {
+   signal += TCut("!detch.active");
+    bkg += TCut("!detch.active");
   }
   // weight the tail by the momentum difference
   if(bkgw == linear){
@@ -206,7 +209,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
 
   dataloader->AddVariable("de.nactive","NActive","Count",'I');
   dataloader->AddVariable("de.nactive/de.nhits","FActive","Fraction",'F');
-  dataloader->AddVariable("log10(de.con)","LogFitCon","Probability",'F');
+  dataloader->AddVariable("log10(de.fitcon)","LogFitCon","Probability",'F');
   dataloader->AddVariable("de.momerr","FitMomErr","MeV/c",'F');
   dataloader->AddVariable("de.t0err","T0Err","nsec",'F');
   dataloader->AddVariable("de.d0","D0","mm",'F');

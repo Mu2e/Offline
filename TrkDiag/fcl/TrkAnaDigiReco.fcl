@@ -1,0 +1,60 @@
+#
+# This script runs TrackAnalysisReco on digi inputs.  It runs the official Reco
+# sequence inline.
+# David Brown (LBNL) Feb 2019
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+#include "JobConfig/reco/prolog.fcl"
+
+process_name : TrkAnaDigis
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::TrkAnaReco.producers
+}
+  filters : @local::Reconstruction.filters
+  analyzers: {
+    @table::Reconstruction.analyzers
+    @table::TrkAnaReco.analyzers
+  }
+#  RecoPath : [ @sequence::Reconstruction.RecoPath ]
+  RecoPath : [ 
+   @sequence::Reconstruction.RecoPath,
+   @sequence::Reconstruction.RecoMCSequence,
+   @sequence::TrkAnaReco.TrigSequence ]
+  EndPath : [ RecoCheck, @sequence::TrkAnaReco.EndSequence ]
+}
+# optionally use TrkPatRec only
+#physics.producers.KSFDeM.SeedCollection : "HelixFinderDe:Positive"
+#physics.producers.KSFDeP.SeedCollection : "HelixFinderDe:Negative"
+#physics.producers.KSFDmuM.SeedCollection : "HelixFinderDmu:Positive"
+#physics.producers.KSFDmuP.SeedCollection : "HelixFinderDmu:Negative"
+#
+#physics.producers.KSFDeM.SeedCollection : "CalHelixFinderDe:Positive"
+#physics.producers.KSFDeP.SeedCollection : "CalHelixFinderDe:Negative"
+#physics.producers.KSFDmuM.SeedCollection : "CalHelixFinderDmu:Positive"
+#physics.producers.KSFDmuP.SeedCollection : "CalHelixFinderDmu:Negative"
+#
+physics.producers.TrkQualDeM.KalSeedCollection : "KFFDeM"
+physics.analyzers.TrkAnaNeg.FillHelixInfo : true
+physics.analyzers.TrkAnaNeg.AnalyzeCRV : false
+#physics.producers.SelectRecoMC.debugLevel : 1
+
+services.TFileService.fileName: "nts.owner.trkanareco.version.sequencer.root"
+physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+
+# turn off filtering
+#include "JobConfig/reco/epilog.fcl"
+#
+#physics.producers.SelectRecoMC.debugLevel : 3
+

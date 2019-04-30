@@ -14,6 +14,7 @@ namespace mu2e {
     virtual std::string const& name() const =0 ;
     set_t const& getCids() const { return _cids; }
     void addCids(set_t const& s) { _cids.insert(s.begin(),s.end()); }
+    virtual void print( std::ostream& ) const {}
   private:
     set_t _cids;
   };

@@ -95,7 +95,7 @@ namespace mu2e {
   bool StrawResponse::wireDistance(Straw const& straw, double edep, 
 	   double dt, double& wdist, double& wderr, double &halfpv) const {
     bool retval(true);
-    double slen = straw.getHalfLength();
+    double slen = straw.halfLength();
     // convert edep from Mev to KeV (should be standardized, FIXME!)
     double kedep = 1000.0*edep;
     halfpv = halfPropV(straw.id(),kedep);

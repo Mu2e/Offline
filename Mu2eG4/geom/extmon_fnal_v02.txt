@@ -202,6 +202,22 @@ vector<double> extMonFNAL.dn.module_zoffset = { 1., -1., 1. }; // just determine
 vector<double> extMonFNAL.dn.module_rotation = { 0., 0., 180. };
 
 
+
+//Addition of the Muon ID detector will be placed here
+// Jackson Waters 2018
+//Right now it will be a rectangular box with 3D rotation
+ 
+vector<double> extMonFNAL.muonID.motherTransverseHalfSize = {200, 200};//mm x, y
+string extMonFNAL.muonID.material  = "G4_Fe"; 
+ 
+bool extMonFNAL.muonID.iron.visible = true;
+bool extMonFNAL.muonID.iron.solid = true;
+
+// Placing the box in the z-position based off of the start and end points of the z-position of the downstream pixel planes
+
+double extMonFNAL.muonID.motherStartZ = -2500.; 
+double extMonFNAL.muonID.motherEndZ = -700.;
+
 //----------------------------------------------------------------
 // These are detector VDs (not filter ones)
 //

@@ -251,9 +251,9 @@ namespace mu2e {
         double halfpv;
 	// get distance along wire from the straw center and it's estimated error
 	bool td = srep.wireDistance(straw,energy,dt, dw,dwerr,halfpv);
-        float propd = straw.getHalfLength()+dw;
+        float propd = straw.halfLength()+dw;
         if (eend == StrawEnd(StrawEnd::hv))
-          propd = straw.getHalfLength()-dw;
+          propd = straw.halfLength()-dw;
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
 	// create combo hit
 	static const XYZVec _zdir(0.0,0.0,1.0);
@@ -278,6 +278,7 @@ namespace mu2e {
 	ch._mask = _mask;
 	ch._flag = flag;
 	if (td) ch._flag.merge(StrawHitFlag::tdiv);
+	ch._tend = eend;
 	if(!_filter && _flagXT){
 	  //buffer large hit for cross-talk analysis
 	  size_t iplane       = straw.id().getPlane();

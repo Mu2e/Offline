@@ -15,7 +15,7 @@
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
@@ -56,7 +56,7 @@ namespace mu2e {
     Int_t _plane, _panel, _layer, _straw;
     Int_t _mcpdg, _mcgen, _mcproc;
     Int_t _mcppdg;
-    threevec _mcpspos, _mcpsmom;
+    XYZVec _mcpspos, _mcpsmom;
     Float_t _mcpke, _mcptime;
     Float_t _edep, _mce;
     Float_t _hittime;
