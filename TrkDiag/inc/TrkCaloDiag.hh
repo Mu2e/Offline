@@ -12,7 +12,7 @@
 // mu2e tracking
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 // Track Calo matching
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 #include "TrkDiag/inc/TrkCaloInfo.hh"
 // particleId
 #include "ParticleID/inc/PIDLogLRatio.hh"

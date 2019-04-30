@@ -46,6 +46,7 @@ namespace mu2e {
       bitnames[std::string("GoodDOCA")]		    = bit_to_mask(doca);
       bitnames[std::string("InTime")]		    = bit_to_mask(intime);
       bitnames[std::string("Track")]		    = bit_to_mask(track);
+      bitnames[std::string("Dead")]		    = bit_to_mask(dead);
     }
     return bitnames;
   }

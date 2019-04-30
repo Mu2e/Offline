@@ -28,6 +28,8 @@ namespace mu2e {
       struct Config {
 	fhicl::Atom<int> debug{ Name("debugLevel"),
 	  Comment("Debug Level"), 0};
+	fhicl::Atom<bool> single{ Name("SinglePrimary"),
+	  Comment("Accept the unique GenParticle as primary if there is only 1 in the collection"), false};
 	fhicl::Atom<art::InputTag> genPC{  Name("GenParticles"),
 	  Comment("GenParticle collection containing the primary")};
 	fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"),
@@ -43,6 +45,7 @@ namespace mu2e {
 
     private:
       int _debug;
+      bool _single;
       art::InputTag _gpc, _spc;
       SimParticleTimeOffset _toff;
       std::vector<int> _pgenids; 
@@ -51,6 +54,7 @@ namespace mu2e {
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
     _debug(config().debug()),
+    _single(config().single()),
     _gpc(config().genPC()),
     _spc(config().simPC()),
     _toff(config().SPTO()),
@@ -77,11 +81,16 @@ namespace mu2e {
     auto const& gpc = *gpch;
     auto spch = event.getValidHandle<SimParticleCollection>(_spc);
     auto const& spc = *spch;
-    // loop over input gen particles and save those whose GenIds match the list
+    // check for a single particle
     std::vector<GenParticleCollection::const_iterator> pgps;
-    for(auto igp= gpc.begin(); igp != gpc.end(); igp++) {
-      if(std::find(_pgenids.begin(),_pgenids.end(),igp->generatorId().id()) != _pgenids.end()){
-	pgps.push_back(igp);
+    if(_single && gpc.size() ==1){
+      pgps.push_back(gpc.begin());
+    } else {
+      // loop over input gen particles and save those whose GenIds match the list
+      for(auto igp= gpc.begin(); igp != gpc.end(); igp++) {
+	if(std::find(_pgenids.begin(),_pgenids.end(),igp->generatorId().id()) != _pgenids.end()){
+	  pgps.push_back(igp);
+	}
       }
     }
     // handle CRY separately: it simulates secondaries and we have to create the primary ourselves.

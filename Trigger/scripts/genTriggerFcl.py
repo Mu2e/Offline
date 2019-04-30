@@ -112,7 +112,7 @@ def appendEpilog(trig_path, output_file, project_name, trig_path_counter):
                                 epilog_file.close()
         # set the TriggerAlg using the trig_path_counter
         epilog_file     = open(epilog_fileName,"a")
-        trigAlg_line    = ("physics.filters."+filterName+".triggerAlg        " + " : [" + "\"Trig"+str(trig_path_counter) + "\" ] \n")
+        trigAlg_line    = ("physics.filters."+filterName+".triggerPath        " + " : " + "\""+trk_alg+"_path\" \n")
         epilog_file.write(trigAlg_line)
 
         epilog=("\n#include \""+epilog_fileName +"\"")
@@ -247,7 +247,7 @@ for line in fh:
         new_epilog.write(new_path)
 
     else:
-        trigerOutput_line= ("\nphysics.out : [ readTriggerInfo, triggerOutput ]"+" \n")
+        trigerOutput_line= ("\nphysics.out : [ readTriggerInfo, triggerOutput ]"+" \n\n")
         new_file.write(trigerOutput_line)
         hasFilteroutput=1
 
@@ -267,9 +267,8 @@ new_epilog.write("\n")
        
 analyzer_line= ("physics.analyzers.readTriggerInfo.SelectEvents : [ "+path_list+" ]"+" \n")
 new_file.write(analyzer_line)
-
-trigInfoMerger_line = ("physics.producers.triggerInfoMerger.trigAlgNames : [ "+trig_list+" ]"+" \n")
-new_epilog.write(trigInfoMerger_line)
+analyzer_paths_list= ("physics.analyzers.readTriggerInfo.triggerPathsList : [ "+path_list+" ]"+" \n\n")
+new_file.write(analyzer_paths_list)
 
 if hasFilteroutput == 1:
     triggerOutput_line= ("outputs.triggerOutput.SelectEvents : [ "+path_list+" ]"+" \n")

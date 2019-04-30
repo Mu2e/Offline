@@ -313,6 +313,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawDigiCollection                         : makeSD
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalSeedFit
+	    CaloClusterCollection                       : "CaloClusterFromProtoCluster"
 	    mcDigiCollTag                               : "dave,_it_is_used_only_when_debugging_MC._pasha"
 	    DtMaxMiss                                   : 55.
 	    MaxAddDoca                                  : 5.    # mm
@@ -331,7 +332,7 @@ CalPatRec : { @table::CalPatRec
 	MergeHelixFinder : { module_type:MergeHelixFinder	
 	    diagLevel                    : 0
 	    debugLevel                   : 0
-	    trkHelixFinderModuleLabel    : "HelixFindere:Positive"
+	    trkHelixFinderModuleLabel    : "HelixFinderDe:Positive"
 	    cprHelixCollTag              : "CalHelixFinder:Positive"
 	}
 
@@ -503,8 +504,8 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFindere:Positive"
-	    calHelixFinderModuleLabel : "HelixFindere:Negative"
+	    trkHelixFinderModuleLabel : "HelixFinderDe:Positive"
+	    calHelixFinderModuleLabel : "HelixFinderDe:Negative"
 	}
 
 	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 

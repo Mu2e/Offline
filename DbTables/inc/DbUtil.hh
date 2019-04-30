@@ -19,6 +19,8 @@ namespace mu2e {
     static std::vector<std::string> splitCsv(std::string const& line);
     // clean up a csv row for SQL insert
     static std::string sqlLine(std::string const & line);
+    // provide the current local time as a string
+    static std::string timeString();
   };
 
 

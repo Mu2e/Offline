@@ -80,7 +80,8 @@ def cppPath(mu2eOpts):
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
         os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
-        os.environ['POSTGRESQL_INC']
+        os.environ['POSTGRESQL_INC'],
+        os.environ['CURL_DIR']+'/include'
         ]
 
     if mu2eOpts['satellite']:
@@ -111,7 +112,8 @@ def libPath(mu2eOpts):
         os.environ['TBB_LIB'],
         os.environ['GSL_LIB'],
         os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
-        os.environ['POSTGRESQL_LIBRARIES']
+        os.environ['POSTGRESQL_LIBRARIES'],
+        os.environ['CURL_DIR']+'/lib'
         ]
 
     if mu2eOpts['satellite']:

@@ -118,8 +118,6 @@ physics : {
     cprSeedDeM_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeM        ]
     cprSeedDeP_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeP        ]
     
-    #merger of the TriggerInfo
-#    zzTrigIfnoMerger_path        : [ triggerInfoMerger ] 
     
 #    out           : [ readTriggerInfo ]
     

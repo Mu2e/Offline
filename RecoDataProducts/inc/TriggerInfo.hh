@@ -2,8 +2,8 @@
 #define RecoDataProducts_TriggerInfo_hh
 
 #include "RecoDataProducts/inc/TriggerFlag.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "canvas/Persistency/Common/Ptr.h"
+#include <string>
 
 namespace mu2e {
 
@@ -17,7 +17,7 @@ namespace mu2e {
   {
      
     const TriggerFlag&             triggerBits()     const { return _triggerBits; }
-    const TriggerAlg&              triggerAlgBits()  const { return _triggerAlgBits; }
+    const std::string&             triggerPath()     const { return _triggerPath; }
     const art::Ptr<CaloCluster>&   caloCluster()     const { return _caloCluster; }
     const art::Ptr<KalSeed>&       track()           const { return _track; }
     const art::Ptr<HelixSeed>&     helix()           const { return _helix; }
@@ -25,7 +25,7 @@ namespace mu2e {
     const art::Ptr<CaloTrigSeed>&  caloTrigSeed()    const { return _caloTrigSeed; }
 
     TriggerFlag	           _triggerBits{}; 
-    TriggerAlg	           _triggerAlgBits{}; 
+    std::string            _triggerPath; 
     art::Ptr<CaloCluster>  _caloCluster; 
     art::Ptr<KalSeed>      _track; // associated track
     art::Ptr<HelixSeed>    _helix; // associated helix

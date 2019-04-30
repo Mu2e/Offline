@@ -24,7 +24,6 @@
 #include "GeometryService/inc/GeometryService.hh"
 
 #include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -59,7 +58,7 @@ namespace mu2e {
   private:
 
     int _diagLevel;
-    TriggerAlg    _trigAlg;
+    std::string    _trigPath;
 
     std::string                _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -104,7 +103,7 @@ namespace mu2e {
 
   FilterEcalMVATrigger::FilterEcalMVATrigger(fhicl::ParameterSet const& pset):
     _diagLevel                  (pset.get<int>("diagLevel",0)),
-    _trigAlg                    (pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath                   (pset.get<std::string>("triggerPath")),
     _MVAMethodLabel             (pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel    (pset.get<std::string>("caloTrigSeedModuleLabel")),  
     _weightsfile                (pset.get<string>("weightsfile")),
@@ -203,7 +202,7 @@ namespace mu2e {
 	  if (_MVA>_MVAlowcut[disk]) {
 	    retval = true;
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerAlgBits.merge(_trigAlg);
+	    triginfo->_triggerPath = _trigPath;
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    break;
@@ -214,7 +213,7 @@ namespace mu2e {
 	  if (_MVA>MVAcut) {
 	    retval = true;
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
-	    triginfo->_triggerAlgBits.merge(_trigAlg);
+	    triginfo->_triggerPath = _trigPath;
 	    size_t index = std::distance(caloTrigSeeds.begin(),seedIt);
 	    triginfo->_caloTrigSeed = art::Ptr<CaloTrigSeed>(caloTrigSeedsHandle,index);
 	    break;

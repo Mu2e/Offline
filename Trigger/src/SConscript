@@ -18,7 +18,6 @@ extrarootlibs = [ 'Geom', 'TMVA' , 'Minuit' , 'XMLIO' ]
 mainlib = helper.make_mainlib ( [] )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrackCaloMatching',
                        'mu2e_TrkExt',
                        'mu2e_TrkDiag',
                        'mu2e_BTrkData',
@@ -52,6 +51,8 @@ helper.make_plugins( [ mainlib,
                        'art_Framework_Services_Optional',
                        'art_Framework_Services_Optional_TFileService_service',
                        'art_Framework_Services_Optional_RandomNumberGenerator_service',
+#                       'art_Framework_Services_System',                       
+                       'art_Framework_Services_System_TriggerNamesService_service',                       
                        'art_Persistency_Common',
                        'art_Persistency_Provenance',
                        'art_Utilities',

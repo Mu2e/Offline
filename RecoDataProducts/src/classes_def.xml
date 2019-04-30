@@ -13,7 +13,6 @@
  <class name="mu2e::CaloDigiCollection"/>
  <class name="art::Ptr<mu2e::CaloDigi>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
- <class name="art::Wrapper<mu2e::CaloDigi>"/>
  <class name="art::Wrapper<mu2e::CaloDigiCollection>"/>
 
  <class name="mu2e::CaloRecoDigi"/>
@@ -29,10 +28,14 @@
  <class name="art::Wrapper<mu2e::CaloHitCollection>"/>
 
  <class name="mu2e::CaloCrystalHit"/>
+ <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
  <class name="std::vector<art::Ptr<mu2e::CaloCrystalHit> >"/>
  <class name="mu2e::CaloCrystalHitCollection"/>
- <class name="art::Ptr<mu2e::CaloCrystalHit>"/>
+ <class name="std::pair<art::Ptr<mu2e::CaloCrystalHit>, art::Ptr<mu2e::CaloCrystalHit> >"/>
+ <class name="std::map<art::Ptr<mu2e::CaloCrystalHit>, art::Ptr<mu2e::CaloCrystalHit> >"/> 
+ <class name="mu2e::CaloCrystalHitRemapping"/>
  <class name="art::Wrapper<mu2e::CaloCrystalHitCollection>"/>
+ <class name="art::Wrapper<mu2e::CaloCrystalHitRemapping>"/>
 
  <class name="mu2e::CaloProtoCluster"/>
  <class name="art::Ptr<mu2e::CaloProtoCluster>"/>
@@ -211,6 +214,16 @@
  <class name="art::Ptr<mu2e::TrkCaloMatch>" />
  <class name="art::Wrapper<mu2e::TrkCaloMatchCollection>"/>
 
+ <class name="mu2e::TrkToCaloExtrapol" />
+ <class name="mu2e::TrkToCaloExtrapolCollection" />
+ <class name="art::Ptr<mu2e::TrkToCaloExtrapol>"/>
+ <class name="std::vector<art::Ptr<mu2e::TrkToCaloExtrapol> >" />
+ <class name="art::Wrapper<mu2e::TrkToCaloExtrapolCollection>" />
+
+ <class name="mu2e::TrackClusterMatch" />
+ <class name="std::vector<mu2e::TrackClusterMatch>"  />
+ <class name="art::Wrapper<mu2e::TrackClusterMatchCollection>" />
+
  <class name="mu2e::PIDProduct" />
  <class name="mu2e::PIDProductCollection" />
  <class name="art::Ptr<mu2e::PIDProduct>" />
@@ -295,14 +308,6 @@
 
  <class name="mu2e::TriggerFlagDetail"/>
  <class name="mu2e::TriggerFlag"/>
- <class name="mu2e::TriggerAlgDetail"/>
- <class name="art::Wrapper<mu2e::TriggerAlgDetail>"/>
- <class name="mu2e::TriggerAlg"/>
- <class name="art::Ptr<mu2e::TriggerAlg>"/>
- <class name="art::Wrapper<mu2e::TriggerAlg>"/>
- <class name="mu2e::TriggerAlgMap"/>
- <class name="art::Ptr<mu2e::TriggerAlgMap>"/>
- <class name="art::Wrapper<mu2e::TriggerAlgMap>"/>
  <class name="mu2e::TriggerInfo"/>
  <class name="art::Ptr<mu2e::TriggerInfo>"/>
  <class name="mu2e::TriggerInfoCollection" /> 

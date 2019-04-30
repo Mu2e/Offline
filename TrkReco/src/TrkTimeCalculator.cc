@@ -10,12 +10,6 @@
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
-// boost
-#include <boost/accumulators/accumulators.hpp>
-#include "boost_fix/accumulators/statistics/stats.hpp"
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // root
@@ -27,7 +21,6 @@
 #include <cmath>
 using CLHEP::Hep3Vector;
 using namespace std;
-using namespace boost::accumulators;
 namespace mu2e
 {
 
@@ -35,11 +28,9 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",0)),
 //    _useflag(pset.get<std::vector<std::string>>("UseFlag")),
 //    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier","Background"})),
-    _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _avgDriftTime(pset.get<double>("AverageDriftTime",22.5)), 
     _useTOTdrift(pset.get<bool>("UseTOTDrift",true)),
-    _pitch(pset.get<double>("AveragePitch",0.62)),// note this can be signed!
-    _invBeta(1.0/pset.get<double>("ParticleBeta",1.)),
+    _beta(pset.get<double>("ParticleBeta",1.)),
     _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
     _caloZOffset(pset.get<double>("CaloClusterZOffset",-120.0)), // WRT downstream face (mm)
     _caloT0Offset(pset.get<double>("CaloT0Offset",-0.4)), // nanoseconds
@@ -48,33 +39,22 @@ namespace mu2e
 
   TrkTimeCalculator::~TrkTimeCalculator() {}
 
-  void TrkTimeCalculator::updateT0(TimeCluster& tc, StrawHitCollection const& shcol){
-// FIXME!
-  }
-  void TrkTimeCalculator::updateT0(HelixSeed& hs, StrawHitCollection const& shcol) {
-// FIXME!
+  double TrkTimeCalculator::timeOfFlightTimeOffset(double hitz,double pitch) const {
+    return hitz/(pitch*_beta*CLHEP::c_light);
   }
 
-  double TrkTimeCalculator::timeOfFlightTimeOffset(double hitz) const {
-    static double invclight = 0.003336; // This value should come from conditions FIXME!!!  
-    return hitz*_invBeta*invclight*_fdir.dzdt();
-  }
-
-  double TrkTimeCalculator::strawHitTime(StrawHit const& sh, StrawHitPosition const& shp) {
-    return sh.time() - timeOfFlightTimeOffset(shp.pos().z()) - _avgDriftTime;
-  }
-
-  double TrkTimeCalculator::comboHitTime(ComboHit const& ch) {
+  double TrkTimeCalculator::comboHitTime(ComboHit const& ch,double pitch) {
+    double tflt = timeOfFlightTimeOffset(ch.pos().z(),pitch);
     if (_useTOTdrift)
-      return ch.correctedTime() - timeOfFlightTimeOffset(ch.pos().z());
+      return ch.correctedTime() - tflt; // use TOT to correct for drift
     else
-      return ch.time() - timeOfFlightTimeOffset(ch.pos().z()) - _avgDriftTime;
+      return ch.time() - tflt - _avgDriftTime; // otherwise make an average correction
   }
 
-  double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc) const {
+  double TrkTimeCalculator::caloClusterTime(CaloCluster const& cc,double pitch) const {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( cc.diskId(), cc.cog3Vector())); 
-    return cc.time() - timeOfFlightTimeOffset(cog.z()+_caloZOffset) + caloClusterTimeOffset();
+    return cc.time() - timeOfFlightTimeOffset(cog.z()+_caloZOffset,pitch) + caloClusterTimeOffset();
   }
 
 }

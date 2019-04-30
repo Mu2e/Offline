@@ -22,8 +22,10 @@ physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 physics.analyzers.TrkAnaNeg.diagLevel : 1
 physics.analyzers.TrkAnaNeg.FillMCInfo : true
 physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
 physics.analyzers.TrkAnaPos.diagLevel : 1
 physics.analyzers.TrkAnaPos.FillMCInfo : true
 physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+physics.analyzers.TrkAnaPos.FillTriggerInfo : true
 
 services.TFileService.fileName: "nts.owner.trkana-reco.version.sequencer.root"

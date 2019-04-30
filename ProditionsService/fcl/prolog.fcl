@@ -3,6 +3,7 @@
 BEGIN_PROLOG
 
 Proditions : {
+   fullReadoutStraw : @local::FullReadoutStraw
    deadStraw : @local::DeadStraw
    strawDrift : @local::StrawDrift
    strawPhysics : @local::StrawPhysics

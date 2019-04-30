@@ -23,7 +23,8 @@ namespace mu2e {
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
       const auto& plane = tracker.getPlane(i);
       // loop over panels
-      for(auto& panel : plane.getPanels()){
+      for(auto panel_p : plane.getPanels()){
+	auto& panel = *panel_p;
 	// loop over straws
         for (const auto& straw : panel.getStrawPointers()) {
 	  // build the straw elements from this

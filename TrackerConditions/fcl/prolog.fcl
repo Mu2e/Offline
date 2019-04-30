@@ -24,6 +24,14 @@ AlignedTracker : {
    useDb : false
 }
 
+FullReadoutStraw : {
+   verbose : 0
+   useDb : false
+   straws : []
+   # straws : ["16_2_1","10_0_23"]
+}
+
+
 DeadStraw : {
    verbose : 0
    useDb : false

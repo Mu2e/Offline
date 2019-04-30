@@ -16,6 +16,7 @@ extrarootlibs = [ 'Geom', 'Geom', 'GeomPainter', 'Ged' ]
 userlibs = [ rootlibs, 
              extrarootlibs,
              babarlibs,
+                          'mu2e_DataProducts',
                           'mu2e_Mu2eBTrk',
 			  'mu2e_TrkReco',
                           'mu2e_BTrkData',

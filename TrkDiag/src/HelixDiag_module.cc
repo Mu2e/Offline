@@ -69,7 +69,7 @@ namespace mu2e {
       StrawHitFlag _dontuseflag;
       bool _mcdiag, _mcsel, _useshfcol;
       StrawHitFlag  _hsel, _hbkg;
-      int _minnprimary; // minimum # Primary hits to make plots
+      unsigned _minnprimary; // minimum # Primary hits to make plots
       int _mcgen; // MC generator code of primary
       double _targetradius;
       bool _plot;
@@ -85,14 +85,15 @@ namespace mu2e {
       art::InputTag   _shfTag;
       art::InputTag _mcdigisTag;
       art::InputTag _vdmcstepsTag;
+      art::InputTag _primaryTag;
       // cache of event objects
       const ComboHitCollection* _chcol;
       const HelixSeedCollection* _hscol;
       const StrawHitFlagCollection*	  _shfcol;
       const StrawDigiMCCollection* _mcdigis;
       const StepPointMCCollection* _vdmcsteps;
+      const PrimaryParticle* _primary;
       // reco offsets
-      TrkTimeCalculator			_ttcalc;
       // mc time offsets
       SimParticleTimeOffset _toff;
       // Virtual Detector IDs
@@ -118,8 +119,9 @@ namespace mu2e {
       Bool_t _circleConverged, _phizConverged, _helixConverged;
       Float_t _tct0, _tct0err, _ht0, _ht0err;
       RobustHelix _rhel;
-      Int_t _nhits, _nused, _nprimary, _npused, _nptot;
-      Int_t _pdg, _gen, _proc;
+      Int_t _nhits, _nused, _npused, _nptot;
+      unsigned _nprimary;
+      Int_t _pdg, _gen, _proc, _prel;
       vector<HelixHitInfo> _hhinfo;
       vector<HelixHitInfoMC> _hhinfomc;
       RobustHelix _mch;
@@ -138,7 +140,7 @@ namespace mu2e {
     _useshfcol		(pset.get<bool>("UseFlagCollection")),
     _hsel(pset.get<std::vector<std::string> >("HitSelectionBits",vector<string>{"EnergySelection","TimeSelection","RadiusSelection"})),
     _hbkg(pset.get<vector<string> >("HitBackgroundBits",vector<string>{"Background"})),
-    _minnprimary(pset.get<int>("MinimumPrimaryHits",8)),
+    _minnprimary(pset.get<unsigned>("MinimumPrimaryHits",8)),
     _mcgen(pset.get<int>("MCGeneratorCode",2)),
     _targetradius(pset.get<double>("TargetRadius",75)),
     _plot(pset.get<bool>("PlotHelices",false)),
@@ -155,7 +157,7 @@ namespace mu2e {
     _shfTag		(pset.get<string>("StrawHitFlagCollection")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
+    _primaryTag(pset.get<art::InputTag>("PrimaryParticleTag","FindMCPrimary")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     if(_diag > 0){
@@ -184,12 +186,13 @@ namespace mu2e {
 	_hdiag->Branch("mch",&_mch);
 	_hdiag->Branch("mcmom",&_mcmom,"mcmom/F");
 	_hdiag->Branch("mcpz",&_mcpz,"mcpz/F");
-	_hdiag->Branch("nprimary",&_nprimary,"nprimary/I");
+	_hdiag->Branch("nprimary",&_nprimary,"nprimary/i");
 	_hdiag->Branch("nptot",&_nptot,"nptot/I");
 	_hdiag->Branch("npused",&_npused,"npused/I");
 	_hdiag->Branch("pdg",&_pdg,"pdg/I");
 	_hdiag->Branch("gen",&_gen,"gen/I");
 	_hdiag->Branch("proc",&_proc,"proc/I");
+	_hdiag->Branch("prel",&_prel,"prel/I");
       }
       if(_diag > 1){
 	_hdiag->Branch("hh",&_hhinfo);
@@ -241,7 +244,6 @@ namespace mu2e {
 	_circleConverged = status.hasAllProperties(TrkFitFlag::circleConverged);
 	_phizConverged = status.hasAllProperties(TrkFitFlag::phizConverged);
 	_helixConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
-	art::Ptr<SimParticle> pspp;
 	_nused = 0;
 	std::vector<StrawDigiIndex> sdis;
 	for(size_t ihh = 0;ihh < hhits.size(); ++ihh) {
@@ -249,17 +251,19 @@ namespace mu2e {
 	  hhits.fillStrawDigiIndices(evt,ihh,sdis);
 	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_nused += hhit.nStrawHits();
 	}
+	art::Ptr<SimParticle> pspp;
 	if(_mcdiag) {
+	  _nprimary = 0; _pdg = -1; _proc = -1; _gen = -1; _prel = -1;
 	  // get information about the primary particle (produced most hits)
-	  _nprimary = TrkMCTools::primaryParticle(pspp,sdis,_mcdigis);
+	  MCRelationship mcrel;
+	  TrkMCTools::primaryRelation(*_primary, *_mcdigis,sdis,
+	  pspp, _nprimary, mcrel);
 	  if(_nprimary >= _minnprimary){
-	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
 	    _pdg = pspp->pdgId();
 	    _proc = pspp->originParticle().creationCode();
-	    if(pspp->genParticle().isNonnull())
-	      _gen = pspp->genParticle()->generatorId().id();
-	    else
-	      _gen = -1;
+	    _gen = _primary->primary().generatorId().id();
+	    _nptot = TrkMCTools::countDigis(pspp,_mcdigis);
+	    _prel = mcrel.relationship();
 	    // fill MC true helix parameters
 	    _mchelixOK = fillMCHelix(pspp);
 	    _mct0 = 0.0;
@@ -371,6 +375,7 @@ namespace mu2e {
     _hscol = 0;
     _mcdigis = 0;
     _vdmcsteps = 0;
+    _primary = 0;
 // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
     _chcol = chH.product();
@@ -383,6 +388,8 @@ namespace mu2e {
       _vdmcsteps = mcstepsH.product();
       // update time offsets
       _toff.updateMap(evt);
+      auto pph = evt.getValidHandle<PrimaryParticle>(_primaryTag);
+      _primary = pph.product();
     }
     if(_useshfcol){
       auto shfH = evt.getValidHandle<StrawHitFlagCollection>(_shfTag);
@@ -761,6 +768,9 @@ namespace mu2e {
     bool retval(false);
     GeomHandle<DetectorSystem> det;
     GlobalConstantsHandle<ParticleDataTable> pdt;
+    double charge = pdt->particle(pspp->pdgId()).ref().charge();
+    Hep3Vector pos;
+    Hep3Vector mom;
   // find the earliest step associated with this particle passing the tracker midplane
     cet::map_vector_key trkid = pspp->id();
     auto jmc = _vdmcsteps->end();
@@ -775,14 +785,28 @@ namespace mu2e {
     }
     if(jmc != _vdmcsteps->end()){
       // get momentum and position from this point
-      _mcmom = jmc->momentum().mag();
-      _mcpz = jmc->momentum().z();
-      Hep3Vector pos = det->toDetector(jmc->position());
-      double charge = pdt->particle(pspp->pdgId()).ref().charge();
-      TrkUtilities::RobustHelixFromMom(pos,jmc->momentum(),charge,_bz0,_mch);
+      mom = jmc->momentum();
+      pos = det->toDetector(jmc->position());
       retval = true;
     } else {
-      _mcmom = _mcpz = -1.0;
+    // no vd steps: try to fill from the tracker StepPoints
+      for(auto imcd = _mcdigis->begin();imcd != _mcdigis->end(); ++imcd){
+	auto const& stepptr = imcd->stepPointMC(imcd->earlyEnd());
+	if(stepptr->simParticle() == pspp){
+	  mom = stepptr->momentum();
+	  pos = stepptr->position();
+	  retval = true;
+	  break;
+	}
+      }
+    }
+    if(retval){
+      _mcmom = mom.mag();
+      _mcpz = mom.z();
+      TrkUtilities::RobustHelixFromMom(pos,mom,charge,_bz0,_mch);
+    } else {
+      _mcmom = -1.0;
+      _mcpz = 0.0;
       _mch = RobustHelix();
     }
     return retval;

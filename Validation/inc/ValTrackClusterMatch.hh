@@ -3,7 +3,7 @@
 #define ValTrackClusterMatch_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 #include "TH1D.h"
 #include <string>
 

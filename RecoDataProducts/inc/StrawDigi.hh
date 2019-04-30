@@ -24,7 +24,7 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 #include "RecoDataProducts/inc/StrawDigiFlag.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 // unfortunately the persistence requires this array dimension be
 // instantiated by hand in the classesdef, so this this #define
 // can't be changed without changing that too
