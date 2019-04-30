@@ -573,7 +573,8 @@ namespace mu2e
     // for(auto const& plane : tracker.getPlanes()){
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
       const auto& plane = tracker.getPlane(i);
-       _debug>3 && std::cout << __func__ << " plane " << plane.id() << std::endl;
+      _debug>3 && std::cout << __func__ << " plane " << plane.id() << " exists: " << plane.exists() << std::endl;
+       if(plane.exists()) {
       // if (!(plane.exists())) continue;
       // # of straws in a panel
       int nstraws = plane.getPanel(0).nStraws();
@@ -655,10 +656,11 @@ namespace mu2e
               matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
               ++nadded;
             }
-          }
-        }
-      }
-    }
+          }  // if prho
+        } // panel loop
+      } // if rho
+      } // plane exists
+    } // nplanes
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto const& strawflt : matstraws){
