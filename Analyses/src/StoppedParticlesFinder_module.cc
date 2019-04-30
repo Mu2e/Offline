@@ -66,7 +66,8 @@ namespace mu2e {
 
   //================================================================
   StoppedParticlesFinder::StoppedParticlesFinder(const fhicl::ParameterSet& pset)
-    : particleInput_(pset.get<std::string>("particleInput"))
+    : EDProducer{pset}
+    , particleInput_(pset.get<std::string>("particleInput"))
     , physVolInfoInput_(pset.get<std::string>("physVolInfoInput"))
     , stoppingMaterial_(pset.get<std::string>("stoppingMaterial", ""))
     , vetoedMaterials_(pset.get<std::vector<std::string> >("vetoedMaterials", std::vector<std::string>()))

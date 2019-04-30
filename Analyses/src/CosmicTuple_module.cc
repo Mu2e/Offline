@@ -77,6 +77,7 @@ namespace mu2e {
   };
 
   CosmicTuple::CosmicTuple(fhicl::ParameterSet const& pset) :
+    EDFilter{pset},
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _minimump(pset.get<double>("minimump")),

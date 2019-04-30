@@ -77,7 +77,8 @@ namespace mu2e {
 
   //================================================================
   SelectPiMinusAtTS5::SelectPiMinusAtTS5(const fhicl::ParameterSet& pset)
-    : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
+    : EDFilter{pset}
+    , _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
     , _positionCut(pset.get<bool>("positionCut", false))

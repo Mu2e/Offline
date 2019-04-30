@@ -263,16 +263,16 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
   for (const auto& i_instance : _newStepPointMCInstances) {
     _newStepPointMCs[i_instance] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
-    _newStepPointMCsPID[i_instance] = getProductID<StepPointMCCollection>(i_instance);
+    _newStepPointMCsPID[i_instance] = event.getProductID<StepPointMCCollection>(i_instance);
     _newStepPointMCGetter[i_instance] = event.productGetter(_newStepPointMCsPID[i_instance]);
   }
 
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
-  _newSimParticlesPID = getProductID<SimParticleCollection>();
+  _newSimParticlesPID = event.getProductID<SimParticleCollection>();
   _newSimParticleGetter = event.productGetter(_newSimParticlesPID);
 
   _newGenParticles = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
-  _newGenParticlesPID = getProductID<GenParticleCollection>();
+  _newGenParticlesPID = event.getProductID<GenParticleCollection>();
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
@@ -398,7 +398,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_caloClusterMCTag == "") {
     CaloShowerStepRemap caloShowerStepRemap;
     _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
-    _newCaloShowerStepsPID = getProductID<CaloShowerStepCollection>();
+    _newCaloShowerStepsPID = event.getProductID<CaloShowerStepCollection>();
     _newCaloShowerStepGetter = event.productGetter(_newCaloShowerStepsPID);
     for (std::vector<art::InputTag>::const_iterator i_tag = _caloShowerStepTags.begin(); i_tag != _caloShowerStepTags.end(); ++i_tag) {
       const auto& oldCaloShowerSteps = event.getValidHandle<CaloShowerStepCollection>(*i_tag);

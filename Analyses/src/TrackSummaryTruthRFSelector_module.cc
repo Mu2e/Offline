@@ -59,7 +59,8 @@ namespace mu2e {
 
   //================================================================
   TrackSummaryTruthRFSelector::TrackSummaryTruthRFSelector(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("TrackTruthInput"))
+    : art::EDProducer{pset}
+    , input_(pset.get<std::string>("TrackTruthInput"))
     , cutMinCommonFraction_(pset.get<double>("cutMinCommonFraction"))
   {
     produces<TrackSummaryTruthAssns>();

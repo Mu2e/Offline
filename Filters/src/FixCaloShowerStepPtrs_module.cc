@@ -120,7 +120,7 @@ void mu2e::FixCaloShowerStepPtrs::produce(art::Event & event)
   // Implementation of required member function here.
   CaloShowerStepRemap caloShowerStepRemap;
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
-  _newCaloShowerStepsPID = getProductID<CaloShowerStepCollection>();
+  _newCaloShowerStepsPID = event.getProductID<CaloShowerStepCollection>();
   _newCaloShowerStepGetter = event.productGetter(_newCaloShowerStepsPID);
   for (std::vector<art::InputTag>::const_iterator i_tag = _caloShowerStepTags.begin(); i_tag != _caloShowerStepTags.end(); ++i_tag) {
     const auto& oldCaloShowerSteps = event.getValidHandle<CaloShowerStepCollection>(*i_tag);

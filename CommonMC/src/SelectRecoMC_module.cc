@@ -438,7 +438,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
     auto vdspch = event.getValidHandle<StepPointMCCollection>(_vdspc);
     auto const& vdspc = *vdspch;
     // some things needed for creating Ptrs before the collection is in the event
-    auto KalSeedMCCollectionPID = getProductID<KalSeedMCCollection>();
+    auto KalSeedMCCollectionPID = event.getProductID<KalSeedMCCollection>();
     auto KalSeedMCCollectionGetter = event.productGetter(KalSeedMCCollectionPID);
 // create products related to the reconstruction output or the event primary
     std::unique_ptr<KalSeedMCCollection> ksmcc(new KalSeedMCCollection);
@@ -546,7 +546,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
     auto const& crvdc = *crvdch;
     auto crvdmcch = event.getValidHandle<CrvDigiMCCollection>(_crvdmcc);
     auto const& crvdmcc = *crvdmcch;
-    auto CrvRecoPulseCollectionPID = getProductID<CrvRecoPulseCollection>();
+    auto CrvRecoPulseCollectionPID = event.getProductID<CrvRecoPulseCollection>();
     auto CrvRecoPulseCollectionGetter = event.productGetter(CrvRecoPulseCollectionPID);
 // create new Crv collections
     std::unique_ptr<CrvDigiCollection> scrvdc(new CrvDigiCollection);
@@ -607,9 +607,9 @@ PrimaryParticle const& pp, RecoCount& nrec);
     auto const& ccc = *ccch;
     auto cssch = event.getValidHandle<CaloShowerSimCollection>(_cssc);
     auto const& cssc = *cssch;
-    auto CaloClusterMCCollectionPID = getProductID<CaloClusterMCCollection>();
+    auto CaloClusterMCCollectionPID = event.getProductID<CaloClusterMCCollection>();
     auto CaloClusterMCCollectionGetter = event.productGetter(CaloClusterMCCollectionPID);
-    auto CaloCrystalHitCollectionPID = getProductID<CaloCrystalHitCollection>();
+    auto CaloCrystalHitCollectionPID = event.getProductID<CaloCrystalHitCollection>();
     auto CaloCrystalHitCollectionGetter = event.productGetter(CaloCrystalHitCollectionPID);
 // create new Calo data
     std::unique_ptr<CaloClusterMCCollection> ccmcc(new CaloClusterMCCollection);

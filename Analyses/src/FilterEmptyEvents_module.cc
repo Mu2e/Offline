@@ -43,24 +43,14 @@ namespace mu2e {
   //--------------------------------------------------------------------
   //
   //
+        
   class FilterEmptyEvents : public art::EDFilter {
   public:
-    explicit FilterEmptyEvents(fhicl::ParameterSet const& pset):
-      _diagLevel(pset.get<int>("diagLevel",0)),
-      _keepTrackOrCalo(pset.get<int>("keepTrackOrCalo",1)),
-      _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
-      _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
-      _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
-      _minTHits(pset.get<unsigned>("MinTrackerHits",0)),
-      _minCHits(pset.get<unsigned>("MinCaloHits",0))
-    {
-    }
-    virtual ~FilterEmptyEvents() {
-    }
-    virtual bool filter(art::Event& e );
+      explicit FilterEmptyEvents(fhicl::ParameterSet const& pset);
+      virtual ~FilterEmptyEvents();
+      virtual bool filter(art::Event& e );
 
   private:
-
     // Control parameter: 0 to filter both tracker and calorimeter
     //                    1 to filter only tracker
     //                    2 to filter only calorimeter
@@ -74,9 +64,20 @@ namespace mu2e {
 
     bool _hasTHits;
     bool _hasCHits;
-
   };
-
+                  
+  //constructor
+  FilterEmptyEvents::FilterEmptyEvents(fhicl::ParameterSet const& pset)
+    : EDFilter{pset},
+    _diagLevel(pset.get<int>("diagLevel",0)),
+    _keepTrackOrCalo(pset.get<int>("keepTrackOrCalo",1)),
+    _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
+    _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
+    _caloReadoutModuleLabel(pset.get<std::string>("caloReadoutModuleLabel", "CaloReadoutHitsMaker")),
+    _minTHits(pset.get<unsigned>("MinTrackerHits",0)),
+    _minCHits(pset.get<unsigned>("MinCaloHits",0))
+    {}
+                  
   bool FilterEmptyEvents::filter(art::Event& e ) {
 
     if (_keepTrackOrCalo < 0 || _keepTrackOrCalo>2) {

@@ -41,7 +41,8 @@ namespace mu2e {
 
   //================================================================
   TrackSummaryMaker::TrackSummaryMaker(const fhicl::ParameterSet& pset)
-    : trackInput_(pset.get<std::string>("trackInput"))
+    : art::EDProducer{pset}
+    , trackInput_(pset.get<std::string>("trackInput"))
   {
     produces<TrackSummaryCollection>();
     produces<TrackSummaryRecoMap>();

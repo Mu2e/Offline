@@ -84,7 +84,7 @@ namespace mu2e {
     std::unique_ptr<HelixSeedCollection> mhels(new HelixSeedCollection);
     std::unique_ptr<TimeClusterCollection> tcs(new TimeClusterCollection);
     // needed for creating Ptrs
-    auto TimeClusterCollectionPID = getProductID<TimeClusterCollection>();
+    auto TimeClusterCollectionPID = event.getProductID<TimeClusterCollection>();
     auto TimeClusterCollectionGetter = event.productGetter(TimeClusterCollectionPID);
     // loop over helix products and flatten the helix collections into a single collection
     std::set<const HelixSeed*> hseeds;

@@ -446,7 +446,7 @@ namespace mu2e {
     //
     // in order to make the pbar's art pointer to parent, need to 
     // collect info about the parent product
-    auto SPpid = getProductID<SimParticleCollection>("");
+    auto SPpid = event.getProductID<SimParticleCollection>("");
     //      auto SPpid = simParticleHandle.id();
     auto SPpg  = event.productGetter(SPpid);
     copySimParticleCollection(simParticles,outSimPart,SPpid,SPpg);
