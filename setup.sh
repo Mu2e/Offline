@@ -78,9 +78,6 @@ if [ -n "$BASEREPO" ]; then
   export PATH=`dropit -p $PATH -sf $MU2E_SATELLITE_RELEASE/bin`
   export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_SATELLITE_RELEASE`
 
-  export PCIE_LINUX_KERNEL_MODULE_INC=/cvmfs/mu2e.opensciencegrid.org/artexternals/pcie_linux_kernel_module/v2_01_02/include
-  export PCIE_LINUX_KERNEL_MODULE_LIB=/cvmfs/mu2e.opensciencegrid.org/artexternals/pcie_linux_kernel_module/v2_01_02/slf7.x86_64.e17.prof/lib
-
 
   if [ -f $MU2E_SATELLITE_RELEASE/.buildopts ] ; then
       echo "WARNING - buildopts will be taken from the base release, "
