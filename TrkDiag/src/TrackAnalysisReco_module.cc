@@ -367,6 +367,8 @@ namespace mu2e {
 	if(_debug>0){
 	  auto const& tch = dekseed.caloHit();
 	  auto const& cc = tch.caloCluster();
+	  std::cout << "CaloCluster has energy " << cc->energyDep()
+	  << " +- " << cc->energyDepErr() << std::endl;
 	  for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
 	    // map the crystal ptr to the reduced collection
 	    auto ifnd = cchmap.find(cchptr);
@@ -377,7 +379,7 @@ namespace mu2e {
 	      else
 		std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
 	    } else {
-	      cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	      std::cout << "CaloCrystaLhitPtr not in map!" << std::endl;
 	    }
 	  }
 	}
