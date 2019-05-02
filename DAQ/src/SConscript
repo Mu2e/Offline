@@ -41,7 +41,7 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService',
                                   'cetlib_except',
                                   'CLHEP',
                                   rootlibs,
-                                  'boost_system',
+                                  'boost_system'
                                 ] )
 
 helper.make_plugins( [ mainlib,
@@ -81,8 +81,10 @@ helper.make_plugins( [ mainlib,
                        'boost_system',
                        rootlibs,
                        'xerces-c', # only needed for MakeStereoHits_module.cc
-                       'Minuit'  # Needed for BetaTauPitch_module.cc and ReadStrawCluster_module.cc
-                                 # See the Fixme at the top of the file.
+                       'Minuit',  # Needed for BetaTauPitch_module.cc and ReadStrawCluster_module.cc
+                                  # See the Fixme at the top of the file.
+                       'DTCInterface',
+                       'artdaq-core_Data'
                      ]
                      )
 

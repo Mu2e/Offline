@@ -1,8 +1,6 @@
 // ======================================================================
 //
-// Mu2eProducer_plugin:  Add tracker/cal data products to the event
-// At the moment this only adds tracker StrawDigi DataProducts to the
-// Art event.
+// StrawAndCaloDigisFromFragments_plugin:  Add tracker/cal data products to the event
 //
 // ======================================================================
 
@@ -13,32 +11,28 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "art/Framework/Principal/Handle.h"
-//#include "canvas/Utilities/Exception.h"
 #include "mu2e-artdaq-core/Overlays/ArtFragmentReader.hh"
 
 #include <artdaq-core/Data/Fragment.hh>
 #include "DataProducts/inc/TrkTypes.hh"
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
-//#include "DataProducts/inc/TrkTypes.hh"
 
 #include <iostream>
 
 #include <string>
 
-#include "trace.h"
-
 #include <memory>
 
 namespace art {
-  class Mu2eProducer;
+  class StrawAndCaloDigisFromFragments;
 }
 
-using art::Mu2eProducer;
+using art::StrawAndCaloDigisFromFragments;
 
 // ======================================================================
 
-class art::Mu2eProducer
+class art::StrawAndCaloDigisFromFragments
   : public EDProducer
 {
 
@@ -48,8 +42,8 @@ public:
   using adc_t = mu2e::ArtFragmentReader::adc_t;
   
   // --- C'tor/d'tor:
-  explicit  Mu2eProducer(fhicl::ParameterSet const& pset);
-  virtual  ~Mu2eProducer()  { }
+  explicit  StrawAndCaloDigisFromFragments(fhicl::ParameterSet const& pset);
+  virtual  ~StrawAndCaloDigisFromFragments()  { }
 
   // --- Production:
   virtual void produce( Event & );
@@ -63,17 +57,17 @@ private:
   art::InputTag trkFragmentsTag_;
   art::InputTag caloFragmentsTag_;
 
-};  // Mu2eProducer
+};  // StrawAndCaloDigisFromFragments
 
 // ======================================================================
 
-Mu2eProducer::Mu2eProducer(fhicl::ParameterSet const& pset)
+StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(fhicl::ParameterSet const& pset)
   : EDProducer( )
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCAL_(pset.get<int>("parseCAL",1))
   , parseTRK_(pset.get<int>("parseTRK",1))
-  , trkFragmentsTag_{"daq:trk"}
-  , caloFragmentsTag_{"daq:calo"}
+  , trkFragmentsTag_(pset.get<art::InputTag>("trkTag","daq:trk"))
+  , caloFragmentsTag_(pset.get<art::InputTag>("caloTag","daq:calo"))
 {
   produces<EventNumber_t>(); 
   produces<mu2e::StrawDigiCollection>();
@@ -83,12 +77,11 @@ Mu2eProducer::Mu2eProducer(fhicl::ParameterSet const& pset)
 // ----------------------------------------------------------------------
 
 void
-  Mu2eProducer::
+  StrawAndCaloDigisFromFragments::
   produce( Event & event )
 {
 
   art::EventNumber_t eventNumber = event.event();
-  //  art::EventNumber_t eventNumber = 0;
 
   auto trkFragments = event.getValidHandle<artdaq::Fragments>(trkFragmentsTag_);
   auto calFragments = event.getValidHandle<artdaq::Fragments>(caloFragmentsTag_);
@@ -217,7 +210,7 @@ void
 //	// NOTE: Because the tracker code in offline has not been updated to
 //	// use 15 samples, it is necessary to add an extra sample in order to
 //	// initialize an ADCWaveform that can be passed to the StrawDigi
-//	// constructor. This means that the digis produced by Mu2eProducer
+//	// constructor. This means that the digis produced by StrawAndCaloDigisFromFragments
 //	// will differ from those processed in offline so the filter performance
 //	// will be different. This is only temporary.
 //	std::array<adc_t,15> const & shortWaveform = cc.DBT_Waveform(pos);
@@ -385,8 +378,7 @@ void
   //  }  // Close loop over the TRK and CAL collections
 
   if( diagLevel_ > 0 ) {
-    TRACE( 11, "mu2e::Mu2eProducer::produce exiting eventNumber=%d / timestamp=%d", (int)(event.event()), eventNumber );
-    std::cout << "mu2e::Mu2eProducer::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
+    std::cout << "mu2e::StrawAndCaloDigisFromFragments::produce exiting eventNumber=" << (int)(event.event()) << " / timestamp=" << (int)eventNumber <<std::endl;
 
   }
 
@@ -400,6 +392,6 @@ void
 
 // ======================================================================
 
-DEFINE_ART_MODULE(Mu2eProducer)
+DEFINE_ART_MODULE(StrawAndCaloDigisFromFragments)
 
 // ======================================================================
