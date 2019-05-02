@@ -4,11 +4,12 @@
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
   :
   _hasPhysicalVolumes(false),
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
+  _crvHitBox(crvHitBox),
   _trackBox(trackBox),
   _g4ModuleLabel(g4ModuleLabel),
   _physicalVolumesMultiLabel(physicalVolumesMultiLabel)
@@ -107,7 +108,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_caloStepPointMCVector, event, "StepPointMC", newEntries, 1);
-//  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 2);  //FIXME: not compatible anymore with CD3 files
+  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 2);
   createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 3);
 
   if(newEntries!=_caloHitEntries)
@@ -126,6 +127,26 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     _caloHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
+//CRV Hit Selection
+  newEntries.clear();
+  newEntries.push_back(nothingSelected);
+  createNewEntries<mu2e::CrvRecoPulseCollection>(_crvRecoPulseVector, event, "CrvRecoPulse", newEntries, 1);
+
+  if(newEntries!=_crvHitEntries)
+  {
+    _crvHitEntries.clear();
+    TGTextLBEntry *selectedEntryTmp=dynamic_cast<TGTextLBEntry*>(_crvHitBox->GetSelectedEntry());
+    std::string selectedEntry="Nothing Selected";
+    if(selectedEntryTmp) selectedEntry=selectedEntryTmp->GetText()->GetString();
+    _crvHitBox->RemoveAll();
+    for(unsigned int i=0; i<newEntries.size(); i++)
+    {
+      _crvHitEntries.push_back(newEntries[i]);
+      _crvHitBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
+      if(newEntries[i].entryText.compare(selectedEntry)==0) _crvHitBox->Select(newEntries[i].entryID);
+    }
+    _crvHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
+  }
 
 //Track Selection
   newEntries.clear();
@@ -289,6 +310,34 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>() const;
 template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
+
+
+template<typename CollectionType>
+const CollectionType* ContentSelector::getSelectedCrvHitCollection() const
+{
+  int i=_crvHitBox->GetSelected();
+  int classID=0;
+  int index=0;
+  std::vector<entryStruct>::const_iterator iter;
+  for(iter=_crvHitEntries.begin(); iter!=_crvHitEntries.end(); iter++)
+  {
+    if(iter->entryID==i)
+    {
+      classID=iter->classID;
+      index=iter->vectorPos;
+      break;
+    }
+  }
+  switch(classID)
+  {
+    case 1 : if(typeid(CollectionType)!=typeid(mu2e::CrvRecoPulseCollection)) return(nullptr);
+             if(index>=static_cast<int>(_crvRecoPulseVector.size())) return(nullptr);
+             return(reinterpret_cast<const CollectionType*>(_crvRecoPulseVector[index].product()));
+  };
+  return(nullptr);
+}
+template const mu2e::CrvRecoPulseCollection* ContentSelector::getSelectedCrvHitCollection<mu2e::CrvRecoPulseCollection>() const;
+
 
 template<typename CollectionType>
 std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const

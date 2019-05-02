@@ -316,6 +316,7 @@
 
 <!--  ********* general reco ********* -->
 
+ <class name="mu2e::AHist<uint16_t,70>"/>
  <class name="mu2e::RecoCount"/>
  <class name="art::Wrapper<mu2e::RecoCount>"/>
 
