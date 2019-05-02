@@ -53,6 +53,7 @@ namespace mu2e
   };
 
   SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _ksTag     (pset.get<art::InputTag>("kalSeedCollection","KSFDeM")),
     _hascc     (pset.get<bool>("requireCaloCluster",false)),
     _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle"))),

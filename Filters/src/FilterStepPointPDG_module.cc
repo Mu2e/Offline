@@ -52,7 +52,8 @@ namespace mu2e {
 
   //================================================================
   FilterStepPointPDG::FilterStepPointPDG(const fhicl::ParameterSet& pset)
-    : numInputHits_()
+    : art::EDFilter{pset}
+    , numInputHits_()
     , numOutputHits_()
     , numInputEvents_()
     , numPassedEvents_()

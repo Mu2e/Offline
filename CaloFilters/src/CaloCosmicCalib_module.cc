@@ -47,6 +47,7 @@ namespace mu2e
   };
 
   CaloCosmicCalib::CaloCosmicCalib(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _clTag          (pset.get<art::InputTag>("CaloClusterCollection")),
     _minncrystalhits(pset.get<int>          ("MinNCrystalHits")),
     _minenergy      (pset.get<double>       ("MinEnergy")), //MeV

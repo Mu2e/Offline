@@ -65,7 +65,8 @@ namespace mu2e {
 
     //================================================================
     EMFPixelHitsFilter::EMFPixelHitsFilter(const fhicl::ParameterSet& pset)
-      : rawHitsModuleLabel_(pset.get<std::string>("rawHitsModuleLabel"))
+      : art::EDFilter{pset}
+      , rawHitsModuleLabel_(pset.get<std::string>("rawHitsModuleLabel"))
       , simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
       , cutMinHits_(pset.get<unsigned>("cutMinHits"))
       , nPassed_()

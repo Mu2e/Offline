@@ -105,6 +105,7 @@ namespace mu2e {
   };
 
   StoppedPionHits::StoppedPionHits(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     mode_(StepFilterMode(pset.get<string>("mode"))),
     nminsteps_(pset.get<int>("hitsmin",0)), 
     nmaxsteps_(pset.get<int>("hitsmax",0)),

@@ -81,6 +81,7 @@ namespace mu2e {
   };
 
   KilledEventFilter::KilledEventFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     ntup_(0),
     _nBadG4Status(0),

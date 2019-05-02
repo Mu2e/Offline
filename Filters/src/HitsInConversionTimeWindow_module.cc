@@ -184,6 +184,7 @@ namespace mu2e {
   };
 
   HitsInConversionTimeWindow::HitsInConversionTimeWindow(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     timeWindow_(pset.get<double>("timeWindow",50)),
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),

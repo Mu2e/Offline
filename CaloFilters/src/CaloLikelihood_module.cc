@@ -117,6 +117,7 @@ namespace mu2e {
 
 
   CaloLikelihood::CaloLikelihood(const fhicl::ParameterSet & pset) :
+    art::EDFilter{pset},
     _diagLevel                   (pset.get<int>("diagLevel",0)),
     _nProcess                    (0),
     _nPass                       (0),

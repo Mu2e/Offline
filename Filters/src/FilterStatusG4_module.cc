@@ -33,7 +33,8 @@ namespace mu2e {
 
   //================================================================
   FilterStatusG4::FilterStatusG4(const fhicl::ParameterSet& pset)
-    : token_{consumes<StatusG4>(pset.get<std::string>("input"))}
+    : art::EDFilter{pset}
+    , token_{consumes<StatusG4>(pset.get<std::string>("input"))}
     , maxAcceptedStatus_(pset.get<int>("maxAcceptedStatus", 0))
   {}
 

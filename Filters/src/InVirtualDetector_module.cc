@@ -88,6 +88,7 @@ namespace mu2e {
   };
 
   InVirtualDetector::InVirtualDetector(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     instance_(StepInstanceName::virtualdetector),
     vdId_(pset.get<int>("vdId")),

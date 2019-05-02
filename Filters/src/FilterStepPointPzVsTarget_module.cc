@@ -61,7 +61,8 @@ namespace mu2e {
 
   //================================================================
   FilterStepPointPzVsTarget::FilterStepPointPzVsTarget(const fhicl::ParameterSet& pset)
-    : numInputHits_()
+    : art::EDFilter{pset}
+    , numInputHits_()
     , numOutputHits_()
     , numInputEvents_()
     , numPassedEvents_()

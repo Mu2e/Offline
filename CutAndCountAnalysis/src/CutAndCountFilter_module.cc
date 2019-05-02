@@ -25,8 +25,9 @@ namespace mu2e {
   };
 
   //================================================================
-  CutAndCountFilter::CutAndCountFilter(const fhicl::ParameterSet& pset)
-    : an_(pset, *art::ServiceHandle<art::TFileService>())
+  CutAndCountFilter::CutAndCountFilter(const fhicl::ParameterSet& pset):
+    art::EDFilter{pset},
+    an_(pset, *art::ServiceHandle<art::TFileService>())
   {}
 
   //================================================================

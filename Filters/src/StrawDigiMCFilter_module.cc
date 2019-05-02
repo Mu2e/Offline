@@ -43,6 +43,7 @@ namespace mu2e {
   };
 
   StrawDigiMCFilter::StrawDigiMCFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     minndigi_(pset.get<unsigned>("MinNDigis")),
     minpmom_(pset.get<double>("MinParticleMom")),
     maxpmom_(pset.get<double>("MaxParticleMom")),

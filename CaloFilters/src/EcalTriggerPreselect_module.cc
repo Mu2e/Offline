@@ -139,6 +139,7 @@ namespace mu2e {
   };
 
   EcalTriggerPreselect::EcalTriggerPreselect(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
     _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName","virtualdetector")),

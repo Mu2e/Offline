@@ -98,6 +98,7 @@ namespace mu2e {
   };
 
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     mode_(StepFilterMode(pset.get<string>("mode"))),
     minnstraws_(pset.get<int>("MinNStraws")),
     minpmom_(pset.get<double>("MinPartMom")),

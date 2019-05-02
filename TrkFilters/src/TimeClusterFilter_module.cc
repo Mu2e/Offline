@@ -39,6 +39,7 @@ namespace mu2e
   };
 
   TimeClusterFilter::TimeClusterFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _tcTag(pset.get<art::InputTag>("timeClusterCollection","TimeClusterFinder")),
     _hascc(pset.get<bool>("requireCaloCluster",false)),
     _minnhits(pset.get<unsigned>("minNHits",11)),

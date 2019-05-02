@@ -89,7 +89,8 @@ namespace mu2e {
 
     //================================================================
     EMFBoxHitsFilter::EMFBoxHitsFilter(const fhicl::ParameterSet& pset)
-      : hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
+      : art::EDFilter{pset}
+      , hitsModuleLabel_(pset.get<std::string>("hitsModuleLabel"))
       , hitsInstanceName_(pset.get<std::string>("hitsInstanceName", ""))
       , simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
       , simParticlesInstanceName_(pset.get<std::string>("simParticlesInstanceName", ""))

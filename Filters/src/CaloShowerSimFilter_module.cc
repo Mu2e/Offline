@@ -44,6 +44,7 @@ namespace mu2e {
   };
 
   CaloShowerSimFilter::CaloShowerSimFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     minpe_(pset.get<double>("MinParticleEnergy")),
     minetot_(pset.get<double>("MinTotalEnergy")),
     diag_(pset.get<int>("diagLevel",0)),

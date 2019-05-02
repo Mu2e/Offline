@@ -53,8 +53,9 @@ namespace mu2e
 
   };
 
-  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p)
-    : nPrescale_      (p.get<uint32_t>("nPrescale")),
+  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p) : 
+      art:EDFilter{p},
+      nPrescale_      (p.get<uint32_t>("nPrescale")),
       useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)),
       _debug          (p.get<int>     ("debugLevel",0)),
       _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),

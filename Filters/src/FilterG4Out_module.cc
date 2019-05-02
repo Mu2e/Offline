@@ -166,7 +166,8 @@ namespace mu2e {
 
   //================================================================
   FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
-    : compressGenParticles_(pset.get<bool>("compressGenParticles", false))
+    : art::EDFilter{pset}
+    , compressGenParticles_(pset.get<bool>("compressGenParticles", false))
     , numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()

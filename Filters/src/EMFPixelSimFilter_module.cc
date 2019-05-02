@@ -64,7 +64,8 @@ namespace mu2e {
 
     //================================================================
     EMFPixelSimFilter::EMFPixelSimFilter(const fhicl::ParameterSet& pset)
-      : hitsModuleLabel_(pset.get<std::string>("simHitsModuleLabel"))
+      : art::EDFilter{pset}
+      , hitsModuleLabel_(pset.get<std::string>("simHitsModuleLabel"))
       , simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
       , cutMinPlanes_(pset.get<unsigned>("cutMinPlanes"))
       , nPassed_()

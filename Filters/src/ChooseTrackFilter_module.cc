@@ -125,6 +125,7 @@ namespace mu2e {
 
 
   ChooseTrackFilter::ChooseTrackFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
     _nProcess(0),
     _trkPatRecModuleLabel(pset.get<std::vector<std::string>>("trkPatRecModuleLabel")),

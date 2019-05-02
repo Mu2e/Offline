@@ -237,6 +237,7 @@ namespace mu2e {
   };
 
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
     _trigPath(pset.get<std::string>("triggerPath")),
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 

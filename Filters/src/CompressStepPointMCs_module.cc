@@ -158,7 +158,8 @@ private:
 
 
 mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pset)
-  : _stepPointMCTags(pset.get<std::vector<art::InputTag> >("stepPointMCTags")),
+  : art::EDFilter{pset},
+    _stepPointMCTags(pset.get<std::vector<art::InputTag> >("stepPointMCTags")),
     _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _simParticleTag(pset.get<art::InputTag>("simParticleTag")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),

@@ -102,6 +102,7 @@ namespace mu2e {
   };
 
   InflightPionHits::InflightPionHits(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     strawHitMakerLabel_(pset.get<string>("strawHitMakerLabel")), 

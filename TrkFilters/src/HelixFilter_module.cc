@@ -62,6 +62,7 @@ namespace mu2e
   };
 
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _hsTag        (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
     _hascc        (pset.get<bool>  ("requireCaloCluster",false)),
     _hel          (pset.get<int>   ("helicity")),

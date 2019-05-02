@@ -78,6 +78,7 @@ namespace mu2e {
   //================================================================
   VetoIncorrectHits::VetoIncorrectHits(fhicl::ParameterSet const& pset)
     :
+    art::EDFilter{pset},
     // Run time parameters
     diagLevel_(pset.get<int>("diagLevel")),
     maxFullPrint_(pset.get<int>("maxFullPrint")),

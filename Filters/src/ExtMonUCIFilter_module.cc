@@ -84,6 +84,7 @@ namespace mu2e {
   };
 
   ExtMonUCIFilter::ExtMonUCIFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     trackerStepPoints_(pset.get<string>("trackerStepPoints","tracker")),

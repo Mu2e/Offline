@@ -51,6 +51,7 @@ namespace mu2e
   };
 
   DigiFilter::DigiFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _sdTag    (pset.get<art::InputTag>("strawDigiCollection")),
     _cdTag    (pset.get<art::InputTag>("caloDigiCollection")),
     _useSD    (pset.get<bool>("useStrawDigi")),

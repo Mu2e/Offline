@@ -50,6 +50,7 @@ namespace mu2e {
   };
 
   WeightSamplingFilter::WeightSamplingFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _evtWtModule(pset.get<art::InputTag>("EventWeightModule")),
     _genParticleModule(pset.get<std::string>("genParticleModule","compressDigiMCs")),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
