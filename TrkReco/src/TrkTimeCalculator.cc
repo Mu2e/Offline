@@ -33,7 +33,7 @@ namespace mu2e
     _beta(pset.get<double>("ParticleBeta",1.)),
     _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
     _caloZOffset(pset.get<double>("CaloClusterZOffset",-120.0)), // WRT downstream face (mm)
-    _caloT0Offset(pset.get<double>("CaloT0Offset",-0.4)), // nanoseconds
+    _caloT0Offset(pset.get<double>("CaloT0Offset")), // nanoseconds
     _caloT0Err(pset.get<double>("CaloTimeErr",0.5)) // nanoseconds
     { }
 
