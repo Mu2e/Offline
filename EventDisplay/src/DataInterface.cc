@@ -369,6 +369,15 @@ void DataInterface::fillGeometry()
     double diskOuterRingOut      = calo->caloInfo().getDouble("diskOuterRingOut");
     double diskOuterRailOut      = diskOuterRingOut + calo->caloInfo().getDouble("diskOutRingEdgeRLength");
 
+
+
+    double FPCarbonDZ               = calo->caloInfo().getDouble("FPCarbonZLength")/2.0;
+    double FPFoamDZ                 = calo->caloInfo().getDouble("FPFoamZLength")/2.0;
+    double FPCoolPipeRadius         = calo->caloInfo().getDouble("FPCoolPipeRadius");
+    double pipeRadius               = calo->caloInfo().getDouble("pipeRadius");
+    double frontPanelHalfThick      = (2.0*FPCarbonDZ+2.0*FPFoamDZ-pipeRadius+FPCoolPipeRadius)/2.0;
+    double holeDZ                   = calo->caloInfo().getDouble("BPHoleZLength")/2.0;
+
     double crystalDXY            = calo->caloInfo().getDouble("crystalXYLength")/2.0;
     double crystalDZ             = calo->caloInfo().getDouble("crystalZLength")/2.0;    
     double crystalFrameDZ        = calo->caloInfo().getDouble("crystalFrameZLength")/2.0;    
@@ -379,7 +388,8 @@ void DataInterface::fillGeometry()
     int icrystal=0;
     for(unsigned int idisk=0; idisk<calo->nDisk(); idisk++)
     {
-      const CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
+      CLHEP::Hep3Vector diskPos = calo->disk(idisk).geomInfo().origin() - _detSysOrigin;
+      diskPos += CLHEP::Hep3Vector(0.0, 0.0, -holeDZ+frontPanelHalfThick);
 
       findBoundaryP(_calorimeterMinmax, diskPos.x()+diskOuterRailOut, diskPos.y()+diskOuterRailOut, diskPos.z()+diskCaseDZLength);
       findBoundaryP(_calorimeterMinmax, diskPos.x()-diskOuterRailOut, diskPos.y()-diskOuterRailOut, diskPos.z()-diskCaseDZLength);
@@ -400,10 +410,9 @@ void DataInterface::fillGeometry()
       int nCrystalInThisDisk = calo->disk(idisk).nCrystals();
       for(int ic=0; ic<nCrystalInThisDisk; ic++)
       {
-        const CLHEP::Hep3Vector crystalPosition = calo->disk(idisk).crystal(ic).localPosition() + diskPos;
-        //constructDiskCalorimeter subtracts wrapperDZ from the z coordinate of these position, since they were meant for Geant4, 
-        //where the "z position of [the] hexagon is their base, not their center"
-        //since this Hexagon class in the event display uses the center as a reference for the position, wrapperDZ does not need to be subtracted
+        CLHEP::Hep3Vector crystalPosition = calo->disk(idisk).crystal(ic).localPosition();
+        crystalPosition.setZ(diskCaseDZLength-wrapperDZ);
+        crystalPosition += diskPos;
 
         boost::shared_ptr<ComponentInfo> info(new ComponentInfo());
         std::string c=Form("Disk %i, Crystal %i",idisk,ic);
