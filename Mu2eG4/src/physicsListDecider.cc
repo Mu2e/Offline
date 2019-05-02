@@ -41,8 +41,6 @@
 #if G4VERSION>4103
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics_option4.hh"
 #include "Mu2eG4/inc/Mu2eEmStandardPhysics.hh"
-#include "Mu2eG4/inc/Shielding_MU2ER1.hh"
-#include "Mu2eG4/inc/QGSP_BERT_MU2ER1.hh"
 #endif
 #include "Mu2eG4/inc/StepLimiterPhysConstructor.hh"
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
@@ -102,18 +100,6 @@ namespace mu2e{
     bool modifyEMOption0(const fhicl::ParameterSet& pset) {
       return pset.get<bool>("physics.modifyEMOption0",false);
     }
-    void checkAddEMZ(const fhicl::ParameterSet& pset,
-                     std::string name,
-                     G4VModularPhysicsList* tmpPL) {
-      if ( name.find("_EMZ") != std::string::npos ) {
-        // somehow RemovePhysics/RegisterPhysics works better than ReplacePhysics
-        tmpPL->RemovePhysics(("G4EmStandard"));
-        if (getDiagLevel(pset)>0) {
-          G4cout << __func__ << " Using G4EmStandardPhysics_option4" << G4endl;
-        }
-        tmpPL->RegisterPhysics( new G4EmStandardPhysics_option4(getDiagLevel(pset)) );
-      }
-    }
 #endif
 
   }
@@ -121,7 +107,6 @@ namespace mu2e{
   G4VUserPhysicsList* physicsListDecider(const fhicl::ParameterSet& pset) {
 
     G4VModularPhysicsList* tmpPL(nullptr);
-    G4VModularPhysicsList* tmpPLN(nullptr);
 
     const string name = getPhysicsListName(pset);
 
@@ -129,11 +114,11 @@ namespace mu2e{
 
     // special cases
     if ( name  == "Minimal" ) {
-      tmpPL = new MinimalPhysicsList();
+      return new MinimalPhysicsList();
     }
 
     else if ( name  == "MinDEDX" ) {
-      tmpPL = new MinDEDXPhysicsList(); // limited EM Processes
+      return new MinDEDXPhysicsList(); // limited EM Processes
     }
 
     else if ( name  == "ErrorPhysicsList" ) {
@@ -143,48 +128,16 @@ namespace mu2e{
       return new G4ErrorPhysicsList(); 
     }
 
-#if G4VERSION>4103
-
-    else if ( name == "ShieldingM_MU2ER1" || name == "ShieldingM_MU2ER1_EMZ" ){
-      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","M");
-      checkAddEMZ(pset,name,tmpPL);
-    }
-
-    else if ( name == "Shielding_MU2ER1"  || name == "Shielding_MU2ER1_EMZ"  ){
-      tmpPL = new Shielding_MU2ER1(pset,getDiagLevel(pset),"HP","");
-      checkAddEMZ(pset,name,tmpPL);
-    }
-
-    else if ( name == "QGSP_BERT_MU2ER1"  || name == "QGSP_BERT_MU2ER1_EMZ"   ){
-      tmpPL = new QGSP_BERT_MU2ER1(pset,getDiagLevel(pset));
-      checkAddEMZ(pset,name,tmpPL);
-    }
-
-#endif
-
     // General case
     else {
 
-      // disable standard Geant4 physics lists as setMu2eG4ProductionCuts,
-      // esp. the region specific cuts need to be done during
-      // initialization in the MT mode forcing the creation of a custom
-      // physics constructor and physics lists
-
       G4PhysListFactory physListFactory;
       physListFactory.SetVerbose(getDiagLevel(pset));
-      tmpPLN = physListFactory.GetReferencePhysList(name);
+      tmpPL = physListFactory.GetReferencePhysList(name);
 
     }
 
-    if ( tmpPL==nullptr && tmpPLN!=nullptr) {
-      throw cet::exception("G4CONTROL")
-        << "Unable to load physics list named: "
-        << name
-        << ". If a list like it is needed please take a look at, e.g. Shielding_MU2ER1"
-        << "\n as an implementation example where one inherits from "
-        << "a reference physics list and adds Mu2e customizations"
-        << "\n";
-    } else if ( tmpPL==nullptr ) {
+    if ( tmpPL==nullptr ) {
       throw cet::exception("G4CONTROL")
         << "Unable to load physics list named: "
         << name
@@ -192,7 +145,10 @@ namespace mu2e{
     }
 
     // The modular physics list takes ownership of the StepLimiterPhysConstructor.
-    if ( name != "Minimal" ) tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
+    tmpPL->RegisterPhysics( new StepLimiterPhysConstructor() );
+
+    // Mu2e Customizations
+    tmpPL->RegisterPhysics( new Mu2eG4CustomizationPhysicsConstructor(&pset));
 
     if (turnOffRadioactiveDecay(pset)) {
       tmpPL->RemovePhysics("G4RadioactiveDecay");
@@ -252,6 +208,21 @@ namespace mu2e{
 
       tmpPL->RegisterPhysics( new DecayMuonsWithSpin(getDiagLevel(pset)));
     }
+
+    G4double productionCut = pset.get<double>("physics.minRangeCut");
+    G4double protonProductionCut = pset.get<double>("physics.protonProductionCut");
+    mf::LogInfo("GEOM_MINRANGECUT")
+      << "Setting production cut to " << productionCut
+      << ", protonProductionCut to " << protonProductionCut << " mm";
+    if (pset.get<int>("debug.diagLevel") > 0) {
+      G4cout << __func__ << " Setting gamma, e- and e+ production cut"
+             << " to " << productionCut << " mm and for proton to "
+             << protonProductionCut << " mm" << G4endl;
+    }
+    //setCutCmd equivalent:
+    tmpPL->SetDefaultCutValue(productionCut);
+    tmpPL->SetCutValue(protonProductionCut, "proton");
+    // regional cuts (if any) are set during the geometry construction
 
     if (getDiagLevel(pset) > 0) tmpPL->DumpCutValuesTable();
 
