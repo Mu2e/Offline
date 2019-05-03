@@ -47,7 +47,7 @@ double fnc_dscb(double*xx,double*pp) {
   return result;
 }
 
-void Draw(TTree* ta) {
+void PId(TTree* ta) {
 
   TH2F* evspep = new TH2F("evspep","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
   TH2F* evspmp = new TH2F("evspmp","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
@@ -643,10 +643,10 @@ void Con(TTree* ta) {
   lcon1->SetLineColor(kBlue);
   lcon2->SetLineColor(kRed);
 
-  ta->Project("con1","de.con",mcsel+"de.status==1");
-  ta->Project("con2","de.con",mcsel+"de.status==2");
-  ta->Project("lcon1","log10(de.con)",mcsel+"de.status==1");
-  ta->Project("lcon2","log10(de.con)",mcsel+"de.status==2");
+  ta->Project("con1","de.fitcon",mcsel+"de.status==1");
+  ta->Project("con2","de.fitcon",mcsel+"de.status==2");
+  ta->Project("lcon1","log10(de.fitcon)",mcsel+"de.status==1");
+  ta->Project("lcon2","log10(de.fitcon)",mcsel+"de.status==2");
 
   TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
   fcan->Clear();
