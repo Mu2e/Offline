@@ -95,6 +95,7 @@ namespace mu2e {
        public:
 
 	   explicit TrackCaloIntersectionMVA(fhicl::ParameterSet const& pset):
+             art::EDProducer{pset},
 	     _trkModuleLabel(pset.get<std::string>("fitterModuleLabel")),
 	     _downstream(pset.get<bool>("downstream")),
 	     _diagLevel(pset.get<int>("diagLevel",0)),

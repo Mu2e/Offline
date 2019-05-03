@@ -89,7 +89,8 @@ private:
 
 
 mu2e::FixCaloShowerStepPtrs::FixCaloShowerStepPtrs(fhicl::ParameterSet const & pset)
-  : _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
+  : art::EDProducer{pset},
+    _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _caloShowerSimTag(pset.get<art::InputTag>("caloShowerSimTag")),
     _caloShowerStepROTag(pset.get<art::InputTag>("caloShowerStepROTag"))
 {

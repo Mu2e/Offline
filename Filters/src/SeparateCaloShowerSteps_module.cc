@@ -63,7 +63,8 @@ private:
 
 
 mu2e::SeparateCaloShowerSteps::SeparateCaloShowerSteps(fhicl::ParameterSet const & pset)
-  : _inputTag(pset.get<art::InputTag>("inputTag")),
+  : art::EDProducer{pset},
+    _inputTag(pset.get<art::InputTag>("inputTag")),
     _crystalOutputInstance(pset.get<std::string>("crystalOutputInstance")),
     _sipmOutputInstance(pset.get<std::string>("sipmOutputInstance"))
 {

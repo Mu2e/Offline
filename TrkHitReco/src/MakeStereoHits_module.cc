@@ -93,6 +93,7 @@ namespace mu2e {
   };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>(           "debugLevel",0)),
     _chTag(pset.get<art::InputTag>("ComboHitCollection")),
     _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),

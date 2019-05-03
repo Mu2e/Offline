@@ -247,6 +247,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   AvikPIDNew::AvikPIDNew(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _debugLevel             (pset.get<int>                ("debugLevel"          )),
     _diagLevel              (pset.get<int>                ("diagLevel"           )),
     _trkRecModuleLabel      (pset.get<string>             ("trkRecModuleLabel"   )),

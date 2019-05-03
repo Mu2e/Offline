@@ -181,6 +181,7 @@ namespace mu2e {
   PrimaryAntiProtonGun::PrimaryAntiProtonGun(Parameters const& config):
     //
     // Information from config file.
+    art::EDProducer{config},
     _verbosityLevel(config().verbosityLevel()),
     _czmin(config().czmin()),
     _czmax(config().czmax()),

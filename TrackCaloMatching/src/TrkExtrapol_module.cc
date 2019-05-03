@@ -114,6 +114,7 @@ namespace mu2e {
   public:
 
     explicit TrkExtrapol(fhicl::ParameterSet const& pset):
+      art::EDProducer{pset},
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),

@@ -94,6 +94,7 @@ namespace mu2e {
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset}, 
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),
       _clusterDt(pset.get<float>(   "clusterDt",100)),

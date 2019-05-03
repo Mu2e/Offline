@@ -176,6 +176,7 @@ int findlowhist(float d){
   };
 
   ParticleID::ParticleID(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _fitterModuleLabel   (pset.get<string>("fitterModuleLabel")),
     _electronTemplateFile(pset.get<string>("ElectronTemplates")),
     _muonTemplateFile    (pset.get<string>("MuonTemplates"    )),

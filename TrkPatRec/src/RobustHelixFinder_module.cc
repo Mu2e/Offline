@@ -190,6 +190,7 @@ namespace mu2e {
   };
 
   RobustHelixFinder::RobustHelixFinder(fhicl::ParameterSet const& pset) :
+    art::EDPRoducer{pset},
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
     _reducedchi2 (pset.get<int>("reducedchi2",0)),

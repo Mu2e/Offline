@@ -46,6 +46,7 @@ namespace mu2e
   };
 
   TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _kalSeedTag(pset.get<art::InputTag>("KalSeedCollection", "")),
     _trkqualmva(new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
 

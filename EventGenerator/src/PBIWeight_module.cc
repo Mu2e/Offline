@@ -47,6 +47,7 @@ namespace mu2e {
 
   //================================================================
   PBIWeight::PBIWeight(const fhicl::ParameterSet& pset) : 
+    art::EDProducer{pset},
     _PBITag(pset.get<art::InputTag>("PBITag")),
     _meanPBITag(pset.get<art::InputTag>("meanPBITag")),
     _meanPBI(0.0)

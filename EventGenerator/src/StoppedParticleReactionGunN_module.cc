@@ -86,7 +86,8 @@ namespace mu2e {
 
   //================================================================
   StoppedParticleReactionGunN::StoppedParticleReactionGunN(const fhicl::ParameterSet& pset)
-    : psphys_(pset.get<fhicl::ParameterSet>("physics"))
+    : art::EDProducer{pset}
+    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
     , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))

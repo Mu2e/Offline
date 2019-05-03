@@ -46,7 +46,8 @@ namespace mu2e {
   };
 
   ProtonBunchIntensityFlat::ProtonBunchIntensityFlat(const Parameters& conf)
-    : urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
+    : art::EDProdcuer{conf}
+    , urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , flat_(-conf().halfWidth(), +conf().halfWidth())
     , mean_(conf().mean())
   {

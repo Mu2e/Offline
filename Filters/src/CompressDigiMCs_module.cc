@@ -190,7 +190,8 @@ private:
 
 
 mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
-  : _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
+  : art::EDProducer{pset},
+    _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
     _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),

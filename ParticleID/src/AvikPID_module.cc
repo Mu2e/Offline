@@ -279,6 +279,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   AvikPID::AvikPID(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _debugLevel(pset.get<int>("debugLevel")),
     _diagLevel (pset.get<int>("diagLevel" )),
 

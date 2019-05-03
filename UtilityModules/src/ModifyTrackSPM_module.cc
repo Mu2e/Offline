@@ -30,6 +30,7 @@ namespace mu2e {
   };
 
   ModifyTrackSPM::ModifyTrackSPM(fhicl::ParameterSet const& pset ):
+    art::EDProducer{pset},
     tag_(pset.get<std::string>("productTag")){
     //    std::cout << "DNBug:  have tag_:  " << tag_ << std::endl;
     //    std::cout << "DNBug:  it has instance:  " << tag_.instance() << std::endl;

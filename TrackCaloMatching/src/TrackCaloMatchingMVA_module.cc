@@ -67,6 +67,7 @@ namespace mu2e {
        public:
 
 	   explicit TrackCaloMatchingMVA(fhicl::ParameterSet const& pset):
+             art::EDProducer{pset},
 	     caloClusterModuleLabel_    (pset.get<std::string>("caloClusterModuleLabel")),
 	     trkIntersectModuleLabel_   (pset.get<std::string>("trkIntersectModuleLabel")),
              BDTWeightsX_               (pset.get<std::string>("BDTWeightsX")),

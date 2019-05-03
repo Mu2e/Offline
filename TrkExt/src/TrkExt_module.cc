@@ -188,6 +188,7 @@ namespace mu2e {
   };
 
   TrkExt::TrkExt(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel")),
     _makerModuleLabel(pset.get<std::string>("makerModuleLabel")),
     _fitterModuleLabelArray(pset.get<std::vector<std::string> >("fitterModuleLabelArray")),

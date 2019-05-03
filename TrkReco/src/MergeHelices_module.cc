@@ -66,6 +66,7 @@ namespace mu2e {
   };
 
   MergeHelices::MergeHelices(const Parameters& config) : 
+    art::EDProducer{config},
     _debug(config().debug()),
     _minnover(config().minnover()),
     _minoverfrac(config().minoverfrac()),

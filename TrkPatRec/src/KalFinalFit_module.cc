@@ -124,6 +124,7 @@ namespace mu2e
   };
 
   KalFinalFit::KalFinalFit(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>("debugLevel", 0)),
     _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency", 101)),

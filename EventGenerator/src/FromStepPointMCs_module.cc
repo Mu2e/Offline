@@ -66,7 +66,8 @@ namespace mu2e {
   };
 
   FromStepPointMCs::FromStepPointMCs(fhicl::ParameterSet const& pset)
-    : logLevel_(pset.get<int>("logLevel", 0))
+    : art::EDProducer{pset}
+    , logLevel_(pset.get<int>("logLevel", 0))
     , allowDuplicates_(pset.get<bool>("allowDuplicates", false))
   {
     produces<GenParticleCollection>();

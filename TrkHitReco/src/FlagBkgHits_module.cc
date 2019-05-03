@@ -92,6 +92,7 @@ namespace mu2e
   };
 
   FlagBkgHits::FlagBkgHits(const fhicl::ParameterSet& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>(                       "debugLevel",0)),
     _printfreq(pset.get<int>(                   "printFrequency",101)),
     _chtoken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
