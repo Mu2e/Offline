@@ -8,7 +8,7 @@
 #include "JobConfig/reco/prolog.fcl"
 #include "Trigger/fcl/templates.fcl"
 #
-process_name : RecoMCDigisTrig
+process_name : recomcdigistrig
 
 source : { module_type : RootInput }
 
