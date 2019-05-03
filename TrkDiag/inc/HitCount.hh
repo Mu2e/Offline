@@ -14,14 +14,14 @@ namespace mu2e
     Int_t _ntsel; // number of StrawHits flaged as passing  time cuts
     Int_t _nbkg; // number of StrawHits flaged as produced by low-energy electrons (Compton electrons)
     Int_t _ntpk; // number of StrawHits assigned to a time peak
-    Int_t _ncd, _ncc, _ncrvd; // # calo digis, clusters, and crv digis
+    Int_t _ncd, _ncrvd; // # calo digis, clusters, and crv digis
     static std::string const& leafnames() { 
       static const std::string leaves =
-	std::string("nsh/I:nesel/I:nrsel/I:ntsel/I:nbkg/I:ntpk/I:ncd/I:ncc/I:ncrvd/I");
+	std::string("nsh/I:nesel/I:nrsel/I:ntsel/I:nbkg/I:ntpk/I:ncd/I:ncrvd/I");
 	return leaves;
     }
     void reset() {
-      _nsd = _nesel = _nrsel = _ntsel = _nbkg = _ntpk = _ncd = _ncc = _ncrvd = 0;
+      _nsd = _nesel = _nrsel = _ntsel = _nbkg = _ntpk = _ncd = _ncrvd = 0;
     }
   };
 }

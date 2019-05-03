@@ -46,7 +46,7 @@
 
 #include "Mu2eUtilities/inc/EventWeightHelper.hh"
 
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 //#include "RecoDataProducts/inc/TrkCaloMatchCollection.hh"
 //#include "RecoDataProducts/inc/TrkCaloMatch.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersect.hh"

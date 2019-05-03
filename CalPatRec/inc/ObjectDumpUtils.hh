@@ -30,13 +30,11 @@ namespace mu2e {
   class StrawHitMCTruth;
   class CaloCluster;
   class CaloProtoCluster;
-  class TrkToCaloExtrapol;
   class StepPointMC;
   class GenParticle;
   class SimParticle;
   //  class CalTimePeak;
   class TrackSeed;
-  class TrackClusterMatch;
   class TrkStrawHit;
 
 

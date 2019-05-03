@@ -7,6 +7,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "ProditionsService/inc/ProditionsService.hh"
 
+#include "TrackerConditions/inc/FullReadoutStrawCache.hh"
 #include "TrackerConditions/inc/DeadStrawCache.hh"
 #include "TrackerConditions/inc/StrawDriftCache.hh"
 #include "TrackerConditions/inc/StrawPhysicsCache.hh"
@@ -29,6 +30,8 @@ namespace mu2e {
     // and then Geometry
     art::ServiceHandle<GeometryService> g;
 
+    auto frc = std::make_shared<mu2e::FullReadoutStrawCache>(_config.fullReadoutStraw());
+    _caches[frc->name()] = frc;
     auto dsc = std::make_shared<mu2e::DeadStrawCache>(_config.deadStraw());
     _caches[dsc->name()] = dsc;
     auto sdc = std::make_shared<mu2e::StrawDriftCache>(_config.strawDrift());
