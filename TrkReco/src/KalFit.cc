@@ -520,25 +520,21 @@ namespace mu2e
 	<< "Cluster COG (Mu2e) " << ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()) << std::endl
 	<<" Cluster COG (Det ) " << cog << std::endl; 
       }
-      // t0 represents the time the particle reached the sensor; estimate that
-      HitT0 ht0;
-      ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.trkToCaloTimeOffset();
-      ht0._t0err = _ttcalc.caloClusterTimeErr();
-      
-      Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
       double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
-      // estimate fltlen from pitch; take the last segment
+       // estimate fltlen from pitch; take the last segment
       HelixVal const& hval = kalData.kalSeed->segments().back().helix();
+      double mom = kalData.kalSeed->segments().back().mom();
+      double beta = kalData.kalSeed->particle().beta(mom);
       double td = hval.tanDip();
       double sd = td/sqrt(1.0+td*td);
       double fltlen = (cog.z()- hval.z0() + 0.5*crystalLength)/sd;// - kalData.kalSeed->flt0();
-      // test
-//      double tlen = fltlen*sqrt(1.0-sd*sd);
-//      double hx = (1.0/hval.omega())*(sin(hval.phi0()+hval.omega()*tlen)-sin(hval.phi0())) - hval.d0()*sin(hval.phi0());
-//      double hy = (-1.0/hval.omega())*(cos(hval.phi0()+hval.omega()*tlen)-cos(hval.phi0())) + hval.d0()*cos(hval.phi0());
-//      double hz = hval.z0() + hval.tanDip()*tlen;
-//      Hep3Vector hpos(hx,hy,hz);
-//      cout << "cog pos   " << cog << endl << "helix pos " << hpos << endl;
+      // t0 represents the time the particle reached the sensor; estimate that
+      HitT0 ht0 = kalData.kalSeed->t0(); // start with the track t0
+      double   flt0 = kalData.kalSeed->flt0();
+      double tflt = (fltlen -flt0)/(beta*CLHEP::c_light);
+      ht0._t0 += tflt;
+      ht0._t0err = _ttcalc.caloClusterTimeErr();
+      Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
       tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _caloHitErr, _ttcalc.caloClusterTimeErr(), _ttcalc.trkToCaloTimeOffset());
     }
   }
@@ -577,7 +573,8 @@ namespace mu2e
     // for(auto const& plane : tracker.getPlanes()){
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
       const auto& plane = tracker.getPlane(i);
-       _debug>3 && std::cout << __func__ << " plane " << plane.id() << std::endl;
+      _debug>3 && std::cout << __func__ << " plane " << plane.id() << " exists: " << plane.exists() << std::endl;
+       if(plane.exists()) {
       // if (!(plane.exists())) continue;
       // # of straws in a panel
       int nstraws = plane.getPanel(0).nStraws();
@@ -659,10 +656,11 @@ namespace mu2e
               matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
               ++nadded;
             }
-          }
-        }
-      }
-    }
+          }  // if prho
+        } // panel loop
+      } // if rho
+      } // plane exists
+    } // nplanes
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto const& strawflt : matstraws){
@@ -909,9 +907,9 @@ namespace mu2e
 	//check the compatibility of the track and time within a given time window
 	if (fabs(dt) > _maxtchdt)        continue;
 
-	//we need to create a TrkCaloHit to evaluate the doca
 	HitT0 ht0;
-	ht0._t0    = cl->time() + _ttcalc.trkToCaloTimeOffset();
+	ht0._t0 = tflt;
+	// initial error can't be better than the input error
 	ht0._t0err = _ttcalc.caloClusterTimeErr();
 
 	Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
@@ -1114,16 +1112,16 @@ namespace mu2e
 	krep->setT0(t0,flt0);
 	updateHitTimes(krep);
 	retval = true;
+
       }
     }
     return retval;
   }
-  
-  void
-  KalFit::updateHitTimes(KalRep* krep) {
-  // compute the time the track came closest to the sensor for each hit, starting from t0 and working out.
-  // this function allows for momentum change along the track.
-  // find the bounding hits on either side of this
+
+  void KalFit::updateHitTimes(KalRep* krep) {
+    // compute the time the track came closest to the sensor for each hit, starting from t0 and working out.
+    // this function allows for momentum change along the track.
+    // find the bounding hits on either side of this
     TrkHitVector *thv = &(krep->hitVector());
     std::sort(thv->begin(),thv->end(),fcomp());
     TrkHitVector::iterator ihigh;
@@ -1136,15 +1134,15 @@ namespace mu2e
     for(TrkHitVector::iterator ihit= ihigh;ihit != thv->end(); ++ihit){
       TrkHit* hit = *ihit;
       double flt1 = hit->fltLen();
-// particle transit time to this hit from the reference
+      // particle transit time to this hit from the reference
       double tflt = krep->transitTime(flt0, flt1);
-// update the time in the HitT0 object
+      // update the time in the TrkT0 object
       hitt0._t0 += tflt;
       (*ihit)->setHitT0(hitt0);
-// update the reference flightlength
+      // update the reference flightlength
       flt0 = flt1;
     }
-// now the same, moving backwards.
+    // now the same, moving backwards.
     flt0 = krep->flt0();
     hitt0 = krep->t0();
     for(TrkHitVector::reverse_iterator ihit= ilow;ihit != thv->rend(); ++ihit){
@@ -1157,10 +1155,9 @@ namespace mu2e
     }
   }
 
-  void
-  KalFit::findBoundingHits(KalRep* krep,double flt0,
-			   TrkHitVector::reverse_iterator& ilow,
-			   TrkHitVector::iterator& ihigh) {
+  void KalFit::findBoundingHits(KalRep* krep,double flt0,
+      TrkHitVector::reverse_iterator& ilow,
+      TrkHitVector::iterator& ihigh) {
     TrkHitVector* hits = &(krep->hitVector());
     ilow = hits->rbegin();
     ihigh = hits->begin();
@@ -1168,15 +1165,15 @@ namespace mu2e
     while(ihigh != hits->end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
 
-// attempt to extend the fit to the specified location
+  // attempt to extend the fit to the specified location
   TrkErrCode KalFit::extendFit(KalRep* krep) {
     TrkErrCode retval;
     // find the downstream and upstream Z positions to extend to
     if(_exdown != noextension){
       double downz = extendZ(_exdown);
-    // convert to flightlength using the fit trajectory
+      // convert to flightlength using the fit trajectory
       double downflt = krep->pieceTraj().zFlight(downz);
-    // actually extend the track
+      // actually extend the track
       retval = krep->extendThrough(downflt);
     }
     // same for upstream extension
@@ -1195,7 +1192,7 @@ namespace mu2e
       GeomHandle<DetectorSystem> det;
       retval = det->toDetector(target->centerInMu2e()).z() - 0.5*target->cylinderLength();
     } else if(ex == ipa) {
-    // the following is wrong FIXME!!
+      // the following is wrong FIXME!!
       GeomHandle<StoppingTarget> target;
       GeomHandle<DetectorSystem> det;
       retval = det->toDetector(target->centerInMu2e()).z() +  0.5*target->cylinderLength();

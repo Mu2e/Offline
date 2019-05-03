@@ -1,57 +1,28 @@
 #
-# reconstruct tracks and Display events from a file
+# run the official reconstruction sequences and Display events from a digi file
 #
-# $Id: TrkPatRecEventDisplay.fcl,v 1.4 2014/05/28 21:02:13 kutschke Exp $
-# $Author: kutschke $
-# $Date: 2014/05/28 21:02:13 $
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
+# Default is for CRY cosmics  for other files, use the include below
+#include "JobConfig/reco/RecoMCDigis_CRY.fcl"
+###include "JobConfig/reco/RecoMCDigis_nocosmic.fcl"
 
-process_name : TrkPatRecTest
-
-source :
-{
-  module_type : RootInput
-}
-
-services : @local::Services.Reco
-
-physics :
-{
-  producers : 
-  {
-      @table::TrkHitReco.producers
-      @table::Tracking.producers
-  #    @table::CaloReco.producers
-  #    @table::CaloCluster.producers
-  #    @table::CrvResponsePackage.producers
-  }
-
-  analyzers:
-  {
-    eventdisplay:
+process_name : EventDisplayDigis 
+# add the display to the analyzers
+physics.analyzers: {
+  @table::physics.analyzers
+  eventdisplay:
     {
       module_type     : EventDisplay
       g4ModuleLabel             : "CompressDigiMCs"
       physicalVolumesMultiLabel : "compressPV"
      }
-  }
-
-  p1: [ 
-	@sequence::TrkHitReco.PrepareHits,
-	@sequence::Tracking.FindHelices,
-	@sequence::Tracking.TPRDeM,
-	@sequence::Tracking.TPRUeM
-      ]
-
-  e1 : [eventdisplay]
-
-  trigger_paths  : [p1]
-  end_paths      : [e1]
-
 }
+# add the display to the path
+physics.EndPath : [ RecoCheck, eventdisplay]
+services.TFileService.fileName: "nts.owner.EventDisplayDigis.version.sequencer.root"
 
 source.readParameterSets : false
 

@@ -31,6 +31,7 @@
 #include "RecoDataProducts/inc/StrawDigi.hh"
 #include "RecoDataProducts/inc/CrvDigi.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/CrvCoincidenceCluster.hh"
 #include "RecoDataProducts/inc/RecoCount.hh"
 // Utilities
@@ -72,6 +73,8 @@ namespace mu2e {
 	Comment("StrawDigiCollection producer")};
       fhicl::Atom<art::InputTag> SHFC { Name("StrawHitFlagCollection"),
 	Comment("StrawHitFlagCollection producer")};
+      fhicl::Atom<art::InputTag> CHC { Name("ComboHitCollection"),
+	Comment("ComboHitCollection for the original StrawHits (not Panel hits)")};
       fhicl::Atom<art::InputTag> CDC { Name("CaloDigiCollection"),
 	Comment("CaloDigiCollection producer")};
        fhicl::Atom<art::InputTag> SDMCC { Name("StrawDigiMCCollection"),
@@ -100,7 +103,6 @@ namespace mu2e {
 	Comment("Min CaloShowerSim MC energy to include")};
       fhicl::Atom<double> CCME{ Name("CaloClusterMinE"),
 	Comment("Minimum energy CaloCluster to save (MeV)"), 10.0};
- 
    };
    using Parameters = art::EDProducer::Table<Config>;
    explicit SelectRecoMC(const Parameters& conf);
@@ -119,15 +121,15 @@ namespace mu2e {
    void fillSDMCI(KalSeedMC const& mcseed,SHIS& shindices);
    void fillCaloClusterMC(CaloCluster const& cc, CaloShowerSimCollection const& cssc,
        PrimaryParticle const& pp, CaloClusterMC& ccmc);
-   void fillStrawHitCounts(StrawHitFlagCollection const& shfc, RecoCount& nrec);
+   void fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec);
    void fillTrk( art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,
-PrimaryParticle const& pp, RecoCount& nrec);
+       PrimaryParticle const& pp, RecoCount& nrec);
    void fillCrv( art::Event& event, PrimaryParticle const& pp, RecoCount& nrec);
    void fillCalo(art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,
        PrimaryParticle const& pp, RecoCount& nrec);
    int _debug;
    bool _saveallenergy, _saveunused, _saveallunused;
-   art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc, _cssc, _ewm, _pbi;
+   art::InputTag _pp, _ccc, _crvccc, _sdc, _shfc, _chc, _cdc, _sdmcc, _crvdc, _crvdmcc, _vdspc, _cssc, _ewm, _pbi;
    std::vector<std::string> _kff, _mh;
    SimParticleTimeOffset _toff;
    double _ccmcdt, _csme, _ccme;
@@ -146,6 +148,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
     _crvccc(config().CrvCCC()),
     _sdc(config().SDC()),
     _shfc(config().SHFC()),
+    _chc(config().CHC()),
     _cdc(config().CDC()),
     _sdmcc(config().SDMCC()),
     _crvdc(config().CRVDC()),
@@ -163,6 +166,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
   {
     consumes<StrawDigiCollection>(_sdc);
     consumes<StrawHitFlagCollection>(_shfc);
+    consumes<ComboHitCollection>(_chc);
     consumes<CaloDigiCollection>(_cdc);
     consumes<CrvDigiCollection>(_crvdc);
     consumesMany<KalSeedCollection>();
@@ -414,8 +418,10 @@ PrimaryParticle const& pp, RecoCount& nrec);
     ccmc._time /= ccmc._edep;
   }
 
-  void SelectRecoMC::fillStrawHitCounts(StrawHitFlagCollection const& shfc, RecoCount& nrec) {
-    nrec._nstrawdigi = shfc.size();
+  void SelectRecoMC::fillStrawHitCounts(ComboHitCollection const& chc, StrawHitFlagCollection const& shfc, RecoCount& nrec) {
+// test
+    if(chc.size() != shfc.size())
+      throw cet::exception("Reco")<<"mu2e::SelectRecoMC: inconsistent collections"<< std::endl; 
     for(const auto& shf : shfc) {
       if(shf.hasAllProperties(StrawHitFlag::energysel))++nrec._nshfesel;
       if(shf.hasAllProperties(StrawHitFlag::radsel))++nrec._nshfrsel;
@@ -423,6 +429,9 @@ PrimaryParticle const& pp, RecoCount& nrec);
       if(shf.hasAllProperties(StrawHitFlag::bkg))++nrec._nshfbkg;
       if(shf.hasAllProperties(StrawHitFlag::trksel))++nrec._nshftpk;
     }
+    nrec._nstrawdigi = chc.size();
+    // fill straw hit time histogram
+    for(auto const& ch : chc)nrec._shthist.fill(ch.time());
   }
 
   void SelectRecoMC::fillTrk( art::Event& event, std::set<art::Ptr<CaloCluster> >& ccptrs,
@@ -433,6 +442,8 @@ PrimaryParticle const& pp, RecoCount& nrec);
     auto const& sdc = *sdch;
     auto shfch = event.getValidHandle<StrawHitFlagCollection>(_shfc);
     auto const& shfc = *shfch;
+    auto chch = event.getValidHandle<ComboHitCollection>(_chc);
+    auto const& chc = *chch;
     auto sdmcch = event.getValidHandle<StrawDigiMCCollection>(_sdmcc);
     auto const& sdmcc = *sdmcch;
     auto vdspch = event.getValidHandle<StepPointMCCollection>(_vdspc);
@@ -529,7 +540,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
     if(_debug > 1) std::cout << "Selected " << shcount << " StrawDigis" << std::endl;
 
     // fill detailed StrawHit counts
-    fillStrawHitCounts(shfc,nrec);
+    fillStrawHitCounts(chc,shfc,nrec);
     event.put(std::move(sdmcim),"StrawDigiMap");
     event.put(std::move(ssdc));
     event.put(std::move(sshfc));
@@ -626,7 +637,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
 	ccptrs.insert(ccp);
       }
     }
-    // fill CaloClusters
+    // fill CaloClusterMCs
     for(auto const& ccptr : ccptrs) {
       CaloClusterMC ccmc;
       fillCaloClusterMC(*ccptr,cssc,pp,ccmc);
@@ -647,12 +658,8 @@ PrimaryParticle const& pp, RecoCount& nrec);
 	}
       }
     }
-    // create new collections for referenced products FIXME!
-    // Should add the SimParticles from the CaloClusters and CRV Coincidences FIXME!!
-    // Should include CaloClusters from the primary particle FIXME!
     // reco count
     nrec._ncalodigi = cdc.size();
-    nrec._ncaloclust = ccc.size();
 // put new data into event
     event.put(std::move(ccmcc));
     event.put(std::move(ccmca));

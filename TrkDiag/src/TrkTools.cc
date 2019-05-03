@@ -56,7 +56,6 @@ namespace mu2e {
     void fillHitCount(RecoCount const& nrec, HitCount& hitcount) {
       hitcount._nsd = nrec._nstrawdigi;
       hitcount._ncd = nrec._ncalodigi;
-      hitcount._ncc = nrec._ncaloclust;
       hitcount._ncrvd = nrec._ncrvdigi;
       hitcount._nesel = nrec._nshfesel;
       hitcount._nrsel = nrec._nshfrsel;

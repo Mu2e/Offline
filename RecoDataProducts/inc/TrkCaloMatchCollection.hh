@@ -1,10 +1,6 @@
 //container of the trajectories which have an intersection with the Calorimeter
 //
 //
-// $Id: TrkToCaloExtrapolCollection.hh,v 1.1 2012/07/10 00:02:19 gianipez Exp $
-// $Author: gianipez $
-// $Date: 2012/07/10 00:02:19 $
-//
 // Original author B. Echenard
 //
 

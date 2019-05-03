@@ -10,12 +10,6 @@
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
-// boost
-#include <boost/accumulators/accumulators.hpp>
-#include "boost_fix/accumulators/statistics/stats.hpp"
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // root
@@ -27,7 +21,6 @@
 #include <cmath>
 using CLHEP::Hep3Vector;
 using namespace std;
-using namespace boost::accumulators;
 namespace mu2e
 {
 
@@ -41,7 +34,7 @@ namespace mu2e
     _shErr(pset.get<double>("StrawHitTimeErr",9.7)), // ns effective hit time res. without TOT
     _caloZOffset(pset.get<double>("CaloClusterZOffset",-120.0)), // WRT downstream face (mm)
     _caloT0Offset(pset.get<double>("TrkToCaloTimeOffset",-0.4)), // nanoseconds
-    _caloT0Err(pset.get<double>("TrkCaloHitTimeErr",0.5)) // nanoseconds
+    _caloT0Err(pset.get<double>("CaloTimeErr",0.5)) // nanoseconds
     { }
 
   TrkTimeCalculator::~TrkTimeCalculator() {}
