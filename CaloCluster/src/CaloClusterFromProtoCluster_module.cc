@@ -44,7 +44,7 @@ namespace mu2e {
   public:
 
     explicit CaloClusterFromProtoCluster(fhicl::ParameterSet const& pset) :
-
+      art::EDProducer{pset},
       caloClusterModuleLabel_(pset.get<std::string>("caloClusterModuleLabel")),
       mainTag_{caloClusterModuleLabel_, pset.get<std::string>("mainClusterCollName")},
       splitTag_{caloClusterModuleLabel_, pset.get<std::string>("splitClusterCollName")},

@@ -137,6 +137,7 @@ PrimaryParticle const& pp, RecoCount& nrec);
   };
 
   SelectRecoMC::SelectRecoMC(const Parameters& config )  : 
+    art::EDProducer{config},
     _debug(config().debug()),
     _saveallenergy(config().saveEnergySteps()),
     _saveunused(config().saveUnused()),

@@ -100,6 +100,7 @@ namespace mu2e {
   };
 
   CrvPacketProducer::CrvPacketProducer(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _outputFile                    (pset.get<string>("outputFile","artdaq_crv.txt")),
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),

@@ -81,9 +81,7 @@ def cppPath(mu2eOpts):
         os.environ['ARTDAQ_CORE_INC'],
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
-        os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
-        os.environ['POSTGRESQL_INC'],
-        os.environ['CURL_DIR']+'/include'
+        os.environ['POSTGRESQL_INC']
         ]
 
     if mu2eOpts['satellite']:
@@ -115,9 +113,7 @@ def libPath(mu2eOpts):
         os.environ['XERCESCROOT']+'/lib',
         os.environ['TBB_LIB'],
         os.environ['GSL_LIB'],
-        os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
-        os.environ['POSTGRESQL_LIBRARIES'],
-        os.environ['CURL_DIR']+'/lib'
+        os.environ['POSTGRESQL_LIBRARIES']
         ]
 
     if mu2eOpts['satellite']:

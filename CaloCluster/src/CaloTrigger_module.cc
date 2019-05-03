@@ -41,6 +41,7 @@ namespace mu2e {
   public:
 
     explicit CaloTrigger(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       caloDigiModuleLabel_(pset.get<std::string>("caloDigiModuleLabel")),
       digiSampling_(       pset.get<double>("digiSampling")),
       windowPeak_(         pset.get<unsigned>("windowPeak")),

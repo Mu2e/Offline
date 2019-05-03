@@ -98,6 +98,7 @@ namespace mu2e {
   public:
 
     explicit CaloShowerStepFromStepPt(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       numZSlices_(              pset.get<int>(        "numZSlices") ),
       deltaTime_(               pset.get<double>(     "deltaTime") ),
       calorimeterStepPoints_(   pset.get<std::string>("calorimeterStepPoints") ),

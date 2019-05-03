@@ -31,6 +31,7 @@ namespace mu2e {
     enum processorStrategy {NoChoice, RawExtract, LogNormalFit, FixedFast};
 
     explicit CaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
       processorStrategy_   (pset.get<std::string>("processorStrategy")),
       digiSampling_        (pset.get<double>     ("digiSampling")),

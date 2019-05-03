@@ -78,7 +78,6 @@ if [ -n "$BASEREPO" ]; then
   export PATH=`dropit -p $PATH -sf $MU2E_SATELLITE_RELEASE/bin`
   export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_SATELLITE_RELEASE`
 
-
   if [ -f $MU2E_SATELLITE_RELEASE/.buildopts ] ; then
       echo "WARNING - buildopts will be taken from the base release, "
       echo "        in partial checkout your local buildopts is ignored"
@@ -133,7 +132,6 @@ fi
 setup -B mu2e_artdaq_core v1_02_21 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
-setup -B pcie_linux_kernel_module v2_01_02 -q${MU2E_UPS_QUALIFIERS}
 
 setup -B heppdt   v3_04_01h -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_16  -q${MU2E_UPS_QUALIFIERS}

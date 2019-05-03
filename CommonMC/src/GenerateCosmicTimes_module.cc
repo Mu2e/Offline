@@ -49,7 +49,8 @@ namespace mu2e {
 
   //================================================================
   GenerateCosmicTimes::GenerateCosmicTimes(const fhicl::ParameterSet& pset)
-    : _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
+    : art::EDProducer{pset}
+    , _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , offsetToTracker_(pset.get<bool>("offsetToTracker", true))
     , tmin_(pset.get<double>("tmin"))

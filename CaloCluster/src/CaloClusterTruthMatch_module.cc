@@ -38,7 +38,7 @@ namespace mu2e {
      public:
 
 	explicit CaloClusterTruthMatch(fhicl::ParameterSet const& pset) :
-	
+          art::EDProducer{pset},	
 	  caloClusterModuleLabel_  (pset.get<std::string>("caloClusterModuleLabel")), 
           caloHitTruthModuleLabel_ (pset.get<std::string>("caloHitTruthModuleLabel")),
 	  diagLevel_               (pset.get<int>        ("diagLevel",0))		  

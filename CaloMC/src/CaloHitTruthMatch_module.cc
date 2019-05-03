@@ -41,7 +41,7 @@ namespace mu2e {
      public:
 
         explicit CaloHitTruthMatch(fhicl::ParameterSet const& pset) :
-
+          art::EDProducer{pset},
           // Parameters
           caloShowerSimModuleLabel_  (pset.get<std::string>("caloShowerSimModuleLabel")), 
           caloCrystalHitModuleLabel_ (pset.get<std::string>("caloCrystalHitModuleLabel")), 

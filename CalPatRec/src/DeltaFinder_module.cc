@@ -158,6 +158,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   DeltaFinder::DeltaFinder(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _shToken{consumes<StrawHitCollection>(pset.get<string>("strawHitCollectionTag"))},
     _chToken{consumes<ComboHitCollection>(pset.get<string>("comboHitCollectionTag"))},
     _tpeakToken{consumes<TimeClusterCollection>(pset.get<string>("timePeakCollectionTag"))},

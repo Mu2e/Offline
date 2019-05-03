@@ -25,7 +25,7 @@ namespace mu2e {
   public:
 
     explicit CaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
-
+      art::EDProducer{pset},
       caloDigisToken_{consumes<CaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
       time4Merge_          (pset.get<double>     ("time4Merge")),
       diagLevel_           (pset.get<int>        ("diagLevel",0))

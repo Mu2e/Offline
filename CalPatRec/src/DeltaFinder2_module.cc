@@ -158,6 +158,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   DeltaFinder2::DeltaFinder2(fhicl::ParameterSet const& pset): 
+    art::EDProducer{pset},
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _shpTag                (pset.get<string>       ("strawHitPositionCollectionTag")),

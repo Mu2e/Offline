@@ -68,6 +68,7 @@ namespace mu2e
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
     _minPEs(pset.get<int>("minPEs")),          //6 PEs
     _darkNoise(pset.get<bool>("darkNoise"))    //true for dark noise calibration

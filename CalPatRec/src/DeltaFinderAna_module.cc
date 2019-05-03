@@ -227,7 +227,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   DeltaFinderAna::DeltaFinderAna(fhicl::ParameterSet const& pset): 
-    //    art::EDProducer(pset), 
+    art::EDProducer(pset), 
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _mcdigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),

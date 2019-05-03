@@ -98,7 +98,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   PrefetchData::PrefetchData(fhicl::ParameterSet const& pset): 
-    //    art::EDProducer(pset), 
+    art::EDProducer(pset), 
     _debugLevel     (pset.get<int>          ("debugLevel"              )),
     _mcDiag         (pset.get<bool>         ("mcDiag"                  )),
 
