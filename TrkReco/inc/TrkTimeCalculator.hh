@@ -42,7 +42,7 @@ namespace mu2e
       // access the offsets
       double timeOfFlightTimeOffset(double hitz,double pitch) const; // z position in the tracker frame!!!
       double strawHitTimeErr() const { return _shErr; }
-      double caloClusterTimeOffset() const { return _caloT0Offset; }
+      double trkToCaloTimeOffset() const { return _caloT0Offset; }
       double caloClusterTimeErr() const { return _caloT0Err; }
       // same for a ComboHit
       double comboHitTime(ComboHit const& ch,double pitch);

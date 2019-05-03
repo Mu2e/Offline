@@ -44,19 +44,24 @@ namespace mu2e
     _parentRep=0;
   }
 
+
+  //2019-05-02 Gianipez: the following function will change meaning in the near future. FIXME!
   double
   TrkCaloHit::time() const{
-  // correct for the light propagation time.
-  // light propagation velocity should come from configuration FIXME!
-    static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
-    double tlight =0.0;
-    if(poca().status().success()){
-// time for light to get to SIPMs at the back of the crystals, bounded by crystal length
-      double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
-      tlight = clen/vlprop;
-    }
-    return caloCluster().time() - tlight;
+    return caloCluster().time() - _dtoffset;
   }
+
+  // bool 
+  // TrkCaloHit::time(HitT0& t0) const{
+  //   HitT0 st0;
+  //   if (signalPropagationTime(st0)){
+  //     t0._t0    = caloCluster().time() - st0._t0 -_dtoffset;
+  //     t0._t0err = st0._t0err;
+  //     return true;
+  //   }else {
+  //     return false;
+  //   }
+  // }
 
   TrkErrCode
   TrkCaloHit::updateMeasurement(const TrkDifTraj* traj) {
@@ -98,19 +103,35 @@ namespace mu2e
 
 
   bool TrkCaloHit::signalPropagationTime(TrkT0& t0) {
-    t0._t0 = -_dtoffset; // following Pasha's convention
-    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating
-    return true;
+    // t0._t0 = -_dtoffset; // following Pasha's convention
+    // t0._t0err = _tErr; // intrinsic error on time, used in T0 updating
+
+  // correct for the light propagation time.
+  // light propagation velocity should come from configuration FIXME!
+    static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
+    double tlight =0.0;
+    if(poca().status().success()){
+// time for light to get to SIPMs at the back of the crystals, bounded by crystal length
+      double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
+      tlight = clen/vlprop;
+    }
+    t0._t0    =  tlight;
+    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating. 
+                       //Contribution from the uncertainty of the light propagation is below 100 ps
+
+    return true;//FIXME!
   }
 
 // this function isn't used and needs to be removed FIXME!
   void
   TrkCaloHit::trackT0Time(double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt){
     // compute the flightlength to this hit from z=0
-    CLHEP::Hep3Vector hpos;
-    hitPosition(hpos);
-    double hflt  = ptraj->zFlight(hpos.z()) - t0flt;
-    htime = time() + _dtoffset - hflt/vflt;
+    // CLHEP::Hep3Vector hpos;
+    // hitPosition(hpos);
+    // double hflt  = ptraj->zFlight(hpos.z()) - t0flt;
+    // HitT0   st0;
+    // if(time(st0))
+    //   htime = st0._t0 - hflt/vflt;
   }
 
   bool

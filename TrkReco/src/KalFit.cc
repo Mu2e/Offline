@@ -325,12 +325,14 @@ namespace mu2e
           nearhit = *ihigh;
         else
           nearhit = *ilow;
-        TrkT0 hitt0 = nearhit->hitT0();
-        double mom = krep->momentum(nearhit->fltLen()).mag();
-        double beta = krep->particleType().beta(mom);
-        double tflt = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
-// update the time in the TrkT0 object
-        hitt0._t0 += tflt;  // FIXME!!! assumes beta=1
+
+//can I just do krep_hitt0()???; this whole block (next 5 lines of code) will disappear!
+        HitT0  hitt0 = krep_hitT0(krep, nearhit);//nearhit->hitT0();
+        double mom   = krep->momentum(nearhit->fltLen()).mag();
+        double beta  = krep->particleType().beta(mom);
+        double tflt  = (hflt-nearhit->fltLen())/(beta*CLHEP::c_light);
+// update the time in the HitT0 object
+        hitt0._t0 += tflt;  
 // create the hit object.  Assume we're at the last iteration over added error
         TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,istraw,hitt0,hflt,
 					      _maxpull,_strHitW );
@@ -439,16 +441,18 @@ namespace mu2e
       krep->resetFit();
       retval = krep->fit();
       if(! retval.success())break;
-      // updates
-      if(_updatet0[iter]){
-	updateT0(kalData, iter);
-        changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
-      }
+
+      //2019-04-26: Giani&Dave; we want to do the weeding before the call to ::updateT0
       // drop outliers
       if(_weedhits[iter]){
         kalData.nweediter = 0;
         changed |= weedHits(kalData,iter);
 	changed |= unweedBestHit(kalData,_maxhitchi);
+      }
+      // updates
+      if(_updatet0[iter]){
+	updateT0(kalData, iter);
+        changed |= fabs(krep->t0()._t0-oldt0) > _t0tol[iter];
       }
       // find missing materials
       unsigned nmat(0);
@@ -518,7 +522,7 @@ namespace mu2e
       }
       // t0 represents the time the particle reached the sensor; estimate that
       HitT0 ht0;
-      ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
+      ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.trkToCaloTimeOffset();
       ht0._t0err = _ttcalc.caloClusterTimeErr();
       
       Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
@@ -535,7 +539,7 @@ namespace mu2e
 //      double hz = hval.z0() + hval.tanDip()*tlen;
 //      Hep3Vector hpos(hx,hy,hz);
 //      cout << "cog pos   " << cog << endl << "helix pos " << hpos << endl;
-      tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _caloHitErr, _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset());
+      tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _caloHitErr, _ttcalc.caloClusterTimeErr(), _ttcalc.trkToCaloTimeOffset());
     }
   }
 
@@ -900,14 +904,14 @@ namespace mu2e
 	    cl->energyDep() < _mintchenergy) continue;
 	// double      hflt(0.0);
 	Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( cl->diskId(), cl->cog3Vector()));
-	double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;
+	double      dt = cl->time() + _ttcalc.trkToCaloTimeOffset() - tflt;
 
 	//check the compatibility of the track and time within a given time window
 	if (fabs(dt) > _maxtchdt)        continue;
 
 	//we need to create a TrkCaloHit to evaluate the doca
 	HitT0 ht0;
-	ht0._t0    = cl->time() + _ttcalc.caloClusterTimeOffset();
+	ht0._t0    = cl->time() + _ttcalc.trkToCaloTimeOffset();
 	ht0._t0err = _ttcalc.caloClusterTimeErr();
 
 	Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
@@ -924,7 +928,7 @@ namespace mu2e
 	  tchFinal.reset(new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
 					ht0, poca.flt1(),
 					_calHitW, _caloHitErr, 
-					_ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
+					_ttcalc.caloClusterTimeErr(), _ttcalc.trkToCaloTimeOffset()));
 	  minFOM   = doca; // this should be some combination of energy, DOCA, etc FIXME!
 	  retval = icc;
 	}
@@ -970,7 +974,7 @@ namespace mu2e
 	TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[diskId]+0.5*crystalLength),flt);
 	//evaluate the transittime using the full trajectory
 	double      tflt = krep->t0()._t0 + krep->transitTime(flt0, flt);
- 	double      dt   = hit->caloCluster().time() + _ttcalc.caloClusterTimeOffset() - tflt;
+ 	double      dt   = hit->caloCluster().time() + _ttcalc.trkToCaloTimeOffset() - tflt;
 
 	kalData.diag.diskId   = diskId;
 	kalData.diag.depth    = hit->hitLen();
@@ -1074,6 +1078,9 @@ namespace mu2e
         size_t nhits = krep->hitVector().size();
         hitt0.reserve(nhits);
         hitt0err.reserve(nhits);
+
+	accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
+
         // loop over the hits and accumulate t0
         for(auto ihit=thv->begin(); ihit != thv->end(); ihit++){
           TrkHit*      hit   = *ihit;
@@ -1086,53 +1093,27 @@ namespace mu2e
 	    }
 	  }
           if(hit->isActive() && trkShAmbigOK) {
-	    TrkT0 st0;
-	    if (hit->signalPropagationTime(st0 )){
+	    HitT0 st0;
+	    //	    if (hit->signalPropagationTime(st0 )){
+	    if (hit_time(hit, st0)){//2019-04-22: this function will become TrkHit::time(HitT0& hitT0) in the fututre development. FIXME!
 	      // subtracting hitT0 makes this WRT the previous track t0
-	      hitt0.push_back(hit->time() - st0._t0 - hit->hitT0()._t0);
-	      hitt0err.push_back(st0._t0err);// temperature is already part of the residual error
+	      double    dtHitToTrack = st0._t0 - krep_hitT0(krep, hit)._t0;//FIXME! KalRep should own this function
+	      wmean(dtHitToTrack, weight=1.0/(st0._t0err*st0._t0err));
+
             }
           }
         }
-        if(hitt0.size() >1){
-          TrkT0 t0;
-          // find the median.  Why is this necessary?  Input t0 has very good precision < 2ns.
-//          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
-//          med = std::for_each( hitt0.begin(), hitt0.end(), med );
-//          t0._t0 = extract_result<tag::median>(med);
-          // iterate an outlier search and linear fit until the set of used hits doesn't change
-          bool changed(true);
-          std::vector<bool> used(hitt0.size(),true);
-          unsigned niter(0);
-          while(changed && niter < 10){
-            niter++;
-            changed = false;
-            accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
-            for(unsigned ihit=0;ihit<hitt0.size();ihit++){
-              bool useit = fabs(hitt0[ihit]-t0._t0) < _t0nsig*hitt0err[ihit];
-              changed |= useit != used[ihit];
-              used[ihit] = useit;
-              if(useit){
-                wmean(hitt0[ihit], weight=1.0/(hitt0err[ihit]*hitt0err[ihit]));
-              }
-            }
-            unsigned nused = extract_result<tag::count>(wmean);
-            if(nused > 1){
-              t0._t0 = extract_result<tag::weighted_mean>(wmean);
-              t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
-            } else {
-              break;
-            }
-          }
-          // reset t0
-          if(!changed){
-            // put in t0 from the track.
-            t0._t0 += krep->t0()._t0;
-            krep->setT0(t0,flt0);
-            updateHitTimes(krep);
-            retval = true;
-          }
-        }
+
+	TrkT0 t0; // null t0; this will be the change in t0 from this update
+	unsigned nused = extract_result<tag::count>(wmean);
+	t0._t0    = extract_result<tag::weighted_mean>(wmean);
+	t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
+	
+	// put in t0 from the track.
+	t0._t0 += krep->t0()._t0;
+	krep->setT0(t0,flt0);
+	updateHitTimes(krep);
+	retval = true;
       }
     }
     return retval;
@@ -1150,13 +1131,14 @@ namespace mu2e
     findBoundingHits(krep, krep->flt0(),ilow,ihigh);
     // reset all the hit times
     double flt0 = krep->flt0();
-    TrkT0 hitt0 = krep->t0();
+    HitT0 hitt0 = krep->t0();
+    //GIANIPEZ 2019-04-26: update the following loops in the bottom using the function kres_hitt0//FIXME!
     for(TrkHitVector::iterator ihit= ihigh;ihit != thv->end(); ++ihit){
       TrkHit* hit = *ihit;
       double flt1 = hit->fltLen();
 // particle transit time to this hit from the reference
       double tflt = krep->transitTime(flt0, flt1);
-// update the time in the TrkT0 object
+// update the time in the HitT0 object
       hitt0._t0 += tflt;
       (*ihit)->setHitT0(hitt0);
 // update the reference flightlength
@@ -1224,6 +1206,32 @@ namespace mu2e
       return cg->caloInfo().getDouble("envelopeZ1");
     }
     return retval;
+  }
+
+  HitT0  KalFit::krep_hitT0(KalRep*krep, const TrkHit*hit){
+    HitT0  t0;
+    double flt0 = krep->flt0();
+    double flt1 = hit->fltLen();
+// particle transit time to this hit from the reference
+    double tflt = krep->transitTime(flt0, flt1);
+    t0._t0    = krep->t0()._t0 + tflt;
+    t0._t0err = krep->t0()._t0err;//the error contribution from the *tflt* term is neglected. In the last fit iteration we might be considering adding a contribution from *tlft*
+    return t0;
+  }
+
+
+//--------------------------------------------------------------------------------
+// 
+//--------------------------------------------------------------------------------
+  bool   KalFit::hit_time(TrkHit*hit, HitT0& hitT0){
+    TrkT0 st0;
+    if (hit->signalPropagationTime(st0)){
+      hitT0._t0    = hit->time() - st0._t0;
+      hitT0._t0err = st0._t0err;
+      return true;
+    }else {
+      return false;
+    }      
   }
 
 }

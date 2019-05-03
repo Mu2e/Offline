@@ -31,6 +31,7 @@ namespace mu2e
 
 // correct the hit time
     virtual double time                 () const;
+//    virtual bool   time                 (HitT0&t0);
     virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
     virtual bool signalPropagationTime(	TrkT0& t0);  // this function should be const FIXME!!!
     // the followin function isn't used and should be removed FIXME!

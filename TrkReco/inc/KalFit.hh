@@ -89,6 +89,9 @@ namespace mu2e
     bool       useTrkCaloHit() const { return _useTrkCaloHit;}
     void       fillTchDiag(KalFitData& kalData);
 
+    bool       hit_time  (TrkHit*hit, HitT0& hitT0);
+    HitT0      krep_hitT0(KalRep*krep, const TrkHit*hit);
+    
     TrkPrintUtils*  printUtils() { return _printUtils; }
 
   private:
