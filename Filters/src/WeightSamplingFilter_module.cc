@@ -71,7 +71,7 @@ namespace mu2e {
 
     double evtwt = event.getValidHandle<EventWeight>( _evtWtModule )->weight() * _weightScalingFactor;
     if (_debug > 0 && evtwt > 1){
-      std::cout << *currentContext()->moduleLabel() << " weight scaling too high, probability is " << evtwt << " " << _weightScalingFactor << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " weight scaling too high, probability is " << evtwt << " " << _weightScalingFactor << std::endl;
     }
     double temp = _randflat.fire();
     if (temp > evtwt)

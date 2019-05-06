@@ -271,7 +271,7 @@ namespace mu2e {
 
   bool CaloLikelihood::endRun( art::Run& run ) {
     if(_diagLevel > 0 && _nProcess > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
     }
     return true;
   }
@@ -431,7 +431,7 @@ namespace mu2e {
         triginfo->_caloCluster = art::Ptr<CaloCluster>(clH, index);
         
 	if(_diagLevel > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << event.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
         }
 	
         break;

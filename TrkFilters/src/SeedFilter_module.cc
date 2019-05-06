@@ -118,7 +118,7 @@ namespace mu2e
         size_t index = std::distance(kscol->begin(),iks);
         triginfo->_track = art::Ptr<KalSeed>(ksH,index);
         if(_debug > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
         break;
       }

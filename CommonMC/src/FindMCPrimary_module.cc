@@ -53,7 +53,7 @@ namespace mu2e {
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
-    art::EDProducer{pset},
+    art::EDProducer{config},
     _debug(config().debug()),
     _single(config().single()),
     _gpc(config().genPC()),

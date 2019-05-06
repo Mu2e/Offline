@@ -74,7 +74,7 @@ namespace mu2e {
 
   //================================================================
   DecayInOrbitWeight::DecayInOrbitWeight(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset},
+    : art::EDProducer{pset}
     , input_(pset.get<std::string>("inputModule") )
     , weightingScheme_(pset.get<std::string>("weightingScheme","pol58") )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0 ) )

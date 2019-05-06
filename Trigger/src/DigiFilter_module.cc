@@ -122,7 +122,7 @@ namespace mu2e
       triginfo->_triggerPath = _trigPath;
 
       if(_debug > 1){
-	cout << *currentContext()->moduleLabel() << " passed event " << event.id() << endl;
+	cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
       }
     }
     
@@ -132,7 +132,7 @@ namespace mu2e
 
   bool DigiFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

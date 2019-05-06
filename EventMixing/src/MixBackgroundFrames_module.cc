@@ -100,7 +100,7 @@ namespace mu2e {
   //================================================================
   art::RandomNumberGenerator::base_engine_t&
   MixBackgroundFramesDetail::createArtEngine() {
-    auto& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(art::ScheduleID::first());
+    auto& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine(art::ScheduleID::first(),pset.get<std::string>("module_label"));
     int dummy(0);
     engine.setSeed( art::ServiceHandle<SeedService>()->getSeed(), dummy );
     return engine;
