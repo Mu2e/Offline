@@ -32,14 +32,17 @@ namespace mu2e {
                        const VolumeInfo& parent,
                        const TubsParams & parentParams,
                        const std::string & lookupToken,
-                       const SimpleConfig & config // to be removed?
+                       const SimpleConfig & config, // to be removed?
+		       const int zNotPhi = 0
                        );
 
   TubsParams calculateTubeCoreParams (const TubsParams& parentParams,
                                       double radiusFract,
                                       double radiusDFract,
                                       double dPhiFraction,
-                                      int verbosityLevel=0);
+                                      int verbosityLevel=0,
+				      const int zNotPhi = 0
+				      );
 
 }
 

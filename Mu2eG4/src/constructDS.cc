@@ -920,6 +920,19 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+         // "Fibre Core"
+         placeTubeCore ( "CalIFBCableRunCore1",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         icrTmp1,
+                         calIFBCableRun1Params,
+                         "ds",
+                         _config,
+			 1
+                         );
 				       
 				       
 	 TubsParams  calIFBCableRun2Params ( ds->calR1CableRunIFB(),
@@ -939,6 +952,20 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+
+         // "Fibre Core"
+         placeTubeCore ( "CalIFBCableRunCore2",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         icrTmp2,
+                         calIFBCableRun2Params,
+                         "ds",
+                         _config,
+			 1
+                         );
 
 	 //Add radial components of calorimeter outside cabling
 	 CLHEP::HepRotation * turn = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
@@ -965,6 +992,20 @@ namespace mu2e {
 				       G4Color::Magenta(),
 				       "ds"
 				       );
+	 double calIFBCableRunEndCore[] = { calIFBCableRunEnd[0],
+					    calIFBCableRunEnd[1]*ds->rdCableRunCalCoreFract(),
+					    calIFBCableRunEnd[2]*ds->dPhiCableRunCalCoreFract()};
+
+	 VolumeInfo icecTmp1 = nestBox( "CalIFBCableRunEndCore1",
+					calIFBCableRunEndCore,
+					findMaterialOrThrow(ds->materialCableRunCalCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					iceTmp1,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
 
 	 CLHEP::HepRotation * turn2 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	 turn2->rotateZ((ds->calPhiECableRunIFB()-180.)*CLHEP::degree);
@@ -985,12 +1026,24 @@ namespace mu2e {
 				       "ds"
 				       );
 
+	 VolumeInfo icecTmp2 = nestBox( "CalIFBCableRunEndCore2",
+					calIFBCableRunEndCore,
+					findMaterialOrThrow(ds->materialCableRunCalCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					iceTmp2,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
+
 	 //Define panels on either side of exit of DS representing cables leaving
 	 TubsParams  calIFBCableExit1Params ( ds->calPR1CableRunIFB(),
 					      ds->calPR2CableRunIFB(),
 					      ds->calPZHLCableRunIFB(),
 					      ds->calPPhi0CableRunIFB()*CLHEP::degree,
 					      ds->calPDPhiCableRunIFB()*CLHEP::degree);
+
 	 TubsParams  calIFBCableExit2Params ( ds->calPR1CableRunIFB(),
 					      ds->calPR2CableRunIFB(),
 					      ds->calPZHLCableRunIFB(),
@@ -1011,6 +1064,20 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+         // "Fibre Core"
+         placeTubeCore ( "CalIFBCablePanelInCore1",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         icpTmp1,
+                         calIFBCableExit1Params,
+                         "ds",
+                         _config,
+			 0
+                         );
+
 	 VolumeInfo icpTmp2 = nestTubs( "CalIFBCablePanelPOut1",
 					calIFBCableExit1Params,
 					findMaterialOrThrow(ds->calPMatCableRunIFB()),
@@ -1021,6 +1088,19 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+         // "Fibre Core"
+         placeTubeCore ( "CalIFBCablePanelOutCore1",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         icpTmp2,
+                         calIFBCableExit1Params,
+                         "ds",
+                         _config,
+			 0
+                         );
 	 VolumeInfo icpTmp3 = nestTubs( "CalIFBCablePanelIn2",
 					calIFBCableExit2Params,
 					findMaterialOrThrow(ds->calPMatCableRunIFB()),
@@ -1031,6 +1111,19 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+         // "Fibre Core"
+         placeTubeCore ( "CalIFBCablePanelInCore2",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         icpTmp3,
+                         calIFBCableExit2Params,
+                         "ds",
+                         _config,
+			 0
+                         );
 	 VolumeInfo icpTmp4 = nestTubs( "CalIFBCablePanelPOut2",
 					calIFBCableExit2Params,
 					findMaterialOrThrow(ds->calPMatCableRunIFB()),
@@ -1041,6 +1134,19 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+         // "Fibre Core"
+         placeTubeCore ( "CalIFBCablePanelOutCore2",
+                         ds->rCableRunCalCoreFract(),
+                         ds->rdCableRunCalCoreFract(),
+                         ds->dPhiCableRunCalCoreFract(),
+                         ds->materialCableRunCalCore(),
+                         G4Color::Yellow(),
+                         icpTmp4,
+                         calIFBCableExit2Params,
+                         "ds",
+                         _config,
+			 0
+                         );
 
 	 //Define circular arcs for Tracker cabling exiting DS
 	 TubsParams  trkIFBCableRun1Params ( ds->trkR1CableRunIFB(),
@@ -1061,6 +1167,20 @@ namespace mu2e {
 					"ds"
 					);
 
+         // "Fibre Core"
+         placeTubeCore ( "TrkIFBCableRunCore1",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunTrkCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         icrTmp3,
+                         trkIFBCableRun1Params,
+                         "ds",
+                         _config,
+			 1
+                         );
+
 	 TubsParams  trkIFBCableRun2Params ( ds->trkR1CableRunIFB(),
 					     ds->trkR2CableRunIFB(),
 					     ds->zHLCableRunIFB(),
@@ -1079,6 +1199,20 @@ namespace mu2e {
 					"ds"
 					);
 	 
+         // "Fibre Core"
+         placeTubeCore ( "TrkIFBCableRunCore2",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunTrkCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         icrTmp4,
+                         trkIFBCableRun2Params,
+                         "ds",
+                         _config,
+			 1
+                         );
+
 	 //Define radial components of Tracker cabling exiting DS
 	 CLHEP::HepRotation * turn3 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	 turn3->rotateZ(-ds->trkPhiECableRunIFB()*CLHEP::degree);
@@ -1107,6 +1241,20 @@ namespace mu2e {
 				       G4Color::Magenta(),
 				       "ds"
 				       );
+	 double trkIFBCableRunEndCore[] = { trkIFBCableRunEnd[0],
+					    trkIFBCableRunEnd[1]*ds->rdCableRunTrkCoreFract(),
+					    trkIFBCableRunEnd[2]*ds->dPhiCableRunTrkCoreFract()};
+
+	 VolumeInfo icecTmp3 = nestBox( "TrkIFBCableRunEndCore1",
+					trkIFBCableRunEndCore,
+					findMaterialOrThrow(ds->materialCableRunTrkCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					iceTmp3,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
 
 	 CLHEP::HepRotation * turn4 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
 	 turn4->rotateZ((ds->trkPhiECableRunIFB()-180.)*CLHEP::degree);
@@ -1126,6 +1274,17 @@ namespace mu2e {
 				       G4Color::Magenta(),
 				       "ds"
 				       );
+	 VolumeInfo icecTmp4 = nestBox( "TrkIFBCableRunEndCore2",
+					trkIFBCableRunEndCore,
+					findMaterialOrThrow(ds->materialCableRunTrkCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					iceTmp4,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
+
 
 	 //Define panels on either side of exit of DS representing cables leaving for tracker
 	 TubsParams  trkIFBCableExit1Params ( ds->trkPR1CableRunIFB(),
@@ -1153,6 +1312,21 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkIFBCablePanelInCore1",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunTrkCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         icpTmp5,
+                         trkIFBCableExit1Params,
+                         "ds",
+                         _config,
+			 0
+                         );
+
 	 VolumeInfo icpTmp6 = nestTubs( "TrkIFBCablePanelPOut1",
 					trkIFBCableExit1Params,
 					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
@@ -1163,6 +1337,21 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkIFBCablePanelOutCore1",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunTrkCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         icpTmp6,
+                         trkIFBCableExit1Params,
+                         "ds",
+                         _config,
+			 0
+                         );
+
 	 VolumeInfo icpTmp7 = nestTubs( "TrkIFBCablePanelIn2",
 					trkIFBCableExit2Params,
 					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
@@ -1173,6 +1362,21 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkIFBCablePanelInCore2",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunTrkCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         icpTmp7,
+                         trkIFBCableExit2Params,
+                         "ds",
+                         _config,
+			 0
+                         );
+
 	 VolumeInfo icpTmp8 = nestTubs( "TrkIFBCablePanelPOut2",
 					trkIFBCableExit2Params,
 					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
@@ -1183,6 +1387,20 @@ namespace mu2e {
 					G4Color::Magenta(),
 					"ds"
 					);
+
+         // "Fibre Core"
+         placeTubeCore ( "TrkIFBCablePanelOutCore2",
+                         ds->rCableRunTrkCoreFract(),
+                         ds->rdCableRunTrkCoreFract(),
+                         ds->dPhiCableRunTrkCoreFract(),
+                         ds->materialCableRunTrkCore(),
+                         G4Color::Yellow(),
+                         icpTmp8,
+                         trkIFBCableExit2Params,
+                         "ds",
+                         _config,
+			 0
+                         );
 
 
        } // end of if ( CableRunVersion > 2 )
@@ -1467,8 +1685,9 @@ namespace mu2e {
                        const VolumeInfo & parent,
                        const TubsParams & parentParams,
                        const std::string &  lookupToken,
-                       const SimpleConfig & config
-                       ) {
+                       const SimpleConfig & config,
+                       const int zNotPhi
+		       ) {
 
     int const verbosityLevel = config.getInt("ds.verbosityLevel",0);
     TubsParams cableRunCoreParams =
@@ -1476,19 +1695,19 @@ namespace mu2e {
                               radiusFract,
                               radiusDFract,
                               dPhiFraction,
-                              verbosityLevel);
+                              verbosityLevel,
+			      zNotPhi);
 
     VolumeInfo tempCore = nestTubs( name,
-                                    cableRunCoreParams,
-                                    findMaterialOrThrow(material),
-                                    nullptr,
-                                    CLHEP::Hep3Vector(),
-                                    parent,
-                                    0,
-                                    color,
-                                    lookupToken
-                                    );
-
+				    cableRunCoreParams,
+				    findMaterialOrThrow(material),
+				    nullptr,
+				    CLHEP::Hep3Vector(),
+				    parent,
+				    0,
+				    color,
+				    lookupToken
+				    );
     if (verbosityLevel > 0) {
       G4cout << __func__ << " parent params: " << parentParams << G4endl;
       G4cout << __func__ << " core   name:   " << name << G4endl;
@@ -1502,7 +1721,9 @@ namespace mu2e {
                                       double radiusFract,
                                       double radiusDFract,
                                       double dPhiFraction,
-                                      int verbosityLevel) {
+                                      int verbosityLevel,
+				      const int zNotPhi) {
+
 
     // calculating the core parameters based on the the parent tube
     // sizes and the core parameters relative to the tube itself
@@ -1534,28 +1755,49 @@ namespace mu2e {
 
     // angular (parent angular params are multiplied by CLHEP::degree already)
 
-    double coreCenterPhi = parentParams.phi0() + 0.5 * parentParams.phiTotal();
-    double coreAngularHalfExtent = parentParams.phiTotal() * dPhiFraction * 0.5;
-    double corePhi0 = coreCenterPhi - coreAngularHalfExtent;
-    double coreDeltaPhi = 2.0 * coreAngularHalfExtent;
+    if(zNotPhi == 0) { //if a small arc that extends in z plane, with dPhi and dR fractions
+      double coreCenterPhi = parentParams.phi0() + 0.5 * parentParams.phiTotal();
+      double coreAngularHalfExtent = parentParams.phiTotal() * dPhiFraction * 0.5;
+      double corePhi0 = coreCenterPhi - coreAngularHalfExtent;
+      double coreDeltaPhi = 2.0 * coreAngularHalfExtent;
 
-    if ( corePhi0 < parentParams.phi0() ) {
+      if ( corePhi0 < parentParams.phi0() ) {
 
-      throw cet::exception("GEOM") << __func__
-                                   << " inconsitent cable core parameters: "
-                                   << corePhi0
-                                   << ", "
-                                   << coreDeltaPhi
-                                   << "\n";
+	throw cet::exception("GEOM") << __func__
+				     << " inconsitent cable core parameters: "
+				     << corePhi0
+				     << ", "
+				     << coreDeltaPhi
+				     << "\n";
+
+      }
+      return TubsParams( coreInnerRadius,
+			 coreOuterRadius,
+			 parentParams.zHalfLength(),
+			 corePhi0,
+			 coreDeltaPhi );
+
+    } else { //if an arc in a z plane, with dZ and dR fractions
+      double coreZHalfExtent = parentParams.zHalfLength() * dPhiFraction;
+
+      if ( dPhiFraction > 1. || dPhiFraction < 0. ) {
+
+	throw cet::exception("GEOM") << __func__
+				     << " inconsitent cable core parameters: "
+				     << coreZHalfExtent
+				     << ", "
+				     << dPhiFraction
+				     << "\n";
+
+      }
+      return TubsParams( coreInnerRadius,
+			 coreOuterRadius,
+			 coreZHalfExtent,
+			 parentParams.phi0(),
+			 parentParams.phiTotal());
 
     }
-
-    return TubsParams( coreInnerRadius,
-                       coreOuterRadius,
-                       parentParams.zHalfLength(),
-                       corePhi0,
-                       coreDeltaPhi );
-
   }
+
 
 }
