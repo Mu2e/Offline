@@ -19,7 +19,7 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 #include "TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {

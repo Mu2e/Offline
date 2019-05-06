@@ -16,12 +16,6 @@
 
 #include "Mu2eUtilities/inc/polyAtan2.hh"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/weighted_median.hpp>
 // root
 // #include "TH1F.h"
 // #include "Math/VectorUtil.h"
@@ -34,7 +28,6 @@
 #include <cmath>
 
 using namespace std;
-using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e

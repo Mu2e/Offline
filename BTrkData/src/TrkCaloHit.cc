@@ -46,16 +46,7 @@ namespace mu2e
 
   double
   TrkCaloHit::time() const{
-  // correct for the light propagation time.
-  // light propagation velocity should come from configuration FIXME!
-    static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
-    double tlight =0.0;
-    if(poca().status().success()){
-// time for light to get to SIPMs at the back of the crystals, bounded by crystal length
-      double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
-      tlight = clen/vlprop;
-    }
-    return caloCluster().time() - tlight;
+    return caloCluster().time()  + _dtoffset; // following Pasha's convention
   }
 
   TrkErrCode
@@ -98,19 +89,24 @@ namespace mu2e
 
 
   bool TrkCaloHit::signalPropagationTime(TrkT0& t0) {
-    t0._t0 = -_dtoffset; // following Pasha's convention
-    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating
+  // compute the light propagation time.
+  // light propagation velocity should come from configuration FIXME!
+    static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
+    double tlight =0.0;
+    if(poca().status().success()){
+// time for light to get to SIPMs at the back of the crystals, bounded by crystal length
+      double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
+      tlight = clen/vlprop;
+    }
+    t0._t0 = tlight;
+    t0._t0err = _tErr; // should be a function of propagation distance: FIXME!
     return true;
   }
 
 // this function isn't used and needs to be removed FIXME!
   void
   TrkCaloHit::trackT0Time(double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt){
-    // compute the flightlength to this hit from z=0
-    CLHEP::Hep3Vector hpos;
-    hitPosition(hpos);
-    double hflt  = ptraj->zFlight(hpos.z()) - t0flt;
-    htime = time() + _dtoffset - hflt/vflt;
+    throw cet::exception("RECO")<<"mu2e::TrkCaloHit: obsolete function"<< endl;
   }
 
   bool

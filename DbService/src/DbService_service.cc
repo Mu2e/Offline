@@ -54,6 +54,10 @@ namespace mu2e {
       _engine.addOverride(coll);
     }
 
+    int cacheLifetime = 0;
+    _config.cacheLifetime(cacheLifetime);
+    _engine.reader().setCacheLifetime(cacheLifetime);
+
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  
     // fastStart overrides this and starts reading the DB imediately.

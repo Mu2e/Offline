@@ -58,6 +58,8 @@ physics.filters.DigiFilter.MinNDigis : 15
 physics.producers.compressDigiMCs.simParticleTags : [ "compressDigiMCs", @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
 physics.producers.compressDigiMCs.caloShowerStepTags : [ "separateCaloShowerSteps:calorimeter", "separateCaloShowerSteps:calorimeterRO", @sequence::Mixing.caloMixerTags ]
 physics.producers.compressDigiMCs.extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
+physics.producers.compressDigiMCs.mcTrajectoryTag : "compressDigiMCs"
+
 #
 # change maps to use the read-in compressed primary maps as input (these are empty for cosmic rays)
 #

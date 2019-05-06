@@ -34,6 +34,7 @@ namespace mu2e {
     // these should only be called in single-threaded startup
     std::shared_ptr<DbValCache>& valCache() {return _vcache;}
     std::vector<int> gids() { return _gids; }
+    DbReader& reader() { return _reader; }
     // these are the only methods that can be called from threads, 
     // such as DbHandle, after the single-threaded configuration
     DbLiveTable update(int tid, uint32_t run, uint32_t subrun);

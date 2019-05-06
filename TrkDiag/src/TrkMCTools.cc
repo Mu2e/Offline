@@ -201,7 +201,7 @@ namespace mu2e {
 	// find relation of this digi to the primary
 	  MCRelationship prel(spp,sdmccol.at(sdi).earlyStepPointMC()->simParticle());
 	  // count the highest relationship for these digis
-	  if(prel == mcrel)
+	  if(prel == mcrel && prel != MCRelationship::none)
 	    count++;
 	  else if(prel > mcrel){
 	    mcrel = prel;

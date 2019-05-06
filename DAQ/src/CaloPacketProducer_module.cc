@@ -192,7 +192,8 @@ namespace mu2e {
       if(_generateTextFile>0) {
 	outputStream << curHit.evt << "\t";
 	outputStream << curHit.crystalId << "\t";
-	outputStream << curHit.recoDigiId << "\t"; // Readout ID
+	//	outputStream << curHit.recoDigiId << "\t"; // Readout ID
+	outputStream << curHit.apdID << "\t"; // Readout ID
 	outputStream << curHit.recoDigiT0 << "\t"; // Readout time
 	outputStream << curHit.recoDigiSamples << "\t";
 	for(size_t j=0; j<curHit.waveform.size(); j++) {
