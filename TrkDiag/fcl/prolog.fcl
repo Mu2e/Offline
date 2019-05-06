@@ -314,7 +314,6 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     DeTrkQualTag : "TrkQualDeM"
     RecoCountTag : "SelectRecoMC"
     CaloCrystalHitMapTag : "SelectRecoMC"
-    SimParticleCollectionTag : "compressRecoMCs"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "SelectRecoMC"
@@ -327,6 +326,11 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
     TimeOffsets         :  { inputs : [ @sequence::RecoCompression.TimeMaps ] }
+    TrkMCHelper : {
+      SimParticleCollectionTag : "compressRecoMCs"
+      TimeMaps : [ @sequence::RecoCompression.TimeMaps ]
+      MinGoodMomFraction : 0.9
+    }
   }
 
 TrkAnaReco : {

@@ -18,6 +18,8 @@
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+
 #include <vector>
 #include <functional>
 namespace mu2e {
@@ -73,10 +75,6 @@ namespace mu2e {
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& digigood, int& ngood);
 
     // fill various info structs
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, art::Ptr<SimParticle>const& trkprimary,
-      const KalSeed& kseed, TrkInfoMC& trkinfomc);
-    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary,
-	GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary);
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,std::vector<int> const& vids);
     void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
@@ -87,6 +85,37 @@ namespace mu2e {
 	art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel);
 
   }
+
+  class TrkMCHelper {
+
+  private:
+    art::InputTag _spctag;
+    art::Handle<SimParticleCollection> _spcH;
+    SimParticleTimeOffset _toff;
+    double _mingood;
+
+    void fillPriInfo(const PrimaryParticle& primary, GenInfo& priinfo);
+    void fillGenInfo(const art::Ptr<GenParticle>& gp, GenInfo& geninfo);
+
+  public:
+    TrkMCHelper(fhicl::ParameterSet const& pset) :
+      _spctag(pset.get<art::InputTag>("SimParticleCollectionTag", art::InputTag())),
+      _toff(pset.get<std::vector<art::InputTag> >("TimeMaps")),
+      _mingood(pset.get<double>("MinGoodMomFraction"))
+    {  };
+
+    void updateEvent(const art::Event& event) {
+      event.getByLabel(_spctag,_spcH);
+      _toff.updateMap(event);
+    }
+
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, TrkInfoMC& trkinfomc);
+    void fillTrkInfoMCDigis(const KalSeedMC& kseedmc, TrkInfoMC& trkinfomc);
+    void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
+    void fillGenAndPriInfo(const KalSeedMC& kseedmc, const PrimaryParticle& primary, GenInfo& priinfo, GenInfo& geninfo);
+    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, std::vector<int> const& vids) {
+
+  };
 }
 
 #endif
