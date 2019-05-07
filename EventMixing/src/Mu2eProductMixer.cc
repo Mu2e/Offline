@@ -16,7 +16,7 @@ namespace mu2e {
 
   //----------------------------------------------------------------
   std::string Mu2eProductMixer::CollectionMixerConfig::Entry::resolvedInstanceName() const {
-    return outInstance = ':' ? inTag.instance() :  outInstance;
+    return (outInstance == ":") ? inTag.instance() :  outInstance;
   }
 
   //----------------------------------------------------------------
