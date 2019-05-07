@@ -79,6 +79,7 @@ def cppPath(mu2eOpts):
         os.environ['TBB_INC'],
         os.environ['MU2E_ARTDAQ_CORE_INC'],
         os.environ['ARTDAQ_CORE_INC'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
         os.environ['POSTGRESQL_INC']
@@ -99,6 +100,7 @@ def libPath(mu2eOpts):
         os.environ['BTRK_LIB'],
         os.environ['MU2E_ARTDAQ_CORE_LIB'],
         os.environ['ARTDAQ_CORE_LIB'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
         os.environ['MESSAGEFACILITY_LIB'],
         os.environ['HEP_CONCURRENCY_LIB'],
         os.environ['FHICLCPP_LIB'],

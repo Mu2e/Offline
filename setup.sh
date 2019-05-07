@@ -132,6 +132,7 @@ fi
 setup -B mu2e_artdaq_core v1_02_21 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
+setup -B pcie_linux_kernel_module v2_01_02 -q${MU2E_UPS_QUALIFIERS}
 
 setup -B heppdt   v3_04_01h -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_16  -q${MU2E_UPS_QUALIFIERS}
