@@ -41,7 +41,10 @@ namespace mu2e {
   class WeightModule : public art::EDProducer {
     Phys _myPhys;
     public:
-    explicit WeightModule(const fhicl::ParameterSet& pset):_myPhys(pset) {
+    explicit WeightModule(const fhicl::ParameterSet& pset):
+      art::EDProducer{pset},
+      _myPhys(pset)
+    {
       produces<mu2e::EventWeight>();
     } ;
     virtual void produce(art::Event& event) {

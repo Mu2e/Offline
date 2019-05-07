@@ -154,7 +154,8 @@ namespace mu2e {
 
     public:
       explicit EMFTrackClusterArbiter(fhicl::ParameterSet const& pset)
-        : verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+        : EDProducer{pset}
+        , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
         , tracksModuleLabel_(pset.get<std::string>("tracksModuleLabel"))
         , tracksInstanceName_(pset.get<std::string>("tracksInstanceName", ""))
         , clustersModuleLabel_(pset.get<std::string>("clustersModuleLabel"))

@@ -55,7 +55,7 @@ namespace mu2e {
   };
 
   ProtonBunchIntensityLogNormal::ProtonBunchIntensityLogNormal(const Parameters& conf)
-    : art::EDProdcuer{conf}
+    : art::EDProducer{conf}
     , urbg_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , lognd_(solveForMu(conf().extendedMean(), conf().sigma()),
              conf().sigma())

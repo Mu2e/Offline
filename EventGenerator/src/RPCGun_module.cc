@@ -103,7 +103,7 @@ namespace mu2e {
 
   //================================================================
   RPCGun::RPCGun(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset},
+    : art::EDProducer{pset}
     , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , spectrum_                  (BinnedSpectrum(psphys_))
     , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))

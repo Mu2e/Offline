@@ -93,9 +93,9 @@ namespace mu2e {
   };
 
   //================================================================
-  CalibCosmicFilter::CalibCosmicFilter(const fhicl::ParameterSet& pset)
-  {
-    art::EDFilter{pset},
+    CalibCosmicFilter::CalibCosmicFilter(const fhicl::ParameterSet& pset):
+    art::EDFilter{pset}
+    {
     _trkDMCtag = art::InputTag(pset.get<std::string>("strawDigiMCs","MakeSD"));
     _calCSStag = art::InputTag(pset.get<std::string>("caloShowerSteps",
                                              "CaloShowerStepFromStepPt"));

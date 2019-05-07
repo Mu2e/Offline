@@ -43,7 +43,8 @@ namespace mu2e {
 
     public:
       explicit SimParticleMARSAssnsMaker(fhicl::ParameterSet const& pset)
-        : simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
+        : EDProducer{pset}
+        , simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
         , simParticlesInstanceName_(pset.get<std::string>("simParticlesInstanceName", ""))
         , marsInfoModuleLabel_(pset.get<std::string>("marsInfoModuleLabel"))
         , marsInfoInstanceName_(pset.get<std::string>("marsInfoInstanceName", ""))

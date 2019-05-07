@@ -97,7 +97,7 @@ private:
 // ======================================================================
 
 ArtdaqFragmentProducer::ArtdaqFragmentProducer(fhicl::ParameterSet const& pset):
-  EDProducer( ),
+  EDProducer(pset),
   _parseTRK(pset.get<int>("includeTracker",1)),
   _parseCAL(pset.get<int>("includeCalorimeter",1)),
   _parseCRV(pset.get<int>("includeCosmicRayVeto",0)),
