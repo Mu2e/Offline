@@ -1227,10 +1227,16 @@ void Upstream(TTree* tneg, TTree* tpos) {
   tchmcrel->GetXaxis()->SetBinLabel(7,"u-mother");
   tchmcrel->GetXaxis()->SetBinLabel(8,"u-sibling");
   tchmcrel->SetStats(0);
-  TH1F* utcha = new TH1F("utcha","Upstream TrkCaloHit",2,-0.5,1.5);
-  utcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
-  utcha->GetXaxis()->SetBinLabel(2,"Active");
-  utcha->SetStats(0);
+  TH1F* eutcha = new TH1F("eutcha","Upstream TrkCaloHit",2,-0.5,1.5);
+  TH1F* muutcha = new TH1F("muutcha","Upstream TrkCaloHit",2,-0.5,1.5);
+  eutcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
+  eutcha->GetXaxis()->SetBinLabel(2,"Active");
+  eutcha->SetStats(0);
+  eutcha->SetLineColor(kBlue);
+  muutcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
+  muutcha->GetXaxis()->SetBinLabel(2,"Active");
+  muutcha->SetStats(0);
+  muutcha->SetLineColor(kBlack);
   TH1F* updg = new TH1F("updg","True Upstream Particle PDG code",27,-13.5,13.5);
   updg->GetXaxis()->SetBinLabel(1,"#mu^{+}");
   updg->GetXaxis()->SetBinLabel(3,"e^{+}");
@@ -1248,7 +1254,8 @@ void Upstream(TTree* tneg, TTree* tpos) {
   ueevsp->SetStats(0);
   umuevsp->SetStats(0);
 
-  tneg->Project("utcha","uetch.active",trueup);
+  tneg->Project("eutcha","uetch.active",trueup&&truee);
+  tneg->Project("muutcha","uetch.active",trueup&&truemu);
   tneg->Project("tchmcrel","uetchmc.prel",trueup&&uetch);
   tneg->Project("eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
   tneg->Project("updg","demc.pdg",trueup);
@@ -1256,7 +1263,8 @@ void Upstream(TTree* tneg, TTree* tpos) {
   tneg->Project("ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
   tneg->Project("umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
 
-  tpos->Project("+utcha","uetch.active",trueup);
+  tpos->Project("+eutcha","uetch.active",trueup&&truee);
+  tpos->Project("+muutcha","uetch.active",trueup&&truemu);
   tpos->Project("+tchmcrel","uetchmc.prel",trueup&&uetch);
   tpos->Project("+updg","demc.pdg",trueup);
   tpos->Project("+eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
@@ -1269,7 +1277,12 @@ void Upstream(TTree* tneg, TTree* tpos) {
   ucan->cd(1);
   updg->Draw();
   ucan->cd(2);
-  utcha->Draw();
+  muutcha->Draw();
+  eutcha->Draw("same");
+  TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
+  tchleg->AddEntry(eutcha,"True electron track ","l");
+  tchleg->AddEntry(muutcha,"True muon track","l");
+  tchleg->Draw();
   ucan->cd(3);
   tchmcrel->Draw(); 
   ucan->cd(4);
