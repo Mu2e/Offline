@@ -208,19 +208,21 @@ namespace mu2e
           //insert the cluster information into the vector of the crv coincidence clusters
           crvCoincidenceClusterCollection->emplace_back(crvSectorType, avgCounterPos, startTime, endTime, PEs, crvRecoPulses);
 
+          //calculate dead time
+          double deadTimeWindowStart = startTime-_deadTimeWindowStartMargin;
+          double deadTimeWindowEnd   = endTime+_deadTimeWindowEndMargin;
+          if(deadTimeWindowStart<_timeWindowStart) deadTimeWindowStart=_timeWindowStart;
+          if(deadTimeWindowEnd<_timeWindowStart) continue;
+          if(deadTimeWindowStart>_timeWindowEnd) continue;
+          if(deadTimeWindowEnd>_timeWindowEnd) deadTimeWindowEnd=_timeWindowEnd;
+   
+          double deadTime = deadTimeWindowEnd-deadTimeWindowStart;
+          _totalDeadTime += deadTime;
+
           if(_verboseLevel>0)
           {
-            double deadTimeWindowStart = startTime-_deadTimeWindowStartMargin;
-            double deadTimeWindowEnd   = endTime+_deadTimeWindowEndMargin;
-            if(deadTimeWindowStart<_timeWindowStart) deadTimeWindowStart=_timeWindowStart;
-            if(deadTimeWindowEnd<_timeWindowStart) continue;
-            if(deadTimeWindowStart>_timeWindowEnd) continue;
-            if(deadTimeWindowEnd>_timeWindowEnd) deadTimeWindowEnd=_timeWindowEnd;
-   
-            double deadTime = deadTimeWindowEnd-deadTimeWindowStart;
             std::cout << "   Found dead time window: " << deadTimeWindowStart << " ns ... " << deadTimeWindowEnd << " ns   (dead time incl. start/end margins: "<<deadTime<<" ns)";
             std::cout << "   in CRV region " << crvSectorType << std::endl;
-            _totalDeadTime += deadTime;
             double fractionDeadTime = _totalDeadTime / _totalTime;
             std::cout << "Dead time so far: " << _totalDeadTime << " ns / " << _totalTime << " ns = " << fractionDeadTime*100 << "%    using time window " << _timeWindowStart << " ns ... " << _timeWindowEnd << " ns" << std::endl;
           }
