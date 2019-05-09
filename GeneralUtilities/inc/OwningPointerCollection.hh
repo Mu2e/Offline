@@ -93,6 +93,14 @@ namespace mu2e {
       return v_.end();
     }
 
+    typename std::vector<value_type>::const_iterator cbegin() const{
+      return v_.cbegin();
+    }
+
+    typename std::vector<value_type>::const_iterator cend() const{
+      return v_.cend();
+    }
+
     // Possibly needed by producer modules?
     /*
     void pop_back( ){
