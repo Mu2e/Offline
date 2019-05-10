@@ -22,20 +22,22 @@ namespace mu2e {
     Tracker const& tracker = *trk_p;
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
       const auto& plane = tracker.getPlane(i);
-      // loop over panels
-      for(auto panel_p : plane.getPanels()){
-	auto& panel = *panel_p;
-	// loop over straws
-        for (const auto& straw : panel.getStrawPointers()) {
-	  // build the straw elements from this
-	  // have to strip const because thing inside BTrk are non-const
-	  auto temp = const_cast<DetStrawType*>(material.strawType());
-          DetStrawElem* elem = new DetStrawElem(temp,straw);
-	  // push this into the map
-          ptr->_strawmap[straw->id()] = elem;
-	}
-      }
-    }
+      if(plane.exists()) {
+	// loop over panels
+	for(auto panel_p : plane.getPanels()){
+	  auto& panel = *panel_p;
+	  // loop over straws
+	  for (const auto& straw : panel.getStrawPointers()) {
+	    // build the straw elements from this
+	    // have to strip const because thing inside BTrk are non-const
+	    auto temp = const_cast<DetStrawType*>(material.strawType());
+	    DetStrawElem* elem = new DetStrawElem(temp,straw);
+	    // push this into the map
+	    ptr->_strawmap[straw->id()] = elem;
+	  } // straws
+	} // panels
+      } // if exists
+    } // planes
 
     return ptr;
   }

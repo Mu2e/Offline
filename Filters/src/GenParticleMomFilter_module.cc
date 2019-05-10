@@ -45,7 +45,7 @@ namespace mu2e {
 
   GenParticleMomFilter::GenParticleMomFilter(fhicl::ParameterSet const& pset):
     _genParticleModule(pset.get<std::string>("genParticleModule","compressDigiMCs")),
-    _momCutoff(pset.get<double>("MomentumCutoff",-1)),
+    _momCutoff(pset.get<double>("MomentumCutoff")),
     _cutoffPDG(PDGCode::type(pset.get<int>("CutoffPDG",0))),
     _cutoffGenId(GenId::findByName(pset.get<std::string>("CutoffGenId",""))),
     _nevt(0), _npass(0){}
@@ -60,20 +60,18 @@ namespace mu2e {
   bool GenParticleMomFilter::filter(art::Event& event) {
     ++_nevt;
 
-    if (_momCutoff > 0){
-      auto genColl = event.getValidHandle<GenParticleCollection>( _genParticleModule);
+    auto genColl = event.getValidHandle<GenParticleCollection>( _genParticleModule);
 
-      // find highest momentum gen particle that passes cuts
-      double mom = 0;
-      for ( const auto& i: *genColl ) {
-        if ((i.pdgId() == _cutoffPDG || _cutoffPDG == PDGCode::null) && i.generatorId() == _cutoffGenId) {
-          if (i.momentum().vect().mag() > mom)
-            mom = i.momentum().vect().mag();
-        }
+    // find highest momentum gen particle that passes cuts
+    double mom = 0;
+    for ( const auto& i: *genColl ) {
+      if ((i.pdgId() == _cutoffPDG || _cutoffPDG == PDGCode::null) && i.generatorId() == _cutoffGenId) {
+        if (i.momentum().vect().mag() > mom)
+          mom = i.momentum().vect().mag();
       }
-      if (mom < _momCutoff){
-        return false;
-      }
+    }
+    if (mom < _momCutoff){
+      return false;
     }
 
     ++_npass;

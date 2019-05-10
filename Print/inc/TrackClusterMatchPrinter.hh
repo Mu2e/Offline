@@ -10,7 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "Print/inc/ProductPrinter.hh"
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 

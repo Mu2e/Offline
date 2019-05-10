@@ -51,7 +51,7 @@ namespace mu2e
     double        _mind0;
     double        _maxlambda;
     double        _minlambda;
-    int           _maxnloops;
+    double        _maxnloops;
     double        _minnloops;
     double        _bz0;
     TrkFitFlag    _goodh; // helix fit flag
@@ -119,7 +119,7 @@ namespace mu2e
       float chi2PhiZ   = hs.helix().chi2dZPhi();
       float d0         = hs.helix().rcent() - hs.helix().radius();
       float lambda     = std::fabs(hs.helix().lambda());
-      int   nLoops     = helTool.nLoops();
+      float nLoops     = helTool.nLoops();
       
       if(_debug > 2){
         cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;

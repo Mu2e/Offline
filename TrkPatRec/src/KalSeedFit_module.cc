@@ -45,6 +45,7 @@
 // BaBar
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/TrkBase/TrkHelixUtils.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 // Mu2e BaBar
@@ -103,6 +104,7 @@ namespace mu2e
     TrkFitDirection _fdir;  // fit direction in search
     vector<double> _perr; // diagonal parameter errors to use in the fit
     Helicity _helicity; // cached value of helicity expected for this fit
+    double _upz, _downz; // z positions to extend the segment
     double _amsign; // cached sign of angular momentum WRT the z axis 
     double _bz000;        // sign of the magnetic field at (0,0,0)
     HepSymMatrix _hcovar; // cache of parameter error covariance matrix
@@ -149,6 +151,8 @@ namespace mu2e
     _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
     _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),
     _perr(pset.get<vector<double> >("ParameterErrors")),
+    _upz(pset.get<double>("UpstreamZ",-1500)),
+    _downz(pset.get<double>("DownstreamZ",1500)),
     _ksf(TrkFitFlag::KSF),
     _kfit(pset.get<fhicl::ParameterSet>("KalFit",fhicl::ParameterSet())),
     _result()
@@ -194,6 +198,7 @@ namespace mu2e
     //    _data.calorimeter = ch.get();
     //    _kfit.setCalorimeter (ch.get());
     _kfit.setTracker     (_tracker);
+    _kfit.setCaloGeom();
 
     // change coordinates to mu2e
     CLHEP::Hep3Vector vpoint(0.0,0.0,0.0);
@@ -375,6 +380,17 @@ namespace mu2e
 	    // sample the momentum at this point
 	    BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
 	    TrkUtilities::fillSegment(*htraj,momerr,locflt-_result.krep->flt0(),kseg);
+	    // extend the segment
+	    double upflt, downflt;
+	    TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
+	    TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
+	    if(_fdir == TrkFitDirection::downstream){
+	      kseg._fmin = upflt;
+	      kseg._fmax = downflt;
+	    } else {
+	      kseg._fmax = upflt;
+	      kseg._fmin = downflt;
+	    } 
 	    kseed._segments.push_back(kseg);
 	    // push this seed into the collection
 	    kscol->push_back(kseed);
@@ -488,6 +504,9 @@ namespace mu2e
     for (int i=0; i<n; ++i) {
       hit_index = tchits.at(i);
       sh        = &kalData.chcol->at(hit_index);
+      if (sh->flag().hasAnyProperty(StrawHitFlag::dead)) {
+	continue;
+      }
       straw     = &_tracker->getStraw(sh->strawId());
 
       const CLHEP::Hep3Vector& wpos = straw->getMidPoint();

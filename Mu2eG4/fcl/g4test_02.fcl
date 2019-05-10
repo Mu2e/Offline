@@ -40,7 +40,7 @@ physics : {
 }
 
 // This loads faster than the default physics list
-physics.producers.g4run.physics.physicsListName: "QGSP_BERT_MU2ER1"
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 
 services.TFileService.fileName : "g4test_02.root"
 

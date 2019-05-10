@@ -14,6 +14,7 @@ FitDir : {
 
 TimeCalculator : {
   CaloT0Offset : @local::TrackCaloMatching.DtOffset
+  CaloTimeErr : 0.5
 }
 
 # time clustering is the 1st stage of track finding 
@@ -94,30 +95,31 @@ RobustHelixFinder : {
     diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
 	mcTruth                                 : 0
     }
+    T0Calculator : @local::TimeCalculator
 }
 RobustHelixFinderDe : {
   @table::RobustHelixFinder
-    TimeClusterCollection  : "TimeClusterFinderDe"
+  TimeClusterCollection  : "TimeClusterFinderDe"
 }
 RobustHelixFinderUe : {
   @table::RobustHelixFinder
-    TimeClusterCollection  : "TimeClusterFinderUe"
+  TimeClusterCollection  : "TimeClusterFinderUe"
 }
 RobustHelixFinderDmu : {
   @table::RobustHelixFinder
-    TimeClusterCollection  : "TimeClusterFinderDmu"
+  TimeClusterCollection  : "TimeClusterFinderDmu"
 }
 RobustHelixFinderUmu : {
   @table::RobustHelixFinder
-    TimeClusterCollection  : "TimeClusterFinderUmu"
+  TimeClusterCollection  : "TimeClusterFinderUmu"
 }
 RobustHelixFinderDpi : {
   @table::RobustHelixFinder
-    TimeClusterCollection  : "TimeClusterFinderDpi"
+  TimeClusterCollection  : "TimeClusterFinderDpi"
 }
 RobustHelixFinderUpi : {
   @table::RobustHelixFinder
-    TimeClusterCollection  : "TimeClusterFinderUpi"
+  TimeClusterCollection  : "TimeClusterFinderUpi"
 }
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
@@ -144,6 +146,7 @@ KFSeed : {
   strawHitT0Weight                : 1
   caloHitT0Weight                 : 10
   caloHitError                    : 15.0 # mm 
+  T0Calculator			  : @local::TimeCalculator
   mcTruth                         : 0
   printUtils                      : { @table::TrkReco.PrintUtils}
 }
@@ -171,9 +174,7 @@ KFFinal : {
   strawHitT0Weight            : 1 # unused? FIXME!
   caloHitT0Weight             : 10 # unused? FIXME!
   caloHitError                : 15.0 # mm 
-  T0Calculator  : { 
-    CaloTimeErr : 0.5
-  }
+  T0Calculator		      : @local::TimeCalculator
   useTrkCaloHit               : true
   t0window                    : 4.0
   mcTruth                     : 0
@@ -243,6 +244,7 @@ KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
+  CaloClusterCollection       : "CaloClusterFromProtoCluster"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []

@@ -78,6 +78,7 @@ if [ -n "$BASEREPO" ]; then
   export PATH=`dropit -p $PATH -sf $MU2E_SATELLITE_RELEASE/bin`
   export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_SATELLITE_RELEASE`
 
+
   if [ -f $MU2E_SATELLITE_RELEASE/.buildopts ] ; then
       echo "WARNING - buildopts will be taken from the base release, "
       echo "        in partial checkout your local buildopts is ignored"
@@ -128,15 +129,16 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_14 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_02_19 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
+setup -B pcie_linux_kernel_module v2_01_02 -q${MU2E_UPS_QUALIFIERS}
 
 setup -B heppdt   v3_04_01h -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_14  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7k  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_4  -q${build}
-
+setup curl v7_64_1
 # The build system.
 setup -B scons v3_0_1  -q p2714b
 

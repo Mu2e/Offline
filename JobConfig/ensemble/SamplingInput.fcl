@@ -1,0 +1,43 @@
+process_name : SI
+
+
+source : { module_type : SamplingInput
+  inputCommands : [ "keep *",
+  "drop *_genCounter_*_*",
+  "drop *_protonBunchIntensity_*_*"]
+  dropDescendantsOfDroppedBranches: false
+  dataSets : { 
+${datasets}
+    }
+  }
+}
+
+physics :
+{
+  TriggerPath : [ ]
+  EndPath : [ OutputMC, OutputData ]
+  end_paths : [ EndPath ] # needed for generate_fcl
+}
+
+outputs : {
+  OutputMC : {
+    module_type : RootOutput
+    outputCommands : [ "keep *_*_*_*"]
+    fileName : "${outnameMC}"
+  }
+
+  OutputData : {
+    module_type : RootOutput
+    outputCommands : [ "drop *_*_*_*",
+		       "keep mu2e::KalSeeds_*_*_*",
+		       "keep mu2e::TimeClusters_*_*_*",
+		       "keep mu2e::CrvCoincidenceClusters_*_*_*",
+                       "keep mu2e::CaloDigis_*_*_*",
+		       "keep mu2e::HelixSeeds_*_*_*",
+		       "keep mu2e::EventWindowMarker_*_*_*",
+		       "keep mu2e::StrawDigis_*_*_*",
+		       "keep mu2e::CrvDigis_*_*_*"]
+    fileName : "${outnameData}"
+  }
+}
+

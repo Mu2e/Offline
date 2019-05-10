@@ -15,6 +15,7 @@
 #include "EventDisplay/src/ContentSelector.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Mu2eBTrk/inc/ParticleInfo.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>
@@ -67,13 +68,14 @@ class DataInterface
   std::list<boost::shared_ptr<VirtualShape> >       _components;
   std::map<int, boost::shared_ptr<Straw> >          _straws;
   std::map<int, boost::shared_ptr<VirtualShape> >   _crystals;
+  std::map<int, boost::shared_ptr<Cube> >           _crvscintillatorbars;
   std::vector<boost::shared_ptr<Straw> >        _hits;
   std::vector<boost::shared_ptr<VirtualShape> > _crystalhits;
   std::vector<boost::shared_ptr<Cylinder> >     _driftradii;
   std::vector<boost::shared_ptr<Track> >        _tracks;
+  std::vector<boost::shared_ptr<Cube> >         _crvhits;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
-  std::vector<boost::shared_ptr<Cube> >         _crvscintillatorbars;
   std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
   std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
   CLHEP::Hep3Vector _detSysOrigin;
@@ -92,6 +94,8 @@ class DataInterface
   bool _showNeutrons;
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
+
+  std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
 
   void createGeometryManager();
   void removeAllComponents();

@@ -61,6 +61,7 @@ namespace mu2e
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     int                            _SiPMNumber; 
   };
+  typedef std::vector<mu2e::CrvRecoPulse> CrvRecoPulseCollection;
 }
 
 #endif /* RecoDataProducts_CrvRecoPulse_hh */

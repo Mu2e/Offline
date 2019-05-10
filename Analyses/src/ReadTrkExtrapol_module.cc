@@ -38,7 +38,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 // data
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
+#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 
 // Other includes.
 #include "cetlib_except/exception.h"

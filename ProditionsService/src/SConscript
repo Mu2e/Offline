@@ -52,6 +52,7 @@ helper.make_plugins( [ mainlib,
                        'cetlib_except',
                        'boost_filesystem',
                        'boost_system',
+                       'pthread'
                        ] )
 
 #BINLIBS   = [ mainlib, 'mu2e_DbExample' , 'cetlib', 'cetlib_except', "pq" ]

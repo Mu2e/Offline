@@ -16,7 +16,6 @@ babarlibs = env['BABARLIBS']
 
 #                                 'mu2e_Validation_root_map',
 mainlib = helper.make_mainlib ( [ 'mu2e_Validation_root',
-                                  'mu2e_TrackCaloMatching',
                                   'mu2e_Mu2eUtilities',
                                   'mu2e_ConditionsService',
                                   'mu2e_GeometryService',
@@ -49,7 +48,6 @@ mainlib = helper.make_mainlib ( [ 'mu2e_Validation_root',
 
 #                       'mu2e_Validation_root_map',
 helper.make_plugins( [ mainlib,'mu2e_Validation_root',
-                       'mu2e_TrackCaloMatching',
                        'mu2e_GeometryService',
                        'mu2e_ConditionsService',
                        'mu2e_Mu2eUtilities',

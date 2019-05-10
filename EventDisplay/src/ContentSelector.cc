@@ -4,11 +4,12 @@
 namespace mu2e_eventdisplay
 {
 
-ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
+ContentSelector::ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel)
   :
   _hasPhysicalVolumes(false),
   _hitBox(hitBox),
   _caloHitBox(caloHitBox),
+  _crvHitBox(crvHitBox),
   _trackBox(trackBox),
   _g4ModuleLabel(g4ModuleLabel),
   _physicalVolumesMultiLabel(physicalVolumesMultiLabel)
@@ -75,6 +76,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   createNewEntries<mu2e::StepPointMCCollection>(_stepPointMCVector, event, "StepPointMC", newEntries, 1);
   createNewEntries<mu2e::StrawHitCollection>(_strawHitVector, event, "StrawHit", newEntries, 2);
   createNewEntries<mu2e::KalRepCollection>(_hitOnTrackVector, event, "KalRep", newEntries, 3);
+  createNewEntries<mu2e::KalSeedCollection>(_kalSeedHitVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_hitEntries)
   {
@@ -106,7 +108,7 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
   newEntries.clear();
   newEntries.push_back(nothingSelected);
   createNewEntries<mu2e::StepPointMCCollection>(_caloStepPointMCVector, event, "StepPointMC", newEntries, 1);
-//  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 2);  //FIXME: not compatible anymore with CD3 files
+  createNewEntries<mu2e::CaloCrystalHitCollection>(_caloCrystalHitVector, event, "CaloCrystalHit", newEntries, 2);
   createNewEntries<mu2e::CaloHitCollection>(_caloHitVector, event, "CaloHit", newEntries, 3);
 
   if(newEntries!=_caloHitEntries)
@@ -125,12 +127,33 @@ void ContentSelector::setAvailableCollections(const art::Event& event)
     _caloHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
   }
 
+//CRV Hit Selection
+  newEntries.clear();
+  newEntries.push_back(nothingSelected);
+  createNewEntries<mu2e::CrvRecoPulseCollection>(_crvRecoPulseVector, event, "CrvRecoPulse", newEntries, 1);
+
+  if(newEntries!=_crvHitEntries)
+  {
+    _crvHitEntries.clear();
+    TGTextLBEntry *selectedEntryTmp=dynamic_cast<TGTextLBEntry*>(_crvHitBox->GetSelectedEntry());
+    std::string selectedEntry="Nothing Selected";
+    if(selectedEntryTmp) selectedEntry=selectedEntryTmp->GetText()->GetString();
+    _crvHitBox->RemoveAll();
+    for(unsigned int i=0; i<newEntries.size(); i++)
+    {
+      _crvHitEntries.push_back(newEntries[i]);
+      _crvHitBox->AddEntry(newEntries[i].entryText.c_str(), newEntries[i].entryID);
+      if(newEntries[i].entryText.compare(selectedEntry)==0) _crvHitBox->Select(newEntries[i].entryID);
+    }
+    _crvHitBox->GetListBox()->GetEntry(0)->SetBackgroundColor(0x00FF00);
+  }
 
 //Track Selection
   newEntries.clear();
   createNewEntries<mu2e::SimParticleCollection>(_simParticleVector, event, "SimParticle", newEntries, 1);
   createNewEntries<mu2e::KalRepCollection>(_trkRecoTrkVector, event, "KalRep", newEntries, 2);
   createNewEntries<mu2e::TrkExtTrajCollection>(_trkExtTrajVector, event, "TrkExtTraj", newEntries, 3);
+  createNewEntries<mu2e::KalSeedCollection>(_kalSeedTrkVector, event, "KalSeed", newEntries, 4);
 
   if(newEntries!=_trackEntries)
   {
@@ -235,6 +258,9 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
     case 3 : if(typeid(CollectionType)!=typeid(mu2e::KalRepCollection)) return(nullptr);
              if(index>=static_cast<int>(_hitOnTrackVector.size())) return(nullptr);
              return(reinterpret_cast<const CollectionType*>(_hitOnTrackVector[index].product()));
+    case 4 : if(typeid(CollectionType)!=typeid(mu2e::KalSeedCollection)) return(nullptr);
+             if(index>=static_cast<int>(_kalSeedHitVector.size())) return(nullptr);
+             return(reinterpret_cast<const CollectionType*>(_kalSeedHitVector[index].product()));
 //Note about the use of reinterpret_cast: While it is generally unsafe to use it, in this case it is Ok.
 //the typeid check makes that the program advances to the line with the reinterpret_cast ONLY if the
 //type of the vector element and the CollectionType are identical. The compiler doesn't see this, the compiler
@@ -249,6 +275,7 @@ const CollectionType* ContentSelector::getSelectedHitCollection() const
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::StrawHitCollection*    ContentSelector::getSelectedHitCollection<mu2e::StrawHitCollection>() const;
 template const mu2e::KalRepCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalRepCollection>() const;
+template const mu2e::KalSeedCollection*  ContentSelector::getSelectedHitCollection<mu2e::KalSeedCollection>() const;
 
 template<typename CollectionType>
 const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
@@ -283,6 +310,34 @@ const CollectionType* ContentSelector::getSelectedCaloHitCollection() const
 template const mu2e::StepPointMCCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::StepPointMCCollection>() const;
 template const mu2e::CaloCrystalHitCollection* ContentSelector::getSelectedCaloHitCollection<mu2e::CaloCrystalHitCollection>() const;
 template const mu2e::CaloHitCollection*    ContentSelector::getSelectedCaloHitCollection<mu2e::CaloHitCollection>() const;
+
+
+template<typename CollectionType>
+const CollectionType* ContentSelector::getSelectedCrvHitCollection() const
+{
+  int i=_crvHitBox->GetSelected();
+  int classID=0;
+  int index=0;
+  std::vector<entryStruct>::const_iterator iter;
+  for(iter=_crvHitEntries.begin(); iter!=_crvHitEntries.end(); iter++)
+  {
+    if(iter->entryID==i)
+    {
+      classID=iter->classID;
+      index=iter->vectorPos;
+      break;
+    }
+  }
+  switch(classID)
+  {
+    case 1 : if(typeid(CollectionType)!=typeid(mu2e::CrvRecoPulseCollection)) return(nullptr);
+             if(index>=static_cast<int>(_crvRecoPulseVector.size())) return(nullptr);
+             return(reinterpret_cast<const CollectionType*>(_crvRecoPulseVector[index].product()));
+  };
+  return(nullptr);
+}
+template const mu2e::CrvRecoPulseCollection* ContentSelector::getSelectedCrvHitCollection<mu2e::CrvRecoPulseCollection>() const;
+
 
 template<typename CollectionType>
 std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const
@@ -330,6 +385,11 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
                to_return.push_back(reinterpret_cast<const CollectionType*>(_trkExtTrajVector[index].product()));
                v.push_back(t);
                break;
+      case 4 : if(typeid(CollectionType)!=typeid(mu2e::KalSeedCollection)) break;
+               if(index>=static_cast<int>(_kalSeedTrkVector.size())) break;
+               to_return.push_back(reinterpret_cast<const CollectionType*>(_kalSeedTrkVector[index].product()));
+               v.push_back(t);
+               break;
     };
   }
   return(to_return);
@@ -337,6 +397,7 @@ std::vector<const CollectionType*> ContentSelector::getSelectedTrackCollection(s
 template std::vector<const mu2e::SimParticleCollection*> ContentSelector::getSelectedTrackCollection<mu2e::SimParticleCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::KalRepCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalRepCollection>(std::vector<trackInfoStruct> &v) const;
 template std::vector<const mu2e::TrkExtTrajCollection*> ContentSelector::getSelectedTrackCollection<mu2e::TrkExtTrajCollection>(std::vector<trackInfoStruct> &v) const;
+template std::vector<const mu2e::KalSeedCollection*> ContentSelector::getSelectedTrackCollection<mu2e::KalSeedCollection>(std::vector<trackInfoStruct> &v) const;
 
 const mu2e::PhysicalVolumeInfoCollection* ContentSelector::getPhysicalVolumeInfoCollection() const
 {
