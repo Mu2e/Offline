@@ -52,6 +52,7 @@ mainlib = helper.make_mainlib ( [
     'xerces-c',
     'boost_filesystem',
     'boost_system',
+    'hep_concurrency',
     ] )
 
 # Fixme: split into link lists for each module.
@@ -100,6 +101,7 @@ helper.make_plugins( [
    'xerces-c',
    'boost_filesystem',
    'boost_system',
+   'hep_concurrency', 
     ] )
 
 # Fixme: do I need all of babarlibs below?

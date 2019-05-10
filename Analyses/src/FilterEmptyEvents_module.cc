@@ -47,8 +47,8 @@ namespace mu2e {
   class FilterEmptyEvents : public art::EDFilter {
   public:
       explicit FilterEmptyEvents(fhicl::ParameterSet const& pset);
-      virtual ~FilterEmptyEvents();
-      virtual bool filter(art::Event& e );
+//      virtual ~FilterEmptyEvents();
+      virtual bool filter(art::Event& e ) override;
 
   private:
     // Control parameter: 0 to filter both tracker and calorimeter
@@ -143,5 +143,4 @@ namespace mu2e {
 
 }
 
-using mu2e::FilterEmptyEvents;
-DEFINE_ART_MODULE(FilterEmptyEvents);
+DEFINE_ART_MODULE(mu2e::FilterEmptyEvents);
