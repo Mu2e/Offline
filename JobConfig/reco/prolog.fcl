@@ -228,7 +228,7 @@ Reconstruction : {
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep mu2e::CaloClusters_CaloClusterFromProtoCluster_*_*",
-            "keep art::TriggerResults_*_*_*Trig",
+            "keep art::TriggerResults_*_*_*",
             "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
 	    "keep *_compressRecoMCs_*_*",
 	    "keep *_SelectRecoMC_*_*" ]

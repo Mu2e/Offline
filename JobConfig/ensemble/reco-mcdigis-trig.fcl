@@ -5,10 +5,10 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "JobConfig/reco/prolog.fcl"
+#include "JobConfig/ensemble/prolog_reco.fcl"
 #include "Trigger/fcl/templates.fcl"
 #
-process_name : RecoMCDigisTrig
+process_name : recomcdigistrig
 
 source : { module_type : RootInput }
 
@@ -21,7 +21,7 @@ physics :
     @table::Trigger.producers
   }
   filters :  {
-    @table::Reconstruction.filters
+    @table::Ensemble.filters
     @table::Trigger.filters
   }
   analyzers: {
@@ -37,7 +37,7 @@ outputs : {
 }
 
 # My epilog
-#include "JobConfig/reco/epilog.fcl"
+#include "JobConfig/ensemble/epilog_reco.fcl"
 # trigger epilog
 #include "TriggerEpilogs/allPaths.fcl"
 outputs.Output.SelectEvents : [ "RecoPath" ]
