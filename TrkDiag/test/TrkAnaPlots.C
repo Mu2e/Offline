@@ -121,13 +121,14 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   TCut final = reco+goodfit;
 //  TCut evtwt = "evtwt.PBIWeight";
 //  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
-  ta->Project("momresp","de.mom-demcgen.mom",final);
+  ta->Project("momresp","de.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
-  dscb->SetParameters(0.05*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
+  dscb->SetParameters(4e-5*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
   dscb->SetNpx(1000);
+  dscb->SetParLimits(2,0.1,50.0);
   dscb->SetParLimits(3,0.0,50.0);
   dscb->SetParLimits(4,1.0,50.0);
   dscb->SetParLimits(5,0.0,50.0);
@@ -895,6 +896,8 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   rad1->SetStats(0);
   dot0->SetStats(0);
   dot1->SetStats(0);
+  doca0->SetStats(0);
+  doca1->SetStats(0);
   eopd0->SetStats(0);
   eopd1->SetStats(0);
   eopdir0->SetStats(0);
