@@ -61,7 +61,7 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
     {
 
       if (pset_.get<int>("debug.diagLevel",0)>0) {
-        G4cout << "Mu2eG4RunAction " << __func__ << " called " << G4endl;
+        G4cout << "Mu2eG4RunAction " << __func__ << " : G4Run: " << aRun->GetRunID() << G4endl;
       }
 
       // run managers are thread local

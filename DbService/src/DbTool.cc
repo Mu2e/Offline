@@ -28,6 +28,8 @@ int mu2e::DbTool::run() {
   if(_action=="commit-list") return commitList();
   if(_action=="commit-purpose") return commitPurpose();
   if(_action=="commit-version") return commitVersion();
+
+  if(_action=="test-url") return testUrl();
   
   std::cout << "error: could not parse action : "<< _args[0]<< std::endl;
   return 1;
@@ -1146,6 +1148,46 @@ int mu2e::DbTool::commitVersion() {
 
 }
 
+
+// ****************************************  testUrl
+
+int mu2e::DbTool::testUrl() {
+  int rc = 0;
+
+  map_ss args;
+  args["file"] = "";
+  args["repeat"] = "";
+  if( (rc = getArgs(args)) ) return rc;
+
+  int n=1;
+  if(!args["repeat"].empty()) {
+    n = std::stoi(args["repeat"]);
+  }
+
+  std::vector <std::string> lines;
+  std::ifstream myfile;
+  myfile.open(args["file"]);
+  std::string line;
+  while ( std::getline(myfile,line) ) {
+    lines.push_back(line);
+  }
+
+  std::cout << "Read "<<lines.size() <<" lines" << std::endl;
+
+  std::string csv;
+  for(int i=0; i<n; i++) {
+    std::cout << "test URL: repeat "<<i << std::endl;
+    for(size_t q=0; q<lines.size(); q++) {
+      std::vector<std::string> words;
+      boost::split(words,lines[q], boost::is_any_of(" \t"), 
+		   boost::token_compress_on);
+      std::cout <<words[0]<< "X" << words[1] << std::endl;
+      _reader.query(csv,words[1],words[0],words[2]);
+    }
+  }
+
+  return 0;
+}
 
 
 

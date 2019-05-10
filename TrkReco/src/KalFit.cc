@@ -1,4 +1,4 @@
- //
+//
 // Class to perform BaBar Kalman fit
 // Original author: Dave Brown LBNL 2012
 //
@@ -96,13 +96,22 @@ namespace mu2e
     _maxhitchi(pset.get<double>("maxhitchi",3.5)),
     _maxpull(pset.get<double>("maxPull",5)),
     _maxweed(pset.get<unsigned>("maxweed",10)),
+    _maxweedtch(pset.get<unsigned>("maxweedtch",1)),
     // t0 parameters
     _useTrkCaloHit(pset.get<bool>("useTrkCaloHit")),
+    _nCaloExtrapolSteps(pset.get<float>("nCaloExtrapolSteps", 100)),
     _caloHitErr(pset.get<double>("caloHitError")),
     _updatet0(pset.get<vector<bool>>("updateT0")),
     _t0tol(pset.get< vector<double> >("t0Tolerance")),
     _t0errfac(pset.get<double>("t0ErrorFactor",1.2)),
     _t0nsig(pset.get<double>("t0window",2.5)),
+    _mindocatch(pset.get<double>("mindocatch",-50.)),
+    _maxdocatch(pset.get<double>("maxdocatch", 50.)),
+    _mindepthtch(pset.get<double>("mindepthtch",-50.)),
+    _maxdepthtch(pset.get<double>("maxdepthtch",250.)),
+    _maxtchdt(pset.get<double>("maxtchdt", 5.)),//ns
+    _mintchenergy(pset.get<double>("mintchEnergy", 10.)),//MeV
+    _mintchtrkpath(pset.get<double>("mintchTrkPath", 1.)),//mm
     _strHitW(pset.get<double>("strawHitT0Weight")),
     _calHitW(pset.get<double>("caloHitT0Weight")),
     //
@@ -191,6 +200,7 @@ namespace mu2e
       else
         throw cet::exception("RECO")<<"mu2e::KalFit: unknown ambiguity resolver " << _ambigstrategy[iter] << " for iteration " << iter << endl;
     }
+    
   }
 
   KalFit::~KalFit(){
@@ -199,6 +209,23 @@ namespace mu2e
     }
     delete _bfield;
   }
+
+  void KalFit::setCaloGeom(){
+    mu2e::GeomHandle<mu2e::Calorimeter> ch;
+    
+    _nCaloDisks = ch->nDisk();
+    double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
+    for (unsigned i=0; i<_nCaloDisks; ++i){
+      CLHEP::Hep3Vector pos(ch->disk(i).geomInfo().frontFaceCenter());
+      pos = ch->geomUtil().mu2eToTracker(pos);
+      
+      _zmincalo[i] = (pos.z());
+      _zmaxcalo[i] = (pos.z()+crystalLength);
+      _rmincalo[i] = (ch->disk(i).geomInfo().innerEnvelopeR());
+      _rmaxcalo[i] = (ch->disk(i).geomInfo().outerEnvelopeR());
+    }
+  }
+
 
 //-----------------------------------------------------------------------------
 // create the track (KalRep) from a track seed
@@ -400,6 +427,7 @@ namespace mu2e
     TrkErrCode retval = TrkErrCode::succeed;
 
     KalRep* krep =  kalData.krep;
+    bool    flagMaterialAdded(false);
 
     while(retval.success() && changed && ++niter < maxIterations()){
 //-----------------------------------------------------------------------------
@@ -427,7 +455,9 @@ namespace mu2e
       if(_addmaterial[iter]){
 	nmat = addMaterial(detmodel,krep);
         changed |= nmat>0;
+	if (!flagMaterialAdded) flagMaterialAdded=true;
       }
+      
       if(_debug > 1) std::cout << "Inner iteration " << niter << " changed = "
 	<< changed << " t0 old " << oldt0 << " new " << krep->t0()._t0 
 	<< " nmat = " << nmat << endl;
@@ -480,28 +510,27 @@ namespace mu2e
     art::Ptr<CaloCluster> const& calo = kalData.kalSeed->caloCluster();
     if (calo.isNonnull()){
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
-      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskToMu2e( calo->diskId(), calo->cog3Vector())); 
-      // t0 represents the time the particle reached the sensor; estimate that
-      HitT0 ht0;
-      ht0._t0    = kalData.kalSeed->caloCluster()->time() + _ttcalc.caloClusterTimeOffset();
-      ht0._t0err = _ttcalc.caloClusterTimeErr();
-      
-      Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
-      double      crystalLength = ch->caloInfo().getDouble("crystalZLength");
-      // move position to front of crystal
-      cog.setZ(cog.z()-crystalLength);
-      // estimate fltlen from pitch; take the last segment
+      Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()));
+      if(_debug > 0){
+	std::cout << "Cluster COG (disk) " << calo->cog3Vector() << std::endl
+	<< "Cluster COG (Mu2e) " << ch->geomUtil().diskFFToMu2e( calo->diskId(), calo->cog3Vector()) << std::endl
+	<<" Cluster COG (Det ) " << cog << std::endl; 
+      }
+      double crystalLength = ch->caloInfo().getDouble("crystalZLength");
+       // estimate fltlen from pitch; take the last segment
       HelixVal const& hval = kalData.kalSeed->segments().back().helix();
+      double mom = kalData.kalSeed->segments().back().mom();
+      double beta = kalData.kalSeed->particle().beta(mom);
       double td = hval.tanDip();
       double sd = td/sqrt(1.0+td*td);
       double fltlen = (cog.z()- hval.z0() + 0.5*crystalLength)/sd;// - kalData.kalSeed->flt0();
-      // test
-//      double tlen = fltlen*sqrt(1.0-sd*sd);
-//      double hx = (1.0/hval.omega())*(sin(hval.phi0()+hval.omega()*tlen)-sin(hval.phi0())) - hval.d0()*sin(hval.phi0());
-//      double hy = (-1.0/hval.omega())*(cos(hval.phi0()+hval.omega()*tlen)-cos(hval.phi0())) + hval.d0()*cos(hval.phi0());
-//      double hz = hval.z0() + hval.tanDip()*tlen;
-//      Hep3Vector hpos(hx,hy,hz);
-//      cout << "cog pos   " << cog << endl << "helix pos " << hpos << endl;
+      // t0 represents the time the particle reached the sensor; estimate that
+      HitT0 ht0 = kalData.kalSeed->t0(); // start with the track t0
+      double   flt0 = kalData.kalSeed->flt0();
+      double tflt = (fltlen -flt0)/(beta*CLHEP::c_light);
+      ht0._t0 += tflt;
+      ht0._t0err = _ttcalc.caloClusterTimeErr();
+      Hep3Vector clusterAxis = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
       tch = new TrkCaloHit(*kalData.kalSeed->caloCluster().get(), cog, crystalLength, clusterAxis, ht0, fltlen, _calHitW, _caloHitErr, _ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset());
     }
   }
@@ -540,7 +569,8 @@ namespace mu2e
     // for(auto const& plane : tracker.getPlanes()){
     for ( size_t i=0; i!= tracker.nPlanes(); ++i){
       const auto& plane = tracker.getPlane(i);
-       _debug>3 && std::cout << __func__ << " plane " << plane.id() << std::endl;
+      _debug>3 && std::cout << __func__ << " plane " << plane.id() << " exists: " << plane.exists() << std::endl;
+       if(plane.exists()) {
       // if (!(plane.exists())) continue;
       // # of straws in a panel
       int nstraws = plane.getPanel(0).nStraws();
@@ -622,10 +652,11 @@ namespace mu2e
               matstraws.insert(StrawFlight(panel.getStraw(is).id(),flt));
               ++nadded;
             }
-          }
-        }
-      }
-    }
+          }  // if prho
+        } // panel loop
+      } // if rho
+      } // plane exists
+    } // nplanes
 // Now test if the Kalman rep hits these straws
     if(_debug>2)std::cout << "Found " << matstraws.size() << " unique possible straws " << " out of " << nadded << std::endl;
     for(auto const& strawflt : matstraws){
@@ -791,6 +822,178 @@ namespace mu2e
     return retval;
   }
 
+//--------------------------------------------------------------------------------
+// This function uses the KalRep for searching for the calorimeter disk where 
+// the track is supposed to impact
+//--------------------------------------------------------------------------------
+  void       
+  KalFit::findCaloDiskFromTrack(KalFitData& kalData, int& trkToCaloDiskId, double& caloFlt){
+    KalRep*krep = kalData.krep;
+    const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+    float  zExtrapolStep  = (_zmaxcalo[0] - _zmincalo[0])/(float)_nCaloExtrapolSteps;
+
+    //initialize the output values
+    trkToCaloDiskId = -1;
+    caloFlt         = 0;
+
+    float  fltIn(0), fltOut(0);
+    for (unsigned i=0; i<_nCaloDisks; ++i){
+      for (unsigned j=0; j<_nCaloExtrapolSteps; ++j){
+	double flt(0);
+	double zCaloExtrap = _zmincalo[i] + j*zExtrapolStep;
+	TrkHelixUtils::findZFltlen(*reftraj, zCaloExtrap, flt);
+	HepPoint pos    = krep->referenceTraj()->position(flt);
+	float    radius = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
+	if ( (radius >= _rmincalo[i]) && (radius <= _rmaxcalo[i])){
+	  if (trkToCaloDiskId<0) {
+	    trkToCaloDiskId = i;
+	    fltIn  = flt;
+	  }else {
+	    fltOut = flt;
+	  }
+	} 
+      }//end loop over the z-steps
+      if (trkToCaloDiskId>=0) break;
+    }//end loop over tghe disks   
+    if (trkToCaloDiskId >= 0)  caloFlt = fltOut - fltIn;
+  }
+
+
+//--------------------------------------------------------------------------------
+// This function loops over the CaloClusterCollection to search for a Cluster
+// compatible with the Track. If the Cluster energy was below the threshold, 
+// no Cluster was added in the TimeClusterFinder module
+//--------------------------------------------------------------------------------
+  int
+  KalFit::addTrkCaloHit( Mu2eDetector::cptr_t detmodel, KalFitData& kalData) {
+    int retval(-1);
+    //extrapolate the track to the calorimeter region 
+    //to understand on which disk the track is supposed to impact
+    int      trkToCaloDiskId(-1);
+    double   trkInCaloFlt(0);
+    findCaloDiskFromTrack(kalData, trkToCaloDiskId, trkInCaloFlt);
+    if (trkToCaloDiskId >= 0 &&  //the Track doesn't intercept the calorimeter
+	trkInCaloFlt > _mintchtrkpath) { //FIX ME! should we check the second disk in case the track-path in the first is too small?
+      KalRep*  krep = kalData.krep;
+      double   minFOM(1e10);
+      const CaloCluster*cl(0);
+      std::unique_ptr<TrkCaloHit> tchFinal;
+      mu2e::GeomHandle<mu2e::Calorimeter> ch;
+      double   crystalLength = ch->caloInfo().getDouble("crystalZLength");
+
+      unsigned nClusters = kalData.caloClusterCol->size();
+      const TrkDifPieceTraj* reftraj = krep->referenceTraj();
+      double   flt0 = krep->flt0();
+      double   tflt(0), flt(0);
+      if (trkToCaloDiskId>=0){
+	//evaluate the flight length at the z of the calorimeter cluster + half crystallength
+	TrkHelixUtils::findZFltlen(*reftraj, (_zmincalo[trkToCaloDiskId]+0.5*crystalLength),flt);
+	//evaluate the transittime using the full trajectory
+	tflt = krep->t0()._t0 + krep->transitTime(flt0, flt);
+      }
+
+      for (unsigned icc=0; icc<nClusters; ++icc){ 
+	cl    = &kalData.caloClusterCol->at(icc);
+	if (cl->diskId() != trkToCaloDiskId ||
+	    cl->energyDep() < _mintchenergy) continue;
+	// double      hflt(0.0);
+	Hep3Vector cog = ch->geomUtil().mu2eToTracker(ch->geomUtil().diskFFToMu2e( cl->diskId(), cl->cog3Vector()));
+	double      dt   = cl->time() + _ttcalc.caloClusterTimeOffset() - tflt;  // should include light propagation time FIXME!!
+
+	//check the compatibility of the track and time within a given time window
+	if (fabs(dt) > _maxtchdt)        continue;
+
+	HitT0 ht0;
+	ht0._t0 = tflt;
+	// initial error can't be better than the input error
+	ht0._t0err = _ttcalc.caloClusterTimeErr();
+
+	Hep3Vector  clusterAxis   = Hep3Vector(0, 0, 1);//FIXME! should come from crystal
+	// construct a temporary TrkCaloHit.  This is just to be able to call POCA
+	TrkLineTraj hitTraj(HepPoint(cog.x(), cog.y(), cog.z()),
+	    clusterAxis, 0.0, crystalLength);
+	//evaluate the doca
+	TrkPoca poca(krep->traj(),flt,hitTraj,0.5*crystalLength);
+	double doca = poca.doca();
+	double depth = poca.flt2(); 
+	if( doca  > _mindocatch  && doca  < _maxdocatch &&
+	    depth > _mindepthtch && depth < _maxdepthtch &&
+	    fabs(doca) < minFOM) {
+	  tchFinal.reset(new TrkCaloHit(*cl, cog, crystalLength, clusterAxis,
+		ht0, poca.flt1(),
+		_calHitW, _caloHitErr, 
+		_ttcalc.caloClusterTimeErr(), _ttcalc.caloClusterTimeOffset()));
+	  minFOM   = doca; // this should be some combination of energy, DOCA, etc FIXME!
+	  retval = icc;
+	}
+      }
+
+      if (tchFinal != 0) { 
+
+	//add the TrkCaloHit
+	krep->addHit(tchFinal.release());
+
+	TrkErrCode fitstat = fitIteration(detmodel,kalData,_herr.size()-1);
+	krep->addHistory(fitstat,"AddHits");
+      }
+    }
+    return retval;
+
+  }
+
+
+  bool
+  KalFit::weedTrkCaloHit(KalFitData& kalData, int iter) {
+    // check if the TrkCaloHit residuals is within a given limit
+    KalRep* krep = kalData.krep;
+    bool    retval(false);
+    //    double  worst = -1.;
+    TrkCaloHit   *worsthit = 0;
+    TrkHitVector *thv      = &(krep->hitVector());
+    
+    for (auto ihit=thv->begin();ihit!=thv->end(); ++ihit){
+      TrkCaloHit*hit = dynamic_cast<TrkCaloHit*>(*ihit);
+      if (hit == 0)     continue;
+      if (hit->isActive()) {
+	//evaluate the doca
+	double  doca  = hit->poca().doca();
+	//evaluate the crystal depth
+	double  depth = hit->hitLen();
+        if( (doca  < _mindocatch ) || (doca  > _maxdocatch) ||
+	    (depth < _mindepthtch) || (depth > _maxdepthtch)) {
+	  worsthit = hit;
+	  break;
+        }
+      }
+    }
+
+    if (iter == -1) iter = _ambigresolver.size()-1;
+
+    if(0 != worsthit){
+      retval = true;
+      worsthit->setActivity(false);
+      worsthit->setFlag(TrkHit::weededHit);
+      if (_resolveAfterWeeding) {
+//-----------------------------------------------------------------------------
+// _resolveAfterWeeding=0 makes changes in the logic fully reversible
+//-----------------------------------------------------------------------------
+        _ambigresolver[iter]->resolveTrk(krep);
+      }
+      TrkErrCode fitstat = krep->fit();
+      krep->addHistory(fitstat, "HitWeed");
+      
+      if (_debug > 0) {
+	char msg[200];
+        sprintf(msg,"KalFit::weedTrkCaloHit Iteration = %2i success = %i",iter,fitstat.success());
+	_printUtils->printTrack(kalData.event,kalData.krep,"banner+data+hits",msg);
+      }
+      
+    }
+
+    kalData.nweedtchiter++;
+    return retval;
+  }
+
   BField const&
   KalFit::bField() const {
     if(_bfield == 0){
@@ -821,85 +1024,64 @@ namespace mu2e
     using namespace boost::accumulators;
     TrkHitVector *thv = &(krep->hitVector());
     bool retval(false);
-// need to have a valid fit
-    if(krep->fitValid()){
-// find the global fltlen associated with z=0.
-      double flt0(0.0);
-      bool converged = TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0);
-      if(converged){
-        std::vector<double> hitt0, hitt0err; // store t0, to allow outlyer removal
-        size_t nhits = krep->hitVector().size();
-        hitt0.reserve(nhits);
-        hitt0err.reserve(nhits);
-        // loop over the hits and accumulate t0
-        for(auto ihit=thv->begin(); ihit != thv->end(); ihit++){
-          TrkHit*      hit   = *ihit;
-	  bool         trkShAmbigOK(true);
-	  if (_ambigstrategy[iter] != 0) {
-	    TrkStrawHit* trkSh = dynamic_cast<TrkStrawHit*>(*ihit);
-	    if (trkSh !=0){
-	      if (trkSh->ambig() == 0) 
-		trkShAmbigOK = false;
-	    }
+    double flt0(0.0);
+// need to have a valid fit and global fltlen associated with z=0.
+    if(krep->fitValid() && TrkHelixUtils::findZFltlen(krep->traj(),0.0,flt0) ) {
+      TrkT0 t0; // null t0; this will be the change in t0 from this update
+      // iterate an outlier search and linear fit until the set of used hits doesn't change
+      bool changed(true);
+      std::vector<bool> used(thv->size(),true);
+      unsigned niter(0);
+      while(changed && niter < 10){
+	niter++;
+	changed = false;
+	accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
+	// loop over the hits and accumulate t0
+	for(size_t ihit=0; ihit < thv->size(); ihit++){
+	  TrkHit* hit = (*thv)[ihit];
+	  TrkT0 st0;
+	  bool usehit = hit->isActive() && hit->signalPropagationTime(st0);
+	  if(usehit){
+	    // compute the hit t0 change WRT the previous fit
+	    double hitt0 = hit->time() - st0._t0 - hit->hitT0()._t0;
+	    double hitt0err = st0._t0err;// temperature is already part of the residual error
+	    // special checks for TrkStrawHit; make sure it has ambiguity, and remove outliers
+	    TrkStrawHit* trkSh = dynamic_cast<TrkStrawHit*>(hit);
+	    if (trkSh !=0) usehit &=  (_ambigstrategy[iter] != 0 && trkSh->ambig() != 0 ) && fabs(hitt0-t0._t0) < _t0nsig*hitt0err;
+	    // keep track of use for testing convergence
+	    changed |= usehit != used[ihit];
+	    used[ihit] = usehit;
+	    // update accumulator
+	    if(usehit) wmean(hitt0, weight=1.0/(hitt0err*hitt0err));
 	  }
-          if(hit->isActive() && trkShAmbigOK) {
-	    TrkT0 st0;
-	    if (hit->signalPropagationTime(st0 )){
-	      // subtracting hitT0 makes this WRT the previous track t0
-	      hitt0.push_back(hit->time() - st0._t0 - hit->hitT0()._t0);
-	      hitt0err.push_back(st0._t0err);// temperature is already part of the residual error
-            }
-          }
-        }
-        if(hitt0.size() >1){
-          TrkT0 t0;
-          // find the median.  Why is this necessary?  Input t0 has very good precision < 2ns.
-//          accumulator_set<double, stats<tag::median(with_p_square_quantile) > > med;
-//          med = std::for_each( hitt0.begin(), hitt0.end(), med );
-//          t0._t0 = extract_result<tag::median>(med);
-          // iterate an outlier search and linear fit until the set of used hits doesn't change
-          bool changed(true);
-          std::vector<bool> used(hitt0.size(),true);
-          unsigned niter(0);
-          while(changed && niter < 10){
-            niter++;
-            changed = false;
-            accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
-            for(unsigned ihit=0;ihit<hitt0.size();ihit++){
-              bool useit = fabs(hitt0[ihit]-t0._t0) < _t0nsig*hitt0err[ihit];
-              changed |= useit != used[ihit];
-              used[ihit] = useit;
-              if(useit){
-                wmean(hitt0[ihit], weight=1.0/(hitt0err[ihit]*hitt0err[ihit]));
-              }
-            }
-            unsigned nused = extract_result<tag::count>(wmean);
-            if(nused > 1){
-              t0._t0 = extract_result<tag::weighted_mean>(wmean);
-              t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
-            } else {
-              break;
-            }
-          }
-          // reset t0
-          if(!changed){
-            // put in t0 from the track.
-            t0._t0 += krep->t0()._t0;
-            krep->setT0(t0,flt0);
-            updateHitTimes(krep);
-            retval = true;
-          }
-        }
+	}
+	// extract result from accumulator
+	unsigned nused = extract_result<tag::count>(wmean);
+	if(nused > 1){
+	  t0._t0 = extract_result<tag::weighted_mean>(wmean);
+	  t0._t0err = sqrt(extract_result<tag::weighted_variance>(wmean)/nused);
+	  retval = true;
+	} else {
+	  retval = false;
+	  break;
+	}
+      }
+      // reset t0
+      if(retval){
+	// add back t0 from the track; this was implicitly subtracted as part of the hit t0
+	t0._t0 += krep->t0()._t0;
+	// update track and hits
+	krep->setT0(t0,flt0);
+	updateHitTimes(krep);
       }
     }
     return retval;
   }
-  
-  void
-  KalFit::updateHitTimes(KalRep* krep) {
-  // compute the time the track came closest to the sensor for each hit, starting from t0 and working out.
-  // this function allows for momentum change along the track.
-  // find the bounding hits on either side of this
+
+  void KalFit::updateHitTimes(KalRep* krep) {
+    // compute the time the track came closest to the sensor for each hit, starting from t0 and working out.
+    // this function allows for momentum change along the track.
+    // find the bounding hits on either side of this
     TrkHitVector *thv = &(krep->hitVector());
     std::sort(thv->begin(),thv->end(),fcomp());
     TrkHitVector::iterator ihigh;
@@ -911,15 +1093,15 @@ namespace mu2e
     for(TrkHitVector::iterator ihit= ihigh;ihit != thv->end(); ++ihit){
       TrkHit* hit = *ihit;
       double flt1 = hit->fltLen();
-// particle transit time to this hit from the reference
+      // particle transit time to this hit from the reference
       double tflt = krep->transitTime(flt0, flt1);
-// update the time in the TrkT0 object
+      // update the time in the TrkT0 object
       hitt0._t0 += tflt;
       (*ihit)->setHitT0(hitt0);
-// update the reference flightlength
+      // update the reference flightlength
       flt0 = flt1;
     }
-// now the same, moving backwards.
+    // now the same, moving backwards.
     flt0 = krep->flt0();
     hitt0 = krep->t0();
     for(TrkHitVector::reverse_iterator ihit= ilow;ihit != thv->rend(); ++ihit){
@@ -932,10 +1114,9 @@ namespace mu2e
     }
   }
 
-  void
-  KalFit::findBoundingHits(KalRep* krep,double flt0,
-			   TrkHitVector::reverse_iterator& ilow,
-			   TrkHitVector::iterator& ihigh) {
+  void KalFit::findBoundingHits(KalRep* krep,double flt0,
+      TrkHitVector::reverse_iterator& ilow,
+      TrkHitVector::iterator& ihigh) {
     TrkHitVector* hits = &(krep->hitVector());
     ilow = hits->rbegin();
     ihigh = hits->begin();
@@ -943,15 +1124,15 @@ namespace mu2e
     while(ihigh != hits->end() && (*ihigh)->fltLen() < flt0 )++ihigh;
   }
 
-// attempt to extend the fit to the specified location
+  // attempt to extend the fit to the specified location
   TrkErrCode KalFit::extendFit(KalRep* krep) {
     TrkErrCode retval;
     // find the downstream and upstream Z positions to extend to
     if(_exdown != noextension){
       double downz = extendZ(_exdown);
-    // convert to flightlength using the fit trajectory
+      // convert to flightlength using the fit trajectory
       double downflt = krep->pieceTraj().zFlight(downz);
-    // actually extend the track
+      // actually extend the track
       retval = krep->extendThrough(downflt);
     }
     // same for upstream extension
@@ -970,7 +1151,7 @@ namespace mu2e
       GeomHandle<DetectorSystem> det;
       retval = det->toDetector(target->centerInMu2e()).z() - 0.5*target->cylinderLength();
     } else if(ex == ipa) {
-    // the following is wrong FIXME!!
+      // the following is wrong FIXME!!
       GeomHandle<StoppingTarget> target;
       GeomHandle<DetectorSystem> det;
       retval = det->toDetector(target->centerInMu2e()).z() +  0.5*target->cylinderLength();

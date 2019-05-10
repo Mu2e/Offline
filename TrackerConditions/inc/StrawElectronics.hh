@@ -14,7 +14,7 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "fhiclcpp/ParameterSet.h"
 

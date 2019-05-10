@@ -88,6 +88,7 @@ helper.make_plugins( [ mainlib,
                        'xerces-c',
                        'boost_filesystem',
                        'boost_system',
+		       'pthread'
                      ] )
 
 helper.make_dict_and_map( [ mainlib,

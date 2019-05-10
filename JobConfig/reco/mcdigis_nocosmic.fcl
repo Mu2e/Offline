@@ -1,0 +1,10 @@
+# Same as mcdigis, but without the cosmic time map
+# This is legacy for MDC2018g digis and earlier
+#include "JobConfig/reco/mcdigis.fcl"
+# redefine time maps
+physics.producers.FindMCPrimary.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.SelectRecoMC.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.compressRecoMCs.timeMapTags : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] 
+physics.analyzers.RecoCheck.OldTimeOffsets.inputs :[  @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.analyzers.RecoCheck.NewTimeOffsets.inputs :[  @sequence::RecoCompression.NoCosmicTimeMaps ]

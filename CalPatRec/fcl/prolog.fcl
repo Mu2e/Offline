@@ -169,6 +169,7 @@ CalPatRec : { @table::CalPatRec
         caloHitError                    : 15.0 # mm 
 		
 	DivergeFlt                        : 1000.            #  default: 1000.
+        T0Calculator : @local::TimeCalculator
 #------------------------------------------------------------------------------
 #  parameters of KalContext 
 #------------------------------------------------------------------------------
@@ -216,6 +217,7 @@ CalPatRec : { @table::CalPatRec
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
+        T0Calculator : @local::TimeCalculator
 #------------------------------------------------------------------------------
 #  KalContext parameters  (there are more to define ! )
 #------------------------------------------------------------------------------
@@ -313,6 +315,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawDigiCollection                         : makeSD
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalSeedFit
+	    CaloClusterCollection                       : "CaloClusterFromProtoCluster"
 	    mcDigiCollTag                               : "dave,_it_is_used_only_when_debugging_MC._pasha"
 	    DtMaxMiss                                   : 55.
 	    MaxAddDoca                                  : 5.    # mm

@@ -117,7 +117,7 @@ services.SeedService.maxUniqueEngines :  20
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/visxz.mac"
 #physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 
-# physics.producers.g4run.physics.physicsListName : "ShieldingM"
+physics.producers.g4run.physics.physicsListName : "ShieldingM"
 #physics.producers.g4run.physics.bfieldMaxStep   : 500000. // not implemented (no field)
 physics.producers.g4run.TrajectoryControl.mcTrajectoryMinSteps:     0
 physics.producers.g4run.TrajectoryControl.mcTrajectoryMomentumCut : 0. // MeV/c
