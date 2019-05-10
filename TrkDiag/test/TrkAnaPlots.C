@@ -786,6 +786,8 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   char cstring[100];
   snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&demc.pdg==%i",tqcut,pdg);
   TCut goodtrkcalo(cstring);
+  snprintf(cstring,100,"(!detch.active)&&detrkqual.trkqual>%f&&demc.pdg==%i",tqcut,pdg);
+  TCut goodtrk(cstring);
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
   TH1F* clen0 = new TH1F("clen0","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,-50,250);
@@ -966,6 +968,40 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   gPad->SetLogz();
   eopr1->Draw("colorz");
 
+  TH2F* dtvsclen = new TH2F("dtvsclen","T_{calo} - T_{trk} vs Cluster Depth;Depth (mm); #Delta t (ns)",50,-100,300,50,-2.0,3.0);
+  TProfile* pdtvsclen = new TProfile("pdtvsclen","T_{calo} - T_{trk} vs Cluster Depth;Depth (mm); #Delta t (ns)",50,-100,300,-2.0,3.0);
+  dtvsclen->SetStats(0);
+  ta->Project("dtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
+  ta->Project("pdtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
+
+  TCanvas* dtchtcan = new TCanvas("dtchtcan","TCH timing",800,800);
+  gPad->SetLogz();
+  dtvsclen->Draw("colorz");
+  pdtvsclen->Fit("pol1","","same");
+
+  TH1F* dt0hiE = new TH1F("dt0hiE","T_{0} Resolution;Reco t_{0} - MC t_{0} (nsec)",100,-5,5);
+  TH1F* dt0loE = new TH1F("dt0loE","T_{0} Resolution;Reco t_{0} - MC t_{0} (nsec)",100,-5,5);
+  TH1F* dt0nocal = new TH1F("dt0nocal","T_{0} Resolution;Reco t_{0} - MC t_{0} (nsec)",100,-5,5);
+  dt0hiE->SetStats(0);
+  dt0loE->SetStats(0);
+  dt0nocal->SetStats(0);
+  dt0hiE->SetLineColor(kBlue);
+  dt0loE->SetLineColor(kGreen);
+  dt0nocal->SetLineColor(kBlack);
+  ta->Project("dt0hiE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep>50.0");
+  ta->Project("dt0loE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep<50.0");
+  ta->Project("dt0nocal","de.t0-demcmid.t0",goodtrk);
+
+  TCanvas* dt0can = new TCanvas("dt0can","t0 resolution",800,800);
+  gPad->SetLogy();
+  dt0hiE->Fit("gaus");
+  dt0loE->Fit("gaus","","same");
+  dt0nocal->Fit("gaus","","same");
+  TLegend* t0leg = new TLegend(0.6,0.6,0.9,0.9);
+  t0leg->AddEntry(dt0hiE,"ECalo > 50 MeV/c","L");
+  t0leg->AddEntry(dt0loE,"ECalo < 50 MeV/c","L");
+  t0leg->AddEntry(dt0nocal,"No TrkCaloHit","L");
+  t0leg->Draw();
 }
 
 void TrkCaloHitMC(TTree* ta) {
@@ -1176,4 +1212,96 @@ void PlotIPA(TTree* ta) {
   dscb->SetParName(6,"PPos");
   dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
   momres->Fit("dscb","RQ");
+}
+
+void Upstream(TTree* tneg, TTree* tpos) {
+  TCut trueup("de.pdg*demc.pdg>0 && demcxit.momz<0");
+  TCut uetch("uetch.active");
+  TCut trueutch("uetchmc.prel>=0");
+  TCut truee("abs(demc.pdg)==11");
+  TCut truemu("abs(demc.pdg)==13");
+  TH1F* tchmcrel = new TH1F("tchmcrel","TrkCaloHit MC Relation;Calo WRT Track Relationship",8,-1.5,6.5);
+  tchmcrel->GetXaxis()->SetBinLabel(1,"none");
+  tchmcrel->GetXaxis()->SetBinLabel(2,"same");
+  tchmcrel->GetXaxis()->SetBinLabel(3,"daughter");
+  tchmcrel->GetXaxis()->SetBinLabel(4,"mother");
+  tchmcrel->GetXaxis()->SetBinLabel(5,"sibling");
+  tchmcrel->GetXaxis()->SetBinLabel(6,"u-daughter");
+  tchmcrel->GetXaxis()->SetBinLabel(7,"u-mother");
+  tchmcrel->GetXaxis()->SetBinLabel(8,"u-sibling");
+  tchmcrel->SetStats(0);
+  TH1F* eutcha = new TH1F("eutcha","Upstream TrkCaloHit",2,-0.5,1.5);
+  TH1F* muutcha = new TH1F("muutcha","Upstream TrkCaloHit",2,-0.5,1.5);
+  eutcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
+  eutcha->GetXaxis()->SetBinLabel(2,"Active");
+  eutcha->SetStats(0);
+  eutcha->SetLineColor(kBlue);
+  muutcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
+  muutcha->GetXaxis()->SetBinLabel(2,"Active");
+  muutcha->SetStats(0);
+  muutcha->SetLineColor(kBlack);
+  TH1F* updg = new TH1F("updg","True Upstream Particle PDG code",27,-13.5,13.5);
+  updg->GetXaxis()->SetBinLabel(1,"#mu^{+}");
+  updg->GetXaxis()->SetBinLabel(3,"e^{+}");
+  updg->GetXaxis()->SetBinLabel(27,"#mu^{-}");
+  updg->GetXaxis()->SetBinLabel(25,"e^{-}");
+  updg->SetStats(0);
+
+  TH1F* eutime = new TH1F("eutime","Upstream fit calo - track time;T_{calo}-T_{track} (ns)",200,-10,10);
+  TH1F* muutime = new TH1F("muutime","Upstream fit calo - track time;T_{calo}-T_{track} (ns)",200,-10,10);
+  muutime->SetStats(0);
+  eutime->SetLineColor(kBlue);
+  muutime->SetLineColor(kBlack);
+  TH2F* ueevsp = new TH2F("ueevsp","Upstream electron E vs P;Fit mom (MeV/c);CaloCluster EDep (MeV)",25,60,200,25,0,700);
+  TH2F* umuevsp = new TH2F("umuevsp","Upstream muon E vs P;Fit mom (MeV/c);CaloCluster EDep (MeV)",25,60,200,25,0,700);
+  ueevsp->SetStats(0);
+  umuevsp->SetStats(0);
+
+  tneg->Project("eutcha","uetch.active",trueup&&truee);
+  tneg->Project("muutcha","uetch.active",trueup&&truemu);
+  tneg->Project("tchmcrel","uetchmc.prel",trueup&&uetch);
+  tneg->Project("eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
+  tneg->Project("updg","demc.pdg",trueup);
+  tneg->Project("muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
+  tneg->Project("ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
+  tneg->Project("umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
+
+  tpos->Project("+eutcha","uetch.active",trueup&&truee);
+  tpos->Project("+muutcha","uetch.active",trueup&&truemu);
+  tpos->Project("+tchmcrel","uetchmc.prel",trueup&&uetch);
+  tpos->Project("+updg","demc.pdg",trueup);
+  tpos->Project("+eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
+  tpos->Project("+muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
+  tpos->Project("+ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
+  tpos->Project("+umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
+
+  TCanvas* ucan = new TCanvas("ucan","Upstream",800,800);
+  ucan->Divide(2,2);
+  ucan->cd(1);
+  updg->Draw();
+  ucan->cd(2);
+  muutcha->Draw();
+  eutcha->Draw("same");
+  TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
+  tchleg->AddEntry(eutcha,"True electron track ","l");
+  tchleg->AddEntry(muutcha,"True muon track","l");
+  tchleg->Draw();
+  ucan->cd(3);
+  tchmcrel->Draw(); 
+  ucan->cd(4);
+  muutime->Fit("gaus");
+  eutime->Fit("gaus","","sames");
+  TLegend* tleg = new TLegend(0.1,0.7,0.4,0.9);
+  tleg->AddEntry(eutime,"True electron track ","l");
+  tleg->AddEntry(muutime,"True muon track","l");
+  tleg->Draw();
+
+  TCanvas* uecan = new TCanvas("uecan","Upstream E vs P",800,800);
+  uecan->Divide(1,2);
+  uecan->cd(1);
+  gPad->SetLogz();
+  ueevsp->Draw("colorz");
+  uecan->cd(2);
+  gPad->SetLogz();
+  umuevsp->Draw("colorz");
 }
