@@ -685,6 +685,11 @@ void Mu2eG4::endJob(){
 // Do the "begin run" parts of BeamOn.
 void Mu2eG4::BeamOnBeginRun( unsigned int runNumber){
 
+  if ( _rmvlevel > 0 ) {
+    G4cout << __func__ << ": runNumber: " << runNumber << G4endl;
+  }
+
+
         _runManager->SetRunIDCounter(runNumber);
 
         bool cond = _runManager->ConfirmBeamOnCondition();
@@ -727,6 +732,12 @@ void Mu2eG4::BeamOnBeginRun( unsigned int runNumber){
 
 // Do the "per event" part of DoEventLoop.
 void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char* macroFile, G4int n_select){
+
+  if ( _rmvlevel > 1 ) {
+    G4cout << __func__ << ": eventNumber: " << eventNumber << ", num_events: " << num_events << G4endl;
+  }
+
+
 
         if (_use_G4MT)//MT mode
         {

@@ -67,6 +67,7 @@ DigiCompression : {
 	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
 	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
 	simParticleTags : [ @local::DigiCompressionTags.primarySimParticleTag ] 
+	mcTrajectoryTag : @local::DigiCompressionTags.primarySimParticleTag
 	extraStepPointMCTags : @local::DigiCompressionTags.commonExtraStepPointMCTags
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
 	caloShowerStepTags : @local::DigiCompressionTags.primaryCaloShowerStepTags
@@ -82,6 +83,7 @@ DigiCompression : {
 	strawDigiMCTag : @local::DigiCompressionTags.commonStrawDigiMCTag
 	crvDigiMCTag : @local::DigiCompressionTags.commonCrvDigiMCTag
 	simParticleTags : @nil
+	mcTrajectoryTag : @local::DigiCompressionTags.primarySimParticleTag
 	extraStepPointMCTags : [ @sequence::DigiCompressionTags.commonExtraStepPointMCTags ]
 	timeMapTags : [ @sequence::CommonMC.TimeMaps ]
 	caloShowerStepTags : @nil

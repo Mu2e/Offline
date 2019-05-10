@@ -13,6 +13,7 @@
 
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
+#include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
@@ -49,6 +50,7 @@ class ContentSelector
   std::vector<art::Handle<mu2e::StrawHitPositionCollection> > _strawHitPositionVector;
   std::vector<art::Handle<mu2e::CaloCrystalHitCollection> > _caloCrystalHitVector;
   std::vector<art::Handle<mu2e::CaloHitCollection> > _caloHitVector;
+  std::vector<art::Handle<mu2e::CrvRecoPulseCollection> > _crvRecoPulseVector;
   std::vector<art::Handle<mu2e::SimParticleCollection> > _simParticleVector;
   std::vector<art::Handle<mu2e::MCTrajectoryCollection> > _mcTrajectoryVector;
   std::vector<art::Handle<mu2e::KalRepCollection> > _trkRecoTrkVector;
@@ -62,6 +64,7 @@ class ContentSelector
 
   TGComboBox  *_hitBox;
   TGComboBox  *_caloHitBox;
+  TGComboBox  *_crvHitBox;
   TGListBox   *_trackBox;
   std::string _g4ModuleLabel;
   std::string _physicalVolumesMultiLabel;
@@ -85,7 +88,7 @@ class ContentSelector
       return ((this->entryID==rhs.entryID) && (this->entryText==rhs.entryText));
     }
   };
-  std::vector<entryStruct> _hitEntries, _caloHitEntries, _trackEntries;
+  std::vector<entryStruct> _hitEntries, _caloHitEntries, _crvHitEntries, _trackEntries;
   std::vector<entryStruct> _hitFlagEntries, _hitPositionEntries;
 
   std::string _selectedHitFlagEntry, _selectedHitPositionEntry;
@@ -95,7 +98,7 @@ class ContentSelector
                                                        std::vector<entryStruct> &newEntries, int classID);
 
   public:
-  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGListBox *trackBox, 
+  ContentSelector(TGComboBox *hitBox, TGComboBox *caloHitBox, TGComboBox *crvHitBox, TGListBox *trackBox, 
                   std::string const &g4ModuleLabel, std::string const &physicalVolumesMultiLabel);
   void firstLoop();
   void setAvailableCollections(const art::Event& event);
@@ -107,6 +110,7 @@ class ContentSelector
 
   template<typename CollectionType> const CollectionType* getSelectedHitCollection() const;
   template<typename CollectionType> const CollectionType* getSelectedCaloHitCollection() const;
+  template<typename CollectionType> const CollectionType* getSelectedCrvHitCollection() const;
   template<typename CollectionType> std::vector<const CollectionType*> getSelectedTrackCollection(std::vector<trackInfoStruct> &v) const;
   const mu2e::PhysicalVolumeInfoCollection *getPhysicalVolumeInfoCollection() const;
   const mu2e::PhysicalVolumeInfoMultiCollection *getPhysicalVolumeInfoMultiCollection() const;

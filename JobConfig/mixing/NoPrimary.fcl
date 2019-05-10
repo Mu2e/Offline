@@ -34,6 +34,7 @@ physics.producers.protonTimeMap.InputTimeMaps : [ @sequence::Mixing.protonTimeMa
 physics.producers.muonTimeMap.InputTimeMaps : [ ]
 physics.producers.compressDigiMCs.simParticleTags : [ @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
 physics.producers.compressDigiMCs.extraStepPointMCTags : [ ]
+physics.producers.compressDigiMCs.mcTrajectoryTag : ""
 
 # customize the output
 services.TFileService.fileName: "nts.owner.NoPrimary-mix.version.sequencer.root"

@@ -35,6 +35,7 @@
 #include "Rtypes.h"
 #include "TBits.h"
 #include "TTree.h"
+#include "TProfile.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -124,6 +125,7 @@ namespace mu2e {
     TrkComp _tcomp;
     // main TTree
     TTree* _trkana;
+    TProfile* _tht; // profile plot of track hit times: just an example
     // general event info branch
     double _meanPBI;
     EventInfo _einfo;
@@ -137,8 +139,8 @@ namespace mu2e {
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _strawHitFlagTag;
-    TrkCaloHitInfo _detch;
-    CaloClusterInfoMC _detchmc;
+    TrkCaloHitInfo _detch, _uetch;
+    CaloClusterInfoMC _detchmc, _uetchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
     unsigned _trigbits;
@@ -190,11 +192,11 @@ namespace mu2e {
     _helices(pset.get<bool>("FillHelixInfo",false)),
     _filltrkqual(pset.get<bool>("FillTrkQualInfo",true)),
     _filltrig(pset.get<bool>("FillTriggerInfo",false)),
-    _diag(pset.get<int>("diagLevel",1)),
+    _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
-    _trkana(0),
+    _trkana(0), _tht(0),
     _meanPBI(0.0),
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
@@ -212,6 +214,7 @@ namespace mu2e {
     art::ServiceHandle<art::TFileService> tfs;
 // create TTree
     _trkana=tfs->make<TTree>("trkana","track analysis");
+    _tht=tfs->make<TProfile>("tht","Track Hit Time Profile",RecoCount::_nshtbins,-25.0,1725.0);
 // add event info branch
     _trkana->Branch("evtinfo.",&_einfo,EventInfo::leafnames().c_str());
 // hit counting branch
@@ -223,6 +226,9 @@ namespace mu2e {
     //
     _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
 // optionally add detailed branches
+    if(_diag > 0){
+      _trkana->Branch("uetch",&_uetch,TrkCaloHitInfo::leafnames().c_str());
+    }
     if(_diag > 1){
       _trkana->Branch("detsh",&_detsh);
       _trkana->Branch("detsm",&_detsm);
@@ -247,7 +253,12 @@ namespace mu2e {
       _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       _trkana->Branch("detchmc",&_detchmc,CaloClusterInfoMC::leafnames().c_str());
-      if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
+      if(_diag > 0){
+	_trkana->Branch("uetchmc",&_uetchmc,CaloClusterInfoMC::leafnames().c_str());
+      }
+      if(_diag > 1){
+	_trkana->Branch("detshmc",&_detshmc);
+      }
     }
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
@@ -316,6 +327,11 @@ namespace mu2e {
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_rctag);
     auto const& rc = *rch;
+    for(size_t ibin=0;ibin < rc._nshtbins; ++ibin){
+      float time = rc._shthist.binMid(ibin);
+      float count  = rc._shthist.binContents(ibin);
+      _tht->Fill(time,count);
+    }
     // TrkQualCollection
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_detqtag, trkQualHandle);
@@ -348,7 +364,13 @@ namespace mu2e {
       if(_helices)TrkTools::fillHelixInfo(dekseed, _bz0, _hinfo);
       // upstream and muon tracks
       auto iuekseed = findUpstreamTrack(ueC,dekseed);
-      if(iuekseed != ueC.end()) TrkTools::fillTrkInfo(*iuekseed,_ueti);
+      if(iuekseed != ueC.end()) {
+	auto const& uekseed = *iuekseed;
+	TrkTools::fillTrkInfo(uekseed,_ueti);
+	if(_diag >0 && uekseed.hasCaloCluster())
+	  TrkTools::fillCaloHitInfo(uekseed, *caloh,  _uetch);
+      }
+	
       auto idmukseed = findMuonTrack(dmC,dekseed);
       if(idmukseed != dmC.end()) TrkTools::fillTrkInfo(*idmukseed,_dmti);
       // calorimeter info
@@ -359,6 +381,8 @@ namespace mu2e {
 	if(_debug>0){
 	  auto const& tch = dekseed.caloHit();
 	  auto const& cc = tch.caloCluster();
+	  std::cout << "CaloCluster has energy " << cc->energyDep()
+	  << " +- " << cc->energyDepErr() << std::endl;
 	  for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
 	    // map the crystal ptr to the reduced collection
 	    auto ifnd = cchmap.find(cchptr);
@@ -369,7 +393,7 @@ namespace mu2e {
 	      else
 		std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
 	    } else {
-	      cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	      std::cout << "CaloCrystaLhitPtr not in map!" << std::endl;
 	    }
 	  }
 	}
@@ -415,6 +439,16 @@ namespace mu2e {
 	      auto const& ccmc = *(iccmca->second);
 	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_detchmc);
 
+	      break;
+	    }
+	  }
+	}
+	if (_diag > 0 && iuekseed != ueC.end() && iuekseed->hasCaloCluster()) {
+	  // fill MC truth of the associated CaloCluster 
+	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
+	    if(iccmca->first == iuekseed->caloCluster()){
+	      auto const& ccmc = *(iccmca->second);
+	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_uetchmc);
 	      break;
 	    }
 	  }
@@ -552,7 +586,9 @@ namespace mu2e {
     _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
+    _uetch.reset();
     _detchmc.reset();
+    _uetchmc.reset();
 // clear vectors
     _detsh.clear();
     _detsm.clear();

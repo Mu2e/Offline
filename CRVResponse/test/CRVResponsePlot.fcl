@@ -27,9 +27,7 @@ physics :
 {
   producers:
   {
-    protonTimeMap: { module_type : GenerateProtonTimes }
-    muonTimeMap: { module_type : GenerateMuonLife }
-
+    @table::CommonMC.producers
     @table::CrvResponsePackage.producers
   }
 
@@ -49,7 +47,7 @@ physics :
     }
   }
 
-  an : [protonTimeMap, muonTimeMap, @sequence::CrvResponsePackage.CrvResponseSequence]
+  an : [ @sequence::CommonMC.DigiSim, @sequence::CrvResponsePackage.CrvResponseSequence]
   out: [CrvPlot]
 
   trigger_paths: [an]

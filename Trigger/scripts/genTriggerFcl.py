@@ -1,10 +1,10 @@
 ################################################################################
 #           HOW RUN THE TRIGGER-FCL GENERATOR SCRIPT                           #
 #------------------------------------------------------------------------------#
-# 1) 
+# 
+# python Trigger/scripts/genTriggerFcl.py -c Trigger/scripts/inputs/allTrig.config -o testAllTrig.fcl
 #
 #
-# 2) 
 
 import re
 import sys
@@ -112,7 +112,7 @@ def appendEpilog(trig_path, output_file, project_name, trig_path_counter):
                                 epilog_file.close()
         # set the TriggerAlg using the trig_path_counter
         epilog_file     = open(epilog_fileName,"a")
-        trigAlg_line    = ("physics.filters."+filterName+".triggerPath        " + " : " + "\""+trk_alg+"_path\" \n")
+        trigAlg_line    = ("\nphysics.filters."+filterName+".triggerPath        " + " : " + "\""+trk_alg+"_trigger\" \n")
         epilog_file.write(trigAlg_line)
 
         epilog=("\n#include \""+epilog_fileName +"\"")
@@ -223,21 +223,21 @@ for line in fh:
         print pathCheck
 
         if path_list == "":
-            path_list += vec_path[0]+"_path"
+            path_list += vec_path[0]+"_trigger"
             trig_list += "\""+vec_path[0]+"\""
         else:
-            path_list += ", "+vec_path[0]+"_path"
+            path_list += ", "+vec_path[0]+"_trigger"
             trig_list += ", "+"\""+vec_path[0]+"\""
     
         if isOnlineMode == False:
-            new_path= ("\nphysics."+vec_path[0]+"_path"+" : [ @sequence::Trigger.paths."+vec_path[0]+" ] \n") 
+            new_path= ("\nphysics."+vec_path[0]+"_trigger"+" : [ @sequence::Trigger.paths."+vec_path[0]+" ] \n") 
         else:
             digi_path=""
             if 'tpr'  in vec_path[0] or 'cpr' in vec_path[0] or 'Sd' in vec_path[0]: 
                 digi_path += "makeSD, "
             if 'calo' in vec_path[0] or 'cpr' in vec_path[0] or 'Cd' in vec_path[0]: 
                 digi_path += "CaloDigiFromShower, "
-            new_path= ("physics."+vec_path[0]+"_path"+" : [ "+ digi_path +"@sequence::Trigger.paths."+vec_path[0]+" ] \n")
+            new_path= ("physics."+vec_path[0]+"_trigger"+" : [ "+ digi_path +"@sequence::Trigger.paths."+vec_path[0]+" ] \n")
 
 #now append the epilog files for setting the filters in the path
         
