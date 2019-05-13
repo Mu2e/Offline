@@ -45,6 +45,7 @@ namespace mu2e {
     void fillHitCount(RecoCount const& nrec, HitCount& hitcount);
 
     void fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo);
+    void fillTrkFitInfo(const KalSeed& kseed,TrkFitInfo& trkfitinfo, const XYZVec& pos);
     void fillTrkInfoHits(const KalSeed& kseed,TrkInfo& trkinfo);
     void fillTrkInfoStraws(const KalSeed& kseed,TrkInfo& trkinfo);
 

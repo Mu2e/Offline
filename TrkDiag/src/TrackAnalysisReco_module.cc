@@ -20,6 +20,7 @@
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
+#include "GeometryService/inc/VirtualDetector.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -129,6 +130,7 @@ namespace mu2e {
     TrkCount _tcnt;
     // track branches
     TrkInfo _deti, _ueti, _dmti;
+    TrkFitInfo _deentti, _demidti, _dexitti;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _strawHitFlagTag;
@@ -216,6 +218,9 @@ namespace mu2e {
     _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
     _trkana->Branch("de.",&_deti,TrkInfo::leafnames().c_str());
+    _trkana->Branch("deent",&_deentti,TrkFitInfo::leafnames().c_str());
+    _trkana->Branch("demid",&_demidti,TrkFitInfo::leafnames().c_str());
+    _trkana->Branch("dexit",&_dexitti,TrkFitInfo::leafnames().c_str());
     //
     _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
 // optionally add detailed branches
@@ -261,12 +266,12 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
-  // update timing maps
-    //    _infoStructHelper.update();
+    // update timing maps
     if(_fillmc){
       _infoMCStructHelper.updateEvent(event);
     }
-  // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
+
+    // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
       std::vector<art::Handle<EventWeight> > eventWeightHandles;
       event.getManyByType(eventWeightHandles);
@@ -330,12 +335,21 @@ namespace mu2e {
     }
     // reset
     resetBranches();
-    // find the best tracks
+    // loop through all tracks
     auto idekseed = findBestRecoTrack(deC);
     // process the best track
     if (idekseed != deC.end()) {
       auto const&  dekseed = *idekseed;
       _infoStructHelper.fillTrkInfo(dekseed,_deti);
+      // TODO: get entpos from virtualdetector
+      mu2e::GeomHandle<VirtualDetector> vdHandle;
+      mu2e::GeomHandle<DetectorSystem> det;
+      const XYZVec& entpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_entvids.begin())));
+      const XYZVec& midpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_midvids.begin())));
+      const XYZVec& xitpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_xitvids.begin())));
+      _infoStructHelper.fillTrkFitInfo(dekseed,_deentti,entpos);
+      _infoStructHelper.fillTrkFitInfo(dekseed,_demidti,midpos);
+      _infoStructHelper.fillTrkFitInfo(dekseed,_dexitti,xitpos);
       if(_diag > 1){
 	_infoStructHelper.fillHitInfo(dekseed, _detsh);
 	_infoStructHelper.fillMatInfo(dekseed, _detsm);
@@ -527,6 +541,9 @@ namespace mu2e {
     _hcnt.reset();
     _tcnt.reset();
     _deti.reset();
+    _deentti.reset();
+    _demidti.reset();
+    _dexitti.reset();
     _ueti.reset();
     _dmti.reset();
     _hinfo.reset();

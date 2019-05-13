@@ -84,14 +84,19 @@ namespace mu2e {
     trkinfo._endvalid = lastflt;
 
     fillTrkInfoStraws(kseed, trkinfo);
+  }
 
-    const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
-    trkinfo._ent._fitmom = kseg.mom();
-    trkinfo._ent._fitmomerr = kseg.momerr();
-    trkinfo._ent._fitpar = kseg.helix();
+  void InfoStructHelper::fillTrkFitInfo(const KalSeed& kseed,TrkFitInfo& trkfitinfo, const XYZVec& pos) {
+    const auto& ksegIter = kseed.nearestSegment(pos);
+    if (ksegIter == kseed.segments().end()) {
+      cet::exception("InfoStructHelper") << "Couldn't find KalSegment that includes pos = " << pos;
+    }
+    trkfitinfo._fitmom = ksegIter->mom();
+    trkfitinfo._fitmomerr = ksegIter->momerr();
+    trkfitinfo._fitpar = ksegIter->helix();
     CLHEP::HepSymMatrix pcov;
-    kseg.covar().symMatrix(pcov);
-    trkinfo._ent._fitparerr = helixpar(pcov);
+    ksegIter->covar().symMatrix(pcov);
+    trkfitinfo._fitparerr = helixpar(pcov);
   }
 
   void InfoStructHelper::fillTrkInfoHits(const KalSeed& kseed, TrkInfo& trkinfo) {
