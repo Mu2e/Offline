@@ -61,7 +61,7 @@
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/HelixInfo.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
+#include "TrkDiag/inc/InfoMCStructHelper.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -164,7 +164,7 @@ namespace mu2e {
     std::vector<CrvHitInfoMC> _crvinfomc;
     // SimParticle timing offset
     InfoStructHelper _infoStructHelper;
-    TrkMCHelper _trkMCHelper;
+    InfoMCStructHelper _infoMCStructHelper;
 };
 
   TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
@@ -194,7 +194,7 @@ namespace mu2e {
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
     _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", "")),
-    _trkMCHelper(pset.get<fhicl::ParameterSet>("TrkMCHelper"))
+    _infoMCStructHelper(pset.get<fhicl::ParameterSet>("InfoMCStructHelper"))
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
     _midvids.push_back(VirtualDetectorId::TT_MidInner);
@@ -264,7 +264,7 @@ namespace mu2e {
   // update timing maps
     //    _infoStructHelper.update();
     if(_fillmc){
-      _trkMCHelper.updateEvent(event);
+      _infoMCStructHelper.updateEvent(event);
     }
   // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
@@ -386,14 +386,14 @@ namespace mu2e {
 	//	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
-	    _trkMCHelper.fillTrkInfoMC(dekseedmc, _demc);
-	    _trkMCHelper.fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
-	    _trkMCHelper.fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
-	    _trkMCHelper.fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
-	    _trkMCHelper.fillGenAndPriInfo(dekseedmc, primary, _demcpri, _demcgen);
+	    _infoMCStructHelper.fillTrkInfoMC(dekseedmc, _demc);
+	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
+	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
+	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
+	    _infoMCStructHelper.fillGenAndPriInfo(dekseedmc, primary, _demcpri, _demcgen);
 
 	    if (_diag>1) {
-	      _trkMCHelper.fillHitInfoMCs(dekseedmc, _detshmc);
+	      _infoMCStructHelper.fillHitInfoMCs(dekseedmc, _detshmc);
 	    }
 	    break;
 	  }
@@ -403,7 +403,7 @@ namespace mu2e {
 	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
 	    if(iccmca->first == dekseed.caloCluster()){
 	      auto const& ccmc = *(iccmca->second);
-	      _trkMCHelper.fillCaloClusterInfoMC(ccmc,_detchmc);
+	      _infoMCStructHelper.fillCaloClusterInfoMC(ccmc,_detchmc);
 
 	      break;
 	    }

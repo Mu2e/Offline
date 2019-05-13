@@ -325,8 +325,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
-    TimeOffsets         :  { inputs : [ @sequence::RecoCompression.TimeMaps ] }
-    TrkMCHelper : {
+    InfoMCStructHelper : {
       SimParticleCollectionTag : "compressRecoMCs"
       TimeMaps : [ @sequence::RecoCompression.TimeMaps ]
       MinGoodMomFraction : 0.9

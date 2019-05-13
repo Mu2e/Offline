@@ -74,48 +74,12 @@ namespace mu2e {
     // count types of hits and digis
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& digigood, int& ngood);
 
-    // fill various info structs
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,std::vector<int> const& vids);
-    void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
-    void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
-    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc);
     // find relationship of a set of StrawDigis to the primary particle in the event
     void primaryRelation(PrimaryParticle const& primary,
 	StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,
 	art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel);
 
   }
-
-  class TrkMCHelper {
-
-  private:
-    art::InputTag _spctag;
-    art::Handle<SimParticleCollection> _spcH;
-    SimParticleTimeOffset _toff;
-    double _mingood;
-
-    void fillPriInfo(const PrimaryParticle& primary, GenInfo& priinfo);
-    void fillGenInfo(const art::Ptr<GenParticle>& gp, GenInfo& geninfo);
-
-  public:
-    TrkMCHelper(fhicl::ParameterSet const& pset) :
-      _spctag(pset.get<art::InputTag>("SimParticleCollectionTag", art::InputTag())),
-      _toff(pset.get<std::vector<art::InputTag> >("TimeMaps")),
-      _mingood(pset.get<double>("MinGoodMomFraction"))
-    {  };
-
-    void updateEvent(const art::Event& event) {
-      event.getByLabel(_spctag,_spcH);
-      _toff.updateMap(event);
-    }
-
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, TrkInfoMC& trkinfomc);
-    void fillTrkInfoMCDigis(const KalSeedMC& kseedmc, TrkInfoMC& trkinfomc);
-    void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
-    void fillGenAndPriInfo(const KalSeedMC& kseedmc, const PrimaryParticle& primary, GenInfo& priinfo, GenInfo& geninfo);
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, std::vector<int> const& vids) {
-
-  };
 }
 
 #endif
