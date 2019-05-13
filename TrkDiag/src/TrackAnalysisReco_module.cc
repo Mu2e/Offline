@@ -60,7 +60,7 @@
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/HelixInfo.hh"
-#include "TrkDiag/inc/TrkTools.hh"
+#include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
@@ -163,8 +163,7 @@ namespace mu2e {
     HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // SimParticle timing offset
-    SimParticleTimeOffset _toff;
-    TrkTools _trktools;
+    InfoStructHelper _infoStructHelper;
     TrkMCHelper _trkMCHelper;
 };
 
@@ -195,7 +194,6 @@ namespace mu2e {
     _primaryParticleTag(pset.get<art::InputTag>("PrimaryParticleTag", "")),
     _kalSeedMCTag(pset.get<art::InputTag>("KalSeedMCAssns", "")),
     _caloClusterMCTag(pset.get<art::InputTag>("CaloClusterMCAssns", "")),
-    _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _trkMCHelper(pset.get<fhicl::ParameterSet>("TrkMCHelper"))
   {
     _midvids.push_back(VirtualDetectorId::TT_Mid);
@@ -259,12 +257,12 @@ namespace mu2e {
     if(PBIHandle.isValid())
       _meanPBI = PBIHandle->intensity();
     // get bfield
-    _trktools.updateSubRun();
+    _infoStructHelper.updateSubRun();
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
   // update timing maps
-    //    _trktools.update();
+    //    _infoStructHelper.update();
     if(_fillmc){
       _trkMCHelper.updateEvent(event);
     }
@@ -337,20 +335,20 @@ namespace mu2e {
     // process the best track
     if (idekseed != deC.end()) {
       auto const&  dekseed = *idekseed;
-      _trktools.fillTrkInfo(dekseed,_deti);
+      _infoStructHelper.fillTrkInfo(dekseed,_deti);
       if(_diag > 1){
-	_trktools.fillHitInfo(dekseed, _detsh);
-	_trktools.fillMatInfo(dekseed, _detsm);
+	_infoStructHelper.fillHitInfo(dekseed, _detsh);
+	_infoStructHelper.fillMatInfo(dekseed, _detsm);
       }
-      if(_helices)_trktools.fillHelixInfo(dekseed, _hinfo);
+      if(_helices)_infoStructHelper.fillHelixInfo(dekseed, _hinfo);
       // upstream and muon tracks
       auto iuekseed = findUpstreamTrack(ueC,dekseed);
-      if(iuekseed != ueC.end()) _trktools.fillTrkInfo(*iuekseed,_ueti);
+      if(iuekseed != ueC.end()) _infoStructHelper.fillTrkInfo(*iuekseed,_ueti);
       auto idmukseed = findMuonTrack(dmC,dekseed);
-      if(idmukseed != dmC.end()) _trktools.fillTrkInfo(*idmukseed,_dmti);
+      if(idmukseed != dmC.end()) _infoStructHelper.fillTrkInfo(*idmukseed,_dmti);
       // calorimeter info
       if (dekseed.hasCaloCluster()) {
-	_trktools.fillCaloHitInfo(dekseed,  _detch);
+	_infoStructHelper.fillCaloHitInfo(dekseed,  _detch);
 	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
 	// test
 	if(_debug>0){
@@ -376,7 +374,7 @@ namespace mu2e {
       if (_filltrkqual) {
 	auto const& tqual = tqcol.at(std::distance(deC.begin(),idekseed));
 	_deti._trkqual = tqual.MVAOutput();
-	_trktools.fillTrkQualInfo(tqual, _trkQualInfo);
+	_infoStructHelper.fillTrkQualInfo(tqual, _trkQualInfo);
       }
       // fill mC info associated with this track
       if(_fillmc ) { 
@@ -392,11 +390,10 @@ namespace mu2e {
 	    _trkMCHelper.fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
 	    _trkMCHelper.fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    _trkMCHelper.fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
-	    //	    TrkMCTools::fillGenInfo(trkprimary, _demcgen, _demcpri, primary);
 	    _trkMCHelper.fillGenAndPriInfo(dekseedmc, primary, _demcpri, _demcgen);
 
 	    if (_diag>1) {
-	      TrkMCTools::fillHitInfoMCs(dekseedmc, _detshmc);
+	      _trkMCHelper.fillHitInfoMCs(dekseedmc, _detshmc);
 	    }
 	    break;
 	  }
@@ -406,7 +403,7 @@ namespace mu2e {
 	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
 	    if(iccmca->first == dekseed.caloCluster()){
 	      auto const& ccmc = *(iccmca->second);
-	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_detchmc);
+	      _trkMCHelper.fillCaloClusterInfoMC(ccmc,_detchmc);
 
 	      break;
 	    }
@@ -417,7 +414,7 @@ namespace mu2e {
     if(idekseed != deC.end() || _pempty) {
       // fill general event information
       fillEventInfo(event);
-      _trktools.fillHitCount(rc, _hcnt);
+      _infoStructHelper.fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
       // fill CRV info
       if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);

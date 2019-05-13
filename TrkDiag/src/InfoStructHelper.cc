@@ -2,14 +2,14 @@
 // Namespace for collecting tools used in TrkDiag tree filling
 // Original author: A. Edmonds (November 2018)
 //
-#include "TrkDiag/inc/TrkTools.hh"
+#include "TrkDiag/inc/InfoStructHelper.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 
 #include "TrackerGeom/inc/Tracker.hh"
 #include <cmath>
 
 namespace mu2e {
-  void TrkTools::fillHitCount(StrawHitFlagCollection const& shfC, HitCount& hitcount) {
+  void InfoStructHelper::fillHitCount(StrawHitFlagCollection const& shfC, HitCount& hitcount) {
     hitcount._nsd = shfC.size();
     for(const auto& shf : shfC) {
       if(shf.hasAllProperties(StrawHitFlag::energysel))++hitcount._nesel;
@@ -20,10 +20,9 @@ namespace mu2e {
     }
   }
 
-  void TrkTools::fillHitCount(RecoCount const& nrec, HitCount& hitcount) {
+  void InfoStructHelper::fillHitCount(RecoCount const& nrec, HitCount& hitcount) {
     hitcount._nsd = nrec._nstrawdigi;
     hitcount._ncd = nrec._ncalodigi;
-    hitcount._ncc = nrec._ncaloclust;
     hitcount._ncrvd = nrec._ncrvdigi;
     hitcount._nesel = nrec._nshfesel;
     hitcount._nrsel = nrec._nshfrsel;
@@ -32,7 +31,7 @@ namespace mu2e {
     hitcount._ntpk = nrec._nshftpk;
   }
 
-  void TrkTools::fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo) {
+  void InfoStructHelper::fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo) {
     if(kseed.status().hasAllProperties(TrkFitFlag::kalmanConverged))
       trkinfo._status = 1;
     else if(kseed.status().hasAllProperties(TrkFitFlag::kalmanOK))
@@ -95,7 +94,7 @@ namespace mu2e {
     trkinfo._ent._fitparerr = helixpar(pcov);
   }
 
-  void TrkTools::fillTrkInfoHits(const KalSeed& kseed, TrkInfo& trkinfo) {
+  void InfoStructHelper::fillTrkInfoHits(const KalSeed& kseed, TrkInfo& trkinfo) {
     trkinfo._nhits = 0; trkinfo._nactive = 0; trkinfo._ndouble = 0; trkinfo._ndactive = 0; trkinfo._nnullambig = 0;
     static StrawHitFlag active(StrawHitFlag::active);
     for (auto ihit = kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
@@ -120,7 +119,7 @@ namespace mu2e {
     }
   }
 
-  void TrkTools::fillTrkInfoStraws(const KalSeed& kseed, TrkInfo& trkinfo) {
+  void InfoStructHelper::fillTrkInfoStraws(const KalSeed& kseed, TrkInfo& trkinfo) {
     trkinfo._nmat = 0; trkinfo._nmatactive = 0; trkinfo._radlen = 0.0;
     for (std::vector<TrkStraw>::const_iterator i_straw = kseed.straws().begin(); i_straw != kseed.straws().end(); ++i_straw) {
       ++trkinfo._nmat;
@@ -131,7 +130,7 @@ namespace mu2e {
     }
   }    
 
-  void TrkTools::fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos ) {
+  void InfoStructHelper::fillHitInfo(const KalSeed& kseed, std::vector<TrkStrawHitInfo>& tshinfos ) {
     tshinfos.clear();
     // loop over hits
 
@@ -197,7 +196,7 @@ namespace mu2e {
     }
   }
 
-  void TrkTools::fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos ) {
+  void InfoStructHelper::fillMatInfo(const KalSeed& kseed, std::vector<TrkStrawMatInfo>& tminfos ) {
     tminfos.clear();
     // loop over sites, pick out the materials
       
@@ -219,7 +218,7 @@ namespace mu2e {
     }
   }
 
-  void TrkTools::fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo) {
+  void InfoStructHelper::fillCaloHitInfo(const KalSeed& kseed, TrkCaloHitInfo& tchinfo) {
     if (kseed.hasCaloCluster()) {
       auto const& tch = kseed.caloHit();
       auto const& cc = tch.caloCluster();
@@ -257,7 +256,7 @@ namespace mu2e {
     }
   }
 
-  void TrkTools::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
+  void InfoStructHelper::fillTrkQualInfo(const TrkQual& tqual, TrkQualInfo& trkqualInfo) {
     int n_trkqual_vars = TrkQual::n_vars;
     for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
       TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
@@ -266,7 +265,7 @@ namespace mu2e {
     trkqualInfo._trkqual = tqual.MVAOutput();
   }
 
-  void TrkTools::fillHelixInfo(const KalSeed& kseed, HelixInfo& hinfo) {
+  void InfoStructHelper::fillHelixInfo(const KalSeed& kseed, HelixInfo& hinfo) {
     // navigate down to the HelixSeed
     auto hhh = kseed.helix();
     if(hhh.isNull() && kseed.kalSeed().isNonnull())

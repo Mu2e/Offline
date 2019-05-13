@@ -14,7 +14,7 @@
 #include "art/Utilities/make_tool.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkDiag/inc/TrkTools.hh"
+#include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
@@ -45,7 +45,7 @@ namespace mu2e
 
     MVATools* _trkqualmva;
 
-    TrkTools _trktools;
+    InfoStructHelper _infoStructHelper;
   };
 
   TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
@@ -75,7 +75,7 @@ namespace mu2e
 
 	// fill the hit count variables
 	TrkInfo tinfo;
-	_trktools.fillTrkInfoHits(i_kalSeed, tinfo);
+	_infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
 	trkqual[TrkQual::nactive] = tinfo._nactive;
 	trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
 	trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;

@@ -5,7 +5,6 @@
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
-#include "TrkDiag/inc/TrkTools.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
 #include "TrackerGeom/inc/Tracker.hh"

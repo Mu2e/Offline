@@ -2,8 +2,8 @@
 // Class for help filling Info structs
 // Original author: A. Edmonds (November 2018)
 //
-#ifndef TrkDiag_TrkTools_hh
-#define TrkDiag_TrkTools_hh
+#ifndef TrkDiag_InfoStructHelper_hh
+#define TrkDiag_InfoStructHelper_hh
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
@@ -26,13 +26,13 @@
 #include <vector>
 #include <functional>
 namespace mu2e {
-  class TrkTools {
+  class InfoStructHelper {
 
   private:
     double _bz0;
 
   public:
-    TrkTools() {}
+    InfoStructHelper() {}
 
     void updateSubRun() {
       mu2e::GeomHandle<mu2e::BFieldManager> bfmgr;
