@@ -23,6 +23,7 @@
 #include <vector>
 #include <functional>
 namespace mu2e {
+
   class InfoMCStructHelper {
 
   private:
@@ -36,11 +37,17 @@ namespace mu2e {
 
   public:
 
-    InfoMCStructHelper(fhicl::ParameterSet const& pset) :
-      _spctag(pset.get<art::InputTag>("SimParticleCollectionTag", art::InputTag())),
-      _toff(pset.get<std::vector<art::InputTag> >("TimeMaps")),
-      _mingood(pset.get<double>("MinGoodMomFraction"))
-    {  };
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      
+      fhicl::Atom<art::InputTag> spctag{Name("SimParticleCollectionTag"), Comment("InputTag for the SimParticleCollection"), art::InputTag()};
+      fhicl::Sequence<art::InputTag> toff{Name("TimeMaps"), Comment("List of SimParticle time maps to use")};
+      fhicl::Atom<double> mingood{Name("MinGoodMomFraction"), Comment("Minimum fraction of the true particle's momentum for a digi to be described as \"good\"")};
+    };
+
+    InfoMCStructHelper(const Config& conf) :
+      _spctag(conf.spctag()), _toff(conf.toff()), _mingood(conf.mingood()) {  };
 
     void updateEvent(const art::Event& event) {
       event.getByLabel(_spctag,_spcH);

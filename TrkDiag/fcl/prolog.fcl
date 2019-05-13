@@ -321,7 +321,6 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     FillMCInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : false
-    StrawHitFlagCollection : "SelectRecoMC"
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
