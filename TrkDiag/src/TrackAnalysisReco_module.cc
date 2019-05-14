@@ -95,7 +95,7 @@ namespace mu2e {
       using Comment=fhicl::Comment;
 
       fhicl::Table<BranchConfig> candidate{Name("candidate"), Comment("Candidate physics track info")};
-      fhicl::Sequence<fhicl::Table<BranchConfig> > supplements{Name("supplements"), Comment("Supplemental physics track info (TrkAna will find closest in time to candidate)")};
+      fhicl::OptionalSequence< fhicl::Table<BranchConfig> > supplements{Name("supplements"), Comment("Supplemental physics track info (TrkAna will find closest in time to candidate)")};
       fhicl::Atom<art::InputTag> detqtag{Name("DeTrkQualTag"), Comment("TrkQualCollection for De")};
       fhicl::Atom<art::InputTag> rctag{Name("RecoCountTag"), Comment("RecoCount"), art::InputTag()};
       fhicl::Atom<art::InputTag> cchmtag{Name("CaloCrystalHitMapTag"), Comment("CaloCrystalHitMapTag"), art::InputTag()};
@@ -144,10 +144,12 @@ namespace mu2e {
     HitCount _hcnt;
     // track counting
     TrkCount _tcnt;
+
     // track branches
     TrkInfo _candidateTI;
+    TrkFitInfo _candidateEntTI, _candidateMidTI, _candidateXitTI;
     std::vector<TrkInfo> _supplementTIs;
-    TrkFitInfo _deentti, _demidti, _dexitti;
+
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _strawHitFlagTag;
@@ -195,9 +197,12 @@ namespace mu2e {
     _entvids.push_back(VirtualDetectorId::TT_FrontPA);
     _xitvids.push_back(VirtualDetectorId::TT_Back);
 
-    for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
-      TrkInfo ti;
-      _supplementTIs.push_back(ti);
+    std::vector<BranchConfig> supps;
+    if (_conf.supplements(supps)) {
+      for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	TrkInfo ti;
+	_supplementTIs.push_back(ti);
+      }
     }
   }
 
@@ -213,10 +218,11 @@ namespace mu2e {
 // track counting branch
     _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
-    _trkana->Branch(_conf.candidate().branch().c_str(),&_candidateTI,TrkInfo::leafnames().c_str());
-    _trkana->Branch("deent",&_deentti,TrkFitInfo::leafnames().c_str());
-    _trkana->Branch("demid",&_demidti,TrkFitInfo::leafnames().c_str());
-    _trkana->Branch("dexit",&_dexitti,TrkFitInfo::leafnames().c_str());
+    std::string branch = _conf.candidate().branch();
+    _trkana->Branch(branch.c_str(),&_candidateTI,TrkInfo::leafnames().c_str());
+    _trkana->Branch((branch+"ent").c_str(),&_candidateEntTI,TrkFitInfo::leafnames().c_str());
+    _trkana->Branch((branch+"mid").c_str(),&_candidateMidTI,TrkFitInfo::leafnames().c_str());
+    _trkana->Branch((branch+"xit").c_str(),&_candidateXitTI,TrkFitInfo::leafnames().c_str());
     //
     _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
 // optionally add detailed branches
@@ -225,9 +231,12 @@ namespace mu2e {
       _trkana->Branch("detsm",&_detsm);
     }
     // add branches for supplement tracks
-    for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
-      const auto& supplementConfig = _conf.supplements().at(i_supplement);
-      _trkana->Branch(supplementConfig.branch().c_str(),&_supplementTIs.at(i_supplement),TrkInfo::leafnames().c_str());
+    std::vector<BranchConfig> supps;
+    if (_conf.supplements(supps)) {
+      for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	const auto& supplementConfig = supps.at(i_supplement);
+	_trkana->Branch(supplementConfig.branch().c_str(),&_supplementTIs.at(i_supplement),TrkInfo::leafnames().c_str());
+      }
     }
 // trigger info.  Actual names should come from the BeginRun object FIXME
     if(_conf.filltrig())_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
@@ -306,11 +315,14 @@ namespace mu2e {
 
     // get the supplement track collections
     std::vector<KalSeedCollection> supplementKSCs;
-    for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
-      art::Handle<KalSeedCollection> i_handle;
-      art::InputTag i_tag = _conf.supplements().at(i_supplement).input();
-      event.getByLabel(i_tag, i_handle);
-      supplementKSCs.push_back(*i_handle);
+    std::vector<BranchConfig> supps;
+    if (_conf.supplements(supps)) {
+      for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	art::Handle<KalSeedCollection> i_handle;
+	art::InputTag i_tag = supps.at(i_supplement).input();
+	event.getByLabel(i_tag, i_handle);
+	supplementKSCs.push_back(*i_handle);
+      }
     }
     art::Handle<CaloCrystalHitRemapping> cchmH;
     event.getByLabel(_conf.cchmtag(),cchmH);
@@ -352,9 +364,9 @@ namespace mu2e {
       auto const& tqual = tqcol.at(i_kseed);
 
       _infoStructHelper.fillTrkInfo(candidateKS,_candidateTI);
-      _infoStructHelper.fillTrkFitInfo(candidateKS,_deentti,entpos);
-      _infoStructHelper.fillTrkFitInfo(candidateKS,_demidti,midpos);
-      _infoStructHelper.fillTrkFitInfo(candidateKS,_dexitti,xitpos);
+      _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateEntTI,entpos);
+      _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateMidTI,midpos);
+      _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateXitTI,xitpos);
 
       if(_conf.diag() > 1){ // want hit level info
 	_infoStructHelper.fillHitInfo(candidateKS, _detsh);
@@ -366,12 +378,15 @@ namespace mu2e {
       }
 
       // go through the supplement collections and find the track nearest to the candidate
-      for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
-	const auto& i_supplementKSC = supplementKSCs.at(i_supplement);
-	auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
-	if(i_supplementKS != i_supplementKSC.end()) { 
-	  auto& i_supplementTI = _supplementTIs.at(i_supplement);
-	  _infoStructHelper.fillTrkInfo(*i_supplementKS,i_supplementTI);
+      std::vector<BranchConfig> supps;
+      if (_conf.supplements(supps)) {
+	for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	  const auto& i_supplementKSC = supplementKSCs.at(i_supplement);
+	  auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
+	  if(i_supplementKS != i_supplementKSC.end()) { 
+	    auto& i_supplementTI = _supplementTIs.at(i_supplement);
+	    _infoStructHelper.fillTrkInfo(*i_supplementKS,i_supplementTI);
+	  }
 	}
       }
 
@@ -523,9 +538,9 @@ namespace mu2e {
     _hcnt.reset();
     _tcnt.reset();
     _candidateTI.reset();
-    _deentti.reset();
-    _demidti.reset();
-    _dexitti.reset();
+    _candidateEntTI.reset();
+    _candidateMidTI.reset();
+    _candidateXitTI.reset();
     for (auto& i_supplementTI : _supplementTIs) {
       i_supplementTI.reset();
     }
