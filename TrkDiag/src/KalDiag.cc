@@ -224,7 +224,7 @@ namespace mu2e
       double entlen = min(firsthitfltlen,lasthitfltlen);
       TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1);
       // compute the tracker entrance fit information
-      fillTrkFitInfo(krep,entlen,trkinfo._ent);
+      //      fillTrkFitInfo(krep,entlen,trkinfo._ent); // no longer stored in TrkInfo
     } else {
       // failed fit
       trkinfo._status = -krep->fitStatus().failure();
@@ -266,6 +266,21 @@ namespace mu2e
     }
 
  }
+
+  void KalDiag::fillTrkFitInfo(const KalRep* krep, TrkFitInfo& trkfitinfo) const {
+    GeomHandle<VirtualDetector> vdg;
+    GeomHandle<DetectorSystem> det;
+    // get the fit at the entrance to the tracker
+    Hep3Vector entpos = det->toDetector(vdg->getGlobal(VirtualDetectorId::TT_FrontPA));
+    double zent = entpos.z();
+    // we don't know which way the fit is going: try both, and pick the one with the smallest flightlength
+    double firsthitfltlen = krep->lowFitRange();
+    double lasthitfltlen = krep->hiFitRange();
+    double entlen = min(firsthitfltlen,lasthitfltlen);
+    TrkHelixUtils::findZFltlen(krep->traj(),zent,entlen,0.1);
+    // compute the tracker entrance fit information
+    fillTrkFitInfo(krep,entlen,trkfitinfo);
+  }
 
   void KalDiag::fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const {
     //    trkfitinfo._fltlen = fltlen;
