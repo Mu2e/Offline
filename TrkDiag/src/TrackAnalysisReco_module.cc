@@ -88,6 +88,7 @@ namespace mu2e {
 
       fhicl::Atom<art::InputTag> input{Name("input"), Comment("KalSeedCollection input tag")};
       fhicl::Atom<std::string> branch{Name("branch"), Comment("Name of output branch")};
+      fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag")};
     };
 
     struct Config {
@@ -96,7 +97,6 @@ namespace mu2e {
 
       fhicl::Table<BranchConfig> candidate{Name("candidate"), Comment("Candidate physics track info")};
       fhicl::OptionalSequence< fhicl::Table<BranchConfig> > supplements{Name("supplements"), Comment("Supplemental physics track info (TrkAna will find closest in time to candidate)")};
-      fhicl::Atom<art::InputTag> detqtag{Name("DeTrkQualTag"), Comment("TrkQualCollection for De")};
       fhicl::Atom<art::InputTag> rctag{Name("RecoCountTag"), Comment("RecoCount"), art::InputTag()};
       fhicl::Atom<art::InputTag> cchmtag{Name("CaloCrystalHitMapTag"), Comment("CaloCrystalHitMapTag"), art::InputTag()};
       fhicl::Atom<art::InputTag> meanPBItag{Name("MeanBeamIntensity"), Comment("Tag for MeanBeamIntensity"), art::InputTag()};
@@ -148,6 +148,7 @@ namespace mu2e {
     // track branches
     TrkInfo _candidateTI;
     TrkFitInfo _candidateEntTI, _candidateMidTI, _candidateXitTI;
+    TrkQualCollection _candidateTQC;
     std::vector<TrkInfo> _supplementTIs;
 
     // detailed info branches for the signal candidate
@@ -174,7 +175,6 @@ namespace mu2e {
     // helper functions
     void fillEventInfo(const art::Event& event);
     void fillTriggerBits(const art::Event& event,std::string const& process);
-//    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
     KSCIter findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate);
     // CRV info
@@ -217,18 +217,18 @@ namespace mu2e {
     _trkana->Branch("hcnt.",&_hcnt,HitCount::leafnames().c_str());
 // track counting branch
     _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
-// add primary track (downstream electron) branch
+    // add candidate track branches
     std::string branch = _conf.candidate().branch();
     _trkana->Branch(branch.c_str(),&_candidateTI,TrkInfo::leafnames().c_str());
     _trkana->Branch((branch+"ent").c_str(),&_candidateEntTI,TrkFitInfo::leafnames().c_str());
     _trkana->Branch((branch+"mid").c_str(),&_candidateMidTI,TrkFitInfo::leafnames().c_str());
     _trkana->Branch((branch+"xit").c_str(),&_candidateXitTI,TrkFitInfo::leafnames().c_str());
     //
-    _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
+    _trkana->Branch((branch+"tch").c_str(),&_detch,TrkCaloHitInfo::leafnames().c_str());
 // optionally add detailed branches
     if(_conf.diag() > 1){
-      _trkana->Branch("detsh",&_detsh);
-      _trkana->Branch("detsm",&_detsm);
+      _trkana->Branch((branch+"tsh").c_str(),&_detsh);
+      _trkana->Branch((branch+"tsm").c_str(),&_detsm);
     }
     // add branches for supplement tracks
     std::vector<BranchConfig> supps;
@@ -247,18 +247,21 @@ namespace mu2e {
    if(_conf.helices()) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
 // optionally add MC truth branches
     if(_conf.fillmc()){
-      _trkana->Branch("demc",&_demc,TrkInfoMC::leafnames().c_str());
-      _trkana->Branch("demcgen",&_demcgen,GenInfo::leafnames().c_str());
-      _trkana->Branch("demcpri",&_demcpri,GenInfo::leafnames().c_str());
-      _trkana->Branch("demcent",&_demcent,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch("demcmid",&_demcmid,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch((branch+"mc").c_str(),&_demc,TrkInfoMC::leafnames().c_str());
+      _trkana->Branch((branch+"mcgen").c_str(),&_demcgen,GenInfo::leafnames().c_str());
+      _trkana->Branch((branch+"mcpri").c_str(),&_demcpri,GenInfo::leafnames().c_str());
+      _trkana->Branch((branch+"mcent").c_str(),&_demcent,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch((branch+"mcmid").c_str(),&_demcmid,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch((branch+"mcxit").c_str(),&_demcxit,TrkInfoMCStep::leafnames().c_str());
       if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
-      _trkana->Branch("detchmc",&_detchmc,CaloClusterInfoMC::leafnames().c_str());
-      if(_conf.diag() > 1)_trkana->Branch("detshmc",&_detshmc);
+      _trkana->Branch((branch+"tchmc").c_str(),&_detchmc,CaloClusterInfoMC::leafnames().c_str());
+      if(_conf.diag() > 1)_trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
     }
-    if (_conf.filltrkqual()) {
-      _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
+    std::string tq;
+    if (_conf.candidate().trkqual(tq)) {
+      if (_conf.filltrkqual()) {
+	_trkana->Branch((branch+"trkqual").c_str(), &_trkQualInfo, TrkQualInfo::leafnames().c_str());
+      }
     }
   }
 
@@ -313,6 +316,16 @@ namespace mu2e {
     auto const& candidateKSC = *candidateKSCH;
     _tcnt._nde = candidateKSC.size();
 
+    art::Handle<TrkQualCollection> candidateTQCH;
+    std::string tqtag;
+    if (_conf.candidate().trkqual(tqtag)) {
+      event.getByLabel(tqtag, candidateTQCH);
+      _candidateTQC = *candidateTQCH;
+    }
+    if (_candidateTQC.size()>0 && _candidateTQC.size() != candidateKSC.size()) {
+      throw cet::exception("TrackAnalysis") << "TrkQualCollection and candidate KalSeedCollection are of different sizes (" << _candidateTQC.size() << " and " << candidateKSC.size() << " respectively" << std::endl;
+    }
+
     // get the supplement track collections
     std::vector<KalSeedCollection> supplementKSCs;
     std::vector<BranchConfig> supps;
@@ -336,13 +349,6 @@ namespace mu2e {
       float count  = rc._shthist.binContents(ibin);
       _tht->Fill(time,count);
     }
-    // TrkQualCollection
-    art::Handle<TrkQualCollection> trkQualHandle;
-    event.getByLabel(_conf.detqtag(), trkQualHandle);
-    TrkQualCollection const& tqcol = *trkQualHandle;
-    if (tqcol.size() != candidateKSC.size()) {
-      throw cet::exception("TrackAnalysis") << "TrkQualCollection and candidate KalSeedCollection are of different sizes (" << tqcol.size() << " and " << candidateKSC.size() << " respectively" << std::endl;
-    }
     // trigger information
     if(_conf.filltrig()){
       fillTriggerBits(event,process);
@@ -361,7 +367,6 @@ namespace mu2e {
     // loop through all tracks
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
       auto const& candidateKS = candidateKSC.at(i_kseed);
-      auto const& tqual = tqcol.at(i_kseed);
 
       _infoStructHelper.fillTrkInfo(candidateKS,_candidateTI);
       _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateEntTI,entpos);
@@ -415,9 +420,12 @@ namespace mu2e {
 	  }
 	}
       }
-      if (_conf.filltrkqual()) {
+      if (_candidateTQC.size()>0) {
+	auto const& tqual = _candidateTQC.at(i_kseed);
 	_candidateTI._trkqual = tqual.MVAOutput();
-	_infoStructHelper.fillTrkQualInfo(tqual, _trkQualInfo);
+	if (_conf.filltrkqual()) {
+	  _infoStructHelper.fillTrkQualInfo(tqual, _trkQualInfo);
+	}
       }
       // fill mC info associated with this track
       if(_conf.fillmc() ) { 
