@@ -82,13 +82,20 @@ namespace mu2e {
 
   public:
 
+    struct BranchConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> input{Name("input"), Comment("KalSeedCollection input tag")};
+      fhicl::Atom<std::string> branch{Name("branch"), Comment("Name of output branch")};
+    };
+
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Atom<art::InputTag> detag{Name("DeTag"), Comment("KalSeedCollection for De")};
-      fhicl::Atom<art::InputTag> uetag{Name("UeTag"), Comment("KalSeedCollection for Ue")};
-      fhicl::Atom<art::InputTag> dmtag{Name("DmuTag"), Comment("KalSeedCollection for Dmu")};
+      fhicl::Table<BranchConfig> candidate{Name("candidate"), Comment("Candidate physics track info")};
+      fhicl::Sequence<fhicl::Table<BranchConfig> > supplements{Name("supplements"), Comment("Supplemental physics track info (TrkAna will find closest in time to candidate)")};
       fhicl::Atom<art::InputTag> detqtag{Name("DeTrkQualTag"), Comment("TrkQualCollection for De")};
       fhicl::Atom<art::InputTag> rctag{Name("RecoCountTag"), Comment("RecoCount"), art::InputTag()};
       fhicl::Atom<art::InputTag> cchmtag{Name("CaloCrystalHitMapTag"), Comment("CaloCrystalHitMapTag"), art::InputTag()};
@@ -138,7 +145,8 @@ namespace mu2e {
     // track counting
     TrkCount _tcnt;
     // track branches
-    TrkInfo _deti, _ueti, _dmti;
+    TrkInfo _candidateTI;
+    std::vector<TrkInfo> _supplementTIs;
     TrkFitInfo _deentti, _demidti, _dexitti;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
@@ -166,9 +174,7 @@ namespace mu2e {
     void fillTriggerBits(const art::Event& event,std::string const& process);
 //    TrkQualCollection const& tqcol, TrkQual& tqual);
     void resetBranches();
-    KSCIter findBestRecoTrack(KalSeedCollection const& kcol);
-    KSCIter findUpstreamTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
-    KSCIter findMuonTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
+    KSCIter findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
     HelixInfo _hinfo;
@@ -188,6 +194,11 @@ namespace mu2e {
     _entvids.push_back(VirtualDetectorId::TT_FrontHollow);
     _entvids.push_back(VirtualDetectorId::TT_FrontPA);
     _xitvids.push_back(VirtualDetectorId::TT_Back);
+
+    for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
+      TrkInfo ti;
+      _supplementTIs.push_back(ti);
+    }
   }
 
   void TrackAnalysisReco::beginJob( ){
@@ -202,7 +213,7 @@ namespace mu2e {
 // track counting branch
     _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
 // add primary track (downstream electron) branch
-    _trkana->Branch("de.",&_deti,TrkInfo::leafnames().c_str());
+    _trkana->Branch(_conf.candidate().branch().c_str(),&_candidateTI,TrkInfo::leafnames().c_str());
     _trkana->Branch("deent",&_deentti,TrkFitInfo::leafnames().c_str());
     _trkana->Branch("demid",&_demidti,TrkFitInfo::leafnames().c_str());
     _trkana->Branch("dexit",&_dexitti,TrkFitInfo::leafnames().c_str());
@@ -213,9 +224,11 @@ namespace mu2e {
       _trkana->Branch("detsh",&_detsh);
       _trkana->Branch("detsm",&_detsm);
     }
-// add branches for other tracks
-    _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
-    _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
+    // add branches for supplement tracks
+    for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
+      const auto& supplementConfig = _conf.supplements().at(i_supplement);
+      _trkana->Branch(supplementConfig.branch().c_str(),&_supplementTIs.at(i_supplement),TrkInfo::leafnames().c_str());
+    }
 // trigger info.  Actual names should come from the BeginRun object FIXME
     if(_conf.filltrig())_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
 // calorimeter information for the downstream electron track
@@ -251,10 +264,17 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
-    // update timing maps
+    // update timing maps for MC
     if(_conf.fillmc()){
       _infoMCStructHelper.updateEvent(event);
     }
+
+    // get VD positions
+    mu2e::GeomHandle<VirtualDetector> vdHandle;
+    mu2e::GeomHandle<DetectorSystem> det;
+    const XYZVec& entpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_entvids.begin())));
+    const XYZVec& midpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_midvids.begin())));
+    const XYZVec& xitpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_xitvids.begin())));
 
     // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
@@ -277,22 +297,25 @@ namespace mu2e {
     }
 
     // Get handle to downstream electron track collection.  This also creates the final set of hit flags
-    art::Handle<KalSeedCollection> deH;
-    event.getByLabel(_conf.detag(),deH);
+    art::Handle<KalSeedCollection> candidateKSCH;
+    event.getByLabel(_conf.candidate().input(),candidateKSCH);
     // get the provenance from this for trigger processing
-    std::string const& process = deH.provenance()->processName();
-    // std::cout << _conf.detag() << std::endl; //teste
-    auto const& deC = *deH;
-    // find downstream muons and upstream electrons
-    art::Handle<KalSeedCollection> ueH;
-    event.getByLabel(_conf.uetag(),ueH);
-    auto const& ueC = *ueH;
-    art::Handle<KalSeedCollection> dmH;
-    event.getByLabel(_conf.dmtag(),dmH);
-    auto const& dmC = *dmH;
+    std::string const& process = candidateKSCH.provenance()->processName();
+    auto const& candidateKSC = *candidateKSCH;
+    _tcnt._nde = candidateKSC.size();
+
+    // get the supplement track collections
+    std::vector<KalSeedCollection> supplementKSCs;
+    for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
+      art::Handle<KalSeedCollection> i_handle;
+      art::InputTag i_tag = _conf.supplements().at(i_supplement).input();
+      event.getByLabel(i_tag, i_handle);
+      supplementKSCs.push_back(*i_handle);
+    }
     art::Handle<CaloCrystalHitRemapping> cchmH;
     event.getByLabel(_conf.cchmtag(),cchmH);
     auto const& cchmap = *cchmH;
+
     // general reco counts
     auto rch = event.getValidHandle<RecoCount>(_conf.rctag());
     auto const& rc = *rch;
@@ -305,6 +328,9 @@ namespace mu2e {
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_conf.detqtag(), trkQualHandle);
     TrkQualCollection const& tqcol = *trkQualHandle;
+    if (tqcol.size() != candidateKSC.size()) {
+      throw cet::exception("TrackAnalysis") << "TrkQualCollection and candidate KalSeedCollection are of different sizes (" << tqcol.size() << " and " << candidateKSC.size() << " respectively" << std::endl;
+    }
     // trigger information
     if(_conf.filltrig()){
       fillTriggerBits(event,process);
@@ -321,40 +347,44 @@ namespace mu2e {
     // reset
     resetBranches();
     // loop through all tracks
-    auto idekseed = findBestRecoTrack(deC);
-    // process the best track
-    if (idekseed != deC.end()) {
-      auto const&  dekseed = *idekseed;
-      _infoStructHelper.fillTrkInfo(dekseed,_deti);
-      // TODO: get entpos from virtualdetector
-      mu2e::GeomHandle<VirtualDetector> vdHandle;
-      mu2e::GeomHandle<DetectorSystem> det;
-      const XYZVec& entpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_entvids.begin())));
-      const XYZVec& midpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_midvids.begin())));
-      const XYZVec& xitpos = XYZVec(det->toDetector(vdHandle->getGlobal(*_xitvids.begin())));
-      _infoStructHelper.fillTrkFitInfo(dekseed,_deentti,entpos);
-      _infoStructHelper.fillTrkFitInfo(dekseed,_demidti,midpos);
-      _infoStructHelper.fillTrkFitInfo(dekseed,_dexitti,xitpos);
-      if(_conf.diag() > 1){
-	_infoStructHelper.fillHitInfo(dekseed, _detsh);
-	_infoStructHelper.fillMatInfo(dekseed, _detsm);
+    for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
+      auto const& candidateKS = candidateKSC.at(i_kseed);
+      auto const& tqual = tqcol.at(i_kseed);
+
+      _infoStructHelper.fillTrkInfo(candidateKS,_candidateTI);
+      _infoStructHelper.fillTrkFitInfo(candidateKS,_deentti,entpos);
+      _infoStructHelper.fillTrkFitInfo(candidateKS,_demidti,midpos);
+      _infoStructHelper.fillTrkFitInfo(candidateKS,_dexitti,xitpos);
+
+      if(_conf.diag() > 1){ // want hit level info
+	_infoStructHelper.fillHitInfo(candidateKS, _detsh);
+	_infoStructHelper.fillMatInfo(candidateKS, _detsm);
       }
-      if(_conf.helices())_infoStructHelper.fillHelixInfo(dekseed, _hinfo);
-      // upstream and muon tracks
-      auto iuekseed = findUpstreamTrack(ueC,dekseed);
-      if(iuekseed != ueC.end()) _infoStructHelper.fillTrkInfo(*iuekseed,_ueti);
-      auto idmukseed = findMuonTrack(dmC,dekseed);
-      if(idmukseed != dmC.end()) _infoStructHelper.fillTrkInfo(*idmukseed,_dmti);
+
+      if(_conf.helices()){
+	_infoStructHelper.fillHelixInfo(candidateKS, _hinfo);
+      }
+
+      // go through the supplement collections and find the track nearest to the candidate
+      for (size_t i_supplement = 0; i_supplement < _conf.supplements().size(); ++i_supplement) {
+	const auto& i_supplementKSC = supplementKSCs.at(i_supplement);
+	auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
+	if(i_supplementKS != i_supplementKSC.end()) { 
+	  auto& i_supplementTI = _supplementTIs.at(i_supplement);
+	  _infoStructHelper.fillTrkInfo(*i_supplementKS,i_supplementTI);
+	}
+      }
+
       // calorimeter info
-      if (dekseed.hasCaloCluster()) {
-	_infoStructHelper.fillCaloHitInfo(dekseed,  _detch);
+      if (candidateKS.hasCaloCluster()) {
+	_infoStructHelper.fillCaloHitInfo(candidateKS,  _detch);
 	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
 	// test
 	if(_conf.debug()>0){
-	  auto const& tch = dekseed.caloHit();
+	  auto const& tch = candidateKS.caloHit();
 	  auto const& cc = tch.caloCluster();
 	  std::cout << "CaloCluster has energy " << cc->energyDep()
-	  << " +- " << cc->energyDepErr() << std::endl;
+		    << " +- " << cc->energyDepErr() << std::endl;
 	  for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
 	    // map the crystal ptr to the reduced collection
 	    auto ifnd = cchmap.find(cchptr);
@@ -371,18 +401,17 @@ namespace mu2e {
 	}
       }
       if (_conf.filltrkqual()) {
-	auto const& tqual = tqcol.at(std::distance(deC.begin(),idekseed));
-	_deti._trkqual = tqual.MVAOutput();
+	_candidateTI._trkqual = tqual.MVAOutput();
 	_infoStructHelper.fillTrkQualInfo(tqual, _trkQualInfo);
       }
       // fill mC info associated with this track
       if(_conf.fillmc() ) { 
 	const PrimaryParticle& primary = *pph;
 	// use Assns interface to find the associated KalSeedMC; this uses ptrs
-	auto dekptr = art::Ptr<KalSeed>(deH,std::distance(deC.begin(),idekseed));
+	auto dekptr = art::Ptr<KalSeed>(candidateKSCH,i_kseed);
 	//	std::cout << "KalSeedMCMatch has " << ksmcah->size() << " entries" << std::endl;
 	for(auto iksmca = ksmcah->begin(); iksmca!= ksmcah->end(); iksmca++){
-	//	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
+	  //	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
 	    _infoMCStructHelper.fillTrkInfoMC(dekseedmc, _demc);
@@ -390,28 +419,26 @@ namespace mu2e {
 	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
 	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
 	    _infoMCStructHelper.fillGenAndPriInfo(dekseedmc, primary, _demcpri, _demcgen);
-
+	    
 	    if (_conf.diag()>1) {
 	      _infoMCStructHelper.fillHitInfoMCs(dekseedmc, _detshmc);
 	    }
 	    break;
 	  }
 	}
-	if (dekseed.hasCaloCluster()) {
+	if (candidateKS.hasCaloCluster()) {
 	  // fill MC truth of the associated CaloCluster 
 	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
-	    if(iccmca->first == dekseed.caloCluster()){
+	    if(iccmca->first == candidateKS.caloCluster()){
 	      auto const& ccmc = *(iccmca->second);
 	      _infoMCStructHelper.fillCaloClusterInfoMC(ccmc,_detchmc);
-
+	      
 	      break;
 	    }
 	  }
 	}
       }
-    }
-    if(idekseed != deC.end() || _conf.pempty()) {
-      // fill general event information
+
       fillEventInfo(event);
       _infoStructHelper.fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
@@ -420,58 +447,28 @@ namespace mu2e {
       // fill this row in the TTree
       _trkana->Fill();
     }
-  }
 
-  KSCIter TrackAnalysisReco::findBestRecoTrack(KalSeedCollection const& kcol) {
-    KSCIter retval = kcol.end();
-    _tcnt._nde = kcol.size();
-    // find the higest momentum track; should be making some quality cuts too FIXME!
-    double max_momentum = -9999;
-    for(auto i_kseed=kcol.begin(); i_kseed != kcol.end(); ++i_kseed) {
-      auto const& kseed = *i_kseed; 
-      double this_momentum = kseed.segments().begin()->mom();
-      if (this_momentum > max_momentum) {
-	retval = i_kseed;
-	max_momentum = this_momentum;
-      }
+    if(_conf.pempty()) {
+      // fill general event information
+      fillEventInfo(event);
+      _infoStructHelper.fillHitCount(rc, _hcnt);
+      _trkana->Fill();
     }
-    return retval;
   }
 
-  KSCIter TrackAnalysisReco::findUpstreamTrack(KalSeedCollection const& kcol,const KalSeed& dekseed) {
+  KSCIter TrackAnalysisReco::findSupplementTrack(KalSeedCollection const& kcol,const KalSeed& candidate) {
     KSCIter retval = kcol.end();
-    _tcnt._nue = kcol.size();
-    // loop over upstream tracks and pick the best one (closest to momentum) that's earlier than the downstream track
-    double demom = dekseed.segments().begin()->mom();
-    double closest_momentum = 0;
+
+    // loop over supplement tracks and find the closest
+    double candidate_time = candidate.t0().t0();
+    double closest_time = 0;
     for(auto i_kseed=kcol.begin(); i_kseed != kcol.end(); i_kseed++) {
-      if(i_kseed->t0().t0() < dekseed.t0().t0() - _conf.minReflectTime() &&
-	 i_kseed->t0().t0() > dekseed.t0().t0() - _conf.maxReflectTime()) {
-	double this_ue_momentum = i_kseed->segments().begin()->mom();
-// choose the upstream track whose parameters best match the downstream track.
-// Currently compare momentum at the tracker center, this should be done at the tracker entrance
-// and should compare more parameters FIXME!
-	if( fabs(this_ue_momentum-demom) < fabs(closest_momentum-demom)) {
-	  retval = i_kseed;
-	}
-      }
-    }
-    return retval;
-  }
-
-  KSCIter TrackAnalysisReco::findMuonTrack(KalSeedCollection const& kcol,const KalSeed& dekseed) {
-    KSCIter retval = kcol.end();
-    _tcnt._ndm = kcol.size();
-// loop over muon tracks and pick the one with the largest hit overlap
-    unsigned maxnover(0);
-    for(auto i_kseed = kcol.begin(); i_kseed != kcol.end(); i_kseed++) {
-      unsigned nover = _tcomp.nOverlap(*i_kseed,dekseed);
-      if(nover > maxnover){
-	maxnover = nover;
+      double supplement_time = i_kseed->t0().t0();
+      if( fabs(supplement_time - candidate_time) < fabs(closest_time-candidate_time)) {
+	closest_time = supplement_time;
 	retval = i_kseed;
       }
     }
-    _tcnt._ndmo = maxnover;
     return retval;
   }
 
@@ -525,12 +522,13 @@ namespace mu2e {
     _einfo.reset();
     _hcnt.reset();
     _tcnt.reset();
-    _deti.reset();
+    _candidateTI.reset();
     _deentti.reset();
     _demidti.reset();
     _dexitti.reset();
-    _ueti.reset();
-    _dmti.reset();
+    for (auto& i_supplementTI : _supplementTIs) {
+      i_supplementTI.reset();
+    }
     _hinfo.reset();
     _demc.reset();
     _uemc.reset();

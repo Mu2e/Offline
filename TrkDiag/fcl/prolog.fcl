@@ -306,11 +306,15 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 
 # Analysis from reco output: beta protype!
 # DeM only for now
+  DeM : { input : "KFFDeM" branch : "de" }
+  UeM : { input : "KFFUeM" branch : "ue" }
+  DmuM : { input : "KFFDmuM" branch : "dm" }
+  DeP : { input : "KFFDeP" branch : "de" }
+  UeP : { input : "KFFUeP" branch : "ue" }
+  DmuP : { input : "KFFDmuP" branch : "dm" }
+
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
-    DeTag : "KFFDeM"
-    UeTag : "KFFUeM"
-    DmuTag : "KFFDmuM"
     DeTrkQualTag : "TrkQualDeM"
     RecoCountTag : "SelectRecoMC"
     CaloCrystalHitMapTag : "SelectRecoMC"
@@ -345,12 +349,15 @@ TrkAnaReco : {
    }
 
    analyzers : {
-      TrkAnaNeg : { @table::TrackAnalysisReco }
+      TrkAnaNeg : { @table::TrackAnalysisReco 
+      		    candidate : @local::DeM
+		    supplements : [ @local::UeM, @local::DmuM ]
+		  }
       TrkAnaPos : { @table::TrackAnalysisReco
-  	      	    DeTag : "KFFDeP"
-  		    UeTag : "KFFUeP"
-  		    DmuTag : "KFFDmuP"
-		    DeTrkQualTag : "TrkQualDeP" }
+      		    candidate : @local::DeP
+		    supplements : [ @local::UeP, @local::DmuP ]
+		    DeTrkQualTag : "TrkQualDeP" 
+		  }
 
       genCountLogger : @local::TrkAna.analyzers.genCountLogger
    }
