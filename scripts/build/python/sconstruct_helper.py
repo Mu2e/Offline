@@ -142,7 +142,7 @@ def mergeFlags(mu2eOpts):
 def exportedOSEnvironment():
     osenv = {}
     for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',
-                 'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR' ]:
+                 'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_FQ_DIR' ]:
         if var in os.environ.keys():
             osenv[var] = os.environ[var]
     return osenv

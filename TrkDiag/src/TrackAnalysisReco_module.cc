@@ -36,6 +36,7 @@
 #include "TBits.h"
 #include "TTree.h"
 #include "TProfile.h"
+#include "TH1F.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -126,6 +127,7 @@ namespace mu2e {
     // main TTree
     TTree* _trkana;
     TProfile* _tht; // profile plot of track hit times: just an example
+    TH1F* _trigbits; // plot of trigger bits: just an example
     // general event info branch
     double _meanPBI;
     EventInfo _einfo;
@@ -143,7 +145,7 @@ namespace mu2e {
     CaloClusterInfoMC _detchmc, _uetchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
-    unsigned _trigbits;
+    unsigned _trigword;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
@@ -171,7 +173,7 @@ namespace mu2e {
     std::vector<CrvHitInfoMC> _crvinfomc;
     // SimParticle timing offset
     SimParticleTimeOffset _toff;
-};
+  };
 
   TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
@@ -237,7 +239,10 @@ namespace mu2e {
     _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
     _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
 // trigger info.  Actual names should come from the BeginRun object FIXME
-    if(_filltrig)_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
+    if(_filltrig){
+      _trkana->Branch("trigbits",&_trigword,"trigbits/i");
+      _trigbits = tfs->make<TH1F>("trigbits","Trigger Bits",16,-0.5,15.5);
+    }
 // calorimeter information for the downstream electron track
 // CRV info
    if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
@@ -383,17 +388,19 @@ namespace mu2e {
 	  auto const& cc = tch.caloCluster();
 	  std::cout << "CaloCluster has energy " << cc->energyDep()
 	  << " +- " << cc->energyDepErr() << std::endl;
-	  for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
-	    // map the crystal ptr to the reduced collection
-	    auto ifnd = cchmap.find(cchptr);
-	    if(ifnd != cchmap.end()){
-	      auto const& scchptr = ifnd->second;
-	      if(scchptr.isNonnull())
-		std::cout << "CaloCrystalHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
-	      else
-		std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
-	    } else {
-	      std::cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	  if(_debug>1){
+	    for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
+	      // map the crystal ptr to the reduced collection
+	      auto ifnd = cchmap.find(cchptr);
+	      if(ifnd != cchmap.end()){
+		auto const& scchptr = ifnd->second;
+		if(scchptr.isNonnull())
+		  std::cout << "CaloCrystalHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
+		else
+		  std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
+	      } else {
+		std::cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	      }
 	    }
 	  }
 	}
@@ -547,22 +554,35 @@ namespace mu2e {
 
   void TrackAnalysisReco::fillTriggerBits(const art::Event& event,std::string const& process) {
     //get the TriggerResult from the process that created the KalFinalFit downstream collection
+    static const std::string tname("_trigger"); // all trigger paths have this in the name
+    static bool first(true);
+    static std::array<bool,16> istrig = {false};
     art::InputTag const tag{Form("TriggerResults::%s", process.c_str())};
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults* trigResults = trigResultsH.product();
-    _trigbits = 0;
-    for(size_t id=0;id < trigResults->size(); ++id){
-      if (trigResults->accept(id)) {
-	_trigbits |= 1 << id;
+    TriggerResultsNavigator tnav(trigResults);
+   _trigword = 0;
+   // setup the bin labels
+    if(first){ // is there a better way to do this?  I think not
+      for(size_t id=0;id < trigResults->size(); ++id){
+	if (tnav.getTrigPath(id).find(tname) != std::string::npos) {
+	  _trigbits->GetXaxis()->SetBinLabel(id+1,tnav.getTrigPath(id).c_str());
+	  istrig[id] =true;
+	}
       }
+      first = false;
     }
-    if(_debug > 0){
-      cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines"
-      << " trigger bits word " << _trigbits << endl;
-      TriggerResultsNavigator tnav(trigResults);
-      tnav.print();
+
+    for(size_t id=0;id < trigResults->size(); ++id){
+      if(trigResults->accept(id) && istrig[id]) {
+	_trigbits->Fill(id);
+	_trigword |= 1 << id;
+      }
+      if(_debug > 1)
+	cout << "Trigger path " << tnav.getTrigPath(id) << " returns " << trigResults->accept(id) << endl;
     }
-    
+    if(_debug > 0)
+      cout << "Trigger word for process " << process << " with " << trigResults->size() << " Lines = "  << _trigword << endl;
   }
 
   void TrackAnalysisReco::resetBranches() {
