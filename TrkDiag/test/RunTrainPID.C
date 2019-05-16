@@ -4,10 +4,10 @@
 #include "TChain.h"
 {
   TChain* cetree = new TChain();
-  cetree->Add("/data/TARCeE.root/TrkAnaNeg/trkana");
+  cetree->Add("/data/TARtest.root/TrkAnaNeg/trkana");
   TChain* mutree = new TChain();
   mutree->Add("/data/TARCRY.root/TrkAnaNeg/trkana");
-  mutree->Add("/data/TARCRY.root_p/TrkAnaPos/trkana");
+  mutree->Add("/data/TARCRY_p.root/TrkAnaPos/trkana");
   mutree->Add("/data/TARDS-cosmic.root/TrkAnaNeg/trkana");
   mutree->Add("/data/TARDS-cosmic_p.root/TrkAnaPos/trkana");
   TrainPID(cetree,mutree);
