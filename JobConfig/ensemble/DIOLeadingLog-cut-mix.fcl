@@ -23,8 +23,9 @@ physics.producers.generate.physics.elow : ${minE}
 
 physics.filters.DigiFilter.particleTypes : ${particleTypes}
 physics.filters.DigiFilter.MinParticleMom : ${minMom}
+physics.producers.generate.doHistograms : false
 
 # customize the output
-services.TFileService.fileName: "nts.owner.${dirname}-${part}-${name}.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.${dirname}-${part}-${name}.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.DIOLeadingLog-cut-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.DIOLeadingLog-cut-mix.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
