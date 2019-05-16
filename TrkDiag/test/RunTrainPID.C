@@ -1,9 +1,17 @@
 #include "TrkDiag/test/TrainPID.C+"
+#include "TFile.h"
+#include "TTree.h"
+#include "TChain.h"
 {
-  TFile cefile("/data/TARCeEMix.root");
-  TTree* cetree = (TTree*)cefile.Get("TrkAnaNeg/trkana");
-  TFile mufile("/data/TARCRY.root");
-  TTree* mutree = (TTree*)mufile.Get("TrkAnaNeg/trkana");
+  TChain* cetree = new TChain();
+  cetree->Add("/data/TARCeE.root/TrkAnaNeg/trkana");
+  TChain* mutree = new TChain();
+  mutree->Add("/data/TARCRY.root/TrkAnaNeg/trkana");
+  mutree->Add("/data/TARCRY.root_p/TrkAnaPos/trkana");
+  mutree->Add("/data/TARDS-cosmic.root/TrkAnaNeg/trkana");
+  mutree->Add("/data/TARDS-cosmic_p.root/TrkAnaPos/trkana");
   TrainPID(cetree,mutree);
+//  cetree->Print();
+//  mutree->Print();
 }
 
