@@ -4,7 +4,6 @@
 //
 #include "TrkReco/inc/TNTClusterer.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"

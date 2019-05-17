@@ -13,7 +13,6 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"

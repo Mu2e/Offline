@@ -28,6 +28,8 @@ int mu2e::DbTool::run() {
   if(_action=="commit-list") return commitList();
   if(_action=="commit-purpose") return commitPurpose();
   if(_action=="commit-version") return commitVersion();
+
+  if(_action=="test-url") return testUrl();
   
   std::cout << "error: could not parse action : "<< _args[0]<< std::endl;
   return 1;
@@ -255,8 +257,10 @@ int mu2e::DbTool::commitCalibrationList(DbTableCollection const& coll,
       command = "INSERT INTO "+ptr->dbname()+"(cid,"+ptr->query()
 	+") VALUES ("+std::to_string(cid)+","+cline+");";
       rc = _sql.execute(command,result);
-      std::cout << command << std::endl;
-      std::cout << result << std::endl;
+      if(_verbose>9) {
+	std::cout << command << std::endl;
+	std::cout << result << std::endl;
+      }
       if(rc!=0) return rc;
     }
 
@@ -1028,16 +1032,21 @@ int mu2e::DbTool::commitVersion() {
     std::cout << "commit-version: --list [LID or LIST] is required "<<std::endl;
     return 1;
   }
-  int major=stoi(args["major"]);
-  if(args["major"].empty() || major<0 || major>1000) {
+
+  int major = -1;
+  if(args["major"].size()>0) major = stoi(args["major"]);
+  if(major<0 || major>1000) {
     std::cout << "commit-version: --major [INT] is required "<<std::endl;
     return 1;
   }
-  int minor = stoi(args["minor"]);
-  if(args["minor"].empty() || minor<0 || minor>1000) {
+
+  int minor = -1;
+  if(args["minor"].size()>0) minor = stoi(args["minor"]);
+  if(minor<0 || minor>1000) {
     std::cout << "commit-version: --minor [INT] is required "<<std::endl;
     return 1;
   }
+
   if(args["comment"].empty()) {
     std::cout << "commit-version: --comment is required "<<std::endl;
     return 1;
@@ -1139,6 +1148,46 @@ int mu2e::DbTool::commitVersion() {
 
 }
 
+
+// ****************************************  testUrl
+
+int mu2e::DbTool::testUrl() {
+  int rc = 0;
+
+  map_ss args;
+  args["file"] = "";
+  args["repeat"] = "";
+  if( (rc = getArgs(args)) ) return rc;
+
+  int n=1;
+  if(!args["repeat"].empty()) {
+    n = std::stoi(args["repeat"]);
+  }
+
+  std::vector <std::string> lines;
+  std::ifstream myfile;
+  myfile.open(args["file"]);
+  std::string line;
+  while ( std::getline(myfile,line) ) {
+    lines.push_back(line);
+  }
+
+  std::cout << "Read "<<lines.size() <<" lines" << std::endl;
+
+  std::string csv;
+  for(int i=0; i<n; i++) {
+    std::cout << "test URL: repeat "<<i << std::endl;
+    for(size_t q=0; q<lines.size(); q++) {
+      std::vector<std::string> words;
+      boost::split(words,lines[q], boost::is_any_of(" \t"), 
+		   boost::token_compress_on);
+      std::cout <<words[0]<< "X" << words[1] << std::endl;
+      _reader.query(csv,words[1],words[0],words[2]);
+    }
+  }
+
+  return 0;
+}
 
 
 

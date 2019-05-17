@@ -46,29 +46,31 @@ namespace mu2e
     double          _minD0, _maxD0; // impact parameter limits
     double          _minT0;
     TrkFitFlag      _goods; // helix fit flag
+    std::string     _trigPath;
     int             _debug;
     // counters
     unsigned        _nevt, _npass;
   };
 
   SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
-    _ksTag     (pset.get<art::InputTag>("KalSeedCollection","KSFDeM")),
-    _hascc     (pset.get<bool>("RequireCaloCluster",false)),
+    _ksTag     (pset.get<art::InputTag>("kalSeedCollection","KSFDeM")),
+    _hascc     (pset.get<bool>("requireCaloCluster",false)),
     _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir      ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _minfitcons(pset.get<double>("MinFitCons",-1.)),   //not used by default
-    _minnhits  (pset.get<unsigned>("MinNHits",15)),
-    _minmom    (pset.get<double>("MinMomentum",40.0)),
-    _maxmom    (pset.get<double>("MaxMomentum",200.0)) ,
-    _mintdip   (pset.get<double>("MinTanDip", 0.)),       //not used by default. 0.57735027
-    _maxtdip   (pset.get<double>("MaxTanDip", 100.)),     //not used by default. 1.5574077
-    _maxchi2dof(pset.get<double>("MaxChi2DOF",20.0)),
-    _maxmomerr (pset.get<double>("MaxMomErr",10)),
-    _minD0     (pset.get<double>("MinD0",-200.)),
-    _maxD0     (pset.get<double>("MaxD0", 200.)),
-    _minT0     (pset.get<double>("MinT0", 0.)),
-    _goods     (pset.get<vector<string> >("SeedFitFlag",vector<string>{"SeedOK"})),
-    _debug     (pset.get<int>("debugLevel",0)),
+    _minfitcons(pset.get<double>("minFitCons",-1.)),   //not used by default
+    _minnhits  (pset.get<unsigned>("minNHits",15)),
+    _minmom    (pset.get<double>("minMomentum",40.0)),
+    _maxmom    (pset.get<double>("maxMomentum",200.0)) ,
+    _mintdip   (pset.get<double>("minTanDip", 0.)),       //not used by default. 0.57735027
+    _maxtdip   (pset.get<double>("maxTanDip", 100.)),     //not used by default. 1.5574077
+    _maxchi2dof(pset.get<double>("maxChi2DOF",20.0)),
+    _maxmomerr (pset.get<double>("maxMomErr",10)),
+    _minD0     (pset.get<double>("minD0",-200.)),
+    _maxD0     (pset.get<double>("maxD0", 200.)),
+    _minT0     (pset.get<double>("minT0", 0.)),
+    _goods     (pset.get<vector<string> >("seedFitFlag",vector<string>{"SeedOK"})),
+    _trigPath  (pset.get<std::string>("triggerPath")),
+    _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -109,6 +111,7 @@ namespace mu2e
 	++_npass;
 	// Fill the trigger info object
 	triginfo->_triggerBits.merge(TriggerFlag::track);
+	triginfo->_triggerPath = _trigPath;
 	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
 	// but filtering is by event!
 	size_t index = std::distance(kscol->begin(),iks);

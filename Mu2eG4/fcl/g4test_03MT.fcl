@@ -14,7 +14,7 @@
 #include "fcl/standardServices.fcl"
 
 BEGIN_PROLOG
-stashSize:100
+stashSize:10
 END_PROLOG
 
 
@@ -128,8 +128,9 @@ physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
-#physics.producers.g4run.visualization.initMacro : "Mu2eG4/test/vismqt.mac"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 #physics.producers.g4run.physics.turnOffRadioactiveDecay: true
 #physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
-#physics.producers.g4run.physics.captureDModel: "muMinusNuclearCapture"
+#physics.producers.g4run.debug.diagLevel : 1
+#physics.producers.g4run.physics.minRangeRegionCuts: {
+#   CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }

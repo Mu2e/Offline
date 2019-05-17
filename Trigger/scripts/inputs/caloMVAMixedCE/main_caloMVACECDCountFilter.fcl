@@ -1,0 +1,8 @@
+physics.filters.caloMVACECDCountFilter.strawDigiCollection : notUSed	    
+physics.filters.caloMVACECDCountFilter.useStrawDigi        : false		    
+physics.filters.caloMVACECDCountFilter.useCaloDigi         : true		    
+physics.filters.caloMVACECDCountFilter.minNStrawDigi       : -1		    
+physics.filters.caloMVACECDCountFilter.maxNStrawDigi       : -1		    
+physics.filters.caloMVACECDCountFilter.minNCaloDigi        : 2		    
+physics.filters.caloMVACECDCountFilter.maxNCaloDigi        : 10000		    
+physics.filters.caloMVACECDCountFilter.maxCaloEnergy       : -1		    

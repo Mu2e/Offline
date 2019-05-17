@@ -1,9 +1,5 @@
 //
-// geometry file with ttracker inner radius modified with other changes which follow
-//
-// $Id: geom_DifferentTTrackerRadius.txt,v 1.1 2011/02/11 20:44:24 genser Exp $
-// $Author: genser $
-// $Date: 2011/02/11 20:44:24 $
+// geometry file with tracker inner radius modified with other changes which follow
 //
 // Original author KLG
 //
@@ -12,28 +8,28 @@
 #include "Mu2eG4/test/geom_01.txt"
 
 // Change the name.
-string detector.name  = "ttrackerDifferentRadius";
+string detector.name  = "trackerDifferentRadius";
 
-int    ttracker.strawsPerManifold    =   11; // this increases the coverage
+int    tracker.strawsPerManifold    =   11; // this increases the coverage
 
 // change the radii, make sure to change protonabsorber.OutRadius1 
-// in step with ttracker.envelopeInnerRadius
+// in step with tracker.envelopeInnerRadius
 
 double protonabsorber.OutRadius1     =   350.0;
 
-double ttracker.envelopeInnerRadius  =   350.0;
+double tracker.envelopeInnerRadius  =   350.0;
 
 // the support radii determine the straw length and prevent
 // sector/panel overlaps
 
-double ttracker.outerSupportRadius   =   810.0;
-double ttracker.innerSupportRadius   =   680.0;
+double tracker.outerSupportRadius   =   810.0;
+double tracker.innerSupportRadius   =   680.0;
 
 // increase the manifold half width (x) by
 // numberOfStrawsAdded*(strawOuterRadius+strawGap/2)
 // when changing the strawsPerManifold number
 
-vector<double> ttracker.manifoldHalfLengths = { 33.0, 5.0, 5.1};  // mm
+vector<double> tracker.manifoldHalfLengths = { 33.0, 5.0, 5.1};  // mm
 
 // invoke volume overlap check to verify the above configuration 
 // make sure each output line with 'Checking overlaps for volume' has OK in it

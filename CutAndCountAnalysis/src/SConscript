@@ -14,7 +14,6 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 
 mainlib = helper.make_mainlib ( [
-        'mu2e_TrackCaloMatching',
         'mu2e_TrkExt',
         'mu2e_TrkDiag',
         'mu2e_TrkReco',
@@ -31,7 +30,6 @@ mainlib = helper.make_mainlib ( [
         'mu2e_ExtinctionMonitorFNAL_Geometry',
         'mu2e_ProtonBeamDumpGeom',
         'mu2e_StoppingTargetGeom',
-        'mu2e_TTrackerGeom',
         'mu2e_TrackerGeom',
         'mu2e_GlobalConstantsService_GlobalConstantsService_service',
         'mu2e_GlobalConstantsService',
@@ -65,7 +63,6 @@ mainlib = helper.make_mainlib ( [
                                 )
 
 helper.make_plugins( [ mainlib,
-                       'mu2e_TrackCaloMatching',
                        'mu2e_TrkExt',
                        'mu2e_TrkDiag',
                        'mu2e_TrkReco',
@@ -81,7 +78,6 @@ helper.make_plugins( [ mainlib,
                        'mu2e_ExtinctionMonitorFNAL_Geometry',
                        'mu2e_ProtonBeamDumpGeom',
                        'mu2e_StoppingTargetGeom',
-                       'mu2e_TTrackerGeom',
                        'mu2e_TrackerGeom',
                        'mu2e_GlobalConstantsService_GlobalConstantsService_service',
                        'mu2e_GlobalConstantsService',

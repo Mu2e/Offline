@@ -23,25 +23,25 @@ cDCount_sf             : 1
 largeCDCount_evt_sf    : 500
 largeCDCount_sf        : 1
 #prescale factor for the calorimeter-only trigger
-caloOnly_evt_sf        : 1
-caloOnly_sf            : 1
+caloMVACE_evt_sf        : 1
+caloMVACE_sf            : 1
 #prescale factor for the calorimeter cosmic muon calibration
-caloCosmicMuon_evt_sf  : 1
-caloCosmicMuon_sf      : 1
+caloCalibCosmic_evt_sf  : 1
+caloCalibCosmic_sf      : 1
 #prescale factor fot the tracker-only track triggers
 # downstream e-
-tprDeMSeed_evt_sf      : 1
-tprDeMSeed_sf          : 1
+tprSeedDeM_evt_sf      : 1
+tprSeedDeM_sf          : 1
 # downstream e+
-tprDePSeed_evt_sf      : 1
-tprDePSeed_sf          : 1
+tprSeedDeP_evt_sf      : 1
+tprSeedDeP_sf          : 1
 #prescale factor fot the calo-seeded track triggers
 # downstream e-
-cprDeMSeed_evt_sf      : 1
-cprDeMSeed_sf          : 1
+cprSeedDeM_evt_sf      : 1
+cprSeedDeM_sf          : 1
 # downstream e+
-cprDePSeed_evt_sf      : 1
-cprDePSeed_sf          : 1
+cprSeedDeP_evt_sf      : 1
+cprSeedDeP_sf          : 1
 END_PROLOG
 
 #include "Trigger/fcl/templates.fcl"
@@ -57,7 +57,7 @@ source :
 # we don't need any simulation services for this job
 #services : @local::Services.Reco
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 
 # timing information
 services.TimeTracker : {
@@ -84,13 +84,13 @@ physics : {
     analyzers : {  
 
 	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 35
+	    nFilters      : 70
 	    nTrackTriggers: 5
 	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSdCount_path,
-			      largeSdCount_path,
-			      caloOnly_path,
-			      tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
+			      minimumbiasSDCount_path,
+			      largeSDCount_path,
+			      caloMVACE_path,
+			      tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
 	}
 	
     }
@@ -99,29 +99,30 @@ physics : {
     unbiased_path                : [ @sequence::paths.unbiased                         ]
     
     #minimum bias filters
-    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount             ]
+    minimumbiasSDCount_path      : [ @sequence::paths.minimumbiasSDCount               ]
 
     #path for selecting events with large ammount of strawDigis
-    largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
+    largeSDCount_path            : [ @sequence::paths.largeSDCount                     ]
 
     #path for the calorimeter only trigger
-    caloOnly_path                : [ FetchCaloDigis, @sequence::paths.caloOnly         ]
+    caloMVACE_path               : [ fetchCaloDigis, @sequence::paths.caloMVACE        ]
 
     #path for calorimeter cosmic muon calibration
-    caloCosmicMuon_path          : [ FetchCaloDigis, @sequence::paths.caloCosmicMuon   ]
+    caloCosmicMuon_path          : [ fetchCaloDigis, @sequence::paths.caloCalibCosmic  ]
 
     #paths for TrkPatRec downstream e- and e+
-    tprDeMSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDeMSeed        ]
-    tprDePSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDePSeed        ]
+    tprSeedDeM_path              : [ tprFetchDigis, @sequence::paths.tprSeedDeM        ]
+    tprSeedDeP_path              : [ tprFetchDigis, @sequence::paths.tprSeedDeP        ]
 
     #paths for CalPatRec downstream e- and e+
-    cprDeMSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDeMSeed        ]
-    cprDePSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDePSeed        ]
+    cprSeedDeM_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeM        ]
+    cprSeedDeP_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeP        ]
     
     
-    out           : [ readTriggerInfo ]
+#    out           : [ readTriggerInfo ]
     
-#    out           : [ readTriggerInfo, triggerOutput ]
+
+    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 
@@ -130,8 +131,6 @@ outputs : {
 }
 
 services.TFileService.fileName : "globalTrigger.root"
-services.SeedService.baseSeed : 0
-services.SeedService.maxUniqueEngines : 20
 
 
 

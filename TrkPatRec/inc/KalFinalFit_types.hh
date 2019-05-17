@@ -16,7 +16,7 @@ namespace art {
 namespace mu2e {
   
   class KalFitData;
-  class TTracker;
+  class Tracker;
   class Calorimeter;
   class DoubletAmbigResolver;
 
@@ -24,7 +24,7 @@ namespace mu2e {
   
     struct Data_t {
       const art::Event*     event;
-      const TTracker*       tracker;
+      const Tracker*       tracker;
       const Calorimeter*    calorimeter;
       fhicl::ParameterSet*  timeOffsets;
 

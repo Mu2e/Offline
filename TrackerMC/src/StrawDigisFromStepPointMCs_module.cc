@@ -19,13 +19,11 @@
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "TrackerConditions/inc/DeadStraw.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
@@ -34,7 +32,7 @@
 // utiliities
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 // data
 #include "DataProducts/inc/EventWindowMarker.hh"
 #include "DataProducts/inc/StrawId.hh"
@@ -390,7 +388,7 @@ namespace mu2e {
       } else {
 	_bdir = b0.unit();
 	//compute the transverse momentum for which a particle will curl up in a straw
-	const Tracker& tracker = getTrackerOrThrow();
+	const Tracker& tracker = *GeomHandle<Tracker>();
 	const Straw& straw = tracker.getStraw(StrawId(0,0,0));
 	double rstraw = straw.getRadius();
 	_ptmin = _ptfac*BField::mmTeslaToMeVc*b0.mag()*rstraw;
@@ -419,7 +417,7 @@ namespace mu2e {
       for (size_t i=0;i<StrawId::_nupanels;i++){
         _ewMarkerROCdt.at(i) = _randgauss.fire(0,strawele.eventWindowMarkerROCJitter());
       }
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
       // make the microbunch buffer long enough to get the full waveform
       _mbbuffer = (strawele.nADCSamples() - strawele.nADCPreSamples())*strawele.adcPeriod();
       _adcbuffer = 0.01*strawele.adcPeriod();
@@ -498,7 +496,7 @@ namespace mu2e {
       DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
       StrawPhysics const& strawphys = _strawphys_h.get(event.id());
       StrawElectronics const& strawele = _strawele_h.get(event.id());
-      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+      const Tracker& tracker = *GeomHandle<Tracker>();
       // Get all of the tracker StepPointMC collections from the event:
       typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
       // This selector will select only data products with the given instance name.
@@ -534,7 +532,7 @@ namespace mu2e {
             // or in dead regions of the straw
             double wpos = fabs((steps[ispmc].position()-straw.getMidPoint()).dot(straw.getDirection()));
 
-            if(wpos <  straw.getDetail().activeHalfLength() &&
+            if(wpos <  straw.activeHalfLength() &&
                deadStraw.isAlive(sid,wpos) &&
                steps[ispmc].ionizingEdep() > _minstepE){
               // create ptr to MC truth, used for references
@@ -617,7 +615,7 @@ namespace mu2e {
       }
 
       // get tracker information
-      const Tracker& tracker = getTrackerOrThrow(); //JB
+      const Tracker& tracker = *GeomHandle<Tracker>(); //JB
       const Straw& straw = tracker.getStraw(step.strawId());//JB
       // if the step length is small compared to the mean free path, or this is an
       // uncharged particle, put all the energy in a single cluster
@@ -711,7 +709,7 @@ namespace mu2e {
       // Compute the vector from the cluster to the wire
       Hep3Vector cpos = cluster._pos-straw.getMidPoint();
       // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
-      double dd = min(cpos.perp(straw.getDirection()),straw.getDetail().innerRadius());
+      double dd = min(cpos.perp(straw.getDirection()),straw.innerRadius());
       // sample the gain for this cluster
       double gain = strawphys.clusterGain(_randgauss, _randflat, cluster._ne);
       wireq._charge = cluster._charge*(gain);
@@ -729,7 +727,7 @@ namespace mu2e {
 	  StrawPhysics const& strawphys, Straw const& straw,
           WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
       // compute distance to the appropriate end
-      double wlen = straw.getDetail().halfLength(); // use the full length, not the active length
+      double wlen = straw.halfLength(); // use the full length, not the active length
       // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
       if(end == StrawEnd::hv)
         weq._wdist = wlen - wireq._wpos;
@@ -984,7 +982,7 @@ namespace mu2e {
     void StrawDigisFromStepPointMCs::waveformDiag(
 		     StrawElectronics const& strawele,
                      SWFP const& wfs, WFXPList const& xings) {
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
       const Straw& straw = tracker.getStraw( wfs[0].clusts().strawId() );
       _swplane = straw.id().getPlane();
       _swpanel = straw.id().getPanel();
@@ -1063,7 +1061,7 @@ namespace mu2e {
     }
 
     void StrawDigisFromStepPointMCs::digiDiag(StrawPhysics const& strawphys, SWFP const& wfs, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi) {
-      const TTracker& tracker = static_cast<const TTracker&>(getTrackerOrThrow());
+      const Tracker& tracker = *GeomHandle<Tracker>();
       const Straw& straw = tracker.getStraw( digi.strawId() );
       _sdplane = straw.id().getPlane();
       _sdpanel = straw.id().getPanel();
@@ -1169,7 +1167,7 @@ namespace mu2e {
       if(pdt->particle(step.simParticle()->pdgId()).isValid()){
         charge = pdt->particle(step.simParticle()->pdgId()).ref().charge();
       }
-      static const double r2 = straw.getDetail().innerRadius()*straw.getDetail().innerRadius();
+      static const double r2 = straw.innerRadius()*straw.innerRadius();
       // decide how we step; straight or helix, depending on the Pt
       Hep3Vector const& mom = step.momentum();
       Hep3Vector mdir = mom.unit();

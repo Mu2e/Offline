@@ -3,7 +3,7 @@
 #
 # Original author Rob Kutschke
 #
-#
+# 
 
 if [ "`basename $0 2>/dev/null`" = "setup.sh" ];then
     echo "You should be sourcing this file, not executing it." >&2
@@ -78,6 +78,7 @@ if [ -n "$BASEREPO" ]; then
   export PATH=`dropit -p $PATH -sf $MU2E_SATELLITE_RELEASE/bin`
   export ROOT_INCLUDE_PATH=`dropit -p $ROOT_INCLUDE_PATH -sf $MU2E_SATELLITE_RELEASE`
 
+
   if [ -f $MU2E_SATELLITE_RELEASE/.buildopts ] ; then
       echo "WARNING - buildopts will be taken from the base release, "
       echo "        in partial checkout your local buildopts is ignored"
@@ -103,7 +104,7 @@ build=$($MU2E_BASE_RELEASE/buildopts --build)
 # and is therefore different from the value shown in
 # SETUP_<productname> environment vars, or by the "ups active" command.
 export MU2E_UPS_QUALIFIERS=+e17:+${build}
-export MU2E_ART_SQUALIFIER=s74
+export MU2E_ART_SQUALIFIER=s79
 
 MU2E_G4_GRAPHICS_QUALIFIER=''
 if [[ $($MU2E_BASE_RELEASE/buildopts --g4vis) == qt ]]; then
@@ -118,7 +119,7 @@ fi
 export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
-setup -B art v2_12_00 -q${MU2E_UPS_QUALIFIERS}
+setup -B art v2_12_01 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
@@ -128,15 +129,16 @@ else
 fi
 
 # Get access to raw data formats.
-setup -B mu2e_artdaq_core v1_02_11 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
+setup -B mu2e_artdaq_core v1_02_19 -q${MU2E_UPS_QUALIFIERS}:+${MU2E_ART_SQUALIFIER}:offline
 
 # Other libraries we need.
+setup -B pcie_linux_kernel_module v2_01_02 -q${MU2E_UPS_QUALIFIERS}
 
 setup -B heppdt   v3_04_01h -q${MU2E_UPS_QUALIFIERS}
 setup -B BTrk   v1_02_14  -q${MU2E_UPS_QUALIFIERS}
 setup -B cry   v1_7k  -q${MU2E_UPS_QUALIFIERS}
 setup -B gsl v2_4  -q${build}
-
+setup curl v7_64_1
 # The build system.
 setup -B scons v3_0_1  -q p2714b
 

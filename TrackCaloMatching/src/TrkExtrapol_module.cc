@@ -37,8 +37,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -46,7 +45,7 @@
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
+#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 
 
 //calorimeter includes

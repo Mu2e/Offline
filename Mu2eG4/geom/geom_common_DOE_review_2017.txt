@@ -29,7 +29,7 @@ bool hasMBS             = true; // note the two subcomponents, see mbs section b
 // X-offset of the PS(+x) and DS(-x) from the Mu2e origin.
 // The origin of the detector coordinate system is on the DS axis at the specified z.
 double mu2e.solenoidOffset   =  3904.;   // mm
-double mu2e.detectorSystemZ0 = 10171.;   // mm  Needs to match ttracker.z0
+double mu2e.detectorSystemZ0 = 10171.;   // mm  Needs to match tracker.z0
 
 #include "Mu2eG4/geom/mu2eWorld.txt"
 // mu2eHall.txt should be used with protonBeamDump_v02.txt, below
@@ -76,7 +76,7 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  Needs to match ttracker.z0
 #include "Mu2eG4/geom/protonBeamDump_v03.txt"
 #include "Mu2eG4/geom/extmon_fnal_v02.txt"
 
-#include "Mu2eG4/geom/ttracker_v4.txt"
+#include "Mu2eG4/geom/tracker_v4.txt"
 
 // Crystal calorimeter
 #include "Mu2eG4/geom/calorimeter_CsI.txt"

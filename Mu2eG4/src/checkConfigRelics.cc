@@ -45,7 +45,7 @@ namespace mu2e {
             
             // Mu2eWorld
             "world.verbosityLevel",
-            "ttracker.ActiveWr_Wl_SD",
+            "tracker.ActiveWr_Wl_SD",
             "writeGDML",
             "GDMLFileName",
             "g4.stepper",

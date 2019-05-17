@@ -37,6 +37,7 @@ mainlib = helper.make_mainlib ( [
     rootlibs,
     'CLHEP',
     'HepPDT',
+    'HepPID',
     'xerces-c',
     'boost_system',
     ] )
@@ -47,7 +48,6 @@ helper.make_plugins( [
    'mu2e_GeometryService',
    'mu2e_BFieldGeom',
    'mu2e_TrackerGeom',
-   'mu2e_TTrackerGeom',
    'mu2e_GlobalConstantsService',
    'mu2e_Mu2eInterfaces',
    'mu2e_DataProducts',

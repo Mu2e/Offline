@@ -30,6 +30,11 @@
 
  <class name="mu2e::GenParticleSPMHistory" />
  <class name="art::Wrapper<mu2e::GenParticleSPMHistory>"/>
+  
+ <class name="mu2e::FixedTimeMap"/>
+ <class name="art::Wrapper<mu2e::FixedTimeMap>" />
+
+
 
 <!--  ********* simulation  ********* -->
  <class name="mu2e::StatusG4"/>
@@ -75,6 +80,7 @@
 
  <class name="std::pair<CLHEP::Hep3Vector,CLHEP::HepLorentzVector>"/>
  <class name="mu2e::GenElHitData"/>
+ <class name="std::pair<unsigned long,mu2e::GenElHitData>"/>
  <class name="std::map<unsigned long,mu2e::GenElHitData>"/>
  <class name="mu2e::VisibleGenElTrack"/>
  <class name="mu2e::VisibleGenElTrackCollection" persistent="false"/>

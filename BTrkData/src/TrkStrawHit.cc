@@ -111,28 +111,11 @@ namespace mu2e
 
   void
   TrkStrawHit::trackT0Time(double &Htime, double T0flt, const TrkDifPieceTraj* Ptraj, double Vflt){
-    // compute the flightlength to this hit from z=0 (can be negative)
-    double pz   = _wpos.z();
-    double hflt = Ptraj->zFlight(pz) - T0flt;
-    // Use this to estimate the time for the track to reaches this hit from z=0
-    double tprop = hflt/Vflt;
-    // estimate signal propagation time on the wire assuming the middle (average)
-    double vwire = _strawResponse->halfPropV(_combohit.strawId(),comboHit().energyDep()*1000.)*2;
-    double teprop = _straw.getHalfLength()/vwire;
-    // correct the measured time for these effects: this gives the aveage time the particle passed this straw, WRT
-    // when the track crossed Z=0
-    // assume the average drift time is half the maximum drift distance.  This is a poor approximation, but good enough for now
-    // for crude estimates, we only need 1 d2t function
-    CLHEP::Hep3Vector zdir(0.0,0.0,1.0);
-    double phi = 0; // FIXME should default phi be 0?
-    double tdrift = _strawResponse->driftDistanceToTime(_combohit.strawId(), 0.5*straw().getRadius(), phi);
-    Htime = _combohit.time() - tprop - teprop - tdrift;
+    throw cet::exception("RECO")<<"mu2e::TrkStrawHit: obsolete function"<< endl;
   }
-
 
   void
   TrkStrawHit::updateDrift() {
-// deal with ambiguity updating.  This is a DEPRECATED OPTION, use external ambiguity resolution algorithms instead!!!
 // compute the drift time
     double tdrift = driftTime();
 // find the track direction at this hit
@@ -179,20 +162,20 @@ namespace mu2e
     if( poca().status().success()){
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:
-	  _stime = (straw().getHalfLength()+hitLen())/_vprop;
+	  _stime = (straw().halfLength()+hitLen())/_vprop;
 	  break;
 	case StrawEnd::hv:
-	  _stime = (straw().getHalfLength()-hitLen())/_vprop;
+	  _stime = (straw().halfLength()-hitLen())/_vprop;
 	  break;
       }
     } else {
 // if we're missing poca information, use time division instead
       switch (_combohit.driftEnd()) {
 	case StrawEnd::cal:
-	  _stime = (straw().getHalfLength()+timeDiffDist())/_vprop;
+	  _stime = (straw().halfLength()+timeDiffDist())/_vprop;
 	  break;
 	case StrawEnd::hv:
-	  _stime = (straw().getHalfLength()-timeDiffDist())/_vprop;
+	  _stime = (straw().halfLength()-timeDiffDist())/_vprop;
 	  break;
       }
     }

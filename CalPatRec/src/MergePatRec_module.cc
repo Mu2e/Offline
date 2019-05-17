@@ -19,7 +19,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
-// #include "CalPatRec/inc/TrkDefHack.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"

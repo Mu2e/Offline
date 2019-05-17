@@ -118,8 +118,7 @@ namespace mu2e {
   StoppedMuonRMCGun::StoppedMuonRMCGun(const fhicl::ParameterSet& pset)
     : psphys_             (pset.get<fhicl::ParameterSet>("physics"))
     , rhoInternal_        (psphys_.get<double>("rhoInternal"))
-    , elow_               (psphys_.get<double>("elow"))
-    , ehi_                (psphys_.get<double>("ehi"))
+    , spectrum_           (BinnedSpectrum(psphys_))
     , verbosityLevel_     (pset.get<int>("verbosityLevel", 0))
     , eng_                (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , czmax_              (pset.get<double>("czmax",  1.))
@@ -181,11 +180,7 @@ namespace mu2e {
     const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
     const int physicsVerbosityLevel_(psphys.get<int>("physicsVerbosityLevel"));
 
-    if (spectrumShape == "ClosureApprox") {
-					// in this case just stop, this is wrong
-      if (elow_ >= ehi_){
-	throw cet::exception("RANGE") << "energy range in Muon Capture Spectrum is wrong " << elow_ << " " << ehi_ << std::endl;
-      }
+    if (spectrumShape == "RMC") {
 
       bool   blind       = psphys.get<bool>  ("blind");
       bool   kMaxUserSet = psphys.get<bool>  ("kMaxUserSet");
@@ -194,7 +189,6 @@ namespace mu2e {
       if (kMaxUserSet) kMaxUser = psphys.get<double>("kMaxUser");
 
       double rmcFrac     = psphys.get<double>("rmcFrac");
-      double bin         = psphys.get<double>("spectrumResolution");
  
       if (physicsVerbosityLevel_ > 0 && !blind) {
 	std::cout << "kMaxUserSet and kMaxUser = " << kMaxUserSet << " " << kMaxUser << std::endl;
@@ -212,29 +206,27 @@ namespace mu2e {
       if (kMaxUserSet) kMax = kMaxUser;
       else             kMax = kMaxMax;
  
-      if ( elow_ > kMax ) {
+      if ( spectrum_.getXMin() > kMax ) {
 	//
 	// if I told you what kMax was you could unblind kMax.  Therefore I will set it to something very low and tell you.
-	std::cout << " StoppedMuonGun elow is too high " << elow_ << " resetting to 0 MeV" << std::endl;
+	std::cout << " StoppedMuonGun elow is too high " << spectrum_.getXMin() << " resetting to 0 MeV" << std::endl;
       }
       
-      spectrum_.initialize<MuonCaptureSpectrum>(elow_, ehi_,bin,kMaxUserSet,kMaxUser,kMaxMax,&randFlat_,&randUnitSphere_);
+      double lowestEnergy = spectrum_.getXMin();
+      double upperEnergy  = spectrum_.getXMax();
 
-      double lowestEnergy = elow_;
-      double upperEnergy  = ehi_;
-
-      if (ehi_ > kMax) upperEnergy = kMax;
+      if (spectrum_.getXMax() > kMax) upperEnergy = kMax;
       // papers measure R(photon>57) = 1.43e-05. Hardwire that.
       const double rGammaEnergy = 57.; // this is what was measured, won't change unless someone does it again. Measurements are e>57.
  
 
-      if (elow_ < rGammaEnergy){
+      if (spectrum_.getXMin() < rGammaEnergy){
 	lowestEnergy = rGammaEnergy;
-	std::cout << "inside " << __func__ << " resetting lower energy to physical limit from " << elow_ << " to " << rGammaEnergy << std::endl;
+	std::cout << "inside " << __func__ << " resetting lower energy to physical limit from " << spectrum_.getXMin() << " to " << rGammaEnergy << std::endl;
       }
-      if (ehi_ > kMax) {
+      if (spectrum_.getXMax() > kMax) {
 	upperEnergy = kMax;
-	std::cout << "inside " << __func__ << " resetting upper energy to physical limit from " << ehi_ << " to " << kMax << std::endl;
+	std::cout << "inside " << __func__ << " resetting upper energy to physical limit from " << spectrum_.getXMax() << " to " << kMax << std::endl;
       }
 
       double xLower = lowestEnergy/kMax;
@@ -257,21 +249,12 @@ namespace mu2e {
 		  << kMax<< " " << rmcFrac<< " " << externalNormalization<< " " << internalNormalization  << std::endl;
 	std::cout << "fraction of spectrum = " << fractionOfSpectrum << std::endl;
       }
-
-
-    }
-    else if (spectrumShape == "flat") {
-      spectrum_.initialize<SimpleSpectrum>(elow_, ehi_, ehi_-elow_, SimpleSpectrum::Spectrum::Flat );
-    }
-    else {
-      throw cet::exception("BADCONFIG")
-        << "StoppedParticleMuonGun: unknown spectrum shape "<<spectrumShape<<"\n";
     }
   }
 
   //================================================================
   double StoppedMuonRMCGun::generateEnergy() {
-    return elow_ + (ehi_ - elow_)*randSpectrum_->fire();
+    return spectrum_.sample(randSpectrum_->fire());
   }
 
   //================================================================

@@ -101,6 +101,13 @@ TrkReco: { @table::TrkReco
 	tempScale                           : 0.5
 	penaltyScale                        : 0.4
 	maxHitChi                           : 5.    # 
+	useMeanResidual                     : 0     # default: dont use
+	maxMeanResidual                     : 0.8
     }
+    producers : {
+      MergeHelices : {
+	module_type : MergeHelices
+      }
+   }
 }
 END_PROLOG

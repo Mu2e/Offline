@@ -39,41 +39,47 @@ namespace mu2e
 
   private:
     art::InputTag _hsTag;
-    bool   _hascc; // Calo Cluster
-    int    _hel;
-    int    _minnstrawhits;
-    double _minmom, _maxmom;
-    double _maxpT;
-    double _minpT;
-    double _maxchi2XY;
-    double _maxchi2PhiZ;
-    double _maxd0;
-    double _mind0;
-    double _maxlambda;
-    double _minlambda;
-    double _bz0;
-    TrkFitFlag _goodh; // helix fit flag
-    int _debug;
+    bool          _hascc; // Calo Cluster
+    int           _hel;
+    int           _minnstrawhits;
+    double        _minmom, _maxmom;
+    double        _maxpT;
+    double        _minpT;
+    double        _maxchi2XY;
+    double        _maxchi2PhiZ;
+    double        _maxd0;
+    double        _mind0;
+    double        _maxlambda;
+    double        _minlambda;
+    double        _maxnloops;
+    double        _minnloops;
+    double        _bz0;
+    TrkFitFlag    _goodh; // helix fit flag
+    std::string   _trigPath;
+    int           _debug;
     // counters
-    unsigned _nevt, _npass;
+    unsigned      _nevt, _npass;
   };
 
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
-    _hsTag(pset.get<art::InputTag>("HelixSeedCollection","PosHelixFinder")),
-    _hascc(pset.get<bool>("RequireCaloCluster",false)),
-    _hel(pset.get<int>("Helicity")),
-    _minnstrawhits(pset.get<int>("MinNStrawHits",15)),
-    _minmom(pset.get<double>("MinMomentum",70.0)),
-    _maxmom(pset.get<double>("MaxMomentum",120.0)),
-    _minpT(pset.get<double>("MinPt", 0.)),
-    _maxchi2XY(pset.get<double>("MaxChi2XY", 8.)),
-    _maxchi2PhiZ(pset.get<double>("MaxChi2PhiZ", 8.)),
-    _maxd0(pset.get<double>("MaxD0", 200.)),
-    _mind0(pset.get<double>("MinD0", -200.)),
-    _maxlambda(pset.get<double>("MaxAbsLambda",350.)),
-    _minlambda(pset.get<double>("MinAbsLambda",150.)),
-    _goodh(pset.get<vector<string> >("HelixFitFlag",vector<string>{"HelixOK"})),
-    _debug(pset.get<int>("debugLevel",0)),
+    _hsTag        (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
+    _hascc        (pset.get<bool>  ("requireCaloCluster",false)),
+    _hel          (pset.get<int>   ("helicity")),
+    _minnstrawhits(pset.get<int>   ("minNStrawHits",15)),
+    _minmom       (pset.get<double>("minMomentum",70.0)),
+    _maxmom       (pset.get<double>("maxMomentum",120.0)),
+    _minpT        (pset.get<double>("minPt", 0.)),
+    _maxchi2XY    (pset.get<double>("maxChi2XY", 8.)),
+    _maxchi2PhiZ  (pset.get<double>("maxChi2PhiZ", 8.)),
+    _maxd0        (pset.get<double>("maxD0", 200.)),
+    _mind0        (pset.get<double>("minD0", -200.)),
+    _maxlambda    (pset.get<double>("maxAbsLambda",350.)),
+    _minlambda    (pset.get<double>("minAbsLambda",150.)),
+    _maxnloops    (pset.get<double>("maxNLoops",30.)),
+    _minnloops    (pset.get<double>("minNLoops",0.)),
+    _goodh        (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
+    _trigPath     (pset.get<std::string>("triggerPath")),
+    _debug        (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -113,25 +119,30 @@ namespace mu2e
       float chi2PhiZ   = hs.helix().chi2dZPhi();
       float d0         = hs.helix().rcent() - hs.helix().radius();
       float lambda     = std::fabs(hs.helix().lambda());
-
+      float nLoops     = helTool.nLoops();
+      
       if(_debug > 2){
         cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
 	  nstrawhits >= _minnstrawhits &&
-          hpT >= _minpT &&
-	  chi2XY <= _maxchi2XY &&
-	  chi2PhiZ <= _maxchi2PhiZ &&
-	  d0 <= _maxd0 &&
-	  d0 >= _mind0 &&
-	  lambda <= _maxlambda &&
-	  lambda >= _minlambda &&
-          hmom > _minmom && hmom < _maxmom) {
+          hpT        >= _minpT &&
+	  chi2XY     <= _maxchi2XY &&
+	  chi2PhiZ   <= _maxchi2PhiZ &&
+	  d0         <= _maxd0 &&
+	  d0         >= _mind0 &&
+	  lambda     <= _maxlambda &&
+	  lambda     >= _minlambda &&
+	  nLoops     <= _maxnloops &&
+	  nLoops     >= _minnloops &&
+          hmom       >= _minmom    && 
+	  hmom       <= _maxmom) {
         retval = true;
         ++_npass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::helix);
+	triginfo->_triggerPath = _trigPath;
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(hscol->begin(),ihs);

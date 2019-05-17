@@ -15,8 +15,7 @@
 
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
@@ -29,7 +28,7 @@ namespace mu2e {
     explicit VetoIncorrectHits(const fhicl::ParameterSet& pset);
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
-    bool doTTracker(const art::Event& event);
+    bool doTracker(const art::Event& event);
     bool doCRV(const art::Event& event);
 
   private:
@@ -102,7 +101,7 @@ namespace mu2e {
     const art::Event& event = const_cast<art::Event&>(theEvent);
     bool passed = true;
 
-    bool trackerResult =  doTTracker(event);
+    bool trackerResult =  doTracker(event);
     bool crvResult     =  doCRV(event);
 
     // a simple && for now
@@ -183,7 +182,7 @@ namespace mu2e {
            << " Hit " << i << " "
            << pos <<  " "
            << " ouside the crv bar " << bar.id()
-           << " inconsistent ttracker geometry file? "
+           << " inconsistent tracker geometry file? "
            << "; relative differences: "
            << std::abs(hitLocalN.x()) - 1. << ", "
            << std::abs(hitLocalN.y()) - 1. << ", "
@@ -215,11 +214,11 @@ namespace mu2e {
   } // end doCRV
 
   //================================================================
-  bool VetoIncorrectHits::doTTracker(const art::Event& event){
+  bool VetoIncorrectHits::doTracker(const art::Event& event){
 
     // Get a reference to the tracker
     // Throw exception if not successful.
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     bool passed = true;
 
@@ -255,14 +254,12 @@ namespace mu2e {
       double s = w.dot(pos-mid);
       CLHEP::Hep3Vector point = pos - (mid + s*w);
 
-      StrawDetail const& strawDetail = straw.getDetail();
-
-      double normPointMag = point.mag()/strawDetail.innerRadius();
-      double normS = s/straw.getHalfLength();
+      double normPointMag = point.mag()/tracker.strawInnerRadius();
+      double normS = s/straw.halfLength();
 
       if ( diagLevel_ > 1 &&  nProcessed_< maxFullPrint_ ){
 
-        std::cout << "VetoIncorrectHits::doTTracker"
+        std::cout << "VetoIncorrectHits::doTracker"
                   << " Event " << event.id().event() << " as " << nProcessed_
                   << " normalized reference point - 1 : "
                   << std::scientific
@@ -286,7 +283,7 @@ namespace mu2e {
            << " Hit " << i << " "
            << pos <<  " "
            << " ouside the straw " << straw.id()
-           << " inconsistent ttracker geometry file? "
+           << " inconsistent tracker geometry file? "
            << "; radial difference: "
            << normPointMag - 1.
            << ", longitudinal difference: "

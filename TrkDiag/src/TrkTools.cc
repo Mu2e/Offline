@@ -5,8 +5,8 @@
 #include "TrkDiag/inc/TrkTools.hh"
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 
+#include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include <cmath>
 
 namespace mu2e {
@@ -14,8 +14,7 @@ namespace mu2e {
     void countHits(const std::vector<TrkStrawHitSeed>& hits, unsigned& nhits, unsigned& nactive, unsigned& ndouble, unsigned& ndactive, unsigned& nnullambig) {
       nhits = 0; nactive = 0; ndouble = 0; ndactive = 0; nnullambig = 0;
       static StrawHitFlag active(StrawHitFlag::active);
-      //      for (const auto& i_hit : hits) {
-      for (std::vector<TrkStrawHitSeed>::const_iterator ihit = hits.begin(); ihit != hits.end(); ++ihit) {
+      for (auto ihit = hits.begin(); ihit != hits.end(); ++ihit) {
 	++nhits;
 	if (ihit->flag().hasAllProperties(active)) {
 	  ++nactive;
@@ -23,7 +22,6 @@ namespace mu2e {
 	    ++nnullambig;
 	  }
 	}
-
 	auto jhit = ihit; jhit++;
 	if(jhit != hits.end() && ihit->strawId().uniquePanel() ==
 	   jhit->strawId().uniquePanel()){
@@ -45,19 +43,26 @@ namespace mu2e {
     }    
 
     void fillHitCount(StrawHitFlagCollection const& shfC, HitCount& hitcount) {
-      hitcount._nsh = shfC.size();
+      hitcount._nsd = shfC.size();
       for(const auto& shf : shfC) {
 	if(shf.hasAllProperties(StrawHitFlag::energysel))++hitcount._nesel;
 	if(shf.hasAllProperties(StrawHitFlag::radsel))++hitcount._nrsel;
 	if(shf.hasAllProperties(StrawHitFlag::timesel))++hitcount._ntsel;
 	if(shf.hasAllProperties(StrawHitFlag::bkg))++hitcount._nbkg;
-	if(shf.hasAllProperties(StrawHitFlag::stereo))++hitcount._nster;
-	if(shf.hasAllProperties(StrawHitFlag::tdiv))++hitcount._ntdiv;
 	if(shf.hasAllProperties(StrawHitFlag::trksel))++hitcount._ntpk;
-	if(shf.hasAllProperties(StrawHitFlag::elecxtalk))++hitcount._nxt;
       }
     }
 
+    void fillHitCount(RecoCount const& nrec, HitCount& hitcount) {
+      hitcount._nsd = nrec._nstrawdigi;
+      hitcount._ncd = nrec._ncalodigi;
+      hitcount._ncrvd = nrec._ncrvdigi;
+      hitcount._nesel = nrec._nshfesel;
+      hitcount._nrsel = nrec._nshfrsel;
+      hitcount._ntsel = nrec._nshftsel;
+      hitcount._nbkg = nrec._nshfbkg;
+      hitcount._ntpk = nrec._nshftpk;
+    }
 
     void fillTrkInfo(const KalSeed& kseed,TrkInfo& trkinfo) {
       if(kseed.status().hasAllProperties(TrkFitFlag::kalmanConverged))
@@ -66,6 +71,13 @@ namespace mu2e {
 	trkinfo._status = 2;
       else
 	trkinfo._status = -1;
+      if(kseed.status().hasAllProperties(TrkFitFlag::CPRHelix))
+	trkinfo._alg = 1;
+      else if(kseed.status().hasAllProperties(TrkFitFlag::TPRHelix))
+	trkinfo._alg = 0;
+      else
+	trkinfo._alg = -1;
+
       trkinfo._pdg = kseed.particle().particleType();
       trkinfo._t0 = kseed.t0().t0();
       trkinfo._t0err = kseed.t0().t0Err();
@@ -111,8 +123,8 @@ namespace mu2e {
 	  lastflt = kseg.globalFlt(kseg.fmax());
 	}
       }
-      trkinfo._startvalid = firstflt;//krep->startValidRange();  // TODO
-      trkinfo._endvalid = lastflt;//krep->endValidRange();  // TODO
+      trkinfo._startvalid = firstflt;
+      trkinfo._endvalid = lastflt;
 
 
       unsigned int nmat(-1), nmatactive(-1);
@@ -120,7 +132,7 @@ namespace mu2e {
       countStraws(kseed.straws(), nmat, nmatactive, radlen);
       trkinfo._nmat = nmat;
       trkinfo._nmatactive = nmatactive;
-      trkinfo._radlen = radlen; // TODO
+      trkinfo._radlen = radlen;
 
       const KalSegment& kseg = *(kseed.segments().begin()); // is this the correct segment to get? TODO
       trkinfo._ent._fitmom = kseg.mom();
@@ -136,7 +148,7 @@ namespace mu2e {
       // loop over hits
 
       static StrawHitFlag active(StrawHitFlag::active);
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
       for(std::vector<TrkStrawHitSeed>::const_iterator ihit=kseed.hits().begin(); ihit != kseed.hits().end(); ++ihit) {
 	TrkStrawHitInfo tshinfo;
 	auto const& straw = tracker.getStraw(ihit->strawId());
@@ -167,7 +179,7 @@ namespace mu2e {
 	tshinfo._trklen = ihit->trkLen();
 	tshinfo._hlen = ihit->hitLen();
 	tshinfo._t0 = ihit->t0().t0();
-	tshinfo._t0err = ihit->t0().t0Err(); //	was: tshinfo._t0err = ihit->t0Err()/ihit->driftVelocity();
+	tshinfo._t0err = ihit->t0().t0Err();
 	tshinfo._ht = ihit->hitTime();
 	tshinfo._ambig = ihit->ambig();
 	tshinfo._doca = ihit->wireDOCA();
@@ -176,6 +188,10 @@ namespace mu2e {
 	tshinfo._werr = ihit->wireRes();	
 	tshinfo._driftend = ihit->driftEnd();
 	tshinfo._tdrift = ihit->hitTime() - ihit->signalTime() - ihit->t0().t0();
+	auto const& wiredir = straw.getDirection();
+	auto const& mid = straw.getMidPoint();
+	CLHEP::Hep3Vector hpos = mid + wiredir*ihit->hitLen();
+	tshinfo._poca = Geom::toXYZVec(hpos);
 
 	// count correlations with other TSH
 	for(std::vector<TrkStrawHitSeed>::const_iterator jhit=kseed.hits().begin(); jhit != ihit; ++jhit) {
@@ -208,9 +224,6 @@ namespace mu2e {
 	tminfo._active = i_straw.active();
 	tminfo._dp = i_straw.pfrac();
 	tminfo._radlen = i_straw.radLen();
-	    /*
-	    tminfo._sigMS = kmat->deflectRMS(); // TODO
-	    */
 	tminfo._doca = i_straw.doca();
 	tminfo._tlen = i_straw.trkLen();
 
@@ -262,6 +275,35 @@ namespace mu2e {
 	trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
       }
       trkqualInfo._trkqual = tqual.MVAOutput();
+    }
+
+    void fillHelixInfo(const KalSeed& kseed, double bz0, HelixInfo& hinfo) {
+      // navigate down to the HelixSeed
+      auto hhh = kseed.helix();
+      if(hhh.isNull() && kseed.kalSeed().isNonnull())
+	hhh = kseed.kalSeed()->helix();
+      if(hhh.isNonnull()){
+      // count hits, active and not
+	for(size_t ihit=0;ihit < hhh->hits().size(); ihit++){
+	  auto const& hh = hhh->hits()[ihit];
+	  hinfo._nch++;
+	  hinfo._nsh += hh.nStrawHits();
+	  if(!hh.flag().hasAnyProperty(StrawHitFlag::outlier)){
+	    hinfo._ncha++;
+	    hinfo._nsha += hh.nStrawHits();
+	  }
+	  if( hhh->status().hasAllProperties(TrkFitFlag::TPRHelix))
+	    hinfo._flag = 1;
+	  else if( hhh->status().hasAllProperties(TrkFitFlag::CPRHelix))
+	    hinfo._flag = 2;
+	  hinfo._t0err = hhh->t0().t0Err();
+	  hinfo._mom = 0.299792*hhh->helix().momentum()*bz0; //FIXME!
+	  hinfo._chi2xy = hhh->helix().chi2dXY();
+	  hinfo._chi2fz = hhh->helix().chi2dZPhi();
+	  if(hhh->caloCluster().isNonnull())
+	    hinfo._ecalo  = hhh->caloCluster()->energyDep();
+	}
+      }
     }
   }
 }

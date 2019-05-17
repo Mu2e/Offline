@@ -1,0 +1,4 @@
+physics.filters.caloCalibCosmicFilter.debugLevel      : 0	         
+physics.filters.caloCalibCosmicFilter.MinNCrystalHits : 7	         
+physics.filters.caloCalibCosmicFilter.MinEnergy       : 150.0     
+physics.filters.caloCalibCosmicFilter.MaxEnergy       : 600.0       

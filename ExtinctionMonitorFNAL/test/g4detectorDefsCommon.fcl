@@ -25,7 +25,7 @@ END_PROLOG
 
 source : {
    module_type : EmptyEvent
-   maxEvents : 10
+   maxEvents : 100
 }
 
 services : {
@@ -73,11 +73,11 @@ physics : {
       //      geom : { module_type : GeometryRecorder }
    }
    analyzers: {
-      //        vdprint: {
-	 //            module_type: EMFCPrint
-	 //            inputModuleLabel  : "g4run"
-	 //            inputInstanceName : "virtualdetector"
-	 //        }
+           //   vdprint: {
+	     //        module_type: EMFCPrint
+	     //        inputModuleLabel  : "g4run"
+	     //        inputInstanceName : "virtualdetector"
+	     //    }
       emfprintsim: {
          module_type: EMFDetPrintSim
          inputModuleLabel  : "g4run"
@@ -93,7 +93,7 @@ physics : {
    tprint : [ generate, g4run ]
    //    gm  : [ geom ]
 
-   //eprint: [ vdprint, emfprintsim, emfSimHits ]
+  // eprint: [ vdprint, emfprintsim, emfSimHits ]
    eprint: [ emfSimHits, emfprintsim ]
    out : [ FullOutput ]
 
@@ -106,15 +106,11 @@ outputs: {
    dump: { module_type: DataProductDump }
 }
 
-physics.producers.g4run.physics.physicsListName: "QGSP_BERT_MU2ER1"
+physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 
 //----------------------------------------------------------------
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
-
-// somewhat reduce the amount of "volatile" printouts
-services.message.destinations.log.noTimeStamps : true
-services.message.statistics.noTimeStamps : true
 
 // This tells emacs to view this file in the JavaScript mode.
 // Local Variables:

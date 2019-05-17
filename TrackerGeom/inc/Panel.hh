@@ -31,13 +31,10 @@
 
 namespace mu2e {
 
-  class Tracker;
-
   class Panel{
 
-    friend class Plane;
-    friend class TTracker;
-    friend class TTrackerMaker;
+    friend class TrackerMaker;
+    friend class Tracker; // needed for deep copy
 
   public:
 
@@ -85,7 +82,7 @@ namespace mu2e {
     // Mid-point position of the average (over the layers) of the primary
     // straws, and (collective) straw direction.
     // (The primary straw of each layer is the straw used to establish position.
-    //  In the TTracker the primary straw is the innermost straw.)
+    //  In the Tracker the primary straw is the innermost straw.)
     // *** In a multi-layer geometry, the straw0MidPoint ***
     // ***        need not lie on any actaul straw       ***
     CLHEP::Hep3Vector straw0MidPoint()  const { return _straw0MidPoint;  }
@@ -116,55 +113,12 @@ namespace mu2e {
     double             getEBKeyPhiExtraRotation() const { return _EBKeyPhiExtraRotation; }
 
     // On readback from persistency, recursively recompute mutable members.
-    void fillPointers ( const Tracker& tracker ) const;
+    void fillPointers ( const Tracker* tracker ) const;
 
-#ifndef __CINT__
-    /*
-    template <class F>
-    void for_each_layer( F f) const{
-      std::for_each ( _layers.begin(),
-                      _layers.end(),
-                      f);
-    }
-
-    template <class F>
-    void for_each_straw( F f) const {
-      for_each_layer( boost::bind( Layer::for_each<F>, _1, f));
-    }
-    */
-
-    // Loop over all straws and call F.
-    // F can be a class with an operator() or a free function.
-    template <class F>
-    inline void forAllStraws ( F& f) const{
-      for ( const auto& sp : _straws2_p ) {
-        f(*sp);
-      }
-    }
-
-    // template <class F>
-    // inline void forAllLayers ( F& f) const{
-    //   for ( std::vector<Layer>::const_iterator i=_layers.begin(), e=_layers.end();
-    //         i !=e; ++i){
-    //     f(*i);
-    //   }
-    // }
-
-#endif
 
   protected:
 
     PanelId _id;
-
-    // std::vector<Layer> _layers;
-
-    // const Layer& getLayer ( int n ) const {
-    //   return _layers.at(n);
-    // }
-
-    // const Layer& getLayer ( const LayerId& layid) const {
-    //   return _layers.at(layid.getLayer());
-    // }
 
     std::array<Straw const*, StrawId::_nstraws> _straws2_p;
 
@@ -172,9 +126,6 @@ namespace mu2e {
     std::vector<CLHEP::Hep3Vector> corners;
 
     // Properties of the enclosing logical volume (box).
-
-    // Half lengths of the logical box.
-    // std::vector<double> _boxHalfLengths;
 
     std::vector<CLHEP::Hep3Vector> _basePosition;
     CLHEP::Hep3Vector _baseDelta;

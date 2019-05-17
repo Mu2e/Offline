@@ -9,8 +9,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -32,7 +31,6 @@
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"

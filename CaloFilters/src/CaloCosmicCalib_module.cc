@@ -40,6 +40,7 @@ namespace mu2e
     art::InputTag _clTag;
     int           _minncrystalhits;
     double        _minenergy, _maxenergy;
+    std::string   _trigPath;
     int           _debug;
     // counters
     unsigned _nevt, _npass;
@@ -50,6 +51,7 @@ namespace mu2e
     _minncrystalhits(pset.get<int>          ("MinNCrystalHits")),
     _minenergy      (pset.get<double>       ("MinEnergy")), //MeV
     _maxenergy      (pset.get<double>       ("MaxEnergy")), //MeV
+    _trigPath       (pset.get<std::string>  ("triggerPath")),
     _debug          (pset.get<int>          ("debugLevel")),
     _nevt(0), _npass(0)
   {
@@ -92,6 +94,7 @@ namespace mu2e
         ++_npass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::caloCalib);
+	triginfo->_triggerPath = _trigPath;
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(clcol->begin(),icl);

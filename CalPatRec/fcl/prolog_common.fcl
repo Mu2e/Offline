@@ -33,11 +33,11 @@ CommonTrk                : {
 # helix reconstruction: put downstream electron and positron helices together
 #------------------------------------------------------------------------------
 CommonTrk.helix_reco_De   : [ CalTimePeakFinder, DeltaFinder, CalHelixFinderDe, MHFinderCprDe, 
-			      TimeClusterFinder, HelixFinder, MHFinderTprDe    ,
+			      TimeClusterFinderDe, HelixFinderDe, MHFinderTprDe    ,
 			      MHFinderDe ]
 
 CommonTrk.helix_reco_Dmu  : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, MHFinderCprDmu, 
-			      TimeClusterFinderMu, HelixFinderMu, MHFinderTprDmu    ,
+			      TimeClusterFinderDmu, HelixFinderDmu, MHFinderTprDmu    ,
 			      MHFinderDmu ]
 #------------------------------------------------------------------------------
 # by default, write out two lists of tracks corresponding to two different 

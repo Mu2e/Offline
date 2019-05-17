@@ -32,15 +32,15 @@ namespace mu2e {
 
   void MinimalPhysicsList::ConstructParticle(){
 
-    G4ChargedGeantino::ChargedGeantinoDefinition();
-    G4Electron::ElectronDefinition();
-    G4Positron::PositronDefinition();
-    G4MuonPlus::MuonPlusDefinition();
-    G4MuonMinus::MuonMinusDefinition();
-    G4Gamma::GammaDefinition();
+    G4ChargedGeantino::Definition();
+    G4Electron::Definition();
+    G4Positron::Definition();
+    G4MuonPlus::Definition();
+    G4MuonMinus::Definition();
+    G4Gamma::Definition();
     G4Proton::Definition();
     G4AntiProton::Definition();
-    G4GenericIon::GenericIonDefinition();
+    G4GenericIon::Definition();
 
   }
 

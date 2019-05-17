@@ -73,7 +73,6 @@ namespace mu2e {
 		 _config.bFieldOverride(),
 		 strawDrift);
  
-    if(_config.verbose()>1) ptr->print(cout);
 
     return ptr;
   }

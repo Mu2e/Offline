@@ -15,10 +15,10 @@
 // conditions
 #include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
 
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeometryService.hh"
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
@@ -28,12 +28,12 @@
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // data
 #include "DataProducts/inc/Helicity.hh"
-#include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/KalRepCollection.hh"
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
+#include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "TrkReco/inc/KalFitData.hh"
 #include "TrkPatRec/inc/KalFinalFit_types.hh"
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
@@ -89,19 +89,21 @@ namespace mu2e
     art::InputTag const _shfTag;
     art::ProductToken<StrawHitFlagCollection> const _shfToken;
     art::ProductToken<KalSeedCollection> const _ksToken;
+    art::ProductToken<CaloClusterCollection> const _clToken;
     // flags
     StrawHitFlag _addsel;
     StrawHitFlag _addbkg;
     TrkFitFlag _goodseed;
     double _maxdtmiss;
     // outlier cuts
-    double _maxadddoca, _maxaddchi;
+    double _maxadddoca, _maxaddchi, _maxtchchi;
     TrkParticle _tpart; // particle type being searched for
     TrkFitDirection _fdir;  // fit direction in search
     // event objects
     const ComboHitCollection* _chcol;
     const StrawHitFlagCollection* _shfcol;
     const KalSeedCollection * _kscol;
+    const CaloClusterCollection* _clCol;
     // Kalman fitter
     KalFit _kfit;
     KalFitData _result;
@@ -114,8 +116,10 @@ namespace mu2e
     bool findData(const art::Event& e);
     void findMissingHits(KalFitData&kalData);
     void findMissingHits_cpr(StrawResponse::cptr_t srep, KalFitData&kalData);
+    bool hasTrkCaloHit(KalFitData&kalData);
 
     ProditionsHandle<StrawResponse> _strawResponse_h;
+    ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
     // flow diagnostic
   };
 
@@ -131,6 +135,7 @@ namespace mu2e
     _shfTag{pset.get<art::InputTag>("StrawHitFlagCollection", "none")},
     _shfToken{consumes<StrawHitFlagCollection>(_shfTag)},
     _ksToken{consumes<KalSeedCollection>(pset.get<art::InputTag>("SeedCollection"))},
+    _clToken{consumes<CaloClusterCollection>(pset.get<art::InputTag>("CaloClusterCollection"))},
     _addsel(pset.get<vector<string>>("AddHitSelectionBits", vector<string>{})),
     _addbkg(pset.get<vector<string>>("AddHitBackgroundBits", vector<string>{})),
     _goodseed(pset.get<vector<string>>("GoodKalSeedFitBits", vector<string>{})),
@@ -145,7 +150,6 @@ namespace mu2e
 
     produces<KalRepCollection>();
     produces<KalRepPtrCollection>();
-    produces<AlgorithmIDCollection>();
     produces<StrawHitFlagCollection>();
     produces<KalSeedCollection>();
 //-----------------------------------------------------------------------------
@@ -177,7 +181,7 @@ namespace mu2e
   }
 //-----------------------------------------------------------------------------
   void KalFinalFit::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
+    mu2e::GeomHandle<mu2e::Tracker> th;
     _data.tracker     = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
@@ -185,12 +189,15 @@ namespace mu2e
     
     _kfit.setCalorimeter (_data.calorimeter);
     _kfit.setTracker     (_data.tracker);
+    
+    _kfit.setCaloGeom();
   }
 
 
   void KalFinalFit::produce(art::Event& event ) {
 
     auto srep = _strawResponse_h.getPtr(event.id());
+    auto detmodel = _mu2eDetector_h.getPtr(event.id());
 
     // event printout
     _iev=event.id().event();
@@ -199,10 +206,11 @@ namespace mu2e
     if(!findData(event)){
       throw cet::exception("RECO")<<"mu2e::KalFinalFit: data missing or incomplete"<< endl;
     }
+    // find the cluster handle (again).  This is inefficient and hard to follow FIXME!
+    auto clH = event.getValidHandle(_clToken);
     // create output
     unique_ptr<KalRepCollection>    krcol(new KalRepCollection );
     unique_ptr<KalRepPtrCollection> krPtrcol(new KalRepPtrCollection );
-    unique_ptr<AlgorithmIDCollection>  algs     (new AlgorithmIDCollection   );
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
@@ -223,20 +231,25 @@ namespace mu2e
       _data.kscol  = kscol.get();
     }
 
-    _result.fitType     = 1;
-    _result.event       = &event ;
-    _result.chcol       = _chcol ;
-    _result.shfcol      = _shfcol ;
+    _result.fitType        = 1;
+    _result.event          = &event ;
+    _result.chcol          = _chcol ;
+    _result.shfcol         = _shfcol ;
+    if (_kfit.useTrkCaloHit()) _result.caloClusterCol = _clCol;
     //    _result.tpart       = _tpart ;
-    _result.fdir        = _fdir  ;
+    _result.fdir           = _fdir  ;
 
     // loop over the seed fits.  I need an index loop here to build the Ptr
     for(size_t ikseed=0; ikseed < _kscol->size(); ++ikseed) {
       KalSeed const& kseed(_kscol->at(ikseed));
       _result.kalSeed = & kseed;
       //      _result.tpart   = kseed.particle();
-
-      if (kseed.caloCluster()) _result.caloCluster = kseed.caloCluster().get();
+      // create a Ptr for possible added CaloCluster
+      art::Ptr<CaloCluster> ccPtr;
+      if (kseed.caloCluster()){
+	_result.caloCluster = kseed.caloCluster().get(); // should not be using KalFitData as a common block FIXME!
+	ccPtr = kseed.caloCluster(); // remember the Ptr for creating the TrkCaloHitSeed and KalSeed Ptr
+      }
 
       // only process fits which meet the requirements
       if(kseed.status().hasAllProperties(_goodseed)) {
@@ -256,7 +269,7 @@ namespace mu2e
 
 	// _kfit.makeTrack(_shcol,kseed,krep);
 	_result.init();
-	_kfit.makeTrack(srep,_result);
+	_kfit.makeTrack(srep,detmodel,_result);
 
 	// KalRep *krep = _result.stealTrack();
 
@@ -282,12 +295,23 @@ namespace mu2e
 	  }else {
 	    findMissingHits(_result);
 	  }
+	  //check the presence of a TrkCaloHit; if it's not present, add it
+	  if (_kfit.useTrkCaloHit() ){
+	    if (!hasTrkCaloHit(_result)){
+	      int icc = _kfit.addTrkCaloHit(detmodel, _result);
+	      if(icc >=0){
+	      // set the CaloCluster Ptr for the TrkCaloHitSeed.
+		ccPtr = art::Ptr<CaloCluster>(clH,(size_t)icc);	
+	      }
+	    }
+	    if ( hasTrkCaloHit(_result)) _kfit.weedTrkCaloHit(_result);
+	  }
 
 	  if(_result.missingHits.size() > 0){
-	    _kfit.addHits(srep,_result,_maxaddchi);
+	    _kfit.addHits(srep,detmodel,_result,_maxaddchi);
 	  }else if (_cprmode){
 	    int last_iteration  = -1;
-	    _kfit.fitIteration(_result,last_iteration);
+	    _kfit.fitIteration(detmodel,_result,last_iteration);
 	  }
 	  if(_debug > 1)
 	    cout << "AddHits Fit result " << _result.krep->fitStatus()
@@ -304,7 +328,8 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
-	  if (_cprmode)	_kfit.updateT0(_result);
+	  int last_iteration  = -1;
+	  if (_cprmode)	_kfit.updateT0(_result, last_iteration);
 
 	  // warning about 'fit current': this is not an error
 	  if(!_result.krep->fitCurrent()){
@@ -323,23 +348,12 @@ namespace mu2e
 	  KalRep *krep = _result.stealTrack();
 	  krcol->push_back(krep);
 
-	  // save the alorithm bit
-	  int best(1),mask(1);
-	  if (_cprmode==0) {
-	    best = AlgorithmID::TrkPatRecBit;
-	    mask = 1 << AlgorithmID::TrkPatRecBit;
-	  } else if (_cprmode==1) {
-	    best = AlgorithmID::CalPatRecBit;
-	    mask = 1 << AlgorithmID::CalPatRecBit;
-	  }
-	  algs->push_back(AlgorithmID(best,mask));
-
-
 	  int index = krcol->size()-1;
 	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
 	  // convert successful fits into 'seeds' for persistence
 	  TrkFitFlag fflag(kseed.status());
-	  fflag.merge(TrkFitFlag::kalmanOK);
+	  fflag.merge(TrkFitFlag::KFF);
+	  if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
 	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
 	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
 	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
@@ -378,7 +392,7 @@ namespace mu2e
 	  if(tch != 0){
 	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
 	    // set the Ptr using the helix: this could be more direct FIXME!
-	    fseed._chit._cluster = fseed._helix->caloCluster();
+	    fseed._chit._cluster = ccPtr;
 	    // create a helix segment at the TrkCaloHit
 	    KalSegment kseg;
 	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
@@ -403,7 +417,6 @@ namespace mu2e
     event.put(move(krcol));
     event.put(move(krPtrcol));
     event.put(move(kscol));
-    event.put(move(algs));
     event.put(move(shfcol));
   }
   
@@ -423,6 +436,10 @@ namespace mu2e
         throw cet::exception("RECO")<<"mu2e::KalFinalFit: inconsistent input collections"<< endl;
     } else {
       _shfcol = 0;
+    }
+    if(_kfit.useTrkCaloHit() == 1){
+      auto clH = evt.getValidHandle(_clToken);
+      _clCol = clH.product();
     }
 
     return _chcol != 0 && _kscol != 0;
@@ -458,6 +475,9 @@ namespace mu2e
 // 2015-02-11 change the selection bit for searching for missed hits
 //----------------------------------------------------------------------
       ComboHit const& sh    = _chcol->at(istr);
+      if (sh.flag().hasAnyProperty(StrawHitFlag::dead)) {
+	continue;
+      }
 //-----------------------------------------------------------------------------
 // I think, we want to check the radial bit: if it is set, than at least one of
 // the two measured times is wrong...
@@ -479,7 +499,9 @@ namespace mu2e
 	double            zhit = hpos.z();
 
 	for (std::vector<TrkHit*>::iterator it=krep->hitVector().begin(); it!=krep->hitVector().end(); it++) {
-	  tsh = static_cast<TrkStrawHit*> (*it);
+	  //	  tsh = static_cast<TrkStrawHit*> (*it);
+	  tsh = dynamic_cast<TrkStrawHit*> (*it);
+	  if (tsh ==0)                  continue;
 	  int tsh_index = tsh->index();
 	  if (tsh_index == istr) {
 	    found = true;
@@ -592,7 +614,7 @@ namespace mu2e
     //clear the array
     kalData.missingHits.clear();
 
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
     //  Trajectory info
     Hep3Vector tdir;
     HepPoint tpos;
@@ -603,6 +625,9 @@ namespace mu2e
     for(unsigned istr=0; istr<nstrs;++istr){
       if(_shfcol->at(istr).hasAllProperties(_addsel)&& !_shfcol->at(istr).hasAnyProperty(_addbkg)){
 	ComboHit const& sh = _chcol->at(istr);
+	if (sh.flag().hasAnyProperty(StrawHitFlag::dead)) {
+	  continue;
+	}
 	if(fabs(_chcol->at(istr).time()-krep->t0()._t0) < _maxdtmiss) {
 	  // make sure we haven't already used this hit
 	  vector<TrkStrawHit*>::iterator ifnd = find_if(tshv.begin(),tshv.end(),FindTrkStrawHit(sh));
@@ -613,7 +638,7 @@ namespace mu2e
 	    CLHEP::Hep3Vector hdir = straw.getDirection();
 	    // convert to HepPoint to satisfy antique BaBar interface: FIXME!!!
 	    HepPoint spt(hpos.x(),hpos.y(),hpos.z());
-	    TrkLineTraj htraj(spt,hdir,-straw.getHalfLength(),straw.getHalfLength());
+	    TrkLineTraj htraj(spt,hdir,-straw.halfLength(),straw.halfLength());
 	    // estimate flightlength along track.  This assumes a constant BField!!!
 	    double fltlen = (hpos.z()-tpos.z())/tdir.z();
 	    // estimate hit length
@@ -635,6 +660,26 @@ namespace mu2e
       }
     }
   }
+  
+//--------------------------------------------------------------------------------
+// function to check the presence of a TrkCaloHit in the KalRep
+//--------------------------------------------------------------------------------
+  bool KalFinalFit::hasTrkCaloHit(KalFitData&kalData){
+    bool retval(false);
+
+    TrkHitVector *thv      = &(kalData.krep->hitVector());    
+    for (auto ihit=thv->begin();ihit!=thv->end(); ++ihit){
+      TrkCaloHit*hit = dynamic_cast<TrkCaloHit*>(*ihit);
+      if (hit != 0){
+	retval = true;
+	break;
+      }
+    }
+    
+    return retval;
+  }
+
+  
 }// mu2e
 
 DEFINE_ART_MODULE(mu2e::KalFinalFit);

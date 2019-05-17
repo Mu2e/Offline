@@ -8,7 +8,6 @@
 #include "MCDataProducts/inc/MCRelationship.hh"
 
 #include "TrackerGeom/inc/Tracker.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 #include "BTrk/TrkBase/TrkHelixUtils.hh"
 
@@ -106,27 +105,42 @@ namespace mu2e {
 	spp = sct[0]._spp;
     }
 
-    void findMCTrk(const KalSeed& kseed,std::vector<spcount>& sct, StrawDigiMCCollection const& mcdigis) {
+    void findMCTrk(const KalSeed& kseed,std::vector<spcount>& sct, StrawDigiMCCollection const& mcdigis, bool saveall) {
       sct.clear();
       // find the SimParticles which contributed hits.
       // loop through the straw hits from the track
       static StrawHitFlag active(StrawHitFlag::active);
-      for(const auto& i_hit : kseed.hits()) {
+      for(const auto& tshs : kseed.hits()) {
 	// loop over the hits and find the associated steppoints
-	bool isactive = i_hit.flag().hasAllProperties(active);
-	StrawDigiMC const& mcdigi = mcdigis.at(i_hit.index());
+	bool isactive = tshs.flag().hasAllProperties(active);
+	StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
 	art::Ptr<SimParticle> spp = mcdigi.earlyStepPointMC()->simParticle();
 	// see if this particle has already been found; if so, increment, if not, add it
 	bool found(false);
-	for(size_t isp=0;isp<sct.size();++isp){
-	  // count direct daughter/parent as part the same particle
-	  if(sct[isp]._spp == spp ){
+	for(auto& spc : sct ) {
+	  if(spc._spp == spp ){
 	    found = true;
-	    sct[isp].append(spp,isactive);
+	    spc.append(spp,isactive);
 	    break;
 	  }
 	}
 	if(!found)sct.push_back(spcount(spp,isactive));
+      }
+      if(saveall){
+	// add the SimParticles that contributed non-trigger energy.  These have 0 count
+	for(const auto& tshs : kseed.hits()) {
+	  StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
+	  for(auto const& spmc : mcdigi.stepPointMCs()){
+	    bool found(false);
+	    for(auto& spc : sct ) {
+	      if(spc._spp == spmc->simParticle() ){
+		found = true;
+		break;
+	      }
+	    }
+	    if(!found)sct.push_back(spcount(spmc->simParticle()));
+	  }
+	}
       }
       // sort by # of contributions
       sort(sct.begin(),sct.end(),spcountcomp());
@@ -145,34 +159,65 @@ namespace mu2e {
     }
 
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& ndigigood, int& nambig) {
+      static double mingood = 0.9; // this is clumsy!
       ndigi = 0; ndigigood = 0, nambig = 0;
-      
+      // find the first segment momentum as reference
+      double simmom = 1.0;
+      if(kseedmc.simParticles().size()>0)
+	simmom = sqrt(kseedmc.simParticles().front()._mom.mag2());
       for(size_t i_digi = 0; i_digi < kseedmc._tshmcs.size(); ++i_digi) {
-	const auto& i_tshmc = kseedmc._tshmcs.at(i_digi);
+	const auto& tshmc = kseedmc._tshmcs.at(i_digi);
 
-	if (kseedmc.simParticle(i_tshmc._spindex)._rel == MCRelationship::same) {
+	if (kseedmc.simParticle(tshmc._spindex)._rel == MCRelationship::same) {
 	  ++ndigi;
-
-	  ++ndigigood;
-
-	  //	  if(spmcp->momentum().mag()/spp->startMomentum().mag() > mingood) {
-	  //	  ++ngood;
-	  // }
+	  if(sqrt(tshmc.particleMomentum().mag2())/simmom > mingood)	  ++ndigigood;
 
 	  // easiest way to get MC ambiguity is through info object
 	  TrkStrawHitInfoMC tshinfomc;
-	  fillHitInfoMC(kseedmc,tshinfomc,i_tshmc);  
-
-	  const auto& ihit = kseed.hits().at(i_digi);
-	  if(ihit.ambig()*tshinfomc._ambig > 0) {
-	    ++nambig;
+	  fillHitInfoMC(kseedmc,tshinfomc,tshmc);  
+	  // the MCDigi list can be longer than the # of TrkStrawHits in the seed:
+	  if(i_digi < kseed.hits().size()){ 
+	    const auto& ihit = kseed.hits().at(i_digi);
+	    if(ihit.ambig()*tshinfomc._ambig > 0) {
+	      ++nambig;
+	    }
 	  }
 	}
       }
     }
 
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, const KalSeed& kseed, 
-    TrkInfoMC& trkinfomc) {
+    void primaryRelation(PrimaryParticle const& primary,
+	StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,
+	art::Ptr<SimParticle>& primarysim, unsigned& nprimary, MCRelationship& mcrel) {
+      // reset
+      primarysim = art::Ptr<SimParticle>();
+      nprimary = 0;
+      mcrel = MCRelationship();
+      // loop over primary sim particles
+      for( auto spp : primary.primarySimParticles()){
+	unsigned count(0);
+	art::Ptr<SimParticle> sp;
+	for(auto sdi : indices) {
+	// find relation of this digi to the primary
+	  MCRelationship prel(spp,sdmccol.at(sdi).earlyStepPointMC()->simParticle());
+	  // count the highest relationship for these digis
+	  if(prel == mcrel && prel != MCRelationship::none)
+	    count++;
+	  else if(prel > mcrel){
+	    mcrel = prel;
+	    count = 1;
+	    sp = sdmccol.at(sdi).earlyStepPointMC()->simParticle();
+	  }
+	}
+	if(count > nprimary){
+	  nprimary = count;
+	  primarysim = sp;
+	}
+      }
+    }
+
+    void fillTrkInfoMC(const KalSeedMC& kseedmc, art::Ptr<SimParticle>const& trkprimary,
+      const KalSeed& kseed, TrkInfoMC& trkinfomc) {
       // use the primary match of the track
       if(kseedmc.simParticles().size() > 0){
 	auto const& simp = kseedmc.simParticles().front();
@@ -181,43 +226,55 @@ namespace mu2e {
 	trkinfomc._proc = simp._proc;
 	trkinfomc._nhits = simp._nhits; // number of hits from the primary particle
 	trkinfomc._nactive = simp._nactive; // number of active hits from the primary particle
-	trkinfomc._prel = simp._rel.relationship(); // relationship of the track primary to the event primary
+	trkinfomc._prel = simp._rel; // relationship of the track primary to the event primary
       }
 
       int ndigi = -1, ndigigood = -1, nambig = -1;
       TrkMCTools::countDigis(kseedmc, kseed, ndigi, ndigigood, nambig);
-      trkinfomc._ndigi = ndigi; // TODO
-      trkinfomc._ndigigood = ndigigood; // TODO
-      trkinfomc._nambig = nambig; // TODO
+      trkinfomc._ndigi = ndigi;
+      trkinfomc._ndigigood = ndigigood;
+      trkinfomc._nambig = nambig;
+      // fill the origin information of this SimParticle
+      GeomHandle<DetectorSystem> det;
+      trkinfomc._otime = trkprimary->startGlobalTime(); // this doesn't include time offsets FIXME!!
+      trkinfomc._opos = Geom::toXYZVec(det->toDetector(trkprimary->startPosition()));
+      trkinfomc._omom = Geom::toXYZVec(trkprimary->startMomentum());
     }
 
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep, const PrimaryParticle& primary) {
-
-      const auto& genParticle = primary.primary();
-
-      trkinfomcstep._time = genParticle.time(); // TODO
-      trkinfomcstep._mom = std::sqrt(genParticle.momentum().px()*genParticle.momentum().px() + 
-				     genParticle.momentum().py()*genParticle.momentum().py() + 
-				     genParticle.momentum().pz()*genParticle.momentum().pz());
+    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary, 
+      GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary) {
       GeomHandle<DetectorSystem> det;
-      trkinfomcstep._pos = det->toDetector(genParticle.position());
 
-      GeomHandle<BFieldManager> bfmgr;
-      GlobalConstantsHandle<ParticleDataTable> pdt;      
-      static CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
-      static double bz = bfmgr->getBField(vpoint_mu2e).z();
-
-      CLHEP::HepVector parvec(5,0);
-      double hflt(0.0);
-      HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
-      CLHEP::Hep3Vector mom = genParticle.momentum().vect();
-      double charge = pdt->particle(genParticle.pdgId()).ref().charge();
-      TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
-      trkinfomcstep._hpar = helixpar(parvec);
+// fill primary info from the primary GenParticle
+      const auto& genParticle = primary.primary();
+      priinfo._pdg = genParticle.pdgId();
+      priinfo._gen = genParticle.generatorId().id();
+      priinfo._time = genParticle.time(); // doesn't include offsets FIXME!
+      priinfo._mom = Geom::toXYZVec(genParticle.momentum());
+      priinfo._pos = Geom::toXYZVec(det->toDetector(genParticle.position()));
+      // go through the SimParticles of this primary, and find the one most related to the
+      // downstream fit (KalSeedMC)
+      auto bestprimarysp = primary.primarySimParticles().front();
+      MCRelationship bestrel;
+      for(auto const& spp : primary.primarySimParticles()){
+	MCRelationship mcrel(spp,trkprimary);
+	if(mcrel > bestrel){
+	  bestrel = mcrel;
+	  bestprimarysp = spp;
+	}
+      }
+      const auto& gp = bestprimarysp->genParticle();
+      if(gp.isNonnull()){
+	geninfo._pdg = gp->pdgId();
+	geninfo._gen = gp->generatorId().id();
+	geninfo._time = gp->time(); // doesn't include offsets FIXME!
+	geninfo._mom = Geom::toXYZVec(gp->momentum());
+	geninfo._pos = Geom::toXYZVec(det->toDetector(gp->position()));
+      }
     }
 
     void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,
-      std::vector<int> const& vids) {
+	std::vector<int> const& vids) {
 
       GeomHandle<BFieldManager> bfmgr;
       GeomHandle<DetectorSystem> det;
@@ -226,22 +283,26 @@ namespace mu2e {
       static double bz = bfmgr->getBField(vpoint_mu2e).z();
 
       const auto& mcsteps = kseedmc._vdsteps;
+      double dmin = FLT_MAX;
       for (const auto& i_mcstep : mcsteps) {
 	for(auto vid : vids) {
 	  if (i_mcstep._vdid == vid) {
-	    trkinfomcstep._time = i_mcstep._time;
-	    trkinfomcstep._mom = std::sqrt(i_mcstep._mom.mag2());
-	    trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
+	    // take the earliest time if there are >1; this avoids picking up
+	    // the albedo track from the calorimeter which can re-enter the tracker
+	    if(i_mcstep._time < dmin){
+	      dmin = i_mcstep._time;
+	      trkinfomcstep._time = i_mcstep._time;
+	      trkinfomcstep._mom = Geom::Hep3Vec(i_mcstep._mom);
+	      trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
 
-	    CLHEP::HepVector parvec(5,0);
-	    double hflt(0.0);
-	    HepPoint ppos(trkinfomcstep._pos._x, trkinfomcstep._pos._y, trkinfomcstep._pos._z);
-	    CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
-	    double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
-	    TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
-	    trkinfomcstep._hpar = helixpar(parvec);
-
-	    break; // only do one step, don't want to keep overwriting
+	      CLHEP::HepVector parvec(5,0);
+	      double hflt(0.0);
+	      HepPoint ppos(trkinfomcstep._pos.x(), trkinfomcstep._pos.y(), trkinfomcstep._pos.z());
+	      CLHEP::Hep3Vector mom = Geom::Hep3Vec(i_mcstep._mom);
+	      double charge = pdt->particle(kseedmc.simParticle()._pdg).ref().charge();
+	      TrkHelixUtils::helixFromMom( parvec, hflt,ppos, mom,charge,bz);
+	      trkinfomcstep._hpar = helixpar(parvec);
+	    }
 	  }
 	}
       }
@@ -251,20 +312,20 @@ namespace mu2e {
       tshinfomcs.clear();
 
       for(const auto& i_tshmc : kseedmc._tshmcs) {
-      	TrkStrawHitInfoMC tshinfomc;
+	TrkStrawHitInfoMC tshinfomc;
 	fillHitInfoMC(kseedmc, tshinfomc, i_tshmc);
       	tshinfomcs.push_back(tshinfomc);
       }
     }
 
     void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc) {
-      const Tracker& tracker = getTrackerOrThrow();
+      const Tracker& tracker = *GeomHandle<Tracker>();
 
       const SimPartStub& simPart = kseedmc.simParticle(tshmc._spindex);
       tshinfomc._pdg = simPart._pdg;
       tshinfomc._proc = simPart._proc;
       tshinfomc._gen = simPart._gid.id();
-      tshinfomc._rel = simPart._rel.relationship();
+      tshinfomc._rel = simPart._rel;
       tshinfomc._t0 = tshmc._time;
       tshinfomc._edep = tshmc._energySum;
       tshinfomc._mom = std::sqrt(tshmc._mom.mag2());
@@ -285,8 +346,7 @@ namespace mu2e {
       tshinfomc._doca = pca.dca();
     }
 
-   void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, 
-      CaloClusterInfoMC& ccimc) {
+    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc) {
       ccimc._nsim = ccmc.energyDeposits().size();
       ccimc._etot = ccmc.totalEnergyDeposit();
       ccimc._tavg = ccmc.averageTime();
@@ -294,7 +354,7 @@ namespace mu2e {
 	auto const& primary = ccmc.energyDeposits().front();
 	ccimc._eprimary = primary.energyDeposit();
 	ccimc._tprimary = primary.time();
-	ccimc._prel = primary._rel.relationship();
+	ccimc._prel = primary._rel;
       }
     }
   }

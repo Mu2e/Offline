@@ -1,0 +1,4 @@
+#include "JobConfig/reco/mcdigis-trig_CRY.fcl"
+services.TFileService.fileName: "nts.owner.CRY-cosmic-general-mix.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.CRY-cosmic-general-mix.version.sequencer.art"
+

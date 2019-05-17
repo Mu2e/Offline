@@ -96,6 +96,7 @@ namespace mu2e {
     double                  _minClEnergy, _clEStep;
     double                  _minRDist   , _rDistStep;
     vector<double>          _minLH;
+    std::string             _trigPath;
 
   //Histograms need to load the templates for the signal and background hypothesis
     TH1F*       _signalHist1D[2][kN1DVar];
@@ -128,7 +129,8 @@ namespace mu2e {
     _clEStep                     (pset.get<double>        ("ClusterEnergyStep"    ,   10.)),   // MeV
     _minRDist                    (pset.get<double>        ("MinClusterRadialDist" ,  350.)),   // mm
     _rDistStep                   (pset.get<double>        ("ClusterRadialDistStep",   50.)),   // mm
-    _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})){   // likelihood threshold
+    _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})),   // likelihood threshold
+    _trigPath                    (pset.get<std::string>("triggerPath")){
 
     produces<TriggerInfo>();
 
@@ -421,6 +423,7 @@ namespace mu2e {
 	++_nPass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
+	triginfo->_triggerPath = _trigPath;
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);

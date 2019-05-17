@@ -61,7 +61,7 @@
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/TTrackerPlaneSupportSD.hh"
+#include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -80,12 +80,12 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eG4/inc/constructTTracker.hh"
+#include "Mu2eG4/inc/constructTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 // G4 includes
@@ -127,6 +127,8 @@
 #include "G4BogackiShampine23.hh"
 #endif
 #include "G4GDMLParser.hh"
+#include "G4ProductionCuts.hh"
+#include "G4Region.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
 
@@ -139,7 +141,7 @@ namespace mu2e {
   Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(fhicl::ParameterSet())
-    , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
+    , activeWr_Wl_SD_(_config.getBool("tracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
     , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
@@ -238,29 +240,6 @@ namespace mu2e {
       constructProtonAbsorber(_config);
       VolumeInfo calorimeterInfo = constructCal();
 
-      // creating regions to be able to asign special cut and EM options
-
-      const fhicl::ParameterSet& minRangeRegionCutsPSet{
-        pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
-
-      if (!minRangeRegionCutsPSet.is_empty()) {
-        const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
-        for(const auto& regionName : regionNames) {
-          G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
-          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
-          volInfo.logical->SetRegion(region);
-          region->AddRootLogicalVolume(volInfo.logical);
-        }
-      }
-
-      // special case for the tracker
-      if ( useEmOption4InTracker_
-           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
-        G4Region* region = new G4Region("TrackerMother");
-        trackerInfo.logical->SetRegion(region);
-        region->AddRootLogicalVolume(trackerInfo.logical);
-      }
-
       // This is just placeholder for now - and might be misnamed.
       constructMagnetYoke();
 
@@ -306,6 +285,51 @@ namespace mu2e {
           log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
       }
 
+      // creating regions to be able to asign special cut and EM options
+
+      const fhicl::ParameterSet& minRangeRegionCutsPSet{
+        pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
+
+      if (!minRangeRegionCutsPSet.is_empty()) {
+        const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
+        for(const auto& regionName : regionNames) {
+          G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
+          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
+          volInfo.logical->SetRegion(region);
+          region->AddRootLogicalVolume(volInfo.logical);
+
+          G4ProductionCuts* regionProductionCuts = new G4ProductionCuts();
+          G4double productionCut = minRangeRegionCutsPSet.get<double>(regionName);
+          regionProductionCuts->SetProductionCut(productionCut);
+          // the above sets the same cut for gamma, e- and e+, proton/ions
+          G4double protonProductionCut = pset_.get<double>("physics.protonProductionCut");
+          regionProductionCuts->SetProductionCut(protonProductionCut,"proton");
+          region->SetProductionCuts(regionProductionCuts);
+
+          if ( _verbosityLevel > 0 ) {
+            std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
+                      << regionName << " to " << productionCut << " mm and for proton to "
+                      << protonProductionCut << " mm" << std::endl;
+            std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: ";
+            for (auto const& rcut : regionProductionCuts->GetProductionCuts() ) {
+              std::cout << " " << rcut;
+            }
+            std::cout << std::endl;
+          }
+
+        }
+      }
+
+      // special case for the tracker when we need a region to set a
+      // different EM option even when no production cuts are set explicitly
+
+      if ( useEmOption4InTracker_
+           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+        G4Region* region = new G4Region("TrackerMother");
+        trackerInfo.logical->SetRegion(region);
+        region->AddRootLogicalVolume(trackerInfo.logical);
+      }
+
       constructStepLimiters();
 
       // Write out mu2e geometry into a gdml file.
@@ -330,14 +354,14 @@ namespace mu2e {
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
 
-    if ( _config.getBool("hasTTracker",false) ) {
-      if ( _config.getInt("TTrackerVersion",3)  != 5 ){
+    if ( _config.getBool("hasTracker",false) ) {
+      if ( _config.getInt("TrackerVersion",3)  != 5 ){
         throw cet::exception("GEOM")
-          << "Current code only supports TTrackerVersion = 5\n"
+          << "Current code only supports TrackerVersion = 5\n"
           << "Requested version: "
-          << _config.getInt("TTrackerVersion",3);
+          << _config.getInt("TrackerVersion",3);
       }
-      trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config);
+      trackerInfo = constructTrackerv5( detSolDownstreamVacInfo, _config);
     }
 
     if ( _verbosityLevel > 0) {
@@ -603,9 +627,9 @@ namespace mu2e {
     }
 
     // Now do all of the tracker related envelope volumes, using regex's with wildcards.
-    stepLimiterHelper("^TTrackerPlaneEnvelope_.*$",                 stepLimit );
-    stepLimiterHelper("^TTrackerSupportServiceEnvelope_.*$",        stepLimit );
-    stepLimiterHelper("^TTrackerSupportServiceSectionEnvelope_.*$", stepLimit );
+    stepLimiterHelper("^TrackerPlaneEnvelope_.*$",                 stepLimit );
+    stepLimiterHelper("^TrackerSupportServiceEnvelope_.*$",        stepLimit );
+    stepLimiterHelper("^TrackerSupportServiceSectionEnvelope_.*$", stepLimit );
 
     // An option to limit the step size in these non-vaccum volumes to
     // visually validate geometry of the filter channel
@@ -683,36 +707,36 @@ namespace mu2e {
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from ConstructTTrackerTDR and constructTTrackerv3
-            if (LVname.find("TTrackerStrawGas_") != std::string::npos) {
+            //from ConstructTrackerTDR and constructTrackerv3
+            if (LVname.find("TrackerStrawGas_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(strawSD);
             }
         }//for
      }//if tracker
 
 
-/************************** TTrackerDS **************************/
+/************************** TrackerDS **************************/
      //done
-    if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
+    if(sdHelper_->enabled(StepInstanceName::trackerDS)) {
 
-        TTrackerPlaneSupportSD* ttdsSD =
-        new TTrackerPlaneSupportSD( SensitiveDetectorName::TTrackerPlaneSupport(), _config );
+        TrackerPlaneSupportSD* ttdsSD =
+        new TrackerPlaneSupportSD( SensitiveDetectorName::TrackerPlaneSupport(), _config );
         SDman->AddNewDetector(ttdsSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from constructTTrackerv3
-            if (LVname.find("TTrackerPlaneSupport_") != std::string::npos) {
+            //from constructTrackerv3
+            if (LVname.find("TrackerPlaneSupport_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttdsSD);
             }
 
-            //from constructTTrackerv3Detailed
-            if (LVname.find("TTrackerSupportElecCu") != std::string::npos) {
+            //from constructTrackerv3Detailed
+            if (LVname.find("TrackerSupportElecCu") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttdsSD);
             }
         }//for
-    }//if ttrackerDS
+    }//if trackerDS
 
 
 /************************** VirtualDetector **************************/
@@ -740,18 +764,18 @@ namespace mu2e {
 
             G4String LVname = (*pos)->GetName();
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWire_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWire_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwsSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerWireCore_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerWireCore_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwsSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerWirePlate_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerWirePlate_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwsSD);
             }
             }//for
@@ -771,23 +795,23 @@ namespace mu2e {
 
             G4String LVname = (*pos)->GetName();
 
-            //from ConstructTTrackerTDR and constructTTrackerv3
-            if (LVname.find("TTrackerStrawWall_") != std::string::npos) {
+            //from ConstructTrackerTDR and constructTrackerv3
+            if (LVname.find("TrackerStrawWall_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWallOuterMetal_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWallOuterMetal_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWallInnerMetal1_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWallInnerMetal1_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWallInnerMetal2_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWallInnerMetal2_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
         }//for

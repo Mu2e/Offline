@@ -37,7 +37,6 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
@@ -75,7 +74,7 @@ namespace mu2e {
   using namespace CalHelixFinderTypes;
 
   class Calorimeter;
-  class TTracker;
+  class Tracker;
   class ModuleHistToolBase;
 
   class CalHelixFinder : public art::EDFilter {
@@ -120,7 +119,7 @@ namespace mu2e {
     std::vector<mu2e::Helicity>           _hels; // helicity values to fit
 
     double                                _bz0;
-    const TTracker*                       _tracker     ; // straw tracker geometry
+    const Tracker*                        _tracker     ; // straw tracker geometry
     const Calorimeter*                    _calorimeter ; // cached pointer to the calorimeter geometry
 //-----------------------------------------------------------------------------
 // diagnostics 

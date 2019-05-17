@@ -53,7 +53,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	UseFlagCollection : true
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
   
@@ -62,7 +62,7 @@ BEGIN_PROLOG
     StrawDigiMCCollection : "compressDigiMCs"
     VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
     TimeOffsets : {
-      inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] 
+      inputs : [ @sequence::DigiCompression.TimeMaps ]
     }
   }
 
@@ -72,7 +72,7 @@ BEGIN_PROLOG
 	ComboHitFlag : false
 	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] 
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
 
@@ -86,7 +86,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
-	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
         ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
         ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
@@ -103,8 +103,8 @@ BEGIN_PROLOG
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	PlotHelices : false
-	SaveHelixFlag : ["HitsOK"]
-	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	InclusivePlotFlagBits : ["HitsOK"]
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
   }
 
   CHD : {
@@ -114,7 +114,7 @@ BEGIN_PROLOG
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
 
@@ -155,7 +155,6 @@ BEGIN_PROLOG
     # want to keep track of the mean beam intensity that was assumed in the simulation
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
-    fillTrkQualInfo : true
   }
 # TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
   TrackCaloMatching : { @table::TrackCaloMatching 
@@ -313,26 +312,28 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     UeTag : "KFFUeM"
     DmuTag : "KFFDmuM"
     DeTrkQualTag : "TrkQualDeM"
+    RecoCountTag : "SelectRecoMC"
+    CaloCrystalHitMapTag : "SelectRecoMC"
+    SimParticleCollectionTag : "compressRecoMCs"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-#    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
+    CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
     ProcessEmptyEvents : false
-    AnalyzeCRV : true
-    fillTrkQualInfo : true
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
-#    PrimaryParticleTag : "FindMCPrimary"
+    AnalyzeCRV : false
+    StrawHitFlagCollection : "SelectRecoMC"
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
+    TimeOffsets         :  { inputs : [ @sequence::RecoCompression.TimeMaps ] }
   }
 
 TrkAnaReco : {
 
    producers: {
-      PBIWeight : @local::TrkAna.producers.PBIWeight
+      PBIWeight : { @table::TrkAna.producers.PBIWeight
+      		    PBITag : "SelectRecoMC" }
       TrkQualDeM : @local::TrkAna.producers.TrkQualDeM
       TrkQualUeM : @local::TrkAna.producers.TrkQualUeM
       TrkQualDeP : @local::TrkAna.producers.TrkQualDeP
@@ -346,12 +347,13 @@ TrkAnaReco : {
       TrkAnaPos : { @table::TrackAnalysisReco
   	      	    DeTag : "KFFDeP"
   		    UeTag : "KFFUeP"
-  		    DmuTag : "KFFDmuP" }
+  		    DmuTag : "KFFDmuP"
+		    DeTrkQualTag : "TrkQualDeP" }
 
       genCountLogger : @local::TrkAna.analyzers.genCountLogger
    }
 
-   TrigSequence : [ PBIWeight, TrkQualDeM ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP  ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }
 

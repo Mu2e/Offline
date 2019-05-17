@@ -18,7 +18,8 @@ mainlib = helper.make_mainlib ( [ 'mu2e_DbTables',
                                   'cetlib',
                                   'cetlib_except',
                                   'curl',
-                                  'pq'
+                                  'pq',
+                                  'pthread'
                                   ] )
 
 helper.make_plugins( [ mainlib,

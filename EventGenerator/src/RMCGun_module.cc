@@ -54,8 +54,6 @@ namespace mu2e {
   class RMCGun : public art::EDProducer {
     fhicl::ParameterSet psphys_;
 
-    double elow_; // BinnedSpectrum does not store emin and emax reliably
-    double ehi_;
     BinnedSpectrum spectrum_;
     static BinnedSpectrum parseSpectrumShape(const fhicl::ParameterSet& psphys,
                                              double *elow,
@@ -99,9 +97,7 @@ namespace mu2e {
   //================================================================
   RMCGun::RMCGun(const fhicl::ParameterSet& pset)
     : psphys_(pset.get<fhicl::ParameterSet>("physics"))
-    , elow_()
-    , ehi_()
-    , spectrum_                  (parseSpectrumShape(psphys_, &elow_, &ehi_))
+    , spectrum_                  (BinnedSpectrum(psphys_))
     , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))
     , generateInternalConversion_{psphys_.get<int>("generateIntConversion", 0)}
     , czmin_                     (pset.get<double>("czmin" , -1.0))
@@ -227,7 +223,7 @@ namespace mu2e {
 
   //================================================================
   double RMCGun::generateEnergy() {
-    return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
+    return spectrum_.sample(randSpectrum_.fire());
   }
 
   //================================================================

@@ -32,6 +32,12 @@ namespace mu2e
       recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(), 
                             cluster.GetStartTime(), cluster.GetEndTime(), 
                             cluster.GetPEs(), cluster.GetCrvRecoPulses().size());
+// test Ptrs
+//      for(auto const& pulse : cluster.GetCrvRecoPulses())
+//	if(pulse.isNull())
+//	  std::cout << "Found invalid CrvRecoPulsePtr" << std::endl;
+//	else
+//	  std::cout << "CrvRecoPulse has " << pulse->GetWaveformIndices().size()  << " Digis" << std::endl;
     }
 
     //fill the MC collection

@@ -2,11 +2,12 @@
 #define DbExample_ProditionsService_hh
 
 //
+// Service to hold and deliver time-dependent and 
+// database-backed conditions quantities
 //
-// C++ include files
+
 #include <string>
 
-// Framework include files
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/OptionalAtom.h"
@@ -20,11 +21,15 @@
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
 
+#include "TrackerConditions/inc/FullReadoutStrawConfig.hh"
 #include "TrackerConditions/inc/DeadStrawConfig.hh"
 #include "TrackerConditions/inc/StrawDriftConfig.hh"
 #include "TrackerConditions/inc/StrawPhysicsConfig.hh"
 #include "TrackerConditions/inc/StrawElectronicsConfig.hh"
 #include "TrackerConditions/inc/StrawResponseConfig.hh"
+#include "TrackerConditions/inc/AlignedTrackerConfig.hh"
+#include "TrackerConditions/inc/Mu2eMaterialConfig.hh"
+#include "TrackerConditions/inc/Mu2eDetectorConfig.hh"
 
 
 namespace mu2e {
@@ -38,6 +43,9 @@ namespace mu2e {
       using Comment=fhicl::Comment;
       fhicl::Atom<int> verbose{Name("verbose"),
 	  Comment("verbosity 0 or 1"),0};
+      fhicl::Table<FullReadoutStrawConfig> fullReadoutStraw{
+	  Name("fullReadoutStraw"), 
+	  Comment("Straws with no time window in readout") };
       fhicl::Table<DeadStrawConfig> deadStraw{
 	  Name("deadStraw"), 
 	  Comment("Dead Straw List by Plane, Panel and Straw") };
@@ -53,6 +61,16 @@ namespace mu2e {
       fhicl::Table<StrawResponseConfig> strawResponse{
 	  Name("strawResponse"), 
 	  Comment("Straw response model") };
+      fhicl::Table<AlignedTrackerConfig> alignedTracker{
+	  Name("alignedTracker"), 
+	  Comment("Tracker alignment in reco code") };
+      fhicl::Table<Mu2eMaterialConfig> mu2eMaterial{
+	  Name("mu2eMaterial"), 
+	  Comment("Mu2e material for BTrk") };
+      fhicl::Table<Mu2eDetectorConfig> mu2eDetector{
+	  Name("mu2eDetector"), 
+	  Comment("Mu2e detector model for BTrk") };
+
     };
 
     // this line is required by art to allow the command line help print

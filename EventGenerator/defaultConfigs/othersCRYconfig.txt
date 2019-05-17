@@ -3,13 +3,21 @@
 // Verbose
 int cosmicCRY.verbose = 0;
 
-string cosmicCRY.refPoint = "CALO";
-double cosmicCRY.refY0 = 20000; // 20 meter above nominal beam height
+string cosmicCRY.refPoint = "TRACKER";
+double cosmicCRY.refY0 = 0; // 0 meter above nominal beam height
 
 bool cosmicCRY.projectToEnvelope = true;
 
-// Enable all particles but muons
-bool cosmicCRY.returnMuons = false;
+// histogram settings
+bool cosmicCRY.doHistograms = true;
+double cosmicCRY.muCosThMin = 0.00366518;
+double cosmicCRY.muCosThMax = 1.0;
+double cosmicCRY.muEMin = 0.5e3;
+double cosmicCRY.muEMax = 5000e3;
+bool cosmicCRY.saveTree = false;
+
+// Enable all particles by default
+bool cosmicCRY.returnMuons = true;
 bool cosmicCRY.returnNeutrons = true;
 bool cosmicCRY.returnProtons = true;
 bool cosmicCRY.returnGammas = true;
@@ -26,7 +34,7 @@ int cosmicCRY.year = 2021;
 // Experiment site settings
 double cosmicCRY.latitude = 41.8;
 int cosmicCRY.altitude = 0; // meter, accepts either of 3 values: 0, 2100 or 11300
-double cosmicCRY.subboxLength = 300.; // meter
+double cosmicCRY.subboxLength = 30.; // meter
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

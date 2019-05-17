@@ -8,8 +8,7 @@
 #include "TrkDiag/inc/TrkTools.hh"
 //geometry
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -33,7 +32,6 @@
 #include "DataProducts/inc/VirtualDetectorId.hh"
 // Utilities
 // tracker
-#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 // BaBar
@@ -479,16 +477,23 @@ namespace mu2e
       mcinfo._gen = spp->genParticle()->generatorId().id();
     mcinfo._pdg = spp->pdgId();
     mcinfo._proc = spp->originParticle().creationCode();
-    art::Ptr<SimParticle> pp = spp->originParticle().parent();
+    /*    art::Ptr<SimParticle> pp = spp->originParticle().parent();
     if(pp.isNonnull()){
       mcinfo._ppdg = pp->pdgId();
       mcinfo._pproc = pp->originParticle().creationCode();
       mcinfo._pmom = pp->startMomentum().vect().mag();
       if(pp->genParticle().isNonnull())
 	mcinfo._pgen = pp->genParticle()->generatorId().id();
+	}*/
+
+    art::Ptr<SimParticle> sp = spp;
+    // find the first parent which comes from a generator
+    while(sp->genParticle().isNull() && sp->parent().isNonnull()){
+      sp = sp->parent();
     }
-    //    Hep3Vector mcmomvec = spp->startMomentum();
-    //    double mcmom = mcmomvec.mag();
+
+    Hep3Vector mcmomvec = spp->startMomentum();
+    double mcmom = mcmomvec.mag();
     // fill track-specific  MC info
     mcinfo._nactive = mcinfo._nhits = mcinfo._nambig = 0;
     if(krep != 0){
@@ -504,8 +509,6 @@ namespace mu2e
 	    // easiest way to get MC ambiguity is through info object
 	    TrkStrawHitInfoMC tshinfomc;
 	    fillHitInfoMC(spp,mcdigi,tsh->straw(),tshinfomc);
-	    // count hits with at least givien fraction of the original momentum as 'good'
-	    //	    if(tshinfomc._mom/mcmom > _mingood )++mcinfo._ngood;
 	    if(tsh->isActive()){
 	      ++mcinfo._nactive;
 	    // count hits with correct left-right iguity
@@ -521,7 +524,7 @@ namespace mu2e
     for(auto imcd = _mcdata._mcdigis->begin(); imcd !=_mcdata._mcdigis->end();++imcd){
       if( imcd->stepPointMC(StrawEnd::cal)->simParticle() == spp){
 	mcinfo._ndigi++;
-	if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/spp->startMomentum().mag() > _mingood)
+	if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/mcmom > _mingood)
 	  mcinfo._ndigigood++;
       }
     }
@@ -672,8 +675,8 @@ namespace mu2e
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
 
-    mcstepinfo._mom = mom.mag();
-    mcstepinfo._pos = pos;
+    mcstepinfo._mom = Geom::toXYZVec(mom);
+    mcstepinfo._pos = Geom::toXYZVec(pos);
     double hflt(0.0);
     HepVector parvec(5,0);
     static Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));

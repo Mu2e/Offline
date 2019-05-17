@@ -10,6 +10,7 @@
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <array>
+#include <vector>
 
 namespace mu2e 
 {
@@ -38,6 +39,7 @@ namespace mu2e
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     int                            _SiPMNumber; 
   };
+  typedef std::vector<mu2e::CrvDigi> CrvDigiCollection;
 }
 
 #endif /* RecoDataProducts_CrvDigi_hh */

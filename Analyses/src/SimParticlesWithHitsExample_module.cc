@@ -19,7 +19,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Mu2e includes.
-#include "GeometryService/inc/getTrackerOrThrow.hh"
+#include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "Mu2eUtilities/inc/SimParticlesWithHits.hh"
 
@@ -61,7 +61,7 @@ namespace mu2e {
   void
   SimParticlesWithHitsExample::analyze(art::Event const& evt ) {
 
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     // Construct an object that ties together all of the simulated particle and hit info.
     SimParticlesWithHits sims( evt,

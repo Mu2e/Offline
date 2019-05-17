@@ -38,7 +38,6 @@ namespace art {
 #include "BTrk/BField/BFieldFixed.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 #include "BTrk/BaBar/BbrStringUtils.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
@@ -73,7 +72,7 @@ namespace mu2e {
   using namespace CalTimePeakFinderTypes;
   
   class Calorimeter;
-  class TTracker;
+  class Tracker;
   class ModuleHistToolBase; 
   
   class CalTimePeakFinder: public art::EDFilter {
@@ -122,7 +121,7 @@ namespace mu2e {
 
     double                                _dtoffset;
 
-    const TTracker*                       _tracker;     // straw tracker geometry
+    const Tracker*                        _tracker;     // straw tracker geometry
     const Calorimeter*                    _calorimeter; // cached pointer to the calorimeter geometry
 
     const CaloCluster*                     cl;

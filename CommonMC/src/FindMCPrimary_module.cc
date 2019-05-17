@@ -9,6 +9,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 // mu2e 
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -26,6 +28,8 @@ namespace mu2e {
       struct Config {
 	fhicl::Atom<int> debug{ Name("debugLevel"),
 	  Comment("Debug Level"), 0};
+	fhicl::Atom<bool> single{ Name("SinglePrimary"),
+	  Comment("Accept the unique GenParticle as primary if there is only 1 in the collection"), false};
 	fhicl::Atom<art::InputTag> genPC{  Name("GenParticles"),
 	  Comment("GenParticle collection containing the primary")};
 	fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"),
@@ -41,16 +45,20 @@ namespace mu2e {
 
     private:
       int _debug;
+      bool _single;
       art::InputTag _gpc, _spc;
       SimParticleTimeOffset _toff;
       std::vector<int> _pgenids; 
+      double _proton_mass; // cache for efficiency
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
     _debug(config().debug()),
+    _single(config().single()),
     _gpc(config().genPC()),
     _spc(config().simPC()),
-    _toff(config().SPTO())
+    _toff(config().SPTO()),
+    _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value())
   {
     consumes<GenParticleCollection>(_gpc);
     consumes<SimParticleCollection>(_spc);
@@ -61,7 +69,6 @@ namespace mu2e {
 	std::cout << "GenId " << genid << " value " << _pgenids.back() << " defined as primary " << std::endl;
     }
   }
-
 
   void FindMCPrimary::produce(art::Event& event) {
     // update the time maps
@@ -74,15 +81,33 @@ namespace mu2e {
     auto const& gpc = *gpch;
     auto spch = event.getValidHandle<SimParticleCollection>(_spc);
     auto const& spc = *spch;
-    // loop over input gen particles and save those whose GenIds match the list
+    // check for a single particle
     std::vector<GenParticleCollection::const_iterator> pgps;
-    for(auto igp= gpc.begin(); igp != gpc.end(); igp++) {
-      if(std::find(_pgenids.begin(),_pgenids.end(),igp->generatorId().id()) != _pgenids.end()){
-	pgps.push_back(igp);
+    if(_single && gpc.size() ==1){
+      pgps.push_back(gpc.begin());
+    } else {
+      // loop over input gen particles and save those whose GenIds match the list
+      for(auto igp= gpc.begin(); igp != gpc.end(); igp++) {
+	if(std::find(_pgenids.begin(),_pgenids.end(),igp->generatorId().id()) != _pgenids.end()){
+	  pgps.push_back(igp);
+	}
       }
     }
-    // now examine the list of potential primaries
-    if (pgps.size() == 1 ) {
+    // handle CRY separately: it simulates secondaries and we have to create the primary ourselves.
+    // This should be done in the generator FIXME!
+    if(pgps.size() >0 && pgps.front()->generatorId() == GenId::cosmicCRY){
+      HepLorentzVector pmom;
+      Hep3Vector ppos;
+      double ptime(FLT_MAX);
+      for(auto const& gp: pgps){
+	pmom += gp->momentum();
+	ppos += gp->position();
+	ptime = std::min(ptime,gp->time());
+      }
+      pmom.setVectM(pmom,_proton_mass);
+      ppos /= pgps.size();
+      pgp = GenParticle(PDGCode::proton,pgps[0]->generatorId(), ppos,pmom, ptime,0.0);
+    } else if (pgps.size() == 1 ) {
       // exactly 1 primary: we're done
       pgp = *pgps.front();
       if(_debug > 1) std::cout << "Found single particle primary " << pgp << std::endl;
@@ -107,7 +132,7 @@ namespace mu2e {
 	throw cet::exception("Simulation")<<"FindMCPrimary: Multiple Primaries" << std::endl;
       }
     } else if(_debug > 1)
-      std::cout << "Found no particle primary " << pgp << std::endl;
+      std::cout << "Found no particle primary " << pgp << std::endl; // not an error for NoPrimary events
     // now find the SimParticles associated with these GenParticles.  There is no forwards map,
     // so I just have to exhaustively search
     PrimaryParticle::SPPV simps;
@@ -129,10 +154,6 @@ namespace mu2e {
     // check consistency
     if(pgps.size() != simps.size())
       throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle <-> SimParticle inconsistency" << std::endl;
-    // update the time of the Primary gen particle to take into account the offets.  Otherwise it has
-    // no meaning.  Using either of the SimParticles should give the same answer.
-    double offtime = pgp.time() + _toff.totalTimeOffset(simps.front());
-    pgp = GenParticle(pgp.pdgId(),pgp.generatorId(),pgp.position(),pgp.momentum(),offtime, pgp.properTime());
     // create output object
     PrimaryParticle pp(pgp, simps);
     // put in event

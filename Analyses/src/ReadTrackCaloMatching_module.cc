@@ -42,11 +42,9 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // data
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // Other includes.
 #include "cetlib_except/exception.h"

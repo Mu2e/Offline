@@ -1,0 +1,8 @@
+physics.filters.caloLHCEFilter.SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  		    
+physics.filters.caloLHCEFilter.BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 		    
+physics.filters.caloLHCEFilter.DropSecondDisk         : false					  		    
+physics.filters.caloLHCEFilter.MinClusterEnergy       : 50.   			  		    
+physics.filters.caloLHCEFilter.ClusterEnergyStep      : 10.        			  		      
+physics.filters.caloLHCEFilter.MinClusterRadialDist   : 350.  			   
+physics.filters.caloLHCEFilter.ClusterRadialDistStep  : 50.   			   
+physics.filters.caloLHCEFilter.MinLikelihoodCut       : [ 41.44, 10.36]                           		    
