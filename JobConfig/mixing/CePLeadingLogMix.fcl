@@ -4,13 +4,13 @@
 #  Dave Brown (LBNL) june 2018
 #
 #include "JobConfig/mixing/prolog.fcl"
-process_name: CeMLeadingLogMix
+process_name: CePLeadingLogMix
 
 source: { module_type : EmptyEvent }
 services: @local::Services.Sim
 physics : { 
   producers : {
-    generate : @local::EventGenerator.producers.CeMLeadingLog
+    generate : @local::EventGenerator.producers.CePLeadingLog
     @table::Mixing.producers
   }
   filters: { @table::Mixing.filters }
@@ -24,6 +24,6 @@ outputs: { Output : @local::Mixing.Output }
 #
 #include "JobConfig/mixing/epilog.fcl"
 # customize the output
-services.TFileService.fileName: "nts.owner.CeMLeadingLog-mix.version.sequencer.root"
-outputs.Output.fileName: "dig.owner.CeMLeadingLog-mix.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CePLeadingLog-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CePLeadingLog-mix.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl

@@ -174,3 +174,15 @@ class mu2e_helper:
             source = sourceFiles,
             LIBS   = userlibs
             )
+
+    #
+    #   Make any combo of files
+    #
+    def make_generic( self, source, target, command ):
+        topSources = []
+        topTargets = []
+        for s in source :
+            topSources.append("#/"+s)
+        for t in target :
+            topTargets.append("#/"+t)
+        self.env.GenericBuild( topTargets, topSources, COMMAND=command)
