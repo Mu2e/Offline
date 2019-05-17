@@ -51,9 +51,10 @@
 #endif
 
 enum bkgweight{linear=0,exponential=1,polynomial=2};
+enum tch{hastch=0,notch,donttest};
 
 int
-TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
+TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
 {
 
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -144,11 +145,17 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-  TString tname;
-  if(calo)
-    tname = "TrkQualCalo";
-  else
-    tname = "TrkQual";
+  TString tname("TrkQual");
+  switch(tch) {
+    case hastch:
+      tname = "TrkQualTCH";
+      break;
+    case notch:
+      tname = "TrkQualNoTCH";
+      break;
+    case donttest : default :
+      break;
+  }
   TString outfilename(tname);
   outfilename += ".root";
   TFile* outputFile = TFile::Open( outfilename, "RECREATE" );
@@ -169,19 +176,19 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
 
 // signal is defined as the momentum resolution core,
   TCut goodfit = "de.status>0";
-  TCut goodmom = "demcent.mom-demcxit.mom<2.0";
+  TCut goodmom = "sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)-sqrt(demcxit.momx^2+demcxit.momy^2+demcxit.momz^2)<2.0";
   TCut goodpitch = "demcent.td>0.57&&demcent.td<1.0";
-  TCut goodmomres = "de.mom-demcent.mom<0.25&&de.mom-demcent.mom>-0.25";
-  TCut badmomres = "de.mom-demcent.mom>0.7";
+  TCut goodmomres = "abs(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2))<0.25";
+  TCut badmomres = "de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>0.7";
   TCut signal = goodfit + goodmom + goodpitch + goodmomres;
   // tail is defined as the high-side tail
   TCut bkg = goodfit + goodmom + goodpitch + badmomres;
-  if(calo) {
+  if(tch == hastch) {
     signal += TCut("detch.active");
     bkg += TCut("detch.active");
-  } else {
+  } else if(tch == notch) {
    signal += TCut("!detch.active");
-    bkg += TCut("!detch.active");
+   bkg += TCut("!detch.active");
   }
   // weight the tail by the momentum difference
   if(bkgw == linear){
