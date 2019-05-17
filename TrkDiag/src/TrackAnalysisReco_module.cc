@@ -169,6 +169,7 @@ namespace mu2e {
     KSCIter findMuonTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
+    int _bestcrv;
     HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // SimParticle timing offset
@@ -245,8 +246,11 @@ namespace mu2e {
     }
 // calorimeter information for the downstream electron track
 // CRV info
-   if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
-   // helix info
+    if(_crv){
+      _trkana->Branch("crvinfo",&_crvinfo);
+      _trkana->Branch("bestcrv",&_bestcrv,"bestcrv/I");
+    }
+    // helix info
    if(_helices) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
 // optionally add MC truth branches
     if(_fillmc){
@@ -468,7 +472,21 @@ namespace mu2e {
       TrkTools::fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
       // fill CRV info
-      if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);
+      if(_crv){
+	CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);
+	// find the best CRV match (closest in time)
+	_bestcrv=-1;
+	float mindt=1.0e9;
+	for(size_t icrv=0;icrv< _crvinfo.size(); ++icrv){
+	  auto const& crvinfo = _crvinfo[icrv];
+	  float dt = std::min(fabs(crvinfo._timeWindowStart-idekseed->t0().t0()),
+	      fabs(crvinfo._timeWindowEnd-idekseed->t0().t0()) );
+	  if(dt < mindt){
+	    mindt =dt;
+	    _bestcrv = icrv;
+	  }
+	}
+      }
       // fill this row in the TTree
       _trkana->Fill();
     }
