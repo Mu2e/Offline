@@ -14,8 +14,8 @@
 #
 # in geom_01.txt enable printing of process summary:
 # bool g4.printPhysicsProcessSummary = true;
-# and use a full "hadronic" physics list e.g. ShieldingM_MU2ER1 or Shielding_MU2ER1
-# physics.producers.g4run.physics.physicsListName : "ShieldingM_MU2ER1"
+# and use a full "hadronic" physics list e.g. ShieldingM or Shielding
+# physics.producers.g4run.physics.physicsListName : "ShieldingM"
 # 
 # in e.g.: g4test_03.fcl 
 # use ejectedProtonGun

@@ -79,6 +79,7 @@ def cppPath(mu2eOpts):
         os.environ['ARTDAQ_CORE_INC'],
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
         os.environ['POSTGRESQL_INC'],
         os.environ['CURL_DIR']+'/include'
         ]
@@ -110,6 +111,7 @@ def libPath(mu2eOpts):
         os.environ['XERCESCROOT']+'/lib',
         os.environ['TBB_LIB'],
         os.environ['GSL_LIB'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
         os.environ['POSTGRESQL_LIBRARIES'],
         os.environ['CURL_DIR']+'/lib'
         ]
@@ -138,7 +140,7 @@ def mergeFlags(mu2eOpts):
 def exportedOSEnvironment():
     osenv = {}
     for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',
-                 'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR' ]:
+                 'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_FQ_DIR' ]:
         if var in os.environ.keys():
             osenv[var] = os.environ[var]
     return osenv

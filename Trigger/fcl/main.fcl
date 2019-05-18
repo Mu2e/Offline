@@ -1,0 +1,55 @@
+# -*- mode:tcl -*-
+#------------------------------------------------------------------------------
+# performs the calorimeter and track reconstruciton
+#------------------------------------------------------------------------------
+#  > mu2e --config CaloFilters/fcl/runGlobalFilter.fcl --source "your digis file" --TFile globalFilter.root --nevts=100
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+
+#include "Trigger/fcl/templates.fcl"
+
+process_name : globalTrigger
+
+source :
+{
+    module_type : RootInput
+}
+# we don't need any simulation services for this job
+# services : @local::Services.Reco
+
+services : @local::Services.Reco
+
+# timing information
+services.TimeTracker : {
+    dbOutput : {
+	filename : ""
+#	filename : "runGlobalTrigger.db" #uncomment to create the .db output
+	overwrite : true
+    }
+}
+
+services.scheduler.wantSummary: true
+
+physics : {
+    producers : { @table::Trigger.producers }
+
+    filters   : { @table::Trigger.filters }
+ 
+    analyzers : { @table::Trigger.analyzers 
+
+	readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
+	    nFilters      : 35
+	}
+	
+    }
+
+    out       : [ readTriggerInfo ]
+    end_paths : [ out ]
+}
+
+outputs : {  @table::Trigger.outputs }
+
+
+services.TFileService.fileName : "globalTrigger.root"
+

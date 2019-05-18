@@ -127,6 +127,8 @@
 #include "G4BogackiShampine23.hh"
 #endif
 #include "G4GDMLParser.hh"
+#include "G4ProductionCuts.hh"
+#include "G4Region.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
 
@@ -238,29 +240,6 @@ namespace mu2e {
       constructProtonAbsorber(_config);
       VolumeInfo calorimeterInfo = constructCal();
 
-      // creating regions to be able to asign special cut and EM options
-
-      const fhicl::ParameterSet& minRangeRegionCutsPSet{
-        pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
-
-      if (!minRangeRegionCutsPSet.is_empty()) {
-        const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
-        for(const auto& regionName : regionNames) {
-          G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
-          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
-          volInfo.logical->SetRegion(region);
-          region->AddRootLogicalVolume(volInfo.logical);
-        }
-      }
-
-      // special case for the tracker
-      if ( useEmOption4InTracker_
-           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
-        G4Region* region = new G4Region("TrackerMother");
-        trackerInfo.logical->SetRegion(region);
-        region->AddRootLogicalVolume(trackerInfo.logical);
-      }
-
       // This is just placeholder for now - and might be misnamed.
       constructMagnetYoke();
 
@@ -304,6 +283,51 @@ namespace mu2e {
       if ( _verbosityLevel > 0) {
           mf::LogInfo log("GEOM");
           log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
+      }
+
+      // creating regions to be able to asign special cut and EM options
+
+      const fhicl::ParameterSet& minRangeRegionCutsPSet{
+        pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
+
+      if (!minRangeRegionCutsPSet.is_empty()) {
+        const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
+        for(const auto& regionName : regionNames) {
+          G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
+          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
+          volInfo.logical->SetRegion(region);
+          region->AddRootLogicalVolume(volInfo.logical);
+
+          G4ProductionCuts* regionProductionCuts = new G4ProductionCuts();
+          G4double productionCut = minRangeRegionCutsPSet.get<double>(regionName);
+          regionProductionCuts->SetProductionCut(productionCut);
+          // the above sets the same cut for gamma, e- and e+, proton/ions
+          G4double protonProductionCut = pset_.get<double>("physics.protonProductionCut");
+          regionProductionCuts->SetProductionCut(protonProductionCut,"proton");
+          region->SetProductionCuts(regionProductionCuts);
+
+          if ( _verbosityLevel > 0 ) {
+            std::cout << __func__ << " Setting gamma, e- and e+ production cut for "
+                      << regionName << " to " << productionCut << " mm and for proton to "
+                      << protonProductionCut << " mm" << std::endl;
+            std::cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: ";
+            for (auto const& rcut : regionProductionCuts->GetProductionCuts() ) {
+              std::cout << " " << rcut;
+            }
+            std::cout << std::endl;
+          }
+
+        }
+      }
+
+      // special case for the tracker when we need a region to set a
+      // different EM option even when no production cuts are set explicitly
+
+      if ( useEmOption4InTracker_
+           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+        G4Region* region = new G4Region("TrackerMother");
+        trackerInfo.logical->SetRegion(region);
+        region->AddRootLogicalVolume(trackerInfo.logical);
       }
 
       constructStepLimiters();

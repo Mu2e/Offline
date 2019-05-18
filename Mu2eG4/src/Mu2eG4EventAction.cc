@@ -23,7 +23,7 @@
 
 //G4 includes
 #include "G4Timer.hh"
-
+//#include "G4Event.hh"
 
 //art includes
 #include "canvas/Utilities/InputTag.h"
@@ -90,6 +90,9 @@ Mu2eG4EventAction::~Mu2eG4EventAction()
 
 void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
     {
+
+      // G4cout << __func__ << " : G4event: " << evt->GetEventID() << G4endl;
+
         setEventData();
         
         _spHelper = perEvtObjManager->getSimParticleHelper();

@@ -319,7 +319,7 @@ EventGenerator : { @table::EventGenerator
 	StoppedParticleRMCGun : { 
 	    module_type    : StoppedMuonRMCGun
 	    verbosityLevel : 0
-	    doHistograms   : 0
+	    doHistograms   : false
 	    physics : {
 	        rhoInternal    : 1.0
 	        elow           : 1.5

@@ -47,7 +47,7 @@ double fnc_dscb(double*xx,double*pp) {
   return result;
 }
 
-void Draw(TTree* ta) {
+void PId(TTree* ta) {
 
   TH2F* evspep = new TH2F("evspep","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
   TH2F* evspmp = new TH2F("evspmp","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
@@ -118,16 +118,16 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   gPad->SetLogy();
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
-  TCut final = reco+goodfit;
-//  TCut evtwt = "evtwt.PBIWeight";
+  TCut final = (reco+goodfit)*"evtwt.PBIWeight";
 //  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
-  ta->Project("momresp","de.mom-demcgen.mom",final);
+  ta->Project("momresp","de.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
-  dscb->SetParameters(0.05*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
+  dscb->SetParameters(4e-5*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
   dscb->SetNpx(1000);
+  dscb->SetParLimits(2,0.1,50.0);
   dscb->SetParLimits(3,0.0,50.0);
   dscb->SetParLimits(4,1.0,50.0);
   dscb->SetParLimits(5,0.0,50.0);
@@ -172,9 +172,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   gPad->SetLogy();
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
-  TCut final = reco+goodfit+physics;
- // TCut evtwt = "evtwt.PBIWeight";
-//  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+  TCut final = (reco+goodfit+physics)*"evtwt.PBIWeight";
   ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
@@ -220,7 +218,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 }
 
 void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
-  unsigned nbins(8);
+  unsigned nbins(9);
   double bmax = nbins-0.5;
 
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
@@ -229,32 +227,38 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
 //  racc->Sumw2();
   unsigned ibin(1);
   acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+//  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Trigger");
   acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
   acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   acc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
   acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
 
   ibin = 1;
   racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+//  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Trigger");
   racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
   racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   racc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
   racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
   ibin = 0;
-  const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
+  const char* binnames[12] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0","11.0"};
 
   TCut mcsel = "demc.ndigigood>15&&sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>90.0";
   // &&demcent.td>0.55&&demcent.td<1.05";
   //&&fmod(demcent.t0,1695.0)>500.0";
+  TCut trigger = "(trigbits&0x208)>0";
   TCut reco = "de.status>0";
+  TCut CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
   char ctext[80];
   snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
   TCut goodfit(ctext);
@@ -262,16 +266,17 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
   TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>103.85";
-//  TCut evtwt = "evtwt.PBIWeight";
-  TCut evtwt = "";
+  TCut evtwt = "evtwt.PBIWeight";
   ta->Project("acc",binnames[ibin++],evtwt);
-  ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+opa));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+opa+rmom));
+ // ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV+rmom));
 
   double all = acc->GetBinContent(1);
   double norm = ngen;
@@ -643,10 +648,10 @@ void Con(TTree* ta) {
   lcon1->SetLineColor(kBlue);
   lcon2->SetLineColor(kRed);
 
-  ta->Project("con1","de.con",mcsel+"de.status==1");
-  ta->Project("con2","de.con",mcsel+"de.status==2");
-  ta->Project("lcon1","log10(de.con)",mcsel+"de.status==1");
-  ta->Project("lcon2","log10(de.con)",mcsel+"de.status==2");
+  ta->Project("con1","de.fitcon",mcsel+"de.status==1");
+  ta->Project("con2","de.fitcon",mcsel+"de.status==2");
+  ta->Project("lcon1","log10(de.fitcon)",mcsel+"de.status==1");
+  ta->Project("lcon2","log10(de.fitcon)",mcsel+"de.status==2");
 
   TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
   fcan->Clear();
@@ -663,6 +668,24 @@ void Con(TTree* ta) {
   leg->AddEntry(con2,"Unconverged Fit","l");
   leg->Draw();
 
+}
+
+void TrkQual(TTree* ta,TCut const& extra) {
+  TH1F* tqtch = new TH1F("tqtch","TrkQual;TrkQual MVA Output",100,-0.05,1.05);
+  TH1F* tqntch = new TH1F("tqntch","TrkQual;TrkQual MVA Output",100,-0.05,1.05);
+  tqtch->SetLineColor(kBlue);
+  tqntch->SetLineColor(kRed);
+  tqtch->SetStats(0);
+  tqntch->SetStats(0);
+  ta->Project("tqtch","de.trkqual","detch.active",extra);
+  ta->Project("tqntch","de.trkqual","!detch.active",extra);
+  TCanvas* tqcan = new TCanvas("tqcan","TrkQual",600,600);
+  tqtch->Draw();
+  tqntch->Draw("same");
+  TLegend* tqleg = new TLegend(0.5,0.7,0.9,0.9);
+  tqleg->AddEntry(tqtch,"TrkCaloHit","L");
+  tqleg->AddEntry(tqntch,"No TrkCaloHit","L");
+  tqleg->Draw();
 }
 
 void TrkQualRes(TTree* ta,double tqcut) {
@@ -783,8 +806,10 @@ void StrawMat(TTree* ta) {
 
 void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   char cstring[100];
-  snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&demc.pdg==%i",tqcut,pdg);
+  snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrkcalo(cstring);
+  snprintf(cstring,100,"(!detch.active)&&detrkqual.trkqual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
+  TCut goodtrk(cstring);
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
   TH1F* clen0 = new TH1F("clen0","TrkCaloHit POCA Crystal Depth;Depth(mm)",200,-50,250);
@@ -793,8 +818,8 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   TH1F* cdoca1 = new TH1F("cdoca1","TrkCaloHit DOCA;DOCA (mm)",200,-150,150);
   TH1F* cdt0 = new TH1F("cdt0","TrkCaloHit #Delta t;TCH t_{0} - CaloCluster Time",100,-5,5);
   TH1F* cdt1 = new TH1F("cdt1","TrkCaloHit #Delta t;TCH t_{0} - CaloCluster Time",100,-5,5);
-  TH1F* ep0 = new TH1F("ep0","TrkCaloHit E/P",100,0.0,1.1);
-  TH1F* ep1 = new TH1F("ep1","TrkCaloHit E/P",100,0.0,1.1);
+  TH1F* ep0 = new TH1F("ep0","TrkCaloHit E/P",100,0.0,1.25);
+  TH1F* ep1 = new TH1F("ep1","TrkCaloHit E/P",100,0.0,1.25);
   TH1F* tdir0 = new TH1F("tdir0","Track Direction at POCA;#hat{t}#bullet#hat{#rho}",100,-1.0,1.0);
   TH1F* tdir1 = new TH1F("tdir1","Track Direction at POCA;#hat{t}#bullet#hat{#rho}",100,-1.0,1.0);
   TH1F* pr0 = new TH1F("pr0","POCA Radius;Transverse Radius (mm)",100,360,650);
@@ -881,20 +906,22 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   TH2F* dotr1 = new TH2F("dotr1","Track Direction vs POCA Radius, Disk 1;Radius (mm);#hat{t}#bullet#hat{#rho}",100,360,650,100,-1,1);
   TH2F* doca0 = new TH2F("doca0","DOCA vs Crystal Depth, Disk 0;Depth (mm);DOCA (mm)",100,-50,250,100,-100,100);
   TH2F* doca1 = new TH2F("doca1","DOCA vs Crystal Depth, Disk 1;Depth (mm);DOCA(mm)",100,-50,250,100,-100,100);
-  TH2F* eopd0 = new TH2F("eopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,100,0.0,1.1);
-  TH2F* eopd1 = new TH2F("eopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,100,0.0,1.1);
-  TH2F* eopdir0 = new TH2F("eopdir0","E/P vs Track Direction, Disk 0;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.1);
-  TH2F* eopdir1 = new TH2F("eopdir1","E/P vs Track Direction, Disk 1;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.1);
-  TH2F* eopr0 = new TH2F("eopr0","E/P vs POCA Radius, Disk 0;Radius (mm);E/P",100,360,650,100,0.0,1.1);
-  TH2F* eopr1 = new TH2F("eopr1","E/P vs POCA Radius, Disk 1;Radius (mm);E/P",100,360,650,100,0.0,1.1);
+  TH2F* eopd0 = new TH2F("eopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,100,0.0,1.25);
+  TH2F* eopd1 = new TH2F("eopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,100,0.0,1.25);
+  TH2F* eopdir0 = new TH2F("eopdir0","E/P vs Track Direction, Disk 0;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.25);
+  TH2F* eopdir1 = new TH2F("eopdir1","E/P vs Track Direction, Disk 1;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.25);
+  TH2F* eopr0 = new TH2F("eopr0","E/P vs POCA Radius, Disk 0;Radius (mm);E/P",100,360,650,100,0.0,1.25);
+  TH2F* eopr1 = new TH2F("eopr1","E/P vs POCA Radius, Disk 1;Radius (mm);E/P",100,360,650,100,0.0,1.25);
 
-  TProfile* peopd0 = new TProfile("peopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,0.0,1.1);
-  TProfile* peopd1 = new TProfile("peopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,0.0,1.1);
+  TProfile* peopd0 = new TProfile("peopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,0.0,1.25);
+  TProfile* peopd1 = new TProfile("peopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,0.0,1.25);
  
   rad0->SetStats(0);
   rad1->SetStats(0);
   dot0->SetStats(0);
   dot1->SetStats(0);
+  doca0->SetStats(0);
+  doca1->SetStats(0);
   eopd0->SetStats(0);
   eopd1->SetStats(0);
   eopdir0->SetStats(0);
@@ -963,6 +990,40 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   gPad->SetLogz();
   eopr1->Draw("colorz");
 
+  TH2F* dtvsclen = new TH2F("dtvsclen","T_{calo} - T_{trk} vs Cluster Depth;Depth (mm); #Delta t (ns)",50,-100,300,50,-2.0,3.0);
+  TProfile* pdtvsclen = new TProfile("pdtvsclen","T_{calo} - T_{trk} vs Cluster Depth;Depth (mm); #Delta t (ns)",50,-100,300,-2.0,3.0);
+  dtvsclen->SetStats(0);
+  ta->Project("dtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
+  ta->Project("pdtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
+
+  TCanvas* dtchtcan = new TCanvas("dtchtcan","TCH timing",800,800);
+  gPad->SetLogz();
+  dtvsclen->Draw("colorz");
+  pdtvsclen->Fit("pol1","","same");
+
+  TH1F* dt0hiE = new TH1F("dt0hiE","T_{0} Resolution;Reco t_{0} - MC t_{0} (nsec)",100,-5,5);
+  TH1F* dt0loE = new TH1F("dt0loE","T_{0} Resolution;Reco t_{0} - MC t_{0} (nsec)",100,-5,5);
+  TH1F* dt0nocal = new TH1F("dt0nocal","T_{0} Resolution;Reco t_{0} - MC t_{0} (nsec)",100,-5,5);
+  dt0hiE->SetStats(0);
+  dt0loE->SetStats(0);
+  dt0nocal->SetStats(0);
+  dt0hiE->SetLineColor(kBlue);
+  dt0loE->SetLineColor(kGreen);
+  dt0nocal->SetLineColor(kBlack);
+  ta->Project("dt0hiE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep>50.0");
+  ta->Project("dt0loE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep<50.0");
+  ta->Project("dt0nocal","de.t0-demcmid.t0",goodtrk);
+
+  TCanvas* dt0can = new TCanvas("dt0can","t0 resolution",800,800);
+  gPad->SetLogy();
+  dt0hiE->Fit("gaus");
+  dt0loE->Fit("gaus","","same");
+  dt0nocal->Fit("gaus","","same");
+  TLegend* t0leg = new TLegend(0.6,0.6,0.9,0.9);
+  t0leg->AddEntry(dt0hiE,"ECalo > 50 MeV/c","L");
+  t0leg->AddEntry(dt0loE,"ECalo < 50 MeV/c","L");
+  t0leg->AddEntry(dt0nocal,"No TrkCaloHit","L");
+  t0leg->Draw();
 }
 
 void TrkCaloHitMC(TTree* ta) {
@@ -1173,4 +1234,96 @@ void PlotIPA(TTree* ta) {
   dscb->SetParName(6,"PPos");
   dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
   momres->Fit("dscb","RQ");
+}
+
+void Upstream(TTree* tneg, TTree* tpos) {
+  TCut trueup("de.pdg*demc.pdg>0 && demcxit.momz<0");
+  TCut uetch("uetch.active");
+  TCut trueutch("uetchmc.prel>=0");
+  TCut truee("abs(demc.pdg)==11");
+  TCut truemu("abs(demc.pdg)==13");
+  TH1F* tchmcrel = new TH1F("tchmcrel","TrkCaloHit MC Relation;Calo WRT Track Relationship",8,-1.5,6.5);
+  tchmcrel->GetXaxis()->SetBinLabel(1,"none");
+  tchmcrel->GetXaxis()->SetBinLabel(2,"same");
+  tchmcrel->GetXaxis()->SetBinLabel(3,"daughter");
+  tchmcrel->GetXaxis()->SetBinLabel(4,"mother");
+  tchmcrel->GetXaxis()->SetBinLabel(5,"sibling");
+  tchmcrel->GetXaxis()->SetBinLabel(6,"u-daughter");
+  tchmcrel->GetXaxis()->SetBinLabel(7,"u-mother");
+  tchmcrel->GetXaxis()->SetBinLabel(8,"u-sibling");
+  tchmcrel->SetStats(0);
+  TH1F* eutcha = new TH1F("eutcha","Upstream TrkCaloHit",2,-0.5,1.5);
+  TH1F* muutcha = new TH1F("muutcha","Upstream TrkCaloHit",2,-0.5,1.5);
+  eutcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
+  eutcha->GetXaxis()->SetBinLabel(2,"Active");
+  eutcha->SetStats(0);
+  eutcha->SetLineColor(kBlue);
+  muutcha->GetXaxis()->SetBinLabel(1,"None/Inactive");
+  muutcha->GetXaxis()->SetBinLabel(2,"Active");
+  muutcha->SetStats(0);
+  muutcha->SetLineColor(kBlack);
+  TH1F* updg = new TH1F("updg","True Upstream Particle PDG code",27,-13.5,13.5);
+  updg->GetXaxis()->SetBinLabel(1,"#mu^{+}");
+  updg->GetXaxis()->SetBinLabel(3,"e^{+}");
+  updg->GetXaxis()->SetBinLabel(27,"#mu^{-}");
+  updg->GetXaxis()->SetBinLabel(25,"e^{-}");
+  updg->SetStats(0);
+
+  TH1F* eutime = new TH1F("eutime","Upstream fit calo - track time;T_{calo}-T_{track} (ns)",200,-10,10);
+  TH1F* muutime = new TH1F("muutime","Upstream fit calo - track time;T_{calo}-T_{track} (ns)",200,-10,10);
+  muutime->SetStats(0);
+  eutime->SetLineColor(kBlue);
+  muutime->SetLineColor(kBlack);
+  TH2F* ueevsp = new TH2F("ueevsp","Upstream electron E vs P;Fit mom (MeV/c);CaloCluster EDep (MeV)",25,60,200,25,0,700);
+  TH2F* umuevsp = new TH2F("umuevsp","Upstream muon E vs P;Fit mom (MeV/c);CaloCluster EDep (MeV)",25,60,200,25,0,700);
+  ueevsp->SetStats(0);
+  umuevsp->SetStats(0);
+
+  tneg->Project("eutcha","uetch.active",trueup&&truee);
+  tneg->Project("muutcha","uetch.active",trueup&&truemu);
+  tneg->Project("tchmcrel","uetchmc.prel",trueup&&uetch);
+  tneg->Project("eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
+  tneg->Project("updg","demc.pdg",trueup);
+  tneg->Project("muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
+  tneg->Project("ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
+  tneg->Project("umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
+
+  tpos->Project("+eutcha","uetch.active",trueup&&truee);
+  tpos->Project("+muutcha","uetch.active",trueup&&truemu);
+  tpos->Project("+tchmcrel","uetchmc.prel",trueup&&uetch);
+  tpos->Project("+updg","demc.pdg",trueup);
+  tpos->Project("+eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
+  tpos->Project("+muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
+  tpos->Project("+ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
+  tpos->Project("+umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
+
+  TCanvas* ucan = new TCanvas("ucan","Upstream",800,800);
+  ucan->Divide(2,2);
+  ucan->cd(1);
+  updg->Draw();
+  ucan->cd(2);
+  muutcha->Draw();
+  eutcha->Draw("same");
+  TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
+  tchleg->AddEntry(eutcha,"True electron track ","l");
+  tchleg->AddEntry(muutcha,"True muon track","l");
+  tchleg->Draw();
+  ucan->cd(3);
+  tchmcrel->Draw(); 
+  ucan->cd(4);
+  muutime->Fit("gaus");
+  eutime->Fit("gaus","","sames");
+  TLegend* tleg = new TLegend(0.1,0.7,0.4,0.9);
+  tleg->AddEntry(eutime,"True electron track ","l");
+  tleg->AddEntry(muutime,"True muon track","l");
+  tleg->Draw();
+
+  TCanvas* uecan = new TCanvas("uecan","Upstream E vs P",800,800);
+  uecan->Divide(1,2);
+  uecan->cd(1);
+  gPad->SetLogz();
+  ueevsp->Draw("colorz");
+  uecan->cd(2);
+  gPad->SetLogz();
+  umuevsp->Draw("colorz");
 }

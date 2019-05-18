@@ -36,6 +36,7 @@
 #include "TBits.h"
 #include "TTree.h"
 #include "TProfile.h"
+#include "TH1F.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -126,6 +127,7 @@ namespace mu2e {
     // main TTree
     TTree* _trkana;
     TProfile* _tht; // profile plot of track hit times: just an example
+    TH1F* _trigbits; // plot of trigger bits: just an example
     // general event info branch
     double _meanPBI;
     EventInfo _einfo;
@@ -139,11 +141,11 @@ namespace mu2e {
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _strawHitFlagTag;
-    TrkCaloHitInfo _detch;
-    CaloClusterInfoMC _detchmc;
+    TrkCaloHitInfo _detch, _uetch;
+    CaloClusterInfoMC _detchmc, _uetchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
-    unsigned _trigbits;
+    unsigned _trigword;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
@@ -167,11 +169,12 @@ namespace mu2e {
     KSCIter findMuonTrack(KalSeedCollection const& kcol,KalSeed const& dekseed);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
+    int _bestcrv;
     HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // SimParticle timing offset
     SimParticleTimeOffset _toff;
-};
+  };
 
   TrackAnalysisReco::TrackAnalysisReco(fhicl::ParameterSet const& pset):
     art::EDAnalyzer(pset),
@@ -192,7 +195,7 @@ namespace mu2e {
     _helices(pset.get<bool>("FillHelixInfo",false)),
     _filltrkqual(pset.get<bool>("FillTrkQualInfo",true)),
     _filltrig(pset.get<bool>("FillTriggerInfo",false)),
-    _diag(pset.get<int>("diagLevel",1)),
+    _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
     _minReflectTime(pset.get<double>("MinimumReflectionTime",20)), // nsec
     _maxReflectTime(pset.get<double>("MaximumReflectionTime",200)), // nsec
@@ -226,6 +229,9 @@ namespace mu2e {
     //
     _trkana->Branch("detch",&_detch,TrkCaloHitInfo::leafnames().c_str());
 // optionally add detailed branches
+    if(_diag > 0){
+      _trkana->Branch("uetch",&_uetch,TrkCaloHitInfo::leafnames().c_str());
+    }
     if(_diag > 1){
       _trkana->Branch("detsh",&_detsh);
       _trkana->Branch("detsm",&_detsm);
@@ -234,11 +240,17 @@ namespace mu2e {
     _trkana->Branch("ue.",&_ueti,TrkInfo::leafnames().c_str());
     _trkana->Branch("dm.",&_dmti,TrkInfo::leafnames().c_str());
 // trigger info.  Actual names should come from the BeginRun object FIXME
-    if(_filltrig)_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
+    if(_filltrig){
+      _trkana->Branch("trigbits",&_trigword,"trigbits/i");
+      _trigbits = tfs->make<TH1F>("trigbits","Trigger Bits",16,-0.5,15.5);
+    }
 // calorimeter information for the downstream electron track
 // CRV info
-   if(_crv) _trkana->Branch("crvinfo",&_crvinfo);
-   // helix info
+    if(_crv){
+      _trkana->Branch("crvinfo",&_crvinfo);
+      _trkana->Branch("bestcrv",&_bestcrv,"bestcrv/I");
+    }
+    // helix info
    if(_helices) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
 // optionally add MC truth branches
     if(_fillmc){
@@ -250,7 +262,12 @@ namespace mu2e {
       _trkana->Branch("demcxit",&_demcxit,TrkInfoMCStep::leafnames().c_str());
       if(_crv)_trkana->Branch("crvinfomc",&_crvinfomc);
       _trkana->Branch("detchmc",&_detchmc,CaloClusterInfoMC::leafnames().c_str());
-      if(_diag > 1)_trkana->Branch("detshmc",&_detshmc);
+      if(_diag > 0){
+	_trkana->Branch("uetchmc",&_uetchmc,CaloClusterInfoMC::leafnames().c_str());
+      }
+      if(_diag > 1){
+	_trkana->Branch("detshmc",&_detshmc);
+      }
     }
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
@@ -356,7 +373,13 @@ namespace mu2e {
       if(_helices)TrkTools::fillHelixInfo(dekseed, _bz0, _hinfo);
       // upstream and muon tracks
       auto iuekseed = findUpstreamTrack(ueC,dekseed);
-      if(iuekseed != ueC.end()) TrkTools::fillTrkInfo(*iuekseed,_ueti);
+      if(iuekseed != ueC.end()) {
+	auto const& uekseed = *iuekseed;
+	TrkTools::fillTrkInfo(uekseed,_ueti);
+	if(_diag >0 && uekseed.hasCaloCluster())
+	  TrkTools::fillCaloHitInfo(uekseed, *caloh,  _uetch);
+      }
+	
       auto idmukseed = findMuonTrack(dmC,dekseed);
       if(idmukseed != dmC.end()) TrkTools::fillTrkInfo(*idmukseed,_dmti);
       // calorimeter info
@@ -367,17 +390,21 @@ namespace mu2e {
 	if(_debug>0){
 	  auto const& tch = dekseed.caloHit();
 	  auto const& cc = tch.caloCluster();
-	  for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
-	    // map the crystal ptr to the reduced collection
-	    auto ifnd = cchmap.find(cchptr);
-	    if(ifnd != cchmap.end()){
-	      auto const& scchptr = ifnd->second;
-	      if(scchptr.isNonnull())
-		std::cout << "CaloCrystalHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
-	      else
-		std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
-	    } else {
-	      cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	  std::cout << "CaloCluster has energy " << cc->energyDep()
+	  << " +- " << cc->energyDepErr() << std::endl;
+	  if(_debug>1){
+	    for( auto const& cchptr: cc->caloCrystalHitsPtrVector() ) { 
+	      // map the crystal ptr to the reduced collection
+	      auto ifnd = cchmap.find(cchptr);
+	      if(ifnd != cchmap.end()){
+		auto const& scchptr = ifnd->second;
+		if(scchptr.isNonnull())
+		  std::cout << "CaloCrystalHit has " << scchptr->energyDep() << " energy Dep" << std::endl;
+		else
+		  std::cout <<"CalCrystalHitPtr is invalid! "<< std::endl;
+	      } else {
+		std::cout << "CaloCrystaLhitPtr not in map!" << std::endl;
+	      }
 	    }
 	  }
 	}
@@ -427,6 +454,16 @@ namespace mu2e {
 	    }
 	  }
 	}
+	if (_diag > 0 && iuekseed != ueC.end() && iuekseed->hasCaloCluster()) {
+	  // fill MC truth of the associated CaloCluster 
+	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
+	    if(iccmca->first == iuekseed->caloCluster()){
+	      auto const& ccmc = *(iccmca->second);
+	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_uetchmc);
+	      break;
+	    }
+	  }
+	}
       }
     }
     if(idekseed != deC.end() || _pempty) {
@@ -435,7 +472,21 @@ namespace mu2e {
       TrkTools::fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
       // fill CRV info
-      if(_crv) CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);
+      if(_crv){
+	CRVAnalysis::FillCrvHitInfoCollections(_crvCoincidenceModuleLabel, _crvCoincidenceMCModuleLabel, event, _crvinfo, _crvinfomc);
+	// find the best CRV match (closest in time)
+	_bestcrv=-1;
+	float mindt=1.0e9;
+	for(size_t icrv=0;icrv< _crvinfo.size(); ++icrv){
+	  auto const& crvinfo = _crvinfo[icrv];
+	  float dt = std::min(fabs(crvinfo._timeWindowStart-idekseed->t0().t0()),
+	      fabs(crvinfo._timeWindowEnd-idekseed->t0().t0()) );
+	  if(dt < mindt){
+	    mindt =dt;
+	    _bestcrv = icrv;
+	  }
+	}
+      }
       // fill this row in the TTree
       _trkana->Fill();
     }
@@ -521,22 +572,35 @@ namespace mu2e {
 
   void TrackAnalysisReco::fillTriggerBits(const art::Event& event,std::string const& process) {
     //get the TriggerResult from the process that created the KalFinalFit downstream collection
+    static const std::string tname("_trigger"); // all trigger paths have this in the name
+    static bool first(true);
+    static std::array<bool,16> istrig = {false};
     art::InputTag const tag{Form("TriggerResults::%s", process.c_str())};
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults* trigResults = trigResultsH.product();
-    _trigbits = 0;
-    for(size_t id=0;id < trigResults->size(); ++id){
-      if (trigResults->accept(id)) {
-	_trigbits |= 1 << id;
+    TriggerResultsNavigator tnav(trigResults);
+   _trigword = 0;
+   // setup the bin labels
+    if(first){ // is there a better way to do this?  I think not
+      for(size_t id=0;id < trigResults->size(); ++id){
+	if (tnav.getTrigPath(id).find(tname) != std::string::npos) {
+	  _trigbits->GetXaxis()->SetBinLabel(id+1,tnav.getTrigPath(id).c_str());
+	  istrig[id] =true;
+	}
       }
+      first = false;
     }
-    if(_debug > 0){
-      cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines"
-      << " trigger bits word " << _trigbits << endl;
-      TriggerResultsNavigator tnav(trigResults);
-      tnav.print();
+
+    for(size_t id=0;id < trigResults->size(); ++id){
+      if(trigResults->accept(id) && istrig[id]) {
+	_trigbits->Fill(id);
+	_trigword |= 1 << id;
+      }
+      if(_debug > 1)
+	cout << "Trigger path " << tnav.getTrigPath(id) << " returns " << trigResults->accept(id) << endl;
     }
-    
+    if(_debug > 0)
+      cout << "Trigger word for process " << process << " with " << trigResults->size() << " Lines = "  << _trigword << endl;
   }
 
   void TrackAnalysisReco::resetBranches() {
@@ -560,7 +624,9 @@ namespace mu2e {
     _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
+    _uetch.reset();
     _detchmc.reset();
+    _uetchmc.reset();
 // clear vectors
     _detsh.clear();
     _detsm.clear();
