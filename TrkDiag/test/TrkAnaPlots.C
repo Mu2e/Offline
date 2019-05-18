@@ -118,8 +118,7 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   gPad->SetLogy();
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
-  TCut final = reco+goodfit;
-//  TCut evtwt = "evtwt.PBIWeight";
+  TCut final = (reco+goodfit)*"evtwt.PBIWeight";
 //  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
   ta->Project("momresp","de.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
   momresp->Scale(1.0/nmu);
@@ -173,9 +172,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   gPad->SetLogy();
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
-  TCut final = reco+goodfit+physics;
- // TCut evtwt = "evtwt.PBIWeight";
-//  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+  TCut final = (reco+goodfit+physics)*"evtwt.PBIWeight";
   ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
@@ -269,7 +266,6 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
   TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>103.85";
-//  TCut evtwt = "evtwt.PBIWeight";
   TCut evtwt = "evtwt.PBIWeight";
   ta->Project("acc",binnames[ibin++],evtwt);
  // ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
