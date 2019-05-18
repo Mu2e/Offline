@@ -674,6 +674,24 @@ void Con(TTree* ta) {
 
 }
 
+void TrkQual(TTree* ta,TCut const& extra) {
+  TH1F* tqtch = new TH1F("tqtch","TrkQual;TrkQual MVA Output",100,-0.05,1.05);
+  TH1F* tqntch = new TH1F("tqntch","TrkQual;TrkQual MVA Output",100,-0.05,1.05);
+  tqtch->SetLineColor(kBlue);
+  tqntch->SetLineColor(kRed);
+  tqtch->SetStats(0);
+  tqntch->SetStats(0);
+  ta->Project("tqtch","de.trkqual","detch.active",extra);
+  ta->Project("tqntch","de.trkqual","!detch.active",extra);
+  TCanvas* tqcan = new TCanvas("tqcan","TrkQual",600,600);
+  tqtch->Draw();
+  tqntch->Draw("same");
+  TLegend* tqleg = new TLegend(0.5,0.7,0.9,0.9);
+  tqleg->AddEntry(tqtch,"TrkCaloHit","L");
+  tqleg->AddEntry(tqntch,"No TrkCaloHit","L");
+  tqleg->Draw();
+}
+
 void TrkQualRes(TTree* ta,double tqcut) {
   TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
   TH1F* badf = new TH1F("badf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
@@ -792,9 +810,9 @@ void StrawMat(TTree* ta) {
 
 void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   char cstring[100];
-  snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&demc.pdg==%i",tqcut,pdg);
+  snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrkcalo(cstring);
-  snprintf(cstring,100,"(!detch.active)&&detrkqual.trkqual>%f&&demc.pdg==%i",tqcut,pdg);
+  snprintf(cstring,100,"(!detch.active)&&detrkqual.trkqual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrk(cstring);
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
@@ -804,8 +822,8 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   TH1F* cdoca1 = new TH1F("cdoca1","TrkCaloHit DOCA;DOCA (mm)",200,-150,150);
   TH1F* cdt0 = new TH1F("cdt0","TrkCaloHit #Delta t;TCH t_{0} - CaloCluster Time",100,-5,5);
   TH1F* cdt1 = new TH1F("cdt1","TrkCaloHit #Delta t;TCH t_{0} - CaloCluster Time",100,-5,5);
-  TH1F* ep0 = new TH1F("ep0","TrkCaloHit E/P",100,0.0,1.1);
-  TH1F* ep1 = new TH1F("ep1","TrkCaloHit E/P",100,0.0,1.1);
+  TH1F* ep0 = new TH1F("ep0","TrkCaloHit E/P",100,0.0,1.25);
+  TH1F* ep1 = new TH1F("ep1","TrkCaloHit E/P",100,0.0,1.25);
   TH1F* tdir0 = new TH1F("tdir0","Track Direction at POCA;#hat{t}#bullet#hat{#rho}",100,-1.0,1.0);
   TH1F* tdir1 = new TH1F("tdir1","Track Direction at POCA;#hat{t}#bullet#hat{#rho}",100,-1.0,1.0);
   TH1F* pr0 = new TH1F("pr0","POCA Radius;Transverse Radius (mm)",100,360,650);
@@ -892,15 +910,15 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   TH2F* dotr1 = new TH2F("dotr1","Track Direction vs POCA Radius, Disk 1;Radius (mm);#hat{t}#bullet#hat{#rho}",100,360,650,100,-1,1);
   TH2F* doca0 = new TH2F("doca0","DOCA vs Crystal Depth, Disk 0;Depth (mm);DOCA (mm)",100,-50,250,100,-100,100);
   TH2F* doca1 = new TH2F("doca1","DOCA vs Crystal Depth, Disk 1;Depth (mm);DOCA(mm)",100,-50,250,100,-100,100);
-  TH2F* eopd0 = new TH2F("eopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,100,0.0,1.1);
-  TH2F* eopd1 = new TH2F("eopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,100,0.0,1.1);
-  TH2F* eopdir0 = new TH2F("eopdir0","E/P vs Track Direction, Disk 0;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.1);
-  TH2F* eopdir1 = new TH2F("eopdir1","E/P vs Track Direction, Disk 1;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.1);
-  TH2F* eopr0 = new TH2F("eopr0","E/P vs POCA Radius, Disk 0;Radius (mm);E/P",100,360,650,100,0.0,1.1);
-  TH2F* eopr1 = new TH2F("eopr1","E/P vs POCA Radius, Disk 1;Radius (mm);E/P",100,360,650,100,0.0,1.1);
+  TH2F* eopd0 = new TH2F("eopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,100,0.0,1.25);
+  TH2F* eopd1 = new TH2F("eopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,100,0.0,1.25);
+  TH2F* eopdir0 = new TH2F("eopdir0","E/P vs Track Direction, Disk 0;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.25);
+  TH2F* eopdir1 = new TH2F("eopdir1","E/P vs Track Direction, Disk 1;#hat{t}#bullet#hat{#rho};E/P",100,-1,1,100,0.0,1.25);
+  TH2F* eopr0 = new TH2F("eopr0","E/P vs POCA Radius, Disk 0;Radius (mm);E/P",100,360,650,100,0.0,1.25);
+  TH2F* eopr1 = new TH2F("eopr1","E/P vs POCA Radius, Disk 1;Radius (mm);E/P",100,360,650,100,0.0,1.25);
 
-  TProfile* peopd0 = new TProfile("peopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,0.0,1.1);
-  TProfile* peopd1 = new TProfile("peopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,0.0,1.1);
+  TProfile* peopd0 = new TProfile("peopd0","E/P vs Crystal Depth, Disk 0;Depth (mm);E/P",100,-50,250,0.0,1.25);
+  TProfile* peopd1 = new TProfile("peopd1","E/P vs Crystal Depth, Disk 1;Depth (mm);E/P",100,-50,250,0.0,1.25);
  
   rad0->SetStats(0);
   rad1->SetStats(0);

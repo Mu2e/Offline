@@ -335,7 +335,7 @@ CalPatRec : { @table::CalPatRec
 	    diagLevel                    : 0
 	    debugLevel                   : 0
 	    trkHelixFinderModuleLabel    : "HelixFinderDe:Positive"
-	    cprHelixCollTag              : "CalHelixFinder:Positive"
+	    calHelixFinderModuleLabel    : "CalHelixFinder:Positive"
 	}
 
 #------------------------------------------------------------------------------

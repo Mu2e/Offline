@@ -52,7 +52,7 @@
 
 
 int
-TrainPID(TTree* Cetree,TTree* Mutree)
+TrainPID(TChain* Cetree,TChain* Mutree)
 {
 
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -163,9 +163,9 @@ TrainPID(TTree* Cetree,TTree* Mutree)
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // must be a good fit
-  TCut goodfit = "de.status>0 && detch.active && de.trkqual>0.2 && de.td<1.5 && de.mom>80.0 && de.mom<150";
+  TCut goodfit = "de.status>0 && detch.active && de.td<1.1 && de.mom>85.0 && de.mom<125";
 // require a good downstream particle
-  TCut goodmu = "demcxit.mmomz>0 && demc.pdg==13";
+  TCut goodmu = "demcxit.momz>0 && abs(demc.pdg)==13";
   TCut goode = "demc.pdg==11 && demc.gen==2";
 
   TCut sigcut = goodfit + goode;
@@ -186,11 +186,11 @@ TrainPID(TTree* Cetree,TTree* Mutree)
   dataloader->AddVariable("detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",
     "EoverP","Fraction",'F');
   dataloader->AddVariable("detch.clen","CDepth","mm",'F');
-  dataloader->AddVariable("detch.doca","DOCA","mm",'F');
+//  dataloader->AddVariable("detch.doca","DOCA","mm",'F');
   dataloader->AddVariable("sqrt(detch.POCAx^2+detch.POCAy^2)", "RPOCA","mm",'F');
   dataloader->AddVariable("(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)", "TrkDir","Fraction",'F');
-  dataloader->AddVariable("detch.t0-detch.ctime","Dt","nsec",'F');
-//  dataloader->AddVariable("detch.disk","Disk","number",'I');
+  dataloader->AddVariable("detch.t0 - detch.ctime - min(200.0,max(0.0,detch.clen))*0.005","Dt","nsec",'F');
+//  dataloader->AddVariable("detch.POCAz","POCAz","mm",'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the

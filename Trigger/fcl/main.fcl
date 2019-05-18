@@ -52,3 +52,4 @@ outputs : {  @table::Trigger.outputs }
 
 
 services.TFileService.fileName : "globalTrigger.root"
+
