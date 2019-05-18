@@ -118,8 +118,7 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   gPad->SetLogy();
   TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
   momresp->Sumw2();
-  TCut final = reco+goodfit;
-//  TCut evtwt = "evtwt.PBIWeight";
+  TCut final = (reco+goodfit)*"evtwt.PBIWeight";
 //  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
   ta->Project("momresp","de.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
   momresp->Scale(1.0/nmu);
@@ -173,9 +172,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   gPad->SetLogy();
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
-  TCut final = reco+goodfit+physics;
- // TCut evtwt = "evtwt.PBIWeight";
-//  ta->Project("momres","de.mom-demcent.mom",evtwt*final);
+  TCut final = (reco+goodfit+physics)*"evtwt.PBIWeight";
   ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
@@ -221,7 +218,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 }
 
 void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
-  unsigned nbins(8);
+  unsigned nbins(9);
   double bmax = nbins-0.5;
 
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
@@ -230,32 +227,38 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
 //  racc->Sumw2();
   unsigned ibin(1);
   acc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+//  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"Trigger");
   acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
   acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   acc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
   acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
 
   ibin = 1;
   racc->GetXaxis()->SetBinLabel(ibin++,"All CE");
-  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+//  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"Trigger");
   racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
   racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
   racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
   racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   racc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
   racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
   ibin = 0;
-  const char* binnames[11] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0"};
+  const char* binnames[12] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0","11.0"};
 
   TCut mcsel = "demc.ndigigood>15&&sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>90.0";
   // &&demcent.td>0.55&&demcent.td<1.05";
   //&&fmod(demcent.t0,1695.0)>500.0";
+  TCut trigger = "(trigbits&0x208)>0";
   TCut reco = "de.status>0";
+  TCut CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
   char ctext[80];
   snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
   TCut goodfit(ctext);
@@ -263,16 +266,17 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   TCut rpitch = "de.td>0.57735027&&de.td<1.0";
   TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>103.85";
-//  TCut evtwt = "evtwt.PBIWeight";
-  TCut evtwt = "";
+  TCut evtwt = "evtwt.PBIWeight";
   ta->Project("acc",binnames[ibin++],evtwt);
-  ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+opa));
-  ta->Project("+acc",binnames[ibin++],evtwt*(mcsel+reco+goodfit+livegate+rpitch+opa+rmom));
+ // ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV+rmom));
 
   double all = acc->GetBinContent(1);
   double norm = ngen;
