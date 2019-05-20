@@ -192,11 +192,11 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   }
   // weight the tail by the momentum difference
   if(bkgw == linear){
-    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(sqrt(de.momx^2+de.momy^2+demomz^2)-demcent.mom,3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == exponential){
-    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(sqrt(de.momx^2+de.momy^2+de.momz^2)-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == polynomial){
-    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(sqrt(de.momx^2+de.momy^2+de.momz^2)-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
   } else {
     return -1;
   }
