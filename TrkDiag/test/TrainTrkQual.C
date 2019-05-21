@@ -192,11 +192,11 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   }
   // weight the tail by the momentum difference
   if(bkgw == linear){
-    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-demcent.mom,3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == exponential){
-    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-demcent.mom,3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == polynomial){
-    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-demcent.mom,3.0),5.0))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
   } else {
     return -1;
   }
@@ -214,16 +214,16 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  dataloader->AddVariable("de.nactive","NActive","Count",'I');
-  dataloader->AddVariable("de.nactive/de.nhits","FActive","Fraction",'F');
-  dataloader->AddVariable("log10(de.fitcon)","LogFitCon","Probability",'F');
-  dataloader->AddVariable("de.momerr","FitMomErr","MeV/c",'F');
-  dataloader->AddVariable("de.t0err","T0Err","nsec",'F');
-  dataloader->AddVariable("de.d0","D0","mm",'F');
-  dataloader->AddVariable("de.d0+2./de.om","MaxRadius","mm",'F');
-  dataloader->AddVariable("de.ndactive/de.nactive","DoubleHitFraction","Fraction",'F');
-  dataloader->AddVariable("de.nnullambig/de.nactive","NullHitFraction","Fraction",'F');
-  dataloader->AddVariable("de.nmatactive/de.nactive","MatFraction","Fraction",'F');
+  dataloader->AddVariable("detrkqual.NActiveHits","NActive","Count",'I');
+  dataloader->AddVariable("detrkqual.ActiveHitFraction","FActive","Fraction",'F');
+  dataloader->AddVariable("detrkqual.Log10FitCon","LogFitCon","Probability",'F');
+  dataloader->AddVariable("detrkqual.MomError","FitMomErr","MeV/c",'F');
+  dataloader->AddVariable("detrkqual.T0Error","T0Err","nsec",'F');
+  dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
+  dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
+  dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
+  dataloader->AddVariable("detrkqual.NullAmbigHitFraction","NullHitFraction","Fraction",'F');
+  dataloader->AddVariable("detrkqual.StrawHitFraction","MatFraction","Fraction",'F');
 //  dataloader->AddVariable("lastflt-firstflt","FltLen","mm",'F');
 
 
