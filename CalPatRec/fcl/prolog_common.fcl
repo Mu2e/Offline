@@ -4,15 +4,6 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-# KSFDeMH      : 
-# KSFDmuMH     : 
-# 
-# KFFDeMHPar   : { @table::KFFDeM                             SeedCollection : KSFDeMH  }
-# KFFDeMHDar   : { @table::CalPatRec.producers.CalTrkFitDem   SeedCollection : KSFDeMH  }
-# 
-# KFFDmuMHPar  : 
-# KFFDmuMHDar  : 
-
 CommonTrk                : {
     producers : {
 #------------------------------------------------------------------------------

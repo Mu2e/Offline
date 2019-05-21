@@ -53,6 +53,11 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
 genreflex = Builder(action="export HOME="+os.environ["HOME"]+"; "+"genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
 
+# a generic builder, some files transform to others
+generic = Builder(action="$COMMAND" )
+env.Append(BUILDERS = {'GenericBuild' : generic})
+
+
 # this sets the build flags, like -std=c++14 -Wall -O3, etc
 SetOption('warn', 'no-fortran-cxx-mix')
 env.MergeFlags( sch.mergeFlags(mu2eOpts) )
