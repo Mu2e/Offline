@@ -701,20 +701,22 @@ void TrkQualRes(TTree* ta,double tqcut) {
   badf->SetFillStyle(3005);
   goodf->SetStats(0);
   badf->SetStats(0);
+  goodf->Sumw2();
+  badf->Sumw2();
   char tqcutgc[40];
   char tqcutbc[40];
   snprintf(tqcutgc,40,"detrkqual.trkqual>%f",tqcut);
-  snprintf(tqcutbc,40,"detrkqual.trkqual<%f",tqcut);
+  snprintf(tqcutbc,40,"detrkqual.trkqual>0");
   TCut tqcutg(tqcutgc);
   TCut tqcutb(tqcutbc);
   TCut reco("de.status>0");
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
-  ta->Project("goodf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",reco+mcsel+tqcutg);
-  ta->Project("badf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",reco+mcsel+tqcutb);
-  badf->Scale(goodf->GetEntries()/badf->GetEntries());
+  ta->Project("goodf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"evtwt.PBIWeight");
+  ta->Project("badf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"evtwt.PBIWeight");
+//  badf->Scale(goodf->GetEntries()/badf->GetEntries());
   TCanvas* tqcan = new TCanvas("tqcan","TrkQual",1000,800);
-  goodf->Draw();
-  badf->Draw("same");
+  badf->Draw("LF2");
+  goodf->Draw("sameLF2");
 
   double gmax = goodf->GetMaximum();
   int gbin1 = goodf->FindFirstBinAbove(0.5*gmax);
@@ -728,11 +730,13 @@ void TrkQualRes(TTree* ta,double tqcut) {
 
   char ltitle[40];
 
-  TLegend* leg = new TLegend(0.55,0.6,0.9,0.9);
-  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutgc,1000.0*gfwhm);
-  leg->AddEntry(goodf,ltitle,"F");
-  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutbc,1000.0*bfwhm);
-  leg->AddEntry(badf,ltitle,"F");
+  TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
+  leg->AddEntry(goodf,tqcutgc,"L");
+  leg->AddEntry(badf,tqcutbc,"L");
+//  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutgc,1000.0*gfwhm);
+//  leg->AddEntry(goodf,ltitle,"F");
+//  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutbc,1000.0*bfwhm);
+//  leg->AddEntry(badf,ltitle,"F");
   leg->Draw();
 }
 
