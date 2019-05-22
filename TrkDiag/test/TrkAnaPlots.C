@@ -670,22 +670,42 @@ void Con(TTree* ta) {
 
 }
 
-void TrkQual(TTree* ta,TCut const& extra) {
-  TH1F* tqtch = new TH1F("tqtch","TrkQual;TrkQual MVA Output",100,-0.05,1.05);
-  TH1F* tqntch = new TH1F("tqntch","TrkQual;TrkQual MVA Output",100,-0.05,1.05);
+void TrkQual(TTree* ta,const char* extra="") {
+  TCut ecut(extra);
+  TH1F* tq = new TH1F("tq","TrkQual;TrkQual MVA Output",203,-0.01,1.01);
+  TH1F* tqtch = new TH1F("tqtch","TrkQual;TrkQual MVA Output",203,-0.01,1.01);
+  TH1F* tqntch = new TH1F("tqntch","TrkQual;TrkQual MVA Output",203,-0.01,1.01);
+  tq->SetLineColor(kBlack);
   tqtch->SetLineColor(kBlue);
   tqntch->SetLineColor(kRed);
+  tq->SetStats(0);
   tqtch->SetStats(0);
   tqntch->SetStats(0);
-  ta->Project("tqtch","de.trkqual","detch.active",extra);
-  ta->Project("tqntch","de.trkqual","!detch.active",extra);
+  ta->Project("tq","de.trkqual",ecut);
+  ta->Project("tqtch","de.trkqual","detch.active"+ecut);
+  ta->Project("tqntch","de.trkqual","!detch.active"+ecut);
+
+  double* tqintarray = tq->GetIntegral();
+
+  TH1F* tqint = new TH1F("tqint","TrkQual Cut Efficiency;TrkQual Cut;Efficiency",tq->GetNbinsX(),tq->GetXaxis()->GetXmin(), tq->GetXaxis()->GetXmax());
+  tqint->SetStats(0);
+  tqint->SetFillColor(kBlack);
+  for(size_t ibin=0;ibin < (size_t)tq->GetNbinsX();ibin++)
+    tqint->SetBinContent(ibin+1, 1.0-tqintarray[ibin]);
   TCanvas* tqcan = new TCanvas("tqcan","TrkQual",600,600);
-  tqtch->Draw();
+  tqcan->Divide(1,2);
+  tqcan->cd(1);
+  gPad->SetLogy();
+  tq->Draw();
+  tqtch->Draw("same");
   tqntch->Draw("same");
-  TLegend* tqleg = new TLegend(0.5,0.7,0.9,0.9);
+  TLegend* tqleg = new TLegend(0.5,0.7,0.8,0.9);
+  tqleg->AddEntry(tq,"All","L");
   tqleg->AddEntry(tqtch,"TrkCaloHit","L");
   tqleg->AddEntry(tqntch,"No TrkCaloHit","L");
   tqleg->Draw();
+  tqcan->cd(2);
+  tqint->Draw();
 }
 
 void TrkQualRes(TTree* ta,double tqcut) {
@@ -715,6 +735,7 @@ void TrkQualRes(TTree* ta,double tqcut) {
   ta->Project("badf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"evtwt.PBIWeight");
 //  badf->Scale(goodf->GetEntries()/badf->GetEntries());
   TCanvas* tqcan = new TCanvas("tqcan","TrkQual",1000,800);
+  gPad->SetLogy();
   badf->Draw("LF2");
   goodf->Draw("sameLF2");
 
@@ -731,12 +752,11 @@ void TrkQualRes(TTree* ta,double tqcut) {
   char ltitle[40];
 
   TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
-  leg->AddEntry(goodf,tqcutgc,"L");
-  leg->AddEntry(badf,tqcutbc,"L");
-//  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutgc,1000.0*gfwhm);
-//  leg->AddEntry(goodf,ltitle,"F");
-//  snprintf(ltitle,40,"%s, FWHM =%3.0f KeV/c",tqcutbc,1000.0*bfwhm);
-//  leg->AddEntry(badf,ltitle,"F");
+//  leg->AddEntry(goodf,tqcutgc,"L");
+//  leg->AddEntry(badf,tqcutbc,"L");
+  snprintf(ltitle,40,"TrkQual>%3.2f, f= %5.3f",tqcut,goodf->GetEntries()/float(badf->GetEntries()));
+  leg->AddEntry(goodf,ltitle,"L");
+  leg->AddEntry(badf,"No TrkQual Cut","L");
   leg->Draw();
 }
 
