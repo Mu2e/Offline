@@ -39,7 +39,7 @@ outputs : {
 # My epilog
 #include "JobConfig/ensemble/epilog_reco.fcl"
 # trigger epilog
-#include "TriggerEpilogs/allPaths.fcl"
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel

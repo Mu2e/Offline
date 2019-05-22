@@ -71,13 +71,15 @@ namespace mu2e
       if (i_kalSeed.status().hasAllProperties(goodfit)) {
 
 	// fill the hit count variables
-	unsigned nhits = 0; unsigned nactive = 0; unsigned ndouble = 0; unsigned ndactive = 0; unsigned nnullambig = 0;
+	unsigned nhits = 0; unsigned nactive = 0; unsigned ndouble = 0; unsigned ndactive = 0; unsigned nnullambig = 0; unsigned nmat=0; unsigned nmatactive=0;
+	double radlen(0.0);
 	TrkTools::countHits(i_kalSeed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
+	TrkTools::countStraws(i_kalSeed.straws(), nmat, nmatactive, radlen);
 	trkqual[TrkQual::nactive] = nactive;
 	trkqual[TrkQual::factive] = (double)nactive / nhits;
 	trkqual[TrkQual::fdouble] = (double)ndactive / nactive;
 	trkqual[TrkQual::fnullambig] = (double)nnullambig / nactive;
-	trkqual[TrkQual::fstraws] = (double)i_kalSeed.straws().size() / nactive;
+	trkqual[TrkQual::fstraws] = (double)nmatactive / nactive;
 
 	// fill fit consistency and t0 variables
 	if (i_kalSeed.fitConsistency() > FLT_MIN) {

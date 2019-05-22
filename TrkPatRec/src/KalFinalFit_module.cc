@@ -23,7 +23,6 @@
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // data
