@@ -1,4 +1,4 @@
-// @(#)root/tmva $Id: TrainTrkQual.C,v 1.4 2014/05/31 14:27:49 brownd Exp $
+// @(#)root/tmva $Id: TrainPID.C,v 1.4 2014/05/31 14:27:49 brownd Exp $
 /**********************************************************************************
  * Project   : TMVA - a ROOT-integrated toolkit for multivariate data analysis    *
  * Package   : TMVA                                                               *
@@ -50,11 +50,9 @@
 #include "TMVA/Tools.h"
 #endif
 
-enum bkgweight{linear=0,exponential=1,polynomial=2};
-enum tch{hastch=0,notch,donttest};
 
 int
-TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
+TrainPID(TChain* Cetree,TChain* Mutree)
 {
 
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -145,17 +143,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-  TString tname("TrkQual");
-  switch(tch) {
-    case hastch:
-      tname = "TrkQualTCH";
-      break;
-    case notch:
-      tname = "TrkQualNoTCH";
-      break;
-    case donttest : default :
-      break;
-  }
+  TString tname("PID");
   TString outfilename(tname);
   outfilename += ".root";
   TFile* outputFile = TFile::Open( outfilename, "RECREATE" );
@@ -174,33 +162,14 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   TMVA::Factory *factory = new TMVA::Factory( "TMVAClassification", outputFile,
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
-// signal is defined as the momentum resolution core,
-  TCut goodfit = "de.status>0";
-  TCut goodmom = "sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)-sqrt(demcxit.momx^2+demcxit.momy^2+demcxit.momz^2)<2.0";
-  TCut goodpitch = "demcent.td>0.57&&demcent.td<1.0";
-  TCut goodmomres = "abs(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2))<0.25";
-  TCut badmomres = "de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>0.7";
-  TCut signal = goodfit + goodmom + goodpitch + goodmomres;
-  // tail is defined as the high-side tail
-  TCut bkg = goodfit + goodmom + goodpitch + badmomres;
-  if(tch == hastch) {
-    signal += TCut("detch.active");
-    bkg += TCut("detch.active");
-  } else if(tch == notch) {
-   signal += TCut("!detch.active");
-   bkg += TCut("!detch.active");
-  }
-  // weight the tail by the momentum difference
-  if(bkgw == linear){
-    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
-  } else if(bkgw == exponential){
-    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
-  } else if(bkgw == polynomial){
-    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
-  } else {
-    return -1;
-  }
+// must be a good fit
+  TCut goodfit = "de.status>0 && detch.active && de.td<1.1 && de.mom>85.0 && de.mom<125";
+// require a good downstream particle
+  TCut goodmu = "demcxit.momz>0 && abs(demc.pdg)==13";
+  TCut goode = "demc.pdg==11 && demc.gen==2";
 
+  TCut sigcut = goodfit + goode;
+  TCut bkgcut = goodfit + goodmu;
   // If you wish to modify default settings
   // (please check "src/Config.h" to see all available global options)
   //    (TMVA::gConfig().GetVariablePlotting()).fTimesRMS = 8.0;
@@ -214,18 +183,14 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  dataloader->AddVariable("detrkqual.NActiveHits","NActive","Count",'I');
-  dataloader->AddVariable("detrkqual.ActiveHitFraction","FActive","Fraction",'F');
-  dataloader->AddVariable("detrkqual.Log10FitCon","LogFitCon","Probability",'F');
-  dataloader->AddVariable("detrkqual.MomError","FitMomErr","MeV/c",'F');
-  dataloader->AddVariable("detrkqual.T0Error","T0Err","nsec",'F');
-  dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
-  dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
-  dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
-  dataloader->AddVariable("detrkqual.NullAmbigHitFraction","NullHitFraction","Fraction",'F');
-  dataloader->AddVariable("detrkqual.StrawHitFraction","MatFraction","Fraction",'F');
-//  dataloader->AddVariable("lastflt-firstflt","FltLen","mm",'F');
-
+  dataloader->AddVariable("detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",
+    "EoverP","Fraction",'F');
+  dataloader->AddVariable("detch.clen","CDepth","mm",'F');
+//  dataloader->AddVariable("detch.doca","DOCA","mm",'F');
+  dataloader->AddVariable("sqrt(detch.POCAx^2+detch.POCAy^2)", "RPOCA","mm",'F');
+  dataloader->AddVariable("(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)", "TrkDir","Fraction",'F');
+  dataloader->AddVariable("detch.t0 - detch.ctime - min(200.0,max(0.0,detch.clen))*0.005","Dt","nsec",'F');
+//  dataloader->AddVariable("detch.POCAz","POCAz","mm",'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
@@ -234,8 +199,8 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   Double_t signalWeight     = 1.0;
   Double_t backgroundWeight = 1.0;
 
-  dataloader->AddSignalTree    ( mytree, signalWeight);
-  dataloader->AddBackgroundTree( mytree, backgroundWeight );
+  dataloader->AddSignalTree    ( Cetree, signalWeight);
+  dataloader->AddBackgroundTree( Mutree, backgroundWeight );
 
   // global event weights per tree (see below for setting event-wise weights)
 
@@ -298,7 +263,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   //    dataloader->PrepareTrainingAndTestTree( mycut,
   //                                         "NSigTrain=3000:NBkgTrain=3000:NSigTest=3000:NBkgTest=3000:SplitMode=Random:!V" );
 
-  dataloader->PrepareTrainingAndTestTree(signal, bkg, "SplitMode=Random:!V:SplitSeed=89281" );
+  dataloader->PrepareTrainingAndTestTree(sigcut, bkgcut, "SplitMode=Random:!V:SplitSeed=89281" );
 
   // ---- Book MVA methods
   //
