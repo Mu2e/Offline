@@ -76,11 +76,12 @@ namespace mu2e
 	// fill the hit count variables
 	TrkInfo tinfo;
 	_infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
+	_infoStructHelper.fillTrkInfoStraws(i_kalSeed, tinfo);
 	trkqual[TrkQual::nactive] = tinfo._nactive;
 	trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
 	trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;
 	trkqual[TrkQual::fnullambig] = (double) tinfo._nnullambig / tinfo._nactive;
-	trkqual[TrkQual::fstraws] = (double)i_kalSeed.straws().size() / tinfo._nactive;
+	trkqual[TrkQual::fstraws] = (double)tinfo._nmatactive / tinfo._nactive;
 
 	// fill fit consistency and t0 variables
 	if (i_kalSeed.fitConsistency() > FLT_MIN) {

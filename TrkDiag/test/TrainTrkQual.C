@@ -51,9 +51,10 @@
 #endif
 
 enum bkgweight{linear=0,exponential=1,polynomial=2};
+enum tch{hastch=0,notch,donttest};
 
 int
-TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
+TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
 {
 
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -144,11 +145,17 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-  TString tname;
-  if(calo)
-    tname = "TrkQualCalo";
-  else
-    tname = "TrkQual";
+  TString tname("TrkQual");
+  switch(tch) {
+    case hastch:
+      tname = "TrkQualTCH";
+      break;
+    case notch:
+      tname = "TrkQualNoTCH";
+      break;
+    case donttest : default :
+      break;
+  }
   TString outfilename(tname);
   outfilename += ".root";
   TFile* outputFile = TFile::Open( outfilename, "RECREATE" );
@@ -169,27 +176,27 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
 
 // signal is defined as the momentum resolution core,
   TCut goodfit = "de.status>0";
-  TCut goodmom = "demcent.mom-demcxit.mom<2.0";
+  TCut goodmom = "sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)-sqrt(demcxit.momx^2+demcxit.momy^2+demcxit.momz^2)<2.0";
   TCut goodpitch = "demcent.td>0.57&&demcent.td<1.0";
-  TCut goodmomres = "de.mom-demcent.mom<0.25&&de.mom-demcent.mom>-0.25";
-  TCut badmomres = "de.mom-demcent.mom>0.7";
+  TCut goodmomres = "abs(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2))<0.25";
+  TCut badmomres = "de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>0.7";
   TCut signal = goodfit + goodmom + goodpitch + goodmomres;
   // tail is defined as the high-side tail
   TCut bkg = goodfit + goodmom + goodpitch + badmomres;
-  if(calo) {
+  if(tch == hastch) {
     signal += TCut("detch.active");
     bkg += TCut("detch.active");
-  } else {
+  } else if(tch == notch) {
    signal += TCut("!detch.active");
-    bkg += TCut("!detch.active");
+   bkg += TCut("!detch.active");
   }
   // weight the tail by the momentum difference
   if(bkgw == linear){
-    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-demcent.mom,3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == exponential){
-    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-demcent.mom,3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == polynomial){
-    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-demcent.mom,3.0),5.0))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
   } else {
     return -1;
   }
@@ -207,16 +214,16 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,bool calo=false)
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  dataloader->AddVariable("de.nactive","NActive","Count",'I');
-  dataloader->AddVariable("de.nactive/de.nhits","FActive","Fraction",'F');
-  dataloader->AddVariable("log10(de.fitcon)","LogFitCon","Probability",'F');
-  dataloader->AddVariable("de.momerr","FitMomErr","MeV/c",'F');
-  dataloader->AddVariable("de.t0err","T0Err","nsec",'F');
-  dataloader->AddVariable("de.d0","D0","mm",'F');
-  dataloader->AddVariable("de.d0+2./de.om","MaxRadius","mm",'F');
-  dataloader->AddVariable("de.ndactive/de.nactive","DoubleHitFraction","Fraction",'F');
-  dataloader->AddVariable("de.nnullambig/de.nactive","NullHitFraction","Fraction",'F');
-  dataloader->AddVariable("de.nmatactive/de.nactive","MatFraction","Fraction",'F');
+  dataloader->AddVariable("detrkqual.NActiveHits","NActive","Count",'I');
+  dataloader->AddVariable("detrkqual.ActiveHitFraction","FActive","Fraction",'F');
+  dataloader->AddVariable("detrkqual.Log10FitCon","LogFitCon","Probability",'F');
+  dataloader->AddVariable("detrkqual.MomError","FitMomErr","MeV/c",'F');
+  dataloader->AddVariable("detrkqual.T0Error","T0Err","nsec",'F');
+  dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
+  dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
+  dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
+  dataloader->AddVariable("detrkqual.NullAmbigHitFraction","NullHitFraction","Fraction",'F');
+  dataloader->AddVariable("detrkqual.StrawHitFraction","MatFraction","Fraction",'F');
 //  dataloader->AddVariable("lastflt-firstflt","FltLen","mm",'F');
 
 

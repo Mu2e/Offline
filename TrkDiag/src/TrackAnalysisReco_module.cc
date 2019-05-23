@@ -34,6 +34,7 @@
 #include "TBits.h"
 #include "TTree.h"
 #include "TProfile.h"
+#include "TH1F.h"
 
 // BaBar includes
 #include "BTrk/BaBar/BaBar.hh"
@@ -136,6 +137,7 @@ namespace mu2e {
     // main TTree
     TTree* _trkana;
     TProfile* _tht; // profile plot of track hit times: just an example
+    TH1F* _trigbits; // plot of trigger bits: just an example
     // general event info branch
     double _meanPBI;
     EventInfo _einfo;
@@ -154,11 +156,11 @@ namespace mu2e {
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     art::InputTag _strawHitFlagTag;
-    TrkCaloHitInfo _detch;
-    CaloClusterInfoMC _detchmc;
+    TrkCaloHitInfo _detch, _uetch;
+    CaloClusterInfoMC _detchmc, _uetchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
-    unsigned _trigbits;
+    unsigned _trigword;
     // MC truth branches
     TrkInfoMC _demc, _uemc, _dmmc;
     art::InputTag _primaryParticleTag;
@@ -179,6 +181,7 @@ namespace mu2e {
     KSCIter findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
+    int _bestcrv;
     HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
     // SimParticle timing offset
@@ -460,6 +463,16 @@ namespace mu2e {
 	    }
 	  }
 	}
+	if (_diag > 0 && iuekseed != ueC.end() && iuekseed->hasCaloCluster()) {
+	  // fill MC truth of the associated CaloCluster 
+	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
+	    if(iccmca->first == iuekseed->caloCluster()){
+	      auto const& ccmc = *(iccmca->second);
+	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_uetchmc);
+	      break;
+	    }
+	  }
+	}
       }
 
       fillEventInfo(event);
@@ -522,14 +535,23 @@ namespace mu2e {
 
   void TrackAnalysisReco::fillTriggerBits(const art::Event& event,std::string const& process) {
     //get the TriggerResult from the process that created the KalFinalFit downstream collection
+    static const std::string tname("_trigger"); // all trigger paths have this in the name
+    static bool first(true);
+    static std::array<bool,16> istrig = {false};
     art::InputTag const tag{Form("TriggerResults::%s", process.c_str())};
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults* trigResults = trigResultsH.product();
-    _trigbits = 0;
-    for(size_t id=0;id < trigResults->size(); ++id){
-      if (trigResults->accept(id)) {
-	_trigbits |= 1 << id;
+    TriggerResultsNavigator tnav(trigResults);
+   _trigword = 0;
+   // setup the bin labels
+    if(first){ // is there a better way to do this?  I think not
+      for(size_t id=0;id < trigResults->size(); ++id){
+	if (tnav.getTrigPath(id).find(tname) != std::string::npos) {
+	  _trigbits->GetXaxis()->SetBinLabel(id+1,tnav.getTrigPath(id).c_str());
+	  istrig[id] =true;
+	}
       }
+      first = false;
     }
     if(_conf.debug() > 0){
       cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines"
@@ -537,7 +559,8 @@ namespace mu2e {
       TriggerResultsNavigator tnav(trigResults);
       tnav.print();
     }
-    
+    if(_debug > 0)
+      cout << "Trigger word for process " << process << " with " << trigResults->size() << " Lines = "  << _trigword << endl;
   }
 
   void TrackAnalysisReco::resetBranches() {
@@ -565,7 +588,9 @@ namespace mu2e {
     _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
+    _uetch.reset();
     _detchmc.reset();
+    _uetchmc.reset();
 // clear vectors
     _detsh.clear();
     _detsm.clear();

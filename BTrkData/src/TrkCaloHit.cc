@@ -44,10 +44,24 @@ namespace mu2e
     _parentRep=0;
   }
 
+
+  //2019-05-02 Gianipez: the following function will change meaning in the near future. FIXME!
   double
   TrkCaloHit::time() const{
     return caloCluster().time()  + _dtoffset; // following Pasha's convention
   }
+
+  // bool 
+  // TrkCaloHit::time(HitT0& t0) const{
+  //   HitT0 st0;
+  //   if (signalPropagationTime(st0)){
+  //     t0._t0    = caloCluster().time() - st0._t0 -_dtoffset;
+  //     t0._t0err = st0._t0err;
+  //     return true;
+  //   }else {
+  //     return false;
+  //   }
+  // }
 
   TrkErrCode
   TrkCaloHit::updateMeasurement(const TrkDifTraj* traj) {
@@ -98,9 +112,11 @@ namespace mu2e
       double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
       tlight = clen/vlprop;
     }
-    t0._t0 = tlight;
-    t0._t0err = _tErr; // should be a function of propagation distance: FIXME!
-    return true;
+    t0._t0    =  tlight;
+    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating. 
+                       //Contribution from the uncertainty of the light propagation is below 100 ps
+
+    return true;//FIXME!
   }
 
 // this function isn't used and needs to be removed FIXME!
