@@ -354,6 +354,7 @@ TrkAnaReco : {
    }
 
    TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP  ]
+   EndSequenceNoMC : [ TrkAnaNeg, TrkAnaPos ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }
 

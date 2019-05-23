@@ -288,11 +288,11 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::analyze(const art::Event& event) {
-  // update timing maps
-    _toff.updateMap(event);
-  // get conditions/geometry objects
+    // update timing maps
+    if(_fillmc)_toff.updateMap(event);
+    // get conditions/geometry objects
     mu2e::GeomHandle<mu2e::Calorimeter> caloh;
-  // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
+    // need to create and define the event weight branch here because we only now know the EventWeight creating modules that have been run through the Event
     if (!_trkana->GetBranch("evtwt")) { 
       std::vector<art::Handle<EventWeight> > eventWeightHandles;
       event.getManyByType(eventWeightHandles);
