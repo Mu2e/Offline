@@ -96,18 +96,11 @@ namespace mu2e {
   };
   
   MergeHelixFinder::MergeHelixFinder(fhicl::ParameterSet const& pset) :
-#<<<<<<< HEAD
-#    art::EDProducer{pset},
-#    _diag            (pset.get<int>        ("diagLevel"                )),
-#    _debugLevel      (pset.get<int>        ("debugLevel"               )),
-#    _tprHelixCollTag (pset.get<std::string>("trkHelixFinderModuleLabel")),
-#    _cprHelixCollTag (pset.get<std::string>("calHelixFinderModuleLabel"))
-#=======
+    EDProducer{pset},
     _diag            (pset.get<int>        ("diagLevel"      )),
     _debugLevel      (pset.get<int>        ("debugLevel"     )),
     _tprHelixCollTag (pset.get<std::string>("tprHelixCollTag")),
     _cprHelixCollTag (pset.get<std::string>("cprHelixCollTag"))
-#>>>>>>> master
   {
 
     produces<AlgorithmIDCollection>  ();
