@@ -183,7 +183,7 @@ namespace mu2e {
     void fillEventInfo(const art::Event& event);
     void fillTriggerBits(const art::Event& event,std::string const& process);
     void resetBranches();
-    size_t findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate);
+    size_t findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate, bool sameColl);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
     int _bestcrv;
@@ -349,7 +349,6 @@ namespace mu2e {
     // get the provenance from this for trigger processing
     std::string const& process = candidateKSCH.provenance()->processName();
     auto const& candidateKSC = *candidateKSCH;
-    _tcnt._nde = candidateKSC.size();
 
     art::Handle<TrkQualCollection> candidateTQCH;
     std::string tqtag;
@@ -408,6 +407,7 @@ namespace mu2e {
     }
     // reset
     resetBranches();
+    _tcnt._nde = candidateKSC.size();
 
     // fill event level info
     fillEventInfo(event);
@@ -517,7 +517,11 @@ namespace mu2e {
 	  const auto& i_supplementKSC = *i_supplementKSCH;
 	  auto const& i_supplementTQC = _supplementTQCs.at(i_supplement);
 
-	  auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
+	  bool sameColl = false;
+	  if (_conf.candidate().input() == supps.at(i_supplement).input()) {
+	    sameColl = true;
+	  }
+	  auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS, sameColl);
 	  
 	  if(i_supplementKS < i_supplementKSC.size()) { 
 	    const auto& supplementKS = i_supplementKSC.at(i_supplementKS);
@@ -584,15 +588,18 @@ namespace mu2e {
     }
   }
 
-  size_t TrackAnalysisReco::findSupplementTrack(KalSeedCollection const& kcol,const KalSeed& candidate) {
+  size_t TrackAnalysisReco::findSupplementTrack(KalSeedCollection const& kcol,const KalSeed& candidate, bool sameColl) {
     size_t retval = kcol.size();
 
     // loop over supplement tracks and find the closest
     double candidate_time = candidate.t0().t0();
-    double closest_time = 0;
+    double closest_time = 999999999;
     for(auto i_kseed=kcol.begin(); i_kseed != kcol.end(); i_kseed++) {
       double supplement_time = i_kseed->t0().t0();
       if( fabs(supplement_time - candidate_time) < fabs(closest_time-candidate_time)) {
+	if (sameColl && fabs(supplement_time - candidate_time)<1e-5) {
+	  continue; // don't want the exact same track
+	}
 	closest_time = supplement_time;
 	retval = i_kseed - kcol.begin();
       }
