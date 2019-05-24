@@ -159,7 +159,6 @@ namespace mu2e {
 
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
-    CaloClusterInfoMC _detchmc, _uetchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
     unsigned _trigword;
@@ -175,7 +174,10 @@ namespace mu2e {
     GenInfo _candidateMCGenTI, _candidateMCPriTI; // generator and 'primary' information
     std::vector<GenInfo> _supplementMCGenTIs, _supplementMCPriTIs;
     TrkInfoMCStep _candidateMCEntTI, _candidateMCMidTI, _candidateMCXitTI;
+    CaloClusterInfoMC _candidateMCTCHI;
+
     std::vector<TrkInfoMCStep> _supplementMCEntTIs, _supplementMCMidTIs, _supplementMCXitTIs;
+    std::vector<CaloClusterInfoMC> _supplementMCTCHIs;
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
@@ -229,6 +231,8 @@ namespace mu2e {
 	_supplementMCMidTIs.push_back(mcmid);
 	_supplementMCXitTIs.push_back(mcxit);
 
+	CaloClusterInfoMC mctchi;
+	_supplementMCTCHIs.push_back(mctchi);
       }
     }
   }
@@ -279,7 +283,7 @@ namespace mu2e {
       _trkana->Branch((branch+"mcent").c_str(),&_candidateMCEntTI,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch((branch+"mcmid").c_str(),&_candidateMCMidTI,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch((branch+"mcxit").c_str(),&_candidateMCXitTI,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch((branch+"tchmc").c_str(),&_detchmc,CaloClusterInfoMC::leafnames().c_str());
+      _trkana->Branch((branch+"tchmc").c_str(),&_candidateMCTCHI,CaloClusterInfoMC::leafnames().c_str());
       if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_conf.diag() > 1)_trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
     }
@@ -307,6 +311,7 @@ namespace mu2e {
 	  _trkana->Branch((branch+"mcent").c_str(),&_supplementMCEntTIs.at(i_supplement),TrkInfoMCStep::leafnames().c_str());
 	  _trkana->Branch((branch+"mcmid").c_str(),&_supplementMCMidTIs.at(i_supplement),TrkInfoMCStep::leafnames().c_str());
 	  _trkana->Branch((branch+"mcxit").c_str(),&_supplementMCXitTIs.at(i_supplement),TrkInfoMCStep::leafnames().c_str());
+	  _trkana->Branch((branch+"tchmc").c_str(),&_supplementMCTCHIs.at(i_supplement),CaloClusterInfoMC::leafnames().c_str());
 	}
       }
     }
@@ -510,23 +515,12 @@ namespace mu2e {
 	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
 	    if(iccmca->first == candidateKS.caloCluster()){
 	      auto const& ccmc = *(iccmca->second);
-	      _infoMCStructHelper.fillCaloClusterInfoMC(ccmc,_detchmc);
+	      _infoMCStructHelper.fillCaloClusterInfoMC(ccmc,_candidateMCTCHI);
 	      
 	      break;
 	    }
 	  }
 	}
-	// TODO: work this in
-	/*	if (_conf.diag() > 0 && iuekseed != ueC.end() && iuekseed->hasCaloCluster()) {
-	  // fill MC truth of the associated CaloCluster 
-	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
-	    if(iccmca->first == iuekseed->caloCluster()){
-	      auto const& ccmc = *(iccmca->second);
-	      TrkMCTools::fillCaloClusterInfoMC(ccmc,_uetchmc);
-	      break;
-	    }
-	  }
-	*/
       }
 
       // go through the supplement collections and find the track nearest to the candidate
@@ -555,8 +549,10 @@ namespace mu2e {
 	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementMidTI,midpos);
 	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementXitTI,xitpos);
 
-	    auto& i_supplementTCHI = _supplementTCHIs.at(i_supplement);
-	    _infoStructHelper.fillCaloHitInfo(supplementKS,  i_supplementTCHI);
+	    if (supplementKS.hasCaloCluster()) {
+	      auto& i_supplementTCHI = _supplementTCHIs.at(i_supplement);
+	      _infoStructHelper.fillCaloHitInfo(supplementKS,  i_supplementTCHI);
+	    }
 
 	    //	    _tcnt._overlaps[i_supplement+1] = _tcomp.nOverlap(candidateKS, supplementKS);
 
@@ -594,6 +590,17 @@ namespace mu2e {
 		  //		    _infoMCStructHelper.fillHitInfoMCs(dekseedmc, _detshmc);
 		  //		  }
 		  break;
+		}
+	      }
+	      if (supplementKS.hasCaloCluster()) {
+		auto& i_supplementMCTCHI = _supplementMCTCHIs.at(i_supplement);
+		// fill MC truth of the associated CaloCluster 
+		for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
+		  if(iccmca->first == supplementKS.caloCluster()){
+		    auto const& ccmc = *(iccmca->second);
+		    _infoMCStructHelper.fillCaloClusterInfoMC(ccmc,i_supplementMCTCHI);
+		    break;
+		  }
 		}
 	      }
 	    }
@@ -694,6 +701,7 @@ namespace mu2e {
     _candidateEntTI.reset();
     _candidateMidTI.reset();
     _candidateXitTI.reset();
+    _candidateTCHI.reset();
     _hinfo.reset();
     _candidateMCTI.reset();
     _candidateMCGenTI.reset();
@@ -701,7 +709,7 @@ namespace mu2e {
     _candidateMCEntTI.reset();
     _candidateMCMidTI.reset();
     _candidateMCXitTI.reset();
-    _candidateTCHI.reset();
+    _candidateMCTCHI.reset();
     _wtinfo.reset();
     _trkqualTest.reset();
     _trkQualInfo.reset();
@@ -722,10 +730,9 @@ namespace mu2e {
 	_supplementMCEntTIs.at(i_supplement).reset();
 	_supplementMCMidTIs.at(i_supplement).reset();
 	_supplementMCXitTIs.at(i_supplement).reset();
+	_supplementMCTCHIs.at(i_supplement).reset();
       }
     }
-    _detchmc.reset();
-    _uetchmc.reset();
 // clear vectors
     _detsh.clear();
     _detsm.clear();
