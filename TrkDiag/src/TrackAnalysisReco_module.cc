@@ -89,6 +89,7 @@ namespace mu2e {
 
       fhicl::Atom<art::InputTag> input{Name("input"), Comment("KalSeedCollection input tag")};
       fhicl::Atom<std::string> branch{Name("branch"), Comment("Name of output branch")};
+      fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag")};
     };
 
@@ -259,7 +260,7 @@ namespace mu2e {
    // helix info
    if(_conf.helices()) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
 // optionally add MC truth branches
-    if(_conf.fillmc()){
+   if(_conf.fillmc() && _conf.candidate().fillmc()){
       _trkana->Branch((branch+"mc").c_str(),&_candidateMCTI,TrkInfoMC::leafnames().c_str());
       _trkana->Branch((branch+"mcgen").c_str(),&_candidateMCGenTI,GenInfo::leafnames().c_str());
       _trkana->Branch((branch+"mcpri").c_str(),&_candidateMCPriTI,GenInfo::leafnames().c_str());
@@ -287,7 +288,7 @@ namespace mu2e {
 	_trkana->Branch((branch+"ent").c_str(),&_supplementEntTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
 	_trkana->Branch((branch+"mid").c_str(),&_supplementMidTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
 	_trkana->Branch((branch+"xit").c_str(),&_supplementXitTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
-	if(_conf.fillmc()){
+	if(_conf.fillmc() && supplementConfig.fillmc()){
 	  _trkana->Branch((branch+"mc").c_str(),&_supplementMCTIs.at(i_supplement),TrkInfoMC::leafnames().c_str());
 	  _trkana->Branch((branch+"mcgen").c_str(),&_supplementMCGenTIs.at(i_supplement),GenInfo::leafnames().c_str());
 	  _trkana->Branch((branch+"mcpri").c_str(),&_supplementMCPriTIs.at(i_supplement),GenInfo::leafnames().c_str());
@@ -407,6 +408,11 @@ namespace mu2e {
     }
     // reset
     resetBranches();
+
+    // fill event level info
+    fillEventInfo(event);
+    _infoStructHelper.fillHitCount(rc, _hcnt);
+
     // loop through all tracks
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
       auto const& candidateKS = candidateKSC.at(i_kseed);
@@ -458,7 +464,7 @@ namespace mu2e {
 	}
       }
       // fill mC info associated with this track
-      if(_conf.fillmc() ) { 
+      if(_conf.fillmc() && _conf.candidate().fillmc()) { 
 	const PrimaryParticle& primary = *pph;
 	// use Assns interface to find the associated KalSeedMC; this uses ptrs
 	auto dekptr = art::Ptr<KalSeed>(candidateKSCH,i_kseed);
@@ -533,7 +539,7 @@ namespace mu2e {
 	      i_supplementTI._trkqual = tqual.MVAOutput();
 	    }
 
-	    if (_conf.fillmc()) {
+	    if (_conf.fillmc() && supps.at(i_supplement).fillmc()) {
 	      const PrimaryParticle& primary = *pph;
 	      // use Assns interface to find the associated KalSeedMC; this uses ptrs
 	      auto kptr = art::Ptr<KalSeed>(i_supplementKSCH,i_supplementKS);
@@ -566,8 +572,6 @@ namespace mu2e {
 	}
       }
 
-      fillEventInfo(event);
-      _infoStructHelper.fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
       // fill CRV info
       if(_conf.crv()) CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(), event, _crvinfo, _crvinfomc);
@@ -575,10 +579,7 @@ namespace mu2e {
       _trkana->Fill();
     }
 
-    if(_conf.pempty()) {
-      // fill general event information
-      fillEventInfo(event);
-      _infoStructHelper.fillHitCount(rc, _hcnt);
+    if(_conf.pempty()) { // if we want to process empty events
       _trkana->Fill();
     }
   }

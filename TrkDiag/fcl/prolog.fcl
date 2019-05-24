@@ -306,7 +306,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 
 # Analysis from reco output: beta protype!
 # DeM only for now
-  DeM : { input : "KFFDeM" branch : "de" trkqual : "TrkQualDeM" }
+  DeM : { input : "KFFDeM" branch : "de" trkqual : "TrkQualDeM" fillMC : true }
   UeM : { input : "KFFUeM" branch : "ue" }
   DmuM : { input : "KFFDmuM" branch : "dm" }
   DeP : { input : "KFFDeP" branch : "de" trkqual : "TrkQualDeP"}
