@@ -152,6 +152,8 @@ namespace mu2e {
     TrkFitInfo _candidateEntTI, _candidateMidTI, _candidateXitTI;
     TrkQualCollection _candidateTQC;
     std::vector<TrkInfo> _supplementTIs;
+    std::vector<TrkFitInfo> _supplementEntTIs, _supplementMidTIs, _supplementXitTIs;
+    std::vector<TrkQualCollection> _supplementTQCs;
 
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
@@ -205,6 +207,11 @@ namespace mu2e {
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	TrkInfo ti;
 	_supplementTIs.push_back(ti);
+
+	TrkFitInfo ent, mid, xit;
+	_supplementEntTIs.push_back(ent);
+	_supplementMidTIs.push_back(mid);
+	_supplementXitTIs.push_back(xit);
       }
     }
   }
@@ -226,9 +233,8 @@ namespace mu2e {
     _trkana->Branch((branch+"ent").c_str(),&_candidateEntTI,TrkFitInfo::leafnames().c_str());
     _trkana->Branch((branch+"mid").c_str(),&_candidateMidTI,TrkFitInfo::leafnames().c_str());
     _trkana->Branch((branch+"xit").c_str(),&_candidateXitTI,TrkFitInfo::leafnames().c_str());
-    //
     _trkana->Branch((branch+"tch").c_str(),&_detch,TrkCaloHitInfo::leafnames().c_str());
-// optionally add detailed branches
+    // optionally add detailed branches
     if(_conf.diag() > 1){
       _trkana->Branch((branch+"tsh").c_str(),&_detsh);
       _trkana->Branch((branch+"tsm").c_str(),&_detsm);
@@ -238,7 +244,11 @@ namespace mu2e {
     if (_conf.supplements(supps)) {
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	const auto& supplementConfig = supps.at(i_supplement);
-	_trkana->Branch(supplementConfig.branch().c_str(),&_supplementTIs.at(i_supplement),TrkInfo::leafnames().c_str());
+	std::string branch = supplementConfig.branch();
+	_trkana->Branch(branch.c_str(),&_supplementTIs.at(i_supplement),TrkInfo::leafnames().c_str());
+	_trkana->Branch((branch+"ent").c_str(),&_supplementEntTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
+	_trkana->Branch((branch+"mid").c_str(),&_supplementMidTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
+	_trkana->Branch((branch+"xit").c_str(),&_supplementXitTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
       }
     }
 // trigger info.  Actual names should come from the BeginRun object FIXME
@@ -256,8 +266,8 @@ namespace mu2e {
       _trkana->Branch((branch+"mcent").c_str(),&_demcent,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch((branch+"mcmid").c_str(),&_demcmid,TrkInfoMCStep::leafnames().c_str());
       _trkana->Branch((branch+"mcxit").c_str(),&_demcxit,TrkInfoMCStep::leafnames().c_str());
-      if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
       _trkana->Branch((branch+"tchmc").c_str(),&_detchmc,CaloClusterInfoMC::leafnames().c_str());
+      if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
       if(_conf.diag() > 1)_trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
     }
     std::string tq;
@@ -326,18 +336,26 @@ namespace mu2e {
       _candidateTQC = *candidateTQCH;
     }
     if (_candidateTQC.size()>0 && _candidateTQC.size() != candidateKSC.size()) {
-      throw cet::exception("TrackAnalysis") << "TrkQualCollection and candidate KalSeedCollection are of different sizes (" << _candidateTQC.size() << " and " << candidateKSC.size() << " respectively" << std::endl;
+      throw cet::exception("TrackAnalysis") << "TrkQualCollection and candidate KalSeedCollection are of different sizes (" << _candidateTQC.size() << " and " << candidateKSC.size() << " respectively)" << std::endl;
     }
 
     // get the supplement track collections
     std::vector<KalSeedCollection> supplementKSCs;
     std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
+      _supplementTQCs.clear();
+
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	art::Handle<KalSeedCollection> i_handle;
 	art::InputTag i_tag = supps.at(i_supplement).input();
 	event.getByLabel(i_tag, i_handle);
 	supplementKSCs.push_back(*i_handle);
+
+	art::Handle<TrkQualCollection> i_tq_handle;
+	std::string i_tq_tag;
+	supps.at(i_supplement).trkqual(i_tq_tag);
+	event.getByLabel(i_tq_tag, i_tq_handle);
+	_supplementTQCs.push_back(*i_tq_handle);
       }
     }
     art::Handle<CaloCrystalHitRemapping> cchmH;
@@ -390,10 +408,27 @@ namespace mu2e {
       if (_conf.supplements(supps)) {
 	for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	  const auto& i_supplementKSC = supplementKSCs.at(i_supplement);
+	  auto const& i_supplementTQC = _supplementTQCs.at(i_supplement);
+
 	  auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
+	  
 	  if(i_supplementKS != i_supplementKSC.end()) { 
 	    auto& i_supplementTI = _supplementTIs.at(i_supplement);
 	    _infoStructHelper.fillTrkInfo(*i_supplementKS,i_supplementTI);
+	    auto& i_supplementEntTI = _supplementEntTIs.at(i_supplement);
+	    _infoStructHelper.fillTrkFitInfo(*i_supplementKS,i_supplementEntTI,entpos);
+	    auto& i_supplementMidTI = _supplementMidTIs.at(i_supplement);
+	    _infoStructHelper.fillTrkFitInfo(*i_supplementKS,i_supplementMidTI,midpos);
+	    auto& i_supplementXitTI = _supplementXitTIs.at(i_supplement);
+	    _infoStructHelper.fillTrkFitInfo(*i_supplementKS,i_supplementXitTI,xitpos);
+
+	    if (i_supplementTQC.size()>0 && i_supplementTQC.size() != i_supplementKSC.size()) {
+	      throw cet::exception("TrackAnalysis") << "TrkQualCollection and supplemental KalSeedCollection are of different sizes (" << i_supplementTQC.size() << " and " << i_supplementKSC.size() << " respectively)" << std::endl;
+	    }
+	    if (i_supplementTQC.size()>0) {
+	      const auto& tqual = i_supplementTQC.at(i_supplementKS - i_supplementKSC.begin());
+	      i_supplementTI._trkqual = tqual.MVAOutput();
+	    }
 	  }
 	}
       }
@@ -463,7 +498,8 @@ namespace mu2e {
 	    }
 	  }
 	}
-	if (_diag > 0 && iuekseed != ueC.end() && iuekseed->hasCaloCluster()) {
+	// TODO: work this in
+	/*	if (_conf.diag() > 0 && iuekseed != ueC.end() && iuekseed->hasCaloCluster()) {
 	  // fill MC truth of the associated CaloCluster 
 	  for(auto iccmca= ccmcah->begin(); iccmca != ccmcah->end(); iccmca++){
 	    if(iccmca->first == iuekseed->caloCluster()){
@@ -472,7 +508,7 @@ namespace mu2e {
 	      break;
 	    }
 	  }
-	}
+	*/
       }
 
       fillEventInfo(event);
@@ -559,8 +595,6 @@ namespace mu2e {
       TriggerResultsNavigator tnav(trigResults);
       tnav.print();
     }
-    if(_debug > 0)
-      cout << "Trigger word for process " << process << " with " << trigResults->size() << " Lines = "  << _trigword << endl;
   }
 
   void TrackAnalysisReco::resetBranches() {
@@ -572,8 +606,14 @@ namespace mu2e {
     _candidateEntTI.reset();
     _candidateMidTI.reset();
     _candidateXitTI.reset();
-    for (auto& i_supplementTI : _supplementTIs) {
-      i_supplementTI.reset();
+    std::vector<BranchConfig> supps;
+    if (_conf.supplements(supps)) {
+      for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	_supplementTIs.at(i_supplement).reset();
+	_supplementEntTIs.at(i_supplement).reset();
+	_supplementMidTIs.at(i_supplement).reset();
+	_supplementXitTIs.at(i_supplement).reset();
+      }
     }
     _hinfo.reset();
     _demc.reset();

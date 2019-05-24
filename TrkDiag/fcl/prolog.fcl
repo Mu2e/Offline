@@ -323,7 +323,7 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
     ProcessEmptyEvents : false
-    AnalyzeCRV : false
+    AnalyzeCRV : true
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
@@ -360,7 +360,7 @@ TrkAnaReco : {
       genCountLogger : @local::TrkAna.analyzers.genCountLogger
    }
 
-   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP  ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP, TrkQualUeM, TrkQualUeP, TrkQualDmuM, TrkQualDmuP  ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }
 
