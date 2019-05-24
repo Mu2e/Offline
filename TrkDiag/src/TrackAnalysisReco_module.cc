@@ -112,8 +112,6 @@ namespace mu2e {
       fhicl::Atom<bool> filltrig{Name("FillTriggerInfo"),false};
       fhicl::Atom<int> diag{Name("diagLevel"),1};
       fhicl::Atom<int> debug{Name("debugLevel"),0};
-      fhicl::Atom<double> minReflectTime{Name("MinimumReflectionTime"), Comment("ns"),20}; // nsec
-      fhicl::Atom<double> maxReflectTime{Name("MaximumReflectionTime"), Comment("ns"),200}; // nsec
       fhicl::Atom<art::InputTag> primaryParticleTag{Name("PrimaryParticleTag"), Comment("Tag for PrimaryParticle"), art::InputTag()};
       fhicl::Atom<art::InputTag> kalSeedMCTag{Name("KalSeedMCAssns"), Comment("Tag for KalSeedMCAssn"), art::InputTag()};
       fhicl::Atom<art::InputTag> caloClusterMCTag{Name("CaloClusterMCAssns"), Comment("Tag for CaloClusterMCAssns"), art::InputTag()};
@@ -163,15 +161,19 @@ namespace mu2e {
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
     unsigned _trigword;
+
     // MC truth branches
-    TrkInfoMC _demc, _uemc, _dmmc;
+    TrkInfoMC _candidateMCTI;
+    std::vector<TrkInfoMC> _supplementMCTIs;
     art::InputTag _primaryParticleTag;
     art::InputTag _kalSeedMCTag, _caloClusterMCTag;
     std::vector<int> _entvids, _midvids, _xitvids;
 
     // detailed MC truth for the signal candidate
-    GenInfo _demcgen, _demcpri; // generator and 'primary' information
-    TrkInfoMCStep _demcent, _demcmid, _demcxit;
+    GenInfo _candidateMCGenTI, _candidateMCPriTI; // generator and 'primary' information
+    std::vector<GenInfo> _supplementMCGenTIs, _supplementMCPriTIs;
+    TrkInfoMCStep _candidateMCEntTI, _candidateMCMidTI, _candidateMCXitTI;
+    std::vector<TrkInfoMCStep> _supplementMCEntTIs, _supplementMCMidTIs, _supplementMCXitTIs;
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
@@ -180,7 +182,7 @@ namespace mu2e {
     void fillEventInfo(const art::Event& event);
     void fillTriggerBits(const art::Event& event,std::string const& process);
     void resetBranches();
-    KSCIter findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate);
+    size_t findSupplementTrack(KalSeedCollection const& kcol,KalSeed const& candidate);
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
     int _bestcrv;
@@ -207,11 +209,21 @@ namespace mu2e {
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	TrkInfo ti;
 	_supplementTIs.push_back(ti);
-
 	TrkFitInfo ent, mid, xit;
 	_supplementEntTIs.push_back(ent);
 	_supplementMidTIs.push_back(mid);
 	_supplementXitTIs.push_back(xit);
+
+	TrkInfoMC mcti;
+	_supplementMCTIs.push_back(mcti);
+	GenInfo mcgen, mcpri;
+	_supplementMCGenTIs.push_back(mcgen);
+	_supplementMCPriTIs.push_back(mcpri);
+	TrkInfoMCStep mcent, mcmid, mcxit;
+	_supplementMCEntTIs.push_back(mcent);
+	_supplementMCMidTIs.push_back(mcmid);
+	_supplementMCXitTIs.push_back(mcxit);
+
       }
     }
   }
@@ -239,6 +251,32 @@ namespace mu2e {
       _trkana->Branch((branch+"tsh").c_str(),&_detsh);
       _trkana->Branch((branch+"tsm").c_str(),&_detsm);
     }
+// trigger info.  Actual names should come from the BeginRun object FIXME
+    if(_conf.filltrig())_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
+// calorimeter information for the downstream electron track
+// CRV info
+    if(_conf.crv()) _trkana->Branch("crvinfo",&_crvinfo);
+   // helix info
+   if(_conf.helices()) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
+// optionally add MC truth branches
+    if(_conf.fillmc()){
+      _trkana->Branch((branch+"mc").c_str(),&_candidateMCTI,TrkInfoMC::leafnames().c_str());
+      _trkana->Branch((branch+"mcgen").c_str(),&_candidateMCGenTI,GenInfo::leafnames().c_str());
+      _trkana->Branch((branch+"mcpri").c_str(),&_candidateMCPriTI,GenInfo::leafnames().c_str());
+      _trkana->Branch((branch+"mcent").c_str(),&_candidateMCEntTI,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch((branch+"mcmid").c_str(),&_candidateMCMidTI,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch((branch+"mcxit").c_str(),&_candidateMCXitTI,TrkInfoMCStep::leafnames().c_str());
+      _trkana->Branch((branch+"tchmc").c_str(),&_detchmc,CaloClusterInfoMC::leafnames().c_str());
+      if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
+      if(_conf.diag() > 1)_trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
+    }
+    std::string tq;
+    if (_conf.candidate().trkqual(tq)) {
+      if (_conf.filltrkqual()) {
+	_trkana->Branch((branch+"trkqual").c_str(), &_trkQualInfo, TrkQualInfo::leafnames().c_str());
+      }
+    }
+
     // add branches for supplement tracks
     std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
@@ -249,31 +287,14 @@ namespace mu2e {
 	_trkana->Branch((branch+"ent").c_str(),&_supplementEntTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
 	_trkana->Branch((branch+"mid").c_str(),&_supplementMidTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
 	_trkana->Branch((branch+"xit").c_str(),&_supplementXitTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
-      }
-    }
-// trigger info.  Actual names should come from the BeginRun object FIXME
-    if(_conf.filltrig())_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
-// calorimeter information for the downstream electron track
-// CRV info
-    if(_conf.crv()) _trkana->Branch("crvinfo",&_crvinfo);
-   // helix info
-   if(_conf.helices()) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
-// optionally add MC truth branches
-    if(_conf.fillmc()){
-      _trkana->Branch((branch+"mc").c_str(),&_demc,TrkInfoMC::leafnames().c_str());
-      _trkana->Branch((branch+"mcgen").c_str(),&_demcgen,GenInfo::leafnames().c_str());
-      _trkana->Branch((branch+"mcpri").c_str(),&_demcpri,GenInfo::leafnames().c_str());
-      _trkana->Branch((branch+"mcent").c_str(),&_demcent,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch((branch+"mcmid").c_str(),&_demcmid,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch((branch+"mcxit").c_str(),&_demcxit,TrkInfoMCStep::leafnames().c_str());
-      _trkana->Branch((branch+"tchmc").c_str(),&_detchmc,CaloClusterInfoMC::leafnames().c_str());
-      if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
-      if(_conf.diag() > 1)_trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
-    }
-    std::string tq;
-    if (_conf.candidate().trkqual(tq)) {
-      if (_conf.filltrkqual()) {
-	_trkana->Branch((branch+"trkqual").c_str(), &_trkQualInfo, TrkQualInfo::leafnames().c_str());
+	if(_conf.fillmc()){
+	  _trkana->Branch((branch+"mc").c_str(),&_supplementMCTIs.at(i_supplement),TrkInfoMC::leafnames().c_str());
+	  _trkana->Branch((branch+"mcgen").c_str(),&_supplementMCGenTIs.at(i_supplement),GenInfo::leafnames().c_str());
+	  _trkana->Branch((branch+"mcpri").c_str(),&_supplementMCPriTIs.at(i_supplement),GenInfo::leafnames().c_str());
+	  _trkana->Branch((branch+"mcent").c_str(),&_supplementMCEntTIs.at(i_supplement),TrkInfoMCStep::leafnames().c_str());
+	  _trkana->Branch((branch+"mcmid").c_str(),&_supplementMCMidTIs.at(i_supplement),TrkInfoMCStep::leafnames().c_str());
+	  _trkana->Branch((branch+"mcxit").c_str(),&_supplementMCXitTIs.at(i_supplement),TrkInfoMCStep::leafnames().c_str());
+	}
       }
     }
   }
@@ -340,7 +361,7 @@ namespace mu2e {
     }
 
     // get the supplement track collections
-    std::vector<KalSeedCollection> supplementKSCs;
+    std::vector<art::Handle<KalSeedCollection> > supplementKSCHs;
     std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
       _supplementTQCs.clear();
@@ -349,7 +370,7 @@ namespace mu2e {
 	art::Handle<KalSeedCollection> i_handle;
 	art::InputTag i_tag = supps.at(i_supplement).input();
 	event.getByLabel(i_tag, i_handle);
-	supplementKSCs.push_back(*i_handle);
+	supplementKSCHs.push_back(i_handle);
 
 	art::Handle<TrkQualCollection> i_tq_handle;
 	std::string i_tq_tag;
@@ -358,6 +379,7 @@ namespace mu2e {
 	_supplementTQCs.push_back(*i_tq_handle);
       }
     }
+
     art::Handle<CaloCrystalHitRemapping> cchmH;
     event.getByLabel(_conf.cchmtag(),cchmH);
     auto const& cchmap = *cchmH;
@@ -403,36 +425,6 @@ namespace mu2e {
 	_infoStructHelper.fillHelixInfo(candidateKS, _hinfo);
       }
 
-      // go through the supplement collections and find the track nearest to the candidate
-      std::vector<BranchConfig> supps;
-      if (_conf.supplements(supps)) {
-	for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
-	  const auto& i_supplementKSC = supplementKSCs.at(i_supplement);
-	  auto const& i_supplementTQC = _supplementTQCs.at(i_supplement);
-
-	  auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
-	  
-	  if(i_supplementKS != i_supplementKSC.end()) { 
-	    auto& i_supplementTI = _supplementTIs.at(i_supplement);
-	    _infoStructHelper.fillTrkInfo(*i_supplementKS,i_supplementTI);
-	    auto& i_supplementEntTI = _supplementEntTIs.at(i_supplement);
-	    _infoStructHelper.fillTrkFitInfo(*i_supplementKS,i_supplementEntTI,entpos);
-	    auto& i_supplementMidTI = _supplementMidTIs.at(i_supplement);
-	    _infoStructHelper.fillTrkFitInfo(*i_supplementKS,i_supplementMidTI,midpos);
-	    auto& i_supplementXitTI = _supplementXitTIs.at(i_supplement);
-	    _infoStructHelper.fillTrkFitInfo(*i_supplementKS,i_supplementXitTI,xitpos);
-
-	    if (i_supplementTQC.size()>0 && i_supplementTQC.size() != i_supplementKSC.size()) {
-	      throw cet::exception("TrackAnalysis") << "TrkQualCollection and supplemental KalSeedCollection are of different sizes (" << i_supplementTQC.size() << " and " << i_supplementKSC.size() << " respectively)" << std::endl;
-	    }
-	    if (i_supplementTQC.size()>0) {
-	      const auto& tqual = i_supplementTQC.at(i_supplementKS - i_supplementKSC.begin());
-	      i_supplementTI._trkqual = tqual.MVAOutput();
-	    }
-	  }
-	}
-      }
-
       // calorimeter info
       if (candidateKS.hasCaloCluster()) {
 	_infoStructHelper.fillCaloHitInfo(candidateKS,  _detch);
@@ -475,11 +467,11 @@ namespace mu2e {
 	  //	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
 	  if(iksmca->first == dekptr) {
 	    auto const& dekseedmc = *(iksmca->second);
-	    _infoMCStructHelper.fillTrkInfoMC(dekseedmc, _demc);
-	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcent, _entvids);
-	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcmid, _midvids);
-	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _demcxit, _xitvids);
-	    _infoMCStructHelper.fillGenAndPriInfo(dekseedmc, primary, _demcpri, _demcgen);
+	    _infoMCStructHelper.fillTrkInfoMC(dekseedmc, _candidateMCTI);
+	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _candidateMCEntTI, _entvids);
+	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _candidateMCMidTI, _midvids);
+	    _infoMCStructHelper.fillTrkInfoMCStep(dekseedmc, _candidateMCXitTI, _xitvids);
+	    _infoMCStructHelper.fillGenAndPriInfo(dekseedmc, primary, _candidateMCPriTI, _candidateMCGenTI);
 	    
 	    if (_conf.diag()>1) {
 	      _infoMCStructHelper.fillHitInfoMCs(dekseedmc, _detshmc);
@@ -511,6 +503,69 @@ namespace mu2e {
 	*/
       }
 
+      // go through the supplement collections and find the track nearest to the candidate
+      std::vector<BranchConfig> supps;
+      if (_conf.supplements(supps)) {
+	for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	  const auto& i_supplementKSCH = supplementKSCHs.at(i_supplement);
+	  const auto& i_supplementKSC = *i_supplementKSCH;
+	  auto const& i_supplementTQC = _supplementTQCs.at(i_supplement);
+
+	  auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS);
+	  
+	  if(i_supplementKS < i_supplementKSC.size()) { 
+	    const auto& supplementKS = i_supplementKSC.at(i_supplementKS);
+	    auto& i_supplementTI = _supplementTIs.at(i_supplement);
+	    _infoStructHelper.fillTrkInfo(supplementKS,i_supplementTI);
+
+	    auto& i_supplementEntTI = _supplementEntTIs.at(i_supplement);
+	    auto& i_supplementMidTI = _supplementMidTIs.at(i_supplement);
+	    auto& i_supplementXitTI = _supplementXitTIs.at(i_supplement);
+	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementEntTI,entpos);
+	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementMidTI,midpos);
+	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementXitTI,xitpos);
+
+	    if (i_supplementTQC.size()>0 && i_supplementTQC.size() != i_supplementKSC.size()) {
+	      throw cet::exception("TrackAnalysis") << "TrkQualCollection and supplemental KalSeedCollection are of different sizes (" << i_supplementTQC.size() << " and " << i_supplementKSC.size() << " respectively)" << std::endl;
+	    }
+	    if (i_supplementTQC.size()>0) {
+	      const auto& tqual = i_supplementTQC.at(i_supplementKS);
+	      i_supplementTI._trkqual = tqual.MVAOutput();
+	    }
+
+	    if (_conf.fillmc()) {
+	      const PrimaryParticle& primary = *pph;
+	      // use Assns interface to find the associated KalSeedMC; this uses ptrs
+	      auto kptr = art::Ptr<KalSeed>(i_supplementKSCH,i_supplementKS);
+	      for(auto iksmca = ksmcah->begin(); iksmca!= ksmcah->end(); iksmca++){
+		//	  std::cout << "KalSeed Ptr " << dekptr << " match Ptr " << iksmca->first << std::endl;
+		if(iksmca->first == kptr) {
+		  auto const& kseedmc = *(iksmca->second);
+		  auto& i_supplementMCTI = _supplementMCTIs.at(i_supplement);
+		  _infoMCStructHelper.fillTrkInfoMC(kseedmc, i_supplementMCTI);
+
+		  auto& i_supplementMCEntTI = _supplementMCEntTIs.at(i_supplement);
+		  auto& i_supplementMCMidTI = _supplementMCMidTIs.at(i_supplement);
+		  auto& i_supplementMCXitTI = _supplementMCXitTIs.at(i_supplement);
+		  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, i_supplementMCEntTI, _entvids);
+		  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, i_supplementMCMidTI, _midvids);
+		  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, i_supplementMCXitTI, _xitvids);
+
+		  auto& i_supplementMCPriTI = _supplementMCPriTIs.at(i_supplement);
+		  auto& i_supplementMCGenTI = _supplementMCGenTIs.at(i_supplement);
+		  _infoMCStructHelper.fillGenAndPriInfo(kseedmc, primary, i_supplementMCPriTI, i_supplementMCGenTI);
+	    
+		  //		  if (_conf.diag()>1) {
+		  //		    _infoMCStructHelper.fillHitInfoMCs(dekseedmc, _detshmc);
+		  //		  }
+		  break;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+
       fillEventInfo(event);
       _infoStructHelper.fillHitCount(rc, _hcnt);
       // TODO we want MC information when we don't have a track
@@ -528,8 +583,8 @@ namespace mu2e {
     }
   }
 
-  KSCIter TrackAnalysisReco::findSupplementTrack(KalSeedCollection const& kcol,const KalSeed& candidate) {
-    KSCIter retval = kcol.end();
+  size_t TrackAnalysisReco::findSupplementTrack(KalSeedCollection const& kcol,const KalSeed& candidate) {
+    size_t retval = kcol.size();
 
     // loop over supplement tracks and find the closest
     double candidate_time = candidate.t0().t0();
@@ -538,7 +593,7 @@ namespace mu2e {
       double supplement_time = i_kseed->t0().t0();
       if( fabs(supplement_time - candidate_time) < fabs(closest_time-candidate_time)) {
 	closest_time = supplement_time;
-	retval = i_kseed;
+	retval = i_kseed - kcol.begin();
       }
     }
     return retval;
@@ -606,6 +661,16 @@ namespace mu2e {
     _candidateEntTI.reset();
     _candidateMidTI.reset();
     _candidateXitTI.reset();
+    _hinfo.reset();
+    _candidateMCTI.reset();
+    _candidateMCGenTI.reset();
+    _candidateMCPriTI.reset();
+    _candidateMCEntTI.reset();
+    _candidateMCMidTI.reset();
+    _candidateMCXitTI.reset();
+    _wtinfo.reset();
+    _trkqualTest.reset();
+    _trkQualInfo.reset();
     std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
@@ -613,20 +678,16 @@ namespace mu2e {
 	_supplementEntTIs.at(i_supplement).reset();
 	_supplementMidTIs.at(i_supplement).reset();
 	_supplementXitTIs.at(i_supplement).reset();
+
+	_supplementMCTIs.at(i_supplement).reset();
+	_supplementMCGenTIs.at(i_supplement).reset();
+	_supplementMCPriTIs.at(i_supplement).reset();
+
+	_supplementMCEntTIs.at(i_supplement).reset();
+	_supplementMCMidTIs.at(i_supplement).reset();
+	_supplementMCXitTIs.at(i_supplement).reset();
       }
     }
-    _hinfo.reset();
-    _demc.reset();
-    _uemc.reset();
-    _dmmc.reset();
-    _demcgen.reset();
-    _demcpri.reset();
-    _demcent.reset();
-    _demcmid.reset();
-    _demcxit.reset();
-    _wtinfo.reset();
-    _trkqualTest.reset();
-    _trkQualInfo.reset();
     _detch.reset();
     _uetch.reset();
     _detchmc.reset();
