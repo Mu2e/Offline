@@ -239,7 +239,15 @@ namespace mu2e {
 // hit counting branch
     _trkana->Branch("hcnt.",&_hcnt,HitCount::leafnames().c_str());
 // track counting branch
-    _trkana->Branch("tcnt.",&_tcnt,TrkCount::leafnames().c_str());
+    std::vector<std::string> trkbranches;
+    trkbranches.push_back(_conf.candidate().branch());
+    std::vector<BranchConfig> supps;
+    if (_conf.supplements(supps)) {
+      for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	trkbranches.push_back(supps.at(i_supplement).branch());
+      }
+    }
+    _trkana->Branch("tcnt",&_tcnt,_tcnt.leafnames(trkbranches).c_str());
     // add candidate track branches
     std::string branch = _conf.candidate().branch();
     _trkana->Branch(branch.c_str(),&_candidateTI,TrkInfo::leafnames().c_str());
@@ -279,7 +287,6 @@ namespace mu2e {
     }
 
     // add branches for supplement tracks
-    std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	const auto& supplementConfig = supps.at(i_supplement);
@@ -407,11 +414,18 @@ namespace mu2e {
     }
     // reset
     resetBranches();
-    _tcnt._nde = candidateKSC.size();
 
     // fill event level info
     fillEventInfo(event);
     _infoStructHelper.fillHitCount(rc, _hcnt);
+
+    // fill track counts
+    _tcnt._counts[0] = candidateKSC.size();
+    if (_conf.supplements(supps)) {
+      for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
+	_tcnt._counts[i_supplement+1] = (supplementKSCHs.at(i_supplement))->size();
+      }
+    }
 
     // loop through all tracks
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
