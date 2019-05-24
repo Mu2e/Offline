@@ -149,15 +149,16 @@ namespace mu2e {
     // track branches
     TrkInfo _candidateTI;
     TrkFitInfo _candidateEntTI, _candidateMidTI, _candidateXitTI;
+    TrkCaloHitInfo _candidateTCHI;
     TrkQualCollection _candidateTQC;
+
     std::vector<TrkInfo> _supplementTIs;
     std::vector<TrkFitInfo> _supplementEntTIs, _supplementMidTIs, _supplementXitTIs;
+    std::vector<TrkCaloHitInfo> _supplementTCHIs;
     std::vector<TrkQualCollection> _supplementTQCs;
 
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
-    art::InputTag _strawHitFlagTag;
-    TrkCaloHitInfo _detch, _uetch;
     CaloClusterInfoMC _detchmc, _uetchmc;
     std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
@@ -215,6 +216,9 @@ namespace mu2e {
 	_supplementMidTIs.push_back(mid);
 	_supplementXitTIs.push_back(xit);
 
+	TrkCaloHitInfo tchi;
+	_supplementTCHIs.push_back(tchi);
+
 	TrkInfoMC mcti;
 	_supplementMCTIs.push_back(mcti);
 	GenInfo mcgen, mcpri;
@@ -254,7 +258,7 @@ namespace mu2e {
     _trkana->Branch((branch+"ent").c_str(),&_candidateEntTI,TrkFitInfo::leafnames().c_str());
     _trkana->Branch((branch+"mid").c_str(),&_candidateMidTI,TrkFitInfo::leafnames().c_str());
     _trkana->Branch((branch+"xit").c_str(),&_candidateXitTI,TrkFitInfo::leafnames().c_str());
-    _trkana->Branch((branch+"tch").c_str(),&_detch,TrkCaloHitInfo::leafnames().c_str());
+    _trkana->Branch((branch+"tch").c_str(),&_candidateTCHI,TrkCaloHitInfo::leafnames().c_str());
     // optionally add detailed branches
     if(_conf.diag() > 1){
       _trkana->Branch((branch+"tsh").c_str(),&_detsh);
@@ -295,6 +299,7 @@ namespace mu2e {
 	_trkana->Branch((branch+"ent").c_str(),&_supplementEntTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
 	_trkana->Branch((branch+"mid").c_str(),&_supplementMidTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
 	_trkana->Branch((branch+"xit").c_str(),&_supplementXitTIs.at(i_supplement),TrkFitInfo::leafnames().c_str());
+	_trkana->Branch((branch+"tch").c_str(),&_supplementTCHIs.at(i_supplement),TrkCaloHitInfo::leafnames().c_str());
 	if(_conf.fillmc() && supplementConfig.fillmc()){
 	  _trkana->Branch((branch+"mc").c_str(),&_supplementMCTIs.at(i_supplement),TrkInfoMC::leafnames().c_str());
 	  _trkana->Branch((branch+"mcgen").c_str(),&_supplementMCGenTIs.at(i_supplement),GenInfo::leafnames().c_str());
@@ -415,10 +420,6 @@ namespace mu2e {
     // reset
     resetBranches();
 
-    // fill event level info
-    fillEventInfo(event);
-    _infoStructHelper.fillHitCount(rc, _hcnt);
-
     // fill track counts
     _tcnt._counts[0] = candidateKSC.size();
     if (_conf.supplements(supps)) {
@@ -426,6 +427,10 @@ namespace mu2e {
 	_tcnt._counts[i_supplement+1] = (supplementKSCHs.at(i_supplement))->size();
       }
     }
+
+    // fill event level info
+    fillEventInfo(event);
+    _infoStructHelper.fillHitCount(rc, _hcnt);
 
     // loop through all tracks
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
@@ -435,6 +440,7 @@ namespace mu2e {
       _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateEntTI,entpos);
       _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateMidTI,midpos);
       _infoStructHelper.fillTrkFitInfo(candidateKS,_candidateXitTI,xitpos);
+      //      _tcnt._overlaps[0] = _tcomp.nOverlap(candidateKS, candidateKS);
 
       if(_conf.diag() > 1){ // want hit level info
 	_infoStructHelper.fillHitInfo(candidateKS, _detsh);
@@ -447,7 +453,7 @@ namespace mu2e {
 
       // calorimeter info
       if (candidateKS.hasCaloCluster()) {
-	_infoStructHelper.fillCaloHitInfo(candidateKS,  _detch);
+	_infoStructHelper.fillCaloHitInfo(candidateKS,  _candidateTCHI);
 	_tcnt._ndec = 1; // only 1 possible calo hit at the moment
 	// test
 	if(_conf.debug()>0){
@@ -548,6 +554,11 @@ namespace mu2e {
 	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementEntTI,entpos);
 	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementMidTI,midpos);
 	    _infoStructHelper.fillTrkFitInfo(supplementKS,i_supplementXitTI,xitpos);
+
+	    auto& i_supplementTCHI = _supplementTCHIs.at(i_supplement);
+	    _infoStructHelper.fillCaloHitInfo(supplementKS,  i_supplementTCHI);
+
+	    //	    _tcnt._overlaps[i_supplement+1] = _tcomp.nOverlap(candidateKS, supplementKS);
 
 	    if (i_supplementTQC.size()>0 && i_supplementTQC.size() != i_supplementKSC.size()) {
 	      throw cet::exception("TrackAnalysis") << "TrkQualCollection and supplemental KalSeedCollection are of different sizes (" << i_supplementTQC.size() << " and " << i_supplementKSC.size() << " respectively)" << std::endl;
@@ -690,6 +701,7 @@ namespace mu2e {
     _candidateMCEntTI.reset();
     _candidateMCMidTI.reset();
     _candidateMCXitTI.reset();
+    _candidateTCHI.reset();
     _wtinfo.reset();
     _trkqualTest.reset();
     _trkQualInfo.reset();
@@ -701,6 +713,8 @@ namespace mu2e {
 	_supplementMidTIs.at(i_supplement).reset();
 	_supplementXitTIs.at(i_supplement).reset();
 
+	_supplementTCHIs.at(i_supplement).reset();
+
 	_supplementMCTIs.at(i_supplement).reset();
 	_supplementMCGenTIs.at(i_supplement).reset();
 	_supplementMCPriTIs.at(i_supplement).reset();
@@ -710,8 +724,6 @@ namespace mu2e {
 	_supplementMCXitTIs.at(i_supplement).reset();
       }
     }
-    _detch.reset();
-    _uetch.reset();
     _detchmc.reset();
     _uetchmc.reset();
 // clear vectors
