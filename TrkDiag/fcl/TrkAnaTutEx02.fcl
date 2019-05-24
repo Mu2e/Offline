@@ -1,0 +1,33 @@
+# TrkAna Tutorial Exercise 2
+# A. Edmonds, May 2019
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaTutEx02
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : { @table::TrkAnaReco.producers }
+  analyzers : { 
+     genCountLogger : @local::TrkAnaReco.analyzers.genCountLogger
+     TrkAnaEx02 : { @table::TrackAnalysisReco }
+  }
+}
+
+physics.analyzers.TrkAnaEx02.candidate.input : "KFFDeM"
+physics.analyzers.TrkAnaEx02.candidate.branch : "trk"
+physics.analyzers.TrkAnaEx02.candidate.trkqual : "TrkQualDeM"
+physics.analyzers.TrkAnaEx02.diagLevel : 0
+physics.analyzers.TrkAnaEx02.FillMCInfo : false
+
+physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence ]
+physics.TrkAnaEndPath : [ genCountLogger, TrkAnaEx02 ]
+
+services.TFileService.fileName: "trkana-ex02.root"

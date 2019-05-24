@@ -1,0 +1,30 @@
+# TrkAna Tutorial Exercise 1
+# Answer to first optional exercise
+# A. Edmonds, May 2019
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : TrkAnaTutEx01Opt01
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  analyzers : { 
+     TrkAnaEx01Opt01 : { @table::TrackAnalysisReco }
+  }
+}
+
+physics.analyzers.TrkAnaEx01Opt01.candidate.input : "KFFDeP"
+physics.analyzers.TrkAnaEx01Opt01.candidate.branch : "trk"
+physics.analyzers.TrkAnaEx01Opt01.diagLevel : 0
+physics.analyzers.TrkAnaEx01Opt01.FillMCInfo : false
+
+physics.TrkAnaEndPath : [ TrkAnaEx01Opt01 ]
+
+services.TFileService.fileName: "trkana-ex01-opt01.root"
