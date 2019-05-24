@@ -60,7 +60,6 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
-#include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/HelixInfo.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/InfoMCStructHelper.hh"
@@ -181,7 +180,6 @@ namespace mu2e {
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
-    TrkQualTestInfo _trkqualTest;
     // helper functions
     void fillEventInfo(const art::Event& event);
     void fillTriggerBits(const art::Event& event,std::string const& process);
@@ -711,7 +709,6 @@ namespace mu2e {
     _candidateMCXitTI.reset();
     _candidateMCTCHI.reset();
     _wtinfo.reset();
-    _trkqualTest.reset();
     _trkQualInfo.reset();
     std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
