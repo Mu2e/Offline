@@ -877,7 +877,7 @@ namespace mu2e
     double   trkInCaloFlt(0);
     findCaloDiskFromTrack(kalData, trkToCaloDiskId, trkInCaloFlt);
     if (trkToCaloDiskId >= 0 &&  //the Track doesn't intercept the calorimeter
-	trkInCaloFlt > _mintchtrkpath) { //FIX ME! should we check the second disk in case the track-path in the first is too small?
+	fabs(trkInCaloFlt) > _mintchtrkpath) { //FIX ME! should we check the second disk in case the track-path in the first is too small?
       KalRep*  krep = kalData.krep;
       double   minFOM(1e10);
       const CaloCluster*cl(0);
