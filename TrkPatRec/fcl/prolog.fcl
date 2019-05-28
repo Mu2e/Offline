@@ -13,7 +13,7 @@ FitDir : {
 }
 
 TimeCalculator : {
-  CaloT0Offset : @local::TrackCaloMatching.DtOffset
+  TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
   CaloTimeErr : 0.5
 }
 

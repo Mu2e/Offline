@@ -44,6 +44,7 @@ namespace mu2e
     const ComboHit& comboHit() const { return _combohit; }
     const Straw& straw() const { return _straw; }
     virtual double time() const { return _combohit.time(); }
+    //    virtual bool time(HitT0& t0) ;// 2019-04-22: GIANIPEZ change
     StrawEnd const& driftEnd() const { return _combohit.driftEnd(); }
     double driftTime() const; // drift time for the current end strategy
     double driftPhi() const { return _phi;}
