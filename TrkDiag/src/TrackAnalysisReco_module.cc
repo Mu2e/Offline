@@ -90,6 +90,7 @@ namespace mu2e {
       fhicl::Atom<std::string> branch{Name("branch"), Comment("Name of output branch")};
       fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag")};
+      fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of full TrkQual information for this set of tracks"), false};
     };
 
     struct Config {
@@ -287,7 +288,7 @@ namespace mu2e {
     }
     std::string tq;
     if (_conf.candidate().trkqual(tq)) {
-      if (_conf.filltrkqual()) {
+      if (_conf.filltrkqual() && _conf.candidate().filltrkqual()) {
 	_trkana->Branch((branch+"trkqual").c_str(), &_trkQualInfo, TrkQualInfo::leafnames().c_str());
       }
     }
@@ -482,7 +483,7 @@ namespace mu2e {
       if (_candidateTQC.size()>0) {
 	auto const& tqual = _candidateTQC.at(i_kseed);
 	_candidateTI._trkqual = tqual.MVAOutput();
-	if (_conf.filltrkqual()) {
+	if (_conf.filltrkqual() && _conf.candidate().filltrkqual()) {
 	  _infoStructHelper.fillTrkQualInfo(tqual, _trkQualInfo);
 	}
       }
