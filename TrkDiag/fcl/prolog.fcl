@@ -182,7 +182,7 @@ BEGIN_PROLOG
   # Track qulaity module
   TrkQual : {
   	  module_type : TrackQuality
-  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQualCalo.weights.xml" }
+  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
   }
   TrkQualDeM		       : @local::TrkQual
   TrkQualDeM.KalSeedCollection : "KFFDeM"

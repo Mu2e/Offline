@@ -76,6 +76,19 @@ namespace mu2e
     return comboHit().time() - _stime - hitT0()._t0;
   }
   
+
+  // bool TrkStrawHit::time( TrkT0& t0 ) {
+  //   HitT0 st0;
+  //   if (signalPropagationTime(st0)){
+  //     t0._t0    = comboHit().time() - st0._t0;
+  //     t0._t0err = st0._t0err;
+  //     return true;
+  //   }else {
+  //     return false;
+  //   }
+  // }
+
+
   bool TrkStrawHit::signalPropagationTime( TrkT0& t0 ){
 // propagation includes drift and signal propagation along the wire.  First, compute the drift
 // time from the distance of closest approach

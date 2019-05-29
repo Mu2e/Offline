@@ -23,7 +23,6 @@
 // utiliites
 #include "GeneralUtilities/inc/Angles.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 // data
@@ -223,7 +222,7 @@ namespace mu2e
       shfcol->push_back(flag);
     }
  
-    if (_diag){
+    if (_diag!=0){
       _data.event  = &event;
       _data.eventNumber = event.event();
       _data.result = &_result;
@@ -305,6 +304,17 @@ namespace mu2e
 	      }
 	    }
 	    if ( hasTrkCaloHit(_result)) _kfit.weedTrkCaloHit(_result);
+	    if (_diag!=0) {
+	      _kfit.fillTchDiag(_result);
+	      _data.tchDiskId  = _result.diag.diskId;	 
+	      _data.tchAdded   = _result.diag.added;	 
+	      _data.tchDepth   = _result.diag.depth;	  
+	      _data.tchDOCA    = _result.diag.doca;	   
+	      _data.tchDt      = _result.diag.dt;     
+	      _data.tchTrkPath = _result.diag.trkPath;	
+	      _data.tchEnergy  = _result.diag.energy;    
+
+	    }
 	  }
 
 	  if(_result.missingHits.size() > 0){
@@ -404,6 +414,9 @@ namespace mu2e
 	  }
 	  // save KalSeed for this track
 	  kscol->push_back(fseed);
+	  
+	  if (_diag > 0) _hmanager->fillHistograms(&_data);
+
 	} else {// fit failure
 	  _result.deleteTrack();
 	  //	  delete krep;
@@ -411,7 +424,7 @@ namespace mu2e
       }
     }
 
-    if (_diag > 0) _hmanager->fillHistograms(&_data);
+    // if (_diag > 0) _hmanager->fillHistograms(&_data);
 
     // put the output products into the event
     event.put(move(krcol));
