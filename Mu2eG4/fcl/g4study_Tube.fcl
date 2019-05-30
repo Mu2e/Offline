@@ -30,7 +30,8 @@ services : {
     TFileService           : { fileName : "g4study_Tube.root" }
     RandomNumberGenerator  : { }
 
-    GeometryService        : { inputFile      : "Mu2eG4/test/g4study_Tube_geom.txt"
+    GeometryService        : { @table::Services.SimAndReco.GeometryService 
+	inputFile          : "Mu2eG4/test/g4study_Tube_geom.txt"
 	simulatedDetector  : { tool_type      : "ConstructEnvTube" }
     }
 
@@ -57,7 +58,7 @@ physics : {
 	    # Mu2eG4CommonCut: { type: kineticEnergy cut: 1000000. }
 
 	    physics : { @table::g4run.physics
-		physicsListName : "ShieldingM_MU2ER1"
+		physicsListName : "ShieldingM"
 		#  bfieldMaxStep   : 500000. // not implemented (no field)
 	    }
 
@@ -74,8 +75,8 @@ physics : {
 	    }
 
 	    debug : { @table::g4run.debug
-		writeGDML                  : true 
-		GDMLFileName               : "g4study_Tube.gdml"
+		# writeGDML                  : true 
+		# GDMLFileName               : "g4study_Tube.gdml"
 		diagLevel                  : 1
 		printElements              : true
 		worldVerbosityLevel        : 2

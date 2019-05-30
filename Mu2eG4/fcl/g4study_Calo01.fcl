@@ -30,7 +30,8 @@ services : {
     TFileService          : { fileName : "g4study_Calo01.root" }
     RandomNumberGenerator : { }
 
-    GeometryService        : { inputFile      : "Mu2eG4/test/g4study_Calo01_geom.txt" 
+    GeometryService        : { @table::Services.SimAndReco.GeometryService 
+	inputFile          : "Mu2eG4/test/g4study_Calo01_geom.txt" 
 	simulatedDetector  : { tool_type: "ConstructEnvCalo01"}
     }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -57,7 +58,7 @@ physics : {
 	    # Mu2eG4CommonCut: { type: kineticEnergy cut: 1000000. }
 
 	    physics : { @table::g4run.physics
-		physicsListName : "ShieldingM_MU2ER1"
+		physicsListName : "ShieldingM"
 		#  bfieldMaxStep   : 500000. // not implemented (no field)
 	    }
 
