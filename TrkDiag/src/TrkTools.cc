@@ -8,6 +8,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include <cmath>
+using CLHEP::Hep3Vector;
 
 namespace mu2e {
   namespace TrkTools {
@@ -255,10 +256,9 @@ namespace mu2e {
 	tchinfo._edep = cc->energyDep();
 	// transform cog to tracker coordinates; requires 2 steps.  This is at the front
 	// of the disk
-	XYZVec cpos = Geom::toXYZVec(calo.geomUtil().mu2eToTracker(calo.geomUtil().diskToMu2e(cc->diskId(),cc->cog3Vector())));
-	// move to the front face and 
-	// add the cluster length (relative to the front face).  crystal size should come from geom FIXME!
-	cpos.SetZ(cpos.z() -200.0 + tch.hitLen());
+	XYZVec cpos = Geom::toXYZVec(calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e( cc->diskId(), cc->cog3Vector())));
+	// move to the POCA;
+	cpos.SetZ(cpos.z()+ tch.hitLen());
 	tchinfo._poca = cpos;
 	// find the nearest segment
 	auto ikseg = kseed.nearestSegment(tch.trkLen());
@@ -272,7 +272,7 @@ namespace mu2e {
       int n_trkqual_vars = TrkQual::n_vars;
       for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
 	TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
-	trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
+	trkqualInfo._trkqualvars[i_trkqual_var] = (float) tqual[i_index];
       }
       trkqualInfo._trkqual = tqual.MVAOutput();
     }
@@ -303,6 +303,27 @@ namespace mu2e {
 	  if(hhh->caloCluster().isNonnull())
 	    hinfo._ecalo  = hhh->caloCluster()->energyDep();
 	}
+      }
+    }
+
+    void fillTrkPIDInfo(const TrkCaloHitPID& tchp, const KalSeed& kseed,
+	Calorimeter const& calo, TrkPIDInfo& trkpidInfo) {
+      int n_trktchpid_vars = TrkCaloHitPID::n_vars;
+      for (int i_trktchpid_var = 0; i_trktchpid_var < n_trktchpid_vars; ++i_trktchpid_var) {
+	TrkCaloHitPID::MVA_varindex i_index = TrkCaloHitPID::MVA_varindex(i_trktchpid_var);
+	trkpidInfo._tchpvars[i_trktchpid_var] = (float) tchp[i_index];
+      }
+      trkpidInfo._tchp = tchp.MVAOutput();
+// extrapolate the track to the calorimeter disk faces and record the transverse radius
+// Use the last segment
+      auto const& trkhel = kseed.segments().back().helix();
+      static const Hep3Vector origin;
+      for(int idisk=0;idisk < 2; idisk++){
+	auto ffpos = calo.geomUtil().mu2eToTracker(calo.geomUtil().diskFFToMu2e(idisk,origin));
+	float flen = trkhel.zFlight(ffpos.z());
+	XYZVec extpos;
+	trkhel.position(flen,extpos);
+	trkpidInfo._diskrad[idisk] = sqrt(extpos.Perp2());	
       }
     }
   }

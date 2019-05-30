@@ -1,0 +1,172 @@
+<?xml version="1.0"?>
+<MethodSetup Method="MLP::MLP">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.14/06 [396806]"/>
+    <Info name="Creator" value="brownd"/>
+    <Info name="Date" value="Wed May 29 14:19:08 2019"/>
+    <Info name="Host" value="Darwin macitois21.cern.ch 18.0.0 Darwin Kernel Version 18.0.0: Wed Aug 22 20:13:40 PDT 2018; root:xnu-4903.201.2~1/RELEASE_X86_64 x86_64"/>
+    <Info name="Dir" value="/Users/brownd/mu2e/Mu2eSim/MDC2018/Offline"/>
+    <Info name="Training events" value="336836"/>
+    <Info name="TrainingTime" value="9.22620851e+02"/>
+    <Info name="AnalysisType" value="Classification"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="NCycles" modified="No">500</Option>
+    <Option name="HiddenLayers" modified="No">N,N-1</Option>
+    <Option name="NeuronType" modified="No">sigmoid</Option>
+    <Option name="RandomSeed" modified="No">1</Option>
+    <Option name="EstimatorType" modified="No">CE</Option>
+    <Option name="NeuronInputType" modified="No">sum</Option>
+    <Option name="V" modified="Yes">False</Option>
+    <Option name="VerbosityLevel" modified="No">Default</Option>
+    <Option name="VarTransform" modified="Yes">N</Option>
+    <Option name="H" modified="Yes">False</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="TrainingMethod" modified="No">BP</Option>
+    <Option name="LearningRate" modified="No">2.000000e-02</Option>
+    <Option name="DecayRate" modified="No">1.000000e-02</Option>
+    <Option name="TestRate" modified="No">10</Option>
+    <Option name="EpochMonitoring" modified="No">False</Option>
+    <Option name="Sampling" modified="No">1.000000e+00</Option>
+    <Option name="SamplingEpoch" modified="No">1.000000e+00</Option>
+    <Option name="SamplingImportance" modified="No">1.000000e+00</Option>
+    <Option name="SamplingTraining" modified="No">True</Option>
+    <Option name="SamplingTesting" modified="No">False</Option>
+    <Option name="ResetStep" modified="No">50</Option>
+    <Option name="Tau" modified="No">3.000000e+00</Option>
+    <Option name="BPMode" modified="No">sequential</Option>
+    <Option name="BatchSize" modified="No">-1</Option>
+    <Option name="ConvergenceImprove" modified="No">1.000000e-30</Option>
+    <Option name="ConvergenceTests" modified="No">-1</Option>
+    <Option name="UseRegulator" modified="No">False</Option>
+    <Option name="UpdateLimit" modified="No">10000</Option>
+    <Option name="CalculateErrors" modified="No">False</Option>
+    <Option name="WeightRange" modified="No">1.000000e+00</Option>
+  </Options>
+  <Variables NVar="5">
+    <Variable VarIndex="0" Expression="detrkpid.KEmu_Over_P" Label="detrkpid.KEmu_Over_P" Title="KEmu_Over_P" Unit="Fraction" Internal="detrkpid.KEmu_Over_P" Type="F" Min="1.43318072e-01" Max="1.09153452e+01"/>
+    <Variable VarIndex="1" Expression="detrkpid.ClusterLength" Label="detrkpid.ClusterLength" Title="ClusterLength" Unit="mm" Internal="detrkpid.ClusterLength" Type="F" Min="-5.73682480e+01" Max="3.08104614e+02"/>
+    <Variable VarIndex="2" Expression="detrkpid.RPOCA" Label="detrkpid.RPOCA" Title="RPOCA" Unit="mm" Internal="detrkpid.RPOCA" Type="F" Min="3.80615295e+02" Max="6.35476318e+02"/>
+    <Variable VarIndex="3" Expression="detrkpid.TrackDirection" Label="detrkpid.TrackDirection" Title="TrackDirection" Unit="Fraction" Internal="detrkpid.TrackDirection" Type="F" Min="-9.98587966e-01" Max="9.99871612e-01"/>
+    <Variable VarIndex="4" Expression="detrkpid.DeltaT" Label="detrkpid.DeltaT" Title="DeltaT" Unit="nsec" Internal="detrkpid.DeltaT" Type="F" Min="-3.32649684e+00" Max="2.33086419e+00"/>
+  </Variables>
+  <Spectators NSpec="0"/>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="1">
+    <Transform Name="Normalize">
+      <Selection>
+        <Input NInputs="5">
+          <Input Type="Variable" Label="detrkpid.KEmu_Over_P" Expression="detrkpid.KEmu_Over_P"/>
+          <Input Type="Variable" Label="detrkpid.ClusterLength" Expression="detrkpid.ClusterLength"/>
+          <Input Type="Variable" Label="detrkpid.RPOCA" Expression="detrkpid.RPOCA"/>
+          <Input Type="Variable" Label="detrkpid.TrackDirection" Expression="detrkpid.TrackDirection"/>
+          <Input Type="Variable" Label="detrkpid.DeltaT" Expression="detrkpid.DeltaT"/>
+        </Input>
+        <Output NOutputs="5">
+          <Output Type="Variable" Label="detrkpid.KEmu_Over_P" Expression="detrkpid.KEmu_Over_P"/>
+          <Output Type="Variable" Label="detrkpid.ClusterLength" Expression="detrkpid.ClusterLength"/>
+          <Output Type="Variable" Label="detrkpid.RPOCA" Expression="detrkpid.RPOCA"/>
+          <Output Type="Variable" Label="detrkpid.TrackDirection" Expression="detrkpid.TrackDirection"/>
+          <Output Type="Variable" Label="detrkpid.DeltaT" Expression="detrkpid.DeltaT"/>
+        </Output>
+      </Selection>
+      <Class ClassIndex="0">
+        <Ranges>
+          <Range Index="0" Min="2.2188755869865417e-01" Max="4.3516550064086914e+00"/>
+          <Range Index="1" Min="-5.7368247985839844e+01" Max="3.0810461425781250e+02"/>
+          <Range Index="2" Min="3.8061529541015625e+02" Max="6.3547631835937500e+02"/>
+          <Range Index="3" Min="-9.9160599708557129e-01" Max="9.9873059988021851e-01"/>
+          <Range Index="4" Min="-2.6324706077575684e+00" Max="2.3308641910552979e+00"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="1">
+        <Ranges>
+          <Range Index="0" Min="1.4331807196140289e-01" Max="1.0915345191955566e+01"/>
+          <Range Index="1" Min="-4.5501312255859375e+01" Max="2.4549555969238281e+02"/>
+          <Range Index="2" Min="3.9167138671875000e+02" Max="6.3547631835937500e+02"/>
+          <Range Index="3" Min="-9.9858796596527100e-01" Max="9.9987161159515381e-01"/>
+          <Range Index="4" Min="-3.3264968395233154e+00" Max="1.2644037008285522e+00"/>
+        </Ranges>
+      </Class>
+      <Class ClassIndex="2">
+        <Ranges>
+          <Range Index="0" Min="1.4331807196140289e-01" Max="1.0915345191955566e+01"/>
+          <Range Index="1" Min="-5.7368247985839844e+01" Max="3.0810461425781250e+02"/>
+          <Range Index="2" Min="3.8061529541015625e+02" Max="6.3547631835937500e+02"/>
+          <Range Index="3" Min="-9.9858796596527100e-01" Max="9.9987161159515381e-01"/>
+          <Range Index="4" Min="-3.3264968395233154e+00" Max="2.3308641910552979e+00"/>
+        </Ranges>
+      </Class>
+    </Transform>
+  </Transformations>
+  <MVAPdfs/>
+  <Weights>
+    <Layout NLayers="4">
+      <Layer Index="0" NNeurons="6">
+        <Neuron NSynapses="5">
+          7.8760027416377426e+01 6.8098333096248567e+01 5.2883608368451462e+01 1.0763373521560139e+02 -5.2423434686002622e+01 
+        </Neuron>
+        <Neuron NSynapses="5">
+          9.4247281281619770e+00 1.5798143088477568e+01 7.1461689924264764e+00 1.6818442022164028e+01 -1.5157270022576215e+01 
+        </Neuron>
+        <Neuron NSynapses="5">
+          -1.6902273553555098e+00 -5.2460430021960400e+00 -1.0005086457312050e-01 8.9448022810997472e+00 1.7581740034505808e+00 
+        </Neuron>
+        <Neuron NSynapses="5">
+          -4.0196370835586448e+00 -1.7306399104406045e+00 -2.5877152651165951e+00 -5.7951886585824042e-01 5.1245763895259477e+00 
+        </Neuron>
+        <Neuron NSynapses="5">
+          4.1892853256185902e+01 2.7354866418407344e+01 2.4364953532755834e+01 5.7169978646934574e+01 -2.0302954646213113e+01 
+        </Neuron>
+        <Neuron NSynapses="5">
+          1.4082144829755338e+01 8.9071995628718952e+00 4.2462772466579707e+01 2.9474170979980027e+01 -1.1887334475700841e+01 
+        </Neuron>
+      </Layer>
+      <Layer Index="1" NNeurons="6">
+        <Neuron NSynapses="4">
+          7.3017187350732051e+00 -1.3853073218591065e+00 -1.6641750581138542e+01 -1.7696717189153777e+01 
+        </Neuron>
+        <Neuron NSynapses="4">
+          -6.3552327212320350e+00 -8.5393658069754466e+00 -1.8001353839335952e+01 -1.0436800563002501e+01 
+        </Neuron>
+        <Neuron NSynapses="4">
+          3.2827960036645969e+00 3.2721797412420703e+00 -1.0952916541412566e+01 -5.4667539613193830e+00 
+        </Neuron>
+        <Neuron NSynapses="4">
+          8.4060981397058789e+00 -1.4436109116374991e+00 -1.2582562972792202e+01 -2.1221912084692768e+01 
+        </Neuron>
+        <Neuron NSynapses="4">
+          1.1096707794742322e+01 -4.7253093871649652e+00 1.7217168785952733e+01 1.0105012179704413e+01 
+        </Neuron>
+        <Neuron NSynapses="4">
+          2.5481073046954235e+00 3.3137692723425092e+00 2.6819032406588414e+00 7.5632822755109101e+00 
+        </Neuron>
+      </Layer>
+      <Layer Index="2" NNeurons="5">
+        <Neuron NSynapses="1">
+          -1.0115977235256409e+01 
+        </Neuron>
+        <Neuron NSynapses="1">
+          1.2204614612734034e+01 
+        </Neuron>
+        <Neuron NSynapses="1">
+          6.6805720770579011e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          2.5355333381898766e+00 
+        </Neuron>
+        <Neuron NSynapses="1">
+          -5.3624804412594660e+00 
+        </Neuron>
+      </Layer>
+      <Layer Index="3" NNeurons="1">
+        <Neuron NSynapses="0"/>
+      </Layer>
+    </Layout>
+  </Weights>
+</MethodSetup>

@@ -21,6 +21,7 @@
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // Framework includes.
@@ -62,6 +63,7 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
+#include "TrkDiag/inc/TrkPIDInfo.hh"
 #include "TrkDiag/inc/TrkQualTestInfo.hh"
 #include "TrkDiag/inc/HelixInfo.hh"
 #include "TrkDiag/inc/TrkTools.hh"
@@ -101,6 +103,7 @@ namespace mu2e {
     art::InputTag _uetag;
     art::InputTag _dmtag;
     art::InputTag _detqtag;
+    art::InputTag _detchpidtag;
     // reco count module
     art::InputTag _rctag;
     // CaloCrystal Ptr map
@@ -116,7 +119,7 @@ namespace mu2e {
     std::string _crvCoincidenceModuleLabel;
     std::string _crvCoincidenceMCModuleLabel;
     // analysis options
-    bool _fillmc, _pempty, _crv, _helices, _filltrkqual, _filltrig;
+    bool _fillmc, _pempty, _crv, _helices, _filltrkqual, _filltrkpid, _filltrig;
     int _diag, _debug;
     // momentum analyzer
     double _bz0;
@@ -159,6 +162,8 @@ namespace mu2e {
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
     TrkQualTestInfo _trkqualTest;
+    // TrkPID
+    TrkPIDInfo _trkPIDInfo;
     // helper functions
     void fillEventInfo(const art::Event& event);
     void fillTriggerBits(const art::Event& event,std::string const& process);
@@ -182,6 +187,7 @@ namespace mu2e {
     _uetag( pset.get<art::InputTag>("UeTag", art::InputTag()) ),
     _dmtag( pset.get<art::InputTag>("DmuTag", art::InputTag()) ),
     _detqtag( pset.get<art::InputTag>("DeTrkQualTag", art::InputTag()) ),
+    _detchpidtag( pset.get<art::InputTag>("DeTrkCaloHitPIDTag", art::InputTag()) ),
     _rctag( pset.get<art::InputTag>("RecoCountTag", art::InputTag()) ),
     _cchmtag( pset.get<art::InputTag>("CaloCrystalHitMapTag", art::InputTag()) ),
     _spctag( pset.get<art::InputTag>("SimParticleCollectionTag", art::InputTag()) ),
@@ -194,6 +200,7 @@ namespace mu2e {
     _crv(pset.get<bool>("AnalyzeCRV",false)),
     _helices(pset.get<bool>("FillHelixInfo",false)),
     _filltrkqual(pset.get<bool>("FillTrkQualInfo",true)),
+    _filltrkpid(pset.get<bool>("FillTrkPIDInfo",true)),
     _filltrig(pset.get<bool>("FillTriggerInfo",false)),
     _diag(pset.get<int>("diagLevel",0)),
     _debug(pset.get<int>("debugLevel",0)),
@@ -272,6 +279,10 @@ namespace mu2e {
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
     }
+    if (_filltrkpid) {
+      _trkana->Branch("detrkpid", &_trkPIDInfo, TrkPIDInfo::leafnames().c_str());
+    }
+
   }
 
   void TrackAnalysisReco::beginSubRun(const art::SubRun & subrun ) {
@@ -345,6 +356,10 @@ namespace mu2e {
     art::Handle<TrkQualCollection> trkQualHandle;
     event.getByLabel(_detqtag, trkQualHandle);
     TrkQualCollection const& tqcol = *trkQualHandle;
+    // TrkCaloHitPID
+    art::Handle<TrkCaloHitPIDCollection> tchpcHandle;
+    event.getByLabel(_detchpidtag, tchpcHandle);
+    TrkCaloHitPIDCollection const& tchpcol = *tchpcHandle;
     // trigger information
     if(_filltrig){
       fillTriggerBits(event,process);
@@ -413,6 +428,10 @@ namespace mu2e {
 	auto const& tqual = tqcol.at(std::distance(deC.begin(),idekseed));
 	_deti._trkqual = tqual.MVAOutput();
 	TrkTools::fillTrkQualInfo(tqual, _trkQualInfo);
+      }
+      if (_filltrkpid) {
+	auto const& tpid = tchpcol.at(std::distance(deC.begin(),idekseed));
+	TrkTools::fillTrkPIDInfo(tpid, *idekseed, *caloh, _trkPIDInfo);
       }
       // fill mC info associated with this track
       if(_fillmc ) { 
