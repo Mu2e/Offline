@@ -390,9 +390,10 @@ namespace mu2e {
 
 	art::Handle<TrkQualCollection> i_tq_handle;
 	std::string i_tq_tag;
-	supps.at(i_supplement).trkqual(i_tq_tag);
-	event.getByLabel(i_tq_tag, i_tq_handle);
-	_supplementTQCs.push_back(*i_tq_handle);
+	if (supps.at(i_supplement).trkqual(i_tq_tag)) {
+	  event.getByLabel(i_tq_tag, i_tq_handle);
+	  _supplementTQCs.push_back(*i_tq_handle);
+	}
       }
     }
 
