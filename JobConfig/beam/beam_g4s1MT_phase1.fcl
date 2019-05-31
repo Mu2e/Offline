@@ -264,7 +264,7 @@ physics : {
    g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
    trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
 
-   outputs: [truncatedEvtsOutput, mubeamout, dsout, extmonbeamout,extmonregionout]
+   outputs: [truncatedEvtsOutput, mubeamout, dsout]
    an: [ genCountLogger, collectionSizes ]
    end_paths: [outputs, an]
 }
