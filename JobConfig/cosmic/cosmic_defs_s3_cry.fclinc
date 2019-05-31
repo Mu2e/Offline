@@ -13,15 +13,22 @@ services: @local::Services.Sim
 
 physics : { 
   producers : {
-    generate: {module_type : EventGenerator}
-    @table::Primary.producers
+     generate: {module_type : EventGenerator}
+     @table::Primary.producers
+     protonBunchIntensity: {module_type: ProtonBunchIntensityLogNormal
+     sigma: 0.3814
+     extendedMean: 3.9e7 // mean of the uncut distribution
+     cutMax: 11.7e7  // cut the tail at 3 times the mean
+    }
   }
   filters  : {@table::Primary.filters}
   analyzers: {@table::Primary.analyzers}
 # enable CRV digis
-  TriggerPath: [@sequence::CommonMC.DigiSim,
+  TriggerPath: [protonBunchIntensity,
+  	        @sequence::CommonMC.DigiSim,
   		@sequence::CaloDigiMC.DigiSim,
   	        @sequence::TrackerMC.DigiSim,
+		DigiFilter,
   		@sequence::CrvDAQPackage.CrvResponseSequence,
   		compressDigiMCs]
   EndPath : @local::Primary.EndPath
@@ -41,10 +48,16 @@ outputs : {
 #  Allow 'infinite' momentum
 physics.producers.g4run  : @erase
 physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter"]
+physics.producers.compressDigiMCs.mcTrajectoryTag: "detectorFilter"
 physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector"]
 physics.producers.cosmicTimeMap.tmin: 800
 physics.producers.cosmicTimeMap.tmax: 805
 
+physics.filters.DigiFilter.MinParticleMom : 50.0
+physics.filters.DigiFilter.MaxParticleMom : 250.0
+physics.filters.DigiFilter.MinNDigis : 15
+# allow all particles
+physics.filters.DigiFilter.particleTypes : [ ]
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 
