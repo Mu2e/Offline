@@ -18,6 +18,7 @@
 #include "MCDataProducts/inc/KalSeedMC.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
+#include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "TrkReco/inc/TrkUtilities.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
@@ -60,6 +61,7 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/CaloClusterInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
+#include "TrkDiag/inc/TrkPIDInfo.hh"
 #include "TrkDiag/inc/HelixInfo.hh"
 #include "TrkDiag/inc/InfoStructHelper.hh"
 #include "TrkDiag/inc/InfoMCStructHelper.hh"
@@ -110,6 +112,8 @@ namespace mu2e {
       fhicl::Atom<bool> crv{Name("AnalyzeCRV"),false};
       fhicl::Atom<bool> helices{Name("FillHelixInfo"),false};
       fhicl::Atom<bool> filltrkqual{Name("FillTrkQualInfo"),true};
+      fhicl::Atom<bool> filltrkpid{Name("FillTrkPIDInfo"),true};
+      fhicl::Atom<art::InputTag> detchpidtag{Name("DeTrkCaloHitPIDTag"), art::InputTag()};
       fhicl::Atom<bool> filltrig{Name("FillTriggerInfo"),false};
       fhicl::Atom<int> diag{Name("diagLevel"),1};
       fhicl::Atom<int> debug{Name("debugLevel"),0};
@@ -155,7 +159,7 @@ namespace mu2e {
     std::vector<TrkInfo> _supplementTIs;
     std::vector<TrkFitInfo> _supplementEntTIs, _supplementMidTIs, _supplementXitTIs;
     std::vector<TrkCaloHitInfo> _supplementTCHIs;
-    std::vector<TrkQualCollection> _supplementTQCs;
+    std::vector<art::Handle<TrkQualCollection> > _supplementTQCHs;
 
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
@@ -181,6 +185,9 @@ namespace mu2e {
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
+
+    // TrkPID
+    TrkPIDInfo _trkPIDInfo;
     // helper functions
     void fillEventInfo(const art::Event& event);
     void fillTriggerBits(const art::Event& event,std::string const& process);
@@ -268,7 +275,10 @@ namespace mu2e {
       _trkana->Branch((branch+"tsm").c_str(),&_detsm);
     }
 // trigger info.  Actual names should come from the BeginRun object FIXME
-    if(_conf.filltrig())_trkana->Branch("trigbits",&_trigbits,"trigbits/i");
+    if(_conf.filltrig()) {
+      _trkana->Branch("trigbits",&_trigbits,"trigbits/i");
+      _trigbits = tfs->make<TH1F>("trigbits","Trigger Bits",16,-0.5,15.5);
+    }
 // calorimeter information for the downstream electron track
 // CRV info
     if(_conf.crv()) _trkana->Branch("crvinfo",&_crvinfo);
@@ -314,6 +324,10 @@ namespace mu2e {
 	}
       }
     }
+    if (_conf.filltrkpid()) {
+      _trkana->Branch("detrkpid", &_trkPIDInfo, TrkPIDInfo::leafnames().c_str());
+    }
+
   }
 
   void TrackAnalysisReco::beginSubRun(const art::SubRun & subrun ) {
@@ -380,7 +394,7 @@ namespace mu2e {
     std::vector<art::Handle<KalSeedCollection> > supplementKSCHs;
     std::vector<BranchConfig> supps;
     if (_conf.supplements(supps)) {
-      _supplementTQCs.clear();
+      _supplementTQCHs.clear();
 
       for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	art::Handle<KalSeedCollection> i_handle;
@@ -392,8 +406,11 @@ namespace mu2e {
 	std::string i_tq_tag;
 	if (supps.at(i_supplement).trkqual(i_tq_tag)) {
 	  event.getByLabel(i_tq_tag, i_tq_handle);
-	  _supplementTQCs.push_back(*i_tq_handle);
 	}
+	else {
+	  i_tq_handle = art::Handle<TrkQualCollection>();
+	}
+	_supplementTQCHs.push_back(i_tq_handle);
       }
     }
 
@@ -409,6 +426,12 @@ namespace mu2e {
       float count  = rc._shthist.binContents(ibin);
       _tht->Fill(time,count);
     }
+
+    // TrkCaloHitPID
+    art::Handle<TrkCaloHitPIDCollection> tchpcHandle;
+    event.getByLabel(_conf.detchpidtag(), tchpcHandle);
+    TrkCaloHitPIDCollection const& tchpcol = *tchpcHandle;
+
     // trigger information
     if(_conf.filltrig()){
       fillTriggerBits(event,process);
@@ -488,6 +511,10 @@ namespace mu2e {
 	  _infoStructHelper.fillTrkQualInfo(tqual, _trkQualInfo);
 	}
       }
+      if (_conf.filltrkpid()) {
+	auto const& tpid = tchpcol.at(i_kseed);
+	_infoStructHelper.fillTrkPIDInfo(tpid, candidateKS, _trkPIDInfo);
+      }
       // fill mC info associated with this track
       if(_conf.fillmc() && _conf.candidate().fillmc()) { 
 	const PrimaryParticle& primary = *pph;
@@ -529,7 +556,7 @@ namespace mu2e {
 	for (size_t i_supplement = 0; i_supplement < supps.size(); ++i_supplement) {
 	  const auto& i_supplementKSCH = supplementKSCHs.at(i_supplement);
 	  const auto& i_supplementKSC = *i_supplementKSCH;
-	  auto const& i_supplementTQC = _supplementTQCs.at(i_supplement);
+	  auto const& i_supplementTQCH = _supplementTQCHs.at(i_supplement);
 
 	  bool sameColl = false;
 	  if (_conf.candidate().input() == supps.at(i_supplement).input()) {
@@ -556,14 +583,16 @@ namespace mu2e {
 
 	    //	    _tcnt._overlaps[i_supplement+1] = _tcomp.nOverlap(candidateKS, supplementKS);
 
-	    if (i_supplementTQC.size()>0 && i_supplementTQC.size() != i_supplementKSC.size()) {
-	      throw cet::exception("TrackAnalysis") << "TrkQualCollection and supplemental KalSeedCollection are of different sizes (" << i_supplementTQC.size() << " and " << i_supplementKSC.size() << " respectively)" << std::endl;
+	    if (i_supplementTQCH.isValid()) {
+	      auto const& i_supplementTQC = *i_supplementTQCH;
+	      if (i_supplementTQC.size()>0 && i_supplementTQC.size() != i_supplementKSC.size()) {
+		throw cet::exception("TrackAnalysis") << "TrkQualCollection and supplemental KalSeedCollection are of different sizes (" << i_supplementTQC.size() << " and " << i_supplementKSC.size() << " respectively)" << std::endl;
+	      }
+	      if (i_supplementTQC.size()>0) {
+		const auto& tqual = i_supplementTQC.at(i_supplementKS);
+		i_supplementTI._trkqual = tqual.MVAOutput();
+	      }
 	    }
-	    if (i_supplementTQC.size()>0) {
-	      const auto& tqual = i_supplementTQC.at(i_supplementKS);
-	      i_supplementTI._trkqual = tqual.MVAOutput();
-	    }
-
 	    if (_conf.fillmc() && supps.at(i_supplement).fillmc()) {
 	      const PrimaryParticle& primary = *pph;
 	      // use Assns interface to find the associated KalSeedMC; this uses ptrs

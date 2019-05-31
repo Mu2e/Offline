@@ -21,6 +21,28 @@ namespace mu2e
 {
 
 
+MVATools::MVATools(const Config& config) : 
+  mvaWgtsFile_(), 
+  wgts_(), 
+  x_(), 
+  y_(),
+  fv_(), 
+  layerToNeurons_(), 
+  synapsessPerLayer_(),
+  voffset_(), 
+  vscale_(), 
+  title_(), 
+  label_(),
+  activeType_(aType::null),
+  activationTypeString_("none"),
+  oldMVA_(false),
+  isNorm_(false)
+{
+   ConfigFileLookupPolicy configFile;
+   std::string weights = config.weights();
+   mvaWgtsFile_ = configFile(weights);
+}
+
 MVATools::MVATools(fhicl::ParameterSet const& pset) : 
   mvaWgtsFile_(), 
   wgts_(), 

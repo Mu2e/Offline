@@ -262,8 +262,8 @@ namespace mu2e {
 	  printf("TrkCaloHit, time = %10.3f hitT0 = %10.3g +/- %10.3f",
 		 chit->time(), chit->hitT0().t0(),chit->hitT0().t0Err());
 
-	  if (hasres) printf(" resid = %10.3f +- %10.3f",res,sigres);
-	  else	      printf(" no residual, hit error = %10.3f",chit->hitErr());
+	  if (hasres) printf(" resid = %10.3f +- %10.3f\n",res,sigres);
+	  else	      printf(" no residual, hit error = %10.3f\n",chit->hitErr());
 	}
       }
     }

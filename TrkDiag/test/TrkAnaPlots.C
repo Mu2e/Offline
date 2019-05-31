@@ -218,7 +218,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 }
 
 void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
-  unsigned nbins(9);
+  unsigned nbins(10);
   double bmax = nbins-0.5;
 
   TH1F* acc = new TH1F("acc","CE Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
@@ -235,6 +235,7 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   acc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
   acc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
+  acc->GetXaxis()->SetBinLabel(ibin++,"PID");
   acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
 
@@ -248,6 +249,7 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
   racc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
   racc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
+  racc->GetXaxis()->SetBinLabel(ibin++,"PID");
   racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
 
   ibin = 0;
@@ -267,6 +269,7 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   TCut opa = "de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680";
   TCut rmom = "de.mom>103.85";
   TCut evtwt = "evtwt.PBIWeight";
+  TCut pid = "detrkpid.mvaout>0.5";
   ta->Project("acc",binnames[ibin++],evtwt);
  // ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
   ta->Project("+acc",binnames[ibin++],evtwt*(trigger));
@@ -276,7 +279,8 @@ void Acc(TTree* ta, double tqcut,int ngen,const char* file="") {
   ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch));
   ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa));
   ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV));
-  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV+rmom));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid));
+  ta->Project("+acc",binnames[ibin++],evtwt*(trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
 
   double all = acc->GetBinContent(1);
   double norm = ngen;
@@ -709,14 +713,30 @@ void TrkQual(TTree* ta,const char* extra="") {
 }
 
 void TrkQualRes(TTree* ta,double tqcut) {
-  TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
+  TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,4,7);
+  dscb->SetParName(0,"Norm");
+  dscb->SetParName(1,"x0");
+  dscb->SetParName(2,"sigma");
+  dscb->SetParName(3,"ANeg");
+  dscb->SetParName(4,"PNeg");
+  dscb->SetParName(5,"APos");
+  dscb->SetParName(6,"PPos");
+  dscb->SetNpx(1000);
+  dscb->SetParLimits(3,0.0,50.0);
+  dscb->SetParLimits(4,1.0,50.0);
+  dscb->SetParLimits(5,0.0,50.0);
+  dscb->SetParLimits(6,1.0,50.0);
+
+   TH1F* goodf = new TH1F("goodf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
   TH1F* badf = new TH1F("badf","Momentum Resolution;Reco - True Momentum (MeV/c)",100,-4,4);
-  goodf->SetLineColor(kGreen);
+  goodf->SetLineColor(kBlue);
+  goodf->SetMarkerColor(kBlue);
   goodf->SetLineWidth(2);
-  goodf->SetFillColor(kGreen);
+  goodf->SetFillColor(kBlue);
   goodf->SetFillStyle(3004);
-  badf->SetLineColor(kMagenta);
-  badf->SetFillColor(kMagenta);
+  badf->SetLineColor(kRed);
+  badf->SetFillColor(kRed);
+  badf->SetMarkerColor(kRed);
   badf->SetLineWidth(2);
   badf->SetFillStyle(3005);
   goodf->SetStats(0);
@@ -733,30 +753,41 @@ void TrkQualRes(TTree* ta,double tqcut) {
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
   ta->Project("goodf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"evtwt.PBIWeight");
   ta->Project("badf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"evtwt.PBIWeight");
-//  badf->Scale(goodf->GetEntries()/badf->GetEntries());
-  TCanvas* tqcan = new TCanvas("tqcan","TrkQual",1000,800);
-  gPad->SetLogy();
-  badf->Draw("LF2");
-  goodf->Draw("sameLF2");
-
-  double gmax = goodf->GetMaximum();
-  int gbin1 = goodf->FindFirstBinAbove(0.5*gmax);
-  int gbin2 = goodf->FindLastBinAbove(0.5*gmax);
-  double gfwhm = goodf->GetBinCenter(gbin2) - goodf->GetBinCenter(gbin1);
-
-  double bmax = badf->GetMaximum();
-  int bbin1 = badf->FindFirstBinAbove(0.5*bmax);
-  int bbin2 = badf->FindLastBinAbove(0.5*bmax);
-  double bfwhm = badf->GetBinCenter(bbin2) - badf->GetBinCenter(bbin1);
-
-  char ltitle[40];
-
+  
+  TCanvas* tqcan = new TCanvas("tqrcan","TrkQualRes",1000,800);
   TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
-//  leg->AddEntry(goodf,tqcutgc,"L");
-//  leg->AddEntry(badf,tqcutbc,"L");
-  snprintf(ltitle,40,"TrkQual>%3.2f, f= %5.3f",tqcut,goodf->GetEntries()/float(badf->GetEntries()));
-  leg->AddEntry(goodf,ltitle,"L");
+  char ltitle[40];
+  gPad->SetLogy();
+
+  double integral = badf->GetEntries()*badf->GetBinWidth(1);
+  dscb->SetParameters(integral,0.0,0.15,1.0,4.5,1.2,10.0);
+  dscb->SetLineColor(kRed);
+  badf->Fit("dscb","LIR");
+  double sigma = dscb->GetParameter(2);
+  double sigerr = dscb->GetParError(2);
+  double ppos = dscb->GetParameter(6);
+  double pposerr = dscb->GetParError(6);
   leg->AddEntry(badf,"No TrkQual Cut","L");
+  snprintf(ltitle,40,"#sigma = %3.1f #pm %2.2f KeV/c",sigma*1000,sigerr*1000);
+  leg->AddEntry(badf,ltitle,"L");
+  snprintf(ltitle,40,"PPos = %3.1f #pm %2.2f",ppos,pposerr);
+  leg->AddEntry(badf,ltitle,"L");
+
+  integral = goodf->GetEntries()*badf->GetBinWidth(1);
+  dscb->SetParameters(integral,0.0,0.15,1.0,4.5,1.2,10.0);
+  dscb->SetLineColor(kBlue);
+  goodf->Fit("dscb","LIR","sameLF2");
+  snprintf(ltitle,40,"TrkQual>%3.2f, f = %5.3f",tqcut,goodf->GetEntries()/float(badf->GetEntries()));
+  leg->AddEntry(goodf,ltitle,"L");
+  sigma = dscb->GetParameter(2);
+  sigerr = dscb->GetParError(2);
+  ppos = dscb->GetParameter(6);
+  pposerr = dscb->GetParError(6);
+  snprintf(ltitle,40,"#sigma = %3.1f #pm %2.2f KeV/c",sigma*1000,sigerr*1000);
+  leg->AddEntry(goodf,ltitle,"L");
+  snprintf(ltitle,40,"PPos = %3.1f #pm %2.2f",ppos,pposerr);
+  leg->AddEntry(goodf,ltitle,"L");
+
   leg->Draw();
 }
 

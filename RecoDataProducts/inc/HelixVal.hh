@@ -36,7 +36,8 @@ namespace mu2e {
     void position(const XYZVec& pos, float& fltlen) const; // to go from XYZVec to fltlen
     void direction(float fltlen,XYZVec& pos) const; 
     float phi(float fltlen) const; // local azimuthal angle 
-
+    float zFlight(float zpos) const { return (zpos-z0())/sinDip(); } // local flight distance for a given z value
+      
     Float_t& d0() { return _pars[HelixParams::d0Index]; }
     Float_t& phi0() { return _pars[HelixParams::phi0Index]; }
     Float_t& omega() { return _pars[HelixParams::omegaIndex]; }

@@ -298,4 +298,25 @@ namespace mu2e {
       }
     }
   }
+
+  void InfoStructHelper::fillTrkPIDInfo(const TrkCaloHitPID& tchp, const KalSeed& kseed, TrkPIDInfo& trkpidInfo) {
+    mu2e::GeomHandle<mu2e::Calorimeter> calo;
+    int n_trktchpid_vars = TrkCaloHitPID::n_vars;
+    for (int i_trktchpid_var = 0; i_trktchpid_var < n_trktchpid_vars; ++i_trktchpid_var) {
+      TrkCaloHitPID::MVA_varindex i_index = TrkCaloHitPID::MVA_varindex(i_trktchpid_var);
+      trkpidInfo._tchpvars[i_trktchpid_var] = (float) tchp[i_index];
+    }
+    trkpidInfo._tchp = tchp.MVAOutput();
+    // extrapolate the track to the calorimeter disk faces and record the transverse radius
+    // Use the last segment
+    auto const& trkhel = kseed.segments().back().helix();
+    static const CLHEP::Hep3Vector origin;
+    for(int idisk=0;idisk < 2; idisk++){
+      auto ffpos = calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(idisk,origin));
+      float flen = trkhel.zFlight(ffpos.z());
+      XYZVec extpos;
+      trkhel.position(flen,extpos);
+      trkpidInfo._diskrad[idisk] = sqrt(extpos.Perp2());	
+    }
+  }
 }
