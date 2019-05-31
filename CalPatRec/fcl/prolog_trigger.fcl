@@ -159,9 +159,11 @@ CprTrigger: { @table::CprTrigger
 	
 	TTCalTrkFitDem                 : { @table::CprTrigger.producers.TTCalTrkFit
 	    SeedCollection             : TTCalSeedFitDem
+	    CaloClusterCollection  : "CaloClusterFast"
 	}
 	TTCalTrkFitDep                 : { @table::CprTrigger.producers.TTCalTrkFit        
 	    SeedCollection             : TTCalSeedFitDep
+	    CaloClusterCollection  : "CaloClusterFast"
 	}
     }
     

@@ -110,6 +110,7 @@ TTKFFDeM.fitparticle	      : @local::Particle.eminus
 TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
 TTKFFDeM.ComboHitCollection	: "TTmakeSH"
 TTKFFDeM.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+TTKFFDeM.CaloClusterCollection  : "CaloClusterFast"
 
 #  downstream positrons
 TTKFFDeP		      : @local::KFF
@@ -118,6 +119,7 @@ TTKFFDeP.fitparticle	      : @local::Particle.eplus
 TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
 TTKFFDeP.ComboHitCollection	: "TTmakeSH"
 TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+TTKFFDeP.CaloClusterCollection  : "CaloClusterFast"
 
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
