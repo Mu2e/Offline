@@ -91,7 +91,8 @@ namespace mu2e
 
       // The module label of this instance of this module.
       std::string moduleLabel_;
-
+      const ComboHitCollection* _chcol;
+      const CosmicTrackSeedCollection* _coscol;
       //For Event Displays:
       TApplication* application_;
       TDirectory*   directory_ = nullptr;
@@ -109,16 +110,12 @@ namespace mu2e
       bool doDisplay_;
       bool clickToAdvance_;
       
-      
-      //Add in details of the tracker segments positions. This will be used for alignment later on:
-
-      Int_t _strawid; // strawid info
-
       void plot2d(const art::Event& evt);
       void plot3dPrimes(const art::Event& evt);
       void plot3dXYZ(const art::Event& evt);
       void improved_event3D(const art::Event& evt);
       std::vector<double> GetMaxAndMin(std::vector<double> myvector);
+       bool findData(const art::Event& evt);
     };
     CosmicFitDisplay::CosmicFitDisplay(fhicl::ParameterSet const& pset) :
 	art::EDAnalyzer(pset),
@@ -144,8 +141,6 @@ namespace mu2e
       	char** tmp_argv(0);
       	application_ = new TApplication( "noapplication", &tmp_argc, tmp_argv );
       }
-
-
       // Create a canvas with a guaranteed unique name; the module label is unique within a job.
       TString name  = "canvas_"     + moduleLabel_;
       TString title = "Canvas for " + moduleLabel_;
@@ -157,47 +152,26 @@ namespace mu2e
       }
 
       void CosmicFitDisplay::analyze(const art::Event& event) {
-        plot2d( event);
-        
+        plot2d( event);  
       }//End Analyze 
 
       void CosmicFitDisplay::plot2d(const art::Event& event){
-        
         _evt = event.id().event();  
+        findData(event);
         
-        auto comboHits  = event.getValidHandle<ComboHitCollection>( _chtag );
-        auto Tracks  = event.getValidHandle<CosmicTrackSeedCollection>( _sttag );
-        
-        std::vector<double> pullsx, pullsy, x, y, z, rawx, rawy, rawz, xinit, yinit, zinit, out_x, out_y, out_z, a0, a1, b0, b1,a0init, a1init, b0init, b1init, chi_dof_XDoublePrimeZPrime, chi_dof_YDoublePrimeZPrime, initchi_dof_YDoublePrimeZPrime, initchi_dof_XDoublePrimeZPrime;
+        std::vector<double> initpullsx, initpullsy, pullsx, pullsy, x, y, z, rawx, rawy, rawz, xinit, yinit, zinit, out_x, out_y, out_z, a0, a1, b0, b1,a0init, a1init, b0init, b1init, chi_dof_XDoublePrimeZPrime, chi_dof_YDoublePrimeZPrime, initchi_dof_YDoublePrimeZPrime, initchi_dof_XDoublePrimeZPrime;
         
         std::vector<XYZVec> xprimes, yprimes, zprimes, xprimesinit,  yprimesinit,  zprimesinit;
-        x.reserve(comboHits->size());
-        y.reserve(comboHits->size());
-        z.reserve(comboHits->size());
-        
-	xinit.reserve(comboHits->size());
-        yinit.reserve(comboHits->size());
-        zinit.reserve(comboHits->size());
-        
-        pullsx.reserve(comboHits->size());
-        pullsy.reserve(comboHits->size());
-        
-        a0.reserve(Tracks->size());
-        a1.reserve(Tracks->size());
-        b0.reserve(Tracks->size());
-        b1.reserve(Tracks->size());
-        chi_dof_XDoublePrimeZPrime.reserve(Tracks->size());
-        chi_dof_YDoublePrimeZPrime.reserve(Tracks->size());
-        
-        initchi_dof_XDoublePrimeZPrime.reserve(Tracks->size());
-        initchi_dof_YDoublePrimeZPrime.reserve(Tracks->size());
-        a0init.reserve(Tracks->size());
-        a1init.reserve(Tracks->size());
-        b0init.reserve(Tracks->size());
-        b1init.reserve(Tracks->size());
-        
+      
+         //find time clusters:
+    	unsigned  _ncosmics = _coscol->size();
+    	
+        unsigned _nch = _chcol->size();
         //loop over tracks:
-        for(auto const& track: *Tracks){
+        for(size_t i =0; i < _ncosmics; i++){
+                 
+        	CosmicTrackSeed track =(*_coscol)[i];
+		
 		xprimes.push_back(track._track.getXPrime());
 		yprimes.push_back(track._track.getYPrime());
 		zprimes.push_back(track._track.getZPrime());
@@ -207,7 +181,9 @@ namespace mu2e
 		zprimesinit.push_back(track._track.getinitZPrime());
 		
 		if(track._track.get_track_parameters().size()!= 0){
+			
 			if(isnan(track._track.get_track_parameters()[0]) == true && isnan(track._track.get_track_parameters()[1]) == true && isnan(track._track.get_track_parameters()[2]) == true && isnan(track._track.get_track_parameters()[3]) == true) continue;
+			
 			a0.push_back(track._track.get_track_parameters()[0]);
 			a1.push_back(track._track.get_track_parameters()[1]);
 			b0.push_back(track._track.get_track_parameters()[2]);
@@ -216,21 +192,27 @@ namespace mu2e
 			a1init.push_back(track._track.get_initial_track_parameters()[1]);
 			b0init.push_back(track._track.get_initial_track_parameters()[2]);
 			b1init.push_back(track._track.get_initial_track_parameters()[3]);
-			std::cout<<"Chi2 display"<<track._track.get_finalchisqX()<<std::endl;
+			
 			chi_dof_XDoublePrimeZPrime.push_back(track._track.get_finalchisq_dofX());
 			chi_dof_YDoublePrimeZPrime.push_back(track._track.get_finalchisq_dofY());
 			
 			initchi_dof_XDoublePrimeZPrime.push_back(track._track.get_initchisq_dofX());
 			initchi_dof_YDoublePrimeZPrime.push_back(track._track.get_initchisq_dofY());
-			for(size_t i = 0 ; i < track._track.get_init_fit_residualsX().size(); i++ ){
-				pullsx.push_back(track._track.get_init_fit_residualsX()[i]/track._track.get_init_fit_residual_errorsX()[i]);
-				pullsy.push_back(track._track.get_init_fit_residualsY()[i]/track._track.get_init_fit_residual_errorsY()[i]);
+			
+			for(size_t i = 0 ; i < track._track.get_final_fit_residualsX().size(); i++ ){
+				
+				pullsx.push_back(track._track.get_final_fit_pullsX()[i]);
+				pullsy.push_back(track._track.get_final_fit_pullsY()[i]);
+				initpullsx.push_back(track._track.get_init_fit_pullsX()[i]);
+				initpullsy.push_back(track._track.get_init_fit_pullsY()[i]);
 			}
 	       	    }
         }
       if(xprimes.size() >0){
         // loop over combo hits
-        for(auto const& chit : *comboHits){
+        
+        for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i];
 		x.push_back(chit.pos().Dot(xprimes[0]));
 		y.push_back(chit.pos().Dot(yprimes[0]));
 		z.push_back(chit.pos().Dot(zprimes[0]));
@@ -271,12 +253,12 @@ namespace mu2e
         GeomHandle<Tracker> tracker;   
         // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
-        
         if (doDisplay_) {
+              
               std::cout << "Run: " << event.id().run()
            << "  Subrun: " << event.id().subRun()
            << "  Event: " << event.id().event()<<std::endl;
-              TLine  error_line, out_line, fit_to_trackxprime, fit_to_trackyprime;
+              TLine  major_error_line, minor_error_line, out_line, fit_to_trackxprime, fit_to_trackyprime;
 	      TArc   arc;
               TPolyMarker poly, out;
 	      TBox   box;
@@ -295,11 +277,13 @@ namespace mu2e
 	      fit_to_trackxprime.SetLineColor(kYellow);
 	      fit_to_trackxprime.SetLineColor(kGreen);
 	      
-	      poly.SetMarkerSize(3);
-	      poly.SetMarkerStyle(5);
+	      poly.SetMarkerSize(1);
+	      poly.SetMarkerStyle(4);
              
               int ihit =0;
-              for ( auto const& chit : *comboHits ){
+              for(size_t i =0; i < _nch; i++){
+                 
+        	ComboHit const& chit =(*_chcol)[i];
               		ihit +=1;
               		if (ihit == 10) {
               			ihit = ihit+1;
@@ -309,25 +293,45 @@ namespace mu2e
               		}  
 			auto const& p = chit.pos();	
 			auto const& w = chit.wdir();
-			auto const& s = chit.wireRes();			
+			auto const& s = chit.wireRes();
+			auto const& t = chit.transRes();			
 			double x0prime{(p.Dot(xprimes[0]))} ;
 			poly.SetMarkerColor(ihit);
-			error_line.SetLineColor(ihit);
+			major_error_line.SetLineColor(ihit);
+			minor_error_line.SetLineColor(ihit);
 			double z0prime{(p.Dot(zprimes[0]))};                      
 			poly.DrawPolyMarker( 1, &z0prime, &x0prime );
-			double x1 = p.Dot(xprimes[0])+s*w.Dot(xprimes[0]);
-			double x2 = p.Dot(xprimes[0])-s*w.Dot(xprimes[0]);
-			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
-			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
+			XYZVec major = (s*w);
+			XYZVec minor = Geom::ZDir().Cross(w) * t;
+			double major2 = (s*w).Mag2();
+			double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+			
+			double major_x1 = p.Dot(xprimes[0])+sqrt(major2)*(major.Unit()).Dot(xprimes[0]);
+			double major_x2 = p.Dot(xprimes[0])-sqrt(major2)*(major.Unit()).Dot(xprimes[0]);
+			double major_z1 = p.Dot(zprimes[0])+sqrt(major2)*(major.Unit()).Dot(zprimes[0]);
+			double major_z2 = p.Dot(zprimes[0])-sqrt(major2)*(major.Unit()).Dot(zprimes[0]);
+			double minor_x1 = p.Dot(xprimes[0])+sqrt(minor2)*(minor.Unit()).Dot(xprimes[0]);
+			double minor_x2 = p.Dot(xprimes[0])-sqrt(minor2)*(minor.Unit()).Dot(xprimes[0]);
+			double minor_z1 = p.Dot(zprimes[0])+sqrt(minor2)*(minor.Unit()).Dot(zprimes[0]);
+			double minor_z2 = p.Dot(zprimes[0])-sqrt(minor2)*(minor.Unit()).Dot(zprimes[0]);
+			
+			major_error_line.DrawLine( major_z1, major_x1, major_z2, major_x2);
+			minor_error_line.DrawLine( minor_z1, minor_x1, minor_z2, minor_x2);
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<pullsx[ihit-1];
+                	pulls.precision(2);
 			const char* str_pulls = pulls.str().c_str();
 		   	latex.SetTextSize(0.05);
+		   	latex.SetTextColor(ihit);
 		   	latex.SetTextAlign(13);  //align at top
-		   	latex.DrawLatex(z0prime, x0prime+10,str_pulls);
-		   
-			error_line.DrawLine( z1, x1, z2, x2);
+		   	if(i%2 == 0){
+		   	latex.DrawLatex(z0prime-10, x0prime+75,str_pulls);
+		   	}
+		   	if(i%2 != 0){
+		   	latex.DrawLatex(z0prime-10, x0prime-75,str_pulls);
+		   	}
+			
               }
               
 	      if(a1.size() > 0){
@@ -335,6 +339,7 @@ namespace mu2e
 		TF1 *trackline_xprime = new TF1("line", "[0]+[1]*x", minz,maxz);
 		trackline_xprime->SetParameter(0, a0[0]);
 		trackline_xprime->SetParameter(1, a1[0]);
+		
 		trackline_xprime->SetLineColor(6);
 		trackline_xprime->Draw("same");
 		TLegend *leg = new TLegend(0.1,0.8,0.3,0.9);
@@ -351,7 +356,8 @@ namespace mu2e
 	      yzplot->GetYaxis()->SetTitleOffset(1.25);
 	      yzplot->SetTitle( "Final Iteration Fit Y'' vs Z'; Z'(mm);Y''(mm)");
 	      ihit = 0;
-              for ( auto const& chit : *comboHits ){ 
+              for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i]; 
               		ihit+=1;   
               		if (ihit == 10) {
               			ihit = ihit+1;
@@ -365,13 +371,27 @@ namespace mu2e
 			double y0prime{(p.Dot(yprimes[0]))} ;
 			double z0prime{(p.Dot(zprimes[0]))};  
 			poly.SetMarkerColor(ihit);  
-			error_line.SetLineColor(ihit);      
+			major_error_line.SetLineColor(ihit);      
 			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
 			double y1 = p.Dot(yprimes[0])+s*w.Dot(yprimes[0]);
 			double y2 = p.Dot(yprimes[0])-s*w.Dot(yprimes[0]);
 			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
 			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
-			error_line.DrawLine( z1, y1, z2, y2);
+			major_error_line.DrawLine( z1, y1, z2, y2);
+			TLatex latex;
+			stringstream pulls;
+                	pulls<<pullsy[ihit-1];
+                	pulls.precision(2);
+			const char* str_pulls = pulls.str().c_str();
+		   	latex.SetTextSize(0.05);
+		   	latex.SetTextColor(ihit);
+		   	latex.SetTextAlign(13);  //align at top
+		   	if(i%2 == 0){
+		   	latex.DrawLatex(z0prime-10, y0prime+75,str_pulls);
+		   	}
+		   	if(i%2 != 0){
+		   	latex.DrawLatex(z0prime-10, y0prime-75,str_pulls);
+		   	}
               }
 	      if(b1.size() > 0){
 	        
@@ -396,7 +416,8 @@ namespace mu2e
 	      xzplot_init->GetYaxis()->SetTitleOffset(1.25);
 	      xzplot_init->SetTitle( "Initial Fit (chi 2 min) X'' vs Z'; Z'(mm);X''(mm)");
 	      ihit = 0;
-              for ( auto const& chit : *comboHits ){ 
+              for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i];
               		ihit+=1;          
               		if (ihit == 10) {
               			ihit = ihit+1;
@@ -410,13 +431,27 @@ namespace mu2e
 			double x0primeinit{(p.Dot(xprimesinit[0]))} ;
 			double z0primeinit{(p.Dot(zprimesinit[0]))};  
 			poly.SetMarkerColor(ihit);  
-			error_line.SetLineColor(ihit);      
+			major_error_line.SetLineColor(ihit);      
 			poly.DrawPolyMarker( 1, &z0primeinit, &x0primeinit );        
 			double x1 = p.Dot(xprimesinit[0])+s*w.Dot(xprimesinit[0]);
 			double x2 = p.Dot(xprimesinit[0])-s*w.Dot(xprimesinit[0]);
 			double z1 = p.Dot(zprimesinit[0])+s*w.Dot(zprimesinit[0]);
 			double z2 = p.Dot(zprimesinit[0])-s*w.Dot(zprimesinit[0]);
-			error_line.DrawLine( z1, x1, z2, x2);
+			major_error_line.DrawLine( z1, x1, z2, x2);
+			TLatex latex;
+			stringstream pulls;
+                	pulls<<initpullsx[ihit-1];
+                	pulls.precision(2);
+			const char* str_pulls = pulls.str().c_str();
+		   	latex.SetTextSize(0.05);
+		   	latex.SetTextColor(ihit);
+		   	latex.SetTextAlign(13);  //align at top
+		   	if(i%2 == 0){
+		   	latex.DrawLatex(z0primeinit-10, x0primeinit+75,str_pulls);
+		   	}
+		   	if(i%2 != 0){
+		   	latex.DrawLatex(z0primeinit-10, x0primeinit-75,str_pulls);
+		   	}
               }
 	      if(a1.size() > 0){
 	        
@@ -441,7 +476,8 @@ namespace mu2e
 	      yzplot_init->GetYaxis()->SetTitleOffset(1.25);
 	      yzplot_init->SetTitle( "Initial (chi 2 min) Fit Y'' vs Z'; Z'(mm);Y''(mm)");
 	      ihit = 0;
-              for ( auto const& chit : *comboHits ){ 
+              for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i]; 
               		ihit+=1;  
               		if (ihit == 10) {
               			ihit = ihit+1;
@@ -455,13 +491,27 @@ namespace mu2e
 			double y0prime{(p.Dot(yprimesinit[0]))} ;
 			double z0prime{(p.Dot(zprimesinit[0]))};  
 			poly.SetMarkerColor(ihit);  
-			error_line.SetLineColor(ihit);      
+			major_error_line.SetLineColor(ihit);      
 			poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
 			double y1 = p.Dot(yprimesinit[0])+s*w.Dot(yprimesinit[0]);
 			double y2 = p.Dot(yprimesinit[0])-s*w.Dot(yprimesinit[0]);
 			double z1 = p.Dot(zprimesinit[0])+s*w.Dot(zprimesinit[0]);
 			double z2 = p.Dot(zprimesinit[0])-s*w.Dot(zprimesinit[0]);
-			error_line.DrawLine( z1, y1, z2, y2);
+			major_error_line.DrawLine( z1, y1, z2, y2);
+			TLatex latex;
+			stringstream pulls;
+                	pulls<<initpullsy[ihit-1];
+                	pulls.precision(2);
+			const char* str_pulls = pulls.str().c_str();
+		   	latex.SetTextSize(0.05);
+		   	latex.SetTextColor(ihit);
+		   	latex.SetTextAlign(13);  //align at top
+		   	if(i%2 == 0){
+		   	latex.DrawLatex(z0prime-10, y0prime+75,str_pulls);
+		   	}
+		   	if(i%2 != 0){
+		   	latex.DrawLatex(z0prime-10, y0prime-75,str_pulls);
+		   	}
               }
 	      if(b1.size() > 0){
 	        
@@ -485,7 +535,8 @@ namespace mu2e
 	      rawxzplot->GetYaxis()->SetTitleOffset(1.25);
 	      rawxzplot->SetTitle( "Raw Hits X vs Z; Z(mm);X(mm)");
 	      ihit = 0;
-	      for ( auto const& chit : *comboHits ){      
+	      for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i];      
 	      		ihit +=1;      
 	      		if (ihit == 10) {
               			ihit = ihit+1;
@@ -504,8 +555,8 @@ namespace mu2e
 			double y2 = p.x()-s*w.x();
 			double z1 = p.z()+s*w.z();
 			double z2 = p.z()-s*w.z();
-			error_line.SetLineColor(ihit);
-			error_line.DrawLine( z1, y1, z2, y2);
+			major_error_line.SetLineColor(ihit);
+			major_error_line.DrawLine( z1, y1, z2, y2);
               }
               
               TF1 *trackline_x = new TF1("line", "[0]+[1]*x",  minrawz, maxrawz);
@@ -521,7 +572,8 @@ namespace mu2e
 	      rawyzplot->GetYaxis()->SetTitleOffset(1.25);
 	      rawyzplot->SetTitle( "Raw Hits Y vs Z; Z(mm);Y(mm)");
 	      ihit=0;
-	      for ( auto const& chit : *comboHits ){                
+	      for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i];              
 	      		ihit +=1;     
 	      		if (ihit == 10) {
               			ihit = ihit+1;
@@ -537,8 +589,8 @@ namespace mu2e
 			double y2 = p.y()-s*w.y();
 			double z1 = p.z()+s*w.z();
 			double z2 = p.z()-s*w.z();
-			error_line.SetLineColor(ihit);
-			error_line.DrawLine( z1, y1, z2, y2);
+			major_error_line.SetLineColor(ihit);
+			major_error_line.DrawLine( z1, y1, z2, y2);
               }
 	      
 	      TF1 *trackline_y = new TF1("line", "[0]+[1]*x", minrawz, maxrawz);
@@ -683,7 +735,7 @@ namespace mu2e
 		Track->Draw("same");
 		
 	      }
-
+             
 	      canvas_->Update();
 
               //END 3D
@@ -711,6 +763,7 @@ namespace mu2e
               }
       	        cerr << endl;
             }
+            
            }//end display
       }//end 3d
 
@@ -753,9 +806,9 @@ namespace mu2e
         
         x.push_back(chit.pos().Dot(xprimes[0]));
         y.push_back(chit.pos().Dot(yprimes[0]));
-        z.push_back(chit.pos().z());
+        z.push_back(chit.pos().Dot(zprimes[0]));
         }
-        double minz = *std::min_element(z.begin(), z.end());
+       double minz = *std::min_element(z.begin(), z.end());
       double maxz = *std::max_element(z.begin(), z.end());
       double minx = *std::min_element(x.begin(), x.end());
       double maxx = *std::max_element(x.begin(), x.end());
@@ -777,7 +830,7 @@ namespace mu2e
               pad->Clear();
 	      canvas_->Draw();
 
-	      TH3D *xyzplot =new TH3D("XYZ","XYZ",1,minz-1500,maxz+1500,1,-miny-1500,maxy+1500,1, minx-1500, maxx+1500);
+	      TH3D *xyzplot =new TH3D("XYZ","XYZ",1,minz,maxz+500,1,-miny-500,maxy+500,1, minx-500, maxx+500);
               
 	      xyzplot->GetYaxis()->SetTitleOffset(1.5);
               xyzplot->GetXaxis()->SetTitleOffset(1.5);
@@ -788,12 +841,7 @@ namespace mu2e
 	      xyzplot->SetMarkerColor(kRed);
 	      xyzplot->SetStats(0);
 	      xyzplot->Draw();
-	      /*
-              TTUBE *Tube = new TTUBE("","","", envelope.innerRadius(), envelope.outerRadius(), zlimit);
-              Tube->SetFillColor(18);
-	      Tube->SetLineColor(18);
-	      Tube->Draw();
-	      */
+	     
 	      poly3D.SetMarkerStyle(2);
 	      poly3D.SetMarkerSize(0.65);
 	      poly3D.SetMarkerColor(kRed);
@@ -826,7 +874,7 @@ namespace mu2e
                 
 		double tz1 = minz;
 	        double tz2 = maxz;
-	       
+	        
 	        double tx1 = a0[0]+ a1[0]*tz1;
 	        double tx2 = a0[0] + a1[0]*tz2;
 		double ty1 = b0[0] + b1[0]*tz1;
@@ -955,7 +1003,6 @@ _evt = event.id().event();  // add event id
               }
       	        cerr << endl;
 
-  
       }
    }
 
@@ -981,7 +1028,17 @@ _evt = event.id().event();  // add event id
     return MaxAndMin;
 	}
 
-   
+bool CosmicFitDisplay::findData(const art::Event& evt){
+	_chcol = 0; 
+        _coscol = 0; 
+	auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
+	_chcol = chH.product();
+	
+	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_sttag);
+	_coscol =stH.product();
+      
+	return _chcol != 0 && _coscol !=0 ;
+       }   
 	
 }//End Namespace Mu2e
 

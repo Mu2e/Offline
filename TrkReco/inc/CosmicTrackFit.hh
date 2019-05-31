@@ -41,6 +41,8 @@
 
 //ROOT
 #include "TMatrixD.h"
+#include "TH2F.h"
+#include "TCanvas.h"
 namespace mu2e 
 {
     class Tracker;
@@ -50,31 +52,32 @@ namespace mu2e
                 explicit CosmicTrackFit(fhicl::ParameterSet const&);
     		virtual ~CosmicTrackFit();
 
-                bool initCosmicTrack(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
-                XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN,CosmicTrack* line);
+                bool initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
+                XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
                 XYZVec LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN, XYZVec ZPrime);
-                XYZVec GetTrackDirection(double a1, double b1, std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime);
+                XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime);
+                XYZVec TransformTrueDirection(XYZVec TrueDirection, XYZVec ZPrime, XYZVec XDoublePrime, XYZVec YDoublePrime);
                 //Step 1: Begin Fit- initializes the fit routine:
-                void BeginFit(CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
+                void BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 
                 //Step 2: RunFitChi2-holds the functions to find initial line, update, refine and add in drift
-                void RunFitChi2(CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
+                void RunFitChi2(const char* title, CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
-		void FitAll(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
+		void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
+		void Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1);
 		void FitXYZ(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
+		
 		XYZVec MCInitHit(StrawDigiMC mcdigi);
 		XYZVec MCFinalHit(StrawDigiMC mcdigi);
 		void MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData);
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 
-                void UpdateFitErrors( std::vector<XYZVec> HitVec, std::vector<double> err, CosmicTrack* track, std::vector<XYZVec> major_axis,std::vector<XYZVec> minor_axis);
-
+		void FitMC(CosmicTrackFinderData& trackData);
                 bool goodTrack(CosmicTrack* track);
                 float pointToLineDCA(CosmicTrack* track, StrawHit hit);
 		void DriftCorrection(CosmicTrackFinderData& trackData);
 		
-
-                float EvalWeight  (const ComboHit& Hit, const CosmicTrack& track);
+                
                 const Tracker*            _tracker;
     		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
                 
@@ -87,24 +90,20 @@ namespace mu2e
   		bool use_track(double length) const;
     		void setOutlier(ComboHit&) const;
                 float hitWeight(ComboHit const& hhit) const;
-                int _dim; //dimensions of fit
                 unsigned _Npara;
 		int _diag;
 		int _mcdiag;
     		int _debug;		    // debug level
                 StrawHitFlag _useflag, _dontuseflag;
-	        unsigned _minresid;
     		unsigned      _minnsh;  // minimum # of StrawHits
     		unsigned _minCHHits; // minimum # of CH hits - should be at least 2 for fit to work....
 		unsigned _n_outliers; //number of significant outliers/number of hits in track....helps with multiplicity(?)
-		float _D_error; //error change below which we consider track "converged"
-    		float _maxresid; // max allowed pull which a hit can have to be classed as "good"
     		unsigned _maxniter; // maxium # of iterations to global minimum   
-		float _maxpull; //maximum allowed hit pull (res/reserror)                
+		float _maxpull; //maximum allowed hit pull (res/reserror)             
     		float _maxd; // maximum distance in hits to begin fit
 		float _maxDOCA; //max allowed DOCA to allow hit into fit
     		float _maxchi2; //maximum allowed chi2
-		
+		float _max_chi2_change;
     
   };//end Fit class
 

@@ -131,8 +131,8 @@ BEGIN_PROLOG
 
 CosmicFitDisplay : {
 	module_type : CosmicFitDisplay
-	ComboHitCollection : "makeSH"
-        _chtag : "makeSH"
+	ComboHitCollection : "makePH"
+        _chtag : "makePH"
         _tctag : TimeClusterFinderCosmics
         _sttag : CosmicTrackFinder
         doDisplay            : true

@@ -38,7 +38,6 @@ namespace ParametricFit{
 	XYZVec PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
 
           double tMin = GettMin(point, starting_point, end_point);
-	 
 	  double POCA_x = starting_point.x() + (end_point.x()-starting_point.x())*tMin;
 	  double POCA_y = starting_point.y() + (end_point.x()-starting_point.y())*tMin;
 	  double POCA_z = starting_point.z() + (end_point.z()-starting_point.z())*tMin;
@@ -50,11 +49,8 @@ namespace ParametricFit{
 	double PointToLineDCA(XYZVec& point, XYZVec& line_starting_point, XYZVec& line_end_point){
 	   double dca;
 	   XYZVec closestPointOnLine=PointToLineCA( point, line_starting_point, line_end_point);
-
-	  //Return magnitude of vector between the two points as DCA
-	
-	  dca =  sqrt((closestPointOnLine-point).Mag2());
-          return dca;
+	   dca =  sqrt((closestPointOnLine-point).Mag2());
+           return dca;
           }
 
         XYZVec ParellelVector(XYZVec lineStartPoint, XYZVec lineEndPoint){
@@ -70,15 +66,12 @@ namespace ParametricFit{
 	
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint)
 	{
-
   	//Get t for given x coord (line eqn: r = r0 + mt)
  	XYZVec gradient = lineEndPoint - lineStartPoint;  
   	double t = ( x - lineStartPoint.x() ) / gradient.x();
-
   	//Use t to get all point coords
   	outputPoint.SetXYZ( x , lineStartPoint.y()+(gradient.y()*t) , lineStartPoint.z()+(gradient.z()*t));
   	return outputPoint;
-
 	}
 
 
@@ -97,12 +90,6 @@ namespace ParametricFit{
 
 	  XYZVec d = p0 - q0;
 
-	  //Closest approach is when magnitude of d is minimized w.r.t. t and s
-	  //These are given by:
-	  //  t_min = [-d.u + (d.v)(u.v)] / [1 - (u.v)^2]
-	  //  s_min = [ d.v - (d.u)(u.v)] / [1 - (u.v)^2]
-
-	  //Pre-compute repeated terms for speed
 	  double u_dot_v = u.Dot(v);
 	  double d_dot_u = d.Dot(u);
 	  double d_dot_v = d.Dot(v);
@@ -130,33 +117,17 @@ namespace ParametricFit{
 {
 	XYZVec closestPointOnFirstLine, closestPointOnSecondLine;
  	bool success = LineToLineCA(firstLineStartPoint, firstLineEndPoint, secondLineStartPoint, secondLineEndPoint, closestPointOnFirstLine, closestPointOnSecondLine);
-
-  
-         dca = success ? sqrt((closestPointOnSecondLine-closestPointOnFirstLine).Mag2()) : -1.;
-         return success;
+        dca = success ? sqrt((closestPointOnSecondLine-closestPointOnFirstLine).Mag2()) : -1.;
+        return success;
 
 }  
 
-/*----------------Initial Error Estimate------------------//
-//    Calculate major and minor error ellipse axes and find projected error for hit//
-//--------------------------- ----------------------------*/
-XYZVec MajorAxis(ComboHit* Hit){
-      XYZVec const& wdir = Hit->wdir();//direction along wire
-      double werr_mag = Hit->wireRes(); //hit major error axis 
-      //std::cout<<"major wdir"<<wdir<<" major mag "<<werr_mag<<std::endl;
-      XYZVec major_axis = werr_mag*wdir;
-      return major_axis;
+int GetDOCASign(XYZVec track_dir, XYZVec point){
+        int sign = (track_dir.y()-point.y() < 0) ?  -1 : 1 ;
+	return sign;
+
 }
 
-XYZVec MinorAxis(ComboHit* Hit){
-    
-      XYZVec const& wdir = Hit->wdir();//direction along wire
-      XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire 
-      double terr_mag = Hit->transRes(); //hit minor error axis
-      //std::cout<<"minor wdir"<<wdir<<" major mag "<<terr_mag<<std::endl;
-      XYZVec minor_axis = terr_mag*wtdir;
-      return minor_axis;
-}
 
 
 
@@ -172,6 +143,20 @@ We require:
 3) y'.x ' = 0 (perp)
 4) y'.z' = 0 (perp)
 */
+
+std::vector<XYZVec>GetAxes(XYZVec TrackDirection){
+	std::vector<XYZVec> AxesList;
+	
+        XYZVec XPrime = ParametricFit::GetXPrime(TrackDirection);
+        XYZVec YPrime = ParametricFit::GetYPrime(XPrime, TrackDirection); 
+        XYZVec XDoublePrime = ParametricFit::GetXDoublePrime(XPrime, YPrime, TrackDirection);
+        XYZVec YDoublePrime = ParametricFit::GetYDoublePrime(XPrime, YPrime, TrackDirection); 
+	//ORDERED X'', Y'', Z' IMPORTANT!!!
+	AxesList.push_back(XDoublePrime);
+	AxesList.push_back(YDoublePrime);
+	AxesList.push_back(TrackDirection);
+	return AxesList;
+}
 XYZVec GetXPrime(XYZVec track_dir){
 	double Ax= abs(track_dir.x());
 	double Ay= abs(track_dir.y());
@@ -189,23 +174,19 @@ XYZVec GetYPrime(XYZVec OrthX, XYZVec track_dir){
 
 }
 
-XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
-	
+XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){	
 	double theta = atan2(XPrime.y(),YPrime.y()); //enforces that X''Dot Y = 0
-	//std::cout<<"Theta "<<theta<<std::endl;
 	XYZVec XDoublePrime = cos(theta)*(XPrime) -1*sin(theta)*(YPrime);
 	return XDoublePrime.Unit();
 }
 
 XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	double theta = atan2(XPrime.y(),YPrime.y());
-	//std::cout<<"Theta "<<theta<<std::endl;
 	XYZVec YDoublePrime = cos(theta)*(YPrime) +sin(theta)*(XPrime);
 	return YDoublePrime.Unit();
 }
 
 void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
-
 	std::cout<<XPrime.y()<<"x'y"<<std::endl;
 	std::cout<<XPrime.Dot(ZPrime)<<"x'z' "<<std::endl;;
 	std::cout<<YPrime.Dot(XPrime) <<"y'x'"<<std::endl;
@@ -213,19 +194,46 @@ void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	
 }
 
-double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime){
+/*----------------Initial Error Estimate------------------//
+//    Calculate major and minor error ellipse axes and find projected error for hit//
+//--------------------------- ----------------------------*/
 
-        double sigma_w_squared = major_axis.Mag2();
+//This function takes charge of the error calculation and calls the others, The list is such that it is consistant with axes so: "0" = X'', "1" = Y'' (and of course not used but "2" =Z'.)//
+std::vector<double> GetErrors(ComboHit* Hit, XYZVec XAxis, XYZVec YAxis){
+	XYZVec major_axis =  MajorAxis(Hit);
+        XYZVec minor_axis =  MinorAxis(Hit);
+        double errX =  HitErrorX(Hit, major_axis, minor_axis, XAxis);
+        double errY =  HitErrorY(Hit, major_axis, minor_axis, YAxis);
+        std::vector<double> ErrorsXY;
+        ErrorsXY.push_back(errX);
+        ErrorsXY.push_back(errY);
+        return ErrorsXY;
+
+}
+XYZVec MajorAxis(ComboHit* Hit){
+      XYZVec const& wdir = Hit->wdir();//direction along wire
+      double werr_mag = Hit->wireRes(); //hit major error axis  
+      XYZVec major_axis = werr_mag*wdir;
+      return major_axis;
+}
+
+XYZVec MinorAxis(ComboHit* Hit){
+      XYZVec const& wdir = Hit->wdir();//direction along wire
+      XYZVec wtdir = Geom::ZDir().Cross(wdir); // transverse direction to the wire 
+      double terr_mag = Hit->transRes(); //hit minor error axis
+      XYZVec minor_axis = terr_mag*wtdir;
+      return minor_axis;
+}
+
+
+double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime){
+        double sigma_w_squared = major_axis.Mag2();      
         double sigma_v_squared = minor_axis.Mag2();
 	double sigma_x_track = sqrt(sigma_w_squared*pow(XPrime.Dot(major_axis.Unit()),2)+sigma_v_squared*pow(XPrime.Dot(minor_axis.Unit()),2));
-	
-	//std::cout<<"minor "<<minor_axis<<"major "<<major_axis<<std::endl;
  	return sigma_x_track;
 }
  
-
 double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec YPrime){
-	
         double sigma_w_squared = major_axis.Mag2();
         double sigma_v_squared = minor_axis.Mag2();
 	double sigma_y_track = sqrt(sigma_w_squared*pow((YPrime.Dot(major_axis.Unit())),2)+sigma_v_squared*pow((YPrime.Dot(minor_axis.Unit())),2));
@@ -243,82 +251,48 @@ Each 2D line has 2 parameters A_0 and A_1 for x and B_0 and B_1 for y.
 A chi2 = sum of (A0+A1zi) - hi.zi / error_i^2  = 0
 Can build 3 matrices for x' and 3 for y'. See documentation for details but alpha = gamma^-1 . beta where alpha are a given 2D 2 parameters.....
 ----------------------------------------------------------------*/
-
-int GetDOCASign(XYZVec track_dir, XYZVec point){
-	
-        int sign = (track_dir.y()-point.y() < 0) ?  -1 : 1 ;
-	return sign;
+double GetHitChi2(double A0, double A1, double errorX, XYZVec point, XYZVec XDoublePrime, XYZVec ZPrime){
+	double chi_i = ((A0*A0))+((A1*A1))*pow(point.Dot(ZPrime),2)+pow(point.Dot(XDoublePrime),2)-2*A0*point.Dot(XDoublePrime)+2*A0*A1*point.Dot(ZPrime)-2*A1*point.Dot(ZPrime)*point.Dot(XDoublePrime);
+	double chi2_i = (chi_i*chi_i)/(errorX*errorX);
+	return chi2_i;
 
 }
-double GetResidualX(double A0, double A1 ,XYZVec XPrime, XYZVec ZPrime, XYZVec point){
+
+double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVec prime_point, double errX, double errY, int DOF){
+	double pullX = (a0+(a1*prime_point.z())-prime_point.x())/errX;
+	double pullY = (b0+(b1*prime_point.z())-prime_point.y())/errY;
+	double chi2 = pullX*pullX + pullY*pullY;
+	return chi2/DOF;
+	}
 	
-	double resid_x = A0 + A1*(point.Dot(ZPrime))-point.Dot(XPrime);	
-	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
-	
+
+double GetResidualX(double A0, double A1 ,XYZVec point_prime){
+	double resid_x = A0 + A1*(point_prime.z())-point_prime.x();	
+	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));	
 }
 
-double GetResidualY( double B0, double B1, XYZVec YPrime, XYZVec ZPrime, XYZVec point){
-	
-	double resid_y = B0 +(B1*(point.Dot(ZPrime))-point.Dot(YPrime) );
-	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
-	
+double GetResidualY( double B0, double B1,  XYZVec point_prime){
+	double resid_y = B0 +(B1*point_prime.z())-point_prime.y();
+	return resid_y;
 }
 
 double GetTotalResidual(double resid_x,double resid_y){
-	return resid_x+resid_y;
-}
-
-double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec ZPrime, XYZVec& point, double DOCA){
-        //XYZVec track_x(track_direction.x(),0,0);
-        XYZVec XPrime = GetXPrime(ZPrime);
-	//XYZVec YPrime = GetYPrime(XPrime, ZPrime);
-	
-	
-        double R = DOCA;
-        double RA2 = Major_Axis.Mag2();
-        double RB2 = Minor_Axis.Mag2();
-        //Phi =  angle between x' and R
-	double Phi = acos((point.Unit()).Dot(XPrime.Unit()));
-	
-	//Theta =  angle between RA and x'i.e. around the vertial direction (polar)
-	double Theta = acos((Major_Axis.Unit()).Dot(XPrime.Unit()));
-	
-	double sigma_R_num =  pow(R,2)*((RA2/2)+(RB2/2)+((RA2+RB2)/2)*cos(2*Phi)*cos(2*Theta));
-	//std::cout<<"sigma N"<<sigma_R_num<<std::endl;
-	
-	double sigma_R_den = (pow(RA2,2)*pow(cos(Theta),2)*pow(sin(Theta),2)+pow(RB2,2)*pow(sin(Theta),2)*pow(cos(Theta),2)+2*RA2*RB2*(pow(cos(Theta),2)+pow(sin(Theta),2)));
-	//std::cout<<"Sigma D "<<sigma_R_den<<std::endl;
-	double sigma_R = sqrt(sigma_R_num/sigma_R_den);
-	std::cout<<" Resid Error "<<sigma_R<<std::endl;
-	return sigma_R;
+	return sqrt(pow(resid_x,2)+pow(resid_y,2));
 }
 
 //-----------------MC Diagnotics--------------------//
 
 double GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec MCX, XYZVec point){
-	
 	double resid_x = A0 + A1*point.Dot(MCTrackDirection)-point.Dot(MCX);	
-
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 
 }
 
 double GetMCResidualY(double B0, double B1, XYZVec MCTrackDirection, XYZVec MCY, XYZVec point){
-
-	double resid_y = B0 + B1*point.Dot(MCTrackDirection)-point.Dot(MCY);	
-	
+	double resid_y = B0 + B1*point.Dot(MCTrackDirection)-point.Dot(MCY);		
 	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
 
 }
-/*-------Convert the 2 fits into full track fit---------*/
-//make a 3D comsic track from the 2 2D lines found from above
-   void Construct3DTrack(StraightTrack* xyLineFit, StraightTrack* zrLineFit, CosmicTrack* track) {
-	
-       //return track;
-
-  }
-
-
 
 
 }//end namespace 

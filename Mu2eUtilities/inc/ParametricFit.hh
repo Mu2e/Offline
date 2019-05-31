@@ -25,39 +25,37 @@ namespace ParametricFit{
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint);
 
 	bool LineToLineCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint, 
-	  XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
-	  XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
-
+	 XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
+	 XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
-        XYZVec MajorAxis(ComboHit* Hit);
-
-	XYZVec MinorAxis(ComboHit* Hit);
+	int GetDOCASign(XYZVec track_dir, XYZVec point);
+	
+       
+	std::vector<XYZVec>GetAxes(XYZVec TrackDirection);
 	XYZVec GetXPrime(XYZVec track_dir);
 	XYZVec GetYPrime(XYZVec OrthX, XYZVec YPrime);
 	XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
 	XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
-	
 	void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
+	
+	std::vector<double> GetErrors(ComboHit* Hit, XYZVec XAxis, XYZVec YAxis);
+	XYZVec MajorAxis(ComboHit* Hit);
+	XYZVec MinorAxis(ComboHit* Hit);
 	double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime);
-
         double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec YPrime);
-        
         double TotalHitError(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime, XYZVec YPrime);
         
-        int GetDOCASign(XYZVec track_dir, XYZVec point);
-       
-        double GetResidualX(double A0, double A1, XYZVec axes, XYZVec track_dir, XYZVec point);
-        double GetResidualY( double B0, double B1, XYZVec axes, XYZVec track_dir, XYZVec point);
         
+        double GetHitChi2(double A0, double A1, double errorX, XYZVec point, XYZVec XDoublePrime, XYZVec ZPrime);
+        double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVec prime_point, double errX, double errY, int DOF);
+        double GetResidualX(double A0, double A1,  XYZVec point);
+        double GetResidualY( double B0, double B1,  XYZVec point);
+        double GetTotalResidual(double resid_x,double resid_y);
 	double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec track_direction, XYZVec& POCA, double DOCA);
         
         double GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec X, XYZVec point);
         double GetMCResidualY(double A0, double A1, XYZVec MCTrackDirection, XYZVec Y, XYZVec point);
-	double Get2DParameter(int i, TMatrixD alpha);	
-
-	TMatrixD GetGamma(double G00, double Gij, double G11);
-
-	TMatrixD GetBeta(double	b0,double b1);
+	
 
 	}
 

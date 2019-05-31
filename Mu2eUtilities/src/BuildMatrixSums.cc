@@ -18,7 +18,7 @@ BuildMatrixSums::BuildMatrixSums(const BuildMatrixSums& S) {
 BuildMatrixSums::~BuildMatrixSums() {
 }
 void BuildMatrixSums::clear(){
-  std::cout<<"Clear...ing"<<std::endl;
+ 
   betaX00 = 0;
   betaX10 = 0;
   gammaX00 = 0;
@@ -31,9 +31,10 @@ void BuildMatrixSums::clear(){
   gammaY11 = 0;
   deltaX = 0;
   deltaY = 0;
+  chi2 = 0;
 }
 void BuildMatrixSums::init(const BuildMatrixSums& S) {
-   std::cout<<"init...."<<std::endl;
+ 
   betaX00 = S.betaX00;
   betaX10 = S.betaX10;
   gammaX00 = S.gammaX00;
@@ -46,66 +47,49 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
   gammaY11 = S.gammaY11;
   deltaX = S.deltaX;
   deltaY = S.deltaY;
+  chi2 = S.chi2;
 }
 
 void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
-	 
-        //if(errX == 0) errX=1;
-        //if(errY ==0) errY =1;
-	betaX00 += point_i.Dot(XPrime)*(1/pow(errX,2));
-        betaX10 += point_i.Dot(ZPrime)*point_i.Dot(XPrime)*(1/pow(errX,2));
+	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));
+	
+        if(errX == 0) return;
+        if(errY ==0) return;
+        
+	betaX00 += (h_Prime.x()/pow(errX,2));
+        betaX10 += (h_Prime.z()*h_Prime.x()*(1/pow(errX,2)));
         
 	//For GammaX:
-	gammaX00 +=1/pow(errX,2);
-        gammaX01  += point_i.Dot(ZPrime)*(1/pow(errX,2));
-	gammaX11 += pow(point_i.Dot(ZPrime),2)*(1/pow(errX,2));
+	gammaX00 +=(1/pow(errX,2));
+        gammaX01 += (h_Prime.z()*(1/pow(errX,2)));
+	gammaX11 += (pow(h_Prime.z(),2)*(1/pow(errX,2)));
 	
 	//For BetaY:
-	betaY00 += point_i.Dot(YPrime)/pow(errY,2);
-        betaY10 += point_i.Dot(ZPrime)*point_i.Dot(YPrime)/pow(errY,2);
-    
-	//For GammaX:
-	gammaY00 +=1/pow(errY,2);
-        gammaY01  += point_i.Dot(ZPrime)*(1/pow(errY,2));
-	gammaY11 += pow(point_i.Dot(ZPrime),2)*(1 /pow(errY,2));
-	
-        //Deltas:
-        deltaX += pow(point_i.Dot(XPrime),2)*(1/pow(errX,2));
-	deltaY += pow(point_i.Dot(YPrime),2)*(1/pow(errY,2));
-	
-}
-
-void BuildMatrixSums::removePoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime, double errX, double errY){
-	//if(errX == 0) errX=1;
-        //if(errY ==0) errY =1;
-	betaX00 -= point_i.Dot(XPrime)*(1/pow(errX,2));
-        betaX10 -= point_i.Dot(ZPrime)*point_i.Dot(XPrime)*(1/pow(errX,2));
+	betaY00 += (h_Prime.y()/pow(errY,2));
+        betaY10 += (h_Prime.z()*h_Prime.y()*(1/pow(errY,2)));
         
 	//For GammaX:
-	gammaX00 -=1/pow(errX,2);
-        gammaX01 -= point_i.Dot(ZPrime)*(1/pow(errX,2));
-	gammaX11 -= pow(point_i.Dot(ZPrime),2)*(1/pow(errX,2));
 	
-	//For BetaY:
-	betaY00 -= point_i.Dot(YPrime)/pow(errY,2);
-        betaY10 -= point_i.Dot(ZPrime)*point_i.Dot(YPrime)/pow(errY,2);
-    
-	//For GammaX:
-	gammaY00 -=1/pow(errY,2);
-        gammaY01 -= point_i.Dot(ZPrime)*(1/pow(errY,2));
-	gammaY11 -= pow(point_i.Dot(ZPrime),2)*(1 /pow(errY,2));
+	gammaY00 +=(1/pow(errY,2));	
+        gammaY01 += (h_Prime.z()*(1/pow(errY,2)));
+	gammaY11 += (pow(h_Prime.z(),2)*(1 /pow(errY,2)));
 	
         //Deltas:
-        deltaX -= pow(point_i.Dot(XPrime),2)*(1/pow(errX,2));
-	deltaY -= pow(point_i.Dot(YPrime),2)*(1/pow(errY,2));
-	 
+        deltaX += (pow(h_Prime.x(),2)*(1/pow(errX,2)));
+	deltaY += (pow(h_Prime.y(),2)*(1/pow(errY,2)));
+	
+	
 }
 
 
 double BuildMatrixSums::Get2DParameter(int i, TMatrixD Alpha){
-        
 	return Alpha[i][0];
 
+}
+
+void BuildMatrixSums::SetChi2(double newchi ){
+	chi2 = newchi;
+	
 }
 
 
@@ -115,7 +99,7 @@ TMatrixD BuildMatrixSums::GetGammaX(){
 	Gamma[1][0] = gammaX01;
 	Gamma[0][1] = gammaX01;
 	Gamma[1][1] = gammaX11;
-	//std::cout<<"gamma "<<gammaX00<<" "<<gammaX01<<" "<<gammaX11<<std::endl;
+	
 	return Gamma;
 }
 
@@ -123,7 +107,7 @@ TMatrixD BuildMatrixSums::GetBetaX(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaX00;
 	Beta[1][0] = betaX10;
-	//std::cout<<"Beta "<<betaX00<<" "<<betaX10<<std::endl;
+	
 	return Beta;
 }
 
@@ -150,7 +134,7 @@ TMatrixD BuildMatrixSums::GetGammaY(){
 	Gamma[1][0] = gammaY01;
 	Gamma[0][1] = gammaY01;
 	Gamma[1][1] = gammaY11;
-	//std::cout<<"gamma "<<gammaY00<<" "<<gammaY01<<" "<<gammaY11<<std::endl;
+	
 	return Gamma;
 }
 
@@ -158,14 +142,15 @@ TMatrixD BuildMatrixSums::GetBetaY(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaY00;
 	Beta[1][0] = betaY10;
-	//std::cout<<"Beta "<<betaY00<<" "<<betaY10<<std::endl;
+	
 	return Beta;
 }
 
 TMatrixD BuildMatrixSums::GetAlphaY(){
         TMatrixD Gamma = GetGammaY();
 	TMatrixD Beta  = GetBetaY();
-	double* det = NULL;                  
+	double* det = NULL; 
+	                 
 	try {
     	        Gamma.Invert(det);
     
@@ -175,13 +160,13 @@ TMatrixD BuildMatrixSums::GetAlphaY(){
 		    message << "Error in Alpha : Cannot fit due to singular matrix error on inversion!" << std::endl;
           } 
         TMatrixD Alpha(Gamma*Beta);
-        //std::cout<<"alpha "<<Alpha[0][0]<<" "<<Alpha[1][0]<<" "<<Alpha[1][1]<<std::endl;
-	return Alpha;
+       return Alpha;
 }
 
 double BuildMatrixSums::GetChi2X(){
 	TMatrixD GammaX = GetGammaX();
 	TMatrixD BetaX  = GetBetaX();
+	//TMatrixD AlphaX = GetAlphaX();
         double* det = NULL;                  
 	try {
     	        GammaX.Invert(det);
@@ -190,19 +175,18 @@ double BuildMatrixSums::GetChi2X(){
 		    message << "Error in Chi2X : Cannot fit due to singular matrix error on inversion!" << std::endl;
           } 
         TMatrixD DeltaX(1,1);
-        DeltaX[0][0] = deltaX;
-        
+        DeltaX[0][0] = deltaX;   
 	TMatrixD Betat(BetaX);
         Betat.T(); 
         TMatrixD Gammat(GammaX);
         Gammat.T(); 
-
 	TMatrixD chi2X(DeltaX-(Betat*Gammat*BetaX));
-	//std::cout<<"Chi X "<<chi2X[0][0]<<std::endl;
+	
 	return chi2X[0][0];
 }
 
 double BuildMatrixSums::GetChi2Y(){
+
 	TMatrixD GammaY = GetGammaY();
 	TMatrixD BetaY  = GetBetaY();
         double* det = NULL;                  
@@ -214,23 +198,20 @@ double BuildMatrixSums::GetChi2Y(){
 		    std::stringstream message;
 		    message << "Error in Chi2Y : Cannot fit due to singular matrix error on inversion!" << std::endl;
         } 
+       
         TMatrixD DeltaY(1,1);
-
-        DeltaY[0][0] = deltaY;
+        DeltaY[0][0] = deltaY;	
         TMatrixD Betat(BetaY);
-        Betat.T(); 
-        TMatrixD Gammat(GammaY);
+        Betat.T(); 	
+        TMatrixD Gammat(GammaY);       
         Gammat.T(); 
-	
-	TMatrixD chi2Y(DeltaY-(Betat*Gammat*BetaY));
-	//std::cout<<"Chi Y "<<chi2Y[0][0]<<std::endl;
+	TMatrixD chi2Y(DeltaY-(Betat*Gammat*BetaY));	
 	return chi2Y[0][0];
 }
 
 double BuildMatrixSums::GetTotalChi2(){
 	double chi2X = GetChi2X();
         double chi2Y = GetChi2Y();
-        //std::cout<<"Total "<<chi2X+chi2Y<<std::endl;
         return chi2Y+chi2X;
 }
 

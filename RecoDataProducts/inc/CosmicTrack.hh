@@ -7,21 +7,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include<vector>
 #include<bitset>
-/*
 
-Cosmic track is parameterised by a paramteric equatrion r(t) were t is a vector of arbituary parameters.
-
-e.g. r(t) = 	   x0	      a
-		[  y0 ] + t*[ b ]    assuming 3D with 4 parameters then: 
-		   z0         c	      
-(first part is point on line, second is direction)
-Assume all pass through vertical (assumption for cosmics ...not true)
-r(t) = 	   x0	      a
-	[  1 ] +  t*[ 0 ]    assuming 3D with 4 parameters then: 
-	   z0 	      b     
-
-our parameters are then x0, z0, a and b
-*/
 using namespace std;
 
 namespace mu2e {
@@ -69,8 +55,8 @@ namespace mu2e {
 	}throw "Error: parameter list not long enough";
      }
      
-    double get_track_length() const {return _track_length;}
-    XYZVec get_track_equation() const{return _track_equation;}
+    //double get_track_length() const {return _track_length;}
+    //XYZVec get_track_equation() const{return _track_equation;}
     XYZVec get_track_direction() const{return _track_direction;}
     XYZVec get_track_position() const{return _track_position;}
     XYZVec get_initial_track_direction() const{ return _initial_track_direction;}
@@ -84,13 +70,19 @@ namespace mu2e {
     XYZVec getinitZPrime() const { return _initZPrime;}
     
     double GetSagitta() const {return _Sagitta;}
-    std::vector<double> get_MC_residualX() const {return _res_MC_X;}
-    std::vector<double> get_MC_residualY() const {return _res_MC_Y;}
+    //std::vector<double> get_MC_residualX() const {return _res_MC_X;}
+    //std::vector<double> get_MC_residualY() const {return _res_MC_Y;}
     std::vector<double> get_init_fit_residualsX() const { return _initfit_residualsX; }
     std::vector<double> get_final_fit_residualsX() const { return _finalfit_residualsX; }
     std::vector<double> get_init_fit_residual_errorsX() const { return _initfit_residual_errorsX; }
     std::vector<double> get_final_fit_residual_errorsX() const { return _finalfit_residual_errorsX; }
     
+    std::vector<double> get_init_fit_pullsX() const { return  _initfit_pullsX; }
+    std::vector<double> get_final_fit_pullsX() const { return _finalfit_pullsX; }
+    std::vector<double> get_init_fit_pullsY() const { return  _initfit_pullsY; }
+    std::vector<double> get_final_fit_pullsY() const { return _finalfit_pullsY; }
+    
+   
     std::vector<double> get_final_fit_residualsY() const { return _finalfit_residualsY; }
     std::vector<double> get_final_fit_residual_errorsY() const { return _finalfit_residual_errorsY; }  
     std::vector<double> get_init_fit_residualsY() const { return _initfit_residualsY; }
@@ -103,7 +95,7 @@ namespace mu2e {
     std::vector<double> get_init_hit_errorsTotal() const{ return _inithit_errorsTotal;}
     
     std::vector<int> get_iter(){return _niters;}
-    std::vector<ComboHit*> get_outliers()const {return _outliers;}
+    //std::vector<ComboHit*> get_outliers()const {return _outliers;}
     
     XYZVec getMCDirection() { return _MCDirection;}
 //---------------------------------------//  
@@ -114,12 +106,13 @@ namespace mu2e {
 //-------------Modiffiers---------------//
    
     void set_N(int N){_Nhits = N;}
-    void set_track_length(double length) { _track_length = length; }
+    //void set_track_length(double length) { _track_length = length; }
     void set_parameters(double a0,double a1, double b0, double b1){ 
 	_a0=a0;
 	_a1=a1;
 	_b0=b0;
 	_b1=b1;
+	_track_parameters.erase(_track_parameters.begin(), _track_parameters.end());
         _track_parameters.push_back(a0);
         _track_parameters.push_back(a1);
 	_track_parameters.push_back(b0);
@@ -169,8 +162,8 @@ namespace mu2e {
     
     void set_mom(XYZVec mom){_track_mommentum=mom;}
      
-    void set_MC_residualX(double resX){_res_MC_X.push_back(resX);}
-    void set_MC_residualY(double resY){_res_MC_Y.push_back(resY);}
+    //void set_MC_residualX(double resX){_res_MC_X.push_back(resX);}
+    //void set_MC_residualY(double resY){_res_MC_Y.push_back(resY);}
     
     void set_init_fit_residualsX(double residual) { _initfit_residualsX.push_back(residual); }
     void set_final_fit_residualsX(double residual) { _finalfit_residualsX.push_back(residual); }
@@ -182,6 +175,12 @@ namespace mu2e {
     void set_init_fit_residual_errorsY(double residual_err) { _initfit_residual_errorsY.push_back(residual_err); }
     void set_final_fit_residual_errorsY(double residual_err) { _finalfit_residual_errorsY.push_back(residual_err); }
      
+    void set_init_pullsX(double residual) { _initfit_pullsX.push_back(residual); }
+    void set_final_pullsX(double residual) { _finalfit_pullsX.push_back(residual); }
+    void set_init_pullsY(double residual) { _initfit_pullsY.push_back(residual); }
+    void set_final_pullsY(double residual) { _finalfit_pullsY.push_back(residual); }
+    
+    
     void set_hit_errorsX(double hit_errorX){_hit_errorsX.push_back(hit_errorX);}
     void set_hit_errorsY(double hit_errorY){_hit_errorsY.push_back(hit_errorY);}
     
@@ -190,7 +189,7 @@ namespace mu2e {
     
     void set_cov(int r, int c, double element){ _cov_mat[r][c] = element;}
     
-    void add_outlier(ComboHit* hit){_outliers.push_back(hit);}
+    //void add_outlier(ComboHit* hit){_outliers.push_back(hit);}
     
     void set_niter(int iter){_niters.push_back(iter);}
     
@@ -211,7 +210,7 @@ namespace mu2e {
     //Track info:
     std::vector<double> _track_parameters; //FIXME NEED TO BE 4D vector.....
     std::vector<double> _initial_track_parameters; 
-    double _track_length;
+    //double _track_length;
     double _Sagitta;//TODO
     XYZVec _track_mommentum;//TODO
    
@@ -259,18 +258,22 @@ namespace mu2e {
     std::vector<double> _inithit_errorsTotal;
     std::vector<double> _finalhit_errorsTotal;
     
+    std::vector<double> _initfit_pullsY;
+    std::vector<double> _initfit_pullsX;
+    std::vector<double> _finalfit_pullsY;
+    std::vector<double> _finalfit_pullsX;
     
     std::vector<double> _hit_errorsX;
     std::vector<double> _hit_errorsY;
     
     std::vector<std::vector<double> > _cov_mat;
-    std::vector<ComboHit*> _outliers;
+    //std::vector<ComboHit*> _outliers;
     
     std::vector<int> _niters;
     //MC Info:
     XYZVec _MCDirection;
-    std::vector<double> _res_MC_X;
-    std::vector<double> _res_MC_Y;
+    //std::vector<double> _res_MC_X;
+    //std::vector<double> _res_MC_Y;
      
   };
 }
