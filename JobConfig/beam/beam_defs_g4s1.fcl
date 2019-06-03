@@ -1,5 +1,6 @@
-// Lisa Goodenough, March 2018
-// modified version of beam_g4s1.fcl for running in MT mode
+// Yuri Oksuzian, March 2019
+// Include this for beam_g4s1MT_phase1.fcl
+// Turned off extinction monitor output streams
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -238,6 +239,7 @@ physics : {
       g4status: {
          module_type: FilterStatusG4
          input: "g4run"
+	 maxAcceptedStatus: 1  #  status 2 and above means StepPointMCCollection may have non-dereferencable pointers
       }
 
       g4consistent: {
