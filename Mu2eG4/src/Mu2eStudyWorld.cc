@@ -20,13 +20,14 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
+#include "art/Utilities/make_tool.h"
 
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/constructStudyEnv_v001.hh"
-#include "Mu2eG4/inc/constructStudyEnv_v002.hh"
-#include "Mu2eG4/inc/constructStudyEnv_v003.hh"
-#include "Mu2eG4/inc/constructStudyEnv_v004.hh"
+// #include "Mu2eG4/inc/constructStudyEnv_v001.hh"
+// #include "Mu2eG4/inc/constructStudyEnv_v002.hh"
+// #include "Mu2eG4/inc/constructStudyEnv_v003.hh"
+// #include "Mu2eG4/inc/constructStudyEnv_v004.hh"
 #include "Mu2eG4/inc/Mu2eStudyWorld.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/MaterialFinder.hh"
@@ -81,7 +82,7 @@ namespace mu2e {
   }
 
   Mu2eStudyWorld::Mu2eStudyWorld(const fhicl::ParameterSet& pset,
-                                 SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
+				       SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(pset)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
@@ -154,21 +155,17 @@ namespace mu2e {
                                           placePV, 
                                           doSurfaceCheck));
 
-    const int seVer = _config.getInt("mu2e.studyEnvVersion",0);
+    std::string simulatedDetector = _geom.pset().get<std::string>("simulatedDetector.tool_type");
 
-    if ( seVer == 1 ) {
-      constructStudyEnv_v001(boxInTheWorldVInfo, _config);
-    } else if ( seVer == 2 ) {
-      constructStudyEnv_v002(boxInTheWorldVInfo, _config);
-    } else if ( seVer == 3 ) {
-      constructStudyEnv_v003(boxInTheWorldVInfo, _config);
-    } else if ( seVer == 4 ) {
-      constructStudyEnv_v004(boxInTheWorldVInfo, _config);
-    } else {
-      throw cet::exception("CONFIG")
-        << __func__ << ": unknown study environment: " << seVer << "\n";
+    if (simulatedDetector != "Mu2e") {
+    
+      constructEnv_ = art::make_tool<InitEnvToolBase>(_geom.pset().get<fhicl::ParameterSet>("simulatedDetector"));
+
+      if (constructEnv_) constructEnv_->construct(boxInTheWorldVInfo,_config);
+      else {
+	throw cet::exception("CONFIG") << __func__ << ": unknown study environment: " << simulatedDetector << "\n";
+      }
     }
-
     if ( _verbosityLevel > 0) {
       cout << __func__ << " world half dimensions     : " 
            << worldBoundaries[0] << ", "
@@ -176,6 +173,11 @@ namespace mu2e {
            << worldBoundaries[2] << ", "
            << endl;
     }
+
+    // if      ( seVer == 1 ) constructStudyEnv_v001(boxInTheWorldVInfo, _config);
+    // else if ( seVer == 2 ) constructStudyEnv_v002(boxInTheWorldVInfo, _config);
+    // else if ( seVer == 3 ) constructStudyEnv_v003(boxInTheWorldVInfo, _config);
+    // else if ( seVer == 4 ) constructStudyEnv_v004(boxInTheWorldVInfo, _config);
 
     //    sdHelper_->instantiateLVSDs(_config); // needs work in the study case
 
@@ -210,7 +212,7 @@ namespace mu2e {
   //    volumes of interest.
   // The net result is specifying a step limiter for pairs of (logical volume, particle species).
   //
-  void Mu2eStudyWorld::constructStepLimiters(){
+  void Mu2eStudyWorld::constructStepLimiters() {
 
     // Maximum step length, in mm.
 

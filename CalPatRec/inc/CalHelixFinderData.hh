@@ -52,7 +52,7 @@ namespace mu2e {
     
     enum { kMaxResidIndex = 500 };
 
-    constexpr static uint16_t        kNMaxChHits = 150;
+    constexpr static uint16_t        kNMaxChHits = 500;
 
     struct Diag_t {
       int       loopId_4;    // fData[4]

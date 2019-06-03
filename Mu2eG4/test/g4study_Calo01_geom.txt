@@ -7,7 +7,7 @@
 
 // Units are mm, MeV
 
-#include "Mu2eG4/test/g4studyGeom.txt"
+#include "Mu2eG4/test/g4study_Box_geom.txt"
 
 // Change the name.
 string detector.name           = "g4studyCalo_01";
@@ -17,7 +17,7 @@ bool g4.doSurfaceCheck         = true;
 
 // version of the target geometry configuration
 
-int            mu2e.studyEnvVersion      = 3;
+// int            mu2e.studyEnvVersion      = 3;
 
 // the "World Box"
 
