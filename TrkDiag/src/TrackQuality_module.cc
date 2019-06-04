@@ -14,7 +14,8 @@
 #include "art/Utilities/make_tool.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkDiag/inc/TrkTools.hh"
+#include "TrkDiag/inc/InfoStructHelper.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
@@ -44,6 +45,8 @@ namespace mu2e
     art::InputTag _kalSeedTag;
 
     MVATools* _trkqualmva;
+
+    InfoStructHelper _infoStructHelper;
   };
 
   TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
@@ -74,15 +77,14 @@ namespace mu2e
       if (i_kalSeed.status().hasAllProperties(goodfit)) {
 
 	// fill the hit count variables
-	unsigned nhits = 0; unsigned nactive = 0; unsigned ndouble = 0; unsigned ndactive = 0; unsigned nnullambig = 0; unsigned nmat=0; unsigned nmatactive=0;
-	double radlen(0.0);
-	TrkTools::countHits(i_kalSeed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
-	TrkTools::countStraws(i_kalSeed.straws(), nmat, nmatactive, radlen);
-	trkqual[TrkQual::nactive] = nactive;
-	trkqual[TrkQual::factive] = (double)nactive / nhits;
-	trkqual[TrkQual::fdouble] = (double)ndactive / nactive;
-	trkqual[TrkQual::fnullambig] = (double)nnullambig / nactive;
-	trkqual[TrkQual::fstraws] = (double)nmatactive / nactive;
+	TrkInfo tinfo;
+	_infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
+	_infoStructHelper.fillTrkInfoStraws(i_kalSeed, tinfo);
+	trkqual[TrkQual::nactive] = tinfo._nactive;
+	trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
+	trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;
+	trkqual[TrkQual::fnullambig] = (double) tinfo._nnullambig / tinfo._nactive;
+	trkqual[TrkQual::fstraws] = (double)tinfo._nmatactive / tinfo._nactive;
 
 	// fill fit consistency and t0 variables
 	if (i_kalSeed.fitConsistency() > FLT_MIN) {

@@ -147,6 +147,8 @@ namespace mu2e {
 
     TrkInfo track;
     kdiag.fillTrkInfo(trk.get(), track);
+    TrkFitInfo track_ent;
+    kdiag.fillTrkFitInfo(trk.get(), track_ent);
 
     // _status > 0 the means code found a track
     if(track._status <= 0) {
@@ -159,7 +161,7 @@ namespace mu2e {
       return TrkCutNumber::quality;
     }
 
-    const helixpar& th = track._ent._fitpar;
+    const helixpar& th = track_ent._fitpar;
     td_->Fill(th._td, wh.weight());
     if((th._td < cuts_.tdmin())||(th._td > cuts_.tdmax())) {
       return TrkCutNumber::pitch;
@@ -224,7 +226,7 @@ namespace mu2e {
 
     //----------------------------------------------------------------
     // The analysis momentum window cut
-    const double fitmom = track._ent._fitmom;
+    const double fitmom = track_ent._fitmom;
     momentum_->Fill(fitmom, wh.weight());
     if((fitmom < cuts_.pmin())||(fitmom > cuts_.pmax())) {
       return TrkCutNumber::momentum;

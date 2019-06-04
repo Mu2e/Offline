@@ -33,6 +33,7 @@ namespace mu2e {
     float sinDip() const { return tanDip()*cosDip(); }
     // simple geometric functions; can't do momentum as we don't know BField here
     void position(float fltlen,XYZVec& pos) const; 
+    void position(const XYZVec& pos, float& fltlen) const; // to go from XYZVec to fltlen
     void direction(float fltlen,XYZVec& pos) const; 
     float phi(float fltlen) const; // local azimuthal angle 
     float zFlight(float zpos) const { return (zpos-z0())/sinDip(); } // local flight distance for a given z value

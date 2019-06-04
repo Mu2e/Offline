@@ -48,7 +48,6 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
-#include "TrkDiag/inc/TrkQualTestInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -134,7 +133,7 @@ namespace mu2e {
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
-    TrkQualTestInfo _trkqualTest;
+
     // helper functions
     void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
@@ -219,7 +218,6 @@ namespace mu2e {
 
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
-      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
     }
   }
 
@@ -548,7 +546,6 @@ namespace mu2e {
     _demcmid.reset();
     _demcxit.reset();
     _wtinfo.reset();
-    _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
     // clear vectors

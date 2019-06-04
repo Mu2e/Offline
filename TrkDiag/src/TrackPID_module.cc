@@ -18,7 +18,7 @@
 #include "canvas/Utilities/InputTag.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkDiag/inc/TrkTools.hh"
+#include "TrkDiag/inc/InfoStructHelper.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
@@ -120,9 +120,9 @@ namespace mu2e {
 	  tchpid.setMVAValue(_tchmva->evalMVA(tchpid.values()));
 	  tchpid.setMVAStatus(MVAStatus::calculated);
 	}
-	tchpcol->push_back(tchpid);
-	rqcol->push_back(RecoQual(tchpid.status(),tchpid.MVAValue()));
       }
+      tchpcol->push_back(tchpid);
+      rqcol->push_back(RecoQual(tchpid.status(),tchpid.MVAValue()));
     }
     // put the output products into the event
     event.put(move(tchpcol));
