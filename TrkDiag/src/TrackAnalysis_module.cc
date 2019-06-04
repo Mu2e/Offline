@@ -331,7 +331,7 @@ namespace mu2e {
 	  if (tch != 0) {
 	    --n_krep_active_hits; // nactive in TrkQual does not include the TrkCaloHit
 	  }
-	  int n_tqual_active_hits = tqual[TrkQual::nactive];
+	  int n_tqual_active_hits = (int)rint(tqual[TrkQual::nactive]);
 	  if (n_krep_active_hits != n_tqual_active_hits) {
 	    throw cet::exception("TrackAnalysis") << "TrkQual nactive (" << n_tqual_active_hits << ") does not match KalRep nactive (" << n_krep_active_hits << ")" << std::endl;
 	  }

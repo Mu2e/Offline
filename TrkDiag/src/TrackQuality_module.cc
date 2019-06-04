@@ -18,6 +18,7 @@
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
+#include "RecoDataProducts/inc/RecoQual.hh"
 // C++
 #include <iostream>
 #include <fstream>
@@ -51,6 +52,7 @@ namespace mu2e
 
   {
     produces<TrkQualCollection>();
+    produces<RecoQualCollection>();
     
     _trkqualmva->initMVA();
   }
@@ -58,6 +60,7 @@ namespace mu2e
   void TrackQuality::produce(art::Event& event ) {
     // create output
     unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
+    unique_ptr<RecoQualCollection> rqcol(new RecoQualCollection());
 
     // get the KalSeeds
     art::Handle<KalSeedCollection> kalSeedHandle;
@@ -112,19 +115,21 @@ namespace mu2e
 	  trkqual[TrkQual::d0] = -1*charge*bestkseg->helix().d0();
 	  trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
 	  
-	  trkqual.setMVAStatus(TrkQual::calculated);
+	  trkqual.setMVAStatus(MVAStatus::calculated);
 	  trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values()));
+
 	}
 	else {
-	  trkqual.setMVAStatus(TrkQual::filled);
+	  trkqual.setMVAStatus(MVAStatus::filled);
 	}
       }
-
       tqcol->push_back(trkqual);
+      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue()));
     }
 
     // put the output products into the event
     event.put(move(tqcol));
+    event.put(move(rqcol));
   }  
 }// mu2e
 

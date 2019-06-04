@@ -22,6 +22,7 @@
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
+#include "RecoDataProducts/inc/RecoQual.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // C++
@@ -67,6 +68,7 @@ namespace mu2e {
     _tchmva(new MVATools(config().MVAConfig()))
   {
     produces<TrkCaloHitPIDCollection>();
+    produces<RecoQualCollection>();
     _tchmva->initMVA();
     if(_debug> 0)_tchmva->showMVA();
   }
@@ -75,6 +77,7 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::Calorimeter> calo;
     // create output
     unique_ptr<TrkCaloHitPIDCollection> tchpcol(new TrkCaloHitPIDCollection());
+    unique_ptr<RecoQualCollection> rqcol(new RecoQualCollection());
     // get the KalSeeds
     art::Handle<KalSeedCollection> kalSeedHandle;
     event.getByLabel(_kalSeedTag, kalSeedHandle);
@@ -82,7 +85,7 @@ namespace mu2e {
 
     for (const auto& kseed : kalSeeds) {
       TrkCaloHitPID tchpid;
-      tchpid.setMVAStatus(TrkCaloHitPID::unset);
+      tchpid.setMVAStatus(MVAStatus::unset);
       tchpid.setMVAValue(-1.0);
 
       static TrkFitFlag goodfit(TrkFitFlag::kalmanOK);
@@ -115,13 +118,15 @@ namespace mu2e {
 	  tchpid[TrkCaloHitPID::DeltaT] = tchs.t0().t0()-tchs.time()- std::min((float)200.0,std::max((float)0.0,tchs.hitLen()))*0.005 - _dtoffset;
 	  // evaluate the MVA
 	  tchpid.setMVAValue(_tchmva->evalMVA(tchpid.values()));
-	  tchpid.setMVAStatus(TrkCaloHitPID::calculated);
+	  tchpid.setMVAStatus(MVAStatus::calculated);
 	}
 	tchpcol->push_back(tchpid);
+	rqcol->push_back(RecoQual(tchpid.status(),tchpid.MVAValue()));
       }
     }
     // put the output products into the event
     event.put(move(tchpcol));
+    event.put(move(rqcol));
   }
 }// mu2e
 

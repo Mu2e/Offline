@@ -28,6 +28,7 @@
 #include <iostream>
 #include <iomanip>
 #include <Rtypes.h>
+#include "GeneralUtilities/inc/MVAStatus.hh"
 namespace mu2e {
 
   template < class DETAIL > class MVAStruct : public DETAIL {
@@ -35,10 +36,8 @@ namespace mu2e {
 
     typedef typename DETAIL::MVA_varindex MVA_varindex;
     typedef typename DETAIL::map_type map_type;
-//    typedef std::array<double,DETAIL::n_vars> vcoll_type;
-    typedef std::vector<Double_t> vcoll_type;
+    typedef std::vector<Float_t> vcoll_type;
 
-    enum MVA_status {unset=0,filled,calculated,failed}; 
     // default Constructor 
     explicit MVAStruct() : _values(DETAIL::n_vars,0.0){
       reset();
@@ -52,41 +51,42 @@ namespace mu2e {
     // Accept compiler generated d'tor, copy c'tor and copy assignment, equivalence, etc.
     //
     // indexed accessor
-    double varValue(MVA_varindex vind) const { return _values[vind]; }
+    Float_t varValue(MVA_varindex vind) const { return _values[vind]; }
     // named accessor
-    double varValue(std::string vname) const {
+    Float_t varValue(std::string vname) const {
       MVA_varindex vind = findIndexByNameOrThrow(vname);
       return varValue(vind);
     }
-    double operator [] (MVA_varindex vindex) const {
+    Float_t operator [] (MVA_varindex vindex) const {
       return _values[vindex];
     }
     // struct accessor
     const vcoll_type& values() const { return _values; }
     // output accessor
-    Double_t MVAOutput() const { return _mvaout; }
-    MVA_status status() const { return _status; }
+    Float_t MVAOutput() const { return _mvaout; }
+    Float_t MVAValue() const { return _mvaout; }
+    MVAStatus status() const { return _status; }
     // The number of input variables
     static size_t size(){ return DETAIL::varNames().size(); }
     // repeat the DETAIL static functions as they are not inherited
     static map_type const& varNames() { return DETAIL::varNames(); }
     static std::string varName(MVA_varindex vindex) { return DETAIL::varName(vindex); }
     // allow setting values
-    void setValue(MVA_varindex vind,double val) { _values[vind] = val; }
-    void setValue(std::string vname,double val) {
+    void setValue(MVA_varindex vind,Float_t val) { _values[vind] = val; }
+    void setValue(std::string vname,Float_t val) {
       MVA_varindex vind = findIndexByNameOrThrow(vname);
       setValue(vind,val);
     }
-    double& operator [] (MVA_varindex vindex) {
+    Float_t& operator [] (MVA_varindex vindex) {
       return _values[vindex];
     }
-    void setMVAValue(double value) { _mvaout = value; }
-    void setMVAStatus(MVA_status status) { _status = status; }
+    void setMVAValue(Float_t value) { _mvaout = value; }
+    void setMVAStatus(MVAStatus status) { _status = status; }
     void reset(){
       for(size_t ivar=0;ivar < DETAIL::n_vars; ++ivar)
 	_values[ivar] = 0.0;
       _mvaout = -1.0;
-      _status = unset;
+      _status = MVAStatus::unset;
     }
 
   private:
@@ -95,8 +95,8 @@ namespace mu2e {
     // flag whether the variable is used in the MVA calculation or not.  Needed?  FIXME!
 //    std::array<bool,DETAIL::n_vars> _used;
     // MVA output
-    Double_t _mvaout;
-    MVA_status _status; // status of MVA calclulation
+    Float_t _mvaout;
+    MVAStatus _status; // status of MVA calclulation
 
     MVA_varindex findIndexByNameOrThrow( std::string const& name ) const {
       typename map_type::const_iterator j = varNames().find(name);

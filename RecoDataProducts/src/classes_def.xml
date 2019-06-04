@@ -186,6 +186,10 @@
  <class name="mu2e::TrkCaloHitPIDDetail"/>
  <class name="art::Wrapper<mu2e::TrkCaloHitPIDCollection>"/>
 
+ <class name="mu2e::RecoQual"/>
+ <class name="mu2e::RecoQualCollection"/>
+ <class name="art::Wrapper<mu2e::RecoQualCollection>"/>
+ 
  <class name="mu2e::AlgorithmID"/>
  <class name="mu2e::AlgorithmIDCollection"/>
  <class name="art::Ptr<mu2e::AlgorithmID>"/>

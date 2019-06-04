@@ -43,9 +43,9 @@
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
 #include "RecoDataProducts/inc/KalSeed.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
 #include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
+#include "RecoDataProducts/inc/RecoQual.hh"
 #include "RecoDataProducts/inc/AlgorithmID.hh"
 #include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 
