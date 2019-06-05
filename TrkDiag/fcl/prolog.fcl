@@ -320,12 +320,37 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 
 # Analysis from reco output: beta protype!
 # DeM only for now
-  DeM : { input : "KFFDeM" branch : "de" trkqual : "TrkQualDeM" fillMC : true }
-  UeM : { input : "KFFUeM" branch : "ue" }
-  DmuM : { input : "KFFDmuM" branch : "dm" }
-  DeP : { input : "KFFDeP" branch : "de" trkqual : "TrkQualDeP"}
-  UeP : { input : "KFFUeP" branch : "ue" }
-  DmuP : { input : "KFFDmuP" branch : "dm" }
+  DeM : { input : "KFF" 
+      	  branch : "de" 
+	  suffix : "DeM" 
+	  trkqual : "TrkQual"
+	  fillMC : true 
+	  fillTrkQual : true 
+  }
+  UeM : { input : "KFF" 
+      	  branch : "ue" 
+	  suffix : "UeM" 
+  }
+  DmuM : { input : "KFF" 
+      	  branch : "dm" 
+	  suffix : "DmuM" 
+  }
+  DeP : { input : "KFF" 
+      	  branch : "de" 
+	  suffix : "DeP" 
+	  trkqual : "TrkQual"
+	  fillMC : true
+	  fillTrkQual : true 
+  }
+  UeP : { input : "KFF" 
+      	  branch : "ue" 
+	  suffix : "UeP" 
+  }
+  DmuP : { input : "KFF" 
+      	  branch : "dm" 
+	  suffix : "DmuP" 
+  }
+
 
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
@@ -337,6 +362,8 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
+    FillTrkQualInfo : true
+    FillTrkPIDInfo : true
     ProcessEmptyEvents : false
     AnalyzeCRV : true
     PrimaryParticleTag : "compressRecoMCs"

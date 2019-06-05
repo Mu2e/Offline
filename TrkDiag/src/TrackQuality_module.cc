@@ -129,6 +129,10 @@ namespace mu2e
       rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue()));
     }
 
+    if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {
+	throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
+      }
+
     // put the output products into the event
     event.put(move(tqcol));
     event.put(move(rqcol));
