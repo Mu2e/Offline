@@ -1,5 +1,5 @@
 # Same as mcdigisTrig, but for input digi files that don't have the cosmic time map
-# This is legacy for MDC2018g digis and earlier
+# This is legacy for MDC2018g digis and earlier and will NOT process MCTrajectory
 #include "JobConfig/reco/mcdigis-trig.fcl"
 # generate a CosmicTimeMap; it will be empty
 # generate a fake ProtonBunchIntensity: it will be 0

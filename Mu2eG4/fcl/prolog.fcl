@@ -1,3 +1,4 @@
+# -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
@@ -134,17 +135,17 @@ mu2eg4CutDeltaElectrons: {
 
 #----------------------------------------------------------------
 mu2eg4runDefaultSingleStage: {
-    module_type: Mu2eG4
-    physics: @local::mu2eg4DefaultPhysics
-    ResourceLimits: @local::mu2eg4DefaultResourceLimits
-    TrajectoryControl: @local::mu2eg4DefaultTrajectories
+    module_type           : Mu2eG4
+    physics               : @local::mu2eg4DefaultPhysics
+    ResourceLimits        : @local::mu2eg4DefaultResourceLimits
+    TrajectoryControl     : @local::mu2eg4DefaultTrajectories
 
-    Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-    Mu2eG4SteppingOnlyCut: @local::mu2eg4NoCut
-    Mu2eG4CommonCut: @local::mu2eg4NoCut
+    Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+    Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+    Mu2eG4CommonCut       : @local::mu2eg4NoCut
 
-    generatorModuleLabel: generate
-    MultiStageParameters : {}
+    generatorModuleLabel  : generate
+    MultiStageParameters  : {}
 
     SDConfig : {
         verbosityLevel : 0

@@ -13,7 +13,7 @@ string detector.name           = "g4study";
 
 // version of the target geometry configuration
 
-int            mu2e.studyEnvVersion      = 4;
+// int            mu2e.studyEnvVersion      = 2;
 // 1 tube; 2 box; 3 "calorimeter", 4 tube and a box
 
 // make the volume mesh visible
@@ -64,7 +64,7 @@ bool           box.visible = true;
 bool           box.solid   = false;
 
 // fixme: may need to use pure isotopes
-string         box.wallMaterialName = "G4_W";
+string         box.wallMaterialName = "G4_AIR";
 
 vector<double> box.halfLengths = {1., 1., 5.0};
 
