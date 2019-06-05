@@ -168,9 +168,6 @@ namespace mu2e {
     std::vector<RecoQualInfo> _allRQIs;
     std::vector<TrkQualInfo> _allTQIs;
     std::vector<TrkPIDInfo> _allTPIs;
-    // detailed info branches for the signal candidate
-    std::vector<TrkStrawHitInfo> _detsh;
-    std::vector<TrkStrawMatInfo> _detsm;
     // trigger information
     unsigned _trigword;
     TH1F* _trigbits; // plot of trigger bits: just an example
@@ -187,6 +184,9 @@ namespace mu2e {
     std::vector<GenInfo> _allMCGenTIs, _allMCPriTIs;
     std::vector<TrkInfoMCStep> _allMCEntTIs, _allMCMidTIs, _allMCXitTIs;
     std::vector<CaloClusterInfoMC> _allMCTCHIs;
+    // hit level info branches (only for candidate at the moment)
+    std::vector<TrkStrawHitInfo> _detsh;
+    std::vector<TrkStrawMatInfo> _detsm;
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // event weights
     std::vector<art::Handle<EventWeight> > _wtHandles;
@@ -194,9 +194,9 @@ namespace mu2e {
     // CRV info
     std::vector<CrvHitInfoReco> _crvinfo;
     int _bestcrv;
-    HelixInfo _hinfo;
     std::vector<CrvHitInfoMC> _crvinfomc;
-
+    // helices
+    HelixInfo _hinfo;
     // struct helpers
     InfoStructHelper _infoStructHelper;
     InfoMCStructHelper _infoMCStructHelper;
@@ -225,6 +225,7 @@ namespace mu2e {
     _entvids.push_back(VirtualDetectorId::TT_FrontPA);
     _xitvids.push_back(VirtualDetectorId::TT_Back);
 
+    // collect both candidate and supplement branches into one place
     _allBranches.push_back(_conf.candidate());
     _candidateIndex = 0;
     std::vector<BranchConfig> supps;
@@ -234,6 +235,7 @@ namespace mu2e {
       }
     }
     
+    // Create all the info structs
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       TrkInfo ti;
       _allTIs.push_back(ti);
@@ -298,8 +300,8 @@ namespace mu2e {
       if (_conf.filltrkpid() && i_branchConfig.filltrkpid()) {
 	_trkana->Branch((branch+"trkpid").c_str(), &_allTPIs.at(i_branch), TrkPIDInfo::leafnames().c_str());
       }
-      // optionally add detailed branches
-      if(_conf.diag() > 1){ // TODO: change to i_branch.diag() > 1
+      // optionally add detailed branches (for now just for the candidate branch, we can think about adding these for supplement branches in the future)
+      if(_conf.diag() > 1 && i_branch==_candidateIndex){ 
 	_trkana->Branch((branch+"tsh").c_str(),&_detsh);
 	_trkana->Branch((branch+"tsm").c_str(),&_detsm);
       }
@@ -312,7 +314,9 @@ namespace mu2e {
 	_trkana->Branch((branch+"mcmid").c_str(),&_allMCMidTIs.at(i_branch),TrkInfoMCStep::leafnames().c_str());
 	_trkana->Branch((branch+"mcxit").c_str(),&_allMCXitTIs.at(i_branch),TrkInfoMCStep::leafnames().c_str());
 	_trkana->Branch((branch+"tchmc").c_str(),&_allMCTCHIs.at(i_branch),CaloClusterInfoMC::leafnames().c_str());
-	if(_conf.diag() > 1)_trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
+	if(_conf.diag() > 1 && i_branch==_candidateIndex) { // just for the candidate branch
+	  _trkana->Branch((branch+"tshmc").c_str(),&_detshmc);
+	}
       }
     }
 // trigger info.  Actual names should come from the BeginRun object FIXME
@@ -445,8 +449,9 @@ namespace mu2e {
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
 
+      // Now loop through all the branches (both candidate + supplements)...
       for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
-	if (i_branch == _candidateIndex) { // don't want to go through the candidate again
+	if (i_branch == _candidateIndex) { // ...but actually ignore candidate
 	  continue;
 	}
 	// check if supplement input collection is the same as the candidate input collections
@@ -457,7 +462,8 @@ namespace mu2e {
 	}
 	const auto& i_supplementKSCH = _allKSCHs.at(i_branch);
 	const auto& i_supplementKSC = *i_supplementKSCH;
-	auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS,sameColl); // find the supplement track closest in time
+	// find the supplement track closest in time
+	auto i_supplementKS = findSupplementTrack(i_supplementKSC,candidateKS,sameColl);
 	if(i_supplementKS < i_supplementKSC.size()) { 
 	  fillAllInfos(_allKSCHs.at(i_branch), i_branch, i_supplementKS);
 	}
@@ -563,7 +569,7 @@ namespace mu2e {
     _infoStructHelper.fillTrkFitInfo(kseed,_allXitTIs.at(i_branch),xitpos);
     //      _tcnt._overlaps[0] = _tcomp.nOverlap(kseed, kseed);
 
-    if(_conf.diag() > 1){ // want hit level info
+    if(_conf.diag() > 1 && i_branch==_candidateIndex){ // want hit level info
       _infoStructHelper.fillHitInfo(kseed, _detsh);
       _infoStructHelper.fillMatInfo(kseed, _detsm);
     }
