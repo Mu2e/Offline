@@ -79,6 +79,8 @@ void mu2e::KalRepsPrinter::analyze(const art::Event& event) {
 
     TrkInfo track;
     kaldiag_.fillTrkInfo( ptr.get(), track);
+    TrkFitInfo track_ent;
+    kaldiag_.fillTrkFitInfo( ptr.get(), track_ent);
 
     out_ << "    : "
          << tracksTag_.label() << " "
@@ -87,9 +89,9 @@ void mu2e::KalRepsPrinter::analyze(const art::Event& event) {
          << " Status: "        << track._status
          << " nHits:  "        << track._nhits
          << " nActive: "       << track._nactive
-         << " ent.fitmom:  "   << track._ent._fitmom
-         << " ent.fitmomerr: " << track._ent._fitmomerr
-         << " ent.tandip: "    << track._ent._fitpar._td
+         << " ent.fitmom:  "   << track_ent._fitmom
+         << " ent.fitmomerr: " << track_ent._fitmomerr
+         << " ent.tandip: "    << track_ent._fitpar._td
          << " ent.trkqual: " << track._trkqual
          << endl;
   }

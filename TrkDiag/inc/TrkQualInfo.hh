@@ -28,9 +28,11 @@ namespace mu2e
       for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
 	TrkQual::MVA_varindex i_index =TrkQual::MVA_varindex(i_trkqual_var);
 	std::string varname = TrkQual::varName(i_index);
-	leaves += varname + "/F:";
+	leaves += varname + "/F";
+	if (i_trkqual_var != n_trkqual_vars-1) {
+	  leaves += ":";
+	}
       }
-      leaves += "mvaout/F";
       return leaves;
     }
   };
