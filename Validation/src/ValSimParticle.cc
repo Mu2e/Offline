@@ -8,6 +8,7 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hN2 = tfs.make<TH1D>( "Nsim2", "log10(N particle)", 100, 0.0, 6.00);
   _id.declare(tfs,"id","id fold");
   _hp = tfs.make<TH1D>( "p", "P", 100, 0.0, 200.0);
+  _hendKE = tfs.make<TH1D>( "endKE", "endKE", 100, 0.0, 200.0);
   _hpe = tfs.make<TH1D>( "pe", "P ele", 100, 0.0, 200.0);
   _hpm = tfs.make<TH1D>( "pm", "P muon", 100, 0.0, 600.0);
   _hp0 = tfs.make<TH1D>( "p0", "P pi0", 100, 0.0, 600.0);
@@ -31,6 +32,12 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _idh.declare(tfs,"idh","id fold, p>10");
   _hscodeh = tfs.make<TH1D>( "scodeh", "start code, p>10", 151, -0.5, 150.0);
   _hecodeh = tfs.make<TH1D>( "ecodeh", "end code, p>10", 151, -0.5, 150.0);
+  _idhendKE.declare(tfs,"idhendKE","id fold, endKE>10");
+  _hscodehendKE = tfs.make<TH1D>( "scodehendKE", "start code, endKE>10", 151, -0.5, 150.0);
+  _hecodehendKE = tfs.make<TH1D>( "ecodehendKE", "end code, endKE>10", 151, -0.5, 150.0);
+  _idh9endKE.declare(tfs,"idh9endKE","id fold, endKE>95");
+  _hscodeh9endKE = tfs.make<TH1D>( "scodeh9endKE", "start code, endKE>95", 151, -0.5, 150.0);
+  _hecodeh9endKE = tfs.make<TH1D>( "ecodeh9endKE", "end code, endKE>95", 151, -0.5, 150.0);
 
   _htx = tfs.make<TH1D>( "Xstop", "stopped mu X", 100, -6000.0, 6000.0);
   _hty = tfs.make<TH1D>( "Ystop", "stopped mu Y", 100, -2000.0, 2000.0);
@@ -47,7 +54,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(3.0);
+  _hVer->Fill(4.0);
 
   _hN->Fill(coll.size()); 
   double x = (coll.size()<=0 ? 0 : log10(coll.size()) );
@@ -59,7 +66,9 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     //int idc = _id.fill(part.pdgId());
     int idc =_id.fill(part.pdgId());
     double p = part.startMomentum().vect().mag();
+    double endKE = part.endKineticEnergy();
     _hp->Fill(p);
+    _hendKE->Fill(endKE);
     if(abs(idc)==11) _hpe->Fill(p);
     if(abs(idc)==13) _hpm->Fill(p);
     if(abs(idc)==30) _hp0->Fill(p);
@@ -90,6 +99,16 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
       _idh.fill(part.pdgId()); 
       _hscodeh->Fill(part.originParticle().creationCode().id());
       _hecodeh->Fill(part.stoppingCode().id());
+    }
+    if(endKE>10.0) {
+      _idhendKE.fill(part.pdgId());
+      _hscodehendKE->Fill(part.originParticle().creationCode().id());
+      _hecodehendKE->Fill(part.stoppingCode().id());
+    }
+    if(endKE>95.0) {
+      _idh9endKE.fill(part.pdgId());
+      _hscodeh9endKE->Fill(part.originParticle().creationCode().id());
+      _hecodeh9endKE->Fill(part.stoppingCode().id());
     }
 
     // stopped muons
