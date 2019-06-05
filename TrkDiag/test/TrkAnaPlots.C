@@ -88,18 +88,18 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
 // cuts
   TCut reco("de.status>0");
   char ctext[80];
-  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
+  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
   TCut goodfit(ctext);
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(700.0);
   double t0max(1695.0);
-  snprintf(ctext,80,"de.td>%5.5f&&de.td<%5.5f",tdlow,tdhigh);
+  snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
   TCut rpitch = TCut(ctext);
   snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   TCut livegate = TCut(ctext);
-  TCut opa = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
-  TCut rmomloose("de.mom>100.0");
+  TCut opa = TCut("deent.d0<105 && deent.d0>-80 && (deent.d0+2/deent.om)>450 && (deent.d0+2/deent.om)<680");
+  TCut rmomloose("deent.mom>100.0");
   TCut physics = rpitch+opa+livegate+rmomloose;
 
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
@@ -120,7 +120,7 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   momresp->Sumw2();
   TCut final = (reco+goodfit)*"evtwt.PBIWeight";
 //  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
-  ta->Project("momresp","de.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
+  ta->Project("momresp","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
   momresp->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
@@ -142,18 +142,18 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 // cuts
   TCut reco("de.status>0");
   char ctext[80];
-  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
+  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
   TCut goodfit(ctext);
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(700.0);
   double t0max(1695.0);
-  snprintf(ctext,80,"de.td>%5.5f&&de.td<%5.5f",tdlow,tdhigh);
+  snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
   TCut rpitch = TCut(ctext);
   snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   TCut livegate = TCut(ctext);
-  TCut opa = TCut("de.d0<105 && de.d0>-80 && (de.d0+2/de.om)>450 && (de.d0+2/de.om)<680");
-  TCut rmomloose("de.mom>100.0");
+  TCut opa = TCut("deent.d0<105 && deent.d0>-80 && (deent.d0+2/deent.om)>450 && (deent.d0+2/deent.om)<680");
+  TCut rmomloose("deent.mom>100.0");
   TCut physics = rpitch+opa+livegate+rmomloose;
 
   TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
@@ -173,7 +173,7 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
   momres->Sumw2();
   TCut final = (reco+goodfit+physics)*"evtwt.PBIWeight";
-  ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",final);
+  ta->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",final);
   momres->Scale(1.0/nmu);
   //    ta->Project(mname,"fit.mom-mcent.mom",final);
   double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
@@ -262,16 +262,16 @@ void Acc(TTree* ta, double tqcut,int ngen,int gencode=2,const char* file="") {
   TCut reco = "de.status>0";
   TCut CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
   char ctext[80];
-  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
+  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
   TCut goodfit(ctext);
   snprintf(ctext,80,"demc.gen==%i",gencode);
   TCut goodmc(ctext);
   TCut livegate = "de.t0>700.0&&de.t0<1695";
-  TCut rpitch = "de.td>0.57735027&&de.td<1.0";
-  TCut opa = "de.d0<105 && de.d0>-80 && abs(de.d0+2/de.om)>450 && abs(de.d0+2/de.om)<680";
-  TCut rmom = "de.mom>103.85";
+  TCut rpitch = "deent.td>0.57735027&&deent.td<1.0";
+  TCut opa = "deent.d0<105 && deent.d0>-80 && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680";
+  TCut rmom = "deent.mom>103.85";
   TCut evtwt = "evtwt.PBIWeight";
-  TCut pid = "detrkpid.mvaout>0.5";
+  TCut pid = "dequal.TrkPIDDeM>0.5";
   ta->Project("acc",binnames[ibin++],evtwt*goodmc);
  // ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
   ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger));
@@ -365,16 +365,16 @@ void CutEff(TTree* ta, double tqcut,int gencode,const char* file="") {
   TCut reco = "de.status>0";
   TCut CRV = "bestcrv<0||de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0";
   char ctext[80];
-  snprintf(ctext,80,"detrkqual.trkqual>%f",tqcut);
+  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
   TCut goodfit(ctext);
   snprintf(ctext,80,"demc.gen==%i",gencode);
   TCut goodmc(ctext);
   TCut livegate = "de.t0>700.0&&de.t0<1695";
-  TCut rpitch = "de.td>0.57735027&&de.td<1.0";
-  TCut opa = "de.d0<105 && de.d0>-80 && abs(de.d0+2/de.om)>450 && abs(de.d0+2/de.om)<680";
-  TCut rmom = "de.mom>103.85";
+  TCut rpitch = "deent.td>0.57735027&&deent.td<1.0";
+  TCut opa = "deent.d0<105 && deent.d0>-80 && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680";
+  TCut rmom = "deent.mom>103.85";
   TCut evtwt = "evtwt.PBIWeight";
-  TCut pid = "detrkpid.mvaout>0.5";
+  TCut pid = "dequal.TrkPIDDeM>0.5";
   ta->Project("norm",binnames[0],evtwt*goodmc);
   ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
   ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+reco+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
@@ -555,9 +555,9 @@ void Ambig(TTree* ta,const char* file="") {
   momres1->SetMarkerStyle(4);
   momres2->SetMarkerColor(kOrange);
   momres2->SetMarkerStyle(5);
-  ta->Project("momres0","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk);
-  ta->Project("momres1","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==1");
-  ta->Project("momres2","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==2");
+  ta->Project("momres0","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk);
+  ta->Project("momres1","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==1");
+  ta->Project("momres2","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==2");
 
   TH1F* afg = new TH1F("afg","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
   TH1F* afn = new TH1F("afn","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c):hit fraction",41,-4,4);
@@ -574,10 +574,10 @@ void Ambig(TTree* ta,const char* file="") {
   afn->Sumw2();
   afb->Sumw2();
   afa->Sumw2();
-  ta->Project("afg","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+gambig);
-  ta->Project("afn","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+nambig);
-  ta->Project("afb","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+bambig);
-  ta->Project("afa","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active);
+  ta->Project("afg","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+gambig);
+  ta->Project("afn","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+nambig);
+  ta->Project("afb","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+bambig);
+  ta->Project("afa","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active);
   afg->Divide(afa);
   afn->Divide(afa);
   afb->Divide(afa);
@@ -778,9 +778,9 @@ void TrkQual(TTree* ta,const char* extra="") {
   tq->SetStats(0);
   tqtch->SetStats(0);
   tqntch->SetStats(0);
-  ta->Project("tq","de.trkqual",ecut);
-  ta->Project("tqtch","de.trkqual","detch.active"+ecut);
-  ta->Project("tqntch","de.trkqual","!detch.active"+ecut);
+  ta->Project("tq","dequal.TrkQualDeM",ecut);
+  ta->Project("tqtch","dequal.TrkQualDeM","detch.active"+ecut);
+  ta->Project("tqntch","dequal.TrkQualDeM","!detch.active"+ecut);
 
   double* tqintarray = tq->GetIntegral();
 
@@ -838,14 +838,14 @@ void TrkQualRes(TTree* ta,double tqcut) {
   badf->Sumw2();
   char tqcutgc[40];
   char tqcutbc[40];
-  snprintf(tqcutgc,40,"detrkqual.trkqual>%f",tqcut);
-  snprintf(tqcutbc,40,"detrkqual.trkqual>0");
+  snprintf(tqcutgc,40,"dequal.TrkQualDeM>%f",tqcut);
+  snprintf(tqcutbc,40,"dequal.TrkQualDeM>0");
   TCut tqcutg(tqcutgc);
   TCut tqcutb(tqcutbc);
   TCut reco("de.status>0");
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
-  ta->Project("goodf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"evtwt.PBIWeight");
-  ta->Project("badf","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"evtwt.PBIWeight");
+  ta->Project("goodf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"evtwt.PBIWeight");
+  ta->Project("badf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"evtwt.PBIWeight");
   
   TCanvas* tqcan = new TCanvas("tqrcan","TrkQualRes",1000,800);
   TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
@@ -920,8 +920,8 @@ void StrawMat(TTree* ta) {
   ta->Project("addstraw","detsm._straw","de.status>0&&detsm._active&&(!detsm._thita)");
   ta->Project("hitstraw","detsm._straw","de.status>0&&detsm._thita");
 
-  ta->Project("lofracres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive<0.1");
-  ta->Project("hifracres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive>0.1");
+  ta->Project("lofracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive<0.1");
+  ta->Project("hifracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive>0.1");
 
   TLegend* leg = new TLegend(0.6,0.7,0.9,.9);
   leg->AddEntry(hitdoca,"Hit Straw","L");
@@ -954,9 +954,9 @@ void StrawMat(TTree* ta) {
 
 void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   char cstring[100];
-  snprintf(cstring,100,"detch.active&&detrkqual.trkqual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
+  snprintf(cstring,100,"detch.active&&dequal.TrkQualDeM>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrkcalo(cstring);
-  snprintf(cstring,100,"(!detch.active)&&detrkqual.trkqual>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
+  snprintf(cstring,100,"(!detch.active)&&dequal.TrkQualDeM>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrk(cstring);
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
@@ -1175,7 +1175,7 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
 }
 
 void TrkCaloHitMC(TTree* ta) {
-  TCut goodtrkcalo("detrkqual.trkqual>0.6&&detch.active");
+  TCut goodtrkcalo("dequal.TrkQualDeM>0.6&&detch.active");
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
 
@@ -1243,8 +1243,8 @@ void TrkCaloHitMC(TTree* ta) {
 }
 
 void t0(TTree* ta) {
-  TCut goodtrkcalo("detrkqual.trkqual>0.6&&detch.active");
-  TCut goodtrknocalo("detrkqual.trkqual>0.6&&!detch.active");
+  TCut goodtrkcalo("dequal.TrkQualDeM>0.6&&detch.active");
+  TCut goodtrknocalo("dequal.TrkQualDeM>0.6&&!detch.active");
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
   TH1F* t00 = new TH1F("t00","Track Fit t_{0} Resolution, TrkCaloHit;t_{0} reco - t_{0} MC (ns)",100,-5,5);
@@ -1277,7 +1277,7 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi, int q=-1) {
   TH1F* cctrig = new TH1F("cctrig","Reco Fraction vs Generated Momentum",100,plo,phi);
 
   TCut t0cut("de.t0>700");
-  TCut goodfit("detrkqual.trkqual>0.4");
+  TCut goodfit("dequal.TrkQualDeM>0.4");
 
   TCut cc("(trigbits&0x4)==0x4");
   // trigger depends on sign
@@ -1356,10 +1356,10 @@ void PlotIPA(TTree* ta) {
   TH1F* momres = new TH1F("momres","Momentum Resolution;P_{reco} - P_{MC} (MeV/c)",100,-5.0,5.0);
   TH1F* nactive = new TH1F("nactive","N Active Straw Hits",121,-0.5,120.5);
   trkqual->SetStats(0);
-  ta->Project("trkqual","de.trkqual");
-  ta->Project("mom","de.mom","de.trkqual>0.4");
-  ta->Project("momres","de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.trkqual>0.4");
-  ta->Project("nactive","de.nactive","de.trkqual>0.4");
+  ta->Project("trkqual","dequal.TrkQualDeM");
+  ta->Project("mom","deent.mom","dequal.TrkQualDeM>0.4");
+  ta->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","dequal.TrkQualDeM>0.4");
+  ta->Project("nactive","de.nactive","dequal.TrkQualDeM>0.4");
   TCanvas* ipacan = new TCanvas("ipacan","ipacan",800,800);
   ipacan->Divide(2,2);
   ipacan->cd(1);
