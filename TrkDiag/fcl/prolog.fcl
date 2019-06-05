@@ -323,9 +323,11 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
   DeM : { input : "KFF" 
       	  branch : "de" 
 	  suffix : "DeM" 
-	  trkqual : "TrkQual"
 	  fillMC : true 
+	  trkqual : "TrkQual"
 	  fillTrkQual : true 
+	  trkpid : "TrkPID"
+	  fillTrkPID : true
   }
   UeM : { input : "KFF" 
       	  branch : "ue" 
@@ -338,9 +340,11 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
   DeP : { input : "KFF" 
       	  branch : "de" 
 	  suffix : "DeP" 
+	  fillMC : true 
 	  trkqual : "TrkQual"
-	  fillMC : true
 	  fillTrkQual : true 
+	  trkpid : "TrkPID"
+	  fillTrkPID : true
   }
   UeP : { input : "KFF" 
       	  branch : "ue" 
@@ -354,7 +358,6 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
-    DeTrkCaloHitPIDTag : "TrkPIDDeM"
     RecoCountTag : "SelectRecoMC"
     CaloCrystalHitMapTag : "SelectRecoMC"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
@@ -399,7 +402,6 @@ TrkAnaReco : {
       TrkAnaPos : { @table::TrackAnalysisReco
       		    candidate : @local::DeP
 		    supplements : [ @local::UeP, @local::DmuP ]
-    		    DeTrkCaloHitPIDTag : "TrkPIDDeP"
 		  }
 
       genCountLogger : @local::TrkAna.analyzers.genCountLogger

@@ -96,6 +96,8 @@ namespace mu2e {
       fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
       fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
       fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of the full TrkQualInfo for this set of tracks"), false};
+      fhicl::OptionalAtom<std::string> trkpid{Name("trkpid"), Comment("TrkCaloHitPIDCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
+      fhicl::Atom<bool> filltrkpid{Name("fillTrkPID"), Comment("Switch to turn on filling of the full TrkPIDInfo for this set of tracks"), false};
     };
 
     struct Config {
@@ -116,7 +118,6 @@ namespace mu2e {
       fhicl::Atom<bool> helices{Name("FillHelixInfo"),false};
       fhicl::Atom<bool> filltrkqual{Name("FillTrkQualInfo"),false};
       fhicl::Atom<bool> filltrkpid{Name("FillTrkPIDInfo"),false};
-      fhicl::Atom<art::InputTag> detchpidtag{Name("DeTrkCaloHitPIDTag"), art::InputTag()};
       fhicl::Atom<bool> filltrig{Name("FillTriggerInfo"),false};
       fhicl::Atom<int> diag{Name("diagLevel"),1};
       fhicl::Atom<int> debug{Name("debugLevel"),0};
@@ -162,10 +163,11 @@ namespace mu2e {
     // quality branches (inputs)
     std::vector<std::vector<art::Handle<RecoQualCollection> > > _allRQCHs; // outer vector is for each candidate/supplement, inner vector is all RecoQuals
     std::vector<art::Handle<TrkQualCollection> > _allTQCHs; // we will only allow one TrkQual object per candidate/supplement to be fully written out
-    art::Handle<TrkCaloHitPIDCollection> _tchpcHandle;
+    std::vector<art::Handle<TrkCaloHitPIDCollection> > _allTCHPCHs; // we will only allow one TrkCaloHitPID object per candidate/supplement to be fully written out
     // quality branches (outputs)
     std::vector<RecoQualInfo> _allRQIs;
     std::vector<TrkQualInfo> _allTQIs;
+    std::vector<TrkPIDInfo> _allTPIs;
     // detailed info branches for the signal candidate
     std::vector<TrkStrawHitInfo> _detsh;
     std::vector<TrkStrawMatInfo> _detsm;
@@ -186,8 +188,6 @@ namespace mu2e {
     std::vector<TrkInfoMCStep> _allMCEntTIs, _allMCMidTIs, _allMCXitTIs;
     std::vector<CaloClusterInfoMC> _allMCTCHIs;
     std::vector<TrkStrawHitInfoMC> _detshmc;
-    // TrkPID
-    TrkPIDInfo _trkPIDInfo;
     // event weights
     std::vector<art::Handle<EventWeight> > _wtHandles;
     EventWeightInfo _wtinfo;
@@ -262,6 +262,8 @@ namespace mu2e {
       _allRQIs.push_back(rqi);
       TrkQualInfo tqi;
       _allTQIs.push_back(tqi);
+      TrkPIDInfo tpi;
+      _allTPIs.push_back(tpi);
     }
   }
 
@@ -292,6 +294,9 @@ namespace mu2e {
       _trkana->Branch((branch+"tch").c_str(),&_allTCHIs.at(i_branch),TrkCaloHitInfo::leafnames().c_str());
       if (_conf.filltrkqual() && i_branchConfig.filltrkqual()) {
 	_trkana->Branch((branch+"trkqual").c_str(), &_allTQIs.at(i_branch), TrkQualInfo::leafnames().c_str());
+      }
+      if (_conf.filltrkpid() && i_branchConfig.filltrkpid()) {
+	_trkana->Branch((branch+"trkpid").c_str(), &_allTPIs.at(i_branch), TrkPIDInfo::leafnames().c_str());
       }
       // optionally add detailed branches
       if(_conf.diag() > 1){ // TODO: change to i_branch.diag() > 1
@@ -325,11 +330,6 @@ namespace mu2e {
     }
 // helix info
    if(_conf.helices()) _trkana->Branch("helixinfo",&_hinfo,HelixInfo::leafnames().c_str());
-
-    if (_conf.filltrkpid()) {
-      _trkana->Branch("detrkpid", &_trkPIDInfo, TrkPIDInfo::leafnames().c_str());
-    }
-
   }
 
   void TrackAnalysisReco::beginSubRun(const art::SubRun & subrun ) {
@@ -357,6 +357,7 @@ namespace mu2e {
     _allKSCHs.clear();
     _allRQCHs.clear();
     _allTQCHs.clear();
+    _allTCHPCHs.clear();
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       BranchConfig i_branchConfig = _allBranches.at(i_branch);
       art::Handle<KalSeedCollection> kalSeedCollHandle;
@@ -378,6 +379,7 @@ namespace mu2e {
       }
       _allRQCHs.push_back(selectedRQCHs);
 
+      // TrkQual
       std::string i_trkqual_tag;
       art::Handle<TrkQualCollection> trkQualCollHandle;
       if (i_branchConfig.trkqual(i_trkqual_tag) && _conf.filltrkqual()) {
@@ -388,6 +390,18 @@ namespace mu2e {
 	}
       }
       _allTQCHs.push_back(trkQualCollHandle);
+
+      // TrkCaloHitPID
+      std::string i_trkpid_tag;
+      art::Handle<TrkCaloHitPIDCollection> trkpidCollHandle;
+      if (i_branchConfig.trkpid(i_trkpid_tag) && _conf.filltrkpid()) {
+	art::InputTag trkpidInputTag = i_trkpid_tag + i_branchConfig.suffix();
+	event.getByLabel(trkpidInputTag,trkpidCollHandle);
+	if (trkpidCollHandle->size() != kalSeedCollHandle->size()) {
+	  throw cet::exception("TrkAna") << "Sizes of KalSeedCollection and TrkCaloHitPIDCollection are inconsistent (" << kalSeedCollHandle->size() << " and " << trkpidCollHandle->size() << " respectively)";
+	}
+      }
+      _allTCHPCHs.push_back(trkpidCollHandle);
     }
 
     // get the TODO
@@ -401,9 +415,6 @@ namespace mu2e {
       float count  = rc._shthist.binContents(ibin);
       _tht->Fill(time,count);
     }
-
-    // TrkCaloHitPID
-    event.getByLabel(_conf.detchpidtag(), _tchpcHandle);
 
     // trigger information
     if(_conf.filltrig()){
@@ -559,11 +570,6 @@ namespace mu2e {
     if(_conf.helices()){
       _infoStructHelper.fillHelixInfo(kseed, _hinfo);
     }
-    if (_conf.filltrkpid()) {
-      TrkCaloHitPIDCollection const& tchpcol = *_tchpcHandle;
-      auto const& tpid = tchpcol.at(i_kseed);
-      _infoStructHelper.fillTrkPIDInfo(tpid, kseed, _trkPIDInfo);
-    }
 
 // calorimeter info
     if (kseed.hasCaloCluster()) {
@@ -592,21 +598,31 @@ namespace mu2e {
       }
     }
 
-// reco wuals
+// all RecoQuals
     std::vector<Float_t> recoQuals;
     for (const auto& i_recoQualHandle : _allRQCHs.at(i_branch)) {
       double recoQual = i_recoQualHandle->at(i_kseed)._value;
       recoQuals.push_back(recoQual);
     }
     _allRQIs.at(i_branch).setQuals(recoQuals);
-// trkquals
-    std::string i_trkqual_branch;
-    if(_conf.filltrkqual() && branchConfig.trkqual(i_trkqual_branch)) { 
+// TrkQual
+    std::string trkqual_branch;
+    if(_conf.filltrkqual() && branchConfig.trkqual(trkqual_branch)) { 
       const auto& trkQualCollHandle = _allTQCHs.at(i_branch);
       if (trkQualCollHandle.isValid()) { // we could have put an empty TrkQualCollection in, if we didn't want it
 	const auto& trkQualColl = *trkQualCollHandle;
 	const auto& trkQual = trkQualColl.at(i_kseed);
 	_infoStructHelper.fillTrkQualInfo(trkQual, _allTQIs.at(i_branch));
+      }
+    }
+// TrkCaloHitPID
+    std::string trkpid_branch;
+    if (_conf.filltrkpid() && branchConfig.trkpid(trkpid_branch)) {
+      const auto& tchpcolH = _allTCHPCHs.at(i_branch);
+      if (tchpcolH.isValid()) {
+	const auto& tchpcol = *tchpcolH;
+	auto const& tpid = tchpcol.at(i_kseed);
+	_infoStructHelper.fillTrkPIDInfo(tpid, kseed, _allTPIs.at(i_branch));
       }
     }
 // fill MC info associated with this track
@@ -703,6 +719,7 @@ namespace mu2e {
 
       _allRQIs.at(i_branch).reset();
       _allTQIs.at(i_branch).reset();
+      _allTPIs.at(i_branch).reset();
     }
 // clear vectors
     _detsh.clear();
