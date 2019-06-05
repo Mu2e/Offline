@@ -235,5 +235,5 @@ namespace mu2e {
 
 } // namespace mu2e
 
-DECLARE_ART_SERVICE(mu2e::SeedService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::SeedService, GLOBAL)
 #endif /* SeedService_SeedService_hh */
