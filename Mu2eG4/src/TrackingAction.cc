@@ -88,7 +88,7 @@ namespace mu2e {
     _stepLimitKillerVerbose(pset.get<bool>("debug.stepLimitKillerVerbose"))
   {
 
-    if ( _stepLimitKillerVerbose > 0 ) {
+    if ( _stepLimitKillerVerbose ) {
       G4cout << __func__
              << " range threshold below not to flag an event when killing slow tracks: "
              << _rangeToIgnore << G4endl;
