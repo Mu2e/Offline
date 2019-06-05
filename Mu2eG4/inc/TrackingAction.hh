@@ -120,6 +120,7 @@ namespace mu2e {
     double _saveTrajectoryMomentumCut;
     int    _mcTrajectoryMinSteps;
     unsigned _nKilledByFieldPropagator;
+    double _rangeToIgnore;
     
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
     Mu2eG4SteppingAction * _steppingAction;
@@ -135,6 +136,8 @@ namespace mu2e {
     // Helper to obtain SimParticle Ptr (non-owning)
     const SimParticleHelper *_spHelper;
     const SimParticlePrimaryHelper *_primaryHelper;
+
+    bool _stepLimitKillerVerbose;
 
     // Some helper functions.
     void insertOrThrow(std::pair<int,SimParticle> const& value);

@@ -53,6 +53,7 @@
 #include "G4RunManager.hh"
 #include "G4EventManager.hh"
 #include "G4SteppingManager.hh"
+#include "G4LossTableManager.hh"
 #include "G4MaterialCutsCouple.hh"
 #include "G4ParticleChange.hh"
 #include "G4DynamicParticle.hh"
@@ -77,13 +78,23 @@ namespace mu2e {
     _saveTrajectoryMomentumCut(trajectoryControl.saveTrajectoryMomentumCut()),
     _mcTrajectoryMinSteps(trajectoryControl.mcTrajectoryMinSteps()),
     _nKilledByFieldPropagator(0),
+    _rangeToIgnore(pset.get<double>("physics.rangeToIgnore")),
     _steppingAction(steppingAction),
     _stageOffset(stageOffset),
     _processInfo(0),
     _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
     _spHelper(),
-    _primaryHelper()
-  {}
+    _primaryHelper(),
+    _stepLimitKillerVerbose(pset.get<bool>("debug.stepLimitKillerVerbose"))
+  {
+
+    if ( _stepLimitKillerVerbose > 0 ) {
+      G4cout << __func__
+             << " range threshold below not to flag an event when killing slow tracks: "
+             << _rangeToIgnore << G4endl;
+    }
+
+}
     
 // Receive information that has a lifetime of a run.
 void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
@@ -448,10 +459,21 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
     // Reason why tracking stopped, decay, range out, etc.
     G4String pname  = Mu2eG4UserHelpers::findTrackStoppingProcessName(trk);
 
+    // adjust verbosity for isTrackKilledByFieldPropagator
+    int trVerbosity = trackingVerbosityLevel;
+    if ( _stepLimitKillerVerbose && trVerbosity < 1 ) trVerbosity = 1;
+
     if (pname == "Transportation" &&
-      Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trackingVerbosityLevel)) {
+      Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
       pname = G4String("FieldPropagator");
-      ++_nKilledByFieldPropagator;
+      if (G4LossTableManager::Instance()->
+          GetRange(trk->GetDefinition(),
+                   trk->GetKineticEnergy(),
+                   trk->GetStep()->GetPreStepPoint()->GetMaterialCutsCouple())>_rangeToIgnore) {
+        // count only particles which have a range which is likely to make them travel
+        ++_nKilledByFieldPropagator;
+      }
+
     }
 
     ProcessCode stoppingCode(_processInfo->findAndCount(pname));
