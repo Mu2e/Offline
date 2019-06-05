@@ -35,6 +35,7 @@ class G4Mag_UsualEqRhs;
 class G4UserLimits;
 
 // Mu2e includes
+#include "Mu2eG4/inc/InitEnvToolBase.hh"
 #include "Mu2eG4/inc/Mu2eUniverse.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
@@ -76,16 +77,17 @@ namespace mu2e {
 
     void constructStepLimiters();
 
-    SensitiveDetectorHelper *sdHelper_; // Non-owning
+    SensitiveDetectorHelper*          sdHelper_; // Non-owning
+    std::unique_ptr<InitEnvToolBase>  constructEnv_;
 
-    fhicl::ParameterSet pset_;
+    fhicl::ParameterSet               pset_;
 
     // _verbosityLevel in the base class
  
-    bool writeGDML_;
+    bool        writeGDML_;
     std::string gdmlFileName_;
     std::string g4stepperName_;
-    double bfieldMaxStep_;
+    double      bfieldMaxStep_;
  
 
   };

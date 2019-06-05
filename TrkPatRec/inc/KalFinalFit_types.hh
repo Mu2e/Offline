@@ -34,6 +34,14 @@ namespace mu2e {
       std::vector<Doublet>* listOfDoublets;
       DoubletAmbigResolver* dar;
       int                   eventNumber;
+      
+      unsigned              tchDiskId; 
+      unsigned              tchAdded;
+      double                tchDepth;  
+      double                tchDOCA;   
+      double                tchDt;     
+      double                tchTrkPath;
+      double                tchEnergy; 
     };
   }
 }
