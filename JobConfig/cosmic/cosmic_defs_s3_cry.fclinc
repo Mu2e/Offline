@@ -13,19 +13,13 @@ services: @local::Services.Sim
 
 physics : { 
   producers : {
-     generate: {module_type : EventGenerator}
-     @table::Primary.producers
-     protonBunchIntensity: {module_type: ProtonBunchIntensityLogNormal
-     sigma: 0.3814
-     extendedMean: 3.9e7 // mean of the uncut distribution
-     cutMax: 11.7e7  // cut the tail at 3 times the mean
-    }
+    generate: {module_type : EventGenerator}
+    @table::Primary.producers
   }
   filters  : {@table::Primary.filters}
   analyzers: {@table::Primary.analyzers}
 # enable CRV digis
-  TriggerPath: [protonBunchIntensity,
-  	        @sequence::CommonMC.DigiSim,
+  TriggerPath: [@sequence::CommonMC.DigiSim,
   		@sequence::CaloDigiMC.DigiSim,
   	        @sequence::TrackerMC.DigiSim,
 		DigiFilter,
