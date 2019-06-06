@@ -445,7 +445,7 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
-    if ( _g4VerbosityLevel > 0 ) G4cout << __func__ << "Setting up " << g4stepperName_ << " stepper" << G4endl;
+    if ( _g4VerbosityLevel > 0 ) G4cout << __func__ << " Setting up " << g4stepperName_ << " stepper" << G4endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
@@ -577,6 +577,8 @@ namespace mu2e {
   //
   void Mu2eWorld::constructStepLimiters(){
 
+    G4LogicalVolume* hallAir        = _helper->locateVolInfo("HallAir").logical;
+
     G4LogicalVolume* ds1Vacuum      = _helper->locateVolInfo("DS1Vacuum").logical;
     G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("DS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("DS3Vacuum").logical;
@@ -636,6 +638,9 @@ namespace mu2e {
 
     // Add the step limiters to the interesting volumes.
     // Keep them separated so that we can add different step limits should we decide to.
+
+    hallAir->SetUserLimits( stepLimit ); // not a vacuum per se
+
     ds1Vacuum->SetUserLimits( stepLimit );
     ds2Vacuum->SetUserLimits( stepLimit );
     ds3Vacuum->SetUserLimits( stepLimit );
