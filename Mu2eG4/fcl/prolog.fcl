@@ -58,7 +58,7 @@ mu2eg4DefaultPhysics: {
     deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
     stepMinimum       : 1.0e-2 // mm minimum size of the integration step
     maxIntSteps       : 1000 // maximum of internal integration steps per physical step
-    rangeToIgnore     : 0.00001 // below which a prticle killed by the FieldPropagator will not be counted in statusG4
+    rangeToIgnore     : 0.00001 // below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
     bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
     limitStepInAllVolumes: false
 }

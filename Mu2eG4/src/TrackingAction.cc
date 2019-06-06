@@ -90,8 +90,10 @@ namespace mu2e {
 
     if ( _stepLimitKillerVerbose ) {
       G4cout << __func__
-             << " range threshold below not to flag an event when killing slow tracks: "
-             << _rangeToIgnore << G4endl;
+             << " range threshold below which not to count killed tracks when killing slow electrons and protons: "
+             << _rangeToIgnore
+             << " mm"
+             << G4endl;
     }
 
 }
@@ -466,11 +468,13 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
     if (pname == "Transportation" &&
       Mu2eG4UserHelpers::isTrackKilledByFieldPropagator(trk, trVerbosity)) {
       pname = G4String("FieldPropagator");
-      if (G4LossTableManager::Instance()->
+      if ( !(trk->GetDefinition()->GetPDGEncoding() == 11 || // electron & proton codes hardcoded for now
+             trk->GetDefinition()->GetPDGEncoding() == 2212 ) ||
+          G4LossTableManager::Instance()->
           GetRange(trk->GetDefinition(),
                    trk->GetKineticEnergy(),
                    trk->GetStep()->GetPreStepPoint()->GetMaterialCutsCouple())>_rangeToIgnore) {
-        // count only particles which have a range which is likely to make them travel
+        // count non electrons/protons or electrons/protons which have a range which is likely to make them travel
         ++_nKilledByFieldPropagator;
       }
 
