@@ -3,6 +3,7 @@
 
 // framework
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
 
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
@@ -15,8 +16,12 @@ namespace mu2e
   class MVATools
   {
      public:
-       
+       struct Config {
+	 fhicl::Atom<std::string> weights{ fhicl::Name("MVAWeights"), fhicl::Comment("MVA Weights xml file")};
+       };       
        explicit MVATools(fhicl::ParameterSet const&);
+       explicit MVATools(const Config& conf);
+
        virtual ~MVATools();
        void     initMVA();
        float    evalMVA(const std::vector<float>&) const;
