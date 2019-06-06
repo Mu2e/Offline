@@ -169,8 +169,8 @@ namespace mu2e {
     std::vector<TrkQualInfo> _allTQIs;
     std::vector<TrkPIDInfo> _allTPIs;
     // trigger information
-    unsigned _trigword;
-    TH1F* _trigbits; // plot of trigger bits: just an example
+    unsigned _trigbits;
+    TH1F* _trigbitsh; // plot of trigger bits: just an example
     // MC truth branches (inputs)
     art::Handle<PrimaryParticle> _pph;
     art::Handle<KalSeedMCAssns> _ksmcah;
@@ -322,12 +322,13 @@ namespace mu2e {
 // trigger info.  Actual names should come from the BeginRun object FIXME
     if(_conf.filltrig()) {
       _trkana->Branch("trigbits",&_trigbits,"trigbits/i");
-      _trigbits = tfs->make<TH1F>("trigbits","Trigger Bits",16,-0.5,15.5);
+      _trigbitsh = tfs->make<TH1F>("trigbits","Trigger Bits",16,-0.5,15.5);
     }
 // calorimeter information for the downstream electron track
 // CRV info
     if(_conf.crv()) { 
       _trkana->Branch("crvinfo",&_crvinfo);
+      _trkana->Branch("bestcrv",&_bestcrv,"bestcrv/I");
       if(_conf.fillmc()){
 	if(_conf.crv())_trkana->Branch("crvinfomc",&_crvinfomc);
       }
@@ -471,7 +472,21 @@ namespace mu2e {
 
       // TODO we want MC information when we don't have a track
       // fill CRV info
-      if(_conf.crv()) CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(), event, _crvinfo, _crvinfomc);
+      if(_conf.crv()){
+	CRVAnalysis::FillCrvHitInfoCollections(_conf.crvCoincidenceModuleLabel(), _conf.crvCoincidenceMCModuleLabel(), event, _crvinfo, _crvinfomc);
+//	find the best CRV match (closest in time)
+	_bestcrv=-1;
+	float mindt=1.0e9;
+	float t0 = candidateKS.t0().t0();
+	for(size_t icrv=0;icrv< _crvinfo.size(); ++icrv){
+	  auto const& crvinfo = _crvinfo[icrv];
+	  float dt = std::min(fabs(crvinfo._timeWindowStart-t0), fabs(crvinfo._timeWindowEnd-t0) );
+	  if(dt < mindt){
+	    mindt =dt;
+	    _bestcrv = icrv;
+	  }
+	}
+      }
       // fill this row in the TTree
       _trkana->Fill();
     }
@@ -532,20 +547,28 @@ namespace mu2e {
     auto trigResultsH = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults* trigResults = trigResultsH.product();
     TriggerResultsNavigator tnav(trigResults);
-   _trigword = 0;
+   _trigbits = 0;
    // setup the bin labels
     if(first){ // is there a better way to do this?  I think not
       for(size_t id=0;id < trigResults->size(); ++id){
 	if (tnav.getTrigPath(id).find(tname) != std::string::npos) {
-	  _trigbits->GetXaxis()->SetBinLabel(id+1,tnav.getTrigPath(id).c_str());
+	  _trigbitsh->GetXaxis()->SetBinLabel(id+1,tnav.getTrigPath(id).c_str());
 	  istrig[id] =true;
 	}
       }
       first = false;
     }
+    for(size_t id=0;id < trigResults->size(); ++id){
+      if(trigResults->accept(id) && istrig[id]) {
+	_trigbitsh->Fill(id);
+	_trigbits |= 1 << id;
+	if(_conf.debug() > 1)
+	  cout << "Trigger path " << tnav.getTrigPath(id) << " returns " << trigResults->accept(id) << endl;
+      }
+    }
     if(_conf.debug() > 0){
       cout << "Found TriggerResults for process " << process << " with " << trigResults->size() << " Lines"
-      << " trigger bits word " << _trigbits << endl;
+	<< " trigger bits word " << _trigbits << endl;
       TriggerResultsNavigator tnav(trigResults);
       tnav.print();
     }
