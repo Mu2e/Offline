@@ -590,6 +590,7 @@ namespace mu2e {
 
     vector<G4LogicalVolume*> psVacua;
     psVacua.push_back( _helper->locateVolInfo("PSVacuum").logical );
+    psVacua.push_back( _helper->locateVolInfo("psVacuumVesselVacuum").logical );
 
     vector<G4LogicalVolume*> tsVacua; // could use stepLimiterHelper; see below
     tsVacua.push_back( _helper->locateVolInfo("TS1Vacuum").logical );
