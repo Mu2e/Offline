@@ -235,7 +235,7 @@ namespace mu2e
   {
     unsigned nactive, nstereo;
     countHits(cluster,nactive,nstereo);
-    cqual.setMVAStatus(BkgQual::unset);
+    cqual.setMVAStatus(MVAStatus::unset);
 
     if (nactive >= _minnhits && nstereo >= _minnstereo)
       {
@@ -285,7 +285,7 @@ namespace mu2e
             cqual[BkgQual::zgap] = zgap;
 
             // compute MVA
-            cqual.setMVAStatus(BkgQual::filled);
+            cqual.setMVAStatus(MVAStatus::filled);
             if (_useMVA)
               {
                 // reduce values down to what's actually used in the MVA.  This functionality
@@ -303,7 +303,7 @@ namespace mu2e
                 float mvaout = _bkgMVA.evalMVA(mvavars);
 
                 cqual.setMVAValue(mvaout);
-                cqual.setMVAStatus(BkgQual::calculated);
+                cqual.setMVAStatus(MVAStatus::calculated);
               }
           } else {
           cqual[BkgQual::hrho] = -1.0;

@@ -196,6 +196,17 @@ BEGIN_PROLOG
   TrkQualUeP.KalSeedCollection : "KFFUeP"
   TrkQualDmuP		       : @local::TrkQual
   TrkQualDmuP.KalSeedCollection : "KFFDmuP"
+  # track PID module
+  TrkPID : {
+    module_type : TrackPID
+    DeltaTOffset : -1.15 # specific to MDC2018h
+    MVAConfig : { MVAWeights : "TrkDiag/test/TrkCaloHitPID.weights.xml"}
+  }
+# this module only makes sense for downstream electron fits
+  TrkPIDDeM		       : @local::TrkPID
+  TrkPIDDeM.KalSeedCollection : "KFFDeM"
+  TrkPIDDeP		       : @local::TrkPID
+  TrkPIDDeP.KalSeedCollection : "KFFDeP"
 
   TrkDiag : {
     analyzers : {
@@ -257,6 +268,7 @@ BEGIN_PROLOG
       TrkQualUeP : @local::TrkQualUeP
       TrkQualDmuM : @local::TrkQualDmuM
       TrkQualDmuP : @local::TrkQualDmuP
+
     }
     analyzers : {
       genCountLogger: { module_type: GenEventCountReader }
@@ -275,6 +287,8 @@ BEGIN_PROLOG
 
     TrkQualSequence : [ TrkQualDeM, TrkQualUeM, TrkQualDmuM,
     		      	TrkQualDeP, TrkQualUeP, TrkQualDmuP ]
+
+    TrkPIDSequence : [ TrkPIDDeM, TrkPIDDeP ]
 
     TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
 		     @sequence::Tracking.TPRDeM,
@@ -296,7 +310,7 @@ TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF,
                          @sequence::TrackCaloMatching.matching_dep_TRF ]
   # aggregate these for convenience
 TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
-			    @sequence::TrkAna.CaloRecoSequence,
+#			    @sequence::TrkAna.CaloRecoSequence,
 			    @sequence::TrkAna.TrkRecoSequence,
 			    @sequence::TrkAna.TrkQualSequence,
 		            @sequence::TrkCaloMatchSequence ]
@@ -306,27 +320,63 @@ TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
 
 # Analysis from reco output: beta protype!
 # DeM only for now
+  DeM : { input : "KFF" 
+      	  branch : "de" 
+	  suffix : "DeM" 
+	  fillMC : true 
+	  trkqual : "TrkQual"
+	  fillTrkQual : true 
+	  trkpid : "TrkPID"
+	  fillTrkPID : true
+  }
+  UeM : { input : "KFF" 
+      	  branch : "ue" 
+	  suffix : "UeM" 
+  }
+  DmuM : { input : "KFF" 
+      	  branch : "dm" 
+	  suffix : "DmuM" 
+  }
+  DeP : { input : "KFF" 
+      	  branch : "de" 
+	  suffix : "DeP" 
+	  fillMC : true 
+	  trkqual : "TrkQual"
+	  fillTrkQual : true 
+	  trkpid : "TrkPID"
+	  fillTrkPID : true
+  }
+  UeP : { input : "KFF" 
+      	  branch : "ue" 
+	  suffix : "UeP" 
+  }
+  DmuP : { input : "KFF" 
+      	  branch : "dm" 
+	  suffix : "DmuP" 
+  }
+
+
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
-    DeTag : "KFFDeM"
-    UeTag : "KFFUeM"
-    DmuTag : "KFFDmuM"
-    DeTrkQualTag : "TrkQualDeM"
     RecoCountTag : "SelectRecoMC"
     CaloCrystalHitMapTag : "SelectRecoMC"
-    SimParticleCollectionTag : "compressRecoMCs"
     MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
     PBIWeightTag : "PBIWeight"
     CrvCoincidenceModuleLabel : "SelectRecoMC"
     CrvCoincidenceMCModuleLabel : "compressRecoMCs"
     FillMCInfo : true
+    FillTrkQualInfo : true
+    FillTrkPIDInfo : true
     ProcessEmptyEvents : false
-    AnalyzeCRV : false
-    StrawHitFlagCollection : "SelectRecoMC"
+    AnalyzeCRV : true
     PrimaryParticleTag : "compressRecoMCs"
     KalSeedMCAssns : "SelectRecoMC"
     CaloClusterMCAssns : "SelectRecoMC"
-    TimeOffsets         :  { inputs : [ @sequence::RecoCompression.TimeMaps ] }
+    InfoMCStructHelper : {
+      SimParticleCollectionTag : "compressRecoMCs"
+      TimeMaps : [ @sequence::RecoCompression.TimeMaps ]
+      MinGoodMomFraction : 0.9
+    }
   }
 
 TrkAnaReco : {
@@ -340,20 +390,24 @@ TrkAnaReco : {
       TrkQualUeP : @local::TrkAna.producers.TrkQualUeP
       TrkQualDmuM : @local::TrkAna.producers.TrkQualDmuM
       TrkQualDmuP : @local::TrkAna.producers.TrkQualDmuP
+      TrkPIDDeM : @local::TrkPIDDeM
+      TrkPIDDeP : @local::TrkPIDDeP
    }
 
    analyzers : {
-      TrkAnaNeg : { @table::TrackAnalysisReco }
+      TrkAnaNeg : { @table::TrackAnalysisReco 
+      		    candidate : @local::DeM
+		    supplements : [ @local::UeM, @local::DmuM ]
+		  }
       TrkAnaPos : { @table::TrackAnalysisReco
-  	      	    DeTag : "KFFDeP"
-  		    UeTag : "KFFUeP"
-  		    DmuTag : "KFFDmuP"
-		    DeTrkQualTag : "TrkQualDeP" }
+      		    candidate : @local::DeP
+		    supplements : [ @local::UeP, @local::DmuP ]
+		  }
 
       genCountLogger : @local::TrkAna.analyzers.genCountLogger
    }
 
-   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualDeP  ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualUeM, TrkQualDmuM, TrkQualDeP, TrkQualUeP, TrkQualDmuP, TrkPIDDeM, TrkPIDDeP ]
    EndSequenceNoMC : [ TrkAnaNeg, TrkAnaPos ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }

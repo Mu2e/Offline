@@ -1,4 +1,4 @@
-#
+# -*- mode:tcl -*-
 # This file defines some standard configurations for services
 #
 
@@ -37,9 +37,11 @@ Services : {
 # a complete job
   Core	    : {
     message		    : @local::default_message
-    GeometryService	    : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-    GlobalConstantsService  : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    GeometryService	    : { inputFile      : "Mu2eG4/geom/geom_common.txt" 
+	simulatedDetector   : { tool_type: "Mu2e" }
+    }
+    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService  : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     DbService : @local::DbEmpty
     ProditionsService: @local::Proditions
   }

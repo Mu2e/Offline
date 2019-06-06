@@ -31,7 +31,11 @@ services : {
   TFileService          : { fileName : "g4study.root" }
   RandomNumberGenerator : { }
 
-  GeometryService        : { inputFile      : "Mu2eG4/test/g4studyGeom.txt"  }
+  GeometryService        : { @table::Services.SimAndReco.GeometryService 
+    inputFile            : "Mu2eG4/test/g4study_Tube_geom.txt"  
+    simulatedDetector    : { tool_type   : "ConstructEnvTube" }
+  }
+
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper               : { }

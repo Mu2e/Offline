@@ -258,6 +258,7 @@ namespace mu2e
 	TrkParticle::type t = (TrkParticle::type) (-(int) _tpart.particleType());
 	tpart = TrkParticle(t);
       }
+
       double amsign   = copysign(1.0,-tpart.charge()*_bz000);
 
       HepVector hpvec(HelixTraj::NHLXPRM);
