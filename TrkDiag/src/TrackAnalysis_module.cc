@@ -175,6 +175,13 @@ namespace mu2e {
     _trkana(0),
     _meanPBI(0.0)
   {
+
+  std::cout << "****************************************************************************************************"
+   << std::endl << "WARNING: TrackAnalysis_module is no longer supported and will be removed in the very near future."
+   << std::endl << "Please used TrackAnalysisReco_module instead, with either TrkAnaReco.fcl or TrackAnaDigisReco.fcl"
+   << std::endl << "for running on reconstruction output (mcs) or digis (dig), respectively"
+   << std::endl << "****************************************************************************************************" << std::endl;
+
   }
 
   void TrackAnalysis::beginJob( ){
