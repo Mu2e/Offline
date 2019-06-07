@@ -577,7 +577,7 @@ namespace mu2e {
   //
   void Mu2eWorld::constructStepLimiters(){
 
-    G4LogicalVolume* hallAir        = _helper->locateVolInfo("HallAir").logical;
+    // G4LogicalVolume* hallAir        = _helper->locateVolInfo("HallAir").logical;
 
     G4LogicalVolume* ds1Vacuum      = _helper->locateVolInfo("DS1Vacuum").logical;
     G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("DS2Vacuum").logical;
@@ -639,7 +639,7 @@ namespace mu2e {
     // Add the step limiters to the interesting volumes.
     // Keep them separated so that we can add different step limits should we decide to.
 
-    hallAir->SetUserLimits( stepLimit ); // not a vacuum per se
+    // hallAir->SetUserLimits( stepLimit ); // not a vacuum per se; CPU costly
 
     ds1Vacuum->SetUserLimits( stepLimit );
     ds2Vacuum->SetUserLimits( stepLimit );
