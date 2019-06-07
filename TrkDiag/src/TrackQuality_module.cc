@@ -72,6 +72,8 @@ namespace mu2e
 	}
       }
     }
+    if(pset.get<bool>("PrintMVA",false))
+      _trkqualmva->showMVA();
   }
 
   void TrackQuality::produce(art::Event& event ) {
