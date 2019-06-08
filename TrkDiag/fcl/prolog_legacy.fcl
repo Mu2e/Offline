@@ -26,7 +26,15 @@ BEGIN_PROLOG
     }
     caloMatchingRoot : "TrackCaloMatchingTRF"
   }
-
+#Generic ReadKalFits config. 
+  ReadKalFits : {
+    module_type: ReadKalFits
+    fitterModuleLabel: KFFDeM
+    KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data files
+    TrkCaloDiag : @local::TrkCaloDiag
+    eventWeightModules : [ ]
+  }
+#
 # Prototype track analysis config.
   TrackAnalysis : {
     module_type : TrackAnalysis

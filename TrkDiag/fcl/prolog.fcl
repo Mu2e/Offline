@@ -5,8 +5,8 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
+#include "TrkDiag/fcl/prolog_legacy.fcl"
 BEGIN_PROLOG
-
 # Diagnostic modules    
   BD : {
 	module_type : BkgDiag
@@ -77,7 +77,8 @@ BEGIN_PROLOG
 	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
-  # Track qulaity module
+
+  # Track quality module
   TrkQual : {
   	  module_type : TrackQuality
   	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
