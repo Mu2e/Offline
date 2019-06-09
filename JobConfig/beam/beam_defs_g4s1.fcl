@@ -1,6 +1,6 @@
 // Yuri Oksuzian, March 2019
 // Include this for beam_g4s1MT_phase1.fcl
-// Turned off extinction monitor output streams
+// Yuri: turned off extinction monitor output streams
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -10,6 +10,7 @@
 BEGIN_PROLOG
 # Mu2eG4 cuts
 
+
 dsRegionCuts: {
    type: intersection
    pars: [
@@ -18,10 +19,11 @@ dsRegionCuts: {
 
       // Yuri's e-mail 2015-04-10: x=1612. from CRV considerations.
       // This is also large enought to enclose TS3 (its half length is 975 mm).
-      { type: plane normal: [ -1, 0, 0 ] point : [ 1612., 0, 0 ] },
+      // Yuri: Moved the plane to cover all the shielding from stage 1.
+     { type: plane normal: [ -1, 0, 0 ] point : [ 2800., 0, 0 ] },
 
-      // Make sure the muon beam reaches our TS3Vacuum stopping volume
-      { type: notInVolume pars: [TS2Vacuum] },
+      // Make sure the muon beam reaches our DS2Vacuum stopping volume
+      {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
 
       // This union splits the output of the above cuts
       // into two exclusive streams
@@ -29,7 +31,7 @@ dsRegionCuts: {
 	    {
 	       type: intersection
 	       pars: [
-		  { type: inVolume pars: [TS3Vacuum] },
+		  { type: inVolume pars: [DS2Vacuum] },
 		  { type: isCharged }
 	       ]
 	       write: mubeam
@@ -157,8 +159,8 @@ physics : {
             type: union
             pars: [
                @local::mu2eg4CutDeltaElectrons, // 8% speed up from killing electrons with Ek<1 MeV
-               @local::dsRegionCuts,
-               @local::extMonRegionCuts
+               @local::dsRegionCuts
+//               @local::extMonRegionCuts
             ]
          }
       }
@@ -251,10 +253,11 @@ physics : {
 
    trigmubeam : [generate, genCounter, g4run, g4consistent, muonBeamFilter, compressPVmuonBeam]
    trigdsregion : [generate, genCounter, g4run, g4consistent, dsRegionFilter, compressPVdsRegion]
-   trigextmonbeam : [generate, genCounter, g4run, g4consistent, extmonBeamFilter, compressPVextmonBeam]
-   trigextmonregion : [generate, genCounter, g4run, g4consistent, extmonRegionFilter, compressPVextmonRegion]
+//   trigextmonbeam : [generate, genCounter, g4run, g4consistent, extmonBeamFilter, compressPVextmonBeam]
+//   trigextmonregion : [generate, genCounter, g4run, g4consistent, extmonRegionFilter, compressPVextmonRegion]
    g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
-   trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
+//   trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
+   trigger_paths  : [trigmubeam, trigdsregion, g4StatusFilter]
 
    outputs: [truncatedEvtsOutput, mubeamout, dsout]
    an: [ genCountLogger, collectionSizes ]
