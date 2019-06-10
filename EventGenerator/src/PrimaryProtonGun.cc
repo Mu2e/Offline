@@ -33,14 +33,11 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-//ROOT Includes
-#include "TH1D.h"
-
 using namespace std;
 
 namespace mu2e {
 
-  PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config):
+  PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepJamesRandom engine, art::Run const& run, SimpleConfig const& config):
 
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->position()

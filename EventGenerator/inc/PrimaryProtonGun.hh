@@ -38,6 +38,8 @@
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 
+#include "CLHEP/Random/JamesRandom.h"
+
 // Forward references outside of namespace mu2e
 namespace art {
   class Run;
@@ -51,7 +53,7 @@ namespace mu2e {
   class PrimaryProtonGun: public GeneratorBase{
   public:
 
-    PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config);
+    PrimaryProtonGun(CLHEP::HepJamesRandom engine, art::Run const& run, SimpleConfig const& config);
     ~PrimaryProtonGun() = default;
 
     virtual void generate( GenParticleCollection&  );
