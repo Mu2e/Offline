@@ -161,5 +161,5 @@ private:
 
 }
 
-DECLARE_ART_SERVICE(mu2e::GeometryService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::GeometryService, GLOBAL)
 #endif /* GeometryService_GeometryService_hh */
