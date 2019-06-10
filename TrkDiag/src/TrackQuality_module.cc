@@ -45,6 +45,7 @@ namespace mu2e
     art::InputTag _kalSeedTag;
 
     MVATools* _trkqualmva;
+    MVAMask _mvamask;
 
     InfoStructHelper _infoStructHelper;
   };
@@ -58,6 +59,21 @@ namespace mu2e
     produces<RecoQualCollection>();
     
     _trkqualmva->initMVA();
+
+    // create the MVA mask in case we have removed variables
+    const auto& labels = _trkqualmva->labels();
+    _mvamask = 0;
+    for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
+      for (const auto& i_label : labels) {
+	std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
+	if (i_label.find(i_varName) != std::string::npos) {
+	  _mvamask ^= (1 << i_var);
+	  break;
+	}
+      }
+    }
+    if(pset.get<bool>("PrintMVA",false))
+      _trkqualmva->showMVA();
   }
 
   void TrackQuality::produce(art::Event& event ) {
@@ -118,7 +134,7 @@ namespace mu2e
 	  trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
 	  
 	  trkqual.setMVAStatus(MVAStatus::calculated);
-	  trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values()));
+	  trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values(), _mvamask));
 
 	}
 	else {

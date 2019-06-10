@@ -10,6 +10,7 @@ int mu2e::ValStatusG4::declare(art::TFileDirectory tfs) {
   _hnTrk3 = tfs.make<TH1D>( "Ntrk3", "log10(N gtrk)", 100, 0.0, 7.0);
   _hover = tfs.make<TH1D>( "over", "SimPart overflow", 2, -0.5, 1.5);
   _hkill = tfs.make<TH1D>( "kill", "N trk killed", 11, -0.5, 10.5);
+  _hkillfp = tfs.make<TH1D>( "killfp", "N trk killed", 11, -0.5, 10.5);
   _hCPU1 = tfs.make<TH1D>( "CPU1", "CPU [info]", 100, 0.0, 1.0);
   _hCPU2 = tfs.make<TH1D>( "CPU2", "CPU [info]", 100, 0.0, 100.0);
   _hCPU3 = tfs.make<TH1D>( "CPU3", "log10(CPU) [info]", 100, -3.0, 4.0);
@@ -25,7 +26,7 @@ int mu2e::ValStatusG4::fill(const mu2e::StatusG4 & obj,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(0.0);
+  _hVer->Fill(1.0);
 
   double logx;
   _hstat->Fill(obj.status());
@@ -35,6 +36,7 @@ int mu2e::ValStatusG4::fill(const mu2e::StatusG4 & obj,
   _hnTrk3->Fill(logx);
   _hover->Fill(obj.overflowSimParticles());
   _hkill->Fill(obj.nKilledStepLimit());
+  _hkillfp->Fill(obj.nKilledByFieldPropagator());
   _hCPU1->Fill(obj.cpuTime());
   _hCPU2->Fill(obj.cpuTime());
   logx = (obj.cpuTime()>0 ? log10(obj.cpuTime()) : -20.0);

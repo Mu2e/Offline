@@ -26,3 +26,4 @@ physics.producers.compressRecoMCs.timeMapTags : [ @sequence::DigiCompression.NoC
 physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] 
 physics.analyzers.RecoCheck.OldTimeOffsets.inputs :[  @sequence::DigiCompression.NoCosmicTimeMaps ]
 physics.analyzers.RecoCheck.NewTimeOffsets.inputs :[  @sequence::RecoCompression.NoCosmicTimeMaps ]
+services.TimeTracker.printSummary: true

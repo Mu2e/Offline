@@ -331,25 +331,24 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
 
 
 
-float MVATools::evalMVA(const std::vector<double >& v) const 
+float MVATools::evalMVA(const std::vector<double >& v,MVAMask mask) const 
 {
-   if (v.size() != layerToNeurons_[1]-1) 
-     throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
-   
    for (size_t i=0;i<v.size();++i)  fv_[i] = static_cast<float>(v[i]);   
-   return evalMVA(fv_);
+   return evalMVA(fv_,mask);
 }
 
-float MVATools::evalMVA(const std::vector<float>& v) const 
+float MVATools::evalMVA(const std::vector<float>& v,MVAMask mask) const 
 {
-    
-    if (v.size() != layerToNeurons_[1]-1) 
-      throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
-    
     // Normalize the bias node is 
+    // skip variables not masked
+    size_t ival(0);
     unsigned vsize = voffset_.size();
-    for (unsigned i=0; i != vsize; ++i) 
-       x_[i]= isNorm_ ? (v[i]-voffset_[i])*vscale_[i] - 1.0 : v[i];
+    for (size_t ivar=0; ivar < v.size(); ivar++){
+      if( (mask&(1<<ivar))){
+	x_[ival]= isNorm_ ? (v[ivar]-voffset_[ival])*vscale_[ival] - 1.0 : v[ivar];
+	ival++;
+      }
+    }
     x_[vsize] = 1.0;
         
     //forward propagation of internal layers
@@ -372,7 +371,10 @@ float MVATools::evalMVA(const std::vector<float>& v) const
     float y(0.0);
     for (unsigned i=0;i<wgts_[idxWeight].size();++i) y += wgts_[idxWeight][i]*x_[i];
 
-    if (oldMVA_) return y;
+    if (ival != layerToNeurons_[1]-1) 
+      throw cet::exception("RECO")<<"mu2e::MVATools: mismatch input dimension and network architecture" << std::endl;
+
+  if (oldMVA_) return y;
     return  1.0/(1.0+expf(-y));
 }
 
