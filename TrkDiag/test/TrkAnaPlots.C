@@ -136,8 +136,8 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   momresp->SetMinimum(0.5);
   momresp->Fit("dscb","LRQ");
   momresp->Fit("dscb","LRM");
-  if(strcmp(file,"")!=0)rcan->SaveAs(file);
 }
+
 void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
 // cuts
   TCut reco("de.status>0");
