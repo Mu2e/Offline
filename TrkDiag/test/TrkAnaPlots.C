@@ -1,5 +1,7 @@
 #include "TH1F.h"
 #include "TF1.h"
+#include "TFile.h"
+#include "TDirectory.h"
 #include "TTree.h"
 #include "TLegend.h"
 #include "TPad.h"
@@ -18,8 +20,6 @@
 #include "TDirectory.h"
 #include "Math/Math.h"
 #include "THStack.h"
-
-
 
 // The following is from Alexx Perloff, JetMetaAnalysis
 double fnc_dscb(double*xx,double*pp) {
@@ -47,61 +47,144 @@ double fnc_dscb(double*xx,double*pp) {
   return result;
 }
 
-void PId(TTree* ta) {
+class TrkAnaPlots {
+  public:
+  TrkAnaPlots(TTree* tn, TTree* tp) : _tn(tn), _tp(tp)
+  { BuildCuts(); }
+  TrkAnaPlots(TFile* file) {
+    _tn = (TTree*)( ((TDirectory*)file->Get("TrkAnaNeg"))->Get("trkana"));
+    _tp = (TTree*)( ((TDirectory*)file->Get("TrkAnaPos"))->Get("trkana"));
+    BuildCuts();
+  }
 
-  TH2F* evspep = new TH2F("evspep","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
-  TH2F* evspmp = new TH2F("evspmp","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
-  TH2F* evspem = new TH2F("evspem","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
-  TH2F* evspmm = new TH2F("evspmm","Associated Cluster Energy vs Track Momentum;P (MeV/c);E (MeV)",50,0,200,50,0,200);
-  evspep->SetMaximum(50);
-  evspmp->SetMaximum(50);
-  evspep->SetStats(0);
-  evspmp->SetStats(0);
-  evspep->SetLineColor(kOrange);
-  evspmp->SetLineColor(kCyan);
-  evspem->SetMaximum(50);
-  evspmm->SetMaximum(50);
-  evspem->SetStats(0);
-  evspmm->SetStats(0);
-  evspem->SetLineColor(kRed);
-  evspmm->SetLineColor(kBlue);
-
-  TCanvas* can = new TCanvas("can","can",800,800);
-
-  ta->Project("evspem","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==11");
-  ta->Project("evspmm","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==13");
-  ta->Project("evspep","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==-11");
-  ta->Project("evspmp","dec.eclust:de.mom","de.status>0&&tcnt.ndemc>0&&demc.pdg==-13");
-
-  evspem->Draw();
-  evspem->Draw("box");
-  evspmm->Draw("boxsame");
-  TLegend* leg = new TLegend(0.1,0.6,0.5,0.9);
-  leg->AddEntry(evspem,"True e^{-}","L");
-  leg->AddEntry(evspmm,"True #mu^{-}","L");
-  leg->AddEntry(evspep,"True e^{+}","L");
-  leg->AddEntry(evspmp,"True #mu^{+}","L");
-  leg->Draw();
-}
-
-void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
+  void BuildCuts();
+  void PId();
+  void FitMomResp(TH1F* momresp);
+  void FitMomRes(TH1F* momres);
+  void MomResp();
+  void MomRes();
+  void Acc(int ngen,int gencode=2,int charge=-1);
+  void hitres();
+  void wpull();
+  void Ambig();
+  void Resid();
+  void Con();
+  void TrkQual(const char* extra="");
+  void TrkQualRes(float tqcut);
+  void StrawMat();
+  void TrkCaloHit(float tqcut,int pdg=11);
+  void TrkCaloHitMC();
+  void t0();
+  void Eff(unsigned norm, double plo, double phi, int q=-1);
+  void PlotIPA();
+  void Upstream();
 // cuts
-  TCut reco("de.status>0");
+  TCut _reco, _goodfit, _rpitch, _livegate, _opa, _physics, _final, _pbi;
+  TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
+  TCut _CRV, _eminustrig, _eplustrig, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
+ // Trees 
+  TTree* _tn;
+  TTree* _tp; 
+  // canvases
+  TCanvas *_pidcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
+
+};
+
+void TrkAnaPlots::BuildCuts(){
   char ctext[80];
-  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
-  TCut goodfit(ctext);
+
+  _reco = TCut("de.status>0");
+  _ele = TCut("abs(demc.pdg)==11");
+  _eminus = TCut("demc.pdg==11");
+  _eplus = TCut("demc.pdg==-11");
+  _mu = TCut("abs(demc.pdg)==13");
+  _muminus = TCut("demc.pdg==13");
+  _muplus = TCut("demc.pdg==-13");
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(700.0);
   double t0max(1695.0);
   snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
-  TCut rpitch = TCut(ctext);
+  _rpitch = TCut(ctext);
   snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
-  TCut livegate = TCut(ctext);
-  TCut opa = TCut("deent.d0<105 && deent.d0>-80 && (deent.d0+2/deent.om)>450 && (deent.d0+2/deent.om)<680");
-  TCut rmomloose("deent.mom>100.0");
-  TCut physics = rpitch+opa+livegate+rmomloose;
+  _livegate = TCut(ctext);
+  _opa = TCut("abs(deent.d0<105) && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680");
+  _pbi = TCut("evtwt.PBIWeight"); 
+  _CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
+  _eminustq = TCut("dequal.TrkQualDeM>0.8");
+  _eplustq = TCut("dequal.TrkQualDeP>0.8");
+  _eminuspid = TCut("dequal.TrkPIDDeM>0.5");
+  _epluspid = TCut("dequal.TrkPIDDeP>0.5");
+  _eminustrig = TCut("(trigbits&0x208)>0"); // negative, TrkPatRec or CalPatRec
+  _eplustrig = TCut("(trigbits&0x410)>0"); // positive, TrkPatRec or CalPatRec
+  _eminusrmom = TCut("deent.mom>103.4");
+  _eplusrmom = TCut("deent.mom>90.9");
+  _downstream = TCut("demcxit.momz>0");
+  _physics = _rpitch+_opa+_livegate+_eminusrmom;
+  _final = _reco+_eminustq+_pbi;
 
+}
+
+void TrkAnaPlots::PId() {
+  TH2F* r1vr0nc = new TH2F("r1vr0nc","Disk 1 projected radius vs Disk 0 projected radius, no TrkCaloHit;R_{0} (mm); R_{1} (mm)",100,0.0,700.0,100,0.0,700);
+  TH2F* r1vr0c = new TH2F("r1vr0c","Disk 1 projected radius vs Disk 0 projected radius, TrkCaloHit;R_{0} (mm); R_{1} (mm)",100,0.0,700.0,100,0.0,700);
+  TH1F* dempid = new TH1F("dempid","TCHPidQual",120,-0.1,1.1);
+  TH1F* deppid = new TH1F("deppid","TCHPidQual",120,-0.1,1.1);
+  TH1F* dmumpid = new TH1F("dmumpid","TCHPidQual",120,-0.1,1.1);
+  TH1F* dmuppid = new TH1F("dmuppid","TCHPidQual",120,-0.1,1.1);
+  dempid->SetStats(0);
+  deppid->SetStats(0);
+  dmumpid->SetStats(0);
+  dmuppid->SetStats(0);
+  //
+  dempid->SetLineColor(kBlue);
+  deppid->SetLineColor(kGreen);
+  dmumpid->SetLineColor(kMagenta);
+  dmuppid->SetLineColor(kRed);
+  
+  _tn->Project("dempid","detrkpid.mvaout",_downstream&&_eminus);
+  _tn->Project("dmumpid","detrkpid.mvaout",_downstream&&_muminus);
+  _tp->Project("deppid","detrkpid.mvaout",_downstream&&_eplus);
+  _tp->Project("dmuppid","detrkpid.mvaout",_downstream&&_muplus);
+  _tn->Project("r1vr0c","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eminus&&"detch.active");
+  _tn->Project("r1vr0nc","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eminus&&"!detch.active");
+  _tp->Project("+r1vr0c","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eplus&&"detch.active");
+  _tp->Project("+r1vr0nc","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eplus&&"!detch.active");
+
+  _pidcan = new TCanvas("pidcan","pidcan",800,1200);
+  _pidcan->Divide(1,2);
+  _pidcan->cd(1);
+  gPad->SetLogy();
+  if(dempid->GetEntries() > deppid->GetEntries()){
+    dempid->Draw();
+    deppid->Draw("same");
+  } else {
+    deppid->Draw();
+    dempid->Draw("same");
+  }
+  dmumpid->Draw("same");
+  dmuppid->Draw("same");
+  
+  TLegend* leg = new TLegend(0.1,0.6,0.5,0.9);
+  leg->AddEntry(dempid,"True e^{-}","L");
+  leg->AddEntry(dmumpid,"True #mu^{-}","L");
+  leg->AddEntry(deppid,"True e^{+}","L");
+  leg->AddEntry(dmuppid,"True #mu^{+}","L");
+  leg->Draw();
+
+  TVirtualPad* pad = _pidcan->cd(2);
+  pad->Divide(2,1);
+  pad->cd(1);
+  r1vr0c->Draw("colorz");
+  pad->cd(2);
+  r1vr0nc->Draw("colorz");
+
+}
+
+void TrkAnaPlots::FitMomResp(TH1F* momresp) {
+  //    _tn->Project(mname,"fit.mom-mcent.mom",_final);
+  double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
+  cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
   dscb->SetParName(0,"Norm");
   dscb->SetParName(1,"x0");
@@ -111,21 +194,7 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   dscb->SetParName(5,"APos");
   dscb->SetParName(6,"PPos");
 
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
-  rcan->Clear();
-  gStyle->SetOptFit(111111);
-  gStyle->SetOptStat("oumr");
-  gPad->SetLogy();
-  TH1F* momresp = new TH1F("momresp","momentum response at tracker;MeV/c",251,-10.0,4.0);
-  momresp->Sumw2();
-  TCut final = (reco+goodfit)*"evtwt.PBIWeight";
-//  ta->Project("momresp","de.mom-demcgen.mom",evtwt*final);
-  ta->Project("momresp","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",final);
-  momresp->Scale(1.0/nmu);
-  //    ta->Project(mname,"fit.mom-mcent.mom",final);
-  double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
-  cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
-  dscb->SetParameters(4e-5*integral,-0.6,0.3,0.7,3.0,3.0,3.0);
+  dscb->SetParameters(integral,momresp->GetMean()+0.5,0.3,0.7,3.0,3.0,6.0);
   dscb->SetNpx(1000);
   dscb->SetParLimits(2,0.1,50.0);
   dscb->SetParLimits(3,0.0,50.0);
@@ -138,24 +207,34 @@ void MomResp(TTree* ta, double tqcut, double nmu,const char* file="") {
   momresp->Fit("dscb","LRM");
 }
 
-void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
-// cuts
-  TCut reco("de.status>0");
-  char ctext[80];
-  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
-  TCut goodfit(ctext);
-  double tdlow(0.57735027);
-  double tdhigh(1.0);
-  double t0min(700.0);
-  double t0max(1695.0);
-  snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
-  TCut rpitch = TCut(ctext);
-  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
-  TCut livegate = TCut(ctext);
-  TCut opa = TCut("deent.d0<105 && deent.d0>-80 && (deent.d0+2/deent.om)>450 && (deent.d0+2/deent.om)<680");
-  TCut rmomloose("deent.mom>100.0");
-  TCut physics = rpitch+opa+livegate+rmomloose;
+void TrkAnaPlots::MomResp() {
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  TH1F* momrespe = new TH1F("momrespe","momentum response at tracker entrance;MeV/c",251,-10.0,4.0);
+  TH1F* momrespm = new TH1F("momrespm","momentum response at tracker middle;MeV/c",251,-10.0,4.0);
+  TH1F* momrespx = new TH1F("momrespx","momentum response at tracker exit;MeV/c",251,-10.0,4.0);
+  momrespe->Sumw2();
+  momrespm->Sumw2();
+  momrespx->Sumw2();
+  _tn->Project("momrespe","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
+  _tn->Project("momrespm","demid.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
+  _tn->Project("momrespx","dexit.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
 
+  _rscan = new TCanvas("rscan","Momentum Response",1200,1200);
+  _rscan->Divide(2,2);
+  _rscan->cd(1);
+  gPad->SetLogy();
+  FitMomResp(momrespe);
+  _rscan->cd(2);
+  gPad->SetLogy();
+  FitMomResp(momrespm);
+  _rscan->cd(3);
+  gPad->SetLogy();
+  FitMomResp(momrespx);
+
+}
+
+void TrkAnaPlots::FitMomRes(TH1F* momres) {
   TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,2.5,7);
   dscb->SetParName(0,"Norm");
   dscb->SetParName(1,"x0");
@@ -165,27 +244,18 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   dscb->SetParName(5,"APos");
   dscb->SetParName(6,"PPos");
 
-  TCanvas* rcan = new TCanvas("rcan","Momentum Resolution",600,600);
-  rcan->Clear();
-  gStyle->SetOptFit(111111);
-  gStyle->SetOptStat("oumr");
-  gPad->SetLogy();
-  TH1F* momres = new TH1F("momres","momentum resolution at start of tracker;MeV/c",251,-4,4);
-  momres->Sumw2();
-  TCut final = (reco+goodfit+physics)*"evtwt.PBIWeight";
-  ta->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",final);
-  momres->Scale(1.0/nmu);
-  //    ta->Project(mname,"fit.mom-mcent.mom",final);
-  double integral = momres->GetEntries()*momres->GetBinWidth(1)/nmu;
+  double integral = momres->GetEntries()*momres->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
   dscb->SetParameters(2*integral,0.0,0.15,1.0,4.5,1.2,10.0);
 
-//  momres->SetMinimum(0.5);
   momres->Fit("dscb","RQ");
   momres->Fit("dscb","RMQ");
   TFitResultPtr fitres = momres->Fit("dscb","SRE");
   cout << "Core Sigma = " << dscb->GetParameter(2) << " +- " << dscb->GetParError(2) << endl;
   cout << "High Side Power = " << dscb->GetParameter(6) << " +- " << dscb->GetParError(6) << endl;
+
+  momres->Fit("dscb","RQ");
+  momres->Fit("dscb","RMQ");
 
   // count outliers
   int outbin = momres->FindBin(1.1);
@@ -194,101 +264,123 @@ void MomRes(TTree* ta, double tqcut,double nmu,const char* file="") {
   double outrat = outint/totint;
   cout <<"Outlier integral = " << outint  << " total integral = " << totint << " Outlier fraction = " << outrat << endl;
 
-
   TLine* zero = new TLine(0.0,0.0,0.0,momres->GetBinContent(momres->GetMaximumBin()));
   zero->SetLineStyle(2);
   zero->Draw();
 
-  TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
-  rtext->AddText("Reco Cuts");
-  char line[40];
-  snprintf(line,80,"%4.3f<tan(#lambda)<%4.3f",tdlow,tdhigh);
-  rtext->AddText(line);
-  snprintf(line,80,"t0>%5.1f nsec",t0min);
-  rtext->AddText(line);
-  sprintf(line,"%s",goodfit.GetTitle());
-  rtext->AddText(line);
-  sprintf(line,"%s",rmomloose.GetTitle());
-  rtext->AddText(line);
-  sprintf(line,"%5.0f Tracks",momres->GetEntries());
-  rtext->AddText(line);
-  rtext->Draw();
-  if(strcmp(file,"")!=0)rcan->SaveAs(file);
-
+//  TPaveText* rtext = new TPaveText(0.1,0.5,0.4,0.9,"NDC");
+//  rtext->AddText("Reco Cuts");
+//  char line[80];
+//  snprintf(line,80,"%s",cut.GetTitle());
+//  rtext->AddText(line);
+//  sprintf(line,"%5.0f Tracks",momres->GetEntries());
+//  rtext->AddText(line);
+//  rtext->Draw();
 }
 
-void Acc(TTree* ta, double tqcut,int ngen,int gencode=2,const char* file="") {
-  unsigned nbins(10);
+void TrkAnaPlots::MomRes() {
+// cuts
+  _rcan = new TCanvas("rcan","Momentum Resolution",1200,1200);
+  _rcan->Divide(2,2);
+  gStyle->SetOptFit(111111);
+  gStyle->SetOptStat("oumr");
+  gPad->SetLogy();
+  TH1F* momrese = new TH1F("momrese","momentum resolution at start of tracker;MeV/c",251,-4,4);
+  TH1F* momresm = new TH1F("momresm","momentum resolution at mid of tracker;MeV/c",251,-4,4);
+  TH1F* momresx = new TH1F("momresx","momentum resolution at exit of tracker;MeV/c",251,-4,4);
+  momrese->Sumw2();
+  momresm->Sumw2();
+  momresx->Sumw2();
+  _tn->Project("momrese","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_final);
+  _tn->Project("momresm","demid.mom-sqrt(demcmid.momx^2+demcmid.momy^2+demcmid.momz^2)",_final);
+  _tn->Project("momresx","dexit.mom-sqrt(demcxit.momx^2+demcxit.momy^2+demcxit.momz^2)",_final);
+  momrese->Scale(1.0);
+  momresm->Scale(1.0);
+  momresx->Scale(1.0);
+//  momres->SetMinimum(0.5);
+  _rcan->cd(1);
+  FitMomRes(momrese);
+  _rcan->cd(2);
+  FitMomRes(momresm);
+  _rcan->cd(3);
+  FitMomRes(momresx);
+
+}
+void TrkAnaPlots::Acc(int ngen,int gencode,int charge) {
+  vector<string> binnames={"All","Trigger", "KF Track fit", "Fit Quality", "Livegate", "Reco pitch", "OPA Rejection", "PID", "CRV Rejection", "Momentum window"};
+
+  unsigned nbins = binnames.size();
   double bmax = nbins-0.5;
 
   TH1F* acc = new TH1F("acc","Acceptance #times Efficiency;;Cummulative a#times#epsilon",nbins,-0.5,bmax);
   TH1F* racc = new TH1F("racc","Acceptance #times Efficiency;;Relative a#times#epsilon",nbins,-0.5,bmax);
-//  acc->Sumw2();
-//  racc->Sumw2();
-  unsigned ibin(1);
-  acc->GetXaxis()->SetBinLabel(ibin++,"All");
-//  acc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
-  acc->GetXaxis()->SetBinLabel(ibin++,"Trigger");
-  acc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
-  acc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
-  acc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
-  acc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  acc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
-  acc->GetXaxis()->SetBinLabel(ibin++,"PID");
-  acc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
-  acc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
+  TH1F* norm = new TH1F("norm","Normalization",nbins,-0.5,bmax);
+  TH1F* eff = new TH1F("eff","Cut Efficiency;;#epsilon after all other cuts",nbins,-0.5,bmax);
+  TH1F* rej = new TH1F("rej","Cut Rejection;;Fraction left after all other cuts",nbins,-0.5,bmax);
+  vector<string> binvals;
+  char bval[20];
+  for(size_t ibin=0;ibin<nbins;ibin++){
+    acc->GetXaxis()->SetBinLabel(ibin+1,binnames[ibin].c_str());
+    racc->GetXaxis()->SetBinLabel(ibin+1,binnames[ibin].c_str());
+    eff->GetXaxis()->SetBinLabel(ibin+1,binnames[ibin].c_str());
+    rej->GetXaxis()->SetBinLabel(ibin+1,binnames[ibin].c_str());
+    snprintf(bval,20,"%i",(int)ibin);
+    binvals.push_back(string(bval));
+  }
+  acc->SetStats(0);
+  racc->SetStats(0);
+  eff->SetStats(0);
+  rej->SetStats(0);
 
-
-  ibin = 1;
-  racc->GetXaxis()->SetBinLabel(ibin++,"All");
-//  racc->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
-  racc->GetXaxis()->SetBinLabel(ibin++,"Trigger");
-  racc->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
-  racc->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
-  racc->GetXaxis()->SetBinLabel(ibin++,"Livegate");
-  racc->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  racc->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
-  racc->GetXaxis()->SetBinLabel(ibin++,"PID");
-  racc->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
-  racc->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
-
-  ibin = 0;
-  const char* binnames[12] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0","11.0"};
-
-  TCut mcsel = "demc.ndigigood>15&&sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>90.0";
-  // &&demcent.td>0.55&&demcent.td<1.05";
-  //&&fmod(demcent.t0,1695.0)>500.0";
-  TCut trigger = "(trigbits&0x208)>0";
-  TCut reco = "de.status>0";
-  TCut CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
+  unsigned ibin = 0;
   char ctext[80];
-  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
-  TCut goodfit(ctext);
   snprintf(ctext,80,"demc.gen==%i",gencode);
   TCut goodmc(ctext);
-  TCut livegate = "de.t0>700.0&&de.t0<1695";
-  TCut rpitch = "deent.td>0.57735027&&deent.td<1.0";
-  TCut opa = "deent.d0<105 && deent.d0>-80 && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680";
-  TCut rmom = "deent.mom>103.85";
-  TCut evtwt = "evtwt.PBIWeight";
-  TCut pid = "dequal.TrkPIDDeM>0.5";
-  ta->Project("acc",binnames[ibin++],evtwt*goodmc);
- // ta->Project("+acc",binnames[ibin++],evtwt*mcsel);
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+pid));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid));
-  ta->Project("+acc",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
+  TCut trigger,goodfit,pid,rmom;
+  TTree* ta;
+  if(charge<0){
+    trigger = _eminustrig;
+    goodfit = _eminustq;
+    pid = _eminuspid;
+    rmom = _eminusrmom;
+    ta = _tn;
+  } else {
+    trigger = _eplustrig;
+    goodfit = _eplustq;
+    pid = _epluspid;
+    rmom = _eplusrmom;
+    ta = _tp;
+  }
+
+  ta->Project("acc",binvals[ibin++].c_str(),_pbi*goodmc);
+ // ta->Project("+acc",binvals[ibin++],_pbi*mcsel);
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+pid));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+
+  ta->Project("norm",binvals[0].c_str(),_pbi*goodmc);
+  ibin = 0;
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid));
 
   double all = acc->GetBinContent(1);
-  double norm = ngen;
   if(ngen < 0)
-    norm = all;
-  double prev = norm;
+    ngen = all;
+  double prev = ngen;
   for(ibin=1;ibin<=nbins;ibin++){
     if(prev > 0.0)
       racc->SetBinContent(ibin,acc->GetBinContent(ibin)/prev);
@@ -296,10 +388,9 @@ void Acc(TTree* ta, double tqcut,int ngen,int gencode=2,const char* file="") {
       racc->SetBinContent(ibin,0.0);
     prev = acc->GetBinContent(ibin);
   }
-  cout << "Found " << norm << "Entries." << endl;
   racc->SetMaximum(1.1);
   racc->SetMinimum(-0.05);
-  acc->Scale(1.0/(float)norm);
+  acc->Scale(1.0/(float)ngen);
   acc->SetMaximum(1.1);
   acc->SetMinimum(-0.05);
   acc->SetStats(0);
@@ -310,109 +401,51 @@ void Acc(TTree* ta, double tqcut,int ngen,int gencode=2,const char* file="") {
   racc->SetMarkerSize(2.0);
   acc->GetYaxis()->SetTitleSize(0.05);
   racc->GetYaxis()->SetTitleSize(0.05);
+  eff->GetXaxis()->SetLabelSize(0.06);
+  rej->GetXaxis()->SetLabelSize(0.06);
+  eff->SetMarkerSize(2.0);
+  rej->SetMarkerSize(2.0);
+  eff->GetYaxis()->SetTitleSize(0.05);
+  rej->GetYaxis()->SetTitleSize(0.05);
 
   gStyle->SetPaintTextFormat("5.4f");
-  TCanvas* acan = new TCanvas("acan","Acceptance",1200,800);
-  acan->Clear();
-  acan->Divide(1,2);
-  acan->cd(1);
-  TPad* tp = (TPad*)acan->cd(1);
+  _acan = new TCanvas("acan","Acceptance",1200,800);
+  _acan->Clear();
+  _acan->Divide(1,2);
+  _acan->cd(1);
+  TPad* tp = (TPad*)_acan->cd(1);
   tp->SetBottomMargin(0.15);
   acc->Draw("histtext0");
-  acan->cd(2);
-  tp = (TPad*)acan->cd(2);
+  _acan->cd(2);
+  tp = (TPad*)_acan->cd(2);
   tp->SetBottomMargin(0.15);
   racc->Draw("histtext0");
-  if(strcmp(file,"")!=0)acan->SaveAs(file);
-}
-
-void CutEff(TTree* ta, double tqcut,int gencode,const char* file="") {
-  unsigned nbins(10);
-  double bmax = nbins-0.5;
-
-  TH1F* norm = new TH1F("norm","Normalization",nbins,-0.5,bmax);
-  TH1F* eff = new TH1F("eff","Cut Efficiency;;#epsilon after all other cuts",nbins,-0.5,bmax);
-  TH1F* rej = new TH1F("rej","Cut Rejection;;Fraction left after all other cuts",nbins,-0.5,bmax);
-  unsigned ibin(1);
-  eff->GetXaxis()->SetBinLabel(ibin++,"All");
-  eff->GetXaxis()->SetBinLabel(ibin++,"Trigger");
-  eff->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
-  eff->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
-  eff->GetXaxis()->SetBinLabel(ibin++,"Livegate");
-  eff->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  eff->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
-  eff->GetXaxis()->SetBinLabel(ibin++,"PID");
-  eff->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
-  eff->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
-  eff->SetStats(0);
-  ibin = 1;
-  rej->GetXaxis()->SetBinLabel(ibin++,"All");
-  rej->GetXaxis()->SetBinLabel(ibin++,"Trigger");
-  rej->GetXaxis()->SetBinLabel(ibin++,"KF Track fit");
-  rej->GetXaxis()->SetBinLabel(ibin++,"Fit Quality");
-  rej->GetXaxis()->SetBinLabel(ibin++,"Livegate");
-  rej->GetXaxis()->SetBinLabel(ibin++,"Reco pitch");
-  rej->GetXaxis()->SetBinLabel(ibin++,"OPA Rejection");
-  rej->GetXaxis()->SetBinLabel(ibin++,"PID");
-  rej->GetXaxis()->SetBinLabel(ibin++,"CRV Rejection");
-  rej->GetXaxis()->SetBinLabel(ibin++,"Momentum window");
-  rej->SetStats(0);
-
-  ibin = 0;
-  const char* binnames[12] ={"0.0","1.0","2.0","3.0","4.0","5.0","6.0","7.0","8.0","9.0","10.0","11.0"};
-
-  TCut trigger = "(trigbits&0x208)>0";
-  TCut reco = "de.status>0";
-  TCut CRV = "bestcrv<0||de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0";
-  char ctext[80];
-  snprintf(ctext,80,"dequal.TrkQualDeM>%f",tqcut);
-  TCut goodfit(ctext);
-  snprintf(ctext,80,"demc.gen==%i",gencode);
-  TCut goodmc(ctext);
-  TCut livegate = "de.t0>700.0&&de.t0<1695";
-  TCut rpitch = "deent.td>0.57735027&&deent.td<1.0";
-  TCut opa = "deent.d0<105 && deent.d0>-80 && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680";
-  TCut rmom = "deent.mom>103.85";
-  TCut evtwt = "evtwt.PBIWeight";
-  TCut pid = "dequal.TrkPIDDeM>0.5";
-  ta->Project("norm",binnames[0],evtwt*goodmc);
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+reco+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+goodfit+livegate+rpitch+opa+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+livegate+rpitch+opa+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+rpitch+opa+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+opa+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+CRV+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+CRV+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+pid+rmom));
-  ta->Project("+eff",binnames[ibin++],evtwt*(goodmc+trigger+reco+goodfit+livegate+rpitch+opa+CRV+pid));
 
   double normval = norm->GetBinContent(1);
   double allval = eff->GetBinContent(1);
   cout << "Found " << normval << "Entries, " << allval << " survive all cuts." << endl;
   for(ibin=1;ibin<=nbins;ibin++){
-    cout << "bin " << ibin << eff->GetXaxis()->GetBinLabel(ibin) <<  " contents = " << eff->GetBinContent(ibin) << endl;
+//    cout << "bin " << ibin << eff->GetXaxis()->GetBinLabel(ibin) <<  " contents = " << eff->GetBinContent(ibin) << endl;
     rej->SetBinContent(ibin,eff->GetBinContent(ibin)/normval);
     if(eff->GetBinContent(ibin)>0.0)
       eff->SetBinContent(ibin,allval/eff->GetBinContent(ibin));
     else
       eff->SetBinContent(ibin,0.0);
   }
-    gStyle->SetPaintTextFormat("5.5f");
-  TCanvas* ecan = new TCanvas("ecan","CutEfficiency",1200,1200);
-  ecan->Divide(1,2);
-  ecan->cd(1);
-  TPad* tp = (TPad*)ecan->cd(1);
+  gStyle->SetPaintTextFormat("5.5f");
+  _ecan = new TCanvas("ecan","CutEfficiency",1200,1200);
+  _ecan->Divide(1,2);
+  _ecan->cd(1);
+  tp = (TPad*)_ecan->cd(1);
   tp->SetBottomMargin(0.15);
   eff->Draw("histtext0");
-  tp = (TPad*)ecan->cd(2);
+  tp = (TPad*)_ecan->cd(2);
   tp->SetBottomMargin(0.15);
   tp->SetLogy();
   rej->Draw("histtext0");
-  if(strcmp(file,"")!=0)ecan->SaveAs(file);
 }
 
-void hitres(TTree* ta) {
+void TrkAnaPlots::hitres() {
   TH1F* hresida = new TH1F("hresida","Hit Residual;mm",100,-2,2);
   TH1F* hresidna = new TH1F("hresidna","Hit Residual;mm",100,-2,2);
   TH1F* hresidall = new TH1F("hresidall","Hit Residual;mm",100,-2,2);
@@ -423,9 +456,9 @@ void hitres(TTree* ta) {
   THStack* hresidst = new THStack("hresidst","Hit Residual;mm");
   hresidst->Add(hresida);
   hresidst->Add(hresidna);
-  ta->Project("hresida","detsh._resid","de.status>0&&detsh._active&&detsh._ambig!=0");
-  ta->Project("hresidna","detsh._resid","de.status>0&&detsh._active&&detsh._ambig==0");
-  ta->Project("hresidall","detsh._resid","de.status>0&&detsh._active");
+  _tn->Project("hresida","detsh._resid",_reco+_reco+"_reco&&detsh._active&&detsh._ambig!=0");
+  _tn->Project("hresidna","detsh._resid",_reco+"_reco&&detsh._active&&detsh._ambig==0");
+  _tn->Project("hresidall","detsh._resid",_reco+"_reco&&detsh._active");
   
   TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
   TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
@@ -437,53 +470,53 @@ void hitres(TTree* ta) {
   THStack* hresst = new THStack("hresst","Hit Drift Resolution;Reco R_{drift}-MC (mm)");
   hresst->Add(hresa);
   hresst->Add(hresna);
-  ta->Project("hresa","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active&&detsh._ambig!=0");
-  ta->Project("hresna","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active&&detsh._ambig==0");
-  ta->Project("hresall","detsh._rdrift-detshmc._dist","de.status>0&&detsh._active");
-  TCanvas* rescan = new TCanvas("rescan","rescan",800,800);
-  rescan->Divide(1,2);
-  rescan->cd(1);
+  _tn->Project("hresa","detsh._rdrift-detshmc._dist",_reco+"_reco&&detsh._active&&detsh._ambig!=0");
+  _tn->Project("hresna","detsh._rdrift-detshmc._dist",_reco+"_reco&&detsh._active&&detsh._ambig==0");
+  _tn->Project("hresall","detsh._rdrift-detshmc._dist",_reco+"_reco&&detsh._active");
+  _rescan = new TCanvas("rescan","rescan",800,800);
+  _rescan->Divide(1,2);
+  _rescan->cd(1);
   hresidst->Draw("h");
   hresidall->Fit("gaus","","sames");
   TLegend* rleg = new TLegend(0.15,0.6,0.4,0.85);
   rleg->AddEntry(hresida,"Resolved Ambiguity","f");
   rleg->AddEntry(hresidna,"Null Ambiguity","f");
   rleg->Draw();
-  rescan->cd(2);
+  _rescan->cd(2);
   hresst->Draw("h");
   hresall->Fit("gaus","","sames");
 }
 
-void wpull(TTree* ta) {
+void TrkAnaPlots::wpull() {
   TH1F* swp = new TH1F("swp","Final Fit Wire Position Pull",100,-25,25);
   TH1F* uwp = new TH1F("uwp","Final Fit Wire Position Pull",100,-25,25);
   TH1F* rwp = new TH1F("rwp","Final Fit Wire Position Pull",100,-25,25);
   swp->SetLineColor(kGreen);
   uwp->SetLineColor(kRed);
   rwp->SetLineColor(kBlue);
-  ta->Project("swp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel==0");
-  ta->Project("uwp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel<0");
-  ta->Project("rwp","(detsh._wdist-detsh._hlen)/detsh._werr","de.status>0&&detsh._active&&detshmc._rel>0");
-  TCanvas* wpcan = new TCanvas("wpcan","wpcan",800,800);
-  wpcan->Divide(2,2);
-  wpcan->cd(1);
+  _tn->Project("swp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"_reco&&detsh._active&&detshmc._rel==0");
+  _tn->Project("uwp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"_reco&&detsh._active&&detshmc._rel<0");
+  _tn->Project("rwp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"_reco&&detsh._active&&detshmc._rel>0");
+  _wpcan = new TCanvas("wpcan","wpcan",800,800);
+  _wpcan->Divide(2,2);
+  _wpcan->cd(1);
   gPad->SetLogy();
   swp->Fit("gaus");
-  wpcan->cd(2);
+  _wpcan->cd(2);
   uwp->Draw();
-  wpcan->cd(3);
+  _wpcan->cd(3);
   gPad->SetLogy();
   rwp->Fit("gaus");
   TLegend* wleg = new TLegend(0.5,0.5,0.9,0.9);
   wleg->AddEntry(swp,"Primary Hit","L");
   wleg->AddEntry(uwp,"Unrelated Hit","L");
   wleg->AddEntry(rwp,"Related Hit","L");
-  wpcan->cd(4);
+  _wpcan->cd(4);
   wleg->Draw();
 
 }
 
-void Ambig(TTree* ta,const char* file="") {
+void TrkAnaPlots::Ambig() {
   gStyle->SetOptStat(1111);
 
   TCut ghit("detshmc._rel==0");
@@ -495,7 +528,7 @@ void Ambig(TTree* ta,const char* file="") {
   TCut active("detsh._active>0");
 // apply requested cuts
 
-  TCut goodtrk("de.status>0&&de.nactive>20&&");
+  TCut goodtrk(_reco+"_reco&&de.nactive>20&&");
 
 
   TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
@@ -526,13 +559,13 @@ void Ambig(TTree* ta,const char* file="") {
   rdd->Sumw2();
   rdf->Sumw2();
 
-  ta->Project("rdg","detshmc._dist",goodtrk+active+gambig+ghit);
-  ta->Project("rdn","detshmc._dist",goodtrk+active+nambig+ghit);
-  ta->Project("rdb","detshmc._dist",goodtrk+active+bambig+ghit);
-  ta->Project("rda","detshmc._dist",goodtrk+active);
-  ta->Project("rdi","detshmc._dist",goodtrk+ghit+(!active));
-  ta->Project("rdd","detshmc._dist",goodtrk+active+delta);
-  ta->Project("rdf","detshmc._dist",goodtrk+active+bkg);
+  _tn->Project("rdg","detshmc._dist",goodtrk+active+gambig+ghit);
+  _tn->Project("rdn","detshmc._dist",goodtrk+active+nambig+ghit);
+  _tn->Project("rdb","detshmc._dist",goodtrk+active+bambig+ghit);
+  _tn->Project("rda","detshmc._dist",goodtrk+active);
+  _tn->Project("rdi","detshmc._dist",goodtrk+ghit+(!active));
+  _tn->Project("rdd","detshmc._dist",goodtrk+active+delta);
+  _tn->Project("rdf","detshmc._dist",goodtrk+active+bkg);
   Double_t ntotal = rda->GetEntries();
   Double_t nright = rdg->GetEntries();
   Double_t nneutral = rdn->GetEntries();
@@ -555,9 +588,9 @@ void Ambig(TTree* ta,const char* file="") {
   momres1->SetMarkerStyle(4);
   momres2->SetMarkerColor(kOrange);
   momres2->SetMarkerStyle(5);
-  ta->Project("momres0","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk);
-  ta->Project("momres1","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==1");
-  ta->Project("momres2","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==2");
+  _tn->Project("momres0","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk);
+  _tn->Project("momres1","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==1");
+  _tn->Project("momres2","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk&&"de.status==2");
 
   TH1F* afg = new TH1F("afg","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c);hit fraction",41,-4,4);
   TH1F* afn = new TH1F("afn","Average hit fraction vs momentum resolution;p_{reco}-p_{true}(MeV/c):hit fraction",41,-4,4);
@@ -574,21 +607,21 @@ void Ambig(TTree* ta,const char* file="") {
   afn->Sumw2();
   afb->Sumw2();
   afa->Sumw2();
-  ta->Project("afg","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+gambig);
-  ta->Project("afn","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+nambig);
-  ta->Project("afb","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+bambig);
-  ta->Project("afa","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active);
+  _tn->Project("afg","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+gambig);
+  _tn->Project("afn","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+nambig);
+  _tn->Project("afb","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active+bambig);
+  _tn->Project("afa","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",goodtrk+active);
   afg->Divide(afa);
   afn->Divide(afa);
   afb->Divide(afa);
   afg->SetMinimum(0.0);
   afg->SetMaximum(1.1);
 
-  TCanvas* ambigcan = new TCanvas("ambigcan","Hit Ambiguity",1200,800);
-  ambigcan->Divide(2,2);
+  _ambigcan = new TCanvas("ambigcan","Hit Ambiguity",1200,800);
+  _ambigcan->Divide(2,2);
 
 
-  ambigcan->cd(1);
+  _ambigcan->cd(1);
   rda->Draw();
   rdi->Draw("same");
   rdd->Draw("same");
@@ -605,7 +638,7 @@ void Ambig(TTree* ta,const char* file="") {
   drleg->AddEntry(rdf,dtitle,"l");
   drleg->Draw();
 
-  ambigcan->cd(2);
+  _ambigcan->cd(2);
 
   rdgr->Draw();
   rdnr->Draw("same");
@@ -621,7 +654,7 @@ void Ambig(TTree* ta,const char* file="") {
   leg->AddEntry(rdbr,title,"l");
   leg->Draw();
 
-  ambigcan->cd(3);
+  _ambigcan->cd(3);
   double integral = momres0->GetEntries()*momres0->GetBinWidth(1);
   TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,1.5,7);
   dscb->SetParName(0,"Norm");
@@ -652,7 +685,7 @@ void Ambig(TTree* ta,const char* file="") {
   mleg->Draw();
 
 
-  ambigcan->cd(4);
+  _ambigcan->cd(4);
   afg->Draw();
   afn->Draw("same");
   afb->Draw("same");
@@ -662,11 +695,10 @@ void Ambig(TTree* ta,const char* file="") {
   fleg->AddEntry(afb,"Incorrect Ambiguity","l");
   fleg->Draw();
 
-  ambigcan->cd(0);
-  if(strcmp(file,"")!=0)ambigcan->SaveAs(file);
+  _ambigcan->cd(0);
 }
 
-void Resid(TTree* ta) {
+void TrkAnaPlots::Resid() {
 
   TCut delta("detshmc._proc==17");
   TCut primary("detshmc._gen==2");
@@ -674,7 +706,7 @@ void Resid(TTree* ta) {
   TCut bambig("detshmc._ambig!=detsh._ambig&&detsh._ambig!=0");
   TCut nambig("detsh._ambig==0");
   TCut active("de.status==1 && detsh._active>0");
-  TCut reco("de.status>0");
+  TCut reco(_reco+"_reco");
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
 
   TH1F* rdg = new TH1F("rdg","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
@@ -696,18 +728,18 @@ void Resid(TTree* ta) {
   rpulln->SetLineColor(kGreen);
   rpulld->SetLineColor(kCyan);
 
-  ta->Project("rdg","detshmc._dist",reco+mcsel+active+gambig+primary);
-  ta->Project("rdb","detshmc._dist",reco+mcsel+active+bambig+primary);
-  ta->Project("rdn","detshmc._dist",reco+mcsel+active+nambig+primary);
+  _tn->Project("rdg","detshmc._dist",reco+mcsel+active+gambig+primary);
+  _tn->Project("rdb","detshmc._dist",reco+mcsel+active+bambig+primary);
+  _tn->Project("rdn","detshmc._dist",reco+mcsel+active+nambig+primary);
 
-  ta->Project("rpullg","detsh._resid/detsh._residerr",reco+mcsel+active+gambig+primary);
-  ta->Project("rpullb","detsh._resid/detsh._residerr",reco+mcsel+active+bambig+primary);
-  ta->Project("rpulln","detsh._resid/detsh._residerr",reco+mcsel+active+nambig+primary);
-  ta->Project("rpulld","detsh._resid/detsh._residerr",reco+mcsel+active+delta);
+  _tn->Project("rpullg","detsh._resid/detsh._residerr",reco+mcsel+active+gambig+primary);
+  _tn->Project("rpullb","detsh._resid/detsh._residerr",reco+mcsel+active+bambig+primary);
+  _tn->Project("rpulln","detsh._resid/detsh._residerr",reco+mcsel+active+nambig+primary);
+  _tn->Project("rpulld","detsh._resid/detsh._residerr",reco+mcsel+active+delta);
 
-  TCanvas* residcan = new TCanvas("residcan","Residuals",1200,800);
-  residcan->Divide(2,1);
-  residcan->cd(1);
+  _residcan = new TCanvas("residcan","Residuals",1200,800);
+  _residcan->Divide(2,1);
+  _residcan->cd(1);
   rdg->Draw();
   rdb->Draw("same");
   rdn->Draw("same");
@@ -718,7 +750,7 @@ void Resid(TTree* ta) {
   leg->AddEntry(rpulln,"No ambiguity assigned","l");
   leg->Draw();
 
-  TPad* ppad = dynamic_cast<TPad*>(residcan->cd(2));
+  TPad* ppad = dynamic_cast<TPad*>(_residcan->cd(2));
   ppad->Divide(1,4);
   ppad->cd(1);
   rpullg->Fit("gaus");
@@ -729,11 +761,11 @@ void Resid(TTree* ta) {
   ppad->cd(4);
   rpulld->Fit("gaus");
 
-  residcan->cd(0);
+  _residcan->cd(0);
 
 }
 
-void Con(TTree* ta) {
+void TrkAnaPlots::Con() {
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
 
   TH1F* con1 = new TH1F("con1","#chi^{2} fit consistency",500,0.0,1.0);
@@ -745,18 +777,18 @@ void Con(TTree* ta) {
   lcon1->SetLineColor(kBlue);
   lcon2->SetLineColor(kRed);
 
-  ta->Project("con1","de.fitcon",mcsel+"de.status==1");
-  ta->Project("con2","de.fitcon",mcsel+"de.status==2");
-  ta->Project("lcon1","log10(de.fitcon)",mcsel+"de.status==1");
-  ta->Project("lcon2","log10(de.fitcon)",mcsel+"de.status==2");
+  _tn->Project("con1","de.fitcon",mcsel+"de.status==1");
+  _tn->Project("con2","de.fitcon",mcsel+"de.status==2");
+  _tn->Project("lcon1","log10(de.fitcon)",mcsel+"de.status==1");
+  _tn->Project("lcon2","log10(de.fitcon)",mcsel+"de.status==2");
 
-  TCanvas* fcan = new TCanvas("fcan","fit consistency",500,800);
-  fcan->Clear();
-  fcan->Divide(1,2);
-  fcan->cd(1);
+  _fcan = new TCanvas("fcan","fit consistency",500,800);
+  _fcan->Clear();
+  _fcan->Divide(1,2);
+  _fcan->cd(1);
   con1->Draw();
   con2->Draw("same");
-  fcan->cd(2);
+  _fcan->cd(2);
   lcon1->Draw();
   lcon2->Draw("same");
 
@@ -767,7 +799,7 @@ void Con(TTree* ta) {
 
 }
 
-void TrkQual(TTree* ta,const char* extra="") {
+void TrkAnaPlots::TrkQual(const char* extra) {
   TCut ecut(extra);
   TH1F* tq = new TH1F("tq","TrkQual;TrkQual MVA Output",203,-0.01,1.01);
   TH1F* tqtch = new TH1F("tqtch","TrkQual;TrkQual MVA Output",203,-0.01,1.01);
@@ -778,9 +810,9 @@ void TrkQual(TTree* ta,const char* extra="") {
   tq->SetStats(0);
   tqtch->SetStats(0);
   tqntch->SetStats(0);
-  ta->Project("tq","dequal.TrkQualDeM",ecut);
-  ta->Project("tqtch","dequal.TrkQualDeM","detch.active"+ecut);
-  ta->Project("tqntch","dequal.TrkQualDeM","!detch.active"+ecut);
+  _tn->Project("tq","dequal.TrkQualDeM",ecut);
+  _tn->Project("tqtch","dequal.TrkQualDeM","detch.active"+ecut);
+  _tn->Project("tqntch","dequal.TrkQualDeM","!detch.active"+ecut);
 
   double* tqintarray = tq->GetIntegral();
 
@@ -789,9 +821,9 @@ void TrkQual(TTree* ta,const char* extra="") {
   tqint->SetFillColor(kBlack);
   for(size_t ibin=0;ibin < (size_t)tq->GetNbinsX();ibin++)
     tqint->SetBinContent(ibin+1, 1.0-tqintarray[ibin]);
-  TCanvas* tqcan = new TCanvas("tqcan","TrkQual",600,600);
-  tqcan->Divide(1,2);
-  tqcan->cd(1);
+  _tqcan = new TCanvas("tqcan","TrkQual",600,600);
+  _tqcan->Divide(1,2);
+  _tqcan->cd(1);
   gPad->SetLogy();
   tq->Draw();
   tqtch->Draw("same");
@@ -801,11 +833,11 @@ void TrkQual(TTree* ta,const char* extra="") {
   tqleg->AddEntry(tqtch,"TrkCaloHit","L");
   tqleg->AddEntry(tqntch,"No TrkCaloHit","L");
   tqleg->Draw();
-  tqcan->cd(2);
+  _tqcan->cd(2);
   tqint->Draw();
 }
 
-void TrkQualRes(TTree* ta,double tqcut) {
+void TrkAnaPlots::TrkQualRes(float tqcut) {
   TF1* dscb = new TF1("dscb",fnc_dscb,-2.0,4,7);
   dscb->SetParName(0,"Norm");
   dscb->SetParName(1,"x0");
@@ -842,12 +874,12 @@ void TrkQualRes(TTree* ta,double tqcut) {
   snprintf(tqcutbc,40,"dequal.TrkQualDeM>0");
   TCut tqcutg(tqcutgc);
   TCut tqcutb(tqcutbc);
-  TCut reco("de.status>0");
+  TCut reco(_reco);
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
-  ta->Project("goodf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"evtwt.PBIWeight");
-  ta->Project("badf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"evtwt.PBIWeight");
+  _tn->Project("goodf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel+tqcutg)*"_pbi.PBIWeight");
+  _tn->Project("badf","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",(reco+mcsel)*"_pbi.PBIWeight");
   
-  TCanvas* tqcan = new TCanvas("tqrcan","TrkQualRes",1000,800);
+  _tqrcan = new TCanvas("tqrcan","TrkQualRes",1000,800);
   TLegend* leg = new TLegend(0.6,0.6,0.9,0.9);
   char ltitle[40];
   gPad->SetLogy();
@@ -884,7 +916,7 @@ void TrkQualRes(TTree* ta,double tqcut) {
   leg->Draw();
 }
 
-void StrawMat(TTree* ta) {
+void TrkAnaPlots::StrawMat() {
   TH1F* naddmat = new TH1F("naddmat","N Added Straws",30,-0.5,29.5);
   TH2F* matvshit = new TH2F("matvshit","N Straw vs N Hits",100,-0.5,99.5,100,-0.5,99.5);
   TH1F* addmatfrac = new TH1F("addmatfrac","Fraction of Added Straws",100,-0.01,0.5);
@@ -912,38 +944,38 @@ void StrawMat(TTree* ta) {
   addstraw->SetStats(0);
   addstraw->SetLineColor(kBlue);
 
-  ta->Project("addmatfrac","(de.nmatactive-de.nactive)/de.nmatactive","de.status>0");
-  ta->Project("matvshit","de.nmatactive:de.nactive","de.status>0");
-  ta->Project("naddmat","de.nmatactive-de.nactive","de.status>0");
-  ta->Project("adddoca","detsm._doca","de.status>0&&detsm._active&&(!detsm._thita)");
-  ta->Project("hitdoca","detsm._doca","de.status>0&&detsm._thita");
-  ta->Project("addstraw","detsm._straw","de.status>0&&detsm._active&&(!detsm._thita)");
-  ta->Project("hitstraw","detsm._straw","de.status>0&&detsm._thita");
+  _tn->Project("addmatfrac","(de.nmatactive-de.nactive)/de.nmatactive",_reco+"_reco");
+  _tn->Project("matvshit","de.nmatactive:de.nactive",_reco+"_reco");
+  _tn->Project("naddmat","de.nmatactive-de.nactive",_reco+"_reco");
+  _tn->Project("adddoca","detsm._doca",_reco+"_reco&&detsm._active&&(!detsm._thita)");
+  _tn->Project("hitdoca","detsm._doca",_reco+"_reco&&detsm._thita");
+  _tn->Project("addstraw","detsm._straw",_reco+"_reco&&detsm._active&&(!detsm._thita)");
+  _tn->Project("hitstraw","detsm._straw",_reco+"_reco&&detsm._thita");
 
-  ta->Project("lofracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive<0.1");
-  ta->Project("hifracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","de.status>0&&(de.nmatactive-de.nactive)/de.nmatactive>0.1");
+  _tn->Project("lofracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_reco+"_reco&&(de.nmatactive-de.nactive)/de.nmatactive<0.1");
+  _tn->Project("hifracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_reco+"_reco&&(de.nmatactive-de.nactive)/de.nmatactive>0.1");
 
   TLegend* leg = new TLegend(0.6,0.7,0.9,.9);
   leg->AddEntry(hitdoca,"Hit Straw","L");
   leg->AddEntry(adddoca,"Added Straw","L");
 
-  TCanvas* mcan = new TCanvas("mcan","mcan",1200,800);
-  mcan->Divide(3,2);
-  mcan->cd(1);
+  _mcan = new TCanvas("mcan","mcan",1200,800);
+  _mcan->Divide(3,2);
+  _mcan->cd(1);
   matvshit->Draw("colorz");
-  mcan->cd(2);
+  _mcan->cd(2);
   naddmat->Draw();
-  mcan->cd(3);
+  _mcan->cd(3);
   addmatfrac->Draw();
-  mcan->cd(4);
+  _mcan->cd(4);
   hitdoca->Draw();
   adddoca->Draw("same");
   leg->Draw();
-  mcan->cd(5);
+  _mcan->cd(5);
   hitstraw->Draw();
   addstraw->Draw("same");
   leg->Draw();
-  mcan->cd(6);
+  _mcan->cd(6);
   lofracres->Draw();
   hifracres->Draw("same");
   TLegend* mleg = new TLegend(0.6,0.7,0.9,0.9);
@@ -952,7 +984,7 @@ void StrawMat(TTree* ta) {
   mleg->Draw();
 }
 
-void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
+void TrkAnaPlots::TrkCaloHit(float tqcut,int pdg) {
   char cstring[100];
   snprintf(cstring,100,"detch.active&&dequal.TrkQualDeM>%f&&abs(demc.pdg)==%i&&demcxit.momz>0",tqcut,pdg);
   TCut goodtrkcalo(cstring);
@@ -999,43 +1031,43 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
 //  pr0->SetStats(0);
   pr1->SetStats(0);
  
-  ta->Project("clen0","detch.clen",goodtrkcalo&&disk0);
-  ta->Project("clen1","detch.clen",goodtrkcalo&&disk1);
-  ta->Project("cdoca0","detch.doca",goodtrkcalo&&disk0);
-  ta->Project("cdoca1","detch.doca",goodtrkcalo&&disk1);
-  ta->Project("cdt0","detch.t0-detch.ctime",goodtrkcalo&&disk0);
-  ta->Project("cdt1","detch.t0-detch.ctime",goodtrkcalo&&disk1);
-  ta->Project("ep0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
-  ta->Project("ep1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
-  ta->Project("tdir0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
-  ta->Project("tdir1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
-  ta->Project("pr0","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
-  ta->Project("pr1","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
+  _tn->Project("clen0","detch.clen",goodtrkcalo&&disk0);
+  _tn->Project("clen1","detch.clen",goodtrkcalo&&disk1);
+  _tn->Project("cdoca0","detch.doca",goodtrkcalo&&disk0);
+  _tn->Project("cdoca1","detch.doca",goodtrkcalo&&disk1);
+  _tn->Project("cdt0","detch.t0-detch.ctime",goodtrkcalo&&disk0);
+  _tn->Project("cdt1","detch.t0-detch.ctime",goodtrkcalo&&disk1);
+  _tn->Project("ep0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
+  _tn->Project("ep1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
+  _tn->Project("tdir0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
+  _tn->Project("tdir1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
+  _tn->Project("pr0","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
+  _tn->Project("pr1","sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
 
   
   TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
   tchleg->AddEntry(clen0,"Disk 0","L");
   tchleg->AddEntry(clen1,"Disk 1","L");
 
-  TCanvas* tchcan = new TCanvas("tchcan","TrkCaloHit",800,600);
-  tchcan->Divide(3,2);
-  tchcan->cd(1);
+  _tchcan = new TCanvas("tchcan","TrkCaloHit",800,600);
+  _tchcan->Divide(3,2);
+  _tchcan->cd(1);
   clen0->Draw();
   clen1->Draw("same");
   tchleg->Draw();
-  tchcan->cd(2);
+  _tchcan->cd(2);
   cdoca0->Draw();
   cdoca1->Draw("same");
-  tchcan->cd(3);
+  _tchcan->cd(3);
   cdt0->Draw();
   cdt1->Draw("same");
-  tchcan->cd(4);
+  _tchcan->cd(4);
   ep0->Draw();
   ep1->Draw("same");
-  tchcan->cd(5);
+  _tchcan->cd(5);
   tdir0->Draw();
   tdir1->Draw("same");
-  tchcan->cd(6);
+  _tchcan->cd(6);
   pr0->Draw();
   pr1->Draw("same");
   
@@ -1044,8 +1076,8 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   TCut badclen("detch.clen>150.0&&detch.clen<250.0");
 //  TH1F* rad0g = new TH1F("rad0g","Cluster Radius, Disk 0",100,380,630);
 //  TH1F* rad0b = new TH1F("rad0b","Cluster Radius, Disk 0",100,380,630);
-//  ta->Project("rad0g","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&goodclen);
-//  ta->Project("rad0b","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&badclen);
+//  _tn->Project("rad0g","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&goodclen);
+//  _tn->Project("rad0b","sqrt(detch.POCAx^2+detch.POCAy^2",goodtrkcalo&&disk0&&badclen);
   TH2F* rad0 = new TH2F("rad0","POCA Radius vs Crystal Depth, Disk 0;Depth (mm);Radius (mm)",100,-50,250,100,360,650);
   TH2F* rad1 = new TH2F("rad1","POCA Radius vs Crystal Depth, Disk 1;Depth (mm);Radius (mm)",100,-50,250,100,360,650);
   TH2F* dot0 = new TH2F("dot0","Track Direction vs Crystal Depth, Disk 0;Depth (mm);#hat{t}#bullet#hat{#rho}",100,-50,250,100,-1,1);
@@ -1076,75 +1108,75 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   eopdir1->SetStats(0);
   eopr0->SetStats(0);
   eopr1->SetStats(0);
-  ta->Project("rad0","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk0);
-  ta->Project("rad1","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk1);
-  ta->Project("dot0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
-  ta->Project("dot1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
-  ta->Project("dotr0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
-  ta->Project("dotr1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
-  ta->Project("eopd0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
-  ta->Project("eopd1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
-  ta->Project("eopdir0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
-  ta->Project("eopdir1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
-  ta->Project("eopr0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
-  ta->Project("eopr1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
-  ta->Project("doca0","detch.doca:detch.clen",goodtrkcalo&&disk0);
-  ta->Project("doca1","detch.doca:detch.clen",goodtrkcalo&&disk1);
+  _tn->Project("rad0","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk0);
+  _tn->Project("rad1","sqrt(detch.POCAx^2+detch.POCAy^2):detch.clen",goodtrkcalo&&disk1);
+  _tn->Project("dot0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
+  _tn->Project("dot1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
+  _tn->Project("dotr0","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
+  _tn->Project("dotr1","(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
+  _tn->Project("eopd0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
+  _tn->Project("eopd1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
+  _tn->Project("eopdir0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk0);
+  _tn->Project("eopdir1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",goodtrkcalo&&disk1);
+  _tn->Project("eopr0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk0);
+  _tn->Project("eopr1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):sqrt(detch.POCAx^2+detch.POCAy^2)",goodtrkcalo&&disk1);
+  _tn->Project("doca0","detch.doca:detch.clen",goodtrkcalo&&disk0);
+  _tn->Project("doca1","detch.doca:detch.clen",goodtrkcalo&&disk1);
 
-  ta->Project("peopd0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
-  ta->Project("peopd1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
+  _tn->Project("peopd0","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk0);
+  _tn->Project("peopd1","detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2):detch.clen",goodtrkcalo&&disk1);
 
-  TCanvas* tch0can = new TCanvas("tch0can","TrkCaloHit Disk 0", 1000, 800);
-  tch0can->Divide(3,2);
-  tch0can->cd(1);
+  _tch0can = new TCanvas("tch0can","TrkCaloHit Disk 0", 1000, 800);
+  _tch0can->Divide(3,2);
+  _tch0can->cd(1);
   gPad->SetLogz();
   rad0->Draw("colorz");
-  tch0can->cd(2);
+  _tch0can->cd(2);
   gPad->SetLogz();
   dot0->Draw("colorz");
-  tch0can->cd(3);
+  _tch0can->cd(3);
   gPad->SetLogz();
   eopd0->Draw("colorz");
   peopd0->Draw("same");
-  tch0can->cd(4);
+  _tch0can->cd(4);
   gPad->SetLogz();
   doca0->Draw("colorz");
-  tch0can->cd(5);
+  _tch0can->cd(5);
   gPad->SetLogz();
   eopdir0->Draw("colorz");
-  tch0can->cd(6);
+  _tch0can->cd(6);
   gPad->SetLogz();
   eopr0->Draw("colorz");
 
-  TCanvas* tch1can = new TCanvas("tch1can","TrkCaloHit Disk 1", 1000, 800);
-  tch1can->Divide(3,2);
-  tch1can->cd(1);
+  _tch1can = new TCanvas("tch1can","TrkCaloHit Disk 1", 1000, 800);
+  _tch1can->Divide(3,2);
+  _tch1can->cd(1);
   gPad->SetLogz();
   rad1->Draw("colorz");
-  tch1can->cd(2);
+  _tch1can->cd(2);
   gPad->SetLogz();
   dot1->Draw("colorz");
-  tch1can->cd(3);
+  _tch1can->cd(3);
   gPad->SetLogz();
   eopd1->Draw("colorz");
   peopd1->Draw("same");
-  tch1can->cd(4);
+  _tch1can->cd(4);
   gPad->SetLogz();
   doca1->Draw("colorz");
-  tch1can->cd(5);
+  _tch1can->cd(5);
   gPad->SetLogz();
   eopdir1->Draw("colorz");
-  tch1can->cd(6);
+  _tch1can->cd(6);
   gPad->SetLogz();
   eopr1->Draw("colorz");
 
   TH2F* dtvsclen = new TH2F("dtvsclen","T_{calo} - T_{trk} vs Cluster Depth;Depth (mm); #Delta t (ns)",50,-100,300,50,-2.0,3.0);
   TProfile* pdtvsclen = new TProfile("pdtvsclen","T_{calo} - T_{trk} vs Cluster Depth;Depth (mm); #Delta t (ns)",50,-100,300,-2.0,3.0);
   dtvsclen->SetStats(0);
-  ta->Project("dtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
-  ta->Project("pdtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
+  _tn->Project("dtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
+  _tn->Project("pdtvsclen","detch.ctime-detch.t0:detch.clen",goodtrkcalo);
 
-  TCanvas* dtchtcan = new TCanvas("dtchtcan","TCH timing",800,800);
+  _dtchtcan = new TCanvas("dtchtcan","TCH timing",800,800);
   gPad->SetLogz();
   dtvsclen->Draw("colorz");
   pdtvsclen->Fit("pol1","","same");
@@ -1158,9 +1190,9 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   dt0hiE->SetLineColor(kBlue);
   dt0loE->SetLineColor(kGreen);
   dt0nocal->SetLineColor(kBlack);
-  ta->Project("dt0hiE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep>50.0");
-  ta->Project("dt0loE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep<50.0");
-  ta->Project("dt0nocal","de.t0-demcmid.t0",goodtrk);
+  _tn->Project("dt0hiE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep>50.0");
+  _tn->Project("dt0loE","de.t0-demcmid.t0",goodtrkcalo&&"detch.edep<50.0");
+  _tn->Project("dt0nocal","de.t0-demcmid.t0",goodtrk);
 
   TCanvas* dt0can = new TCanvas("dt0can","t0 resolution",800,800);
   gPad->SetLogy();
@@ -1174,7 +1206,7 @@ void TrkCaloHit(TTree* ta,float tqcut=0.4,int pdg=11) {
   t0leg->Draw();
 }
 
-void TrkCaloHitMC(TTree* ta) {
+void TrkAnaPlots::TrkCaloHitMC() {
   TCut goodtrkcalo("dequal.TrkQualDeM>0.6&&detch.active");
   TCut disk0("detch.disk==0");
   TCut disk1("detch.disk==1");
@@ -1207,42 +1239,42 @@ void TrkCaloHitMC(TTree* ta) {
 
   TCut tcm("detchmc.prel>=0");
   TCut tcn("detchmc.prel<0");
-  ta->Project("clen0m","detch.clen",goodtrkcalo&&disk0&&tcm);
-  ta->Project("clen0n","detch.clen",goodtrkcalo&&disk0&&tcn);
-  ta->Project("clen1m","detch.clen",goodtrkcalo&&disk1&&tcm);
-  ta->Project("clen1n","detch.clen",goodtrkcalo&&disk1&&tcn);
+  _tn->Project("clen0m","detch.clen",goodtrkcalo&&disk0&&tcm);
+  _tn->Project("clen0n","detch.clen",goodtrkcalo&&disk0&&tcn);
+  _tn->Project("clen1m","detch.clen",goodtrkcalo&&disk1&&tcm);
+  _tn->Project("clen1n","detch.clen",goodtrkcalo&&disk1&&tcn);
 
-  ta->Project("cdoca0m","detch.doca",goodtrkcalo&&disk0&&tcm);
-  ta->Project("cdoca0n","detch.doca",goodtrkcalo&&disk0&&tcn);
-  ta->Project("cdoca1m","detch.doca",goodtrkcalo&&disk1&&tcm);
-  ta->Project("cdoca1n","detch.doca",goodtrkcalo&&disk1&&tcn);
+  _tn->Project("cdoca0m","detch.doca",goodtrkcalo&&disk0&&tcm);
+  _tn->Project("cdoca0n","detch.doca",goodtrkcalo&&disk0&&tcn);
+  _tn->Project("cdoca1m","detch.doca",goodtrkcalo&&disk1&&tcm);
+  _tn->Project("cdoca1n","detch.doca",goodtrkcalo&&disk1&&tcn);
 
   TLegend* tchmcleg = new TLegend(0.5,0.7,0.9,0.9);
   tchmcleg->AddEntry(clen0m,"Trk-Calo MC Match","L");
   tchmcleg->AddEntry(clen0n,"No MC Match","L");
 
-  TCanvas* tchmc = new TCanvas("tchmc","TrkCaloHitMC",800,800);
-  tchmc->Divide(2,2);
-  tchmc->cd(1);
+  _tchmccan = new TCanvas("tchmc","TrkCaloHitMC",800,800);
+  _tchmccan->Divide(2,2);
+  _tchmccan->cd(1);
   gPad->SetLogy();
   clen0m->Draw();
   clen0n->Draw("same");
-  tchmc->cd(2);
+  _tchmccan->cd(2);
   gPad->SetLogy();
   clen1m->Draw();
   clen1n->Draw("same");
   tchmcleg->Draw();
-  tchmc->cd(3);
+  _tchmccan->cd(3);
   gPad->SetLogy();
   cdoca0m->Draw();
   cdoca0n->Draw("same");
-  tchmc->cd(4);
+  _tchmccan->cd(4);
   gPad->SetLogy();
   cdoca1m->Draw();
   cdoca1n->Draw("same");
 }
 
-void t0(TTree* ta) {
+void TrkAnaPlots::t0() {
   TCut goodtrkcalo("dequal.TrkQualDeM>0.6&&detch.active");
   TCut goodtrknocalo("dequal.TrkQualDeM>0.6&&!detch.active");
   TCut disk0("detch.disk==0");
@@ -1253,20 +1285,20 @@ void t0(TTree* ta) {
 //  t01->SetStats(0);
 //  t00->SetLineColor(kRed);
 //  t01->SetLineColor(kBlue);
-  ta->Project("t00","de.t0-fmod(demcmid.t0,1695)",goodtrkcalo);
-  ta->Project("t01","de.t0-fmod(demcmid.t0,1695)",goodtrknocalo);
+  _tn->Project("t00","de.t0-fmod(demcmid.t0,1695)",goodtrkcalo);
+  _tn->Project("t01","de.t0-fmod(demcmid.t0,1695)",goodtrknocalo);
   TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
   tchleg->AddEntry(t00,"TrkCaloHit","L");
   tchleg->AddEntry(t01,"No TrkCaloHit","L");
-  TCanvas* t0can = new TCanvas("t0can","t0can",600,400);
-  t0can->Divide(2,1);
-  t0can->cd(1);
+  _t0can = new TCanvas("t0can","t0can",600,400);
+  _t0can->Divide(2,1);
+  _t0can->cd(1);
   t00->Draw();
-  t0can->cd(2);
+  _t0can->cd(2);
   t01->Draw();
 }
 
-void Eff(TTree* ta, unsigned norm, double plo, double phi, int q=-1) {
+void TrkAnaPlots::Eff(unsigned norm, double plo, double phi, int q) {
   TH1F* allrec = new TH1F("allrec","Reco Fraction vs Generated Momentum",100,plo,phi);
   TH1F* tqrec = new TH1F("tqrec","Reco Fraction vs Generated Momentum",100,plo,phi);
   TH1F* t0rec = new TH1F("t0rec","Reco Fraction vs Generated Momentum",100,plo,phi);
@@ -1311,13 +1343,13 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi, int q=-1) {
   trktrig->SetLineColor(kCyan);
   alltrig->SetLineColor(kBlack);
   cctrig->SetLineColor(kYellow);
-  ta->Project("allrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)");
-  ta->Project("tqrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit);
-  ta->Project("tprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtpr);
-  ta->Project("cprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodcpr);
-  ta->Project("trktrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtrk);
-  ta->Project("alltrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtrig);
-  ta->Project("cctrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&cc);
+  _tn->Project("allrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)");
+  _tn->Project("tqrec","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit);
+  _tn->Project("tprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtpr);
+  _tn->Project("cprtrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodcpr);
+  _tn->Project("trktrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtrk);
+  _tn->Project("alltrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&goodtrig);
+  _tn->Project("cctrig","sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",goodfit&&cc);
 
   // scale by the absolute normalization
   double scalefac =100.0/norm;
@@ -1328,7 +1360,7 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi, int q=-1) {
   trktrig->Scale(scalefac);
   alltrig->Scale(scalefac);
   cctrig->Scale(scalefac);
-  TCanvas* effcan = new TCanvas("effcan","Efficiency",600,600);
+  _effcan = new TCanvas("effcan","Efficiency",600,600);
   allrec->Draw("h");
   tqrec->Draw("hsame");
   alltrig->Draw("hsame");
@@ -1348,7 +1380,7 @@ void Eff(TTree* ta, unsigned norm, double plo, double phi, int q=-1) {
   leg->Draw();
 }
 
-void PlotIPA(TTree* ta) {
+void TrkAnaPlots::PlotIPA() {
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
   TH1F* trkqual = new TH1F("trkqual","TrkQual",103,-0.01,1.01);
@@ -1356,19 +1388,19 @@ void PlotIPA(TTree* ta) {
   TH1F* momres = new TH1F("momres","Momentum Resolution;P_{reco} - P_{MC} (MeV/c)",100,-5.0,5.0);
   TH1F* nactive = new TH1F("nactive","N Active Straw Hits",121,-0.5,120.5);
   trkqual->SetStats(0);
-  ta->Project("trkqual","dequal.TrkQualDeM");
-  ta->Project("mom","deent.mom","dequal.TrkQualDeM>0.4");
-  ta->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","dequal.TrkQualDeM>0.4");
-  ta->Project("nactive","de.nactive","dequal.TrkQualDeM>0.4");
-  TCanvas* ipacan = new TCanvas("ipacan","ipacan",800,800);
-  ipacan->Divide(2,2);
-  ipacan->cd(1);
+  _tn->Project("trkqual","dequal.TrkQualDeM");
+  _tn->Project("mom","deent.mom","dequal.TrkQualDeM>0.4");
+  _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)","dequal.TrkQualDeM>0.4");
+  _tn->Project("nactive","de.nactive","dequal.TrkQualDeM>0.4");
+  _ipacan = new TCanvas("ipacan","ipacan",800,800);
+  _ipacan->Divide(2,2);
+  _ipacan->cd(1);
   trkqual->Draw();
-  ipacan->cd(2);
+  _ipacan->cd(2);
   nactive->Draw();
-  ipacan->cd(3);
+  _ipacan->cd(3);
   mom->Draw();
-  ipacan->cd(4);
+  _ipacan->cd(4);
   gPad->SetLogy();
   double integral = momres->GetEntries()*momres->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momres->GetMean() << " rms = " << momres->GetRMS() << endl;
@@ -1384,7 +1416,7 @@ void PlotIPA(TTree* ta) {
   momres->Fit("dscb","RQ");
 }
 
-void Upstream(TTree* tneg, TTree* tpos) {
+void TrkAnaPlots::Upstream() {
   TCut trueup("de.pdg*demc.pdg>0 && demcxit.momz<0");
   TCut uetch("uetch.active");
   TCut trueutch("uetchmc.prel>=0");
@@ -1427,38 +1459,38 @@ void Upstream(TTree* tneg, TTree* tpos) {
   ueevsp->SetStats(0);
   umuevsp->SetStats(0);
 
-  tneg->Project("eutcha","uetch.active",trueup&&truee);
-  tneg->Project("muutcha","uetch.active",trueup&&truemu);
-  tneg->Project("tchmcrel","uetchmc.prel",trueup&&uetch);
-  tneg->Project("eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
-  tneg->Project("updg","demc.pdg",trueup);
-  tneg->Project("muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
-  tneg->Project("ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
-  tneg->Project("umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
+  _tn->Project("eutcha","uetch.active",trueup&&truee);
+  _tn->Project("muutcha","uetch.active",trueup&&truemu);
+  _tn->Project("tchmcrel","uetchmc.prel",trueup&&uetch);
+  _tn->Project("eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
+  _tn->Project("updg","demc.pdg",trueup);
+  _tn->Project("muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
+  _tn->Project("ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
+  _tn->Project("umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
 
-  tpos->Project("+eutcha","uetch.active",trueup&&truee);
-  tpos->Project("+muutcha","uetch.active",trueup&&truemu);
-  tpos->Project("+tchmcrel","uetchmc.prel",trueup&&uetch);
-  tpos->Project("+updg","demc.pdg",trueup);
-  tpos->Project("+eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
-  tpos->Project("+muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
-  tpos->Project("+ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
-  tpos->Project("+umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
+  _tp->Project("+eutcha","uetch.active",trueup&&truee);
+  _tp->Project("+muutcha","uetch.active",trueup&&truemu);
+  _tp->Project("+tchmcrel","uetchmc.prel",trueup&&uetch);
+  _tp->Project("+updg","demc.pdg",trueup);
+  _tp->Project("+eutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truee);
+  _tp->Project("+muutime","uetch.ctime+uetch.clen/200.0-uetch.t0",trueup&&uetch&&trueutch&&truemu);
+  _tp->Project("+ueevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truee);
+  _tp->Project("+umuevsp","uetch.edep:ue.mom",trueup&&uetch&&trueutch&&truemu);
 
-  TCanvas* ucan = new TCanvas("ucan","Upstream",800,800);
-  ucan->Divide(2,2);
-  ucan->cd(1);
+  _ucan = new TCanvas("ucan","Upstream",800,800);
+  _ucan->Divide(2,2);
+  _ucan->cd(1);
   updg->Draw();
-  ucan->cd(2);
+  _ucan->cd(2);
   muutcha->Draw();
   eutcha->Draw("same");
   TLegend* tchleg = new TLegend(0.6,0.7,0.9,0.9);
   tchleg->AddEntry(eutcha,"True electron track ","l");
   tchleg->AddEntry(muutcha,"True muon track","l");
   tchleg->Draw();
-  ucan->cd(3);
+  _ucan->cd(3);
   tchmcrel->Draw(); 
-  ucan->cd(4);
+  _ucan->cd(4);
   muutime->Fit("gaus");
   eutime->Fit("gaus","","sames");
   TLegend* tleg = new TLegend(0.1,0.7,0.4,0.9);
@@ -1466,12 +1498,12 @@ void Upstream(TTree* tneg, TTree* tpos) {
   tleg->AddEntry(muutime,"True muon track","l");
   tleg->Draw();
 
-  TCanvas* uecan = new TCanvas("uecan","Upstream E vs P",800,800);
-  uecan->Divide(1,2);
-  uecan->cd(1);
+  _uecan = new TCanvas("uecan","Upstream E vs P",800,800);
+  _uecan->Divide(1,2);
+  _uecan->cd(1);
   gPad->SetLogz();
   ueevsp->Draw("colorz");
-  uecan->cd(2);
+  _uecan->cd(2);
   gPad->SetLogz();
   umuevsp->Draw("colorz");
 }
