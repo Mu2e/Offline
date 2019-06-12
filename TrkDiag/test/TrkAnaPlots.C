@@ -86,7 +86,7 @@ class TrkAnaPlots {
   TTree* _tn;
   TTree* _tp; 
   // canvases
-  TCanvas *_pidcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
+  TCanvas *_pidcan, *_pidqcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
 
 };
 
@@ -132,6 +132,8 @@ void TrkAnaPlots::PId() {
   TH1F* deppid = new TH1F("deppid","TCHPidQual",120,-0.1,1.1);
   TH1F* dmumpid = new TH1F("dmumpid","TCHPidQual",120,-0.1,1.1);
   TH1F* dmuppid = new TH1F("dmuppid","TCHPidQual",120,-0.1,1.1);
+  r1vr0nc->SetStats(0);
+  r1vr0c->SetStats(0);
   dempid->SetStats(0);
   deppid->SetStats(0);
   dmumpid->SetStats(0);
@@ -179,6 +181,25 @@ void TrkAnaPlots::PId() {
   pad->cd(2);
   r1vr0nc->Draw("colorz");
 
+
+  TH2F* qvqmu = new TH2F("qvqmu","TrkPID vs TrkQual, true #mu^{#pm};TrkQual mvaout;TrkPid mvaout",50,-0.05,1.05,50,-0.05,1.05);
+  TH2F* qvqe = new TH2F("qvqe","TrkPID vs TrkQual, true e^{#pm};TrkQual mvaout;TrkPid mvaout",50,-0.05,1.05,50,-0.05,1.05);
+  qvqmu->SetStats(0);
+  qvqe->SetStats(0);
+
+  _tn->Project("qvqmu","dequal.TrkQualDeM:dequal.TrkPIDDeM",_downstream&&_muminus);
+  _tp->Project("+qvqmu","dequal.TrkQualDeP:dequal.TrkPIDDeP",_downstream&&_muplus);
+  _tn->Project("qvqe","dequal.TrkQualDeM:dequal.TrkPIDDeM",_downstream&&_eminus);
+  _tp->Project("+qvqe","dequal.TrkQualDeP:dequal.TrkPIDDeP",_downstream&&_eplus);
+
+  _pidqcan = new TCanvas("pidqcan","pidqcan",1000,500);
+  _pidqcan->Divide(2,1);
+  _pidqcan->cd(1);
+  gPad->SetLogz();
+  qvqe->Draw("colorz");
+  _pidqcan->cd(2);
+  gPad->SetLogz();
+  qvqmu->Draw("colorz");
 }
 
 void TrkAnaPlots::FitMomResp(TH1F* momresp) {
