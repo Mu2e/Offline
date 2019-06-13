@@ -49,20 +49,24 @@ double fnc_dscb(double*xx,double*pp) {
 
 class TrkAnaPlots {
   public:
+  enum TrackerRegion {entrance=0,middle, exit};
   TrkAnaPlots(TTree* tn, TTree* tp) : _tn(tn), _tp(tp)
   { BuildCuts(); }
   TrkAnaPlots(TFile* file) {
     _tn = (TTree*)( ((TDirectory*)file->Get("TrkAnaNeg"))->Get("trkana"));
     _tp = (TTree*)( ((TDirectory*)file->Get("TrkAnaPos"))->Get("trkana"));
     BuildCuts();
+    _rname.push_back("Entrance");
+    _rname.push_back("Middle");
+    _rname.push_back("Exit");
   }
-
+  
   void BuildCuts();
   void PId();
   void FitMomResp(TH1F* momresp);
   void FitMomRes(TH1F* momres);
-  void MomResp();
-  void MomRes();
+  void MomResp(TrackerRegion region=entrance);
+  void MomRes(TrackerRegion region=entrance);
   void Acc(int ngen,int gencode=2,int charge=-1);
   void hitres();
   void wpull();
@@ -81,13 +85,13 @@ class TrkAnaPlots {
 // cuts
   TCut _reco, _goodfit, _rpitch, _livegate, _opa, _physics, _final, _pbi;
   TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
-  TCut _CRV, _eminustrig, _eplustrig, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
+  TCut _CRV, _eminustrig, _eplustrig, _eminuslmom, _epluslmom, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
  // Trees 
   TTree* _tn;
   TTree* _tp; 
   // canvases
   TCanvas *_pidcan, *_pidqcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
-
+  vector<string> _rname;
 };
 
 void TrkAnaPlots::BuildCuts(){
@@ -117,11 +121,13 @@ void TrkAnaPlots::BuildCuts(){
   _epluspid = TCut("dequal.TrkPIDDeP>0.5");
   _eminustrig = TCut("(trigbits&0x208)>0"); // negative, TrkPatRec or CalPatRec
   _eplustrig = TCut("(trigbits&0x410)>0"); // positive, TrkPatRec or CalPatRec
+  _eminuslmom = TCut("deent.mom>100.0");
+  _epluslmom = TCut("deent.mom>87.3");
   _eminusrmom = TCut("deent.mom>103.4");
   _eplusrmom = TCut("deent.mom>90.9");
   _downstream = TCut("demcxit.momz>0");
-  _physics = _rpitch+_opa+_livegate+_eminusrmom;
-  _final = _reco+_eminustq+_pbi;
+  _physics = _rpitch+_opa+_livegate;
+  _final = (_physics+_eminustq+_eminuslmom)*_pbi;
 
 }
 
@@ -228,31 +234,31 @@ void TrkAnaPlots::FitMomResp(TH1F* momresp) {
   momresp->Fit("dscb","LRM");
 }
 
-void TrkAnaPlots::MomResp() {
+void TrkAnaPlots::MomResp(TrackerRegion region) {
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
-  TH1F* momrespe = new TH1F("momrespe","momentum response at tracker entrance;MeV/c",251,-10.0,4.0);
-  TH1F* momrespm = new TH1F("momrespm","momentum response at tracker middle;MeV/c",251,-10.0,4.0);
-  TH1F* momrespx = new TH1F("momrespx","momentum response at tracker exit;MeV/c",251,-10.0,4.0);
-  momrespe->Sumw2();
-  momrespm->Sumw2();
-  momrespx->Sumw2();
-  _tn->Project("momrespe","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
-  _tn->Project("momrespm","demid.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
-  _tn->Project("momrespx","dexit.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
-
-  _rscan = new TCanvas("rscan","Momentum Response",1200,1200);
-  _rscan->Divide(2,2);
-  _rscan->cd(1);
+  char title[80];
+  snprintf(title,80,"Momentum Response at Tracker %s;P_{reconstructed} - P_{generated} (MeV/c)",_rname[region].c_str());
+  TH1F* momresp = new TH1F("momresp",title,151,-4.0,4.0);
+  TH1F* momrespr = new TH1F("momrespr",title,151,-4.0,4.0);
+  momresp->Sumw2();
+  momrespr->Sumw2();
+  momresp->SetLineColor(kRed);
+  momrespr->SetLineColor(kBlue);
+  _tn->Project("momresp","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
+  _tn->Project("momrespr","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",(_physics+_eminuslmom)*_pbi);
+  _rscan = new TCanvas("rscan","Momentum Response",800,800);
   gPad->SetLogy();
-  FitMomResp(momrespe);
-  _rscan->cd(2);
-  gPad->SetLogy();
-  FitMomResp(momrespm);
-  _rscan->cd(3);
-  gPad->SetLogy();
-  FitMomResp(momrespx);
-
+  FitMomResp(momrespr);
+  FitMomResp(momresp);
+  momrespr->GetFunction("dscb")->SetLineColor(kBlue);
+  momrespr->Draw();
+  momrespr->SetStats(0);
+  momresp->Draw("same");
+  TLegend* leg = new TLegend(0.55,0.7,0.9,0.9);
+  leg->AddEntry(momrespr,"All Tracks","l");
+  leg->AddEntry(momresp,"Selected Tracks","l");
+  leg->Draw();
 }
 
 void TrkAnaPlots::FitMomRes(TH1F* momres) {
@@ -299,32 +305,19 @@ void TrkAnaPlots::FitMomRes(TH1F* momres) {
 //  rtext->Draw();
 }
 
-void TrkAnaPlots::MomRes() {
+void TrkAnaPlots::MomRes(TrackerRegion region) {
 // cuts
-  _rcan = new TCanvas("rcan","Momentum Resolution",1200,1200);
-  _rcan->Divide(2,2);
+  char title[80];
+  snprintf(title,80,"momentum resolution at tracker %s;MeV/c",_rname[region].c_str());
+  TH1F* momres = new TH1F("momres",title,251,-4,4);
+  momres->Sumw2();
+  _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_final);
+//  momres->SetMinimum(0.5);
+  _rcan = new TCanvas("rcan","Momentum Resolution",800,800);
   gStyle->SetOptFit(111111);
   gStyle->SetOptStat("oumr");
   gPad->SetLogy();
-  TH1F* momrese = new TH1F("momrese","momentum resolution at start of tracker;MeV/c",251,-4,4);
-  TH1F* momresm = new TH1F("momresm","momentum resolution at mid of tracker;MeV/c",251,-4,4);
-  TH1F* momresx = new TH1F("momresx","momentum resolution at exit of tracker;MeV/c",251,-4,4);
-  momrese->Sumw2();
-  momresm->Sumw2();
-  momresx->Sumw2();
-  _tn->Project("momrese","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_final);
-  _tn->Project("momresm","demid.mom-sqrt(demcmid.momx^2+demcmid.momy^2+demcmid.momz^2)",_final);
-  _tn->Project("momresx","dexit.mom-sqrt(demcxit.momx^2+demcxit.momy^2+demcxit.momz^2)",_final);
-  momrese->Scale(1.0);
-  momresm->Scale(1.0);
-  momresx->Scale(1.0);
-//  momres->SetMinimum(0.5);
-  _rcan->cd(1);
-  FitMomRes(momrese);
-  _rcan->cd(2);
-  FitMomRes(momresm);
-  _rcan->cd(3);
-  FitMomRes(momresx);
+  FitMomRes(momres);
 
 }
 void TrkAnaPlots::Acc(int ngen,int gencode,int charge) {
@@ -374,7 +367,6 @@ void TrkAnaPlots::Acc(int ngen,int gencode,int charge) {
   }
 
   ta->Project("acc",binvals[ibin++].c_str(),_pbi*goodmc);
- // ta->Project("+acc",binvals[ibin++],_pbi*mcsel);
   ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger));
   ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco));
   ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit));
@@ -387,16 +379,16 @@ void TrkAnaPlots::Acc(int ngen,int gencode,int charge) {
 
   ta->Project("norm",binvals[0].c_str(),_pbi*goodmc);
   ibin = 0;
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_opa+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid));
 
   double all = acc->GetBinContent(1);
   if(ngen < 0)
