@@ -1,0 +1,66 @@
+// Lisa Goodenough, March 2018
+// modified version of beam_g4s1.fcl for running in MT mode
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+
+BEGIN_PROLOG
+#----------------------------------------------------------------
+# for the GenParticle and Event Stashes
+stashSize:50
+
+END_PROLOG
+#================================================================
+
+# Give this job a name.
+process_name :  beamTEST
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : {
+
+   message               : @local::default_message
+   TFileService          : { fileName : "beamTEST.root" }
+//   RandomNumberGenerator : { }
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+//   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   SeedService            : @local::automaticSeeds
+}
+
+//services.scheduler: {
+//  num_schedules: 2
+//}
+
+physics : {
+ 
+   producers: {
+
+      generate: {
+         module_type          : PrimaryProtonGunR
+         inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsR.txt"
+      }
+
+//      genCounter: {
+//         module_type: GenEventCounter
+//      }
+ 
+   }
+
+
+   p1: [generate]  
+
+   trigger_paths  : [p1] 
+//   outputs: [p1]
+//   end_paths: [outputs]
+}
+
+
+// Initialize seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
