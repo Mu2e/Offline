@@ -28,6 +28,7 @@ mainlib = helper.make_mainlib ( [ 'art_Framework_Services_Registry',
 
 helper.make_plugins( [ mainlib,
                        'art_Framework_Services_Registry',
+                       'art_Utilities',
                        'canvas',
                        'boost_filesystem',
                        'boost_system',

@@ -11,7 +11,8 @@
 //
 
 // C++ includes.
-#include <iostream>
+//#include <iostream>
+#include <string>
 
 // Framework includes
 #include "art/Framework/Principal/Run.h"
@@ -37,7 +38,7 @@ using namespace std;
 
 namespace mu2e {
 
-  PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepJamesRandom engine, art::Run const& run, SimpleConfig const& config):
+    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepJamesRandom& engine, art::Run const& run, SimpleConfig const& config, int instance):
 
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->position()
@@ -65,8 +66,15 @@ namespace mu2e {
     _randPoissonQ{engine, std::abs(_mean)},
     _randFlat{engine},
     _randGaussQ{engine, 0., _beamSpotSigma},
-    _randomUnitSphere{engine, _czmin, _czmax, _phimin, _phimax}
-    {}
+    _randomUnitSphere{engine, _czmin, _czmax, _phimin, _phimax},
+    _makeOutFiles(config.getBool("primaryProtonGun.makeOutFiles", true))
+    {
+        
+        std::string outFileName(config.getString("primaryProtonGun.outFileName"));
+        outFileName = outFileName + "_" + to_string(instance) + ".dat";
+        outFile_.open(outFileName.c_str());
+        
+    }
 
   void PrimaryProtonGun::generate( GenParticleCollection& genParts ){
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
@@ -105,6 +113,8 @@ namespace mu2e {
 
     // Energy and kinetic energy.
     double e = sqrt( _p*_p + _proton_mass*_proton_mass);
+    double ekine = e - _proton_mass;
+
 
     // Generated 4 momentum.
     CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(_p), e );
@@ -122,6 +132,18 @@ namespace mu2e {
                                      // Convert momentum to Mu2e coordinates
                                      _gunRotation*mom,
                                      time));
+      
+      if ( _makeOutFiles ){
+          outFile_          << std::setprecision(8)
+          << ekine          << " "
+          << _p             << " "
+          << time           << " "
+          << mom.cosTheta() << " "
+          << pos.x()        << " "
+          << pos.y()        << " "
+          << pos.z()        << " "
+          << std::endl;
+      }
 
   }
 

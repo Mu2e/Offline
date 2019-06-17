@@ -77,6 +77,9 @@ namespace mu2e {
       
       // Check for a valid configuration
       void checkConfig( const SimpleConfig& config );
+      
+      // Number of times BeginRun is called on this module
+      int ncalls;
 
   };
 
@@ -90,11 +93,11 @@ namespace mu2e {
         _printConfig(           pSet.get<bool>          ("printConfig",           false)),
         // A common random engine for the generator to use.
         //_engine{createEngine(procFrame.serviceHandle<SeedService>{}->getSeed())}
-        _engine{art::ServiceHandle<SeedService>{}->getSeed()}
+        _engine{art::ServiceHandle<SeedService>{}->getSeed()},
         //_engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
+        ncalls(0)
     {
         produces<GenParticleCollection>();
-        std::cout << "Constructing PrimaryProtonGunR #" << procFrame.scheduleID() << std::endl;
     }
 
 
@@ -102,15 +105,16 @@ namespace mu2e {
   // information that may change with conditions information.
   // Otherwise this information could be computed in the c'tor.
     void PrimaryProtonGunR::beginRun(art::Run const& run, art::ProcessingFrame const& procFrame){
-
-    static int ncalls(0);
+        
     if ( ++ncalls > 1){
       mf::LogInfo("PrimaryProtonGunR")
-        << "PrimaryProtonGunR Generator does not change state at beginRun.  Hope that's OK.";
+        << "For Schedule: " << procFrame.scheduleID()
+        << ", PrimaryProtonGunR Generator does not change state at beginRun.  Hope that's OK.";
       return;
     }
 
-    cout << "Event generator configuration file: "
+    cout << "For Schedule: " << procFrame.scheduleID()
+         << ", event generator configuration file: "
          << _configfile
          << "\n"
          << endl;
@@ -122,17 +126,18 @@ namespace mu2e {
       config.print(cout,"PrimaryProtonGunR: ");
     }
 
+    static int instance(0);
     // Instantiate generator for this run.
-    _primaryProtonGunGenerator = GeneratorBasePtr( new PrimaryProtonGun( _engine, run, config )) ;
- 
+    _primaryProtonGunGenerator = GeneratorBasePtr( new PrimaryProtonGun( _engine, run, config, instance)) ;
+
     config.printAllSummaries( cout, _configStatsVerbosity, "PrimaryProtonGunR: ");
+        
+    instance++;
 
   }//beginRun
 
     void PrimaryProtonGunR::produce(art::Event& evt, art::ProcessingFrame const& procFrame) {
-
-        std::cout << "THIS IS Schedule " << procFrame.scheduleID() << " at event " << evt.id() << std::endl;
-
+        
         // Make the collections to hold the output.
         unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
         
