@@ -103,6 +103,7 @@ PrimaryProtonGunN: {
 
 StoppedParticleReactionGun: {
     @table::CeEndpointGun 
+    genId : StoppedParticleReactionGun
 }
 
 
