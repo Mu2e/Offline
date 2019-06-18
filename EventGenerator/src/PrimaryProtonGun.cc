@@ -67,12 +67,13 @@ namespace mu2e {
     _randFlat{engine},
     _randGaussQ{engine, 0., _beamSpotSigma},
     _randomUnitSphere{engine, _czmin, _czmax, _phimin, _phimax},
-    _makeOutFiles(config.getBool("primaryProtonGun.makeOutFiles", true))
+    _makeOutFiles(config.getBool("primaryProtonGun.makeOutFiles", false))
     {
-        
+        if ( _makeOutFiles ){
         std::string outFileName(config.getString("primaryProtonGun.outFileName"));
         outFileName = outFileName + "_" + to_string(instance) + ".dat";
         outFile_.open(outFileName.c_str());
+        }
         
     }
 

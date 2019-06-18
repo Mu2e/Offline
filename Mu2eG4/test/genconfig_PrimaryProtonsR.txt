@@ -18,7 +18,7 @@ double primaryProtonGun.mean  =    -1.;
 
 // Determine whether to make data files with distrubutions of
 // various beam-related quantities related to the above config parameters
-bool primaryProtonGun.makeOutFiles  = 1; 
+bool primaryProtonGun.makeOutFiles  = false; 
 string primaryProtonGun.outFileName = primaryProtonGunModule;
 
 
