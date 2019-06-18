@@ -1,13 +1,11 @@
 
 /*
-
-  A plug-in for running PrimaryProtonGun-based event generator for running in MT mode.
+  This is a Replicated Module.
+  A plug-in for running PrimaryProtonGun-based event generator for running in MT art.
   It produces a GenParticleCollection of primary protons using the PrimaryProtonGun.
  
   These Collections are used in Mu2eG4_module.cc.
  
-  The code is tightly based on the EventGenerator_plugin
-
   Original author Lisa Goodenough
 
 */
@@ -80,7 +78,7 @@ namespace mu2e {
       
       // Number of times BeginRun is called on this module
       int ncalls;
-
+      
   };
 
     PrimaryProtonGunR::PrimaryProtonGunR(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& procFrame):
@@ -91,10 +89,7 @@ namespace mu2e {
         _messageOnDefault(      pSet.get<bool>          ("messageOnDefault",      false)),
         _configStatsVerbosity(  pSet.get<int>           ("configStatsVerbosity",  0)),
         _printConfig(           pSet.get<bool>          ("printConfig",           false)),
-        // A common random engine for the generator to use.
-        //_engine{createEngine(procFrame.serviceHandle<SeedService>{}->getSeed())}
         _engine{art::ServiceHandle<SeedService>{}->getSeed()},
-        //_engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
         ncalls(0)
     {
         produces<GenParticleCollection>();
@@ -106,6 +101,7 @@ namespace mu2e {
   // Otherwise this information could be computed in the c'tor.
     void PrimaryProtonGunR::beginRun(art::Run const& run, art::ProcessingFrame const& procFrame){
         
+    //The configuration of the PPG Generator does not change within a job
     if ( ++ncalls > 1){
       mf::LogInfo("PrimaryProtonGunR")
         << "For Schedule: " << procFrame.scheduleID()
@@ -113,11 +109,14 @@ namespace mu2e {
       return;
     }
 
-    cout << "For Schedule: " << procFrame.scheduleID()
-         << ", event generator configuration file: "
-         << _configfile
-         << "\n"
-         << endl;
+    //we don't want to print this out more than once, regardless of the number of instances
+    static int instance(0);
+    if ( instance == 0){
+        cout << "Event generator configuration file: "
+        << _configfile
+        << "\n"
+        << endl;
+    }
 
     SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement, _messageOnDefault );
     checkConfig(config);
@@ -126,14 +125,15 @@ namespace mu2e {
       config.print(cout,"PrimaryProtonGunR: ");
     }
 
-    static int instance(0);
+    config.printAllSummaries( cout, _configStatsVerbosity, "PrimaryProtonGunR: ");
+     
+    //we need a different output data filename for each schedule
+    //since BeginRun is called serially, we don't need to worry about a lock here
+    //static int instance(0);
     // Instantiate generator for this run.
     _primaryProtonGunGenerator = GeneratorBasePtr( new PrimaryProtonGun( _engine, run, config, instance)) ;
-
-    config.printAllSummaries( cout, _configStatsVerbosity, "PrimaryProtonGunR: ");
-        
     instance++;
-
+        
   }//beginRun
 
     void PrimaryProtonGunR::produce(art::Event& evt, art::ProcessingFrame const& procFrame) {
@@ -151,7 +151,7 @@ namespace mu2e {
     // Look for inconsistencies in the config file.
     void PrimaryProtonGunR::checkConfig( const SimpleConfig&  config){
       // There is nothing to do for this generator
-    }
+    }//checkConfig
 
 
 }

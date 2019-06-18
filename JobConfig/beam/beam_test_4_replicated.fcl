@@ -1,20 +1,13 @@
-// Lisa Goodenough, March 2018
-// modified version of beam_g4s1.fcl for running in MT mode
+// Lisa Goodenough, June 2019
+//fcl file for running PrimaryProtonGun as a Replicated module
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-BEGIN_PROLOG
-#----------------------------------------------------------------
-# for the GenParticle and Event Stashes
-stashSize:50
-
-END_PROLOG
-#================================================================
 
 # Give this job a name.
-process_name :  beamTEST
+process_name :  beamtest4replicated
 
 source : {
    module_type : EmptyEvent
@@ -23,11 +16,9 @@ source : {
 
 services : {
 
-   message               : @local::default_message
-   TFileService          : { fileName : "beamTEST.root" }
-//   RandomNumberGenerator : { }
+   message                : @local::default_message
+//   TFileService           : { fileName : "beam_test_4_replicated.root" }
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
-//   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    SeedService            : @local::automaticSeeds
 }
@@ -45,18 +36,24 @@ physics : {
          inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsR.txt"
       }
 
-//      genCounter: {
-//         module_type: GenEventCounter
-//      }
- 
    }
 
 
-   p1: [generate]  
+   p1 : [generate]  
+   e1 : [outfile]
 
    trigger_paths  : [p1] 
-//   outputs: [p1]
-//   end_paths: [outputs]
+   end_paths: [e1]
+}
+
+
+outputs: {
+
+  outfile : {
+    module_type : RootOutput
+    fileName    : "data_beam_test_4_replicated.root"
+  }
+
 }
 
 
