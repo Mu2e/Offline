@@ -28,9 +28,6 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// Other external includes.
-#include <boost/shared_ptr.hpp>
-
 // C++ includes.
 #include <iostream>
 #include <sstream>
@@ -48,16 +45,14 @@ namespace mu2e {
       explicit PrimaryProtonGunR(fhicl::ParameterSet const& pS, art::ProcessingFrame const& pF);
       // Accept compiler written d'tor.  Modules are never moved or copied.
 
-      virtual void produce (art::Event& e, art::ProcessingFrame const& pF);
-      virtual void beginRun(art::Run const& r, art::ProcessingFrame const& pF);
+      virtual void produce (art::Event& e, art::ProcessingFrame const& pF) override;
+      virtual void beginRun(art::Run const& r, art::ProcessingFrame const& pF) override;
 
   private:
 
       // Name of the run-time configuration file.
       string _configfile;
 
-      // Control the behaviour of messages from the SimpleConfig object holding
-      // the geometry parameters.
       bool _allowReplacement;
       bool _messageOnReplacement;
       bool _messageOnDefault;
@@ -66,18 +61,11 @@ namespace mu2e {
       // Print final config file after all replacements.
       bool _printConfig;
     
-      //CLHEP::HepRandomEngine& _engine;
       CLHEP::HepJamesRandom _engine;
-      
-      // A collection of all of the generators that we will run.
-      typedef boost::shared_ptr<GeneratorBase> GeneratorBasePtr;
-      GeneratorBasePtr _primaryProtonGunGenerator;
-      
-      // Check for a valid configuration
-      void checkConfig( const SimpleConfig& config );
+      std::unique_ptr<PrimaryProtonGun> _primaryProtonGunGenerator;
       
       // Number of times BeginRun is called on this module
-      int ncalls;
+      int ncalls = 0;
       
   };
 
@@ -89,19 +77,14 @@ namespace mu2e {
         _messageOnDefault(      pSet.get<bool>          ("messageOnDefault",      false)),
         _configStatsVerbosity(  pSet.get<int>           ("configStatsVerbosity",  0)),
         _printConfig(           pSet.get<bool>          ("printConfig",           false)),
-        _engine{art::ServiceHandle<SeedService>{}->getSeed()},
-        ncalls(0)
+        _engine{art::ServiceHandle<SeedService>{}->getSeed()}
     {
         produces<GenParticleCollection>();
     }
-
-
-  // Run this at beginRun time in case any of them depend on geoemtry
-  // information that may change with conditions information.
-  // Otherwise this information could be computed in the c'tor.
+    
     void PrimaryProtonGunR::beginRun(art::Run const& run, art::ProcessingFrame const& procFrame){
         
-    //The configuration of the PPG Generator does not change within a job
+    // The configuration of the PPG Generator does not change within a job.
     if ( ++ncalls > 1){
       mf::LogInfo("PrimaryProtonGunR")
         << "For Schedule: " << procFrame.scheduleID()
@@ -109,7 +92,8 @@ namespace mu2e {
       return;
     }
 
-    //we don't want to print this out more than once, regardless of the number of instances
+    // We don't want to print this out more than once,
+    // regardless of the number of instances/schedules running.
     static int instance(0);
     if ( instance == 0){
         cout << "Event generator configuration file: "
@@ -118,20 +102,16 @@ namespace mu2e {
         << endl;
     }
 
+    // Load the configuration, make modifications if required, and print if desired.
     SimpleConfig config(_configfile, _allowReplacement, _messageOnReplacement, _messageOnDefault );
-    checkConfig(config);
-
     if ( _printConfig ){
       config.print(cout,"PrimaryProtonGunR: ");
     }
-
     config.printAllSummaries( cout, _configStatsVerbosity, "PrimaryProtonGunR: ");
      
-    //we need a different output data filename for each schedule
-    //since BeginRun is called serially, we don't need to worry about a lock here
-    //static int instance(0);
+        
     // Instantiate generator for this run.
-    _primaryProtonGunGenerator = GeneratorBasePtr( new PrimaryProtonGun( _engine, run, config, instance)) ;
+    _primaryProtonGunGenerator = std::make_unique <PrimaryProtonGun>( _engine, run, config, instance);
     instance++;
         
   }//beginRun
@@ -141,21 +121,12 @@ namespace mu2e {
         // Make the collections to hold the output.
         unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
         
-        // Run the generators.
+        // Run the generator and put the generated particles into the event.
         _primaryProtonGunGenerator->generate(*genParticles);
-        // Put the generated particles into the event.
         evt.put(std::move(genParticles));
 
     }//produce()
 
-    // Look for inconsistencies in the config file.
-    void PrimaryProtonGunR::checkConfig( const SimpleConfig&  config){
-      // There is nothing to do for this generator
-    }//checkConfig
-
-
 }
 
-
-using mu2e::PrimaryProtonGunR;
-DEFINE_ART_MODULE(PrimaryProtonGunR);
+DEFINE_ART_MODULE(mu2e::PrimaryProtonGunR);
