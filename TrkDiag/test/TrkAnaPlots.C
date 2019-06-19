@@ -83,7 +83,7 @@ class TrkAnaPlots {
   void PlotIPA();
   void Upstream();
 // cuts
-  TCut _reco, _goodfit, _rpitch, _livegate, _opa, _physics, _final, _pbi;
+  TCut _reco, _goodfit, _rpitch, _livegate, _opa, _upstream, _physics, _final, _pbi;
   TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
   TCut _CRV, _eminustrig, _eplustrig, _eminuslmom, _epluslmom, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
  // Trees 
@@ -113,6 +113,7 @@ void TrkAnaPlots::BuildCuts(){
   snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
   _livegate = TCut(ctext);
   _opa = TCut("abs(deent.d0<105) && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680");
+  _upstream = TCut("ue.status<0");
   _pbi = TCut("evtwt.PBIWeight"); 
   _CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
   _eminustq = TCut("dequal.TrkQualDeM>0.8");
@@ -321,7 +322,7 @@ void TrkAnaPlots::MomRes(TrackerRegion region) {
 
 }
 void TrkAnaPlots::Acc(int ngen,int gencode,int charge) {
-  vector<string> binnames={"All","Trigger", "KF Track fit", "Fit Quality", "Livegate", "Reco pitch", "OPA Rejection", "PID", "CRV Rejection", "Momentum window"};
+  vector<string> binnames={"All","Trigger", "KF Track fit", "Fit Quality", "Livegate", "Reco pitch", "OPA Rejection", "Upstream", "PID", "CRV Rejection", "Momentum window"};
 
   unsigned nbins = binnames.size();
   double bmax = nbins-0.5;
@@ -373,22 +374,24 @@ void TrkAnaPlots::Acc(int ngen,int gencode,int charge) {
   ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate));
   ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch));
   ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa));
-  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+pid));
-  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid));
-  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+pid));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid));
+  ta->Project("+acc",binvals[ibin++].c_str(),_pbi*(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom));
 
   ta->Project("norm",binvals[0].c_str(),_pbi*goodmc);
   ibin = 0;
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_rpitch+_opa+_upstream+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_opa+_upstream+_CRV+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_upstream+_CRV+pid+rmom));
   ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+_livegate+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_rpitch+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_opa+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_CRV+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+pid+rmom));
-  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_CRV+pid));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+pid+rmom));
+  ta->Project("+eff",binvals[ibin++].c_str(),(goodmc+trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid));
 
   double all = acc->GetBinContent(1);
   if(ngen < 0)
