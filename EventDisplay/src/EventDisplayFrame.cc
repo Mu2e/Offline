@@ -46,7 +46,8 @@ namespace mu2e_eventdisplay
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) : 
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
-  _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV"))
+  _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
+  _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
   Move(20,20);
@@ -593,6 +594,8 @@ void EventDisplayFrame::fillGeometry()
 
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
+  _timeOffsets.updateMap(event);
+
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
   _runNumber=event.id().run();
@@ -639,7 +642,7 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   }
   else _runNumberText->SetTitle(eventInfoText.c_str());
 
-  _dataInterface->fillEvent(_contentSelector);
+  _dataInterface->fillEvent(_contentSelector, _timeOffsets);
   _dataInterface->useHitColors(_useHitColors, _whiteBackground);
   _dataInterface->useTrackColors(_contentSelector, _useTrackColors, _whiteBackground);
   _dataInterface->makeCrvScintillatorBarsVisible(_showCRV);

@@ -28,7 +28,7 @@ using namespace std;
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/SimParticlePtrCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/PhysicalVolumeMultiHelper.hh"
 #include "ConfigTools/inc/SimpleConfig.hh"
@@ -781,7 +781,7 @@ void DataInterface::findBoundaryP(spaceminmax &m, double x, double y, double z)
   if(std::isnan(m.maxz) || z>m.maxz) m.maxz=z;
 }
 
-void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector)
+void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets)
 {
   removeNonGeometryComponents();
   if(!_geometrymanager) createGeometryManager();
@@ -801,7 +801,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const mu2e::StepPointMC& hit = *iter;
       int sid = hit.strawId().asUint16();
       int trackid = hit.trackId().asInt();
-      double time = hit.time();
+      double time = timeOffsets.timeWithOffsetsApplied(hit);
       double energy = hit.eDep();
       std::map<int,boost::shared_ptr<Straw> >::iterator straw=_straws.find(sid);
       if(straw!=_straws.end() && !std::isnan(time))
@@ -987,7 +987,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       const mu2e::StepPointMC& calohit = *iter;
       int crystalid = calohit.volumeId();
       int trackid = calohit.trackId().asInt();
-      double time = calohit.time();
+      double time = timeOffsets.timeWithOffsetsApplied(calohit);
       double energy = calohit.eDep();
       std::map<int,boost::shared_ptr<VirtualShape> >::iterator crystal=_crystals.find(crystalid);
       if(crystal!=_crystals.end() && !std::isnan(time))
@@ -1127,6 +1127,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     physicalVolumeEntries=physicalVolumes->size();
   }
 
+
   resetBoundaryP(_tracksMinmax);
   std::vector<ContentSelector::trackInfoStruct> trackInfos;
   std::vector<const mu2e::SimParticleCollection*> simParticleCollectionVector=contentSelector->getSelectedTrackCollection<mu2e::SimParticleCollection>(trackInfos);
@@ -1137,6 +1138,8 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
     for(iter=simParticles->begin(); iter!=simParticles->end(); iter++)
     {
       const mu2e::SimParticle& particle = iter->second;
+      art::Ptr<mu2e::SimParticle> particlePtr(trackInfos[i].productId, &particle, iter->first.asUint());
+      double timeOffset = timeOffsets.totalTimeOffset(particlePtr);
       int id = particle.id().asInt();   //is identical with cet::map_vector_key& particleKey = iter->first;
       int parentid = particle.parentId().asInt();
       int particleid=particle.pdgId();
@@ -1162,12 +1165,12 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       double x1=particle.startPosition().x() - _detSysOrigin.x();
       double y1=particle.startPosition().y() - _detSysOrigin.y();
       double z1=particle.startPosition().z() - _detSysOrigin.z();
-      double t1=particle.startGlobalTime();
+      double t1=particle.startGlobalTime()+timeOffset;
       double e1=particle.startMomentum().e();
       double x2=particle.endPosition().x() - _detSysOrigin.x();
       double y2=particle.endPosition().y() - _detSysOrigin.y();
       double z2=particle.endPosition().z() - _detSysOrigin.z();
-      double t2=particle.endGlobalTime();
+      double t2=particle.endGlobalTime()+timeOffset;
       double e2=particle.endMomentum().e();
       findBoundaryT(_tracksTimeMinmax, t1);
       findBoundaryT(_tracksTimeMinmax, t2);
@@ -1192,7 +1195,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       boost::shared_ptr<Track> shape(new Track(x1,y1,z1,t1, x2,y2,z2,t2,
                                                particleid, trackclass, trackclassindex, e1,
                                                _geometrymanager, _topvolume, _mainframe, info, false));
-      findTrajectory(contentSelector,shape,particle.id(), t1,t2, simParticles, trackInfos[i]);
+      findTrajectory(contentSelector,shape,particle.id(), timeOffset, trackInfos[i]);
       _components.push_back(shape);
       _tracks.push_back(shape);
     }
@@ -1434,8 +1437,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
 
 void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
                                    boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
-                                   double t1, double t2,
-                                   const mu2e::SimParticleCollection *simParticles,
+                                   double timeOffset,
                                    const ContentSelector::trackInfoStruct &trackInfo)
 {
   const mu2e::MCTrajectoryCollection *mcTrajectories=contentSelector->getMCTrajectoryCollection(trackInfo);
@@ -1452,7 +1454,7 @@ void DataInterface::findTrajectory(boost::shared_ptr<ContentSelector> const &con
           track->addTrajectoryPoint(point_iter->x()-_detSysOrigin.x(),
                                     point_iter->y()-_detSysOrigin.y(),
                                     point_iter->z()-_detSysOrigin.z(),
-                                    point_iter->t());
+                                    point_iter->t()+timeOffset);
         }
       }
     }

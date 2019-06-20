@@ -1,6 +1,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
+#include "CommonMC/fcl/prolog.fcl"
 
 process_name : EventDisplay
 
@@ -27,6 +28,8 @@ physics :
       module_type               : EventDisplay
       g4ModuleLabel             : "g4run"
       physicalVolumesMultiLabel : "compressPV"
+#      timeOffsets               : { inputs : [ @sequence::CommonMC.TimeMaps ] }
+      timeOffsets               : { inputs : [ @sequence::RecoCompression.TimeMaps ] }
     }
   }
 
@@ -35,4 +38,5 @@ physics :
   end_paths      : [e1]
 }
 
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
 source.readParameterSets : false
