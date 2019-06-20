@@ -11,8 +11,6 @@
 //
 
 // C++ includes.
-//#include <iostream>
-#include <string>
 
 // Framework includes
 #include "art/Framework/Principal/Run.h"
@@ -38,7 +36,7 @@ using namespace std;
 
 namespace mu2e {
 
-    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepJamesRandom& engine, art::Run const& run, SimpleConfig const& config, int instance):
+    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepJamesRandom& engine, art::Run const& run, SimpleConfig const& config, std::string sID):
 
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->position()
@@ -70,9 +68,9 @@ namespace mu2e {
     _makeOutFiles(config.getBool("primaryProtonGun.makeOutFiles", false))
     {
         if ( _makeOutFiles ){
-        std::string outFileName(config.getString("primaryProtonGun.outFileName"));
-        outFileName = outFileName + "_" + to_string(instance) + ".dat";
-        outFile_.open(outFileName.c_str());
+            std::string outFileName(config.getString("primaryProtonGun.outFileName"));
+            outFileName = outFileName + "_" + sID + ".dat";
+            outFile_.open(outFileName.c_str());
         }
         
     }

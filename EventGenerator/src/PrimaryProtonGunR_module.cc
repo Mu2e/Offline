@@ -71,7 +71,7 @@ namespace mu2e {
 
     PrimaryProtonGunR::PrimaryProtonGunR(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& procFrame):
         art::ReplicatedProducer{pSet,procFrame},
-        _configfile(            pSet.get<std::string>   ("inputfile",             "generatorconfig.txt")),
+        _configfile(            pSet.get<std::string>   ("inputfile")),
         _allowReplacement(      pSet.get<bool>          ("allowReplacement",      true)),
         _messageOnReplacement(  pSet.get<bool>          ("messageOnReplacement",  false)),
         _messageOnDefault(      pSet.get<bool>          ("messageOnDefault",      false)),
@@ -94,8 +94,9 @@ namespace mu2e {
 
     // We don't want to print this out more than once,
     // regardless of the number of instances/schedules running.
-    static int instance(0);
-    if ( instance == 0){
+    std::string schedID = std::to_string(procFrame.scheduleID().id());
+        
+    if ( schedID == "0"){
         cout << "Event generator configuration file: "
         << _configfile
         << "\n"
@@ -111,8 +112,7 @@ namespace mu2e {
      
         
     // Instantiate generator for this run.
-    _primaryProtonGunGenerator = std::make_unique <PrimaryProtonGun>( _engine, run, config, instance);
-    instance++;
+    _primaryProtonGunGenerator = std::make_unique <PrimaryProtonGun>( _engine, run, config, schedID);
         
   }//beginRun
 
