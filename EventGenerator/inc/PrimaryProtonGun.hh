@@ -27,6 +27,7 @@
 
 // C++ includes
 #include <iostream>
+#include <string>
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
@@ -56,10 +57,12 @@ namespace mu2e {
   class PrimaryProtonGun: public GeneratorBase{
   public:
 
-    PrimaryProtonGun(CLHEP::HepJamesRandom& engine, art::Run const& run, SimpleConfig const& config, int instance);
+      PrimaryProtonGun(CLHEP::HepJamesRandom& engine, art::Run const& run, SimpleConfig const& config,
+                       std::string sID);
+
     ~PrimaryProtonGun() = default;
 
-    virtual void generate( GenParticleCollection&  );
+    virtual void generate( GenParticleCollection& );
 
   private:
       
