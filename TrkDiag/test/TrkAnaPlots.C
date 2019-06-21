@@ -472,9 +472,9 @@ void TrkAnaPlots::hitres() {
   THStack* hresidst = new THStack("hresidst","Hit Residual;mm");
   hresidst->Add(hresida);
   hresidst->Add(hresidna);
-  _tn->Project("hresida","detsh._resid",_reco+_reco+"_reco&&detsh._active&&detsh._ambig!=0");
-  _tn->Project("hresidna","detsh._resid",_reco+"_reco&&detsh._active&&detsh._ambig==0");
-  _tn->Project("hresidall","detsh._resid",_reco+"_reco&&detsh._active");
+  _tn->Project("hresida","(detsh._doca-detsh._rdrift*detsh._ambig)",_reco+_reco+"detsh._active&&detsh._ambig!=0");
+  _tn->Project("hresidna","(detsh._doca-detsh._rdrift*detsh._ambig)",_reco+"detsh._active&&detsh._ambig==0");
+  _tn->Project("hresidall","(detsh._doca-detsh._rdrift*detsh._ambig)",_reco+"detsh._active");
   
   TH1F* hresa = new TH1F("hresa","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
   TH1F* hresna = new TH1F("hresna","Hit Drift Resolution;Reco R_{drift}-MC (mm)",100,-2,2);
@@ -486,9 +486,9 @@ void TrkAnaPlots::hitres() {
   THStack* hresst = new THStack("hresst","Hit Drift Resolution;Reco R_{drift}-MC (mm)");
   hresst->Add(hresa);
   hresst->Add(hresna);
-  _tn->Project("hresa","detsh._rdrift-detshmc._dist",_reco+"_reco&&detsh._active&&detsh._ambig!=0");
-  _tn->Project("hresna","detsh._rdrift-detshmc._dist",_reco+"_reco&&detsh._active&&detsh._ambig==0");
-  _tn->Project("hresall","detsh._rdrift-detshmc._dist",_reco+"_reco&&detsh._active");
+  _tn->Project("hresa","detsh._rdrift-detshmc._dist",_reco+"detsh._active&&detsh._ambig!=0");
+  _tn->Project("hresna","detsh._rdrift-detshmc._dist",_reco+"detsh._active&&detsh._ambig==0");
+  _tn->Project("hresall","detsh._rdrift-detshmc._dist",_reco+"detsh._active");
   _rescan = new TCanvas("rescan","rescan",800,800);
   _rescan->Divide(1,2);
   _rescan->cd(1);
@@ -510,9 +510,9 @@ void TrkAnaPlots::wpull() {
   swp->SetLineColor(kGreen);
   uwp->SetLineColor(kRed);
   rwp->SetLineColor(kBlue);
-  _tn->Project("swp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"_reco&&detsh._active&&detshmc._rel==0");
-  _tn->Project("uwp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"_reco&&detsh._active&&detshmc._rel<0");
-  _tn->Project("rwp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"_reco&&detsh._active&&detshmc._rel>0");
+  _tn->Project("swp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"detsh._active&&detshmc._rel._rel==0");
+  _tn->Project("uwp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"detsh._active&&detshmc._rel._rel<0");
+  _tn->Project("rwp","(detsh._wdist-detsh._hlen)/detsh._werr",_reco+"detsh._active&&detshmc._rel._rel>0");
   _wpcan = new TCanvas("wpcan","wpcan",800,800);
   _wpcan->Divide(2,2);
   _wpcan->cd(1);
@@ -535,16 +535,16 @@ void TrkAnaPlots::wpull() {
 void TrkAnaPlots::Ambig() {
   gStyle->SetOptStat(1111);
 
-  TCut ghit("detshmc._rel==0");
-  TCut delta("detshmc._rel>0");
-  TCut bkg("detshmc._rel<0");
-  TCut gambig("detshmc._ambig==_ambig");
-  TCut bambig("detshmc._ambig!=_ambig&&_ambig!=0");
+  TCut ghit("detshmc._rel._rel==0");
+  TCut delta("detshmc._rel._rel>0");
+  TCut bkg("detshmc._rel._rel<0");
+  TCut gambig("detshmc._ambig==detsh._ambig");
+  TCut bambig("detshmc._ambig!=detsh._ambig&&detsh._ambig!=0");
   TCut nambig("detsh._ambig==0");
   TCut active("detsh._active>0");
 // apply requested cuts
 
-  TCut goodtrk(_reco+"_reco&&de.nactive>20&&");
+  TCut goodtrk(_reco+"de.nactive>20");
 
 
   TH1F* rdg = new TH1F("rdg","Hit fraction vs drift radius;true radius (mm);hit fraction",100,0.0,2.7);
@@ -562,6 +562,8 @@ void TrkAnaPlots::Ambig() {
   rdd->SetLineColor(kOrange);
   rdf->SetLineColor(kYellow);
   rdg->SetStats(0);
+  rdg->SetMaximum(1.1);
+  rdg->SetMinimum(-0.1);
   rdn->SetStats(0);
 //  rdb->SetStats(0);
   rdi->SetStats(0);
@@ -719,10 +721,10 @@ void TrkAnaPlots::Resid() {
   TCut delta("detshmc._proc==17");
   TCut primary("detshmc._gen==2");
   TCut gambig("detshmc._ambig==detsh._ambig&&detsh._ambig!=0");
-  TCut bambig("detshmc._ambig!=detsh._ambig&&detsh._ambig!=0");
+  TCut bambig("(detshmc._ambig!=detsh._ambig)&&detsh._ambig!=0");
   TCut nambig("detsh._ambig==0");
   TCut active("de.status==1 && detsh._active>0");
-  TCut reco(_reco+"_reco");
+  TCut reco(_reco);
   TCut mcsel("sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>100.0");
 
   TH1F* rdg = new TH1F("rdg","True Drift radius;radius (mm);N hits",100,-0.05,2.55);
@@ -748,10 +750,10 @@ void TrkAnaPlots::Resid() {
   _tn->Project("rdb","detshmc._dist",reco+mcsel+active+bambig+primary);
   _tn->Project("rdn","detshmc._dist",reco+mcsel+active+nambig+primary);
 
-  _tn->Project("rpullg","detsh._resid/detsh._residerr",reco+mcsel+active+gambig+primary);
-  _tn->Project("rpullb","detsh._resid/detsh._residerr",reco+mcsel+active+bambig+primary);
-  _tn->Project("rpulln","detsh._resid/detsh._residerr",reco+mcsel+active+nambig+primary);
-  _tn->Project("rpulld","detsh._resid/detsh._residerr",reco+mcsel+active+delta);
+  _tn->Project("rpullg","(detsh._doca-detsh._rdrift*detsh._ambig)/detsh._residerr",reco+mcsel+active+gambig+primary);
+  _tn->Project("rpullb","(detsh._doca-detsh._rdrift*detsh._ambig)/detsh._residerr",reco+mcsel+active+bambig+primary);
+  _tn->Project("rpulln","(detsh._doca-detsh._rdrift*detsh._ambig)/detsh._residerr",reco+mcsel+active+nambig+primary);
+  _tn->Project("rpulld","(detsh._doca-detsh._rdrift*detsh._ambig)/detsh._residerr",reco+mcsel+active+delta);
 
   _residcan = new TCanvas("residcan","Residuals",1200,800);
   _residcan->Divide(2,1);
@@ -960,16 +962,16 @@ void TrkAnaPlots::StrawMat() {
   addstraw->SetStats(0);
   addstraw->SetLineColor(kBlue);
 
-  _tn->Project("addmatfrac","(de.nmatactive-de.nactive)/de.nmatactive",_reco+"_reco");
-  _tn->Project("matvshit","de.nmatactive:de.nactive",_reco+"_reco");
-  _tn->Project("naddmat","de.nmatactive-de.nactive",_reco+"_reco");
-  _tn->Project("adddoca","detsm._doca",_reco+"_reco&&detsm._active&&(!detsm._thita)");
-  _tn->Project("hitdoca","detsm._doca",_reco+"_reco&&detsm._thita");
-  _tn->Project("addstraw","detsm._straw",_reco+"_reco&&detsm._active&&(!detsm._thita)");
-  _tn->Project("hitstraw","detsm._straw",_reco+"_reco&&detsm._thita");
+  _tn->Project("addmatfrac","(de.nmatactive-de.nactive)/de.nmatactive",_reco);
+  _tn->Project("matvshit","de.nmatactive:de.nactive",_reco);
+  _tn->Project("naddmat","de.nmatactive-de.nactive",_reco);
+  _tn->Project("adddoca","detsm._doca",_reco+"detsm._active&&(!detsm._thita)");
+  _tn->Project("hitdoca","detsm._doca",_reco+"detsm._thita");
+  _tn->Project("addstraw","detsm._straw",_reco+"detsm._active&&(!detsm._thita)");
+  _tn->Project("hitstraw","detsm._straw",_reco+"detsm._thita");
 
-  _tn->Project("lofracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_reco+"_reco&&(de.nmatactive-de.nactive)/de.nmatactive<0.1");
-  _tn->Project("hifracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_reco+"_reco&&(de.nmatactive-de.nactive)/de.nmatactive>0.1");
+  _tn->Project("lofracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_reco+"(de.nmatactive-de.nactive)/de.nmatactive<0.1");
+  _tn->Project("hifracres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_reco+"(de.nmatactive-de.nactive)/de.nmatactive>0.1");
 
   TLegend* leg = new TLegend(0.6,0.7,0.9,.9);
   leg->AddEntry(hitdoca,"Hit Straw","L");
