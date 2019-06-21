@@ -347,11 +347,17 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // determine, approximately, 'sz0' - flight length corresponding to the
 // virtual detector at the tracker entrance
+// 2019-06-21 P.Murat: now, with the introduction of TrkCaloHit, not all hits 
+//            have the fltlen() defined
 //-----------------------------------------------------------------------------
-        double  h1_fltlen, hn_fltlen, entlen;
+        double  h1_fltlen(1.e6), hn_fltlen(1.e6), entlen;
 
-        h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
-        hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
+	const TrkStrawHit* h1 = dynamic_cast<const TrkStrawHit*> (krep_cpr->firstHit()->kalHit()->hit());
+	const TrkStrawHit* h2 = dynamic_cast<const TrkStrawHit*> (krep_cpr->lastHit ()->kalHit()->hit());
+
+        if (h1) h1_fltlen = h1->fltLen();
+        if (h2) hn_fltlen = h2->fltLen();
+
         entlen         = std::min(h1_fltlen,hn_fltlen);
 
         CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
@@ -567,10 +573,14 @@ namespace mu2e {
 // determine, approximately, 'sz0' - flight length corresponding to the
 // virtual detector at the tracker entrance
 //-----------------------------------------------------------------------------
-	double  h1_fltlen, hn_fltlen, entlen;
-	
-	h1_fltlen      = krep_cpr->firstHit()->kalHit()->hit()->fltLen();
-	hn_fltlen      = krep_cpr->lastHit ()->kalHit()->hit()->fltLen();
+	double  h1_fltlen(1.e6), hn_fltlen(1.e6), entlen;
+
+	const TrkStrawHit* h1 = dynamic_cast<const TrkStrawHit*> (krep_cpr->firstHit()->kalHit()->hit());
+	const TrkStrawHit* h2 = dynamic_cast<const TrkStrawHit*> (krep_cpr->lastHit ()->kalHit()->hit());
+
+	if (h1) h1_fltlen = h1->fltLen();
+	if (h2) hn_fltlen = h2->fltLen();
+
 	entlen         = std::min(h1_fltlen,hn_fltlen);
 
 	CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
