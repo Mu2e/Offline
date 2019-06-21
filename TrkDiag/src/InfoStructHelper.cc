@@ -161,7 +161,7 @@ namespace mu2e {
       }
       tshinfo._residerr = ihit->radialErr();
       // note; the following is the BIASED residual FIXME!
-      tshinfo._resid = ihit->driftRadius()-ihit->wireDOCA()*ihit->ambig();
+      tshinfo._resid = ihit->wireDOCA() -ihit->driftRadius()*ihit->ambig();
       tshinfo._rdrift = ihit->driftRadius();
       tshinfo._rdrifterr = ihit->radialErr();
 
