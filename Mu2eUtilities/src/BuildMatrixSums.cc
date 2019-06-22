@@ -99,10 +99,35 @@ TMatrixD BuildMatrixSums::GetGammaX(){
 	Gamma[1][0] = gammaX01;
 	Gamma[0][1] = gammaX01;
 	Gamma[1][1] = gammaX11;
-	
 	return Gamma;
 }
-
+TMatrixD BuildMatrixSums::GetCovX(){
+	TMatrixD GammaINV = GetGammaX();
+	double* det = NULL;                  
+	try {
+    	        GammaINV.Invert(det);
+        } catch (std::exception exc) {
+    
+	        std::stringstream message;
+		message << "Error in Cov Mat : Cannot fit due to singular matrix error on inversion!" << std::endl;
+        } 
+	TMatrixD CovX(2,2);
+	CovX[0][0] = sqrt(GammaINV[0][0]);
+	CovX[1][0] = sqrt(GammaINV[1][0]);
+	CovX[1][1] = sqrt(GammaINV[1][1]);
+	CovX[0][1] = sqrt(GammaINV[0][1]);
+	return CovX;
+}
+/*
+TMatrixD BuildMatrixSums::GetCovX(){
+	TMatrixD CovX(2,2);
+	CovX[0][0] = sqrt(gammaX00);
+	CovX[1][0] = sqrt(gammaX01);
+	CovX[1][1] = sqrt(gammaX11);
+	CovX[0][1] = sqrt(gammaX01);
+	return CovX;
+}
+*/
 TMatrixD BuildMatrixSums::GetBetaX(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaX00;
@@ -137,7 +162,23 @@ TMatrixD BuildMatrixSums::GetGammaY(){
 	
 	return Gamma;
 }
-
+TMatrixD BuildMatrixSums::GetCovY(){
+	TMatrixD GammaINV = GetGammaY();
+	double* det = NULL;                  
+	try {
+    	        GammaINV.Invert(det);
+        } catch (std::exception exc) {
+    
+	        std::stringstream message;
+		message << "Error in Cov Mat : Cannot fit due to singular matrix error on inversion!" << std::endl;
+        } 
+	TMatrixD CovY(2,2);
+	CovY[0][0] = sqrt(GammaINV[0][0]);
+	CovY[1][0] = sqrt(GammaINV[1][0]);
+	CovY[1][1] = sqrt(GammaINV[1][1]);
+	CovY[0][1] = sqrt(GammaINV[0][1]);
+	return CovY;
+}
 TMatrixD BuildMatrixSums::GetBetaY(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaY00;

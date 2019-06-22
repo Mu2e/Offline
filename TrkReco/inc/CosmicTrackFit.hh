@@ -43,6 +43,7 @@
 #include "TMatrixD.h"
 #include "TH2F.h"
 #include "TCanvas.h"
+
 namespace mu2e 
 {
     class Tracker;
@@ -51,19 +52,18 @@ namespace mu2e
      public:
                 explicit CosmicTrackFit(fhicl::ParameterSet const&);
     		virtual ~CosmicTrackFit();
-
                 bool initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
+                XYZVec InitLineDirection( StrawDigiMC const& ch0,  StrawDigiMC const& chN, XYZVec reco, bool is_prime) ;
                 XYZVec LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN, XYZVec ZPrime);
-                XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime);
-                XYZVec TransformTrueDirection(XYZVec TrueDirection, XYZVec ZPrime, XYZVec XDoublePrime, XYZVec YDoublePrime);
+                XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
                 //Step 1: Begin Fit- initializes the fit routine:
                 void BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
-                
                 //Step 2: RunFitChi2-holds the functions to find initial line, update, refine and add in drift
                 void RunFitChi2(const char* title, CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
 		void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
+		double chi_sum(double chisq, double ndf);
 		void Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1);
 		void FitXYZ(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
 		
@@ -72,7 +72,7 @@ namespace mu2e
 		void MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData);
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 
-		void FitMC(CosmicTrackFinderData& trackData);
+		void FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool is_prime);
                 bool goodTrack(CosmicTrack* track);
                 float pointToLineDCA(CosmicTrack* track, StrawHit hit);
 		void DriftCorrection(CosmicTrackFinderData& trackData);
@@ -81,11 +81,8 @@ namespace mu2e
                 const Tracker*            _tracker;
     		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
                 
-		
 	private:
 		
-                //list function:
-               
   		bool use_hit(ComboHit const&) const;
   		bool use_track(double length) const;
     		void setOutlier(ComboHit&) const;

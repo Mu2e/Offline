@@ -285,6 +285,7 @@ namespace mu2e
                  
         	ComboHit const& chit =(*_chcol)[i];
               		ihit +=1;
+              		if (ihit == 5) continue;
               		if (ihit == 10) {
               			ihit = ihit+1;
               		}
@@ -317,6 +318,7 @@ namespace mu2e
 			
 			major_error_line.DrawLine( major_z1, major_x1, major_z2, major_x2);
 			minor_error_line.DrawLine( minor_z1, minor_x1, minor_z2, minor_x2);
+			/*
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<pullsx[ihit-1];
@@ -325,13 +327,14 @@ namespace mu2e
 		   	latex.SetTextSize(0.05);
 		   	latex.SetTextColor(ihit);
 		   	latex.SetTextAlign(13);  //align at top
+		   	
 		   	if(i%2 == 0){
 		   	latex.DrawLatex(z0prime-10, x0prime+75,str_pulls);
 		   	}
 		   	if(i%2 != 0){
 		   	latex.DrawLatex(z0prime-10, x0prime-75,str_pulls);
 		   	}
-			
+			*/
               }
               
 	      if(a1.size() > 0){
@@ -359,6 +362,7 @@ namespace mu2e
               for(size_t i =0; i < _nch; i++){
         	ComboHit const& chit =(*_chcol)[i]; 
               		ihit+=1;   
+              		if (ihit == 5) continue;
               		if (ihit == 10) {
               			ihit = ihit+1;
               		}      
@@ -378,6 +382,7 @@ namespace mu2e
 			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
 			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
 			major_error_line.DrawLine( z1, y1, z2, y2);
+			/*
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<pullsy[ihit-1];
@@ -386,12 +391,14 @@ namespace mu2e
 		   	latex.SetTextSize(0.05);
 		   	latex.SetTextColor(ihit);
 		   	latex.SetTextAlign(13);  //align at top
+		   	
 		   	if(i%2 == 0){
 		   	latex.DrawLatex(z0prime-10, y0prime+75,str_pulls);
 		   	}
 		   	if(i%2 != 0){
 		   	latex.DrawLatex(z0prime-10, y0prime-75,str_pulls);
 		   	}
+		   	*/
               }
 	      if(b1.size() > 0){
 	        
@@ -418,7 +425,8 @@ namespace mu2e
 	      ihit = 0;
               for(size_t i =0; i < _nch; i++){
         	ComboHit const& chit =(*_chcol)[i];
-              		ihit+=1;          
+              		ihit+=1;  
+              		if (ihit == 5) continue;        
               		if (ihit == 10) {
               			ihit = ihit+1;
               		}        
@@ -446,6 +454,7 @@ namespace mu2e
 		   	latex.SetTextSize(0.05);
 		   	latex.SetTextColor(ihit);
 		   	latex.SetTextAlign(13);  //align at top
+		   	
 		   	if(i%2 == 0){
 		   	latex.DrawLatex(z0primeinit-10, x0primeinit+75,str_pulls);
 		   	}
@@ -459,7 +468,7 @@ namespace mu2e
 		trackline_yprime->SetParameter(0, a0init[0]);
 		trackline_yprime->SetParameter(1, a1init[0]);
 		trackline_yprime->SetLineColor(6);
-		trackline_yprime->Draw("same");
+		//trackline_yprime->Draw("same");
 		TLegend *leg = new TLegend(0.1,0.8,0.2,0.9);
         	leg->AddEntry("#Chi^{2}/N = ", "#Chi^{2}/N =",  "");
         	stringstream chi_info;
@@ -479,6 +488,7 @@ namespace mu2e
               for(size_t i =0; i < _nch; i++){
         	ComboHit const& chit =(*_chcol)[i]; 
               		ihit+=1;  
+              		if (ihit == 5) continue;
               		if (ihit == 10) {
               			ihit = ihit+1;
               		}      
@@ -519,7 +529,7 @@ namespace mu2e
 		trackline_yprime->SetParameter(0, b0init[0]);
 		trackline_yprime->SetParameter(1, b1init[0]);
 		trackline_yprime->SetLineColor(6);
-		trackline_yprime->Draw("same");
+		//trackline_yprime->Draw("same");
 		TLegend *leg = new TLegend(0.1,0.8,0.2,0.9);
         	leg->AddEntry("#Chi^{2}/N = ", "#Chi^{2}/N =",  "");
         	stringstream chi_info;
@@ -537,7 +547,8 @@ namespace mu2e
 	      ihit = 0;
 	      for(size_t i =0; i < _nch; i++){
         	ComboHit const& chit =(*_chcol)[i];      
-	      		ihit +=1;      
+	      		ihit +=1; 
+	      		if (ihit == 5) continue;     
 	      		if (ihit == 10) {
               			ihit = ihit+1;
               		}  
@@ -563,7 +574,7 @@ namespace mu2e
 	      trackline_x->SetParameter(0, a0[0]*xprimes[0].x());
 	      trackline_x->SetParameter(1, a1[0]);
 	      trackline_x->SetLineColor(6);
-	      trackline_x->Draw("same");
+	      //trackline_x->Draw("same");
               
 		
 	      pad = canvas_->cd(6);
@@ -574,7 +585,8 @@ namespace mu2e
 	      ihit=0;
 	      for(size_t i =0; i < _nch; i++){
         	ComboHit const& chit =(*_chcol)[i];              
-	      		ihit +=1;     
+	      		ihit +=1;    
+	      		if (ihit == 5) continue; 
 	      		if (ihit == 10) {
               			ihit = ihit+1;
               		} 
@@ -597,7 +609,7 @@ namespace mu2e
 	      trackline_y->SetParameter(0,b0[0]);
 	      trackline_y->SetParameter(1, b1[0]);
 	      trackline_y->SetLineColor(6);
-	      trackline_y->Draw("same");
+	      //trackline_y->Draw("same");
 	      
                 
               ostringstream title;

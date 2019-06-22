@@ -124,7 +124,7 @@ namespace mu2e{
     int 				_minnsh; // minimum # of strawHits in CH
     int 				_minnch; // minimum # of ComboHits for viable fit
     TrkFitFlag				_saveflag;//write tracks that satisfy these flags
-    unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting 
+    //unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting 
     int 				_minNHitsTimeCluster; //min number of hits in a viable time cluster
   
     
@@ -134,14 +134,14 @@ namespace mu2e{
     art::ProductToken<StrawDigiMCCollection> const _mcToken;
     
     //Define straw hit falgs
-    StrawHitFlag  _hsel, _hbkg;
+    //StrawHitFlag  _hsel, _hbkg;
     TH1F* _chi2dXY;
     
       
     //Define Track Fits
     CosmicTrackFit     _tfit;
-    TrkTimeCalculator _ttcalc;
-    float             _t0shift; //TODO: use  
+    //TrkTimeCalculator _ttcalc;
+    //float             _t0shift; //TODO: use  
     StrawHitFlag      _outlier;
    
     std::unique_ptr<ModuleHistToolBase>   _hmanager;
@@ -166,17 +166,17 @@ namespace mu2e{
     _minnsh      (pset.get<int>("minNStrawHits",2)),
     _minnch      (pset.get<int>("minNComboHits",4)),
     _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"StraightTrackOK"})),
-    _maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
-   _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
+    //_maxniter    (pset.get<unsigned>("MaxIterations",10)), // iterations over outlier removal
+    _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
     _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
     _mcToken{consumes<StrawDigiMCCollection>(pset.get<art::InputTag>("StrawDigiMCCollection"))},
     
-    _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
-    _hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
+    //_hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
+    //_hbkg        (pset.get<std::vector<std::string> >("HitBackgroundBits",std::vector<std::string>{"Background"})),
     _tfit        (pset.get<fhicl::ParameterSet>("CosmicTrackFit",fhicl::ParameterSet())), 
-    _ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
-    _t0shift     (pset.get<float>("T0Shift",4.0)),
+    //_ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
+    //_t0shift     (pset.get<float>("T0Shift",4.0)),
     _outlier     (StrawHitFlag::outlier)
   {
     produces<CosmicTrackSeedCollection>();
@@ -216,12 +216,19 @@ namespace mu2e{
    _tfit.setTracker  (tracker);
    }
 
-
+int nStart=0;
+int nHasEvents = 0;
+int nGoodClusters = 0;
+int n_enought_hits = 0;
+int _n_first_hits_OK = 0;
+int n_passes_converged = 0;
+int n_passes_not_outlier = 0;
+int n_passes_fill_good_hits = 0;
 /* ------------------------PRODUCE--------------------------//
 //                  Should produce ST seed Collection      //
 //----------------------------------------------------------*/
   void CosmicTrackFinder::produce(art::Event& event ) {
-     
+     nStart+=1;
      if (_debug != 0) std::cout<<"Producing Cosmic Track in  Finder..."<<std::endl;
      //Create output collection - this is collection of straght track seeds:
      unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
@@ -239,7 +246,7 @@ namespace mu2e{
    
      auto const& tcH = event.getValidHandle(_tcToken);
      const TimeClusterCollection& tccol(*tcH);
-     
+     nHasEvents+=1;
      if(_mcdiag>0){
      	 
            auto const& mcdH = event.getValidHandle(_mcToken);
@@ -265,6 +272,7 @@ namespace mu2e{
       const auto& tclust = tccol[index];
       // ensure only good clusters will be used for fit:
       nGoodTClusterHits     = goodHitsTimeCluster(tclust,chcol );
+      nGoodClusters +=1;
 /*------------------------- FITTING STAGE :---------------------------//
 Ensure good clusters used 
 //------------------------- FITTING STAGE---------------------------*/
@@ -296,10 +304,11 @@ Ensure enough straw hits used
       
       if (_stResult._nFiltComboHits < _minnch ) 	continue;
       if (_stResult._nFiltStrawHits < _minnsh)          continue;
+      n_enought_hits +=1;
       _stResult._nStrawHits = _stResult._nFiltStrawHits;
       _stResult._nComboHits = _stResult._nFiltComboHits;
       _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
-      
+      _n_first_hits_OK +=1;
       if (_diag) _stResult._diag.CosmicTrackFitCounter = 0;
  /*------------------------- FITTING STAGE  :---------------------------//
  initial ST Pat Rec.. Call the "Fit" function and apply to the CosmicTrackData 
@@ -349,21 +358,22 @@ Ensure enough straw hits used
 	_stResult._diag.nChFit = _stResult._nXYCh;
 	
       } //end "diag"
-      
+     
       if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackConverged)  ) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
 	      //tentatively store as a temporary result
 	      CosmicTrackFinderData tmpResult(_stResult);
-		
+	      n_passes_converged +=1;
  /*------------------------- FITTING STAGE  :---------------------------//
 Fill Seed Info into CosmicTrackFinder_seed
 //------------------------- FITTING STAGE  :---------------------------*/
 	      _data.nseeds += 1;
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
-              		
+              	n_passes_not_outlier +=1;
 		      //fille the hits in the seed collection
 		      fillGoodHits(tmpResult);
+		      n_passes_fill_good_hits +=1;
 		      track_seed_vec.push_back(tmpResult._tseed);
 		      if (_diag > 0) {
 	      		fillPluginDiag(tmpResult);
@@ -374,6 +384,7 @@ Fill Seed Info into CosmicTrackFinder_seed
 		      col->push_back(tmpResult._tseed);
                       
               }//end "saveflag"
+              //std::cout<< nStart<<" "<<nGoodClusters<<" "<<nHasEvents<<" "<< n_enought_hits<<" "<<_n_first_hits_OK<<" "<< n_passes_converged<<" "<<n_passes_not_outlier<<" "<<n_passes_fill_good_hits<<" "<<n_passes_fill_good_hits<<std::endl;
       }//end "track ok" criteria
 /*------------------------- FITTING STAGE  ----------------------------//
 Fill Diagnostic Info.
@@ -479,7 +490,7 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
   void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
     
     int loc = _data.nseeds;
-    printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
+  //  printf(" N(seeds) > %i, IGNORE SEED\n",_data.maxSeeds());
     
       _data.nChPPanel[loc] = trackData._diag.nChPPanel;
       _data.nChHits[loc] = trackData._diag.nChHits;

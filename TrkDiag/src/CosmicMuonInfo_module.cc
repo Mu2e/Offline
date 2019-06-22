@@ -1,7 +1,6 @@
-//
-// Find events containing a cosmic with an intereting number of hits.
-// Fixme: This is currently a mix of a Analyzer and a filter. Needs
-//        to be split up.
+//Author: S Middleton April 2019
+//Purpose : to help select muons for cosmic study based on momentum and other info.
+//This also provides  the MC truth information for the cosmic muon diagnostics
 
 #include "DataProducts/inc/PDGCode.hh"
 #include "DataProducts/inc/StrawEnd.hh"
@@ -29,7 +28,7 @@
 
 #include "TH1D.h"
 #include "TNtuple.h"
-
+#include "Math/VectorUtil.h"
 using namespace std;
 
 namespace mu2e {
@@ -63,7 +62,11 @@ namespace mu2e {
       }
     };
     Cuts _cuts;
-
+    TH1D* _phiMC          = nullptr;
+    TH1D* _thetaMC       = nullptr;
+    TH1D* _phiMCcuts        = nullptr;
+    TH1D* _thetaMCcuts       = nullptr;
+    TH1D* _driftDistance = nullptr;
     TH1D* _hNStrawHits    = nullptr;
     TH1D* _hNPanelHits    = nullptr;
     TH1D* _hUniquePanel   = nullptr;
@@ -219,7 +222,11 @@ mu2e::CosmicMuonInfo::CosmicMuonInfo(fhicl::ParameterSet const& pset):
   _cuts(pset.get<fhicl::ParameterSet>("filterCuts")){
 
   art::ServiceHandle<art::TFileService> tfs;
-
+  _driftDistance  = tfs->make<TH1D>( "Drift Distance",   "Drift Distance",  100,  -5, 5 );
+  _phiMC	  = tfs->make<TH1D>( "#phi_{MC}",   "Angle #phi_{MC} of Muon MC tracks All",  100, -3.141529,      3.141529 );
+  _thetaMC        = tfs->make<TH1D>( "#theta_{MC}",   "Angle #theta_{MC} of Muon MC tracks All",  20, 0,      3.141529 );
+  _phiMCcuts	  = tfs->make<TH1D>( "#phi_after_cuts_{MC}",   "Angle #phi_{MC} of Muon MC tracks after MC cuts",  100, -3.141529,      3.141529 );
+  _thetaMCcuts        = tfs->make<TH1D>( "#theta_after_cuts{MC}",   "Angle #theta_{MC} of Muon MC tracks aft MC cuts",  20, 0,      3.141529 );
   _hNStrawHits    = tfs->make<TH1D>( "hNStrawHits",   "Number of Straw Hits",         100,  0.,       100. );
   _hNPanelHits    = tfs->make<TH1D>( "hNPanelHits",   "Number of Panel Hits",         100,  0.,       100. );
   _hUniquePanel   = tfs->make<TH1D>( "hUniquePanel",  "Unique Panel ID",              216,  0.,       216. );
@@ -233,7 +240,7 @@ mu2e::CosmicMuonInfo::CosmicMuonInfo(fhicl::ParameterSet const& pset):
   _hnMCTracks     = tfs->make<TH1D>( "hnMCTracks",    "Number MC Tracks with Digis",   10,   0.,       10. );
   _hnMCMuons      = tfs->make<TH1D>( "hnMCMuons",     "Number MC Muons with Digis",    10,   0.,       10. );
   _hnDigisPerMuon = tfs->make<TH1D>( "hnDigsPerMuon", "Number of Digis per Muon",      50,   0.,       50. );
-  _hMomentumAll   = tfs->make<TH1D>( "hMomentumAll",  "Momentum of all Muons;(MeV/c)",              100,   0.,   200000. );
+  _hMomentumAll   = tfs->make<TH1D>( "hMomentumAll",  "Momentum of all Muons;(MeV/c)",              100,   -20000.,   200000. );
   _hnBackground   = tfs->make<TH1D>( "hnBackground",  "Extra hits per good Muon",                    50,   0.,       50. );
   _hMomentum      = tfs->make<TH1D>( "hMomentum",     "Momentum of Muons after cuts;(MeV/c)",       100,   0.,   100000. );
   _hMomentumStart = tfs->make<TH1D>( "hMomentumStart","Start Momentum of Muons after cuts;(MeV/c)", 100,   0.,   100000. );
@@ -296,6 +303,10 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
          << endl;
   }
 
+  for(auto const& digi : *strawDigiMCs){
+      double driftDistance = digi.driftDistance(mu2e::StrawEnd::cal);
+      _driftDistance->Fill(driftDistance);
+  }
   _hnBadDigis->Fill( digisBySim.nBad() );
 
   for ( auto const& combo : *comboHits ){
@@ -337,16 +348,28 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
     const double p        = trkinfo.second.p;
     const double pDelta   = pStart-p;
     const bool isMuon = (std::abs(sim.pdgId()) == PDGCode::mu_minus);
-
+    XYZVec momStart(sim.startMomentum().vect().x(),sim.startMomentum().vect().y(), sim.startMomentum().vect().z());
+    //const double phi_start = atan2(sim.startMomentum().vect().y(),sim.startMomentum().vect().z());
+    //double mag = sqrt((sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x()));
+    
+    //const double theta_start = acos(sim.startMomentum().vect().z()/mag);
+    //const double phi_start = atan(sim.startMomentum().vect().y()/sim.startMomentum().vect().x());
+    
     if ( isMuon ) {
       _hnDigisPerMuon->Fill( trkinfo.second.digi_indices.size() );
       _hMomentumAll->Fill(p);
+     // _phiMC->Fill(phi_start);
+      //_phiMC->SetStats(0);
+      //_thetaMC->Fill(theta_start);
+      //_thetaMC->SetStats(0);
+     // _phiMC->SaveAs("thetaMC.root");
     }
 
     set<int> planes;
     for ( int i : trkinfo.second.digi_indices ){
       auto const& digi = strawDigis->at(i);
       planes.insert( digi.strawId().getPlane() );
+      
     }
     if ( _diagLevel > 2 ) {
       cout << " Evt: " << event.id().event()
@@ -365,6 +388,14 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
       _hMomentumStart->Fill(pStart);
       _hMomentumDelta->Fill(pDelta);
       _hnPlanes->Fill( planes.size() );
+      //double mag = sqrt((sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x()));
+    
+      //const double theta_cuts = acos(sim.startMomentum().vect().z()/mag);
+      //const double phi_cuts = atan(sim.startMomentum().vect().y()/sim.startMomentum().vect().x());
+    
+      //_phiMCcuts->Fill(phi_cuts);
+      //_thetaMCcuts->Fill(theta_cuts);
+    
 
       if ( planes.size() >= _cuts.minPlanes &&
            nBackground   >= _cuts.minBackground &&

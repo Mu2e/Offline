@@ -29,8 +29,7 @@ namespace ParametricFit{
 	 XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
 	int GetDOCASign(XYZVec track_dir, XYZVec point);
-	
-       
+
 	std::vector<XYZVec>GetAxes(XYZVec TrackDirection);
 	XYZVec GetXPrime(XYZVec track_dir);
 	XYZVec GetYPrime(XYZVec OrthX, XYZVec YPrime);
@@ -44,7 +43,6 @@ namespace ParametricFit{
 	double HitErrorX(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime);
         double HitErrorY(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec YPrime);
         double TotalHitError(ComboHit* Hit, XYZVec major_axis, XYZVec minor_axis, XYZVec XPrime, XYZVec YPrime);
-        
         
         double GetHitChi2(double A0, double A1, double errorX, XYZVec point, XYZVec XDoublePrime, XYZVec ZPrime);
         double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVec prime_point, double errX, double errY, int DOF);
