@@ -206,10 +206,23 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   double MergePatRec::s_at_given_z(const KalRep* Krep, double Z) {
 
-    double  ds(10.), s0, s1, s2, z0, z1, z2, dzds, sz, sz1, z01;
+    double  ds(10.), s0, s1(1.e6), s2(1.e6), z0, z1, z2, dzds, sz, sz1, z01;
 
-    s1     = Krep->firstHit()->kalHit()->hit()->fltLen();
-    s2     = Krep->lastHit ()->kalHit()->hit()->fltLen();
+    const TrkHit  *first(nullptr), *last(nullptr); 
+
+    const TrkHitVector* hots = &Krep->hitVector();
+    int nh = hots->size();
+
+    for (int ih=0; ih<nh; ++ih) {
+      const TrkHit* hit =  dynamic_cast<const TrkHit*> (hots->at(ih));
+      if (hit   != nullptr) {
+	if (first == nullptr) first = hit;
+	last = hit;
+      }
+    }
+
+    if (first) s1     = first->fltLen();
+    if (last ) s2     = last ->fltLen();
     z1     = Krep->position(s1).z();
     z2     = Krep->position(s2).z();
 
@@ -352,11 +365,24 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         double  h1_fltlen(1.e6), hn_fltlen(1.e6), entlen;
 
-	const TrkStrawHit* h1 = dynamic_cast<const TrkStrawHit*> (krep_cpr->firstHit()->kalHit()->hit());
-	const TrkStrawHit* h2 = dynamic_cast<const TrkStrawHit*> (krep_cpr->lastHit ()->kalHit()->hit());
+	// const TrkStrawHit* h1 = dynamic_cast<const TrkStrawHit*> (krep_cpr->firstHit()->kalHit()->hit());
+	// const TrkStrawHit* h2 = dynamic_cast<const TrkStrawHit*> (krep_cpr->lastHit ()->kalHit()->hit());
 
-        if (h1) h1_fltlen = h1->fltLen();
-        if (h2) hn_fltlen = h2->fltLen();
+	const TrkHit  *first(nullptr), *last(nullptr); 
+
+	const TrkHitVector* hots = &krep_cpr->hitVector();
+	int nh = hots->size();
+
+	for (int ih=0; ih<nh; ++ih) {
+	  const TrkHit* hit =  dynamic_cast<const TrkHit*> (hots->at(ih));
+	  if (hit   != nullptr) {
+	    if (first == nullptr) first = hit;
+	    last = hit;
+	  }
+	}
+
+        if (first) h1_fltlen = first->fltLen();
+        if (last ) hn_fltlen = last->fltLen();
 
         entlen         = std::min(h1_fltlen,hn_fltlen);
 
@@ -575,12 +601,27 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 	double  h1_fltlen(1.e6), hn_fltlen(1.e6), entlen;
 
-	const TrkStrawHit* h1 = dynamic_cast<const TrkStrawHit*> (krep_cpr->firstHit()->kalHit()->hit());
-	const TrkStrawHit* h2 = dynamic_cast<const TrkStrawHit*> (krep_cpr->lastHit ()->kalHit()->hit());
+	// const TrkStrawHit* h1 = dynamic_cast<const TrkStrawHit*> (krep_cpr->firstHit()->kalHit()->hit());
+	// const TrkStrawHit* h2 = dynamic_cast<const TrkStrawHit*> (krep_cpr->lastHit ()->kalHit()->hit());
 
-	if (h1) h1_fltlen = h1->fltLen();
-	if (h2) hn_fltlen = h2->fltLen();
+	// if (h1) h1_fltlen = h1->fltLen();
+	// if (h2) hn_fltlen = h2->fltLen();
 
+	const TrkHit  *first(nullptr), *last(nullptr); 
+
+	const TrkHitVector* hots = &krep_cpr->hitVector();
+	int nh = hots->size();
+
+	for (int ih=0; ih<nh; ++ih) {
+	  const TrkHit* hit =  dynamic_cast<const TrkHit*> (hots->at(ih));
+	  if (hit   != nullptr) {
+	    if (first == nullptr) first = hit;
+	    last = hit;
+	  }
+	}
+
+        if (first) h1_fltlen = first->fltLen();
+        if (last ) hn_fltlen = last->fltLen();
 	entlen         = std::min(h1_fltlen,hn_fltlen);
 
 	CLHEP::Hep3Vector fitmom = krep_cpr->momentum(entlen);
