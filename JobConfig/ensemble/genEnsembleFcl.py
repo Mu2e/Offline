@@ -16,7 +16,8 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
 
     # lists of files to send to scons for dependencies
     sourceFiles = [
-	"JobConfig/ensemble/epilog.fcl","JobConfig/ensemble/prolog.fcl"]
+	"JobConfig/ensemble/epilog.fcl","JobConfig/ensemble/prolog.fcl",
+	"JobConfig/ensemble/epilog_reco.fcl","JobConfig/ensemble/prolog_reco.fcl","JobConfig/ensemble/reco-mcdigis-trig.fcl"]
 
     targetFiles = []
 
@@ -29,10 +30,20 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       sourceFiles.append(templateFileName)
       fin = open(templateFileName) 
       t = Template(fin.read())
-    
       d = {"minE": dem_emin, "particleTypes": [11, 13], "minMom": dem_emin}
-    
       fclFileName = projectDir + "/" + tname + ".fcl"
+      if verbose:
+        print "Creating " + fclFileName
+      targetFiles.append(fclFileName)
+      fout = open(fclFileName,"w")
+      fout.write(t.substitute(d))
+      fout.close()
+
+      templateFileName = "JobConfig/ensemble/reco-mcdigis-trig.fcl"
+      fin = open(templateFileName)
+      t = Template(fin.read())
+      d = {"name": tname}
+      fclFileName = projectDir + "/reco-" + tname + ".fcl"
       if verbose:
         print "Creating " + fclFileName
       targetFiles.append(fclFileName)
@@ -45,7 +56,6 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       sourceFiles.append(templateFileName)
       fin = open(templateFileName) 
       t = Template(fin.read())
-      
       d = {"minE": dep_emin+1, "particleTypes": [11, 13,-11,-13], "minMom": dep_emin, "pionTMin": rpc_tmin}
       fclFileName = projectDir + "/" + tname + ".fcl"
       if verbose:
@@ -54,23 +64,66 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       fout = open(fclFileName,"w")
       fout.write(t.substitute(d))
       fout.close()
+
+      templateFileName = "JobConfig/ensemble/reco-mcdigis-trig.fcl"
+      fin = open(templateFileName)
+      t = Template(fin.read())
+      d = {"name": tname}
+      fclFileName = projectDir + "/reco-" + tname + ".fcl"
+      if verbose:
+        print "Creating " + fclFileName
+      targetFiles.append(fclFileName)
+      fout = open(fclFileName,"w")
+      fout.write(t.substitute(d))
+      fout.close()
+ 
     
-    for tname in ["RMCexternal-cut","RMCinternal-cut-mix"]:
+    for tname in ["RMCexternal-cut-mix","RMCinternal-cut-mix"]:
       for ikmax in range(8):
         templateFileName = "JobConfig/ensemble/" + tname + ".fcl"
         if ikmax == 0:
           sourceFiles.append(templateFileName)
         fin = open(templateFileName) 
         t = Template(fin.read())
+        temp_tname = tname.split("-")[0] + "-kMax%d-" % (ikmax) + tname[len(tname.split("-")[0])+1:] 
     
         d = {"minE": dep_emin+1, "particleTypes": [11, 13,-11,-13], "minMom": dep_emin, "kMaxNum": ikmax, "pionTMin": rpc_tmin}
-        fclFileName = projectDir + "/" + tname.split("-")[0] + "-kMax%d-" % (ikmax) + tname[len(tname.split("-")[0])+1:] + ".fcl"
+        fclFileName = projectDir + "/" + temp_tname + ".fcl"
         if verbose:
           print "Creating " + fclFileName
         targetFiles.append(fclFileName)
         fout = open(fclFileName,"w")
         fout.write(t.substitute(d))
         fout.close()
+
+    for tname in ["RMCexternal-cut-mix","RMCinternal-cut-mix"]:
+      for ikmax in range(8):
+        temp_tname = tname.split("-")[0] + "-kMax%d-" % (ikmax) + tname[len(tname.split("-")[0])+1:] 
+        templateFileName = "JobConfig/ensemble/reco-mcdigis-trig.fcl"
+        fin = open(templateFileName)
+        t = Template(fin.read())
+        d = {"name": temp_tname}
+        fclFileName = projectDir + "/reco-" + temp_tname + ".fcl"
+        if verbose:
+          print "Creating " + fclFileName
+        targetFiles.append(fclFileName)
+        fout = open(fclFileName,"w")
+        fout.write(t.substitute(d))
+        fout.close()
+
+    for tname in ["CeMLeadingLog-mix", "CePLeadingLog-mix"]:
+      templateFileName = "JobConfig/ensemble/reco-mcdigis-trig.fcl"
+      fin = open(templateFileName)
+      t = Template(fin.read())
+      d = {"name": tname}
+      fclFileName = projectDir + "/reco-" + tname + ".fcl"
+      if verbose:
+        print "Creating " + fclFileName
+      targetFiles.append(fclFileName)
+      fout = open(fclFileName,"w")
+      fout.write(t.substitute(d))
+      fout.close()
+ 
     return sourceFiles, targetFiles
 
 
