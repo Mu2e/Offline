@@ -4,7 +4,8 @@
 // framework
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/types/Atom.h"
-
+// Mu2e
+#include "DataProducts/inc/MVAMask.hh"
 #include <xercesc/util/PlatformUtils.hpp>
 #include <xercesc/parsers/XercesDOMParser.hpp>
 #include <xercesc/dom/DOMDocument.hpp>
@@ -24,10 +25,11 @@ namespace mu2e
 
        virtual ~MVATools();
        void     initMVA();
-       float    evalMVA(const std::vector<float>&) const;
-       float    evalMVA(const std::vector<double>&) const;
+       float    evalMVA(const std::vector<float>&,MVAMask vmask=0xffffffff) const;
+       float    evalMVA(const std::vector<double>&,MVAMask vmask=0xffffffff) const;
        void     showMVA()const;
-     
+       std::vector<std::string> const& titles() const { return title_;}     
+       std::vector<std::string> const& labels() const { return label_;}     
  
     private:
        

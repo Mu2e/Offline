@@ -102,7 +102,10 @@ PrimaryProtonGunN: {
 
 
 StoppedParticleReactionGun: {
-    @table::CeEndpointGun 
+    @table::CeEndpointGun
+    physics:  { @table::CeEndpointGun.physics
+	genId : StoppedParticleReactionGun
+    }
 }
 
 
@@ -153,7 +156,7 @@ EventGenerator : { @table::EventGenerator
 # conversion e- and e+ on Al27 
 #------------------------------------------------------------------------------
 	CeMEndpoint              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeEndpoint 
 		pdgId                 : 11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
@@ -167,7 +170,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
 	CePEndpoint              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeEndpoint 
 		pdgId                 : -11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
@@ -181,7 +184,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
 	CeMLeadingLog              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeLeadingLog 
 		pdgId                 : 11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
@@ -197,7 +200,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
 	CePLeadingLog              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeLeadingLog 
 		pdgId                 : -11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
@@ -215,7 +218,7 @@ EventGenerator : { @table::EventGenerator
 # generic electron and muon guns, default momentum is that of the CE on Al
 #------------------------------------------------------------------------------
   	egun : { @table::StoppedParticleReactionGun 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 11
 		elow             : 104.97175
 		ehi              : 104.97176
@@ -228,7 +231,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
   	mgun : { @table::StoppedParticleReactionGun 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 13
 		elow             : 104.97175
 		ehi              : 104.97176
@@ -243,7 +246,7 @@ EventGenerator : { @table::EventGenerator
 # DIO electrons, Al, leading order spectrum
 #------------------------------------------------------------------------------
   	dioallo : { @table::StoppedParticleReactionGun # DIO Al LO 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            :  11
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
@@ -255,7 +258,7 @@ EventGenerator : { @table::EventGenerator
 # 'tabulated' option ignores elow and ehi
 #------------------------------------------------------------------------------
   	dioalll : { @table::StoppedParticleReactionGun # DIO Al leading log 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            :  11
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
@@ -266,7 +269,7 @@ EventGenerator : { @table::EventGenerator
 # 100 MeV/c protons
 #------------------------------------------------------------------------------
   	pgun : { @table::StoppedParticleReactionGun # p(proton)=100 MeV/c
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 2212
 		elow             :  99.99
 		ehi              : 100.01
@@ -276,7 +279,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
   	photonGun : { @table::StoppedParticleReactionGun # p(photon)=100 MeV/c
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 22
 		elow             :  99.999
 		ehi              : 100.001
