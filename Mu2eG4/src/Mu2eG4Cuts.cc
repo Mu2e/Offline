@@ -25,7 +25,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eG4/inc/getPhysicalVolumeOrThrow.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eG4/inc/EventStash.hh"
 
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -42,7 +41,6 @@ namespace mu2e {
       virtual void declareProducts(art::ProducesCollector& collector) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
-      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void deleteCutsData() override;
 
     protected:
@@ -87,14 +85,7 @@ namespace mu2e {
       }
     }
 
-    //NEW for MT
-    void IOHelper::insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data){
-        if(steppingOutput_) {
-            stash_for_event_data->insertCutsStepPointMC(g4event_identifier, std::move(steppingOutput_),
-                                                         steppingOutputName_);
-        }
-    }
-      
+
     //temporary for MT HPC work, until art3 is integrated
     void IOHelper::deleteCutsData(){
         if(steppingOutput_) {
@@ -157,7 +148,6 @@ namespace mu2e {
       // Sequences need a different implementation
       virtual void declareProducts(art::ProducesCollector& collector) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
-      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void deleteCutsData() override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
@@ -221,14 +211,6 @@ namespace mu2e {
       }
     }
       
-      //NEW for MT!
-    void Union::insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data){
-          IOHelper::insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
-          for(auto& cut: cuts_) {
-              cut->insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
-          }
-      }
-      
     void Union::deleteCutsData(){
           IOHelper::deleteCutsData();
           for(auto& cut: cuts_) {
@@ -248,7 +230,6 @@ namespace mu2e {
       // Sequences need a different implementation
       virtual void declareProducts(art::ProducesCollector& collector) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
-      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void deleteCutsData() override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
 
@@ -311,14 +292,6 @@ namespace mu2e {
       for(auto& cut: cuts_) {
         cut->beginEvent(evt, spHelper);
       }
-    }
-      
-    //NEW for MT!
-    void Intersection::insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data){
-        IOHelper::insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
-        for(auto& cut: cuts_) {
-            cut->insertCutsDataIntoStash(g4event_identifier, stash_for_event_data);
-        }
     }
       
     void Intersection::deleteCutsData(){

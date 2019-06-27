@@ -28,14 +28,13 @@
 
 // Forward references.
 namespace art   { class Event; }
-namespace art   { class ProducesCollector; }
+namespace art   { class SharedProducer; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
   class SimpleConfig;
   class SimParticleHelper;
-  class EventStash;
 
   class SensitiveDetectorHelper{
 
@@ -47,7 +46,11 @@ namespace mu2e {
       // Register the sensitive detector with this class; to be called after G4 Initialize.
       void registerSensitiveDetectors();
 
+<<<<<<< HEAD
       void declareProducts(art::ProducesCollector& collector);
+=======
+      void declareProducts(art::SharedProducer *parent);
+>>>>>>> First stage of changes to code to integrate G4MT into art3 - get rid of stashes
 
       // Create data products and pre-fill with input hits if any;
       // to be called at the start of each event.
@@ -57,11 +60,8 @@ namespace mu2e {
       void updateSensitiveDetectors(PhysicsProcessInfo& info,
                                     const SimParticleHelper& spHelper);
 
-      // put data into the stash
-      void insertSDDataIntoStash(int position_to_insert,
-                                 EventStash* stash_for_event_data);
       
-      //filter the event data here to cut down on Stash size and execution time
+      //filter the event data here to cut down on execution time
       bool filterStepPointMomentum();
       bool filterTrackerStepPoints();
       

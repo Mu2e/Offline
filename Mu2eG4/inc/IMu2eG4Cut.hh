@@ -49,7 +49,6 @@ namespace mu2e {
 
   class SimParticleHelper;
   class Mu2eG4ResourceLimits;
-  class EventStash;
 
   class IMu2eG4Cut {
   public:
@@ -63,9 +62,6 @@ namespace mu2e {
 
       // Create data products and pre-fill with input hits, if any; to be called at the start of each event.
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
-
-      // put data into the stash
-      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) = 0;
       
       // delete data if we don't need it
       virtual void deleteCutsData() = 0;

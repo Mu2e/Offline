@@ -27,12 +27,10 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/EventStash.hh"
-#include "GeometryService/inc/GeometryService.hh"
 
 // From art and its tool chain
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/ProducesCollector.h"
+#include "art/Framework/Core/SharedProducer.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -259,26 +257,6 @@ void SensitiveDetectorHelper::updateSensitiveDetectors( PhysicsProcessInfo&   in
     }//for
 
 }
-
-    
-void SensitiveDetectorHelper::insertSDDataIntoStash(int position_to_insert, EventStash* stash_for_event_data){
-        
-        for ( InstanceMap::iterator i=stepInstances_.begin();
-             i != stepInstances_.end(); ++i ) {
-            unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
-            StepInstance& instance(i->second);
-            std::swap( instance.p, *p);
-            stash_for_event_data->insertSDStepPointMC(position_to_insert, std::move(p),
-                                                      instance.stepName);
-        }
-        
-        for (auto& i: lvsd_) {
-            unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
-            std::swap( i.second.p, *p);
-            stash_for_event_data->insertSDStepPointMC(position_to_insert, std::move(p),
-                                                      i.second.stepName);
-        }
-}
     
     
 bool SensitiveDetectorHelper::filterStepPointMomentum(){
@@ -385,7 +363,11 @@ vector<string> SensitiveDetectorHelper::stepInstanceNamesToBeProduced() const{
 }
 
     
+<<<<<<< HEAD
 void SensitiveDetectorHelper::declareProducts(art::ProducesCollector& collector) {
+=======
+void SensitiveDetectorHelper::declareProducts(art::SharedProducer *parent) {
+>>>>>>> First stage of changes to code to integrate G4MT into art3 - get rid of stashes
     
     vector<string> const& instanceNames = stepInstanceNamesToBeProduced();
     for(const auto& name: instanceNames) {
