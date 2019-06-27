@@ -46,7 +46,6 @@ namespace mu2e {
     class IMu2eG4Cut;
     class GenEventBroker;
     class PerEventObjectsManager;
-    class EventStash;
     
     typedef std::map<art::Ptr<SimParticle>, art::Ptr<SimParticle> >  SimParticleRemapping;
     
@@ -118,13 +117,10 @@ class Mu2eG4EventAction : public G4UserEventAction
     
     //these are set in setEventData
     art::Event *_artEvent;
-    EventStash *_stashForEventData;
     int eventNumberInProcess;
     
     bool _g4InternalFiltering;
 
-    // products for the g4study
-    //std::unique_ptr<StepPointMCCollection> steppingPoints;    
 };
 
 }  // end namespace mu2e

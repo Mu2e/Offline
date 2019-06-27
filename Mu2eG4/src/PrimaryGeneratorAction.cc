@@ -102,26 +102,10 @@ namespace mu2e {
 //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
 void PrimaryGeneratorAction::setEventData()
     {
-
-        if (G4Threading::IsWorkerThread())//if this is being called by a worker thread, we are in MT mode
-        {
-            //get the instance of the GenParticleCollection that we need for this event
-            GenEventBroker::GenParticleCollectionInstance genCollectionInstance = genEventBroker_->getNextGenPartCollectionInstance();
-
-            //store the instance number currently being used
-            perEvtObjManager->storeEventInstanceNumber(genCollectionInstance.instanceNumber);
-
-            //here's the ptr to the GPC
-            genParticles_ = genCollectionInstance.genCollection;
-
-        }
-        else//we are in sequential mode
-        {
-            genParticles_ = genEventBroker_->getGenParticleHandle().isValid() ?
-                            genEventBroker_->getGenParticleHandle().product() :
-                            nullptr;
-            perEvtObjManager->storeEventInstanceNumber(0);
-        }
+        genParticles_ = genEventBroker_->getGenParticleHandle().isValid() ?
+                        genEventBroker_->getGenParticleHandle().product() :
+                        nullptr;
+        perEvtObjManager->storeEventInstanceNumber(0);
 
         hitInputs_ = genEventBroker_->getHitHandles();
 
