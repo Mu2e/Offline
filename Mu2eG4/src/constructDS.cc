@@ -453,10 +453,10 @@ namespace mu2e {
       dss->getVPSPendFlange()->outerRadius(),
       dss->getVPSPendFlange()->innerRadius(),
       dss->getIFBmain()->outerRadius(),
-      // dss->getIFBendPlug()->outerRadius(),
-      // dss->getIFBendPlug()->outerRadius()
-      (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius(),
-      (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius()
+      dss->getIFBendPlug()->outerRadius(),
+      dss->getIFBendPlug()->outerRadius()
+      // (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius(),
+      // (ds->cableRunVersion() > 2) ? ds->calR2CableRunIFB() : dss->getIFBendPlug()->outerRadius()
     };
 
     assert( tmp_zPlanesDs3.size() == tmp_rOuterDs3.size() );
@@ -888,9 +888,9 @@ namespace mu2e {
                                                    G4Colour::Yellow(),
                                                    "ds" );
 
-           if (verbosityLevel > -1) {
+           if (verbosityLevel > 0) {
              G4cout << __func__ << " parent params: " << myPars << G4endl;
-             G4cout << __func__ << " core   name:   " << "calCableRunFallCore" << G4endl;
+             G4cout << __func__ << " core   name:   " << ccrTmpFCore.name << G4endl;
              G4cout << __func__ << " core   params: " << cableRunCoreParams << G4endl;
              // checkForOverlaps( ccrTmpFCore.physical, _config, verbosityLevel>0);
            }
@@ -912,10 +912,11 @@ namespace mu2e {
 	 
 	 VolumeInfo icrTmp1 = nestTubs( "CalIFBCableRun1",
 					calIFBCableRun1Params,
-					findMaterialOrThrow(ds->materialCableRunIFB()),
+					findMaterialOrThrow(ds->materialCalCableRunIFB()),
 					0,
-					calIFBCableRunLoc,
-					dsShieldParent,
+					calIFBCableRunLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					// dsShieldParent,
+					parent, // hall air since outside detector
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -929,7 +930,8 @@ namespace mu2e {
                          G4Color::Yellow(),
                          icrTmp1,
                          calIFBCableRun1Params,
-                         "ds",
+                         // "ds",
+			 "ds",
                          _config,
 			 1
                          );
@@ -944,10 +946,11 @@ namespace mu2e {
 
 	 VolumeInfo icrTmp2 = nestTubs( "CalIFBCableRun2",
 					calIFBCableRun2Params,
-					findMaterialOrThrow(ds->materialCableRunIFB()),
+					findMaterialOrThrow(ds->materialCalCableRunIFB()),
 					0,
-					calIFBCableRunLoc,
-					dsShieldParent,
+					calIFBCableRunLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					// dsShieldParent,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -962,7 +965,8 @@ namespace mu2e {
                          G4Color::Yellow(),
                          icrTmp2,
                          calIFBCableRun2Params,
-                         "ds",
+                         // "ds",
+			 "ds",
                          _config,
 			 1
                          );
@@ -984,12 +988,14 @@ namespace mu2e {
 
 	 VolumeInfo iceTmp1 = nestBox( "CalIFBCableRunEnd1",
 				       calIFBCableRunEnd,
-				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       findMaterialOrThrow(ds->materialCalCableRunIFB()),
 				       turn,
-				       calIFBCableRunEndLoc1,
-				       dsShieldParent,
+				       calIFBCableRunEndLoc1+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       // dsShieldParent,
+				       parent,
 				       0,
 				       G4Color::Magenta(),
+				       // "ds"
 				       "ds"
 				       );
 	 double calIFBCableRunEndCore[] = { calIFBCableRunEnd[0],
@@ -1004,6 +1010,7 @@ namespace mu2e {
 					iceTmp1,
 					0,
 					G4Color::Yellow(),
+					// "ds"
 					"ds"
 					);
 
@@ -1017,12 +1024,14 @@ namespace mu2e {
 
 	 VolumeInfo iceTmp2 = nestBox( "CalIFBCableRunEnd2",
 				       calIFBCableRunEnd,
-				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       findMaterialOrThrow(ds->materialCalCableRunIFB()),
 				       turn2,
-				       calIFBCableRunEndLoc2,
-				       dsShieldParent,
+				       calIFBCableRunEndLoc2+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       // dsShieldParent,
+				       parent,
 				       0,
 				       G4Color::Magenta(),
+				       // "ds"
 				       "ds"
 				       );
 
@@ -1034,6 +1043,7 @@ namespace mu2e {
 					iceTmp2,
 					0,
 					G4Color::Yellow(),
+					// "ds"
 					"ds"
 					);
 
@@ -1082,8 +1092,8 @@ namespace mu2e {
 					calIFBCableExit1Params,
 					findMaterialOrThrow(ds->calPMatCableRunIFB()),
 					0,
-					calIFBCablePOutLoc,
-					dsShieldParent,
+					calIFBCablePOutLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -1128,8 +1138,8 @@ namespace mu2e {
 					calIFBCableExit2Params,
 					findMaterialOrThrow(ds->calPMatCableRunIFB()),
 					0,
-					calIFBCablePOutLoc,
-					dsShieldParent,
+					calIFBCablePOutLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -1158,10 +1168,10 @@ namespace mu2e {
 	 
 	 VolumeInfo icrTmp3 = nestTubs( "TrkIFBCableRun1",
 					trkIFBCableRun1Params,
-					findMaterialOrThrow(ds->materialCableRunIFB()),
+					findMaterialOrThrow(ds->materialTrkCableRunIFB()),
 					0,
-					calIFBCableRunLoc,
-					dsShieldParent,
+					calIFBCableRunLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -1190,10 +1200,10 @@ namespace mu2e {
 
 	 VolumeInfo icrTmp4 = nestTubs( "TrkIFBCableRun2",
 					trkIFBCableRun2Params,
-					findMaterialOrThrow(ds->materialCableRunIFB()),
+					findMaterialOrThrow(ds->materialTrkCableRunIFB()),
 					0,
-					calIFBCableRunLoc,
-					dsShieldParent,
+					calIFBCableRunLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -1233,10 +1243,10 @@ namespace mu2e {
 
 	 VolumeInfo iceTmp3 = nestBox( "TrkIFBCableRunEnd1",
 				       trkIFBCableRunEnd,
-				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       findMaterialOrThrow(ds->materialTrkCableRunIFB()),
 				       turn3,
-				       trkIFBCableRunEndLoc1,
-				       dsShieldParent,
+				       trkIFBCableRunEndLoc1+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       parent,
 				       0,
 				       G4Color::Magenta(),
 				       "ds"
@@ -1266,10 +1276,10 @@ namespace mu2e {
 
 	 VolumeInfo iceTmp4 = nestBox( "TrkIFBCableRunEnd2",
 				       trkIFBCableRunEnd,
-				       findMaterialOrThrow(ds->materialCableRunIFB()),
+				       findMaterialOrThrow(ds->materialTrkCableRunIFB()),
 				       turn4,
-				       trkIFBCableRunEndLoc2,
-				       dsShieldParent,
+				       trkIFBCableRunEndLoc2+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       parent,
 				       0,
 				       G4Color::Magenta(),
 				       "ds"
@@ -1331,8 +1341,8 @@ namespace mu2e {
 					trkIFBCableExit1Params,
 					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
 					0,
-					trkIFBCablePOutLoc,
-					dsShieldParent,
+					trkIFBCablePOutLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"
@@ -1381,8 +1391,8 @@ namespace mu2e {
 					trkIFBCableExit2Params,
 					findMaterialOrThrow(ds->trkPMatCableRunIFB()),
 					0,
-					trkIFBCablePOutLoc,
-					dsShieldParent,
+					trkIFBCablePOutLoc+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+					parent,
 					0,
 					G4Color::Magenta(),
 					"ds"

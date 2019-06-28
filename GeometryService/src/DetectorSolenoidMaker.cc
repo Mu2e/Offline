@@ -190,7 +190,8 @@ namespace mu2e {
 	ds->_trkPMatCableRunIFB  = c.getString("ds.CableRunIFB.TrkPMat");
 
 	ds->_zHLCableRunIFB      = c.getDouble("ds.CableRunIFB.ZHL");
-	ds->_materialCableRunIFB = c.getString("ds.CableRunIFB.Material");
+	ds->_materialCalCableRunIFB = c.getString("ds.CalCableRunIFB.Material");
+	ds->_materialTrkCableRunIFB = c.getString("ds.TrkCableRunIFB.Material");
 	ds->_zCCableRunIFB       = c.getDouble("ds.CableRunIFB.ZC");
       }
       ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");

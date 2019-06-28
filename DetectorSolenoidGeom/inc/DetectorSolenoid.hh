@@ -198,7 +198,8 @@ namespace mu2e {
     std::string trkPMatCableRunIFB()   const { return _trkPMatCableRunIFB ;}
 
     double zHLCableRunIFB()            const { return _zHLCableRunIFB     ;}
-    std::string materialCableRunIFB()  const { return _materialCableRunIFB;}
+    std::string materialCalCableRunIFB()  const { return _materialCalCableRunIFB;}
+    std::string materialTrkCableRunIFB()  const { return _materialTrkCableRunIFB;}
     double zCCableRunIFB()             const { return _zCCableRunIFB      ;}
 
     double rCableRunTrkCoreFract()     const { return _rCableRunTrkCoreFract; }
@@ -404,7 +405,8 @@ namespace mu2e {
     std::string         _trkPMatCableRunIFB ;
 
     double              _zHLCableRunIFB     ;
-    std::string         _materialCableRunIFB;
+    std::string         _materialCalCableRunIFB;
+    std::string         _materialTrkCableRunIFB;
     double              _zCCableRunIFB      ;
 
     // Service pipes

@@ -13,9 +13,6 @@
 // Half length of DS1 has been adjusted such that given an assumed
 // rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
 // DS is at 3239 mm, consistent with CDR.
-//
-// NOTE 4 (04/29/19): Use Pipe_v04.txt to avoid overlap of old
-// implementation of cabling outside IFB
 
 double ds.rIn.in             =  950.;
 double ds.rIn.out            =  969.05; //970.;
@@ -26,6 +23,8 @@ double ds.endWallHalfLength  =   15.;
 double ds.frontHalfLength    =   15.;
 string ds.materialName       = "StainlessSteel";
 string ds.insideMaterialName = "DSVacuum";
+//bool   ds.doSurfaceCheck     = true;
+
 
 // Test geometry added for Jim Miller for study of absorbing radiation in DS
 bool   ds.hasInnerLining     = false;
@@ -189,13 +188,13 @@ double    ds.CableRunCal.Rout      = 640.0; // 906.0;  // Not well specified?
 double    ds.CableRunCal.dPhi      = 13.0; // degrees
 double    ds.CableRunCal.zC        = 15475.0; //15400 + 150/2
 double    ds.CableRunCal.phi0      = 83.5; // degrees
-string    ds.CableRunCal.material  = "Electronics"; //
+string    ds.CableRunCal.material  = "CalCableRunOuter";//"Electronics";
 
 // Optical "core" placed in the "Cable"
-double    ds.CableRunCalCore.RadiusFraction  = 0.5; // TBD
-double    ds.CableRunCalCore.dRadiusFraction = 0.25; // TBD
-double    ds.CableRunCalCore.dPhiFraction    = 0.5; // TBD
-string    ds.CableRunCalCore.material        = "G4_SILICON_DIOXIDE"; // TBC
+double    ds.CableRunCalCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
+double    ds.CableRunCalCore.dRadiusFraction = 0.003; // Set so the cross section matches expectations with portion near IFB
+double    ds.CableRunCalCore.dPhiFraction    = 0.006; // 
+string    ds.CableRunCalCore.material        = "CalCableRunFiber";//"G4_SILICON_DIOXIDE";
 
 double    ds.CableRunTrk.length    = 1943; //1919 + 150/2 mm - actually halflength
 double    ds.CableRunTrk.Rin       = 820.0;  
@@ -203,21 +202,21 @@ double    ds.CableRunTrk.Rout      = 850.0;
 double    ds.CableRunTrk.dPhi      = 20.7; // degrees
 double    ds.CableRunTrk.zC        = 15155.0; // 15131 + 150/2
 double    ds.CableRunTrk.phi0      = 194.5; // degrees
-string    ds.CableRunTrk.material  = "Electronics"; //
+string    ds.CableRunTrk.material  = "TrkCableRunOuter"; //"Electronics";
 
 // Optical "core" placed in the "Cable"
-double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // TBD
-double    ds.CableRunTrkCore.dRadiusFraction = 0.25; // TBD
-double    ds.CableRunTrkCore.dPhiFraction    = 0.5; // TBD
-string    ds.CableRunTrkCore.material        = "G4_SILICON_DIOXIDE"; // TBC
+double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
+double    ds.CableRunTrkCore.dRadiusFraction = 0.017; // Set so the cross section matches expectations with portion near IFB
+double    ds.CableRunTrkCore.dPhiFraction    = 0.033; // 
+string    ds.CableRunTrkCore.material        = "TrkCableRunFiber"; //"G4_SILICON_DIOXIDE";
 
 //Cabling At Outside of IFB
 double    ds.CableRunIFB.CalR1     =  1250.5;
-double    ds.CableRunIFB.CalR2     =  1338.0;
-double    ds.CableRunIFB.CalPhi0   =   137.2; // 135 + sin^-1(87.5/2/1162.5) to avoid end piece
-double    ds.CableRunIFB.CalDPhi   =   132.3;
+double    ds.CableRunIFB.CalR2     =  1348.0;
+double    ds.CableRunIFB.CalPhi0   =   137.8; // 135 + sin^-1(97.5/2/1162.5) to avoid end piece
+double    ds.CableRunIFB.CalDPhi   =   131.7;
 double    ds.CableRunIFB.CalREnd   =  1000.5; //radial component
-double    ds.CableRunIFB.CalEndW   =    87.5;
+double    ds.CableRunIFB.CalEndW   =    97.5;
 double    ds.CableRunIFB.CalPhiE   =   135.0;
 double    ds.CableRunIFB.CalPR1    =   590.0; //panel dimensions
 double    ds.CableRunIFB.CalPR2    =  1000.0;
@@ -226,14 +225,14 @@ double    ds.CableRunIFB.CalPDPhi  =    45.0;
 double    ds.CableRunIFB.CalPZIn   = 17155.0;
 double    ds.CableRunIFB.CalPZHL   =    45.0;
 double    ds.CableRunIFB.CalPZOut  = 17370.0;
-string    ds.CableRunIFB.CalPMat   = "Electronics";
+string    ds.CableRunIFB.CalPMat   = "CalCableRunOuter";
 
-double    ds.CableRunIFB.TrkR1     =  1159.0;
+double    ds.CableRunIFB.TrkR1     =  1149.0;
 double    ds.CableRunIFB.TrkR2     =  1249.5;
-double    ds.CableRunIFB.TrkPhi0   =   207.6; // 205 + sin^-1(90.5/2/1000.5)
-double    ds.CableRunIFB.TrkDPhi   =    61.9;
+double    ds.CableRunIFB.TrkPhi0   =   207.8; // 205 + sin^-1(100.5/2/1000.5)
+double    ds.CableRunIFB.TrkDPhi   =    61.7;
 double    ds.CableRunIFB.TrkREnd   =  1000.5;
-double    ds.CableRunIFB.TrkEndW   =    90.5;
+double    ds.CableRunIFB.TrkEndW   =   100.5;
 double    ds.CableRunIFB.TrkPhiE   =   205.0;
 double    ds.CableRunIFB.TrkPR1    =   590.0; //panel dimensions
 double    ds.CableRunIFB.TrkPR2    =  1000.0;
@@ -242,10 +241,11 @@ double    ds.CableRunIFB.TrkPDPhi  =    45.0;
 double    ds.CableRunIFB.TrkPZIn   = 17155.0;
 double    ds.CableRunIFB.TrkPZHL   =    45.0;
 double    ds.CableRunIFB.TrkPZOut  = 17370.0;
-string    ds.CableRunIFB.TrkPMat   = "Electronics";
+string    ds.CableRunIFB.TrkPMat   = "TrkCableRunOuter";
 
-double    ds.CableRunIFB.ZHL       = 45.; // 4 inches thick --> 2 inch half length
-string    ds.CableRunIFB.Material  = "Electronics";
+double    ds.CableRunIFB.ZHL       = 45.; // ~3.5 inches thick
+string    ds.CalCableRunIFB.Material  = "CalCableRunOuter";
+string    ds.TrkCableRunIFB.Material  = "TrkCableRunOuter";
 double    ds.CableRunIFB.ZC        = 17370.;
 
 // Service pipes along bottom of DS

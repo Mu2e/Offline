@@ -1423,6 +1423,90 @@ namespace mu2e {
     }
 
 
+    //Material for the Calorimeter cable runs bulk
+    mat = uniqueMaterialOrThrow( "CalCableRunOuter" );
+    {
+
+      G4Material* CalCableRunOuter =
+        new G4Material( mat.name, 6.8440*CLHEP::g/CLHEP::cm3, 4);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eCu = getElementOrThrow("Cu");
+      G4Element* eAg = getElementOrThrow("Ag");
+      G4Element* eF  = getElementOrThrow("F");
+
+      //Add elements by mass fraction
+      CalCableRunOuter->AddElement( eAg, 52.603*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eCu, 34.825*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eF,  9.553*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eC,  3.019*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs fiber optic cable
+    mat = uniqueMaterialOrThrow( "CalCableRunFiber" );
+    {
+
+      G4Material* CalCableRunFiber =
+        new G4Material( mat.name, 1.6575*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eH  = getElementOrThrow("H");
+
+      //Add elements by mass fraction
+      CalCableRunFiber->AddElement( eC,   34.093*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eO,   28.578*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eAl,  28.265*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs bulk
+    mat = uniqueMaterialOrThrow( "TrkCableRunOuter" );
+    {
+
+      G4Material* TrkCableRunOuter =
+        new G4Material( mat.name, 4.6254*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eCu = getElementOrThrow("Cu");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eN  = getElementOrThrow("N");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+
+      //Add elements by mass fraction
+      TrkCableRunOuter->AddElement( eCu, 71.458*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eC,  10.259*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eH,  2.099*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eN,  0.197*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eO,  6.161*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eSi, 9.826*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs fiber optic cable
+    mat = uniqueMaterialOrThrow( "TrkCableRunFiber" );
+    {
+
+      G4Material* TrkCableRunFiber =
+        new G4Material( mat.name, 1.6575*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eH  = getElementOrThrow("H");
+
+      //Add elements by mass fraction
+      TrkCableRunFiber->AddElement( eC,   34.093*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eO,   28.578*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eAl,  28.265*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
+
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.
 
