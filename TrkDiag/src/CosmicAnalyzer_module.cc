@@ -49,6 +49,7 @@
 #include "TTree.h"
 #include "TLatex.h"
 #include "TGraph.h"
+#include "TProfile.h"
 using namespace std; 
 
 namespace mu2e 
@@ -122,6 +123,10 @@ namespace mu2e
       TH1F* _Cov_Fit_A1;
       TH1F* _Cov_Fit_B0;
       TH1F* _Cov_Fit_B1;
+      TProfile* _A0pull_v_theta_true;
+      TProfile* _B0pull_v_theta_true;
+      TProfile* _A1pull_v_theta_true;
+      TProfile* _B1pull_v_theta_true;
       TGraph* EFF;
       // add event id
       Int_t _evt; 
@@ -196,8 +201,8 @@ namespace mu2e
        _cosmic_analysis->Branch("StraightTrackOK",&_StraightTrackOK,"StraightTrackOK/B");
        _cosmic_analysis->Branch("StraightTrackConverged",&_StraightTrackConverged,"StraightTrackConverged/B");
         //Extra histograms for Fit Diags:
-        _chisq_quant = tfs->make<TH1F>("ChiSq Quant","ChiSq Quant" ,100,0, 5);
-	_chisq_quant->GetXaxis()->SetTitle("Chi Sq Quant");
+        _chisq_quant = tfs->make<TH1F>("PDF","PDF" ,50,0, 1);
+	_chisq_quant->GetXaxis()->SetTitle("PDF");
 	
 	_chisq_ndf_plot_init = tfs->make<TH1F>("init chisq_ndf_plot","init chisq_ndf_plot" ,100,0, 10);
 	_chisq_ndf_plot_init->GetXaxis()->SetTitle("Init. #Chi^{2}/N");
@@ -277,11 +282,11 @@ namespace mu2e
 	_b0->GetXaxis()->SetTitle("Track Parameter B0");
 	_b0->SetStats();
 	
-	_a1 = tfs->make<TH1F>("Track Parameter A1  ","Track Parameter A1 " ,50,-0.2, 0.2);
+	_a1 = tfs->make<TH1F>("Track Parameter A1  ","Track Parameter A1 " ,50,-1,1);
 	_a1->GetXaxis()->SetTitle("Track Parameter A1");
 	_a1->SetStats();
 	
-	_b1 = tfs->make<TH1F>("Track Parameter B1  ","Track Parameter B1  " ,50,-0.2, 0.2);
+	_b1 = tfs->make<TH1F>("Track Parameter B1  ","Track Parameter B1  " ,50,-1,1);
 	_b1->GetXaxis()->SetTitle("Track Parameter B1");
 	_b1->SetStats();
 	
@@ -293,11 +298,11 @@ namespace mu2e
 	_trueb0->GetXaxis()->SetTitle("Track Parameter B0");
 	_trueb0->SetStats();
 	
-	_truea1 = tfs->make<TH1F>("True Track Parameter A1  ","True Track Parameter A1 " ,200,-0.2, 0.2);
+	_truea1 = tfs->make<TH1F>("True Track Parameter A1  ","True Track Parameter A1 " ,50,-1,1);
 	_truea1->GetXaxis()->SetTitle("Track Parameter A1");
 	_truea1->SetStats();
 	
-	_trueb1 = tfs->make<TH1F>("True Track Parameter B1  ","True Track Parameter B1  " ,200,-0.2,0.2);
+	_trueb1 = tfs->make<TH1F>("True Track Parameter B1  ","True Track Parameter B1  " ,50,-1,1);
 	_trueb1->GetXaxis()->SetTitle("Track Parameter B1");
 	_trueb1->SetStats();
 	
@@ -398,7 +403,21 @@ namespace mu2e
 	_Cov_Fit_B1 = tfs->make<TH1F>("#sigma_{B_{1}}", "#sigma_{B_{1}}" ,100,0, 0.5);
 	_Cov_Fit_B1->GetXaxis()->SetTitle("#sigma_{B_{1}}");
 	
+	_A0pull_v_theta_true= tfs->make<TProfile>("Parameter Pull A_{0} v #theta_{true,fit}  ","Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+	_A0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+	_A0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{0}");
 	
+	_B0pull_v_theta_true= tfs->make<TProfile>("Parameter Pull B_{0} v #theta_{true,fit}  ","Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+	_B0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+	_B0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{0}");
+	
+	_A1pull_v_theta_true= tfs->make<TProfile>("Parameter Pull A_{1} v #theta_{true,fit}  ","Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+	_A1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+	_A1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{1}");
+	
+	_B1pull_v_theta_true= tfs->make<TProfile>("Parameter Pull B_{1} v #theta_{true,fit}  ","Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+	_B1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+	_B1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{1}");
         }
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
@@ -446,8 +465,8 @@ namespace mu2e
                 _a0->Fill(st.get_track_parameters()[0]);
                 _b0->Fill(st.get_track_parameters()[2]);
                 
-                _chiX_v_true_trackposX->Fill(st.get_track_parameters()[0], st.get_finalchisq_dofX());
-                _chiY_v_true_trackposY->Fill(st.get_track_parameters()[2], st.get_finalchisq_dofY());
+                _chiX_v_true_trackposX->Fill(st.get_track_parameters()[0], st.get_initchisq_dofX());
+                _chiY_v_true_trackposY->Fill(st.get_track_parameters()[2], st.get_initchisq_dofY());
                
                 if(_mcdiag ){
                 	_mc_phi_angle->Fill(st.get_true_phi());//atan2(st.get_true_track_direction().y(),st.get_true_track_direction().x()));//st.get_true_phi());  
@@ -462,28 +481,28 @@ namespace mu2e
 		        _trueb0->Fill(st.get_true_track_parameters()[2]);
                         _parameter_pulls_A0->Fill((st.get_true_track_parameters()[0] - st.get_track_parameters()[0] )/(st.get_cov()[0]));
 		        _parameter_pulls_A1->Fill((st.get_true_track_parameters()[1] - st.get_track_parameters()[1] )/(st.get_cov()[1]));
-		        _parameter_pulls_B0->Fill((st.get_true_track_parameters()[2] - st.get_track_parameters()[2] )/(st.get_cov()[2]));
-		        _parameter_pulls_B1->Fill((st.get_true_track_parameters()[3] - st.get_track_parameters()[3] )/(st.get_cov()[3]));
-		        /*
-		        std::cout<<"-------------"<<std::endl;
-		        std::cout<<"A0 "<<st.get_true_track_parameters()[0]<<" - "<<st.get_track_parameters()[0] <<" / "<<(st.get_cov()[0])<<std::endl;
-		        std::cout<<"A1 "<<st.get_true_track_parameters()[1]<<" - "<<st.get_track_parameters()[1] <<" / "<<(st.get_cov()[1])<<std::endl;
-		        std::cout<<"B0 "<<st.get_true_track_parameters()[2]<<" - "<<st.get_track_parameters()[2] <<" / "<<(st.get_cov()[2])<<std::endl;
-		        std::cout<<"B1 "<<st.get_true_track_parameters()[3]<<" - "<<st.get_track_parameters()[3] <<" / "<<(st.get_cov()[3])<<std::endl;
-		        */
+		        _parameter_pulls_B0->Fill(st.get_true_theta(), (st.get_true_track_parameters()[2] - st.get_track_parameters()[2] )/(st.get_cov()[2]));
+		        _parameter_pulls_B1->Fill(st.get_true_theta(), (st.get_true_track_parameters()[3] - st.get_track_parameters()[3] )/(st.get_cov()[3]));
+		        _A0pull_v_theta_true->Fill(st.get_true_theta(), (st.get_true_track_parameters()[0] - st.get_track_parameters()[0] )/(st.get_cov()[0]));
+		        _A1pull_v_theta_true->Fill(st.get_true_theta(), (st.get_true_track_parameters()[1] - st.get_track_parameters()[1] )/(st.get_cov()[1]));
+		        _B0pull_v_theta_true->Fill(st.get_true_theta(), (st.get_true_track_parameters()[2] - st.get_track_parameters()[2] )/(st.get_cov()[2]));
+		        _B1pull_v_theta_true->Fill(st.get_true_theta(), (st.get_true_track_parameters()[3] - st.get_track_parameters()[3] )/(st.get_cov()[3]));
+		       
                 }
                 _Cov_Fit_A0->Fill(st.get_cov()[0]);
                 _Cov_Fit_A1->Fill(st.get_cov()[1]);
                 _Cov_Fit_B0->Fill(st.get_cov()[2]);
                 _Cov_Fit_B1->Fill(st.get_cov()[3]);
-                
+               
                 _A0_v_A1->Fill(st.get_track_parameters()[1],st.get_track_parameters()[0]);
                 _B0_v_B1->Fill(st.get_track_parameters()[3],st.get_track_parameters()[2]);
                 _A0_v_B1->Fill(st.get_track_parameters()[3],st.get_track_parameters()[0]);
 	        _A0_v_B0->Fill(st.get_track_parameters()[0],st.get_track_parameters()[2]);
 	        _B1_v_A1->Fill(st.get_track_parameters()[3],st.get_track_parameters()[1]);
-	 
-                _chisq_quant->Fill(st.get_chi2_quant());
+	 	if(st.get_chi2_quant()>0){//TODO: Fix some weird root issue here.....
+                	_chisq_quant->Fill(st.get_chi2_quant());
+                	std::cout<<"pdf "<<st.get_chi2_quant()<<std::endl;
+                }
                 
                 _reco_phi_angle->Fill(st.get_fit_phi());
                 
@@ -530,15 +549,15 @@ namespace mu2e
 			_hit_drift_time = chit.driftTime();
 			}
                 //----------------Get panels/planes/stations per track:------------------//
-                _n_panels = std::set<double>( panels.begin(), panels.end() ).size();
-		_n_planes = std::set<double>( planes.begin(), planes.end() ).size();
-		_n_stations = std::set<double>( stations.begin(), stations.end() ).size();
+                _n_panels = std::set<float>( panels.begin(), panels.end() ).size();
+		_n_planes = std::set<float>( planes.begin(), planes.end() ).size();
+		_n_stations = std::set<float>( stations.begin(), stations.end() ).size();
 	 
 		//}//endS ST
 	        
       }//end analyze
       
-      _mc_phi_angle->SaveAs("phiMCfit.root");
+      //_mc_phi_angle->SaveAs("phiMCfit.root");
       
       _cosmic_analysis->Fill();
       /*

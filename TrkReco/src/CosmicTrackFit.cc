@@ -1,5 +1,4 @@
-// Object to perform track fit to combo hits
-//
+// Calls fitting objects to perform track fit to ComboHits
 // $Id: CosmicTrackFit code
 // $Author: S Middleton
 // $Date: Feb 2019
@@ -45,6 +44,9 @@
 #include "TH1F.h"
 #include "TPolyMarker.h"
 #include "TMath.h"
+#include "Math/Math.h"
+#include "Math/DistFunc.h"
+ 
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -54,7 +56,7 @@ using namespace std;
 using namespace boost::accumulators;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
-
+using namespace ROOT::Math;
 namespace mu2e
 {
   CosmicTrackFit::CosmicTrackFit(fhicl::ParameterSet const& pset) :
@@ -67,7 +69,7 @@ namespace mu2e
     _minCHHits(pset.get<unsigned>("minCHHits",4)),
     _n_outliers(pset.get<unsigned>("_n_outliers",5)),
     _maxniter(pset.get<unsigned>("maxniter",100)),//10
-    _maxpull(pset.get<double>("maxPull",3)),
+    _maxpull(pset.get<float>("maxPull",3)),
     _maxd(pset.get<float>("maxd",300.0)),//max distance between hits at start of fit
     _maxDOCA(pset.get<float>("maxDOCA",1000)),//max distance of closest approach between a hit included in fit and one flag out-right as an outlier
     _maxchi2(pset.get<float>("maxchi2",10.0)) ,
@@ -89,20 +91,18 @@ namespace mu2e
     return is_ok;
   }
 
-
   /*-------------Line Direction-------------------------//
  Range of methods for finding track directions
   //----------------------------------------------*/
   XYZVec CosmicTrackFit::InitLineDirection(const ComboHit *ch0, const ComboHit *chN) {
-      double tx = chN->pos().x() - ch0->pos().x();
-      double ty = chN->pos().y() - ch0->pos().y();
-      double tz = chN->pos().z() - ch0->pos().z();       
+      float tx = chN->pos().x() - ch0->pos().x();
+      float ty = chN->pos().y() - ch0->pos().y();
+      float tz = chN->pos().z() - ch0->pos().z();       
       XYZVec track(tx,ty,tz);
       return track.Unit();
     } 
     
   XYZVec CosmicTrackFit::InitLineDirection( StrawDigiMC const& mc0,  StrawDigiMC const& mcN, XYZVec reco_dir, bool is_prime) {
-       
        art::Ptr<StepPointMC> const& spmcp0 = mc0.stepPointMC(StrawEnd::cal);
        XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());//det->toDetector(spmcp0->position());
        art::Ptr<StepPointMC> const& spmcpN = mcN.stepPointMC(StrawEnd::cal);
@@ -112,10 +112,9 @@ namespace mu2e
        	  posN.SetXYZ(posN.Dot(AxesList[0]), posN.Dot(AxesList[1]), posN.Dot(AxesList[2]));
        	  pos0.SetXYZ(pos0.Dot(AxesList[0]), pos0.Dot(AxesList[1]), pos0.Dot(AxesList[2]));
        }
-       
-       double tx = posN.x() -  pos0.x();
-       double ty = posN.y() -  pos0.y();
-       double tz = posN.z() -  pos0.z();
+       float tx = posN.x() -  pos0.x();
+       float ty = posN.y() -  pos0.y();
+       float tz = posN.z() -  pos0.z();
        XYZVec track(tx,ty,tz);
        return track.Unit();
     } 
@@ -126,18 +125,18 @@ namespace mu2e
     } 
     
     XYZVec CosmicTrackFit::GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime){
-           std::vector<double> X, Y, Z;
+           std::vector<float> X, Y, Z;
     	   for (size_t j =0; j < hitXYZ.size(); j++){
     	  	 X.push_back( hitXYZ[j].Dot(XDoublePrime));
     	  	 Y.push_back(hitXYZ[j].Dot(YDoublePrime));
     	  	 Z.push_back(hitXYZ[j].Dot(ZPrime));
   	   }
-           double minz = *std::min_element(Z.begin(), Z.end());
-           double maxz = *std::max_element(Z.begin(),Z.end());
+           float minz = *std::min_element(Z.begin(), Z.end());
+           float maxz = *std::max_element(Z.begin(),Z.end());
            unsigned first = 0;
            unsigned last = Z.size()-1;
            for(size_t i = 0 ; i < Z.size(); i++){
-           	double zprime = Z.at(i);
+           	float zprime = Z.at(i);
            	if(zprime == maxz) first = i;
            	if(zprime == minz) last = i;
            	if (first >  last) {
@@ -147,9 +146,9 @@ namespace mu2e
            		last = temp;
            	} 	
            }     
-           double tx = (X.at(last) - Z.at(first));
-      	   double ty = (Y.at(last) - Y.at(first));
-           double tz = Z.at(last) - Z.at(first);
+           float tx = (X.at(last) - Z.at(first));
+      	   float ty = (Y.at(last) - Y.at(first));
+           float tz = Z.at(last) - Z.at(first);
            XYZVec track(tx,ty,tz);
            return track.Unit(); 
     }
@@ -162,8 +161,7 @@ namespace mu2e
       	std::cout<<" Beginning Fit ..." << std::endl;
       }
       //Clear Previous Flags:
-      TrackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
-      
+      TrackData._tseed._status.clear(TrkFitFlag::StraightTrackOK); 
     // Initialize:
     bool init(false);
     if (!TrackData._tseed._status.hasAllProperties(TrkFitFlag::StraightTrackInit)) {
@@ -187,7 +185,6 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
    FitAll(title, TrackData, track, diagnostics);  
    TrackData._diag.CosmicTrackFitCounter += 1;//label as having a track
    diagnostics.npasses +=1;//total number of tracks
- 
 }
 
 int n_lost = 0;
@@ -247,8 +244,8 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 		      XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
 		      XYZVec point_prime(point.Dot(AxesList[0]), point.Dot(AxesList[1]), point.Dot(ZPrime));
 		      std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, AxesList[0], AxesList[1]);   
-		      double Rx = ParametricFit::GetResidualX(a0,a1, point_prime);
-		      double Ry = ParametricFit::GetResidualY(b0, b1, point_prime); 
+		      float Rx = ParametricFit::GetResidualX(a0,a1, point_prime);
+		      float Ry = ParametricFit::GetResidualY(b0, b1, point_prime); 
 		      cosmictrack->set_init_hit_errorsTotal(sqrt(pow(ErrorsXY[0],2)+pow(ErrorsXY[1],2)));
 		      cosmictrack->set_init_fit_residual_errorsX(ErrorsXY[0]);
 		      cosmictrack->set_init_fit_residual_errorsY(ErrorsXY[1]);
@@ -299,7 +296,7 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 	   cosmictrack->setYPrime(AxesList[1]);
 	   cosmictrack->setZPrime(AxesList[2]);
 	   cosmictrack ->set_parameters(a0,a1,b0,b1);
-           double updated_chi2 = S_niteration.GetTotalChi2()/abs(DOF);
+           float updated_chi2 = S_niteration.GetTotalChi2()/abs(DOF);
            changed_chi2 = chi2_best_track - updated_chi2;
           
            if(updated_chi2 > chi2_best_track){
@@ -311,9 +308,9 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 	   	BestTrack->setZPrime(AxesList[2]);
                 cosmictrack = BestTrack;
                 if(_debug>0){
-           	BestTrack->set_finalchisq_dof(S_niteration.GetTotalChi2()/abs(DOF)); 
-	        BestTrack->set_finalchisq_dofY(S_niteration.GetChi2Y()/abs(DOF));
-		BestTrack->set_finalchisq_dofX(S_niteration.GetChi2X()/abs(DOF));
+		   	BestTrack->set_finalchisq_dof(S_niteration.GetTotalChi2()/abs(DOF)); 
+			BestTrack->set_finalchisq_dofY(S_niteration.GetChi2Y()/abs(DOF));
+			BestTrack->set_finalchisq_dofX(S_niteration.GetChi2X()/abs(DOF));
 		}    
            }
            if (updated_chi2 < chi2_best_track ){
@@ -326,11 +323,13 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 	   		BestTrack->setZPrime(AxesList[2]);
            		cosmictrack = BestTrack;
                         if(_debug > 0){
-                        	
+                        	if(S.GetTotalChi2()/abs(DOF)<20){
+                        	BestTrack->set_chi2_quant(PDF(S_niteration.GetTotalChi2()/abs(DOF), DOF));
+                        	}
 		                BestTrack->set_finalchisq_dof(S_niteration.GetTotalChi2()/abs(DOF)); 
 		                BestTrack->set_finalchisq_dofY(S_niteration.GetChi2Y()/abs(DOF));
 		                BestTrack->set_finalchisq_dofX(S_niteration.GetChi2X()/abs(DOF));   
-		               
+		                
 		        }
                         chi2_best_track = updated_chi2;  
                                	
@@ -351,12 +350,9 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
     		      	
 	        }//end while 
 	        cosmictrack=BestTrack;
-
+		     //step 7 : final diagnostics stored
 	             if(_debug>0){
 	             
-                        	if (BestTrack->get_finalchisq_dof() < 1){
-                        	BestTrack->set_chi2_quant(chi_sum(BestTrack->get_finalchisq_dof(), DOF)); 
-                        	}
 		     for (size_t f5=0; f5<nHits; ++f5){
 		     		if(isnan(cosmictrack->get_track_direction().Mag2()) == true) continue;     
 		                hitP2 = &trackData._chHitsToProcess[f5];
@@ -364,8 +360,8 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
       	        		XYZVec point_prime(point.Dot(BestTrack->getXPrime()), point.Dot(BestTrack->getYPrime()), point.Dot(BestTrack->getZPrime()));
       	        		
       	        		std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, AxesList[0], AxesList[1]);  
-				double newRx = ParametricFit::GetResidualX(BestTrack->get_parameter(0), BestTrack->get_parameter(1), point_prime);
-				double newRy = ParametricFit::GetResidualY(BestTrack->get_parameter(2), BestTrack->get_parameter(3), point_prime);
+				float newRx = ParametricFit::GetResidualX(BestTrack->get_parameter(0), BestTrack->get_parameter(1), point_prime);
+				float newRy = ParametricFit::GetResidualY(BestTrack->get_parameter(2), BestTrack->get_parameter(3), point_prime);
 				
 				BestTrack->set_final_hit_errorsTotal(sqrt(pow(ErrorsXY[0],2)+ pow(ErrorsXY[1],2)));
 				BestTrack->set_final_fit_residual_errorsX(ErrorsXY[0]);
@@ -376,24 +372,35 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 		      		BestTrack->set_final_fit_residualsY(newRy); 
 		      		BestTrack->set_initchisq_dof(S.GetTotalChi2()/abs(DOF));
 		      		BestTrack->set_cov(S.GetCovX()[0][0],S.GetCovX()[1][1], S.GetCovY()[0][0], S.GetCovY()[1][1]);  
-		      		cosmictrack=BestTrack;
-		      			
+		      		cosmictrack=BestTrack;      			
                    	  }               	
                    	}
     S.clear();
     if(_mcdiag > 0){
-    FitMC(trackData,cosmictrack, false, false);
+         FitMC(trackData,cosmictrack, true, false);
      }
-    cosmictrack->set_fit_phi(acos(cosmictrack->getZPrime().x()/sqrt(cosmictrack->getZPrime().Mag2())));
-   
+    //cosmictrack->set_fit_phi(acos(cosmictrack->getZPrime().x()/sqrt(cosmictrack->getZPrime().Mag2())));
+  }
+  float CosmicTrackFit::PDF(float chisq, float ndf){
+  	float pdf = ROOT::Math::chisquared_pdf(chisq, ndf);
+  	return pdf;
   }
   
-  double CosmicTrackFit::chi_sum(double chisq, double ndf){
-  	double sum = TMath::ChisquareQuantile(chisq, ndf);	
+  float CosmicTrackFit::chi_sum(float chisq, float ndf){
+  	float sum = TMath::ChisquareQuantile(chisq, ndf);
   	return sum;
   }
-  
-  
+  	
+  float CosmicTrackFit::CDF(float chisq, float ndf){	
+  	float cdf;
+  	if(chisq/ndf < 3){	
+  	cdf = ROOT::Math::chisquared_cdf_c(chisq, ndf , 0);	
+  	}
+  	else{
+  	cdf = ROOT::Math::chisquared_cdf(chisq, ndf , 0);
+  	}
+  	return cdf;
+  }
 
 void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool prime){	
         ::BuildMatrixSums S;
@@ -403,8 +410,7 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
     	size_t nHits (trackData._mcDigisToProcess.size());
         StrawDigiMC const& ch0 = trackData._mccol->at(0); 
         StrawDigiMC const& chN = trackData._mccol->at(nHits-1);
-        
-        
+ 
         XYZVec ZPrime = InitLineDirection(ch0, chN, FitDirection, prime);  
         StrawDigiMC *hitP1; 
   
@@ -417,7 +423,7 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
                 std::vector<XYZVec> AxesList = ParametricFit::GetAxes(ZPrime);
                 S.addPoint(f1, point, AxesList[0], AxesList[1], AxesList[2], 1,1);//AxesList[0], AxesList[1], AxesList[2], 1,1); 
             }
-            if(XYZ == true && prime ==false){ //gets the true XYZ and does in that frame
+            if(XYZ == true && prime ==false){ //gets the true XYZ and does in that frame USE THIS THEN TRANSFORM
                 XYZVec point(posN.x(), posN.y(), posN.z());
                 std::vector<XYZVec> AxesList = ParametricFit::GetAxes(ZPrime);
                 XYZVec X(1,0,0);//to evaluate for XYZ frame
@@ -432,13 +438,22 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
             }
           
         }   
-     
+     //now transform into XYZ fitplane
      double a0 = S.GetAlphaX()[0][0];
      double a1 = S.GetAlphaX()[1][0];
      double b0 = S.GetAlphaY()[0][0];
      double b1 = S.GetAlphaY()[1][0];
      XYZVec Direction(a1,b1,1);
+     XYZVec Position(a0,b0,0);
     // XYZVec UpdatedTrackDirection =Direction.Unit();
+     XYZVec transformedDirection(Direction.Dot(cosmictrack->getXPrime())/Direction.Dot(cosmictrack->getZPrime()), Direction.Dot(cosmictrack->getYPrime())/Direction.Dot(cosmictrack->getZPrime()), 1);
+     XYZVec unit_transformedDirection = transformedDirection.Unit();
+     XYZVec transformedPosition(Position.Dot(cosmictrack->getXPrime()), Position.Dot(cosmictrack->getYPrime()), Position.Dot(cosmictrack->getZPrime()));
+     
+     double a0_trans = transformedPosition.X();
+     double a1_trans = unit_transformedDirection.X();
+     double b0_trans = transformedPosition.Y();
+     double b1_trans = unit_transformedDirection.Y();
      
      double mcpos_mag = sqrt(Direction.Mag2());    
      cosmictrack->set_true_track_direction(ZPrime);
@@ -447,35 +462,28 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
      const double phi_start = atan(Direction.y()/Direction.x());
      cosmictrack->set_true_phi(phi_start);
      cosmictrack->set_true_theta(theta_start);
-     cosmictrack->set_true_parameters(a0,a1,b0,b1);
-     //cosmictrack->set_true_finalchisq_dof(S.GetTotalChi2()/nHits);
+     cosmictrack->set_true_parameters(a0_trans,a1_trans,b0_trans,b1_trans);
+     cosmictrack->set_true_finalchisq_dof(S.GetTotalChi2()/nHits);
      
      }
 
 
 XYZVec CosmicTrackFit::MCInitHit(StrawDigiMC mcdigi){
 	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
-	//std::cout<<"first before "<<)<<" "<<<<" "<<spmcp->position().z()<<std::endl;
-	//GeomHandle<DetectorSystem> det;
-	//Hep3Vector pos = det->toDetector(spmcp->position());
-
-	//double mcposx0 = spmcp->position().x();
-	//double mcposy0 = spmcp->position().y();
-	//double mcposz0 = spmcp->position().z();
 	XYZVec first(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
-	
         return first;
 }
+/*
 
+//GeomHandle<DetectorSystem> det;
+Hep3Vector pos = det->toDetector(spmcp->position());
+double mcposx0 = spmcp->position().x();
+double mcposy0 = spmcp->position().y();
+double mcposz0 = spmcp->position().z();
+*/
 XYZVec CosmicTrackFit::MCFinalHit(StrawDigiMC mcdigi){
 	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
-	//GeomHandle<DetectorSystem> det;
-	//Hep3Vector pos = det->toDetector(spmcp->position());
-	//double mcposxN = spmcp->position().x();
-	//double mcposyN = spmcp->position().y();
-	//double mcposzN = spmcp->position().z();
 	XYZVec last(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
-	
         return last;
 }
 
@@ -490,7 +498,7 @@ void CosmicTrackFit::MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderDat
       
         
 }
-
+/*
 void CosmicTrackFit::Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1){
         TCanvas canvas;
         canvas.Draw();
@@ -538,7 +546,7 @@ void CosmicTrackFit::Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, T
 	
 	
 	}
-
+*/
 void CosmicTrackFit::MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track){
 	//if track has a significant amount of tracks with large chi2 and those large values are all similar...and resiudals within range of each other, this coule mean a second track....check for this although unlikely with cosmics....
 
@@ -548,7 +556,6 @@ bool CosmicTrackFit::goodTrack(CosmicTrack* track)
   { 
     if(track->get_finalchisq_dof() < _maxchi2) return true;
     else return false;
-
   }
 
 /*--------------USE? ---------------------------//
@@ -562,9 +569,7 @@ bool CosmicTrackFit::use_track(double track_length) const
   {
      return (track_length > _maxd) ? false : true ;
   }
-  
 
-  
  /*--------Drift Correction-------*/
 void CosmicTrackFit::DriftCorrection(CosmicTrackFinderData& trackData){
 	//Find SH in CH with smallest distance from wire centre, then need to find relative sign of that SH doca value. Then we know which side of wire the track approached. Then add on/minus off to z this distance
@@ -667,9 +672,6 @@ void CosmicTrackFit::DriftCorrection(CosmicTrackFinderData& trackData){
         //TrkPoca wpoca(trajectory,fltlen,wire,0.0);	 
         //TrkPoca     hitpoca(trajectory,fltlen,wire,0.0);
   	*/
-
-
-
 
 
 }//end namespace

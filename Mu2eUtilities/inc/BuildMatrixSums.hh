@@ -24,10 +24,12 @@ public:
   void SetChi2(double chi2);
   TMatrixD GetAlphaX();
   TMatrixD GetGammaX();
+  TMatrixD GetCovX();
   TMatrixD GetBetaX();
   TMatrixD GetAlphaY();
   TMatrixD GetGammaY();
   TMatrixD GetBetaY();
+  TMatrixD GetCovY();
   
   double GetChi2X();
   double GetChi2Y();

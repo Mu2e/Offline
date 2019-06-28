@@ -63,18 +63,21 @@ namespace mu2e
                 void RunFitChi2(const char* title, CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
 		void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
-		double chi_sum(double chisq, double ndf);
-		void Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1);
+		//Step 4: Do the fitting
 		void FitXYZ(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
 		
+		//Step 5: validation of algorithm -  some functions to help
+		float PDF(float chisq, float ndf);
+		float chi_sum(float chisq, float ndf);
+		float CDF(float chisq, float ndf);
+		void Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1);
+		//Some functions to extract MC truth
 		XYZVec MCInitHit(StrawDigiMC mcdigi);
 		XYZVec MCFinalHit(StrawDigiMC mcdigi);
 		void MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData);
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
-
 		void FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool is_prime);
                 bool goodTrack(CosmicTrack* track);
-                float pointToLineDCA(CosmicTrack* track, StrawHit hit);
 		void DriftCorrection(CosmicTrackFinderData& trackData);
 		
                 
