@@ -98,6 +98,7 @@ BEGIN_PROLOG
   # track PID module
   TrkPID : {
     module_type : TrackPID
+    MaxDE : 5.0 # MeV
     DeltaTOffset : -1.15 # specific to MDC2018h
     MVAConfig : { MVAWeights : "TrkDiag/test/TrkCaloHitPID.weights.xml"}
   }

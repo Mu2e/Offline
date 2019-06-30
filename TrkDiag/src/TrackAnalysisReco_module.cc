@@ -431,9 +431,12 @@ namespace mu2e {
       event.getByLabel(_conf.kalSeedMCTag(),_ksmcah);
       event.getByLabel(_conf.caloClusterMCTag(),_ccmcah);
     }
-    // reset
-    resetBranches();
-
+    // reset event level structs
+    _einfo.reset();
+    _hcnt.reset();
+    _tcnt.reset();
+    _hinfo.reset();
+    _wtinfo.reset();
     // fill track counts
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       _tcnt._counts[i_branch] = (_allKSCHs.at(i_branch))->size();
@@ -447,6 +450,9 @@ namespace mu2e {
     const auto& candidateKSCH = _allKSCHs.at(_candidateIndex);
     const auto& candidateKSC = *candidateKSCH;
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
+    // reset
+      resetBranches();
+
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
 
@@ -723,12 +729,6 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::resetBranches() {
-    // reset structs
-    _einfo.reset();
-    _hcnt.reset();
-    _tcnt.reset();
-    _hinfo.reset();
-    _wtinfo.reset();
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       _allTIs.at(i_branch).reset();
       _allEntTIs.at(i_branch).reset();

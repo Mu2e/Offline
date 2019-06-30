@@ -10,7 +10,8 @@ namespace mu2e
 // general information about a track
   struct TrkQualInfo {
     Float_t _trkqualvars[TrkQualDetail::n_vars];
-    Float_t _trkqual;
+    Float_t _mvaout;
+    Int_t _mvastat;
 
     TrkQualInfo() { reset(); }
 
@@ -19,7 +20,8 @@ namespace mu2e
       for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
 	_trkqualvars[i_trkqual_var] = -1000.0;
       }
-      _trkqual = -1000.0;
+      _mvaout = -1000.0;
+      _mvastat = -1;
     }
 
     static std::string const leafnames() { 
@@ -28,11 +30,9 @@ namespace mu2e
       for (int i_trkqual_var = 0; i_trkqual_var < n_trkqual_vars; ++i_trkqual_var) {
 	TrkQual::MVA_varindex i_index =TrkQual::MVA_varindex(i_trkqual_var);
 	std::string varname = TrkQual::varName(i_index);
-	leaves += varname + "/F";
-	if (i_trkqual_var != n_trkqual_vars-1) {
-	  leaves += ":";
-	}
+	leaves += varname + "/F:";
       }
+      leaves += "mvaout/F:mvastat/I";
       return leaves;
     }
   };
