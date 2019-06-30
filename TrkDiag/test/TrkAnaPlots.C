@@ -62,7 +62,7 @@ class TrkAnaPlots {
   }
   
   void BuildCuts();
-  void PId();
+  void PID();
   void FitMomResp(TH1F* momresp);
   void FitMomRes(TH1F* momres);
   void MomResp(TrackerRegion region=entrance);
@@ -90,7 +90,7 @@ class TrkAnaPlots {
   TTree* _tn;
   TTree* _tp; 
   // canvases
-  TCanvas *_pidcan, *_pidqcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
+  TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
   vector<string> _rname;
 };
 
@@ -132,13 +132,28 @@ void TrkAnaPlots::BuildCuts(){
 
 }
 
-void TrkAnaPlots::PId() {
+void TrkAnaPlots::PID() {
   TH2F* r1vr0nc = new TH2F("r1vr0nc","Disk 1 projected radius vs Disk 0 projected radius, no TrkCaloHit;R_{0} (mm); R_{1} (mm)",100,0.0,700.0,100,0.0,700);
   TH2F* r1vr0c = new TH2F("r1vr0c","Disk 1 projected radius vs Disk 0 projected radius, TrkCaloHit;R_{0} (mm); R_{1} (mm)",100,0.0,700.0,100,0.0,700);
   TH1F* dempid = new TH1F("dempid","TCHPidQual",120,-0.1,1.1);
   TH1F* deppid = new TH1F("deppid","TCHPidQual",120,-0.1,1.1);
   TH1F* dmumpid = new TH1F("dmumpid","TCHPidQual",120,-0.1,1.1);
   TH1F* dmuppid = new TH1F("dmuppid","TCHPidQual",120,-0.1,1.1);
+  TH1F* demom = new TH1F("demom","Momentum;Mom (MeV/c)",120,60,180);
+  TH1F* dmmom = new TH1F("dmmom","Momentum;Mom (MeV/c)",120,60,180);
+  TH1F* demompid = new TH1F("demompid","Momentum after PIDQual cut;Mom (MeV/c)",120,60,180);
+  TH1F* dmmompid = new TH1F("dmmompid","Momentum after PIDQual cut;Mom (MeV/c)",120,60,180);
+  TH1F* demompide = new TH1F("demompide","PIDQual efficiency vs Momentum;Mom (MeV/c)",120,60,180);
+  TH1F* dmmompide = new TH1F("dmmompide","PIDQual efficiency vs Momentum;Mom (MeV/c)",120,60,180);
+
+  TH2F* deevsp = new TH2F("deevsp","E_{calo} vs P_{track};P (MeV/c);E (MeV)",50,50,200,50,0,220);
+  TH2F* dmevsp = new TH2F("dmevsp","E_{calo} vs P_{track};P (MeV/c);E (MeV)",50,50,200,50,0,220);
+  TH2F* dpevsp = new TH2F("dpevsp","E_{calo} vs P_{track};P (MeV/c);E (MeV)",50,50,200,50,0,220);
+  TProfile* deevspp = new TProfile("deevspp","E_{calo} vs P_{track};P (MeV/c);E (MeV)",50,50,200,0,220);
+  TProfile* dmevspp = new TProfile("dmevspp","E_{calo} vs P_{track};P (MeV/c);E (MeV)",50,50,200,0,220);
+  TProfile* dpevspp = new TProfile("dpevspp","E_{calo} vs P_{track};P (MeV/c);E (MeV)",50,50,200,0,220);
+
+
   r1vr0nc->SetStats(0);
   r1vr0c->SetStats(0);
   dempid->SetStats(0);
@@ -150,15 +165,52 @@ void TrkAnaPlots::PId() {
   deppid->SetLineColor(kGreen);
   dmumpid->SetLineColor(kMagenta);
   dmuppid->SetLineColor(kRed);
+
+  demom->Sumw2();
+  dmmom->Sumw2();
+  demompid->Sumw2();
+  dmmompid->Sumw2();
+  demompide->Sumw2();
+  dmmompide->Sumw2();
+  demom->SetLineColor(kRed);
+  dmmom->SetLineColor(kBlue);
+  demompid->SetLineColor(kRed);
+  dmmompid->SetLineColor(kBlue);
+  demompide->SetLineColor(kRed);
+  dmmompide->SetLineColor(kBlue);
+  deevsp->SetStats(0);
+  dmevsp->SetStats(0);
+  deevspp->SetStats(0);
+  dmevspp->SetStats(0);
+  deevsp->SetLineColor(kRed);
+  dmevsp->SetLineColor(kBlue);
+  deevspp->SetLineColor(kRed);
+  dmevspp->SetLineColor(kBlue);
+  
+  demompide->SetStats(0);
+  dmmompide->SetStats(0);
   
   _tn->Project("dempid","detrkpid.mvaout",_downstream&&_eminus);
   _tn->Project("dmumpid","detrkpid.mvaout",_downstream&&_muminus);
   _tp->Project("deppid","detrkpid.mvaout",_downstream&&_eplus);
   _tp->Project("dmuppid","detrkpid.mvaout",_downstream&&_muplus);
-  _tn->Project("r1vr0c","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eminus&&"detch.active");
-  _tn->Project("r1vr0nc","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eminus&&"!detch.active");
-  _tp->Project("+r1vr0c","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eplus&&"detch.active");
-  _tp->Project("+r1vr0nc","detrkpid.disk1rad:detrkpid.disk0rad",_downstream&&_eplus&&"!detch.active");
+  _tn->Project("deevsp","detch.edep:dexit.mom",_downstream&&_eminus);
+  _tp->Project("+deevsp","detch.edep:dexit.mom",_downstream&&_eplus);
+  _tn->Project("deevspp","detch.edep:dexit.mom",_downstream&&_eminus);
+  _tp->Project("+deevspp","detch.edep:dexit.mom",_downstream&&_eplus);
+  _tn->Project("dmevsp","detch.edep:dexit.mom",_downstream&&_muminus);
+  _tp->Project("+dmevsp","detch.edep:dexit.mom",_downstream&&_muplus);
+  _tn->Project("dmevspp","detch.edep:dexit.mom",_downstream&&_muminus);
+  _tp->Project("+dmevspp","detch.edep:dexit.mom",_downstream&&_muplus);
+  _tn->Project("dpevsp","detch.edep:dexit.mom",_upstream&&_eplus);
+  _tp->Project("+dpevsp","detch.edep:dexit.mom",_upstream&&_eminus);
+  _tn->Project("dpevspp","detch.edep:dexit.mom",_upstream&&_eplus);
+  _tp->Project("+dpevspp","detch.edep:dexit.mom",_upstream&&_eminus);
+
+  _tn->Project("r1vr0c","detrkpid.disk1frad:detrkpid.disk0frad",_downstream&&_eminus&&"detch.active");
+  _tn->Project("r1vr0nc","detrkpid.disk1frad:detrkpid.disk0frad",_downstream&&_eminus&&"!detch.active");
+  _tp->Project("+r1vr0c","detrkpid.disk1frad:detrkpid.disk0frad",_downstream&&_eplus&&"detch.active");
+  _tp->Project("+r1vr0nc","detrkpid.disk1frad:detrkpid.disk0frad",_downstream&&_eplus&&"!detch.active");
 
   _pidcan = new TCanvas("pidcan","pidcan",800,1200);
   _pidcan->Divide(1,2);
@@ -207,6 +259,43 @@ void TrkAnaPlots::PId() {
   _pidqcan->cd(2);
   gPad->SetLogz();
   qvqmu->Draw("colorz");
+
+  
+  _tn->Project("dmmom","deent.mom",_downstream&&_muminus&&_eminustq);
+  _tp->Project("+dmmom","deent.mom",_downstream&&_muplus&&_eplustq);
+  _tn->Project("demom","deent.mom",_downstream&&_eminus&&_eminustq);
+  _tp->Project("+demom","deent.mom",_downstream&&_eplus&&_eplustq);
+  _tn->Project("dmmompid","deent.mom",_downstream&&_muminus&&_eminustq&&_eminuspid);
+  _tp->Project("+dmmompid","deent.mom",_downstream&&_muplus&&_eplustq&&_epluspid);
+  _tn->Project("demompid","deent.mom",_downstream&&_eminus&&_eminustq&&_eminuspid);
+  _tp->Project("+demompid","deent.mom",_downstream&&_eplus&&_eplustq&&_epluspid);
+
+  demompide->Divide(demompid,demom);
+  dmmompide->Divide(dmmompid,dmmom);
+
+  _pidmomcan = new TCanvas("mompid","mompid",800,800);
+  _pidmomcan->Divide(2,2);
+  _pidmomcan->cd(1);
+  demom->Draw();
+  dmmom->Draw("same");
+  TLegend* mpleg = new TLegend(0.1,0.7,0.4,0.9);
+  mpleg->AddEntry("demom","True electron","L");
+  mpleg->AddEntry("dmmom","True muon","L");
+  mpleg->Draw();
+  _pidmomcan->cd(2);
+  demompid->Draw();
+  dmmompid->Draw("same");
+  _pidmomcan->cd(3);
+  demompide->SetMinimum(-0.05);
+  demompide->SetMaximum(1.05);
+  demompide->Draw();
+  dmmompide->Draw("same");
+  _pidmomcan->cd(4);
+  deevsp->Draw("box");
+  deevspp->Fit("pol1","","same");
+  dmevsp->Draw("boxsame");
+  dmevspp->Fit("pol1","","same");
+  mpleg->Draw();
 }
 
 void TrkAnaPlots::FitMomResp(TH1F* momresp) {
