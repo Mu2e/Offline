@@ -163,9 +163,9 @@ TrainPID(TChain* Cetree,TChain* Mutree)
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // must be a good fit
-  TCut goodfit = "de.status>0 && detrkpid.mvastat==2 && deent.td<1.1 && deent.td>0.4 && deent.mom>80.0 && deent.mom<130 && detrkqual.mvaout>0.8 && detch.edep<dexit.mom";
+  TCut goodfit = "de.status>0 && detrkpid.mvastat==2 && deent.td<1.1 && deent.td>0.4 && deent.mom>80.0 && deent.mom<130 && detrkqual.mvaout>0.8";
 // require a good downstream particle
-  TCut goodmu = "abs(demc.pdg)==13 && demc.pdg*de.pdg>0";
+  TCut goodmu = "abs(demc.pdg)==13";
 //  TCut bade = "abs(demc.pdg)==11 && demc.pdg*de.pdg<0";
   TCut goode = "abs(demc.pdg)==11 && demc.pdg*de.pdg>0";
 
@@ -187,14 +187,16 @@ TrainPID(TChain* Cetree,TChain* Mutree)
 
 //  dataloader->AddVariable("detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)", "eEoverP","Fraction",'F');
 //  dataloader->AddVariable("2*(detch.edep-dexit.mom)/(detch.edep+dexit.mom)",'F');
-  dataloader->AddVariable("detch.edep-dexit.mom",'F');
+  dataloader->AddVariable("detrkpid.DeltaE","DeltaE","MeV",'F');
   dataloader->AddVariable("detrkpid.ClusterLength","ClusterLength","mm",'F');
 //  dataloader->AddVariable("detch.doca","DOCA","mm",'F');
 //  dataloader->AddVariable("detrkpid.RPOCA", "RPOCA","mm",'F');
-  dataloader->AddVariable("sqrt(detch.POCAx^2+detch.POCAy^2)", "RPOCA","mm",'F');
+  dataloader->AddVariable("detrkpid.RPOCA", "RPOCA","mm",'F');
   dataloader->AddVariable("detrkpid.TrackDirection", "TrackDirection","Fraction",'F');
   dataloader->AddVariable("detrkpid.DeltaT","DeltaT","nsec",'F');
+//  dataloader->AddVariable("de.fitcon","FitCon","none",'F');
 //  dataloader->AddVariable("detch.POCAz","POCAz","mm",'F');
+//  dataloader->AddVariable("detrkqual.mvaout","TrkQual","none",'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the
