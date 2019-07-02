@@ -707,10 +707,13 @@ namespace mu2e {
       for (const auto& i_handle : handles) {
 	std::string moduleLabel = i_handle.provenance()->moduleLabel();
 	// event.getMany() doesn't have a way to wildcard part of the ModuleLabel, do it ourselves here
+	size_t pos;
 	if (selection != "") { // if we want to add a selection
-	  if (moduleLabel.find(selection) == std::string::npos) { // check to see if this appears
+	  pos = moduleLabel.find(selection);
+	  if (pos == std::string::npos) { // check to see if this appears
 	    continue;
 	  }
+	  moduleLabel = moduleLabel.erase(pos, selection.length());
 	}
 	std::string instanceName = i_handle.provenance()->productInstanceName();
 
