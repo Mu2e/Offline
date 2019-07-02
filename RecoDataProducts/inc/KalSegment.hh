@@ -13,7 +13,7 @@
 
 namespace mu2e {
   struct KalSegment {
-    KalSegment() : _fmin(0.0), _fmax(-1.0), _mom(-1.0), _momerr(-1.0) {}
+    KalSegment() : _fmin(0.0), _fmax(-1.0), _dflt(0.0), _mom(-1.0), _momerr(-1.0) {}
     Float_t fmin() const { return _fmin; } // local helix flight limits
     Float_t fmax() const { return _fmax; }
     HelixVal const& helix() const { return _helix; }
