@@ -172,6 +172,7 @@ namespace mu2e {
     double calREndCableRunIFB()        const { return _calREndCableRunIFB ;}
     double calEndWCableRunIFB()        const { return _calEndWCableRunIFB ;}
     double calPhiECableRunIFB()        const { return _calPhiECableRunIFB ;}
+    //Calo IFB patch panel info
     double calPR1CableRunIFB()         const { return _calPR1CableRunIFB  ;}
     double calPR2CableRunIFB()         const { return _calPR2CableRunIFB  ;}
     double calPPhi0CableRunIFB()       const { return _calPPhi0CableRunIFB;}
@@ -180,6 +181,9 @@ namespace mu2e {
     double calPZHLCableRunIFB()        const { return _calPZHLCableRunIFB ;}
     double calPZOutCableRunIFB()       const { return _calPZOutCableRunIFB;}
     std::string calPMatCableRunIFB()   const { return _calPMatCableRunIFB ;}
+    //Calo cabling at bottom of IFB cabling
+    double calBCXCableRunIFB()         const { return _calBCXCableRunIFB  ;}
+    double calBLCableRunIFB()          const { return _calBLCableRunIFB   ;}
 
     double trkR1CableRunIFB()          const { return _trkR1CableRunIFB   ;}
     double trkR2CableRunIFB()          const { return _trkR2CableRunIFB   ;}
@@ -188,6 +192,7 @@ namespace mu2e {
     double trkREndCableRunIFB()        const { return _trkREndCableRunIFB ;}
     double trkEndWCableRunIFB()        const { return _trkEndWCableRunIFB ;}
     double trkPhiECableRunIFB()        const { return _trkPhiECableRunIFB ;}
+    //Tracker IFB patch panel info
     double trkPR1CableRunIFB()         const { return _trkPR1CableRunIFB  ;}
     double trkPR2CableRunIFB()         const { return _trkPR2CableRunIFB  ;}
     double trkPPhi0CableRunIFB()       const { return _trkPPhi0CableRunIFB;}
@@ -196,6 +201,9 @@ namespace mu2e {
     double trkPZHLCableRunIFB()        const { return _trkPZHLCableRunIFB ;}
     double trkPZOutCableRunIFB()       const { return _trkPZOutCableRunIFB;}
     std::string trkPMatCableRunIFB()   const { return _trkPMatCableRunIFB ;}
+    //Tracker cabling at bottom of IFB cabling
+    double trkBCXCableRunIFB()         const { return _trkBCXCableRunIFB  ;}
+    double trkBLCableRunIFB()          const { return _trkBLCableRunIFB   ;}
 
     double zHLCableRunIFB()            const { return _zHLCableRunIFB     ;}
     std::string materialCalCableRunIFB()  const { return _materialCalCableRunIFB;}
@@ -386,6 +394,8 @@ namespace mu2e {
     double              _calPZHLCableRunIFB ;
     double              _calPZOutCableRunIFB;
     std::string         _calPMatCableRunIFB ;
+    double              _calBCXCableRunIFB  ;
+    double              _calBLCableRunIFB   ;
 
     double              _trkR1CableRunIFB   ;
     double              _trkR2CableRunIFB   ;
@@ -403,6 +413,8 @@ namespace mu2e {
     double              _trkPZHLCableRunIFB ;
     double              _trkPZOutCableRunIFB;
     std::string         _trkPMatCableRunIFB ;
+    double              _trkBCXCableRunIFB  ;
+    double              _trkBLCableRunIFB   ;
 
     double              _zHLCableRunIFB     ;
     std::string         _materialCalCableRunIFB;

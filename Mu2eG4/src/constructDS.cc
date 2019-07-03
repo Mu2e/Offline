@@ -1047,6 +1047,69 @@ namespace mu2e {
 					"ds"
 					);
 
+	 //Cabling at the bottom of the IFB cabling
+	 double r_bot_ifb     = ds->trkR2CableRunIFB() + 1.; //use bottom of tracker cabling + 1 mm
+
+	 // double boxwidth = ds->calEndWCableRunIFB();
+	 double calIFBCableRunBot[] = { boxwidth/2., //use same box dimensions
+					ds->calBLCableRunIFB()/2., //length of the piece
+					ds->zHLCableRunIFB()}; //same width in z as the rest
+	 CLHEP::Hep3Vector calIFBCableRunBotLoc1( ds->calBCXCableRunIFB(), 
+						 -r_bot_ifb-calIFBCableRunBot[1], ds->zCCableRunIFB() );
+
+	 VolumeInfo icbTmp1 = nestBox( "CalIFBCableRunBottom1",
+				       calIFBCableRunBot,
+				       findMaterialOrThrow(ds->materialCalCableRunIFB()),
+				       nullptr,
+				       calIFBCableRunBotLoc1+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       parent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 double calIFBCableRunBotCore[] = { calIFBCableRunBot[0],
+					    calIFBCableRunBot[1]*ds->rdCableRunCalCoreFract(),
+					    calIFBCableRunBot[2]*ds->dPhiCableRunCalCoreFract()};
+
+	 VolumeInfo icbcTmp1 = nestBox( "CalIFBCableRunBottomCore1",
+					calIFBCableRunBotCore,
+					findMaterialOrThrow(ds->materialCableRunCalCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					icbTmp1,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
+
+	 CLHEP::Hep3Vector calIFBCableRunBotLoc2(-ds->calBCXCableRunIFB(), 
+						 -r_bot_ifb-calIFBCableRunBot[1], ds->zCCableRunIFB() );
+
+	 VolumeInfo icbTmp2 = nestBox( "CalIFBCableRunBottom2",
+				       calIFBCableRunBot,
+				       findMaterialOrThrow(ds->materialCalCableRunIFB()),
+				       nullptr,
+				       calIFBCableRunBotLoc2+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       parent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 VolumeInfo icbcTmp2 = nestBox( "CalIFBCableRunBottomCore2",
+					calIFBCableRunBotCore,
+					findMaterialOrThrow(ds->materialCableRunCalCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					icbTmp2,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
+
+
+
 	 //Define panels on either side of exit of DS representing cables leaving
 	 TubsParams  calIFBCableExit1Params ( ds->calPR1CableRunIFB(),
 					      ds->calPR2CableRunIFB(),
@@ -1290,6 +1353,65 @@ namespace mu2e {
 					nullptr,
 					CLHEP::Hep3Vector(),
 					iceTmp4,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
+
+
+	 //Cabling at the bottom of the IFB cabling
+	 double trkIFBCableRunBot[] = { ds->trkEndWCableRunIFB()/2., //use same box dimensions
+					ds->trkBLCableRunIFB()/2., //length of the piece
+					ds->zHLCableRunIFB()}; //same width in z as the rest
+	 CLHEP::Hep3Vector trkIFBCableRunBotLoc1( ds->trkBCXCableRunIFB(), 
+						 -r_bot_ifb-trkIFBCableRunBot[1], ds->zCCableRunIFB() );
+
+	 VolumeInfo icbTmp3 = nestBox( "TrkIFBCableRunBottom1",
+				       trkIFBCableRunBot,
+				       findMaterialOrThrow(ds->materialTrkCableRunIFB()),
+				       nullptr,
+				       trkIFBCableRunBotLoc1+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       parent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 double trkIFBCableRunBotCore[] = { trkIFBCableRunBot[0],
+					    trkIFBCableRunBot[1]*ds->rdCableRunTrkCoreFract(),
+					    trkIFBCableRunBot[2]*ds->dPhiCableRunTrkCoreFract()};
+
+	 VolumeInfo icbcTmp3 = nestBox( "TrkIFBCableRunBottomCore1",
+					trkIFBCableRunBotCore,
+					findMaterialOrThrow(ds->materialCableRunTrkCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					icbTmp3,
+					0,
+					G4Color::Yellow(),
+					"ds"
+					);
+
+	 CLHEP::Hep3Vector trkIFBCableRunBotLoc2(-ds->trkBCXCableRunIFB(), 
+						 -r_bot_ifb-trkIFBCableRunBot[1], ds->zCCableRunIFB() );
+
+	 VolumeInfo icbTmp4 = nestBox( "TrkIFBCableRunBottom2",
+				       trkIFBCableRunBot,
+				       findMaterialOrThrow(ds->materialTrkCableRunIFB()),
+				       nullptr,
+				       trkIFBCableRunBotLoc2+dsShieldParent.centerInMu2e()-_hallOriginInMu2e,
+				       parent,
+				       0,
+				       G4Color::Magenta(),
+				       "ds"
+				       );
+
+	 VolumeInfo icbcTmp4 = nestBox( "TrkIFBCableRunBottomCore2",
+					trkIFBCableRunBotCore,
+					findMaterialOrThrow(ds->materialCableRunTrkCore()),
+					nullptr,
+					CLHEP::Hep3Vector(),
+					icbTmp4,
 					0,
 					G4Color::Yellow(),
 					"ds"

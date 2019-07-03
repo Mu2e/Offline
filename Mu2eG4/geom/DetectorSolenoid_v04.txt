@@ -178,8 +178,8 @@ int       ds.CableRun.version      = 3;
 bool      ds.CableRun.sensitive    = true;
 double    ds.CableRunCal.UpRin     = 721.0; //mm top of Cal
 double    ds.CableRunCal.UpRout    = 821.0; //mm
-double    ds.CableRunCal.UpHL1     = 120.0; // mm
-double    ds.CableRunCal.UpHL2     = 95.0; // mm
+double    ds.CableRunCal.UpHL1     = 139.0;//120.0; // mm
+double    ds.CableRunCal.UpHL2     = 119.0;//95.0; // mm
 double    ds.CableRunCal.UpZC1     = 12440.0; // mm
 double    ds.CableRunCal.UpZC2     = 13116.0; // mm
 double    ds.CableRunCal.length    = 1725.0; //1650 + 150/2 mm - actually halflength
@@ -192,8 +192,8 @@ string    ds.CableRunCal.material  = "CalCableRunOuter";//"Electronics";
 
 // Optical "core" placed in the "Cable"
 double    ds.CableRunCalCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
-double    ds.CableRunCalCore.dRadiusFraction = 0.003; // Set so the cross section matches expectations with portion near IFB
-double    ds.CableRunCalCore.dPhiFraction    = 0.006; // 
+double    ds.CableRunCalCore.dRadiusFraction = 0.0864; //.0117 nominally to set so the cross section matches expectations with portion near IFB
+double    ds.CableRunCalCore.dPhiFraction    = 0.0864;//.0117 
 string    ds.CableRunCalCore.material        = "CalCableRunFiber";//"G4_SILICON_DIOXIDE";
 
 double    ds.CableRunTrk.length    = 1943; //1919 + 150/2 mm - actually halflength
@@ -206,46 +206,61 @@ string    ds.CableRunTrk.material  = "TrkCableRunOuter"; //"Electronics";
 
 // Optical "core" placed in the "Cable"
 double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
-double    ds.CableRunTrkCore.dRadiusFraction = 0.017; // Set so the cross section matches expectations with portion near IFB
-double    ds.CableRunTrkCore.dPhiFraction    = 0.033; // 
+double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; //.0331; // Set so the cross section matches expectations with portion near IFB
+double    ds.CableRunTrkCore.dPhiFraction    = 0.1051; //.0331; // 
 string    ds.CableRunTrkCore.material        = "TrkCableRunFiber"; //"G4_SILICON_DIOXIDE";
 
 //Cabling At Outside of IFB
+//Calo cable run parameters
 double    ds.CableRunIFB.CalR1     =  1250.5;
 double    ds.CableRunIFB.CalR2     =  1348.0;
-double    ds.CableRunIFB.CalPhi0   =   137.8; // 135 + sin^-1(97.5/2/1162.5) to avoid end piece
-double    ds.CableRunIFB.CalDPhi   =   131.7;
-double    ds.CableRunIFB.CalREnd   =  1000.5; //radial component
+double    ds.CableRunIFB.CalPhi0   =   137.5; // 135 + sin^-1(97.5/2/1162.5) + 0.1 to avoid end piece
+double    ds.CableRunIFB.CalDPhi   =   123.2; // 270 - Phi0 - 9.2 for bottom cabling - 0.1
+double    ds.CableRunIFB.CalREnd   =  1006.0; //radial component
 double    ds.CableRunIFB.CalEndW   =    97.5;
 double    ds.CableRunIFB.CalPhiE   =   135.0;
-double    ds.CableRunIFB.CalPR1    =   590.0; //panel dimensions
-double    ds.CableRunIFB.CalPR2    =  1000.0;
-double    ds.CableRunIFB.CalPPhi0  =   112.5; 
-double    ds.CableRunIFB.CalPDPhi  =    45.0;
+string    ds.CalCableRunIFB.Material  = "CalCableRunOuter";
+
+//Cable panel on IFB parameters for the Calo cable runs
+double    ds.CableRunIFB.CalPR1    =  623.19; //panel dimensions
+double    ds.CableRunIFB.CalPR2    = 1005.84;
+double    ds.CableRunIFB.CalPPhi0  =  114.96; //112.5; //Measured from the right side
+double    ds.CableRunIFB.CalPDPhi  =  40.08; // 45.0;
 double    ds.CableRunIFB.CalPZIn   = 17155.0;
 double    ds.CableRunIFB.CalPZHL   =    45.0;
 double    ds.CableRunIFB.CalPZOut  = 17370.0;
 string    ds.CableRunIFB.CalPMat   = "CalCableRunOuter";
 
+//Cabling at the bottom of the IFB for the Calo, using radial box dimensions
+double    ds.CableRunIFB.CalBCX    = 150.0;  //offset from center axis for the two boxes
+double    ds.CableRunIFB.CalBL     = 915.; //Length of the cabling, assumes starting from the tracker cabling radius
+
+//Tracker cable run parameters
 double    ds.CableRunIFB.TrkR1     =  1149.0;
 double    ds.CableRunIFB.TrkR2     =  1249.5;
-double    ds.CableRunIFB.TrkPhi0   =   207.8; // 205 + sin^-1(100.5/2/1000.5)
-double    ds.CableRunIFB.TrkDPhi   =    61.7;
-double    ds.CableRunIFB.TrkREnd   =  1000.5;
+double    ds.CableRunIFB.TrkPhi0   =   227.8; // 205 + sin^-1(100.5/2/1000.5)
+double    ds.CableRunIFB.TrkDPhi   =    42.1; //270 - Phi0 - 0.1
+double    ds.CableRunIFB.TrkREnd   =  1006.0;
 double    ds.CableRunIFB.TrkEndW   =   100.5;
-double    ds.CableRunIFB.TrkPhiE   =   205.0;
-double    ds.CableRunIFB.TrkPR1    =   590.0; //panel dimensions
-double    ds.CableRunIFB.TrkPR2    =  1000.0;
-double    ds.CableRunIFB.TrkPPhi0  =   184.5; 
-double    ds.CableRunIFB.TrkPDPhi  =    45.0;
+double    ds.CableRunIFB.TrkPhiE   =   225.0;
+string    ds.TrkCableRunIFB.Material  = "TrkCableRunOuter";
+
+//Cable panel on IFB parameters for the Tracker cable runs
+double    ds.CableRunIFB.TrkPR1    =  623.19; //panel dimensions
+double    ds.CableRunIFB.TrkPR2    = 1005.84;
+double    ds.CableRunIFB.TrkPPhi0  = 204.96.;// 184.5; 
+double    ds.CableRunIFB.TrkPDPhi  = 40.08; //  45.0;
 double    ds.CableRunIFB.TrkPZIn   = 17155.0;
 double    ds.CableRunIFB.TrkPZHL   =    45.0;
 double    ds.CableRunIFB.TrkPZOut  = 17370.0;
 string    ds.CableRunIFB.TrkPMat   = "TrkCableRunOuter";
 
+//Cabling at the bottom of the IFB for the Tracker, using radial box dimensions
+double    ds.CableRunIFB.TrkBCX    = 50.5;  //offset from center axis for the two boxes
+double    ds.CableRunIFB.TrkBL     = 915.; //Length of the cabling, assumes starting from the cabling above it
+
+//Position and width of the cabling outside the IFB
 double    ds.CableRunIFB.ZHL       = 45.; // ~3.5 inches thick
-string    ds.CalCableRunIFB.Material  = "CalCableRunOuter";
-string    ds.TrkCableRunIFB.Material  = "TrkCableRunOuter";
 double    ds.CableRunIFB.ZC        = 17370.;
 
 // Service pipes along bottom of DS

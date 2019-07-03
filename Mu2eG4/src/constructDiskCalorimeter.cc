@@ -935,7 +935,18 @@ namespace mu2e {
        G4double crateHalfLength = crate->GetZHalfLength();   
        G4double cratePosY       = crateRadIn+1.001*crate->GetYHalfLength();    
        
-       G4Tubs* calorimeterFEB = new G4Tubs("caloFEB",crateRadIn, crateRadOut,crateHalfLength,-phi0Crate, CLHEP::pi+2*phi0Crate);       
+       //Increase the size of the mother volume to fit the entire track cable run if needed
+       const GeomHandle<DetectorSolenoid> ds;
+       double phi0FEB = -phi0Crate;
+       double phi1FEB = CLHEP::pi + 2*phi0Crate;
+       if ( ds->hasCableRunTrk() && 
+	    ds->phi0CableRunTrk()*CLHEP::degree + ds->dPhiCableRunTrk()*CLHEP::degree > 180.0*CLHEP::degree + phi0Crate ) {
+	 phi0FEB = -( ds->phi0CableRunTrk()*CLHEP::degree + ds->dPhiCableRunTrk()*CLHEP::degree - 180.0*CLHEP::degree);
+	 phi0FEB += -0.2*CLHEP::degree; //add a small buffer
+	 phi1FEB = CLHEP::pi - 2*phi0FEB;
+       }
+
+       G4Tubs* calorimeterFEB = new G4Tubs("caloFEB",crateRadIn, crateRadOut,crateHalfLength,phi0FEB, phi1FEB);       
        G4LogicalVolume* calorimeterFEBLog  = caloBuildLogical(calorimeterFEB, vacuumMaterial, "caloFEBLog",0,G4Color::Black(),0,0);   
   
        G4RotationMatrix rotCrate = G4RotationMatrix();
@@ -968,8 +979,6 @@ namespace mu2e {
 	   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);	
         }
         
-       const GeomHandle<DetectorSolenoid> ds;
-
         if ( ds->hasCableRunCal() ) {
           double crRin  = ds->rInCableRunCal();
           double crRout = ds->rOutCableRunCal();
@@ -1064,11 +1073,12 @@ namespace mu2e {
           double phi01  = ds->phi0CableRunTrk()*CLHEP::degree;
           double dPhi   = ds->dPhiCableRunTrk()*CLHEP::degree;
           double phi02  = 180.0*CLHEP::degree - phi01 - dPhi;
-          if ( phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate )
-            {
-              dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
-              phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
-            }
+	  //Mother volume was increased to fit the cable run rather than shrink the cable run
+          // if ( phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate )
+          //   {
+          //     dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
+          //     phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
+          //   }
 
           G4Material* cableMaterial = findMaterialOrThrow(ds->trkCableRunMaterial());
 
