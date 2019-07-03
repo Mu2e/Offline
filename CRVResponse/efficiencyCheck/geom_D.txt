@@ -11,8 +11,8 @@ vector<string>  crs.sectorNames = {"Test"};
 
 double          crs.scintillatorBarLengthTest    =  5700;
 
-double          crs.scintillatorBarThickness     =  19.8; //mm 
-double          crs.scintillatorBarWidth         =  51.3; //mm
+double          crs.scintillatorBarThickness     =  19.78; //mm 
+double          crs.scintillatorBarWidth         =  51.34; //mm
 double          crs.layerOffset                  =   0.0; //mm
 double          crs.gapLarge                     =   0.5; //mm
 double          crs.gapSmall                     =   0.0875; //mm

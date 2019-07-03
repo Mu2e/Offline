@@ -48,7 +48,6 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
-#include "TrkDiag/inc/TrkQualTestInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -134,7 +133,7 @@ namespace mu2e {
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
-    TrkQualTestInfo _trkqualTest;
+
     // helper functions
     void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
@@ -176,6 +175,13 @@ namespace mu2e {
     _trkana(0),
     _meanPBI(0.0)
   {
+
+  std::cout << "****************************************************************************************************"
+   << std::endl << "WARNING: TrackAnalysis_module is no longer supported and will be removed in the very near future."
+   << std::endl << "Please used TrackAnalysisReco_module instead, with either TrkAnaReco.fcl or TrackAnaDigisReco.fcl"
+   << std::endl << "for running on reconstruction output (mcs) or digis (dig), respectively"
+   << std::endl << "****************************************************************************************************" << std::endl;
+
   }
 
   void TrackAnalysis::beginJob( ){
@@ -219,7 +225,6 @@ namespace mu2e {
 
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
-      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
     }
   }
 
@@ -331,7 +336,7 @@ namespace mu2e {
 	  if (tch != 0) {
 	    --n_krep_active_hits; // nactive in TrkQual does not include the TrkCaloHit
 	  }
-	  int n_tqual_active_hits = tqual[TrkQual::nactive];
+	  int n_tqual_active_hits = (int)rint(tqual[TrkQual::nactive]);
 	  if (n_krep_active_hits != n_tqual_active_hits) {
 	    throw cet::exception("TrackAnalysis") << "TrkQual nactive (" << n_tqual_active_hits << ") does not match KalRep nactive (" << n_krep_active_hits << ")" << std::endl;
 	  }
@@ -548,7 +553,6 @@ namespace mu2e {
     _demcmid.reset();
     _demcxit.reset();
     _wtinfo.reset();
-    _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
     // clear vectors

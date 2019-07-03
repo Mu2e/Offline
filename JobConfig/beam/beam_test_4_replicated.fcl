@@ -61,3 +61,4 @@ outputs: {
 services.SeedService.baseSeed         :  0
 services.SeedService.maxUniqueEngines :  20
 
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"

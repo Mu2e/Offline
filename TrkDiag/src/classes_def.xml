@@ -42,4 +42,5 @@
  <class name="mu2e::TrkInfoMCStep" />
  <class name="mu2e::TrkQualInfo" />
  <class name="mu2e::EventWeightInfo" />
+ <class name="mu2e::RecoQualInfo" />
 </lcgdict>

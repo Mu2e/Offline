@@ -60,7 +60,7 @@ Mu2eG4RunAction::~Mu2eG4RunAction()
 void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
     {
 
-      if (pset_.get<int>("debug.diagLevel",0)>0) {
+      if (pset_.get<int>("debug.diagLevel",0)>1) {
         G4cout << "Mu2eG4RunAction " << __func__ << " : G4Run: " << aRun->GetRunID() << G4endl;
       }
 

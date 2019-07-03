@@ -45,7 +45,6 @@ namespace mu2e
     Float_t _firstflt, _lastflt;  // distance along the helix of the first and last hit
     Float_t _startvalid, _endvalid; // distance along the helix for which the fit is accurate
     Float_t _trkqual;  // track quality MVA output
-    TrkFitInfo _ent;  // fit information at tracker entrance
     TrkInfo() { reset(); }
     void reset() { 
       _status = -1000;
@@ -55,10 +54,9 @@ namespace mu2e
       _t0 = _t0err = _chisq = _fitcon = _radlen = _firstflt = _lastflt = -1.0;
       _trkqual=-1000.0;
       _startvalid = _endvalid = -999999.0;
-      _ent.reset();
     }
     static std::string const& leafnames() { static const std::string leaves =
-    std::string("status/I:alg/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F:trkqual/F:")+TrkFitInfo::leafnames();
+    std::string("status/I:alg/I:pdg/I:nhits/I:ndof/I:nactive/I:ndouble/I:ndactive/I:nnullambig/I:nmat/I:nmatactive/I:nbend/I:t0/F:t0err/F:chisq/F:fitcon/F:radlen/F:firstflt/F:lastflt/F:startvalid/F:endvalid/F");
      return leaves;
     }
   };
