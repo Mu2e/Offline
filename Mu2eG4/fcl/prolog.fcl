@@ -45,19 +45,19 @@ mu2eg4DefaultPhysics: {
     // G4SimpleHeum
     // G4HelixImplicitEuler
     // G4HelixSimpleRunge
-    stepper : "G4DormandPrince745"
+    stepper : "G4ClassicalRK4"
     // the following parameters control intagration and have a cumulative effect on the final precision
     // limits on the relative position errors
-    // epsilonMin Can be 1.0e-5 to 1.0e-10  Minimum & value for largest integration steps
-    // epsilonMax Can be 1.0e-3 to 1.0e-8   Maximum & value for smallest integration steps
-    epsilonMin        : 1.0e-8
-    epsilonMax        : 1.0e-8
+    // epsilonMin Can be 1.0e-5 to 1.0e-10  Minimum & value for largest steps
+    // epsilonMax Can be 1.0e-3 to 1.0e-8   Maximum & value for smallest steps
+    epsilonMin        : 5.0e-5
+    epsilonMax        : 1.0e-3
     // the following values are in mm
-    deltaOneStep      : 1.0e-5 // position error acceptable in an integration (not physics) step
-    deltaIntersection : 1.0e-5 // maximum inaccuracy of a single boundary crossing
-    deltaChord        : 2.0e-3 // maximum "miss distance" between chord and a mid point of an integration step
-    stepMinimum       : 1.0e-3 // mm minimum size of the integration step
-    maxIntSteps       : 100000 // maximum of internal integration steps per physical step
+    deltaOneStep      : 5.0e-2 // position error acceptable in an integration (not physics) step
+    deltaIntersection : 5.0e-2 // maximum inaccuracy of a single boundary crossing
+    deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
+    stepMinimum       : 1.0e-2 // mm minimum size of the integration step
+    maxIntSteps       : 1000 // maximum of internal integration steps per physical step
     rangeToIgnore     : 0.00001 // below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
     bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
     limitStepInAllVolumes: false
