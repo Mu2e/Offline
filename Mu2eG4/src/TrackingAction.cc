@@ -88,7 +88,8 @@ namespace mu2e {
     _stepLimitKillerVerbose(pset.get<bool>("debug.stepLimitKillerVerbose"))
   {
 
-    if ( _stepLimitKillerVerbose ) {
+    if ( _stepLimitKillerVerbose && (G4Threading::G4GetThreadId() <= 0) ) {
+
       G4cout << __func__
              << " range threshold below which not to count killed tracks when killing slow electrons and protons: "
              << _rangeToIgnore
