@@ -150,7 +150,7 @@ namespace mu2e {
   }
 
   void InfoMCStructHelper::fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,
-				      std::vector<int> const& vids) {
+					     std::vector<int> const& vids, double target_time) {
 
     GeomHandle<BFieldManager> bfmgr;
     GeomHandle<DetectorSystem> det;
@@ -163,10 +163,11 @@ namespace mu2e {
     for (const auto& i_mcstep : mcsteps) {
       for(auto vid : vids) {
 	if (i_mcstep._vdid == vid) {
-	  // take the earliest time if there are >1; this avoids picking up
-	  // the albedo track from the calorimeter which can re-enter the tracker
-	  if(i_mcstep._time < dmin){
-	    dmin = i_mcstep._time;
+	  // take the VD step with the time closest to target_time
+	  // this is so that we can take the correct step when looking at upstream/downstream trachs
+	  double corrected_time = fmod(i_mcstep._time, 1695); // VDStep is created with the time offsets included
+	  if(fabs(target_time - corrected_time) < dmin){
+	    dmin = fabs(target_time - corrected_time);//i_mcstep._time;
 	    trkinfomcstep._time = i_mcstep._time;
 	    trkinfomcstep._mom = Geom::Hep3Vec(i_mcstep._mom);
 	    trkinfomcstep._pos = Geom::Hep3Vec(i_mcstep._pos);
