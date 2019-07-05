@@ -1068,9 +1068,9 @@ namespace mu2e {
 				       "ds"
 				       );
 
-	 double calIFBCableRunBotCore[] = { calIFBCableRunBot[0],
-					    calIFBCableRunBot[1]*ds->rdCableRunCalCoreFract(),
-					    calIFBCableRunBot[2]*ds->dPhiCableRunCalCoreFract()};
+	 double calIFBCableRunBotCore[] = { calIFBCableRunBot[0]*ds->dPhiCableRunCalCoreFract(),
+					    calIFBCableRunBot[1],
+					    calIFBCableRunBot[2]*ds->rdCableRunCalCoreFract()};
 
 	 VolumeInfo icbcTmp1 = nestBox( "CalIFBCableRunBottomCore1",
 					calIFBCableRunBotCore,
@@ -1377,9 +1377,9 @@ namespace mu2e {
 				       "ds"
 				       );
 
-	 double trkIFBCableRunBotCore[] = { trkIFBCableRunBot[0],
-					    trkIFBCableRunBot[1]*ds->rdCableRunTrkCoreFract(),
-					    trkIFBCableRunBot[2]*ds->dPhiCableRunTrkCoreFract()};
+	 double trkIFBCableRunBotCore[] = { trkIFBCableRunBot[0]*ds->dPhiCableRunTrkCoreFract(),
+					    trkIFBCableRunBot[1],
+					    trkIFBCableRunBot[2]*ds->rdCableRunTrkCoreFract()};
 
 	 VolumeInfo icbcTmp3 = nestBox( "TrkIFBCableRunBottomCore1",
 					trkIFBCableRunBotCore,

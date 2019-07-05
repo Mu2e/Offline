@@ -935,11 +935,11 @@ namespace mu2e {
        G4double crateHalfLength = crate->GetZHalfLength();   
        G4double cratePosY       = crateRadIn+1.001*crate->GetYHalfLength();    
        
-       //Increase the size of the mother volume to fit the entire track cable run if needed
+       //Increase the size of the mother volume to fit the entire track cable run if needed in newer cable run version
        const GeomHandle<DetectorSolenoid> ds;
        double phi0FEB = -phi0Crate;
        double phi1FEB = CLHEP::pi + 2*phi0Crate;
-       if ( ds->hasCableRunTrk() && 
+       if ( ds->hasCableRunTrk() && ds->cableRunVersion() > 2 &&
 	    ds->phi0CableRunTrk()*CLHEP::degree + ds->dPhiCableRunTrk()*CLHEP::degree > 180.0*CLHEP::degree + phi0Crate ) {
 	 phi0FEB = -( ds->phi0CableRunTrk()*CLHEP::degree + ds->dPhiCableRunTrk()*CLHEP::degree - 180.0*CLHEP::degree);
 	 phi0FEB += -0.2*CLHEP::degree; //add a small buffer
@@ -1073,12 +1073,12 @@ namespace mu2e {
           double phi01  = ds->phi0CableRunTrk()*CLHEP::degree;
           double dPhi   = ds->dPhiCableRunTrk()*CLHEP::degree;
           double phi02  = 180.0*CLHEP::degree - phi01 - dPhi;
-	  //Mother volume was increased to fit the cable run rather than shrink the cable run
-          // if ( phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate )
-          //   {
-          //     dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
-          //     phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
-          //   }
+	  //Mother volume was increased to fit the cable run rather than shrink the cable run in new version
+	  if ( ds->cableRunVersion() <= 2 && phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate )
+            {
+              dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
+              phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
+            }
 
           G4Material* cableMaterial = findMaterialOrThrow(ds->trkCableRunMaterial());
 
