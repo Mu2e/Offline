@@ -288,7 +288,8 @@ namespace mu2e {
       SensitiveDetectorHelpers.emplace_back(sd_pSet);
     }
 
-    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(this);
+    auto& collector = producesCollector();
+    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(collector);
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -307,9 +308,9 @@ namespace mu2e {
 
     //can we simplify this and directly declare the relevent products
     //rather than contructing these unneccesary object?
-    stackingCuts_->declareProducts(this);
-    steppingCuts_->declareProducts(this);
-    commonCuts_->declareProducts(this);
+    stackingCuts_->declareProducts(collector);
+    steppingCuts_->declareProducts(collector);
+    commonCuts_->declareProducts(collector);
 
     // Declare which products this module will read.
     auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
