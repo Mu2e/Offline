@@ -325,7 +325,7 @@ namespace mu2e
 	if ( facezF1 == facezF2 )  continue;
 
 	float dz = hitP2->pos().z() - hitP1->pos().z();//facezF2->z - facezF1->z;
-	if (dz < _minzsep || dz > _maxzsep)          continue;
+	if (fabs(dz) < _minzsep || fabs(dz) > _maxzsep)          continue;
 	float dphi = deltaPhi(hitP1->_hphi, hitP2->_hphi);
 
 	int bin(-1), bin_last(-1);
