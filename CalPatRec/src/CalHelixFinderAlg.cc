@@ -173,6 +173,7 @@ namespace mu2e {
     _filter             (pset.get<bool>          ("filter"                 )),
     _plotall            (pset.get<bool>          ("plotall"                )),
     _usetarget          (pset.get<bool>          ("usetarget"              )),
+    _maxZTripletSearch  (pset.get<float>         ("maxZTripletSearch"      )),
     _bz                 (0.0),
     _nHitsMaxPerPanel   (pset.get<int>           ("nHitsMaxPerPanel"       )),
     _hitChi2Max         (pset.get<double>        ("hitChi2Max"             )),
@@ -2005,6 +2006,7 @@ namespace mu2e {
     PanelZ_t* panelz(0);
     
     for (int f=0; f<StrawId::_ntotalfaces; ++f){
+      if (Helix._zFace[f] > _maxZTripletSearch)     break;
       facez     = &Helix._oTracker[f];
       for (int p=0; p<FaceZ_t::kNPanels; ++p){
 	panelz = &facez->panelZs[p];

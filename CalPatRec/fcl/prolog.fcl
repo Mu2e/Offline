@@ -79,6 +79,7 @@ CalPatRec : { @table::CalPatRec
 	filter                                  : true
 	plotall                                 : false
 	usetarget                               : true
+	maxZTripletSearch                       : 2000.    # mm
 	nHitsMaxPerPanel                        : 1
 	chi2xyMax                               : 5.0    
 	chi2zphiMax                             : 5.0    

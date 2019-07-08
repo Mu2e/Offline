@@ -132,6 +132,7 @@ namespace mu2e {
     bool                 _filter;        // filter hits
     bool                 _plotall;       // plot also failed fits
     bool                 _usetarget;     // constrain to target when initializing
+    float                _maxZTripletSearch; //maximum z allowed for the hit used to search the best triplet
     mutable double       _bz;            // cached value of Field Z component at the tracker origin
 //-----------------------------------------------------------------------------
 // cached value of radius and pitch sign: these depend on the particle type
