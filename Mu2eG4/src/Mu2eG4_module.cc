@@ -82,6 +82,9 @@
 #include <iomanip>
 #include <utility>
 
+// TBB includes
+#include "tbb/concurrent_hash_map.h"
+
 using namespace std;
 
 namespace {
@@ -192,6 +195,40 @@ namespace mu2e {
       
       
     CLHEP::HepJamesRandom _engine;
+      
+
+    // Per-schedule data
+      struct ScheduleData {
+          
+          int test_INT;
+          // The labeled random number engines for this stream.
+          // Indexed by engine label.
+          //std::map<std::string, std::shared_ptr<CLHEP::HepRandomEngine>> dict_{};
+          
+          // The most recent source of the labeled random number engines for this
+          // stream. Indexed by engine label. When EngineSource == Seed, this means
+          // an engine with the given label has been created by createEngine(sid,
+          // seed, ...). When EngineSource == File, this means the engine was
+          // created by restoring it from a file. When EngineSource == Product, this
+          // means the engine was created by restoring it from a snapshot data
+          // product with module label "restoreStateLabel".
+          //std::map<std::string, EngineSource> tracker_{};
+          
+          // The requested engine kind for each labeled random number engine for
+          // this stream. Indexed by engine label.
+          //std::map<std::string, std::string> kind_{};
+          
+          // The random engine number state snapshots taken for this stream.
+          //std::vector<RNGsnapshot> snapshot_{};
+      };
+      
+      ScheduleData _perSchedData;
+      
+      typedef tbb::concurrent_hash_map<int, ScheduleData> ScheduleDataMap;
+      ScheduleDataMap myPerSchedDataMap;
+      ScheduleDataMap::accessor access_SchedDataMap;
+
+      
 
   }; // end G4 header
 
@@ -233,6 +270,7 @@ namespace mu2e {
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     _masterThreadIndex(_use_G4MT ? _nThreads : 0),
+    //NEED TO FIGURE OUT HOW TO CONNECT THIS ENGINE TO THE G4 ENGINE
     _engine{art::ServiceHandle<SeedService>{}->getSeed()}
     {
         if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
@@ -298,7 +336,13 @@ namespace mu2e {
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
         
-        
+    for(int i=0; i<5; ++i)
+    {
+        myPerSchedDataMap.insert(access_SchedDataMap, i);
+        access_SchedDataMap->second.test_INT = i+10;
+        access_SchedDataMap.release();
+    }
+    
 
 } // end G4:G4(fhicl::ParameterSet const& pSet);
 
@@ -481,7 +525,9 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     if (_use_G4MT && event.id().event() == 1) cout << "\n*-*-*-*-*-*- You are running "
        << dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->GetNumberOfThreads() << " threads. -*-*-*-*-*-*\n" << endl;
 
-
+        std::cout << "I AM Schedule: " << procFrame.scheduleID() << std::endl;
+        
+        
     
     //******** these are per art::event quantities ********
 
@@ -538,6 +584,15 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 //        commonCuts_->put(event);
     
     }
+        
+        int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
+        
+        if(myPerSchedDataMap.find(access_SchedDataMap, schedID)){
+            std::cout << "FROM OUR HASH MAP WE GET FOR SchedID: " << schedID << ", the integer "
+            << access_SchedDataMap->second.test_INT << std::endl;
+        }
+        access_SchedDataMap.release();
+        
     
 }//end Mu2eG4::produce
 
