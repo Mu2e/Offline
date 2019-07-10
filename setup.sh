@@ -119,7 +119,7 @@ export MU2E_G4_EXTRA_QUALIFIER=''
 
 # Setup the framework and its dependent products
 setup -B art v3_03_00 -q${MU2E_UPS_QUALIFIERS}
-setup -B art_root_io v1_01_00 -q${MU2E_UPS_QUALIFIERS}
+setup -B art_root_io v1_01_01 -q${MU2E_UPS_QUALIFIERS}
 
 # Geant4 and its cross-section files.
 if [[ $($MU2E_BASE_RELEASE/buildopts --trigger) == "off" ]]; then
