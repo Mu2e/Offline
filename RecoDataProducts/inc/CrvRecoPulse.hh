@@ -18,7 +18,10 @@ namespace mu2e
   {
     public:
 
-    CrvRecoPulse() : _PEs(0), _PEsPulseHeight(0), _pulseTime(0), _pulseHeight(0), _pulseBeta(0), _pulseFitChi2(0), _LEtime(0), 
+    static constexpr double pulseWidthConversion = 1.28254983016; //TODO: This will disappear in the future when we move from pulse widths to beta
+
+//    CrvRecoPulse() : _PEs(0), _PEsPulseHeight(0), _pulseTime(0), _pulseHeight(0), _pulseBeta(0), _pulseFitChi2(0), _LEtime(0), 
+    CrvRecoPulse() : _PEs(0), _PEsPulseHeight(0), _pulseTime(0), _pulseHeight(0), _pulseWidth(0), _pulseFitChi2(0), _LEtime(0), 
                      _scintillatorBarIndex(0), _SiPMNumber(0) {}
 
     CrvRecoPulse(int PEs, int PEsPulseHeight, double pulseTime, double pulseHeight, double pulseBeta, double pulseFitChi2, double LEtime, 
@@ -27,7 +30,8 @@ namespace mu2e
                                                                             _PEsPulseHeight(PEsPulseHeight), 
                                                                             _pulseTime(pulseTime), 
                                                                             _pulseHeight(pulseHeight),
-                                                                            _pulseBeta(pulseBeta),
+//                                                                            _pulseBeta(pulseBeta),
+                                                                            _pulseWidth(pulseBeta*pulseWidthConversion),
                                                                             _pulseFitChi2(pulseFitChi2),
                                                                             _LEtime(LEtime),
                                                                             _waveformIndices(waveformIndices),
@@ -39,7 +43,9 @@ namespace mu2e
     int    GetPEsPulseHeight() const {return _PEsPulseHeight;}
     double GetPulseTime() const    {return _pulseTime;}
     double GetPulseHeight() const  {return _pulseHeight;}
-    double GetPulseBeta() const    {return _pulseBeta;}
+//    double GetPulseBeta() const    {return _pulseBeta;}
+    double GetPulseBeta() const    {return _pulseWidth/pulseWidthConversion;}   //TODO: This will disappear in the future
+    double GetPulseWidth() const   {return _pulseWidth;}  //TODO: This will disappear in the future
     double GetPulseFitChi2() const {return _pulseFitChi2;}
     double GetLEtime() const       {return _LEtime;}
 
@@ -53,7 +59,8 @@ namespace mu2e
     int    _PEsPulseHeight;  //used for PEs which were calculated using the pulse height and the pulse height calibration factor
     double _pulseTime;
     double _pulseHeight;
-    double _pulseBeta;
+//    double _pulseBeta;
+    double _pulseWidth;     //TODO: this will be replaced by _pulseBeta in the future
     double _pulseFitChi2;
     double _LEtime;
 
