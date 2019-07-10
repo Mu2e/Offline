@@ -57,7 +57,7 @@ namespace mu2e {
     , _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", ""))
     , _oldCaloShowerSimTag(pset.get<art::InputTag>("oldCaloShowerSimTag"))
     , _newCaloShowerSimTag(pset.get<art::InputTag>("newCaloShowerSimTag"))
-    , _checkTrackerDuplicateSteps(pset.get<bool>("checkTrackerDuplicateSteps"), true)
+    , _checkTrackerDuplicateSteps(pset.get<bool>("checkTrackerDuplicateSteps",true))
   {  }
 
   //================================================================
