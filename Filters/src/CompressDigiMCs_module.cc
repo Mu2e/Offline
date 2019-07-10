@@ -79,6 +79,7 @@ namespace mu2e {
   typedef std::map<art::Ptr<mu2e::CaloShowerStep>, art::Ptr<mu2e::CaloShowerStep> > CaloShowerStepRemap;
   typedef std::string InstanceLabel;
   typedef std::map<cet::map_vector_key, cet::map_vector_key> KeyRemap;
+  typedef std::map<art::Ptr<mu2e::StepPointMC>, art::Ptr<mu2e::StepPointMC> > StepPointMCRemap;
 }
 
 
@@ -649,28 +650,40 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
 void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
 
+  StepPointMCRemap step_remap;
+
   // Need to update the Ptrs for the StepPointMCs
   art::Ptr<StepPointMC> newTriggerStepPtr[StrawEnd::nends];
   for(int i_end=0;i_end<StrawEnd::nends;++i_end){
     StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
 
     const art::Ptr<StepPointMC>& old_step_point = old_straw_digi_mc.stepPointMC(end);
-    if (old_step_point.isAvailable()) {
-      newTriggerStepPtr[i_end] = copyStepPointMC( *old_step_point, _trackerOutputInstanceLabel );
+    const auto& newStepPtrIter = step_remap.find(old_step_point);
+    if (newStepPtrIter == step_remap.end()) {
+      if (old_step_point.isAvailable()) {
+	step_remap[old_step_point] = copyStepPointMC( *old_step_point, _trackerOutputInstanceLabel );
+      }
+      else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+	step_remap[old_step_point] = old_step_point;
+      }
     }
-    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-      newTriggerStepPtr[i_end] = old_step_point;
-    }
+    art::Ptr<StepPointMC> new_step_point = step_remap.at(old_step_point);
+    newTriggerStepPtr[i_end] = new_step_point;
   }
   
   std::vector<art::Ptr<StepPointMC> > newWaveformStepPtrs;
   for (const auto& i_step_mc : old_straw_digi_mc.stepPointMCs()) {
-    if (i_step_mc.isAvailable()) {
-      newWaveformStepPtrs.push_back(copyStepPointMC(*i_step_mc, _trackerOutputInstanceLabel));
+    const auto& newStepPtrIter = step_remap.find(i_step_mc);
+    if (newStepPtrIter == step_remap.end()) {
+      if (i_step_mc.isAvailable()) {
+	step_remap[i_step_mc] = copyStepPointMC( *i_step_mc, _trackerOutputInstanceLabel );
+      }
+      else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+	step_remap[i_step_mc] = i_step_mc;
+      }
     }
-    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-      newWaveformStepPtrs.push_back(i_step_mc);
-    }
+    art::Ptr<StepPointMC> new_step_point = step_remap.at(i_step_mc);
+    newWaveformStepPtrs.push_back(new_step_point);
   }
   
   StrawDigiMC new_straw_digi_mc(old_straw_digi_mc, newTriggerStepPtr, newWaveformStepPtrs); // copy everything except the Ptrs from the old StrawDigiMC  

@@ -130,6 +130,22 @@ namespace mu2e {
 	if (std::fabs(old_time - new_time) > 1e-5) {
 	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
 	}
+
+	// Loop through all the StepPointMCs in the waveform and check that the trigger step points are the same Ptr
+	const auto& i_newStepPointMCCal = i_newStrawDigiMC.stepPointMC(StrawEnd::cal);
+	bool identical_cal_ptr = false;
+	bool identical_hv_ptr = false;
+	for (const auto& i_triggerStepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
+	  if (i_triggerStepPointPtr == i_newStepPointMC) {
+	    identical_hv_ptr = true;
+	  }
+	  if (i_triggerStepPointPtr == i_newStepPointMCCal) {
+	    identical_cal_ptr = true;
+	  }
+	}
+	if (! (identical_hv_ptr && identical_cal_ptr) ) {
+	  throw cet::exception("CompressDigiMCsCheck") << "Trigger StepPointMCs in StrawDigiMCs are not identical to any StepPointMC in the waveform. This could indicate a duplication of StepPointMCs" << std::endl;
+	}
       }
     }
 
