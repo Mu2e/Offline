@@ -16,7 +16,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
 {
   _pulseTimes.clear();
   _pulseHeights.clear();
-  _pulseWidths.clear();
+  _pulseBetas.clear();
   _pulseFitChi2s.clear();
   _fitParams0.clear();
   _fitParams1.clear();
@@ -74,7 +74,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
 
     //set the fit function
     TF1 f("peakfitter","[0]*(TMath::Exp(-(x-[1])/[2]-TMath::Exp(-(x-[1])/[2])))");
-    f.SetParameter(0, (waveform[maxBin]-pedestal)*2.718);
+    f.SetParameter(0, (waveform[maxBin]-pedestal)*TMath::E());
     f.SetParameter(1, (startTDC+maxBin)*digitizationPeriod);
     f.SetParameter(2, darkNoise?12.6:19.0);
     if(peaks[i].second) f.SetParameter(1, (startTDC+maxBin+0.5)*digitizationPeriod);
@@ -87,12 +87,14 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
     double fitParam1 = fr->Parameter(1);
     double fitParam2 = fr->Parameter(2);
     if(fitParam0<=0 || fitParam2<=0) continue;
-    if(fitParam2>50 && waveform[maxBin]-pedestal<10) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+    if(fitParam2>50) continue; //FIXME: need a better way to identify these fake pulse which are caused by electronic noise
+    if(fabs(fitParam1-(startTDC+maxBin)*digitizationPeriod)>30) continue; //FIXME
+    if(fitParam0/((waveform[maxBin]-pedestal)*TMath::E())>2.0) continue; //FIXME
 
     int    PEs          = lrint(fitParam0*fitParam2 / calibrationFactor);
     double pulseTime    = fitParam1;
-    double pulseHeight  = fitParam0/2.718;    //=fitParam0/e
-    double pulseWidth   = fitParam2*1.283;    //=fitParam2*pi/sqrt(6)  // =standard deviation of the Gumbel distribution
+    double pulseHeight  = fitParam0/TMath::E();
+    double pulseBeta    = fitParam2;
     double pulseFitChi2 = fr->Chi2();
 
     double LEtime=f.GetX(0.5*pulseHeight,pulseTime-50,pulseTime);   //i.e. at 50% of pulse height
@@ -100,7 +102,7 @@ void MakeCrvRecoPulses::SetWaveform(const std::vector<unsigned int> &waveform, u
 
     _pulseTimes.push_back(pulseTime);
     _pulseHeights.push_back(pulseHeight);
-    _pulseWidths.push_back(pulseWidth);
+    _pulseBetas.push_back(pulseBeta);
     _pulseFitChi2s.push_back(pulseFitChi2);
     _fitParams0.push_back(fitParam0);
     _fitParams1.push_back(fitParam1);
@@ -147,11 +149,11 @@ double MakeCrvRecoPulses::GetPulseHeight(int pulse)
   return _pulseHeights[pulse];
 }
 
-double MakeCrvRecoPulses::GetPulseWidth(int pulse)
+double MakeCrvRecoPulses::GetPulseBeta(int pulse)
 {
-  int n = _pulseWidths.size();
+  int n = _pulseBetas.size();
   if(pulse<0 || pulse>=n) throw std::logic_error("invalid pulse number");
-  return _pulseWidths[pulse];
+  return _pulseBetas[pulse];
 }
 
 double MakeCrvRecoPulses::GetPulseFitChi2(int pulse)

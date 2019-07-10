@@ -176,11 +176,21 @@
  <class name="art::Wrapper<mu2e::KalSeedCollection>"/>
  <class name="art::Ptr<mu2e::KalSeed>"/>
 
+ <class name="mu2e::MVAStatus"/>
  <class name="mu2e::TrkQual"/>
  <class name="mu2e::TrkQualCollection"/>
  <class name="mu2e::TrkQualDetail"/>
  <class name="art::Wrapper<mu2e::TrkQualCollection>"/>
 
+ <class name="mu2e::TrkCaloHitPID"/>
+ <class name="mu2e::TrkCaloHitPIDCollection"/>
+ <class name="mu2e::TrkCaloHitPIDDetail"/>
+ <class name="art::Wrapper<mu2e::TrkCaloHitPIDCollection>"/>
+
+ <class name="mu2e::RecoQual"/>
+ <class name="mu2e::RecoQualCollection"/>
+ <class name="art::Wrapper<mu2e::RecoQualCollection>"/>
+ 
  <class name="mu2e::AlgorithmID"/>
  <class name="mu2e::AlgorithmIDCollection"/>
  <class name="art::Ptr<mu2e::AlgorithmID>"/>

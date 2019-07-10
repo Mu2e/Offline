@@ -8,7 +8,7 @@ double cosmicFromTH2.dx     =    0;    //mm
 double cosmicFromTH2.dy     = 2275.0;  //mm
 double cosmicFromTH2.dz     =  828.0;  //mm
 
-vector<double> cosmicFromTH2.cosmicReferencePointInMu2e = {-6542.33, 275.53, -469.45};
+vector<double> cosmicFromTH2.cosmicReferencePointInMu2e = {-6542.26, 275.53, -469.45};
 
 //
 // This tells emacs to view this file in c++ mode.

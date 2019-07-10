@@ -136,13 +136,13 @@ namespace mu2e
         int    PEs         = _makeCrvRecoPulses->GetPEs(j);
         int    PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight(j);
         double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(j); 
-        double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(j);
+        double pulseBeta   = _makeCrvRecoPulses->GetPulseBeta(j);
         double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(j);
         double LEtime      = _makeCrvRecoPulses->GetLEtime(j);
 //        if(pulseTime<0) continue;
 //        if(pulseTime>_microBunchPeriod) continue;
         if(PEs<_minPEs) continue; 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, 
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, 
                                                   waveformIndices, barIndex, SiPM);
       }
     }

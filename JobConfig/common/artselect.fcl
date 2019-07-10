@@ -1,0 +1,28 @@
+// simple script to write a file containing a subset of events
+// include this in a script which species the input, output, and the eventIDs to match
+// see art/Framework/Modules/EventIDFilter_module.cc for the eventid matching syntax details
+// David Brown (LBNL) 31 May 2019
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name: artselect
+source: { module_type: RootInput }
+services: { message: @local::default_message }
+physics: { 
+  filters : {
+    EventIDFilter : {
+      module_type : EventIDFilter
+      idsToMatch : @nil
+    }
+  }
+  TrigPath : [ EventIDFilter ]
+  EndPath: [out]
+}
+
+outputs: { 
+  out: { 
+    module_type: RootOutput
+    fileName: @nil
+    SelectEvents : [ TrigPath ]
+  }
+}

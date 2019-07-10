@@ -35,6 +35,7 @@ namespace mu2e {
     std::vector<KalSegment> const& segments() const { return _segments; }
     // find the nearest segment to a given GLOBAL flightlength
     std::vector<KalSegment>::const_iterator nearestSegment(float fltlen)  const;
+    std::vector<KalSegment>::const_iterator nearestSegment(const XYZVec& pos)  const; // find nearest segment to a GLOBAL position
     TrkFitFlag const& status() const { return _status; }
     Float_t flt0() const { return _flt0; }
     HitT0 const& t0() const { return _t0; }

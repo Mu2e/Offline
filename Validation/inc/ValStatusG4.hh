@@ -28,6 +28,7 @@ namespace mu2e {
     TH1D* _hnTrk3;
     TH1D* _hover;
     TH1D* _hkill;
+    TH1D* _hkillfp;
     TH1D* _hCPU1;
     TH1D* _hCPU2;
     TH1D* _hCPU3;

@@ -119,7 +119,10 @@ physics.producers.CrvPhotons.scintillationYieldVariation  : 0.0
 physics.producers.CrvPhotons.CRVSectors                   : ["Test"]
 physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_3000_0"]
 physics.producers.CrvPhotons.reflectors                   : [0]
+# physics.producers.CrvPhotons.lookupTableFileNames         : ["CRVConditions/v6_0/LookupTable_6000_1"]
+# physics.producers.CrvPhotons.reflectors                   : [1]
 physics.producers.CrvSiPMCharges.deadSiPMProbability      : 0.0
+physics.producers.CrvSiPMCharges.CrossTalkProb            : 0.09
 physics.producers.CrvWaveforms.FEBtimeSpread              : 0.0
 
 services.SeedService.baseSeed         :  773651

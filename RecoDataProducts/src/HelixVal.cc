@@ -83,5 +83,9 @@ namespace mu2e {
 	z0() + fltlen*sinDip());
   }
 
+  void HelixVal::position(const XYZVec& pos, float& fltlen) const {
+    float z = pos.z();
+    fltlen = (z - z0()) / sinDip();
+  }
 
 }

@@ -4,29 +4,20 @@
 #------------------------------------------------------------------------------
 BEGIN_PROLOG
 
-# KSFDeMH      : 
-# KSFDmuMH     : 
-# 
-# KFFDeMHPar   : { @table::KFFDeM                             SeedCollection : KSFDeMH  }
-# KFFDeMHDar   : { @table::CalPatRec.producers.CalTrkFitDem   SeedCollection : KSFDeMH  }
-# 
-# KFFDmuMHPar  : 
-# KFFDmuMHDar  : 
-
 CommonTrk                : {
     producers : {
 #------------------------------------------------------------------------------
 # track fit, downstream electron hypothesis
 #------------------------------------------------------------------------------
-	KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  }
-	KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH     }
-	KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH     }
+	KSFDeMH     : { @table::KSFDeM                            SeedCollection : MHFinderDe  CheckHelicity:false }
+	KFFDeMHPar  : { @table::KFFDeM                            SeedCollection : KSFDeMH  }
+	KFFDeMHDar  : { @table::CalPatRec.producers.CalTrkFitDem  SeedCollection : KSFDeMH  }
 #------------------------------------------------------------------------------
 # track fit, downstream muon hypothesis
 #------------------------------------------------------------------------------
-	KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu }
-	KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH    }
-	KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH    }
+	KSFDmuMH    : { @table::KSFDmuM                           SeedCollection : MHFinderDmu CheckHelicity:false}
+	KFFDmuMHPar : { @table::KFFDmuM                           SeedCollection : KSFDmuMH }
+	KFFDmuMHDar : { @table::CalPatRec.producers.CalTrkFitDmm  SeedCollection : KSFDmuMH }
     }
 }
 #------------------------------------------------------------------------------

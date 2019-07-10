@@ -490,6 +490,53 @@ namespace mu2e
       std::cout<<(crvCoincidenceCollection->size()>0?"Coincidence satisfied":"No coincidence found")<<std::endl;
     }
 
+/*
+if(crvCoincidenceCollection->size()==0)
+{
+  std::cout<<"============="<<std::endl;
+  for(size_t recoPulseIndex=0; recoPulseIndex<crvRecoPulseCollection->size(); recoPulseIndex++)
+  {
+    const art::Ptr<CrvRecoPulse> crvRecoPulse(crvRecoPulseCollection, recoPulseIndex);
+    const CRSScintillatorBarIndex &barIndex = crvRecoPulse->GetScintillatorBarIndex();
+    const CRSScintillatorBar &CRSbar = CRS->getBar(barIndex);
+    const CRSScintillatorBarId &barId = CRSbar.id();
+    int sectorNumber=barId.getShieldNumber();
+    int moduleNumber=barId.getModuleNumber();
+    int layerNumber=barId.getLayerNumber();
+    int barNumber=barId.getBarNumber();
+
+    //need to find the counter number within the entire sector type (like CRV-T, CRV-R, ...)
+    std::map<int,sectorCoincidenceProperties>::const_iterator sIter = _sectorMap.find(sectorNumber);
+    if(sIter==_sectorMap.end()) throw std::logic_error("CrvCoincidenceFinder: Found a CRV hit at a CRV sector without properties.");
+    const sectorCoincidenceProperties &sector = sIter->second;
+
+    int counterNumber = sector.precedingCounters + sector.nCountersPerModule*moduleNumber + barNumber;
+
+    double x=CRSbar.getPosition()[sector.widthDirection];
+    double y=CRSbar.getPosition()[sector.thicknessDirection];
+
+    //get the reco pulses information
+    int SiPM = crvRecoPulse->GetSiPMNumber();
+
+    //ignore SiPMs on counter sides which don't have SiPMs according to the geometry file
+    int counterSide=SiPM%2;
+    if(counterSide==0 && !sector.sipmsAtSide0) continue;
+    if(counterSide==1 && !sector.sipmsAtSide1) continue;
+
+    //find the hit mapkey (positive numbers for side 1, negative numbers for side 0)
+    int sectorType=sector.sectorType;
+    if(counterSide==0) sectorType*=-1;
+
+    double time=crvRecoPulse->GetPulseTime();
+    double LEtime=crvRecoPulse->GetLEtime();
+    int    PEs =crvRecoPulse->GetPEs();
+
+    std::cout<<"sector: "<<sectorNumber<<"  module: "<<moduleNumber<<"  layer: "<<layerNumber<<"  counter: "<<counterNumber<<"  SiPM: "<<SiPM<<"      ";
+    std::cout<<"  PEs: "<<PEs<<"   time: "<<time<<"   LE: "<<LEtime<<"   x: "<<x<<"   y: "<<y<<"       bar: "<<barNumber<<std::endl;
+  }
+}
+*/
+
     event.put(std::move(crvCoincidenceCollection));
 
   } // end produce

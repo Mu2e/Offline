@@ -120,7 +120,7 @@ namespace mu2e {
 	      kmat->detIntersection().pathlen, // poca.flt1(),
 	      poca.flt2(),  // not stored in KalMaterial, FIXME!
 	      kmat->detIntersection().pathLength(),
-	      kmat->radiationFraction(),
+	      detstraw->radiationFraction(kmat->detIntersection()),
 	      kmat->momFraction(),
 	      isite->isActive() );
 	    tstraws.push_back(tstraw);
@@ -159,6 +159,8 @@ namespace mu2e {
       caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
 	  tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(), hflag);
     }
+    // DNB: the timeOffset() should NOT be added to time(), it is a double correction.
+    // I'm leaving for now as the production was run with this error FIXME!
 
   // compute the overlap between 2 clusters 
     double overlap(SHIV const& shiv1, SHIV const& shiv2) {

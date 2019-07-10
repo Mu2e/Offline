@@ -1,3 +1,4 @@
+# -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
@@ -57,6 +58,7 @@ mu2eg4DefaultPhysics: {
     deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
     stepMinimum       : 1.0e-2 // mm minimum size of the integration step
     maxIntSteps       : 1000 // maximum of internal integration steps per physical step
+    rangeToIgnore     : 0.00001 // below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
     bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
     limitStepInAllVolumes: false
 }
@@ -134,17 +136,17 @@ mu2eg4CutDeltaElectrons: {
 
 #----------------------------------------------------------------
 mu2eg4runDefaultSingleStage: {
-    module_type: Mu2eG4
-    physics: @local::mu2eg4DefaultPhysics
-    ResourceLimits: @local::mu2eg4DefaultResourceLimits
-    TrajectoryControl: @local::mu2eg4DefaultTrajectories
+    module_type           : Mu2eG4
+    physics               : @local::mu2eg4DefaultPhysics
+    ResourceLimits        : @local::mu2eg4DefaultResourceLimits
+    TrajectoryControl     : @local::mu2eg4DefaultTrajectories
 
-    Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-    Mu2eG4SteppingOnlyCut: @local::mu2eg4NoCut
-    Mu2eG4CommonCut: @local::mu2eg4NoCut
+    Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+    Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+    Mu2eG4CommonCut       : @local::mu2eg4NoCut
 
-    generatorModuleLabel: generate
-    MultiStageParameters : {}
+    generatorModuleLabel  : generate
+    MultiStageParameters  : {}
 
     SDConfig : {
         verbosityLevel : 0

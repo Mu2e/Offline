@@ -8,7 +8,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "TrkDiag/fcl/prolog_legacy.fcl"
 
 process_name : TrkAnaDigis
 
@@ -21,7 +21,7 @@ physics :
   producers : @local::TrkAna.producers
   analyzers :  {
     @table::TrkAna.analyzers
-    @table::TrkDiag.analyzers
+#    @table::TrkDiag.analyzers
   }
 }
 

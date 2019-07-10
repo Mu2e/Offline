@@ -30,6 +30,8 @@ namespace mu2e {
 	  Comment("Debug Level"), 0};
 	fhicl::Atom<bool> single{ Name("SinglePrimary"),
 	  Comment("Accept the unique GenParticle as primary if there is only 1 in the collection"), false};
+	fhicl::Atom<bool> none{ Name("NoPrimary"),
+	  Comment("Allow the event to have no primary particle"), false};
 	fhicl::Atom<art::InputTag> genPC{  Name("GenParticles"),
 	  Comment("GenParticle collection containing the primary")};
 	fhicl::Atom<art::InputTag> simPC{  Name("SimParticles"),
@@ -45,7 +47,7 @@ namespace mu2e {
 
     private:
       int _debug;
-      bool _single;
+      bool _single, _none;
       art::InputTag _gpc, _spc;
       SimParticleTimeOffset _toff;
       std::vector<int> _pgenids; 
@@ -55,6 +57,7 @@ namespace mu2e {
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
     _debug(config().debug()),
     _single(config().single()),
+    _none(config().none()),
     _gpc(config().genPC()),
     _spc(config().simPC()),
     _toff(config().SPTO()),
@@ -154,6 +157,9 @@ namespace mu2e {
     // check consistency
     if(pgps.size() != simps.size())
       throw cet::exception("Simulation")<<"FindMCPrimary: GenParticle <-> SimParticle inconsistency" << std::endl;
+    // check that at least 1 primary particle was found
+    if( !_none && simps.size()==0 )
+      throw cet::exception("Simulation")<<"FindMCPrimary: No Primary Particle found" << std::endl;
     // create output object
     PrimaryParticle pp(pgp, simps);
     // put in event
