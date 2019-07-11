@@ -21,6 +21,7 @@ namespace mu2e {
     virtual ~Mu2eG4MTRunManager();
     
     //we need our own versions of these functions in order to correctly control the event loop
+    void Mu2eG4InitializeEventLoop(G4int);
     void Mu2eG4WaitForEndEventLoopWorkers();
     void Mu2eG4RunTermination();
         
@@ -29,6 +30,10 @@ namespace mu2e {
     // Private and unimplemented to prevent copying.
     Mu2eG4MTRunManager( Mu2eG4MTRunManager const & );
     Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & );
+        
+        
+    //G4MTRunManagerKernel* MTkernel;
+    G4int my_nworkers;
     
   };
   

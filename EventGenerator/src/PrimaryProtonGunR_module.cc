@@ -61,7 +61,10 @@ namespace mu2e {
       // Print final config file after all replacements.
       bool _printConfig;
     
-      CLHEP::HepJamesRandom _engine;
+      //This engine implementation is only necessary for art versions below v3_02_06
+      //the fix in v3_02_06 allows The RandomNumberService to be used in a Replicated Module
+      //CLHEP::HepJamesRandom _engine;
+      CLHEP::HepRandomEngine& _engine;
       std::unique_ptr<PrimaryProtonGun> _primaryProtonGunGenerator;
       
       // Number of times BeginRun is called on this module
@@ -77,7 +80,8 @@ namespace mu2e {
         _messageOnDefault(      pSet.get<bool>          ("messageOnDefault",      false)),
         _configStatsVerbosity(  pSet.get<int>           ("configStatsVerbosity",  0)),
         _printConfig(           pSet.get<bool>          ("printConfig",           false)),
-        _engine{art::ServiceHandle<SeedService>{}->getSeed()}
+        //_engine{art::ServiceHandle<SeedService>{}->getSeed()}
+        _engine{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
         produces<GenParticleCollection>();
     }

@@ -36,8 +36,8 @@ using namespace std;
 
 namespace mu2e {
 
-    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepJamesRandom& engine, art::Run const& run, SimpleConfig const& config, std::string sID):
-
+    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config, std::string sID):
+    
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->position()
                + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength())),

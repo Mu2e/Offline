@@ -30,7 +30,8 @@
 
 // From art and its tool chain
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/SharedProducer.h"
+//#include "art/Framework/Core/SharedProducer.h"
+#include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "fhiclcpp/ParameterSet.h"
 
@@ -356,14 +357,14 @@ vector<string> SensitiveDetectorHelper::stepInstanceNamesToBeProduced() const{
 }
 
     
-void SensitiveDetectorHelper::declareProducts(art::SharedProducer *parent) {
+void SensitiveDetectorHelper::declareProducts(art::ProducesCollector& collector) {
     
     vector<string> const& instanceNames = stepInstanceNamesToBeProduced();
     for(const auto& name: instanceNames) {
-        parent->produces<StepPointMCCollection>(name);
+        collector.produces<StepPointMCCollection>(name);
     }
     if(extMonPixelsEnabled_)
-      parent->produces<ExtMonFNALSimHitCollection>();
+      collector.produces<ExtMonFNALSimHitCollection>();
 }
 
   

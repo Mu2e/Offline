@@ -35,6 +35,7 @@
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/GenEventBroker.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
+#include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -131,7 +132,9 @@ namespace mu2e {
     // to be able to make StorePhysicsTable call after the event loop started
     G4VUserPhysicsList* physicsList_;
 
-    ActionInitialization const * _actionInit;
+    ActionInitialization* actionInit_;
+      
+    Mu2eG4WorkerInitialization* workerInit_;
 
     //these cut objects are used in the master thread to indicate what data product is produced
     //additional thread-local cut objects are owned by ActionInitialization
@@ -195,22 +198,8 @@ namespace mu2e {
           // The labeled random number engines for this stream.
           // Indexed by engine label.
           //std::map<std::string, std::shared_ptr<CLHEP::HepRandomEngine>> dict_{};
-          
-          // The most recent source of the labeled random number engines for this
-          // stream. Indexed by engine label. When EngineSource == Seed, this means
-          // an engine with the given label has been created by createEngine(sid,
-          // seed, ...). When EngineSource == File, this means the engine was
-          // created by restoring it from a file. When EngineSource == Product, this
-          // means the engine was created by restoring it from a snapshot data
-          // product with module label "restoreStateLabel".
-          //std::map<std::string, EngineSource> tracker_{};
-          
-          // The requested engine kind for each labeled random number engine for
-          // this stream. Indexed by engine label.
           //std::map<std::string, std::string> kind_{};
           
-          // The random engine number state snapshots taken for this stream.
-          //std::vector<RNGsnapshot> snapshot_{};
       };
       
       ScheduleData _perSchedData;
@@ -288,7 +277,7 @@ namespace mu2e {
       SensitiveDetectorHelpers.emplace_back(sd_pSet);
     }
 
-    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(this);
+    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(producesCollector());
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -314,6 +303,7 @@ namespace mu2e {
     
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
+    // This does not work in a Shared Module
     //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
         
     for(int i=0; i<5; ++i)
@@ -351,6 +341,8 @@ namespace mu2e {
 
 
     // Tell G4 that we are starting a new run.
+        std::cout << "In Mu2eG4::beginRun, calling BeamOnBeginRun( run.id().run() ); from Schedule: "
+                  << procFrame.scheduleID() << std::endl;
     BeamOnBeginRun( run.id().run() );
 
     // A few more things that only need to be done only once per job,
@@ -425,7 +417,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     _runManager->SetUserInitialization(physicsList_);
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(pset_,
+    ActionInitialization* actionInit_ = new ActionInitialization(pset_,
                                                                 _extMonFNALPixelSD, SensitiveDetectorHelpers,
                                                                 &_genEventBroker, &_physVolHelper,
                                                                 _use_G4MT, _nThreads, originInWorld,
@@ -435,8 +427,12 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     //in MT mode, this is where BuildForMaster is called for master thread
     // in sequential mode, this is where Build() is called for main thread
-    _runManager->SetUserInitialization(actioninit);
-
+    _runManager->SetUserInitialization(actionInit_);
+    
+    if (_use_G4MT) {
+        dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetUserInitialization(workerInit_);
+    }
+    
     if ( _rmvlevel > 0 ) {
       //  GetRunManagerType() returns an enum named RMType to indicate
       //  what kind of RunManager it is. RMType is defined as {
@@ -449,6 +445,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     
     // Initialize G4 for this run.  Geometry and Physics are initialized.
     // IN MT mode, BeamOn(0) is called to do additional setup such as setting up the ScoringWorlds.
+    std::cout << "In Mu2eG4::initializeG4, calling _runManager->Initialize();" << std::endl;
     _runManager->Initialize();
 
     if ( _rmvlevel > 0 ) {
@@ -507,24 +504,30 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     //TEMP FIX, we need to get the number of events to process from fcl file
     int number_of_events_to_process = 100;
 
-    // Run G4 for this event and access the completed event.
-    BeamOnDoOneArtEvent( event.id().event(), number_of_events_to_process );
+        
+        if (procFrame.scheduleID().id() == 0) {
+            // Run G4 for this event and access the completed event.
+            BeamOnDoOneArtEvent( event.id().event(), number_of_events_to_process );
+        }
+    
 
     _genEventBroker.setEventPtrToZero();
 
 /////////////////////////////////////////////////////////////////////////////////////
     
+        std::cout << "THIS IS WHERE WE WOULD PUT STUFF IN THE EVENT" << std::endl;
+/*
     if (simParticles == nullptr) {
         numExcludedEvents++;
     }
     else {
         
+        std::cout << "THIS IS WHERE WE WOULD PUT STUFF IN THE EVENT" << std::endl;
         //THESE ARE CURRENTLY IN THE EVENTACTION
         //event.put(move(g4stat)); THIS data product doesn't exist in this context.
         //event.put(move(simParticles));
         
         //need something similar for the SensitiveDetector hits
-        
         
 //TAKING THESE OUT TEMPORARILY
 //        stackingCuts_->put(event);
@@ -532,7 +535,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 //        commonCuts_->put(event);
     
     }
-        
+*/
         int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
         
         if(myPerSchedDataMap.find(access_SchedDataMap, schedID)){
@@ -637,7 +640,8 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
             //in order to access this function
 
             dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfEventsToBeProcessed(num_events);
-            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
+            //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4InitializeEventLoop(num_events);
             dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4WaitForEndEventLoopWorkers();
             //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4TerminateWorkers();//DID NOT WORK BEFORE
 

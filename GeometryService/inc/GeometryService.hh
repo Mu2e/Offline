@@ -161,5 +161,5 @@ private:
 
 }
 
-DECLARE_ART_SERVICE(mu2e::GeometryService, GLOBAL)
+DECLARE_ART_SERVICE(mu2e::GeometryService, SHARED)
 #endif /* GeometryService_GeometryService_hh */

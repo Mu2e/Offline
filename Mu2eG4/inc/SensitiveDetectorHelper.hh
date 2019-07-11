@@ -27,7 +27,7 @@
 
 // Forward references.
 namespace art   { class Event; }
-namespace art   { class SharedProducer; }
+namespace art   { class ProducesCollector; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
@@ -45,7 +45,7 @@ namespace mu2e {
       // Register the sensitive detector with this class; to be called after G4 Initialize.
       void registerSensitiveDetectors();
 
-      void declareProducts(art::SharedProducer *parent);
+      void declareProducts(art::ProducesCollector& collector);
 
       // Create data products and pre-fill with input hits if any;
       // to be called at the start of each event.

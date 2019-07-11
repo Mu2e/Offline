@@ -96,5 +96,5 @@ namespace mu2e {
 
 }
 
-DECLARE_ART_SERVICE(mu2e::ProditionsService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::ProditionsService, SHARED)
 #endif /* ProditionsService_ProditionsService_hh */
