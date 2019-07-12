@@ -85,7 +85,6 @@ namespace{
   
     struct ycomp_digi : public std::binary_function<mu2e::StrawDigiMC,mu2e::StrawDigiMC,bool> {
     bool operator()(mu2e::StrawDigiMC const& p1, mu2e::StrawDigiMC const& p2) {
-    std::cout<<"ycmp digi "<<std::endl;
     art::Ptr<mu2e::StepPointMC> const& spmcp1 = p1.stepPointMC(mu2e::StrawEnd::cal); 
     art::Ptr<mu2e::StepPointMC> const& spmcp2 = p2.stepPointMC(mu2e::StrawEnd::cal);
     std::cout<<spmcp1->position().y() <<" "<< spmcp2->position().y()<<std::endl;
@@ -94,7 +93,6 @@ namespace{
   //For MC StrawDigis:
   struct ycomp_MC : public std::binary_function<mu2e::StrawDigiMC,mu2e::StrawDigiMC,bool> {
     bool operator()(art::Ptr<mu2e::StepPointMC> const& spmcp1, art::Ptr<mu2e::StepPointMC> const& spmcp2) {
-
     return spmcp1->position().y() > spmcp2->position().y(); }
   };
 
@@ -202,7 +200,7 @@ namespace mu2e{
    const Tracker* tracker = th.get();
    _tfit.setTracker  (tracker);
    }
-
+//DEBUGGERS_QUICK FIX(IGNORE THESE)
 int nStart=0;
 int nHasEvents = 0;
 int nGoodClusters = 0;
@@ -446,10 +444,7 @@ QUESTION: Are we using wire position or absolute position...wire+/-dres...?
     TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
   }//end order function
   
-  
-  
-  
-
+//Currently not using Diag module but may "upgrade" so leave this here for now...
   void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
     
     int loc = _data.nseeds;

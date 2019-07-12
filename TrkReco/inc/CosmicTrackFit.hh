@@ -70,7 +70,7 @@ namespace mu2e
 		float PDF(float chisq, float ndf);
 		float chi_sum(float chisq, float ndf);
 		float CDF(float chisq, float ndf);
-		void Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1);
+		
 		//Some functions to extract MC truth
 		XYZVec MCInitHit(StrawDigiMC mcdigi);
 		XYZVec MCFinalHit(StrawDigiMC mcdigi);

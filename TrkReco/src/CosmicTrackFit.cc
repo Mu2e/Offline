@@ -57,6 +57,7 @@ using namespace boost::accumulators;
 using CLHEP::Hep3Vector;
 using CLHEP::HepVector;
 using namespace ROOT::Math;
+
 namespace mu2e
 {
   CosmicTrackFit::CosmicTrackFit(fhicl::ParameterSet const& pset) :
@@ -76,7 +77,6 @@ namespace mu2e
     _max_chi2_change(pset.get<float>("max_chi2_change",0.5)) //0.01
     {}
 
-//destructor
     CosmicTrackFit::~CosmicTrackFit(){}
 
     /* ---------------Initialize Fit----------------//
@@ -92,8 +92,9 @@ namespace mu2e
   }
 
   /*-------------Line Direction-------------------------//
- Range of methods for finding track directions
+    Range of methods for finding track directions - some are redundent-check!
   //----------------------------------------------*/
+  //ComboHits
   XYZVec CosmicTrackFit::InitLineDirection(const ComboHit *ch0, const ComboHit *chN) {
       float tx = chN->pos().x() - ch0->pos().x();
       float ty = chN->pos().y() - ch0->pos().y();
@@ -101,7 +102,7 @@ namespace mu2e
       XYZVec track(tx,ty,tz);
       return track.Unit();
     } 
-    
+  //MCDigis: 
   XYZVec CosmicTrackFit::InitLineDirection( StrawDigiMC const& mc0,  StrawDigiMC const& mcN, XYZVec reco_dir, bool is_prime) {
        art::Ptr<StepPointMC> const& spmcp0 = mc0.stepPointMC(StrawEnd::cal);
        XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());//det->toDetector(spmcp0->position());
@@ -123,7 +124,7 @@ namespace mu2e
       XYZVec track(a1,b1,1);//tx,ty,tz);
       return track.Unit();
     } 
-    
+    //Something Different (Remove!)
     XYZVec CosmicTrackFit::GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime){
            std::vector<float> X, Y, Z;
     	   for (size_t j =0; j < hitXYZ.size(); j++){
@@ -260,7 +261,7 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
      ::BuildMatrixSums S_niteration;
      bool converged = false;
      CosmicTrack* BestTrack = cosmictrack;	 
-     double chi2_best_track = 10000000;//arbitary high number
+     double chi2_best_track = 10000000;//chosen arbitary high number
      
      while(niter < _maxniter && converged==false){                 
      	niter +=1; 
@@ -381,6 +382,8 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
      }
     //cosmictrack->set_fit_phi(acos(cosmictrack->getZPrime().x()/sqrt(cosmictrack->getZPrime().Mag2())));
   }
+  
+//Some Functions to store some analysis functions (Currently not doing a very good job)
   float CosmicTrackFit::PDF(float chisq, float ndf){
   	float pdf = ROOT::Math::chisquared_pdf(chisq, ndf);
   	return pdf;
@@ -401,7 +404,7 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
   	}
   	return cdf;
   }
-
+//Applies fitting routine to MCDigis:
 void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool prime){	
         ::BuildMatrixSums S;
          //GeomHandle<DetectorSystem> det;        
@@ -487,7 +490,7 @@ XYZVec CosmicTrackFit::MCFinalHit(StrawDigiMC mcdigi){
         return last;
 }
 
-
+//REDUNDANT??
 void CosmicTrackFit::MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData){ //int hitN, int N, CosmicTrackFinderData& trackData, StrawDigiMC mcdigi){
       //CosmicTrack* cosmictrack = &trackData._tseed._track; 
       double tx = last.x() - first.x();
@@ -498,55 +501,7 @@ void CosmicTrackFit::MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderDat
       
         
 }
-/*
-void CosmicTrackFit::Draw_Chi_Para( const char* title, TH2F *cha0, TH2F *cha1, TH2F *chb0, TH2F *chb1, double end_chi2, double a0, double a1, double b0, double b1){
-        TCanvas canvas;
-        canvas.Draw();
-        canvas.Divide(2,2);
-  	TPolyMarker a0Result( 1, &a0,&end_chi2);
-	TPolyMarker a1Result( 1, &a1,&end_chi2);
-	TPolyMarker b0Result( 1, &b0,&end_chi2);
-	TPolyMarker b1Result( 1, &b1,&end_chi2);
-	a0Result.SetMarkerColor(2);
-	a0Result.SetMarkerStyle(5);
-	a0Result.SetMarkerSize(3);
-      	a1Result.SetMarkerColor(2);
-      	a1Result.SetMarkerStyle(5);
-      	a1Result.SetMarkerSize(3);
-      	b0Result.SetMarkerColor(2);
-      	b0Result.SetMarkerStyle(5);
-      	b0Result.SetMarkerSize(3);
-      	b1Result.SetMarkerColor(2);
-      	b1Result.SetMarkerStyle(5);
-      	b1Result.SetMarkerSize(3);
-      	canvas.cd(1);
-	cha0->SetMarkerStyle(5);
-	cha0->SetMarkerSize(3);
-	cha0->Draw();
-	a0Result.Draw("same");
-	canvas.cd(2);
-	cha1->SetMarkerStyle(5);
-	cha1->SetMarkerSize(3);
-	cha1->Draw();
-	a1Result.Draw("same");
 
-	canvas.cd(3);
-	chb0->SetMarkerStyle(5);
-	chb0->SetMarkerSize(3);
-	chb0->Draw();
-	b0Result.Draw("same");
-	canvas.cd(4);
-	chb1->SetMarkerStyle(5);
-	chb1->SetMarkerSize(3);
-	chb1->Draw();
-	b1Result.Draw("same");
-	canvas.Modified();
-        canvas.Update();
-        canvas.SaveAs(title);
-	
-	
-	}
-*/
 void CosmicTrackFit::MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track){
 	//if track has a significant amount of tracks with large chi2 and those large values are all similar...and resiudals within range of each other, this coule mean a second track....check for this although unlikely with cosmics....
 
@@ -571,6 +526,7 @@ bool CosmicTrackFit::use_track(double track_length) const
   }
 
  /*--------Drift Correction-------*/
+ //THIS IS NOT COMPLETE_PLEASE IGNORE!
 void CosmicTrackFit::DriftCorrection(CosmicTrackFinderData& trackData){
 	//Find SH in CH with smallest distance from wire centre, then need to find relative sign of that SH doca value. Then we know which side of wire the track approached. Then add on/minus off to z this distance
 	

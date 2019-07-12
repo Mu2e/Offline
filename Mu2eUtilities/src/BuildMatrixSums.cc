@@ -18,7 +18,7 @@ BuildMatrixSums::BuildMatrixSums(const BuildMatrixSums& S) {
 BuildMatrixSums::~BuildMatrixSums() {
 }
 void BuildMatrixSums::clear(){
- 
+  //initialize:
   betaX00 = 0;
   betaX10 = 0;
   gammaX00 = 0;
@@ -51,7 +51,7 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
 }
 
 void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
-	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));
+	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));//hit in X"Y"Z'
 	
         if(errX == 0) return;
         if(errY ==0) return;
@@ -84,12 +84,10 @@ void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPri
 
 double BuildMatrixSums::Get2DParameter(int i, TMatrixD Alpha){
 	return Alpha[i][0];
-
 }
 
 void BuildMatrixSums::SetChi2(double newchi ){
-	chi2 = newchi;
-	
+	chi2 = newchi;	
 }
 
 
@@ -101,6 +99,7 @@ TMatrixD BuildMatrixSums::GetGammaX(){
 	Gamma[1][1] = gammaX11;
 	return Gamma;
 }
+
 TMatrixD BuildMatrixSums::GetCovX(){
 	TMatrixD GammaINV = GetGammaX();
 	double* det = NULL;                  
@@ -118,16 +117,7 @@ TMatrixD BuildMatrixSums::GetCovX(){
 	CovX[0][1] = sqrt(GammaINV[0][1]);
 	return CovX;
 }
-/*
-TMatrixD BuildMatrixSums::GetCovX(){
-	TMatrixD CovX(2,2);
-	CovX[0][0] = sqrt(gammaX00);
-	CovX[1][0] = sqrt(gammaX01);
-	CovX[1][1] = sqrt(gammaX11);
-	CovX[0][1] = sqrt(gammaX01);
-	return CovX;
-}
-*/
+
 TMatrixD BuildMatrixSums::GetBetaX(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaX00;
@@ -159,7 +149,6 @@ TMatrixD BuildMatrixSums::GetGammaY(){
 	Gamma[1][0] = gammaY01;
 	Gamma[0][1] = gammaY01;
 	Gamma[1][1] = gammaY11;
-	
 	return Gamma;
 }
 TMatrixD BuildMatrixSums::GetCovY(){
@@ -255,7 +244,3 @@ double BuildMatrixSums::GetTotalChi2(){
         double chi2Y = GetChi2Y();
         return chi2Y+chi2X;
 }
-
-
-
-

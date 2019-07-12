@@ -1,4 +1,5 @@
-//S Middleton 2019
+//S Middleton 
+//March 2019
 //Description: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment
 
 #include "Mu2eUtilities/inc/ParametricFit.hh"
@@ -19,16 +20,14 @@ using namespace mu2e;
 
 
 namespace ParametricFit{
-
+//------Some Basic Line Functions------//
 	double GettMin(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
-
             double tMin = -(starting_point-point).Dot(end_point-starting_point) /((end_point-starting_point).Mag2());
 	    return tMin;
 
        }
 
       double LRAmbig( double& dca){
-        
 	   //XYZVec closestPointOnLine=PointToLineCA( point, line_starting_point, line_end_point);
 	double LorR = dca > 0.0 ? 1.0 : -1.0;
 
@@ -36,7 +35,6 @@ namespace ParametricFit{
       }
 
 	XYZVec PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
-
           double tMin = GettMin(point, starting_point, end_point);
 	  double POCA_x = starting_point.x() + (end_point.x()-starting_point.x())*tMin;
 	  double POCA_y = starting_point.y() + (end_point.x()-starting_point.y())*tMin;
@@ -80,8 +78,6 @@ namespace ParametricFit{
   XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
   XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine)
         {
-
-
 	  XYZVec & p0 = firstLineStartPoint;
 	  XYZVec u = ( firstLineEndPoint - firstLineStartPoint ).Unit();
 
@@ -127,8 +123,6 @@ int GetDOCASign(XYZVec track_dir, XYZVec point){
 	return sign;
 
 }
-
-
 
 
 /*-----------------Get X' and Y' and hit errors------------//
