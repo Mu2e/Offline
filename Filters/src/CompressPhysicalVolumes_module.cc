@@ -49,7 +49,8 @@ namespace mu2e {
 
   //================================================================
   CompressPhysicalVolumes::CompressPhysicalVolumes(const fhicl::ParameterSet& pset)
-    : volumesToken_{consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(pset.get<std::string>("volumesInput"))}
+    : art::EDProducer{pset},
+      volumesToken_{consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(pset.get<std::string>("volumesInput"))}
   {
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 

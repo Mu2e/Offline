@@ -39,6 +39,7 @@ namespace mu2e
   };
 
   TimeClusterFilter::TimeClusterFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _tcTag(pset.get<art::InputTag>("timeClusterCollection","TimeClusterFinder")),
     _hascc(pset.get<bool>("requireCaloCluster",false)),
     _minnhits(pset.get<unsigned>("minNHits",11)),
@@ -63,7 +64,7 @@ namespace mu2e
     for(auto itc = tccol->begin();itc != tccol->end(); ++itc) {
       auto const& tc = *itc;
       if(_debug > 2){
-        cout << *currentContext()->moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
+        cout << moduleDescription().moduleLabel() << " nhits = " << tc.hits().size() << " t0 = " << tc.t0().t0() << endl;
       }
       if( (!_hascc || tc.caloCluster().isNonnull()) &&
           tc.hits().size() >= _minnhits &&
@@ -78,7 +79,7 @@ namespace mu2e
         size_t index = std::distance(tccol->begin(),itc);
         triginfo->_hitCluster = art::Ptr<TimeCluster>(tcH,index);
         if(_debug > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
         break;
       }
@@ -89,7 +90,7 @@ namespace mu2e
 
   bool TimeClusterFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

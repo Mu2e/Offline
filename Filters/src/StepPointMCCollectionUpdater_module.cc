@@ -40,7 +40,8 @@ namespace mu2e {
 
   //================================================================
   StepPointMCCollectionUpdater::StepPointMCCollectionUpdater(const fhicl::ParameterSet& pset)
-    : remapping_(pset.get<std::string>("remapping"))
+    : art::EDProducer{pset}
+    , remapping_(pset.get<std::string>("remapping"))
     , inputs_(pset.get<std::vector<art::InputTag> >("inputs"))
     , outInstanceName_(pset.get<std::string>("outInstanceName"))
   {

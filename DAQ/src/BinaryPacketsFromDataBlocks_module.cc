@@ -117,7 +117,7 @@ private:
 // ======================================================================
 
 BinaryPacketsFromDataBlocks::BinaryPacketsFromDataBlocks(fhicl::ParameterSet const& pset):
-  EDProducer( ),
+  EDProducer{pset},
   _outputFile                     (pset.get<std::string>("outputFile","DTC_packets.bin")),
   _maxDMABlockSize                (pset.get<size_t>("maxDMABlockSize",32000)), // Maximum size in bytes of a DMA block
   _bufferSize                     (pset.get<size_t>("bufferSize",1000)),

@@ -19,7 +19,7 @@
 
 #include <iostream>
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TTrackerGeom/inc/TTracker.hh"

@@ -8,9 +8,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 
 //CLHEP includes
@@ -114,6 +114,7 @@ namespace mu2e {
   public:
 
     explicit TrkExtrapol(fhicl::ParameterSet const& pset):
+      art::EDProducer{pset},
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),

@@ -30,7 +30,7 @@
 
 #include "boost/noncopyable.hpp"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"

@@ -43,7 +43,8 @@ namespace mu2e {
 
     public:
       explicit SimParticleMARSAssnsMaker(fhicl::ParameterSet const& pset)
-        : simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
+        : EDProducer{pset}
+        , simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
         , simParticlesInstanceName_(pset.get<std::string>("simParticlesInstanceName", ""))
         , marsInfoModuleLabel_(pset.get<std::string>("marsInfoModuleLabel"))
         , marsInfoInstanceName_(pset.get<std::string>("marsInfoInstanceName", ""))
@@ -67,7 +68,7 @@ namespace mu2e {
       std::unique_ptr<MARSInfoCollection> info(new MARSInfoCollection());
       std::unique_ptr<SimParticleMARSAssns> assns(new SimParticleMARSAssns());
 
-      const art::ProductID infoPID = getProductID<MARSInfoCollection>();
+      const art::ProductID infoPID = event.getProductID<MARSInfoCollection>();
       const art::EDProductGetter *infoGetter = event.productGetter(infoPID);
 
       art::Handle<GenParticleCollection> genpartsh;

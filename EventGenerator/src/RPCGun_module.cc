@@ -24,7 +24,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 
@@ -103,7 +103,8 @@ namespace mu2e {
 
   //================================================================
   RPCGun::RPCGun(const fhicl::ParameterSet& pset)
-    : psphys_(pset.get<fhicl::ParameterSet>("physics"))
+    : art::EDProducer{pset}
+    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , spectrum_                  (BinnedSpectrum(psphys_))
     , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))
     , generateInternalConversion_{psphys_.get<int>("generateIntConversion", 0)}

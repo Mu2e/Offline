@@ -8,7 +8,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 

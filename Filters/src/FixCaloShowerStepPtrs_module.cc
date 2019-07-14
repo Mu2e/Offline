@@ -19,7 +19,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <memory>
 
@@ -89,7 +89,8 @@ private:
 
 
 mu2e::FixCaloShowerStepPtrs::FixCaloShowerStepPtrs(fhicl::ParameterSet const & pset)
-  : _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
+  : art::EDProducer{pset},
+    _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _caloShowerSimTag(pset.get<art::InputTag>("caloShowerSimTag")),
     _caloShowerStepROTag(pset.get<art::InputTag>("caloShowerStepROTag"))
 {
@@ -120,7 +121,7 @@ void mu2e::FixCaloShowerStepPtrs::produce(art::Event & event)
   // Implementation of required member function here.
   CaloShowerStepRemap caloShowerStepRemap;
   _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
-  _newCaloShowerStepsPID = getProductID<CaloShowerStepCollection>();
+  _newCaloShowerStepsPID = event.getProductID<CaloShowerStepCollection>();
   _newCaloShowerStepGetter = event.productGetter(_newCaloShowerStepsPID);
   for (std::vector<art::InputTag>::const_iterator i_tag = _caloShowerStepTags.begin(); i_tag != _caloShowerStepTags.end(); ++i_tag) {
     const auto& oldCaloShowerSteps = event.getValidHandle<CaloShowerStepCollection>(*i_tag);

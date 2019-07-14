@@ -62,6 +62,7 @@ namespace mu2e
   };
 
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _hsTag        (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
     _hascc        (pset.get<bool>  ("requireCaloCluster",false)),
     _hel          (pset.get<int>   ("helicity")),
@@ -122,7 +123,7 @@ namespace mu2e
       float nLoops     = helTool.nLoops();
       
       if(_debug > 2){
-        cout << *currentContext()->moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
+        cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
       }
       if( hs.status().hasAllProperties(_goodh) &&
           (!_hascc || hs.caloCluster().isNonnull()) &&
@@ -148,7 +149,7 @@ namespace mu2e
         size_t index = std::distance(hscol->begin(),ihs);
         triginfo->_helix = art::Ptr<HelixSeed>(hsH,index);
         if(_debug > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
         break;
       }
@@ -159,7 +160,7 @@ namespace mu2e
 
   bool HelixFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " paassed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

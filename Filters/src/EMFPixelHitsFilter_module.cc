@@ -17,7 +17,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALHitTruthAssn.hh"
@@ -65,7 +65,8 @@ namespace mu2e {
 
     //================================================================
     EMFPixelHitsFilter::EMFPixelHitsFilter(const fhicl::ParameterSet& pset)
-      : rawHitsModuleLabel_(pset.get<std::string>("rawHitsModuleLabel"))
+      : art::EDFilter{pset}
+      , rawHitsModuleLabel_(pset.get<std::string>("rawHitsModuleLabel"))
       , simParticlesModuleLabel_(pset.get<std::string>("simParticlesModuleLabel"))
       , cutMinHits_(pset.get<unsigned>("cutMinHits"))
       , nPassed_()
@@ -117,7 +118,7 @@ namespace mu2e {
 
         ParticleSelector selector(particlesWithHits);
 
-        art::ProductID newParticlesPID(getProductID<SimParticleCollection>());
+        art::ProductID newParticlesPID(event.getProductID<SimParticleCollection>());
         const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
         compressSimParticleCollection(newParticlesPID, newParticlesGetter, *inparts, selector, *outparts);

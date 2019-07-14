@@ -3,7 +3,7 @@
 #define ValCaloShowerStep_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
 #include "TH1D.h"
 #include <string>

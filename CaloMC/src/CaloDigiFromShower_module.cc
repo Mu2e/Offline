@@ -10,8 +10,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 #include "CaloMC/inc/CaloPulseShape.hh"
@@ -46,6 +46,7 @@ namespace mu2e {
   public:
 
     explicit CaloDigiFromShower(fhicl::ParameterSet const& pset) :
+      EDProducer{pset},
       // Parameters
       caloShowerToken_{consumes<CaloShowerStepROCollection>(pset.get<std::string>("caloShowerModuleLabel"))},
       blindTime_             (pset.get<double>     ("blindTime")),
@@ -65,20 +66,18 @@ namespace mu2e {
       randGauss_             (engine_),
       pulseShape_(CaloPulseShape(digiSampling_,pulseIntegralSteps_))
     {
-      //      consumes<CaloShowerStepROCollection>(
       produces<CaloDigiCollection>();
 
       maxADCCounts_ =  1 << nBits_;
       ADCTomV_      = dynamicRange_/float(maxADCCounts_);
       mVToADC_      = float(maxADCCounts_)/dynamicRange_;
       nROperCard_   = 40;
-
     }
+
+  private:
 
     void produce(art::Event& e) override;
     void beginRun(art::Run& aRun) override;
-
-  private:
 
     art::ProductToken<CaloShowerStepROCollection> const caloShowerToken_;
 
@@ -120,9 +119,7 @@ namespace mu2e {
     void   buildOutputDigi(CaloDigiCollection& caloDigiColl);
     void   diag0(int iRO,std::vector<double>& itWave );
     void   diag1(int iRO, double time, std::vector<int>& wf );
-
   };
-
 
 
   //-----------------------------------------------------------------------------
@@ -151,8 +148,6 @@ namespace mu2e {
 
     if ( diagLevel_ > 0 ) std::cout<<"[CaloDigiFromShower::produce] end" << std::endl;
   }
-
-
 
   //-------------------------------------------------------------------------------------------------------------
   void CaloDigiFromShower::makeDigitization(const CaloShowerStepROCollection& caloShowerStepROs,CaloDigiCollection& caloDigiColl)

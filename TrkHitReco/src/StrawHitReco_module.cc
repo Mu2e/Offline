@@ -12,7 +12,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // conditions
 #include "ProditionsService/inc/ProditionsHandle.hh"
@@ -94,6 +94,7 @@ namespace mu2e {
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset}, 
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),
       _clusterDt(pset.get<float>(   "clusterDt",100)),

@@ -16,7 +16,7 @@
 #include "BTrk/TrkBase/HelixTraj.hh"
 #include "CalPatRec/inc/CalHelixFinderAlg.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"

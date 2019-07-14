@@ -9,8 +9,9 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ProducesCollector.h"
 #include "canvas/Utilities/InputTag.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "G4Track.hh"
@@ -38,7 +39,7 @@ namespace mu2e {
     // A common implementation for some of the required IMu2eG4Cut methods
     class IOHelper: virtual public IMu2eG4Cut {
     public:
-      virtual void declareProducts(art::EDProducer *parent) override;
+      virtual void declareProducts(art::ProducesCollector& collector) override;
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
@@ -64,9 +65,9 @@ namespace mu2e {
       void addHit(const G4Step *aStep);
     };
 
-    void IOHelper::declareProducts(art::EDProducer *parent) {
+    void IOHelper::declareProducts(art::ProducesCollector& collector) {
       if(!steppingOutputName_.empty()) {
-        parent->produces<StepPointMCCollection>(steppingOutputName_);
+        collector.produces<StepPointMCCollection>(steppingOutputName_);
       }
     }
 
@@ -154,7 +155,7 @@ namespace mu2e {
       virtual bool stackingActionCut(const G4Track *trk);
 
       // Sequences need a different implementation
-      virtual void declareProducts(art::EDProducer *parent) override;
+      virtual void declareProducts(art::ProducesCollector& collector) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void deleteCutsData() override;
@@ -199,10 +200,10 @@ namespace mu2e {
       return result;
     }
 
-    void Union::declareProducts(art::EDProducer *parent) {
-      IOHelper::declareProducts(parent);
+    void Union::declareProducts(art::ProducesCollector& collector) {
+      IOHelper::declareProducts(collector);
       for(auto& cut: cuts_) {
-        cut->declareProducts(parent);
+        cut->declareProducts(collector);
       }
     }
 
@@ -245,7 +246,7 @@ namespace mu2e {
       virtual bool stackingActionCut(const G4Track *trk);
 
       // Sequences need a different implementation
-      virtual void declareProducts(art::EDProducer *parent) override;
+      virtual void declareProducts(art::ProducesCollector& collector) override;
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) override;
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) override;
       virtual void deleteCutsData() override;
@@ -291,10 +292,10 @@ namespace mu2e {
       return result;
     }
 
-    void Intersection::declareProducts(art::EDProducer *parent) {
-      IOHelper::declareProducts(parent);
+    void Intersection::declareProducts(art::ProducesCollector& collector) {
+      IOHelper::declareProducts(collector);
       for(auto& cut: cuts_) {
-        cut->declareProducts(parent);
+        cut->declareProducts(collector);
       }
     }
 

@@ -28,6 +28,7 @@ namespace mu2e{
   };
 
   STMStepPointFilter::STMStepPointFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _stepsTag(pset.get<string>("stepsTag")),
     _minStepPoints(pset.get<size_t>("minStepPoints",1)){
   }

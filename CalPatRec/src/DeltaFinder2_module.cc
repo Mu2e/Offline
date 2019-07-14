@@ -10,7 +10,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -158,6 +158,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   DeltaFinder2::DeltaFinder2(fhicl::ParameterSet const& pset): 
+    art::EDProducer{pset},
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _shpTag                (pset.get<string>       ("strawHitPositionCollectionTag")),

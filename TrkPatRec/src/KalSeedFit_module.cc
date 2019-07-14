@@ -14,7 +14,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -133,6 +133,7 @@ namespace mu2e
   };
 
   KalSeedFit::KalSeedFit(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>("debugLevel",0)),
     _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),

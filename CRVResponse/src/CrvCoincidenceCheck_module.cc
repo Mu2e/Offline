@@ -113,6 +113,7 @@ namespace mu2e
   };
 
   CrvCoincidenceCheck::CrvCoincidenceCheck(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _verboseLevel(pset.get<int>("verboseLevel")),
     _crvRecoPulsesModuleLabel(pset.get<std::string>("crvRecoPulsesModuleLabel")),
     _CRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
@@ -482,7 +483,7 @@ namespace mu2e
 
     _totalEvents++;
     if(crvCoincidenceCollection->size()>0) _totalEventsCoincidence++;
-    _moduleLabel = *currentContext()->moduleLabel();
+    _moduleLabel = moduleDescription().moduleLabel();
 
     if(_verboseLevel>0)
     {

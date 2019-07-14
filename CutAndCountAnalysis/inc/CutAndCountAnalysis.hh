@@ -27,7 +27,7 @@
 #include <string>
 #include <vector>
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"

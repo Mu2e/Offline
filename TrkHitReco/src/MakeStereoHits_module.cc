@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -93,6 +93,7 @@ namespace mu2e {
   };
 
   MakeStereoHits::MakeStereoHits(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>(           "debugLevel",0)),
     _chTag(pset.get<art::InputTag>("ComboHitCollection")),
     _shsel(pset.get<std::vector<std::string> >("StrawHitSelectionBits",std::vector<std::string>{"EnergySelection","TimeSelection"} )),

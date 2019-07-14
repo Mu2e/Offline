@@ -55,6 +55,7 @@ namespace mu2e {
   };
 
   FindMCPrimary::FindMCPrimary(const Parameters& config )  : 
+    art::EDProducer{config},
     _debug(config().debug()),
     _single(config().single()),
     _none(config().none()),

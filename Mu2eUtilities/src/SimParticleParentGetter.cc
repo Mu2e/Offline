@@ -53,7 +53,7 @@ namespace mu2e {
 	    for(SimParticleHandles::const_iterator h = simParticleResults.begin(); h != simParticleResults.end(); ++h) {
 	      AGDEBUG("In loop over simParticleHandles");
 	      // could filter out entries here
-	      for(GenSimParticleLink::assn_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
+	      for(GenSimParticleLink::const_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
 		AGDEBUG("In loop over sim particle assns");
 		if(!simParticleMap_.insert(std::make_pair(i->first, i->second)).second) {
 		  throw cet::exception("BADINPUTS")<<"Non-unique GenParticle ptr in GenSimParticleLink";
@@ -71,7 +71,7 @@ namespace mu2e {
         for(StepPointHandles::const_iterator h = stepPointResults.begin(); h != stepPointResults.end(); ++h) {
           AGDEBUG("In loop over stepPointHandles");
           // could filter out entries here
-          for(GenParticleSPMHistory::assn_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
+          for(GenParticleSPMHistory::const_iterator i = (*h)->begin(); i != (*h)->end(); ++i) {
             AGDEBUG("In loop over step point assns");
             if(!stepPointMap_.insert(std::make_pair(i->first, i->second)).second) {
               throw cet::exception("BADINPUTS")<<"Non-unique GenParticle ptr in GenParticleSPMHistory";

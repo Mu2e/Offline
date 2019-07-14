@@ -62,7 +62,7 @@ private:
 // ======================================================================
 
 StrawAndCaloDigisFromFragments::StrawAndCaloDigisFromFragments(fhicl::ParameterSet const& pset)
-  : EDProducer( )
+  : EDProducer(pset)
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCAL_(pset.get<int>("parseCAL",1))
   , parseTRK_(pset.get<int>("parseTRK",1))

@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // Mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
@@ -125,6 +125,7 @@ namespace mu2e {
   };
 
   TimeClusterFinder::TimeClusterFinder(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug             (pset.get<int>("debugLevel",0)),
     _printfreq         (pset.get<int>("printFrequency",101)),
     _testflag(pset.get<bool>("TestFlag")),

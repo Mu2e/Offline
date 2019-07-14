@@ -57,7 +57,8 @@ namespace mu2e {
 
   //================================================================
   GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
-    : engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
+    : EDProducer{pset}
+    , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
     , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , fixedTime_(pset.get<std::string>("FixedModule",""))
@@ -97,8 +98,8 @@ namespace mu2e {
     if(verbosityLevel_ > 0) {
       if(applyToGenIds_.empty()) {
         mf::LogInfo("Info")<<"pulseType = "<<protonPulse_->pulseType() <<", ignoring genIds [ "<< listStream( ignoredGenIds_ ) <<" ]\n";
-      }                                                  
-      else {                                             
+      }
+      else {
         mf::LogInfo("Info")<<"pulseType = "<<protonPulse_->pulseType() <<", applying to genIds [ "<< listStream( applyToGenIds_ ) <<" ]\n";
       }
     }
@@ -107,8 +108,8 @@ namespace mu2e {
       std::ostringstream timeSpectrum;
       std::cout << " Size of proton pulse: " << protonPulse_->getTimes().size() << std::endl;
       for ( std::size_t i(0) ; i < protonPulse_->getTimes().size(); i++ ) {
-        timeSpectrum << "   POT time: " 
-                     << protonPulse_->getTimes().at(i) 
+        timeSpectrum << "   POT time: "
+                     << protonPulse_->getTimes().at(i)
                      << "     "
                      << protonPulse_->getSpectrum().at(i) << "\n";
       }
@@ -135,34 +136,34 @@ namespace mu2e {
     // Generate and record offsets for all primaries
     for(const auto& ih : colls) {
       for(const auto& iter : *ih) {
-	if(iter.second.isPrimary()) {
-	  art::Ptr<SimParticle> part(ih, iter.first.asUint());
-	  // don't re-simulate if particle is already present.  This can happen if there is an input map
-	  if(res->find(part) == res->end()){
-	    const auto genId = part->genParticle()->generatorId();
+        if(iter.second.isPrimary()) {
+          art::Ptr<SimParticle> part(ih, iter.first.asUint());
+          // don't re-simulate if particle is already present.  This can happen if there is an input map
+          if(res->find(part) == res->end()){
+            const auto genId = part->genParticle()->generatorId();
 
-	    const bool apply= applyToGenIds_.empty() ?
-	      // do all particles, except the explicitly vetoed ones
-	      (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
-	      // do just explicitly listed GenIds
-	      : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
+            const bool apply= applyToGenIds_.empty() ?
+              // do all particles, except the explicitly vetoed ones
+              (ignoredGenIds_.find(genId.id()) == ignoredGenIds_.end())
+              // do just explicitly listed GenIds
+              : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
 
-	    (*res)[part] = apply ? protonPulse_->fire() : 0.;
+            (*res)[part] = apply ? protonPulse_->fire() : 0.;
             if (fixedTime_.size() > 0){
               (*res)[part] = apply ? ftmHandle->time() : 0;
             }
-	  } else if(verbosityLevel_ > 2) {
-	    std::cout << "Found existing particle in map" << std::endl;
-	  }
-	}
+          } else if(verbosityLevel_ > 2) {
+            std::cout << "Found existing particle in map" << std::endl;
+          }
+        }
       }
     }
 
     if(verbosityLevel_ > 10) {
       std::cout<<"GenerateProtonTimes dump begin"<<std::endl;
       for(const auto& i : *res) {
-	SimParticleCollectionPrinter::print(std::cout, *i.first);
-	std::cout<<" => "<<i.second<<std::endl;
+        SimParticleCollectionPrinter::print(std::cout, *i.first);
+        std::cout<<" => "<<i.second<<std::endl;
       }
       std::cout<<"GenerateProtonTimes dump end"<<std::endl;
     }
@@ -177,7 +178,7 @@ namespace mu2e {
       osList<<i<<", ";
     }
     return osList.str();
-  } 
+  }
 
   //================================================================
 } // end namespace mu2e

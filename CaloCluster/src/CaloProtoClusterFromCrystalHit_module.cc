@@ -65,6 +65,7 @@ namespace mu2e {
 
 
     explicit CaloProtoClusterFromCrystalHit(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       caloCrystalToken_{consumes<CaloCrystalHitCollection>(pset.get<std::string>("caloCrystalModuleLabel"))},
       producerNameMain_(pset.get<std::string>("mainClusterCollName")),
       producerNameSplit_(pset.get<std::string>("splitClusterCollName")),

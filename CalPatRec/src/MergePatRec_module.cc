@@ -146,6 +146,7 @@ namespace mu2e {
   };
 
   MergePatRec::MergePatRec(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _diagLevel              (pset.get<int>("diagLevel" )),
     _debugLevel             (pset.get<int>("debugLevel")),
     _tprToken{consumes<KalRepPtrCollection>(pset.get<std::string>("trkPatRecModuleLabel"))},

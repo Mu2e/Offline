@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"

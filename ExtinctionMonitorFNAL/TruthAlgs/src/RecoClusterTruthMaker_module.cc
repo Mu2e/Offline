@@ -48,7 +48,8 @@ namespace mu2e {
 
     public:
       explicit RecoClusterTruthMaker(fhicl::ParameterSet const& pset)
-        : recoClusterModuleLabel_(pset.get<std::string>("recoClusterModuleLabel"))
+        : EDProducer{pset}
+        , recoClusterModuleLabel_(pset.get<std::string>("recoClusterModuleLabel"))
         , recoClusterInstanceName_(pset.get<std::string>("recoClusterInstanceName", ""))
         , hitTruthModuleLabel_(pset.get<std::string>("hitTruthModuleLabel"))
         , hitTruthInstanceName_(pset.get<std::string>("hitTruthInstanceName", ""))

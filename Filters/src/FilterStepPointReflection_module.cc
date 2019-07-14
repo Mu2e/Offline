@@ -41,7 +41,8 @@ namespace mu2e {
 
   //================================================================
   FilterStepPointReflection::FilterStepPointReflection(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("input"))
+    : art::EDFilter{pset}
+    , input_(pset.get<std::string>("input"))
     , cutMomentumMin_(pset.get<double>("cutMomentumMin"))
     , numInputEvents_(0)
     , numPassedEvents_(0)
