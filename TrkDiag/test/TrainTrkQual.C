@@ -178,8 +178,8 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   TCut goodfit = "de.status>0";
   TCut goodmom = "sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)-sqrt(demcxit.momx^2+demcxit.momy^2+demcxit.momz^2)<2.0";
   TCut goodpitch = "demcent.td>0.57&&demcent.td<1.0";
-  TCut goodmomres = "abs(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2))<0.25";
-  TCut badmomres = "de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>0.7";
+  TCut goodmomres = "abs(deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2))<0.25";
+  TCut badmomres = "deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)>0.7";
   TCut signal = goodfit + goodmom + goodpitch + goodmomres;
   // tail is defined as the high-side tail
   TCut bkg = goodfit + goodmom + goodpitch + badmomres;
@@ -192,11 +192,11 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   }
   // weight the tail by the momentum difference
   if(bkgw == linear){
-    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,5.0*(min(deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == exponential){
-    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,exp(2.0*min(deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0)))");
   } else if(bkgw == polynomial){
-    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(de.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
+    dataloader->SetBackgroundWeightExpression("max(1.0,pow(2.0*min(deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2),3.0),5.0))");
   } else {
     return -1;
   }

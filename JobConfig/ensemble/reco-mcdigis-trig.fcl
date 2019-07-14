@@ -5,7 +5,8 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "JobConfig/ensemble/prolog_reco.fcl"
+#include "JobConfig/reco/prolog.fcl"
+##include "JobConfig/ensemble/prolog_reco.fcl"
 #include "Trigger/fcl/templates.fcl"
 #
 process_name : recomcdigistrig
@@ -21,7 +22,21 @@ physics :
     @table::Trigger.producers
   }
   filters :  {
-    @table::Ensemble.filters
+    @table::CalPatRec.filters
+    RecoFilter : {
+      module_type   : RecoMomFilter
+      KalFinalTagRoot : ""
+      TrkTags : [ "KFFDeM", "KFFDeP",
+                  "KFFUeM", "KFFUeP",
+                  "KFFDmuM", "KFFDmuP",
+                  "KFFUmuM", "KFFUmuP"
+                ]
+                # // set low cutoffs
+      MomentumCutoff : [ 95.0, 85.0,
+                         95.0, 85.0,
+                         95.0, 85.0,
+                         95.0, 85.0 ]
+    }
     @table::Trigger.filters
   }
   analyzers: {
@@ -37,15 +52,19 @@ outputs : {
 }
 
 # My epilog
-#include "JobConfig/ensemble/epilog_reco.fcl"
+##include "JobConfig/ensemble/epilog_reco.fcl"
+#include "JobConfig/reco/epilog.fcl"
 # trigger epilog
-#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+##include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+#include "TriggerEpilogs/allPaths.fcl"
 outputs.Output.SelectEvents : [ "RecoPath" ]
 #
 # the following need to be overwritten for the specific channel
-services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.RecoMCTrig.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.${name}.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.${name}.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+physics.producers.compressRecoMCs.mcTrajectoryTag : "compressDigiMCs"
 
 
 services.scheduler.wantSummary: true

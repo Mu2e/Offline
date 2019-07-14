@@ -34,6 +34,7 @@
 #include "G4VProcess.hh"
 #include "G4RunManager.hh"
 #include "G4TrackingManager.hh"
+#include "G4LossTableManager.hh"
 
 using namespace std;
 
@@ -125,6 +126,53 @@ namespace mu2e {
 
     }
 
+    void printKilledTrackInfo(G4Track const* const trk) {
+
+      int constexpr newPrecision = 8;
+      int constexpr newWidth = 14;
+      int oldPrecision = cout.precision(newPrecision);
+      int oldWidth = cout.width(newWidth);
+      std::ios::fmtflags oldFlags = cout.flags();
+      cout.setf(std::ios::fixed,std::ios::floatfield);
+      cout << __func__ << " Track info:"
+           << " ID: "
+           << trk->GetTrackID()
+           << " pdgid: "
+           << trk->GetDefinition()->GetPDGEncoding()
+           << " name: "
+           << trk->GetParticleDefinition()->GetParticleName()
+           << ", CurrentStepNumber: "
+           << trk->GetCurrentStepNumber()
+           << ", TrackStatus: "
+           << trk->GetTrackStatus()
+           << ", step length: "
+           << trk->GetStep()->GetStepLength()
+           << ", currentRange: "
+           << G4LossTableManager::Instance()->
+        GetRange(trk->GetDefinition(),
+                 trk->GetKineticEnergy(),
+                 trk->GetStep()->GetPreStepPoint()->GetMaterialCutsCouple())
+           << ", track length: "
+           << trk->GetTrackLength();
+      cout.unsetf(std::ios::fixed);
+      cout.setf(std::ios::dec,       std::ios::basefield);
+      cout.setf(std::ios::scientific,std::ios::floatfield);
+      cout << ", KE: "
+           << trk->GetKineticEnergy()
+           << ", mom: "
+           << trk->GetMomentum()
+           << ", mag: "
+           << trk->GetMomentum().mag()
+           << ", TrackCreationCode: "
+           << findCreationCode(trk)
+           << endl;
+
+      cout.setf(oldFlags);
+      cout.precision(oldPrecision);
+      cout.width(oldWidth);
+
+    }
+
     // Is the particle killed due to the integration limits?
     bool isTrackKilledByFieldPropagator(G4Track const* const trk, int trVerbosity){
       G4Step const* const theStep = trk->GetStep();
@@ -135,47 +183,11 @@ namespace mu2e {
               theStep->GetPostStepPoint()->GetPhysicalVolume()) {
             // the two volumes should not be the same in standard cases
 
-            double kE = trk->GetKineticEnergy();
-
-            if ( (trVerbosity>0 && kE > 1.*CLHEP::eV) ||
-                 trVerbosity>1 ) {
+            if (trVerbosity>0) {
               cout << __func__ << " WARNING: particle killed by the Field Propagator in "
-                   << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetName()
+                   << theStep->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
                    << endl;
-
-              int constexpr newPrecision = 8;
-              int constexpr newWidth = 14;
-              int oldPrecision = cout.precision(newPrecision);
-              int oldWidth = cout.width(newWidth);
-              std::ios::fmtflags oldFlags = cout.flags();
-              cout.setf(std::ios::fixed,std::ios::floatfield);
-              cout << __func__ << " Track info:"
-                   << " ID: "
-                   << trk->GetTrackID()
-                   << " name: "
-                   << trk->GetParticleDefinition()->GetParticleName()
-                   << ", CurrentStepNumber: "
-                   << trk->GetCurrentStepNumber()
-                   << ", TrackStatus: "
-                   << trk->GetTrackStatus()
-                   << ", step length: "
-                   << theStep->GetStepLength()
-                   << ", track length: "
-                   << trk->GetTrackLength();
-              cout.unsetf(std::ios::fixed);
-              cout.setf(std::ios::scientific,std::ios::dec);
-              cout << ", KE: "
-                   << kE
-                   << ", mom: "
-                   << trk->GetMomentum()
-                   << ", mag: "
-                   << trk->GetMomentum().mag()
-                   << ", TrackCreationCode: "
-                   << findCreationCode(trk)
-                   << endl;
-              cout.setf(oldFlags);
-              cout.precision(oldPrecision);
-              cout.width(oldWidth);
+              printKilledTrackInfo(trk);
             }
 
             return true;

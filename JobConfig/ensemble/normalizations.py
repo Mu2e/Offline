@@ -1,19 +1,38 @@
 import ROOT
 import math
+import os
 
-mean_PBI = 3.9e7
+mean_PBI = 3.9e7 # in JobConfig/mixing/prolog.fcl  protonBunchIntensity.extendedMean
 dutyfactor = 0.25 # 43.1ms+5ms on spill x8, then 1020ms off spill
 ub_per_year = 365*24*60*60./1695e-9*dutyfactor
 POT_per_year = ub_per_year*mean_PBI
 stopped_mu_per_POT = 0.00187
 
+def cry_normalization(livetime):
+  cry_expected_rate = 253440 #Hz
+  cry_tmin = 450e-9
+  cry_tmax = 1705e-9
+  cry_expected_per_ub = cry_expected_rate*(cry_tmax-cry_tmin)
+  cry_expected_per_year = ub_per_year * cry_expected_per_ub
+  return cry_expected_per_year * livetime
+
+def dayabay_normalization(livetime):
+  db_expected_rate = 5494.24 #Hz
+  db_tmin = 400e-9
+  db_tmax = 1705e-9
+  db_expected_per_ub = db_expected_rate*(db_tmax-db_tmin)
+  db_expected_per_year = ub_per_year * db_expected_per_ub
+  return db_expected_per_year * livetime
+
+
+
 def ce_normalization(livetime, rue):
-  captures_per_stopped_muon = 0.61
+  captures_per_stopped_muon = 0.609
   return POT_per_year * stopped_mu_per_POT * captures_per_stopped_muon * livetime * rue
 
 def dio_normalization(livetime, emin):
   # calculate fraction of spectrum being generated
-  spec = open("ConditionsService/data/czarnecki_szafron_Al_2016.tbl")
+  spec = open(os.path.join(os.environ["MU2E_BASE_RELEASE"],"ConditionsService/data/czarnecki_szafron_Al_2016.tbl"))
   energy = []
   val = []
   for line in spec:
@@ -27,14 +46,14 @@ def dio_normalization(livetime, emin):
     if energy[i] >= emin:
       cut_norm += val[i]
 
-  DIO_per_stopped_muon = 0.391
+  DIO_per_stopped_muon = 0.391 # 1 - captures_per_stopped_muon
 
   physics_events = POT_per_year * stopped_mu_per_POT * DIO_per_stopped_muon * livetime
   return physics_events * cut_norm/total_norm
 
 def rpc_normalization(livetime, emin, tmin, internal):
   # calculate fraction of spectrum being generated
-  spec = open("JobConfig/ensemble/RPCspectrum.dat")
+  spec = open("JobConfig/ensemble/RPCspectrum.dat") # Bistirlich spectrum from 0.05 to 139.95 in steps of 0.1
   energy = []
   val = []
   for line in spec:
@@ -49,13 +68,13 @@ def rpc_normalization(livetime, emin, tmin, internal):
     if (energy[i]-bin_width/2. >= emin):
       cut_norm += val[i]
 
-  geometric_stopped_pion_per_POT = 0.002484 # stops assuming infinite pion lifetime
-  RPC_per_stopped_pion = 0.0215;
-  internalRPC_per_RPC = 0.00690; 
+  geometric_stopped_pion_per_POT = 0.002484 # stops assuming infinite pion lifetime (for cd3 sim sample. in docdb-7468)
+  RPC_per_stopped_pion = 0.0215; # from reference, uploaded on docdb-469
+  internalRPC_per_RPC = 0.00690; # from reference, uploaded on docdb-717
 
 
   # calculate survival probability for tmin including smearing of POT
-  pot = open("JobConfig/ensemble/POTspectrum.dat");
+  pot = open("JobConfig/ensemble/POTspectrum.dat"); # ConditionsService/data/potTimingDistribution_20160511.txt, sampled by GenerateProtonTimes_module.cc 
   time = []
   cdf = []
   for line in pot:
@@ -93,6 +112,7 @@ def rpc_normalization(livetime, emin, tmin, internal):
 def rmc_normalization(livetime, emin, kmax,internal):
   energy = []
   val = []
+  # closure approximation as implemented in MuonCaptureSpectrum.cc
   for i in range(int((kmax-57.05)/0.1)):
     temp_e = 57.05 + i*0.1
     xFit = temp_e/kmax
@@ -107,7 +127,7 @@ def rmc_normalization(livetime, emin, kmax,internal):
     if (energy[i]-bin_width/2. >= emin):
       cut_norm += val[i]
 
-  captures_per_stopped_muon = 0.61
+  captures_per_stopped_muon = 0.609
   RMC_gt_57_per_capture = 1.43e-5 # from literature (to overall captures)
   internalRPC_per_RPC = 0.00690; # just copy RPC value
 

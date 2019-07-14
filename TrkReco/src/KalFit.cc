@@ -1077,6 +1077,7 @@ namespace mu2e
         hitt0.reserve(nhits);
         hitt0err.reserve(nhits);
 
+	if (iter == -1) iter = _herr.size()-1;
 	accumulator_set<double,stats<tag::weighted_variance>,double > wmean;
 
         // loop over the hits and accumulate t0

@@ -1,43 +1,34 @@
+#include "JobConfig/ensemble/prolog.fcl"
+
 process_name : SI
 
-
 source : { module_type : SamplingInput
-  inputCommands : [ "keep *",
-  "drop *_genCounter_*_*",
-  "drop *_protonBunchIntensity_*_*"]
+  inputCommands : @local::Ensemble.InputCommands
   dropDescendantsOfDroppedBranches: false
+  run : ${run}
+  subRun : ${subRun}
   dataSets : { 
-${datasets}
-    }
+${datasets} 
   }
 }
 
 physics :
 {
-  TriggerPath : [ ]
-  EndPath : [ OutputMC, OutputData ]
+  EndPath : [ OutputMC ]
   end_paths : [ EndPath ] # needed for generate_fcl
 }
 
 outputs : {
   OutputMC : {
     module_type : RootOutput
-    outputCommands : [ "keep *_*_*_*"]
+    outputCommands : @local::Ensemble.OutputCommandsMC
     fileName : "${outnameMC}"
   }
 
-  OutputData : {
-    module_type : RootOutput
-    outputCommands : [ "drop *_*_*_*",
-		       "keep mu2e::KalSeeds_*_*_*",
-		       "keep mu2e::TimeClusters_*_*_*",
-		       "keep mu2e::CrvCoincidenceClusters_*_*_*",
-                       "keep mu2e::CaloDigis_*_*_*",
-		       "keep mu2e::HelixSeeds_*_*_*",
-		       "keep mu2e::EventWindowMarker_*_*_*",
-		       "keep mu2e::StrawDigis_*_*_*",
-		       "keep mu2e::CrvDigis_*_*_*"]
-    fileName : "${outnameData}"
-  }
+#  OutputData : {
+#    module_type : RootOutput
+#    outputCommands : @local::Ensemble.OutputCommandsData
+#    fileName : "${outnameData}"
+#  }
 }
 

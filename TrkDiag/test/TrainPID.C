@@ -163,12 +163,14 @@ TrainPID(TChain* Cetree,TChain* Mutree)
       "!V:!Silent:Color:DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification" );
 
 // must be a good fit
-  TCut goodfit = "de.status>0 && detch.active && de.td<1.1 && de.mom>85.0 && de.mom<125";
+  TCut goodfit = "de.status>0 && detrkpid.mvastat==2 && deent.td<1.1 && deent.td>0.4 && deent.mom>80.0 && deent.mom<130 && detrkqual.mvaout>0.8";
 // require a good downstream particle
-  TCut goodmu = "demcxit.momz>0 && abs(demc.pdg)==13";
-  TCut goode = "demc.pdg==11 && demc.gen==2";
+  TCut goodmu = "abs(demc.pdg)==13";
+//  TCut bade = "abs(demc.pdg)==11 && demc.pdg*de.pdg<0";
+  TCut goode = "abs(demc.pdg)==11 && demc.pdg*de.pdg>0";
 
   TCut sigcut = goodfit + goode;
+//  TCut bkgcut = goodfit + (goodmu || bade);
   TCut bkgcut = goodfit + goodmu;
   // If you wish to modify default settings
   // (please check "src/Config.h" to see all available global options)
@@ -183,14 +185,18 @@ TrainPID(TChain* Cetree,TChain* Mutree)
   // note that you may also use variable expressions, such as: "3*var1/var2*abs(var3)"
   // [all types of expressions that can also be parsed by TTree::Draw( "expression" )]
 
-  dataloader->AddVariable("detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)",
-    "EoverP","Fraction",'F');
-  dataloader->AddVariable("detch.clen","CDepth","mm",'F');
+//  dataloader->AddVariable("detch.edep/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)", "eEoverP","Fraction",'F');
+//  dataloader->AddVariable("2*(detch.edep-dexit.mom)/(detch.edep+dexit.mom)",'F');
+  dataloader->AddVariable("detrkpid.DeltaE","DeltaE","MeV",'F');
+  dataloader->AddVariable("detrkpid.ClusterLength","ClusterLength","mm",'F');
 //  dataloader->AddVariable("detch.doca","DOCA","mm",'F');
-  dataloader->AddVariable("sqrt(detch.POCAx^2+detch.POCAy^2)", "RPOCA","mm",'F');
-  dataloader->AddVariable("(detch.POCAx*detch.momx+detch.POCAy*detch.momy)/sqrt(detch.POCAx^2+detch.POCAy^2)/sqrt(detch.momx^2+detch.momy^2+detch.momz^2)", "TrkDir","Fraction",'F');
-  dataloader->AddVariable("detch.t0 - detch.ctime - min(200.0,max(0.0,detch.clen))*0.005","Dt","nsec",'F');
+//  dataloader->AddVariable("detrkpid.RPOCA", "RPOCA","mm",'F');
+  dataloader->AddVariable("detrkpid.RPOCA", "RPOCA","mm",'F');
+  dataloader->AddVariable("detrkpid.TrackDirection", "TrackDirection","Fraction",'F');
+  dataloader->AddVariable("detrkpid.DeltaT","DeltaT","nsec",'F');
+//  dataloader->AddVariable("de.fitcon","FitCon","none",'F');
 //  dataloader->AddVariable("detch.POCAz","POCAz","mm",'F');
+//  dataloader->AddVariable("detrkqual.mvaout","TrkQual","none",'F');
 
   // You can add so-called "Spectator variables", which are not used in the MVA training,
   // but will appear in the final "TestTree" produced by TMVA. This TestTree will contain the

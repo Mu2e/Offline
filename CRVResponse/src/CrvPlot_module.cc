@@ -243,9 +243,9 @@ namespace mu2e
           const CrvRecoPulse &crvRecoPulse = crvRecoPulseCollection->at(recoPulseIndex);
           if(crvRecoPulse.GetScintillatorBarIndex()==barIndex && crvRecoPulse.GetSiPMNumber()==SiPM) 
           {
-            double fitParam0 = crvRecoPulse.GetPulseHeight()*2.718;
+            double fitParam0 = crvRecoPulse.GetPulseHeight()*TMath::E();
             double fitParam1 = crvRecoPulse.GetPulseTime();
-            double fitParam2 = crvRecoPulse.GetPulseWidth()/1.283;
+            double fitParam2 = crvRecoPulse.GetPulseBeta();
 
             double tF1=fitParam1 - 2.0*fitParam2;
             double tF2=fitParam1 + 8.0*fitParam2;

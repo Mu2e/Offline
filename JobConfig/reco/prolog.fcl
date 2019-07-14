@@ -175,6 +175,7 @@ Reconstruction : {
       crvDigiMCIndexMapTag : "SelectRecoMC:CrvDigiMap"
       oldCaloShowerSimTag : "CaloFix"
       newCaloShowerSimTag : "compressRecoMCs"
+      checkTrackerDuplicateSteps : false
     }
   }
 # reconstruct multiple types of tracks.  These are separate sequences to allow granular execution

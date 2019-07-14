@@ -33,6 +33,8 @@ namespace mu2e {
 	double& pFractionRMS,
 	double& pFraction,
 	trkDirection dedxdir=trkOut) const;
+    // override KalMaterial function which is broken and shouldn't be used
+    double radiationFraction(const DetIntersection&) const;
     // accessors
     const Straw* straw() const { return _straw; }
     const Trajectory* wireTraj() const { return _wtraj; }
