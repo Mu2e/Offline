@@ -17,7 +17,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <memory>
 
@@ -58,7 +58,8 @@ private:
 
 
 mu2e::FixTrackerStepPointMCs::FixTrackerStepPointMCs(const Parameters& conf)
-  : _conf(conf())
+  : EDProducer(conf),
+    _conf(conf())
 {
   // Call appropriate produces<>() functions here.
   produces<StepPointMCCollection>("tracker");
@@ -84,7 +85,7 @@ void mu2e::FixTrackerStepPointMCs::produce(art::Event & event)
     if (!already_added) {
       newTrackerSteps->push_back(i_oldTrackerStep);
     }
-  }    
+  }
   event.put(std::move(newTrackerSteps), "tracker");
 }
 
