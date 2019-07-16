@@ -52,7 +52,7 @@ double ifb.endwindow.z          = 3277.; // had been at 3182.
 double ifb.endwindow.rIn        = 0.;
 double ifb.endwindow.rOut       = 110.;
 //CRV requires 1 cm of plastic plug in IFB.
-double ifb.endwindow.halfLength = 0.7; // mm --> so 1.4 mm thick
+double ifb.endwindow.halfLength = 0.8; // mm --> so 1.6 mm thick
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:
