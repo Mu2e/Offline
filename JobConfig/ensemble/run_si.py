@@ -103,6 +103,8 @@ weights = {signal: mean_reco_events[signal]/float(total_sample_events) for signa
 
 fin = open("JobConfig/ensemble/SamplingInput.fcl")
 t = Template(fin.read())
+fin2 = open("JobConfig/ensemble/MCtoData.fcl")
+t2 = Template(fin2.read())
 
 subrun = 0
 
@@ -126,6 +128,7 @@ while True:
   d = {}
   d["datasets"] = datasets
   d["outnameMC"] = os.path.join(outpath,"mcs.mu2e.ensemble-MC.MDC2018h.%06d_%08d.art" % (run,subrun))
+  d["inname"] = d["outnameMC"]
   d["outnameData"] = os.path.join(outpath,"mcs.mu2e.ensemble-Data.MDC2018h.%06d_%08d.art" % (run,subrun))
   d["run"] = run
   d["subRun"] = subrun
@@ -133,6 +136,10 @@ while True:
   fout = open(os.path.join(dirname,"SamplingInput_sr%d.fcl" % (subrun)),"w")
   fout.write(t.substitute(d))
   fout.close()
+
+  fout2 = open(os.path.join(dirname,"MCtoData_sr%d.fcl" % (subrun)),"w")
+  fout2.write(t2.substitute(d))
+  fout2.close()
 
   flog = open(os.path.join(dirname,"SamplingInput_sr%d.log" % (subrun)),"w")
   
@@ -163,5 +170,9 @@ while True:
     if currently_used_events[signal] > max_possible_events[signal]:
       print "SIGNAL",signal,"HAS RUN OUT OF EVENTS!",currently_used_events[signal],max_possible_events[signal]
     print "SIGNAL",signal,currently_used_events[signal],max_possible_events[signal]
+
+  cmd = ["mu2e","-c",os.path.join(dirname,"MCtoData_sr%d.fcl" % (subrun))]
+  p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
+  p.wait()
   subrun+=1
 

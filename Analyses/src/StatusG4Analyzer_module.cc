@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Provenance.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "MCDataProducts/inc/StatusG4.hh"
 

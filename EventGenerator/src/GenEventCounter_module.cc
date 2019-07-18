@@ -34,7 +34,8 @@ namespace mu2e {
 
   //================================================================
   GenEventCounter::GenEventCounter(const fhicl::ParameterSet& pset)
-    : seenEvents_(0)
+    : art::EDProducer{pset},
+      seenEvents_(0)
   {
     produces<mu2e::GenEventCount, art::InSubRun>();
   }

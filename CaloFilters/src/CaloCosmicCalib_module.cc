@@ -47,6 +47,7 @@ namespace mu2e
   };
 
   CaloCosmicCalib::CaloCosmicCalib(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _clTag          (pset.get<art::InputTag>("CaloClusterCollection")),
     _minncrystalhits(pset.get<int>          ("MinNCrystalHits")),
     _minenergy      (pset.get<double>       ("MinEnergy")), //MeV
@@ -85,7 +86,7 @@ namespace mu2e
       int   clsize     = cl.size();
       
       if(_debug > 2){
-        cout << *currentContext()->moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << endl;
+        cout << moduleDescription().moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << endl;
       }
       if( (energy >= _minenergy) && 
 	  (energy <= _maxenergy) && 
@@ -100,7 +101,7 @@ namespace mu2e
         size_t index = std::distance(clcol->begin(),icl);
         triginfo->_caloCluster = art::Ptr<CaloCluster>(clH,index);
         if(_debug > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
         break;
       }
@@ -111,7 +112,7 @@ namespace mu2e
 
   bool CaloCosmicCalib::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

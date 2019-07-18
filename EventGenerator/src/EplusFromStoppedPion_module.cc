@@ -33,7 +33,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // Root includes.
@@ -92,7 +92,7 @@ namespace mu2e {
   };
 
   EplusFromStoppedPion::EplusFromStoppedPion(fhicl::ParameterSet const& pset):
-
+    EDProducer{pset},
     // Run time arguments from the pset.
     inputModuleLabel_(pset.get<string>("inputModuleLabel")),
 

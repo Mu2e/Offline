@@ -18,7 +18,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 //ROOTs
@@ -176,6 +176,7 @@ int findlowhist(float d){
   };
 
   ParticleID::ParticleID(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _fitterModuleLabel   (pset.get<string>("fitterModuleLabel")),
     _electronTemplateFile(pset.get<string>("ElectronTemplates")),
     _muonTemplateFile    (pset.get<string>("MuonTemplates"    )),

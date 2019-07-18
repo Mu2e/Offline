@@ -7,6 +7,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/IO/ProductMix/MixHelper.h"
 #include "art/Framework/Modules/MixFilter.h"
+#include "art_root_io/RootIOPolicy.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -70,7 +71,7 @@ namespace mu2e {
 //================================================================
 namespace mu2e {
   // This is the module class.
-  typedef art::MixFilter<ResamplingMixerDetail> ResamplingMixer;
+  typedef art::MixFilter<ResamplingMixerDetail,art::RootIOPolicy> ResamplingMixer;
 
 }
 

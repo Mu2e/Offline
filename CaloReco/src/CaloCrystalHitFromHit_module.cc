@@ -1,8 +1,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -25,7 +25,7 @@ namespace mu2e {
   public:
 
     explicit CaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
-
+      art::EDProducer{pset},
       caloDigisToken_{consumes<CaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
       time4Merge_          (pset.get<double>     ("time4Merge")),
       diagLevel_           (pset.get<int>        ("diagLevel",0))

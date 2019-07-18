@@ -34,7 +34,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -117,6 +117,7 @@ namespace mu2e {
 
 
   CaloLikelihood::CaloLikelihood(const fhicl::ParameterSet & pset) :
+    art::EDFilter{pset},
     _diagLevel                   (pset.get<int>("diagLevel",0)),
     _nProcess                    (0),
     _nPass                       (0),
@@ -270,7 +271,7 @@ namespace mu2e {
 
   bool CaloLikelihood::endRun( art::Run& run ) {
     if(_diagLevel > 0 && _nProcess > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
     }
     return true;
   }
@@ -430,7 +431,7 @@ namespace mu2e {
         triginfo->_caloCluster = art::Ptr<CaloCluster>(clH, index);
         
 	if(_diagLevel > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << event.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
         }
 	
         break;

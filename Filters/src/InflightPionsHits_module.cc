@@ -23,7 +23,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Root includes
 #include "TH1F.h"
@@ -102,6 +102,7 @@ namespace mu2e {
   };
 
   InflightPionHits::InflightPionHits(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     strawHitMakerLabel_(pset.get<string>("strawHitMakerLabel")), 

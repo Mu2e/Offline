@@ -15,9 +15,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -67,6 +67,7 @@ namespace mu2e {
        public:
 
 	   explicit TrackCaloMatchingMVA(fhicl::ParameterSet const& pset):
+             art::EDProducer{pset},
 	     caloClusterModuleLabel_    (pset.get<std::string>("caloClusterModuleLabel")),
 	     trkIntersectModuleLabel_   (pset.get<std::string>("trkIntersectModuleLabel")),
              BDTWeightsX_               (pset.get<std::string>("BDTWeightsX")),

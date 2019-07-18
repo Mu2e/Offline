@@ -63,7 +63,8 @@ namespace mu2e {
 
   //================================================================
   FilterStepPointAngleVsTarget::FilterStepPointAngleVsTarget(const fhicl::ParameterSet& pset)
-    : numInputHits_()
+    : art::EDFilter{pset}
+    , numInputHits_()
     , numOutputHits_()
     , numInputEvents_()
     , numPassedEvents_()

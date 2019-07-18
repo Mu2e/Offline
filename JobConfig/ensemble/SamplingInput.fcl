@@ -14,8 +14,7 @@ ${datasets}
 
 physics :
 {
-  TriggerPath : [ ]
-  EndPath : [ OutputMC, OutputData ]
+  EndPath : [ OutputMC ]
   end_paths : [ EndPath ] # needed for generate_fcl
 }
 
@@ -26,10 +25,10 @@ outputs : {
     fileName : "${outnameMC}"
   }
 
-  OutputData : {
-    module_type : RootOutput
-    outputCommands : @local::Ensemble.OutputCommandsData
-    fileName : "${outnameData}"
-  }
+#  OutputData : {
+#    module_type : RootOutput
+#    outputCommands : @local::Ensemble.OutputCommandsData
+#    fileName : "${outnameData}"
+#  }
 }
 

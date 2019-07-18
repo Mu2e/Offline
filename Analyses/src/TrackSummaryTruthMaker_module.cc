@@ -40,7 +40,8 @@ namespace mu2e {
 
   //================================================================
   TrackSummaryTruthMaker::TrackSummaryTruthMaker(const fhicl::ParameterSet& pset)
-    : recoMapInput_(pset.get<std::string>("recoMapInput"))
+    : art::EDProducer{pset}
+    , recoMapInput_(pset.get<std::string>("recoMapInput"))
     , strawHitDigiMCInput_(pset.get<std::string>("strawHitDigiMCInput"))
     , minPrincipalHits_(pset.get<unsigned>("minPrincipalHits"))
     , minAllHits_(pset.get<unsigned>("minAllHits"))

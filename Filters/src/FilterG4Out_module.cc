@@ -166,7 +166,8 @@ namespace mu2e {
 
   //================================================================
   FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
-    : compressGenParticles_(pset.get<bool>("compressGenParticles", false))
+    : art::EDFilter{pset}
+    , compressGenParticles_(pset.get<bool>("compressGenParticles", false))
     , numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
@@ -366,7 +367,7 @@ namespace mu2e {
     PIDMap partCollMap;
 
     std::unique_ptr<GenParticleCollection> genParts(new GenParticleCollection());
-    art::ProductID newGenPID(compressGenParticles_ ? getProductID<GenParticleCollection>() : art::ProductID());
+    art::ProductID newGenPID(compressGenParticles_ ? event.getProductID<GenParticleCollection>() : art::ProductID());
     const art::EDProductGetter *newGenGetter(compressGenParticles_ ? event.productGetter(newGenPID) : nullptr);
 
     for(const auto& iopair : spim) {
@@ -374,7 +375,7 @@ namespace mu2e {
       const auto& outInstance = iopair.second;
 
       std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-      art::ProductID newParticlesPID(getProductID<SimParticleCollection>(outInstance));
+      art::ProductID newParticlesPID(event.getProductID<SimParticleCollection>(outInstance));
       const art::EDProductGetter *newParticlesGetter(event.productGetter(newParticlesPID));
 
       // Is there anything to copy into this output?

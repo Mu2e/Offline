@@ -52,7 +52,8 @@ namespace mu2e {
 
   //================================================================
   GenerateMuonLife::GenerateMuonLife(const fhicl::ParameterSet& pset)
-    : rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
+    : EDProducer{pset}
+    , rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , mean_(getMean(pset))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
   {

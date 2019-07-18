@@ -22,7 +22,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <memory>
 
@@ -158,7 +158,8 @@ private:
 
 
 mu2e::CompressStepPointMCs::CompressStepPointMCs(fhicl::ParameterSet const & pset)
-  : _stepPointMCTags(pset.get<std::vector<art::InputTag> >("stepPointMCTags")),
+  : art::EDFilter{pset},
+    _stepPointMCTags(pset.get<std::vector<art::InputTag> >("stepPointMCTags")),
     _caloShowerStepTags(pset.get<std::vector<art::InputTag> >("caloShowerStepTags")),
     _simParticleTag(pset.get<art::InputTag>("simParticleTag")),
     _timeMapTags(pset.get<std::vector<art::InputTag> >("timeMapTags")),
@@ -203,11 +204,11 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   _simParticlesToKeep.clear();
     
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
-  _newSimParticlesPID = getProductID<SimParticleCollection>();
+  _newSimParticlesPID = event.getProductID<SimParticleCollection>();
   _newSimParticleGetter = event.productGetter(_newSimParticlesPID);
     
   _newGenParticles = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
-  _newGenParticlesPID = getProductID<GenParticleCollection>();
+  _newGenParticlesPID = event.getProductID<GenParticleCollection>();
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
 
   _oldTimeMaps.clear();
@@ -233,7 +234,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   _newStepPointMCs.clear();
   for (const auto& i_stepTag : _stepPointMCTags) {
     _newStepPointMCs.push_back(std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection));  
-    _newStepPointMCsPID = getProductID<StepPointMCCollection>( i_stepTag.instance() );
+    _newStepPointMCsPID = event.getProductID<StepPointMCCollection>( i_stepTag.instance() );
     _newStepPointMCGetter = event.productGetter(_newStepPointMCsPID);
 
     event.getByLabel(i_stepTag, _stepPointMCsHandle);
@@ -279,7 +280,7 @@ bool mu2e::CompressStepPointMCs::filter(art::Event & event)
   _newCaloShowerSteps.clear();
   for (const auto& i_caloStepTag : _caloShowerStepTags) {
     _newCaloShowerSteps.push_back(std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection));  
-    _newCaloShowerStepsPID = getProductID<CaloShowerStepCollection>( i_caloStepTag.label() );
+    _newCaloShowerStepsPID = event.getProductID<CaloShowerStepCollection>( i_caloStepTag.label() );
     _newCaloShowerStepGetter = event.productGetter(_newCaloShowerStepsPID);
 
     event.getByLabel(i_caloStepTag, _caloShowerStepsHandle);

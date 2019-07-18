@@ -10,7 +10,7 @@
 #include <utility>
 
 // Framework include files
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"

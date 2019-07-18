@@ -32,7 +32,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
@@ -171,7 +171,8 @@ namespace mu2e {
 
     //================================================================
     ExtMonFNALBoxGenerator::ExtMonFNALBoxGenerator(const fhicl::ParameterSet& pset)
-      : verbosityLevel_(pset.get<int>("verbosityLevel"))
+      : EDProducer{pset}
+      , verbosityLevel_(pset.get<int>("verbosityLevel"))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
       , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
 
@@ -434,10 +435,10 @@ namespace mu2e {
                                                           MARSInfoCollection *info,
                                                           GenParticleMARSAssns *assns) {
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
+      const art::ProductID particlesPID = event.getProductID<GenParticleCollection>();
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
+      const art::ProductID marsPID = event.getProductID<MARSInfoCollection>();
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       const int numStopProtons = randPoisson_.fire(numPrimaryProtonsPerMicrobunch_ * primaryProtonStopEfficiency_);
@@ -500,10 +501,10 @@ namespace mu2e {
                                                     MARSInfoCollection *info,
                                                     GenParticleMARSAssns *assns) {
 
-      const art::ProductID particlesPID = getProductID<GenParticleCollection>();
+      const art::ProductID particlesPID = event.getProductID<GenParticleCollection>();
       const art::EDProductGetter *particlesGetter = event.productGetter(particlesPID);
 
-      const art::ProductID marsPID = getProductID<MARSInfoCollection>();
+      const art::ProductID marsPID = event.getProductID<MARSInfoCollection>();
       const art::EDProductGetter *marsGetter = event.productGetter(marsPID);
 
       const int numHitProtons = randPoisson_.fire(numPrimaryProtonsPerMicrobunch_ * primaryProtonHitEfficiency_);

@@ -45,7 +45,8 @@ namespace mu2e {
 
   public:
     explicit ExtMonFNALRecoClusterization(fhicl::ParameterSet const& pset)
-      : verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+      : EDProducer{pset}
+      , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
       , inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
       , inputInstanceName_(pset.get<std::string>("inputInstanceName", ""))
       , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))

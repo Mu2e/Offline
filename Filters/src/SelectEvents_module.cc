@@ -41,6 +41,7 @@ namespace mu2e {
   };
 
   SelectEvents::SelectEvents(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _events(pset.get<std::vector<unsigned> >("events")),
     _verbose(pset.get<bool>("verbose",false)) {
   }

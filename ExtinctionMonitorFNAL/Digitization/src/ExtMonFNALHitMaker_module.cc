@@ -79,7 +79,8 @@ namespace mu2e {
 
     public:
       explicit ExtMonFNALHitMaker(fhicl::ParameterSet const& pset)
-        : inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
+        : EDProducer{pset}
+        , inputModuleLabel_(pset.get<std::string>("inputModuleLabel"))
         , inputInstanceName_(pset.get<std::string>("inputInstanceName"))
         , geomModuleLabel_(pset.get<std::string>("geomModuleLabel"))
         , geomInstanceName_(pset.get<std::string>("geomInstanceName", ""))
@@ -350,7 +351,7 @@ namespace mu2e {
       // Hits near microbunch boundaries are duplicated.
       foldHitTimes(&pixcharges);
 
-      const art::ProductID hitsPID = getProductID<ExtMonFNALRawHitCollection>();
+      const art::ProductID hitsPID = event.getProductID<ExtMonFNALRawHitCollection>();
       const art::EDProductGetter *hitsGetter = event.productGetter(hitsPID);
       discriminate(&*outHits, &*outTruth, hitsPID, hitsGetter, pixcharges);
 

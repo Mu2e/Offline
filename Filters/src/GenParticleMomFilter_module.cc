@@ -44,6 +44,7 @@ namespace mu2e {
   };
 
   GenParticleMomFilter::GenParticleMomFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _genParticleModule(pset.get<std::string>("genParticleModule","compressDigiMCs")),
     _momCutoff(pset.get<double>("MomentumCutoff")),
     _cutoffPDG(PDGCode::type(pset.get<int>("CutoffPDG",0))),

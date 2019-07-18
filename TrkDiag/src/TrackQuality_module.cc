@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
@@ -51,6 +51,7 @@ namespace mu2e
   };
 
   TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _kalSeedTag(pset.get<art::InputTag>("KalSeedCollection", "")),
     _trkqualmva(new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
 

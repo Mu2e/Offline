@@ -62,6 +62,7 @@ namespace mu2e {
 
   //================================================================
   StoppedMuplusDecayGun::StoppedMuplusDecayGun(const fhicl::ParameterSet& pset) :
+    EDProducer{pset},
     eng_             (createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , czmin_           (pset.get<double>("czmin" , -1.0))
     , czmax_           (pset.get<double>("czmax" ,  1.0))

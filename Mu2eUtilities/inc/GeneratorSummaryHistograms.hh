@@ -12,7 +12,7 @@
 
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include <string>
 

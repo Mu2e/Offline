@@ -11,7 +11,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Utilities/make_tool.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/Atom.h"
@@ -64,6 +63,7 @@ namespace mu2e {
   };
 
   TrackPID::TrackPID(const Parameters& config ) :
+    art::EDProducer(config),
     _debug(config().debug()),
     _maxde(config().MaxDE()),
     _dtoffset(config().DT()),
