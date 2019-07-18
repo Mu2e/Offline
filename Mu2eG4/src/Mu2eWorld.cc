@@ -151,6 +151,7 @@ namespace mu2e {
     , g4DeltaIntersection_(_config.getDouble("g4.deltaIntersection")*CLHEP::mm)
     , g4DeltaChord_(_config.getDouble("g4.deltaChord")*CLHEP::mm)
     , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.)*CLHEP::mm)
+    , strawGasMaxStep_(_config.getDouble("strawGas.maxStep", 20.)*CLHEP::mm)
     , useEmOption4InTracker_(_config.getBool("g4.useEmOption4InTracker",false))
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
@@ -173,6 +174,7 @@ namespace mu2e {
     , g4StepMinimum_(pset.get<double>("physics.stepMinimum")*CLHEP::mm)
     , g4MaxIntSteps_(pset.get<int>("physics.maxIntSteps"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
+    , strawGasMaxStep_(pset.get<double>("physics.strawGasMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
     , useEmOption4InTracker_(pset.get<bool>("physics.useEmOption4InTracker",false))
   {
@@ -482,7 +484,7 @@ namespace mu2e {
 #endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
-      if ( _g4VerbosityLevel > -1 ) G4cout << __func__ << "Using default G4SimpleRunge stepper" << G4endl;
+      if ( _g4VerbosityLevel > -1 ) G4cout << __func__ << " Using default G4SimpleRunge stepper" << G4endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,g4StepMinimum_,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -496,15 +498,15 @@ namespace mu2e {
     // Define uniform field region in the detector solenoid, if neccessary
     if (bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
-      if ( _verbosityLevel > 0 ) G4cout << __func__ << "Use uniform field in DS2" << G4endl;
+      if ( _verbosityLevel > 0 ) G4cout << __func__ << " Use uniform field in DS2" << G4endl;
     }
     if (bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform || bfConfig->dsFieldForm() == BFieldConfig::dsModelSplit){
       if( needDSGradient ) {
         ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
-      if ( _verbosityLevel > 0 ) G4cout << __func__ << "Use gradient field in DS3" << G4endl;
+      if ( _verbosityLevel > 0 ) G4cout << __func__ << " Use gradient field in DS3" << G4endl;
       } else {
         ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-        if ( _verbosityLevel > 0 ) G4cout << __func__ << "Use uniform field in DS3" << G4endl;
+        if ( _verbosityLevel > 0 ) G4cout << __func__ << " Use uniform field in DS3" << G4endl;
       }
 
       // if( _config.getBool("hasMBS",false) ) {
@@ -562,7 +564,7 @@ namespace mu2e {
     for ( auto v : vols ){
       v->logical->SetUserLimits( stepLimit );
       if(_g4VerbosityLevel > 0)  {
-        G4cout << __func__ <<"Activated step limit for volume "<<v->logical->GetName() << G4endl;
+        G4cout << __func__ << " Activated step limit for volume "<<v->logical->GetName() << G4endl;
       }
     }
   }
@@ -633,7 +635,7 @@ namespace mu2e {
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
     if(_g4VerbosityLevel > 0) {
-      G4cout << __func__<<"Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<G4endl;
+      G4cout << __func__ << " Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<G4endl;
     }
 
     // Add the step limiters to the interesting volumes.
@@ -673,6 +675,17 @@ namespace mu2e {
     stepLimiterHelper("^TrackerPlaneEnvelope_.*$",                 stepLimit );
     stepLimiterHelper("^TrackerSupportServiceEnvelope_.*$",        stepLimit );
     stepLimiterHelper("^TrackerSupportServiceSectionEnvelope_.*$", stepLimit );
+
+    // special case for straws to get the energy deposits right
+
+    if (strawGasMaxStep_>0.0) {
+      G4UserLimits* strawGasStepLimit = reg.add( G4UserLimits(strawGasMaxStep_) );
+      if(_g4VerbosityLevel > 0) {
+        G4cout << __func__<< " Using strawGas step limit = "
+               <<strawGasMaxStep_/CLHEP::mm<<" mm"<<G4endl;
+      }
+      stepLimiterHelper("^TrackerStrawGas_.*$", strawGasStepLimit);
+    }
 
     // and the calorimeter elements
 

@@ -59,7 +59,8 @@ mu2eg4DefaultPhysics: {
     stepMinimum       : 1.0e-2 // mm minimum size of the integration step
     maxIntSteps       : 1000 // maximum of internal integration steps per physical step
     rangeToIgnore     : 0.00001 // below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
-    bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
+    bfieldMaxStep     : 20. // mm;  value used in step limmiter, impacts tracking accuracy as well
+    strawGasMaxStep   : 1.0 // mm;  for straw step limmiter, impacts tracking accuracy as well
     limitStepInAllVolumes: false
 }
 #----------------
