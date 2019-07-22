@@ -15,7 +15,7 @@ namespace mu2e {
 // enumerate the input varibles used in TrkCaloHitPID.  The order should match that used in
 // the MVA configuration (XML).  The names may optionally be required to match exactly what's in the
 // MVA configuration
-    enum MVA_varindex { KEmu_over_p = 0,ClusterLen, RPOCA, TrkDir, DeltaT , n_vars};
+    enum MVA_varindex { DeltaE= 0,ClusterLen, RPOCA, TrkDir, DeltaT , n_vars};
     typedef std::map<std::string,MVA_varindex> map_type;
     static std::string const& typeName();
     static std::map<std::string,MVA_varindex> const& varNames();

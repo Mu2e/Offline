@@ -431,9 +431,12 @@ namespace mu2e {
       event.getByLabel(_conf.kalSeedMCTag(),_ksmcah);
       event.getByLabel(_conf.caloClusterMCTag(),_ccmcah);
     }
-    // reset
-    resetBranches();
-
+    // reset event level structs
+    _einfo.reset();
+    _hcnt.reset();
+    _tcnt.reset();
+    _hinfo.reset();
+    _wtinfo.reset();
     // fill track counts
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       _tcnt._counts[i_branch] = (_allKSCHs.at(i_branch))->size();
@@ -447,6 +450,9 @@ namespace mu2e {
     const auto& candidateKSCH = _allKSCHs.at(_candidateIndex);
     const auto& candidateKSC = *candidateKSCH;
     for (size_t i_kseed = 0; i_kseed < candidateKSC.size(); ++i_kseed) {
+    // reset
+      resetBranches();
+
       auto const& candidateKS = candidateKSC.at(i_kseed);
       fillAllInfos(candidateKSCH, _candidateIndex, i_kseed); // fill the info structs for the candidate
 
@@ -665,9 +671,10 @@ namespace mu2e {
 	if(iksmca->first == kptr) {
 	  auto const& kseedmc = *(iksmca->second);
 	  _infoMCStructHelper.fillTrkInfoMC(kseedmc, _allMCTIs.at(i_branch));
-	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCEntTIs.at(i_branch), _entvids);
-	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCMidTIs.at(i_branch), _midvids);
-	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCXitTIs.at(i_branch), _xitvids);
+	  double t0 = kseed.t0().t0();
+	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCEntTIs.at(i_branch), _entvids, t0);
+	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCMidTIs.at(i_branch), _midvids, t0);
+	  _infoMCStructHelper.fillTrkInfoMCStep(kseedmc, _allMCXitTIs.at(i_branch), _xitvids, t0);
 	  _infoMCStructHelper.fillGenAndPriInfo(kseedmc, primary, _allMCPriTIs.at(i_branch), _allMCGenTIs.at(i_branch));
 	    
 	  if (_conf.diag()>1 && i_branch == _candidateIndex) {
@@ -701,10 +708,13 @@ namespace mu2e {
       for (const auto& i_handle : handles) {
 	std::string moduleLabel = i_handle.provenance()->moduleLabel();
 	// event.getMany() doesn't have a way to wildcard part of the ModuleLabel, do it ourselves here
+	size_t pos;
 	if (selection != "") { // if we want to add a selection
-	  if (moduleLabel.find(selection) == std::string::npos) { // check to see if this appears
+	  pos = moduleLabel.find(selection);
+	  if (pos == std::string::npos) { // check to see if this appears
 	    continue;
 	  }
+	  moduleLabel = moduleLabel.erase(pos, selection.length());
 	}
 	std::string instanceName = i_handle.provenance()->productInstanceName();
 
@@ -723,12 +733,6 @@ namespace mu2e {
   }
 
   void TrackAnalysisReco::resetBranches() {
-    // reset structs
-    _einfo.reset();
-    _hcnt.reset();
-    _tcnt.reset();
-    _hinfo.reset();
-    _wtinfo.reset();
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       _allTIs.at(i_branch).reset();
       _allEntTIs.at(i_branch).reset();

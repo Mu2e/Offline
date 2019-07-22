@@ -39,10 +39,10 @@ sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 1 ]/' CRVR
 sed -i '691s/.*/physics.producers.CrvPhotons.reflectors           : [ 0 ]/' CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl
 
 i=0
-name=CRV_Efficiency_check_T
+name=CRV_Efficiency_check_L
 layerOffset=42
 #layerOffset=0
-moduleGap="2.0"
+moduleGap="3.0"
 gapSmall="0.0"
 gapLarge="0.46"
 #PEYield=44
@@ -61,12 +61,12 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         dz=`echo "821.44+$moduleGap+7*$gapLarge+8*$gapSmall" | bc -l`
 
         genconfigfile=CRVResponse/efficiencyCheck/submit/genconfig'_'$name'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/genconfig_T.txt\"" >| $genconfigfile
+        #echo "#include \"CRVResponse/efficiencyCheck/genconfig_T.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_T4.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_TS.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_E.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_R.txt\"" >| $genconfigfile
-        #echo "#include \"CRVResponse/efficiencyCheck/genconfig_L.txt\"" >| $genconfigfile
+        echo "#include \"CRVResponse/efficiencyCheck/genconfig_L.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_U.txt\"" >| $genconfigfile
         #echo "#include \"CRVResponse/efficiencyCheck/genconfig_D.txt\"" >| $genconfigfile
 
@@ -75,11 +75,11 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         echo "double cosmicFromTH2.dz = $dz;" >> $genconfigfile  #for T,T4,TS,R,L
 
         geomfile=CRVResponse/efficiencyCheck/submit/geom'_'$name'_'$i.txt
-        echo "#include \"CRVResponse/efficiencyCheck/geom_T.txt\"" >| $geomfile
+        #echo "#include \"CRVResponse/efficiencyCheck/geom_T.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_TS.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_E.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_R.txt\"" >| $geomfile
-        #echo "#include \"CRVResponse/efficiencyCheck/geom_L.txt\"" >| $geomfile
+        echo "#include \"CRVResponse/efficiencyCheck/geom_L.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_U.txt\"" >| $geomfile
         #echo "#include \"CRVResponse/efficiencyCheck/geom_D.txt\"" >| $geomfile
 
@@ -89,17 +89,18 @@ joblist=CRVResponse/efficiencyCheck/jobs.sh
         echo "double crs.layerOffset       = $layerOffset;" >> $geomfile
 
         fclfile=CRVResponse/efficiencyCheck/submit/$name'_'$i.fcl
-        echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl\"" >| $fclfile
+        #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_T.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_TS.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_E.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_R.fcl\"" >| $fclfile
-        #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl\"" >| $fclfile
+        echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_L.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_U.fcl\"" >| $fclfile
         #echo "#include \"CRVResponse/efficiencyCheck/submit/CRV_Efficiency_check_D.fcl\"" >| $fclfile
 
         echo "services.GeometryService.inputFile                      : \"$geomfile\"" >> $fclfile
         echo "physics.producers.generate.inputfile                    : \"$genconfigfile\"" >> $fclfile
         echo "physics.producers.CrvPhotons.scintillationYield         : $photonYield" >> $fclfile
+        echo "physics.producers.CrvSiPMCharges.deadSiPMProbability    : 0.02" >> $fclfile
 
         generate_fcl --description=$name --dsconf=$i --run=1 --events=100000 --njobs=20 --include $fclfile
         tar -zcvf fcls.$name.$i.tar.gz 000/cnf.$USER.$name.$i.*.fcl

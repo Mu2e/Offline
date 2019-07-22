@@ -75,6 +75,7 @@ class ContentSelector
     int classID, index;
     std::string entryText;
     std::string moduleLabel, productInstanceName;
+    art::ProductID productId;
   };
 
   private:

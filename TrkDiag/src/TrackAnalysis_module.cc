@@ -569,7 +569,8 @@ namespace mu2e {
       TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
       trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
     }
-    trkqualInfo._trkqual = tqual.MVAOutput();
+    trkqualInfo._mvaout = tqual.MVAOutput();
+    trkqualInfo._mvastat = tqual.status();
   }
 }  // end namespace mu2e
 

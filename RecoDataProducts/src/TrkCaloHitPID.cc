@@ -12,7 +12,7 @@ namespace mu2e {
   std::map<std::string,TrkCaloHitPIDDetail::MVA_varindex> const& TrkCaloHitPIDDetail::varNames() {
     static std::map<std::string,TrkCaloHitPIDDetail::MVA_varindex> varnames;
     if(varnames.size()==0){
-      varnames[std::string("KEmu_Over_P")]	  = TrkCaloHitPIDDetail::KEmu_over_p;
+      varnames[std::string("DeltaE")]	  = TrkCaloHitPIDDetail::DeltaE;
       varnames[std::string("ClusterLength")]  = TrkCaloHitPIDDetail::ClusterLen;
       varnames[std::string("RPOCA")]	  = TrkCaloHitPIDDetail::RPOCA;
       varnames[std::string("TrackDirection")]		  = TrkCaloHitPIDDetail::TrkDir;

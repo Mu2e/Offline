@@ -308,9 +308,9 @@ belowCrvCutD:
 CrvCoincidenceT: @local::CrvCoincidence
 CrvCoincidenceT.verboseLevel                  : 0
 CrvCoincidenceT.CRVSectors                    : ["Test"]
-CrvCoincidenceT.adjacentPulseTimeDifferences  : [   5  ]
+CrvCoincidenceT.adjacentPulseTimeDifferences  : [  10  ]
 CrvCoincidenceT.useFourLayers                 : [ false]
-CrvCoincidenceT.muonsOnly                     : true
+CrvCoincidenceT.muonsOnly                     : false
 CrvCoincidenceT.muonMinTime                   :  20.0  //ns
 CrvCoincidenceT.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceT.genParticleModuleLabel        : "generate" 
@@ -320,7 +320,7 @@ CrvCoincidenceTS.verboseLevel                  : 0
 CrvCoincidenceTS.CRVSectors                    : ["Test"]
 CrvCoincidenceTS.adjacentPulseTimeDifferences  : [  10  ]
 CrvCoincidenceTS.useFourLayers                 : [ true ]
-CrvCoincidenceTS.muonsOnly                     : true
+CrvCoincidenceTS.muonsOnly                     : false
 CrvCoincidenceTS.muonMinTime                   :  20.0  //ns
 CrvCoincidenceTS.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceTS.genParticleModuleLabel        : "generate" 
@@ -330,7 +330,7 @@ CrvCoincidenceE.verboseLevel                  : 0
 CrvCoincidenceE.CRVSectors                    : ["Test"]
 CrvCoincidenceE.adjacentPulseTimeDifferences  : [  10  ]
 CrvCoincidenceE.useFourLayers                 : [ true ]
-CrvCoincidenceE.muonsOnly                     : true
+CrvCoincidenceE.muonsOnly                     : false
 CrvCoincidenceE.muonMinTime                   :  20.0  //ns
 CrvCoincidenceE.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceE.genParticleModuleLabel        : "generate" 
@@ -338,9 +338,9 @@ CrvCoincidenceE.genParticleModuleLabel        : "generate"
 CrvCoincidenceR: @local::CrvCoincidence
 CrvCoincidenceR.verboseLevel                  : 0
 CrvCoincidenceR.CRVSectors                    : ["Test"]
-CrvCoincidenceR.adjacentPulseTimeDifferences  : [   5  ]
+CrvCoincidenceR.adjacentPulseTimeDifferences  : [  10  ]
 CrvCoincidenceR.useFourLayers                 : [ false]
-CrvCoincidenceR.muonsOnly                     : true
+CrvCoincidenceR.muonsOnly                     : false
 CrvCoincidenceR.muonMinTime                   :  20.0  //ns
 CrvCoincidenceR.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceR.genParticleModuleLabel        : "generate" 
@@ -348,9 +348,9 @@ CrvCoincidenceR.genParticleModuleLabel        : "generate"
 CrvCoincidenceL: @local::CrvCoincidence
 CrvCoincidenceL.verboseLevel                  : 0
 CrvCoincidenceL.CRVSectors                    : ["Test"]
-CrvCoincidenceL.adjacentPulseTimeDifferences  : [   5  ]
+CrvCoincidenceL.adjacentPulseTimeDifferences  : [  10  ]
 CrvCoincidenceL.useFourLayers                 : [ false]
-CrvCoincidenceL.muonsOnly                     : true
+CrvCoincidenceL.muonsOnly                     : false
 CrvCoincidenceL.muonMinTime                   :  20.0  //ns
 CrvCoincidenceL.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceL.genParticleModuleLabel        : "generate" 
@@ -360,7 +360,7 @@ CrvCoincidenceU.verboseLevel                  : 0
 CrvCoincidenceU.CRVSectors                    : ["Test"]
 CrvCoincidenceU.adjacentPulseTimeDifferences  : [  10  ]
 CrvCoincidenceU.useFourLayers                 : [ true ]
-CrvCoincidenceU.muonsOnly                     : true
+CrvCoincidenceU.muonsOnly                     : false
 CrvCoincidenceU.muonMinTime                   :  20.0  //ns
 CrvCoincidenceU.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceU.genParticleModuleLabel        : "generate" 
@@ -368,9 +368,9 @@ CrvCoincidenceU.genParticleModuleLabel        : "generate"
 CrvCoincidenceD: @local::CrvCoincidence
 CrvCoincidenceD.verboseLevel                  : 0
 CrvCoincidenceD.CRVSectors                    : ["Test"]
-CrvCoincidenceD.adjacentPulseTimeDifferences  : [   5  ]
-CrvCoincidenceD.useFourLayers                 : [ false]
-CrvCoincidenceD.muonsOnly                     : true
+CrvCoincidenceD.adjacentPulseTimeDifferences  : [  10  ]
+CrvCoincidenceD.useFourLayers                 : [ true ]
+CrvCoincidenceD.muonsOnly                     : false
 CrvCoincidenceD.muonMinTime                   :  20.0  //ns
 CrvCoincidenceD.muonMaxTime                   : 150.0  //ns
 CrvCoincidenceD.genParticleModuleLabel        : "generate" 

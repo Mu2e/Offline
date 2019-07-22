@@ -1,0 +1,8 @@
+#include "TrkDiag/fcl/TrkAnaReco.fcl"
+
+physics.analyzers.TrkAnaNeg.FillMCInfo : false
+physics.analyzers.TrkAnaPos.FillMCInfo : false
+
+physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequenceNoMC ]
+
+services.TFileService.fileName: "nts.owner.trkana-reco-ensemble-data.version.sequencer.root"

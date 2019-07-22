@@ -137,7 +137,7 @@ namespace mu2e
         int    nRecoPulses=0;
         int    recoPEs=0;
         double recoPulseHeight=0;
-        double recoPulseWidth=0;
+        double recoPulseBeta=0;
         double recoPulseTime=0;
         double recoLEtime=0;
         double MCPEs=0;
@@ -153,7 +153,7 @@ namespace mu2e
             {
               recoPEs            = crvRecoPulse.GetPEs();
               recoPulseHeight    = crvRecoPulse.GetPulseHeight();
-              recoPulseWidth     = crvRecoPulse.GetPulseWidth();
+              recoPulseBeta      = crvRecoPulse.GetPulseBeta();
               recoPulseTime      = crvRecoPulse.GetPulseTime();
               recoLEtime         = crvRecoPulse.GetLEtime();
               chi2               = crvRecoPulse.GetPulseFitChi2();
@@ -173,8 +173,8 @@ namespace mu2e
           }
         }
 
-        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,recoLEtime,MCPEs,chi2);
-        _recoPulses2->Fill(startPos.x(),startPos.y(),startPos.z(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseWidth,recoPulseTime,MCPEs,ionizingEnergy,nonIonizingEnergy,notDepositedEnergyElectron,notDepositedEnergyOther,energyLoss);
+        _recoPulses->Fill(eventID,startPos.x(),startPos.y(),startPos.z(),barIndex.asInt(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseBeta,recoPulseTime,recoLEtime,MCPEs,chi2);
+        _recoPulses2->Fill(startPos.x(),startPos.y(),startPos.z(),SiPM,nRecoPulses,recoPEs,recoPulseHeight,recoPulseBeta,recoPulseTime,MCPEs,ionizingEnergy,nonIonizingEnergy,notDepositedEnergyElectron,notDepositedEnergyOther,energyLoss);
       }
     }
 

@@ -10,9 +10,10 @@ namespace mu2e
 // general information about a track
   struct TrkPIDInfo {
     Float_t _tchpvars[TrkCaloHitPID::n_vars];
-    Float_t _tchp;
-// extrapolation radii to the disks
-    Float_t _diskrad[2];
+    Float_t _mvaout;
+    Int_t _mvastat;
+// extrapolation radii to the disks; front and back
+    Float_t _diskfrad[2], _diskbrad[2];
 
     // eventually add dE/dx PID FIXME!
 
@@ -23,9 +24,12 @@ namespace mu2e
       for (int ivar = 0; ivar < n_tchp_vars; ++ivar) {
 	_tchpvars[ivar] = -1000.0;
       }
-      _tchp = -1000.0;
-      for(size_t idisk=0;idisk<2;idisk++)
-	_diskrad[idisk]=-1000.0;
+      _mvaout = -1000.0;
+      _mvastat = -1;
+      for(size_t idisk=0;idisk<2;idisk++){
+	_diskfrad[idisk]=-1000.0;
+	_diskbrad[idisk]=-1000.0;
+      }
     }
 
     static std::string const leafnames() { 
@@ -35,7 +39,7 @@ namespace mu2e
 	std::string varname = TrkCaloHitPID::varName(index);
 	leaves += varname + "/F:";
       }
-      leaves += "mvaout/F:disk0rad/F:disk1rad/F";
+      leaves += "mvaout/F:mvastat/I:disk0frad/F:disk1frad/F:disk0brad/F:disk1brad/F";
       return leaves;
     }
   };

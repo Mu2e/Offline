@@ -120,7 +120,7 @@ namespace mu2e {
 	      kmat->detIntersection().pathlen, // poca.flt1(),
 	      poca.flt2(),  // not stored in KalMaterial, FIXME!
 	      kmat->detIntersection().pathLength(),
-	      kmat->radiationFraction(),
+	      detstraw->radiationFraction(kmat->detIntersection()),
 	      kmat->momFraction(),
 	      isite->isActive() );
 	    tstraws.push_back(tstraw);

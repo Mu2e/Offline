@@ -119,6 +119,11 @@ DigiCompression : {
 	caloShowerStepROTag : ""
     }
 
+    TrackerFix : {
+	module_type : FixTrackerStepPointMCs
+	trackerSteps : ""
+    }
+
 
     Reco : {
       module_type : CompressDigiMCs

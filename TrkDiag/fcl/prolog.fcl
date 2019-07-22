@@ -81,23 +81,28 @@ BEGIN_PROLOG
   # Track quality module
   TrkQual : {
   	  module_type : TrackQuality
-  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
   }
-  TrkQualDeM		       : @local::TrkQual
+  TrkQualNeg : @local::TrkQual
+  TrkQualNeg.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQual.weights.xml"
+  TrkQualPos : @local::TrkQual
+  TrkQualPos.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualPos.weights.xml"
+
+  TrkQualDeM		       : @local::TrkQualNeg
   TrkQualDeM.KalSeedCollection : "KFFDeM"
-  TrkQualUeM		       : @local::TrkQual
+  TrkQualUeM		       : @local::TrkQualNeg
   TrkQualUeM.KalSeedCollection : "KFFUeM"
-  TrkQualDmuM		       : @local::TrkQual
+  TrkQualDmuM		       : @local::TrkQualNeg
   TrkQualDmuM.KalSeedCollection : "KFFDmuM"
-  TrkQualDeP		       : @local::TrkQual
+  TrkQualDeP		       : @local::TrkQualPos
   TrkQualDeP.KalSeedCollection : "KFFDeP"
-  TrkQualUeP		       : @local::TrkQual
+  TrkQualUeP		       : @local::TrkQualPos
   TrkQualUeP.KalSeedCollection : "KFFUeP"
-  TrkQualDmuP		       : @local::TrkQual
+  TrkQualDmuP		       : @local::TrkQualPos
   TrkQualDmuP.KalSeedCollection : "KFFDmuP"
   # track PID module
   TrkPID : {
     module_type : TrackPID
+    MaxDE : 5.0 # MeV
     DeltaTOffset : -1.15 # specific to MDC2018h
     MVAConfig : { MVAWeights : "TrkDiag/test/TrkCaloHitPID.weights.xml"}
   }
