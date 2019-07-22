@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
+#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "SeedService/inc/SeedService.hh"
@@ -35,8 +36,6 @@
 #include "Mu2eG4/inc/GenEventBroker.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
-#include "Mu2eG4/inc/MTMasterThread.hh"
-
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -118,13 +117,8 @@ namespace mu2e {
     void BeamOnEndRun();
 
 
-    std::unique_ptr<G4RunManager> _runManager;
+    unique_ptr<G4RunManager> _runManager;
 
-    
-    std::unique_ptr<MTMasterThread> _masterThread;
-
-      
-      
     const bool _use_G4MT;
     const G4int _nThreads;
 
@@ -138,7 +132,9 @@ namespace mu2e {
     // to be able to make StorePhysicsTable call after the event loop started
     G4VUserPhysicsList* physicsList_;
 
-    ActionInitialization const * _actionInit;
+    ActionInitialization* actionInit_;
+      
+    Mu2eG4WorkerInitialization* workerInit_;
 
     //these cut objects are used in the master thread to indicate what data product is produced
     //additional thread-local cut objects are owned by ActionInitialization
@@ -151,6 +147,7 @@ namespace mu2e {
     int _rmvlevel;
     int _tmvlevel;
     int _smvlevel;
+    int _checkFieldMap;
 
 
     art::InputTag _generatorModuleLabel;
@@ -201,22 +198,8 @@ namespace mu2e {
           // The labeled random number engines for this stream.
           // Indexed by engine label.
           //std::map<std::string, std::shared_ptr<CLHEP::HepRandomEngine>> dict_{};
-          
-          // The most recent source of the labeled random number engines for this
-          // stream. Indexed by engine label. When EngineSource == Seed, this means
-          // an engine with the given label has been created by createEngine(sid,
-          // seed, ...). When EngineSource == File, this means the engine was
-          // created by restoring it from a file. When EngineSource == Product, this
-          // means the engine was created by restoring it from a snapshot data
-          // product with module label "restoreStateLabel".
-          //std::map<std::string, EngineSource> tracker_{};
-          
-          // The requested engine kind for each labeled random number engine for
-          // this stream. Indexed by engine label.
           //std::map<std::string, std::string> kind_{};
           
-          // The random engine number state snapshots taken for this stream.
-          //std::vector<RNGsnapshot> snapshot_{};
       };
       
       ScheduleData _perSchedData;
@@ -235,7 +218,7 @@ namespace mu2e {
     mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
     multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
 
-    _use_G4MT(pSet.get<bool>("runinMTMode",true)),
+    _use_G4MT(pSet.get<bool>("runinMTMode",false)),
     _nThreads(pSet.get<int>("numberOfThreads",1)),
 
     _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
@@ -250,6 +233,7 @@ namespace mu2e {
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
     _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
     _smvlevel(pSet.get<int>("debug.steppingVerbosityLevel",0)),
+    _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
     
     _generatorModuleLabel(pSet.get<string>("generatorModuleLabel", "")),
     _physVolHelper(),
@@ -261,8 +245,7 @@ namespace mu2e {
     _systemElapsed(0.),
     _userElapsed(0.),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-    _masterThreadIndex(_nThreads),
-    
+    _masterThreadIndex(_use_G4MT ? _nThreads : 0),
     //NEED TO FIGURE OUT HOW TO CONNECT THIS ENGINE TO THE G4 ENGINE
     _engine{art::ServiceHandle<SeedService>{}->getSeed()}
     {
@@ -270,10 +253,15 @@ namespace mu2e {
             throw cet::exception("CONFIG")
             << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
         }
-        
-   //         _runManager.reset(new Mu2eG4MTRunManager());
- 
-        
+            
+        //get the right type of RunManager depending on whether we are in MT mode or not
+        if (_use_G4MT) {
+            _runManager.reset(new Mu2eG4MTRunManager());
+        }
+        else {
+            _runManager.reset(new G4RunManager());
+        }
+
     //In sequential mode, we need 1 SDHelper and it lives at index 0.
     //
     //In MT, mode we need one SDHelper for each Worker thread, plus one extra for the Master
@@ -281,7 +269,7 @@ namespace mu2e {
     //the "0th" worker thread gets the "0th" element of the vector, etc
     //we give the "_nThreads" element to the Master thread through Mu2eG4World to setup the InstanceMap in the ctor of the SDH class
     //we need only one of these SDHs to declare to art the list of products that will be produced
-    int nSDHelpersNeeded = _nThreads+1;
+    int nSDHelpersNeeded = ( _use_G4MT ) ? _nThreads+1 : 1;
     SensitiveDetectorHelpers.reserve(nSDHelpersNeeded);
 
     auto sd_pSet = pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet());;
@@ -289,8 +277,7 @@ namespace mu2e {
       SensitiveDetectorHelpers.emplace_back(sd_pSet);
     }
 
-    auto& collector = producesCollector();
-    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(collector);
+    SensitiveDetectorHelpers.at(_masterThreadIndex).declareProducts(producesCollector());
 
     produces<StatusG4>();
     produces<SimParticleCollection>();
@@ -302,6 +289,9 @@ namespace mu2e {
  
     //can we simplify this and directly declare the relevent products
     //rather than contructing these unneccesary object?
+//    stackingCuts_->declareProducts(this);
+//    steppingCuts_->declareProducts(this);
+//    commonCuts_->declareProducts(this);
 
     // Declare which products this module will read.
    
@@ -313,6 +303,7 @@ namespace mu2e {
     
 
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
+    // This does not work in a Shared Module
     //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
         
     for(int i=0; i<5; ++i)
@@ -321,69 +312,66 @@ namespace mu2e {
         access_SchedDataMap->second.test_INT = i+10;
         access_SchedDataMap.release();
     }
-        
-        _masterThread = std::make_unique<MTMasterThread>(pSet);
     
 
 } // end G4:G4(fhicl::ParameterSet const& pSet);
 
 
-void Mu2eG4::beginRun( art::Run &run, art::ProcessingFrame const& procFrame){
-    
-    _masterThread->stopThread();
-    
+    void Mu2eG4::beginRun( art::Run &run, art::ProcessingFrame const& procFrame){
 
-    if (procFrame.scheduleID() != art::ScheduleID::first()) return;
-    
-        art::ServiceHandle<GeometryService> geom;
-        SimpleConfig const& config  = geom->config();
-        checkConfigRelics(config);
+    art::ServiceHandle<GeometryService> geom;
+    SimpleConfig const& config  = geom->config();
+    checkConfigRelics(config);
 
-        static int ncalls(0);
-        ++ncalls;
+    static int ncalls(0);
+    ++ncalls;
 
-
-        // Do the main initialization of G4; only once per job.
-        if ( ncalls == 1 ) {
-            initializeG4( *geom, run );
-        } else {
-            if ( ncalls ==2 || _warnEveryNewRun ){
-                mf::LogWarning log("G4");
-                log << "G4 does not change state when we cross run boundaries - hope this is OK .... ";
-                if ( ncalls == 2 && !_warnEveryNewRun ){
-                    log << "\nThis message will not be repeated on subsequent new runs.";
-                }
-            }
+    // Do the main initialization of G4; only once per job.
+    if ( ncalls == 1 ) {
+      initializeG4( *geom, run );
+    } else {
+      if ( ncalls ==2 || _warnEveryNewRun ){
+        mf::LogWarning log("G4");
+        log << "G4 does not change state when we cross run boundaries - hope this is OK .... ";
+        if ( ncalls == 2 && !_warnEveryNewRun ){
+          log << "\nThis message will not be repeated on subsequent new runs.";
         }
+      }
+    }
 
-    std::cout << "GOT TO PT A in Mu2eG4::beginRun!" << std::endl;
-    
-        // Tell G4 that we are starting a new run.
+
+    // Tell G4 that we are starting a new run.
         std::cout << "In Mu2eG4::beginRun, calling BeamOnBeginRun( run.id().run() ); from Schedule: "
                   << procFrame.scheduleID() << std::endl;
-        BeamOnBeginRun( run.id().run() );
+    BeamOnBeginRun( run.id().run() );
 
-        // A few more things that only need to be done only once per job,
-        // not once per run, but which need to be done after the call to
-        // BeamOnReadyToBeginRun.
-        if ( ncalls == 1 ) {
-            // Since the cuts that are put into the event are owned by the individual threads,
-            // I do not think we need to do this.  Taking it out for now.
-            //stackingCuts_->finishConstruction(originInWorld);
-            //steppingCuts_->finishConstruction(originInWorld);
-            //commonCuts_->finishConstruction(originInWorld);
+    // A few more things that only need to be done only once per job,
+    // not once per run, but which need to be done after the call to
+    // BeamOnReadyToBeginRun.
+    if ( ncalls == 1 ) {
+      // Since the cuts that are put into the event are owned by the individual threads,
+      // I do not think we need to do this.  Taking it out for now.
+      //stackingCuts_->finishConstruction(originInWorld);
+      //steppingCuts_->finishConstruction(originInWorld);
+      //commonCuts_->finishConstruction(originInWorld);
 
+      //can only be run in single-threaded mode
+      if( _checkFieldMap>0 && !(_use_G4MT)) generateFieldMap(originInWorld,_checkFieldMap);
 
-            if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
-        }//if ( ncalls == 1 )
+      if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
+    }//if ( ncalls == 1 )
     
 }
 
 
 void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfThreads(_nThreads);
-    
+    //if running in MT mode, set number of threads.
+    //need to downcast the ptr to the RunManager, which was defined as a ptr to G4RunManager
+    if (_use_G4MT) {
+        dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfThreads(_nThreads);
+    }
+
     if (standardMu2eDetector_) {
       geom.addWorldG4(*GeomHandle<Mu2eHall>());
     }
@@ -429,10 +417,10 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     _runManager->SetUserInitialization(physicsList_);
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(pset_,
-                                                                SensitiveDetectorHelpers,
+    ActionInitialization* actionInit_ = new ActionInitialization(pset_,
+                                                                _extMonFNALPixelSD, SensitiveDetectorHelpers,
                                                                 &_genEventBroker, &_physVolHelper,
-                                                                _use_G4MT, _nThreads, _originInWorld,
+                                                                _use_G4MT, _nThreads, originInWorld,
                                                                 mu2elimits_,
                                                                 multiStagePars_.simParticleNumberOffset()
                                                                 );
@@ -441,7 +429,9 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     // in sequential mode, this is where Build() is called for main thread
     _runManager->SetUserInitialization(actionInit_);
     
-
+    if (_use_G4MT) {
+        dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetUserInitialization(workerInit_);
+    }
     
     if ( _rmvlevel > 0 ) {
       //  GetRunManagerType() returns an enum named RMType to indicate
@@ -455,15 +445,8 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     
     // Initialize G4 for this run.  Geometry and Physics are initialized.
     // IN MT mode, BeamOn(0) is called to do additional setup such as setting up the ScoringWorlds.
-    
-    std::cout << "\n*-*-*-*-*-*- You are running "
-              << dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->GetNumberOfThreads()
-              << " threads. -*-*-*-*-*-*\n" << endl;
-        
-    std::cout << "In Mu2eG4::initializeG4, calling Mu2eG4Initialize();" << std::endl;
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetUserInitialization(workerInit_);
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4Initialize(0);
-    
+    std::cout << "In Mu2eG4::initializeG4, calling _runManager->Initialize();" << std::endl;
+    _runManager->Initialize();
 
     if ( _rmvlevel > 0 ) {
        G4cout << __func__
@@ -484,12 +467,8 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 // Create one G4 event and copy its output to the art::event.
     void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 
-    if (event.id().event() == 1)
-    {
-        std::cout << "\n*-*-*-*-*-*- You are running "
-                  << dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->GetNumberOfThreads()
-                  << " threads. -*-*-*-*-*-*\n" << endl;
-    }
+    if (_use_G4MT && event.id().event() == 1) cout << "\n*-*-*-*-*-*- You are running "
+       << dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->GetNumberOfThreads() << " threads. -*-*-*-*-*-*\n" << endl;
 
         std::cout << "I AM Schedule: " << procFrame.scheduleID() << std::endl;
         
@@ -525,24 +504,30 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     //TEMP FIX, we need to get the number of events to process from fcl file
     int number_of_events_to_process = 100;
 
-    // Run G4 for this event and access the completed event.
-    BeamOnDoOneArtEvent( event.id().event(), number_of_events_to_process );
+        
+        if (procFrame.scheduleID().id() == 0) {
+            // Run G4 for this event and access the completed event.
+            BeamOnDoOneArtEvent( event.id().event(), number_of_events_to_process );
+        }
+    
 
     _genEventBroker.setEventPtrToZero();
 
 /////////////////////////////////////////////////////////////////////////////////////
     
+        std::cout << "THIS IS WHERE WE WOULD PUT STUFF IN THE EVENT" << std::endl;
+/*
     if (simParticles == nullptr) {
         numExcludedEvents++;
     }
     else {
         
+        std::cout << "THIS IS WHERE WE WOULD PUT STUFF IN THE EVENT" << std::endl;
         //THESE ARE CURRENTLY IN THE EVENTACTION
         //event.put(move(g4stat)); THIS data product doesn't exist in this context.
         //event.put(move(simParticles));
         
         //need something similar for the SensitiveDetector hits
-        
         
 //TAKING THESE OUT TEMPORARILY
 //        stackingCuts_->put(event);
@@ -550,7 +535,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 //        commonCuts_->put(event);
     
     }
-        
+*/
         int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
         
         if(myPerSchedDataMap.find(access_SchedDataMap, schedID)){
@@ -644,19 +629,38 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
     G4cout << __func__ << ": eventNumber: " << eventNumber << ", num_events: " << num_events << G4endl;
   }
 
-    
-    //this is where the events are actually processed
-    //num_events is # of G4 events processed per art event
 
-    //NOTE: G4MTRunManager::WaitForEndEventLoopWorkers() is a protected function in G4 code, so we MUST have our own MTRunManager
-    //in order to access this function
 
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfEventsToBeProcessed(num_events);
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
-    //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4InitializeEventLoop(num_events);
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4WaitForEndEventLoopWorkers();
-    //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4TerminateWorkers();//DID NOT WORK BEFORE
+        if (_use_G4MT)//MT mode
+        {
+            //this is where the events are actually processed
+            //num_events is # of G4 events processed per art event
 
+            //NOTE: G4MTRunManager::WaitForEndEventLoopWorkers() is a protected function in G4 code, so we MUST have our own MTRunManager
+            //in order to access this function
+
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->SetNumberOfEventsToBeProcessed(num_events);
+            //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->InitializeEventLoop(num_events,macroFile,n_select);
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4InitializeEventLoop(num_events);
+            dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4WaitForEndEventLoopWorkers();
+            //dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4TerminateWorkers();//DID NOT WORK BEFORE
+
+        }
+        else//sequential mode
+        {
+            _runManager->InitializeEventLoop(num_events,macroFile,n_select);
+
+            _timer->Start();
+            _runManager->ProcessOneEvent(eventNumber);
+            _timer->Stop();
+
+            // Accumulate time spent in G4 for all events in this run.
+            _realElapsed   += _timer->GetRealElapsed();
+            _systemElapsed += _timer->GetSystemElapsed();
+            _userElapsed   += _timer->GetUserElapsed();
+
+            _runManager->TerminateOneEvent();
+        }//end if
 
 }//BeamOnDoOneArtEvent
 
@@ -664,8 +668,18 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber, G4int num_events, const char*
 // Do the "end of run" parts of DoEventLoop and BeamOn.
 void Mu2eG4::BeamOnEndRun(){
 
-    dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4RunTermination();
-  
+
+    if (_use_G4MT)//MT mode
+    {
+        dynamic_cast<Mu2eG4MTRunManager*>(_runManager.get())->Mu2eG4RunTermination();
+    }
+    else//sequential mode
+    {
+        _runManager->TerminateEventLoop();
+        _runManager->RunTermination();
+
+ 
+    }
 }//BeamOnEndRun
 
 
