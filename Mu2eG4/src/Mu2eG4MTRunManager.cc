@@ -9,31 +9,83 @@
 //
 // Implementation file for Mu2eG4MTRunManager
 
+//Framework includes
+#include "cetlib_except/exception.h"
 
-
+//Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "G4MTRunManagerKernel.hh"
 #include "G4UserWorkerThreadInitialization.hh"
 
+//G4 includes
 #include "G4Timer.hh"
+
+//C++ includes
+#include <thread>
+#include <sstream>
 
 
 using namespace std;
 
 namespace mu2e {
   
+    
+    Mu2eG4MTRunManager* Mu2eG4MTRunManager::fMu2eMasterRM = 0;
+    
     // If the c'tor is called a second time, the c'tor of base will
     // generate an exception.
     Mu2eG4MTRunManager::Mu2eG4MTRunManager():
         G4MTRunManager()
         {
-            //MTkernel = GetMTMasterRunManagerKernel();
-        
+            if ( fMu2eMasterRM )
+            {
+                throw cet::exception("MTRUNMANAGER")
+                << "Error: you are trying to create an MTRunManager when one already exists!\n";
+            }
+            fMu2eMasterRM = this;
         }
   
     // Destructor of base is called automatically.  No need to do anything.
     Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
         {}
+    
+    
+    Mu2eG4MTRunManager* Mu2eG4MTRunManager::GetMasterRunManager()
+    {
+        return fMu2eMasterRM;
+    }
+    
+    // this function is a protected member of G4MTRunManager but we need to access it
+    // from Mu2eG4_module, so we must make it public here
+    void Mu2eG4MTRunManager::Mu2eG4Initialize(G4int n_event)
+    {
+        G4RunManager::Initialize();
+        
+        //BeamOn(0);
+        if(n_event<=0) { fakeRun = true; }
+        else { fakeRun = false; }
+        G4bool cond = ConfirmBeamOnCondition();
+        if(cond)
+        {
+            numberOfEventToBeProcessed = n_event;
+            numberOfEventProcessed = 0;
+            G4MTRunManager::ConstructScoringWorlds();
+            RunInitialization();
+            
+            //Instead of calling DoEventLoop(n_event);
+            //we call the only piece that happens for 0 events
+            //and an MT RunManager
+            InitializeEventLoop(n_event);
+            
+            RunTermination();
+        }
+        fakeRun = false;
+        //end BeamOn(0);
+        
+        SetRunIDCounter(n_event);
+        
+    }
+    
     
     
     // this function is a protected member of G4MTRunManager but we need to access it
@@ -110,8 +162,6 @@ namespace mu2e {
                 
                 CLHEP::HepRandomEngine* mrnge = const_cast<CLHEP::HepRandomEngine*> (G4MTRunManager::GetMasterRunManager()->getMasterRandomEngine());
                 
-                //CLHEP::HepRandomEngine* mrnge = G4Random::getTheEngine();
-                
                 mrnge->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
                 helper->Fill(randDbl,nSeedsFilled,n_event,nSeedsPerEvent);
                 
@@ -159,4 +209,17 @@ namespace mu2e {
         G4RunManager::TerminateEventLoop();
         G4RunManager::RunTermination();
     }
-} // end namespace artg4
+    
+    void Mu2eG4MTRunManager::TestFunc()
+    {
+        
+        //std::stringstream ss;
+        //ss << std::this_thread::get_id();
+        //int id = std::stoi(ss.str());
+        
+        std::cout << "Calling Mu2eG4MTRunManager::TestFunc()" << std::endl;
+        
+    }
+    
+    
+} // end namespace mu2e

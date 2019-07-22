@@ -230,6 +230,7 @@ mainlib = helper.make_mainlib ( [
         'boost_regex',
         'boost_system',
         'tbb',
+        'pthread',
     ],
                                 [  G4CPPFLAGS, G4GS_CPPFLAGS ],
                                 [ '-L'+g4libdir, '-I'+g4inc ]
@@ -267,6 +268,7 @@ helper.make_plugins( [
     'boost_filesystem',
     'boost_system',
     'tbb',
+    'pthread',
     ],
                      [],
                      [ G4CPPFLAGS, G4GS_CPPFLAGS ],

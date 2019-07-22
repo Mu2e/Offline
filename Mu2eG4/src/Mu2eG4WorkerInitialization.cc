@@ -20,7 +20,11 @@ Mu2eG4WorkerInitialization::Mu2eG4WorkerInitialization(const fhicl::ParameterSet
     :
     G4UserWorkerInitialization(),
     pset_(pset)
-    {}
+    {
+        
+        std::cout << "We are in the c'tor of WorkerInitialize!!!" << std::endl;
+        
+    }
 
 Mu2eG4WorkerInitialization::~Mu2eG4WorkerInitialization()
     {}
