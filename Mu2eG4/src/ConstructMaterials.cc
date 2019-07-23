@@ -273,6 +273,13 @@ namespace mu2e {
       Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }
 
+    mat = uniqueMaterialOrThrow( "Polyethylene0935");
+    {
+      G4Material* Polyethylene096 = new G4Material( mat.name, 0.935*CLHEP::g/CLHEP::cm3, 2);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+    }
+
     // Not real, very thin Polyethylene
     mat = uniqueMaterialOrThrow( "Polyethylene0010");
     {

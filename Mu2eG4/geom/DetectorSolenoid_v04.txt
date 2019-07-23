@@ -183,8 +183,8 @@ double    ds.CableRunCal.UpHL2     = 119.0;//95.0; // mm
 double    ds.CableRunCal.UpZC1     = 12440.0; // mm
 double    ds.CableRunCal.UpZC2     = 13116.0; // mm
 double    ds.CableRunCal.length    = 1725.0; //1650 + 150/2 mm - actually halflength
-double    ds.CableRunCal.Rin       = 540.0; // 720.2;  // top of MBS now
-double    ds.CableRunCal.Rout      = 640.0; // 906.0;  // Not well specified?
+double    ds.CableRunCal.Rin       = 544.0; // 720.2;  // top of MBS now
+double    ds.CableRunCal.Rout      = 644.0; // 906.0;  // Not well specified?
 double    ds.CableRunCal.dPhi      = 13.0; // degrees
 double    ds.CableRunCal.zC        = 15475.0; //15400 + 150/2
 double    ds.CableRunCal.phi0      = 83.5; // degrees
@@ -199,14 +199,14 @@ string    ds.CableRunCalCore.material        = "CalCableRunFiber";//"G4_SILICON_
 double    ds.CableRunTrk.length    = 1943; //1919 + 150/2 mm - actually halflength
 double    ds.CableRunTrk.Rin       = 820.0;  
 double    ds.CableRunTrk.Rout      = 850.0;
-double    ds.CableRunTrk.dPhi      = 20.7; // degrees
+double    ds.CableRunTrk.dPhi      = 20.;//20.7; // degrees
 double    ds.CableRunTrk.zC        = 15155.0; // 15131 + 150/2
-double    ds.CableRunTrk.phi0      = 194.5; // degrees
+double    ds.CableRunTrk.phi0      = 195.; //194.5; // degrees
 string    ds.CableRunTrk.material  = "TrkCableRunOuter"; //"Electronics";
 
 // Optical "core" placed in the "Cable"
 double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
-double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; //.0331; // Set so the cross section matches expectations with portion near IFB
+double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; // changed to be 100 mm^2 .0331; // Set so the cross section matches expectations with portion near IFB
 double    ds.CableRunTrkCore.dPhiFraction    = 0.1051; //.0331; // 
 string    ds.CableRunTrkCore.material        = "TrkCableRunFiber"; //"G4_SILICON_DIOXIDE";
 

@@ -50,7 +50,7 @@ double ifb.endplug.halfLength = 50.;
 string ifb.endwindow.material   = "G4_Ti";
 double ifb.endwindow.z          = 3277.; // had been at 3182.
 double ifb.endwindow.rIn        = 0.;
-double ifb.endwindow.rOut       = 110.;
+double ifb.endwindow.rOut       = 110.; //ensure matches ifb.endplug.rIn
 //CRV requires 1 cm of plastic plug in IFB.
 double ifb.endwindow.halfLength = 0.8; // mm --> so 1.6 mm thick
 
