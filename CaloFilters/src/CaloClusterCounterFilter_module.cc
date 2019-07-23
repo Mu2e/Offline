@@ -34,7 +34,8 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -95,6 +96,7 @@ namespace mu2e {
 
 
   CaloClusterCounter::CaloClusterCounter(const fhicl::ParameterSet & pset) :
+    art::EDFilter{pset},
     _diagLevel                   (pset.get<int>("diagLevel",0)),
     _nProcess                    (0),
     _nPass                       (0),
@@ -112,7 +114,7 @@ namespace mu2e {
 
   bool CaloClusterCounter::endRun( art::Run& run ) {
     if(_diagLevel > 0 && _nProcess > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
+      cout << "CaloClusterCounter" << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
     }
     return true;
   }
