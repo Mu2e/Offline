@@ -35,7 +35,8 @@ namespace mu2e {
 
   //================================================================
   FilterStepPointMomentum::FilterStepPointMomentum(const fhicl::ParameterSet& pset)
-    : cutMomentumMin_(pset.get<double>("cutMomentumMin"))
+    : art::EDFilter{pset}
+    , cutMomentumMin_(pset.get<double>("cutMomentumMin"))
     , numInputEvents_(0)
     , numPassedEvents_(0)
   {

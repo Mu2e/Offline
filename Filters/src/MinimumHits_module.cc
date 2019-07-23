@@ -24,7 +24,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Root includes
 #include "TH1F.h"
@@ -98,6 +98,7 @@ namespace mu2e {
   };
 
   MinimumHits::MinimumHits(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     mode_(StepFilterMode(pset.get<string>("mode"))),
     minnstraws_(pset.get<int>("MinNStraws")),
     minpmom_(pset.get<double>("MinPartMom")),

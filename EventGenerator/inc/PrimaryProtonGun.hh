@@ -39,7 +39,6 @@
 #include "CLHEP/Random/RandPoissonQ.h"
 
 // Forward references outside of namespace mu2e
-class TH1D;
 namespace art {
   class Run;
 }
@@ -52,7 +51,7 @@ namespace mu2e {
   class PrimaryProtonGun: public GeneratorBase{
   public:
 
-    PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run& run, SimpleConfig const& config);
+    PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config);
     ~PrimaryProtonGun() = default;
 
     virtual void generate( GenParticleCollection&  );
@@ -100,22 +99,6 @@ namespace mu2e {
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandGaussQ   _randGaussQ;
     RandomUnitSphere    _randomUnitSphere;
-
-
-    // Make histograms or not.
-    bool _doHistograms;
-
-    // End parameters from the run time configuration.
-
-    // Histograms.
-    TH1D* _hKE;
-    TH1D* _hKEZoom;
-    TH1D* _hmomentum;
-    TH1D* _hposx;
-    TH1D* _hposy;
-    TH1D* _hposz;
-    TH1D* _hcosTheta;
-    TH1D* _htime;
 
     virtual void generateOne( GenParticleCollection&  );
   };

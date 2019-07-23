@@ -43,7 +43,8 @@ namespace mu2e {
     
   //================================================================
   FilterOutEmptyEvents::FilterOutEmptyEvents(Parameters const& config)
-    : _inputModuleLabel(config().inputModuleLabel())
+    : art::EDFilter{config},
+      _inputModuleLabel(config().inputModuleLabel())
   {}
     
   //================================================================

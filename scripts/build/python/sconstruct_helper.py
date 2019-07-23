@@ -61,10 +61,12 @@ def cppPath(mu2eOpts):
     path = [
         mu2eOpts["primaryBase"],
         os.environ['ART_INC'],
+        os.environ['ART_ROOT_IO_INC'],
         os.environ['CANVAS_INC'],
         os.environ['BTRK_INC'],
         os.environ['MESSAGEFACILITY_INC'],
         os.environ['FHICLCPP_INC'],
+        os.environ['HEP_CONCURRENCY_INC'],
         os.environ['SQLITE_INC'],
         os.environ['CETLIB_INC'],
         os.environ['CETLIB_EXCEPT_INC'],
@@ -77,11 +79,10 @@ def cppPath(mu2eOpts):
         os.environ['TBB_INC'],
         os.environ['MU2E_ARTDAQ_CORE_INC'],
         os.environ['ARTDAQ_CORE_INC'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
-        os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
-        os.environ['POSTGRESQL_INC'],
-        os.environ['CURL_DIR']+'/include'
+        os.environ['POSTGRESQL_INC']
         ]
 
     if mu2eOpts['satellite']:
@@ -94,11 +95,14 @@ def libPath(mu2eOpts):
     path = [
         mu2eOpts['primaryBase']+'/lib',
         os.environ['ART_LIB'],
+        os.environ['ART_ROOT_IO_LIB'],
         os.environ['CANVAS_LIB'],
         os.environ['BTRK_LIB'],
         os.environ['MU2E_ARTDAQ_CORE_LIB'],
         os.environ['ARTDAQ_CORE_LIB'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
         os.environ['MESSAGEFACILITY_LIB'],
+        os.environ['HEP_CONCURRENCY_LIB'],
         os.environ['FHICLCPP_LIB'],
         os.environ['SQLITE_LIB'],
         os.environ['CETLIB_LIB'],
@@ -111,9 +115,7 @@ def libPath(mu2eOpts):
         os.environ['XERCESCROOT']+'/lib',
         os.environ['TBB_LIB'],
         os.environ['GSL_LIB'],
-        os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
-        os.environ['POSTGRESQL_LIBRARIES'],
-        os.environ['CURL_DIR']+'/lib'
+        os.environ['POSTGRESQL_LIBRARIES']
         ]
 
     if mu2eOpts['satellite']:
@@ -193,4 +195,3 @@ def extraCleanup():
             ff =  os.path.join(top, name)
             print "removing file ", ff
             os.unlink (ff)
-

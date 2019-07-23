@@ -13,7 +13,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -53,6 +53,7 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalHelixFinder::CalHelixFinder(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _diagLevel          (pset.get<int>   ("diagLevel"                      )),
     _debugLevel         (pset.get<int>   ("debugLevel"                     )),
     _printfreq          (pset.get<int>   ("printFrequency"                 )),

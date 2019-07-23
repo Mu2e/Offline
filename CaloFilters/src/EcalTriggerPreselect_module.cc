@@ -58,7 +58,7 @@
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -139,6 +139,7 @@ namespace mu2e {
   };
 
   EcalTriggerPreselect::EcalTriggerPreselect(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
     _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
     _virtualDetectorLabel(pset.get<std::string>("virtualDetectorName","virtualdetector")),

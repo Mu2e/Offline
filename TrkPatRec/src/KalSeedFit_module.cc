@@ -14,7 +14,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -133,6 +133,7 @@ namespace mu2e
   };
 
   KalSeedFit::KalSeedFit(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>("debugLevel",0)),
     _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency",101)),
@@ -258,6 +259,7 @@ namespace mu2e
 	TrkParticle::type t = (TrkParticle::type) (-(int) _tpart.particleType());
 	tpart = TrkParticle(t);
       }
+
       double amsign   = copysign(1.0,-tpart.charge()*_bz000);
 
       HepVector hpvec(HelixTraj::NHLXPRM);
@@ -381,7 +383,7 @@ namespace mu2e
 	    BbrVectorErr momerr = _result.krep->momentumErr(_result.krep->flt0());
 	    TrkUtilities::fillSegment(*htraj,momerr,locflt-_result.krep->flt0(),kseg);
 	    // extend the segment
-	    double upflt, downflt;
+	    double upflt(0.0), downflt(0.0);
 	    TrkHelixUtils::findZFltlen(*htraj,_upz,upflt);
 	    TrkHelixUtils::findZFltlen(*htraj,_downz,downflt);
 	    if(_fdir == TrkFitDirection::downstream){

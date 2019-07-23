@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // conditions
 #include "ProditionsService/inc/ProditionsHandle.hh"
@@ -123,6 +123,7 @@ namespace mu2e
   };
 
   KalFinalFit::KalFinalFit(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug(pset.get<int>("debugLevel", 0)),
     _diag(pset.get<int>("diagLevel",0)),
     _printfreq(pset.get<int>("printFrequency", 101)),
@@ -213,7 +214,7 @@ namespace mu2e
     unique_ptr<KalSeedCollection> kscol(new KalSeedCollection());
     unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection());
     // lookup productID for payload saver
-    art::ProductID kalRepsID(getProductID<KalRepCollection>());
+    art::ProductID kalRepsID(event.getProductID<KalRepCollection>());
     // copy and merge hit flags
     size_t index(0);
     for(auto const& ch : *_chcol) {

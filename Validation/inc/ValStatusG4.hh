@@ -3,7 +3,7 @@
 #define ValStatusG4_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "TH1D.h"
 #include <string>
@@ -28,6 +28,7 @@ namespace mu2e {
     TH1D* _hnTrk3;
     TH1D* _hover;
     TH1D* _hkill;
+    TH1D* _hkillfp;
     TH1D* _hCPU1;
     TH1D* _hCPU2;
     TH1D* _hCPU3;

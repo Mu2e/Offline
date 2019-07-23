@@ -60,6 +60,7 @@ namespace mu2e {
 }  // end namespace mu2e
 
 mu2e::PtrTest::PtrTest(fhicl::ParameterSet const& pset):
+  EDProducer{pset},
   _tpart((TrkParticle::type)(pset.get<int>("fitparticle"))),
   _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
   _instanceName( _fdir.name() + _tpart.name()),

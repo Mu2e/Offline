@@ -50,7 +50,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Root includes
 #include "TH1F.h"
@@ -184,6 +184,7 @@ namespace mu2e {
   };
 
   HitsInConversionTimeWindow::HitsInConversionTimeWindow(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     timeWindow_(pset.get<double>("timeWindow",50)),
     generatorModuleLabel_(pset.get<string>("generatorModuleLabel")),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
@@ -351,7 +352,7 @@ namespace mu2e {
     for ( size_t i=0; i<simHandles.size(); ++i ){
 
       // These are needed to reseat the art::Ptr's inside the SimParticleCollections.
-      art::ProductID simsProductId(getProductID<SimParticleCollection>(instanceNames_.at(i)));
+      art::ProductID simsProductId(event.getProductID<SimParticleCollection>(instanceNames_.at(i)));
       art::EDProductGetter const * productGetter = event.productGetter(simsProductId);
 
       // Adapters to translate from the Info map to the format needed by the compress functions.

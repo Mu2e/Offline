@@ -6,7 +6,7 @@
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // data
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"

@@ -50,6 +50,7 @@ namespace mu2e {
   };
 
   WeightSamplingFilter::WeightSamplingFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _evtWtModule(pset.get<art::InputTag>("EventWeightModule")),
     _genParticleModule(pset.get<std::string>("genParticleModule","compressDigiMCs")),
     _engine(createEngine( art::ServiceHandle<SeedService>()->getSeed())),
@@ -70,7 +71,7 @@ namespace mu2e {
 
     double evtwt = event.getValidHandle<EventWeight>( _evtWtModule )->weight() * _weightScalingFactor;
     if (_debug > 0 && evtwt > 1){
-      std::cout << *currentContext()->moduleLabel() << " weight scaling too high, probability is " << evtwt << " " << _weightScalingFactor << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " weight scaling too high, probability is " << evtwt << " " << _weightScalingFactor << std::endl;
     }
     double temp = _randflat.fire();
     if (temp > evtwt)

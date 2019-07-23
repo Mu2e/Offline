@@ -67,6 +67,8 @@ namespace mu2e {
     typedef StorageImpl::value_type value_type;
     const_iterator begin() const { return storage_.begin(); }
     const_iterator end() const { return storage_.end(); }
+    const_iterator cbegin() const { return storage_.cbegin(); }
+    const_iterator cend() const { return storage_.cend(); }
     const ExtMonFNALRecoCluster& operator[](std::size_t globalIndex) const { return storage_[globalIndex]; }
 
     // clients need a correct element index to create art::Ptr

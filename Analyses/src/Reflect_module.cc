@@ -10,7 +10,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 // services
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -79,6 +79,7 @@ namespace mu2e {
     TTree* _reflect;
     // TTree branches
     TrkInfo _utrkinfo, _dtrkinfo;
+    TrkFitInfo _utrkinfo_ent, _dtrkinfo_ent;
     TrkInfoMC _mcinfo;
     TrkInfoMCStep _umcinfo,_dmcinfo;
     XYZVec _opos, _omom, _ppos, _pmom, _pppos;
@@ -167,11 +168,13 @@ namespace mu2e {
 	KalRep const* ukrep = utrks.get(iue);
 	if ( ukrep != 0 && ukrep->fitCurrent() ){
 	  _kdiag.fillTrkInfo(ukrep,_utrkinfo);
+	  _kdiag.fillTrkFitInfo(ukrep,_utrkinfo_ent);
 	  for ( size_t ide=0; ide < dtrks.size(); ++ide ){
 	    KalRep const* dkrep = dtrks.get(ide);
 	    if ( dkrep != 0 && dkrep->fitCurrent() ){
 // fill fit info
 	      _kdiag.fillTrkInfo(dkrep,_dtrkinfo);
+	      _kdiag.fillTrkFitInfo(dkrep,_dtrkinfo_ent);
 	      if(reflection()){
 // fill the branches with this info
 		_umcinfo.reset(); _dmcinfo.reset();
@@ -227,9 +230,9 @@ namespace mu2e {
       _utrkinfo._pdg == _dtrkinfo._pdg;
     if(retval){
       // rough cuts on momentum and direction at tracker entrance
-      double dmom = _utrkinfo._ent._fitmom-_dtrkinfo._ent._fitmom;
-      double dtd = _utrkinfo._ent._fitpar._td + _dtrkinfo._ent._fitpar._td; // note sign change!!!
-      double dp0 = _utrkinfo._ent._fitpar._p0 - _dtrkinfo._ent._fitpar._p0;
+      double dmom = _utrkinfo_ent._fitmom-_dtrkinfo_ent._fitmom;
+      double dtd = _utrkinfo_ent._fitpar._td + _dtrkinfo_ent._fitpar._td; // note sign change!!!
+      double dp0 = _utrkinfo_ent._fitpar._p0 - _dtrkinfo_ent._fitpar._p0;
       if(fabs(dp0) > M_PI){
 	if(dp0 > 0.0)
 	  dp0 -= 2*M_PI;
@@ -281,7 +284,9 @@ namespace mu2e {
     _reflect->Branch("subrunid",&_subrunid,"subrunid/I");
     // upstream and downstream track information
     _reflect->Branch("utrk",&_utrkinfo,TrkInfo::leafnames().c_str());
+    _reflect->Branch("utrkent",&_utrkinfo_ent,TrkFitInfo::leafnames().c_str());
     _reflect->Branch("dtrk",&_dtrkinfo,TrkInfo::leafnames().c_str());
+    _reflect->Branch("dtrkent",&_dtrkinfo_ent,TrkFitInfo::leafnames().c_str());
     _reflect->Branch("mc",&_mcinfo,TrkInfoMC::leafnames().c_str());
     _reflect->Branch("umc",&_umcinfo,TrkInfoMCStep::leafnames().c_str());
     _reflect->Branch("dmc",&_dmcinfo,TrkInfoMCStep::leafnames().c_str());

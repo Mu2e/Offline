@@ -41,7 +41,8 @@ namespace mu2e {
 
   //================================================================
   TrackSummaryMaker::TrackSummaryMaker(const fhicl::ParameterSet& pset)
-    : trackInput_(pset.get<std::string>("trackInput"))
+    : art::EDProducer{pset}
+    , trackInput_(pset.get<std::string>("trackInput"))
   {
     produces<TrackSummaryCollection>();
     produces<TrackSummaryRecoMap>();
@@ -55,7 +56,7 @@ namespace mu2e {
     std::unique_ptr<TrackSummaryCollection> output(new TrackSummaryCollection());
     std::unique_ptr<TrackSummaryRecoMap> recomap(new TrackSummaryRecoMap());
 
-    const art::ProductID trackSummaryPID = getProductID<TrackSummaryCollection>();
+    const art::ProductID trackSummaryPID = event.getProductID<TrackSummaryCollection>();
     const art::EDProductGetter *trackSummaryGetter = event.productGetter(trackSummaryPID);
 
     auto ih = event.getValidHandle<KalRepPtrCollection>(trackInput_);

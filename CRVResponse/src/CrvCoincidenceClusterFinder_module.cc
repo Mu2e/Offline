@@ -90,6 +90,7 @@ namespace mu2e
   };
 
   CrvCoincidenceClusterFinder::CrvCoincidenceClusterFinder(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _verboseLevel(pset.get<int>("verboseLevel")),
     _usingPEsPulseHeight(pset.get<bool>("usingPEsPulseHeight")),
     _maxDistance(pset.get<double>("maxDistance")),

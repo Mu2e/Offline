@@ -41,7 +41,7 @@
 #include "CLHEP/Random/RandFlat.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "cetlib_except/exception.h"
 

@@ -18,6 +18,8 @@
 #include "BTrk/BbrGeom/HepPoint.h"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
+
 #include <vector>
 #include <functional>
 namespace mu2e {
@@ -72,15 +74,6 @@ namespace mu2e {
     // count types of hits and digis
     void countDigis(const KalSeedMC& kseedmc, const KalSeed& kseed, int& ndigi, int& digigood, int& ngood);
 
-    // fill various info structs
-    void fillTrkInfoMC(const KalSeedMC& kseedmc, art::Ptr<SimParticle>const& trkprimary,
-      const KalSeed& kseed, TrkInfoMC& trkinfomc);
-    void fillGenInfo(art::Ptr<SimParticle>const& trkprimary,
-	GenInfo& geninfo, GenInfo& priinfo, const PrimaryParticle& primary);
-    void fillTrkInfoMCStep(const KalSeedMC& kseedmc, TrkInfoMCStep& trkinfomcstep,std::vector<int> const& vids);
-    void fillHitInfoMCs(const KalSeedMC& kseedmc, std::vector<TrkStrawHitInfoMC>& tshinfomcs);
-    void fillHitInfoMC(const KalSeedMC& kseedmc, TrkStrawHitInfoMC& tshinfomc, const TrkStrawHitMC& tshmc);
-    void fillCaloClusterInfoMC(CaloClusterMC const& ccmc, CaloClusterInfoMC& ccimc);
     // find relationship of a set of StrawDigis to the primary particle in the event
     void primaryRelation(PrimaryParticle const& primary,
 	StrawDigiMCCollection const& sdmccol, std::vector<StrawDigiIndex> const& indices,

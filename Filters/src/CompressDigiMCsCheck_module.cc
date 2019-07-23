@@ -8,7 +8,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -38,6 +38,7 @@ namespace mu2e {
     art::InputTag _oldCaloShowerSimTag;
     art::InputTag _newCaloShowerSimTag;
 
+    bool _checkTrackerDuplicateSteps;
   public:
     explicit CompressDigiMCsCheck(const fhicl::ParameterSet& pset);
     virtual void analyze(const art::Event& event);
@@ -56,6 +57,7 @@ namespace mu2e {
     , _crvDigiMCIndexMapTag(pset.get<art::InputTag>("crvDigiMCIndexMapTag", ""))
     , _oldCaloShowerSimTag(pset.get<art::InputTag>("oldCaloShowerSimTag"))
     , _newCaloShowerSimTag(pset.get<art::InputTag>("newCaloShowerSimTag"))
+    , _checkTrackerDuplicateSteps(pset.get<bool>("checkTrackerDuplicateSteps",true))
   {  }
 
   //================================================================
@@ -129,6 +131,24 @@ namespace mu2e {
 	double new_time = _newTOff.timeWithOffsetsApplied(*i_newStepPointMC);
 	if (std::fabs(old_time - new_time) > 1e-5) {
 	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
+	}
+
+	// Loop through all the StepPointMCs in the waveform and check that the trigger step points are the same Ptr
+	if (_checkTrackerDuplicateSteps) {
+	  const auto& i_newStepPointMCCal = i_newStrawDigiMC.stepPointMC(StrawEnd::cal);
+	  bool identical_cal_ptr = false;
+	  bool identical_hv_ptr = false;
+	  for (const auto& i_triggerStepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
+	    if (i_triggerStepPointPtr == i_newStepPointMC) {
+	      identical_hv_ptr = true;
+	    }
+	    if (i_triggerStepPointPtr == i_newStepPointMCCal) {
+	      identical_cal_ptr = true;
+	    }
+	  }
+	  if (! (identical_hv_ptr && identical_cal_ptr) ) {
+	    throw cet::exception("CompressDigiMCsCheck") << "Trigger StepPointMCs in StrawDigiMCs are not identical to any StepPointMC in the waveform. This could indicate a duplication of StepPointMCs" << std::endl;
+	  }
 	}
       }
     }

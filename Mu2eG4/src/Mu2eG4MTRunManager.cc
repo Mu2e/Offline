@@ -32,7 +32,7 @@ namespace mu2e {
     //from Mu2eG4_module, so we must make it public here
     void Mu2eG4MTRunManager::Mu2eG4WaitForEndEventLoopWorkers()
     {
-      if ( verboseLevel > 0 ) {
+      if ( verboseLevel > 1 ) {
         G4cout << __func__ << " called" << G4endl;
       }
         WaitForEndEventLoopWorkers();

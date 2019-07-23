@@ -14,7 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Ptr.h"
@@ -81,7 +81,7 @@ namespace mu2e {
                                   "run:evt:trk:gid:pdg:pk:ppdg:"
                                   "sgt:spt:svid:sg4stat:scc:rcc:sx:sy:sz:spx:spy:spz:"
                                   "egt:ept:evid:eg4stat:esc:ex:ey:ez:epx:epy:epz:"
-                                  "plsKE:nstep"
+                                  "eKE:nstep"
                                   );
   }
 
@@ -157,7 +157,7 @@ namespace mu2e {
       nt[27] = simP.endMomentum().x();
       nt[28] = simP.endMomentum().y();
       nt[29] = simP.endMomentum().z();
-      nt[30] = simP.preLastStepKineticEnergy();
+      nt[30] = simP.endKineticEnergy();
       nt[31] = simP.nSteps();
 
       _ntpssp->Fill(nt);

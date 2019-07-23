@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -43,6 +43,7 @@ namespace mu2e {
   };
 
   StrawDigiMCFilter::StrawDigiMCFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     minndigi_(pset.get<unsigned>("MinNDigis")),
     minpmom_(pset.get<double>("MinParticleMom")),
     maxpmom_(pset.get<double>("MaxParticleMom")),

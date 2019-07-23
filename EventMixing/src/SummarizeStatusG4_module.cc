@@ -63,7 +63,7 @@ namespace mu2e {
   };
 
   SummarizeStatusG4::SummarizeStatusG4(fhicl::ParameterSet const& pset) :
-
+    art::EDProducer{pset},
     // Run time parameters
     diagLevel_(pset.get<int>("diagLevel",0)),
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel","")){

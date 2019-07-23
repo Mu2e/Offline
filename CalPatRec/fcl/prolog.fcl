@@ -691,9 +691,9 @@ CalPatRec: { @table::CalPatRec
     }
 }
 
-CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDe,  CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDe,  CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDep, CalTrkFitDep ]
 CalPatRec.dmm_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDmm, CalTrkFitDmm ]
 CalPatRec.dmp_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDmp, CalTrkFitDmp ]
 

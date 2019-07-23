@@ -5,7 +5,7 @@
 // A helper class to create, hold, and fill particle ID
 // histograms to avoid copying this code several places
 //
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "TH1D.h"
 #include <string>
 

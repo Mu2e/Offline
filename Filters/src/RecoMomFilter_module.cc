@@ -40,6 +40,7 @@ namespace mu2e {
   };
 
   RecoMomFilter::RecoMomFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _moduleRoot(pset.get<std::string>("KalFinalTagRoot")),
     _trkTags(pset.get<std::vector<std::string> >("TrkTags")),
     _momCutoff(pset.get<std::vector<double> >("MomentumCutoff"))

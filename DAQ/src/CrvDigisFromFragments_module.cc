@@ -60,7 +60,7 @@ private:
 // ======================================================================
 
 CrvDigisFromFragments::CrvDigisFromFragments(fhicl::ParameterSet const& pset)
-  : EDProducer( )
+  : EDProducer{pset}
   , diagLevel_(pset.get<int>("diagLevel",0))
   , parseCRV_(pset.get<int>("parseCRV",1))
   , crvFragmentsTag_(pset.get<art::InputTag>("crvTag","daq:crv"))

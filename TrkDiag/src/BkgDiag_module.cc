@@ -12,7 +12,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -234,7 +234,7 @@ namespace mu2e
 	_bkgqualvars[ivar] = qual[static_cast<BkgQual::MVA_varindex>(ivar)];
       }
       _mvaout = qual.MVAOutput();
-      _mvastat = qual.status();
+      _mvastat = (Int_t)qual.status();
       // info on nearest cluster
       _mindt = _mindrho = 1.0e3;
       for(size_t jbkg = 0; jbkg < _bkgccol->size(); ++jbkg){

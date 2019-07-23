@@ -36,6 +36,7 @@ namespace mu2e
   };
 
   TrkPatRecFilter::TrkPatRecFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _fitterModuleLabels(pset.get<std::vector<std::string> >("fitterModuleLabels")),
     _trkPatRecInstances(pset.get<std::vector<std::string> >("trkPatRecInstances")),
     _minMomentum(pset.get<double>("minMomentum", -1.0)),

@@ -18,7 +18,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 //ROOTs
@@ -247,6 +247,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   AvikPIDNew::AvikPIDNew(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _debugLevel             (pset.get<int>                ("debugLevel"          )),
     _diagLevel              (pset.get<int>                ("diagLevel"           )),
     _trkRecModuleLabel      (pset.get<string>             ("trkRecModuleLabel"   )),
@@ -868,7 +869,6 @@ namespace mu2e {
 
     art::Handle<mu2e::KalRepPtrCollection> handle;
 
-    double         firsthitfltlen, lasthitfltlen, entlen;
     double         path, dedx_prob_ele, dedx_prob_muo;
 
     int const      max_ntrk(100);
@@ -935,10 +935,38 @@ namespace mu2e {
 // dE/dX: use only 'active' hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the track
 //-----------------------------------------------------------------------------
-      firsthitfltlen = trk->firstHit()->kalHit()->hit()->fltLen() - 10;
-      lasthitfltlen  = trk->lastHit()->kalHit()->hit()->fltLen() - 10;
-      entlen         = std::min(firsthitfltlen,lasthitfltlen);
-      _trkmom        = trk->momentum(entlen).mag();
+      double        firsthitfltlen(1.e6), lasthitfltlen(1.e6), entlen;
+
+      const TrkHit  *first(nullptr), *last(nullptr); 
+
+      for (int ih=0; ih<nh; ++ih) {
+        const TrkHit* hit =  dynamic_cast<const TrkHit*> (hots->at(ih));
+      	if (hit   != nullptr) {
+      	  if (first == nullptr) first = hit;
+      	  last = hit;
+      	}
+      }
+
+      // first = dynamic_cast<const TrkHit*> (trk->firstHit()->kalHit()->hit());
+      // last  = dynamic_cast<const TrkHit*> (trk->lastHit ()->kalHit()->hit());
+
+      // if (dynamic_cast<const TrkStrawHit*> (first) == nullptr) { 
+      // 	printf("ERROR in AvikPIDNew::produce for Event: %8i : first hit is not a TrkStrawHit, test fltLen*\n",_evtid);
+      // 	double len = first->fltLen();
+      // 	printf("first->fltLen() = %10.3f\n",len);
+      // }
+
+      // if (dynamic_cast<const TrkStrawHit*> (last ) == nullptr) { 
+      // 	printf("ERROR in AvikPIDNew::produce for Event: %8i : last  hit is not a TrkStrawHit, test fltLen*\n",_evtid);
+      // 	double len = last->fltLen();
+      // 	printf("last->fltLen() = %10.3f\n",len);
+      // }
+
+      if (first) firsthitfltlen = first->fltLen() - 10;
+      if (last ) lasthitfltlen  = last->fltLen()  - 10;
+
+      entlen  = std::min(firsthitfltlen,lasthitfltlen);
+      _trkmom = trk->momentum(entlen).mag();
 
       gaspaths.clear();
       edeps.clear();

@@ -19,7 +19,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 //ROOTs
@@ -279,6 +279,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   AvikPID::AvikPID(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _debugLevel(pset.get<int>("debugLevel")),
     _diagLevel (pset.get<int>("diagLevel" )),
 
@@ -1192,8 +1193,8 @@ namespace mu2e {
       edeps.clear();
 
       for (auto ihot=ele_hots.begin(); ihot != ele_hots.end(); ++ihot) {
-        hit = (mu2e::TrkStrawHit*) (*ihot);
-        if (hit->isActive()) {
+        const TrkStrawHit* hit = dynamic_cast<const mu2e::TrkStrawHit*> (*ihot);
+        if (hit && hit->isActive()) {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
@@ -1224,11 +1225,11 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
         ncommon = 0;
         for(auto ite=ele_hots.begin(); ite<ele_hots.end(); ite++) {
-          ehit = (const mu2e::TrkStrawHit*) (*ite);
-          if (ehit->isActive()) {
+          ehit = dynamic_cast<const mu2e::TrkStrawHit*> (*ite);
+          if (ehit && ehit->isActive()) {
             for(auto itm=muo_hots.begin(); itm<muo_hots.end(); itm++) {
-              mhit = (const mu2e::TrkStrawHit*) (*itm);
-              if (mhit->isActive()) {
+              mhit = dynamic_cast<const mu2e::TrkStrawHit*> (*itm);
+              if (mhit && mhit->isActive()) {
                 if (&ehit->comboHit() == &mhit->comboHit()) {
                   ncommon += 1;
                   break;
@@ -1252,16 +1253,16 @@ namespace mu2e {
           _dar->findDoublets  (muo_Trk,&muo_listOfDoublets);
 
           for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
-            TrkStrawHit* hit = (mu2e::TrkStrawHit*) (*ihot);
-            if (hit->isActive()) {
+            const TrkStrawHit* hit = dynamic_cast<const mu2e::TrkStrawHit*> (*ihot);
+            if (hit && hit->isActive()) {
               msh = &hit->comboHit();
 //-----------------------------------------------------------------------------
 // check if 'hit' is unique for the muon track
 //-----------------------------------------------------------------------------
               found = 0;
               for (auto ehot=ele_hots.begin(); ehot != ele_hots.end(); ++ehot) {
-                ehit = (mu2e::TrkStrawHit*) (*ehot);
-                if (ehit->isActive()) {
+                ehit = dynamic_cast<const mu2e::TrkStrawHit*> (*ehot);
+                if (ehit && ehit->isActive()) {
                   esh  = &ehit->comboHit();
                   if (esh == msh) {
                     found = 1;
@@ -1408,8 +1409,8 @@ namespace mu2e {
         edeps.clear();
 
         for (auto ihot=muo_hots.begin(); ihot != muo_hots.end(); ++ihot) {
-          hit = (mu2e::TrkStrawHit*) (*ihot);
-          if (hit->isActive()) {
+          hit = dynamic_cast<const mu2e::TrkStrawHit*> (*ihot);
+          if (hit && hit->isActive()) {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------

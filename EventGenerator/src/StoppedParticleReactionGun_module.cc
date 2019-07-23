@@ -84,12 +84,13 @@ namespace mu2e {
 
   //================================================================
   StoppedParticleReactionGun::StoppedParticleReactionGun(const fhicl::ParameterSet& pset)
-    : psphys_(pset.get<fhicl::ParameterSet>("physics"))
+    : EDProducer{pset}
+    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
     , pdgId_(PDGCode::type(psphys_.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
     , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
     , spectrum_(BinnedSpectrum(psphys_))
-    , genId_(GenId::findByName(psphys_.get<std::string>("genId", "StoppedParticleReactionGun")))
+    , genId_(GenId::findByName(psphys_.get<std::string>("genId")))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , eng_(createEngine(art::ServiceHandle<SeedService>()->getSeed()))
     , randSpectrum_(eng_, spectrum_.getPDF(), spectrum_.getNbins())

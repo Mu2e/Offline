@@ -14,7 +14,7 @@
 // framework
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 
 // conditions
@@ -45,6 +45,7 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalTimePeakFinder::CalTimePeakFinder(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _diagLevel       (pset.get<int>            ("diagLevel"                      )),
     _debugLevel      (pset.get<int>            ("debugLevel"                     )),
     _printfreq       (pset.get<int>            ("printFrequency"                 )),

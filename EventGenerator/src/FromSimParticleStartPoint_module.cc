@@ -28,8 +28,8 @@
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "SeedService/inc/SeedService.hh"
 
@@ -63,6 +63,7 @@ namespace mu2e {
   };
 
   FromSimParticleStartPoint::FromSimParticleStartPoint(fhicl::ParameterSet const& pset):
+    EDProducer{pset},
     _inModuleLabel(pset.get<std::string>("inputG4ModuleLabel","g4run")),
     _inPdgId(pset.get<Vpdg>("inputPdgIds", {})),
     _inVolumes(pset.get<Vstring>("inputVolumes", {})),
@@ -142,7 +143,7 @@ namespace mu2e {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenSimParticleLink> history(new GenSimParticleLink);
-    art::ProductID gpc_pid = (getProductID<GenParticleCollection>());
+    art::ProductID gpc_pid = (event.getProductID<GenParticleCollection>());
 
     if (_firstevent) {
 

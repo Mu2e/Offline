@@ -53,10 +53,11 @@ namespace mu2e
 
   };
 
-  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p)
-    : nPrescale_      (p.get<uint32_t>("nPrescale")), 
-      useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)), 
-      _debug          (p.get<int>     ("debugLevel",0)), 
+  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p) : 
+      art::EDFilter{p},
+      nPrescale_      (p.get<uint32_t>("nPrescale")),
+      useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)),
+      _debug          (p.get<int>     ("debugLevel",0)),
       _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),
       _trigPath       (p.get<std::string>("triggerPath")),
       _nevt(0), _npass(0)
@@ -85,7 +86,7 @@ namespace mu2e
 
   bool PrescaleEvent::endRun( art::Run& run ) {
     if(_debug > 0){
-      std::cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

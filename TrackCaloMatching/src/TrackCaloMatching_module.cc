@@ -14,7 +14,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 // From the art tool-chain
 #include "fhiclcpp/ParameterSet.h"
@@ -98,7 +98,7 @@ namespace mu2e {
   public:
 
     explicit TrackCaloMatching(fhicl::ParameterSet const& pset):
-
+      art::EDProducer{pset},
       _fitterToken           {consumes<KalRepPtrCollection>       (pset.get<string>     ("fitterModuleLabel"           ))},
       _caloClusterToken      {consumes<CaloClusterCollection>     (pset.get<std::string>("caloClusterModuleLabel"      ))},
       _trkToCaloExtrapolToken{consumes<TrkCaloIntersectCollection>(pset.get<std::string>("trkToCaloExtrapolModuleLabel"))},
