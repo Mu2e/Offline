@@ -308,66 +308,86 @@ void
 
       } else if(mode_ == "CAL" && packetCount>0 && parseCAL_>0) {	// Parse phyiscs information from CAL packets
 	
+	for(size_t hitIdx = 0; hitIdx<cc.DBC_NumHits(pos); hitIdx++) {
 
-	// Fill the CaloDigiCollection
-	std::vector<int> cwf = cc.DBC_Waveform(pos);
-	calo_digis->emplace_back(cc.DBC_CrystalID(pos)*2 + cc.DBC_apdID(pos), cc.DBC_Time(pos), cwf);
-	
-	if( diagLevel_ > 1 ) {
-	  adc_t crystalID  = cc.DBC_CrystalID(pos);
-	  adc_t apdID      = cc.DBC_apdID(pos);
-	  adc_t time       = cc.DBC_Time(pos);
-	  adc_t numSamples = cc.DBC_NumSamples(pos);
-	  //adc_t peakIdx    = cc.DBC_PeakSampleIdx(pos);
+	  // Fill the CaloDigiCollection
+	  std::vector<int> cwf = cc.DBC_Waveform(pos,hitIdx);
 
-	  std::cout << "timestamp: " << timestamp << std::endl;
-	  std::cout << "sysID: " << sysID << std::endl;
-	  std::cout << "dtcID: " << dtcID << std::endl;
-	  std::cout << "rocID: " << rocID << std::endl;
-	  std::cout << "packetCount: " << packetCount << std::endl;
-	  std::cout << "valid: " << valid << std::endl;
-	  std::cout << "EVB mode: " << EVBMode << std::endl;		
-	  
-	  for(int i=7; i>=0; i--) {
-	    std::cout << (adc_t) *(pos+8+i);
-	    std::cout << " ";
-	  }
-	  std::cout << std::endl;
-	  
-	  for(int i=7; i>=0; i--) {
-	    std::cout << (adc_t) *(pos+8*2+i);
-	    std::cout << " ";
-	  }
-	  std::cout << std::endl;
-	  
-	  std::cout << "Crystal ID: " << crystalID << std::endl;		
-	  std::cout << "APD ID: " << apdID << std::endl;
-	  std::cout << "Time: " << time << std::endl;
-	  std::cout << "NumSamples: " << numSamples << std::endl;
-	  std::cout << "Waveform: {";
-	  for(size_t i=0; i<cwf.size(); i++) {
-	    std::cout << cwf[i];
-	    if(i<cwf.size()-1) {
-	      std::cout << ",";
-	    }
-	  }
-	  std::cout << "}" << std::endl;
-	  
-	  // Text format: timestamp crystalID roID time nsamples samples...
-	  // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
-	  std::cout << "GREPMECAL: " << timestamp << " ";
-	  std::cout << crystalID << " ";
-	  std::cout << apdID << " ";
-	  std::cout << time << " ";
-	  std::cout << cwf.size() << " ";
-	  for(size_t i=0; i<cwf.size(); i++) {
-	    std::cout << cwf[i];
-	    if(i<cwf.size()-1) {
-	      std::cout << " ";
-	    }
-	  }
-	  std::cout << std::endl;
-	} // End debug output
+	  // IMPORTANT NOTE: As described in CaloPacketProducer_module.cc, we don't have a final
+	  // mapping yet so for the moment, the BoardID field (described in docdb 4914) is just a
+	  // placeholder. Because we still need to know which crystal a hit belongs to, we are
+	  // temporarily storing the 4-bit apdID and 12-bit crystalID in the Reserved DIRAC A slot.
+	  // Also, note that until we have an actual map, channel index does not actually correspond
+	  // to the physical readout channel on a ROC.
+	  calo_digis->emplace_back(
+				   ((cc.DBC_DIRACOutputB(pos,hitIdx) & 0x0FFF)*2 +
+				    (cc.DBC_DIRACOutputB(pos,hitIdx)>>12)),
+				     cc.DBC_Time(pos,hitIdx),
+				     cwf
+				   );
+
+	    if( diagLevel_ > 1 ) {
+	      // Until we have the final mapping, the BoardID is just a placeholder
+	      // adc_t BoardId    = cc.DBC_BoardID(pos,channelIdx);
+	      
+	      // As noted above, until we have the final mapping, the crystal ID and apdID
+	      // will be temporarily stored in the Reserved DIRAC A slot.
+	      adc_t crystalID  = cc.DBC_DIRACOutputB(pos,hitIdx) & 0x0FFF;
+	      adc_t apdID      = cc.DBC_DIRACOutputB(pos,hitIdx) >> 12;
+	      adc_t time       = cc.DBC_Time(pos,hitIdx);
+	      adc_t numSamples = cc.DBC_NumSamples(pos,hitIdx);
+	      //adc_t peakIdx    = cc.DBC_PeakSampleIdx(pos,hitIdx);
+         
+	      std::cout << "timestamp: " << timestamp << std::endl;
+	      std::cout << "sysID: " << sysID << std::endl;
+	      std::cout << "dtcID: " << dtcID << std::endl;
+	      std::cout << "rocID: " << rocID << std::endl;
+	      std::cout << "packetCount: " << packetCount << std::endl;
+	      std::cout << "valid: " << valid << std::endl;
+	      std::cout << "EVB mode: " << EVBMode << std::endl;		
+         	  
+	      for(int i=7; i>=0; i--) {
+		std::cout << (adc_t) *(pos+8+i);
+		std::cout << " ";
+	      }
+	      std::cout << std::endl;
+         	  
+	      for(int i=7; i>=0; i--) {
+		std::cout << (adc_t) *(pos+8*2+i);
+		std::cout << " ";
+	      }
+	      std::cout << std::endl;
+	      
+	      std::cout << "Crystal ID: " << crystalID << std::endl;		
+	      std::cout << "APD ID: " << apdID << std::endl;
+	      std::cout << "Time: " << time << std::endl;
+	      std::cout << "NumSamples: " << numSamples << std::endl;
+	      std::cout << "Waveform: {";
+	      for(size_t i=0; i<cwf.size(); i++) {
+		std::cout << cwf[i];
+		if(i<cwf.size()-1) {
+		  std::cout << ",";
+		}
+	      }
+	      std::cout << "}" << std::endl;
+         	  
+	      // Text format: timestamp crystalID roID time nsamples samples...
+	      // Example: 1 201 402 660 18 0 0 0 0 1 17 51 81 91 83 68 60 58 52 42 33 23 16
+	      std::cout << "GREPMECAL: " << timestamp << " ";
+	      std::cout << crystalID << " ";
+	      std::cout << apdID << " ";
+	      std::cout << time << " ";
+	      std::cout << cwf.size() << " ";
+	      for(size_t i=0; i<cwf.size(); i++) {
+		std::cout << cwf[i];
+		if(i<cwf.size()-1) {
+		  std::cout << " ";
+		}
+	      }
+	      std::cout << std::endl;
+	    } // End debug output
+	    
+	} // End loop over readout channels in DataBlock
 	
       } // End Cal Mode
       
