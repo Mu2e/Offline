@@ -1003,8 +1003,12 @@ namespace mu2e {
     // and a cylinder placed in TS1Vacuum)
 
     // the cone (which can be a tube/cylinder) inside the outer tube/cylinder
-    double coll1Param1[7] = { coll1.rIn1(), coll1.rIn3(),
-                              coll1.rIn2(), coll1.rIn3(),
+    double coll11rout = coll1.rIn3();
+    if(coll1.rOut1() > 0.) //allow the inner liner to have a different outer radius than the next layer's inner radius
+      coll11rout = coll1.rOut1();
+
+    double coll1Param1[7] = { coll1.rIn1(), coll11rout,
+                              coll1.rIn2(), coll11rout,
                               coll1.halfLength() - 2.*vdHalfLength,
                               0.0, CLHEP::twopi };
 

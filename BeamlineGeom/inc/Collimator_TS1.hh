@@ -28,6 +28,7 @@ namespace mu2e {
     double rIn3() const { return _rIn3; }
     double rIn4() const { return _rIn4; }
     double rOut() const { return _rOut4; }
+    double rOut1()const { return _rOut1; }
 
     std::string material1() const { return _material1; }
     std::string material2() const { return _material2; }
@@ -47,6 +48,7 @@ namespace mu2e {
     double _rIn3;
     double _rIn4;
     double _rOut4;
+    double _rOut1;
 
     std::string _material1;
     std::string _material2;
