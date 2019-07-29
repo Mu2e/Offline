@@ -157,7 +157,7 @@ double pbar.coll31In.offset = 1.0;      // distance to the TS3 coll31 entrance p
 // Collimators
 bool   ts.coll.visible        = true;
 bool   ts.coll.solid          = false;
-int    ts.coll.verbosityLevel = 2;
+int    ts.coll.verbosityLevel = 0;
 
 // Offsets of collimators wrt parent volumes (TS straight sections)
 double ts.coll1.sOffset       =  -37.5;  // Was -77.5, added 40
