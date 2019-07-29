@@ -14,11 +14,11 @@
 #include "RecoDataProducts/inc/StrawDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloDigiCollection.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 // c++
 #include <iostream>
 #include <memory>
+#include <string> 
 
 using namespace std;
 
@@ -36,7 +36,7 @@ namespace mu2e
     art::InputTag   _cdTag;
     bool            _useSD;   //flag for using the StrawDigi
     bool            _useCD;   //flag for using the CaloDigi
-    TriggerAlg      _trigAlg;
+    std::string     _trigPath;
 
     //list of the parameters used to perform the filtering
     int             _minnsd;  //minimum number of StrawDigi required
@@ -51,11 +51,12 @@ namespace mu2e
   };
 
   DigiFilter::DigiFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _sdTag    (pset.get<art::InputTag>("strawDigiCollection")),
     _cdTag    (pset.get<art::InputTag>("caloDigiCollection")),
     _useSD    (pset.get<bool>("useStrawDigi")),
     _useCD    (pset.get<bool>("useCaloDigi")),
-    _trigAlg  (pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath (pset.get<std::string>("triggerPath")),
     _minnsd   (pset.get<int>("minNStrawDigi")),
     _maxnsd   (pset.get<int>("maxNStrawDigi")),
     _minncd   (pset.get<int>("minNCaloDigi")),
@@ -118,10 +119,10 @@ namespace mu2e
       
       if (retvalSD) triginfo->_triggerBits.merge(TriggerFlag::strawDigis);
       if (retvalCD) triginfo->_triggerBits.merge(TriggerFlag::caloDigis );
-      triginfo->_triggerAlgBits.merge(_trigAlg);
+      triginfo->_triggerPath = _trigPath;
 
       if(_debug > 1){
-	cout << *currentContext()->moduleLabel() << " passed event " << event.id() << endl;
+	cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
       }
     }
     
@@ -131,7 +132,7 @@ namespace mu2e
 
   bool DigiFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

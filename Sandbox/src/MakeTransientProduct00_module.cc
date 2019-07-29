@@ -36,7 +36,9 @@ namespace mu2e {
 
   };
 
-  MakeTransientProduct00::MakeTransientProduct00(fhicl::ParameterSet const& ){
+  MakeTransientProduct00::MakeTransientProduct00(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset}
+  {
     produces<TransientProduct00Collection>();
   }
 

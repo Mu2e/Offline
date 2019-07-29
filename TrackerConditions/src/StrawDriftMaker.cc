@@ -148,8 +148,6 @@ namespace mu2e {
     auto ptr = std::make_shared<StrawDrift>(D2Tinfos,distances,
 					    instantSpeeds,averageSpeeds,phiBins);
     
-    if(_config.verbose()>1) ptr->print(cout);
-
     return ptr;
 
   } // fromFcl

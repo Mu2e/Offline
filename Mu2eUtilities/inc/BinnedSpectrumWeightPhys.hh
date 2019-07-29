@@ -25,7 +25,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
+#include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -38,55 +39,69 @@
 namespace mu2e {
 
   class BinnedSpectrumWeightPhys {
+    enum SpectrumVar  { TOTAL_ENERGY, KINETIC_ENERGY, MOMENTUM };
     
   private :
+    fhicl::ParameterSet psphys_;
     art::InputTag input_;
-    mu2e::BinnedSpectrum spectrum_;
     int verbosityLevel_;
-    double elow_;
-    double ehi_;
     PDGCode::type genPdg_;
     GenId genId_;
+    SpectrumVar       spectrumVariable_;
+    BinnedSpectrum spectrum_;
+
+    static SpectrumVar parseSpectrumVar(const std::string& name) {
+      if (name == "totalEnergy"  )  return TOTAL_ENERGY;
+      if (name == "kineticEnergy")  return KINETIC_ENERGY;
+      if (name == "momentum"     )  return MOMENTUM;
+      throw cet::exception("BADCONFIG")<<"BinnedSpectrumWeightPhys: unknown spectrum variable "<<name<<"\n";
+    }
 
   public :
-    BinnedSpectrumWeightPhys(const fhicl::ParameterSet& pset)
-      : input_(pset.get<std::string>("genParticleTag","compressDigiMCs") )
-      , verbosityLevel_(pset.get<int>("verbosityLevel", 0 ) )
-      , genPdg_(PDGCode::type(pset.get<int>("genParticlePdgId")) )
-      , genId_(GenId::findByName(pset.get<std::string>("genParticleGenId")) ){
 
-      std::string spectrumFileName = pset.get<std::string>("spectrumFileName");
-      spectrum_.initialize(loadTable<2>( ConfigFileLookupPolicy()( spectrumFileName )));
-      elow_ = spectrum_.getAbscissa(0);
-      ehi_  = spectrum_.getAbscissa(spectrum_.getNbins()-1) + spectrum_.getBinWidth();
-      if (pset.get<bool>("BinCenter", false)) {
-        elow_ -= spectrum_.getBinWidth()/2;
-        ehi_  -= spectrum_.getBinWidth()/2;
-      }
-      if(elow_ < 0.0) {
-	throw cet::exception("BADCONFIG")
-	  << "StoppedParticleReactionGun: negative energy endpoint "<< elow_ <<"\n";
-      }
+    BinnedSpectrumWeightPhys(const fhicl::ParameterSet& pset)
+      : psphys_(pset.get<fhicl::ParameterSet>("physics"))
+      , input_(pset.get<std::string>("genParticleTag","compressDigiMCs") )
+      , verbosityLevel_(pset.get<int>("verbosityLevel", 0 ) )
+      , genPdg_(PDGCode::type(pset.get<int>("genParticlePdgId",0)) )
+      , genId_(GenId::findByName(pset.get<std::string>("genParticleGenId")))
+      , spectrumVariable_(parseSpectrumVar(psphys_.get<std::string>("spectrumVariable")))
+      , spectrum_(BinnedSpectrum(psphys_))
+
+    {
     }
+
 
     double weight(const art::Event& evt) {
       auto genColl = evt.getValidHandle<GenParticleCollection>( input_ );
-      double energy = 0;
-      double wt = 0;
-      for ( const auto& i: *genColl ) {
-        if (i.pdgId() == genPdg_ && i.generatorId() == genId_ ) {
-          energy = i.momentum().e(); 
+      double sampleVal = 0;
+      if (spectrumVariable_ == TOTAL_ENERGY){
+        for ( const auto& i: *genColl ) {
+          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
+            sampleVal += i.momentum().e(); 
+          }
         }
+      }else if (spectrumVariable_ == KINETIC_ENERGY){
+        for ( const auto& i: *genColl ) {
+          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
+            sampleVal += i.momentum().e() - i.momentum().restMass(); 
+          }
+        }
+      }else{
+        CLHEP::Hep3Vector mom(0,0,0);
+        for ( const auto& i: *genColl ) {
+          if ((i.pdgId() == genPdg_ || genPdg_ == PDGCode::null) && i.generatorId() == genId_ ) {
+            mom += i.momentum().vect(); 
+          }
+        }
+        sampleVal = mom.mag();
       }
 
-      if (energy > ehi_) {
-	wt = 0;
-      }
-      else {
-	size_t i_bin = (energy - elow_) / spectrum_.getBinWidth();
-	wt = spectrum_.getPDF(i_bin);
-      }
-      return wt;
+      if (sampleVal > spectrum_.getXMax() || sampleVal < spectrum_.getXMin())
+        return 0;
+
+      size_t i_bin = (sampleVal - spectrum_.getXMin()) / spectrum_.getBinWidth();
+      return spectrum_.getPDF(i_bin);
     };
   };
 }

@@ -1,0 +1,8 @@
+physics.filters.minimumbiasCDCountPrescale.strawDigiCollection : notUSed		  
+physics.filters.minimumbiasCDCountPrescale.useStrawDigi        : false			  
+physics.filters.minimumbiasCDCountPrescale.useCaloDigi         : true			  
+physics.filters.minimumbiasCDCountPrescale.minNStrawDigi       : -1 		  
+physics.filters.minimumbiasCDCountPrescale.maxNStrawDigi       : -1			  
+physics.filters.minimumbiasCDCountPrescale.minNCaloDigi        : 500  			  
+physics.filters.minimumbiasCDCountPrescale.maxNCaloDigi        : 10000			  
+physics.filters.minimumbiasCDCountPrescale.maxCaloEnergy       : -1                      

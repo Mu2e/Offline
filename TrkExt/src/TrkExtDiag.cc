@@ -11,7 +11,7 @@
 #include "art/Framework/Principal/fwd.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "BFieldGeom/inc/BFieldManager.hh"

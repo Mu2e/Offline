@@ -1,0 +1,14 @@
+#include "JobConfig/beam/beam_defs_g4s1.fcl"
+
+physics.producers.generate.module_type  : PrimaryProtonGunN
+physics.producers.generate.inputfile    : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+physics.producers.generate.stashSize    : 1000
+physics.producers.g4run.runinMTMode     : true
+physics.producers.g4run.numberOfThreads : 64
+
+services.TFileService.fileName			     : "nts.owner.beam-g4s1.version.sequencer.root"
+services.GeometryService.inputFile		     : "Mu2eG4/geom/geom_common_phase1.txt"
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+outputs.mubeamout.fileName           		     : "sim.owner.beam-g4s1-mubeam.version.sequencer.art"
+outputs.dsout.fileName               		     : "sim.owner.beam-g4s1-dsregion.version.sequencer.art"
+outputs.truncatedEvtsOutput.fileName 		     : "sim.owner.beam-g4s1-truncated.version.sequencer.art"

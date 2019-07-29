@@ -7,7 +7,6 @@
  <class name="std::vector<mu2e::TrkStrawHitInfo>" />
  <class name="mu2e::TrkStrawMatInfo" />
  <class name="std::vector<mu2e::TrkStrawMatInfo>" />
- <class name="mu2e::threevec" />
  <class name="mu2e::TrkCaloInfo" />
  <class name="std::vector<mu2e::TrkCaloInfo>" />
  <class name="mu2e::TrkHitShare" />
@@ -43,4 +42,5 @@
  <class name="mu2e::TrkInfoMCStep" />
  <class name="mu2e::TrkQualInfo" />
  <class name="mu2e::EventWeightInfo" />
+ <class name="mu2e::RecoQualInfo" />
 </lcgdict>

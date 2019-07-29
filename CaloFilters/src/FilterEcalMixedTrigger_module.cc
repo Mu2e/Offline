@@ -2,7 +2,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -38,7 +38,6 @@
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 
@@ -92,7 +91,7 @@ namespace mu2e {
   private:
 
     int _diagLevel;
-    TriggerAlg    _trigAlg;
+    std::string    _trigPath;
 
     std::string _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -238,8 +237,9 @@ namespace mu2e {
   };
 
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
-    _trigAlg(pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath(pset.get<std::string>("triggerPath")),
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
@@ -738,7 +738,7 @@ namespace mu2e {
 	    //FIX ME!!!!
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
 	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
-	    triginfo->_triggerAlgBits.merge(_trigAlg);
+	    triginfo->_triggerPath = _trigPath;
 	    event.put(std::move(triginfo));
     	    return true;
 	  }
@@ -749,7 +749,7 @@ namespace mu2e {
 	    //FIX ME!!!!
 	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
 	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
-	    triginfo->_triggerAlgBits.merge(_trigAlg);
+	    triginfo->_triggerPath = _trigPath;
 	    event.put(std::move(triginfo));	    
 	    return true;
 	  }

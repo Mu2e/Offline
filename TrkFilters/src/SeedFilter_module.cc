@@ -8,7 +8,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "fhiclcpp/ParameterSet.h"
 // mu2e
 // data
@@ -47,13 +46,14 @@ namespace mu2e
     double          _minD0, _maxD0; // impact parameter limits
     double          _minT0;
     TrkFitFlag      _goods; // helix fit flag
-    TriggerAlg      _trigAlg;
+    std::string     _trigPath;
     int             _debug;
     // counters
     unsigned        _nevt, _npass;
   };
 
   SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _ksTag     (pset.get<art::InputTag>("kalSeedCollection","KSFDeM")),
     _hascc     (pset.get<bool>("requireCaloCluster",false)),
     _tpart     ((TrkParticle::type)(pset.get<int>("fitparticle"))),
@@ -70,7 +70,7 @@ namespace mu2e
     _maxD0     (pset.get<double>("maxD0", 200.)),
     _minT0     (pset.get<double>("minT0", 0.)),
     _goods     (pset.get<vector<string> >("seedFitFlag",vector<string>{"SeedOK"})),
-    _trigAlg   (pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath  (pset.get<std::string>("triggerPath")),
     _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -98,28 +98,29 @@ namespace mu2e
       // get the first segment
       KalSegment const& fseg = ks.segments().front();
       if(_debug > 2){
-        cout << *currentContext()->moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << endl;
+        cout << moduleDescription().moduleLabel() << "status = " << ks.status() << " nactive = " << nactive << " mom = " << fseg.mom() << " chisq/dof = " << ks.chisquared()/ndof << endl;
       }
       if( ks.status().hasAllProperties(_goods) &&
           (!_hascc || ks.caloCluster().isNonnull()) &&
           nactive >= _minnhits &&
           fseg.mom() > _minmom && fseg.mom() < _maxmom && fseg.momerr() < _maxmomerr &&
           ks.chisquared()/ndof < _maxchi2dof &&
-	  ks.fitConsistency()  > _minfitcons &&
-	  fseg.helix().tanDip() > _mintdip && fseg.helix().tanDip() < _maxtdip &&
-	  fseg.helix().d0() > _minD0 && fseg.helix().d0() < _maxD0 ) {
-	retval = true;
-	++_npass;
-	// Fill the trigger info object
-	triginfo->_triggerBits.merge(TriggerFlag::track);
-	// associate to the helix which triggers.  Note there may be other helices which also pass the filter
-	// but filtering is by event!
-	size_t index = std::distance(kscol->begin(),iks);
-	triginfo->_track = art::Ptr<KalSeed>(ksH,index);
-	if(_debug > 1){
-	  cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
-	}
-	break;
+          ks.fitConsistency()  > _minfitcons &&
+          fseg.helix().tanDip() > _mintdip && fseg.helix().tanDip() < _maxtdip &&
+          fseg.helix().d0() > _minD0 && fseg.helix().d0() < _maxD0 ) {
+        retval = true;
+        ++_npass;
+        // Fill the trigger info object
+        triginfo->_triggerBits.merge(TriggerFlag::track);
+        triginfo->_triggerPath = _trigPath;
+        // associate to the helix which triggers.  Note there may be other helices which also pass the filter
+        // but filtering is by event!
+        size_t index = std::distance(kscol->begin(),iks);
+        triginfo->_track = art::Ptr<KalSeed>(ksH,index);
+        if(_debug > 1){
+          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
+        }
+        break;
       }
     }
     evt.put(std::move(triginfo));
@@ -128,7 +129,7 @@ namespace mu2e
 
   bool SeedFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

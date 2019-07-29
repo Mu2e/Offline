@@ -1,0 +1,4 @@
+#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
+services.TFileService.fileName: "nts.owner.flatpigamma-mix.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.flatpigamma-mix.version.sequencer.art"
+

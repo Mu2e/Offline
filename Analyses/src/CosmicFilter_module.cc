@@ -19,7 +19,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 //#include <boost/shared_ptr.hpp>
 #include "fhiclcpp/ParameterSet.h"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -58,20 +58,21 @@ namespace mu2e {
 
   public:
 
-    explicit CosmicFilter(fhicl::ParameterSet const& pset):
-      fTrkPatRecModuleLabel(pset.get<std::string>   ("trkPatRecModuleLabel")),
-      fDiagLevel           (pset.get<int>           ("diagLevel"           )),
-      fMaxD0               (pset.get<double>        ("maxD0"               )), // in mm
-      fMaxZ0               (pset.get<double>        ("maxZ0"               ))  // in mm
-    {
-    }
-
+    explicit CosmicFilter(fhicl::ParameterSet const& pset);
     virtual ~CosmicFilter() {}
 
     virtual void beginJob();
     virtual bool filter  (art::Event& event);
 
   };
+    
+    CosmicFilter::CosmicFilter(fhicl::ParameterSet const& pset):
+    EDFilter{pset},
+    fTrkPatRecModuleLabel(pset.get<std::string>   ("trkPatRecModuleLabel")),
+    fDiagLevel           (pset.get<int>           ("diagLevel"           )),
+    fMaxD0               (pset.get<double>        ("maxD0"               )), // in mm
+    fMaxZ0               (pset.get<double>        ("maxZ0"               ))  // in mm
+    {}
 
 //-----------------------------------------------------------------------------
 // Get access to the TFile service and book histograms

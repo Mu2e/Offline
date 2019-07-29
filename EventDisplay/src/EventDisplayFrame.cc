@@ -46,7 +46,8 @@ namespace mu2e_eventdisplay
 EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhicl::ParameterSet const &pset) : 
   TGMainFrame(p, w, h),
   _g4ModuleLabel(pset.get<std::string>("g4ModuleLabel","g4run")),
-  _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV"))
+  _physicalVolumesMultiLabel(pset.get<std::string>("physicalVolumesMultiLabel","compressPV")),
+  _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets"))
 {
   SetCleanup(kDeepCleanup);
   Move(20,20);
@@ -108,6 +109,13 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(caloHitLabel, lh1);
   _subFrame->AddFrame(caloHitBox, lh1);
 
+  TGLabel *crvHitLabel  = new TGLabel(_subFrame, "CRV Hits");
+  TGComboBox *crvHitBox = new TGComboBox(_subFrame,13);
+  crvHitBox->Associate(this);
+  crvHitBox->Resize(250,20);
+  _subFrame->AddFrame(crvHitLabel, lh1);
+  _subFrame->AddFrame(crvHitBox, lh1);
+
   TGLabel *trackLabel  = new TGLabel(_subFrame, "Tracks");
   TGListBox *trackBox = new TGListBox(_subFrame,12);
   trackBox->Associate(this);
@@ -116,7 +124,7 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   _subFrame->AddFrame(trackLabel, lh1);
   _subFrame->AddFrame(trackBox, lh1);
 
-  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, trackBox, 
+  _contentSelector=boost::shared_ptr<ContentSelector>(new ContentSelector(hitBox, caloHitBox, crvHitBox, trackBox,  
                                                                           _g4ModuleLabel, _physicalVolumesMultiLabel));
 
   TGHorizontalFrame *subFrameView1   = new TGHorizontalFrame(_subFrame,300,15);
@@ -375,12 +383,15 @@ EventDisplayFrame::EventDisplayFrame(const TGWindow* p, UInt_t w, UInt_t h, fhic
   TGHorizontalFrame *navigationFrame = new TGHorizontalFrame(innerFrame1,100,200);
   TGTextButton *quitButton         = new TGTextButton(navigationFrame, "&Quit", 1001);
   TGTextButton *nextButton         = new TGTextButton(navigationFrame, "&Next", 1111);
-  navigationFrame->AddFrame(quitButton, new TGLayoutHints(kLHintsLeft,10,0,10,0));
-  navigationFrame->AddFrame(nextButton, new TGLayoutHints(kLHintsLeft,10,0,10,0));
-  innerFrame1->AddFrame(navigationFrame, new TGLayoutHints(kLHintsLeft,10,0,10,0));
+  TGTextButton *updateButton       = new TGTextButton(navigationFrame, "&Update", 1112);
+  navigationFrame->AddFrame(quitButton, new TGLayoutHints(kLHintsLeft,3,0,3,0));
+  navigationFrame->AddFrame(nextButton, new TGLayoutHints(kLHintsLeft,3,0,3,0));
+  navigationFrame->AddFrame(updateButton, new TGLayoutHints(kLHintsLeft,3,0,3,0));
+  innerFrame1->AddFrame(navigationFrame, new TGLayoutHints(kLHintsLeft,3,0,3,0));
 
   quitButton->Associate(this);
   nextButton->Associate(this);
+  updateButton->Associate(this);
   _minHitField->Associate(this);
   _eventToFindField->Associate(this);
   applyButton->Associate(this);
@@ -547,18 +558,17 @@ Bool_t EventDisplayFrame::HandleConfigureNotify(Event_t *event)
 void EventDisplayFrame::fillZoomAngleFields()
 {
   if(_mainPad->GetView()==nullptr) return;
-  char c[100];
   double min[3], max[3];
   _mainPad->GetView()->GetRange(min,max);
-  sprintf(c,"%.0f",min[0]); _minXField->SetText(c);
-  sprintf(c,"%.0f",min[1]); _minYField->SetText(c);
-  sprintf(c,"%.0f",min[2]); _minZField->SetText(c);
-  sprintf(c,"%.0f",max[0]); _maxXField->SetText(c);
-  sprintf(c,"%.0f",max[1]); _maxYField->SetText(c);
-  sprintf(c,"%.0f",max[2]); _maxZField->SetText(c);
-  sprintf(c,"%.0f",_mainPad->GetView()->GetLongitude()); _phiField->SetText(c);
-  sprintf(c,"%.0f",_mainPad->GetView()->GetLatitude()); _thetaField->SetText(c);
-  sprintf(c,"%.0f",_mainPad->GetView()->GetPsi()); _psiField->SetText(c);
+  _minXField->SetText(Form("%.0f",min[0]));
+  _minYField->SetText(Form("%.0f",min[1]));
+  _minZField->SetText(Form("%.0f",min[2]));
+  _maxXField->SetText(Form("%.0f",max[0]));
+  _maxYField->SetText(Form("%.0f",max[1]));
+  _maxZField->SetText(Form("%.0f",max[2]));
+  _phiField->SetText(Form("%.0f",_mainPad->GetView()->GetLongitude()));
+  _thetaField->SetText(Form("%.0f",_mainPad->GetView()->GetLatitude()));
+  _psiField->SetText(Form("%.0f",_mainPad->GetView()->GetPsi()));
   if(_mainPad->GetView()->IsPerspective())
   {
     _perspectiveButton->SetState(kButtonDown);
@@ -584,6 +594,8 @@ void EventDisplayFrame::fillGeometry()
 
 void EventDisplayFrame::setEvent(const art::Event& event, bool firstLoop)
 {
+  _timeOffsets.updateMap(event);
+
   _eventNumber=event.id().event();
   _subrunNumber=event.id().subRun();
   _runNumber=event.id().run();
@@ -601,47 +613,46 @@ void EventDisplayFrame::fillEvent(bool firstLoop)
   _findEvent=false;
   _mainPad->cd();
 
-  char eventInfoText[50];
-  sprintf(eventInfoText,"Event #: %i",_eventNumber);
+  std::string eventInfoText;
+  eventInfoText=Form("Event #: %i",_eventNumber);
   if(_eventNumberText==nullptr) 
   {
-    _eventNumberText = new TText(0.6,-0.8,eventInfoText);
+    _eventNumberText = new TText(0.6,-0.8,eventInfoText.c_str());
     _eventNumberText->SetTextColor(5);
     _eventNumberText->SetTextSize(0.025);
     _eventNumberText->Draw("same");
   }
-  else _eventNumberText->SetTitle(eventInfoText);
-  sprintf(eventInfoText,"Sub Run #: %i",_subrunNumber);
+  else _eventNumberText->SetTitle(eventInfoText.c_str());
+  eventInfoText=Form("Sub Run #: %i",_subrunNumber);
   if(_subrunNumberText==nullptr)
   {
-    _subrunNumberText = new TText(0.6,-0.75,eventInfoText);
+    _subrunNumberText = new TText(0.6,-0.75,eventInfoText.c_str());
     _subrunNumberText->SetTextColor(5);
     _subrunNumberText->SetTextSize(0.025);
     _subrunNumberText->Draw("same");
   }
-  else _subrunNumberText->SetTitle(eventInfoText);
-  sprintf(eventInfoText,"Run #: %i",_runNumber);
+  else _subrunNumberText->SetTitle(eventInfoText.c_str());
+  eventInfoText=Form("Run #: %i",_runNumber);
   if(_runNumberText==nullptr)
   {
-    _runNumberText = new TText(0.6,-0.7,eventInfoText);
+    _runNumberText = new TText(0.6,-0.7,eventInfoText.c_str());
     _runNumberText->SetTextColor(5);
     _runNumberText->SetTextSize(0.025);
     _runNumberText->Draw("same");
   }
-  else _runNumberText->SetTitle(eventInfoText);
+  else _runNumberText->SetTitle(eventInfoText.c_str());
 
-  _dataInterface->fillEvent(_contentSelector);
+  _dataInterface->fillEvent(_contentSelector, _timeOffsets);
   _dataInterface->useHitColors(_useHitColors, _whiteBackground);
   _dataInterface->useTrackColors(_contentSelector, _useTrackColors, _whiteBackground);
+  _dataInterface->makeCrvScintillatorBarsVisible(_showCRV);
 
   updateTimeIntervalFields();
   updateHitLegend(_useHitColors);
   updateTrackLegend(_useTrackColors);
 
-  sprintf(eventInfoText,"Number of tracker hits: %i",_dataInterface->getNumberHits());
-  _eventInfo[0]->SetText(eventInfoText);
-  sprintf(eventInfoText,"Number of calorimeter hits: %i",_dataInterface->getNumberCrystalHits());
-  _eventInfo[1]->SetText(eventInfoText);
+  _eventInfo[0]->SetText(Form("Number of tracker hits: %i",_dataInterface->getNumberHits()));
+  _eventInfo[1]->SetText(Form("Number of calorimeter hits: %i",_dataInterface->getNumberCrystalHits()));
   this->Layout();
 
   drawEverything();
@@ -661,10 +672,9 @@ void EventDisplayFrame::updateTimeIntervalFields(bool allTracks)
     maxt=_dataInterface->getHitsTimeBoundary().maxt;
   }
 
-  char c[50];
   if(maxt<mint) {mint=NAN; maxt=NAN;}
-  sprintf(c,"%.0f",mint); _timeIntervalField1->SetText(c);
-  sprintf(c,"%.0f",maxt); _timeIntervalField2->SetText(c);
+  _timeIntervalField1->SetText(Form("%.0f",mint));
+  _timeIntervalField2->SetText(Form("%.0f",maxt));
 }
 
 void EventDisplayFrame::updateHitLegend(bool draw)
@@ -693,9 +703,7 @@ void EventDisplayFrame::updateHitLegend(bool draw)
         double maxt=_dataInterface->getHitsTimeBoundary().maxt;
         double t=i*(maxt-mint)/20.0+mint;
         if(maxt<=mint) t=NAN;
-        char s[50];
-        sprintf(s,"%+.3e ns",t);
-        _legendText[i]=new TText(0.72,0.54+i*0.02,s);
+        _legendText[i]=new TText(0.72,0.54+i*0.02,Form("%+.3e ns",t));
         _legendText[i]->SetTextColor(_whiteBackground?kBlack:kWhite);
         _legendText[i]->SetTextSize(0.025);
         _legendText[i]->Draw();
@@ -758,7 +766,6 @@ void EventDisplayFrame::CloseWindow()
 
 Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param2)
 {
-  char c[100];
   switch (GET_MSG(msg))
   {
     case kC_TEXTENTRY:
@@ -770,35 +777,34 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
             double phi = _phiField->GetNumber();
             double theta = _thetaField->GetNumber();
             double psi = _psiField->GetNumber();
-            while (phi>360) {
+            while (phi>360) 
+            {
               phi-=360;
-              sprintf(c,"%.0f",phi); 
-              _phiField->SetText(c);
+              _phiField->SetText(Form("%.0f",phi));
             }
-            while (phi<0) {
+            while (phi<0) 
+            {
               phi+=360;
-              sprintf(c,"%.0f",phi); 
-              _phiField->SetText(c);
+              _phiField->SetText(Form("%.0f",phi));
             }
-            while (theta>360) {
+            while (theta>360) 
+            {
               theta-=360;
-              sprintf(c,"%.0f",theta); 
-              _thetaField->SetText(c);
+              _thetaField->SetText(Form("%.0f",theta));
             }
-            while (theta<0) {
+            while (theta<0) 
+            {
               theta+=360;
-              sprintf(c,"%.0f",theta); 
-              _thetaField->SetText(c);
+              _thetaField->SetText(Form("%.0f",theta));
             }
             while (psi>360) {
               psi-=360;
-              sprintf(c,"%.0f",psi); 
-              _psiField->SetText(c);
+              _psiField->SetText(Form("%.0f",psi));
             }
-            while (psi<0) {
+            while (psi<0) 
+            {
               psi+=360;
-              sprintf(c,"%.0f",psi); 
-              _psiField->SetText(c);
+              _psiField->SetText(Form("%.0f",psi));
             }
 
             int irep=0;
@@ -835,6 +841,12 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _timer->Stop();
                            _timeCurrent=NAN;
                            gApplication->Terminate();
+                         }
+                         if(param1==1112)
+                         {
+                           _timer->Stop();
+                           _timeCurrent=NAN;
+                           fillEvent();
                          }
                          if(param1==1100)
                          {
@@ -919,38 +931,40 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            double psi = _psiField->GetNumber();
                            int irep=0;
                            _mainPad->GetView()->SetView(phi,theta,psi,irep);
-                           _mainPad->SetPhi(-90-phi);
-                           _mainPad->SetTheta(90-theta);
+                           _mainPad->SetPhi(-90.0-phi);
+                           _mainPad->SetTheta(90.0-theta);
                            _mainPad->Modified();
                            _mainPad->Update();
                          }
-                         if (param1 ==1507 || param1 == 1508) {
+                         if(param1==1507 || param1==1508) 
+                         {
                            double min[3],max[3],hdist,cen;
-                           char c[100];
                            _mainPad->GetView()->GetRange(min,max);
-                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2]) {
-                             for (int i = 0 ; i < 3; ++i) {
-                               hdist = (max[i] - min[i]) /2.;
+                           if(min[0]<max[0] && min[1]<max[1] && min[2]<max[2]) 
+                           {
+                             for(int i=0; i<3; i++) 
+                             {
+                               hdist = (max[i] - min[i])/2.0;
                                cen   = min[i] + hdist;
-                               if(param1 == 1507) hdist *= 0.9;
-                               else hdist /= 0.9;
+                               if(param1==1507) hdist*=0.9;
+                               else hdist/=0.9;
                                min[i] = cen - hdist;
                                max[i] = cen + hdist;
                              }
                              _mainPad->GetView()->SetRange(min,max);
-                             sprintf(c,"%.0f",min[0]); _minXField->SetText(c);
-                             sprintf(c,"%.0f",min[1]); _minYField->SetText(c);
-                             sprintf(c,"%.0f",min[2]); _minZField->SetText(c);
-                             sprintf(c,"%.0f",max[0]); _maxXField->SetText(c);
-                             sprintf(c,"%.0f",max[1]); _maxYField->SetText(c);
-                             sprintf(c,"%.0f",max[2]); _maxZField->SetText(c);
+                             _minXField->SetText(Form("%.0f",min[0]));
+                             _minYField->SetText(Form("%.0f",min[1]));
+                             _minZField->SetText(Form("%.0f",min[2]));
+                             _maxXField->SetText(Form("%.0f",max[0]));
+                             _maxYField->SetText(Form("%.0f",max[1]));
+                             _maxZField->SetText(Form("%.0f",max[2]));
                              _mainPad->Modified();
                              _mainPad->Update();
                            }
                          }
-                         if (1509 <= param1 && param1 <= 1514) {
+                         if(1509 <= param1 && param1 <= 1514) 
+                         {
                            double min[3],max[3];
-                           char c[100];
                            min[0]=atof(_minXField->GetText());
                            min[1]=atof(_minYField->GetText());
                            min[2]=atof(_minZField->GetText());
@@ -961,21 +975,25 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            int dir = (param1 - 1509)%2;
                            double diff = 100;
                            if (!dir) diff*=-1;
-                           if (0 <= mode && mode <3) {
+                           if (0 <= mode && mode <3) 
+                           {
                              min[mode] += diff;
                              max[mode] += diff;
                              _mainPad->GetView()->SetRange(min,max);
-                             if (mode == 0) {
-                               sprintf(c,"%.0f",min[0]); _minXField->SetText(c);
-                               sprintf(c,"%.0f",max[0]); _maxXField->SetText(c);
+                             if(mode == 0) 
+                             {
+                               _minXField->SetText(Form("%.0f",min[0]));
+                               _maxXField->SetText(Form("%.0f",max[0]));
                              }
-                             else if (mode == 1) {
-                               sprintf(c,"%.0f",min[1]); _minYField->SetText(c);
-                               sprintf(c,"%.0f",max[1]); _maxYField->SetText(c);
+                             else if(mode == 1) 
+                             {
+                               _minYField->SetText(Form("%.0f",min[1]));
+                               _maxYField->SetText(Form("%.0f",max[1]));
                              }
-                             else if (mode == 2) {
-                               sprintf(c,"%.0f",min[2]); _minZField->SetText(c);
-                               sprintf(c,"%.0f",max[2]); _maxZField->SetText(c);
+                             else if(mode == 2) 
+                             {
+                               _minZField->SetText(Form("%.0f",min[2]));
+                               _maxZField->SetText(Form("%.0f",max[2]));
                              }
                              else {}
                              _mainPad->Modified();
@@ -1014,12 +1032,14 @@ Bool_t EventDisplayFrame::ProcessMessage(Long_t msg, Long_t param1, Long_t param
                            _mainPad->Update();
                          }
                          break;
-
+/*
   case kCM_COMBOBOX : if(param1==10) fillEvent();
                       if(param1==11) fillEvent();
+                      if(param1==13) fillEvent();
                       break;
   case kCM_LISTBOX : if(param1==12) fillEvent();
                      break;
+*/
       }
       break;
   }
@@ -1062,9 +1082,7 @@ Bool_t EventDisplayFrame::HandleTimer(TTimer *)
     {
 //      if(_saveAnimCounter%3==0) //save only every 3rd gif to make final file smaller
       {
-        char c[_saveAnimFile.length()+15];
-        sprintf(c,"%s.tmp_%04i.gif",_saveAnimFile.c_str(),_saveAnimCounter);
-        _mainPad->GetCanvas()->SaveAs(c);
+        _mainPad->GetCanvas()->SaveAs(Form("%s.tmp_%04i.gif",_saveAnimFile.c_str(),_saveAnimCounter));
       }
     }
   }
@@ -1084,11 +1102,8 @@ void EventDisplayFrame::createAnimFile()
   if(_saveAnimRoot) _rootFileManagerAnim->write();
   else
   {
-    char c[2*_saveAnimFile.length()+100];
-    sprintf(c,"convert -delay 50 -loop 0 %s.tmp_*.gif %s",_saveAnimFile.c_str(),_saveAnimFile.c_str());
-    gSystem->Exec(c);
-    sprintf(c,"rm -f %s.tmp_*.gif",_saveAnimFile.c_str());
-    gSystem->Exec(c);
+    gSystem->Exec(Form("convert -delay 50 -loop 0 %s.tmp_*.gif %s",_saveAnimFile.c_str(),_saveAnimFile.c_str()));
+    gSystem->Exec(Form("rm -f %s.tmp_*.gif",_saveAnimFile.c_str()));
   }
 }
 
@@ -1098,18 +1113,14 @@ void EventDisplayFrame::drawSituation()
   _dataInterface->updateComponents(_timeCurrent, _contentSelector);
   if(!_clock)
   {
-    char timeText[50];
-    sprintf(timeText,"%+.4e ns",_timeCurrent);
-    _clock = new TText(0.6,-0.9,timeText);
+    _clock = new TText(0.6,-0.9,Form("%+.4e ns",_timeCurrent));
     _clock->SetTextColor(5);
     _clock->SetTextSize(0.025);
     _clock->Draw("same");
   }
   else
   {
-    char timeText[50];
-    sprintf(timeText,"%+.4e ns",_timeCurrent);
-    _clock->SetTitle(timeText);
+    _clock->SetTitle(Form("%+.4e ns",_timeCurrent));
   }
 
   _mainPad->Modified();

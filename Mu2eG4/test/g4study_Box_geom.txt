@@ -1,0 +1,82 @@
+//
+// config file to perform Geant4 studies using the Mu2e framework infrastructure
+//
+//
+// Original author K.L. Genser
+//
+
+// Units are mm, MeV
+
+
+// Change the name.
+string detector.name           = "g4study";
+
+// version of the target geometry configuration
+
+// int            mu2e.studyEnvVersion      = 2;
+// 1 tube; 2 box; 3 "calorimeter", 4 tube and a box
+
+// make the volume mesh visible
+bool g4.forceAuxEdgeVisible    = true;
+
+// do not check for overlaps
+bool g4.doSurfaceCheck         = false;
+
+// the "World Box"
+
+// a very "thin" vacuum
+string world.materialName        = "G4_Galactic";
+
+// make the world boundaries visible
+bool   world.boxVisible          = true;
+// make the volume transparent
+bool   world.boxSolid            = false;
+
+double world.halfLength          = 10.0;
+double world.outerLayerThickness = 0.001;// the world "outer layer" to force a step point
+
+// the target (a tube) for mu2e.studyEnvVersion == 1
+
+bool           tube.visible = true;
+bool           tube.solid   = false;
+
+// fixme: may need to use pure isotopes
+string         tube.wallMaterialName = "G4_W";
+
+double         tube.rIn        = 0.0;
+double         tube.rOut       = 1.0;
+double         tube.halfLength = 3.0;
+double         tube.phi0       = 0.;
+double         tube.phiSpan    = 360.; // degrees
+double         tube.phiRotZ    =  0.;
+double         tube.sign       =  1.; // for additional 180 deg rotation tests around Y axis (when -1)
+
+int            tube.copyNumber = 3; // non 0 for volume tracking purposes
+                                    // 0 & 1 are World and an auxiliary 
+                                    // volume almost filling up the world
+
+// tube position in the world
+vector<double> tube.centerInWorld = {0., 0., 10.};
+
+// another target (a plane/box) for mu2e.studyEnvVersion == 2
+
+bool           box.visible = true;
+bool           box.solid   = false;
+
+// fixme: may need to use pure isotopes
+string         box.wallMaterialName = "G4_AIR";
+
+vector<double> box.halfLengths = {1., 1., 5.0};
+
+int            box.copyNumber = 2; // non 0 for volume tracking purposes
+                                   // 0 & 1 are World and an auxiliary 
+                                   // volume almost filling up the world
+
+// box position in the world
+vector<double> box.centerInWorld = {0., 0., 0.};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

@@ -8,7 +8,7 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "Validation/inc/ValStatusG4.hh"
 #include "Validation/inc/ValGenParticle.hh"
 #include "Validation/inc/ValSimParticle.hh"

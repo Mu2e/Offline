@@ -101,6 +101,7 @@ namespace mu2e {
 
   //================================================================
   StoppedMuonXRayGammaRayGun::StoppedMuonXRayGammaRayGun(const fhicl::ParameterSet& pset):
+    EDProducer{pset},
     _psphys(pset.get<fhicl::ParameterSet>("physics")),
     _p(0.0),
     _czmin (_psphys.get<double>("czmin", -1.0)),

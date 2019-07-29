@@ -29,6 +29,7 @@ namespace mu2e {
     TH1D* _hN2;
     ValId _id;
     TH1D* _hp;
+    TH1D* _hendKE;
     TH1D* _hpe;
     TH1D* _hpm;
     TH1D* _hp0;
@@ -52,6 +53,12 @@ namespace mu2e {
     ValId _idh;
     TH1D* _hscodeh;
     TH1D* _hecodeh;
+    ValId _idhendKE;
+    TH1D* _hscodehendKE;
+    TH1D* _hecodehendKE;
+    ValId _idh9endKE;
+    TH1D* _hscodeh9endKE;
+    TH1D* _hecodeh9endKE;
     TH1D* _htx;
     TH1D* _hty;
     TH1D* _htz;

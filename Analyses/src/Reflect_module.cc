@@ -10,7 +10,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 // services
 #include "BFieldGeom/inc/BFieldConfig.hh"
@@ -24,7 +24,7 @@
 // data
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "RecoDataProducts/inc/TrkExtTrajCollection.hh"
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 // ROOT incldues
 #include "TTree.h"
 #include "TH1F.h"
@@ -79,9 +79,10 @@ namespace mu2e {
     TTree* _reflect;
     // TTree branches
     TrkInfo _utrkinfo, _dtrkinfo;
+    TrkFitInfo _utrkinfo_ent, _dtrkinfo_ent;
     TrkInfoMC _mcinfo;
     TrkInfoMCStep _umcinfo,_dmcinfo;
-    threevec _opos, _omom, _ppos, _pmom, _pppos;
+    XYZVec _opos, _omom, _ppos, _pmom, _pppos;
     Int_t _ppdg;
     Float_t _ot0, _pt0;
     Int_t _uextnpa,_dextnpa,_uextnst,_dextnst;
@@ -167,11 +168,13 @@ namespace mu2e {
 	KalRep const* ukrep = utrks.get(iue);
 	if ( ukrep != 0 && ukrep->fitCurrent() ){
 	  _kdiag.fillTrkInfo(ukrep,_utrkinfo);
+	  _kdiag.fillTrkFitInfo(ukrep,_utrkinfo_ent);
 	  for ( size_t ide=0; ide < dtrks.size(); ++ide ){
 	    KalRep const* dkrep = dtrks.get(ide);
 	    if ( dkrep != 0 && dkrep->fitCurrent() ){
 // fill fit info
 	      _kdiag.fillTrkInfo(dkrep,_dtrkinfo);
+	      _kdiag.fillTrkFitInfo(dkrep,_dtrkinfo_ent);
 	      if(reflection()){
 // fill the branches with this info
 		_umcinfo.reset(); _dmcinfo.reset();
@@ -227,9 +230,9 @@ namespace mu2e {
       _utrkinfo._pdg == _dtrkinfo._pdg;
     if(retval){
       // rough cuts on momentum and direction at tracker entrance
-      double dmom = _utrkinfo._ent._fitmom-_dtrkinfo._ent._fitmom;
-      double dtd = _utrkinfo._ent._fitpar._td + _dtrkinfo._ent._fitpar._td; // note sign change!!!
-      double dp0 = _utrkinfo._ent._fitpar._p0 - _dtrkinfo._ent._fitpar._p0;
+      double dmom = _utrkinfo_ent._fitmom-_dtrkinfo_ent._fitmom;
+      double dtd = _utrkinfo_ent._fitpar._td + _dtrkinfo_ent._fitpar._td; // note sign change!!!
+      double dp0 = _utrkinfo_ent._fitpar._p0 - _dtrkinfo_ent._fitpar._p0;
       if(fabs(dp0) > M_PI){
 	if(dp0 > 0.0)
 	  dp0 -= 2*M_PI;
@@ -281,18 +284,20 @@ namespace mu2e {
     _reflect->Branch("subrunid",&_subrunid,"subrunid/I");
     // upstream and downstream track information
     _reflect->Branch("utrk",&_utrkinfo,TrkInfo::leafnames().c_str());
+    _reflect->Branch("utrkent",&_utrkinfo_ent,TrkFitInfo::leafnames().c_str());
     _reflect->Branch("dtrk",&_dtrkinfo,TrkInfo::leafnames().c_str());
+    _reflect->Branch("dtrkent",&_dtrkinfo_ent,TrkFitInfo::leafnames().c_str());
     _reflect->Branch("mc",&_mcinfo,TrkInfoMC::leafnames().c_str());
     _reflect->Branch("umc",&_umcinfo,TrkInfoMCStep::leafnames().c_str());
     _reflect->Branch("dmc",&_dmcinfo,TrkInfoMCStep::leafnames().c_str());
-    _reflect->Branch("opos",&_opos,threevec::leafnames().c_str());
-    _reflect->Branch("omom",&_omom,threevec::leafnames().c_str());
+    _reflect->Branch("opos",&_opos,Geom::XYZnames().c_str());
+    _reflect->Branch("omom",&_omom,Geom::XYZnames().c_str());
     _reflect->Branch("ot0",&_ot0,"ot0/F");
     _reflect->Branch("ppdg",&_ppdg,"ppdg/I");
-    _reflect->Branch("ppos",&_ppos,threevec::leafnames().c_str());
-    _reflect->Branch("pmom",&_pmom,threevec::leafnames().c_str());
+    _reflect->Branch("ppos",&_ppos,Geom::XYZnames().c_str());
+    _reflect->Branch("pmom",&_pmom,Geom::XYZnames().c_str());
     _reflect->Branch("pt0",&_pt0,"pt0/F");
-    _reflect->Branch("pppos",&_pppos,threevec::leafnames().c_str());
+    _reflect->Branch("pppos",&_pppos,Geom::XYZnames().c_str());
     if(_extrapolate){
       _reflect->Branch("uextnPA",&_uextnpa,"uextnpa/I");
       _reflect->Branch("dextnPA",&_dextnpa,"dextnpa/I");

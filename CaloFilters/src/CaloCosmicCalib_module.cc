@@ -8,7 +8,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 #include "fhiclcpp/ParameterSet.h"
 //#include "BFieldGeom/inc/BFieldManager.hh"
@@ -41,18 +40,19 @@ namespace mu2e
     art::InputTag _clTag;
     int           _minncrystalhits;
     double        _minenergy, _maxenergy;
-    TriggerAlg    _trigAlg;
+    std::string   _trigPath;
     int           _debug;
     // counters
     unsigned _nevt, _npass;
   };
 
   CaloCosmicCalib::CaloCosmicCalib(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _clTag          (pset.get<art::InputTag>("CaloClusterCollection")),
     _minncrystalhits(pset.get<int>          ("MinNCrystalHits")),
     _minenergy      (pset.get<double>       ("MinEnergy")), //MeV
     _maxenergy      (pset.get<double>       ("MaxEnergy")), //MeV
-    _trigAlg(pset.get<std::vector<std::string> >("triggerAlg")),
+    _trigPath       (pset.get<std::string>  ("triggerPath")),
     _debug          (pset.get<int>          ("debugLevel")),
     _nevt(0), _npass(0)
   {
@@ -86,7 +86,7 @@ namespace mu2e
       int   clsize     = cl.size();
       
       if(_debug > 2){
-        cout << *currentContext()->moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << endl;
+        cout << moduleDescription().moduleLabel() << " nhits = " << cl.size() << " energy = " << energy << endl;
       }
       if( (energy >= _minenergy) && 
 	  (energy <= _maxenergy) && 
@@ -95,13 +95,13 @@ namespace mu2e
         ++_npass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::caloCalib);
-	triginfo->_triggerAlgBits.merge(_trigAlg);
+	triginfo->_triggerPath = _trigPath;
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(clcol->begin(),icl);
         triginfo->_caloCluster = art::Ptr<CaloCluster>(clH,index);
         if(_debug > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << evt.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
         break;
       }
@@ -112,7 +112,7 @@ namespace mu2e
 
   bool CaloCosmicCalib::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " <<  _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

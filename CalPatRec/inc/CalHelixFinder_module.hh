@@ -6,7 +6,7 @@
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // data
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -37,7 +37,6 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"

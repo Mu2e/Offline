@@ -13,6 +13,9 @@ int mu2e::ValStepPointMC::declare(art::TFileDirectory tfs) {
   _hx = tfs.make<TH1D>( "X", "X", 100, -6000.0, 6000.0);
   _hy = tfs.make<TH1D>( "Y", "Y", 100, -2000.0, 2000.0);
   _hz = tfs.make<TH1D>( "Z", "Z", 100, -20000.0, 20000.0);
+  _hl1 = tfs.make<TH1D>( "Length1", "Length", 100, 0.0, 1000.0);
+  _hl2 = tfs.make<TH1D>( "Length2", "Length", 100, 0.0, 10.0);
+  _hl3 = tfs.make<TH1D>( "Length3", "Length", 100, 0.0, 0.01);
   _hxDS = tfs.make<TH1D>( "XDS", "X DS", 100, -3904-1000, -3904+1000);
   _hyDS = tfs.make<TH1D>( "YDS", "Y DS", 100, -1000.0, 1000.0);
   _hxTrk = tfs.make<TH1D>( "XTrk", "X Trk", 100, -1000.0, 1000.0);
@@ -33,12 +36,30 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
   _hVer->Fill(0.0);
 
   _hN->Fill(coll.size()); 
+  art::Handle<mu2e::SimParticleCollection> sph;
+  art::ProductID oldId(0);
+
   for(auto sp : coll) {
-    if(sp.simParticle()) _id.fill(sp.simParticle()->pdgId()); 
+
+    // unfortunately, if the event was truncated, then StepPointMC's
+    // can point to missing SimParticles, this code catches that case
+    // (none of the art::Ptr checks will tell us this, those only abort)
+    if(sp.simParticle().id()!=oldId) {
+      event.get(sp.simParticle().id(),sph);
+      oldId = sp.simParticle().id();
+    }
+    auto const& coll = *sph;
+    auto key = cet::map_vector_key( sp.simParticle().key() );
+    bool hasSim = coll.find(key)!=coll.end();
+
+    if(hasSim) _id.fill(sp.simParticle()->pdgId()); 
     _hp->Fill(sp.momentum().mag()); 
     _hx->Fill(sp.position().x());
     _hy->Fill(sp.position().y());
     _hz->Fill(sp.position().z());
+    _hl1->Fill(sp.stepLength());
+    _hl2->Fill(sp.stepLength());
+    _hl3->Fill(sp.stepLength());
     _hxDS->Fill(sp.position().x());
     _hyDS->Fill(sp.position().y());
     _hxTrk->Fill(sp.position().x());

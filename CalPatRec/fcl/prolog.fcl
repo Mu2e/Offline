@@ -169,6 +169,7 @@ CalPatRec : { @table::CalPatRec
         caloHitError                    : 15.0 # mm 
 		
 	DivergeFlt                        : 1000.            #  default: 1000.
+        T0Calculator : @local::TimeCalculator
 #------------------------------------------------------------------------------
 #  parameters of KalContext 
 #------------------------------------------------------------------------------
@@ -209,13 +210,14 @@ CalPatRec : { @table::CalPatRec
 	t0window                                : 2.5
 	dtOffset                                : @local::TrackCaloMatching.DtOffset
 	# did Dave mean that? 
-	useTrkCaloHit                           : false
+	useTrkCaloHit                           : true
 	strawHitT0Weight                        : 1
 	caloHitT0Weight                         : 10
 	caloHitError				: 15.0 # mm 
 	updateT0				: [ false, true, true, true, true, true, true, true, true ]
 	updateT0Mode                            : 1 # 0: always use cluster time, if available;  1: use cluster time just once
 	DivergeFlt                              : 1000.
+        T0Calculator : @local::TimeCalculator
 #------------------------------------------------------------------------------
 #  KalContext parameters  (there are more to define ! )
 #------------------------------------------------------------------------------
@@ -313,6 +315,7 @@ CalPatRec : { @table::CalPatRec
 	    StrawDigiCollection                         : makeSD
 	    StrawHitFlagCollection                      : "DeltaFinder:StrawHits"
 	    SeedCollection                              : CalSeedFit
+	    CaloClusterCollection                       : "CaloClusterFromProtoCluster"
 	    mcDigiCollTag                               : "dave,_it_is_used_only_when_debugging_MC._pasha"
 	    DtMaxMiss                                   : 55.
 	    MaxAddDoca                                  : 5.    # mm
@@ -331,8 +334,8 @@ CalPatRec : { @table::CalPatRec
 	MergeHelixFinder : { module_type:MergeHelixFinder	
 	    diagLevel                    : 0
 	    debugLevel                   : 0
-	    trkHelixFinderModuleLabel    : "HelixFindere:Positive"
-	    cprHelixCollTag              : "CalHelixFinder:Positive"
+	    tprHelixCollTag    : "HelixFinderDe:Positive"
+	    cprHelixCollTag    : "CalHelixFinder:Positive"
 	}
 
 #------------------------------------------------------------------------------
@@ -503,33 +506,33 @@ CalPatRec : { @table::CalPatRec
 	}
 
 	MHFinderTprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFindere:Positive"
-	    calHelixFinderModuleLabel : "HelixFindere:Negative"
+	    tprHelixCollTag : "HelixFinderDe:Positive"
+	    cprHelixCollTag : "HelixFinderDe:Negative"
 	}
 
 	MHFinderCprDe : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "CalHelixFinder:Positive"
-	    calHelixFinderModuleLabel : "CalHelixFinder:Negative"
+	    tprHelixCollTag : "CalHelixFinderDe:Positive"
+	    cprHelixCollTag : "CalHelixFinderDe:Negative"
 	}
 
 	MHFinderDe   : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : MHFinderTprDe
-	    calHelixFinderModuleLabel : MHFinderCprDe
+	    tprHelixCollTag : MHFinderTprDe
+	    cprHelixCollTag : MHFinderCprDe
 	}
 
 	MHFinderTprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "HelixFinderMu:Positive"
-	    calHelixFinderModuleLabel : "HelixFinderMu:Negative"
+	    tprHelixCollTag : "HelixFinderMu:Positive"
+	    cprHelixCollTag : "HelixFinderMu:Negative"
 	}
 
 	MHFinderCprDmu : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : "CalHelixFinderDmu:Positive"
-	    calHelixFinderModuleLabel : "CalHelixFinderDmu:Negative"
+	    tprHelixCollTag : "CalHelixFinderDmu:Positive"
+	    cprHelixCollTag : "CalHelixFinderDmu:Negative"
 	}
 
 	MHFinderDmu   : { @table::CalPatRec.producers.MergeHelixFinder 
-	    trkHelixFinderModuleLabel : MHFinderTprDmu
-	    calHelixFinderModuleLabel : MHFinderCprDmu
+	    tprHelixCollTag : MHFinderTprDmu
+	    cprHelixCollTag : MHFinderCprDmu
 	}
 
 	MergePatRecCpr : { @table::CalPatRec.producers.MergePatRec trkPatRecModuleLabel: none    calPatRecModuleLabel: CalTrkFit    }
@@ -687,9 +690,9 @@ CalPatRec: { @table::CalPatRec
     }
 }
 
-CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinder   ,  CalSeedFit   , CalTrkFit    ]
-CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDe,  CalSeedFitDem, CalTrkFitDem ]
-CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder, CalHelixFinderDe,  CalSeedFitDep, CalTrkFitDep ]
+CalPatRec.reco     : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinder   , CalSeedFit   , CalTrkFit    ]
+CalPatRec.dem_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDem, CalTrkFitDem ]
+CalPatRec.dep_reco : [ CalTimePeakFinder  , DeltaFinder  , CalHelixFinderDe , CalSeedFitDep, CalTrkFitDep ]
 CalPatRec.dmm_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDmm, CalTrkFitDmm ]
 CalPatRec.dmp_reco : [ CalTimePeakFinderMu, DeltaFinderMu, CalHelixFinderDmu, CalSeedFitDmp, CalTrkFitDmp ]
 

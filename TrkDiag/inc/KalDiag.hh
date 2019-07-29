@@ -34,7 +34,6 @@
 // Mu2e tracking
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrkData/inc/TrkCaloHit.hh"
-#include "TrkReco/inc/TrkDef.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -91,6 +90,7 @@ namespace mu2e
     std::vector<int> const& VDids(TRACKERPOS tpos) const;
 // functions to fill track information from KalRep
     void fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const;
+    void fillTrkFitInfo(const KalRep* krep, TrkFitInfo& trkfitinfo) const;
     void fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const;
 // MC info about a track
     void fillTrkInfoMC(art::Ptr<SimParticle> const& spp,const KalRep* krep,TrkInfoMC& trkinfomc);

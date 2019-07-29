@@ -13,7 +13,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -25,6 +25,7 @@
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 // #include "CalPatRec/inc/KalFitResult.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
+#include "RecoDataProducts/inc/HelixHit.hh"
 
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/median.hpp>
@@ -52,6 +53,7 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalHelixFinder::CalHelixFinder(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _diagLevel          (pset.get<int>   ("diagLevel"                      )),
     _debugLevel         (pset.get<int>   ("debugLevel"                     )),
     _printfreq          (pset.get<int>   ("printFrequency"                 )),
@@ -122,39 +124,34 @@ namespace mu2e {
     _hfinder.setCalorimeter(_calorimeter);
 
     ChannelID cx, co;
-    // int       nTotalStations = _tracker->nStations();
+    int       nPlanesPerStation(2);
+    for (int ipl=0; ipl<_tracker->nPlanes(); ipl++) {
+      const Plane*  pln = &_tracker->getPlane(ipl);
+      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+	const Panel* panel = &pln->getPanel(ipn);
+	int face;
+	if (panel->id().getPanel() % 2 == 0) face = 0;
+	else                                 face = 1;
+	cx.Station = ipl/nPlanesPerStation;//ist;
+	cx.Plane   = ipl % nPlanesPerStation;
+	cx.Face    = face;
+	cx.Panel   = ipn;
+	//	    cx.Layer   = il;
+	_hfResult.orderID (&cx, &co);
+	int os = co.Station; 
+	int of = co.Face;
+	int op = co.Panel;
 
-    for (int ist=0; ist<_tracker->nStations(); ist++) {
-      const Station* st = &_tracker->getStation(ist);
-
-      for (int ipl=0; ipl<st->nPlanes(); ipl++) {
-	const Plane* pln = &st->getPlane(ipl);
-	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
-	  const Panel* panel = &pln->getPanel(ipn);
-	  int face;
-	  if (panel->id().getPanel() % 2 == 0) face = 0;
-	  else                                 face = 1;
-	  cx.Station = ist;
-	  cx.Plane   = ipl;
-	  cx.Face    = face;
-	  cx.Panel   = ipn;
-	  //	    cx.Layer   = il;
-	  _hfResult.orderID (&cx, &co);
-	  int os = co.Station; 
-	  int of = co.Face;
-	  int op = co.Panel;
-
-	  int       stationId = os;
-	  int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
-	  _hfResult._zFace[faceId] = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	  //-----------------------------------------------------------------------------
-	  // panel caches phi of its center and the z
-	  //-----------------------------------------------------------------------------
-	  _hfResult._phiPanel[faceId*FaceZ_t::kNPanels + op] = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
-	}	
-      }
+	int       stationId = os;
+	int       faceId    = of + stationId*StrawId::_nfaces*FaceZ_t::kNPlanesPerStation;
+	_hfResult._zFace[faceId] = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	//-----------------------------------------------------------------------------
+	// panel caches phi of its center and the z
+	//-----------------------------------------------------------------------------
+	_hfResult._phiPanel[faceId*FaceZ_t::kNPanels + op] = TVector2::Phi_0_2pi(polyAtan2(panel->straw0MidPoint().y(),panel->straw0MidPoint().x()));
+      }	
     }
-
+	   
     if (_debugLevel > 10){
       printf("//----------------------------------------------//\n");
       printf("//     Face      Panel       PHI       Z        //\n");
@@ -428,6 +425,11 @@ namespace mu2e {
     int    nseeds(0);// = outseeds->size();
     for(auto const& hel : _hels ) {
       nseeds += helcols[hel]->size();
+	// set the flag here: This should be set on initialization FIXME!
+      for(auto & helix : *helcols[hel] ) {
+	helix._status.merge(TrkFitFlag::CPRHelix);
+      }
+
       event.put(std::move(helcols[hel]),Helicity::name(hel));
     }   
     // event.put(std::move(outseeds));

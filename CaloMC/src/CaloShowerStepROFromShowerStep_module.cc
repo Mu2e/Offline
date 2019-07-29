@@ -14,8 +14,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
@@ -122,6 +122,7 @@ namespace mu2e {
     using Parameters = art::EDProducer::Table<Config>;
 
     explicit CaloShowerStepROFromShowerStep(const Parameters& config) :
+      EDProducer{config},
       toff_                       (config().timeOffsets()),
       blindTime_                  (config().blindTime()),
       caloLRUCorrection_          (config().caloLRUCorrection()),

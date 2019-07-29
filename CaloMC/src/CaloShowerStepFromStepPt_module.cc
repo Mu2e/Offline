@@ -31,8 +31,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -98,6 +98,7 @@ namespace mu2e {
   public:
 
     explicit CaloShowerStepFromStepPt(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       numZSlices_(              pset.get<int>(        "numZSlices") ),
       deltaTime_(               pset.get<double>(     "deltaTime") ),
       calorimeterStepPoints_(   pset.get<std::string>("calorimeterStepPoints") ),

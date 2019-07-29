@@ -102,7 +102,10 @@ PrimaryProtonGunN: {
 
 
 StoppedParticleReactionGun: {
-    @table::CeEndpointGun 
+    @table::CeEndpointGun
+    physics:  { @table::CeEndpointGun.physics
+	genId : StoppedParticleReactionGun
+    }
 }
 
 
@@ -153,15 +156,12 @@ EventGenerator : { @table::EventGenerator
 # conversion e- and e+ on Al27 
 #------------------------------------------------------------------------------
 	CeMEndpoint              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeEndpoint 
 		pdgId                 : 11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-		eMax                  : 104.97                
-		spectrumResolution    : 0.1                # MeV
 		ehi                   : 104.97
-		elow                  : 0.
 	    } 
 	    muonStops            : { @table::mu2e.tgtMuonStops
 		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
@@ -170,15 +170,12 @@ EventGenerator : { @table::EventGenerator
 	}
 
 	CePEndpoint              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeEndpoint 
 		pdgId                 : -11
 		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-		eMax                  : 92.32                
-		spectrumResolution    : 0.1                # MeV
 		ehi                   : 92.32
-		elow                  : 0.
 	    } 
 	    muonStops            : { @table::mu2e.tgtMuonStops
 		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
@@ -187,12 +184,11 @@ EventGenerator : { @table::EventGenerator
 	}
 
 	CeMLeadingLog              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeLeadingLog 
 		pdgId                 : 11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-		eMax                  : 104.97                
 		spectrumResolution    : 0.1                # MeV
 		ehi                   : 104.97
 		elow                  : 0.
@@ -204,12 +200,11 @@ EventGenerator : { @table::EventGenerator
 	}
 
 	CePLeadingLog              : {   module_type: StoppedParticleReactionGun
-	    physics: {
+	    physics: { @table::StoppedParticleReactionGun.physics
 		genId                 : CeLeadingLog 
 		pdgId                 : -11
 		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
 		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
-		eMax                  : 92.32                
 		spectrumResolution    : 0.1                # MeV
 		ehi                   : 92.32
 		elow                  : 0.
@@ -223,7 +218,7 @@ EventGenerator : { @table::EventGenerator
 # generic electron and muon guns, default momentum is that of the CE on Al
 #------------------------------------------------------------------------------
   	egun : { @table::StoppedParticleReactionGun 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 11
 		elow             : 104.97175
 		ehi              : 104.97176
@@ -236,7 +231,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
   	mgun : { @table::StoppedParticleReactionGun 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 13
 		elow             : 104.97175
 		ehi              : 104.97176
@@ -251,7 +246,7 @@ EventGenerator : { @table::EventGenerator
 # DIO electrons, Al, leading order spectrum
 #------------------------------------------------------------------------------
   	dioallo : { @table::StoppedParticleReactionGun # DIO Al LO 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            :  11
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
@@ -263,7 +258,7 @@ EventGenerator : { @table::EventGenerator
 # 'tabulated' option ignores elow and ehi
 #------------------------------------------------------------------------------
   	dioalll : { @table::StoppedParticleReactionGun # DIO Al leading log 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            :  11
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
@@ -274,7 +269,7 @@ EventGenerator : { @table::EventGenerator
 # 100 MeV/c protons
 #------------------------------------------------------------------------------
   	pgun : { @table::StoppedParticleReactionGun # p(proton)=100 MeV/c
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 2212
 		elow             :  99.99
 		ehi              : 100.01
@@ -284,7 +279,7 @@ EventGenerator : { @table::EventGenerator
 	}
 
   	photonGun : { @table::StoppedParticleReactionGun # p(photon)=100 MeV/c
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 22
 		elow             :  99.999
 		ehi              : 100.001
@@ -327,7 +322,7 @@ EventGenerator : { @table::EventGenerator
 	StoppedParticleRMCGun : { 
 	    module_type    : StoppedMuonRMCGun
 	    verbosityLevel : 0
-	    doHistograms   : 0
+	    doHistograms   : false
 	    physics : {
 	        rhoInternal    : 1.0
 	        elow           : 1.5

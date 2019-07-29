@@ -11,7 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 #include "Mu2eInterfaces/inc/ProditionsEntity.hh"
 
 

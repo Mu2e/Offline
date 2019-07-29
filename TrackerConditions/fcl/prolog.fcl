@@ -1,4 +1,36 @@
 BEGIN_PROLOG
+Mu2eMaterial : {
+   verbose : 0
+   #  Location of dictionary files for the material model.
+   elements  : "TrackerConditions/data/ElementsList.data"
+   isotopes  : "TrackerConditions/data/IsotopesList.data"
+   materials : "TrackerConditions/data/MaterialsList.data"
+   strawGasMaterialName  : "straw-gas"
+   strawWallMaterialName : "straw-wall"
+   strawWireMaterialName : "straw-wire"
+   dahlLynchScatteringFraction : 0.995
+   intersectionTolerance : 0.001
+   strawElementOffset    : 0.25
+   maximumIntersectionRadiusFraction : 0.96
+}
+
+Mu2eDetector : {
+   verbose : 0
+   useDb : false
+}
+
+AlignedTracker : {
+   verbose : 0
+   useDb : false
+}
+
+FullReadoutStraw : {
+   verbose : 0
+   useDb : false
+   straws : []
+   # straws : ["16_2_1","10_0_23"]
+}
+
 
 DeadStraw : {
    verbose : 0

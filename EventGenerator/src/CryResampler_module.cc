@@ -27,7 +27,7 @@
 
 #include "TTree.h"
 #include "TFile.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 
 namespace mu2e {
@@ -65,8 +65,9 @@ namespace mu2e {
   };
 
   //================================================================
-  CryResampler::CryResampler(const fhicl::ParameterSet& pset){
-
+  CryResampler::CryResampler(const fhicl::ParameterSet& pset) :
+    art::EDProducer{pset}
+    {
     verbosityLevel_ = pset.get<int>("verbosityLevel", 0);
     pdt_ = (&*GlobalConstantsHandle<ParticleDataTable>());
     inputFile_ = pset.get<std::string>("inputFile");

@@ -27,7 +27,6 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
 // #include "art/Framework/Core/EDAnalyzer.h"
@@ -35,7 +34,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -97,7 +96,7 @@ namespace mu2e {
     double                  _minClEnergy, _clEStep;
     double                  _minRDist   , _rDistStep;
     vector<double>          _minLH;
-    TriggerAlg              _trigAlg;
+    std::string             _trigPath;
 
   //Histograms need to load the templates for the signal and background hypothesis
     TH1F*       _signalHist1D[2][kN1DVar];
@@ -118,6 +117,7 @@ namespace mu2e {
 
 
   CaloLikelihood::CaloLikelihood(const fhicl::ParameterSet & pset) :
+    art::EDFilter{pset},
     _diagLevel                   (pset.get<int>("diagLevel",0)),
     _nProcess                    (0),
     _nPass                       (0),
@@ -131,7 +131,7 @@ namespace mu2e {
     _minRDist                    (pset.get<double>        ("MinClusterRadialDist" ,  350.)),   // mm
     _rDistStep                   (pset.get<double>        ("ClusterRadialDistStep",   50.)),   // mm
     _minLH                       (pset.get<vector<double>>("MinLikelihoodCut"     , vector<double>{1.,1.})),   // likelihood threshold
-    _trigAlg                     (pset.get<std::vector<std::string> >("triggerAlg")){
+    _trigPath                    (pset.get<std::string>("triggerPath")){
 
     produces<TriggerInfo>();
 
@@ -271,7 +271,7 @@ namespace mu2e {
 
   bool CaloLikelihood::endRun( art::Run& run ) {
     if(_diagLevel > 0 && _nProcess > 0){
-      cout << *currentContext()->moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
     }
     return true;
   }
@@ -424,14 +424,14 @@ namespace mu2e {
 	++_nPass;
         // Fill the trigger info object
         triginfo->_triggerBits.merge(TriggerFlag::caloCluster);
-	triginfo->_triggerAlgBits.merge(_trigAlg);
+	triginfo->_triggerPath = _trigPath;
         // associate to the caloCluster which triggers.  Note there may be other caloClusters which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(caloClusters->begin(), icl);
         triginfo->_caloCluster = art::Ptr<CaloCluster>(clH, index);
         
 	if(_diagLevel > 1){
-          cout << *currentContext()->moduleLabel() << " passed event " << event.id() << endl;
+          cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
         }
 	
         break;

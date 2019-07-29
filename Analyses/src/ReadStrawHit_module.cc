@@ -18,8 +18,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Principal/Provenance.h"
 #include "canvas/Utilities/Exception.h"
@@ -173,7 +173,7 @@ namespace mu2e {
     // Get the persistent data about the StrawHits.
 
     if (ncalls==1){
-      const auto & allstraws = tracker.getAllStraws();
+      const auto & allstraws = tracker.getStraws();
       float detnt[11];
       // for ( const auto & str : allstraws)
       for (size_t i = 0; i<tracker.nStraws(); ++i)

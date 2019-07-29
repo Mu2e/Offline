@@ -57,6 +57,7 @@ namespace mu2e
   };
 
   CrvDigitizer::CrvDigitizer(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _crvWaveformsModuleLabel(pset.get<std::string>("crvWaveformsModuleLabel")),
     _ADCconversionFactor(pset.get<double>("ADCconversionFactor")),
     _pedestal(pset.get<int>("pedestal"))

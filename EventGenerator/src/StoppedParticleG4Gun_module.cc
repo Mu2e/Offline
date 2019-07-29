@@ -57,7 +57,8 @@ namespace mu2e {
 
   //================================================================
   StoppedParticleG4Gun::StoppedParticleG4Gun(const fhicl::ParameterSet& pset)
-    : pdgId_(PDGCode::type(pset.get<int>("pdgId")))
+    : EDProducer{pset}
+    , pdgId_(PDGCode::type(pset.get<int>("pdgId")))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , stops_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),

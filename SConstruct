@@ -50,8 +50,13 @@ env = Environment( CPPPATH = sch.cppPath(mu2eOpts),   # $ART_INC ...
 # sources are classes.h, classes_def.xml, 
 # targets are dict.cpp, .rootmap and .pcm
 # LIBTEXT is the library for the dict - not a target, only text for names
-genreflex = Builder(action="genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG" )
+genreflex = Builder(action="export HOME="+os.environ["HOME"]+"; "+"genreflex ${SOURCES[0]} -s ${SOURCES[1]} $_CPPINCFLAGS -l $LIBTEXT -o ${TARGETS[0]} --fail_on_warnings --rootmap-lib=$LIBTEXT  --rootmap=${TARGETS[1]} $DEBUG_FLAG" )
 env.Append(BUILDERS = {'DictionarySource' : genreflex})
+
+# a generic builder, some files transform to others
+generic = Builder(action="$COMMAND" )
+env.Append(BUILDERS = {'GenericBuild' : generic})
+
 
 # this sets the build flags, like -std=c++14 -Wall -O3, etc
 SetOption('warn', 'no-fortran-cxx-mix')

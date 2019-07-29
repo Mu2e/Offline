@@ -10,14 +10,16 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 // utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkDiag/inc/TrkTools.hh"
+#include "TrkDiag/inc/InfoStructHelper.hh"
+#include "TrkDiag/inc/TrkInfo.hh"
 // data
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
+#include "RecoDataProducts/inc/RecoQual.hh"
 // C++
 #include <iostream>
 #include <fstream>
@@ -43,21 +45,42 @@ namespace mu2e
     art::InputTag _kalSeedTag;
 
     MVATools* _trkqualmva;
+    MVAMask _mvamask;
+
+    InfoStructHelper _infoStructHelper;
   };
 
   TrackQuality::TrackQuality(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _kalSeedTag(pset.get<art::InputTag>("KalSeedCollection", "")),
     _trkqualmva(new MVATools(pset.get<fhicl::ParameterSet>("TrkQualMVA", fhicl::ParameterSet())))
 
   {
     produces<TrkQualCollection>();
+    produces<RecoQualCollection>();
     
     _trkqualmva->initMVA();
+
+    // create the MVA mask in case we have removed variables
+    const auto& labels = _trkqualmva->labels();
+    _mvamask = 0;
+    for (int i_var = 0; i_var < TrkQual::n_vars; ++i_var) {
+      for (const auto& i_label : labels) {
+	std::string i_varName = TrkQual::varName(static_cast<TrkQual::MVA_varindex>(i_var));
+	if (i_label.find(i_varName) != std::string::npos) {
+	  _mvamask ^= (1 << i_var);
+	  break;
+	}
+      }
+    }
+    if(pset.get<bool>("PrintMVA",false))
+      _trkqualmva->showMVA();
   }
 
   void TrackQuality::produce(art::Event& event ) {
     // create output
     unique_ptr<TrkQualCollection> tqcol(new TrkQualCollection());
+    unique_ptr<RecoQualCollection> rqcol(new RecoQualCollection());
 
     // get the KalSeeds
     art::Handle<KalSeedCollection> kalSeedHandle;
@@ -71,13 +94,14 @@ namespace mu2e
       if (i_kalSeed.status().hasAllProperties(goodfit)) {
 
 	// fill the hit count variables
-	unsigned nhits = 0; unsigned nactive = 0; unsigned ndouble = 0; unsigned ndactive = 0; unsigned nnullambig = 0;
-	TrkTools::countHits(i_kalSeed.hits(), nhits, nactive, ndouble, ndactive, nnullambig);
-	trkqual[TrkQual::nactive] = nactive;
-	trkqual[TrkQual::factive] = (double)nactive / nhits;
-	trkqual[TrkQual::fdouble] = (double)ndactive / nactive;
-	trkqual[TrkQual::fnullambig] = (double)nnullambig / nactive;
-	trkqual[TrkQual::fstraws] = (double)i_kalSeed.straws().size() / nactive;
+	TrkInfo tinfo;
+	_infoStructHelper.fillTrkInfoHits(i_kalSeed, tinfo);
+	_infoStructHelper.fillTrkInfoStraws(i_kalSeed, tinfo);
+	trkqual[TrkQual::nactive] = tinfo._nactive;
+	trkqual[TrkQual::factive] = (double) tinfo._nactive / tinfo._nhits;
+	trkqual[TrkQual::fdouble] = (double) tinfo._ndactive / tinfo._nactive;
+	trkqual[TrkQual::fnullambig] = (double) tinfo._nnullambig / tinfo._nactive;
+	trkqual[TrkQual::fstraws] = (double)tinfo._nmatactive / tinfo._nactive;
 
 	// fill fit consistency and t0 variables
 	if (i_kalSeed.fitConsistency() > FLT_MIN) {
@@ -110,19 +134,25 @@ namespace mu2e
 	  trkqual[TrkQual::d0] = -1*charge*bestkseg->helix().d0();
 	  trkqual[TrkQual::rmax] = -1*charge*(bestkseg->helix().d0() + 2.0/bestkseg->helix().omega());
 	  
-	  trkqual.setMVAStatus(TrkQual::calculated);
-	  trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values()));
+	  trkqual.setMVAStatus(MVAStatus::calculated);
+	  trkqual.setMVAValue(_trkqualmva->evalMVA(trkqual.values(), _mvamask));
+
 	}
 	else {
-	  trkqual.setMVAStatus(TrkQual::filled);
+	  trkqual.setMVAStatus(MVAStatus::filled);
 	}
       }
-
       tqcol->push_back(trkqual);
+      rqcol->push_back(RecoQual(trkqual.status(),trkqual.MVAValue()));
     }
+
+    if ( (tqcol->size() != rqcol->size()) || (tqcol->size() != kalSeeds.size()) ) {
+	throw cet::exception("TrackQuality") << "KalSeed, TrkQual and RecoQual sizes are inconsistent (" << kalSeeds.size() << ", " << tqcol->size() << ", " << rqcol->size() << " respectively)";
+      }
 
     // put the output products into the event
     event.put(move(tqcol));
+    event.put(move(rqcol));
   }  
 }// mu2e
 

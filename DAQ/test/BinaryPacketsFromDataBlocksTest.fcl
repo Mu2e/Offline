@@ -1,0 +1,68 @@
+# Run BinaryPacketsFromDataBlocks module to combine DataBlocks from
+# specified input root files
+# Usage: mu2e -c DAQ/test/BinaryPacketsFromDataBlocksTest.fcl -s <input root files> -n '-1'
+#
+#
+# Contact person Tomonari Miyashita
+
+process_name : FileDumper
+
+source : {
+  module_type : RootInput
+  fileNames   : @nil
+
+  # firstEvent  : 500
+  maxEvents   : -1
+}
+
+physics : {
+
+  producers : {
+    binaryOutput: {
+      module_type     : BinaryPacketsFromDataBlocks
+      diagLevel       : 2
+      maxFullPrint    : 0
+
+      includeTracker : 1
+      includeCalorimeter : 1
+      includeCosmicRayVeto: 1
+      includeDMAHeaders: 1
+      # Cosmic ray veto module is currently incomplete
+
+      generateTimestampTable : 1
+
+      generateBinaryFile : 1
+      
+      outputFile      : "DTC_packets.bin"
+      maxDMABlockSize : 32000
+      bufferSize      : 1000
+    }
+  }
+
+
+  t1 : [ binaryOutput ] 
+  e1 : [ outfile ]
+
+  trigger_paths  : [t1]
+  end_paths      : [e1]
+
+}
+
+outputs:  {
+  outfile :  {
+    module_type   :   RootOutput
+    fileName      :   "packet_data.root"
+
+#    outputCommands: [ "drop *",
+#		      "keep mu2e::StrawDigis_makeSD_*_*",
+#		      "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
+#                      "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
+#                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
+#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
+#                     ]
+  }
+}
+
+#services.message.destinations.log.categories.ArtReport.reportEvery : 1
+#services.message.destinations.log.categories.ArtReport.limit : 1
+#services.message.destinations.log.categories.ArtReport.timespan : 300

@@ -45,7 +45,7 @@ namespace mu2e_eventdisplay
     ComponentInfo()
     {
       _name=boost::shared_ptr<std::string>(new std::string);
-      for(int i=0; i<5; i++)
+      for(int i=0; i<7; i++)
       {
         char const* tmp = nullptr;
         boost::shared_ptr<TText> newLine(new TText(0.0,0.0,tmp));
@@ -71,21 +71,14 @@ namespace mu2e_eventdisplay
       _text[lineNumber]->SetTitle(newText);
     }
 
-    template <typename NUMERIC_TYPE>
-      // This template will not instantiate for non-arithmetic types (cf SFINAE).
-      // std::enable_if expression below will give return type void if instantiated.
-      typename std::enable_if<std::is_arithmetic<NUMERIC_TYPE>::value>::type 
-      // const on pass-by-value is meaningless in an argument list.
-      expandLine(unsigned int lineNumber, NUMERIC_TYPE newNumber, const char *unit)
+    void expandLine(unsigned int lineNumber, const char *text)
     {
       if(lineNumber>=_text.size()) return;  //TODO throw exception
       const char *oldLine = _text[lineNumber]->GetTitle();
       if(oldLine!=nullptr)
       {
         std::ostringstream newLine;
-        // No manipulators is equivalent to %g for floating point types, %i for integral.
-        // Add eg std::setfill('0') and/or std::setw(n) from <iomanip> for padding.
-        newLine<<oldLine<<", "<<newNumber<<unit;
+        newLine<<oldLine<<"  "<<text;
         _text[lineNumber]->SetTitle(newLine.str().c_str());
       }
     }

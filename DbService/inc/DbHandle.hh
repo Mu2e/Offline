@@ -2,6 +2,7 @@
 #define DbService_DbHandle_hh
 
 #include <memory>
+#include <iostream>
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "DbService/inc/DbService.hh"
 #include "DbTables/inc/DbLiveTable.hh"
@@ -68,7 +69,6 @@ T const& mu2e::DbHandle<T>::get(art::EventID const& eid) {
   
   _table = std::dynamic_pointer_cast<const T,const mu2e::DbTable>(
 						  _liveTable.ptr());
-
   if(_table) return *_table;
 
   throw cet::exception("DBHANDLE_NO_TABLE") 

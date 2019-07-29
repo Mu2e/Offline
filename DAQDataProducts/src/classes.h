@@ -16,7 +16,7 @@
 
 #include "DAQDataProducts/inc/DataBlockCollection.hh"
 
-template class std::vector<mu2e::DataBlock::adc_t>;
-template class art::Wrapper<mu2e::DataBlockCollection>;
+//template class std::vector<mu2e::DataBlock::adc_t>;
+//template class art::Wrapper<mu2e::DataBlockCollection>;
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

@@ -35,10 +35,13 @@ namespace mu2e {
 
 
 
-    if(_verbose>1) std::cout << "DbService::postBeginJob " <<std::endl;
+    if(_verbose>1) std::cout << "DbService::constructor " <<std::endl;
 
     // the engine which will read db, hold calibrations, deliver them
     _engine.setVerbose(_verbose);
+
+    _engine.setDbId( DbId(_config.dbName()) );
+    _engine.setVersion( _version );
 
     // if there were text files containing calibrations,
     // then read them and tell the engine to let them override IOV
@@ -51,8 +54,9 @@ namespace mu2e {
       _engine.addOverride(coll);
     }
 
-    _engine.setDbId( DbId(_config.dbName()) );
-    _engine.setVersion( _version );
+    int cacheLifetime = 0;
+    _config.cacheLifetime(cacheLifetime);
+    _engine.reader().setCacheLifetime(cacheLifetime);
 
     // service will start calling the database at the first event,
     // so the service can exist without the DB being contacted.  

@@ -13,7 +13,7 @@
 // C++ includes
 #include <iostream>
 #include <vector>
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"

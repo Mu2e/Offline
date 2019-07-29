@@ -31,7 +31,7 @@ namespace mu2e {
     MuonCaptureSpectrum(CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
 
     MuonCaptureSpectrum(bool kMaxUserSet, double kMaxUser, double kMaxMax,
-			CLHEP::RandFlat* randFlat, RandomUnitSphere* randomUnitSphere);
+			CLHEP::RandFlat* randFlat = 0, RandomUnitSphere* randomUnitSphere = 0);
 
     ~MuonCaptureSpectrum(){}
 

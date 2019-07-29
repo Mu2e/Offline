@@ -31,6 +31,7 @@ namespace mu2e
 
 // correct the hit time
     virtual double time                 () const;
+//    virtual bool   time                 (HitT0&t0);
     virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
     virtual bool signalPropagationTime(	TrkT0& t0);  // this function should be const FIXME!!!
     // the followin function isn't used and should be removed FIXME!
@@ -50,6 +51,7 @@ namespace mu2e
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
 
     const CaloCluster& _caloCluster;
+    double	       _clen; // crystal length
     double             _dtoffset;
     TrkLineTraj*       _hittraj;
     double             _hitErr; // geometric error on the cluster transverse position for POCA calculation

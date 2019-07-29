@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "SeedService/inc/SeedService.hh"
@@ -111,7 +111,8 @@ namespace mu2e {
 
   //================================================================
   AntiProtonGun::AntiProtonGun(const fhicl::ParameterSet& pset)
-    : verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    : art::EDProducer{pset}
+    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , rotateTarget_(pset.get<bool>("rotateTarget", false))
     , phiMin_(pset.get<double>("phiMin", 0.))
     , phiMax_(pset.get<double>("phiMax", 360.))

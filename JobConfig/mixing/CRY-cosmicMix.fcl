@@ -1,0 +1,59 @@
+# 
+# Simulate digis using CRY StepPoints
+#
+#include "JobConfig/mixing/prolog.fcl"
+
+# Give this job a name.
+process_name: CRYmix
+
+source: { 
+  module_type : RootInput
+  # drop products that will get remade and aren't needed for filtering.
+  inputCommands: ["keep *_*_*_*",
+		  @sequence::Mixing.Input.droppedProducts]
+}
+
+services: @local::Services.Sim
+
+physics : { 
+  producers : {
+    generate: @local::dummyGenerator
+    @table::Mixing.producers
+  }
+  filters  : {@table::Mixing.filters}
+  analyzers: {@table::Mixing.analyzers}
+# enable CRV digis
+  TriggerPath: [
+		@sequence::CommonMC.PrimaryDigiSim,
+		makeSDPrimary, DigiFilter,
+		@sequence::Mixing.MixSequence,
+  		compressDigiMCs]
+  EndPath : @local::Mixing.EndPath
+}
+outputs: { Output : @local::Mixing.Output }
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+physics.producers.g4run  : @erase
+# a few patches for these files
+physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter",
+  @sequence::Mixing.TrkCalMixSequence, @sequence::Mixing.CRVMixSequence ]
+physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector" ]
+# use the same times for primary particles when mixing
+physics.producers.cosmicTimeMap.InputTimeMaps : [@sequence::Mixing.cosmicTimeMaps]
+#
+# filter out high-momentum cosmics with few hits
+#
+physics.filters.DigiFilter.StrawDigiMCCollection : "makeSDPrimary"
+physics.filters.DigiFilter.MinParticleMom : 70.0
+physics.filters.DigiFilter.MaxParticleMom : 200.0
+physics.filters.DigiFilter.MinNDigis : 15
+# allow all particles
+physics.filters.DigiFilter.particleTypes : [ ]  
+# compress MCTrajectories
+physics.producers.compressDigiMCs.mcTrajectoryTag : "detectorFilter"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+services.TFileService.fileName       : "nts.owner.CRY-cosmic-general-mix.version.sequencer.root"
+outputs.Output.fileName      : "dig.owner.CRY-cosmic-general-mix.version.sequencer.art"

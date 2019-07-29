@@ -19,7 +19,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -41,7 +41,6 @@
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
 
 #include <algorithm>
 #include <cmath>
@@ -228,7 +227,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   DeltaFinderAna::DeltaFinderAna(fhicl::ParameterSet const& pset): 
-    //    art::EDProducer(pset), 
+    art::EDProducer(pset), 
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _mcdigisTag            (pset.get<art::InputTag>("strawDigiMCCollectionTag"     )),

@@ -61,10 +61,12 @@ def cppPath(mu2eOpts):
     path = [
         mu2eOpts["primaryBase"],
         os.environ['ART_INC'],
+        os.environ['ART_ROOT_IO_INC'],
         os.environ['CANVAS_INC'],
         os.environ['BTRK_INC'],
         os.environ['MESSAGEFACILITY_INC'],
         os.environ['FHICLCPP_INC'],
+        os.environ['HEP_CONCURRENCY_INC'],
         os.environ['SQLITE_INC'],
         os.environ['CETLIB_INC'],
         os.environ['CETLIB_EXCEPT_INC'],
@@ -77,6 +79,7 @@ def cppPath(mu2eOpts):
         os.environ['TBB_INC'],
         os.environ['MU2E_ARTDAQ_CORE_INC'],
         os.environ['ARTDAQ_CORE_INC'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_INC'],
         os.environ['TRACE_INC'],
         os.environ['GSL_INC'],
         os.environ['POSTGRESQL_INC']
@@ -92,11 +95,14 @@ def libPath(mu2eOpts):
     path = [
         mu2eOpts['primaryBase']+'/lib',
         os.environ['ART_LIB'],
+        os.environ['ART_ROOT_IO_LIB'],
         os.environ['CANVAS_LIB'],
         os.environ['BTRK_LIB'],
         os.environ['MU2E_ARTDAQ_CORE_LIB'],
         os.environ['ARTDAQ_CORE_LIB'],
+        os.environ['PCIE_LINUX_KERNEL_MODULE_LIB'],
         os.environ['MESSAGEFACILITY_LIB'],
+        os.environ['HEP_CONCURRENCY_LIB'],
         os.environ['FHICLCPP_LIB'],
         os.environ['SQLITE_LIB'],
         os.environ['CETLIB_LIB'],
@@ -136,7 +142,7 @@ def mergeFlags(mu2eOpts):
 def exportedOSEnvironment():
     osenv = {}
     for var in [ 'LD_LIBRARY_PATH',  'GCC_FQ_DIR',  'PATH', 'PYTHONPATH',
-                 'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR' ]:
+                 'ROOTSYS', 'PYTHON_ROOT', 'PYTHON_DIR', 'SQLITE_FQ_DIR' ]:
         if var in os.environ.keys():
             osenv[var] = os.environ[var]
     return osenv
@@ -189,4 +195,3 @@ def extraCleanup():
             ff =  os.path.join(top, name)
             print "removing file ", ff
             os.unlink (ff)
-

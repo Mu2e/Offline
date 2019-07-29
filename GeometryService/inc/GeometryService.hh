@@ -46,6 +46,8 @@ public:
 
     SimpleConfig const& config() const { return *_config;}
 
+    fhicl::ParameterSet const& pset() const { return _pset; }
+
     G4GeometryOptions const * geomOptions() const { return _g4GeomOptions.get(); }
     G4GeometryOptions       * geomOptions()       { return _g4GeomOptions.get(); }
 
@@ -87,6 +89,8 @@ private:
 
     // The object that parses run-time configuration file.
     std::unique_ptr<SimpleConfig> _config;
+
+    const fhicl::ParameterSet          _pset;
 
     // Load G4 geometry options
     std::unique_ptr<G4GeometryOptions> _g4GeomOptions;

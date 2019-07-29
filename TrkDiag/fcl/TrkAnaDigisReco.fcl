@@ -1,0 +1,48 @@
+#
+# This script runs TrackAnalysisReco on digi inputs.  It runs the official Reco sequence inline.
+# David Brown (LBNL) Feb 2019
+#
+#include "fcl/standardProducers.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+# the following is for reading MDC2018g and earlier.  To read later digis, remove the "_nocosmic"
+###include "JobConfig/reco/mcdigis_nocosmic.fcl"
+#include "JobConfig/reco/mcdigis.fcl"
+
+process_name : TrkAnaDigisReco
+# augment producers and analyzers
+physics.producers: {
+  @table::physics.producers
+  @table::TrkAnaReco.producers
+}
+physics.analyzers: {
+  @table::physics.analyzers
+  @table::TrkAnaReco.analyzers
+}
+# add TrkQual to path
+physics.RecoPath : [ @sequence::physics.RecoPath,
+   @sequence::TrkAnaReco.TrigSequence ]
+physics.EndPath : [ RecoCheck, @sequence::TrkAnaReco.EndSequence ]
+services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.root"
+#
+#  Script options
+# 
+# uncomment the following for detailed helix information
+#physics.analyzers.TrkAnaNeg.FillHelixInfo : true
+#physics.analyzers.TrkAnaPos.FillHelixInfo : true
+# uncomment the following to turn on CRV information
+#physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+#physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+# uncomment the following for hit level diagnostics
+#physics.analyzers.TrkAnaNeg.diagLevel : 2
+#physics.analyzers.TrkAnaPos.diagLevel : 2
+# trigger information is not supported by this script
+
+# TrkQual and TrkCaloHitPID input variables branch not supported by this script
+physics.analyzers.TrkAnaNeg.FillTrkQualInfo : false
+physics.analyzers.TrkAnaPos.FillTrkQualInfo : false
+physics.analyzers.TrkAnaNeg.candidate.fillTrkQual : false
+physics.analyzers.TrkAnaPos.candidate.fillTrkQual : false
+physics.analyzers.TrkAnaNeg.FillTrkPIDInfo : false
+physics.analyzers.TrkAnaPos.FillTrkPIDInfo : false
+physics.analyzers.TrkAnaNeg.candidate.fillTrkPID : false
+physics.analyzers.TrkAnaPos.candidate.fillTrkPID : false

@@ -10,7 +10,7 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
@@ -28,8 +28,6 @@
 //#include "RecoDataProducts/inc/TimeCluster.hh"
 
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
-
 #include "CalPatRec/inc/DeltaFinder2_types.hh"
 
 // #include "CalPatRec/inc/LsqSums2.hh"
@@ -160,6 +158,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   DeltaFinder2::DeltaFinder2(fhicl::ParameterSet const& pset): 
+    art::EDProducer{pset},
     _shTag                 (pset.get<string>       ("strawHitCollectionTag"        )),
     _shfTag                (pset.get<string>       ("strawHitFlagCollectionTag"    )),
     _shpTag                (pset.get<string>       ("strawHitPositionCollectionTag")),
@@ -232,47 +231,54 @@ namespace mu2e {
       disk_z[i] = tpos.z();
     }
 
-    for (int ist=0; ist<_tracker->nStations(); ist++) {
-      const Station* st = &_tracker->getStation(ist);
+    int       nPlanesPerStation(2);
+    double    station_z(0);
+
+    for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+      const Plane* pln = &_tracker->getPlane(planeId);
+      int  ist = planeId/nPlanesPerStation;
+      int  ipl = planeId % nPlanesPerStation;
 
       //calculate the time-of-flight between the station and each calorimeter disk
       //for a typical Conversion Electron
-      for (int iDisk=0; iDisk<nDisks; ++iDisk){
-	_stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - st->midZ())/sin(_pitchAngle)/CLHEP::c_light;
+      if (ipl == 0) {
+	station_z = pln->origin().z();
+      }else {
+	station_z = (station_z + pln->origin().z())/2.;
+	for (int iDisk=0; iDisk<nDisks; ++iDisk){
+	  _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - station_z)/sin(_pitchAngle)/CLHEP::c_light;
+	}
       }
 
-      for (int ipl=0; ipl<st->nPlanes(); ipl++) {
-	const Plane* pln = &st->getPlane(ipl);
-	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
-	  const Panel* panel = &pln->getPanel(ipn);
-	  int face;
-	  if (panel->id().getPanel() % 2 == 0) face = 0;
-	  else                                 face = 1;
-	  for (int il=0; il<panel->nLayers(); ++il) {
-	    cx.Station = ist;
-	    cx.Plane   = ipl;
-	    cx.Face    = face;
-	    cx.Panel   = ipn;
-	    cx.Layer   = il;
-	    orderID (&cx, &co);
-	    int os = co.Station; 
-	    int of = co.Face;
-	    int op = co.Panel;
-	    PanelZ_t* pz = &_data.oTracker[os][of][op];
-	    pz->fPanel = panel;
-//-----------------------------------------------------------------------------
-// panel caches phi of its center and the z
-//-----------------------------------------------------------------------------
-	    pz->wx  = panel->straw0Direction().x();
-	    pz->wy  = panel->straw0Direction().y();
-	    pz->phi = panel->straw0MidPoint().phi();
-	    pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	  }
-	}	
-      }
+      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+	const Panel* panel = &pln->getPanel(ipn);
+	int face;
+	if (panel->id().getPanel() % 2 == 0) face = 0;
+	else                                 face = 1;
+	for (int il=0; il<panel->nLayers(); ++il) {
+	  cx.Station = ist;
+	  cx.Plane   = ipl;
+	  cx.Face    = face;
+	  cx.Panel   = ipn;
+	  cx.Layer   = il;
+	  orderID (&cx, &co);
+	  int os = co.Station; 
+	  int of = co.Face;
+	  int op = co.Panel;
+	  PanelZ_t* pz = &_data.oTracker[os][of][op];
+	  pz->fPanel = panel;
+	  //-----------------------------------------------------------------------------
+	  // panel caches phi of its center and the z
+	  //-----------------------------------------------------------------------------
+	  pz->wx  = panel->straw0Direction().x();
+	  pz->wy  = panel->straw0Direction().y();
+	  pz->phi = panel->straw0MidPoint().phi();
+	  pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	}
+      }	
 
-      if ((ist == 6) || (ist == 13))  _data.stationUsed[ist] = 0;
-      else                            _data.stationUsed[ist] = 1;
+      // if ((ist == 6) || (ist == 13))  _data.stationUsed[ist] = 0;
+      // else                            _data.stationUsed[ist] = 1;
     }
 //-----------------------------------------------------------------------------
 // it is enough to print that once

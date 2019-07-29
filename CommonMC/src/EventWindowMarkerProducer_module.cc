@@ -40,6 +40,7 @@ namespace mu2e {
   };
 
   EventWindowMarkerProducer::EventWindowMarkerProducer(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _systemClockSpeed(pset.get<float>("SystemClockSpeed",40.0)), // MHz
     _eventWindowConstantOffset(pset.get<float>("EventWindowConstantOffset",0.0)), // ns (is a calibration value to get data/sim agreement)
     // a positive value means the event window is delayed relative to the StepPointMC timing
