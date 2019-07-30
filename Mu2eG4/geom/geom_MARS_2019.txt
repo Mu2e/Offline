@@ -1,6 +1,6 @@
+// Updated to be used in the 2019 MARS simulation campaign. 
 //
 // Top level geometry file first used in pass 2 of (stage 4 and after) of the CD3c simulation campaign.
-// Updated to be used in the 2019 MARS simulation campaign. 
 //
 // Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
 
