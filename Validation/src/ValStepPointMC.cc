@@ -13,9 +13,9 @@ int mu2e::ValStepPointMC::declare(art::TFileDirectory tfs) {
   _hx = tfs.make<TH1D>( "X", "X", 100, -6000.0, 6000.0);
   _hy = tfs.make<TH1D>( "Y", "Y", 100, -2000.0, 2000.0);
   _hz = tfs.make<TH1D>( "Z", "Z", 100, -20000.0, 20000.0);
-  _hl1 = tfs.make<TH1D>( "Length1", "Length", 100, 0.0, 1000.0);
+  _hl1 = tfs.make<TH1D>( "Length1", "Length", 100, 0.0, 100.0);
   _hl2 = tfs.make<TH1D>( "Length2", "Length", 100, 0.0, 10.0);
-  _hl3 = tfs.make<TH1D>( "Length3", "Length", 100, 0.0, 0.01);
+  _hl3 = tfs.make<TH1D>( "Length3", "log10(Length)", 100, -19.0, 6.0);
   _hxDS = tfs.make<TH1D>( "XDS", "X DS", 100, -3904-1000, -3904+1000);
   _hyDS = tfs.make<TH1D>( "YDS", "Y DS", 100, -1000.0, 1000.0);
   _hxTrk = tfs.make<TH1D>( "XTrk", "X Trk", 100, -1000.0, 1000.0);
@@ -33,7 +33,7 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(0.0);
+  _hVer->Fill(1.0);
 
   _hN->Fill(coll.size()); 
   art::Handle<mu2e::SimParticleCollection> sph;
@@ -59,7 +59,7 @@ int mu2e::ValStepPointMC::fill(const mu2e::StepPointMCCollection & coll,
     _hz->Fill(sp.position().z());
     _hl1->Fill(sp.stepLength());
     _hl2->Fill(sp.stepLength());
-    _hl3->Fill(sp.stepLength());
+    _hl3->Fill(log10(sp.stepLength()));
     _hxDS->Fill(sp.position().x());
     _hyDS->Fill(sp.position().y());
     _hxTrk->Fill(sp.position().x());

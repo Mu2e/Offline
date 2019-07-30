@@ -33,7 +33,7 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hNS2 = tfs.make<TH1D>( "NStep2", "log10(N Steps)", 100, -0.05, 9.95);
   _hl1 = tfs.make<TH1D>( "Length1", "Length", 100, 0.0, 1000.0);
   _hl2 = tfs.make<TH1D>( "Length2", "Length", 100, 0.0, 10.0);
-  _hl3 = tfs.make<TH1D>( "Length3", "log10(Length)", 100, -15.0, 5.0);
+  _hl3 = tfs.make<TH1D>( "Length3", "log10(Length)", 100, -19.0, 6.0);
   _idh.declare(tfs,"idh","id fold, p>10");
   _hND  = tfs.make<TH1D>( "NDaughter",  "N Daughters", 100, -0.05, 100.0);
   _hND2 = tfs.make<TH1D>( "NDaughter2", "N Daughters", 100, -0.05, 1000.0);
