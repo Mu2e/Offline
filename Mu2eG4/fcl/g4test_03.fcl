@@ -22,7 +22,10 @@ source : {
   maxEvents : 200
 }
 
-services : @local::Services.SimAndReco
+services : {
+  @table::Services.SimAndReco
+  TFileService : { fileName : "g4test_03.root" }
+}
 
 physics : {
 
@@ -95,8 +98,6 @@ outputs: {
   }
 
 }
-
-services.TFileService.fileName : "g4test_03.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
 services.SeedService.baseSeed         :  0
