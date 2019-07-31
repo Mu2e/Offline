@@ -503,6 +503,7 @@ namespace mu2e {
 		       ,ProcessCode::mu2eProtonInelastic      // same process code
 		       ,momPbar.e()- _mass                    // preLastStepKE
 		       ,0                                     // nSteps
+		       ,-1.                                   // track length
 		       );                 
     //
     // next stage will fail unless you tell it this new particle is the daughter of the proton!
