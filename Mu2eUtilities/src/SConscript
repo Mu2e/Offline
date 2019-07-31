@@ -13,7 +13,7 @@ helper=mu2e_helper(env)
 XERCESC_LIBS = [ 'xerces-c' ]
 
 rootlibs = env['ROOTLIBS']
-
+extrarootlibs = ['Minuit2']
 mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService_ConditionsService_service',
                                   'mu2e_GeometryService_GeometryService_service',
                                   'mu2e_GlobalConstantsService',
@@ -45,7 +45,8 @@ mainlib = helper.make_mainlib ( [ 'mu2e_ConditionsService_ConditionsService_serv
                                   'cetlib',
                                   'cetlib_except',
                                   rootlibs,
-                                  'boost_system'
+                                  'boost_system',
+                                  extrarootlibs
                                   ] )
 
 # This tells emacs to view this file in python mode.

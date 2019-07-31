@@ -6,8 +6,7 @@
 using namespace std;
 
 namespace mu2e {
-
-
+   
   // simple line interpolation, this should be a utility function, FIXME!
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
     double yval;
@@ -43,16 +42,19 @@ namespace mu2e {
 
   double StrawResponse::driftDistanceToTime(StrawId strawId, 
 				double ddist, double phi) const {
+   
     if(_usenonlindrift){
+      std::cout<<" calling D2T "<<endl;
       return _strawDrift->D2T(ddist,phi);
     }
-    else{
-      return ddist/_lindriftvel; //or return t assuming a constant drift speed of 0.06 mm/ns (for diagnosis)
+    else{  
+      return ddist/0.0625; 
     }
   }
 
   double StrawResponse::driftTimeToDistance(StrawId strawId, 
 				 double dtime, double phi) const {
+    
     if(_usenonlindrift){
       return _strawDrift->T2D(dtime,phi);
     }
@@ -63,6 +65,8 @@ namespace mu2e {
 
   double StrawResponse::driftInstantSpeed(StrawId strawId, 
 				 double doca, double phi) const {
+     std::cout << "InSp usenonlindrift = " << _usenonlindrift << endl;
+    std::cout << "InSp lindriftvel = " << _lindriftvel << endl;
     if(_usenonlindrift){
       return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
@@ -204,7 +208,14 @@ namespace mu2e {
     os << "pmpEnergyScaleAvg = " << _pmpEnergyScaleAvg << endl;
 
   }
+void StrawResponse::print() const {
+    
+    std::cout<< "StrawResponse parameters: "  << std::endl;
+    std::cout << "usenonlindrift = " << _usenonlindrift << endl;
+    std::cout << "lindriftvel = " << _lindriftvel << endl;
 
+    }
+    
   void StrawResponse::printVector(std::ostream& os, std::string const& name, 
 				  std::vector<double> const& a) const {
     size_t n = a.size();

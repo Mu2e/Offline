@@ -8,7 +8,6 @@ namespace mu2e {
   class DriftCircle{
   public:
 
-
 //Cosmic Track can be constructed on drift circle - this struct defines the drift cricle parameters , x or y position, z position, radius and error. The radius should be DCA to the line in YZ plane..
             double t0;   //t0 from time cluster
 	    double t_drift; //drift time =hit time - t0;

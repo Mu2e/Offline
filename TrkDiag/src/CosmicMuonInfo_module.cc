@@ -222,6 +222,7 @@ mu2e::CosmicMuonInfo::CosmicMuonInfo(fhicl::ParameterSet const& pset):
   _cuts(pset.get<fhicl::ParameterSet>("filterCuts")){
 
   art::ServiceHandle<art::TFileService> tfs;
+  
   _driftDistance  = tfs->make<TH1D>( "Drift Distance",   "Drift Distance",  100,  -5, 5 );
   _phiMC	  = tfs->make<TH1D>( "#phi_{MC}",   "Angle #phi_{MC} of Muon MC tracks All",  100, -3.141529,      3.141529 );
   _thetaMC        = tfs->make<TH1D>( "#theta_{MC}",   "Angle #theta_{MC} of Muon MC tracks All",  20, 0,      3.141529 );
@@ -306,6 +307,7 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
   for(auto const& digi : *strawDigiMCs){
       double driftDistance = digi.driftDistance(mu2e::StrawEnd::cal);
       _driftDistance->Fill(driftDistance);
+       
   }
   _hnBadDigis->Fill( digisBySim.nBad() );
 

@@ -30,7 +30,6 @@ namespace ParametricFit{
       double LRAmbig( double& dca){
 	   //XYZVec closestPointOnLine=PointToLineCA( point, line_starting_point, line_end_point);
 	double LorR = dca > 0.0 ? 1.0 : -1.0;
-
 	return LorR;
       }
 
@@ -73,7 +72,7 @@ namespace ParametricFit{
 	}
 
 
-
+        //this utility is additonal to the PCA ones which exist-it may not be useful in the end!
 	bool LineToLineCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint, 
   XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
   XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine)

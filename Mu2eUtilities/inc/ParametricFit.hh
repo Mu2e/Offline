@@ -11,8 +11,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/StraightTrack.hh"
-#include "RecoDataProducts/inc/DriftCircle.hh"
+
 using namespace mu2e;
 namespace ParametricFit{
 

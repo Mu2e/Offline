@@ -149,7 +149,7 @@ namespace mu2e
       Int_t _n_stations; // # stations
       Int_t _n_planes; // # stations
       int n_analyze =0;
-      Float_t _hit_time, _hit_drift_time, _cluster_time;
+      Float_t _hit_time, _hit_drift_time, _cluster_time, _dt;
 	
       //Flags:
 	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
@@ -191,15 +191,15 @@ namespace mu2e
         _cosmic_analysis->Branch("PanelsCrossedInEvent", &_n_panels, "PanelsCrossedInEvent/I");
         _cosmic_analysis->Branch("PlanesCrossedInEvent", &_n_planes, "PlanesCrossedInEvent/I");
         _cosmic_analysis->Branch("StatonsCrossedInEvent", &_n_stations, "StationsCrossedInEvent/I");
-        _cosmic_analysis->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I");
-       
-       _cosmic_analysis->Branch("hit_time", &_hit_time, "hit_time/F");
-       _cosmic_analysis->Branch("hit_drit_time", &_hit_drift_time, "hit_drift_time/F");
-       _cosmic_analysis->Branch("cluster_time", &_cluster_time, "cluster_time/F");
-       _cosmic_analysis->Branch("hitsOK",&_hitsOK,"hitsOK/B");
-       _cosmic_analysis->Branch("StraightTrackInit",&_StraightTrackInit,"StraightTrackInit/B");
-       _cosmic_analysis->Branch("StraightTrackOK",&_StraightTrackOK,"StraightTrackOK/B");
-       _cosmic_analysis->Branch("StraightTrackConverged",&_StraightTrackConverged,"StraightTrackConverged/B");
+        _cosmic_analysis->Branch("TimeClustersInEvent", &_ntc, "TimeClusterInEvent/I"); 
+        _cosmic_analysis->Branch("hit_time", &_hit_time, "hit_time/F");
+        _cosmic_analysis->Branch("hit_drit_time", &_hit_drift_time, "hit_drift_time/F");
+        _cosmic_analysis->Branch("cluster_time", &_cluster_time, "cluster_time/F");
+        _cosmic_analysis->Branch("dt", &_dt, "dt/F");
+        _cosmic_analysis->Branch("hitsOK",&_hitsOK,"hitsOK/B");
+        _cosmic_analysis->Branch("StraightTrackInit",&_StraightTrackInit,"StraightTrackInit/B");
+        _cosmic_analysis->Branch("StraightTrackOK",&_StraightTrackOK,"StraightTrackOK/B");
+        _cosmic_analysis->Branch("StraightTrackConverged",&_StraightTrackConverged,"StraightTrackConverged/B");
         //Extra histograms for Fit Diags:
         _chisq_quant = tfs->make<TH1F>("PDF","PDF" ,50,0, 1);
 	_chisq_quant->GetXaxis()->SetTitle("PDF");
@@ -501,7 +501,7 @@ namespace mu2e
 	        _B1_v_A1->Fill(st.get_track_parameters()[3],st.get_track_parameters()[1]);
 	 	if(st.get_chi2_quant()>0){//TODO: Fix some weird root issue here.....
                 	_chisq_quant->Fill(st.get_chi2_quant());
-                	std::cout<<"pdf "<<st.get_chi2_quant()<<std::endl;
+                	
                 }
                 
                 _reco_phi_angle->Fill(st.get_fit_phi());
@@ -547,6 +547,7 @@ namespace mu2e
 		//-----------Hit details:---------------//
 		        _hit_time = chit.time();
 			_hit_drift_time = chit.driftTime();
+                        _dt =  _hit_time - _cluster_time;
 			}
                 //----------------Get panels/planes/stations per track:------------------//
                 _n_panels = std::set<float>( panels.begin(), panels.end() ).size();

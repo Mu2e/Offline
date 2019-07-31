@@ -78,7 +78,7 @@ namespace mu2e
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 		void FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool is_prime);
                 bool goodTrack(CosmicTrack* track);
-		void DriftCorrection(CosmicTrackFinderData& trackData);
+		void DriftFit(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack);
 		
                 
                 const Tracker*            _tracker;
@@ -103,7 +103,7 @@ namespace mu2e
     		float _maxd; // maximum distance in hits to begin fit
 		float _maxDOCA; //max allowed DOCA to allow hit into fit
     		float _maxchi2; //maximum allowed chi2
-		float _max_chi2_change;
+		float _max_chi2_change; // once we are lower than this we can say its converged
     
   };//end Fit class
 
