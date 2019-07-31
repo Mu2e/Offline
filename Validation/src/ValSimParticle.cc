@@ -29,7 +29,14 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hezDS = tfs.make<TH1D>( "ZendDS", "end Z DS", 100,  3000.0, 14000.0);
   _hscode = tfs.make<TH1D>( "scode", "start code", 151, -0.5, 150.0);
   _hecode = tfs.make<TH1D>( "ecode", "end code", 151, -0.5, 150.0);
+  _hNS  = tfs.make<TH1D>( "NStep", "N Steps", 100, -0.05, 10000.0);
+  _hNS2 = tfs.make<TH1D>( "NStep2", "log10(N Steps)", 100, -0.05, 9.95);
+  _hl1 = tfs.make<TH1D>( "Length1", "Length", 100, 0.0, 1000.0);
+  _hl2 = tfs.make<TH1D>( "Length2", "Length", 100, 0.0, 10.0);
+  _hl3 = tfs.make<TH1D>( "Length3", "log10(Length)", 100, -19.0, 6.0);
   _idh.declare(tfs,"idh","id fold, p>10");
+  _hND  = tfs.make<TH1D>( "NDaughter",  "N Daughters", 100, -0.05, 100.0);
+  _hND2 = tfs.make<TH1D>( "NDaughter2", "N Daughters", 100, -0.05, 1000.0);
   _hscodeh = tfs.make<TH1D>( "scodeh", "start code, p>10", 151, -0.5, 150.0);
   _hecodeh = tfs.make<TH1D>( "ecodeh", "end code, p>10", 151, -0.5, 150.0);
   _idhendKE.declare(tfs,"idhendKE","id fold, endKE>10");
@@ -54,7 +61,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(4.0);
+  _hVer->Fill(5.0);
 
   _hN->Fill(coll.size()); 
   double x = (coll.size()<=0 ? 0 : log10(coll.size()) );
@@ -94,7 +101,17 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
     _hscode->Fill(part.originParticle().creationCode().id());
     _hecode->Fill(part.stoppingCode().id());
-    
+
+    _hNS->Fill(part.nSteps());
+    _hNS2->Fill(part.nSteps()<=0 ? 0 : log10(part.nSteps()));
+
+    _hl1->Fill(part.trackLength());
+    _hl2->Fill(part.trackLength());
+    _hl3->Fill(part.trackLength()<=0 ? 0 : log10(part.trackLength()));
+
+    _hND->Fill(part.daughters().size());
+    _hND2->Fill(part.daughters().size());
+
     if(pstart>10.0) {
       _idh.fill(part.pdgId()); 
       _hscodeh->Fill(part.originParticle().creationCode().id());
