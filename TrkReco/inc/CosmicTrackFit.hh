@@ -25,7 +25,10 @@
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "RecoDataProducts/inc/StraightTrack.hh"
 #include "RecoDataProducts/inc/StraightTrackSeed.hh"
-
+//Drift:
+#include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/StrawPhysics.hh"
+#include "TrackerConditions/inc/StrawDrift.hh"
 // Mu2e objects
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
 #include "Math/VectorUtil.h"
@@ -83,7 +86,8 @@ namespace mu2e
                 
                 const Tracker*            _tracker;
     		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
-                
+                StrawResponse _srep;
+                void  setStrawResponse (StrawResponse rep) {_srep = rep;}
 	private:
 		
   		bool use_hit(ComboHit const&) const;

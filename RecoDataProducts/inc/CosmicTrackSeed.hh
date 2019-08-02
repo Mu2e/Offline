@@ -21,7 +21,7 @@ namespace mu2e {
 
     TrkT0 const& t0() const { return _t0; }//from the Time cluster
    // const std::vector<StrawHitIndex>& hits       () const { return _strawHitIdxs; }
-    //ComboHitCollection const& hits() const { return _thits; }
+    ComboHitCollection const& hits() const { return _thits; }
     CosmicTrack const& track() const { return _track; }
     TrkFitFlag const& status() const { return _status; }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }

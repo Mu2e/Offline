@@ -1,18 +1,31 @@
 //Likilhood Functions for minuit fitting
 // Author: S. Middleton 
 // Date: July 2019
-
-
 //ROOT:
 #include "Math/VectorUtil.h"
 #include "TMath.h"
 #include "Math/Math.h"
-#include "Mu2eUtilities/inc/PDFFit.hh"
-#include "Mu2eUtilities/inc/DriftUtils.hh"
-
 #include <TSystem.h>
 #include <TROOT.h>
 #include <TObjString.h>
+//For Drift:
+#include "BTrk/BaBar/BaBar.hh"
+#include "BTrk/BbrGeom/Trajectory.hh"
+#include "BTrk/KalmanTrack/KalRep.hh"
+#include "BTrk/BbrGeom/HepPoint.h"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrkData/inc/TrkStrawHit.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
+#include "BTrk/TrkBase/TrkPoca.hh"
+#include "BTrk/ProbTools/ChisqConsistency.hh"
+#include "BTrk/TrkBase/TrkMomCalculator.hh"
+//Tracker Details:
+#include "TrackerGeom/inc/Tracker.hh"
+#include "TrackerConditions/inc/StrawDrift.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
+//Utilities:
+#include "Mu2eUtilities/inc/PDFFit.hh"
+#include "Mu2eUtilities/inc/DriftFitUtils.hh"
 //Minuit
 #include <Minuit2/FCNBase.h>
 #include <Minuit2/MnMigrad.h>
@@ -26,59 +39,70 @@ using namespace mu2e;
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
+double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1)const{
 
-void PDFFit::calculate_weighted_pdf (const std::vector<double> &x, TH1F* h, double doca_min, double doca_max, bool dist) const
-{
-  std::cout<<"Get weighted PDF "<<std::endl;
-  double tau = x[0];
-  double sigma = x[1];
-  double toffset = x[2];
-  double background = x[3];
-  std::cout<<"Times size in pdf "<<this->times.size()<<std::endl;
-  for (size_t i=0;i<this->times.size();i++){
-    if (fabs(this->docas[i]) < doca_min || fabs(this->docas[i]) > doca_max)
-      continue;
-    std::cout<<"Getting Taus"<<std::endl;
-    double hypotenuse = sqrt(pow(this->docas[i],2) + pow(tau * AVG_VELOCITY,2));
-    double tau_eff = hypotenuse/AVG_VELOCITY - this->docas[i]/AVG_VELOCITY;
-    std::cout<<"Hist Stuff "<<std::endl;
-    for (int j=0;j<h->GetNbinsX();j++){
-      double time_residual = h->GetXaxis()->GetBinCenter(j+1);
-      if (dist){
-        time_residual = h->GetXaxis()->GetBinCenter(j+1)/AVG_VELOCITY;
-      }
-
-      double pdf_val =1/sqrt(2*TMath::Pi()*x[1]*x[1]) * exp(-(time_residual*time_residual)/(2*x[1]*x[1]))+x[3];
-      std::cout<<"Tau "<<tau<<" sigma "<<sigma<<"Background "<< background<<"toffset"<<toffset<<"time residual "<<time_residual<<" PDF "<<pdf_val<<" Tau Eff "<<tau_eff<<std::endl;
-    }
-  }
+	TrkPoca poca = DriftFitUtils::GetPOCA(straw, a0,a1,b0,b1);
+	return poca.doca();
 }
-
-
-double PDFFit::operator() (const std::vector<double> &x) const
+double TimePDFFit::TimeResidual(double doca, double time)const{
+	double tres = time - doca/0.0625;
+	return tres;
+}
+double TimePDFFit::operator() (const std::vector<double> &x) const
 {
-  std::cout<<"In Operator "<<std::endl;
-  double tau = x[0];
-  double sigma = x[1];
-  double toffset = x[2];
-  double background = x[3];
+  std::cout<<"In operator "<<std::endl;
+  double a0 = x[0];
+  double a1 = x[1];
+  double b0 = x[2];
+  double b1 = x[3];
+  double t0 = x[4];
+  //tau = 10, sigma = 1
   double llike = 0;
   
-  for (size_t i=0;i<this->docas.size();i++){
-    double time_residual = this->times[i]-toffset;//this->TimeResidual(this->docas[i],this->times[i],toffset);
-    std::cout<<"t offset "<<toffset<<"time "<<times[i]<<" time res "<<time_residual<<" doca "<<docas[i]<<" taus "<<tau<<" sigma "<<sigma<<std::endl;
-    double hypotenuse = sqrt(pow(this->docas[i],2) + pow(tau * AVG_VELOCITY,2));
-    std::cout<<"hyptoenuse "<<hypotenuse<<std::endl;
-    double tau_eff = hypotenuse/0.0625 - this->docas[i]/0.0625;
-    std::cout<<"Tau Eff"<<tau_eff<<std::endl;
-    double pdf_val = 1/sqrt(2*TMath::Pi()*x[1]*x[1]) * exp(-(time_residual*time_residual)/(2*x[1]*x[1]))+x[3];
-    llike -= log(pdf_val);
+  for (size_t i=0;i<this->times.size();i++){
+     
+      double doca = calculate_DOCA(this->straws[i], x[0],x[1], x[2], x[3]);
+      std::cout<<"DOCA"<<doca<<std::endl;
+      double time_residual = this->TimeResidual(doca,this->times[i]);
+      double pdf_t =1/sqrt(2*TMath::Pi()*1) * exp(-(time_residual*time_residual)/(2*1));
+      llike +=log(pdf_t);
+      //llike -= log(pdf_val*pdf_x*pdf_y);
   }
   for (int i=0;i<this->nparams;i++){
     if (this->constraints[i] > 0){
       llike += pow((x[i]-this->constraint_means[i])/this->constraints[i],2);
+    }
   }
+  std::cout<<"a0 "<<a0<<" a1 "<<a1<<" b0 "<<b0<<" b1 "<<b1<<" t0 "<<t0<<std::endl;
+ 
+  return llike;
+}
+
+double PDFFit::operator() (const std::vector<double> &x) const
+{
+  
+  double a0 = x[0];
+  double a1 = x[1];
+  double b0 = x[2];
+  double b1 = x[3];
+  double t0 = x[4];
+  //tau = 10, sigma = 1
+  double llike = 0;
+  //for (size_t i=0;i<this->docas.size();i++){
+  for (size_t i=0;i<this->times.size();i++){
+      double pdf_x = 1/sqrt(2*TMath::Pi()*this->errorsX[i]*this->errorsX[i]) * exp(-((this->hit_positions[i].x() - x[0]+x[1]*hit_positions[i].x())*(this->hit_positions[i].x() - x[0]+x[1]*hit_positions[i].x()))/(this->errorsX[i]*this->errorsX[i]));
+      double pdf_y = 1/sqrt(2*TMath::Pi()*this->errorsY[i]*this->errorsY[i]) * exp(-((this->hit_positions[i].y() - x[2]+x[3]*hit_positions[i].y())*(this->hit_positions[i].y() - x[2]+x[3]*hit_positions[i].y()))/(this->errorsY[i]*this->errorsY[i]));
+     
+      double pdf_val = pdf_x*pdf_y;
+      llike -=log(pdf_val);
+      
   }
-  std::cout<<"Sigma "<<sigma<<" Background "<<background<<"llike"<<llike<<std::endl;
+  for (int i=0;i<this->nparams;i++){
+    if (this->constraints[i] > 0){
+      llike += pow((x[i]-this->constraint_means[i])/this->constraints[i],2);
+    }
+  }
+  std::cout<<"a0 "<<a0<<" a1 "<<a1<<" b0 "<<b0<<" b1 "<<b1<<" t0 "<<t0<<std::endl;
+ 
   return llike;
 }

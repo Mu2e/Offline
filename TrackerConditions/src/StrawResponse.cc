@@ -48,7 +48,7 @@ namespace mu2e {
       return _strawDrift->D2T(ddist,phi);
     }
     else{  
-      return ddist/0.0625; 
+      return ddist/_lindriftvel; 
     }
   }
 

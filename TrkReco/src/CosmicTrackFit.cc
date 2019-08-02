@@ -19,9 +19,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerConditions/inc/StrawDrift.hh"
+
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BbrGeom/Trajectory.hh"
@@ -37,6 +35,7 @@
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "Mu2eUtilities/inc/BuildMatrixSums.hh"
 #include "Mu2eUtilities/inc/LiklihoodFunctions.hh"
+#include "Mu2eUtilities/inc/DriftFitUtils.hh"
 //ROOT:
 #include "TMatrixD.h"
 #include "Math/VectorUtil.h"
@@ -132,34 +131,7 @@ namespace mu2e
       return track.Unit();
     } 
  
-    XYZVec CosmicTrackFit::GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime){
-           std::vector<float> X, Y, Z;
-    	   for (size_t j =0; j < hitXYZ.size(); j++){
-    	  	 X.push_back( hitXYZ[j].Dot(XDoublePrime));
-    	  	 Y.push_back(hitXYZ[j].Dot(YDoublePrime));
-    	  	 Z.push_back(hitXYZ[j].Dot(ZPrime));
-  	   }
-           float minz = *std::min_element(Z.begin(), Z.end());
-           float maxz = *std::max_element(Z.begin(),Z.end());
-           unsigned first = 0;
-           unsigned last = Z.size()-1;
-           for(size_t i = 0 ; i < Z.size(); i++){
-           	float zprime = Z.at(i);
-           	if(zprime == maxz) first = i;
-           	if(zprime == minz) last = i;
-           	if (first >  last) {
-           		unsigned temp;
-           		temp = first;
-           		first = last;
-           		last = temp;
-           	} 	
-           }     
-           float tx = (X.at(last) - Z.at(first));
-      	   float ty = (Y.at(last) - Y.at(first));
-           float tz = Z.at(last) - Z.at(first);
-           XYZVec track(tx,ty,tz);
-           return track.Unit(); 
-    }
+    
     
 //--------------Fit-----------------//
 // This is the top level call to Fitting routines....
@@ -490,15 +462,13 @@ XYZVec CosmicTrackFit::MCFinalHit(StrawDigiMC mcdigi){
 }
 
 
-void CosmicTrackFit::MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData){ //int hitN, int N, CosmicTrackFinderData& trackData, StrawDigiMC mcdigi){
-      //CosmicTrack* cosmictrack = &trackData._tseed._track; 
+void CosmicTrackFit::MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData){ 
       double tx = last.x() - first.x();
       double ty = last.y() - first.y();
       double tz = last.z() - first.z();       
       XYZVec track(tx,ty,tz);
       trackData._tseed._track.set_true_track_direction(track.Unit());
-      
-        
+   
 }
 
 bool CosmicTrackFit::goodTrack(CosmicTrack* track)
@@ -519,10 +489,11 @@ bool CosmicTrackFit::use_track(double track_length) const
      return (track_length > _maxd) ? false : true ;
   }
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack){
-         std::vector<double> DOCAs;
+         std::vector<XYZVec> positions;
          std::vector<double> times;
-         std::vector<double> time_residuals;
-         
+         std::vector<Straw> straws;
+         std::vector<double> errorsX;
+         std::vector<double> errorsY;
 	 size_t nHits (trackData._chHitsToProcess.size());
          ComboHit   *hitP1(0);
          //double t0 = trackData._tseed._t0.t0() ; //Get t0 from tclust, from BTrk
@@ -532,65 +503,43 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, CosmicTrack* cos
       		hitP1 = &trackData._chHitsToProcess[f1];
       		if (!use_hit(*hitP1) )    continue;
       		float hit_time = hitP1->time();
-      		//Get ComboHit Co-ordinate in XYZ
-      		XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
-      		//Transform to track co-ordinate frame X"Y"Z':
-      		XYZVec point_prime(point.Dot(trackData._tseed.track().getXPrime()), point.Dot(trackData._tseed.track().getYPrime()), point.Dot(trackData._tseed.track().getZPrime())); 
-      		//Get straw associated with hit:
+      		times.push_back(hit_time);
+      		XYZVec pos(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
+      		positions.push_back(pos);
+      		XYZVec track_direction = trackData._tseed.track().get_track_direction();
+		std::vector<XYZVec> AxesList = ParametricFit::GetAxes(track_direction);
+      		errorsX.push_back(ParametricFit::GetErrors(hitP1, AxesList[0], AxesList[1])[0]);
+      		errorsY.push_back(ParametricFit::GetErrors(hitP1, AxesList[0], AxesList[1])[1]);   
+      		//Straw const&  straw = _tracker->getStraw(hitP1->strawId());
+      		//straws.push_back(straw);
+      		/*
       	        Straw const&  straw = _tracker->getStraw(hitP1->strawId());
-                //Get Wire position and direction:
-                
-      		const CLHEP::Hep3Vector& spos = straw.getMidPoint();
-      		const CLHEP::Hep3Vector& sdir = straw.getDirection();
-      		//Transform to XYZVec - assumne straw centre is wire position (?):
-                XYZVec wire_position(spos.x(), spos.y(), spos.z());
-                //Translate to X"Y"Z'
-                XYZVec wire_prime_position(wire_position.Dot(trackData._tseed.track().getXPrime()),wire_position.Dot(trackData._tseed.track().getYPrime()),wire_position.Dot(trackData._tseed.track().getZPrime()));
-                //Get track position and direction
-                XYZVec track_position(trackData._tseed.track().get_parameter(0), trackData._tseed.track().get_parameter(2), 0);
+      	        XYZVec track_position(trackData._tseed.track().get_parameter(0), trackData._tseed.track().get_parameter(2), 0);
                 XYZVec track_direction = trackData._tseed.track().get_track_direction();
-                //For TrkPOCA:
-      		HepPoint pointwire(wire_prime_position.x(),wire_prime_position.y(),wire_prime_position.z());
-      		HepPoint tpos(track_position.x(), track_position.y(), track_position.z());
-      		Hep3Vector tpos1(tpos.x(),tpos.y(),tpos.z()); 
-      		Hep3Vector tdir(track_direction.x(), track_direction.y(), track_direction.z());
+		std::vector<XYZVec> TrackAxes = ParametricFit::GetAxes(track_direction);
+		
+      	        TrkPoca poca = DriftFitUtils::GetPOCA(straw, TrackAxes, track_position,  track_direction);
+      	        double doca =  DriftFitUtils::GetDOCA(poca);
+      	        cout<<"DOCA"<<doca<<endl;
       		
-      		//Get flight length along the track
-      		double fltlen = (spos.z()-tpos.z())/tdir.z(); //along the track
-      		//Get hit length:
-	 	double hitlen = sdir.dot(tpos - spos); //along the straw
-	 	//Get wire length - max distance signal travels to either end:
-		double wirehalflen = straw.halfLength();
-		 //Build trajectorys
-      		TrkLineTraj wire(pointwire,sdir,-straw.halfLength(),straw.halfLength());//wire
-      		TrkLineTraj track(tpos,tdir);//track (no start and end specified)
-      		
-      		//Find POCA:
-      		TrkPoca hitpoca(track,fltlen,wire,hitlen);
-      		
-      		double flt1 = hitpoca.flt1();
-      		double flt2 = hitpoca.flt2();
-      		double doca = hitpoca.doca();
-      		cout<<"Flights "<<flt1<<" "<<flt2<<endl;
-      		
-      		StrawResponse response;
       		StrawId strawid = straw.id();
-      		//azimuthial angle:
-      		double phi = 0;//CLHEP::pi/2 - acos(doca/(pointwire.z())); /Not used currently, assume linear
+      		double phi =  0.;//LiklihoodFunctions::GetPhi(straw, track_position,  TrackAxes, doca);
       		//Use the StrawResponse::driftDistanceToTime() function to turn the transverse distance and t0 into an expected time that will let you calculate a time residual:
-      	        double expectedtime= response.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
-      	        //double time_residual_trans = expectedtime;              
-      	        double propagation_time = wirehalflen/299.; //vprop=299mm/ns.
+      	        double expectedtime= _srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
+      	        //double time_residual_trans = expectedtime;
+      	        double wirehalflen = straw.halfLength();              
+      	        double propagation_time = wirehalflen/299.; 
       	        double time_residual_long = expectedtime+propagation_time;
                 
                 //Fill lists for Minuit:
                 DOCAs.push_back(doca);
                 times.push_back(hit_time);
                 time_residuals.push_back(time_residual_long);
-      	
+      	        */
       		}
       		
-      		EndResult bestfit = LiklihoodFunctions::DoFit( times, DOCAs, time_residuals);
+      		EndResult bestfit = LiklihoodFunctions::DoFit(trackData._tseed, times, positions, errorsX, errorsY, straws);
+      		
 
 }
  

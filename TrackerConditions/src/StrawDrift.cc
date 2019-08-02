@@ -141,14 +141,11 @@ namespace mu2e {
   double StrawDrift::D2T(double distance, double phi) const {
     std::cout<<"In Straw Drift D2T "<<std::endl;
     float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
-    std::cout<<"phi sl;ice width "<<phiSliceWidth<<std::endl;
     //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
     float reducedPhi = ConstrainAngle(phi);
-    std::cout<<" reduced phi "<<reducedPhi<<std::endl;
     //for interpolation, define a high and a low index
     int upperPhiIndex = ceil(reducedPhi/phiSliceWidth); //rounds the index up to the nearest integer
     int lowerPhiIndex = floor(reducedPhi/phiSliceWidth); //rounds down
-    std::cout<<" indices "<<upperPhiIndex<<" "<<lowerPhiIndex<<std::endl;
     //need the weighting factors
     float lowerPhiWeight = upperPhiIndex - reducedPhi/phiSliceWidth; //a measure of how far the lowerPhiIndex is
     float upperPhiWeight = 1.0 - lowerPhiWeight;
@@ -158,7 +155,7 @@ namespace mu2e {
     float time = 0;
     float gammaTest = 0.;
     for (size_t k=0; k < (_distances.size() - 1); k++) { //loop through only some of the large vector of structs
-      std::cout<<"D2T infos"<<_D2Tinfos[fullIndex].distance<<" "<<_D2Tinfos[fullIndex].time<<std::endl;
+
       fullIndex = k*(_phiBins)+upperPhiIndex;
       if (distance >= _D2Tinfos[fullIndex].distance){
         upperTime = _D2Tinfos[fullIndex].time;//set the higher time
