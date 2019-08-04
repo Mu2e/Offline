@@ -50,6 +50,13 @@ namespace mu2e {
     TH1D* _hezDS;
     TH1D* _hscode;
     TH1D* _hecode;
+    TH1D* _hNS;
+    TH1D* _hNS2;
+    TH1D* _hl1;
+    TH1D* _hl2;
+    TH1D* _hl3;
+    TH1D* _hND;
+    TH1D* _hND2;
     ValId _idh;
     TH1D* _hscodeh;
     TH1D* _hecodeh;

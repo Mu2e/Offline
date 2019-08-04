@@ -935,7 +935,7 @@ namespace mu2e {
       double r0 = straw.getMidPoint().perp();
       double r1 = r0 - _strawOuterRadius;
       double r2 = r0 + _strawOuterRadius;
-      
+
       // Choose half length so that the outer edge of straw just touches the outer
       // limit of the channel.
       double hlen = sqrt(diff_of_squares( rmax, r2));
@@ -944,7 +944,7 @@ namespace mu2e {
       double activeHalfLen = sqrt( diff_of_squares(rmin,r0) )-_passivationMargin;
       activeHalfLen = std::max( activeHalfLen, .0);
       activeHalfLen = std::min( activeHalfLen, hlen);
-      
+
       // Check that the inner edge of the straw reaches the support
       double r3 = sqrt(sum_of_squares(hlen,r1));
 
@@ -961,15 +961,15 @@ namespace mu2e {
       _strawActiveHalfLengths[sn] = activeHalfLen;
 
       if (_verbosityLevel>2) {
-	cout << __func__ 
+	cout << __func__
 	     << " Straw " << straw._id.getStraw()
 	     << " id: "
 	     << straw._id
-	     << " hlen = " << hlen 
+	     << " hlen = " << hlen
 	     << " active = " << activeHalfLen
 	     << endl;
       }
-      
+
     }
 
 

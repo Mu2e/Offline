@@ -273,6 +273,13 @@ namespace mu2e {
       Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }
 
+    mat = uniqueMaterialOrThrow( "Polyethylene0935");
+    {
+      G4Material* Polyethylene096 = new G4Material( mat.name, 0.935*CLHEP::g/CLHEP::cm3, 2);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+    }
+
     // Not real, very thin Polyethylene
     mat = uniqueMaterialOrThrow( "Polyethylene0010");
     {
@@ -426,7 +433,7 @@ namespace mu2e {
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Ni"),0.050);
     }
 
-    // Bronze C94300  from www.matweb.com
+    // Bronze C93800  from www.matweb.com
     mat = uniqueMaterialOrThrow( "BronzeC943" );
     {
       G4Material* BronzeC943 = new G4Material( mat.name, 9.29*CLHEP::g/CLHEP::cm3, 6);
@@ -437,6 +444,39 @@ namespace mu2e {
       BronzeC943->AddMaterial(findMaterialOrThrow("G4_Ni"),0.005);
       BronzeC943->AddMaterial(findMaterialOrThrow("G4_Zn"),0.0025);
     }
+
+    // Bronze C60800 somewat based on www.matweb.com
+    mat = uniqueMaterialOrThrow( "BronzeC608" );
+    {
+      G4Material* BronzeC608 = new G4Material( mat.name, 8.17*CLHEP::g/CLHEP::cm3, 5);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Cu"),0.9310);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Al"),0.0572);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Fe"),0.0050);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Pb"),0.0050);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_As"),0.0018);
+    }
+
+    // Bronze C94500  from https://alloys.copper.org/alloy/C94500
+    mat = uniqueMaterialOrThrow( "BronzeC945" );
+    {
+      G4Material* BronzeC945 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 3);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Cu"),0.78);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Pb"),0.16);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Sn"),0.06);
+    }
+
+    // Bronze C93800  from https://alloys.copper.org/alloy/C93800
+    mat = uniqueMaterialOrThrow( "BronzeC938" );
+    {
+      G4Material* BronzeC938 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 6);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Cu"),0.76);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Pb"),0.145);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Sn"),0.069);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Ni"),0.01);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Zn"),0.008);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Sb"),0.008);
+    }
+
 
     // C360 brass
     mat = uniqueMaterialOrThrow( "BrassC360" );
@@ -471,6 +511,20 @@ namespace mu2e {
       A95083->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0013);
       A95083->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.0007);
       A95083->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.0005);
+    }
+
+    // 1100 Aluminum
+    // https://en.wikipedia.org/wiki/1100_aluminium_alloy
+    // http://www.matweb.com/search/DataSheet.aspx?MatGUID=2ca5a0592e4147848bdbd40d1ff1a056&ckck=1
+    mat = uniqueMaterialOrThrow( "A1100");
+    {
+      G4Material* A1100 = new G4Material( mat.name, 2.71*CLHEP::g/CLHEP::cm3, 6);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Al"), 0.99275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.00275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Si"), 0.00275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.00100);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.00025);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0005);
     }
 
     // NbTi
@@ -1375,6 +1429,90 @@ namespace mu2e {
       G4_Al_Triple->AddElement(Al, 100.0*CLHEP::perCent );
     }
 
+
+    //Material for the Calorimeter cable runs bulk
+    mat = uniqueMaterialOrThrow( "CalCableRunOuter" );
+    {
+
+      G4Material* CalCableRunOuter =
+        new G4Material( mat.name, 6.8440*CLHEP::g/CLHEP::cm3, 4);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eCu = getElementOrThrow("Cu");
+      G4Element* eAg = getElementOrThrow("Ag");
+      G4Element* eF  = getElementOrThrow("F");
+
+      //Add elements by mass fraction
+      CalCableRunOuter->AddElement( eAg, 52.603*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eCu, 34.825*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eF,  9.553*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eC,  3.019*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs fiber optic cable
+    mat = uniqueMaterialOrThrow( "CalCableRunFiber" );
+    {
+
+      G4Material* CalCableRunFiber =
+        new G4Material( mat.name, 1.6575*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eH  = getElementOrThrow("H");
+
+      //Add elements by mass fraction
+      CalCableRunFiber->AddElement( eC,   34.093*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eO,   28.578*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eAl,  28.265*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs bulk
+    mat = uniqueMaterialOrThrow( "TrkCableRunOuter" );
+    {
+
+      G4Material* TrkCableRunOuter =
+        new G4Material( mat.name, 4.6254*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eCu = getElementOrThrow("Cu");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eN  = getElementOrThrow("N");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+
+      //Add elements by mass fraction
+      TrkCableRunOuter->AddElement( eCu, 71.458*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eC,  10.259*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eH,  2.099*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eN,  0.197*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eO,  6.161*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eSi, 9.826*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs fiber optic cable
+    mat = uniqueMaterialOrThrow( "TrkCableRunFiber" );
+    {
+
+      G4Material* TrkCableRunFiber =
+        new G4Material( mat.name, 1.6575*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eH  = getElementOrThrow("H");
+
+      //Add elements by mass fraction
+      TrkCableRunFiber->AddElement( eC,   34.093*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eO,   28.578*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eAl,  28.265*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
 
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.

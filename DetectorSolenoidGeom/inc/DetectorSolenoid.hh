@@ -150,6 +150,12 @@ namespace mu2e {
     double phi0CableRunCal()           const { return _phi0CableRunCal; }
     double dPhiCableRunCal()           const { return _dPhiCableRunCal; }
     double zCCableRunCal()             const { return _zCCableRunCal; }
+
+    double rCableRunCalCoreFract()     const { return _rCableRunCalCoreFract; }
+    double rdCableRunCalCoreFract()    const { return _rdCableRunCalCoreFract; }
+    double dPhiCableRunCalCoreFract()  const { return _dPhiCableRunCalCoreFract; }
+    std::string materialCableRunCalCore()   const { return _materialCableRunCalCore; }
+
     bool hasCableRunTrk()              const { return _hasCableRunTrk; }
     std::string trkCableRunMaterial()  const { return _materialCableRunTrk; }
     double rInCableRunTrk()            const { return _rInCableRunTrk; }
@@ -158,6 +164,56 @@ namespace mu2e {
     double phi0CableRunTrk()           const { return _phi0CableRunTrk; }
     double dPhiCableRunTrk()           const { return _dPhiCableRunTrk; }
     double zCCableRunTrk()             const { return _zCCableRunTrk; }
+    //Cabling outside IFB
+    double calR1CableRunIFB()          const { return _calR1CableRunIFB   ;}
+    double calR2CableRunIFB()          const { return _calR2CableRunIFB   ;}
+    double calPhi0CableRunIFB()        const { return _calPhi0CableRunIFB ;}
+    double calDPhiCableRunIFB()        const { return _calDPhiCableRunIFB ;}
+    double calREndCableRunIFB()        const { return _calREndCableRunIFB ;}
+    double calEndWCableRunIFB()        const { return _calEndWCableRunIFB ;}
+    double calPhiECableRunIFB()        const { return _calPhiECableRunIFB ;}
+    //Calo IFB patch panel info
+    double calPR1CableRunIFB()         const { return _calPR1CableRunIFB  ;}
+    double calPR2CableRunIFB()         const { return _calPR2CableRunIFB  ;}
+    double calPPhi0CableRunIFB()       const { return _calPPhi0CableRunIFB;}
+    double calPDPhiCableRunIFB()       const { return _calPDPhiCableRunIFB;}
+    double calPZInCableRunIFB()        const { return _calPZInCableRunIFB ;}
+    double calPZHLCableRunIFB()        const { return _calPZHLCableRunIFB ;}
+    double calPZOutCableRunIFB()       const { return _calPZOutCableRunIFB;}
+    std::string calPMatCableRunIFB()   const { return _calPMatCableRunIFB ;}
+    //Calo cabling at bottom of IFB cabling
+    double calBCXCableRunIFB()         const { return _calBCXCableRunIFB  ;}
+    double calBLCableRunIFB()          const { return _calBLCableRunIFB   ;}
+
+    double trkR1CableRunIFB()          const { return _trkR1CableRunIFB   ;}
+    double trkR2CableRunIFB()          const { return _trkR2CableRunIFB   ;}
+    double trkPhi0CableRunIFB()        const { return _trkPhi0CableRunIFB ;}
+    double trkDPhiCableRunIFB()        const { return _trkDPhiCableRunIFB ;}
+    double trkREndCableRunIFB()        const { return _trkREndCableRunIFB ;}
+    double trkEndWCableRunIFB()        const { return _trkEndWCableRunIFB ;}
+    double trkPhiECableRunIFB()        const { return _trkPhiECableRunIFB ;}
+    //Tracker IFB patch panel info
+    double trkPR1CableRunIFB()         const { return _trkPR1CableRunIFB  ;}
+    double trkPR2CableRunIFB()         const { return _trkPR2CableRunIFB  ;}
+    double trkPPhi0CableRunIFB()       const { return _trkPPhi0CableRunIFB;}
+    double trkPDPhiCableRunIFB()       const { return _trkPDPhiCableRunIFB;}
+    double trkPZInCableRunIFB()        const { return _trkPZInCableRunIFB ;}
+    double trkPZHLCableRunIFB()        const { return _trkPZHLCableRunIFB ;}
+    double trkPZOutCableRunIFB()       const { return _trkPZOutCableRunIFB;}
+    std::string trkPMatCableRunIFB()   const { return _trkPMatCableRunIFB ;}
+    //Tracker cabling at bottom of IFB cabling
+    double trkBCXCableRunIFB()         const { return _trkBCXCableRunIFB  ;}
+    double trkBLCableRunIFB()          const { return _trkBLCableRunIFB   ;}
+
+    double zHLCableRunIFB()            const { return _zHLCableRunIFB     ;}
+    std::string materialCalCableRunIFB()  const { return _materialCalCableRunIFB;}
+    std::string materialTrkCableRunIFB()  const { return _materialTrkCableRunIFB;}
+    double zCCableRunIFB()             const { return _zCCableRunIFB      ;}
+
+    double rCableRunTrkCoreFract()     const { return _rCableRunTrkCoreFract; }
+    double rdCableRunTrkCoreFract()    const { return _rdCableRunTrkCoreFract; }
+    double dPhiCableRunTrkCoreFract()  const { return _dPhiCableRunTrkCoreFract; }
+    std::string materialCableRunTrkCore()   const { return _materialCableRunTrkCore; }
 
     // Services pipes along bottom of DS
     bool   hasServicePipes()           const { return _hasServicePipes; }
@@ -303,6 +359,11 @@ namespace mu2e {
     double              _phi0CableRunCal;
     double              _dPhiCableRunCal;
     std::string         _materialCableRunCal;
+    double              _rCableRunCalCoreFract;
+    double              _rdCableRunCalCoreFract;
+    double              _dPhiCableRunCalCoreFract;
+    std::string         _materialCableRunCalCore;
+
     bool                _hasCableRunTrk;
     double              _lengthCableRunTrk;
     double              _rInCableRunTrk;
@@ -311,6 +372,54 @@ namespace mu2e {
     double              _phi0CableRunTrk;
     double              _dPhiCableRunTrk;
     std::string         _materialCableRunTrk;
+
+    double              _rCableRunTrkCoreFract;
+    double              _rdCableRunTrkCoreFract;
+    double              _dPhiCableRunTrkCoreFract;
+    std::string         _materialCableRunTrkCore;
+
+    //Cabling outside IFB
+    double              _calR1CableRunIFB   ;
+    double              _calR2CableRunIFB   ;
+    double              _calPhi0CableRunIFB ;
+    double              _calDPhiCableRunIFB ;
+    double              _calREndCableRunIFB ;
+    double              _calEndWCableRunIFB ;
+    double              _calPhiECableRunIFB ;
+    double              _calPR1CableRunIFB  ;
+    double              _calPR2CableRunIFB  ;
+    double              _calPPhi0CableRunIFB;
+    double              _calPDPhiCableRunIFB;
+    double              _calPZInCableRunIFB ;
+    double              _calPZHLCableRunIFB ;
+    double              _calPZOutCableRunIFB;
+    std::string         _calPMatCableRunIFB ;
+    double              _calBCXCableRunIFB  ;
+    double              _calBLCableRunIFB   ;
+
+    double              _trkR1CableRunIFB   ;
+    double              _trkR2CableRunIFB   ;
+    double              _trkPhi0CableRunIFB ;
+    double              _trkDPhiCableRunIFB ;
+    double              _trkR1EndCableRunIFB;
+    double              _trkREndCableRunIFB ;
+    double              _trkEndWCableRunIFB ;
+    double              _trkPhiECableRunIFB ;
+    double              _trkPR1CableRunIFB  ;
+    double              _trkPR2CableRunIFB  ;
+    double              _trkPPhi0CableRunIFB;
+    double              _trkPDPhiCableRunIFB;
+    double              _trkPZInCableRunIFB ;
+    double              _trkPZHLCableRunIFB ;
+    double              _trkPZOutCableRunIFB;
+    std::string         _trkPMatCableRunIFB ;
+    double              _trkBCXCableRunIFB  ;
+    double              _trkBLCableRunIFB   ;
+
+    double              _zHLCableRunIFB     ;
+    std::string         _materialCalCableRunIFB;
+    std::string         _materialTrkCableRunIFB;
+    double              _zCCableRunIFB      ;
 
     // Service pipes
     bool                  _hasServicePipes;
