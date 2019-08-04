@@ -447,8 +447,9 @@ namespace mu2e {
     auto const& chc = *chch;
     auto sdmcch = event.getValidHandle<StrawDigiMCCollection>(_sdmcc);
     auto const& sdmcc = *sdmcch;
-    auto vdspch = event.getValidHandle<StepPointMCCollection>(_vdspc);
-    auto const& vdspc = *vdspch;
+    // virtual detector hits won't exist in no-primary samples: don't flag this as an error
+    art::Handle<StepPointMCCollection> vdspch;
+    event.getByLabel<StepPointMCCollection>(_vdspc,vdspch);
     // some things needed for creating Ptrs before the collection is in the event
     auto KalSeedMCCollectionPID = event.getProductID<KalSeedMCCollection>();
     auto KalSeedMCCollectionGetter = event.productGetter(KalSeedMCCollectionPID);
@@ -491,7 +492,10 @@ namespace mu2e {
 	  fillTSHMC(seed,spcc,sdmcc,mcseed);
 	  // add DigiMCs not used in the track but from true particles used in the track
 	  if(_saveunused)fillUnusedTSHMC(spcc,sdmcc,mcseed);
-	  if(spcc.size() > 0)fillVDSP(det,spcc.front()._spp,vdspc,mcseed);
+	  if(spcc.size() > 0 && vdspch.isValid()){
+	    auto const& vdspc = *vdspch;
+	    fillVDSP(det,spcc.front()._spp,vdspc,mcseed);
+	  }
 	  ksmcc->push_back(mcseed);
 	  // fill indices from all digis; those on the track and those from the MC true particle too
 	  fillSDMCI(mcseed,shindices);
