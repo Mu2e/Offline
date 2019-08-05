@@ -76,8 +76,8 @@ env.Append( G4MT = mu2eOpts["g4mt"] )
 Export('env')
 
 # Export the class so that it can be used in the SConscript files
-# For reasons I don't understand, this must come before the env.SConscript(ss) line.
-# also it is undocumented how you can export a class name, not a variable
+# comes before the env.SConscript(ss) line so it is available to SConscripts
+# it is undocumented how you can export a class name, not a variable
 Export('mu2e_helper')
 
 # the list of SConscript files in the directory tree
@@ -96,6 +96,41 @@ env.SConscript(ss)
 #  this code removes orphan files caused by a parent that was removed
 if ( GetOption('clean') and not COMMAND_LINE_TARGETS):
     sch.extraCleanup()
+
+#
+# create targets that are only built on demand
+#
+
+# make a copy of env with the full build environmentals so it can run exe's
+build_env = env.Clone()
+build_env.Append(ENV=os.environ)
+# a text file of how packages depend on each other: run with 'scons DEPS'
+pts = []
+pts = pts + sch.PhonyTarget(build_env,'DEPS','gen/txt/deps.txt',
+                            'scripts/build/bin/procs.sh DEPS')
+# make the gdml file
+pts = pts + sch.PhonyTarget(build_env,'GDML','gen/gdml/mu2e.gdml',
+                            'scripts/build/bin/procs.sh GDML' )
+# run root fast overlaps check
+pts = pts + sch.PhonyTarget(build_env,'ROVERLAPS',[],
+                            'scripts/build/bin/procs.sh ROVERLAPS' )
+Depends(pts[-1], pts[-2]) # root check requires gdml
+# run g4test_03
+pts = pts + sch.PhonyTarget(build_env,'TEST03',[],
+                            'scripts/build/bin/procs.sh TEST03' )
+# pack git records
+pts = pts + sch.PhonyTarget(build_env,'GITPACK',[],
+                            'scripts/build/bin/procs.sh GITPACK' )
+# remove tmp and intermediate .so files
+pts = pts + sch.PhonyTarget(build_env,'RMSO',[],
+                            'scripts/build/bin/procs.sh RMSO' )
+# a standard validation file (~20min to run)
+pts = pts + sch.PhonyTarget(build_env,'VAL0','gen/val/ceSimReco_5000.root',
+                'scripts/build/bin/procs.sh VAL0' )
+# combine the targets into one
+pt_rel = env.AlwaysBuild(env.Alias('RELEASE', [], '#echo completed release targets'))
+Depends(pt_rel, pts)
+
 
 # This tells emacs to view this file in python mode.
 # Local Variables:

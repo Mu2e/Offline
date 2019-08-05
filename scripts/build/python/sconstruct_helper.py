@@ -177,6 +177,23 @@ def makeSubDirs(mu2eOpts):
         cmd = "mkdir -p "+mu2eOpts[dir]
         subprocess.call(cmd, shell=True)
 
+#
+# a method for creating build-on-demand targets
+#
+def PhonyTarget(env,name,targets,action):
+    if not isinstance(targets,list):
+        targets = [targets]
+    if env.GetOption('clean'):
+        for t in targets:
+            if os.path.isfile(t):
+                os.remove(t)
+    else:
+        for t in targets:
+            d = os.path.dirname(t)
+            if not os.path.isdir(d):
+                os.makedirs(d)
+    return env.AlwaysBuild(env.Alias(name, [], action))
+
 
 # with -c, scons will remove all dependant files it knows about
 # but when a source file is deleted:
@@ -191,6 +208,12 @@ def extraCleanup():
             os.unlink (ff)
 
     for top, dirs, files in os.walk("./tmp"):
+        for name in files:
+            ff =  os.path.join(top, name)
+            print "removing file ", ff
+            os.unlink (ff)
+
+    for top, dirs, files in os.walk("./gen"):
         for name in files:
             ff =  os.path.join(top, name)
             print "removing file ", ff
