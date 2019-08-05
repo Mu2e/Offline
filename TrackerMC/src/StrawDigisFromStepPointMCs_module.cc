@@ -822,13 +822,15 @@ namespace mu2e {
           double wetime[2] = {-100.,-100.};
           CLHEP::HepLorentzVector cpos[2];
           art::Ptr<StepPointMC> stepMC[2];
-
+          set<art::Ptr<StepPointMC> > spmcs;
           for (size_t iend=0;iend<2;++iend){
             StrawCluster const& sc = *(xpair[iend]._iclust);
             xmcsp.insert(sc.stepPointMC());
             wetime[iend] = sc.time();
             cpos[iend] = sc.clusterPosition();
             stepMC[iend] = sc.stepPointMC();
+	    // make sure the trigter StepPoints also go in the StrawDigiMC
+	    spmcs.insert(sc.stepPointMC());
           }
           // choose the minimum time from either end, as the ADC sums both
           double ptime = 1.0e10;
@@ -838,7 +840,6 @@ namespace mu2e {
           // subtract a small buffer
           ptime -= _adcbuffer;
           // pickup all StepPointMCs associated with clusts inside the time window of the ADC digitizations (after the threshold)
-          set<art::Ptr<StepPointMC> > spmcs;
           for (auto ih=wf[0].clusts().clustList().begin();ih!=wf[0].clusts().clustList().end();++ih){
             if (ih->time() >= ptime && ih->time() < ptime +
                 ( strawele.nADCSamples()-strawele.nADCPreSamples())*strawele.adcPeriod())
