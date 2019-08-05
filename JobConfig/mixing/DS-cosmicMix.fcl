@@ -11,6 +11,7 @@ source: {
   # drop products that will get remade and aren't needed for filtering.
   inputCommands: ["keep *_*_*_*",
 		  @sequence::Mixing.Input.droppedProducts]
+  dropDescendantsOfDroppedBranches: false
 }
 services: @local::Services.Sim
 physics : { 

@@ -1,0 +1,292 @@
+// A geometric rendering of the DS, cyrostats+coils, vacuum
+//
+// NOTE 1: the size of DS3Vacuum is constrained by the placement of
+// DS2 vacuum volume, the z extent of the DS itself, and the end
+// location of the MBS, outside of the det. solenoid.  Therefore a
+// ds3.halfLength parameter is not included below as it is superfluous
+// and could possibly lead to geometrical inconsistencies.
+//
+// NOTE 2: The front face is designed to be flush with the edge of the
+// DS.
+//
+// NOTE 3: halflength of DS is now consistent with CDR of 10750 mm.
+// Half length of DS1 has been adjusted such that given an assumed
+// rTorus of 2929 mm, and TS5 half-length of 500 mm, the start of the
+// DS is at 3239 mm, consistent with CDR.
+
+double ds.rIn.in             =  950.;
+double ds.rIn.out            =  969.05; //970.;
+double ds.rOut.in            = 1303.;
+double ds.rOut.out           = 1328.;
+double ds.halfLength         = 5450.;
+double ds.endWallHalfLength  =   15.;
+double ds.frontHalfLength    =   15.;
+string ds.materialName       = "StainlessSteel";
+string ds.insideMaterialName = "DSVacuum";
+//bool   ds.doSurfaceCheck     = true;
+
+
+// Test geometry added for Jim Miller for study of absorbing radiation in DS
+bool   ds.hasInnerLining     = false;
+double ds.innerLiningThickness = 10.0; // mm
+string ds.innerLiningMaterial  = "G4_Li"; // 
+
+
+// The shield
+string dsShield.materialName       = "G4_Al";
+string dsShield.insideMaterialName = "DSVacuum";
+double dsShield.zOffset            =  132.3; // wrt inner part of DS cryo end wall
+double dsShield.halfLength         = 5287.7;
+double dsShield.endWallHalfLength  =    6.35;
+double dsShield.rIn.in             = 1010.;
+double dsShield.rIn.out            = 1022.7;
+double dsShield.rOut.in            = 1237.3;
+double dsShield.rOut.out           = 1250.;
+
+// The coils - a la doc-db 1328
+int    dsCoil.version           = 2; // Adds Al spacers and mods coil materials
+string dsCoil.materialName      = "NbTi"; // Only relevant for version 1
+vector<string> dsCoil.materialNameVector = {
+  "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", "DS1CoilMix", 
+  "DS1CoilMix", "DS1CoilMix", "DS2CoilMix", "DS2CoilMix", "DS2CoilMix", 
+  "DS1CoilMix"
+};
+
+double dsCoil.rIn = 1050.;
+vector<double> dsCoil.rOut = {
+  1091.,1091.,1091.,1091.,
+  1091.,1091.,1091.,
+  1070.5,1070.5,1070.5,
+  1091.0
+};
+vector<double> dsCoil.zLength = {
+  419.75,419.75,419.75,419.75,
+  362.25,362.25,362.25,
+  1777.50,1777.50,1777.50,
+  362.25 
+};
+vector<double> dsCoil.zPosition = { // these correspond to the START
+  3539.,3964.,4389.,5042.,          // of the coil
+  5699.,6369.,7176.,
+  7949.,9761.,11544.,
+  13326.
+};
+
+
+// DS coil spacers
+string dsSpacer.materialName = "G4_Al";
+double dsSpacer.rIn = 1050.;
+vector<double> dsSpacer.rOut = {
+  1091., 1091.,1091.,1091.,
+  1070.5
+};
+vector<double> dsSpacer.zLength = {
+  230.0,235.0,305.0,442.0,409
+};
+vector<double> dsSpacer.zPosition = { // these correspond to the START
+  4810.0,5463.0,6063.0,6733.0,          // of the spacer
+  7539.0
+};
+
+
+// Coil-support system
+string dsSupport.materialName = "G4_Al";
+double dsSupport.rIn          = 1091.;
+double dsSupport.rOut         = 1111.;
+double dsSupport.halfLength   = 5275.;// [10575.4-2*12.7]*0.5
+
+// Flags
+int    ds.verbosityLevel     = 0;
+bool   ds.visible            = true;
+bool   ds.solid              = false;
+bool   dsCoil.visible        = true;
+bool   dsCoil.solid          = false;
+bool   dsThShield.visible    = true;
+bool   dsThShield.solid      = false;
+bool   dsSupport.visible     = true;
+bool   dsSupport.solid       = false;
+bool   dsVacuum.visible      = true;
+bool   dsVacuum.solid        = false;
+
+// Rings added by David Norvil Brown (May 2015)
+double ds.rInRingSide = 1329;
+double ds.rOutRingSide = 1450;
+double ds.thickRingSide = 30;
+double ds.rInRing = 1420;
+double ds.rOutRing = 1450;
+double ds.lengthRing = 374;
+string ds.RingMaterialType = "StainlessSteel";
+vector<double> ds.xRing = {-3904, -3904};
+vector<double> ds.yRing = {0, 0};
+vector<double> ds.zRing = {4039, 13339};
+
+// Rails added by David Norvil Brown (May 2015)
+// First define the outline of the rail assembly for extruding.
+int ds.nPtRail = 19;
+vector<double> ds.outlineU = {470,    470, 500,   530, 530, 527, 527, 518, 518, 527, 527, 523, 477, 473, 473, 482, 482, 473, 473};
+vector<double> ds.outlineV = {-750,-825.4,-807.4,-788,-750,-750,-738,-730,-722,-714,-710,-706,-706,-710,-714,-722,-730,-738,-750};
+double ds.lengthRail2       = 4160;
+double ds.lengthRail3       = 5500;
+string ds.RailMaterialType = "StainlessSteel";
+// The following center points are each relative to the center of the 
+// corresponding dsVacuum area (DS2Vacuum, DS3Vacuum) n= north, s=south
+vector<double> ds.n2RailCenter = { 0, 0, 0 };
+vector<double> ds.s2RailCenter = { 0, 0, 0 };
+vector<double> ds.n3RailCenter = { 0, 0, 11090 };
+vector<double> ds.s3RailCenter = { 0, 0, 11090 };
+// Bearing blocks riding the rails.  Added Jan 2016
+int ds.nPtBBlock = 16;
+vector<double> ds.outlineBBlockU = {25, 28, 28, 20, 45, 45, 60, 45, -45, -60, -45, -45, -20, -28, -28, -25};
+vector<double> ds.outlineBBlockV = {0, -5, -10, -23, -23, -5, -5, 20, 20, -5, -5, -23, -23, -10, -5, 0};
+//vector<double> ds.outlineBBlockU = {30, 30, 55, 55, 70, 70, -70, -70, -55, -55, -30, -30};
+//vector<double> ds.outlineBBlockV = {0, -25, -25, -5, -5, 20, 20, -5, -5, -25, -25, 0};
+double ds.lengthBBlock2 = 150;
+double ds.lengthBBlock3 = 190;
+string ds.BBlockMaterialType = "StainlessSteel";
+int ds.nBBlocks = 20;
+vector<double> ds.xCentersBBlock = { 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500, 500, -500};//, 500, -500, 500, -500 };
+vector<double> ds.yCentersBBlock = { -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705, -705}; //, -705, -705, -705, -705 };
+vector<double> ds.zCentersBBlock = { 4789, 4789, 5850,5850, 6100, 6100, 6350, 6350, 6976, 6976, 8028, 8028, 12025, 12025, 12725, 12725, 13355, 13355, 13655, 13655 };
+
+				     //9397, 9397, 10953, 10953, 
+// Temporarily discard Bearing blocks under tracker
+// ***
+// couplers run between bearing blocks.  Need width and height of coupler bar,
+// plus vertical location relative to center of bearing blocks.
+double ds.widthCoupler        = 25.0; //mm
+double ds.heightCoupler       = 20.0; // mm
+double ds.yCenterCoupler      = 10.0; // mm
+int    ds.couplerScheme       = 1; // 0 = along both rails, 1 = along north
+// rail only (current default), 2 = along south rail only
+
+
+// Spherical support for the upstream end of the MBS.  (DNB, April 2017)
+bool ds.hasMBSSupport = true;
+int ds.MBSSupport.nVertices = 8;
+double ds.MBSSupport.length = 500.0; // mm
+vector<double> ds.MBSSupport.outlineU = {550., 550., 451., 451., -451., -451.,-550., -550. };
+vector<double> ds.MBSSupport.outlineV = {0., 350., 350., 234., 234., 350.,350., 0. };
+vector<double> ds.MBSSupport.location   = { 0, -685., 13505. };
+string   ds.MBSSupport.material   = "MBSSupportMix";
+
+
+// Cable Runs, added April 2017 (DNB)
+// Cal Cable run in on top, a wedge between crates.
+bool      ds.hasCableRunCal        = true;
+bool      ds.hasCableRunTrk        = true;
+int       ds.CableRun.version      = 3;
+bool      ds.CableRun.sensitive    = true;
+double    ds.CableRunCal.UpRin     = 721.0; //mm top of Cal
+double    ds.CableRunCal.UpRout    = 821.0; //mm
+double    ds.CableRunCal.UpHL1     = 137.0; //mm
+double    ds.CableRunCal.UpHL2     = 119.0; //mm
+double    ds.CableRunCal.UpZC1     = 12439.0; // mm
+double    ds.CableRunCal.UpZC2     = 13116.0; // mm
+double    ds.CableRunCal.length    = 1725.0; //1650 + 150/2 mm - actually halflength
+double    ds.CableRunCal.Rin       = 544.0; // 720.2;  // top of MBS now
+double    ds.CableRunCal.Rout      = 644.0; // 906.0;  // Not well specified?
+double    ds.CableRunCal.dPhi      = 13.0; // degrees
+double    ds.CableRunCal.zC        = 15475.0; //15400 + 150/2
+double    ds.CableRunCal.phi0      = 83.5; // degrees
+string    ds.CableRunCal.material  = "CalCableRunOuter";//"Electronics";
+
+// Optical "core" placed in the "Cable"
+double    ds.CableRunCalCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
+double    ds.CableRunCalCore.dRadiusFraction = 0.0864; //.0117 nominally to set so the cross section matches expectations with portion near IFB
+double    ds.CableRunCalCore.dPhiFraction    = 0.0864;//.0117 
+string    ds.CableRunCalCore.material        = "CalCableRunFiber";//"G4_SILICON_DIOXIDE";
+
+double    ds.CableRunTrk.length    = 1933; // actually halflength
+double    ds.CableRunTrk.Rin       = 820.0;  
+double    ds.CableRunTrk.Rout      = 850.0;
+double    ds.CableRunTrk.dPhi      = 20.;//20.7; // degrees
+double    ds.CableRunTrk.zC        = 15174.0;
+double    ds.CableRunTrk.phi0      = 195.; //194.5; // degrees
+string    ds.CableRunTrk.material  = "TrkCableRunOuter"; //"Electronics";
+
+// Optical "core" placed in the "Cable"
+double    ds.CableRunTrkCore.RadiusFraction  = 0.5; // 0.5 = centered in the volume
+double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; // changed to be 100 mm^2 .0331; // Set so the cross section matches expectations with portion near IFB
+double    ds.CableRunTrkCore.dPhiFraction    = 0.1051; //.0331; // 
+string    ds.CableRunTrkCore.material        = "TrkCableRunFiber"; //"G4_SILICON_DIOXIDE";
+
+//Cabling At Outside of IFB
+//Calo cable run parameters
+double    ds.CableRunIFB.CalR1     =  1250.5;
+double    ds.CableRunIFB.CalR2     =  1348.0;
+double    ds.CableRunIFB.CalPhi0   =   137.5; // 135 + sin^-1(97.5/2/1162.5) + 0.1 to avoid end piece
+double    ds.CableRunIFB.CalDPhi   =   123.2; // 270 - Phi0 - 9.2 for bottom cabling - 0.1
+double    ds.CableRunIFB.CalREnd   =  1006.0; //radial component
+double    ds.CableRunIFB.CalEndW   =    97.5;
+double    ds.CableRunIFB.CalPhiE   =   135.0;
+string    ds.CalCableRunIFB.Material  = "CalCableRunOuter";
+
+//Cable panel on IFB parameters for the Calo cable runs
+double    ds.CableRunIFB.CalPR1    =  623.19; //panel dimensions
+double    ds.CableRunIFB.CalPR2    = 1005.84;
+double    ds.CableRunIFB.CalPPhi0  =  114.96; //112.5; //Measured from the right side
+double    ds.CableRunIFB.CalPDPhi  =  40.08; // 45.0;
+double    ds.CableRunIFB.CalPZIn   = 17155.0;
+double    ds.CableRunIFB.CalPZHL   =    45.0;
+double    ds.CableRunIFB.CalPZOut  = 17370.0;
+string    ds.CableRunIFB.CalPMat   = "CalCableRunOuter";
+
+//Cabling at the bottom of the IFB for the Calo, using radial box dimensions
+double    ds.CableRunIFB.CalBCX    = 150.0;  //offset from center axis for the two boxes
+double    ds.CableRunIFB.CalBL     = 915.; //Length of the cabling, assumes starting from the tracker cabling radius
+
+//Tracker cable run parameters
+double    ds.CableRunIFB.TrkR1     =  1149.0;
+double    ds.CableRunIFB.TrkR2     =  1249.5;
+double    ds.CableRunIFB.TrkPhi0   =   227.8; // 205 + sin^-1(100.5/2/1000.5)
+double    ds.CableRunIFB.TrkDPhi   =    42.1; //270 - Phi0 - 0.1
+double    ds.CableRunIFB.TrkREnd   =  1006.0;
+double    ds.CableRunIFB.TrkEndW   =   100.5;
+double    ds.CableRunIFB.TrkPhiE   =   225.0;
+string    ds.TrkCableRunIFB.Material  = "TrkCableRunOuter";
+
+//Cable panel on IFB parameters for the Tracker cable runs
+double    ds.CableRunIFB.TrkPR1    =  623.19; //panel dimensions
+double    ds.CableRunIFB.TrkPR2    = 1005.84;
+double    ds.CableRunIFB.TrkPPhi0  = 204.96.;// 184.5; 
+double    ds.CableRunIFB.TrkPDPhi  = 40.08; //  45.0;
+double    ds.CableRunIFB.TrkPZIn   = 17155.0;
+double    ds.CableRunIFB.TrkPZHL   =    45.0;
+double    ds.CableRunIFB.TrkPZOut  = 17370.0;
+string    ds.CableRunIFB.TrkPMat   = "TrkCableRunOuter";
+
+//Cabling at the bottom of the IFB for the Tracker, using radial box dimensions
+double    ds.CableRunIFB.TrkBCX    = 50.5;  //offset from center axis for the two boxes
+double    ds.CableRunIFB.TrkBL     = 915.; //Length of the cabling, assumes starting from the cabling above it
+
+//Position and width of the cabling outside the IFB
+double    ds.CableRunIFB.ZHL       = 45.; // ~3.5 inches thick
+double    ds.CableRunIFB.ZC        = 17370.;
+
+// Service pipes along bottom of DS
+bool      ds.hasServicePipes       = true;
+double    ds.servicePipeRIn        = 19.05; // 3/4 in
+double    ds.servicePipeROut       = 25.4; // 1 in
+double    ds.servicePipeHL         = 2100.0; // halflength in mm - guess val
+string    ds.servicePipeMat        = "G4_Al";
+string    ds.servicePipeFillMat    = "G4_WATER";
+double    ds.servicePipeZC         = 14000.0; // Z-coord of pipe cent - a guess
+double    ds.servicePipeYC         = -820.0; // Y-coord guess
+vector<double> ds.servicePipeXCs   = {300,200.0,140.0,-140.0,-200.0,-300};// relative to
+                                                                 // axis of DS
+
+// Vacuum volumes inside DS
+string ds.vacuumMaterialName = "DSVacuum";
+double ds.vacuumPressure     = 1.e-4;      // torr
+
+double ds1.halfLength        =  455.;
+double ds2.halfLength        = 2080.;
+
+bool   ds1.visible           = true;
+bool   ds2.visible           = true;
+bool   ds3.visible           = true;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

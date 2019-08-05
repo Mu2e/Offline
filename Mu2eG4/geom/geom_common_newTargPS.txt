@@ -11,6 +11,7 @@
 
 // First, the base geometry to start from...
 #include "Mu2eG4/geom/geom_common_current.txt"
+// bool hasAlignment = true;  // Likely to be changed
 
 // Now the specific items for version 2 of the Production Target
 int targetPS_version           = 2;

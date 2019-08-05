@@ -16,6 +16,8 @@
 // 
 //
 
+#include "DetectorSolenoidGeom/inc/DetectorSolenoid.hh"
+
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Disk.hh"
 #include "CalorimeterGeom/inc/Crystal.hh"
@@ -34,6 +36,7 @@
 #include "Mu2eG4/inc/CaloReadoutSD.hh"
 #include "Mu2eG4/inc/CaloReadoutCardSD.hh"
 #include "Mu2eG4/inc/checkForOverlaps.hh"
+#include "Mu2eG4/inc/constructDS.hh" // for calculateTubeCoreParams
 
 #include "G4Box.hh"
 #include "G4Polyhedra.hh"
@@ -76,6 +79,10 @@ namespace mu2e {
        const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("calorimeterEnvelope");
        const int  verbosityLevel       = config.getInt("calorimeter.verbosityLevel",1);
 
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
+
        MaterialFinder materialFinder(config);
        G4Material* vacuumMaterial  = materialFinder.get("calorimeter.vacuumMaterial");
 
@@ -111,8 +118,8 @@ namespace mu2e {
        {
             double zhl = static_cast<G4Tubs*>(calorimeterInfo.solid)->GetZHalfLength();
 	    double CalorimeterOffsetInMu2eZ = calorimeterInfo.centerInMu2e()[CLHEP::Hep3Vector::Z];
-	    std::cout << __func__ << " Calorimeter mother center in Mu2e   : " << calorimeterInfo.centerInMu2e() << std::endl;
-	    std::cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << std::endl;
+	    G4cout << __func__ << " Calorimeter mother center in Mu2e   : " << calorimeterInfo.centerInMu2e() << G4endl;
+	    G4cout << __func__ << " Calorimeter mother Z extent in Mu2e : " << CalorimeterOffsetInMu2eZ - zhl << ", " << CalorimeterOffsetInMu2eZ + zhl << G4endl;
        }
 
 
@@ -186,14 +193,14 @@ namespace mu2e {
 
 	   if ( verbosityLevel > 0) 
 	   {
-	       std::cout << __func__ << " CalorimeterDisk center in Mu2e    : " << calorimeterDisk[idisk].centerInMu2e() << std::endl;
-	       std::cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << calorimeterDisk[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - zHalftot << ", " << calorimeterDisk[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + zHalftot << std::endl;
-	       std::cout << __func__ << " Calorimeter FP / DISK / BP half depth: "<<zHalfFP<<" / "<<zHalfDisk<<" / "<<zHalfBP<<std::endl;
+	       G4cout << __func__ << " CalorimeterDisk center in Mu2e    : " << calorimeterDisk[idisk].centerInMu2e() << G4endl;
+	       G4cout << __func__ << " CalorimeterDisk Z extent in Mu2e  : " << calorimeterDisk[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] - zHalftot << ", " << calorimeterDisk[idisk].centerInMu2e()[CLHEP::Hep3Vector::Z] + zHalftot << G4endl;
+	       G4cout << __func__ << " Calorimeter FP / DISK / BP half depth: "<<zHalfFP<<" / "<<zHalfDisk<<" / "<<zHalfBP<< G4endl;
            }
 
 	}
 
-        if ( verbosityLevel > 0) std::cout << __func__ << " Calorimeter constructed "<<std::endl;
+        if ( verbosityLevel > 0) G4cout << __func__ << " Calorimeter constructed "<< G4endl;
         return calorimeterInfo;
   }
   
@@ -219,6 +226,11 @@ namespace mu2e {
        const bool forceEdge              = geomOptions->forceAuxEdgeVisible("calorimeterPipe"); 
        const bool doSurfaceCheck         = geomOptions->doSurfaceCheck("calorimeterPipe");
        const int  verbosityLevel         = config.getInt("calorimeter.verbosityLevel",1);
+
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
+
        G4VPhysicalVolume* pv;
 
        G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
@@ -343,6 +355,11 @@ namespace mu2e {
        const bool forceEdge            = geomOptions->forceAuxEdgeVisible("calorimeterCase"); 
        const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("calorimeterCase");
        const int  verbosityLevel       = config.getInt("calorimeter.verbosityLevel",1);
+
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
+
        G4VPhysicalVolume* pv;
 
        G4Material* vacuumMaterial     = materialFinder.get("calorimeter.vacuumMaterial");
@@ -528,6 +545,10 @@ namespace mu2e {
        const bool forceEdge          = geomOptions->forceAuxEdgeVisible("calorimeterRO"); 
        const bool doSurfaceCheck     = geomOptions->doSurfaceCheck("calorimeterRO");
        const int  verbosityLevel     = config.getInt("calorimeter.verbosityLevel",1);
+
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
 
        G4Material* vacuumMaterial    = materialFinder.get("calorimeter.vacuumMaterial");
        G4Material* ROMaterial        = materialFinder.get("calorimeter.readoutMaterial");
@@ -777,6 +798,9 @@ namespace mu2e {
        const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("calorimeterCrate");
        const int  verbosityLevel       = config.getInt("calorimeter.verbosityLevel",1);
 
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
 
        G4Material* vacuumMaterial        = materialFinder.get("calorimeter.vacuumMaterial");
        G4Material* crateMaterial         = materialFinder.get("calorimeter.crateMaterial");
@@ -890,6 +914,10 @@ namespace mu2e {
        const bool doSurfaceCheck  = geomOptions->doSurfaceCheck("calorimeterCrate");
        const int  verbosityLevel  = config.getInt("calorimeter.verbosityLevel",1);
 
+       if ( verbosityLevel > 0) {
+         G4cout << __func__ << " Called. doSurfaceCheck: " << doSurfaceCheck << G4endl;
+       }
+
        G4Material* vacuumMaterial = materialFinder.get("calorimeter.vacuumMaterial");
        G4VPhysicalVolume* pv;
        
@@ -907,7 +935,18 @@ namespace mu2e {
        G4double crateHalfLength = crate->GetZHalfLength();   
        G4double cratePosY       = crateRadIn+1.001*crate->GetYHalfLength();    
        
-       G4Tubs* calorimeterFEB = new G4Tubs("caloFEB",crateRadIn, crateRadOut,crateHalfLength,-phi0Crate, CLHEP::pi+2*phi0Crate);       
+       //Increase the size of the mother volume to fit the entire track cable run if needed in newer cable run version
+       const GeomHandle<DetectorSolenoid> ds;
+       double phi0FEB = -phi0Crate;
+       double phi1FEB = CLHEP::pi + 2*phi0Crate;
+       if ( ds->hasCableRunTrk() && ds->cableRunVersion() > 2 &&
+	    ds->phi0CableRunTrk()*CLHEP::degree + ds->dPhiCableRunTrk()*CLHEP::degree > 180.0*CLHEP::degree + phi0Crate ) {
+	 phi0FEB = -( ds->phi0CableRunTrk()*CLHEP::degree + ds->dPhiCableRunTrk()*CLHEP::degree - 180.0*CLHEP::degree);
+	 phi0FEB += -0.2*CLHEP::degree; //add a small buffer
+	 phi1FEB = CLHEP::pi - 2*phi0FEB;
+       }
+
+       G4Tubs* calorimeterFEB = new G4Tubs("caloFEB",crateRadIn, crateRadOut,crateHalfLength,phi0FEB, phi1FEB);       
        G4LogicalVolume* calorimeterFEBLog  = caloBuildLogical(calorimeterFEB, vacuumMaterial, "caloFEBLog",0,G4Color::Black(),0,0);   
   
        G4RotationMatrix rotCrate = G4RotationMatrix();
@@ -940,69 +979,213 @@ namespace mu2e {
 	   doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);	
         }
         
- 	if (config.getBool("ds.hasCableRunCal",false))
-        {
-             double crRin  = config.getDouble("ds.CableRunCal.Rin")*CLHEP::mm;
-	     double crRout = config.getDouble("ds.CableRunCal.Rout")*CLHEP::mm;
-	     if ( config.getInt("ds.CableRun.version",1) > 1 ) {
-	       crRin = config.getDouble("ds.CableRunCal.UpRin")*CLHEP::mm;
-	       crRout = config.getDouble("ds.CableRunCal.UpRout")*CLHEP::mm;
-	     }
-	     double phi0   = config.getDouble("ds.CableRunCal.phi0")*CLHEP::degree;
-	     double dPhi   = config.getDouble("ds.CableRunCal.dPhi")*CLHEP::degree;
+        if ( ds->hasCableRunCal() ) {
+          double crRin  = ds->rInCableRunCal();
+          double crRout = ds->rOutCableRunCal();
+          if ( ds->cableRunVersion() > 1 ) {
+            crRin = ds->upRInCableRunCal();
+            crRout =ds->upROutCableRunCal();
+          }
+          double phi0 = ds->phi0CableRunCal()*CLHEP::degree;
+          double dPhi = ds->dPhiCableRunCal()*CLHEP::degree;
 
-             G4Material* cableMaterial = findMaterialOrThrow(config.getString("ds.CableRunCal.material"));
+          G4Material* cableMaterial = findMaterialOrThrow(ds->calCableRunMaterial());
 
-	     G4Tubs* ccrTub = new G4Tubs("caloCableRunCalTub",crRin, crRout,crateHalfLength - 5.0,phi0,dPhi);
-             G4LogicalVolume* ccrTubLog = caloBuildLogical(ccrTub, cableMaterial, "caloCableRunCalTubLog",isCrateVisible,G4Color::Yellow(),0,0);
+          TubsParams caloCableRunCalParams ( crRin, crRout, crateHalfLength - 5.0, phi0, dPhi);
 
-	     G4RotationMatrix ccrRot = G4RotationMatrix();
-	     CLHEP::Hep3Vector calCableRunLoc(0.0,0.0,0.0);
-	     G4Transform3D ccrCoord = G4Transform3D(ccrRot,calCableRunLoc);
-             reg.add(ccrRot);
-             
+          CLHEP::Hep3Vector calCableRunLoc(0.0,0.0,0.0);
 
-	     pv = new G4PVPlacement(ccrCoord,ccrTubLog,"caloCableRunCalTub_PV",calorimeterFEBLog, false, 0, false);
-	     doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+          std::string const caloCableRunCalName ("caloCableRunCal");
+          G4Tubs* ccrTub = new G4Tubs(caloCableRunCalName,
+                                      caloCableRunCalParams.data()[0],
+                                      caloCableRunCalParams.data()[1],
+                                      caloCableRunCalParams.data()[2],
+                                      caloCableRunCalParams.data()[3],
+                                      caloCableRunCalParams.data()[4]
+                                      );
 
-         }         
- 	 if ( config.getBool("ds.hasCableRunTrk",false))
-         {
-	     double crRin = config.getDouble("ds.CableRunTrk.Rin")*CLHEP::mm;
-	     double crRout = config.getDouble("ds.CableRunTrk.Rout")*CLHEP::mm;
-	     double phi01 = config.getDouble("ds.CableRunTrk.phi0")*CLHEP::degree;
-	     double dPhi = config.getDouble("ds.CableRunTrk.dPhi")*CLHEP::degree;
-	     double phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
-	     if ( phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate )
-             {
-		 dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
-		 phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
-	     }
+          G4LogicalVolume* ccrTubLog
+            = caloBuildLogical(ccrTub,
+                               cableMaterial,
+                               caloCableRunCalName,
+                               isCrateVisible,
+                               G4Color::Magenta(),0,0);
 
-             G4Material* cableMaterial = findMaterialOrThrow(config.getString("ds.CableRunTrk.material"));
+          G4RotationMatrix ccrRot = G4RotationMatrix();
+          G4Transform3D ccrCoord = G4Transform3D(ccrRot,calCableRunLoc);
+          reg.add(ccrRot);
 
-	     G4Tubs* ccr1Tub = new G4Tubs("caloCableRun1TrkTub",crRin, crRout, crateHalfLength - 5.0,phi01, dPhi);
-	     G4Tubs* ccr2Tub = new G4Tubs("caloCableRun2TrkTub",crRin, crRout,crateHalfLength - 5.0,phi02, dPhi);
-             G4LogicalVolume* ccr1TubLog = caloBuildLogical(ccr1Tub, cableMaterial, "caloccr1TubLog",isCrateVisible,G4Color::Yellow(),0,0);
-             G4LogicalVolume* ccr2TubLog = caloBuildLogical(ccr2Tub, cableMaterial, "caloccr2TubLog",isCrateVisible,G4Color::Yellow(),0,0);
+          pv = new G4PVPlacement(ccrCoord,ccrTubLog,caloCableRunCalName,calorimeterFEBLog, false, 0, false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
 
-	     CLHEP::Hep3Vector trkCableRunLoc(0.0,0.0,0.0);
-	     G4RotationMatrix ccrRot = G4RotationMatrix();
-	     G4Transform3D ccrCoord = G4Transform3D(ccrRot,trkCableRunLoc);
-             reg.add(ccrRot);
-             
-	     pv = new G4PVPlacement(ccrCoord,ccr1TubLog,"TrkCableRun1InCalFeb",calorimeterFEBLog,false, 0, false);
-	     doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+          if ( verbosityLevel > 0) {
+            G4cout << __func__ << G4endl;
+            ccrTub->DumpInfo();
+          }
 
-	     pv = new G4PVPlacement(ccrCoord,ccr2TubLog,"TrkCableRun2InCalFeb",calorimeterFEBLog,false, 0, false);
-	     doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);			     
-	 }
-         
-         return calorimeterFEBLog;
+          if ( ds->cableRunVersion() > 2 ) {
+
+            // place the core tube in the tube
+
+            TubsParams caloCableRunCalCoreParams 
+              = calculateTubeCoreParams(caloCableRunCalParams,
+                                        ds->rCableRunCalCoreFract(),
+                                        ds->rdCableRunCalCoreFract(),
+                                        ds->dPhiCableRunCalCoreFract());
+
+            std::string const caloCableRunCalCoreName ("caloCableRunCalCore");
+            G4Tubs* ccrCoreTub = new G4Tubs(caloCableRunCalCoreName,
+                                            caloCableRunCalCoreParams.data()[0],
+                                            caloCableRunCalCoreParams.data()[1],
+                                            caloCableRunCalCoreParams.data()[2],
+                                            caloCableRunCalCoreParams.data()[3],
+                                            caloCableRunCalCoreParams.data()[4]
+                                            );
+
+            G4LogicalVolume* ccrCoreTubLog =
+              caloBuildLogical(ccrCoreTub,
+                               cableMaterial,
+                               caloCableRunCalCoreName,
+                               isCrateVisible,
+                               G4Color::Yellow(),0,0);
+
+
+            G4RotationMatrix ccrCoreRot = G4RotationMatrix();
+            CLHEP::Hep3Vector calCableRunCoreLoc(0.0,0.0,0.0);
+            G4Transform3D ccrCoreCoord = G4Transform3D(ccrCoreRot,calCableRunCoreLoc);
+            reg.add(ccrCoreRot);
+
+            pv = new G4PVPlacement(ccrCoreCoord,ccrCoreTubLog,caloCableRunCalCoreName,ccrTubLog, false, 0, false);
+            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+            if ( verbosityLevel > 0) {
+              G4cout << __func__ << G4endl;
+              ccrCoreTub->DumpInfo();
+            }
+
+          }
+
+        }
+        if ( ds->hasCableRunTrk() ) {
+
+          double crRin  = ds->rInCableRunTrk();
+          double crRout = ds->rOutCableRunTrk();
+          double phi01  = ds->phi0CableRunTrk()*CLHEP::degree;
+          double dPhi   = ds->dPhiCableRunTrk()*CLHEP::degree;
+          double phi02  = 180.0*CLHEP::degree - phi01 - dPhi;
+	  //Mother volume was increased to fit the cable run rather than shrink the cable run in new version
+	  if ( ds->cableRunVersion() <= 2 && phi01 + dPhi > 180.0*CLHEP::degree + phi0Crate )
+            {
+              dPhi = 179.5*CLHEP::degree + phi0Crate - phi01;
+              phi02 = 180.0*CLHEP::degree - phi01 - dPhi;
+            }
+
+          G4Material* cableMaterial = findMaterialOrThrow(ds->trkCableRunMaterial());
+
+          TubsParams ccr1TubParams ( crRin, crRout, crateHalfLength - 5.0, phi01, dPhi);
+          TubsParams ccr2TubParams ( crRin, crRout, crateHalfLength - 5.0, phi02, dPhi);
+
+          std::string const ccr1TubName ("TrkCableRun1InCalFeb");
+          std::string const ccr2TubName ("TrkCableRun2InCalFeb");
+
+          G4Tubs* ccr1Tub = new G4Tubs(ccr1TubName,
+                                       ccr1TubParams.data()[0],
+                                       ccr1TubParams.data()[1],
+                                       ccr1TubParams.data()[2],
+                                       ccr1TubParams.data()[3],
+                                       ccr1TubParams.data()[4]
+                                       );
+          G4Tubs* ccr2Tub = new G4Tubs(ccr2TubName,
+                                       ccr2TubParams.data()[0],
+                                       ccr2TubParams.data()[1],
+                                       ccr2TubParams.data()[2],
+                                       ccr2TubParams.data()[3],
+                                       ccr2TubParams.data()[4]
+                                       );
+
+          G4LogicalVolume* ccr1TubLog = caloBuildLogical(ccr1Tub, cableMaterial, ccr1TubName,isCrateVisible,G4Color::Magenta(),0,0);
+          G4LogicalVolume* ccr2TubLog = caloBuildLogical(ccr2Tub, cableMaterial, ccr2TubName,isCrateVisible,G4Color::Magenta(),0,0);
+
+          CLHEP::Hep3Vector trkCableRunLoc(0.0,0.0,0.0);
+          G4RotationMatrix ccrRot = G4RotationMatrix();
+          G4Transform3D ccrCoord = G4Transform3D(ccrRot,trkCableRunLoc);
+          reg.add(ccrRot);
+
+          pv = new G4PVPlacement(ccrCoord,ccr1TubLog,ccr1TubName,calorimeterFEBLog,false, 0, false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+          pv = new G4PVPlacement(ccrCoord,ccr2TubLog,ccr2TubName,calorimeterFEBLog,false, 0, false);
+          doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+          if ( verbosityLevel > 0) {
+            G4cout << __func__ << G4endl;
+            ccr1Tub->DumpInfo();
+            ccr2Tub->DumpInfo();
+          }
+
+          if ( ds->cableRunVersion() > 2 ) {
+            // place the core tubes in the tubes
+
+            TubsParams ccr1CoreTubParams
+              = calculateTubeCoreParams(ccr1TubParams,
+                                        ds->rCableRunCalCoreFract(),
+                                        ds->rdCableRunCalCoreFract(),
+                                        ds->dPhiCableRunCalCoreFract());
+
+            TubsParams ccr2CoreTubParams
+              = calculateTubeCoreParams(ccr2TubParams,
+                                        ds->rCableRunCalCoreFract(),
+                                        ds->rdCableRunCalCoreFract(),
+                                        ds->dPhiCableRunCalCoreFract());
+
+
+            std::string const ccr1CoreTubName ("TrkCableRun1InCalFebCore");
+            std::string const ccr2CoreTubName ("TrkCableRun2InCalFebCore");
+
+            G4Tubs* ccr1CoreTub = new G4Tubs(ccr1CoreTubName,
+                                             ccr1CoreTubParams.data()[0],
+                                             ccr1CoreTubParams.data()[1],
+                                             ccr1CoreTubParams.data()[2],
+                                             ccr1CoreTubParams.data()[3],
+                                             ccr1CoreTubParams.data()[4]
+                                             );
+            G4Tubs* ccr2CoreTub = new G4Tubs(ccr2CoreTubName,
+                                             ccr2CoreTubParams.data()[0],
+                                             ccr2CoreTubParams.data()[1],
+                                             ccr2CoreTubParams.data()[2],
+                                             ccr2CoreTubParams.data()[3],
+                                             ccr2CoreTubParams.data()[4]
+                                             );
+
+            G4Material* cableCoreMaterial = findMaterialOrThrow(ds->materialCableRunTrkCore());
+
+            G4LogicalVolume* ccr1CoreTubLog = caloBuildLogical(ccr1CoreTub, cableCoreMaterial, ccr1CoreTubName,isCrateVisible,G4Color::Yellow(),0,0);
+            G4LogicalVolume* ccr2CoreTubLog = caloBuildLogical(ccr2CoreTub, cableCoreMaterial, ccr2CoreTubName,isCrateVisible,G4Color::Yellow(),0,0);
+
+            CLHEP::Hep3Vector trkCableCoreRunLoc(0.0,0.0,0.0);
+            G4RotationMatrix ccrCoreRot = G4RotationMatrix();
+            G4Transform3D ccrCoreCoord = G4Transform3D(ccrCoreRot,trkCableCoreRunLoc);
+            reg.add(ccrCoreRot);
+
+            pv = new G4PVPlacement(ccrCoreCoord,ccr1CoreTubLog,ccr1CoreTubName,ccr1TubLog,false, 0, false);
+            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+            pv = new G4PVPlacement(ccrCoreCoord,ccr2CoreTubLog,ccr2CoreTubName,ccr2TubLog,false, 0, false);
+            doSurfaceCheck && checkForOverlaps( pv, config, verbosityLevel>0);
+
+            if ( verbosityLevel > 0) {
+              G4cout << __func__ << G4endl;
+              ccr1CoreTub->DumpInfo();
+              ccr2CoreTub->DumpInfo();
+            }
+
+          }
+
+        }
+
+        return calorimeterFEBLog;
+
      }
-
-
-
 
      //--------------------------------------------------------------------------------------------------------------------------------
      // utility for Logical volume

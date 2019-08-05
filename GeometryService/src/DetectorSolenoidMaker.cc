@@ -151,6 +151,59 @@ namespace mu2e {
 	ds->_upZC1CableRunCal  = c.getDouble("ds.CableRunCal.UpZC1");
 	ds->_upZC2CableRunCal  = c.getDouble("ds.CableRunCal.UpZC2");
       }
+      if ( ds->_cableRunVersion > 2 ) {
+	//cable core parameters
+        ds->_rCableRunCalCoreFract    = c.getDouble("ds.CableRunCalCore.RadiusFraction");
+        ds->_rdCableRunCalCoreFract   = c.getDouble("ds.CableRunCalCore.dRadiusFraction");
+        ds->_dPhiCableRunCalCoreFract = c.getDouble("ds.CableRunCalCore.dPhiFraction");
+        ds->_materialCableRunCalCore  = c.getString("ds.CableRunCalCore.material");
+
+	//IFB cabling
+	ds->_calR1CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR1");
+	ds->_calR2CableRunIFB    = c.getDouble("ds.CableRunIFB.CalR2");
+	ds->_calPhi0CableRunIFB  = c.getDouble("ds.CableRunIFB.CalPhi0");
+	ds->_calDPhiCableRunIFB  = c.getDouble("ds.CableRunIFB.CalDPhi");
+	ds->_calREndCableRunIFB  = c.getDouble("ds.CableRunIFB.CalREnd");
+	ds->_calEndWCableRunIFB  = c.getDouble("ds.CableRunIFB.CalEndW");
+	ds->_calPhiECableRunIFB  = c.getDouble("ds.CableRunIFB.CalPhiE");
+	//IFB patch panel
+	ds->_calPR1CableRunIFB   = c.getDouble("ds.CableRunIFB.CalPR1");
+	ds->_calPR2CableRunIFB   = c.getDouble("ds.CableRunIFB.CalPR2");
+	ds->_calPPhi0CableRunIFB = c.getDouble("ds.CableRunIFB.CalPPhi0");
+	ds->_calPDPhiCableRunIFB = c.getDouble("ds.CableRunIFB.CalPDPhi");
+	ds->_calPZInCableRunIFB  = c.getDouble("ds.CableRunIFB.CalPZIn");
+	ds->_calPZHLCableRunIFB  = c.getDouble("ds.CableRunIFB.CalPZHL");
+	ds->_calPZOutCableRunIFB = c.getDouble("ds.CableRunIFB.CalPZOut");
+	ds->_calPMatCableRunIFB  = c.getString("ds.CableRunIFB.CalPMat");
+	//cabling at bottom of IFB cabling
+	ds->_calBCXCableRunIFB   = c.getDouble("ds.CableRunIFB.CalBCX");
+	ds->_calBLCableRunIFB    = c.getDouble("ds.CableRunIFB.CalBL");
+
+	ds->_trkR1CableRunIFB    = c.getDouble("ds.CableRunIFB.TrkR1");
+	ds->_trkR2CableRunIFB    = c.getDouble("ds.CableRunIFB.TrkR2");
+	ds->_trkPhi0CableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPhi0");
+	ds->_trkDPhiCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkDPhi");
+	ds->_trkREndCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkREnd");
+	ds->_trkEndWCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkEndW");
+	ds->_trkPhiECableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPhiE");
+	//IFB patch panel
+	ds->_trkPR1CableRunIFB   = c.getDouble("ds.CableRunIFB.TrkPR1");
+	ds->_trkPR2CableRunIFB   = c.getDouble("ds.CableRunIFB.TrkPR2");
+	ds->_trkPPhi0CableRunIFB = c.getDouble("ds.CableRunIFB.TrkPPhi0");
+	ds->_trkPDPhiCableRunIFB = c.getDouble("ds.CableRunIFB.TrkPDPhi");
+	ds->_trkPZInCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPZIn");
+	ds->_trkPZHLCableRunIFB  = c.getDouble("ds.CableRunIFB.TrkPZHL");
+	ds->_trkPZOutCableRunIFB = c.getDouble("ds.CableRunIFB.TrkPZOut");
+	ds->_trkPMatCableRunIFB  = c.getString("ds.CableRunIFB.TrkPMat");
+	//cabling at bottom of IFB cabling
+	ds->_trkBCXCableRunIFB   = c.getDouble("ds.CableRunIFB.TrkBCX");
+	ds->_trkBLCableRunIFB    = c.getDouble("ds.CableRunIFB.TrkBL");
+
+	ds->_zHLCableRunIFB      = c.getDouble("ds.CableRunIFB.ZHL");
+	ds->_materialCalCableRunIFB = c.getString("ds.CalCableRunIFB.Material");
+	ds->_materialTrkCableRunIFB = c.getString("ds.TrkCableRunIFB.Material");
+	ds->_zCCableRunIFB       = c.getDouble("ds.CableRunIFB.ZC");
+      }
       ds->_lengthCableRunCal = c.getDouble("ds.CableRunCal.length");
       ds->_rInCableRunCal    = c.getDouble("ds.CableRunCal.Rin");
       ds->_rOutCableRunCal   = c.getDouble("ds.CableRunCal.Rout");
@@ -158,6 +211,7 @@ namespace mu2e {
       ds->_zCCableRunCal     = c.getDouble("ds.CableRunCal.zC"  );
       ds->_phi0CableRunCal   = c.getDouble("ds.CableRunCal.phi0");
       ds->_materialCableRunCal = c.getString("ds.CableRunCal.material");
+
     }
     if ( ds->_hasCableRunTrk ) {
       ds->_lengthCableRunTrk = c.getDouble("ds.CableRunTrk.length");
@@ -167,8 +221,16 @@ namespace mu2e {
       ds->_zCCableRunTrk     = c.getDouble("ds.CableRunTrk.zC"  );
       ds->_phi0CableRunTrk   = c.getDouble("ds.CableRunTrk.phi0");
       ds->_materialCableRunTrk = c.getString("ds.CableRunTrk.material");
+
+      if ( ds->_cableRunVersion > 2 ) {
+        ds->_rCableRunTrkCoreFract    = c.getDouble("ds.CableRunTrkCore.RadiusFraction");
+        ds->_rdCableRunTrkCoreFract   = c.getDouble("ds.CableRunTrkCore.dRadiusFraction");
+        ds->_dPhiCableRunTrkCoreFract = c.getDouble("ds.CableRunTrkCore.dPhiFraction");
+        ds->_materialCableRunTrkCore  = c.getString("ds.CableRunTrkCore.material");
+      }
+
     }
-  
+
     // Service pipes
     bool hasServicePipes = c.getBool("ds.hasServicePipes",false);
     ds->_hasServicePipes = hasServicePipes;
@@ -182,7 +244,6 @@ namespace mu2e {
       ds->_servicePipeYC = c.getDouble("ds.servicePipeYC");
       c.getVectorDouble("ds.servicePipeXCs",ds->_servicePipeXCs);
     } 
-
 
     // Vacuum volumes
     ds->_vacuumMaterialName = c.getString("ds.vacuumMaterialName");
