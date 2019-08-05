@@ -12,6 +12,7 @@
 #include <string>
 #include <cmath>
 #include <math.h>
+#include <cassert>
 
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
@@ -73,7 +74,6 @@ namespace mu2e {
     ofstream              outputStream;
 
 
-    //const size_t number_of_rocs = 160;
     const size_t number_of_rocs = 172;
     const size_t number_of_crystals_per_roc = 8;
     const size_t number_of_rocs_per_dtc = 6;
@@ -208,6 +208,7 @@ namespace mu2e {
       
     }
 
+
     dtc_id max_dtc_id = number_of_rocs/number_of_rocs_per_dtc-1;
     if(number_of_rocs % number_of_rocs_per_dtc > 0) {
       max_dtc_id += 1;
@@ -243,7 +244,79 @@ namespace mu2e {
 
       if (curHitVector.size() == 0) {
 
-	// No hits, so just fill a header packet and no data packets
+	// No hits
+	std::vector<adc_t> curDataBlock;
+	adc_t null_adc = 0;
+	// First 16 bits of header (reserved values)
+	curDataBlock.push_back(null_adc);
+	// Second 16 bits of header (ROC ID, packet type):
+	adc_t curROCID = rocID; // 4 bit ROC ID
+	adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
+	headerPacketType <<= 4; // Shift left by 4
+	adc_t secondEntry = (curROCID | headerPacketType);
+	secondEntry = (secondEntry | (1 << 15)); // valid bit
+	curDataBlock.push_back(secondEntry);
+	// Third 16 bits of header (the number of data packets following the header
+	// is 1 when there are no hits)
+	curDataBlock.push_back(0x0001);
+	// Fourth through sixth 16 bits of header (timestamp)
+	uint64_t timestamp = eventNum;
+	curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
+	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
+	curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
+	
+	// Seventh 16 bits of header (data packet format version and status)
+	adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
+	adc_t formatVersion = (5 << 8); // Using 5 for now
+	curDataBlock.push_back(formatVersion + status);
+
+	// Eighth 16 bits of header (EVB Mode | SYSID | DTCID)
+	adc_t evbMode = (0 << 8);
+	adc_t sysID = (1 << 6) & 0x00C0;
+	adc_t curDTCID = dtcID & 0x003F;
+	curDataBlock.push_back(evbMode + sysID + curDTCID);
+	
+	// Fill in the byte count field of the header packet
+	adc_t numBytes = 16*2;
+	// A ROC with no hits requires 2 packets (including the header packet)
+	curDataBlock[0] = numBytes;
+
+	///////////////////////////////////////////
+	// Create the CAL ROC Hit Index Packet
+	///////////////////////////////////////////
+	adc_t numHits = 0x0000;
+	curDataBlock.push_back(numHits);
+
+	// Add the Board ID and Channel Status fields. For now, we'll just fill this with 0x0000.
+	// Once accessor methods and a final conversion table are available, this should be
+	// replaced with an actual board ID as described in docdb 4914. For now, we'll also set
+	// all the Channel Status Flags to 1. Once the full wiring map is available, this can be
+	// updated to take into account cases where fewer than 20 channels are connected to a ROC.
+	curDataBlock.push_back(0xFC00);
+	curDataBlock.push_back(0x3FFF);
+
+	// Pad the empty space in the last packet. 3 fields were used for the number of hits,
+	// the Board ID, and the Channel Status Flags so there are 5 fields left in the current
+	// packet.
+	for(size_t i=0; i<5; i++) {
+	  curDataBlock.push_back(0x0000);
+	}
+	
+	// Make sure we end on a packet boundary
+	assert(curDataBlock.size() % 8 == 0);
+
+	/////////////////////////////////////////////////////
+	// Create mu2e::DataBlock and add to the collection
+	/////////////////////////////////////////////////////	
+	DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
+	dtcPackets->push_back(theBlock);
+	
+      } else {
+
+	///////////////////////////////////////////
+	// Create the header packet
+	///////////////////////////////////////////
+
 	std::vector<adc_t> curDataBlock;
 	// Add the header packet to the DataBlock (leaving including a placeholder for
 	// the number of packets in the DataBlock);
@@ -276,67 +349,76 @@ namespace mu2e {
 	adc_t curDTCID = dtcID & 0x003F;
 	curDataBlock.push_back(evbMode + sysID + curDTCID);
 	
-	// Fill in the byte count field of the header packet
-	adc_t numBytes = 16; // Just the header packet
-	curDataBlock[0] = numBytes;
-	
-	// Create mu2e::DataBlock and add to the collection
-	DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
-	dtcPackets->push_back(theBlock);
-	
-      } else {
-	for (size_t curHitIdx = 0; curHitIdx < curHitVector.size(); curHitIdx++) {
-	  // Generate a DataBlock for the current hit
-	  
-	  calhit curHit = curHitVector[curHitIdx];
-	  
-	  std::vector<adc_t> curDataBlock;
-	  // Add the header packet to the DataBlock (leaving including a placeholder for
-	  // the number of packets in the DataBlock);
-	  adc_t null_adc = 0;
-	  // First 16 bits of header (reserved values)
-	  curDataBlock.push_back(null_adc);
-	  // Second 16 bits of header (ROC ID, packet type):
-	  adc_t curROCID = rocID; // 4 bit ROC ID
-	  adc_t headerPacketType = 5; // 4 bit Data packet header type is 5
-	  headerPacketType <<= 4; // Shift left by 4
-	  adc_t secondEntry = (curROCID | headerPacketType);
-	  secondEntry = (secondEntry | (1 << 15)); // valid bit
-	  curDataBlock.push_back(secondEntry);
-	  // Third 16 bits of header (number of data packets is 0)
-	  curDataBlock.push_back(null_adc);
-	  // Fourth through sixth 16 bits of header (timestamp)
-	  uint64_t timestamp = eventNum;
-	  curDataBlock.push_back(static_cast<adc_t>(timestamp & 0xFFFF));
-	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 16) & 0xFFFF));
-	  curDataBlock.push_back(static_cast<adc_t>((timestamp >> 32) & 0xFFFF));
-	  
-	  // Seventh 16 bits of header (data packet format version and status)
-	  adc_t status = 0; // 0 Corresponds to "Timestamp has valid data"
-	  adc_t formatVersion = (5 << 8); // Using 5 for now
-	  curDataBlock.push_back(formatVersion + status);
+	///////////////////////////////////////////
+	// Create the CAL ROC Hit Index Packets
+	///////////////////////////////////////////
 
-	  // Eighth 16 bits of header (EVB Mode | SYSID | DTCID)
-	  adc_t evbMode = (0 << 8);
-	  adc_t sysID = (1 << 6) & 0x00C0;
-	  adc_t curDTCID = dtcID & 0x003F;
-	  curDataBlock.push_back(evbMode + sysID + curDTCID);
-	  
-	  // Create a vector of adc_t values corresponding to
-	  // the content of CAL data packets.
-	  std::vector<adc_t> packetVector;
-	  
-	  // Fill the data packets:
+	size_t numHits = curHitVector.size();
+	
+	// The first field in the CAL ROC Hit Index Packet is the number of hits
+	curDataBlock.push_back((adc_t)numHits);
+
+	// The first offset is always numHits+3 because there is 1 field for the number
+	// of hits, numHits fields for the hit indices, and 2 fields for the board ID
+	// and Channel Status.
+	size_t curOffset = numHits+3;
+	curDataBlock.push_back(curOffset);
+	for(size_t curHitIdx = 1; curHitIdx < numHits; curHitIdx++) {
+	  calhit previousHit = curHitVector[curHitIdx-1];
+	  size_t previousHitSize = previousHit.waveform.size() + 5;
+	  // In addition to the waveform samples, there are 5 other fields in a channel readout:
+	  // DIRAC A, DIRAC B, Error Flags, Time, and the Num Samples/Max Sample Idx field
+	  curOffset += previousHitSize;
+	  curDataBlock.push_back(curOffset);
+	}
+	
+	// Find the offset of the end of the last hit
+	curOffset += curHitVector[numHits-1].waveform.size() + 5;
+
+	// Add the Board ID and Channel Status fields. For now, we'll just fill this with 0x0000.
+	// Once accessor methods and a final conversion table are available, this should be
+	// replaced with an actual board ID as described in docdb 4914. For now, we'll also set
+	// all the Channel Status Flags to 1. Once the full wiring map is available, this can be
+	// updated to take into account cases where fewer than 20 channels are connected to a ROC.
+	curDataBlock.push_back(0xFC00);
+	curDataBlock.push_back(0x3FFF);
+
+	///////////////////////////////////////////
+	// Create the channel hit list
+	///////////////////////////////////////////
+
+	for(size_t curHitIdx = 0; curHitIdx<numHits; curHitIdx++) {
+	  calhit curHit = curHitVector[curHitIdx];
+
 	  // Assume the 0th apd is always read out before the second
 	  adc_t crystalID = curHit.crystalId;
 	  adc_t apdID = curHit.apdID;
 	  adc_t IDNum = ((apdID << 12) | crystalID);
-	  
-	  packetVector.push_back(IDNum);
-	  packetVector.push_back((adc_t)(curHit.recoDigiT0));
 
+	  // Fill the channel number and Reserved For DIRAC A fields
+	  // IMPORTANT NOTE: Since we don't have the wiring map, we'll just fill this with 0s for now
+	  // Also, the Reserved For DIRAC A field is not yet defined, so we'll fill it with 0s as well
+	  adc_t reservedForDIRACA = 0x0000;
+	  adc_t channelNum = 0x0000;
+	  adc_t firstField = (reservedForDIRACA & 0xFFC0) | (channelNum & 0x003F);
+	  curDataBlock.push_back(firstField);
+
+	  // Fill field second field reserved for DIRAC output
+	  // IMPORTANT NOTE: Since we are not using actual Board IDs (see comment above) we still need
+	  // a way to store and recover the crystal ID until we have an actual wiring map. For now,
+	  // we will simply store the apdID and crystalID in the first per-hit field reserved for DIRAC
+	  // output
+	  curDataBlock.push_back(IDNum);
+
+	  // Fill Error Flag field (format TBD):
+	  curDataBlock.push_back(0x0000);
+
+	  // Fill Time field:
+	  curDataBlock.push_back((adc_t)(curHit.recoDigiT0));
+	  
+	  // Fill Num Samples / DIRAC Max Peak Idx Field:
 	  if(_enableDIRACEmulation==0) {
-	    packetVector.push_back((adc_t)(curHit.recoDigiSamples));
+	    curDataBlock.push_back((adc_t)(curHit.recoDigiSamples));
 	  } else {
 	    adc_t maxVal = 0;
 	    size_t maxIdx = 0;
@@ -347,44 +429,52 @@ namespace mu2e {
 		maxIdx = sampleIdx;
 	      }
 	    }
-	    packetVector.push_back( (0xFF00 & (adc_t)(maxIdx<<8)) | (0x00FF & (adc_t)(curHit.recoDigiSamples)) );
+	    curDataBlock.push_back( (0xFF00 & (adc_t)(maxIdx<<8)) | (0x00FF & (adc_t)(curHit.recoDigiSamples)) );
 	  }
-
-
+	  
 	  for (auto sampleIdx = 0; sampleIdx < curHit.recoDigiSamples; sampleIdx++) {
 	      adc_t scaledVal = static_cast<adc_t>(curHit.waveform[sampleIdx]);
-	      packetVector.push_back(scaledVal);
+	      curDataBlock.push_back(scaledVal);
 	  }
 
-	  // Pad any empty space in the last packet with 0s
-	  size_t padding_slots = 8 - ((curHit.recoDigiSamples - 5) % 8);
-	  if (padding_slots < 8) {
-	    for (size_t i = 0; i < padding_slots; i++) {
-	      packetVector.push_back((adc_t)0);
-	    }
-	  }
-	  
-	  // Fill in the number of data packets entry in the header packet
-	  adc_t numDataPackets = static_cast<adc_t>(packetVector.size() / 8);
-	  curDataBlock[2] = numDataPackets;
-	  
-	  // Fill in the byte count field of the header packet
-	  adc_t numBytes = (numDataPackets + 1) * 16;
-	  curDataBlock[0] = numBytes;
-	  
-	  // Append the data packets after the header packet in the DataBlock
-	  curDataBlock.insert(curDataBlock.end(), packetVector.begin(), packetVector.end());
-	  
-	  // Create mu2e::DataBlock and add to the collection
-	  DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
-	  dtcPackets->push_back(theBlock);
 	} // Done looping over hits for this DTC/ROC pair
 
-      }
+
+//	for(size_t curHitIdx=0; curHitIdx<numHits; curHitIdx++) {
+//	  calhit curHit = curHitVector[curHitIdx];
+//	  std::cout << "\t" << dtcID << "/" << rocID << "\t" << curHit.crystalId << "\t" << std::dec << curHit.dtcID << "/" << curHit.rocID << std::endl;
+//	  std::cout << std::endl;
+//	}
+	
+	// Pad any empty space in the last packet with 0s
+	size_t padding_slots = 8 - (curDataBlock.size() % 8);
+	if(padding_slots<8) {
+	    for (size_t i = 0; i < padding_slots; i++) {
+	      curDataBlock.push_back(0x0000);
+	    }
+	}
+
+	// Fill in the number of data packets entry in the header packet
+	adc_t numDataPackets = static_cast<adc_t>(curDataBlock.size() / 8 - 1);
+	curDataBlock[2] = numDataPackets;
+
+	// Fill in the byte count field of the header packet
+	adc_t numBytes = curDataBlock.size() * 2;
+	curDataBlock[0] = numBytes;
+
+	// Make sure we end on a packet boundary
+	assert(curDataBlock.size() % 8 == 0);
 	
 
-    } // Done looping of DTC/ROC pairs
+	/////////////////////////////////////////////////////
+	// Create mu2e::DataBlock and add to the collection
+	/////////////////////////////////////////////////////	
+	DataBlock theBlock(DataBlock::CAL, evt.id(), dtcID, curDataBlock);
+	dtcPackets->push_back(theBlock);
+      }
 
+    } // Done looping over  DTC/ROC pairs
+ 
     evt.put(move(dtcPackets));
 
   } // end of ::produce
