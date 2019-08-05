@@ -26,6 +26,7 @@
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSShield.hh"
 #include "Mu2eG4/inc/constructTargetPS.hh"
+#include "Mu2eG4/inc/constructHaymanRings.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 
@@ -303,24 +304,10 @@ namespace mu2e {
 					  "PS"
                                           );
 
-//    // Build the production target.
-//    GeomHandle<ProductionTarget> tgt;
-//    TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
-//
-//    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
-//
-//    geomOptions->loadEntry( config, "ProductionTarget", "targetPS" );
-//
-//    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
-//                                            prodTargetParams,
-//                                            prodTargetMaterial,
-//                                            &tgt->productionTargetRotation(),
-//                                            tgt->position() - psVacuumInfo.centerInMu2e(),
-//                                            psVacuumInfo,
-//                                            0,
-//                                            G4Colour::Magenta()
-//                                            );
-    constructTargetPS(psVacuumInfo, _config);
+    // Build the production target.
+    
+
+        constructHaymanRings(psVacuumInfo, _config);
 
     // FIXME: make unconditional
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {

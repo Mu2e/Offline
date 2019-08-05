@@ -62,9 +62,9 @@ namespace mu2e {
   ConstructMaterials::ConstructMaterials() {
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config = geom->config();
-    mu2eStandardDetector_ = geom->isStandardMu2eDetector();
-    printElements_        = config.getBool("g4.printElements",false);
-    printMaterials_       = config.getBool("g4.printMaterials",false);
+    mu2eStandardDetector_ = config.getBool("mu2e.standardDetector",true);
+    printElements_ = config.getBool("g4.printElements",false);
+    printMaterials_ = config.getBool("g4.printMaterials",false);
   }
 
   ConstructMaterials::ConstructMaterials(const fhicl::ParameterSet& pset)
@@ -1353,6 +1353,17 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMl, 96.95e-2 );
       stWallEq->AddMaterial(strwMet1, 1.80e-2 );
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
+    }
+
+
+    // scaled W for hayman studies
+    mat = uniqueMaterialOrThrow("G4_W_Hayman");
+    {  //220 mm with gaps; this models as lower density without gaps
+      G4int nel;
+      G4Material* tung = findMaterialOrThrow("G4_W");
+      G4Material*  G4_W_Hayman = new G4Material(mat.name, (80./110.0)*tung->GetDensity(), nel = 1);
+      G4Element* Tung  = getElementOrThrow("W");
+      G4_W_Hayman->AddElement(Tung, 100.0*CLHEP::perCent );
     }
 
     // various densities of Al and Be to permit staging of pbar window studies without changing geometry
