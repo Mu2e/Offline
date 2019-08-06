@@ -36,7 +36,8 @@ namespace DriftFitUtils{
   	TrkPoca GetPOCA(Straw const&  straw, std::vector<XYZVec> TrackAxes, XYZVec track_position, XYZVec track_direction);
   	TrkPoca GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1);
   	double GetDOCA(TrkPoca poca);
-  	double TimeResidual(Straw const&  straw, double doca, StrawResponse srep);
+  	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep);
+  	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep);
   
  }
 

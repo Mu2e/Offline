@@ -36,11 +36,8 @@ struct EndResult{
 };
 
 namespace LiklihoodFunctions {
-	//double TimeResiduals(double drifttime, double doca, double time, double time_offset);
-        //double GetDOCA(TrkPoca poca);
-       // TrkPoca GetPOCA(Straw const&  straw, std::vector<XYZVec> TrackAxes, XYZVec track_position, XYZVec track_direction);
-        //double GetPhi(Straw const&  straw, XYZVec track_direction, std::vector<XYZVec> TrackAxes, double doca);
-	EndResult DoFit(CosmicTrackSeed trackseed, std::vector<double> times,  std::vector<XYZVec> position, std::vector<double> errorsX, std::vector<double> errorsY, std::vector<Straw> straws);
+	
+	EndResult DoFit(CosmicTrackSeed trackseed, StrawResponse srep);
 
 }
 

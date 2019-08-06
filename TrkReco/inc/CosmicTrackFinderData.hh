@@ -1,8 +1,6 @@
-//Author: S Middleton 2018
+//Author: S Middleton 2019
 #ifndef CosmicTrackFinderData_HH
 #define CosmicTrackFinderData_HH
-
-
 #include "BTrk/TrkBase/TrkErrCode.hh"
 #include "BTrk/TrkBase/TrkParticle.hh"
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
@@ -39,25 +37,18 @@ namespace mu2e {
   };
 
   class TimeCluster;
- 
-  //  class Panel;
-
-  //---------------------------------------------------------------------------
-  // output struct
-  //-----------------------------------------------------------------------------
   class CosmicTrackFinderData {
   public:
     
     enum { kMaxResidIndex = 500 };
 
     constexpr static uint16_t        kNMaxChHits = 150;
-
+    //possible use for alignment so keep for now:
     struct ChannelID {
       int Station;
       int Plane; 
       int Face; 
       int Panel; 
-      //      int Layer;
     };
 
     struct Diag_t {
@@ -65,30 +56,38 @@ namespace mu2e {
       int       nShFit; //after fit
       int       nChFit; //after fit
 
-      int       nChPPanel;
-      int       nChHits;
+      //int       nChPPanel;
+      //int       nChHits; //same as above at moment as nothing removed
 
-      float    hit_residualX[kMaxResidIndex];
-      float    hit_residualY[kMaxResidIndex];
-      float    hit_pullX[kMaxResidIndex];
-      float    hit_pullY[kMaxResidIndex];
+      float    Final_hit_residualX[kMaxResidIndex];
+      float    Final_hit_residualY[kMaxResidIndex];
+      float    Final_hit_pullX[kMaxResidIndex];
+      float    Final_hit_pullY[kMaxResidIndex];
+      float    Initial_hit_residualX[kMaxResidIndex];
+      float    Initial_hit_residualY[kMaxResidIndex];
+      float    Initial_hit_pullX[kMaxResidIndex];
+      float    Initial_hit_pullY[kMaxResidIndex];
       
-      //float    dz   [kMaxResidIndex];
-      
-      float    recon_eff;
       int      CosmicTrackFitCounter;
-      float    chi2d_track;
+      float    Final_chi2d_track;
+      float    Final_chi2dX_track;
+      float    Final_chi2dY_track;
+      float    Initial_chi2dX_track;
+      float    Initial_chi2dY_track;
+      float    Initial_chi2d_track;
       
       unsigned      niters;    
     };
-   
+    const art::Event*                 event;
+    const art::Run*		      run;
+    
     const TimeCluster*                _timeCluster;     // hides vector of its time cluster straw hit indices
     art::Ptr<TimeCluster>             _timeClusterPtr;
-    const art::Event*                 event;
+    
     CosmicTrackSeed                   _tseed;
     int                               _nStrawHits;      
     int                               _nComboHits;    
-    int                               _nXYSh; //SH at start
+    //int                               _nXYSh; //SH at start
     int                               _nXYCh; //CH at start
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster filtering 
@@ -103,9 +102,7 @@ namespace mu2e {
 // diagnostics, histogramming
 //-----------------------------------------------------------------------------
     Diag_t             _diag;
-//-----------------------------------------------------------------------------
-// structure used to organize the strawHits for the pattern recognition
-//-----------------------------------------------------------------------------
+
     std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;//array of faces, length of number of faces
     ComboHitCollection                                _chHitsToProcess;
     std::vector<XYWVec>                                  _chHitsWPos;
@@ -128,7 +125,7 @@ namespace mu2e {
     void          clearMCVariables();
     void          clearTempVariables();
     void          clearResults();
-
+    void          clearDiagnostics();
   };
 
 };

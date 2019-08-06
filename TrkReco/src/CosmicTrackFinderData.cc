@@ -1,8 +1,6 @@
 //S Middleton, Nov. 2018
-
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
-
 
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
@@ -52,9 +50,7 @@ Orders the channels. Starts by finding the face of the X channel (i.e. the origi
     // else            O->Layer = X->Layer;       // order layer    
   }
 
-//-----------------------------------------------------------------------------
-// don't clear the diagnostics part.
-//-----------------------------------------------------------------------------
+
   void CosmicTrackFinderData::clearMCVariables() {
        _mcDigisToProcess.clear();
   }
@@ -87,28 +83,33 @@ Orders the channels. Starts by finding the face of the X channel (i.e. the origi
 	panelz->idChEnd   = -1;
       }
     }
-    
-    
+ 
   }
 
-//-----------------------------------------------------------------------------
-// don't clear the diagnostics part.
-//-----------------------------------------------------------------------------
-   void CosmicTrackFinderData::clearResults() {
 
+   void CosmicTrackFinderData::clearResults() {
     _S.clear();
     _nFiltComboHits = 0;
     _nFiltStrawHits = 0;
     _nStrawHits  = 0;
     _nComboHits  = 0;
    }
+   
+   void CosmicTrackFinderData::clearDiagnostics() {
+    _diag.nShFit = 0;
+    _diag.Final_chi2d_track = 0;
+    _diag.Final_chi2d_track =0;
+    _diag.Final_chi2dX_track =0;
+    _diag.Final_chi2dY_track =0;
+    _diag.Initial_chi2dX_track=0;
+    _diag.Initial_chi2dY_track=0;
+    _diag.Initial_chi2d_track=0;
+   }
 
 
 //-----------------------------------------------------------------------------
   void CosmicTrackFinderData::print(const char* Title) {
-
-    printf(" CosmicTrackFinderData::print: %s\n",Title);
-    
+    printf(" CosmicTrackFinderData::print: %s\n",Title);   
   }
 
 };

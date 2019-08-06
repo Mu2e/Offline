@@ -1,11 +1,12 @@
 #ifndef __TrkPatRec_CosmicTrackFinder_types_hh__
 #define __TrkPatRec_CosmicTrackFinder_types_hh__
-
+//Stores diagnostic information about cosmic seed fit (residuals, chi2 before and after first chi2 minimization application)
 #include "TObject.h"
 #include <vector>
 
 namespace art {
   class Event;
+  class Run;
 };
 
 namespace fhicl {
@@ -17,40 +18,88 @@ namespace mu2e {
   class CosmicTrackFit;
 
   namespace CosmicTrackFinderTypes{
-  
-    struct Data_t {
+    /*
+    struct NewData_t {
       const art::Event*               event;
-      fhicl::ParameterSet*            timeOffsets;
-      enum {kMaxSeeds = 1000, kMaxNHits = 10 };
-      int     nseeds ; 
-      int     npasses ;
-      int     chi2numbers ;
-      int     nTimePeaks;               // number of time peaks (input)
+      fhicl::ParameterSet*            timeOffsets; //what are these?
+      enum {kMaxSeeds = 1000, kMaxNHits = 50 };
+      int     nseeds ; //Number of Seeds
+      int     npasses ; //Number passing all cuts in finder
+      int     nTimePeaks;               // number of time clusters
       
-      int     nChPPanel[kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
-      int     nChHits[kMaxSeeds];    // maximum number of combohits per panel found in the TimeCluster
-      int     ntclhits [kMaxSeeds]; //number of time cluster hits for each seed
-      size_t  nhits    [kMaxSeeds]; //number of hits for each seed
-      int     ninters  [kMaxSeeds];  
-      double  chi2d_track[kMaxSeeds]; //chi-squared of fit for each tracl seed
-      int     niters    [kMaxSeeds];
-      int     nShFit [kMaxSeeds];
-      int     nChFit [kMaxSeeds];
-      int     good     [kMaxSeeds];
-      int     nXYSh    [kMaxSeeds];
-      int     nXYCh    [kMaxSeeds];
+      int     ntclhits; //number of time cluster hits for each seed
+      size_t  nhits    ; //number of hits for each seed
+      
+      double  Final_chi2d_track; //chi-squared of fit for each tracl seed
+      double  Final_chi2dX_track; //chi-squared of fit for each tracl seed
+      double  Final_chi2dY_track; //chi-squared of fit for each tracl seed
+      double  Initial_chi2dX_track; //chi-squared of fit for each tracl seed
+      double  Initial_chi2dY_track; //chi-squared of fit for each tracl seed
+      double  Initial_chi2d_track; //chi-squared of fit for each tracl seed
+      int     niters    ; //Number of iterations on seed
+      int     nShFit ; //Number ofstraw hits in the fit
+      int     nChFit ; //Number of ComboHits Fit
+      int     good     ; //Number which are "good"
       //for chi2 fitting:
-      double  hit_residualX[kMaxSeeds][kMaxNHits];
-      double  hit_errorX [kMaxSeeds][kMaxNHits];
-      double  hit_residualY[kMaxSeeds][kMaxNHits];
-      double  hit_errorY [kMaxSeeds][kMaxNHits];
-        
-      int     nsh    [kMaxSeeds];
-      double  chi2  [kMaxSeeds];
-            
+      std::vector<double>  Final_hit_residualX;
+      std::vector<double>  Final_hit_errorX ;
+      std::vector<double>  Final_hit_residualY;
+      std::vector<double>  Final_hit_errorY ;
+      std::vector<double>  Final_hit_pullX;
+      std::vector<double>  Final_hit_pullY;
+      //for chi2 fitting:
+      std::vector<double>  Initial_hit_residualX;
+      std::vector<double>  Initial_hit_errorX ;
+      std::vector<double>  Initial_hit_residualY;
+      std::vector<double>  Initial_hit_errorY ;
+      std::vector<double>  Initial_hit_pullX;
+      std::vector<double>  Initial_hit_pullY;
+      //int     nsh    ;
+      
       int maxSeeds() { return kMaxSeeds; }
     };
-   
+    */
+    struct Data_t {
+      const art::Run*               run;
+      const art::Event*               event;
+      fhicl::ParameterSet*            timeOffsets; //what are these?
+      enum {kMaxSeeds = 1000, kMaxNHits = 50 };
+      int     nseeds ; //Number of Seeds
+      int     npasses ; //Number passing all cuts in finder
+      int     nTimePeaks;               // number of time clusters
+      
+      int     ntclhits ; //number of time cluster hits for each seed
+      size_t  nhits    ; //number of hits for each seed
+      
+      double  Final_chi2d_track; //chi-squared of fit for each tracl seed
+      double  Final_chi2dX_track; //chi-squared of fit for each tracl seed
+      double  Final_chi2dY_track; //chi-squared of fit for each tracl seed
+      double  Initial_chi2dX_track; //chi-squared of fit for each tracl seed
+      double  Initial_chi2dY_track; //chi-squared of fit for each tracl seed
+      double  Initial_chi2d_track; //chi-squared of fit for each tracl seed
+      int     niters    ; //Number of iterations on seed
+      int     nShFit ; //Number ofstraw hits in the fit
+      int     nChFit ; //Number of ComboHits Fit
+      int     good     ; //Number which are "good"
+      //for chi2 fitting:
+      double  Final_hit_residualX[kMaxNHits];
+      double  Final_hit_errorX [kMaxNHits];
+      double  Final_hit_residualY[kMaxNHits];
+      double  Final_hit_errorY [kMaxNHits];
+      double  Final_hit_pullX[kMaxNHits];
+      double  Final_hit_pullY[kMaxNHits];
+      //for chi2 fitting:
+      double  Initial_hit_residualX[kMaxNHits];
+      double  Initial_hit_errorX [kMaxNHits];
+      double  Initial_hit_residualY[kMaxNHits];
+      double  Initial_hit_errorY [kMaxNHits];
+      double  Initial_hit_pullX[kMaxNHits];
+      double  Initial_hit_pullY[kMaxNHits];
+      //int     nsh    ;
+      
+      int maxSeeds() { return kMaxSeeds; }
+    };
+     
   }
 }
 #endif

@@ -220,6 +220,6 @@ namespace Kalman {
   }
 
 }//End Kalman
-} // namespace MAUS
+} // namespace Mu2e
 
 

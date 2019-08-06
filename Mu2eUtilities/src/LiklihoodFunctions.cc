@@ -1,4 +1,4 @@
-//Likilhood Functions for minuit fitting
+//Likilhood Functions for minuit fitting to cosmic track seed. Input is CosmicTrackSeed, can then derive parameters from CosmicTrack stored there.
 // Author: S. Middleton, based on Tracker Code
 // Date: July 2019
 
@@ -85,8 +85,16 @@ namespace LiklihoodFunctions{
       		return hitpoca;
 	}
         */
-	EndResult DoFit(CosmicTrackSeed trackseed, std::vector<double> times, std::vector<XYZVec> positions, std::vector<double> errorsX, std::vector<double> errorsY, std::vector<Straw> straws){
-	  
+	EndResult DoFit(CosmicTrackSeed trackseed , StrawResponse srep){
+	std::vector<double> times;
+	std::vector<XYZVec> positions;
+	
+	for(auto const& hit : trackseed.hits()){
+	  times.push_back(hit.time());
+	  XYZVec pos(hit.pos().x(),hit.pos().y(), hit.pos().z());
+	  positions.push_back(pos);//FIX 
+	  std::cout<<"hit time in"<<hit.time()<<std::endl;
+	 }
 	  EndResult endresult;//best, best_errors
 	  //double voltage = 1425.;
 	  std::vector<double> seed(5,0);
@@ -95,29 +103,29 @@ namespace LiklihoodFunctions{
 	  seed[1] = trackseed._track.get_parameter(1);//1;a1
 	  seed[2] = trackseed._track.get_parameter(2);//b0
 	  seed[3] = trackseed._track.get_parameter(3);//b1
-	  seed[4] = 1.; //t0
+	  seed[4] = trackseed._t0.t0(); //t0
 	  errors[0] = trackseed._track.get_cov()[0];
 	  errors[1] = trackseed._track.get_cov()[1];
 	  errors[2] = trackseed._track.get_cov()[2];
 	  errors[3] = trackseed._track.get_cov()[3];
-	  errors[4] = 0.1;
+	  errors[4] = trackseed._t0.t0Err();
 	  
 	  std::vector<double> constraint_means(5,0);
 	  std::vector<double> constraints(5,0);
 	  std::cout <<"Seeds : "<<seed[0]<<"  "<<seed[1]<<"  " <<seed[2]<<" "<<seed[3]<<std::endl;
 	  //PDFFit fit(times,positions, errorsX, errorsY, constraint_means,constraints,1,voltage);
-          TimePDFFit fit(times,positions, straws, constraint_means,constraints,1);
+          TimePDFFit fit(times,positions, trackseed._straws, srep, constraint_means,constraints,1);
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
 	  ROOT::Minuit2::MnUserParameters params(seed,errors);
 	  std::cout<<"Starting Minuit "<<std::endl;
 	  ROOT::Minuit2::MnMigrad migrad(fit,params,mnStrategy);
 	  
 	  migrad.SetLimits((unsigned) 0, -2000,2000);
-	  migrad.SetLimits((unsigned) 1, 0,1);
+	  migrad.SetLimits((unsigned) 1, -1,1);
 	  migrad.SetLimits((unsigned) 2, -2000,2000);
-	  migrad.SetLimits((unsigned) 3,0,1);
+	  migrad.SetLimits((unsigned) 3,-1,1);
+	  migrad.Fix((unsigned) 4); 
 	  
-	  migrad.Fix((unsigned) 4); //fix time TODO
           std::cout<<"Function min "<<std::endl;
 	  ROOT::Minuit2::FunctionMinimum min = migrad();
 	  std::cout<<"User params "<<std::endl;

@@ -88,9 +88,7 @@ namespace mu2e
     /* ---------------Initialize Fit----------------//
     //----------------------------------------------*/
     bool CosmicTrackFit::initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics) {
-    if(_debug>5){
-    	std::cout<<"Initializing ST Fit ..."<<std::endl;
-    }
+    
     bool is_ok(false);
     RunFitChi2(title, TrackData,diagnostics );
     is_ok = TrackData._tseed._status.hasAllProperties(TrkFitFlag::StraightTrackOK);
@@ -130,18 +128,13 @@ namespace mu2e
       XYZVec track(a1,b1,1);
       return track.Unit();
     } 
- 
-    
-    
+  
 //--------------Fit-----------------//
 // This is the top level call to Fitting routines....
 //-------------------------------------------// 
-  void CosmicTrackFit::BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics){
-      if(_debug>5){
-      	std::cout<<" Beginning Fit ..." << std::endl;
-      }
-      //Clear Previous Flags:
-      TrackData._tseed._status.clear(TrkFitFlag::StraightTrackOK); 
+  void CosmicTrackFit::BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics){ 
+    //Clear Previous Flags:
+    TrackData._tseed._status.clear(TrkFitFlag::StraightTrackOK); 
     // Initialize:
     bool init(false);
     if (!TrackData._tseed._status.hasAllProperties(TrkFitFlag::StraightTrackInit)) {
@@ -165,10 +158,11 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
    FitAll(title, TrackData, track, diagnostics); 
    DriftFit(TrackData, track); 
    TrackData._diag.CosmicTrackFitCounter += 1;//label as having a track
-   diagnostics.npasses +=1;//total number of tracks
+   diagnostics.nChFit = (TrackData._chHitsToProcess.size());
+ 
 }
 
-int n_lost = 0; //For Debug 
+
 /*---------------Refine Fit ------ ----------------//
 //    Refines the fit in and updates chi2 information   //
 //-----------------------------------------------*/
@@ -176,7 +170,8 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
     ::BuildMatrixSums S;
     ComboHit   *hitP1(0), *hitP2(0); 
     size_t nHits (trackData._chHitsToProcess.size());
-    int DOF = (nHits);//-4;
+    
+    int DOF = (nHits);
     const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
     const ComboHit* chN = &trackData._chHitsToProcess[trackData._chHitsToProcess.size()-1]; 
     XYZVec FirstPoint(ch0->pos().x(),ch0->pos().y(),ch0->pos().z());
@@ -215,6 +210,8 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 	     cosmictrack->setinitXPrime(AxesList[0]);
 	     cosmictrack->setinitYPrime(AxesList[1]);
 	     cosmictrack->setinitZPrime(AxesList[2]); 
+	     diagnostics.Initial_chi2dX_track = S.GetChi2X()/abs(DOF); 
+	     diagnostics.Initial_chi2dY_track = S.GetChi2Y()/abs(DOF); 
 	     cosmictrack->set_initchisq_dofY(S.GetChi2Y()/abs(DOF));
 	     cosmictrack->set_initchisq_dofX(S.GetChi2X()/abs(DOF));
 	     for (size_t f2=0; f2<nHits; ++f2){
@@ -233,6 +230,10 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 		      cosmictrack->set_init_pullsY(Ry/ErrorsXY[1]);
 		      cosmictrack->set_init_fit_residualsX(Rx);
 		      cosmictrack->set_init_fit_residualsY(Ry); 
+		      diagnostics.Initial_hit_residualX[f2]=(Rx);
+    		      diagnostics.Initial_hit_residualY[f2] = (Ry);
+    		      diagnostics.Initial_hit_errorX[f2]=(ErrorsXY[0]);
+    		      diagnostics.Initial_hit_errorY[f2] = (ErrorsXY[1]);
 		} 
       }
      //Step 6: Begin iteration for finding the best track fit possible.
@@ -300,7 +301,8 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 		                BestTrack->set_finalchisq_dof(S_niteration.GetTotalChi2()/abs(DOF)); 
 		                BestTrack->set_finalchisq_dofY(S_niteration.GetChi2Y()/abs(DOF));
 		                BestTrack->set_finalchisq_dofX(S_niteration.GetChi2X()/abs(DOF));   
-		                
+		                diagnostics.Final_chi2dX_track = S_niteration.GetChi2X()/abs(DOF); 
+		      		diagnostics.Final_chi2dY_track = S_niteration.GetChi2Y()/abs(DOF); 
 		        }
                         chi2_best_track = updated_chi2;  
                                	
@@ -313,7 +315,6 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 	      
 	      //If at end of the iteration process but the track is still not converging then remove it
               if(niter == _maxniter && converged ==false ){
-              		 n_lost+=1;
 		    	 trackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
 		    	 trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
 		    	 continue;
@@ -321,9 +322,7 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
     		      	
 	        }//end while 
 	        cosmictrack=BestTrack;
-		     //step 7 : final diagnostics stored
-	             if(_debug>0){
-	             
+		if(_debug>0){   
 		     for (size_t f5=0; f5<nHits; ++f5){
 		     		if(isnan(cosmictrack->get_track_direction().Mag2()) == true) continue;     
 		                hitP2 = &trackData._chHitsToProcess[f5];
@@ -344,6 +343,13 @@ void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,
 		      		BestTrack->set_final_fit_residualsY(newRy); 
 		      		BestTrack->set_initchisq_dof(S.GetTotalChi2()/abs(DOF));
 		      		BestTrack->set_cov(S.GetCovX()[0][0],S.GetCovX()[1][1], S.GetCovY()[0][0], S.GetCovY()[1][1]);  
+		      		
+		      		
+		      		diagnostics.Final_hit_residualX[f5] = (newRx);
+    		      		diagnostics.Final_hit_residualY[f5] = (newRy);
+    		      		diagnostics.Final_hit_errorX[f5]=(ErrorsXY[0]);
+    		      		diagnostics.Final_hit_errorY[f5] = (ErrorsXY[1]);
+    		      	
 		      		cosmictrack=BestTrack;      			
                    	  }               	
                    	}
@@ -431,7 +437,7 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
      
      double mcpos_mag = sqrt(Direction.Mag2());    
      cosmictrack->set_true_track_direction(ZPrime);
-     //cosmictrack->set_true_phi(acos(ZPrime.x()/mcpos_mag)); 
+   
      const double theta_start = acos(Direction.x()/mcpos_mag);
      const double phi_start = atan(Direction.y()/Direction.x());
      cosmictrack->set_true_phi(phi_start);
@@ -447,14 +453,7 @@ XYZVec CosmicTrackFit::MCInitHit(StrawDigiMC mcdigi){
 	XYZVec first(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
         return first;
 }
-/*
 
-//GeomHandle<DetectorSystem> det;
-Hep3Vector pos = det->toDetector(spmcp->position());
-double mcposx0 = spmcp->position().x();
-double mcposy0 = spmcp->position().y();
-double mcposz0 = spmcp->position().z();
-*/
 XYZVec CosmicTrackFit::MCFinalHit(StrawDigiMC mcdigi){
 	art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(StrawEnd::cal);
 	XYZVec last(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
@@ -489,59 +488,23 @@ bool CosmicTrackFit::use_track(double track_length) const
      return (track_length > _maxd) ? false : true ;
   }
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack){
-         std::vector<XYZVec> positions;
-         std::vector<double> times;
-         std::vector<Straw> straws;
-         std::vector<double> errorsX;
-         std::vector<double> errorsY;
-	 size_t nHits (trackData._chHitsToProcess.size());
-         ComboHit   *hitP1(0);
-         //double t0 = trackData._tseed._t0.t0() ; //Get t0 from tclust, from BTrk
-         //double t0err = trackData._tseed._t0.t0Err() ; //error on t0 from BTrk
-         cout<<"=================="<<endl;
-         for (size_t f1=0; f1<nHits+1; ++f1){  
-      		hitP1 = &trackData._chHitsToProcess[f1];
-      		if (!use_hit(*hitP1) )    continue;
-      		float hit_time = hitP1->time();
-      		times.push_back(hit_time);
-      		XYZVec pos(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
-      		positions.push_back(pos);
-      		XYZVec track_direction = trackData._tseed.track().get_track_direction();
-		std::vector<XYZVec> AxesList = ParametricFit::GetAxes(track_direction);
-      		errorsX.push_back(ParametricFit::GetErrors(hitP1, AxesList[0], AxesList[1])[0]);
-      		errorsY.push_back(ParametricFit::GetErrors(hitP1, AxesList[0], AxesList[1])[1]);   
-      		//Straw const&  straw = _tracker->getStraw(hitP1->strawId());
-      		//straws.push_back(straw);
-      		/*
-      	        Straw const&  straw = _tracker->getStraw(hitP1->strawId());
-      	        XYZVec track_position(trackData._tseed.track().get_parameter(0), trackData._tseed.track().get_parameter(2), 0);
-                XYZVec track_direction = trackData._tseed.track().get_track_direction();
-		std::vector<XYZVec> TrackAxes = ParametricFit::GetAxes(track_direction);
-		
-      	        TrkPoca poca = DriftFitUtils::GetPOCA(straw, TrackAxes, track_position,  track_direction);
-      	        double doca =  DriftFitUtils::GetDOCA(poca);
-      	        cout<<"DOCA"<<doca<<endl;
-      		
-      		StrawId strawid = straw.id();
-      		double phi =  0.;//LiklihoodFunctions::GetPhi(straw, track_position,  TrackAxes, doca);
-      		//Use the StrawResponse::driftDistanceToTime() function to turn the transverse distance and t0 into an expected time that will let you calculate a time residual:
-      	        double expectedtime= _srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
-      	        //double time_residual_trans = expectedtime;
-      	        double wirehalflen = straw.halfLength();              
-      	        double propagation_time = wirehalflen/299.; 
-      	        double time_residual_long = expectedtime+propagation_time;
-                
-                //Fill lists for Minuit:
-                DOCAs.push_back(doca);
-                times.push_back(hit_time);
-                time_residuals.push_back(time_residual_long);
-      	        */
-      		}
-      		
-      		EndResult bestfit = LiklihoodFunctions::DoFit(trackData._tseed, times, positions, errorsX, errorsY, straws);
+         EndResult bestfit = LiklihoodFunctions::DoFit(trackData._tseed,  _srep);
       		
 
 }
- 
-
+/*
+ std::vector<TrkStrawHitSeed>const trkseeds = trackData._tseed.trkstrawhits();
+     cout<<"trkseed size "<<trkseeds.size()<<endl;
+     for(auto const& ths : trkseeds ){
+      // create a TrkStrawHit from this seed.
+      size_t index = ths.index();
+      cout<<"index "<<index<<endl;
+      const ComboHit& strawhit(trackData.chcol()->at(index));
+      const Straw& straw = _tracker->getStraw(strawhit.strawId());
+      StrawResponse::cptr_t strawResponse;
+     
+      TrkStrawHit* trkhit = new TrkStrawHit(strawResponse,strawhit,straw,ths.index(),ths.t0(),100., 5.,1.);
+      cout<<" Phi "<<trkhit->driftPhi()<<" v drift "<<trkhit->driftVelocity()<<" time"<<trkhit->driftTime()<<endl;
+        }
+*/
 }//end namespace

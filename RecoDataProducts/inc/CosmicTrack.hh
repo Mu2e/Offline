@@ -23,33 +23,7 @@ namespace mu2e {
     std::vector<std::vector<double>> Initialize_Cov_Mat(int i, int j, int sizei, int sizej);
 
  //---------------Accessors:--------------//
-    int get_N() const { return _Nhits;}
-    double get_finalchisq() const { return _finalchisq; }
-    double get_finalchisq_dof() const { return _finalchisq_dof; }
-    double get_true_finalchisq_dof() const { return _finalchisq_dofTrue; }
-    double get_initchisq() const { return _initchisq; }
-    double get_initchisq_dof() const { return _initchisq_dof; }
-    double get_finalchisqX() const { return _finalchisqX; }
-    double get_finalchisq_dofX() const { return _finalchisq_dofX; }
-    double get_initchisqX() const { return _initchisqX; }
-    double get_initchisq_dofX() const { return _initchisq_dofX; }
-    double get_finalchisqY() const { return _finalchisqY; }
-    double get_finalchisq_dofY() const { return _finalchisq_dofY; }
-    double get_initchisqY() const { return _initchisqY; }
-    double get_initchisq_dofY() const { return _initchisq_dofY; }
-    
-    double get_true_phi() const { return true_track_angle_phi;}
-    double get_fit_phi() const { return fit_track_angle_phi;}
-     double get_true_theta() const { return true_track_angle_theta;}
-    double get_fit_theta() const { return fit_track_angle_theta;}
-    
-    double get_chi2_quant() const{ return _chi2_quant;}
-    
-    std::vector<double> get_track_parameters() const { return _track_parameters; } 
-    std::vector<double> get_initial_track_parameters() const { return _initial_track_parameters; } 
-    std::vector<double> get_true_track_parameters() const { return _true_track_parameters; }
-    
-    double get_parameter(unsigned para_ID) const { 
+  double get_parameter(unsigned para_ID) const { 
 	if(_track_parameters.size() >=para_ID){
 		return _track_parameters.at(para_ID);
 	}throw "Error: parameter list not long enough";
@@ -68,6 +42,39 @@ namespace mu2e {
     XYZVec getinitZPrime() const { return _initZPrime;}
     
     double GetSagitta() const {return _Sagitta;}
+     
+    std::vector<double> get_track_parameters() const { return _track_parameters; } 
+    std::vector<double> get_initial_track_parameters() const { return _initial_track_parameters; } 
+    std::vector<double> get_true_track_parameters() const { return _true_track_parameters; }
+    
+    
+    double get_true_phi() const { return true_track_angle_phi;}
+    double get_fit_phi() const { return fit_track_angle_phi;}
+    double get_true_theta() const { return true_track_angle_theta;}
+    double get_fit_theta() const { return fit_track_angle_theta;}
+    
+    XYZVec get_true_track_direction() { return _true_track_direction;}
+    std::vector<double> get_cov() const { return _cov;}
+ 
+ //Diagnostics (MOVE THESE)
+    int get_N() const { return _Nhits;}
+    double get_finalchisq() const { return _finalchisq; }
+    double get_finalchisq_dof() const { return _finalchisq_dof; }
+    double get_true_finalchisq_dof() const { return _finalchisq_dofTrue; }
+    double get_initchisq() const { return _initchisq; }
+    double get_initchisq_dof() const { return _initchisq_dof; }
+    double get_finalchisqX() const { return _finalchisqX; }
+    double get_finalchisq_dofX() const { return _finalchisq_dofX; }
+    double get_initchisqX() const { return _initchisqX; }
+    double get_initchisq_dofX() const { return _initchisq_dofX; }
+    double get_finalchisqY() const { return _finalchisqY; }
+    double get_finalchisq_dofY() const { return _finalchisq_dofY; }
+    double get_initchisqY() const { return _initchisqY; }
+    double get_initchisq_dofY() const { return _initchisq_dofY; }
+    
+    double get_chi2_quant() const{ return _chi2_quant;}
+   
+    
     std::vector<double> get_init_fit_residualsX() const { return _initfit_residualsX; }
     std::vector<double> get_final_fit_residualsX() const { return _finalfit_residualsX; }
     std::vector<double> get_init_fit_residual_errorsX() const { return _initfit_residual_errorsX; }
@@ -86,15 +93,14 @@ namespace mu2e {
     std::vector<double> get_final_hit_errorsTotal() const{ return _finalhit_errorsTotal;} 
     std::vector<double> get_init_hit_errorsTotal() const{ return _inithit_errorsTotal;}
     int get_iter(){return _niters;}
-    XYZVec get_true_track_direction() { return _true_track_direction;}
-    std::vector<double> get_cov() const { return _cov;}
     
-//---------------------------------------//  
+    
+//----------------END DIAGNOSTICS-----------------------//  
     
      void clear_all(); //clears track info and diagnostics
      void clear_parameters(); //clears just track info
      
-//-------------Modiffiers---------------//
+//-------------Modiffiers of Track Parameters/Features---------------//
     void set_chi2_quant(double sum){_chi2_quant = sum;}
     void set_N(int N){_Nhits = N;}
     void set_parameters(double a0,double a1, double b0, double b1){ 
@@ -148,33 +154,6 @@ namespace mu2e {
     void setinitYPrime(XYZVec YPrime){ _initYPrime = YPrime;}
     void setinitZPrime(XYZVec ZPrime){_initZPrime = ZPrime;}
     
-    void set_initchisq_dof(double initchisq_dof) { _initchisq_dof = initchisq_dof; }
-    void set_finalchisq_dof(double finalchisq_dof) { _finalchisq_dof = finalchisq_dof; }
-    void set_true_finalchisq_dof(double finalchisq_dof) { _finalchisq_dofTrue = finalchisq_dof; }
-    void set_initchisq_dofX(double initchisq_dofX) { _initchisq_dofX = initchisq_dofX; }
-    void set_finalchisq_dofX(double finalchisq_dofX) { _finalchisq_dofX = finalchisq_dofX; }
-    void set_initchisq_dofY(double initchisq_dofY) { _initchisq_dofY = initchisq_dofY; }
-    void set_finalchisq_dofY(double finalchisq_dofY) { _finalchisq_dofY = finalchisq_dofY; }
-    
-    void set_mom(XYZVec mom){_track_mommentum=mom;}
-    
-    void set_init_fit_residualsX(double residual) { _initfit_residualsX.push_back(residual); }
-    void set_final_fit_residualsX(double residual) { _finalfit_residualsX.push_back(residual); }
-    void set_init_fit_residual_errorsX(double residual_err) { _initfit_residual_errorsX.push_back(residual_err); }
-    void set_final_fit_residual_errorsX(double residual_err) { _finalfit_residual_errorsX.push_back(residual_err); }
-    void set_init_fit_residualsY(double residual) { _initfit_residualsY.push_back(residual); }
-    void set_final_fit_residualsY(double residual) { _finalfit_residualsY.push_back(residual); }  
-    void set_init_fit_residual_errorsY(double residual_err) { _initfit_residual_errorsY.push_back(residual_err); }
-    void set_final_fit_residual_errorsY(double residual_err) { _finalfit_residual_errorsY.push_back(residual_err); }
-    void set_init_pullsX(double residual) { _initfit_pullsX.push_back(residual); }
-    void set_final_pullsX(double residual) { _finalfit_pullsX.push_back(residual); }
-    void set_init_pullsY(double residual) { _initfit_pullsY.push_back(residual); }
-    void set_final_pullsY(double residual) { _finalfit_pullsY.push_back(residual); }  
-    void set_hit_errorsX(double hit_errorX){_hit_errorsX.push_back(hit_errorX);}
-    void set_hit_errorsY(double hit_errorY){_hit_errorsY.push_back(hit_errorY);}
-    void set_init_hit_errorsTotal(double hit_errorTotal){_inithit_errorsTotal.push_back(hit_errorTotal);}
-    void set_final_hit_errorsTotal(double hit_errorTotal){_finalhit_errorsTotal.push_back(hit_errorTotal);}
-    void set_niter(int iter){_niters= (iter);}
     void set_true_track_direction(XYZVec direction){ _true_track_direction = direction;}
     void set_true_phi(double track_angle){true_track_angle_phi=track_angle;}
     void set_fit_phi(double track_angle){fit_track_angle_phi=track_angle;}
@@ -186,6 +165,38 @@ namespace mu2e {
     	_cov.push_back(db0);
     	_cov.push_back(db1);
     }
+    
+    void set_mom(XYZVec mom){_track_mommentum=mom;}
+    
+    //_-----------Diganostics ---------------//
+    void set_initchisq_dof(double initchisq_dof) { _initchisq_dof = initchisq_dof; }
+    void set_finalchisq_dof(double finalchisq_dof) { _finalchisq_dof = finalchisq_dof; }
+    void set_true_finalchisq_dof(double finalchisq_dof) { _finalchisq_dofTrue = finalchisq_dof; }
+    void set_initchisq_dofX(double initchisq_dofX) { _initchisq_dofX = initchisq_dofX; }
+    void set_finalchisq_dofX(double finalchisq_dofX) { _finalchisq_dofX = finalchisq_dofX; }
+    void set_initchisq_dofY(double initchisq_dofY) { _initchisq_dofY = initchisq_dofY; }
+    void set_finalchisq_dofY(double finalchisq_dofY) { _finalchisq_dofY = finalchisq_dofY; }
+    
+    void set_init_fit_residualsX(double residual) { _initfit_residualsX.push_back(residual); }
+    void set_final_fit_residualsX(double residual) { _finalfit_residualsX.push_back(residual); }
+    void set_init_fit_residual_errorsX(double residual_err) { _initfit_residual_errorsX.push_back(residual_err); }
+    void set_final_fit_residual_errorsX(double residual_err) { _finalfit_residual_errorsX.push_back(residual_err); }
+    void set_init_fit_residualsY(double residual) { _initfit_residualsY.push_back(residual); }
+    void set_final_fit_residualsY(double residual) { _finalfit_residualsY.push_back(residual); }  
+    void set_init_fit_residual_errorsY(double residual_err) { _initfit_residual_errorsY.push_back(residual_err); }
+    void set_final_fit_residual_errorsY(double residual_err) { _finalfit_residual_errorsY.push_back(residual_err); }
+    
+    void set_init_pullsX(double residual) { _initfit_pullsX.push_back(residual); }
+    void set_final_pullsX(double residual) { _finalfit_pullsX.push_back(residual); }
+    void set_init_pullsY(double residual) { _initfit_pullsY.push_back(residual); }
+    void set_final_pullsY(double residual) { _finalfit_pullsY.push_back(residual); }  
+    
+    void set_hit_errorsX(double hit_errorX){_hit_errorsX.push_back(hit_errorX);}
+    void set_hit_errorsY(double hit_errorY){_hit_errorsY.push_back(hit_errorY);}
+    void set_init_hit_errorsTotal(double hit_errorTotal){_inithit_errorsTotal.push_back(hit_errorTotal);}
+    void set_final_hit_errorsTotal(double hit_errorTotal){_finalhit_errorsTotal.push_back(hit_errorTotal);}
+    void set_niter(int iter){_niters= (iter);}
+    //----------End Diagnostics ----------//
   private:
     int _Nhits;
     //Parameters:
@@ -229,6 +240,8 @@ namespace mu2e {
     XYZVec _initXPrime;
     XYZVec _initYPrime;
     XYZVec _initZPrime;
+    //Cov Matrix:
+    std::vector<double> _cov;
     //Diagnostics:
     double _chi2_quant;
     double _finalchisq ;
@@ -245,7 +258,7 @@ namespace mu2e {
     double _initchisqY;
     double _initchisq_dofY;
     
-    std::vector<double> _cov;
+   
     std::vector<double> _initfit_residualsX;
     std::vector<double> _initfit_residual_errorsX;
     std::vector<double> _initfit_residualsY;

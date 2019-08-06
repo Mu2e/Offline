@@ -40,33 +40,35 @@ float wireradius = 12.5/1000.; //12.5 um in mm
 float strawradius = 2.5; //2.5 mm in mm 
 
 double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1)const{
-
 	TrkPoca poca = DriftFitUtils::GetPOCA(straw, a0,a1,b0,b1);
 	return poca.doca();
 }
-double TimePDFFit::TimeResidual(double doca, double time)const{
+double TimePDFFit::TimeResidual(Straw straw, double doca, double time, StrawResponse srep)const{
+	std::cout<<"time "<<time<<std::endl;
 	double tres = time - doca/0.0625;
+	DriftFitUtils::TimeResidualLong( straw, doca, srep);
 	return tres;
 }
 double TimePDFFit::operator() (const std::vector<double> &x) const
 {
-  std::cout<<"In operator "<<std::endl;
+
   double a0 = x[0];
   double a1 = x[1];
   double b0 = x[2];
   double b1 = x[3];
   double t0 = x[4];
-  //tau = 10, sigma = 1
+  //tau = 10, 
+  double sigma = 1.;
   double llike = 0;
-  
-  for (size_t i=0;i<this->times.size();i++){
-     
+  std::cout<<"times size "<<this->combohit_times.size()<<std::endl;
+  for (size_t i=0;i<this->combohit_times.size();i++){
+      
       double doca = calculate_DOCA(this->straws[i], x[0],x[1], x[2], x[3]);
       std::cout<<"DOCA"<<doca<<std::endl;
-      double time_residual = this->TimeResidual(doca,this->times[i]);
-      double pdf_t =1/sqrt(2*TMath::Pi()*1) * exp(-(time_residual*time_residual)/(2*1));
-      llike +=log(pdf_t);
-      //llike -= log(pdf_val*pdf_x*pdf_y);
+      double time_residual = this->TimeResidual(this->straws[i], doca,this->combohit_times[i],this->srep);
+      double pdf_t =1/sqrt(2*TMath::Pi()*sigma*sigma) * exp(-(time_residual*time_residual)/(2*sigma*sigma));
+      llike -=log(pdf_t);
+      
   }
   for (int i=0;i<this->nparams;i++){
     if (this->constraints[i] > 0){
@@ -74,7 +76,6 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
     }
   }
   std::cout<<"a0 "<<a0<<" a1 "<<a1<<" b0 "<<b0<<" b1 "<<b1<<" t0 "<<t0<<std::endl;
- 
   return llike;
 }
 
@@ -89,9 +90,9 @@ double PDFFit::operator() (const std::vector<double> &x) const
   //tau = 10, sigma = 1
   double llike = 0;
   //for (size_t i=0;i<this->docas.size();i++){
-  for (size_t i=0;i<this->times.size();i++){
-      double pdf_x = 1/sqrt(2*TMath::Pi()*this->errorsX[i]*this->errorsX[i]) * exp(-((this->hit_positions[i].x() - x[0]+x[1]*hit_positions[i].x())*(this->hit_positions[i].x() - x[0]+x[1]*hit_positions[i].x()))/(this->errorsX[i]*this->errorsX[i]));
-      double pdf_y = 1/sqrt(2*TMath::Pi()*this->errorsY[i]*this->errorsY[i]) * exp(-((this->hit_positions[i].y() - x[2]+x[3]*hit_positions[i].y())*(this->hit_positions[i].y() - x[2]+x[3]*hit_positions[i].y()))/(this->errorsY[i]*this->errorsY[i]));
+  for (size_t i=0;i<this->combohit_times.size();i++){
+      double pdf_x = 1/sqrt(2*TMath::Pi()*this->errorsX[i]*this->errorsX[i]) * exp(-((this->combohit_positions[i].x() - x[0]+x[1]*combohit_positions[i].x())*(this->combohit_positions[i].x() - x[0]+x[1]*combohit_positions[i].x()))/(this->errorsX[i]*this->errorsX[i]));
+      double pdf_y = 1/sqrt(2*TMath::Pi()*this->errorsY[i]*this->errorsY[i]) * exp(-((this->combohit_positions[i].y() - x[2]+x[3]*combohit_positions[i].y())*(this->combohit_positions[i].y() - x[2]+x[3]*combohit_positions[i].y()))/(this->errorsY[i]*this->errorsY[i]));
      
       double pdf_val = pdf_x*pdf_y;
       llike -=log(pdf_val);

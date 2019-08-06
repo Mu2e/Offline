@@ -102,7 +102,7 @@ namespace mu2e {
   }
 
   void ComboHitCollection::fillStrawHitIndices(art::Event const& event, uint16_t chindex, vector<StrawHitIndex>& shids) const {
-    std::cout<<"Filling indices"<<chindex<<std::endl;
+    
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
     if(_parent.isValid()){

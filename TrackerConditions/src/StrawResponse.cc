@@ -9,20 +9,25 @@ namespace mu2e {
    
   // simple line interpolation, this should be a utility function, FIXME!
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
+    
     double yval;
     if(xvals.size() != yvals.size() || xvals.size() < 2)
       std::cout << "size error " << std::endl;
+    
     int imax = int(xvals.size()-1);
     // approximate constant binning to get initial guess
     double xbin = (xvals.back()-xvals.front())/(xvals.size()-1);
+   
     int ibin = min(imax,max(0,int(floor((xval-xvals.front())/xbin))));
     // scan to exact bin
+    
     while(ibin > 0 && xval < xvals[ibin])
       --ibin;
     while(ibin < imax && xval > xvals[ibin])
       ++ibin;
     // interpolate
     double slope(0.0);
+    
     if(ibin >= 0 && ibin < imax){
       yval = yvals[ibin];
       int jbin = ibin+1;
@@ -38,6 +43,7 @@ namespace mu2e {
       yval += (xval-xvals[0])*slope;
     }
     return yval;
+    cout<<"finished"<<endl;
   }
 
   double StrawResponse::driftDistanceToTime(StrawId strawId, 
@@ -65,8 +71,7 @@ namespace mu2e {
 
   double StrawResponse::driftInstantSpeed(StrawId strawId, 
 				 double doca, double phi) const {
-     std::cout << "InSp usenonlindrift = " << _usenonlindrift << endl;
-    std::cout << "InSp lindriftvel = " << _lindriftvel << endl;
+    
     if(_usenonlindrift){
       return _strawDrift->GetInstantSpeedFromD(doca);
     }else{
@@ -117,6 +122,7 @@ namespace mu2e {
   }
 
   double StrawResponse::halfPropV(StrawId strawId, double kedep) const {
+    
     return PieceLine(_edep,_halfvp,kedep);
   }
 
