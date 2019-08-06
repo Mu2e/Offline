@@ -204,36 +204,8 @@ namespace mu2e {
     // Now add fins for version 2
     // this is hayman target; first version has four fins, and looks very much like strawman 3.4 of doc-db 27281
     if ( tgt->version() > 1 ) {
-      // Length of fins must be calculated:
 
-      double finHalfLength = (tgt->halfLength() * 2.0 - tgt->hubDistUS() 
-			      - tgt->hubDistDS() - tgt->hubLenUS() - tgt->hubLenDS())/2.0;  // on the inner side, 
-                                         // adjacent to the main target body.
-
-     //
-      // rhb: discussion with KL says this target is getting trashed anyway.  Would be useful to have rates
-      // though with the fins in appropriate positions.  It doesn't seem worth getting rid of volume conflicts 
-      // by moving target fins (see little 0.15 and -1.0)
-      // motions.  I am just going to make target fins a little smaller to avoid a bunch of meaningless tweaks.
-  
- 
-
-         finHalfLength = finHalfLength - 1.5; 
-      //for adding hubs as a test
-      	 finHalfLength = finHalfLength - 3.5; 
-
-      // Use the steeper of the two hub angles to angle the ends of the fin
-      double theAngle = tgt->hubAngleUS();
-
-      if ( tgt->hubAngleDS() > theAngle ) theAngle = tgt->hubAngleDS();
-
-
-
-      //double finHalfLengthOut = finHalfLength + tgt->finHeight()*std::cos(theAngle*CLHEP::degree);
-      //      finHalfLengthOut = finHalfLength;
-      //
-      // hangover from hub hangover
-      finHalfLength = tgt->halfLength();
+      double finHalfLength = tgt->halfLength();
       //
       // in hayman, there are no hubs and in space no one can hear you scream.  Leave the code in for hooks later
       
@@ -261,65 +233,27 @@ namespace mu2e {
       CLHEP::HepRotation* rotRing = new CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation());
 
       // std::vector<double> finDims = {tgt->finThickness()/2.0,tgt->finHeight()/2.0,finHalfLength};
-      double finZoff = (tgt->hubDistUS() - tgt->hubDistDS() + tgt->hubLenUS() - tgt->hubLenDS())/2.0; // z-offset for fin
-      double rToFin = tgt->rOut()+tgt->finHeight()/2.0+0.2;
+      double rToFin = tgt->rOut()+tgt->finHeight()/2.0+ 0.2;
  
-     double xMove = finZoff * sin(tgt->productionTargetRotation().theta());
-      std::cout << "xMove= " << xMove << std::endl;
-      //original with fin 1 on top in the way of extinction monitor
-      //CLHEP::Hep3Vector finOffset1(xMove,rToFin,finZoff);
-      //CLHEP::Hep3Vector finOffset2(rToFin*cos(-M_PI/6.0)+xMove+0.15,rToFin*sin(-M_PI/6.0),finZoff-1.0);
-      //CLHEP::Hep3Vector finOffset3(rToFin*cos(-5.0*M_PI/6.0)+xMove,rToFin*sin(-5.0*M_PI/6.0),finZoff);
- 
-      //
-      // fin 1 on top, then 90, 180 and 270; too bad for extinction monitor
-      
-      //CLHEP::Hep3Vector finOffset1(xMove,+rToFin,finZoff);
-      //CLHEP::Hep3Vector finOffset2(xMove+  rToFin + 0.04,0.,finZoff);
-      //CLHEP::Hep3Vector finOffset3(xMove - rToFin - 0.08,0.,finZoff);
-      //CLHEP::Hep3Vector finOffset4(xMove,-rToFin,finZoff);
-      
-      /*
-      CLHEP::Hep3Vector finOffset1(xMove-tgt->rOut(),+rToFin,finZoff);
-      CLHEP::Hep3Vector finOffset2(xMove+  rToFin + 0.04,0.,finZoff);
-      CLHEP::Hep3Vector finOffset3(xMove - rToFin - 0.08,0.,finZoff);
-      CLHEP::Hep3Vector finOffset4(xMove,-rToFin,finZoff);
- */
-     //std::cout << "fin offsets = " << finOffset1 << "\n" << finOffset2 << "\n" << finOffset3 << std::endl;
       CLHEP::Hep3Vector finOffset1(rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset2(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset3(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset4(-rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
  
 
-     CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-     rotFinBase->rotateX(90.0*CLHEP::degree);
-      //     rotFinBase->rotateZ(90.0*CLHEP::degree);
-     //
-     // these rotate fins 2 and 3 so that widest part of trapezoid away from the hub if it were a trapezoid as in Tier1 version
-     rotFinBase->rotateX(-90*CLHEP::degree);
-     rotFinBase->rotateZ(-90.0*CLHEP::degree);
+      CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+ 
 
+      CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+     
+      rotFin1->rotateZ(-M_PI/4.);
+      rotFin2->rotateZ(+M_PI/4.);
+      rotFin3->rotateZ(+M_PI/4.);
+      rotFin4->rotateZ(-M_PI/4.);
 
-     CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-     CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-     CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-     CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-     /*  original */
-      //     rotFin2->rotateX(M_PI/2.0);
-      //rotFin3->rotateX(-M_PI/2.0);
-     
-      rotFin1->rotateZ(M_PI/4.0);
-      rotFin2->rotateZ(-M_PI/4.0);
-      rotFin3->rotateZ(-M_PI/4.);
-      rotFin4->rotateZ(M_PI/4.);
-      //rotFin2->rotateZ(-M_PI/4);
-      //rotFin3->rotateZ(3.*M_PI/2.);
-      //rotFin4->rotateZ(-3.*M_PI/2.);
-     
-      //
-      // get trapezoid pointed in the right direction
-      //rotFin4->rotateX(-M_PI);
       VolumeInfo fin1Vol("ProductionTargetFin1",
 			 _loclCenter,
 			 prodTargetMotherInfo.centerInWorld);
