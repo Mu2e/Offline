@@ -43,6 +43,7 @@
 #include "G4Trd.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "G4Tubs.hh"
+#include "G4RotationMatrix.hh"
 using namespace std;
 
 namespace mu2e {
@@ -233,26 +234,59 @@ namespace mu2e {
       CLHEP::HepRotation* rotRing = new CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation());
 
       // std::vector<double> finDims = {tgt->finThickness()/2.0,tgt->finHeight()/2.0,finHalfLength};
-      double rToFin = tgt->rOut()+tgt->finHeight()/2.0+ 0.2;
+      double rToFin = tgt->rOut()+tgt->finHeight()/2.0;
+      std::cout << "r variables " << rToFin << " " << tgt->rOut() << " " << tgt->finHeight()/2. << std::endl;
+  
  
+      CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+ 
+      std::cout << "rotfinbase = " << *rotFinBase << std::endl;
+      CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+      CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+
+
+      rotFin1->rotateZ(-M_PI/4.);
+      rotFin2->rotateZ(+M_PI/4.);
+      rotFin3->rotateZ(+M_PI/4.);
+      rotFin4->rotateZ(-M_PI/4.);
+
       CLHEP::Hep3Vector finOffset1(rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset2(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset3(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
       CLHEP::Hep3Vector finOffset4(-rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
  
+      // These are shifts in the unrotated frame in x and y.  But then when I apply
+      // the rotation, since the fins are not centered on the z-axis, they pick up a z-shift that I must
+      // take out.  rather than calculate it for the special case I'll do the matrix. If life gets more complicated
+      // in the future (target rotated along and y) it's straightforward if tedious.
+      //
+      // it's complicated because the "finishNesting", rotates then shifts by what you give it; the above is wrong once the frame is 
+      // rotated... 
+      CLHEP::Hep3Vector fin1Shift(rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector fin2Shift(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector fin3Shift(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector fin4Shift(-rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
+      //      std::cout << "fin1shift before = " << fin1Shift << std::endl;
+      //std::cout << "fin2shift before = " << fin2Shift << std::endl;
+      //std::cout << "fin3shift before = " << fin3Shift << std::endl;
+      //std::cout << "fin4shift before = " << fin4Shift << std::endl;
 
-      CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
- 
+      fin1Shift.transform(*rotFin1);
+      fin2Shift.transform(*rotFin2);
+      fin3Shift.transform(*rotFin3);
+      fin4Shift.transform(*rotFin4);
 
-      CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-     
-      rotFin1->rotateZ(-M_PI/4.);
-      rotFin2->rotateZ(+M_PI/4.);
-      rotFin3->rotateZ(+M_PI/4.);
-      rotFin4->rotateZ(-M_PI/4.);
+      //std::cout << "fin1shift after = " << fin1Shift << std::endl;
+      //std::cout << "fin2shift after = " << fin2Shift << std::endl;
+      //std::cout << "fin3shift after = " << fin3Shift << std::endl;
+      //std::cout << "fin4shift after = " << fin4Shift << std::endl;
+
+      finOffset1 += CLHEP::Hep3Vector(0.,0.,-fin1Shift.z());
+      finOffset2 += CLHEP::Hep3Vector(0.,0.,-fin2Shift.z());
+      finOffset3 += CLHEP::Hep3Vector(0.,0.,-fin3Shift.z());
+      finOffset4 += CLHEP::Hep3Vector(0.,0.,-fin4Shift.z());
 
       VolumeInfo fin1Vol("ProductionTargetFin1",
 			 _loclCenter,
