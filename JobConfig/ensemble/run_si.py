@@ -7,11 +7,11 @@ import ROOT
 from normalizations import *
 import subprocess
 
-max_events_per_subrun = 100000
+max_events_per_subrun = 1000000
 
 dirname = sys.argv[1]
 outpath = sys.argv[2]
-livetime = float(open(os.path.join(dirname,"livetime")).readline())
+livetime = float(open(os.path.join(dirname,"livetime")).readline())/365./24./60./60.
 rue = float(open(os.path.join(dirname,"rue")).readline())
 rup = float(open(os.path.join(dirname,"rup")).readline())
 kmax = float(open(os.path.join(dirname,"kmax")).readline())
@@ -22,7 +22,9 @@ lines = fin.readlines()
 dem_emin = float(lines[0])
 dep_emin = float(lines[1])
 tmin = float(lines[2])
-run = int(lines[3])
+max_livetime = float(lines[3])/365./24./60./60.
+run = int(lines[4])
+samplingseed = int(lines[5])
 
 #use_dayabay = 0
 #if len(sys.argv) > 2:
@@ -38,8 +40,8 @@ norms = {
   "RMCinternal": rmc_normalization(livetime, dep_emin+1, kmax, True),
   "RPCexternal": 1.59222825e+08*livetime, #FIXME python takes too long
   "RPCinternal": 1.098685e+06*livetime,
-  "DYBCosmic": dayabay_normalization(livetime),
-  "CRYCosmic": cry_normalization(livetime)
+  "DYBCosmic": dayabay_normalization(max_livetime),
+  "CRYCosmic": cry_normalization(max_livetime)
   }
 
 
@@ -64,10 +66,28 @@ for line in ffns:
 
   # get event id for first event we will use
   start_entry = int(reco_events * starting_fraction)
-  te.GetEntry(start_entry)
-  start_run_id = te.EventAuxiliary.run()
-  start_subrun_id = te.EventAuxiliary.subRun()
-  start_event_id = te.EventAuxiliary.event()
+  tfi = fin.Get("FileIndex")
+  current_entry = 0
+  check_entry = 0
+  for i in range(tfi.GetEntries()):
+    tfi.GetEntry(i)
+    if tfi.Element.getEntryType() != 2:
+      continue
+    if current_entry >= start_entry:
+      start_run_id = tfi.Element.eventID_.run()
+      start_subrun_id = tfi.Element.eventID_.subRun()
+      start_event_id = tfi.Element.eventID_.event()
+      check_entry = tfi.Element.entry_
+      if start_subrun_id == 0:
+        # fails if we try to use subrun of 0 so get next event
+        continue
+      break
+    current_entry += 1
+
+  te.GetEntry(check_entry)
+  if (not start_run_id == te.EventAuxiliary.run() or not start_subrun_id == te.EventAuxiliary.subRun() or not start_event_id == te.EventAuxiliary.event()):
+    print "PROBLEM GETTING STARTING EVENT"
+    import pdb;pdb.set_trace()
   starting_event_num[signal] = [start_run_id,start_subrun_id,start_event_id]
   # determine how many events we can use before throwing error
   max_possible_events[signal] = int(reco_events * max_fraction) - int(reco_events * starting_fraction)
@@ -90,11 +110,11 @@ for line in ffns:
   mean_gen_events = norms[signal]
   mean_reco_events[signal] = mean_gen_events*reco_events/float(gen_events)
   # DEBUG ONLY
-#  print signal,"GEN_EVENTS:",gen_events,"RECO_EVENTS:",reco_events,"EXPECTED EVENTS:",mean_reco_events[signal],"STARTING AT:",starting_event_num[signal]
+  # print signal,"GEN_EVENTS:",gen_events,"RECO_EVENTS:",reco_events,"EXPECTED EVENTS:",mean_reco_events[signal],"STARTING AT:",starting_event_num[signal]
 
 total_sample_events = ROOT.gRandom.Poisson(sum(mean_reco_events.values()))
 # DEBUG ONLY
-#print "TOTAL EXPECTED EVENTS:",sum(mean_reco_events.values()),"GENERATING:",total_sample_events
+# print "TOTAL EXPECTED EVENTS:",sum(mean_reco_events.values()),"GENERATING:",total_sample_events
 
 # calculate the normalized weights for each signal
 weights = {signal: mean_reco_events[signal]/float(total_sample_events) for signal in mean_reco_events}
@@ -103,8 +123,6 @@ weights = {signal: mean_reco_events[signal]/float(total_sample_events) for signa
 
 fin = open("JobConfig/ensemble/SamplingInput.fcl")
 t = Template(fin.read())
-fin2 = open("JobConfig/ensemble/MCtoData.fcl")
-t2 = Template(fin2.read())
 
 subrun = 0
 
@@ -127,19 +145,17 @@ while True:
 
   d = {}
   d["datasets"] = datasets
-  d["outnameMC"] = os.path.join(outpath,"mcs.mu2e.ensemble-MC.MDC2018h.%06d_%08d.art" % (run,subrun))
-  d["inname"] = d["outnameMC"]
-  d["outnameData"] = os.path.join(outpath,"mcs.mu2e.ensemble-Data.MDC2018h.%06d_%08d.art" % (run,subrun))
+  d["outnameMC"] = os.path.join(outpath,"mcs.mu2e.ensemble-MC.MDC2018i.%06d_%08d.art" % (run,subrun))
+  d["outnameData"] = os.path.join(outpath,"mcs.mu2e.ensemble-Data.MDC2018i.%06d_%08d.art" % (run,subrun))
   d["run"] = run
   d["subRun"] = subrun
+  d["samplingSeed"] = samplingseed + subrun
+  # put all the exact parameter values in the fcl file
+  d["comments"] = "#livetime: %f\n#rue: %e\n#rup: %e\n#kmax: %f\n#dem_emin: %f\n#dep_emin: %f\n#tmin: %f\n#max_livetime: %f\n#run: %d\n" % (livetime*365*24*60*60,rue,rup,kmax,dem_emin,dep_emin,tmin,max_livetime*365*24*60*60,run)
 
   fout = open(os.path.join(dirname,"SamplingInput_sr%d.fcl" % (subrun)),"w")
   fout.write(t.substitute(d))
   fout.close()
-
-  fout2 = open(os.path.join(dirname,"MCtoData_sr%d.fcl" % (subrun)),"w")
-  fout2.write(t2.substitute(d))
-  fout2.close()
 
   flog = open(os.path.join(dirname,"SamplingInput_sr%d.log" % (subrun)),"w")
   
@@ -171,8 +187,5 @@ while True:
       print "SIGNAL",signal,"HAS RUN OUT OF EVENTS!",currently_used_events[signal],max_possible_events[signal]
     print "SIGNAL",signal,currently_used_events[signal],max_possible_events[signal]
 
-  cmd = ["mu2e","-c",os.path.join(dirname,"MCtoData_sr%d.fcl" % (subrun))]
-  p = subprocess.Popen(cmd,stdout=subprocess.PIPE)
-  p.wait()
   subrun+=1
 
