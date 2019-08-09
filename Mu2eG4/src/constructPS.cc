@@ -26,6 +26,7 @@
 #include "Mu2eG4/inc/constructPS.hh"
 #include "Mu2eG4/inc/constructPSShield.hh"
 #include "Mu2eG4/inc/constructTargetPS.hh"
+#include "Mu2eG4/inc/constructHaymanRings.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
 
@@ -42,6 +43,7 @@
 #include "G4SDManager.hh"
 #include "G4LogicalVolume.hh"
 
+#include "cetlib_except/exception.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
 using namespace std;
@@ -49,7 +51,7 @@ using namespace std;
 namespace mu2e {
 
   G4LogicalVolume* constructPS(VolumeInfo const & parent, SimpleConfig const & _config) {
-    
+
     ProductionSolenoid const & psgh = *(GeomHandle<ProductionSolenoid>());
 
     Tube const & psVacVesselInnerParams     = *psgh.getVacVesselInnerParamsPtr();
@@ -58,10 +60,12 @@ namespace mu2e {
     // Extract some information from the config file.
 
     int verbosityLevel                  = _config.getInt("PS.verbosityLevel");
-                                                
+
+    std::string targetPS_model = _config.getString("targetPS_model");
+
     G4Material* psVacVesselMaterial = findMaterialOrThrow(psVacVesselInnerParams.materialName());
 
-    verbosityLevel >0 && 
+    verbosityLevel >0 &&
       cout << __func__ << " verbosityLevel                   : " << verbosityLevel  << endl;
 
     G4GeometryOptions* geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
@@ -77,7 +81,7 @@ namespace mu2e {
 
     // Build the barrel of the cryostat, the length is the "outer length"
 
-    VolumeInfo psVacVesselInnerInfo = 
+    VolumeInfo psVacVesselInnerInfo =
       nestTubs("PSVacVesselInner",
                psVacVesselInnerParams.getTubsParams(),
                psVacVesselMaterial,
@@ -89,7 +93,7 @@ namespace mu2e {
 	       "PS"
                );
 
-    VolumeInfo psVacVesselOuterInfo = 
+    VolumeInfo psVacVesselOuterInfo =
       nestTubs("PSVacVesselOuter",
                psVacVesselOuterParams.getTubsParams(),
                psVacVesselMaterial,
@@ -106,12 +110,12 @@ namespace mu2e {
     Tube const & psRing1Params = *psgh.getRing1ParamsPtr();
     Tube const & psRing2Params = *psgh.getRing2ParamsPtr();
     G4Material* ringMaterial = findMaterialOrThrow(psRing1Params.materialName());
-    VolumeInfo psRing1Info = 
+    VolumeInfo psRing1Info =
       nestTubs("PSRing1", psRing1Params.getTubsParams(),
 	       ringMaterial, 0,
 	       psRing1Params.originInMu2e() - _hallOriginInMu2e,
 	       parent, 0, G4Colour::Blue(), "PS");
-    VolumeInfo psRing2Info = 
+    VolumeInfo psRing2Info =
       nestTubs("PSRing2", psRing2Params.getTubsParams(),
 	       ringMaterial, 0,
 	       psRing2Params.originInMu2e() - _hallOriginInMu2e,
@@ -122,7 +126,7 @@ namespace mu2e {
     Tube const & psVacVesselEndPlateDParams = *psgh.getVacVesselEndPlateDParamsPtr();
     Tube const & psVacVesselEndPlateUParams = *psgh.getVacVesselEndPlateUParamsPtr();
 
-    VolumeInfo psVacVesselEndPlateDInfo = 
+    VolumeInfo psVacVesselEndPlateDInfo =
       nestTubs("PSVacVesselEndPlateD",
                psVacVesselEndPlateDParams.getTubsParams(),
                psVacVesselMaterial,
@@ -134,7 +138,7 @@ namespace mu2e {
 	       "PS"
                );
 
-    VolumeInfo psVacVesselEndPlateUInfo 
+    VolumeInfo psVacVesselEndPlateUInfo
       = nestTubs("PSVacVesselEndPlateU",
                  psVacVesselEndPlateUParams.getTubsParams(),
                  psVacVesselMaterial,
@@ -172,7 +176,7 @@ namespace mu2e {
     // but is now the vacuum in the PS cryo.
 
     string const psCoilShellName = "PSCoilShell";
-  
+
     VolumeInfo psCoilShellInfo(psCoilShellName,
                                psCoilShellParams.originInMu2e()-psVacuumVesselVacuumInfo.centerInMu2e(),
                                psVacuumVesselVacuumInfo.centerInWorld);
@@ -184,7 +188,7 @@ namespace mu2e {
                                               &psCoilShellParams.zPlanes()[0],
                                               &psCoilShellParams.rInner()[0],
                                               &psCoilShellParams.rOuter()[0]);
-    
+
     G4Material* psCoilShellMaterial = findMaterialOrThrow(psCoilShellParams.materialName());
 
     finishNesting(psCoilShellInfo,
@@ -248,17 +252,17 @@ namespace mu2e {
 
     if ( verbosityLevel > 0) {
 
-      cout << __func__ << " parent.centerInMu2e()                     : " 
+      cout << __func__ << " parent.centerInMu2e()                     : "
            << parent.centerInMu2e() << endl;
 
-      cout << __func__ << " psVacVesselInnerParams.originInMu2e()     : " 
+      cout << __func__ << " psVacVesselInnerParams.originInMu2e()     : "
            << psVacVesselInnerParams.originInMu2e() << endl;
-      cout << __func__ << " psVacVesselOuterParams.originInMu2e()     : " 
+      cout << __func__ << " psVacVesselOuterParams.originInMu2e()     : "
            << psVacVesselOuterParams.originInMu2e() << endl;
 
-      cout << __func__ << " psVacVesselEndPlateDParams.originInMu2e() : " 
+      cout << __func__ << " psVacVesselEndPlateDParams.originInMu2e() : "
            << psVacVesselEndPlateDParams.originInMu2e() << endl;
-      cout << __func__ << " psVacVesselEndPlateUParams.originInMu2e() : " 
+      cout << __func__ << " psVacVesselEndPlateUParams.originInMu2e() : "
            << psVacVesselEndPlateUParams.originInMu2e() << endl;
 
       cout << __func__ << " psCoilShellParams.originInMu2e()          : "
@@ -267,19 +271,19 @@ namespace mu2e {
       cout << __func__ << " psCoilShellInfo.centerInMu2e()            : "
            << psCoilShellInfo.centerInMu2e() <<  endl;
 
-      cout << __func__ << " psCoil1Params.originInMu2e()              : " 
+      cout << __func__ << " psCoil1Params.originInMu2e()              : "
            << psCoil1Params.originInMu2e() << endl;
-      cout << __func__ << " psCoil1 local Offset                      : " 
+      cout << __func__ << " psCoil1 local Offset                      : "
            << psCoil1Params.originInMu2e()- psCoilShellInfo.centerInMu2e() << endl;
 
-      cout << __func__ << " psCoil2Params.originInMu2e()              : " 
+      cout << __func__ << " psCoil2Params.originInMu2e()              : "
            << psCoil2Params.originInMu2e() << endl;
-      cout << __func__ << " psCoil2 local Offset                      : " 
+      cout << __func__ << " psCoil2 local Offset                      : "
            << psCoil2Params.originInMu2e()- psCoilShellInfo.centerInMu2e() << endl;
 
-      cout << __func__ << " psCoil3Params.originInMu2e()              : " 
+      cout << __func__ << " psCoil3Params.originInMu2e()              : "
            << psCoil3Params.originInMu2e() << endl;
-      cout << __func__ << " psCoil3 local Offset                      : " 
+      cout << __func__ << " psCoil3 local Offset                      : "
            << psCoil3Params.originInMu2e()- psCoilShellInfo.centerInMu2e() << endl;
 
     }
@@ -303,31 +307,25 @@ namespace mu2e {
 					  "PS"
                                           );
 
-//    // Build the production target.
-//    GeomHandle<ProductionTarget> tgt;
-//    TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
-//
-//    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
-//
-//    geomOptions->loadEntry( config, "ProductionTarget", "targetPS" );
-//
-//    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
-//                                            prodTargetParams,
-//                                            prodTargetMaterial,
-//                                            &tgt->productionTargetRotation(),
-//                                            tgt->position() - psVacuumInfo.centerInMu2e(),
-//                                            psVacuumInfo,
-//                                            0,
-//                                            G4Colour::Magenta()
-//                                            );
-    constructTargetPS(psVacuumInfo, _config);
+    // Build the production target.
+
+    if ( targetPS_model == "MDC2018" ){
+      constructTargetPS(psVacuumInfo, _config );
+    } else if ( targetPS_model == "HaymanLowerDensity" ){
+      constructHaymanRings(psVacuumInfo, _config);
+    } else{
+      throw cet::exception("CONFIG")
+        << "In constructPS.cc unrecognized production target model name: "
+        << targetPS_model
+        << "\n";
+    }
 
     // FIXME: make unconditional
     if(art::ServiceHandle<GeometryService>()->hasElement<PSShield>()) {
       constructPSShield(psVacuumInfo, _config);
     }
-      
-      
+
+
       return psVacuumInfo.logical;
 
   } // end Mu2eWorld::constructPS
