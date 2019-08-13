@@ -14,27 +14,28 @@
 
 using namespace mu2e;
 namespace ParametricFit{
-
+        //Remove this
 	double GettMin(XYZVec& point, XYZVec& starting_point, XYZVec& end_point);
 	XYZVec PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point);
 	double PointToLineDCA(XYZVec& point, XYZVec& line_starting_point, XYZVec& line_end_point);
 	XYZVec ParellelVector(XYZVec lineStartPoint, XYZVec lineEndPoint);
-
-	//CosmicTrack ConstructTrack();
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint);
-
 	bool LineToLineCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint, 
 	 XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
 	 XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
 	int GetDOCASign(XYZVec track_dir, XYZVec point);
-
+        //Remove this --> redundent, already exists elsewhere....
+        
 	std::vector<XYZVec>GetAxes(XYZVec TrackDirection);
+	TrackAxes GetTrackAxes(XYZVec TrackDirection);
 	XYZVec GetXPrime(XYZVec track_dir);
 	XYZVec GetYPrime(XYZVec OrthX, XYZVec YPrime);
 	XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
 	XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
+	
 	void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime);
+	XYZVec ConvertToPrimePoint(ComboHit* chit, TrackAxes axes);
 	
 	std::vector<double> GetErrors(ComboHit* Hit, XYZVec XAxis, XYZVec YAxis);
 	XYZVec MajorAxis(ComboHit* Hit);

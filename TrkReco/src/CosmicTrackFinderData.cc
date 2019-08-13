@@ -104,6 +104,10 @@ Orders the channels. Starts by finding the face of the X channel (i.e. the origi
     _diag.Initial_chi2dX_track=0;
     _diag.Initial_chi2dY_track=0;
     _diag.Initial_chi2d_track=0;
+    _diag.Change_chi2dX_track=0;
+    _diag.Change_chi2dY_track=0;
+    _diag.Change_chi2d_track=0;
+    _diag.True_chi2d_track=0;
    }
 
 

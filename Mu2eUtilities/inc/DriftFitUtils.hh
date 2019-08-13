@@ -15,7 +15,7 @@
 #include "TrackerConditions/inc/StrawResponse.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
-//utilities:
+//Utilities:
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -33,11 +33,15 @@
 using namespace mu2e;
 
 namespace DriftFitUtils{
-  	TrkPoca GetPOCA(Straw const&  straw, std::vector<XYZVec> TrackAxes, XYZVec track_position, XYZVec track_direction);
-  	TrkPoca GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1);
+  	
+  	TrkPoca GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit);
   	double GetDOCA(TrkPoca poca);
-  	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep);
-  	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep);
+  	std::vector<double> UpdateErrors(double a0, double a1, double b0, double b1, ComboHit chit);
+  	double GetPropVelocity(StrawResponse rep, ComboHit chit); 
+	double GetPropTime(ComboHit chit, Straw straw, TrkPoca poca, double vprop);
+  	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
+  	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
+  	double TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
   
  }
 

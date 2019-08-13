@@ -44,6 +44,10 @@ namespace mu2e {
       TH1F*  Initial_chi2dY_track;
       TH1F*  Final_chi2d_track;
       TH1F*  Initial_chi2d_track;
+      TH1F*  Change_chi2d_track;
+      TH1F*  Change_chi2dX_track;
+      TH1F*  Change_chi2dY_track;
+      TH1F*  True_chi2d_track;
       //Residuals and Pulls:
       TH1F*  Final_residualX;
       TH1F*  Final_residualY;
@@ -53,7 +57,13 @@ namespace mu2e {
       TH1F*  Initial_residualY;
       TH1F*  Initial_pullX;
       TH1F*  Initial_pullY;
-     
+     //Errors:
+     TH1F*  Final_ErrorsX;
+     TH1F*  Final_ErrorsY;
+     TH1F*  Final_ErrorsTot;
+     TH1F*  Initial_ErrorsX;
+     TH1F*  Initial_ErrorsY;
+     TH1F*  Initial_ErrorsTot;
       
     };
 
@@ -107,18 +117,31 @@ namespace mu2e {
     _hist.pT         = Tfs->make<TH1F>("pT0"      , "transverse momentum; pT [MeV/c]"           , 400, -0.5, 200.5);
     _hist.p          = Tfs->make<TH1F>("p0"       , "momentum; p [MeV/c]"                       , 400, -0.5, 200.5);
     
-    _hist.Final_chi2d_track = Tfs->make<TH1F>("Final_chi2dtrack" , "End total chi2", 50, 0, 50); 
-    _hist.Final_chi2dX_track = Tfs->make<TH1F>("Final_chi2dtrackX" , "End X chi2"  , 50, 0, 50);
-    _hist.Final_chi2dY_track = Tfs->make<TH1F>("Final_chi2dtrackY" , "End Y chi2"   , 50, 0, 50);
-   
+    _hist.Final_chi2d_track = Tfs->make<TH1F>("Final_chi2dtrack" , "End total chi2", 50, 0, 10); 
+    _hist.Final_chi2dX_track = Tfs->make<TH1F>("Final_chi2dtrackX" , "End X chi2"  , 50, 0, 10);
+    _hist.Final_chi2dY_track = Tfs->make<TH1F>("Final_chi2dtrackY" , "End Y chi2"   , 50, 0, 10);
+    
+    _hist.Final_ErrorsX = Tfs->make<TH1F>("Final Errors X" , "Final Errors X", 50, 0, 100); 
+    _hist.Final_ErrorsY = Tfs->make<TH1F>("Final Errors Y" , "Final Errors Y"  , 50, 0, 100);
+    _hist.Final_ErrorsTot = Tfs->make<TH1F>("Final Errors Total" , "Final Errors Total"   , 50, 0, 100);
+    
+    _hist.Initial_ErrorsX = Tfs->make<TH1F>("Init Errors X" , "Init Errors X", 50, 0, 100); 
+    _hist.Initial_ErrorsY = Tfs->make<TH1F>("Init Errors Y" , "Init Errors Y"  , 50, 0, 100);
+    _hist.Initial_ErrorsTot = Tfs->make<TH1F>("Init Errors Total" , "Init Errors Total"   , 50, 0, 100);
+    
+    _hist.Change_chi2d_track = Tfs->make<TH1F>("Change_chi2dtrack" , "Changetotal chi2", 50, -10, 10); 
+    _hist.Change_chi2dX_track = Tfs->make<TH1F>("Change_chi2dtrackX" , "Change X chi2"  , 50, -10, 10);
+    _hist.Change_chi2dY_track = Tfs->make<TH1F>("Change_chi2dtrackY" , "Change Y chi2"   , 50, -10, 10);
+    _hist.True_chi2d_track  = Tfs->make<TH1F>("True_chi2dtrackY" , "True chi2"   , 50, 0, 10);
+    
     _hist.Final_residualX  = Tfs->make<TH1F>("final_resid_X" , "Final Track Residual X, ", 100,   -100., 100.);
     _hist.Final_residualY   = Tfs->make<TH1F>("final_resid_Y" , "Final Track Residual Y, " , 100,   -100., 100.);
-    _hist.Final_pullX  = Tfs->make<TH1F>("final_pull_X" , "Final Track Pull X"               , 50,   -10., 10.);
-    _hist.Final_pullY  = Tfs->make<TH1F>("final_pull_Y" , "Final Track Pull Y"               , 50,   -10., 10.);
+    _hist.Final_pullX  = Tfs->make<TH1F>("Final_pull_X" , "Final Track Pull X"               , 50,   -10., 10.);
+    _hist.Final_pullY  = Tfs->make<TH1F>("Final_pull_Y" , "Final Track Pull Y"               , 50,   -10., 10.);
     
-    _hist.Initial_chi2d_track = Tfs->make<TH1F>("Initial_chi2dtrack" , "End total chi2", 50, 0, 50); 
-    _hist.Initial_chi2dX_track = Tfs->make<TH1F>("Initial_chi2dtrackX" , "End X chi2", 50, 0, 50); 
-    _hist.Initial_chi2dY_track = Tfs->make<TH1F>("Initial_chi2dtrackY" , "End Y chi2"  , 50, 0, 50); 
+    _hist.Initial_chi2d_track = Tfs->make<TH1F>("Initial_chi2dtrack" , "Initial total chi2", 50, 0, 10); 
+    _hist.Initial_chi2dX_track = Tfs->make<TH1F>("Initial_chi2dtrackX" , "Initial X chi2", 50, 0, 10); 
+    _hist.Initial_chi2dY_track = Tfs->make<TH1F>("Initial_chi2dtrackY" , "Initial Y chi2"  , 50, 0, 10); 
     
     _hist.Initial_residualX  = Tfs->make<TH1F>("Initial_resid_X" , "Initial Track Residual X, " , 50,   -500., 500.);
     _hist.Initial_residualY  = Tfs->make<TH1F>("Initial_resid_Y" , "Initial Track Residual Y, "  , 50,   -500., 500.);
@@ -132,7 +155,7 @@ int CosmicTrackFinderDiag::fillHistograms(void* Data,  int Mode) {
     _data = (Data_t*) Data;
     _hist.nTimePeaks ->Fill(_data->nTimePeaks);
     _hist.nseeds->Fill(_data->nseeds);
-   //for (int i=0; i<_data->nseeds; i++) {
+   
 	
 	_hist.ntclhits   ->Fill(_data->ntclhits);
 	_hist.nhits      ->Fill(_data->nhits);	
@@ -141,22 +164,38 @@ int CosmicTrackFinderDiag::fillHistograms(void* Data,  int Mode) {
 	  	
 	//Diagnostics	
 	_hist.Final_chi2d_track->Fill(_data->Final_chi2d_track);
-	_hist.Initial_chi2d_track->Fill(_data->Final_chi2d_track);
+	_hist.Initial_chi2d_track->Fill(_data->Initial_chi2d_track);
+	
 	_hist.Final_chi2dX_track->Fill(_data->Final_chi2dX_track);
-	_hist.Initial_chi2dX_track->Fill(_data->Final_chi2dX_track);
-	_hist.Final_chi2d_track->Fill(_data->Final_chi2dY_track);
-	_hist.Initial_chi2d_track->Fill(_data->Final_chi2dY_track);
+	_hist.Initial_chi2dX_track->Fill(_data->Initial_chi2dX_track);
+	
+	_hist.Final_chi2dY_track->Fill(_data->Final_chi2dY_track);
+	_hist.Initial_chi2dY_track->Fill(_data->Initial_chi2dY_track);
+	
+	_hist.Change_chi2d_track->Fill(_data->Final_chi2d_track - _data->Initial_chi2d_track);
+	_hist.Change_chi2dX_track->Fill(_data->Final_chi2dX_track - _data->Initial_chi2dX_track);
+	_hist.Change_chi2dY_track->Fill(_data->Final_chi2dY_track - _data->Initial_chi2dY_track);
+	_hist.True_chi2d_track->Fill(_data->True_chi2d_track);
 	
 	for (int j=0; j<_data->nChFit;++j){
+	  _hist.Initial_ErrorsX->Fill(_data->Initial_hit_errorX[j]);
+     	  _hist.Initial_ErrorsY->Fill(_data->Initial_hit_errorY[j]);
+          _hist.Initial_ErrorsTot->Fill(_data->Initial_ErrorsTot[j]);
+          _hist.Final_ErrorsX ->Fill(_data->Final_hit_errorX[j]);
+     	  _hist.Final_ErrorsY ->Fill(_data->Final_hit_errorY[j]);
+          _hist.Final_ErrorsTot ->Fill(_data->Final_ErrorsTot[j]);
+          
 	  _hist.Final_residualX->Fill(_data->Final_hit_residualX[j]);
 	  _hist.Final_residualY->Fill(_data->Final_hit_residualY[j]);
+	  
 	  _hist.Final_pullX->Fill(_data->Final_hit_residualX[j]/_data->Final_hit_errorX[j]);
 	  _hist.Final_pullY->Fill(_data->Final_hit_residualY[j]/_data->Final_hit_errorY[j]);
+	  
 	  _hist.Initial_residualX->Fill(_data->Initial_hit_residualX[j]);
-	  _hist.Initial_residualY->Fill(_data->Initial_hit_residualX[j]);
+	  _hist.Initial_residualY->Fill(_data->Initial_hit_residualY[j]);
 	  _hist.Initial_pullX->Fill(_data->Initial_hit_residualX[j]/_data->Initial_hit_errorX[j]);
 	  _hist.Initial_pullY->Fill(_data->Initial_hit_residualY[j]/_data->Initial_hit_errorY[j]);
-	//}//end CH loop
+	
 	
       }//end seed loop
    

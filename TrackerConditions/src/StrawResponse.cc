@@ -50,7 +50,6 @@ namespace mu2e {
 				double ddist, double phi) const {
    
     if(_usenonlindrift){
-      std::cout<<" calling D2T "<<endl;
       return _strawDrift->D2T(ddist,phi);
     }
     else{  

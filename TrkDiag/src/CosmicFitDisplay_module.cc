@@ -169,44 +169,47 @@ namespace mu2e
         unsigned _nch = _chcol->size();
         //loop over tracks:
         for(size_t i =0; i < _ncosmics; i++){
-                 
+                
         	CosmicTrackSeed track =(*_coscol)[i];
+		if(track._track.converged == false){continue;}
+		xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
+		yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
+		zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
+		cout<<"in display XdP "<<track._track.TrackCoordSystem._XDoublePrime<<endl;
+		cout<<"in display YdP "<<track._track.TrackCoordSystem._YDoublePrime<<endl;
+	        cout<<"in display Z"<<track._track.TrackCoordSystem._ZPrime<<endl;
+		xprimesinit.push_back(track._track.InitTrackCoordSystem._XDoublePrime);
+		yprimesinit.push_back(track._track.InitTrackCoordSystem._YDoublePrime);
+		zprimesinit.push_back(track._track.InitTrackCoordSystem._ZPrime);
 		
-		xprimes.push_back(track._track.getXPrime());
-		yprimes.push_back(track._track.getYPrime());
-		zprimes.push_back(track._track.getZPrime());
-		
-		xprimesinit.push_back(track._track.getinitXPrime());
-		yprimesinit.push_back(track._track.getinitYPrime());
-		zprimesinit.push_back(track._track.getinitZPrime());
-		
-		if(track._track.get_track_parameters().size()!= 0){
+		//if(track._track.get_track_parameters().size()!= 0){
 			
-			if(isnan(track._track.get_track_parameters()[0]) == true && isnan(track._track.get_track_parameters()[1]) == true && isnan(track._track.get_track_parameters()[2]) == true && isnan(track._track.get_track_parameters()[3]) == true) continue;
+			if(isnan(track._track.FitParams.A0) == true && isnan(track._track.FitParams.A1) == true && isnan(track._track.FitParams.B0) == true && isnan(track._track.FitParams.B1) == true) continue;
 			
-			a0.push_back(track._track.get_track_parameters()[0]);
-			a1.push_back(track._track.get_track_parameters()[1]);
-			b0.push_back(track._track.get_track_parameters()[2]);
-			b1.push_back(track._track.get_track_parameters()[3]);
-			a0init.push_back(track._track.get_initial_track_parameters()[0]);
-			a1init.push_back(track._track.get_initial_track_parameters()[1]);
-			b0init.push_back(track._track.get_initial_track_parameters()[2]);
-			b1init.push_back(track._track.get_initial_track_parameters()[3]);
+			a0.push_back(track._track.FitParams.A0);
+			a1.push_back(track._track.FitParams.A1);
+			b0.push_back(track._track.FitParams.B0);
+			b1.push_back(track._track.FitParams.B1);
+			a0init.push_back(track._track.InitParams.A0);
+			a1init.push_back(track._track.InitParams.A1);
+			b0init.push_back(track._track.InitParams.B0);
+			b1init.push_back(track._track.InitParams.B1);
 			
-			chi_dof_XDoublePrimeZPrime.push_back(track._track.get_finalchisq_dofX());
-			chi_dof_YDoublePrimeZPrime.push_back(track._track.get_finalchisq_dofY());
+			chi_dof_XDoublePrimeZPrime.push_back(track._track.Diag.FinalChiX);
+			chi_dof_YDoublePrimeZPrime.push_back(track._track.Diag.FinalChiY);
 			
-			initchi_dof_XDoublePrimeZPrime.push_back(track._track.get_initchisq_dofX());
-			initchi_dof_YDoublePrimeZPrime.push_back(track._track.get_initchisq_dofY());
+			initchi_dof_XDoublePrimeZPrime.push_back(track._track.Diag.InitialChiX);
+			initchi_dof_YDoublePrimeZPrime.push_back(track._track.Diag.InitialChiY);
 			
-			for(size_t i = 0 ; i < track._track.get_final_fit_residualsX().size(); i++ ){
+			for(size_t i = 0 ; i < track._track.Diag.FinalResidualsX.size(); i++ ){
 				
-				pullsx.push_back(track._track.get_final_fit_pullsX()[i]);
-				pullsy.push_back(track._track.get_final_fit_pullsY()[i]);
-				initpullsx.push_back(track._track.get_init_fit_pullsX()[i]);
-				initpullsy.push_back(track._track.get_init_fit_pullsY()[i]);
+				pullsx.push_back(track._track.Diag.FinalResidualsX[i]/track._track.Diag.FinalErrX[i]);
+				pullsy.push_back(track._track.Diag.FinalResidualsY[i]/track._track.Diag.FinalErrY[i]);
+				initpullsx.push_back(track._track.Diag.InitialResidualsX[i]/track._track.Diag.InitErrX[i]);
+				initpullsy.push_back(track._track.Diag.InitialResidualsY[i]/track._track.Diag.InitErrY[i]);
 			}
-	       	    }
+			
+	       	    //}
         }
       if(xprimes.size() >0){
         // loop over combo hits
@@ -318,7 +321,7 @@ namespace mu2e
 			
 			major_error_line.DrawLine( major_z1, major_x1, major_z2, major_x2);
 			minor_error_line.DrawLine( minor_z1, minor_x1, minor_z2, minor_x2);
-			/*
+			
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<pullsx[ihit-1];
@@ -334,7 +337,7 @@ namespace mu2e
 		   	if(i%2 != 0){
 		   	latex.DrawLatex(z0prime-10, x0prime-75,str_pulls);
 		   	}
-			*/
+			
               }
               
 	      if(a1.size() > 0){
@@ -382,7 +385,7 @@ namespace mu2e
 			double z1 = p.Dot(zprimes[0])+s*w.Dot(zprimes[0]);
 			double z2 = p.Dot(zprimes[0])-s*w.Dot(zprimes[0]);
 			major_error_line.DrawLine( z1, y1, z2, y2);
-			/*
+			
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<pullsy[ihit-1];
@@ -398,7 +401,7 @@ namespace mu2e
 		   	if(i%2 != 0){
 		   	latex.DrawLatex(z0prime-10, y0prime-75,str_pulls);
 		   	}
-		   	*/
+		   	
               }
 	      if(b1.size() > 0){
 	        
@@ -446,6 +449,7 @@ namespace mu2e
 			double z1 = p.Dot(zprimesinit[0])+s*w.Dot(zprimesinit[0]);
 			double z2 = p.Dot(zprimesinit[0])-s*w.Dot(zprimesinit[0]);
 			major_error_line.DrawLine( z1, x1, z2, x2);
+			
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<initpullsx[ihit-1];
@@ -461,6 +465,7 @@ namespace mu2e
 		   	if(i%2 != 0){
 		   	latex.DrawLatex(z0primeinit-10, x0primeinit-75,str_pulls);
 		   	}
+		   	
               }
 	      if(a1.size() > 0){
 	        
@@ -508,6 +513,7 @@ namespace mu2e
 			double z1 = p.Dot(zprimesinit[0])+s*w.Dot(zprimesinit[0]);
 			double z2 = p.Dot(zprimesinit[0])-s*w.Dot(zprimesinit[0]);
 			major_error_line.DrawLine( z1, y1, z2, y2);
+			
 			TLatex latex;
 			stringstream pulls;
                 	pulls<<initpullsy[ihit-1];
@@ -522,6 +528,7 @@ namespace mu2e
 		   	if(i%2 != 0){
 		   	latex.DrawLatex(z0prime-10, y0prime-75,str_pulls);
 		   	}
+		   	
               }
 	      if(b1.size() > 0){
 	        
@@ -658,14 +665,14 @@ namespace mu2e
        
         //Get track coordinate system and fit parameters
         for(auto const& track: *Tracks){
-        xprimes.push_back(track._track.getXPrime());
-        yprimes.push_back(track._track.getYPrime());
-        zprimes.push_back(track._track.getZPrime());
-        initial_track_direction.push_back(track._track.get_initial_track_direction() );
-        a1.push_back(track._track.get_track_parameters()[1]);
-        a0.push_back(track._track.get_track_parameters()[0]);
-        b1.push_back(track._track.get_track_parameters()[3]);
-        b0.push_back(track._track.get_track_parameters()[2]);	
+        xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
+        yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
+        zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
+        initial_track_direction.push_back(track._track.GetInitTrackDirection() );
+        a1.push_back(track._track.FitParams.A0);
+        a0.push_back(track._track.FitParams.A1);
+        b1.push_back(track._track.FitParams.B0);
+        b0.push_back(track._track.FitParams.B1);	
         }
         
         if(xprimes.size() >0){
@@ -803,14 +810,14 @@ namespace mu2e
        
         //Get track coordinate system and fit parameters
         for(auto const& track: *Tracks){
-        xprimes.push_back(track._track.getXPrime());
-        yprimes.push_back(track._track.getYPrime());
-        zprimes.push_back(track._track.getZPrime());
-        initial_track_direction.push_back(track._track.get_initial_track_direction() );
-        a1.push_back(track._track.get_track_parameters()[1]);
-        a0.push_back(track._track.get_track_parameters()[0]);
-        b1.push_back(track._track.get_track_parameters()[3]);
-        b0.push_back(track._track.get_track_parameters()[2]);	
+        xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
+        yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
+        zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
+        initial_track_direction.push_back(track._track.GetInitTrackDirection() );
+        a1.push_back(track._track.FitParams.A0);
+        a0.push_back(track._track.FitParams.A1);
+        b1.push_back(track._track.FitParams.B0);
+        b0.push_back(track._track.FitParams.B1);	
         }
          
         if(xprimes.size() >0){
@@ -983,11 +990,11 @@ _evt = event.id().event();  // add event id
           }
           //loop over tracks:
           for(auto const& track: *Tracks){
-             a1.push_back(track._track.get_track_parameters()[1]);
-             a0.push_back(track._track.get_track_parameters()[0]);
+             a1.push_back(track._track.FitParams.A1);
+             a0.push_back(track._track.FitParams.A0);
              
-	     b1.push_back(track._track.get_track_parameters()[3]);
-             b1.push_back(track._track.get_track_parameters()[2]);
+	     b1.push_back(track._track.FitParams.B1);
+             b0.push_back(track._track.FitParams.B0);
           }
         
         //If Diag:

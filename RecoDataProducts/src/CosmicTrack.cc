@@ -1,24 +1,67 @@
-//S. Middleton, Feb 2019
+//S. Middleton, Aug 2019
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include <vector>
 
 using namespace std;
-namespace mu2e{
 
+TrackParams::TrackParams(){
+	A0 = 0.;
+	A1 = 0.;
+	B0 = 0.;
+	B1 = 0.;
+	T0 = 0.;
+} 
+
+TrackCov::TrackCov(){
+	sigA0 = 0.;
+  	sigA1 = 0.;
+  	sigB0 = 0.;
+  	sigB1 = 0.;
+} 
+
+TrackAxes::TrackAxes(){
+	_XDoublePrime.SetXYZ(0,0,0);
+	_YDoublePrime.SetXYZ(0,0,0);
+	_ZPrime.SetXYZ(0,0,0);
+
+}
+TrackEquation::TrackEquation(){
+	Pos.SetXYZ(0,0,0);
+	Dir.SetXYZ(0,0,0);
+} 
+
+TrackSeedDiag::TrackSeedDiag(){
+   	FinalChiX = 0;
+   	FinalChiY = 0;
+   	FinalChiTot = 0;
+   	
+   	InitialChiX = 0;
+   	InitialChiY = 0;
+   	InitialChiTot = 0;
+   	
+	}
+TrackDriftDiag::TrackDriftDiag(){
+   	FinalChiX = 0;
+   	FinalChiY = 0;
+   	FinalChiTot = 0;
+
+	}
+namespace mu2e{
 
 	CosmicTrack::CosmicTrack() {
           	_Nhits = 0;
     		
-    		_inita0=0.;
-		_inita1=0.;
-		_initb0=0.;
-		_initb1=0.;
+    		InitParams.A0 = 0;
+          	InitParams.A1 = 0;
+          	InitParams.B0 = 0;
+          	InitParams.B1 = 0;
+          	InitParams.T0 = 0;
+          	
 		_Sagitta = 0.;
 		
-    		XYZVec _track_equation(0,0,0);//r(t) expression
-    		XYZVec _track_direction(0,0,0);//the "gradient" term
-    		XYZVec _track_position(0,0,0);//the "starting point" in fit line
-		XYZVec _initial_track_direction(0,0,0);
+    		//Pos.SetXYZ(0,0,0);
+	        Direction.SetXYZ(0,0,0);
+    		
    		
    			
 	 }
@@ -31,30 +74,37 @@ namespace mu2e{
 	CosmicTrack::~CosmicTrack() {}
 
 	void CosmicTrack::clear_parameters() {
-	  
-          _track_parameters.erase(_track_parameters.begin(), _track_parameters.end());
-          
-	}
-
-	void CosmicTrack::clear_all() {
-	  
-	  _finalhit_errorsTotal.erase(_finalhit_errorsTotal.begin(),_finalhit_errorsTotal.end());
-	  
-	  _finalfit_residualsX.erase(_finalfit_residualsX.begin(),_finalfit_residualsX.end());
-	  _finalfit_residual_errorsX.erase(_finalfit_residual_errorsX.begin(),_finalfit_residual_errorsX.end());
-	  
-	  _finalfit_residualsY.erase(_finalfit_residualsY.begin(),_finalfit_residualsY.end());
-	  _finalfit_residual_errorsY.erase(_finalfit_residual_errorsY.begin(),_finalfit_residual_errorsY.end());
-	  
-	  _finalfit_pullsX.erase(_finalfit_pullsX.begin(),_finalfit_pullsX.end());
-	  _finalfit_pullsY.erase(_finalfit_pullsY.begin(),_finalfit_pullsY.end());
-	  
-	  _cov.erase(_cov.begin(),_cov.end());
-	 
+          FitParams.A0 = 0;
+          FitParams.A1 = 0;
+          FitParams.B0 = 0;
+          FitParams.B1 = 0;
+          FitParams.T0 = 0;
 	}
 	
-     
+	
+	void CosmicTrack::clear_diag(){
+          Diag.FinalErrX.erase(Diag.FinalErrX.begin(),Diag.FinalErrX.end());
+	  Diag.FinalErrY.erase(Diag.FinalErrY.begin(),Diag.FinalErrY.end());
+	  Diag.FinalResidualsX.erase(Diag.FinalResidualsX.begin(),Diag.FinalResidualsX.end());
+	  Diag.FinalResidualsY.erase(Diag.FinalResidualsY.begin(),Diag.FinalResidualsY.end());
 
+	}
+
+	void CosmicTrack::clear_errors() {  
+	 
+	  Diag.FinalErrX.erase(Diag.FinalErrX.begin(),Diag.FinalErrX.end());
+	  Diag.FinalErrY.erase(Diag.FinalErrY.begin(),Diag.FinalErrY.end());
+	  		  
+	}
+	void CosmicTrack::clear_cov() {  
+	 
+	  FitParams.Covarience.sigA0 = 0.;
+	  FitParams.Covarience.sigA1 = 0.;
+	  FitParams.Covarience.sigB0 = 0.;
+	  FitParams.Covarience.sigB1 = 0.;		  
+	}
+	
+	
 	
 }
 

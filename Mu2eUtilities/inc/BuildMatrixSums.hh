@@ -17,7 +17,7 @@ public:
 
   void   clear();
   void   init(const BuildMatrixSums& S);
-  void addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime,XYZVec ZPrime, double errX, double errY);
+  void addPoint(XYZVec point_i, XYZVec XPrime, XYZVec YPrime,XYZVec ZPrime, double errX, double errY);
  
 
   double Get2DParameter(int i, TMatrixD Alpha);

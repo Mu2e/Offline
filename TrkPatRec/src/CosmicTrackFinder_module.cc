@@ -144,7 +144,7 @@ namespace mu2e{
    
     _diag        (pset.get<int>("diagLevel",1)),
     _mcdiag      (pset.get<int>("mcdiagLevel",1)),
-    _debug       (pset.get<int>("debugLevel",0)),
+    _debug       (pset.get<int>("debugLevel",3)),
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
     _minnsh      (pset.get<int>("minNStrawHits",2)),
     _minnch      (pset.get<int>("minNComboHits",4)),
@@ -258,10 +258,9 @@ namespace mu2e{
  
       if(_mcdiag > 0 && _stResult._chHitsToProcess.size() > 0){
            XYZVec first, last;       
-             
+
 	     for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) {  
-	     
-	        
+	      
            	std::vector<StrawDigiIndex> shids;  
            	std::vector<StrawHitIndex> shitids;          	
            	ComboHit const& chit = _stResult._chHitsToProcess.at(ich);
@@ -272,7 +271,7 @@ namespace mu2e{
            	
                 _stResult._chHitsToProcess.fillStrawDigiIndices(event,ich,shids);    
                 _stResult._chHitsToProcess.fillStrawHitIndices(event, ich,shitids);
-                       
+                      
                 _stResult._tseed._strawHitIdxs.push_back(ich);
                 
                 StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);              
@@ -307,14 +306,15 @@ namespace mu2e{
      _tfit.BeginFit(title.str().c_str(), _stResult, _data);
 
      
-      if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackConverged)  ) { 
+      if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackConverged) && _stResult._tseed._track.converged == true ) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
-	      fillGoodHits(_stResult);
+	      fillGoodHits(_stResult);//add
 	      CosmicTrackFinderData tmpResult(_stResult);
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
               
-		      //fillGoodHits(tmpResult);
+		      fillGoodHits(tmpResult);
+		      //_tfit.DriftFit(tmpResult);
 		      track_seed_vec.push_back(tmpResult._tseed);
 		      //if (_diag > 1) {
 	      		//fillPluginDiag(tmpResult);
@@ -328,7 +328,7 @@ namespace mu2e{
     
     }
   event.put(std::move(seed_col));    
-  if (_diag > 0 ) _hmanager->fillHistograms(&_data);
+   _hmanager->fillHistograms(&_data);//if (_diag > 0 )
   
   }//end produce
  
@@ -391,31 +391,31 @@ namespace mu2e{
     TrackData._nFiltComboHits = nFiltComboHits;  //ComboHit counter
     TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
   }
-  /*
+  
   void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
  
     int nhits          = trackData._tseed._thits.size();
-    int loc = _data.nseeds;
+    //int loc = _data.nseeds;
    
-    _data.ntclhits[loc] = trackData._timeCluster->hits().size();
-    _data.nhits[loc] = nhits;
-    _data.nShFit[loc] = trackData._diag.nShFit;
-    _data.nChFit[loc] = trackData._diag.nChFit;
+    _data.ntclhits = trackData._timeCluster->hits().size();
+    _data.nhits = nhits;
+    _data.nShFit = trackData._diag.nShFit;
+    _data.nChFit = trackData._diag.nChFit;
     //_data.niters[loc] = trackData._diag.niters;
     for (int i=0; i<trackData._diag.nChFit; ++i) {
         
-	_data.Final_hit_residualX[loc][i] = trackData._diag.Final_hit_residualX[i];
-	_data.Final_hit_residualY[loc][i] = trackData._diag.Final_hit_residualY[i];
-	_data.Initial_hit_residualX[loc][i] = trackData._diag.Initial_hit_residualX[i];
-	_data.Initial_hit_residualY[loc][i] = trackData._diag.Initial_hit_residualY[i];
-	_data.Final_hit_pullX[loc][i] = trackData._diag.Final_hit_residualX[i];
-	_data.Final_hit_pullY[loc][i] = trackData._diag.Final_hit_residualY[i];
-	_data.Initial_hit_pullX[loc][i] = trackData._diag.Initial_hit_residualX[i];
-	_data.Initial_hit_pullY[loc][i] = trackData._diag.Initial_hit_residualY[i];
+	_data.Final_hit_residualX[i] = trackData._diag.Final_hit_residualX[i];
+	_data.Final_hit_residualY[i] = trackData._diag.Final_hit_residualY[i];
+	_data.Initial_hit_residualX[i] = trackData._diag.Initial_hit_residualX[i];
+	_data.Initial_hit_residualY[i] = trackData._diag.Initial_hit_residualY[i];
+	_data.Final_hit_pullX[i] = trackData._diag.Final_hit_residualX[i];
+	_data.Final_hit_pullY[i] = trackData._diag.Final_hit_residualY[i];
+	_data.Initial_hit_pullX[i] = trackData._diag.Initial_hit_residualX[i];
+	_data.Initial_hit_pullY[i] = trackData._diag.Initial_hit_residualY[i];
     }
   
 }
-*/
+
 int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol){
     int   nhits         = TCluster.nhits();
     int   ngoodhits(0);

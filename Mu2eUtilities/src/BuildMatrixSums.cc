@@ -50,7 +50,7 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
   chi2 = S.chi2;
 }
 
-void BuildMatrixSums::addPoint(int i, XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
+void BuildMatrixSums::addPoint( XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
 	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));//hit in X"Y"Z'
 	
         if(errX == 0) return;

@@ -18,47 +18,7 @@ namespace mu2e {
   class CosmicTrackFit;
 
   namespace CosmicTrackFinderTypes{
-    /*
-    struct NewData_t {
-      const art::Event*               event;
-      fhicl::ParameterSet*            timeOffsets; //what are these?
-      enum {kMaxSeeds = 1000, kMaxNHits = 50 };
-      int     nseeds ; //Number of Seeds
-      int     npasses ; //Number passing all cuts in finder
-      int     nTimePeaks;               // number of time clusters
-      
-      int     ntclhits; //number of time cluster hits for each seed
-      size_t  nhits    ; //number of hits for each seed
-      
-      double  Final_chi2d_track; //chi-squared of fit for each tracl seed
-      double  Final_chi2dX_track; //chi-squared of fit for each tracl seed
-      double  Final_chi2dY_track; //chi-squared of fit for each tracl seed
-      double  Initial_chi2dX_track; //chi-squared of fit for each tracl seed
-      double  Initial_chi2dY_track; //chi-squared of fit for each tracl seed
-      double  Initial_chi2d_track; //chi-squared of fit for each tracl seed
-      int     niters    ; //Number of iterations on seed
-      int     nShFit ; //Number ofstraw hits in the fit
-      int     nChFit ; //Number of ComboHits Fit
-      int     good     ; //Number which are "good"
-      //for chi2 fitting:
-      std::vector<double>  Final_hit_residualX;
-      std::vector<double>  Final_hit_errorX ;
-      std::vector<double>  Final_hit_residualY;
-      std::vector<double>  Final_hit_errorY ;
-      std::vector<double>  Final_hit_pullX;
-      std::vector<double>  Final_hit_pullY;
-      //for chi2 fitting:
-      std::vector<double>  Initial_hit_residualX;
-      std::vector<double>  Initial_hit_errorX ;
-      std::vector<double>  Initial_hit_residualY;
-      std::vector<double>  Initial_hit_errorY ;
-      std::vector<double>  Initial_hit_pullX;
-      std::vector<double>  Initial_hit_pullY;
-      //int     nsh    ;
-      
-      int maxSeeds() { return kMaxSeeds; }
-    };
-    */
+    
     struct Data_t {
       const art::Run*               run;
       const art::Event*               event;
@@ -77,6 +37,12 @@ namespace mu2e {
       double  Initial_chi2dX_track; //chi-squared of fit for each tracl seed
       double  Initial_chi2dY_track; //chi-squared of fit for each tracl seed
       double  Initial_chi2d_track; //chi-squared of fit for each tracl seed
+      double  Change_chi2d_track; //total change
+      double  Change_chi2d_trackX; 
+      double  Change_chi2d_trackY; 
+      double  True_chi2d_track;
+      
+      
       int     niters    ; //Number of iterations on seed
       int     nShFit ; //Number ofstraw hits in the fit
       int     nChFit ; //Number of ComboHits Fit
@@ -95,6 +61,10 @@ namespace mu2e {
       double  Initial_hit_errorY [kMaxNHits];
       double  Initial_hit_pullX[kMaxNHits];
       double  Initial_hit_pullY[kMaxNHits];
+      //Errors:
+      
+      double    Final_ErrorsTot[kMaxNHits];
+      double    Initial_ErrorsTot[kMaxNHits];
       //int     nsh    ;
       
       int maxSeeds() { return kMaxSeeds; }

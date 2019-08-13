@@ -139,7 +139,7 @@ namespace mu2e {
   
   //D2T for sims
   double StrawDrift::D2T(double distance, double phi) const {
-    std::cout<<"In Straw Drift D2T "<<std::endl;
+    
     float phiSliceWidth = (TMath::Pi()/2.0)/float(_phiBins-1);
     //For the purposes of lorentz corrections, the phi values can be contracted to between 0-90
     float reducedPhi = ConstrainAngle(phi);

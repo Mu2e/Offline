@@ -62,11 +62,12 @@ namespace mu2e
                 XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
                 //Step 1: Begin Fit- initializes the fit routine:
                 void BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
-                //Step 2: RunFitChi2-holds the functions to find initial line, update, refine and add in drift
+                //Step 2: RunFitChi2-holds the functions to find initial line, update, refine 
                 void RunFitChi2(const char* title, CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
+                std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY);
 		//Step 3: Fit All - finds the chi-squared anf line information when all hits in track taken into account. This will be the initial chi-squared value.
 		void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
-		//Step 4: Do the fitting
+		//Step 4: Do the Chi2 fitting
 		void FitXYZ(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
 		
 		//Step 5: validation of algorithm -  some functions to help
@@ -81,7 +82,9 @@ namespace mu2e
 		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
 		void FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool is_prime);
                 bool goodTrack(CosmicTrack* track);
-		void DriftFit(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack);
+                
+                //Step 6: Drift fit - calls to logL minuit code utility
+		void DriftFit(CosmicTrackFinderData& trackData);
 		
                 
                 const Tracker*            _tracker;
@@ -108,7 +111,7 @@ namespace mu2e
 		float _maxDOCA; //max allowed DOCA to allow hit into fit
     		float _maxchi2; //maximum allowed chi2
 		float _max_chi2_change; // once we are lower than this we can say its converged
-    
+    		float _max_position_deviation;//maximum hcange from initial choice of a0 and b0 (in mm)
   };//end Fit class
 
 }

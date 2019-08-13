@@ -68,6 +68,15 @@ namespace mu2e {
       float    Initial_hit_pullX[kMaxResidIndex];
       float    Initial_hit_pullY[kMaxResidIndex];
       
+      float    Final_ErrorsX[kMaxResidIndex];
+      float    Final_ErrorsY[kMaxResidIndex];
+      
+      float    Initial_ErrorsX[kMaxResidIndex];
+      float    Initial_ErrorsY[kMaxResidIndex];
+      
+      float    Final_ErrorsTot[kMaxResidIndex];
+      float    Initial_ErrorsTot[kMaxResidIndex];
+      
       int      CosmicTrackFitCounter;
       float    Final_chi2d_track;
       float    Final_chi2dX_track;
@@ -75,6 +84,10 @@ namespace mu2e {
       float    Initial_chi2dX_track;
       float    Initial_chi2dY_track;
       float    Initial_chi2d_track;
+      float    Change_chi2dX_track;
+      float    Change_chi2dY_track;
+      float    Change_chi2d_track;
+      float    True_chi2d_track;
       
       unsigned      niters;    
     };
@@ -96,7 +109,7 @@ namespace mu2e {
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;
     const StrawDigiMCCollection*      _mccol;
-    ::BuildMatrixSums         _S;
+    ::BuildMatrixSums         _S;//USED?
 
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
@@ -105,8 +118,8 @@ namespace mu2e {
 
     std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;//array of faces, length of number of faces
     ComboHitCollection                                _chHitsToProcess;
-    std::vector<XYWVec>                                  _chHitsWPos;
-    std::vector<StrawDigiMC>				_mcDigisToProcess;
+    std::vector<XYWVec>                               _chHitsWPos;
+    std::vector<StrawDigiMC>		              _mcDigisToProcess;
 //-----------------------------------------------------------------------------
 // functions
 //-----------------------------------------------------------------------------

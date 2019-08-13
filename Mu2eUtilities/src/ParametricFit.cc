@@ -71,7 +71,6 @@ namespace ParametricFit{
   	return outputPoint;
 	}
 
-
         //this utility is additonal to the PCA ones which exist-it may not be useful in the end!
 	bool LineToLineCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint, 
   XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
@@ -123,7 +122,6 @@ int GetDOCASign(XYZVec track_dir, XYZVec point){
 
 }
 
-
 /*-----------------Get X' and Y' and hit errors------------//
 The initial track is found and its direction. z' becomes the parametric variable and the fit factorizes into 2 2-D fits, with intercept and slopes (A0, A1 and B0, B1) along x' and y' respectively.  You have to project the hits and their error ellipses onto x' and y'. The following 2 equations do this:
 
@@ -150,6 +148,17 @@ std::vector<XYZVec>GetAxes(XYZVec TrackDirection){
 	AxesList.push_back(TrackDirection);
 	return AxesList;
 }
+
+TrackAxes GetTrackAxes(XYZVec TrackDirection){
+	
+        XYZVec XPrime = ParametricFit::GetXPrime(TrackDirection); 
+        XYZVec YPrime = ParametricFit::GetYPrime(XPrime, TrackDirection); 
+        XYZVec XDoublePrime = ParametricFit::GetXDoublePrime(XPrime, YPrime, TrackDirection);
+        XYZVec YDoublePrime = ParametricFit::GetYDoublePrime(XPrime, YPrime, TrackDirection); 
+	TrackAxes axes(XDoublePrime,YDoublePrime,TrackDirection);
+	return axes;
+	
+}
 XYZVec GetXPrime(XYZVec track_dir){
 	double Ax= abs(track_dir.x());
 	double Ay= abs(track_dir.y());
@@ -167,10 +176,12 @@ XYZVec GetYPrime(XYZVec OrthX, XYZVec track_dir){
 
 }
 
-XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){	
+XYZVec GetXDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
+	
 	double theta = atan2(XPrime.y(),YPrime.y()); //enforces that X''Dot Y = 0
 	XYZVec XDoublePrime = cos(theta)*(XPrime) -1*sin(theta)*(YPrime);
 	return XDoublePrime.Unit();
+	
 }
 
 XYZVec GetYDoublePrime(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
@@ -185,6 +196,13 @@ void TestConditions(XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime){
 	std::cout<<YPrime.Dot(XPrime) <<"y'x'"<<std::endl;
 	std::cout<<(YPrime.Dot(ZPrime))<<"y'z'"<<std::endl;
 	
+}
+
+XYZVec ConvertToPrimePoint(ComboHit* chit, TrackAxes axes){
+        XYZVec point(chit->pos().x(),chit->pos().y(),chit->pos().z());
+	XYZVec point_prime(point.Dot(axes._XDoublePrime), point.Dot(axes._YDoublePrime), point.Dot(axes._ZPrime));
+      	return point_prime;
+      	        		
 }
 
 /*----------------Initial Error Estimate------------------//
@@ -260,12 +278,14 @@ double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVec prime_po
 	
 
 double GetResidualX(double A0, double A1 ,XYZVec point_prime){
-	double resid_x = A0 + A1*(point_prime.z())-point_prime.x();	
+        
+	double resid_x = point_prime.x() - A0 - A1*(point_prime.z());	
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));	
 }
 
 double GetResidualY( double B0, double B1,  XYZVec point_prime){
-	double resid_y = B0 +(B1*point_prime.z())-point_prime.y();
+	
+	double resid_y = point_prime.y() - B0 -(B1*point_prime.z());
 	return resid_y;
 }
 

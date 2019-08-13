@@ -56,12 +56,7 @@ namespace LiklihoodFunctions{
       		return phi;	
         }
         
-        double GetDOCA(TrkPoca hitpoca) {
-        	double doca = hitpoca.doca();
-      		std::cout<<"doca "<<doca<<std::endl;
-      		return doca;
-	}
-	
+        
 	TrkPoca GetPOCA(Straw const&  straw, std::vector<XYZVec> TrackAxes, XYZVec track_position, XYZVec track_direction) {
       		const CLHEP::Hep3Vector& spos = straw.getMidPoint();
       		const CLHEP::Hep3Vector& sdir = straw.getDirection();
@@ -86,38 +81,32 @@ namespace LiklihoodFunctions{
 	}
         */
 	EndResult DoFit(CosmicTrackSeed trackseed , StrawResponse srep){
-	std::vector<double> times;
-	std::vector<XYZVec> positions;
 	
-	for(auto const& hit : trackseed.hits()){
-	  times.push_back(hit.time());
-	  XYZVec pos(hit.pos().x(),hit.pos().y(), hit.pos().z());
-	  positions.push_back(pos);//FIX 
-	  std::cout<<"hit time in"<<hit.time()<<std::endl;
-	 }
-	  EndResult endresult;//best, best_errors
-	  //double voltage = 1425.;
-	  std::vector<double> seed(5,0);
-	  std::vector<double> errors(5,0);
-	  seed[0] = trackseed._track.get_parameter(0);//10;a0
-	  seed[1] = trackseed._track.get_parameter(1);//1;a1
-	  seed[2] = trackseed._track.get_parameter(2);//b0
-	  seed[3] = trackseed._track.get_parameter(3);//b1
-	  seed[4] = trackseed._t0.t0(); //t0
-	  errors[0] = trackseed._track.get_cov()[0];
-	  errors[1] = trackseed._track.get_cov()[1];
-	  errors[2] = trackseed._track.get_cov()[2];
-	  errors[3] = trackseed._track.get_cov()[3];
-	  errors[4] = trackseed._t0.t0Err();
 	  
+	  std::vector<double> errors(5,0);
+	  std::vector<double> seed(5,0);
+	  EndResult endresult;//best, best_errors
+	 
+	  seed[0] = trackseed._track.FitParams.A0;//10;a0
+	  seed[1] = trackseed._track.FitParams.A1;//1;a1
+	  seed[2] = trackseed._track.FitParams.B0;//b0
+	  seed[3] = trackseed._track.FitParams.B1;//b1
+	  seed[4] = trackseed._t0.t0(); //t0
+	  errors[0] = trackseed._track.FitParams.Covarience.sigA0;
+	  errors[1] = trackseed._track.FitParams.Covarience.sigA1;
+	  errors[2] = trackseed._track.FitParams.Covarience.sigB0;
+	  errors[3] =trackseed._track.FitParams.Covarience.sigB1;
+	  errors[4] = trackseed._t0.t0Err();
+	  std::cout <<"Seeds : "<<seed[0]<<"  "<<seed[1]<<"  " <<seed[2]<<" "<<seed[3]<<std::endl;
+	  std::cout <<"Errors : "<<errors[0]<<"  "<<errors[1]<<"  " <<errors[2]<<" "<<errors[3]<<std::endl;
 	  std::vector<double> constraint_means(5,0);
 	  std::vector<double> constraints(5,0);
-	  std::cout <<"Seeds : "<<seed[0]<<"  "<<seed[1]<<"  " <<seed[2]<<" "<<seed[3]<<std::endl;
-	  //PDFFit fit(times,positions, errorsX, errorsY, constraint_means,constraints,1,voltage);
-          TimePDFFit fit(times,positions, trackseed._straws, srep, constraint_means,constraints,1);
+	 
+	 
+          TimePDFFit fit(trackseed.hits(), trackseed._straws, srep, constraint_means,constraints,1);
+          //PDFFit fit(trackseed.hits(), trackseed._straws, srep, constraint_means,constraints,1);
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
 	  ROOT::Minuit2::MnUserParameters params(seed,errors);
-	  std::cout<<"Starting Minuit "<<std::endl;
 	  ROOT::Minuit2::MnMigrad migrad(fit,params,mnStrategy);
 	  
 	  migrad.SetLimits((unsigned) 0, -2000,2000);
@@ -125,18 +114,16 @@ namespace LiklihoodFunctions{
 	  migrad.SetLimits((unsigned) 2, -2000,2000);
 	  migrad.SetLimits((unsigned) 3,-1,1);
 	  migrad.Fix((unsigned) 4); 
+	  //int maxfcn = 10;
+	  //double tolerance = 1.;
+	  ROOT::Minuit2::FunctionMinimum min = migrad();//maxfcn, tolerance);
 	  
-          std::cout<<"Function min "<<std::endl;
-	  ROOT::Minuit2::FunctionMinimum min = migrad();
-	  std::cout<<"User params "<<std::endl;
 	  ROOT::Minuit2::MnUserParameters results = min.UserParameters();
-	  std::cout<<"Getting minval "<<std::endl;
+	  
 	  double minval = min.Fval();
-	  //define best results as the outcome params from minuit
-	  std::cout<<"Best Fit "<<std::endl;
+	
 	  endresult.bestfit = results.Params();
 	  endresult.bestfiterrors = results.Errors();
-	  std::cout<<" Printing Out "<<std::endl;
 	  
 	  endresult.names.push_back("a0");
 	  endresult.names.push_back("a1");
@@ -145,9 +132,14 @@ namespace LiklihoodFunctions{
 	  endresult.names.push_back("t0");
 	  //add best fit results to approprtiate name element:
 	  std::cout << "NLL: " << minval << std::endl;
+	  cout<<"Is Valid: "<<min.IsValid()<<"N calls "<<min.NFcn()<<endl;
 	  for (size_t i=0;i<endresult.names.size();i++){
 	    std::cout << i << endresult.names[i] << " : " << endresult.bestfit[i] << " +- " << endresult.bestfiterrors[i] << std::endl;
 	  }
+	 trackseed._track.MinuitFitParams.A0 = endresult.bestfit[0];
+	 trackseed._track.MinuitFitParams.A1 = endresult.bestfit[1];
+	 trackseed._track.MinuitFitParams.B0 = endresult.bestfit[2];
+	 trackseed._track.MinuitFitParams.B1 = endresult.bestfit[3];
 	 return endresult;
  
   }
