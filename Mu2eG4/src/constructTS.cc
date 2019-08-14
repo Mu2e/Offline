@@ -134,11 +134,11 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
     if ( verbosityLevel ) {
-      cout << __func__ << " Upstream TS1 endwall at: " << pos << endl;
+      G4cout << __func__ << " Upstream TS1 endwall at: " << pos << G4endl;
     }
 
     // Build TS1
@@ -173,16 +173,16 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
     
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() <<","  
-           << strsec->getGlobal().z() + strsec->getHalfLength() << "]" << endl;
-      cout << __func__ << " TS1(in)  rotation      : " << strsec->getRotation() << endl;
-    }
+      G4cout << __func__ << " TS1(in)  OffsetInMu2e  : " << strsec->getGlobal()   << G4endl;
+      G4cout << __func__ << " TS1(in)  Extent        :[ " << strsec->getGlobal().z() - strsec->getHalfLength() <<","  
+           << strsec->getGlobal().z() + strsec->getHalfLength() << "]" << G4endl;
+      G4cout << __func__ << " TS1(in)  rotation      : " << *(strsec->getRotation()) << G4endl;
+     }
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT );
     tssName =  "TS1OuterCryoShell";
@@ -201,13 +201,13 @@ namespace mu2e {
               );
     
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS1(out) OffsetInMu2e  : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS1(out) rotation      : " << strsec->getRotation() << endl;
+      G4cout << __func__ << " TS1(out) OffsetInMu2e  : " << strsec->getGlobal()   << G4endl;
+      G4cout << __func__ << " TS1(out) rotation      : " << *(strsec->getRotation()) << G4endl;
     }
     
     // Build downstream partial end wall of TS1
@@ -230,14 +230,14 @@ namespace mu2e {
               );
               
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     if ( verbosityLevel ) {
-      cout << __func__ << " Downstream TS1 endwall at: " << pos2 << endl;
-      cout << __func__ << " Downstream TS1 extent   [: " << pos2.z()-ts->endWallU2_halfLength() 
-           << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << endl;
+      G4cout << __func__ << " Downstream TS1 endwall at: " << pos2 << G4endl;
+      G4cout << __func__ << " Downstream TS1 extent   [: " << pos2.z()-ts->endWallU2_halfLength() 
+           << "," << pos2.z() +ts->endWallU2_halfLength() << "]" << G4endl;
     }
 
     // Put in the insulating vacuum, which will serve as the mother volume
@@ -304,9 +304,9 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS2,TransportSolenoid::TSRadialPart::OUT );
     std::array<double,5> ts2Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
@@ -325,9 +325,9 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
 
     // Put in the insulating vacuum, which will serve as the mother volume
@@ -377,9 +377,9 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS3,TransportSolenoid::TSRadialPart::OUT );
 
@@ -399,13 +399,13 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS3  rotation     : " << strsec->getRotation() << endl;
+      G4cout << __func__ << " TS3  OffsetInMu2e : " << strsec->getGlobal()   << G4endl;
+      G4cout << __func__ << " TS3  rotation     : " << *(strsec->getRotation()) << G4endl;
     }
 
     // Put in the insulating vacuum, which will serve as the mother volume
@@ -470,9 +470,9 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     torsec = ts->getTSCryo<TorusSection>(TransportSolenoid::TSRegion::TS4,TransportSolenoid::TSRadialPart::OUT );
     std::array<double,5> ts4Cryo2Params { { torsec->rIn(), torsec->rOut(), torsec->torusRadius(), torsec->phiStart(), torsec->deltaPhi() } };
@@ -490,9 +490,9 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     // Put in the insulating vacuum, which will serve as the mother volume
     // for the coils and coil assemblies (CAs).
@@ -546,9 +546,9 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     strsec = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS5,TransportSolenoid::TSRadialPart::OUT );
     tssName = "TS5OuterCryoShell";
@@ -567,13 +567,13 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
    
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS5  OffsetInMu2e : " << strsec->getGlobal()   << endl;
-      cout << __func__ << " TS5  rotation     : " << strsec->getRotation() << endl;
+      G4cout << __func__ << " TS5  OffsetInMu2e : " << strsec->getGlobal()   << G4endl;
+      G4cout << __func__ << " TS5  rotation     : " << *(strsec->getRotation()) << G4endl;
     }
 
 
@@ -690,47 +690,47 @@ namespace mu2e {
     // Will model for now as solid tubes
 
     int pbarAbsTS3Version = config.getInt("pbar.version",1);
-    if ( pbarAbsTS3Version > 1 ) {
+      if ( pbarAbsTS3Version > 1 ) {
 
-      std::ostringstream PabsSupOutName;
-      PabsSupOutName << "PabsTS3SupOut";
-      CLHEP::HepRotation* pasubRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-      pasubRotat->rotateY(90.0*CLHEP::degree);
+	std::ostringstream PabsSupOutName;
+	PabsSupOutName << "PabsTS3SupOut";
+	CLHEP::HepRotation* pasubRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	pasubRotat->rotateY(90.0*CLHEP::degree);
 
-      nestTubs( PabsSupOutName.str(),
-		TubsParams( rirs, rors, trs ),
-		ringMaterial,
-		pasubRotat, 
-		CLHEP::Hep3Vector(0,0,0)-_hallOriginInMu2e,
-		parent,
-		0,
-		G4Color::Blue(),
-		"TSCryo"
-		);
+	nestTubs( PabsSupOutName.str(),
+		  TubsParams( rirs, rors, trs ),
+		  ringMaterial,
+		  pasubRotat, 
+		  CLHEP::Hep3Vector(0,0,0)-_hallOriginInMu2e,
+		  parent,
+		  0,
+		  G4Color::Blue(),
+		  "TSCryo"
+		  );
 
-      // Now do the next level in for the TS3 pabs window support - in cryo
-      // (acts as endwall for TSu and TSd cryo sections.
-      double rinner = config.getDouble("pbar.support.midRin")*CLHEP::mm;
-      double router = config.getDouble("pbar.support.midRout")*CLHEP::mm;
-      double halflen = config.getDouble("pbar.support.midThickness")*CLHEP::mm/2.0;
+	// Now do the next level in for the TS3 pabs window support - in cryo
+	// (acts as endwall for TSu and TSd cryo sections.
+	double rinner = config.getDouble("pbar.support.midRin")*CLHEP::mm;
+	double router = config.getDouble("pbar.support.midRout")*CLHEP::mm;
+	double halflen = config.getDouble("pbar.support.midThickness")*CLHEP::mm/2.0;
 
-      G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
-      VolumeInfo useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
+	G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
+	VolumeInfo useAsParent = _helper->locateVolInfo( "TS3CryoInsVac" );
 
-      std::ostringstream PabsSupMidName;
-      PabsSupMidName << "PabsTS3MidOut";
-      nestTubs( PabsSupMidName.str(),
-		TubsParams( rinner, router, halflen ),
-		ringMaterial,
-		0, 
-		CLHEP::Hep3Vector(0,0,0)- useAsParent.centerInMu2e(),
-		useAsParent,
-		0,
-		G4Color::Blue(),
-		"TSCryo"
-		);
+	std::ostringstream PabsSupMidName;
+	PabsSupMidName << "PabsTS3MidOut";
+	nestTubs( PabsSupMidName.str(),
+		  TubsParams( rinner, router, halflen ),
+		  ringMaterial,
+		  0, 
+		  CLHEP::Hep3Vector(0,0,0)- useAsParent.centerInMu2e(),
+		  useAsParent,
+		  0,
+		  G4Color::Blue(),
+		  "TSCryo"
+		  );
 
-    } //end of " if pbarAbsTS3Version..."
+      } //end of " if pbarAbsTS3Version..."
 
 
 
@@ -755,12 +755,12 @@ namespace mu2e {
               );
 
     verbosityLevel &&
-      std::cout << __func__ << " " << tssName << " Mass in kg: " 
+      G4cout << __func__ << " " << tssName << " Mass in kg: " 
                 << _helper->locateVolInfo(tssName).logical->GetMass()/CLHEP::kg 
-                << std::endl;
+                << G4endl;
 
     if ( verbosityLevel ) {
-      cout << __func__ << " Downstream TS5 endwall at: " << pos3 << endl;
+      G4cout << __func__ << " Downstream TS5 endwall at: " << pos3 << G4endl;
     }
   } 
 
@@ -788,7 +788,7 @@ namespace mu2e {
 
       auto its = static_cast<TransportSolenoid::TSCARegion>(iTS);
       std::string const & caName  = its.name()+"CA";
-      verbosityLevel && std::cout << __func__ << " constructing " << caName << std::endl;
+      verbosityLevel && G4cout << __func__ << " constructing " << caName << G4endl;
 
       VolumeInfo useAsParent;
       G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
@@ -879,9 +879,9 @@ namespace mu2e {
       }
 
       verbosityLevel 
-        && std::cout << __func__ << " " << caName << " Mass in kg: " 
+        && G4cout << __func__ << " " << caName << " Mass in kg: " 
                      << _helper->locateVolInfo(caName).logical->GetMass()/CLHEP::kg 
-                     << std::endl;
+                     << G4endl;
     }
 
   }
@@ -956,9 +956,9 @@ namespace mu2e {
 		    );
 	}
         if ( verbosityLevel > 0 ) {
-          cout << __func__ << " " << coilname.str() << " placed at: " << coil.getGlobal() << endl;
-          cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/CLHEP::degree << endl;
-          cout << __func__ << "              params: " << coil.rIn() << " , " << coil.rOut() << " , " << 2*coil.halfLength() << endl;
+          G4cout << __func__ << " " << coilname.str() << " placed at: " << coil.getGlobal() << G4endl;
+          G4cout << __func__ << "            rotation: " << -coil.getRotation()->getTheta()/CLHEP::degree << G4endl;
+          G4cout << __func__ << "              params: " << coil.rIn() << " , " << coil.rOut() << " , " << 2*coil.halfLength() << G4endl;
         }
 
       }
@@ -1003,14 +1003,29 @@ namespace mu2e {
     // and a cylinder placed in TS1Vacuum)
 
     // the cone (which can be a tube/cylinder) inside the outer tube/cylinder
-    double coll1Param1[7] = { coll1.rIn1(), coll1.rIn3(),
-                              coll1.rIn2(), coll1.rIn3(),
+    double coll11rout = coll1.rIn3();
+    if(coll1.rOut1() > 0.) //allow the inner liner to have a different outer radius than the next layer's inner radius
+      coll11rout = coll1.rOut1();
+
+    double coll1Param1[7] = { coll1.rIn1(), coll11rout,
+                              coll1.rIn2(), coll11rout,
                               coll1.halfLength() - 2.*vdHalfLength,
                               0.0, CLHEP::twopi };
 
     G4Helper* _helper = &(*art::ServiceHandle<G4Helper>() );
 
-    CLHEP::Hep3Vector parentPos    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
+    CLHEP::Hep3Vector parentPosW    = _helper->locateVolInfo("TS1Vacuum").centerInWorld;
+    CLHEP::Hep3Vector parentPosM    = _helper->locateVolInfo("TS1Vacuum").centerInMu2e();
+
+
+    if ( verbosityLevel > 0 ) {
+      G4cout << __func__ << " Coll1 OffsetInW     : " << coll1.getLocal() + parentPosW << G4endl;
+      G4cout << __func__ << " Coll1 OffsetInMu2e  : " << coll1.getLocal() + parentPosM << G4endl;
+      G4cout << __func__ << " Coll1 Extent        :[ " << coll1.getLocal().z() - coll1.halfLength() + parentPosM.z() <<","
+           << coll1.getLocal().z() + coll1.halfLength()  + parentPosM.z() << "]" << G4endl;
+     }
+
+
 
     nestCons( "Coll11",
               coll1Param1,
@@ -1023,7 +1038,7 @@ namespace mu2e {
 	      "TSColl"
               );
 
-    double tmpRout = ts.innerRadius();
+    double tmpRout = coll1.rOut();
     if ( coll1.rIn4() > 1.0 ) tmpRout = coll1.rIn4();
 
     TubsParams coll1Param2 ( coll1.rIn3(),  tmpRout, coll1.halfLength()-2.*vdHalfLength);
@@ -1039,9 +1054,9 @@ namespace mu2e {
 	      "TSColl"
               );
 
-    if ( coll1.rIn4() > 1.0 && coll1.rOu4() > coll1.rIn4() ) {
+    if ( coll1.rIn4() > 1.0 && coll1.rOut() > coll1.rIn4() ) {
       // Make the sheath
-      TubsParams coll1Param3 ( coll1.rIn4(),  coll1.rOu4(), coll1.halfLength()-2.*vdHalfLength);
+      TubsParams coll1Param3 ( coll1.rIn4(),  coll1.rOut(), coll1.halfLength()-2.*vdHalfLength);
       nestTubs( "Coll13",
 		coll1Param3,
 		findMaterialOrThrow( coll1.material3() ),
@@ -1057,9 +1072,9 @@ namespace mu2e {
 
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS1  OffsetInMu2e    : " << ts1in->getGlobal()       << endl;
-      cout << __func__ << " Coll1 local offset   : " << ts.getColl1().getLocal() << endl;
-      cout << __func__ << " TS1  Rotation        : " << ts1in->getRotation()     << endl;
+      G4cout << __func__ << " TS1  OffsetInMu2e    : " << ts1in->getGlobal()       << G4endl;
+      G4cout << __func__ << " Coll1 local offset   : " << ts.getColl1().getLocal() << G4endl;
+      G4cout << __func__ << " TS1  Rotation        : " << ts1in->getRotation()     << G4endl;
     }
 
     // Place collimator 3
@@ -1078,8 +1093,8 @@ namespace mu2e {
                                            0.0,coll31.holeRadius(),hDz+2.0,
                                            0.0, CLHEP::twopi );
     G4IntersectionSolid* coll3_hole = new G4IntersectionSolid("coll3_hole",
-							      coll3_hole_box,
-							      coll3_hole_circle);
+							   coll3_hole_box,
+							   coll3_hole_circle);
 
 
     // Make collimators themselves. At this moment the collimators
@@ -1093,12 +1108,23 @@ namespace mu2e {
     coll31Info.name = "Coll31";
     coll32Info.name = "Coll32";
 
+    if ( verbosityLevel > 0 ) {
+      CLHEP::Hep3Vector parentPosW    = _helper->locateVolInfo("TS3Vacuum").centerInWorld;
+      CLHEP::Hep3Vector parentPosM    = _helper->locateVolInfo("TS3Vacuum").centerInMu2e();
+      G4cout << __func__ << " Coll31 OffsetInW     : " << coll31.getLocal() + parentPosW << G4endl;
+      G4cout << __func__ << " Coll31 OffsetInMu2e  : " << coll31.getLocal() + parentPosM << G4endl;
+      G4cout << __func__ << " Coll31 Extent        :[ " << coll31.getLocal().z() - coll31.halfLength() + parentPosM.z() <<","
+           << coll31.getLocal().z() + coll31.halfLength()  + parentPosM.z() << "]" << G4endl;
+      G4cout << __func__ << " ts innerRadius      : " << ts.innerRadius() << G4endl;
+      G4cout << __func__ << " coll31 outerRadius  : " << coll31.rOut()    << G4endl;
+     }
+
     G4Tubs* coll31_mother = new G4Tubs("Coll31_mother",
-                                       0, ts.innerRadius(), coll31.halfLength()-2.*vdHalfLength,
+                                       0, coll31.rOut(), coll31.halfLength()-2.*vdHalfLength,
                                        0.0, CLHEP::twopi );
 
     G4Tubs* coll32_mother = new G4Tubs("Coll32_mother",
-                                       0, ts.innerRadius(), coll32.halfLength()-2.*vdHalfLength,
+                                       0, coll32.rOut(), coll32.halfLength()-2.*vdHalfLength,
                                        0.0, CLHEP::twopi );
 
     coll31Info.solid = new G4SubtractionSolid(coll31Info.name,
@@ -1199,9 +1225,9 @@ namespace mu2e {
               0,
               G4Color::Blue(),
 	      "TSColl"
-	      );
+            );
 
-    TubsParams coll32InRecordParam ( 0,  ts.innerRadius(), vdHalfLength );
+    TubsParams coll32InRecordParam ( 0,  coll32.rOut(), vdHalfLength );
     G4ThreeVector coll32InRecordTrans( coll32.getLocal().x(),
                                        coll32.getLocal().y(),
                                        coll32.getLocal().z() - coll32.halfLength() - vdHalfLength );
@@ -1214,21 +1240,21 @@ namespace mu2e {
               0,
               G4Color::Blue(),
 	      "TSColl"
-	      );
+            );
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS3  OffsetInMu2e   : " << ts3in->getGlobal() << endl;
-      cout << __func__ << " Coll31 local offest : " << coll31.getLocal() << endl;
-      cout << __func__ << " Coll32 local offset : " << coll32.getLocal() << endl;
-      cout << __func__ << " TS3  Rotation       : " << ts3in->getRotation() << endl;
+      G4cout << __func__ << " TS3  OffsetInMu2e   : " << ts3in->getGlobal() << G4endl;
+      G4cout << __func__ << " Coll31 local offest : " << coll31.getLocal() << G4endl;
+      G4cout << __func__ << " Coll32 local offset : " << coll32.getLocal() << G4endl;
+      G4cout << __func__ << " TS3  Rotation       : " << ts3in->getRotation() << G4endl;
     }
 
     // Place collimator 5
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << " TS5  OffsetInMu2e  : " << ts5in->getGlobal()   << endl;
-      cout << __func__ << " Coll5 local offset : " << coll51.getLocal()    << endl;
-      cout << __func__ << " TS5  Rotation      : " << ts5in->getRotation() << endl;
+      G4cout << __func__ << " TS5  OffsetInMu2e  : " << ts5in->getGlobal()   << G4endl;
+      G4cout << __func__ << " Coll5 local offset : " << coll51.getLocal()    << G4endl;
+      G4cout << __func__ << " TS5  Rotation      : " << ts5in->getRotation() << G4endl;
     }
 
     CLHEP::Hep3Vector coll5OffsetInMu2e = ts5in->getGlobal() + 
@@ -1237,8 +1263,8 @@ namespace mu2e {
         coll51.getLocal() );
 
     if ( verbosityLevel > 0) {
-      cout << __func__ << "  coll5OffsetInMu2e    : "    << coll5OffsetInMu2e << endl;
-      cout << __func__ << "  Coll5 calc local offset : " << coll5OffsetInMu2e - ts5in->getGlobal() << endl;
+      G4cout << __func__ << "  coll5OffsetInMu2e    : "    << coll5OffsetInMu2e << G4endl;
+      G4cout << __func__ << "  Coll5 calc local offset : " << coll5OffsetInMu2e - ts5in->getGlobal() << G4endl;
     }
 
     // the most outer part (with Virtual Detectors on the outer surfaces of the Coll5)
@@ -1320,7 +1346,7 @@ namespace mu2e {
 
     if( degraderR.size()!=degraderDZB.size() || degraderR.size()!=degraderDZT.size() ||
         degraderR.size()!=degraderPhi.size() ) {
-      cout << __func__ << " Warning: MuonDegrader is not build - dimensions don't match." << endl;
+      G4cout << __func__ << " Warning: MuonDegrader is not build - dimensions don't match." << G4endl;
       addDegrader = false;
     }
     
@@ -1371,7 +1397,7 @@ namespace mu2e {
                       );
 
         if ( verbosityLevel > 0 ) {
-          cout << __func__ << " Degrader constructed at: " << coll5.getLocal() << " wrt. TS5 " << endl;
+          G4cout << __func__ << " Degrader constructed at: " << coll5.getLocal() << " wrt. TS5 " << G4endl;
         }
 
       }
@@ -1430,13 +1456,14 @@ namespace mu2e {
     int const verbosityLevel = config.getInt("pbar.verbosityLevel", 0);
 
     if (verbosityLevel > 0){
-    std::cout << "pbarWindow.shape() = " << pbarWindow.shape() << std::endl;
+      G4cout << "pbarWindow.shape() = " << pbarWindow.shape() << G4endl;
     }
+
     if ( pbarAbsTS3Version == 1 ) {
       // -- vacuum wall
 
-      std::cout << "inside version 1 " << std::endl;
-      if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
+      G4cout << "inside version 1 " << G4endl;
+      if (verbosityLevel > 0) G4cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << G4endl; 
         
       if ( pbarWindow.shape() == "wedge" ||
 	   pbarWindow.shape() == "disk" ) {
@@ -1459,79 +1486,79 @@ namespace mu2e {
       if ( pbarWindow.shape() != "disk")
 	{
 	  if( pbarWindow.shape() == "wedge")
-	    {
-	      // -- pbar wedge        
-	      double pbarWedge_y0  = pbarWindow.getY0();
-	      double pbarWedge_y1  = pbarWindow.getY1();
-	      double pbarWedge_dz0 = pbarWindow.getDZ0();
-	      double pbarWedge_dz1 = pbarWindow.getDZ1();
+	{
+	  // -- pbar wedge        
+	  double pbarWedge_y0  = pbarWindow.getY0();
+	  double pbarWedge_y1  = pbarWindow.getY1();
+	  double pbarWedge_dz0 = pbarWindow.getDZ0();
+	  double pbarWedge_dz1 = pbarWindow.getDZ1();
 
-	      VolumeInfo pbarWedgeInfo;
+	  VolumeInfo pbarWedgeInfo;
       
-	      pbarWedgeInfo.name = "PbarAbsWedge";
+	  pbarWedgeInfo.name = "PbarAbsWedge";
       
-	      double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
-	      double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
+	  double pbarWedge_dz = ( pbarWedge_dz0<pbarWedge_dz1 ) ? pbarWedge_dz1 : pbarWedge_dz0;
+	  double pbarWedge_h = pbarWedge_y1 - pbarWedge_y0;
 	  
-	      double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
+	  double pbarWedge_dy = (pbarWedge_y1 + pbarWedge_y0)/2.;
       
-	      G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
-						  0,bl.getTS().innerRadius(),pbarWedge_dz/2.,0,CLHEP::twopi);
+	  G4Tubs *pbarWedge_disk = new G4Tubs("PbarAbsWedge_disk",
+					      0,bl.getTS().innerRadius(),pbarWedge_dz/2.,0,CLHEP::twopi);
       
-	      G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
-					       bl.getTS().innerRadius(),bl.getTS().innerRadius(),
-					       pbarWedge_dz0/2.,pbarWedge_dz1/2.,
-					       pbarWedge_h/2.);
+	  G4Trd *pbarWedge_trd = new G4Trd("PbarAbsWedge_trd",
+					   bl.getTS().innerRadius(),bl.getTS().innerRadius(),
+					   pbarWedge_dz0/2.,pbarWedge_dz1/2.,
+					   pbarWedge_h/2.);
       
-	      AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
-	      G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
-	      pbarWedgeRot->rotateX(90.0*CLHEP::degree);
-	      G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
+	  AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
+	  G4RotationMatrix* pbarWedgeRot = reg.add(G4RotationMatrix());
+	  pbarWedgeRot->rotateX(90.0*CLHEP::degree);
+	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_dy,0.0);
 	  
-	      pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
-							    pbarWedge_disk,
-							    pbarWedge_trd,
-							    pbarWedgeRot,
-							    pbarWedgeTrans);
+	  pbarWedgeInfo.solid = new G4IntersectionSolid(pbarWedgeInfo.name,
+							pbarWedge_disk,
+							pbarWedge_trd,
+							pbarWedgeRot,
+							pbarWedgeTrans);
 	  
-	      finishNesting(pbarWedgeInfo,
-			    pbarMaterial,
-			    0,
-			    G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength() ),
-			    parent.logical,
-			    0,
-			    G4Color::Yellow(),
-			    "PbarAbs"
-			    );
+	  finishNesting(pbarWedgeInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0.,0.,pbarWedge_dz/2+pbarWindow.halfLength() ),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
 	  
-	    }
-	  else if ( pbarWindow.shape() == "polycone" ) 
-	    {
-	      // Define polycone parameters
-	      vector<double> tmp_zPlanesDs3 {-0.50,-0.06,0.06,0.50};
-	      vector<double> tmp_rOuterDs3  (4,239.5);
-	      vector<double> tmp_rInnerDs3  {239.5,0.,0.,239.5};
+	}
+      else if ( pbarWindow.shape() == "polycone" ) 
+	{
+	  // Define polycone parameters
+	  vector<double> tmp_zPlanesDs3 {-0.50,-0.06,0.06,0.50};
+	  vector<double> tmp_rOuterDs3  (4,239.5);
+	  vector<double> tmp_rInnerDs3  {239.5,0.,0.,239.5};
 	  
 	  
-	      CLHEP::Hep3Vector polyPositionInMu2e = bl.getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
-									  TransportSolenoid::TSRadialPart::IN)->getGlobal();
+	  CLHEP::Hep3Vector polyPositionInMu2e = bl.getTS().getTSCryo(TransportSolenoid::TSRegion::TS3,
+								      TransportSolenoid::TSRadialPart::IN)->getGlobal();
         
-	      nestPolycone( "PbarAbsPolycone",
-			    PolyconsParams(tmp_zPlanesDs3,
-					   tmp_rInnerDs3,
-					   tmp_rOuterDs3 ),
-			    pbarMaterial,
-			    0,
-			    polyPositionInMu2e - parent.centerInMu2e(),
-			    parent,
-			    0,
-			    G4Colour::Yellow(),
-			    "PbarAbs"
-			    );
-	    }
-	  else 
-	    {
-	      throw cet::exception("GEOM")<<
+	  nestPolycone( "PbarAbsPolycone",
+			PolyconsParams(tmp_zPlanesDs3,
+				       tmp_rInnerDs3,
+				       tmp_rOuterDs3 ),
+			pbarMaterial,
+			0,
+			polyPositionInMu2e - parent.centerInMu2e(),
+			parent,
+			0,
+			G4Colour::Yellow(),
+			"PbarAbs"
+			);
+	}
+      else if ( pbarWindow.shape() != "disk" )
+	{
+	  throw cet::exception("GEOM")<<
 		" Incorrect pbar window geometry requested! \n << pbarWindow.shape() = in version 1" << pbarWindow.shape() <<"\n";
 	    }
 	}
@@ -1542,7 +1569,7 @@ namespace mu2e {
       // support.  Based on code in Collimator build function
       // Get collimators
 
-      std::cout << "inside version 2" << std::endl;
+      G4cout << "inside version 2" << G4endl;
       TransportSolenoid const& ts = bl.getTS();
       CollimatorTS3 const& coll31  = ts.getColl31();
       // First, construct hole; make it slightly longer than the support
@@ -1553,26 +1580,26 @@ namespace mu2e {
 
       // Hole is the intersection of box and tube
       G4Box* support_hole_box = new G4Box("support_hole_box",
-					  coll31.holeRadius()+5.0,coll31.holeHalfHeight(),hDz+1.0);
+					coll31.holeRadius()+5.0,coll31.holeHalfHeight(),hDz+1.0);
       // make the tube longer than the box to avoid overlapping surfaces 
       G4Tubs* support_hole_circle = new G4Tubs("support_hole_circle",
-					       0.0,coll31.holeRadius(),hDz+2.0,
-					       0.0, CLHEP::twopi );
+					     0.0,coll31.holeRadius(),hDz+2.0,
+					     0.0, CLHEP::twopi );
       G4IntersectionSolid* support_hole = new G4IntersectionSolid("support_hole",
-								  support_hole_box,
-								  support_hole_circle);
+								support_hole_box,
+								support_hole_circle);
 
       // Now make the actual support
       G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
-					  0, ts.innerRadius(), hDz,
+					  0, coll31.rOut(), hDz,
 					  0.0, CLHEP::twopi );
 
       supportInfo.solid = new G4SubtractionSolid("pBarTS3Support",
-						 support_mother,
-						 support_hole,
-						 0,
-						 G4ThreeVector(0,
-							       config.getDouble("pbar.support.holeDisp"),0));
+                                              support_mother,
+                                              support_hole,
+                                              0,
+                                              G4ThreeVector(0,
+							    config.getDouble("pbar.support.holeDisp"),0));
 
       CLHEP::HepRotation * supportRot = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
       //      supportRot->rotateY(90.0*CLHEP::degree);
@@ -1588,7 +1615,7 @@ namespace mu2e {
 
       // -- vacuum wall
 
-      if (verbosityLevel > 0) std::cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << std::endl; 
+      if (verbosityLevel > 0) G4cout << "TS3 pbar windows HalfLength : " << pbarWindow.halfLength() << G4endl; 
       if ( pbarWindow.shape() == "wedge" ||
 	   pbarWindow.shape() == "disk" ) {
 
@@ -1611,15 +1638,15 @@ namespace mu2e {
 						     0,
 						     G4ThreeVector(0,0,0));
 	  
-	finishNesting(pbarDiskInfo,
-		      pbarMaterial,
-		      0,
-		      G4ThreeVector(0,pbarWedge_dy,0),
-		      parent.logical,
-		      0,
-		      G4Color::Yellow(),
-		      "PbarAbs"
-		      );
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,pbarWedge_dy,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
 	// nestTubs( "PbarAbs",
 	// 	  pbarParams,
 	// 	  pbarMaterial,
@@ -1678,11 +1705,11 @@ namespace mu2e {
     }  else if ( pbarAbsTS3Version == 3 || pbarAbsTS3Version == 4) {
 
       if ( verbosityLevel > 2) {
-	std::cout << __func__ <<"inside version " << pbarAbsTS3Version << std::endl;
+	G4cout << __func__ <<"inside version " << pbarAbsTS3Version << G4endl;
       }
       // =============== Now Version 3 of pbarAbs in TS3! ==============
-      // Get collimators
-      TransportSolenoid const& ts = bl.getTS();
+      // Get collimators (we use the coll31 info)
+      CollimatorTS3 const& coll31  = bl.getTS().getColl31();
       // First, construct hole; make it slightly longer than the support
       double hDz = config.getDouble("pbar.support.innerHalflength")* CLHEP::mm;
 
@@ -1693,7 +1720,7 @@ namespace mu2e {
       // Now make the actual support
       G4Tubs* support_mother = new G4Tubs("PbarSupport_mother",
 					  pbarWindow.diskRadius(), 
-					  ts.innerRadius(), hDz,
+					  coll31.rOut(), hDz,
 					  0.0, CLHEP::twopi );
 
       supportInfo.solid = support_mother;
@@ -1718,24 +1745,27 @@ namespace mu2e {
 	VolumeInfo pbarDiskInfo;
 	pbarDiskInfo.name = "PbarAbsDisk";
 
-	if (verbosityLevel > 0) std::cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << std::endl; 
-	if (verbosityLevel > 1){
-	std::cout << " inside wedge or disk" << std::endl;
-	}
+        if (verbosityLevel > 0) {
+          G4cout << "TS3 pbar window thickness : " << pbarWindow.halfLength()*2. << G4endl; 
+          if (verbosityLevel > 1){
+            G4cout << " inside wedge or disk" << G4endl;
+          }
+        }
+
 	pbarDiskInfo.solid = new G4Tubs("PbarAbs_disk",
-					0.0 ,pbarWindow.diskRadius(),
-					pbarWindow.halfLength(),
-					0.0,CLHEP::twopi);
+					  0.0 ,pbarWindow.diskRadius(),
+					  pbarWindow.halfLength(),
+					  0.0,CLHEP::twopi);
 	  
-	finishNesting(pbarDiskInfo,
-		      pbarMaterial,
-		      0,
-		      G4ThreeVector(0,0,0),
-		      parent.logical,
-		      0,
-		      G4Color::Yellow(),
-		      "PbarAbs"
-		      );
+	  finishNesting(pbarDiskInfo,
+			pbarMaterial,
+			0,
+			G4ThreeVector(0,0,0),
+			parent.logical,
+			0,
+			G4Color::Yellow(),
+			"PbarAbs"
+			);
 
       }
 
@@ -1744,7 +1774,7 @@ namespace mu2e {
 	  // Helper info
 	  // -- pbar wedge        
 	  double pbarWedge_y1  = pbarWindow.getY1();
-	  double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset();
+          double pbarWedge_offsetZ = pbarWindow.getWedgeZOffset();
 	  VolumeInfo pbarWedgeInfo;
       
 	  pbarWedgeInfo.name = "PbarAbsWedge";
@@ -1809,22 +1839,22 @@ namespace mu2e {
 	  stairOutline.push_back(tmpVertex);
 	  double xCoord = 0.0;
 	  if (verbosityLevel > 2){
-	    std::cout << __func__ << "stepThck = " << stepThck << std::endl;
+	    G4cout << __func__ << "stepThck = " << stepThck << G4endl;
 	  }
 	  // Now loop over steps
 	  for ( int iStep = 0; iStep < nSteps; iStep++ ) {
 	    if ( verbosityLevel > 2) {
-	      std::cout << "istep, stair outline 1: " << iStep << " " << xCoord << " " << stepLength[iStep] << std::endl;
+	      G4cout << "istep, stair outline 1: " << iStep << " " << xCoord << " " << stepLength[iStep] << G4endl;
 	    }
 	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
 	      
 	    if (pbarAbsTS3Version == 3){
-	      xCoord += stepThck;
+	    xCoord += stepThck;
 	    } else  if (pbarAbsTS3Version == 4) {
 	      xCoord += stepThickStrip[iStep];
 	    }
 	    if ( verbosityLevel > 2) {
-	      std::cout << "istep, stair outline 2: " << iStep << " " << xCoord << " " << stepLength[iStep] << std::endl;
+	      G4cout << "istep, stair outline 2: " << iStep << " " << xCoord << " " << stepLength[iStep] << G4endl;
 	    }
 	    stairOutline.push_back(G4TwoVector(xCoord,-stepLength[iStep]));
 	  }
@@ -1844,7 +1874,7 @@ namespace mu2e {
 	  pbarWedgeRot->rotateY(90.0*CLHEP::degree);
 	  G4ThreeVector pbarWedgeTrans(0.0,pbarWedge_y1,pbarWedge_offsetZ);
 	  if (verbosityLevel > 2){
-	    std::cout << "pbarWedgeTrans = " << pbarWedgeTrans << std::endl;
+	    G4cout << "pbarWedgeTrans = " << pbarWedgeTrans << G4endl;
 	  }
 	  pbarWedgeInfo.solid = stairCase;
 	  
@@ -1859,17 +1889,17 @@ namespace mu2e {
 			);
 	} //end of if ( pbarWindow.shape == wedge )
     }  else {
-      throw cet::exception("GEOM")<<
-	" Incorrect pbar window geometry requested! \n " << " pbarWindow.shape() = " << pbarWindow.shape() << std::endl;   
+	throw cet::exception("GEOM")<<
+	" Incorrect pbar window geometry requested! \n " << " pbarWindow.shape() = " << pbarWindow.shape() << G4endl;   
  
     } // end of else for pbarAbsTS3Version == ... 
 
 
-      // =============================================
-      // ======== Now UPSTREAM pbar window ===========
-      // =============================================
+    // =============================================
+    // ======== Now UPSTREAM pbar window ===========
+    // =============================================
 
-      // add a pbar window at the TS entrance
+    // add a pbar window at the TS entrance
     TransportSolenoid const& ts = bl.getTS();
     GeomHandle<VirtualDetector> vdg;
     double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
@@ -1899,8 +1929,8 @@ namespace mu2e {
       double pbarTS1InOffset = config.getDouble("pbar.coll1In.offset", 1.0);
 
       if ( verbosityLevel > 0 ) {
-	cout << __func__ << "Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << std::endl;
-	cout << __func__ << "Pbar absorber at TS1 coll1 entrance offset : " << pbarTS1InOffset << std::endl;
+        G4cout << __func__ << " Pbar absorber at TS1 coll1 entrance halfLength : " << pbarTS1InHalfLength << G4endl;
+        G4cout << __func__ << " Pbar absorber at TS1 coll1 entrance offset : " << pbarTS1InOffset << G4endl;
       }
 
       CLHEP::Hep3Vector pbarTS1InPos = coll1.getLocal();
@@ -1909,42 +1939,44 @@ namespace mu2e {
       // This block determines the mother volume to use
 
       if (pbarTS1InOffset >= 0.0) {
-	// use local when put in the TS1Vacuum
-	pbarTS1InPos = coll1.getLocal();
-	pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHalfLength + pbarTS1InHalfLength + pbarTS1InOffset);
-	motherVolume = _helper->locateVolInfo("TS1Vacuum");
+        // use local when put in the TS1Vacuum
+        pbarTS1InPos = coll1.getLocal();
+        pbarTS1InPos.setZ( pbarTS1InPos.z() - coll1.halfLength() + 2.*vdHalfLength + pbarTS1InHalfLength + pbarTS1InOffset);
+        motherVolume = _helper->locateVolInfo("TS1Vacuum");
       }
       else { // pbarTS1InOffset < 0.0
-	// use global when put in the HallAir
+        // use global when put in the HallAir
 
-	Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
+        Tube const & psVacuumParams  = GeomHandle<PSVacuum>()->vacuum();
 
-	pbarTS1InPos = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
-	pbarTS1InPos.setZ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - pbarTS1InHalfLength + pbarTS1InOffset);
-	motherVolume = _helper->locateVolInfo("PSVacuum");
-	G4ThreeVector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
-	pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
+        pbarTS1InPos = ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getGlobal();
+        pbarTS1InPos.setZ( pbarTS1InPos.z() - ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() - pbarTS1InHalfLength + pbarTS1InOffset);
+        motherVolume = _helper->locateVolInfo("PSVacuum");
+        G4ThreeVector psVacuumOriginInMu2e = psVacuumParams.originInMu2e();
+        pbarTS1InPos = pbarTS1InPos - psVacuumOriginInMu2e;
 
-       	if ( verbosityLevel > 0 ) {
-	  cout << __func__ << " coll1 halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << endl;
-	  cout << __func__ << " pbarTS1InHalfLength " << pbarTS1InHalfLength << endl;
-	  cout << __func__ << " pbarTS1InOffset " << pbarTS1InOffset << endl;
-	  cout << __func__ << " pbarTS1InPos " << pbarTS1InPos << endl;
-	}
+        if ( verbosityLevel > 0 ) {
+
+          G4cout << __func__ << " straight section halflength " << ts.getTSVacuum<StraightSection>(TransportSolenoid::TSRegion::TS1)->getHalfLength() << G4endl;
+          G4cout << __func__ << " pbarTS1InHalfLength " << pbarTS1InHalfLength << G4endl;
+          G4cout << __func__ << " pbarTS1InOffset " << pbarTS1InOffset << G4endl;
+          G4cout << __func__ << " pbarTS1InPos " << pbarTS1InPos << G4endl;
+        }
       }
+
       // mother volume set in block above
 
       // Here we put in the actual window - true in all versions
       nestTubs( "PbarAbsTS1In",
-		pbarTS1InParams,
-		findMaterialOrThrow(pbarTS1InMaterial),
-		0,
-		pbarTS1InPos,
-		motherVolume,
-		0,
-		G4Color::Yellow(),
+                pbarTS1InParams,
+                findMaterialOrThrow(pbarTS1InMaterial),
+                0,
+                pbarTS1InPos,
+                motherVolume,
+                0,
+                G4Color::Yellow(),
 		"PbarAbs"
-		);
+              );
 
       // ***
       // Check the version.  If version 2 or above, get new parameters
@@ -1952,7 +1984,7 @@ namespace mu2e {
       // ***
       int pbarTS1InVersion = config.getInt("pbar.coll1In.Version",1);
       if ( pbarTS1InVersion > 1 ) {
-	// Support structure inner and outer radius, halflength, and material
+      // Support structure inner and outer radius, halflength, and material
 	double pbarTS1InSupRIn = config.getDouble("pbar.coll1In.supportRIn");
 	double pbarTS1InSupROut = config.getDouble("pbar.coll1In.supportROut");
 	double pbarTS1InSupHLen = config.getDouble("pbar.coll1In.supportHLen");
@@ -1970,15 +2002,15 @@ namespace mu2e {
 
 	// Now put in the support ring
 	nestTubs( "PbarAbsTS1InSup",
-		  pbarTS1InSuptParams,
-		  findMaterialOrThrow(pbarTS1InSupMaterial),
-		  0,
-		  pbarTS1InPos+pbarTS1InSupRelPos,
-		  motherVolume,
-		  0,
-		  G4Color::Yellow(),
-		  "PbarAbs"
-		  );
+                pbarTS1InSuptParams,
+                findMaterialOrThrow(pbarTS1InSupMaterial),
+                0,
+                pbarTS1InPos+pbarTS1InSupRelPos,
+                motherVolume,
+                0,
+                G4Color::Yellow(),
+		"PbarAbs"
+              );
 
 	// The frames between which the Pbar window is sandwiched are
 	// the same basic size and shape as the support ring, but with
@@ -2100,8 +2132,8 @@ namespace mu2e {
 				  -pegOffsetZ);
 
 	Polycone pegCone( pegZ, pegIR, pegOR, 
-			  pbarTS1InPos - peg1Pos,
-			  pegMaterial);
+		  pbarTS1InPos - peg1Pos,
+		  pegMaterial);
 
 	VolumeInfo pegInfo = nestPolycone( "PbarAbsTS1InPeg1",
 					   pegCone.getPolyconsParams(),
@@ -2117,15 +2149,15 @@ namespace mu2e {
 	//This one at 6 o'clock looking down the z axis
 	CLHEP::Hep3Vector peg2Pos(0, -pegRad, -pegOffsetZ);
 	VolumeInfo peg2Info = nestPolycone( "PbarAbsTS1InPeg2",
-					    pegCone.getPolyconsParams(),
-					    findMaterialOrThrow(pegMaterial),
-					    0,
-					    pbarTS1InPos+peg2Pos,
-					    motherVolume,
-					    0,
-					    G4Colour::Yellow(),
-					    "PbarAbs"
-					    );
+					   pegCone.getPolyconsParams(),
+					   findMaterialOrThrow(pegMaterial),
+					   0,
+					   pbarTS1InPos+peg2Pos,
+					   motherVolume,
+					   0,
+					   G4Colour::Yellow(),
+					   "PbarAbs"
+					   );
 
 
 	//This one at 10 o'clock looking down the z axis
@@ -2134,15 +2166,15 @@ namespace mu2e {
 				  -pegOffsetZ);
 
 	VolumeInfo peg3Info = nestPolycone( "PbarAbsTS1InPeg3",
-					    pegCone.getPolyconsParams(),
-					    findMaterialOrThrow(pegMaterial),
-					    0,
-					    pbarTS1InPos+peg3Pos,
-					    motherVolume,
-					    0,
-					    G4Colour::Yellow(),
-					    "PbarAbs"
-					    );
+					   pegCone.getPolyconsParams(),
+					   findMaterialOrThrow(pegMaterial),
+					   0,
+					   pbarTS1InPos+peg3Pos,
+					   motherVolume,
+					   0,
+					   G4Colour::Yellow(),
+					   "PbarAbs"
+					   );
 
 
       } // end of building support structure
@@ -2155,66 +2187,87 @@ namespace mu2e {
       pbarTS1InRecordPos.setZ(pbarTS1InPos.z() - pbarTS1InHalfLength - 2*vdHalfLength - pbarTS1InRecordParams[2]);
 
       if ( verbosityLevel > 0 ) {
-	cout << __func__ << "pbarTS1InRecordParams " << pbarTS1InRecordParams[1] << "  " << pbarTS1InRecordParams[2] << endl;
-	cout << __func__ << "pbarTS1InRecordPos " << pbarTS1InRecordPos << endl;
+        G4cout << __func__ << "pbarTS1InRecordParams " << pbarTS1InRecordParams[1] << "  " << pbarTS1InRecordParams[2] << G4endl;
+        G4cout << __func__ << "pbarTS1InRecordPos " << pbarTS1InRecordPos << G4endl;
       }
 
       nestTubs( "PbarAbsTS1InRecord",
-		pbarTS1InRecordParams,
-		findMaterialOrThrow(ts.upstreamVacuumMaterial()),
-		0,
-		pbarTS1InRecordPos,
-		motherVolume,
-		0,
-		G4Color::Yellow(),
-		"PbarAbs"
-		);
+                pbarTS1InRecordParams,
+                findMaterialOrThrow(ts.upstreamVacuumMaterial()),
+                0,
+                pbarTS1InRecordPos,
+                motherVolume,
+                0,
+                G4Color::Yellow(),
+                "PbarAbs"
+              );
     }
 
     if (is_pbarTS1Out) {
 
       // Get VDs
-      GeomHandle<VirtualDetector> vdg;
-      double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
+      // GeomHandle<VirtualDetector> vdg;
+      // double vdHalfLength = vdg->getHalfLength()*CLHEP::mm;
 
       CollimatorTS1 const& coll1  = ts.getColl1() ;
 
       string pbarTS1OutMaterial   = config.getString("pbar.coll1Out.material1Name");
-      //      double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
-      double pbarTS1OutHalfLength = coll1.collarHalfLength()-2.*vdHalfLength;
-      double pbarTS1OutrIn        = config.getDouble("pbar.coll1Out.rIn",        120.0);
-      double pbarTS1OutphiBegin   = config.getDouble("pbar.coll1Out.phiBegin",   210.0);
-      double pbarTS1OutphiDelta   = config.getDouble("pbar.coll1Out.phiDelta",   120.0);
+      // double pbarTS1OutHalfLength = config.getDouble("pbar.coll1Out.halfLength", 0.05);
+      // double pbarTS1OutHalfLength = coll1.collarHalfLength()-2.*vdHalfLength;
+      double pbarTS1OutHalfLength = coll1.collarHalfLength();
+      double pbarTS1OutrIn        = coll1.collarrIn();
+      double pbarTS1OutphiBegin   = coll1.collarphiBegin();
+      double pbarTS1OutphiDelta   = coll1.collarphiDelta();
       double pbarTS1OutParams[5]  = { pbarTS1OutrIn, coll1.rIn1(), pbarTS1OutHalfLength,
-				      pbarTS1OutphiBegin*CLHEP::degree, pbarTS1OutphiDelta*CLHEP::degree };
-      double pbarTS1OutPosz       = config.getDouble("pbar.coll1Out.z", -3144.0);
+                                      pbarTS1OutphiBegin*CLHEP::degree, pbarTS1OutphiDelta*CLHEP::degree };
+
+      double pbarTS1OutPosz       = coll1.collarZ();
+
       if ( verbosityLevel > 0 ) {
-	std::cout << "Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
-		  << " pbarTS1OutPosz " << pbarTS1OutPosz << " phiBegin " << pbarTS1OutphiBegin << " dPhi " << pbarTS1OutphiDelta << std::endl;
+        G4cout << __func__ << " Pbar absorber at TS1 coll1 near exit halfLength : " << pbarTS1OutHalfLength << " rIn " << pbarTS1OutrIn 
+          << " pbarTS1OutPosz " << pbarTS1OutPosz << " phiBegin " << pbarTS1OutphiBegin << " dPhi " << pbarTS1OutphiDelta << G4endl;
       }
 
-      CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal();
-      //      CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
-      //      pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
-      pbarTS1OutPos.setZ( pbarTS1OutPos.z() + (pbarTS1OutPosz-(-4044)) - coll1.halfLength() );
+      CLHEP::Hep3Vector pbarTS1OutPos = coll1.getLocal(); // the absorber is placed on the axis of coll1, shifted in z, see below
+      // CLHEP::Hep3Vector TS1VacuumPos = ts->getTSCryo<StraightSection>(TransportSolenoid::TSRegion::TS1,TransportSolenoid::TSRadialPart::OUT)->getGlobal()-_hallOriginInMu2e;
+      // pbarTS1OutPos.setZ( pbarTS1Outz - TS1VacuumPos.z() );
+
+      if ( verbosityLevel > 1 ) {
+	// printout related to the old code below
+	G4cout << __func__ << " pbarTS1OutPos :                      " << pbarTS1OutPos << G4endl;
+	G4cout << __func__ << " pbarTS1OutPosz-(-4044)) :            " << pbarTS1OutPosz-(-4044) << G4endl;
+	G4cout << __func__ << " coll1.halfLength() :                 " << coll1.halfLength() << G4endl;
+      }
+
+      // pbarTS1OutPos.setZ( pbarTS1OutPos.z() + (pbarTS1OutPosz-(-4044)) - coll1.halfLength() );
+      pbarTS1OutPos.setZ( coll1.collarZ() - ((_helper->locateVolInfo("TS1Vacuum")).centerInMu2e()).z() );
+
+      if ( verbosityLevel > 0 ) {
+	G4cout << __func__ << " PbarAbsTS1Out position in TS1Vacuum: " << pbarTS1OutPos << G4endl;
+	double zpos = pbarTS1OutPos.z()+((_helper->locateVolInfo("TS1Vacuum")).centerInMu2e()).z();
+	G4cout << __func__ << " PbarAbsTS1Out position in mu2e:      " << pbarTS1OutPos+(_helper->locateVolInfo("TS1Vacuum")).centerInMu2e() << G4endl;
+	G4cout << __func__ << " PbarAbsTS1Out Extent:               [" << zpos - pbarTS1OutHalfLength << ","
+	     << zpos + pbarTS1OutHalfLength << "]" << G4endl;
+	G4cout << __func__ << " PbarAbsTS1Out HalfLength :           " << pbarTS1OutHalfLength << G4endl;
+      }
 
       nestTubs( "PbarAbsTS1Out",
-		pbarTS1OutParams,
-		findMaterialOrThrow(pbarTS1OutMaterial),
-		0,
-		pbarTS1OutPos,
-		_helper->locateVolInfo("TS1Vacuum"),
-		0,
-		G4Color::Yellow(),
+                pbarTS1OutParams,
+                findMaterialOrThrow(pbarTS1OutMaterial),
+                0,
+                pbarTS1OutPos,
+                _helper->locateVolInfo("TS1Vacuum"),
+                0,
+                G4Color::Yellow(),
 		"PbarAbs"
-		);
+              );
     }
 
     if (is_pbarTS31) {
       CollimatorTS3 const& coll31 = ts.getColl31();
 
       double pbarTS31HalfLength = config.getDouble("pbar.coll31In.halfLength", 0.05);
-      double pbarTS31Params[5]  = { 0.0, ts.innerRadius(), pbarTS31HalfLength, 0.0, CLHEP::twopi };
+      double pbarTS31Params[5]  = { 0.0, coll31.rOut(), pbarTS31HalfLength, 0.0, CLHEP::twopi };
       double pbarTS31Offset = config.getDouble("pbar.coll31In.offset", 1.0);
 
       CLHEP::Hep3Vector pbarTS31Pos = coll31.getLocal();
@@ -2226,15 +2279,15 @@ namespace mu2e {
       coll31Rot->rotateZ(coll31.rotationAngle()*CLHEP::degree);
 
       nestTubs( "PbarAbsTS31",
-		pbarTS31Params,
-		pbarMaterial,
-		coll31Rot,
-		pbarTS31Pos,
-		_helper->locateVolInfo("TS3Vacuum"),
-		0,
-		G4Color::Yellow(),
+                pbarTS31Params,
+                pbarMaterial,
+                coll31Rot,
+                pbarTS31Pos,
+                _helper->locateVolInfo("TS3Vacuum"),
+                0,
+                G4Color::Yellow(),
 		"PbarAbs"
-		);
+              );
     }
 
   } // end Mu2eWorld::constructPbarWindow()

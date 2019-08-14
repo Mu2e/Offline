@@ -4,6 +4,12 @@ import random
 import os
 from normalizations import *
 
+random.seed()
+
+if len(sys.argv) < 6:
+  print "python JobConfig/ensemble/genEnsemble.py <dirname> <max livetime> <livetime for DIO/RPC gen> <kmax number> <run number>"
+  sys.exit()
+
 dirname = sys.argv[1]
 max_livetime_rmc = float(sys.argv[2]) # in years
 max_livetime_others = float(sys.argv[3]) # in years
@@ -20,17 +26,21 @@ livetime_fraction_min = 0.9
 livetime_fraction_max = 1.0
 livetime = max_livetime_rmc * random.uniform(livetime_fraction_min,livetime_fraction_max)
 
-# for one week
-rue_exp_min = -14
-rue_exp_max = -12.8
-rup_exp_min = -14
-rup_exp_max = -12.8
+if max_livetime_rmc <= 6/365.*20/24.:
+  print "One week"
+  # for one week
+  rue_exp_min = -14
+  rue_exp_max = -12.8
+  rup_exp_min = -14
+  rup_exp_max = -12.8
+else:
+  print "One month"
+  # for one month
+  rue_exp_min = -14.6
+  rue_exp_max = -13.4
+  rup_exp_min = -14.6
+  rup_exp_max = -13.4
 
-# # for one month
-# rue_exp_min = -15
-# rue_exp_max = -13.5
-# rup_exp_min = -13
-# rup_exp_max = -11.5
 
 rue = 10**random.uniform(rue_exp_min,rue_exp_max)
 rup = 10**random.uniform(rup_exp_min,rup_exp_max)
@@ -55,7 +65,7 @@ fout = open(dirname + "/kmax","w")
 fout.write("%f\n" % kmax)
 fout.close()
 fout = open(dirname + "/livetime","w")
-fout.write("%f\n" % livetime)
+fout.write("%f\n" % (livetime*365*24*60*60))
 fout.close()
 fout = open(dirname + "/rue","w")
 fout.write("%e\n" % rue)
@@ -64,7 +74,7 @@ fout = open(dirname + "/rup","w")
 fout.write("%e\n" % rup)
 fout.close()
 fout = open(dirname + "/settings","w")
-fout.write("%f\n%f\n%f\n%d\n" % (dem_emin,dep_emin,tmin,run_number))
+fout.write("%f\n%f\n%f\n%f\n%d\n%d\n" % (dem_emin,dep_emin,tmin,max_livetime_rmc*0.95*365*24*60*60,run_number,random.randint(0,10000)))
 fout.close()
 
 # maximum expected events per year

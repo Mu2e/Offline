@@ -26,12 +26,11 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
-#include "Mu2eG4/inc/constructTargetPS.hh"
+#include "Mu2eG4/inc/constructHaymanRings.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestBox.hh"
 #include "Mu2eG4/inc/nestPolycone.hh"
 #include "Mu2eG4/inc/finishNesting.hh"
-//#include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 
@@ -43,12 +42,13 @@
 #include "G4SDManager.hh"
 #include "G4Trd.hh"
 #include "CLHEP/Units/SystemOfUnits.h"
-
+#include "G4Tubs.hh"
+#include "G4RotationMatrix.hh"
 using namespace std;
 
 namespace mu2e {
 
-  void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config) {
+  void constructHaymanRings(VolumeInfo const & parent, SimpleConfig const & _config) {
 
     int verbosityLevel                  = _config.getInt("PS.verbosityLevel");
 
@@ -84,6 +84,9 @@ namespace mu2e {
                                                   "PS"
                                                   );
 
+    std::cout << "production target mother info \n" <<
+      tgt->position() << " " << parent.centerInMu2e() << std::endl;
+
     double const _supWheel_trgtPS_rIn         = _config.getDouble("supWheel_trgtPS_rIn");
     double const _supWheel_trgtPS_rOut        = _config.getDouble("supWheel_trgtPS_rOut");
     G4Material* _suppWheelMaterial = findMaterialOrThrow(_config.getString("supWheel_trgtPS_material"));
@@ -93,7 +96,9 @@ namespace mu2e {
 
     G4ThreeVector _loclCenter(0.0,0.0,0.0);
 
-    TubsParams suppWheelParams( _supWheel_trgtPS_rIn, _supWheel_trgtPS_rOut, _supWheel_trgtPS_halfLength);
+    //    TubsParams suppWheelParams( _supWheel_trgtPS_rIn, _supWheel_trgtPS_rOut, _supWheel_trgtPS_halfLength);
+    // making infinitely small support wheel
+    TubsParams suppWheelParams( _supWheel_trgtPS_rIn, _supWheel_trgtPS_rOut, .0000001);
     VolumeInfo suppWheelInfo   = nestTubs( "ProductionTargetSupportWheel",
                                            suppWheelParams,
                                            _suppWheelMaterial,
@@ -136,57 +141,153 @@ namespace mu2e {
 
     TubsParams prodTargetParams( 0., tgt->rOut(), tgt->halfLength());
 
-    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
+    std::cout << __func__ << " radius and halfLength =" << tgt->rOut() << " " << tgt->halfLength() << std::endl;
+    std::cout << __func__ << " rotation angle        =" << tgt->productionTargetRotation() << std::endl;
 
+    G4Material* prodTargetMaterial = findMaterialOrThrow(_config.getString("targetPS_materialName"));
     geomOptions->loadEntry( _config, "ProductionTarget", "targetPS" );
 
-    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTarget",
+    //
+    // this extra Core word because in making a sensitive detector, the code sees "ProductionTarget" in
+    // "ProductionTarget*" and screws up.  Need something unique.  easier than fixing LV.name function 
+    VolumeInfo prodTargetInfo   = nestTubs( "ProductionTargetCore",
                                             prodTargetParams,
                                             prodTargetMaterial,
                                             &tgt->productionTargetRotation(),
                                             _loclCenter,
                                             prodTargetMotherInfo,
                                             0,
-                                            G4Colour::Magenta()
+                                            G4Colour::Yellow()
                                             );
 
+    //
+    // support rings, from Pushka email on 15 April 2019: from 15 to 17 mm, 2 mm half-length
+    double innerRadiusRing = 15.;
+    double outerRadiusRing = 17.;
+    double halfLengthRing = 2.;
+    TubsParams supportRingsParams(innerRadiusRing,outerRadiusRing,halfLengthRing);
+    //    TubsParams supportRingsParams( 0., tgt->rOut(), tgt->halfLength());
+
+    //
+    //now move rings into position.  Since there is just a y-rotation it's easy.  Remember that the central z of the ring changes too; rotate about the y-axis,
+    // about a point at the center, dx = rsin,dz = rcos
+
+    /*
+    //double deltaX = sin(tgt->productionTargetRotation().getTheta())*(tgt->halfLength()+halfLengthRing);
+    //double deltaZ = cos(tgt->productionTargetRotation().getTheta())*(tgt->halfLength()+halfLengthRing);
+    //    CLHEP::Hep3Vector SupportRingFarTSOffset (+deltaX, 0., +deltaZ);
+    //CLHEP::Hep3Vector SupportRingNearTSOffset(-deltaX, 0., -deltaZ);
+    CLHEP::Hep3Vector SupportRingFarTSOffset (+0., 0., +0.);
+    CLHEP::Hep3Vector SupportRingNearTSOffset(+0., 0., +0.);
+    VolumeInfo supportRingsFarTSInfo = nestTubs("SupportRingsFarTS",
+						supportRingsParams,
+						supportRingsMaterial,
+						&tgt->productionTargetRotation(),
+						_loclCenter+SupportRingFarTSOffset,
+						prodTargetMotherInfo,
+						0,
+						G4Colour::Yellow()
+						);
+
+    VolumeInfo supportRingsNearTSInfo = nestTubs("SupportRingsNearTS",
+						 supportRingsParams,
+						 supportRingsMaterial,
+						 &tgt->productionTargetRotation(),
+						 _loclCenter+SupportRingNearTSOffset,
+						 prodTargetMotherInfo,
+						 0,
+						 G4Colour::Yellow()
+						 );
+    std::cout << "local center = " << _loclCenter << std::endl;
+   std::cout << "local center far = " << SupportRingFarTSOffset << std::endl;
+   std::cout << "local center near = " << SupportRingNearTSOffset << std::endl;
+    */
     // Now add fins for version 2
+    // this is hayman target; first version has four fins, and looks very much like strawman 3.4 of doc-db 27281
     if ( tgt->version() > 1 ) {
-      // Length of fins must be calculated:
 
-      double finHalfLength = (tgt->halfLength() * 2.0 - tgt->hubDistUS() 
-			      - tgt->hubDistDS() - tgt->hubLenUS() - tgt->hubLenDS())/2.0;  // on the inner side, 
-                                         // adjacent to the main target body.
-
-      // Use the steeper of the two hub angles to angle the ends of the fin
-      double theAngle = tgt->hubAngleUS();
-      if ( tgt->hubAngleDS() > theAngle ) theAngle = tgt->hubAngleDS();
-
-      double finHalfLengthOut = finHalfLength + tgt->finHeight()*std::cos(theAngle*CLHEP::degree);  
-
+      double finHalfLength = tgt->halfLength();
+      //
+      // in hayman, there are no hubs and in space no one can hear you scream.  Leave the code in for hooks later
+      
       G4Trd * myTrd = new G4Trd("FinTrapezoid",
-				finHalfLength, finHalfLengthOut,
+				//				finHalfLength, finHalfLengthOut,
 				tgt->finThickness()/2.0, tgt->finThickness()/2.0,
-				tgt->finHeight()/2.0);
+				tgt->finHeight()/2.0,tgt->finHeight()/2.0,
+				finHalfLength);
+
+
+      G4Tubs* targetEndRingNearTS = new G4Tubs("targetEndRingFarTS",
+					    innerRadiusRing,outerRadiusRing,halfLengthRing,0.,2.*M_PI);
+      G4Tubs* targetEndRingFarTS = new G4Tubs("targetEndRingNearTS",
+					    innerRadiusRing,outerRadiusRing,halfLengthRing,0.,2.*M_PI);
+
+      VolumeInfo targetEndRingNearTSVol("targetEndRingNearTS",
+					   _loclCenter,prodTargetMotherInfo.centerInWorld);
+      VolumeInfo targetEndRingFarTSVol("targetEndRingFarTS", 
+					   _loclCenter,prodTargetMotherInfo.centerInWorld);
+      G4Material* endRingsMaterial = findMaterialOrThrow("G4_W");
+
+
+     CLHEP::HepRotation* rotRingBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+
+      CLHEP::HepRotation* rotRing = new CLHEP::HepRotation((*rotRingBase)*tgt->productionTargetRotation());
 
       // std::vector<double> finDims = {tgt->finThickness()/2.0,tgt->finHeight()/2.0,finHalfLength};
-      double finZoff = (tgt->hubDistUS() - tgt->hubDistDS() + tgt->hubLenUS() - tgt->hubLenDS())/2.0; // z-offset for fin
-      double rToFin = tgt->rOut()+tgt->finHeight()/2.0+0.1;
-
-      double xMove = finZoff * sin(tgt->productionTargetRotation().theta());
-      CLHEP::Hep3Vector finOffset1(xMove,-rToFin,finZoff);
-      CLHEP::Hep3Vector finOffset2(rToFin*cos(M_PI/6.0)+xMove,rToFin*sin(M_PI/6.0),finZoff-1.0);
-      CLHEP::Hep3Vector finOffset3(-rToFin*cos(M_PI/6.0)+xMove-0.1,rToFin*sin(M_PI/6.0)+0.02,finZoff+0.2);
+      double rToFin = tgt->rOut()+tgt->finHeight()/2.0;
+      std::cout << "r variables " << rToFin << " " << tgt->rOut() << " " << tgt->finHeight()/2. << std::endl;
+  
+ 
       CLHEP::HepRotation* rotFinBase = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-      rotFinBase->rotateX(90.0*CLHEP::degree);
-      rotFinBase->rotateZ(90.0*CLHEP::degree);
-
+ 
+      std::cout << "rotfinbase = " << *rotFinBase << std::endl;
       CLHEP::HepRotation* rotFin1 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
       CLHEP::HepRotation* rotFin2 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
       CLHEP::HepRotation* rotFin3 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
-      rotFin1->rotateX(M_PI);
-      rotFin2->rotateX(M_PI/3.0);
-      rotFin3->rotateX(5.0*M_PI/3.0);
+      CLHEP::HepRotation* rotFin4 = new CLHEP::HepRotation((*rotFinBase)*tgt->productionTargetRotation());
+
+
+      rotFin1->rotateZ(-M_PI/4.);
+      rotFin2->rotateZ(+M_PI/4.);
+      rotFin3->rotateZ(+M_PI/4.);
+      rotFin4->rotateZ(-M_PI/4.);
+
+      CLHEP::Hep3Vector finOffset1(rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector finOffset2(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector finOffset3(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector finOffset4(-rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
+ 
+      // These are shifts in the unrotated frame in x and y.  But then when I apply
+      // the rotation, since the fins are not centered on the z-axis, they pick up a z-shift that I must
+      // take out.  rather than calculate it for the special case I'll do the matrix. If life gets more complicated
+      // in the future (target rotated along and y) it's straightforward if tedious.
+      //
+      // it's complicated because the "finishNesting", rotates then shifts by what you give it; the above is wrong once the frame is 
+      // rotated... 
+      CLHEP::Hep3Vector fin1Shift(rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector fin2Shift(-rToFin/sqrt(2.),-rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector fin3Shift(rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
+      CLHEP::Hep3Vector fin4Shift(-rToFin/sqrt(2.),rToFin/sqrt(2.),0.);
+      //      std::cout << "fin1shift before = " << fin1Shift << std::endl;
+      //std::cout << "fin2shift before = " << fin2Shift << std::endl;
+      //std::cout << "fin3shift before = " << fin3Shift << std::endl;
+      //std::cout << "fin4shift before = " << fin4Shift << std::endl;
+
+      fin1Shift.transform(*rotFin1);
+      fin2Shift.transform(*rotFin2);
+      fin3Shift.transform(*rotFin3);
+      fin4Shift.transform(*rotFin4);
+
+      //std::cout << "fin1shift after = " << fin1Shift << std::endl;
+      //std::cout << "fin2shift after = " << fin2Shift << std::endl;
+      //std::cout << "fin3shift after = " << fin3Shift << std::endl;
+      //std::cout << "fin4shift after = " << fin4Shift << std::endl;
+
+      finOffset1 += CLHEP::Hep3Vector(0.,0.,-fin1Shift.z());
+      finOffset2 += CLHEP::Hep3Vector(0.,0.,-fin2Shift.z());
+      finOffset3 += CLHEP::Hep3Vector(0.,0.,-fin3Shift.z());
+      finOffset4 += CLHEP::Hep3Vector(0.,0.,-fin4Shift.z());
+
       VolumeInfo fin1Vol("ProductionTargetFin1",
 			 _loclCenter,
 			 prodTargetMotherInfo.centerInWorld);
@@ -199,9 +300,14 @@ namespace mu2e {
 			 _loclCenter,
 			 prodTargetMotherInfo.centerInWorld);
 
+      VolumeInfo fin4Vol("ProductionTargetFin4",
+			 _loclCenter,
+			 prodTargetMotherInfo.centerInWorld);
+
       fin1Vol.solid = myTrd;
       fin2Vol.solid = myTrd;
       fin3Vol.solid = myTrd;
+      fin4Vol.solid = myTrd;
 
       finishNesting( fin1Vol,
 		     prodTargetMaterial,
@@ -233,6 +339,57 @@ namespace mu2e {
 		     "PS"
 		     );
 		    
+
+      finishNesting( fin4Vol,
+		     prodTargetMaterial,
+		     rotFin4,
+		     finOffset4,
+		     prodTargetMotherInfo.logical,
+		     0,
+		     G4Colour::Magenta(),
+		     "PS"
+		     );
+ 
+
+      targetEndRingNearTSVol.solid = targetEndRingNearTS;
+      targetEndRingFarTSVol.solid = targetEndRingFarTS;
+
+      //
+      // put these just past edge of target in z, and shift them in x because target rotated about y axis.
+      // rotation is about y, and xprime  = x cos - z sin, zprime = z cos + x sin.  x is zero, z is L/2 + whatever I need to push past core
+      //but also recall 14deg from z-axis, not from x-axis...
+      double lengthToEnd = tgt->halfLength()+(4.); //4. being half length of ring.  
+      double deltaXRing =  sin(tgt->productionTargetRotation().getTheta());
+      double deltaZRing =  cos(tgt->productionTargetRotation().getTheta());
+      //
+      // these offets are actual placements.  I just took absolute values for sin/cos above and deal with that in the offsets
+      CLHEP::Hep3Vector farTSRingOffset (-deltaXRing*lengthToEnd,0.,-lengthToEnd*(deltaZRing));
+      CLHEP::Hep3Vector nearTSRingOffset(+deltaXRing*lengthToEnd,0., lengthToEnd*(deltaZRing));
+      //      std::cout << "angle of rotation in degrees = " << TMath::RadToDeg()*tgt->productionTargetRotation().getTheta() << std::endl;
+      //std::cout << "length to end = " << lengthToEnd << std::endl;
+      //std::cout << "ring offsets x,z = " << deltaXRing << " \n " << deltaZRing << std::endl;
+     finishNesting(targetEndRingFarTSVol,
+		    endRingsMaterial,
+		    rotRing,
+		    farTSRingOffset,
+		    prodTargetMotherInfo.logical,
+		    0,
+		    G4Colour::Magenta(),
+		    "PS"
+		    );
+
+      finishNesting(targetEndRingNearTSVol,
+		    endRingsMaterial,
+		    rotRing,
+		    nearTSRingOffset,
+		    prodTargetMotherInfo.logical,
+		    0,
+		    G4Colour::Magenta(),
+		    "PS"
+		    );
+
+
+		    
     }
 
 
@@ -240,6 +397,10 @@ namespace mu2e {
     // Using the old terms "right" and "left" to mean "downstream" (DS)
     // and "upstream" (US), respectively.
 
+    // 
+    //hayman has no hubs.  In this approximation the spokes will hang in space.  
+    
+    /*
     Polycone const & pHubRgtParams = *tgt->getHubsRgtPtr();
     VolumeInfo prodTargetHubRgtInfo  = nestPolycone("ProductionTargetHubRgt",
                                                     pHubRgtParams.getPolyconsParams(),
@@ -263,7 +424,8 @@ namespace mu2e {
                                                     G4Colour::Magenta(),
                                                     "ProductionTarget"
                                                     );
-
+    
+    */
     CLHEP::Hep3Vector zax(0,0,1);
     double spokeRad = 0.5*_config.getDouble("targetPS_Spoke_diameter");
     G4Material* spokeMaterial = findMaterialOrThrow(_config.getString("targetPS_Spoke_materialName"));
@@ -309,6 +471,8 @@ namespace mu2e {
       std::stringstream iSpokeName;
       iSpokeName<<"ProductionTargetSpokeRgt_"<<iSpk;
 
+
+       
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
                                           iSpokeParams,
                                           spokeMaterial,
@@ -323,6 +487,7 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
+      
       ++iSpk;
     }
 
@@ -340,7 +505,6 @@ namespace mu2e {
       CLHEP::Hep3Vector tmpRotAxis = tmpDirVec.cross(zax);
       double rotAngle = tmpDirVec.angle(zax);
       double deepAngleWheel = tmpDirVec.angle(normalax);
-
       CLHEP::Hep3Vector normalaxHub(sin(normalOverhangLft),0,cos(normalOverhangLft));
       normalaxHub.rotateZ(tmpAngle);
       normalaxHub.transform(invTrgtRot);
@@ -355,7 +519,7 @@ namespace mu2e {
       TubsParams iSpokeParams( 0.0, spokeRad, 0.5*tmpSpokeLength);
       std::stringstream iSpokeName;
       iSpokeName<<"ProductionTargetSpokeLft_"<<iSpk;
-
+      
       VolumeInfo iSpokeInfo   = nestTubs( iSpokeName.str(),
                                           iSpokeParams,
                                           spokeMaterial,
@@ -370,6 +534,7 @@ namespace mu2e {
                                           placePV,
                                           doSurfaceCheck
                                           );
+      
       ++iSpk;
     }
 

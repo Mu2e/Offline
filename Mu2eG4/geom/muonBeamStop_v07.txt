@@ -1,0 +1,136 @@
+// Muon Beam Dump/Stop
+// This file is used in the common geometry.
+// except for one of the Z offset values the rest is computable from the other values
+
+// the Z values were adjusted from mu2e doc-1351 based on doc-1186 also to
+// fit with the previously implemented components
+
+// David No. Brown updating MBS based on doc-1351 v7, 10/29/2015
+// This version will be known as Version 2.
+// the initial implementation is described in doc-1519
+
+// Michael MacKenzie adding a Calorimeter shield ring at the upstream
+// end of the MBS based on doc-12822 slide 17, 12/15/18
+// Version numbers = 6 : create this object.
+
+// Michael MacKenzie editing outer steel on plastic cylinder dimensions
+// to match designs as of 07/18/19, Version number 7 currently
+
+int    mbs.Version            = 7;
+
+double mbs.MBSCZ              = 15273.0;
+
+vector<double> mbs.BSTSInnerRadii = { 437.5, 437.5, 437.5 };
+vector<double> mbs.BSTSOuterRadii = { 450.2, 475.6, 475.6 }; //last radii 462.9 --> 475.6 (MM)
+vector<double> mbs.BSTSZLengths   = { 1000.0, 2270.0, 816.0 }; 
+double mbs.BSTSHLength        =  2043.0;
+string mbs.BSTSMaterialName   = "StainlessSteel";
+double mbs.BSTSZrelCntr       =    0.0;
+
+// These next two kept in case you try to build older geom version.  Don't.
+double mbs.SPBSSup1InnerRadius  =   451.0;
+double mbs.SPBSSup1OuterRadius  =   700.0;
+double mbs.SPBSSup1HLength      =    20.0;
+string mbs.SPBSSup1MaterialName = "StainlessSteel";
+double mbs.SPBSSup1ZrelCntr     =  -1063.5;
+
+double mbs.SPBSSup2InnerRadius  =   451.0;
+double mbs.SPBSSup2OuterRadius  =   700.0;
+double mbs.SPBSSup2HLength      =    20.0;
+string mbs.SPBSSup2MaterialName = "StainlessSteel";
+double mbs.SPBSSup2ZrelCntr     =  1247.0;
+
+// Not in use currently
+double mbs.SPBSLInnerRadius   =   480.0;
+double mbs.SPBSLOuterRadius   =   700.0;
+double mbs.SPBSLHLength       =   300.0;
+string mbs.SPBSLMaterialName  = "Polyethylene096";
+double mbs.SPBLZrelCntr       = -1198.0;
+
+// All that stays of outer HDPE
+double mbs.SPBSCInnerRadius   =   479.8; // 475.6 --> 479.8 (MM)
+double mbs.SPBSCOuterRadius   =   543.3; // 539.1 --> 543.3 (MM)
+double mbs.SPBSCHLength       =   1135;
+double mbs.SPBSCminAngle      =   -45.0;
+double mbs.SPBSCmaxAngle      =   270.0;
+string mbs.SPBSCMaterialName  = "Polyethylene0935"; //"Polyethylene096" --> "Polyethylene0935" (MM)
+double mbs.SPBCZrelCntr       =  92.0;
+
+// Not currently in use
+double mbs.SPBSRInnerRadius   =   480.0;
+double mbs.SPBSROuterRadius   =   700.0;
+double mbs.SPBSRHLength       =   280.0;
+string mbs.SPBSRMaterialName  = "Polyethylene096";
+double mbs.SPBRZrelCntr       = 1242.0;
+
+// Upstream inner HDPE
+vector<double> mbs.BSTCInnerRadii  =   { 319.45, 319.45 }; // 386.7 and 323.2 --> 319.45 (MM)
+vector<double> mbs.BSTCOuterRadii  =   { 433.75, 433.75 }; // 437.5 --> 433.75 (MM)
+vector<double> mbs.BSTCLengths     =   { 1000.0, 585.0 }; //no longer matters since matching dimensions (MM)
+string mbs.BSTCMaterialName   = "Polyethylene0935"; // "Polyethylene096" --> "Polyethylene0935" (MM)
+double mbs.BSTCZrelCntr       =  -1250.5;
+
+// Downstream inner HDPE
+vector<double> mbs.BSBSInnerRadii  =   { 344.85, 319.45 }; //348.6 --> 344.85, 323.2 --> 319.45 (MM)
+vector<double> mbs.BSBSOuterRadii  =   { 433.75, 433.75 }; // 437.5 --> 433.75 (MM)
+vector<double> mbs.BSBSLengths     =   { 1685.0, 706.0 };
+string mbs.BSBSMaterialName   = "Polyethylene0935"; // "Polyethylene096" --> "Polyethylene0935" (MM)
+double mbs.BSBSZrelCntr            =  737.5;
+
+
+// Pump-out holes 
+int    mbs.nHolesSteel = 3;
+int    mbs.nHolesUpstreamPoly = 1;
+int    mbs.nHolesDownstreamPoly = 2;
+double mbs.steelHoleXDim = 615.0;
+double mbs.steelHoleYDim = 164.4; // 164.4 --> 
+double mbs.steelHoleZDim = 300.0;
+double mbs.upPolyHoleXDim = 566.0; // 460.0 --> 566.0 (MM)
+double mbs.upPolyHoleYDim = 300.0; // 209 --> 213 to match inner radii changes
+double mbs.upPolyHoleZDim = 250.0; 
+double mbs.downPolyHoleXDim = 566.0; // 490 --> 566 (MM)
+double mbs.downPolyHoleYDim = 300.0; //164.4 --> 168.4
+double mbs.downPolyHoleZDim = 250.0;
+vector<double> mbs.steelHoleCenter1 = {0.0, -393.4, 1340.0}; 
+vector<double> mbs.steelHoleCenter2 = {0.0, -393.4, 1960.0};
+vector<double> mbs.steelHoleCenter3 = {0.0, -393.4, 2580.0};
+vector<double> mbs.upPolyHoleCenter1   = {0.0, -319.45, 1315.0};   // moved to line up with steel edge (MM)
+vector<double> mbs.downPolyHoleCenter1 = {0.0, -319.45, 1935.0}; // moved to line up with steel edge (MM)
+vector<double> mbs.downPolyHoleCenter2 = {0.0, -319.45, 2555.0}; // moved to line up with steel edge (MM)
+
+
+// Calorimeter Shield Ring at Upstream end of MBS (Not built in this version)
+double mbs.CalShieldRingInnerRadius   =   390.0;
+double mbs.CalShieldRingOuterRadius   =   530.0;
+double mbs.CalShieldRingHLength       =   3.0;
+string mbs.CalShieldRingMaterialName  = "MBSCalShieldRing";
+double mbs.CalShieldRingZRelCnt       = -2047.0; //13230.0 - 15273.0 - 3.0 - 1.0 = -2047.0
+
+
+// End plug
+vector<double> mbs.CLV2InnerRadii  =   { 110.0, 110.0  }; // 92 --> 110 to match IFB window (MM)
+vector<double> mbs.CLV2OuterRadii  =   { 317., 433.75 }; // 323.2 --> 317 and 437.5 --> 433.75 (MM)
+vector<double> mbs.CLV2Lengths     =   {  50.0, 102.4 };
+string mbs.CLV2MaterialName   = "Polyethylene0935"; //"Polyethylene096" --> "Polyethylene0935" (MM)
+double mbs.CLV2ZrelCntr            =  1959.2;
+
+bool   mbs.CLV2.absorber.build          = false;
+string mbs.CLV2.absorber.MaterialName   = "Polyethylene0935"; //"Polyethylene096" --> "Polyethylene0935" (MM)
+double mbs.CLV2.absorber.halflength     =  10.0;
+
+int    mbs.verbosityLevel = 0;
+bool   mbs.visible      = true;
+bool   mbs.solid        = false;
+
+//
+//
+// End notes:
+//
+// 1) Sources of information:
+//
+//
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

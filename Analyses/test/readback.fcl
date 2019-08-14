@@ -1,59 +1,27 @@
-# Configuration file for Readback
 #
-# Readback the output of g4test_03.py; make histograms and printout.
+# Readback the output of g4test_03.fcl; make histograms and printout.
 #
-# $Id: readback.fcl,v 1.4 2012/03/02 17:16:22 gandr Exp $
-# $Author: gandr $
-# $Date: 2012/03/02 17:16:22 $
 
 #include "fcl/minimalMessageService.fcl"
-#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
 
-# Give this job a name.  
 process_name : ReadBack01
 
-# Start form an empty source
-source : 
-{ 
+source : {
   module_type : RootInput
   fileNames   : [ "data_03.root" ]
-  maxEvents : -1
+  maxEvents   : -1
 }
 
-services : 
-{
-  message : @local::default_message 
-
-  TFileService : 
-  {
-    fileName : "readback.root"
-  }
-
-  GeometryService :
-  {
-    inputFile : "Mu2eG4/geom/geom_common.txt"
-  }  
-
-  ConditionsService :
-  {
-    conditionsfile : "Mu2eG4/test/conditions_01.txt"
-  }  
-
-  GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-
+services : {
+  @table::Services.Core
+  TFileService : { fileName : "readback.root" }
 }
 
-physics :
-{
-  producers:
-  {  }
+physics : {
+  analyzers: {
 
-
-  analyzers:
-  {
-
-    checkhits:
-    {
+    checkhits: {
       module_type            : ReadBack
       generatorModuleLabel   : generate
       g4ModuleLabel          : g4run
@@ -63,17 +31,16 @@ physics :
     }
 
     readStrawHits: {
-      module_type      : ReadStrawHit
+      module_type     : ReadStrawHit
       recoModuleLabel : makeSH
-      simModuleLabel : makeSD
-      diagLevel        : 3
-      maxFullPrint     : 100
+      simModuleLabel  : makeSD
+      diagLevel       : 3
+      maxFullPrint    : 100
     }
+
+
   }
 
-  e1 : [checkhits, readStrawHits]
-
-  end_paths      : [e1]
+  e1 : [ checkhits, readStrawHits ]
 
 }
-

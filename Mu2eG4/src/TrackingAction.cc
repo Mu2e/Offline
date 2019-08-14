@@ -516,7 +516,8 @@ void TrackingAction::saveSimParticleEnd(const G4Track* trk){
                           trk->GetTrackStatus(),
                           stoppingCode,
                           endKE,
-                          nSteps
+                          nSteps,
+                          trk->GetTrackLength()
                           );
 
     if (trackingVerbosityLevel > 0) {

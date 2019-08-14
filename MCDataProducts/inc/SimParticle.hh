@@ -64,9 +64,10 @@ namespace mu2e {
       _endVolumeIndex(0),
       _endG4Status(),
       _stoppingCode(),
-      _preLastStepKE(-1),
-      _endKE(-1),
+      _preLastStepKE(-1.),
+      _endKE(-1.),
       _nSteps(0),
+      _trackLength(-1.),
       _daughterSims(),
       _endDefined(false){
     }
@@ -105,6 +106,7 @@ namespace mu2e {
       _preLastStepKE(-1),
       _endKE(-1),
       _nSteps(0),
+      _trackLength(-1.),
       _daughterSims(),
       _endDefined(false)
     {}
@@ -119,7 +121,8 @@ namespace mu2e {
                      unsigned                aendG4Status,
                      ProcessCode             astoppingCode,
                      float                   endKE,
-                     int                     nSteps){
+                     int                     nSteps,
+		     double                  trackLength){
       _endDefined      = true;
       _endPosition     = aendPosition;
       _endMomentum     = aendMomentum;
@@ -131,6 +134,7 @@ namespace mu2e {
       _preLastStepKE   = -1.0;      
       _endKE           = endKE;
       _nSteps          = nSteps;
+      _trackLength     = trackLength;
     }
 
     void addDaughter( art::Ptr<SimParticle> const& p ){
@@ -183,7 +187,7 @@ namespace mu2e {
     double      startProperTime()  const { return _startProperTime;}
     unsigned    startVolumeIndex() const { return _startVolumeIndex;}
     unsigned    startG4Status()    const { return _startG4Status;}
-    ProcessCode creationCode()      const { return _creationCode;  }
+    ProcessCode creationCode()     const { return _creationCode;   }
 
     // Information at the end of the track.
     CLHEP::Hep3Vector const& endPosition() const { return _endPosition;}
@@ -195,7 +199,8 @@ namespace mu2e {
     ProcessCode  stoppingCode()   const { return _stoppingCode;  }
     double       preLastStepKineticEnergy() const { return _preLastStepKE; }
     float        endKineticEnergy() const { return _endKE; }
-    int          nSteps()  const { return _nSteps;        }
+    int          nSteps()         const { return _nSteps;        }
+    double       trackLength()    const { return _trackLength;   }
 
     // SimParticle daughters of this track.
     std::vector<art::Ptr<SimParticle> > const& daughters()   const { return _daughterSims; }
@@ -265,6 +270,7 @@ namespace mu2e {
     double                  _preLastStepKE;
     float                   _endKE;
     int                     _nSteps;
+    double                  _trackLength;
 
     // SimParticle IDs of daughters of this track.
     std::vector<art::Ptr<SimParticle> > _daughterSims;

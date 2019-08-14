@@ -87,10 +87,13 @@ namespace mu2e {
 
       int verbosityLevel_;
 
-    int standardMu2eDetector_;
+      int standardMu2eDetector_;
       
       GenEventBroker* genEventBroker_;
       PerEventObjectsManager* perEvtObjManager;
+
+      bool preCreateIsomers_;
+      PDGCode::type pdgIdToGenerate_;
       
   };
 
