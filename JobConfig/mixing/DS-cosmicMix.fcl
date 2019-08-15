@@ -11,6 +11,7 @@ source: {
   # drop products that will get remade and aren't needed for filtering.
   inputCommands: ["keep *_*_*_*",
 		  @sequence::Mixing.Input.droppedProducts]
+  dropDescendantsOfDroppedBranches: false
 }
 services: @local::Services.Sim
 physics : { 
@@ -80,3 +81,64 @@ outputs.Output.outputCommands : [ "drop *_*_*_*",
 services.TFileService.fileName: "nts.owner.DS-cosmic-mix.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.DS-cosmic-mix.version.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+#
+# Fixes needed in art3_03_01 due to changes in provenance rules.  This affects only jobs rerunning digi-making and compression
+#
+
+source.dropDescendantsOfDroppedBranches : false
+
+# digiCompressionCheck
+physics.analyzers.digiCompressionCheck.NewTimeOffsets.inputs: [
+    "compressDigiMCs:protonTimeMap:current_process",
+    "compressDigiMCs:muonTimeMap:current_process",
+    "compressDigiMCs:cosmicTimeMap:current_process"
+]
+physics.analyzers.digiCompressionCheck.newCaloShowerSimTag : "compressDigiMCs::current_process"
+physics.analyzers.digiCompressionCheck.newCrvDigiMCTag     : "compressDigiMCs::current_process"
+physics.analyzers.digiCompressionCheck.newStrawDigiMCTag   : "compressDigiMCs::current_process"
+
+# DigiFilter
+physics.filters.DigiFilter.StrawDigiMCCollection : "compressDigiMCs::input_source"
+
+# compressDigiMCs
+physics.producers.compressDigiMCs.extraStepPointMCTags: [
+   "compressDigiMCs:virtualdetector:input_source",
+   "compressDigiMCs:protonabsorber:input_source"
+]
+physics.producers.compressDigiMCs.mcTrajectoryTag : ""
+physics.producers.compressDigiMCs.simParticleTags: [
+  "compressDigiMCs::input_source",
+  "flashMixerTrkCal",
+  "ootMixerTrkCal",
+  "neutronMixerTrkCal",
+  "dioMixerTrkCal",
+  "photonMixerTrkCal",
+  "protonMixerTrkCal",
+  "deuteronMixerTrkCal",
+  "PSMixerCRV",
+  "TSMixerCRV",
+  "DSMixerCRV",
+  "ootMixerCRV",
+  "neutronMixerCRV",
+  "dioMixerCRV",
+  "photonMixerCRV"
+]
+
+
+# muonTimeMap
+physics.producers.muonTimeMap.InputTimeMaps: [
+   "compressDigiMCs:muonTimeMap:input_source"
+]
+
+# protonTimeMap
+physics.producers.protonTimeMap.InputTimeMaps: [
+   "compressDigiMCs:protonTimeMap:input_source",
+   "flashMixerTrkCal:protonTimeMap:current_process",
+   "PSMixerCRV:protonTimeMap:current_process",
+   "DSMixerCRV:protonTimeMap:current_process"
+]
+
+# separateCaloShowerSteps
+physics.producers.separateCaloShowerSteps.inputTag : "compressDigiMCs::input_source"
+

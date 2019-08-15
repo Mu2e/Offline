@@ -100,6 +100,8 @@ namespace mu2e {
       void fillStrawHitIndices(art::Event const& event, uint16_t chindex, std::vector<StrawHitIndex>& shids) const;
       // do this for all the hits in the collection
       void fillStrawHitIndices(art::Event const& event, std::vector<std::vector<StrawHitIndex> >& shids) const;
+      // translate a collection of ComboHits into the lowest-level (straw) combo hits.  This function is recursive
+      void fillComboHits(art::Event const& event, std::vector<uint16_t> const& indices, CHCIter& iters) const;
       // fill a vector of iterators to the ComboHits 1 layer below a given ComboHit.  This is NOT RECURSIVE
       // return value says whether there's a layer below or not (if not, output is empty)
       bool fillComboHits(art::Event const& event, uint16_t chindex, CHCIter& iters) const;

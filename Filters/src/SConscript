@@ -57,6 +57,7 @@ helper.make_plugins( [
     rootlibs,
     'boost_filesystem',
     'boost_system',
+    'hep_concurrency',
     ] )
 
 #helper.make_dict_and_map( [

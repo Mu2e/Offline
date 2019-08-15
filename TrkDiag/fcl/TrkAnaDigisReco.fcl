@@ -4,23 +4,28 @@
 #
 #include "fcl/standardProducers.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
-# the following is for reading MDC2018g and earlier.  To read later digis, remove the "_nocosmic"
-###include "JobConfig/reco/mcdigis_nocosmic.fcl"
-#include "JobConfig/reco/mcdigis.fcl"
-
+# the following is for reading primary digis
+##include "JobConfig/reco/mcdigis_primary.fcl"
+# the following is for reading mixed digis MDC2018g and earlier
+#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+# the following is for reading mixed digis MDC2018h and later
+###include "JobConfig/reco/mcdigis.fcl"
 process_name : TrkAnaDigisReco
 # augment producers and analyzers
 physics.producers: {
   @table::physics.producers
+  @table::CommonMC.producers  
   @table::TrkAnaReco.producers
 }
 physics.analyzers: {
   @table::physics.analyzers
   @table::TrkAnaReco.analyzers
 }
-# add TrkQual to path
-physics.RecoPath : [ @sequence::physics.RecoPath,
-   @sequence::TrkAnaReco.TrigSequence ]
+# for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
+physics.analyzers.TrkAnaNeg.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
+physics.analyzers.TrkAnaPos.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
+
+physics.RecoPath : [ @sequence::physics.RecoPath, @sequence::TrkAnaReco.TrigSequence ]
 physics.EndPath : [ RecoCheck, @sequence::TrkAnaReco.EndSequence ]
 services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.root"
 #
@@ -37,12 +42,7 @@ services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.roo
 #physics.analyzers.TrkAnaPos.diagLevel : 2
 # trigger information is not supported by this script
 
-# TrkQual and TrkCaloHitPID input variables branch not supported by this script
-physics.analyzers.TrkAnaNeg.FillTrkQualInfo : false
-physics.analyzers.TrkAnaPos.FillTrkQualInfo : false
-physics.analyzers.TrkAnaNeg.candidate.fillTrkQual : false
-physics.analyzers.TrkAnaPos.candidate.fillTrkQual : false
-physics.analyzers.TrkAnaNeg.FillTrkPIDInfo : false
-physics.analyzers.TrkAnaPos.FillTrkPIDInfo : false
-physics.analyzers.TrkAnaNeg.candidate.fillTrkPID : false
-physics.analyzers.TrkAnaPos.candidate.fillTrkPID : false
+# Filter based on the reco path
+physics.analyzers.TrkAnaNeg.SelectEvents : [RecoPath]
+physics.analyzers.TrkAnaPos.SelectEvents : [RecoPath]
+

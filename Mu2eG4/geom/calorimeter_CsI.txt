@@ -130,3 +130,7 @@ bool calorimeter.RO.visible                    = true;
 bool calorimeter.RO.solid                      = false;
 
 
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

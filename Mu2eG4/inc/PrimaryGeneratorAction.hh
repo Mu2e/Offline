@@ -82,8 +82,12 @@ namespace mu2e {
       TH1D* _totalMultiplicity;
 
       int verbosityLevel_;
+      int standardMu2eDetector_;
       
       Mu2eG4PerThreadStorage* perThreadObjects_;
+
+      bool preCreateIsomers_;
+      PDGCode::type pdgIdToGenerate_;
       
   };
 

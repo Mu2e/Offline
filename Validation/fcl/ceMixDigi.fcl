@@ -184,5 +184,3 @@ mu2emetadata.fcl.outkeys: [ "services.TFileService.fileName", "outputs.Output.fi
 # End code added by generate_fcl:
 #----------------------------------------------------------------
 
-# avoid an error report under investigation, 7/15/19
-physics.analyzers.digiCompressionCheck.checkTrackerDuplicateSteps : false

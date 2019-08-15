@@ -1,5 +1,7 @@
 #include "JobConfig/ensemble/prolog.fcl"
 
+${comments}
+
 process_name : SI
 
 source : { module_type : SamplingInput
@@ -7,14 +9,25 @@ source : { module_type : SamplingInput
   dropDescendantsOfDroppedBranches: false
   run : ${run}
   subRun : ${subRun}
+  samplingSeed : ${samplingSeed}
   dataSets : { 
 ${datasets} 
   }
 }
 
 physics :
-{
-  EndPath : [ OutputMC ]
+{ 
+  filters : {
+    TRF : {
+      module_type : TriggerResultsFilter
+      PrintFirst : false
+      ProcessName : "recomcdigistrig"
+      TriggerNames : ["tprSeedDeM_trigger", "tprSeedDeP_trigger", "cprSeedDeM_trigger", "cprSeedDeP_trigger" ]
+    }
+  }
+
+  FilterPath : [TRF]
+  EndPath : [ OutputMC, OutputData ]
   end_paths : [ EndPath ] # needed for generate_fcl
 }
 
@@ -25,10 +38,11 @@ outputs : {
     fileName : "${outnameMC}"
   }
 
-#  OutputData : {
-#    module_type : RootOutput
-#    outputCommands : @local::Ensemble.OutputCommandsData
-#    fileName : "${outnameData}"
-#  }
+  OutputData : {
+    module_type : RootOutput
+    SelectEvents: [FilterPath]
+    outputCommands : @local::Ensemble.OutputCommandsData
+    fileName : "${outnameData}"
+  }
 }
 
