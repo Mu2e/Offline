@@ -2,7 +2,7 @@
 #define RecoDataProducts_StraightTrackSeed_hh
 //
 // S. Middleton - seed class for striaght track fit
-//
+// This class is mostly obsolete now-upgrade to cosmictrack
 
 // Mu2e includes
 #include "BTrk/TrkBase/TrkT0.hh"
@@ -19,7 +19,6 @@ namespace mu2e {
 
   struct StraightTrackSeed {
 
-    //TrkT0 const& t0() const { return _t0; }//TODO:remove?
     ComboHitCollection const& hits() const { return _thits; }
     StraightTrack const& track() const { return _track; }
     TrkFitFlag const& status() const { return _status; }

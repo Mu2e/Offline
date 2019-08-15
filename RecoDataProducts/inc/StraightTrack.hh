@@ -1,6 +1,7 @@
 #ifndef RecoDataProducts_StraightTrack_hh
 #define RecoDataProducts_StraightTrack_hh
 //S. Middleton - straight track class, will store info of fit result in terms of m and c and errors.
+//This is now almost obsolete - upgrade to comsic track
 #include "TMath.h"
 #include "TMatrixD.h"
 #include<vector>
