@@ -7,34 +7,34 @@ string ts.upstreamVacuumMaterialName   = "PSVacuum";
 
 // Cryostat
 // - radii
-double ts.ts1in.rOut       = 270.;  
-double ts.ts2in.rOut       = 270.;  
-double ts.ts3in.rOut       = 270.;  
-double ts.ts4in.rOut       = 270.;  
-double ts.ts5in.rOut       = 270.;  
+double ts.ts1in.rOut       = 270.;
+double ts.ts2in.rOut       = 270.;
+double ts.ts3in.rOut       = 270.;
+double ts.ts4in.rOut       = 270.;
+double ts.ts5in.rOut       = 270.;
 
-double ts.ts1out.rIn       = 705.0; 
-double ts.ts2out.rIn       = 812.5; 
-double ts.ts3out.rIn       = 812.5; 
-double ts.ts4out.rIn       = 812.5; 
-double ts.ts5out.rIn       = 812.5; 
+double ts.ts1out.rIn       = 705.0;
+double ts.ts2out.rIn       = 812.5;
+double ts.ts3out.rIn       = 812.5;
+double ts.ts4out.rIn       = 812.5;
+double ts.ts5out.rIn       = 812.5;
 
-double ts.ts1out.rOut      = 725.0; 
-double ts.ts2out.rOut      = 832.5; 
-double ts.ts3out.rOut      = 832.5; 
-double ts.ts4out.rOut      = 832.5; 
-double ts.ts5out.rOut      = 832.5; 
+double ts.ts1out.rOut      = 725.0;
+double ts.ts2out.rOut      = 832.5;
+double ts.ts3out.rOut      = 832.5;
+double ts.ts4out.rOut      = 832.5;
+double ts.ts5out.rOut      = 832.5;
 
 double ts.tsUendWall1.halfLength = 15.;
 
-double ts.tsUendWall2.rIn   = 725.; 
+double ts.tsUendWall2.rIn   = 725.;
 double ts.tsUendWall2.rOut  = 832.5.;
 double ts.tsUendWall2.halfLength = 15.;
 
 double ts.tsDendWall.halfLength = 15.;
 
-double ts.ts1.halfLength  = 537.5; 
-double ts.ts5.halfLength  = 625.;  
+double ts.ts1.halfLength  = 537.5;
+double ts.ts5.halfLength  = 625.;
 
 // Rings
 double ts.rInRingSide = 848.6;
@@ -58,7 +58,7 @@ bool ts.cryo.solid   = false;
 bool   ts.polyliner.Up.build     = false;
 bool   ts.polyliner.Down.build   = false;
 string ts.polyliner.materialName = "G4_POLYETHYLENE";
-double ts.polyliner.rIn          = 210.; 
+double ts.polyliner.rIn          = 210.;
 double ts.polyliner.rOut         = 247.;
 bool   ts.polyliner.visible      = true;
 bool   ts.polyliner.solid        = true;
@@ -79,23 +79,23 @@ double pbarwedge.width                = 304.6; // mm (1 foot)
 double pbarwedge.stripThickness       = 0.127; // mm
 vector<double> pbarwedge.stripHeights = {173, 146, 113, 79, 46, 13}; // mm
 
-// The following are holdovers from version 2 of the pbar model.  Only y1 
-// and the zOffset is used for version 3. 
+// The following are holdovers from version 2 of the pbar model.  Only y1
+// and the zOffset is used for version 3.
 double pbarwedge.y0  = -10.;
-double pbarwedge.y1  = 190.; // Do not exceed hole in support 
+double pbarwedge.y1  = 190.; // Do not exceed hole in support
 // Switching to Be window from Kapton.  Use .82 scaling factor, and scale
 // for new height.  The .82 scaling factor is a balance between the density
 // ratio and electron density ratio
 double pbarwedge.dz0 = 0.00082; //0.001 times 0.82 G4 does not like 0
-double pbarwedge.dz1 = 0.724; //1.1 times 0.82 times 200 over 249;  
+double pbarwedge.dz1 = 0.724; //1.1 times 0.82 times 200 over 249;
 // This makes total thickness changing
 // from 0.1648 mm to 0.888 mm over the  height of window
 // from 0.2 mm to 1.3 mm over the height of window  (Kapton vals)
 // Info on support for the Antiproton Stopping Window in TS3:
 double pbarwedge.zOffset = 5.1; // mm
-double pbar.support.midThickness = 53.0; // mm, 
+double pbar.support.midThickness = 53.0; // mm,
 double pbar.support.midRin = 270.1; //
-double pbar.support.midRout = 812.4; 
+double pbar.support.midRout = 812.4;
 string pbar.support.material = "StainlessSteel";
 double pbar.support.innerHalflength = 5.0; // mm
 double pbar.support.holeDisp = 90.0 ; // mm
@@ -137,9 +137,9 @@ string pbar.coll1Out.material1Name = "G4_C";
 double pbar.coll1Out.halfLength = 100.0;
 double pbar.coll1Out.rIn = 120.0;
 double pbar.coll1Out.z = -3144.5;
-double pbar.coll1Out.zDiff = 0.5; // margin between end of collar and Coll1    
-// Has always been there, now we keep track of it 
-//double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values 
+double pbar.coll1Out.zDiff = 0.5; // margin between end of collar and Coll1
+// Has always been there, now we keep track of it
+//double pbar.coll1Out.phiBegin = 200.0; // Old, incorrect values
 //double pbar.coll1Out.phiDelta = 140.0;
 double pbar.coll1Out.phiBegin = 210.0;
 double pbar.coll1Out.phiDelta = 120.0;
@@ -165,7 +165,7 @@ double ts.coll1.halfLength = 500.0;
 // r1 is at the smaller z
 double ts.coll1.innerRadius1 = 150.0;
 double ts.coll1.innerRadius2 = 150.0;
-double ts.coll1.innerRadius3 = 160.0; 
+double ts.coll1.innerRadius3 = 160.0;
 double ts.coll1.innerRadius4 = 240.0;
 double ts.coll1.outerRadius4 = 248.0;
 // r3 is outer cylinder inner radius; set it and r2 to 170mm and r1==150mm
@@ -174,6 +174,7 @@ string ts.coll1.material1Name = "G4_C";
 string ts.coll1.material2Name = "CollCu";
 string ts.coll1.material3Name = "StainlessSteel";
 
+double ts.coll3.outerRadius      = 250.0;
 double ts.coll3.halfLength       = 400.0;
 double ts.coll3.hole             = 50.0;
 string ts.coll3.materialName     = "CollCu";
@@ -201,9 +202,9 @@ string ts.flashBlockDn.Material    = "CollCu"; //
 
 
 double ts.coll5.halfLength    = 500.0;
-double ts.coll5.Radius1       = 128.0; 
-double ts.coll5.Radius2       = 240.0; 
-double ts.coll5.Radius3       = 248.0; 
+double ts.coll5.Radius1       = 128.0;
+double ts.coll5.Radius2       = 240.0;
+double ts.coll5.Radius3       = 248.0;
 string ts.coll5.material1Name = "G4_POLYETHYLENE";
 string ts.coll5.material2Name = "StainlessSteel";
 
@@ -237,57 +238,57 @@ vector<double> ts1.coils.zPos      = {-3629.,-3379.,-3136.5, -2972.3 };
 vector<double> ts1.coils.yRotAngle = {    0. ,   0. ,   0., 0.  };
 
 // - TS2
-vector<double> ts2.coils.rIn       = 
-  { 
-    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
-    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
-    405.  , 405.  , 405.  , 405.  , 405.  , 405.  
+vector<double> ts2.coils.rIn       =
+  {
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  ,
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  ,
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.
   };
-vector<double> ts2.coils.rOut      = 
-  { 
+vector<double> ts2.coils.rOut      =
+  {
     448.60, 448.60, 448.60, 463.20, 463.20, 463.20,
-    463.20, 466.80, 466.80, 466.80, 466.80, 470.50, 
+    463.20, 466.80, 466.80, 466.80, 466.80, 470.50,
     470.50, 470.50, 470.50, 470.50, 477.80, 448.60
   };
 
-vector<double> ts2.coils.sLength   = 
-  { 
-    86.30, 172.60, 172.60, 172.60, 172.60, 172.60, 
-    172.60, 172.60, 172.60, 172.60, 172.60, 172.60, 
+vector<double> ts2.coils.sLength   =
+  {
+    86.30, 172.60, 172.60, 172.60, 172.60, 172.60,
+    172.60, 172.60, 172.60, 172.60, 172.60, 172.60,
     172.60, 172.60, 172.60, 172.60, 172.60, 81.30
   };
-vector<double> ts2.coils.xPos   = 
-  { 
+vector<double> ts2.coils.xPos   =
+  {
     3904.,3894.,3864.,3807.,3723.,3613.,
     3479.,3322.,3143.,2944.,2728.,2495.,
     2248.,1990.,1722.,1457.,1217., 1015.8
   };
 
-vector<double> ts2.coils.zPos   = 
-  { 
+vector<double> ts2.coils.zPos   =
+  {
     -2885.7, -2687., -2447., -2182., -1914., -1656.,
     -1409., -1176.,  -960.,  -761.,  -582.,  -425.,
     -291.,   -181.,   -97.,   -40.,   -10.,     0.
   };
-// first WAS -2929 
+// first WAS -2929
 vector<double> ts2.coils.yRotAngle =
-  { 
+  {
       0.0,  -5.7, -10.5, -15.8, -21.3, -26.8,
     -32.3, -37.8, -43.3, -48.7, -54.2, -59.7,
     -65.2, -70.7, -76.2, -81.5, -86.3, -90.0
   };
 
 // - TS3
-vector<double> ts3.coils.rIn       = 
+vector<double> ts3.coils.rIn       =
   {
     405. ,
-    465.  , 465.  , 465.  , 465.  , 
+    465.  , 465.  , 465.  , 465.  ,
     465.  , 465.  , 465.  , 465.  ,
     405.
   };
 vector<double> ts3.coils.rOut      =
   {
-    448.60, 
+    448.60,
     523.20, 512.20, 519.50, 621.70,
     618.10, 512.20, 515.90, 515.90,
     441.30
@@ -313,76 +314,76 @@ vector<double> ts3.coils.zPos   =
     0.,0.,0.,0.,
     0.
   };
-vector<double> ts3.coils.yRotAngle = 
+vector<double> ts3.coils.yRotAngle =
   {
     -90.  ,
-    -90.  , -90.  , -90.  , -90.  , 
+    -90.  , -90.  , -90.  , -90.  ,
     -90.  , -90.  , -90.  , -90.  ,
     -90.
   };
 
 // - TS4
-vector<double> ts4.coils.rIn       = 
-  { 
-    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
-    405.  , 405.  , 405.  , 405.  , 405.  , 405.  , 
-    405.  , 405.  , 405.  , 405.  , 405.  , 405.  
+vector<double> ts4.coils.rIn       =
+  {
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  ,
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.  ,
+    405.  , 405.  , 405.  , 405.  , 405.  , 405.
   };
-vector<double> ts4.coils.rOut      = 
+vector<double> ts4.coils.rOut      =
   {
     441.30, 448.60, 448.60, 459.50, 459.50, 459.50,
     459.50, 463.20, 463.20, 463.20, 463.20, 463.20,
     463.20, 463.20, 463.20, 455.90, 455.90, 444.90
   };
-vector<double> ts4.coils.sLength   = 
-  { 
-    81.30, 172.60, 172.60, 172.60, 172.60, 172.60, 
-    172.60, 172.60, 172.60, 172.60, 172.60, 172.60, 
+vector<double> ts4.coils.sLength   =
+  {
+    81.30, 172.60, 172.60, 172.60, 172.60, 172.60,
+    172.60, 172.60, 172.60, 172.60, 172.60, 172.60,
     172.60, 172.60, 172.60, 172.60, 172.60, 86.30
   };
-vector<double> ts4.coils.xPos   = 
-  { 
+vector<double> ts4.coils.xPos   =
+  {
     -1015.8 ,-1217.,-1457.,-1722.,-1990.,-2248.,
     -2495.,-2728.,-2944.,-3143.,-3322.,-3479.,
     -3613.,-3723.,-3807.,-3864.,-3894.,-3904.
   };
-vector<double> ts4.coils.zPos   = 
-  { 
-        0.,   10.,   40.,   97.,  181.,  291.,    
-      425.,  582.,  761.,  960., 1176., 1409.,   
-     1656., 1914., 2182., 2447., 2687., 2885.70  
+vector<double> ts4.coils.zPos   =
+  {
+        0.,   10.,   40.,   97.,  181.,  291.,
+      425.,  582.,  761.,  960., 1176., 1409.,
+     1656., 1914., 2182., 2447., 2687., 2885.70
   }; // last WAS 2929
-vector<double> ts4.coils.yRotAngle = 
-  { 
-    -90.0, -86.5, -81.7, -76.4, -70.9, -65.4, 
-    -59.9, -54.4, -48.9, -43.5, -38.0, -32.5, 
+vector<double> ts4.coils.yRotAngle =
+  {
+    -90.0, -86.5, -81.7, -76.4, -70.9, -65.4,
+    -59.9, -54.4, -48.9, -43.5, -38.0, -32.5,
     -27.0, -21.5, -16.0, -10.7,  -5.9,   0.0
   };
 
 // - TS5
-vector<double> ts5.coils.rIn      = 
-  { 405.  , 
-    405.  , 405.  , 405.  , 405.  , 405.  
+vector<double> ts5.coils.rIn      =
+  { 405.  ,
+    405.  , 405.  , 405.  , 405.  , 405.
   };
-vector<double> ts5.coils.rOut     = 
-  { 444.90, 
+vector<double> ts5.coils.rOut     =
+  { 444.90,
     430.30, 426.70, 419.40, 415.70, 412.10
   };
-vector<double> ts5.coils.sLength   = 
+vector<double> ts5.coils.sLength   =
   {
     86.30, 172.60, 172.60, 172.60, 172.60, 172.60
   };
-vector<double> ts5.coils.xPos      = 
+vector<double> ts5.coils.xPos      =
   { -3904.,
     -3904.,-3904.,-3904.,-3904.,-3904.
   };
-vector<double> ts5.coils.zPos      = 
+vector<double> ts5.coils.zPos      =
   { 2972.3,
     3151.6,3339.8,3528.1,3716.4,3904.7
   };
-vector<double> ts5.coils.yRotAngle = 
+vector<double> ts5.coils.yRotAngle =
   {   0.  ,
-      0.  ,   0.  ,   0.  ,   0.  ,   0.  
+      0.  ,   0.  ,   0.  ,   0.  ,   0.
   };
 
 // The coils assemblies (CA) are approximated by a torus and tubes/cones for now
@@ -390,48 +391,48 @@ vector<double> ts5.coils.yRotAngle =
 
 int  ts.cas.verbosityLevel = 0;
 
-vector<double> ts1.cas.radii = 
+vector<double> ts1.cas.radii =
   {
     445.00, 525.00,
     485.00, 570.00
   };
 
-vector<double> ts2.cas.radii  = 
+vector<double> ts2.cas.radii  =
   {
     485.00, 570.00
   };
 
-vector<double> ts3u.cas.radii  = 
+vector<double> ts3u.cas.radii  =
   {
-    485.00, 570.00, 
+    485.00, 570.00,
     630.00, 710.00
   };
 
 double ts3ud.cas.halfLength  = 835.00;
 double ts3udgap.cas.halfLength  = 27.00;
 
-vector<double> ts3uu.cas.radii  = 
+vector<double> ts3uu.cas.radii  =
   {
     630.00, 710.00
   };
 
-vector<double> ts3dd.cas.radii  = 
+vector<double> ts3dd.cas.radii  =
   {
     630.00, 710.00
   };
 
-vector<double> ts3d.cas.radii  = 
+vector<double> ts3d.cas.radii  =
   {
     630.00, 710.00,
     485.00, 570.00
   };
 
-vector<double> ts4.cas.radii  = 
+vector<double> ts4.cas.radii  =
   {
     485.00, 570.00
   };
 
-vector<double> ts5.cas.radii = 
+vector<double> ts5.cas.radii =
   {
     485.00, 570.00,
     430.00, 510.00
@@ -443,4 +444,3 @@ string ts.cas.materialName   = "G4_Al";
 // Local Variables:
 // mode:c++
 // End:
-

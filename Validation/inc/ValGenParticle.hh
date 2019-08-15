@@ -3,7 +3,7 @@
 #define ValGenParticle_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "Validation/inc/ValId.hh"
 #include "TH1D.h"

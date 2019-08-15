@@ -35,6 +35,7 @@ namespace mu2e {
       // Accept compiler written d'tor.  Modules are never moved or copied.
       virtual void produce (art::Event& e);
       virtual void beginRun(art::Run&   r);
+      virtual void endRun(art::Run&   r);
       void resetStash();
       void fillStash();
 
@@ -50,6 +51,7 @@ namespace mu2e {
   };
 
   CryEventGeneratorN::CryEventGeneratorN(fhicl::ParameterSet const& pSet) :
+    art::EDProducer{pSet},
     inputfile(pSet.get<std::string>("inputFile",
           "CRYEventGenerator/config/defaultCRYconfig.txt")),
     seed_( art::ServiceHandle<SeedService>()->getSeed() ),
@@ -97,6 +99,13 @@ namespace mu2e {
     for ( size_t i=0; i<stashSize_; ++i){
       cryGen->generate(stash_[i]);
     }
+  }
+
+  void CryEventGeneratorN::endRun(art::Run&){
+    std::ostringstream oss;
+    oss << "Total live time simulated: " << cryGen->getLiveTime() << "\n";
+    oss << "Number of events simulated: " << cryGen->getNumEvents() << "\n";
+    mf::LogInfo("CRYEventGenerator") << oss.str();
   }
 
 }

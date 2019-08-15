@@ -13,7 +13,7 @@
 //    delete them.
 // 2) (DNB Louisville).  Because of the large number of materials, we
 //    have split the function for building Mu2e material into two
-//    functions, which I have unimaginatively named 
+//    functions, which I have unimaginatively named
 //    constructMu2eMaterials and constructMu2eMaterials2.  New materials
 //    should be added to the latter.
 //
@@ -62,7 +62,7 @@ namespace mu2e {
   ConstructMaterials::ConstructMaterials() {
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config = geom->config();
-    mu2eStandardDetector_ = config.getBool("mu2e.standardDetector",true);
+    mu2eStandardDetector_ = geom->isStandardMu2eDetector();
     printElements_ = config.getBool("g4.printElements",false);
     printMaterials_ = config.getBool("g4.printMaterials",false);
   }
@@ -113,10 +113,10 @@ namespace mu2e {
   //    Therefore the first argument cannot be a const pointer.
   //
   // 2) After each mat assignment (mat = ... ), the material construction takes place within
-  //    in a code body of local scope--i.e. within { ... }.  This is to allow for 
+  //    in a code body of local scope--i.e. within { ... }.  This is to allow for
   //    multiple C++ definitions of (e.g.) density, temperature, etc., which are objects
   //    that have G4-specific types (G4double).  Removing the braces would require removing
-  //    the G4double typename in front of the variable strings for assignments after the first 
+  //    the G4double typename in front of the variable strings for assignments after the first
 //    one, possibly making things a little confusing for people needing to define materials.
 //  **************** Added Note *********************
 //  Because of warnings from the compiler about too many variables in the
@@ -273,6 +273,13 @@ namespace mu2e {
       Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
     }
 
+    mat = uniqueMaterialOrThrow( "Polyethylene0935");
+    {
+      G4Material* Polyethylene096 = new G4Material( mat.name, 0.935*CLHEP::g/CLHEP::cm3, 2);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_H"), 0.14);
+      Polyethylene096->AddMaterial( findMaterialOrThrow("G4_C"), 0.86);
+    }
+
     // Not real, very thin Polyethylene
     mat = uniqueMaterialOrThrow( "Polyethylene0010");
     {
@@ -334,7 +341,7 @@ namespace mu2e {
 
     //  FEP, AKA Teflon FEP, AKA flourinated ethylene propylene.
     //  Used, among other places, in signal cable insulation.
-    //  Here, specifically treating as an equal mix of 
+    //  Here, specifically treating as an equal mix of
     //  tetraflouroethylene and hexaflouropropylene (the manufacturers
     //  tend to protect the specifics).  So that's C2F4 + C3F6 = C5F10
 
@@ -374,7 +381,7 @@ namespace mu2e {
       StainlessSteel316->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.65495 );
     }
 
-    // Stainless Steel 316L http://en.wikipedia.org/wiki/Marine_grade_stainless 
+    // Stainless Steel 316L http://en.wikipedia.org/wiki/Marine_grade_stainless
     mat = uniqueMaterialOrThrow( "StainlessSteel316L");
     {
       G4Material* StainlessSteel316L = new G4Material( mat.name, 8.00*CLHEP::g/CLHEP::cm3, 10);
@@ -426,7 +433,7 @@ namespace mu2e {
       HRSBronze->AddMaterial(findMaterialOrThrow("G4_Ni"),0.050);
     }
 
-    // Bronze C94300  from www.matweb.com
+    // Bronze C93800  from www.matweb.com
     mat = uniqueMaterialOrThrow( "BronzeC943" );
     {
       G4Material* BronzeC943 = new G4Material( mat.name, 9.29*CLHEP::g/CLHEP::cm3, 6);
@@ -437,6 +444,39 @@ namespace mu2e {
       BronzeC943->AddMaterial(findMaterialOrThrow("G4_Ni"),0.005);
       BronzeC943->AddMaterial(findMaterialOrThrow("G4_Zn"),0.0025);
     }
+
+    // Bronze C60800 somewat based on www.matweb.com
+    mat = uniqueMaterialOrThrow( "BronzeC608" );
+    {
+      G4Material* BronzeC608 = new G4Material( mat.name, 8.17*CLHEP::g/CLHEP::cm3, 5);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Cu"),0.9310);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Al"),0.0572);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Fe"),0.0050);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_Pb"),0.0050);
+      BronzeC608->AddMaterial(findMaterialOrThrow("G4_As"),0.0018);
+    }
+
+    // Bronze C94500  from https://alloys.copper.org/alloy/C94500
+    mat = uniqueMaterialOrThrow( "BronzeC945" );
+    {
+      G4Material* BronzeC945 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 3);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Cu"),0.78);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Pb"),0.16);
+      BronzeC945->AddMaterial(findMaterialOrThrow("G4_Sn"),0.06);
+    }
+
+    // Bronze C93800  from https://alloys.copper.org/alloy/C93800
+    mat = uniqueMaterialOrThrow( "BronzeC938" );
+    {
+      G4Material* BronzeC938 = new G4Material( mat.name, 9.40*CLHEP::g/CLHEP::cm3, 6);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Cu"),0.76);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Pb"),0.145);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Sn"),0.069);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Ni"),0.01);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Zn"),0.008);
+      BronzeC938->AddMaterial(findMaterialOrThrow("G4_Sb"),0.008);
+    }
+
 
     // C360 brass
     mat = uniqueMaterialOrThrow( "BrassC360" );
@@ -471,6 +511,20 @@ namespace mu2e {
       A95083->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0013);
       A95083->AddMaterial(findMaterialOrThrow("G4_Ti"), 0.0007);
       A95083->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.0005);
+    }
+
+    // 1100 Aluminum
+    // https://en.wikipedia.org/wiki/1100_aluminium_alloy
+    // http://www.matweb.com/search/DataSheet.aspx?MatGUID=2ca5a0592e4147848bdbd40d1ff1a056&ckck=1
+    mat = uniqueMaterialOrThrow( "A1100");
+    {
+      G4Material* A1100 = new G4Material( mat.name, 2.71*CLHEP::g/CLHEP::cm3, 6);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Al"), 0.99275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Fe"), 0.00275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Si"), 0.00275);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.00100);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Mn"), 0.00025);
+      A1100->AddMaterial(findMaterialOrThrow("G4_Zn"), 0.0005);
     }
 
     // NbTi
@@ -697,14 +751,14 @@ namespace mu2e {
       StrawGasArCF4->AddElement( getElementOrThrow("C") , 1);
       StrawGasArCF4->AddElement( getElementOrThrow("F") , 4);
     }
-    
+
     mat = uniqueMaterialOrThrow( "TrackerManifold"); // materials and proportions defined in doc888v7
     {
       G4Material* TrackerManifold = new G4Material( mat.name, 1.95*CLHEP::g/CLHEP::cm3, 2);
       TrackerManifold->AddMaterial(findMaterialOrThrow("G4_POLYVINYL_CHLORIDE"), 0.355);
       TrackerManifold->AddMaterial(findMaterialOrThrow("G4_Al"), 0.645);
     }
-  
+
     mat = uniqueMaterialOrThrow( "StrawWall"); // materials and proportions defined in doc888v7
     {
       G4Material* StrawWall = new G4Material( mat.name, 1.43*CLHEP::g/CLHEP::cm3, 3);
@@ -758,7 +812,7 @@ namespace mu2e {
       Kapton->AddElement( getElementOrThrow("C"), 0.691133);
       Kapton->AddElement( getElementOrThrow("N"), 0.073270);
       Kapton->AddElement( getElementOrThrow("O"), 0.209235);
-    }      
+    }
 
     mat = uniqueMaterialOrThrow( "Scintillator");
     {
@@ -904,7 +958,7 @@ namespace mu2e {
       density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
-                                           kStateGas, temperature= 293.15*CLHEP::kelvin, 
+                                           kStateGas, temperature= 293.15*CLHEP::kelvin,
 					   pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
@@ -939,7 +993,7 @@ namespace mu2e {
       density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
-                                           kStateGas, temperature= 293.15*CLHEP::kelvin, 
+                                           kStateGas, temperature= 293.15*CLHEP::kelvin,
 					   pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
@@ -1010,7 +1064,7 @@ namespace mu2e {
       density = fractionHe*densityHe + (1.0-fractionHe)*densityCF4;
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
-                                           kStateGas, temperature= 293.15*CLHEP::kelvin, 
+                                           kStateGas, temperature= 293.15*CLHEP::kelvin,
 					   pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
@@ -1035,7 +1089,7 @@ namespace mu2e {
     mat = uniqueMaterialOrThrow( "ITGasMix");
     {
       //He/C4H10-gas-mixture
-      
+
       G4double density, temperature, pressure;
       G4int nel;
 
@@ -1046,7 +1100,7 @@ namespace mu2e {
       density = fractionHe*densityHe + (1.0-fractionHe)*densityIsoB;
 
       G4Material *GasMix = new G4Material( mat.name, density, nel=3,
-                                           kStateGas, temperature= 293.15*CLHEP::kelvin, 
+                                           kStateGas, temperature= 293.15*CLHEP::kelvin,
 					   pressure= 1.*CLHEP::atmosphere);
 
       G4Element* He = getElementOrThrow("He");
@@ -1074,7 +1128,7 @@ namespace mu2e {
     //Material for the MBS ring to protect the calorimeter
     mat = uniqueMaterialOrThrow( "MBSCalShieldRing" );
     {
-      //Shield is 90% tungsten 10% copper and 18 g/cm^3 
+      //Shield is 90% tungsten 10% copper and 18 g/cm^3
       G4Material* MBSCalShieldRing = new G4Material( mat.name, 18.0*CLHEP::g/CLHEP::cm3, 2);
       MBSCalShieldRing->AddElement( getElementOrThrow("W"),  90.0*CLHEP::perCent);
       MBSCalShieldRing->AddElement( getElementOrThrow("Cu"), 10.0*CLHEP::perCent);
@@ -1082,7 +1136,7 @@ namespace mu2e {
 
     // Completed constructing Mu2e specific materials, first function.
     // Now second function for Mu2e specific materials.
-    
+
   }
 
 
@@ -1124,7 +1178,7 @@ namespace mu2e {
       CarbonFiber->AddMaterial(CFibers, fiberFrac );
       CarbonFiber->AddMaterial(CFresin, (1.0-fiberFrac) );
     }
- 
+
     mat = uniqueMaterialOrThrow("PET_P100");
       G4Material* PET_P100 = new G4Material( mat.name, 0.11*CLHEP::g/CLHEP::cm3, 3);
       PET_P100->AddElement( getElementOrThrow("C"), 10);
@@ -1144,19 +1198,19 @@ namespace mu2e {
       G4Element* Y  = getElementOrThrow("Y");
       G4Element* Ce  = getElementOrThrow("Ce");
       Lyso_00->AddElement( Lu, 71.0*CLHEP::perCent );
-      Lyso_00->AddElement( Si, 7.0*CLHEP::perCent );      
-      Lyso_00->AddElement( O, 18.0*CLHEP::perCent );      
+      Lyso_00->AddElement( Si, 7.0*CLHEP::perCent );
+      Lyso_00->AddElement( O, 18.0*CLHEP::perCent );
       Lyso_00->AddElement( Y, 4.0*CLHEP::perCent );
       G4Material* Lyso_01 =
         new G4Material(mat.name, density = 7.4*CLHEP::g/CLHEP::cm3, nel=2);
-      Lyso_01->AddMaterial( Lyso_00, 99.85*CLHEP::perCent ); 
-      Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );    
-    }   
+      Lyso_01->AddMaterial( Lyso_00, 99.85*CLHEP::perCent );
+      Lyso_01->AddElement( Ce, 0.15*CLHEP::perCent );
+    }
 
     mat = uniqueMaterialOrThrow( "CuW1090");
      G4Material* CuW1090 = new G4Material(mat.name, 17.3*CLHEP::g/CLHEP::cm3, 2);
-     CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90); 
-     CuW1090->AddMaterial( findMaterialOrThrow("G4_Cu"),0.10); 
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_W"),0.90);
+     CuW1090->AddMaterial( findMaterialOrThrow("G4_Cu"),0.10);
 
 
     mat = uniqueMaterialOrThrow("CorrugatedPolypropylene");
@@ -1193,7 +1247,7 @@ namespace mu2e {
       Electronics2->AddMaterial(findMaterialOrThrow("G10_FR4"), 0.26);
       Electronics2->AddMaterial(findMaterialOrThrow("G4_Cu"), 0.74);
     }
-    
+
     mat = uniqueMaterialOrThrow( "AluminumHoneycomb");
     {
       //Honeycomb used to fill the source-panel and the inner step margins of the calorimeter
@@ -1301,6 +1355,17 @@ namespace mu2e {
       stWallEq->AddMaterial(strwMet2, 1.25e-2 );
     }
 
+
+    // scaled W for hayman studies
+    mat = uniqueMaterialOrThrow("G4_W_Hayman");
+    {  //220 mm with gaps; this models as lower density without gaps
+      G4int nel;
+      G4Material* tung = findMaterialOrThrow("G4_W");
+      G4Material*  G4_W_Hayman = new G4Material(mat.name, (80./110.0)*tung->GetDensity(), nel = 1);
+      G4Element* Tung  = getElementOrThrow("W");
+      G4_W_Hayman->AddElement(Tung, 100.0*CLHEP::perCent );
+    }
+
     // various densities of Al and Be to permit staging of pbar window studies without changing geometry
     // between stages
     mat = uniqueMaterialOrThrow( "G4_Be_Quarter");
@@ -1346,8 +1411,8 @@ namespace mu2e {
       G4_Al_Quarter->AddElement(Al, 100.0*CLHEP::perCent );
     }
     mat = uniqueMaterialOrThrow( "G4_Al_Half");
-    { 
-      G4int nel; 
+    {
+      G4int nel;
       G4Material*  G4_Al_Half = new G4Material(mat.name, 0.50*2.70*CLHEP::g/CLHEP::cm3, nel = 1);
       G4Element* Al  = getElementOrThrow("Al");
       G4_Al_Half->AddElement(Al, 100.0*CLHEP::perCent );
@@ -1375,6 +1440,90 @@ namespace mu2e {
       G4_Al_Triple->AddElement(Al, 100.0*CLHEP::perCent );
     }
 
+
+    //Material for the Calorimeter cable runs bulk
+    mat = uniqueMaterialOrThrow( "CalCableRunOuter" );
+    {
+
+      G4Material* CalCableRunOuter =
+        new G4Material( mat.name, 6.8440*CLHEP::g/CLHEP::cm3, 4);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eCu = getElementOrThrow("Cu");
+      G4Element* eAg = getElementOrThrow("Ag");
+      G4Element* eF  = getElementOrThrow("F");
+
+      //Add elements by mass fraction
+      CalCableRunOuter->AddElement( eAg, 52.603*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eCu, 34.825*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eF,  9.553*CLHEP::perCent);
+      CalCableRunOuter->AddElement( eC,  3.019*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs fiber optic cable
+    mat = uniqueMaterialOrThrow( "CalCableRunFiber" );
+    {
+
+      G4Material* CalCableRunFiber =
+        new G4Material( mat.name, 1.6575*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eH  = getElementOrThrow("H");
+
+      //Add elements by mass fraction
+      CalCableRunFiber->AddElement( eC,   34.093*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eO,   28.578*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eAl,  28.265*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
+      CalCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs bulk
+    mat = uniqueMaterialOrThrow( "TrkCableRunOuter" );
+    {
+
+      G4Material* TrkCableRunOuter =
+        new G4Material( mat.name, 4.6254*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eCu = getElementOrThrow("Cu");
+      G4Element* eH  = getElementOrThrow("H");
+      G4Element* eN  = getElementOrThrow("N");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+
+      //Add elements by mass fraction
+      TrkCableRunOuter->AddElement( eCu, 71.458*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eC,  10.259*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eH,  2.099*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eN,  0.197*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eO,  6.161*CLHEP::perCent);
+      TrkCableRunOuter->AddElement( eSi, 9.826*CLHEP::perCent);
+    }
+
+    //Material for the Calorimeter cable runs fiber optic cable
+    mat = uniqueMaterialOrThrow( "TrkCableRunFiber" );
+    {
+
+      G4Material* TrkCableRunFiber =
+        new G4Material( mat.name, 1.6575*CLHEP::g/CLHEP::cm3, 6);
+      G4Element* eC  = getElementOrThrow("C");
+      G4Element* eSi = getElementOrThrow("Si");
+      G4Element* eO  = getElementOrThrow("O");
+      G4Element* eAl = getElementOrThrow("Al");
+      G4Element* eF  = getElementOrThrow("F");
+      G4Element* eH  = getElementOrThrow("H");
+
+      //Add elements by mass fraction
+      TrkCableRunFiber->AddElement( eC,   34.093*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eO,   28.578*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eAl,  28.265*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eH,   5.676*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eSi,  3.172*CLHEP::perCent);
+      TrkCableRunFiber->AddElement( eF,   0.216*CLHEP::perCent);
+    }
 
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.

@@ -49,13 +49,13 @@ namespace mu2e {
       int ilay = -1;
       double iang = -36000;
 
-      cout << __func__ << " (_tt->_allStraws2).size(), StrawId::_nustraws "
-           << fixed << setw(6) << _tt->_allStraws2.size()
+      cout << __func__ << " (_tt->_allStraws).size(), StrawId::_nustraws "
+           << fixed << setw(6) << _tt->_allStraws.size()
            << fixed << setw(6) << StrawId::_nustraws
            << endl;
 
       size_t istr = -1;
-      for (const auto& istr_p : _tt->_allStraws2_p) {
+      for (const auto& istr_p : _tt->_allStraws_p) {
         cout << __func__ << setw(10) << ++istr
           // << setw(20) << istr_p;
              << setw(20) << " ";
@@ -75,7 +75,7 @@ namespace mu2e {
         }
       }
 
-      for ( const Straw& straw : _tt->getAllStraws() ){
+      for ( const Straw& straw : _tt->getStraws() ){
 
         int cpln = straw.id().getPlane();
         int cpnl = straw.id().getPanel();
@@ -88,7 +88,6 @@ namespace mu2e {
         size_t nStrawsPerPlane = plane.nPanels() * nStrawsPerPanel;
 
         double cang = panel.boxRzAngle()/M_PI*180.;
-        double dang = plane.rotation()/M_PI*180.;
 
         size_t ipnlf = nStrawsPerPanel*cpnl + nStrawsPerPlane*cpln;
 
@@ -103,7 +102,6 @@ namespace mu2e {
              << " panel rotation: " << cang
              << " straw0MidPoint  " << panel.straw0MidPoint()
              << " straw0Direction " << panel.straw0Direction()
-             << " plane rotation: " << dang
              << " origin " << plane.origin()
              << " straw exists " << _tt->strawExists(straw.id())
              << " plane exists " << plane.exists();
@@ -288,8 +286,6 @@ namespace mu2e {
 
     }
 
-    _numStations = StrawId::_nplanes/_planesPerStation;
-
     //string tracker.mat.manifold  = "G4_Al";  // Placeholder.
 
     // Also define some parameters that may become variable some day.
@@ -414,8 +410,7 @@ namespace mu2e {
   void plntest( const Plane& plane){
     cout << "Plane: "
          << plane.id() << " "
-         << plane.origin() << " "
-         << plane.rotation()
+         << plane.origin() 
          << endl;
   }
 
@@ -483,18 +478,6 @@ namespace mu2e {
     _tt->fillPointers();
 
     identifyNeighbourStraws();
-
-    // Stations
-    // Construct the stations and their internals based on planes internals
-
-    if (_verbosityLevel>2) {
-      cout << __func__ << " _numStations: " << _numStations << endl;
-    }
-    _tt->_stations.reserve(_numStations);
-
-    for ( int istation=0; istation<_numStations; ++istation ){
-      makeStation( StationId(istation) );
-    }
 
     // Order is important here.
     computePlaneEnvelope();
@@ -567,9 +550,7 @@ namespace mu2e {
 
     auto& planes = _tt->_planes;
 
-    // plane rotation is no longer used.
-    double phi = 0.0;
-    planes.at(ipln) = Plane(planeId,origin, phi);
+    planes.at(ipln) = Plane(planeId,origin);
     Plane& plane = planes.at(ipln);
     if (_verbosityLevel>2) {
       cout << __func__ << " making plane " <<  plane.id();
@@ -583,7 +564,7 @@ namespace mu2e {
       makePanel ( StrawId(ipln,ipnl,0), plane );
       if (_verbosityLevel>2) {
         size_t istr = -1; // local index in the panel
-        Panel& panel = plane._panels.at(ipnl);
+        Panel const& panel = *( plane._panels.at(ipnl) );
         std::ostringstream pnlid("",std::ios_base::ate); // to write at the end
         pnlid << panel.id();
         cout << __func__ << " straws in panel "
@@ -603,8 +584,6 @@ namespace mu2e {
                << " "
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str();
-          // now the straw by the Panel::getStraw(const StrawId& strid2) which uses local index
-          // panel.getStraw(StrawId(0,0,0)); // test
           nsid.str("");
           nsid << panel.getStraw(lsid).id();
           cout << setw(8) << nsid.str();
@@ -613,18 +592,20 @@ namespace mu2e {
           nsid << panel.getStraw(sid).id(); // old id of the straw in the old container
           cout << setw(10) << nsid.str()
                << endl;
-        }
-      }
-    }
+        } // straw loop
+      } // verbosity check
+    } // loop over panels
 
-//std::cout << "<-<-<- makePlane\n";
   }
 
   void TrackerMaker::makePanel( const PanelId& pnlId, Plane& plane ){
-//std::cout << "->->-> makePanel\n";
 
-    plane._panels.at(pnlId.getPanel()) = Panel(pnlId);
-    Panel& panel = plane._panels.at(pnlId.getPanel());
+    auto& panels = _tt->_panels;
+    // create a Panel in the Tracker global list of all panels
+    panels.at(pnlId.uniquePanel()) = Panel(pnlId);
+    Panel& panel = panels.at(pnlId.uniquePanel());
+    // put a pointer to this Panel on its Plane 
+    plane._panels.at(pnlId.getPanel()) = &panel;
 
     _strawPanelConstrCount = -1;
     // check if the opposite panels do not overlap
@@ -665,9 +646,9 @@ namespace mu2e {
                << setw(3) << is
                << " " << straw.id()
                << endl;
-        }
+        } // loop over straws in the panel
 
-      }
+      } // end verbosity
 
       for (  auto is = panel.getStrawPointers().cbegin();
              is < (panel.getStrawPointers().cend()-2); ++is) {
@@ -690,9 +671,9 @@ namespace mu2e {
 
           throw cet::exception("GEOM")  << "Incorrect intralayer straw spacing, check manifold sizes etc..\n";
 
-        }
-      }
-    }
+        } // end if tolerance check
+      } // loop over straws in the panel
+    } // loop over layers
 
     // check spacing between layers/straws
 
@@ -729,7 +710,7 @@ namespace mu2e {
           throw cet::exception("GEOM")  << "Incorrect interlayer straw spacing \n";
 
         }
-      }
+      } // loop over straws in panel
 
       for (  auto is = panel.getStrawPointers().cbegin()+2;
              is < (panel.getStrawPointers().cend()); ++is) {
@@ -773,21 +754,6 @@ namespace mu2e {
 
     panel._boxRzAngle = panelRotation( panel.id().getPanel(),plane.id().getPlane() ); //  is it really used? needed?
 
-    // make EBkey
-
-    // need to decide how to apply the rotation; it seems it is deferred to ConstructTrackerTDR
-    // let's do it the same way it is done for the panels
-
-    // panel._EBKeys = PlacedTubs("EBKey",
-    //                            TubsParams(_EBKeyInnerRadius,
-    //                                       _EBKeyOuterRadius,
-    //                                       _EBKeyHalfLength,
-    //                                       0.,
-    //                                       _EBKeyPhiRange),
-    //                            EBKeyPosition,
-    //                            EBKeyRotation,
-    //                            _EBKeyMaterial);
-
     panel._EBKey       = TubsParams(_EBKeyInnerRadius,
                                     _EBKeyOuterRadius,
                                     _EBKeyHalfLength,
@@ -804,21 +770,13 @@ namespace mu2e {
     panel._EBKeyShieldMaterial   = _EBKeyShieldMaterial;
     panel._EBKeyPhiExtraRotation = _EBKeyPhiExtraRotation;
 
-//std::cout << "<-<-<- makePanel\n";
-  }  // makePanel
+  }  // end makePanel
 
   void TrackerMaker::makeLayer ( const StrawId& layId, Panel& panel ){
-//std::cout << "->->-> makeLayer\n";
-
-    // Make an empty layer object.
-    // panel._layers.push_back( Layer(layId) );
-    // Layer& layer = panel._layers.back(); // fixme: try to avoid this construction
-
-    // Get additional bookkeeping info.
 
     // array type containers of straws and pointers, tracker ones
-    array<Straw,StrawId::_nustraws>& allStraws2  = _tt->_allStraws2;
-    array<Straw const*,Tracker::_maxRedirect>& allStraws2_p  = _tt->_allStraws2_p;
+    array<Straw,StrawId::_nustraws>& allStraws  = _tt->_allStraws;
+    array<Straw const*,Tracker::_maxRedirect>& allStraws_p  = _tt->_allStraws_p;
     // panel ones
     array<Straw const*, StrawId::_nstraws>& panelStraws2_p = panel._straws2_p;
     array<bool,Tracker::_maxRedirect>& strawExists2 = _tt->_strawExists2;
@@ -901,7 +859,7 @@ namespace mu2e {
         StrawId lsid(iplane, ipnl, listraw);
         // in the new tracker model the straws are placed in the
         // panels, not layers, so we have to reshuffle them here
-        // before we place them in allStraws2
+        // before we place them in allStraws
 
         // number of panels placed
         int npp = _strawTrckrConstrCount/spp;
@@ -910,15 +868,15 @@ namespace mu2e {
         // counter used to *place* the straws in an order 0..95, not 0,2..93,95
         int strawCountReCounted = npp*spp+listraw;
 
-        allStraws2.at(strawCountReCounted) =
+        allStraws.at(strawCountReCounted) =
           Straw( lsid,
                  offset,
                  unit
                  );
 
-        allStraws2_p.at(lsid.asUint16()) = &allStraws2.at(strawCountReCounted);
+        allStraws_p.at(lsid.asUint16()) = &allStraws.at(strawCountReCounted);
         // straw pointers are always stored by StrawId order
-        panelStraws2_p.at(lsid.straw()) = &allStraws2.at(strawCountReCounted);
+        panelStraws2_p.at(lsid.straw()) = &allStraws.at(strawCountReCounted);
         strawExists2.at(lsid.asUint16()) = plane.exists();
 
         if (_verbosityLevel>3) {
@@ -938,46 +896,18 @@ namespace mu2e {
                << " "
                << setw(6) << std::showbase << std::hex << lsid.asUint16()
                << " " << std::dec << std::noshowbase << setw(7) << nsid.str()
-               // << " " << std::showbase << std::hex << setw(10) << &allStraws2.at(_strawTrckrConstrCount)
+               // << " " << std::showbase << std::hex << setw(10) << &allStraws.at(_strawTrckrConstrCount)
                // << std::dec << std::noshowbase
                << endl;
         }
 
-        // layer._straws.push_back(&allStraws2.at(_strawTrckrConstrCount));
+        // layer._straws.push_back(&allStraws.at(_strawTrckrConstrCount));
       }
     }
 
 //std::cout << "<-<-<- makeLayer\n";
   } // end TrackerMaker::makeLayer
 
-
-// ======= Station view makers ============
-
-  void TrackerMaker::makeStation( StationId stationId ){
-
-    int ist = stationId;
-    int ipln1 = _planesPerStation*ist; // _planesPerStation is/has to be 2
-    int ipln2 = ipln1 + 1;
-
-    if (_verbosityLevel>2) {
-      cout << __func__ << " StationId, plane1, plane2 :"
-           << stationId << ", "
-           << ipln1 << ", "
-           << ipln2 << ", "
-           << endl;
-    }
-
-    double stationZ = 0.5 *
-        ( _tt->_planes.at(ipln1).origin().z() +
-          _tt->_planes.at(ipln2).origin().z() );
-    _tt->_stations.push_back(Station(stationId, stationZ));
-
-    Station & st = _tt->_stations.back();
-    st._planes.reserve (_planesPerStation);
-    st._planes.push_back(_tt->_planes.at(ipln1));
-    st._planes.push_back(_tt->_planes.at(ipln2));
-
-  }
 
 
   void TrackerMaker::computeStrawHalfLengths(){
@@ -1005,7 +935,7 @@ namespace mu2e {
       double r0 = straw.getMidPoint().perp();
       double r1 = r0 - _strawOuterRadius;
       double r2 = r0 + _strawOuterRadius;
-      
+
       // Choose half length so that the outer edge of straw just touches the outer
       // limit of the channel.
       double hlen = sqrt(diff_of_squares( rmax, r2));
@@ -1014,7 +944,7 @@ namespace mu2e {
       double activeHalfLen = sqrt( diff_of_squares(rmin,r0) )-_passivationMargin;
       activeHalfLen = std::max( activeHalfLen, .0);
       activeHalfLen = std::min( activeHalfLen, hlen);
-      
+
       // Check that the inner edge of the straw reaches the support
       double r3 = sqrt(sum_of_squares(hlen,r1));
 
@@ -1031,15 +961,15 @@ namespace mu2e {
       _strawActiveHalfLengths[sn] = activeHalfLen;
 
       if (_verbosityLevel>2) {
-	cout << __func__ 
+	cout << __func__
 	     << " Straw " << straw._id.getStraw()
 	     << " id: "
 	     << straw._id
-	     << " hlen = " << hlen 
+	     << " hlen = " << hlen
 	     << " active = " << activeHalfLen
 	     << endl;
       }
-      
+
     }
 
 
@@ -1117,7 +1047,7 @@ namespace mu2e {
     }
 
     else if ( _spacingPattern == 1 ) {
-      int nStations = StrawId::_nplanes/2;
+      int nStations = StrawId::_nstations;
       return double(nStations-1)/2.0 * _planeSpacing;
     }
     else {
@@ -1131,7 +1061,7 @@ namespace mu2e {
   // Identify the neighbour straws for all straws in the tracker
   void TrackerMaker::identifyNeighbourStraws() {
 
-    for (auto& straw : _tt->_allStraws2) {
+    for (auto& straw : _tt->_allStraws) {
 
       if (_verbosityLevel>2) {
         cout << __func__ << " "
@@ -1276,10 +1206,11 @@ namespace mu2e {
           << "TrackerMaker::makeSupportStructure expected an even number of planes. Saw " << StrawId::_nplanes << " planes.\n";
       }
 
-      // From upstream end of most upstream station to the downstream end of the most downstream station.
+      // From upstream end of most upstream station to the 
+      // downstream end of the most downstream station.
       // Including all materials.
-      double overallLength = (StrawId::_nplanes/2-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;
-      if ( _ttVersion > 3 ) overallLength = (StrawId::_nplanes/2-1)*_planeSpacing +
+      double overallLength = (StrawId::_nstations-1)*_planeSpacing + 2.*_planeHalfSeparation + 2.* _innerRingHalfLength;
+      if ( _ttVersion > 3 ) overallLength = (StrawId::_nstations-1)*_planeSpacing +
 			      2.*_planeHalfSeparation + 4.*_innerRingHalfLength
 			      + _planePadding + 2.*_panelPadding;
 
@@ -1308,21 +1239,6 @@ namespace mu2e {
       std::ostringstream bos("TrackerSupportBeam_",std::ios_base::ate); // to write at the end
       bos << std::setfill('0') << std::setw(2);
 
-      // supportBeamParams.insert(std::pair<std::string,
-      //                          TubsParams>(bos.str(),
-      //                                      TubsParams(_beam0_innerRadius,
-      //                                                 _beam0_outerRadius,
-      //                                                 zHalf,
-      //                                                 _beam0_phiRange[0]*CLHEP::degree,
-      //                                                 (_beam0_phiRange[1]- _beam0_phiRange[0])*CLHEP::degree)));
-
-      // sup._beamBody.push_back( PlacedTubs( bos.str(),
-      //                                      supportBeamParams.at(bos.str()), // to make sure it exists
-      //                                      CLHEP::Hep3Vector(_xCenter, 0., _zCenter+zoff),
-      //                                      _beam0_material) );
-
-      // make the first support beam (1) , the other one (2) is a mirror reflection
-      // phi0 can be negative, deltaPhi must not
 
       size_t nsServices =  _beam1_servicePhi0s.size();
 
@@ -1440,7 +1356,7 @@ namespace mu2e {
             cout << __func__ << " making " <<  boss << endl;
           }
 
-          for ( int ssservice = 0; ssservice!=_numStations; ++ssservice) {
+          for ( int ssservice = 0; ssservice!=StrawId::_nstations; ++ssservice) {
 
             bos.str(boss);
             bos << std::setw(2) << ssservice;
@@ -1449,7 +1365,7 @@ namespace mu2e {
               cout << __func__ << " making " <<  bos.str() << endl;
             }
 
-            double sHLength = zHalf*(_numStations-ssservice)/_numStations;
+            double sHLength = zHalf*(StrawId::_nstations-ssservice)/StrawId::_nstations;
             double sOffset  = zoff + zHalf - sHLength;
 
             if ( _verbosityLevel > 0 ) {
@@ -1458,7 +1374,7 @@ namespace mu2e {
             }
 
             // the span of one "sub" service of this section
-            double deltaPhi  = deltaPhi0/_numStations;
+            double deltaPhi  = deltaPhi0/StrawId::_nstations;
             // the starting position of the "sub" service
             double phi0      = (ibeam == 1)
               ? phi00 + _beam1_servicePhi0s[sservice] + deltaPhi*ssservice

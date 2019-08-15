@@ -43,6 +43,16 @@ namespace mu2e {
 // otherwise, deletion of the list of KalFitData's (a data product) results in a crash
 //-----------------------------------------------------------------------------
   struct KalFitData {
+    struct Diag_t {
+      unsigned  diskId;	
+      unsigned  added;	
+      double    depth;	
+      double    dt;	
+      double    trkPath;
+      double    energy;	
+      double    doca;   
+    };
+    
     const art::Event*                 event;
     KalRep*                           krep;           // Kalman rep, owned by the collection
     const ComboHitCollection*         chcol;          // 
@@ -52,13 +62,17 @@ namespace mu2e {
 
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
+    const CaloClusterCollection*      caloClusterCol;    //
 
     const HelixSeed*                  helixSeed;      //
     const KalSeed*                    kalSeed;        // 
     HelixTraj*                        helixTraj;      // initial parameterization of the track
     unsigned                          nweediter;      // number of iterations on hit weeding
+    unsigned                          nweedtchiter;   // number of iterations on TrkCaloHit weeding
     std::vector<MissingHit_t>         missingHits; 
     int                               fitType;        // 0:seed 1:final
+    
+    Diag_t                            diag;
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------

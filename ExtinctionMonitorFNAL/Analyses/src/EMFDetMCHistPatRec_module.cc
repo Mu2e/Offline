@@ -32,7 +32,7 @@
 
 #include "ExtinctionMonitorFNAL/Reconstruction/inc/TrackExtrapolator.hh"
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "TH1D.h"

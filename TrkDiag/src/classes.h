@@ -18,3 +18,4 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
 #include "TrkDiag/inc/EventWeightInfo.hh"
+#include "TrkDiag/inc/RecoQualInfo.hh"

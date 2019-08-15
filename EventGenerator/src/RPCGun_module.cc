@@ -24,7 +24,9 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
+#include "ConditionsService/inc/ConditionsHandle.hh"
+#include "ConditionsService/inc/AcceleratorParams.hh"
 
 // Mu2e includes
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -41,6 +43,9 @@
 #include "Mu2eUtilities/inc/Table.hh"
 #include "Mu2eUtilities/inc/RootTreeSampler.hh"
 #include "GeneralUtilities/inc/RSNTIO.hh"
+#include "MCDataProducts/inc/FixedTimeMap.hh"
+#include "Mu2eUtilities/inc/ProtonPulseRandPDF.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 
 // ROOT includes
 #include "TTree.h"
@@ -54,15 +59,13 @@ namespace mu2e {
   class RPCGun : public art::EDProducer {
     fhicl::ParameterSet psphys_;
 
-    double elow_; // BinnedSpectrum does not store emin and emax reliably
-    double ehi_;
     BinnedSpectrum spectrum_;
-    static BinnedSpectrum parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                             double *elow,
-                                             double *ehi);
 
     int                 verbosityLevel_;
     int                 generateInternalConversion_;
+    bool applySurvivalProbability_;
+    double survivalProbScaling_;
+    double tmin_;
 
     double              czmin_;
     double              czmax_;
@@ -77,8 +80,10 @@ namespace mu2e {
     PionCaptureSpectrum pionCaptureSpectrum_;
 
     RootTreeSampler<IO::StoppedParticleTauNormF> stops_;
+    std::unique_ptr<ProtonPulseRandPDF>  protonPulse_;
 
     bool doHistograms_;
+    fhicl::ParameterSet protonPset_;
 
     double generateEnergy();
 
@@ -92,17 +97,20 @@ namespace mu2e {
 
   public:
     explicit RPCGun(const fhicl::ParameterSet& pset);
+    virtual void beginRun(art::Run&   r) override;
     virtual void produce(art::Event& event);
   };
 
   //================================================================
   RPCGun::RPCGun(const fhicl::ParameterSet& pset)
-    : psphys_(pset.get<fhicl::ParameterSet>("physics"))
-    , elow_()
-    , ehi_()
-    , spectrum_                  (parseSpectrumShape(psphys_, &elow_, &ehi_))
+    : art::EDProducer{pset}
+    , psphys_(pset.get<fhicl::ParameterSet>("physics"))
+    , spectrum_                  (BinnedSpectrum(psphys_))
     , verbosityLevel_            (pset.get<int>   ("verbosityLevel", 0))
     , generateInternalConversion_{psphys_.get<int>("generateIntConversion", 0)}
+    , applySurvivalProbability_  (psphys_.get<bool>("ApplySurvivalProb",false))
+    , survivalProbScaling_       (psphys_.get<double>("SurvivalProbScaling",1))
+    , tmin_                      (pset.get<double>("tmin",-1))
     , czmin_                     (pset.get<double>("czmin" , -1.0))
     , czmax_                     (pset.get<double>("czmax" ,  1.0))
     , phimin_                    (pset.get<double>("phimin",  0. ))
@@ -115,9 +123,11 @@ namespace mu2e {
       //    , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
+    , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
   {
     produces<mu2e::GenParticleCollection>();
     produces<mu2e::EventWeight>();
+    produces<mu2e::FixedTimeMap>();
 
     if(verbosityLevel_ > 0) {
       std::cout<<"RPCGun: using = "
@@ -147,38 +157,59 @@ namespace mu2e {
   }
 
   //================================================================
-  BinnedSpectrum
-  RPCGun::parseSpectrumShape(const fhicl::ParameterSet& psphys,
-                                                 double *elow,
-                                                 double *ehi)
-  {
-    BinnedSpectrum res;
-
-    const std::string spectrumShape(psphys.get<std::string>("spectrumShape"));
-    if (spectrumShape == "Bistirlich") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<PionCaptureSpectrum>( *elow, *ehi, psphys.get<double>("spectrumResolution") );
-    }
-    else if (spectrumShape == "flat") {
-      *elow = psphys.get<double>("elow");
-      *ehi = psphys.get<double>("ehi");
-      res.initialize<SimpleSpectrum>(*elow, *ehi, *ehi-*elow, SimpleSpectrum::Spectrum::Flat );
-    }
-    else {
-      throw cet::exception("BADCONFIG")
-        << "StoppedParticlePionGun: unknown spectrum shape "<<spectrumShape<<"\n";
-    }
-
-    return res;
+  
+  void RPCGun::beginRun(art::Run& run) {
+    protonPulse_.reset( new ProtonPulseRandPDF( eng_, protonPset_ ) );
   }
 
-  //================================================================
   void RPCGun::produce(art::Event& event) {
 
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
+    std::unique_ptr<FixedTimeMap> timemap(new FixedTimeMap);
 
-    const auto& stop = stops_.fire();
+    ConditionsHandle<AcceleratorParams> accPar("ignored");
+    double _mbtime = accPar->deBuncherPeriod;
+
+    IO::StoppedParticleTauNormF stop;
+    if (tmin_ > 0){
+      while (true){
+        const auto& tstop = stops_.fire();
+        timemap->SetTime(protonPulse_->fire()); 
+        if (tstop.t+timemap->time() < 0 || tstop.t+timemap->time() > tmin_){
+          if (applySurvivalProbability_){
+            double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
+            if (weight > 1)
+              std::cout << "WEIGHT TOO HIGH " << weight << " " << fmod(tstop.t,_mbtime) << std::endl;
+            double rand = randomFlat_.fire();
+            if (weight > rand){
+              stop = tstop;
+              break;
+            }
+          }else{
+            stop = tstop;
+            break;
+          }
+        }
+      }
+    }else{
+      timemap->SetTime(protonPulse_->fire()); 
+      if (applySurvivalProbability_){
+        while (true){
+          const auto& tstop = stops_.fire();
+          double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
+          double rand = randomFlat_.fire();
+          if (weight > rand){
+            stop = tstop;
+            break;
+          }
+        }
+      }else{
+        const auto& tstop = stops_.fire();
+        stop = tstop;
+      }
+    }
+
+    //std::cout << "Found stop " << exp(-stop.tauNormalized) << " " << stop.t << std::endl;
 
     const CLHEP::Hep3Vector pos(stop.x, stop.y, stop.z);
 
@@ -192,6 +223,7 @@ namespace mu2e {
                           stop.t );
 
       event.put(std::move(output));
+      event.put(std::move(timemap));
     } else {
       CLHEP::HepLorentzVector mome, momp;
       pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
@@ -200,6 +232,7 @@ namespace mu2e {
       output->emplace_back(PDGCode::e_minus, GenId::InternalRPC,pos,mome,stop.t);
       output->emplace_back(PDGCode::e_plus , GenId::InternalRPC,pos,momp,stop.t);
       event.put(move(output));
+      event.put(std::move(timemap));
       
       if(doHistograms_){
         _hElecMom ->Fill(mome.vect().mag());
@@ -230,7 +263,7 @@ namespace mu2e {
 
   //================================================================
   double RPCGun::generateEnergy() {
-    return elow_ + (ehi_ - elow_)*randSpectrum_.fire();
+    return spectrum_.sample(randSpectrum_.fire());
   }
 
   //================================================================

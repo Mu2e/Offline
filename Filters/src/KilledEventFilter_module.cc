@@ -16,7 +16,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Root includes
 //#include "TNtuple.h"
@@ -81,6 +81,7 @@ namespace mu2e {
   };
 
   KilledEventFilter::KilledEventFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     g4ModuleLabel_(pset.get<string>("g4ModuleLabel")),
     ntup_(0),
     _nBadG4Status(0),

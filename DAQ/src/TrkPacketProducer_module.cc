@@ -131,6 +131,7 @@ namespace mu2e {
   };
 
   TrkPacketProducer::TrkPacketProducer(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _outputFile                    (pset.get<string>("outputFile","artdaq_trk.txt")),
     _generateTextFile(pset.get<int>("generateTextFile",0)),
     _diagLevel(pset.get<int>("diagLevel",0)),

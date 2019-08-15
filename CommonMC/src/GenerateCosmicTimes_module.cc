@@ -49,11 +49,12 @@ namespace mu2e {
 
   //================================================================
   GenerateCosmicTimes::GenerateCosmicTimes(const fhicl::ParameterSet& pset)
-    : _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
+    : art::EDProducer{pset}
+    , _randflat(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
     , offsetToTracker_(pset.get<bool>("offsetToTracker", true))
-    , tmin_(pset.get<double>("tmin", 700))
-    , tmax_(pset.get<double>("tmax", 1705))
+    , tmin_(pset.get<double>("tmin"))
+    , tmax_(pset.get<double>("tmax"))
     , hitsInputTag_(pset.get<std::string>("hitsInputTag"))
   {
     std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
@@ -81,10 +82,13 @@ namespace mu2e {
 
     art::Handle<std::vector<mu2e::StepPointMC>> spHndl;
     bool gotIt = event.getByLabel(hitsInputTag_, spHndl);
+    
     double firstTrackerHit = 0;
-    if(gotIt && offsetToTracker_){
+    if(gotIt && offsetToTracker_ && spHndl->size() > 0){
+      firstTrackerHit = FLT_MAX;
       std::vector<mu2e::StepPointMC> stepPoints = *spHndl;
-      firstTrackerHit = stepPoints.at(0).time();
+      for (auto const& spmc : stepPoints) 
+	if(spmc.time() < firstTrackerHit) firstTrackerHit = spmc.time();
     }
 
     // Generate and record offsets for all primaries

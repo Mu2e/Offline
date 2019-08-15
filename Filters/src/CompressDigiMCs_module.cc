@@ -4,7 +4,7 @@
 // File:        CompressDigiMCs_module.cc
 //
 // Creates new StrawDigiMC and CrvDigiMC collections after creating new
-// StepPointMC, SimParticle, GenParticle and SimParticleTimeMaps with all 
+// StepPointMC, SimParticle, GenParticle and SimParticleTimeMaps with all
 // unnecessary MC objects removed.
 //
 // Also creates new CaloShowerStep, CaloShowerStepRO and CaloShowerSim collections after
@@ -23,7 +23,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <memory>
 
@@ -43,6 +43,7 @@
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 #include "MCDataProducts/inc/CrvCoincidenceClusterMCCollection.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
+#include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 
 namespace mu2e {
   class CompressDigiMCs;
@@ -51,13 +52,13 @@ namespace mu2e {
 
   class SimParticleSelector {
   public:
-    SimParticleSelector(const SimParticleSet& simPartSet) { 
+    SimParticleSelector(const SimParticleSet& simPartSet) {
       for (const auto& i_simPart : simPartSet) {
-	cet::map_vector_key key = cet::map_vector_key(i_simPart.key());
-	m_keys.insert(key);
+        cet::map_vector_key key = cet::map_vector_key(i_simPart.key());
+        m_keys.insert(key);
       }
     }
-    
+
     bool operator[]( cet::map_vector_key key ) const {
       return m_keys.find(key) != m_keys.end();
     }
@@ -72,12 +73,13 @@ namespace mu2e {
 
   private:
     std::set<cet::map_vector_key> m_keys;
-    
+
   };
 
   typedef std::map<art::Ptr<mu2e::CaloShowerStep>, art::Ptr<mu2e::CaloShowerStep> > CaloShowerStepRemap;
   typedef std::string InstanceLabel;
   typedef std::map<cet::map_vector_key, cet::map_vector_key> KeyRemap;
+  typedef std::map<art::Ptr<mu2e::StepPointMC>, art::Ptr<mu2e::StepPointMC> > StepPointMCRemap;
 }
 
 
@@ -173,11 +175,24 @@ private:
   art::InputTag _primaryParticleTag;
   art::Handle<PrimaryParticle> _primaryParticleHandle;
   std::unique_ptr<PrimaryParticle> _newPrimaryParticle;
+  bool _rekeySimParticleCollection;
+
+  // other optional parameters
+  art::InputTag _mcTrajectoryTag;
+  art::Handle<MCTrajectoryCollection> _mcTrajectoriesHandle;
+  std::unique_ptr<MCTrajectoryCollection> _newMCTrajectories;
+
+  // For CrvDigiMCs, there's a chance that the same StepPointMC will go into multiple CrvDigiMCs
+  // This module didn't take this into account initially and so the same StepPointMC was being written out multiple times
+  // This std::set is used to make sure that this doesn't happen
+  std::set<art::Ptr<StepPointMC> > _crvStepPointMCsSeen;
+  std::map<art::Ptr<StepPointMC>, art::Ptr<StepPointMC> > _crvStepPointMCsMap;
 };
 
 
 mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
-  : _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
+  : art::EDProducer{pset},
+    _strawDigiMCTag(pset.get<art::InputTag>("strawDigiMCTag")),
     _crvDigiMCTag(pset.get<art::InputTag>("crvDigiMCTag")),
     _simParticleTags(pset.get<std::vector<art::InputTag> >("simParticleTags")),
     _extraStepPointMCTags(pset.get<std::vector<art::InputTag> >("extraStepPointMCTags")),
@@ -192,7 +207,9 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
     _caloClusterMCTag(pset.get<art::InputTag>("caloClusterMCTag", "")),
     _keepAllGenParticles(pset.get<bool>("keepAllGenParticles", true)),
     _crvCoincClusterMCTag(pset.get<art::InputTag>("crvCoincClusterMCTag", "")),
-    _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", ""))
+    _primaryParticleTag(pset.get<art::InputTag>("primaryParticleTag", "")),
+    _rekeySimParticleCollection(pset.get<bool>("rekeySimParticleCollection", true)),
+    _mcTrajectoryTag(pset.get<art::InputTag>("mcTrajectoryTag", ""))
 {
   // Call appropriate produces<>() functions here.
   produces<StrawDigiMCCollection>();
@@ -235,26 +252,29 @@ mu2e::CompressDigiMCs::CompressDigiMCs(fhicl::ParameterSet const & pset)
   if (_primaryParticleTag != "") {
     produces<PrimaryParticle>();
   }
+  if (_mcTrajectoryTag != "") {
+    produces<MCTrajectoryCollection>();
+  }
 }
 
 void mu2e::CompressDigiMCs::produce(art::Event & event)
 {
   // Implementation of required member function here.
-  _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);  
-  _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);  
+  _newStrawDigiMCs = std::unique_ptr<StrawDigiMCCollection>(new StrawDigiMCCollection);
+  _newCrvDigiMCs = std::unique_ptr<CrvDigiMCCollection>(new CrvDigiMCCollection);
 
   for (const auto& i_instance : _newStepPointMCInstances) {
     _newStepPointMCs[i_instance] = std::unique_ptr<StepPointMCCollection>(new StepPointMCCollection);
-    _newStepPointMCsPID[i_instance] = getProductID<StepPointMCCollection>(i_instance);
+    _newStepPointMCsPID[i_instance] = event.getProductID<StepPointMCCollection>(i_instance);
     _newStepPointMCGetter[i_instance] = event.productGetter(_newStepPointMCsPID[i_instance]);
   }
 
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
-  _newSimParticlesPID = getProductID<SimParticleCollection>();
+  _newSimParticlesPID = event.getProductID<SimParticleCollection>();
   _newSimParticleGetter = event.productGetter(_newSimParticlesPID);
-    
+
   _newGenParticles = std::unique_ptr<GenParticleCollection>(new GenParticleCollection);
-  _newGenParticlesPID = getProductID<GenParticleCollection>();
+  _newGenParticlesPID = event.getProductID<GenParticleCollection>();
   _newGenParticleGetter = event.productGetter(_newGenParticlesPID);
 
   // Create all the new collections, ProductIDs and product getters for the SimParticles and GenParticles
@@ -270,12 +290,12 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     if (_keepAllGenParticles) {
       // Add all the SimParticles that are also GenParticles
       for (const auto& i_oldSimParticle : *oldSimParticles) {
-	const cet::map_vector_key& key = i_oldSimParticle.first;
-	const SimParticle& i_oldSim = i_oldSimParticle.second;
-	if (i_oldSim.genParticle().isNonnull()) {
-	  keepSimParticle(art::Ptr<SimParticle>(i_product_id, key.asUint(), i_product_getter));
-	  ++n_gen_particles_to_keep;
-	}	
+        const cet::map_vector_key& key = i_oldSimParticle.first;
+        const SimParticle& i_oldSim = i_oldSimParticle.second;
+        if (i_oldSim.genParticle().isNonnull()) {
+          keepSimParticle(art::Ptr<SimParticle>(i_product_id, key.asUint(), i_product_getter));
+          ++n_gen_particles_to_keep;
+        }
       }
     }
   }
@@ -322,6 +342,11 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     event.getByLabel(_primaryParticleTag, _primaryParticleHandle);
     _newPrimaryParticle = std::unique_ptr<PrimaryParticle>(new PrimaryParticle);
   }
+  // If we want to keep MC trajectories
+  if (_mcTrajectoryTag != "") {
+    event.getByLabel(_mcTrajectoryTag, _mcTrajectoriesHandle);
+    _newMCTrajectories = std::unique_ptr<MCTrajectoryCollection>(new MCTrajectoryCollection);
+  }
 
 
   // Now start to compress
@@ -341,12 +366,15 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
 
   // Only check for this if we are not reducing the number of StrawDigiMCs
   if (_strawDigiMCIndexMapTag == "" && strawDigiMCs.size() != _newStrawDigiMCs->size()) {
-    throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match (" 
-					    << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
+    throw cet::exception("CompressDigiMCs") << "The number of StrawDigiMCs before and after compression does not match ("
+                                            << strawDigiMCs.size() << " != " << _newStrawDigiMCs->size() << ")" << std::endl;
   }
-  
-  
+
+
   if (_crvDigiMCTag != "") {
+    _crvStepPointMCsSeen.clear();
+    _crvStepPointMCsMap.clear();
+
     event.getByLabel(_crvDigiMCTag, _crvDigiMCsHandle);
     const auto& crvDigiMCs = *_crvDigiMCsHandle;
     for (size_t i = 0; i < crvDigiMCs.size(); ++i) {
@@ -354,16 +382,16 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       mu2e::FullIndex full_i = i;
       bool in_index_map = false;
       if (_crvDigiMCIndexMapTag != "") {
-	in_index_map = _crvDigiMCIndexMap.checkInMap(full_i);
+        in_index_map = _crvDigiMCIndexMap.checkInMap(full_i);
       }
       if (_crvDigiMCIndexMapTag == "" || in_index_map) {
-	copyCrvDigiMC(i_crvDigiMC);
+        copyCrvDigiMC(i_crvDigiMC);
       }
     }
     // Only check for this if we are not reducing the number of CrvDigiMCs
     if (_crvDigiMCIndexMapTag == "" && crvDigiMCs.size() != _newCrvDigiMCs->size()) {
-      throw cet::exception("CompressDigiMCs") << "The number of CrvDigiMCs before and after compression does not match (" 
-					      << crvDigiMCs.size() << " != " << _newCrvDigiMCs->size() << ")" << std::endl;
+      throw cet::exception("CompressDigiMCs") << "The number of CrvDigiMCs before and after compression does not match ("
+                                              << crvDigiMCs.size() << " != " << _newCrvDigiMCs->size() << ")" << std::endl;
     }
   }
 
@@ -372,7 +400,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_caloClusterMCTag == "") {
     CaloShowerStepRemap caloShowerStepRemap;
     _newCaloShowerSteps = std::unique_ptr<CaloShowerStepCollection>(new CaloShowerStepCollection);
-    _newCaloShowerStepsPID = getProductID<CaloShowerStepCollection>();
+    _newCaloShowerStepsPID = event.getProductID<CaloShowerStepCollection>();
     _newCaloShowerStepGetter = event.productGetter(_newCaloShowerStepsPID);
     for (std::vector<art::InputTag>::const_iterator i_tag = _caloShowerStepTags.begin(); i_tag != _caloShowerStepTags.end(); ++i_tag) {
       const auto& oldCaloShowerSteps = event.getValidHandle<CaloShowerStepCollection>(*i_tag);
@@ -380,9 +408,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
       _oldCaloShowerStepGetter[i_product_id] = event.productGetter(i_product_id);
 
       for (CaloShowerStepCollection::const_iterator i_caloShowerStep = oldCaloShowerSteps->begin(); i_caloShowerStep != oldCaloShowerSteps->end(); ++i_caloShowerStep) {
-	art::Ptr<mu2e::CaloShowerStep> oldShowerStepPtr(i_product_id,  i_caloShowerStep - oldCaloShowerSteps->begin(), _oldCaloShowerStepGetter[i_product_id]);
-	art::Ptr<mu2e::CaloShowerStep> newShowerStepPtr = copyCaloShowerStep(*i_caloShowerStep);
-	caloShowerStepRemap[oldShowerStepPtr] = newShowerStepPtr;
+        art::Ptr<mu2e::CaloShowerStep> oldShowerStepPtr(i_product_id,  i_caloShowerStep - oldCaloShowerSteps->begin(), _oldCaloShowerStepGetter[i_product_id]);
+        art::Ptr<mu2e::CaloShowerStep> newShowerStepPtr = copyCaloShowerStep(*i_caloShowerStep);
+        caloShowerStepRemap[oldShowerStepPtr] = newShowerStepPtr;
       }
     }
 
@@ -421,26 +449,26 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     const auto& primaryParticle = *_primaryParticleHandle;
     copyPrimaryParticle(primaryParticle);
   }
-  
+
   // Get the hits from the virtualdetector
   for (std::vector<art::InputTag>::const_iterator i_tag = _extraStepPointMCTags.begin(); i_tag != _extraStepPointMCTags.end(); ++i_tag) {
     const auto& stepPointMCs = event.getValidHandle<StepPointMCCollection>(*i_tag);
     for (const auto& stepPointMC : *stepPointMCs) {
       for (const auto& simPartsToKeep : _simParticlesToKeep) {
-	const art::ProductID& oldProdID = simPartsToKeep.first;
-	if (stepPointMC.simParticle().id() != oldProdID) {
-	  continue;
-	}
-	const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
-	for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
-	  if (stepPointMC.simParticle() == alreadyKeptSimPart) {
-	    copyStepPointMC(stepPointMC, (*i_tag).instance() );
-	  }
-	}
+        const art::ProductID& oldProdID = simPartsToKeep.first;
+        if (stepPointMC.simParticle().id() != oldProdID) {
+          continue;
+        }
+        const SimParticleSet& alreadyKeptSimParts = simPartsToKeep.second;
+        for (const auto& alreadyKeptSimPart : alreadyKeptSimParts) {
+          if (stepPointMC.simParticle() == alreadyKeptSimPart) {
+            copyStepPointMC(stepPointMC, (*i_tag).instance() );
+          }
+        }
       }
     }
   }
-  
+
   // Now compress the SimParticleCollections into their new collections
   KeyRemap* keyRemap = new KeyRemap;
   SimParticleRemapping remap;
@@ -451,28 +479,37 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     art::ProductID i_product_id = oldSimParticles.id();
     SimParticleSelector simPartSelector(_simParticlesToKeep[i_product_id]);
     keep_size += _simParticlesToKeep[i_product_id].size();
-    compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles, 
-				  simPartSelector, *_newSimParticles, keyRemap);
+    if (_rekeySimParticleCollection) {
+      compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles,
+                                    simPartSelector, *_newSimParticles, keyRemap);
+    }
+    else {
+      compressSimParticleCollection(_newSimParticlesPID, _newSimParticleGetter, *oldSimParticles,
+                                    simPartSelector, *_newSimParticles);
+    }
 
     // Fill out the SimParticleRemapping
     for (const auto& i_keptSimPart : _simParticlesToKeep[i_product_id]) {
       cet::map_vector_key oldKey = cet::map_vector_key(i_keptSimPart.key());
-      cet::map_vector_key newKey = keyRemap->at(oldKey);
+      cet::map_vector_key newKey = oldKey;
+      if (_rekeySimParticleCollection) {
+        newKey = keyRemap->at(oldKey);
+      }
       remap[i_keptSimPart] = art::Ptr<SimParticle>(_newSimParticlesPID, newKey.asUint(), _newSimParticleGetter);
     }
   }
   if (keep_size != _newSimParticles->size()) {
-    throw cet::exception("CompressDigiMCs") << "Number of SimParticles in output collection (" 
-					    << _newSimParticles->size() 
-					    << ") does not match the number of SimParticles we wanted to keep (" 
-					    << keep_size << ")" << std::endl;
+    throw cet::exception("CompressDigiMCs") << "Number of SimParticles in output collection ("
+                                            << _newSimParticles->size()
+                                            << ") does not match the number of SimParticles we wanted to keep ("
+                                            << keep_size << ")" << std::endl;
   }
-  
+
   // Loop through the new SimParticles to keep any GenParticles
   for (auto& i_simParticle : *_newSimParticles) {
     mu2e::SimParticle& newsim = i_simParticle.second;
     if(newsim.genParticle().isNonnull()) { // will crash if not resolvable
-      
+
       // Copy GenParticle to the new collection
       _newGenParticles->emplace_back(*newsim.genParticle());
       newsim.genParticle() = art::Ptr<GenParticle>(_newGenParticlesPID, _newGenParticles->size()-1, _newGenParticleGetter);
@@ -481,21 +518,21 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_keepAllGenParticles && _newGenParticles->size() != n_gen_particles_to_keep) {
     throw cet::exception("CompressDigiMCs") << "Number of GenParticles in output collection does not match the number of GenParticles we wanted to keep (" << n_gen_particles_to_keep << " != " << _newGenParticles->size() << ")" << std::endl;
   }
-  
-  
+
+
   // Now update all objects with SimParticlePtrs
   // Update the time maps
   for (std::vector<SimParticleTimeMap>::const_iterator i_time_map = _oldTimeMaps.begin(); i_time_map != _oldTimeMaps.end(); ++i_time_map) {
     size_t i_element = i_time_map - _oldTimeMaps.begin();
-	
+
     const SimParticleTimeMap& i_oldTimeMap = *i_time_map;
     SimParticleTimeMap& i_newTimeMap = *_newSimParticleTimeMaps.at(i_element);
     for (const auto& timeMapPair : i_oldTimeMap) {
       art::Ptr<SimParticle> oldSimPtr = timeMapPair.first;
       const auto& newSimPtrIter = remap.find(oldSimPtr);
       if (newSimPtrIter != remap.end()) {
-	art::Ptr<SimParticle> newSimPtr = newSimPtrIter->second;
-	i_newTimeMap[newSimPtr] = timeMapPair.second;
+        art::Ptr<SimParticle> newSimPtr = newSimPtrIter->second;
+        i_newTimeMap[newSimPtr] = timeMapPair.second;
       }
     }
   }
@@ -524,8 +561,8 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   else if (_caloClusterMCTag != "") {
     for (auto& i_caloClusterMC : *_newCaloClusterMCs) {
       for (auto& i_caloMCEDep : i_caloClusterMC._edeps) {
-	art::Ptr<SimParticle> newSimPtr = remap.at(i_caloMCEDep.sim());
-	i_caloMCEDep._simp = newSimPtr;
+        art::Ptr<SimParticle> newSimPtr = remap.at(i_caloMCEDep.sim());
+        i_caloMCEDep._simp = newSimPtr;
       }
     }
   }
@@ -546,9 +583,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_crvCoincClusterMCTag != "") {
     for (auto& i_crvCoincClusterMC : *_newCrvCoincClusterMCs) {
       for (auto& i_pulseInfo : i_crvCoincClusterMC.GetModifiablePulses()) {
-	art::Ptr<SimParticle> oldSimPtr = i_pulseInfo._simParticle;
-	art::Ptr<SimParticle> newSimPtr = remap.at(oldSimPtr);
-	i_pulseInfo._simParticle = newSimPtr;
+        art::Ptr<SimParticle> oldSimPtr = i_pulseInfo._simParticle;
+        art::Ptr<SimParticle> newSimPtr = remap.at(oldSimPtr);
+        i_pulseInfo._simParticle = newSimPtr;
       }
 
       art::Ptr<SimParticle> oldSimPtr = i_crvCoincClusterMC.GetMostLikelySimParticle();
@@ -560,6 +597,15 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_primaryParticleTag != "") {
     for (auto& i_simPartPtr : _newPrimaryParticle->modifySimParticles()) {
       i_simPartPtr = remap.at(i_simPartPtr);
+    }
+  }
+  // Create new MC Trajectory collection
+  if (_mcTrajectoryTag != "") {
+    for (const auto& i_mcTrajectory : *_mcTrajectoriesHandle) {
+      art::Ptr<SimParticle> oldSimPtr = i_mcTrajectory.first;
+      if (remap.find(oldSimPtr) != remap.end()) {
+        _newMCTrajectories->insert(std::pair<art::Ptr<SimParticle>, mu2e::MCTrajectory>(remap.at(oldSimPtr), i_mcTrajectory.second));
+      }
     }
   }
 
@@ -598,9 +644,14 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
   if (_primaryParticleTag != "") {
     event.put(std::move(_newPrimaryParticle));
   }
+  if (_mcTrajectoryTag != "") {
+    event.put(std::move(_newMCTrajectories));
+  }
 }
 
 void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_digi_mc) {
+
+  StepPointMCRemap step_remap;
 
   // Need to update the Ptrs for the StepPointMCs
   art::Ptr<StepPointMC> newTriggerStepPtr[StrawEnd::nends];
@@ -608,25 +659,35 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
     StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
 
     const art::Ptr<StepPointMC>& old_step_point = old_straw_digi_mc.stepPointMC(end);
-    if (old_step_point.isAvailable()) {
-      newTriggerStepPtr[i_end] = copyStepPointMC( *old_step_point, _trackerOutputInstanceLabel );
+    const auto& newStepPtrIter = step_remap.find(old_step_point);
+    if (newStepPtrIter == step_remap.end()) {
+      if (old_step_point.isAvailable()) {
+	step_remap[old_step_point] = copyStepPointMC( *old_step_point, _trackerOutputInstanceLabel );
+      }
+      else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+	step_remap[old_step_point] = old_step_point;
+      }
     }
-    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-      newTriggerStepPtr[i_end] = old_step_point;
-    }
+    art::Ptr<StepPointMC> new_step_point = step_remap.at(old_step_point);
+    newTriggerStepPtr[i_end] = new_step_point;
   }
-  
+
   std::vector<art::Ptr<StepPointMC> > newWaveformStepPtrs;
   for (const auto& i_step_mc : old_straw_digi_mc.stepPointMCs()) {
-    if (i_step_mc.isAvailable()) {
-      newWaveformStepPtrs.push_back(copyStepPointMC(*i_step_mc, _trackerOutputInstanceLabel));
+    const auto& newStepPtrIter = step_remap.find(i_step_mc);
+    if (newStepPtrIter == step_remap.end()) {
+      if (i_step_mc.isAvailable()) {
+	step_remap[i_step_mc] = copyStepPointMC( *i_step_mc, _trackerOutputInstanceLabel );
+      }
+      else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+	step_remap[i_step_mc] = i_step_mc;
+      }
     }
-    else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-      newWaveformStepPtrs.push_back(i_step_mc);
-    }
+    art::Ptr<StepPointMC> new_step_point = step_remap.at(i_step_mc);
+    newWaveformStepPtrs.push_back(new_step_point);
   }
-  
-  StrawDigiMC new_straw_digi_mc(old_straw_digi_mc, newTriggerStepPtr, newWaveformStepPtrs); // copy everything except the Ptrs from the old StrawDigiMC  
+
+  StrawDigiMC new_straw_digi_mc(old_straw_digi_mc, newTriggerStepPtr, newWaveformStepPtrs); // copy everything except the Ptrs from the old StrawDigiMC
   _newStrawDigiMCs->push_back(new_straw_digi_mc);
 }
 
@@ -636,7 +697,14 @@ void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc
   std::vector<art::Ptr<StepPointMC> > newStepPtrs;
   for (const auto& i_step_mc : old_crv_digi_mc.GetStepPoints()) {
     if (i_step_mc.isAvailable()) {
-      newStepPtrs.push_back(copyStepPointMC(*i_step_mc, _crvOutputInstanceLabel));
+      if (_crvStepPointMCsSeen.insert(i_step_mc).second == true) { // if we have inserted this StepPointMCPtrs (i.e. it hasn't already been seen)
+        art::Ptr<StepPointMC> newStepPtr = copyStepPointMC(*i_step_mc, _crvOutputInstanceLabel);
+        newStepPtrs.push_back(newStepPtr);
+        _crvStepPointMCsMap[i_step_mc] = newStepPtr;
+      }
+      else {
+        newStepPtrs.push_back(_crvStepPointMCsMap.at(i_step_mc));
+      }
     }
     else { // this is a null Ptr but it should be added anyway to keep consistency (expected for CrvDigis)
       newStepPtrs.push_back(i_step_mc);
@@ -651,7 +719,7 @@ void mu2e::CompressDigiMCs::copyCrvDigiMC(const mu2e::CrvDigiMC& old_crv_digi_mc
 
 art::Ptr<mu2e::CaloShowerStep> mu2e::CompressDigiMCs::copyCaloShowerStep(const mu2e::CaloShowerStep& old_calo_shower_step) {
 
-  // Need this if-statement because sometimes the SimParticle that is being Ptr'd to 
+  // Need this if-statement because sometimes the SimParticle that is being Ptr'd to
   // is not there... The Ptr itself is valid (i.e. old_step.simParticle().isNonnull() returns true)
   // but there is no object there and so when we try to get the id of the SimParticle
   // there is a segfault
@@ -729,10 +797,10 @@ void mu2e::CompressDigiMCs::copyPrimaryParticle(const mu2e::PrimaryParticle& old
 art::Ptr<mu2e::StepPointMC> mu2e::CompressDigiMCs::copyStepPointMC(const mu2e::StepPointMC& old_step, const InstanceLabel& instance) {
 
   keepSimParticle(old_step.simParticle());
-  
+
   StepPointMC new_step(old_step);
   _newStepPointMCs.at(instance)->push_back(new_step);
-  
+
   return art::Ptr<StepPointMC>(_newStepPointMCsPID.at(instance), _newStepPointMCs.at(instance)->size()-1, _newStepPointMCGetter.at(instance));
 }
 
@@ -742,7 +810,7 @@ void mu2e::CompressDigiMCs::keepSimParticle(const art::Ptr<SimParticle>& sim_ptr
   _simParticlesToKeep[sim_ptr.id()].insert(sim_ptr);
   art::Ptr<SimParticle> childPtr = sim_ptr;
   art::Ptr<SimParticle> parentPtr = childPtr->parent();
-  
+
   while (parentPtr) {
     _simParticlesToKeep[sim_ptr.id()].insert(parentPtr);
     childPtr = parentPtr;

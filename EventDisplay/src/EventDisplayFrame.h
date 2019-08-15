@@ -16,6 +16,7 @@
 #ifndef __CINT__
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #endif
 
 class TBox;
@@ -134,6 +135,8 @@ namespace mu2e_eventdisplay
     TBox                *_legendBox[30];
     TPolyLine           *_legendParticleLine[30];
     std::string         _g4ModuleLabel, _physicalVolumesMultiLabel;
+
+    mu2e::SimParticleTimeOffset _timeOffsets;
 
     ClassDef(EventDisplayFrame,0);
   };

@@ -5,46 +5,8 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
-
+#include "TrkDiag/fcl/prolog_legacy.fcl"
 BEGIN_PROLOG
-
-# prolog which should be elsewhere, FIXME
-  pidPathBins: [ 0., 50., 100., 150., 200., 250., 300., 1.e12 ]
-
-  TrkCaloDiag : {
-    PIDdt : {
-      signalHypothesis: {
-	inputFile: "ConditionsService/data/v5_7_2/pid_ele_dt.tbl"
-      }
-      backgroundHypothesis: {
-	inputFile: "ConditionsService/data/v5_7_2/pid_muo_dt.tbl"
-      }
-    }
-    PIDEp : {
-      signalHypothesis: {
-	inputFile: "ConditionsService/data/v5_7_2/pid_ele_ep_vs_path.tbl"
-	pathBinBoundaries: @local::pidPathBins
-      }
-      backgroundHypothesis: {
-	inputFile: "ConditionsService/data/v5_7_2/pid_muo_ep_vs_path.tbl"
-	pathBinBoundaries: @local::pidPathBins
-      }
-    }
-    caloMatchingRoot : "TrackCaloMatchingTRF"
-  }
-
-  CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
-#Generic ReadKalFits config.  These only work for CD3
-  ReadKalFits : {
-    module_type: ReadKalFits
-    fitterModuleLabel: KFFDeM
-    KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data files
-    TrkCaloDiag : @local::TrkCaloDiag
-    eventWeightModules : [ ]
-  }
-  ReadKalFitsMix : @local::ReadKalFits
-  ReadKalFitsMix.eventWeightModules : [ protonBunchSummarizer  ]
-  ReadKalFitsMix.beamWeightModule : protonBunchSummarizer
 # Diagnostic modules    
   BD : {
 	module_type : BkgDiag
@@ -53,7 +15,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	UseFlagCollection : true
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
   
@@ -62,7 +24,7 @@ BEGIN_PROLOG
     StrawDigiMCCollection : "compressDigiMCs"
     VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
     TimeOffsets : {
-      inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] 
+      inputs : [ @sequence::DigiCompression.TimeMaps ]
     }
   }
 
@@ -72,12 +34,10 @@ BEGIN_PROLOG
 	ComboHitFlag : false
 	StrawHitFlagCollection : "FlagBkgHits:StrawHits"
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] 
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
 
-
-# reco path
   TCD : {
 	module_type : TimeClusterDiag
 	StrawDigiMCCollection : "compressDigiMCs"
@@ -86,7 +46,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	HitSelectionBits	    : ["EnergySelection","TimeSelection","RadiusSelection"]
 	HitBackgroundBits	    : ["Background"]
-	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
         ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
         ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
 	PlotTimeSpectra : false
@@ -103,8 +63,8 @@ BEGIN_PROLOG
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	PlotHelices : false
-	SaveHelixFlag : ["HitsOK"]
-	TimeOffsets         :  { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+	InclusivePlotFlagBits : ["HitsOK"]
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
   }
 
   CHD : {
@@ -114,7 +74,7 @@ BEGIN_PROLOG
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
   }
   
@@ -245,23 +205,41 @@ CosmicMuonInfo : {
   TrackCaloMatching.matching_dem_TRF : [ TrackCaloIntersectionTRFDem, TrackCaloMatchingTRFDem ]
   TrackCaloMatching.matching_dep_TRF : [ TrackCaloIntersectionTRFDep, TrackCaloMatchingTRFDep ]
 
-  # Track qulaity module
+
+  # Track quality module
+
   TrkQual : {
   	  module_type : TrackQuality
-  	  TrkQualMVA : { MVAWeights : "TrkDiag/test/TrkQual.weights.xml" }
   }
-  TrkQualDeM		       : @local::TrkQual
+  TrkQualNeg : @local::TrkQual
+  TrkQualNeg.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQual.weights.xml"
+  TrkQualPos : @local::TrkQual
+  TrkQualPos.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualPos.weights.xml"
+
+  TrkQualDeM		       : @local::TrkQualNeg
   TrkQualDeM.KalSeedCollection : "KFFDeM"
-  TrkQualUeM		       : @local::TrkQual
+  TrkQualUeM		       : @local::TrkQualNeg
   TrkQualUeM.KalSeedCollection : "KFFUeM"
-  TrkQualDmuM		       : @local::TrkQual
+  TrkQualDmuM		       : @local::TrkQualNeg
   TrkQualDmuM.KalSeedCollection : "KFFDmuM"
-  TrkQualDeP		       : @local::TrkQual
+  TrkQualDeP		       : @local::TrkQualPos
   TrkQualDeP.KalSeedCollection : "KFFDeP"
-  TrkQualUeP		       : @local::TrkQual
+  TrkQualUeP		       : @local::TrkQualPos
   TrkQualUeP.KalSeedCollection : "KFFUeP"
-  TrkQualDmuP		       : @local::TrkQual
+  TrkQualDmuP		       : @local::TrkQualPos
   TrkQualDmuP.KalSeedCollection : "KFFDmuP"
+  # track PID module
+  TrkPID : {
+    module_type : TrackPID
+    MaxDE : 5.0 # MeV
+    DeltaTOffset : -1.15 # specific to MDC2018h
+    MVAConfig : { MVAWeights : "TrkDiag/test/TrkCaloHitPID.weights.xml"}
+  }
+# this module only makes sense for downstream electron fits
+  TrkPIDDeM		       : @local::TrkPID
+  TrkPIDDeM.KalSeedCollection : "KFFDeM"
+  TrkPIDDeP		       : @local::TrkPID
+  TrkPIDDeP.KalSeedCollection : "KFFDeP"
 
   TrkDiag : {
     analyzers : {
@@ -272,10 +250,6 @@ CosmicMuonInfo : {
       SHD : @local::SHD
       HD : @local::HD
       TRD : @local::TRD
-      RKF : @local::ReadKalFits
-      TTCHD : @local::TTTCD
-      TTTCD : @local::TTTCD
-      TTHD : @local::TTHD
       BD : @local::BD
     }
     filters : {
@@ -283,92 +257,126 @@ CosmicMuonInfo : {
      }
   }
 
-# aggregate the prolog to produce the stanard analysis chain
-  TrkAna : {
+# DIO weighting for flat spectrum electrons
+  DIOWeight: {
+    module_type: DecayInOrbitWeight
+    weightingScheme : pol58
+    inputModule : compressDigiMCs
+    verbosityLevel: 1
+  }
+# converts ProtonBunchIntensity object to EventWeight object
+  PBIWeight : { 
+    module_type : PBIWeight
+    PBITag : "protonBunchIntensity"
+    meanPBITag : "protonBunchIntensity:MeanIntensity"
+  }
+#Example configuration of RMCWeightModule
+  RMCWeight : { 
+    module_type : RMCWeight
+    kinematic_endpoint : 100
+    internalConversion : 1
+    verbosityLevel : 0
+  }
+  dioLLWeight : {
+    module_type : BinnedSpectrumWeight
+    genParticleTag : "compressDigiMCs"
+    genParticlePdgId : 11
+    genParticleGenId : dioTail
+    spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
+    BinCenter : false
+  }
+  genCountLogger: { module_type: GenEventCountReader }
 
-    producers : {
-      @table::TrkHitReco.producers
-      @table::Tracking.producers
-      @table::CaloReco.producers
-      @table::CaloCluster.producers
-      @table::TrackCaloMatching.producers
-      @table::CrvResponsePackage.producers
+# candidate configuration for TrkAna
+  DeM : { input : "KFF" 
+      	  branch : "de" 
+	  suffix : "DeM" 
+	  fillMC : true 
+	  trkqual : "TrkQual"
+	  fillTrkQual : true 
+	  trkpid : "TrkPID"
+	  fillTrkPID : true
+  }
+  UeM : { input : "KFF" 
+      	  branch : "ue" 
+	  suffix : "UeM" 
+  }
+  DmuM : { input : "KFF" 
+      	  branch : "dm" 
+	  suffix : "DmuM" 
+  }
+  DeP : { input : "KFF" 
+      	  branch : "de" 
+	  suffix : "DeP" 
+	  fillMC : true 
+	  trkqual : "TrkQual"
+	  fillTrkQual : true 
+	  trkpid : "TrkPID"
+	  fillTrkPID : true
+  }
+  UeP : { input : "KFF" 
+      	  branch : "ue" 
+	  suffix : "UeP" 
+  }
+  DmuP : { input : "KFF" 
+      	  branch : "dm" 
+	  suffix : "DmuP" 
+  }
 
-  # DIO weighting for flat spectrum electrons
-      DIOWeight: {
-	module_type: DecayInOrbitWeight
-	weightingScheme : pol58
-	inputModule : compressDigiMCs
-	verbosityLevel: 1
-      }
-      # converts ProtonBunchIntensity object to EventWeight object
-      PBIWeight : { 
-        module_type : PBIWeight
-      	PBITag : "protonBunchIntensity"
-	meanPBITag : "protonBunchIntensity:MeanIntensity"
-      }
-      #Example configuration of RMCWeightModule
-      RMCWeight : { 
-        module_type : RMCWeight
-        kinematic_endpoint : 100
-        internalConversion : 1
-        verbosityLevel : 0
-      }
-      dioLLWeight : { module_type : BinnedSpectrumWeight
-      		      genParticleTag : "compressDigiMCs"
-		      genParticlePdgId : 11
-		      genParticleGenId : dioTail
-		      spectrumFileName : "ConditionsService/data/czarnecki_szafron_Al_2016.tbl"
-		      BinCenter : false
-      }
+  TrackAnalysisReco : {
+    module_type : TrackAnalysisReco
+    RecoCountTag : "SelectRecoMC"
+    CaloCrystalHitMapTag : "SelectRecoMC"
+    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
+    PBIWeightTag : "PBIWeight"
+    CrvCoincidenceModuleLabel : "SelectRecoMC"
+    CrvCoincidenceMCModuleLabel : "compressRecoMCs"
+    FillMCInfo : true
+    FillTrkQualInfo : true
+    FillTrkPIDInfo : true
+    ProcessEmptyEvents : false
+    AnalyzeCRV : true
+    PrimaryParticleTag : "compressRecoMCs"
+    KalSeedMCAssns : "SelectRecoMC"
+    CaloClusterMCAssns : "SelectRecoMC"
+    InfoMCStructHelper : {
+      SimParticleCollectionTag : "compressRecoMCs"
+      TimeMaps : [ @sequence::RecoCompression.TimeMaps ]
+      MinGoodMomFraction : 0.9
+    }
+  }
 
+  TrkAnaReco : {
+
+   producers: {
+      PBIWeight : { @table::PBIWeight
+      		    PBITag : "SelectRecoMC" }
       TrkQualDeM : @local::TrkQualDeM
       TrkQualUeM : @local::TrkQualUeM
       TrkQualDeP : @local::TrkQualDeP
       TrkQualUeP : @local::TrkQualUeP
       TrkQualDmuM : @local::TrkQualDmuM
       TrkQualDmuP : @local::TrkQualDmuP
-    }
-    analyzers : {
-      genCountLogger: { module_type: GenEventCountReader }
-      TrkAnaNeg: {
-        @table::TrackAnalysis
-        TrkParticle : 11
-      }
-      TrkAnaPos: {
-        @table::TrackAnalysis
-        TrkParticle : -11
-      }
-      TrkAnaReco : @local::TrackAnalysisReco
-    }
-  
-    # diagnostic Reco sequences starting from digis
-    EventWeightSequence : [ PBIWeight ]
+      TrkPIDDeM : @local::TrkPIDDeM
+      TrkPIDDeP : @local::TrkPIDDeP
+   }
 
-    TrkRecoSequence : [ @sequence::TrkHitReco.PrepareHits,
-		     @sequence::Tracking.TPRDeM, TrkQualDeM,
-		     @sequence::Tracking.TPRUeM, TrkQualUeM,
-		     @sequence::Tracking.TPRDmuM, TrkQualDmuM,
-                     @sequence::Tracking.TPRDeP, TrkQualDeP,
-                     @sequence::Tracking.TPRUeP, TrkQualUeP,
-                     @sequence::Tracking.TPRDmuP, TrkQualDmuP ]
+   analyzers : {
+      TrkAnaNeg : { @table::TrackAnalysisReco 
+      		    candidate : @local::DeM
+		    supplements : [ @local::UeM, @local::DmuM ]
+		  }
+      TrkAnaPos : { @table::TrackAnalysisReco
+      		    candidate : @local::DeP
+		    supplements : [ @local::UeP, @local::DmuP ]
+		  }
 
-    CaloRecoSequence : [ @sequence::CaloReco.Reco,
-			 @sequence::CaloCluster.Reco ]
+      genCountLogger : @local::genCountLogger
+   }
 
-    CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
-
-    EndSequence : [ TrkAnaNeg, TrkAnaPos ]
-
-  }
-TrkCaloMatchSequence : [ @sequence::TrackCaloMatching.matching_dem_TRF, 
-                         @sequence::TrackCaloMatching.matching_dep_TRF ]
-  # aggregate these for convenience
-TrkAna.TrkCaloRecoSequence : [ @sequence::TrkAna.EventWeightSequence,
-			    @sequence::TrkAna.CaloRecoSequence,
-			    @sequence::TrkAna.TrkRecoSequence,
-		            @sequence::TrkCaloMatchSequence ]
-TrkAna.TrkCaloCrvRecoSequence : [ @sequence::TrkAna.TrkCaloRecoSequence,
-				 @sequence::TrkAna.CrvRecoSequence ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualUeM, TrkQualDmuM, TrkQualDeP, TrkQualUeP, TrkQualDmuP, TrkPIDDeM, TrkPIDDeP ]
+   EndSequenceNoMC : [ TrkAnaNeg, TrkAnaPos ]
+   EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
+}
 
 END_PROLOG

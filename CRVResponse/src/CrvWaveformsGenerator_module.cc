@@ -70,6 +70,7 @@ namespace mu2e
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
+    EDProducer{pset},
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)

@@ -7,46 +7,9 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 
-BEGIN_PROLOG
-#prescale factor for the unbiased trigger
-unbiased_evt_sf        : 500
-#prescale factors for the strawDigi count filter
-sDCount_evt_sf         : 500
-sDCount_sf             : 1
-#prescale factors for the "large" strawDigi counter filter
-largeSDCount_evt_sf    : 500
-largeSDCount_sf        : 1
-#prescale factors for the caloDigi count filter
-cDCount_evt_sf         : 500
-cDCount_sf             : 1
-#prescale factors for the "large" caloDigi counter filter
-largeCDCount_evt_sf    : 500
-largeCDCount_sf        : 1
-#prescale factor for the calorimeter-only trigger
-caloMVACE_evt_sf        : 1
-caloMVACE_sf            : 1
-#prescale factor for the calorimeter cosmic muon calibration
-caloCalibCosmic_evt_sf  : 1
-caloCalibCosmic_sf      : 1
-#prescale factor fot the tracker-only track triggers
-# downstream e-
-tprSeedDeM_evt_sf      : 1
-tprSeedDeM_sf          : 1
-# downstream e+
-tprSeedDeP_evt_sf      : 1
-tprSeedDeP_sf          : 1
-#prescale factor fot the calo-seeded track triggers
-# downstream e-
-cprSeedDeM_evt_sf      : 1
-cprSeedDeM_sf          : 1
-# downstream e+
-cprSeedDeP_evt_sf      : 1
-cprSeedDeP_sf          : 1
-END_PROLOG
-
 #include "Trigger/fcl/templates.fcl"
 
-#process_name : globalTrigger
+process_name : globalTrigger
 
 source :
 {
@@ -57,7 +20,7 @@ source :
 # we don't need any simulation services for this job
 #services : @local::Services.Reco
 
-services : @local::Services.SimAndReco
+services : @local::Services.Reco
 
 # timing information
 services.TimeTracker : {
@@ -87,8 +50,8 @@ physics : {
 	    nFilters      : 70
 	    nTrackTriggers: 5
 	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSdCount_path,
-			      largeSdCount_path,
+			      minimumbiasSDCount_path,
+			      largeSDCount_path,
 			      caloMVACE_path,
 			      tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
 	}
@@ -99,10 +62,10 @@ physics : {
     unbiased_path                : [ @sequence::paths.unbiased                         ]
     
     #minimum bias filters
-    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount               ]
+    minimumbiasSDCount_path      : [ @sequence::paths.minimumbiasSDCount               ]
 
     #path for selecting events with large ammount of strawDigis
-    largeSdCount_path            : [ @sequence::paths.largeSdCount                     ]
+    largeSDCount_path            : [ @sequence::paths.largeSDCount                     ]
 
     #path for the calorimeter only trigger
     caloMVACE_path               : [ fetchCaloDigis, @sequence::paths.caloMVACE        ]
@@ -118,13 +81,11 @@ physics : {
     cprSeedDeM_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeM        ]
     cprSeedDeP_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeP        ]
     
-    #merger of the TriggerInfo
-    zzTrigIfnoMerger_path        : [ triggerInfoMerger ] 
     
-    out           : [ readTriggerInfo ]
+#    out           : [ readTriggerInfo ]
     
 
-#    out           : [ readTriggerInfo, triggerOutput ]
+    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 
@@ -133,8 +94,6 @@ outputs : {
 }
 
 services.TFileService.fileName : "globalTrigger.root"
-services.SeedService.baseSeed : 0
-services.SeedService.maxUniqueEngines : 20
 
 
 

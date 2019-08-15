@@ -38,7 +38,9 @@ namespace mu2e {
 
   };
 
-  MakeTracerProduct00::MakeTracerProduct00(fhicl::ParameterSet const& ){
+  MakeTracerProduct00::MakeTracerProduct00(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset}
+  {
     produces<TracerProduct>();
   }
 

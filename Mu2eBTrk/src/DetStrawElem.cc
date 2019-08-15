@@ -109,6 +109,17 @@ namespace mu2e {
     return gaspath;
   }
 
+  double
+  DetStrawElem::radiationFraction(const DetIntersection& dinter) const {
+// compute the path through the straw wall and gas (and eventually test for wire intersections!)
+    CLHEP::Hep3Vector tdir = dinter.trajet->direction(dinter.pathlen);
+    double gaspath = gasPath(dinter.dist,tdir);
+    double wallpath = wallPath(dinter.dist,tdir);
+    double retval = _stype->gasMaterial()->radiationFraction(2*gaspath);
+    retval += _stype->wallMaterial()->radiationFraction(2*wallpath);
+    return retval;
+  }
+
 // compute the pathlength through one wall of the straw, given the drift distance and straw geometry
   double DetStrawElem::wallPath(double pdist,Hep3Vector const& tdir) const {
     double thick = _straw->getThickness();

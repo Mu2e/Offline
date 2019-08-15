@@ -38,7 +38,9 @@ namespace mu2e {
   };
 
   //================================================================
-  GeometryRecorder::GeometryRecorder(const fhicl::ParameterSet&) {
+  GeometryRecorder::GeometryRecorder(const fhicl::ParameterSet& pset) :
+    art::EDProducer{pset} 
+ {
     produces<Mu2eHall, art::InRun>();
     produces<ProductionTarget, art::InRun>();
     produces<ProtonBeamDump, art::InRun>();

@@ -23,8 +23,8 @@
 #include "CLHEP/Random/RandGaussQ.h"
 
 // Framework includes
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib/pow.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -48,7 +48,7 @@
 #include "GeneralUtilities/inc/safeSqrt.hh"
 #include "Mu2eUtilities/inc/SimpleSpectrum.hh"
 #include "Mu2eUtilities/inc/BinnedSpectrum.hh"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 
 #include "GeometryService/inc/GeomHandle.hh"
@@ -181,6 +181,7 @@ namespace mu2e {
   PrimaryAntiProtonGun::PrimaryAntiProtonGun(Parameters const& config):
     //
     // Information from config file.
+    art::EDProducer{config},
     _verbosityLevel(config().verbosityLevel()),
     _czmin(config().czmin()),
     _czmax(config().czmax()),
@@ -446,7 +447,7 @@ namespace mu2e {
     //
     // in order to make the pbar's art pointer to parent, need to 
     // collect info about the parent product
-    auto SPpid = getProductID<SimParticleCollection>("");
+    auto SPpid = event.getProductID<SimParticleCollection>("");
     //      auto SPpid = simParticleHandle.id();
     auto SPpg  = event.productGetter(SPpid);
     copySimParticleCollection(simParticles,outSimPart,SPpid,SPpg);
@@ -502,6 +503,7 @@ namespace mu2e {
 		       ,ProcessCode::mu2eProtonInelastic      // same process code
 		       ,momPbar.e()- _mass                    // preLastStepKE
 		       ,0                                     // nSteps
+		       ,-1.                                   // track length
 		       );                 
     //
     // next stage will fail unless you tell it this new particle is the daughter of the proton!

@@ -16,7 +16,7 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Mu2e includes.
 #include "DataProducts/inc/PDGCode.hh"
@@ -57,7 +57,8 @@ namespace mu2e {
 
   //================================================================
   SimParticleDaughterSelector::SimParticleDaughterSelector(const fhicl::ParameterSet& pset)
-    : particleInput_(pset.get<std::string>("particleInput"))
+    : EDProducer{pset}
+    , particleInput_(pset.get<std::string>("particleInput"))
     , haccepted_(tfs()->make<TH1D>("accepted", "Accepted pdgId and process code pairs", 1, 0., 1.))
     , hignored_(tfs()->make<TH1D>("ignored", "Ignored pdgId and process code pairs", 1, 0., 1.))
   {

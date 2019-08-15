@@ -27,6 +27,7 @@ namespace mu2e {
     //    fit         = TrkErrCode::fail;
     //    nt0iter     = 0;
     nweediter   = 0;
+    nweedtchiter   = 0;
     //    nunweediter = 0;
 
     // hitIndices  = new vector<StrawHitIndex>;
@@ -58,9 +59,18 @@ namespace mu2e {
   void KalFitData::init() {
     deleteTrack();
     missingHits.clear();
-    nweediter = 0;
-    helixTraj = NULL;
-  } 
+    nweediter    = 0;
+    nweedtchiter = 0;
+    helixTraj    = NULL;
+    
+    diag.diskId   = 0;
+    diag.added	  = 0;
+    diag.depth    = -9999;
+    diag.dt       = -9999;
+    diag.trkPath  = -9999;
+    diag.energy   = -9999;
+    diag.doca     = -9999;   
+}
 
 //-----------------------------------------------------------------------------
   KalRep*  KalFitData::stealTrack() { 

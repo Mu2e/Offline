@@ -13,9 +13,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 
 //CLHEP includes
@@ -44,8 +44,7 @@
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 // data
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // Other includes.
 #include "cetlib_except/exception.h"

@@ -17,6 +17,7 @@
 #include "BTrkData/inc/TrkStrawHit.hh"
 
 #include "BTrkData/inc/Doublet.hh"
+#include "BTrk/KalmanTrack/KalHit.hh"
 
 #include "TrkPatRec/inc/KalFinalFit_types.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
@@ -54,8 +55,16 @@ namespace mu2e {
       TH1F*  nhits  ;
       TH1F*  chi2dof;
       TH1F*  p      ;
+      TH1F*  tchDiskId[2];
+      TH1F*  tchAdded    ;
+      TH1F*  tchDepth [2];
+      TH1F*  tchDoca  [2];
+      TH1F*  tchDt    [2];
+      TH1F*  trkPath  [2];
+      TH1F*  tchEnergy[2];      
+      TH1F*  tchEp    [2];
     };
-
+    
     struct DoubletHist_t {
       TH1F*  dSlope;
       TH1F*  chi2bc;   // coordinate part of the best chi2
@@ -108,7 +117,7 @@ namespace mu2e {
     int  fillEventHistograms  (EventHist_t*   Hist, Data_t*    Data);
     int  fillDoubletHistograms(DoubletHist_t* Hist, Doublet*   D);
     int  fillHitHistograms    (HitHist_t*     Hist, HitData_t* Data);
-    int  fillTrackHistograms  (TrackHist_t*   Hist, KalRep*    KRep);
+    int  fillTrackHistograms  (TrackHist_t*   Hist, Data_t*    Data, const KalRep*krep);
 				  
     virtual int bookHistograms(art::ServiceHandle<art::TFileService>& Tfs) override ;
     virtual int fillHistograms(void* Data, int Mode = -1) override ;
@@ -147,7 +156,25 @@ namespace mu2e {
     Hist->nhits    = Dir->make<TH1F>("nhits", "N(track hits)"    , 101,  -0.5, 100.5);
     Hist->chi2dof  = Dir->make<TH1F>("chi2d", "track chi2/dof"   , 100,   0. ,  10.);
     Hist->p        = Dir->make<TH1F>("p"    , "track momentum"   , 400,   0. , 200.);
-    
+    //histogromas for the TrackCaloHit
+    Hist->tchAdded = Dir->make<TH1F>("tchAdded "    , "trackCaloHit: added in the end: added-later"   , 2,   0. , 2.);
+
+    Hist->tchDiskId[0] = Dir->make<TH1F>("tchDiskId0"    , "trackCaloHit: diskId; diskId"   , 3,   0. , 3.);
+    Hist->tchDepth [0] = Dir->make<TH1F>("tchDepth0 "    , "trackCaloHit: hit-length"   , 500,   0. , 500.);
+    Hist->tchDoca  [0] = Dir->make<TH1F>("tchDoca0  "    , "trackCaloHit: DOCA; DOCA [mm]"   , 400,   -200. , 200.);
+    Hist->tchDt    [0] = Dir->make<TH1F>("tchDt0    "    , "trackCaloHit: dt @ calo; dt [0] = t_{calo} - t_{trk} [ns]"   , 400,   -10. , 10.);
+    Hist->trkPath  [0] = Dir->make<TH1F>("trkPath0  "    , "trackCaloHit: track path length; trk-calo path [mm]"   , 500,   0. , 500.);
+    Hist->tchEnergy[0] = Dir->make<TH1F>("tchEnergy0"    , "trackCaloHit: energy; E [MeV]"   , 240,   0. , 120.);
+    Hist->tchEp    [0] = Dir->make<TH1F>("tchEp0"        , "trackCaloHit: E/p; E/p"          , 240,   0. , 1.2);
+
+    Hist->tchDiskId[1] = Dir->make<TH1F>("tchDiskId1"    , "trackCaloHit added lastly: diskId; diskId"   , 3,   0. , 3.);
+    Hist->tchDepth [1] = Dir->make<TH1F>("tchDepth1 "    , "trackCaloHit added lastly: hit-length"   , 500,   0. , 500.);
+    Hist->tchDoca  [1] = Dir->make<TH1F>("tchDoca1  "    , "trackCaloHit added lastly: DOCA; DOCA [mm]"   , 400,   -200. , 200.);
+    Hist->tchDt    [1] = Dir->make<TH1F>("tchDt1    "    , "trackCaloHit added lastly: dt @ calo; dt [1] = t_{calo} - t_{trk} [ns]"   , 400,   -10. , 10.);
+    Hist->trkPath  [1] = Dir->make<TH1F>("trkPath1  "    , "trackCaloHit added lastly: track path length; trk-calo path [mm]"   , 500,   0. , 500.);
+    Hist->tchEnergy[1] = Dir->make<TH1F>("tchEnergy1"    , "trackCaloHit added lastly: energy; E [MeV]"   , 240,   0. , 120.);
+    Hist->tchEp    [1] = Dir->make<TH1F>("tchEp1"        , "trackCaloHit added lastly: E/p; E/p"          , 240,   0. , 1.2);
+
     return 0;
   }
     
@@ -188,7 +215,8 @@ namespace mu2e {
     for (int i=0; i<kNTrackHistSets; i++) book_track_histset[i] = 0;
 
     book_track_histset[ 0] = 1;		// all 
-    book_track_histset[ 1] = 1;		// nhits > 15
+    book_track_histset[ 1] = 1;		// nhits > 20
+    book_track_histset[ 2] = 1;		// nhits > 20 & p > 100
 
     for (int i=0; i<kNTrackHistSets; i++) {
       if (book_track_histset[i] != 0) {
@@ -250,7 +278,30 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  int KalFinalFitDiag::fillTrackHistograms(TrackHist_t* Hist, KalRep* KRep) {
+  int KalFinalFitDiag::fillTrackHistograms(TrackHist_t* Hist, Data_t* Data, const KalRep*krep) {
+
+    const TrkHitVector* thv = &(krep->hitVector());
+    double  h1_fltlen, hn_fltlen, entlen;
+
+    h1_fltlen      = krep->firstHit()->kalHit()->hit()->fltLen();
+    hn_fltlen      = krep->lastHit ()->kalHit()->hit()->fltLen();
+    entlen         = std::min(h1_fltlen,hn_fltlen);
+
+    Hist->nhits     ->Fill( thv->size());      
+    Hist->chi2dof   ->Fill( krep->chisq()/(krep->nActive()-5.));
+    Hist->p         ->Fill( krep->momentum(entlen).mag());
+    
+    if (Data->tchEnergy > 0){
+      int  tchAdd = Data->tchAdded;
+      Hist->tchAdded          ->Fill( tchAdd);
+      Hist->tchDiskId[tchAdd] ->Fill( Data->tchDiskId);  
+      Hist->tchDepth [tchAdd] ->Fill( Data->tchDepth);   
+      Hist->tchDoca  [tchAdd] ->Fill( Data->tchDOCA);    
+      Hist->tchDt    [tchAdd] ->Fill( Data->tchDt);      
+      Hist->trkPath  [tchAdd] ->Fill( Data->tchTrkPath); 
+      Hist->tchEnergy[tchAdd] ->Fill( Data->tchEnergy);  
+      Hist->tchEp    [tchAdd] ->Fill( Data->tchEnergy/krep->momentum(entlen).mag());        
+    }
     return 0;
   }
 
@@ -304,6 +355,8 @@ namespace mu2e {
       HepPoint                 tpos;
 
       const KalRep* krep = &_data->tracks->at(i);
+
+      fillTrackHistograms(_hist._track[0], _data, krep);
 					          // hits on the track
       
       TrkHitVector const& hot_l = krep->hitVector();
@@ -311,6 +364,17 @@ namespace mu2e {
       krep->traj().getInfo(0.0,tpos,tdir);
 					          // loop over track hits
       int nhits = krep->hitVector().size();
+      
+      if (nhits > 20)       fillTrackHistograms(_hist._track[1], _data, krep);
+      double  h1_fltlen, hn_fltlen, entlen;
+      
+      h1_fltlen      = krep->firstHit()->kalHit()->hit()->fltLen();
+      hn_fltlen      = krep->lastHit ()->kalHit()->hit()->fltLen();
+      entlen         = std::min(h1_fltlen,hn_fltlen);
+      double  mom    = krep->momentum(entlen).mag();
+ 
+      if (nhits > 20 && mom>100.)    fillTrackHistograms(_hist._track[2], _data, krep);
+
 //-----------------------------------------------------------------------------
 // get the calorimeter cluster from the KalSeed
 //-----------------------------------------------------------------------------

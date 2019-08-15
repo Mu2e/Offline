@@ -14,7 +14,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
 
@@ -33,8 +33,10 @@
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "BTrk/BaBar/BaBar.hh"
+
 #include "TrkReco/inc/TrkDef.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
+
 #include "TrkReco/inc/RobustHelixFit.hh"
 #include "TrkReco/inc/Chi2HelixFit.hh"
 
@@ -117,6 +119,7 @@ namespace mu2e {
     bool				_prefilter; // prefilter hits based on sector
     bool				_updatestereo; // update the stereo hit positions each iteration
     int 				_minnsh; // minimum # of strawHits to work with
+    float			        _pitch; // average pitch to assume in time calculations
     float                               _maxchi2dxy;
     float                               _maxchi2dzphi;
     float                               _maxphihitchi2;
@@ -188,6 +191,7 @@ namespace mu2e {
   };
 
   RobustHelixFinder::RobustHelixFinder(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _diag        (pset.get<int>("diagLevel",0)),
     _debug       (pset.get<int>("debugLevel",0)),
     _reducedchi2 (pset.get<int>("reducedchi2",0)),
@@ -195,6 +199,7 @@ namespace mu2e {
     _prefilter   (pset.get<bool>("PrefilterHits",true)),
     _updatestereo(pset.get<bool>("UpdateStereoHits",false)),
     _minnsh      (pset.get<int>("minNStrawHits",10)),
+    _pitch       (pset.get<int>("AveragePitch",0.6)),
     _maxchi2dxy  (pset.get<float>("MaxChi2dXY", 5.0)),
     _maxchi2dzphi(pset.get<float>("MaxChi2dZPhi", 5.0)),
     _maxphihitchi2(pset.get<float>("MaxHitPhiChi2", 25.0)),
@@ -309,7 +314,7 @@ namespace mu2e {
     for (size_t index=0;index< tccol.size();++index) {
       const auto& tclust = tccol[index];
       HelixSeed hseed;
-
+      hseed._status.merge(TrkFitFlag::TPRHelix);
       //clear the variables in hfResult
       _hfResult.clearTempVariables();
 
@@ -494,7 +499,6 @@ namespace mu2e {
       HelixTool helTool(&helixData._hseed, 3);
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
-      helixData._diag.nHitsLoopFailed   = helTool.nHitsLoopFailed();
     }
   }
 
@@ -975,17 +979,20 @@ namespace mu2e {
 
   void RobustHelixFinder::updateT0(RobustHelixFinderData& helixData)
   {
-  // Don't update if there's a calo cluster
-    if (helixData._hseed.caloCluster().isNonnull())
-      return;
-
+  // compute the pitch
+    float pitch = helixData._hseed.helix().pitch();
     accumulator_set<float, stats<tag::weighted_variance(lazy)>, float > terr;
+  // update t0 from calo cluster according to current pitch 
+    if (helixData._hseed.caloCluster().isNonnull()){
+      float cwt = std::pow(1.0/_ttcalc.caloClusterTimeErr(),2);
+      terr(_ttcalc.caloClusterTime(*helixData._hseed.caloCluster(),pitch),weight=cwt);
+    }
     ComboHit*      hit(0);
+    float hwt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
     for (unsigned f=0; f<helixData._chHitsToProcess.size(); ++f){
       hit = &helixData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))   continue;
-      float wt = std::pow(1.0/_ttcalc.strawHitTimeErr(),2);
-      terr(_ttcalc.comboHitTime(*hit),weight=wt);
+      terr(_ttcalc.comboHitTime(*hit,pitch),weight=hwt);
     }//end faces loop
     if (sum_of_weights(terr) > 0.0)
       {

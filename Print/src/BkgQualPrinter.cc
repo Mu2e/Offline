@@ -77,7 +77,7 @@ mu2e::BkgQualPrinter::Print(const mu2e::BkgQual& obj, int ind, std::ostream& os)
   if(verbose()==1) {
     os 
       << " " << std::setw(8) << std::setprecision(3) << obj.MVAOutput()
-      << " " << std::setw(5) << obj.status()
+      << " " << std::setw(5) << (int)obj.status()
       << std::endl;
   }  
 

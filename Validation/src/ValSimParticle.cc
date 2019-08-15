@@ -8,6 +8,7 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hN2 = tfs.make<TH1D>( "Nsim2", "log10(N particle)", 100, 0.0, 6.00);
   _id.declare(tfs,"id","id fold");
   _hp = tfs.make<TH1D>( "p", "P", 100, 0.0, 200.0);
+  _hendKE = tfs.make<TH1D>( "endKE", "endKE", 100, 0.0, 200.0);
   _hpe = tfs.make<TH1D>( "pe", "P ele", 100, 0.0, 200.0);
   _hpm = tfs.make<TH1D>( "pm", "P muon", 100, 0.0, 600.0);
   _hp0 = tfs.make<TH1D>( "p0", "P pi0", 100, 0.0, 600.0);
@@ -28,9 +29,22 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hezDS = tfs.make<TH1D>( "ZendDS", "end Z DS", 100,  3000.0, 14000.0);
   _hscode = tfs.make<TH1D>( "scode", "start code", 151, -0.5, 150.0);
   _hecode = tfs.make<TH1D>( "ecode", "end code", 151, -0.5, 150.0);
+  _hNS  = tfs.make<TH1D>( "NStep", "N Steps", 100, -0.05, 10000.0);
+  _hNS2 = tfs.make<TH1D>( "NStep2", "log10(N Steps)", 100, -0.05, 9.95);
+  _hl1 = tfs.make<TH1D>( "Length1", "Length", 100, 0.0, 1000.0);
+  _hl2 = tfs.make<TH1D>( "Length2", "Length", 100, 0.0, 10.0);
+  _hl3 = tfs.make<TH1D>( "Length3", "log10(Length)", 100, -19.0, 6.0);
   _idh.declare(tfs,"idh","id fold, p>10");
+  _hND  = tfs.make<TH1D>( "NDaughter",  "N Daughters", 100, -0.05, 100.0);
+  _hND2 = tfs.make<TH1D>( "NDaughter2", "N Daughters", 100, -0.05, 1000.0);
   _hscodeh = tfs.make<TH1D>( "scodeh", "start code, p>10", 151, -0.5, 150.0);
   _hecodeh = tfs.make<TH1D>( "ecodeh", "end code, p>10", 151, -0.5, 150.0);
+  _idhendKE.declare(tfs,"idhendKE","id fold, endKE>10");
+  _hscodehendKE = tfs.make<TH1D>( "scodehendKE", "start code, endKE>10", 151, -0.5, 150.0);
+  _hecodehendKE = tfs.make<TH1D>( "ecodehendKE", "end code, endKE>10", 151, -0.5, 150.0);
+  _idh9endKE.declare(tfs,"idh9endKE","id fold, endKE>95");
+  _hscodeh9endKE = tfs.make<TH1D>( "scodeh9endKE", "start code, endKE>95", 151, -0.5, 150.0);
+  _hecodeh9endKE = tfs.make<TH1D>( "ecodeh9endKE", "end code, endKE>95", 151, -0.5, 150.0);
 
   _htx = tfs.make<TH1D>( "Xstop", "stopped mu X", 100, -6000.0, 6000.0);
   _hty = tfs.make<TH1D>( "Ystop", "stopped mu Y", 100, -2000.0, 2000.0);
@@ -47,7 +61,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(3.0);
+  _hVer->Fill(5.0);
 
   _hN->Fill(coll.size()); 
   double x = (coll.size()<=0 ? 0 : log10(coll.size()) );
@@ -59,7 +73,9 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
     //int idc = _id.fill(part.pdgId());
     int idc =_id.fill(part.pdgId());
     double p = part.startMomentum().vect().mag();
+    double endKE = part.endKineticEnergy();
     _hp->Fill(p);
+    _hendKE->Fill(endKE);
     if(abs(idc)==11) _hpe->Fill(p);
     if(abs(idc)==13) _hpm->Fill(p);
     if(abs(idc)==30) _hp0->Fill(p);
@@ -85,11 +101,31 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
     _hscode->Fill(part.originParticle().creationCode().id());
     _hecode->Fill(part.stoppingCode().id());
-    
+
+    _hNS->Fill(part.nSteps());
+    _hNS2->Fill(part.nSteps()<=0 ? 0 : log10(part.nSteps()));
+
+    _hl1->Fill(part.trackLength());
+    _hl2->Fill(part.trackLength());
+    _hl3->Fill(part.trackLength()<=0 ? 0 : log10(part.trackLength()));
+
+    _hND->Fill(part.daughters().size());
+    _hND2->Fill(part.daughters().size());
+
     if(pstart>10.0) {
       _idh.fill(part.pdgId()); 
       _hscodeh->Fill(part.originParticle().creationCode().id());
       _hecodeh->Fill(part.stoppingCode().id());
+    }
+    if(endKE>10.0) {
+      _idhendKE.fill(part.pdgId());
+      _hscodehendKE->Fill(part.originParticle().creationCode().id());
+      _hecodehendKE->Fill(part.stoppingCode().id());
+    }
+    if(endKE>95.0) {
+      _idh9endKE.fill(part.pdgId());
+      _hscodeh9endKE->Fill(part.originParticle().creationCode().id());
+      _hecodeh9endKE->Fill(part.stoppingCode().id());
     }
 
     // stopped muons

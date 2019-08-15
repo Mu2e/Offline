@@ -17,6 +17,7 @@ helper=mu2e_helper(env);
 libs =  [
     'mu2e_Mu2eBTrk',
     'mu2e_TrkReco',
+    'mu2e_TrackerConditions',
     'mu2e_BTrkData',
     'mu2e_RecoDataProducts',
     'mu2e_DataProducts',
@@ -27,8 +28,8 @@ libs =  [
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
-    'art_Framework_Services_Optional',
-    'art_Framework_Services_Optional_TFileService_service',
+    'art_root_io_tfile_support',
+    'art_root_io_TFileService_service',
     'art_Framework_Services_Optional_RandomNumberGenerator_service',
     'art_Persistency_Common',
     'art_Persistency_Provenance',
@@ -43,6 +44,7 @@ libs =  [
     'Minuit',
     'boost_filesystem',
     'boost_system',
+    'pthread'
     ]
 
 mainlib = helper.make_mainlib ( libs )

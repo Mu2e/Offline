@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -44,6 +44,7 @@ namespace mu2e {
   };
 
   CaloShowerSimFilter::CaloShowerSimFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     minpe_(pset.get<double>("MinParticleEnergy")),
     minetot_(pset.get<double>("MinTotalEnergy")),
     diag_(pset.get<int>("diagLevel",0)),

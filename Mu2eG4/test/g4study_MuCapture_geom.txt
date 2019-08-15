@@ -1,0 +1,20 @@
+//
+// config file to perform Geant4 studies using the Mu2e framework infrastructure
+//
+//
+// Original author K. Genser
+//
+
+// Units are mm, MeV
+
+#include "Mu2eG4/test/g4study_Tube_geom.txt"
+
+// int            mu2e.studyEnvVersion      = 1;
+// 1 tube; 2 box
+string         tube.wallMaterialName = "G4_Al";
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

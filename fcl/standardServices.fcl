@@ -1,10 +1,9 @@
-#
+# -*- mode:tcl -*-
 # This file defines some standard configurations for services
 #
 
 #include "DbService/fcl/prolog.fcl"
 #include "ProditionsService/fcl/prolog.fcl"
-#include "BTrkHelper/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
@@ -38,9 +37,11 @@ Services : {
 # a complete job
   Core	    : {
     message		    : @local::default_message
-    GeometryService	    : { inputFile : "Mu2eG4/geom/geom_common.txt" }
-    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-    GlobalConstantsService  : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+    GeometryService	    : { inputFile      : "Mu2eG4/geom/geom_common.txt" 
+	simulatedDetector   : { tool_type: "Mu2e" }
+    }
+    ConditionsService	    : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService  : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
     DbService : @local::DbEmpty
     ProditionsService: @local::Proditions
   }
@@ -51,9 +52,9 @@ Services : {
     G4Helper: {}
   }
 
-  RecoOnly  : {
-    BTrkHelper : @local::BTrkHelperDefault
-  }
+  #RecoOnly : {
+  #}
+
 }
 # aggregate to make complete sets that can be used to fully configure common jobs
 Services.Sim	    : {
@@ -63,13 +64,13 @@ Services.Sim	    : {
 
 Services.Reco	    : {
   @table::Services.Core
-  @table::Services.RecoOnly
+  #@table::Services.RecoOnly
 }
 
 Services.SimAndReco : {
   @table::Services.Core
   @table::Services.SimOnly
-  @table::Services.RecoOnly
+  #@table::Services.RecoOnly
 }
 
 END_PROLOG

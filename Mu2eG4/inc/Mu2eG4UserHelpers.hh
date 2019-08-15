@@ -50,6 +50,7 @@ namespace mu2e {
                         bool isEnd=false, bool printTimers=true);
 
     G4String findStepStoppingProcessName(G4Step const* const aStep);
+    void printKilledTrackInfo(G4Track const* const trk);
     bool isTrackKilledByFieldPropagator(G4Track const* const trk, int trVerbosity);
     G4String findTrackStoppingProcessName(G4Track const* const trk);
     void printProcessNotSpecifiedWarning(G4Track const* const trk);

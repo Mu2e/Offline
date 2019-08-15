@@ -120,7 +120,7 @@ namespace mu2e {
     CLHEP::Hep3Vector _mu2eOrigin;
 
     // Functions to decide whether or not to kill tracks.
-    bool killTooManySteps ( const G4Track* );
+    bool killTooManySteps ( const G4Track* const);
 
     // A helper function to kill the track and record the reason for killing it.
     void killTrack( G4Track* track, ProcessCode::enum_type code, G4TrackStatus status );

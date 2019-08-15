@@ -1,8 +1,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
@@ -41,6 +41,7 @@ namespace mu2e {
   public:
 
     explicit CaloTrigger(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       caloDigiModuleLabel_(pset.get<std::string>("caloDigiModuleLabel")),
       digiSampling_(       pset.get<double>("digiSampling")),
       windowPeak_(         pset.get<unsigned>("windowPeak")),

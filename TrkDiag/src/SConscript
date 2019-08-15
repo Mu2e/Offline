@@ -13,7 +13,6 @@ rootlibs  = env['ROOTLIBS']
 babarlibs = env['BABARLIBS']
 extrarootlibs = [ 'Geom', 'Geom', 'GeomPainter', 'Ged' ]
 mainlib = helper.make_mainlib ( [
-    'mu2e_TrackCaloMatching',
     'mu2e_TrkReco',
     'mu2e_ParticleID',
     'mu2e_BTrkData',
@@ -36,8 +35,8 @@ mainlib = helper.make_mainlib ( [
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
-    'art_Framework_Services_Optional_TFileService_service',
-    'art_Framework_Services_Optional',
+    'art_root_io_TFileService_service',
+    'art_root_io_tfile_support',
     'art_Persistency_Provenance',
     'art_Persistency_Common',
     'art_Utilities',
@@ -53,12 +52,13 @@ mainlib = helper.make_mainlib ( [
     'boost_filesystem',
     'boost_system',
      extrarootlibs,
+    'hep_concurrency',
+
     ] )
 
 # Fixme: split into link lists for each module.
 helper.make_plugins( [
    mainlib,
-   'mu2e_TrackCaloMatching',
    'mu2e_TrkReco',
    'mu2e_ParticleID',
    'mu2e_BTrkData',
@@ -83,9 +83,10 @@ helper.make_plugins( [
    'art_Framework_Core',
    'art_Framework_Principal',
    'art_Framework_Services_Registry',
-   'art_Framework_Services_Optional',
-   'art_Framework_Services_Optional_TFileService_service',
+   'art_root_io_tfile_support',
+   'art_root_io_TFileService_service',
    'art_Framework_Services_Optional_RandomNumberGenerator_service',
+   'art_Framework_Services_System_TriggerNamesService_service',                       
    'art_Persistency_Common',
    'art_Persistency_Provenance',
    'art_Utilities',
@@ -102,6 +103,7 @@ helper.make_plugins( [
    'boost_filesystem',
    'boost_system',
    extrarootlibs,
+   'hep_concurrency', 
     ] )
 
 # Fixme: do I need all of babarlibs below?

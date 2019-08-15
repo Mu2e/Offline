@@ -14,7 +14,7 @@
 #include "boost/noncopyable.hpp"
 #include "fhiclcpp/ParameterSet.h"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "DataProducts/inc/ExtMonFNALChipId.hh"
 #include "RecoDataProducts/inc/ExtMonFNALRawHitCollection.hh"

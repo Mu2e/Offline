@@ -26,7 +26,7 @@ namespace mu2e {
 
   void Plane::fillPointers ( const Tracker* tracker ) const{
     for ( size_t i=0; i<_panels.size(); ++i ){
-      _panels[i].fillPointers(tracker);
+      _panels[i]->fillPointers(tracker);
     }
   }
 

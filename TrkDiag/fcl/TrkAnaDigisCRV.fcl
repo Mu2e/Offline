@@ -15,19 +15,13 @@ process_name : TrkAnaDigisCRV
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloCrvRecoSequence ]
 physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
 physics.analyzers.TrkAnaPos.AnalyzeCRV : true
-#physics.analyzers.TrkAnaKSNeg.AnalyzeCRV : true
-#physics.analyzers.TrkAnaKSPos.AnalyzeCRV : true
 
-physics.analyzers.TrkAnaNeg.fillTrkQualInfo : true
-physics.analyzers.TrkAnaPos.fillTrkQualInfo : true
-#physics.analyzers.TrkAnaKSNeg.fillTrkQualInfo : true
-#physics.analyzers.TrkAnaKSPos.fillTrkQualInfo : true
-
-physics.analyzers.TrkAnaNeg.diagLevel : 2
-physics.analyzers.TrkAnaPos.diagLevel : 2
-#physics.analyzers.TrkAnaKSNeg.diagLevel : 2
-#physics.analyzers.TrkAnaKSPos.diagLevel : 2
+physics.analyzers.TrkAnaNeg.diagLevel : 1
+physics.analyzers.TrkAnaPos.diagLevel : 1
 
 # update labels to read compressed output from MDC2018
 physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
-physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
+#physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.TimeMaps ]
+# Comment the below and uncomment the above to process MDC2018h and later digi collections
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+

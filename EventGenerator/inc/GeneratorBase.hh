@@ -13,6 +13,7 @@
 //
 
 // Framework includes
+#include "art/Framework/Core/detail/EngineCreator.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // Mu2e includes

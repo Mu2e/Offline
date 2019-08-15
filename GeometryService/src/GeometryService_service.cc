@@ -10,7 +10,7 @@
 #include <utility>
 
 // Framework include files
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
@@ -99,7 +99,8 @@ namespace mu2e {
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
     _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(nullptr),
-    standardMu2eDetector_( pset.get<bool>        ("standardMu2eDetector", true)),
+    _pset   (pset),
+    standardMu2eDetector_( _pset.get<std::string>("simulatedDetector.tool_type") == "Mu2e"),
     _detectors(),
     _run_count()
   {
@@ -157,11 +158,11 @@ namespace mu2e {
     // Print final state of file after all substitutions.
     if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
 
-    // decide if this is standard Mu2e detector or something else ...
+    // 2019-03-24 P.M. : *not needed* decide if this is standard Mu2e detector or something else ...
 
     if (!isStandardMu2eDetector() ||
-        !_config->getBool("mu2e.standardDetector",true)) {
-      cout  << "Non standard mu2e configuration, assuming it is intentional" << endl;
+	!_config->getBool("mu2e.standardDetector",true)) {
+      cout  << "Non-standard mu2e configuration, assuming it is intentional" << endl;
       return;
     }
 

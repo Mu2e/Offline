@@ -15,8 +15,6 @@
 
 // Framework includes
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -42,7 +40,7 @@ using namespace std;
 
 namespace mu2e {
 
-  PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run& run, SimpleConfig const& config):
+  PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config):
 
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->position()
@@ -70,23 +68,8 @@ namespace mu2e {
     _randPoissonQ{engine, std::abs(_mean)},
     _randFlat{engine},
     _randGaussQ{engine, 0., _beamSpotSigma},
-    _randomUnitSphere{engine, _czmin, _czmax, _phimin, _phimax},
-    _doHistograms(config.getBool("primaryProtonGun.doHistograms", true))
-  {
-
-    if ( _doHistograms ){
-      art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir( "PrimaryProtonGun" );
-      _hmomentum = tfdir.make<TH1D>( "hmomentum", "Primary Proton Momentum, MeV",        10, 7000., 9000.);
-      _hKE       = tfdir.make<TH1D>( "hKE",       "Primary Proton Kinetic Energy, MeV", 200, 7000., 9000.);
-      _hposx       = tfdir.make<TH1D>( "hposx",       "Primary Proton Position in X",       100, -5.,   5.);
-      _hposy       = tfdir.make<TH1D>( "hposy",       "Primary Proton Position in Y",       100, -5.,   5.);
-      _hposz       = tfdir.make<TH1D>( "hposz",       "Primary Proton Position in Z",       200,  0., 100.);
-      _hcosTheta   = tfdir.make<TH1D>( "hcosTheta",   "Primary Proton Cos Theta",           100, -1.0,1.0);
-      _htime       = tfdir.make<TH1D>( "htime",       "Primary Proton Time",                200, 0.,200.);
-    }
-
-  }
+    _randomUnitSphere{engine, _czmin, _czmax, _phimin, _phimax}
+    {}
 
   void PrimaryProtonGun::generate( GenParticleCollection& genParts ){
     long n = _mean < 0 ? static_cast<long>(-_mean): _randPoissonQ.fire();
@@ -125,7 +108,6 @@ namespace mu2e {
 
     // Energy and kinetic energy.
     double e = sqrt( _p*_p + _proton_mass*_proton_mass);
-    double ekine = e - _proton_mass;
 
     // Generated 4 momentum.
     CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(_p), e );
@@ -143,17 +125,6 @@ namespace mu2e {
                                      // Convert momentum to Mu2e coordinates
                                      _gunRotation*mom,
                                      time));
-
-    if ( _doHistograms ){
-      _hKE->Fill(ekine);
-      _hmomentum->Fill(_p);
-      _htime->Fill(time);
-      _hcosTheta->Fill(mom.cosTheta());
-      _hposx->Fill(pos.x());
-      _hposy->Fill(pos.y());
-      _hposz->Fill(pos.z());
-
-    }
 
   }
 

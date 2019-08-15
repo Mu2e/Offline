@@ -41,7 +41,7 @@
 #include "RecoDataProducts/inc/ExtMonFNALTrkFit.hh"
 #include "RecoDataProducts/inc/ExtMonFNALTrkFitCollection.hh"
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "TH1D.h"
@@ -154,7 +154,8 @@ namespace mu2e {
 
     public:
       explicit EMFTrackClusterArbiter(fhicl::ParameterSet const& pset)
-        : verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+        : EDProducer{pset}
+        , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
         , tracksModuleLabel_(pset.get<std::string>("tracksModuleLabel"))
         , tracksInstanceName_(pset.get<std::string>("tracksInstanceName", ""))
         , clustersModuleLabel_(pset.get<std::string>("clustersModuleLabel"))

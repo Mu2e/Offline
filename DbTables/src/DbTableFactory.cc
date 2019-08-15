@@ -8,6 +8,9 @@
 #include "DbTables/inc/TrkPreampRStraw.hh"
 #include "DbTables/inc/TrkPreampStraw.hh"
 #include "DbTables/inc/TrkThresholdRStraw.hh"
+#include "DbTables/inc/TrkAlignTracker.hh"
+#include "DbTables/inc/TrkAlignPlane.hh"
+#include "DbTables/inc/TrkAlignPanel.hh"
 
 mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
   if (name=="TstCalib1") {
@@ -24,6 +27,12 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkPreampStraw());
   } else if (name=="TrkThresholdRStraw") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkThresholdRStraw());
+  } else if (name=="TrkAlignTracker") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignTracker());
+  } else if (name=="TrkAlignPlane") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPlane());
+  } else if (name=="TrkAlignPanel") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPanel());
   } else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME") 
       << "DbTableFactory::newTable call with bad table name: "+name+"\n";

@@ -4,6 +4,7 @@
 //The TiO2 coating of the CRV counters has a thickness of 0.25mm so that the active volume of the lookup table counters
 //is fully covered by the Offline counters.
 
+#include "CommonMC/fcl/prolog.fcl"
 BEGIN_PROLOG
 
     CrvPhotons:
@@ -141,23 +142,6 @@ BEGIN_PROLOG
       timeOffsets                            : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
 
-
-CrvResponsePackage : 
-{
-   producers : 
-   {
-     CrvPhotons                  : @local::CrvPhotons
-     CrvSiPMCharges              : @local::CrvSiPMCharges
-     CrvWaveforms                : @local::CrvWaveforms
-     CrvDigi                     : @local::CrvDigi
-     CrvRecoPulses               : @local::CrvRecoPulses
-     CrvCoincidence              : @local::CrvCoincidence
-     CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
-     CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
-   }
-   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi, CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, CrvCoincidenceClusterMatchMC ]
-}
-
 CrvDAQPackage : 
 {
    producers : 
@@ -167,7 +151,39 @@ CrvDAQPackage :
      CrvWaveforms                : @local::CrvWaveforms
      CrvDigi                     : @local::CrvDigi
    }
-   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ]
+   CrvResponseSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ] //for backward compatibility
+   CrvDAQSequence : [ CrvPhotons, CrvSiPMCharges, CrvWaveforms, CrvDigi ]
+}
+
+CrvRecoPackage :
+{
+   producers :
+   {
+     CrvRecoPulses               : @local::CrvRecoPulses
+     CrvCoincidence              : @local::CrvCoincidence
+     CrvCoincidenceClusterFinder : @local::CrvCoincidenceClusterFinder
+   }
+   CrvRecoSequence : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder]
+}
+
+CrvRecoMCPackage :
+{
+   producers :
+   {
+     @table::CrvRecoPackage.producers
+     CrvCoincidenceClusterMatchMC : @local::CrvCoincidenceClusterMatchMC
+   }
+   CrvRecoMCSequence : [ @sequence::CrvRecoPackage.CrvRecoSequence, CrvCoincidenceClusterMatchMC ]
+}
+
+CrvResponsePackage :
+{
+   producers :
+   {
+     @table::CrvDAQPackage.producers
+     @table::CrvRecoMCPackage.producers
+   }
+   CrvResponseSequence : [ @sequence::CrvDAQPackage.CrvDAQSequence, @sequence::CrvRecoMCPackage.CrvRecoMCSequence ]
 }
 
 END_PROLOG

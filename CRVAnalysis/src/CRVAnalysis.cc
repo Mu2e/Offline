@@ -21,7 +21,7 @@ namespace mu2e
     event.getByLabel(crvCoincidenceClusterModuleLabel,"",crvCoincidenceClusterCollection);
     event.getByLabel(crvCoincidenceClusterMCModuleLabel,"",crvCoincidenceClusterMCCollection);
 
-    if(crvCoincidenceClusterCollection.product()==NULL) return;
+    if(!crvCoincidenceClusterCollection.isValid()) return;
     size_t nClusters=crvCoincidenceClusterCollection->size();
 
     for(size_t i=0; i<nClusters; i++)
@@ -32,10 +32,16 @@ namespace mu2e
       recoInfo.emplace_back(cluster.GetCrvSectorType(), cluster.GetAvgCounterPos(), 
                             cluster.GetStartTime(), cluster.GetEndTime(), 
                             cluster.GetPEs(), cluster.GetCrvRecoPulses().size());
+// test Ptrs
+//      for(auto const& pulse : cluster.GetCrvRecoPulses())
+//	if(pulse.isNull())
+//	  std::cout << "Found invalid CrvRecoPulsePtr" << std::endl;
+//	else
+//	  std::cout << "CrvRecoPulse has " << pulse->GetWaveformIndices().size()  << " Digis" << std::endl;
     }
 
     //fill the MC collection
-    if(crvCoincidenceClusterMCCollection.product()!=NULL)
+    if(crvCoincidenceClusterMCCollection.isValid())
     {
       size_t nClustersMC=crvCoincidenceClusterMCCollection->size();
       if(nClusters!=nClustersMC) std::cout<<"The number of MC and reco CRV coincidence clusters does not match!"<<std::endl;

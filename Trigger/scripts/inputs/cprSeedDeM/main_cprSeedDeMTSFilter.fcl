@@ -1,7 +1,0 @@
-physics.filters.cprSeedDeMTSFilter.minNStrawHits : 15.0
-physics.filters.cprSeedDeMTSFilter.minMomentum : 80.0
-physics.filters.cprSeedDeMTSFilter.maxMomentum : 200.0
-physics.filters.cprSeedDeMTSFilter.maxChi2DOF : 20.0
-physics.filters.cprSeedDeMTSFilter.maxMomErr : 10.0
-physics.filters.cprSeedDeMTSFilter.minD0 : -200.0
-physics.filters.cprSeedDeMTSFilter.maxD0 : 200.0

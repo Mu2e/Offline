@@ -1,0 +1,48 @@
+#
+# This script runs TrackAnalysisReco on digi inputs.  It runs the official Reco sequence inline.
+# David Brown (LBNL) Feb 2019
+#
+#include "fcl/standardProducers.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+# the following is for reading primary digis
+##include "JobConfig/reco/mcdigis_primary.fcl"
+# the following is for reading mixed digis MDC2018g and earlier
+#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+# the following is for reading mixed digis MDC2018h and later
+###include "JobConfig/reco/mcdigis.fcl"
+process_name : TrkAnaDigisReco
+# augment producers and analyzers
+physics.producers: {
+  @table::physics.producers
+  @table::CommonMC.producers  
+  @table::TrkAnaReco.producers
+}
+physics.analyzers: {
+  @table::physics.analyzers
+  @table::TrkAnaReco.analyzers
+}
+# for MDC2018g and earlier, correct the time maps.  Comment these out for MDC2018h and beyond
+physics.analyzers.TrkAnaNeg.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
+physics.analyzers.TrkAnaPos.InfoMCStructHelper.TimeMaps : [ @sequence::RecoCompression.NoCosmicTimeMaps ]
+
+physics.RecoPath : [ @sequence::physics.RecoPath, @sequence::TrkAnaReco.TrigSequence ]
+physics.EndPath : [ RecoCheck, @sequence::TrkAnaReco.EndSequence ]
+services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.root"
+#
+#  Script options
+# 
+# uncomment the following for detailed helix information
+#physics.analyzers.TrkAnaNeg.FillHelixInfo : true
+#physics.analyzers.TrkAnaPos.FillHelixInfo : true
+# uncomment the following to turn on CRV information
+#physics.analyzers.TrkAnaNeg.AnalyzeCRV : true
+#physics.analyzers.TrkAnaPos.AnalyzeCRV : true
+# uncomment the following for hit level diagnostics
+#physics.analyzers.TrkAnaNeg.diagLevel : 2
+#physics.analyzers.TrkAnaPos.diagLevel : 2
+# trigger information is not supported by this script
+
+# Filter based on the reco path
+physics.analyzers.TrkAnaNeg.SelectEvents : [RecoPath]
+physics.analyzers.TrkAnaPos.SelectEvents : [RecoPath]
+

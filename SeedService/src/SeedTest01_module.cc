@@ -31,8 +31,6 @@ namespace mu2e {
 
   public:
 
-    typedef art::RandomNumberGenerator::seed_t seed_t;
-
     explicit SeedTest01(fhicl::ParameterSet const& pset);
 
     void analyze(const art::Event& event);
@@ -63,24 +61,24 @@ namespace mu2e {
     art::ServiceHandle<SeedService> seeds;
 
     if ( testMode_ == 0 ){
-      seed_t seed = seeds->getSeed();
+      auto seed = seeds->getSeed();
       cout << "Seed is :  " << seed << endl;
 
-      seed_t seed2 = seeds->getSeed();
+      auto seed2 = seeds->getSeed();
       cout << "Seed2 is : " << seed2 << endl;
     }
 
     if ( testMode_ == 1 ){
       cout << "Here we go ... " << endl;
       for ( size_t i=0; i< instanceNames_.size(); ++i){
-        seed_t seed = seeds->getSeed( instanceNames_[i] );
+        auto seed = seeds->getSeed( instanceNames_[i] );
         cout << "Seed for : "
              << instanceNames_[i] << " is: "
              << seed
              << endl;
       }
       for ( size_t i=0; i< instanceNames_.size(); ++i){
-        seed_t seed = seeds->getSeed( instanceNames_[i] );
+        auto seed = seeds->getSeed( instanceNames_[i] );
         cout << "Seed2 for : "
              << instanceNames_[i] << " is: "
              << seed
@@ -95,7 +93,7 @@ namespace mu2e {
          << endl;
     if ( testMode_ == 4 ){
       art::ServiceHandle<SeedService> seeds;
-      seed_t seed = seeds->getSeed();
+      auto seed = seeds->getSeed();
       cout << "Seed from analyze is :  " << seed << endl;
     }
 
@@ -107,7 +105,7 @@ namespace mu2e {
          << endl;
     if ( testMode_ == 2 ){
       art::ServiceHandle<SeedService> seeds;
-      seed_t seed = seeds->getSeed();
+      auto seed = seeds->getSeed();
       cout << "Seed from beginRun is :  " << seed << endl;
     }
   }
@@ -118,7 +116,7 @@ namespace mu2e {
          << endl;
     if ( testMode_ == 3 ){
       art::ServiceHandle<SeedService> seeds;
-      seed_t seed = seeds->getSeed();
+      auto seed = seeds->getSeed();
       cout << "Seed from beginSubRun is :  " << seed << endl;
     }
   }

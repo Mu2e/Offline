@@ -8,7 +8,7 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
-#include "TrkDiag/fcl/prolog.fcl"
+#include "TrkDiag/fcl/prolog_legacy.fcl"
 
 process_name : TrkAnaDigis
 
@@ -21,16 +21,20 @@ physics :
   producers : @local::TrkAna.producers
   analyzers :  {
     @table::TrkAna.analyzers
-    @table::TrkDiag.analyzers
+#    @table::TrkDiag.analyzers
   }
 }
 
 physics.TrkAnaTriggerPath : [ @sequence::TrkAna.TrkCaloRecoSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAna.EndSequence, genCountLogger ]
+#
+physics.analyzers.TrkAnaNeg.FillTrkQualInfo : true
+physics.analyzers.TrkAnaPos.FillTrkQualInfo : true
 
 # You can add detailed (hit) information to the TTree by setting diagLevel to 2
 physics.analyzers.TrkAnaNeg.diagLevel : 1
 physics.analyzers.TrkAnaPos.diagLevel : 1
+
 
 physics.analyzers.CHD.diagLevel : 2
 physics.analyzers.TCD.diagLevel : 2
@@ -46,3 +50,4 @@ physics.producers.CrvCoincidenceClusterSummarizer.crvWaveformsModuleLabel : "com
 physics.producers.CrvCoincidenceClusterSummarizer.timeOffsets.inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
 
 services.TFileService.fileName: "nts.owner.trkanadigi.version.sequencer.root"
+

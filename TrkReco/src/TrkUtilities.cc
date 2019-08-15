@@ -89,9 +89,10 @@ namespace mu2e {
       helix._fz0 = phi;
     }
 
-    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr, KalSegment& kseg) {
+    void fillSegment(HelixTraj const& htraj, BbrVectorErr const& momerr,double dflt, KalSegment& kseg) {
       kseg._fmin = htraj.lowRange();
       kseg._fmax = htraj.hiRange();
+      kseg._dflt = dflt;
       kseg._helix = htraj.parameters()->parameter();
       kseg._hcov = htraj.parameters()->covariance();
       kseg._mom = momerr.mag();
@@ -119,7 +120,7 @@ namespace mu2e {
 	      kmat->detIntersection().pathlen, // poca.flt1(),
 	      poca.flt2(),  // not stored in KalMaterial, FIXME!
 	      kmat->detIntersection().pathLength(),
-	      kmat->radiationFraction(),
+	      detstraw->radiationFraction(kmat->detIntersection()),
 	      kmat->momFraction(),
 	      isite->isActive() );
 	    tstraws.push_back(tstraw);
@@ -140,9 +141,11 @@ namespace mu2e {
 	StrawHitFlag hflag = chit.flag();
 	if(tsh->isActive())hflag.merge(StrawHitFlag::active);
 	if(tsh->poca().status().success())hflag.merge(StrawHitFlag::doca);
-	TrkStrawHitSeed seedhit(tsh->index(),tsh->straw().id(),
+	// fill the seed.  I have to protect the class from TrkStrawHit to avoid a circular dependency, FIXME!
+	TrkStrawHitSeed seedhit(tsh->index(),
 	    tsh->hitT0(), tsh->fltLen(), tsh->hitLen(),
-	    tsh->driftRadius(), tsh->driftTime(), tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
+	    tsh->driftRadius(), tsh->signalTime(),
+	    tsh->poca().doca(), tsh->ambig(),tsh->driftRadiusErr(), hflag, chit);
 	hitseeds.push_back(seedhit);
       }
     }
@@ -156,6 +159,8 @@ namespace mu2e {
       caloseed = TrkCaloHitSeed(tch->hitT0(), tch->fltLen(), tch->hitLen(),
 	  tch->poca().doca(), tch->hitErr(), tch->time() + tch->timeOffset(), tch->timeErr(), hflag);
     }
+    // DNB: the timeOffset() should NOT be added to time(), it is a double correction.
+    // I'm leaving for now as the production was run with this error FIXME!
 
   // compute the overlap between 2 clusters 
     double overlap(SHIV const& shiv1, SHIV const& shiv2) {

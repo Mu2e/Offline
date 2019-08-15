@@ -15,12 +15,12 @@
 #include "RecoDataProducts/inc/KalmanTrack.hh"
 
 // calorimeter
-#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"
-#include "RecoDataProducts/inc/CaloClusterCollection.hh"
+#include "RecoDataProducts/inc/CaloCluster.hh"
 #include "RecoDataProducts/inc/CaloTrigSeedCollection.hh"
 
 // straws
@@ -48,7 +48,9 @@
 #include "RecoDataProducts/inc/TrackSummary.hh"
 #include "RecoDataProducts/inc/TrackCaloAssns.hh" 
 #include "RecoDataProducts/inc/KalSeed.hh"
+#include "RecoDataProducts/inc/TrkCaloHitPID.hh"
 #include "RecoDataProducts/inc/TrkQual.hh"
+#include "RecoDataProducts/inc/RecoQual.hh"
 #include "RecoDataProducts/inc/AlgorithmID.hh"
 #include "RecoDataProducts/inc/AlgorithmIDCollection.hh"
 
@@ -59,6 +61,8 @@
 #include "RecoDataProducts/inc/AvikPIDProductCollection.hh"
 #include "RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
 #include "RecoDataProducts/inc/PIDProductCollection.hh"
+#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
+#include "RecoDataProducts/inc/TrackClusterMatch.hh"
 
 // CRV
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
@@ -82,8 +86,9 @@
 
 // trigger
 #include "RecoDataProducts/inc/TriggerFlag.hh"
-#include "RecoDataProducts/inc/TriggerAlg.hh"
 #include "RecoDataProducts/inc/TriggerInfo.hh"
 
+// general reco
+#include "RecoDataProducts/inc/RecoCount.hh"
 
 #undef ENABLE_MU2E_GENREFLEX_HACKS

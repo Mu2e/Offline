@@ -127,6 +127,7 @@ namespace mu2e {
       double g4StepMinimum_;
       int    g4MaxIntSteps_;
       double bfieldMaxStep_;
+      double strawGasMaxStep_;
       bool limitStepInAllVolumes_;
       bool useEmOption4InTracker_;
 

@@ -14,13 +14,12 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"
-#include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 
 // ROOT incldues
@@ -49,7 +48,6 @@
 #include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 #include "TrkDiag/inc/TrkQualInfo.hh"
-#include "TrkDiag/inc/TrkQualTestInfo.hh"
 // CRV info
 #include "CRVAnalysis/inc/CRVAnalysis.hh"
 
@@ -135,7 +133,7 @@ namespace mu2e {
     std::vector<TrkStrawHitInfoMC> _detshmc;
     // test trkqual variable branches
     TrkQualInfo _trkQualInfo;
-    TrkQualTestInfo _trkqualTest;
+
     // helper functions
     void fillMCSteps(KalDiag::TRACKERPOS tpos, TrkFitDirection const& fdir, SimParticle::key_type id, TrkInfoMCStep& tmcs);
     void fillEventInfo(const art::Event& event);
@@ -177,6 +175,13 @@ namespace mu2e {
     _trkana(0),
     _meanPBI(0.0)
   {
+
+  std::cout << "****************************************************************************************************"
+   << std::endl << "WARNING: TrackAnalysis_module is no longer supported and will be removed in the very near future."
+   << std::endl << "Please used TrackAnalysisReco_module instead, with either TrkAnaReco.fcl or TrackAnaDigisReco.fcl"
+   << std::endl << "for running on reconstruction output (mcs) or digis (dig), respectively"
+   << std::endl << "****************************************************************************************************" << std::endl;
+
   }
 
   void TrackAnalysis::beginJob( ){
@@ -220,7 +225,6 @@ namespace mu2e {
 
     if (_filltrkqual) {
       _trkana->Branch("detrkqual", &_trkQualInfo, TrkQualInfo::leafnames().c_str());
-      //      _trkana->Branch("trkqualTest", &_trkqualTest, TrkQualTestInfo::leafnames().c_str());
     }
   }
 
@@ -332,7 +336,7 @@ namespace mu2e {
 	  if (tch != 0) {
 	    --n_krep_active_hits; // nactive in TrkQual does not include the TrkCaloHit
 	  }
-	  int n_tqual_active_hits = tqual[TrkQual::nactive];
+	  int n_tqual_active_hits = (int)rint(tqual[TrkQual::nactive]);
 	  if (n_krep_active_hits != n_tqual_active_hits) {
 	    throw cet::exception("TrackAnalysis") << "TrkQual nactive (" << n_tqual_active_hits << ") does not match KalRep nactive (" << n_krep_active_hits << ")" << std::endl;
 	  }
@@ -519,16 +523,16 @@ namespace mu2e {
   }
 
   void TrackAnalysis::countHits(StrawHitFlagCollection const& shfC) {
-    _hcnt._nsh = shfC.size();
+    _hcnt._nsd = shfC.size();
     for(auto shf : shfC) {
       if(shf.hasAllProperties(StrawHitFlag::energysel))++_hcnt._nesel;
       if(shf.hasAllProperties(StrawHitFlag::radsel))++_hcnt._nrsel;
       if(shf.hasAllProperties(StrawHitFlag::timesel))++_hcnt._ntsel;
       if(shf.hasAllProperties(StrawHitFlag::bkg))++_hcnt._nbkg;
-      if(shf.hasAllProperties(StrawHitFlag::stereo))++_hcnt._nster;
-      if(shf.hasAllProperties(StrawHitFlag::tdiv))++_hcnt._ntdiv;
+//      if(shf.hasAllProperties(StrawHitFlag::stereo))++_hcnt._nster;
+//     if(shf.hasAllProperties(StrawHitFlag::tdiv))++_hcnt._ntdiv;
       if(shf.hasAllProperties(StrawHitFlag::trksel))++_hcnt._ntpk;
-      if(shf.hasAllProperties(StrawHitFlag::elecxtalk))++_hcnt._nxt;
+//      if(shf.hasAllProperties(StrawHitFlag::elecxtalk))++_hcnt._nxt;
     }
   }
 
@@ -549,7 +553,6 @@ namespace mu2e {
     _demcmid.reset();
     _demcxit.reset();
     _wtinfo.reset();
-    _trkqualTest.reset();
     _trkQualInfo.reset();
     _detch.reset();
     // clear vectors
@@ -566,7 +569,8 @@ namespace mu2e {
       TrkQual::MVA_varindex i_index = TrkQual::MVA_varindex(i_trkqual_var);
       trkqualInfo._trkqualvars[i_trkqual_var] = (double) tqual[i_index];
     }
-    trkqualInfo._trkqual = tqual.MVAOutput();
+    trkqualInfo._mvaout = tqual.MVAOutput();
+    trkqualInfo._mvastat = tqual.status();
   }
 }  // end namespace mu2e
 

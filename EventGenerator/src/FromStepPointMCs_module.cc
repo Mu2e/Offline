@@ -66,7 +66,8 @@ namespace mu2e {
   };
 
   FromStepPointMCs::FromStepPointMCs(fhicl::ParameterSet const& pset)
-    : logLevel_(pset.get<int>("logLevel", 0))
+    : art::EDProducer{pset}
+    , logLevel_(pset.get<int>("logLevel", 0))
     , allowDuplicates_(pset.get<bool>("allowDuplicates", false))
   {
     produces<GenParticleCollection>();
@@ -96,7 +97,7 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
 
-    art::ProductID gpc_pid = getProductID<GenParticleCollection>();
+    art::ProductID gpc_pid = event.getProductID<GenParticleCollection>();
 
     for(const auto& tag : inputs_) {
       auto ih = event.getValidHandle<mu2e::StepPointMCCollection>(tag);

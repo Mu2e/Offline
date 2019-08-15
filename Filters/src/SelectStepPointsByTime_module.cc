@@ -43,7 +43,8 @@ namespace mu2e {
 
   //================================================================
   SelectStepPointsByTime::SelectStepPointsByTime(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("input"))
+    : art::EDProducer{pset}
+    , input_(pset.get<std::string>("input"))
     , outInstanceName_(pset.get<std::string>("outInstanceName"))
     , cutTimeMin_(pset.get<double>("cutTimeMin",std::numeric_limits<double>::min()))
     , cutTimeMax_(pset.get<double>("cutTimeMax",std::numeric_limits<double>::max()))

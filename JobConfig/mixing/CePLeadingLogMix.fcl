@@ -1,0 +1,29 @@
+#
+# Radiative Ce- spectrum, based on doc 7615 spectrum with background mixing
+#
+#  Dave Brown (LBNL) june 2018
+#
+#include "JobConfig/mixing/prolog.fcl"
+process_name: CePLeadingLogMix
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.CePLeadingLog
+    @table::Mixing.producers
+  }
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+  TriggerPath : @local::Mixing.TriggerPath
+  EndPath : @local::Mixing.EndPath
+}
+outputs: { Output : @local::Mixing.Output }
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+# customize the output
+services.TFileService.fileName: "nts.owner.CePLeadingLog-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.CePLeadingLog-mix.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

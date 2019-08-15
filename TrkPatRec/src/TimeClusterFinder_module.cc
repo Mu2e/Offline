@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // Mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
@@ -94,6 +94,7 @@ namespace mu2e {
       float             _minkeepmva, _minaddmva; 
       float             _maxdPhi;
       float             _tmin, _tmax, _tbin;
+      float		_pitch; // average helix pitch (= dz/dflight, =sin(lambda))
       TH1F              _timespec;
       float             _ymin;
       bool              _refine;
@@ -124,6 +125,7 @@ namespace mu2e {
   };
 
   TimeClusterFinder::TimeClusterFinder(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _debug             (pset.get<int>("debugLevel",0)),
     _printfreq         (pset.get<int>("printFrequency",101)),
     _testflag(pset.get<bool>("TestFlag")),
@@ -140,6 +142,7 @@ namespace mu2e {
     _tmin              (pset.get<float>(  "tmin",450.0)),
     _tmax              (pset.get<float>(  "tmax",1700.0)),
     _tbin              (pset.get<float>(  "tbin",15.0)),
+    _pitch             (pset.get<float>(  "AveragePitch",0.6)), // =sin(lambda)
     _ymin              (pset.get<float>(  "ymin",5.0)),
     _refine            (pset.get<bool>(  "RefineClusters",true)),
     _preFilter         (pset.get<bool>(    "PrefilterCluster",true)),
@@ -257,7 +260,7 @@ namespace mu2e {
       auto const& calo = (*_cccol)[icalo];
       if (calo.energyDep() > _ccmine){
 	TimeCluster tc;
-	tc._t0 = TrkT0(_ttcalc.caloClusterTime(calo), _ttcalc.caloClusterTimeErr());
+	tc._t0 = TrkT0(_ttcalc.caloClusterTime(calo,_pitch), _ttcalc.caloClusterTimeErr());
 	tc._caloCluster = art::Ptr<CaloCluster>(ccH,icalo);
 	tccol.push_back(tc);
       }
@@ -270,7 +273,7 @@ namespace mu2e {
     for (unsigned istr=0; istr<_chcol->size();++istr) {
       if (_testflag && !goodHit((*_shfcol)[istr])) continue;
       ComboHit const& ch = (*_chcol)[istr];
-      float time = _ttcalc.comboHitTime((*_chcol)[istr]);
+      float time = _ttcalc.comboHitTime((*_chcol)[istr],_pitch);
       _timespec.Fill(time,ch.nStrawHits());
     }
   }
@@ -280,7 +283,7 @@ namespace mu2e {
     for(size_t istr=0; istr<_chcol->size(); ++istr) {
       if ((!_testflag) || goodHit((*_shfcol)[istr])) {
 	ComboHit const& ch =(*_chcol)[istr];
-	float time = _ttcalc.comboHitTime(ch);
+	float time = _ttcalc.comboHitTime(ch,_pitch);
 	float mindt(1e5);
 	auto besttc = tccol.end();
 	// find the closest seed (if any)
@@ -349,7 +352,7 @@ namespace mu2e {
       unsigned nsh = ch.nStrawHits();
       tc._nsh += nsh;
       const XYZVec& pos = ch.pos();
-      float htime = _ttcalc.comboHitTime(ch);
+      float htime = _ttcalc.comboHitTime(ch,_pitch);
       float hwt = ch.nStrawHits();
       tmin(htime);
       tmax(htime);
@@ -412,7 +415,7 @@ namespace mu2e {
 	if ((!_testflag) || goodHit((*_shfcol)[ich])) {
 	  if(std::find(tc._strawHitIdxs.begin(),tc._strawHitIdxs.end(),ich) == tc._strawHitIdxs.end()){
 	    ComboHit const& ch = (*_chcol)[ich];
-	    float cht = _ttcalc.comboHitTime(ch);
+	    float cht = _ttcalc.comboHitTime(ch,_pitch);
 	    _pmva._dt = fabs(cht - tc._t0._t0);
 	    if(_pmva._dt < _maxdt+tc._t0._t0err){
 	      float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();
@@ -448,7 +451,7 @@ namespace mu2e {
     float denom = float(tc._nsh - nsh);
     // update time cluster properties 
     if(!tc.hasCaloCluster()){
-      float cht = _ttcalc.comboHitTime(ch);
+      float cht = _ttcalc.comboHitTime(ch,_pitch);
       float newt0  = (tc._t0._t0*tc._nsh - cht*nsh)/denom;
       tc._t0._t0err = sqrt((tc._t0._t0err*tc._t0._t0err*tc._nsh - (cht-newt0)*(cht-tc._t0._t0)*nsh )/denom);
       tc._t0._t0 = newt0;
@@ -466,7 +469,7 @@ namespace mu2e {
     float denom = float(tc._nsh + nsh);
     // update time cluster properties 
     if(!tc.hasCaloCluster()){
-      float cht = _ttcalc.comboHitTime(ch);
+      float cht = _ttcalc.comboHitTime(ch,_pitch);
       float newt0  = (tc._t0._t0*tc._nsh + cht*nsh)/denom;
       tc._t0._t0err = sqrt((tc._t0._t0err*tc._t0._t0err*tc._nsh + (cht-newt0)*(cht-tc._t0._t0)*nsh )/denom);
       tc._t0._t0 = newt0;
@@ -485,7 +488,7 @@ namespace mu2e {
     for(StrawHitIndex ish : tc._strawHitIdxs) {
       ComboHit const& ch = (*_chcol)[ish];
       float hwt = ch.nStrawHits();
-      float cht = _ttcalc.comboHitTime(ch);
+      float cht = _ttcalc.comboHitTime(ch,_pitch);
       terr(cht,weight=hwt);
       xacc(ch.pos().x(),weight=hwt);
       yacc(ch.pos().y(),weight=hwt);
@@ -516,7 +519,7 @@ namespace mu2e {
       float pphi = polyAtan2(tc._pos.y(), tc._pos.x());
       for (auto ips=tc._strawHitIdxs.begin();ips != tc._strawHitIdxs.end();++ips) {
         ComboHit const& ch = (*_chcol)[*ips];
-        float cht = _ttcalc.comboHitTime(ch);
+        float cht = _ttcalc.comboHitTime(ch,_pitch);
 
         _pmva._dt = fabs(cht - tc._t0._t0);
         float phi = polyAtan2(ch.pos().y(), ch.pos().x());//ch.phi();

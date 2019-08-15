@@ -71,6 +71,7 @@ namespace mu2e
   };
 
   CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset) :
+    EDProducer{pset},
     _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
     _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
     _nPixelsX(pset.get<int>("nPixelsX")),                            //40

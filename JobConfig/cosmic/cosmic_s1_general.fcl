@@ -5,3 +5,6 @@ physics.producers.generate.inputfile : "JobConfig/cosmic/genconfig_cosmic_genera
 services.TFileService.fileName       : "nts.owner.cosmic-g4s1-general.version.sequencer.root"
 outputs.filteredOutput.fileName      : "sim.owner.cosmic-g4s1-general.version.sequencer.art"
 outputs.truncatedEvtsOutput.fileName : "sim.owner.cosmic-g4s1-truncated-general.version.sequencer.art"
+
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+

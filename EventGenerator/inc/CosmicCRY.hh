@@ -24,6 +24,7 @@ namespace mu2e {
           CLHEP::HepRandomEngine& engine);
       const double getLiveTime();
       const double getShowerSumEnergy();
+      const unsigned long long int getNumEvents();
 
       virtual void generate( GenParticleCollection&  );
 
@@ -49,6 +50,7 @@ namespace mu2e {
       double _latitude;
       int _altitude;
       double _subboxLength;
+      double _maxShowerEn;
 
       std::string _setupString;
       std::string _cryDataPath;
@@ -62,23 +64,34 @@ namespace mu2e {
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
       bool _vertical;
 
-      bool _projectToEnvelope;
+      bool _projectToTargetBox;
 
       bool _geomInfoObtained;
-      double _envXmin;
-      double _envXmax;
-      double _envYmin;
-      double _envYmax;
-      double _envZmin;
-      double _envZmax;
+      double _targetBoxXmin;
+      double _targetBoxXmax;
+      double _targetBoxYmin;
+      double _targetBoxYmax;
+      double _targetBoxZmin;
+      double _targetBoxZmax;
+      double _worldXmin;
+      double _worldXmax;
+      double _worldYmin;
+      double _worldYmax;
+      double _worldZmin;
+      double _worldZmax;
 
       double _GeV2MeV;
       double _m2mm;
       double _showerSumEnergy;
+      unsigned long long int _numEvents;
 
-      std::vector<CLHEP::Hep3Vector> _envIntersections;
-      void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir);
+      std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
+      std::vector<CLHEP::Hep3Vector> _worldIntersections;
+      void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir,
+          std::vector<CLHEP::Hep3Vector> &intersections,
+          double xMin, double xMax, double yMin, double yMax, double zMin, double zMax);
       bool pointInBox(double x, double y, double x0, double y0, double x1, double z1);
+      double distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v);
 
       void createSetupString();
   };  // CosmicCRY
