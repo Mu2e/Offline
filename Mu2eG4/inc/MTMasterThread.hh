@@ -21,11 +21,13 @@
 #include <mutex>
 #include <condition_variable>
 
+namespace art { class Run; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
     
     class Mu2eG4MTRunManager;
+    class PhysicalVolumeHelper;
 
 class MTMasterThread
 {
@@ -37,6 +39,8 @@ class MTMasterThread
     void beginRun() const;
     void endRun() const;
     void stopThread();
+    void storeRunNumber(int art_runnumber);
+    void readRunData(PhysicalVolumeHelper* phys_vol_help) const;
     
     inline Mu2eG4MTRunManager& masterRunManager() const { return *m_masterRunManager; }
     inline Mu2eG4MTRunManager* masterRunManagerPtr() const { return m_masterRunManager.get(); }
@@ -49,9 +53,7 @@ private:
     
     enum class ThreadState { NotExist = 0, BeginRun = 1, EndRun = 2, Destruct = 3 };
     
-    //const bool m_pUseMagneticField;
-    //const bool m_pGeoFromDD4hep;
-    
+
     std::shared_ptr<Mu2eG4MTRunManager> m_masterRunManager;
     std::thread m_masterThread;
     
@@ -74,6 +76,8 @@ private:
     mutable bool m_mainCanProceed;
     mutable bool m_firstRun;
     mutable bool m_stopped;
+    
+    int run_number;
     
 };
 

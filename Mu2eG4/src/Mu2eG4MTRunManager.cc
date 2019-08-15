@@ -14,15 +14,34 @@
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#include "G4MTRunManagerKernel.hh"
-#include "G4UserWorkerThreadInitialization.hh"
+
+#include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "Mu2eHallGeom/inc/Mu2eHall.hh"
+#include "GeometryService/inc/WorldG4.hh"
+
+#include "Mu2eG4/inc/WorldMaker.hh"
+#include "Mu2eG4/inc/Mu2eWorld.hh"
+
+#include "Mu2eG4/inc/physicsListDecider.hh"
+#include "Mu2eG4/inc/preG4InitializeTasks.hh"
+
+#include "Mu2eG4/inc/ActionInitialization.hh"
+#include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
+#include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
 #include "G4Timer.hh"
-
-//C++ includes
-#include <thread>
-#include <sstream>
+#include "G4VUserPhysicsList.hh"
+#include "G4ParticleHPManager.hh"
+#include "G4HadronicProcessStore.hh"
+#include "G4StateManager.hh"
+#include "G4GeometryManager.hh"
+#include "G4UserWorkerThreadInitialization.hh"
+#include "G4MTRunManagerKernel.hh"
+#include "G4VUserPhysicsList.hh"
+#include "G4SDManager.hh"
+#include "G4MTHepRandom.hh"
 
 
 using namespace std;
@@ -30,196 +49,243 @@ using namespace std;
 namespace mu2e {
   
     
-    Mu2eG4MTRunManager* Mu2eG4MTRunManager::fMu2eMasterRM = 0;
+Mu2eG4MTRunManager* Mu2eG4MTRunManager::fMu2eMasterRM = 0;
     
-    // If the c'tor is called a second time, the c'tor of base will
-    // generate an exception.
-    Mu2eG4MTRunManager::Mu2eG4MTRunManager():
-        G4MTRunManager()
+// If the c'tor is called a second time, the c'tor of base will
+// generate an exception.
+Mu2eG4MTRunManager::Mu2eG4MTRunManager(const fhicl::ParameterSet& pset):
+    G4MTRunManager(),
+    pset_(pset),
+    m_managerInitialized(false),
+    m_runTerminated(false),
+    physVolHelper_(nullptr),
+    sensitiveDetectorHelper_(pset.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
+    masterRunAction_(nullptr),
+    physicsList_(nullptr),
+    rmvlevel_(pset.get<int>("debug.diagLevel",0))
+    {
+        if ( fMu2eMasterRM )
         {
-            if ( fMu2eMasterRM )
-            {
-                throw cet::exception("MTRUNMANAGER")
-                << "Error: you are trying to create an MTRunManager when one already exists!\n";
-            }
-            fMu2eMasterRM = this;
+            throw cet::exception("MTRUNMANAGER")
+            << "Error: you are trying to create an MTRunManager when one already exists!\n";
         }
+        fMu2eMasterRM = this;
+    }
   
-    // Destructor of base is called automatically.  No need to do anything.
-    Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
-        {}
+// Destructor of base is called automatically.  No need to do anything.
+Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
+    {}
     
     
-    Mu2eG4MTRunManager* Mu2eG4MTRunManager::GetMasterRunManager()
+Mu2eG4MTRunManager* Mu2eG4MTRunManager::GetMasterRunManager()
     {
         return fMu2eMasterRM;
     }
     
-    // this function is a protected member of G4MTRunManager but we need to access it
-    // from Mu2eG4_module, so we must make it public here
-    void Mu2eG4MTRunManager::Mu2eG4Initialize(G4int n_event)
+    
+void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
     {
-        G4RunManager::Initialize();
-        
-        //BeamOn(0);
-        if(n_event<=0) { fakeRun = true; }
-        else { fakeRun = false; }
-        G4bool cond = ConfirmBeamOnCondition();
-        if(cond)
-        {
-            numberOfEventToBeProcessed = n_event;
-            numberOfEventProcessed = 0;
-            G4MTRunManager::ConstructScoringWorlds();
-            RunInitialization();
+        if (m_managerInitialized) {
+            std::cout << "Mu2eG4MTRunManager::initializeG4 was already done - exit";
+            return;
+            }
             
-            //Instead of calling DoEventLoop(n_event);
-            //we call the only piece that happens for 0 events
-            //and an MT RunManager
-            InitializeEventLoop(n_event);
+            DeclarePhysicsAndGeometry();
             
-            RunTermination();
-        }
-        fakeRun = false;
-        //end BeamOn(0);
-        
-        SetRunIDCounter(n_event);
-        
-    }
-    
-    
-    
-    // this function is a protected member of G4MTRunManager but we need to access it
-    // from Mu2eG4_module, so we must make it public here
-    void Mu2eG4MTRunManager::Mu2eG4InitializeEventLoop(G4int n_event)
-    {
-        //MTkernel->SetUpDecayChannels();
-        G4MTRunManager::GetMTMasterRunManagerKernel()->SetUpDecayChannels();
-        
-        numberOfEventToBeProcessed = n_event;
-        numberOfEventProcessed = 0;
-        
-        my_nworkers = G4MTRunManager::GetNumberOfThreads();
-        
-        if(!fakeRun)
-        {
-            nSeedsUsed = 0;
-            nSeedsFilled = 0;
+            //Below here is similar to _runManager->RunInitialization();
+            InitializeKernelAndRM();        
+            initializeMasterRunAction();
             
-            //if(verboseLevel>0)
-            //{ timer->Start(); }
+            G4StateManager* stateManager = G4StateManager::GetStateManager();
+            G4String currentState = stateManager->GetStateString(stateManager->GetCurrentState());
+            std::cout << "Current G4State is : " << currentState << std::endl;
             
-            n_select_msg = -1;
-            selectMacro = "";
-            
-            //initialize seeds
-            //If user did not implement InitializeSeeds,
-            // use default: nSeedsPerEvent seeds per event
-            if( eventModuloDef > 0 )
-                {
-                    eventModulo = eventModuloDef;
-                    if(eventModulo > numberOfEventToBeProcessed/my_nworkers)
-                    {
-                        eventModulo = numberOfEventToBeProcessed/my_nworkers;
-                        if(eventModulo<1) eventModulo =1;
-                        G4ExceptionDescription msgd;
-                        msgd << "Event modulo is reduced to " << eventModulo
-                             << " to distribute events to all threads.";
-                                G4Exception("G4MTRunManager::InitializeEventLoop()",
-                                            "Run10035", JustWarning, msgd);
-                    }
-                }
+            //G4Run* GetCurrentRun()
+            if (GetCurrentRun()) {
+                delete currentRun;
+            }
             else
             {
-                eventModulo = int(std::sqrt(double(numberOfEventToBeProcessed/my_nworkers)));
-                if(eventModulo<1) eventModulo =1;
+                currentRun = new G4Run();
+                currentRun->SetRunID(art_runnumber);
             }
-            if ( InitializeSeeds(n_event) == false && n_event>0 )
-            {
-                G4RNGHelper* helper = G4RNGHelper::GetInstance();
-                switch(seedOncePerCommunication)
-                {
-                    case 0:
-                        nSeedsFilled = n_event;
-                        break;
-                    case 1:
-                        nSeedsFilled = my_nworkers;
-                        break;
-                    case 2:
-                        nSeedsFilled = n_event/eventModulo + 1;
-                        break;
-                    default:
-                        G4ExceptionDescription msgd;
-                        msgd << "Parameter value <" << seedOncePerCommunication
-                             << "> of seedOncePerCommunication is invalid. It is reset to 0." ;
-                        G4Exception("G4MTRunManager::InitializeEventLoop()",
-                                    "Run10036", JustWarning, msgd);
-                        seedOncePerCommunication = 0;
-                        nSeedsFilled = n_event;
+            
+            std::cout << "Art Run Number is: " << art_runnumber << std::endl;
+            std::cout << "Current Run is " << GetCurrentRun()->GetRunID() << std::endl;
+            
+            //We don't need to do this here.  RunActions are owned by the worker threads
+            //m_userRunAction->BeginOfRunAction(m_currentRun);
+            //if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
+            
+            currentRun->SetDCtable(DCtable);
+            G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
+            if(fSDM)
+                { currentRun->SetHCtable(fSDM->GetHCtable()); }
+            std::ostringstream oss;
+            //WHAT LIBRARY TO USE?
+            //G4Random::saveFullState(oss);
+            //randomNumberStatusForThisRun = oss.str();
+            //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
+        
+            
+            if(storeRandomNumberStatus) {
+            G4String fileN = "currentRun";
+            if ( rngStatusEventsFlag ) {
+                std::ostringstream os;
+                os << "run" << currentRun->GetRunID();
+                fileN = os.str();
                 }
-
-                // Generates up to nSeedsMax seed pairs only.
-                if(nSeedsFilled>nSeedsMax) nSeedsFilled=nSeedsMax;
-                
-                CLHEP::HepRandomEngine* mrnge = const_cast<CLHEP::HepRandomEngine*> (G4MTRunManager::GetMasterRunManager()->getMasterRandomEngine());
-                
-                mrnge->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
-                helper->Fill(randDbl,nSeedsFilled,n_event,nSeedsPerEvent);
-                
+            StoreRNGStatus(fileN);
             }
-        }
 
-        //Now initialize workers. Check if user defined a WorkerThreadInitialization
-        if ( userWorkerThreadInitialization == 0 )
-        { userWorkerThreadInitialization = new G4UserWorkerThreadInitialization(); }
-        
-        //Prepare UI commands for threads
-        PrepareCommandsStack();
-        
-        //Start worker threads
-        CreateAndStartWorkers();
-        
-        // We need a barrier here. Wait for workers to start event loop.
-        //This will return only when all workers have started processing events.
-        WaitForReadyWorkers();
     }
     
     
-    
-
-    //this function is a protected member of G4MTRunManager but we need to access it
-    //from Mu2eG4_module, so we must make it public here
-    void Mu2eG4MTRunManager::Mu2eG4WaitForEndEventLoopWorkers()
+// this function is a protected member of G4MTRunManager but we need to access it
+// from Mu2eG4_module, so we must make it public here
+void Mu2eG4MTRunManager::InitializeKernelAndRM()
     {
+        G4RunManager::Initialize();
+        G4MTRunManager::GetMTMasterRunManagerKernel()->SetUpDecayChannels();//note, this is usually done in
+            //InitializeEventLoop
+    
+        if ( userWorkerThreadInitialization == 0 )
+            { userWorkerThreadInitialization = new G4UserWorkerThreadInitialization(); }
+        
+        
+        
+        G4bool cond = ConfirmBeamOnCondition();
+        if (cond) {
+            
+            G4MTRunManager::ConstructScoringWorlds();
+            if (G4MTRunManager::GetMTMasterRunManagerKernel()->RunInitialization()) {
+                m_managerInitialized = true;
+            } else {
+                throw cet::exception("G4MTRunManagerKernel initialization failed!");
+            }
+            SetRunIDCounter(0);
+            
+        } else {
+            throw cet::exception("G4RunManager ConfirmBeamOnCondition failed!");
+        }
+        
+    }
+    
+void Mu2eG4MTRunManager::DeclarePhysicsAndGeometry()
+    {
+        G4VUserDetectorConstruction* allMu2e;
+        
+        if ((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()) {
+            allMu2e = (new WorldMaker<Mu2eWorld>(make_unique<Mu2eWorld>(pset_, &sensitiveDetectorHelper_),
+                                                 make_unique<ConstructMaterials>(pset_)));
+        }
+        else {
+            throw cet::exception("CONFIG")
+            << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
+        }
+        
+        G4ThreeVector originInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld();
+        
+        preG4InitializeTasks(pset_);
+        
+        physicsList_ = physicsListDecider(pset_);
+        
+        physicsList_->SetVerboseLevel(rmvlevel_);
+        SetVerboseLevel(rmvlevel_);
+        G4ParticleHPManager::GetInstance()->SetVerboseLevel(rmvlevel_);
+        G4HadronicProcessStore::Instance()->SetVerbose(rmvlevel_);
+        
+        SetUserInitialization(allMu2e);
+        SetUserInitialization(physicsList_);
+        SetUserInitialization( new Mu2eG4WorkerInitialization(pset_) );//This is NEW code, not sure we need it.
+        
+        
+        /*ActionInitialization* actionInit = new ActionInitialization(pset_,
+                                                                    sensitiveDetectorHelper_,
+                                                                    &_genEventBroker,
+                                                                    &physVolHelper_,
+                                                                    originInWorld
+                                                                    );
+        */
+        //in MT mode, this is where BuildForMaster is called for master thread
+        // in sequential mode, this is where Build() is called for main thread
+        //        SetUserInitialization(actionInit);
+        
+    }
+  
+    
+void Mu2eG4MTRunManager::initializeMasterRunAction()
+    {
+        masterRunAction_ = new Mu2eG4MasterRunAction(pset_, physVolHelper_);
+        SetUserAction( masterRunAction_ );
+        masterRunAction_->MasterBeginRunAction();
+    }
+    
+    
+void Mu2eG4MTRunManager::stopG4()
+    {
+<<<<<<< HEAD
       if ( verboseLevel > 1 ) {
         G4cout << __func__ << " called" << G4endl;
       }
         WaitForEndEventLoopWorkers();
+=======
+        G4GeometryManager::GetInstance()->OpenGeometry();
+        G4StateManager::GetStateManager()->SetNewState(G4State_Quit);
+        
+        if (!m_runTerminated) {
+            terminateRun();
+        }
+>>>>>>> modifications for converting Mu2eG4_module to MT art
     }
+    
+    
+void Mu2eG4MTRunManager::terminateRun() {
+    
+        masterRunAction_->MasterEndRunAction();
+    
+        /*if (m_userRunAction) {
+            m_userRunAction->EndOfRunAction(m_currentRun);
+            delete m_userRunAction;
+            m_userRunAction = nullptr;
+        }*/
+        if ((G4MTRunManager::GetMTMasterRunManagerKernel()!=nullptr) && !m_runTerminated) {
+            G4MTRunManager::GetMTMasterRunManagerKernel()->RunTermination();
+        }
+        m_runTerminated = true;
+}
+    
+    
+void Mu2eG4MTRunManager::Test_Func(int in)
+    {
+        std::cout << "FROM MASTER_RM::Test_Func, the integer is " << in << std::endl;
+        physicsList_->DumpList();
+        
+    }
+    
 
+////////////////////////// OLD STUFF BELOW HERE //////////////////////////
+    
+
+   
     //we need control of the event loop in order to correctly break up the stages
     //to fit within the art framework.  we were getting a hang using the G4MTRunManager
     //version of RunTermination due to the call of WaitForEndEventLoopWorkers()
     void Mu2eG4MTRunManager::Mu2eG4RunTermination()
     {
-
-      if ( verboseLevel > 0 ) {
-        G4cout << __func__ << " called" << G4endl;
-      }
-
+        
+        if ( verboseLevel > 0 ) {
+            G4cout << __func__ << " called" << G4endl;
+        }
+        
         G4RunManager::TerminateEventLoop();
         G4RunManager::RunTermination();
     }
     
-    void Mu2eG4MTRunManager::TestFunc()
-    {
-        
-        //std::stringstream ss;
-        //ss << std::this_thread::get_id();
-        //int id = std::stoi(ss.str());
-        
-        std::cout << "Calling Mu2eG4MTRunManager::TestFunc()" << std::endl;
-        
-    }
+    
+    
+    
+    
     
     
 } // end namespace mu2e

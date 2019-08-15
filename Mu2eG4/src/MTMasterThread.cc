@@ -9,7 +9,9 @@
 #include "Mu2eG4/inc/MTMasterThread.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
+
 //art includes
+#include "art/Framework/Principal/Run.h"
 #include "fhiclcpp/ParameterSet.h"
 
 using namespace std;
@@ -18,36 +20,30 @@ namespace mu2e {
 
 MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
     :
-    pset_(pset)
+    pset_(pset),
+    m_masterThreadState(ThreadState::NotExist),
+    m_masterCanProceed(false),
+    m_mainCanProceed(false),
+    m_firstRun(true),
+    m_stopped(false),
+    run_number(0)
     {
-        std::cout << "We are in the c'tor of MTMasterThread!!!" << std::endl;
-        
         // Lock the mutex
         std::unique_lock<std::mutex> lk(m_threadMutex);
         
-        std::cout << "MTMasterThread: creating master thread" << std::endl;
-        
         // Create Genat4 master thread using a Lambda expression
         m_masterThread = std::thread([&]() {
-            /////////////////
+           
             // Initialization
-            
             std::shared_ptr<Mu2eG4MTRunManager> masterRunManager;
             
             // Lock the mutex (i.e. wait until the creating thread has called cv.wait()
             std::unique_lock<std::mutex> lk2(m_threadMutex);
             
-            std::cout << "MTMasterThread: initializing Mu2eG4MTRunManager" << std::endl;
-            
             // Create the master run manager, and share it with the art::mu2e thread
-            masterRunManager = std::make_shared<Mu2eG4MTRunManager>();
-            
-            //WHY NOT???????
-            //std::shared_ptr<Mu2eG4MTRunManager> masterRunManager = std::make_shared<Mu2eG4MTRunManager>();
-            
+            masterRunManager = std::make_shared<Mu2eG4MTRunManager>(pset);
             m_masterRunManager = masterRunManager;
             
-            /////////////
             // State loop
             bool isG4Alive = false;
             while (true) {
@@ -64,17 +60,15 @@ MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
                 // Act according to the state
                 std::cout << "Master thread: Woke up, state is " << static_cast<int>(m_masterThreadState) << std::endl;
                 
-                masterRunManager->TestFunc();
-                
                 if (m_masterThreadState == ThreadState::BeginRun) {
                     // Initialize Geant4
                     std::cout << "Master thread: Initializing Geant4" << std::endl;
-                    //masterRunManager->initG4(m_pDD, m_pDD4hep, m_pMF, m_pTable);
+                    masterRunManager->initializeG4(run_number);
                     isG4Alive = true;
                 } else if (m_masterThreadState == ThreadState::EndRun) {
                     // Stop Geant4
                     std::cout << "Master thread: Stopping Geant4" << std::endl;
-                    //masterRunManager->stopG4();
+                    masterRunManager->stopG4();
                     isG4Alive = false;
                 } else if (m_masterThreadState == ThreadState::Destruct) {
                     std::cout << "Master thread: Breaking out of state loop" << std::endl;
@@ -88,7 +82,6 @@ MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
                 }
             }
             
-            //////////
             // Cleanup
             std::cout << "MTMasterThread: start Mu2eG4MTRunManager destruction\n";
             std::cout << "Master thread: Am I unique owner of masterRunManager? "
@@ -123,9 +116,8 @@ MTMasterThread::~MTMasterThread()
  
     
 void MTMasterThread::beginRun() const {
-        
+    
         std::lock_guard<std::mutex> lk(m_protectMutex);
-        
         std::unique_lock<std::mutex> lk2(m_threadMutex);
         
         // Reading from ES must be done in the main (CMSSW) thread
@@ -170,11 +162,11 @@ void MTMasterThread::stopThread() {
         // thread, and join it.
         std::unique_lock<std::mutex> lk2(m_threadMutex);
         m_masterRunManager.reset();
-        std::cout << "Main thread: reseted shared_ptr" << std::endl;
+        std::cout << "Main thread: reset shared_ptr" << std::endl;
         
         m_masterThreadState = ThreadState::Destruct;
         m_masterCanProceed = true;
-        std::cout << "MTMasterThread::stopTread: notify" << std::endl;
+        std::cout << "MTMasterThread::stopThread: notify" << std::endl;
         m_notifyMasterCV.notify_one();
         lk2.unlock();
         
@@ -183,7 +175,19 @@ void MTMasterThread::stopThread() {
         std::cout << "MTMasterThread::stopThread: main thread finished" << std::endl;
         m_stopped = true;
     }
+    
+  
+void MTMasterThread::storeRunNumber(int art_runnumber)
+    {
+        run_number = art_runnumber;
+    }
  
+    
+void MTMasterThread::readRunData(PhysicalVolumeHelper* phys_vol_help) const {
+    
+    m_masterRunManager->setPhysVolumeHelper(phys_vol_help);
+    
+}
 
 void MTMasterThread::readES() const {
         
