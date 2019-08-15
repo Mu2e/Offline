@@ -34,6 +34,7 @@ namespace mu2e {
 
   class SimpleConfig;
   class SimParticleHelper;
+  class Mu2eG4PerThreadStorage;
 
   class SensitiveDetectorHelper{
 
@@ -55,6 +56,8 @@ namespace mu2e {
       void updateSensitiveDetectors(PhysicsProcessInfo& info,
                                     const SimParticleHelper& spHelper);
 
+      // add the SD data into the PerThreadStorage
+      void insertSDDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store);
       
       //filter the event data here to cut down on execution time
       bool filterStepPointMomentum();

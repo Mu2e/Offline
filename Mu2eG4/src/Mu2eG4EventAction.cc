@@ -17,8 +17,6 @@
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
-#include "Mu2eG4/inc/GenEventBroker.hh"
-#include "Mu2eG4/inc/PerEventObjectsManager.hh"
 
 //G4 includes
 #include "G4Timer.hh"
@@ -35,7 +33,7 @@
 using namespace std;
 
 namespace mu2e {
-
+    
     Mu2eG4EventAction::Mu2eG4EventAction(const fhicl::ParameterSet& pset,
         TrackingAction* tracking_action,
         Mu2eG4SteppingAction* stepping_action,
@@ -44,13 +42,12 @@ namespace mu2e {
         IMu2eG4Cut& stacking_cuts,
         IMu2eG4Cut& stepping_cuts,
         IMu2eG4Cut& common_cuts,
-        GenEventBroker *gen_eventbroker,
-        PerEventObjectsManager *per_evtobjmanager,
+        Mu2eG4PerThreadStorage* pts,
         PhysicsProcessInfo* phys_process_info,
         const CLHEP::Hep3Vector& origin_in_world)
         :
-    
         G4UserEventAction(),
+        perThreadObjects_(pts),
         trajectoryControl_(pset.get<fhicl::ParameterSet>("TrajectoryControl")),
         simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
         timeVDtimes_(pset.get<std::vector<double> >("SDConfig.TimeVD.times")),
@@ -63,8 +60,6 @@ namespace mu2e {
         _steppingCuts(&stepping_cuts),
         _commonCuts(&common_cuts),
         _originInWorld(origin_in_world),
-        _genEventBroker(gen_eventbroker),
-        perEvtObjManager(per_evtobjmanager),
         _tvdOutputName(StepInstanceName::timeVD),
         _timer(std::make_unique<G4Timer>()),
     
@@ -72,7 +67,6 @@ namespace mu2e {
         _parentHelper(),
         _processInfo(phys_process_info),
         _artEvent(),
-        eventNumberInProcess(-1),
         _g4InternalFiltering(pset.get<bool>("G4InteralFiltering",false))
         {
             /*if (G4Threading::G4GetThreadId()<= 0){
@@ -89,12 +83,12 @@ Mu2eG4EventAction::~Mu2eG4EventAction()
 void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
     {
 
-      // G4cout << __func__ << " : G4event: " << evt->GetEventID() << G4endl;
-
+        std::cerr << "We are in EVENTACTION:BeginOfEventAction!\n";
+        
         setEventData();
         
-        _spHelper = perEvtObjManager->getSimParticleHelper();
-        _parentHelper = perEvtObjManager->getSimParticlePrimaryHelper();
+        _spHelper = perThreadObjects_->simParticleHelper;
+        _parentHelper = perThreadObjects_->simParticlePrimaryHelper;
         
         // local Mu2e timer, almost equal to time of G4EventManager::ProcessOneEvent()
         _timer->Start();
@@ -160,101 +154,110 @@ void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
 
     
 void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
-    {
-        // Run self consistency checks if enabled.
-        _trackingAction->endEvent(*simParticles);
+{
+    // Run self consistency checks if enabled.
+    _trackingAction->endEvent(*simParticles);
         
-        _timer->Stop();
+    _timer->Stop();
     
-        // Populate the output data products.
-        // Fill the status object.
-        float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
+    // Populate the output data products.
+    // Fill the status object.
+    float cpuTime  = _timer->GetSystemElapsed() + _timer->GetUserElapsed();
     
-        int status(0);
-        if ( _steppingAction->nKilledStepLimit() > 0 ||
-            _trackingAction->nKilledByFieldPropagator() > 0 ) {
-            status =  1;
-        }
-        if ( _trackingAction->overflowSimParticles() ) status = 10;
-        
-        auto g4stat = std::make_unique<StatusG4>(status,
-                                                 _trackingAction->nG4Tracks(),
-                                                 _trackingAction->overflowSimParticles(),
-                                                 _steppingAction->nKilledStepLimit(),
-                                                 _trackingAction->nKilledByFieldPropagator(),
-                                                 cpuTime,
-                                                 _timer->GetRealElapsed()
-                                                 );
-        
-        simParticlePrinter_.print(std::cout, *simParticles);
-        
-        // Add data products
-        if (eventNumberInProcess == -1) {
-            throw cet::exception("EVENTACTION")
-            << "Invalid event number from generator stash being processed." << "\n"
-            << "Event number was not incremented by PerEventObjectManager!" << "\n";
-
-        }
-        else
-        {
-            bool event_passes = false;
-            
-            //if internal G4 filtering is turned OFF, event passes
-            //otherwise event must pass the StepPoints momentum and Tracker StepPoints filters
-            if (_g4InternalFiltering) {
-                if (_sensitiveDetectorHelper->filterStepPointMomentum() && _sensitiveDetectorHelper->filterTrackerStepPoints()) {
-                    event_passes = true;
-                    //std::cout << "WE ARE FILTERING AND THIS EVENT HAS PASSED: " << _artEvent->event() << std::endl;
-                }
-            } else {
-                event_passes = true;
-                //std::cout << "WE ARE *NOT* FILTERING AND THIS EVENT HAS PASSED: " << _artEvent->event() << std::endl;
-            }
-            
-            
-            if (event_passes) {
-
-                std::cout << "IN EVENTACTION: THIS EVENT HAS PASSED!" << std::endl;
-                std::cout << "WE NEED TO PUT THE EVENT INFO INTO THE EVENT." << std::endl;
-                
-                
-                _artEvent->put(move(g4stat));
-                _artEvent->put(move(simParticles));
-                
- //               _sensitiveDetectorHelper.put(event);
-                
-                
-            }//event_passes cuts
-            else {
-                
-                //g4stat = StatusG4();
-                simParticles = nullptr;
-                tvdHits = nullptr;
-                mcTrajectories = nullptr;
-                simsRemap = nullptr;
-                extMonFNALHits = nullptr;
-
-                std::cout << "IN EVENTACTION: THIS EVENT HAS NOT PASSED!" << std::endl;
-                std::cout << "WE NEED TO PUT THE EVENT INFO INTO THE EVENT." << std::endl;
-                
-                //there is no need to clear SD data here, since it is done in the call to
-                //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
-                
-                //CLEAR OUT THE STEPPING CUTS
-                _stackingCuts->deleteCutsData();
-                _steppingCuts->deleteCutsData();
-                _commonCuts->deleteCutsData();
-                
-            }//else put NULL ptrs into the stash
-        }//event number accounting is correct, add data to stash if it passes the filter
-    
+    int status(0);
+    if ( _steppingAction->nKilledStepLimit() > 0 ||
+        _trackingAction->nKilledByFieldPropagator() > 0 ) {
+        status =  1;
     }
+    if ( _trackingAction->overflowSimParticles() ) status = 10;
+        
+    auto g4stat = std::make_unique<StatusG4>(status,
+                                             _trackingAction->nG4Tracks(),
+                                             _trackingAction->overflowSimParticles(),
+                                             _steppingAction->nKilledStepLimit(),
+                                             _trackingAction->nKilledByFieldPropagator(),
+                                             cpuTime,
+                                             _timer->GetRealElapsed()
+                                             );
+        
+    simParticlePrinter_.print(std::cout, *simParticles);
+        
+    // Pass data products to the module to put into the event
+    bool event_passes = false;
+            
+    //if internal G4 filtering is turned OFF, event passes
+    //otherwise event must pass the StepPoints momentum and Tracker StepPoints filters
+    if (_g4InternalFiltering) {
+        if (_sensitiveDetectorHelper->filterStepPointMomentum() && _sensitiveDetectorHelper->filterTrackerStepPoints()) {
+                event_passes = true;
+        }
+    } else {
+        event_passes = true;
+    }
+            
+            
+    if (event_passes) {
+        std::cout << "IN EVENTACTION: THIS EVENT HAS PASSED!" << std::endl;
+        std::cout << "WE NEED TO PUT THE EVENT INFO INTO THE EVENT." << std::endl;
+        
+        perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
+        
+        _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
+        _stackingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
+        _steppingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
+        _commonCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
+        
+        
+        //OLD SCHOOL
+        //_artEvent->put(move(g4stat));
+        //_artEvent->put(move(simParticles));
+        //_sensitiveDetectorHelper.put(event);
+       
+        //NEW SCHOOL
+        
+/*        if(!timeVDtimes_.empty()) {
+            perThreadObjects_->insertTVDHits(eventNumberInProcess, std::move(tvdHits), _tvdOutputName.name());
+        }
+        
+        if(trajectoryControl_.produce()) {
+            perThreadObjects_->insertMCTrajectoryCollection(eventNumberInProcess, std::move(mcTrajectories));
+        }
+        
+        if(multiStagePars_.multiStage()) {
+            perThreadObjects_->insertSimsRemapping(eventNumberInProcess, std::move(simsRemap));
+        }
+        
+        if(_sensitiveDetectorHelper->extMonPixelsEnabled()) {
+            perThreadObjects_->insertExtMonFNALSimHits(eventNumberInProcess, std::move(extMonFNALHits));
+        }
+ */
+                
+    }//event_passes cuts
+    else {
+
+        //g4stat = StatusG4();
+        simParticles = nullptr;
+        tvdHits = nullptr;
+        mcTrajectories = nullptr;
+        simsRemap = nullptr;
+        extMonFNALHits = nullptr;
+        std::cout << "IN EVENTACTION: THIS EVENT HAS *NOT* PASSED!" << std::endl;
+            
+        //there is no need to clear SD data here, since it is done in the call to
+        //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
+        
+        //CLEAR OUT THE STEPPING CUTS
+        _stackingCuts->deleteCutsData();
+        _steppingCuts->deleteCutsData();
+        _commonCuts->deleteCutsData();
+        }//else put NULL ptrs into the stash
+    
+}//EndOfEventAction
     
     
 void Mu2eG4EventAction::setEventData()
-    {
-        _artEvent = _genEventBroker->getartEvent();
-        eventNumberInProcess = perEvtObjManager->getEventInstanceNumber();
-    }
+{
+        _artEvent = perThreadObjects_->artEvent;
+}
 
 } // end namespace mu2e

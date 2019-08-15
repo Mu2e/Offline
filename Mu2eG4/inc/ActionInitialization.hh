@@ -21,7 +21,7 @@
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
+#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 
 //art includes
 #include "fhiclcpp/ParameterSet.h"
@@ -49,15 +49,10 @@ class ActionInitialization : public G4VUserActionInitialization
 {
   public:
     ActionInitialization(const fhicl::ParameterSet& pset,
-                         ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
                          std::vector< SensitiveDetectorHelper> &sensitive_detectorhelper_vector,
                          GenEventBroker* gen_eventbroker,
                          PhysicalVolumeHelper* phys_volume_helper,
-                         const bool using_MT,
-                         const int num_threads,
-                         CLHEP::Hep3Vector const& origin_in_world,
-                         Mu2eG4ResourceLimits const& mu2e_limits,
-                         unsigned stage_offset_for_tracking_action
+                         CLHEP::Hep3Vector const& origin_in_world
                          );
 
     virtual ~ActionInitialization();
@@ -89,13 +84,11 @@ class ActionInitialization : public G4VUserActionInitialization
 
     GenEventBroker* _genEventBroker;
     PhysicalVolumeHelper* _physVolHelper;
-    mutable PhysicsProcessInfo processInfo;
 
     const bool use_G4MT_;
     const int numthreads;
     CLHEP::Hep3Vector const& originInWorld;
-    Mu2eG4ResourceLimits const& mu2eLimits;
-    unsigned stageOffset;
+    Mu2eG4MultiStageParameters multiStagePars_;
 
     mutable std::vector< PerEventObjectsManager > perEvtObjManagerVector;
     mutable std::vector< PhysicsProcessInfo > physicsProcessInfoVector;

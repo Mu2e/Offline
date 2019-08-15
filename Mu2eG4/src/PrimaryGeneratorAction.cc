@@ -25,6 +25,7 @@
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
+#include "art/Utilities/Globals.h"
 
 // G4 Includes
 #include "G4Event.hh"
@@ -47,8 +48,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eG4/inc/GenEventBroker.hh"
-#include "Mu2eG4/inc/PerEventObjectsManager.hh"
+#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 
 // ROOT includes
@@ -64,16 +64,16 @@ namespace mu2e {
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill,
                                                  int verbosityLevel,
-                                                 GenEventBroker *gen_eventbroker,
-                                                 PerEventObjectsManager *per_evtobjmanager)
+                                                 Mu2eG4PerThreadStorage* tls)
+    
     :
     _totalMultiplicity(nullptr),
     verbosityLevel_(verbosityLevel),
-    genEventBroker_(gen_eventbroker),
-    perEvtObjManager(per_evtobjmanager)
+    perThreadObjects_(tls)
   {
 
-      if(fill) {
+      //Cannot fill a ROOT histogram in multi-schedule mode.  Root is not a thread-safe library.
+      if(fill && art::Globals::instance()->nschedules()==1) {
           art::ServiceHandle<art::TFileService> tfs;
           _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
       }
@@ -85,40 +85,29 @@ namespace mu2e {
   }
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
-    : PrimaryGeneratorAction(true, 0, nullptr, perEvtObjManager)
+    : PrimaryGeneratorAction(true, 0, nullptr)
   {}
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
-                                                 GenEventBroker *gen_eventbroker,
-                                                 PerEventObjectsManager* per_evtobjmanager)
+                                                 Mu2eG4PerThreadStorage* tls)
     :
     PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false),
                            pset.get<int>("debug.diagLevel", 0),
-                           gen_eventbroker,
-                           per_evtobjmanager)
-    {
-      art::ServiceHandle<GeometryService> geom;
-      standardMu2eDetector_ = geom->isStandardMu2eDetector();
-    }
+                           tls)
+    {}
 
 
 //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
 void PrimaryGeneratorAction::setEventData()
     {
-        genParticles_ = genEventBroker_->getGenParticleHandle().isValid() ?
-                        genEventBroker_->getGenParticleHandle().product() :
+        genParticles_ = perThreadObjects_->gensHandle.isValid() ?
+                        perThreadObjects_->gensHandle.product() :
                         nullptr;
-        perEvtObjManager->storeEventInstanceNumber(0);
 
-        hitInputs_ = genEventBroker_->getHitHandles();
+        hitInputs_ = perThreadObjects_->genInputHits;
 
-        perEvtObjManager->createSimParticleHelpers(genEventBroker_->getproductID(),
-                                                   genEventBroker_->getartEvent(),
-                                                   &(genEventBroker_->getGenParticleHandle()),
-                                                   genEventBroker_->getSimProductGetter());
-
-        parentMapping_ = perEvtObjManager->getSimParticlePrimaryHelper();
-
+        parentMapping_ = perThreadObjects_->simParticlePrimaryHelper;
+        
     }
 
 
@@ -138,15 +127,15 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 void PrimaryGeneratorAction::fromEvent(G4Event* event)
     {
 
-        // art::ServiceHandle<GeometryService> geom;
-        // SimpleConfig const & _config = geom->config();
+        art::ServiceHandle<GeometryService> geom;
+        SimpleConfig const & _config = geom->config();
 
         // Get the offsets to map from generator world to G4 world.
         // check if this is standard mu2e configuration or not
 
-	G4ThreeVector const mu2eOrigin =
-	//        (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
-	  (! standardMu2eDetector_) ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+        G4ThreeVector const mu2eOrigin =
+        (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
+        ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
         // For each generated particle, add it to the event.
         if(genParticles_) {

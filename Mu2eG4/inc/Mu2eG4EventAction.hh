@@ -20,6 +20,7 @@
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 
 //art includes
 #include "art/Framework/Principal/Handle.h"
@@ -44,8 +45,6 @@ namespace mu2e {
     class SimParticlePrimaryHelper;
     class PhysicsProcessInfo;
     class IMu2eG4Cut;
-    class GenEventBroker;
-    class PerEventObjectsManager;
     
     typedef std::map<art::Ptr<SimParticle>, art::Ptr<SimParticle> >  SimParticleRemapping;
     
@@ -62,8 +61,7 @@ class Mu2eG4EventAction : public G4UserEventAction
                       IMu2eG4Cut&,
                       IMu2eG4Cut&,
                       IMu2eG4Cut&,
-                      GenEventBroker*,
-                      PerEventObjectsManager*,
+                      Mu2eG4PerThreadStorage* pts,
                       PhysicsProcessInfo*,
                       const CLHEP::Hep3Vector&
                       );
@@ -75,15 +73,17 @@ class Mu2eG4EventAction : public G4UserEventAction
     
   private:
     
-    //used to set the art::Event from the GenEventBroker
+    //used to set the art::Event
     void setEventData();
+    
+    Mu2eG4PerThreadStorage* perThreadObjects_;
+
     
     //these are set using fhicl pset
     Mu2eG4TrajectoryControl trajectoryControl_;
     SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
     Mu2eG4MultiStageParameters multiStagePars_;
-
     
     TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
@@ -95,10 +95,6 @@ class Mu2eG4EventAction : public G4UserEventAction
     IMu2eG4Cut* _steppingCuts;
     IMu2eG4Cut* _commonCuts;
     const CLHEP::Hep3Vector& _originInWorld;
-    
-    GenEventBroker *_genEventBroker;
-    PerEventObjectsManager* perEvtObjManager;
-    
     const StepInstanceName _tvdOutputName;
 
     // local Mu2e per Geant4 event timer
@@ -115,9 +111,8 @@ class Mu2eG4EventAction : public G4UserEventAction
     SimParticlePrimaryHelper *_parentHelper;
     PhysicsProcessInfo *_processInfo;
     
-    //these are set in setEventData
+    //this are set in setEventData
     art::Event *_artEvent;
-    int eventNumberInProcess;
     
     bool _g4InternalFiltering;
 

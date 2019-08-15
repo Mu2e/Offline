@@ -30,7 +30,6 @@ using namespace std;
 namespace mu2e {
 
 Mu2eG4RunAction::Mu2eG4RunAction(const fhicl::ParameterSet& pset,
-                                 const bool using_MT,
                                  CLHEP::Hep3Vector const& origin_in_world,
                                  PhysicalVolumeHelper* phys_volume_helper,
                                  PhysicsProcessInfo* phys_process_info,
@@ -42,7 +41,6 @@ Mu2eG4RunAction::Mu2eG4RunAction(const fhicl::ParameterSet& pset,
     :
     G4UserRunAction(),
     pset_(pset),
-    use_G4MT_(using_MT),
     originInWorld(origin_in_world),
     _physVolHelper(phys_volume_helper),
     _processInfo(phys_process_info),
@@ -60,7 +58,7 @@ Mu2eG4RunAction::~Mu2eG4RunAction()
 void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
     {
 
-      if (pset_.get<int>("debug.diagLevel",0)>1) {
+      if (pset_.get<int>("debug.diagLevel",0)>0) {
         G4cout << "Mu2eG4RunAction " << __func__ << " : G4Run: " << aRun->GetRunID() << G4endl;
       }
 
@@ -71,55 +69,36 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
       G4SteppingManager* sm  = tm->GetSteppingManager();
       sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
 
-        if (use_G4MT_ == true){//MT mode
-
-          //BeginOfRunAction is called from Worker Threads only
-
-          _sensitiveDetectorHelper->registerSensitiveDetectors();
-                
-          _extMonFNALPixelSD = ( standardMu2eDetector_ &&
-                                 _sensitiveDetectorHelper->extMonPixelsEnabled()) ?
-            dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
-                                             FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
-            : nullptr;
-                
-          _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
-          _steppingAction->beginRun( _processInfo, originInWorld );
-                
-          //make this done only once per job/run according to ncalls in Mu2eG4_module?
-          _steppingAction->finishConstruction();//once per thread
+       
+      _sensitiveDetectorHelper->registerSensitiveDetectors();
             
-        }//MT mode
-        else{//sequential mode
-
-            _sensitiveDetectorHelper->registerSensitiveDetectors();
-            
-            _extMonFNALPixelSD = ( standardMu2eDetector_ &&
+        _extMonFNALPixelSD = ( standardMu2eDetector_ &&
                                   _sensitiveDetectorHelper->extMonPixelsEnabled()) ?
             dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
                                              FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
             : nullptr;
-
+            
+      if (!_physVolHelper->helperIsInitialized())
+        {
             _physVolHelper->beginRun();//map w/~20,000 entries
-            _processInfo->beginRun();
+        }
+        
+      _processInfo->beginRun();
             
-            _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
-            _steppingAction->beginRun( _processInfo, originInWorld );
-            
-            //make this done only once per job/run according to ncalls in Mu2eG4_module?
-            _steppingAction->finishConstruction();//once per thread
-            
-        }//sequential mode
+      _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
+      _steppingAction->beginRun( _processInfo, originInWorld );
+        
+        
+      _steppingAction->finishConstruction();
+        //stackingCuts_->finishConstruction(originInWorld);
+        //commonCuts_->finishConstruction(originInWorld);
         
     }
     
     
 void Mu2eG4RunAction::EndOfRunAction(const G4Run* aRun)
     {
-        if (use_G4MT_ == false){//sequential mode
             _processInfo->endRun();
-            //_physVolHelper.endRun(); is this really an endJob action that can be done in module?
-        }
     }
 
 }  // end namespace mu2e

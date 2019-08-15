@@ -32,7 +32,6 @@ class Mu2eG4RunAction : public G4UserRunAction
 {
   public:
     Mu2eG4RunAction(const fhicl::ParameterSet& pset,
-                    const bool,
                     CLHEP::Hep3Vector const&,
                     PhysicalVolumeHelper*,
                     PhysicsProcessInfo*,
@@ -52,7 +51,6 @@ class Mu2eG4RunAction : public G4UserRunAction
     //data members
 
     const fhicl::ParameterSet& pset_;
-    const bool use_G4MT_;
     CLHEP::Hep3Vector const& originInWorld;
 
     PhysicalVolumeHelper* _physVolHelper;
