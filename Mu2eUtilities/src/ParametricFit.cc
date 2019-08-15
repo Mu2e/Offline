@@ -1,6 +1,6 @@
 //S Middleton 
 //March 2019
-//Description: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment
+//Description: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment. This includes calculting track axes, hit errors and re-orientating those errors, track residuals are also calcuated here.
 
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 

@@ -42,6 +42,7 @@ namespace DriftFitUtils{
   	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
   	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
   	double TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
+  	double T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
   
  }
 

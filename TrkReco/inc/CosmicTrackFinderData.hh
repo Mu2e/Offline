@@ -43,6 +43,7 @@ namespace mu2e {
     enum { kMaxResidIndex = 500 };
 
     constexpr static uint16_t        kNMaxChHits = 150;
+    
     //possible use for alignment so keep for now:
     struct ChannelID {
       int Station;

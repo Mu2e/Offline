@@ -38,7 +38,10 @@ namespace mu2e {
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
     std::vector<StrawHitIndex> _strawHitIdxs; // associated straw hits: can be empty
     std::vector<TrkStrawHitSeed>  _trkstrawhits; //vector of associated trkstrawhits
-    std::vector<Straw> _straws;
+    std::vector<Straw> _straws; //vector of straw info 
+    std::vector<Panel> _panels; //vector of panel info 
+    std::vector<Plane> _planes; //vector of plane info 
+    std::vector<Station> _stations; //vector of station info 
   };
    typedef std::vector<mu2e::CosmicTrackSeed> CosmicTrackSeedCollection;
 } // namespace mu2e

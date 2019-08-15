@@ -32,6 +32,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+
 //Mu2e Tracker Geom:
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
@@ -110,7 +111,10 @@ namespace mu2e
       bool doDisplay_;
       bool clickToAdvance_;
       
+      Int_t _strawid; // strawid info
+      
       void plot2d(const art::Event& evt);
+      void plotTrackerElements(const art::Event& event);
       void plot3dPrimes(const art::Event& evt);
       void plot3dXYZ(const art::Event& evt);
       void improved_event3D(const art::Event& evt);
@@ -150,10 +154,14 @@ namespace mu2e
       canvas_->Divide(2,3);
         
       }
-
       void CosmicFitDisplay::analyze(const art::Event& event) {
-        plot2d( event);  
+      //Call one or more of the macros from below here, for example: plot2d( event);  
+        plotTrackerElements(event);
       }//End Analyze 
+      
+      
+//----------Below here are a series of macros -  they are not glamarous but they produce useful debugging plots ----//
+
 
       void CosmicFitDisplay::plot2d(const art::Event& event){
         _evt = event.id().event();  
@@ -165,7 +173,6 @@ namespace mu2e
       
          //find time clusters:
     	unsigned  _ncosmics = _coscol->size();
-    	
         unsigned _nch = _chcol->size();
         //loop over tracks:
         for(size_t i =0; i < _ncosmics; i++){
@@ -175,16 +182,12 @@ namespace mu2e
 		xprimes.push_back(track._track.TrackCoordSystem._XDoublePrime);
 		yprimes.push_back(track._track.TrackCoordSystem._YDoublePrime);
 		zprimes.push_back(track._track.TrackCoordSystem._ZPrime);
-		cout<<"in display XdP "<<track._track.TrackCoordSystem._XDoublePrime<<endl;
-		cout<<"in display YdP "<<track._track.TrackCoordSystem._YDoublePrime<<endl;
-	        cout<<"in display Z"<<track._track.TrackCoordSystem._ZPrime<<endl;
+		
 		xprimesinit.push_back(track._track.InitTrackCoordSystem._XDoublePrime);
 		yprimesinit.push_back(track._track.InitTrackCoordSystem._YDoublePrime);
 		zprimesinit.push_back(track._track.InitTrackCoordSystem._ZPrime);
 		
-		//if(track._track.get_track_parameters().size()!= 0){
-			
-			if(isnan(track._track.FitParams.A0) == true && isnan(track._track.FitParams.A1) == true && isnan(track._track.FitParams.B0) == true && isnan(track._track.FitParams.B1) == true) continue;
+		if(isnan(track._track.FitParams.A0) == true && isnan(track._track.FitParams.A1) == true && isnan(track._track.FitParams.B0) == true && isnan(track._track.FitParams.B1) == true) continue;
 			
 			a0.push_back(track._track.FitParams.A0);
 			a1.push_back(track._track.FitParams.A1);
@@ -253,7 +256,12 @@ namespace mu2e
       double minrawy = *std::min_element(rawy.begin(), rawy.end());
       double maxrawy = *std::max_element(rawy.begin(), rawy.end());
       
-        GeomHandle<Tracker> tracker;   
+        GeomHandle<Tracker> tracker; 
+        GeomHandle<Straw> straw; 
+        //Straw& straw_details = tracker->getStraw(id);
+	//double const straw_radius = straw_details.at(0).getRadius();; 
+        GeomHandle<Plane> plane;     
+        GeomHandle<Panel> panel;     
         // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
         if (doDisplay_) {
@@ -582,8 +590,7 @@ namespace mu2e
 	      trackline_x->SetParameter(1, a1[0]);
 	      trackline_x->SetLineColor(6);
 	      //trackline_x->Draw("same");
-              
-		
+             
 	      pad = canvas_->cd(6);
 	      pad->Clear();   
 	      auto rawyzplot = pad->DrawFrame(minrawz-100,minrawy-100, maxrawz+100, maxrawy+100);//-plotLimits,-plotLimits,plotLimits,plotLimits);//pad->DrawFrame(minrawz-100, minrawy-100, maxrawz+100, maxrawy+100);
@@ -642,6 +649,122 @@ namespace mu2e
         }//End Diag
       }
       }//End 2d
+      
+      //Plots XZ or YZ of hits with straws:
+      void CosmicFitDisplay::plotTrackerElements(const art::Event& event){
+        _evt = event.id().event();  
+        findData(event);
+        
+         //find time clusters:
+    	unsigned  _ncosmics = _coscol->size();
+        unsigned _nch = _chcol->size();
+        //loop over tracks:
+        std::vector<double> x,y,z;
+        std::vector<XYZVec> xprimes, yprimes, zprimes;
+        for(size_t i =0; i < _ncosmics; i++){
+                
+          CosmicTrackSeed track =(*_coscol)[i];
+          if(track._track.converged == false){continue;}
+		
+          for(size_t i =0; i < _nch; i++){
+        	ComboHit const& chit =(*_chcol)[i];
+		x.push_back(chit.pos().x());
+		y.push_back(chit.pos().y());
+		z.push_back(chit.pos().z());
+		
+            }
+            double minz = *std::min_element(z.begin(), z.end());
+      	    double maxz = *std::max_element(z.begin(), z.end());
+      	    //double minx = *std::min_element(x.begin(), x.end());
+            //double maxx = *std::max_element(x.begin(), x.end());
+            double miny = *std::min_element(y.begin(), y.end());
+            double maxy = *std::max_element(y.begin(), y.end());
+       	    GeomHandle<Tracker> th;
+       	    const Tracker* tracker = th.get(); 
+            //GeomHandle<Straw> straw; 
+            //Straw& straw_details = tracker->getStraw(id);
+	    //double const straw_radius = straw_details.at(0).getRadius();; 
+            //GeomHandle<Plane> plane;     
+            //GeomHandle<Panel> panel;     
+            // Annulus of a cylinder that bounds the tracker/straw info:
+            TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+            if (doDisplay_) {
+                TPolyMarker poly, wirecentre;
+	      	TBox   box;
+	        TText  text;    
+	        TLine error_line; 
+	        TEllipse strawXsec;     
+	        poly.SetMarkerStyle(2);
+	        //poly.SetMarkerSize(straw_radius);
+	        
+	        auto pad = canvas_;
+	      	pad->Clear();
+	      	canvas_->SetTitle("bar title");
+	        auto yzplot = pad->DrawFrame(minz-20, miny-20, maxz+20, maxy+20);
+	      	yzplot->GetYaxis()->SetTitleOffset(1.25);
+	        int ihit = 0;
+	        for(size_t i =0; i < _nch; i++){
+        	        ComboHit const& chit =(*_chcol)[i];              
+	      		ihit +=1;    
+	      		if (ihit == 5) continue; 
+	      		if (ihit == 10) {
+              			ihit = ihit+1;
+              		} 
+			
+			auto const& p = chit.pos();
+			auto const& w = chit.wdir();
+			auto const& s = chit.wireRes();	
+			double y0prime{p.y()} ;
+			double z0prime{p.z()};    
+			poly.SetMarkerColor(ihit);       
+			poly.DrawPolyMarker( 1, &z0prime, &y0prime );       
+			   
+			double y1 = p.y()+s*w.y();
+			double y2 = p.y()-s*w.y();
+			double z1 = p.z()+s*w.z();
+			double z2 = p.z()-s*w.z();
+		        Straw const&  straw = tracker->getStraw(chit.strawId());
+	                double const straw_radius = straw.getRadius();
+	                cout<<straw_radius<<endl;
+			const CLHEP::Hep3Vector& spos = straw.getMidPoint();
+      			const CLHEP::Hep3Vector& sdir = straw.getDirection();
+      		        CLHEP::Hep3Vector wpos = spos + chit.wireDist()*sdir;
+ 		        
+ 		        wirecentre.SetMarkerColor(ihit);   
+ 		        double y0wire{wpos.y()} ;
+			double z0wire{wpos.z()};      
+			wirecentre.DrawPolyMarker( 1,&z0wire , &y0wire );  
+			error_line.SetLineColor(ihit);
+			error_line.DrawLine( z1, y1, z2, y2);
+			strawXsec.SetFillStyle(ihit);
+                        strawXsec.DrawEllipse(wpos.z(), wpos.y(), straw_radius, straw_radius, 0 ,360, 0); 
+		   }  
+		   ostringstream title;
+		      title << "Run: " << event.id().run()
+		      << "  Subrun: " << event.id().subRun()
+		      << "  Event: " << event.id().event()<<".root";
+		      
+		      text.SetTextAlign(11);
+		      text.DrawTextNDC( 0., 0.01, title.str().c_str() );
+		      canvas_->SetTitle("foo title");
+	      	      
+		      canvas_->Modified();
+		      canvas_->Update();
+		      canvas_->SaveAs(title.str().c_str());
+		      if ( clickToAdvance_ ){
+			cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
+			gPad->WaitPrimitive();
+	      	      } else{
+			char junk;
+			cerr << "Enter any character to continue: ";
+			cin >> junk;
+		      }
+	      	        cerr << endl;
+       		 }//End Diag
+      	   }
+      }//End 2d
+      
+      
       void CosmicFitDisplay::plot3dXYZ(const art::Event& event){
          
         _evt = event.id().event();  // add event id

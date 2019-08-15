@@ -1,4 +1,4 @@
-// Cosmic Track finder- module calls seed fitting routine to begin cosmic track analysis
+// Cosmic Track finder- module calls seed fitting routine to begin cosmic track analysis. The module can call the seed fit and drift fit. Producing a "CosmicTrackSeed" list.
 // $Id: CosmicTrackFinder_module.cc
 // $Author: S.middleton
 // $Date: Feb 2019 $
@@ -143,7 +143,7 @@ namespace mu2e{
  CosmicTrackFinder::CosmicTrackFinder(fhicl::ParameterSet const& pset) :
    
     _diag        (pset.get<int>("diagLevel",1)),
-    _mcdiag      (pset.get<int>("mcdiagLevel",1)),
+    _mcdiag      (pset.get<int>("mcdiagLevel",2)),
     _debug       (pset.get<int>("debugLevel",3)),
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
     _minnsh      (pset.get<int>("minNStrawHits",2)),
@@ -245,7 +245,7 @@ namespace mu2e{
       OrderHitsY(_stResult); 
 
       if (_debug != 0){
-	 std::cout<<"#filtered SHits"<<_stResult._nFiltStrawHits<<"  Minimum allowed: "<<_minnsh<<std::endl;
+	 std::cout<<"#filtered SHits"<<_stResult._nFiltStrawHits<<" #filter CHits "<<_stResult._nFiltComboHits<<std::endl;
       }
       if (_stResult._nFiltComboHits < _minnch ) 	continue;
       if (_stResult._nFiltStrawHits < _minnsh)          continue;
@@ -260,12 +260,12 @@ namespace mu2e{
            XYZVec first, last;       
 
 	     for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) {  
-	      
+	        cout<<"Size of chHits in Order func. "<<_stResult._chHitsToProcess.size()<<endl;
            	std::vector<StrawDigiIndex> shids;  
            	std::vector<StrawHitIndex> shitids;          	
            	ComboHit const& chit = _stResult._chHitsToProcess.at(ich);
            	Straw const& straw = _tfit._tracker->getStraw(chit.strawId()); 
-           	_stResult._tseed._straws.push_back(straw);
+           	_stResult._tseed._straws.push_back(straw);//TODO only half filled - why?
            	
            	if (chit.nCombo() >  chit.nStrawHits() ) continue;
            	
@@ -314,7 +314,10 @@ namespace mu2e{
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
               
 		      fillGoodHits(tmpResult);
-		      //_tfit.DriftFit(tmpResult);
+		      if(_stResult._tseed._track.converged == false) continue;
+		      _tfit.DriftFit(_stResult);
+		      int count;//raw_input()
+	 	      cin>>count;
 		      track_seed_vec.push_back(tmpResult._tseed);
 		      //if (_diag > 1) {
 	      		//fillPluginDiag(tmpResult);
@@ -338,6 +341,7 @@ namespace mu2e{
 	std::cout<<"Filling good hits..."<<std::endl;
     }
     ComboHit*     hit(0);
+    cout<<"Size of chits in fill hits "<<_stResult._chHitsToProcess.size()<<endl;
     for (unsigned f=0; f<trackData._chHitsToProcess.size(); ++f){
       hit = &trackData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))     continue;

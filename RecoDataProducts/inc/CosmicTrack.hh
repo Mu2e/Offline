@@ -78,6 +78,11 @@ using namespace std;
    	double FinalChiY;
    	double FinalChiTot;
    	
+   	std::vector<double> StartDOCAs;
+   	std::vector<double> EndDOCAs;
+   	std::vector<double> StartTimeResiduals;
+   	std::vector<double> EndTimeResiduals;
+   	
    	std::vector<double> FinalResidualsX;
    	std::vector<double> FinalResidualsY;
 	 
@@ -153,6 +158,15 @@ namespace mu2e {
 	    void SetTrueParams(TrackParams par){ 
 	    	this->TrueParams = par;
 	    }
+	    
+	    void SetMinuitParams(double par_a0, double par_a1, double par_b0, double par_b1, double par_t0 ){
+	    	this->MinuitFitParams.A0 = par_a0;
+	 	this->MinuitFitParams.A1 = par_a1;
+	 	this->MinuitFitParams.B0 = par_b0;
+	 	this->MinuitFitParams.B1 = par_b1;
+	  	this->MinuitFitParams.B1 = par_t0;
+	    
+	    }
 	    void SetFitTrackCoOrdSystem(TrackAxes coordsys){
 	    	this->TrackCoordSystem = coordsys;
 	    }
@@ -167,7 +181,9 @@ namespace mu2e {
     	    	TrackCov Cov(siga0, siga1, sigb0, sigb1);
 	    	this->FitParams.Covarience = Cov;
 	    }
-	    
+	     void SetMinuitCoordSystem(TrackAxes coordsys){
+	    	this->MinuitCoordSystem = coordsys;
+	    }
 	    void set_N(unsigned N){_Nhits = N;}
 	    
 	    void SetTrackEquation(TrackEquation Track){ 
@@ -181,23 +197,23 @@ namespace mu2e {
 	    void set_mom(XYZVec mom){ _track_mommentum = mom;}
 	    
 	    //-----------Fill Diag info----------//
-	    void set_finalchisq_dof(double finalchisq_dof) { Diag.FinalChiTot = finalchisq_dof; }
+	    void set_finalchisq_dof(double finalchisq_dof)   { Diag.FinalChiTot = finalchisq_dof; }
 	    void set_finalchisq_dofX(double finalchisq_dofX) { Diag.FinalChiX = finalchisq_dofX; }
 	    void set_finalchisq_dofY(double finalchisq_dofY) { Diag.FinalChiY = finalchisq_dofY; }
 	    
-	    void set_initchisq_dof(double initchisq_dof) { Diag.InitialChiTot = initchisq_dof; }
+	    void set_initchisq_dof(double initchisq_dof)   { Diag.InitialChiTot = initchisq_dof; }
 	    void set_initchisq_dofX(double initchisq_dofX) { Diag.InitialChiX = initchisq_dofX; }
 	    void set_initchisq_dofY(double initchisq_dofY) { Diag.InitialChiY = initchisq_dofY; }
 	    
-	    void set_init_fit_residualsX(double residual) { Diag.InitialResidualsX.push_back(residual); }
+	    void set_init_fit_residualsX(double residual)  { Diag.InitialResidualsX.push_back(residual); }
 	    void set_final_fit_residualsX(double residual) { Diag.FinalResidualsX.push_back(residual); }
 	    
-	    void set_init_fit_residualsY(double residual) { Diag.InitialResidualsY.push_back(residual); }
+	    void set_init_fit_residualsY(double residual)  { Diag.InitialResidualsY.push_back(residual); }
 	    void set_final_fit_residualsY(double residual) { Diag.FinalResidualsY.push_back(residual); }
 	    
 	    void set_true_finalchisq_dof(double true_chisq) { _true_chisq = true_chisq; }
 	    
-	    void SetFinalErrorsX(double residual_err) { Diag.FinalErrX.push_back(residual_err); }
+	    void SetFinalErrorsX(double residual_err){ Diag.FinalErrX.push_back(residual_err); }
 	    void SetInitErrorsX(double residual_err) { Diag.InitErrX.push_back(residual_err); }
 	    
 	    void SetInitErrors(double residual_errX, double residual_errY) {
@@ -221,13 +237,18 @@ namespace mu2e {
 	     TrackParams TrueParams;
 	     
 	     TrackParams MinuitFitParams;
+	     TrackAxes MinuitCoordSystem;
+	     
 	     TrackAxes TrackCoordSystem;
 	     TrackAxes InitTrackCoordSystem;
 	     TrackAxes TrueTrackCoordSystem;
 	     TrackEquation FitEquation;
+	     
 	     TrackSeedDiag Diag;
+	     TrackDriftDiag DriftDiag;
 	     
 	     bool converged = false; // set default 
+	     bool minuit_converged = false;
   private:
 	    unsigned _Nhits;
 	    

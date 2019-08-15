@@ -367,216 +367,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
      } 
      //cosmictrack->set_fit_phi(acos(cosmictrack->getZPrime().x()/sqrt(cosmictrack->getZPrime().Mag2())));
    }
-/*
-void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, CosmicTrackFinderTypes::Data_t& diagnostics){
-    
-    ::BuildMatrixSums S;
-   // ComboHit   *hitP1(0);
-    int DOF = (trackData._chHitsToProcess.size());
-    const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
-    const ComboHit* chN = &trackData._chHitsToProcess[trackData._chHitsToProcess.size()-1]; 
-    
-    //Step 1: Get Initial Estimate of track direction
-    XYZVec ZPrime = InitLineDirection(ch0, chN);  
-    TrackAxes InitAxes = ParametricFit::GetTrackAxes(ZPrime);
-    cout<<"Initial X "<<InitAxes._XDoublePrime<<endl;
-    cout<<"Initial Y "<<InitAxes._YDoublePrime<<endl;
-    cout<<"Initial Z "<<InitAxes._ZPrime<<endl;
-    cosmictrack->SetInitTrackCoordSystem(InitAxes);
-    //Step 2: Loop over hits and get track parameters based on above estimated track direction
-    for (auto const& hitP1 : trackData._chHitsToProcess ){   
-      if (!use_hit(hitP1) && hitP1.nStrawHits() < _minnsh)  continue;  
-      XYZVec point(hitP1.pos().x(),hitP1.pos().y(),hitP1.pos().z());
-      std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, InitAxes._XDoublePrime, InitAxes._YDoublePrime); 
-      S.addPoint(point, InitAxes._XDoublePrime, InitAxes._YDoublePrime, InitAxes._ZPrime, ErrorsXY[0], ErrorsXY[1]); 
-     }    
-      
-     //Step 3: Get the first estmiate of track parameters, get a updated track direction vector from these parameters
-     double a0 = S.GetAlphaX()[0][0];
-     double a1 = S.GetAlphaX()[1][0];
-     double b0 = S.GetAlphaY()[0][0];
-     double b1 = S.GetAlphaY()[1][0];
-     XYZVec Direction(a1,b1,1);
-     XYZVec UpdatedTrackDirection =Direction.Unit();
-     cosmictrack->SetTrackDirection(UpdatedTrackDirection);
-     cout<<"Updated initaxes "<<cosmictrack->GetTrackDirection()<<endl;
-     InitAxes = ParametricFit::GetTrackAxes(UpdatedTrackDirection);
-     TrackParams InitParams(a0,a1,b0,b1);
-     cosmictrack->SetInitParams(InitParams);
-     cout<<"Stored init "<<cosmictrack->InitParams.A0<<" "<<cosmictrack->InitParams.A1<<" "<<cosmictrack->FitParams.B0<<" "<<cosmictrack->InitParams.B1<<endl;
-     //cosmictrack->SetFitParams(InitParams);
-     
-     cosmictrack->SetFitTrackCoOrdSystem(InitAxes);
-      cout<<"Updated Fit Track Coords to "<<InitAxes._ZPrime<<endl;
-       
-     //Step 4: Loop for initial diagnostics
-	if(_debug>0){
-	     cosmictrack->set_N(trackData._chHitsToProcess.size());
-	     if(_diag>0){
-		      cosmictrack->set_initchisq_dof(S.GetTotalChi2()/abs(DOF)); 
-		      cosmictrack->set_initchisq_dofY(S.GetChi2Y()/abs(DOF));
-		      cosmictrack->set_initchisq_dofX(S.GetChi2X()/abs(DOF));
-		      
-	     }
-	    
-	     for (auto const& hitP1 : trackData._chHitsToProcess ){  
-      		if (!use_hit(hitP1) && hitP1.nStrawHits() < _minnsh)  continue; 
-	      	XYZVec point(hitP1.pos().x(),hitP1.pos().y(),hitP1.pos().z());
-		XYZVec point_prime(point.Dot(InitAxes._XDoublePrime), point.Dot(InitAxes._YDoublePrime), point.Dot(InitAxes._ZPrime));
-		
-		std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, InitAxes._XDoublePrime, InitAxes._YDoublePrime); 
-	      	if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue; 
-	      	if(_diag>0){
-	      	      float Rx = ParametricFit::GetResidualX(a0,a1, point_prime);
-	      	      float Ry = ParametricFit::GetResidualY(b0,b1, point_prime);
-	      	      
-		      cosmictrack->set_init_fit_residualsX(Rx);
-		      cosmictrack->set_init_fit_residualsY(Ry); 
-		      cosmictrack->SetInitErrors(ErrorsXY[0],ErrorsXY[1]);
-		    } 
-	}
-      } 
-     
-     //Step 6: Begin iteration for finding the best track fit possible.
-     unsigned niter(0);
-     ::BuildMatrixSums S_niteration;
-     bool converged = false;
-     CosmicTrack* BestTrack = cosmictrack;	 
-     double chi2_best_track = 10000000;//chosen arbitary high number
-     
-     //Step 7: Find Best previous chi2
-     while(niter < _maxniter && converged==false){                 
-     	niter +=1; 
-     	double previous_chi2, chi_change;
-     	if (niter == 1) {
-	     	 previous_chi2 = S.GetTotalChi2()/abs(DOF);
-	     	 chi2_best_track = previous_chi2;
-     	} 
-     	else {
-     	 	previous_chi2 = S_niteration.GetTotalChi2()/abs(DOF);
-     	}
-     	//Step 8: Remove previous sums and get previous axes:
-     	S_niteration.clear(); 
-     	TrackAxes Axes = ParametricFit::GetTrackAxes(cosmictrack->TrackCoordSystem._ZPrime);
-     	cout<<"Set Cosmic track axes to X "<<cosmictrack->TrackCoordSystem._XDoublePrime<<endl;
-	cout<<"Set Cosmic track axes to Y "<<cosmictrack->TrackCoordSystem._YDoublePrime<<endl;
-	cout<<"Set Cosmic track axes to Z "<<cosmictrack->TrackCoordSystem._ZPrime<<endl;
-	  
-     	cout<<"New axes X"<<Axes._XDoublePrime<<endl;
-     	cout<<"New axes Y"<<Axes._YDoublePrime<<endl;
-     	cout<<"New axes Z"<<Axes._ZPrime<<endl;
-        cosmictrack->set_niter(niter );
-     	for (auto const& hitP2 : trackData._chHitsToProcess){  
-     	      if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue; 
-      	      if (((!use_hit(hitP2) ) && (hitP2.nStrawHits() < _minnsh) )) continue;   
-	      XYZVec point(hitP2.pos().x(),hitP2.pos().y(),hitP2.pos().z());	  
-	      std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP2, Axes._XDoublePrime, Axes._YDoublePrime);	        
-	      S_niteration.addPoint(point, Axes._XDoublePrime, Axes._YDoublePrime, Axes._ZPrime, ErrorsXY[0],ErrorsXY[1]);
-    	  }
-    	  a0 = S_niteration.GetAlphaX()[0][0];
-          a1 = S_niteration.GetAlphaX()[1][0];
-	  b0 = S_niteration.GetAlphaY()[0][0];
-	  b1 = S_niteration.GetAlphaY()[1][0];
-    	  //Step 9: Update Directions:
-	   XYZVec DirectionSecond(a1,b1,1);
-	   XYZVec UpdatedTrackDirectionSecond = DirectionSecond.Unit();
-	   cosmictrack->SetTrackDirection(UpdatedTrackDirectionSecond); 
-	   //Step 10: Update Axes
-           Axes = ParametricFit::GetTrackAxes(UpdatedTrackDirectionSecond);
-	   cosmictrack->SetFitTrackCoOrdSystem(Axes);
-	   cout<<"Set Cosmic track axes to X "<<cosmictrack->TrackCoordSystem._XDoublePrime<<endl;
-	   cout<<"Set Cosmic track axes to Y "<<cosmictrack->TrackCoordSystem._YDoublePrime<<endl;
-	   cout<<"Set Cosmic track axes to Z "<<cosmictrack->TrackCoordSystem._ZPrime<<endl;
-	  
-	   //Step 11: Update Parameters:
-	   TrackParams FitParams(a0,a1,b0,b1);
-	   cosmictrack->SetFitParams(FitParams);
-	   cout<<"Setting Params "<<cosmictrack->FitParams.A0<<" "<<cosmictrack->FitParams.A1<<" "<<cosmictrack->FitParams.B0<<" "<<cosmictrack->FitParams.B1<<endl;
-	   float updated_chi2 = S_niteration.GetTotalChi2()/abs(DOF);
-	   chi_change = chi2_best_track - updated_chi2;
-	   
-           //Step 12: Update Chi2:
-           if(_debug > 0){ 
-           	   cosmictrack->Diag.FinalChiTot = (S_niteration.GetTotalChi2()/abs(DOF)); 
-		   cosmictrack->Diag.FinalChiY = S_niteration.GetChi2Y()/abs(DOF);
-		   cosmictrack->Diag.FinalChiX = S_niteration.GetChi2X()/abs(DOF);
-	   }
-	    
-	   //Step13: Check if Chi2 is improved:, If so call this "BestTrack"
-           if (updated_chi2 < chi2_best_track ){
-		BestTrack->clear_errors();
-		BestTrack->clear_diag();
-		TrackParams FitParams(a0,a1,b0,b1);
-	   	BestTrack->SetFitParams(FitParams);
-	        BestTrack->SetFitTrackCoOrdSystem(Axes);
-	        cout<<"Best track added with X"<<BestTrack->TrackCoordSystem._XDoublePrime<<endl;
-	        cout<<"Best track added with Y"<<BestTrack->TrackCoordSystem._YDoublePrime<<endl;
-	        cout<<"Best track added with Z"<<BestTrack->TrackCoordSystem._ZPrime<<endl;
-                
-      		XYZVec EndTrackPosition(BestTrack->FitParams.A0,BestTrack->FitParams.B0,0);
-      		TrackEquation EndTrack(EndTrackPosition, BestTrack->TrackCoordSystem._ZPrime);
-      		BestTrack->SetTrackEquation(EndTrack);
-      		//cosmictrack = BestTrack;
-   		//Step 14: Save this Chi2:
-                if(_debug > 0){
-                	BestTrack->Diag.FinalChiTot = (S_niteration.GetTotalChi2()/abs(DOF)); 
-		   	BestTrack->Diag.FinalChiY = S_niteration.GetChi2Y()/abs(DOF);
-		        BestTrack->Diag.FinalChiX = S_niteration.GetChi2X()/abs(DOF);
-                	
-                	cout<<"Best Track Params in "<<S_niteration.GetAlphaX()[0][0]<<" "<<S_niteration.GetAlphaX()[1][0]<<" "<<S_niteration.GetAlphaY()[0][0]<<" "<<S_niteration.GetAlphaY()[1][0]<<endl;
-	        }
-                chi2_best_track = updated_chi2;  
-                cosmictrack=BestTrack;      	
-	      }
-	      
-             //Step 15: If  the change in chi2 becomes small than we can assume we have converged on a track
-             if( abs(chi_change) < _max_chi2_change ){
-                 converged = true;
-	      }
-	      
-	      //Step 16: If at end of the iteration process but the track is still not converging then remove it
-              if(niter == _maxniter && converged ==false ){
-		    	 trackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
-		    	 trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
-		    	 continue;
-    		 }    	
-	      }
-	
-        //Final Step: Fill Final diagnotsics
-	 if(converged==true){
-	     if(_diag>0){
-	     	   for (size_t f5=0; f5< trackData._chHitsToProcess.size(); ++f5){
-		     	if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue; 
-			ComboHit hitP1 = trackData._chHitsToProcess[f5];
-      	        	XYZVec point(hitP1.pos().x(),hitP1.pos().y(),hitP1.pos().z());
-		        XYZVec point_prime(point.Dot(BestTrack->TrackCoordSystem._XDoublePrime), point.Dot(BestTrack->TrackCoordSystem._YDoublePrime), point.Dot(BestTrack->TrackCoordSystem._ZPrime));
-		        cout<<"Final diags with X "<<BestTrack->TrackCoordSystem._XDoublePrime<<endl;	
-		        cout<<"Final diags with Y "<<BestTrack->TrackCoordSystem._YDoublePrime<<endl;	
-		        cout<<"Final diags with Z "<<BestTrack->TrackCoordSystem._ZPrime<<endl;	
-			std::vector<double> ErrorsXY = ParametricFit::GetErrors(hitP1, BestTrack->TrackCoordSystem._XDoublePrime, BestTrack->TrackCoordSystem._YDoublePrime);  
-			cout<<"Final Params "<<BestTrack->FitParams.A0<<" "<<BestTrack->FitParams.A1<<" "<<BestTrack->FitParams.B0<<" "<<BestTrack->FitParams.B1<<endl;
-			cout<<"Saved a's "<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<endl;
-			BestTrack->SetFinalErrors(ErrorsXY[0], ErrorsXY[1]);
-	      		float newRx = ParametricFit::GetResidualX(BestTrack->FitParams.A0, BestTrack->FitParams.A1, point_prime);
-			float newRy = ParametricFit::GetResidualY(BestTrack->FitParams.B0, BestTrack->FitParams.B1, point_prime);
-			cout<<"Final Params "<<BestTrack->FitParams.A0<<" "<<BestTrack->FitParams.A1<<" "<<BestTrack->FitParams.B0<<" "<<BestTrack->FitParams.B1<<endl;
-			BestTrack->SetCovarience(S_niteration.GetCovX()[0][0],S_niteration.GetCovX()[1][1], S_niteration.GetCovY()[0][0], S_niteration.GetCovY()[1][1]);
-	      	        BestTrack->Diag.FinalResidualsX.push_back(newRx);
-	      	        BestTrack->Diag.FinalResidualsY.push_back(newRy);
-	      	        
-      		        cosmictrack = BestTrack; 
-      		  	
-      		  	 }		
-   	          }      	
-      }
-    S.clear();
-    if(_mcdiag > 0){
-         FitMC(trackData,cosmictrack, true, false);
-     }
-    //cosmictrack->set_fit_phi(acos(cosmictrack->getZPrime().x()/sqrt(cosmictrack->getZPrime().Mag2())));
-  }
-  
-*/
+
 //Applies fitting routine to MCDigis:
 void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool prime){	
         ::BuildMatrixSums S; 
@@ -586,7 +377,6 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
         StrawDigiMC const& chN = trackData._mccol->at(nHits-1);
         XYZVec ZPrime = InitLineDirection(ch0, chN, FitDirection, prime);  
         StrawDigiMC *hitP1; 
-        cout<<"Fitting MC"<<endl;
         for (size_t f1=0; f1<nHits; ++f1){ 
             hitP1 = &trackData._mcDigisToProcess[f1]; 
             art::Ptr<StepPointMC> const& spmcp = hitP1->stepPointMC(StrawEnd::cal);
@@ -610,14 +400,14 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
             }
           
         }   
-     //now transform into XYZ fitplane
+     //Transform into XYZ fitplane
      XYZVec Direction(S.GetAlphaX()[1][0],S.GetAlphaY()[1][0],1);
      XYZVec Position(S.GetAlphaX()[0][0],S.GetAlphaY()[0][0],0);
 
      XYZVec transformedDirection(Direction.Dot(cosmictrack->TrackCoordSystem._XDoublePrime)/Direction.Dot(cosmictrack->TrackCoordSystem._ZPrime), Direction.Dot(cosmictrack->TrackCoordSystem._YDoublePrime)/Direction.Dot(cosmictrack->TrackCoordSystem._ZPrime), 1);
      XYZVec unit_transformedDirection = transformedDirection.Unit();
      XYZVec transformedPosition(Position.Dot(cosmictrack->TrackCoordSystem._XDoublePrime), Position.Dot(cosmictrack->TrackCoordSystem._YDoublePrime), Position.Dot(cosmictrack->TrackCoordSystem._ZPrime));
-     
+     //Fill details in cosmictrack:
      double mcpos_mag = sqrt(Direction.Mag2());    
      TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);
      cosmictrack->SetTrueTrackCoordSystem(TrueAxes);
@@ -694,16 +484,56 @@ bool CosmicTrackFit::use_track(double track_length) const
      return (track_length > _maxd) ? false : true ;
   }
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
-	cout<<"==============================="<<endl;
-        EndResult bestfit = LiklihoodFunctions::DoFit(trackData._tseed,  _srep);
-      	int count;
-	cin>>count;	
 
+	 cout<<"======== Drift Fit Diagnostics ============="<<endl;
+         EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep);
+         //Store fits:
+         trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];
+         trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];
+         trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];
+         trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];
+         trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];
+	 XYZVec NewDirection(endresult.bestfit[1], endresult.bestfit[3], 1);
+	 NewDirection = NewDirection.Unit();
+	 TrackAxes Axes = ParametricFit::GetTrackAxes(NewDirection);
+	 trackData._tseed._track.MinuitCoordSystem = Axes; 
+	 
+	 cout<<" Min Fit: "<<trackData._tseed._track.MinuitFitParams.A0<<" "<<trackData._tseed._track.MinuitFitParams.A1<<" "<<trackData._tseed._track.MinuitFitParams.B0<<" "<<trackData._tseed._track.MinuitFitParams.B1<<endl;
+	 
+	 cout<<"Stored Axes "<<trackData._tseed._track.MinuitCoordSystem._ZPrime<<endl;
+	
+	 if(_diag > 0){
+	 ComboHit *chit(0);
+        for(size_t j=0; j<(trackData._chHitsToProcess.size()); j++){
+            //Get Hit:
+            chit = &trackData._chHitsToProcess[j];
+            if (((!use_hit(*chit) ) && (chit->nStrawHits() < _minnsh) )) continue;
+            //Get point:
+            XYZVec point(chit->pos().x(),chit->pos().y(),chit->pos().z());
+            //Convert Point
+	    XYZVec chit_prime(point.Dot(trackData._tseed._track.MinuitCoordSystem._XDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._YDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._ZPrime));
+	    
+	    //Set Residuals:
+            trackData._tseed._track.DriftDiag.FinalResidualsX.push_back(ParametricFit::GetResidualX(trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
+            trackData._tseed._track.DriftDiag.FinalResidualsY.push_back(ParametricFit::GetResidualY( trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
+            
+           //Set Errors:
+            std::vector<double> ErrorsXY = ParametricFit::GetErrors(chit, trackData._tseed._track.MinuitCoordSystem._XDoublePrime, trackData._tseed._track.MinuitCoordSystem._YDoublePrime);
+             	
+            trackData._tseed._track.DriftDiag.FinalErrX.push_back(ErrorsXY[0]);
+            trackData._tseed._track.DriftDiag.FinalErrY.push_back(ErrorsXY[1]);
+        }
+      }
+        //If minuit does not converge then remove "OK" flags:
+       if(trackData._tseed._track.minuit_converged ==false ){
+	  trackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
+	  trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
+	  
+      }
+      
 }
 /*
- void FillDriftDiag(CosmicTrack track){
- 
- }
+ TrkStrawHits  filler (not working)
  std::vector<TrkStrawHitSeed>const trkseeds = trackData._tseed.trkstrawhits();
      cout<<"trkseed size "<<trkseeds.size()<<endl;
      for(auto const& ths : trkseeds ){
