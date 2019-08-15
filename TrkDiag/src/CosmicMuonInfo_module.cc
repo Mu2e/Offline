@@ -17,8 +17,8 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-
+#include "art_root_io/TFileService.h"
+#include "fhiclcpp/ParameterSet.h"
 #include <iostream>
 #include <map>
 #include <set>
@@ -213,6 +213,7 @@ namespace {
 }
 
 mu2e::CosmicMuonInfo::CosmicMuonInfo(fhicl::ParameterSet const& pset):
+  art::EDFilter{pset},
   _strawHitsTag(pset.get<std::string>("strawHitsTag")),
   _strawDigisTag(pset.get<std::string>("strawDigisTag")),
   _strawDigiMCsTag(pset.get<std::string>("strawDigiMCsTag")),

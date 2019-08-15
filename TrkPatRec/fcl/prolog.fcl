@@ -28,7 +28,7 @@ TimeClusterFinder : {
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 
   # enable calorimeter cluster info in time clustering
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  //CaloClusterCollection : "CaloClusterFromProtoCluster"
   UseCaloCluster : true
   UseCaloClusterPosition : true
   CaloClusterWeight : 10.0
@@ -38,7 +38,8 @@ TimeClusterFinder : {
 #cosmics:
 TimeClusterFinderCosmics : {
   @table::TimeClusterFinder
-  //CaloClusterCollection : "CaloClusterFromProtoCluster"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
   maxdPhi : 10.0
   RefineClusters : false
   PrefilterCluster : false

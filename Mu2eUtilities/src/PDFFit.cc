@@ -42,9 +42,10 @@ using namespace mu2e;
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
-double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit, std::vector<double> distances)const{
+
+double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
 	TrkPoca poca = DriftFitUtils::GetPOCA(straw, a0,a1,b0,b1, chit);
-	distances.push_back(poca.doca());
+	
 	return poca.doca();
 }
 double TimePDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 ,  ComboHit hit)const{
@@ -67,23 +68,23 @@ double PDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double
 }
 double TimePDFFit::operator() (const std::vector<double> &x) const
 {
+  
   double a0 = x[0];
   double a1 = x[1];
   double b0 = x[2];
   double b1 = x[3];
   double t0 = x[4]; 
   double llike = 0;
+  std::vector<double> tmp;
   std::cout<<"In: a0 "<<a0<<" a1 "<<a1<<" b0 "<<b0<<" b1 "<<b1<<" t0 "<<t0<<std::endl;
   for (size_t i=0;i<this->straws.size();i++){
-      double doca = calculate_DOCA(this->straws[i], a0, a1,b0,b1,chits[i], this->docas);
-      std::cout<<"DOCA"<<doca<<std::endl;
-      //TimePDFFit::SetDOCAList(doca);    
-      if(doca < this->doca_min || doca > this->doca_max) continue; 
+      double doca = calculate_DOCA(this->straws[i], a0, a1,b0,b1,chits[i]);
       
+      if(doca < this->doca_min || doca > this->doca_max) continue; 
+      tmp.push_back(doca);
       XYZVec NewDirection(a1,b1, 1);
       NewDirection = NewDirection.Unit();
-      std::cout<<"Iterated Axis "<<NewDirection<<endl;
-      //if(fabs(doca) > this->doca_max) continue;
+  
       double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
       double pdf_t =1/sqrt(2*TMath::Pi()*sigma*sigma) * exp(-(time_residual*time_residual)/(2*sigma*sigma));
       llike -=log(pdf_t);
@@ -94,7 +95,7 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
       llike += pow((x[i]-this->constraint_means[i])/this->constraints[i],2);
     }
   }
-  
+        
   return llike;
 }
 

@@ -512,7 +512,7 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
             XYZVec point(chit->pos().x(),chit->pos().y(),chit->pos().z());
             //Convert Point
 	    XYZVec chit_prime(point.Dot(trackData._tseed._track.MinuitCoordSystem._XDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._YDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._ZPrime));
-	    
+	    cout<<"in fot min par is "<<trackData._tseed._track.MinuitFitParams.A0<<endl;
 	    //Set Residuals:
             trackData._tseed._track.DriftDiag.FinalResidualsX.push_back(ParametricFit::GetResidualX(trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
             trackData._tseed._track.DriftDiag.FinalResidualsY.push_back(ParametricFit::GetResidualY( trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
@@ -524,8 +524,9 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
             trackData._tseed._track.DriftDiag.FinalErrY.push_back(ErrorsXY[1]);
         }
       }
+      cout<<"is min converged "<<trackData._tseed._track.minuit_converged<<endl;
         //If minuit does not converge then remove "OK" flags:
-       if(trackData._tseed._track.minuit_converged ==false ){
+      if(trackData._tseed._track.minuit_converged ==false ){
 	  trackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
 	  trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
 	  

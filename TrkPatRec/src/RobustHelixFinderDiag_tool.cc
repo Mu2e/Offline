@@ -24,11 +24,10 @@ namespace mu2e {
 
     enum {
       kNEventHistSets = 10,
-      kNHelixHistSets = 10,
+      kNTrackHistSets = 10,
       kNHitHistSets   = 10
     };
 
-    
     struct Hist_t {
       TH1F*  nTimePeaks;
       TH1F*  nChPerPanel;
@@ -41,12 +40,10 @@ namespace mu2e {
       TH1F*  xyniter [2];
       TH1F*  fzniter [2];
       TH1F*  niter   [2];
-
       TH1F*  nShFitXY    [2];
       TH1F*  nChFitXY    [2];
       TH1F*  nShFitCircle[2];
       TH1F*  nChFitCircle[2];
-
       TH1F*  nrescuedhits[2];
 
       TH1F*  nXYSh   [2];

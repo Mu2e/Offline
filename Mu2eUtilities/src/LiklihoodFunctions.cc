@@ -40,7 +40,7 @@ namespace LiklihoodFunctions{
 	
 	  std::vector<double> errors(5,0);
 	  std::vector<double> seed(5,0);
-	  std::vector<double> ds;
+
 	  EndResult endresult;//best, best_errors
 	  CosmicTrack cosmictrack = trackseed._track;
 	  seed[0] = trackseed._track.FitParams.A0;//10;a0
@@ -57,7 +57,7 @@ namespace LiklihoodFunctions{
 	  std::vector<double> constraint_means(5,0);
 	  std::vector<double> constraints(5,0);
 	 
-          TimePDFFit fit(trackseed.hits(), trackseed._straws, srep, cosmictrack, ds, constraint_means,constraints,1);
+          TimePDFFit fit(trackseed.hits(), trackseed._straws, srep, cosmictrack, constraint_means,constraints,1);
           //PDFFit fit(trackseed.hits(), trackseed._straws, srep, constraint_means,constraints,1);
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
 	  ROOT::Minuit2::MnUserParameters params(seed,errors);
@@ -92,15 +92,15 @@ namespace LiklihoodFunctions{
 	  }
 	  std::cout <<"Seeds : "<<seed[0]<<"  "<<seed[1]<<"  " <<seed[2]<<" "<<seed[3]<<std::endl;
 	  if(min.IsValid()){ cosmictrack.minuit_converged = true;}
-	  //cout<<"size of docas "<<fit.docas.size()<<endl;
 	  
-	  //cout<<"start doca "<<fit.docas[0]<<endl;
-	  //cout<<"storing doca "<<fit.docas[fit.docas.size()-1]<<endl;
-	  //cosmictrack.DriftDiag.StartDOCAs = fit.docas;
-	  cosmictrack.DriftDiag.EndDOCAs = ds;//fit.GetDOCAList();
-	  //cout<<"docas "<<fit.GetDOCAList()[0]<<"...."<<endl;
+	  
+	  for(size_t i = 0; i< trackseed.hits().size(); i++){
+	      //if(cosmictrack.minuit_converged == false) continue;
+	      double doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed.hits()[i]);
+	      trackseed._track.DriftDiag.EndDOCAs.push_back(doca);
+	  }
+	 
 	  trackseed._track = cosmictrack;
-	  
 	 return endresult;
  
   }

@@ -21,7 +21,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "GeneralUtilities/inc/Angles.hh"
 #include "art/Utilities/make_tool.h"
 //MC:
@@ -141,7 +141,7 @@ namespace mu2e{
 
 
  CosmicTrackFinder::CosmicTrackFinder(fhicl::ParameterSet const& pset) :
-   
+   art::EDProducer{pset},
     _diag        (pset.get<int>("diagLevel",1)),
     _mcdiag      (pset.get<int>("mcdiagLevel",2)),
     _debug       (pset.get<int>("debugLevel",3)),
@@ -316,8 +316,7 @@ namespace mu2e{
 		      fillGoodHits(tmpResult);
 		      if(_stResult._tseed._track.converged == false) continue;
 		      _tfit.DriftFit(_stResult);
-		      int count;//raw_input()
-	 	      cin>>count;
+		      
 		      track_seed_vec.push_back(tmpResult._tseed);
 		      //if (_diag > 1) {
 	      		//fillPluginDiag(tmpResult);

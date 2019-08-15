@@ -14,6 +14,7 @@ BEGIN_PROLOG
 	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	UseFlagCollection : true
+	
 	TimeOffsets : {
 	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
@@ -64,7 +65,7 @@ BEGIN_PROLOG
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	PlotHelices : false
 	InclusivePlotFlagBits : ["HitsOK"]
-	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
   }
 
   CHD : {
@@ -73,9 +74,7 @@ BEGIN_PROLOG
 	ComboHitCollection : "makePH"
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	TimeOffsets : {
-	  inputs : [ @sequence::DigiCompression.TimeMaps ]
-	}
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
   }
   
   CosmicAnalysis : {
@@ -84,9 +83,7 @@ BEGIN_PROLOG
 	TimeClusterCollection : TimeClusterFinderCosmics
         CosmicTrackSeedCollection : CosmicTrackFinder
 	StrawDigiMCCollection : "compressDigiMCs"
-	TimeOffsets : {
-	  inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ]
-	}
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
   }
 
 CosmicFitDisplay : {

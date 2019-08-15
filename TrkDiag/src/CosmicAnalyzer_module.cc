@@ -11,7 +11,6 @@
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 //Mu2e Data Prods:
-#include "DataProducts/inc/threevec.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -36,9 +35,8 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
-
+#include "art_root_io/TFileService.h"
 // ROOT incldues
 #include "TStyle.h"
 #include "Rtypes.h"
