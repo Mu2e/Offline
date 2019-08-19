@@ -1,4 +1,3 @@
-# Note: the jobs created by this script need at least 8GBytes of memory
 generate_fcl --description DS-cosmicMix --dsconf MDC2018i --dsowner mu2e --include JobConfig/mixing/DS-cosmicMix.fcl \
 --inputs=DS-cosmic.txt --merge-factor 5 --max-engines 30 \
 --auxinput=3:physics.filters.ootMixerCRV.fileNames:oot-CRV-cat-cat.txt \
