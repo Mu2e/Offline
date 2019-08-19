@@ -357,7 +357,8 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 		BestTrack->SetCovarience(S_niteration.GetCovX()[0][0],S_niteration.GetCovX()[1][1], S_niteration.GetCovY()[0][0], S_niteration.GetCovY()[1][1]);
 		BestTrack->Diag.FinalResidualsX.push_back(newRx);
 	      	BestTrack->Diag.FinalResidualsY.push_back(newRy);
-	      	cosmictrack = BestTrack;      		
+	      	cosmictrack = BestTrack;      
+	      	cout<<" size of diags  "<<BestTrack->Diag.FinalResidualsX.size()<<endl;		
       	}	                	
     }
 
@@ -483,55 +484,57 @@ bool CosmicTrackFit::use_track(double track_length) const
   {
      return (track_length > _maxd) ? false : true ;
   }
+  
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
-
 	 cout<<"======== Drift Fit Diagnostics ============="<<endl;
          EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep);
          //Store fits:
-         trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];
-         trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];
-         trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];
-         trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];
-         trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];
+         trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
+         trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
+         trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
+         trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];//b1
+         trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];//t0
+         //Get New Axesa:
 	 XYZVec NewDirection(endresult.bestfit[1], endresult.bestfit[3], 1);
 	 NewDirection = NewDirection.Unit();
 	 TrackAxes Axes = ParametricFit::GetTrackAxes(NewDirection);
+	 //Fill Diagnostics:
 	 trackData._tseed._track.MinuitCoordSystem = Axes; 
-	 
-	 cout<<" Min Fit: "<<trackData._tseed._track.MinuitFitParams.A0<<" "<<trackData._tseed._track.MinuitFitParams.A1<<" "<<trackData._tseed._track.MinuitFitParams.B0<<" "<<trackData._tseed._track.MinuitFitParams.B1<<endl;
-	 
-	 cout<<"Stored Axes "<<trackData._tseed._track.MinuitCoordSystem._ZPrime<<endl;
-	
+	 trackData._tseed._track.DriftDiag.EndDOCAs = endresult.EndDOCAs;
+	 trackData._tseed._track.DriftDiag.StartDOCAs = endresult.StartDOCAs;
+	 trackData._tseed._track.DriftDiag.EndTimeResiduals = endresult.EndTimeResiduals;
+	 trackData._tseed._track.DriftDiag.StartTimeResiduals = endresult.StartTimeResiduals;
 	 if(_diag > 0){
-	 ComboHit *chit(0);
-        for(size_t j=0; j<(trackData._chHitsToProcess.size()); j++){
-            //Get Hit:
-            chit = &trackData._chHitsToProcess[j];
-            if (((!use_hit(*chit) ) && (chit->nStrawHits() < _minnsh) )) continue;
-            //Get point:
-            XYZVec point(chit->pos().x(),chit->pos().y(),chit->pos().z());
-            //Convert Point
-	    XYZVec chit_prime(point.Dot(trackData._tseed._track.MinuitCoordSystem._XDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._YDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._ZPrime));
-	    cout<<"in fot min par is "<<trackData._tseed._track.MinuitFitParams.A0<<endl;
-	    //Set Residuals:
-            trackData._tseed._track.DriftDiag.FinalResidualsX.push_back(ParametricFit::GetResidualX(trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
-            trackData._tseed._track.DriftDiag.FinalResidualsY.push_back(ParametricFit::GetResidualY( trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
-            
-           //Set Errors:
-            std::vector<double> ErrorsXY = ParametricFit::GetErrors(chit, trackData._tseed._track.MinuitCoordSystem._XDoublePrime, trackData._tseed._track.MinuitCoordSystem._YDoublePrime);
-             	
-            trackData._tseed._track.DriftDiag.FinalErrX.push_back(ErrorsXY[0]);
-            trackData._tseed._track.DriftDiag.FinalErrY.push_back(ErrorsXY[1]);
-        }
+		ComboHit *chit(0);
+		for(size_t j=0; j<(trackData._chHitsToProcess.size()); j++){
+		    //Get Hit:
+		    chit = &trackData._chHitsToProcess[j];
+		    //if(trackData._tseed._track.minuit_converged == false) continue;
+		    if (((!use_hit(*chit) ) && (chit->nStrawHits() < _minnsh) )) continue;
+		    //Get point:
+		    XYZVec point(chit->pos().x(),chit->pos().y(),chit->pos().z());
+		    //Convert Point
+		    XYZVec chit_prime(point.Dot(trackData._tseed._track.MinuitCoordSystem._XDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._YDoublePrime), point.Dot(trackData._tseed._track.MinuitCoordSystem._ZPrime));
+		    
+		    //Set Residuals:
+		    trackData._tseed._track.DriftDiag.FinalResidualsX.push_back(ParametricFit::GetResidualX(trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, chit_prime ));
+		    trackData._tseed._track.DriftDiag.FinalResidualsY.push_back(ParametricFit::GetResidualY( trackData._tseed._track.MinuitFitParams.B0,  trackData._tseed._track.MinuitFitParams.B1, chit_prime ));
+		    
+		   //Set Errors:
+		    std::vector<double> ErrorsXY = ParametricFit::GetErrors(chit, trackData._tseed._track.MinuitCoordSystem._XDoublePrime, trackData._tseed._track.MinuitCoordSystem._YDoublePrime);
+		     	
+		    trackData._tseed._track.DriftDiag.FinalErrX.push_back(ErrorsXY[0]);
+		    trackData._tseed._track.DriftDiag.FinalErrY.push_back(ErrorsXY[1]);
+		}
       }
-      cout<<"is min converged "<<trackData._tseed._track.minuit_converged<<endl;
-        //If minuit does not converge then remove "OK" flags:
+      /*
+       //If minuit does not converge then remove "OK" flags: HERE LOSING ALL HITS
       if(trackData._tseed._track.minuit_converged ==false ){
 	  trackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
 	  trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
 	  
       }
-      
+      */
 }
 /*
  TrkStrawHits  filler (not working)

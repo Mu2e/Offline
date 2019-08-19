@@ -25,7 +25,6 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrkData/inc/TrkStrawHit.hh"
 #include "BTrk/BbrGeom/BbrVectorErr.hh"
-#include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/ProbTools/ChisqConsistency.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
@@ -38,11 +37,11 @@ namespace DriftFitUtils{
   	double GetDOCA(TrkPoca poca);
   	std::vector<double> UpdateErrors(double a0, double a1, double b0, double b1, ComboHit chit);
   	double GetPropVelocity(StrawResponse rep, ComboHit chit); 
-	double GetPropTime(ComboHit chit, Straw straw, TrkPoca poca, double vprop);
+	double GetPropTime(ComboHit chit, Straw straw, double vprop);
   	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
   	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
   	double TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
-  	double T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
+  	double T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit, double average);
   
  }
 

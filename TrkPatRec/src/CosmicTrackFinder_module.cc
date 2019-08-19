@@ -238,7 +238,7 @@ namespace mu2e{
       _stResult.clearTempVariables();
       _stResult._tseed              = tseed;
       _stResult._timeCluster        = &tclust;
-      _stResult._tseed._thits.setParent(chcol.parent());
+      _stResult._tseed._panel_hits.setParent(chcol.parent());
       _stResult._tseed._t0          = tclust._t0;
       _stResult._tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
       
@@ -260,18 +260,14 @@ namespace mu2e{
            XYZVec first, last;       
 
 	     for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) {  
-	        cout<<"Size of chHits in Order func. "<<_stResult._chHitsToProcess.size()<<endl;
            	std::vector<StrawDigiIndex> shids;  
            	std::vector<StrawHitIndex> shitids;          	
            	ComboHit const& chit = _stResult._chHitsToProcess.at(ich);
-           	Straw const& straw = _tfit._tracker->getStraw(chit.strawId()); 
-           	_stResult._tseed._straws.push_back(straw);//TODO only half filled - why?
            	
            	if (chit.nCombo() >  chit.nStrawHits() ) continue;
            	
                 _stResult._chHitsToProcess.fillStrawDigiIndices(event,ich,shids);    
-                _stResult._chHitsToProcess.fillStrawHitIndices(event, ich,shitids);
-                      
+                _stResult._chHitsToProcess.fillStrawHitIndices(event, ich,shitids);  
                 _stResult._tseed._strawHitIdxs.push_back(ich);
                 
                 StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);              
@@ -283,7 +279,7 @@ namespace mu2e{
 			last = _tfit.MCFinalHit(mcd1); 	
 		} 
 		
-		for(auto const& ids : shitids){ //TODO: switch to using these
+		for(auto const& ids : shitids){ 
 			size_t    istraw   = (ids);
 		     	TrkStrawHitSeed tshs;
 		     	tshs._index  = istraw;
@@ -292,12 +288,8 @@ namespace mu2e{
 	     	}
 	     }
 	     _tfit.MCDirection(first, last, _stResult);
-	    
-
 	     }
-	     
-	  
-	  
+
      ostringstream title;
      title << "Run: " << event.id().run()
      << "  Subrun: " << event.id().subRun()
@@ -305,36 +297,50 @@ namespace mu2e{
      _data.nseeds += 1;
      _tfit.BeginFit(title.str().c_str(), _stResult, _data);
 
-     
       if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackConverged) && _stResult._tseed._track.converged == true ) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
-	      fillGoodHits(_stResult);//add
+	       
+	      fillGoodHits(_stResult);
+	      
 	      CosmicTrackFinderData tmpResult(_stResult);
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
               
-		      fillGoodHits(tmpResult);
-		      if(_stResult._tseed._track.converged == false) continue;
-		      _tfit.DriftFit(_stResult);
-		      
+		      //fillGoodHits(tmpResult);
+		      std::vector<uint16_t> chindices;
+		      if(tmpResult._tseed._track.converged == false) continue;
+		      for(size_t ich= 0; ich<tmpResult._chHitsToProcess.size(); ich++) { //TODO chcol?? 
+		   	 chindices.push_back(ich);
+	              }
+	              //get list of indices to straw level combohits
+	              std::vector<ComboHitCollection::const_iterator> chids;  
+		      tmpResult._chHitsToProcess.fillComboHits(event, chindices, chids); 
+		      std::vector<ComboHitCollection::const_iterator> StrawLevelCHitIndices = chids;
+		      for (auto const& it : chids){
+		      	 //it = "_normal_iterator<const mu2e::ComboHit*, std::vector<mu2e::ComboHit> >"
+		      	  const mu2e::ComboHit chit = it[0];
+		      	  tmpResult._tseed._straw_chits.push_back(chit);
+		      	  Straw const& straw = _tfit._tracker->getStraw(chit.strawId()); 
+           		  tmpResult._tseed._straws.push_back(straw);
+           		  
+	      	      }
+	              //Pass straw hits to the drift fit for ambig resolution:
+		      _tfit.DriftFit(tmpResult);
+		      //Add tmp to seed list:
 		      track_seed_vec.push_back(tmpResult._tseed);
-		      //if (_diag > 1) {
-	      		//fillPluginDiag(tmpResult);
-	    	      //}
+		     
 		      CosmicTrackSeedCollection* col = seed_col.get();
 		      
 		      if (track_seed_vec.size() == 0)     continue;
 		      col->push_back(tmpResult._tseed);                 
               }
-      }
-    
+        }
     }
   event.put(std::move(seed_col));    
-   _hmanager->fillHistograms(&_data);//if (_diag > 0 )
+  if (_diag > 0 ) _hmanager->fillHistograms(&_data);
   
-  }//end produce
- 
-  
+  }
+
   void CosmicTrackFinder::fillGoodHits(CosmicTrackFinderData& trackData){
     if (_debug != 0) {
 	std::cout<<"Filling good hits..."<<std::endl;
@@ -346,7 +352,7 @@ namespace mu2e{
       if (hit->_flag.hasAnyProperty(_outlier))     continue;
       
       ComboHit                thit(*hit);					
-      trackData._tseed._thits.push_back(thit);
+      trackData._tseed._panel_hits.push_back(thit);
     }
   }
 
@@ -397,7 +403,7 @@ namespace mu2e{
   
   void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
  
-    int nhits          = trackData._tseed._thits.size();
+    int nhits          = trackData._tseed._panel_hits.size();
     //int loc = _data.nseeds;
    
     _data.ntclhits = trackData._timeCluster->hits().size();
@@ -422,7 +428,7 @@ namespace mu2e{
 int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol){
     int   nhits         = TCluster.nhits();
     int   ngoodhits(0);
-    double     minT(500.), maxT(2000.);// TODO: Check Where do these come from?
+    double     minT(500.), maxT(2000.);
     for (int i=0; i<nhits; ++i){
       int          index   = TCluster.hits().at(i);
       ComboHit     sh      = chcol.at(index); 

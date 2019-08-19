@@ -43,26 +43,26 @@ namespace mu2e
     Hep3Vector const& wiredir = straw.getDirection();
     Hep3Vector const& mid = straw.getMidPoint();
     // cache the propagation velocity: this depends just on the pulseheight
-    std::cout<<" in TrkStrawHit "<<std::endl;
+    
     _vprop = 2.0*_strawResponse->halfPropV(_combohit.strawId(),1000.0*_combohit.energyDep()); // edep in KeV, FIXME!
     // initialize wire position using time difference
     _wpos = mid +_combohit.wireDist()*wiredir;
-    std::cout<<"wpos "<<_wpos<<std::endl;
+    
 // the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
 // ugly conversion to HepPoint FIXME!
-    std::cout<<"traj "<<std::endl;
+   
     _hittraj = new TrkLineTraj(HepPoint(mid.x(),mid.y(),mid.z()),wiredir,
       timeDiffDist()-timeDiffDistErr(),
       timeDiffDist()+timeDiffDistErr());
-    std::cout<<"hit/ flt "<<timeDiffDist()<<" "<<fltlen<<std::endl;
+    
     setHitLen(timeDiffDist());
     setFltLen(fltlen);
 // update electroncs signal propagation time
-std::cout<<"signal "<<std::endl;
+
     updateSignalTime();
 // compute initial hit t0 and drift
 //    updateHitT0(hitt0);
-std::cout<<"times "<<std::endl;
+
     setHitT0(hitt0);
     setHitRms(1.e-6);   // to make sure that the print routine bomb if called from SeedFit
     setActivity(true);

@@ -21,7 +21,7 @@ XYZVec ConvertToXYZ(Hep3Vector vec1){
 	return XYZ;
 
 }
-//overload
+
 XYZVec ConvertToXYZ(HepPoint vec1){
 	XYZVec XYZ(vec1.x(), vec1.y(), vec1.z());
 	return XYZ;

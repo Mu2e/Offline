@@ -37,17 +37,18 @@ using namespace mu2e;
 namespace LiklihoodFunctions{
         
 	EndResult DoFit(CosmicTrackSeed trackseed , StrawResponse srep){
-	
+	  cout<<"================= New End Result==========="<<endl;
 	  std::vector<double> errors(5,0);
 	  std::vector<double> seed(5,0);
 
-	  EndResult endresult;//best, best_errors
+	  EndResult endresult;
 	  CosmicTrack cosmictrack = trackseed._track;
-	  seed[0] = trackseed._track.FitParams.A0;//10;a0
-	  seed[1] = trackseed._track.FitParams.A1;//1;a1
-	  seed[2] = trackseed._track.FitParams.B0;//b0
-	  seed[3] = trackseed._track.FitParams.B1;//b1
-	  seed[4] = trackseed._t0.t0(); //t0
+	  seed[0] = trackseed._track.FitParams.A0;
+	  seed[1] = trackseed._track.FitParams.A1;
+	  seed[2] = trackseed._track.FitParams.B0;
+	  seed[3] = trackseed._track.FitParams.B1;
+	  seed[4] = trackseed._t0.t0();
+	   
 	  errors[0] = trackseed._track.FitParams.Covarience.sigA0;
 	  errors[1] = trackseed._track.FitParams.Covarience.sigA1;
 	  errors[2] = trackseed._track.FitParams.Covarience.sigB0;
@@ -56,9 +57,9 @@ namespace LiklihoodFunctions{
 	 
 	  std::vector<double> constraint_means(5,0);
 	  std::vector<double> constraints(5,0);
-	 
-          TimePDFFit fit(trackseed.hits(), trackseed._straws, srep, cosmictrack, constraint_means,constraints,1);
-          //PDFFit fit(trackseed.hits(), trackseed._straws, srep, constraint_means,constraints,1);
+	  cout<<"Seeds in "<<seed[0]<<" "<<seed[1]<<" "<<seed[2]<<" "<<seed[3]<<endl;
+          TimePDFFit fit(trackseed._straw_chits, trackseed._straws, srep, cosmictrack, constraint_means,constraints,1);
+        
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
 	  ROOT::Minuit2::MnUserParameters params(seed,errors);
 	  ROOT::Minuit2::MnMigrad migrad(fit,params,mnStrategy);
@@ -68,9 +69,9 @@ namespace LiklihoodFunctions{
 	  migrad.SetLimits((unsigned) 2, -1500,1500);
 	  migrad.SetLimits((unsigned) 3,-1,1);
 	  migrad.Fix((unsigned) 4); 
-	  //int maxfcn = 10;
-	  //double tolerance = 1.;
-	  ROOT::Minuit2::FunctionMinimum min = migrad();//maxfcn, tolerance);
+	  int maxfcn = 400;
+	  double tolerance = 1.;
+	  ROOT::Minuit2::FunctionMinimum min = migrad(maxfcn, tolerance);
 	  
 	  ROOT::Minuit2::MnUserParameters results = min.UserParameters();
 	  
@@ -87,20 +88,27 @@ namespace LiklihoodFunctions{
 	  //add best fit results to approprtiate name element:
 	  std::cout << "NLL: " << minval << std::endl;
 	  cout<<"Is Valid: "<<min.IsValid()<<"N calls "<<min.NFcn()<<endl;
+	  double dif = 0;
 	  for (size_t i=0;i<endresult.names.size();i++){
+	    dif +=abs(endresult.bestfit[i] - seed[i]);
 	    std::cout << i << endresult.names[i] << " : " << endresult.bestfit[i] << " +- " << endresult.bestfiterrors[i] << std::endl;
 	  }
-	  std::cout <<"Seeds : "<<seed[0]<<"  "<<seed[1]<<"  " <<seed[2]<<" "<<seed[3]<<std::endl;
-	  if(min.IsValid()){ cosmictrack.minuit_converged = true;}
-	  
-	  
-	  for(size_t i = 0; i< trackseed.hits().size(); i++){
+	  cout<<"Seeds out "<<seed[0]<<" "<<seed[1]<<" "<<seed[2]<<" "<<seed[3]<<endl;
+	  cout<<"diff sum "<<dif<<endl;
+	  //if(min.IsValid()){ cosmictrack.minuit_converged = true;}
+	  for(size_t i = 0; i< trackseed._straws.size(); i++){
 	      //if(cosmictrack.minuit_converged == false) continue;
-	      double doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed.hits()[i]);
-	      trackseed._track.DriftDiag.EndDOCAs.push_back(doca);
+	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3], trackseed._straw_chits[i]);
+	      double start_time_residual = fit.TimeResidual(trackseed._straws[i], start_doca,  srep, seed[4], trackseed._straw_chits[i]);
+	      endresult.StartDOCAs.push_back(start_doca);
+	      endresult.StartTimeResiduals.push_back(start_time_residual);
+	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
+	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
+	      endresult.EndTimeResiduals.push_back(end_time_residual);
+	      endresult.EndDOCAs.push_back(end_doca);
+	     
 	  }
-	 
-	  trackseed._track = cosmictrack;
+	  
 	 return endresult;
  
   }

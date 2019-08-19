@@ -185,7 +185,7 @@ namespace mu2e {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-// already at lowest level: just translate indices to pointers
+    // already at lowest level: just translate indices to pointers
       for(auto index : indices)
 	iters.push_back(std::next(begin(),index));
     }

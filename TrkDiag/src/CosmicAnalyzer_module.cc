@@ -139,6 +139,9 @@ namespace mu2e
       //Drift diags:
       TH1F* _EndDOCAs;
       TH1F* _EndTimeResiduals;
+      TH1F* _StartTimeResiduals;
+      TH1F* _StartDOCAs;
+   
       // add event id
       Int_t _evt; 
 
@@ -249,10 +252,8 @@ namespace mu2e
 	_niters->GetXaxis()->SetTitle("Number of Iterations Unitl Converged");
 	_niters->SetStats();
 	
-	
 	_mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.141529,3.141529);
 	_mc_phi_angle->GetXaxis()->SetTitle("#phi_{true, fit} [rad]");
-	
 	
 	_reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,3.141529);
 	_reco_phi_angle->GetXaxis()->SetTitle("#phi_{reco} [rad]");
@@ -431,19 +432,27 @@ namespace mu2e
 	_total_residualsY_Minuit->GetXaxis()->SetTitle("Minuit Res. Y'' [mm]");
 	_total_residualsY_Minuit->SetStats();
 	
-	_EndDOCAs = tfs->make<TH1F>("Final DOCAs ","Final DOCAs" ,100,-10,10);
+	_EndDOCAs = tfs->make<TH1F>("Final DOCAs ","Final DOCAs" ,100,-3,3);
 	_EndDOCAs->GetXaxis()->SetTitle("Final DOCAs [mm]");
 	_EndDOCAs->SetStats();
+	
+	_StartDOCAs = tfs->make<TH1F>("Initial DOCAs ","InitialDOCAs" ,100,-3,3);
+	_StartDOCAs->GetXaxis()->SetTitle("Initial DOCAs [mm]");
+	_StartDOCAs->SetStats();
        
-        _EndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,100,-100,100);
+        _EndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,100,0,100);
 	_EndTimeResiduals->GetXaxis()->SetTitle("Final Time Res [ns]");
 	_EndTimeResiduals->SetStats();
+	
+	_StartTimeResiduals = tfs->make<TH1F>("Start Time Res ","Start Time Resid" ,100,0,100);
+	_StartTimeResiduals->GetXaxis()->SetTitle("Start Time Res [ns]");
+	_StartTimeResiduals->SetStats();
 	
 	_A0MinuitDiff = tfs->make<TH1F>(" A0 Minuit Diff "," A0 Minuit Diff" ,100,-100,100);
 	_A0MinuitDiff->GetXaxis()->SetTitle("#Delta A0 [ns]");
 	_A0MinuitDiff->SetStats();
 	
-	_A1MinuitDiff = tfs->make<TH1F>(" A1 Minuit Diff "," A1 Minuit Diff" ,100,-10,10);
+	_A1MinuitDiff = tfs->make<TH1F>(" A1 Minuit Diff "," A1 Minuit Diff" ,100,-3,3);
 	_A1MinuitDiff->GetXaxis()->SetTitle("#Delta A1 [ns]");
 	_A1MinuitDiff->SetStats();
 	
@@ -451,7 +460,7 @@ namespace mu2e
 	_B0MinuitDiff->GetXaxis()->SetTitle("#Delta B0 [ns]");
 	_B0MinuitDiff->SetStats();
 	
-	_B1MinuitDiff = tfs->make<TH1F>(" B1 Minuit Diff "," B1 Minuit Diff" ,100,-10,10);
+	_B1MinuitDiff = tfs->make<TH1F>(" B1 Minuit Diff "," B1 Minuit Diff" ,100,-3,3);
 	_B1MinuitDiff->GetXaxis()->SetTitle("#Delta B1 [ns]");
 	_B1MinuitDiff->SetStats();
         }
@@ -539,12 +548,12 @@ namespace mu2e
                 _reco_phi_angle->Fill(st.get_fit_phi()); 
 		_niters->Fill(st.get_iter()); 
 		
-		if(st.minuit_converged == true){
+		//if(st.minuit_converged == true){
 		  _A0MinuitDiff->Fill(st.MinuitFitParams.A0-st.FitParams.A0);
 		  _A1MinuitDiff->Fill(st.MinuitFitParams.A1-st.FitParams.A1);
 		  _B0MinuitDiff->Fill(st.MinuitFitParams.B0-st.FitParams.B0);
 		  _B1MinuitDiff->Fill(st.MinuitFitParams.B1-st.FitParams.B1);
-		}
+		//}
                 for(size_t i=0; i< st.Diag.InitErrTot.size();i++){
 		    _InitErrTot->Fill(st.Diag.InitErrTot[i]); 
                     _total_residualsX_init->Fill(st.Diag.InitialResidualsX[i]);             
@@ -556,7 +565,7 @@ namespace mu2e
 	        }
                 //-----------Fill Hist Details:----------//
 		for(size_t i=0; i< st.Diag.FinalErrTot.size();i++){
-		    cout<<st.Diag.FinalResidualsX[i]<<endl;
+		    
 		    _FinalErrTot->Fill(st.Diag.FinalErrTot[i]);
                     _total_residualsX_final->Fill(st.Diag.FinalResidualsX[i]);          
 	            _total_pullsX_final->Fill(st.Diag.FinalResidualsX[i]/st.Diag.FinalErrX[i]);
@@ -571,8 +580,8 @@ namespace mu2e
 	            _total_residualsY_Minuit->Fill(st.DriftDiag.FinalResidualsY[i]);
 	        }
 	        for(size_t i=0; i<st.DriftDiag.EndDOCAs.size();i++){
-	            //_StartDOCAS->Fill(st.DriftDiag.StartDOCAs[i]);
-	            //_StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
+	            _StartDOCAs->Fill(st.DriftDiag.StartDOCAs[i]);
+	            _StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
 	            _EndDOCAs->Fill(st.DriftDiag.EndDOCAs[i]);
 	            _EndTimeResiduals->Fill(st.DriftDiag.EndTimeResiduals[i]);
 	        }

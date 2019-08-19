@@ -32,6 +32,11 @@ struct EndResult{
 		std::vector<std::string> names;
 		std::vector<double> bestfit;
 		std::vector<double> bestfiterrors;
+		std::vector<double> StartDOCAs;
+		std::vector<double> StartTimeResiduals;
+		std::vector<double> EndDOCAs;
+		std::vector<double> EndTimeResiduals;
+		
 	
 };
 

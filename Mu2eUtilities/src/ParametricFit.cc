@@ -278,13 +278,11 @@ double GetGlobalChi2(double a0, double a1, double b0, double b1, XYZVec prime_po
 	
 
 double GetResidualX(double A0, double A1 ,XYZVec point_prime){
-        
 	double resid_x = point_prime.x() - A0 - A1*(point_prime.z());	
 	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));	
 }
 
 double GetResidualY( double B0, double B1,  XYZVec point_prime){
-	
 	double resid_y = point_prime.y() - B0 -(B1*point_prime.z());
 	return resid_y;
 }

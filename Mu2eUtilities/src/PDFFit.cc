@@ -45,11 +45,10 @@ float strawradius = 2.5; //2.5 mm in mm
 
 double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
 	TrkPoca poca = DriftFitUtils::GetPOCA(straw, a0,a1,b0,b1, chit);
-	
 	return poca.doca();
 }
 double TimePDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 ,  ComboHit hit)const{
-
+        cout<<"getting time residuals "<<endl;
 	//double tres = t0 - doca/0.0625;
 	double tres = DriftFitUtils::TimeResidual( straw, doca, srep, t0, hit);
 	return tres;
@@ -57,12 +56,12 @@ double TimePDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, do
 
 double PDFFit::calculate_DOCA(Straw const& straw, double a0,  double a1, double b0,double b1, ComboHit chit)const{
 	TrkPoca poca = DriftFitUtils::GetPOCA(straw, a0,a1,b0,b1, chit);
-	
 	return poca.doca();
 }
 double PDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 , ComboHit hit)const{
 
 	//double tres = t0 - doca/0.0625;
+	
 	double tres = DriftFitUtils::TimeResidualTrans( straw, doca, srep, t0, hit);
 	return tres;
 }
@@ -73,21 +72,18 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   double a1 = x[1];
   double b0 = x[2];
   double b1 = x[3];
-  double t0 = x[4]; 
+  double t0 = x[4]; //T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit)
   double llike = 0;
-  std::vector<double> tmp;
+  
   std::cout<<"In: a0 "<<a0<<" a1 "<<a1<<" b0 "<<b0<<" b1 "<<b1<<" t0 "<<t0<<std::endl;
   for (size_t i=0;i<this->straws.size();i++){
-      double doca = calculate_DOCA(this->straws[i], a0, a1,b0,b1,chits[i]);
-      
+      double doca = calculate_DOCA(this->straws[i], a0, a1,b0,b1,chits[i]);   
       if(doca < this->doca_min || doca > this->doca_max) continue; 
-      tmp.push_back(doca);
-      XYZVec NewDirection(a1,b1, 1);
-      NewDirection = NewDirection.Unit();
-  
+      cout<<"DOCA "<<doca<<endl;
       double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
       double pdf_t =1/sqrt(2*TMath::Pi()*sigma*sigma) * exp(-(time_residual*time_residual)/(2*sigma*sigma));
       llike -=log(pdf_t);
+      t0 += time_residual/this->straws.size();
   }
 
   for (int i=0;i<this->nparams;i++){
@@ -113,7 +109,6 @@ double PDFFit::operator() (const std::vector<double> &x) const
       
       std::vector<double> ErrorsXY = DriftFitUtils::UpdateErrors(a0, a1, b0, b1,  chits[i]);
       double doca = calculate_DOCA(this->straws[i], a0, a1,b0,b1,chits[i]);
-      std::cout<<"DOCA"<<doca<<std::endl;
       
       if(fabs(doca) > this->doca_max) continue;
       double time_residual = this->TimeResidual(this->straws[i], doca,this->srep, t0, this->chits[i]);
@@ -130,7 +125,6 @@ double PDFFit::operator() (const std::vector<double> &x) const
       llike += pow((x[i]-this->constraint_means[i])/this->constraints[i],2);
     }
   }
-   std::cout<<"a0 "<<a0<<" a1 "<<a1<<" b0 "<<b0<<" b1 "<<b1<<" t0 "<<t0<<std::endl;
- 
+
   return llike;
 }
