@@ -20,6 +20,8 @@
 //G4 includes
 #include "G4Timer.hh"
 //#include "G4Event.hh"
+#include "G4SDManager.hh"
+#include "G4EventManager.hh"
 
 //art includes
 #include "canvas/Utilities/InputTag.h"
@@ -66,11 +68,13 @@ namespace mu2e {
         _artEvent(),
         _g4InternalFiltering(pset.get<bool>("G4InteralFiltering",false))
         {
-            /*if (G4Threading::G4GetThreadId()<= 0){
+            if (G4Threading::G4GetThreadId()<= 0){
                 std::cout << "From EventAction" << std::endl;
                 G4SDManager* SDman = G4SDManager::GetSDMpointer();
                 SDman->ListTree();
-            }*/
+            }
+            
+            G4EventManager::GetEventManager()->SetVerboseLevel(2);
         }
     
 Mu2eG4EventAction::~Mu2eG4EventAction()
@@ -199,11 +203,14 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         
         perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
         
+        std::cout << "Got to ptX IN EVENTACTION" << std::endl;
+        
         _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
         _stackingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
         _steppingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
         _commonCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
         
+        std::cout << "Got to ptY IN EVENTACTION" << std::endl;
         
         //OLD SCHOOL
         //_artEvent->put(move(g4stat));
@@ -248,6 +255,9 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         _steppingCuts->deleteCutsData();
         _commonCuts->deleteCutsData();
         }//else put NULL ptrs into the stash
+    
+    std::cout << "Got to ptZ IN EVENTACTION" << std::endl;
+    
     
 }//EndOfEventAction
     
