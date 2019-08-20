@@ -22,8 +22,6 @@ namespace G4 {class G4VUserPhysicsList;}
 
 namespace mu2e {
     
-    
-    //class PhysicalVolumeHelper;
     class Mu2eG4MasterRunAction;
 
   
@@ -38,13 +36,12 @@ namespace mu2e {
     
     //we need our own versions of these functions in order to correctly control the event loop
     void initializeG4(int art_runnumber);
-    void InitializeKernelAndRM();
-    void DeclarePhysicsAndGeometry();
+    void initializeKernelAndRM();
+    void declarePhysicsAndGeometry();
     void initializeMasterRunAction();
     void stopG4();
     void terminateRun();
-    
-    void Mu2eG4RunTermination();
+    void mu2eG4RunTermination();
         
     void Test_Func(int in);
         
@@ -64,15 +61,12 @@ namespace mu2e {
     static Mu2eG4MTRunManager* fMu2eMasterRM;
         
     fhicl::ParameterSet pset_;
-        
-    //G4MTRunManagerKernel* MTkernel;
-        
+            
     bool m_managerInitialized;
     bool m_runTerminated;
         
     PhysicalVolumeHelper* physVolHelper_;
     SensitiveDetectorHelper sensitiveDetectorHelper_;
-        
     Mu2eG4MasterRunAction* masterRunAction_;
     G4VUserPhysicsList* physicsList_;
         

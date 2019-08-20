@@ -41,6 +41,8 @@
 #include "G4VPhysicalVolume.hh"
 #include "G4TransportationManager.hh"
 #include "G4VUserPhysicsList.hh"
+#include "G4ParallelWorldProcessStore.hh"
+#include "G4MTHepRandom.hh"
 
 //Other includes
 #include "CLHEP/Random/JamesRandom.h"
@@ -62,8 +64,6 @@ namespace {
 }
 
 namespace mu2e {
-    
-//thread_local Mu2eG4PerThreadStorage* Mu2eG4WorkerRunManager::PerThreadObjects_{nullptr};
     
     
 // If the c'tor is called a second time, the c'tor of base will
@@ -88,9 +88,7 @@ Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset):
     steppingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut",fhicl::ParameterSet()), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_))
 {
-    SetVerboseLevel(2);
-    
-    
+    //SetVerboseLevel(2);
 }
   
 // Destructor of base is called automatically.  No need to do anything.
@@ -103,7 +101,6 @@ void Mu2eG4WorkerRunManager::initializePTS(Mu2eG4PerThreadStorage* pls){
 
     perThreadObjects_ = pls;
     threadID_ = getThreadIndex();
-        
     std::cerr << "WorkerRM PLS " << threadID_ << " is Initialized!!\n";
         
 }
@@ -122,17 +119,17 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     const CLHEP::HepRandomEngine* masterEngine = masterRM->getMasterRandomEngine();
     masterRM->GetUserWorkerThreadInitialization()->SetupRNGEngine(masterEngine);
     
-    //if(masterRM->GetUserWorkerInitialization())
-    if(m_userWorkerInit)
-    {
-        //we don't have one of these
-        //perThreadObjects_->workerInit = new Mu2eG4WorkerInitialization(pset_);
-        //perThreadObjects_->workerInit->WorkerInitialize();
-    }
-
     //perThreadObjects_->UserActionInit->InitializeSteppingVerbose()
     if(m_steppingVerbose) {
-        if(perThreadObjects_->steppingVerbose){std::cout << "WE HAVE STEPV1" << std::endl;}
+        
+        
+        //if(masterRM->GetUserActionInitialization())
+        //{
+        //    G4VSteppingVerbose* sv = masterRM->GetUserActionInitialization()->InitializeSteppingVerbose();
+        //    if ( sv ) { G4VSteppingVerbose::SetInstance(sv); }
+        //}
+        
+        //if(perThreadObjects_->steppingVerbose){std::cout << "WE HAVE STEPV1" << std::endl;}
         if(G4VSteppingVerbose::GetInstance()){std::cout << "WE HAVE STEPV2" << std::endl;}
             //WE CANNOT INSTANTIATE THIS ONE RIGHT NOW SINCE WE ALREADY HAVE ONE
             //perThreadObjects_->steppingVerbose = new SteppingVerbose();
@@ -141,28 +138,27 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
             //    SteppingVerbose::SetInstance(sv);
     }
     
+
+    
     // Initialize worker part of shared resources (geometry, physics)
     G4WorkerThread::BuildGeometryAndPhysicsVector();
 
     // Create unique_ptr to worker run manager
-    //perThreadObjects_->kernel.reset(G4WorkerRunManagerKernel::GetRunManagerKernel());
-    //if (!perThreadObjects_->kernel) {
-    //    perThreadObjects_->kernel.reset(new G4WorkerRunManagerKernel());
-    //}
-    perThreadObjects_->kernel = G4WorkerRunManagerKernel::GetRunManagerKernel();
-    if (!perThreadObjects_->kernel) {
-        std::cout << "Making a NEW kernel" << std::endl;
-        perThreadObjects_->kernel = new G4WorkerRunManagerKernel();
-    }
+//    perThreadObjects_->kernel = G4WorkerRunManagerKernel::GetRunManagerKernel();
+//    if (!perThreadObjects_->kernel) {
+//        std::cout << "Making a NEW kernel" << std::endl;
+//        perThreadObjects_->kernel = new G4WorkerRunManagerKernel();
+//    }
   
         
     // Set the geometry for the worker, share from master
     //This stuff happens in this call: localRM->Initialize();
+    //WHAT IF CALLED wrm->Initialze();?
  
     //G4RunManagerKernel* masterKernel = G4MTRunManager::GetMasterRunManagerKernel();
     //G4VPhysicalVolume* worldPV = masterKernel->GetCurrentWorld();
     G4VPhysicalVolume* worldPV = G4MTRunManager::GetMasterRunManagerKernel()->GetCurrentWorld();
-    perThreadObjects_->kernel->WorkerDefineWorldVolume(worldPV);
+    kernel->WorkerDefineWorldVolume(worldPV);
         
     //G4TransportationManager* tM = G4TransportationManager::GetTransportationManager();
     //tM->SetWorldForTracking(worldPV);
@@ -181,18 +177,16 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     std::cout << "WorkerRunManager initializing the PhysicsList" << std::endl;
     physicsList = const_cast<G4VUserPhysicsList*>(masterRM->GetUserPhysicsList());
     SetUserInitialization(physicsList);
-    //const G4VUserPhysicsList* workerPhysicsList = masterRM->GetUserPhysicsList();
-    //SetUserInitialization(const_cast<G4VUserPhysicsList*>(workerPhysicsList));
     
-    //these two calls made in SetUserInit when called by workerRM
-    //const_cast<G4VUserPhysicsList*>(perThreadObjects_->physicsList)->InitializeWorker();
-    //perThreadObjects_->kernel->SetPhysics( const_cast<G4VUserPhysicsList*>(perThreadObjects_->physicsList) );
+  
     
     //these called in G4RunManager::InitializePhysics()
     G4StateManager::GetStateManager()->SetNewState(G4State_Init);
-    perThreadObjects_->kernel->InitializePhysics();
- 
-    const bool kernelInit = perThreadObjects_->kernel->RunInitialization();
+    kernel->InitializePhysics();
+    
+    //WHY IS THIS DONE HERE???????????????????????????
+    
+    const bool kernelInit = kernel->RunInitialization();
     if (!kernelInit) {
         throw cet::exception("WorkerRUNMANAGER")
         << "Error: WorkerRunManager Geant4 kernel initialization failed!\n";
@@ -220,8 +214,8 @@ void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_i
         
     std::cout << "We are in WorkerRM::InitializeUserActions on thread " << threadID_ << std::endl;
     
-    genAction_ = new PrimaryGeneratorAction(pset_, perThreadObjects_);
-    SetUserAction(genAction_);
+    userPrimaryGeneratorAction = new PrimaryGeneratorAction(pset_, perThreadObjects_);
+    SetUserAction(userPrimaryGeneratorAction);
     
     steppingAction_ = new Mu2eG4SteppingAction(pset_,
                                                pset_.get<std::vector<double> >("SDConfig.TimeVD.times"),
@@ -273,8 +267,72 @@ void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_i
 
 void Mu2eG4WorkerRunManager::initializeRun(art::Event* art_event){
     
-    //NOTE: we may need to add some more functionality here
     
+    if (art_event->id().run() != perThreadObjects_->currentRunNumber) {
+        if (perThreadObjects_->currentRunNumber != 0 && !perThreadObjects_->runTerminated) {
+            //terminateRun();
+            throw cet::exception("WorkerRUNMANAGER") << "Error: There is a problem with Run Numbering\n";
+        }
+    
+        
+    //following taken from G4WorkerRunManager::RunInitialization()
+    fakeRun = false;
+    if(!(kernel->RunInitialization(fakeRun))) return;
+
+    runAborted = false;
+    numberOfEventProcessed = 0;
+
+    CleanUpPreviousEvents();
+    if(currentRun) delete currentRun;
+    currentRun = 0;
+
+    if(fGeometryHasBeenDestroyed) G4ParallelWorldProcessStore::GetInstance()->UpdateWorlds();
+    if(userRunAction) currentRun = userRunAction->GenerateRun();
+
+    if(!currentRun) currentRun = new G4Run();
+    currentRun->SetRunID(runIDCounter);
+    currentRun->SetNumberOfEventToBeProcessed(numberOfEventToBeProcessed);
+    currentRun->SetDCtable(DCtable);
+    
+    G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
+    
+    if(fSDM) currentRun->SetHCtable(fSDM->GetHCtable());
+    
+    //AGAIN, WHAT LIBRARY?
+    //std::ostringstream oss;
+    //G4Random::saveFullState(oss);
+    //randomNumberStatusForThisRun = oss.str();
+    //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
+
+    for(G4int i_prev=0;i_prev<n_perviousEventsToBeStored;i_prev++) {
+        previousEvents->push_back((G4Event*)0);
+    }
+
+    if(printModulo>=0 || verboseLevel>0) {
+        G4cout << "### Run " << currentRun->GetRunID() << " starts." << G4endl;
+    }
+    
+    if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
+    
+    if(storeRandomNumberStatus) {
+        G4String fileN = "currentRun";
+        if ( rngStatusEventsFlag ) {
+            std::ostringstream os;
+            os << "run" << currentRun->GetRunID();
+            fileN = os.str();
+
+        }
+        StoreRNGStatus(fileN);
+    }
+    
+    }
+    
+    perThreadObjects_->currentRunNumber = art_event->id().run();
+/////////////////////////////////////////////
+    
+  
+    
+/*
     if (art_event->id().run() != perThreadObjects_->currentRunNumber) {
         if (perThreadObjects_->currentRunNumber != 0 && !perThreadObjects_->runTerminated) {
             //terminateRun();
@@ -293,7 +351,7 @@ void Mu2eG4WorkerRunManager::initializeRun(art::Event* art_event){
             
         perThreadObjects_->currentRunNumber = art_event->id().run();
     }
-    
+*/
         m_managerInitialized = true;
 }
 
@@ -306,14 +364,39 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     
     std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << threadID_ << std::endl;
     //RunInitialization();DONE ABOVE
+    //G4WorkerRunManager::DoEventLoop(1);DOESN'T WORK
+    
+    eventLoopOnGoing = true;
+    while(seedsQueue.size()>0)
+        { seedsQueue.pop(); }
+    // for each run, worker should receive at least one set of random number seeds.
+    runIsSeeded = false;
+    
+    eventLoopOnGoing = true;
+    
+    
+/*    G4int i_event = -1;
+    nevModulo = -1;
+    currEvID = -1;
+
+    while(eventLoopOnGoing) {
+        ProcessOneEvent(i_event);
+        
+        if(eventLoopOnGoing) {
+            TerminateOneEvent();
+            
+            if(runAborted)
+            { eventLoopOnGoing = false; }
+        }
+    }//while
+
+    TerminateEventLoop();
+*/
     
     ProcessOneEvent(event->id().event());
-    TerminateOneEvent();
+    //TerminateOneEvent();
     
-    //DoEventLoop(1);
-    //RunTermination();SKIP
-    
-    
+ 
     //_runManager->InitializeEventLoop(num_events,macroFile,n_select);
     //_timer->Start();
     //_runManager->ProcessOneEvent(eventNumber);

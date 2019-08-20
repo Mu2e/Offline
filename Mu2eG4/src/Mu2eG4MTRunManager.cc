@@ -88,62 +88,133 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
         if (m_managerInitialized) {
             std::cout << "Mu2eG4MTRunManager::initializeG4 was already done - exit";
             return;
-            }
+        }
+        
+        SetNumberOfThreads(1);
             
-            DeclarePhysicsAndGeometry();
+        declarePhysicsAndGeometry();
             
-            //Below here is similar to _runManager->RunInitialization();
-            InitializeKernelAndRM();        
-            initializeMasterRunAction();
+        //Below here is similar to _runManager->RunInitialization();
+        initializeKernelAndRM();
+        initializeMasterRunAction();
             
-            G4StateManager* stateManager = G4StateManager::GetStateManager();
-            G4String currentState = stateManager->GetStateString(stateManager->GetCurrentState());
-            std::cout << "Current G4State is : " << currentState << std::endl;
+        G4StateManager* stateManager = G4StateManager::GetStateManager();
+        G4String currentState = stateManager->GetStateString(stateManager->GetCurrentState());
+        std::cout << "Current G4State is : " << currentState << std::endl;
             
-            //G4Run* GetCurrentRun()
-            if (GetCurrentRun()) {
-                delete currentRun;
-            }
-            else
-            {
-                currentRun = new G4Run();
-                currentRun->SetRunID(art_runnumber);
-            }
+        if (GetCurrentRun()) {
+            delete currentRun;
+        }
+        else {
+            currentRun = new G4Run();
+            currentRun->SetRunID(art_runnumber);
+        }
             
-            std::cout << "Art Run Number is: " << art_runnumber << std::endl;
-            std::cout << "Current Run is " << GetCurrentRun()->GetRunID() << std::endl;
+        std::cout << "Art Run Number is: " << art_runnumber << std::endl;
+        std::cout << "Current Run is " << GetCurrentRun()->GetRunID() << std::endl;
             
-            //We don't need to do this here.  RunActions are owned by the worker threads
-            //m_userRunAction->BeginOfRunAction(m_currentRun);
-            //if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
+        //We don't need to do this here.  RunActions are owned by the worker threads
+        //m_userRunAction->BeginOfRunAction(m_currentRun);
+        //if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
             
-            currentRun->SetDCtable(DCtable);
-            G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
-            if(fSDM)
-                { currentRun->SetHCtable(fSDM->GetHCtable()); }
-            std::ostringstream oss;
-            //WHAT LIBRARY TO USE?
-            //G4Random::saveFullState(oss);
-            //randomNumberStatusForThisRun = oss.str();
-            //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
+        currentRun->SetDCtable(DCtable);
+        G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
+        if(fSDM)
+            { currentRun->SetHCtable(fSDM->GetHCtable()); }
+        std::ostringstream oss;
+        //WHAT LIBRARY TO USE?
+        //G4Random::saveFullState(oss);
+        //randomNumberStatusForThisRun = oss.str();
+        //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
         
             
-            if(storeRandomNumberStatus) {
+        if(storeRandomNumberStatus) {
             G4String fileN = "currentRun";
             if ( rngStatusEventsFlag ) {
                 std::ostringstream os;
                 os << "run" << currentRun->GetRunID();
                 fileN = os.str();
-                }
-            StoreRNGStatus(fileN);
             }
+            StoreRNGStatus(fileN);
+        }
+        
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+        //RANDOM NUMBER SEEDING: NEED TO FIGURE THIS OUT
+        //taken from G4MTRunManager::InitializeEventLoop()
+        int numevents = 1000;
+        int numworkers = 1;
+        SetNumberOfEventsToBeProcessed(numevents);
+        //numberOfEventToBeProcessed = 1000;//this needs to be filled from the # of events we are processing
+        numberOfEventProcessed = 0;
+        
+        nSeedsUsed = 0;
+        nSeedsFilled = 0;
+        
+        if(verboseLevel>0)
+        { timer->Start(); }
+   
+        //n_select_msg = -1;
+        //selectMacro = "";
+
+        //initialize seeds
+        //If user did not implement InitializeSeeds,
+        // use default: nSeedsPerEvent seeds per event
+        //eventModuloDef = 0 by default
+        if( eventModuloDef > 0 ) {
+            eventModulo = eventModuloDef;
+            if(eventModulo > numberOfEventToBeProcessed/numworkers) {
+                eventModulo = numberOfEventToBeProcessed/numworkers;
+                if(eventModulo<1) eventModulo =1;
+                
+                G4ExceptionDescription msgd;
+                msgd << "Event modulo is reduced to " << eventModulo
+                     << " to distribute events to all threads.";
+                G4Exception("G4MTRunManager::InitializeEventLoop()", "Run10035", JustWarning, msgd);
+            }
+        }
+        else {
+            eventModulo = int(std::sqrt(double(numberOfEventToBeProcessed/numworkers)));
+            if(eventModulo<1) eventModulo = 1;
+        }
+        
+        if ( InitializeSeeds(numevents) == false && numevents>0 ) {
+            
+            G4RNGHelper* helper = G4RNGHelper::GetInstance();
+            switch(seedOncePerCommunication)
+            {
+                case 0://default value
+                    nSeedsFilled = numevents;
+                    break;
+                case 1:
+                    nSeedsFilled = numworkers;
+                    break;
+                case 2:
+                    nSeedsFilled = numevents/eventModulo + 1;
+                    break;
+                default:
+                    G4ExceptionDescription msgd;
+                    msgd << "Parameter value <" << seedOncePerCommunication
+                         << "> of seedOncePerCommunication is invalid. It is reset to 0." ;
+                    G4Exception("G4MTRunManager::InitializeEventLoop()", "Run10036", JustWarning, msgd);
+                    seedOncePerCommunication = 0;
+                    nSeedsFilled = numevents;
+            }
+
+            // Generates up to nSeedsMax seed pairs only.
+            if(nSeedsFilled>nSeedsMax) nSeedsFilled=nSeedsMax;
+            const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
+            helper->Fill(randDbl,nSeedsFilled,numevents,nSeedsPerEvent);
+        }
+
+      
 
     }
     
     
 // this function is a protected member of G4MTRunManager but we need to access it
 // from Mu2eG4_module, so we must make it public here
-void Mu2eG4MTRunManager::InitializeKernelAndRM()
+void Mu2eG4MTRunManager::initializeKernelAndRM()
     {
         G4RunManager::Initialize();
         G4MTRunManager::GetMTMasterRunManagerKernel()->SetUpDecayChannels();//note, this is usually done in
@@ -171,7 +242,7 @@ void Mu2eG4MTRunManager::InitializeKernelAndRM()
         
     }
     
-void Mu2eG4MTRunManager::DeclarePhysicsAndGeometry()
+void Mu2eG4MTRunManager::declarePhysicsAndGeometry()
     {
         G4VUserDetectorConstruction* allMu2e;
         
@@ -264,7 +335,7 @@ void Mu2eG4MTRunManager::Test_Func(int in)
     //we need control of the event loop in order to correctly break up the stages
     //to fit within the art framework.  we were getting a hang using the G4MTRunManager
     //version of RunTermination due to the call of WaitForEndEventLoopWorkers()
-    void Mu2eG4MTRunManager::Mu2eG4RunTermination()
+    void Mu2eG4MTRunManager::mu2eG4RunTermination()
     {
         
         if ( verboseLevel > 0 ) {

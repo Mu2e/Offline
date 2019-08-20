@@ -10,7 +10,7 @@
 //
 
 //Mu2e includes
-#include "Mu2eG4/inc/SteppingVerbose.hh"
+//#include "Mu2eG4/inc/SteppingVerbose.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/Mu2eWorld.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
@@ -21,9 +21,9 @@
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 
 //G4 includes
-#include "G4WorkerRunManagerKernel.hh"
-#include "G4Run.hh"
-#include "G4VUserPhysicsList.hh"
+//#include "G4WorkerRunManagerKernel.hh"
+//#include "G4Run.hh"
+//#include "G4VUserPhysicsList.hh"
 
 //C++ includes
 #include <iostream>
@@ -160,18 +160,11 @@ struct Mu2eG4PerThreadStorage
 // run-level data members
     const fhicl::ParameterSet& pset_;
     int test_INT = 0;
-    
-    G4RunManagerKernel* kernel = nullptr;  //must be deleted last
-    //std::unique_ptr<G4WorkerRunManagerKernel> kernel;  //must be deleted last
-    SteppingVerbose* steppingVerbose = nullptr;
-    //WorldMaker<Mu2eWorld,ConstructMaterials>* userDetector = nullptr;
-    G4VUserPhysicsList* physList = nullptr;
-    G4Run* currentRun = nullptr;
     art::RunNumber_t currentRunNumber = 0;
+    
     //bool threadInitialized = false;
     bool runTerminated = false;
 
-    
 // event-level data members
     art::Event* artEvent = nullptr;
     SimParticleHelper* simParticleHelper = nullptr;
@@ -184,6 +177,15 @@ struct Mu2eG4PerThreadStorage
     std::unique_ptr<SimParticleCollection> simPartCollection = nullptr;
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > sensitiveDetectorSteps;
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > cutsSteps;
+    
+
+    //G4RunManagerKernel* kernel = nullptr;  //must be deleted last
+    //std::unique_ptr<G4WorkerRunManagerKernel> kernel;  //must be deleted last
+    //SteppingVerbose* steppingVerbose = nullptr;
+    //WorldMaker<Mu2eWorld,ConstructMaterials>* userDetector = nullptr;
+    //G4VUserPhysicsList* physList = nullptr;
+    //G4Run* currentRun = nullptr;
+    
     
     //std::unique_ptr<G4Event> currentEvent;
 /*    RandomNumberEngine
