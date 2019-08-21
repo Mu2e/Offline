@@ -5,7 +5,7 @@
 // class for the Mu2e G4 simulation for the Master Thread in MT mode.
 // This class is instantiated only in ActionInitialization::BuildForMaster()
 //
-// Author: Lisa Goodeough
+// Author: Lisa Goodenough
 // Date: 2017/08/07
 //
 //

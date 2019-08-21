@@ -27,7 +27,7 @@
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
 
 #include "Mu2eG4/inc/ActionInitialization.hh"
-#include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
+//#include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
@@ -255,7 +255,7 @@ void Mu2eG4MTRunManager::declarePhysicsAndGeometry()
             << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
         }
         
-        G4ThreeVector originInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld();
+        //G4ThreeVector originInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld();
         
         preG4InitializeTasks(pset_);
         
@@ -268,7 +268,7 @@ void Mu2eG4MTRunManager::declarePhysicsAndGeometry()
         
         SetUserInitialization(allMu2e);
         SetUserInitialization(physicsList_);
-        SetUserInitialization( new Mu2eG4WorkerInitialization(pset_) );//This is NEW code, not sure we need it.
+        //SetUserInitialization( new Mu2eG4WorkerInitialization(pset_) );//This is NEW code, not sure we need it.
         
         
         /*ActionInitialization* actionInit = new ActionInitialization(pset_,
