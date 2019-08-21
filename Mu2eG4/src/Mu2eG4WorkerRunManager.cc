@@ -17,7 +17,6 @@
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
-//#include "Mu2eG4/inc/ActionInitialization.hh"
 #include "Mu2eG4/inc/SteppingVerbose.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
@@ -29,9 +28,6 @@
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
-
-//C++ includes
-#include <atomic>
 
 //G4 includes
 #include "G4WorkerThread.hh"
@@ -179,13 +175,12 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     SetUserInitialization(physicsList);
     
   
-    
     //these called in G4RunManager::InitializePhysics()
+    
     G4StateManager::GetStateManager()->SetNewState(G4State_Init);
     kernel->InitializePhysics();
     
     //WHY IS THIS DONE HERE???????????????????????????
-    
     const bool kernelInit = kernel->RunInitialization();
     if (!kernelInit) {
         throw cet::exception("WorkerRUNMANAGER")
@@ -193,9 +188,9 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     }
     
     initializeUserActions(origin_in_world);
-        
-    if(masterRM->GetUserWorkerInitialization())
-        { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
+    
+    //if(masterRM->GetUserWorkerInitialization())
+    //    { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
         
     G4StateManager* stateManager = G4StateManager::GetStateManager();
     G4String currentState =  stateManager->GetStateString(stateManager->GetCurrentState());
@@ -206,7 +201,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     //we have to do this so that the state is correct for RunInitialization
     G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
     std::cout << "completed WorkerRM::initializeThread on thread " << threadID_ << std::endl;
-        
 }
     
    
@@ -373,25 +367,6 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     runIsSeeded = false;
     
     eventLoopOnGoing = true;
-    
-    
-/*    G4int i_event = -1;
-    nevModulo = -1;
-    currEvID = -1;
-
-    while(eventLoopOnGoing) {
-        ProcessOneEvent(i_event);
-        
-        if(eventLoopOnGoing) {
-            TerminateOneEvent();
-            
-            if(runAborted)
-            { eventLoopOnGoing = false; }
-        }
-    }//while
-
-    TerminateEventLoop();
-*/
     
     ProcessOneEvent(event->id().event());
     //TerminateOneEvent();
