@@ -8,7 +8,6 @@
 //G4 includes
 #include "G4VUserPhysicsList.hh"
 #include "G4RunManager.hh"
-#include "G4TransportationManager.hh"
 
 //art includes
 #include "fhiclcpp/ParameterSet.h"
@@ -34,37 +33,24 @@ Mu2eG4MasterRunAction::~Mu2eG4MasterRunAction()
     {}
 
 
-void Mu2eG4MasterRunAction::BeginOfRunAction(const G4Run* aRun)
-    {
-
-      if (pset_.get<int>("debug.diagLevel",0)>0) {
-        G4cout << "Mu2eG4MasterRunAction " << __func__ << " called " << G4endl;
-      }
-
-      // run managers are thread local
-      G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
-      G4TrackingManager* tm  = rmk->GetTrackingManager();
-      tm->SetVerboseLevel(pset_.get<int>("debug.trackingVerbosityLevel",0));
-      G4SteppingManager* sm  = tm->GetSteppingManager();
-      sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
-      G4Navigator* navigator =
-	G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-      navigator->CheckMode(pset_.get<bool>("debug.navigatorCheckMode",false));
-
-    //this class is ONLY called in MT mode
-    //we want these actions performed only in the Master thread
-    physVolHelper_->beginRun();//map w/~20,000 entries
-    
+void Mu2eG4MasterRunAction::BeginOfRunAction(const G4Run* aRun) {
+    //this can be called in ActionInitialization::BuildForMaster()
+    //however, for our version of MT running, we are not utilizing the ActionInitialization class
     }
     
     
-void Mu2eG4MasterRunAction::MasterBeginRunAction()
-    {
+void Mu2eG4MasterRunAction::MasterBeginRunAction() {
         
         if (pset_.get<int>("debug.diagLevel",0)>0) {
             G4cout << "Mu2eG4MasterRunAction " << __func__ << " called " << G4endl;
         }
-        
+    
+    //G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
+    //G4TrackingManager* tm  = rmk->GetTrackingManager();
+    //tm->SetVerboseLevel(pset_.get<int>("debug.trackingVerbosityLevel",0));
+    //G4SteppingManager* sm  = tm->GetSteppingManager();
+    //sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
+
         //this class is ONLY called in MT mode
         //we want these actions performed only in the Master thread
         physVolHelper_->beginRun();//map w/~20,000 entries

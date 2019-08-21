@@ -73,8 +73,8 @@ namespace mu2e {
                 G4SDManager* SDman = G4SDManager::GetSDMpointer();
                 SDman->ListTree();
             }
-            
-            G4EventManager::GetEventManager()->SetVerboseLevel(2);
+        
+            //G4EventManager::GetEventManager()->SetVerboseLevel(2);
         }
     
 Mu2eG4EventAction::~Mu2eG4EventAction()
@@ -83,9 +83,6 @@ Mu2eG4EventAction::~Mu2eG4EventAction()
 
 void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
     {
-
-        std::cerr << "We are in EVENTACTION:BeginOfEventAction!\n";
-        
         setEventData();
         
         _spHelper = perThreadObjects_->simParticleHelper;
@@ -199,43 +196,30 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
             
     if (event_passes) {
         std::cout << "IN EVENTACTION: THIS EVENT HAS PASSED!" << std::endl;
-        std::cout << "WE NEED TO PUT THE EVENT INFO INTO THE EVENT." << std::endl;
         
         perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
-        
-        std::cout << "Got to ptX IN EVENTACTION" << std::endl;
         
         _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
         _stackingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
         _steppingCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
         _commonCuts->insertCutsDataIntoPerThreadStorage(perThreadObjects_);
         
-        std::cout << "Got to ptY IN EVENTACTION" << std::endl;
-        
-        //OLD SCHOOL
-        //_artEvent->put(move(g4stat));
-        //_artEvent->put(move(simParticles));
-        //_sensitiveDetectorHelper.put(event);
-       
-        //NEW SCHOOL
-        
-/*        if(!timeVDtimes_.empty()) {
-            perThreadObjects_->insertTVDHits(eventNumberInProcess, std::move(tvdHits), _tvdOutputName.name());
+        if(!timeVDtimes_.empty()) {
+            perThreadObjects_->insertTVDHits(std::move(tvdHits), _tvdOutputName.name());
         }
         
         if(trajectoryControl_.produce()) {
-            perThreadObjects_->insertMCTrajectoryCollection(eventNumberInProcess, std::move(mcTrajectories));
+            perThreadObjects_->insertMCTrajectoryCollection(std::move(mcTrajectories));
         }
         
         if(multiStagePars_.multiStage()) {
-            perThreadObjects_->insertSimsRemapping(eventNumberInProcess, std::move(simsRemap));
+            perThreadObjects_->insertSimsRemapping(std::move(simsRemap));
         }
         
         if(_sensitiveDetectorHelper->extMonPixelsEnabled()) {
-            perThreadObjects_->insertExtMonFNALSimHits(eventNumberInProcess, std::move(extMonFNALHits));
+            perThreadObjects_->insertExtMonFNALSimHits(std::move(extMonFNALHits));
         }
- */
-                
+
     }//event_passes cuts
     else {
 
@@ -255,9 +239,6 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         _steppingCuts->deleteCutsData();
         _commonCuts->deleteCutsData();
         }//else put NULL ptrs into the stash
-    
-    std::cout << "Got to ptZ IN EVENTACTION" << std::endl;
-    
     
 }//EndOfEventAction
     

@@ -21,7 +21,6 @@
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
-#include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 
 
 //C++ includes
@@ -37,8 +36,7 @@ namespace mu2e {
     class SensitiveDetectorHelper;
     class IMu2eG4Cut;
     class PrimaryGeneratorAction;
-    class GenEventBroker;
-    class PerEventObjectsManager;
+    class Mu2eG4PerThreadStorage;
     class PhysicalVolumeHelper;
 
 
@@ -46,10 +44,12 @@ class ActionInitialization : public G4VUserActionInitialization
 {
   public:
     ActionInitialization(const fhicl::ParameterSet& pset,
-                         std::vector< SensitiveDetectorHelper> &sensitive_detectorhelper_vector,
-                         GenEventBroker* gen_eventbroker,
+                         ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
+                         SensitiveDetectorHelper* sensitive_detectorhelper,
+                         Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
-                         CLHEP::Hep3Vector const& origin_in_world
+                         CLHEP::Hep3Vector const& origin_in_world,
+                         unsigned stage_offset_for_tracking_action
                          );
 
     virtual ~ActionInitialization();
@@ -71,25 +71,22 @@ class ActionInitialization : public G4VUserActionInitialization
     Mu2eG4TrajectoryControl trajectoryControl_;
     SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
-    Mu2eG4ResourceLimits mu2elimits_;
+    Mu2eG4ResourceLimits mu2eLimits_;
 
+    ExtMonFNALPixelSD* extMonFNALPixelSD_;
 
-    std::vector < std::unique_ptr<IMu2eG4Cut> > stackingCutsVector;
-    std::vector < std::unique_ptr<IMu2eG4Cut> > steppingCutsVector;
-    std::vector < std::unique_ptr<IMu2eG4Cut> > commonCutsVector;
+    std::unique_ptr<IMu2eG4Cut> stackingCuts_;
+    std::unique_ptr<IMu2eG4Cut> steppingCuts_;
+    std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
-    GenEventBroker* _genEventBroker;
-    PhysicalVolumeHelper* _physVolHelper;
-
-    const bool use_G4MT_;
-    const int numthreads;
-    CLHEP::Hep3Vector const& originInWorld;
-    Mu2eG4MultiStageParameters multiStagePars_;
-
-    mutable std::vector< PerEventObjectsManager > perEvtObjManagerVector;
-    mutable std::vector< PhysicsProcessInfo > physicsProcessInfoVector;
-    std::vector< SensitiveDetectorHelper > &sensitiveDetectorHelperVector;
-
+    SensitiveDetectorHelper* sensitiveDetectorHelper_;
+    Mu2eG4PerThreadStorage*  perThreadStorage_;
+    PhysicalVolumeHelper* physVolHelper_;
+    
+    mutable PhysicsProcessInfo physicsProcessInfo_;
+    
+    CLHEP::Hep3Vector const& originInWorld_;
+    unsigned stageOffset_;
 };
 
 }  // end namespace mu2e

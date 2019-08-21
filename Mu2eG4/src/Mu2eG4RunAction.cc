@@ -19,7 +19,6 @@
 
 //G4 includes
 #include "G4RunManager.hh"
-#include "G4TransportationManager.hh"
 
 //CLHEP includes
 #include "CLHEP/Vector/ThreeVector.h"
@@ -64,9 +63,6 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
       tm->SetVerboseLevel(pset_.get<int>("debug.trackingVerbosityLevel",0));
       G4SteppingManager* sm  = tm->GetSteppingManager();
       sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
-      G4Navigator* navigator =
-	G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
-      navigator->CheckMode(pset_.get<bool>("debug.navigatorCheckMode",false));
 
 <<<<<<< HEAD
         if (use_G4MT_ == true){//MT mode
@@ -111,11 +107,7 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
             
       _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
       _steppingAction->beginRun( _processInfo, originInWorld );
-        
-        
       _steppingAction->finishConstruction();
-        //stackingCuts_->finishConstruction(originInWorld);
-        //commonCuts_->finishConstruction(originInWorld);
         
     }
     
