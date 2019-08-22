@@ -1,5 +1,5 @@
 generate_fcl --description CRY-cosmicMix --dsconf MDC2018i --dsowner mu2e --include JobConfig/mixing/CRY-cosmicMix.fcl \
---inputs=CRYcosmic.txt --merge-factor 5 --max-engines 30 \
+--inputs=CRYcosmic.txt --merge-factor 1 --max-engines 30 \
 --auxinput=3:physics.filters.ootMixerCRV.fileNames:oot-CRV-cat-cat.txt \
 --auxinput=1:physics.filters.neutronMixerCRV.fileNames:neutron-CRV-cat.txt \
 --auxinput=1:physics.filters.dioMixerCRV.fileNames:dio-CRV-cat.txt \
