@@ -4,7 +4,7 @@
 // bin size = 0.06486
   TTree ihep("ihep","ihep");
   // data is at bin lower edges, not all bins were measured
-  ihep.ReadFile("IHEP_PBI.dat","Irel/F:freq/F");
+  ihep.ReadFile("EventGenerator/test/IHEP_PBI.dat","Irel/F:freq/F");
   RInten = new TH1F("RInten","Relative Beam Intensity",46,0.0,3.0);
   RInten->Sumw2();
   ihep.Project("RInten","Irel+0.03243","freq");
