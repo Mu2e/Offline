@@ -1620,3 +1620,29 @@ void TrkAnaPlots::Upstream() {
   gPad->SetLogz();
   umuevsp->Draw("colorz");
 }
+
+void TrkAnaPlots::PBI(){
+  TCut truece("demc.gen==2");
+  TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
+  TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
+  TH1F* emeff = new TH1F("emeff","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeff = new TH1F("epeff","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+  _tn->Project("emeff","evtwt.PBIWeight",emall);
+  _tp->Project("epeff","evtwt.PBIWeight",epall);
+  TF1* ln = new TF1("ln","[0]*TMath::LogNormal(x,[1],[2],[3])",0,4.0);
+  ln->SetParameters(1.0,0.3814,0.0,0.93);
+  if(emeff->Integral()>0){
+    emeff->Scale(1.0/emeff->Integral());
+    emeff->Divide(ln);
+  }
+  if(epeff->Integral()>0){
+    epeff->Scale(1.0/epeff->Integral());
+    epeff->Divide(ln);
+  }
+  TCanvas* effcan = new TCanvas("effcan","effcan",800,800);
+  effcan->Divide(1,2);
+  effcan->cd(1);
+  emeff->Fit("pol1");
+  effcan->cd(2);
+  epeff->Fit("pol1");
+} 
