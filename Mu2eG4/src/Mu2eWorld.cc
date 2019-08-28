@@ -572,14 +572,15 @@ namespace mu2e {
 
   // helper function
   void Mu2eWorld::setStepLimitToAllSuchVolumes(const G4String& vn,
-                                               const G4UserLimits* const stepLimit,
+                                               G4UserLimits* const stepLimit,
                                                const G4LogicalVolumeStore* const lvs,
                                                int verbosityLevel) {
     int vtbcc = 0;
-    for ( auto i=lvs->begin(); i!=lvs->end(); ++i) {
-      if ((*i)->GetName() == vn) {
+    for ( auto lvi=lvs->begin(); lvi!=lvs->end(); ++lvi) {
+      if ((*lvi)->GetName() == vn) {
+	(*lvi)->SetUserLimits( stepLimit );
         if(verbosityLevel > 0) {
-          G4cout << __func__<< " Assigning step limit to " << *i << ":" << vn << G4endl;
+          G4cout << __func__<< " Activated step limit for volume " << vn << G4endl;
         }
         ++vtbcc;
       }
