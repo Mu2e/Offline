@@ -32,7 +32,13 @@ int mu2e::ValId::compress(int id) {
     code = 30;
   } else if(aid==211) { // pi+/-
     code = sign*31;
-  } else if(aid==2112) { // n
+  } else if(aid==130) { // K_L^0
+    code = sign*32;
+  } else if(aid==310) { // K_S^0
+    code = sign*33;
+  } else if(aid==321) { // K+/-
+    code = sign*34;
+    } else if(aid==2112) { // n
     code = 40;
   } else if(aid==2212) { // p+/-
     code = sign*41;
