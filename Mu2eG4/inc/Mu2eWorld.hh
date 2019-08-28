@@ -102,7 +102,7 @@ namespace mu2e {
       
       void stepLimiterHelper(const std::string &regexp, G4UserLimits* stepLimit);
       void setStepLimitToAllSuchVolumes(const G4String& vn,
-                                        const G4UserLimits* const stepLimit,
+                                        G4UserLimits* const stepLimit,
                                         const G4LogicalVolumeStore* const lvs,
                                         int verbosityLevel);
 
