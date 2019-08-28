@@ -569,6 +569,26 @@ namespace mu2e {
     }
   }
 
+
+  // helper function
+  void Mu2eWorld::setStepLimitToAllSuchVolumes(const G4String& vn,
+                                               const G4UserLimits* const stepLimit,
+                                               const G4LogicalVolumeStore* const lvs,
+                                               int verbosityLevel) {
+    int vtbcc = 0;
+    for ( auto i=lvs->begin(); i!=lvs->end(); ++i) {
+      if ((*i)->GetName() == vn) {
+        if(verbosityLevel > 0) {
+          G4cout << __func__<< " Assigning step limit to " << *i << ":" << vn << G4endl;
+        }
+        ++vtbcc;
+      }
+    }
+    if (vtbcc>1 && verbosityLevel > -1) {
+      G4cout << __func__<< " WARNING: found " << vn << " " << vtbcc << " times" << G4endl;
+    }
+  }
+
   // Adding a step limiter is a two step process.
   // 1) In the physics list constructor add a G4StepLimiter to the list of discrete
   //    physics processes attached to each particle species of interest.
@@ -612,23 +632,6 @@ namespace mu2e {
     vector<G4LogicalVolume*> mbsLVS;
     mbsLVS.push_back( _helper->locateVolInfo("MBSMother").logical );
 
-    vector<G4LogicalVolume*> calEl;
-
-    // calorimeter does not use the nest functions; fixme
-    // so we need to use the geant4's functions
-    G4LogicalVolumeStore* lvs = G4LogicalVolumeStore::GetInstance();
-
-    calEl.push_back( lvs->GetVolume("caloBackPlateFEELog",   _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("caloCrystalFrameInLog", _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("caloFEBLog",            _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("caloFEEBoxInLog",       _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("caloFrontPlateLog",     _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("caloFullBackPlateLog",  _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("caloHoleBackLog",       _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("calofullCrystalDiskLog",_g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("ccrateBoxInLog",        _g4VerbosityLevel>0) );
-    calEl.push_back( lvs->GetVolume("ccrateFullBoxLog",      _g4VerbosityLevel>0) );
-
     // We may make separate G4UserLimits objects per logical volume but we choose not to.
     // At some it might be interesting to make several step limiters, each with different
     // limits.  For now that is not necessary.
@@ -642,6 +645,22 @@ namespace mu2e {
     // Keep them separated so that we can add different step limits should we decide to.
 
     // hallAir->SetUserLimits( stepLimit ); // not a vacuum per se; CPU costly
+
+    // calorimeter does not use the nest functions; fixme
+    // so we need to use the geant4's functions
+    // in addition, some of its logical volumes are duplicated; fixme
+
+    G4LogicalVolumeStore* lvs = G4LogicalVolumeStore::GetInstance();
+    setStepLimitToAllSuchVolumes("caloBackPlateFEELog",    stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloCrystalFrameInLog",  stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFEBLog",             stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFEEBoxInLog",        stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFrontPlateLog",      stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFullBackPlateLog",   stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloHoleBackLog",        stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("calofullCrystalDiskLog", stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("ccrateBoxInLog",         stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("ccrateFullBoxLog",       stepLimit,lvs,_g4VerbosityLevel);
 
     ds1Vacuum->SetUserLimits( stepLimit );
     ds2Vacuum->SetUserLimits( stepLimit );
@@ -665,10 +684,6 @@ namespace mu2e {
 
     for ( auto lv : mbsLVS ){
       lv->SetUserLimits( stepLimit );
-    }
-
-    for ( auto lv : calEl ){
-      if (lv) lv->SetUserLimits( stepLimit );
     }
 
     // Now do all of the tracker related envelope volumes, using regex's with wildcards.

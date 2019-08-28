@@ -56,6 +56,7 @@ class G4UserLimits;
 
 class G4VPhysicalVolume;
 class G4LogicalVolume;
+class G4LogicalVolumeStore;
 class G4VSensitiveDetector;
 
 namespace mu2e {
@@ -100,6 +101,10 @@ namespace mu2e {
       void instantiateSensitiveDetectors();
       
       void stepLimiterHelper(const std::string &regexp, G4UserLimits* stepLimit);
+      void setStepLimitToAllSuchVolumes(const G4String& vn,
+                                        const G4UserLimits* const stepLimit,
+                                        const G4LogicalVolumeStore* const lvs,
+                                        int verbosityLevel);
 
       // Field managers for the different regions of magnetic field.
       // These have a lifetime equal to that of the G4 geometry.
