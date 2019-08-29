@@ -282,9 +282,6 @@ void PrimaryGeneratorAction::addG4Particle(G4Event *event,
                             mom.x(),
                             mom.y(),
                             mom.z());
-
-        std::cerr << "From PGA: particle energy is " << particle->GetKineticEnergy() << "\n";
-        std::cerr << "From PGA: x-momentum is " << particle->GetPx() << "\n";
         
     // Add the particle to the event.
     vertex->SetPrimary( particle );

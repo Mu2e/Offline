@@ -60,8 +60,17 @@
 #include <utility>
 #include <mutex>
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <map>
+
+
+
+
 // TBB includes
 #include "tbb/concurrent_hash_map.h"
+#include "tbb/concurrent_vector.h"
 
 using namespace std;
 
@@ -88,7 +97,6 @@ namespace mu2e {
     Mu2eG4MultiStageParameters multiStagePars_;
 
     std::unique_ptr<MTMasterThread> masterThread;
-    std::vector< std::unique_ptr<Mu2eG4WorkerRunManager> > workerRunManagers;
       
     // Do we issue warnings about multiple runs?
     bool _warnEveryNewRun;
@@ -134,15 +142,15 @@ namespace mu2e {
     // pass the filtering in Mu2eG4EventAction
     int numExcludedEvents = 0;
     
-    std::mutex initmutex_;
+    //std::mutex initmutex_;
       
     CLHEP::HepJamesRandom _engine;
 
     int num_schedules;
-    
-    typedef tbb::concurrent_hash_map<int, Mu2eG4PerThreadStorage> ScheduleMap;
-    ScheduleMap myPerSchedMap;
-    ScheduleMap::accessor access_PerSchedMap;
+    //typedef tbb::concurrent_hash_map< string, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
+    //WorkerRMMap myworkerRunManagerMap;
+      
+//    tbb::concurrent_vector <pid_t> threadIDs;
 
   }; // end G4 header
 
@@ -212,14 +220,7 @@ namespace mu2e {
     //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
         
     num_schedules = art::Globals::instance()->nschedules();
-    workerRunManagers.resize(num_schedules);
     std::cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  std::endl;
-        
-    for(int i=0; i<num_schedules; ++i)
-    {
-        myPerSchedMap.emplace(std::make_pair( int(i), Mu2eG4PerThreadStorage(pSet,i+10) ));
-    }
-
 } // end G4:G4(fhicl::ParameterSet const& pSet);
 
 
@@ -298,6 +299,7 @@ void Mu2eG4::beginSubRun(art::SubRun& sr, art::ProcessingFrame const& procFrame)
 // Create one G4 event and copy its output to the art::event.
 void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     
+    
     if (num_schedules>1) {
         if (   multiStagePars_.inputSimParticles() != art::InputTag()
                 || multiStagePars_.inputMCTrajectories() != art::InputTag()
@@ -325,32 +327,21 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 
     
     int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
+    pid_t tid = syscall(SYS_gettid);
+    std::string workerID = std::to_string(tid) + "_" + std::to_string(event.id().event());
+    std::cerr << "FOR SchedID: " << schedID << ", workerID=" << workerID << "\n";
+ 
     
-    if(workerRunManagers[schedID].get()==nullptr){
-            std::cerr << "FOR SchedID: " << schedID << ", NO WORKER.  We are making one.\n";
-            workerRunManagers[schedID].reset(new Mu2eG4WorkerRunManager(pset_));
-    }
-
-    Mu2eG4WorkerRunManager* scheduleWorkerRM = workerRunManagers[schedID].get();
+    std::unique_ptr<Mu2eG4WorkerRunManager> scheduleWorkerRM = make_unique<Mu2eG4WorkerRunManager>(pset_,workerID);
+    Mu2eG4PerThreadStorage* perThreadStore = scheduleWorkerRM->getMu2eG4PerThreadStorage();
     
-    myPerSchedMap.find(access_PerSchedMap, schedID);
-    Mu2eG4PerThreadStorage* perThreadStore = &(access_PerSchedMap->second);
-    access_PerSchedMap.release();
-    
-        
-    //if this is the first time the thread is being used, it should be initialized
-    if (!scheduleWorkerRM->workerRMInitialized()){
-        scheduleWorkerRM->initializePTS(perThreadStore);
-        
-        std::lock_guard<std::mutex> init_lock(initmutex_);
-        scheduleWorkerRM->initializeThread(masterThread->masterRunManagerPtr(), originInWorld);
-        scheduleWorkerRM->initializeRun(&event);
-    }
+    scheduleWorkerRM->initializeThread(masterThread->masterRunManagerPtr(), originInWorld);
+    scheduleWorkerRM->initializeRun(&event);
     
     perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
     scheduleWorkerRM->processEvent(&event);
     
-    std::cerr << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << std::endl;
+    std::cerr << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
     
 /////////////////////////////////////////////////////////////////////////////////////
     std::cout << "Putting data into the EVENT" << std::endl;
@@ -374,6 +365,9 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     perThreadStore->clearData();
     scheduleWorkerRM->TerminateOneEvent();
     
+    //There is also a call to RunTermination that needs to be made
+    
+    
 }//end Mu2eG4::produce
 
         
@@ -381,7 +375,19 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 // Tell G4 that this run is over.
 void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
     
+  //NEED TO ADD THIS BACK IN
+/*    if (storePhysicsTablesDir_!="") {
+        if ( _rmvlevel > 0 ) {
+            G4cout << __func__ << " Will write out physics tables to "
+            << storePhysicsTablesDir_
+            << G4endl;
+        }
+        physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+    }
+*/
+    
     G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+   // myworkerRunManagerMap.clear();
     masterThread->endRun();
 }
 

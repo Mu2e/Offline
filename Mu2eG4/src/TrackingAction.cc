@@ -196,10 +196,10 @@ void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
                                                _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
-
-//    if ( !_debugList.inList() ) return;
-//    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap, 
- //                                      _timer, _mu2eOrigin);
+            
+    if ( !_debugList.inList() ) return;
+    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap,
+                                       _timer, _mu2eOrigin);
 
     _timer.reset();
     _timer.start();
@@ -223,9 +223,9 @@ void TrackingAction::PostUserTrackingAction(const G4Track* trk){
     // Any other clean up.
     _steppingAction->EndOfTrack();
 
-//    if ( !_debugList.inList() ) return;
-//    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ", _transientMap,
-//                                       _timer, _mu2eOrigin, true, _printTrackTiming);
+    if ( !_debugList.inList() ) return;
+    Mu2eG4UserHelpers::printTrackInfo( trk, "End Track:       ", _transientMap,
+                                       _timer, _mu2eOrigin, true, _printTrackTiming);
 
 }
 

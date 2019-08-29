@@ -64,15 +64,15 @@ namespace mu2e {
     
 // If the c'tor is called a second time, the c'tor of base will
 // generate an exception.
-Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset):
+    Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::string worker_ID):
     G4WorkerRunManager(),
     pset_(pset),
     m_managerInitialized(false),
     m_userWorkerInit(true),
     m_steppingVerbose(true),
-    perThreadObjects_(nullptr),
+    perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>(pset)),
     masterRM(nullptr),
-    threadID_(-10),
+    workerID_(worker_ID),
     mu2elimits_(pset.get<fhicl::ParameterSet>("ResourceLimits")),
     trajectoryControl_(pset.get<fhicl::ParameterSet>("TrajectoryControl")),
     multiStagePars_(pset.get<fhicl::ParameterSet>("MultiStageParameters")),
@@ -95,9 +95,9 @@ Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
     
 void Mu2eG4WorkerRunManager::initializePTS(Mu2eG4PerThreadStorage* pls){
 
-    perThreadObjects_ = pls;
-    threadID_ = getThreadIndex();
-    std::cerr << "WorkerRM PLS " << threadID_ << " is Initialized!!\n";
+    //perThreadObjects_ = pls;
+    //workerID_ = getThreadIndex();
+    //std::cerr << "WorkerRM PLS " << workerID_ << " is Initialized!!\n";
         
 }
     
@@ -106,8 +106,8 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
         
     masterRM = mRM;
     
-    std::cout << "starting WorkerRM::initializeThread on thread: " << threadID_ << std::endl;
-    std::cout << "test_INT = " << perThreadObjects_->test_INT << std::endl;
+    std::cout << "starting WorkerRM::initializeThread on thread: " << workerID_ << std::endl;
+    //std::cout << "test_INT = " << perThreadObjects_->test_INT << std::endl;
         
     G4Threading::G4SetThreadId(getThreadIndex());
         
@@ -200,15 +200,15 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
         
     //we have to do this so that the state is correct for RunInitialization
     G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
-    std::cout << "completed WorkerRM::initializeThread on thread " << threadID_ << std::endl;
+    std::cout << "completed WorkerRM::initializeThread on thread " << workerID_ << std::endl;
 }
     
    
 void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_in_world){
         
-    std::cout << "We are in WorkerRM::InitializeUserActions on thread " << threadID_ << std::endl;
+    std::cout << "We are in WorkerRM::InitializeUserActions on thread " << workerID_ << std::endl;
     
-    userPrimaryGeneratorAction = new PrimaryGeneratorAction(pset_, perThreadObjects_);
+    userPrimaryGeneratorAction = new PrimaryGeneratorAction(pset_, perThreadObjects_.get());
     SetUserAction(userPrimaryGeneratorAction);
     
     steppingAction_ = new Mu2eG4SteppingAction(pset_,
@@ -247,7 +247,7 @@ void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_i
                                          *stackingCuts_.get(),
                                          *steppingCuts_.get(),
                                          *commonCuts_.get(),
-                                         perThreadObjects_,
+                                         perThreadObjects_.get(),
                                          &physicsProcessInfo_,
                                          origin_in_world) );
 
@@ -356,7 +356,7 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     numberOfEventProcessed = 0;
     ConstructScoringWorlds();
     
-    std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << threadID_ << std::endl;
+    std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << workerID_ << std::endl;
     //RunInitialization();DONE ABOVE
     //G4WorkerRunManager::DoEventLoop(1);DOESN'T WORK
     
@@ -370,8 +370,7 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     
     ProcessOneEvent(event->id().event());
     //TerminateOneEvent();
-    
- 
+     
     //_runManager->InitializeEventLoop(num_events,macroFile,n_select);
     //_timer->Start();
     //_runManager->ProcessOneEvent(eventNumber);

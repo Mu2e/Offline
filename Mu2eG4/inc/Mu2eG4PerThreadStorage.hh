@@ -40,9 +40,8 @@ namespace mu2e {
 
 struct Mu2eG4PerThreadStorage
 {
-    explicit Mu2eG4PerThreadStorage(const fhicl::ParameterSet& pset, int input):
+    explicit Mu2eG4PerThreadStorage(const fhicl::ParameterSet& pset):
     pset_(pset),
-    test_INT(input),
     simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet()))
     {
         std::cout << "We are in the c'tor of PerThreadStorage!!!" << std::endl;
@@ -221,7 +220,6 @@ struct Mu2eG4PerThreadStorage
 /////////////////////////////////////////////////////////////
 // run-level data members
     const fhicl::ParameterSet& pset_;
-    int test_INT = 0;
     art::RunNumber_t currentRunNumber = 0;
     
     //bool threadInitialized = false;
