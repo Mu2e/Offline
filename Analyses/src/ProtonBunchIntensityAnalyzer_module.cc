@@ -70,7 +70,7 @@ namespace mu2e {
   void ProtonBunchIntensityAnalyzer::analyze(const art::Event& event) {
     auto ih = event.getValidHandle<ProtonBunchIntensity>(conf_.input());
     hh_->Fill(ih->intensity());
-    hhr_->Fill(ih->intensity()/meanPBI_);
+    if(meanPBI_>0.0)hhr_->Fill(ih->intensity()/meanPBI_);
   }
 
   //================================================================
