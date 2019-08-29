@@ -32,19 +32,31 @@ namespace mu2e {
       struct Config {
 	fhicl::Atom<int> debug{ Name("debugLevel"),
 	  Comment("Debug Level"), 0};
+	fhicl::Atom<bool> compDeltas{ Name("CompressDeltas"),
+	  Comment("Compress short delta-rays into the primary step")};
+	fhicl::Atom<float> maxDeltaLength{ Name("MaxDeltaLength"),
+	  Comment("Maximum step length for a delta ray to be compressed"),0.5};
 	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
 	  Comment("Estimated size of output collection"), 2000};
-	fhicl::Atom<std::string> trackerSteps { Name("trackerStepPoints"),
+	fhicl::Atom<string> trackerSteps { Name("trackerStepPoints"),
 	  Comment("Tracker StepPointMC Producer Instance name")};
+	  fhicl::Atom<unsigned> startSize { Name("StartSize"),
+	  Comment("Starting size for straw-particle vector"),1};
       };
       using Parameters = art::EDProducer::Table<Config>;
       explicit CreateStrawGasSteps(const Parameters& conf);
 
     private:
-      typedef std::map< std::pair<StrawId,cet::map_vector_key>, PtrStepPointMCVector > StrawSimPMap; // steps by straw, SimParticle
+      typedef map< pair<StrawId,cet::map_vector_key>, PtrStepPointMCVector > StrawSimPMap; // steps by straw, SimParticle
+      typedef map< cet::map_vector_key, StrawId> SimPStrawMap; // map from SimParticle to Straw
       void produce(art::Event& e) override;
+      void extractDeltas(SimPStrawMap const& spmap,StrawSimPMap& sspmap, StrawSimPMap& deltas);
+      void addDeltas(StrawGasStep& step,StrawSimPMap& deltas);
+      void endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw, XYZVec& lastpos);
       int _debug;
-      unsigned _csize;
+      bool _compressDeltas;
+      float _maxDeltaLen;
+      unsigned _csize, _ssize;
       bool _firstEvent;
       string _trackerStepPoints;
 
@@ -53,7 +65,10 @@ namespace mu2e {
   CreateStrawGasSteps::CreateStrawGasSteps(const Parameters& config )  : 
     art::EDProducer{config},
     _debug(config().debug()),
+    _compressDeltas(config().compDeltas()),
+    _maxDeltaLen(config().maxDeltaLength()),
     _csize(config().csize()),
+    _ssize(config().startSize()),
     _firstEvent(false),
     _trackerStepPoints(config().trackerSteps())
     {
@@ -64,8 +79,8 @@ namespace mu2e {
 
   void CreateStrawGasSteps::produce(art::Event& event) {
   // create output
-    std::unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
-    std::unique_ptr<StrawGasStepAssns> sgsa(new StrawGasStepAssns);
+    unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
+    unique_ptr<StrawGasStepAssns> sgsa(new StrawGasStepAssns);
     // needed for making Ptrs
     auto StrawGasStepCollectionPID = event.getProductID<StrawGasStepCollection>();
     auto StrawGasStepCollectionGetter = event.productGetter(StrawGasStepCollectionPID);
@@ -96,46 +111,40 @@ namespace mu2e {
     unsigned nsps(0);
     // Loop over StepPointMC collections
     for ( HandleVector::const_iterator ispmcc=stepsHandles.begin(), espmcc=stepsHandles.end();ispmcc != espmcc; ++ispmcc ){
-      
-      StrawSimPMap stmap;
-
+      StrawSimPMap sspmap, deltas;
+      SimPStrawMap spmap;
       art::Handle<StepPointMCCollection> const& handle(*ispmcc);
       StepPointMCCollection const& steps(*handle);
       nsps += steps.size();
-      // Loop over the StepPointMCs in this collection and sort them
-      // by straw and SimParticle
+      // Loop over the StepPointMCs in this collection and sort them by straw and SimParticle
       for (size_t ispmc =0; ispmc<steps.size();++ispmc) {
 	StrawId const & sid = steps[ispmc].strawId();
 	// Skip dead straws, and straws that don't exist
 	if (tracker.strawExists(sid)) {
 	  // extract the SimParticle id
 	  cet::map_vector_key tid = steps[ispmc].simParticle().get()->id();
-	  // create pair
-	  std::pair<StrawId,cet::map_vector_key> stpair(sid,tid);
-	  // try to find it in the map
-	  auto const pos = stmap.find(stpair);
-	  // create ptr
+	  // check if this particle has already been seen in a different straw
+	  auto sp = spmap.emplace(tid,sid);
+	  if(!sp.second && sp.first->second != sid) 
+	    if(sp.first->second.valid())sp.first->second = StrawId(); // Already seen in another straw: make invalid to avoid compressing it
+	  // create key
+	  pair<StrawId,cet::map_vector_key> stpair(sid,tid);
+	  // create ptr to this step
 	  art::Ptr<StepPointMC> spmcptr(handle,ispmc);
-	  // since stmap is a Map, we loop over all steps just once and fill the map
-	  // however since the map elements are pairs of paris(strawid,trackid) and a vector
-	  // we need to check if a straw/track element was created already
-	  if ( pos!=stmap.end() ) {
-	    // the straw/track has been seen already
-	    // add the ptr to the vector corresponding to this strawid and the track
-	    // typedef std::vector<art::Ptr<StepPointMC> > PtrStepPointMCVector;
-	    pos->second.push_back(spmcptr);
-	  } else {
-	    // StepPointMC seen for the first time for this straw/track
-	    // create a new vector with one element;
-	    // may want to reserve some based on the step limit size
-	    std::vector<art::Ptr<StepPointMC>> spmcptrv(1,spmcptr);
-	    stmap.emplace(stpair,spmcptrv);
-	  }
+	  vector<art::Ptr<StepPointMC>> spmcptrv(_ssize,spmcptr);
+	  // check if this key exists and add it if not
+	  auto ssp = sspmap.emplace(stpair,spmcptrv);
+	  // if the key already exists, just add this Ptr to the vector
+	  if(!ssp.second)ssp.first->second.push_back(spmcptr);
 	}
       }
-      // now that the StepPoints are sorted by particle and straw, create the StrawGas objects and fill the collection.  Loop over the SimParticle/straw pairs
-      for(auto istmap = stmap.begin(); istmap != stmap.end(); istmap++){
-	auto const& spmcptrs = istmap->second;
+      // optionally compress out delta-rays that never leave the straw
+      
+      if(_compressDeltas)extractDeltas(spmap,sspmap,deltas);
+      // create the StrawGas objects and fill the collection.  Loop over the SimParticle/straw pairs
+      for(auto isspmap = sspmap.begin(); isspmap != sspmap.end(); isspmap++){
+	auto const& spmcptrs = isspmap->second;
+	const Straw& straw = tracker.getStraw(isspmap->first.first);
 
 	// variables we accumulate for all the StepPoints in this pair
 	double eion(0.0), pathlen(0.0);
@@ -152,10 +161,10 @@ namespace mu2e {
 	}
 	// Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
 	XYZVec start = Geom::toXYZVec(first->position());
-	XYZVec end = Geom::toXYZVec(last->position() + last->stepLength()*last->momentum().unit());
-	// average first and last time, momentum
-	time = 0.5*(first->time() + last->time());
-	mom = 0.5*(first->momentum().mag() + last->momentum().mag());
+	XYZVec end;
+	endPosition(last,straw,end);
+	time = first->time(); // use first time as time of this step (cluster times will be added)
+	mom = 0.5*(first->momentum().mag() + last->momentum().mag());	// average first and last momentum
 	// 2nd pass through steps to get width
 	Hep3Vector axis;
 	if(last != first)
@@ -165,18 +174,22 @@ namespace mu2e {
 
 	double width(0.0);
 	for(auto const& spmcptr : spmcptrs)
-	  width = std::max(width,(spmcptr->position()-first->position()).perp2(axis));
+	  width = max(width,(spmcptr->position()-first->position()).perp2(axis));
 
 	// create the gas step
-	StrawGasStep sgs(istmap->first.second, istmap->first.first,
+	StrawGasStep sgs(isspmap->first.second, isspmap->first.first,
 		(float)eion, (float)pathlen, (float)width, (float)mom, time, 
 		start, end);
 	cet::map_vector_key key(istep++);
+	// Add in the energy from the delta-rays
+	if(_compressDeltas) addDeltas(sgs,deltas);
 	sgsc->insert(make_pair(key,sgs));
 
+	// create the Assns
 	auto sgsp = art::Ptr<StrawGasStep>(StrawGasStepCollectionPID,sgsc->size()-1,StrawGasStepCollectionGetter);
 	for(auto const& spmcptr : spmcptrs)
 	  sgsa->addSingle(sgsp,spmcptr);
+	  // add delta-rays FIXME!
 
 	if(_debug > 1){
 	  // checks and printout
@@ -199,11 +212,49 @@ namespace mu2e {
     } // end of collection loop
     if(_debug > 0){
       cout << "Total number of StrawGasSteps " << sgsc->size() << " , StepPointMCs = " << nsps << endl;
+//      << " SimParticles before " << nsimold << endl;
     }
-    event.put(std::move(sgsc));
-    event.put(std::move(sgsa));
+    event.put(move(sgsc));
+    event.put(move(sgsa));
   } // end of produce
 
+  void CreateStrawGasSteps::extractDeltas(SimPStrawMap const& spmap,StrawSimPMap& sspmap, StrawSimPMap& deltas) {
+    auto issp = sspmap.begin();
+    while(issp != sspmap.end()){
+      bool isdelta(false);
+    // see if this particle is a delta-ray and if it's step is short
+      auto pcode = issp->second.front()->simParticle()->creationCode();
+      if(pcode == ProcessCode::eIoni || pcode == ProcessCode::hIoni){
+	float len(0.0);
+	for(auto const& istep : issp->second)
+	  len += istep->stepLength();
+	if(len < _maxDeltaLen){
+// make sure this particle didn't create hits in any other straw
+	  isdelta = spmap.find(issp->first.second)->second == issp->first.first;
+	}
+      }
+// if this is a delta, move the object to the delta-ray list, and erase it from the primary map
+      if(isdelta){
+	deltas.emplace(*issp);
+	sspmap.erase(issp++);
+      } else
+	++issp;
+    }
+  }
+
+  void CreateStrawGasSteps::addDeltas(StrawGasStep& step,StrawSimPMap& deltas) {
+    //FIXME!
+
+  }
+
+  void CreateStrawGasSteps::endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw, XYZVec& lastpos) {
+    lastpos = Geom::toXYZVec(last->position() + last->stepLength()*last->momentum().unit());
+    // check straw boundary
+//    double r2 = straw.innerRadius()*straw.innerRadius();
+//    Hep3Vector hend = Geom::Hep3Vec(end);
+//    double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
+    // FIXME!
+  }
 }
 
-DEFINE_ART_MODULE(mu2e::CreateStrawGasSteps)
+  DEFINE_ART_MODULE(mu2e::CreateStrawGasSteps)
