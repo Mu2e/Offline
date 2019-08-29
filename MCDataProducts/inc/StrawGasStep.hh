@@ -44,7 +44,7 @@ namespace mu2e {
       Float_t       _pathLen;  // Length this particle traveled in this straw gas: this is NOT necessarily the end-start distance
       Float_t       _width; // transverse radial width of the charge cloud
       Float_t	    _mom; // scalar momentum of the particle in the middle of this gas volume
-      Double_t      _time; // time particle passes the middle of this gas volume; must be double to allow for long-lived particles
+      Double_t      _time; // time particle enters this gas volume; must be double to allow for long-lived particles
       XYZVec	    _startpos, _endpos; //entrance and exit to the gas volume
   };
 
