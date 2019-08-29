@@ -8,6 +8,7 @@
 //G4 includes
 #include "G4VUserPhysicsList.hh"
 #include "G4RunManager.hh"
+#include "G4TransportationManager.hh"
 
 //art includes
 #include "fhiclcpp/ParameterSet.h"
@@ -50,6 +51,9 @@ void Mu2eG4MasterRunAction::BeginOfRunAction(const G4Run* aRun)
       tm->SetVerboseLevel(pset_.get<int>("debug.trackingVerbosityLevel",0));
       G4SteppingManager* sm  = tm->GetSteppingManager();
       sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
+      G4Navigator* navigator =
+	G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking();
+      navigator->CheckMode(pset_.get<bool>("debug.navigatorCheckMode",false));
 
         //this class is ONLY called in MT mode
         //we want these actions performed only in the Master thread
