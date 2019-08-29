@@ -21,6 +21,9 @@
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
+// C++ includes
+#include <string>
+
 
 namespace art { class Event; }
 namespace CLHEP { class Hep3Vector; }
@@ -44,18 +47,23 @@ namespace mu2e {
                 
   public:
     
-    Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset);
+    Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::string worker_ID);
     virtual ~Mu2eG4WorkerRunManager();
     
     //**********************************************************
     //These functions help us control the event loop
     void initializePTS(Mu2eG4PerThreadStorage* pts);
-    void initializeThread(Mu2eG4MTRunManager* mRM, const G4ThreeVector& origin_in_world);
+    void initializeThread(Mu2eG4MTRunManager* mRM,
+                          const G4ThreeVector& origin_in_world);
     void initializeUserActions(const G4ThreeVector& origin_in_world);
     void initializeRun(art::Event* art_event);
     void processEvent(art::Event*);
                 
     inline bool workerRMInitialized() const { return m_managerInitialized; }
+        
+    Mu2eG4PerThreadStorage* getMu2eG4PerThreadStorage() {
+        return perThreadObjects_.get();
+    }
         
   private:
             
@@ -65,12 +73,12 @@ namespace mu2e {
         bool m_userWorkerInit;//is there a UserWorkerInitialization class?
         bool m_steppingVerbose;
         
-        //static thread_local Mu2eG4PerThreadStorage* perThreadObjects;
-        Mu2eG4PerThreadStorage* perThreadObjects_;
+        //Mu2eG4PerThreadStorage* perThreadObjects_;
+        std::unique_ptr<Mu2eG4PerThreadStorage> perThreadObjects_;
     
         Mu2eG4MTRunManager* masterRM;
         
-        int threadID_;
+        std::string workerID_;
         Mu2eG4ResourceLimits mu2elimits_;
         Mu2eG4TrajectoryControl trajectoryControl_;
         Mu2eG4MultiStageParameters multiStagePars_;
@@ -87,7 +95,7 @@ namespace mu2e {
         PrimaryGeneratorAction* genAction_;
         Mu2eG4SteppingAction* steppingAction_;
         TrackingAction* trackingAction_;
-
+        
   };
 
 } // end namespace mu2e
