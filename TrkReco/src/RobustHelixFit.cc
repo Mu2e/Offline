@@ -16,12 +16,6 @@
 
 #include "Mu2eUtilities/inc/polyAtan2.hh"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/weighted_median.hpp>
 // root
 // #include "TH1F.h"
 // #include "Math/VectorUtil.h"
@@ -34,7 +28,6 @@
 #include <cmath>
 
 using namespace std;
-using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e
@@ -290,8 +283,6 @@ namespace mu2e
     }
 
     // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
-    //    accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
-    
     ComboHit*      hitP1(0), *hitP2(0);
     uint16_t       facezF1(0), facezF2(0);
     int            nHits(HelixData._chHitsToProcess.size());
@@ -325,7 +316,7 @@ namespace mu2e
 	if ( facezF1 == facezF2 )  continue;
 
 	float dz = hitP2->pos().z() - hitP1->pos().z();//facezF2->z - facezF1->z;
-	if (dz < _minzsep || dz > _maxzsep)          continue;
+	if (fabs(dz) < _minzsep || fabs(dz) > _maxzsep)          continue;
 	float dphi = deltaPhi(hitP1->_hphi, hitP2->_hphi);
 
 	int bin(-1), bin_last(-1);
@@ -361,7 +352,6 @@ namespace mu2e
       }//end secondloop over the hits
     }//end first loop over the hits
 
-    //    if(boost::accumulators::extract::count(accf) < _minnhit) return retval;
     if (counter < _minnhit) {
       return retval;
     }
@@ -739,7 +729,6 @@ namespace mu2e
     while(changed && niter < _maxniter)
       {
 	changed = false;
-	//	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
 
 	ComboHit*      hitP1(0), *hitP2(0);
 	uint16_t       facezF1(0), facezF2(0);
@@ -783,7 +772,6 @@ namespace mu2e
 	  }//end secondloop over faces 
 	}//end first loop over faces
 
-	//	rhel._lambda = extract_result<tag::weighted_median>(accf);
 	float       swmax(0), sw(0), xmp(0);
 	unsigned    binsToIntegrate(10);
 	if (_debug > 0) {
@@ -816,7 +804,7 @@ namespace mu2e
 	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   lambda = %1.1f\n", rhel._lambda);
 	}
 	// now extract intercept.  Here we solve for the difference WRT the previous value
-	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > acci;
+	std::vector<MedianData>  acci;
 
 	for (unsigned i=0; i<HelixData._chHitsToProcess.size(); ++i){ 
 	  hitP1 = &HelixData._chHitsToProcess[i];
@@ -825,12 +813,11 @@ namespace mu2e
 	  float phiex = rhel.circleAzimuth(hitP1->_pos.z());
 	  float dphi  = deltaPhi(phiex,hitP1->helixPhi());
 	  float wt    = hitP1->nStrawHits();
-	  acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
+	  acci.push_back(MedianData(dphi, wt));
 	}
 
-
 	// enforce convention on azimuth phase
-	float dphi = extract_result<tag::weighted_median>(acci);
+	float dphi = _medianCalculator.extractMedian(acci);
 	rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
 
 	// resolve the hit loops again
@@ -882,8 +869,7 @@ namespace mu2e
       
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
     RobustHelix* rhel         = &HelixData._hseed._helix;
-    accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accx, accy, accr;
-
+    std::vector<MedianData>  accx, accy, accr;
     // loop over all triples
     unsigned      ntriple(0);
  
@@ -955,9 +941,10 @@ namespace mu2e
 	      ++ntriple;
 
 	      float wt = cbrtf(wposP1.weight()*wposP2.weight()*wposP3.weight()); 
-	      accx(cx,weight = wt);
-	      accy(cy,weight = wt);
-	      if(_tripler) accr(rho,weight = wt);
+	      
+	      accx.push_back(MedianData(cx,wt));
+	      accy.push_back(MedianData(cy,wt));
+	      if(_tripler) accr.push_back(MedianData(rho,wt));
 	      if (ntriple>_ntripleMax) {
 		f1=nHits-2; f2=nHits-1; f3=nHits;
 	      }
@@ -969,8 +956,8 @@ namespace mu2e
     // median calculation needs a reasonable number of points to function
     if (ntriple > _ntripleMin)
       {        
-	float centx = extract_result<tag::weighted_median>(accx);
-        float centy = extract_result<tag::weighted_median>(accy);
+	float centx = _medianCalculator.extractMedian(accx);
+        float centy = _medianCalculator.extractMedian(accy);
 	XYVec center(centx,centy);
 	if(!_tripler) {
 	  if(!_errrwt) {		   
@@ -978,7 +965,7 @@ namespace mu2e
 	      hitP1 = &HelixData._chHitsToProcess[i];
 	      if (!use(*hitP1) )                          continue;	  
 	      float rho = sqrtf(pow(hitP1->pos().x() - centx,2) + pow(hitP1->pos().y() - centy,2));//(wp - center).Mag2());
-	      accr(rho,weight = hitP1->nStrawHits()); 
+	      accr.push_back(MedianData(rho, hitP1->nStrawHits())); 
 	    }
 	  } else {
 	    // set weight according to the errors
@@ -989,14 +976,14 @@ namespace mu2e
 	      float wt   = evalWeightXY(*hitP1,center);
 	      float rho  = sqrtf(rvec.Mag2());
 	      // if (rho*wt > _xyHitCut)         continue;//FIXME! need an histogram to implement this cut
-	      accr(rho,weight=wt);
+	      accr.push_back(MedianData(rho,wt));
 	    }
 
 	    if ( _usecc && HelixData._hseed.caloCluster().isNonnull()){
 	    }
 	  }
 	}
-	float rho = extract_result<tag::weighted_median>(accr);
+	float rho = _medianCalculator.extractMedian(accr);
         rhel->_rcent = sqrtf(center.Mag2());
         rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
         rhel->_radius = rho;
@@ -1053,11 +1040,11 @@ namespace mu2e
     if (radii.size() > _minnhit)
       {
         // find the median radius
-        accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accr;
+	std::vector<MedianData> accr;
         for(unsigned irad=0;irad<radii.size();++irad)
-	  accr(radii[irad].first, weight = radii[irad].second);
+	  accr.push_back(MedianData(radii[irad].first, radii[irad].second));
 
-        rmed = extract_result<tag::weighted_median>(accr);
+        rmed = _medianCalculator.extractMedian(accr);
         // now compute the AGE (Absolute Geometric Error)
         age = 0.0;
         for(unsigned irad=0;irad<radii.size();++irad)
