@@ -6,7 +6,8 @@
 #include "fcl/standardServices.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
 # Default is for CRY cosmics  for other files, use the include below
-#include "JobConfig/reco/RecoMCDigis_CRY.fcl"
+#include "JobConfig/reco/mcdigis_CRY.fcl"
+#RecoMCDigis_CRY.fcl"
 ###include "JobConfig/reco/RecoMCDigis_nocosmic.fcl"
 
 process_name : EventDisplayDigis 
