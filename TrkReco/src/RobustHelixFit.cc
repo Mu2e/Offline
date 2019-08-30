@@ -752,7 +752,7 @@ namespace mu2e
 		
 	    float dz   = hitP2->pos().z() - hitP1->pos().z();//facezF2->z - facezF1->z;
 	    float dphi = hitP2->helixPhi()- hitP1->helixPhi(); 
-	    if (dz < _minzsep || fabs(dphi) < _mindphi)          continue;
+	    if (fabs(dphi) < _mindphi)          continue;
   
 	    float lambda = dz/dphi;
 	    if(goodLambda(rhel.helicity(),lambda)){
