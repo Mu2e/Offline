@@ -752,7 +752,7 @@ namespace mu2e
 		
 	    float dz   = hitP2->pos().z() - hitP1->pos().z();//facezF2->z - facezF1->z;
 	    float dphi = hitP2->helixPhi()- hitP1->helixPhi(); 
-	    if (dz < _minzsep || fabs(dphi) < _mindphi)          continue;
+	    if (fabs(dphi) < _mindphi)          continue;
   
 	    float lambda = dz/dphi;
 	    if(goodLambda(rhel.helicity(),lambda)){
@@ -804,7 +804,8 @@ namespace mu2e
 	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   lambda = %1.1f\n", rhel._lambda);
 	}
 	// now extract intercept.  Here we solve for the difference WRT the previous value
-	std::vector<MedianData>  acci;
+	//	std::vector<MedianData>  acci;
+	MedianCalculator acci;
 
 	for (unsigned i=0; i<HelixData._chHitsToProcess.size(); ++i){ 
 	  hitP1 = &HelixData._chHitsToProcess[i];
@@ -813,11 +814,11 @@ namespace mu2e
 	  float phiex = rhel.circleAzimuth(hitP1->_pos.z());
 	  float dphi  = deltaPhi(phiex,hitP1->helixPhi());
 	  float wt    = hitP1->nStrawHits();
-	  acci.push_back(MedianData(dphi, wt));
+	  acci.push(dphi, wt);
 	}
 
 	// enforce convention on azimuth phase
-	float dphi = _medianCalculator.extractMedian(acci);
+	float dphi = acci.weightedMedian();//_medianCalculator.extractMedian(acci);
 	rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
 
 	// resolve the hit loops again
@@ -869,7 +870,7 @@ namespace mu2e
       
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
     RobustHelix* rhel         = &HelixData._hseed._helix;
-    std::vector<MedianData>  accx, accy, accr;
+    MedianCalculator   accx, accy, accr;
     // loop over all triples
     unsigned      ntriple(0);
  
@@ -942,9 +943,9 @@ namespace mu2e
 
 	      float wt = cbrtf(wposP1.weight()*wposP2.weight()*wposP3.weight()); 
 	      
-	      accx.push_back(MedianData(cx,wt));
-	      accy.push_back(MedianData(cy,wt));
-	      if(_tripler) accr.push_back(MedianData(rho,wt));
+	      accx.push(cx,wt);
+	      accy.push(cy,wt);
+	      if(_tripler) accr.push(rho,wt);
 	      if (ntriple>_ntripleMax) {
 		f1=nHits-2; f2=nHits-1; f3=nHits;
 	      }
@@ -956,8 +957,8 @@ namespace mu2e
     // median calculation needs a reasonable number of points to function
     if (ntriple > _ntripleMin)
       {        
-	float centx = _medianCalculator.extractMedian(accx);
-        float centy = _medianCalculator.extractMedian(accy);
+	float centx = accx.weightedMedian();
+        float centy = accy.weightedMedian();
 	XYVec center(centx,centy);
 	if(!_tripler) {
 	  if(!_errrwt) {		   
@@ -965,7 +966,7 @@ namespace mu2e
 	      hitP1 = &HelixData._chHitsToProcess[i];
 	      if (!use(*hitP1) )                          continue;	  
 	      float rho = sqrtf(pow(hitP1->pos().x() - centx,2) + pow(hitP1->pos().y() - centy,2));//(wp - center).Mag2());
-	      accr.push_back(MedianData(rho, hitP1->nStrawHits())); 
+	      accr.push(rho, hitP1->nStrawHits()); 
 	    }
 	  } else {
 	    // set weight according to the errors
@@ -976,14 +977,14 @@ namespace mu2e
 	      float wt   = evalWeightXY(*hitP1,center);
 	      float rho  = sqrtf(rvec.Mag2());
 	      // if (rho*wt > _xyHitCut)         continue;//FIXME! need an histogram to implement this cut
-	      accr.push_back(MedianData(rho,wt));
+	      accr.push(rho,wt);
 	    }
 
 	    if ( _usecc && HelixData._hseed.caloCluster().isNonnull()){
 	    }
 	  }
 	}
-	float rho = _medianCalculator.extractMedian(accr);
+	float rho = accr.weightedMedian();
         rhel->_rcent = sqrtf(center.Mag2());
         rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
         rhel->_radius = rho;
@@ -1040,11 +1041,11 @@ namespace mu2e
     if (radii.size() > _minnhit)
       {
         // find the median radius
-	std::vector<MedianData> accr;
+	MedianCalculator accr;
         for(unsigned irad=0;irad<radii.size();++irad)
-	  accr.push_back(MedianData(radii[irad].first, radii[irad].second));
+	  accr.push(radii[irad].first, radii[irad].second);
 
-        rmed = _medianCalculator.extractMedian(accr);
+        rmed = accr.weightedMedian();
         // now compute the AGE (Absolute Geometric Error)
         age = 0.0;
         for(unsigned irad=0;irad<radii.size();++irad)
