@@ -58,7 +58,19 @@ namespace mu2e {
   class CrvCoincidenceClusterFilter : public art::EDFilter {
      
   public:
-    
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    struct Config {
+      fhicl::Atom<int> diag{ Name("ddiagLevel"),
+	Comment("Diagnostic Level"), 0};
+      fhicl::Atom<art::InputTag> CRVCCF{ Name("CrvCoincidenceClusterFinder"),
+	Comment("CrvCoincidenceClusterFinder producer")};
+      fhicl::Atom<int> minNCC{ Name("MinNCC"),
+	Comment("Minimum number of cluster of coincidences")};
+      fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
+	Comment("label of the given trigger-path")};
+    };
+
     enum {
       kN1DVar    = 10,
       kN2DVar    = 10,
@@ -72,7 +84,8 @@ namespace mu2e {
     virtual bool filter  (art::Event& event) override;
     virtual bool endRun( art::Run& run ) override;
 
-    explicit CrvCoincidenceClusterFilter(const fhicl::ParameterSet& PSet);
+    using Parameters = art::EDFilter::Table<Config>;
+    explicit CrvCoincidenceClusterFilter(const Parameters& conf);
 
   private:
        
@@ -88,14 +101,14 @@ namespace mu2e {
   };
 
 
-  CrvCoincidenceClusterFilter::CrvCoincidenceClusterFilter(const fhicl::ParameterSet & pset) :
-    art::EDFilter{pset},
-    _diagLevel                   (pset.get<int>("diagLevel",0)),
+  CrvCoincidenceClusterFilter::CrvCoincidenceClusterFilter(const Parameters& config) :
+    art::EDFilter{config},
+    _diagLevel                   (config().diag()),
     _nProcess                    (0),
     _nPass                       (0),
-    _clTag                       (pset.get<art::InputTag> ("CrvCoincidenceClusterFinder")),
-    _minNCl                      (pset.get<int>           ("MinNCluster")),   // 
-    _trigPath                    (pset.get<std::string>   ("triggerPath")){
+    _clTag                       (config().CRVCCF()),
+    _minNCl                      (config().minNCC()),
+    _trigPath                    (config().trgPath()){
 
     produces<TriggerInfo>();
   }
