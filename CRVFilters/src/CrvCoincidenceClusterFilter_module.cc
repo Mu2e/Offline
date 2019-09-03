@@ -61,20 +61,14 @@ namespace mu2e {
     using Name=fhicl::Name;
     using Comment=fhicl::Comment;
     struct Config {
-      fhicl::Atom<int> diag{ Name("ddiagLevel"),
+      fhicl::Atom<int> diag{ Name("diagLevel"),
 	Comment("Diagnostic Level"), 0};
       fhicl::Atom<art::InputTag> CRVCCF{ Name("CrvCoincidenceClusterFinder"),
 	Comment("CrvCoincidenceClusterFinder producer")};
-      fhicl::Atom<int> minNCC{ Name("MinNCC"),
+      fhicl::Atom<size_t> minNCC{ Name("MinNCC"),
 	Comment("Minimum number of cluster of coincidences")};
       fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
 	Comment("label of the given trigger-path")};
-    };
-
-    enum {
-      kN1DVar    = 10,
-      kN2DVar    = 10,
-      kNCorHist  = 10
     };
 
     virtual ~CrvCoincidenceClusterFilter() { }
@@ -95,7 +89,7 @@ namespace mu2e {
     int                     _nProcess;
     int                     _nPass;
     art::InputTag           _clTag;
-    int                     _minNCl;
+    size_t                  _minNCC;
     std::string             _trigPath;
     
   };
@@ -103,11 +97,11 @@ namespace mu2e {
 
   CrvCoincidenceClusterFilter::CrvCoincidenceClusterFilter(const Parameters& config) :
     art::EDFilter{config},
-    _diagLevel                   (config().diag()),
-    _nProcess                    (0),
-    _nPass                       (0),
+    _diagLevel                   (config().diag()),  
+    _nProcess                    (0),		     
+    _nPass                       (0),		     
     _clTag                       (config().CRVCCF()),
-    _minNCl                      (config().minNCC()),
+    _minNCC                      (config().minNCC()),
     _trigPath                    (config().trgPath()){
 
     produces<TriggerInfo>();
@@ -139,7 +133,7 @@ namespace mu2e {
     auto  clH = event.getValidHandle<CrvCoincidenceClusterCollection>(_clTag);
     const CrvCoincidenceClusterCollection*  crvCoincidenceClusters = clH.product();
 
-    if (crvCoincidenceClusters->size() > 0) retval = true;
+    if (crvCoincidenceClusters->size() > _minNCC) retval = true;
     
     event.put(std::move(triginfo));
     return retval;
