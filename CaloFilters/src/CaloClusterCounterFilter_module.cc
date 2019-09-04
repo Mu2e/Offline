@@ -64,11 +64,19 @@ namespace mu2e {
   class CaloClusterCounter : public art::EDFilter {
      
   public:
-    
-    enum {
-      kN1DVar    = 10,
-      kN2DVar    = 10,
-      kNCorHist  = 10
+    using Name=fhicl::Name;
+    using Comment=fhicl::Comment;
+    struct Config {
+      fhicl::Atom<int> diag{ Name("diagLevel"),
+	  Comment("Diagnostic Level"), 0};
+      fhicl::Atom<art::InputTag> CCTag{ Name("CaloClusterModuleLabel"),
+	  Comment("CaloClusterModuleLabel producer")};
+      fhicl::Atom<int> minNClE{ Name("MinClusterEnergy"),
+	  Comment("Minimum energy deposit in a calo cluster")};
+      fhicl::Atom<int> minNCl{ Name("MinNCl"),
+	  Comment("Minimum number of calo cluster")};
+      fhicl::Atom<std::string> trgPath{ Name("triggerPath"),
+	  Comment("label of the given trigger-path")};
     };
 
     virtual ~CaloClusterCounter() { }
@@ -78,7 +86,8 @@ namespace mu2e {
     virtual bool filter  (art::Event& event) override;
     virtual bool endRun( art::Run& run ) override;
 
-    explicit CaloClusterCounter(const fhicl::ParameterSet& PSet);
+    using Parameters = art::EDFilter::Table<Config>;
+    explicit CaloClusterCounter(const Parameters& conf);
 
   private:
        
@@ -95,19 +104,19 @@ namespace mu2e {
   };
 
 
-  CaloClusterCounter::CaloClusterCounter(const fhicl::ParameterSet & pset) :
-    art::EDFilter{pset},
-    _diagLevel                   (pset.get<int>("diagLevel",0)),
-    _nProcess                    (0),
-    _nPass                       (0),
-    _clTag                       (pset.get<art::InputTag> ("CaloClusterModuleLabel")),
-    _minClEnergy                 (pset.get<double>        ("MinClusterEnergy"     ,   50.)),   // MeV
-    _minNCl                      (pset.get<int>           ("MinNClsuter"          ,   2)),   // 
-    _trigPath                    (pset.get<std::string>("triggerPath")){
-
-    produces<TriggerInfo>();
-  }
-
+  CaloClusterCounter::CaloClusterCounter(const Parameters& config):
+    art::EDFilter{config},
+    _diagLevel                   (config().diag()), 
+    _nProcess                    (0),		     
+    _nPass                       (0),		     
+    _clTag                       (config().CCTag()),
+    _minClEnergy                 (config().minNClE()),
+    _minNCl                      (config().minNCl()),
+    _trigPath                    (config().trgPath()){
+      
+      produces<TriggerInfo>();
+    }
+  
   void CaloClusterCounter::beginJob(){ }
 
   void CaloClusterCounter::endJob(){}
