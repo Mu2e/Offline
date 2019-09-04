@@ -21,23 +21,22 @@ namespace mu2e {
       return   _weightedMedian;
     }
   
-    float   totWg(std::accumulate(_vec.begin(), _vec.end(), 0, [](float sum, const MedianData& curr){return sum + curr.wg;}));
     float   sum(0);
     size_t  id(0);
 
-    sum = totWg - _vec[0].wg;
-    while (sum > 0.5*totWg){
+    sum = _totalWeight - _vec[0].wg;
+    while (sum > 0.5*_totalWeight){
       ++id;
       sum -= _vec[id].wg;
     }
 
-    float   over((sum)/totWg);
+    float   over((sum)/_totalWeight);
     float   interpolation(0);
     if (v_size %2 == 0) {
       interpolation =  _vec[id].val * over + _vec[id+1].val * (1.-over);
     }else {
-      float  w2     = (sum)/totWg;
-      float  w1     = (sum + _vec[id].wg )/totWg;
+      float  w2     = (sum)/_totalWeight;
+      float  w1     = (sum + _vec[id].wg )/_totalWeight;
       float  val1   = _vec[id-1].val*w1 + _vec[id].val*(1.-w1);
       float  val2   = _vec[id].val*w2 + _vec[id+1].val*(1.-w2);
       interpolation = 0.5*(val1 + val2);
@@ -67,24 +66,19 @@ namespace mu2e {
     }
  
     float   totWg(_vec.size());
-    float   sum(0);
     size_t  id(0);
 
-    sum = totWg - 1.;//_vec[0].wg;
-    while (sum > 0.5*totWg){
-      ++id;
-      sum -= 1.;//_vec[id].wg;
-    }
-
-    float   over((sum)/totWg);
     float   interpolation(0);
     if (v_size %2 == 0) {
-      interpolation =  _vec[id].val * over + _vec[id+1].val * (1.-over);
+      id = v_size/2 - 1;
+      interpolation =  _vec[id].val * 0.5 + _vec[id+1].val * 0.5;
     }else {
+      id = v_size/2;
+      float  sum(id);      
       float  w2     = (sum)/totWg;
       float  w1     = (sum + 1.)/totWg;
-      float  val1   = _vec[id-1].val*w1 + _vec[id].val*(1.-w1);
-      float  val2   = _vec[id].val*w2 + _vec[id+1].val*(1.-w2);
+      float  val1   = _vec[id-1].val*w1 + _vec[id].val  *(1.-w1);
+      float  val2   = _vec[id].val  *w2 + _vec[id+1].val*(1.-w2);
       interpolation = 0.5*(val1 + val2);
     }
 
@@ -94,9 +88,4 @@ namespace mu2e {
     return interpolation;
   }
   
-  void     MedianCalculator::push(float  value, float   weight){
-    _vec.push_back(MedianData(value, weight));
-    _needsSorting = true;
-  }
-
 }
