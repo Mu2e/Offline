@@ -226,6 +226,7 @@ namespace mu2e {
     art::InputTag             _cdTag;
     art::InputTag             _evtWeightTag;
     double                    _duty_cycle;
+    string                    _processName;
 
     float                     _nProcess;
     double                    _bz0;
@@ -268,6 +269,7 @@ namespace mu2e {
     _cdTag         (pset.get<art::InputTag>("caloDigiCollection"   , "CaloDigiFromShower")),
     _evtWeightTag  (pset.get<art::InputTag>("protonBunchIntensity" , "protonBunchIntensity")),
     _duty_cycle    (pset.get<float> ("dutyCycle", 1.)),
+    _processName   (pset.get<string> ("processName", "globalTrigger")),
     _nProcess      (pset.get<float> ("nEventsProcessed", 1.))
   {
     _trigAll.      resize(_nMaxTrig);	     
@@ -698,7 +700,7 @@ namespace mu2e {
     event.getManyByType(hTrigInfoVec);
 
     //get the TriggerResult
-    art::InputTag const tag{"TriggerResults::globalTrigger"};                     //FIXME! in art3 we can use the "current_process" variable
+    art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};  
     auto const trigResultsH   = event.getValidHandle<art::TriggerResults>(tag);
     const art::TriggerResults*trigResults = trigResultsH.product();
     TriggerResultsNavigator   trigNavig(trigResults);

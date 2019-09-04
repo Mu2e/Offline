@@ -66,7 +66,9 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     MinMVA                 : 0.1
     
     RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit
-	maxzsep : 275.	
+	maxzsep     : 275.	
+	maxdphi     : 10.
+#	ntripleMax  : 5e6
     }
     #    Chi2HelixFit         : 
     #	T0Calculator         : 
@@ -80,7 +82,8 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
 # same for trigger
 TTKSF : { @table::KSF
     ComboHitCollection	      : "TTmakeSH"
-    SeedCollection	      : "TThelixFinder:Positive"
+#    SeedCollection	      : "TThelixFinder:Positive"
+    SeedCollection	      : "TTHelixMergerDeM"
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 TTKFF : { @table::KFF
@@ -92,13 +95,15 @@ TTKFF : { @table::KFF
 #  First, downstream electrons
 TTKSFDeM                      : @local::TTKSF
 TTKSFDeM.ComboHitCollection   : "TTmakeSH"
-TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+#TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+TTKSFDeM.SeedCollection       : "TTHelixMergerDeM"
 TTKSFDeM.fitparticle	      : @local::Particle.eminus
 TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
 
 TTKSFDeP                      : @local::TTKSF
 TTKSFDeP.ComboHitCollection   : "TTmakeSH"
-TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+#TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+TTKSFDeP.SeedCollection       : "TTHelixMergerDeP"
 TTKSFDeP.fitparticle	      : @local::Particle.eplus
 TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
 
@@ -110,6 +115,7 @@ TTKFFDeM.fitparticle	      : @local::Particle.eminus
 TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
 TTKFFDeM.ComboHitCollection	: "TTmakeSH"
 TTKFFDeM.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+TTKFFDeM.CaloClusterCollection  : "CaloClusterFast"
 
 #  downstream positrons
 TTKFFDeP		      : @local::KFF
@@ -118,6 +124,7 @@ TTKFFDeP.fitparticle	      : @local::Particle.eplus
 TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
 TTKFFDeP.ComboHitCollection	: "TTmakeSH"
 TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+TTKFFDeP.CaloClusterCollection  : "CaloClusterFast"
 
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
