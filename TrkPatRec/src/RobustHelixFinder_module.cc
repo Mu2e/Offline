@@ -736,9 +736,9 @@ namespace mu2e {
 
       nhitsFace = facez->nChHits();
       if (nhitsFace == 0)                        continue;
-      
+      int        idFirstFaceCh(facez->idChBegin);
       for (int ip=0; ip<nhitsFace; ++ip){
-	hit = &helixData._chHitsToProcess[facez->idChBegin + ip];
+	hit = &helixData._chHitsToProcess[idFirstFaceCh + ip];
 	bool trash=hit->_flag.hasAnyProperty(_outlier);
 	if (trash)                               continue;
 
