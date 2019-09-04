@@ -804,8 +804,7 @@ namespace mu2e
 	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   lambda = %1.1f\n", rhel._lambda);
 	}
 	// now extract intercept.  Here we solve for the difference WRT the previous value
-	//	std::vector<MedianData>  acci;
-	MedianCalculator acci;
+	MedianCalculator acci(HelixData._chHitsToProcess.size());
 
 	for (unsigned i=0; i<HelixData._chHitsToProcess.size(); ++i){ 
 	  hitP1 = &HelixData._chHitsToProcess[i];
@@ -818,7 +817,8 @@ namespace mu2e
 	}
 
 	// enforce convention on azimuth phase
-	float dphi = acci.weightedMedian();//_medianCalculator.extractMedian(acci);
+	if (acci.size() == 0) return;
+	float dphi = acci.weightedMedian();
 	rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
 
 	// resolve the hit loops again
@@ -870,7 +870,7 @@ namespace mu2e
       
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
     RobustHelix* rhel         = &HelixData._hseed._helix;
-    MedianCalculator   accx, accy, accr;
+    MedianCalculator   accx(_ntripleMax), accy(_ntripleMax), accr(_ntripleMax);
     // loop over all triples
     unsigned      ntriple(0);
  
@@ -984,6 +984,7 @@ namespace mu2e
 	    }
 	  }
 	}
+	if (accr.size() == 0)      return;
 	float rho = accr.weightedMedian();
         rhel->_rcent = sqrtf(center.Mag2());
         rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
@@ -1041,7 +1042,7 @@ namespace mu2e
     if (radii.size() > _minnhit)
       {
         // find the median radius
-	MedianCalculator accr;
+	MedianCalculator accr(radii.size());
         for(unsigned irad=0;irad<radii.size();++irad)
 	  accr.push(radii[irad].first, radii[irad].second);
 
