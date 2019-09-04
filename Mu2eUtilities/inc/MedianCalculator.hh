@@ -13,35 +13,38 @@
 #include <functional>
 
 namespace mu2e { 
-  struct  MedianData {
-    MedianData(float Val, float Wg){
-      val = Val;
-      wg  = Wg; 
-    }
-    float    val;
-    float    wg;
-  };
-  struct MedianDatacomp : public std::binary_function<mu2e::MedianData,mu2e::MedianData,bool> {
-    bool operator()(MedianData const& p1, MedianData const& p2) { return p1.val < p2.val; }
-  };
-
   class MedianCalculator{
-    
+    struct  MedianData {
+      MedianData(float Val, float Wg): val(Val), wg(Wg){}
+      float    val;
+      float    wg;
+    };
+    struct MedianDatacomp : public std::binary_function<MedianData,MedianData,bool> {
+      bool operator()(MedianData const& p1, MedianData const& p2) { return p1.val < p2.val; }
+    };
+   
   public:
-    MedianCalculator():_needsSorting(true){}
+    MedianCalculator(size_t nToReserve=0){
+      _vec.reserve(nToReserve);
+    }
     
     float  weightedMedian();
     float  unweightedMedian();
     
-    void   push(float  value, float   weight=1.);
-
+    inline void     push(float  value, float   weight=1){
+      _vec.emplace_back(MedianData(value, weight));
+      _needsSorting = true;
+      _totalWeight  += weight;
+    }
+    
+    inline size_t   size(){ return _vec.size(); }
   private:
     
     std::vector<MedianData>  _vec; 
-    bool                     _needsSorting;
-    float                    _weightedMedian;
-    float                    _unweightedMedian;
-    
+    bool                     _needsSorting     = true;
+    float                    _weightedMedian   = 0;
+    float                    _unweightedMedian = 0;
+    float                    _totalWeight      = 0;
   };
 } // namespace mu2e
 
