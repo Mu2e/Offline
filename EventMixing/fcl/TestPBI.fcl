@@ -30,7 +30,7 @@ physics : {
          module_type: ProtonBunchIntensityLogNormal
          extendedMean: 3.9e7
 	 sigma: 0.3814
-	 cutMax: 7.8e7
+	 cutMax: 11.7e7
       }
    }
 
@@ -38,10 +38,12 @@ physics : {
       hflat: {
 	 module_type: ProtonBunchIntensityAnalyzer
 	 input: pbiflat
+      	 MeanBeamIntensity : "pbiflat:MeanIntensity"
       }
       hln: {
 	 module_type: ProtonBunchIntensityAnalyzer
 	 input: pbiln
+	 MeanBeamIntensity : "pbiln:MeanIntensity"
       }
    }
 
