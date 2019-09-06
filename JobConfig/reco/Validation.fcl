@@ -1,0 +1,65 @@
+#
+# Reconstruct from MC digis, including trigger simulation
+# Only reconstruct electrons for validation
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
+#
+process_name : recomcdigistrig
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::Trigger.producers
+    @table::CommonMC.producers  
+  }
+  filters :  {
+    @table::Reconstruction.filters
+    @table::Trigger.filters
+  }
+  analyzers: {
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+  }
+  RecoPath : [ cosmicTimeMap, @sequence::Reconstruction.ValidationPath ]
+  EndPath : [ Output, RecoCheck  ]
+
+}
+
+outputs : { 
+  Output :@local::Reconstruction.Output
+}
+
+# My epilog
+#include "JobConfig/reco/epilog.fcl"
+# trigger epilog
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+outputs.Output.SelectEvents : [ "RecoPath" ]
+# patches
+services : @local::Services.SimAndReco
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+physics.producers.SelectRecoMC.KFFInstances : [ "KFFDeM", "KFFDeP"]
+physics.producers.SelectRecoMC.MHInstances  : ["MHDeM", "MHDeP" ]
+physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP"]
+physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0 ]
+physics.producers.FindMCPrimary.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.SelectRecoMC.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.compressRecoMCs.timeMapTags : [ @sequence::DigiCompression.NoCosmicTimeMaps, "cosmicTimeMap"]
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] 
+physics.analyzers.RecoCheck.OldTimeOffsets.inputs :[  @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.analyzers.RecoCheck.NewTimeOffsets.inputs :[  @sequence::RecoCompression.NoCosmicTimeMaps ]
+#
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.Validation.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.Validation.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+services.scheduler.wantSummary: true
