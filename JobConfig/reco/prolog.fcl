@@ -281,7 +281,7 @@ Reconstruction.RecoMCPath : [
   RecoFilter
 ]
 # Special path for validation
-Reconstruction.ValidationPath : [
+Reconstruction.DePath : [
   @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
   @sequence::TrkHitReco.PrepareHits, # Track hit
   @sequence::Reconstruction.DeSequence,
