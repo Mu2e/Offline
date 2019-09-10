@@ -57,6 +57,6 @@ outputs : {
 #include "JobConfig/primary/epilog.fcl"
 #include "JobConfig/reco/Validation_epilog.fcl"
 
-services.TFileService.fileName: "nts.owner.CeSimReco.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.CeSimReco.version.sequencer.art"
+services.TFileService.fileName: "nts.owner.CeSimRecoVal.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.CeSimRecoVal.version.sequencer.art"
 
