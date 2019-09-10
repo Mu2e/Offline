@@ -27,4 +27,73 @@ namespace mu2e {
     _protonBeamRotation.rotateX(rotX).rotateY(rotY);
     _protonBeamInverseRotation = _protonBeamRotation.inverse();
   }
+
+  ProductionTarget::ProductionTarget(
+		     int version
+		     ,double productionTargetMotherOuterRadius
+		     ,double productionTargetMotherHalfLength
+		     ,double rOut
+		     ,double halfHaymanLength
+		     ,double rotHaymanX
+		     ,double rotHaymanY
+		     ,double rotHaymanZ
+		     ,const CLHEP::Hep3Vector& haymanProdTargetPosition
+		     ,std::string targetCoreMaterial
+		     ,std::string targetFinMaterial
+		     ,std::string targetVacuumMaterial
+		     ,std::string supportRingMaterial
+		     ,std::string spokeMaterial
+		     ,int numberOfTargetSections
+		     ,std::vector<double> startingSectionThickness
+		     ,std::vector<int> numberOfSegmentsPerSection
+		     ,std::vector<double> thicknessOfSegmentPerSection
+		     ,std::vector<double> heightOfRectangularGapPerSection
+		     ,std::vector<double> thicknessOfGapPerSection
+		     ,int nHaymanFins
+		     ,std::vector<double> finAngles
+		     ,double finOuterRadius
+		     ,double supportRingLength
+		     ,double supportRingInnerRadius
+		     ,double supportRingOuterRadius
+		     ,double supportRingCutoutThickness
+		     ,double supportRingCutoutLength
+		     ,double supportRingCutoutAngularSize
+		     )
+    : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
+    ,_version(version)
+    ,_productionTargetMotherOuterRadius(productionTargetMotherOuterRadius)
+    ,_productionTargetMotherHalfLength(productionTargetMotherHalfLength)
+    ,_rOut(rOut)
+    ,_halfHaymanLength(halfHaymanLength)
+    ,_rotHaymanX(rotHaymanX)
+    ,_rotHaymanY(rotHaymanY)
+    ,_rotHaymanZ(rotHaymanZ)
+    ,_haymanProdTargetPosition(haymanProdTargetPosition)
+    ,_targetCoreMaterial(targetCoreMaterial)
+    ,_targetFinMaterial(targetFinMaterial)
+    ,_targetVacuumMaterial(targetVacuumMaterial)
+    ,_supportRingMaterial(supportRingMaterial)
+    ,_spokeMaterial(spokeMaterial)
+    ,_numberOfTargetSections(numberOfTargetSections)
+    ,_startingSectionThickness(startingSectionThickness)
+    ,_numberOfSegmentsPerSection(numberOfSegmentsPerSection)
+    ,_thicknessOfSegmentPerSection(thicknessOfSegmentPerSection)
+    ,_heightOfRectangularGapPerSection(heightOfRectangularGapPerSection)
+    ,_thicknessOfGapPerSection(thicknessOfGapPerSection)
+    ,_nHaymanFins(nHaymanFins)
+    ,_finAngles(finAngles)
+    ,_finOuterRadius(finOuterRadius)
+    ,_supportRingLength(supportRingLength)
+    ,_supportRingInnerRadius(supportRingInnerRadius)
+    ,_supportRingOuterRadius(supportRingOuterRadius)
+    ,_supportRingCutoutThickness(supportRingCutoutThickness)
+    ,_supportRingCutoutLength(supportRingCutoutLength)
+    ,_supportRingCutoutAngularSize(supportRingCutoutAngularSize)
+    {
+      //having this duplicated is inelegant but when it comes time to rip out Tier 1 I think it will be easier
+      _protonBeamRotation.rotateX(rotHaymanX).rotateY(rotHaymanY).rotateZ(rotHaymanZ);
+      _protonBeamInverseRotation = _protonBeamRotation.inverse();
+    }
+
+
 }
