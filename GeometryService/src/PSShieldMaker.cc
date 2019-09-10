@@ -55,7 +55,7 @@ namespace mu2e {
                                                + c.getDouble("PSShield.zOffsetFromProductionTarget")
                                                - zPlane[0]
                                                );
-
+    std::cout << " PSShieldMaker " << __func__ << productionTargetCenter.z() << " " << c.getDouble("PSShield.zOffsetFromProductionTarget") << " " << zPlane[0] << std::endl;
     //----------------------------------------------------------------
     // Read in the shells
 
