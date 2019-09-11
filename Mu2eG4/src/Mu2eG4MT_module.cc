@@ -105,7 +105,8 @@ namespace mu2e {
     bool  _exportPDTStart;
     bool  _exportPDTEnd;
       
-
+    std::string storePhysicsTablesDir_;
+      
     //these cut objects are used in the master thread to indicate what data product is produced
     //additional thread-local cut objects are owned by Mu2eG4EventAction
     std::unique_ptr<IMu2eG4Cut> stackingCuts_;
@@ -147,8 +148,8 @@ namespace mu2e {
     CLHEP::HepJamesRandom _engine;
 
     int num_schedules;
-    //typedef tbb::concurrent_hash_map< string, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
-    //WorkerRMMap myworkerRunManagerMap;
+    typedef tbb::concurrent_hash_map< string, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
+    WorkerRMMap myworkerRunManagerMap;
       
 //    tbb::concurrent_vector <pid_t> threadIDs;
 
@@ -167,6 +168,8 @@ namespace mu2e {
     _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
     _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
 
+    storePhysicsTablesDir_(pSet.get<std::string>("debug.storePhysicsTablesDir","")),
+    
     stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
     steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
@@ -328,15 +331,45 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     
     int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
     pid_t tid = syscall(SYS_gettid);
-    std::string workerID = std::to_string(tid) + "_" + std::to_string(event.id().event());
+    
+    //std::string workerID = std::to_string(tid) + "_" + std::to_string(event.id().event());//constructs more than one RM in a thread
+    std::string workerID = std::to_string(tid);
+    
+    WorkerRMMap::accessor access_workerMap;
+    
+    if (!myworkerRunManagerMap.find(access_workerMap, workerID)){
+        std::cerr << "FOR workerID: " << workerID << ", NO WORKER.  We are making one.\n";
+        myworkerRunManagerMap.insert(access_workerMap, workerID);
+        access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(pset_, workerID);
+        
+        //threadIDs.push_back(tid);
+    }
+
+    std::cerr << "Our RMmap has " << myworkerRunManagerMap.size() << " members\n";
+//    std::cerr << "Our threadIDs vector has " << threadIDs.size() << " members\n";
+
+    myworkerRunManagerMap.find(access_workerMap, workerID);
+    Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
+    access_workerMap.release();
+
+    
     std::cerr << "FOR SchedID: " << schedID << ", workerID=" << workerID << "\n";
  
     
-    std::unique_ptr<Mu2eG4WorkerRunManager> scheduleWorkerRM = make_unique<Mu2eG4WorkerRunManager>(pset_,workerID);
+    std::cerr << "FOR SchedID: " << schedID << ", workerID=" << workerID << ", workerRunManagers[schedID].get() is: 0x" << std::hex << scheduleWorkerRM << std::dec << "\n";
+    std::cerr << "FOR SchedID: " << schedID << " G4RunManager::GetRunManager() is: 0x" << std::hex << G4RunManager::GetRunManager() << std::dec << "\n";
+    
+    
+    //std::unique_ptr<Mu2eG4WorkerRunManager> scheduleWorkerRM = make_unique<Mu2eG4WorkerRunManager>(pset_,tid);
     Mu2eG4PerThreadStorage* perThreadStore = scheduleWorkerRM->getMu2eG4PerThreadStorage();
     
-    scheduleWorkerRM->initializeThread(masterThread->masterRunManagerPtr(), originInWorld);
-    scheduleWorkerRM->initializeRun(&event);
+        
+    //if this is the first time the thread is being used, it should be initialized
+    if (!scheduleWorkerRM->workerRMInitialized()){
+        //std::lock_guard<std::mutex> init_lock(initmutex_);
+        scheduleWorkerRM->initializeThread(masterThread->masterRunManagerPtr(), originInWorld);
+        scheduleWorkerRM->initializeRun(&event);
+    }
     
     perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
     scheduleWorkerRM->processEvent(&event);
@@ -365,7 +398,9 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     perThreadStore->clearData();
     scheduleWorkerRM->TerminateOneEvent();
     
-    //There is also a call to RunTermination that needs to be made
+    //scheduleWorkerRM->reset();//ONLY for std_unique_ptr
+    
+    //myworkerRunManagerMap.erase(workerID);
     
     
 }//end Mu2eG4::produce
@@ -375,19 +410,24 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 // Tell G4 that this run is over.
 void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
     
-  //NEED TO ADD THIS BACK IN
-/*    if (storePhysicsTablesDir_!="") {
+//UGH, didn't work.  We got the G4ParticleDefinition::IsGeneralIon (this=0x65) seg fault
+//        for ( tbb::concurrent_vector<pid_t>::iterator i = threadIDs.begin(); i != threadIDs.end(); i++ ) {
+//            std::cerr << "TID[i] = " << *i << "\n";
+//            myworkerRunManagerMap.erase(*i);
+//        }
+    
+    
+    if (storePhysicsTablesDir_!="") {
         if ( _rmvlevel > 0 ) {
             G4cout << __func__ << " Will write out physics tables to "
             << storePhysicsTablesDir_
             << G4endl;
         }
-        physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
-    }
-*/
+        //NEED TO ADD THIS BACK IN  physicsList_->StorePhysicsTable(storePhysicsTablesDir_);
+     }
     
     G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
-   // myworkerRunManagerMap.clear();
+    myworkerRunManagerMap.clear();
     masterThread->endRun();
 }
 
