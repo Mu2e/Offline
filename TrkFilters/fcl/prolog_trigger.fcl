@@ -41,7 +41,8 @@ TrkFilters : {
 	# filters for either positive or negative helicity tracks near the CE energy
 	tprSeedDeMHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TThelixFinder:Positive"
+#	    helixSeedCollection : "TThelixFinder:Positive"
+	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1
 	    minNStrawHits       : 15   
 	    minMomentum         : 70.  
@@ -57,7 +58,8 @@ TrkFilters : {
 	}
 	tprHelixIPADeMHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TThelixFinder:Positive"
+#	    helixSeedCollection : "TThelixFinder:Positive"
+	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1		    
 	    minNStrawHits       : 15   		    
 	    minMomentum         : 30.  		    
@@ -74,7 +76,8 @@ TrkFilters : {
 
 	tprSeedDePHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TThelixFinder:Negative"
+#	    helixSeedCollection : "TThelixFinder:Negative"
+	    helixSeedCollection : "TTHelixMergerDeP"
 	    helicity            : -1
 	    minNStrawHits       : 15   
 	    minMomentum         : 60.  
@@ -91,7 +94,8 @@ TrkFilters : {
 	
 	cprSeedDeMHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TTCalHelixFinderDe:Positive"
+#	    helixSeedCollection : "TTCalHelixFinderDe:Positive"
+	    helixSeedCollection : "TTCalHelixMergerDeM"
 	    helicity            : 1
 	    minNStrawHits       : 15   
 	    minMomentum         : 80.  
@@ -107,7 +111,8 @@ TrkFilters : {
 	}
 	cprSeedDePHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TTCalHelixFinderDe:Negative"
+#	    helixSeedCollection : "TTCalHelixFinderDe:Negative"
+	    helixSeedCollection : "TTCalHelixMergerDeP"
 	    helicity            : -1
 	    minNStrawHits       : 15   
 	    minMomentum         : 60.  
@@ -467,16 +472,16 @@ TrkFilters : {
 				 TTtimeClusterFinder, tprTimeClusterDePTCFilter,  tprTimeClusterDePPrescale ]
 
 	tprHelixDeM          : [ tprHelixDeMEventPrescale, tprHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, tprDeMHelixFilter, tprDeMHelixPrescale  ]
+				 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeMHSFilter, tprHelixDeMPrescale  ]
 	tprHelixDeP          : [ tprDePHelixEventPrescale, tprDePHelixSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, tprHelixDePHSFilter, tprHelixDePPrescale  ]
+				 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprHelixDePHSFilter, tprHelixDePPrescale  ]
 
 	tprSeedDeM           : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMPrescale ]
+				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMPrescale ]
 	tprSeedDeP           : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePPrescale ]
+				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePPrescale ]
 	#   calibration with DIO-Michel form Inner Proton Absorber
 	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, tprHelixIPADeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
@@ -485,11 +490,11 @@ TrkFilters : {
 	#calo-seeded tracking
 	cprSeedDeM           : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, cprSeedDeMHSFilter,
+				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprSeedDeMHSFilter,
 				 TTCalSeedFitDem, cprSeedDeMTSFilter, cprSeedDeMPrescale ]
 	cprSeedDeP           : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, cprSeedDePHSFilter, 
+				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprSeedDePHSFilter, 
 				 TTCalSeedFitDep, cprSeedDePTSFilter, cprSeedDePPrescale ]
 	
 	#fast tracking sequences that uses the calorimeter-time selection to reduce the number of TimeClusters and also the number of hits processed by the Delta-ray 
@@ -504,7 +509,7 @@ TrkFilters : {
 	#kalman filter included
 	tprKalDeM  : [ @sequence::CaloClusterTrigger.Reco,
 		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, 
+		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, 
 		       TTKSFDeM, tprSeedDeMTSFilter, TTKFFDeM, tprSeedDeMKFFilter ]
 	# add sequences for upstream, calibration, ...  FIXME!
     }
