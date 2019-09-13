@@ -80,6 +80,7 @@ class TrkAnaPlots {
   void Eff(unsigned norm, double plo, double phi, int q=-1);
   void PlotIPA();
   void Upstream();
+  void PBI(unsigned ngen, int charge=-1);
 // cuts
   TCut _reco, _goodfit, _rpitch, _livegate, _opa, _upstream, _physics, _final, _pbi;
   TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
@@ -105,7 +106,7 @@ void TrkAnaPlots::BuildCuts(float momwin){
   double tdlow(0.57735027);
   double tdhigh(1.0);
   double t0min(700.0);
-  double t0max(1695.0);
+  double t0max(1650.0);
   double eminusmom(105.0);
   double eplusmom(92.3);
   snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
@@ -1619,4 +1620,49 @@ void TrkAnaPlots::Upstream() {
   _uecan->cd(2);
   gPad->SetLogz();
   umuevsp->Draw("colorz");
+}
+
+void TrkAnaPlots::PBI(unsigned ngen, int charge) {
+  TCut truece("demc.gen==2");
+  TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
+  TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
+  TH1F* emeff = new TH1F("emeff","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeff = new TH1F("epeff","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* emeffw = new TH1F("emeffw","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeffw = new TH1F("epeffw","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+  emeff->Sumw2();
+  epeff->Sumw2();
+  emeffw->Sumw2();
+  epeffw->Sumw2();
+  TF1* ln = new TF1("ln","[0]*TMath::LogNormal(x,[1],[2],[3])",0,4.0);
+  // compute mu given sigma, assuming the mean = 1.0
+  double sigma = 0.3814; // From IHEP fit
+  double mu = -0.5*sigma*sigma;
+  double median = exp(mu);
+  ln->SetParameters(3.0*ngen/100,sigma,0.0,median);
+  TCanvas* effcan = new TCanvas("effcan","effcan",800,600);
+  if(charge<0){
+    _tn->Project("emeff","evtwt.PBIWeight",emall);
+    _tn->Project("emeffw","evtwt.PBIWeight",emall*_pbi);
+    cout << "tracks passing cuts = " << emeff->GetEntries() << " naive efficiency " << emeff->GetEntries()/ngen
+    << " net efficiency = " << emeffw->Integral()/ngen << endl;
+    emeff->Divide(ln);
+    emeff->SetMaximum(0.25);
+    emeff->SetMinimum(0.05);
+    emeff->Fit("pol1");
+// compute the convolution efficiency
+    TF1* line = emeff->GetFunction("pol1");
+    line->SetName("line");
+    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
+
+  } else {
+    _tp->Project("epeff","evtwt.PBIWeight",epall);
+    _tp->Project("epeffw","evtwt.PBIWeight",epall*_pbi);
+    cout << "tracks passing cuts = " << epeff->GetEntries() << " naive efficiency " << epeff->GetEntries()/ngen
+    << " net efficiency = " << epeffw->Integral()/ngen << endl;
+    epeff->Divide(ln);
+    epeff->SetMaximum(0.2);
+    epeff->SetMinimum(0.0);
+    epeff->Fit("pol1");
+  }
 }

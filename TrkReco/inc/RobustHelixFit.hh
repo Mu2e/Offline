@@ -19,6 +19,8 @@
 //#include "Mu2eUtilities/inc/LsqSums4.hh"
 #include "TrkReco/inc/RobustHelixFinderData.hh"
 
+#include "Mu2eUtilities/inc/MedianCalculator.hh"
+
 //using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e 
@@ -148,6 +150,7 @@ namespace mu2e
     float    _initFZMinL, _initFZMaxL, _initFZStepL;
     unsigned _fitFZNBins;
     float    _fitFZMinL, _fitFZMaxL, _fitFZStepL;
+    MedianCalculator  _medianCalculator;
   };
 }
 #endif
