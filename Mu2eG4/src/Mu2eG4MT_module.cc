@@ -51,31 +51,39 @@
 #include "G4Timer.hh"
 
 // C++ includes.
-#include <iostream>
-#include <string>
-#include <vector>
 #include <cstdlib>
-#include <memory>
 #include <iomanip>
-#include <utility>
+#include <iostream>
+#include <memory>
 #include <mutex>
-
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
-#include <map>
-
-
-
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 
 // TBB includes
 #include "tbb/concurrent_hash_map.h"
-#include "tbb/concurrent_vector.h"
+#include "tbb/task_group.h"
 
 using namespace std;
 
 namespace {
   art::InputTag const invalid_tag{};
+}
+
+namespace tbb {
+  template<>
+  struct tbb_hash_compare<std::thread::id> {
+    tbb_hash_compare() {}
+    static size_t hash(std::thread::id tid) {
+      std::ostringstream oss;
+      oss << tid;
+      return std::stoull(oss.str());
+    }
+    static bool equal(std::thread::id const k1, std::thread::id const k2) {
+      return k1==k2;
+    }
+  };
 }
 
 namespace mu2e {
@@ -147,12 +155,11 @@ namespace mu2e {
       
     CLHEP::HepJamesRandom _engine;
 
-    int num_schedules;
-    typedef tbb::concurrent_hash_map< string, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
-    WorkerRMMap myworkerRunManagerMap;
-      
-//    tbb::concurrent_vector <pid_t> threadIDs;
+    int const num_schedules{art::Globals::instance()->nschedules()};
+    int const num_threads{art::Globals::instance()->nthreads()};
 
+    typedef tbb::concurrent_hash_map< std::thread::id, std::unique_ptr<Mu2eG4WorkerRunManager> > WorkerRMMap;
+    WorkerRMMap myworkerRunManagerMap;
   }; // end G4 header
 
     
@@ -222,7 +229,6 @@ namespace mu2e {
     // This does not work in a Shared Module
     //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
         
-    num_schedules = art::Globals::instance()->nschedules();
     std::cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  std::endl;
 } // end G4:G4(fhicl::ParameterSet const& pSet);
 
@@ -330,33 +336,29 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 
     
     int schedID = std::stoi(std::to_string(procFrame.scheduleID().id()));
-    pid_t tid = syscall(SYS_gettid);
-    
-    //std::string workerID = std::to_string(tid) + "_" + std::to_string(event.id().event());//constructs more than one RM in a thread
-    std::string workerID = std::to_string(tid);
+    auto const tid = std::this_thread::get_id();
     
     WorkerRMMap::accessor access_workerMap;
     
-    if (!myworkerRunManagerMap.find(access_workerMap, workerID)){
-        std::cerr << "FOR workerID: " << workerID << ", NO WORKER.  We are making one.\n";
-        myworkerRunManagerMap.insert(access_workerMap, workerID);
+    if (!myworkerRunManagerMap.find(access_workerMap, tid)){
+        std::cerr << "FOR workerID: " << tid << ", NO WORKER.  We are making one.\n";
+        myworkerRunManagerMap.insert(access_workerMap, tid);
+        std::ostringstream oss;
+        oss << tid;
+        std::string workerID = oss.str();
         access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(pset_, workerID);
-        
-        //threadIDs.push_back(tid);
     }
 
     std::cerr << "Our RMmap has " << myworkerRunManagerMap.size() << " members\n";
-//    std::cerr << "Our threadIDs vector has " << threadIDs.size() << " members\n";
 
-    myworkerRunManagerMap.find(access_workerMap, workerID);
+    myworkerRunManagerMap.find(access_workerMap, tid);
     Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
     access_workerMap.release();
 
-    
-    std::cerr << "FOR SchedID: " << schedID << ", workerID=" << workerID << "\n";
+    std::cerr << "FOR SchedID: " << schedID << ", workerID=" << tid << "\n";
  
     
-    std::cerr << "FOR SchedID: " << schedID << ", workerID=" << workerID << ", workerRunManagers[schedID].get() is: 0x" << std::hex << scheduleWorkerRM << std::dec << "\n";
+    std::cerr << "FOR SchedID: " << schedID << ", workerID=" << tid << ", workerRunManagers[schedID].get() is: 0x" << std::hex << scheduleWorkerRM << std::dec << "\n";
     std::cerr << "FOR SchedID: " << schedID << " G4RunManager::GetRunManager() is: 0x" << std::hex << G4RunManager::GetRunManager() << std::dec << "\n";
     
     
@@ -366,7 +368,6 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
         
     //if this is the first time the thread is being used, it should be initialized
     if (!scheduleWorkerRM->workerRMInitialized()){
-        //std::lock_guard<std::mutex> init_lock(initmutex_);
         scheduleWorkerRM->initializeThread(masterThread->masterRunManagerPtr(), originInWorld);
         scheduleWorkerRM->initializeRun(&event);
     }
@@ -394,14 +395,8 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
         }
     }
     
-    
     perThreadStore->clearData();
     scheduleWorkerRM->TerminateOneEvent();
-    
-    //scheduleWorkerRM->reset();//ONLY for std_unique_ptr
-    
-    //myworkerRunManagerMap.erase(workerID);
-    
     
 }//end Mu2eG4::produce
 
@@ -410,12 +405,23 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
 // Tell G4 that this run is over.
 void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
     
-//UGH, didn't work.  We got the G4ParticleDefinition::IsGeneralIon (this=0x65) seg fault
-//        for ( tbb::concurrent_vector<pid_t>::iterator i = threadIDs.begin(); i != threadIDs.end(); i++ ) {
-//            std::cerr << "TID[i] = " << *i << "\n";
-//            myworkerRunManagerMap.erase(*i);
-//        }
-    
+    // KJK - should move this to endJob
+    std::atomic<int> threads_left = num_threads;
+    tbb::task_group g;
+    for (int i = 0; i < num_threads; ++i) {
+      auto destroy_worker = [&threads_left, this] {
+        for (auto& [tid, worker] : myworkerRunManagerMap) {
+          if (std::this_thread::get_id() == tid) {
+            worker.reset();
+            --threads_left;
+            while (threads_left != 0) {}
+            return;
+          }
+        }
+      };
+      g.run(destroy_worker);
+    }
+    g.wait();
     
     if (storePhysicsTablesDir_!="") {
         if ( _rmvlevel > 0 ) {
@@ -427,7 +433,7 @@ void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
      }
     
     G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
-    myworkerRunManagerMap.clear();
+    //    myworkerRunManagerMap.clear();
     masterThread->endRun();
 }
 
