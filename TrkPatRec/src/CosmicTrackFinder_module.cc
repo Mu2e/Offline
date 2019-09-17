@@ -1,7 +1,5 @@
 // Cosmic Track finder- module calls seed fitting routine to begin cosmic track analysis. The module can call the seed fit and drift fit. Producing a "CosmicTrackSeed" list.
-// $Id: CosmicTrackFinder_module.cc
-// $Author: S.middleton
-// $Date: Feb 2019 $
+
 #include "TrkReco/inc/CosmicTrackFit.hh"
 #include "TrkPatRec/inc/CosmicTrackFinder_types.hh"
 #include "TrkReco/inc/CosmicTrackFinderData.hh"
@@ -134,6 +132,7 @@ namespace mu2e{
     CosmicTrackFinderData                 _stResult;
     ProditionsHandle<StrawResponse> _strawResponse_h; 
     void     OrderHitsY(CosmicTrackFinderData& TrackData); //Order in height
+    void     OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event); //Same but for MCDigis
     void     fillGoodHits(CosmicTrackFinderData& TrackData);//apply "good" cut
     void     fillPluginDiag(CosmicTrackFinderData& TrackData);
     int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);
@@ -214,15 +213,15 @@ namespace mu2e{
      if(_mcdiag>0){ 	 
            auto const& mcdH = event.getValidHandle(_mcToken);
            const StrawDigiMCCollection& mccol(*mcdH);
-           _stResult._mccol =  &mccol;
+           _stResult._mccol =  &mccol;/*
            for(size_t imc=0; imc<mccol.size(); imc++){
                 StrawDigiMC digi = mccol[imc];
            	_stResult._mcDigisToProcess.push_back(digi);
-           }  
-        }
+           }  */
+       }
     _data.event       = &event;
     _data.nTimePeaks  = tccol.size();
-    _stResult.event       = &event;
+    _stResult.event   = &event;
     _stResult._chcol  = &chcol; 
     _stResult._tccol  = &tccol;
     
@@ -238,6 +237,7 @@ namespace mu2e{
       _stResult.clearTempVariables();
       _stResult._tseed              = tseed;
       _stResult._timeCluster        = &tclust;
+      _stResult._chHitsToProcess.setParent(chcol.parent());
       _stResult._tseed._panel_hits.setParent(chcol.parent());
       _stResult._tseed._t0          = tclust._t0;
       _stResult._tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
@@ -253,41 +253,19 @@ namespace mu2e{
       _stResult._nStrawHits = _stResult._nFiltStrawHits;
       _stResult._nComboHits = _stResult._nFiltComboHits;
       _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
+      _stResult._tseed._panel_hits = _stResult._chHitsToProcess;
       
       if (_diag) _stResult._diag.CosmicTrackFitCounter = 0;
  
       if(_mcdiag > 0 && _stResult._chHitsToProcess.size() > 0){
-           XYZVec first, last;       
-
-	     for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) {  
-           	std::vector<StrawDigiIndex> shids;  
-           	std::vector<StrawHitIndex> shitids;          	
-           	ComboHit const& chit = _stResult._chHitsToProcess.at(ich);
-           	
-           	if (chit.nCombo() >  chit.nStrawHits() ) continue;
-           	
-                _stResult._chHitsToProcess.fillStrawDigiIndices(event,ich,shids);    
-                _stResult._chHitsToProcess.fillStrawHitIndices(event, ich,shitids);  
-                _stResult._tseed._strawHitIdxs.push_back(ich);
-                
-                StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);              
-                
-		if(ich ==0){
-			first = _tfit.MCInitHit(mcd1) ; 	
+		OrderHitsYMC(_stResult, event);
+		for(auto const & mcd : _stResult._mcDigisToProcess){
+			art::Ptr<StepPointMC> const& spmcp = mcd.stepPointMC(StrawEnd::cal);
+            		XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+                	
 		}
-		if(ich == _stResult._chHitsToProcess.size()-1){
-			last = _tfit.MCFinalHit(mcd1); 	
-		} 
-		
-		for(auto const& ids : shitids){ 
-			size_t    istraw   = (ids);
-		     	TrkStrawHitSeed tshs;
-		     	tshs._index  = istraw;
-		     	tshs._t0 = tclust._t0;
-		     	_stResult._tseed._trkstrawhits.push_back(tshs); 
-	     	}
-	     }
-	     _tfit.MCDirection(first, last, _stResult);
+			
+             
 	     }
 
      ostringstream title;
@@ -306,11 +284,11 @@ namespace mu2e{
 	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
               
-		      //fillGoodHits(tmpResult);
 		      std::vector<uint16_t> chindices;
 		      if(tmpResult._tseed._track.converged == false) continue;
-		      for(size_t ich= 0; ich<tmpResult._chHitsToProcess.size(); ich++) { //TODO chcol?? 
+		      for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) { 
 		   	 chindices.push_back(ich);
+		   	
 	              }
 	              //get list of indices to straw level combohits
 	              std::vector<ComboHitCollection::const_iterator> chids;  
@@ -324,6 +302,20 @@ namespace mu2e{
            		  tmpResult._tseed._straws.push_back(straw);
            		  
 	      	      }
+	      	      for(size_t ich= 0; ich<tmpResult._tseed._straw_chits.size(); ich++) {  
+           	 
+           		std::vector<StrawHitIndex> shitids;          	          		
+           	        tmpResult._tseed._straw_chits.fillStrawHitIndices(event, ich,shitids);  
+                        tmpResult._tseed._strawHitIdxs.push_back(ich);
+               
+			for(auto const& ids : shitids){ 
+				size_t    istraw   = (ids);
+			     	TrkStrawHitSeed tshs;
+			     	tshs._index  = istraw;
+			     	tshs._t0 = tclust._t0;
+			     	tmpResult._tseed._trkstrawhits.push_back(tshs); 
+	     		}  
+	     		}
 	              //Pass straw hits to the drift fit for ambig resolution:
 		      _tfit.DriftFit(tmpResult);
 		      //Add tmp to seed list:
@@ -346,7 +338,6 @@ namespace mu2e{
 	std::cout<<"Filling good hits..."<<std::endl;
     }
     ComboHit*     hit(0);
-    cout<<"Size of chits in fill hits "<<_stResult._chHitsToProcess.size()<<endl;
     for (unsigned f=0; f<trackData._chHitsToProcess.size(); ++f){
       hit = &trackData._chHitsToProcess[f];
       if (hit->_flag.hasAnyProperty(_outlier))     continue;
@@ -355,6 +346,28 @@ namespace mu2e{
       trackData._tseed._panel_hits.push_back(thit);
     }
   }
+void CosmicTrackFinder::OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event){
+    int     size  = _stResult._chHitsToProcess.size();
+    StrawDigiMCCollection ordDigiCol;
+    ordDigiCol.reserve(size);
+ 
+    for (int i=0; i<size; ++i) {
+     std::vector<StrawDigiIndex> shids;  
+     _stResult._chHitsToProcess.fillStrawDigiIndices(event,i,shids);    
+     StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);  
+      ordDigiCol.push_back(mcd1); 
+    }
+   
+    if (_debug != 0) std::cout<<"Number of Digis: "<<ordDigiCol.size()<<std::endl;
+    std::sort(ordDigiCol.begin(), ordDigiCol.end(),ycomp_digi());
+
+    for (unsigned i=0; i<ordDigiCol.size(); ++i) { 
+      StrawDigiMC const& mcd1 = ordDigiCol[i]; 
+     _stResult._mcDigisToProcess.push_back(mcd1);
+
+    }
+
+}
 
   void CosmicTrackFinder::OrderHitsY(CosmicTrackFinderData& TrackData){
     if (_debug != 0){
@@ -440,7 +453,24 @@ int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHit
     return ngoodhits;
   } 
 
- 
+ /*
+	     for(size_t ich= 0; ich<_stResult._chHitsToProcess.size(); ich++) {  
+           	std::vector<StrawDigiIndex> shids;  
+           	          	
+           	ComboHit const& chit = _stResult._chHitsToProcess.at(ich);
+           	cout<<"hit "<<ich<<" position "<<chit.pos()<<endl;
+           	if (chit.nCombo() >  chit.nStrawHits() ) continue;
+           	
+                _stResult._chHitsToProcess.fillStrawDigiIndices(event,ich,shids);    
+                
+                StrawDigiMC const& mcd1 = _stResult._mccol->at(shids[0]);   
+                
+           	_stResult._mcDigisToProcess.push_back(mcd1);
+		art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(StrawEnd::cal);
+            	XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+                cout<<"hit "<<ich<<" MC position "<<posN<<endl;
+                      
+               }*/
 ///////////////////////////////////////////////////
 }//end mu2e namespace
 using mu2e::CosmicTrackFinder;

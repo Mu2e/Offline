@@ -1,11 +1,8 @@
-//
+
 // Class to perform Cosmic fit
 // Original author: Sophie Middleton 
-//
-// $Id: CosmicTrackFit.hh 
-// $Author: sophie $ 
-// $Date: 2018/01/12 18:56:10 $
-//
+
+
 #ifndef TrkReco_CosmicTrackFit_HH
 #define TrkReco_CosmicTrackFit_HH
 
@@ -69,18 +66,15 @@ namespace mu2e
 		void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
 		//Step 4: Do the Chi2 fitting
 		void FitXYZ(CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
-		
+		void ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData, TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool isseed);
 		//Step 5: validation of algorithm -  some functions to help
 		float PDF(float chisq, float ndf);
 		float chi_sum(float chisq, float ndf);
 		float CDF(float chisq, float ndf);
 		
 		//Some functions to extract MC truth
-		XYZVec MCInitHit(StrawDigiMC mcdigi);
-		XYZVec MCFinalHit(StrawDigiMC mcdigi);
-		void MCDirection(XYZVec first, XYZVec last, CosmicTrackFinderData& trackData);
-		void MulitpleTrackResolver(CosmicTrackFinderData& trackData,CosmicTrack* track);
-		void FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool XYZ, bool is_prime);
+		void FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool Det);
+		void TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axes, CosmicTrack* cosmictrack, bool is_seed);
                 bool goodTrack(CosmicTrack* track);
                 
                 //Step 6: Drift fit - calls to logL minuit code utility
@@ -111,8 +105,11 @@ namespace mu2e
 		float _maxDOCA; //max allowed DOCA to allow hit into fit
     		float _maxchi2; //maximum allowed chi2
 		float _max_chi2_change; // once we are lower than this we can say its converged
+		// float _max_residual;// max residual per track in either x'' or y''
     		float _max_position_deviation;//maximum hcange from initial choice of a0 and b0 (in mm)
+	       
   };//end Fit class
+	
 
 }
 #endif

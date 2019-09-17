@@ -111,7 +111,7 @@ namespace mu2e
       bool clickToAdvance_;
       
       Int_t _strawid; // strawid info
-      
+      void plot2dDriftCompare(const art::Event& event);
       void plot2d(const art::Event& evt);
       void plotTrackerElements(const art::Event& event);
       void plot3dPrimes(const art::Event& evt);
@@ -155,13 +155,311 @@ namespace mu2e
       }
       void CosmicFitDisplay::analyze(const art::Event& event) {
       //Call one or more of the macros from below here, for example: plot2d( event);  
-        plotTrackerElements(event);
+        plot2dDriftCompare(event);
       }//End Analyze 
-      
-      
+     
 //----------Below here are a series of macros -  they are not glamarous but they produce useful debugging plots ----//
 
+      void CosmicFitDisplay::plot2dDriftCompare(const art::Event& event){
+        _evt = event.id().event();  
+        findData(event);
+        
+        std::vector<double>  xseed, yseed, zseed, xdrift, ydrift, zdrift, a0seed, a1seed, b0seed, b1seed, a0drift, a1drift, b0drift, b1drift;
+        std::vector<XYZVec> xprimes_seed, yprimes_seed, zprimes_seed, xprimes_drift,  yprimes_drift,  zprimes_drift;
+        
+          //find time clusters:
+    	unsigned  _ncosmics = _coscol->size();
+        unsigned _nch = _chcol->size();
+        //loop over tracks:
+        for(size_t i =0; i < _ncosmics; i++){
+                
+        	CosmicTrackSeed track =(*_coscol)[i];
+		if(track._track.converged == false){continue;}
+		if(track._track.minuit_converged == false){continue;}
+		xprimes_seed.push_back(track._track.TrackCoordSystem._XDoublePrime);
+		yprimes_seed.push_back(track._track.TrackCoordSystem._YDoublePrime);
+		zprimes_seed.push_back(track._track.TrackCoordSystem._ZPrime);
+		
+		xprimes_drift.push_back(track._track.MinuitCoordSystem._XDoublePrime);
+		yprimes_drift.push_back(track._track.MinuitCoordSystem._YDoublePrime);
+		zprimes_drift.push_back(track._track.MinuitCoordSystem._ZPrime);
+		
+		if(isnan(track._track.FitParams.A0) == true && isnan(track._track.FitParams.A1) == true && isnan(track._track.FitParams.B0) == true && isnan(track._track.FitParams.B1) == true) continue;
+			
+			a0seed.push_back(track._track.FitParams.A0);
+			a1seed.push_back(track._track.FitParams.A1);
+			b0seed.push_back(track._track.FitParams.B0);
+			b1seed.push_back(track._track.FitParams.B1);
+			a0drift.push_back(track._track.MinuitFitParams.A0);
+			a1drift.push_back(track._track.MinuitFitParams.A1);
+			b0drift.push_back(track._track.MinuitFitParams.B0);
+			b1drift.push_back(track._track.MinuitFitParams.B1);
+			
+			for(size_t i =0; i < _nch; i++){
+				ComboHit const& chit =(*_chcol)[i];
+				xseed.push_back(chit.pos().Dot(xprimes_seed[0]));
+				yseed.push_back(chit.pos().Dot(yprimes_seed[0]));
+				zseed.push_back(chit.pos().Dot(zprimes_seed[0]));
+				xdrift.push_back(chit.pos().Dot(xprimes_drift[0]));
+				ydrift.push_back(chit.pos().Dot(yprimes_drift[0]));
+				zdrift.push_back(chit.pos().Dot(zprimes_drift[0]));
+				
+		
+        		}//end hit loop
+        		
+                      double minz_seed = *std::min_element(zseed.begin(), zseed.end());
+		      double maxz_seed = *std::max_element(zseed.begin(), zseed.end());
+		      double minx_seed = *std::min_element(xseed.begin(), xseed.end());
+		      double maxx_seed = *std::max_element(xseed.begin(), xseed.end());
+		      double miny_seed = *std::min_element(yseed.begin(), yseed.end());
+		      double maxy_seed = *std::max_element(yseed.begin(), yseed.end());
+      
+		      double minz_drift = *std::min_element(zdrift.begin(), zdrift.end());
+		      double maxz_drift = *std::max_element(zdrift.begin(), zdrift.end());
+		      double minx_drift = *std::min_element(xdrift.begin(), xdrift.end());
+		      double maxx_drift = *std::max_element(xdrift.begin(), xdrift.end());
+		      double miny_drift = *std::min_element(ydrift.begin(), ydrift.end());
+		      double maxy_drift = *std::max_element(ydrift.begin(), ydrift.end());
+		      
+        	      GeomHandle<Tracker> th; 
+		      const Tracker* tracker = th.get(); 
+        	      TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+        	      if (doDisplay_) {
+              
+			      std::cout << "Run: " << event.id().run()
+			   << "  Subrun: " << event.id().subRun()
+			   << "  Event: " << event.id().event()<<std::endl;
+			      TLine  major_error_line, minor_error_line, out_line, fit_to_trackxprime, fit_to_trackyprime;
+			      TPolyMarker poly;
+			      TText  text;     
+			      TEllipse strawXsec; 
+			      canvas_->SetTitle("foo title");
+			      auto pad = canvas_->cd(1);
+			      pad->Clear();
+			      canvas_->SetTitle("bar title");
+	      
+			      auto xzplot = pad->DrawFrame(minz_drift-100,minx_drift-100, maxz_drift+100, maxx_drift+150);
+			      xzplot->GetYaxis()->SetTitleOffset(1.25);
+			      xzplot->SetTitle( "Drift Fit X'' vs Z'; Z'(mm);X''(mm)");
+	      
+			      fit_to_trackxprime.SetLineColor(kYellow);
+			      fit_to_trackxprime.SetLineColor(kGreen);
+			      
+			      poly.SetMarkerSize(1);
+			      poly.SetMarkerStyle(4);
+			     
+			      int ihit =0;
+			      for(size_t i =0; i < _nch; i++){
+                 
+					ComboHit const& chit =(*_chcol)[i];
+			      		ihit +=1;
+			      		if (ihit == 5) continue;
+			      		if (ihit == 10) {
+			      			ihit = ihit+1;
+			      		}
+			      		if (ihit == 13) {
+			      			ihit = 29;
+			      		}  
+					auto const& p = chit.pos();	
+					auto const& w = chit.wdir();
+					auto const& s = chit.wireRes();
+					auto const& t = chit.transRes();			
+					double x0prime{(p.Dot(xprimes_drift[0]))} ;
+					poly.SetMarkerColor(ihit);
+					major_error_line.SetLineColor(ihit);
+					minor_error_line.SetLineColor(ihit);
+					double z0prime{(p.Dot(zprimes_drift[0]))};                      
+					poly.DrawPolyMarker( 1, &z0prime, &x0prime );
+					XYZVec major = (s*w);
+					XYZVec minor = Geom::ZDir().Cross(w) * t;
+					double major2 = (s*w).Mag2();
+					double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+			
+					double major_x1 = p.Dot(xprimes_drift[0])+sqrt(major2)*(major.Unit()).Dot(xprimes_drift[0]);
+					double major_x2 = p.Dot(xprimes_drift[0])-sqrt(major2)*(major.Unit()).Dot(xprimes_drift[0]);
+					double major_z1 = p.Dot(zprimes_drift[0])+sqrt(major2)*(major.Unit()).Dot(zprimes_drift[0]);
+					double major_z2 = p.Dot(zprimes_drift[0])-sqrt(major2)*(major.Unit()).Dot(zprimes_drift[0]);
+					double minor_x1 = p.Dot(xprimes_drift[0])+sqrt(minor2)*(minor.Unit()).Dot(xprimes_drift[0]);
+					double minor_x2 = p.Dot(xprimes_drift[0])-sqrt(minor2)*(minor.Unit()).Dot(xprimes_drift[0]);
+					double minor_z1 = p.Dot(zprimes_drift[0])+sqrt(minor2)*(minor.Unit()).Dot(zprimes_drift[0]);
+					double minor_z2 = p.Dot(zprimes_drift[0])-sqrt(minor2)*(minor.Unit()).Dot(zprimes_drift[0]);
+			
+					major_error_line.DrawLine( major_z1, major_x1, major_z2, major_x2);
+					minor_error_line.DrawLine( minor_z1, minor_x1, minor_z2, minor_x2);
+					
+				}//end hit loop
+			      
+			       if(a1drift.size() > 0){
+		
+				TF1 *trackline_xprime = new TF1("line", "[0]+[1]*x", minz_drift,maxz_drift);
+				trackline_xprime->SetParameter(0, a0drift[0]);
+				trackline_xprime->SetParameter(1, a1drift[0]);
+		
+				trackline_xprime->SetLineColor(6);
+				trackline_xprime->Draw("same");
+		
+				} 
+				
+			      pad = canvas_->cd(2);
+			      pad->Clear();   
+			      auto yzplot = pad->DrawFrame(minz_drift-100,miny_drift-100, maxz_drift+100, maxy_drift+150);
+			      yzplot->GetYaxis()->SetTitleOffset(1.25);
+			      yzplot->SetTitle( "Drift Fit Y'' vs Z'; Z'(mm);Y''(mm)");
+			      ihit = 0;
+              		      for(size_t i =0; i < _nch; i++){
+				ComboHit const& chit =(*_chcol)[i]; 
+			      		ihit+=1;   
+			      		if (ihit == 5) continue;
+			      		if (ihit == 10) {
+			      			ihit = ihit+1;
+			      		}      
+			      		if (ihit == 13) {
+			      			ihit = 29;
+			      		}              
+					auto const& p = chit.pos();
+					auto const& w = chit.wdir();
+					auto const& s = chit.wireRes();	
+					double y0prime{(p.Dot(yprimes_drift[0]))} ;
+					double z0prime{(p.Dot(zprimes_drift[0]))};  
+					poly.SetMarkerColor(ihit);  
+					major_error_line.SetLineColor(ihit);      
+					poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
+					double y1 = p.Dot(yprimes_drift[0])+s*w.Dot(yprimes_drift[0]);
+					double y2 = p.Dot(yprimes_drift[0])-s*w.Dot(yprimes_drift[0]);
+					double z1 = p.Dot(zprimes_drift[0])+s*w.Dot(zprimes_drift[0]);
+					double z2 = p.Dot(zprimes_drift[0])-s*w.Dot(zprimes_drift[0]);
+					major_error_line.DrawLine( z1, y1, z2, y2);
+			
+				      }
+				      if(b1drift.size() > 0){
+	        
+					TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",minz_drift,maxz_drift);
+					trackline_yprime->SetParameter(0, b0drift[0]);
+					trackline_yprime->SetParameter(1, b1drift[0]);
+					trackline_yprime->SetLineColor(6);
+					trackline_yprime->Draw("same");
+		
+              			    } 
+              			    pad = canvas_->cd(3);
+			      	    pad->Clear();   
+			            xzplot = pad->DrawFrame(minz_seed-100,minx_seed, maxz_seed+100, maxx_seed+150);
+			      	    xzplot->GetYaxis()->SetTitleOffset(1.25);
+			            xzplot->SetTitle( "Seed Fit X'' vs Z'; Z'(mm);Y''(mm)");
+              			    ihit =0;
+			            for(size_t i =0; i < _nch; i++){
+                 
+					ComboHit const& chit =(*_chcol)[i];
+			      		ihit +=1;
+			      		if (ihit == 5) continue;
+			      		if (ihit == 10) {
+			      			ihit = ihit+1;
+			      		}
+			      		if (ihit == 13) {
+			      			ihit = 29;
+			      		}  
+					auto const& p = chit.pos();	
+					auto const& w = chit.wdir();
+					auto const& s = chit.wireRes();
+					auto const& t = chit.transRes();			
+					double x0prime{(p.Dot(xprimes_seed[0]))} ;
+					poly.SetMarkerColor(ihit);
+					major_error_line.SetLineColor(ihit);
+					minor_error_line.SetLineColor(ihit);
+					double z0prime{(p.Dot(zprimes_seed[0]))};                      
+					poly.DrawPolyMarker( 1, &z0prime, &x0prime );
+					XYZVec major = (s*w);
+					XYZVec minor = Geom::ZDir().Cross(w) * t;
+					double major2 = (s*w).Mag2();
+					double minor2 = (Geom::ZDir().Cross(w) * t).Mag2();
+			
+					double major_x1 = p.Dot(xprimes_seed[0])+sqrt(major2)*(major.Unit()).Dot(xprimes_seed[0]);
+					double major_x2 = p.Dot(xprimes_seed[0])-sqrt(major2)*(major.Unit()).Dot(xprimes_seed[0]);
+					double major_z1 = p.Dot(zprimes_seed[0])+sqrt(major2)*(major.Unit()).Dot(zprimes_seed[0]);
+					double major_z2 = p.Dot(zprimes_seed[0])-sqrt(major2)*(major.Unit()).Dot(zprimes_seed[0]);
+					double minor_x1 = p.Dot(xprimes_seed[0])+sqrt(minor2)*(minor.Unit()).Dot(xprimes_seed[0]);
+					double minor_x2 = p.Dot(xprimes_seed[0])-sqrt(minor2)*(minor.Unit()).Dot(xprimes_seed[0]);
+					double minor_z1 = p.Dot(zprimes_seed[0])+sqrt(minor2)*(minor.Unit()).Dot(zprimes_seed[0]);
+					double minor_z2 = p.Dot(zprimes_seed[0])-sqrt(minor2)*(minor.Unit()).Dot(zprimes_seed[0]);
+			
+					major_error_line.DrawLine( major_z1, major_x1, major_z2, major_x2);
+					minor_error_line.DrawLine( minor_z1, minor_x1, minor_z2, minor_x2);
+					
+				}//end hit loop
+			      
+			       if(a1seed.size() > 0){
+		
+				TF1 *trackline_xprime = new TF1("line", "[0]+[1]*x", minz_seed,maxz_seed);
+				trackline_xprime->SetParameter(0, a0seed[0]);
+				trackline_xprime->SetParameter(1, a1seed[0]);
+		
+				trackline_xprime->SetLineColor(6);
+				trackline_xprime->Draw("same");
+		
+				} 
+			      pad = canvas_->cd(4);
+			      pad->Clear();   
+			      yzplot = pad->DrawFrame(minz_seed-100,miny_seed-100, maxz_seed+100, maxy_seed+150);
+			      yzplot->GetYaxis()->SetTitleOffset(1.25);
+			      yzplot->SetTitle( "Seed Fit Y'' vs Z'; Z'(mm);Y''(mm)");
+			      ihit = 0;
+              		      for(size_t i =0; i < _nch; i++){
+				ComboHit const& chit =(*_chcol)[i]; 
+			      		ihit+=1;   
+			      		if (ihit == 5) continue;
+			      		if (ihit == 10) {
+			      			ihit = ihit+1;
+			      		}      
+			      		if (ihit == 13) {
+			      			ihit = 29;
+			      		}              
+					auto const& p = chit.pos();
+					auto const& w = chit.wdir();
+					auto const& s = chit.wireRes();	
+					double y0prime{(p.Dot(yprimes_seed[0]))} ;
+					double z0prime{(p.Dot(zprimes_seed[0]))};  
+					poly.SetMarkerColor(ihit);  
+					major_error_line.SetLineColor(ihit);      
+					poly.DrawPolyMarker( 1, &z0prime, &y0prime );        
+					double y1 = p.Dot(yprimes_seed[0])+s*w.Dot(yprimes_seed[0]);
+					double y2 = p.Dot(yprimes_seed[0])-s*w.Dot(yprimes_seed[0]);
+					double z1 = p.Dot(zprimes_seed[0])+s*w.Dot(zprimes_seed[0]);
+					double z2 = p.Dot(zprimes_seed[0])-s*w.Dot(zprimes_seed[0]);
+					major_error_line.DrawLine( z1, y1, z2, y2);
+				      }
+				      if(b1seed.size() > 0){
+					TF1 *trackline_yprime = new TF1("line", "[0]+[1]*x",minz_seed, maxz_seed);
+					trackline_yprime->SetParameter(0, b0seed[0]);
+					trackline_yprime->SetParameter(1, b1seed[0]);
+					trackline_yprime->SetLineColor(6);
+					trackline_yprime->Draw("same");
+              			    } 
+              			    ostringstream title;
+				      title << "Run: " << event.id().run()
+				      << "  Subrun: " << event.id().subRun()
+				      << "  Event: " << event.id().event()<<".root";
 
+				      text.SetTextAlign(11);
+				      text.DrawTextNDC( 0., 0.01, title.str().c_str() );
+              
+				      canvas_->Modified();
+				      canvas_->Update();
+				      canvas_->SaveAs(title.str().c_str());
+				      if ( clickToAdvance_ ){
+					cerr << "Double click in the Canvas " << moduleLabel_ << " to continue:" ;
+					gPad->WaitPrimitive();
+			      	      } else{
+					char junk;
+					cerr << "Enter any character to continue: ";
+					cin >> junk;
+				      }
+			      	        cerr << endl;
+			
+		}//end cosmic loop
+		}//display
+		}//end drift plotting
+        
+        
+        
       void CosmicFitDisplay::plot2d(const art::Event& event){
         _evt = event.id().event();  
         findData(event);

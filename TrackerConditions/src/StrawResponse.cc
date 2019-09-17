@@ -9,7 +9,7 @@ namespace mu2e {
    
   // simple line interpolation, this should be a utility function, FIXME!
   double StrawResponse::PieceLine(std::vector<double> const& xvals, std::vector<double> const& yvals, double xval){
-    
+    ;
     double yval;
     if(xvals.size() != yvals.size() || xvals.size() < 2)
       std::cout << "size error " << std::endl;

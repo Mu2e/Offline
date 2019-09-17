@@ -1,6 +1,4 @@
 #define _USE_MATH_DEFINES
-//S. Middleton, Feb 2019
-// C++ includes.
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -132,19 +130,31 @@ namespace mu2e
       TH1F* _InitErrTot;
       TH1F* _total_residualsX_Minuit;
       TH1F* _total_residualsY_Minuit;
-      TH1F* _A0MinuitDiff;
-      TH1F* _A1MinuitDiff;
-      TH1F* _B0MinuitDiff;
-      TH1F* _B1MinuitDiff;
+      TH1F* _A0MinuitFitDiff;
+      TH1F* _A1MinuitFitDiff;
+      TH1F* _B0MinuitFitDiff;
+      TH1F* _B1MinuitFitDiff;
+      TH1F* _A0Minuit;
+      TH1F* _A1Minuit;
+      TH1F* _B0Minuit;
+      TH1F* _B1Minuit;
+      TH1F* _A0MinuitMCDiff;
+      TH1F* _A1MinuitMCDiff;
+      TH1F* _B0MinuitMCDiff;
+      TH1F* _B1MinuitMCDiff;
+      
       //Drift diags:
       TH1F* _EndDOCAs;
       TH1F* _EndTimeResiduals;
       TH1F* _StartTimeResiduals;
       TH1F* _StartDOCAs;
-   
+      TH1F* _minuit_pullsX_final;
+      TH1F* _minuit_pullsY_final;
+      TH1F* _NLL;
+      TH2F* _NLL_v_Pulls;
       // add event id
       Int_t _evt; 
-
+      int N_not_converged= 0;
       // Event object Tags
       art::InputTag   _chtag;//combo
       art::InputTag   _tctag;//timeclusters
@@ -267,7 +277,7 @@ namespace mu2e
 	_A0_v_A1 = tfs->make<TH2F>("A_{0} v A_{1}", "A_{0} v A_{1}", 50, -0.2, 0.2, 50, -1500, 1500);
 	_A0_v_A1->GetXaxis()->SetTitle("A_{1}");
 	_A0_v_A1->GetYaxis()->SetTitle("A_{0}");
-	
+
 	
 	_B0_v_B1 = tfs->make<TH2F>("B_{0} v B_{1}", "B_{0} v B_{1}", 50, -0.2, 0.2, 50, -1500, 1500);
 	_B0_v_B1->GetXaxis()->SetTitle("B_{1}");
@@ -285,19 +295,19 @@ namespace mu2e
 	_B1_v_A1->GetXaxis()->SetTitle("B_{1}");
 	_B1_v_A1->GetYaxis()->SetTitle("A_{1} ");
 	
-	_parameter_pulls_A0 = tfs->make<TH1F>("Parameter Pull A_{0} ","Parameter Pull A_{0}" ,100,-200, 200);
+	_parameter_pulls_A0 = tfs->make<TH1F>("Parameter Pull A_{0} ","Parameter Pull A_{0}" ,100,-2000, 200);
 	_parameter_pulls_A0->GetXaxis()->SetTitle("Parameter Pull #A_{0}");
 	_parameter_pulls_A0->SetStats();
 	
-	_parameter_pulls_A1 = tfs->make<TH1F>("Parameter Pull A_{1}","Parameter Pull A_{1}" ,50,-10, 10);
+	_parameter_pulls_A1 = tfs->make<TH1F>("Parameter Pull A_{1}","Parameter Pull A_{1}" ,100,-50, 50);
 	_parameter_pulls_A1->GetXaxis()->SetTitle("Parameter Pull A_{1}");
 	_parameter_pulls_A1->SetStats();
 	
-	_parameter_pulls_B0 = tfs->make<TH1F>("Parameter Pull B_{0}" ,"Parameter Pull B_{0}",100,-200, 200);
-	_parameter_pulls_A0->GetXaxis()->SetTitle("Parameter Pull B_{0}");
-	_parameter_pulls_A0->SetStats();
+	_parameter_pulls_B0 = tfs->make<TH1F>("Parameter Pull B_{0}" ,"Parameter Pull B_{0}",100,-2000, 2000);
+	_parameter_pulls_B0->GetXaxis()->SetTitle("Parameter Pull B_{0}");
+	_parameter_pulls_B0->SetStats();
 	
-	_parameter_pulls_B1 = tfs->make<TH1F>("Parameter Pull B_{1}", "Parameter Pull B_{1}" ,50,-10, 10);
+	_parameter_pulls_B1 = tfs->make<TH1F>("Parameter Pull B_{1}", "Parameter Pull B_{1}" ,100,-50, 50);
 	_parameter_pulls_B1->GetXaxis()->SetTitle("Parameter Pull B_{1}");
 	_parameter_pulls_B1->SetStats();
 	
@@ -448,21 +458,69 @@ namespace mu2e
 	_StartTimeResiduals->GetXaxis()->SetTitle("Start Time Res [ns]");
 	_StartTimeResiduals->SetStats();
 	
-	_A0MinuitDiff = tfs->make<TH1F>(" A0 Minuit Diff "," A0 Minuit Diff" ,100,-100,100);
-	_A0MinuitDiff->GetXaxis()->SetTitle("#Delta A0 [ns]");
-	_A0MinuitDiff->SetStats();
+	_A0MinuitFitDiff = tfs->make<TH1F>(" A0 Minuit Diff "," A0 Minuit Diff" ,100,-100,100);
+	_A0MinuitFitDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
+	_A0MinuitFitDiff->SetStats();
 	
-	_A1MinuitDiff = tfs->make<TH1F>(" A1 Minuit Diff "," A1 Minuit Diff" ,100,-3,3);
-	_A1MinuitDiff->GetXaxis()->SetTitle("#Delta A1 [ns]");
-	_A1MinuitDiff->SetStats();
+	_A1MinuitFitDiff = tfs->make<TH1F>(" A1 Minuit Diff "," A1 Minuit Diff" ,100,-3,3);
+	_A1MinuitFitDiff->GetXaxis()->SetTitle("#Delta A1 ");
+	_A1MinuitFitDiff->SetStats();
 	
-	_B0MinuitDiff = tfs->make<TH1F>(" B0 Minuit Diff "," B0 Minuit Diff" ,100,-100,100);
-	_B0MinuitDiff->GetXaxis()->SetTitle("#Delta B0 [ns]");
-	_B0MinuitDiff->SetStats();
+	_B0MinuitFitDiff = tfs->make<TH1F>(" B0 Minuit Diff "," B0 Minuit Diff" ,100,-100,100);
+	_B0MinuitFitDiff->GetXaxis()->SetTitle("#Delta B0 [mm] ");
+	_B0MinuitFitDiff->SetStats();
 	
-	_B1MinuitDiff = tfs->make<TH1F>(" B1 Minuit Diff "," B1 Minuit Diff" ,100,-3,3);
-	_B1MinuitDiff->GetXaxis()->SetTitle("#Delta B1 [ns]");
-	_B1MinuitDiff->SetStats();
+	_B1MinuitFitDiff = tfs->make<TH1F>(" B1 Minuit Diff "," B1 Minuit Diff" ,100,-3,3);
+	_B1MinuitFitDiff->GetXaxis()->SetTitle("#Delta B1 ");
+	_B1MinuitFitDiff->SetStats();
+	
+	_minuit_pullsX_final = tfs->make<TH1F>("Miuit Pull X'' ","Minuit Pull X'' " ,200,-50, 50);
+	_minuit_pullsX_final->GetXaxis()->SetTitle("Minuit Pull X''");
+	
+	_minuit_pullsY_final = tfs->make<TH1F>("Minuit Pull Y'' ","Final Pull Y'' " ,200,-50, 50);
+	_minuit_pullsY_final->GetXaxis()->SetTitle("Minuit Pull Y''");
+	
+	_NLL = tfs->make<TH1F>(" PDF "," PDF" ,100,0,1000);
+	_NLL->GetXaxis()->SetTitle("PDF Min Val ");
+	_NLL->SetStats();
+	
+	_A0Minuit = tfs->make<TH1F>(" A0_{Minuit} "," A0_{Minuit} " ,50,-2000,2000);
+	_A0Minuit->GetXaxis()->SetTitle("#Delta A0 [mm]");
+	_A0Minuit->SetStats();
+	
+	_A1Minuit = tfs->make<TH1F>(" A1_{Minuit}  "," A1_{Minuit}" ,50,-1,1);
+	_A1Minuit->GetXaxis()->SetTitle("#Delta A1 ");
+	_A1Minuit->SetStats();
+	
+	_B0Minuit = tfs->make<TH1F>(" B0_{Minuit}"," B0_{Minuit} " ,50,-2000,2000);
+	_B0Minuit->GetXaxis()->SetTitle("#Delta B0 [mm]");
+	_B0Minuit->SetStats();
+	
+	_B1Minuit = tfs->make<TH1F>(" B1_{Minuit}  "," B1_{Minuit} " ,50,-1,1);
+	_B1Minuit->GetXaxis()->SetTitle("#Delta B1 ");
+	_B1Minuit->SetStats();
+	
+	_A0MinuitMCDiff = tfs->make<TH1F>(" A0_{Minuit} - A0_{MC} "," A0_{Minuit}" ,100,-2000,2000);
+	_A0MinuitMCDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
+	_A0MinuitMCDiff->SetStats();
+	
+	_A1MinuitMCDiff = tfs->make<TH1F>(" A1_{Minuit} - A1_{MC} "," A1_{Minuit} - A1_{MC}" ,100,-50,50);
+	_A1MinuitMCDiff->GetXaxis()->SetTitle("#Delta A1 ");
+	_A1MinuitMCDiff->SetStats();
+	
+	_B0MinuitMCDiff = tfs->make<TH1F>(" B0_{Minuit} - B0_{MC} "," B0_{Minuit} - B0_{MC}" ,50,-2000,2000);
+	_B0MinuitMCDiff->GetXaxis()->SetTitle("#Delta B0 [mm]");
+	_B0MinuitMCDiff->SetStats();
+	
+	_B1MinuitMCDiff = tfs->make<TH1F>(" B1_{Minuit} - B1_{MC}  "," B1_{Minuit} - B1_{MC}" ,100,-50,50);
+	_B1MinuitMCDiff->GetXaxis()->SetTitle("#Delta B1 ");
+	_B1MinuitMCDiff->SetStats();
+
+	_NLL_v_Pulls= tfs->make<TH2F>("NLL_v_Pulls", " NLL_v_Pulls", 1000, -2000, 2000, 1000, 0, 10000);
+	_NLL_v_Pulls->GetXaxis()->SetTitle("NLL");
+	_NLL_v_Pulls->GetYaxis()->SetTitle("Pulls");
+        N_not_converged = 0;
+	
         }
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
@@ -489,6 +547,7 @@ namespace mu2e
 		CosmicTrack st = sts._track;
 		TrkFitFlag const& status = sts._status;
         	if (!status.hasAllProperties(TrkFitFlag::StraightTrackOK) ){continue;}
+		if(st.converged == false or st.minuit_converged  == false) { continue;}
 		std::vector<int> panels, planes, stations;
                 _chisq_ndf_plot_init->Fill(st.Diag.InitialChiTot);
                 _chisq_ndf_plot_final->Fill(st.Diag.FinalChiTot);
@@ -510,7 +569,7 @@ namespace mu2e
                 _b0->Fill(st.FitParams.B0);
                 
                 _chiX_v_true_trackposX->Fill(st.FitParams.A0, st.Diag.FinalChiX);
-                _chiY_v_true_trackposY->Fill(st.TrueParams.B0, st.Diag.FinalChiY);
+                _chiY_v_true_trackposY->Fill(st.SeedTrueParams.B0, st.Diag.FinalChiY);
                
                 if(_mcdiag ){
                 	
@@ -518,20 +577,25 @@ namespace mu2e
 	                _mc_theta_angle->Fill(st.get_true_theta());//atan2(val,st.get_true_track_direction().z()));                   
 	                _chi_v_true_theta->Fill(st.get_true_theta(),st.get_true_chisq());
 	               
-		        _truea1->Fill(st.TrueParams.A1);
-		        _trueb1->Fill(st.TrueParams.B1);
-		        _truea0->Fill(st.TrueParams.A0);
-		        _trueb0->Fill(st.TrueParams.B0);
-		        
-                        _parameter_pulls_A0->Fill((st.TrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
-		        _parameter_pulls_A1->Fill((st.TrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
-		        _parameter_pulls_B0->Fill((st.TrueParams.B0 - st.FitParams.B0 )/(st.FitParams.Covarience.sigB0));
-		        _parameter_pulls_B1->Fill((st.TrueParams.B1 - st.FitParams.B1 )/(st.FitParams.Covarience.sigB1));
-		        
-		        _A0pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
-		        _A1pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
-		        _B0pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueParams.B0 - st.FitParams.B0 )/(st.FitParams.Covarience.sigB0));
-		        _B1pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueParams.B1 - st.FitParams.B1 )/(st.FitParams.Covarience.sigB1));
+		        _truea1->Fill(st.SeedTrueParams.A1);
+		        _trueb1->Fill(st.SeedTrueParams.B1);
+		        _truea0->Fill(st.SeedTrueParams.A0);
+		        _trueb0->Fill(st.SeedTrueParams.B0);
+		        /*
+                        _parameter_pulls_A0->Fill((st.SeedTrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
+		        _parameter_pulls_A1->Fill((st.SeedTrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
+		        _parameter_pulls_B0->Fill((st.SeedTrueParams.B0 - st.FitParams.B0 )/(st.FitParams.Covarience.sigB0));
+		        _parameter_pulls_B1->Fill((st.SeedTrueParams.B1 - st.FitParams.B1 )/(st.FitParams.Covarience.sigB1));
+		        */
+			_parameter_pulls_A0->Fill(st.RawTrueParams.A0 - st.FitEquationXYZ.Pos.X());///st.RawTrueParams.A0 (st.FitParams.Covarience.sigA0));
+		        _parameter_pulls_A1->Fill(st.RawTrueParams.A1 -st.FitEquationXYZ.Dir.X());///(st.FitParams.Covarience.sigA1));
+		        _parameter_pulls_B0->Fill(st.RawTrueParams.B0 - st.FitEquationXYZ.Pos.Y());///(st.FitParams.Covarience.sigB0));
+		        _parameter_pulls_B1->Fill(st.RawTrueParams.B1  - st.FitEquationXYZ.Dir.Y());///(st.FitParams.Covarience.sigB1));
+			
+		        _A0pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
+		        _A1pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
+		        _B0pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.B0 - st.FitParams.B0 )/(st.FitParams.Covarience.sigB0));
+		        _B1pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.B1 - st.FitParams.B1 )/(st.FitParams.Covarience.sigB1));
 		       
                 }
                 _Cov_Fit_A0->Fill(st.FitParams.Covarience.sigA0);
@@ -547,13 +611,57 @@ namespace mu2e
 	 	
                 _reco_phi_angle->Fill(st.get_fit_phi()); 
 		_niters->Fill(st.get_iter()); 
+	
+	
+		_A0MinuitFitDiff->Fill(st.MinuitFitParams.A0-st.FitParams.A0);
+		_A1MinuitFitDiff->Fill(st.MinuitFitParams.A1-st.FitParams.A1);
+		_B0MinuitFitDiff->Fill(st.MinuitFitParams.B0-st.FitParams.B0);
+		_B1MinuitFitDiff->Fill(st.MinuitFitParams.B1-st.FitParams.B1);
+		/*
+		if(st.MinuitFitParams.Covarience.sigA0 !=0){
+		_A0MinuitMCDiff->Fill((st.MinuitFitParams.A0-st.StrawLevelTrueParams.A0)/(st.MinuitFitParams.Covarience.sigA0));
+		}if(st.MinuitFitParams.Covarience.sigA1 !=0){
+		_A1MinuitMCDiff->Fill((st.MinuitFitParams.A1-st.StrawLevelTrueParams.A1)/(st.MinuitFitParams.Covarience.sigA1));
+		}if(st.MinuitFitParams.Covarience.sigB0 !=0){
+		_B0MinuitMCDiff->Fill((st.MinuitFitParams.B0-st.StrawLevelTrueParams.B0)/(st.MinuitFitParams.Covarience.sigB0));
+		}if(st.MinuitFitParams.Covarience.sigB1 !=0){
+		_B1MinuitMCDiff->Fill((st.MinuitFitParams.B1-st.StrawLevelTrueParams.B1)/(st.MinuitFitParams.Covarience.sigB1));
+	        }
+ 		*/
+
+              if(st.minuit_converged == true) {
 		
-		//if(st.minuit_converged == true){
-		  _A0MinuitDiff->Fill(st.MinuitFitParams.A0-st.FitParams.A0);
-		  _A1MinuitDiff->Fill(st.MinuitFitParams.A1-st.FitParams.A1);
-		  _B0MinuitDiff->Fill(st.MinuitFitParams.B0-st.FitParams.B0);
-		  _B1MinuitDiff->Fill(st.MinuitFitParams.B1-st.FitParams.B1);
-		//}
+	      if(_mcdiag ){
+		if(st.MinuitFitParams.Covarience.sigA0 !=0){
+		_A0MinuitMCDiff->Fill((st.RawTrueParams.A0- st.MinuitFitEquation.Pos.X()));///(st.MinuitFitParams.Covarience.sigA0));
+		}if(st.MinuitFitParams.Covarience.sigA1 !=0){
+		_A1MinuitMCDiff->Fill((st.RawTrueParams.A1 - st.MinuitFitEquation.Dir.X()));///(st.MinuitFitParams.Covarience.sigA1));
+	 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
+	        _B0MinuitMCDiff->Fill((st.RawTrueParams.B0- st.MinuitFitEquation.Pos.Y()));///(st.MinuitFitParams.Covarience.sigB0));
+		
+		}if(st.MinuitFitParams.Covarience.sigB1 !=0){
+		_B1MinuitMCDiff->Fill((st.RawTrueParams.B1 - st.MinuitFitEquation.Dir.Y()));//(st.MinuitFitParams.Covarience.sigB1));
+		}
+	       }
+	      }
+	      if(st.RawTrueParams.B0 - st.MinuitFitEquation.Pos.Y() > 500){ 
+		cout<<"Debugging  X "<<st.DriftDiag.NLL<<" Minuit pull: "<<(st.RawTrueParams.A0 - st.MinuitFitEquation.Pos.X())/(st.MinuitFitParams.Covarience.sigA0)<<" true "<<st.RawTrueParams.A0<<" Minuit "<<st.MinuitFitEquation.Pos.X()<<" Diff "<<(st.RawTrueParams.A0 - st.MinuitFitEquation.Pos.X())<<" Cov "<<(st.MinuitFitParams.Covarience.sigA0)<<" Seed pull: " <<(st.RawTrueParams.A0  - st.FitEquationXYZ.Pos.X())/(st.FitParams.Covarience.sigA0)<<" Diff "<<(st.RawTrueParams.A0  - st.FitEquationXYZ.Pos.X())<<" Cov "<<(st.FitParams.Covarience.sigA0)<<endl;
+
+	       cout<<"Debugging  X "<<st.DriftDiag.NLL<<" Minuit pull: "<<(st.RawTrueParams.A1 - st.MinuitFitEquation.Pos.X())/(st.MinuitFitParams.Covarience.sigA1)<<" true "<<st.RawTrueParams.A1<<" Minuit "<<st.MinuitFitEquation.Dir.X()<<" Diff "<<(st.RawTrueParams.A1 - st.MinuitFitEquation.Dir.X())<<" Cov "<<(st.MinuitFitParams.Covarience.sigA1)<<" Seed pull: " <<(st.RawTrueParams.A1  - st.FitEquationXYZ.Dir.X())/(st.FitParams.Covarience.sigA1)<<" Diff "<<(st.RawTrueParams.A1  - st.FitEquationXYZ.Dir.X())<<" Cov "<<(st.FitParams.Covarience.sigA1)<<endl;
+
+		cout<<"Debugging Y: "<<st.DriftDiag.NLL<<" Minuit pull: "<<(st.RawTrueParams.B0 - st.MinuitFitEquation.Pos.Y())/(st.MinuitFitParams.Covarience.sigB0)<<" true "<<st.RawTrueParams.B0<<" minuit "<<st.MinuitFitEquation.Pos.Y()<<" Diff "<<(st.RawTrueParams.B0 - st.MinuitFitEquation.Pos.Y())<<" Cov "<<(st.MinuitFitParams.Covarience.sigB0)<<" Seed pull: " <<(st.RawTrueParams.B0  - st.FitEquationXYZ.Pos.Y())/(st.FitParams.Covarience.sigB0)<<" Diff "<<(st.RawTrueParams.B0  - st.FitEquationXYZ.Pos.Y())<<" Cov "<<(st.FitParams.Covarience.sigB0)<<endl;
+
+	        cout<<"Debugging  Y "<<st.DriftDiag.NLL<<" Minuit pull: "<<(st.RawTrueParams.B1 - st.MinuitFitEquation.Dir.X())/(st.MinuitFitParams.Covarience.sigB1)<<" true "<<st.RawTrueParams.B1<<" Minuit "<<st.MinuitFitEquation.Dir.X()<<" Diff "<<(st.RawTrueParams.B1 - st.MinuitFitEquation.Dir.X())<<" Cov "<<(st.MinuitFitParams.Covarience.sigB1)<<" Seed pull: " <<(st.RawTrueParams.B1  - st.FitEquationXYZ.Dir.X())/(st.FitParams.Covarience.sigB1)<<" Diff "<<(st.RawTrueParams.B1  - st.FitEquationXYZ.Dir.X())<<" Cov "<<(st.FitParams.Covarience.sigB1)<<endl;
+		 cout<<" PDF "<<st.DriftDiag.NLL<<endl;
+	        cout<<"N not converged "<<N_not_converged<<endl;
+		
+	        }
+	        _A0Minuit->Fill(st.MinuitFitParams.A0);
+	        _A1Minuit->Fill(st.MinuitFitParams.A1);
+	        _B0Minuit->Fill(st.MinuitFitParams.B0);
+	        _B1Minuit->Fill(st.MinuitFitParams.B1);
+		_NLL->Fill(st.DriftDiag.NLL);
+		_NLL_v_Pulls->Fill((st.RawTrueParams.B0 - st.MinuitFitEquation.Pos.Y()), st.DriftDiag.NLL);
                 for(size_t i=0; i< st.Diag.InitErrTot.size();i++){
 		    _InitErrTot->Fill(st.Diag.InitErrTot[i]); 
                     _total_residualsX_init->Fill(st.Diag.InitialResidualsX[i]);             
@@ -578,6 +686,8 @@ namespace mu2e
 	        for(size_t i=0; i<st.DriftDiag.FinalResidualsX.size();i++){
 	            _total_residualsX_Minuit->Fill(st.DriftDiag.FinalResidualsX[i]);
 	            _total_residualsY_Minuit->Fill(st.DriftDiag.FinalResidualsY[i]);
+	            _minuit_pullsX_final->Fill(st.DriftDiag.FinalResidualsX[i]/sqrt(st.DriftDiag.FinalErrX[i]*st.DriftDiag.FinalErrX[i]+st.MinuitFitParams.Covarience.sigA0*st.MinuitFitParams.Covarience.sigA0+st.MinuitFitParams.Covarience.sigA1*st.MinuitFitParams.Covarience.sigA1));
+	            _minuit_pullsY_final->Fill(st.DriftDiag.FinalResidualsY[i]/sqrt(st.DriftDiag.FinalErrY[i]*st.DriftDiag.FinalErrY[i]+st.MinuitFitParams.Covarience.sigB0*st.MinuitFitParams.Covarience.sigB0+st.MinuitFitParams.Covarience.sigB1*st.MinuitFitParams.Covarience.sigB1));
 	        }
 	        for(size_t i=0; i<st.DriftDiag.EndDOCAs.size();i++){
 	            _StartDOCAs->Fill(st.DriftDiag.StartDOCAs[i]);

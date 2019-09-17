@@ -117,7 +117,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     Diag_t             _diag;
 
-    std::array<FaceZ_t,StrawId::_ntotalfaces>            _oTracker;//array of faces, length of number of faces
+    std::array<FaceZ_t,StrawId::_ntotalfaces>         _oTracker;//array of faces, length of number of faces
     ComboHitCollection                                _chHitsToProcess;
     std::vector<XYWVec>                               _chHitsWPos;
     std::vector<StrawDigiMC>		              _mcDigisToProcess;

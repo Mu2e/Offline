@@ -6,9 +6,11 @@
 #include "DataProducts/inc/XYZVec.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "Mu2eUtilities/inc/BuildMatrixSums.hh"
+
 #include<vector>
 #include<bitset>
 
+using CLHEP::Hep3Vector;
 using namespace std;
    //Struct To Hold Covarience Info:
    struct TrackCov{
@@ -77,6 +79,7 @@ using namespace std;
         double FinalChiX;
    	double FinalChiY;
    	double FinalChiTot;
+   	double NLL;
    	
    	std::vector<double> StartDOCAs;
    	std::vector<double> EndDOCAs;
@@ -122,15 +125,13 @@ namespace mu2e {
 	    TrackParams GetInitParams()const{ 
 	    	return InitParams;
 	    }
-	    TrackParams GetTrueParams()const{ 
-	    	return TrueParams;
-	    }
+	    
 	    void SetTrackDirection(XYZVec dir){
 	    	this->Direction = dir;
 	    }
 	 
 	    XYZVec GetTrackDirection() const{
-	    	//XYZVec Direction(FitParams.A1, FitParams.B1, 1);
+	    	XYZVec Direction(FitParams.A1, FitParams.B1, 1);
 	    	return Direction;
 	    }
 	    
@@ -143,6 +144,8 @@ namespace mu2e {
 	    	XYZVec Position(FitParams.A0, FitParams.B0, 0);
 	    	return Position;
 	    }
+  
+	    
 	    double get_true_chisq() const { return _true_chisq;}
 	     void clear_errors(); //clears track info and diagnostics
 	     void clear_parameters(); //clears just track info
@@ -155,8 +158,18 @@ namespace mu2e {
 	    void SetInitParams(TrackParams par){ 
 	    	this->InitParams = par;
 	    }
-	    void SetTrueParams(TrackParams par){ 
-	    	this->TrueParams = par;
+	   
+	    void SetSeedTrueParams(TrackParams par){ 
+	    	this->SeedTrueParams = par;
+	    }
+
+	    void SetStrawLevelTrueParams(TrackParams par){ 
+	    	this->StrawLevelTrueParams = par;
+	    }
+	    
+	    
+	    void SetRawTrueParams(TrackParams par){ 
+	    	this->RawTrueParams = par;
 	    }
 	    
 	    void SetMinuitParams(double par_a0, double par_a1, double par_b0, double par_b1, double par_t0 ){
@@ -164,7 +177,7 @@ namespace mu2e {
 	 	this->MinuitFitParams.A1 = par_a1;
 	 	this->MinuitFitParams.B0 = par_b0;
 	 	this->MinuitFitParams.B1 = par_b1;
-	  	this->MinuitFitParams.B1 = par_t0;
+	  	this->MinuitFitParams.T0 = par_t0;
 	    
 	    }
 	    void SetFitTrackCoOrdSystem(TrackAxes coordsys){
@@ -188,6 +201,18 @@ namespace mu2e {
 	    
 	    void SetTrackEquation(TrackEquation Track){ 
 	        this->FitEquation = Track;
+	     }
+
+	    void SetTrackEquationXYZ(TrackEquation Track){ 
+	        this->FitEquationXYZ = Track;
+	     }
+
+	    void SetMinuitTrackEquation(TrackEquation Track){ 
+	        this->MinuitFitEquation = Track;
+	     }
+	    
+	    void SetTrueTrackEquationXYZ(TrackEquation Track){ 
+	        this->TrueFitEquation = Track;
 	     }
 	    
 	    void set_true_phi(double track_angle){ TruePhi = track_angle;}
@@ -229,26 +254,43 @@ namespace mu2e {
 	     
 	    void SetInitErrorsY(double residual_err) { Diag.InitErrY.push_back(residual_err); }
 	    void SetFinalErrorsY(double residual_err) { Diag.FinalErrY.push_back(residual_err); }
+            void SetFirstPoint(double x, double y, double z){
+		FirstPoint.SetXYZ(x,y,z);
+		}
             //------------End Diag Fill---------------//
 	    void set_niter(int iter){_niters= (iter);}
 	    
-    	     TrackParams FitParams;
-             TrackParams InitParams;
-	     TrackParams TrueParams;
-	     
-	     TrackParams MinuitFitParams;
-	     TrackAxes MinuitCoordSystem;
-	     
-	     TrackAxes TrackCoordSystem;
-	     TrackAxes InitTrackCoordSystem;
-	     TrackAxes TrueTrackCoordSystem;
+    	     TrackParams FitParams; //Seed Fit
+             TrackParams InitParams; //Initial fit
+	     TrackParams SeedTrueParams; //True Params in Seed Fit Frame
+	     TrackParams StrawLevelTrueParams; //True Params in Drift Fit Frame
+	     TrackParams RawTrueParams;//untransformed true vlaues
+	     TrackParams MinuitFitParams; // Minuit Params
+
+	     TrackAxes MinuitCoordSystem;//Result from Minuit Fit
+	     TrackAxes TrackCoordSystem;//Seed Fit Result Axes
+	     TrackAxes InitTrackCoordSystem;//Initial Axes (start->end line)
+	     TrackAxes TrueTrackCoordSystem;//From Step Point MCs
+	    
+	     //These will become track representations LineFitTraj eventually TODO
 	     TrackEquation FitEquation;
-	     
+	     TrackEquation FitEquationXYZ;
+	     TrackEquation TrueFitEquation;
+	     TrackEquation MinuitFitEquation;
+
 	     TrackSeedDiag Diag;
 	     TrackDriftDiag DriftDiag;
 	     
-	     bool converged = false; // set default 
+	     XYZVec TrueTrueTrackDirection;
+	     XYZVec TrueTrueTrackPosition;
+
+	     XYZVec FirstPoint;
+	
+	    
+	     
+	     bool converged = false;
 	     bool minuit_converged = false;
+
   private:
 	    unsigned _Nhits;
 	    

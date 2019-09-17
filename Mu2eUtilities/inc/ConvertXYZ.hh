@@ -3,6 +3,8 @@
 
 #include "DataProducts/inc/XYZVec.hh"
 #include "BTrk/BbrGeom/HepPoint.h"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 
 using namespace mu2e;
 
@@ -24,6 +26,15 @@ XYZVec ConvertToXYZ(Hep3Vector vec1){
 
 XYZVec ConvertToXYZ(HepPoint vec1){
 	XYZVec XYZ(vec1.x(), vec1.y(), vec1.z());
+	return XYZ;
+
+}
+
+XYZVec ConvertToDetFrame(XYZVec vec){
+        Hep3Vector vec1(vec.x(),vec.y(),vec.z());
+        GeomHandle<DetectorSystem> det;
+        Hep3Vector vec2 = det->toDetector(vec1);
+	XYZVec XYZ(vec2.x(), vec2.y(), vec2.z());
 	return XYZ;
 
 }
