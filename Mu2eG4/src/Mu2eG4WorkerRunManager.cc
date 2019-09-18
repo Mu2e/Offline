@@ -64,7 +64,7 @@ namespace mu2e {
     
 // If the c'tor is called a second time, the c'tor of base will
 // generate an exception.
-    Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::string worker_ID):
+    Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::thread::id worker_ID):
     G4WorkerRunManager(),
     pset_(pset),
     m_managerInitialized(false),
@@ -107,8 +107,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     masterRM = mRM;
     
     std::cout << "starting WorkerRM::initializeThread on thread: " << workerID_ << std::endl;
-    //std::cout << "test_INT = " << perThreadObjects_->test_INT << std::endl;
-        
     G4Threading::G4SetThreadId(getThreadIndex());
         
     //should this be TL?
@@ -117,7 +115,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     
     //perThreadObjects_->UserActionInit->InitializeSteppingVerbose()
     if(m_steppingVerbose) {
-        
         
         //if(masterRM->GetUserActionInitialization())
         //{
@@ -138,18 +135,11 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     
     // Initialize worker part of shared resources (geometry, physics)
     G4WorkerThread::BuildGeometryAndPhysicsVector();
-
-    // Create unique_ptr to worker run manager
-//    perThreadObjects_->kernel = G4WorkerRunManagerKernel::GetRunManagerKernel();
-//    if (!perThreadObjects_->kernel) {
-//        std::cout << "Making a NEW kernel" << std::endl;
-//        perThreadObjects_->kernel = new G4WorkerRunManagerKernel();
-//    }
   
         
     // Set the geometry for the worker, share from master
     //This stuff happens in this call: localRM->Initialize();
-    //WHAT IF CALLED wrm->Initialze();?
+    //WHAT IF CALLED wrm->Initialize();?
  
     //G4RunManagerKernel* masterKernel = G4MTRunManager::GetMasterRunManagerKernel();
     //G4VPhysicalVolume* worldPV = masterKernel->GetCurrentWorld();
@@ -160,11 +150,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     //tM->SetWorldForTracking(worldPV);
     G4TransportationManager::GetTransportationManager()->SetWorldForTracking(worldPV);
     
-    //try this once I get the ptr made in perThreadStorage
-    //perThreadObjects_->userDetector = masterRM->GetUserDetectorConstruction();
-    //this->G4RunManager::SetUserInitialization( perThreadObjects_->userDetector );
-    //perThreadObjects_->userDetector->ConstructSDandField();
-        
     const G4VUserDetectorConstruction* detector = masterRM->GetUserDetectorConstruction();
     G4RunManager::SetUserInitialization( const_cast<G4VUserDetectorConstruction*>(detector) );
     const_cast<G4VUserDetectorConstruction*>(detector)->ConstructSDandField();
@@ -176,7 +161,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     
   
     //these called in G4RunManager::InitializePhysics()
-    
     G4StateManager::GetStateManager()->SetNewState(G4State_Init);
     kernel->InitializePhysics();
     

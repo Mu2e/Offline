@@ -32,8 +32,6 @@ namespace mu2e {
     Mu2eG4MTRunManager(const fhicl::ParameterSet& pset);
     virtual ~Mu2eG4MTRunManager();
         
-    static Mu2eG4MTRunManager* GetMasterRunManager();
-    
     //we need our own versions of these functions in order to correctly control the event loop
     void initializeG4(int art_runnumber);
     void initializeKernelAndRM();
@@ -41,9 +39,6 @@ namespace mu2e {
     void initializeMasterRunAction();
     void stopG4();
     void terminateRun();
-    void mu2eG4RunTermination();
-        
-    void Test_Func(int in);
         
     inline G4VUserPhysicsList* getMasterPhysicsList() {return physicsList_;}
     
@@ -57,9 +52,6 @@ namespace mu2e {
     Mu2eG4MTRunManager( Mu2eG4MTRunManager const & );
     Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & );
         
-    //Singleton implementing master thread behavior
-    static Mu2eG4MTRunManager* fMu2eMasterRM;
-        
     fhicl::ParameterSet pset_;
             
     bool m_managerInitialized;
@@ -72,7 +64,6 @@ namespace mu2e {
         
     int rmvlevel_;
         
-            
   };
   
 } // end namespace mu2e

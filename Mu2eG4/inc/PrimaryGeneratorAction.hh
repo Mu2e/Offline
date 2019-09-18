@@ -29,7 +29,6 @@
 class G4ParticleDefinition;
 class G4ParticleGun;
 class G4Event;
-class TH1D;
 
 namespace fhicl { class ParameterSet; }
 
@@ -49,16 +48,15 @@ namespace mu2e {
       PrimaryGeneratorAction();
       
       explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
-                                      Mu2eG4PerThreadStorage* tls);
+                                      Mu2eG4PerThreadStorage* pts);
       
       // This is the interface specified by G4.
       void GeneratePrimaries(G4Event*);
 
   private:
 
-      explicit PrimaryGeneratorAction(bool fillHistograms,
-                                      int verbosityLevel,
-                                      Mu2eG4PerThreadStorage* tls);
+      explicit PrimaryGeneratorAction(int verbosityLevel,
+                                      Mu2eG4PerThreadStorage* pts);
       
       void setEventData();
 
@@ -79,22 +77,9 @@ namespace mu2e {
       const HitHandles* hitInputs_;
       SimParticlePrimaryHelper* parentMapping_;
 
-      TH1D* _totalMultiplicity;
-
       int verbosityLevel_;
-<<<<<<< HEAD
-
-      int standardMu2eDetector_;
-      
-      GenEventBroker* genEventBroker_;
-      PerEventObjectsManager* perEvtObjManager;
-
-      bool preCreateIsomers_;
-      PDGCode::type pdgIdToGenerate_;
-=======
       
       Mu2eG4PerThreadStorage* perThreadObjects_;
->>>>>>> modifications for converting Mu2eG4_module to MT art
       
   };
 

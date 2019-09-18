@@ -48,9 +48,6 @@ using namespace std;
 
 namespace mu2e {
   
-    
-Mu2eG4MTRunManager* Mu2eG4MTRunManager::fMu2eMasterRM = 0;
-    
 // If the c'tor is called a second time, the c'tor of base will
 // generate an exception.
 Mu2eG4MTRunManager::Mu2eG4MTRunManager(const fhicl::ParameterSet& pset):
@@ -63,24 +60,11 @@ Mu2eG4MTRunManager::Mu2eG4MTRunManager(const fhicl::ParameterSet& pset):
     masterRunAction_(nullptr),
     physicsList_(nullptr),
     rmvlevel_(pset.get<int>("debug.diagLevel",0))
-    {
-        if ( fMu2eMasterRM )
-        {
-            throw cet::exception("MTRUNMANAGER")
-            << "Error: you are trying to create an MTRunManager when one already exists!\n";
-        }
-        fMu2eMasterRM = this;
-    }
+    {}
   
 // Destructor of base is called automatically.  No need to do anything.
 Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
     {}
-    
-    
-Mu2eG4MTRunManager* Mu2eG4MTRunManager::GetMasterRunManager()
-    {
-        return fMu2eMasterRM;
-    }
     
     
 void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
@@ -90,6 +74,8 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
             return;
         }
         
+        //this is the number of G4 Worker Threads.  It allows us to use the G4MT RunManager without having to create
+        // extra worker threads
         SetNumberOfThreads(1);
             
         declarePhysicsAndGeometry();
@@ -321,42 +307,16 @@ void Mu2eG4MTRunManager::terminateRun() {
             m_userRunAction = nullptr;
         }*/
         if ((G4MTRunManager::GetMTMasterRunManagerKernel()!=nullptr) && !m_runTerminated) {
-            G4MTRunManager::GetMTMasterRunManagerKernel()->RunTermination();
+            std::cerr << "CALLING RunTermination() from MTRunManager\n";
+            //G4MTRunManager::GetMTMasterRunManagerKernel()->RunTermination();
+            
+            G4RunManager::TerminateEventLoop();
+            G4RunManager::RunTermination();
+            
+        
         }
         m_runTerminated = true;
 }
-    
-    
-void Mu2eG4MTRunManager::Test_Func(int in)
-    {
-        std::cout << "FROM MASTER_RM::Test_Func, the integer is " << in << std::endl;
-        physicsList_->DumpList();
-        
-    }
-    
 
-////////////////////////// OLD STUFF BELOW HERE //////////////////////////
-    
-
-   
-    //we need control of the event loop in order to correctly break up the stages
-    //to fit within the art framework.  we were getting a hang using the G4MTRunManager
-    //version of RunTermination due to the call of WaitForEndEventLoopWorkers()
-    void Mu2eG4MTRunManager::mu2eG4RunTermination()
-    {
-        
-        if ( verboseLevel > 0 ) {
-            G4cout << __func__ << " called" << G4endl;
-        }
-        
-        G4RunManager::TerminateEventLoop();
-        G4RunManager::RunTermination();
-    }
-    
-    
-    
-    
-    
-    
     
 } // end namespace mu2e
