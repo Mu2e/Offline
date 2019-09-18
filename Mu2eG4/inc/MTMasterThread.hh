@@ -11,13 +11,9 @@
 //
 
 
-//G4 includes
-//#include "G4UserWorkerInitialization.hh"
-
 //C++ includes
-#include <iostream>
+
 #include <thread>
-#include <pthread.h>
 #include <mutex>
 #include <condition_variable>
 
@@ -49,22 +45,11 @@ private:
     
     const fhicl::ParameterSet& pset_;
     
-    void readES() const;
-    
     enum class ThreadState { NotExist = 0, BeginRun = 1, EndRun = 2, Destruct = 3 };
     
-
     std::shared_ptr<Mu2eG4MTRunManager> m_masterRunManager;
     std::thread m_masterThread;
     
-    // ES products needed for Geant4 initialization
-    /*mutable edm::ESWatcher<IdealGeometryRecord> idealGeomRcdWatcher_;
-    mutable edm::ESWatcher<IdealMagneticFieldRecord> idealMagRcdWatcher_;
-    mutable const DDCompactView* m_pDD;
-    mutable const cms::DDCompactView* m_pDD4hep;
-    mutable const MagneticField* m_pMF;
-    mutable const HepPDT::ParticleDataTable* m_pTable;
-    */
     mutable std::mutex m_protectMutex;
     mutable std::mutex m_threadMutex;
     mutable std::condition_variable m_notifyMasterCV;
