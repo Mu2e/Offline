@@ -17,8 +17,6 @@
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"
-#include "art_root_io/TFileDirectory.h"
-#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -51,9 +49,6 @@
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 
-// ROOT includes
-#include "TH1D.h"
-
 
 using namespace std;
 
@@ -62,22 +57,11 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill,
-                                                 int verbosityLevel,
-                                                 Mu2eG4PerThreadStorage* tls)
-    
+  PrimaryGeneratorAction::PrimaryGeneratorAction(int verbosityLevel, Mu2eG4PerThreadStorage* tls)
     :
-    _totalMultiplicity(nullptr),
     verbosityLevel_(verbosityLevel),
     perThreadObjects_(tls)
   {
-
-      //Cannot fill a ROOT histogram in multi-schedule mode.  Root is not a thread-safe library.
-      if(fill && art::Globals::instance()->nschedules()==1) {
-          art::ServiceHandle<art::TFileService> tfs;
-          _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
-      }
-
       if ( verbosityLevel_ > 0 ) {
           cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
       }
@@ -85,15 +69,13 @@ namespace mu2e {
   }
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
-    : PrimaryGeneratorAction(true, 0, nullptr)
+    : PrimaryGeneratorAction(0, nullptr)
   {}
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
                                                  Mu2eG4PerThreadStorage* tls)
     :
-    PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false),
-                           pset.get<int>("debug.diagLevel", 0),
-                           tls)
+    PrimaryGeneratorAction(pset.get<int>("debug.diagLevel", 0), tls)
     {}
 
 
@@ -182,11 +164,6 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
                 parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
 
             }
-        }
-
-        // Fill multiplicity histogram.
-        if(_totalMultiplicity){
-            _totalMultiplicity->Fill(parentMapping_->numPrimaries());
         }
 
     }

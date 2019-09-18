@@ -1,7 +1,7 @@
 //
 //
 // Author: Lisa Goodeough
-// Date: 2017/07/17
+// Date: 2019/07/17
 //
 //
 
@@ -9,10 +9,12 @@
 #include "Mu2eG4/inc/MTMasterThread.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
 
-
 //art includes
 #include "art/Framework/Principal/Run.h"
 #include "fhiclcpp/ParameterSet.h"
+
+//C++ includes
+#include <iostream>
 
 using namespace std;
 
@@ -85,9 +87,8 @@ MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
             // Cleanup
             std::cout << "MTMasterThread: start Mu2eG4MTRunManager destruction\n";
             std::cout << "Master thread: Am I unique owner of masterRunManager? "
-            << masterRunManager.unique() << std::endl;
+                      << masterRunManager.unique() << std::endl;
             
-            // must be done in this thread, segfault otherwise
             masterRunManager.reset();
             //G4PhysicalVolumeStore::Clean();
             
@@ -119,10 +120,7 @@ void MTMasterThread::beginRun() const {
     
         std::lock_guard<std::mutex> lk(m_protectMutex);
         std::unique_lock<std::mutex> lk2(m_threadMutex);
-        
-        // Reading from ES must be done in the main (CMSSW) thread
-        readES();
-        
+    
         m_masterThreadState = ThreadState::BeginRun;
         m_masterCanProceed = true;
         m_mainCanProceed = false;
@@ -186,57 +184,6 @@ void MTMasterThread::storeRunNumber(int art_runnumber)
 void MTMasterThread::readRunData(PhysicalVolumeHelper* phys_vol_help) const {
     
     m_masterRunManager->setPhysVolumeHelper(phys_vol_help);
-    
-}
-
-void MTMasterThread::readES() const {
-        
-        std::cout << "We are in the call to MTMasterThread::readES" << std::endl;
-        /*
-        
-        bool geomChanged = idealGeomRcdWatcher_.check(iSetup);
-        if (geomChanged && (!m_firstRun)) {
-            throw edm::Exception(edm::errors::Configuration)
-            << "[SimG4Core MTMasterThread]\n"
-            << "The Geometry configuration is changed during the job execution\n"
-            << "this is not allowed, the geometry must stay unchanged";
-        }
-        if (m_pUseMagneticField) {
-            bool magChanged = idealMagRcdWatcher_.check(iSetup);
-            if (magChanged && (!m_firstRun)) {
-                throw edm::Exception(edm::errors::Configuration)
-                << "[SimG4Core MTMasterThread]\n"
-                << "The MagneticField configuration is changed during the job execution\n"
-                << "this is not allowed, the MagneticField must stay unchanged";
-            }
-        }
-        // Don't read from ES if not the first run, just as in
-        if (!m_firstRun)
-            return;
-        
-        // DDDWorld: get the DDCV from the ES and use it to build the World
-        if (m_pGeoFromDD4hep) {
-            edm::ESTransientHandle<cms::DDCompactView> pDD;
-            iSetup.get<IdealGeometryRecord>().get(pDD);
-            m_pDD4hep = pDD.product();
-        } else {
-            edm::ESTransientHandle<DDCompactView> pDD;
-            iSetup.get<IdealGeometryRecord>().get(pDD);
-            m_pDD = pDD.product();
-        }
-        
-        if (m_pUseMagneticField) {
-            edm::ESHandle<MagneticField> pMF;
-            iSetup.get<IdealMagneticFieldRecord>().get(pMF);
-            m_pMF = pMF.product();
-        }
-        
-        edm::ESHandle<HepPDT::ParticleDataTable> fTable;
-        iSetup.get<PDTRecord>().get(fTable);
-        m_pTable = fTable.product();
-        
-        m_firstRun = false;
-    */
     
 }
     

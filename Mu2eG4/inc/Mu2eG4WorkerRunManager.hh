@@ -22,7 +22,8 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 // C++ includes
-#include <string>
+//#include <string>
+#include <thread>
 
 
 namespace art { class Event; }
@@ -47,7 +48,7 @@ namespace mu2e {
                 
   public:
     
-    Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::string worker_ID);
+        Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::thread::id worker_ID);
     virtual ~Mu2eG4WorkerRunManager();
     
     //**********************************************************
@@ -65,6 +66,9 @@ namespace mu2e {
         return perThreadObjects_.get();
     }
         
+        
+    //G4VUserPhysicsList* myphysicsList;
+        
   private:
             
         fhicl::ParameterSet pset_;
@@ -78,7 +82,7 @@ namespace mu2e {
     
         Mu2eG4MTRunManager* masterRM;
         
-        std::string workerID_;
+        std::thread::id workerID_;
         Mu2eG4ResourceLimits mu2elimits_;
         Mu2eG4TrajectoryControl trajectoryControl_;
         Mu2eG4MultiStageParameters multiStagePars_;
