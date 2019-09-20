@@ -224,7 +224,8 @@ namespace mu2e {
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
     fCaloY           = tpos.y();
-    fCaloZ           = tpos.z();
+    float     offset = _calorimeter->caloInfo().getDouble("diskCaseZLength")/2. + (_calorimeter->caloInfo().getDouble("BPPipeZOffset") + _calorimeter->caloInfo().getDouble("BPHoleZLength")+ _calorimeter->caloInfo().getDouble("FEEZLength"))/2. - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength");
+    fCaloZ           = tpos.z()-offset;
   }
 
 
@@ -756,8 +757,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // calorimeter cluster - point number nstations+1
 //-----------------------------------------------------------------------------
-    float zCl   = fCaloZ;
-    float phiCl = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
+    float zCl     = fCaloZ;
+    float phiCl   = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
     if (phiCl < 0) phiCl += 2*M_PI;
 
     phiVec[nstations] = phiCl;
