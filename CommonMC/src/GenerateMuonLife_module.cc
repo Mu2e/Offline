@@ -56,17 +56,17 @@ namespace mu2e {
     , rexp_(createEngine( art::ServiceHandle<SeedService>()->getSeed() ))
     , mean_(getMean(pset))
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-  {
-    std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
-    for(auto const& tag : inmaps ){
-      inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
+    {
+      std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
+      for(auto const& tag : inmaps ){
+        inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
+      }
+      consumesMany<SimParticleCollection>();
+      produces<SimParticleTimeMap>();
+      if(verbosityLevel_ > 0) {
+        std::cout<<"GenerateMuonLife initialized with meanLife = "<<mean_<<std::endl;
+      }
     }
-    consumesMany<SimParticleCollection>();
-    produces<SimParticleTimeMap>();
-    if(verbosityLevel_ > 0) {
-      std::cout<<"GenerateMuonLife initialized with meanLife = "<<mean_<<std::endl;
-    }
-  }
 
   //================================================================
   double GenerateMuonLife::getMean(const  fhicl::ParameterSet& pset) {
@@ -96,24 +96,24 @@ namespace mu2e {
       for(const auto& iter : *ih) {
         if(iter.second.isPrimary()) {
           art::Ptr<SimParticle> part(ih, iter.first.asUint());
-	  // don't re-simulate if particle is already present.  This can happen if there is an input map
-	  if(res->find(part) == res->end()){
+          // don't re-simulate if particle is already present.  This can happen if there is an input map
+          if(res->find(part) == res->end()){
 
-	    if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
-		part->genParticle()->generatorId() == GenId::dioTail                       ||
-		part->genParticle()->generatorId().isConversion()  || 
-		part->genParticle()->generatorId() == GenId::ExternalRMC          ||
-		part->genParticle()->generatorId() == GenId::InternalRMC )
+            if(part->genParticle()->generatorId() == GenId::StoppedParticleReactionGun    ||
+               part->genParticle()->generatorId() == GenId::dioTail                       ||
+               part->genParticle()->generatorId().isConversion()  ||
+               part->genParticle()->generatorId() == GenId::ExternalRMC          ||
+               part->genParticle()->generatorId() == GenId::InternalRMC )
 
-	    {
-	      (*res)[part] = rexp_.fire(mean_);
-	    }
-	    else
-	    {
-	      (*res)[part] = 0;
-	    }
-	  }
-	}
+              {
+                (*res)[part] = rexp_.fire(mean_);
+              }
+            else
+              {
+                (*res)[part] = 0;
+              }
+          }
+        }
       }
     }
 
