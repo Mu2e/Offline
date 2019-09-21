@@ -43,7 +43,7 @@
 // table entries.
 //
 // =NB1= No wrapping functionality is available if a time range is
-//       specified that is larger than the nominal 1695-ns microbunch 
+//       specified that is larger than the nominal 1695-ns microbunch
 //       time cycle.
 //
 // =NB2= The proton pulse is always centered at 0 ns.
@@ -55,9 +55,9 @@
 //       but is unlikely to result in any noticeable effect.
 
 namespace mu2e{
-  
+
   ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
-                                         const fhicl::ParameterSet pset ) 
+                                         const fhicl::ParameterSet pset )
     : accPar_      ( &*ConditionsHandle<AcceleratorParams>( "ignored" ) )
     , pulseEnum_   ( pset.get<std::string>("pulseType","default") )
     , tmin_        ( pset.get<double>("tmin", setTmin() ) )
@@ -69,8 +69,8 @@ namespace mu2e{
     , acdipole_    ( loadTable<2>(          ConfigFileLookupPolicy()( accPar_->acDipole ) ) )
     , spectrum_    ( setSpectrum() )
     , randSpectrum_( engine, &spectrum_.front(), times_.size() )
-  {}  
-  
+  {}
+
 
   //============================================================================================================
   double ProtonPulseRandPDF::fire() {
@@ -84,7 +84,7 @@ namespace mu2e{
     double min(0.);
     if ( pulseEnum_ == DEFAULT ) min = -accPar_->limitingHalfWidth;
     if ( pulseEnum_ == TOTAL   ) min = -accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == OOT     ) min =  accPar_->limitingHalfWidth;              
+    if ( pulseEnum_ == OOT     ) min =  accPar_->limitingHalfWidth;
     if ( pulseEnum_ == ALLFLAT ) min = -accPar_->limitingHalfWidth;
     return min;
   }
@@ -93,12 +93,12 @@ namespace mu2e{
   double ProtonPulseRandPDF::setTmax() {
     double max(0.);
     if ( pulseEnum_ == DEFAULT ) max = accPar_->limitingHalfWidth;
-    if ( pulseEnum_ == TOTAL   ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;                       
+    if ( pulseEnum_ == TOTAL   ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;
     if ( pulseEnum_ == OOT     ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;
     if ( pulseEnum_ == ALLFLAT ) max = accPar_->deBuncherPeriod - accPar_->limitingHalfWidth;
     return max;
   }
-  
+
   //============================================================================================================
   std::vector<double> ProtonPulseRandPDF::setTimes() {
     std::vector<double> times;
@@ -136,18 +136,18 @@ namespace mu2e{
 
   //============================================================================================================
   std::vector<double> ProtonPulseRandPDF::setSpectrum() {
-    
+
     std::vector<double> spectrum;
     spectrum.reserve( times_.size() );
-    
+
     if ( pulseEnum_ == ALLFLAT ) {
       spectrum = std::vector<double>( times_.size() , 1. );
     }
     else {
-      
+
       for ( const auto& t : times_ )
         spectrum.push_back( pulseShape_.getValueAtKey(t).at(0)*acdipole_.getValueAtKey(t).at(0) );
-      
+
     }
     return spectrum;
   }
@@ -158,13 +158,13 @@ namespace mu2e{
     auto const& shapevec = potShape.getShape( potShape(0,0), potShape( potShape.getNrows()-1, 0 ), tres_ );
 
     double num(0.), denom(0.);
-    std::for_each( shapevec.begin(), shapevec.end(), 
-                   [&](const TableRow<2>& pt ) 
+    std::for_each( shapevec.begin(), shapevec.end(),
+                   [&](const TableRow<2>& pt )
                    {
                      if ( std::abs(pt.first) >= accPar_->limitingHalfWidth ) { num += pt.second.at(0);}
                      else denom += pt.second.at(0);
                    } );
-    
+
     return num/denom;
   }
 

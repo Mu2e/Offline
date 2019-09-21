@@ -1,7 +1,7 @@
 #ifndef ProtonPulseRandPDF_hh
 #define ProtonPulseRandPDF_hh
 
-//  
+//
 // Constructor of a PDF to extract random times to describe the proton pulse
 //
 // $Id: ProtonPulseRandPDF.hh,v 1.11 2014/04/25 17:26:42 knoepfel Exp $
@@ -40,7 +40,7 @@ namespace mu2e {
     }
     static std::map<enum_type,std::string> const& names() {
       static std::map<enum_type,std::string> nam;
-      
+
       if ( nam.empty() ) {
         nam[unknown] = "unknown";
         nam[DEFAULT] = "default";
@@ -48,16 +48,16 @@ namespace mu2e {
         nam[OOT]     = "oot";
         nam[ALLFLAT] = "allflat";
       }
-      
+
       return nam;
     }
   };
-  
+
   typedef EnumToStringSparse<ProtonPulseEnumDetail> ProtonPulseEnum;
 
-  // ==================================================================    
+  // ==================================================================
   // ProtonPulseRandPDF class declaration
-  // ==================================================================    
+  // ==================================================================
   class ProtonPulseRandPDF : public ProtonPulseEnum {
   public:
     ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
@@ -74,13 +74,13 @@ namespace mu2e {
     const AcceleratorParams* accPar_;
 
     const ProtonPulseEnum pulseEnum_;
-    
+
     const double tmin_;
     const double tmax_;
     const double tres_;
     const std::vector<double> times_;
-    
-    const double extFactor_;    
+
+    const double extFactor_;
     const Table<2> pulseShape_;
     const Table<2> acdipole_;
 
