@@ -57,6 +57,26 @@
 namespace mu2e{
 
   ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
+                                         const Config& conf)
+    : accPar_      ( &*ConditionsHandle<AcceleratorParams>( "ignored" ) )
+    , pulseEnum_   ( conf.pulseType() )
+    , tmin_        ( setTmin() )
+    , tmax_        ( setTmax() )
+    , tres_        ( conf.tres() )
+    , times_       ( setTimes() )
+    , extFactor_   ( determineIntrinsicExt( ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
+    , pulseShape_  ( setPotPulseShape(      ConfigFileLookupPolicy()( accPar_->potPulse ) ) )
+    , acdipole_    ( loadTable<2>(          ConfigFileLookupPolicy()( accPar_->acDipole ) ) )
+    , spectrum_    ( setSpectrum() )
+    , randSpectrum_( engine, &spectrum_.front(), times_.size() )
+  {
+    // Process optional FHICL parameters: modify the values set in the
+    // initialization list if job config supplies overrides.
+    conf.tmin(tmin_);
+    conf.tmax(tmax_);
+  }
+
+  ProtonPulseRandPDF::ProtonPulseRandPDF(art::RandomNumberGenerator::base_engine_t& engine,
                                          const fhicl::ParameterSet pset )
     : accPar_      ( &*ConditionsHandle<AcceleratorParams>( "ignored" ) )
     , pulseEnum_   ( pset.get<std::string>("pulseType","default") )
