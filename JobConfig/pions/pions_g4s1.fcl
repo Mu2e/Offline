@@ -100,7 +100,6 @@ physics : {
             userModuleLabel          : true
             useInstanceName          : true
             useProcessName           : false
-            maxStepPointMultiplicity : 500
         }
     } // analyzers
 
