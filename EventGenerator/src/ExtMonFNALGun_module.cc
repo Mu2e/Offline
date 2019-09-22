@@ -52,6 +52,9 @@ namespace mu2e {
     , engine_{createEngine(art::ServiceHandle<SeedService>{}->getSeed())}
     {
       produces<GenParticleCollection>();
+      if(conf_.empty()) {
+        throw cet::exception("BADCONFIG")<<"Error: no ExtMon guns defined.\n";
+      }
     }
 
   void ExtMonFNALGun::beginRun(art::Run&) {
