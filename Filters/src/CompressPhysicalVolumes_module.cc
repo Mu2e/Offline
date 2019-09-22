@@ -44,24 +44,43 @@ namespace mu2e {
     void endSubRun(art::SubRun& sr) override;
 
   public:
-    explicit CompressPhysicalVolumes(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> volumesInput {
+        Name("volumesInput"),
+          Comment("The collection to compress")
+          };
+
+      fhicl::Sequence<art::InputTag> hitInputs {
+        Name("hitInputs"),
+          Comment("A list of StepPointMCCollections; physical volumes referred to by corresponding SimParticles will be kept.")
+          };
+
+      fhicl::Sequence<art::InputTag> particleInputs {
+        Name("particleInputs"),
+          Comment("A list of SimParticleCollections; physical volumes referred to by the particles will be kept.")
+          };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit CompressPhysicalVolumes(const Parameters& conf);
   };
 
   //================================================================
-  CompressPhysicalVolumes::CompressPhysicalVolumes(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset},
-      volumesToken_{consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(pset.get<std::string>("volumesInput"))}
+  CompressPhysicalVolumes::CompressPhysicalVolumes(const Parameters& conf)
+    : art::EDProducer{conf},
+    volumesToken_{consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(conf().volumesInput())}
   {
     produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
-    typedef std::vector<std::string> VS;
-    const VS hi(pset.get<VS>("hitInputs"));
-    for(const auto& i : hi) {
+    for(const auto& i : conf().hitInputs()) {
       hitTokens_.emplace_back(consumes<StepPointMCCollection>(i));
     }
 
-    const VS pi(pset.get<VS>("particleInputs"));
-    for(const auto& i : pi) {
+    for(const auto& i : conf().particleInputs()) {
       particleTokens_.emplace_back(consumes<SimParticleCollection>(i));
     }
   }
