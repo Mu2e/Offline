@@ -156,7 +156,7 @@ namespace mu2e {
         , nt_(tr)
         , mrb_(mainRecordBranch)
 
-        , pieb_(tr->GetBranch(pset.get<std::string>("pieBranchName").c_str()))
+        , pieb_(nullptr)
         , particleInEvent_(-1)
 
         , recordUseFraction_(recordUseFraction)
@@ -164,6 +164,9 @@ namespace mu2e {
         , currentEntry_(0)
         , numUsedNtupleEntries_(0)
       {
+        const std::string pbn = pset.get<std::string>("pieBranchName");
+        pieb_ = tr->GetBranch(pbn.c_str());
+
         mrb_->SetAddress(&ntr_);
 
         if(!pieb_) {
