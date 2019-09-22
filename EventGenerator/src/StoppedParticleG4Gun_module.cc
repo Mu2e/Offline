@@ -48,21 +48,43 @@ namespace mu2e {
     double mass_;
     int verbosityLevel_;
 
-    RootTreeSampler<IO::StoppedParticleF> stops_;
+    typedef RootTreeSampler<IO::StoppedParticleF> RTS;
+    RTS stops_;
 
   public:
-    explicit StoppedParticleG4Gun(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<int> pdgId { Name("pdgId"), Comment("PDG ID of the particle to place.")};
+
+      fhicl::Atom<int> verbosityLevel{
+        Name("verbosityLevel"),
+          Comment("A positive value generates more printouts than the default."),
+          0
+          };
+
+      fhicl::Table<RTS::Config> muonStops {
+        Name("muonStops"),
+          Comment("RootTreeSampler settings")
+          };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit StoppedParticleG4Gun(const Parameters& conf);
+
     virtual void produce(art::Event& event);
   };
 
   //================================================================
-  StoppedParticleG4Gun::StoppedParticleG4Gun(const fhicl::ParameterSet& pset)
-    : EDProducer{pset}
-    , pdgId_(PDGCode::type(pset.get<int>("pdgId")))
+  StoppedParticleG4Gun::StoppedParticleG4Gun(const Parameters& conf)
+    : EDProducer{conf}
+    , pdgId_(PDGCode::type(conf().pdgId()))
     , mass_(GlobalConstantsHandle<ParticleDataTable>()->particle(pdgId_).ref().mass().value())
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , verbosityLevel_(conf().verbosityLevel())
     , stops_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
-             pset.get<fhicl::ParameterSet>("muonStops"))
+             conf().muonStops())
   {
     produces<mu2e::GenParticleCollection>();
 
