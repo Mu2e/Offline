@@ -36,23 +36,44 @@ namespace mu2e {
 
   //================================================================
   class InFlightParticleSampler : public art::EDProducer {
-    RootTreeSampler<std::vector<IO::InFlightParticleD>, IO::InFlightParticleD > particles_;
+    typedef RootTreeSampler<std::vector<IO::InFlightParticleD>, IO::InFlightParticleD > RTS;
+    RTS particles_;
+
     const mu2e::ParticleDataTable *pdt_;
     int verbosityLevel_;
 
   public:
-    explicit InFlightParticleSampler(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<int> verbosityLevel{
+        Name("verbosityLevel"),
+          Comment("A positive value generates more printouts than the default."),
+          0
+          };
+
+      fhicl::Table<RTS::Config> particles {
+        Name("particles"),
+          Comment("RootTreeSampler settings")
+          };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit InFlightParticleSampler(const Parameters& conf);
+
     virtual void produce(art::Event& event);
   };
   //================================================================
-  InFlightParticleSampler::InFlightParticleSampler(const fhicl::ParameterSet& pset)
-    : EDProducer{pset}
+  InFlightParticleSampler::InFlightParticleSampler(const Parameters& conf)
+    : EDProducer{conf}
     , particles_(createEngine(art::ServiceHandle<SeedService>()->getSeed()),
-                 pset.get<fhicl::ParameterSet>("particles"))
+                 conf().particles())
 
     , pdt_(&*GlobalConstantsHandle<ParticleDataTable>())
 
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
+    , verbosityLevel_(conf().verbosityLevel())
   {
     produces<mu2e::GenParticleCollection>();
 
