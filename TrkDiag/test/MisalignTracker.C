@@ -37,7 +37,8 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
   << " sigalpha = "<< sigalpha << " rad" 
   << " sigpos = "<< sigpos << " mm"
   << endl;
-  
+ 
+  os << "TABLE TrkAlignPlane" << endl;
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
     double planez = (iplane-float(NPlanes)/2.0)*planezgap;
     double dalphax = myrand.Gaus(0.0,sigalpha);
@@ -47,16 +48,13 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
     double dy = myrand.Gaus(planez*yskew/trackerlen,sigpos);
     double dz = myrand.Gaus(planez*rsqueeze/trackerlen,sigpos);
 
-    os << "Plane " << iplane 
-      << " dalpha : [ "
-      << dalphax << " , "
-      << dalphay << " , "
-      << dalphaz << " ] "
-      << " dpos : [ "
-      << dx << " , "
-      << dy << " , "
-      << dz << " ] "
-      << endl;
+    os << iplane << ", " 
+      << dx << ", "
+      << dy << ", "
+      << dz << ", "
+      << dalphax << ", "
+      << dalphay << ", "
+      << dalphaz << endl;
   }
 
 }
