@@ -1,0 +1,4 @@
+physics.producers.SelectRecoMC.KFFInstances : [ "KFFDeM", "KFFDeP"]
+physics.producers.SelectRecoMC.MHInstances  : ["MHDeM", "MHDeP" ]
+physics.filters.RecoFilter.TrkTags : [ "KFFDeM", "KFFDeP"]
+physics.filters.RecoFilter.MomentumCutoff : [ 60.0, 60.0 ]

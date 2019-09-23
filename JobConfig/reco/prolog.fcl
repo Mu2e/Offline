@@ -1,4 +1,4 @@
-#
+
 #  Prolog for production reconstruction jobs
 #
 #include "TrkHitReco/fcl/prolog.fcl"
@@ -222,8 +222,7 @@ Reconstruction : {
 # Calo and CRV should be defined elswehere, FIXME!
 # separate MC info FIXME!
  # define reco products to keep
-  ToKeep : [ "drop *_*_*_*",
-	    "keep *_genCounter_*_*",
+  ToKeep : ["keep *_genCounter_*_*",
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
@@ -277,6 +276,15 @@ Reconstruction.RecoPath : [
 # Full reco path with MC
 Reconstruction.RecoMCPath : [
   @sequence::Reconstruction.RecoPath,
+  @sequence::Reconstruction.RecoMCSequence,
+  RecoFilter
+]
+# Special path for validation
+Reconstruction.DePath : [
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
+  @sequence::TrkHitReco.PrepareHits, # Track hit
+  @sequence::Reconstruction.DeSequence,
+  @sequence::Reconstruction.CrvRecoSequence,
   @sequence::Reconstruction.RecoMCSequence,
   RecoFilter
 ]
