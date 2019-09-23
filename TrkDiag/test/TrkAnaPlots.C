@@ -94,7 +94,7 @@ class TrkAnaPlots {
 };
 
 void TrkAnaPlots::BuildCuts(float momwin){
-  char ctext[80];
+  char ctext[200];
 
   _reco = TCut("de.status>0");
   _ele = TCut("abs(demc.pdg)==11");
@@ -109,23 +109,26 @@ void TrkAnaPlots::BuildCuts(float momwin){
   double t0max(1650.0);
   double eminusmom(105.0);
   double eplusmom(92.3);
-  snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
+  snprintf(ctext,200,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
   _rpitch = TCut(ctext);
-  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
+  snprintf(ctext,200,"de.t0>%f&&de.t0<%f",t0min,t0max);
   _livegate = TCut(ctext);
   _opa = TCut("abs(deent.d0<105) && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680");
   _upstream = TCut("ue.status<0");
-  _pbi = TCut("evtwt.PBIWeight"); 
-  _CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
+  _pbi = TCut("evtwt.PBIWeight");
+  double crvlow(-50.0);
+  double crvhigh(150.0);
+  snprintf(ctext,200,"bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<%5.1f||de.t0-crvinfo._timeWindowStart[bestcrv]>%5.1f)",crvlow,crvhigh);
+  _CRV = TCut(ctext);
   _eminustq = TCut("dequal.TrkQualDeM>0.8");
   _eplustq = TCut("dequal.TrkQualDeP>0.8");
   _eminuspid = TCut("dequal.TrkPIDDeM>0.95");
   _epluspid = TCut("dequal.TrkPIDDeP>0.95");
   _eminustrig = TCut("(trigbits&0x208)>0"); // negative, TrkPatRec or CalPatRec
   _eplustrig = TCut("(trigbits&0x410)>0"); // positive, TrkPatRec or CalPatRec
-  snprintf(ctext,80,"abs(deent.mom-%f)<%f",eminusmom,momwin);
+  snprintf(ctext,200,"abs(deent.mom-%f)<%f",eminusmom,momwin);
   _eminusrmom = TCut(ctext);
-  snprintf(ctext,80,"abs(deent.mom-%f)<%f",eplusmom,momwin);
+  snprintf(ctext,200,"abs(deent.mom-%f)<%f",eplusmom,momwin);
   _eplusrmom = TCut(ctext);
   _downstream = TCut("demcxit.momz>0");
   _physics = _rpitch+_opa+_livegate;
@@ -1624,12 +1627,14 @@ void TrkAnaPlots::Upstream() {
 
 void TrkAnaPlots::PBI(unsigned ngen, int charge) {
   TCut truece("demc.gen==2");
-  TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
-  TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
-  TH1F* emeff = new TH1F("emeff","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
-  TH1F* epeff = new TH1F("epeff","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
-  TH1F* emeffw = new TH1F("emeffw","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
-  TH1F* epeffw = new TH1F("epeffw","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+    TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
+    TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
+//  TCut emall = _eminustrig+_CRV+truece;
+//  TCut epall = _eplustrig+_CRV+truece;
+  TH1F* emeff = new TH1F("emeff","Selection Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeff = new TH1F("epeff","Selection Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* emeffw = new TH1F("emeffw","Signal Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeffw = new TH1F("epeffw","Signal Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
   emeff->Sumw2();
   epeff->Sumw2();
   emeffw->Sumw2();
@@ -1641,19 +1646,24 @@ void TrkAnaPlots::PBI(unsigned ngen, int charge) {
   double median = exp(mu);
   ln->SetParameters(3.0*ngen/100,sigma,0.0,median);
   TCanvas* effcan = new TCanvas("effcan","effcan",800,600);
+  effcan->Divide(1,2);
   if(charge<0){
     _tn->Project("emeff","evtwt.PBIWeight",emall);
     _tn->Project("emeffw","evtwt.PBIWeight",emall*_pbi);
-    cout << "tracks passing cuts = " << emeff->GetEntries() << " naive efficiency " << emeff->GetEntries()/ngen
-    << " net efficiency = " << emeffw->Integral()/ngen << endl;
+    double neteff = emeffw->Integral()/ngen;
+    cout << "tracks passing cuts = " << emeff->GetEntries() << " net signal efficiency = " <<  neteff << endl;
     emeff->Divide(ln);
-    emeff->SetMaximum(0.25);
-    emeff->SetMinimum(0.05);
+    emeff->SetMaximum(neteff+0.1);
+    emeff->SetMinimum(neteff-0.1);
+    effcan->cd(1);
     emeff->Fit("pol1");
+    effcan->cd(2);
+    emeffw->Scale(1.0/ngen);
+    emeffw->Draw();
 // compute the convolution efficiency
-    TF1* line = emeff->GetFunction("pol1");
-    line->SetName("line");
-    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
+//    TF1* line = emeff->GetFunction("pol1");
+//    line->SetName("line");
+//    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
 
   } else {
     _tp->Project("epeff","evtwt.PBIWeight",epall);
