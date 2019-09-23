@@ -1,5 +1,7 @@
 #include "Mu2eUtilities/inc/DriftFitUtils.hh"
 #include "Mu2eUtilities/inc/ConvertXYZ.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
+
 #include "Math/VectorUtil.h"
 #include "TMath.h"
 #include "Math/Math.h"
@@ -36,63 +38,43 @@ void SetHitLen(double length){
 
 }
 
-/*
-The old formalism (NB WILL DELETE ONCE WORKING)
-TrkPoca DriftFitUtils::GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
-		//Get the current position and direction vectora
-		XYZVec track_position(a0,b0,0);
-		XYZVec track_direction(a1,b1,1);
-		track_direction= track_direction.Unit();
-                //Get the current co-ordinate system:
-		TrackAxes MinuitCoordSystem = ParametricFit::GetTrackAxes(track_direction);
-		
-                //Get straw details
-      		const CLHEP::Hep3Vector& spos = straw.getMidPoint();
-      		const CLHEP::Hep3Vector& sdir = straw.getDirection();
-      		//Get wire details:
- 		//CLHEP::Hep3Vector wpos = //spos + chit.wireDist()*sdir;//TODO - should be just spos
-      		XYZVec wire_position = ConvertToXYZ(spos);
-                XYZVec wire_direction= ConvertToXYZ(sdir);
-             
-                XYZVec wire_prime_position(wire_position.Dot(MinuitCoordSystem._XDoublePrime),wire_position.Dot(MinuitCoordSystem._YDoublePrime),wire_position.Dot(MinuitCoordSystem._ZPrime));
-                XYZVec wire_prime_direction(wire_direction.Dot(MinuitCoordSystem._XDoublePrime), wire_direction.Dot(MinuitCoordSystem._YDoublePrime), wire_direction.Dot(MinuitCoordSystem._ZPrime));
-      	     
-      		HepPoint pointwire = ConvertToHepPoint(wire_prime_position);
-      		HepPoint tpos = ConvertToHepPoint(track_position);
-      		Hep3Vector tdir = ConvertToHep3Vector(track_direction);
-      		Hep3Vector wdir = ConvertToHep3Vector(wire_prime_direction);
-                
-      		double fltlen = (fabs((spos.z()-tpos.z())/tdir.z())); //along the track = spos.z() in  prime frame
-	        SetFltLen(fltlen);
-	 	double hitlen = fabs(wdir.dot(tpos - spos)); //distance from track to wire centre, i.e dist along the straw
-	 	SetHitLen(hitlen);
-      		TrkLineTraj wire(pointwire,wdir);//NOTE: Print statmenet comes from here, chit.wireDist()-chit.wireRes(),chit.wireDist()+chit.wireRes());
-      		TrkLineTraj track(tpos,tdir);
-      		
-      		TrkPoca hitpoca(track,fltlen,wire,hitlen);
-      		return hitpoca;
-     }
 
+double DriftFitUtils::GetTestDOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
+	XYZVec track_position(a0,b0,0);
+	XYZVec track_direction(a1,b1,1);
 
-*/
+	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
+	const CLHEP::Hep3Vector& sdir = straw.getDirection();
+	
+	XYZVec wire_position = ConvertToXYZ(spos);
+        XYZVec wire_direction= ConvertToXYZ(sdir);
+	
+	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
+                track_direction,
+                wire_position,
+                wire_direction,
+                1.e-8);
+	
+        double dca; 
+	dca = PCA.dca();     		
+	//ParametricFit::LineToLineDCA(track_position, track_direction, wire_position, wire_direction, dca);
+	return dca;
+}
+
 TrkPoca DriftFitUtils::GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
 		//Get the current position and direction vector NB: this is such that the parameter is "z" coordinate and the position is the point in X or Y where z=0 respectively.
 		XYZVec track_position(a0,b0,0);
 		XYZVec track_direction(a1,b1,1);
-		cout<<"Debugging "<<track_position<<" "<<track_direction<<endl;
+		
 		track_direction = track_direction.Unit();
-	        cout<<" unit "<<track_direction<<endl;
-                
+	        
                 //Get straw details
       		const CLHEP::Hep3Vector& spos = straw.getMidPoint();
       		const CLHEP::Hep3Vector& sdir = straw.getDirection();
-		cout<<" straws "<<spos<<" "<<sdir<<endl;
-      		
+		
       		XYZVec wire_position = ConvertToXYZ(spos);
                 XYZVec wire_direction= ConvertToXYZ(sdir);
-             	cout<<" wire "<<wire_position<<" "<<wire_direction<<endl;
-	        cout<<" dir unit "<<wire_direction<<endl;
-
+             	
       		HepPoint pointwire = ConvertToHepPoint(wire_position);		
       		HepPoint tpos = ConvertToHepPoint(track_position);
       		Hep3Vector tdir = ConvertToHep3Vector(track_direction);
@@ -141,9 +123,9 @@ double DriftFitUtils::GetPropTime(ComboHit chit, Straw straw, double vprop) {
 
 double DriftFitUtils::TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit){
 	        
-                StrawId strawid = straw.id();
-      		double phi =  hit.phi();
-      	        double drift_time= srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
+                //StrawId strawid = straw.id();
+      		//double phi =  hit.phi();
+      	        double drift_time= doca/0.065;//srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
       	        return drift_time;
 }
         
@@ -159,7 +141,7 @@ double DriftFitUtils::TimeResidualLong(Straw const&  straw, double doca, StrawRe
 double DriftFitUtils::TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit){
 		double time_residual_long = TimeResidualLong( straw,  doca, srep,  t0,  hit);
 		double time_residual_trans = TimeResidualTrans(straw,doca, srep, t0, hit); 
-		//std::cout<<hit.time()<<"trans "<<time_residual_trans<<" long time "<<time_residual_long<<std::endl;
+		std::cout<<hit.time()<<"trans "<<time_residual_trans<<" long time "<<time_residual_long<<std::endl;
 		return time_residual_trans + time_residual_long + hitlen/299 + fltlen/299;
 }
 

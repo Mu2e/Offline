@@ -1,15 +1,8 @@
-//S Middleton 
-//March 2019
-//Description: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment. This includes calculting track axes, hit errors and re-orientating those errors, track residuals are also calcuated here.
+//Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment. This includes calculting track axes, hit errors and re-orientating those errors, track residuals are also calcuated here.
 
 #include "Mu2eUtilities/inc/ParametricFit.hh"
-
 #include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/StraightTrack.hh"
-#include "RecoDataProducts/inc/DriftCircle.hh"
-//c++
-#include<exception>
-#include<bitset>
+
 //ROOT
 #include "TMath.h"
 #include "TF1.h"
@@ -20,7 +13,7 @@ using namespace mu2e;
 
 
 namespace ParametricFit{
-//------Some Basic Line Functions------//
+
 	double GettMin(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
             double tMin = -(starting_point-point).Dot(end_point-starting_point) /((end_point-starting_point).Mag2());
 	    return tMin;
@@ -72,47 +65,42 @@ namespace ParametricFit{
 	}
 
         //this utility is additonal to the PCA ones which exist-it may not be useful in the end!
-	bool LineToLineCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint, 
-  XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
+	bool LineToLineCA(XYZVec& FirstLinePosition, XYZVec& FirstLineDirection, 
+  XYZVec& SecondLinePosition, XYZVec& SecondLineDirection, 
   XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine)
         {
-	  XYZVec & p0 = firstLineStartPoint;
-	  XYZVec u = ( firstLineEndPoint - firstLineStartPoint ).Unit();
-
-	  XYZVec & q0 = secondLineStartPoint;
-	  XYZVec v = ( secondLineEndPoint - secondLineStartPoint ).Unit();
-
+	  XYZVec & p0 = FirstLinePosition; //position
+	  XYZVec u = FirstLineDirection.Unit();//( firstLineEndPoint - firstLineStartPoint ).Unit();//direction
+          cout<<" p0 "<<p0<<endl;
+	  XYZVec & q0 = SecondLinePosition;//secondLineStartPoint; //position
+	  cout<<" q0 "<<q0<<endl;
+	  XYZVec v = SecondLineDirection.Unit();//( secondLineEndPoint - secondLineStartPoint ).Unit();//direction
+          cout<<" v "<<v<<endl;
 	  XYZVec d = p0 - q0;
-
+	  cout<<" d "<<d<<endl;
 	  double u_dot_v = u.Dot(v);
 	  double d_dot_u = d.Dot(u);
 	  double d_dot_v = d.Dot(v);
 	  double denominator = 1 - (u_dot_v*u_dot_v);
-
+          cout<<"denominator "<<denominator<<endl;
 	  //Calculate t and s values at closest approach 
 	  double tMin = ( -d_dot_u + (d_dot_v*u_dot_v) ) / denominator;
 	  double sMin = (  d_dot_v - (d_dot_u*u_dot_v) ) / denominator;
-	
-	  
-	    if( tMin > sqrt((firstLineEndPoint-firstLineStartPoint).Mag2()) ) return false;
-	    if( tMin < 0. ) return false;
-	    if( sMin > sqrt((secondLineEndPoint-secondLineStartPoint).Mag2()) ) return false;
-	    if( sMin < 0. ) return false;
-	   
-
+	  cout<<"tmin "<<tMin<<" smin "<<sMin<<endl;
 	  //Get the closest approach point on each line using the minimised parameteric scalars
-	  closestPointOnFirstLine = firstLineStartPoint + ( tMin * u );
-	  closestPointOnSecondLine = secondLineStartPoint + ( sMin * v );
+	  closestPointOnFirstLine = FirstLinePosition + ( tMin * u );
+	  closestPointOnSecondLine = SecondLinePosition + ( sMin * v );
 
           return true;
         }
 
-	 double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca)
+	 double LineToLineDCA(XYZVec& FirstLinePosition, XYZVec& FirstLineDirection, XYZVec& SecondLinePosition, XYZVec& SecondLineDirection, double& dca)
 {
 	XYZVec closestPointOnFirstLine, closestPointOnSecondLine;
- 	bool success = LineToLineCA(firstLineStartPoint, firstLineEndPoint, secondLineStartPoint, secondLineEndPoint, closestPointOnFirstLine, closestPointOnSecondLine);
+ 	bool success = LineToLineCA(FirstLinePosition, FirstLineDirection, SecondLinePosition, SecondLineDirection, closestPointOnFirstLine, closestPointOnSecondLine);
         dca = success ? sqrt((closestPointOnSecondLine-closestPointOnFirstLine).Mag2()) : -1.;
-        return success;
+	cout<<"DOCA "<<dca<<endl;
+	return success;
 
 }  
 
@@ -289,20 +277,6 @@ double GetResidualY( double B0, double B1,  XYZVec point_prime){
 
 double GetTotalResidual(double resid_x,double resid_y){
 	return sqrt(pow(resid_x,2)+pow(resid_y,2));
-}
-
-//-----------------MC Diagnotics--------------------//
-
-double GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec MCX, XYZVec point){
-	double resid_x = A0 + A1*point.Dot(MCTrackDirection)-point.Dot(MCX);	
-	return resid_x;//sqrt(pow(resid_x,2)+pow(resid_y,2));
-
-}
-
-double GetMCResidualY(double B0, double B1, XYZVec MCTrackDirection, XYZVec MCY, XYZVec point){
-	double resid_y = B0 + B1*point.Dot(MCTrackDirection)-point.Dot(MCY);		
-	return resid_y;//sqrt(pow(resid_x,2)+pow(resid_y,2));
-
 }
 
 

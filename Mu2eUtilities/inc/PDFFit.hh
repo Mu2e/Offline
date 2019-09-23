@@ -22,7 +22,10 @@
 
 using namespace mu2e;
 
-
+//From Richie:
+#define pdf_tbins 500
+#define pdf_taubins 50
+#define pdf_sbins 25
 
 class TimePDFFit : public ROOT::Minuit2::FCNBase {
   public:
@@ -55,12 +58,14 @@ class TimePDFFit : public ROOT::Minuit2::FCNBase {
     
 };
 
-/*
+
 class FullFit : public TimePDFFit {
   public:
     FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k);
+
     double voltage=1425.;
-    void calculate_full_pdf();
+    int Factorial(int k);
+    void CalculateFullPdf();
 
     double interpolatePDF(double time_residual, double sigma, double tau) const;
 
@@ -71,28 +76,5 @@ class FullFit : public TimePDFFit {
     double *pdf;
     int k;
 };
-*/
-class PDFFit : public ROOT::Minuit2::FCNBase {
-  public:
-    std::vector<double> docas;
-    ComboHitCollection chits;
-    std::vector<Straw> straws;
-    StrawResponse srep;
-   
-    std::vector<double> constraint_means;
-    std::vector<double> constraints;
-    int nparams =5;
-    double doca_min = 0;
-    double doca_max = 1000;
-
-    PDFFit(ComboHitCollection _chits,  std::vector<Straw> &_straws, StrawResponse _srep, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k) :  chits(_chits) , constraint_means(_constraint_means), constraints(_constraints) {};
-   
-    double Up() const { return 0.5; };
-    double operator() (const std::vector<double> &x) const;
-    double TimeResidual(Straw straw, double doca, StrawResponse srep, double t0, ComboHit hit) const ;
-    double calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit hit) const;
-   
-};
-
 
 #endif

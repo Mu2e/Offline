@@ -167,7 +167,7 @@ namespace mu2e
         std::vector<double>  xseed, yseed, zseed, xdrift, ydrift, zdrift, a0seed, a1seed, b0seed, b1seed, a0drift, a1drift, b0drift, b1drift;
         std::vector<XYZVec> xprimes_seed, yprimes_seed, zprimes_seed, xprimes_drift,  yprimes_drift,  zprimes_drift;
         
-          //find time clusters:
+        //find time clusters:
     	unsigned  _ncosmics = _coscol->size();
         unsigned _nch = _chcol->size();
         //loop over tracks:
@@ -176,6 +176,7 @@ namespace mu2e
         	CosmicTrackSeed track =(*_coscol)[i];
 		if(track._track.converged == false){continue;}
 		if(track._track.minuit_converged == false){continue;}
+
 		xprimes_seed.push_back(track._track.TrackCoordSystem._XDoublePrime);
 		yprimes_seed.push_back(track._track.TrackCoordSystem._YDoublePrime);
 		zprimes_seed.push_back(track._track.TrackCoordSystem._ZPrime);

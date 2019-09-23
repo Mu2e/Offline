@@ -1,10 +1,5 @@
 #ifndef _MU2E_UTILITIES_PARAMETRICFIT_HH
 #define _MU2E_UTILITIES_PARAMETRICFIT_HH
-// Fitting Routines for parametric line
-// Author: S. Middleton
-// Date: March 2019
-
-//ROOT
 
 #include "Math/VectorUtil.h"
 #include "TMatrix.h"
@@ -20,12 +15,11 @@ namespace ParametricFit{
 	double PointToLineDCA(XYZVec& point, XYZVec& line_starting_point, XYZVec& line_end_point);
 	XYZVec ParellelVector(XYZVec lineStartPoint, XYZVec lineEndPoint);
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint);
-	bool LineToLineCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint, 
-	 XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, 
+	bool LineToLineCA(XYZVec& FirstLinePos, XYZVec& FirstLineDir, 
+	 XYZVec& SecondLinePos, XYZVec& SecondLineDir, 
 	 XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
 	int GetDOCASign(XYZVec track_dir, XYZVec point);
-        //Remove this --> redundent, already exists elsewhere....
         
 	std::vector<XYZVec>GetAxes(XYZVec TrackDirection);
 	TrackAxes GetTrackAxes(XYZVec TrackDirection);

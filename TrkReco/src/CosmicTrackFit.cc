@@ -357,12 +357,11 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 		// Remove bad tracks:
 		if(abs(newRx)/ErrorsXY[0] > 100 or abs(newRy)/ErrorsXY[1] > 100 ){ cosmictrack->converged = false;}
 
-		BestTrack->SetCovarience(S_niteration.GetCovX()[0][0],S_niteration.GetCovX()[1][1], S_niteration.GetCovY()[0][0], S_niteration.GetCovY()[1][1]);
+		BestTrack->SetCovarience(S_niteration.GetCovX()[0][0],S_niteration.GetCovX()[0][1], S_niteration.GetCovX()[1][0], S_niteration.GetCovX()[1][1], S_niteration.GetCovY()[0][0], S_niteration.GetCovY()[0][1], S_niteration.GetCovY()[1][0], S_niteration.GetCovY()[1][1]);
 		BestTrack->Diag.FinalResidualsX.push_back(newRx);
 	      	BestTrack->Diag.FinalResidualsY.push_back(newRy);
 	      	cosmictrack = BestTrack;  
-                
-	      		
+                     		
       	}	                	
     }
      S.clear();
@@ -370,13 +369,15 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
      if(_mcdiag > 0 and cosmictrack->converged == true){
 	  cout<<"=========Getting Seed Level MC ==============="<<endl;
           FitMC(trackData,cosmictrack, false);
-	  //TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axes, CosmicTrack* cosmictrack, bool is_seed)
+          ConvertFitToDetectorFrame(trackData, cosmictrack->TrackCoordSystem, cosmictrack->GetTrackPosition(), cosmictrack->GetTrackDirection(), cosmictrack, true, false);
 	  cout<<"==============================================="<<endl;
      } 
-    ConvertFitToDetectorFrame(trackData, cosmictrack->TrackCoordSystem, cosmictrack->GetTrackPosition(), cosmictrack->GetTrackDirection(), cosmictrack, true);
+    
    }
 
-void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData, TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool seed){
+/*------------Translate fit back into XYZ and/or the detector frame------//
+//-----------------------------------------------------------------------*/
+void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData, TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool seed, bool det){
 	TMatrixD A(3,3);
 	A[0][0] = axes._XDoublePrime.X();
 	A[0][1] = axes._YDoublePrime.X();
@@ -410,28 +411,59 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 	PXYZ[0][0] = PXYZ[0][0] - DXYZ[0][0]*PXYZ[2][0]/ DXYZ[2][0];
 	PXYZ[1][0] = PXYZ[1][0]- DXYZ[1][0]*PXYZ[2][0]/ DXYZ[2][0];
 	PXYZ[2][0] = PXYZ[2][0]- DXYZ[2][0]*PXYZ[2][0]/ DXYZ[2][0];
+       
+	TMatrixD sigmaPos(3,1);
+	sigmaPos[0][0] = cosmictrack->FitParams.Covarience.sigA0; 
+	sigmaPos[1][0] = cosmictrack->FitParams.Covarience.sigB0;
+	sigmaPos[2][0] = 0;
+
+	TMatrixD sigmaPosXYZ(A*sigmaPos);
+	TMatrixD sigmaDir(3,1);
+	sigmaDir[0][0] = cosmictrack->FitParams.Covarience.sigA1; 
+	sigmaDir[1][0] = cosmictrack->FitParams.Covarience.sigB1;
+ 	sigmaDir[2][0] = 0;
+	TMatrixD sigmaDirXYZ(A*sigmaDir);
 	
+	cout<<"sigmaPos "<<sigmaPos[0][0]<<"----->"<<sigmaPosXYZ[1][0]<<endl;
+	cout<<"sigmaPos "<<sigmaPos[1][0]<<"----->"<<sigmaPosXYZ[1][0]<<endl;
+	cout<<"sigmaPos "<<sigmaPos[2][0]<<"----->"<<sigmaPosXYZ[2][0]<<endl;
+
+	cout<<"sigmaDir "<<sigmaDir[0][0]<<"----->"<<sigmaDirXYZ[0][0]<<endl;
+	cout<<"sigmaDir "<<sigmaDir[1][0]<<"----->"<<sigmaDirXYZ[1][0]<<endl;
+	cout<<"sigmaDir "<<sigmaDir[2][0]<<"----->"<<sigmaDirXYZ[2][0]<<endl;
+        
 	XYZVec Pos(PXYZ[0][0], PXYZ[1][0], PXYZ[2][0]);
 	XYZVec Dir(DXYZ[0][0], DXYZ[1][0] , DXYZ[2][0]);
-
-	
-	//XYZVec PositonInDetFrame = ConvertToDetFrame(Pos);
-	//Dir = Dir.Unit();
-	//Dir = Dir/Dir.Z();
-	TrackEquation XYZTrack(Pos, Dir);
-	
+        
 	if(seed == true){
-        cosmictrack->SetTrackEquationXYZ(XYZTrack);
-	cout<<"Fit Position in detector frame "<<Pos<<endl;
-	cout<<"Fit Direction in detector frame "<<Dir<<endl;
-	}else{
+		if (det == true){
+			XYZVec PosInDet = ConvertToDetFrame(Pos);
+			TrackEquation XYZTrack(PosInDet, Dir);
+			cosmictrack->SetTrackEquationXYZ(XYZTrack);
+			cosmictrack->sigmaPos.SetXYZ(sigmaPosXYZ[0][0], sigmaPosXYZ[1][0], sigmaPosXYZ[2][0]);
+			cosmictrack->sigmaDir.SetXYZ(sigmaDirXYZ[0][0], sigmaDirXYZ[1][0], sigmaDirXYZ[2][0]);
+			
+		
+		} else {
+			TrackEquation XYZTrack(Pos, Dir);
+			cosmictrack->SetTrackEquationXYZ(XYZTrack);
+			
+		}}
+	else{
+	TrackEquation XYZTrack(Pos, Dir);
 	cosmictrack->SetMinuitTrackEquation(XYZTrack);
 	cout<<"Minuit Position in detector frame "<<Pos<<endl;
 	cout<<"Minuit Direction in detector frame "<<Dir<<endl;
 	}
 
 }
-//Get MC details and store for comparision. Both accesses the StepPointMC for directio/position and also applies routine to StrawDigiMCs
+
+/*----------------Fit MC-------------------------------//
+Can do 2 things:
+  1) Get True pos and dir from StepPointMC i.e. independent of my fit routine
+  2) Applky my fit routine to the MC StrawDigiMC i.e. a way to assess accuracy of fitting routine when compared to reco.
+
+//----------------------------------------------------*/
 void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool Det){	
 	GeomHandle<DetectorSystem> det;
         ::BuildMatrixSums S; 
@@ -442,7 +474,7 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
         //Get StepPointMC:
 	art::Ptr<StepPointMC> const& spmcp0= first->stepPointMC(StrawEnd::cal);
         XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
-        
+        XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
         for (size_t f1=0; f1<nHits; ++f1){ 
             hitP1 = &trackData._mcDigisToProcess[f1]; 
 	   
@@ -450,14 +482,6 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
 	    art::Ptr<StepPointMC> const& spmcp = hitP1->stepPointMC(StrawEnd::cal);
             XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
            
-            //Convert to detector frame:
-	    Hep3Vector DetposN = det->toDetector(spmcp->position());
-	    XYZVec DetPosN = ConvertToXYZ(DetposN);
-
-	    //Transform Cosmic Fit To Detector Frame:
-	    //XYZVec Position(cosmictrack->FitParams.A0, cosmictrack->FitParams.B0, 0);
-            //XYZVec PositonInDetFrame = ConvertToDetFrame(Position);
-	    
             //Use Step Point MC direction as the True Axes:
             XYZVec ZPrime = ConvertToXYZ(spmcp->momentum().unit());
            
@@ -466,41 +490,42 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
             cosmictrack->SetTrueTrackCoordSystem(TrueAxes);
 	    
             //Apply routine to the True Tracks (for validation):
-            if(Det == false){ //Finds parameters in local coordinates
-                XYZVec point(posN.x(), posN.y(), posN.z());
-                XYZVec X(1,0,0);
-                XYZVec Y(0,1,0);
-                XYZVec Z(0,0,1);
-                S.addPoint( point, X,Y,Z, 1,1);
-            }
-            if(Det == true){ //Finds parameters in global coordinates
-                XYZVec point(DetPosN.x(), DetPosN.y(), DetPosN.z());
-                XYZVec X(1,0,0);
-                XYZVec Y(0,1,0);
-                XYZVec Z(0,0,1);
-                S.addPoint( point, X,Y,Z, 1,1);
-            }
-           
-          
+            XYZVec point(posN.x(), posN.y(), posN.z());
+            XYZVec X(1,0,0);
+            XYZVec Y(0,1,0);
+            XYZVec Z(0,0,1);
+            S.addPoint( point, X,Y,Z, 1,1);
+            
         }   
     
      TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
-     //Store the absolute track position and direction for reference:
+     
      XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
+     if(Det==true){
+	TruePos = ConvertToDetFrame(TruePos);
+     }
      XYZVec TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
      TrueDir = TrueDir.Unit();
      TrueDir = TrueDir/TrueDir.Z();
-     cout<<" Position of MC in XYZ "<<" "<<S.GetAlphaX()[0][0]<<" "<<S.GetAlphaY()[0][0]<<" "<<0<<endl;
-     cout<<" Direction of MC in XYZ "<<" "<<S.GetAlphaX()[1][0]<<" "<<S.GetAlphaY()[1][0]<<" "<<1<<endl;
-     cosmictrack->TrueTrueTrackPosition =  TruePos; 
-     cosmictrack->TrueTrueTrackDirection = TrueDir; 
-     //Store the Raw Track Parameters
+     
+    
+     pos0.SetX(pos0.X()-(dir0.X()*pos0.Z()/dir0.Z()));
+     pos0.SetY(pos0.Y()-(dir0.Y()*pos0.Z()/dir0.Z()));
+     pos0.SetX(pos0.Z()-(dir0.Z()*pos0.Z()/dir0.Z()));
+     dir0 = dir0/dir0.Z();
+     cosmictrack->TrueTrueTrackDirection = dir0;
+     cosmictrack->TrueTrueTrackPosition = pos0;
      cosmictrack->RawTrueParams = RawTrueParams;
-     //XYZVec PositonInDetFrame = ConvertToDetFrame(TruePos);//TODO
-     //cout<<"MC Position in detector frame "<<PositonInDetFrame<<endl;
      TrackEquation TrueTrack(TruePos, TrueDir);
      cosmictrack->SetTrueTrackEquationXYZ(TrueTrack);
+     //Store angles:
+     cosmictrack->set_true_phi(atan(TrueDir.y()/TrueDir.x()));
+     cosmictrack->set_true_theta(acos(TrueDir.x()/sqrt(TrueDir.Mag2())));
      }
+
+/*-----------------------Transform MC---------------------/
+Can be used to transform the MC in to prime frame
+//---------------------------------------------------*/
 
 void CosmicTrackFit::TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axes, CosmicTrack* cosmictrack, bool is_seed){
      
@@ -520,8 +545,7 @@ void CosmicTrackFit::TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axe
 
      if (is_seed) {
      	cosmictrack->SetSeedTrueParams(TrueParams);
-     	cosmictrack->set_true_phi(atan(Direction.y()/Direction.x()));
-     	cosmictrack->set_true_theta(acos(Direction.x()/sqrt(Direction.Mag2())));
+     	
      } else cosmictrack->SetStrawLevelTrueParams(TrueParams);
 }     
 
@@ -563,7 +587,8 @@ bool CosmicTrackFit::use_track(double track_length) const
   {
      return (track_length > _maxd) ? false : true ;
   }
-  
+ /*-------------Drift Fit Diagnotics--------------//
+//------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	
          EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep);
@@ -574,15 +599,15 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
          trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];//b1
          trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];//t0
          if(endresult.bestfitcov.size() !=0 ){
-		 TrackCov Cov(endresult.bestfitcov[0], endresult.bestfitcov[1], endresult.bestfitcov[2], endresult.bestfitcov[3]);
+		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
 		 trackData._tseed._track.MinuitFitParams.Covarience = Cov; //TODO gives MASSIVE values!!!
          }
-         if(endresult.NLL !=0){ trackData._tseed._track.minuit_converged = true;} //TODO ungrade this criteria!!!
+         if(endresult.NLL !=0){ trackData._tseed._track.minuit_converged = true;}
 	
 	 //Fill Diagnostics:
 	 XYZVec X(1,0,0);
 	 XYZVec Y(0,1,0);
-	 XYZVec Z(0,0,1);//TODO (for plotting as need to make code to jus tplot in the XYZ)
+	 XYZVec Z(0,0,1);//TODO (for plotting as need to make code to just plot in the XYZ)
 	 TrackAxes XYZ(X,Y,Z);
 	 trackData._tseed._track.MinuitCoordSystem = XYZ; 
 	 trackData._tseed._track.DriftDiag.EndDOCAs = endresult.EndDOCAs;
@@ -607,11 +632,8 @@ trackData._tseed._track.DriftDiag.FinalResidualsX.push_back(ParametricFit::GetRe
 	trackData._tseed._track.DriftDiag.FinalResidualsY.push_back(ParametricFit::GetResidualY( trackData._tseed._track.MinuitFitParams.B0,  trackData._tseed._track.MinuitFitParams.B1, point));
 	          
 		   
-		}
-
-	       
-      }
-      
+		}       
+      }  
      
 }
 /*

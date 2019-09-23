@@ -27,6 +27,7 @@
 #include <Minuit2/MnMigrad.h>
 #include <Minuit2/MnMinos.h>
 #include <Minuit2/MnStrategy.h>
+#include <Minuit2/MnPrint.h>
 #include <Minuit2/MnUserParameters.h>
 #include <Minuit2/FunctionMinimum.h>
 using namespace mu2e;
@@ -49,13 +50,13 @@ namespace LiklihoodFunctions{
 	  seed[4] = trackseed._t0.t0();
 
 	  //Seed errors = covarience of parameters in seed fit
-	  errors[0] = trackseed._track.FitParams.Covarience.sigA0;
+	  errors[0] = trackseed._track.FitParams.Covarience.sigA0; 
 	  errors[1] = trackseed._track.FitParams.Covarience.sigA1;
 	  errors[2] = trackseed._track.FitParams.Covarience.sigB0;
 	  errors[3] = trackseed._track.FitParams.Covarience.sigB1;
 	  errors[4] = trackseed._t0.t0Err();
 	  //Constrain to mean = 0 for 4 parameters (T0 might not be so...)
-	  std::vector<double> constraint_means(5,0);//4
+	  std::vector<double> constraint_means(5,0);
 	  std::vector<double> constraints(5,0);
 	  //Define the PDF used by Minuit:
           TimePDFFit fit(trackseed._straw_chits, trackseed._straws, srep, cosmictrack, constraint_means,constraints,1);
@@ -64,15 +65,18 @@ namespace LiklihoodFunctions{
 	  ROOT::Minuit2::MnUserParameters params(seed,errors);
 	  ROOT::Minuit2::MnMigrad migrad(fit,params,mnStrategy);
 	  //Set Limits as tracker dimensions:
-	  migrad.SetLimits((unsigned) 0, -3000, 3000);
-	  migrad.SetLimits((unsigned) 1, -1, 1);//-1,1);
-	  migrad.SetLimits((unsigned) 2, -3000, 3000);
-	  migrad.SetLimits((unsigned) 3, -1,1);//-1,1);
+	  migrad.SetLimits((signed) 0,-10000, 10000);
+	  migrad.SetLimits((signed) 1, -5, 5);
+	  migrad.SetLimits((signed) 2,-5000, 5000 ); 
+	  migrad.SetLimits((signed) 3, -10,10);
 	  migrad.Fix((unsigned) 4); 
-	  //int maxfcn = 200;
-	  //double tolerance = 0.001;
+	  int maxfcn = 400;
+	  double tolerance = 1000;
           //Define Minimization method as "MIGRAD" (see minuit documentation)
-	  ROOT::Minuit2::FunctionMinimum min = migrad();//(maxfcn, tolerance);
+	  ROOT::Minuit2::FunctionMinimum min = migrad(maxfcn, tolerance);
+	  ROOT::Minuit2::MnPrint::SetLevel(3);
+	  ROOT::Minuit2::operator<<(cout, min);
+
 	  //Will be the results of the fit routine:
 	  ROOT::Minuit2::MnUserParameters results = min.UserParameters();
 	  double minval = min.Fval();
@@ -89,17 +93,19 @@ namespace LiklihoodFunctions{
 	  endresult.names.push_back("t0");
 	  
 	  //Add best fit results to appropriatly named element:
-	  cout<<"Minval"<<minval<<"Is Valid: "<<min.IsValid()<<"N calls "<<min.NFcn()<<endl;
-          cout<<"seeds "<<seed[0]<<" "<<seed[1]<<" "<<seed[2]<<" "<<seed[3]<<endl;
+	  cout<<"Minval "<<minval<<"Is Valid: "<<min.IsValid()<<"N calls "<<min.NFcn()<<endl;
+          
 	  endresult.NLL = minval;
 	  for (size_t i=0;i<endresult.names.size();i++){
 	    std::cout << i << endresult.names[i] << " : " << endresult.bestfit[i] << " +- " << endresult.bestfiterrors[i] << std::endl;
+	    std::cout<<" Covarience Size "<<endresult.bestfitcov.size()<<endl;
 	    if(endresult.bestfitcov.size() != 0 and i< 4) cout<<"cov "<<endresult.bestfitcov[i]<<endl;
 	
 	  }
 	
 	  //Store DOCA results for analysis:
-	  if(minval != 0 ){ cosmictrack.minuit_converged = true;} // min.IsValid()
+	  if(minval != 0 ){ cosmictrack.minuit_converged = true;} 
+
 	  for(size_t i = 0; i< trackseed._straws.size(); i++){	    
 	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3], trackseed._straw_chits[i]);
 	      double start_time_residual = fit.TimeResidual(trackseed._straws[i], start_doca,  srep, seed[4], trackseed._straw_chits[i]);
@@ -109,8 +115,9 @@ namespace LiklihoodFunctions{
 	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
 	      endresult.EndTimeResiduals.push_back(end_time_residual);
 	      endresult.EndDOCAs.push_back(end_doca);
+	     
 	  }
-	  
+	
 	 return endresult;
  
   }

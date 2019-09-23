@@ -34,6 +34,7 @@ using namespace mu2e;
 
 namespace DriftFitUtils{
   	TrackEquation ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction);
+	double GetTestDOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit);
   	TrkPoca GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit);
   	double GetDOCA(TrkPoca poca);
   	std::vector<double> UpdateErrors(double a0, double a1, double b0, double b1, ComboHit chit);

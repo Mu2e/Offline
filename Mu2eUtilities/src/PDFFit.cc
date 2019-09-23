@@ -34,16 +34,16 @@
 #include <Minuit2/FunctionMinimum.h>
 using namespace mu2e;
 
-#define AVG_VELOCITY 0.065
-#define sigma 1.05
-#define tau 10.7
+#define AVG_VELOCITY 0.065 //mm/ns
+#define sigma 10.5 //ns
+#define tau 10.7 //ns
 
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
 double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
-	TrkPoca poca = DriftFitUtils::GetPOCA(straw, a0,a1,b0,b1, chit);
-	return poca.doca();
+	double doca = DriftFitUtils::GetTestDOCA(straw, a0,a1,b0,b1, chit); 
+        return (doca);
 }
 double TimePDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 ,  ComboHit hit)const{
 	double tres =  DriftFitUtils::TimeResidual( straw, doca, srep, t0, hit);
@@ -58,24 +58,18 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   double a1 = x[1];
   double b0 = x[2];
   double b1 = x[3];
-  double t0 = x[4]; //T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit)
-  double llike = 0;
+  double t0 = x[4]; 
+  long double llike = 0;
   
   //Loop through the straws and get DOCA:
-  std::cout<<"=======called operator ========"<<std::endl;
-  std::cout<<"Parameters "<<a0<<" "<<a1<<" "<<b0<<" "<<b1<<" "<<t0<<endl;
-  std::cout<<" Start LL "<<llike<<std::endl;
   for (size_t i=0;i<this->straws.size();i++){
-       std::cout<<" Hit "<<i<<" OF "<<this->straws.size()<<endl;
-       //double val_tau = pow(1/tau,k)*pow(time_tau,k-1)*exp(-time_tau/tau)/(double) factorial(k-1);
-      double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]);   
-      if(doca < this->doca_min || doca > this->doca_max) continue; 
+      double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
       double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
       double pdf_t =1/sqrt(2*TMath::Pi()*sigma*sigma) * exp(-(time_residual*time_residual)/(2*sigma*sigma));
       //Log Liklihood:
       llike -=log(pdf_t);
       t0 += time_residual/this->straws.size(); 
-      std::cout<<" Current LL "<<llike<<std::endl;
+      
   }
 
   for (int i=0;i<this->nparams;i++){
@@ -86,39 +80,51 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   
   return llike;
 }
-/*
-double PDFFit::operator() (const std::vector<double> &x) const
+
+int FullFit::Factorial(int k)
 {
-  //This is not used!!!!
-  double a0 = x[0];
-  double a1 = x[1];
-  double b0 = x[2];
-  double b1 = x[3];
-  double t0 = x[4];
-  double llike = 0;
- 
-  for (size_t i=0;i<this->chits.size();i++){
-      
-      std::vector<double> ErrorsXY = DriftFitUtils::UpdateErrors(a0, a1, b0, b1,  chits[i]);
-      double doca = calculate_DOCA(this->straws[i], a0, a1,b0,b1,chits[i]);
-      
-      if(fabs(doca) > this->doca_max) continue;
-      double time_residual = this->TimeResidual(this->straws[i], doca,this->srep, t0, this->chits[i]);
-      double drift_dist = time_residual*0.0625; //need to find angle too and spliot XY
-      double pdf_x = 1/sqrt(2*TMath::Pi()*ErrorsXY[0]*ErrorsXY[0]) * exp(-((this->chits[i].pos().x() - x[0]+x[1]*this->chits[i].pos().x()-drift_dist)*(this->chits[i].pos().x() - a0+a1*chits[i].pos().x()-drift_dist))/(2*ErrorsXY[0]*ErrorsXY[0]));
-      double pdf_y = 1/sqrt(2*TMath::Pi()*ErrorsXY[1]*ErrorsXY[1]) * exp(-((this->chits[i].pos().y() - x[2]+x[3]*this->chits[i].pos().y()-drift_dist)*(this->chits[i].pos().y() - x[2]+x[3]*this->chits[i].pos().y()-drift_dist))/(2*ErrorsXY[1]*ErrorsXY[1]));
-     
-      double pdf_val = pdf_x*pdf_y;
-      llike -=log(pdf_val);
-      
+  if (k == 0){
+    return 1;
   }
-  for (int i=0;i<this->nparams;i++){
-    if (this->constraints[i] > 0){
-      llike += pow((x[i]-this->constraint_means[i])/this->constraints[i],2);
+  int response = 1;
+  for (int i=1;i<k;i++){
+    response *= i;
+    return response;
+   }
+}
+
+void FullFit::CalculateFullPDF() {
+  for (int is=0;is<pdf_sbins;is++){
+     double sigma = this->pdf_sigmas[is];
+     for (int it0=0;it0<pdf_tbins;it0++){
+       //Time residuals?
+       double time_gaus = this->pdf_times[it0];
+       //Time PDF
+       double time_gaussian = 1.0/sqrt(2*TMath::Pi()*sigma*sigma)*exp(-(time_gaus*time_gaus)/(2*sigma*sigma));
+      //Use taus:
+      for (int itau=0;itau<pdf_taubins;itau++){
+        double tau = this->pdf_taus[itau];
+        for (int it1=0;it1<pdf_tbins-it0;it1++){
+          double time_tau = this->pdf_deltat*it1;
+          double val_tau = pow(1/tau,k)*pow(time_tau,k-1)*exp(-time_tau/tau)/(double) Factorial(k-1);
+          this->pdf[is * pdf_taubins * pdf_tbins + itau * pdf_tbins + (it0+it1)] += time_gaussian * val_tau;
+        }
+      }
     }
   }
 
-  return llike;
+  for (int is=0; is < pdf_sbins;is++){
+    for (int itau=0;itau<pdf_taubins;itau++){
+      double total = 0;
+      for (int it=0;it<pdf_tbins;it++){
+        total += this->pdf[is * pdf_taubins * pdf_tbins + itau * pdf_tbins + it];
+      }
+      //Normalize:
+      for (int it=0;it<pdf_tbins;it++){
+        this->pdf[is * pdf_taubins * pdf_tbins + itau * pdf_tbins + it] /= total;
+      }
+    }
+  }
 }
-*/
+
 

@@ -16,11 +16,15 @@ using namespace std;
    struct TrackCov{
    	std::vector<double> Covariance;
 	double sigA0;
+	double sigA0A1;
+        double sigA1A0;
   	double sigA1;
   	double sigB0;
+	double sigB0B1;
+        double sigB1B0;
   	double sigB1;
   	TrackCov();
-  	TrackCov(double& siga0, double& siga1, double& sigb0, double& sigb1) : sigA0(siga0), sigA1(siga1), sigB0(sigb0), sigB1(sigb1) {};
+  	TrackCov(double siga0, double siga0a1,double siga1a0, double siga1, double sigb0,double sigb0b1, double sigb1b0, double sigb1) : sigA0(siga0), sigA0A1(siga0a1), sigA1A0(siga1a0), sigA1(siga1), sigB0(sigb0), sigB0B1(sigb0b1), sigB1B0(sigb1b0), sigB1(sigb1) {};
    
    };
    //Struct To Hold Track Parameters
@@ -190,8 +194,8 @@ namespace mu2e {
     	    void SetTrueTrackCoordSystem(TrackAxes coordsys){
 	    	this->TrueTrackCoordSystem = coordsys;
     	    }
-    	    void SetCovarience(double siga0, double siga1, double sigb0, double sigb1){ 
-    	    	TrackCov Cov(siga0, siga1, sigb0, sigb1);
+    	    void SetCovarience(double siga0, double siga0a1, double siga1a0, double siga1, double sigb0, double sigb0b1, double sigb1b0, double sigb1){ 
+    	    	TrackCov Cov(siga0, siga0a1, siga1a0, siga1, sigb0, sigb0b1, sigb1b0, sigb1);
 	    	this->FitParams.Covarience = Cov;
 	    }
 	     void SetMinuitCoordSystem(TrackAxes coordsys){
@@ -285,9 +289,10 @@ namespace mu2e {
 	     XYZVec TrueTrueTrackPosition;
 
 	     XYZVec FirstPoint;
+
+	     XYZVec sigmaPos;
+	     XYZVec sigmaDir;
 	
-	    
-	     
 	     bool converged = false;
 	     bool minuit_converged = false;
 
