@@ -132,7 +132,7 @@ void TrkAnaPlots::BuildCuts(float momwin){
   _eplusrmom = TCut(ctext);
   _downstream = TCut("demcxit.momz>0");
   _physics = _rpitch+_opa+_livegate;
-  _final = (_physics+_eminustq+_eminusrmom)*_pbi;
+  _final = trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom;
 
 }
 
@@ -315,7 +315,7 @@ void TrkAnaPlots::PID() {
 }
 
 void TrkAnaPlots::FitMomResp(TH1F* momresp) {
-  //    _tn->Project(mname,"fit.mom-mcent.mom",_final);
+  _tn->Project(mname,"fit.mom-mcent.mom",_final*_pbi);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
@@ -351,7 +351,7 @@ void TrkAnaPlots::MomResp(TrackerRegion region) {
   momrespr->Sumw2();
   momresp->SetLineColor(kRed);
   momrespr->SetLineColor(kBlue);
-  _tn->Project("momresp","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final);
+  _tn->Project("momresp","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",_final*_pbi);
   _tn->Project("momrespr","deent.mom-sqrt(demcgen.momx^2+demcgen.momy^2+demcgen.momz^2)",(_physics+_eminusrmom)*_pbi);
   _rscan = new TCanvas("rscan","Momentum Response",800,800);
   gPad->SetLogy();
@@ -417,7 +417,7 @@ void TrkAnaPlots::MomRes(TrackerRegion region) {
   snprintf(title,80,"momentum resolution at tracker %s;MeV/c",_rname[region].c_str());
   TH1F* momres = new TH1F("momres",title,251,-4,4);
   momres->Sumw2();
-  _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_final);
+  _tn->Project("momres","deent.mom-sqrt(demcent.momx^2+demcent.momy^2+demcent.momz^2)",_final*_pbi);
 //  momres->SetMinimum(0.5);
   _rcan = new TCanvas("rcan","Momentum Resolution",800,800);
   gStyle->SetOptFit(111111);
