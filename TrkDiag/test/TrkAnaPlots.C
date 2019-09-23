@@ -65,6 +65,7 @@ class TrkAnaPlots {
   void FitMomRes(TH1F* momres);
   void MomResp(TrackerRegion region=entrance);
   void MomRes(TrackerRegion region=entrance);
+  void SelPlots(int charge=-1);
   void Acc(int ngen,int charge=-1);
   void hitres();
   void wpull();
@@ -89,7 +90,7 @@ class TrkAnaPlots {
   TTree* _tn;
   TTree* _tp; 
   // canvases
-  TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_radcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
+  TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_radcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan, *_spcan;
   vector<string> _rname;
 };
 
@@ -132,7 +133,7 @@ void TrkAnaPlots::BuildCuts(float momwin){
   _eplusrmom = TCut(ctext);
   _downstream = TCut("demcxit.momz>0");
   _physics = _rpitch+_opa+_livegate;
-  _final = trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom;
+  _final = _eminustrig+_reco+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom;
 
 }
 
@@ -315,7 +316,7 @@ void TrkAnaPlots::PID() {
 }
 
 void TrkAnaPlots::FitMomResp(TH1F* momresp) {
-  _tn->Project(mname,"fit.mom-mcent.mom",_final*_pbi);
+  _tn->Project(momresp->GetName(),"fit.mom-mcent.mom",_final*_pbi);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
@@ -426,6 +427,54 @@ void TrkAnaPlots::MomRes(TrackerRegion region) {
   FitMomRes(momres);
 
 }
+
+void TrkAnaPlots::SelPlots(int charge) {
+  vector<string> names={"trig", "trkqual", "t0", "pitch","d0", "rmax", "PID", "CRVDT", "Momentum"};
+  vector<string> titles={"Trigger Bits;log2(trigger)", "Track Fit Quality;trkqual", "t0", "Reco pitch;tan(#lambda)", "d0;d0 (mm)", "Rmax;rmax (mm)", "PID;TrkPIDDeM", "CRV #Deltat;t0-#t_{CRV}", "Track Momentum;Momentum (MeV/c)"};
+  vector<string> vars={"log2(trigbits)", "dequal.TrkQualDeM", "de.t0", "deent.td", "deent.d0", "abs(de.ent.d0+2.0/deent.om)", "dequal.TrkPIDDeM", "de.t0-crvinfo._timeWindowStart[bestcrv]", "deent.mom"};
+  vector<double> low={0,-0.01, 400.0, 0.2, -150.0, 450.0, -0.01, -150.0, 95.0 };
+  vector<double> hi={32, 1.1, 1700.0, 1.8, 150.0, 650.0, 1.1, 250.0, 110.0 };
+  
+  TCut trigger,goodfit,pid,rmom;
+  TTree* ta;
+  if(charge<0){
+    trigger = _eminustrig;
+    goodfit = _eminustq;
+    pid = _eminuspid;
+    rmom = _eminusrmom;
+    ta = _tn;
+  } else {
+    trigger = _eplustrig;
+    goodfit = _eplustq;
+    pid = _epluspid;
+    rmom = _eplusrmom;
+    ta = _tp;
+  }
+
+  vector<TCut> cuts(names.size());
+  cuts[0] = goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom;
+  cuts[1] = trigger+_livegate+_rpitch+_opa+_CRV+pid+rmom;
+  cuts[2] = trigger+goodfit+_rpitch+_opa+_CRV+pid+rmom;
+  cuts[3] = trigger+goodfit+_livegate+_opa+_CRV+pid+rmom;
+  cuts[4] = trigger+goodfit+_livegate+_rpitch+_CRV+pid+rmom;
+  cuts[5] = trigger+goodfit+_livegate+_rpitch+_CRV+pid+rmom;
+  cuts[6] = trigger+goodfit+_livegate+_rpitch+_opa+_CRV+rmom;
+  cuts[7] = trigger+goodfit+_livegate+_rpitch+_opa+pid+rmom+"bestcrv>=0";
+  cuts[8] = trigger+goodfit+_livegate+_rpitch+_opa+_CRV+pid;
+
+  vector<TH1F*> plots;
+  for(size_t iplot=0;iplot<names.size();iplot++){
+    plots.push_back(new TH1F(names[iplot].c_str(),titles[iplot].c_str(),100,low[iplot],hi[iplot]));
+    ta->Project(names[iplot].c_str(),vars[iplot].c_str(),cuts[iplot]);
+  }
+  _spcan = new TCanvas("spcan","spcan",1000,1000);
+  _spcan->Divide(3,3);
+  for(size_t iplot=0;iplot<names.size();iplot++){
+    _spcan->cd(iplot+1);
+    plots[iplot]->Draw();
+  }  
+}
+
 void TrkAnaPlots::Acc(int ngen,int charge) {
   vector<string> binnames={"All","Trigger", "KF Track fit", "Fit Quality", "Livegate", "Reco pitch", "OPA Rejection", "Upstream", "PID", "CRV Rejection", "Momentum window"};
 
