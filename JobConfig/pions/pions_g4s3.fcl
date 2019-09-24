@@ -120,7 +120,6 @@ physics : {
             mainHitInputs             : []
             extraHitInputs            : [ "g4run:virtualdetector", "vacuuas1:vacuuas1" , "vacuuas2:vacuuas2" ]
             mainSPPtrInputs           : [ "stoppedPionFinder" ]
-            numSimParticleCollections : 1
             vetoDaughters             : [ "stoppedPionFinder" ]
         }
     } // filters

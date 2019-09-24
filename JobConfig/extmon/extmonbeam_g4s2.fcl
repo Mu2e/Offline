@@ -121,7 +121,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
       g4consistent: {

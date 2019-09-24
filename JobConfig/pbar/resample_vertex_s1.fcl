@@ -153,7 +153,6 @@ physics : {
             module_type               : FilterG4Out
             mainHitInputs             : [ "g4run:VirtualDetectorPSPbarIn" ]
             extraHitInputs            : [ "g4run:virtualdetector"]
-            numSimParticleCollections : 1
             vetoDaughters             : []
         }
 

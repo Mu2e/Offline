@@ -113,7 +113,6 @@ physics : {
             module_type               : FilterG4Out
             mainHitInputs             : [ "g4run:Coll31Out" ]
             extraHitInputs            : [ "g4run:virtualdetector"]
-            numSimParticleCollections : 1
             vetoDaughters             : []
         }
       mixread: {

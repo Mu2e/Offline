@@ -105,7 +105,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: []
       }
 
@@ -113,7 +112,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs: [ "g4run:CRV" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: []
       }
 
