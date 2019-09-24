@@ -110,55 +110,10 @@ namespace mu2e {
       }
     }
 
-    //----------------------------------------------------------------
-    // input product => output instance name
-    struct ProductMapEntry : public std::pair<art::InputTag, std::string> {
-      ProductMapEntry(const art::InputTag in, const std::string out)
-        : std::pair<art::InputTag,std::string>(in, out)
-      {}
-    };
-
   } // anonymous namespace
 
   //================================================================
   class FilterG4Out : public art::EDFilter {
-
-    typedef std::vector<art::InputTag> InputTags;
-    InputTags mainHitInputs_; // These hits, and SimParticles referenced here, will be kept
-    InputTags mainSPPtrInputs_; // SimParticles referenced here, will be kept
-
-    InputTags extraHitInputs_;  // other StepPointMCCollections to keep
-
-    InputTags trajectoryInputs_; // Optionally, filter and keep MCTrajectoryCollection
-
-    InputTags vetoDaughtersInputs_;
-    InputTags vetoParticlesInputs_;
-
-    bool compressGenParticles_;
-
-    // Output instance names.
-    typedef std::set<std::string> OutputNames;
-    OutputNames mainOutputNames_;
-    OutputNames extraOutputNames_;
-
-    typedef std::vector<ProductMapEntry> VPM;
-    VPM simParticleIOVec_;
-    OutputNames simPartOutNames;
-
-    // statistics counters
-    unsigned numInputEvents_;
-    unsigned numPassedEvents_;
-
-    unsigned numMainHits_;
-    unsigned numInputExtraHits_;
-    unsigned numPassedExtraHits_;
-
-    unsigned numInputParticles_;
-    unsigned numPassedParticles_;
-
-    unsigned numVetoedParticles_;
-    unsigned numVetoedHits_;
-
   public:
 
     struct IOMapEntry {
@@ -249,6 +204,43 @@ namespace mu2e {
 
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
+
+  private:
+    typedef std::vector<art::InputTag> InputTags;
+    InputTags mainHitInputs_; // These hits, and SimParticles referenced here, will be kept
+    InputTags mainSPPtrInputs_; // SimParticles referenced here, will be kept
+
+    InputTags extraHitInputs_;  // other StepPointMCCollections to keep
+
+    InputTags trajectoryInputs_; // Optionally, filter and keep MCTrajectoryCollection
+
+    InputTags vetoDaughtersInputs_;
+    InputTags vetoParticlesInputs_;
+
+    bool compressGenParticles_;
+
+    // Output instance names.
+    typedef std::set<std::string> OutputNames;
+    OutputNames mainOutputNames_;
+    OutputNames extraOutputNames_;
+
+    typedef std::vector<IOMapEntry> VPM;
+    VPM simParticleIOVec_;
+    OutputNames simPartOutNames;
+
+    // statistics counters
+    unsigned numInputEvents_;
+    unsigned numPassedEvents_;
+
+    unsigned numMainHits_;
+    unsigned numInputExtraHits_;
+    unsigned numPassedExtraHits_;
+
+    unsigned numInputParticles_;
+    unsigned numPassedParticles_;
+
+    unsigned numVetoedParticles_;
+    unsigned numVetoedHits_;
   };
 
   //================================================================
@@ -299,20 +291,15 @@ namespace mu2e {
 
     // We can't merge different SimParticle collections (unlike the hits)
     // Need to have a separate output collection for every input one.
-    std::vector<IOMapEntry> iomap;
-    if(conf().simParticleIOMap(iomap)) {
-      for(const auto& i: iomap) {
-        simParticleIOVec_.emplace_back(i.in(), i.out());
-      }
-    }
+    conf().simParticleIOMap(simParticleIOVec_);
 
     if(!simParticleIOVec_.empty()) {
       // The validity and uniquiness of the input half will is checked
       // inside the event loop, where ProductID-s can be resolved.
       // FIXME: why not check it here?
       for(const auto & i : simParticleIOVec_) {
-        simPartOutNames.insert(i.second);
-        produces<SimParticleCollection>(i.second);
+        simPartOutNames.insert(i.out());
+        produces<SimParticleCollection>(i.out());
       }
     }
     else {
@@ -416,11 +403,11 @@ namespace mu2e {
 
     if(!simParticleIOVec_.empty()) {
       for(const auto& i : simParticleIOVec_) {
-        auto ih = event.getValidHandle<SimParticleCollection>(i.first);
-        if(!spim.insert(std::make_pair(ih.id(), i.second)).second) {
+        auto ih = event.getValidHandle<SimParticleCollection>(i.in());
+        if(!spim.insert(std::make_pair(ih.id(), i.out())).second) {
           throw cet::exception("BADCONFIG")
             <<"FilterG4Out: Different entries of simParticleIOMap resolved to the same product!\n"
-            <<"The current one: { in : "<<i.first<<" out: "<<i.second<<" }\n";
+            <<"The current one: { in : "<<i.in()<<" out: "<<i.out()<<" }\n";
         }
       }
     }
