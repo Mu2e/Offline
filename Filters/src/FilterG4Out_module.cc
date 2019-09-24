@@ -135,15 +135,6 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::Atom<bool> compressGenParticles {
-        Name("compressGenParticles"),
-          Comment("By default GenParticles are not touched, and the output SimParticles will point\n"
-                  "to the original GenParticleCollection. If GenParticle compression is requested,\n"
-                  "a new GenParticleCollection will be produced, and output SimParticles will point to it."
-                  ),
-          false
-          };
-
       fhicl::Sequence<art::InputTag> mainHitInputs {
         Name("mainHitInputs"),
           Comment("Particles and StepPointMCs mentioned in thise collections will be preserved.")
@@ -185,6 +176,25 @@ namespace mu2e {
                   "This should only be used when inputs depend on multiple SimParticle collections (e.g. in mixed events)."
                   )
           };
+
+
+
+      // It looks like the GenParticle compression code can write out multiple copies
+      // of the same particle.  The setting is not used by any fcl files in the
+      // current master branch of Offline.  Comment it out untile the issue is
+      // verified and resolved.
+
+      //FIXME:fhicl::Atom<bool> compressGenParticles {
+      //FIXME:  Name("compressGenParticles"),
+      //FIXME:    Comment("By default GenParticles are not touched, and the output SimParticles will point\n"
+      //FIXME:            "to the original GenParticleCollection. If GenParticle compression is requested,\n"
+      //FIXME:            "a new GenParticleCollection will be produced, and output SimParticles will point to it."
+      //FIXME:            ),
+      //FIXME:    false
+      //FIXME:    };
+
+
+
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -234,7 +244,7 @@ namespace mu2e {
   //================================================================
   FilterG4Out::FilterG4Out(const Parameters& conf)
     : art::EDFilter{conf}
-    , compressGenParticles_(conf().compressGenParticles())
+    , compressGenParticles_(false /*FIXME: compressGenParticles_(conf().compressGenParticles() */)
     , numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
