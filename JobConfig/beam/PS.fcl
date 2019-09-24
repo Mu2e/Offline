@@ -191,7 +191,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs : [ "g4run:mubeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
@@ -199,7 +198,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs : [ "g4run:dsregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
@@ -207,7 +205,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
@@ -215,7 +212,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs : [ "g4run:extmonregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 

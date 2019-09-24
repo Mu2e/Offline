@@ -211,7 +211,6 @@ cosmicFilter:
 	 mainHitInputs : [ "g4run:CRV" ]
 	 extraHitInputs : []
 	 mcTrajectoryInputs : [ ]
-	 numSimParticleCollections : 1
 	 vetoDaughters: []
       }
    }

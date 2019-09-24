@@ -144,7 +144,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
 
@@ -152,7 +151,6 @@ physics : {
          module_type: FilterG4Out
          mainHitInputs: [ "g4run:CRV" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
 
@@ -161,7 +159,6 @@ physics : {
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "stoppedMuonFinder" ]
-         numSimParticleCollections: 1
       }
 
       ootStopFilter: {
@@ -169,7 +166,6 @@ physics : {
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "outOfTargetMuonFinder" ]
-         numSimParticleCollections: 1
       }
 
       g4status: {

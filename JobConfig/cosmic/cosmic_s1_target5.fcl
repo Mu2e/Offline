@@ -240,7 +240,6 @@ physics :
          mainHitInputs : [ "g4run:crvStage1" ]
          extraHitInputs : []
          mcTrajectoryInputs : [ "g4run" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 

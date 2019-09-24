@@ -115,7 +115,6 @@ physics : {
             module_type               : FilterG4Out
             mainHitInputs             : [ "g4run:vacuuas2" ]
             extraHitInputs            : [ "g4run:virtualdetector", "vacuuas1:vacuuas1" ]
-            numSimParticleCollections : 1
             vetoDaughters             : []
         }
     } // filters

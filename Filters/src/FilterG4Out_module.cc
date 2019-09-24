@@ -185,12 +185,6 @@ namespace mu2e {
                   "This should only be used when inputs depend on multiple SimParticle collections (e.g. in mixed events)."
                   )
           };
-
-      fhicl::Atom<int> numSimParticleCollections {
-        Name("numSimParticleCollections"),
-          Comment("How many different SimParticleMC collections are used by the inputs."),
-          1
-      };
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -309,22 +303,9 @@ namespace mu2e {
       }
     }
     else {
-      const unsigned numSimPartOuts(conf().numSimParticleCollections());
-      if(numSimPartOuts == 1) {
-        const std::string defaultInstance;
-        simPartOutNames.insert(defaultInstance);
-        produces<SimParticleCollection>(defaultInstance);
-      }
-      else {
-        // Assign arbitrary unique instance names to the output collections.
-        // We need to know how many outputs will be needed.
-        for(unsigned i = 0; i < numSimPartOuts; ++i) {
-          std::ostringstream os;
-          os<<"s"<<i;
-          simPartOutNames.insert(os.str());
-          produces<SimParticleCollection>(os.str());
-        }
-      }
+      const std::string defaultInstance;
+      simPartOutNames.insert(defaultInstance);
+      produces<SimParticleCollection>(defaultInstance);
     }
 
     produces<SimParticleRemapping>();

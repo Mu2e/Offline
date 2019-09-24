@@ -115,7 +115,6 @@ physics : {
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "stoppedMuonFinder" ]
-         numSimParticleCollections: 1
       }
 
       g4consistent: {
