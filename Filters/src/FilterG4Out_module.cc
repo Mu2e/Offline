@@ -34,7 +34,8 @@
 #include <iterator>
 
 // art includes.
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalSequence.h"
+
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/SelectorBase.h"
@@ -112,8 +113,8 @@ namespace mu2e {
     //----------------------------------------------------------------
     // input product => output instance name
     struct ProductMapEntry : public std::pair<art::InputTag, std::string> {
-      ProductMapEntry(const fhicl::ParameterSet& pset)
-        : std::pair<art::InputTag,std::string>(pset.get<std::string>("in"), pset.get<std::string>("out"))
+      ProductMapEntry(const art::InputTag in, const std::string out)
+        : std::pair<art::InputTag,std::string>(in, out)
       {}
     };
 
@@ -159,24 +160,107 @@ namespace mu2e {
     unsigned numVetoedHits_;
 
   public:
-    explicit FilterG4Out(const fhicl::ParameterSet& pset);
+
+    struct IOMapEntry {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> in {
+        Name("in"),
+          Comment("The input collection")
+          };
+
+      fhicl::Atom<std::string> out {
+        Name("out"),
+          Comment("Map the input to this instance name on the output")
+          };
+    };
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<bool> compressGenParticles {
+        Name("compressGenParticles"),
+          Comment("By default GenParticles are not touched, and the output SimParticles will point\n"
+                  "to the original GenParticleCollection. If GenParticle compression is requested,\n"
+                  "a new GenParticleCollection will be produced, and output SimParticles will point to it."
+                  ),
+          false
+          };
+
+      fhicl::Sequence<art::InputTag> mainHitInputs {
+        Name("mainHitInputs"),
+          Comment("Particles and StepPointMCs mentioned in thise collections will be preserved.")
+          };
+
+      fhicl::Sequence<art::InputTag> mainSPPtrInputs {
+        Name("mainSPPtrInputs"),
+          Comment("A list of SimParticlePtrCollections. The pointed to SimParticles will be preserved."),
+          std::vector<art::InputTag>()
+          };
+
+      fhicl::Sequence<art::InputTag> extraHitInputs {
+        Name("extraHitInputs"),
+          Comment("If a hit in one of these collection is produced by a preserved SimParticle, the hit will be kept."),
+          std::vector<art::InputTag>()
+          };
+
+      fhicl::Sequence<art::InputTag> mcTrajectoryInputs {
+        Name("mcTrajectoryInputs"),
+          Comment("Trajectories to preserve if the corresponding SimParticle is preserved."),
+          std::vector<art::InputTag>()
+          };
+
+      fhicl::Sequence<art::InputTag> vetoDaughters {
+        Name("vetoDaughters"),
+          Comment("SimParticlePtrCollections; the daughters and further descendants of the pointed-to particles will be dropped."),
+          std::vector<art::InputTag>()
+          };
+
+      fhicl::Sequence<art::InputTag> vetoParticles {
+        Name("vetoParticles"),
+          Comment("SimParticlePtrCollections; the particles and all their descendants will be dropped.."),
+          std::vector<art::InputTag>()
+          };
+
+      fhicl::OptionalSequence<fhicl::Table<IOMapEntry> > simParticleIOMap {
+        Name("simParticleIOMap"),
+          Comment("Specify an output instance name for each SimParticleCollection referenced by the inputs.\n"
+                  "This should only be used when inputs depend on multiple SimParticle collections (e.g. in mixed events)."
+                  )
+          };
+
+      fhicl::Atom<int> numSimParticleCollections {
+        Name("numSimParticleCollections"),
+          Comment("How many different SimParticleMC collections are used by the inputs."),
+          1
+      };
+
+      // FIXME: it is time to remove this
+      fhicl::Atom<bool> noInstanceName {
+        Name("noInstanceName"),
+          true
+          };
+    };
+
+    using Parameters = art::EDFilter::Table<Config>;
+    explicit FilterG4Out(const Parameters& conf);
+
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
   };
 
   //================================================================
-  FilterG4Out::FilterG4Out(const fhicl::ParameterSet& pset)
-    : art::EDFilter{pset}
-    , compressGenParticles_(pset.get<bool>("compressGenParticles", false))
+  FilterG4Out::FilterG4Out(const Parameters& conf)
+    : art::EDFilter{conf}
+    , compressGenParticles_(conf().compressGenParticles())
     , numInputEvents_(), numPassedEvents_()
     , numMainHits_(), numInputExtraHits_(), numPassedExtraHits_()
     , numInputParticles_(), numPassedParticles_()
     , numVetoedParticles_(), numVetoedHits_()
   {
-    typedef std::vector<std::string> VS;
-
-    const VS mainStrings(pset.get<VS>("mainHitInputs"));
-    for(const auto& i : mainStrings) {
+    for(const auto& i : conf().mainHitInputs()) {
       mainHitInputs_.emplace_back(i);
       // Coalesce same instance names from multiple input modules/processes.
       mainOutputNames_.insert(mainHitInputs_.back().instance());
@@ -185,13 +269,11 @@ namespace mu2e {
       produces<StepPointMCCollection>(i);
     }
 
-    const VS ptrStrings(pset.get<VS>("mainSPPtrInputs", VS()));
-    for(const auto& i : ptrStrings) {
+    for(const auto& i : conf().mainSPPtrInputs()) {
       mainSPPtrInputs_.emplace_back(i);
     }
 
-    const VS extraStrings(pset.get<VS>("extraHitInputs", VS()));
-    for(const auto& i : extraStrings) {
+    for(const auto& i : conf().extraHitInputs()) {
       extraHitInputs_.emplace_back(i);
       // Coalesce same instance names from multiple input modules/processes.
       extraOutputNames_.insert(extraHitInputs_.back().instance());
@@ -200,43 +282,42 @@ namespace mu2e {
       produces<StepPointMCCollection>(i);
     }
 
-    const VS trajectoryStrings(pset.get<VS>("mcTrajectoryInputs", VS()));
-    for(const auto& i : trajectoryStrings) {
+    for(const auto& i : conf().mcTrajectoryInputs()) {
       trajectoryInputs_.emplace_back(i);
     }
     if(!trajectoryInputs_.empty()) {
       produces<MCTrajectoryCollection>();
     }
 
-    const VS vdStrings(pset.get<VS>("vetoDaughters", VS()));
-    for(const auto& i : vdStrings) {
+    for(const auto& i : conf().vetoDaughters()) {
       vetoDaughtersInputs_.emplace_back(i);
     }
 
-    const VS vpStrings(pset.get<VS>("vetoParticles", VS()));
-    for(const auto& i : vpStrings) {
+    for(const auto& i : conf().vetoParticles()) {
       vetoParticlesInputs_.emplace_back(i);
     }
 
     // We can't merge different SimParticle collections (unlike the hits)
     // Need to have a separate output collection for every input one.
-    typedef std::vector<fhicl::ParameterSet> SPIOPS;
-    SPIOPS simParticleIOPS(pset.get<SPIOPS>("simParticleIOMap", SPIOPS()));
-    for(const auto& i: simParticleIOPS) {
-      simParticleIOVec_.emplace_back(i);
+    std::vector<IOMapEntry> iomap;
+    if(conf().simParticleIOMap(iomap)) {
+      for(const auto& i: iomap) {
+        simParticleIOVec_.emplace_back(i.in(), i.out());
+      }
     }
 
     if(!simParticleIOVec_.empty()) {
       // The validity and uniquiness of the input half will is checked
       // inside the event loop, where ProductID-s can be resolved.
+      // FIXME: why not check it here?
       for(const auto & i : simParticleIOVec_) {
         simPartOutNames.insert(i.second);
         produces<SimParticleCollection>(i.second);
       }
     }
     else {
-      const unsigned numSimPartOuts(pset.get<unsigned>("numSimParticleCollections"));
-      if((numSimPartOuts == 1) && pset.get<bool>("noInstanceName", true)) {
+      const unsigned numSimPartOuts(conf().numSimParticleCollections());
+      if((numSimPartOuts == 1) && conf().noInstanceName()) {
         const std::string defaultInstance;
         simPartOutNames.insert(defaultInstance);
         produces<SimParticleCollection>(defaultInstance);
@@ -551,6 +632,11 @@ namespace mu2e {
       << "vetoed " << numVetoedParticles_ << " particles and "
       << numVetoedHits_ <<" hits."
       << "\n";
+  }
+
+  //================================================================
+  std::ostream& operator<<(std::ostream& out, const FilterG4Out::IOMapEntry& a) {
+    return out<<"IOMapEntry{ in: "<<a.in()<<", out: "<<a.out()<<" }";
   }
 
   //================================================================
