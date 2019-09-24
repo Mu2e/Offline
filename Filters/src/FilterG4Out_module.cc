@@ -288,11 +288,23 @@ namespace mu2e {
     conf().simParticleIOMap(simParticleIOVec_);
 
     if(!simParticleIOVec_.empty()) {
-      // The validity and uniquiness of the input half will is checked
-      // inside the event loop, where ProductID-s can be resolved.
-      // FIXME: why not check it here?
+
+      // FIXME: the check for duplicate InputTags
+      // needs https://cdcvs.fnal.gov/redmine/issues/23320
+      //
+      //redmine#23320:std::set<art::InputTag> inset;
+
       for(const auto & i : simParticleIOVec_) {
-        simPartOutNames.insert(i.out());
+        //redmine#23320:if(!inset.insert(i.in()).second) {
+        //redmine#23320:  throw cet::exception("BADCONFIG")
+        //redmine#23320:    <<"FilterG4Out: duplicate input tag in simParticleIOMap: in: "<<i.in()<<"\n";
+        //redmine#23320:}
+
+        if(!simPartOutNames.insert(i.out()).second) {
+          throw cet::exception("BADCONFIG")
+            <<"FilterG4Out: duplicate out name in simParticleIOMap: "<<" out: "<<i.out()<<"\n";
+        }
+
         produces<SimParticleCollection>(i.out());
       }
     }
