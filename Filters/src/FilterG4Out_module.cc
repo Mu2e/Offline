@@ -191,12 +191,6 @@ namespace mu2e {
           Comment("How many different SimParticleMC collections are used by the inputs."),
           1
       };
-
-      // FIXME: it is time to remove this
-      fhicl::Atom<bool> noInstanceName {
-        Name("noInstanceName"),
-          true
-          };
     };
 
     using Parameters = art::EDFilter::Table<Config>;
@@ -304,7 +298,7 @@ namespace mu2e {
     }
     else {
       const unsigned numSimPartOuts(conf().numSimParticleCollections());
-      if((numSimPartOuts == 1) && conf().noInstanceName()) {
+      if(numSimPartOuts == 1) {
         const std::string defaultInstance;
         simPartOutNames.insert(defaultInstance);
         produces<SimParticleCollection>(defaultInstance);

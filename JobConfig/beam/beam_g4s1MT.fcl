@@ -210,7 +210,6 @@ physics : {
    filters: {
       muonBeamFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:mubeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -219,7 +218,6 @@ physics : {
 
       dsRegionFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:dsregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -228,7 +226,6 @@ physics : {
 
       extmonBeamFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1
@@ -237,7 +234,6 @@ physics : {
 
       extmonRegionFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:extmonregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
          numSimParticleCollections : 1

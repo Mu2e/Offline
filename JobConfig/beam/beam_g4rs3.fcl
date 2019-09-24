@@ -103,7 +103,6 @@ physics : {
    filters: {
       mothersFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
          numSimParticleCollections: 1
@@ -112,7 +111,6 @@ physics : {
 
       crvFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: [ "g4run:CRV" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
          numSimParticleCollections: 1

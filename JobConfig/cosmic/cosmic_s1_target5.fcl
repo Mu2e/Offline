@@ -237,7 +237,6 @@ physics :
       cosmicFilter: 
       {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:crvStage1" ]
          extraHitInputs : []
          mcTrajectoryInputs : [ "g4run" ]
