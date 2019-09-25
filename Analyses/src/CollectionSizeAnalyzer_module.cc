@@ -66,7 +66,6 @@ namespace mu2e {
     struct Config {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
-      //using Atom=fhicl::Atom;
       fhicl::Atom<bool> useModuleLabel{Name("useModuleLabel"), Comment("Include input module label into collection name in the plots") };
       fhicl::Atom<bool> useInstanceName{Name("useInstanceName"), Comment("Include input instance name into collection name in the plots")};
       fhicl::Atom<bool> useProcessName{Name("useProcessName"), Comment("Include input process name into collection name in the plots")};
