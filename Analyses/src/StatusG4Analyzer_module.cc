@@ -32,14 +32,24 @@ namespace mu2e {
     TH1D *hCPUTime_ = nullptr;
     TH1D *hCPUTimeWide_ = nullptr;
   public:
-    explicit StatusG4Analyzer(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      fhicl::Atom<art::InputTag> input {
+        fhicl::Name("input"),
+          fhicl::Comment("The InputTag of the StatusG4 object to analyze.")
+          };
+    };
+
+    using Parameters = art::EDAnalyzer::Table<Config>;
+    explicit StatusG4Analyzer(const Parameters& conf);
+
     virtual void analyze(const art::Event& event);
   };
 
   //================================================================
-  StatusG4Analyzer::StatusG4Analyzer(const fhicl::ParameterSet& pset)
-    : art::EDAnalyzer(pset)
-    , input_(pset.get<std::string>("input"))
+  StatusG4Analyzer::StatusG4Analyzer(const Parameters& conf)
+    : art::EDAnalyzer(conf)
+    , input_(conf().input())
   {
     art::ServiceHandle<art::TFileService> tfs;
     hStatusValue_     = tfs->make<TH1D>("statusValue", "Non-zero values of the G4 status", 20, 0., 20.);
