@@ -55,6 +55,7 @@ outputs : {
   }
 }
 #include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/reco/epilog.fcl"
 #include "JobConfig/reco/Validation_epilog.fcl"
 
 services.TFileService.fileName: "nts.owner.CeSimRecoVal.version.sequencer.root"
