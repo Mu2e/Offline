@@ -151,19 +151,38 @@ TprTrigger : {
 
 
 	TTtimeClusterFinder  : @local::TTtimeClusterFinder
+	TTtimeClusterFinderUCC : { @table::TTtimeClusterFinder
+	    ComboHitCollection     : "TTflagBkgHitsUCC"
+	}
 	TThelixFinder        : @local::TTrobustHelixFinder
+	TThelixFinderUCC     : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTflagBkgHitsUCC"
+	    TimeClusterCollection : "TTtimeClusterFinderUCC"
+	}
 	TTfastHelixFinder    : { @table::TTrobustHelixFinder 
 	    ComboHitCollection    : "TTDeltaFinder"
 	    TimeClusterCollection : "TTfastTimeClusterFinder"
 	}
 	TTKSFDeM	     : @local::TTKSFDeM
 	TTKSFDeP	     : @local::TTKSFDeP
+
+
+	TTKSFUCCDeM	     : { @table::TTKSFDeM
+	    ComboHitCollection	  : "TTmakeSHUCC"
+	    SeedCollection        : "TThelixFinderUCC:Positive"
+	}
+	TTKSFUCCDeP	     : { @table::TTKSFDeP 
+	    ComboHitCollection	  : "TTmakeSHUCC"
+	    SeedCollection        : "TThelixFinderUCC:Negative"
+	}
+
 	TTFKSFDeM	     : { @table::TTKSFDeM
 	    SeedCollection : "TTfastHelixFinder:Positive"
 	}
 	TTFKSFDeP	     : { @table::TTKSFDeP 
 	    SeedCollection : "TTfastHelixFinder:Negative"
 	}
+
 	TTKFFDeM             : @local::TTKFFDeM
 	TTKFFDeP             : @local::TTKFFDeP
     }
