@@ -1,3 +1,7 @@
+//
+// Generate random misalignemnts for MDC2018.  Execute as:
+//  root -l JobConfig/reco/MT_MDC2018.C
+//
 #include "JobConfig/reco/MisalignTracker.C+"
 #include "math.h"
 {

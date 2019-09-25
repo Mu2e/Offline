@@ -29,14 +29,25 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
   ostream os(&fb);
   // write header
   os << "# Tracker Misalignments from MisalignTracker.C, parameters: "
-  << " twist = "<< rtwist << " mm" 
+  << " twist = "<< twist << " mm" 
+  << " skew = "<< skew << " mm" 
+  << " squeeze = "<< squeeze << " mm" 
+  << " rtwist = "<< rtwist << " mm" 
   << " dtwist = " << dtwist << " rad/mm"
   << " xskew = "<< xskew << " mm" 
   << " yskew = "<< yskew << " mm" 
-  << " squeeze = "<< rsqueeze << " mm" 
+  << " rsqueeze = "<< rsqueeze << " mm" 
   << " sigalpha = "<< sigalpha << " rad" 
   << " sigpos = "<< sigpos << " mm"
   << endl;
+  for(unsigned ibuf=0;ibuf<3;ibuf++)
+    os << "#" << endl;
+
+  // global track: dummy for now
+  os << " TABLE TrkAlignTracker " << endl;
+  os << "0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
+  for(unsigned ibuf=0;ibuf<3;ibuf++)
+    os << "#" << endl;
  
   os << "TABLE TrkAlignPlane" << endl;
   for(unsigned iplane=0;iplane < NPlanes; ++iplane){
@@ -57,5 +68,12 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
       << dalphaz << endl;
   }
 
+   for(unsigned ibuf=0;ibuf<3;ibuf++)
+    os << "#" << endl;
+ // dummy panel alignment for now
+  os << "TABLE TrkAlignPanel" << endl;
+  for(unsigned ipanel=0;ipanel<6*NPlanes; ++ipanel){
+    os << ipanel << ", "
+    << "0.0, 0.0, 0.0, 0.0, 0.0, 0.0" << endl;
+  }
 }
-
