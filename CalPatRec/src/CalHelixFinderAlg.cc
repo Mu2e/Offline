@@ -726,7 +726,8 @@ namespace mu2e {
 
     float phi, phi_ref(-1e10), z_ref, dphi, dz;
 
-    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
+    //    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
+    float hist[50], minX(0), maxX(0.025), stepX(0.0005), nbinsX(50); // make it 20 bins: gianipez test 2019-09-23
 
     XYZVec* center = &Helix._center;
     XYZVec  pos_ref;
@@ -1585,8 +1586,9 @@ namespace mu2e {
       //-----------------------------------------------------------------------------
       int good_hit = flag.hasAllProperties(_hsel  );
       int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
-      int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
-      if (good_hit && (! bkg_hit) && (! used_hit)) {
+      // int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
+      // if (good_hit && (! bkg_hit) && (! used_hit)) {
+      if (good_hit && (! bkg_hit) ) {
 	const ComboHit& ch  = Helix.chcol()->at(loc);
 
 	if (ch.energyDep() > _maxHitEnergy)                 continue;
