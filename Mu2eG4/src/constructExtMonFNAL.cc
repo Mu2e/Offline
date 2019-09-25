@@ -116,8 +116,8 @@ namespace mu2e {
     // Construct ExtMonStackMother* as nestedBox
     double stackMotherZCoord = (stack.motherStartZ() + stack.motherEndZ())/2.0;
     CLHEP::Hep3Vector stackMotherZVec (0, 0, stackMotherZCoord);
-    CLHEP::Hep3Vector stackMotherOffset = stackRefPointInRoom
-      + stackRotationInRoom * stackMotherZVec;
+    CLHEP::Hep3Vector stackMotherOffset = stackRefPointInRoom +
+      stackRotationInRoom * stackMotherZVec;
 
     double pz = abs( stack.motherStartZ() - stack.motherEndZ() )/2.0;
     double const halfDims[3] = {px, py, pz};
@@ -245,7 +245,13 @@ namespace mu2e {
       ExtMonFNALPlane plane(module, hs);
       std::ostringstream osp;
       osp<<"EMFPlane"<<volNameSuffix<<iplane;
-      
+
+      AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
+      G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]};
+      //double offset_z;
+      //if (stack.plane_zoffset()[iplane] > 0) offset_z = stack.plane_zoffset()[iplane]-450.;
+      //else offset_z = stack.plane_zoffset()[iplane] + 450.;
+      //G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], offset_z};
 
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
