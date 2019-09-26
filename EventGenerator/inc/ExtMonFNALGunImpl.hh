@@ -38,7 +38,7 @@ namespace mu2e {
       using Hep3Vector_t = CLHEP::Hep3Vector(double, double, double);
 
       fhicl::Atom<double> multiplicity {
-        Name("multipliticy"),
+        Name("multiplicity"),
           Comment("The number of generated particles is sampled from the Poisson\n"
                   "distribution with mean==multiplicity for mulitplicity>0,\n"
                   "or is fixed to |multiplicity| for negative integer inputs."
