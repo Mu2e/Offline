@@ -48,9 +48,10 @@ outputs : {
      SelectEvents : [ TriggerPath ]
      fileName    : @nil
      # drop StepPoints from calorimeter
-     outputCommands : [
-       @sequence::DigiCompression.OutputCommands,
-       @sequence::Reconstruction.ToKeep
+     outputCommands : [ "drop *_*_*_*",
+      @sequence::Reconstruction.HighReco,
+      @sequence::Reconstruction.LowRecoAll,
+      @sequence::Reconstruction.DigiMC
      ]
   }
 }
