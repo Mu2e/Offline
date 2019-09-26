@@ -58,7 +58,7 @@ BEGIN_PROLOG
 	module_type : HelixDiag
 	StrawDigiMCCollection : "compressDigiMCs"
 	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-	HelixSeedCollection : "HelixFinder:Positive"
+	HelixSeedCollection : "MHDeM"
 	ComboHitCollection : "makePH"
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
