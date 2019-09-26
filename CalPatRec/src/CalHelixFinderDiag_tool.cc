@@ -35,7 +35,15 @@ namespace mu2e {
     SimParticleTimeOffset*     _timeOffsets;
     
   public:
+
+    // using Name=fhicl::Name;
+    // using Comment=fhicl::Comment;
+    // struct Config {
+    //   fhicl::Atom<int> diag{ Name("diagLevel"),
+    // 	  Comment("Diagnostic Level")};
+    // };
     
+    //    CalHelixFinderDiag(const Parameters& config );
     CalHelixFinderDiag(const fhicl::ParameterSet& PSet);
     ~CalHelixFinderDiag();
     
@@ -49,12 +57,10 @@ namespace mu2e {
 //
 //-----------------------------------------------------------------------------
 CalHelixFinderDiag::CalHelixFinderDiag(const fhicl::ParameterSet& PSet) {
-  printf(" CalHelixFinderDiag::CalHelixFinderDiag : HOORAY! \n");
   _first_call   = 1;
   _event_number = -1;
   _timeOffsets  = NULL;
 }
-
 
 CalHelixFinderDiag::~CalHelixFinderDiag() {
 }
