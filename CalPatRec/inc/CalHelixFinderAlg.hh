@@ -41,6 +41,50 @@ namespace mu2e {
   class CalHelixFinderAlg {
   public:
     enum { kMaxNHits = 10000 } ;
+
+    // using Name=fhicl::Name;
+    // using Comment=fhicl::Comment;
+
+    // struct Config {
+    //   fhicl::Atom<int>   diag               { Name("diagLevel"              )};
+    //   fhicl::Atom<int>   debug              { Name("debugLevel"             )};
+    //   fhicl::Atom<int>   debug2             { Name("debugLevel2"            )};
+    //   fhicl::Sequence<std::string> hsel     { Name("HelixFitSelectionBits"  )};
+    //   fhicl::Sequence<>std::string bkgsel   { Name("BackgroundSelectionBits")};
+    //   fhicl::Atom<float> maxHitEnergy       { Name("maxElectronHitEnergy"   )};
+    //   fhicl::Atom<int>   minNHits           { Name("minNHit"                )};
+    //   fhicl::Atom<float> absMpDfDz          { Name("mostProbableDfDz"       )};
+    //   fhicl::Atom<float> dzOverHelPitchCut  { Name("dzOverHelPitchCut"      )};
+    //   fhicl::Atom<float> maxDfDz            { Name("maxDfDz"                )}; //0.01)};2018-10-11 gianipez test
+    //   fhicl::Atom<float> minDfDz            { Name("minDfDz"                )};
+    //   fhicl::Atom<float> sigmaPhi           { Name("sigmaPhi"               )};
+    //   fhicl::Atom<float> weightXY           { Name("weightXY"               )};
+    //   fhicl::Atom<int>   targetcon          { Name("targetconsistent"       )};
+    //   fhicl::Atom<float> weightZPhi         { Name("weightZPhi"             )};
+    //   fhicl::Atom<float> weight3D           { Name("weight3D"               )};
+    //   fhicl::Atom<float> maxXDPhi           { Name("maxXDPhi"               )};
+    //   fhicl::Atom<float> maxPanelToHelixDPhi{ Name("maxPanelToHelixDPhi"    )}; // 75 degrees
+    //   fhicl::Atom<float> distPatRec         { Name("distPatRec"             )};
+    //   fhicl::Atom<float> minDeltaNShPatRec  { Name("minDeltaNShPatRec"      )};
+    //   fhicl::Atom<float> mindist            { Name("mindist"                )};
+    //   fhicl::Atom<float> pmin               { Name("minP"                   )};
+    //   fhicl::Atom<float> pmax               { Name("maxP"                   )};
+    //   fhicl::Atom<float> tdmin              { Name("minAbsTanDip"           )};
+    //   fhicl::Atom<float> tdmax              { Name("maxAbsTanDip"           )};
+    //   fhicl::Atom<bool>  xyweights          { Name("xyWeights"              )};
+    //   fhicl::Atom<bool>  zweights           { Name("zWeights"               )};
+    //   fhicl::Atom<bool>  filter             { Name("filter"                 )};
+    //   fhicl::Atom<bool>  plotall            { Name("plotall"                )};
+    //   fhicl::Atom<bool>  usetarget          { Name("usetarget"              )};
+    //   fhicl::Atom<float> maxZTripletSearch  { Name("maxZTripletSearch"      )};
+    //   fhicl::Atom<int>   nHitsMaxPerPanel   { Name("nHitsMaxPerPanel"       )};
+    //   fhicl::Atom<float> hitChi2Max         { Name("hitChi2Max"             )};
+    //   fhicl::Atom<float> chi2xyMax          { Name("chi2xyMax"              )};
+    //   fhicl::Atom<float> chi2zphiMax        { Name("chi2zphiMax"            )};
+    //   fhicl::Atom<float> chi2hel3DMax       { Name("chi2hel3DMax"           )};
+    //   fhicl::Atom<float> dfdzErr            { Name("dfdzErr"                )};
+    // };
+
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
@@ -165,8 +209,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
                                         // parameter set should be passed in on construction
+    // using Parameters = art::EDFilter::Table<Config>;
 
     explicit CalHelixFinderAlg(fhicl::ParameterSet const&);
+    // explicit CalHelixFinderAlg(const Parameters& Conf);
     virtual ~CalHelixFinderAlg();
                                         // cached bfield accessor
     float bz() const;
@@ -321,6 +367,8 @@ namespace mu2e {
                                            // float*            Weights,
                                            HitInfo_t&         Iworst ,
                                            float&             HitChi2Worst);
+
+
 
   };
 }
