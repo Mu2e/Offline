@@ -35,6 +35,9 @@
 
 #include <vector>
 
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/TupleAs.h"
 #include "fhiclcpp/ParameterSet.h"
 
 #include "CLHEP/Random/RandomEngine.h"
@@ -56,6 +59,51 @@ namespace mu2e {
   class RootTreeSampler {
   public:
 
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Sequence<std::string> inputFiles {
+        Name("inputFiles"),
+          Comment("List of input ntuple files")
+      };
+
+      fhicl::Atom<std::string> treeName {
+        Name("treeName"),
+          Comment("Name of the ROOT tree object containing particle records")
+          };
+
+      fhicl::Atom<std::string> branchName {
+        Name("branchName"),
+          Comment("Name of the ROOT tree branch containing particle records")
+          };
+
+      fhicl::Atom<long> averageNumRecordsToUse {
+        Name("averageNumRecordsToUse"),
+          Comment("Zero means use all record.  Use a non-zero value\n"
+                  "to load only a random subset of the records to limit memory use."),
+          0
+          };
+
+      fhicl::Atom<long> verbosityLevel {
+        Name("verbosityLevel"),
+          Comment("A positive value generates more printouts than the default."),
+          0
+          };
+
+      fhicl::Atom<std::string> pieBranchName {
+        Name("pieBranchName"),
+          Comment("Only for generators resampling correlated particles from\n"
+                  "multiple ntuple records:\n"
+                  "Name of the ROOT tree branch that maps input records to events."),
+          [this](){ return !std::is_same<EventRecord,NtupleRecord>::value; }
+      };
+    };
+
+    RootTreeSampler(art::RandomNumberGenerator::base_engine_t& engine,
+                    const Config& conf);
+
+    // legacy interface with pset
     RootTreeSampler(art::RandomNumberGenerator::base_engine_t& engine,
                     const fhicl::ParameterSet& pset);
 
@@ -88,6 +136,20 @@ namespace mu2e {
       Long64_t numTreeEntries_;
       Long64_t currentEntry_ = 0;
       Long64_t numUsedNtupleEntries_ = 0;
+
+      SingleRecordGetter(RootTreeSampler *ts,
+                         TTree *tr,
+                         TBranch *mainRecordBranch,
+                         const Config& conf,
+                         double recordUseFraction)
+        : parent_(ts)
+        , nt_(tr)
+        , mrb_(mainRecordBranch)
+        , recordUseFraction_(recordUseFraction)
+        , numTreeEntries_(tr->GetEntries())
+      {
+        mrb_->SetAddress(&ntr_);
+      }
 
       SingleRecordGetter(RootTreeSampler *ts,
                          TTree *tr,
@@ -150,13 +212,13 @@ namespace mu2e {
       MultiRecordGetter(RootTreeSampler *ts,
                         TTree *tr,
                         TBranch *mainRecordBranch,
-                        const fhicl::ParameterSet& pset,
+                        const Config& conf,
                         double recordUseFraction)
         : parent_(ts)
         , nt_(tr)
         , mrb_(mainRecordBranch)
 
-        , pieb_(tr->GetBranch(pset.get<std::string>("pieBranchName").c_str()))
+        , pieb_(nullptr)
         , particleInEvent_(-1)
 
         , recordUseFraction_(recordUseFraction)
@@ -164,6 +226,40 @@ namespace mu2e {
         , currentEntry_(0)
         , numUsedNtupleEntries_(0)
       {
+        const std::string pbn = conf.pieBranchName();
+        pieb_ = tr->GetBranch(pbn.c_str());
+
+        mrb_->SetAddress(&ntr_);
+
+        if(!pieb_) {
+          throw cet::exception("BADINPUT")
+            <<"RootTreeSampler: Could not get branch \""<<conf.pieBranchName()
+            <<"\" in tree \""<<nt_->GetName()
+            <<"\"\n";
+        }
+        pieb_->SetAddress(&particleInEvent_);
+      }
+
+      MultiRecordGetter(RootTreeSampler *ts,
+                        TTree *tr,
+                        TBranch *mainRecordBranch,
+                        const fhicl::ParameterSet& pset,
+                        double recordUseFraction)
+        : parent_(ts)
+        , nt_(tr)
+        , mrb_(mainRecordBranch)
+
+        , pieb_(nullptr)
+        , particleInEvent_(-1)
+
+        , recordUseFraction_(recordUseFraction)
+        , numTreeEntries_(tr->GetEntries())
+        , currentEntry_(0)
+        , numUsedNtupleEntries_(0)
+      {
+        const std::string pbn = pset.get<std::string>("pieBranchName");
+        pieb_ = tr->GetBranch(pbn.c_str());
+
         mrb_->SetAddress(&ntr_);
 
         if(!pieb_) {
@@ -232,12 +328,120 @@ namespace mu2e {
     }; // MultiRecordGetter
     //----------------------------------------------------------------
 
-  };
+  }; // RootTreeSampler
 }
 
 //================================================================
 namespace mu2e {
 
+  template<class EventRecord, class NtupleRecord>
+  RootTreeSampler<EventRecord, NtupleRecord>::
+  RootTreeSampler(art::RandomNumberGenerator::base_engine_t& engine,
+                  const Config& conf)
+    : randFlat_(engine)
+  {
+    const auto inputFiles(conf.inputFiles());
+    const auto treeName(conf.treeName());
+    const long averageNumRecordsToUse(conf.averageNumRecordsToUse());
+    int verbosityLevel = conf.verbosityLevel();
+
+    if(inputFiles.empty()) {
+      throw cet::exception("BADCONFIG")<<"Error: no inputFiles";
+    }
+
+    art::ServiceHandle<art::TFileService> tfs;
+
+    double recordUseFraction = 1.;
+    if(averageNumRecordsToUse > 0) {
+      const long totalRecords = countInputRecords(tfs, inputFiles, treeName);
+      if(averageNumRecordsToUse < totalRecords) {
+        recordUseFraction = averageNumRecordsToUse/double(totalRecords);
+        if(verbosityLevel > 0) {
+          std::cout<<"RootTreeSampler: recordUseFraction = "<<recordUseFraction
+                   <<" for the requested average = "<<averageNumRecordsToUse
+                   <<" and total number of input records = "<<totalRecords
+                   <<std::endl;
+        }
+      }
+      else {
+        if(verbosityLevel > 0) {
+          std::cout<<"RootTreeSampler: forcing recordUseFraction=1 "
+                   <<": the requested number = "<<averageNumRecordsToUse
+                   <<" exceeds the number of available inputs = "<<totalRecords
+                   <<std::endl;
+        }
+      }
+    }
+
+    //----------------------------------------------------------------
+    // Load the records
+    for(const auto& fn : inputFiles) {
+      const std::string resolvedFileName = ConfigFileLookupPolicy()(fn);
+      TFile *infile = tfs->make<TFile>(resolvedFileName.c_str(), "READ");
+
+      TTree *nt = dynamic_cast<TTree*>(infile->Get(treeName.c_str()));
+      if(!nt) {
+        throw cet::exception("BADINPUT")<<"RootTreeSampler: Could not get tree \""<<treeName
+                                        <<"\" from file \""<<infile->GetName()
+                                        <<"\"\n";
+      }
+
+      //----------------------------------------------------------------
+      // A rudimentary check that the input ntuple is consistent with the data structure
+
+      const auto branchName(conf.branchName());
+      TBranch *bb = nt->GetBranch(branchName.c_str());
+      if(!bb) {
+        throw cet::exception("BADINPUT")<<"RootTreeSampler: Could not get branch \""<<branchName
+                                        <<"\" in tree \""<<treeName
+                                        <<"\" from file \""<<infile->GetName()
+                                        <<"\"\n";
+      }
+
+      if(unsigned(bb->GetNleaves()) != NtupleRecord::numBranchLeaves()) {
+        throw cet::exception("BADINPUT")<<"RootTreeSampler: wrong number of leaves: expect "
+                                        <<NtupleRecord::numBranchLeaves()<<", but branch \""<<branchName
+                                        <<"\", tree \""<<treeName
+                                        <<"\" in file \""<<infile->GetName()
+                                        <<"\" has "<<bb->GetNleaves()
+                                        <<"\n";
+      }
+      //----------------------------------------------------------------
+
+      const Long64_t nTreeEntries = nt->GetEntries();
+      std::cout<<"RootTreeSampler: reading "<<nTreeEntries
+               <<" entries.  Tree "<<treeName
+               <<", file "<<infile->GetName()
+               <<std::endl;
+
+      // If the average per-event ntuple record multiplicity is large,
+      // this will over-allocate the memory.
+      records_.reserve(records_.size()
+                       // Add "mean + 3sigma": do not re-allocate in most cases.
+                       + recordUseFraction*nTreeEntries
+                       + 3*recordUseFraction*sqrt(double(nTreeEntries)));
+
+      typename std::conditional
+        <std::is_same<EventRecord,NtupleRecord>::value,
+        SingleRecordGetter, MultiRecordGetter>::type
+        egt(this, nt, bb, conf, recordUseFraction);
+
+      while(egt.hasMoreRecords()) {
+        records_.push_back(egt.getRecord());
+      }
+
+      if(verbosityLevel > 0) {
+        std::cout<<"RootTreeSampler: stored "<<records_.size()
+                 <<" event entries.  Used "<<egt.numUsedNtupleEntries()
+                 <<" ntuple entries."
+                 <<std::endl;
+      }
+
+    } // for(inputFiles)
+
+  } // Constructor (conf)
+
+  //================================================================
   template<class EventRecord, class NtupleRecord>
   RootTreeSampler<EventRecord, NtupleRecord>::
   RootTreeSampler(art::RandomNumberGenerator::base_engine_t& engine,
@@ -314,9 +518,9 @@ namespace mu2e {
 
       const Long64_t nTreeEntries = nt->GetEntries();
       std::cout<<"RootTreeSampler: reading "<<nTreeEntries
-	       <<" entries.  Tree "<<treeName
-	       <<", file "<<infile->GetName()
-	       <<std::endl;
+               <<" entries.  Tree "<<treeName
+               <<", file "<<infile->GetName()
+               <<std::endl;
 
       // If the average per-event ntuple record multiplicity is large,
       // this will over-allocate the memory.
@@ -343,7 +547,7 @@ namespace mu2e {
 
     } // for(inputFiles)
 
-  } // Constructor
+  } // Constructor (pset)
 
   //================================================================
   template<class EventRecord, class NtupleRecord>

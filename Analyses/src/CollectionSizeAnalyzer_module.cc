@@ -62,17 +62,28 @@ namespace mu2e {
     void doSimParticles(const art::Event& event);
 
   public:
-    explicit CollectionSizeAnalyzer(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<bool> useModuleLabel{Name("useModuleLabel"), Comment("Include input module label into collection name in the plots") };
+      fhicl::Atom<bool> useInstanceName{Name("useInstanceName"), Comment("Include input instance name into collection name in the plots")};
+      fhicl::Atom<bool> useProcessName{Name("useProcessName"), Comment("Include input process name into collection name in the plots")};
+    };
+
+    using Parameters = art::EDAnalyzer::Table<Config>;
+    explicit CollectionSizeAnalyzer(const Parameters& conf);
+
     virtual void analyze(const art::Event& event);
   };
 
   //================================================================
-  CollectionSizeAnalyzer::CollectionSizeAnalyzer(const fhicl::ParameterSet& pset)
-    : art::EDAnalyzer(pset)
+  CollectionSizeAnalyzer::CollectionSizeAnalyzer(const Parameters& conf)
+    : art::EDAnalyzer(conf)
     , hStepPointSize_(0)
-    , useModuleLabel_(pset.get<bool>("useModuleLabel"))
-    , useInstanceName_(pset.get<bool>("useInstanceName"))
-    , useProcessName_(pset.get<bool>("useProcessName"))
+    , useModuleLabel_(conf().useModuleLabel())
+    , useInstanceName_(conf().useInstanceName())
+    , useProcessName_(conf().useProcessName())
   {
     art::ServiceHandle<art::TFileService> tfs;
     hStepPointSize_ = tfs->make<TProfile>("avgStepPointsSize", "Average step point collection size", 1, 0., 0.);

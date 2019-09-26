@@ -154,20 +154,16 @@ mu2e.physics.g4s4CommonBase: {
    filters: {
       detectorFilter: {
 	 module_type: FilterG4Out
-	 noInstanceName: true
 	 mainHitInputs: [ "g4run:tracker" ]
 	 mainSPPtrInputs: [ "CaloShowerStepFromStepPt" ]
 	 extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-	 numSimParticleCollections: 1
 	 vetoDaughters: []
       }
 
       crvFilter: {
 	 module_type: FilterG4Out
-	 noInstanceName: true
 	 mainHitInputs: [ "g4run:CRV"]
 	 extraHitInputs: [ "g4run:virtualdetector" ]
-	 numSimParticleCollections: 1
 	 vetoDaughters: []
       }
 

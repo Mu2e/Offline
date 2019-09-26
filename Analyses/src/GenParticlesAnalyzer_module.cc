@@ -21,7 +21,15 @@ namespace mu2e {
   class GenParticlesAnalyzer : public art::EDAnalyzer {
   public:
 
-    explicit GenParticlesAnalyzer(fhicl::ParameterSet const& pset);
+    struct Config {
+      fhicl::Atom<art::InputTag> inputs{
+        fhicl::Name("inputs"),
+          fhicl::Comment("The InputTag of a GenParticle collection to analyze. ")
+          };
+    };
+
+    using Parameters = art::EDAnalyzer::Table<Config>;
+    explicit GenParticlesAnalyzer(const Parameters& conf);
 
     void beginRun(const art::Run&) override;
     void analyze(const art::Event& e) override;
@@ -31,9 +39,9 @@ namespace mu2e {
     GeneratorSummaryHistograms genSummary_;
   };
 
-  GenParticlesAnalyzer::GenParticlesAnalyzer(const fhicl::ParameterSet& pset) : 
-      art::EDAnalyzer(pset),
-      inputs_(pset.get<std::string>("inputs")),
+  GenParticlesAnalyzer::GenParticlesAnalyzer(const Parameters& conf) :
+      art::EDAnalyzer(conf),
+      inputs_(conf().inputs()),
       genSummary_()
   {}
 
