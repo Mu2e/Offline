@@ -236,7 +236,7 @@ TrkFilters : {
 
 	cprSeedDeMTSFilter : {
 	    module_type : SeedFilter
-	    kalSeedCollection : "TTCalSeedFitUCCDem"    
+	    kalSeedCollection : "TTCalSeedFitDem"    
 	    fitparticle       : @local::Particle.eminus
 	    fitdirection      : @local::FitDir.downstream 
 	    minNStrawHits     : 15   
