@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/OptionalTable.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "CLHEP/Random/RandGaussQ.h"
@@ -33,16 +33,55 @@ namespace mu2e {
 
   public:
 
-    explicit GenerateProtonTimes(const fhicl::ParameterSet& pset);
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::OptionalTable<ProtonPulseRandPDF::Config> randPDFparameters { Name("randPDFparameters") };
+
+      fhicl::Sequence<std::string> ignoredGenIds {
+        Name("ignoredGenIds"),
+          Comment("A non-empty list means: generate time offsets for all particles\n"
+                  "except those produced by the listed generators.   If this list is emtpy,\n"
+                  "the applyToGenIds parameter below is enabled."
+                  ),
+          std::vector<std::string>{"cosmicToy", "cosmicDYB", "cosmic"}
+      };
+
+      fhicl::Sequence<std::string> applyToGenIds {
+        Name("applyToGenIds"),
+          Comment("The whitelist mode: assign time offsets just to particles made by one of the\n"
+                  "listed generators. This setting is only active in the case ignoredGenIds is emtpy.\n"
+                  ),
+          [this](){ return ignoredGenIds().empty(); }
+      };
+
+      fhicl::Sequence<art::InputTag> InputTimeMaps {
+        Name("InputTimeMaps"),
+          Comment("Pre-exising time offsets that should be transferred to the output."),
+          std::vector<art::InputTag>()
+          };
+
+      fhicl::Atom<art::InputTag> FixedModule {
+        Name("FixedModule"),
+          Comment("Input tag of a FixedTimeMap from RPC generation, if any."),
+          art::InputTag()
+          };
+
+      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"), Comment("Levels 0, 1, and 11 increase the number of printouts.."), 0 };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit GenerateProtonTimes(const Parameters& conf);
 
     virtual void beginRun(art::Run&   r) override;
     virtual void produce (art::Event& e) override;
 
   private:
     art::RandomNumberGenerator::base_engine_t& engine_;
-    fhicl::ParameterSet protonPset_;
+    ProtonPulseRandPDF::Config protonPulseConf_;
     int  verbosityLevel_;
-    std::string fixedTime_;
+    art::InputTag fixedTime_;
 
     typedef std::set<GenId::enum_type> GenIdSet;
     GenIdSet ignoredGenIds_;
@@ -56,14 +95,13 @@ namespace mu2e {
   };
 
   //================================================================
-  GenerateProtonTimes::GenerateProtonTimes(fhicl::ParameterSet const& pset)
-    : EDProducer{pset}
+  GenerateProtonTimes::GenerateProtonTimes(const Parameters& conf)
+    : EDProducer{conf}
     , engine_(createEngine(art::ServiceHandle<SeedService>()->getSeed()) )
-    , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , fixedTime_(pset.get<std::string>("FixedModule",""))
+    , verbosityLevel_(conf().verbosityLevel())
+    , fixedTime_(conf().FixedModule())
   {
-    std::vector<art::InputTag> inmaps = pset.get<std::vector<art::InputTag> >("InputTimeMaps",std::vector<art::InputTag>());
+    std::vector<art::InputTag> inmaps = conf().InputTimeMaps();
     for(auto const& tag : inmaps ){
       inmaps_.push_back(consumes<SimParticleTimeMap>(tag));
     }
@@ -73,27 +111,22 @@ namespace mu2e {
 
     typedef std::vector<std::string> VS;
 
-    const auto ig(pset.get<VS>("ignoredGenIds", VS{"cosmicToy", "cosmicDYB", "cosmic"}));
-    for(const auto i: ig) {
+    for(const auto i: conf().ignoredGenIds()) {
       ignoredGenIds_.insert(GenId::findByName(i).id());
     }
 
-    const auto ia(pset.get<VS>("applyToGenIds", VS()));
-    for(const auto i: ia) {
-      applyToGenIds_.insert(GenId::findByName(i).id());
+    if(ignoredGenIds_.empty()) {
+      for(const auto i: conf().applyToGenIds()) {
+        applyToGenIds_.insert(GenId::findByName(i).id());
+      }
     }
 
-    if(!applyToGenIds_.empty() && !ignoredGenIds_.empty()) {
-      throw cet::exception("BADCONFIG")
-        <<"If applyToGenIds is set, ignoredGenIds should be empty.  Got: applyToGenIds = [ "
-        <<listStream( applyToGenIds_ )<<" ], ignoredGenIds = [ "<<listStream( ignoredGenIds_ )<<"]\n";
-    }
-
+    conf().randPDFparameters(protonPulseConf_);
   }
 
   //================================================================
   void GenerateProtonTimes::beginRun(art::Run& run) {
-    protonPulse_.reset( new ProtonPulseRandPDF( engine_, protonPset_ ) );
+    protonPulse_.reset( new ProtonPulseRandPDF( engine_, protonPulseConf_ ) );
 
     if(verbosityLevel_ > 0) {
       if(applyToGenIds_.empty()) {
@@ -129,9 +162,8 @@ namespace mu2e {
     std::vector<art::Handle<SimParticleCollection> > colls;
     event.getManyByType(colls);
     art::Handle<FixedTimeMap> ftmHandle;
-    if (fixedTime_.size() > 0)
+    if (!fixedTime_.empty())
       event.getByLabel(fixedTime_, ftmHandle);
-
 
     // Generate and record offsets for all primaries
     for(const auto& ih : colls) {
@@ -149,7 +181,7 @@ namespace mu2e {
               : (applyToGenIds_.find(genId.id()) != applyToGenIds_.end());
 
             (*res)[part] = apply ? protonPulse_->fire() : 0.;
-            if (fixedTime_.size() > 0){
+            if (!fixedTime_.empty()){
               (*res)[part] = apply ? ftmHandle->time() : 0;
             }
           } else if(verbosityLevel_ > 2) {

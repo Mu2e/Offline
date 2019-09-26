@@ -14,7 +14,7 @@ physics : {
    producers:  {
       generate: {
          module_type          : ExtMonFNALGun
-	 guns: []
+         guns: [ { reference: "detector" } ]
       }
 
       g4run :  @local::g4run

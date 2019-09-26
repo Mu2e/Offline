@@ -119,10 +119,8 @@ physics : {
    filters: {
       extmonBeamFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
       g4consistent: {
