@@ -131,45 +131,9 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
-    // using Name=fhicl::Name;
-    // using Comment=fhicl::Comment;
-    // struct Config {
-    //   fhicl::Atom<int> diag{ Name("diagLevel"),
-    // 	  Comment("Diagnostic Level")};
-    //   fhicl::Atom<int> debug{ Name("debugLevel"),
-    // 	  Comment("Debug Level")};
-    //   fhicl::Atom<int> printfreq{ Name("printFrequency"),
-    // 	  Comment("Print Frequency")};
-    //   fhicl::Atom<int> useAsFilter{ Name("useAsFilter"),
-    // 	  Comment("Use as a filter")};
-    //   fhicl::Atom<art::InputTag> shTag{ Name("StrawHitCollectionLabel"),
-    // 	  Comment("ComboHitCollection tag")};
-    //   fhicl::Atom<art::InputTag> shfTag{ Name("StrawHitFlagCollectionLabel"),	  
-    // 	  Comment("StrawHitFlagCollection tag")};
-    //   fhicl::Atom<art::InputTag> tcTag{ Name("TimeClusterCollectionLabel"),	  
-    // 	  Comment("TimeClusterFinder tag")};
-    //   fhicl::Atom<int> minNHitsTimeCluster{ Name("minNHitsTimeCluster"),
-    // 	  Comment("Min N comboHits within the TimeCluster")};
-    //   fhicl::Atom<TrkParticle::type> fitparticle{ Name("fitparticle"),	  
-    // 	  Comment("particle assumption for the fit")};
-    //   fhicl::Atom<TrkFitDirection::FitDirection> fitdirection{ Name("fitdirection"),
-    // 	  Comment("particle's direction assumption for the fit")};
-    //   fhicl::Table<HelixFinderAlg::Config> helixFinderAlg{ Name("HelixFinderAlg"),
-    // 	  Comment("HelixFinderAlg configuration")};
-    //   fhicl::Sequence<int> helicities{ Name("Helicities"),
-    //    	  Comment("Helicities used for the pattern recognition")};
-    //   fhicl::Table<art::InputTag> timeOffsets{ Name("TimeOffsets"),
-    // 	  Comment("TimeOffsets configuration")};
-    //   fhicl::Table<fhicl::ParameterSet> diagPlugin{ Name("diagPlugin"),
-    // 	  Comment("Diagnostic plugin configuration")};
-    // };
-
-
 
     enum fitType {helixFit=0,seedFit,kalFit};
 
-    // using Parameters = art::EDFilter::Table<Config>;
-    // explicit CalHelixFinder(const Parameters& Conf);
     explicit CalHelixFinder(const fhicl::ParameterSet& PSet);
     virtual ~CalHelixFinder();
     

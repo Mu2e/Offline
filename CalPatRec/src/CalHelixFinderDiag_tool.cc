@@ -36,14 +36,6 @@ namespace mu2e {
     
   public:
 
-    // using Name=fhicl::Name;
-    // using Comment=fhicl::Comment;
-    // struct Config {
-    //   fhicl::Atom<int> diag{ Name("diagLevel"),
-    // 	  Comment("Diagnostic Level")};
-    // };
-    
-    //    CalHelixFinderDiag(const Parameters& config );
     CalHelixFinderDiag(const fhicl::ParameterSet& PSet);
     ~CalHelixFinderDiag();
     

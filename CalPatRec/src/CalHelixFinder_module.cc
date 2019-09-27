@@ -90,46 +90,6 @@ namespace mu2e {
       else                 _hmanager = std::make_unique<ModuleHistToolBase>();
     }
 
-//   CalHelixFinder::CalHelixFinder(const Parameters& config) :
-//     art::EDFilter{config},
-//     _diagLevel          (config().diag()), 
-//     _debugLevel         (config().debug()), 
-//     _printfreq          (config().printfreq()), 
-//     _useAsFilter        (config().useAsFilter()), 
-//     _shLabel            (config().shTag()), 
-//     _shfLabel           (config().shfTag()), 
-//     _timeclLabel        (config().tcTag()), 
-//     _minNHitsTimeCluster(config().minNHitsTimeCluster()), 
-//     _tpart              (config().fitparticle()), 
-//     _fdir               (config().fitdirection()), 
-//     _hfinder            (config().helixFinderAlg()){
-//       consumes<ComboHitCollection>(_shLabel);
-//     consumes<StrawHitFlagCollection>(_shfLabel);
-//     consumes<TimeClusterCollection>(_timeclLabel);
-
-//     std::vector<int> helvals = config().get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel}); //pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
-//     for(auto hv : helvals) {
-//       Helicity hel(hv);
-//       _hels.push_back(hel);
-//       produces<HelixSeedCollection>(Helicity::name(hel));
-//     }
-//     //    produces<HelixSeedCollection>();
-// //-----------------------------------------------------------------------------
-// // provide for interactive disanostics
-// //-----------------------------------------------------------------------------
-//     _helTraj          = 0;
-//     _timeOffsets      = new fhicl::ParameterSet(config().timeOffSets());    //pset.get<fhicl::ParameterSet>("TimeOffsets",fhicl::ParameterSet()));
-
-//     _data.shLabel     = _shLabel;
-//     _data.timeOffsets = _timeOffsets;
-   
-//     if (_debugLevel != 0) _printfreq = 1;
-
-//     if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(config().diagPlugin()); // pset.get<fhicl::ParameterSet>("diagPlugin"));
-//     else                 _hmanager = std::make_unique<ModuleHistToolBase>();
-
-//   }
-
 //-----------------------------------------------------------------------------
 // destructor
 //-----------------------------------------------------------------------------
