@@ -188,54 +188,6 @@ namespace mu2e {
     //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
   }
 
-
-//-----------------------------------------------------------------------------
-  // CalHelixFinderAlg::CalHelixFinderAlg(const Parameters& config) :
-  //   _diag               (config().diag               ()),
-  //   _debug              (config().debug              ()),
-  //   _debug2             (config().debug2             ()),
-  //   _hsel               (config().hsel               ()),
-  //   _bkgsel             (config().bkgsel             ()),
-  //   _maxHitEnergy       (config().maxHitEnergy       ()),
-  //   _minNHits           (config().minNHits           ()),
-  //   _absMpDfDz          (config().absMpDfDz          ()),
-  //   _dzOverHelPitchCut  (config().dzOverHelPitchCut  ()),
-  //   _maxDfDz            (config().maxDfDz            ()),//0.01)),2018-10-11 gianipez test
-  //   _minDfDz            (config().minDfDz            ()),
-  //   _sigmaPhi           (config().sigmaPhi           ()),
-  //   _weightXY           (config().weightXY           ()),
-  //   _targetcon          (config().targetcon          ()),
-  //   _weightZPhi         (config().weightZPhi         ()),
-  //   _weight3D           (config().weight3D           ()),
-  //   _maxXDPhi           (config().maxXDPhi           ()),
-  //   _maxPanelToHelixDPhi(config().maxPanelToHelixDPhi()),// 75 degrees
-  //   _distPatRec         (config().distPatRec         ()),
-  //   _minDeltaNShPatRec  (config().minDeltaNShPatRec  ()),
-  //   _mindist            (config().mindist            ()),
-  //   _pmin               (config().pmin               ()),
-  //   _pmax               (config().pmax               ()),
-  //   _tdmin              (config().tdmin              ()),
-  //   _tdmax              (config().tdmax              ()),
-  //   _xyweights          (config().xyweights          ()),
-  //   _zweights           (config().zweights           ()),
-  //   _filter             (config().filter             ()),
-  //   _plotall            (config().plotall            ()),
-  //   _usetarget          (config().usetarget          ()),
-  //   _maxZTripletSearch  (config().maxZTripletSearch  ()),
-  //   _nHitsMaxPerPanel   (config().nHitsMaxPerPanel   ()),
-  //   _hitChi2Max         (config().hitChi2Max         ()),
-  //   _chi2xyMax          (config().chi2xyMax          ()),
-  //   _chi2zphiMax        (config().chi2zphiMax        ()),
-  //   _chi2hel3DMax       (config().chi2hel3DMax       ()),
-  //   _dfdzErr            (config().dfdzErr            ()){
-
-  //   _bz = 0.;
-  //   std::vector<std::string> bitnames;
-  //   bitnames.push_back("Outlier");
-  //   bitnames.push_back("OtherBackground");
-  //   //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
-  // }
-
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::~CalHelixFinderAlg() {
   }
