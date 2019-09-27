@@ -22,7 +22,6 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
 // C++ includes
-//#include <string>
 #include <thread>
 
 
@@ -31,9 +30,7 @@ namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
     
-    //class PhysicalVolumeHelper;
     class Mu2eG4PerThreadStorage;
-    //class GenEventBroker;
     
     class Mu2eG4MTRunManager;
     class IMu2eG4Cut;
@@ -53,7 +50,6 @@ namespace mu2e {
     
     //**********************************************************
     //These functions help us control the event loop
-    void initializePTS(Mu2eG4PerThreadStorage* pts);
     void initializeThread(Mu2eG4MTRunManager* mRM,
                           const G4ThreeVector& origin_in_world);
     void initializeUserActions(const G4ThreeVector& origin_in_world);
@@ -71,7 +67,7 @@ namespace mu2e {
         
   private:
             
-        fhicl::ParameterSet pset_;
+        fhicl::ParameterSet const& pset_;
         
         bool m_managerInitialized;
         bool m_userWorkerInit;//is there a UserWorkerInitialization class?
