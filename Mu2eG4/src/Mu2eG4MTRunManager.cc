@@ -41,8 +41,6 @@
 #include "G4MTRunManagerKernel.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4SDManager.hh"
-#include "G4MTHepRandom.hh"
-
 
 using namespace std;
 
@@ -192,9 +190,6 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
             const_cast<CLHEP::HepRandomEngine*>(getMasterRandomEngine())->flatArray(nSeedsPerEvent*nSeedsFilled,randDbl);
             helper->Fill(randDbl,nSeedsFilled,numevents,nSeedsPerEvent);
         }
-
-      
-
     }
     
     

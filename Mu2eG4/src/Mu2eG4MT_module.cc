@@ -408,8 +408,9 @@ void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
       auto destroy_worker = [&threads_left, this] {
           WorkerRMMap::accessor access_workerMap;
           std::thread::id this_tid = std::this_thread::get_id();
-          myworkerRunManagerMap.find(access_workerMap, this_tid);
+        if (myworkerRunManagerMap.find(access_workerMap, this_tid)) {
           access_workerMap->second.reset();
+        }
           access_workerMap.release();
           --threads_left;
           while (threads_left != 0) {}
