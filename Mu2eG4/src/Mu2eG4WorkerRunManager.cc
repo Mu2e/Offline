@@ -38,7 +38,6 @@
 #include "G4TransportationManager.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4ParallelWorldProcessStore.hh"
-#include "G4MTHepRandom.hh"
 
 //Other includes
 #include "CLHEP/Random/JamesRandom.h"
@@ -89,16 +88,7 @@ namespace mu2e {
   
 // Destructor of base is called automatically.  No need to do anything.
 Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
-    std::cout << "This WorkerRM is being destroyed!" << std::endl;
-}
-    
-    
-void Mu2eG4WorkerRunManager::initializePTS(Mu2eG4PerThreadStorage* pls){
-
-    //perThreadObjects_ = pls;
-    //workerID_ = getThreadIndex();
-    //std::cerr << "WorkerRM PLS " << workerID_ << " is Initialized!!\n";
-        
+  std::cout << "This WorkerRM is being destroyed!\n";
 }
     
 
