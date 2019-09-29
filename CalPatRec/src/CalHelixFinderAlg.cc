@@ -148,26 +148,27 @@ namespace mu2e {
     _debug2             (pset.get<int>           ("debugLevel2"            )),
     _hsel               (pset.get<vector<string>>("HelixFitSelectionBits"  )),
     _bkgsel             (pset.get<vector<string>>("BackgroundSelectionBits")),
-    _maxHitEnergy       (pset.get<float>        ("maxElectronHitEnergy"   )),
+    _maxHitEnergy       (pset.get<float>         ("maxElectronHitEnergy"   )),
     _minNHits           (pset.get<int>           ("minNHit"                )),
-    _absMpDfDz          (pset.get<float>        ("mostProbableDfDz"       )),
-    _dzOverHelPitchCut  (pset.get<float>        ("dzOverHelPitchCut"      )),
-    _maxDfDz            (pset.get<float>        ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
-    _minDfDz            (pset.get<float>        ("minDfDz"                )),
-    _sigmaPhi           (pset.get<float>        ("sigmaPhi"               )),
-    _weightXY           (pset.get<float>        ("weightXY"               )),
+    _absMpDfDz          (pset.get<float>         ("mostProbableDfDz"       )),
+    _initDfDz           (pset.get<int>           ("initDfDz"               )),
+    _dzOverHelPitchCut  (pset.get<float>         ("dzOverHelPitchCut"      )),
+    _maxDfDz            (pset.get<float>         ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
+    _minDfDz            (pset.get<float>         ("minDfDz"                )),
+    _sigmaPhi           (pset.get<float>         ("sigmaPhi"               )),
+    _weightXY           (pset.get<float>         ("weightXY"               )),
     _targetcon          (pset.get<int>           ("targetconsistent"       )),
-    _weightZPhi         (pset.get<float>        ("weightZPhi"             )),
-    _weight3D           (pset.get<float>        ("weight3D"               )),
-    _maxXDPhi           (pset.get<float>        ("maxXDPhi"               )),
-    _maxPanelToHelixDPhi(pset.get<float>        ("maxPanelToHelixDPhi"    )), // 75 degrees
-    _distPatRec         (pset.get<float>        ("distPatRec"             )),
-    _minDeltaNShPatRec  (pset.get<float>        ("minDeltaNShPatRec"      )),
-    _mindist            (pset.get<float>        ("mindist"                )),
-    _pmin               (pset.get<float>        ("minP"                   )),
-    _pmax               (pset.get<float>        ("maxP"                   )),
-    _tdmin              (pset.get<float>        ("minAbsTanDip"           )),
-    _tdmax              (pset.get<float>        ("maxAbsTanDip"           )),
+    _weightZPhi         (pset.get<float>         ("weightZPhi"             )),
+    _weight3D           (pset.get<float>         ("weight3D"               )),
+    _maxXDPhi           (pset.get<float>         ("maxXDPhi"               )),
+    _maxPanelToHelixDPhi(pset.get<float>         ("maxPanelToHelixDPhi"    )), // 75 degrees
+    _distPatRec         (pset.get<float>         ("distPatRec"             )),
+    _minDeltaNShPatRec  (pset.get<float>         ("minDeltaNShPatRec"      )),
+    _mindist            (pset.get<float>         ("mindist"                )),
+    _pmin               (pset.get<float>         ("minP"                   )),
+    _pmax               (pset.get<float>         ("maxP"                   )),
+    _tdmin              (pset.get<float>         ("minAbsTanDip"           )),
+    _tdmax              (pset.get<float>         ("maxAbsTanDip"           )),
     _xyweights          (pset.get<bool>          ("xyWeights"              )),
     _zweights           (pset.get<bool>          ("zWeights"               )),
     _filter             (pset.get<bool>          ("filter"                 )),
@@ -3033,11 +3034,12 @@ namespace mu2e {
 // gianipez test 2019-09-28
 // let's try to evaluate the dfdz NOW!
 //--------------------------------------------------------------------------------
-    int res = findDfDz(Helix, SeedIndex);
-    if (res ==1 ) {
-      dfdz = _hdfdz;    
+    if (_initDfDz == 1){
+      int res = findDfDz(Helix, SeedIndex);
+      if (res ==1 ) {
+	dfdz = _hdfdz;    
+      }
     }
-    
     float     tollMax = fabs(2.*M_PI/dfdz);
 //------------------------------------------------------------------------------
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
