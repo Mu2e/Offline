@@ -56,6 +56,7 @@ CalPatRec : { @table::CalPatRec
 	minNHit                                 : @local::CalPatRec.minNStrawHits       # minimal number of hits on found helix
 	hitChi2Max                              : @local::CalPatRec.chi2HitCut
 	mostProbableDfDz                        : 0.00475
+	initDfDz                                : 0
 #	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
