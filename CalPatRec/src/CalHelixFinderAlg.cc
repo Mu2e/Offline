@@ -3029,6 +3029,15 @@ namespace mu2e {
     
     calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz);
     
+//--------------------------------------------------------------------------------
+// gianipez test 2019-09-28
+// let's try to evaluate the dfdz NOW!
+//--------------------------------------------------------------------------------
+    int res = findDfDz(Helix, SeedIndex);
+    if (res ==1 ) {
+      dfdz = _hdfdz;    
+    }
+    
     float     tollMax = fabs(2.*M_PI/dfdz);
 //------------------------------------------------------------------------------
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
