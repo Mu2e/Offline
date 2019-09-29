@@ -43,6 +43,20 @@ TTmakePH : {
     TestRadius : true
     ComboHitCollection : "TTmakeSH"
 }
+TTmakeSHUCC : {
+    module_type : StrawHitReco
+    UseCalorimeter : true
+    FilterHits : true
+    WriteStrawHitCollection : false
+    EventWindowMarkerLabel : "EWMProducer"
+}
+# combine hits in a panel
+TTmakePHUCC : {
+    module_type : CombineStrawHits
+    TestFlag : false
+    TestRadius : true
+    ComboHitCollection : "TTmakeSHUCC"
+}
 # stereo version: defer the radius test
 TTSmakePH : {
     @table::TTmakePH
@@ -85,15 +99,21 @@ TrkHitRecoTrigger : {
     producers : { 
 	TTmakeSH            : { @table::TTmakeSH             }
 	TTmakePH            : { @table::TTmakePH             }
+	TTmakeSHUCC         : { @table::TTmakeSHUCC          }
+	TTmakePHUCC         : { @table::TTmakePHUCC          }
 	TTmakeSTH           : { @table::TTmakeSTH            }
 	TTflagBkgHits	    : { @table::TTflagBkgHits        }
+	TTflagBkgHitsUCC    : { @table::TTflagBkgHits
+	        ComboHitCollection : TTmakePHUCC		
+	}
     }
     # sequences
     # production sequence to prepare hits for tracking
     sequences: {
-	TTprepareHits  : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
-	TTmakefastHits : [ TTmakeSH, TTmakePH ]
-	TTSprepareHits : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
+	TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
+	TTprepareHitsUCC  : [ TTmakeSHUCC, TTmakePHUCC, TTflagBkgHitsUCC ]
+	TTmakefastHits    : [ TTmakeSH, TTmakePH ]
+	TTSprepareHits    : [ TTmakeSH, TTSmakePH, TTmakeSTH ,TTSflagBkgHits ]
     }
 }
 

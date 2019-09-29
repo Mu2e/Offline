@@ -103,6 +103,7 @@ namespace mu2e {
                                         // the dfdz value in the pattern-recognition stage
     float               _mpDfDz;
     float               _absMpDfDz;         // absolute value of most probable expected dphi/dz
+    int                 _initDfDz;
     float               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
     float               _maxDfDz;
     float               _minDfDz;
@@ -121,7 +122,7 @@ namespace mu2e {
 					// squared distance requed bewtween a straw hit and its predicted 
 					// position used in the patter recognition procedure
     float               _distPatRec;
-    int                  _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
+    int                 _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
                                               //the findTrack function to set the new Helix
 
     float               _mindist;       // minimum distance between points used in circle initialization
