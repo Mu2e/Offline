@@ -19,7 +19,7 @@ services : {
    message                : @local::default_message
    TFileService           : { fileName : "nts.owner.beam-g4rs3.version.sequencer.root" }
    RandomNumberGenerator  : { }
-   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+   GeometryService        : { @table::Services.Core.GeometryService inputFile : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -103,19 +103,15 @@ physics : {
    filters: {
       mothersFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: []
       }
 
       crvFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: [ "g4run:CRV" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: []
       }
 

@@ -27,14 +27,16 @@ namespace mu2e {
   class GenEventCounter : public art::EDProducer {
     GenEventCount::count_t seenEvents_;
   public:
-    explicit GenEventCounter(const fhicl::ParameterSet& pset);
+    struct Config {};
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit GenEventCounter(const Parameters& conf);
     virtual void produce(art::Event& event) override;
     virtual void endSubRun(art::SubRun& sr) override;
   };
 
   //================================================================
-  GenEventCounter::GenEventCounter(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset},
+  GenEventCounter::GenEventCounter(const Parameters& conf)
+    : art::EDProducer{conf},
       seenEvents_(0)
   {
     produces<mu2e::GenEventCount, art::InSubRun>();

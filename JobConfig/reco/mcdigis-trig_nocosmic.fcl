@@ -1,22 +1,11 @@
 # Same as mcdigisTrig, but for input digi files that don't have the cosmic time map
 # This is legacy for MDC2018g digis and earlier
 #include "JobConfig/reco/mcdigis-trig.fcl"
-# generate a CosmicTimeMap; it will be empty
 physics.producers : {
   @table::physics.producers
   @table::CommonMC.producers  
 }
-# add sim services so we can create a fake cosmic time map to make output consistent
-services : @local::Services.SimAndReco
-services.SeedService.baseSeed         :  773651
-services.SeedService.maxUniqueEngines :  20
+#include "JobConfig/reco/NoCosmicTimeMap_epilog.fcl"
 services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
 services.scheduler.wantSummary: true
-physics.RecoPath : [cosmicTimeMap, @sequence::Reconstruction.RecoMCPath ]
-# redefine the time maps being used
-physics.producers.FindMCPrimary.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
-physics.producers.SelectRecoMC.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
-physics.producers.compressRecoMCs.timeMapTags : [ @sequence::DigiCompression.NoCosmicTimeMaps, "cosmicTimeMap"]
-physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] 
-physics.analyzers.RecoCheck.OldTimeOffsets.inputs :[  @sequence::DigiCompression.NoCosmicTimeMaps ]
-physics.analyzers.RecoCheck.NewTimeOffsets.inputs :[  @sequence::RecoCompression.NoCosmicTimeMaps ]
+

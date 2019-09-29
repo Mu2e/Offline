@@ -99,19 +99,15 @@ physics : {
    filters: {
       muonBeamFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
          mainHitInputs : [ "g4run:DSVacuum" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
       crvFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
          mainHitInputs : [ "g4run:CRV" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
