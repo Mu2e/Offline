@@ -92,8 +92,8 @@ namespace mu2e {
     TH1F* _hPosiMom {nullptr};
     TH1F* _hMee;
     TH2F* _hMeeVsE;
-    TH1F* _hMeeOverE;    		// M(ee)/E(gamma)
-    TH1F* _hy;				// splitting function
+    TH1F* _hMeeOverE;                   // M(ee)/E(gamma)
+    TH1F* _hy;                          // splitting function
 
   public:
     explicit RPCGun(const fhicl::ParameterSet& pset);
@@ -120,44 +120,44 @@ namespace mu2e {
     , randomFlat_         (eng_)
     , randomUnitSphere_   (eng_, czmin_,czmax_,phimin_,phimax_)
     , pionCaptureSpectrum_(&randomFlat_,&randomUnitSphere_)
-      //    , randomUnitSphere_(eng_)
+    //    , randomUnitSphere_(eng_)
     , stops_(eng_, pset.get<fhicl::ParameterSet>("pionStops"))
     , doHistograms_( pset.get<bool>("doHistograms",true ) )
     , protonPset_( pset.get<fhicl::ParameterSet>("randPDFparameters", fhicl::ParameterSet() ) )
-  {
-    produces<mu2e::GenParticleCollection>();
-    produces<mu2e::EventWeight>();
-    produces<mu2e::FixedTimeMap>();
+    {
+      produces<mu2e::GenParticleCollection>();
+      produces<mu2e::EventWeight>();
+      produces<mu2e::FixedTimeMap>();
 
-    if(verbosityLevel_ > 0) {
-      std::cout<<"RPCGun: using = "
-               <<stops_.numRecords()
-               <<" stopped particles"
-               <<std::endl;
+      if(verbosityLevel_ > 0) {
+        std::cout<<"RPCGun: using = "
+                 <<stops_.numRecords()
+                 <<" stopped particles"
+                 <<std::endl;
 
-      std::cout<<"RPCGun: producing photon " << std::endl;
-    }
-
-    if ( doHistograms_ ) {
-      art::ServiceHandle<art::TFileService> tfs;
-      art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
-
-      _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
-      
-      if(generateInternalConversion_){
-        _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
-        _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
-        _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
-        _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
-        _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
-        _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+        std::cout<<"RPCGun: producing photon " << std::endl;
       }
-    }
 
-  }
+      if ( doHistograms_ ) {
+        art::ServiceHandle<art::TFileService> tfs;
+        art::TFileDirectory tfdir = tfs->mkdir( "RPCGun" );
+
+        _hmomentum     = tfdir.make<TH1F>( "hmomentum", "Produced photon momentum", 100,  40.,  140.  );
+
+        if(generateInternalConversion_){
+          _hElecMom  = tfdir.make<TH1F>("hElecMom" , "Produced electron momentum", 140,  0. , 140.);
+          _hPosiMom  = tfdir.make<TH1F>("hPosiMom" , "Produced positron momentum", 140,  0. , 140.);
+          _hMee      = tfdir.make<TH1F>("hMee"     , "M(e+e-) "           , 200,0.,200.);
+          _hMeeVsE   = tfdir.make<TH2F>("hMeeVsE"  , "M(e+e-) vs E"       , 200,0.,200.,200,0,200);
+          _hMeeOverE = tfdir.make<TH1F>("hMeeOverE", "M(e+e-)/E "         , 200, 0.,1);
+          _hy        = tfdir.make<TH1F>("hy"       , "y = (ee-ep)/|pe+pp|", 200,-1.,1.);
+        }
+      }
+
+    }
 
   //================================================================
-  
+
   void RPCGun::beginRun(art::Run& run) {
     protonPulse_.reset( new ProtonPulseRandPDF( eng_, protonPset_ ) );
   }
@@ -174,7 +174,7 @@ namespace mu2e {
     if (tmin_ > 0){
       while (true){
         const auto& tstop = stops_.fire();
-        timemap->SetTime(protonPulse_->fire()); 
+        timemap->SetTime(protonPulse_->fire());
         if (tstop.t+timemap->time() < 0 || tstop.t+timemap->time() > tmin_){
           if (applySurvivalProbability_){
             double weight = exp(-tstop.tauNormalized)*survivalProbScaling_;
@@ -192,7 +192,7 @@ namespace mu2e {
         }
       }
     }else{
-      timemap->SetTime(protonPulse_->fire()); 
+      timemap->SetTime(protonPulse_->fire());
       if (applySurvivalProbability_){
         while (true){
           const auto& tstop = stops_.fire();
@@ -217,40 +217,40 @@ namespace mu2e {
 
     if(!generateInternalConversion_){
       output->emplace_back( PDGCode::gamma,
-                          GenId::ExternalRPC,
-                          pos,
-                          CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
-                          stop.t );
+                            GenId::ExternalRPC,
+                            pos,
+                            CLHEP::HepLorentzVector( randomUnitSphere_.fire(energy), energy),
+                            stop.t );
 
       event.put(std::move(output));
       event.put(std::move(timemap));
     } else {
       CLHEP::HepLorentzVector mome, momp;
-      pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp); 
+      pionCaptureSpectrum_.getElecPosiVectors(energy,mome,momp);
       // Add particles to list
       auto output = std::make_unique<GenParticleCollection>();
       output->emplace_back(PDGCode::e_minus, GenId::InternalRPC,pos,mome,stop.t);
       output->emplace_back(PDGCode::e_plus , GenId::InternalRPC,pos,momp,stop.t);
       event.put(move(output));
       event.put(std::move(timemap));
-      
+
       if(doHistograms_){
         _hElecMom ->Fill(mome.vect().mag());
         _hPosiMom ->Fill(momp.vect().mag());
- 
+
         double mee = (mome+momp).m();
         _hMee->Fill(mee);
         _hMeeVsE->Fill(energy,mee);
         _hMeeOverE->Fill(mee/energy);
-      
+
         CLHEP::Hep3Vector p = mome.vect()+momp.vect();
         double y = (mome.e()-momp.e())/p.mag();
-      
+
         _hy->Fill(y);
       }
     }
 
-// Calculate survival probability
+    // Calculate survival probability
     const double weight = exp(-stop.tauNormalized);
     std::unique_ptr<EventWeight> pw(new EventWeight(weight));
     event.put(std::move(pw));

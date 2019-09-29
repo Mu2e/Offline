@@ -105,9 +105,7 @@ physics : {
    filters: {
       g4filter: {
          module_type               : FilterG4Out
-         noInstanceName            : true
          mainHitInputs             : [ "g4run:pbars0" ]
-         numSimParticleCollections : 1
          vetoDaughters             : []
       }
    }
