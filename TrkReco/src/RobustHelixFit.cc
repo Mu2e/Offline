@@ -88,9 +88,9 @@ namespace mu2e
     _initFZMaxL(pset.get<float>("initFZMaxLambda",530.)),
     _initFZStepL(pset.get<float>("initFZStepLambda",20.)),
   //    _fitFZNBins(pset.get<unsigned>("fitFZNBins",125)),
-    _fitFZMinL(pset.get<float>("fitFZMinLambda",10.)),
+    _fitFZMinL(pset.get<float>("fitFZMinLambda",30.)),
     _fitFZMaxL(pset.get<float>("fitFZMaxLambda",510.)),
-    _fitFZStepL(pset.get<float>("fitFZStepLambda",4.))
+    _fitFZStepL(pset.get<float>("fitFZStepLambda",10.))
   {
     float minarea(pset.get<float>("minArea",5000.0));
     _minarea2    = minarea*minarea;
