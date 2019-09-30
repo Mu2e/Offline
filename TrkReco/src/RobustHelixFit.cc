@@ -83,11 +83,9 @@ namespace mu2e
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
     _ntripleMin(pset.get<unsigned>("ntripleMin",5)),
     _ntripleMax(pset.get<unsigned>("ntripleMax",500)),
-  //    _initFZNBins(pset.get<unsigned>("initFZNBins",25)),
     _initFZMinL(pset.get<float>("initFZMinLambda",30.)),
     _initFZMaxL(pset.get<float>("initFZMaxLambda",530.)),
     _initFZStepL(pset.get<float>("initFZStepLambda",20.)),
-  //    _fitFZNBins(pset.get<unsigned>("fitFZNBins",125)),
     _fitFZMinL(pset.get<float>("fitFZMinLambda",10.)),
     _fitFZMaxL(pset.get<float>("fitFZMaxLambda",510.)),
     _fitFZStepL(pset.get<float>("fitFZStepLambda",4.))
@@ -95,7 +93,7 @@ namespace mu2e
     float minarea(pset.get<float>("minArea",5000.0));
     _minarea2    = minarea*minarea;
     _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL);
-    _fitFZNBins = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
+    _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
   }
 
   RobustHelixFit::~RobustHelixFit()

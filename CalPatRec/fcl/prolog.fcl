@@ -86,6 +86,7 @@ CalPatRec : { @table::CalPatRec
 	chi2zphiMax                             : 5.0    
 	chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
 	dfdzErr                                 : 0.1
+	minArea                                 : 5000.
     }
 #------------------------------------------------------------------------------
 # KalFitHack configuration for the KFF fits 

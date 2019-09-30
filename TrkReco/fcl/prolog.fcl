@@ -78,6 +78,12 @@ TrkReco: { @table::TrkReco
 	ntripleMin         : 5
 	ntripleMax         : 500
 	
+	maxzsep            : 275.	
+	maxdphi            : 10.
+	fitFZMinLambda     : 30
+	fitFZMaxLambda     : 510
+	fitFZStepLambda    : 10
+
 	minArea            : 5000.0
     }
     

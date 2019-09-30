@@ -183,12 +183,14 @@ namespace mu2e {
     _chi2hel3DMax       (pset.get<float>        ("chi2hel3DMax"           )),
     _dfdzErr            (pset.get<float>        ("dfdzErr"                )){
 
+    float minarea(pset.get<float>("minArea"));
+    _minarea2    = minarea*minarea;    
+    
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
     //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
   }
-
 
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::~CalHelixFinderAlg() {
@@ -2017,14 +2019,14 @@ namespace mu2e {
 	int       nhits  = panelz->nChHits();
 	for (int i=0; i<nhits; ++i){   
 	  if (Helix._nStrawHits > (nSh - nHitsTested))   continue;	  
-	  if ((nSh - nHitsTested) < _minNHits     )   continue;	  
+	  if ((nSh - nHitsTested) < _minNHits        )   continue;	  
 	  //clear the info of the tmp object used to test the triplet
 	  TmpHelix.clearResults();
 
 	  HitInfo_t          seed(f,p,panelz->idChBegin + i);
 	  findTrack(seed,TmpHelix,UseMPVdfdz);
 
-	  nHitsTested += Helix._chHitsToProcess[panelz->idChBegin + i].nStrawHits();// panelz->_chHitsToProcess.at(i).nStrawHits();
+	  nHitsTested += Helix._chHitsToProcess[panelz->idChBegin + i].nStrawHits();
 
 	  //compare tripletHelix with bestTripletHelix
 	  //2019-02-08: gianipez chanceg the logic;
@@ -3029,7 +3031,7 @@ namespace mu2e {
     XYZVec p2(seedHit->_pos);          // seed hit
     XYZVec p3(fCaloX,fCaloY,fCaloZ);   // cluster
     
-    calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz);
+    if (!calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz))    return;  
     
 //--------------------------------------------------------------------------------
 // gianipez test 2019-09-28
@@ -3484,13 +3486,21 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // helix parameters are defined at Z=p2.z, Phi0 corresponds to p2
   //-----------------------------------------------------------------------------
-  void CalHelixFinderAlg::calculateTrackParameters(const XYZVec&   p1       ,
+  bool CalHelixFinderAlg::calculateTrackParameters(const XYZVec&   p1       ,
 						   const XYZVec&   p2       ,
 						   const XYZVec&   p3       ,
 						   XYZVec&         Center   ,
 						   float&         Radius   ,
 						   float&         Phi0     ,
 						   float&         DfDz32) {
+    //evaluate the area covered by the Triplet
+    float dist2ij = (p1 - p2).Mag2();
+    float dist2ik = (p1 - p3).Mag2();
+    float dist2jk = (p2 - p3).Mag2();
+    float area2   = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
+    if(area2 < _minarea2)              return false;
+
+
     Center.SetZ(p2.z());
 
     float x_m, y_m, x_n, y_n;
@@ -3595,6 +3605,8 @@ namespace mu2e {
 	     Center.x(),Center.y(),Phi0,p1.z(),p2.z(),p3.z(),dphi32,DfDz32);
       printf("[CalHelixFinderAlg:calculateTrackParameters] z0 = %9.3f d0 = %8.4f  phi00 = %8.5f omega = %8.5f tandip = %8.4f\n",z0,d0,phi00,1/Radius,tandip);
     }
+
+    return true;
   }
 
 //-----------------------------------------------------------------------------

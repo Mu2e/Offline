@@ -38,8 +38,9 @@ CprTrigger : {
 #------------------------------------------------------------------------------
     TTHelixFinderAlg : { @table::CalPatRec.HelixFinderAlg
 	targetconsistent      : 0
-#	maxZTripletSearch     : 0. # mm            
+	maxZTripletSearch     : 0. # mm            
 	maxDfDz               : 0.025
+	initDfDz              : 1
     }
 #------------------------------------------------------------------------------
 # SeedFitter(SeedFitHackNew) configuration for the final track fit: NOT USED ANYMORE
