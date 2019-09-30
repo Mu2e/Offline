@@ -37,6 +37,7 @@ struct EndResult{
 		std::vector<double> StartTimeResiduals;
 		std::vector<double> EndDOCAs;
 		std::vector<double> EndTimeResiduals;
+	        std::vector<double> TrueDOCAs;
 		double NLL;
 	
 };

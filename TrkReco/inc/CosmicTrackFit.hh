@@ -96,7 +96,7 @@ namespace mu2e
 		int _mcdiag;
     		int _debug;		    // debug level
                 StrawHitFlag _useflag, _dontuseflag;
-    		unsigned      _minnsh;  // minimum # of StrawHits
+    		unsigned _minnsh;  // minimum # of StrawHits
     		unsigned _minCHHits; // minimum # of CH hits - should be at least 2 for fit to work....
 		unsigned _n_outliers; //number of significant outliers/number of hits in track....helps with multiplicity(?)
     		unsigned _maxniter; // maxium # of iterations to global minimum   
@@ -105,7 +105,7 @@ namespace mu2e
 		float _maxDOCA; //max allowed DOCA to allow hit into fit
     		float _maxchi2; //maximum allowed chi2
 		float _max_chi2_change; // once we are lower than this we can say its converged
-		// float _max_residual;// max residual per track in either x'' or y''
+	        float _max_seed_chi2;// max chi2 total of seed track
     		float _max_position_deviation;//maximum hcange from initial choice of a0 and b0 (in mm)
 	       
   };//end Fit class

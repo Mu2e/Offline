@@ -83,11 +83,10 @@ TrkPoca DriftFitUtils::GetPOCA(Straw const& straw, double a0, double a1, double 
 
       		double fltlen = (fabs((pointwire.z()-tpos.z())/tdir.z())); 
 	        SetFltLen(fltlen); //store
-		cout<<"FltLen "<<fltlen<<endl;
+		
 	 	double hitlen = fabs(wdir.dot(tpos - pointwire));
 	 	SetHitLen(hitlen); //store
-		cout<<"HitLen "<<hitlen<<endl;
-
+		
       		TrkLineTraj wire(pointwire,wdir);
       		TrkLineTraj track(tpos,tdir);
       		
@@ -95,9 +94,9 @@ TrkPoca DriftFitUtils::GetPOCA(Straw const& straw, double a0, double a1, double 
       		return hitpoca;
      }
 
-double DriftFitUtils::GetDOCA(TrkPoca hitpoca) {
-        	double doca = hitpoca.doca();
-      		return doca;
+double DriftFitUtils::GetAmbig(TrkPoca hitpoca) {
+		double newamb = hitpoca.doca() > 0 ? 1 : -1;
+      		return newamb;
 }
 	
 double DriftFitUtils::GetPropVelocity(StrawResponse rep, ComboHit chit){
@@ -121,8 +120,7 @@ double DriftFitUtils::GetPropTime(ComboHit chit, Straw straw, double vprop) {
   }
 
 
-double DriftFitUtils::TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit){
-	        
+double DriftFitUtils::TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit){ 
                 //StrawId strawid = straw.id();
       		//double phi =  hit.phi();
       	        double drift_time= doca/0.065;//srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
@@ -141,7 +139,6 @@ double DriftFitUtils::TimeResidualLong(Straw const&  straw, double doca, StrawRe
 double DriftFitUtils::TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit){
 		double time_residual_long = TimeResidualLong( straw,  doca, srep,  t0,  hit);
 		double time_residual_trans = TimeResidualTrans(straw,doca, srep, t0, hit); 
-		std::cout<<hit.time()<<"trans "<<time_residual_trans<<" long time "<<time_residual_long<<std::endl;
 		return time_residual_trans + time_residual_long + hitlen/299 + fltlen/299;
 }
 

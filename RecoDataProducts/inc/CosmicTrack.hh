@@ -34,6 +34,11 @@ using namespace std;
   	double B0;
   	double B1;
   	double T0;
+	double deltaA0;
+  	double deltaA1;
+  	double deltaB0;
+  	double deltaB1;
+  	double deltaT0;
   	TrackParams();
   	TrackParams(double a0, double a1, double  b0, double b1) : A0(a0), A1(a1), B0(b0) , B1(b1){};
 	TrackCov Covarience;
@@ -87,6 +92,7 @@ using namespace std;
    	
    	std::vector<double> StartDOCAs;
    	std::vector<double> EndDOCAs;
+	std::vector<double> TrueDOCAs;
    	std::vector<double> StartTimeResiduals;
    	std::vector<double> EndTimeResiduals;
    	
@@ -201,7 +207,7 @@ namespace mu2e {
 	     void SetMinuitCoordSystem(TrackAxes coordsys){
 	    	this->MinuitCoordSystem = coordsys;
 	    }
-	    void set_N(unsigned N){_Nhits = N;}
+	    void Set_N(unsigned N){_Nhits = N;}
 	    
 	    void SetTrackEquation(TrackEquation Track){ 
 	        this->FitEquation = Track;
@@ -292,13 +298,13 @@ namespace mu2e {
 
 	     XYZVec sigmaPos;
 	     XYZVec sigmaDir;
-	
+	     
 	     bool converged = false;
 	     bool minuit_converged = false;
 
   private:
-	    unsigned _Nhits;
 	    
+	    unsigned _Nhits;
 	    double TruePhi;
 	    double FitPhi;
 	    double TrueTheta;

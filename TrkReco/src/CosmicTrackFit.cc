@@ -42,13 +42,7 @@
 #include "TMath.h"
 #include "Math/Math.h"
 #include "Math/DistFunc.h"
-//Minit2:
-#include <Minuit2/FCNBase.h>
-#include <Minuit2/MnMigrad.h>
-#include <Minuit2/MnMinos.h>
-#include <Minuit2/MnStrategy.h>
-#include <Minuit2/MnUserParameters.h>
-#include <Minuit2/FunctionMinimum.h>
+
 // boost
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics/stats.hpp>
@@ -86,7 +80,6 @@ namespace mu2e
     _maxDOCA(pset.get<float>("maxDOCA",1000)),//max distance of closest approach between a hit included in fit and one flag out-right as an outlier
     _maxchi2(pset.get<float>("maxchi2",10.0)) ,
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
-    //_max_residual((pset.get<float>("max_residual",1000)),
     _max_position_deviation((pset.get<float>("max_position_deviation",200)))
     {}
 
@@ -189,6 +182,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
      const ComboHit* ch0 = &trackData._chHitsToProcess[0]; 
      const ComboHit* chN = &trackData._chHitsToProcess[trackData._chHitsToProcess.size()-1]; 
      cosmictrack->SetFirstPoint(ch0->pos().x(), ch0->pos().y(), ch0->pos().z());
+     cosmictrack->Set_N(nHits);
 
      //Step 1: Get Initial Estimate of track direction
      XYZVec ZPrime = InitLineDirection(ch0, chN);  
@@ -411,19 +405,41 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 	PXYZ[0][0] = PXYZ[0][0] - DXYZ[0][0]*PXYZ[2][0]/ DXYZ[2][0];
 	PXYZ[1][0] = PXYZ[1][0]- DXYZ[1][0]*PXYZ[2][0]/ DXYZ[2][0];
 	PXYZ[2][0] = PXYZ[2][0]- DXYZ[2][0]*PXYZ[2][0]/ DXYZ[2][0];
-       
+       /*
+	//TMatrixD sigmaPos(3,1);
+        TMatrixD Cov(3,3);
+        TMatrixD At(A);
+	At.T();
+        for(unsigned i =0; i< 3; i++){
+        	for(unsigned j =0 ; j <3; j++){
+                    
+	            if(i==0 and j==0) {Cov[i][j] =  cosmictrack->FitParams.Covarience.sigA0; }
+                    if(i==1 and j ==1) { Cov[i][j] = cosmictrack->FitParams.Covarience.sigA1;}
+		    else {Cov[i][j] =0;}
+        	}
+        }
+        TMatrixD CovXYZ(A*Cov*At);
+	for(unsigned i=0; i<3 ; i++){
+	
+		for(unsigned j=0; j<3; j++){
+			cout<<"i= "<<i<<" j= "<<j<<" "<<Cov[i][j]<<"=======> "<<CovXYZ[i][j]<<endl;
+			
+		}
+		
+	}
+       */
 	TMatrixD sigmaPos(3,1);
 	sigmaPos[0][0] = cosmictrack->FitParams.Covarience.sigA0; 
 	sigmaPos[1][0] = cosmictrack->FitParams.Covarience.sigB0;
 	sigmaPos[2][0] = 0;
-
 	TMatrixD sigmaPosXYZ(A*sigmaPos);
+
 	TMatrixD sigmaDir(3,1);
 	sigmaDir[0][0] = cosmictrack->FitParams.Covarience.sigA1; 
 	sigmaDir[1][0] = cosmictrack->FitParams.Covarience.sigB1;
  	sigmaDir[2][0] = 0;
 	TMatrixD sigmaDirXYZ(A*sigmaDir);
-	
+	//TODO NOT WORKING!!!
 	cout<<"sigmaPos "<<sigmaPos[0][0]<<"----->"<<sigmaPosXYZ[1][0]<<endl;
 	cout<<"sigmaPos "<<sigmaPos[1][0]<<"----->"<<sigmaPosXYZ[1][0]<<endl;
 	cout<<"sigmaPos "<<sigmaPos[2][0]<<"----->"<<sigmaPosXYZ[2][0]<<endl;
@@ -431,10 +447,10 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 	cout<<"sigmaDir "<<sigmaDir[0][0]<<"----->"<<sigmaDirXYZ[0][0]<<endl;
 	cout<<"sigmaDir "<<sigmaDir[1][0]<<"----->"<<sigmaDirXYZ[1][0]<<endl;
 	cout<<"sigmaDir "<<sigmaDir[2][0]<<"----->"<<sigmaDirXYZ[2][0]<<endl;
-        
+
 	XYZVec Pos(PXYZ[0][0], PXYZ[1][0], PXYZ[2][0]);
 	XYZVec Dir(DXYZ[0][0], DXYZ[1][0] , DXYZ[2][0]);
-        
+    
 	if(seed == true){
 		if (det == true){
 			XYZVec PosInDet = ConvertToDetFrame(Pos);
@@ -598,6 +614,13 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
          trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
          trackData._tseed._track.MinuitFitParams.B1 =  endresult.bestfit[3];//b1
          trackData._tseed._track.MinuitFitParams.T0 =  endresult.bestfit[4];//t0
+
+	 trackData._tseed._track.MinuitFitParams.deltaA0 =  endresult.bestfiterrors[0];//erra0
+         trackData._tseed._track.MinuitFitParams.deltaA1 =  endresult.bestfiterrors[1];//erra1
+         trackData._tseed._track.MinuitFitParams.deltaB0 =  endresult.bestfiterrors[2];//errb0
+         trackData._tseed._track.MinuitFitParams.deltaB1 =  endresult.bestfiterrors[3];//errb1
+         trackData._tseed._track.MinuitFitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
+
          if(endresult.bestfitcov.size() !=0 ){
 		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
 		 trackData._tseed._track.MinuitFitParams.Covarience = Cov; //TODO gives MASSIVE values!!!
@@ -612,10 +635,22 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	 trackData._tseed._track.MinuitCoordSystem = XYZ; 
 	 trackData._tseed._track.DriftDiag.EndDOCAs = endresult.EndDOCAs;
 	 trackData._tseed._track.DriftDiag.StartDOCAs = endresult.StartDOCAs;
+	 trackData._tseed._track.DriftDiag.TrueDOCAs = endresult.TrueDOCAs;
 	 trackData._tseed._track.DriftDiag.EndTimeResiduals = endresult.EndTimeResiduals;
 	 trackData._tseed._track.DriftDiag.NLL = endresult.NLL;
 	 trackData._tseed._track.DriftDiag.StartTimeResiduals = endresult.StartTimeResiduals;
-	 
+         /*
+	 for(unsigned i = 0; i< endresult.TrueDOCAs.size(); i++){ 
+	
+	 if(endresult.TrueDOCAs[i] > 100){
+		int count;
+		cout<<"Not Converged "<<endresult.NLL<<" start doca "<<endresult.StartDOCAs[i]<<"true doca "<<endresult.TrueDOCAs[i] <<" seeds "<<trackData._tseed._track.FitEquationXYZ.Pos.X()<<" "<<trackData._tseed._track.FitEquationXYZ.Dir.X()<<" "<<trackData._tseed._track.FitEquationXYZ.Pos.Y()<<" "<<trackData._tseed._track.FitEquationXYZ.Dir.Y()<<" ptrue"<<sqrt(trackData._tseed._track.TrueTrueTrackDirection.Mag2())<<" theta "<<trackData._tseed._track.get_true_theta() <<" phi "<<trackData._tseed._track.get_true_phi()<<" seed chi2 "<<trackData._tseed._track.Diag.FinalChiTot<<endl;
+		cin>>count;
+		
+	  }
+         
+         }
+        */
 	 if(_diag > 0){
 		ComboHit *chit(0);
 		for(size_t j=0; j<(trackData._tseed._straw_chits.size()); j++){
@@ -630,7 +665,12 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 		    //Set Residuals:
 trackData._tseed._track.DriftDiag.FinalResidualsX.push_back(ParametricFit::GetResidualX(trackData._tseed._track.MinuitFitParams.A0,  trackData._tseed._track.MinuitFitParams.A1, point));
 	trackData._tseed._track.DriftDiag.FinalResidualsY.push_back(ParametricFit::GetResidualY( trackData._tseed._track.MinuitFitParams.B0,  trackData._tseed._track.MinuitFitParams.B1, point));
-	          
+
+	           //Set Hit errors:
+		  std::vector<double> ErrorsXY = ParametricFit::GetErrors(chit, X, Y);	 
+trackData._tseed._track.DriftDiag.FinalErrX.push_back(ErrorsXY[0]);
+
+trackData._tseed._track.DriftDiag.FinalErrY.push_back(ErrorsXY[1]);	          
 		   
 		}       
       }  

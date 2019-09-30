@@ -116,7 +116,7 @@ namespace mu2e{
     TrkFitFlag				_saveflag;//write tracks that satisfy these flags
     //unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting 
     int 				_minNHitsTimeCluster; //min number of hits in a viable time cluster
-
+    int 				_max_seed_chi2; ///maximum chi2 allowed for seed
     
     art::ProductToken<ComboHitCollection> const _chToken;
     art::ProductToken<TimeClusterCollection> const _tcToken;
@@ -149,10 +149,12 @@ namespace mu2e{
     _minnch      (pset.get<int>("minNComboHits",4)),
     _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"StraightTrackOK"})),
     _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
+    _max_seed_chi2(pset.get<float>("max_seed_chi2",10)),
     _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
     _mcToken{consumes<StrawDigiMCCollection>(pset.get<art::InputTag>("StrawDigiMCCollection"))},
     _tfit        (pset.get<fhicl::ParameterSet>("CosmicTrackFit",fhicl::ParameterSet())), 
+    
     //_ttcalc      (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet())),
     //_t0shift     (pset.get<float>("T0Shift",4.0)),
     _outlier     (StrawHitFlag::outlier)
@@ -317,6 +319,7 @@ namespace mu2e{
 	     		}  
 	     		}
 	              //Pass straw hits to the drift fit for ambig resolution:
+                      if( tmpResult._tseed._track.Diag.FinalChiTot > _max_seed_chi2) continue;
 		      _tfit.DriftFit(tmpResult);
 		      //Add tmp to seed list:
 		      track_seed_vec.push_back(tmpResult._tseed);

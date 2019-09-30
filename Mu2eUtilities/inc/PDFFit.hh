@@ -22,10 +22,8 @@
 
 using namespace mu2e;
 
-//From Richie:
-#define pdf_tbins 500
-#define pdf_taubins 50
-#define pdf_sbins 25
+
+
 
 class TimePDFFit : public ROOT::Minuit2::FCNBase {
   public:
@@ -43,12 +41,8 @@ class TimePDFFit : public ROOT::Minuit2::FCNBase {
 
     int k;
 
-
-    XYZVec Direction;
-    int nparams =5;
-    double doca_min = -10;
-    double doca_max = 10;
-
+    int nparams =5; 
+    
      TimePDFFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k) :  chits(_chits), straws(_straws), srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , k(_k) {};
    
     double Up() const { return 0.5; };
@@ -65,16 +59,27 @@ class FullFit : public TimePDFFit {
 
     double voltage=1425.;
     int Factorial(int k);
-    void CalculateFullPdf();
+    void CalculateFullPDF();
+    double InterpolatePDF(double time_residual, double sigma, double tau) const;
 
-    double interpolatePDF(double time_residual, double sigma, double tau) const;
-
-    double pdf_mint, pdf_mintau, pdf_mins;
-    double pdf_maxt, pdf_maxtau, pdf_maxs;
-    double pdf_deltat, pdf_deltatau, pdf_deltas;
+    double Min_t, Min_tau, Min_s;
+    double Max_t, Max_tau, Max_s;
+    double delta_T, delta_Tau, delta_S;
     double *pdf_sigmas, *pdf_taus, *pdf_times;
     double *pdf;
     int k;
 };
+
+class DataFit : public FullFit {
+  public:
+    DataFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k): FullFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _k) {}
+    
+    double operator() (const std::vector<double> &x) const;
+    
+    //void calculate_weighted_pdf (const std::vector<double> &x, TH1F* h, double doca_min=-1, double doca_max=1e8, bool dist=false) const;
+
+    };
+
+
 
 #endif

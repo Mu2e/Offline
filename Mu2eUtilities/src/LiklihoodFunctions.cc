@@ -42,13 +42,22 @@ namespace LiklihoodFunctions{
 	  EndResult endresult;
 	  CosmicTrack cosmictrack = trackseed._track;
           
-          //Seed Track using seed fit parameters stored in track info NB these are in local co-ords here still:
-	  seed[0] = trackseed._track.FitEquationXYZ.Pos.X();//trackseed._track.FitParams.A0;
-	  seed[1] = trackseed._track.FitEquationXYZ.Dir.X();//trackseed._track.FitParams.A1;
-	  seed[2] = trackseed._track.FitEquationXYZ.Pos.Y();//trackseed._track.FitParams.B0;
+          //Seed Track using seed fit parameters stored in track info 
+	  seed[0] = trackseed._track.FitEquationXYZ.Pos.X();
+	  seed[1] = trackseed._track.FitEquationXYZ.Dir.X();
+	  seed[2] = trackseed._track.FitEquationXYZ.Pos.Y();
 	  seed[3] = trackseed._track.FitEquationXYZ.Dir.Y();//trackseed._track.FitParams.B1;
 	  seed[4] = trackseed._t0.t0();
-
+	  /* alignment parameters -  6 DoF:
+	  1) Translations:
+	  seed[5] = dx;//shifts of straw centre positions relative to truth
+	  seed[6] = dy;
+          seed[7] = dz;
+	  2) Rotations: 
+	  seed[8] =  eta;//shift about x
+	  seed[9] = zeta; //shift about y
+	  seed[10] = epsilon; //shift about z
+	  */
 	  //Seed errors = covarience of parameters in seed fit
 	  errors[0] = trackseed._track.FitParams.Covarience.sigA0; 
 	  errors[1] = trackseed._track.FitParams.Covarience.sigA1;
@@ -60,6 +69,7 @@ namespace LiklihoodFunctions{
 	  std::vector<double> constraints(5,0);
 	  //Define the PDF used by Minuit:
           TimePDFFit fit(trackseed._straw_chits, trackseed._straws, srep, cosmictrack, constraint_means,constraints,1);
+	  //DataFit fit(trackseed._straw_chits, trackseed._straws, srep, cosmictrack, constraint_means,constraints,1);
           //Initiate Minuit Fit:
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
 	  ROOT::Minuit2::MnUserParameters params(seed,errors);
@@ -93,18 +103,16 @@ namespace LiklihoodFunctions{
 	  endresult.names.push_back("t0");
 	  
 	  //Add best fit results to appropriatly named element:
-	  cout<<"Minval "<<minval<<"Is Valid: "<<min.IsValid()<<"N calls "<<min.NFcn()<<endl;
-          
 	  endresult.NLL = minval;
 	  for (size_t i=0;i<endresult.names.size();i++){
 	    std::cout << i << endresult.names[i] << " : " << endresult.bestfit[i] << " +- " << endresult.bestfiterrors[i] << std::endl;
-	    std::cout<<" Covarience Size "<<endresult.bestfitcov.size()<<endl;
 	    if(endresult.bestfitcov.size() != 0 and i< 4) cout<<"cov "<<endresult.bestfitcov[i]<<endl;
 	
 	  }
 	
 	  //Store DOCA results for analysis:
 	  if(minval != 0 ){ cosmictrack.minuit_converged = true;} 
+	  
 
 	  for(size_t i = 0; i< trackseed._straws.size(); i++){	    
 	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3], trackseed._straw_chits[i]);
@@ -115,7 +123,11 @@ namespace LiklihoodFunctions{
 	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
 	      endresult.EndTimeResiduals.push_back(end_time_residual);
 	      endresult.EndDOCAs.push_back(end_doca);
-	     
+
+	      double true_doca = fit.calculate_DOCA(trackseed._straws[i], trackseed._track.TrueFitEquation.Pos.X(), trackseed._track.TrueFitEquation.Dir.X(), trackseed._track.TrueFitEquation.Pos.Y(),trackseed._track.TrueFitEquation.Dir.Y(), trackseed._straw_chits[i]);
+	      endresult.TrueDOCAs.push_back(true_doca);
+	      
+	      
 	  }
 	
 	 return endresult;

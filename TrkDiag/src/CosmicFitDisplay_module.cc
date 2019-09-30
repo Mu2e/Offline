@@ -171,6 +171,7 @@ namespace mu2e
     	unsigned  _ncosmics = _coscol->size();
         unsigned _nch = _chcol->size();
         //loop over tracks:
+	
         for(size_t i =0; i < _ncosmics; i++){
                 
         	CosmicTrackSeed track =(*_coscol)[i];
@@ -225,6 +226,7 @@ namespace mu2e
         	      GeomHandle<Tracker> th; 
 		      const Tracker* tracker = th.get(); 
         	      TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+		      //double zlimit{envelope.zHalfLength()};
         	      if (doDisplay_) {
               
 			      std::cout << "Run: " << event.id().run()
@@ -234,6 +236,7 @@ namespace mu2e
 			      TPolyMarker poly;
 			      TText  text;     
 			      TEllipse strawXsec; 
+			      TArc arc;
 			      canvas_->SetTitle("foo title");
 			      auto pad = canvas_->cd(1);
 			      pad->Clear();
@@ -242,7 +245,9 @@ namespace mu2e
 			      auto xzplot = pad->DrawFrame(minz_drift-100,minx_drift-100, maxz_drift+100, maxx_drift+150);
 			      xzplot->GetYaxis()->SetTitleOffset(1.25);
 			      xzplot->SetTitle( "Drift Fit X'' vs Z'; Z'(mm);X''(mm)");
-	      
+	      		      arc.SetFillStyle(0);
+	      		      arc.DrawArc(0.,0., envelope.outerRadius());
+	      	              arc.DrawArc(0.,0., envelope.innerRadius());
 			      fit_to_trackxprime.SetLineColor(kYellow);
 			      fit_to_trackxprime.SetLineColor(kGreen);
 			      
@@ -562,6 +567,7 @@ namespace mu2e
         GeomHandle<Panel> panel;     
         // Annulus of a cylinder that bounds the tracker/straw info:
         TubsParams envelope(tracker->getInnerTrackerEnvelopeParams());
+         
         if (doDisplay_) {
               
               std::cout << "Run: " << event.id().run()
@@ -572,8 +578,7 @@ namespace mu2e
               TPolyMarker poly, out;
 	      TBox   box;
 	      TText  text;     
-	      arc.SetFillStyle(0);
-	      
+	     
 	      canvas_->SetTitle("foo title");
 	      auto pad = canvas_->cd(1);
 	      pad->Clear();
@@ -582,7 +587,9 @@ namespace mu2e
 	      auto xzplot = pad->DrawFrame(minz-100,minx-100, maxz+100, maxx+150);
 	      xzplot->GetYaxis()->SetTitleOffset(1.25);
 	      xzplot->SetTitle( "Final Iteration Fit X'' vs Z'; Z'(mm);X''(mm)");
-	      
+	      arc.SetFillStyle(0);
+	      //arc.DrawArc(0.,0., envelope.outerRadius());
+	      //arc.DrawArc(0.,0., envelope.innerRadius());
 	      fit_to_trackxprime.SetLineColor(kYellow);
 	      fit_to_trackxprime.SetLineColor(kGreen);
 	      
