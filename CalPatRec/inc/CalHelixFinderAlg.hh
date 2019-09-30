@@ -158,6 +158,7 @@ namespace mu2e {
     int       _phiCorrectedDefined;
 
     float    _dfdzErr;                 // error on dfdz by ::findDfDz
+    float    _minarea2;
 //-----------------------------------------------------------------------------
 // checkpoints, used for debugging
 //-----------------------------------------------------------------------------
@@ -197,7 +198,7 @@ namespace mu2e {
 				const XYZVec& HelCenter, 
 				float                   Radius);
 
-    void   calculateTrackParameters(const XYZVec& p1, 
+    bool   calculateTrackParameters(const XYZVec& p1, 
 				    const XYZVec& p2,
                                     const XYZVec& p3,
 				    XYZVec&       Center, 
