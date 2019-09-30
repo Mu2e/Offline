@@ -1,22 +1,22 @@
-// #include "fhiclcpp/ParameterSet.h"
-// #include "fhiclcpp/ParameterSetRegistry.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/ParameterSetRegistry.h"
 #include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
 #include <ostream>
 
 namespace mu2e {
 
-  // TriggerResultsNavigator::TriggerResultsNavigator(const art::TriggerResults* trigResults): 
-  //   _trigResults(trigResults){
-  //   auto const  id   = trigResults->parameterSetID();
-  //   auto const& pset = fhicl::ParameterSetRegistry::get(id);
-  //   //set the vector<string> with the names of the tirgger_paths
-  //   _trigPathsNames  = pset.get<std::vector<std::string>>("trigger_paths");
+  TriggerResultsNavigator::TriggerResultsNavigator(const art::TriggerResults* trigResults): 
+    _trigResults(trigResults){
+    auto const  id   = trigResults->parameterSetID();
+    auto const& pset = fhicl::ParameterSetRegistry::get(id);
+    //set the vector<string> with the names of the tirgger_paths
+    _trigPathsNames  = pset.get<std::vector<std::string>>("trigger_paths");
       
-  //   //loop over trigResults to fill the map <string, unsigned int) 
-  //   for (unsigned int i=0; i< _trigPathsNames.size(); ++i){
-  //     _trigMap.insert(std::pair<std::string, unsigned int>(_trigPathsNames[i], i));
-  //   }
-  // }
+    //loop over trigResults to fill the map <string, unsigned int) 
+    for (unsigned int i=0; i< _trigPathsNames.size(); ++i){
+      _trigMap.insert(std::pair<std::string, unsigned int>(_trigPathsNames[i], i));
+    }
+  }
 
   size_t
   TriggerResultsNavigator::findTrigPath(std::string const& name) const
