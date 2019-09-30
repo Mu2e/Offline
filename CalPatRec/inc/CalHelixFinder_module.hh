@@ -131,7 +131,9 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
+
     enum fitType {helixFit=0,seedFit,kalFit};
+
     explicit CalHelixFinder(const fhicl::ParameterSet& PSet);
     virtual ~CalHelixFinder();
     
