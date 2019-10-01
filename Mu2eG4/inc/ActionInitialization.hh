@@ -11,6 +11,7 @@
 //
 //
 
+
 //G4 includes
 #include "G4VUserActionInitialization.hh"
 #include "G4ThreeVector.hh"
@@ -30,26 +31,23 @@
 #include <vector>
 #include <memory>
 
-namespace fhicl { class ParameterSet; }
+#include "CLHEP/Vector/ThreeVector.h"
 
-namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
-
-    class ExtMonFNALPixelSD;
+    
     class SensitiveDetectorHelper;
     class IMu2eG4Cut;
     class PrimaryGeneratorAction;
     class GenEventBroker;
     class PerEventObjectsManager;
     class PhysicalVolumeHelper;
-
-
+ 
+    
 class ActionInitialization : public G4VUserActionInitialization
 {
   public:
     ActionInitialization(const fhicl::ParameterSet& pset,
-                         ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
                          std::vector< SensitiveDetectorHelper> &sensitive_detectorhelper_vector,
                          GenEventBroker* gen_eventbroker,
                          PhysicalVolumeHelper* phys_volume_helper,
@@ -59,34 +57,32 @@ class ActionInitialization : public G4VUserActionInitialization
                          Mu2eG4ResourceLimits const& mu2e_limits,
                          unsigned stage_offset_for_tracking_action
                          );
-
+                             
     virtual ~ActionInitialization();
-
+    
     //BuildForMaster should be used for defining only the UserRunAction for the master thread.
     virtual void BuildForMaster() const;
-
+    
     //Build should be used for defining user action classes for worker threads as well as for the sequential mode.
     virtual void Build() const;
-
+    
     virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
-
-
+    
+    
    private:
-
-    fhicl::ParameterSet const& pset_;
-
+    
+    fhicl::ParameterSet pset_;
+    
     //these are set using pset
     Mu2eG4TrajectoryControl trajectoryControl_;
     SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2elimits_;
-
-    ExtMonFNALPixelSD* _extMonFNALPixelSD;
-
+        
     std::vector < std::unique_ptr<IMu2eG4Cut> > stackingCutsVector;
     std::vector < std::unique_ptr<IMu2eG4Cut> > steppingCutsVector;
     std::vector < std::unique_ptr<IMu2eG4Cut> > commonCutsVector;
-
+    
     GenEventBroker* _genEventBroker;
     PhysicalVolumeHelper* _physVolHelper;
     mutable PhysicsProcessInfo processInfo;
@@ -96,12 +92,14 @@ class ActionInitialization : public G4VUserActionInitialization
     CLHEP::Hep3Vector const& originInWorld;
     Mu2eG4ResourceLimits const& mu2eLimits;
     unsigned stageOffset;
-
+        
     mutable std::vector< PerEventObjectsManager > perEvtObjManagerVector;
     mutable std::vector< PhysicsProcessInfo > physicsProcessInfoVector;
     std::vector< SensitiveDetectorHelper > &sensitiveDetectorHelperVector;
-
+        
 };
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_ActionInitialization_hh */
+
+
