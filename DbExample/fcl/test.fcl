@@ -1,0 +1,38 @@
+
+#include "fcl/minimalMessageService.fcl"
+
+process_name : dbTest
+
+services : {
+   message : @local::mf_interactive
+
+   DbService : {
+      purpose :  "TEST"
+      version :  "v2_1"
+      dbName : "mu2e_conditions_prd"
+      #textFile : ["table.txt"]
+      verbose : 1
+   }
+   ConditionsService2 : {
+      fileName : "DbExample/data/conditions2.txt"
+      verbose : 1
+   }
+}
+
+source: { 
+   module_type: RootInput 
+   fileNames: [ "/mu2e/app/users/rlc/db/Offline/mcs.mu2e.test.0.0.art" ]
+}
+
+physics :{
+   analyzers: {
+      cs2test : {
+	 module_type : ConditionsService2Test
+      }   
+   }
+  ana       : [ cs2test ]
+  end_paths : [ ana ]
+
+}
+
+

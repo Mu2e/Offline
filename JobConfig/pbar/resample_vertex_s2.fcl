@@ -1,0 +1,163 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)--> rhb adapts for antiprotons
+//starts at VD91 and propagates to Coll31Out, use to study collar collimator and then TS3 central window
+#include "minimalMessageService.fcl"
+#include "standardProducers.fcl"
+#include "standardServices.fcl"
+
+BEGIN_PROLOG
+
+// Energy cuts on electron, positron, photon, and neutron.
+CutEPPhN : {
+    type : intersection
+    pars : [ { type: kineticEnergy cut: 100.0 },
+             { type: pdgId pars: [ 11, -11, 22, 2112 ] } ]
+}
+
+END_PROLOG
+
+# Give this job a name.
+process_name : pbars2
+
+source : { 
+    module_type : EmptyEvent maxEvents: @nil
+}
+
+services : {
+    message                : @local::default_message
+    TFileService           : { fileName : "nts.owner.pbar_s2_toColl31Out.version.sequencer.root" }
+    RandomNumberGenerator  : {}
+    GeometryService        : { inputFile      : "JobConfig/cd3/geom_baseline.txt"    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : {}
+    SeedService            : @local::automaticSeeds
+}
+
+physics : {
+
+    producers : {
+
+        g4run : {
+
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
+
+            generatorModuleLabel : generate 
+            MultiStageParameters : {
+                 simParticleNumberOffset : 2000000
+                 genInputHits               : ["g4filter:enterTS"]
+                 inputSimParticles          : "g4filter"
+                 inputMCTrajectories        : ""
+                 inputPhysVolumeMultiInfo   : ""
+          }
+
+            doWriteLegacyPhysVolumeInfo : false
+
+            SDConfig : {
+                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
+                TimeVD           : { times : [] }
+            }
+
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            // For the "union" type the first true stops the evaluation.
+            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+            Mu2eG4CommonCut : {
+                type : union
+                pars : [
+                    @local::CutEPPhN,
+                    { type: inVolume pars: [ HallAir ] },
+                   {
+		      type: intersection
+		      pars: [
+     		     {
+                        type  : inVolume
+                        pars  : [Coll31_Out]
+		     },
+		     {
+			type: pdgId
+			pars: [ -2212 ]
+		     }
+		     ]
+                        write : Coll31Out
+                    }
+                ]
+            }
+
+        } // g4run
+
+ 
+    } // producers
+
+    analyzers : {
+        genCountLogger : {
+            module_type : GenEventCountReader
+        }
+        readAntiProtonSteps : {
+             module_type : ReadAntiProtonSteps
+             savePDG : [-2212]
+             psVacuumStepPoints : "Coll31Out"
+       }
+
+    } // analyzers
+
+    filters : {
+        g4filter : {
+            module_type               : FilterG4Out
+            mainHitInputs             : [ "g4run:Coll31Out" ]
+            extraHitInputs            : [ "g4run:virtualdetector"]
+            vetoDaughters             : []
+        }
+      mixread: {
+	 module_type: ResamplingMixer
+	 fileNames: @nil
+         readMode: "randomNoReplace"
+         wrapFiles: true
+
+	 // detail
+	 mu2e: {
+	    products: {
+	       genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	       simParticleMixer: { mixingMap: [ [ "g4run", "" ] ] }
+	    }
+	 }
+
+
+    } // filters
+
+
+    trigFilter    : [ mixread, g4run, g4filter,genCounter]
+    trigger_paths : [ trigFilter ]
+
+    e1        : [ filteredOutput, readAntiProtonSteps, genCountLogger ]
+    end_paths : [ e1 ]
+} // physics
+
+outputs : {
+
+outputs : {
+   filteredOutput     : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "drop art::TriggerResults_*_*_*"]
+      fileName       : "sim.owner.pbar_s2toColl31Out.version.sequencer.art"
+   }
+}
+
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+
+// Limit the rate of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+//services.SeedService.baseSeed          : 0
+//services.SeedService.maxUniqueEngines  : 20

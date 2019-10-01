@@ -18,7 +18,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <memory>
 
@@ -63,7 +63,8 @@ private:
 
 
 mu2e::SeparateCaloShowerSteps::SeparateCaloShowerSteps(fhicl::ParameterSet const & pset)
-  : _inputTag(pset.get<art::InputTag>("inputTag")),
+  : art::EDProducer{pset},
+    _inputTag(pset.get<art::InputTag>("inputTag")),
     _crystalOutputInstance(pset.get<std::string>("crystalOutputInstance")),
     _sipmOutputInstance(pset.get<std::string>("sipmOutputInstance"))
 {
@@ -89,7 +90,7 @@ void mu2e::SeparateCaloShowerSteps::produce(art::Event & event)
     // if the volume ID is greater than the number of crystals, then we know it is a SiPM step
     CaloShowerStep new_step = i_caloShowerStep;
     int volumeId = i_caloShowerStep.volumeId();
-    if (volumeId > n_crystals) {
+    if (volumeId >= n_crystals) {
       _newSiPMSteps->push_back(new_step);
       continue;
     }

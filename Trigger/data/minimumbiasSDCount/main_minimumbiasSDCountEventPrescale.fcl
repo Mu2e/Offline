@@ -1,0 +1,2 @@
+physics.filters.minimumbiasSDCountEventPrescale.nPrescale    : 10000
+physics.filters.minimumbiasSDCountEventPrescale.triggerFlag  : ["PrescaleRandom"]

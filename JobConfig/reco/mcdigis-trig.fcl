@@ -1,0 +1,51 @@
+#
+# Reconstruct from MC digis, including trigger simulation
+# David Brown (LBNL) 1 Feb 2019
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
+#
+process_name : recomcdigistrig
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : {
+    @table::Reconstruction.producers
+    @table::Trigger.producers
+  }
+  filters :  {
+    @table::Reconstruction.filters
+    @table::Trigger.filters
+  }
+  analyzers: {
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+  }
+  RecoPath : [ @sequence::Reconstruction.RecoMCPath ]
+  EndPath : [ Output, RecoCheck  ]
+}
+
+outputs : { 
+  Output :@local::Reconstruction.Output
+}
+
+# My epilog
+#include "JobConfig/reco/epilog.fcl"
+# trigger epilog
+#include "gen/fcl/Trigger/offline/allTrig/allPaths.fcl"
+outputs.Output.SelectEvents : [ "RecoPath" ]
+#
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.RecoMCTrig.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+
+services.scheduler.wantSummary: true

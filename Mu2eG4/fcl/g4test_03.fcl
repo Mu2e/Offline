@@ -23,17 +23,8 @@ source : {
 }
 
 services : {
-
-  message               : @local::default_message
-  TFileService          : { fileName : "g4test_03.root" }
-  RandomNumberGenerator : { }
-
-  GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"            }
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-  BTrkHelper             : @local::BTrkHelperDefault
-  G4Helper               : { }
-  SeedService            : @local::automaticSeeds
+  @table::Services.SimAndReco
+  TFileService : { fileName : "g4test_03.root" }
 }
 
 physics : {
@@ -126,6 +117,6 @@ physics.producers.makeSH.maxFullPrint : 5
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 #physics.producers.g4run.physics.turnOffRadioactiveDecay: true
 #physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
-#physics.producers.g4run.physics.captureDModel: "muMinusNuclearCapture"
-
-
+#physics.producers.g4run.debug.diagLevel : 1
+#physics.producers.g4run.physics.minRangeRegionCuts: {
+#   CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }

@@ -9,7 +9,7 @@ process_name: NoPrimaryFlat
 # specal extreme configuration for stress testing
 physics.producers.protonBunchIntensity : {
   module_type: ProtonBunchIntensityFlat
-  mean: 11.7e7 # 0-6X nominal
+  mean: 19.5e7 # 0-10X nominal
   halfWidth : 1.0
 }
 # less restricted read mode for the most highly-oversampled sources

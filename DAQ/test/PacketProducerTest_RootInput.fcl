@@ -38,7 +38,7 @@ physics : {
 
     CosmicRayVetoPacketProducer: {
       module_type      : CrvPacketProducer
-      makerModuleLabel : CrvWaveforms
+      makerModuleLabel : CrvDigi
       diagLevel        : 0
       maxFullPrint     : 0
       generateTextFile : 1
@@ -48,8 +48,8 @@ physics : {
 
   t1 : [
 	CalorimeterPacketProducer,
-	TrackerPacketProducer
-#	CosmicRayVetoPacketProducer
+	TrackerPacketProducer,
+	CosmicRayVetoPacketProducer
        ] 
 
   e1 : [ outfile ]
@@ -69,8 +69,8 @@ outputs:  {
 		      "keep mu2e::StrawDigis_makeSD_*_*",
 		      "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
                       "keep mu2e::DataBlocks_TrackerPacketProducer_*_*",
-                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*"
-#                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
+                      "keep mu2e::DataBlocks_CalorimeterPacketProducer_*_*",
+                      "keep mu2e::DataBlocks_CosmicRayVetoPacketProducer_*_*"
                      ]
   }
 }

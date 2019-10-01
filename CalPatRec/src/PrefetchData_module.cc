@@ -6,11 +6,10 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -32,7 +31,6 @@
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
@@ -100,7 +98,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   PrefetchData::PrefetchData(fhicl::ParameterSet const& pset): 
-    //    art::EDProducer(pset), 
+    art::EDProducer(pset), 
     _debugLevel     (pset.get<int>          ("debugLevel"              )),
     _mcDiag         (pset.get<bool>         ("mcDiag"                  )),
 

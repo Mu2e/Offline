@@ -1,5 +1,5 @@
-#ifndef TrackerGeom_StrawId_hh
-#define TrackerGeom_StrawId_hh
+#ifndef DataProducts_StrawId_hh
+#define DataProducts_StrawId_hh
 //
 // Identifier of one straw in a tracker.
 // Original author Rob Kutschke
@@ -12,13 +12,6 @@
 namespace mu2e {
 
   class StrawId{
-
-    friend class Tracker;
-    friend class TTracker;
-    friend class TTrackerMaker;
-    friend class Plane;
-    friend class Panel;
-    friend class StrawSD;
 
     private:
       //  data member is a short
@@ -44,6 +37,7 @@ namespace mu2e {
       constexpr static uint16_t _npanels = 6; // number of panels per plane
       constexpr static uint16_t _nfaces = 2; // number of faces in a plane
       constexpr static uint16_t _nplanes = 36; // number of planes
+      constexpr static uint16_t _nstations = _nplanes/2; // number of stations
       constexpr static uint16_t _nupanels = _npanels * _nplanes; // number of unique panels
       constexpr static uint16_t _nustraws = _nupanels* _nstraws; // number of unique straws
       constexpr static uint16_t _ntotalfaces = StrawId::_nfaces*StrawId::_nplanes;
@@ -216,4 +210,4 @@ namespace mu2e {
                            const StrawId& s );
 
 }
-#endif /* TrackerGeom_StrawId_hh */
+#endif /* DataProducts_StrawId_hh */

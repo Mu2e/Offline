@@ -1,0 +1,171 @@
+//
+// Geometry description of the Tracker, based on Mu2e-doc-888-v5
+//   All lengths are given in mm.
+//   All angles are given in degrees.
+//
+// $Id: tracker_v3.txt,v 1.2 2014/08/29 16:53:32 knoepfel Exp $
+// $Author: knoepfel $
+// $Date: 2014/08/29 16:53:32 $
+//
+// Most paramaters are from Mu2e-doc-888-v5
+// Parameters not found in that document are:
+//    Email from Aseet:
+//      End rings are 100mm thick in Z, cover the radial range 700-840mm and are assumed to be made of aluminum.
+//      Upper staves are for mechanical support only and carry no cables or other utilities; only the lower ones
+//      carry utilities.
+//    Email from Robert Wagner
+//      Thickness of Au plate on W sense wires is 0.25 micron
+//
+// Compared to tracker_v2.txt this version has
+//
+// 1) Parameters adjusted to match Mu2e-doc-888-v5
+//      Plane positions have moved around by a few mm in z.
+//      Panels rotated differently.
+//      Wires slightly farther out from the center of each support.
+//
+// 2) Item 1) results in a slightly longer Tracker
+//    Therefore the DS2/DS3 boundary must be moved upstream
+//    in order to make room for it.  This change preserves
+//    the total length of the DS
+//
+// 3) Bug fixes:
+//    The vacuum materials are now DSVacuum, not WAGVacuum.
+//    The straw material is now Mylar, not Kapton
+//
+// 3) New parameters added to describe:
+//    - Details of the support structure
+//    - The thin metal coatings on the straws and wires
+//    - Passivation Margin
+//
+// FIXME:
+// 1) The services section of the staves is not yet described and for now is left as solid Al.
+//
+
+#include "Mu2eG4/geom/tracker_v0.txt"
+
+// Tell the Tracker object that we using the detailed support structure.
+string trackerSupport.model = "detailedv0";
+
+// Mother to hold all straws and supports.
+double tracker.mother.rIn         =   379.9; // mm
+double tracker.mother.rOut        =   850.1; // mm
+double tracker.mother.halfLength  =  1635.1; // mm
+double tracker.mother.z0          = 10175.;  // mm
+double tracker.rInnermostWire     =   383.125; // mm
+int    tracker.innermostLayer       =     0;    // Which layer has innermost straw?
+int    tracker.panelZPattern        =     0;    // Controls up/down stream choice for odd/even panels.
+int    tracker.layerZPattern        =     0;    // Which straw layer is closest to the base plate.
+
+
+// Adjust spacings and rotations within the Tracker to match Mu2e-doc-888-v5
+double tracker.planeHalfSeparation        =    23.5;
+double tracker.planeSpacing               =   140.86;
+double tracker.supportHalfThickness        =     2.5;
+vector<double> tracker.manifoldHalfLengths = { 3.125, 5.0, 8.5};
+double tracker.manifoldYOffset             =     0.;
+double tracker.panelPhi0                  =    45.; // degrees
+int    tracker.layersPerPanel             =    2;
+int    tracker.strawsPerManifold           =    1; //  1,10
+int    tracker.manifoldsPerEnd             =   48; // 50, 5
+double tracker.strawGap                    =     1.25;
+int    tracker.numPlanes                  = 44;
+
+// going from 44 to 20 does the spacing increase?
+// or is it ok to remove four more planes? i.e. 12,13, 30, 31?
+
+int    tracker.rotationPattern             =    2;
+double tracker.oddStationRotation          = 60.0;
+
+//vector<int> tracker.nonExistingPlanes = { 8,9,16,17,26,27,34,35 };
+
+// Bug fixes
+string tracker.mat.vacuum             = "DSVacuum";
+vector<string> tracker.strawMaterials = { "G4_MYLAR", "StrawGas", "G4_W" };
+
+// A new parameter to help define the active length of each straw.
+double tracker.passivationMargin = 10.;
+
+// Define the parameters of the support structure.
+double trackerSupport.endRing.outerRadius =  840.;
+double trackerSupport.endRing.innerRadius =  700.;
+double trackerSupport.endRing.halfLength  =   50.;
+double trackerSupport.endRing.zOffset     = 1610.;
+string trackerSupport.endRing.material    = "G4_Al";
+
+vector<int> trackerSupport.midRing.slot  = { 19, 20 };
+double trackerSupport.midRing.halfLength = 10.;
+
+// steves are called beams now
+// in doc-db 888.v7 the one at the top is different one from the ones
+// on the sides
+
+vector<double> trackerSupport.beam0.phiRange = { 81.4, 98.7 };
+double trackerSupport.beam0.innerRadius   =  810.;
+double trackerSupport.beam0.outerRadius   =  830.;
+string trackerSupport.beam0.material      = "G4_Al";
+
+// see fig 8, page 7 in doc-db 888.v7
+
+vector<double> trackerSupport.beam1.phiRange = { 180.4, 221.7 };
+vector<double> trackerSupport.beam1.phiSpans = { 0.4, 14.1, 34.8, 41.7 }; //deltas from 0
+string trackerSupport.beam1.material      = "G4_Al";
+double trackerSupport.beam1.innerRadius   =  810.;
+double trackerSupport.beam1.midRadius1    =  820.;
+double trackerSupport.beam1.midRadius2    =  840.;
+double trackerSupport.beam1.outerRadius   =  850.;
+// services and their starting, ending phi positions and materials
+vector<double> trackerSupport.beam1.servicePhi0s      = { 14.10, 17.64, 21.18, 30.48, 31.35 };
+vector<double> trackerSupport.beam1.servicePhiEnds    = { 16.28, 21.18, 30.17, 30.63, 34.80 };
+vector<double> trackerSupport.beam1.serviceOuterRadii = { 840., 840., 840., 840., 840. };
+// should be >= midRadius1 <= midRadius2
+vector<string> trackerSupport.beam1.serviceMaterials  = {"G4_Cu", "G4_Cu", "StrawGas", "G4_SILICON_DIOXIDE", "G4_Cu"} ;
+vector<double> trackerSupport.beam1.serviceCovRelThickness = {.1, .1, .1, .1, .1} ; // fractions of service layers as "covers"
+vector<string> trackerSupport.beam1.serviceMaterialsCov =
+  { "G4_POLYETHYLENE", "G4_POLYETHYLENE", "StainlessSteel316", "G4_POLYETHYLENE", "G4_POLYETHYLENE" };
+
+
+double trackerSupport.innerRing.innerRadius  = 700.;
+double trackerSupport.innerRing.outerRadius  = 710.;
+double trackerSupport.innerRing.halfLength   =  22.5;
+string trackerSupport.innerRing.material     =  "StainlessSteel";
+
+double trackerSupport.centerPlate.halfLength =  5.;
+string trackerSupport.centerPlate.material   = "G4_Al";
+
+double trackerSupport.outerRing.innerRadius  = 790.;
+double trackerSupport.outerRing.outerRadius  = 800.;
+string trackerSupport.outerRing.material     =  "StainlessSteel";
+
+double trackerSupport.cover.halfLength       =  1.5;
+string trackerSupport.cover.material         =  "G4_BRASS";
+
+double trackerSupport.electronics.g10.halfLength  =  1.5;
+string trackerSupport.electronics.g10.material    =  "G10";
+
+double trackerSupport.electronics.cu.halfLength   =  0.5;
+string trackerSupport.electronics.cu.material     =  "G4_Cu";
+
+double trackerSupport.channel.zOffset  = 11.0;
+double trackerSupport.channel.depth    =  5.0;
+string trackerSupport.channel.material =  "DSVacuum";
+
+string trackerSupport.electronicsSpace.material =  "StrawGas";
+
+// Define the parameters of the metal coatings on the straws and wires.
+double tracker.straw.wallOuterMetal.thickness  = 0.00005;
+string tracker.straw.wallOuterMetal.material   = "G4_Al";
+double tracker.straw.wallInnerMetal1.thickness = 0.00005;
+string tracker.straw.wallInnerMetal1.material  = "G4_Al";
+double tracker.straw.wallInnerMetal2.thickness = 0.00002;
+string tracker.straw.wallInnerMetal2.material  = "G4_Au";
+double tracker.straw.wirePlate.thickness       = 0.00025;
+string tracker.straw.wirePlate.material        = "G4_Au";
+
+// Turn off 2 stations for TDR
+vector<int> tracker.nonExistingPlanes = { 14,15,28,29 };
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

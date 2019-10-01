@@ -1,0 +1,67 @@
+// This file contains the common part of job configuration for stage 3
+// cosmic ray simulations.  It is included by top level files
+// (like cosmic_s3_target1.fcl), which define output file names.
+//
+// Yuri Oksuzian, 2019
+#include "JobConfig/primary/prolog.fcl"
+
+# Give this job a name.
+process_name: cosmics3
+
+source:{ module_type: RootInput}
+services: @local::Services.Sim
+
+physics : { 
+  producers : {
+    generate: {module_type : EventGenerator}
+    @table::Primary.producers
+    protonBunchIntensity : {
+    module_type: ProtonBunchIntensityFlat
+    mean: 0.0 # No PBI possible for pure signal! 
+    halfWidth : 1.0
+    }  
+  }
+  filters  : {@table::Primary.filters}
+  analyzers: {@table::Primary.analyzers}
+# enable CRV digis
+  TriggerPath: [protonBunchIntensity,
+  	        @sequence::CommonMC.DigiSim,
+  		@sequence::CaloDigiMC.DigiSim,
+  	        @sequence::TrackerMC.DigiSim,
+		DigiFilter,
+  		@sequence::CrvDAQPackage.CrvResponseSequence,
+  		compressDigiMCs]
+  EndPath : @local::Primary.EndPath
+}
+outputs : { 
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     # drop StepPoints from calorimeter
+     outputCommands : @local::DigiCompression.OutputCommands
+  }
+}
+#
+# final configuration
+#
+#include "JobConfig/primary/epilog.fcl"
+#  Allow 'infinite' momentum
+physics.producers.g4run  : @erase
+physics.producers.compressDigiMCs.simParticleTags: ["detectorFilter"]
+physics.producers.compressDigiMCs.mcTrajectoryTag: "detectorFilter"
+physics.producers.compressDigiMCs.extraStepPointMCTags: ["detectorFilter:virtualdetector"]
+physics.producers.cosmicTimeMap.tmin: 800
+physics.producers.cosmicTimeMap.tmax: 801
+
+physics.filters.DigiFilter.MinParticleMom : 50.0
+physics.filters.DigiFilter.MaxParticleMom : 250.0
+physics.filters.DigiFilter.MinNDigis : 15
+# allow all particles
+physics.filters.DigiFilter.particleTypes : [ ]
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+services.TFileService.fileName        : "nts.owner.CRY-cosmic-general.version.sequencer.root"
+outputs.Output.fileName     	      : "dig.owner.CRY-cosmic-general.version.sequencer.art"
+
+
+

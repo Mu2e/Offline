@@ -21,17 +21,20 @@ namespace mu2e
 {
   class TrkCaloHit : public TrkHit {
   public:
-    TrkCaloHit(const CaloCluster& caloCluster, CLHEP::Hep3Vector &caloClusterPos,
-	       double crystalHalfLength,  CLHEP::Hep3Vector const& clusterAxis,
-	       const HitT0& trkt0, double fltlen, double timeWeight, double _dtoffset);
+    TrkCaloHit(CaloCluster const& caloCluster, CLHEP::Hep3Vector const& caloClusterPos,
+	       double crystalLength,  CLHEP::Hep3Vector const& clusterAxis,
+	       const HitT0& trkt0, double fltlen, double timeWeight, 
+	       double hiterr, double terr, double _dtoffset);
     virtual ~TrkCaloHit();
 //  implementation of TrkHit interface
     virtual const TrkLineTraj* hitTraj() const                   { return _hittraj; }
 
 // correct the hit time
     virtual double time                 () const;
+//    virtual bool   time                 (HitT0&t0);
     virtual void   hitPosition          (CLHEP::Hep3Vector& hpos) const;
-    virtual bool signalPropagationTime(	TrkT0& t0);
+    virtual bool signalPropagationTime(	TrkT0& t0);  // this function should be const FIXME!!!
+    // the followin function isn't used and should be removed FIXME!
     virtual void   trackT0Time          (double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt);
      // test the consistincy of this hit with 'physical' limts, with a given # of sigma
     virtual bool isPhysical         (double maxchi) const;
@@ -42,13 +45,17 @@ namespace mu2e
     void print                  (std::ostream& ) const;
 // caloCluster specific interface
     const CaloCluster& caloCluster() const { return _caloCluster; }
+    double timeOffset() const { return _dtoffset; }
+    double timeErr() const { return _tErr; }
   protected:
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
 
     const CaloCluster& _caloCluster;
+    double	       _clen; // crystal length
     double             _dtoffset;
     TrkLineTraj*       _hittraj;
     double             _hitErr; // geometric error on the cluster transverse position for POCA calculation
+    double		_tErr; // error on the calorimeter time
   };
 
 // define TrkStrawHitVector, to allow explicit conversion and construction

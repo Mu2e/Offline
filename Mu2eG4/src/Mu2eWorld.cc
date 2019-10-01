@@ -61,7 +61,7 @@
 #include "Mu2eG4/inc/TrackerWireSD.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/StrawSD.hh"
-#include "Mu2eG4/inc/TTrackerPlaneSupportSD.hh"
+#include "Mu2eG4/inc/TrackerPlaneSupportSD.hh"
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/nestTubs.hh"
 #include "Mu2eG4/inc/nestTorus.hh"
@@ -80,12 +80,12 @@
 #include "BeamlineGeom/inc/Beamline.hh"
 #include "BeamlineGeom/inc/TransportSolenoid.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
-#include "Mu2eG4/inc/constructTTracker.hh"
+#include "Mu2eG4/inc/constructTracker.hh"
 #include "Mu2eG4/inc/constructStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDummyStoppingTarget.hh"
 #include "Mu2eG4/inc/constructDiskCalorimeter.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
 // G4 includes
@@ -127,6 +127,8 @@
 #include "G4BogackiShampine23.hh"
 #endif
 #include "G4GDMLParser.hh"
+#include "G4ProductionCuts.hh"
+#include "G4Region.hh"
 
 #include "Mu2eG4/inc/Mu2eGlobalField.hh"
 
@@ -139,7 +141,7 @@ namespace mu2e {
   Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
     , pset_(fhicl::ParameterSet())
-    , activeWr_Wl_SD_(_config.getBool("ttracker.ActiveWr_Wl_SD",false))
+    , activeWr_Wl_SD_(_config.getBool("tracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
     , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
@@ -149,8 +151,11 @@ namespace mu2e {
     , g4DeltaIntersection_(_config.getDouble("g4.deltaIntersection")*CLHEP::mm)
     , g4DeltaChord_(_config.getDouble("g4.deltaChord")*CLHEP::mm)
     , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.)*CLHEP::mm)
+    , strawGasMaxStep_(_config.getDouble("strawGas.maxStep", 20.)*CLHEP::mm)
+    , useEmOption4InTracker_(_config.getBool("g4.useEmOption4InTracker",false))
   {
     _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
+    _g4VerbosityLevel = _config.getInt("g4.diagLevel", 0);
   }
 
   Mu2eWorld::Mu2eWorld(const fhicl::ParameterSet& pset,
@@ -169,9 +174,12 @@ namespace mu2e {
     , g4StepMinimum_(pset.get<double>("physics.stepMinimum")*CLHEP::mm)
     , g4MaxIntSteps_(pset.get<int>("physics.maxIntSteps"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
+    , strawGasMaxStep_(pset.get<double>("physics.strawGasMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
+    , useEmOption4InTracker_(pset.get<bool>("physics.useEmOption4InTracker",false))
   {
     _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
+    _g4VerbosityLevel = pset.get<int>("debug.diagLevel");
   }
 
 
@@ -206,16 +214,16 @@ namespace mu2e {
       VolumeInfo worldVInfo = constructWorldVolume(_config);
 
       if ( _verbosityLevel > 0) {
-          cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << endl;
-          cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << endl;
+          G4cout << __func__ << " worldVInfo.centerInParent : " <<  worldVInfo.centerInParent << G4endl;
+          G4cout << __func__ << " worldVInfo.centerInWorld  : " <<  worldVInfo.centerInWorld  << G4endl;
       }
 
       VolumeInfo hallInfo  = constructHall(worldVInfo, _config);
 
       if ( _verbosityLevel > 0) {
-          cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << endl;
-          cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << endl;
-          cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << endl;
+          G4cout << __func__ << " hallInfo.centerInParent   : " <<  hallInfo.centerInParent << G4endl;
+          G4cout << __func__ << " hallInfo.centerInWorld    : " <<  hallInfo.centerInWorld  << G4endl;
+          G4cout << __func__ << " hallInfo.centerInMu2e()   : " <<  hallInfo.centerInMu2e() << G4endl;
       }
 
       constructProtonBeamDump(hallInfo, _config);
@@ -234,24 +242,8 @@ namespace mu2e {
       constructProtonAbsorber(_config);
       VolumeInfo calorimeterInfo = constructCal();
 
-    if (pset_.has_key("physics.minRangeCut2")) {
-      // creating a region to be able to asign special cut and EM options
-      G4Region* regionCalorimeter = new G4Region("Calorimeter");
-      calorimeterInfo.logical->SetRegion(regionCalorimeter);
-      regionCalorimeter->AddRootLogicalVolume(calorimeterInfo.logical);
-    }
-
-    if (pset_.has_key("physics.minRangeCut3")) {
-      // creating a region to be able to asign special cut and EM options
-      G4Region* regionTracker = new G4Region("Tracker");
-      trackerInfo.logical->SetRegion(regionTracker);
-      regionTracker->AddRootLogicalVolume(trackerInfo.logical);
-    }
-
-    // This is just placeholder for now - and might be misnamed.
-    constructMagnetYoke();
-
-    // Check for stale names
+      // This is just placeholder for now - and might be misnamed.
+      constructMagnetYoke();
 
       if ( _config.getBool("hasExternalShielding",false) ) {
           constructExternalShielding(hallInfo, _config);
@@ -295,6 +287,51 @@ namespace mu2e {
           log << "Mu2e Origin:          " << worldGeom->mu2eOriginInWorld() << "\n";
       }
 
+      // creating regions to be able to asign special cut and EM options
+
+      const fhicl::ParameterSet& minRangeRegionCutsPSet{
+        pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
+
+      if (!minRangeRegionCutsPSet.is_empty()) {
+        const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
+        for(const auto& regionName : regionNames) {
+          G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
+          VolumeInfo const & volInfo = _helper->locateVolInfo(regionName);
+          volInfo.logical->SetRegion(region);
+          region->AddRootLogicalVolume(volInfo.logical);
+
+          G4ProductionCuts* regionProductionCuts = new G4ProductionCuts();
+          G4double productionCut = minRangeRegionCutsPSet.get<double>(regionName);
+          regionProductionCuts->SetProductionCut(productionCut);
+          // the above sets the same cut for gamma, e- and e+, proton/ions
+          G4double protonProductionCut = pset_.get<double>("physics.protonProductionCut");
+          regionProductionCuts->SetProductionCut(protonProductionCut,"proton");
+          region->SetProductionCuts(regionProductionCuts);
+
+          if ( _verbosityLevel > 0 ) {
+            G4cout << __func__ << " Setting gamma, e- and e+ production cut for "
+                      << regionName << " to " << productionCut << " mm and for proton to "
+                      << protonProductionCut << " mm" << G4endl;
+            G4cout << __func__ << " Resulting cuts for gamma, e-, e+, proton: ";
+            for (auto const& rcut : regionProductionCuts->GetProductionCuts() ) {
+              G4cout << " " << rcut;
+            }
+            G4cout << G4endl;
+          }
+
+        }
+      }
+
+      // special case for the tracker when we need a region to set a
+      // different EM option even when no production cuts are set explicitly
+
+      if ( useEmOption4InTracker_
+           && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+        G4Region* region = new G4Region("TrackerMother");
+        trackerInfo.logical->SetRegion(region);
+        region->AddRootLogicalVolume(trackerInfo.logical);
+      }
+
       constructStepLimiters();
 
       // Write out mu2e geometry into a gdml file.
@@ -319,20 +356,20 @@ namespace mu2e {
     // Construct one of the trackers.
     VolumeInfo trackerInfo;
 
-    if ( _config.getBool("hasTTracker",false) ) {
-      if ( _config.getInt("TTrackerVersion",3)  != 5 ){
+    if ( _config.getBool("hasTracker",false) ) {
+      if ( _config.getInt("TrackerVersion",3)  != 5 ){
         throw cet::exception("GEOM")
-          << "Current code only supports TTrackerVersion = 5\n"
+          << "Current code only supports TrackerVersion = 5\n"
           << "Requested version: "
-          << _config.getInt("TTrackerVersion",3);
+          << _config.getInt("TrackerVersion",3);
       }
-      trackerInfo = constructTTrackerv5( detSolDownstreamVacInfo, _config);
+      trackerInfo = constructTrackerv5( detSolDownstreamVacInfo, _config);
     }
 
     if ( _verbosityLevel > 0) {
-      cout << "detSolDownstreamVacInfo.centerInMu2e().x() =" << detSolDownstreamVacInfo.centerInMu2e().x() << endl;
-      cout << "detSolDownstreamVacInfo.centerInMu2e().y() =" << detSolDownstreamVacInfo.centerInMu2e().y() << endl;
-      cout << "detSolDownstreamVacInfo.centerInMu2e().z() =" << detSolDownstreamVacInfo.centerInMu2e().z() << endl;
+      G4cout << __func__ << "detSolDownstreamVacInfo.centerInMu2e().x() =" << detSolDownstreamVacInfo.centerInMu2e().x() << G4endl;
+      G4cout << __func__ << "detSolDownstreamVacInfo.centerInMu2e().y() =" << detSolDownstreamVacInfo.centerInMu2e().y() << G4endl;
+      G4cout << __func__ << "detSolDownstreamVacInfo.centerInMu2e().z() =" << detSolDownstreamVacInfo.centerInMu2e().z() << G4endl;
     }
 
     return trackerInfo;
@@ -348,8 +385,8 @@ namespace mu2e {
     VolumeInfo const & detSolUpstreamVacInfo   = ( _config.getBool("isDumbbell",false) ) ? _helper->locateVolInfo("DS3Vacuum") : _helper->locateVolInfo("DS2Vacuum");//DS3Vacuum to move the targets
 
     if ( _verbosityLevel > 0) {
-      cout << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << endl;
-      cout << "detSolUpstreamVacInfo.centerInMu2e().z() =" << detSolUpstreamVacInfo.centerInMu2e().z() << endl;
+      G4cout << __func__ << "detSolUpstreamVacInfo.centerInWorld.z()=" << detSolUpstreamVacInfo.centerInWorld.z() << G4endl;
+      G4cout << __func__ << "detSolUpstreamVacInfo.centerInMu2e().z() =" << detSolUpstreamVacInfo.centerInMu2e().z() << G4endl;
     }
 
     // Buid the stopping target
@@ -410,16 +447,24 @@ namespace mu2e {
     G4MagneticField * _field = new Mu2eGlobalField(worldGeom->mu2eOriginInWorld());
     G4Mag_EqRhs * _rhs  = new G4Mag_UsualEqRhs(_field);
     G4MagIntegratorStepper * _stepper;
-    if ( _verbosityLevel > 0 ) cout << "Setting up " << g4stepperName_ << " stepper" << endl;
+    if ( _g4VerbosityLevel > 0 ) G4cout << __func__ << " Setting up " << g4stepperName_ << " stepper" << G4endl;
     if ( g4stepperName_  == "G4ClassicalRK4" ) {
       _stepper = new G4ClassicalRK4(_rhs);
     } else if ( g4stepperName_  == "G4ClassicalRK4WSpin" ) {
       delete _rhs; // FIXME: avoid the delete
       _rhs  = new G4Mag_SpinEqRhs(_field);
       _stepper = new G4ClassicalRK4(_rhs, 12);
-      if ( _verbosityLevel > 0) {
-        cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin "
-             << "and used G4ClassicalRK4 with Spin" << endl;
+      if ( _g4VerbosityLevel > 0) {
+        G4cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin "
+             << "and used G4ClassicalRK4 with Spin" << G4endl;
+      }
+    } else if ( g4stepperName_  == "G4DormandPrince745WSpin" ) {
+      delete _rhs; // FIXME: avoid the delete
+      _rhs  = new G4Mag_SpinEqRhs(_field);
+      _stepper = new G4DormandPrince745(_rhs, 12);
+      if ( _g4VerbosityLevel > 0) {
+        G4cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4DormandPrince745WSpin "
+             << "and used G4DormandPrince745 with Spin" << G4endl;
       }
     } else if ( g4stepperName_  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
@@ -439,7 +484,7 @@ namespace mu2e {
 #endif
     } else {
       _stepper = new G4SimpleRunge(_rhs);
-      if ( _verbosityLevel > 0 ) cout << "Using default G4SimpleRunge stepper" << endl;
+      if ( _g4VerbosityLevel > -1 ) G4cout << __func__ << " Using default G4SimpleRunge stepper" << G4endl;
     }
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,g4StepMinimum_,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
@@ -453,15 +498,15 @@ namespace mu2e {
     // Define uniform field region in the detector solenoid, if neccessary
     if (bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform  ){
       ds2Vacuum->SetFieldManager( _dsUniform->manager(), true);
-      if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS2" << endl;
+      if ( _verbosityLevel > 0 ) G4cout << __func__ << " Use uniform field in DS2" << G4endl;
     }
     if (bfConfig->dsFieldForm() == BFieldConfig::dsModelUniform || bfConfig->dsFieldForm() == BFieldConfig::dsModelSplit){
       if( needDSGradient ) {
         ds3Vacuum->SetFieldManager( _dsGradient->manager(), true);
-      if ( _verbosityLevel > 0 ) cout << "Use gradient field in DS3" << endl;
+      if ( _verbosityLevel > 0 ) G4cout << __func__ << " Use gradient field in DS3" << G4endl;
       } else {
         ds3Vacuum->SetFieldManager( _dsUniform->manager(), true);
-        if ( _verbosityLevel > 0 ) cout << "Use uniform field in DS3" << endl;
+        if ( _verbosityLevel > 0 ) G4cout << __func__ << " Use uniform field in DS3" << G4endl;
       }
 
       // if( _config.getBool("hasMBS",false) ) {
@@ -494,17 +539,17 @@ namespace mu2e {
     _propInField->SetMaxLoopCount(g4MaxIntSteps_);
 
 
-    if ( _verbosityLevel > 0 ) {
-      cout << __func__ << " Stepper precision parameters: " << endl;
-      cout << __func__ << " g4epsilonMin        " << _manager->GetMinimumEpsilonStep() << endl;
-      cout << __func__ << " g4epsilonMax        " << _manager->GetMaximumEpsilonStep() << endl;
-      cout << __func__ << " g4DeltaOneStep      " << _manager->GetDeltaOneStep() << endl;
-      cout << __func__ << " g4DeltaIntersection " << _manager->GetDeltaIntersection() << endl;
-      cout << __func__ << " g4DeltaChord        " << _chordFinder->GetDeltaChord() << endl;
-      cout << __func__ << " g4StepMinimum       "
-           << dynamic_cast<G4MagInt_Driver*>(_chordFinder->GetIntegrationDriver())->GetHmin() << endl;
+    if ( _g4VerbosityLevel > 0 ) {
+      G4cout << __func__ << " Stepper precision parameters: " << G4endl;
+      G4cout << __func__ << " g4epsilonMin        " << _manager->GetMinimumEpsilonStep() << G4endl;
+      G4cout << __func__ << " g4epsilonMax        " << _manager->GetMaximumEpsilonStep() << G4endl;
+      G4cout << __func__ << " g4DeltaOneStep      " << _manager->GetDeltaOneStep() << G4endl;
+      G4cout << __func__ << " g4DeltaIntersection " << _manager->GetDeltaIntersection() << G4endl;
+      G4cout << __func__ << " g4DeltaChord        " << _chordFinder->GetDeltaChord() << G4endl;
+      G4cout << __func__ << " g4StepMinimum       "
+           << dynamic_cast<G4MagInt_Driver*>(_chordFinder->GetIntegrationDriver())->GetHmin() << G4endl;
       // the above assumes G4ChordFinder is instantiated in the way it is done above with the 3 parameters
-      cout << __func__ << " g4MaxIntStep        " << _propInField->GetMaxLoopCount() << endl;
+      G4cout << __func__ << " g4MaxIntStep        " << _propInField->GetMaxLoopCount() << G4endl;
     }
 
   } // end Mu2eWorld::constructBFieldAndManagers
@@ -518,9 +563,30 @@ namespace mu2e {
       art::ServiceHandle<mu2e::G4Helper>()->locateVolInfo(expression);
     for ( auto v : vols ){
       v->logical->SetUserLimits( stepLimit );
-      if(_verbosityLevel > 0)  {
-        std::cout<<"Activated step limit for volume "<<v->logical->GetName() <<std::endl;
+      if(_g4VerbosityLevel > 0)  {
+        G4cout << __func__ << " Activated step limit for volume "<<v->logical->GetName() << G4endl;
       }
+    }
+  }
+
+
+  // helper function
+  void Mu2eWorld::setStepLimitToAllSuchVolumes(const G4String& vn,
+                                               G4UserLimits* const stepLimit,
+                                               const G4LogicalVolumeStore* const lvs,
+                                               int verbosityLevel) {
+    int vtbcc = 0;
+    for ( auto lvi=lvs->begin(); lvi!=lvs->end(); ++lvi) {
+      if ((*lvi)->GetName() == vn) {
+	(*lvi)->SetUserLimits( stepLimit );
+        if(verbosityLevel > 0) {
+          G4cout << __func__<< " Activated step limit for volume " << vn << G4endl;
+        }
+        ++vtbcc;
+      }
+    }
+    if (vtbcc>1 && verbosityLevel > -1) {
+      G4cout << __func__<< " WARNING: found " << vn << " " << vtbcc << " times" << G4endl;
     }
   }
 
@@ -534,21 +600,35 @@ namespace mu2e {
   //
   void Mu2eWorld::constructStepLimiters(){
 
+    // G4LogicalVolume* hallAir        = _helper->locateVolInfo("HallAir").logical;
+
+    G4LogicalVolume* ds1Vacuum      = _helper->locateVolInfo("DS1Vacuum").logical;
     G4LogicalVolume* ds2Vacuum      = _helper->locateVolInfo("DS2Vacuum").logical;
     G4LogicalVolume* ds3Vacuum      = _helper->locateVolInfo("DS3Vacuum").logical;
+    G4LogicalVolume* dsCVacuum      = _helper->locateVolInfo("DSCryoVacuumRegion").logical;
+
     G4LogicalVolume* tracker        = _helper->locateVolInfo("TrackerMother").logical;
+    G4LogicalVolume* trackerPanel   = _helper->locateVolInfo("StrawPanelEnvelope").logical;
     G4LogicalVolume* caloMother     = _helper->locateVolInfo("CalorimeterMother").logical;
-    G4LogicalVolume* stoppingtarget = _helper->locateVolInfo("StoppingTargetMother").logical;
+    G4LogicalVolume* stoppingTarget = _helper->locateVolInfo("StoppingTargetMother").logical;
+    G4LogicalVolume* productionTarget = _helper->locateVolInfo("ProductionTargetMother").logical;
 
     vector<G4LogicalVolume*> psVacua;
     psVacua.push_back( _helper->locateVolInfo("PSVacuum").logical );
+    psVacua.push_back( _helper->locateVolInfo("psVacuumVesselVacuum").logical );
 
-    vector<G4LogicalVolume*> tsVacua;
+    vector<G4LogicalVolume*> tsVacua; // could use stepLimiterHelper; see below
     tsVacua.push_back( _helper->locateVolInfo("TS1Vacuum").logical );
     tsVacua.push_back( _helper->locateVolInfo("TS2Vacuum").logical );
     tsVacua.push_back( _helper->locateVolInfo("TS3Vacuum").logical );
     tsVacua.push_back( _helper->locateVolInfo("TS4Vacuum").logical );
     tsVacua.push_back( _helper->locateVolInfo("TS5Vacuum").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS1CryoInsVac").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS2CryoInsVac").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS3CryoInsVac").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS4CryoInsVac").logical );
+    tsVacua.push_back( _helper->locateVolInfo("TS5CryoInsVac").logical );
+
 
     vector<G4LogicalVolume*> mbsLVS;
     mbsLVS.push_back( _helper->locateVolInfo("MBSMother").logical );
@@ -558,18 +638,42 @@ namespace mu2e {
     // limits.  For now that is not necessary.
     AntiLeakRegistry& reg = art::ServiceHandle<G4Helper>()->antiLeakRegistry();
     G4UserLimits* stepLimit = reg.add( G4UserLimits(bfieldMaxStep_) );
-    if(_verbosityLevel > 0) {
-      std::cout<<"Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<std::endl;
+    if(_g4VerbosityLevel > 0) {
+      G4cout << __func__ << " Using step limit = "<<bfieldMaxStep_/CLHEP::mm<<" mm"<<G4endl;
     }
 
     // Add the step limiters to the interesting volumes.
     // Keep them separated so that we can add different step limits should we decide to.
+
+    // hallAir->SetUserLimits( stepLimit ); // not a vacuum per se; CPU costly
+
+    // calorimeter does not use the nest functions; fixme
+    // so we need to use the geant4's functions
+    // in addition, some of its logical volumes are duplicated; fixme
+
+    G4LogicalVolumeStore* lvs = G4LogicalVolumeStore::GetInstance();
+    setStepLimitToAllSuchVolumes("caloBackPlateFEELog",    stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloCrystalFrameInLog",  stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFEBLog",             stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFEEBoxInLog",        stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFrontPlateLog",      stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloFullBackPlateLog",   stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("caloHoleBackLog",        stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("calofullCrystalDiskLog", stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("ccrateBoxInLog",         stepLimit,lvs,_g4VerbosityLevel);
+    setStepLimitToAllSuchVolumes("ccrateFullBoxLog",       stepLimit,lvs,_g4VerbosityLevel);
+
+    ds1Vacuum->SetUserLimits( stepLimit );
     ds2Vacuum->SetUserLimits( stepLimit );
     ds3Vacuum->SetUserLimits( stepLimit );
+    dsCVacuum->SetUserLimits( stepLimit );
 
     tracker->SetUserLimits( stepLimit );
+    trackerPanel->SetUserLimits( stepLimit );
+
     caloMother->SetUserLimits( stepLimit );
-    stoppingtarget->SetUserLimits( stepLimit );
+    stoppingTarget->SetUserLimits( stepLimit );
+    productionTarget->SetUserLimits( stepLimit );
 
     for ( auto lv : psVacua ){
       lv->SetUserLimits( stepLimit);
@@ -584,9 +688,40 @@ namespace mu2e {
     }
 
     // Now do all of the tracker related envelope volumes, using regex's with wildcards.
-    stepLimiterHelper("^TTrackerPlaneEnvelope_.*$",                 stepLimit );
-    stepLimiterHelper("^TTrackerSupportServiceEnvelope_.*$",        stepLimit );
-    stepLimiterHelper("^TTrackerSupportServiceSectionEnvelope_.*$", stepLimit );
+    stepLimiterHelper("^TrackerPlaneEnvelope_.*$",                 stepLimit );
+    stepLimiterHelper("^TrackerSupportServiceEnvelope_.*$",        stepLimit );
+    stepLimiterHelper("^TrackerSupportServiceSectionEnvelope_.*$", stepLimit );
+
+    // special case for straws to get the energy deposits right
+
+    if (strawGasMaxStep_>0.0) {
+      G4UserLimits* strawGasStepLimit = reg.add( G4UserLimits(strawGasMaxStep_) );
+      if(_g4VerbosityLevel > 0) {
+        G4cout << __func__<< " Using strawGas step limit = "
+               <<strawGasMaxStep_/CLHEP::mm<<" mm"<<G4endl;
+      }
+      stepLimiterHelper("^TrackerStrawGas_.*$", strawGasStepLimit);
+    }
+
+    // and the calorimeter elements
+
+    stepLimiterHelper("^caloDisk_.*$", stepLimit );
+    stepLimiterHelper("^caloFEB_.*$", stepLimit );
+
+    // calorimeter does not use Mu2e nest functions for those; see above; fixme
+    // stepLimiterHelper("^caloFEBLog*$", stepLimit );
+
+    // stepLimiterHelper("^ccrateFullBoxLog*$", stepLimit );
+    // stepLimiterHelper("^ccrateBoxInLog*$", stepLimit );
+    // stepLimiterHelper("^ccrateBoardLog*$", stepLimit );
+
+    // stepLimiterHelper("^caloFrontPlateLog*$", stepLimit );
+    // stepLimiterHelper("^caloCrystalFrameInLog*$", stepLimit );
+    // stepLimiterHelper("^caloHoleBackLog*$", stepLimit );
+    // stepLimiterHelper("^caloFEEBoxInLog*$", stepLimit );
+    // stepLimiterHelper("^caloBackPlateFEELog*$", stepLimit );
+    // stepLimiterHelper("^caloFullBackPlateLog*$", stepLimit );
+
 
     // An option to limit the step size in these non-vaccum volumes to
     // visually validate geometry of the filter channel
@@ -597,7 +732,7 @@ namespace mu2e {
     //     if(emfcMagnetAperture) {
     //       const double maxStepLength = _config.getDouble("extMonFNAL.maxG4StepLength", 0)*CLHEP::millimeter;
     //       if(maxStepLength > 0) {
-    //         std::cout<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<std::endl;
+    //         G4cout<< __func__<<"Adding step limiter for ExtMonFNALFilterMagnet: maxStepLength = "<<maxStepLength<<G4endl;
     //         G4UserLimits* emfcStepLimit = reg.add(G4UserLimits(maxStepLength));
     //         emfcMagnetAperture->SetUserLimits(emfcStepLimit);
     //         _helper->locateVolInfo("ExtMonFNALfilterMagnetIron").logical->SetUserLimits(emfcStepLimit);
@@ -664,36 +799,36 @@ namespace mu2e {
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from ConstructTTrackerTDR and constructTTrackerv3
-            if (LVname.find("TTrackerStrawGas_") != std::string::npos) {
+            //from ConstructTrackerTDR and constructTrackerv3
+            if (LVname.find("TrackerStrawGas_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(strawSD);
             }
         }//for
      }//if tracker
 
 
-/************************** TTrackerDS **************************/
+/************************** TrackerDS **************************/
      //done
-    if(sdHelper_->enabled(StepInstanceName::ttrackerDS)) {
+    if(sdHelper_->enabled(StepInstanceName::trackerDS)) {
 
-        TTrackerPlaneSupportSD* ttdsSD =
-        new TTrackerPlaneSupportSD( SensitiveDetectorName::TTrackerPlaneSupport(), _config );
+        TrackerPlaneSupportSD* ttdsSD =
+        new TrackerPlaneSupportSD( SensitiveDetectorName::TrackerPlaneSupport(), _config );
         SDman->AddNewDetector(ttdsSD);
 
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from constructTTrackerv3
-            if (LVname.find("TTrackerPlaneSupport_") != std::string::npos) {
+            //from constructTrackerv3
+            if (LVname.find("TrackerPlaneSupport_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttdsSD);
             }
 
-            //from constructTTrackerv3Detailed
-            if (LVname.find("TTrackerSupportElecCu") != std::string::npos) {
+            //from constructTrackerv3Detailed
+            if (LVname.find("TrackerSupportElecCu") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttdsSD);
             }
         }//for
-    }//if ttrackerDS
+    }//if trackerDS
 
 
 /************************** VirtualDetector **************************/
@@ -721,18 +856,18 @@ namespace mu2e {
 
             G4String LVname = (*pos)->GetName();
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWire_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWire_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwsSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerWireCore_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerWireCore_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwsSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerWirePlate_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerWirePlate_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwsSD);
             }
             }//for
@@ -752,23 +887,23 @@ namespace mu2e {
 
             G4String LVname = (*pos)->GetName();
 
-            //from ConstructTTrackerTDR and constructTTrackerv3
-            if (LVname.find("TTrackerStrawWall_") != std::string::npos) {
+            //from ConstructTrackerTDR and constructTrackerv3
+            if (LVname.find("TrackerStrawWall_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWallOuterMetal_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWallOuterMetal_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWallInnerMetal1_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWallInnerMetal1_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
 
-            //from ConstructTTrackerTDR
-            if (LVname.find("TTrackerStrawWallInnerMetal2_") != std::string::npos) {
+            //from ConstructTrackerTDR
+            if (LVname.find("TrackerStrawWallInnerMetal2_") != std::string::npos) {
               (*pos)->SetSensitiveDetector(ttwlSD);
             }
         }//for
@@ -816,7 +951,7 @@ namespace mu2e {
           for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
               G4String LVname = (*pos)->GetName();
 
-              if (LVname.find("ElectronicsROLog") != std::string::npos) {
+              if (LVname.find("caloFEECardROLog") != std::string::npos) {
                 (*pos)->SetSensitiveDetector(crCardSD);
               }
           }//for
@@ -830,7 +965,7 @@ namespace mu2e {
           for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
               G4String LVname = (*pos)->GetName();
 
-              if (LVname.find("activeStripBoardLog") != std::string::npos) {
+              if (LVname.find("ccrateActiveStripLog") != std::string::npos) {
                 (*pos)->SetSensitiveDetector(cCrateSD);
               }
           }//for
@@ -951,13 +1086,7 @@ namespace mu2e {
         for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
             G4String LVname = (*pos)->GetName();
 
-            //from constructMSTM
-            if (LVname.find("mstmCrystal") != std::string::npos) {
-              (*pos)->SetSensitiveDetector(STMDetSD);
-            }
-
-            //from constructSTM, will pick up stmDet1 and stmDet2
-            if (LVname.find("stmDet") != std::string::npos) {
+            if ( LVname == "stmDet1" || LVname == "stmDet2" ){
               (*pos)->SetSensitiveDetector(STMDetSD);
             }
         }//for

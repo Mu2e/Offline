@@ -23,7 +23,7 @@ namespace fhicl {
 namespace mu2e {
   class Panel;
   class SimParticle;
-  class TTracker;
+  class Tracker;
 //-----------------------------------------------------------------------------
 // delta-electron seed: structure within the station
 // doesn't own anything, no need to delete any pinters
@@ -243,7 +243,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     struct Data_t {
       const art::Event*             event;
-      const TTracker*               tracker;
+      const Tracker*                tracker;
       std::string                   strawDigiMCCollectionTag;
       std::string                   ptrStepPointMCVectorCollectionTag;
       std::vector<DeltaSeed*>       seedHolder [kNStations];

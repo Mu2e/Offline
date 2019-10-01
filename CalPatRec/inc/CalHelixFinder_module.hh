@@ -6,7 +6,7 @@
 
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // data
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -23,6 +23,8 @@
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 
+#include "DataProducts/inc/Helicity.hh"
+
 // BaBar
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BField/BField.hh"
@@ -35,7 +37,6 @@
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 
-#include "Mu2eBTrk/inc/BaBarMu2eField.hh"
 #include "BFieldGeom/inc/BFieldConfig.hh"
 
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
@@ -73,7 +74,7 @@ namespace mu2e {
   using namespace CalHelixFinderTypes;
 
   class Calorimeter;
-  class TTracker;
+  class Tracker;
   class ModuleHistToolBase;
 
   class CalHelixFinder : public art::EDFilter {
@@ -115,9 +116,10 @@ namespace mu2e {
     HelixTraj*                            _helTraj;
     CalHelixFinderAlg                     _hfinder;	
     CalHelixFinderData                    _hfResult;
+    std::vector<mu2e::Helicity>           _hels; // helicity values to fit
 
     double                                _bz0;
-    const TTracker*                       _tracker     ; // straw tracker geometry
+    const Tracker*                        _tracker     ; // straw tracker geometry
     const Calorimeter*                    _calorimeter ; // cached pointer to the calorimeter geometry
 //-----------------------------------------------------------------------------
 // diagnostics 
@@ -129,7 +131,9 @@ namespace mu2e {
 // functions
 //-----------------------------------------------------------------------------
   public:
+
     enum fitType {helixFit=0,seedFit,kalFit};
+
     explicit CalHelixFinder(const fhicl::ParameterSet& PSet);
     virtual ~CalHelixFinder();
     
@@ -155,6 +159,7 @@ namespace mu2e {
     
     int  goodHitsTimeCluster(const TimeCluster* TimeCluster);
     
+    void pickBestHelix(std::vector<HelixSeed>& HelVec, int &Index_best);
   };
 }
 #endif

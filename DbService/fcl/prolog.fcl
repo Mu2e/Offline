@@ -1,0 +1,11 @@
+BEGIN_PROLOG
+
+DbEmpty : {
+   purpose :  "TRK_TEST"
+   version :  "v2_0"
+   dbName : "mu2e_conditions_prd"
+   #textFile : ["table.txt"]
+   verbose : 0
+}
+
+END_PROLOG

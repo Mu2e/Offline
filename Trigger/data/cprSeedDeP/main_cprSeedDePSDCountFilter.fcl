@@ -1,0 +1,9 @@
+physics.filters.cprSeedDePSDCountFilter.caloDigiCollection  : notUsed
+physics.filters.cprSeedDePSDCountFilter.useStrawDigi        : true	 
+physics.filters.cprSeedDePSDCountFilter.useCaloDigi         : false	 
+physics.filters.cprSeedDePSDCountFilter.minNStrawDigi       : 10 	 
+physics.filters.cprSeedDePSDCountFilter.maxNStrawDigi       : 10000	 
+physics.filters.cprSeedDePSDCountFilter.minNCaloDigi        : -1	 
+physics.filters.cprSeedDePSDCountFilter.maxNCaloDigi        : -1	 
+physics.filters.cprSeedDePSDCountFilter.maxCaloEnergy       : -1     
+

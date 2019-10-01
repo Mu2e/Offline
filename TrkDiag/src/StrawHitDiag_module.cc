@@ -12,11 +12,10 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // root
 #include "TMath.h"
 #include "TH1F.h"
@@ -229,7 +228,7 @@ namespace mu2e
 
   void StrawHitDiag::fillStrawHitDiag() {
     GeomHandle<DetectorSystem> det;
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
     static const double rstraw = tracker.getStraw(StrawId(0,0,0)).getRadius();
     unsigned nstrs = _chcol->size();
     for(unsigned istr=0; istr<nstrs;++istr){
@@ -254,7 +253,7 @@ namespace mu2e
       _ptime = ch.propTime();
       _shp = ch.posCLHEP();
       _shlen =(ch.posCLHEP()-straw.getMidPoint()).dot(straw.getDirection());
-      _slen = straw.getHalfLength();
+      _slen = straw.halfLength();
       _stereo = ch.flag().hasAllProperties(StrawHitFlag::stereo);
       _tdiv = ch.flag().hasAllProperties(StrawHitFlag::tdiv);
       _esel = shf.hasAllProperties(StrawHitFlag::energysel);
@@ -328,7 +327,7 @@ namespace mu2e
           Hep3Vector cdir = (cpos-straw.getMidPoint());
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           _mccphi[iend] = cdir.theta();
-          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.getDetail().innerRadius());
+          _mccd[iend] = min(cdir.perp(straw.getDirection()),straw.innerRadius());
 	}
         _mcshp = spmcp->position();
         _mcop = det->toDetector(osp.startPosition());

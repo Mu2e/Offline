@@ -26,6 +26,7 @@ namespace mu2e {
   };
 
   ModifyTestProduct::ModifyTestProduct(fhicl::ParameterSet const& pset ):
+    art::EDProducer{pset},
     tag_(pset.get<std::string>("productTag")){
     produces<int>( tag_.instance() );
   }

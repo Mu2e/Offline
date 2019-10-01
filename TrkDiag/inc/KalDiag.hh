@@ -11,13 +11,13 @@
 #include "TrkDiag/inc/helixpar.hh"
 #include "TrkDiag/inc/TrkInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfo.hh"
+#include "TrkDiag/inc/TrkCaloHitInfo.hh"
 #include "TrkDiag/inc/TrkStrawMatInfo.hh"
 #include "TrkDiag/inc/TrkStrawHitInfoMC.hh"
 // data
 #include "art/Framework/Principal/fwd.h"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
-#include "RecoDataProducts/inc/TrkQual.hh"
 // Utilities
 #include "Mu2eUtilities/inc/MVATools.hh"
 // MC data
@@ -33,7 +33,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // Mu2e tracking
 #include "BTrkData/inc/TrkStrawHit.hh"
-#include "TrkReco/inc/TrkDef.hh"
+#include "BTrkData/inc/TrkCaloHit.hh"
 //CLHEP
 #include "CLHEP/Units/PhysicalConstants.h"
 // root 
@@ -90,6 +90,7 @@ namespace mu2e
     std::vector<int> const& VDids(TRACKERPOS tpos) const;
 // functions to fill track information from KalRep
     void fillTrkInfo(const KalRep* krep,TrkInfo& trkinfo) const;
+    void fillTrkFitInfo(const KalRep* krep, TrkFitInfo& trkfitinfo) const;
     void fillTrkFitInfo(const KalRep* krep,double fltlen,TrkFitInfo& trkfitinfo) const;
 // MC info about a track
     void fillTrkInfoMC(art::Ptr<SimParticle> const& spp,const KalRep* krep,TrkInfoMC& trkinfomc);
@@ -98,6 +99,7 @@ namespace mu2e
 // hit information
     void fillHitInfo(const KalRep* krep, std::vector<TrkStrawHitInfo>& hitinfos) const;
     void fillHitInfo(const TrkStrawHit* tsh,TrkStrawHitInfo& tshinfo) const;
+    void fillCaloHitInfo(const TrkCaloHit* tsh,TrkCaloHitInfo& tshinfo) const;
     void fillMatInfo(const KalRep* krep, std::vector<TrkStrawMatInfo>& hitinfos) const;
     bool fillMatInfo(const KalMaterial* ,TrkStrawMatInfo& tshinfo) const;
     void fillHitInfoMC(art::Ptr<SimParticle> const& primary,const KalRep* krep,std::vector<TrkStrawHitInfoMC>& tshinfomc) const;
@@ -120,7 +122,6 @@ namespace mu2e
 // helper functions
     void fillTrkInfoMCStep(CLHEP::Hep3Vector const& mom, CLHEP::Hep3Vector const& pos, double charge, TrkInfoMCStep& einfo) const;
     void countHits(const KalRep* krep, TrkInfo& tinfo) const;
-    void fillTrkQual(TrkInfo& trkinfo) const;
     const helixpar& MCHelix(TRACKERPOS tpos) const;
     void reset();
     // config parameters
@@ -135,8 +136,6 @@ namespace mu2e
 // trk tuple variables
     public:
     TTree *_trkdiag;
-// track quality computation
-    std::unique_ptr<MVATools> _trkqualmva;
 // struct for track info
     TrkInfo _trkinfo;
 // hit information

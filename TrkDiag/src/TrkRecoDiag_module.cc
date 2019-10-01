@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
@@ -72,7 +72,6 @@ namespace mu2e {
 // config parameters
       int _diag;
       bool _mcdiag;
-      int _mcgen, _mcproc, _mcpdg; // targets for MC match
       TrkFitFlag _goodkf, _goodks, _goodhs; // define a good track
      // event object tags
       art::InputTag _hsTag;
@@ -80,7 +79,9 @@ namespace mu2e {
       art::InputTag _kfTag;
       art::InputTag _tqTag;
       art::InputTag _tcTag;
+      art::InputTag _chTag;
       art::InputTag _mcdigisTag;
+      art::InputTag _primaryTag;
       art::InputTag _vdmcstepsTag;
       art::InputTag _beamWtModule;
       // cache of event objects
@@ -88,7 +89,9 @@ namespace mu2e {
       const KalSeedCollection* _kscol;
       const KalSeedCollection* _kfcol;
       const TimeClusterCollection* _tccol;
+      const ComboHitCollection* _chcol;
       const StrawDigiMCCollection* _mcdigis;
+      const PrimaryParticle* _primary;
       const StepPointMCCollection* _vdmcsteps;
       const TrkQualCollection* _tqcol;
       // time offsets
@@ -118,16 +121,16 @@ namespace mu2e {
       Float_t _mcentmom, _mcmidmom, _mcxitmom;
       Float_t _mcentpz, _mcmidpz, _mcxitpz;
       Float_t _mcentt0, _mcmidt0, _mcxitt0;
-      Int_t _pdg, _gen, _proc;
+      Int_t _nprimary, _pdg, _gen, _proc;
       UInt_t _ndigitot;
       UInt_t _ndigi, _nkfprimary, _nksprimary, _nhsprimary, _ntcprimary;
       RobustHelix _mch;
 
       // helper functions 
-      void findMCParticle(SPP& spp);
+      unsigned findMCParticle(SPP& spp);
       KSI findMCMatch(SPP const& spp,KalSeedCollection const& ksc,unsigned& nprimary);
-      HSI findMCMatch(SPP const& spp,HelixSeedCollection const& hsc,unsigned& nprimary);
-      TCI findMCMatch(SPP const& spp,TimeClusterCollection const& tcc,unsigned& nprimary);
+      HSI findMCMatch(art::Event const& evt, SPP const& spp,HelixSeedCollection const& hsc,unsigned& nprimary);
+      TCI findMCMatch(art::Event const& evt, SPP const& spp,TimeClusterCollection const& tcc,unsigned& nprimary);
       KSI findBestReco(KalSeedCollection const& ksc, TrkFitFlag const& goodreco);
       HSI findBestReco(HelixSeedCollection const& ksc, TrkFitFlag const& goodreco);
       TCI findBestReco(TimeClusterCollection const& tcc);
@@ -146,20 +149,19 @@ namespace mu2e {
     art::EDAnalyzer(pset),
     _diag(pset.get<int>("DiagLevel",1)),
     _mcdiag(pset.get<bool>("MonteCarloDiag",true)),
-    _mcgen(pset.get<int>("MCGenerator",2)),// default for conversion electron
-    _mcproc(pset.get<int>("MCProcess",56)),
-    _mcpdg(pset.get<int>("MCPDG",11)),
     _goodkf(pset.get<vector<string> >("GoodKalFinalFlag",vector<string>{"KalmanOK"})),
     _goodks(pset.get<vector<string> >("GoodKalSeedFlag",vector<string>{"SeedOK"})),
     _goodhs(pset.get<vector<string> >("GoodHelixFlag",vector<string>{"HelixOK"})),
     _hsTag(pset.get<art::InputTag>("HelixSeedCollection","HelixFinder:Positive")),
     _ksTag(pset.get<art::InputTag>("KalSeedFitCollection","KSFDeM")),
     _kfTag(pset.get<art::InputTag>("KalFinalFitCollection","KFFDeM")),
-    _tqTag(pset.get<art::InputTag>("TrkQualTag","KFFDeM")),
+    _tqTag(pset.get<art::InputTag>("TrkQualTag","TrkQualDeM")),
     _tcTag(pset.get<art::InputTag>("TimeClusterCollection","TimeClusterFinder")),
+    _chTag(pset.get<art::InputTag>("ComboHitCollection","makePH")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
+    _primaryTag(pset.get<art::InputTag>("PrimaryParticleTag","FindMCPrimary")),
     _vdmcstepsTag(pset.get<art::InputTag>("VDStepPointMCCollection","detectorFilter:virtualdetector")),
-    _beamWtModule( pset.get<art::InputTag>("beamWeightModule","protonBunchSummarizer" )),
+    _beamWtModule( pset.get<art::InputTag>("beamWeightModule","PBIWeight" )),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {
     if(_diag > 0){
@@ -211,6 +213,7 @@ namespace mu2e {
 	_trdiag->Branch("mcxitpz",&_mcxitpz,"mcxitpz/F");
 	_trdiag->Branch("mcxitt0",&_mcxitt0,"mcxitt0/F");
 	_trdiag->Branch("mch.",&_mch);
+	_trdiag->Branch("nprimary",&_nprimary,"nprimary/i");
 	_trdiag->Branch("pdg",&_pdg,"pdg/I");
 	_trdiag->Branch("gen",&_gen,"gen/I");
 	_trdiag->Branch("proc",&_proc,"proc/I");
@@ -263,7 +266,7 @@ namespace mu2e {
 	if(beamWtHandle.isValid())
 	  _beamwt = beamWtHandle->weight();
 	// find the MC true particle that best meets the specified requirements
-	findMCParticle(bestpart);
+	_nprimary = findMCParticle(bestpart);
 	if(bestpart.isNonnull()){
 	  _mcgenmom = bestpart->startMomentum().mag(); // momentum at production
 	  _pdg = bestpart->pdgId();
@@ -281,11 +284,11 @@ namespace mu2e {
 	    if(bestks != _kscol->end()){
 	      fillKalSeed(bestpart,*bestks);
 	    } else {
-	      auto besths = findMCMatch(bestpart,*_hscol, _nhsprimary);
+	      auto besths = findMCMatch(evt, bestpart,*_hscol, _nhsprimary);
 	      if(besths != _hscol->end()){
 		fillHelixSeed(bestpart,*besths);
 	      } else {
-		auto besttc = findMCMatch(bestpart,*_tccol, _ntcprimary);
+		auto besttc = findMCMatch(evt, bestpart,*_tccol, _ntcprimary);
 		if(besttc != _tccol->end()){
 		  fillTimeCluster(bestpart,*besttc);
 		}
@@ -325,13 +328,17 @@ namespace mu2e {
   bool TrkRecoDiag::findData(const art::Event& evt){
     _tccol = 0;
     _hscol = 0;
+    _chcol = 0;
     _kscol = 0;
     _kfcol = 0;
     _mcdigis = 0;
+    _primary = 0;
     _vdmcsteps = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto tcH = evt.getValidHandle<TimeClusterCollection>(_tcTag);
     _tccol = tcH.product();
+    auto chH = evt.getValidHandle<ComboHitCollection>(_chTag);
+    _chcol = chH.product();
     auto tqH = evt.getValidHandle<TrkQualCollection>(_tqTag);
     _tqcol = tqH.product();
     auto hsH = evt.getValidHandle<HelixSeedCollection>(_hsTag);
@@ -345,14 +352,13 @@ namespace mu2e {
       _mcdigis = mcdH.product();
       // update time offsets
       _toff.updateMap(evt);
-      if(_mcgen > 0){
-	auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
-	_vdmcsteps = mcstepsH.product();
-      }
+      auto mcstepsH = evt.getValidHandle<StepPointMCCollection>(_vdmcstepsTag);
+      _vdmcsteps = mcstepsH.product();
+      auto pph = evt.getValidHandle<PrimaryParticle>(_primaryTag);
+      _primary = pph.product();
     }
-
     return _hscol != 0 && _kscol!= 0 && _kfcol != 0 && _tccol != 0 && _tqcol != 0
-      && ((_mcdigis != 0 && (_vdmcsteps != 0 || _mcgen < 0) ) || !_mcdiag);
+      && ((_mcdigis != 0 && _vdmcsteps != 0 && _primary != 0 ) || !_mcdiag);
   }
 
   KSI TrkRecoDiag::findMCMatch(SPP const& bestspp,KalSeedCollection const& ksc,unsigned& nprimary) {
@@ -372,15 +378,15 @@ namespace mu2e {
     return retval;
   }
 
-  HSI TrkRecoDiag::findMCMatch(SPP const& bestspp,HelixSeedCollection const& hsc,unsigned& nprimary) {
+  HSI TrkRecoDiag::findMCMatch(art::Event const&  evt, SPP const& bestspp,HelixSeedCollection const& hsc,unsigned& nprimary) {
     auto retval = hsc.end();
     nprimary = 0;
     SPP spp; 
     for(auto ihs = hsc.begin(); ihs != hsc.end(); ++ihs) {
-      vector<StrawHitIndex> hits;
-      for(auto const& hhit : ihs->hits())
-	hits.push_back(hhit.index());
-      unsigned nmc = TrkMCTools::primaryParticle(spp,hits,_mcdigis);
+      std::vector<StrawDigiIndex> sdis;
+      for(size_t ihit=0;ihit < ihs->hits().size();ihit++)
+	ihs->hits().fillStrawDigiIndices(evt,ihit,sdis);
+      unsigned nmc = TrkMCTools::primaryParticle(spp,sdis,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
 	retval = ihs;
 	nprimary = nmc;
@@ -389,12 +395,16 @@ namespace mu2e {
     return retval;
   }
 
-  TCI TrkRecoDiag::findMCMatch(SPP const& bestspp,TimeClusterCollection const& tcc,unsigned& nprimary) {
+  TCI TrkRecoDiag::findMCMatch(art::Event const&  evt, SPP const& bestspp,TimeClusterCollection const& tcc,unsigned& nprimary) {
     auto retval = tcc.end();
     nprimary = 0;
     SPP spp; 
     for(auto itc = tcc.begin(); itc != tcc.end(); ++itc) {
-      unsigned nmc = TrkMCTools::primaryParticle(spp,itc->hits(),_mcdigis);
+    // translate from ComboHit to StrawDigi indices
+      std::vector<StrawDigiIndex> sdis;
+      for(auto ihit : itc->hits())
+	_chcol->fillStrawDigiIndices(evt,ihit,sdis);
+      unsigned nmc = TrkMCTools::primaryParticle(spp,sdis,_mcdigis);
       if(spp == bestspp && nmc > nprimary){
 	retval = itc;
 	nprimary = nmc;
@@ -423,7 +433,7 @@ namespace mu2e {
     // take the fit with the highest product momentum*nhits
     double maxqual(0.0);
     for(auto ihs = hsc.begin(); ihs != hsc.end(); ++ihs) {
-      double qual = ihs->hits().size()*abs(ihs->helix().lambda()*ihs->helix().radius());
+      double qual = ihs->hits().nStrawHits()*abs(ihs->helix().lambda()*ihs->helix().radius());
       if(ihs->status().hasAllProperties(goodreco) && qual > maxqual){
 	maxqual = qual;
 	retval = ihs;
@@ -437,8 +447,8 @@ namespace mu2e {
     // take the cluster with the most hits.  Should add quality later?
     unsigned maxnhits(0);
     for(auto itc = tcc.begin(); itc != tcc.end(); ++itc) {
-      if(itc->hits().size() > maxnhits){
-	maxnhits = itc->hits().size();
+      if(itc->nStrawHits() > maxnhits){
+	maxnhits = itc->nStrawHits();
 	retval = itc;
       }
     }
@@ -557,17 +567,17 @@ namespace mu2e {
     _hsh = hs.helix();
     _hst0 = hs.t0().t0();
     _hst0err = hs.t0().t0Err();
-    _hsn = hs.hits().size();
     // count the active hits
     for(auto hhit : hs.hits()){
-      if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))++_hsna;
+      _hsn += hhit.nStrawHits(); 
+      if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsna += hhit.nStrawHits();
       if(spp.isNonnull()){
 	StrawDigiMC const& mcdigi = _mcdigis->at(hhit.index());
 	art::Ptr<StepPointMC> spmcp;
 	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
 	    spmcp->simParticle() == spp){
-	  ++_hsnp;
-	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))++_hsnap;
+	  _hsnp += hhit.nStrawHits(); 
+	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsnap += hhit.nStrawHits(); 
 	}
       }
     }
@@ -583,7 +593,7 @@ namespace mu2e {
     // fill branches
     _tct0 = tc.t0().t0();
     _tct0err = tc.t0().t0Err();
-    _tcn = tc.hits().size();
+    _tcn = tc.nStrawHits();
     // count matching hits
     for(auto tchit : tc.hits()){
       StrawDigiMC const& mcdigi = _mcdigis->at(tchit);
@@ -595,34 +605,32 @@ namespace mu2e {
     }
   }
 
-  void TrkRecoDiag::findMCParticle(SPP& spp){
+  unsigned TrkRecoDiag::findMCParticle(SPP& spp){
     // reset
     spp = SPP(); 
-    std::map<SPP,unsigned> spmap; // count how many digis each good SimParticle has
+    // pick the most related particle with the most hits
+    unsigned nprimary(0);
+    for(auto psp : _primary->primarySimParticles()){
     // loop over the digis and find the ones that match
-    for(auto mcd : *_mcdigis) {
+      unsigned count(0);
+      MCRelationship mcrel;
       SPP sp;
-      TrkMCTools::simParticle(sp,mcd);
-      if(sp.isNonnull() &&
-	  sp->genParticle().isNonnull() &&
-	  sp->genParticle()->generatorId().id() == _mcgen &&
-	  sp->originParticle().creationCode() == _mcproc &&
-	  sp->pdgId() == _mcpdg){
-	auto ifnd = spmap.find(sp);
-	if(ifnd == spmap.end())
-	  spmap[sp] = 1;// initialize
-	else
-	  ++(ifnd->second);
+      for(auto mcd : *_mcdigis) {
+	MCRelationship prel(psp,mcd.earlyStepPointMC()->simParticle());
+	if(prel == mcrel)
+	  count++;
+	else if(prel > mcrel){
+	  mcrel = prel;
+	  count = 1;
+	  sp = mcd.earlyStepPointMC()->simParticle();
+	}
+      }
+      if(count > nprimary){
+	nprimary = count;
+	spp = sp;
       }
     }
-    // find particle with the highest count
-    unsigned maxcount(0);
-    for(auto isp =spmap.begin();isp != spmap.end(); ++isp) {
-      if(isp->second > maxcount){
-	maxcount = isp->second;
-	spp = isp->first;
-      }
-    }
+    return nprimary;
   }
 
   bool TrkRecoDiag::fillMCInfo(art::Ptr<SimParticle> const& pspp) {

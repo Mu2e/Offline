@@ -14,7 +14,7 @@
 // framework
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Utilities/make_tool.h"
 
 // conditions
@@ -24,7 +24,7 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -45,6 +45,7 @@ namespace mu2e {
 // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
 //-----------------------------------------------------------------------------
   CalTimePeakFinder::CalTimePeakFinder(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _diagLevel       (pset.get<int>            ("diagLevel"                      )),
     _debugLevel      (pset.get<int>            ("debugLevel"                     )),
     _printfreq       (pset.get<int>            ("printFrequency"                 )),
@@ -61,6 +62,7 @@ namespace mu2e {
     _minClusterSize  (pset.get<int>            ("minClusterSize"                 )),
     _minClusterTime  (pset.get<double>         ("minClusterTime"                 )),
     _pitchAngle      (pset.get<double>         ("pitchAngle"                     )),
+    _beta            (pset.get<double>         ("beta"                           )),  
     _dtoffset        (pset.get<double>         ("dtOffset"                       ))
   {
     consumes<ComboHitCollection>(_shLabel);
@@ -95,7 +97,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   bool CalTimePeakFinder::beginRun(art::Run& ) {
-    mu2e::GeomHandle<mu2e::TTracker> th;
+    mu2e::GeomHandle<mu2e::Tracker> th;
     _tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
@@ -241,7 +243,7 @@ namespace mu2e {
 // estimate time-of-flight and calculate residual between the predicted and the hit times
 // 2017-03-31 P.M.: this assumes electron (e^- or e^+), not muon
 //-----------------------------------------------------------------------------
-            tof = (zcl-zstraw)/_sinPitch/CLHEP::c_light;
+            tof = (zcl-zstraw)/_sinPitch/(CLHEP::c_light*_beta);
             dt  = cl_time-(time+tof-meanDriftTime);
 //--------------------------------------------------------------------------------
 // check the angular distance from the calorimeter cluster

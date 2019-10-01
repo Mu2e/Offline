@@ -1,0 +1,332 @@
+// Yuri Oksuzian, March 2019
+// Include this for beam_g4s1MT_phase1.fcl
+// Yuri: turned off extinction monitor output streams
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+# Mu2eG4 cuts
+
+
+dsRegionCuts: {
+   type: intersection
+   pars: [
+      // Plane on the west side, outside of the wall
+      { type: plane normal: [  0, 0, 1 ] point : [ 0, 0, -4851 ] },
+
+      // Yuri's e-mail 2015-04-10: x=1612. from CRV considerations.
+      // This is also large enought to enclose TS3 (its half length is 975 mm).
+      // Yuri: Moved the plane to cover all the shielding from stage 1.
+     { type: plane normal: [ -1, 0, 0 ] point : [ 2800., 0, 0 ] },
+
+      // Make sure the muon beam reaches our DS2Vacuum stopping volume
+      {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
+
+      // This union splits the output of the above cuts
+      // into two exclusive streams
+      { type: union pars:  [
+	    {
+	       type: intersection
+	       pars: [
+		  { type: inVolume pars: [DS2Vacuum] },
+		  { type: isCharged }
+	       ]
+	       write: mubeam
+	    },
+            {  type: constant
+               value: true
+               write: dsregion
+            }
+         ]
+      }
+   ]
+}
+
+extMonRegionCuts: {
+   type: intersection
+   pars: [
+      {
+         type: plane
+         normal: @local::mu2eg4BeamDumpNormal
+         // Dump core center: (661.90,  527.40, -19428.2)
+	 // A plane 950 mm beyond the core center as measured along
+	 // the "beam" direction normal to the dump face.
+	 // DeltaZ = L/cos(13.72 degrees)
+         point: [ 661.90, 527.40, -20406.10 ]
+      },
+
+      // Split the output of the "plane" cut above into two exclusive streams
+      { type: union pars:  [
+
+            {  type: intersection
+	       pars: [
+		  {
+		     type: inVolume
+		     pars:
+		     [  collimator1Channel,
+			HallAir,
+			ExtMonFNALfilterMagnetAperture,
+			ExtMonFNALfilterMagnetApertureMarginUp,
+			ExtMonFNALfilterMagnetApertureMarginDn
+		     ]
+		  },
+		  { type: isCharged }
+	       ]
+               write: extmonbeam
+            },
+
+            { type: constant  value: true       write: extmonregion }
+         ]
+      }
+   ]
+}
+#----------------------------------------------------------------
+END_PROLOG
+
+#================================================================
+# Give this job a name.
+process_name :  beamg4s1
+
+source : {
+   module_type : EmptyEvent
+   maxEvents : @nil
+}
+
+services : {
+
+   message               : @local::default_message
+   TFileService          : { }
+   RandomNumberGenerator : { }
+
+   GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_current.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   analyzers: {
+      genCountLogger: {
+         module_type: GenEventCountReader
+      }
+
+      collectionSizes: {
+	 module_type: CollectionSizeAnalyzer
+         useModuleLabel: true useInstanceName: true useProcessName: false
+      }
+   }
+
+   producers: {
+
+      generate: {
+         module_type          : PrimaryProtonGun
+      }
+
+      genCounter: {
+         module_type: GenEventCounter
+      }
+
+      g4run : {
+         module_type: Mu2eG4
+         physics: @local::mu2eg4DefaultPhysics
+         ResourceLimits: @local::mu2eg4DefaultResourceLimits
+	 TrajectoryControl: @local::mu2eg4NoTrajectories
+         debug: @local::mu2eg4DefaultDebug
+         visualization: @local::mu2eg4NoVisualization
+
+         generatorModuleLabel: generate
+         MultiStageParameters: {} // this is the first stage
+
+         SDConfig: {
+            enableSD: [ virtualdetector ] // activate just the explicitly listed SDs
+            TimeVD: { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
+
+         Mu2eG4SteppingOnlyCut: {}
+
+         // Mu2eG4 cuts are evaluated in the listed order.
+         // The first match wins.  For the "intersection"
+         // type, the first false stops the evaluation.
+         // For the "union" type the first true stops the evaluation.
+         Mu2eG4CommonCut: {
+            type: union
+            pars: [
+               @local::mu2eg4CutDeltaElectrons, // 8% speed up from killing electrons with Ek<1 MeV
+               @local::dsRegionCuts
+//               @local::extMonRegionCuts
+            ]
+         }
+      }
+
+      compressPVmuonBeam : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "muonBeamFilter" ]
+      }
+
+      compressPVdsRegion : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "dsRegionFilter" ]
+      }
+
+      compressPVextmonBeam : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "extmonBeamFilter" ]
+      }
+
+      compressPVextmonRegion : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "extmonRegionFilter" ]
+      }
+
+      compressPVFull : {
+         module_type: CompressPhysicalVolumes
+         volumesInput : "g4run"
+         hitInputs : []
+         particleInputs : [ "g4run" ]
+      }
+   }
+
+   filters: {
+      muonBeamFilter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:mubeam" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         vetoDaughters: []
+      }
+
+      dsRegionFilter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:dsregion" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         vetoDaughters: []
+      }
+
+      extmonBeamFilter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:extmonbeam" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         vetoDaughters: []
+      }
+
+      extmonRegionFilter: {
+         module_type: FilterG4Out
+         mainHitInputs : [ "g4run:extmonregion" ]
+         extraHitInputs : [ "g4run:virtualdetector" ]
+         vetoDaughters: []
+      }
+
+      g4status: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 1  #  status 2 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+
+      g4consistent: {
+         module_type: FilterStatusG4
+         input: "g4run"
+	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
+      }
+   }
+
+   trigmubeam : [generate, genCounter, g4run, g4consistent, muonBeamFilter, compressPVmuonBeam]
+   trigdsregion : [generate, genCounter, g4run, g4consistent, dsRegionFilter, compressPVdsRegion]
+//   trigextmonbeam : [generate, genCounter, g4run, g4consistent, extmonBeamFilter, compressPVextmonBeam]
+//   trigextmonregion : [generate, genCounter, g4run, g4consistent, extmonRegionFilter, compressPVextmonRegion]
+   g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
+//   trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
+   trigger_paths  : [trigmubeam, trigdsregion, g4StatusFilter]
+
+   outputs: [truncatedEvtsOutput, mubeamout, dsout]
+   an: [ genCountLogger, collectionSizes ]
+   end_paths: [outputs, an]
+}
+
+outputs: {
+
+   mubeamout : {
+      module_type : RootOutput
+      SelectEvents: ["trigmubeam"]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_muonBeamFilter_*_*",
+         "keep *_compressPVmuonBeam_*_*"
+      ]
+   }
+
+   dsout : {
+      module_type : RootOutput
+      SelectEvents: ["trigdsregion"]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_dsRegionFilter_*_*",
+         "keep *_compressPVdsRegion_*_*"
+      ]
+   }
+
+   extmonbeamout : {
+      module_type : RootOutput
+      SelectEvents: ["trigextmonbeam"]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_extmonBeamFilter_*_*",
+         "keep *_compressPVextmonBeam_*_*"
+      ]
+   }
+
+   extmonregionout : {
+      module_type : RootOutput
+      SelectEvents: ["trigextmonregion"]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_extmonRegionFilter_*_*",
+         "keep *_compressPVextmonRegion_*_*"
+      ]
+   }
+
+   truncatedEvtsOutput : {
+      module_type : RootOutput
+      SelectEvents: ["g4StatusFilter"]
+      outputCommands:   [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_g4run_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
+         "keep *_compressPVFull_*_*"
+      ]
+   }
+
+}
+// Larger range cut for the first stage
+physics.producers.g4run.physics.minRangeCut : 1. // mm
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20

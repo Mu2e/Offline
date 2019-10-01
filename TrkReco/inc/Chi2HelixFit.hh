@@ -26,7 +26,7 @@ namespace mu2e
 {
 
   class Calorimeter;
-  class TTracker;
+  class Tracker;
 
   class Chi2HelixFit
   {
@@ -55,12 +55,12 @@ namespace mu2e
     void  refineFitXY  (RobustHelixFinderData& helixData, bool TargetCon, int weightMode=1);
     void  refineFitZPhi(RobustHelixFinderData& helixData, int weightMode=1);
 
-    void  setTracker    (const TTracker*    Tracker) { _tracker     = Tracker; }
+    void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
     void  setCalorimeter(const Calorimeter* Cal    ) { _calorimeter = Cal    ; }
     
     void  setRobustHelixFitter(RobustHelixFit *RHFit) { _rhfit = RHFit; }
 
-    const TTracker*            _tracker;
+    const Tracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
 

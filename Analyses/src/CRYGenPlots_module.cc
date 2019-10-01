@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "canvas/Utilities/InputTag.h"
@@ -182,8 +182,8 @@ void mu2e::CRYGenPlots::bookHists()
 {
   art::ServiceHandle<art::TFileService> tfs;
 
-  _hXZ = tfs->make<TH2F>("XZ", "XZ", 400, -2.0e5,  2.0e5, 400, -2.0e5, 2.0e5 );
-  _hY = tfs->make<TH1F>("Y", "Y", 400, -10.0e3, 20.0e3 );
+  _hXZ = tfs->make<TH2F>("XZ", "XZ", 500, -2.0e5,  2.0e5, 500, -2.0e5, 2.0e5 );
+  _hY = tfs->make<TH1F>("Y", "Y", 500, -15.0e3, 21.0e3 );
 
   _hKE = tfs->make<TH1F>("E", "E", 2000, 0, _keMax);
   _hTheta = tfs->make<TH1F>("Theta", "Theta",

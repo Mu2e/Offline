@@ -35,7 +35,7 @@ namespace mu2e {
 
   };
 
-  RanTest::RanTest(fhicl::ParameterSet const& pSet){
+  RanTest::RanTest(fhicl::ParameterSet const& pSet) : EDProducer{pSet} {
 
     produces<GenParticleCollection>();
 

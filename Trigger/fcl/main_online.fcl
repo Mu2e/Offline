@@ -1,0 +1,126 @@
+# -*- mode: tcl -*-
+# FHiCL document used to run the "driver" executable. To learn more
+#  about the FHiCL language, please look at
+#  cdcvs.fnal.gov/redmine/documents/327 , the "FHiCL Quick Start Guide"
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+#include "Trigger/fcl/templates.fcl"
+
+
+events_to_generate: 5
+#events_to_generate: 25
+
+
+run_number: 101
+
+fragment_receiver: {
+
+    # Parameters defining and configuring the fragment generator to be used
+    generator: Mu2eReceiver
+    ring_0_roc_count: 1
+    ring_0_timing_enabled: false
+    debug_print: false
+    verbose: false
+    raw_output_enable: false
+    raw_output_file: "mu2eReceiver.bin"
+
+    load_sim_file: true
+    use_detector_emulator: true
+
+    fragment_id: 0
+    board_id: 0
+}
+
+event_builder: {
+    expected_fragments_per_event: 1
+    use_art: true
+    print_event_store_stats: false
+    verbose: false
+    events_expected_in_SimpleQueueReader: @local::events_to_generate
+
+    max_fragment_size_bytes: 522705344
+    buffer_count: 20
+    end_of_data_wait_s: 0
+
+    # 24 Cores Total (mu2edaq01)
+    # art_analyzer_count: 1
+    #  art_analyzer_count: 18
+}
+
+######################################################################
+# The ART code
+######################################################################
+
+#services : @local::Services.Reco
+
+services : @local::Services.Reco
+
+physics:
+{
+    
+    producers : { @table::Trigger.producers 
+
+	makeSD:
+	{
+	    module_type: Mu2eProducer
+	    diagLevel: 0
+	    parseCAL: 0
+	    parseTRK: 1
+	}
+	
+	CaloDigiFromShower:
+	{
+	    module_type: Mu2eProducer
+	    diagLevel: 0
+	    parseCAL: 1
+	    parseTRK: 0
+	}
+	
+	
+    }
+    
+    filters   : { @table::Trigger.filters }
+    
+    analyzers : {  @table::Trigger.analyzers
+	
+	readTriggerInfo : { @table::Trigger.analyzers.ReadTriggerInfo
+	    nFilters      : 70
+	}
+	
+    }
+    
+    
+    e2: [ readTriggerInfo ]
+
+    end_paths: [ e2 ]
+
+}
+
+outputs:
+{
+    @table::Trigger.outputs
+    
+    out1:
+    {
+	module_type: FileDumperOutput
+	wantProductFriendlyClassName: true
+    }
+
+}
+
+source:
+{
+    module_type: OfflineFragmentReader
+    waiting_time: 900
+    resume_after_timeout: true
+}
+
+services.TFileService.fileName : "trig.root"
+services.scheduler.wantSummary: true
+
+process_name: Driver
+

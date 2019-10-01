@@ -115,6 +115,8 @@ Mixing : {
   }
    # input time maps from cut mix inputs.  All are needed
   protonTimeMaps : [ "flashMixerTrkCal:protonTimeMap", "PSMixerCRV:protonTimeMap", "DSMixerCRV:protonTimeMap"]
+  # cosmic time maps from primary generation
+  cosmicTimeMaps : ["cosmicTimeMapPrimary"]
   # calo tags.  flashMixer is different because they are filtered
   caloMixerTags : ["ootMixerTrkCal:calorimeter",
 		"protonMixerTrkCal:calorimeter",

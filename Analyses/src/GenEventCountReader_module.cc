@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Provenance.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "MCDataProducts/inc/GenEventCount.hh"
@@ -30,18 +30,29 @@ namespace mu2e {
     unsigned numSubRuns_;
     bool makeHistograms_;
   public:
-    explicit GenEventCountReader(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      fhicl::Atom<bool> makeHistograms{
+        fhicl::Name("makeHistograms"),
+          fhicl::Comment("Write out number of events and subruns as histograms, in addition to printing them out. "),
+          true
+          };
+    };
+
+    using Parameters = art::EDAnalyzer::Table<Config>;
+    explicit GenEventCountReader(const Parameters& conf);
+
     virtual void analyze(const art::Event&) override {}
     virtual void endSubRun(const art::SubRun& sr) override;
     virtual void endJob() override;
   };
 
   //================================================================
-  GenEventCountReader::GenEventCountReader(const fhicl::ParameterSet& pset)
-    : art::EDAnalyzer(pset)
+  GenEventCountReader::GenEventCountReader(const Parameters& conf)
+    : art::EDAnalyzer(conf)
     , numEvents_(0)
     , numSubRuns_(0)
-    , makeHistograms_(pset.get<bool>("makeHistograms", true))
+    , makeHistograms_(conf().makeHistograms())
   {}
 
   //================================================================

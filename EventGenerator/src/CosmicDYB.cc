@@ -12,8 +12,8 @@
 
 // Framework includes.
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -83,9 +83,6 @@ namespace mu2e
     // Number of lookup bins for DYBGenerator.
   , _ne ( config.getInt("cosmicDYB.nBinsE", 2000) )
   , _nth( config.getInt("cosmicDYB.nBinsTheta", 200) )
-
-    // Time range (in ns) over which to generate events.
-  , _dt ( 0.0 )
 
     , _randFlat{engine}
     , _randPoissonQ{engine, std::abs(_mean)}
@@ -170,24 +167,6 @@ namespace mu2e
     // Access conditions data.
     ConditionsHandle<AcceleratorParams> accPar("ignored");
     ConditionsHandle<DAQParams>         daqPar("ignored");
-
-    // Start time for generation is a little before the start time
-    // of the DAQ system.
-    double offset = 100.;
-
-    // Start and end times for generation.
-    _tmin = (daqPar->t0 > offset)? daqPar->t0-offset : 0.;
-    _tmax = accPar->deBuncherPeriod;
-
-    //default can be overriden by user values
-    _tmin = config.getDouble("cosmicDYB.tMin", _tmin);
-    _tmax = config.getDouble("cosmicDYB.tMax", _tmax);
-
-    //tmin and tmax can be overriden by a constant time
-    _tmin = config.getDouble("cosmicDYB.constTime", _tmin);
-    _tmax = config.getDouble("cosmicDYB.constTime", _tmax);
-
-    _dt   = _tmax - _tmin;
 
     // convert to GeV
     _muEMin /= GeV;
@@ -378,10 +357,6 @@ namespace mu2e
 
       if(_verbose>1) std::cout << "starting position = " << pos << std::endl;
 
-      // pick a random starting time, unless a constant time was set
-      double time = _tmin;
-      if(_dt>0) time += _dt*_randFlat.fire();
-
       // Pick a random charge.
       // implement a rough charge asymmetry
       double logP = log10(p)-3.;
@@ -394,8 +369,8 @@ namespace mu2e
 
       PDGCode::type pid = (_randFlat.fire() > asym/(1+asym) ) ? PDGCode::mu_minus : PDGCode::mu_plus;
 
-      // Add the muon to the list.
-      genParts.push_back(GenParticle(pid, GenId::cosmicDYB, pos, mom, time));
+      // Add the muon to the list. time = 0.0
+      genParts.push_back(GenParticle(pid, GenId::cosmicDYB, pos, mom, 0.0));
 
     }
   }

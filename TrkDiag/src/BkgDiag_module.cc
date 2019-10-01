@@ -12,7 +12,7 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // root 
 #include "TMath.h"
 #include "TH1F.h"
@@ -234,7 +234,7 @@ namespace mu2e
 	_bkgqualvars[ivar] = qual[static_cast<BkgQual::MVA_varindex>(ivar)];
       }
       _mvaout = qual.MVAOutput();
-      _mvastat = qual.status();
+      _mvastat = (Int_t)qual.status();
       // info on nearest cluster
       _mindt = _mindrho = 1.0e3;
       for(size_t jbkg = 0; jbkg < _bkgccol->size(); ++jbkg){
@@ -401,7 +401,7 @@ namespace mu2e
 	  art::Ptr<SimParticle> sppj = *jpp;
 	  if(sppj->genParticle().isNull()){
 	    // call the particles 'the same' if they are related and were produced near each other
-	    MCRelationship::relation rel = MCRelationship::relationship(sppi,sppj);
+	    MCRelationship rel(sppi,sppj);
 	    if(rel==MCRelationship::daughter || rel == MCRelationship::udaughter){
 	      spmap[sppi] = sppj;
 	      break;
@@ -503,7 +503,8 @@ namespace mu2e
     if(spmcp.isNonnull() && pptr.isNonnull()){
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       if(spp.isNonnull()){
-	shinfo._relation = MCRelationship::relationship(spp,pptr);
+	 MCRelationship rel(spp,pptr);
+	 shinfo._relation = rel.relationship();  
       }
     }
   }

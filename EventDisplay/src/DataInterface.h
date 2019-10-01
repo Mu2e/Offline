@@ -15,6 +15,8 @@
 #include "EventDisplay/src/ContentSelector.h"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
+#include "Mu2eBTrk/inc/ParticleInfo.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Event.h"
 #include "boost/shared_ptr.hpp"
 #include <TObject.h>
@@ -67,13 +69,14 @@ class DataInterface
   std::list<boost::shared_ptr<VirtualShape> >       _components;
   std::map<int, boost::shared_ptr<Straw> >          _straws;
   std::map<int, boost::shared_ptr<VirtualShape> >   _crystals;
+  std::map<int, boost::shared_ptr<Cube> >           _crvscintillatorbars;
   std::vector<boost::shared_ptr<Straw> >        _hits;
   std::vector<boost::shared_ptr<VirtualShape> > _crystalhits;
   std::vector<boost::shared_ptr<Cylinder> >     _driftradii;
   std::vector<boost::shared_ptr<Track> >        _tracks;
+  std::vector<boost::shared_ptr<Cube> >         _crvhits;
   std::vector<boost::shared_ptr<VirtualShape> > _supportstructures;
   std::vector<boost::shared_ptr<VirtualShape> > _otherstructures;
-  std::vector<boost::shared_ptr<Cube> >         _crvscintillatorbars;
   std::vector<boost::shared_ptr<VirtualShape> > _mbsstructures;
   std::vector<boost::shared_ptr<Cone> > _mecostylepastructures;
   CLHEP::Hep3Vector _detSysOrigin;
@@ -93,6 +96,8 @@ class DataInterface
   bool _showOthers;
   mu2e::StrawHitFlag _hitFlagSetting;
 
+  std::unique_ptr<mu2e::ParticleInfo> _particleInfo;
+
   void createGeometryManager();
   void removeAllComponents();
   void removeNonGeometryComponents();
@@ -103,8 +108,7 @@ class DataInterface
   void toForeground();
   void findTrajectory(boost::shared_ptr<ContentSelector> const &contentSelector,
                       boost::shared_ptr<Track> const &track, const cet::map_vector_key &id,
-                      double t1, double t2,
-                      const mu2e::SimParticleCollection *simParticles,
+                      double timeOffset,
                       const ContentSelector::trackInfoStruct &trackInfo);
   struct trajectoryStruct
   {
@@ -120,7 +124,7 @@ class DataInterface
   void startComponents();
   void updateComponents(double time, boost::shared_ptr<ContentSelector> contentSelector);
   void fillGeometry();
-  void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector);
+  void fillEvent(boost::shared_ptr<ContentSelector> const &contentSelector, const mu2e::SimParticleTimeOffset &timeOffsets);
   void makeSupportStructuresVisible(bool visible);
   void makeOtherStructuresVisible(bool visible);
   void makeCrvScintillatorBarsVisible(bool visible);

@@ -33,6 +33,8 @@ namespace mu2e
     double                                      GetEndTime() const       {return _endTime;}
     int                                         GetPEs() const           {return _PEs;}
     const std::vector<art::Ptr<CrvRecoPulse> > &GetCrvRecoPulses() const {return _crvRecoPulses;}
+    // allow setting the Ptrs for reco compression
+    void SetCrvRecoPulses(std::vector<art::Ptr<CrvRecoPulse> > const& pulses) { _crvRecoPulses = pulses; }
 
     private:
 
@@ -43,6 +45,7 @@ namespace mu2e
     int                                  _PEs;
     std::vector<art::Ptr<CrvRecoPulse> > _crvRecoPulses;
   };
+  typedef std::vector<mu2e::CrvCoincidenceCluster> CrvCoincidenceClusterCollection;
 }
 
 #endif /* RecoDataProducts_CrvCoincidenceCluster_hh */

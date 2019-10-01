@@ -21,7 +21,7 @@
 #include <functional>
 #include <iostream>
 // art
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 using CLHEP::Hep3Vector;
 using CLHEP::HepSymMatrix;
@@ -46,6 +46,7 @@ namespace mu2e {
       AmbigResolver(tmpErr),
       _minsep(pset.get<double>("minChisqSep",4.0)),
       _inactivepenalty(pset.get<double>("inactivePenalty",16.0)),
+      _nullpenalty(pset.get<double>("NullHitPenalty",0.0)),
       _penaltyres(pset.get<double>("PenaltyResolution",0.25)),
       _trkpenaltyres(pset.get<double>("TrackPenaltyResolution",0.5)),
       _addtrkpos(pset.get<bool>("AddTrackPositionConstraint",true)),
@@ -54,7 +55,7 @@ namespace mu2e {
       _maxnpanel(pset.get<unsigned>("MaxHitsPerPanel",8)),
       _diag(pset.get<int>("DiagLevel",0))
     {
-      double nullerr = pset.get<double>("NullAmbigPenalty",0.0);
+      double nullerr = pset.get<double>("ExtraNullAmbigError",0.0);
       _nullerr2 = nullerr*nullerr;
       std::vector<int> allowed = pset.get< std::vector<int> >("AllowedHitStates");
       for(std::vector<int>::iterator ial = allowed.begin();ial != allowed.end();++ial){
@@ -268,6 +269,7 @@ namespace mu2e {
 	      r = 0.; // inactive hits don't depend on time
 	      v = 0.;
 	      w = 1.0/(1.0/w + _nullerr2); // increase the error on 0 ambiguity hits
+	      chi2penalty += _nullpenalty;
 	    }
 	    double u = tshui._upos + r;
 	    wsum += w;

@@ -26,7 +26,7 @@ physics : {
       # run g4sim all the way through the detector
       @table::simulation.default.mod
       # proton and muon time, proton bunch summarizer
-      @table::timeSimulation.beam.mod
+      @table::timeSimulation.all.mod
       #digis
       @table::digis.straw.mod
       @table::digis.cal.mod
@@ -45,7 +45,7 @@ physics : {
     all_path : [ 
       @sequence::generation.CE.seq , 
       @sequence::simulation.default.seq , 
-      @sequence::timeSimulation.beam.seq , 
+      @sequence::timeSimulation.all.seq , 
       @sequence::digis.straw.seq , 
       @sequence::digis.cal.seq ,
       #@sequence::digis.crv.seq ,

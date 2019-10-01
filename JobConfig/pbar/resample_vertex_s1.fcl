@@ -1,0 +1,205 @@
+// Andrei Gaponenko, 2013
+// Jake Colston & Joseph Brock, 2015 (edit for cd3)--> rhb adapts for antiprotons
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+protonInteractionFile: @nil
+END_PROLOG
+
+BEGIN_PROLOG
+pbars0out: {
+   type: pdgId
+   pars: [ -2212 ]  # stop and save pbars
+   write: pbars1
+}
+
+// Energy cut on everything.  Very conservative: 2*m_proton.
+pbars0EkCuts: {  type: kineticEnergy  cut: 1876. } // MeV
+
+// Energy cuts on electron, positron, photon, and neutron.
+CutEPPhN : {
+    type : intersection
+    pars : [ { type: kineticEnergy cut: 100.0 },
+             { type: pdgId pars: [ 11, -11, 22, 2112 ] } ]
+}
+
+END_PROLOG
+
+# Give this job a name.
+process_name : pbars1
+
+source : { 
+    module_type : EmptyEvent maxEvents: @nil
+}
+
+services : {
+    message                : @local::default_message
+    TFileService           : { fileName : "nts.owner.pbar_s1_toVD91.version.sequencer.root" }
+    RandomNumberGenerator  : {}
+    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
+    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+    G4Helper               : {}
+    SeedService            : @local::automaticSeeds
+}
+
+physics : {
+
+    producers : {
+
+        g4run : {
+
+            module_type       : Mu2eG4
+            physics           : @local::mu2eg4DefaultPhysics
+            ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+            TrajectoryControl : @local::mu2eg4NoTrajectories
+            debug             : @local::mu2eg4DefaultDebug
+            visualization     : @local::mu2eg4NoVisualization
+
+            MultiStageParameters : {
+                 simParticleNumberOffset : 1000000
+                 genInputHits               : ["pbarWrite"]
+                 inputSimParticles          : "pbarWrite"
+                 inputMCTrajectories        : ""
+                 inputPhysVolumeMultiInfo   : ""
+          }
+
+            doWriteLegacyPhysVolumeInfo : false
+
+            SDConfig : {
+                enableSD         : [ virtualdetector ] // activate just the explicitly listed SDs
+                TimeVD           : { times : [] }
+            }
+
+            // Mu2eG4 cuts are evaluated in the listed order.
+            // The first match wins.  For the "intersection"
+            // type, the first false stops the evaluation.
+            // For the "union" type the first true stops the evaluation.
+            Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+            Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+            Mu2eG4CommonCut : {
+                type : union
+                pars : [
+                    @local::CutEPPhN,
+                    { type: inVolume pars: [ HallAir ] },
+                   {
+		      type: intersection
+		      pars: [
+     		     {
+                        type  : inVolume
+                        pars  : [VirtualDetector_PSPbarIn]
+		     },
+		     {
+			type: pdgId
+			pars: [ -2212 ]
+		     }
+		     ]
+                        write : VirtualDetectorPSPbarIn
+                    }
+                ]
+            }
+
+ 
+            SimParticlePrinter : {
+                enabled       : false
+                primariesOnly : false
+                prefix        : "SimParticle : "
+            }
+        } // g4run
+
+ 
+        compressPV : {
+            module_type    : CompressPhysicalVolumes
+            volumesInput   : "g4run"
+            hitInputs      : []
+            particleInputs : [ "g4filter" ]
+        }
+
+      pbarWrite : {
+         module_type          : PrimaryAntiProtonGun
+	 verbosityLevel: 0
+	 pLowFlat: 0.
+	 pHighFlat: 9000.
+         inputModuleLabel: mixread
+  	 doHistograms: true
+	 }
+
+      genCounter: { module_type : GenEventCounter }
+
+    } // producers
+
+    analyzers : {
+        genCountLogger : {
+            module_type : GenEventCountReader
+        }
+        readAntiProtonSteps : {
+             module_type : ReadAntiProtonSteps
+             savePDG : [-2212]
+             psVacuumStepPoints : "VirtualDetectorPSPbarIn"
+             generatorModuleLabel : "mixread"
+             g4ModuleLabel : "g4run"
+             diagLevel          : 0
+      }
+
+
+    } // analyzers
+
+    filters : {
+        g4filter : {
+            module_type               : FilterG4Out
+            mainHitInputs             : [ "g4run:VirtualDetectorPSPbarIn" ]
+            extraHitInputs            : [ "g4run:virtualdetector"]
+            vetoDaughters             : []
+        }
+
+      mixread: {
+	 module_type: ResamplingMixer
+	 fileNames: @local::protonInteractionFile
+         readMode: "randomNoReplace"
+         wrapFiles: true
+
+	 // detail
+	 mu2e: {
+	    products: {
+	       genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	       simParticleMixer: { mixingMap: [ [ "g4run", "" ] ] }
+	    }
+	 }
+
+      }
+    } // filters
+
+
+    trigFilter    : [ genCounter,mixread,pbarWrite,g4run,g4filter] //compressPV removed since doesn't work with mixing
+    trigger_paths : [ trigFilter]
+
+    e1        : [ filterOutput , readAntiProtonSteps,genCountLogger]
+
+    end_paths : [ e1 ]
+} // physics
+
+outputs : {
+   filterOutput     : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "drop *_*_*_*",
+                         "keep mu2e::GenParticles_*_*_*",
+                         "keep *_g4filter_*_*" ]
+      fileName       : "sim.owner.pbar_s1toVD91.version.sequencer.art"
+   }
+
+}
+
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+//physics.filters.mixread.fileNames : @local::protonInteractionFile
+// Limit the rate of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+// Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
+#services.SeedService.baseSeed          : 0
+#services.SeedService.maxUniqueEngines  : 20

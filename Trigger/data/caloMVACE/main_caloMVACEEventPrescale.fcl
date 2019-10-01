@@ -1,0 +1,2 @@
+physics.filters.caloMVACEEventPrescale.nPrescale    : 1
+physics.filters.caloMVACEEventPrescale.triggerFlag  : ["PrescaleRandom"]

@@ -59,9 +59,9 @@ namespace mu2e {
     _spHelper()
   {
     if( (!tvd_time_.empty()) && (G4Threading::G4GetThreadId() <= 0) ) {
-        cout << "Time virtual detector is enabled. Particles are recorded at";
-        for( unsigned int i=0; i<tvd_time_.size(); ++i ) cout << " " << tvd_time_[i];
-            cout << " ns" << endl;
+        G4cout << "Time virtual detector is enabled. Particles are recorded at";
+        for( unsigned int i=0; i<tvd_time_.size(); ++i ) G4cout << " " << tvd_time_[i];
+            G4cout << " ns" << G4endl;
     }
   }//end ctor
 
@@ -74,6 +74,7 @@ namespace mu2e {
                                       double globalTime ){
 
       // It is easier to line up printout in columns with printf than with cout.
+      // fixme use G4cout to be compatible with MT
       printf ( "%-8s %4d %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %15.4f %13.4f %13.4f\n",
               s.data(), id,
               pos.x(), pos.y(), pos.z(),
@@ -168,13 +169,22 @@ namespace mu2e {
       
       // Get information about this track.
       G4int id = track->GetTrackID();
-      
+
       // If no tracks are listed, then printout for all tracks.
       // If some tracks are listed, then printout only for those tracks.
       if ( _debugTrackList.size() > 0 ){
           if ( !_debugTrackList.inList(id) ) return;
       }
       
+      const G4DynamicParticle*  pParticle = track->GetDynamicParticle();
+      double theKEnergy  = pParticle->GetKineticEnergy();
+      const G4ThreeVector& theMomentumDirection = pParticle->GetMomentumDirection();
+      G4int prec = G4cout.precision(15);
+      G4cout << __func__ << " KE " << theKEnergy
+             << " Momentum direction " << theMomentumDirection
+             << G4endl;
+      G4cout.precision(prec);
+
       // Momentum at the the pre point.
       G4ThreeVector const& mom = prept->GetMomentum();
       
@@ -194,7 +204,7 @@ namespace mu2e {
           postCopy   = postpt->GetPhysicalVolume()->GetCopyNo();
       }
       
-      // Status report.
+      // Status report. // fixme use G4cout to be compatible with MT
       printf ( "Step number: %d\n", numTrackSteps_ );
       
       printit ( "Pre: ", id,
@@ -219,8 +229,8 @@ namespace mu2e {
                );
       fflush(stdout);
       
-      cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << endl;
-      cout << "Post Volume and copy: " << postVolume << " " << postCopy << endl;
+      G4cout << "Pre  Volume and copy: " << preVolume  << " " << preCopy  << G4endl;
+      G4cout << "Post Volume and copy: " << postVolume << " " << postCopy << G4endl;
       
       printf ( "\n");
       fflush(stdout);
@@ -229,15 +239,16 @@ namespace mu2e {
 
 
   // Kill tracks that take too many steps.
-  bool Mu2eG4SteppingAction::killTooManySteps( const G4Track* track ){
+  bool Mu2eG4SteppingAction::killTooManySteps( const G4Track* const track ){
       if(numTrackSteps_ <= mu2elimits_->maxStepsPerTrack()) {
           return false;
       }
       
       if ( stepLimitKillerVerbose_ ) {
-          cout << "Mu2eG4SteppingAction: kill particle pdg="
-               << track->GetDefinition()->GetPDGEncoding()
-               << " due to large number of steps." << endl;
+        G4cout << __func__ << " WARNING: kill particle in "
+               << track->GetStep()->GetPreStepPoint()->GetPhysicalVolume()->GetLogicalVolume()->GetName()
+               << " due to large number of steps." << G4endl;
+        Mu2eG4UserHelpers::printKilledTrackInfo(track);
       }
       
       ++numKilledTracks_;

@@ -57,17 +57,13 @@ namespace mu2e
 
     ConfigFileLookupPolicy                                     _resolveFullPath;
     std::vector<std::string>                                   _lookupTableFileNames;
+    std::vector<int>                                           _lookupTableReflectors;
     std::vector<std::string>                                   _lookupTableCRVSectors;
     std::vector<boost::shared_ptr<mu2eCrv::MakeCrvPhotons> >   _makeCrvPhotons;
 
     double      _scintillationYield;
     double      _scintillationYieldVariation;
     double      _scintillationYieldVariationCutoff;
-    double      _scintillatorBirksConstant;
-    double      _scintillatorRatioFastSlow;
-    double      _scintillatorDecayTimeFast;
-    double      _scintillatorDecayTimeSlow;
-    double      _fiberDecayTime;
 
     double      _startTime;             //StepPoint times before this time will be ignored to reduce computation times
                                         //(in particular by ignoring hits during the beam flash).
@@ -88,18 +84,15 @@ namespace mu2e
   };
 
   CrvPhotonGenerator::CrvPhotonGenerator(fhicl::ParameterSet const& pset) :
+    EDProducer{pset},
     _g4ModuleLabels(pset.get<std::vector<std::string> >("g4ModuleLabels")),
     _processNames(pset.get<std::vector<std::string> >("processNames")),
     _lookupTableFileNames(pset.get<std::vector<std::string> >("lookupTableFileNames")),
+    _lookupTableReflectors(pset.get<std::vector<int> >("reflectors")),
     _lookupTableCRVSectors(pset.get<std::vector<std::string> >("CRVSectors")),
     _scintillationYield(pset.get<double>("scintillationYield")),    //5000.0 photons per MeV
     _scintillationYieldVariation(pset.get<double>("scintillationYieldVariation")),    //20.0%
     _scintillationYieldVariationCutoff(pset.get<double>("scintillationYieldVariationCutoff")),    //20.0%
-    _scintillatorBirksConstant(pset.get<double>("scintillatorBirksConstant")), //0.126 mm/MeV
-    _scintillatorRatioFastSlow(pset.get<double>("scintillatorRatioFastSlow")), //1.0
-    _scintillatorDecayTimeFast(pset.get<double>("scintillatorDecayTimeFast")), //3.0 ns, includes WLS components in the scintillator
-    _scintillatorDecayTimeSlow(pset.get<double>("scintillatorDecayTimeSlow")), //100.0 ns, unknown, not used
-    _fiberDecayTime(pset.get<double>("fiberDecayTime")),     //7.4 ns
     _startTime(pset.get<double>("startTime")),               //0.0 ns
     _visibleEnergyAdjustmentFileName(pset.get<std::string>("visibleEnergyAdjustmentFileName")),
     _timeOffsets(pset.get<fhicl::ParameterSet>("timeOffsets", fhicl::ParameterSet())),
@@ -111,6 +104,8 @@ namespace mu2e
     if(_g4ModuleLabels.size()!=_processNames.size()) throw std::logic_error("ERROR: mismatch between specified selectors (g4ModuleLabels/processNames)");
 
     if(_lookupTableFileNames.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (lookupTableFileNames/CRVSectors)");
+    if(_lookupTableReflectors.size()!=_lookupTableCRVSectors.size()) throw std::logic_error("ERROR: mismatch between specified lookup tables (reflectors/CRVSectors)");
+
     ConfigFileLookupPolicy configFile;
     _visibleEnergyAdjustmentFileName = configFile(_visibleEnergyAdjustmentFileName);
 
@@ -133,11 +128,6 @@ namespace mu2e
       boost::shared_ptr<mu2eCrv::MakeCrvPhotons> &photonMaker=_makeCrvPhotons.back();
       photonMaker->LoadLookupTable(_resolveFullPath(_lookupTableFileNames[i]));
       photonMaker->SetScintillationYield(_scintillationYield);
-      photonMaker->SetScintillatorBirksConstant(_scintillatorBirksConstant);
-      photonMaker->SetScintillatorRatioFastSlow(_scintillatorRatioFastSlow);
-      photonMaker->SetScintillatorDecayTimeFast(_scintillatorDecayTimeFast);
-      photonMaker->SetScintillatorDecayTimeSlow(_scintillatorDecayTimeSlow);
-      photonMaker->SetFiberDecayTime(_fiberDecayTime);
       photonMaker->LoadVisibleEnergyAdjustmentTable(_visibleEnergyAdjustmentFileName);
       std::cout<<"CRV sector "<<i<<" ("<<_lookupTableCRVSectors[i]<<") uses "<<_makeCrvPhotons.back()->GetFileName()<<std::endl;
     }
@@ -248,7 +238,8 @@ namespace mu2e
                                         energyDepositedTotal,
                                         energyDepositedNonIonizing,
                                         step.stepLength(),
-                                        scintillationYieldAdjustment);
+                                        scintillationYieldAdjustment,
+                                        _lookupTableReflectors[CRVSectorNumber]);
 
           CrvPhotons &crvPhotons = (*crvPhotonsCollection)[step.barIndex()];
           for(int SiPM=0; SiPM<4; SiPM++)

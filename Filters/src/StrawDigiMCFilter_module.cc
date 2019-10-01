@@ -13,7 +13,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // Other includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Vector/ThreeVector.h"
@@ -43,6 +43,7 @@ namespace mu2e {
   };
 
   StrawDigiMCFilter::StrawDigiMCFilter(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     minndigi_(pset.get<unsigned>("MinNDigis")),
     minpmom_(pset.get<double>("MinParticleMom")),
     maxpmom_(pset.get<double>("MaxParticleMom")),
@@ -72,8 +73,10 @@ namespace mu2e {
       art::Ptr<SimParticle> const& sp = step->simParticle();
       CLHEP::Hep3Vector const& mom = step->momentum(); // cast to 3-vector
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << mom.mag() << std::endl;
-      auto pdgfnd = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId());
-      if(pdgfnd != pdgs_.end() && mom.mag() > minpmom_ && mom.mag() < maxpmom_ ){
+      bool goodpdg(true);
+      if(pdgs_.size() > 0)
+	goodpdg = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId()) != pdgs_.end();
+      if(goodpdg && mom.mag() > minpmom_ && mom.mag() < maxpmom_ ){
 	auto mapfnd = pmap.find(sp);
 	if(mapfnd == pmap.end()) 
 	  pmap[sp] = 1;

@@ -9,7 +9,7 @@
 //
 #ifndef mu2e_PanelAmbig_PanelAmbigStructs_HH
 #define mu2e_PanelAmbig_PanelAmbigStructs_HH
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/SymMatrix.h"
 #include "CLHEP/Matrix/Vector.h"
@@ -80,7 +80,7 @@ namespace mu2e {
     struct PanelInfo {
       PanelInfo() : _tupos(0.0), _tuerr(0.0), _tuwt(0.0), _nused(0), _nfree(0) {}
       // information from the track fit, excluding the hits from panel, projected into this panel's measurement direction
-      threevec _udir;  // u direction in detector coordinates
+      XYZVec _udir;  // u direction in detector coordinates
       Float_t _tupos; // hit position projected perpendicular to track direction WRT wire
       Float_t _tuerr; // track error projected into U coordinate
       Float_t _tuwt; // cache of track weight = 1/error^2

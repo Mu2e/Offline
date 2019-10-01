@@ -51,7 +51,7 @@ physics : {
   producers : {
     cryGen : {
       module_type : CRYEventGenerator
-      inputFile : "EventGenerator/defaultConfigs/othersCRYconfig.txt"
+      inputFile : "EventGenerator/defaultConfigs/defaultCRYconfig.txt"
     }
 
     g4run : 

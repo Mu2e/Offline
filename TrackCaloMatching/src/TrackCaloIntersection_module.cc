@@ -25,9 +25,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 
 // From the art tool-chain
@@ -93,9 +93,10 @@ namespace mu2e {
   public:
 
     explicit TrackCaloIntersection(fhicl::ParameterSet const& pset):
+      art::EDProducer{pset},
       _trkterToken{consumes<KalRepPtrCollection>(pset.get<std::string>("fitterModuleLabel"))},
       _downstream(pset.get<bool>("downstream")),
-      _diagLevel(pset.get<int>("diagLevel",0)),
+      _diagLevel(pset.get<int>("diagLevel")),
       _pathStep(pset.get<double>("pathStep")),
       _tolerance(pset.get<double>("tolerance")),
       _checkExit(pset.get<bool>("checkExit")),

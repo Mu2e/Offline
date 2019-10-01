@@ -1,6 +1,6 @@
 #include "Mu2eUtilities/inc/HistTrackSum.hh"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "TH1.h"
 

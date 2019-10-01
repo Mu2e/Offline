@@ -1,0 +1,75 @@
+//
+// config file to perform Geant4 calorimetric studies using the Mu2e framework infrastructure
+// to be included in g4studyGeom.txt
+//
+// Original author K. Genser
+//
+
+// Units are mm, MeV
+
+#include "Mu2eG4/test/g4study_Box_geom.txt"
+
+// Change the name.
+string detector.name           = "g4studyCalo_01";
+
+// overlaps check
+bool g4.doSurfaceCheck         = true;
+
+// version of the target geometry configuration
+
+// int            mu2e.studyEnvVersion      = 3;
+
+// the "World Box"
+
+// a very "thin" vacuum
+string world.materialName        = "G4_Galactic";
+
+// make the world boundaries invisible
+bool   world.boxVisible          = false;
+// make the volume transparent
+bool   world.boxSolid            = false;
+
+double world.halfLength          = 2000.0;
+double world.outerLayerThickness = 0.001;// the world "outer layer" to force a step point
+
+// copyNumber for volume tracking purposes
+// 0 & 1 are World and an auxiliary 
+// volume almost filling up the world
+
+// calorimeter type target with the dimensions and materials specified by vectors of data
+
+// verbosity 
+int    calo.verbosityLevel         = 1;
+
+bool   calo.visible = true;
+bool   calo.solid   = true;
+
+vector<double> calo.transverseHalfLengths   = {200.,200.}; // mm
+vector<double> calo.transverseCenterInWorld = {0., 0.};
+
+// the copy numbers will increase by one starting from then numbers below (0 & 1 are taken...)
+
+int            calo.activeVolumeStartingCopyNumber  = 100;
+int            calo.passiveVolumeStartingCopyNumber = 201;
+
+// we make the world big enough to start the first surface at z=0.0
+
+double         calo.frontScintStartingLongitPosition   =   0.0;
+vector<double> calo.frontScintLayerHalfLengths = {3.}; // mm
+vector<string> calo.frontScintLayerMaterials  = {"G4_POLYSTYRENE"};
+
+double         calo.frontModuleStartingLongitPosition  =   6.0;
+int            calo.frontModuleNumberOfLayers  = 20;
+vector<double> calo.frontModuleLayerHalfLengths = {3.,3.}; // mm
+vector<string> calo.frontModuleLayerMaterials  = {"G4_Pb", "G4_POLYSTYRENE"};
+
+double         calo.rearModuleStartingLongitPosition   = 246.0;
+int            calo.rearModuleNumberOfLayers  = 49;
+vector<double> calo.rearModuleLayerHalfLengths = {12.5,3.}; // mm
+vector<string> calo.rearModuleLayerMaterials  = {"G4_Fe", "G4_POLYSTYRENE"};
+
+//
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:

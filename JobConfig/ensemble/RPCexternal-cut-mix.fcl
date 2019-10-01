@@ -1,0 +1,43 @@
+#
+# Natural RPC spectrum with background mixing
+#
+# 
+#
+#include "JobConfig/mixing/prolog.fcl"
+process_name: ensembleMix
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.RPCGun
+    @table::Mixing.producers
+  }
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+  TriggerPath : @local::Mixing.TriggerPath
+  EndPath : @local::Mixing.EndPath
+}
+outputs: { Output : @local::Mixing.Output }
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+
+physics.producers.generate.physics.generateIntConversion : 0
+physics.producers.generate.physics.elow : ${minE}
+physics.producers.generate.physics.ApplySurvivalProb : true
+physics.producers.generate.physics.SurvivalProbScaling : 4000
+physics.producers.generate.tmin : ${pionTMin}
+physics.producers.protonTimeMapPrimary.FixedModule : "generate"
+
+physics.filters.DigiFilter.particleTypes : ${particleTypes}
+physics.filters.DigiFilter.MinParticleMom : ${minMom}
+physics.producers.generate.doHistograms : false
+
+# customize the output
+services.TFileService.fileName: "nts.owner.RPCexternal-cut-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.RPCexternal-cut-mix.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+

@@ -35,11 +35,11 @@ namespace mu2e {
   void finishNesting(VolumeInfo& info,
                      G4Material* material,
                      G4RotationMatrix const* rot,
-                     G4ThreeVector const & offset,
+                     G4ThreeVector const& offset,
                      G4LogicalVolume* parent,
                      int copyNo,
                      bool const isVisible,
-                     G4Colour const color,
+                     G4Colour const& color,
                      bool const forceSolid,
                      bool const forceAuxEdgeVisible,
                      bool const placePV,
@@ -49,8 +49,8 @@ namespace mu2e {
 
     G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
     AntiLeakRegistry & reg = _helper.antiLeakRegistry();
-    GeometryService const & _geom(*(art::ServiceHandle<GeometryService>()));
-    SimpleConfig    const & _config(_geom.config());
+    GeometryService const& _geom(*(art::ServiceHandle<GeometryService>()));
+    SimpleConfig    const& _config(_geom.config());
 
     // the code below if activated prints the parameters of the solid
     // being placed

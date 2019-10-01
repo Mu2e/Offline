@@ -51,7 +51,6 @@ namespace mu2e
     double      _deadSiPMProbability;
     int         _nPixelsX;
     int         _nPixelsY;
-    int         _nPixelsRFiber;
     double      _overvoltage;
     double      _timeConstant;
     double      _capacitance;
@@ -66,22 +65,26 @@ namespace mu2e
     CLHEP::HepRandomEngine& _engine;
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandPoissonQ _randPoissonQ;
+
+    std::string             _photonMapFileName;
+    ConfigFileLookupPolicy  _resolveFullPath;
   };
 
   CrvSiPMChargeGenerator::CrvSiPMChargeGenerator(fhicl::ParameterSet const& pset) :
+    EDProducer{pset},
     _crvPhotonsModuleLabel(pset.get<std::string>("crvPhotonsModuleLabel")),
     _deadSiPMProbability(pset.get<double>("deadSiPMProbability")),   //0.01
     _nPixelsX(pset.get<int>("nPixelsX")),                            //40
     _nPixelsY(pset.get<int>("nPixelsY")),                            //40
-    _nPixelsRFiber(pset.get<int>("nPixelsRFiber")),                  //14
-    _overvoltage(pset.get<double>("overvoltage")),                   //2.1V
+    _overvoltage(pset.get<double>("overvoltage")),                   //3.0V
     _timeConstant(pset.get<double>("timeConstant")),                 //12.0ns
     _capacitance(pset.get<double>("capacitance")),                   //8.84e-14F (per pixel)
     _blindTime(pset.get<double>("blindTime")),                       //500ns
     _inactivePixels(pset.get<std::vector<std::pair<int,int> > >("inactivePixels")),      //{18,18},....,{21,21}
     _engine{createEngine(art::ServiceHandle<SeedService>()->getSeed())},
     _randFlat{_engine},
-    _randPoissonQ{_engine}
+    _randPoissonQ{_engine},
+    _photonMapFileName(pset.get<std::string>("photonMapFileName"))
   {
     produces<CrvSiPMChargesCollection>();
     _probabilities._avalancheProbParam1 = pset.get<double>("AvalancheProbParam1");  //0.65
@@ -92,14 +95,16 @@ namespace mu2e
     _probabilities._trapType1Lifetime = pset.get<double>("TrapType1Lifetime");      //50.0ns
     _probabilities._thermalRate = pset.get<double>("ThermalRate");                  //3.0e-4 ns^-1   300MHz for entire SiPM
     _probabilities._crossTalkProb = pset.get<double>("CrossTalkProb");              //0.05
+
+    std::string fullPhotonMapFileName(_resolveFullPath(_photonMapFileName));
+    _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ, fullPhotonMapFileName));
   }
 
   void CrvSiPMChargeGenerator::beginRun(art::Run &run)
   {
     mu2e::ConditionsHandle<mu2e::AcceleratorParams> accPar("ignored");
     _microBunchPeriod = accPar->deBuncherPeriod;
-    _makeCrvSiPMCharges = boost::shared_ptr<mu2eCrv::MakeCrvSiPMCharges>(new mu2eCrv::MakeCrvSiPMCharges(_randFlat, _randPoissonQ));
-    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _nPixelsRFiber, _overvoltage, _blindTime, _microBunchPeriod,
+    _makeCrvSiPMCharges->SetSiPMConstants(_nPixelsX, _nPixelsY, _overvoltage, _blindTime, _microBunchPeriod,
                                             _timeConstant, _capacitance, _probabilities, _inactivePixels);
   }
 

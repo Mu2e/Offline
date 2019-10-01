@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CrvDigiCollection_hh
-#define MCDataProducts_CrvDigiCollection_hh
+#ifndef RecoDataProducts_CrvDigiCollection_hh
+#define RecoDataProducts_CrvDigiCollection_hh
 
 //
 // $Id: $
@@ -10,12 +10,4 @@
 //
 
 #include "RecoDataProducts/inc/CrvDigi.hh"
-
-#include <vector>
-
-namespace mu2e 
-{
-  typedef std::vector<mu2e::CrvDigi> CrvDigiCollection;
-}
-
 #endif /* RecoDataProducts_CrvDigiCollection_hh */

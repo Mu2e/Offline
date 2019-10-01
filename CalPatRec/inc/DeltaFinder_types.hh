@@ -14,7 +14,7 @@ namespace fhicl {
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "TrackerGeom/inc/Straw.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 namespace mu2e {
   class Panel;
@@ -238,7 +238,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
     struct Data_t {
       const art::Event*             event;
-      const TTracker*               tracker;
+      const Tracker*                tracker;
       std::string                   strawDigiMCCollectionTag;
       std::string                   ptrStepPointMCVectorCollectionTag;
       std::vector<DeltaSeed*>       seedHolder [kNStations];

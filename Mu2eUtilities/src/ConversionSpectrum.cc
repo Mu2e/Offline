@@ -37,9 +37,14 @@ namespace mu2e {
     _par.me    = pdt->particle(PDGCode::e_minus ).ref().mass().value();
     _par.alpha = 1./137.035999139;
     _par.eMax  = maxEnergy;
-    _nbins     = maxEnergy/_bin ;
+    _nbins     = maxEnergy/_bin;
+    double de = _bin;
+    if (_nbins*_bin < maxEnergy){
+      _nbins += 1;
+      de = _par.eMax-_bin*(_nbins-1);
+    }
 					// calculate integral.... for n-1 bins;
-     _integral = evalIntegral(bin); 
+     _integral = evalIntegral(de); 
 
   }
 
@@ -64,14 +69,18 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------  
+// this function is called only from one place - BinnedSpectrum.hh
+// the whole thing is inconsistent, but assume that. for the caller, 
+// E represents the left edge of the bin, so need to shift it by half-bin
+// RJB - fixed so now BinnedSpectrum calls from bin center
+//-----------------------------------------------------------------------------
   double ConversionSpectrum::getWeight(double E) const {
     
     double weight(0.);
   
+    int    bin = E/_bin ; 
 
-    int bin  = E/_bin   ; 
-
-    if (bin < _nbins) {
+    if (bin < _nbins-1) {
       weight = _bin* getCorrectedConversionSpectrum(E);
     }
     else {

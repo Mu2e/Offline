@@ -28,9 +28,10 @@ namespace mu2e {
     };
 
     using Parameters = art::EDProducer::Table<Config>;
-    explicit CaloShowerUpdater(const Parameters& config)
-      : showerInput_(config().showerInput())
-      , newSimParticles_(config().newSimParticles())
+    explicit CaloShowerUpdater(const Parameters& config) :
+       art::EDProducer{config},
+       showerInput_(config().showerInput()),
+       newSimParticles_(config().newSimParticles())
     {
       produces<CaloShowerStepCollection>();
     }

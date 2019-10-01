@@ -14,8 +14,8 @@
 #
 # in geom_01.txt enable printing of process summary:
 # bool g4.printPhysicsProcessSummary = true;
-# and use a full "hadronic" physics list e.g. Shielding or FTFP_BERT_HP (or QGSP_BERT_HP)
-# string g4.physicsListName = "Shielding";
+# and use a full "hadronic" physics list e.g. ShieldingM or Shielding
+# physics.producers.g4run.physics.physicsListName : "ShieldingM"
 # 
 # in e.g.: g4test_03.fcl 
 # use ejectedProtonGun

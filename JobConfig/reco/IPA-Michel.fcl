@@ -1,0 +1,49 @@
+#
+# Reconstruct from Michel electrons from the IPA
+# David Brown (LBNL) 1 Feb 2019
+#
+#include "JobConfig/reco/mcdigis.fcl"
+
+# the following need to be overwritten for the specific channel
+services.TFileService.fileName: "nts.owner.RecoIPAMichel.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.RecoIPAMichel.versionIPA.sequencer.art"
+physics.producers.KSFDeM.MaxDoca : 80
+physics.producers.KSFDeM.FilterOutliers : true
+physics.producers.KSFDeM.KalFit.maxPull : 10
+physics.producers.KSFDeM.KalFit.maxhitchi : 10
+physics.producers.KSFDeM.KalFit.maxAddChi : 10
+physics.producers.KSFDeM.KalFit.rescueHits : true
+physics.producers.KSFDeM.ParameterErrors : [20.0, 0.1, 0.01, 20.0, 0.1]
+# find low-momentum helices 
+physics.producers.HelixFinderDe.targetconsistent_init : false
+physics.producers.HelixFinderDe.targetconsistent : false
+physics.producers.HelixFinderDe.RobustHelixFit.minCenterR : 300
+physics.producers.HelixFinderDe.RobustHelixFit.maxCenterR : 500
+physics.producers.HelixFinderDe.RobustHelixFit.minR : 100
+physics.producers.HelixFinderDe.RobustHelixFit.maxR : 200
+physics.producers.HelixFinderDe.RobustHelixFit.minAbsLambda : 50
+physics.producers.HelixFinderDe.RobustHelixFit.maxAbsLambda : 150
+physics.producers.HelixFinderDe.RobustHelixFit.minzsep : 40
+physics.producers.HelixFinderDe.RobustHelixFit.maxzsep : 200
+physics.producers.HelixFinderDe.RobustHelixFit.mindist : 50
+physics.producers.HelixFinderDe.RobustHelixFit.maxdist : 250
+physics.producers.HelixFinderDe.RobustHelixFit.minArea : 800
+##physics.producers.HelixFinderDe.minNHit : 40
+physics.producers.TimeClusterFinderDe.UseCaloCluster : true
+physics.producers.TimeClusterFinderDe.CaloClusterMinE : 10
+physics.producers.TimeClusterFinderDe.AveragePitch : 0.5
+# turn off the rest
+physics.producers.TimeClusterFinderDmu.ymin : 1e7
+physics.producers.TimeClusterFinderUe.ymin : 1e7
+physics.producers.TimeClusterFinderUmu.ymin : 1e7
+# primary finding
+physics.producers.FindMCPrimary.SinglePrimary : true
+# TPR downstream electrons only for now
+physics.producers.MHDeM.HelixFinders : ["HelixFinderDe:Positive"]
+physics.producers.MHDeP.HelixFinders : []
+physics.producers.MHDmuM.HelixFinders : []
+physics.producers.MHDmuP.HelixFinders : []
+# output filter update
+physics.filters.RecoFilter.TrkTags : [ "KFFDeM" ]
+physics.filters.RecoFilter.MomentumCutoff : [40.0]
+

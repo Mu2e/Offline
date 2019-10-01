@@ -1,0 +1,175 @@
+// Andrei Gaponenko, 2015
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+pbars0out: {
+   type: pdgId
+   pars: [ -2212 ]  # stop and save pbars
+   write: pbars0
+}
+
+// Energy cut on everything.  Very conservative: 2*m_proton.
+pbars0EkCuts: {  type: kineticEnergy  cut: 1876. } // MeV
+
+END_PROLOG
+
+# Give this job a name.
+process_name : pbars0
+
+source : {
+   module_type : EmptyEvent
+   maxEvents   : @nil
+}
+
+services : {
+   message               : @local::default_message
+   TFileService          : { fileName : "nts.owner.pbar_g4s0.version.sequencer.root" }
+   RandomNumberGenerator : { }
+
+   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   producers : {
+      generate : {
+         module_type : EventGenerator
+         inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
+      }
+    
+
+      genCounter: { module_type : GenEventCounter }
+
+      g4run : {
+         module_type       : Mu2eG4
+         physics           : @local::mu2eg4DefaultPhysics
+         ResourceLimits    : @local::mu2eg4DefaultResourceLimits
+         TrajectoryControl : @local::mu2eg4NoTrajectories
+         debug             : @local::mu2eg4DefaultDebug
+         visualization     : @local::mu2eg4NoVisualization
+
+         generatorModuleLabel : generate
+         MultiStageParameters : {} // This is the first stage
+
+         SDConfig: {
+            enableSD : [] // activate just the explicitly listed SDs
+            TimeVD   : { times: [] }
+         }
+
+         Mu2eG4StackingOnlyCut : @local::mu2eg4NoCut
+         // Mu2eG4 cuts are evaluated in the listed order.
+         // The first match wins.  For the "intersection"
+         // type, the first false stops the evaluation.
+         // For the "union" type the first true stops the evaluation.
+         Mu2eG4SteppingOnlyCut : {
+            type: union pars: [
+               @local::pbars0out,
+               @local::pbars0EkCuts,
+               { type: notInVolume pars: [ "ProductionTarget" ] }
+            ]
+         }
+         Mu2eG4CommonCut : @local::mu2eg4NoCut
+
+         SimParticlePrinter : {
+            enabled             : false
+            primariesOnly       : false
+            prefix              : "SimParticle: "
+         }
+
+      }
+
+     compressPV : {
+         module_type    : CompressPhysicalVolumes
+         volumesInput   : "g4run"
+         hitInputs      : []
+         particleInputs : [ "g4run" ]
+      }    
+ 
+ 
+   }
+
+   analyzers : {
+      genCountLogger : {
+         module_type : GenEventCountReader
+      }
+   }
+
+   filters: {
+      g4filter: {
+         module_type               : FilterG4Out
+         mainHitInputs             : [ "g4run:pbars0" ]
+         vetoDaughters             : []
+      }
+   }
+
+   trigFilter    : [ generate, genCounter, g4run, compressPV]
+   trigger_paths : [ trigFilter ]
+
+   e1        : [ genCountLogger, filteredOutput ]
+   end_paths : [ e1 ]
+}
+
+outputs: {
+   filteredOutput     : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "drop *_*_*_*",
+         "keep mu2e::GenParticles_*_*_*",
+         "keep mu2e::GenEventCount_*_*_*",
+         "keep mu2e::SimParticle*_*_*_*",
+         "keep mu2e::StatusG4_*_*_*",
+         "keep *_pbarWrite_*_*",
+         "keep *_compressPV_*_*" ]
+      fileName       : "sim.owner.pbar_s0.version.sequencer.art"
+   }
+
+   allOutput     : {
+      module_type    : RootOutput
+      SelectEvents   : ["trigFilter"]
+      outputCommands : [ "keep *_*_*_*" ]
+      fileName       : "sim.owner.pbar_s0_unfiltered.version.sequencer.art"
+   }
+
+
+}
+
+physics.producers.g4run.physics.minRangeCut : 1.0 // mm
+#physics.producers.g4run.physics.physicsListName: "FTFP_BERT_PBAR_MU2E02"
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+// Initialze seeding of random engines for an out-of-the-box test job.
+// Grid jobs will overwrite this to use different seeds.
+services.SeedService.baseSeed          : 0
+services.SeedService.maxUniqueEngines  : 20
+
+physics.producers.g4run.Mu2eG4SteppingOnlyCut : { }
+physics.producers.g4run.Mu2eG4CommonCut : {  
+   type: plane normal: [  0,  0, -1 ] point : [ 0, 0, -6500 ]
+}
+physics.producers.g4run.Mu2eG4StackingOnlyCut : { 
+   type: union
+   pars: [
+      {type: intersection pars: [ 
+	    {type: pdgId pars:  [ 2212,2112 ]}, 
+	    {type: kineticEnergy cut: 4000.0} 
+	 ] },
+      {type: intersection pars: [ 
+	    {type: pdgId pars:  [ 211, -211 ]}, 
+	    {type: kineticEnergy cut: 6000.0} 
+	 ] },
+      {type: notPdgId pars:  [ 2212,2112, 211, -211 ]}
+   ]
+
+}

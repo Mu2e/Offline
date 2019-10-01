@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -41,7 +41,10 @@ namespace mu2e {
   class WeightModule : public art::EDProducer {
     Phys _myPhys;
     public:
-    explicit WeightModule(const fhicl::ParameterSet& pset):_myPhys(pset) {
+    explicit WeightModule(const fhicl::ParameterSet& pset):
+      art::EDProducer{pset},
+      _myPhys(pset)
+    {
       produces<mu2e::EventWeight>();
     } ;
     virtual void produce(art::Event& event) {

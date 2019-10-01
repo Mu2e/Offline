@@ -18,7 +18,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 //ROOTs
@@ -50,9 +50,10 @@
 
 #include "RecoDataProducts/inc/TrkFitDirection.hh"
 
-#include "BTrkHelper/inc/BTrkHelper.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
+
 #include "ParticleID/inc/PIDUtilities.hh"
-#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -127,6 +128,8 @@ int findlowhist(float d){
     std::string _electronTemplateFile;
     std::string _muonTemplateFile;
 
+    ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
+
     TrkParticle _tpart;
     TrkFitDirection _fdir;
 
@@ -173,6 +176,7 @@ int findlowhist(float d){
   };
 
   ParticleID::ParticleID(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _fitterModuleLabel   (pset.get<string>("fitterModuleLabel")),
     _electronTemplateFile(pset.get<string>("ElectronTemplates")),
     _muonTemplateFile    (pset.get<string>("MuonTemplates"    )),
@@ -273,7 +277,9 @@ int findlowhist(float d){
 ////////// Produce ///////////
 
   void ParticleID::produce(art::Event& event) {
-    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
+
+    auto detmodel = _mu2eDetector_h.getPtr(event.id());
+
     _evtid = event.id().event();
     ++_processed_events;
     if (_processed_events%100 == 0) {
@@ -343,7 +349,7 @@ int findlowhist(float d){
            evflt.push_back(0.1);
 
            //      2. * here because KalmanFit reports half the path through gas.
-           const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
+           const DetStrawElem* strawelem = detmodel->strawElem(hit->straw());
            gaspaths.push_back(2. * strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction( hit->fltLen() )));
 
            edeps.push_back(hit->comboHit().energyDep());

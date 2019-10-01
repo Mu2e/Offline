@@ -9,7 +9,7 @@
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
@@ -109,7 +109,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    //    const StrawDigiMCCollection*          _listOfMcStrawHits;
     int                                   _nDeltaHitsTot;
     int                                   _nDeltaHitsReco;
     
@@ -538,7 +538,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	  _eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	  //	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	InitMcDiag();
 	associateMcTruth();
       }
@@ -671,10 +671,10 @@ namespace mu2e {
 	    // get the StrawDigi indices associated with this ComboHit
 	    std::vector<StrawDigiIndex> shids;
 	    _data->chcol->fillStrawDigiIndices(*(_data->event),ish,shids);
-	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_listOfMcStrawHits,shids[0]);//ish);
-	    //-----------------------------------------------------------------------------
-	    // search if this particle has already been registered
-	    //-----------------------------------------------------------------------------
+	    const mu2e::SimParticle* sim = _mcUtils->getSimParticle(_data->event,shids[0]);//ish);
+//-----------------------------------------------------------------------------
+// search if this particle has already been registered
+//-----------------------------------------------------------------------------
 	    McPart_t* mc = findParticle(sim);
 
 	    if (mc == NULL) {
@@ -900,7 +900,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	InitMcDiag();
 	associateMcTruth();
       }
@@ -1099,7 +1099,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);
@@ -1186,7 +1186,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);

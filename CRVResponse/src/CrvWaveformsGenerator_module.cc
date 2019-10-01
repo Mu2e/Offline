@@ -70,6 +70,7 @@ namespace mu2e
   };
 
   CrvWaveformsGenerator::CrvWaveformsGenerator(fhicl::ParameterSet const& pset) :
+    EDProducer{pset},
     _crvSiPMChargesModuleLabel(pset.get<std::string>("crvSiPMChargesModuleLabel")),
     _singlePEWaveformFileName(pset.get<std::string>("singlePEWaveformFileName")),
     _FEBtimeSpread(pset.get<double>("FEBtimeSpread")),         //2.0 ns (due to cable lengths differences, etc.)
@@ -83,7 +84,7 @@ namespace mu2e
   {
     double singlePEWaveformPrecision(pset.get<double>("singlePEWaveformPrecision"));    //1.0 ns
     double singlePEWaveformStretchFactor(pset.get<double>("singlePEWaveformStretchFactor"));    //1.047
-    double singlePEReferenceCharge(pset.get<double>("singlePEReferenceCharge")); //1.8564e-13 C (the charge which was used to generate the above 1PE waveform)
+    double singlePEReferenceCharge(pset.get<double>("singlePEReferenceCharge")); //2.652e-13 C (the charge which was used to generate the above 1PE waveform)
     ConfigFileLookupPolicy configFile;
     _singlePEWaveformFileName = configFile(_singlePEWaveformFileName);
     _makeCrvWaveforms = boost::shared_ptr<mu2eCrv::MakeCrvWaveforms>(new mu2eCrv::MakeCrvWaveforms());
@@ -140,7 +141,7 @@ namespace mu2e
 
         double startTime = floor(firstSiPMChargeTime / _digitizationPeriod) * _digitizationPeriod;  //start time of the waveform
                                                                                                     //in multiples of the
-                                                                                                    //digitization period (12.58ns)
+                                                                                                    //digitization period (12.55ns)
 
         startTime -= samplingPointShift;  //random shift of start time (same shift for all FEBs of this event)
 

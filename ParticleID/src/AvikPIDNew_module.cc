@@ -18,7 +18,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "fhiclcpp/ParameterSet.h"
 
 //ROOTs
@@ -52,9 +52,10 @@
 #include "ParticleID/inc/PIDUtilities.hh"
 #include "RecoDataProducts/inc/AvikPIDNewProductCollection.hh"
 
-#include "BTrkHelper/inc/BTrkHelper.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
+#include "TrackerConditions/inc/Mu2eDetector.hh"
+
 #include "TrkReco/inc/DoubletAmbigResolver.hh"
-#include "Mu2eBTrk/inc/Mu2eDetectorModel.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
@@ -84,6 +85,8 @@ namespace mu2e {
     string _eleDedxTemplateFile;
     string _muoDedxTemplates;
     string _muoDedxTemplateFile;
+
+    ProditionsHandle<Mu2eDetector> _mu2eDetector_h;
 
     TrkParticle     _tpart;
     TrkFitDirection _fdir;
@@ -244,6 +247,7 @@ namespace mu2e {
 
 //-----------------------------------------------------------------------------
   AvikPIDNew::AvikPIDNew(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _debugLevel             (pset.get<int>                ("debugLevel"          )),
     _diagLevel              (pset.get<int>                ("diagLevel"           )),
     _trkRecModuleLabel      (pset.get<string>             ("trkRecModuleLabel"   )),
@@ -404,19 +408,18 @@ namespace mu2e {
 
     for (int i=0; i<nhits; i++) {
 
-      const mu2e::TrkStrawHit* hit = static_cast<const mu2e::TrkStrawHit*>(hot_list.at(i));
+      const mu2e::TrkStrawHit* hit = dynamic_cast<const mu2e::TrkStrawHit*>(hot_list.at(i));
 
-      mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
+      if (hit) {
+	mu2e::Straw*   straw = (mu2e::Straw*) &hit->straw();
 
-      panelall[i] = straw->id().getPanel();
-      planeall[i] = straw->id().getPlane();
-      layall  [i] = straw->id().getLayer();
-      Nall    [i] = straw->id().getStraw();
-      //      strawall[i] = straw->index().asInt();
-      iamball [i] = hit->ambig();
-      //      hit->hitPosition(pos);
-      resgood [i] = hit->resid(hitres,hiterr,1);
-      //      resall  [i] = hitres;
+	panelall[i] = straw->id().getPanel();
+	planeall[i] = straw->id().getPlane();
+	layall  [i] = straw->id().getLayer();
+	Nall    [i] = straw->id().getStraw();
+	iamball [i] = hit->ambig();
+	resgood [i] = hit->resid(hitres,hiterr,1);
+      }
     }
 //-----------------------------------------------------------------------------
 // loop over the track hits
@@ -862,12 +865,10 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   void AvikPIDNew::produce(art::Event& event) {
 
-  // fetcth the DetectorModel
-    Mu2eDetectorModel const& detmodel{ art::ServiceHandle<BTrkHelper>()->detectorModel() };
+    auto detmodel = _mu2eDetector_h.getPtr(event.id());
 
     art::Handle<mu2e::KalRepPtrCollection> handle;
 
-    double         firsthitfltlen, lasthitfltlen, entlen;
     double         path, dedx_prob_ele, dedx_prob_muo;
 
     int const      max_ntrk(100);
@@ -879,8 +880,8 @@ namespace mu2e {
     vector<double>         edeps;
     const KalRep            *trk;
 
-    TrkHitVector            hots;
-    const mu2e::TrkStrawHit *hit ;
+    const TrkHitVector*      hots;
+    const TrkStrawHit*       hit ;
 
 
     _evtid = event.id().event();
@@ -924,8 +925,8 @@ namespace mu2e {
     for (int i=0; i<n_trk; i++) {
       _trkid     = i;
       trk        = _listOfTracks->at(i).get();
-      hots       = trk->hitVector();
-      //      nhits      = trk->nActive();
+      hots       = &trk->hitVector();
+      int nh     = hots->size();
 //-----------------------------------------------------------------------------
 // track hit doublets
 //-----------------------------------------------------------------------------
@@ -934,21 +935,50 @@ namespace mu2e {
 // dE/dX: use only 'active' hits
 // calculate dE/dX, clear vectors, start forming a list of hits from the track
 //-----------------------------------------------------------------------------
-      firsthitfltlen = trk->firstHit()->kalHit()->hit()->fltLen() - 10;
-      lasthitfltlen  = trk->lastHit()->kalHit()->hit()->fltLen() - 10;
-      entlen         = std::min(firsthitfltlen,lasthitfltlen);
-      _trkmom        = trk->momentum(entlen).mag();
+      double        firsthitfltlen(1.e6), lasthitfltlen(1.e6), entlen;
+
+      const TrkHit  *first(nullptr), *last(nullptr); 
+
+      for (int ih=0; ih<nh; ++ih) {
+        const TrkHit* hit =  dynamic_cast<const TrkHit*> (hots->at(ih));
+      	if (hit   != nullptr) {
+      	  if (first == nullptr) first = hit;
+      	  last = hit;
+      	}
+      }
+
+      // first = dynamic_cast<const TrkHit*> (trk->firstHit()->kalHit()->hit());
+      // last  = dynamic_cast<const TrkHit*> (trk->lastHit ()->kalHit()->hit());
+
+      // if (dynamic_cast<const TrkStrawHit*> (first) == nullptr) { 
+      // 	printf("ERROR in AvikPIDNew::produce for Event: %8i : first hit is not a TrkStrawHit, test fltLen*\n",_evtid);
+      // 	double len = first->fltLen();
+      // 	printf("first->fltLen() = %10.3f\n",len);
+      // }
+
+      // if (dynamic_cast<const TrkStrawHit*> (last ) == nullptr) { 
+      // 	printf("ERROR in AvikPIDNew::produce for Event: %8i : last  hit is not a TrkStrawHit, test fltLen*\n",_evtid);
+      // 	double len = last->fltLen();
+      // 	printf("last->fltLen() = %10.3f\n",len);
+      // }
+
+      if (first) firsthitfltlen = first->fltLen() - 10;
+      if (last ) lasthitfltlen  = last->fltLen()  - 10;
+
+      entlen  = std::min(firsthitfltlen,lasthitfltlen);
+      _trkmom = trk->momentum(entlen).mag();
 
       gaspaths.clear();
       edeps.clear();
 
-      for (auto ihot=hots.begin(); ihot != hots.end(); ++ihot) {
-        hit = (mu2e::TrkStrawHit*) (*ihot);
-        if (hit->isActive()) {
+      for (int ih=0; ih<nh; ++ih) {
+        hit =  dynamic_cast<TrkStrawHit*> (hots->at(ih));
+        if (hit && hit->isActive()) {
 //-----------------------------------------------------------------------------
 // hit charges: '2.*' here because KalmanFit reports half-path through gas.
 //-----------------------------------------------------------------------------
-          const DetStrawElem* strawelem = detmodel.strawElem(hit->straw());
+	  const Straw* straw = &hit->straw();
+          const DetStrawElem* strawelem = detmodel->strawElem(*straw);
           path = 2.*strawelem->gasPath(hit->driftRadius(),hit->trkTraj()->direction(hit->fltLen()));
           gaspaths.push_back(path);
           edeps.push_back(hit->comboHit().energyDep());

@@ -36,13 +36,12 @@ namespace mu2e {
   //   _straw0MidPoint  /= _layers.size();
   // }
 
-  void Panel::fillPointers ( const Tracker& tracker ) const {
-    for (std::array<Straw const*, StrawId::_nstraws>::const_iterator is =
-           getStrawPointers().begin();
-         is < getStrawPointers().end(); ++is) {
-      const Straw& straw(**is);
-      straw.fillPointers(tracker);
+  void Panel::fillPointers ( const Tracker* tracker ) const {
+
+    for(auto& isp : getStrawPointers()) {
+      isp->fillPointers(tracker);
     }
+
 
     _straw0MidPoint = CLHEP::Hep3Vector();
     for ( uint16_t ilay=0; ilay<StrawId::_nlayers; ++ilay ) {

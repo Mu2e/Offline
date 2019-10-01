@@ -10,7 +10,7 @@
 #include <utility>
 
 // Framework include files
-#include "canvas/Persistency/Provenance/ModuleDescription.h"
+#include "art/Persistency/Provenance/ModuleDescription.h"
 #include "canvas/Persistency/Provenance/EventID.h"
 #include "canvas/Persistency/Provenance/Timestamp.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
@@ -24,7 +24,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eHallMaker.hh"
 #include "GeometryService/inc/TSdAMaker.hh"
-#include "GeometryService/inc/TTrackerMaker.hh"
+#include "GeometryService/inc/TrackerMaker.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "GeometryService/inc/WorldG4Maker.hh"
 #include "GeometryService/src/DetectorSystemMaker.hh"
@@ -57,7 +57,7 @@
 #include "ServicesGeom/inc/ElectronicRack.hh"
 #include "GeometryService/inc/ElectronicRackMaker.hh"
 #include "BeamlineGeom/inc/TSdA.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/DiskCalorimeterMaker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
@@ -83,6 +83,8 @@
 #include "STMGeom/inc/STM.hh"
 #include "GeometryService/inc/STMMaker.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
+#include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALMuonID.hh"
+#include "GeometryService/inc/ExtMonFNALMuonIDMaker.hh"
 
 using namespace std;
 
@@ -97,7 +99,8 @@ namespace mu2e {
     _configStatsVerbosity( pset.get<int>         ("configStatsVerbosity", 0)),
     _printConfig(          pset.get<bool>        ("printConfig",          false)),
     _config(nullptr),
-    standardMu2eDetector_( pset.get<bool>        ("standardMu2eDetector", true)),
+    _pset   (pset),
+    standardMu2eDetector_( _pset.get<std::string>("simulatedDetector.tool_type") == "Mu2e"),
     _detectors(),
     _run_count()
   {
@@ -155,11 +158,11 @@ namespace mu2e {
     // Print final state of file after all substitutions.
     if ( _printConfig      ){ _config->print(cout, "Geom: ");       }
 
-    // decide if this is standard Mu2e detector or something else ...
+    // 2019-03-24 P.M. : *not needed* decide if this is standard Mu2e detector or something else ...
 
     if (!isStandardMu2eDetector() ||
-        !_config->getBool("mu2e.standardDetector",true)) {
-      cout  << "Non standard mu2e configuration, assuming it is intentional" << endl;
+	!_config->getBool("mu2e.standardDetector",true)) {
+      cout  << "Non-standard mu2e configuration, assuming it is intentional" << endl;
       return;
     }
 
@@ -232,9 +235,9 @@ namespace mu2e {
     const StoppingTarget& target = *tmptgt.get();
     addDetector(std::move(tmptgt));
 
-    if (_config->getBool("hasTTracker",false)){
-      TTrackerMaker ttm( *_config );
-      addDetector( ttm.getTTrackerPtr() );
+    if (_config->getBool("hasTracker",false)){
+      TrackerMaker ttm( *_config );
+      addDetector( ttm.getTrackerPtr() );
     }
 
     if(_config->getBool("hasMBS",false)){
@@ -273,12 +276,16 @@ namespace mu2e {
     addDetector(std::move(tmpemb));
     if(_config->getBool("hasExtMonFNAL",false)){
       addDetector(ExtMonFNAL::ExtMonMaker::make(*_config, emfb));
+      addDetector(ExtMonFNALMuonIDMaker::make(*_config));
     }
+    
+
 
     if(_config->getBool("hasVirtualDetector",false)){
       addDetector(VirtualDetectorMaker::make(*_config));
     }
       
+    
     if(_config->getBool("hasBFieldManager",false)){
       std::unique_ptr<BFieldConfig> bfc( BFieldConfigMaker(*_config, beamline).getBFieldConfig() );
       BFieldManagerMaker bfmgr(*bfc);
@@ -308,8 +315,8 @@ namespace mu2e {
   void GeometryService::checkTrackerConfig(){
     int ntrackers(0);
     string allTrackers;
-    if ( _config->getBool("hasTTracker",false) ) {
-      allTrackers += " TTracker";
+    if ( _config->getBool("hasTracker",false) ) {
+      allTrackers += " Tracker";
       ++ntrackers;
     }
     if ( ntrackers > 1 ){

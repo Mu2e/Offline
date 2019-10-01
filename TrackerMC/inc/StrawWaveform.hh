@@ -19,7 +19,7 @@
 #include "DataProducts/inc/StrawId.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/Types.hh"
+#include "DataProducts/inc/TrkTypes.hh"
 #include "TrackerMC/inc/StrawClusterSequence.hh"
 
 namespace mu2e {
@@ -40,37 +40,35 @@ namespace mu2e {
     class StrawWaveform{
       public:
 	// construct from a clust sequence and response object.  Scale affects the voltage
-	StrawWaveform(StrawClusterSequence const& hseqq, ConditionsHandle<StrawElectronics> const& sresponse,XTalk const& xtalk);
+	StrawWaveform(StrawClusterSequence const& hseqq, XTalk const& xtalk);
 	// disallow copy and assignment
 	StrawWaveform() = delete; // don't allow default constructor, references can't be assigned empty
 	StrawWaveform(StrawWaveform const& other);
 	StrawWaveform & operator=(StrawWaveform const& other) = delete;
 	// find the next point the waveform crosses threhold.  Waveform crossing
 	// is both input (determines starting point) and output
-	bool crossesThreshold(double threshold,WFX& wfx) const;
+      bool crossesThreshold(StrawElectronics const& strawele, double threshold,WFX& wfx) const;
 	// sample the waveform at a given time, no saturation included.  Return value is in units of volts
-	double sampleWaveform(StrawElectronics::Path ipath,double time) const;
+	double sampleWaveform(StrawElectronics const& strawele,StrawElectronics::Path ipath,double time) const;
 	// sample the waveform at a series of points allowing saturation to occur after preamp stage
         // FIXME no cross talk yet
-	void sampleADCWaveform(TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
-        unsigned short digitizeTOT(double threshold, double time) const;
+	void sampleADCWaveform(StrawElectronics const& strawele,TrkTypes::ADCTimes const& times,TrkTypes::ADCVoltages& volts) const;
+        unsigned short digitizeTOT(StrawElectronics const& strawele, double threshold, double time) const;
 	//accessors
 	StrawClusterSequence const& clusts() const { return _cseq; }
-	ConditionsHandle<StrawElectronics> const& strawElectronics() const { return _strawele; }
 	XTalk const& xtalk() const { return _xtalk; }
 	StrawEnd const& strawEnd() const { return _cseq.strawEnd(); }
         StrawId const& strawId() const { return _sid; }
       private:
 	// clust sequence used in this waveform
 	StrawClusterSequence const& _cseq;
-	ConditionsHandle<StrawElectronics> const& _strawele; // straw response object
 	XTalk _xtalk; // X-talk applied to all voltages
         StrawId const& _sid;
 	// helper functions
-	void returnCrossing(double threshold, WFX& wfx) const;
-	bool roughCrossing(double threshold, WFX& wfx) const;
-	bool fineCrossing(double threshold, double vmax, WFX& wfx) const;
-	double maxLinearResponse(ClusterList::const_iterator const& iclust) const;
+	void returnCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const;
+	bool roughCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const;
+	bool fineCrossing(StrawElectronics const& strawele, double threshold, double vmax, WFX& wfx) const;
+	double maxLinearResponse(StrawElectronics const& strawele,ClusterList::const_iterator const& iclust) const;
     };
 
     struct WFX { // waveform crossing

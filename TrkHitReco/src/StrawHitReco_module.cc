@@ -12,17 +12,18 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // conditions
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "ConditionsBase/inc/TrackerCalibrationStructs.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
+#include "TrackerConditions/inc/DeadStraw.hh"
 
 #include "TrkHitReco/inc/PeakFit.hh"
 #include "TrkHitReco/inc/PeakFitRoot.hh"
@@ -86,10 +87,14 @@ namespace mu2e {
        // helper function
        float peakMinusPedAvg(TrkTypes::ADCWaveform const& adcData) const;
        float peakMinusPed(StrawId id, TrkTypes::ADCWaveform const& adcData) const;
+    ProditionsHandle<StrawResponse> _strawResponse_h;
+    ProditionsHandle<DeadStraw> _deadStraw_h;
+
 
  };
 
   StrawHitReco::StrawHitReco(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset}, 
       _fittype((TrkHitReco::FitType) pset.get<unsigned>("FitType",TrkHitReco::FitType::peakminuspedavg)),
       _usecc(pset.get<bool>(         "UseCalorimeter",false)),
       _clusterDt(pset.get<float>(   "clusterDt",100)),
@@ -132,21 +137,21 @@ namespace mu2e {
 
   void StrawHitReco::beginRun(art::Run& run)
   {
-      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+      auto const& srep = _strawResponse_h.get(run.id());
 // set cache for peak-ped calculation (default)
-      _npre = srep->nADCPreSamples();
+      _npre = srep.nADCPreSamples();
       _invnpre = 1.0/(float)_npre;
-      _invgainAvg = srep->adcLSB()*srep->peakMinusPedestalEnergyScale()/srep->strawGain();
+      _invgainAvg = srep.adcLSB()*srep.peakMinusPedestalEnergyScale()/srep.strawGain();
       for (int i=0;i<96;i++){
         StrawId dummyId(0,0,i);
-        _invgain[i] = srep->adcLSB()*srep->peakMinusPedestalEnergyScale(dummyId)/srep->strawGain();
+        _invgain[i] = srep.adcLSB()*srep.peakMinusPedestalEnergyScale(dummyId)/srep.strawGain();
       }
 
       // this must be done here because srep is not accessible at startup and pfit references it
       if (_fittype == TrkHitReco::FitType::combopeakfit)
-         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(*srep,_peakfit) );
+         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::ComboPeakFitRoot(srep,_peakfit) );
       else if (_fittype == TrkHitReco::FitType::peakfit)
-         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(*srep,_peakfit) );
+         _pfit = std::unique_ptr<TrkHitReco::PeakFit>(new TrkHitReco::PeakFitRoot(srep,_peakfit) );
       if (_printLevel > 0) std::cout << "In StrawHitReco begin Run " << std::endl;
   }
 
@@ -155,11 +160,10 @@ namespace mu2e {
   {
       if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
-      const Tracker& tracker = getTrackerOrThrow();
-      const TTracker& tt(*GeomHandle<TTracker>());
+      const Tracker& tt(*GeomHandle<Tracker>());
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();
-      ConditionsHandle<StrawResponse> srep = ConditionsHandle<StrawResponse>("ignored");
+      auto const& srep = _strawResponse_h.get(event.id());
       auto sdH = event.getValidHandle(_sdtoken);
       const StrawDigiCollection& sdcol(*sdH);
 
@@ -189,12 +193,19 @@ namespace mu2e {
       largeHits.reserve(sdcol.size());
       largeHitPanels.reserve(sdcol.size());
 
+      DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
+
       for (size_t isd=0;isd<sdcol.size();++isd) {
 	const StrawDigi& digi = sdcol[isd];
+
 	StrawHitFlag flag;
+	if (deadStraw.isDead(digi.strawId())) {
+	  flag.merge(StrawHitFlag::dead);
+	}
+
 	// start by reconstructing the times
 	TDCTimes times;
-	srep->calibrateTimes(digi.TDC(),times,digi.strawId());
+	srep.calibrateTimes(digi.TDC(),times,digi.strawId());
 	// find the end with the earliest time
 	StrawEnd eend(StrawEnd::cal);
 	if(times[StrawEnd::hv] < times[StrawEnd::cal])
@@ -221,14 +232,14 @@ namespace mu2e {
 	float energy(0.0);
 	if (_fittype == TrkHitReco::FitType::peakminuspedavg){
 	  float charge = peakMinusPedAvg(digi.adcWaveform());
-	  energy = srep->ionizationEnergy(charge);
+	  energy = srep.ionizationEnergy(charge);
 	} else if (_fittype == TrkHitReco::FitType::peakminusped){
 	  float charge = peakMinusPed(digi.strawId(),digi.adcWaveform());
-	  energy = srep->ionizationEnergy(charge);
+	  energy = srep.ionizationEnergy(charge);
 	} else {
 	  TrkHitReco::PeakFitParams params;
 	  _pfit->process(digi.adcWaveform(),params);
-	  energy = srep->ionizationEnergy(params._charge/srep->strawGain());
+	  energy = srep.ionizationEnergy(params._charge/srep.strawGain());
 	  if (_printLevel > 1) std::cout << "Fit status = " << params._status << " NDF = " << params._ndf << " chisquared " << params._chi2
 	    << " Fit charge = " << params._charge << " Fit time = " << params._time << std::endl;
 	}
@@ -240,21 +251,21 @@ namespace mu2e {
 	// time-over-threshold
 	TOTTimes tots{0.0,0.0};
 	for(size_t iend=0;iend<2;++iend){
-	  tots[iend] = digi.TOT(_end[iend])*srep->totLSB();
+	  tots[iend] = digi.TOT(_end[iend])*srep.totLSB();
 	}
 	// choose earliest end TOT: maybe average later?
 	float tot = tots[eend.end()];
 	// filter on specific ionization FIXME!
 	// filter based on composite e/P separation FIXME!
-	const Straw& straw  = tracker.getStraw( digi.strawId() );
-	float dw, dwerr;
-	float dt = times[StrawEnd::cal] - times[StrawEnd::hv];
-        float halfpv;
+	const Straw& straw  = tt.getStraw( digi.strawId() );
+	double dw, dwerr;
+	double dt = times[StrawEnd::cal] - times[StrawEnd::hv];
+        double halfpv;
 	// get distance along wire from the straw center and it's estimated error
-	bool td = srep->wireDistance(straw,energy,dt, dw,dwerr,halfpv);
-        float propd = straw.getHalfLength()+dw;
+	bool td = srep.wireDistance(straw,energy,dt, dw,dwerr,halfpv);
+        float propd = straw.halfLength()+dw;
         if (eend == StrawEnd(StrawEnd::hv))
-          propd = straw.getHalfLength()-dw;
+          propd = straw.halfLength()-dw;
 	XYZVec pos = Geom::toXYZVec(straw.getMidPoint()+dw*straw.getDirection());
 	// create combo hit
 	static const XYZVec _zdir(0.0,0.0,1.0);
@@ -268,9 +279,9 @@ namespace mu2e {
 	ch._time = time;
 	ch._edep = energy;
 	ch._sid = straw.id();
-	ch._dtime = srep->driftTime(straw,tot,energy);
+	ch._dtime = srep.driftTime(straw,tot,energy);
         ch._ptime = propd/(2*halfpv);
-	ch._pathlength = srep->pathLength(straw,tot); 
+	ch._pathlength = srep.pathLength(straw,tot); 
 	ch.addIndex(isd); // reference the digi; this allows MC truth matching to work
 	// crude initial estimate of the transverse error
 	static const float invsqrt12 = 1.0/sqrt(12.0);
@@ -279,6 +290,7 @@ namespace mu2e {
 	ch._mask = _mask;
 	ch._flag = flag;
 	if (td) ch._flag.merge(StrawHitFlag::tdiv);
+	ch._tend = eend;
 	if(!_filter && _flagXT){
 	  //buffer large hit for cross-talk analysis
 	  size_t iplane       = straw.id().getPlane();

@@ -18,6 +18,7 @@
 // c++
 #include <iostream>
 #include <memory>
+#include <string> 
 
 using namespace std;
 
@@ -35,6 +36,7 @@ namespace mu2e
     art::InputTag   _cdTag;
     bool            _useSD;   //flag for using the StrawDigi
     bool            _useCD;   //flag for using the CaloDigi
+    std::string     _trigPath;
 
     //list of the parameters used to perform the filtering
     int             _minnsd;  //minimum number of StrawDigi required
@@ -49,15 +51,17 @@ namespace mu2e
   };
 
   DigiFilter::DigiFilter(fhicl::ParameterSet const& pset) :
-    _sdTag    (pset.get<art::InputTag>("StrawDigiCollection")),
-    _cdTag    (pset.get<art::InputTag>("CaloDigiCollection")),
-    _useSD    (pset.get<bool>("UseStrawDigi")),
-    _useCD    (pset.get<bool>("UseCaloDigi")),
-    _minnsd   (pset.get<int>("MinNStrawDigi")),
-    _maxnsd   (pset.get<int>("MaxNStrawDigi")),
-    _minncd   (pset.get<int>("MinNCaloDigi")),
-    _maxncd   (pset.get<int>("MaxNCaloDigi")),
-    _maxcaloE (pset.get<float>("MaxCaloEnergy")),
+    art::EDFilter{pset},
+    _sdTag    (pset.get<art::InputTag>("strawDigiCollection")),
+    _cdTag    (pset.get<art::InputTag>("caloDigiCollection")),
+    _useSD    (pset.get<bool>("useStrawDigi")),
+    _useCD    (pset.get<bool>("useCaloDigi")),
+    _trigPath (pset.get<std::string>("triggerPath")),
+    _minnsd   (pset.get<int>("minNStrawDigi")),
+    _maxnsd   (pset.get<int>("maxNStrawDigi")),
+    _minncd   (pset.get<int>("minNCaloDigi")),
+    _maxncd   (pset.get<int>("maxNCaloDigi")),
+    _maxcaloE (pset.get<float>("maxCaloEnergy")),
     _debug    (pset.get<int>("debugLevel",0)),
     _nevt(0), _npass(0)
   {
@@ -115,9 +119,10 @@ namespace mu2e
       
       if (retvalSD) triginfo->_triggerBits.merge(TriggerFlag::strawDigis);
       if (retvalCD) triginfo->_triggerBits.merge(TriggerFlag::caloDigis );
+      triginfo->_triggerPath = _trigPath;
 
       if(_debug > 1){
-	cout << *currentContext()->moduleLabel() << " passed event " << event.id() << endl;
+	cout << moduleDescription().moduleLabel() << " passed event " << event.id() << endl;
       }
     }
     
@@ -127,7 +132,7 @@ namespace mu2e
 
   bool DigiFilter::endRun( art::Run& run ) {
     if(_debug > 0 && _nevt > 0){
-      cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
+      cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << endl;
     }
     return true;
   }

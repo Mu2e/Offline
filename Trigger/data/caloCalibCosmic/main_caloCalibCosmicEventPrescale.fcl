@@ -1,0 +1,2 @@
+physics.filters.caloCalibCosmicEventPrescale.nPrescale    : 1
+physics.filters.caloCalibCosmicEventPrescale.triggerFlag  : ["PrescaleRandom"]

@@ -29,6 +29,7 @@ namespace mu2e
   };
 
   TrackerStepPointFilter::TrackerStepPointFilter(fhicl::ParameterSet const& pset) :
+    art::EDFilter{pset},
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel","g4run")),
     _stepPointInstance(pset.get<string>("stepPointInstance","tracker")),
     _minStepPoints(pset.get<size_t>("minStepPoints",15))

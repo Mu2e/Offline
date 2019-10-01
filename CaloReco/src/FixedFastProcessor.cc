@@ -10,8 +10,8 @@
 
 #include "CaloReco/inc/FixedFastProcessor.hh"
 #include "CaloReco/inc/CaloPulseCache.hh"
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h" 
+#include "art_root_io/TFileService.h"
 #include "ConditionsService/inc/ConditionsHandle.hh"
 
 
@@ -371,8 +371,9 @@ namespace mu2e {
 
 
         minuit.mnstat(chi2,edm,errdef,nvpar,nparx,istat);        
-        for (int i=0;i<nparTot_;++i) minuit.GetParameter(i,sfpar[i],errsfpar[i]);    
-        
+        for (int i=0;i<nparTot_;++i) minuit.GetParameter(i,sfpar[i],errsfpar[i]);
+        for (int i=0;i<nparTot_;++i) errsfpar[i] = std::abs(  errsfpar[i]); 
+
         return;
    }
    
@@ -416,8 +417,8 @@ namespace mu2e {
 
        sfpar[0]    = alpha;
        sfpar[1]    = tmin;
-       errsfpar[0] = sqrt(v11/det);
-       errsfpar[1] = sqrt(v22/det);
+       errsfpar[0] = v11/det > 1e-6 ? sqrt(v11/det) : sfpar[0];
+       errsfpar[1] = v22/det > 1e-6 ? sqrt(v22/det) : sfpar[1];
 
        chi2 = calcChi2(tmin,alpha);
        

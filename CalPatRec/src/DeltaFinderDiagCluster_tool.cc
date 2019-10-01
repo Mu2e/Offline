@@ -9,7 +9,7 @@
 #include "CalPatRec/inc/DeltaFinder2_types.hh"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Utilities/ToolMacros.h"
 #include "art/Utilities/make_tool.h"
@@ -20,7 +20,7 @@
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Mu2eUtilities/inc/McUtilsToolBase.hh"
 #include "RecoDataProducts/inc/StrawHitPosition.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 using namespace std;
 
@@ -86,7 +86,7 @@ namespace mu2e {
     std::unique_ptr<McUtilsToolBase>      _mcUtils;
 
     int                                   _eventNumber;
-    const StrawDigiMCCollection*          _listOfMcStrawHits;
+    //    const StrawDigiMCCollection*          _listOfMcStrawHits;
     
     std::vector<McPart_t*>                _list_of_mc_particles; // list_of_particles with hits in the tracker
     std::vector<McPart_t*>                _list_of_mc_part_hit ; // for each StrawHit, pointer to its McPart 
@@ -261,7 +261,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	associateMcTruth();
       }
     }
@@ -366,7 +366,7 @@ namespace mu2e {
 
 	    const StrawHit* sh            = hd->fHit;
 	    int i0                        = sh-sh0;
-	    const mu2e::SimParticle* simp = _mcUtils->getSimParticle(_listOfMcStrawHits,i0);
+	    const mu2e::SimParticle* simp = _mcUtils->getSimParticle(_data->event,i0);
 	    hcl._simp                     = simp;
 
 	    _list_of_hclusters[station][face][ip].push_back(hcl);
@@ -388,14 +388,14 @@ namespace mu2e {
 
 	    const StrawHit* sh           = hcl->_hits.front()->fHit;
 	    int i0                       = sh-sh0;
-	    const mu2e::SimParticle* mc0 = _mcUtils->getSimParticle(_listOfMcStrawHits,i0);
+	    const mu2e::SimParticle* mc0 = _mcUtils->getSimParticle(_data->event,i0);
 
 	    hcl->_unique = 1;
 
 	    for (int ih=1; ih<nhits; ih++) {
 	      const StrawHit* sh           = hcl->_hits[ih]->fHit;
 	      int i1                       = sh-sh0;
-	      const mu2e::SimParticle* mc1 = _mcUtils->getSimParticle(_listOfMcStrawHits,i1);
+	      const mu2e::SimParticle* mc1 = _mcUtils->getSimParticle(_data->event,i1);
 
 	      if (mc1 != mc0) {
 		hcl->_unique = 0;
@@ -423,7 +423,7 @@ namespace mu2e {
     if (_mcDiag) {
       if (_eventNumber != en) {
 	_eventNumber       = en;
-	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
+	//	_listOfMcStrawHits = _mcUtils->getListOfMcStrawHits(_data->event, _stepPointMcCollTag);
 	//	InitMcDiag();
 	associateMcTruth();
       }
@@ -466,7 +466,7 @@ namespace mu2e {
     float              mc_mom(-9999.);
 	
     if (_mcDiag) {
-      sim    = _mcUtils->getSimParticle(_listOfMcStrawHits,loc);
+      sim    = _mcUtils->getSimParticle(_data->event,loc);
       pdg_id = _mcUtils->getPdgID(sim);
       sim_id = _mcUtils->getID(sim);
       mc_mom = _mcUtils->getStartMom(sim);
