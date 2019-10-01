@@ -10,18 +10,17 @@
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-#include "DataProducts/inc/threevec.hh"
+#include "DataProducts/inc/XYZVec.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrkDiag/inc/KalDiag.hh"
@@ -57,7 +56,7 @@ namespace mu2e {
     Int_t _plane, _panel, _layer, _straw;
     Int_t _mcpdg, _mcgen, _mcproc;
     Int_t _mcppdg;
-    threevec _mcpspos, _mcpsmom;
+    XYZVec _mcpspos, _mcpsmom;
     Float_t _mcpke, _mcptime;
     Float_t _edep, _mce;
     Float_t _hittime;
@@ -106,7 +105,7 @@ namespace mu2e {
 
   void StrawEnergy::analyze(const art::Event& event) {
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     art::Handle<StrawHitCollection> pdataHandle;
     event.getByLabel(_makerModuleLabel,pdataHandle);

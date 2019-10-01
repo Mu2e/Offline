@@ -1,0 +1,34 @@
+# common parts used in all mixing jobs
+
+#include "JobConfig/beam/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/mixing/prolog.fcl"
+
+BEGIN_PROLOG
+
+Ensemble : {
+
+  InputCommands : [ "keep *",
+	  "drop *_genCounter_*_*",
+	  "drop *_protonBunchIntensity_*_*"]
+  OutputCommandsMC : [   "keep *_*_*_*"]
+  OutputCommandsData : [   "drop *_*_*_*",
+          "keep mu2e::KalSeeds_*_*_*",
+          "keep mu2e::TimeClusters_*_*_*",
+          "keep mu2e::CrvCoincidenceClusters_*_*_*",
+          "keep mu2e::CrvRecoPulses_*_*_*",
+          "keep mu2e::CaloDigis_*_*_*",
+          "keep mu2e::CaloCrystalHits_*_*_*",
+	  "keep mu2e::CaloClusters_*_*_*",
+          "keep mu2e::HelixSeeds_*_*_*",
+          "keep mu2e::EventWindowMarker_*_*_*",
+	  "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_*_*_*",
+	  "keep art::TriggerResults_*_*_recomcdigistrig",
+	  "keep mu2e::StrawDigis_*_*_*",
+	  "keep mu2e::RecoCount_*_*_*",
+	  "keep mu2e::IndexMap_*_*_*",
+	  "keep mu2e::CaloCrystalHitart::Ptrmu2e::CaloCrystalHitart::Ptrstd::map_*_*_*",
+	  "keep mu2e::CrvDigis_*_*_*"]
+}
+
+END_PROLOG

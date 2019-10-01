@@ -16,9 +16,15 @@ caloOnly_sf             : 1
 #prescale factors for the cosmic muon calibration
 caloCosmicMuon_evt_sf         : 1
 caloCosmicMuon_sf             : 1
+#prescale factors for the caloDigi count filter
+cDCount_evt_sf         : 500
+cDCount_sf             : 1
+#prescale factors for the "large" caloDigi counter filter
+largeCDCount_evt_sf    : 500
+largeCDCount_sf        : 1
 END_PROLOG
 
-#include "CaloFilters/fcl/prolog.fcl"
+#include "CaloFilters/fcl/prolog_trigger.fcl"
 
 process_name : caloOnlyFilter
 
@@ -27,26 +33,10 @@ source :
     module_type : RootInput
 }
 # we don't need any simulation services for this job
-services : @local::Services.Reco
+#services : @local::Services.Reco
 
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "readCaloDigis.root" }
+services : @local::Services.SimAndReco
 
-    RandomNumberGenerator : { }
-    #   Timing                : { }
-
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }
-    
-}
 
 # timing information
 services.TimeTracker : {
@@ -81,4 +71,7 @@ physics : {
 }
 
 
+services.TFileService.fileName : "readCaloDigis.root"
+services.SeedService.baseSeed : 0
+services.SeedService.maxUniqueEngines : 20
 

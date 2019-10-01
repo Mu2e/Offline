@@ -1,5 +1,5 @@
-#ifndef MCDataProducts_CrvDigi_hh
-#define MCDataProducts_CrvDigi_hh
+#ifndef RecoDataProducts_CrvDigi_hh
+#define RecoDataProducts_CrvDigi_hh
 //
 // $Id: $
 // $Author: ehrlich $
@@ -10,6 +10,7 @@
 
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"
 #include <array>
+#include <vector>
 
 namespace mu2e 
 {
@@ -38,6 +39,7 @@ namespace mu2e
     mu2e::CRSScintillatorBarIndex  _scintillatorBarIndex;
     int                            _SiPMNumber; 
   };
+  typedef std::vector<mu2e::CrvDigi> CrvDigiCollection;
 }
 
 #endif /* RecoDataProducts_CrvDigi_hh */

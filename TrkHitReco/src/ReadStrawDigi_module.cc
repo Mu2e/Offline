@@ -30,6 +30,7 @@ namespace mu2e {
   };
 
   ReadStrawDigi::ReadStrawDigi(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
       _sdtag  (pset.get<art::InputTag>("StrawDigiCollection","makeSD"))
   { }
 

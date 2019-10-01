@@ -9,8 +9,8 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include "RecoDataProducts/inc/CaloClusterCollection.hh"
 #include "MCDataProducts/inc/CaloShowerStepCollection.hh"
@@ -38,7 +38,7 @@ namespace mu2e {
      public:
 
 	explicit CaloClusterTruthMatch(fhicl::ParameterSet const& pset) :
-	
+          art::EDProducer{pset},	
 	  caloClusterModuleLabel_  (pset.get<std::string>("caloClusterModuleLabel")), 
           caloHitTruthModuleLabel_ (pset.get<std::string>("caloHitTruthModuleLabel")),
 	  diagLevel_               (pset.get<int>        ("diagLevel",0))		  

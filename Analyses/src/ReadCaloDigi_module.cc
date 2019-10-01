@@ -25,8 +25,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
@@ -38,7 +38,6 @@
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
@@ -571,7 +570,7 @@ namespace mu2e {
               if ( sim.fromGenerator() ){
 
                 GenParticle* gen = (GenParticle*) &(*sim.genParticle());
-                if ( gen->generatorId() != GenId::conversionGun ){
+                if ( gen->generatorId().isConversion() ){
                   continue;
                 }
               }
@@ -893,7 +892,7 @@ namespace mu2e {
 	      }
 	    // if ( sim->fromGenerator() ){
 	    //   GenParticle* gen = (GenParticle*) &(sim->genParticle());
-	    //   if ( gen->generatorId() == GenId::conversionGun ){
+	    //   if ( gen->generatorId().isConversion() ){
 	    // 	isConversion = 1;
 	    //   }
 	    // }

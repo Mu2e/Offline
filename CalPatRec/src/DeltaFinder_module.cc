@@ -10,11 +10,10 @@
 #include "art/Framework/Core/EDProducer.h"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 // root
 #include "TVector2.h"
@@ -29,7 +28,6 @@
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 // diagnostics
-#include "DataProducts/inc/threevec.hh"
 
 #include "CalPatRec/inc/DeltaFinder_types.hh"
 
@@ -90,6 +88,8 @@ namespace mu2e {
     float                               _maxDriftTime;
     float                               _maxStrawDt;
     float                               _maxDtDs;              // low-P electron travel time between two stations
+    int                                 _writeStrawHits;
+    int                                 _filter;
 
     int                                 _debugLevel;
     int                                 _diagLevel;
@@ -102,7 +102,7 @@ namespace mu2e {
     const TimeClusterCollection*        _tpeakcol;
     StrawHitFlagCollection*             _bkgfcol;  // output collection
 
-    const TTracker*                     _tracker;
+    const Tracker*                      _tracker;
     const DiskCalorimeter*              _calorimeter;
 
     float                               _tdbuff; // following Dave - time division buffer
@@ -158,6 +158,7 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   DeltaFinder::DeltaFinder(fhicl::ParameterSet const& pset):
+    art::EDProducer{pset},
     _shToken{consumes<StrawHitCollection>(pset.get<string>("strawHitCollectionTag"))},
     _chToken{consumes<ComboHitCollection>(pset.get<string>("comboHitCollectionTag"))},
     _tpeakToken{consumes<TimeClusterCollection>(pset.get<string>("timePeakCollectionTag"))},
@@ -183,6 +184,8 @@ namespace mu2e {
     _maxDriftTime          (pset.get<float>        ("maxDriftTime"                 )),
     _maxStrawDt            (pset.get<float>        ("maxStrawDt"                   )),
     _maxDtDs               (pset.get<float>        ("maxDtDs"                      )),
+    _writeStrawHits        (pset.get<int>          ("writeStrawHits"               )),
+    _filter                (pset.get<int>          ("filter"                       )),
 
     _debugLevel            (pset.get<int>          ("debugLevel"                   )),
     _diagLevel             (pset.get<int>          ("diagLevel"                    )),
@@ -191,7 +194,8 @@ namespace mu2e {
     consumesMany<ComboHitCollection>(); // Necessary because fillStrawHitIndices calls getManyByType.
 
     produces<StrawHitFlagCollection>("ComboHits");
-    produces<StrawHitFlagCollection>("StrawHits");
+    if(_writeStrawHits == 1) produces<StrawHitFlagCollection>("StrawHits");
+    if (_filter) produces<ComboHitCollection>();
 
     _testOrderPrinted = 0;
     _tdbuff           = 80.; // mm ... abit less than 1 ns
@@ -212,8 +216,8 @@ namespace mu2e {
 // create a Z-ordered map of the tracker
 //-----------------------------------------------------------------------------
   void DeltaFinder::beginRun(art::Run& aRun) {
-    mu2e::GeomHandle<mu2e::TTracker> ttHandle;
-    _tracker      = ttHandle.get();
+    mu2e::GeomHandle<mu2e::Tracker> tHandle;
+    _tracker      = tHandle.get();
     _data.tracker = _tracker;
 
     mu2e::GeomHandle<mu2e::DiskCalorimeter> ch;
@@ -230,48 +234,52 @@ namespace mu2e {
     }
 
     float     z_tracker_center(0.);
-
-    int nst = _tracker->nStations();
-    for (int ist=0; ist<nst; ist++) {
-      const Station* st = &_tracker->getStation(ist);
-
+    int       nPlanesPerStation(2);
+    double    station_z(0);
+    
+    for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+      const Plane* pln = &_tracker->getPlane(planeId);
+      int  ist = planeId/nPlanesPerStation;
+      int  ipl = planeId % nPlanesPerStation;
       //calculate the time-of-flight between the station and each calorimeter disk
       //for a typical Conversion Electron
-      for (int iDisk=0; iDisk<nDisks; ++iDisk){
-        _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - st->midZ())/sin(_pitchAngle)/CLHEP::c_light;
+      if (ipl == 0) {
+	station_z = pln->origin().z();
+      }else {
+	station_z = (station_z + pln->origin().z())/2.;
+	for (int iDisk=0; iDisk<nDisks; ++iDisk){
+	  _stationToCaloTOF[iDisk][ist] = (disk_z[iDisk] - station_z)/sin(_pitchAngle)/CLHEP::c_light;
+	}
       }
-
-      for (int ipl=0; ipl<st->nPlanes(); ipl++) {
-	const Plane* pln = &st->getPlane(ipl);
-	for (int ipn=0; ipn<pln->nPanels(); ipn++) {
-	  const Panel* panel = &pln->getPanel(ipn);
-	  int face;
-	  if (panel->id().getPanel() % 2 == 0) face = 0;
-	  else                                 face = 1;
-	  for (int il=0; il<panel->nLayers(); ++il) {
-	    cx.Station = ist;
-	    cx.Plane   = ipl;
-	    cx.Face    = face;
-	    cx.Panel   = ipn;
-	    cx.Layer   = il;
-	    orderID (&cx, &co);
-	    int os = co.Station; 
-	    int of = co.Face;
-	    int op = co.Panel;
-	    PanelZ_t* pz = &_data.oTracker[os][of][op];
-	    pz->fPanel = panel;
-//-----------------------------------------------------------------------------
-// panel caches phi of its center and the z
-//-----------------------------------------------------------------------------
-	    pz->wx  = panel->straw0Direction().x();
-	    pz->wy  = panel->straw0Direction().y();
-	    pz->phi = panel->straw0MidPoint().phi();
-	    pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	    int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
-	    _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_pitchAngle)/CLHEP::c_light;
-	  }
-	}	
-      }
+      
+      for (int ipn=0; ipn<pln->nPanels(); ipn++) {
+	const Panel* panel = &pln->getPanel(ipn);
+	int face;
+	if (panel->id().getPanel() % 2 == 0) face = 0;
+	else                                 face = 1;
+	for (int il=0; il<panel->nLayers(); ++il) {
+	  cx.Station = ist;
+	  cx.Plane   = ipl;
+	  cx.Face    = face;
+	  cx.Panel   = ipn;
+	  cx.Layer   = il;
+	  orderID (&cx, &co);
+	  int os = co.Station; 
+	  int of = co.Face;
+	  int op = co.Panel;
+	  PanelZ_t* pz = &_data.oTracker[os][of][op];
+	  pz->fPanel = panel;
+	  //-----------------------------------------------------------------------------
+	  // panel caches phi of its center and the z
+	  //-----------------------------------------------------------------------------
+	  pz->wx  = panel->straw0Direction().x();
+	  pz->wy  = panel->straw0Direction().y();
+	  pz->phi = panel->straw0MidPoint().phi();
+	  pz->z   = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	  int  uniqueFaceId = ipl*mu2e::StrawId::_nfaces + of;
+	  _faceTOF[uniqueFaceId] = (z_tracker_center - pz->z)/sin(_pitchAngle)/CLHEP::c_light;
+	}
+      }	
       _data.stationUsed[ist] = 1;
       // if ((ist == 6) || (ist == 13))  _data.stationUsed[ist] = 0; // this is the past
     }
@@ -631,22 +639,40 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // create the collection of StrawHitFlag for the StrawHitCollection
 //-----------------------------------------------------------------------------
-    auto shH = Event.getValidHandle<StrawHitCollection>(_shToken);
-    const StrawHitCollection* shcol  = shH.product();
-    // first, copy over the original flags
-    unsigned nsh = shcol->size();
-    std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
-    std::vector<std::vector<StrawHitIndex> > shids;
-    _chcol->fillStrawHitIndices(Event,shids);
-    for(size_t ich = 0;ich < _chcol->size();++ich) {
-      StrawHitFlag flag = bkgfcol->at(ich);
-      flag.merge((*_chcol)[ich].flag());
-      for(auto ish : shids[ich])
-        (*shfcol)[ish] = flag;
+    if(_writeStrawHits == 1){
+      auto shH = Event.getValidHandle<StrawHitCollection>(_shToken);
+      const StrawHitCollection* shcol = shH.product();
+      // first, copy over the original flags
+      unsigned nsh = shcol->size();
+      std::unique_ptr<StrawHitFlagCollection> shfcol(new StrawHitFlagCollection(nsh));
+      std::vector<std::vector<StrawHitIndex> > shids;
+      _chcol->fillStrawHitIndices(Event,shids);
+      for(size_t ich = 0;ich < _chcol->size();++ich) {
+    	StrawHitFlag flag = bkgfcol->at(ich);
+    	flag.merge((*_chcol)[ich].flag());
+    	for(auto ish : shids[ich])
+    	  (*shfcol)[ish] = flag;
+      }
+
+      Event.put(std::move(shfcol),"StrawHits");
     }
-
-    Event.put(std::move(shfcol),"StrawHits");
-
+//-----------------------------------------------------------------------------
+// create the collection of StrawHitFlag for the StrawHitCollection
+//-----------------------------------------------------------------------------
+    if (_filter == 1){
+      auto chcol = std::make_unique<ComboHitCollection>();
+      chcol->reserve(nch);
+      // same parent as the original collection
+      chcol->setParent(_chcol->parent());
+      for(int ich=0;ich < nch; ++ich){
+        StrawHitFlag const& flag = bkgfcol->at(ich);
+        if(!flag.hasAnyProperty(StrawHitFlag::bkg)) {
+          chcol->push_back((*_chcol)[ich]);
+          chcol->back()._flag.merge(flag);
+        }
+      }
+      Event.put(std::move(chcol));
+    }
 //-----------------------------------------------------------------------------
 // finally, put the output flag collection into the event
 //-----------------------------------------------------------------------------

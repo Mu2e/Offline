@@ -1,5 +1,5 @@
 // Read a StepPointMC collection and create a GenParticleCollection
-// from the recorded hits, rotate around target axis with a random 
+// from the recorded hits, rotate around target axis with a random
 // phi angle
 //
 // Zhengyun You, 2013
@@ -91,7 +91,8 @@ namespace mu2e {
   };
 
   FromStepPointMCsRotateTarget::FromStepPointMCsRotateTarget(fhicl::ParameterSet const& pset)
-    : inPdgId_(pset.get<Vpdg>("inputPdgIds", Vpdg()))
+    : EDProducer{pset}
+    , inPdgId_(pset.get<Vpdg>("inputPdgIds", Vpdg()))
     , logLevel_(pset.get<int>("logLevel", 0))
     , allowDuplicates_(pset.get<bool>("allowDuplicates", false))
     , phiMin_(pset.get<double>("phiMin", 0.))
@@ -134,7 +135,7 @@ namespace mu2e {
       targetCenter_ = target->position();
       if(logLevel_ > 1) {
         std::cout << "targetCenter   " << targetCenter_ << std::endl;
-        std::cout << "targetRotation " << targetRotation_ << std::endl;    
+        std::cout << "targetRotation " << targetRotation_ << std::endl;
       }
       firstEvent_ = false;
     }
@@ -142,7 +143,7 @@ namespace mu2e {
     std::unique_ptr<GenParticleCollection> output(new GenParticleCollection);
     std::unique_ptr<GenParticleSPMHistory> history(new GenParticleSPMHistory);
 
-    art::ProductID gpc_pid = getProductID<GenParticleCollection>();
+    art::ProductID gpc_pid = event.getProductID<GenParticleCollection>();
     for(const auto& tag : inputs_) {
       auto ih = event.getValidHandle<mu2e::StepPointMCCollection>(tag);
 

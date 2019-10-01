@@ -9,8 +9,6 @@
 #include "BTrk/TrkBase/TrkHit.hh"
 //
 #include "CLHEP/Vector/ThreeVector.h"
-// conditions
-#include "ConditionsService/inc/ConditionsHandle.hh"
 #include <algorithm>
 
 using namespace std;
@@ -18,20 +16,18 @@ using CLHEP::Hep3Vector;
 
 namespace mu2e
 {
-  TrkCaloHit::TrkCaloHit(const CaloCluster& caloCluster, Hep3Vector &caloClusterPos,
-			 double crystalHalfLength, Hep3Vector const& clusterAxis,
-			 const HitT0& hitt0,double fltlen, double timeWeight, double dtoffset) :
-    _caloCluster(caloCluster),
+  TrkCaloHit::TrkCaloHit(CaloCluster const& caloCluster, Hep3Vector const& caloClusterPos,
+			 double crystalLength, Hep3Vector const& clusterAxis,
+			 const HitT0& hitt0,double fltlen, double timeWeight,
+			 double hiterr, double terr, double dtoffset) :
+    _caloCluster(caloCluster), _clen(crystalLength),
     _dtoffset(dtoffset),
-    _hitErr(10.0)  // transverse cluster resolution this should come from data FIXME!!
+    _hitErr(hiterr) , _tErr(terr)
   {
-
-    caloClusterPos.setZ(caloClusterPos.z() + crystalHalfLength);
-
-// the hit trajectory is defined as a line segment directed along the wire direction starting from the wire center
+// the hit trajectory is defined as a line segment directed along the cluster axis 
     _hittraj = new TrkLineTraj(HepPoint(caloClusterPos.x(), caloClusterPos.y(), caloClusterPos.z()),
-			       clusterAxis, -crystalHalfLength, crystalHalfLength);
-    setHitLen(crystalHalfLength);
+			       clusterAxis, 0.0, crystalLength);
+    setHitLen(0.5*crystalLength); // approximpate
     setFltLen(fltlen);
 // compute initial hit t0
     setHitT0(hitt0);
@@ -48,10 +44,24 @@ namespace mu2e
     _parentRep=0;
   }
 
+
+  //2019-05-02 Gianipez: the following function will change meaning in the near future. FIXME!
   double
   TrkCaloHit::time() const{
-    return caloCluster().time();
+    return caloCluster().time()  + _dtoffset; // following Pasha's convention
   }
+
+  // bool 
+  // TrkCaloHit::time(HitT0& t0) const{
+  //   HitT0 st0;
+  //   if (signalPropagationTime(st0)){
+  //     t0._t0    = caloCluster().time() - st0._t0 -_dtoffset;
+  //     t0._t0err = st0._t0err;
+  //     return true;
+  //   }else {
+  //     return false;
+  //   }
+  // }
 
   TrkErrCode
   TrkCaloHit::updateMeasurement(const TrkDifTraj* traj) {
@@ -59,6 +69,15 @@ namespace mu2e
     // find POCA to the wire
     updatePoca(traj);
     if( poca().status().success()) {
+// check the cluster distance to make sure we're on the right loop
+      if(hitLen() < _hittraj->lowRange() || hitLen() > 1.5*_hittraj->hiRange()){
+	double cost = traj->direction(fltLen()).dot(_hittraj->direction(hitLen()));
+	double smax =  0.5*_hittraj->hiRange(); // approximate shwowermax
+	double dflt = (hitLen()-smax)/cost;
+	setFltLen(fltLen() - dflt);
+	setHitLen(smax);
+	updatePoca(traj);
+      }
       status = poca().status();
       double residual = poca().doca();
       setHitResid(residual);
@@ -84,18 +103,26 @@ namespace mu2e
 
 
   bool TrkCaloHit::signalPropagationTime(TrkT0& t0) {
-    t0._t0 = 0;//FIXME!
-    t0._t0err = 0.5;//FIXME!
-    return true;
+  // compute the light propagation time.
+  // light propagation velocity should come from configuration FIXME!
+    static const double vlprop =200.0; // mm/nsec  Needs better calibration FIXME!!
+    double tlight =0.0;
+    if(poca().status().success()){
+// time for light to get to SIPMs at the back of the crystals, bounded by crystal length
+      double clen = _clen-std::min(_clen,std::max(0.0,poca().flt2()));
+      tlight = clen/vlprop;
+    }
+    t0._t0    =  tlight;
+    t0._t0err = _tErr; // intrinsic error on time, used in T0 updating. 
+                       //Contribution from the uncertainty of the light propagation is below 100 ps
+
+    return true;//FIXME!
   }
 
+// this function isn't used and needs to be removed FIXME!
   void
   TrkCaloHit::trackT0Time(double& htime, double t0flt, const TrkDifPieceTraj* ptraj, double vflt){
-    // compute the flightlength to this hit from z=0
-    CLHEP::Hep3Vector hpos;
-    hitPosition(hpos);
-    double hflt  = ptraj->zFlight(hpos.z()) - t0flt;
-    htime = time() + _dtoffset - hflt/vflt;
+    throw cet::exception("RECO")<<"mu2e::TrkCaloHit: obsolete function"<< endl;
   }
 
   bool

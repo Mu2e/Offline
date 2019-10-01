@@ -1,0 +1,18 @@
+#include "TrackerConditions/fcl/prolog.fcl"
+
+BEGIN_PROLOG
+
+Proditions : {
+   fullReadoutStraw : @local::FullReadoutStraw
+   deadStraw : @local::DeadStraw
+   strawDrift : @local::StrawDrift
+   strawPhysics : @local::StrawPhysics
+   strawElectronics : @local::StrawElectronics
+   strawResponse : @local::StrawResponse
+   alignedTracker : @local::AlignedTracker
+   mu2eMaterial : @local::Mu2eMaterial
+   mu2eDetector : @local::Mu2eDetector
+   verbose : 0
+}
+
+END_PROLOG

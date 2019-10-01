@@ -23,7 +23,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 // Art includes
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 // Forward declarations.
 class TH1F;

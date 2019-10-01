@@ -26,7 +26,9 @@ namespace mu2e {
   class HelloProducer : public art::EDProducer {
 
   public:
-    explicit HelloProducer(fhicl::ParameterSet const& pset){
+    explicit HelloProducer(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset}
+    {
       produces<GenParticleCollection>();
     }
 

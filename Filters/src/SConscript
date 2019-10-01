@@ -23,6 +23,7 @@ rootlibs  = env['ROOTLIBS']
 #    ] )
 
 helper.make_plugins( [
+  'mu2e_SeedService_SeedService_service',
     'mu2e_Mu2eUtilities',
     'mu2e_CaloCluster',
     'mu2e_MCDataProducts',
@@ -40,8 +41,9 @@ helper.make_plugins( [
     'art_Framework_Core',
     'art_Framework_Principal',
     'art_Framework_Services_Registry',
-    'art_Framework_Services_Optional',
-    'art_Framework_Services_Optional_TFileService_service',
+    'art_root_io_tfile_support',
+    'art_root_io_TFileService_service',
+    'art_Framework_Services_Optional_RandomNumberGenerator_service',
     'art_Persistency_Common',
     'art_Persistency_Provenance',
     'art_Utilities',
@@ -55,6 +57,7 @@ helper.make_plugins( [
     rootlibs,
     'boost_filesystem',
     'boost_system',
+    'hep_concurrency',
     ] )
 
 #helper.make_dict_and_map( [

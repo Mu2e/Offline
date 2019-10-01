@@ -17,6 +17,7 @@
 #include "art/Framework/Modules/MixFilter.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
+#include "art_root_io/RootIOPolicy.h"
 
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/Sequence.h"
@@ -82,12 +83,10 @@ namespace mu2e {
     art::InputTag pbiTag_;
     const double meanEventsPerProton_;
     const int debugLevel_;
+    art::RandomNumberGenerator::base_engine_t& engine_;
     artURBG urbg_;
 
     ProtonBunchIntensity pbi_;
-
-    // intended to be called from the constructor, thus static
-    static art::RandomNumberGenerator::base_engine_t& createArtEngine();
 
   public:
     MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper &helper);
@@ -98,21 +97,13 @@ namespace mu2e {
   };
 
   //================================================================
-  art::RandomNumberGenerator::base_engine_t&
-  MixBackgroundFramesDetail::createArtEngine() {
-    auto& engine = art::ServiceHandle<art::RandomNumberGenerator>()->getEngine();
-    int dummy(0);
-    engine.setSeed( art::ServiceHandle<SeedService>()->getSeed(), dummy );
-    return engine;
-  }
-
-  //================================================================
   MixBackgroundFramesDetail::MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper& helper)
     : spm_{ retrieveConfiguration("mu2e", pset).products(), helper }
     , pbiTag_{ retrieveConfiguration("mu2e", pset).protonBunchIntensityTag() }
     , meanEventsPerProton_{ retrieveConfiguration("mu2e", pset).meanEventsPerProton() }
     , debugLevel_{ retrieveConfiguration("mu2e", pset).debugLevel() }
-    , urbg_{ createArtEngine() }
+    , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
+    , urbg_{ engine_ }
   {}
 
   //================================================================
@@ -132,7 +123,7 @@ namespace mu2e {
 
   //================================================================
   // This is the module class.
-  typedef art::MixFilter<MixBackgroundFramesDetail> MixBackgroundFrames;
+  typedef art::MixFilter<MixBackgroundFramesDetail,art::RootIOPolicy> MixBackgroundFrames;
 }
 
 DEFINE_ART_MODULE(mu2e::MixBackgroundFrames);

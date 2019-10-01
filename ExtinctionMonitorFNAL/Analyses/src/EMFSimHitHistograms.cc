@@ -9,7 +9,7 @@
 
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 #include "cetlib_except/exception.h"

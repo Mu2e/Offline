@@ -120,6 +120,8 @@ class Mu2eG4EventAction : public G4UserEventAction
     art::Event *_artEvent;
     EventStash *_stashForEventData;
     int eventNumberInProcess;
+    
+    bool _g4InternalFiltering;
 
     // products for the g4study
     //std::unique_ptr<StepPointMCCollection> steppingPoints;    

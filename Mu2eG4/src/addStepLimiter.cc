@@ -45,6 +45,14 @@ namespace mu2e{
     list.push_back( "proton" );
     list.push_back( "anti_proton"     );
     list.push_back( "chargedgeantino" );
+    list.push_back( "deuteron" );
+    list.push_back( "anti_deuteron" );
+    list.push_back( "triton" );
+    list.push_back( "anti_triton" );
+    list.push_back( "He3" );
+    list.push_back( "anti_He3" );
+    list.push_back( "alpha" );
+    list.push_back( "anti_alpha" );
 
     // Do the work for particles in this list.
     addStepLimiter( list );

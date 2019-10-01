@@ -7,37 +7,6 @@
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
 
-BEGIN_PROLOG
-#prescale factor for the unbiased trigger
-unbiased_evt_sf        : 500
-#prescale factors for the strawDigi count filter
-sDCount_evt_sf         : 500
-sDCount_sf             : 1
-#prescale factors for the "large" strawDigi counter filter
-largeSDCount_evt_sf    : 500
-largeSDCount_sf        : 1
-#prescale factor for the calorimeter-only trigger
-caloOnly_evt_sf        : 1
-caloOnly_sf            : 1
-#prescale factor for the calorimeter cosmic muon calibration
-caloCosmicMuon_evt_sf  : 1
-caloCosmicMuon_sf      : 1
-#prescale factor fot the tracker-only track triggers
-# downstream e-
-tprDeMSeed_evt_sf      : 1
-tprDeMSeed_sf          : 1
-# downstream e+
-tprDePSeed_evt_sf      : 1
-tprDePSeed_sf          : 1
-#prescale factor fot the calo-seeded track triggers
-# downstream e-
-cprDeMSeed_evt_sf      : 1
-cprDeMSeed_sf          : 1
-# downstream e+
-cprDePSeed_evt_sf      : 1
-cprDePSeed_sf          : 1
-END_PROLOG
-
 #include "Trigger/fcl/templates.fcl"
 
 process_name : globalTrigger
@@ -45,28 +14,13 @@ process_name : globalTrigger
 source :
 {
     module_type : RootInput
+    inputCommands : [  "keep *_*_*_*",
+		       "drop *mu2e::TriggerInfo_*_*_*"]
 }
 # we don't need any simulation services for this job
+#services : @local::Services.Reco
+
 services : @local::Services.Reco
-
-services : {
-    message               : @local::default_message
-    TFileService          : { fileName : "globalTrigger.root" }
-
-    RandomNumberGenerator : { }
-    #   Timing                : { }
-
-    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"          }
-    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
-    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt"   }
-    G4Helper               : { }
-    BTrkHelper             : @local::BTrkHelperDefault
-    SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
-	maxUniqueEngines :  20
-    }
-    
-}
 
 # timing information
 services.TimeTracker : {
@@ -93,13 +47,13 @@ physics : {
     analyzers : {  
 
 	readTriggerInfo : { @table::analyzers.ReadTriggerInfo
-	    nFilters      : 35
+	    nFilters      : 70
 	    nTrackTriggers: 5
 	    SelecEvents   : [ unbiased_path, 
-			      minimumbiasSdCount_path,
-			      largeSdCount_path,
-			      caloOnly_path,
-			      tprDeMSeed_path, tprDePSeed_path, cprDeMSeed_path, cprDePSeed_path ]
+			      minimumbiasSDCount_path,
+			      largeSDCount_path,
+			      caloMVACE_path,
+			      tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
 	}
 	
     }
@@ -108,35 +62,38 @@ physics : {
     unbiased_path                : [ @sequence::paths.unbiased                         ]
     
     #minimum bias filters
-    minimumbiasSdCount_path      : [ @sequence::paths.minimumbiasSdCount             ]
+    minimumbiasSDCount_path      : [ @sequence::paths.minimumbiasSDCount               ]
 
     #path for selecting events with large ammount of strawDigis
-    largeSdCount_path            : [ @sequence::paths.largeSdCount                   ]
+    largeSDCount_path            : [ @sequence::paths.largeSDCount                     ]
 
     #path for the calorimeter only trigger
-    caloOnly_path                : [ FetchCaloDigis, @sequence::paths.caloOnly         ]
+    caloMVACE_path               : [ fetchCaloDigis, @sequence::paths.caloMVACE        ]
 
     #path for calorimeter cosmic muon calibration
-    caloCosmicMuon_path          : [ FetchCaloDigis, @sequence::paths.caloCosmicMuon   ]
+    caloCosmicMuon_path          : [ fetchCaloDigis, @sequence::paths.caloCalibCosmic  ]
 
     #paths for TrkPatRec downstream e- and e+
-    tprDeMSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDeMSeed        ]
-    tprDePSeed_path              : [ TPRFetchDigis, @sequence::paths.tprDePSeed        ]
+    tprSeedDeM_path              : [ tprFetchDigis, @sequence::paths.tprSeedDeM        ]
+    tprSeedDeP_path              : [ tprFetchDigis, @sequence::paths.tprSeedDeP        ]
 
     #paths for CalPatRec downstream e- and e+
-    cprDeMSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDeMSeed        ]
-    cprDePSeed_path              : [ CPRFetchDigis, @sequence::paths.cprDePSeed        ]
+    cprSeedDeM_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeM        ]
+    cprSeedDeP_path              : [ cprFetchDigis, @sequence::paths.cprSeedDeP        ]
     
     
-    out           : [ readTriggerInfo ]
+#    out           : [ readTriggerInfo ]
     
-#    out           : [ ReadTriggerInfo, triggerOutput ]
+
+    out           : [ readTriggerInfo, triggerOutput ]
     end_paths     : [ out ]
 }
 
 outputs : {
     @table::outputs
 }
+
+services.TFileService.fileName : "globalTrigger.root"
 
 
 

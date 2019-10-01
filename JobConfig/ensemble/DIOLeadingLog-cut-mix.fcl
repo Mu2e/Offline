@@ -1,0 +1,32 @@
+#include "JobConfig/mixing/prolog.fcl"
+process_name: ensembleMix
+
+source: { module_type : EmptyEvent }
+services: @local::Services.Sim
+physics : { 
+  producers : {
+    generate : @local::EventGenerator.producers.dioalll
+    @table::Mixing.producers
+  }
+  filters: { @table::Mixing.filters }
+  analyzers: { @table::Mixing.analyzers }
+  TriggerPath : @local::Mixing.TriggerPath
+  EndPath : @local::Mixing.EndPath
+}
+outputs: { Output : @local::Mixing.Output }
+#
+# final configuration
+#
+#include "JobConfig/mixing/epilog.fcl"
+physics.producers.generate.physics.genId : dioTail
+
+physics.producers.generate.physics.elow : ${minE}
+
+physics.filters.DigiFilter.particleTypes : ${particleTypes}
+physics.filters.DigiFilter.MinParticleMom : ${minMom}
+physics.producers.generate.doHistograms : false
+
+# customize the output
+services.TFileService.fileName: "nts.owner.DIOLeadingLog-cut-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.DIOLeadingLog-cut-mix.version.sequencer.art"
+physics.end_paths : [ EndPath ] # needed for generate_fcl

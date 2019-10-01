@@ -1,5 +1,5 @@
 //
-// TTracker time cluster diagnostics
+// Tracker time cluster diagnostics
 //
 // Original author D. Brown and G. Tassielli
 //
@@ -10,7 +10,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 // mu2e
 #include "GeneralUtilities/inc/Angles.hh"
 #include "Mu2eUtilities/inc/MVATools.hh"
@@ -95,7 +95,7 @@ namespace mu2e {
     double        _tmax;
     double        _tbin;
     unsigned      _nbins;
-    // cache of event objects
+// cache of event objects
     const ComboHitCollection*		  _chcol;
     const TimeClusterCollection*	  _tccol;
     const CaloClusterCollection*	  _cccol;
@@ -116,6 +116,7 @@ namespace mu2e {
     vector<TimeClusterInfo>	  _alltc; // info about all TimeClusters in the event, sorted by # CE
     // time offsets
     SimParticleTimeOffset _toff;
+    float		_pitch; // average helix pitch (= dz/dflight, =sin(lambda))
     //t0 calculator
     TrkTimeCalculator _ttcalc;
 // helper functions
@@ -159,9 +160,10 @@ namespace mu2e {
     _tmax		(pset.get<double>("tmax",1700.0)),
    _tbin		(pset.get<double>("tbin",15.0)),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
+    _pitch             (pset.get<float>(  "AveragePitch",0.6)), // =sin(lambda)
     _ttcalc            (pset.get<fhicl::ParameterSet>("T0Calculator",fhicl::ParameterSet()))
     {
-    // set # bins for time spectrum plot
+      // set # bins for time spectrum plot
     _nbins = (unsigned)rint((_tmax-_tmin)/_tbin);
     _tcsel = StrawHitFlag(StrawHitFlag::tclust); 
     _cesel = StrawHitFlag(StrawHitFlag::track);
@@ -316,7 +318,7 @@ namespace mu2e {
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	++nce;
 	_ceclust._pos += ch.pos();
-	_ceclust._time +=  _ttcalc.comboHitTime(ch);
+	_ceclust._time +=  _ttcalc.comboHitTime(ch,_pitch);
       }
     }
     if(nce > 0){
@@ -353,7 +355,7 @@ namespace mu2e {
       ComboHit const& ch = _chcol->at(ich);
       TimeClusterHitInfo tchi;
       tchi._time = ch.time();
-      tchi._dt = _ttcalc.comboHitTime(ch) -tc._t0._t0;
+      tchi._dt = _ttcalc.comboHitTime(ch,_pitch) -tc._t0._t0;
       tchi._wdist = ch.wireDist();
       tchi._werr = ch.wireRes();
       XYZVec const& pos = ch.pos();
@@ -391,8 +393,10 @@ namespace mu2e {
 	  tchi._mcproc = sp->creationCode();
 	  if(sp->genParticle().isNonnull())
 	    tchi._mcgen = sp->genParticle()->generatorId().id();
-	  if(primary.isNonnull())
-	    tchi._mcrel = MCRelationship::relationship(primary,sp);
+	  if(primary.isNonnull()){
+	    MCRelationship rel(primary,sp);
+	    tchi._mcrel = rel.relationship();
+	  }
 	}
       }
       _tchinfo.push_back(tchi);
@@ -439,7 +443,7 @@ namespace mu2e {
     unsigned nstrs = _chcol->size();
     for(unsigned ich=0; ich<nstrs;++ich){
       ComboHit const& ch = _chcol->at(ich);
-      float time = _ttcalc.comboHitTime(ch);
+      float time = _ttcalc.comboHitTime(ch,_pitch);
       bool conversion = _shfcol[ich].hasAllProperties(_cesel);
       bool selected = _shfcol[ich].hasAllProperties(_hsel) && !_shfcol[ich].hasAnyProperty(_hbkg);
       bool tclust = _shfcol[ich].hasAllProperties(_tcsel);
@@ -457,7 +461,7 @@ namespace mu2e {
     if(_cccol != 0){
       for(auto cc : *_cccol) {
 	if(cc.energyDep() > _ccmine)
-	  catsp->Fill( _ttcalc.caloClusterTime(cc),_ccwt);
+	  catsp->Fill( _ttcalc.caloClusterTime(cc,_pitch),_ccwt);
       }
     }
     // plot time cluster times
@@ -551,8 +555,8 @@ namespace mu2e {
     // calo info if available
     if(tc._caloCluster.isNonnull()){
       tcinfo._ecalo = tc._caloCluster->energyDep();
-      tcinfo._tcalo = _ttcalc.caloClusterTime(*tc._caloCluster);
-      tcinfo._dtcalo = _ttcalc.caloClusterTime(*tc._caloCluster) - tc._t0._t0;
+      tcinfo._tcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch);
+      tcinfo._dtcalo = _ttcalc.caloClusterTime(*tc._caloCluster,_pitch) - tc._t0._t0;
       // calculate the cluster position.  Currently the Z is in disk coordinates and must be translated, FIXME!
       XYZVec cog = Geom::toXYZVec(calo->geomUtil().mu2eToTracker(calo->geomUtil().diskFFToMu2e(tc._caloCluster->diskId(),tc._caloCluster->cog3Vector())));
       tcinfo._cog = cog;
@@ -576,7 +580,7 @@ namespace mu2e {
     // count CE hits 
     for (auto const& idx : tc._strawHitIdxs) {
       ComboHit const& ch = _chcol->at(idx);
-      float ht = _ttcalc.comboHitTime(ch);
+      float ht = _ttcalc.comboHitTime(ch,_pitch);
       tcinfo._maxhtime = std::max( ht , tcinfo._maxhtime);
       tcinfo._minhtime = std::min( ht , tcinfo._minhtime);
       if(_mcdiag){

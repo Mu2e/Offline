@@ -1,0 +1,8 @@
+           Release notes for Mu2e Offline software, v7_3_2
+
+1) 2/11/19 rlc
+   merge straw_conditions branch.  This creates Db and Proditions
+   service, and make them required for straw reco and track fitting.
+   The current default settings are still to take conditions
+   from fcl, and not the database itself.
+

@@ -25,7 +25,8 @@ namespace mu2e {
 
   VolumeInfo constructHall(const VolumeInfo& worldInfo, const SimpleConfig& config);
 
-  void constructSolids( const VolumeInfo& hallInfo, 
+  void constructSolids( const SimpleConfig& config,
+                        const VolumeInfo& hallInfo, 
 		        const std::map<std::string,ExtrudedSolid>& solidMap,
 			const CLHEP::HepRotation& rot,
 			const NotchManager& notchMgr);

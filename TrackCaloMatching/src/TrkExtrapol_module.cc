@@ -8,9 +8,9 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 
 //CLHEP includes
@@ -37,8 +37,7 @@
 #include "BTrk/KalmanTrack/KalRep.hh"
 // conditions
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // data
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -46,7 +45,7 @@
 #include "MCDataProducts/inc/StrawHitMCTruth.hh"
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
+#include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 
 
 //calorimeter includes
@@ -115,6 +114,7 @@ namespace mu2e {
   public:
 
     explicit TrkExtrapol(fhicl::ParameterSet const& pset):
+      art::EDProducer{pset},
       _fitterModuleLabel(pset.get<string>("fitterModuleLabel")),
       _tpart((TrkParticle::type)(pset.get<int>("fitparticle",TrkParticle::e_minus))),
       _fdir((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection",TrkFitDirection::downstream))),

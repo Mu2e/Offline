@@ -6,7 +6,7 @@ BEGIN_PROLOG
 #------------------------------------------------------------------------------
 # "muonStops" is a TDR config, deprecated for CD3:
 muonStops : {
-    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+#    inputFiles            : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
     averageNumRecordsToUse: 500000
     treeName              : "stoppedMuonDumper/stops"
     branchName            : "stops"
@@ -17,19 +17,21 @@ muonStops : {
 #   tdr       - 17 target configuration
 #   cd3       - 34 target configuration, produced by Andy Edmonds in 2017.
 #   mdc2018_x - 34 target configuration, produced during MDC2018.  There may be several versions.
-merged_tgtStops_tdr       : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-merged_tgtStops_cd3       : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
+merged_tgtStops_tdr           : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+merged_tgtStops_cd3           : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-tgtstops.v533_v543_v563b.001002_00000000.root" ]
 mergedMuon_tgtStops_mdc2018_1 : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
 
-merged_ootStops_tdr       : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
-merged_ootStops_cd3       : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
+merged_ootStops_tdr           : [ "mergedMuonStops/mustops.1025a_1426a_1504a.15318715.root" ]
+merged_ootStops_cd3           : [ "mergedMuonStops/nts.mu2e.cd3-beam-nts3-ootstops.v533_v543_v563b.001002_00000000.root" ]
 mergedMuon_ootStops_mdc2018_1 : [ "mergedMuonStops/nts.mu2e.DS-OOTstops.MDC2018a.001002_00000000.root" ]
 
 mergedMuon_ipaStops_mdc2018_1 : [ "mergedMuonStops/nts.mu2e.DS-IPAstops.MDC2018a.001002_00000000.root" ]
 
-mergedMuon_tgtStops_mdc2018 : @local::mergedMuon_tgtStops_mdc2018_1
-mergedMuon_ootStops_mdc2018 : @local::mergedMuon_ootStops_mdc2018_1
-mergedMuon_ipaStops_mdc2018 : @local::mergedMuon_ipaStops_mdc2018_1
+mergedMuon_tgtStops_mdc2018   : @local::mergedMuon_tgtStops_mdc2018_1
+mergedMuon_ootStops_mdc2018   : @local::mergedMuon_ootStops_mdc2018_1
+mergedMuon_ipaStops_mdc2018   : @local::mergedMuon_ipaStops_mdc2018_1
+
+mergedPion_tgtStops_mdc2018   : ["mergedMuonStops/nts.mu2e.pion-DS-TGTstops.MDC2018a.001002_00000000.root" ]
 
 # CD3 stopped muon configs.
 mu2e.tgtMuonStops: {
@@ -70,7 +72,7 @@ dummyGenerator : {
 CeEndpointGun: {
     module_type    : StoppedParticleReactionGun
     physics: {
-      genId : conversionGun 
+      genId : CeEndpoint 
       pdgId : 11
       spectrumShape: CeEndpoint
       spectrumVariable: totalEnergy
@@ -81,26 +83,29 @@ CeEndpointGun: {
 CeplusEndpointGun : {
     module_type    : StoppedParticleReactionGun
     physics: {
-	genId : conversionGun 
-	pdgId : -11
-	# temporary hack until we get this number into code FIXME!
+	genId           : CeEndpoint 
+	pdgId           : -11
+# temporary hack until we get this number into code FIXME!
 	spectrumShape: flat
-	elow : 92.32
-	ehi : 92.3200001
+	elow            : 92.32
+	ehi             : 92.3200001
 	spectrumVariable: totalEnergy
     }
     muonStops      : @local::mu2e.tgtMuonStops
 }
 
 PrimaryProtonGunN: {
-    module_type          : PrimaryProtonGunN
-    inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-    stashSize     : @nil
+    module_type : PrimaryProtonGunN
+    inputfile   : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
+    stashSize   : @nil
 }
 
 
 StoppedParticleReactionGun: {
-    @table::CeEndpointGun 
+    @table::CeEndpointGun
+    physics:  { @table::CeEndpointGun.physics
+	genId : StoppedParticleReactionGun
+    }
 }
 
 
@@ -128,27 +133,92 @@ randomsaver: {
 # transitioning ... EventGenerator producers table
 #------------------------------------------------------------------------------
 EventGenerator : {
+    pionStops : {
+	treeName               : "stoppedPionDumper/stops"
+	branchName             : "stops"
+	inputFiles             : ["mergedMuonStops/nts.mu2e.pion-DS-TGTstops.MDC2018a.001002_00000000.root" ]
+	averageNumRecordsToUse : 0
+	verbosityLevel         : 0
+    }
+    muonStops      : { @table::mu2e.tgtMuonStops
+	inputFiles : @local::mergedMuon_tgtStops_mdc2018_1
+    } 
+}
+
+EventGenerator : { @table::EventGenerator 
     producers : {
 	CeEndpointGun               : { @table::CeEndpointGun               }
 	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
         PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 #------------------------------------------------------------------------------
-# CE on Al - leading logs approximation, spectrum from mu2e-7615 by R.Czafron
+# new implementation from Eleonora, doesn't require tabulations of LL spectra
+# conversion e- and e+ on Al27 
 #------------------------------------------------------------------------------
-  	ceLeadingLog : { @table::StoppedParticleReactionGun # CE + rad corr
-	    physics : {
-		pdgId            :  11
-		spectrumVariable : "totalEnergy"
-		spectrumShape    : "tabulated"
-		spectrumFileName : "ConditionsService/data/szafron_mu2e_7615.tbl"
+	CeMEndpoint              : {   module_type: StoppedParticleReactionGun
+	    physics: { @table::StoppedParticleReactionGun.physics
+		genId                 : CeEndpoint 
+		pdgId                 : 11
+		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		ehi                   : 104.97
+	    } 
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
 	    }
+	    doHistograms              : true
+	}
+
+	CePEndpoint              : {   module_type: StoppedParticleReactionGun
+	    physics: { @table::StoppedParticleReactionGun.physics
+		genId                 : CeEndpoint 
+		pdgId                 : -11
+		spectrumShape         : "CeEndpoint"       # could also be "flat" or "ceLeadingLog" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		ehi                   : 92.32
+	    } 
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
+	    }
+	    doHistograms              : true
+	}
+
+	CeMLeadingLog              : {   module_type: StoppedParticleReactionGun
+	    physics: { @table::StoppedParticleReactionGun.physics
+		genId                 : CeLeadingLog 
+		pdgId                 : 11
+		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		spectrumResolution    : 0.1                # MeV
+		ehi                   : 104.97
+		elow                  : 0.
+	    } 
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
+	    }
+	    doHistograms              : true
+	}
+
+	CePLeadingLog              : {   module_type: StoppedParticleReactionGun
+	    physics: { @table::StoppedParticleReactionGun.physics
+		genId                 : CeLeadingLog 
+		pdgId                 : -11
+		spectrumShape         : "ceLeadingLog"     # could also be "flat" or "CeEndpoint"
+		spectrumVariable      : "totalEnergy"      # could be  "kineticEnergy" or "momentum" or "totalEnergy"
+		spectrumResolution    : 0.1                # MeV
+		ehi                   : 92.32
+		elow                  : 0.
+	    }
+	    muonStops            : { @table::mu2e.tgtMuonStops
+		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+	    }
+	    doHistograms              : true
 	}
 #------------------------------------------------------------------------------
 # generic electron and muon guns, default momentum is that of the CE on Al
 #------------------------------------------------------------------------------
   	egun : { @table::StoppedParticleReactionGun 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 11
 		elow             : 104.97175
 		ehi              : 104.97176
@@ -156,12 +226,12 @@ EventGenerator : {
 		spectrumShape    : "flat"
 	    }
 	    muonStops            : { @table::mu2e.tgtMuonStops
-		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	}
 
   	mgun : { @table::StoppedParticleReactionGun 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 13
 		elow             : 104.97175
 		ehi              : 104.97176
@@ -169,14 +239,14 @@ EventGenerator : {
 		spectrumShape    : "flat"
 	    }
 	    muonStops            : { @table::mu2e.tgtMuonStops
-		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
+		inputFiles       : @local::mergedMuon_tgtStops_mdc2018_1
 	    }
 	}
 #------------------------------------------------------------------------------
 # DIO electrons, Al, leading order spectrum
 #------------------------------------------------------------------------------
   	dioallo : { @table::StoppedParticleReactionGun # DIO Al LO 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            :  11
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
@@ -188,7 +258,7 @@ EventGenerator : {
 # 'tabulated' option ignores elow and ehi
 #------------------------------------------------------------------------------
   	dioalll : { @table::StoppedParticleReactionGun # DIO Al leading log 
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            :  11
 		spectrumVariable : "totalEnergy"
 		spectrumShape    : "tabulated"
@@ -199,7 +269,7 @@ EventGenerator : {
 # 100 MeV/c protons
 #------------------------------------------------------------------------------
   	pgun : { @table::StoppedParticleReactionGun # p(proton)=100 MeV/c
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 2212
 		elow             :  99.99
 		ehi              : 100.01
@@ -209,7 +279,7 @@ EventGenerator : {
 	}
 
   	photonGun : { @table::StoppedParticleReactionGun # p(photon)=100 MeV/c
-	    physics : {
+	    physics : { @table::StoppedParticleReactionGun.physics
 		pdgId            : 22
 		elow             :  99.999
 		ehi              : 100.001
@@ -219,6 +289,50 @@ EventGenerator : {
 	    muonStops            : { @table::mu2e.tgtMuonStops
 		inputFiles: @local::mergedMuon_tgtStops_mdc2018_1
 	    }
+	}
+
+	RPCGun : { 
+	    module_type    : RPCGun
+	    verbosityLevel : 0
+	    doHistograms   : false
+	    physics : {
+		generateIntConversion : 0    # 0:photons 1: e+e- internal conversion pairs 
+		spectrumShape         : "Bistirlich"    # could also be "flat"
+		elow                  : 1.5
+		ehi                   : 140.1
+		spectrumResolution    : 0.1 # hopefully, in MeV
+	    }
+	    pionStops                 : { @table::EventGenerator.pionStops }
+	}
+        
+        RMCGun : {
+	    module_type    : RMCGun
+	    verbosityLevel : 0
+	    doHistograms   : false
+	    physics : {
+		generateIntConversion : 0
+		spectrumShape         : "flat"
+		elow                  : 60
+		ehi                   : 110
+		spectrumResolution    : 0.1
+	    }
+	    muonStops      : { @table::EventGenerator.muonStops }
+	}
+
+	StoppedParticleRMCGun : { 
+	    module_type    : StoppedMuonRMCGun
+	    verbosityLevel : 0
+	    doHistograms   : false
+	    physics : {
+	        rhoInternal    : 1.0
+	        elow           : 1.5
+	        ehi            : 120.0 
+		generateIntConversion : 0    # 0:photons 1: e+e- internal conversion pairs 
+		spectrumShape         : "flat"    # could also be "flat"
+		physicsVerbosityLevel : 0
+	    }
+	    muonStops                 : { @table::muonStops  }
+
 	}
     }
 }

@@ -33,7 +33,7 @@ physics:
 {
     producers:
     {
-        @table::EventMixing.producers
+        @table::CommonMC.producers
         @table::Tracking.producers
     }
 
@@ -57,7 +57,7 @@ physics:
         }
     }
 
-    trigFilter: [@sequence::EventMixing.TimeMaps,
+    trigFilter: [@sequence::CommonMC.DigiSim,
                  @sequence::Tracking.DigiSim,
                  @sequence::Tracking.TPRDeM,
                  TrkPatRecFilter]
@@ -79,11 +79,14 @@ outputs:
             "keep *_*_*_cosmics1",
             "keep *_*_*_cosmics2",
             "keep *_makeSD_*_*",
-            "keep *_muonTimeMap_*_*",
-            "keep *_protonTimeMap_*_*"
+            "keep *_*TimeMap_*_*"
         ]
     }
 }
+
+# force all muons to hit the surface at 800ns into event window
+physics.producers.cosmicTimeMap.tmin = 800.0
+physics.producers.cosmicTimeMap.tmax = 800.0
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1

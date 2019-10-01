@@ -1,0 +1,13 @@
+physics.filters.caloMVACEFilter.diagLevel               : 0						    
+physics.filters.caloMVACEFilter.MVAMethod               : BDT						    
+physics.filters.caloMVACEFilter.weightsfile             : "CaloFilters/data/ce_bkg_ecal_20_BDT.weights.xml" 
+physics.filters.caloMVACEFilter.TimeOFFSET              : 22.5						    
+physics.filters.caloMVACEFilter.MVAhighcut0             : 0.1						    
+physics.filters.caloMVACEFilter.MVArpivot0              : 445 # mm					    
+physics.filters.caloMVACEFilter.MVApivotcut0            : 0.1						    
+physics.filters.caloMVACEFilter.MVAlowcut0              : 0.0						    
+physics.filters.caloMVACEFilter.MVAhighcut1             : 0.1						    
+physics.filters.caloMVACEFilter.MVArpivot1              : 445 # mm					    
+physics.filters.caloMVACEFilter.MVApivotcut1            : 0.1						    
+physics.filters.caloMVACEFilter.MVAlowcut1              : 0.0						      
+physics.filters.caloMVACEFilter.downscale500factor      : 1						    

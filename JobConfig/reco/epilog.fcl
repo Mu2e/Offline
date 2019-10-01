@@ -1,0 +1,8 @@
+# fixes
+physics.filters.CalHelixFinderDe.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
+physics.filters.CalHelixFinderDmu.StrawHitFlagCollectionLabel : "FlagBkgHits:ComboHits"
+
+# update labels to read compressed output from MDC2018
+physics.producers.CrvCoincidenceClusterMatchMC.crvWaveformsModuleLabel : "compressDigiMCs"
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.TimeMaps ]
+# temporary

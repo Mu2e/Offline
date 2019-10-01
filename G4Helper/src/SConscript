@@ -12,7 +12,7 @@ helper=mu2e_helper(env);
 mainlib = helper.make_mainlib ( [ 'mu2e_GeometryService',
                                   'mu2e_Mu2eInterfaces',
                                   'art_Framework_Services_Registry',
-                                  'art_Framework_Services_Optional',
+                                  'art_root_io_tfile_support',
                                   'art_Utilities',
                                   'canvas',
                                   'CLHEP',

@@ -49,7 +49,8 @@ namespace mu2e {
 
     public:
       explicit PatRecTruthMaker(fhicl::ParameterSet const& pset)
-        : patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
+        : EDProducer{pset}
+        , patRecModuleLabel_(pset.get<std::string>("patRecModuleLabel"))
         , patRecInstanceName_(pset.get<std::string>("patRecInstanceName", ""))
         , clusterTruthModuleLabel_(pset.get<std::string>("clusterTruthModuleLabel"))
         , clusterTruthInstanceName_(pset.get<std::string>("clusterTruthInstanceName", ""))

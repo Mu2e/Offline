@@ -34,7 +34,8 @@ namespace mu2e {
 
   //================================================================
   SimParticleTimeMapUpdater::SimParticleTimeMapUpdater(const fhicl::ParameterSet& pset)
-    : timeCollection_(pset.get<std::string>("inputTimeCollection"))
+    : art::EDProducer{pset}
+    , timeCollection_(pset.get<std::string>("inputTimeCollection"))
     , remapping_(pset.get<std::string>("remapping"))
   {
     produces<SimParticleTimeMap>();

@@ -32,6 +32,9 @@ namespace mu2e {
     //from Mu2eG4_module, so we must make it public here
     void Mu2eG4MTRunManager::Mu2eG4WaitForEndEventLoopWorkers()
     {
+      if ( verboseLevel > 1 ) {
+        G4cout << __func__ << " called" << G4endl;
+      }
         WaitForEndEventLoopWorkers();
     }
 
@@ -40,6 +43,11 @@ namespace mu2e {
     //version of RunTermination due to the call of WaitForEndEventLoopWorkers()
     void Mu2eG4MTRunManager::Mu2eG4RunTermination()
     {
+
+      if ( verboseLevel > 0 ) {
+        G4cout << __func__ << " called" << G4endl;
+      }
+
         G4RunManager::TerminateEventLoop();
         G4RunManager::RunTermination();
     }

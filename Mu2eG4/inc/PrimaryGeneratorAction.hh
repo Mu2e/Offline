@@ -86,9 +86,14 @@ namespace mu2e {
       TH1D* _totalMultiplicity;
 
       int verbosityLevel_;
+
+      int standardMu2eDetector_;
       
       GenEventBroker* genEventBroker_;
       PerEventObjectsManager* perEvtObjManager;
+
+      bool preCreateIsomers_;
+      PDGCode::type pdgIdToGenerate_;
       
   };
 

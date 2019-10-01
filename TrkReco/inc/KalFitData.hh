@@ -39,10 +39,20 @@ namespace mu2e {
 // struct defining the Kalman fit inputs and output
 // an internal CalPatRec data structure
 // KalFitData doesn't own any pointers, '_krep' is handled in the pattern 
-// recognition modules, so, in principle, no need to delete it here
-// otherwise, a deletion of the list of KalFitDatas (a data product) resutls in a crash
+// recognition modules, so, no need to delete it here
+// otherwise, deletion of the list of KalFitData's (a data product) results in a crash
 //-----------------------------------------------------------------------------
   struct KalFitData {
+    struct Diag_t {
+      unsigned  diskId;	
+      unsigned  added;	
+      double    depth;	
+      double    dt;	
+      double    trkPath;
+      double    energy;	
+      double    doca;   
+    };
+    
     const art::Event*                 event;
     KalRep*                           krep;           // Kalman rep, owned by the collection
     const ComboHitCollection*         chcol;          // 
@@ -50,38 +60,28 @@ namespace mu2e {
     const StrawHitFlagCollection*     shfcol;         //
     std::string                       shDigiLabel;    // 
 
-    TrkParticle                       tpart;
     TrkFitDirection                   fdir;
     const CaloCluster*                caloCluster;    //
+    const CaloClusterCollection*      caloClusterCol;    //
 
     const HelixSeed*                  helixSeed;      //
     const KalSeed*                    kalSeed;        // 
-    //    TrkT0                             t0;             // estimate of the track t0
     HelixTraj*                        helixTraj;      // initial parameterization of the track
-    // std::vector<StrawHitIndex>*       hitIndices;     // list of hit indices, updates during the fit
-    // std::vector<StrawHitIndex>*       savedHits;      // list of hit indices, updates during the fit
-
-    //    TrkErrCode                        fit;            // error code from last fit
-    //    unsigned                          nt0iter;        // number of times t0 was iterated
     unsigned                          nweediter;      // number of iterations on hit weeding
-    //    unsigned                          nunweediter;    // number of iterations on hit unweeding
-    //    std::vector <Doublet>             listOfDoublets; // list of hist multiplets
-    //    int                               nrescued;       // N rescued hits
+    unsigned                          nweedtchiter;   // number of iterations on TrkCaloHit weeding
     std::vector<MissingHit_t>         missingHits; 
     int                               fitType;        // 0:seed 1:final
+    
+    Diag_t                            diag;
 //-----------------------------------------------------------------------------
 // constructors and destructor
 //-----------------------------------------------------------------------------
     KalFitData();
     ~KalFitData();
 
-    //    void    removeFailed() { if(fit.failure()) deleteTrack(); }
     void    deleteTrack ();
     KalRep* stealTrack  ();
     void    init        ();
-
-    //    int                               nHelixHits     () { return helixSeed->hits().size(); }
-
   };
 
 } 

@@ -30,7 +30,7 @@ namespace mu2e {
             "g4.printPhysicsProcessSummary",
             "g4.pointTrajectoryMinSteps",
             
-            // postG4InitializeTasks() call tree
+            // old post G4InitializeTasks() call tree
             "g4.PiENuPolicy",
             "g4.PiENuPolicyVerbosity",
             "g4.minRangeCut",
@@ -45,7 +45,7 @@ namespace mu2e {
             
             // Mu2eWorld
             "world.verbosityLevel",
-            "ttracker.ActiveWr_Wl_SD",
+            "tracker.ActiveWr_Wl_SD",
             "writeGDML",
             "GDMLFileName",
             "g4.stepper",

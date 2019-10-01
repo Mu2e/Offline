@@ -1,0 +1,8 @@
+           Release notes for Mu2e Offline software, v7_2_1
+3) brownd, song, pavel December 19, 2018
+  Updates to physics process generators and production scripts
+2) namtran Dec 11, 2018
+  Updates to CRY generator
+1) gianipez Nov 27, 2018
+  Updates to trigger filters and CalPatRec
+

@@ -23,6 +23,7 @@
 #include "GeomPrimitives/inc/Tube.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/VirtualDetector.hh"
 #include "DataProducts/inc/VirtualDetectorId.hh"
 #include "MECOStyleProtonAbsorberGeom/inc/MECOStyleProtonAbsorber.hh"
@@ -34,7 +35,7 @@
 #include "ProductionSolenoidGeom/inc/PSVacuum.hh"
 #include "ProtonBeamDumpGeom/inc/ProtonBeamDump.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 // G4 includes
 #include "G4Material.hh"
@@ -54,14 +55,16 @@ namespace mu2e {
   void constructVirtualDetectors( const SimpleConfig& _config ){
 
     // Place virtual detectors
+    const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
+    geomOptions->loadEntry( _config, "vd", "vd");
 
+    const bool vdIsVisible          = geomOptions->isVisible("vd"); 
+    const bool vdIsSolid            = geomOptions->isSolid("vd"); 
+    const bool forceAuxEdgeVisible  = geomOptions->forceAuxEdgeVisible("vd"); 
+    const bool doSurfaceCheck       = geomOptions->doSurfaceCheck("vd");
+    const bool placePV              = geomOptions->placePV("vd");
     int static const verbosityLevel = _config.getInt("vd.verbosityLevel",0);
 
-    bool const vdIsVisible         = _config.getBool("vd.visible",true);
-    bool const vdIsSolid           = _config.getBool("vd.solid",true);
-    bool const forceAuxEdgeVisible = _config.getBool("g4.forceAuxEdgeVisible",false);
-    bool const doSurfaceCheck      = _config.getBool("g4.doSurfaceCheck",false) || _config.getBool("vd.doSurfaceCheck",false);
-    bool const placePV             = true;
 
     GeomHandle<VirtualDetector> vdg;
     if( vdg->nDet()<=0 ) return;
@@ -121,8 +124,8 @@ namespace mu2e {
       if ( verbosityLevel > 0 ) {
 	cout << __func__ << " constructing TS2_Bend " <<  " at " 
 	     << vdg->getGlobal(myvdId) << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(myvdId) << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(myvdId) << endl;
 
       }
       CLHEP::HepRotation* tsBendrot = 
@@ -136,8 +139,8 @@ namespace mu2e {
 				  vdIsSolid, forceAuxEdgeVisible,
 				  placePV, false);
 
-        doSurfaceCheck && checkForOverlaps(myvd.physical, 
-					   _config, verbosityLevel>0);
+      doSurfaceCheck && checkForOverlaps(myvd.physical, 
+					 _config, verbosityLevel>0);
 
     }
 
@@ -148,8 +151,8 @@ namespace mu2e {
       if ( verbosityLevel > 0 ) {
 	cout << __func__ << " constructing TS4_Bend " <<  " at " 
 	     << vdg->getGlobal(myvdId) << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(myvdId) << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(myvdId) << endl;
 
       }
       CLHEP::HepRotation* tsBendrot = 
@@ -157,14 +160,14 @@ namespace mu2e {
       tsBendrot->rotateX(90.0*CLHEP::deg);
       tsBendrot->rotateY(-45.0*CLHEP::deg);
       VolumeInfo myvd = nestTubs( VirtualDetector::volumeName(myvdId),
-				 vdParams, downstreamVacuumMaterial, tsBendrot,
+				  vdParams, downstreamVacuumMaterial, tsBendrot,
 				  vdg->getLocal(myvdId),
 				  parent, myvdId, vdIsVisible, G4Color::Red(),
 				  vdIsSolid, forceAuxEdgeVisible,
 				  placePV, false);
 
-        doSurfaceCheck && checkForOverlaps(myvd.physical, 
-					   _config, verbosityLevel>0);
+      doSurfaceCheck && checkForOverlaps(myvd.physical, 
+					 _config, verbosityLevel>0);
 
     }
 
@@ -274,61 +277,61 @@ namespace mu2e {
         }
       }
       vdId = VirtualDetectorId::STMUpstream;
-          if( vdg->exist(vdId) ) {
+      if( vdg->exist(vdId) ) {
 
-          if ( verbosityLevel > 0) {
-            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-          }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
+	}
     
-          double zvd = vdg->getGlobal(vdId).z();
-          if (opaflag) {
-            Ravr = (opari1 - opari0)/(opaz1 - opaz0) * (zvd - opaz0) + opari0;
-          }
-          double rvd = Ravr - 5.0;
+	double zvd = vdg->getGlobal(vdId).z();
+	if (opaflag) {
+	  Ravr = (opari1 - opari0)/(opaz1 - opaz0) * (zvd - opaz0) + opari0;
+	}
+	double rvd = Ravr - 5.0;
 
-          if ( verbosityLevel > 0) {
-            cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-              " z, r : " << zvd << ", " << rvd << endl;
-          }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
+	    " z, r : " << zvd << ", " << rvd << endl;
+	}
 
-          TubsParams vdParamsSTMUpstream(0.,rvd,vdHalfLength);
-	  std::string theDS3("DS3Vacuum");
-	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
-          VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
-            _helper->locateVolInfo(theDS3) :
-            _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
+	TubsParams vdParamsSTMUpstream(0.,rvd,vdHalfLength);
+	std::string theDS3("DS3Vacuum");
+	if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+	VolumeInfo const & parent = ( _config.getBool("isDumbbell",false) ) ?
+	  _helper->locateVolInfo(theDS3) :
+	  _helper->locateVolInfo("DS2Vacuum"); //DS3Vacuum to move the targets
             
-          CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
+	CLHEP::Hep3Vector const& parentInMu2e = parent.centerInMu2e();
           
-          if (verbosityLevel >0) {
-            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
-              zvd << endl;
-            cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z extent in Mu2e    : " <<
-              zvd - vdHalfLength << ", " << zvd + vdHalfLength << "\n" 
+	if (verbosityLevel >0) {
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z offset in Mu2e    : " <<
+	    zvd << endl;
+	  cout << __func__ << " " << VirtualDetector::volumeName(vdId) << " Z extent in Mu2e    : " <<
+	    zvd - vdHalfLength << ", " << zvd + vdHalfLength << "\n" 
                << " at " << vdg->getGlobal(vdId) <<  " parent: " << parent.centerInMu2e() << endl;
-         }
+	}
 
-          VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                    vdParamsSTMUpstream, downstreamVacuumMaterial, 0,
-                                    vdg->getLocal(vdId),
-                                    parent,
-                                    vdId,
-                                    vdIsVisible,
-                                    G4Color::Red(), vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false);
+	VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
+				  vdParamsSTMUpstream, downstreamVacuumMaterial, 0,
+				  vdg->getLocal(vdId),
+				  parent,
+				  vdId,
+				  vdIsVisible,
+				  G4Color::Red(), vdIsSolid,
+				  forceAuxEdgeVisible,
+				  placePV,
+				  false);
 
-          doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
+	doSurfaceCheck && checkForOverlaps(vd.physical, _config, verbosityLevel>0);
           
-          if ( verbosityLevel > 0) {
-            cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-                 << " at " << vdg->getGlobal(vdId) << endl
-                 << " at " << vdg->getLocal(vdId) << " w.r.t. parent (DS3Vacuum or DS2Vacuum?) " << endl;
-            cout << __func__ << "    VD parameters: " << vdParams << endl;
-            cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
-          }
-        }
+	if ( verbosityLevel > 0) {
+	  cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	       << " at " << vdg->getGlobal(vdId) << endl
+	       << " at " << vdg->getLocal(vdId) << " w.r.t. parent (DS3Vacuum or DS2Vacuum?) " << endl;
+	  cout << __func__ << "    VD parameters: " << vdParams << endl;
+	  cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	}
+      }
     }
 
 
@@ -414,13 +417,13 @@ namespace mu2e {
         }
     }
 
-    if ( _config.getBool("hasTTracker",false)  ) {
+    if ( _config.getBool("hasTracker",false)  ) {
 
 
-      // placing virtual detectors in the middle of the ttracker
+      // placing virtual detectors in the middle of the tracker
 
-      // check if ttracker exists and if the number of planes
-      // ttracker.numPlanes is even is done in VirtualDetectorMaker
+      // check if tracker exists and if the number of planes
+      // tracker.numPlanes is even is done in VirtualDetectorMaker
 
       vdId = VirtualDetectorId::TT_Mid;
       if( vdg->exist(vdId) ) {
@@ -430,12 +433,12 @@ namespace mu2e {
         }
 
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.mother().tubsParams().outerRadius();
-        double irvd = ttracker.mother().tubsParams().innerRadius();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        double orvd = tracker.mother().tubsParams().outerRadius();
+        double irvd = tracker.mother().tubsParams().innerRadius();
 
-        if ( ttracker.getSupportModel() == SupportModel::detailedv0 ) {
-          auto const& beams =  ttracker.getSupportStructure().beamBody();
+        if ( tracker.getSupportModel() == SupportModel::detailedv0 ) {
+          auto const& beams =  tracker.getSupportStructure().beamBody();
           if ( beams.empty() ){
             throw cet::exception("GEOM")
               << "Cannot create virtual detector " << VirtualDetectorId(vdId).name()
@@ -452,16 +455,16 @@ namespace mu2e {
             " z, r : " << zvd << ", " << irvd << " " << orvd << endl;
         }
 
-        TubsParams vdParamsTTracker(irvd,orvd,vdHalfLength);
+        TubsParams vdParamsTracker(irvd,orvd,vdHalfLength);
 
         VolumeInfo const & parent = _helper->locateVolInfo("TrackerMother");
 
         CLHEP::Hep3Vector vdPos = vdg->getGlobal(vdId)-parent.centerInMu2e();
         //        cout << "foo: TT_Mid: " << vdPos << " " << vdg->getLocal(vdId) << endl;
-        //        cout << "foo: TT_Mid: " << vdParamsTTracker << endl;
+        //        cout << "foo: TT_Mid: " << vdParamsTracker << endl;
 
         VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                  vdParamsTTracker, downstreamVacuumMaterial, 0,
+                                  vdParamsTracker, downstreamVacuumMaterial, 0,
                                   vdPos,
                                   parent,
                                   vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -478,15 +481,15 @@ namespace mu2e {
             cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
           }
 
-          // VD TT_MidInner is placed inside the ttracker at the same z position as
-          // VD TT_Mid but from radius 0 to the inner radius of the ttracker
+          // VD TT_MidInner is placed inside the tracker at the same z position as
+          // VD TT_Mid but from radius 0 to the inner radius of the tracker
           // mother volume. However, its mother volume is DS3Vacuum
           // which has a different offset. We will use the global offset
           // here (!) as DS is not in the geometry service yet
 
           // we need to take into account the "overlap" with the TT_InSurf
 
-          TubsParams vdParamsTTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
+          TubsParams vdParamsTrackerInner(0.,irvd-2.*vdHalfLength,vdHalfLength);
 	  std::string theDS3("DS3Vacuum");
 	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
           VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
@@ -500,10 +503,10 @@ namespace mu2e {
           }
 
           //        cout << "foo: TT_MidInner: " << vdLocalOffset         << endl;
-          //        cout << "foo: TT_MidInner: " << vdParamsTTrackerInner << endl;
+          //        cout << "foo: TT_MidInner: " << vdParamsTrackerInner << endl;
 
           VolumeInfo vd = nestTubs( VirtualDetector::volumeName(vdId),
-                                    vdParamsTTrackerInner, downstreamVacuumMaterial, 0,
+                                    vdParamsTrackerInner, downstreamVacuumMaterial, 0,
                                     vdLocalOffset,
                                     parent,
                                     vdId, vdIsVisible, G4Color::Red(), vdIsSolid,
@@ -518,8 +521,8 @@ namespace mu2e {
       }
 
       // placing virtual detectors TT_FrontHollow, TT_FrontPA in front
-      // of the ttracker (in the proton absorber region); check if
-      // ttracker exist is done in VirtualDetectorMaker
+      // of the tracker (in the proton absorber region); check if
+      // tracker exist is done in VirtualDetectorMaker
 
       if (    _config.getBool("hasProtonAbsorber",false)
               && !_config.getBool("protonabsorber.isHelical", false)
@@ -540,8 +543,8 @@ namespace mu2e {
           }
 
           // the radius of tracker mother
-          TTracker const & ttracker = *(GeomHandle<TTracker>());
-          double orvd = ttracker.mother().tubsParams().outerRadius();
+          Tracker const & tracker = *(GeomHandle<Tracker>());
+          double orvd = tracker.mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -563,14 +566,14 @@ namespace mu2e {
           VolumeInfo vdFullInfo;
           vdFullInfo.name = VirtualDetector::volumeName(vdId) + "_FULL";
 
-          TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+          TubsParams  vdParamsTrackerFrontFull(0.,orvd,vdHalfLength);
 
           vdFullInfo.solid = new G4Tubs(vdFullInfo.name,
-                                        vdParamsTTrackerFrontFull.innerRadius(),
-                                        vdParamsTTrackerFrontFull.outerRadius(),
-                                        vdParamsTTrackerFrontFull.zHalfLength(),
-                                        vdParamsTTrackerFrontFull.phi0(),
-                                        vdParamsTTrackerFrontFull.phiMax());
+                                        vdParamsTrackerFrontFull.innerRadius(),
+                                        vdParamsTrackerFrontFull.outerRadius(),
+                                        vdParamsTrackerFrontFull.zHalfLength(),
+                                        vdParamsTrackerFrontFull.phi0(),
+                                        vdParamsTrackerFrontFull.phiMax());
 
           if ( verbosityLevel > 0) {
             cout << __func__ << " constructing " <<  vdFullInfo.name << endl;
@@ -766,8 +769,8 @@ namespace mu2e {
           }
 
           // the radius of tracker mother
-          TTracker const & ttracker = *(GeomHandle<TTracker>());
-          double orvd = ttracker.mother().tubsParams().outerRadius();
+          Tracker const & tracker = *(GeomHandle<Tracker>());
+          double orvd = tracker.mother().tubsParams().outerRadius();
           double vdZ  = vdg->getGlobal(vdId).z();
 
           if ( verbosityLevel > 0) {
@@ -781,12 +784,12 @@ namespace mu2e {
 
           G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-          TubsParams  vdParamsTTrackerFrontFull(0.,orvd,vdHalfLength);
+          TubsParams  vdParamsTrackerFrontFull(0.,orvd,vdHalfLength);
 
           //          cout << "foo: TT_Front: " << vdLocalOffset             << endl;
-          //          cout << "foo: TT_Front: " << vdParamsTTrackerFrontFull << endl;
+          //          cout << "foo: TT_Front: " << vdParamsTrackerFrontFull << endl;
           VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                       vdParamsTTrackerFrontFull,
+                                       vdParamsTrackerFrontFull,
                                        downstreamVacuumMaterial,
                                        0,
                                        vdLocalOffset,
@@ -812,8 +815,8 @@ namespace mu2e {
           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
         }
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        double orvd = ttracker.mother().tubsParams().outerRadius();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        double orvd = tracker.mother().tubsParams().outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
         if ( verbosityLevel > 0) {
@@ -821,19 +824,19 @@ namespace mu2e {
             " z, r : " << vdZ << ", " << orvd << endl;
         }
 
-	  std::string theDS3("DS3Vacuum");
-	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+	std::string theDS3("DS3Vacuum");
+	if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
         VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        TubsParams  vdParamsTTrackerBackFull(0.,orvd,vdHalfLength);
+        TubsParams  vdParamsTrackerBackFull(0.,orvd,vdHalfLength);
 
         //        cout << "foo: TT_Back: " << vdLocalOffset    << endl;
-        //        cout << "foo: TT_Back: " << vdParamsTTrackerBackFull << endl;
+        //        cout << "foo: TT_Back: " << vdParamsTrackerBackFull << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsTTrackerBackFull,
+                                     vdParamsTrackerBackFull,
                                      downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
@@ -858,8 +861,8 @@ namespace mu2e {
         }
 
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        TubsParams const& motherParams = ttracker.mother().tubsParams();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        TubsParams const& motherParams = tracker.mother().tubsParams();
         double orvd = motherParams.outerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -868,21 +871,21 @@ namespace mu2e {
             " z, r : " << vdZ << ", " << orvd << endl;
         }
 
-	  std::string theDS3("DS3Vacuum");
-	  if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
+	std::string theDS3("DS3Vacuum");
+	if ( _config.getBool("inGaragePosition",false) ) theDS3 = "garageFakeDS3Vacuum";
         VolumeInfo const & parent = _helper->locateVolInfo(theDS3);
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        // the detector is on the outer surface of the ttracker envelope
+        // the detector is on the outer surface of the tracker envelope
         // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsTTrackerOutSurf(orvd,orvd+2.*vdHalfLength,motherParams.zHalfLength());
+        TubsParams  vdParamsTrackerOutSurf(orvd,orvd+2.*vdHalfLength,motherParams.zHalfLength());
 
         //        cout << "foo: TT_OutSurf: " << vdLocalOffset         << endl;
-        //        cout << "foo: TT_OutSurf: " << vdParamsTTrackerOutSurf << endl;
+        //        cout << "foo: TT_OutSurf: " << vdParamsTrackerOutSurf << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsTTrackerOutSurf,
+                                     vdParamsTrackerOutSurf,
                                      downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
@@ -907,8 +910,8 @@ namespace mu2e {
         }
 
         // the radius of tracker mother
-        TTracker const & ttracker = *(GeomHandle<TTracker>());
-        TubsParams const& motherParams = ttracker.mother().tubsParams();
+        Tracker const & tracker = *(GeomHandle<Tracker>());
+        TubsParams const& motherParams = tracker.mother().tubsParams();
         double irvd = motherParams.innerRadius();
         double vdZ  = vdg->getGlobal(vdId).z();
 
@@ -923,15 +926,15 @@ namespace mu2e {
 
         G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
 
-        // the detector is on the inner surface of the ttracker envelope
+        // the detector is on the inner surface of the tracker envelope
         // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsTTrackerInSurf(irvd-2.*vdHalfLength,irvd,motherParams.zHalfLength());
+        TubsParams  vdParamsTrackerInSurf(irvd-2.*vdHalfLength,irvd,motherParams.zHalfLength());
 
         //        cout << "foo: TT_InSurf: " << vdLocalOffset         << endl;
-        //        cout << "foo: TT_InSurf: " << vdParamsTTrackerInSurf << endl;
+        //        cout << "foo: TT_InSurf: " << vdParamsTrackerInSurf << endl;
 
         VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsTTrackerInSurf,
+                                     vdParamsTrackerInSurf,
                                      downstreamVacuumMaterial,
                                      0,
                                      vdLocalOffset,
@@ -948,142 +951,7 @@ namespace mu2e {
 
       }
 
-    } // end hasTTracker
-    else if ( _config.getBool("hasITracker",false) && _config.getBool("itracker.VirtualDetect",false) ) {
-
-      VolumeInfo const & trckrParent = _helper->locateVolInfo("TrackerMother");
-
-      double tModInRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetInnerRadius();
-      double tModOtRd = (static_cast<G4Tubs*>(trckrParent.solid))->GetOuterRadius();
-      double tModDz   = (static_cast<G4Tubs*>(trckrParent.solid))->GetZHalfLength();
-
-
-      vdId = VirtualDetectorId::IT_VD_InSurf;
-      if( vdg->exist(vdId) ) {
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        // the radius of tracker mother
-        double irvd = tModInRd; //envelopeParams.innerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << irvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
-
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();
-
-        // the detector is on the inner surface of the tracker envelope
-        // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsITrackerInSurf(irvd-2.*vdHalfLength,irvd,tModDz);
-
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsITrackerInSurf,
-                                     downstreamVacuumMaterial,
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId,
-                                     vdIsVisible,
-                                     G4Color::Red(),
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-      }
-
-      vdId = VirtualDetectorId::IT_VD_EndCap_Front;
-      if( vdg->exist(vdId) ) {
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        // the radius of tracker mother
-        double irvd = tModInRd; //envelopeParams.innerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << irvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
-
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,-(tModDz+vdHalfLength));
-
-        // the detector is on the inner surface of the tracker envelope
-        // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
-
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsITrackerInSurf,
-                                     downstreamVacuumMaterial,
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId,
-                                     vdIsVisible,
-                                     G4Color::Red(),
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      }
-
-      vdId = VirtualDetectorId::IT_VD_EndCap_Back;
-      if( vdg->exist(vdId) ) {
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
-        }
-
-        // the radius of tracker mother
-        double irvd = tModInRd; //envelopeParams.innerRadius();
-        double vdZ  = vdg->getGlobal(vdId).z();
-
-        if ( verbosityLevel > 0) {
-          cout << __func__ << " " << VirtualDetector::volumeName(vdId) <<
-            " z, r : " << vdZ << ", " << irvd << endl;
-        }
-
-        VolumeInfo const & parent = _helper->locateVolInfo("DS3Vacuum");
-
-        G4ThreeVector vdLocalOffset = vdg->getGlobal(vdId) - parent.centerInMu2e();// -G4ThreeVector(0.0,0.0,(tModDz+vdHalfLength));
-
-        // the detector is on the inner surface of the tracker envelope
-        // it is thin cylinder, NOT a thin disk
-        TubsParams  vdParamsITrackerInSurf(tModInRd,tModOtRd,vdHalfLength);
-
-        VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                     vdParamsITrackerInSurf,
-                                     downstreamVacuumMaterial,
-                                     0,
-                                     vdLocalOffset,
-                                     parent,
-                                     vdId,
-                                     vdIsVisible,
-                                     G4Color::Red(),
-                                     vdIsSolid,
-                                     forceAuxEdgeVisible,
-                                     placePV,
-                                     false);
-
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-
-      }
-
-    } // end hasITracker
+    } // end hasTracker
 
     vdId = VirtualDetectorId::EMFC1Entrance;
     if( vdg->exist(vdId) ) {
@@ -1092,58 +960,58 @@ namespace mu2e {
         cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId)  << endl;
       }
       /*
-      VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
-      GeomHandle<ProtonBeamDump> dump;
+	VolumeInfo const & parent = _helper->locateVolInfo("HallAir");
+	GeomHandle<ProtonBeamDump> dump;
 
-      const double vdYmin = dump->frontShieldingCenterInMu2e().y()
+	const double vdYmin = dump->frontShieldingCenterInMu2e().y()
         - dump->frontShieldingHalfSize()[1]
         + building->hallFloorThickness()
         ;
-      const double vdYmax = std::min(
-                                     dump->frontShieldingCenterInMu2e().y() + dump->frontShieldingHalfSize()[1],
-                                     building->hallInsideYmax()
-                                     );
+	const double vdYmax = std::min(
+	dump->frontShieldingCenterInMu2e().y() + dump->frontShieldingHalfSize()[1],
+	building->hallInsideYmax()
+	);
 
-      std::vector<double> hlen(3);
-      hlen[0] = dump->frontShieldingHalfSize()[0];
-      hlen[1] = (vdYmax - vdYmin)/2;
-      hlen[2] = vdg->getHalfLength();
+	std::vector<double> hlen(3);
+	hlen[0] = dump->frontShieldingHalfSize()[0];
+	hlen[1] = (vdYmax - vdYmin)/2;
+	hlen[2] = vdg->getHalfLength();
 
-      // NB: it's not "shielding" center in Y in case the ceiling height is a limitation
-      CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+
-                                                    dump->shieldingFaceXmax())/2,
+	// NB: it's not "shielding" center in Y in case the ceiling height is a limitation
+	CLHEP::Hep3Vector shieldingFaceCenterInMu2e( (dump->shieldingFaceXmin()+
+	dump->shieldingFaceXmax())/2,
                                                    
-                                                   (vdYmax + vdYmin)/2,
+	(vdYmax + vdYmin)/2,
                                                    
-                                                   (dump->shieldingFaceZatXmin()+
-                                                    dump->shieldingFaceZatXmax())/2
-                                                   );
+	(dump->shieldingFaceZatXmin()+
+	dump->shieldingFaceZatXmax())/2
+	);
 
-      CLHEP::Hep3Vector vdOffset(dump->coreRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
+	CLHEP::Hep3Vector vdOffset(dump->coreRotationInMu2e() * CLHEP::Hep3Vector(0, 0, hlen[2]));
 
 
-      if ( verbosityLevel > 0) {
+	if ( verbosityLevel > 0) {
         std::cout<<"shieldingFaceCenterInMu2e = "<<shieldingFaceCenterInMu2e
-                 <<", parent.centerInMu2e() = "<<parent.centerInMu2e()
-                 <<", vdOffset = "<<vdOffset
-                 <<std::endl;
-      }
+	<<", parent.centerInMu2e() = "<<parent.centerInMu2e()
+	<<", vdOffset = "<<vdOffset
+	<<std::endl;
+	}
 
-      VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                  hlen,
-                                  downstreamVacuumMaterial,
-                                  reg.add(dump->coreRotationInMu2e().inverse()),
-                                  shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
-                                  parent,
-                                  vdId,
-                                  vdIsVisible,
-                                  G4Color::Red(),
-                                  vdIsSolid,
-                                  forceAuxEdgeVisible,
-                                  placePV,
-                                  false);
+	VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+	hlen,
+	downstreamVacuumMaterial,
+	reg.add(dump->coreRotationInMu2e().inverse()),
+	shieldingFaceCenterInMu2e + vdOffset - parent.centerInMu2e(),
+	parent,
+	vdId,
+	vdIsVisible,
+	G4Color::Red(),
+	vdIsSolid,
+	forceAuxEdgeVisible,
+	placePV,
+	false);
 
-      doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
       */
     }
@@ -1182,65 +1050,65 @@ namespace mu2e {
       }
 
     if (_config.getBool("targetPS.hasVD.backward", false)) {
-            vdId = VirtualDetectorId::PT_Back;
-            if ( vdg->exist(vdId) )
-            {
-                    const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
-                    G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
+      vdId = VirtualDetectorId::PT_Back;
+      if ( vdg->exist(vdId) )
+	{
+	  const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
+	  G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
 
-                    TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
+	  TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
 
-                    G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetZHalfLength() + vdg->getHalfLength());
+	  G4ThreeVector vdCenterInParent(0., 0., -PTMoth->GetZHalfLength() + vdg->getHalfLength());
 
-                    VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                    vdParams,
-                                    downstreamVacuumMaterial,
-                                    0,
-                                    vdCenterInParent,
-                                    parent,
-                                    vdId,
-                                    vdIsVisible,
-                                    G4Color::Red(),
-                                    vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false
-                    );
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+				       vdParams,
+				       downstreamVacuumMaterial,
+				       0,
+				       vdCenterInParent,
+				       parent,
+				       vdId,
+				       vdIsVisible,
+				       G4Color::Red(),
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false
+				       );
 
-                    doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	  doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-            }
+	}
     }
 
     if (_config.getBool("targetPS.hasVD.forward", false)) {
-            vdId = VirtualDetectorId::PT_Front;
-            if ( vdg->exist(vdId) )
-            {
-                    const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
-                    G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
+      vdId = VirtualDetectorId::PT_Front;
+      if ( vdg->exist(vdId) )
+	{
+	  const VolumeInfo& parent = _helper->locateVolInfo("ProductionTargetMother");
+	  G4Tubs *PTMoth = static_cast<G4Tubs*>(parent.solid);
 
-                    TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
+	  TubsParams vdParams(0., PTMoth->GetOuterRadius(), vdg->getHalfLength());
 
-                    G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetZHalfLength() - vdg->getHalfLength());
+	  G4ThreeVector vdCenterInParent(0., 0., PTMoth->GetZHalfLength() - vdg->getHalfLength());
 
-                    VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                    vdParams,
-                                    downstreamVacuumMaterial,
-                                    0,
-                                    vdCenterInParent,
-                                    parent,
-                                    vdId,
-                                    vdIsVisible,
-                                    G4Color::Red(),
-                                    vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false
-                    );
+	  VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+				       vdParams,
+				       downstreamVacuumMaterial,
+				       0,
+				       vdCenterInParent,
+				       parent,
+				       vdId,
+				       vdIsVisible,
+				       G4Color::Red(),
+				       vdIsSolid,
+				       forceAuxEdgeVisible,
+				       placePV,
+				       false
+				       );
 
-                    doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	  doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
-            }
+	}
     }
 
     // An XY plane between the PS and anything ExtMon
@@ -1326,155 +1194,155 @@ namespace mu2e {
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
       
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) - parentInMu2e <<" or local "<< vdg->getLocal(vdId)<< " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) - parentInMu2e <<" or local "<< vdg->getLocal(vdId)<< " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
     }
 
 
 
     if ( _config.getBool("hasDiskCalorimeter",true) )
-    {
+      {
 
-       int vdIdDiskEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
-       int vdIdDiskSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
-       int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
-       int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
+	int vdIdDiskEdge = VirtualDetectorId::EMC_Disk_0_EdgeIn;
+	int vdIdDiskSurf = VirtualDetectorId::EMC_Disk_0_SurfIn;
+	int vdIdFEBEdge  = VirtualDetectorId::EMC_FEB_0_EdgeIn;
+	int vdIdFEBSurf  = VirtualDetectorId::EMC_FEB_0_SurfIn;
 
-       double vdgThick            = 2.0*vdg->getHalfLength();
-       DiskCalorimeter const& cal = *(GeomHandle<DiskCalorimeter>());
+	double vdgThick            = 2.0*vdg->getHalfLength();
+	DiskCalorimeter const& cal = *(GeomHandle<DiskCalorimeter>());
 
-       for (size_t id = 0; id < cal.nDisk(); id++)
-       {
+	for (size_t id = 0; id < cal.nDisk(); id++)
+	  {
 
-	   std::ostringstream diskname; diskname<<"caloDisk_" <<id;
-	   const VolumeInfo& caloDisk = _helper->locateVolInfo(diskname.str());
-           G4Tubs* disk  = static_cast<G4Tubs*>(caloDisk.logical->GetSolid());
+	    std::ostringstream diskname; diskname<<"caloDisk_" <<id;
+	    const VolumeInfo& caloDisk = _helper->locateVolInfo(diskname.str());
+	    G4Tubs* disk  = static_cast<G4Tubs*>(caloDisk.logical->GetSolid());
 
-           double diskRadIn  = disk->GetInnerRadius();
-           double diskRadOut = disk->GetOuterRadius();
-           double diskHalfZ  = disk->GetZHalfLength();
+	    double diskRadIn  = disk->GetInnerRadius();
+	    double diskRadOut = disk->GetOuterRadius();
+	    double diskHalfZ  = disk->GetZHalfLength();
 
-	   TubsParams  vdParamsFrontDisk(diskRadIn,           diskRadOut,         vdgThick/2.0);
-           TubsParams  vdParamsInnerDisk(diskRadIn,           diskRadIn+vdgThick, diskHalfZ-vdgThick);
-           TubsParams  vdParamsOuterDisk(diskRadOut-vdgThick, diskRadOut,         diskHalfZ-vdgThick);
+	    TubsParams  vdParamsFrontDisk(diskRadIn,           diskRadOut,         vdgThick/2.0);
+	    TubsParams  vdParamsInnerDisk(diskRadIn,           diskRadIn+vdgThick, diskHalfZ-vdgThick);
+	    TubsParams  vdParamsOuterDisk(diskRadOut-vdgThick, diskRadOut,         diskHalfZ-vdgThick);
            
-           G4ThreeVector posFrontDisk(0,0,-diskHalfZ+vdgThick/2.0);
-           G4ThreeVector posBackDisk(0,0,diskHalfZ-vdgThick/2.0);
-           G4ThreeVector posInnerDisk(0,0,0);
+	    G4ThreeVector posFrontDisk(0,0,-diskHalfZ+vdgThick/2.0);
+	    G4ThreeVector posBackDisk(0,0,diskHalfZ-vdgThick/2.0);
+	    G4ThreeVector posInnerDisk(0,0,0);
 
-           if( vdg->exist(vdIdDiskSurf) )
-           {
+	    if( vdg->exist(vdIdDiskSurf) )
+	      {
 
-               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdDiskSurf),
-                                            vdParamsFrontDisk,downstreamVacuumMaterial,0,                                            
-                                            posFrontDisk,caloDisk,                                            
-                                            vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                            placePV,false);
-               ++vdIdDiskSurf;
+		VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdDiskSurf),
+					     vdParamsFrontDisk,downstreamVacuumMaterial,0,                                            
+					     posFrontDisk,caloDisk,                                            
+					     vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					     placePV,false);
+		++vdIdDiskSurf;
 
-               VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskSurf),
-                                            vdParamsFrontDisk,downstreamVacuumMaterial,0,
-                                            posBackDisk,caloDisk,
-                                            vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                            placePV,false);
-               ++vdIdDiskSurf;
+		VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskSurf),
+					      vdParamsFrontDisk,downstreamVacuumMaterial,0,
+					      posBackDisk,caloDisk,
+					      vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					      placePV,false);
+		++vdIdDiskSurf;
 
-               doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-               doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-           }
+		doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+		doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
+	      }
 
            
-           if( vdg->exist(vdIdDiskEdge) )
-           {
-               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
-                                            vdParamsInnerDisk,downstreamVacuumMaterial,0,
-                                            posInnerDisk,caloDisk,
-                                            vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                            placePV,false);
-               ++vdIdDiskEdge;
+	    if( vdg->exist(vdIdDiskEdge) )
+	      {
+		VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
+					     vdParamsInnerDisk,downstreamVacuumMaterial,0,
+					     posInnerDisk,caloDisk,
+					     vdIdDiskSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					     placePV,false);
+		++vdIdDiskEdge;
                
-               //needed to maintain the consistence with the numbering scheme
-               //VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
-               //                              vdParamsOuterDisk,downstreamVacuumMaterial,0,
-               //                              posInnerDisk,caloDisk,
-               //                              vdIdDiskSurf,1,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-               //                              placePV,false);
-               ++vdIdDiskEdge; //must keep this for consistency with numbering scheme
+		//needed to maintain the consistence with the numbering scheme
+		//VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdDiskEdge),
+		//                              vdParamsOuterDisk,downstreamVacuumMaterial,0,
+		//                              posInnerDisk,caloDisk,
+		//                              vdIdDiskSurf,1,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+		//                              placePV,false);
+		++vdIdDiskEdge; //must keep this for consistency with numbering scheme
 
-               doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-               // doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-           }
+		doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+		// doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
+	      }
 
           
-	   std::ostringstream cratename; cratename<<"caloFEB_" <<id;
-	   VolumeInfo const& caloFEBParent = _helper->locateVolInfo(cratename.str());
-           G4Tubs* crate  = static_cast<G4Tubs*>(caloFEBParent.logical->GetSolid());
+	    std::ostringstream cratename; cratename<<"caloFEB_" <<id;
+	    VolumeInfo const& caloFEBParent = _helper->locateVolInfo(cratename.str());
+	    G4Tubs* crate  = static_cast<G4Tubs*>(caloFEBParent.logical->GetSolid());
 
-           double crateRadIn    = crate->GetInnerRadius();
-           double crateRadOut   = crate->GetOuterRadius();
-           double crateHalfZ    = crate->GetZHalfLength();
-           double crateStartPhi = crate->GetStartPhiAngle();
-           double crateDphi     = crate->GetDeltaPhiAngle();
+	    double crateRadIn    = crate->GetInnerRadius();
+	    double crateRadOut   = crate->GetOuterRadius();
+	    double crateHalfZ    = crate->GetZHalfLength();
+	    double crateStartPhi = crate->GetStartPhiAngle();
+	    double crateDphi     = crate->GetDeltaPhiAngle();
 
-	   TubsParams  vdParamsFrontFEB(crateRadIn,           crateRadOut,         vdgThick/2.0,        crateStartPhi,crateDphi);
-           TubsParams  vdParamsInnerFEB(crateRadIn,           crateRadIn+vdgThick, crateHalfZ-vdgThick, crateStartPhi,crateDphi);
-           TubsParams  vdParamsOuterFEB(crateRadOut-vdgThick, crateRadOut,         crateHalfZ-vdgThick, crateStartPhi,crateDphi);
+	    TubsParams  vdParamsFrontFEB(crateRadIn,           crateRadOut,         vdgThick/2.0,        crateStartPhi,crateDphi);
+	    TubsParams  vdParamsInnerFEB(crateRadIn,           crateRadIn+vdgThick, crateHalfZ-vdgThick, crateStartPhi,crateDphi);
+	    TubsParams  vdParamsOuterFEB(crateRadOut-vdgThick, crateRadOut,         crateHalfZ-vdgThick, crateStartPhi,crateDphi);
            
-           G4ThreeVector posFrontFEB(0,0,-crateHalfZ+vdgThick/2.0);
-           G4ThreeVector posBackFEB(0,0,crateHalfZ-vdgThick/2.0);
-           G4ThreeVector posInnerFEB(0,0,0);
-           G4ThreeVector posOuterFEB(0,0,0);
+	    G4ThreeVector posFrontFEB(0,0,-crateHalfZ+vdgThick/2.0);
+	    G4ThreeVector posBackFEB(0,0,crateHalfZ-vdgThick/2.0);
+	    G4ThreeVector posInnerFEB(0,0,0);
+	    G4ThreeVector posOuterFEB(0,0,0);
 
            
-           if( vdg->exist(vdIdFEBSurf) )
-           {
-               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdFEBSurf),
-                                            vdParamsFrontFEB,downstreamVacuumMaterial,0,
-                                            posFrontFEB,caloFEBParent,                                            
-                                            vdIdFEBSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                            placePV,false);
-               ++vdIdFEBSurf;
+	    if( vdg->exist(vdIdFEBSurf) )
+	      {
+		VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdFEBSurf),
+					     vdParamsFrontFEB,downstreamVacuumMaterial,0,
+					     posFrontFEB,caloFEBParent,                                            
+					     vdIdFEBSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					     placePV,false);
+		++vdIdFEBSurf;
 
-               VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdFEBSurf),
-                                             vdParamsFrontFEB,downstreamVacuumMaterial,0,
-                                             posBackFEB,caloFEBParent,
-                                             vdIdFEBSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                             placePV,false);
+		VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdFEBSurf),
+					      vdParamsFrontFEB,downstreamVacuumMaterial,0,
+					      posBackFEB,caloFEBParent,
+					      vdIdFEBSurf,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					      placePV,false);
                                             
                                             
-               ++vdIdFEBSurf;
+		++vdIdFEBSurf;
 
-	       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-	       doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-           }
+		doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+		doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
+	      }
            
-           if( vdg->exist(vdIdFEBEdge) )
-           {
-               VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
-                                            vdParamsInnerFEB,downstreamVacuumMaterial,0,
-                                            posInnerFEB,caloFEBParent,
-                                            vdIdFEBEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                            placePV,false);
-               ++vdIdFEBEdge;
+	    if( vdg->exist(vdIdFEBEdge) )
+	      {
+		VolumeInfo vdInfo = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
+					     vdParamsInnerFEB,downstreamVacuumMaterial,0,
+					     posInnerFEB,caloFEBParent,
+					     vdIdFEBEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					     placePV,false);
+		++vdIdFEBEdge;
 
-               VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
-                                            vdParamsOuterFEB,downstreamVacuumMaterial,0,
-                                            posOuterFEB,caloFEBParent,
-                                            vdIdFEBEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
-                                            placePV,false);
-               ++vdIdFEBEdge;
+		VolumeInfo vdInfo2 = nestTubs(VirtualDetector::volumeName(vdIdFEBEdge),
+					      vdParamsOuterFEB,downstreamVacuumMaterial,0,
+					      posOuterFEB,caloFEBParent,
+					      vdIdFEBEdge,vdIsVisible,G4Color::Red(),vdIsSolid,forceAuxEdgeVisible,
+					      placePV,false);
+		++vdIdFEBEdge;
 
-               doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-               doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
-           }
+		doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+		doSurfaceCheck && checkForOverlaps(vdInfo2.physical, _config, verbosityLevel>0);
+	      }
            
 
-       }
-    }
+	  }
+      }
 
 
     //-----------------------------------------------------------------------------------------------------------------------------
@@ -1509,51 +1377,51 @@ namespace mu2e {
                                   );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
 
-//     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
-//     if ( vdg->exist(vdId) ) {
-// 
-//       const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
-//       GeomHandle<CosmicRayShield> CRS;
-//       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
-//       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
-//       const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
-//       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
-//       const double y_mother_halflength = yExtentLow;
-//       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
-// 
-//       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-//                                   dimVD,
-//                                   downstreamVacuumMaterial,
-//                                   0,                              //rotation
-//                                   vdg->getLocal(vdId),
-//                                   parent,
-//                                   vdId,
-//                                   vdIsVisible,
-//                                   G4Color::White(),
-//                                   vdIsSolid,
-//                                   forceAuxEdgeVisible,
-//                                   placePV,
-//                                   false
-//                                   );
-// 
-//       if ( verbosityLevel > 0) {
-//           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-//                << " at " << vdg->getGlobal(vdId) << endl
-//                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-//           cout << __func__ << "    VD parameters: " << vdParams << endl;
-//           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
-//       }
-//       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
-//     }
+    //     vdId = VirtualDetectorId::STM_CRVShieldDnStr;
+    //     if ( vdg->exist(vdId) ) {
+    // 
+    //       const VolumeInfo& parent = _helper->locateVolInfo("HallAir");
+    //       GeomHandle<CosmicRayShield> CRS;
+    //       //const double y_crv_max       = CRS->getSectorPosition("D").y() + (CRS->getSectorHalfLengths("D"))[1];
+    //       const double yExtentLow      = std::abs(_config.getDouble("yOfFloorSurface.below.mu2eOrigin") );
+    //       const double x_vd_halflength = (CRS->getSectorHalfLengths("D"))[0];
+    //       //const double y_vd_halflength = (y_crv_max + yExtentLow)/2.0;
+    //       const double y_mother_halflength = yExtentLow;
+    //       const double dimVD[3] = { x_vd_halflength, y_mother_halflength, vdg->getHalfLength() };
+    // 
+    //       VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+    //                                   dimVD,
+    //                                   downstreamVacuumMaterial,
+    //                                   0,                              //rotation
+    //                                   vdg->getLocal(vdId),
+    //                                   parent,
+    //                                   vdId,
+    //                                   vdIsVisible,
+    //                                   G4Color::White(),
+    //                                   vdIsSolid,
+    //                                   forceAuxEdgeVisible,
+    //                                   placePV,
+    //                                   false
+    //                                   );
+    // 
+    //       if ( verbosityLevel > 0) {
+    //           cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+    //                << " at " << vdg->getGlobal(vdId) << endl
+    //                << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+    //           cout << __func__ << "    VD parameters: " << vdParams << endl;
+    //           cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+    //       }
+    //       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+    //     }
 
     vdId = VirtualDetectorId::STM_FieldOfViewCollDnStr;
     if ( vdg->exist(vdId) ) {
@@ -1583,11 +1451,11 @@ namespace mu2e {
                                   );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
@@ -1630,11 +1498,11 @@ namespace mu2e {
                                   );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
@@ -1664,11 +1532,11 @@ namespace mu2e {
                                    );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
@@ -1698,11 +1566,11 @@ namespace mu2e {
                                    );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
@@ -1733,11 +1601,11 @@ namespace mu2e {
                                    );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
@@ -1768,11 +1636,11 @@ namespace mu2e {
                                    );
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (HallAir) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
     }
@@ -1790,46 +1658,46 @@ namespace mu2e {
 
       VolumeInfo vdInfo; 
       if (pbarTS1InOffset < 0.0) {
-                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   upstreamVacuumMaterial,
-                                   0,
-                                   vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parentPS,
-                                   vdId,
-                                   vdIsVisible, //
-                                   G4Color::White(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                  );
+	vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+			  vdParams,
+			  upstreamVacuumMaterial,
+			  0,
+			  vdg->getLocal(vdId), //local position w.r.t. parent
+			  parentPS,
+			  vdId,
+			  vdIsVisible, //
+			  G4Color::White(),
+			  vdIsSolid,
+			  forceAuxEdgeVisible,
+			  placePV,
+			  false
+			  );
       }
       else {
-                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   downstreamVacuumMaterial,
-                                   0,
-                                   vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parentTS1,
-                                   vdId,
-                                   vdIsVisible, //
-                                   G4Color::White(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                  );
+	vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+			  vdParams,
+			  downstreamVacuumMaterial,
+			  0,
+			  vdg->getLocal(vdId), //local position w.r.t. parent
+			  parentTS1,
+			  vdId,
+			  vdIsVisible, //
+			  G4Color::White(),
+			  vdIsSolid,
+			  forceAuxEdgeVisible,
+			  placePV,
+			  false
+			  );
       }
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	//     
       }
-
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
 
     }
@@ -1846,44 +1714,44 @@ namespace mu2e {
 
       VolumeInfo vdInfo;
       if (pbarTS1InOffset < 0.0) {
-                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   upstreamVacuumMaterial,
-                                   0,
-                                   vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parentPS,
-                                   vdId,
-                                   vdIsVisible, //
-                                   G4Color::White(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                  );
+	vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+			  vdParams,
+			  upstreamVacuumMaterial,
+			  0,
+			  vdg->getLocal(vdId), //local position w.r.t. parent
+			  parentPS,
+			  vdId,
+			  vdIsVisible, //
+			  G4Color::White(),
+			  vdIsSolid,
+			  forceAuxEdgeVisible,
+			  placePV,
+			  false
+			  );
       }
       else {
-                 vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
-                                   vdParams,
-                                   downstreamVacuumMaterial,
-                                   0,
-                                   vdg->getLocal(vdId), //local position w.r.t. parent
-                                   parentTS1,
-                                   vdId,
-                                   vdIsVisible, //
-                                   G4Color::White(),
-                                   vdIsSolid,
-                                   forceAuxEdgeVisible,
-                                   placePV,
-                                   false
-                                  );
+	vdInfo = nestTubs(VirtualDetector::volumeName(vdId),
+			  vdParams,
+			  downstreamVacuumMaterial,
+			  0,
+			  vdg->getLocal(vdId), //local position w.r.t. parent
+			  parentTS1,
+			  vdId,
+			  vdIsVisible, //
+			  G4Color::White(),
+			  vdIsSolid,
+			  forceAuxEdgeVisible,
+			  placePV,
+			  false
+			  );
       }
 
       if ( verbosityLevel > 0) {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
-               << " at " << vdg->getGlobal(vdId) << endl
-               << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
-          cout << __func__ << "    VD parameters: " << vdParams << endl;
-          cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
+	cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << endl
+	     << " at " << vdg->getGlobal(vdId) << endl
+	     << " at " << vdg->getLocal(vdId) << " w.r.t. parent (PSVacuum) " << endl;
+	cout << __func__ << "    VD parameters: " << vdParams << endl;
+	cout << __func__ << "    VD rel. posit: " << vdg->getLocal(vdId) << endl;
       }
 
       doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
@@ -1892,45 +1760,45 @@ namespace mu2e {
 
     GeomHandle<CosmicRayShield> CRS;
     for(int vdId=VirtualDetectorId::CRV_R; vdId<=VirtualDetectorId::CRV_U; vdId++)
-    {
-
-      if(vdg->exist(vdId)) 
       {
-        std::string vdName;
-        vdName = VirtualDetector::volumeName(vdId).back();
-        std::vector<double> halfLengths = CRS->getSectorHalfLengths(vdName);
-        const CLHEP::Hep3Vector vdDirection = _config.getHep3Vector("crs.vdDirection"+vdName);
-        for(int i=0; i<3; i++) {if(vdDirection[i]!=0) halfLengths[i]=vdg->getHalfLength();}
 
-        VolumeInfo const &parent = _helper->locateVolInfo("HallAir");
-        G4Material* hallAirMaterial = parent.logical->GetMaterial();
+	if(vdg->exist(vdId)) 
+	  {
+	    std::string vdName;
+	    vdName = VirtualDetector::volumeName(vdId).back();
+	    std::vector<double> halfLengths = CRS->getSectorHalfLengths(vdName);
+	    const CLHEP::Hep3Vector vdDirection = _config.getHep3Vector("crs.vdDirection"+vdName);
+	    for(int i=0; i<3; i++) {if(vdDirection[i]!=0) halfLengths[i]=vdg->getHalfLength();}
 
-        if(verbosityLevel > 0) 
-        {
-          cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << " at " << vdg->getGlobal(vdId) << endl;
-          cout << __func__ << "    VD half lengths: (" << halfLengths[0]<<","<<halfLengths[1]<<","<<halfLengths[2]<<")" << endl;
-          cout << __func__ << "    VD rel. position: " << vdg->getLocal(vdId) << endl;
-        }
+	    VolumeInfo const &parent = _helper->locateVolInfo("HallAir");
+	    G4Material* hallAirMaterial = parent.logical->GetMaterial();
 
-        VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
-                                    halfLengths,
-                                    hallAirMaterial,
-                                    0,
-                                    vdg->getLocal(vdId),
-                                    parent,
-                                    vdId,
-                                    vdIsVisible,
-                                    G4Color::Red(),
-                                    vdIsSolid,
-                                    forceAuxEdgeVisible,
-                                    placePV,
-                                    false
-                                    );
+	    if(verbosityLevel > 0) 
+	      {
+		cout << __func__ << " constructing " << VirtualDetector::volumeName(vdId) << " at " << vdg->getGlobal(vdId) << endl;
+		cout << __func__ << "    VD half lengths: (" << halfLengths[0]<<","<<halfLengths[1]<<","<<halfLengths[2]<<")" << endl;
+		cout << __func__ << "    VD rel. position: " << vdg->getLocal(vdId) << endl;
+	      }
 
-        doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+	    VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
+					halfLengths,
+					hallAirMaterial,
+					0,
+					vdg->getLocal(vdId),
+					parent,
+					vdId,
+					vdIsVisible,
+					G4Color::Red(),
+					vdIsSolid,
+					forceAuxEdgeVisible,
+					placePV,
+					false
+					);
 
+	    doSurfaceCheck && checkForOverlaps(vdInfo.physical, _config, verbosityLevel>0);
+
+	  }
       }
-    }
    
   } // constructVirtualDetectors()
 }

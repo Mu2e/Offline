@@ -8,15 +8,7 @@ double cosmicCRY.refY0 = 20000; // 20 meter above nominal beam height
 
 bool cosmicCRY.projectToEnvelope = true;
 
-// histogram settings
-bool cosmicCRY.doHistograms = true;
-double cosmicCRY.muCosThMin = 0.00366518;
-double cosmicCRY.muCosThMax = 1.0;
-double cosmicCRY.muEMin = 3000.;
-double cosmicCRY.muEMax = 1.e5;
-bool cosmicCRY.saveTree = false;
-
-// Enable all particles by default
+// Enable only muons
 bool cosmicCRY.returnMuons = true;
 bool cosmicCRY.returnNeutrons = false;
 bool cosmicCRY.returnProtons = false;
@@ -40,3 +32,5 @@ double cosmicCRY.subboxLength = 300.; // meter
 // Local Variables:
 // mode:c++
 // End:
+// Similar stuff for vim
+// vim: ft=cpp

@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Mu2e includes
 #include "MCDataProducts/inc/EventWeight.hh"
@@ -47,6 +47,7 @@ namespace mu2e {
 
   //================================================================
   PBIWeight::PBIWeight(const fhicl::ParameterSet& pset) : 
+    art::EDProducer{pset},
     _PBITag(pset.get<art::InputTag>("PBITag")),
     _meanPBITag(pset.get<art::InputTag>("meanPBITag")),
     _meanPBI(0.0)

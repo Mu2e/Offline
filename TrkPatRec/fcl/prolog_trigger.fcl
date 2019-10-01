@@ -13,12 +13,18 @@ FitDir : {
     downstream : 0
     upstream : 1
 }
+# duplicated: FIXME!
+TimeCalculator : {
+  CaloT0Offset : @local::TrackCaloMatching.DtOffset
+  CaloTimeErr : 0.5
+}
 
 TTtimeClusterFinder : { @table::TimeClusterFinder
     ComboHitCollection     : "TTflagBkgHits"
     CaloClusterCollection  : "CaloClusterFast"
     StrawHitFlagCollection : "none"
     TestFlag               : false
+    T0Calculator : @local::TimeCalculator
 }
 
 TTrobustHelixFinder : { @table::RobustHelixFinder
@@ -59,11 +65,9 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     UseHitMVA              : false
     MinMVA                 : 0.1
     
-    RobustHelixFit       : @local::TrkReco.TTrobustHelixFit
-    #    Chi2HelixFit         : 
-    #	T0Calculator         : 
-    T0Shift              : 4.0
+    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit }
 
+    T0Calculator : @local::TimeCalculator
     UpdateStereo         : false
 }
 # pattern recognition internals
@@ -72,7 +76,8 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
 # same for trigger
 TTKSF : { @table::KSF
     ComboHitCollection	      : "TTmakeSH"
-    SeedCollection	      : "TThelixFinder:Positive"
+#    SeedCollection	      : "TThelixFinder:Positive"
+    SeedCollection	      : "TTHelixMergerDeM"
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 TTKFF : { @table::KFF
@@ -84,13 +89,15 @@ TTKFF : { @table::KFF
 #  First, downstream electrons
 TTKSFDeM                      : @local::TTKSF
 TTKSFDeM.ComboHitCollection   : "TTmakeSH"
-TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+#TTKSFDeM.SeedCollection       : "TThelixFinder:Positive"
+TTKSFDeM.SeedCollection       : "TTHelixMergerDeM"
 TTKSFDeM.fitparticle	      : @local::Particle.eminus
 TTKSFDeM.fitdirection	      : @local::FitDir.downstream 
 
 TTKSFDeP                      : @local::TTKSF
 TTKSFDeP.ComboHitCollection   : "TTmakeSH"
-TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+#TTKSFDeP.SeedCollection       : "TThelixFinder:Negative"
+TTKSFDeP.SeedCollection       : "TTHelixMergerDeP"
 TTKSFDeP.fitparticle	      : @local::Particle.eplus
 TTKSFDeP.fitdirection	      : @local::FitDir.downstream 
 
@@ -102,6 +109,7 @@ TTKFFDeM.fitparticle	      : @local::Particle.eminus
 TTKFFDeM.fitdirection	      : @local::FitDir.downstream 
 TTKFFDeM.ComboHitCollection	: "TTmakeSH"
 TTKFFDeM.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+TTKFFDeM.CaloClusterCollection  : "CaloClusterFast"
 
 #  downstream positrons
 TTKFFDeP		      : @local::KFF
@@ -110,12 +118,13 @@ TTKFFDeP.fitparticle	      : @local::Particle.eplus
 TTKFFDeP.fitdirection	      : @local::FitDir.downstream 
 TTKFFDeP.ComboHitCollection	: "TTmakeSH"
 TTKFFDeP.StrawHitFlagCollection : "TTflagBkgHits:StrawHits"
+TTKFFDeP.CaloClusterCollection  : "CaloClusterFast"
 
 # Declare a table with all the modules needed for track reconstruction
 # This should be divided into sim, reco FIXME!
 TprTrigger : {
     producers : {
-	TPRFetchDigis : { module_type:PrefetchData
+	tprFetchDigis : { module_type:PrefetchData
 	    debugLevel                    : 0
 	    mcDiag                        : true
 
@@ -136,9 +145,38 @@ TprTrigger : {
 
 
 	TTtimeClusterFinder  : @local::TTtimeClusterFinder
+	TTtimeClusterFinderUCC : { @table::TTtimeClusterFinder
+	    ComboHitCollection     : "TTflagBkgHitsUCC"
+	}
 	TThelixFinder        : @local::TTrobustHelixFinder
+	TThelixFinderUCC     : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTflagBkgHitsUCC"
+	    TimeClusterCollection : "TTtimeClusterFinderUCC"
+	}
+	TTfastHelixFinder    : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTDeltaFinder"
+	    TimeClusterCollection : "TTfastTimeClusterFinder"
+	}
 	TTKSFDeM	     : @local::TTKSFDeM
 	TTKSFDeP	     : @local::TTKSFDeP
+
+
+	TTKSFUCCDeM	     : { @table::TTKSFDeM
+	    ComboHitCollection	  : "TTmakeSHUCC"
+	    SeedCollection        : "TThelixFinderUCC:Positive"
+	}
+	TTKSFUCCDeP	     : { @table::TTKSFDeP 
+	    ComboHitCollection	  : "TTmakeSHUCC"
+	    SeedCollection        : "TThelixFinderUCC:Negative"
+	}
+
+	TTFKSFDeM	     : { @table::TTKSFDeM
+	    SeedCollection : "TTfastHelixFinder:Positive"
+	}
+	TTFKSFDeP	     : { @table::TTKSFDeP 
+	    SeedCollection : "TTfastHelixFinder:Negative"
+	}
+
 	TTKFFDeM             : @local::TTKFFDeM
 	TTKFFDeP             : @local::TTKFFDeP
     }
@@ -168,10 +206,5 @@ TprTrigger : {
 		   "keep mu2e::TimeClusters_*_*_*" ]
     }
 }
-# production sequences for tracking specific paricles; first downstream moving electrons
-#electrons
-# TprTrigger.TPRDeM : [ @sequence::TrkTrigger.TTfindHelices, TTKSFDeM]
-#positrons
-# TprTrigger.TPRDeP : [ @sequence::TrkTrigger.TTfindHelices, TTKSFDeP]
 
 END_PROLOG

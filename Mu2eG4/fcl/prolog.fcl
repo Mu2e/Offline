@@ -1,3 +1,4 @@
+# -*- mode:tcl -*-
 #------------------------------------------------------------------------------
 # this file is included by fcl/standardProducers.fcl inside the PROLOG section
 #------------------------------------------------------------------------------
@@ -15,12 +16,22 @@ mu2eg4DefaultPhysics: {
     BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
     useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
+
+    // uncomment to activate the cuts per region; works for Geant4 "root" volumes
+    // minRangeRegionCuts: { CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }
+
     protonProductionCut: 0.0 // mm
     physicsListName:  "ShieldingM"
     turnOffRadioactiveDecay:  false
     turnOnRadioactiveDecay:  false
-    modifyEMOption4: false
-    modifyEMOption0: false
+
+    setMuHadLateralDisplacement: true // improves accuracy of boundary
+                                      // crossing for muons and common charged hadrons
+
+    modifyEMOption4: false // to set 115 MeV transition energy for the msc models when using _EMZ
+    modifyEMOption0: false // to set 115 MeV transition energy for the msc models with "opt0"
+    useEmOption4InTracker: false // to use that option in the tracker only if not using _EMZ;
+                                 // does not seem to work all that well in geant4 10.4
     addProcesses: []
     captureDModel: ""
 
@@ -47,7 +58,9 @@ mu2eg4DefaultPhysics: {
     deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
     stepMinimum       : 1.0e-2 // mm minimum size of the integration step
     maxIntSteps       : 1000 // maximum of internal integration steps per physical step
-    bfieldMaxStep: 20. // mm;  value used in step limmiter, has impact on tracking accuracy as well
+    rangeToIgnore     : 0.00001 // below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
+    bfieldMaxStep     : 20. // mm;  value used in step limmiter, impacts tracking accuracy as well
+    strawGasMaxStep   : -1.0 // mm;  for straw step limmiter, impacts tracking accuracy as well (set negative to disable)
     limitStepInAllVolumes: false
 }
 #----------------
@@ -97,6 +110,7 @@ mu2eg4DefaultDebug: {
     worldVerbosityLevel : 0
     printElements : false
     printMaterials : false
+    storePhysicsTablesDir: "" // Make it not "" to activate; directory must exist first
     exportPDTStart : false
     exportPDTEnd : false
     fillDiagnosticHistograms: false
@@ -104,6 +118,7 @@ mu2eg4DefaultDebug: {
     diagLevel : 0
     trackingVerbosityLevel : 0
     steppingVerbosityLevel : 0
+    navigatorCheckMode : false
     checkFieldMap : 0
     writeGDML : false
     GDMLFileName : "mu2e.gdml"
@@ -123,17 +138,17 @@ mu2eg4CutDeltaElectrons: {
 
 #----------------------------------------------------------------
 mu2eg4runDefaultSingleStage: {
-    module_type: Mu2eG4
-    physics: @local::mu2eg4DefaultPhysics
-    ResourceLimits: @local::mu2eg4DefaultResourceLimits
-    TrajectoryControl: @local::mu2eg4DefaultTrajectories
+    module_type           : Mu2eG4
+    physics               : @local::mu2eg4DefaultPhysics
+    ResourceLimits        : @local::mu2eg4DefaultResourceLimits
+    TrajectoryControl     : @local::mu2eg4DefaultTrajectories
 
-    Mu2eG4StackingOnlyCut: @local::mu2eg4CutNeutrinos
-    Mu2eG4SteppingOnlyCut: @local::mu2eg4NoCut
-    Mu2eG4CommonCut: @local::mu2eg4NoCut
+    Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+    Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+    Mu2eG4CommonCut       : @local::mu2eg4NoCut
 
-    generatorModuleLabel: generate
-    MultiStageParameters : {}
+    generatorModuleLabel  : generate
+    MultiStageParameters  : {}
 
     SDConfig : {
         verbosityLevel : 0

@@ -9,7 +9,7 @@
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "CalorimeterGeom/inc/DiskCalorimeter.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 
@@ -40,15 +40,14 @@
 
 #include "RecoDataProducts/inc/KalRepPtrCollection.hh"
 
-#include "TrackCaloMatching/inc/TrkToCaloExtrapolCollection.hh"
 #include "RecoDataProducts/inc/TrkCaloIntersectCollection.hh"
-#include "TrackCaloMatching/inc/TrackClusterMatch.hh"
 
 // #include "CalPatRec/inc/CalTimePeak.hh"
 
 
 //BaBar includes
 #include "BTrk/BbrGeom/TrkLineTraj.hh"
+#include "BTrk/BbrGeom/BbrVectorErr.hh"
 #include "BTrk/TrkBase/TrkPoca.hh"
 #include "BTrk/KalmanTrack/KalHit.hh"
 #include "BTrk/KalmanTrack/KalRep.hh"

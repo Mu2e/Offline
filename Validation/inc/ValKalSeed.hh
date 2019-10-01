@@ -3,7 +3,7 @@
 #define ValKalSeed_HH_
 
 #include "art/Framework/Principal/Event.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 #include "RecoDataProducts/inc/KalSeed.hh"
 #include "TH1D.h"
 #include <string>
@@ -43,6 +43,13 @@ namespace mu2e {
     TH1D* _hTan;
     TH1D* _hCuts;
     TH1D* _hPRes;
+    TH1D* _hCCdisk;
+    TH1D* _hCCEoverP;
+    TH1D* _hCCDt0;
+    TH1D* _hCCDt;
+    TH1D* _hCCDOCA;
+    TH1D* _hCChlen;
+    TH1D* _hCCtlen;
   };
 }
 

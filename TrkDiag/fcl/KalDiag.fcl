@@ -45,7 +45,9 @@ BEGIN_PROLOG
     StrawDigiMCLabel : "compressDigiMCs" #Update Labels
     MCStepsLabel : "compressDigiMCs"
     SimParticleLabel : "compressDigiMCs"
-    TimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap" ] }
+#    TimeOffsets : { inputs : [ @sequence::DigiCompression.TimeMaps ] }
+    # the following is for MDC2018h and later samples 
+    TimeOffsets : { inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] }
   }
   
 END_PROLOG

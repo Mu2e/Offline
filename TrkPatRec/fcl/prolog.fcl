@@ -12,6 +12,11 @@ FitDir : {
   upstream : 1
 }
 
+TimeCalculator : {
+  TrkToCaloTimeOffset : @local::TrackCaloMatching.DtOffset
+  CaloTimeErr : 0.5
+}
+
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
   module_type  : TimeClusterFinder
@@ -20,37 +25,102 @@ TimeClusterFinder : {
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection : "CaloClusterFromProtoCluster"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  # enable calorimeter cluster info in time clustering
   CaloClusterCollection : "CaloClusterFromProtoCluster"
+  UseCaloCluster : true
+  UseCaloClusterPosition : true
+  CaloClusterWeight : 10.0
   TestFlag : true
 }
-# stereo version
-STimeClusterFinder : {
+# specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
+# note these are helicity-independent
+TimeClusterFinderDe : {
   @table::TimeClusterFinder
-  ComboHitCollection : "makeSTH"
-  StrawHitFlagCollection :"SflagBkgHits:ComboHits"
+  AveragePitch : 0.63 # signed
+  T0Calculator : {
+    @table::TimeCalculator
+    StrawHitBeta : 1.0
+  }
 }
+TimeClusterFinderUe : {
+  @table::TimeClusterFinder
+  AveragePitch : -0.63
+  T0Calculator : {
+    @table::TimeCalculator
+    StrawHitBeta : 1.0
+  }
+}
+# muons
+TimeClusterFinderDmu : {
+  @table::TimeClusterFinder
+  AveragePitch : 0.63
+  T0Calculator : {
+    @table::TimeCalculator
+    StrawHitBeta : 0.7
+  }
+}
+TimeClusterFinderUmu : {
+  @table::TimeClusterFinder
+  AveragePitch : -0.63
+  T0Calculator : {
+    @table::TimeCalculator
+    StrawHitBeta : 0.7
+  }
+}
+# pions
+TimeClusterFinderDpi : {
+  @table::TimeClusterFinder
+  AveragePitch : 0.63
+  T0Calculator : {
+    @table::TimeCalculator
+    StrawHitBeta : 0.63
+  }
+}
+TimeClusterFinderUpi : {
+  @table::TimeClusterFinder
+  AveragePitch : -0.63
+  T0Calculator : {
+    @table::TimeCalculator
+    StrawHitBeta : 0.63
+  }
+}
+
+# helix finding.  Search for both helicities
 RobustHelixFinder : {
     module_type		: RobustHelixFinder
     ComboHitCollection     : "makePH"
     ComboHitFlagCollection : "FlagBkgHits:ComboHits"
-    TimeClusterCollection  : "TimeClusterFinder"
     HelixStereoHitMVA      : { MVAWeights : "TrkPatRec/test/HelixStereoHitMVA.weights.xml" }
     HelixNonStereoHitMVA   : { MVAWeights : "TrkPatRec/test/HelixNonStereoHitMVA.weights.xml" }
-
     diagPlugin : { tool_type                    : "RobustHelixFinderDiag"
 	mcTruth                                 : 0
     }
-    
+    T0Calculator : @local::TimeCalculator
 }
-SRobustHelixFinder : {
+RobustHelixFinderDe : {
   @table::RobustHelixFinder
-   ComboHitCollection : "makeSTH"
-   TimeClusterCollection : "STimeClusterFinder"
-   HitSelectionBits : ["TimeDivision","Stereo"]
+  TimeClusterCollection  : "TimeClusterFinderDe"
 }
-#same for trigger
-
+RobustHelixFinderUe : {
+  @table::RobustHelixFinder
+  TimeClusterCollection  : "TimeClusterFinderUe"
+}
+RobustHelixFinderDmu : {
+  @table::RobustHelixFinder
+  TimeClusterCollection  : "TimeClusterFinderDmu"
+}
+RobustHelixFinderUmu : {
+  @table::RobustHelixFinder
+  TimeClusterCollection  : "TimeClusterFinderUmu"
+}
+RobustHelixFinderDpi : {
+  @table::RobustHelixFinder
+  TimeClusterCollection  : "TimeClusterFinderDpi"
+}
+RobustHelixFinderUpi : {
+  @table::RobustHelixFinder
+  TimeClusterCollection  : "TimeClusterFinderUpi"
+}
 # pattern recognition internals
 # Kalman fit configuration for the seed fit (least squares configuration of Kalman fit)
 KFSeed : {
@@ -75,7 +145,10 @@ KFSeed : {
   dtOffset                        : @local::TrackCaloMatching.DtOffset
   strawHitT0Weight                : 1
   caloHitT0Weight                 : 10
+  caloHitError                    : 15.0 # mm 
+  T0Calculator			  : @local::TimeCalculator
   mcTruth                         : 0
+  printUtils                      : { @table::TrkReco.PrintUtils}
 }
 
 # Kalman fit configuration for the final track fit.  This also runs the simulated annealing
@@ -83,7 +156,6 @@ KFFinal : {
   materialCorrection          : true
   fieldCorrection	      : true
   initT0		      : false
-  useTrkCaloHit               : false
   ResolveAfterWeeding	      : false
   # time external error, assuming s drift velocity of 62.5 #mu m / ns
 #  hiterr                      : [ 5.0, 1.5, 0.5, 0.25, 0.125, 0.05, 0.0, 0.0, 0.0]
@@ -97,13 +169,19 @@ KFFinal : {
   ambiguityStrategy           : @local::PanelAmbig.Strategy
 # Extend downstream to the calorimeter by default
   DownstreamExtent	      : 3
+  # the following is redundant with the TrkTimeCalculator offset FIXME!
   dtOffset                    : @local::TrackCaloMatching.DtOffset
-  strawHitT0Weight            : 1
-  caloHitT0Weight             : 10
-  mcTruth                         : 0
+  strawHitT0Weight            : 1 # unused? FIXME!
+  caloHitT0Weight             : 10 # unused? FIXME!
+  caloHitError                : 15.0 # mm 
+  T0Calculator		      : @local::TimeCalculator
+  useTrkCaloHit               : true
+  t0window                    : 4.0
+  mcTruth                     : 0
+  printUtils                  : { @table::TrkReco.PrintUtils } 
 }
 
-# Kalman fit configuration for the cprmode
+# KalFit (Kalman fiter)  configuration for Doublet Ambig Resolver
 CprKFFinal : {
     debugLevel                              : 0
     minnstraws                              : 15
@@ -146,8 +224,7 @@ CprKFFinal : {
 #    deltaDriftDoublet                       : 0.3
 #    maxDoubletChi2                          : 9
 #   sigmaSlope                              : 0.025
-    mcTruth                                 : 1
-    mcUtils                                 : { tool_type : "TrkPatRecMcUtils" }
+    printUtils                              : { @table::TrkReco.PrintUtils }
 }
 
 
@@ -155,184 +232,245 @@ CprKFFinal : {
 KSF : {
   module_type                 : KalSeedFit
   ComboHitCollection	      : "makeSH"
-  SeedCollection	      : "RobustHelixFinder"
   KalFit		      : @local::KFSeed
   ParameterErrors	      : [10.0,0.05,0.001,10.0,0.05]
 #  ParameterErrors	      : [1.0,1.0,1.0,1.0,1.0]
   MaxAddDoca                  : 7.    # mm
   MaxAddChi                   : 5.    # normalized unit
-  rescueHits                  : 0     # turned off 
+  rescueHits                  : 1     # turned on (CalPatRec style)
 }
 # Final Kalman fit, including material and magnetic inhomogeneity effects
 KFF : {
   module_type                 : KalFinalFit
   ComboHitCollection	      : "makeSH"
   StrawHitFlagCollection      : "FlagBkgHits:StrawHits"
+  CaloClusterCollection       : "CaloClusterFromProtoCluster"
   KalFit		      : @local::KFFinal
   GoodKallSeedFitBits	      : ["SeedOK"]
   AddHitSelectionBits	      : []
   AddHitBackgroundBits	      : []
+  ZSavePositions : [-1631.11, -1522.0, 0.0, 1522.0 ]
 }
 
 # seed Fit configuration for specific particles
 #  First, downstream electrons
-KSFDeM			      : @local::KSF
-KSFDeM.SeedCollection      : "HelixFinder:Positive"
-KSFDeM.fitparticle	      : @local::Particle.eminus
-KSFDeM.fitdirection	      : @local::FitDir.downstream 
-
+KSFDeM	: {
+  @table::KSF
+  SeedCollection      : "HelixFinderDe:Positive"
+  fitparticle	      : @local::Particle.eminus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream electrons
-KSFUeM			      : @local::KSF
-KSFUeM.SeedCollection      : "HelixFinder:Negative"
-KSFUeM.fitparticle	      : @local::Particle.eminus
-KSFUeM.fitdirection	      : @local::FitDir.upstream 
+KSFUeM	: {
+  @table::KSF
+  SeedCollection      : "HelixFinderUe:Negative"
+  fitparticle	      : @local::Particle.eminus
+  fitdirection	      : @local::FitDir.upstream 
+}
 #  downstream positrons
-KSFDeP			      : @local::KSF
-KSFDeP.SeedCollection      : "HelixFinder:Negative"
-KSFDeP.fitparticle	      : @local::Particle.eplus
-KSFDeP.fitdirection	      : @local::FitDir.downstream 
-
+KSFDeP	: {
+  @table::KSF
+  SeedCollection      : "HelixFinderDe:Negative"
+  fitparticle	      : @local::Particle.eplus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream positrons
-KSFUeP			      : @local::KSF
-KSFUeP.SeedCollection      : "HelixFinder:Positive"
-KSFUeP.fitparticle	      : @local::Particle.eplus
-KSFUeP.fitdirection	      : @local::FitDir.upstream 
+KSFUeP	: {
+  @table::KSF
+  SeedCollection      : "HelixFinderUe:Positive"
+  fitparticle	      : @local::Particle.eplus
+  fitdirection	      : @local::FitDir.upstream 
+}
 # downstream mu minus
-KSFDmuM			      : @local::KSF
-KSFDmuM.SeedCollection     : "HelixFinder:Positive"
-KSFDmuM.fitparticle	      : @local::Particle.muminus
-KSFDmuM.fitdirection	      : @local::FitDir.downstream 
+KSFDmuM	: { 
+  @table::KSF
+  SeedCollection     : "HelixFinderDmu:Positive"
+  fitparticle	      : @local::Particle.muminus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream mu minus
-KSFUmuM			      : @local::KSF
-KSFUmuM.SeedCollection     : "HelixFinder:Negative"
-KSFUmuM.fitparticle	      : @local::Particle.muminus
-KSFUmuM.fitdirection	      : @local::FitDir.upstream 
+KSFUmuM	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderUmu:Negative"
+  fitparticle	      : @local::Particle.muminus
+  fitdirection	      : @local::FitDir.upstream 
+}
 # downstream mu plus
-KSFDmuP			      : @local::KSF
-KSFDmuP.SeedCollection     : "HelixFinder:Negative"
-KSFDmuP.fitparticle	      : @local::Particle.muplus
-KSFDmuP.fitdirection	      : @local::FitDir.downstream 
+KSFDmuP	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderDmu:Negative"
+  fitparticle	      : @local::Particle.muplus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream mu plus
-KSFUmuP			      : @local::KSF
-KSFUmuP.SeedCollection     : "HelixFinder:Positive"
-KSFUmuP.fitparticle	      : @local::Particle.muplus
-KSFUmuP.fitdirection	      : @local::FitDir.upstream 
+KSFUmuP	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderUmu:Positive"
+  fitparticle	      : @local::Particle.muplus
+  fitdirection	      : @local::FitDir.upstream 
+}
 # downstream pi minus
-KSFDpiM			      : @local::KSF
-KSFDpiM.SeedCollection     : "HelixFinder:Positive"
-KSFDpiM.fitparticle	      : @local::Particle.piminus
-KSFDpiM.fitdirection	      : @local::FitDir.downstream 
+KSFDpiM	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderDpi:Positive"
+  fitparticle	      : @local::Particle.piminus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream pi minus
-KSFUpiM			      : @local::KSF
-KSFUpiM.SeedCollection     : "HelixFinder:Negative"
-KSFUpiM.fitparticle	      : @local::Particle.piminus
-KSFUpiM.fitdirection	      : @local::FitDir.upstream 
+KSFUpiM	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderUpi:Negative"
+  fitparticle	      : @local::Particle.piminus
+  fitdirection	      : @local::FitDir.upstream 
+}
 # downstream pi plus
-KSFDpiP			      : @local::KSF
-KSFDpiP.SeedCollection     : "HelixFinder:Negative"
-KSFDpiP.fitparticle	      : @local::Particle.piplus
-KSFDpiP.fitdirection	      : @local::FitDir.downstream 
+KSFDpiP	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderDpi:Negative"
+  fitparticle	      : @local::Particle.piplus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream pi plus
-KSFUpiP			      : @local::KSF
-KSFUpiP.SeedCollection     : "HelixFinder:Positive"
-KSFUpiP.fitparticle	      : @local::Particle.piplus
-KSFUpiP.fitdirection	      : @local::FitDir.upstream
-
+KSFUpiP	: {
+  @table::KSF
+  SeedCollection     : "HelixFinderUpi:Positive"
+  fitparticle	      : @local::Particle.piplus
+  fitdirection	      : @local::FitDir.upstream
+}
 # Final Fit configuration for specific particles
 #  First, downstream electrons
-KFFDeM			      : @local::KFF
-KFFDeM.SeedCollection      : "KSFDeM"
-KFFDeM.fitparticle	      : @local::Particle.eminus
-KFFDeM.fitdirection	      : @local::FitDir.downstream 
+KFFDeM			      : { 
+  @table::KFF
+  SeedCollection      : "KSFDeM"
+  fitparticle	      : @local::Particle.eminus
+  fitdirection	      : @local::FitDir.downstream 
+}
 
 # upstream electrons
-KFFUeM			      : @local::KFF
-KFFUeM.SeedCollection      : "KSFUeM"
-KFFUeM.fitparticle	      : @local::Particle.eminus
-KFFUeM.fitdirection	      : @local::FitDir.upstream 
+  KFFUeM			      : { 
+  @table::KFF
+  SeedCollection      : "KSFUeM"
+  fitparticle	      : @local::Particle.eminus
+  fitdirection	      : @local::FitDir.upstream 
+}
+
 #  downstream positrons
-KFFDeP			      : @local::KFF
-KFFDeP.SeedCollection      : "KSFDeP"
-KFFDeP.fitparticle	      : @local::Particle.eplus
-KFFDeP.fitdirection	      : @local::FitDir.downstream 
-
+KFFDeP			      : { 
+  @table::KFF
+  SeedCollection      : "KSFDeP"
+  fitparticle	      : @local::Particle.eplus
+  fitdirection	      : @local::FitDir.downstream 
+}
 # upstream positrons
-KFFUeP			      : @local::KFF
-KFFUeP.SeedCollection      : "KSFUeP"
-KFFUeP.fitparticle	      : @local::Particle.eplus
-KFFUeP.fitdirection	      : @local::FitDir.upstream 
+KFFUeP			      : { 
+  @table::KFF
+  SeedCollection      : "KSFUeP"
+  fitparticle	      : @local::Particle.eplus
+  fitdirection	      : @local::FitDir.upstream 
+}
+
 # downstream mu minus
-KFFDmuM			      : @local::KFF
-KFFDmuM.SeedCollection     : "KSFDmuM"
-KFFDmuM.fitparticle	      : @local::Particle.muminus
-KFFDmuM.fitdirection	      : @local::FitDir.downstream 
+KFFDmuM			      : { 
+  @table::KFF
+  SeedCollection     : "KSFDmuM"
+  fitparticle	      : @local::Particle.muminus
+  fitdirection	      : @local::FitDir.downstream 
+}
+
 # upstream mu minus
-KFFUmuM			      : @local::KFF
-KFFUmuM.SeedCollection     : "KSFUmuM"
-KFFUmuM.fitparticle	      : @local::Particle.muminus
-KFFUmuM.fitdirection	      : @local::FitDir.upstream 
+KFFUmuM			      : { 
+  @table::KFF
+  SeedCollection     : "KSFUmuM"
+  fitparticle	      : @local::Particle.muminus
+  fitdirection	      : @local::FitDir.upstream 
+}
+
 # downstream mu plus
-KFFDmuP			      : @local::KFF
-KFFDmuP.SeedCollection     : "KSFDmuP"
-KFFDmuP.fitparticle	      : @local::Particle.muplus
-KFFDmuP.fitdirection	      : @local::FitDir.downstream 
+KFFDmuP			      : { 
+  @table::KFF
+  SeedCollection     : "KSFDmuP"
+  fitparticle	      : @local::Particle.muplus
+  fitdirection	      : @local::FitDir.downstream 
+}
+
 # upstream mu plus
-KFFUmuP			      : @local::KFF
-KFFUmuP.SeedCollection     : "KSFUmuP"
-KFFUmuP.fitparticle	      : @local::Particle.muplus
-KFFUmuP.fitdirection	      : @local::FitDir.upstream 
+KFFUmuP			      : { 
+  @table::KFF
+  SeedCollection     : "KSFUmuP"
+  fitparticle	      : @local::Particle.muplus
+  fitdirection	      : @local::FitDir.upstream
+}
+
 # downstream pi minus
-KFFDpiM			      : @local::KFF
-KFFDpiM.SeedCollection     : "KSFDpiM"
-KFFDpiM.fitparticle	      : @local::Particle.piminus
-KFFDpiM.fitdirection	      : @local::FitDir.downstream 
+KFFDpiM			      : { 
+  @table::KFF
+  SeedCollection     : "KSFDpiM"
+  fitparticle	      : @local::Particle.piminus
+  fitdirection	      : @local::FitDir.downstream 
+}
+
 # upstream pi minus
-KFFUpiM			      : @local::KFF
-KFFUpiM.SeedCollection     : "KSFUpiM"
-KFFUpiM.fitparticle	      : @local::Particle.piminus
-KFFUpiM.fitdirection	      : @local::FitDir.upstream 
+KFFUpiM			      : { 
+  @table::KFF
+  SeedCollection     : "KSFUpiM"
+  fitparticle	      : @local::Particle.piminus
+  fitdirection	      : @local::FitDir.upstream 
+}
+
 # downstream pi plus
-KFFDpiP			      : @local::KFF
-KFFDpiP.SeedCollection     : "KSFDpiP"
-KFFDpiP.fitparticle	      : @local::Particle.piplus
-KFFDpiP.fitdirection	      : @local::FitDir.downstream 
+KFFDpiP			      : { 
+  @table::KFF
+  SeedCollection     : "KSFDpiP"
+  fitparticle	      : @local::Particle.piplus
+  fitdirection	      : @local::FitDir.downstream 
+}
+
 # upstream pi plus
-KFFUpiP			      : @local::KFF
-KFFUpiP.SeedCollection     : "KSFUpiP"
-KFFUpiP.fitparticle	      : @local::Particle.piplus
-KFFUpiP.fitdirection	      : @local::FitDir.upstream
+KFFUpiP			      : { 
+  @table::KFF
+  SeedCollection     : "KSFUpiP"
+  fitparticle	      : @local::Particle.piplus
+  fitdirection	      : @local::FitDir.upstream
+}
 
+# Final fit of merged Helices : these depend on CalPatRec
 
-MHFinalFitDeM                : @local::KFF
-MHFinalFitDeM.SeedCollection : MHSeedFitDem
-MHFinalFitDeM.fitparticle	: @local::Particle.eminus
-MHFinalFitDeM.fitdirection	: @local::FitDir.downstream 
+MHFinalFitDeM                : { 
+  @table::KFFDeM
+  SeedCollection : MHSeedFitDem
+}
 
+MHFinalFitDeP                :  {
+  @table::KFFDeP
+  SeedCollection : MHSeedFitDep
+}
 
-MHFinalFitDeP                :  @local::KFF
-MHFinalFitDeP.SeedCollection : MHSeedFitDep
-MHFinalFitDeP.fitparticle	      : @local::Particle.eplus
-MHFinalFitDeP.fitdirection	      : @local::FitDir.downstream 
-
-MHFinalFitDmuM               : @local::KFF
-MHFinalFitDmuMSeedCollection : MHSeedFitDmm
-MHFinalFitDmuM.fitparticle	      : @local::Particle.muminus
-MHFinalFitDmuM.fitdirection	      : @local::FitDir.downstream 
+MHFinalFitDmuM               : { 
+  @table::KFFDmuM
+  SeedCollection : MHSeedFitDmm
+}
 #
-MHFinalFitDmuP                :  @local::KFF
-MHFinalFitDmuP.SeedCollection : MHSeedFitDmp
-MHFinalFitDmuP.fitparticle	 : @local::Particle.muplus
-MHFinalFitDmuP.fitdirection	 : @local::FitDir.downstream 
+MHFinalFitDmuP                :  {
+  @table::KFFDmuP
+  SeedCollection : MHSeedFitDmp
+}
 
 # Declare a table with all the modules needed for track reconstruction
-# This should be divided into sim, reco FIXME!
 Tracking : {
   producers : {
-# the following should be independently sourced FIXME!
-    TimeClusterFinder  : @local::TimeClusterFinder
-    HelixFinder  : @local::RobustHelixFinder
-    STimeClusterFinder  : @local::STimeClusterFinder
-    SHelixFinder  : @local::SRobustHelixFinder
+    TimeClusterFinderDe  : @local::TimeClusterFinderDe
+    HelixFinderDe  : @local::RobustHelixFinderDe
+    TimeClusterFinderDmu  : @local::TimeClusterFinderDmu
+    HelixFinderDmu  : @local::RobustHelixFinderDmu
+    TimeClusterFinderDpi  : @local::TimeClusterFinderDpi
+    HelixFinderDpi  : @local::RobustHelixFinderDpi
+    TimeClusterFinderUe  : @local::TimeClusterFinderUe
+    HelixFinderUe  : @local::RobustHelixFinderUe
+    TimeClusterFinderUmu  : @local::TimeClusterFinderUmu
+    HelixFinderUmu  : @local::RobustHelixFinderUmu
+    TimeClusterFinderUpi  : @local::TimeClusterFinderUpi
+    HelixFinderUpi  : @local::RobustHelixFinderUpi
+# should add proton FIXME!
 # now all the different track fits based on these inputs
 # First, seed fits
     KSFDeM	  : @local::KSFDeM
@@ -360,15 +498,8 @@ Tracking : {
     KFFUpiM	  : @local::KFFUpiM
     KFFDpiP	  : @local::KFFDpiP
     KFFUpiP	  : @local::KFFUpiP
-    KFFUeM	  : @local::KFFUeM
-    KFFDeP	  : @local::KFFDeP
-    KFFUeP	  : @local::KFFUeP
-    KFFDmuM	  : @local::KFFDmuM
-    KFFUmuM	  : @local::KFFUmuM
-    KFFDmuP	  : @local::KFFDmuP
-    KFFUmuP	  : @local::KFFUmuP
-  
 # configuration for using the sequence with MergeHelix
+# Only downstream: upstream can't be seeded by a cluster!
     MHFinalFitDeM	  : @local::MHFinalFitDeM
     MHFinalFitDeP	  : @local::MHFinalFitDeP
     MHFinalFitDmuM        : @local::MHFinalFitDmuM
@@ -376,45 +507,42 @@ Tracking : {
     
   }
 
-# production sequence to find helices
-  FindHelices : [ TimeClusterFinder, HelixFinder ]
-  SFindHelices : [ STimeClusterFinder, SHelixFinder ]
-
 # define standard outputs 
   Output : {
     Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
     Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
-	 "keep mu2e::StrawHitPositions_MakeStereoHits_*_*",
+	 "keep mu2e::ComboHitCollection_*_*_*",
 	  "keep mu2e::StrawHits_*_*_*"	]
 
-    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_*_*_*",
-	  "keep mu2e::TrkQualDetailmu2e::MVAStructs_*_*_*",
+    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+	 "keep mu2e::ComboHitCollection_makePH_*_*",
+	  "keep mu2e::KalSeeds_*_*_*",
 	  "keep mu2e::KalSeeds_*_*_*",
 	   "keep mu2e::HelixSeeds_*_*_*",
 	    "keep mu2e::TimeClusters_*_*_*" ]
 
     MCTracks : ["keep mu2e::GenParticles_*_*_*",
-		"keep mu2e::SimParticlesmv_*_*_*" ]
-    MCDigis : ["keep mu2e::StrawDigiMCs_makeSD_*_*"]
-    MCHits : [ "keep mu2e::StepPointMCs_detectorFilter_tracker_*",
-	      "keep mu2e::StepPointMCs_detectorFilter_virtualdetector_*"]
+		"keep mu2e::SimParticles_*_*_*" ]
+    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+	      "keep mu2e::StepPointMCs_*_virtualdetector_*"]
 
   }
 }
 # production sequences for tracking specific paricles; first electrons
-Tracking.TPRDeM  : [ TimeClusterFinder, HelixFinder, KSFDeM, KFFDeM ]
-Tracking.TPRUeM  : [ TimeClusterFinder, HelixFinder, KSFUeM, KFFUeM ]
-Tracking.TPRDeP  : [ TimeClusterFinder, HelixFinder, KSFDeP, KFFDeP ]
-Tracking.TPRUeP  : [ TimeClusterFinder, HelixFinder, KSFUeP, KFFUeP ]
+Tracking.TPRDeM  : [ TimeClusterFinderDe, HelixFinderDe, KSFDeM, KFFDeM ]
+Tracking.TPRUeM  : [ TimeClusterFinderUe, HelixFinderUe, KSFUeM, KFFUeM ]
+Tracking.TPRDeP  : [ TimeClusterFinderDe, HelixFinderDe, KSFDeP, KFFDeP ]
+Tracking.TPRUeP  : [ TimeClusterFinderUe, HelixFinderUe, KSFUeP, KFFUeP ]
 #muons
-Tracking.TPRDmuM  : [ TimeClusterFinder, HelixFinder, KSFDmuM, KFFDmuM ]
-Tracking.TPRUmuM  : [ TimeClusterFinder, HelixFinder, KSFUmuM, KFFUmuM ]
-Tracking.TPRDmuP  : [ TimeClusterFinder, HelixFinder, KSFDmuP, KFFDmuP ]
-Tracking.TPRUmuP  : [ TimeClusterFinder, HelixFinder, KSFUmuP, KFFUmuP ]
+Tracking.TPRDmuM  : [ TimeClusterFinderDmu, HelixFinderDmu, KSFDmuM, KFFDmuM ]
+Tracking.TPRUmuM  : [ TimeClusterFinderUmu, HelixFinderUmu, KSFUmuM, KFFUmuM ]
+Tracking.TPRDmuP  : [ TimeClusterFinderDmu, HelixFinderDmu, KSFDmuP, KFFDmuP ]
+Tracking.TPRUmuP  : [ TimeClusterFinderUmu, HelixFinderUmu, KSFUmuP, KFFUmuP ]
 #pions
-Tracking.TPRDpiM  : [ TimeClusterFinder, HelixFinder, KSFDpiM, KFFDpiM ]
-Tracking.TPRUpiM  : [ TimeClusterFinder, HelixFinder, KSFUpiM, KFFUpiM ]
-Tracking.TPRDpiP  : [ TimeClusterFinder, HelixFinder, KSFDpiP, KFFDpiP ]
-Tracking.TPRUpiP  : [ TimeClusterFinder, HelixFinder, KSFUpiP, KFFUpiP ]
+Tracking.TPRDpiM  : [ TimeClusterFinderDpi, HelixFinderDpi, KSFDpiM, KFFDpiM ]
+Tracking.TPRUpiM  : [ TimeClusterFinderUpi, HelixFinderUpi, KSFUpiM, KFFUpiM ]
+Tracking.TPRDpiP  : [ TimeClusterFinderDpi, HelixFinderDpi, KSFDpiP, KFFDpiP ]
+Tracking.TPRUpiP  : [ TimeClusterFinderUpi, HelixFinderUpi, KSFUpiP, KFFUpiP ]
 
 END_PROLOG

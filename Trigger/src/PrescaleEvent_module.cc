@@ -44,17 +44,22 @@ namespace mu2e
 
     private:
 
-    uint32_t nPrescale_;
-    bool     useFilteredEvts_;
-    int      _debug;
-    unsigned _nevt, _npass;
+    uint32_t     nPrescale_;
+    bool         useFilteredEvts_;
+    int          _debug;
+    TriggerFlag  _trigFlag;
+    std::string  _trigPath;
+    unsigned     _nevt, _npass;
 
   };
 
-  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p)
-    : nPrescale_      (p.get<uint32_t>("nPrescale")), 
-      useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)), 
-      _debug          (p.get<int>     ("debugLevel",0)), 
+  PrescaleEvent::PrescaleEvent(fhicl::ParameterSet const & p) : 
+      art::EDFilter{p},
+      nPrescale_      (p.get<uint32_t>("nPrescale")),
+      useFilteredEvts_(p.get<bool>    ("useFilteredEvents",false)),
+      _debug          (p.get<int>     ("debugLevel",0)),
+      _trigFlag       (p.get<std::vector<std::string> >("triggerFlag")),
+      _trigPath       (p.get<std::string>("triggerPath")),
       _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -62,7 +67,7 @@ namespace mu2e
 
   inline bool PrescaleEvent::filter(art::Event & e)
   {
-    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
+    std::unique_ptr<TriggerInfo> trigInfo(new TriggerInfo);
     ++_nevt;
     bool retval(false);
     bool condition = e.event() % nPrescale_ == 0;
@@ -70,16 +75,18 @@ namespace mu2e
 
     if(condition) {
       ++_npass;
-      triginfo->_triggerBits.merge(TriggerFlag::prescaleRandom);
+      //      trigInfo->_triggerBits.merge(TriggerFlag::prescaleRandom);
+      trigInfo->_triggerBits.merge(_trigFlag);
+      trigInfo->_triggerPath = _trigPath;
       retval = true;
     }
-    e.put(std::move(triginfo));
+    e.put(std::move(trigInfo));
     return retval;
   }
 
   bool PrescaleEvent::endRun( art::Run& run ) {
     if(_debug > 0){
-      std::cout << *currentContext()->moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
+      std::cout << moduleDescription().moduleLabel() << " passed " << _npass << " events out of " << _nevt << " for a ratio of " << float(_npass)/float(_nevt) << std::endl;
     }
     return true;
   }

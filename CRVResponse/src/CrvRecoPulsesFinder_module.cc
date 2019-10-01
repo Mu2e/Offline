@@ -21,8 +21,8 @@
 #include "RecoDataProducts/inc/CrvDigiCollection.hh"
 #include "RecoDataProducts/inc/CrvRecoPulseCollection.hh"
 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include <TH1D.h>
 
@@ -68,6 +68,7 @@ namespace mu2e
   };
 
   CrvRecoPulsesFinder::CrvRecoPulsesFinder(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     _crvDigiModuleLabel(pset.get<std::string>("crvDigiModuleLabel")),
     _minPEs(pset.get<int>("minPEs")),          //6 PEs
     _darkNoise(pset.get<bool>("darkNoise"))    //true for dark noise calibration
@@ -136,13 +137,13 @@ namespace mu2e
         int    PEs         = _makeCrvRecoPulses->GetPEs(j);
         int    PEsPulseHeight = _makeCrvRecoPulses->GetPEsPulseHeight(j);
         double pulseHeight = _makeCrvRecoPulses->GetPulseHeight(j); 
-        double pulseWidth  = _makeCrvRecoPulses->GetPulseWidth(j);
+        double pulseBeta   = _makeCrvRecoPulses->GetPulseBeta(j);
         double pulseFitChi2= _makeCrvRecoPulses->GetPulseFitChi2(j);
         double LEtime      = _makeCrvRecoPulses->GetLEtime(j);
 //        if(pulseTime<0) continue;
 //        if(pulseTime>_microBunchPeriod) continue;
         if(PEs<_minPEs) continue; 
-        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseWidth, pulseFitChi2, LEtime, 
+        crvRecoPulseCollection->emplace_back(PEs, PEsPulseHeight, pulseTime, pulseHeight, pulseBeta, pulseFitChi2, LEtime, 
                                                   waveformIndices, barIndex, SiPM);
       }
     }

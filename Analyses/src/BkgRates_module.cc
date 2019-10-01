@@ -13,7 +13,6 @@
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/CaloHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
@@ -25,15 +24,14 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "TFile.h"
 #include "TNtuple.h"
-#include "TTrackerGeom/inc/TTracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -195,7 +193,7 @@ namespace mu2e {
 
       art::ServiceHandle<art::TFileService> tfs;
 
-      if (geom->hasElement<TTracker>()) {
+      if (geom->hasElement<Tracker>()) {
         _tNtup        = tfs->make<TNtuple>( "StrawHits", "Straw Ntuple",
                                             "evt:run:time:dt:eDep:lay:dev:sec:strawId:MChitX:MChitY:v:vMC:z:trkId:pdgId:isGen:P:CreationCode:StartVolume:StartX:StartY:StartZ:StartT:StoppingCode:EndVolume:EndX:EndY:EndZ:EndT:StepFromEva:EvaIsGen:EvaCreationCode:genId:genP:genE:genX:genY:genZ:genCosTh:genPhi:genTime:driftTime:driftDist" );
       } 
@@ -212,7 +210,7 @@ namespace mu2e {
 
     if (_doStoppingTarget) doStoppingTarget(evt);
 
-    if (geom->hasElement<TTracker>()) {
+    if (geom->hasElement<Tracker>()) {
       doTracker(evt, _skipEvent);
     }
     doCalorimeter(evt, _skipEvent);
@@ -240,7 +238,7 @@ namespace mu2e {
 
     if (skip) return;
 
-    const Tracker& tracker = getTrackerOrThrow();
+    const Tracker& tracker = *GeomHandle<Tracker>();
 
     art::Handle<StrawHitCollection> pdataHandle;
     evt.getByLabel(_makerModuleLabel,pdataHandle);
@@ -332,7 +330,7 @@ namespace mu2e {
       const CLHEP::Hep3Vector HitPoint = stMidPoint3 + (v/stDirection3.mag())*stDirection3;
       const CLHEP::Hep3Vector MCHitPoint = stMidPoint3 + (vMC/stDirection3.mag())*stDirection3;
 
-      if (fabs(v) > str.getHalfLength()) {
+      if (fabs(v) > str.halfLength()) {
         if (_diagLevel > 0) cout << "Position along the wire bigger than halflength" << endl;
       }
 
@@ -346,7 +344,7 @@ namespace mu2e {
 
 
       CLHEP::Hep3Vector const& strDir = str.direction();
-      double strRadius = str.getRadius();
+      double strRadius = tracker.strawOuterRadius();
       bool foundTrack = false;
       if ( haveSimPart ) {
 	for (size_t j = 0; j < mcptr.size(); ++j) {

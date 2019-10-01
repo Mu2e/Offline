@@ -10,18 +10,12 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "Mu2eUtilities/inc/polyAtan2.hh"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/weighted_median.hpp>
 // root
 // #include "TH1F.h"
 // #include "Math/VectorUtil.h"
@@ -34,7 +28,6 @@
 #include <cmath>
 
 using namespace std;
-using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e
@@ -57,6 +50,7 @@ namespace mu2e
     _minlambda(pset.get<float>("minlambda",0.001)),
     _mindfdz(pset.get<float>("minDfDz",0.002)),
     _maxdfdz(pset.get<float>("maxDfDz",0.01)),
+    _nLoopsdfdz(pset.get<int>("nLoopsdfdz",2)),
     _nphibins(pset.get<unsigned>("NPhiHistBins",25)),
     _phifactor(pset.get<float>("PhiHistRangeFactor",1.2)),
     _minnphi(pset.get<unsigned>("MinNPhi",2)),//5)),//FIXME!
@@ -88,10 +82,18 @@ namespace mu2e
     _rwind(pset.get<float>("RadiusWindow",10.0)), // window for calling a point to be 'on' the helix in the AGG fit (mm)
     _hphi("hphi","phi value",_nphibins,-_phifactor*CLHEP::pi,_phifactor*CLHEP::pi),
     _ntripleMin(pset.get<unsigned>("ntripleMin",5)),
-    _ntripleMax(pset.get<unsigned>("ntripleMax",500))
+    _ntripleMax(pset.get<unsigned>("ntripleMax",500)),
+    _initFZMinL(pset.get<float>("initFZMinLambda",30.)),
+    _initFZMaxL(pset.get<float>("initFZMaxLambda",530.)),
+    _initFZStepL(pset.get<float>("initFZStepLambda",20.)),
+    _fitFZMinL(pset.get<float>("fitFZMinLambda",10.)),
+    _fitFZMaxL(pset.get<float>("fitFZMaxLambda",510.)),
+    _fitFZStepL(pset.get<float>("fitFZStepLambda",4.))
   {
     float minarea(pset.get<float>("minArea",5000.0));
-    _minarea2 = minarea*minarea;
+    _minarea2    = minarea*minarea;
+    _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL);
+    _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
   }
 
   RobustHelixFit::~RobustHelixFit()
@@ -281,11 +283,25 @@ namespace mu2e
     }
 
     // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
-    accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
-    
     ComboHit*      hitP1(0), *hitP2(0);
     uint16_t       facezF1(0), facezF2(0);
     int            nHits(HelixData._chHitsToProcess.size());
+    // float          minX(30);
+    // float          maxX(530);
+    // float          stepX(20);
+    int            hist[_initFZNBins] = {0};
+    // int            nbins(25);
+    int            wg      = 1;
+    unsigned       counter = 0;
+    int            dbin_min(2); // doesn't allow to fill in two consecutive iterations two bins close to each other
+
+    float          dzdphisign(0);
+    if (rhel.helicity()._value == Helicity::neghel) {
+      dzdphisign = -1.;
+    }
+    else if (rhel.helicity()._value == Helicity::poshel) {
+      dzdphisign = 1.;
+    }
 
     for (int f1=0; f1<nHits-1; ++f1){
       hitP1   = &HelixData._chHitsToProcess[f1];
@@ -300,23 +316,67 @@ namespace mu2e
 	if ( facezF1 == facezF2 )  continue;
 
 	float dz = hitP2->pos().z() - hitP1->pos().z();//facezF2->z - facezF1->z;
-	if (dz < _minzsep || dz > _maxzsep)          continue;
+	if (fabs(dz) < _minzsep || fabs(dz) > _maxzsep)          continue;
 	float dphi = deltaPhi(hitP1->_hphi, hitP2->_hphi);
-	if (dphi*int(rhel.helicity()._value) < 0 || fabs(dphi) < _mindphi || fabs(dphi) > _maxdphi) continue;
 
-	float lambda = dz/dphi;
-	if(goodLambda(rhel.helicity(),lambda)){
-	  float wt = sqrtf(hitP1->nStrawHits()*hitP2->nStrawHits());
-	  //		float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
-	  accf(lambda, weight=wt);
+	int bin(-1), bin_last(-1);
+	for (int dphiloop=0; dphiloop<_nLoopsdfdz; ++dphiloop){
+	  double dphi_n = dphi + double(dphiloop)*2*M_PI*dzdphisign;
+	  if (dphi_n*int(rhel.helicity()._value) < 0 || fabs(dphi_n) < _mindphi || fabs(dphi_n) > _maxdphi) continue;
+	  float lambda = dz/dphi_n;
+	  if (_debug > 0) {
+	    printf("[RobustHelixFinder::initFZ:LOOP]      counter = %4i dzdphisign = %1.1f iLoop = %i dphi_n = %3.3f dz = %3.3f lambda = %3.3f\n",
+		   counter, dzdphisign, dphiloop, dphi_n, dz, lambda);
+	  }
+	  
+	  if (lambda*dzdphisign >= _initFZMaxL) {
+	    continue;
+	  }else if (lambda*dzdphisign <= _initFZMinL){
+	    break;
+	  }
+	  
+	  bin = (lambda*dzdphisign-_initFZMinL)/_initFZStepL;
+	  if ( (bin_last > 0) && (bin_last - bin <= dbin_min))          continue; 
+
+	  if (_debug > 0) {
+	    printf("[RobustHelixFinder::initFZ:LOOPFILL]  counter = %4i dzdphisign = %1.1f lambda = %3.3f bin = %2i\n",
+		   counter, dzdphisign, lambda, bin);
+	  }
+	  hist[bin] += wg;
+	  counter   += 1;
+
+	  bin_last   = bin;
+	    //}
 	}
 		
       }//end secondloop over the hits
     }//end first loop over the hits
 
-    if(boost::accumulators::extract::count(accf) < _minnhit) return retval;
+    if (counter < _minnhit) {
+      return retval;
+    }
+    //-----------------------------------------------------------------------------
+    // the 'histogram' is filled, find a peak
+    //-----------------------------------------------------------------------------
+    float swmax(0), sw, xmp(0);
 
-    float lambda = extract_result<tag::weighted_median>(accf);
+    if (_debug > 0) {
+      printf("[RobustHelixFinder::initFZ:PEAK_SEARCH]   dzdphisign   counter  ix   hist[ix]   sw\n");
+    }
+    
+    for (unsigned ix=0; ix<_initFZNBins-2; ix++) {
+      sw = (hist[ix]+hist[ix+1]+hist[ix+2]);
+      if (sw > swmax) { 
+	xmp = _initFZMinL + (_initFZStepL*(ix+0.5)*hist[ix] + _initFZStepL*(ix+1+0.5)*hist[ix+1]+ _initFZStepL*(ix+2+0.5)*hist[ix+2])/sw;
+	swmax = sw;
+      }
+      if (_debug > 0) {
+	if (sw>0) 
+	  printf("[RobustHelixFinder::initFZ:PEAK_SEARCH]   %10.1f  %5i %3i  %6i %8.3f\n",
+		 dzdphisign, counter, ix, hist[ix], sw);
+      }
+    }
+    float lambda = xmp*dzdphisign;// extract_result<tag::weighted_median>(accf);
 
     if(!goodLambda( rhel.helicity(),lambda) ) return retval;
     rhel._lambda = lambda;
@@ -398,7 +458,7 @@ namespace mu2e
     int       nstations, nhits[30], nstations_with_hits(0);
     float     phiVec[30], zVec[30], weight(0);
     
-    nstations = _tracker->nStations();//RobustHelixFinderData::kNStations;
+    nstations = StrawId::_nstations;//RobustHelixFinderData::kNStations;
 
     for (int i=0; i<nstations; i++) {
       phiVec[i] = 0;
@@ -552,10 +612,10 @@ namespace mu2e
     int ixmax = int(maxX/stepX);
 
     double swmax(0), sw, xmp(0);
-    for (int ix=0; ix<ixmax-1; ix++) {
-      sw = (hist[ix]+hist[ix+1]);
+    for (int ix=0; ix<ixmax-2; ix++) {
+      sw = (hist[ix]+hist[ix+1]+hist[ix+2]);
       if (sw > swmax) { 
-	xmp = (stepX*(ix+0.5)*hist[ix] + stepX*(ix+1+0.5)*hist[ix+1])/sw;
+	xmp = (stepX*(ix+0.5)*hist[ix] + stepX*(ix+1+0.5)*hist[ix+1]+ stepX*(ix+2+0.5)*hist[ix+2])/sw;
 	swmax = sw;
       }
     }
@@ -650,17 +710,34 @@ namespace mu2e
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
     RobustHelix& rhel         = HelixData._hseed._helix;
 
+    float          dzdphisign(0);
+    if (rhel.helicity()._value == Helicity::neghel) {
+      dzdphisign = -1.;
+    }
+    else if (rhel.helicity()._value == Helicity::poshel) {
+      dzdphisign = 1.;
+    }
+    // float          minX(10);
+    // float          maxX(510);//500
+    // float          stepX(4); //10
+    int            hist[_fitFZNBins] = {0};// 49
+    // int            nbins(125);     // 49
+
     //iterate over lambda and loop resolution
     unsigned niter(0);
     bool changed(true);
     while(changed && niter < _maxniter)
       {
 	changed = false;
-	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accf;
 
 	ComboHit*      hitP1(0), *hitP2(0);
 	uint16_t       facezF1(0), facezF2(0);
         int            nHits(HelixData._chHitsToProcess.size());
+	int            wg  = 1;
+	int            counter = 0;
+
+	//reset the array
+	for (unsigned i=0; i<_fitFZNBins; ++i) hist[i]=0;
 
 	for (int f1=0; f1<nHits-1; ++f1){
 	  hitP1 = &HelixData._chHitsToProcess[f1];
@@ -675,22 +752,59 @@ namespace mu2e
 		
 	    float dz   = hitP2->pos().z() - hitP1->pos().z();//facezF2->z - facezF1->z;
 	    float dphi = hitP2->helixPhi()- hitP1->helixPhi(); 
-	    if (dz < _minzsep || fabs(dphi) < _mindphi) continue;
-
+	    if (fabs(dphi) < _mindphi)          continue;
+  
 	    float lambda = dz/dphi;
-	    if (goodLambda(rhel.helicity(),lambda)){
-	      float wt = sqrtf(hitP1->nStrawHits()*hitP2->nStrawHits());
-	      //		    float wt = (*ihit)->nStrawHits() + (*jhit)->nStrawHits();
-	      accf(lambda, weight=wt);
+	    if(goodLambda(rhel.helicity(),lambda)){
+	      
+	      int bin = (lambda*dzdphisign-_fitFZMinL)/_fitFZStepL;
+	      if (lambda*dzdphisign >= _fitFZMaxL) {
+		continue;
+	      }
+	      else if (lambda*dzdphisign <= _fitFZMinL){
+		break;
+	      }
+	      hist[bin] += wg;
+	      counter += 1;
 	    }
+	      //	    }
 		
 	  }//end secondloop over faces 
 	}//end first loop over faces
 
-	rhel._lambda = extract_result<tag::weighted_median>(accf);
+	float       swmax(0), sw(0), xmp(0);
+	unsigned    binsToIntegrate(10);
+	if (_debug > 0) {
+	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   dzdphisign   counter  ix   hist[ix]   sw\n");
+	}
+	for (unsigned ix=0; ix<_fitFZNBins-binsToIntegrate; ix++) {
+	  sw  = 0;
+	  for (unsigned l=0; l<binsToIntegrate; ++l){
+	    sw += hist[ix+l];
+	  }
+	  if (sw > swmax) { 
+	    xmp = 0;
+	    for (unsigned l=0; l<binsToIntegrate; ++l){
+	      xmp = xmp + _fitFZStepL*(ix + l + 0.5)*hist[ix+l];
+	    }
+	    xmp  /= sw;
+	    xmp  += _fitFZMinL;
+	    swmax = sw;
+	  }
+	  if (_debug > 0) {
+	    if (sw>0) 
+	      printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   %10.1f  %5i %3i  %6i %8.3f\n",
+		     dzdphisign, counter, ix, hist[ix], sw);
+	  }
+	}
+	
+	rhel._lambda = xmp*dzdphisign;
 
+	if (_debug > 0) {
+	  printf("[RobustHelixFinder::fitFZ:PEAK_SEARCH]   lambda = %1.1f\n", rhel._lambda);
+	}
 	// now extract intercept.  Here we solve for the difference WRT the previous value
-	accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > acci;
+	MedianCalculator acci(HelixData._chHitsToProcess.size());
 
 	for (unsigned i=0; i<HelixData._chHitsToProcess.size(); ++i){ 
 	  hitP1 = &HelixData._chHitsToProcess[i];
@@ -699,12 +813,12 @@ namespace mu2e
 	  float phiex = rhel.circleAzimuth(hitP1->_pos.z());
 	  float dphi  = deltaPhi(phiex,hitP1->helixPhi());
 	  float wt    = hitP1->nStrawHits();
-	  acci(dphi,weight = wt);// accumulate the difference WRT the current intercept
+	  acci.push(dphi, wt);
 	}
 
-
 	// enforce convention on azimuth phase
-	float dphi = extract_result<tag::weighted_median>(acci);
+	if (acci.size() == 0) return;
+	float dphi = acci.weightedMedian();
 	rhel._fz0 = deltaPhi(0.0,rhel.fz0()+ dphi);
 
 	// resolve the hit loops again
@@ -756,8 +870,7 @@ namespace mu2e
       
     // ComboHitCollection& hhits = HelixData._hseed._hhits;
     RobustHelix* rhel         = &HelixData._hseed._helix;
-    accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accx, accy, accr;
-
+    MedianCalculator   accx(_ntripleMax), accy(_ntripleMax), accr(_ntripleMax);
     // loop over all triples
     unsigned      ntriple(0);
  
@@ -829,9 +942,10 @@ namespace mu2e
 	      ++ntriple;
 
 	      float wt = cbrtf(wposP1.weight()*wposP2.weight()*wposP3.weight()); 
-	      accx(cx,weight = wt);
-	      accy(cy,weight = wt);
-	      if(_tripler) accr(rho,weight = wt);
+	      
+	      accx.push(cx,wt);
+	      accy.push(cy,wt);
+	      if(_tripler) accr.push(rho,wt);
 	      if (ntriple>_ntripleMax) {
 		f1=nHits-2; f2=nHits-1; f3=nHits;
 	      }
@@ -843,8 +957,8 @@ namespace mu2e
     // median calculation needs a reasonable number of points to function
     if (ntriple > _ntripleMin)
       {        
-	float centx = extract_result<tag::weighted_median>(accx);
-        float centy = extract_result<tag::weighted_median>(accy);
+	float centx = accx.weightedMedian();
+        float centy = accy.weightedMedian();
 	XYVec center(centx,centy);
 	if(!_tripler) {
 	  if(!_errrwt) {		   
@@ -852,7 +966,7 @@ namespace mu2e
 	      hitP1 = &HelixData._chHitsToProcess[i];
 	      if (!use(*hitP1) )                          continue;	  
 	      float rho = sqrtf(pow(hitP1->pos().x() - centx,2) + pow(hitP1->pos().y() - centy,2));//(wp - center).Mag2());
-	      accr(rho,weight = hitP1->nStrawHits()); 
+	      accr.push(rho, hitP1->nStrawHits()); 
 	    }
 	  } else {
 	    // set weight according to the errors
@@ -863,14 +977,15 @@ namespace mu2e
 	      float wt   = evalWeightXY(*hitP1,center);
 	      float rho  = sqrtf(rvec.Mag2());
 	      // if (rho*wt > _xyHitCut)         continue;//FIXME! need an histogram to implement this cut
-	      accr(rho,weight=wt);
+	      accr.push(rho,wt);
 	    }
 
 	    if ( _usecc && HelixData._hseed.caloCluster().isNonnull()){
 	    }
 	  }
 	}
-	float rho = extract_result<tag::weighted_median>(accr);
+	if (accr.size() == 0)      return;
+	float rho = accr.weightedMedian();
         rhel->_rcent = sqrtf(center.Mag2());
         rhel->_fcent = polyAtan2(center.y(), center.x());//center.Phi();
         rhel->_radius = rho;
@@ -927,11 +1042,11 @@ namespace mu2e
     if (radii.size() > _minnhit)
       {
         // find the median radius
-        accumulator_set<float, stats<tag::weighted_median(with_p_square_quantile) >, float > accr;
+	MedianCalculator accr(radii.size());
         for(unsigned irad=0;irad<radii.size();++irad)
-	  accr(radii[irad].first, weight = radii[irad].second);
+	  accr.push(radii[irad].first, radii[irad].second);
 
-        rmed = extract_result<tag::weighted_median>(accr);
+        rmed = accr.weightedMedian();
         // now compute the AGE (Absolute Geometric Error)
         age = 0.0;
         for(unsigned irad=0;irad<radii.size();++irad)

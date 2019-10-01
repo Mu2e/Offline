@@ -1,9 +1,9 @@
 name=CRV_Efficiency_check_T
 layerOffset=42
 #layerOffset=0
-moduleGap="4.0"
-gapSmall="0.2"
-gapLarge="0.5"
+moduleGap="2.0"
+gapSmall="0.0"
+gapLarge="0.46"
 
 timeWindow=10
 #timeWindow=20
@@ -11,9 +11,9 @@ sides=2
 
 #for layerOffset in {0..62..1}
 #do
-    for PEthreshold in {10..40..2}
+    for PEthreshold in {6..40..2}
     do
-        for PEYield in {32..68..2}  #PE per SiPM @ 1m away from SiPM of 3m long counter
+        for PEYield in {10..68..2}  #PE per SiPM @ 1m away from SiPM of 3m long counter
         do
 
               directory=/pnfs/mu2e/scratch/users/ehrlich/workflow

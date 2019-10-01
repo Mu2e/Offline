@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Mu2e includes
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
@@ -74,7 +74,8 @@ namespace mu2e {
 
   //================================================================
   DecayInOrbitWeight::DecayInOrbitWeight(const fhicl::ParameterSet& pset)
-    : input_(pset.get<std::string>("inputModule") )
+    : art::EDProducer{pset}
+    , input_(pset.get<std::string>("inputModule") )
     , weightingScheme_(pset.get<std::string>("weightingScheme","pol58") )
     , verbosityLevel_(pset.get<int>("verbosityLevel", 0 ) )
   {
@@ -103,13 +104,15 @@ namespace mu2e {
 
     double weight(-1.);
     for ( const auto& i: *genColl ) {
-      const double energy = i.momentum().e();
+      if (i.generatorId() == GenId::dioTail) {
+	const double energy = i.momentum().e();
       
-      if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy ); 
-      else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy ); 
-      else {
-        throw cet::exception("MODEL")
-          << "Wrong or not allowed DIO energy spectrum";
+	if      ( weightingScheme_ == SpectrumChoice::Pol5  ) weight = SimpleSpectrum::getPol5 ( energy ); 
+	else if ( weightingScheme_ == SpectrumChoice::Pol58 ) weight = SimpleSpectrum::getPol58( energy ); 
+	else {
+	  throw cet::exception("MODEL")
+	    << "Wrong or not allowed DIO energy spectrum";
+	}
       }
     }
 

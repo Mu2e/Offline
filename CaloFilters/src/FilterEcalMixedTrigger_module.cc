@@ -2,7 +2,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Selector.h"
 #include "art/Framework/Principal/Provenance.h"
@@ -37,6 +37,8 @@
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
+
+#include "RecoDataProducts/inc/TriggerInfo.hh"
 
 
 // Root includes
@@ -89,6 +91,7 @@ namespace mu2e {
   private:
 
     int _diagLevel;
+    std::string    _trigPath;
 
     std::string _MVAMethodLabel;
     std::string _caloTrigSeedModuleLabel;
@@ -234,8 +237,9 @@ namespace mu2e {
   };
 
   FilterEcalMixedTrigger::FilterEcalMixedTrigger(fhicl::ParameterSet const& pset):
+    art::EDFilter{pset},
     _diagLevel(pset.get<int>("diagLevel",0)),
-
+    _trigPath(pset.get<std::string>("triggerPath")),
     _MVAMethodLabel(pset.get<std::string>("MVAMethod","BDT")), 
     _caloTrigSeedModuleLabel(pset.get<std::string>("caloTrigSeedModuleLabel")), 
     _ecalweightsfile               (pset.get<std::string>("ecalweightsfile")),
@@ -259,6 +263,8 @@ namespace mu2e {
     _step                       (pset.get<float>("step",10)),
     _nProcessed(0)  
   { 
+    produces<TriggerInfo>();
+
     _MVAmethod= _MVAMethodLabel + " method"; 
     //
     _ecalMVAcutB[0]=(_ecalMVAhighcut0-_ecalMVApivotcut0)/(395.-_MVArpivot); // high cut is at r=395 mm
@@ -322,6 +328,7 @@ namespace mu2e {
   }
 
   bool FilterEcalMixedTrigger::filter(art::Event& event) {
+    std::unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
 
     if (_step==0) return false;
 
@@ -727,11 +734,25 @@ namespace mu2e {
 	  }
 	}
 	if (_rpeak>_MVArpivot){
-	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) return true;
+	  if (_mixedMVA>_mixedMVAlowcut[peak.disk]) {
+	    //FIX ME!!!!
+	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
+	    triginfo->_triggerPath = _trigPath;
+	    event.put(std::move(triginfo));
+    	    return true;
+	  }
 	}
 	else{
 	  mixedMVAcut=_mixedMVAcutA[peak.disk]+_mixedMVAcutB[peak.disk]*_rpeak;
-	  if (_mixedMVA>mixedMVAcut) return true;
+	  if (_mixedMVA>mixedMVAcut) {
+	    //FIX ME!!!!
+	    triginfo->_triggerBits.merge(TriggerFlag::caloTrigSeed);
+	    triginfo->_triggerBits.merge(TriggerFlag::hitCluster);	    
+	    triginfo->_triggerPath = _trigPath;
+	    event.put(std::move(triginfo));	    
+	    return true;
+	  }
 	}
       }
     }

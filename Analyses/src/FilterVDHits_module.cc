@@ -17,7 +17,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 //#define AGDEBUG(stuff) std::cerr<<"AG: "<<__FILE__<<", line "<<__LINE__<<": "<<stuff<<std::endl;
 #define AGDEBUG(stuff)
@@ -76,7 +76,8 @@ namespace mu2e {
 
   //================================================================
   FilterVDHits::FilterVDHits(const fhicl::ParameterSet& pset)
-    : _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
+    : EDFilter{pset}
+    , _inModuleLabel(pset.get<std::string>("inputModuleLabel"))
     , _inInstanceName(pset.get<std::string>("inputInstanceName"))
     , _vids(pset.get<std::vector<VolumeId> >("acceptedVids"))
     , _positionCut(pset.get<bool>("positionCut", false))
@@ -165,7 +166,7 @@ namespace mu2e {
     // The case when parents are stored is supported by compressSimParticleCollection()
     // otherwise we need to prepare the output SimParticleCollection by hand
     std::unique_ptr<SimParticleCollection> outparts(new SimParticleCollection());
-    art::ProductID newProductId(getProductID<SimParticleCollection>());
+    art::ProductID newProductId(event.getProductID<SimParticleCollection>());
     const art::EDProductGetter *newProductGetter(event.productGetter(newProductId));
     if(!_storeParents) {
 

@@ -1,0 +1,26 @@
+// A geometry file for using the version 3 Production Target Geometry.
+
+// Target T1 milestone target geometry design, see Docdb-16583 for detail
+// there is a fabrication drawing there
+
+// First, the base geometry to start from...
+#include "Mu2eG4/geom/geom_common_current.txt"
+
+// Now the specific items for version 3 of the Production Target
+
+int targetPS_version           = 3;
+double targetPS_nFins          = 3;
+double targetPS_finHeight      = 5.0; // mm  Parameter "A"
+double targetPS_finThickness   = 1.0; // mm  Parameter "B"
+double targetPS_hubDistanceUS  = 0.0; // mm  Parameter "C"  (Upstream)
+double targetPS_hubDistanceDS  = 0.0;// mm  Parameter "D"  (Downstream)
+double targetPS_hubAngleUS     = 42.0;// deg Parameter "E"
+double targetPS_hubAngleDS     = 30.8;// deg Parameter "F"
+double targetPS_rOut	       = 3.15;// mm  radius of the main rod
+double targetPS_hubOverhangUS = 16.93; // mm
+double targetPS_hubOverhangDS = 15.87; // mm
+
+double targetPS_Hub_hang_Length    = 1.0; // mm
+double targetPS_Hub_overhang_angle = 42.0; // deg
+double targetPS_Hub_thickness      = 2.0; // mm
+

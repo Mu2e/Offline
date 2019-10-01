@@ -42,7 +42,7 @@ class G4Track;
 namespace CLHEP { class Hep3Vector; }
 
 namespace art { class Event; }
-namespace art { class EDProducer; }
+namespace art { class ProducesCollector; }
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
@@ -57,7 +57,7 @@ namespace mu2e {
       virtual bool steppingActionCut(const G4Step  *step) = 0;
       virtual bool stackingActionCut(const G4Track *trk) = 0;
 
-      virtual void declareProducts(art::EDProducer *parent) =  0;
+      virtual void declareProducts(art::ProducesCollector& collector) =  0;
 
       virtual void finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) = 0;
 
@@ -66,6 +66,9 @@ namespace mu2e {
 
       // put data into the stash
       virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) = 0;
+      
+      // delete data if we don't need it
+      virtual void deleteCutsData() = 0;
       
       // Put the data products into the event.
       //virtual void put(art::Event& event) = 0;

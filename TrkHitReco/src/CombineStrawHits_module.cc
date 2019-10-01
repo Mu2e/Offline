@@ -62,6 +62,7 @@ namespace mu2e {
   };
 
   CombineStrawHits::CombineStrawHits(fhicl::ParameterSet const& pset) :
+    art::EDProducer{pset},
     // Parameters
     _debug(pset.get<int>("debugLevel",0)),
     _chTag(pset.get<art::InputTag>("ComboHitCollection")),

@@ -4,7 +4,6 @@
 //
 #include "TrkReco/inc/TNTClusterer.hh"
 #include "ConditionsService/inc/ConditionsHandle.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
 #include "GeometryService/inc/GeometryService.hh"
@@ -14,7 +13,7 @@
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "GeneralUtilities/inc/Angles.hh"
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "cetlib_except/exception.h"
 

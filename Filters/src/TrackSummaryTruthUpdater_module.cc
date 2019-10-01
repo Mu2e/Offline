@@ -31,7 +31,8 @@ namespace mu2e {
 
   //================================================================
   TrackSummaryTruthUpdater::TrackSummaryTruthUpdater(const fhicl::ParameterSet& pset)
-    : inputTST_(pset.get<std::string>("inputTST"))
+    : art::EDProducer{pset}
+    , inputTST_(pset.get<std::string>("inputTST"))
     , remapping_(pset.get<std::string>("remapping"))
   {
     produces<TrackSummaryTruthAssns>();

@@ -14,6 +14,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitIndex.hh"
 #include "TrackerGeom/inc/Straw.hh"
+#include "TrackerConditions/inc/StrawResponse.hh"
 // CLHEP
 #include "CLHEP/Vector/ThreeVector.h"
 // c++
@@ -28,7 +29,8 @@ namespace mu2e
   class TrkStrawHit : public TrkHit {
   public:
   // enum for hit flags
-    TrkStrawHit(const ComboHit& strawhit, const Straw& straw,StrawHitIndex index,
+    TrkStrawHit(StrawResponse::cptr_t strawResponse,
+		const ComboHit& strawhit, const Straw& straw,StrawHitIndex index,
 		const TrkT0& trkt0, double fltlen, double maxdriftpull,
 		double timeWeight);
     virtual ~TrkStrawHit();
@@ -42,6 +44,7 @@ namespace mu2e
     const ComboHit& comboHit() const { return _combohit; }
     const Straw& straw() const { return _straw; }
     virtual double time() const { return _combohit.time(); }
+    //    virtual bool time(HitT0& t0) ;// 2019-04-22: GIANIPEZ change
     StrawEnd const& driftEnd() const { return _combohit.driftEnd(); }
     double driftTime() const; // drift time for the current end strategy
     double driftPhi() const { return _phi;}
@@ -75,10 +78,14 @@ namespace mu2e
     void setPenalty(double penerr) { _penerr = penerr; }
 
   protected:
+
     virtual TrkErrCode updateMeasurement(const TrkDifTraj* traj);
     virtual void updateDrift();
     virtual void updateSignalTime();
   //private:
+
+    StrawResponse::cptr_t _strawResponse;
+
     const ComboHit&   _combohit;
     const Straw&      _straw;
     StrawHitIndex     _index;
@@ -94,6 +101,7 @@ namespace mu2e
     double            _vprop; // effective signal propagation velocity
     double	      _stime; // signal propagation time
     double            _maxdriftpull;
+
   };
 
 // binary functor to sort TrkStrawHits by StrawHit index

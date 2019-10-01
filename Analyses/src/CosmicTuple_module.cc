@@ -13,7 +13,6 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/GeometryService.hh"
-#include "GeometryService/inc/getTrackerOrThrow.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
@@ -27,7 +26,7 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Principal/Handle.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -78,6 +77,7 @@ namespace mu2e {
   };
 
   CosmicTuple::CosmicTuple(fhicl::ParameterSet const& pset) :
+    EDFilter{pset},
     _generatorModuleLabel(pset.get<std::string>("generatorModuleLabel", "generate")),
     _g4ModuleLabel(pset.get<string>("g4ModuleLabel")),
     _minimump(pset.get<double>("minimump")),

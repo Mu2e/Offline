@@ -141,38 +141,30 @@ physics : {
    filters: {
       mothersFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: [ "g4run:DetectorMother" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
 
       crvFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: [ "g4run:CRV" ]
          extraHitInputs: [ "g4run:virtualdetector" ]
-         numSimParticleCollections: 1
          vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
       }
 
       tgtStopFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "stoppedMuonFinder" ]
-         numSimParticleCollections: 1
       }
 
       ootStopFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "outOfTargetMuonFinder" ]
-         numSimParticleCollections: 1
       }
 
       g4status: {

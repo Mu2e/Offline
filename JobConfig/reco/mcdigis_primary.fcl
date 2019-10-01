@@ -1,0 +1,29 @@
+# Same as mcdigisTrig, but for input digi files that don't have the cosmic time map
+# This is legacy for MDC2018g digis and earlier and will NOT process MCTrajectory
+#include "JobConfig/reco/mcdigis-trig.fcl"
+# generate a CosmicTimeMap; it will be empty
+# generate a fake ProtonBunchIntensity: it will be 0
+physics.producers : {
+  @table::physics.producers
+  @table::CommonMC.producers  
+  protonBunchIntensity : {
+    module_type: ProtonBunchIntensityFlat
+    mean: 0.0 # No PBI possible for pure signal! 
+    halfWidth : 1.0
+  } 
+}
+# add sim services so we can create a fake cosmic time map to make output consistent
+services : @local::Services.SimAndReco
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
+services.TFileService.fileName: "nts.owner.RecoMCTrig.version.sequencer.root"
+services.scheduler.wantSummary: true
+physics.RecoPath : [cosmicTimeMap, protonBunchIntensity, @sequence::Reconstruction.RecoMCPath ]
+# redefine the time maps being used
+physics.producers.FindMCPrimary.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.SelectRecoMC.TimeOffsets : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.producers.compressRecoMCs.timeMapTags : [ @sequence::DigiCompression.NoCosmicTimeMaps, "cosmicTimeMap"]
+physics.producers.CrvCoincidenceClusterMatchMC.timeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ] 
+physics.analyzers.RecoCheck.OldTimeOffsets.inputs :[  @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.analyzers.RecoCheck.NewTimeOffsets.inputs :[  @sequence::RecoCompression.NoCosmicTimeMaps ]
+services.TimeTracker.printSummary: true

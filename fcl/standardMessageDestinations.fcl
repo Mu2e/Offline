@@ -117,6 +117,10 @@ mf_coutInfo:
      limit       : 1    # start exponential backoff right away
      timespan    : 300  # report every 5min too, as asymmtotic behavior
    }
+   fileAction:
+   {
+     limit : -1
+   } 
    default:             
    {
      limit : 100

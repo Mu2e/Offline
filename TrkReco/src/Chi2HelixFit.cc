@@ -10,18 +10,12 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
-#include "TTrackerGeom/inc/TTracker.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 #include "RecoDataProducts/inc/CaloCluster.hh"
 
 #include "Mu2eUtilities/inc/polyAtan2.hh"
 
-#include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include "boost_fix/accumulators/statistics.hpp"
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/median.hpp>
-#include <boost/accumulators/statistics/weighted_median.hpp>
 // root
 // #include "TH1F.h"
 // #include "Math/VectorUtil.h"
@@ -34,7 +28,6 @@
 #include <cmath>
 
 using namespace std;
-using namespace boost::accumulators;
 using namespace ROOT::Math::VectorUtil;
 
 namespace mu2e
@@ -109,7 +102,7 @@ namespace mu2e
     int       nstations, nhits[30], nstations_with_hits(0);
     float     phiVec[30], zVec[30], weight(0);
     
-    nstations = _tracker->nStations();//RobustHelixFinderData::kNStations;
+    nstations = StrawId::_nstations;//RobustHelixFinderData::kNStations;
 
     for (int i=0; i<nstations; i++) {
       phiVec[i] = 0;

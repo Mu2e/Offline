@@ -14,9 +14,9 @@ bool protonabsorber.visible  = false;
 bool mbs.visible             = false;
 bool vd.visible              = false;
 
-bool ttracker.envelopeVisible       = false;
-bool ttracker.planeEnvelopeVisible = false;
-bool ttracker.supportVisible        = false;
+bool tracker.envelopeVisible       = false;
+bool tracker.planeEnvelopeVisible = false;
+bool tracker.supportVisible        = false;
 
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

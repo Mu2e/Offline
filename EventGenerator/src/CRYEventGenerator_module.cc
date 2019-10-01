@@ -4,6 +4,8 @@
 #include "MCDataProducts/inc/GenId.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // Particular generators that this code knows about.
 #include "SeedService/inc/SeedService.hh"
@@ -43,6 +45,7 @@ namespace mu2e {
   };
 
   CryEventGenerator::CryEventGenerator(fhicl::ParameterSet const& pSet) :
+    EDProducer{pSet},
     inputfile(pSet.get<std::string>("inputFile",
           "CRYEventGenerator/config/defaultCRYconfig.txt")),
     seed_( art::ServiceHandle<SeedService>()->getSeed() ),
@@ -57,12 +60,16 @@ namespace mu2e {
 
   void CryEventGenerator::produce(art::Event& evt) {
     std::unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
+    genParticles->clear();
     cryGen->generate(*genParticles);
     evt.put(std::move(genParticles));
   }
 
   void CryEventGenerator::endRun(art::Run&){
-    mf::LogInfo("CRYEventGenerator") << "Total live time simulated by CRY in this run: " << cryGen->getLiveTime();
+    std::ostringstream oss;
+    oss << "Total live time simulated: " << cryGen->getLiveTime() << "\n";
+    oss << "Number of events simulated: " << cryGen->getNumEvents() << "\n";
+    mf::LogInfo("CRYEventGenerator") << oss.str();
   }
 
 }

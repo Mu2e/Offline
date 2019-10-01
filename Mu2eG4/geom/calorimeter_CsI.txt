@@ -113,16 +113,24 @@ string calorimeter.passiveStripMaterial        = "Electronics2";
 
 
 // Control display and debug printout.
-bool calorimeter.caseVisible                  = false;
-bool calorimeter.caseSolid                    = false;
-bool calorimeter.crystalVisible               = false;
-bool calorimeter.crystalSolid                 = false;
-bool calorimeter.ROVisible                    = false;
-bool calorimeter.ROSolid                      = false;
-bool calorimeter.pipeVisible                  = false;
-bool calorimeter.pipeSolid                    = false;
-bool calorimeter.crateVisible                 = false;
-bool calorimeter.crateBoardVisible            = false;
+int  calorimeter.verbosityLevel                = 0;
+bool calorimeter.envelope.visible              = false;
+bool calorimeter.envelope.solid                = false;
+bool calorimeter.case.visible                  = true;
+bool calorimeter.case.solid                    = false;
+bool calorimeter.crystal.visible               = true;
+bool calorimeter.crystal.solid                 = false;
+bool calorimeter.crate.visible                 = true;
+bool calorimeter.crate.solid                   = false;
+bool calorimeter.crateBoard.visible            = true;
+bool calorimeter.crateBoard.solid              = false;
+bool calorimeter.pipe.visible                  = true;
+bool calorimeter.pipe.solid                    = false;
+bool calorimeter.RO.visible                    = true;
+bool calorimeter.RO.solid                      = false;
 
-int  calorimeter.verbosityLevel               = 0;
-bool calorimeter.doSurfaceCheck               = false;
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
