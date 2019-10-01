@@ -14,6 +14,7 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 // From the art tool chain
 #include "fhiclcpp/ParameterSet.h"
@@ -73,6 +74,8 @@ namespace mu2e {
       // create SDs for arbitrary logical volumes as requested
       void instantiateLVSDs(const SimpleConfig& config);
 
+      ExtMonFNALPixelSD* getExtMonFNALPixelSD() const { return extMonFNALPixelSD_; }
+      
       bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
       
       //LG: I made this public to use it in testing something
@@ -122,8 +125,10 @@ namespace mu2e {
       //std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
       // Separate handling as this detector does not produced StepPointMCs
+      ExtMonFNALPixelSD* extMonFNALPixelSD_ = nullptr;
       bool extMonPixelsEnabled_;
-      
+      const bool standardMu2eDetector_;
+
       int  verbosityLevel_;
 
       // minimum momentum of a hit in a StepPtMCColl and minimum # hits in Tracker
