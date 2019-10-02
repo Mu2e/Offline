@@ -155,6 +155,12 @@ physics :{
         verbose: 2   # 0,1,2
         #inputTags : [ "KFFDeM" ] # select instances
       }
+
+      TriggerResultsPrinter : {
+        verbose: 1   # 0,1
+        #inputTags : [ "KFFDeM" ] # select instances
+      }
+
     }
 
   } # analyzers
