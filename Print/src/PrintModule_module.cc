@@ -40,6 +40,7 @@
 #include "Print/inc/TimeClusterPrinter.hh"
 #include "Print/inc/KalSeedPrinter.hh"
 #include "Print/inc/PhysicalVolumePrinter.hh"
+#include "Print/inc/TriggerResultsPrinter.hh"
 
 namespace mu2e {
 
@@ -97,6 +98,7 @@ mu2e::PrintModule::PrintModule(fhicl::ParameterSet const& pset ):
   _printers.push_back( new TimeClusterPrinter(pset) );
   _printers.push_back( new KalSeedPrinter(pset) );
   _printers.push_back( new PhysicalVolumePrinter(pset) );
+  _printers.push_back( new TriggerResultsPrinter(pset) );
 }
 
 
