@@ -21,7 +21,7 @@ services.TimeTracker.printSummary: true
 # histogram file
 services.TFileService.fileName : "nts.owner.val-reco.dsconf.seq.root"
 # art file
-outputs.fullOutput.fileName : "mcs.owner.val-reco.dsconf.seq.art"
+outputs.Output.fileName : "mcs.owner.val-reco.dsconf.seq.art"
 
 # use the default standard geometry
 services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
