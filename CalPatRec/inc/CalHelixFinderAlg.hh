@@ -41,6 +41,7 @@ namespace mu2e {
   class CalHelixFinderAlg {
   public:
     enum { kMaxNHits = 10000 } ;
+
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
@@ -103,6 +104,7 @@ namespace mu2e {
                                         // the dfdz value in the pattern-recognition stage
     float               _mpDfDz;
     float               _absMpDfDz;         // absolute value of most probable expected dphi/dz
+    int                 _initDfDz;
     float               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
     float               _maxDfDz;
     float               _minDfDz;
@@ -121,7 +123,7 @@ namespace mu2e {
 					// squared distance requed bewtween a straw hit and its predicted 
 					// position used in the patter recognition procedure
     float               _distPatRec;
-    int                  _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
+    int                 _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
                                               //the findTrack function to set the new Helix
 
     float               _mindist;       // minimum distance between points used in circle initialization
@@ -156,6 +158,7 @@ namespace mu2e {
     int       _phiCorrectedDefined;
 
     float    _dfdzErr;                 // error on dfdz by ::findDfDz
+    float    _minarea2;
 //-----------------------------------------------------------------------------
 // checkpoints, used for debugging
 //-----------------------------------------------------------------------------
@@ -165,7 +168,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
                                         // parameter set should be passed in on construction
-
     explicit CalHelixFinderAlg(fhicl::ParameterSet const&);
     virtual ~CalHelixFinderAlg();
                                         // cached bfield accessor
@@ -196,7 +198,7 @@ namespace mu2e {
 				const XYZVec& HelCenter, 
 				float                   Radius);
 
-    void   calculateTrackParameters(const XYZVec& p1, 
+    bool   calculateTrackParameters(const XYZVec& p1, 
 				    const XYZVec& p2,
                                     const XYZVec& p3,
 				    XYZVec&       Center, 
@@ -321,6 +323,8 @@ namespace mu2e {
                                            // float*            Weights,
                                            HitInfo_t&         Iworst ,
                                            float&             HitChi2Worst);
+
+
 
   };
 }
