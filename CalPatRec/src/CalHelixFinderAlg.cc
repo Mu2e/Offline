@@ -148,26 +148,27 @@ namespace mu2e {
     _debug2             (pset.get<int>           ("debugLevel2"            )),
     _hsel               (pset.get<vector<string>>("HelixFitSelectionBits"  )),
     _bkgsel             (pset.get<vector<string>>("BackgroundSelectionBits")),
-    _maxHitEnergy       (pset.get<float>        ("maxElectronHitEnergy"   )),
+    _maxHitEnergy       (pset.get<float>         ("maxElectronHitEnergy"   )),
     _minNHits           (pset.get<int>           ("minNHit"                )),
-    _absMpDfDz          (pset.get<float>        ("mostProbableDfDz"       )),
-    _dzOverHelPitchCut  (pset.get<float>        ("dzOverHelPitchCut"      )),
-    _maxDfDz            (pset.get<float>        ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
-    _minDfDz            (pset.get<float>        ("minDfDz"                )),
-    _sigmaPhi           (pset.get<float>        ("sigmaPhi"               )),
-    _weightXY           (pset.get<float>        ("weightXY"               )),
+    _absMpDfDz          (pset.get<float>         ("mostProbableDfDz"       )),
+    _initDfDz           (pset.get<int>           ("initDfDz"               )),
+    _dzOverHelPitchCut  (pset.get<float>         ("dzOverHelPitchCut"      )),
+    _maxDfDz            (pset.get<float>         ("maxDfDz"                )), //0.01)),2018-10-11 gianipez test
+    _minDfDz            (pset.get<float>         ("minDfDz"                )),
+    _sigmaPhi           (pset.get<float>         ("sigmaPhi"               )),
+    _weightXY           (pset.get<float>         ("weightXY"               )),
     _targetcon          (pset.get<int>           ("targetconsistent"       )),
-    _weightZPhi         (pset.get<float>        ("weightZPhi"             )),
-    _weight3D           (pset.get<float>        ("weight3D"               )),
-    _maxXDPhi           (pset.get<float>        ("maxXDPhi"               )),
-    _maxPanelToHelixDPhi(pset.get<float>        ("maxPanelToHelixDPhi"    )), // 75 degrees
-    _distPatRec         (pset.get<float>        ("distPatRec"             )),
-    _minDeltaNShPatRec  (pset.get<float>        ("minDeltaNShPatRec"      )),
-    _mindist            (pset.get<float>        ("mindist"                )),
-    _pmin               (pset.get<float>        ("minP"                   )),
-    _pmax               (pset.get<float>        ("maxP"                   )),
-    _tdmin              (pset.get<float>        ("minAbsTanDip"           )),
-    _tdmax              (pset.get<float>        ("maxAbsTanDip"           )),
+    _weightZPhi         (pset.get<float>         ("weightZPhi"             )),
+    _weight3D           (pset.get<float>         ("weight3D"               )),
+    _maxXDPhi           (pset.get<float>         ("maxXDPhi"               )),
+    _maxPanelToHelixDPhi(pset.get<float>         ("maxPanelToHelixDPhi"    )), // 75 degrees
+    _distPatRec         (pset.get<float>         ("distPatRec"             )),
+    _minDeltaNShPatRec  (pset.get<float>         ("minDeltaNShPatRec"      )),
+    _mindist            (pset.get<float>         ("mindist"                )),
+    _pmin               (pset.get<float>         ("minP"                   )),
+    _pmax               (pset.get<float>         ("maxP"                   )),
+    _tdmin              (pset.get<float>         ("minAbsTanDip"           )),
+    _tdmax              (pset.get<float>         ("maxAbsTanDip"           )),
     _xyweights          (pset.get<bool>          ("xyWeights"              )),
     _zweights           (pset.get<bool>          ("zWeights"               )),
     _filter             (pset.get<bool>          ("filter"                 )),
@@ -182,12 +183,14 @@ namespace mu2e {
     _chi2hel3DMax       (pset.get<float>        ("chi2hel3DMax"           )),
     _dfdzErr            (pset.get<float>        ("dfdzErr"                )){
 
+    float minarea(pset.get<float>("minArea"));
+    _minarea2    = minarea*minarea;    
+    
     std::vector<std::string> bitnames;
     bitnames.push_back("Outlier");
     bitnames.push_back("OtherBackground");
     //mu2e::ComboHit::_useflag = StrawHitFlag(bitnames);
   }
-
 
 //-----------------------------------------------------------------------------
   CalHelixFinderAlg::~CalHelixFinderAlg() {
@@ -224,7 +227,8 @@ namespace mu2e {
     fCaloTime        = cl->time();
     fCaloX           = tpos.x();
     fCaloY           = tpos.y();
-    fCaloZ           = tpos.z();
+    float     offset = _calorimeter->caloInfo().getDouble("diskCaseZLength")/2. + (_calorimeter->caloInfo().getDouble("BPPipeZOffset") + _calorimeter->caloInfo().getDouble("BPHoleZLength")+ _calorimeter->caloInfo().getDouble("FEEZLength"))/2. - _calorimeter->caloInfo().getDouble("FPCarbonZLength") - _calorimeter->caloInfo().getDouble("FPFoamZLength");
+    fCaloZ           = tpos.z()-offset;
   }
 
 
@@ -725,7 +729,8 @@ namespace mu2e {
 
     float phi, phi_ref(-1e10), z_ref, dphi, dz;
 
-    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
+    //    float hist[20], minX(0), maxX(0.01), stepX(0.0005), nbinsX(20); // make it 20 bins
+    float hist[50], minX(0), maxX(0.025), stepX(0.0005), nbinsX(50); // make it 20 bins: gianipez test 2019-09-23
 
     XYZVec* center = &Helix._center;
     XYZVec  pos_ref;
@@ -756,8 +761,8 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // calorimeter cluster - point number nstations+1
 //-----------------------------------------------------------------------------
-    float zCl   = fCaloZ;
-    float phiCl = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
+    float zCl     = fCaloZ;
+    float phiCl   = polyAtan2(fCaloY-center->y(),fCaloX-center->x());
     if (phiCl < 0) phiCl += 2*M_PI;
 
     phiVec[nstations] = phiCl;
@@ -1584,8 +1589,9 @@ namespace mu2e {
       //-----------------------------------------------------------------------------
       int good_hit = flag.hasAllProperties(_hsel  );
       int bkg_hit  = flag.hasAnyProperty  (_bkgsel);
-      int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
-      if (good_hit && (! bkg_hit) && (! used_hit)) {
+      // int used_hit = flag.hasAnyProperty  (StrawHitFlag::calosel);
+      // if (good_hit && (! bkg_hit) && (! used_hit)) {
+      if (good_hit && (! bkg_hit) ) {
 	const ComboHit& ch  = Helix.chcol()->at(loc);
 
 	if (ch.energyDep() > _maxHitEnergy)                 continue;
@@ -2013,14 +2019,14 @@ namespace mu2e {
 	int       nhits  = panelz->nChHits();
 	for (int i=0; i<nhits; ++i){   
 	  if (Helix._nStrawHits > (nSh - nHitsTested))   continue;	  
-	  if ((nSh - nHitsTested) < _minNHits     )   continue;	  
+	  if ((nSh - nHitsTested) < _minNHits        )   continue;	  
 	  //clear the info of the tmp object used to test the triplet
 	  TmpHelix.clearResults();
 
 	  HitInfo_t          seed(f,p,panelz->idChBegin + i);
 	  findTrack(seed,TmpHelix,UseMPVdfdz);
 
-	  nHitsTested += Helix._chHitsToProcess[panelz->idChBegin + i].nStrawHits();// panelz->_chHitsToProcess.at(i).nStrawHits();
+	  nHitsTested += Helix._chHitsToProcess[panelz->idChBegin + i].nStrawHits();
 
 	  //compare tripletHelix with bestTripletHelix
 	  //2019-02-08: gianipez chanceg the logic;
@@ -3025,8 +3031,18 @@ namespace mu2e {
     XYZVec p2(seedHit->_pos);          // seed hit
     XYZVec p3(fCaloX,fCaloY,fCaloZ);   // cluster
     
-    calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz);
+    if (!calculateTrackParameters(p1,p2,p3,center,radius,phi0,dfdz))    return;  
     
+//--------------------------------------------------------------------------------
+// gianipez test 2019-09-28
+// let's try to evaluate the dfdz NOW!
+//--------------------------------------------------------------------------------
+    if (_initDfDz == 1){
+      int res = findDfDz(Helix, SeedIndex);
+      if (res ==1 ) {
+	dfdz = _hdfdz;    
+      }
+    }
     float     tollMax = fabs(2.*M_PI/dfdz);
 //------------------------------------------------------------------------------
 // helix parameters, in particular, phi0, are defined at Z=p2.z()
@@ -3470,13 +3486,21 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   // helix parameters are defined at Z=p2.z, Phi0 corresponds to p2
   //-----------------------------------------------------------------------------
-  void CalHelixFinderAlg::calculateTrackParameters(const XYZVec&   p1       ,
+  bool CalHelixFinderAlg::calculateTrackParameters(const XYZVec&   p1       ,
 						   const XYZVec&   p2       ,
 						   const XYZVec&   p3       ,
 						   XYZVec&         Center   ,
 						   float&         Radius   ,
 						   float&         Phi0     ,
 						   float&         DfDz32) {
+    //evaluate the area covered by the Triplet
+    float dist2ij = (p1 - p2).Mag2();
+    float dist2ik = (p1 - p3).Mag2();
+    float dist2jk = (p2 - p3).Mag2();
+    float area2   = (dist2ij*dist2jk + dist2ik*dist2jk + dist2ij*dist2ik) - 0.5*(dist2ij*dist2ij + dist2jk*dist2jk + dist2ik*dist2ik);
+    if(area2 < _minarea2)              return false;
+
+
     Center.SetZ(p2.z());
 
     float x_m, y_m, x_n, y_n;
@@ -3581,6 +3605,8 @@ namespace mu2e {
 	     Center.x(),Center.y(),Phi0,p1.z(),p2.z(),p3.z(),dphi32,DfDz32);
       printf("[CalHelixFinderAlg:calculateTrackParameters] z0 = %9.3f d0 = %8.4f  phi00 = %8.5f omega = %8.5f tandip = %8.4f\n",z0,d0,phi00,1/Radius,tandip);
     }
+
+    return true;
   }
 
 //-----------------------------------------------------------------------------

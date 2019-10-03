@@ -111,14 +111,14 @@ namespace mu2e {
 
     typedef std::vector<std::string> VS;
 
-    const auto ig(conf().ignoredGenIds());
-    for(const auto i: ig) {
+    for(const auto i: conf().ignoredGenIds()) {
       ignoredGenIds_.insert(GenId::findByName(i).id());
     }
 
-    const auto ia(conf().applyToGenIds());
-    for(const auto i: ia) {
-      applyToGenIds_.insert(GenId::findByName(i).id());
+    if(ignoredGenIds_.empty()) {
+      for(const auto i: conf().applyToGenIds()) {
+        applyToGenIds_.insert(GenId::findByName(i).id());
+      }
     }
 
     conf().randPDFparameters(protonPulseConf_);

@@ -15,6 +15,16 @@ TrkRecoTrigger : {
 	    HelixFinders  : [ "TThelixFinder:Negative" ]
 	}	
 
+	TTHelixUCCMergerDeM : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TThelixFinderUCC:Positive" ]
+	}	
+
+	TTHelixUCCMergerDeP : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TThelixFinderUCC:Negative" ]
+	}	
+
 	TTCalHelixMergerDeM : {
 	    module_type : MergeHelices
 	    HelixFinders  : [ "TTCalHelixFinderDe:Positive" ]
@@ -23,6 +33,16 @@ TrkRecoTrigger : {
 	TTCalHelixMergerDeP : {
 	    module_type : MergeHelices
 	    HelixFinders  : [ "TTCalHelixFinderDe:Negative" ]
+	}
+
+	TTCalHelixUCCMergerDeM : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TTCalHelixFinderUCCDe:Positive" ]
+	}	
+
+	TTCalHelixUCCMergerDeP : {
+	    module_type : MergeHelices
+	    HelixFinders  : [ "TTCalHelixFinderUCCDe:Negative" ]
 	}	
     }
 }

@@ -56,6 +56,7 @@ CalPatRec : { @table::CalPatRec
 	minNHit                                 : @local::CalPatRec.minNStrawHits       # minimal number of hits on found helix
 	hitChi2Max                              : @local::CalPatRec.chi2HitCut
 	mostProbableDfDz                        : 0.00475
+	initDfDz                                : 0
 #	minNActiveStationPairs                  : 10
 	dzOverHelPitchCut                       : 0.7
 	maxDfDz                                 : 0.01
@@ -63,7 +64,7 @@ CalPatRec : { @table::CalPatRec
 	sigmaPhi                                : 0.1636  # radians
 	targetconsistent                        : 0
 	weightXY                                : 1.11      #0.4527
-	weightZPhi                              : 0.15    #0.29      #0.4423    
+	weightZPhi                              : 0.75      #0.15      #0.29      #0.4423    
 	weight3D                                : 0.12      #1
 	maxXDPhi                                : 5         #
 	maxPanelToHelixDPhi                     : 1.309     # 75 degrees
@@ -85,6 +86,7 @@ CalPatRec : { @table::CalPatRec
 	chi2zphiMax                             : 5.0    
 	chi2hel3DMax                            : @local::CalPatRec.chi2hel3DMax
 	dfdzErr                                 : 0.1
+	minArea                                 : 5000.
     }
 #------------------------------------------------------------------------------
 # KalFitHack configuration for the KFF fits 
