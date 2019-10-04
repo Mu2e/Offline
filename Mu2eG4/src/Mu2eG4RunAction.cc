@@ -13,7 +13,6 @@
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "GeometryService/inc/GeometryService.hh"
 
 //art includes
 #include "fhiclcpp/ParameterSet.h"
@@ -47,8 +46,7 @@ Mu2eG4RunAction::Mu2eG4RunAction(const fhicl::ParameterSet& pset,
     _processInfo(phys_process_info),
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
-    _sensitiveDetectorHelper(sensitive_detectorhelper),
-    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
+    _sensitiveDetectorHelper(sensitive_detectorhelper)
     {}
 
 Mu2eG4RunAction::~Mu2eG4RunAction()
