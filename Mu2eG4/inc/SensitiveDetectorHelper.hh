@@ -74,13 +74,9 @@ namespace mu2e {
       // create SDs for arbitrary logical volumes as requested
       void instantiateLVSDs(const SimpleConfig& config);
 
+      bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
       ExtMonFNALPixelSD* getExtMonFNALPixelSD() const { return extMonFNALPixelSD_; }
       
-      bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
-      
-      //LG: I made this public to use it in testing something
-      std::vector<std::string> stepInstanceNamesToBeProduced() const;
-
       int verbosityLevel() const { return verbosityLevel_; }
 
   private:
@@ -121,14 +117,13 @@ namespace mu2e {
       InputTags preSimulatedHits_;
 
       // Return all of the instances names of the data products to be produced.
-      //LG: I made this public to use it in testing something
-      //std::vector<std::string> stepInstanceNamesToBeProduced() const;
+      std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
       // Separate handling as this detector does not produced StepPointMCs
-      ExtMonFNALPixelSD* extMonFNALPixelSD_ = nullptr;
       bool extMonPixelsEnabled_;
+      ExtMonFNALPixelSD* extMonFNALPixelSD_ = nullptr;
       const bool standardMu2eDetector_;
-
+      
       int  verbosityLevel_;
 
       // minimum momentum of a hit in a StepPtMCColl and minimum # hits in Tracker

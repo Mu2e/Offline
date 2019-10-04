@@ -49,7 +49,6 @@ namespace mu2e {
 
 SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset)
     :
-    extMonFNALPixelSD_(),
     extMonPixelsEnabled_(false),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     verbosityLevel_(pset.get<int>("verbosityLevel",0)),
@@ -173,9 +172,9 @@ void SensitiveDetectorHelper::registerSensitiveDetectors(){
     
         extMonFNALPixelSD_ = ( standardMu2eDetector_ && extMonPixelsEnabled_) ?
         dynamic_cast<ExtMonFNALPixelSD*>(sdManager->
-                                     FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
+                                         FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
         : nullptr;
-
+    
 }
 
     

@@ -29,6 +29,10 @@
 //G4 includes
 #include "G4Threading.hh"
 
+//art includes
+#include "fhiclcpp/ParameterSet.h"
+
+
 
 namespace mu2e {
     
@@ -84,7 +88,7 @@ namespace mu2e {
 // used for defining only the UserRunAction for the master thread
     void ActionInitialization::BuildForMaster() const
     {
-        SetUserAction( new Mu2eG4MasterRunAction(pset_,_physVolHelper, &physicsProcessInfoVector) );
+      SetUserAction( new Mu2eG4MasterRunAction(pset_, _physVolHelper, &physicsProcessInfoVector) );
     }
     
     
@@ -119,7 +123,7 @@ namespace mu2e {
         
         SetUserAction( new Mu2eG4RunAction(pset_, use_G4MT_, originInWorld, _physVolHelper,
                                            physics_Process_Info, trackingAction, steppingAction,
-                                           sensitive_Detector_Helper));
+                                           sensitive_Detector_Helper) );
 
         
         SetUserAction( new Mu2eG4EventAction(pset_, trackingAction, steppingAction,

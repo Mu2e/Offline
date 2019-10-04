@@ -60,8 +60,6 @@ class Mu2eG4RunAction : public G4UserRunAction
 
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
 
-    const bool standardMu2eDetector_;
-
 };
 
 }  // end namespace mu2e
