@@ -115,6 +115,10 @@ physics :{
         verbose: 1
       }
 
+      TriggerResultsPrinter : {
+        verbose: 1
+      }
+
     } # printModule
 
 
