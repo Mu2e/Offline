@@ -347,6 +347,7 @@ namespace mu2e {
 			    thicknessOfGapPerSection,
 			    c.getInt("targetPS_nHaymanFins"),
 			    finAngles,
+			    c.getDouble("targetPS_finThickness"),
 			    c.getDouble("targetPS_finOuterRadius"),
 			    c.getDouble("targetPS_supportRingLength"),
                             c.getDouble("targetPS_supportRingInnerRadius"),

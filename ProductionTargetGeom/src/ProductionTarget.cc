@@ -51,6 +51,7 @@ namespace mu2e {
 		     ,std::vector<double> thicknessOfGapPerSection
 		     ,int nHaymanFins
 		     ,std::vector<double> finAngles
+		     ,double haymanFinThickness
 		     ,double finOuterRadius
 		     ,double supportRingLength
 		     ,double supportRingInnerRadius
@@ -82,6 +83,7 @@ namespace mu2e {
     ,_thicknessOfGapPerSection(thicknessOfGapPerSection)
     ,_nHaymanFins(nHaymanFins)
     ,_finAngles(finAngles)
+    ,_haymanFinThickness(haymanFinThickness)
     ,_finOuterRadius(finOuterRadius)
     ,_supportRingLength(supportRingLength)
     ,_supportRingInnerRadius(supportRingInnerRadius)
