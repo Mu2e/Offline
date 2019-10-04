@@ -15,6 +15,8 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "BFieldGeom/inc/BFieldManager.hh"
+#include "BTrk/BField/BField.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
@@ -37,6 +39,8 @@ namespace mu2e {
 	  Comment("Compress short delta-rays into the primary step"),true};
 	fhicl::Atom<float> maxDeltaLength{ Name("MaxDeltaLength"),
 	  Comment("Maximum step length for a delta ray to be compressed"),0.5}; //mm
+	fhicl::Atom<float> radiusTolerance{ Name("RadiusTolerance"),
+	  Comment("Tolerance to accept a point outside the straw radius"),0.5}; //mm
 	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
 	  Comment("Estimated size of output collection"), 2000};
 	fhicl::Atom<string> trackerSteps { Name("trackerStepPoints"),
@@ -52,18 +56,20 @@ namespace mu2e {
       explicit MakeStrawGasSteps(const Parameters& conf);
 
     private:
+      void beginRun(art::Run& run) override;
+      void produce(art::Event& e) override;
       typedef pair<StrawId,cet::map_vector_key> SSPair; // key for pair of straw, SimParticle
       typedef map< SSPair , PtrStepPointMCVector > SPSMap; // steps by straw, SimParticle
-      void produce(art::Event& e) override;
       void compressDeltas(SPSMap& spsmap);
-      void endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw, XYZVec& lastpos);
+      XYZVec endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw);
       int _debug;
       bool _combineDeltas, _allAssns;
-      float _maxDeltaLen;
+      float _maxDeltaLen, _radtol;
       unsigned _csize, _ssize;
       bool _firstEvent;
       string _trackerSteps, _keepDeltas;
-
+      // cache the BField direction at the tracker center
+      Hep3Vector _bdir, _bnom;
   };
 
   MakeStrawGasSteps::MakeStrawGasSteps(const Parameters& config )  : 
@@ -72,6 +78,7 @@ namespace mu2e {
     _combineDeltas(config().combineDeltas()),
     _allAssns(config().allStepsAssns()),
     _maxDeltaLen(config().maxDeltaLength()),
+    _radtol(config().radiusTolerance()),
     _csize(config().csize()),
     _ssize(config().startSize()),
     _firstEvent(false),
@@ -85,8 +92,22 @@ namespace mu2e {
       if(_allAssns)produces <StrawGasStepAssns>("All");
     }
 
+  void MakeStrawGasSteps::beginRun( art::Run& run ){
+    // get field at the center of the tracker
+    GeomHandle<BFieldManager> bfmgr;
+    GeomHandle<DetectorSystem> det;
+    Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
+    _bnom = bfmgr->getBField(vpoint_mu2e);
+    if ( _bnom.mag() < 1.0e-4 ){
+      _bdir = Hep3Vector(0.0,0.0,1.0);
+    } else {
+      _bdir = _bnom.unit();
+    } 
+  }
+
   void MakeStrawGasSteps::produce(art::Event& event) {
-  // create output
+    const Tracker& tracker = *GeomHandle<Tracker>();
+    // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
     sgsc->reserve(_csize);
     unique_ptr<StrawGasStepAssns> sgsa_primary(new StrawGasStepAssns);
@@ -100,7 +121,7 @@ namespace mu2e {
     art::ProductInstanceNameSelector selector(_trackerSteps);
     HandleVector stepsHandles;
     event.getMany( selector, stepsHandles);
-    const Tracker& tracker = *GeomHandle<Tracker>();
+    //    const Tracker& tracker = *GeomHandle<Tracker>();
     // Informational message on the first event.
     if ( _firstEvent && _debug>0 ) {
       mf::LogInfo log("StrawDigiSim");
@@ -124,6 +145,7 @@ namespace mu2e {
       nspmcs += steps.size();
       // see if we should compress deltas from this collection
       bool dcomp = _combineDeltas && handle.provenance()->moduleLabel() != _keepDeltas;
+      if(_debug > 1 && !dcomp)cout << "No compression for collection " << handle.provenance()->moduleLabel() << endl;
       // Loop over the StepPointMCs in this collection and sort them by straw and SimParticle
       for (size_t ispmc =0; ispmc<steps.size();++ispmc) {
 	const auto& step = steps[ispmc];
@@ -135,7 +157,9 @@ namespace mu2e {
 	  pair<StrawId,cet::map_vector_key> stpair(sid,tid);
 	  // create ptr to this step
 	  art::Ptr<StepPointMC> spmcptr(handle,ispmc);
-	  vector<art::Ptr<StepPointMC>> spmcptrv(_ssize,spmcptr);
+	  vector<art::Ptr<StepPointMC>> spmcptrv;
+	  spmcptrv.reserve(_ssize);
+	  spmcptrv.push_back(spmcptr);
 	  // check if this key exists and add it if not
 	  auto ssp = spsmap.emplace(stpair,spmcptrv);
 	  // if the key already exists, just add this Ptr to the vector
@@ -158,33 +182,24 @@ namespace mu2e {
 	// loop over all  the StepPoints for this SimParticle
 	auto pid = first->trackId();
 	for(auto const& spmcptr : spmcptrs){
+	// update eion for all contributions
+	  eion += spmcptr->ionizingEdep();
 	// treat primary and secondary (delta-ray) energy differently
 	  if(spmcptr->simParticle()->id() == pid) {
-	  // primary: update energy, path length, and entry/exit
-	    eion += spmcptr->ionizingEdep();
+	  // primary: update path length, and entry/exit
 	    pathlen += spmcptr->stepLength();
 	    if(spmcptr->time() < first->time()) first = spmcptr;
 	    if(spmcptr->time() > last->time()) last = spmcptr;
-	  } else {
-// secondary: only update energy
-	    eion +=  spmcptr->ionizingEdep();
 	  }
 	}
 	// Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
 	XYZVec start = Geom::toXYZVec(first->position());
-	XYZVec end;
-	endPosition(last,straw,end);
+	XYZVec end = endPosition(last,straw);
 	time = first->time(); // use first time as time of this step (cluster times will be added)
 	mom = 0.5*(first->momentum().mag() + last->momentum().mag());	// average first and last momentum
-	Hep3Vector axis;
-	if(last != first)
-	  axis = (last->position() - first->position()).unit();
-	else
-	  axis = first->momentum().unit();
-	// 2nd pass through steps to get width
+	// determine the width from the triangle calculation
 	double width(0.0);
-	for(auto const& spmcptr : spmcptrs)
-	  width = max(width,(spmcptr->position()-first->position()).perp2(axis));
+	if(spmcptrs.size() > 1)width = sqrt( pathlen*pathlen - (end-start).mag2())/2.0;
 
 	// create the gas step
 	StrawGasStep sgs(ispsmap->first.second, ispsmap->first.first,
@@ -203,15 +218,15 @@ namespace mu2e {
 	if(_debug > 1){
 	  // checks and printout
 	  cout << " SGS with " << spmcptrs.size() << " steps, StrawId = " << sgs.strawId()  << " SimParticle Key = " << sgs.simParticleKey()
-	    << " edep = " << eion << " pathlen = " << pathlen << " width = " << width << " mom = " << mom
+	    << " edep = " << eion << " pathlen = " << pathlen << " glen = " << sqrt((end-start).mag2()) << " width = " << width << " mom = " << mom
 	    << " time = " << sgs.time() << endl;
 
 	  // check if end is inside physical straw
 	  const Straw& straw = tracker.getStraw(sgs.strawId());
-	  double r2 = straw.innerRadius()*straw.innerRadius();
+	  static double r2 = straw.innerRadius()*straw.innerRadius();
 	  Hep3Vector hend = Geom::Hep3Vec(end);
 	  double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
-	  if(rd2 - r2 > 1e-5 ) cout << "End outside straw " << rd2 << endl;
+	  if(rd2 - r2 > 1e-5 ) cout << "End outside straw, radius " << sqrt(rd2) << endl;
 	
 	}
       } // end of pair loop
@@ -296,17 +311,39 @@ namespace mu2e {
     }
   }
 
-  void MakeStrawGasSteps::endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw, XYZVec& lastpos) {
-    // divide into linear, curved, and curlers
+  XYZVec MakeStrawGasSteps::endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw) {
+// test linear extrapolation first
+    auto momhat = last->momentum().unit();
+    auto end = last->position() + last->stepLength()*momhat;
+    // check position against straw boundary
+    static const double r2 = straw.innerRadius()*straw.innerRadius();
+    double rd2 = (end-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
+    if(rd2 > r2) {
+    // outside the straw: adjust the end position
+      Hep3Vector mperp;
+      if(rd2 - r2 < _radtol){
+	// close enogh; interpolate linearly along the momentum direction;
+	mperp = momhat.perpPart(straw.getDirection());
+      } else {
+	// curler; assume the net motion is along the BField axis.  Sign by the projection of the momentum
+	mperp = _bdir;
+	if(momhat.dot(_bdir)<0.0) mperp *= -1.0;
+	momhat = mperp;
+      }
+      auto pperp = (last->position()-straw.getMidPoint()).perpPart(straw.getDirection());
+      double pmdot = pperp.dot(mperp);
+      double ppmag2 = pperp.mag2();
+      double mpmag2 = mperp.mag2();
+      double len = (sqrt(pmdot*pmdot + mpmag2*(r2 - ppmag2))-pmdot)/mpmag2;
+      end = last->position() + len*momhat;
+      if(_debug > 1){
+	double newr2 =(end-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
+	cout <<"Forced in straw, old length = " << last->stepLength() << " new length " << len << " new r2 " << newr2 << endl;
+      }
 
-
-    lastpos = Geom::toXYZVec(last->position() + last->stepLength()*last->momentum().unit());
-    // check straw boundary
-//    double r2 = straw.innerRadius()*straw.innerRadius();
-//    Hep3Vector hend = Geom::Hep3Vec(end);
-//    double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
-    // FIXME!
+    } 
+    return Geom::toXYZVec(end);
   }
 }
 
-  DEFINE_ART_MODULE(mu2e::MakeStrawGasSteps)
+DEFINE_ART_MODULE(mu2e::MakeStrawGasSteps)
