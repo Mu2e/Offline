@@ -83,7 +83,7 @@ namespace mu2e {
     double rotHaymanX()                      const  {return _rotHaymanX;} 
     double rotHaymanY()                      const  {return _rotHaymanY;} 
     double rotHaymanZ()                      const  {return _rotHaymanZ;} 
-    CLHEP::Hep3Vector haymanProdTargetPosition()           const {std::cout << "hayman target position = " << _haymanProdTargetPosition << std::endl; return _haymanProdTargetPosition; }
+    CLHEP::Hep3Vector haymanProdTargetPosition()           const {return _haymanProdTargetPosition; }
     int numberOfTargetSections()                           const {return _numberOfTargetSections;}
     std::vector<double> startingSectionThickness()         const {return _startingSectionThickness;}
     std::vector<int> numberOfSegmentsPerSection()          const {return _numberOfSegmentsPerSection;}
@@ -92,6 +92,7 @@ namespace mu2e {
     std::vector<double> thicknessOfGapPerSection()         const {return _thicknessOfGapPerSection;}
     int nHaymanFins()                       const {return _nHaymanFins;}
     std::vector<double> finAngles()         const {return _finAngles;}
+    double haymanFinThickness()                   const {return _haymanFinThickness;}
     double finOuterRadius()                 const {return _finOuterRadius;}
     double supportRingLength()              const {return _supportRingLength;}
     double supportRingInnerRadius()         const {return _supportRingInnerRadius;}
@@ -141,6 +142,7 @@ namespace mu2e {
 		     ,std::vector<double> thicknessOfGapPerSection
 		     ,int nHaymanFins
 		     ,std::vector<double> finAngles
+		     ,double haymanFinThickness
 		     ,double finOuterRadius
 		     ,double supportRingLength
 		     ,double supportRingInnerRadius
@@ -207,6 +209,7 @@ namespace mu2e {
     std::vector<double> _thicknessOfGapPerSection;
     int _nHaymanFins;
     std::vector<double> _finAngles;
+    double _haymanFinThickness;
     double _finOuterRadius;
     double _supportRingLength;
     double _supportRingInnerRadius;
