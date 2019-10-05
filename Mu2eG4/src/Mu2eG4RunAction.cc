@@ -12,9 +12,7 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "GeometryService/inc/GeometryService.hh"
 
 //art includes
 #include "fhiclcpp/ParameterSet.h"
@@ -37,8 +35,7 @@ Mu2eG4RunAction::Mu2eG4RunAction(const fhicl::ParameterSet& pset,
                                  PhysicsProcessInfo* phys_process_info,
                                  TrackingAction *tracking_action,
                                  Mu2eG4SteppingAction *stepping_action,
-                                 SensitiveDetectorHelper* sensitive_detectorhelper,
-                                 ExtMonFNALPixelSD* extmon_FNAL_pixelSD
+                                 SensitiveDetectorHelper* sensitive_detectorhelper
                                  )
     :
     G4UserRunAction(),
@@ -49,9 +46,7 @@ Mu2eG4RunAction::Mu2eG4RunAction(const fhicl::ParameterSet& pset,
     _processInfo(phys_process_info),
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
-    _sensitiveDetectorHelper(sensitive_detectorhelper),
-    _extMonFNALPixelSD(extmon_FNAL_pixelSD),
-    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector())
+    _sensitiveDetectorHelper(sensitive_detectorhelper)
     {}
 
 Mu2eG4RunAction::~Mu2eG4RunAction()
@@ -80,13 +75,7 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
           //BeginOfRunAction is called from Worker Threads only
 
           _sensitiveDetectorHelper->registerSensitiveDetectors();
-                
-          _extMonFNALPixelSD = ( standardMu2eDetector_ &&
-                                 _sensitiveDetectorHelper->extMonPixelsEnabled()) ?
-            dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
-                                             FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
-            : nullptr;
-                
+            
           _trackingAction->beginRun( _physVolHelper, _processInfo, originInWorld );
           _steppingAction->beginRun( _processInfo, originInWorld );
                 
@@ -98,12 +87,6 @@ void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
 
             _sensitiveDetectorHelper->registerSensitiveDetectors();
             
-            _extMonFNALPixelSD = ( standardMu2eDetector_ &&
-                                  _sensitiveDetectorHelper->extMonPixelsEnabled()) ?
-            dynamic_cast<ExtMonFNALPixelSD*>(G4SDManager::GetSDMpointer()->
-                                             FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
-            : nullptr;
-
             _physVolHelper->beginRun();//map w/~20,000 entries
             _processInfo->beginRun();
             
