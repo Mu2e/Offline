@@ -165,8 +165,8 @@ vector<double> extMonFNAL.up.motherTransverseHalfSize = { 70, 70 }; // x, y
 double extMonFNAL.up.motherStartZ = 295.;
 double extMonFNAL.up.motherEndZ = 605.;
 
-//vector<double> extMonFNAL.up.plane_zoffset = { +300., +400., +500., +600.};
-vector<double> extMonFNAL.up.plane_zoffset = { -150.., -50., +50., +150.};
+vector<double> extMonFNAL.up.plane_zoffset = { +300., +400., +500., +600.};
+//vector<double> extMonFNAL.up.plane_zoffset = { -150.., -50., +50., +150.};
 vector<double> extMonFNAL.up.plane_xoffset = { 0.,    0.,    0.,    0. };
 vector<double> extMonFNAL.up.plane_yoffset = { 0.,    0.,    0.,    0. };
 
@@ -192,8 +192,8 @@ vector<double> extMonFNAL.dn.motherTransverseHalfSize = { 70, 70 }; // x, y
 double extMonFNAL.dn.motherStartZ = -605.;
 double extMonFNAL.dn.motherEndZ = -295.;
 
-//vector<double> extMonFNAL.dn.plane_zoffset = {-600., -500.,  -400., -300.};
-vector<double> extMonFNAL.dn.plane_zoffset = {-150., -50.,  50., 150.};
+vector<double> extMonFNAL.dn.plane_zoffset = {-600., -500.,  -400., -300.};
+//vector<double> extMonFNAL.dn.plane_zoffset = {-150., -50.,  50., 150.};
 vector<double> extMonFNAL.dn.plane_xoffset = { 0., 0., 0., 0. };
 vector<double> extMonFNAL.dn.plane_yoffset = { 0., 0., 0., 0. };
 
