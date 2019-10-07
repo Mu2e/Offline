@@ -88,6 +88,7 @@ class TrkAnaPlots {
   TCut _reco, _goodfit, _rpitch, _livegate, _opa, _upstream, _physics, _final, _pbi;
   TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
   TCut _CRV, _eminustrig, _eplustrig, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
+  TCut _TPR, _CPR;
  // Trees 
   TTree* _tn;
   TTree* _tp; 
@@ -133,10 +134,11 @@ void TrkAnaPlots::BuildCuts(float momwin){
   _eminusrmom = TCut(ctext);
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eplusmom,momwin);
   _eplusrmom = TCut(ctext);
-  _downstream = TCut("demcxit.momz>0");
+  _downstream = TCut("demcent.momz>0");
   _physics = _rpitch+_opa+_livegate;
+  _TPR = TCut("de.alg==0");
+  _CPR = TCut("de.alg==1");
   _final = _eminustrig+_reco+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom;
-
 }
 
 void TrkAnaPlots::PID() {
@@ -1728,10 +1730,15 @@ void TrkAnaPlots::PBI(unsigned ngen, int charge) {
 }
 
 void TrkAnaPlots::Trigger() {
-  TH1F* nmom = new TH1F("nmom","e^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
-  TH1F* ntmom = new TH1F("ntmom","e^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
-  TH1F* pmom = new TH1F("pmom","e^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
-  TH1F* ptmom = new TH1F("ptmom","e^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TCut down("demcent.momz>0");
+  TH1F* nmom = new TH1F("nmom","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ntmom = new TH1F("ntmom","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* pmom = new TH1F("pmom","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ptmom = new TH1F("ptmom","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* nmommu = new TH1F("nmommu","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ntmommu = new TH1F("ntmommu","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* pmommu = new TH1F("pmommu","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ptmommu = new TH1F("ptmommu","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
   nmom->SetStats(0);
   ntmom->SetStats(0);
   pmom->SetStats(0);
@@ -1740,10 +1747,23 @@ void TrkAnaPlots::Trigger() {
   ntmom->SetLineColor(kRed);
   pmom->SetLineColor(kBlack);
   ptmom->SetLineColor(kRed);
-  TH1F* nd0 = new TH1F("nd0","e^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
-  TH1F* ntd0 = new TH1F("ntd0","e^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
-  TH1F* pd0 = new TH1F("pd0","e^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
-  TH1F* ptd0 = new TH1F("ptd0","e^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  nmommu->SetStats(0);
+  ntmommu->SetStats(0);
+  pmommu->SetStats(0);
+  ptmommu->SetStats(0);
+  nmommu->SetLineColor(kGreen);
+  ntmommu->SetLineColor(kCyan);
+  pmommu->SetLineColor(kGreen);
+  ptmommu->SetLineColor(kCyan);
+  TH1F* nd0 = new TH1F("nd0","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ntd0 = new TH1F("ntd0","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* pd0 = new TH1F("pd0","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ptd0 = new TH1F("ptd0","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  
+  TH1F* nd0mu = new TH1F("nd0mu","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ntd0mu = new TH1F("ntd0mu","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* pd0mu = new TH1F("pd0mu","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ptd0mu = new TH1F("ptd0mu","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
   nd0->SetStats(0);
   ntd0->SetStats(0);
   pd0->SetStats(0);
@@ -1753,19 +1773,40 @@ void TrkAnaPlots::Trigger() {
   pd0->SetLineColor(kBlack);
   ptd0->SetLineColor(kRed);
 
-  _tn->Project("nmom","deent.mom");
-  _tn->Project("ntmom","deent.mom",_eminustrig);
-  _tp->Project("pmom","deent.mom");
-  _tp->Project("ptmom","deent.mom",_eplustrig);
+  nd0mu->SetStats(0);
+  ntd0mu->SetStats(0);
+  pd0mu->SetStats(0);
+  ptd0mu->SetStats(0);
+  nd0mu->SetLineColor(kGreen);
+  ntd0mu->SetLineColor(kCyan);
+  pd0mu->SetLineColor(kGreen);
+  ptd0mu->SetLineColor(kCyan);
 
-  _tn->Project("nd0","deent.d0");
-  _tn->Project("ntd0","deent.d0",_eminustrig);
-  _tp->Project("pd0","deent.d0");
-  _tp->Project("ptd0","deent.d0",_eplustrig);
+  _tn->Project("nmom","deent.mom",_downstream+_eminus);
+  _tn->Project("ntmom","deent.mom",_downstream+_eminus+_eminustrig);
+  _tp->Project("pmom","deent.mom",_downstream+_eplus);
+  _tp->Project("ptmom","deent.mom",_downstream+_eplus+_eplustrig);
 
-  TLegend* tleg = new TLegend(0.6,0.7,0.9,0.9);
-  tleg->AddEntry(nmom,"Reconstructed","L");
+  _tn->Project("nmommu","deent.mom",_downstream+_muminus);
+  _tn->Project("ntmommu","deent.mom",_downstream+_muminus+_eminustrig);
+  _tp->Project("pmommu","deent.mom",_downstream+_muplus);
+  _tp->Project("ptmommu","deent.mom",_downstream+_muplus+_eplustrig);
+
+  _tn->Project("nd0","deent.d0",_downstream+_eminus);
+  _tn->Project("ntd0","deent.d0",_downstream+_eminus+_eminustrig);
+  _tp->Project("pd0","deent.d0",_downstream+_eplus);
+  _tp->Project("ptd0","deent.d0",_downstream+_eplus+_eplustrig);
+
+  _tn->Project("nd0mu","deent.d0",_downstream+_muminus);
+  _tn->Project("ntd0mu","deent.d0",_downstream+_muminus+_eminustrig);
+  _tp->Project("pd0mu","deent.d0",_downstream+_muplus);
+  _tp->Project("ptd0mu","deent.d0",_downstream+_muplus+_eplustrig);
+
+  TLegend* tleg = new TLegend(0.6,0.6,0.9,0.9);
+  tleg->AddEntry(nmom,"Reconstructed e","L");
   tleg->AddEntry(ntmom,"Triggered","L");
+  tleg->AddEntry(nmommu,"Reconstructed #mu","L");
+  tleg->AddEntry(ntmommu,"Triggered #mu","L");
 
   TCanvas* tcan = new TCanvas("tcan","tcan",800,800);
   tcan->Divide(2,2);
@@ -1773,14 +1814,22 @@ void TrkAnaPlots::Trigger() {
   nmom->Draw();
   tleg->Draw();
   ntmom->Draw("same");
+  nmommu->Draw("same");
+  ntmommu->Draw("same");
   tcan->cd(2);
-  pmom->Draw();
+  pmommu->Draw();
+  ptmommu->Draw("same");
+  pmom->Draw("same");
   ptmom->Draw("same");
   tcan->cd(3);
   nd0->Draw();
   ntd0->Draw("same");
+  nd0mu->Draw("same");
+  ntd0mu->Draw("same");
   tcan->cd(4);
-  pd0->Draw();
+  pd0mu->Draw();
+  ptd0mu->Draw("same");
+  pd0->Draw("same");
   ptd0->Draw("same");
 }
 
@@ -1790,55 +1839,102 @@ void TrkAnaPlots::Alg() {
   THStack* algnmom = new THStack("algnmom","e^{-} Reco Momentum;Momentum (MeV/c)");
   algnmom->Add(cprnmom);
   algnmom->Add(tprnmom);
-  tprnmom->SetFillColor(kGreen);
-  cprnmom->SetFillColor(kBlue);
+  tprnmom->SetFillColor(kRed);
+  cprnmom->SetFillColor(kCyan);
+  TH1F* tprnmommu = new TH1F("tprnmommu","#mu^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* cprnmommu = new TH1F("cprnmommu","#mu^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  THStack* algnmommu = new THStack("algnmommu","#mu^{-} Reco Momentum;Momentum (MeV/c)");
+  algnmommu->Add(cprnmommu);
+  algnmommu->Add(tprnmommu);
+  tprnmommu->SetFillColor(kRed);
+  cprnmommu->SetFillColor(kCyan);
   TH1F* tprpmom = new TH1F("tprpmom","e^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
   TH1F* cprpmom = new TH1F("cprpmom","e^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
   THStack* algpmom = new THStack("algpmom","e^{+} Reco Momentum;Momentum (MeV/c)");
   algpmom->Add(cprpmom);
   algpmom->Add(tprpmom);
-  tprpmom->SetFillColor(kGreen);
-  cprpmom->SetFillColor(kBlue);
+  tprpmom->SetFillColor(kRed);
+  cprpmom->SetFillColor(kCyan);
+  TH1F* tprpmommu = new TH1F("tprpmommu","#mu^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* cprpmommu = new TH1F("cprpmommu","#mu^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  THStack* algpmommu = new THStack("algpmommu","#mu^{+} Reco Momentum;Momentum (MeV/c)");
+  algpmommu->Add(cprpmommu);
+  algpmommu->Add(tprpmommu);
+  tprpmommu->SetFillColor(kRed);
+  cprpmommu->SetFillColor(kCyan);
 
   TH1F* tprnd0 = new TH1F("tprnd0","e^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
   TH1F* cprnd0 = new TH1F("cprnd0","e^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
   THStack* algnd0 = new THStack("algnd0","e^{-} Reco d_{0};d_{0} (mm)");
   algnd0->Add(cprnd0);
   algnd0->Add(tprnd0);
-  tprnd0->SetFillColor(kGreen);
-  cprnd0->SetFillColor(kBlue);
+  tprnd0->SetFillColor(kRed);
+  cprnd0->SetFillColor(kCyan);
+  TH1F* tprnd0mu = new TH1F("tprnd0mu","#mu^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* cprnd0mu = new TH1F("cprnd0mu","#mu^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
+  THStack* algnd0mu = new THStack("algnd0mu","#mu^{-} Reco d_{0};d_{0} (mm)");
+  algnd0mu->Add(cprnd0mu);
+  algnd0mu->Add(tprnd0mu);
+  tprnd0mu->SetFillColor(kRed);
+  cprnd0mu->SetFillColor(kCyan);
   TH1F* tprpd0 = new TH1F("tprpd0","e^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
   TH1F* cprpd0 = new TH1F("cprpd0","e^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
   THStack* algpd0 = new THStack("algpd0","e^{+} Reco d_{0};d_{0} (mm)");
   algpd0->Add(cprpd0);
   algpd0->Add(tprpd0);
-  tprpd0->SetFillColor(kGreen);
-  cprpd0->SetFillColor(kBlue);
+  tprpd0->SetFillColor(kRed);
+  cprpd0->SetFillColor(kCyan);
+  TH1F* tprpd0mu = new TH1F("tprpd0mu","#mu^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* cprpd0mu = new TH1F("cprpd0mu","#mu^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  THStack* algpd0mu = new THStack("algpd0mu","#mu^{+} Reco d_{0};d_{0} (mm)");
+  algpd0mu->Add(cprpd0mu);
+  algpd0mu->Add(tprpd0mu);
+  tprpd0mu->SetFillColor(kRed);
+  cprpd0mu->SetFillColor(kCyan);
 
-  _tn->Project("tprnmom","deent.mom","de.alg==0");
-  _tn->Project("cprnmom","deent.mom","de.alg==1");
-  _tp->Project("tprpmom","deent.mom","de.alg==0");
-  _tp->Project("cprpmom","deent.mom","de.alg==1");
+  _tn->Project("tprnmom","deent.mom",_eminus+_downstream+_TPR);
+  _tn->Project("cprnmom","deent.mom",_eminus+_downstream+_CPR);
+  _tp->Project("tprpmom","deent.mom",_eplus+_downstream+_TPR);
+  _tp->Project("cprpmom","deent.mom",_eplus+_downstream+_CPR);
+  _tn->Project("tprnmommu","deent.mom",_muminus+_downstream+_TPR);
+  _tn->Project("cprnmommu","deent.mom",_muminus+_downstream+_CPR);
+  _tp->Project("tprpmommu","deent.mom",_muplus+_downstream+_TPR);
+  _tp->Project("cprpmommu","deent.mom",_muplus+_downstream+_CPR);
 
-  _tn->Project("tprnd0","deent.d0","de.alg==0");
-  _tn->Project("cprnd0","deent.d0","de.alg==1");
-  _tp->Project("tprpd0","deent.d0","de.alg==0");
-  _tp->Project("cprpd0","deent.d0","de.alg==1");
+  _tn->Project("tprnd0","deent.d0",_eminus+_downstream+_TPR);
+  _tn->Project("cprnd0","deent.d0",_eminus+_downstream+_CPR);
+  _tp->Project("tprpd0","deent.d0",_eplus+_downstream+_TPR);
+  _tp->Project("cprpd0","deent.d0",_eplus+_downstream+_CPR);
+  _tn->Project("tprnd0mu","deent.d0",_muminus+_downstream+_TPR);
+  _tn->Project("cprnd0mu","deent.d0",_muminus+_downstream+_CPR);
+  _tp->Project("tprpd0mu","deent.d0",_muplus+_downstream+_TPR);
+  _tp->Project("cprpd0mu","deent.d0",_muplus+_downstream+_CPR);
 
   TLegend* aleg = new TLegend(0.6,0.7,0.9,0.9);
   aleg->AddEntry(tprnmom,"TrkPatRec","F");
   aleg->AddEntry(cprnmom,"CalPatRec","F");
   
-  TCanvas* acan = new TCanvas("acan","acan",800,800);
-  acan->Divide(2,2);
-  acan->cd(1);
+  TCanvas* acane = new TCanvas("acane","acane",800,800);
+  acane->Divide(2,2);
+  acane->cd(1);
   algnmom->Draw();
   aleg->Draw();
-  acan->cd(2);
+  acane->cd(2);
   algpmom->Draw();
-  acan->cd(3);
+  acane->cd(3);
   algnd0->Draw();
-  acan->cd(4);
+  acane->cd(4);
   algpd0->Draw();
+  TCanvas* acanmu = new TCanvas("acanmu","acanmu",800,800);
+  acanmu->Divide(2,2);
+  acanmu->cd(1);
+  algnmommu->Draw();
+  aleg->Draw();
+  acanmu->cd(2);
+  algpmommu->Draw();
+  acanmu->cd(3);
+  algnd0mu->Draw();
+  acanmu->cd(4);
+  algpd0mu->Draw();
 }
 
