@@ -83,36 +83,6 @@ namespace mu2e {
     double px = stack.motherTransverseHalfSize()[0];
     double py = stack.motherTransverseHalfSize()[1];
 
-    /* Old method: Using G4ExtrudedSolid (bug in Geant4 10.4.2) */
-    //std::vector<G4TwoVector> polygon;
-    //polygon.push_back({+px,+py});
-    //polygon.push_back({-px,+py});
-    //polygon.push_back({-px,-py});
-    //polygon.push_back({+px,-py});
-
-    //std::vector<G4ExtrudedSolid::ZSection> zsections;
-    //zsections.emplace_back(stack.motherStartZ(), G4TwoVector(), 1.);
-    //zsections.emplace_back(stack.motherEndZ(), G4TwoVector(), 1.);
-
-    //VolumeInfo mother = nestExtrudedSolid("ExtMonStackMother"+volNameSuffix,
-    //                                      polygon,
-    //                                      zsections,
-    //                                      findMaterialOrThrow("G4_AIR"),
-    //                                      stackRotationInRoomInv,
-    //                                      stackRefPointInRoom,
-    //                                      parent,
-    //                                      0,
-    //                                      isStackMotherVisible,
-    //                                      G4Colour::Magenta(),
-    //                                      isStackMotherSolid,
-    //                                      forceAuxEdgeVisible,
-    //                                      placePV,
-    //                                      doSurfaceCheck
-    //                                      );
-
-    //if (volNameSuffix == "Dn") std::cout << "volNameSuffix is Dn" << std::endl;
-    //else if (volNameSuffix == "Up") std::cout << "volNameSuffix is Up" << std::endl;
-
     // Construct ExtMonStackMother* as nestedBox
     double stackMotherZCoord = (stack.motherStartZ() + stack.motherEndZ())/2.0;
     CLHEP::Hep3Vector stackMotherZVec (0, 0, stackMotherZCoord);
