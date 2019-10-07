@@ -32,7 +32,11 @@ namespace mu2e {
     TH1D* _hchi2;
     TH1D* _hhasCal;
     TH1D* _hfitCon;
+    TH1D* _hfitConC;
+    TH1D* _hfitConT;
     TH1D* _hp;
+    TH1D* _hpC;
+    TH1D* _hpT;
     TH1D* _hpce;
     TH1D* _hpcep;
     TH1D* _hpe;
