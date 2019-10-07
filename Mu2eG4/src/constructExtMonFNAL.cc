@@ -218,10 +218,6 @@ namespace mu2e {
 
       AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
       G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]};
-      //double offset_z;
-      //if (stack.plane_zoffset()[iplane] > 0) offset_z = stack.plane_zoffset()[iplane]-450.;
-      //else offset_z = stack.plane_zoffset()[iplane] + 450.;
-      //G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], offset_z};
 
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
