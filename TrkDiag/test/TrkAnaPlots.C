@@ -1804,7 +1804,7 @@ void TrkAnaPlots::Trigger() {
 
   TLegend* tleg = new TLegend(0.6,0.6,0.9,0.9);
   tleg->AddEntry(nmom,"Reconstructed e","L");
-  tleg->AddEntry(ntmom,"Triggered","L");
+  tleg->AddEntry(ntmom,"Triggered e","L");
   tleg->AddEntry(nmommu,"Reconstructed #mu","L");
   tleg->AddEntry(ntmommu,"Triggered #mu","L");
 
