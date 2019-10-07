@@ -5,7 +5,7 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
-#include "TrkDiag/fcl/prolog_legacy.fcl"
+
 BEGIN_PROLOG
 # Diagnostic modules    
   BD : {
