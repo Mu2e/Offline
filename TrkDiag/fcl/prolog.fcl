@@ -5,7 +5,7 @@
 #include "TrkHitReco/fcl/prolog.fcl"
 #include "TrkPatRec/fcl/prolog.fcl"
 #include "TrkDiag/fcl/KalDiag.fcl"
-#include "TrkDiag/fcl/prolog_legacy.fcl"
+
 BEGIN_PROLOG
 # Diagnostic modules    
   BD : {
@@ -93,12 +93,16 @@ BEGIN_PROLOG
   TrkQualUeM.KalSeedCollection : "KFFUeM"
   TrkQualDmuM		       : @local::TrkQualNeg
   TrkQualDmuM.KalSeedCollection : "KFFDmuM"
+  TrkQualUmuM		       : @local::TrkQualNeg
+  TrkQualUmuM.KalSeedCollection : "KFFUmuM"
   TrkQualDeP		       : @local::TrkQualPos
   TrkQualDeP.KalSeedCollection : "KFFDeP"
   TrkQualUeP		       : @local::TrkQualPos
   TrkQualUeP.KalSeedCollection : "KFFUeP"
   TrkQualDmuP		       : @local::TrkQualPos
   TrkQualDmuP.KalSeedCollection : "KFFDmuP"
+  TrkQualUmuP		       : @local::TrkQualPos
+  TrkQualUmuP.KalSeedCollection : "KFFUmuP"
   # track PID module
   TrkPID : {
     module_type : TrackPID
@@ -171,6 +175,10 @@ BEGIN_PROLOG
       	  branch : "dm" 
 	  suffix : "DmuM" 
   }
+  UmuM : { input : "KFF" 
+      	  branch : "um" 
+	  suffix : "UmuM" 
+  }
   DeP : { input : "KFF" 
       	  branch : "de" 
 	  suffix : "DeP" 
@@ -188,6 +196,11 @@ BEGIN_PROLOG
       	  branch : "dm" 
 	  suffix : "DmuP" 
   }
+  UmuP : { input : "KFF" 
+      	  branch : "um" 
+	  suffix : "UmuP" 
+  }
+
 
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
@@ -223,6 +236,8 @@ BEGIN_PROLOG
       TrkQualUeP : @local::TrkQualUeP
       TrkQualDmuM : @local::TrkQualDmuM
       TrkQualDmuP : @local::TrkQualDmuP
+      TrkQualUmuM : @local::TrkQualUmuM
+      TrkQualUmuP : @local::TrkQualUmuP
       TrkPIDDeM : @local::TrkPIDDeM
       TrkPIDDeP : @local::TrkPIDDeP
    }
@@ -240,7 +255,7 @@ BEGIN_PROLOG
       genCountLogger : @local::genCountLogger
    }
 
-   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualUeM, TrkQualDmuM, TrkQualDeP, TrkQualUeP, TrkQualDmuP, TrkPIDDeM, TrkPIDDeP ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualUeM, TrkQualDmuM, TrkQualDeP, TrkQualUeP, TrkQualDmuP, TrkQualUmuM, TrkQualUmuP, TrkPIDDeM, TrkPIDDeP ]
    EndSequenceNoMC : [ TrkAnaNeg, TrkAnaPos ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }
