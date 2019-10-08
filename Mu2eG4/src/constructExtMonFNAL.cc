@@ -232,11 +232,7 @@ namespace mu2e {
 
 
       AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
-<<<<<<< HEAD
-      G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]};
-=======
       G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], zOffset};
->>>>>>> ExtMonGeom
 
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
