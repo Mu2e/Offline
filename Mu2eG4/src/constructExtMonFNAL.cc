@@ -207,7 +207,16 @@ namespace mu2e {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNALSensorPlane", "extMonFNAL.sensorPlane" );
     bool const isSensorPlaneVisible = geomOptions->isVisible("extMonFNALSensorPlane"); 
-    bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane"); 
+    bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
+
+    // Define local offsets for planes (for G4Box)
+    auto planeMax = std::max_element(std::begin(stack.plane_zoffset()),
+                                         std::end(stack.plane_zoffset()));
+    auto planeMin = std::min_element(std::begin(stack.plane_zoffset()),
+                                         std::end(stack.plane_zoffset()));
+    double planeZero= (*planeMin - *planeMax)/2.;
+
+    double zOffset = planeZero;
 
     for(unsigned iplane = 0; iplane < stack.nplanes(); ++iplane) {
       std::vector<double> hs;
@@ -216,8 +225,18 @@ namespace mu2e {
       std::ostringstream osp;
       osp<<"EMFPlane"<<volNameSuffix<<iplane;
 
+      if (iplane > 0) {
+        double planeSpacing = stack.plane_zoffset()[iplane] - stack.plane_zoffset()[iplane-1];
+        zOffset += planeSpacing;
+      }
+
+
       AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
+<<<<<<< HEAD
       G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]};
+=======
+      G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], zOffset};
+>>>>>>> ExtMonGeom
 
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
