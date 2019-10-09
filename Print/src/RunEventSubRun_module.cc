@@ -10,6 +10,7 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
+#include "fhiclcpp/types/OptionalAtom.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -27,7 +28,25 @@ namespace mu2e {
 
   public:
 
-    explicit RunEventSubRun(fhicl::ParameterSet const& );
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      
+      fhicl::OptionalAtom<bool> printSam{Name("printSam"), 
+	  Comment("print summary good for SAM")};
+      fhicl::OptionalAtom<bool> printRun{Name("printRun"), 
+	  Comment("print runs")};
+      fhicl::OptionalAtom<bool> printSubrun{Name("printSubrun"), 
+	  Comment("print subruns")};
+      fhicl::OptionalAtom<bool> printEvent{Name("printEvent"), 
+	  Comment("print events")};
+
+    };
+
+    // this line is required by art to allow the command line help print
+    typedef art::EDAnalyzer::Table<Config> Parameters;
+
+    explicit RunEventSubRun( const Parameters& conf );
     void beginRun   ( art::Run const& run ) override;
     void beginSubRun( art::SubRun const& subRun ) override;
     void analyze    ( art::Event const&  event  ) override;
@@ -62,17 +81,21 @@ namespace mu2e {
 
 }
 
-mu2e::RunEventSubRun::RunEventSubRun(fhicl::ParameterSet const& pset ):
-  art::EDAnalyzer(pset),
-  _printSam(pset.get<bool>("printSam",true)),
-  _printRun(pset.get<bool>("printRun",false)),
-  _printSubrun(pset.get<bool>("printSubrun",false)),
-  _printEvent(pset.get<bool>("printEvent",false)),
+mu2e::RunEventSubRun::RunEventSubRun( const Parameters& conf ):
+  art::EDAnalyzer(conf),
+  _printSam(true),
+  _printRun(false),
+  _printSubrun(false),
+  _printEvent(false),
   _max_run_s(0),_min_run_s(-1), // -1 is maxint for a unsigned int
   _max_sub(0),_min_sub(-1),
   _max_run_e(0),_min_run_e(-1),
   _max_evt(0),_min_evt(-1),
   _runCount(0),_subrunCount(0),_eventCount(0) {
+  conf().printSam(_printSam);
+  conf().printRun(_printRun);
+  conf().printSubrun(_printSubrun);
+  conf().printEvent(_printEvent);
 }
 
 void
