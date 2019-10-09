@@ -16,7 +16,7 @@ physics :{
     checkModule : {
       module_type : PointerCheck
 
-	 skipDerference : false
+	 skipDereference : false
 	 # 0 (quiet) or 1 (print every event)
 	 verbose : 1
          # skip any known problematic collections with these inputTags

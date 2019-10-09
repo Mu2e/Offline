@@ -8,7 +8,7 @@ void
 mu2e::TrkCaloIntersectPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<TrkCaloIntersectCollection> > vah;
     event.getManyByType(vah);
@@ -93,17 +93,6 @@ void
 mu2e::TrkCaloIntersectPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   secId   trkKey  trkId  path_ent path_ent_err path_exit\n";
-
-}
-
-void 
-mu2e::TrkCaloIntersectPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("TrkCaloIntersectPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

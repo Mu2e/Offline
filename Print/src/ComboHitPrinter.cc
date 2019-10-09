@@ -8,7 +8,7 @@ void
 mu2e::ComboHitPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<ComboHitCollection> > vah;
     event.getManyByType(vah);
@@ -126,17 +126,6 @@ void
 mu2e::ComboHitPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os <<  "ind  nCombo nStraw   x        y         z        t        E       qual\n";
-
-}
-
-void 
-mu2e::ComboHitPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("ComboHitPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

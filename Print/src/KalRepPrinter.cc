@@ -17,7 +17,7 @@ void
 mu2e::KalRepPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<KalRepPtrCollection> > vah;
     event.getManyByType(vah);
@@ -129,14 +129,4 @@ mu2e::KalRepPrinter::PrintListHeader(std::ostream& os) {
   _tsprinter.PrintListHeader(os);
 }
 
-void 
-mu2e::KalRepPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("KalRepPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
-}
 
