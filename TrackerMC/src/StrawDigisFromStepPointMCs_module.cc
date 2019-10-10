@@ -182,7 +182,7 @@ namespace mu2e {
       Int_t _tdc[2], _tot[2];
       TTree* _sdiag;
       Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
-      Int_t _nclusd, _netot, _partPDG;
+      Int_t _nclust, _netot, _partPDG;
       vector<IonCluster> _clusters;
       Float_t _ewMarkerOffset;
       array<Float_t, StrawId::_nupanels> _ewMarkerROCdt;
@@ -298,7 +298,7 @@ namespace mu2e {
         _sdiag->Branch("eesum",&_eesum,"eesum/F");
         _sdiag->Branch("qe",&_qe,"qe/F");
         _sdiag->Branch("steptime",&_steptime,"steptime/F");
-        _sdiag->Branch("nclust",&_nclusd,"nclust/I");
+        _sdiag->Branch("nclust",&_nclust,"nclust/I");
         _sdiag->Branch("netot",&_netot,"netot/I");
         _sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
         _sdiag->Branch("clusters",&_clusters);
@@ -690,7 +690,7 @@ namespace mu2e {
         _steptime = microbunchTime(strawele,_toff.timeWithOffsetsApplied(step));
         _partP = step.momentum().mag();
         _partPDG = step.simParticle()->pdgId();
-        _nclusd = (int)clusters.size();
+        _nclust = (int)clusters.size();
         _netot = 0;
         _qsum = _esum = _eesum = 0.0;
         for(auto iclust=clusters.begin();iclust != clusters.end();++iclust){
