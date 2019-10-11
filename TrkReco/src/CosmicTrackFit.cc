@@ -77,13 +77,13 @@ namespace mu2e
     _maxniter(pset.get<unsigned>("maxniter",1000)),//10
     _maxpull(pset.get<float>("maxPull",3)),
     _maxd(pset.get<float>("maxd",300.0)),//max distance between hits at start of fit (UNUSED)
-    _maxchi2(pset.get<float>("maxchi2",5.0)) ,
+    _maxchi2(pset.get<float>("maxchi2",3.0)) ,
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
     _max_position_deviation((pset.get<float>("max_position_deviation",200))),
     _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
     _minMomTrue      (pset.get<int>("minxMomTrue",4)),//TODO
     _maxLogL (pset.get<int>("maxLogL",400)),
-    _minCHStrawFull (pset.get<int>("minCHStrawFull",4)),
+    _minCHStrawFull (pset.get<int>("minCHStrawFull",8)),
     _gaussTres (pset.get<int>("gaussTres",24))
     {}
 
