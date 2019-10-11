@@ -10,7 +10,7 @@
 
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Atom.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
@@ -32,14 +32,14 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
       
-      fhicl::OptionalAtom<bool> printSam{Name("printSam"), 
-	  Comment("print summary good for SAM")};
-      fhicl::OptionalAtom<bool> printRun{Name("printRun"), 
-	  Comment("print runs")};
-      fhicl::OptionalAtom<bool> printSubrun{Name("printSubrun"), 
-	  Comment("print subruns")};
-      fhicl::OptionalAtom<bool> printEvent{Name("printEvent"), 
-	  Comment("print events")};
+      fhicl::Atom<bool> printSam{Name("printSam"), 
+	  Comment("print summary good for SAM"),true};
+      fhicl::Atom<bool> printRun{Name("printRun"), 
+	  Comment("print runs"),false};
+      fhicl::Atom<bool> printSubrun{Name("printSubrun"), 
+	  Comment("print subruns"),false};
+      fhicl::Atom<bool> printEvent{Name("printEvent"), 
+	  Comment("print events"),false};
 
     };
 
@@ -83,20 +83,16 @@ namespace mu2e {
 
 mu2e::RunEventSubRun::RunEventSubRun( const Parameters& conf ):
   art::EDAnalyzer(conf),
-  _printSam(true),
-  _printRun(false),
-  _printSubrun(false),
-  _printEvent(false),
+  _printSam(conf().printSam()),
+  _printRun(conf().printRun()),
+  _printSubrun(conf().printSubrun()),
+  _printEvent(conf().printEvent()),
   _max_run_s(0),_min_run_s(-1), // -1 is maxint for a unsigned int
   _max_sub(0),_min_sub(-1),
   _max_run_e(0),_min_run_e(-1),
   _max_evt(0),_min_evt(-1),
-  _runCount(0),_subrunCount(0),_eventCount(0) {
-  conf().printSam(_printSam);
-  conf().printRun(_printRun);
-  conf().printSubrun(_printSubrun);
-  conf().printEvent(_printEvent);
-}
+  _runCount(0),_subrunCount(0),_eventCount(0) {  
+  }
 
 void
 mu2e::RunEventSubRun::beginRun( art::Run const& run ){
