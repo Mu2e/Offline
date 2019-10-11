@@ -31,7 +31,7 @@ namespace mu2e {
       StrawId    strawId()    const { return _strawId;}
       Float_t    ionizingEdep()    const { return _eIon; }
       Float_t    pathLength()   const { return _pathLen; }
-      Float_t    radialWidth()   const { return _width; }
+      Float_t    radialWidth()   const { return _width; } 
       Float_t    momentum()     const { return _mom; }
       Double_t   time()         const { return _time; }
       XYZVec const& startPosition() const { return _startpos; }
@@ -42,7 +42,7 @@ namespace mu2e {
       StrawId       _strawId; // straw
       Float_t       _eIon;  // ionization energy deposited in this straw by this particle
       Float_t       _pathLen;  // Length the primary particle traveled in this straw gas: this is NOT necessarily the end-start distance
-      Float_t       _width; // transverse radial width of the charge cloud
+      Float_t       _width; // transverse RMS of the charge cloud WRT the wire
       Float_t	    _mom; // scalar momentum of the particle in the middle of this gas volume
       Double_t      _time; // time particle enters this gas volume; must be double to allow for long-lived particles
       XYZVec	    _startpos, _endpos; //entrance and exit to the gas volume
