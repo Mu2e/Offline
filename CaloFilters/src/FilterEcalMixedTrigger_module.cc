@@ -297,7 +297,7 @@ namespace mu2e {
     // this loads the TMVA library
     TMVA::Tools::Instance();
     //
-    ecalreader = new TMVA::Reader( "!Color:!Silent" );  
+    ecalreader = new TMVA::Reader( "!Color:Silent" );  
     ecalreader->AddVariable("rpeak",&_rpeak);
     ecalreader->AddVariable("tpeak",&_tpeak);
     ecalreader->AddVariable("Epeak",&_Epeak);
@@ -308,7 +308,7 @@ namespace mu2e {
     ecalreader->AddSpectator("fevt",&_fevt);  
     ecalreader->BookMVA(_MVAmethod ,configFile(_ecalweightsfile));
     //
-    mixedreader = new TMVA::Reader( "!Color:!Silent" );  
+    mixedreader = new TMVA::Reader( "!Color:Silent" );  
     mixedreader->AddVariable("rpeak",&_rpeak);
     mixedreader->AddVariable("tpeak",&_tpeak);
     mixedreader->AddVariable("Epeak",&_Epeak);
