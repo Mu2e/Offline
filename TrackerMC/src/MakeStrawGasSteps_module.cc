@@ -52,7 +52,7 @@ namespace mu2e {
 	fhicl::Atom<float> parabolicRotation{ Name("parabolicRotation"),
 	  Comment("Maximum bending rotation to use parabolic end estimation"),0.15}; //radians
 	fhicl::Atom<float> curlRotation{ Name("curlRotation"),
-	  Comment("Minimum bending rotation to use curl end estimation"),1.0}; //radians
+	  Comment("Minimum bending rotation to use curl end estimation"),2.0}; //radians
 	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
 	  Comment("Estimated size of output collection"), 2000};
 	fhicl::Atom<string> trackerSteps { Name("trackerStepPoints"),
@@ -83,11 +83,12 @@ namespace mu2e {
       string _trackerSteps, _keepDeltas;
       // cache the BField direction at the tracker center
       Hep3Vector _bdir;
-      float _bnom; // BField in units of mm/MeV/c
+      float _bnom; // BField in units of (MeV/c)/mm
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
-      Float_t _prilen, _pridist, _elen, _erad, _epri, _esec, _partP, _brot;
+      Float_t _prilen, _pridist, _elen, _erad, _epri, _esec, _partP, _brot, _width;
+      vector<Float_t> _sdist;
       Int_t _npri, _nsec, _partPDG;
   };
 
@@ -128,11 +129,12 @@ namespace mu2e {
 	_sgsdiag->Branch("erad",&_erad,"erad/F");
 	_sgsdiag->Branch("epri",&_epri,"epri/F");
 	_sgsdiag->Branch("esec",&_esec,"esec/F");
+        _sgsdiag->Branch("width",&_width,"width/F");
         _sgsdiag->Branch("npri",&_npri,"npri/I");
         _sgsdiag->Branch("nsec",&_nsec,"nsec/I");
         _sgsdiag->Branch("partP",&_partP,"partP/F");
         _sgsdiag->Branch("partPDG",&_partPDG,"partPDG/I");
-
+        _sgsdiag->Branch("sdist",&_sdist);
       }
     }
   }
@@ -262,13 +264,19 @@ namespace mu2e {
 	if(pdt->particle(first->simParticle()->pdgId()).isValid())
 	  charge = pdt->particle(first->simParticle()->pdgId()).ref().charge();
 
+	
 	XYZVec end = endPosition(last,straw,charge);
 	time = first->time(); // use first time as time of this step (cluster times will be added)
 	mom = 0.5*(first->momentum().mag() + last->momentum().mag());	// average first and last momentum
-	// determine the width from the triangle calculation
-	double width(0.0);
-	if(spmcptrs.size() > 1)width = sqrt( pathlen*pathlen - (end-start).mag2())/2.0;
-
+	// determine the width from the sigitta or curl radius
+	auto pdir = first->momentum().unit();
+	auto pperp = pdir.perp(_bdir);
+	static const float invsqrt12(1.0/sqrt(12.0));
+	float rbend = 0.5*mom*pperp/_bnom; // bend radius spread.  factor accounts for average over all points
+	// only sigitta perp to the wire counts
+	float sint = sqrt((_bdir.cross(pdir).cross(straw.getDirection())).mag2());
+	float sag = invsqrt12*sint*pathlen*pathlen*_bnom*pperp/(8.0*mom);
+	double width = std::min(sag,rbend); 
 	// create the gas step
 	StrawGasStep sgs(ispsmap->first.second, ispsmap->first.first,
 		(float)eion,(float)pathlen, (float)width, (float)mom, time, 
@@ -277,7 +285,7 @@ namespace mu2e {
 	// create the Assns
 	auto sgsp = art::Ptr<StrawGasStep>(StrawGasStepCollectionPID,sgsc->size()-1,StrawGasStepCollectionGetter);
 	sgsa_primary->addSingle(sgsp,first);
-	// add Assns for all StepPoints, including delta-rays, for diagnostics
+	// optionall add Assns for all StepPoints, including delta-rays
 	if(_allAssns){
 	  for(auto const& spmcptr : spmcptrs)
 	    sgsa_all->addSingle(sgsp,spmcptr);
@@ -292,6 +300,13 @@ namespace mu2e {
 	    _partP = mom;
 	    _partPDG = first->simParticle()->pdgId();
 	    _elen = last->stepLength();
+	    _width = width;
+	    _sdist.clear();
+	    auto sdir = Geom::Hep3Vec(end-start).unit();
+	    for(auto const& spmcptr : spmcptrs){
+	      auto dist = ((spmcptr->position()-Geom::Hep3Vec(start)).cross(sdir)).mag(); 
+	      _sdist.push_back(dist);
+	    }
 	    _sgsdiag->Fill();
 	  }
 	}
@@ -393,6 +408,7 @@ namespace mu2e {
   }
 
   XYZVec MakeStrawGasSteps::endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw, float charge) {
+  // in future we should store the end position in the StepPointMC FIXME!
     static const double r2 = straw.innerRadius()*straw.innerRadius();
     XYZVec retval;
 // test parabolic extrapolation first
@@ -406,17 +422,18 @@ namespace mu2e {
       // estimate end position with a parabolic trajectory
       retval  = last->position() + last->stepLength()*(momhat -(0.5*charge*_brot)*rho);
     } else {
-      Hep3Vector cdir = (momhat-(0.5*charge*_brot)*rho).unit(); // effective propagation direction
-      if(_brot > _curlrot) {
+      Hep3Vector cdir;
+      if(_brot > _curlrot)
 	// curler; assume the net motion is along the BField axis.  Sign by the projection of the momentum
-	cdir = _bdir;
-	if(momhat.dot(_bdir)<0.0)cdir *= -1.0;
-      } 
-// propagate to the straw wall 
+	cdir = _bdir * (momhat.dot(_bdir)>0.0 ? 1.0 : -1.0);
+      else
+	cdir = (momhat-(0.5*charge*_brot)*rho).unit(); // effective propagation direction
+// propagate to the straw wall
       auto pperp = (last->position()-straw.getMidPoint()).perpPart(straw.getDirection());
       double pdot = pperp.dot(cdir);
       double ppmag2 = pperp.mag2();
       double len = sqrt(pdot*pdot + r2 - ppmag2)-pdot;
+      len = std::min(last->stepLength(),len);
       retval = last->position() + len*cdir;
     }
     return retval; 
