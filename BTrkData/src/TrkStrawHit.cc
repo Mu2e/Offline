@@ -37,7 +37,7 @@ namespace mu2e
     _maxdriftpull(maxdriftpull)
   {
 // make sure this ComboHit represents only a single straw hit
-    if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)//
+    if(_combohit.nStrawHits() != 1 || _combohit.driftEnd() == StrawEnd::unknown)
       throw cet::exception("RECO")<<"mu2e::TrkStrawHit: ComboHit > 1 StrawHit"<< endl;
     // The StrawResponse should be passsed in from outside FIXME!
     Hep3Vector const& wiredir = straw.getDirection();
