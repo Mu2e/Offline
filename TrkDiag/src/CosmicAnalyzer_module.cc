@@ -189,6 +189,9 @@ namespace mu2e
       TH1F* _minuit_pullsY_final;
       TH1F* _NLL;
      
+//Triggger AnalysisL:
+      TH1F* _TrueMomDOCACut;
+      TH1F* _TrueMomNoCuts;
       // add event id
       Int_t _evt; 
 
@@ -700,6 +703,11 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	_AMBIG->GetXaxis()->SetTitle("True");
 	_AMBIG->GetYaxis()->SetTitle("Reco");
 
+	_TrueMomDOCACut = tfs->make<TH1F>("True Mom Tot After DOCA Cut", "True Mom After DOCA cut", 100,0,100);
+	_TrueMomDOCACut->GetXaxis()->SetTitle("#p_{true} [MeV/c]");
+	
+        _TrueMomNoCuts = tfs->make<TH1F>("True Mom Tot No Cut", "True Mom No cut", 100,0,100);
+	_TrueMomNoCuts->GetXaxis()->SetTitle("#p_{true} [MeV/c]");
         }
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
@@ -890,20 +898,21 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	            _FinalErrY->Fill(st.Diag.FinalErrTot[i]);
 	            
 	        }   
-        
-		for(size_t i=0; i<st.DriftDiag.FullFitEndDOCAs.size();i++){
-	            _StartDOCAs->Fill(st.DriftDiag.StartDOCAs[i]);
-		
-	            _StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
-	
-	            _FullFitEndDOCAs->Fill(st.DriftDiag.FullFitEndDOCAs[i]);
-	
-		    _FullFitEndTimeResiduals->Fill(st.DriftDiag.FullFitEndTimeResiduals[i]);
-	
+                for(size_t i=0; i<st.DriftDiag.FullFitEndDOCAs.size();i++){
 		    _GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
 		    _GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
+		    _TrueMomNoCuts->Fill(ptrue); 
+			
+		}
+		for(size_t i=0; i<st.DriftDiag.FullFitEndDOCAs.size();i++){
+	            _StartDOCAs->Fill(st.DriftDiag.StartDOCAs[i]);
+	            _StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
+	            _FullFitEndDOCAs->Fill(st.DriftDiag.FullFitEndDOCAs[i]);
+		    _FullFitEndTimeResiduals->Fill(st.DriftDiag.FullFitEndTimeResiduals[i]);
+		    //_GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
+		    //_GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
 		    _TrueDOCAs->Fill(st.DriftDiag.TrueDOCAs[i]);
-		     
+		    _TrueMomDOCACut->Fill(ptrue); 
 			      
 	        }
 
