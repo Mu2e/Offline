@@ -76,11 +76,15 @@ namespace mu2e
     _n_outliers(pset.get<unsigned>("_n_outliers",5)),
     _maxniter(pset.get<unsigned>("maxniter",1000)),//10
     _maxpull(pset.get<float>("maxPull",3)),
-    _maxd(pset.get<float>("maxd",300.0)),//max distance between hits at start of fit
-    _maxDOCA(pset.get<float>("maxDOCA",1000)),//max distance of closest approach between a hit included in fit and one flag out-right as an outlier
+    _maxd(pset.get<float>("maxd",300.0)),//max distance between hits at start of fit (UNUSED)
     _maxchi2(pset.get<float>("maxchi2",10.0)) ,
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
-    _max_position_deviation((pset.get<float>("max_position_deviation",200)))
+    _max_position_deviation((pset.get<float>("max_position_deviation",200))),
+    _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
+    _minMomTrue      (pset.get<int>("minxMomTrue",4)),//TODO
+    _maxLogL (pset.get<int>("maxLogL",400)),
+    _minCHStrawFull (pset.get<int>("minCHStrawFull",4)),
+    _gaussTres (pset.get<int>("gaussTres",24))
     {}
 
     CosmicTrackFit::~CosmicTrackFit(){}
@@ -439,7 +443,7 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 	sigmaDir[1][0] = cosmictrack->FitParams.Covarience.sigB1;
  	sigmaDir[2][0] = 0;
 	TMatrixD sigmaDirXYZ(A*sigmaDir);
-	//TODO NOT WORKING!!!
+	//TODO  --> check math!!!
 	cout<<"sigmaPos "<<sigmaPos[0][0]<<"----->"<<sigmaPosXYZ[1][0]<<endl;
 	cout<<"sigmaPos "<<sigmaPos[1][0]<<"----->"<<sigmaPosXYZ[1][0]<<endl;
 	cout<<"sigmaPos "<<sigmaPos[2][0]<<"----->"<<sigmaPosXYZ[2][0]<<endl;
@@ -468,8 +472,7 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 	else{
 	TrackEquation XYZTrack(Pos, Dir);
 	cosmictrack->SetMinuitTrackEquation(XYZTrack);
-	cout<<"Minuit Position in detector frame "<<Pos<<endl;
-	cout<<"Minuit Direction in detector frame "<<Dir<<endl;
+	
 	}
 
 }
@@ -540,7 +543,7 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
      }
 
 /*-----------------------Transform MC---------------------/
-Can be used to transform the MC in to prime frame
+Can be used to transform the MC in to prime frame (not used any more)
 //---------------------------------------------------*/
 
 void CosmicTrackFit::TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axes, CosmicTrack* cosmictrack, bool is_seed){
@@ -566,17 +569,17 @@ void CosmicTrackFit::TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axe
 }     
 
 //Some Functions to store some analysis functions (Currently not doing a very good job)
-  float CosmicTrackFit::PDF(float chisq, float ndf){
+float CosmicTrackFit::PDF(float chisq, float ndf){
   	float pdf = ROOT::Math::chisquared_pdf(chisq, ndf);
   	return pdf;
   }
   
-  float CosmicTrackFit::chi_sum(float chisq, float ndf){
+float CosmicTrackFit::chi_sum(float chisq, float ndf){
   	float sum = TMath::ChisquareQuantile(chisq, ndf);
   	return sum;
   }
   	
-  float CosmicTrackFit::CDF(float chisq, float ndf){	
+float CosmicTrackFit::CDF(float chisq, float ndf){	
   	float cdf;
   	if(chisq/ndf < 3){	
   	cdf = ROOT::Math::chisquared_cdf_c(chisq, ndf , 0);	
@@ -604,10 +607,11 @@ bool CosmicTrackFit::use_track(double track_length) const
      return (track_length > _maxd) ? false : true ;
   }
  /*-------------Drift Fit Diagnotics--------------//
+This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimzed track parameters 
 //------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	
-         EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep);
+         EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep, _maxHitDOCA, _minCHStrawFull, _maxLogL, _gaussTres);
          //Store fit information in the track data:
          trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
          trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
@@ -622,8 +626,8 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
          trackData._tseed._track.MinuitFitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
 
          if(endresult.bestfitcov.size() !=0 ){
-		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
-		 trackData._tseed._track.MinuitFitParams.Covarience = Cov; //TODO gives MASSIVE values!!!
+		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);//TODO - understand how minuit gets these - they are currently v. small
+		 trackData._tseed._track.MinuitFitParams.Covarience = Cov;
          }
          if(endresult.NLL !=0){ trackData._tseed._track.minuit_converged = true;}
 	
@@ -633,24 +637,19 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	 XYZVec Z(0,0,1);//TODO (for plotting as need to make code to just plot in the XYZ)
 	 TrackAxes XYZ(X,Y,Z);
 	 trackData._tseed._track.MinuitCoordSystem = XYZ; 
-	 trackData._tseed._track.DriftDiag.EndDOCAs = endresult.EndDOCAs;
+	 trackData._tseed._track.DriftDiag.FullFitEndDOCAs = endresult.FullFitEndDOCAs;
+	 trackData._tseed._track.DriftDiag.GaussianEndDOCAs = endresult.GaussianEndDOCAs;
 	 trackData._tseed._track.DriftDiag.StartDOCAs = endresult.StartDOCAs;
 	 trackData._tseed._track.DriftDiag.TrueDOCAs = endresult.TrueDOCAs;
-	 trackData._tseed._track.DriftDiag.EndTimeResiduals = endresult.EndTimeResiduals;
+	 
 	 trackData._tseed._track.DriftDiag.NLL = endresult.NLL;
 	 trackData._tseed._track.DriftDiag.StartTimeResiduals = endresult.StartTimeResiduals;
-         /*
-	 for(unsigned i = 0; i< endresult.TrueDOCAs.size(); i++){ 
-	
-	 if(endresult.TrueDOCAs[i] > 100){
-		int count;
-		cout<<"Not Converged "<<endresult.NLL<<" start doca "<<endresult.StartDOCAs[i]<<"true doca "<<endresult.TrueDOCAs[i] <<" seeds "<<trackData._tseed._track.FitEquationXYZ.Pos.X()<<" "<<trackData._tseed._track.FitEquationXYZ.Dir.X()<<" "<<trackData._tseed._track.FitEquationXYZ.Pos.Y()<<" "<<trackData._tseed._track.FitEquationXYZ.Dir.Y()<<" ptrue"<<sqrt(trackData._tseed._track.TrueTrueTrackDirection.Mag2())<<" theta "<<trackData._tseed._track.get_true_theta() <<" phi "<<trackData._tseed._track.get_true_phi()<<" seed chi2 "<<trackData._tseed._track.Diag.FinalChiTot<<endl;
-		cin>>count;
-		
-	  }
-         
-         }
-        */
+	 trackData._tseed._track.DriftDiag.GaussianEndTimeResiduals = endresult.GaussianEndTimeResiduals;
+	 trackData._tseed._track.DriftDiag.FullFitEndTimeResiduals = endresult.FullFitEndTimeResiduals;
+	 
+	 trackData._tseed._track.DriftDiag.RecoAmbigs = endresult.RecoAmbigs;
+	 trackData._tseed._track.DriftDiag.TrueAmbigs = endresult.TrueAmbigs;
+        
 	 if(_diag > 0){
 		ComboHit *chit(0);
 		for(size_t j=0; j<(trackData._tseed._straw_chits.size()); j++){
@@ -676,7 +675,7 @@ trackData._tseed._track.DriftDiag.FinalErrY.push_back(ErrorsXY[1]);
       }  
      
 }
-/*
+/*	This code was built to help transofrm into BTrk - it didnt work but may be useful:
  	std::vector<TrkStrawHitSeed>const trkseeds = trackData._tseed.trkstrawhits();
         cout<<"size track seed "<<trkseeds.size()<<" "<<trackData._tseed._straw_chits.size()<<std::endl;
      	for(auto const& ths : trkseeds ){

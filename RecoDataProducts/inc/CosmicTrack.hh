@@ -91,11 +91,16 @@ using namespace std;
    	double NLL;
    	
    	std::vector<double> StartDOCAs;
-   	std::vector<double> EndDOCAs;
+   	std::vector<double> FullFitEndDOCAs;
+	std::vector<double> GaussianEndDOCAs;
 	std::vector<double> TrueDOCAs;
    	std::vector<double> StartTimeResiduals;
-   	std::vector<double> EndTimeResiduals;
-   	
+   	std::vector<double> FullFitEndTimeResiduals;
+	std::vector<double> GaussianEndTimeResiduals;
+	
+   	std::vector<double> RecoAmbigs;
+	std::vector<double> TrueAmbigs;
+
    	std::vector<double> FinalResidualsX;
    	std::vector<double> FinalResidualsY;
 	 

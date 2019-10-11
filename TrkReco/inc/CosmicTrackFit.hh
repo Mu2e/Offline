@@ -1,8 +1,4 @@
 
-// Class to perform Cosmic fit
-// Original author: Sophie Middleton 
-
-
 #ifndef TrkReco_CosmicTrackFit_HH
 #define TrkReco_CosmicTrackFit_HH
 
@@ -102,12 +98,16 @@ namespace mu2e
     		unsigned _maxniter; // maxium # of iterations to global minimum   
 		float _maxpull; //maximum allowed hit pull (res/reserror)             
     		float _maxd; // maximum distance in hits to begin fit
-		float _maxDOCA; //max allowed DOCA to allow hit into fit
+		
     		float _maxchi2; //maximum allowed chi2
 		float _max_chi2_change; // once we are lower than this we can say its converged
 	        float _max_seed_chi2;// max chi2 total of seed track
     		float _max_position_deviation;//maximum hcange from initial choice of a0 and b0 (in mm)
-	       
+	        float _maxHitDOCA ;//Max allowed DOCA for gaussian seed
+		float _minMomTrue;//Minimum true momentum (unused)
+		int _maxLogL; //Maximum allowed liklihood in drift model
+		unsigned _minCHStrawFull; //Minimum number of hits remaining after Gaussian seed
+		double _gaussTres;//resolution for intial seed
   };//end Fit class
 	
 

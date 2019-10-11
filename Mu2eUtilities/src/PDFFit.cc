@@ -34,8 +34,8 @@
 using namespace mu2e;
 
 //For Gaussian:
-const double AVG_VELOCITY = 0.065; //mm/ns
-const double sigma = 25; //ns
+const double drift_v = 0.065; //mm/ns
+const double sigma = 5; //ns (for full fit only) TODO - make FCL parameter
 const double tau = 10.7; //ns
 //For Full fit:
 const int N_tbins = 500;
@@ -47,7 +47,7 @@ float strawradius = 2.5; //2.5 mm in mm
 
 
 
-FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k) : TimePDFFit(_chits, _straws,  _srep, _track,  _constraint_means, _constraints, _k)
+FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) : TimePDFFit(_chits, _straws,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k)
 {
   //create pdf bins using pre defined numbers:
   pdf_times = new double[N_tbins];
@@ -55,19 +55,10 @@ FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawRe
   pdf_sigmas = new double[N_sbins];
   pdf = new double[N_tbins*N_taubins*N_sbins];
   //set min and maxes:
-  /*
 
-  Min_t = 50;
-  Min_tau = 5;
-  Min_s = 15;
-  Max_t = 1000;
-  Max_tau = 15.;
-  Max_s = 25.;
-
-  */
   Min_t = 0.1;
   Min_tau = 5;
-  Min_s = 10;
+  Min_s = 1;//10;(1 for upto  sig = 5)
   Max_t = 1000;
   Max_tau = 15.;
   Max_s = 30.;
@@ -88,7 +79,9 @@ FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawRe
   }
   this->CalculateFullPDF();
 };
-
+/*-------Factorial ------//
+calculates factorial for deominator
+//-----------------------*/
 int FullFit::Factorial(int k)
 {
   if (k == 0)
@@ -99,14 +92,16 @@ int FullFit::Factorial(int k)
     response *= i;
   return response;
 }
-
+/* ------- Calc. Full PDF--------/
+Fills PDF bins
+//----------------------------*/
 void FullFit::CalculateFullPDF() {
   
   for (int is=0;is<N_sbins;is++){
      double sigma = this->pdf_sigmas[is];
      for (int it0=0;it0<N_tbins;it0++){
        //Time residuals?
-       double time_gaus = this->pdf_times[it0];//TODO - time residual
+       double time_gaus = this->pdf_times[it0];
        //Time PDF
        double time_gaussian = 1.0/sqrt(2*TMath::Pi()*sigma*sigma)*exp(-(time_gaus*time_gaus)/(2*sigma*sigma));
      
@@ -196,17 +191,23 @@ double FullFit::InterpolatePDF(double time_residual, double sigma, double tau) c
 }
 
 
-
+// This 3 functions talk to the drift util:
 double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
 	double doca = DriftFitUtils::GetTestDOCA(straw, a0,a1,b0,b1, chit); 
         return (doca);
 }
+
+double TimePDFFit::calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
+	double ambig = DriftFitUtils::GetAmbig(straw, a0,a1,b0,b1, chit); 
+        return (ambig);
+}
+
 double TimePDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 ,  ComboHit hit)const{
 	double tres =  DriftFitUtils::TimeResidual( straw, doca, srep, t0, hit);
 	return tres;
 }
 
-
+//Gaussian PDF function:
 double TimePDFFit::operator() (const std::vector<double> &x) const
 {
   //Name/store parameters in terms of Minuit "x's":
@@ -220,9 +221,10 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   //Loop through the straws and get DOCA:
   for (size_t i=0;i<this->straws.size();i++){
       double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
+      //if(doca > 2.5) continue;
       double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
       
-      double pdf_t = 1/sqrt(2*TMath::Pi()*sigma*sigma) * exp(-(time_residual*time_residual)/(2*sigma*sigma));
+      double pdf_t = 1/sqrt(2*TMath::Pi()*this->sigma_t*this->sigma_t) * exp(-(time_residual*time_residual)/(2*this->sigma_t*this->sigma_t));
       //Log Liklihood:
       llike -=log(pdf_t);
       t0 += time_residual/this->straws.size(); 
@@ -238,7 +240,7 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   return llike;
 }
 
-
+//Full fit PDF function:
 double DataFit::operator() (const std::vector<double> &x) const
 {
   
@@ -263,7 +265,7 @@ double DataFit::operator() (const std::vector<double> &x) const
       }
     */
     double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
-    /*  
+     /*
     if(time_residual>Max_t){
 	time_residual = Max_t;
     }

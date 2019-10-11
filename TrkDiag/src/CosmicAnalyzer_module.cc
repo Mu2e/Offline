@@ -95,7 +95,7 @@ namespace mu2e
       TH2F* _seedDeltaB1_v_MOM;
       TH2F* _LL_v_MOM;
       TH2F* _LL_v_Nhits;
-
+      TH2F* _AMBIG;
       TH1F* _seed_a1;
       TH1F* _seed_b1;
       TH1F* _seed_a0;
@@ -178,11 +178,13 @@ namespace mu2e
       TH1F* _B1MinuitMCDiff;
       
       //Drift diags:
-      TH1F* _EndDOCAs;
+      TH1F* _FullFitEndDOCAs;
       TH1F* _TrueDOCAs;
-      TH1F* _EndTimeResiduals;
+      TH1F* _FullFitEndTimeResiduals;
       TH1F* _StartTimeResiduals;
       TH1F* _StartDOCAs;
+      TH1F* _GaussianEndDOCAs;
+      TH1F* _GaussianEndTimeResiduals;
       TH1F* _minuit_pullsX_final;
       TH1F* _minuit_pullsY_final;
       TH1F* _NLL;
@@ -311,45 +313,7 @@ namespace mu2e
 	_SPtrueb1XYZ->GetXaxis()->SetTitle("Track Parameter B1");
 	_SPtrueb1XYZ->SetStats();
 
-        //------------------------------------------Seed---------------------------- --------------//
-
-	_seed_a0 = tfs->make<TH1F>("Track Parameter A0 ","Track Parameter A0 " ,50,-2000, 2000);
-	_seed_a0->GetXaxis()->SetTitle("Track Parameter A0");
-	_seed_a0->SetStats();
-	
-	_seed_b0 = tfs->make<TH1F>("Track Parameter B0 ","Track Parameter B0  " ,50,-2000, 2000);
-	_seed_b0->GetXaxis()->SetTitle("Track Parameter B0");
-	_seed_b0->SetStats();
-	
-	_seed_a1 = tfs->make<TH1F>("Track Parameter A1  ","Track Parameter A1 " ,50,-1,1);
-	_seed_a1->GetXaxis()->SetTitle("Track Parameter A1");
-	_seed_a1->SetStats();
-	
-	_seed_b1 = tfs->make<TH1F>("Track Parameter B1  ","Track Parameter B1  " ,50,-1,1);
-	_seed_b1->GetXaxis()->SetTitle("Track Parameter B1");
-	_seed_b1->SetStats();
-
-	_seed_a0XYZ = tfs->make<TH1F>("Track Parameter A0 XYZ","Track Parameter A0 XYZ " ,50,-10000, 10000);
-	_seed_a0XYZ->GetXaxis()->SetTitle("Track Parameter A0 XYZ");
-	_seed_a0XYZ->SetStats();
-	
-	_seed_b0XYZ = tfs->make<TH1F>("Track Parameter B0 XYZ","Track Parameter B0 XYZ " ,50,-5000, 5000);
-	_seed_b0XYZ->GetXaxis()->SetTitle("Track Parameter B0 XYZ");
-	_seed_b0XYZ->SetStats();
-	
-	_seed_a1XYZ = tfs->make<TH1F>("Track Parameter A1 XYZ ","Track Parameter A1 XYZ" ,50,-5,5);
-	_seed_a1XYZ->GetXaxis()->SetTitle("Track Parameter A1 XYZ");
-	_seed_a1XYZ->SetStats();
-	
-	_seed_b1XYZ = tfs->make<TH1F>("Track Parameter B1 XYZ ","Track Parameter B1 XYZ " ,50,-5,5);
-	_seed_b1XYZ->GetXaxis()->SetTitle("Track Parameter B1");
-	_seed_b1XYZ->SetStats();
-
-	_niters  = tfs->make<TH1F>("Number of Iterations Until Seed Fit Converged  ","Number of Iterations Until Seed Fit Converged " ,100,0, 100);
-	_niters->GetXaxis()->SetTitle("Number of Iterations Until Seed Fit Converged");
-	_niters->SetStats();
-	
-	_mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.141529,3.141529);
+_mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.141529,3.141529);
 	_mc_phi_angle->GetXaxis()->SetTitle("#phi_{true, fit} [rad]");
 	
 	_reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,3.141529);
@@ -360,6 +324,44 @@ namespace mu2e
 	_mc_theta_angle->GetXaxis()->SetTitle("#theta_{true, fit} [rad]");
 	
 
+        //------------------------------------------Seed---------------------------- --------------//
+
+	_seed_a0 = tfs->make<TH1F>("Seed Track Parameter A0 ","Seed Track Parameter A0 " ,50,-2000, 2000);
+	_seed_a0->GetXaxis()->SetTitle("Seed Track Parameter A0");
+	_seed_a0->SetStats();
+	
+	_seed_b0 = tfs->make<TH1F>("Seed  Track Parameter B0 ","Seed Track Parameter B0  " ,50,-2000, 2000);
+	_seed_b0->GetXaxis()->SetTitle("Seed Track Parameter B0");
+	_seed_b0->SetStats();
+	
+	_seed_a1 = tfs->make<TH1F>("Seed Track Parameter A1  ","Seed vTrack Parameter A1 " ,50,-1,1);
+	_seed_a1->GetXaxis()->SetTitle("Seed Track Parameter A1");
+	_seed_a1->SetStats();
+	
+	_seed_b1 = tfs->make<TH1F>("Seed Track Parameter B1  ","Seed Track Parameter B1  " ,50,-1,1);
+	_seed_b1->GetXaxis()->SetTitle("Seed Track Parameter B1");
+	_seed_b1->SetStats();
+
+	_seed_a0XYZ = tfs->make<TH1F>("Seed Track Parameter A0 XYZ","Seed Track Parameter A0 XYZ " ,50,-10000, 10000);
+	_seed_a0XYZ->GetXaxis()->SetTitle("Seed Track Parameter A0 XYZ");
+	_seed_a0XYZ->SetStats();
+	
+	_seed_b0XYZ = tfs->make<TH1F>("Seedf Track Parameter B0 XYZ","Seed Track Parameter B0 XYZ " ,50,-5000, 5000);
+	_seed_b0XYZ->GetXaxis()->SetTitle("Seed Track Parameter B0 XYZ");
+	_seed_b0XYZ->SetStats();
+	
+	_seed_a1XYZ = tfs->make<TH1F>("Seedf Track Parameter A1 XYZ ","Seed Track Parameter A1 XYZ" ,50,-5,5);
+	_seed_a1XYZ->GetXaxis()->SetTitle("Seed Track Parameter A1 XYZ");
+	_seed_a1XYZ->SetStats();
+	
+	_seed_b1XYZ = tfs->make<TH1F>("Seed Track Parameter B1 XYZ ","Seed Track Parameter B1 XYZ " ,50,-5,5);
+	_seed_b1XYZ->GetXaxis()->SetTitle("Seed Track Parameter B1");
+	_seed_b1XYZ->SetStats();
+
+	_niters  = tfs->make<TH1F>("Seed Number of Iterations Until Seed Fit Converged  ","Number of Iterations Until Seed Fit Converged " ,100,0, 100);
+	_niters->GetXaxis()->SetTitle("Seed Number of Iterations Until Seed Fit Converged");
+	_niters->SetStats();
+	
 	_seedDeltaA0_v_N  = tfs->make<TH2F>("#Delta A^{seed-MC}_{0} v #N_{hits}", "#N_{hits}", 50, -100,100, 50, 0,50);
 	_seedDeltaA0_v_N->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{0}");
 	_seedDeltaA0_v_N->GetYaxis()->SetTitle("#N_{hits}");
@@ -392,13 +394,10 @@ namespace mu2e
 	_seedDeltaB1_v_MOM->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
 	_seedDeltaB1_v_MOM->GetYaxis()->SetTitle("#p_{true}");
 
-
-
 	_seedA0_v_seedA1 = tfs->make<TH2F>("Seed A_{0} v A_{1}", "Seed A_{0} v A_{1}", 50, -0.2, 0.2, 50, -1500, 1500);
 	_seedA0_v_seedA1->GetXaxis()->SetTitle("A_{1}");
 	_seedA0_v_seedA1->GetYaxis()->SetTitle("A_{0}");
 
-	
 	_seedB0_v_seedB1 = tfs->make<TH2F>("Seed B_{0} v B_{1}", "Seed B_{0} v B_{1}", 50, -0.2, 0.2, 50, -1500, 1500);
 	_seedB0_v_seedB1->GetXaxis()->SetTitle("B_{1}");
 	_seedB0_v_seedB1->GetYaxis()->SetTitle("B_{0}");
@@ -431,133 +430,131 @@ namespace mu2e
 	_B1SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{1}");
 	_B1SeedMCDiff->SetStats();
 	
-	_chiX_v_true_trackposX = tfs->make<TH2F>("#chi^{2}/ndf v A_{0,true}", "#chi^{2}/ndf v A_{0,true}", 100, -2000,2000, 100, 0,5);
+	_chiX_v_true_trackposX = tfs->make<TH2F>("Seed #chi^{2}/ndf v A_{0,true}", "Seed #chi^{2}/ndf v A_{0,true}", 100, -2000,2000, 100, 0,5);
 	_chiX_v_true_trackposX->GetXaxis()->SetTitle("A_{0}");
 	_chiX_v_true_trackposX->GetYaxis()->SetTitle("#chi{2}/ndf");
 	
-	_chiY_v_true_trackposY = tfs->make<TH2F>("#chi^{2}/ndf v B_{0,true}", "#chi^{2}/ndf v B_{0,true}", 100, -2000,2000, 100, 0,5);
+	_chiY_v_true_trackposY = tfs->make<TH2F>("Seed #chi^{2}/ndf v B_{0,true}", "Seed #chi^{2}/ndf v B_{0,true}", 100, -2000,2000, 100, 0,5);
 	_chiY_v_true_trackposY->GetXaxis()->SetTitle("B_{0}");
 	_chiY_v_true_trackposY->GetYaxis()->SetTitle("#chi{2}/ndf");
 	
-	_chi_v_true_theta = tfs->make<TH2F>("#chi^{2}/ndf v #theta_{true}", "#chi^{2}/ndf v #theta_{true}", 100, 0, 3.141529, 100, 0,2);
+	_chi_v_true_theta = tfs->make<TH2F>("Seed #chi^{2}/ndf v #theta_{true}", "Seed #chi^{2}/ndf v #theta_{true}", 100, 0, 3.141529, 100, 0,2);
 	_chi_v_true_theta->GetXaxis()->SetTitle("B_{0}");
 	_chi_v_true_theta->GetYaxis()->SetTitle("#chi{2}/ndf");
 	
 	_Seed_Cov_A0 = tfs->make<TH1F>("#sigma_{A_{0}}", "#sigma_{A_{0}}" ,100,0, 100);
 	_Seed_Cov_A0->GetXaxis()->SetTitle("#sigma_{A_{0}}");
 
-	_Seed_Cov_A0A1 = tfs->make<TH1F>("#sigma_{A_{0}A_{1}}", "#sigma_{A_{0}A_{1}}" ,100,0, 100);
+	_Seed_Cov_A0A1 = tfs->make<TH1F>("Seed #sigma_{A_{0}A_{1}}", "Seed #sigma_{A_{0}A_{1}}" ,100,0, 100);
 	_Seed_Cov_A0A1->GetXaxis()->SetTitle("#sigma_{A_{0}A_{1}}");
 
-	_Seed_Cov_A1 = tfs->make<TH1F>("#sigma_{A_{1}}", "#sigma_{A_{1}}" ,100,0, 0.5);
+	_Seed_Cov_A1 = tfs->make<TH1F>("Seed #sigma_{A_{1}}", "Seed #sigma_{A_{1}}" ,100,0, 0.5);
 	_Seed_Cov_A1->GetXaxis()->SetTitle("#sigma_{A_{1}}");
 	
-	_Seed_Cov_B0 = tfs->make<TH1F>("#sigma_{B_{0}}", "#sigma_{B_{0}}" ,100,0, 100);
+	_Seed_Cov_B0 = tfs->make<TH1F>("Seed #sigma_{B_{0}}", "Seed #sigma_{B_{0}}" ,100,0, 100);
 	_Seed_Cov_B0->GetXaxis()->SetTitle("#sigma_{B_{0}}");
 		
-	_Seed_Cov_B1 = tfs->make<TH1F>("#sigma_{B_{1}}", "#sigma_{B_{1}}" ,100,0, 0.5);
+	_Seed_Cov_B1 = tfs->make<TH1F>("Seed #sigma_{B_{1}}", "Seed #sigma_{B_{1}}" ,100,0, 0.5);
 	_Seed_Cov_B1->GetXaxis()->SetTitle("#sigma_{B_{1}}");
 
-        _Seed_Cov_B0B1 = tfs->make<TH1F>("#sigma_{B_{0}B_{1}}", "#sigma_{B_{0}B_{1}}" ,100,0, 100);
+        _Seed_Cov_B0B1 = tfs->make<TH1F>("Seed #sigma_{B_{0}B_{1}}", "Seed #sigma_{B_{0}B_{1}}" ,100,0, 100);
 	_Seed_Cov_B0B1->GetXaxis()->SetTitle("#sigma_{B_{0}B_{1}}");
 
-	
-	_A0pull_v_theta_true= tfs->make<TProfile>("Parameter Pull A_{0} v #theta_{true,fit}  ","Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+	_A0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{0} v #theta_{true,fit}  ","Seed Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
 	_A0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
 	_A0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{0}");
 	
-	_B0pull_v_theta_true= tfs->make<TProfile>("Parameter Pull B_{0} v #theta_{true,fit}  ","Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+	_B0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{0} v #theta_{true,fit}  ","Seed Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
 	_B0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
 	_B0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{0}");
 	
-	_A1pull_v_theta_true= tfs->make<TProfile>("Parameter Pull A_{1} v #theta_{true,fit}  ","Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+	_A1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{1} v #theta_{true,fit}  ","Seed Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
 	_A1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
 	_A1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{1}");
 	
-	_B1pull_v_theta_true= tfs->make<TProfile>("Parameter Pull B_{1} v #theta_{true,fit}  ","Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+	_B1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{1} v #theta_{true,fit}  ","Seed Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
 	_B1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
 	_B1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{1}");
 	
-	_chisq_ndf_plot_init = tfs->make<TH1F>("init chisq_ndf_plot","init chisq_ndf_plot" ,100,0, 10);
+	_chisq_ndf_plot_init = tfs->make<TH1F>("Seed Init ChiSq/NDF","Seed Init ChiSq/NDF" ,100,0, 10);
 	_chisq_ndf_plot_init->GetXaxis()->SetTitle("Init. #Chi^{2}/N");
 	
-	_chisq_ndf_plot_final = tfs->make<TH1F>("final chisq_ndf_plot","final chisq_ndf_plot" ,100,0,10);
+	_chisq_ndf_plot_final = tfs->make<TH1F>("Seed Final ChiSq/NDF","Seed Final ChiSq/NDF" ,100,0,10);
 	_chisq_ndf_plot_final->GetXaxis()->SetTitle("Final #Chi^{2}/N");
 	
-	_chisq_ndf_plot_finalX = tfs->make<TH1F>("final chisq_ndf_plot X''","final chisq_ndf_plot X''" ,100,0,10);
+	_chisq_ndf_plot_finalX = tfs->make<TH1F>("Seed Final ChiSq/NDF X''","Seed Final ChiSq/NDF X''" ,100,0,10);
 	_chisq_ndf_plot_finalX->GetXaxis()->SetTitle("Final X '' #Chi^{2}/N");
 	
-        _chisq_ndf_plot_finalY = tfs->make<TH1F>("final chisq_ndf_plot Y''","final chisq_ndf_plot Y''" ,100,0,10);
+        _chisq_ndf_plot_finalY = tfs->make<TH1F>("Seed Final ChiSq/NDF Y''","Seed Final ChiSq/NDF Y''" ,100,0,10);
 	_chisq_ndf_plot_finalY->GetXaxis()->SetTitle("Final Y '' #Chi^{2}/N");
 	
-	
-	_chisq_ndf_plot_initX = tfs->make<TH1F>("initial chisq_ndf_plot X''","initial chisq_ndf_plot X''" ,100,0,10);
+	_chisq_ndf_plot_initX = tfs->make<TH1F>("Seed Init Chi2/NDF  X''","Seed Init Chi2/NDF X''" ,100,0,10);
 	_chisq_ndf_plot_initX->GetXaxis()->SetTitle("Initial X '' #Chi^{2}/N");
 	
-        _chisq_ndf_plot_initY = tfs->make<TH1F>("initial chisq_ndf_plot Y''","initial chisq_ndf_plot Y''" ,100,0,10);
+        _chisq_ndf_plot_initY = tfs->make<TH1F>("Seed Init Chi2/NDF Y''","initial chisq_ndf_plot Y''" ,100,0,10);
 	_chisq_ndf_plot_initY->GetXaxis()->SetTitle("Initial Y '' #Chi^{2}/N");
 	
-	_change_chisq_ndf_plot_X = tfs->make<TH1F>("Total Change in Chisq/ ndf X''","Total Change in Chisq/ ndf X''" ,50,-10,20);
+	_change_chisq_ndf_plot_X = tfs->make<TH1F>("Seed Total Change in Chisq/ ndf X''","Total Change in Chisq/ ndf X''" ,50,-10,20);
 	_change_chisq_ndf_plot_X->GetXaxis()->SetTitle("Initial X '' #Chi^{2}/N");
 	
-	_change_chisq_ndf_plot_Y = tfs->make<TH1F>("Total Change in Chisq/ ndf Y''","Total Change in Chisq/ ndf Y''" ,50,-10,20);
+	_change_chisq_ndf_plot_Y = tfs->make<TH1F>("Seed Total Change in Chisq/ ndf Y''","Seed Total Change in Chisq/ ndf Y''" ,50,-10,20);
 	_change_chisq_ndf_plot_Y->GetXaxis()->SetTitle("Initial Y '' #Chi^{2}/N");
 	
-	_change_chisq_ndf_plot_Total = tfs->make<TH1F>("Total Change in #Chi^{2}/ ndf","Total Change in #Chi^{2}/ ndf" ,50,-5,20);
+	_change_chisq_ndf_plot_Total = tfs->make<TH1F>("Seed Total Change in #Chi^{2}/ ndf","Seed Total Change in #Chi^{2}/ ndf" ,50,-5,20);
 	_change_chisq_ndf_plot_Total->GetXaxis()->SetTitle("Total Change in #Chi^{2}/ndf");
 	
-        _total_residualsX_init = tfs->make<TH1F>("Initial Residuals X'' ","Initial Residuals X'' " ,50,-1000,1000);
+        _total_residualsX_init = tfs->make<TH1F>("Seedf Initial Residuals X'' ","Initial Residuals X'' " ,50,-1000,1000);
 	_total_residualsX_init->GetXaxis()->SetTitle("Initial Residual X'' [mm]");
 	_total_residualsX_init->SetStats();
 	
-	_total_residualsY_init = tfs->make<TH1F>("Initial Residuals Y''","Initial Residuals Y'' " ,50,-1000,1000);
+	_total_residualsY_init = tfs->make<TH1F>("Seed Initial Residuals Y''","Seed Initial Residuals Y'' " ,50,-1000,1000);
 	_total_residualsY_init->GetXaxis()->SetTitle("Initial Residual Y'' [mm]");
 	_total_residualsY_init->SetStats();
 
-	_total_pullsX_init = tfs->make<TH1F>("Initial Pull X","Initial Pull X''" ,200,-50, 50);
+	_total_pullsX_init = tfs->make<TH1F>("Seed Initial PullSeed  X","Initial Pull X''" ,200,-50, 50);
 	_total_pullsX_init->GetXaxis()->SetTitle("Pull X");
 	_total_pullsX_init->SetStats();
 	
-	_total_pullsY_init = tfs->make<TH1F>("Initial Pull Y''","Initial Pull Y''" ,200,-50, 50);
+	_total_pullsY_init = tfs->make<TH1F>("Seed Initial Pull Y''","Seed Initial Pull Y''" ,200,-50, 50);
 	_total_pullsY_init->GetXaxis()->SetTitle("Initial Pull Y");
 	_total_pullsY_init->SetStats();
        
-	_total_residualsX_final = tfs->make<TH1F>("Final Residuals X''  ","Final Residuals X''#chi^{2}/dof all  " ,100,-200,200);
+	_total_residualsX_final = tfs->make<TH1F>("Seed Final Residuals X''  ","Seed Final Residuals X''#chi^{2}/dof all  " ,100,-200,200);
 	_total_residualsX_final->GetXaxis()->SetTitle("Residual X'' [mm]");
 	_total_residualsX_final->SetStats();
 	
-	_total_residualsY_final = tfs->make<TH1F>("Final Residuals Y'' ","FinalResiduals Y'' #chi^{2}/dof all " ,100,-200,200);
+	_total_residualsY_final = tfs->make<TH1F>("Seed Final Residuals Y'' ","Seed Final Residuals Y'' #chi^{2}/dof all " ,100,-200,200);
 	_total_residualsY_final->GetXaxis()->SetTitle("Final Residual Y'' [mm]");
 	_total_residualsY_final->SetStats();
 	
-	_total_pullsX_final = tfs->make<TH1F>("Final Pull X'' #chi^{2}/dof all ","Final Pull X''#chi^{2}/dof all " ,50,-2, 2);
+	_total_pullsX_final = tfs->make<TH1F>("Seed Final Pull X'' #chi^{2}/dof alSeed l ","Seed Final Pull X''#chi^{2}/dof all " ,50,-2, 2);
 	_total_pullsX_final->GetXaxis()->SetTitle("Final Pull X''");
 	
 	
-	_total_pullsY_final = tfs->make<TH1F>("Final Pull Y''#chi^{2}/dof all ","Final Pull Y''#chi^{2}/dof all " ,50,-2, 2);
+	_total_pullsY_final = tfs->make<TH1F>("Seed Final Pull Y''#chi^{2}/dof all ","Seed Final Pull Y''#chi^{2}/dof all " ,50,-2, 2);
 	_total_pullsY_final->GetXaxis()->SetTitle("Final Pull Y''");
 	
-	_FinalErrX = tfs->make<TH1F>("Final Errors in X''","Final Errors in X'' " ,50,0, 100);
+	_FinalErrX = tfs->make<TH1F>("Seed Final Errors in X''","Seed Final Errors in X'' " ,50,0, 100);
 	_FinalErrX->GetXaxis()->SetTitle("#sigma_{X''} [mm]");
 	_FinalErrX->SetStats();
 	
-	_FinalErrY = tfs->make<TH1F>("Final Errors in Y''","Final Errors in Y'' " ,50,0, 100);
+	_FinalErrY = tfs->make<TH1F>("Seed Final Errors in Y''","Seed Final Errors in Y'' " ,50,0, 100);
 	_FinalErrY->GetXaxis()->SetTitle("#sigma_{Y''} [mm]");
 	_FinalErrY->SetStats();
 	
-	_InitErrX = tfs->make<TH1F>("Initial Errors in X''","Initial Errors in X'' " ,50,0, 100);
+	_InitErrX = tfs->make<TH1F>("Seed Initial Errors in X''","Seed Initial Errors in X'' " ,50,0, 100);
 	_InitErrX->GetXaxis()->SetTitle("#sigma_{X''} [mm]");
 	_InitErrX->SetStats();
 	
-	_InitErrY = tfs->make<TH1F>("Initial Errors in Y''","Initial Errors in Y'' " ,50,0, 100);
+	_InitErrY = tfs->make<TH1F>("Seed Initial Errors in Y''","Seed Initial Errors in Y'' " ,50,0, 100);
 	_InitErrY->GetXaxis()->SetTitle("#sigma_{Y''} [mm]");
 	_InitErrY->SetStats();
 	
-	_FinalErrTot = tfs->make<TH1F>("Final Errors Total","Final Errors Total " ,50,0, 100);
+	_FinalErrTot = tfs->make<TH1F>("Seed Final Errors Total","Seed Final Errors Total " ,50,0, 100);
 	_FinalErrTot->GetXaxis()->SetTitle("#sigma_{Y''} [mm]");
 	_FinalErrTot->SetStats();
 	
-	_InitErrTot = tfs->make<TH1F>("Initial Errors Total","Initial Errors Total " ,50,0, 100);
+	_InitErrTot = tfs->make<TH1F>("Seed Initial Errors Total","Seed Initial Errors Total " ,50,0, 100);
 	_InitErrTot->GetXaxis()->SetTitle("#sigma_{X''} [mm]");
 	_InitErrTot->SetStats();
 
@@ -571,23 +568,32 @@ namespace mu2e
 	_total_residualsY_Minuit->GetXaxis()->SetTitle("Minuit Res. Y'' [mm]");
 	_total_residualsY_Minuit->SetStats();
 	
-	_EndDOCAs = tfs->make<TH1F>("Final DOCAs ","Final DOCAs" ,200,0,60);
-	_EndDOCAs->GetXaxis()->SetTitle("Final DOCAs [mm]");
-	_EndDOCAs->SetStats();
+	_FullFitEndDOCAs = tfs->make<TH1F>("Final DOCAs ","Final DOCAs" ,100,0,10);
+	_FullFitEndDOCAs->GetXaxis()->SetTitle("Final DOCAs [mm]");
+	_FullFitEndDOCAs->SetStats();
+
+	_GaussianEndDOCAs = tfs->make<TH1F>("Gaussian DOCAs ","Gaussian DOCAs" ,100,0,10);
+	_GaussianEndDOCAs->GetXaxis()->SetTitle("Gaussian DOCAs [mm]");
+	_GaussianEndDOCAs->SetStats();
 	
-	_StartDOCAs = tfs->make<TH1F>("Initial DOCAs ","InitialDOCAs" ,200, 0,60);
+	_StartDOCAs = tfs->make<TH1F>("Initial DOCAs ","InitialDOCAs" ,100, 0,10);
 	_StartDOCAs->GetXaxis()->SetTitle("Initial DOCAs [mm]");
 	_StartDOCAs->SetStats();
 
-	_TrueDOCAs = tfs->make<TH1F>("True DOCAs ","TrueDOCAs" ,200, 0,60);
+	_TrueDOCAs = tfs->make<TH1F>("True DOCAs ","TrueDOCAs" ,100, 0,10);
 	_TrueDOCAs->GetXaxis()->SetTitle("True DOCAs [mm]");
 	_TrueDOCAs->SetStats();
 
        
-        _EndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,50,0,500);
-	_EndTimeResiduals->GetXaxis()->SetTitle("Final Time Res [ns]");
-	_EndTimeResiduals->SetStats();
+        _FullFitEndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,50,0,500);
+	_FullFitEndTimeResiduals->GetXaxis()->SetTitle("Final Time Res [ns]");
+	_FullFitEndTimeResiduals->SetStats();
+
 	
+	_GaussianEndTimeResiduals = tfs->make<TH1F>("Gaussian Time Res ","Gaussian Time Resid" ,50,0,500);
+	_GaussianEndTimeResiduals->GetXaxis()->SetTitle("Gaussian Time Res [ns]");
+	_GaussianEndTimeResiduals->SetStats();
+
 	_StartTimeResiduals = tfs->make<TH1F>("Start Time Res ","Start Time Resid" ,50,0,500);
 	_StartTimeResiduals->GetXaxis()->SetTitle("Start Time Res [ns]");
 	_StartTimeResiduals->SetStats();
@@ -614,7 +620,7 @@ namespace mu2e
 	_minuit_pullsY_final = tfs->make<TH1F>("Minuit Pull Y'' ","Minuit Pull Y'' " ,50,-2, 2);
 	_minuit_pullsY_final->GetXaxis()->SetTitle("Minuit Pull Y''");
 	
-	_NLL = tfs->make<TH1F>(" Log(L) "," Log(L)" ,100,0,500);
+	_NLL = tfs->make<TH1F>(" Log(L) "," Log(L)" ,200,0,1000);
 	_NLL->GetXaxis()->SetTitle("Log(L) ");
 	_NLL->SetStats();
 	
@@ -690,7 +696,10 @@ namespace mu2e
 	_LL_v_Nhits->GetXaxis()->SetTitle("Log(L)");
 	_LL_v_Nhits->GetYaxis()->SetTitle("#N_{hits}");
 
-	
+	_AMBIG = tfs->make<TH2F>("True v Reco", "True v Reco", 2,-2,2,2,-2,2);
+	_AMBIG->GetXaxis()->SetTitle("True");
+	_AMBIG->GetYaxis()->SetTitle("Reco");
+
         }
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
@@ -750,7 +759,7 @@ namespace mu2e
                 	_mc_phi_angle->Fill(st.get_true_phi());
 	                _mc_theta_angle->Fill(st.get_true_theta());                  
 	                _chi_v_true_theta->Fill(st.get_true_theta(),st.get_true_chisq());
-			cout<<"filling true "<<endl;
+			
 			_truea1->Fill(st.SeedTrueParams.A1);
 		        _trueb1->Fill(st.SeedTrueParams.B1);
 		        _truea0->Fill(st.SeedTrueParams.A0);
@@ -766,17 +775,7 @@ namespace mu2e
 		        _SPtruea0XYZ->Fill(st.TrueTrueTrackPosition.X());
 		        _SPtrueb0XYZ->Fill(st.TrueTrueTrackPosition.Y());
 
-		        /*
-                        _A0SeedMCDiff->Fill((st.SeedTrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
-		        _A1SeedMCDiff->Fill((st.SeedTrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
-		        _B0SeedMCDiff->Fill((st.SeedTrueParams.B0 - st.FitParams.B0 )/(st.FitParams.Covarience.sigB0));
-		        _B1SeedMCDiff->Fill((st.SeedTrueParams.B1 - st.FitParams.B1 )/(st.FitParams.Covarience.sigB1));
-		        */
-			cout<<"filling true seed df "<<endl;
-			_A0SeedMCDiff->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
-		        _A1SeedMCDiff->Fill(st.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
-		        _B0SeedMCDiff->Fill(st.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
-		        _B1SeedMCDiff->Fill(st.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
+			
 			/*
 		        _A0pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
 		        _A1pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
@@ -818,23 +817,25 @@ namespace mu2e
 		_B1MinuitMCDiff->Fill((st.MinuitFitParams.B1-st.StrawLevelTrueParams.B1)/(st.MinuitFitParams.Covarience.sigB1));
 	        }
  		*/
-
-              if(st.minuit_converged == true) {
-		
-	      if(_mcdiag ){
-		if(st.MinuitFitParams.Covarience.sigA0 !=0){
-		_A0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
-		}if(st.MinuitFitParams.Covarience.sigA1 !=0){
-		_A1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
-	 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
-	        _B0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
-		
-		}if(st.MinuitFitParams.Covarience.sigB1 !=0){
-		_B1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
-		}
+		if(st.minuit_converged == true ) {
+		      _A0SeedMCDiff->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
+	        _A1SeedMCDiff->Fill(st.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
+	       	     _B0SeedMCDiff->Fill(st.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
+	             _B1SeedMCDiff->Fill(st.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
+		      if(_mcdiag ){
+			if(st.MinuitFitParams.Covarience.sigA0 !=0){
+			_A0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
+			}if(st.MinuitFitParams.Covarience.sigA1 !=0){
+			_A1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
+		 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
+			_B0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
+			
+			}if(st.MinuitFitParams.Covarience.sigB1 !=0){
+			_B1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
+			}
+		       }
+      
 	       }
-	      }
-	      
 	        _A0Minuit->Fill(st.MinuitFitParams.A0);
 	        _A1Minuit->Fill(st.MinuitFitParams.A1);
 	        _B0Minuit->Fill(st.MinuitFitParams.B0);
@@ -889,21 +890,30 @@ namespace mu2e
 	            _FinalErrY->Fill(st.Diag.FinalErrTot[i]);
 	            
 	        }   
-	        
-	        for(size_t i=0; i<st.DriftDiag.EndDOCAs.size();i++){
+        
+		for(size_t i=0; i<st.DriftDiag.FullFitEndDOCAs.size();i++){
 	            _StartDOCAs->Fill(st.DriftDiag.StartDOCAs[i]);
+		
 	            _StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
-	            _EndDOCAs->Fill(st.DriftDiag.EndDOCAs[i]);
-	            _EndTimeResiduals->Fill(st.DriftDiag.EndTimeResiduals[i]);
+	
+	            _FullFitEndDOCAs->Fill(st.DriftDiag.FullFitEndDOCAs[i]);
+	
+		    _FullFitEndTimeResiduals->Fill(st.DriftDiag.FullFitEndTimeResiduals[i]);
+	
+		    _GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
+		    _GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
 		    _TrueDOCAs->Fill(st.DriftDiag.TrueDOCAs[i]);
+		     
+			      
 	        }
 
-		for(size_t i=0; i< st.DriftDiag.FinalResidualsX.size();i++){
+		for(size_t i=0; i< st.DriftDiag.FullFitEndDOCAs.size();i++){
                     _total_residualsX_Minuit->Fill(st.DriftDiag.FinalResidualsX[i]);          
                     _total_residualsY_Minuit->Fill(st.DriftDiag.FinalResidualsY[i]);   
 		    _minuit_pullsX_final->Fill(st.DriftDiag.FinalResidualsX[i]/st.DriftDiag.FinalErrX[i]);          
                     _minuit_pullsY_final->Fill(st.DriftDiag.FinalResidualsY[i]/st.DriftDiag.FinalErrY[i]);           
-   
+   		   _AMBIG->Fill(st.DriftDiag.RecoAmbigs[i], st.DriftDiag.TrueAmbigs[i]);
+		   
 	        }   
 	        for(auto const& tseed : *_coscol) {   
                 	TrkFitFlag const& status = tseed._status;
@@ -933,21 +943,12 @@ namespace mu2e
 	 
       }//end analyze
       _cosmic_analysis->Fill();
-       /*
--      if(_mcdiag > 0){
-       
--      for ( auto const& digimc : *_mcdigis ){
--        
--          //const CLHEP::Hep3Vector p = digimc.stepPointMC(mu2e::StrawEnd::cal)->momentum();
--          art::Ptr<mu2e::SimParticle>& sim = digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle();
--          double mag = sqrt((sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x())+(sim.startMomentum().vect().x()*sim.startMomentum().vect().x()));
--         const double theta_start = acos(sim.startMomentum().vect().z()/mag);
--          const double phi_start = atan(sim.startMomentum().vect().y()/sim.startMomentum().vect().x());
--          std::cout<<theta_start<<" "<<phi_start<<" "<<mag<<std::endl;
--         }
--      }*/
-
-      
+      /*
+      cout<<"true + "<< _AMBIG->GetBinContent(2,2)/_AMBIG->Integral()<<endl;
+      cout<<"true - "<< _AMBIG->GetBinContent(1,1)/_AMBIG->Integral()<<endl;	
+      cout<<"false + "<< _AMBIG->GetBinContent(2,1)/_AMBIG->Integral()<<endl;
+      cout<<"false - "<< _AMBIG->GetBinContent(1,2)/_AMBIG->Integral()<<endl;
+*/
      }
       bool CosmicAnalyzer::findData(const art::Event& evt){
 	_chcol = 0; 

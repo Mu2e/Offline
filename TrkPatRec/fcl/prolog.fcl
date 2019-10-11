@@ -24,7 +24,7 @@ TimeClusterFinder : {
   ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-  //CaloClusterCollection : "CaloClusterFromProtoCluster"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 
   # enable calorimeter cluster info in time clustering

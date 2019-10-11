@@ -22,9 +22,6 @@
 
 using namespace mu2e;
 
-
-
-
 class TimePDFFit : public ROOT::Minuit2::FCNBase {
   public:
     
@@ -38,24 +35,26 @@ class TimePDFFit : public ROOT::Minuit2::FCNBase {
      
     std::vector<double> constraint_means;
     std::vector<double> constraints;
-
+    double sigma_t;
     int k;
-
+    std::vector<double> DOCAs;
+    std::vector<double> TimeResiduals;
+    
     int nparams =5; 
     
-     TimePDFFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k) :  chits(_chits), straws(_straws), srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , k(_k) {};
+     TimePDFFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) :  chits(_chits), straws(_straws), srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k) {};
    
     double Up() const { return 0.5; };
     double operator() (const std::vector<double> &x) const;
     double TimeResidual(Straw straw, double doca, StrawResponse srep, double t0, ComboHit hit) const ;
     double calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit hit) const;
+    double calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit hit) const;
     
 };
 
-
 class FullFit : public TimePDFFit {
   public:
-    FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k);
+    FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k);
 
     double voltage=1425.;
     int Factorial(int k);
@@ -72,7 +71,7 @@ class FullFit : public TimePDFFit {
 
 class DataFit : public FullFit {
   public:
-    DataFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, int _k): FullFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _k) {}
+    DataFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k): FullFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _sigma_t, _k) {}
     
     double operator() (const std::vector<double> &x) const;
     

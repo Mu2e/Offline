@@ -33,18 +33,29 @@ struct EndResult{
 		std::vector<double> bestfit;
 		std::vector<double> bestfiterrors;
 		std::vector<double> bestfitcov;
+
 		std::vector<double> StartDOCAs;
 		std::vector<double> StartTimeResiduals;
-		std::vector<double> EndDOCAs;
-		std::vector<double> EndTimeResiduals;
+
+		std::vector<double> GaussianEndDOCAs;
+		std::vector<double> GaussianEndTimeResiduals;
+
+		std::vector<double> FullFitEndDOCAs;
+		std::vector<double> FullFitEndTimeResiduals;
+
 	        std::vector<double> TrueDOCAs;
+		std::vector<double> TrueTimeResiduals;
+
+		std::vector<double> RecoAmbigs;
+		std::vector<double> TrueAmbigs;
+		
 		double NLL;
 	
 };
 
 namespace LiklihoodFunctions {
 	
-	EndResult DoFit(CosmicTrackSeed trackseed, StrawResponse srep);
+	EndResult DoFit(CosmicTrackSeed trackseed, StrawResponse srep, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres);
 
 }
 

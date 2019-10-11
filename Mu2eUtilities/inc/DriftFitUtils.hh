@@ -38,6 +38,7 @@ namespace DriftFitUtils{
   	TrkPoca GetPOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit);
   	double GetDOCA(TrkPoca poca);
 	double GetAmbig(TrkPoca poca);
+        double GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit);
   	std::vector<double> UpdateErrors(double a0, double a1, double b0, double b1, ComboHit chit);
   	double GetPropVelocity(StrawResponse rep, ComboHit chit); 
 	double GetPropTime(ComboHit chit, Straw straw, double vprop);
