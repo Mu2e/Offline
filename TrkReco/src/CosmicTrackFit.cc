@@ -77,7 +77,7 @@ namespace mu2e
     _maxniter(pset.get<unsigned>("maxniter",1000)),//10
     _maxpull(pset.get<float>("maxPull",3)),
     _maxd(pset.get<float>("maxd",300.0)),//max distance between hits at start of fit (UNUSED)
-    _maxchi2(pset.get<float>("maxchi2",10.0)) ,
+    _maxchi2(pset.get<float>("maxchi2",5.0)) ,
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
     _max_position_deviation((pset.get<float>("max_position_deviation",200))),
     _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
