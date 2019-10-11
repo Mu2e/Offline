@@ -8,7 +8,7 @@ void
 mu2e::TrackClusterMatchPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<TrackClusterMatchCollection> > vah;
     event.getManyByType(vah);
@@ -125,17 +125,6 @@ void
 mu2e::TrackClusterMatchPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind       du       dv      e/p      chi2   chi2_time\n";
-
-}
-
-void 
-mu2e::TrackClusterMatchPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("TrackClusterMatchPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 
