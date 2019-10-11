@@ -7,7 +7,7 @@
 // 
 
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Atom.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Validation/inc/ValStatusG4.hh"
@@ -48,8 +48,8 @@ namespace mu2e {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
 
-      fhicl::OptionalAtom<int> validation_level{
-	Name("validation_level"), Comment("validation level, 0 to 2")
+      fhicl::Atom<int> validation_level{
+	Name("validation_level"), Comment("validation level, 0 to 2"), 1
 	  };
     };
 
@@ -114,8 +114,7 @@ namespace mu2e {
 
 mu2e::Validation::Validation(const Parameters& conf):
   art::EDAnalyzer(conf),
-  _level(0),_count(0){
-  conf().validation_level(_level);
+  _level(conf().validation_level()),_count(0){
 }
 
 void mu2e::Validation::beginJob(){
