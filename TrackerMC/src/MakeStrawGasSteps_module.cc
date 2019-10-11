@@ -20,6 +20,7 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
@@ -87,7 +88,7 @@ namespace mu2e {
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
-      Float_t _prilen, _pridist, _elen, _erad, _epri, _esec, _partP, _brot, _width;
+      Float_t _prilen, _pridist, _elen, _erad, _epri, _esec, _partP, _brot, _width, _doca;
       vector<Float_t> _sdist;
       Int_t _npri, _nsec, _partPDG;
   };
@@ -130,6 +131,7 @@ namespace mu2e {
 	_sgsdiag->Branch("epri",&_epri,"epri/F");
 	_sgsdiag->Branch("esec",&_esec,"esec/F");
         _sgsdiag->Branch("width",&_width,"width/F");
+        _sgsdiag->Branch("doca",&_doca,"doca/F");
         _sgsdiag->Branch("npri",&_npri,"npri/I");
         _sgsdiag->Branch("nsec",&_nsec,"nsec/I");
         _sgsdiag->Branch("partP",&_partP,"partP/F");
@@ -271,12 +273,12 @@ namespace mu2e {
 	// determine the width from the sigitta or curl radius
 	auto pdir = first->momentum().unit();
 	auto pperp = pdir.perp(_bdir);
-	static const float invsqrt12(1.0/sqrt(12.0));
-	float rbend = 0.5*mom*pperp/_bnom; // bend radius spread.  factor accounts for average over all points
+	float bendrms = 0.5*std::min(straw.innerRadius(),mom*pperp/_bnom); // bend radius spread.  0.5 factor givs RMS of a circle
 	// only sigitta perp to the wire counts
-	float sint = sqrt((_bdir.cross(pdir).cross(straw.getDirection())).mag2());
-	float sag = invsqrt12*sint*pathlen*pathlen*_bnom*pperp/(8.0*mom);
-	double width = std::min(sag,rbend); 
+	float sint = (_bdir.cross(pdir).cross(straw.getDirection())).mag();
+	static const float prms(1.0/(12.0*sqrt(5.0))); // RMS for a parabola.  This includes a factor 1/8 for the sagitta calculation too
+	float sagrms = prms*sint*pathlen*pathlen*_bnom*pperp/mom;
+	double width = std::min(sagrms,bendrms); // choose the smaller: different approximations work for different momenta/directions
 	// create the gas step
 	StrawGasStep sgs(ispsmap->first.second, ispsmap->first.first,
 		(float)eion,(float)pathlen, (float)width, (float)mom, time, 
@@ -301,6 +303,10 @@ namespace mu2e {
 	    _partPDG = first->simParticle()->pdgId();
 	    _elen = last->stepLength();
 	    _width = width;
+	    // compute DOCA to the wire
+	    TwoLinePCA poca(Geom::Hep3Vec(start),Geom::Hep3Vec(end-start),
+		straw.getMidPoint(),straw.getDirection());
+	    _doca = poca.dca();
 	    _sdist.clear();
 	    auto sdir = Geom::Hep3Vec(end-start).unit();
 	    for(auto const& spmcptr : spmcptrs){
