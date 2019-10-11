@@ -35,13 +35,11 @@ services : {
     TFileService: {}
     RandomNumberGenerator: {}
 
-    GeometryService: { inputFile : "Mu2eG4/geom/geom_common.txt"
-	simulatedDetector   : { tool_type: "Mu2e" }
-    }
-    ConditionsService: { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
-    GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
-    SeedService: @local::automaticSeeds
-    G4Helper: { }
+   GeometryService: {@table::Services.Core.GeometryService}
+   ConditionsService: { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
+   GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
+   SeedService: @local::automaticSeeds
+   G4Helper: { }
 }
 
 physics : {

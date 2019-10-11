@@ -10,7 +10,7 @@ void
 mu2e::TriggerResultsPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<art::TriggerResults> > vah;
     event.getManyByType(vah);
@@ -68,16 +68,5 @@ void
 mu2e::TriggerResultsPrinter::PrintHeader(const std::string& tag, std::ostream& os) {
   if(verbose()<1) return;
   os << "\nProductPrint " << tag << "\n";
-}
-
-void 
-mu2e::TriggerResultsPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("TriggerResultsPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
 }
 

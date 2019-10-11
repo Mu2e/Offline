@@ -7,6 +7,7 @@
 // 
 
 #include "art/Framework/Core/EDAnalyzer.h"
+#include "fhiclcpp/types/Atom.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
 #include "Validation/inc/ValStatusG4.hh"
@@ -43,7 +44,19 @@ namespace mu2e {
 
   public:
 
-    explicit Validation(fhicl::ParameterSet const& );
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<int> validation_level{
+	Name("validation_level"), Comment("validation level, 0 to 2"), 1
+	  };
+    };
+
+    // this line is required by art to allow the command line help print
+    typedef art::EDAnalyzer::Table<Config> Parameters;
+
+    explicit Validation(const Parameters& conf);
     void analyze  ( art::Event const&  event  ) override;
     void beginJob () override;
     void endJob () override;
@@ -99,11 +112,9 @@ namespace mu2e {
 
 }
 
-mu2e::Validation::Validation(fhicl::ParameterSet const& pset ):
-  art::EDAnalyzer(pset),
-  _level(0),_count(0){
-  _level = pset.get<int>("validation_level");
-
+mu2e::Validation::Validation(const Parameters& conf):
+  art::EDAnalyzer(conf),
+  _level(conf().validation_level()),_count(0){
 }
 
 void mu2e::Validation::beginJob(){
