@@ -72,7 +72,7 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",1)),
     _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
     _minnsh(pset.get<unsigned>("minNStrawHits",2)),
-    _minCHHits(pset.get<unsigned>("minCHHits",4)),
+    _minCHHits(pset.get<unsigned>("minCHHits",8)),
     _n_outliers(pset.get<unsigned>("_n_outliers",5)),
     _maxniter(pset.get<unsigned>("maxniter",1000)),//10
     _maxpull(pset.get<float>("maxPull",3)),
