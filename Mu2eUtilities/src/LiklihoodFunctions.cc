@@ -103,7 +103,7 @@ namespace LiklihoodFunctions{
 	  endresult.names.push_back("b0");
 	  endresult.names.push_back("b1");
 	  endresult.names.push_back("t0");
-	  if(minval != 0 ){ cosmictrack.minuit_converged = true;} 
+	  if(minval != 0 and minval> 200 ){ cosmictrack.minuit_converged = true;} 
 	  //Add best fit results to appropriatly named element:
 	  endresult.NLL = minval;
 	  for (size_t i=0;i<endresult.names.size();i++){
@@ -118,11 +118,12 @@ namespace LiklihoodFunctions{
 	for(size_t i = 0; i< trackseed._straws.size(); i++){
 	      double gauss_end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
 	      double gauss_end_time_residual = fit.TimeResidual(trackseed._straws[i], gauss_end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
-	      endresult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
-	      endresult.GaussianEndDOCAs.push_back(gauss_end_doca);
+	      
 	        if (gauss_end_doca < max_doca){ 
 			passed_hits.push_back(trackseed._straw_chits[i]);
 			passed_hits.push_back(trackseed._straw_chits[i]);
+			endresult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
+	      		endresult.GaussianEndDOCAs.push_back(gauss_end_doca);
 		}
 	}
        
@@ -146,7 +147,7 @@ namespace LiklihoodFunctions{
 	 newmigrad.Fix((unsigned) 4); 
 	 
          //Define Minimization method as "MIGRAD" (see minuit documentation)
-	  min = newmigrad(400, tolerance);
+	  min = newmigrad(MaxLogL, tolerance);
 	
 	 //Will be the results of the fit routine:
 	 results = min.UserParameters();

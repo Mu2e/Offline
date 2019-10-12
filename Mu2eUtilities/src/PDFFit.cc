@@ -35,7 +35,7 @@ using namespace mu2e;
 
 //For Gaussian:
 const double drift_v = 0.065; //mm/ns
-const double sigma = 5; //ns (for full fit only) TODO - make FCL parameter
+const double sigma = 1.0; //ns (for full fit only) TODO - make FCL parameter
 const double tau = 10.7; //ns
 //For Full fit:
 const int N_tbins = 500;
@@ -58,7 +58,7 @@ FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawRe
 
   Min_t = 0.1;
   Min_tau = 5;
-  Min_s = 1;//10;(1 for upto  sig = 5)
+  Min_s = 0.1;//10;(1 for upto  sig = 5)
   Max_t = 1000;
   Max_tau = 15.;
   Max_s = 30.;
