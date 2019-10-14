@@ -547,8 +547,10 @@ namespace mu2e {
       G4cout << __func__ << " g4DeltaIntersection " << _manager->GetDeltaIntersection() << G4endl;
       G4cout << __func__ << " g4DeltaChord        " << _chordFinder->GetDeltaChord() << G4endl;
       G4cout << __func__ << " g4StepMinimum       "
-           << dynamic_cast<G4MagInt_Driver*>(_chordFinder->GetIntegrationDriver())->GetHmin() << G4endl;
+      // << dynamic_cast<G4MagInt_Driver*>(_chordFinder->GetIntegrationDriver())->GetHmin() << G4endl;
       // the above assumes G4ChordFinder is instantiated in the way it is done above with the 3 parameters
+      // does not work in 10.5+; fixme
+	     << g4StepMinimum_ << G4endl;
       G4cout << __func__ << " g4MaxIntStep        " << _propInField->GetMaxLoopCount() << G4endl;
     }
 
