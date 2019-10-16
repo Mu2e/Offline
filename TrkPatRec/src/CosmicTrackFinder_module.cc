@@ -153,7 +153,7 @@ namespace mu2e{
     _minnch      (pset.get<int>("minNComboHits",8)),
     _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"StraightTrackOK"})),
     _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
-    _max_seed_chi2(pset.get<float>("max_seed_chi2",3)),
+    _max_seed_chi2(pset.get<float>("max_seed_chi2",2.5)),
     _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
     _mcToken{consumes<StrawDigiMCCollection>(pset.get<art::InputTag>("StrawDigiMCCollection"))},

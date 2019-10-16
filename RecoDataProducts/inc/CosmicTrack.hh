@@ -97,6 +97,7 @@ using namespace std;
    	std::vector<double> StartTimeResiduals;
    	std::vector<double> FullFitEndTimeResiduals;
 	std::vector<double> GaussianEndTimeResiduals;
+	std::vector<double> TrueTimeResiduals;
 	
    	std::vector<double> RecoAmbigs;
 	std::vector<double> TrueAmbigs;
@@ -306,6 +307,7 @@ namespace mu2e {
 	     
 	     bool converged = false;
 	     bool minuit_converged = false;
+	     unsigned n_outliers = 0;
 
   private:
 	    

@@ -55,7 +55,7 @@ struct EndResult{
 
 namespace LiklihoodFunctions {
 	
-	EndResult DoFit(CosmicTrackSeed trackseed, StrawResponse srep, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres);
+	EndResult DoFit(CosmicTrackSeed trackseed, StrawResponse srep, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
 
 }
 

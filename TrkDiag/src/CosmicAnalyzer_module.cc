@@ -68,7 +68,7 @@ namespace mu2e
       TH2F* _chiY_v_true_trackposY;
       TH2F* _chiX_v_true_trackposX;
       TH2F* _chi_v_true_theta;
-    
+      //For Seed fit validation:
       TH2F* _seedA0_v_seedA1;
       TH2F* _seedB0_v_seedB1;
       TH2F* _seedA0_v_seedB1;
@@ -93,9 +93,13 @@ namespace mu2e
       TH2F* _seedDeltaA1_v_MOM;
       TH2F* _seedDeltaB0_v_MOM;
       TH2F* _seedDeltaB1_v_MOM;
-      TH2F* _LL_v_MOM;
-      TH2F* _LL_v_Nhits;
-      TH2F* _AMBIG;
+
+      TH2F* _DeltaA0_v_OUT;
+      TH2F* _DeltaA1_v_OUT;
+      TH2F* _DeltaB0_v_OUT;
+      TH2F* _DeltaB1_v_OUT;
+
+      
       TH1F* _seed_a1;
       TH1F* _seed_b1;
       TH1F* _seed_a0;
@@ -137,7 +141,7 @@ namespace mu2e
       TProfile* _B0pull_v_theta_true;
       TProfile* _A1pull_v_theta_true;
       TProfile* _B1pull_v_theta_true;
-      //Diagnostics:
+      //Seed Diagnostics:
       TH1F* _total_residualsX_init;
       TH1F* _total_pullsX_init;
       TH1F* _total_residualsY_init;
@@ -162,6 +166,7 @@ namespace mu2e
       TH1F* _InitErrY;
       TH1F* _FinalErrTot;
       TH1F* _InitErrTot;
+      //Drift PArameters
       TH1F* _total_residualsX_Minuit;
       TH1F* _total_residualsY_Minuit;
       TH1F* _A0MinuitFitDiff;
@@ -182,13 +187,16 @@ namespace mu2e
       TH1F* _TrueDOCAs;
       TH1F* _FullFitEndTimeResiduals;
       TH1F* _StartTimeResiduals;
+      TH1F* _TrueTimeResiduals;
       TH1F* _StartDOCAs;
       TH1F* _GaussianEndDOCAs;
       TH1F* _GaussianEndTimeResiduals;
       TH1F* _minuit_pullsX_final;
       TH1F* _minuit_pullsY_final;
       TH1F* _NLL;
-     
+      TH2F* _LL_v_MOM;
+      TH2F* _LL_v_Nhits;
+      TH2F* _AMBIG;
 //Triggger AnalysisL:
       TH1F* _TrueMomDOCACut;
       TH1F* _TrueMomNoCuts;
@@ -397,6 +405,23 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	_seedDeltaB1_v_MOM->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
 	_seedDeltaB1_v_MOM->GetYaxis()->SetTitle("#p_{true}");
 
+
+	_DeltaA0_v_OUT = tfs->make<TH2F>("#Delta A_{0} v Outliers", "#Outliers", 50, -100,100, 20, 0,20);
+	_DeltaA0_v_OUT->GetXaxis()->SetTitle("#Delta A_{0}");
+	_DeltaA0_v_OUT->GetYaxis()->SetTitle("Outliers");
+
+	_DeltaA1_v_OUT  = tfs->make<TH2F>("#Delta A_{1} v Outliers", "#Outliers", 50, -0.5, 0.5, 20, 0, 20);
+	_DeltaA1_v_OUT->GetXaxis()->SetTitle("#Delta A_{1}");
+	_DeltaA1_v_OUT->GetYaxis()->SetTitle("Oiutliers");
+
+	_DeltaB0_v_OUT = tfs->make<TH2F>("#Delta B_{0} v Outliers", "Outliers", 50, -100,100, 20, 0,20);
+	_DeltaB0_v_OUT->GetXaxis()->SetTitle("#Delta B_{0}");
+	_DeltaB0_v_OUT->GetYaxis()->SetTitle("Outliers");
+
+	_DeltaB1_v_OUT  = tfs->make<TH2F>("#Delta B_{1} v Outliers", "Outliers", 50, -0.5, 0.5, 20, 0,20);
+	_DeltaB1_v_OUT->GetXaxis()->SetTitle("#Delta B_{1}");
+	_DeltaB1_v_OUT->GetYaxis()->SetTitle("Outliers");
+
 	_seedA0_v_seedA1 = tfs->make<TH2F>("Seed A_{0} v A_{1}", "Seed A_{0} v A_{1}", 50, -0.2, 0.2, 50, -1500, 1500);
 	_seedA0_v_seedA1->GetXaxis()->SetTitle("A_{1}");
 	_seedA0_v_seedA1->GetYaxis()->SetTitle("A_{0}");
@@ -571,28 +596,26 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	_total_residualsY_Minuit->GetXaxis()->SetTitle("Minuit Res. Y'' [mm]");
 	_total_residualsY_Minuit->SetStats();
 	
-	_FullFitEndDOCAs = tfs->make<TH1F>("Final DOCAs ","Final DOCAs" ,100,0,10);
+	_FullFitEndDOCAs = tfs->make<TH1F>("Final DOCAs ","Final DOCAs" ,50,0,10);
 	_FullFitEndDOCAs->GetXaxis()->SetTitle("Final DOCAs [mm]");
 	_FullFitEndDOCAs->SetStats();
 
-	_GaussianEndDOCAs = tfs->make<TH1F>("Gaussian DOCAs ","Gaussian DOCAs" ,100,0,10);
+	_GaussianEndDOCAs = tfs->make<TH1F>("Gaussian DOCAs ","Gaussian DOCAs" ,50,0,10);
 	_GaussianEndDOCAs->GetXaxis()->SetTitle("Gaussian DOCAs [mm]");
 	_GaussianEndDOCAs->SetStats();
 	
-	_StartDOCAs = tfs->make<TH1F>("Initial DOCAs ","InitialDOCAs" ,100, 0,10);
+	_StartDOCAs = tfs->make<TH1F>("Initial DOCAs ","InitialDOCAs" ,50, 0,10);
 	_StartDOCAs->GetXaxis()->SetTitle("Initial DOCAs [mm]");
 	_StartDOCAs->SetStats();
 
-	_TrueDOCAs = tfs->make<TH1F>("True DOCAs ","TrueDOCAs" ,100, 0,10);
+	_TrueDOCAs = tfs->make<TH1F>("True DOCAs ","TrueDOCAs" ,50, 0,10);
 	_TrueDOCAs->GetXaxis()->SetTitle("True DOCAs [mm]");
 	_TrueDOCAs->SetStats();
 
-       
         _FullFitEndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,50,0,500);
 	_FullFitEndTimeResiduals->GetXaxis()->SetTitle("Final Time Res [ns]");
 	_FullFitEndTimeResiduals->SetStats();
 
-	
 	_GaussianEndTimeResiduals = tfs->make<TH1F>("Gaussian Time Res ","Gaussian Time Resid" ,50,0,500);
 	_GaussianEndTimeResiduals->GetXaxis()->SetTitle("Gaussian Time Res [ns]");
 	_GaussianEndTimeResiduals->SetStats();
@@ -600,6 +623,10 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	_StartTimeResiduals = tfs->make<TH1F>("Start Time Res ","Start Time Resid" ,50,0,500);
 	_StartTimeResiduals->GetXaxis()->SetTitle("Start Time Res [ns]");
 	_StartTimeResiduals->SetStats();
+
+	_TrueTimeResiduals = tfs->make<TH1F>("True Time Res ","True Time Resid" ,50,0,500);
+	_TrueTimeResiduals->GetXaxis()->SetTitle("True Time Res [ns]");
+	_TrueTimeResiduals->SetStats();
 	
 	_A0MinuitFitDiff = tfs->make<TH1F>(" A0 Minuit Diff "," A0 Minuit Diff" ,100,-100,100);
 	_A0MinuitFitDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
@@ -690,6 +717,8 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	_seedDeltaB1_v_LL  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v LogL", "End LogL", 50, -0.5, 0.5, 50, 0,200);
 	_seedDeltaB1_v_LL->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
 	_seedDeltaB1_v_LL->GetYaxis()->SetTitle("End LogL");
+
+	
 
 	_LL_v_MOM  = tfs->make<TH2F>("Log(L) v p_{true}", "p_{true}", 50, 0,1000, 50, 0,10);
 	_LL_v_MOM->GetXaxis()->SetTitle("Log(L)");
@@ -784,12 +813,10 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 		        _SPtrueb0XYZ->Fill(st.TrueTrueTrackPosition.Y());
 
 			
-			/*
-		        _A0pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.A0 - st.FitParams.A0 )/(st.FitParams.Covarience.sigA0));
-		        _A1pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.A1 - st.FitParams.A1 )/(st.FitParams.Covarience.sigA1));
-		        _B0pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.B0 - st.FitParams.B0 )/(st.FitParams.Covarience.sigB0));
-		        _B1pull_v_theta_true->Fill(st.get_true_theta(), (st.SeedTrueParams.B1 - st.FitParams.B1 )/(st.FitParams.Covarience.sigB1));
-			*/
+		        _A0pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));
+		        _A1pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Dir.X()- st.MinuitFitParams.A1 ));
+		        _B0pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));
+		        _B1pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Dir.Y()- st.MinuitFitParams.B1));
 		       
                 }
 		
@@ -814,36 +841,26 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 		_A1MinuitFitDiff->Fill(st.MinuitFitParams.A1-st.FitEquationXYZ.Dir.X());
 		_B0MinuitFitDiff->Fill(st.MinuitFitParams.B0- st.FitEquationXYZ.Pos.Y());
 		_B1MinuitFitDiff->Fill(st.MinuitFitParams.B1-st.FitEquationXYZ.Dir.Y());
-		/*
+		
+ 
+	      _A0SeedMCDiff->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
+              _A1SeedMCDiff->Fill(st.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
+       	     _B0SeedMCDiff->Fill(st.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
+             _B1SeedMCDiff->Fill(st.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
+	      if(_mcdiag ){
 		if(st.MinuitFitParams.Covarience.sigA0 !=0){
-		_A0MinuitMCDiff->Fill((st.MinuitFitParams.A0-st.StrawLevelTrueParams.A0)/(st.MinuitFitParams.Covarience.sigA0));
+		_A0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
 		}if(st.MinuitFitParams.Covarience.sigA1 !=0){
-		_A1MinuitMCDiff->Fill((st.MinuitFitParams.A1-st.StrawLevelTrueParams.A1)/(st.MinuitFitParams.Covarience.sigA1));
-		}if(st.MinuitFitParams.Covarience.sigB0 !=0){
-		_B0MinuitMCDiff->Fill((st.MinuitFitParams.B0-st.StrawLevelTrueParams.B0)/(st.MinuitFitParams.Covarience.sigB0));
+		_A1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
+	 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
+		_B0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
+		
 		}if(st.MinuitFitParams.Covarience.sigB1 !=0){
-		_B1MinuitMCDiff->Fill((st.MinuitFitParams.B1-st.StrawLevelTrueParams.B1)/(st.MinuitFitParams.Covarience.sigB1));
-	        }
- 		*/
-		if(st.minuit_converged == true ) {
-		      _A0SeedMCDiff->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
-	        _A1SeedMCDiff->Fill(st.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
-	       	     _B0SeedMCDiff->Fill(st.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
-	             _B1SeedMCDiff->Fill(st.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
-		      if(_mcdiag ){
-			if(st.MinuitFitParams.Covarience.sigA0 !=0){
-			_A0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
-			}if(st.MinuitFitParams.Covarience.sigA1 !=0){
-			_A1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
-		 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
-			_B0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
-			
-			}if(st.MinuitFitParams.Covarience.sigB1 !=0){
-			_B1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
-			}
-		       }
-      
+		_B1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
+		}
 	       }
+
+       
 	        _A0Minuit->Fill(st.MinuitFitParams.A0);
 	        _A1Minuit->Fill(st.MinuitFitParams.A1);
 	        _B0Minuit->Fill(st.MinuitFitParams.B0);
@@ -872,8 +889,11 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 
 		_LL_v_MOM->Fill(st.DriftDiag.NLL, ptrue);
 		_LL_v_Nhits->Fill(st.DriftDiag.NLL, st.get_N());
-
-
+		_DeltaA0_v_OUT->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.n_outliers);
+		_DeltaB0_v_OUT->Fill(st.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.n_outliers);
+		_DeltaA1_v_OUT->Fill(st.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.n_outliers);
+		_DeltaB1_v_OUT->Fill(st.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.n_outliers);
+		
 		_NLL->Fill(st.DriftDiag.NLL);
 		
                 for(size_t i=0; i< st.Diag.InitErrTot.size();i++){
@@ -898,22 +918,22 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	            _FinalErrY->Fill(st.Diag.FinalErrTot[i]);
 	            
 	        }   
-                for(size_t i=0; i<st.DriftDiag.FullFitEndDOCAs.size();i++){
+                for(size_t i=0; i<st.DriftDiag.GaussianEndDOCAs.size();i++){
 		    _GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
 		    _GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
 		    _TrueMomNoCuts->Fill(ptrue); 
 			
 		}
+		
 		for(size_t i=0; i<st.DriftDiag.FullFitEndDOCAs.size();i++){
 	            _StartDOCAs->Fill(st.DriftDiag.StartDOCAs[i]);
 	            _StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
+		    
 	            _FullFitEndDOCAs->Fill(st.DriftDiag.FullFitEndDOCAs[i]);
 		    _FullFitEndTimeResiduals->Fill(st.DriftDiag.FullFitEndTimeResiduals[i]);
-		    //_GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
-		    //_GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
 		    _TrueDOCAs->Fill(st.DriftDiag.TrueDOCAs[i]);
 		    _TrueMomDOCACut->Fill(ptrue); 
-			      
+		    _TrueTimeResiduals->Fill(st.DriftDiag.TrueTimeResiduals[i]);	      
 	        }
 
 		for(size_t i=0; i< st.DriftDiag.FullFitEndDOCAs.size();i++){
@@ -952,12 +972,12 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 	 
       }//end analyze
       _cosmic_analysis->Fill();
-      /*
+      
       cout<<"true + "<< _AMBIG->GetBinContent(2,2)/_AMBIG->Integral()<<endl;
       cout<<"true - "<< _AMBIG->GetBinContent(1,1)/_AMBIG->Integral()<<endl;	
       cout<<"false + "<< _AMBIG->GetBinContent(2,1)/_AMBIG->Integral()<<endl;
       cout<<"false - "<< _AMBIG->GetBinContent(1,2)/_AMBIG->Integral()<<endl;
-*/
+
      }
       bool CosmicAnalyzer::findData(const art::Event& evt){
 	_chcol = 0; 

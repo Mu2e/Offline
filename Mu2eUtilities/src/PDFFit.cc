@@ -58,7 +58,7 @@ FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawRe
 
   Min_t = 0.1;
   Min_tau = 5;
-  Min_s = 0.1;//10;(1 for upto  sig = 5)
+  Min_s = -1;//10;(1 for upto  sig = 5)
   Max_t = 1000;
   Max_tau = 15.;
   Max_s = 30.;
@@ -265,11 +265,12 @@ double DataFit::operator() (const std::vector<double> &x) const
       }
     */
     double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
-     /*
-    if(time_residual>Max_t){
-	time_residual = Max_t;
+    //if(time_residual > 40 ) continue;
+     
+    if(time_residual>40){
+	time_residual = 40;
     }
-    */
+    
     double hypotenuse = sqrt(pow(doca,2) + pow((tau * 0.0625),2));
    
     double tau_eff = (hypotenuse/0.0625) - (doca/0.0625);
