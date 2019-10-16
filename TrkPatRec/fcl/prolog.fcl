@@ -28,7 +28,6 @@ TimeClusterFinder : {
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
 
   # enable calorimeter cluster info in time clustering
-  //CaloClusterCollection : "CaloClusterFromProtoCluster"
   UseCaloCluster : true
   UseCaloClusterPosition : true
   CaloClusterWeight : 10.0
@@ -47,15 +46,6 @@ TimeClusterFinderCosmics : {
   UseCaloClusterPosition : false
 }
 
-//StraightTrackFinder : {
-//    module_type		: StraightTrackFinder
-//    ComboHitCollection     : "makePH"
-//    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
-//    TimeClusterCollection  : "TimeClusterFinderCosmics"
-//    StraightTrackSeedCollection  :"StraightTrackFinder"
-//    diagPlugin : { tool_type                    : "StraightTrackFinderDiag"
-//    }                                   
-//}
 
 CosmicTrackFinder : {
     module_type		: CosmicTrackFinder
