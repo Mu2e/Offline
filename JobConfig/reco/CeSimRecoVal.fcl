@@ -1,0 +1,64 @@
+# example script for running reconstruction for Valdation of Ceminus and Ceplus
+# running simulation inline.  This doesn't run compression
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
+
+source : { module_type :EmptyEvent }
+services: @local::Services.SimAndReco
+physics: {
+  producers : {
+    @table::Primary.producers
+    @table::Reconstruction.producers
+    generate : @local::CeEndpointGun
+    protonBunchIntensity : {
+      module_type: ProtonBunchIntensityFlat
+      mean: 0.0 # No PBI possible for pure signal! 
+      halfWidth : 1.0
+    } 
+  }
+
+  filters : { 
+    @table::Primary.filters
+    @table::Reconstruction.filters
+  }
+
+  analyzers: {
+    @table::Primary.analyzers
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+  }
+
+  TriggerPath : [
+    @sequence::Primary.TriggerPath,
+    protonBunchIntensity,
+    @sequence::Reconstruction.DePath,
+    @sequence::Reconstruction.CrvRecoSequence,
+    @sequence::Reconstruction.RecoMCSequence
+  ]
+  EndPath : @local::Primary.EndPath
+}
+
+outputs : { 
+  Output : {
+     module_type : RootOutput
+     SelectEvents : [ TriggerPath ]
+     fileName    : @nil
+     # drop StepPoints from calorimeter
+     outputCommands : [ "drop *_*_*_*",
+      @sequence::Reconstruction.HighReco,
+      @sequence::Reconstruction.LowRecoAll,
+      @sequence::Reconstruction.DigiMC
+     ]
+  }
+}
+#include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/reco/epilog.fcl"
+#include "JobConfig/reco/Validation_epilog.fcl"
+
+services.TFileService.fileName: "nts.owner.CeSimRecoVal.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.CeSimRecoVal.version.sequencer.art"
+

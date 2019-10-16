@@ -119,7 +119,6 @@ physics : {
       collectionSizes: {
 	 module_type: CollectionSizeAnalyzer
          useModuleLabel: true useInstanceName: true useProcessName: false
-	 maxStepPointMultiplicity: 500
       }
    }
 
@@ -211,37 +210,29 @@ physics : {
    filters: {
       muonBeamFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:mubeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
       dsRegionFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:dsregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
       extmonBeamFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 
       extmonRegionFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:extmonregion" ]
          extraHitInputs : [ "g4run:virtualdetector" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 

@@ -21,29 +21,52 @@ namespace mu2e {
 
   class StepPointMCCollectionUpdater : public art::EDProducer {
   public:
-    explicit StepPointMCCollectionUpdater(fhicl::ParameterSet const& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> remapping {
+        Name("remapping"),
+          Comment("The SimParticleRemapping object to use.")
+          };
+
+      fhicl::Sequence<art::InputTag> inputs {
+        Name("inputs"),
+          Comment("A list of StepPointMCCollections to rewrite.")
+          };
+
+      fhicl::Atom<std::string> outInstanceName {
+        Name("outInstanceName"),
+          Comment(
+                  "We create a single data product, so the normal Mu2e policy is\n"
+                  "to not use instance name for it.  However when our output is\n"
+                  "fed to FilterG4Out, the latter ignores module labels but keeps\n"
+                  "instance names of its \"extraHitInputs\" collections.  If a job runs\n"
+                  "several StepPointMCCollectionUpdater modules and their outputs\n"
+                  "are passed to FilterG4Out, a way to preserve information is to\n"
+                  "use instance names for StepPointMCCollectionUpdater outputs.\n"
+                  )
+          };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit StepPointMCCollectionUpdater(const Parameters& conf);
+
     void produce(art::Event& evt) override;
   private:
     typedef std::vector<art::InputTag> InputTags;
     art::InputTag remapping_;
     InputTags inputs_;
-
-    // We create a single data product, so the normal Mu2e policy is
-    // to not use instance name for it.  However when our output is
-    // fed to FilterG4Out, the latter ignores module labels but keeps
-    // instance names of "extraHitInputs" collections.  If a job runs
-    // several StepPointMCCollectionUpdater modules and their outputs
-    // are passed to FilterG4Out, a way to preserve information is to
-    // use instance names for StepPointMCCollectionUpdater outputs.
     std::string outInstanceName_;
   };
 
   //================================================================
-  StepPointMCCollectionUpdater::StepPointMCCollectionUpdater(const fhicl::ParameterSet& pset)
-    : art::EDProducer{pset}
-    , remapping_(pset.get<std::string>("remapping"))
-    , inputs_(pset.get<std::vector<art::InputTag> >("inputs"))
-    , outInstanceName_(pset.get<std::string>("outInstanceName"))
+  StepPointMCCollectionUpdater::StepPointMCCollectionUpdater(const Parameters& conf)
+    : art::EDProducer{conf}
+    , remapping_(conf().remapping())
+    , inputs_(conf().inputs())
+    , outInstanceName_(conf().outInstanceName())
   {
     produces<StepPointMCCollection>(outInstanceName_);
   }

@@ -16,6 +16,8 @@
 #include <algorithm>
 
 #include "fhiclcpp/ParameterSet.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 #include "cetlib_except/exception.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -38,13 +40,71 @@ namespace mu2e {
   class PointerCheck : public art::EDAnalyzer {
 
   public:
-    explicit PointerCheck(fhicl::ParameterSet const& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<bool> skipDereference{Name("skipDereference"), 
+	  Comment("skip dereferencing pointers check"),false};
+      fhicl::Atom<int> verbose{Name("verbose"), 
+	  Comment("verbose flag, 0 to 10"),1};
+
+      fhicl::Sequence<art::InputTag> skipSimParticle{ 
+	fhicl::Name("skipSimParticle"),
+          fhicl::Comment("InputTag for collections to skip"),
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipSimParticlePtr{ 
+	fhicl::Name("skipSimParticlePtr"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipStepPointMC{ 
+	fhicl::Name("skipStepPointMC"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipMCTracjectory{ 
+	fhicl::Name("skipMCTracjectory"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipStrawDigiMC{ 
+	fhicl::Name("skipStrawDigiMC"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipCaloDigiMC{ 
+	fhicl::Name("skipCaloDigiMC"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipCaloShowerStep{ 
+	fhicl::Name("skipCaloShowerStep"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+      fhicl::Sequence<art::InputTag> skipCrvDigiMC{ 
+	fhicl::Name("skipCrvDigiMC"),
+          fhicl::Comment("InputTag for collections to skip"), 
+	  std::vector<art::InputTag>()
+	  };
+    };
+
+    // this line is required by art to allow the command line help print
+    typedef art::EDAnalyzer::Table<Config> Parameters;
+
+    explicit PointerCheck(const Parameters& conf);
     void analyze(art::Event const&  event) override;
   private:
 
     typedef std::vector<int> pcounts;
     typedef std::vector<art::InputTag> InputTags;
     typedef std::vector<std::string> VS;
+
+    bool _skipDereference; // do not do dereference check
+    int _verbose; // 0 = none, 1 = print as you go
 
     InputTags _SPtags; // SimParticles to skip
     InputTags _SPPtrtags; // SimParticlePtr to skip
@@ -54,9 +114,6 @@ namespace mu2e {
     InputTags _calDMCtags;  // CaloDigiMC to skip
     InputTags _calCSStags;  // CaloShowerStep to skip
     InputTags _crvDMCtags;  // CaloShowerStep to skip
-
-    bool _skipDereference; // do not do dereference check
-    int _verbose; // 0 = none, 1 = print as you go
 
     void printProvenance(art::Provenance const& p);
     bool excludedCollection(art::Provenance const& p, InputTags const& tags);
@@ -73,50 +130,19 @@ namespace mu2e {
   };
 
   //================================================================
-  PointerCheck::PointerCheck(fhicl::ParameterSet const& pset):
-    art::EDAnalyzer(pset)
+  PointerCheck::PointerCheck(const Parameters& conf):
+    art::EDAnalyzer(conf),
+    _skipDereference(conf().skipDereference()),
+    _verbose(conf().verbose()),
+    _SPtags(conf().skipSimParticle()),
+    _SPPtrtags(conf().skipSimParticlePtr()),
+    _SPMCtags(conf().skipStepPointMC()),
+    _trajtags(conf().skipMCTracjectory()),
+    _trkDMCtags(conf().skipStrawDigiMC()),
+    _calDMCtags(conf().skipCaloDigiMC()),
+    _calCSStags(conf().skipCaloShowerStep()),
+    _crvDMCtags(conf().skipCrvDigiMC())
   {
-    
-    // if true, don't check dereferencing pointers (can crash)
-    _skipDereference = pset.get<bool>("skipDereference",false);
-
-    // 1 = print for each event
-    _verbose = pset.get<int>("verbose",1);
-
-    VS slist;
-
-    // lists of SimParticle collections to skip
-    slist = pset.get<VS>("skipSimParticle",VS());
-    for(auto const& i: slist) _SPtags.emplace_back(art::InputTag(i));
-
-    // lists of SimParticlePtr collections to skip
-    slist = pset.get<VS>("skipSimParticlePtr",VS());
-    for(auto const& i: slist) _SPPtrtags.emplace_back(art::InputTag(i));
-
-    // lists of StepPointMC collections to skip
-    slist = pset.get<VS>("skipStepPointMC",VS());
-    for(auto const& i: slist) _SPMCtags.emplace_back(art::InputTag(i));
-
-    // lists of MCTrajectory collections to skip
-    slist = pset.get<VS>("skipMCTracjectory",VS());
-    for(auto const& i: slist) _trajtags.emplace_back(art::InputTag(i));
-
-    // lists of StrawDigiMC collections to skip
-    slist = pset.get<VS>("skipStrawDigiMC",VS());
-    for(auto const& i: slist) _trkDMCtags.emplace_back(art::InputTag(i));
-
-    // lists of CaloDigiMC collections to skip
-    slist = pset.get<VS>("skipCaloDigiMC",VS());
-    for(auto const& i: slist) _calDMCtags.emplace_back(art::InputTag(i));
-
-    // lists of CaloShowerStep collections to skip
-    slist = pset.get<VS>("skipCaloShowerStep",VS());
-    for(auto const& i: slist) _calDMCtags.emplace_back(art::InputTag(i));
-
-    // lists of CrvDigiMC collections to skip
-    slist = pset.get<VS>("skipCrvDigiMC",VS());
-    for(auto const& i: slist) _crvDMCtags.emplace_back(art::InputTag(i));
-
   }
 
   //================================================================

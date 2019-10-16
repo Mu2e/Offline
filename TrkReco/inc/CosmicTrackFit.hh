@@ -108,6 +108,7 @@ namespace mu2e
 		int _maxLogL; //Maximum allowed liklihood in drift model
 		unsigned _minCHStrawFull; //Minimum number of hits remaining after Gaussian seed
 		double _gaussTres;//resolution for intial seed
+		double _maxTres;//maximum allowed time residual in drift fit
   };//end Fit class
 	
 

@@ -24,7 +24,6 @@
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "Mu2eG4/inc/generateFieldMap.hh"
 #include "SeedService/inc/SeedService.hh"
@@ -174,8 +173,6 @@ namespace mu2e {
         // do a counter that counts how mnay times it was called with an unknown process
         PhysicalVolumeHelper _physVolHelper;
 
-        ExtMonFNALPixelSD       *_extMonFNALPixelSD;
-
         // handles per-thread objects
         GenEventBroker _genEventBroker;
 
@@ -247,7 +244,6 @@ namespace mu2e {
     _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
     _physVolHelper(),
     //_printPhysicsProcessSummary(pSet.get<bool>("debug.printPhysicsProcessSummary",false)),
-    _extMonFNALPixelSD(),
     _genEventBroker(_use_G4MT),
     _tvdOutputName(StepInstanceName::timeVD),
     timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
@@ -452,7 +448,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     //this is where the UserActions are instantiated
     ActionInitialization* actioninit = new ActionInitialization(pset_,
-                                                                _extMonFNALPixelSD, SensitiveDetectorHelpers,
+                                                                SensitiveDetectorHelpers,
                                                                 &_genEventBroker, &_physVolHelper,
                                                                 _use_G4MT, _nThreads, _originInWorld,
                                                                 mu2elimits_,

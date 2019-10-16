@@ -19,28 +19,28 @@ namespace mu2e {
   class SimParticlePrinter : public ProductPrinter {
   public:
 
-    typedef std::vector<std::string> vecstr;
+    struct Config : public ProductPrinter::Config {
+      fhicl::Atom<float> pCut{ fhicl::Name("pCut"), 
+	  fhicl::Comment("momentum cut on all particles"), -1 };
+      fhicl::Atom<float> emPCut{ fhicl::Name("emPcut"), 
+	  fhicl::Comment("momentum cut on EM particles"), -1 };
+      fhicl::Atom<bool> primaryOnly{ fhicl::Name("primaryOnly"), 
+	  fhicl::Comment("show only the primary particles"), false };
+    };
 
-    SimParticlePrinter() { set( fhicl::ParameterSet() ); }
-    SimParticlePrinter(const fhicl::ParameterSet& pset) { set(pset); }
+    SimParticlePrinter():_pCut(-1),_emPCut(-1),_primaryOnly(false) {}
+    SimParticlePrinter(const Config& conf):ProductPrinter(conf) { 
+      _pCut = conf.pCut();
+      _emPCut = conf.emPCut();
+      _primaryOnly = conf.primaryOnly();
+    }
 
-    // tags to select which product instances to process
-    void setTags(const vecstr& tags) { _tags = tags; }
-    // usually customized in the subclass for items relevant to that product
-
-    // methods to setup parameters
     // do not print if p is below this cut
     void setPCut(double p) { _pCut = p; }
     // do not print e and gamma if p is below this cut
     void setEmPCut(double p) { _emPCut = p; }
     // print only particles marked primary
     void setPrimaryOnly(bool q) { _primaryOnly = q; }
-
-    // pset should contain a table called SimParticlePrinter
-    void set(const fhicl::ParameterSet& pset);
-
-    // the vector<string> list of inputTags
-    const vecstr& tags() const {return _tags; }
 
     // all the ways to request a printout
     void Print(art::Event const& event,
@@ -64,7 +64,6 @@ namespace mu2e {
     double _pCut;
     double _emPCut;
     bool _primaryOnly;
-    vecstr _tags;
 
   };
 

@@ -72,19 +72,18 @@ namespace mu2e
     _debug(pset.get<int>("debugLevel",1)),
     _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
     _minnsh(pset.get<unsigned>("minNStrawHits",2)),
-    _minCHHits(pset.get<unsigned>("minCHHits",4)),
-    _n_outliers(pset.get<unsigned>("_n_outliers",5)),
+    _minCHHits(pset.get<unsigned>("minCHHits",8)),
+    _n_outliers(pset.get<unsigned>("_n_outliers",2)),
     _maxniter(pset.get<unsigned>("maxniter",1000)),//10
-    _maxpull(pset.get<float>("maxPull",3)),
-    _maxd(pset.get<float>("maxd",300.0)),//max distance between hits at start of fit (UNUSED)
-    _maxchi2(pset.get<float>("maxchi2",10.0)) ,
+    _maxchi2(pset.get<float>("maxchi2",2.5)) ,
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
     _max_position_deviation((pset.get<float>("max_position_deviation",200))),
     _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
     _minMomTrue      (pset.get<int>("minxMomTrue",4)),//TODO
-    _maxLogL (pset.get<int>("maxLogL",400)),
-    _minCHStrawFull (pset.get<int>("minCHStrawFull",4)),
-    _gaussTres (pset.get<int>("gaussTres",24))
+    _maxLogL (pset.get<int>("maxLogL",150)),
+    _minCHStrawFull (pset.get<int>("minCHStrawFull",8)),
+    _gaussTres (pset.get<int>("gaussTres",24)),
+    _maxTres (pset.get<int>("maxTres",35))
     {}
 
     CosmicTrackFit::~CosmicTrackFit(){}
@@ -340,7 +339,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 		 
    }//end while 
    cosmictrack=BestTrack;
-   if(cosmictrack->converged and  _diag>0){
+   if(cosmictrack->converged and  _diag > 0){
 	 for (size_t f5=0; f5<nHits; ++f5){
      		hitP2 = &trackData._chHitsToProcess[f5];
                 if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;
@@ -610,9 +609,10 @@ bool CosmicTrackFit::use_track(double track_length) const
 This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimzed track parameters 
 //------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
-	
-         EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep, _maxHitDOCA, _minCHStrawFull, _maxLogL, _gaussTres);
+	 
+         EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep, _maxHitDOCA, _minCHStrawFull, _maxLogL, _gaussTres, _maxTres);
          //Store fit information in the track data:
+	
          trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
          trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
          trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
@@ -646,10 +646,19 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	 trackData._tseed._track.DriftDiag.StartTimeResiduals = endresult.StartTimeResiduals;
 	 trackData._tseed._track.DriftDiag.GaussianEndTimeResiduals = endresult.GaussianEndTimeResiduals;
 	 trackData._tseed._track.DriftDiag.FullFitEndTimeResiduals = endresult.FullFitEndTimeResiduals;
-	 
+	 trackData._tseed._track.DriftDiag.TrueTimeResiduals = endresult.TrueTimeResiduals;
 	 trackData._tseed._track.DriftDiag.RecoAmbigs = endresult.RecoAmbigs;
 	 trackData._tseed._track.DriftDiag.TrueAmbigs = endresult.TrueAmbigs;
-        
+	if(trackData._tseed._track.DriftDiag.FullFitEndTimeResiduals.size() >0){
+	for(unsigned i = 0; i< trackData._tseed._track.DriftDiag.FullFitEndTimeResiduals.size()-1; i++){
+		cout<<"outliers ---------> "<<trackData._tseed._track.DriftDiag.FullFitEndTimeResiduals[i]<<endl;
+		if( trackData._tseed._track.DriftDiag.FullFitEndTimeResiduals[i] >40 ){ trackData._tseed._track.n_outliers +=1;}
+	}
+        if( trackData._tseed._track.n_outliers  > _n_outliers) {
+		trackData._tseed._track.minuit_converged = false;
+		cout<<"Outliers "<<trackData._tseed._track.n_outliers<<endl;
+	}
+	}
 	 if(_diag > 0){
 		ComboHit *chit(0);
 		for(size_t j=0; j<(trackData._tseed._straw_chits.size()); j++){

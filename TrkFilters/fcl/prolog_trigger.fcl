@@ -9,7 +9,7 @@ BEGIN_PROLOG
 # filter to require a minimum # of hits in a time slot
 TrkFilters : {
     filters : {
-	# filters for track hit clustering
+	# filters for the TimeClustering results
 	tprSeedDeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
@@ -32,6 +32,28 @@ TrkFilters : {
 	    minNHits              : 1  #just check if there are TimeClusters
 	    triggerPath            : "cprSeedDeP"	    
 	}
+	tprSeedUCCDeMTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTtimeClusterFinderUCC"
+	    triggerPath            : "tprSeedUCCDeM"
+	}
+	tprSeedUCCDePTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTtimeClusterFinderUCC"
+	    triggerPath            : "tprSeedUCCDeP"
+	}
+	cprSeedUCCDeMTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTCalTimePeakFinderUCC"
+	    minNHits              : 1  #just check if there are TimeClusters
+	    triggerPath            : "cprSeedUCCDeM"	    
+	}
+	cprSeedUCCDePTCFilter : {
+	    module_type : TimeClusterFilter
+	    timeClusterCollection : "TTCalTimePeakFinderUCC"
+	    minNHits              : 1  #just check if there are TimeClusters
+	    triggerPath            : "cprSeedUCCDeP"	    
+	}
 	tprHelixIPADeMTCFilter : {
 	    module_type : TimeClusterFilter
 	    timeClusterCollection : "TTtimeClusterFinder"
@@ -41,7 +63,8 @@ TrkFilters : {
 	# filters for either positive or negative helicity tracks near the CE energy
 	tprSeedDeMHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TThelixFinder:Positive"
+#	    helixSeedCollection : "TThelixFinder:Positive"
+	    helixSeedCollection : "TTHelixMergerDeM"
 	    helicity            : 1
 	    minNStrawHits       : 15   
 	    minMomentum         : 70.  
@@ -55,26 +78,10 @@ TrkFilters : {
 	    maxAbsLambda        : 300. 
 	    triggerPath          : "tprSeedDeM"	    
 	}
-	tprHelixIPADeMHSFilter : {
-	    module_type : HelixFilter
-	    helixSeedCollection : "TThelixFinder:Positive"
-	    helicity            : 1		    
-	    minNStrawHits       : 15   		    
-	    minMomentum         : 30.  		    
-	    maxMomentum         : 70. 		    
-	    minPt               : 0    		    
-	    maxChi2XY           : 8.   		    
-	    maxChi2PhiZ         : 8.   		    
-	    maxD0               : 500. 		    
-	    minD0               : 200.		    
-	    minAbsLambda        : 40. 		    
-	    maxAbsLambda        : 80. 		    
-	    triggerPath          : "tprHelixIPADeM"	    
-	}
-
 	tprSeedDePHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TThelixFinder:Negative"
+#	    helixSeedCollection : "TThelixFinder:Negative"
+	    helixSeedCollection : "TTHelixMergerDeP"
 	    helicity            : -1
 	    minNStrawHits       : 15   
 	    minMomentum         : 60.  
@@ -91,7 +98,8 @@ TrkFilters : {
 	
 	cprSeedDeMHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TTCalHelixFinderDe:Positive"
+#	    helixSeedCollection : "TTCalHelixFinderDe:Positive"
+	    helixSeedCollection : "TTCalHelixMergerDeM"
 	    helicity            : 1
 	    minNStrawHits       : 15   
 	    minMomentum         : 80.  
@@ -107,7 +115,8 @@ TrkFilters : {
 	}
 	cprSeedDePHSFilter : {
 	    module_type : HelixFilter
-	    helixSeedCollection : "TTCalHelixFinderDe:Negative"
+#	    helixSeedCollection : "TTCalHelixFinderDe:Negative"
+	    helixSeedCollection : "TTCalHelixMergerDeP"
 	    helicity            : -1
 	    minNStrawHits       : 15   
 	    minMomentum         : 60.  
@@ -121,6 +130,94 @@ TrkFilters : {
 	    maxAbsLambda        : 330. 
 	    triggerPath          : "cprSeedDeP"	    
 	}
+
+	# filters that uses the combohit collection filtered with the calorimeter info
+	tprSeedUCCDeMHSFilter : {
+	    module_type : HelixFilter
+	    helixSeedCollection : "TTHelixUCCMergerDeM"
+	    helicity            : 1
+	    minNStrawHits       : 15   
+	    minMomentum         : 70.  
+	    maxMomentum         : 120. 
+	    minPt               : 0    
+	    maxChi2XY           : 8.   
+	    maxChi2PhiZ         : 8.   
+	    maxD0               : 300. 
+	    minD0               : -150.
+	    minAbsLambda        : 140. 
+	    maxAbsLambda        : 300. 
+	    triggerPath          : "tprSeedUCCDeM"	    
+	}
+	tprSeedUCCDePHSFilter : {
+	    module_type : HelixFilter
+	    helixSeedCollection : "TTHelixUCCMergerDeP"
+	    helicity            : -1
+	    minNStrawHits       : 15   
+	    minMomentum         : 60.  
+	    maxMomentum         : 140. 
+	    minPt               : 0    
+	    maxChi2XY           : 8.   
+	    maxChi2PhiZ         : 8.   
+	    maxD0               : 300. 
+	    minD0               : -150.
+	    minAbsLambda        : 100. 
+	    maxAbsLambda        : 330. 
+	    triggerPath          : "tprSeedUCCDeP"	    
+	}
+	
+	cprSeedUCCDeMHSFilter : {
+	    module_type : HelixFilter
+	    helixSeedCollection : "TTCalHelixUCCMergerDeM"
+	    helicity            : 1
+	    minNStrawHits       : 15   
+	    minMomentum         : 80.  
+	    maxMomentum         : 140. 
+	    minPt               : 0    
+	    maxChi2XY           : 5.   
+	    maxChi2PhiZ         : 5.   
+	    maxD0               : 350. 
+	    minD0               : -350.
+	    minAbsLambda        : 140. 
+	    maxAbsLambda        : 330. 
+	    triggerPath          : "cprSeedUCCDeM"	    
+	}
+	cprSeedUCCDePHSFilter : {
+	    module_type : HelixFilter
+	    helixSeedCollection : "TTCalHelixUCCMergerDeP"
+	    helicity            : -1
+	    minNStrawHits       : 15   
+	    minMomentum         : 60.  
+	    maxMomentum         : 140. 
+	    minPt               : 0    
+	    maxChi2XY           : 5.   
+	    maxChi2PhiZ         : 5.   
+	    maxD0               : 300. 
+	    minD0               : -150.
+	    minAbsLambda        : 100. 
+	    maxAbsLambda        : 330. 
+	    triggerPath          : "cprSeedUCCDeP"	    
+	}
+
+
+	tprHelixIPADeMHSFilter : {
+	    module_type : HelixFilter
+#	    helixSeedCollection : "TThelixFinder:Positive"
+	    helixSeedCollection : "TTHelixMergerDeM"
+	    helicity            : 1		    
+	    minNStrawHits       : 15   		    
+	    minMomentum         : 30.  		    
+	    maxMomentum         : 70. 		    
+	    minPt               : 0    		    
+	    maxChi2XY           : 8.   		    
+	    maxChi2PhiZ         : 8.   		    
+	    maxD0               : 500. 		    
+	    minD0               : 200.		    
+	    minAbsLambda        : 40. 		    
+	    maxAbsLambda        : 80. 		    
+	    triggerPath          : "tprHelixIPADeM"	    
+	}
+
+
 	# filters for CE candidates (downstream eminus near 100 MeV/c)
 	tprSeedDeMTSFilter : {
 	    module_type : SeedFilter
@@ -150,6 +247,36 @@ TrkFilters : {
 	    minD0             : -200.
 	    maxD0             : 200. 
 	    triggerPath        : "cprSeedDeM"	    
+	}
+
+	tprSeedUCCDeMTSFilter : {
+	    module_type : SeedFilter
+	    kalSeedCollection : "TTKSFUCCDeM"
+	    fitparticle       : @local::Particle.eminus	 
+	    fitdirection      : @local::FitDir.downstream 
+	    minNStrawHits     : 15   
+	    minMomentum       : 80.      
+	    maxMomentum       : 200.     #don't apply cut
+	    maxChi2DOF        : 20.      #don't apply cut
+	    maxMomErr         : 10.      #don't apply cut
+	    minD0             : -200.
+	    maxD0             : 200. 
+	    triggerPath        : "tprSeedUCCDeM"	    
+	}
+
+	cprSeedUCCDeMTSFilter : {
+	    module_type : SeedFilter
+	    kalSeedCollection : "TTCalSeedFitUCCDem"    
+	    fitparticle       : @local::Particle.eminus
+	    fitdirection      : @local::FitDir.downstream 
+	    minNStrawHits     : 15   
+	    minMomentum       : 80.      
+	    maxMomentum       : 200.     #don't apply cut
+	    maxChi2DOF        : 20.      #don't apply cut
+	    maxMomErr         : 10.      #don't apply cut
+	    minD0             : -200.
+	    maxD0             : 200. 
+	    triggerPath        : "cprSeedUCCDeM"	    
 	}
 	tprSeedDeMKFFilter : {
 	    module_type : SeedFilter
@@ -185,6 +312,36 @@ TrkFilters : {
 	    minD0             : -200.
 	    maxD0             : 200. 
 	    triggerPath        : "cprSeedDeP"	    
+	}
+
+	tprSeedUCCDePTSFilter : {
+	    module_type : SeedFilter
+	    kalSeedCollection : "TTKSFUCCDeP"
+	    fitparticle       : @local::Particle.eplus
+	    fitdirection      : @local::FitDir.downstream 
+	    minNStrawHits     : 15  
+	    minMomentum       : 70.      
+	    maxMomentum       : 110.     #don't apply cut
+	    maxChi2DOF        : 20.      #don't apply cut
+	    maxMomErr         : 10.      #don't apply cut
+	    minD0             : -200.
+	    maxD0             : 200.
+	    triggerPath        : "tprSeedUCCDeP"	    
+	}
+
+	cprSeedUCCDePTSFilter : {
+	    module_type : SeedFilter
+	    kalSeedCollection : "TTCalSeedFitUCCDep"    
+	    fitparticle       : @local::Particle.eplus
+	    fitdirection      : @local::FitDir.downstream 
+	    minNStrawHits     : 15   
+	    minMomentum       : 70.      
+	    maxMomentum       : 110.     #don't apply cut
+	    maxChi2DOF        : 20.      #don't apply cut
+	    maxMomErr         : 10.      #don't apply cut
+	    minD0             : -200.
+	    maxD0             : 200. 
+	    triggerPath        : "cprSeedUCCDeP"	    
 	}
 
 	tprSeedDePKFFilter : {
@@ -322,6 +479,60 @@ TrkFilters : {
 	    triggerPath          : "cprSeedDeP"	    
 	}
 	
+
+	tprSeedUCCDeMSDCountFilter     : {
+	    module_type : DigiFilter
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
+	    useStrawDigi        : true
+	    useCaloDigi         : false
+	    minNStrawDigi       : 10 
+	    maxNStrawDigi       : 10000
+	    minNCaloDigi        : -1
+	    maxNCaloDigi        : -1
+	    maxCaloEnergy       : -1
+	    triggerPath          : "tprSeedUCCDeM"	    
+	}
+	tprSeedUCCDePSDCountFilter     : {
+	    module_type : DigiFilter
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
+	    useStrawDigi        : true
+	    useCaloDigi         : false
+	    minNStrawDigi       : 10 
+	    maxNStrawDigi       : 10000
+	    minNCaloDigi        : -1
+	    maxNCaloDigi        : -1
+	    maxCaloEnergy       : -1
+	    triggerPath          : "tprSeedUCCDeP"	    
+	}
+	
+	cprSeedUCCDeMSDCountFilter     : {
+	    module_type : DigiFilter
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
+	    useStrawDigi        : true
+	    useCaloDigi         : false
+	    minNStrawDigi       : 10 
+	    maxNStrawDigi       : 10000
+	    minNCaloDigi        : -1
+	    maxNCaloDigi        : -1
+	    maxCaloEnergy       : -1
+	    triggerPath          : "cprSeedUCCDeM"	    
+	}
+	cprSeedUCCDePSDCountFilter     : {
+	    module_type : DigiFilter
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
+	    useStrawDigi        : true	 
+	    useCaloDigi         : false	 
+	    minNStrawDigi       : 10 	 
+	    maxNStrawDigi       : 10000	 
+	    minNCaloDigi        : -1	 
+	    maxNCaloDigi        : -1	 
+	    maxCaloEnergy       : -1      
+	    triggerPath          : "cprSeedUCCDeP"	    
+	}
 	#  Prescaling filters
 	#follow the prescaler filters for Tpr Track sequences
 
@@ -453,6 +664,66 @@ TrkFilters : {
 	    triggerPath        : "cprSeedDeP"	    
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
+
+	#prescaler for the sequences that use the combohit collection filtered with the calorimeter cluster
+	tprSeedUCCDeMEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    triggerPath        : "tprSeedUCCDeM"	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}
+	
+	tprSeedUCCDeMPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1
+	    useFilteredEvents : true
+	    triggerPath        : "tprSeedUCCDeM"	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	}
+
+	tprSeedUCCDePEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1
+	    triggerPath        : "tprSeedUCCDeP"	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}	
+	tprSeedUCCDePPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	    triggerPath        : "tprSeedUCCDeP"	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	}
+	
+	#follow the prescaler filters for Tpr Track sequences
+	cprSeedUCCDeMEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    triggerPath        : "cprSeedUCCDeM"	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}
+	
+	cprSeedUCCDeMPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	    triggerPath        : "cprSeedUCCDeM"	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	}
+
+	cprSeedUCCDePEventPrescale: {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    triggerPath        : "cprSeedUCCDeP"	    
+	    triggerFlag   : ["PrescaleRandom"]	    
+	}
+	cprSeedUCCDePPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	    triggerPath        : "cprSeedUCCDeP"	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	}
 	
     }
 
@@ -467,16 +738,25 @@ TrkFilters : {
 				 TTtimeClusterFinder, tprTimeClusterDePTCFilter,  tprTimeClusterDePPrescale ]
 
 	tprHelixDeM          : [ tprHelixDeMEventPrescale, tprHelixDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, tprDeMHelixFilter, tprDeMHelixPrescale  ]
+				 TTtimeClusterFinder, tprHelixDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprHelixDeMHSFilter, tprHelixDeMPrescale  ]
 	tprHelixDeP          : [ tprDePHelixEventPrescale, tprDePHelixSDCountFilter, @sequence::CaloClusterTrigger.Reco, @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, tprHelixDePHSFilter, tprHelixDePPrescale  ]
+				 TTtimeClusterFinder, tprHelixDePTCFilter, TThelixFinder, TTHelixMergerDeP, tprHelixDePHSFilter, tprHelixDePPrescale  ]
 
 	tprSeedDeM           : [ tprSeedDeMEventPrescale, tprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMPrescale ]
+				 TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, TTKSFDeM, tprSeedDeMTSFilter, tprSeedDeMPrescale ]
 	tprSeedDeP           : [ tprSeedDePEventPrescale, tprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder, tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePPrescale ]
+				 TTtimeClusterFinder, tprSeedDePTCFilter, TThelixFinder,TTHelixMergerDeP,  tprSeedDePHSFilter, TTKSFDeP, tprSeedDePTSFilter, tprSeedDePPrescale ]
+
+	# sequences that use a collection of combohits filtered using the calorimeter cluster info 
+	tprSeedUCCDeM        : [ tprSeedUCCDeMEventPrescale, tprSeedUCCDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
+				 TTtimeClusterFinderUCC, tprSeedUCCDeMTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeM, tprSeedUCCDeMHSFilter, TTKSFUCCDeM, tprSeedUCCDeMTSFilter, tprSeedUCCDeMPrescale ]
+	tprSeedUCCDeP        : [ tprSeedUCCDePEventPrescale, tprSeedUCCDePSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
+				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
+				 TTtimeClusterFinderUCC, tprSeedUCCDePTCFilter, TThelixFinderUCC, TTHelixUCCMergerDeP, tprSeedUCCDePHSFilter, TTKSFUCCDeP, tprSeedUCCDePTSFilter, tprSeedUCCDePPrescale ]
+
 	#   calibration with DIO-Michel form Inner Proton Absorber
 	tprHelixIPADeM       : [ tprHelixIPADeMEventPrescale, tprHelixIPADeMSDCountFilter, @sequence::CaloClusterTrigger.Reco, 
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
@@ -485,12 +765,21 @@ TrkFilters : {
 	#calo-seeded tracking
 	cprSeedDeM           : [ cprSeedDeMEventPrescale, cprSeedDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits,
-				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, cprSeedDeMHSFilter,
+				 TTCalTimePeakFinder, cprSeedDeMTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeM, cprSeedDeMHSFilter,
 				 TTCalSeedFitDem, cprSeedDeMTSFilter, cprSeedDeMPrescale ]
 	cprSeedDeP           : [ cprSeedDePEventPrescale, cprSeedDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
 				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, cprSeedDePHSFilter, 
+				 TTCalTimePeakFinder, cprSeedDePTCFilter, TTCalHelixFinderDe, TTCalHelixMergerDeP, cprSeedDePHSFilter, 
 				 TTCalSeedFitDep, cprSeedDePTSFilter, cprSeedDePPrescale ]
+
+	cprSeedUCCDeM        : [ cprSeedUCCDeMEventPrescale, cprSeedUCCDeMSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC,
+				 TTCalTimePeakFinderUCC, cprSeedUCCDeMTCFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeM, cprSeedUCCDeMHSFilter,
+				 TTCalSeedFitUCCDem, cprSeedUCCDeMTSFilter, cprSeedUCCDeMPrescale ]
+	cprSeedUCCDeP        : [ cprSeedUCCDePEventPrescale, cprSeedUCCDePSDCountFilter, @sequence::CaloClusterTrigger.Reco,
+				 @sequence::TrkHitRecoTrigger.sequences.TTprepareHitsUCC, 
+				 TTCalTimePeakFinderUCC, cprSeedUCCDePTCFilter, TTCalHelixFinderUCCDe, TTCalHelixUCCMergerDeP, cprSeedUCCDePHSFilter, 
+				 TTCalSeedFitUCCDep, cprSeedUCCDePTSFilter, cprSeedUCCDePPrescale ]
 	
 	#fast tracking sequences that uses the calorimeter-time selection to reduce the number of TimeClusters and also the number of hits processed by the Delta-ray 
 	#removal algorithm
@@ -504,7 +793,7 @@ TrkFilters : {
 	#kalman filter included
 	tprKalDeM  : [ @sequence::CaloClusterTrigger.Reco,
 		       @sequence::TrkHitRecoTrigger.sequences.TTprepareHits, 
-		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, tprSeedDeMHSFilter, 
+		       TTtimeClusterFinder, tprSeedDeMTCFilter, TThelixFinder, TTHelixMergerDeM, tprSeedDeMHSFilter, 
 		       TTKSFDeM, tprSeedDeMTSFilter, TTKFFDeM, tprSeedDeMKFFilter ]
 	# add sequences for upstream, calibration, ...  FIXME!
     }

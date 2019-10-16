@@ -100,17 +100,14 @@ physics : {
             userModuleLabel          : true
             useInstanceName          : true
             useProcessName           : false
-            maxStepPointMultiplicity : 500
         }
     } // analyzers
 
     filters : {
         g4filter : {
             module_type               : FilterG4Out
-            noInstanceName            : true
             mainHitInputs             : [ "g4run:vacuuas1" ]
             extraHitInputs            : [ "g4run:virtualdetector" ]
-            numSimParticleCollections : 1
             vetoDaughters             : []
         }
     } // filters

@@ -10,9 +10,16 @@ int mu2e::ValSimParticle::declare(art::TFileDirectory tfs) {
   _hp = tfs.make<TH1D>( "p", "P", 100, 0.0, 200.0);
   _hendKE = tfs.make<TH1D>( "endKE", "endKE", 100, 0.0, 200.0);
   _hpe = tfs.make<TH1D>( "pe", "P ele", 100, 0.0, 200.0);
+  _hpe2 = tfs.make<TH1D>( "pe2", "P ele", 100, 0.0, 10.0);
+  _hpg = tfs.make<TH1D>( "pg", "P gamma", 100, 0.0, 200.0);
+  _hpg2 = tfs.make<TH1D>( "pg2", "P gamma", 100, 0.0, 10.0);
   _hpm = tfs.make<TH1D>( "pm", "P muon", 100, 0.0, 600.0);
   _hp0 = tfs.make<TH1D>( "p0", "P pi0", 100, 0.0, 600.0);
   _hpi = tfs.make<TH1D>( "pi", "P pi+/-", 100, 0.0, 600.0);
+  _hpk0 = tfs.make<TH1D>( "k0", "P K_L^0", 100, 0.0, 600.0);
+  _hpk  = tfs.make<TH1D>( "pk", "P K+/-", 100, 0.0, 600.0);
+  _hpn0 = tfs.make<TH1D>( "pn0", "P n", 100, 0.0, 200.0);
+  _hpn02 = tfs.make<TH1D>( "pn02", "P n", 100, 0.0, 10.0);
   _hpn = tfs.make<TH1D>( "pn", "P nuclei", 100, 0.0, 200.0);
   _hpn2 = tfs.make<TH1D>( "pn2", "P nuclei", 100, 0.0, 10.0);
   _hsx = tfs.make<TH1D>( "Xstart", "start X", 100, -6000.0, 6000.0);
@@ -61,7 +68,7 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(5.0);
+  _hVer->Fill(6.0);
 
   _hN->Fill(coll.size()); 
   double x = (coll.size()<=0 ? 0 : log10(coll.size()) );
@@ -70,16 +77,31 @@ int mu2e::ValSimParticle::fill(const mu2e::SimParticleCollection & coll,
   for(auto sp : coll) {
     const mu2e::SimParticle& part = sp.second;
     double pstart = part.startMomentum().vect().mag();
-    //int idc = _id.fill(part.pdgId());
-    int idc =_id.fill(part.pdgId());
+    int idc = _id.fill(part.pdgId()); // this "rewrites" pdgId
     double p = part.startMomentum().vect().mag();
     double endKE = part.endKineticEnergy();
     _hp->Fill(p);
     _hendKE->Fill(endKE);
-    if(abs(idc)==11) _hpe->Fill(p);
+    if(abs(idc)==11) {
+      _hpe->Fill(p);
+      _hpe2->Fill(p);
+    }
     if(abs(idc)==13) _hpm->Fill(p);
+    if(abs(idc)==22) {
+      _hpg->Fill(p);
+      _hpg2->Fill(p);
+    }
     if(abs(idc)==30) _hp0->Fill(p);
     if(abs(idc)==31) _hpi->Fill(p);
+
+    if(abs(idc)==32) _hpk0->Fill(p);
+    if(abs(idc)==34) _hpk->Fill(p);
+
+    if(abs(idc)==40) {
+      _hpn0->Fill(p);
+      _hpn02->Fill(p);
+    }
+
     if(abs(idc)==51) {
       _hpn->Fill(p);
       _hpn2->Fill(p);

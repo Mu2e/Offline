@@ -1,4 +1,4 @@
-#include "EventGenerator/inc/ExtMonFNALGun.hh"
+#include "EventGenerator/inc/ExtMonFNALGunImpl.hh"
 
 #include "GeometryService/inc/GeomHandle.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNALBuilding.hh"
@@ -15,34 +15,49 @@
 namespace mu2e {
 
   //================================================================
-  ExtMonFNALGun::ExtMonFNALGun(CLHEP::HepRandomEngine& engine, const fhicl::ParameterSet& pset)
+  ExtMonFNALGunImpl::ExtMonFNALGunImpl(CLHEP::HepRandomEngine& engine, const Config& conf)
     : m_gun(engine,
-            pset.get<double>("multiplicity"),
-            PDGCode::type(pset.get<int>("pdgId")),
+            conf.multiplicity(),
+            PDGCode::type(conf.pdgId()),
 
-            pset.get<double>("pmin", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
-            pset.get<double>("pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
+            //pset.get<double>("pmax", GeomHandle<ExtMonFNALBuilding>()->filterMagnet().nominalMomentum()),
+            getpmin(conf, *GeomHandle<ExtMonFNALBuilding>()),
+            getpmax(conf, *GeomHandle<ExtMonFNALBuilding>()),
 
-            RandomUnitSphereParams(-cos(pset.get<double>("coneAngleMin")),
-                                   -cos(pset.get<double>("coneAngleMax")),
+            RandomUnitSphereParams(-cos(conf.coneAngleMin()),
+                                   -cos(conf.coneAngleMax()),
                                    0., 2*M_PI),
 
-            pset.get<double>("tmin", 0.),
-            pset.get<double>("tmax", 0.),
+            conf.tmin(),
+            conf.tmax(),
 
-            h3v(pset.get<std::vector<double> >("offset")),
-            h3v(pset.get<std::vector<double> >("halfSize")),
+            conf.offset(),
+            conf.halfSize(),
 
-            pset.get<std::string>("histDirName"),
+            conf.histDirName(),
 
-            pset.get<int>("verbosityLevel",0)
+            conf.verbosityLevel()
             )
   {
-    initGeom(pset.get<std::string>("reference"));
+    initGeom(conf.reference());
   }
 
   //================================================================
-  void ExtMonFNALGun::initGeom(const std::string& ref) {
+  double ExtMonFNALGunImpl::getpmin(const Config& conf, const ExtMonFNALBuilding& emb) {
+    double p = emb.filterMagnet().nominalMomentum();
+    conf.pmin(p);
+    return p;
+  }
+
+  //================================================================
+  double ExtMonFNALGunImpl::getpmax(const Config& conf, const ExtMonFNALBuilding& emb) {
+    double p = emb.filterMagnet().nominalMomentum();
+    conf.pmax(p);
+    return p;
+  }
+
+  //================================================================
+  void ExtMonFNALGunImpl::initGeom(const std::string& ref) {
     if(ref == "filter") {
       m_rotation = GeomHandle<ExtMonFNALBuilding>()->collimator1RotationInMu2e();
       m_translation = GeomHandle<ExtMonFNALBuilding>()->filterEntranceInMu2e();
@@ -74,21 +89,7 @@ namespace mu2e {
   }
 
   //================================================================
-  CLHEP::Hep3Vector ExtMonFNALGun::h3v(const std::vector<double>& v) {
-    CLHEP::Hep3Vector res;
-    if(!v.empty()) {
-      if(v.size() != 3) {
-        throw cet::exception("BADCONFIG")
-          <<"Error converting to CLHEP::Hep3Vector: input size="<<v.size()
-          <<", must be 3\n";
-      }
-      res = CLHEP::Hep3Vector(v[0], v[1], v[2]);
-    }
-    return res;
-  }
-
-  //================================================================
-  void ExtMonFNALGun::generate( GenParticleCollection& outParts) {
+  void ExtMonFNALGunImpl::generate( GenParticleCollection& outParts) {
     GenParticleCollection localParts;
     m_gun.generate(localParts);
 
@@ -98,7 +99,7 @@ namespace mu2e {
   }
 
   //================================================================
-  GenParticle ExtMonFNALGun::transform(const GenParticle& in) const {
+  GenParticle ExtMonFNALGunImpl::transform(const GenParticle& in) const {
     return GenParticle(in.pdgId(),
                        GenId::extMonFNALGun,
                        m_translation + m_rotation*in.position(),

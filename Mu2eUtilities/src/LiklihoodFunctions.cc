@@ -34,11 +34,12 @@ using namespace mu2e;
 
 namespace LiklihoodFunctions{
         
-	EndResult DoFit(CosmicTrackSeed trackseed , StrawResponse srep, double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres){
+	EndResult DoFit(CosmicTrackSeed trackseed , StrawResponse srep, double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
 	  
 	  std::vector<double> errors(5,0);
 	  std::vector<double> seed(5,0);
           std::vector<double> newseed(5,0);
+	  std::vector<double> newerrors(5,0);
 	  EndResult endresult;
 	  CosmicTrack cosmictrack = trackseed._track;
          
@@ -79,7 +80,7 @@ namespace LiklihoodFunctions{
 	  migrad.SetLimits((signed) 0,-10000, 10000);
 	  migrad.SetLimits((signed) 1, -5, 5);
 	  migrad.SetLimits((signed) 2,-5000, 5000 ); 
-	  migrad.SetLimits((signed) 3, -10,10);
+	  migrad.SetLimits((signed) 3, -10,1);
 	  migrad.Fix((unsigned) 4); 
 	  int maxfcn = MaxLogL;
 	  double tolerance = 1000;
@@ -103,7 +104,7 @@ namespace LiklihoodFunctions{
 	  endresult.names.push_back("b0");
 	  endresult.names.push_back("b1");
 	  endresult.names.push_back("t0");
-	  if(minval != 0 ){ cosmictrack.minuit_converged = true;} 
+	  if(minval != 0 and minval< 100 ){ cosmictrack.minuit_converged = true;} 
 	  //Add best fit results to appropriatly named element:
 	  endresult.NLL = minval;
 	  for (size_t i=0;i<endresult.names.size();i++){
@@ -112,7 +113,7 @@ namespace LiklihoodFunctions{
 	
 	  }
      
-      //Cut on Gaussian resultsm remove "bad" hits
+       //Cut on Gaussian resultsm remove "bad" hits
 	ComboHitCollection passed_hits;
 	std::vector<Straw> passed_straws;
 	for(size_t i = 0; i< trackseed._straws.size(); i++){
@@ -120,9 +121,10 @@ namespace LiklihoodFunctions{
 	      double gauss_end_time_residual = fit.TimeResidual(trackseed._straws[i], gauss_end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
 	      endresult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
 	      endresult.GaussianEndDOCAs.push_back(gauss_end_doca);
-	        if (gauss_end_doca < max_doca){ 
+	       if (gauss_end_doca < max_doca and gauss_end_time_residual < maxTres){ 
 			passed_hits.push_back(trackseed._straw_chits[i]);
 			passed_hits.push_back(trackseed._straw_chits[i]);
+			
 		}
 	}
        
@@ -134,9 +136,15 @@ namespace LiklihoodFunctions{
 	 newseed[2] = endresult.bestfit[2];
 	 newseed[3] = endresult.bestfit[3];
 	 newseed[4] = endresult.bestfit[4];
+
+	 newerrors[0] = endresult.bestfiterrors[0]; 
+	 newerrors[1] = endresult.bestfiterrors[1];
+	 newerrors[2] = endresult.bestfiterrors[2];
+	 newerrors[3] = endresult.bestfiterrors[3];
+	 newerrors[4] = trackseed._t0.t0Err();
 	 DataFit fullfit(passed_hits, passed_straws, srep, cosmictrack, constraint_means,constraints,_gaussTres, 1);
 	
-	 ROOT::Minuit2::MnUserParameters newparams(newseed,errors);
+	 ROOT::Minuit2::MnUserParameters newparams(newseed,newerrors);
 	 ROOT::Minuit2::MnMigrad newmigrad(fullfit, newparams,mnStrategy);
 	 //Set Limits as tracker dimensions:
 	 newmigrad.SetLimits((signed) 0,-10000, 10000);
@@ -146,7 +154,7 @@ namespace LiklihoodFunctions{
 	 newmigrad.Fix((unsigned) 4); 
 	 
          //Define Minimization method as "MIGRAD" (see minuit documentation)
-	  min = newmigrad(400, tolerance);
+	  min = newmigrad(MaxLogL, tolerance);
 	
 	 //Will be the results of the fit routine:
 	 results = min.UserParameters();
@@ -167,6 +175,7 @@ namespace LiklihoodFunctions{
 	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
               double ambig = fit.calculate_ambig(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
 	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
+	      
 	      endresult.FullFitEndTimeResiduals.push_back(end_time_residual);
 	      endresult.FullFitEndDOCAs.push_back(end_doca);
 	      endresult.RecoAmbigs.push_back(ambig);
@@ -176,8 +185,11 @@ namespace LiklihoodFunctions{
 	      double trueambig = fit.calculate_ambig(trackseed._straws[i], trackseed._track.TrueFitEquation.Pos.X(), trackseed._track.TrueFitEquation.Dir.X(), trackseed._track.TrueFitEquation.Pos.Y(),trackseed._track.TrueFitEquation.Dir.Y(), trackseed._straw_chits[i]);
 	      endresult.TrueAmbigs.push_back(trueambig);
 	      endresult.TrueDOCAs.push_back(true_doca);
+	      double true_time_residual = fit.TimeResidual(trackseed._straws[i], true_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
+	      endresult.TrueTimeResiduals.push_back(true_time_residual);
 	     
 	  }//ADDBACK
+	
 }
 	 return endresult;
  
