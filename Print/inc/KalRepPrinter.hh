@@ -18,19 +18,8 @@ namespace mu2e {
   class KalRepPrinter : public ProductPrinter {
   public:
 
-    typedef std::vector<std::string> vecstr;
-
-    KalRepPrinter() { set( fhicl::ParameterSet() ); }
-    KalRepPrinter(const fhicl::ParameterSet& pset) { set(pset); }
-
-    // tags to select which product instances to process
-    void setTags(const vecstr& tags) { _tags = tags; }
-
-    // pset should contain a table called KalRepPrinter
-    void set(const fhicl::ParameterSet& pset);
-
-    // the vector<string> list of inputTags
-    const vecstr& tags() const {return _tags; }
+    KalRepPrinter() { }
+    KalRepPrinter(const Config& conf):ProductPrinter(conf) { }
 
     // all the ways to request a printout
     void Print(art::Event const& event,
@@ -52,7 +41,6 @@ namespace mu2e {
 
   private:
 
-    vecstr _tags;
     TrackSummaryPrinter _tsprinter;
 
   };

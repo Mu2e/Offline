@@ -49,9 +49,9 @@ using CLHEP::HepVector;
 using CLHEP::Hep3Vector;
 
 namespace mu2e {
-//-----------------------------------------------------------------------------
-// module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
-//-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // module constructor, parameter defaults are defiend in CalPatRec/fcl/prolog.fcl
+  //-----------------------------------------------------------------------------
   CalHelixFinder::CalHelixFinder(fhicl::ParameterSet const& pset) :
     art::EDFilter{pset},
     _diagLevel          (pset.get<int>   ("diagLevel"                      )),
@@ -64,34 +64,31 @@ namespace mu2e {
     _minNHitsTimeCluster(pset.get<int>   ("minNHitsTimeCluster"            )),
     _tpart              ((TrkParticle::type)(pset.get<int>("fitparticle"))),
     _fdir               ((TrkFitDirection::FitDirection)(pset.get<int>("fitdirection"))),
-    _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet()))
-  {
-    consumes<ComboHitCollection>(_shLabel);
-    consumes<StrawHitFlagCollection>(_shfLabel);
-    consumes<TimeClusterCollection>(_timeclLabel);
+    _hfinder            (pset.get<fhicl::ParameterSet>("HelixFinderAlg",fhicl::ParameterSet())){
+      consumes<ComboHitCollection>(_shLabel);
+      consumes<StrawHitFlagCollection>(_shfLabel);
+      consumes<TimeClusterCollection>(_timeclLabel);
 
-    std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
-    for(auto hv : helvals) {
+      std::vector<int> helvals = pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel}); //pset.get<std::vector<int> >("Helicities",vector<int>{Helicity::neghel,Helicity::poshel});
+      for(auto hv : helvals) {
       Helicity hel(hv);
       _hels.push_back(hel);
       produces<HelixSeedCollection>(Helicity::name(hel));
     }
-    //    produces<HelixSeedCollection>();
 //-----------------------------------------------------------------------------
 // provide for interactive disanostics
 //-----------------------------------------------------------------------------
-    _helTraj          = 0;
-    _timeOffsets      = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("TimeOffsets",fhicl::ParameterSet()));
+      _helTraj          = 0;
+      _timeOffsets      = new fhicl::ParameterSet(pset.get<fhicl::ParameterSet>("TimeOffsets",fhicl::ParameterSet()));
 
-    _data.shLabel     = _shLabel;
-    _data.timeOffsets = _timeOffsets;
+      _data.shLabel     = _shLabel;
+      _data.timeOffsets = _timeOffsets;
    
-    if (_debugLevel != 0) _printfreq = 1;
+      if (_debugLevel != 0) _printfreq = 1;
 
-    if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
-    else                 _hmanager = std::make_unique<ModuleHistToolBase>();
-
-  }
+      if (_diagLevel != 0) _hmanager = art::make_tool  <ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
+      else                 _hmanager = std::make_unique<ModuleHistToolBase>();
+    }
 
 //-----------------------------------------------------------------------------
 // destructor
