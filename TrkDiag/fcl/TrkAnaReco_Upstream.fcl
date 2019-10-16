@@ -23,6 +23,12 @@ physics.analyzers.TrkAnaNeg.supplements : [ @local::DeM, @local::UmuM ]
 physics.analyzers.TrkAnaPos.candidate : @local::UeP
 physics.analyzers.TrkAnaPos.supplements : [ @local::DeP, @local::UmuP ]
 
+# Include more information (MC and full TrkQual branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaNeg.candidate.options.fillTrkPID : false
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options.fillTrkPID : false
+
 # for hit level diagnostics, set diagLevel to 2
 physics.analyzers.TrkAnaNeg.diagLevel : 1
 physics.analyzers.TrkAnaNeg.FillMCInfo : true
