@@ -46,3 +46,7 @@ services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.roo
 physics.analyzers.TrkAnaNeg.SelectEvents : [RecoPath]
 physics.analyzers.TrkAnaPos.SelectEvents : [RecoPath]
 
+# Include more information (MC, full TrkQual and TrkPID branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
+
