@@ -46,7 +46,6 @@ TimeClusterFinderCosmics : {
   UseCaloClusterPosition : false
 }
 
-
 CosmicTrackFinder : {
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
@@ -113,6 +112,9 @@ TimeClusterFinderUpi : {
     StrawHitBeta : 0.63
   }
 }
+
+
+
 
 # helix finding.  Search for both helicities
 RobustHelixFinder : {
@@ -484,13 +486,21 @@ MHFinalFitDmuP                :  {
   SeedCollection : MHSeedFitDmp
 }
 
+CosmicTracking : {
+  producers :{
+    
+    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
+    CosmicTrackFinder  : @local::CosmicTrackFinder
+
+ }
+}
 # Declare a table with all the modules needed for track reconstruction
 Tracking : {
   producers : {
 
     TimeClusterFinderDe  : @local::TimeClusterFinderDe
-    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
-    CosmicTrackFinder  : @local::CosmicTrackFinder
+    //TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
+    //CosmicTrackFinder  : @local::CosmicTrackFinder
     HelixFinderDe  : @local::RobustHelixFinderDe
     TimeClusterFinderDmu  : @local::TimeClusterFinderDmu
     HelixFinderDmu  : @local::RobustHelixFinderDmu
@@ -563,8 +573,7 @@ Tracking : {
   }
 }
 #production sequence to find straight track
-//Tracking.FindCosmicStraights : [ TimeClusterFinderCosmics, StraightTrackFinder ] //old fit routine
-Tracking.FindCosmics : [ TimeClusterFinderCosmics, CosmicTrackFinder ]
+CosmicTracking.FindCosmics : [ TimeClusterFinder, TimeClusterFinderCosmics, CosmicTrackFinder ]
 
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ TimeClusterFinderDe, HelixFinderDe, KSFDeM, KFFDeM ]
