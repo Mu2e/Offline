@@ -15,7 +15,6 @@
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/GenEventBroker.hh"
@@ -30,11 +29,14 @@
 //G4 includes
 #include "G4Threading.hh"
 
+//art includes
+#include "fhiclcpp/ParameterSet.h"
+
+
 
 namespace mu2e {
     
     ActionInitialization::ActionInitialization(const fhicl::ParameterSet& pset,
-                                               ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
                                                std::vector< SensitiveDetectorHelper> &sensitive_detectorhelper_vector,
                                                GenEventBroker* gen_eventbroker,
                                                PhysicalVolumeHelper* phys_volume_helper,
@@ -51,7 +53,6 @@ namespace mu2e {
         simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
         timeVDtimes_(pset.get<std::vector<double> >("SDConfig.TimeVD.times")),
         mu2elimits_(pset.get<fhicl::ParameterSet>("ResourceLimits")),
-        _extMonFNALPixelSD(extmon_FNAL_pixelSD),
         _genEventBroker(gen_eventbroker),
         _physVolHelper(phys_volume_helper),
         processInfo(),
@@ -122,10 +123,10 @@ namespace mu2e {
         
         SetUserAction( new Mu2eG4RunAction(pset_, use_G4MT_, originInWorld, _physVolHelper,
                                            physics_Process_Info, trackingAction, steppingAction,
-                                           sensitive_Detector_Helper, _extMonFNALPixelSD) );
+                                           sensitive_Detector_Helper) );
 
         
-        SetUserAction( new Mu2eG4EventAction(pset_, trackingAction, steppingAction, _extMonFNALPixelSD,
+        SetUserAction( new Mu2eG4EventAction(pset_, trackingAction, steppingAction,
                                              sensitive_Detector_Helper, stacking_Cuts, stepping_Cuts,
                                              common_Cuts, _genEventBroker, per_Event_Objects_Mgr,
                                              physics_Process_Info,

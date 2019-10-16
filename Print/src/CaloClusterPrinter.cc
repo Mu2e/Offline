@@ -8,7 +8,7 @@ void
 mu2e::CaloClusterPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<CaloClusterCollection> > vah;
     event.getManyByType(vah);
@@ -121,18 +121,6 @@ void
 mu2e::CaloClusterPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind  secId   size    time    energy            position\n";
-
-}
-
-void 
-mu2e::CaloClusterPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("CaloClusterPrinter",fhicl::ParameterSet());
-
-  _eCut = localPset.get<double>("eCut",-1);
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

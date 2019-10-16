@@ -8,7 +8,7 @@ void
 mu2e::BkgQualPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<BkgQualCollection> > vah;
     event.getManyByType(vah);
@@ -93,18 +93,6 @@ void
 mu2e::BkgQualPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind     mva   status \n";
-
-}
-
-void 
-mu2e::BkgQualPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("BkgQualPrinter",fhicl::ParameterSet());
-
-  _eCut = localPset.get<double>("eCut",-1);
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

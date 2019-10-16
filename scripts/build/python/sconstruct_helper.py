@@ -128,7 +128,7 @@ def libPath(mu2eOpts):
 def mergeFlags(mu2eOpts):
     build = mu2eOpts['build']
     flags = ['-std=c++17','-Wall','-Wno-unused-local-typedefs','-g',
-             '-Werror','-Wl,--no-undefined','-gdwarf-2',
+             '-Werror','-Wl,--no-undefined','-gdwarf-2', '-Wl,--as-needed',
              '-Werror=return-type','-Winit-self','-Woverloaded-virtual']
     if build == 'prof':
         flags = flags + [ '-O3', '-fno-omit-frame-pointer', '-DNDEBUG' ]

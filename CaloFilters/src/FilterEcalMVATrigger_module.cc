@@ -143,7 +143,7 @@ namespace mu2e {
     ConfigFileLookupPolicy configFile;
     // this loads the TMVA library
     TMVA::Tools::Instance();
-    reader = new TMVA::Reader( "!Color:!Silent" );  
+    reader = new TMVA::Reader( "!Color:Silent" );  
     reader->AddVariable("rpeak",&_rpeak);
     reader->AddVariable("tpeak",&_tpeak);
     reader->AddVariable("Epeak",&_Epeak);
