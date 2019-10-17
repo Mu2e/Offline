@@ -1,0 +1,86 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+# this should go in a general file FIXME!!
+FitDir : {
+  downstream : 0
+  upstream : 1
+}
+
+# time clustering is the 1st stage of track finding 
+TimeClusterFinder : {
+  module_type  : TimeClusterFinder
+  ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+  ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+  ComboHitCollection : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+
+  # enable calorimeter cluster info in time clustering
+  UseCaloCluster : true
+  UseCaloClusterPosition : true
+  #CaloClusterWeight : 10.0
+  TestFlag : true
+}
+
+#cosmics:
+TimeClusterFinderCosmics : {
+  @table::TimeClusterFinder
+  ComboHitCollection : "makePH"
+  #CaloClusterCollection : "CaloClusterFromProtoCluster"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  maxdPhi : 10.0
+  RefineClusters : false
+  PrefilterCluster : false
+  UseCaloCluster : false
+  UseCaloClusterPosition : false
+}
+
+CosmicTrackFinder : {
+    module_type		: CosmicTrackFinder
+    ComboHitCollection     : "makePH"
+    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
+    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    CosmicTrackSeedCollection  :"CosmicTrackFinder"
+    StrawDigiMCCollection : "compressDigiMCs"
+    diagPlugin : { tool_type                    : "CosmicTrackFinderDiag"
+    mcTruth                                 : 0
+    }
+                                    
+}
+    
+
+CosmicTracking : {
+  producers :{
+    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
+    CosmicTrackFinder  : @local::CosmicTrackFinder
+ }
+}
+# 
+# define standard outputs 
+  Output : {
+    Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
+    Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+	 "keep mu2e::ComboHitCollection_*_*_*",
+	  "keep mu2e::StrawHits_*_*_*"	]
+
+    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+	 "keep mu2e::ComboHitCollection_makePH_*_*",
+	    "keep mu2e::TimeClusters_*_*_*" ]
+    MCTracks : ["keep mu2e::GenParticles_*_*_*",
+		"keep mu2e::SimParticles_*_*_*" ]
+    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+	      "keep mu2e::StepPointMCs_*_virtualdetector_*"]
+
+  }
+}
+#production sequence to find straight track
+CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
+
+END_PROLOG
