@@ -5,12 +5,6 @@
 
 BEGIN_PROLOG
 
-# this should go in a general file FIXME!!
-FitDir : {
-  downstream : 0
-  upstream : 1
-}
-
 # time clustering is the 1st stage of track finding 
 TimeClusterFinder : {
   module_type  : TimeClusterFinder
@@ -50,11 +44,10 @@ CosmicTrackFinder : {
     StrawDigiMCCollection : "compressDigiMCs"
     diagPlugin : { tool_type                    : "CosmicTrackFinderDiag"
     mcTruth                                 : 0
-    }
                                     
-}
+    }
     
-
+}
 CosmicTracking : {
   producers :{
     TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
@@ -79,7 +72,7 @@ CosmicTracking : {
 	      "keep mu2e::StepPointMCs_*_virtualdetector_*"]
 
   }
-}
+
 #production sequence to find straight track
 CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
 
