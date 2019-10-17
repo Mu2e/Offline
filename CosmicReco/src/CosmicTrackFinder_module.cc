@@ -8,7 +8,6 @@
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
@@ -37,7 +36,7 @@
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "RecoDataProducts/inc/CosmicTrkFitFlag.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 //utils:
@@ -110,7 +109,7 @@ namespace mu2e{
     int                                 _printfreq;
     int 				_minnsh; // minimum # of strawHits in CH
     int 				_minnch; // minimum # of ComboHits for viable fit
-    TrkFitFlag				_saveflag;//write tracks that satisfy these flags
+    CosmicTrkFitFlag				_saveflag;//write tracks that satisfy these flags
     //unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting 
     int 				_minNHitsTimeCluster; //min number of hits in a viable time cluster
     int 				_max_seed_chi2; ///maximum chi2 allowed for seed
@@ -251,7 +250,7 @@ namespace mu2e{
      
       _stResult._nStrawHits = _stResult._nFiltStrawHits;
       _stResult._nComboHits = _stResult._nFiltComboHits;
-      _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
+      _stResult._tseed._status.merge(CosmicTrkFitFlag::hitsOK);
       _stResult._tseed._panel_hits = _stResult._chHitsToProcess;
       
       if (_diag) _stResult._diag.CosmicTrackFitCounter = 0;
@@ -274,13 +273,13 @@ namespace mu2e{
      _data.nseeds += 1;
      _tfit.BeginFit(title.str().c_str(), _stResult, _data);
 
-      if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::StraightTrackConverged) && _stResult._tseed._track.converged == true ) { 
+      if (_stResult._tseed._status.hasAnyProperty(CosmicTrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(CosmicTrkFitFlag::StraightTrackConverged) && _stResult._tseed._track.converged == true ) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
 	       
 	      fillGoodHits(_stResult);
 	      
 	      CosmicTrackFinderData tmpResult(_stResult);
-	      _stResult._tseed._status.merge(TrkFitFlag::StraightTrackOK);
+	      _stResult._tseed._status.merge(CosmicTrkFitFlag::StraightTrackOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
               
 		      std::vector<uint16_t> chindices;

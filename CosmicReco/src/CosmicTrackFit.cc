@@ -12,7 +12,7 @@
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
-#include "RecoDataProducts/inc/TrkFitFlag.hh"
+#include "RecoDataProducts/inc/CosmicTrkFitFlag.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
@@ -91,7 +91,7 @@ namespace mu2e
     
     bool is_ok(false);
     RunFitChi2(title, TrackData,diagnostics );
-    is_ok = TrackData._tseed._status.hasAllProperties(TrkFitFlag::StraightTrackOK);
+    is_ok = TrackData._tseed._status.hasAllProperties(CosmicTrkFitFlag::StraightTrackOK);
     return is_ok;
   }
 
@@ -145,13 +145,13 @@ namespace mu2e
 //-------------------------------------------// 
   void CosmicTrackFit::BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics){ 
     //Clear Previous Flags:
-    TrackData._tseed._status.clear(TrkFitFlag::StraightTrackOK); 
+    TrackData._tseed._status.clear(CosmicTrkFitFlag::StraightTrackOK); 
     // Initialize:
     bool init(false);
-    if (!TrackData._tseed._status.hasAllProperties(TrkFitFlag::StraightTrackInit)) {
+    if (!TrackData._tseed._status.hasAllProperties(CosmicTrkFitFlag::StraightTrackInit)) {
       init = true;
       if (initCosmicTrack( title, TrackData, diagnostics))
-	TrackData._tseed._status.merge(TrkFitFlag::StraightTrackInit);
+	TrackData._tseed._status.merge(CosmicTrkFitFlag::StraightTrackInit);
       else
 	return;
     } 
@@ -164,8 +164,8 @@ namespace mu2e
 //------------------------------------------------------------------*/
 void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics) {   
    CosmicTrack* track = &TrackData._tseed._track; 
-   TrackData._tseed._status.merge(TrkFitFlag::StraightTrackOK);  
-   TrackData._tseed._status.merge(TrkFitFlag::StraightTrackConverged);
+   TrackData._tseed._status.merge(CosmicTrkFitFlag::StraightTrackOK);  
+   TrackData._tseed._status.merge(CosmicTrkFitFlag::StraightTrackConverged);
    FitAll(title, TrackData, track, diagnostics); 
    
    TrackData._diag.CosmicTrackFitCounter += 1;
@@ -331,8 +331,8 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
  	      
            //If at end of the iteration process but the track is still not converging then remove it
            if(niter == _maxniter && converged ==false ){
- 		    trackData._tseed._status.clear(TrkFitFlag::StraightTrackOK);
- 		    trackData._tseed._status.clear(TrkFitFlag::StraightTrackConverged);
+ 		    trackData._tseed._status.clear(CosmicTrkFitFlag::StraightTrackOK);
+ 		    trackData._tseed._status.clear(CosmicTrkFitFlag::StraightTrackConverged);
  		    continue;
 		 }
 		 
