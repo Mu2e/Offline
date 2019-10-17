@@ -1,4 +1,5 @@
-//Likilhood Functions for minuit fitting to cosmic track seed. Input is CosmicTrackSeed, can then derive parameters from CosmicTrack stored there.
+//Author: S Middleton
+//Purpose: Likilhood Functions for minuit fitting to cosmic track seed. Input is CosmicTrackSeed, can then derive parameters from CosmicTrack stored there.
 
 //ROOT:
 #include "Math/VectorUtil.h"
@@ -49,7 +50,7 @@ namespace LiklihoodFunctions{
 	  seed[2] = trackseed._track.FitEquationXYZ.Pos.Y();
 	  seed[3] = trackseed._track.FitEquationXYZ.Dir.Y();//trackseed._track.FitParams.B1;
 	  seed[4] = trackseed._t0.t0();
-	  /* alignment parameters -  6 DoF:
+	  /* alignment parameters -  6 DoF: TODO
 	  1) Translations:
 	  seed[5] = dx;//shifts of straw centre positions relative to truth
 	  seed[6] = dy;
@@ -104,6 +105,7 @@ namespace LiklihoodFunctions{
 	  endresult.names.push_back("b0");
 	  endresult.names.push_back("b1");
 	  endresult.names.push_back("t0");
+
 	  if(minval != 0 and minval< 100 ){ cosmictrack.minuit_converged = true;} 
 	  //Add best fit results to appropriatly named element:
 	  endresult.NLL = minval;
@@ -113,7 +115,7 @@ namespace LiklihoodFunctions{
 	
 	  }
      
-       //Cut on Gaussian resultsm remove "bad" hits
+       //Cut on Gaussian results remove "bad" hits
 	ComboHitCollection passed_hits;
 	std::vector<Straw> passed_straws;
 	for(size_t i = 0; i< trackseed._straws.size(); i++){
@@ -163,34 +165,34 @@ namespace LiklihoodFunctions{
 	 endresult.bestfit = results.Params();
 	 endresult.bestfiterrors = results.Errors();
 
-	//Store DOCA results for analysis:
 	  for(size_t i = 0; i< trackseed._straws.size(); i++){
 		//Store Init DOCA	    
 	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3], trackseed._straw_chits[i]);
 	      double start_time_residual = fit.TimeResidual(trackseed._straws[i], start_doca,  srep, seed[4], trackseed._straw_chits[i]);
-	      endresult.StartDOCAs.push_back(start_doca);
-	      endresult.StartTimeResiduals.push_back(start_time_residual);
+	      
 	     
-		//Store Final
+		//Store Final Fit DOCA
 	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
               double ambig = fit.calculate_ambig(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
 	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
 	      
-	      endresult.FullFitEndTimeResiduals.push_back(end_time_residual);
-	      endresult.FullFitEndDOCAs.push_back(end_doca);
-	      endresult.RecoAmbigs.push_back(ambig);
 	      
 		//Store True DOCA
 	      double true_doca = fit.calculate_DOCA(trackseed._straws[i], trackseed._track.TrueFitEquation.Pos.X(), trackseed._track.TrueFitEquation.Dir.X(), trackseed._track.TrueFitEquation.Pos.Y(),trackseed._track.TrueFitEquation.Dir.Y(), trackseed._straw_chits[i]);
 	      double trueambig = fit.calculate_ambig(trackseed._straws[i], trackseed._track.TrueFitEquation.Pos.X(), trackseed._track.TrueFitEquation.Dir.X(), trackseed._track.TrueFitEquation.Pos.Y(),trackseed._track.TrueFitEquation.Dir.Y(), trackseed._straw_chits[i]);
+	      double true_time_residual = fit.TimeResidual(trackseed._straws[i], true_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
+ 	
+	      endresult.StartDOCAs.push_back(start_doca);
+	      endresult.StartTimeResiduals.push_back(start_time_residual);
+	      endresult.FullFitEndTimeResiduals.push_back(end_time_residual);
+	      endresult.FullFitEndDOCAs.push_back(end_doca);
+	      endresult.RecoAmbigs.push_back(ambig);
+	      endresult.TrueTimeResiduals.push_back(true_time_residual);
 	      endresult.TrueAmbigs.push_back(trueambig);
 	      endresult.TrueDOCAs.push_back(true_doca);
-	      double true_time_residual = fit.TimeResidual(trackseed._straws[i], true_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
-	      endresult.TrueTimeResiduals.push_back(true_time_residual);
-	     
-	  }//ADDBACK
+	  }
 	
-}
+     }
 	 return endresult;
  
   }

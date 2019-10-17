@@ -19,7 +19,7 @@ namespace ParametricFit{
 	 XYZVec& SecondLinePos, XYZVec& SecondLineDir, 
 	 XYZVec& closestPointOnFirstLine, XYZVec& closestPointOnSecondLine);
 	double LineToLineDCA(XYZVec& firstLineStartPoint, XYZVec& firstLineEndPoint,XYZVec& secondLineStartPoint, XYZVec& secondLineEndPoint, double& dca);
-	int GetDOCASign(XYZVec track_dir, XYZVec point);
+	
         
 	std::vector<XYZVec>GetAxes(XYZVec TrackDirection);
 	TrackAxes GetTrackAxes(XYZVec TrackDirection);

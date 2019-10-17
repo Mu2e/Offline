@@ -52,30 +52,30 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
 
 void BuildMatrixSums::addPoint( XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
 	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));//hit in X"Y"Z'
-	
-        if(errX == 0) return;
-        if(errY ==0) return;
-        
+
+	if(errX == 0) return;
+	if(errY ==0) return;
+
 	betaX00 += (h_Prime.x()/pow(errX,2));
-        betaX10 += (h_Prime.z()*h_Prime.x()*(1/pow(errX,2)));
-        
+	betaX10 += (h_Prime.z()*h_Prime.x()*(1/pow(errX,2)));
+
 	//For GammaX:
 	gammaX00 +=(1/pow(errX,2));
-        gammaX01 += (h_Prime.z()*(1/pow(errX,2)));
+	gammaX01 += (h_Prime.z()*(1/pow(errX,2)));
 	gammaX11 += (pow(h_Prime.z(),2)*(1/pow(errX,2)));
-	
+
 	//For BetaY:
 	betaY00 += (h_Prime.y()/pow(errY,2));
-        betaY10 += (h_Prime.z()*h_Prime.y()*(1/pow(errY,2)));
-        
+	betaY10 += (h_Prime.z()*h_Prime.y()*(1/pow(errY,2)));
+
 	//For GammaX:
-	
+
 	gammaY00 +=(1/pow(errY,2));	
-        gammaY01 += (h_Prime.z()*(1/pow(errY,2)));
+	gammaY01 += (h_Prime.z()*(1/pow(errY,2)));
 	gammaY11 += (pow(h_Prime.z(),2)*(1 /pow(errY,2)));
-	
-        //Deltas:
-        deltaX += (pow(h_Prime.x(),2)*(1/pow(errX,2)));
+
+	//Deltas:
+	deltaX += (pow(h_Prime.x(),2)*(1/pow(errX,2)));
 	deltaY += (pow(h_Prime.y(),2)*(1/pow(errY,2)));
 	
 	

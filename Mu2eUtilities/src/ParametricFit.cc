@@ -1,12 +1,11 @@
-//Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment. This includes calculting track axes, hit errors and re-orientating those errors, track residuals are also calcuated here.
+//Author: S Middleton
+//Purpose: Stores all the functions associated with building and interpretting parametric line equations for the purpose of cosmic track based alignment. This includes calculting track axes, hit errors and re-orientating those errors, track residuals are also calcuated here.
 
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 
 //ROOT
 #include "TMath.h"
-#include "TF1.h"
-#include "TH1F.h"
 
 using namespace std;
 using namespace mu2e;
@@ -19,12 +18,6 @@ namespace ParametricFit{
 	    return tMin;
 
        }
-
-      double LRAmbig( double& dca){
-	   //XYZVec closestPointOnLine=PointToLineCA( point, line_starting_point, line_end_point);
-	double LorR = dca > 0.0 ? 1.0 : -1.0;
-	return LorR;
-      }
 
 	XYZVec PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
           double tMin = GettMin(point, starting_point, end_point);
@@ -53,7 +46,6 @@ namespace ParametricFit{
 
 	} 
      
-	
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint)
 	{
   	//Get t for given x coord (line eqn: r = r0 + mt)
@@ -95,14 +87,13 @@ namespace ParametricFit{
         }
 
 	 double LineToLineDCA(XYZVec& FirstLinePosition, XYZVec& FirstLineDirection, XYZVec& SecondLinePosition, XYZVec& SecondLineDirection, double& dca)
-{
-	XYZVec closestPointOnFirstLine, closestPointOnSecondLine;
- 	bool success = LineToLineCA(FirstLinePosition, FirstLineDirection, SecondLinePosition, SecondLineDirection, closestPointOnFirstLine, closestPointOnSecondLine);
-        dca = success ? sqrt((closestPointOnSecondLine-closestPointOnFirstLine).Mag2()) : -1.;
-	cout<<"DOCA "<<dca<<endl;
-	return success;
+	{
+		XYZVec closestPointOnFirstLine, closestPointOnSecondLine;
+	 	bool success = LineToLineCA(FirstLinePosition, FirstLineDirection, SecondLinePosition, SecondLineDirection, closestPointOnFirstLine, closestPointOnSecondLine);
+		dca = success ? sqrt((closestPointOnSecondLine-closestPointOnFirstLine).Mag2()) : -1.;
+		return success;
 
-}  
+       }  
 
 int GetDOCASign(XYZVec track_dir, XYZVec point){
         int sign = (track_dir.y()-point.y() < 0) ?  -1 : 1 ;
