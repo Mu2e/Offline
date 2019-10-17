@@ -80,7 +80,7 @@ namespace LiklihoodFunctions{
 	  migrad.SetLimits((signed) 0,-10000, 10000);
 	  migrad.SetLimits((signed) 1, -5, 5);
 	  migrad.SetLimits((signed) 2,-5000, 5000 ); 
-	  migrad.SetLimits((signed) 3, -10,1);
+	  migrad.SetLimits((signed) 3, -10,10);
 	  migrad.Fix((unsigned) 4); 
 	  int maxfcn = MaxLogL;
 	  double tolerance = 1000;
