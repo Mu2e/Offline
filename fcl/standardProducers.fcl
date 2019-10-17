@@ -30,7 +30,6 @@ END_PROLOG
 #include "CaloReco/fcl/prolog.fcl"
 #include "CRVResponse/fcl/prolog.fcl"
 #include "CommonMC/fcl/prolog.fcl"
-#include "CosmicReco/fcl/prolog.fcl"
 
 BEGIN_PROLOG
 
