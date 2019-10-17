@@ -761,8 +761,8 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
         	
         	CosmicTrackSeed sts =(*_coscol)[ist];
 		CosmicTrack st = sts._track;
-		TrkFitFlag const& status = sts._status;
-        	if (!status.hasAllProperties(TrkFitFlag::StraightTrackOK) ){continue;}
+		CosmicTrkFitFlag const& status = sts._status;
+        	if (!status.hasAllProperties(CosmicTrkFitFlag::StraightTrackOK) ){continue;}
 		if(st.converged == false or st.minuit_converged  == false) { continue;}
 		std::vector<int> panels, planes, stations;
                 _chisq_ndf_plot_init->Fill(st.Diag.InitialChiTot);
@@ -945,11 +945,11 @@ _mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.14
 		   
 	        }   
 	        for(auto const& tseed : *_coscol) {   
-                	TrkFitFlag const& status = tseed._status;
-                	_hitsOK = status.hasAllProperties(TrkFitFlag::hitsOK);
-                	_StraightTrackOK = status.hasAllProperties(TrkFitFlag::StraightTrackOK);
-                	_StraightTrackConverged = status.hasAllProperties(TrkFitFlag::StraightTrackConverged);
-                	_StraightTrackInit = status.hasAllProperties(TrkFitFlag::StraightTrackInit);
+                	CosmicTrkFitFlag const& status = tseed._status;
+                	_hitsOK = status.hasAllProperties(CosmicTrkFitFlag::hitsOK);
+                	_StraightTrackOK = status.hasAllProperties(CosmicTrkFitFlag::StraightTrackOK);
+                	_StraightTrackConverged = status.hasAllProperties(CosmicTrkFitFlag::StraightTrackConverged);
+                	_StraightTrackInit = status.hasAllProperties(CosmicTrkFitFlag::StraightTrackInit);
         	}
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];

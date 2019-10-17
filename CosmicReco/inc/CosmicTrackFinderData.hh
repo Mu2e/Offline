@@ -128,10 +128,8 @@ namespace mu2e {
     CosmicTrackFinderData();
     ~CosmicTrackFinderData();
 
-    //const CosmicTrackSeedCollection*   stcol(){return      _stcol;}
     const ComboHitCollection*         chcol () { return _chcol ; }
     const StrawHitCollection*         shcol () {return _shcol;}
-    //const StrawHitFlagCollection*     shfcol() { return _shfcol; }
     const TimeClusterCollection*         tccol () { return _tccol ; }
     int           maxIndex          () { return kMaxResidIndex; }
     void          orderID           (ChannelID* X, ChannelID* O);
