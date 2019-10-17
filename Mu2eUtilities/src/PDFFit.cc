@@ -34,8 +34,8 @@
 using namespace mu2e;
 
 //For Gaussian:
-const double drift_v = 0.065; //mm/ns
-const double sigma = 1.0; //ns (for full fit only) TODO - make FCL parameter
+const double drift_v = 0.065; //mm/ns TODO fix this in the code
+const double sigma = 1.0; //ns (for full fit only) , if gaussian the sigma is set to 24ns in the FCL parametets
 const double tau = 10.7; //ns
 //For Full fit:
 const int N_tbins = 500;
@@ -189,7 +189,6 @@ double FullFit::InterpolatePDF(double time_residual, double sigma, double tau) c
   return pdf_val;
  
 }
-
 
 // This 3 functions talk to the drift util:
 double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
