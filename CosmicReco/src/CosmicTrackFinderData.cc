@@ -1,6 +1,8 @@
-//S Middleton, Nov. 2018
+//Author: S Middleton
+//Purpise: stores details of Cosmic Track fit (based on helix fit data)
+// Diagnostics can also be stored
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "TrkReco/inc/CosmicTrackFinderData.hh"
+#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 
 using CLHEP::HepVector;
 using CLHEP::HepSymMatrix;
