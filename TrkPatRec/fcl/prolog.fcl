@@ -34,32 +34,6 @@ TimeClusterFinder : {
   TestFlag : true
 }
 
-#cosmics:
-TimeClusterFinderCosmics : {
-  @table::TimeClusterFinder
-  ComboHitCollection : "makePH"
-  #CaloClusterCollection : "CaloClusterFromProtoCluster"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-  maxdPhi : 10.0
-  RefineClusters : false
-  PrefilterCluster : false
-  UseCaloCluster : false
-  UseCaloClusterPosition : false
-}
-
-CosmicTrackFinder : {
-    module_type		: CosmicTrackFinder
-    ComboHitCollection     : "makePH"
-    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
-    TimeClusterCollection  : "TimeClusterFinderCosmics"
-    CosmicTrackSeedCollection  :"CosmicTrackFinder"
-    StrawDigiMCCollection : "compressDigiMCs"
-    diagPlugin : { tool_type                    : "CosmicTrackFinderDiag"
-    mcTruth                                 : 0
-    }
-                                    
-}
-    
 
 # specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
 # note these are helicity-independent
@@ -487,14 +461,7 @@ MHFinalFitDmuP                :  {
   SeedCollection : MHSeedFitDmp
 }
 
-CosmicTracking : {
-  producers :{
-    
-    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
-    CosmicTrackFinder  : @local::CosmicTrackFinder
 
- }
-}
 # Declare a table with all the modules needed for track reconstruction
 Tracking : {
   producers : {
@@ -571,8 +538,7 @@ Tracking : {
 
   }
 }
-#production sequence to find straight track
-CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
+
 
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ TimeClusterFinderDe, HelixFinderDe, KSFDeM, KFFDeM ]
