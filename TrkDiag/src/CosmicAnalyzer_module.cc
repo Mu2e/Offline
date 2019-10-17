@@ -4,10 +4,12 @@
 #include <cmath>
 
 // Cosmic Tracks:
-#include "TrkReco/inc/CosmicTrackFit.hh"
-#include "TrkPatRec/inc/CosmicTrackFinder_types.hh"
-#include "TrkReco/inc/CosmicTrackFinderData.hh"
+#include "CosmicReco/inc/CosmicTrackFit.hh"
+#include "CosmicReco/inc/CosmicTrackFinder_types.hh"
+#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
+#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/TimeClusterCollection.hh"
@@ -19,8 +21,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 // MC Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"

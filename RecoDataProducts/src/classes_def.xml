@@ -8,13 +8,9 @@
 
  <class name="std::vector<std::pair<unsigned int, unsigned int> >"/>
 
-<class name="mu2e::StraightTrackSeed"/>
- <class name="mu2e::StraightTrackSeedCollection"/>
  <class name="mu2e::CosmicTrackSeed"/>
  <class name="mu2e::CosmicTrackSeedCollection"/>
-<class name="art::Ptr<mu2e::StraightTrackSeed>"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
-<class name="art::Wrapper<mu2e::StraightTrackSeedCollection>"/>
  <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
 <!--  ********* calorimeter  ********* -->
  <class name="mu2e::CaloDigi"/>

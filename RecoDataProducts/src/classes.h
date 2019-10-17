@@ -8,11 +8,8 @@
 #include <vector>
 #include "canvas/Persistency/Common/Wrapper.h"
 #include "canvas/Persistency/Common/Assns.h"
-#include "RecoDataProducts/inc/StraightTrack.hh" 
-#include "RecoDataProducts/inc/StraightTrackSeed.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh" 
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "RecoDataProducts/inc/KalmanTrack.hh"
 
 // calorimeter
 #include "RecoDataProducts/inc/CaloDigi.hh"
