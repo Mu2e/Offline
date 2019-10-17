@@ -77,7 +77,6 @@ namespace mu2e
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
     _max_position_deviation((pset.get<float>("max_position_deviation",200))),
     _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
-    _minMomTrue      (pset.get<int>("minxMomTrue",4)),//TODO
     _maxLogL (pset.get<int>("maxLogL",150)),
     _minCHStrawFull (pset.get<int>("minCHStrawFull",8)),
     _gaussTres (pset.get<int>("gaussTres",24)),
@@ -96,6 +95,15 @@ namespace mu2e
     return is_ok;
   }
 
+  std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY){
+        std::vector<XYZVec> sortedPoints;
+  	std::sort(pointY.begin(), pointY.end(),ycomp());
+  	for (unsigned i=0; i<pointY.size(); ++i) { 
+      		sortedPoints.push_back(pointY[i]);
+      	}
+      	return sortedPoints;
+   }
+   
   /*-------------Line Direction-------------------------//
     Range of methods for finding track directions - some are redundent-check!
   //----------------------------------------------*/
@@ -165,15 +173,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
  
 }
 
-  std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY){
-        std::vector<XYZVec> sortedPoints;
-  	std::sort(pointY.begin(), pointY.end(),ycomp());
-  	for (unsigned i=0; i<pointY.size(); ++i) { 
-      		sortedPoints.push_back(pointY[i]);
-      	}
-      	return sortedPoints;
-   }
-   
+
 
  void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, CosmicTrackFinderTypes::Data_t& diagnostics){
  
