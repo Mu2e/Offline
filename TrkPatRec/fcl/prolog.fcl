@@ -30,14 +30,15 @@ TimeClusterFinder : {
   # enable calorimeter cluster info in time clustering
   UseCaloCluster : true
   UseCaloClusterPosition : true
-  CaloClusterWeight : 10.0
+  #CaloClusterWeight : 10.0
   TestFlag : true
 }
 
 #cosmics:
 TimeClusterFinderCosmics : {
   @table::TimeClusterFinder
-  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  ComboHitCollection : "makePH"
+  #CaloClusterCollection : "CaloClusterFromProtoCluster"
   T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
   maxdPhi : 10.0
   RefineClusters : false
@@ -499,8 +500,6 @@ Tracking : {
   producers : {
 
     TimeClusterFinderDe  : @local::TimeClusterFinderDe
-    //TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
-    //CosmicTrackFinder  : @local::CosmicTrackFinder
     HelixFinderDe  : @local::RobustHelixFinderDe
     TimeClusterFinderDmu  : @local::TimeClusterFinderDmu
     HelixFinderDmu  : @local::RobustHelixFinderDmu
@@ -573,7 +572,7 @@ Tracking : {
   }
 }
 #production sequence to find straight track
-CosmicTracking.FindCosmics : [ TimeClusterFinder, TimeClusterFinderCosmics, CosmicTrackFinder ]
+CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
 
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ TimeClusterFinderDe, HelixFinderDe, KSFDeM, KFFDeM ]
