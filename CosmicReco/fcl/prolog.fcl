@@ -35,6 +35,14 @@ TimeClusterFinderCosmics : {
   UseCaloClusterPosition : false
 }
 
+CHD : {
+	module_type : ComboHitDiag
+	StrawDigiMCCollection : "compressDigiMCs"
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+}
 CosmicTrackFinder : {
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
