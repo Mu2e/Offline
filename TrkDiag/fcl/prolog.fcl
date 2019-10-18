@@ -14,7 +14,6 @@ BEGIN_PROLOG
 	ComboHitCollection : "makePH"
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	UseFlagCollection : true
-	
 	TimeOffsets : {
 	  inputs : [ @sequence::DigiCompression.TimeMaps ]
 	}
@@ -59,13 +58,13 @@ BEGIN_PROLOG
 	module_type : HelixDiag
 	StrawDigiMCCollection : "compressDigiMCs"
 	VDStepPointMCCollection : "compressDigiMCs:virtualdetector"
-	HelixSeedCollection : "MHDeM"
+	HelixSeedCollection : "HelixFinder:Positive"
 	ComboHitCollection : "makePH"
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
 	PlotHelices : false
 	InclusivePlotFlagBits : ["HitsOK"]
-	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+	TimeOffsets         :  { inputs : [ @sequence::DigiCompression.TimeMaps ] }
   }
 
   CHD : {
@@ -74,98 +73,12 @@ BEGIN_PROLOG
 	ComboHitCollection : "makePH"
 	UseFlagCollection : true
 	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
-	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+	TimeOffsets : {
+	  inputs : [ @sequence::DigiCompression.TimeMaps ]
+	}
   }
-
-
-# track trigger path
-  TTTCD : {
-	@table::TCD
-	UseFlagCollection : false
-	StrawHitFlagCollection : none
-	ComboHitCollection : TTflagBkgHits
-	TimeClusterCollection : TTtimeClusterFinder
-  }
-
-  TTHD : {
-	@table::HD
-	ComboHitCollection : TTflagBkgHits
-	HelixSeedCollection : "TThelixFinder:Positive"
-	UseFlagCollection : false
-	StrawHitFlagCollection : none
-  }
-
-  TTCHD : {
-	@table::CHD
-	UseStrawHitFlagCollection : false
-	ComboHitCollection : TTflagBkgHits
-  }
-
-# Prototype track analysis config.
-  TrackAnalysis : {
-    module_type : TrackAnalysis
-    KalFinalTagRoot : KFF
-    TrkQualTagRoot : TrkQual
-#   KalDiag : @local::KalDiagReadCD3 # configure KalDiag to read CD3 Beam Sim Particles
-    KalDiag : @local::KalDiagReadMDC # configure KalDiag to read MDC2018 data
-    # change this if reading cosmic data or generating inline
-    //TrkCaloDiag : @local::TrkCaloDiag
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
-    # want to keep track of the mean beam intensity that was assumed in the simulation
-    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    PBIWeightTag : "PBIWeight"
-    fillTrkQualInfo : true
-  }
-# Analysis from reco output: beta protype!
-# DeM only for now
-  TrackAnalysisReco : {
-    module_type : TrackAnalysisReco
-    DeTag : "KFFDeM"
-    UeTag : "KFFUeM"
-    DmuTag : "KFFDmuM"
-    DeTrkQualTag : "TrkQualDeM"
-    MeanBeamIntensity : "protonBunchIntensity:MeanIntensity"
-    PBIWeightTag : "PBIWeight"
-    CrvCoincidenceModuleLabel : "CrvCoincidenceClusterFinder"
-#    CrvCoincidenceMCModuleLabel : "CrvCoincidenceClusterMatchMC"
-    CrvCoincidenceMCModuleLabel : "compressRecoMCs"
-    FillMCInfo : true
-    ProcessEmptyEvents : false
-    AnalyzeCRV : true
-    fillTrkQualInfo : true
-    StrawHitFlagCollection : "FlagBkgHits:StrawHits"
- #   PrimaryParticleTag : "FindMCPrimary"
-    PrimaryParticleTag : "compressRecoMCs"
-    KalSeedMCAssns : "SelectRecoMC"
-    CaloClusterMCAssns : "SelectRecoMC"
-  }
-# TrkCaloIntersection by default looks for merged tracks; repoint to the tracker-found tracks
-  TrackCaloMatching : { @table::TrackCaloMatching 
-    producers : { @table::TrackCaloMatching.producers 
-      TrackCaloIntersectionTRFDem : { @table::TrackCaloMatching.producers.TrackCaloIntersectionDem
-	fitterModuleLabel : KFFDeM
-      }
-      TrackCaloMatchingTRFDem : { @table::TrackCaloMatching.producers.TrackCaloMatchingDem
-	fitterModuleLabel : KFFDeM
-	trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTRFDem
-      }
-      TrackCaloIntersectionTRFDep: { @table::TrackCaloMatching.producers.TrackCaloIntersectionDep
-	fitterModuleLabel : KFFDeP
-      }
-      TrackCaloMatchingTRFDep : { @table::TrackCaloMatching.producers.TrackCaloMatchingDep
-	fitterModuleLabel : KFFDeP
-	trkToCaloExtrapolModuleLabel: TrackCaloIntersectionTRFDep
-      }
-    }
-  }
-  
-  TrackCaloMatching.matching_dem_TRF : [ TrackCaloIntersectionTRFDem, TrackCaloMatchingTRFDem ]
-  TrackCaloMatching.matching_dep_TRF : [ TrackCaloIntersectionTRFDep, TrackCaloMatchingTRFDep ]
-
 
   # Track quality module
-
   TrkQual : {
   	  module_type : TrackQuality
   }
@@ -180,16 +93,12 @@ BEGIN_PROLOG
   TrkQualUeM.KalSeedCollection : "KFFUeM"
   TrkQualDmuM		       : @local::TrkQualNeg
   TrkQualDmuM.KalSeedCollection : "KFFDmuM"
-  TrkQualUmuM		       : @local::TrkQualNeg
-  TrkQualUmuM.KalSeedCollection : "KFFUmuM"
   TrkQualDeP		       : @local::TrkQualPos
   TrkQualDeP.KalSeedCollection : "KFFDeP"
   TrkQualUeP		       : @local::TrkQualPos
   TrkQualUeP.KalSeedCollection : "KFFUeP"
   TrkQualDmuP		       : @local::TrkQualPos
   TrkQualDmuP.KalSeedCollection : "KFFDmuP"
-  TrkQualUmuP		       : @local::TrkQualPos
-  TrkQualUmuP.KalSeedCollection : "KFFUmuP"
   # track PID module
   TrkPID : {
     module_type : TrackPID
@@ -212,7 +121,6 @@ BEGIN_PROLOG
       TRD : @local::TRD
       BD : @local::BD
     }
-    
   }
 
 # DIO weighting for flat spectrum electrons
@@ -263,10 +171,6 @@ BEGIN_PROLOG
       	  branch : "dm" 
 	  suffix : "DmuM" 
   }
-  UmuM : { input : "KFF" 
-      	  branch : "um" 
-	  suffix : "UmuM" 
-  }
   DeP : { input : "KFF" 
       	  branch : "de" 
 	  suffix : "DeP" 
@@ -284,11 +188,6 @@ BEGIN_PROLOG
       	  branch : "dm" 
 	  suffix : "DmuP" 
   }
-  UmuP : { input : "KFF" 
-      	  branch : "um" 
-	  suffix : "UmuP" 
-  }
-
 
   TrackAnalysisReco : {
     module_type : TrackAnalysisReco
@@ -324,8 +223,6 @@ BEGIN_PROLOG
       TrkQualUeP : @local::TrkQualUeP
       TrkQualDmuM : @local::TrkQualDmuM
       TrkQualDmuP : @local::TrkQualDmuP
-      TrkQualUmuM : @local::TrkQualUmuM
-      TrkQualUmuP : @local::TrkQualUmuP
       TrkPIDDeM : @local::TrkPIDDeM
       TrkPIDDeP : @local::TrkPIDDeP
    }
@@ -343,7 +240,7 @@ BEGIN_PROLOG
       genCountLogger : @local::genCountLogger
    }
 
-   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualUeM, TrkQualDmuM, TrkQualDeP, TrkQualUeP, TrkQualDmuP, TrkQualUmuM, TrkQualUmuP, TrkPIDDeM, TrkPIDDeP ]
+   TrigSequence : [ PBIWeight, TrkQualDeM, TrkQualUeM, TrkQualDmuM, TrkQualDeP, TrkQualUeP, TrkQualDmuP, TrkPIDDeM, TrkPIDDeP ]
    EndSequenceNoMC : [ TrkAnaNeg, TrkAnaPos ]
    EndSequence : [ TrkAnaNeg, TrkAnaPos, genCountLogger ]
 }
