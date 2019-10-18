@@ -154,8 +154,6 @@ StrawElectronics : {
 StrawResponse : {
    verbose : 0
    useDb : false
-   useNonLinearDrift : true
-   linearDriftVelocity : 0.0625
    // KeV
    eDep : [ 0.214044 , 0.311385 , 0.405932 , 0.503041 , 0.601217 , 0.700171 , 
       0.799435 , 0.898859 , 0.998941 , 1.09876 , 1.19853 , 1.29892 , 1.39884 , 
@@ -235,7 +233,8 @@ StrawResponse : {
    wireLengthBuffer : 2.0
    strawLengthFactor : 0.9
    errorFactor : 1.0
-   
+   useNonLinearDrift : true
+   linearDriftVelocity : 0.0625
    minDriftRadiusResolution : 0.2
    maxDriftRadiusResolution : 0.2
    driftRadiusResolutionRadius : -1

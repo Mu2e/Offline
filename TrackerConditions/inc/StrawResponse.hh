@@ -27,7 +27,6 @@ namespace mu2e {
     typedef std::shared_ptr<const StrawResponse> cptr_t;
 
     explicit StrawResponse() : _name("StrawResponse") {}
-   
     explicit StrawResponse( StrawDrift::cptr_t strawDrift,
 			    StrawElectronics::cptr_t strawElectronics,
 			    StrawPhysics::cptr_t strawPhysics,
@@ -100,7 +99,6 @@ namespace mu2e {
     //      double pathLength(StrawHit const& strawhit, double theta) const;
 
     void print(std::ostream& os) const;
-    void print() const;
     void printVector(std::ostream& os, std::string const& name, 
 		    std::vector<double> const& a) const;
 
