@@ -20,7 +20,7 @@ void run_analyzer(TString const fname="data_03.root",
 
   // Get rid of grey background on print out.
   gROOT->SetStyle("Plain");
-  
+
   gSystem->Load("libCintex");
   Cintex::Enable();
   gSystem->Load("libCore.so");
