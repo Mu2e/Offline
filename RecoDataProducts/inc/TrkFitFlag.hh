@@ -22,7 +22,7 @@ namespace mu2e {
     // The first 16 describe various success conditions, the last 16 various failure modes
     enum bit_type {hitsOK=0,circleOK,phizOK,helixOK,seedOK,kalmanOK,circleInit,phizInit,
 
-    circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged, KSF=16, KFF, TPRHelix, CPRHelix, StraightTrackOK,StraightTrackConverged, StraightTrackInit};
+    circleConverged,phizConverged,helixConverged,seedConverged,kalmanConverged, KSF=16, KFF, TPRHelix, CPRHelix};
 
     // functions needed for the BitMap template
     static std::string const& typeName();
