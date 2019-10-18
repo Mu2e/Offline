@@ -28,7 +28,7 @@ namespace mu2e {
       kNHitHistSets   = 10
     };
 
-
+    
     struct Hist_t {
       TH1F*  nTimePeaks;
       TH1F*  nChPerPanel;
