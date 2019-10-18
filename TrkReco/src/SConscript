@@ -46,7 +46,6 @@ mainlib = helper.make_mainlib ( [
     'HepPDT',
     'xerces-c',
     'boost_system',
-    extrarootlibs,
     ] )
 
 # Fixme: split into link lists for each module.
