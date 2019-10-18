@@ -40,10 +40,6 @@ namespace mu2e {
       bitnames[std::string("KalFinalFit")]              = bit_to_mask(KFF);
       bitnames[std::string("TrkPatRecHelix")]              = bit_to_mask(TPRHelix);
       bitnames[std::string("CalPatRecHelix")]              = bit_to_mask(CPRHelix);
-      bitnames[std::string("StraightTrackOK")]              = bit_to_mask(StraightTrackOK);
-      bitnames[std::string("StraightTrackConverged")]              = bit_to_mask(StraightTrackConverged);
-      bitnames[std::string("StraightTrackInit")]              = bit_to_mask(StraightTrackInit);
-
     }
     return bitnames;
   }

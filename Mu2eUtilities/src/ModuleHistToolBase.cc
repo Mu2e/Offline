@@ -29,7 +29,6 @@ namespace mu2e {
   int ModuleHistToolBase::fillHistograms(void* Data, int Module) {
     return 0;
   }
-  
 
 //-----------------------------------------------------------------------------
 //  hook for debug printout
