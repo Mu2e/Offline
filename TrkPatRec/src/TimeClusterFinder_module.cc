@@ -1,5 +1,5 @@
 //
-// TTracker time cluster finder
+// Tracker time cluster finder
 //
 // $Id: TimeClusterFinder_module.cc,v 1.3 2014/08/25 12:08:29 tassiell Exp $
 // $Author: tassiell $
