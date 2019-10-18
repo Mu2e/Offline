@@ -1,8 +1,6 @@
-//Author: S. Middleton
-//Purpose: Stores details of cosmics
-#ifndef __CosmicReco_CosmicTrackFinder_types_hh__
-#define __CosmicReco_CosmicTrackFinder_types_hh__
-
+#ifndef __TrkPatRec_CosmicTrackFinder_types_hh__
+#define __TrkPatRec_CosmicTrackFinder_types_hh__
+//Stores diagnostic information about cosmic seed fit (residuals, chi2 before and after first chi2 minimization application)
 #include "TObject.h"
 #include <vector>
 
@@ -28,7 +26,7 @@ namespace mu2e {
       enum {kMaxSeeds = 1000, kMaxNHits = 50 };
       int     nseeds ; //Number of Seeds
       int     npasses ; //Number passing all cuts in finder
-      int     nTimePeaks; // number of time clusters
+      int     nTimePeaks;               // number of time clusters
       
       int     ntclhits ; //number of time cluster hits for each seed
       size_t  nhits    ; //number of hits for each seed
@@ -64,8 +62,10 @@ namespace mu2e {
       double  Initial_hit_pullX[kMaxNHits];
       double  Initial_hit_pullY[kMaxNHits];
       //Errors:
+      
       double    Final_ErrorsTot[kMaxNHits];
       double    Initial_ErrorsTot[kMaxNHits];
+      //int     nsh    ;
       
       int maxSeeds() { return kMaxSeeds; }
     };
