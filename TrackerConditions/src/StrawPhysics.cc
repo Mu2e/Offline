@@ -70,7 +70,6 @@ namespace mu2e {
   
   // get drift time
   double StrawPhysics::driftDistanceToTime(double ddist, double phi) const{
-    
     if(_nonlindrift){
       return _strawDrift->D2T(ddist,phi);
     }

@@ -1,6 +1,6 @@
 //
 // Original author Rob Kutschke
-// 
+//
 
 #include "canvas/Persistency/Common/Wrapper.h"
 
