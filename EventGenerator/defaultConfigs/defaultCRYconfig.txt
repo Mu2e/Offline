@@ -3,10 +3,10 @@
 // Verbose
 int cosmicCRY.verbose = 0;
 
-string cosmicCRY.refPoint = "UNDEFINED";
+string cosmicCRY.refPoint = "TRACKER";
 double cosmicCRY.refY0 = 20000; // 15.4 meter above nominal beam height - at the surface
 
-bool cosmicCRY.projectToTargetBox = false;
+bool cosmicCRY.projectToTargetBox = true;
 
 double cosmicCRY.targetBoxXmin =-10000;
 double cosmicCRY.targetBoxXmax =  3000;
