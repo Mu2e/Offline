@@ -72,36 +72,7 @@ double RNGWrapper<T>::rng(void) { return (m_obj->*m_func)(); }
 
 CosmicCRY::CosmicCRY(art::Run &run,
                      const SimpleConfig &config, CLHEP::HepRandomEngine &engine)
-    : _verbose(config.getInt("cosmicCRY.verbose", 0)),
-      _returnMuons(config.getBool("cosmicCRY.returnMuons", true)),
-      _returnNeutrons(config.getBool("cosmicCRY.returnNeutrons", true)),
-      _returnProtons(config.getBool("cosmicCRY.returnProtons", true)),
-      _returnGammas(config.getBool("cosmicCRY.returnGammas", true)),
-      _returnElectrons(config.getBool("cosmicCRY.returnElectrons", true)),
-      _returnPions(config.getBool("cosmicCRY.returnPions", true)),
-      _returnKaons(config.getBool("cosmicCRY.returnKaons", true)),
-      _month(config.getInt("cosmicCRY.month", 6)),
-      _day(config.getInt("cosmicCRY.day", 21)),
-      _year(config.getInt("cosmicCRY.year", 2020)),
-      _latitude(config.getDouble("cosmicCRY.latitude", 41.8)),
-      _altitude(config.getInt("cosmicCRY.altitude", 0)),
-      _subboxLength(config.getDouble("cosmicCRY.subboxLength", 100.)),
-      _maxShowerEn(config.getDouble("cosmicCRY.maxShowerEn", 1E6)),
-      _minShowerEn(config.getDouble("cosmicCRY.minShowerEn", 50)),
-      _setupString(""),
-      _refY0(config.getDouble("cosmicCRY.refY0", 20000.)),
-      _refPointChoice(config.getString("cosmicCRY.refPoint", "UNDEFINED")),
-      _directionChoice(config.getString("cosmicCRY.directionChoice", "ALL")),
-      _cosmicReferencePointInMu2e(),
-      _vertical(false),
-      _projectToTargetBox(config.getBool("cosmicCRY.projectToTargetBox", false)),
-      _geomInfoObtained(false),
-      _targetBoxXmin(config.getDouble("cosmicCRY.targetBoxXmin", -1000)),
-      _targetBoxXmax(config.getDouble("cosmicCRY.targetBoxXmax", 1000)),
-      _targetBoxYmin(config.getDouble("cosmicCRY.targetBoxYmin", -1000)),
-      _targetBoxYmax(config.getDouble("cosmicCRY.targetBoxYmax", 1000)),
-      _targetBoxZmin(config.getDouble("cosmicCRY.targetBoxZmin", -1000)),
-      _targetBoxZmax(config.getDouble("cosmicCRY.targetBoxZmax", 1000))
+    : _verbose(config.getInt("cosmicCRY.verbose", 0)), _returnMuons(config.getBool("cosmicCRY.returnMuons", true)), _returnNeutrons(config.getBool("cosmicCRY.returnNeutrons", true)), _returnProtons(config.getBool("cosmicCRY.returnProtons", true)), _returnGammas(config.getBool("cosmicCRY.returnGammas", true)), _returnElectrons(config.getBool("cosmicCRY.returnElectrons", true)), _returnPions(config.getBool("cosmicCRY.returnPions", true)), _returnKaons(config.getBool("cosmicCRY.returnKaons", true)), _month(config.getInt("cosmicCRY.month", 6)), _day(config.getInt("cosmicCRY.day", 21)), _year(config.getInt("cosmicCRY.year", 2020)), _latitude(config.getDouble("cosmicCRY.latitude", 41.8)), _altitude(config.getInt("cosmicCRY.altitude", 0)), _subboxLength(config.getDouble("cosmicCRY.subboxLength", 100.)), _maxShowerEn(config.getDouble("cosmicCRY.maxShowerEn", 1E6)), _minShowerEn(config.getDouble("cosmicCRY.minShowerEn", 50)), _setupString(""), _refY0(config.getDouble("cosmicCRY.refY0", 20000.)), _refPointChoice(config.getString("cosmicCRY.refPoint", "UNDEFINED")), _directionChoice(config.getString("cosmicCRY.directionChoice", "ALL")), _cosmicReferencePointInMu2e(), _vertical(false), _projectToTargetBox(config.getBool("cosmicCRY.projectToTargetBox", false)), _geomInfoObtained(false), _targetBoxXmin(config.getDouble("cosmicCRY.targetBoxXmin", -1000)), _targetBoxXmax(config.getDouble("cosmicCRY.targetBoxXmax", 1000)), _targetBoxYmin(config.getDouble("cosmicCRY.targetBoxYmin", -1000)), _targetBoxYmax(config.getDouble("cosmicCRY.targetBoxYmax", 1000)), _targetBoxZmin(config.getDouble("cosmicCRY.targetBoxZmin", -1000)), _targetBoxZmax(config.getDouble("cosmicCRY.targetBoxZmax", 1000))
 {
   _cryDataPath = std::string(std::getenv("CRYDATAPATH"));
   if (_cryDataPath.length() == 0)
@@ -210,6 +181,7 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
       double ke = secondary->ke(); // MeV by default in CRY
       if (ke < _minShowerEn)
         continue;
+
       double totalE = ke + mass;
       _showerSumEnergy += totalE;
       double totalP = safeSqrt(totalE * totalE - mass * mass);
@@ -218,7 +190,6 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
 
       // Change coordinate system since y points upward, z points along
       // the beam line; which make cry(xyz) -> mu2e(zxy), uvw -> mu2e(zxy)
-
       Hep3Vector position(
           secondary->y() * _m2mm + _cosmicReferencePointInMu2e.x(),
           secondary->z() * _m2mm + _cosmicReferencePointInMu2e.y(),
@@ -255,6 +226,7 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
                 closestDistance = _targetBoxIntersections.at(idx).y();
               }
             }
+
             Hep3Vector projectedPos = _worldIntersections.at(idx);
             // genParts.push_back(GenParticle(static_cast<PDGCode::type>(secondary->PDGid()),
             // 				     GenId::cosmicCRY, position, mom4,
