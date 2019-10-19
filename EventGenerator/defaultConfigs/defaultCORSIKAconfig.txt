@@ -1,0 +1,32 @@
+// default config for CORSIKA cosmic generator
+
+// Verbose
+int cosmicCORSIKA.verbose = 0;
+
+// string cosmicCORSIKA.refPoint = "TRACKER";
+double cosmicCORSIKA.refY0 = 20000; // 15.4 meter above nominal beam height - at the surface
+double cosmicCORSIKA.buffer = 500;
+double cosmicCORSIKA.showerAreaExtension = 3000;
+bool cosmicCORSIKA.projectToTargetBox = true;
+
+double cosmicCORSIKA.targetBoxXmin =-10000;
+double cosmicCORSIKA.targetBoxXmax =  3000;
+double cosmicCORSIKA.randomXZShift = 1000;
+double cosmicCORSIKA.targetBoxYmin = -5000;
+double cosmicCORSIKA.targetBoxYmax =  5000;
+
+double cosmicCORSIKA.targetBoxZmin = -5000;
+double cosmicCORSIKA.targetBoxZmax = 21000;
+
+double cosmicCORSIKA.timeOffset = 0;
+
+vector<string> cosmicCORSIKA.showerInputFiles = {"/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310002",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310001",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310003",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310004",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310005",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310006",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310007",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310008",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310009",
+                                                 "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT310010"};
