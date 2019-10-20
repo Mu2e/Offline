@@ -150,7 +150,7 @@ namespace mu2e
       int window_size_x(1300);
       int window_size_y(600);
       canvas_ = tfs->make<TCanvas>(name,title,window_size_x,window_size_y);
-      canvas_->Divide(2,3);
+      canvas_->Divide(2,2);
         
       }
       void CosmicFitDisplay::analyze(const art::Event& event) {
@@ -245,9 +245,9 @@ namespace mu2e
 			      auto xzplot = pad->DrawFrame(minz_drift-100,minx_drift-100, maxz_drift+100, maxx_drift+150);
 			      xzplot->GetYaxis()->SetTitleOffset(1.25);
 			      xzplot->SetTitle( "Drift Fit X'' vs Z'; Z'(mm);X''(mm)");
-	      		      arc.SetFillStyle(0);
-	      		      arc.DrawArc(0.,0., envelope.outerRadius());
-	      	              arc.DrawArc(0.,0., envelope.innerRadius());
+	      		      //arc.SetFillStyle(0);
+	      		      //arc.DrawArc(0.,0., envelope.outerRadius());
+	      	              //arc.DrawArc(0.,0., envelope.innerRadius());
 			      fit_to_trackxprime.SetLineColor(kYellow);
 			      fit_to_trackxprime.SetLineColor(kGreen);
 			      
