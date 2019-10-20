@@ -30,7 +30,7 @@ TimeClusterFinder : {
   # enable calorimeter cluster info in time clustering
   UseCaloCluster : true
   UseCaloClusterPosition : true
-  #CaloClusterWeight : 10.0
+  CaloClusterWeight : 10.0
   TestFlag : true
 }
 
