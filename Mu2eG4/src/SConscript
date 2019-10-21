@@ -29,7 +29,7 @@ else:
 # print "GEANT4_VERSION ",  g4_version
 
 # Compiler switches needed by the default G4 build.
-G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
+G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',    '-DG4GMAKE',
                '-DG4_STORE_TRAJECTORY',  '-DG4UI_USE_TCSH ',
                '-DG4UI_USE',             '-DG4VIS_USE_DAWNFILE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',

@@ -158,14 +158,16 @@ BEGIN_PROLOG
   genCountLogger: { module_type: GenEventCountReader }
 
 # candidate configuration for TrkAna
+  AllOpt : { fillMC : true 
+	     trkqual : "TrkQual"
+	     fillTrkQual : true 
+	     trkpid : "TrkPID"
+	     fillTrkPID : true
+  }
+
   DeM : { input : "KFF" 
       	  branch : "de" 
 	  suffix : "DeM" 
-	  fillMC : true 
-	  trkqual : "TrkQual"
-	  fillTrkQual : true 
-	  trkpid : "TrkPID"
-	  fillTrkPID : true
   }
   UeM : { input : "KFF" 
       	  branch : "ue" 
@@ -182,11 +184,6 @@ BEGIN_PROLOG
   DeP : { input : "KFF" 
       	  branch : "de" 
 	  suffix : "DeP" 
-	  fillMC : true 
-	  trkqual : "TrkQual"
-	  fillTrkQual : true 
-	  trkpid : "TrkPID"
-	  fillTrkPID : true
   }
   UeP : { input : "KFF" 
       	  branch : "ue" 
