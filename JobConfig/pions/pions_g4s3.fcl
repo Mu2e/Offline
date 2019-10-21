@@ -117,11 +117,9 @@ physics : {
     filters : {
         stopFilter : {
             module_type               : FilterG4Out
-            noInstanceName            : true
             mainHitInputs             : []
             extraHitInputs            : [ "g4run:virtualdetector", "vacuuas1:vacuuas1" , "vacuuas2:vacuuas2" ]
             mainSPPtrInputs           : [ "stoppedPionFinder" ]
-            numSimParticleCollections : 1
             vetoDaughters             : [ "stoppedPionFinder" ]
         }
     } // filters

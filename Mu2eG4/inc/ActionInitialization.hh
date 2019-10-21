@@ -22,8 +22,6 @@
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
-//art includes
-#include "fhiclcpp/ParameterSet.h"
 
 //C++ includes
 #include <vector>
@@ -35,7 +33,6 @@ namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
 
-    class ExtMonFNALPixelSD;
     class SensitiveDetectorHelper;
     class IMu2eG4Cut;
     class PrimaryGeneratorAction;
@@ -47,7 +44,6 @@ class ActionInitialization : public G4VUserActionInitialization
 {
   public:
     ActionInitialization(const fhicl::ParameterSet& pset,
-                         ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
                          SensitiveDetectorHelper* sensitive_detectorhelper,
                          Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
@@ -75,8 +71,6 @@ class ActionInitialization : public G4VUserActionInitialization
     SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2eLimits_;
-
-    ExtMonFNALPixelSD* extMonFNALPixelSD_;
 
     std::unique_ptr<IMu2eG4Cut> stackingCuts_;
     std::unique_ptr<IMu2eG4Cut> steppingCuts_;

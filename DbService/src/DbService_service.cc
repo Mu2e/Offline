@@ -48,9 +48,14 @@ namespace mu2e {
     std::vector<std::string> files;
     _config.textFile(files);
     for(auto ss : files ) {
-      if(_verbose>1) std::cout << "DbService::beginJob read file "<<
+      if(_verbose>1) std::cout << "DbService::beginJob reading file "<<
 		       ss <<std::endl;
       auto coll = DbUtil::readFile(ss);
+      if(_verbose>1) {
+	for(auto const& lt : coll) {
+	  std::cout << "  read table " << lt.table().name() <<std::endl;
+	}
+      }
       _engine.addOverride(coll);
     }
 

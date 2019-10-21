@@ -65,14 +65,8 @@ TTrobustHelixFinder : { @table::RobustHelixFinder
     UseHitMVA              : false
     MinMVA                 : 0.1
     
-    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit
-	maxzsep     : 275.	
-	maxdphi     : 10.
-#	ntripleMax  : 5e6
-    }
-    #    Chi2HelixFit         : 
-    #	T0Calculator         : 
-#    T0Shift              : 4.0 ?? what is this
+    RobustHelixFit         : { @table::TrkReco.TTrobustHelixFit }
+
     T0Calculator : @local::TimeCalculator
     UpdateStereo         : false
 }
@@ -151,19 +145,38 @@ TprTrigger : {
 
 
 	TTtimeClusterFinder  : @local::TTtimeClusterFinder
+	TTtimeClusterFinderUCC : { @table::TTtimeClusterFinder
+	    ComboHitCollection     : "TTflagBkgHitsUCC"
+	}
 	TThelixFinder        : @local::TTrobustHelixFinder
+	TThelixFinderUCC     : { @table::TTrobustHelixFinder 
+	    ComboHitCollection    : "TTflagBkgHitsUCC"
+	    TimeClusterCollection : "TTtimeClusterFinderUCC"
+	}
 	TTfastHelixFinder    : { @table::TTrobustHelixFinder 
 	    ComboHitCollection    : "TTDeltaFinder"
 	    TimeClusterCollection : "TTfastTimeClusterFinder"
 	}
 	TTKSFDeM	     : @local::TTKSFDeM
 	TTKSFDeP	     : @local::TTKSFDeP
+
+
+	TTKSFUCCDeM	     : { @table::TTKSFDeM
+	    ComboHitCollection	  : "TTmakeSHUCC"
+	    SeedCollection        : "TThelixFinderUCC:Positive"
+	}
+	TTKSFUCCDeP	     : { @table::TTKSFDeP 
+	    ComboHitCollection	  : "TTmakeSHUCC"
+	    SeedCollection        : "TThelixFinderUCC:Negative"
+	}
+
 	TTFKSFDeM	     : { @table::TTKSFDeM
 	    SeedCollection : "TTfastHelixFinder:Positive"
 	}
 	TTFKSFDeP	     : { @table::TTKSFDeP 
 	    SeedCollection : "TTfastHelixFinder:Negative"
 	}
+
 	TTKFFDeM             : @local::TTKFFDeM
 	TTKFFDeP             : @local::TTKFFDeP
     }

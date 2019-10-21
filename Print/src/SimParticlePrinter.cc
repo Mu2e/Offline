@@ -8,7 +8,7 @@ void
 mu2e::SimParticlePrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<SimParticleCollection> > vah;
     event.getManyByType(vah);
@@ -163,17 +163,4 @@ mu2e::SimParticlePrinter::PrintListHeader(std::ostream& os) {
   os << "ind      key    parent  pdgId       Start  Position            P            End Position               P     vol   process\n";
 }
 
-void 
-mu2e::SimParticlePrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("SimParticlePrinter",fhicl::ParameterSet());
-
-  _pCut = localPset.get<double>("pCut",-1);
-  _emPCut = localPset.get<double>("emPCut",-1);
-  _primaryOnly = localPset.get<bool>("primaryOnly",false);
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
-}
 

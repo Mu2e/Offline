@@ -15,7 +15,6 @@
 #include "Mu2eG4/inc/Mu2eG4EventAction.hh"
 #include "Mu2eG4/inc/Mu2eG4RunAction.hh"
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/IMu2eG4Cut.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
@@ -29,7 +28,6 @@
 namespace mu2e {
     
     ActionInitialization::ActionInitialization(const fhicl::ParameterSet& pset,
-                                               ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
                                                SensitiveDetectorHelper* sensitive_detectorhelper,
                                                Mu2eG4PerThreadStorage* per_thread_storage,
                                                PhysicalVolumeHelper* phys_volume_helper,
@@ -44,8 +42,6 @@ namespace mu2e {
         timeVDtimes_(pset.get<std::vector<double> >("SDConfig.TimeVD.times")),
         mu2eLimits_(pset.get<fhicl::ParameterSet>("ResourceLimits")),
     
-        extMonFNALPixelSD_(extmon_FNAL_pixelSD),
-    
         stackingCuts_(createMu2eG4Cuts(pset.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut",fhicl::ParameterSet()), mu2eLimits_)),
         steppingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", fhicl::ParameterSet()), mu2eLimits_)),
         commonCuts_(createMu2eG4Cuts(pset.get<fhicl::ParameterSet>("Mu2eG4CommonCut",fhicl::ParameterSet()), mu2eLimits_)),
@@ -58,7 +54,7 @@ namespace mu2e {
         originInWorld_(origin_in_world),
         stageOffset_(stage_offset_for_tracking_action)
     {}
-    
+
     ActionInitialization::~ActionInitialization()
     {}
 
@@ -100,14 +96,12 @@ namespace mu2e {
                                            &physicsProcessInfo_,
                                            trackingAction,
                                            steppingAction,
-                                           sensitiveDetectorHelper_,
-                                           extMonFNALPixelSD_) );
+                                           sensitiveDetectorHelper_) );
 
         
         SetUserAction( new Mu2eG4EventAction(pset_,
                                              trackingAction,
                                              steppingAction,
-                                             extMonFNALPixelSD_,
                                              sensitiveDetectorHelper_,
                                              stacking_Cuts,
                                              stepping_Cuts,
