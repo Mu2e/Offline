@@ -65,6 +65,7 @@ class TrkAnaPlots {
   void FitMomRes(TH1F* momres);
   void MomResp(TrackerRegion region=entrance);
   void MomRes(TrackerRegion region=entrance);
+  void SelPlots(int charge=-1);
   void Acc(int ngen,int charge=-1);
   void hitres();
   void wpull();
@@ -81,20 +82,23 @@ class TrkAnaPlots {
   void PlotIPA();
   void Upstream();
   void PBI(unsigned ngen, int charge=-1);
+  void Trigger();
+  void Alg();
 // cuts
   TCut _reco, _goodfit, _rpitch, _livegate, _opa, _upstream, _physics, _final, _pbi;
   TCut _eminus,_eplus,_ele, _muminus, _muplus, _mu;
   TCut _CRV, _eminustrig, _eplustrig, _eminusrmom, _eplusrmom, _eminuspid, _epluspid, _eminustq, _eplustq, _downstream;
+  TCut _TPR, _CPR;
  // Trees 
   TTree* _tn;
   TTree* _tp; 
   // canvases
-  TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_radcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan;
+  TCanvas *_pidcan, *_pidqcan, *_pidmomcan, *_radcan, *_rscan, *_rcan, *_acan, *_ecan, *_rescan, *_wpcan, *_ambigcan, *_residcan, *_fcan, *_tqcan, *_tqrcan, *_mcan, *_tchcan, *_tch0can, *_tch1can, *_dtchtcan,*_t0can, *_effcan, *_ipacan, *_ucan, *_uecan, *_tchmccan, *_spcan;
   vector<string> _rname;
 };
 
 void TrkAnaPlots::BuildCuts(float momwin){
-  char ctext[80];
+  char ctext[200];
 
   _reco = TCut("de.status>0");
   _ele = TCut("abs(demc.pdg)==11");
@@ -109,28 +113,32 @@ void TrkAnaPlots::BuildCuts(float momwin){
   double t0max(1650.0);
   double eminusmom(105.0);
   double eplusmom(92.3);
-  snprintf(ctext,80,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
+  snprintf(ctext,200,"deent.td>%5.5f&&deent.td<%5.5f",tdlow,tdhigh);
   _rpitch = TCut(ctext);
-  snprintf(ctext,80,"de.t0>%f&&de.t0<%f",t0min,t0max);
+  snprintf(ctext,200,"de.t0>%f&&de.t0<%f",t0min,t0max);
   _livegate = TCut(ctext);
   _opa = TCut("abs(deent.d0<105) && abs(deent.d0+2/deent.om)>450 && abs(deent.d0+2/deent.om)<680");
   _upstream = TCut("ue.status<0");
-  _pbi = TCut("evtwt.PBIWeight"); 
-  _CRV = "bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<-50||de.t0-crvinfo._timeWindowStart[bestcrv]>150.0)";
+  _pbi = TCut("evtwt.PBIWeight");
+  double crvlow(-50.0);
+  double crvhigh(150.0);
+  snprintf(ctext,200,"bestcrv<0||(de.t0-crvinfo._timeWindowStart[bestcrv]<%5.1f||de.t0-crvinfo._timeWindowStart[bestcrv]>%5.1f)",crvlow,crvhigh);
+  _CRV = TCut(ctext);
   _eminustq = TCut("dequal.TrkQualDeM>0.8");
   _eplustq = TCut("dequal.TrkQualDeP>0.8");
   _eminuspid = TCut("dequal.TrkPIDDeM>0.95");
   _epluspid = TCut("dequal.TrkPIDDeP>0.95");
   _eminustrig = TCut("(trigbits&0x208)>0"); // negative, TrkPatRec or CalPatRec
   _eplustrig = TCut("(trigbits&0x410)>0"); // positive, TrkPatRec or CalPatRec
-  snprintf(ctext,80,"abs(deent.mom-%f)<%f",eminusmom,momwin);
+  snprintf(ctext,200,"abs(deent.mom-%f)<%f",eminusmom,momwin);
   _eminusrmom = TCut(ctext);
-  snprintf(ctext,80,"abs(deent.mom-%f)<%f",eplusmom,momwin);
+  snprintf(ctext,200,"abs(deent.mom-%f)<%f",eplusmom,momwin);
   _eplusrmom = TCut(ctext);
-  _downstream = TCut("demcxit.momz>0");
+  _downstream = TCut("demcent.momz>0");
   _physics = _rpitch+_opa+_livegate;
-  _final = trigger+_reco+goodfit+_livegate+_rpitch+_opa+_upstream+_CRV+pid+rmom;
-
+  _TPR = TCut("de.alg==0");
+  _CPR = TCut("de.alg==1");
+  _final = _eminustrig+_reco+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom;
 }
 
 void TrkAnaPlots::PID() {
@@ -312,7 +320,6 @@ void TrkAnaPlots::PID() {
 }
 
 void TrkAnaPlots::FitMomResp(TH1F* momresp) {
-  _tn->Project(mname,"fit.mom-mcent.mom",_final*_pbi);
   double integral = momresp->GetEntries()*momresp->GetBinWidth(1);
   cout << "Integral = " << integral << " mean = " << momresp->GetMean() << " rms = " << momresp->GetRMS() << endl;
   TF1* dscb = new TF1("dscb",fnc_dscb,-10.0,5,7);
@@ -423,6 +430,54 @@ void TrkAnaPlots::MomRes(TrackerRegion region) {
   FitMomRes(momres);
 
 }
+
+void TrkAnaPlots::SelPlots(int charge) {
+  vector<string> names={"trig", "trkqual", "t0", "pitch","d0", "rmax", "PID", "CRVDT", "Momentum"};
+  vector<string> titles={"Trigger Bits;log2(trigger)", "Track Fit Quality;trkqual", "t0", "Reco pitch;tan(#lambda)", "d0;d0 (mm)", "Rmax;rmax (mm)", "PID;TrkPIDDeM", "CRV #Deltat;t0-#t_{CRV}", "Track Momentum;Momentum (MeV/c)"};
+  vector<string> vars={"log2(trigbits)", "dequal.TrkQualDeM", "de.t0", "deent.td", "deent.d0", "abs(de.ent.d0+2.0/deent.om)", "dequal.TrkPIDDeM", "de.t0-crvinfo._timeWindowStart[bestcrv]", "deent.mom"};
+  vector<double> low={0,-0.01, 400.0, 0.2, -150.0, 450.0, -0.01, -150.0, 95.0 };
+  vector<double> hi={32, 1.1, 1700.0, 1.8, 150.0, 650.0, 1.1, 250.0, 110.0 };
+  
+  TCut trigger,goodfit,pid,rmom;
+  TTree* ta;
+  if(charge<0){
+    trigger = _eminustrig;
+    goodfit = _eminustq;
+    pid = _eminuspid;
+    rmom = _eminusrmom;
+    ta = _tn;
+  } else {
+    trigger = _eplustrig;
+    goodfit = _eplustq;
+    pid = _epluspid;
+    rmom = _eplusrmom;
+    ta = _tp;
+  }
+
+  vector<TCut> cuts(names.size());
+  cuts[0] = goodfit+_livegate+_rpitch+_opa+_CRV+pid+rmom;
+  cuts[1] = trigger+_livegate+_rpitch+_opa+_CRV+pid+rmom;
+  cuts[2] = trigger+goodfit+_rpitch+_opa+_CRV+pid+rmom;
+  cuts[3] = trigger+goodfit+_livegate+_opa+_CRV+pid+rmom;
+  cuts[4] = trigger+goodfit+_livegate+_rpitch+_CRV+pid+rmom;
+  cuts[5] = trigger+goodfit+_livegate+_rpitch+_CRV+pid+rmom;
+  cuts[6] = trigger+goodfit+_livegate+_rpitch+_opa+_CRV+rmom;
+  cuts[7] = trigger+goodfit+_livegate+_rpitch+_opa+pid+rmom+"bestcrv>=0";
+  cuts[8] = trigger+goodfit+_livegate+_rpitch+_opa+_CRV+pid;
+
+  vector<TH1F*> plots;
+  for(size_t iplot=0;iplot<names.size();iplot++){
+    plots.push_back(new TH1F(names[iplot].c_str(),titles[iplot].c_str(),100,low[iplot],hi[iplot]));
+    ta->Project(names[iplot].c_str(),vars[iplot].c_str(),cuts[iplot]);
+  }
+  _spcan = new TCanvas("spcan","spcan",1000,1000);
+  _spcan->Divide(3,3);
+  for(size_t iplot=0;iplot<names.size();iplot++){
+    _spcan->cd(iplot+1);
+    plots[iplot]->Draw();
+  }  
+}
+
 void TrkAnaPlots::Acc(int ngen,int charge) {
   vector<string> binnames={"All","Trigger", "KF Track fit", "Fit Quality", "Livegate", "Reco pitch", "OPA Rejection", "Upstream", "PID", "CRV Rejection", "Momentum window"};
 
@@ -1624,12 +1679,14 @@ void TrkAnaPlots::Upstream() {
 
 void TrkAnaPlots::PBI(unsigned ngen, int charge) {
   TCut truece("demc.gen==2");
-  TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
-  TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
-  TH1F* emeff = new TH1F("emeff","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
-  TH1F* epeff = new TH1F("epeff","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
-  TH1F* emeffw = new TH1F("emeffw","Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
-  TH1F* epeffw = new TH1F("epeffw","Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+    TCut emall = _eminustrig+_eminustq+_livegate+_rpitch+_opa+_upstream+_CRV+_eminuspid+_eminusrmom+truece;
+    TCut epall = _eplustrig+_eplustq+_livegate+_rpitch+_opa+_upstream+_CRV+_epluspid+_eplusrmom+truece;
+//  TCut emall = _eminustrig+_CRV+truece;
+//  TCut epall = _eplustrig+_CRV+truece;
+  TH1F* emeff = new TH1F("emeff","Selection Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeff = new TH1F("epeff","Selection Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* emeffw = new TH1F("emeffw","Signal Efficiency for #mu^{-}#rightarrowe^{-} vs PBI;Relative PBI",100,0,3.0);
+  TH1F* epeffw = new TH1F("epeffw","Signal Efficiency for #mu^{-}#rightarrowe^{+} vs PBI;Relative PBI",100,0,3.0);
   emeff->Sumw2();
   epeff->Sumw2();
   emeffw->Sumw2();
@@ -1641,19 +1698,24 @@ void TrkAnaPlots::PBI(unsigned ngen, int charge) {
   double median = exp(mu);
   ln->SetParameters(3.0*ngen/100,sigma,0.0,median);
   TCanvas* effcan = new TCanvas("effcan","effcan",800,600);
+  effcan->Divide(1,2);
   if(charge<0){
     _tn->Project("emeff","evtwt.PBIWeight",emall);
     _tn->Project("emeffw","evtwt.PBIWeight",emall*_pbi);
-    cout << "tracks passing cuts = " << emeff->GetEntries() << " naive efficiency " << emeff->GetEntries()/ngen
-    << " net efficiency = " << emeffw->Integral()/ngen << endl;
+    double neteff = emeffw->Integral()/ngen;
+    cout << "tracks passing cuts = " << emeff->GetEntries() << " net signal efficiency = " <<  neteff << endl;
     emeff->Divide(ln);
-    emeff->SetMaximum(0.25);
-    emeff->SetMinimum(0.05);
+    emeff->SetMaximum(neteff+0.1);
+    emeff->SetMinimum(neteff-0.1);
+    effcan->cd(1);
     emeff->Fit("pol1");
+    effcan->cd(2);
+    emeffw->Scale(1.0/ngen);
+    emeffw->Draw();
 // compute the convolution efficiency
-    TF1* line = emeff->GetFunction("pol1");
-    line->SetName("line");
-    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
+//    TF1* line = emeff->GetFunction("pol1");
+//    line->SetName("line");
+//    TF1* prod = new TF1("prod","[&](double *x, double *p){return ln(x)*line(x); }",0,3.0,0);
 
   } else {
     _tp->Project("epeff","evtwt.PBIWeight",epall);
@@ -1666,3 +1728,213 @@ void TrkAnaPlots::PBI(unsigned ngen, int charge) {
     epeff->Fit("pol1");
   }
 }
+
+void TrkAnaPlots::Trigger() {
+  TCut down("demcent.momz>0");
+  TH1F* nmom = new TH1F("nmom","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ntmom = new TH1F("ntmom","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* pmom = new TH1F("pmom","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ptmom = new TH1F("ptmom","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* nmommu = new TH1F("nmommu","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ntmommu = new TH1F("ntmommu","Downstream Negative Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* pmommu = new TH1F("pmommu","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* ptmommu = new TH1F("ptmommu","Downstream Positive Reco Momentum;Momentum (MeV/c)",100,50,220);
+  nmom->SetStats(0);
+  ntmom->SetStats(0);
+  pmom->SetStats(0);
+  ptmom->SetStats(0);
+  nmom->SetLineColor(kBlack);
+  ntmom->SetLineColor(kRed);
+  pmom->SetLineColor(kBlack);
+  ptmom->SetLineColor(kRed);
+  nmommu->SetStats(0);
+  ntmommu->SetStats(0);
+  pmommu->SetStats(0);
+  ptmommu->SetStats(0);
+  nmommu->SetLineColor(kGreen);
+  ntmommu->SetLineColor(kCyan);
+  pmommu->SetLineColor(kGreen);
+  ptmommu->SetLineColor(kCyan);
+  TH1F* nd0 = new TH1F("nd0","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ntd0 = new TH1F("ntd0","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* pd0 = new TH1F("pd0","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ptd0 = new TH1F("ptd0","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  
+  TH1F* nd0mu = new TH1F("nd0mu","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ntd0mu = new TH1F("ntd0mu","Downstream Negative Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* pd0mu = new TH1F("pd0mu","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* ptd0mu = new TH1F("ptd0mu","Downstream Positive Reco d_{0};d_{0} (mm)",100,-500,500);
+  nd0->SetStats(0);
+  ntd0->SetStats(0);
+  pd0->SetStats(0);
+  ptd0->SetStats(0);
+  nd0->SetLineColor(kBlack);
+  ntd0->SetLineColor(kRed);
+  pd0->SetLineColor(kBlack);
+  ptd0->SetLineColor(kRed);
+
+  nd0mu->SetStats(0);
+  ntd0mu->SetStats(0);
+  pd0mu->SetStats(0);
+  ptd0mu->SetStats(0);
+  nd0mu->SetLineColor(kGreen);
+  ntd0mu->SetLineColor(kCyan);
+  pd0mu->SetLineColor(kGreen);
+  ptd0mu->SetLineColor(kCyan);
+
+  _tn->Project("nmom","deent.mom",_downstream+_eminus);
+  _tn->Project("ntmom","deent.mom",_downstream+_eminus+_eminustrig);
+  _tp->Project("pmom","deent.mom",_downstream+_eplus);
+  _tp->Project("ptmom","deent.mom",_downstream+_eplus+_eplustrig);
+
+  _tn->Project("nmommu","deent.mom",_downstream+_muminus);
+  _tn->Project("ntmommu","deent.mom",_downstream+_muminus+_eminustrig);
+  _tp->Project("pmommu","deent.mom",_downstream+_muplus);
+  _tp->Project("ptmommu","deent.mom",_downstream+_muplus+_eplustrig);
+
+  _tn->Project("nd0","deent.d0",_downstream+_eminus);
+  _tn->Project("ntd0","deent.d0",_downstream+_eminus+_eminustrig);
+  _tp->Project("pd0","deent.d0",_downstream+_eplus);
+  _tp->Project("ptd0","deent.d0",_downstream+_eplus+_eplustrig);
+
+  _tn->Project("nd0mu","deent.d0",_downstream+_muminus);
+  _tn->Project("ntd0mu","deent.d0",_downstream+_muminus+_eminustrig);
+  _tp->Project("pd0mu","deent.d0",_downstream+_muplus);
+  _tp->Project("ptd0mu","deent.d0",_downstream+_muplus+_eplustrig);
+
+  TLegend* tleg = new TLegend(0.6,0.6,0.9,0.9);
+  tleg->AddEntry(nmom,"Reconstructed e","L");
+  tleg->AddEntry(ntmom,"Triggered e","L");
+  tleg->AddEntry(nmommu,"Reconstructed #mu","L");
+  tleg->AddEntry(ntmommu,"Triggered #mu","L");
+
+  TCanvas* tcan = new TCanvas("tcan","tcan",800,800);
+  tcan->Divide(2,2);
+  tcan->cd(1);
+  nmom->Draw();
+  tleg->Draw();
+  ntmom->Draw("same");
+  nmommu->Draw("same");
+  ntmommu->Draw("same");
+  tcan->cd(2);
+  pmommu->Draw();
+  ptmommu->Draw("same");
+  pmom->Draw("same");
+  ptmom->Draw("same");
+  tcan->cd(3);
+  nd0->Draw();
+  ntd0->Draw("same");
+  nd0mu->Draw("same");
+  ntd0mu->Draw("same");
+  tcan->cd(4);
+  pd0mu->Draw();
+  ptd0mu->Draw("same");
+  pd0->Draw("same");
+  ptd0->Draw("same");
+}
+
+void TrkAnaPlots::Alg() {
+  TH1F* tprnmom = new TH1F("tprnmom","e^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* cprnmom = new TH1F("cprnmom","e^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  THStack* algnmom = new THStack("algnmom","e^{-} Reco Momentum;Momentum (MeV/c)");
+  algnmom->Add(cprnmom);
+  algnmom->Add(tprnmom);
+  tprnmom->SetFillColor(kRed);
+  cprnmom->SetFillColor(kCyan);
+  TH1F* tprnmommu = new TH1F("tprnmommu","#mu^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* cprnmommu = new TH1F("cprnmommu","#mu^{-} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  THStack* algnmommu = new THStack("algnmommu","#mu^{-} Reco Momentum;Momentum (MeV/c)");
+  algnmommu->Add(cprnmommu);
+  algnmommu->Add(tprnmommu);
+  tprnmommu->SetFillColor(kRed);
+  cprnmommu->SetFillColor(kCyan);
+  TH1F* tprpmom = new TH1F("tprpmom","e^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* cprpmom = new TH1F("cprpmom","e^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  THStack* algpmom = new THStack("algpmom","e^{+} Reco Momentum;Momentum (MeV/c)");
+  algpmom->Add(cprpmom);
+  algpmom->Add(tprpmom);
+  tprpmom->SetFillColor(kRed);
+  cprpmom->SetFillColor(kCyan);
+  TH1F* tprpmommu = new TH1F("tprpmommu","#mu^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  TH1F* cprpmommu = new TH1F("cprpmommu","#mu^{+} Reco Momentum;Momentum (MeV/c)",100,50,220);
+  THStack* algpmommu = new THStack("algpmommu","#mu^{+} Reco Momentum;Momentum (MeV/c)");
+  algpmommu->Add(cprpmommu);
+  algpmommu->Add(tprpmommu);
+  tprpmommu->SetFillColor(kRed);
+  cprpmommu->SetFillColor(kCyan);
+
+  TH1F* tprnd0 = new TH1F("tprnd0","e^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* cprnd0 = new TH1F("cprnd0","e^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
+  THStack* algnd0 = new THStack("algnd0","e^{-} Reco d_{0};d_{0} (mm)");
+  algnd0->Add(cprnd0);
+  algnd0->Add(tprnd0);
+  tprnd0->SetFillColor(kRed);
+  cprnd0->SetFillColor(kCyan);
+  TH1F* tprnd0mu = new TH1F("tprnd0mu","#mu^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* cprnd0mu = new TH1F("cprnd0mu","#mu^{-} Reco d_{0};d_{0} (mm)",100,-500,500);
+  THStack* algnd0mu = new THStack("algnd0mu","#mu^{-} Reco d_{0};d_{0} (mm)");
+  algnd0mu->Add(cprnd0mu);
+  algnd0mu->Add(tprnd0mu);
+  tprnd0mu->SetFillColor(kRed);
+  cprnd0mu->SetFillColor(kCyan);
+  TH1F* tprpd0 = new TH1F("tprpd0","e^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* cprpd0 = new TH1F("cprpd0","e^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  THStack* algpd0 = new THStack("algpd0","e^{+} Reco d_{0};d_{0} (mm)");
+  algpd0->Add(cprpd0);
+  algpd0->Add(tprpd0);
+  tprpd0->SetFillColor(kRed);
+  cprpd0->SetFillColor(kCyan);
+  TH1F* tprpd0mu = new TH1F("tprpd0mu","#mu^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  TH1F* cprpd0mu = new TH1F("cprpd0mu","#mu^{+} Reco d_{0};d_{0} (mm)",100,-500,500);
+  THStack* algpd0mu = new THStack("algpd0mu","#mu^{+} Reco d_{0};d_{0} (mm)");
+  algpd0mu->Add(cprpd0mu);
+  algpd0mu->Add(tprpd0mu);
+  tprpd0mu->SetFillColor(kRed);
+  cprpd0mu->SetFillColor(kCyan);
+
+  _tn->Project("tprnmom","deent.mom",_eminus+_downstream+_TPR);
+  _tn->Project("cprnmom","deent.mom",_eminus+_downstream+_CPR);
+  _tp->Project("tprpmom","deent.mom",_eplus+_downstream+_TPR);
+  _tp->Project("cprpmom","deent.mom",_eplus+_downstream+_CPR);
+  _tn->Project("tprnmommu","deent.mom",_muminus+_downstream+_TPR);
+  _tn->Project("cprnmommu","deent.mom",_muminus+_downstream+_CPR);
+  _tp->Project("tprpmommu","deent.mom",_muplus+_downstream+_TPR);
+  _tp->Project("cprpmommu","deent.mom",_muplus+_downstream+_CPR);
+
+  _tn->Project("tprnd0","deent.d0",_eminus+_downstream+_TPR);
+  _tn->Project("cprnd0","deent.d0",_eminus+_downstream+_CPR);
+  _tp->Project("tprpd0","deent.d0",_eplus+_downstream+_TPR);
+  _tp->Project("cprpd0","deent.d0",_eplus+_downstream+_CPR);
+  _tn->Project("tprnd0mu","deent.d0",_muminus+_downstream+_TPR);
+  _tn->Project("cprnd0mu","deent.d0",_muminus+_downstream+_CPR);
+  _tp->Project("tprpd0mu","deent.d0",_muplus+_downstream+_TPR);
+  _tp->Project("cprpd0mu","deent.d0",_muplus+_downstream+_CPR);
+
+  TLegend* aleg = new TLegend(0.6,0.7,0.9,0.9);
+  aleg->AddEntry(tprnmom,"TrkPatRec","F");
+  aleg->AddEntry(cprnmom,"CalPatRec","F");
+  
+  TCanvas* acane = new TCanvas("acane","acane",800,800);
+  acane->Divide(2,2);
+  acane->cd(1);
+  algnmom->Draw();
+  aleg->Draw();
+  acane->cd(2);
+  algpmom->Draw();
+  acane->cd(3);
+  algnd0->Draw();
+  acane->cd(4);
+  algpd0->Draw();
+  TCanvas* acanmu = new TCanvas("acanmu","acanmu",800,800);
+  acanmu->Divide(2,2);
+  acanmu->cd(1);
+  algnmommu->Draw();
+  aleg->Draw();
+  acanmu->cd(2);
+  algpmommu->Draw();
+  acanmu->cd(3);
+  algnd0mu->Draw();
+  acanmu->cd(4);
+  algpd0mu->Draw();
+}
+

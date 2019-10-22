@@ -1,18 +1,19 @@
 #include "TRandom3.h"
+#include "TMath.h"
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 #include <string>
-// generate parameters to misalign the tracker to include an overall twist (dalphaz/dz), skew (dalphay/dz), and random mis-positions and angles
+// generate parameters to misalign the tracker to include an overall twist (dphi/zdz), skew in x and y, and random mis-positions and angles
 // David Brown (LBNL)
 //
 
 using namespace std;
 void MisalignTracker(double twist, double skew, double squeeze, double sigalpha, double sigpos, const char* outfile) {
   unsigned NPlanes(36);
-  double planezgap(83.0);
-  double planer(700.0);
+  double planezgap(83.0); // approximate number
+  double planer(700.0); // approximate number
   double trackerlen = NPlanes*planezgap; // approximate
 
   TRandom3 myrand(3499803);
@@ -20,9 +21,7 @@ void MisalignTracker(double twist, double skew, double squeeze, double sigalpha,
   double xskew = myrand.Uniform(-skew,skew);
   double yskew = myrand.Uniform(-skew,skew);
   double rsqueeze = myrand.Uniform(-squeeze,squeeze);
-  double alphaxskew = xskew/(2*planer);
-  double alphayskew = yskew/(2*planer);
-  double dtwist = twist/(6.28*planer*trackerlen);
+  double dtwist = twist/(TMath::Pi()*2.0*planer*trackerlen);
 
   filebuf fb;
   fb.open (outfile,ios::out);

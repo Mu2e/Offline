@@ -8,7 +8,7 @@ void
 mu2e::CrvDigiPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<CrvDigiCollection> > vah;
     event.getManyByType(vah);
@@ -91,14 +91,4 @@ mu2e::CrvDigiPrinter::PrintListHeader(std::ostream& os) {
 
 }
 
-void 
-mu2e::CrvDigiPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("CrvDigiPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
-}
 
