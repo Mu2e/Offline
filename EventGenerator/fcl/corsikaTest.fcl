@@ -30,10 +30,8 @@ source : {
 services : {
   message : @local::default_message
   TFileService : { fileName : "nts.corsikaHist.owner.version.sequencer.root" }
-  GeometryService : {
-    inputFile : "JobConfig/cosmic/geom_cosmic.txt"
-    simulatedDetector : { tool_type: "Mu2e" }
-  }
+  GeometryService : @local::Services.Core.GeometryService
+
   ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper : { }
@@ -43,6 +41,8 @@ services : {
     printSummary: true  # default
   }
 }
+
+services.GeometryService.inputFile : "JobConfig/cosmic/geom_cosmic.txt"
 
 physics : {
   producers : {
