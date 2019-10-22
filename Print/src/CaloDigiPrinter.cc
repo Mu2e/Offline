@@ -8,7 +8,7 @@ void
 mu2e::CaloDigiPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<CaloDigiCollection> > vah;
     event.getManyByType(vah);
@@ -87,17 +87,6 @@ void
 mu2e::CaloDigiPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   roId   time     waveform\n";
-
-}
-
-void 
-mu2e::CaloDigiPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("CaloDigiPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

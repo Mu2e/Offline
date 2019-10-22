@@ -8,7 +8,7 @@ void
 mu2e::StrawDigiMCPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<StrawDigiMCCollection> > vah;
     event.getManyByType(vah);
@@ -189,17 +189,6 @@ void
 mu2e::StrawDigiMCPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind StrwInd   time0   time1    drift0   drift1   energy    crossTalk\n";
-
-}
-
-void 
-mu2e::StrawDigiMCPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("StrawDigiMCPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

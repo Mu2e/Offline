@@ -8,7 +8,7 @@ void
 mu2e::CaloRecoDigiPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<CaloRecoDigiCollection> > vah;
     event.getManyByType(vah);
@@ -93,14 +93,4 @@ mu2e::CaloRecoDigiPrinter::PrintListHeader(std::ostream& os) {
 
 }
 
-void 
-mu2e::CaloRecoDigiPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("CaloRecoDigiPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
-}
 

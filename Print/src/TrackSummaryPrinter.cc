@@ -7,7 +7,7 @@ void
 mu2e::TrackSummaryPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<TrackSummaryCollection> > vah;
     event.getManyByType(vah);
@@ -231,16 +231,5 @@ void
 mu2e::TrackSummaryPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind  status   fitcon  chrg     p      pErr   tanDip     d0     dMax     t0    nActive\n";
-}
-
-void 
-mu2e::TrackSummaryPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("TrackSummaryPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
 }
 

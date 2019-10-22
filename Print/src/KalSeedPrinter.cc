@@ -7,7 +7,7 @@ void
 mu2e::KalSeedPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<KalSeedCollection> > vah;
     event.getManyByType(vah);
@@ -172,16 +172,5 @@ void
 mu2e::KalSeedPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind  status   fitcon    p      pErr   tanDip     d0     omega    t0    nhits\n";
-}
-
-void 
-mu2e::KalSeedPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("KalSeedPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
 }
 
