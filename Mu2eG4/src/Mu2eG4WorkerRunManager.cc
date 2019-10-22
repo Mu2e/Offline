@@ -210,13 +210,11 @@ void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_i
                                        &physicsProcessInfo_,
                                        trackingAction_,
                                        steppingAction_,
-                                       &sensitiveDetectorHelper_,
-                                       extMonFNALPixelSD_) );
+                                       &sensitiveDetectorHelper_) );
     
     SetUserAction( new Mu2eG4EventAction(pset_,
                                          trackingAction_,
                                          steppingAction_,
-                                         extMonFNALPixelSD_,
                                          &sensitiveDetectorHelper_,
                                          *stackingCuts_.get(),
                                          *steppingCuts_.get(),

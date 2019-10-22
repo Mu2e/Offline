@@ -28,6 +28,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "GeometryService/inc/GeometryService.hh"
 
 // From art and its tool chain
 #include "art/Framework/Principal/Event.h"
