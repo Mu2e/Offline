@@ -5,8 +5,8 @@ int cosmicCORSIKA.verbose = 0;
 
 // string cosmicCORSIKA.refPoint = "TRACKER";
 double cosmicCORSIKA.refY0 = 20000; // 15.4 meter above nominal beam height - at the surface
-double cosmicCORSIKA.buffer = 500;
-double cosmicCORSIKA.showerAreaExtension = 3000;
+double cosmicCORSIKA.buffer = 0;
+double cosmicCORSIKA.showerAreaExtension = 10000;
 bool cosmicCORSIKA.projectToTargetBox = true;
 
 double cosmicCORSIKA.targetBoxXmin =-10000;
