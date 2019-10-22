@@ -86,6 +86,16 @@ namespace mu2e {
 
   public:
 
+    struct BranchOptConfig {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
+      fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
+      fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of the full TrkQualInfo for this set of tracks"), false};
+      fhicl::OptionalAtom<std::string> trkpid{Name("trkpid"), Comment("TrkCaloHitPIDCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
+      fhicl::Atom<bool> filltrkpid{Name("fillTrkPID"), Comment("Switch to turn on filling of the full TrkPIDInfo for this set of tracks"), false};
+    };
+
     struct BranchConfig {
       using Name=fhicl::Name;
       using Comment=fhicl::Comment;
@@ -93,11 +103,7 @@ namespace mu2e {
       fhicl::Atom<std::string> input{Name("input"), Comment("KalSeedCollection input tag (use prefix if fcl parameter suffix is defined)")};
       fhicl::Atom<std::string> branch{Name("branch"), Comment("Name of output branch")};
       fhicl::Atom<std::string> suffix{Name("suffix"), Comment("Fit suffix (e.g. DeM)"), ""};
-      fhicl::Atom<bool> fillmc{Name("fillMC"), Comment("Switch to turn on filling of MC information for this set of tracks"), false};
-      fhicl::OptionalAtom<std::string> trkqual{Name("trkqual"), Comment("TrkQualCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
-      fhicl::Atom<bool> filltrkqual{Name("fillTrkQual"), Comment("Switch to turn on filling of the full TrkQualInfo for this set of tracks"), false};
-      fhicl::OptionalAtom<std::string> trkpid{Name("trkpid"), Comment("TrkCaloHitPIDCollection input tag to be written out (use prefix if fcl parameter suffix is defined)")};
-      fhicl::Atom<bool> filltrkpid{Name("fillTrkPID"), Comment("Switch to turn on filling of the full TrkPIDInfo for this set of tracks"), false};
+      fhicl::Table<BranchOptConfig> options{Name("options"), Comment("Optional arguments for a branch")};
     };
 
     struct Config {
@@ -125,6 +131,9 @@ namespace mu2e {
       fhicl::Atom<art::InputTag> kalSeedMCTag{Name("KalSeedMCAssns"), Comment("Tag for KalSeedMCAssn"), art::InputTag()};
       fhicl::Atom<art::InputTag> caloClusterMCTag{Name("CaloClusterMCAssns"), Comment("Tag for CaloClusterMCAssns"), art::InputTag()};
       fhicl::Table<InfoMCStructHelper::Config> infoMCStructHelper{Name("InfoMCStructHelper"), Comment("Configuration for the InfoMCStructHelper")};
+      fhicl::Atom<bool> fillmcxtra{Name("FillExtraMCSteps"),false};
+      fhicl::OptionalSequence<art::InputTag> mcxtratags{Name("ExtraMCStepCollectionTags"), Comment("Input tags for any other StepPointMCCollections you want written out")};
+      fhicl::OptionalSequence<std::string> mcxtrasuffix{Name("ExtraMCStepBranchSuffix"), Comment("The suffix to the branch for the extra MC steps (e.g. putting \"ipa\" will give a branch \"demcipa\")")};
     };
     typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -184,10 +193,12 @@ namespace mu2e {
     std::vector<GenInfo> _allMCGenTIs, _allMCPriTIs;
     std::vector<TrkInfoMCStep> _allMCEntTIs, _allMCMidTIs, _allMCXitTIs;
     std::vector<CaloClusterInfoMC> _allMCTCHIs;
+
     // hit level info branches (only for candidate at the moment)
     std::vector<TrkStrawHitInfo> _detsh;
     std::vector<TrkStrawMatInfo> _detsm;
     std::vector<TrkStrawHitInfoMC> _detshmc;
+
     // event weights
     std::vector<art::Handle<EventWeight> > _wtHandles;
     EventWeightInfo _wtinfo;
@@ -234,7 +245,7 @@ namespace mu2e {
 	_allBranches.push_back(i_supp);
       }
     }
-    
+
     // Create all the info structs
     for (size_t i_branch = 0; i_branch < _allBranches.size(); ++i_branch) {
       TrkInfo ti;
@@ -294,10 +305,10 @@ namespace mu2e {
       _trkana->Branch((branch+"mid").c_str(),&_allMidTIs.at(i_branch),TrkFitInfo::leafnames().c_str());
       _trkana->Branch((branch+"xit").c_str(),&_allXitTIs.at(i_branch),TrkFitInfo::leafnames().c_str());
       _trkana->Branch((branch+"tch").c_str(),&_allTCHIs.at(i_branch),TrkCaloHitInfo::leafnames().c_str());
-      if (_conf.filltrkqual() && i_branchConfig.filltrkqual()) {
+      if (_conf.filltrkqual() && i_branchConfig.options().filltrkqual()) {
 	_trkana->Branch((branch+"trkqual").c_str(), &_allTQIs.at(i_branch), TrkQualInfo::leafnames().c_str());
       }
-      if (_conf.filltrkpid() && i_branchConfig.filltrkpid()) {
+      if (_conf.filltrkpid() && i_branchConfig.options().filltrkpid()) {
 	_trkana->Branch((branch+"trkpid").c_str(), &_allTPIs.at(i_branch), TrkPIDInfo::leafnames().c_str());
       }
       // optionally add detailed branches (for now just for the candidate branch, we can think about adding these for supplement branches in the future)
@@ -306,7 +317,7 @@ namespace mu2e {
 	_trkana->Branch((branch+"tsm").c_str(),&_detsm);
       }
       // optionall add MC branches
-      if(_conf.fillmc() && i_branchConfig.fillmc()){
+      if(_conf.fillmc() && i_branchConfig.options().fillmc()){
 	_trkana->Branch((branch+"mc").c_str(),&_allMCTIs.at(i_branch),TrkInfoMC::leafnames().c_str());
 	_trkana->Branch((branch+"mcgen").c_str(),&_allMCGenTIs.at(i_branch),GenInfo::leafnames().c_str());
 	_trkana->Branch((branch+"mcpri").c_str(),&_allMCPriTIs.at(i_branch),GenInfo::leafnames().c_str());
@@ -387,7 +398,7 @@ namespace mu2e {
       // TrkQual
       std::string i_trkqual_tag;
       art::Handle<TrkQualCollection> trkQualCollHandle;
-      if (i_branchConfig.trkqual(i_trkqual_tag) && _conf.filltrkqual()) {
+      if (i_branchConfig.options().trkqual(i_trkqual_tag) && i_branchConfig.options().filltrkqual() && _conf.filltrkqual()) {
 	art::InputTag trkQualInputTag = i_trkqual_tag + i_branchConfig.suffix();
 	event.getByLabel(trkQualInputTag,trkQualCollHandle);
 	if (trkQualCollHandle->size() != kalSeedCollHandle->size()) {
@@ -399,7 +410,7 @@ namespace mu2e {
       // TrkCaloHitPID
       std::string i_trkpid_tag;
       art::Handle<TrkCaloHitPIDCollection> trkpidCollHandle;
-      if (i_branchConfig.trkpid(i_trkpid_tag) && _conf.filltrkpid()) {
+      if (i_branchConfig.options().trkpid(i_trkpid_tag) && i_branchConfig.options().filltrkpid() && _conf.filltrkpid()) {
 	art::InputTag trkpidInputTag = i_trkpid_tag + i_branchConfig.suffix();
 	event.getByLabel(trkpidInputTag,trkpidCollHandle);
 	if (trkpidCollHandle->size() != kalSeedCollHandle->size()) {
@@ -642,7 +653,7 @@ namespace mu2e {
     _allRQIs.at(i_branch).setQuals(recoQuals);
 // TrkQual
     std::string trkqual_branch;
-    if(_conf.filltrkqual() && branchConfig.trkqual(trkqual_branch)) { 
+    if(_conf.filltrkqual() && branchConfig.options().filltrkqual() && branchConfig.options().trkqual(trkqual_branch)) { 
       const auto& trkQualCollHandle = _allTQCHs.at(i_branch);
       if (trkQualCollHandle.isValid()) { // we could have put an empty TrkQualCollection in, if we didn't want it
 	const auto& trkQualColl = *trkQualCollHandle;
@@ -652,7 +663,7 @@ namespace mu2e {
     }
 // TrkCaloHitPID
     std::string trkpid_branch;
-    if (_conf.filltrkpid() && branchConfig.trkpid(trkpid_branch)) {
+    if (_conf.filltrkpid() && branchConfig.options().filltrkpid() && branchConfig.options().trkpid(trkpid_branch)) {
       const auto& tchpcolH = _allTCHPCHs.at(i_branch);
       if (tchpcolH.isValid()) {
 	const auto& tchpcol = *tchpcolH;
@@ -661,7 +672,7 @@ namespace mu2e {
       }
     }
 // fill MC info associated with this track
-    if(_conf.fillmc() && branchConfig.fillmc()) { 
+    if(_conf.fillmc() && branchConfig.options().fillmc()) { 
       const PrimaryParticle& primary = *_pph;
       // use Assns interface to find the associated KalSeedMC; this uses ptrs
       auto kptr = art::Ptr<KalSeed>(ksch,i_kseed);

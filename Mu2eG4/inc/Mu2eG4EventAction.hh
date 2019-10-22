@@ -39,7 +39,6 @@ namespace mu2e {
     class TrackingAction;
     class Mu2eG4SteppingAction;
     class SensitiveDetectorHelper;
-    class ExtMonFNALPixelSD;
     class SimParticleHelper;
     class SimParticlePrimaryHelper;
     class PhysicsProcessInfo;
@@ -58,7 +57,6 @@ class Mu2eG4EventAction : public G4UserEventAction
     Mu2eG4EventAction(const fhicl::ParameterSet&,
                       TrackingAction*,
                       Mu2eG4SteppingAction*,
-                      ExtMonFNALPixelSD*,
                       SensitiveDetectorHelper*,
                       IMu2eG4Cut&,
                       IMu2eG4Cut&,
@@ -89,7 +87,6 @@ class Mu2eG4EventAction : public G4UserEventAction
     TrackingAction* _trackingAction;
     Mu2eG4SteppingAction* _steppingAction;
     
-    ExtMonFNALPixelSD* _extMonFNALPixelSD;
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
     
     IMu2eG4Cut* _stackingCuts;
