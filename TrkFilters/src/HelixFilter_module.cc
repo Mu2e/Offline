@@ -56,31 +56,37 @@ namespace mu2e
     double        _bz0;
     TrkFitFlag    _goodh; // helix fit flag
     std::string   _trigPath;
+    bool          _prescaleUsingD0Phi;
+    std::vector<float> _prescalerPar;
     int           _debug;
     // counters
     unsigned      _nevt, _npass;
+    
+    int evalIPAPresc(float &phi0);
   };
 
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
     art::EDFilter{pset},
-    _hsTag        (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
-    _hascc        (pset.get<bool>  ("requireCaloCluster",false)),
-    _hel          (pset.get<int>   ("helicity")),
-    _minnstrawhits(pset.get<int>   ("minNStrawHits",15)),
-    _minmom       (pset.get<double>("minMomentum",70.0)),
-    _maxmom       (pset.get<double>("maxMomentum",120.0)),
-    _minpT        (pset.get<double>("minPt", 0.)),
-    _maxchi2XY    (pset.get<double>("maxChi2XY", 8.)),
-    _maxchi2PhiZ  (pset.get<double>("maxChi2PhiZ", 8.)),
-    _maxd0        (pset.get<double>("maxD0", 200.)),
-    _mind0        (pset.get<double>("minD0", -200.)),
-    _maxlambda    (pset.get<double>("maxAbsLambda",350.)),
-    _minlambda    (pset.get<double>("minAbsLambda",150.)),
-    _maxnloops    (pset.get<double>("maxNLoops",30.)),
-    _minnloops    (pset.get<double>("minNLoops",0.)),
-    _goodh        (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
-    _trigPath     (pset.get<std::string>("triggerPath")),
-    _debug        (pset.get<int>   ("debugLevel",0)),
+    _hsTag             (pset.get<art::InputTag>("helixSeedCollection","PosHelixFinder")),
+    _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
+    _hel               (pset.get<int>   ("helicity")),
+    _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
+    _minmom            (pset.get<double>("minMomentum",70.0)),
+    _maxmom            (pset.get<double>("maxMomentum",120.0)),
+    _minpT             (pset.get<double>("minPt", 0.)),
+    _maxchi2XY         (pset.get<double>("maxChi2XY", 8.)),
+    _maxchi2PhiZ       (pset.get<double>("maxChi2PhiZ", 8.)),
+    _maxd0             (pset.get<double>("maxD0", 200.)),
+    _mind0             (pset.get<double>("minD0", -200.)),
+    _maxlambda         (pset.get<double>("maxAbsLambda",350.)),
+    _minlambda         (pset.get<double>("minAbsLambda",150.)),
+    _maxnloops         (pset.get<double>("maxNLoops",30.)),
+    _minnloops         (pset.get<double>("minNLoops",0.)),
+    _goodh             (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
+    _trigPath          (pset.get<std::string>("triggerPath")),
+    _prescaleUsingD0Phi(pset.get<bool>  ("prescaleUsingD0Phi",false)),
+    _prescalerPar      (pset.get< vector<float> >("prescalerPar", vector<float>{6.2, 0.9675, 0.1396})),
+    _debug             (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
     produces<TriggerInfo>();
@@ -93,6 +99,13 @@ namespace mu2e
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
     return true;
+  }
+
+  int HelixFilter::evalIPAPresc(float &phi0){
+    //function defined by M. Whalen (m.whalen@yale.edu)
+    // reference: docdb-xxxx
+    int val= (_prescalerPar[0] - (_prescalerPar[0]-1)*sin(_prescalerPar[1]*phi0 + _prescalerPar[2]));
+    return val;
   }
 
   bool HelixFilter::filter(art::Event& evt){
@@ -139,6 +152,13 @@ namespace mu2e
 	  nLoops     >= _minnloops &&
           hmom       >= _minmom    && 
 	  hmom       <= _maxmom) {
+
+	//now check if we want to prescake or not 
+	if (_prescaleUsingD0Phi) {
+	  float phiAtD0   = hs.helix().fcent();
+	  int   prescaler = evalIPAPresc(phiAtD0);
+	  if (_nevt % prescaler != 0)               continue;
+	}
         retval = true;
         ++_npass;
         // Fill the trigger info object
