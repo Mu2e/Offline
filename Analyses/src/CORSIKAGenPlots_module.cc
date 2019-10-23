@@ -3,8 +3,8 @@
 // Plugin Type: analyzer (art v2_10_04)
 // File:        CORSIKAGenPlots_module.cc
 //
-// Generated at Wed Jun 27 18:05:40 2018 by Hoai Nam Tran using cetskelgen
-// from cetlib version v3_02_01.
+// Stefano Roberto Soleti (roberto@lbl.gov)
+//
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -59,34 +59,34 @@ class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
     std::string processName_;
     std::string CORSIKAModuleLabel_;
     std::string CORSIKAInstanceName_;
-    double _keMax;
+    float _keMax = std::numeric_limits<float>::max();
 
     // histograms
-    TH2F *_hXZ;
-    TH1F *_hY;
-    TH1F *_hKE;
-    TH1F *_hTheta;
-    TH1F *_hPhi;
-    TH1F *_hPmag;
-    TH1F *_hPyOverPmag;
-    TH1F *_hTime;
-    TH2F *_hPtypeKE;
-    TH1F *_hNSecondaries;
+    TH2F *_hXZ = nullptr;
+    TH1F *_hY = nullptr;
+    TH1F *_hKE = nullptr;
+    TH1F *_hTheta = nullptr;
+    TH1F *_hPhi = nullptr;
+    TH1F *_hPmag = nullptr;
+    TH1F *_hPyOverPmag = nullptr;
+    TH1F *_hTime = nullptr;
+    TH2F *_hPtypeKE = nullptr;
+    TH1F *_hNSecondaries = nullptr;
 
-    TTree *_cosmicTree;
+    TTree *_cosmicTree = nullptr;
 
-    float _x;
-    float _y;
-    float _z;
-    float _px;
-    float _py;
-    float _pz;
-    float _theta;
-    float _phi;
-    float _KE;
-    float _p;
-    float _t;
-    int _pdgId;
+    float _x = std::numeric_limits<float>::lowest();
+    float _y = std::numeric_limits<float>::lowest();
+    float _z = std::numeric_limits<float>::lowest();
+    float _px = std::numeric_limits<float>::lowest();
+    float _py = std::numeric_limits<float>::lowest();
+    float _pz = std::numeric_limits<float>::lowest();
+    float _theta = std::numeric_limits<float>::lowest();
+    float _phi = std::numeric_limits<float>::lowest();
+    float _KE = std::numeric_limits<float>::lowest();
+    float _p = std::numeric_limits<float>::lowest();
+    float _t = std::numeric_limits<float>::lowest();
+    PDGCode::type _pdgId;
 
     void bookHists(art::ServiceHandle<art::TFileService> &);
     GlobalConstantsHandle<ParticleDataTable> pdt;
