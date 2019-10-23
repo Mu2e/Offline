@@ -24,49 +24,50 @@
 
 #include "EventGenerator/inc/CosmicCORSIKA.hh"
 
-    namespace mu2e {
+namespace mu2e {
 
   class CorsikaEventGenerator : public art::EDProducer {
     public:
-      explicit CorsikaEventGenerator(fhicl::ParameterSet const& pSet);
+      explicit CorsikaEventGenerator(const Parameters& conf);
       // Accept compiler written d'tor.  Modules are never moved or copied.
       virtual void produce (art::Event& e);
       virtual void beginRun(art::Run&   r);
       virtual void endRun(art::Run&   r);
+
     private:
-      std::unique_ptr<CosmicCORSIKA> corsikaGen;
-      std::string inputfile;
+      std::unique_ptr<CosmicCORSIKA> _corsikaGen;
+      Config _conf;
       int _seed;
       art::RandomNumberGenerator::base_engine_t &_engine;
   };
 
-  CorsikaEventGenerator::CorsikaEventGenerator(fhicl::ParameterSet const &pSet) : EDProducer{pSet},
-                                                                                  inputfile(pSet.get<std::string>("inputFile", "EventGenerator/config/defaultCORSIKAconfig.txt")),
-                                                                                  _seed( art::ServiceHandle<SeedService>()->getSeed() ),
-                                                                                  _engine(createEngine(_seed))
+  CorsikaEventGenerator::CorsikaEventGenerator(const Parameters& conf) : EDProducer{conf},
+                                                                         _conf(conf()),
+                                                                         _seed( art::ServiceHandle<SeedService>()->getSeed() ),
+                                                                         _engine(createEngine(_seed))
   {
     produces<GenParticleCollection>();
   }
 
   void CorsikaEventGenerator::beginRun( art::Run &run){
-    corsikaGen = std::make_unique<CosmicCORSIKA>(run,
-                                                 SimpleConfig(inputfile),
-                                                 _engine);
+    _corsikaGen = std::make_unique<CosmicCORSIKA>(run,
+                                                  _conf,
+                                                  _engine);
   }
 
   void CorsikaEventGenerator::produce(art::Event &evt)
   {
     std::unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
     genParticles->clear();
-    corsikaGen->generate(*genParticles);
+    _corsikaGen->generate(*genParticles);
     evt.put(std::move(genParticles));
   }
 
   void CorsikaEventGenerator::endRun(art::Run &)
   {
     std::ostringstream oss;
-    mf::LogInfo("CORSIKAEventGenerator") << "Total primaries: " << corsikaGen->getNumShowers(); // << std::endl;
-    mf::LogInfo("CORSIKAEventGenerator") << "Total live-time: " << corsikaGen->getLiveTime(); // << std::endl;
+    mf::LogInfo("CORSIKAEventGenerator") << "Total primaries: " << _corsikaGen->getNumShowers(); // << std::endl;
+    mf::LogInfo("CORSIKAEventGenerator") << "Total live-time: " << _corsikaGen->getLiveTime(); // << std::endl;
 
     mf::LogInfo("CORSIKAEventGenerator") << oss.str();
   }

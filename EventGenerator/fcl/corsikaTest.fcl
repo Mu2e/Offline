@@ -48,7 +48,23 @@ physics : {
   producers : {
     corsikaGen : {
       module_type : CORSIKAEventGenerator
-      inputFile : "EventGenerator/defaultConfigs/defaultCORSIKAconfig.txt"
+      refY0 : 20000
+      buffer : 0
+      showerAreaExtension : 10000
+      projectToTargetBox : true
+      randomXZshift : 1000
+      targetBoxXmin : -10000
+      targetBoxXmax : 3000
+      targetBoxYmin : -5000
+      targetBoxYmax : 5000
+      targetBoxZmin : -5000
+      targetBoxZmax : 21000
+      tOffset : 0
+      showerInputFiles : ["/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110001",
+                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110002",
+                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110003",
+                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110004",
+                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110005"]
     }
 
     g4run : 
@@ -97,7 +113,7 @@ physics : {
          module_type: GenEventCountReader 
     }
 
-        corsikaGenPlots: {
+    corsikaGenPlots: {
          module_type: CORSIKAGenPlots
     }
 
