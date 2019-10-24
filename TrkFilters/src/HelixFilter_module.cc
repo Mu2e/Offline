@@ -19,7 +19,7 @@
 // mu2e
 #include "Mu2eUtilities/inc/HelixTool.hh"
 // helper function
-#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+//#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "TrkFilters/inc/PhiPrescalingParams.hh"
 #include "TrkFilters/inc/TrkFiltersHelpers.hh"
 

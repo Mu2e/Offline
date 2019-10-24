@@ -2,31 +2,32 @@
 // types that are not directly supported by fhicl.  After including this
 // file you will be able to do, for example
 //
-//    pset.get<CLHEP::Hep3Vector>("position")
+//    pset.get<PhiPrescalingParams>("prescaler")
 //
 // in you code.  The fhicl file syntax for specifying vectors is
 //
-//    position : [ 1.1, 2.2, 3.3 ]
+//    prescaler : { amplitude : 0 frequency : 0 phase : 0 }
 //
-// Andrei Gaponenko, 2012
+// Gianantonio Pezzullo, 2019
 
 #ifndef TrkFilters_inc_TrkFiltersHelpers_hh
 #define TrkFilters_inc_TrkFiltersHelpers_hh
 
-#include <set>
-#include <string>
-#include <vector>
+// #include <set>
+// #include <string>
+// #include <vector>
 #include "fhiclcpp/ParameterSet.h"
+//#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 
 namespace art { class InputTag; }
 
-class PhiPrescalingParams;
+namespace mu2e { class PhiPrescalingParams;}
 
 namespace fhicl {
   
   // Read the parameters value need to define the phiPrescaling Function (sinusoidal function)
   // key : { amplitude : <amplitude>  frequencey : <frequency>  phase : <phase> }
-  template<> bool ParameterSet::get_if_present<PhiPrescalingParams>(std::string const & key, PhiPrescalingParams&value) const;
+  template<> bool ParameterSet::get_if_present<mu2e::PhiPrescalingParams>(std::string const & key, mu2e::PhiPrescalingParams&value) const;
 
 }
 
