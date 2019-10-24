@@ -1,0 +1,30 @@
+#
+#  This script runs ComboHitDiag off of digis
+# David Brown (LBNL) 13 July 2016
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : ComboHitDiag
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : @local::TrkHitReco.producers
+  analyzers :  {
+    PHD : @local::CHD
+    SHD : @local::CHD
+  }
+}
+physics.producers.makePH.TestFlag : false
+physics.producers.makePH.TestRadius : false
+physics.analyzers.SHD.ComboHitCollection : "makeSH"
+physics.analyzers.PHD.ComboHitCollection : "makePH"
+
+physics.TrkAnaTriggerPath : [ makeSH, makePH ]
+physics.TrkAnaEndPath : [ SHD, PHD ]
