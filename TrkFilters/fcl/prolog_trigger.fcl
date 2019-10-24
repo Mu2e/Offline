@@ -117,7 +117,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath          : "tprSeedDeM"	    
+	    triggerPath         : "tprSeedDeM"	 
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	tprSeedDePHSFilter : {
 	    module_type : HelixFilter
@@ -133,7 +135,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "tprSeedDeP"	    
+	    triggerPath         : "tprSeedDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
 	cprSeedDeMHSFilter : {
@@ -150,7 +154,9 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "cprSeedDeM"	    
+	    triggerPath         : "cprSeedDeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	cprSeedDePHSFilter : {
 	    module_type : HelixFilter
@@ -166,7 +172,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "cprSeedDeP"	    
+	    triggerPath         : "cprSeedDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 	# low P e-/e+ from the ST
@@ -184,7 +192,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath          : "tprLowPSeedDeM"	    
+	    triggerPath         : "tprLowPSeedDeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	tprLowPSeedDePHSFilter : {
 	    module_type : HelixFilter
@@ -200,7 +210,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "tprLowPSeedDeP"	    
+	    triggerPath         : "tprLowPSeedDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
 	cprLowPSeedDeMHSFilter : {
@@ -217,7 +229,9 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "cprLowPSeedDeM"	    
+	    triggerPath         : "cprLowPSeedDeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	cprLowPSeedDePHSFilter : {
 	    module_type : HelixFilter
@@ -233,7 +247,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "cprLowPSeedDeP"	    
+	    triggerPath         : "cprLowPSeedDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 	# filters that uses the combohit collection filtered with the calorimeter info
@@ -251,7 +267,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 300. 
-	    triggerPath          : "tprSeedUCCDeM"	    
+	    triggerPath         : "tprSeedUCCDeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	tprSeedUCCDePHSFilter : {
 	    module_type : HelixFilter
@@ -267,7 +285,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "tprSeedUCCDeP"	    
+	    triggerPath         : "tprSeedUCCDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	
 	cprSeedUCCDeMHSFilter : {
@@ -284,7 +304,9 @@ TrkFilters : {
 	    minD0               : -350.
 	    minAbsLambda        : 140. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "cprSeedUCCDeM"	    
+	    triggerPath         : "cprSeedUCCDeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 	cprSeedUCCDePHSFilter : {
 	    module_type : HelixFilter
@@ -300,7 +322,9 @@ TrkFilters : {
 	    minD0               : -150.
 	    minAbsLambda        : 100. 
 	    maxAbsLambda        : 330. 
-	    triggerPath          : "cprSeedUCCDeP"	    
+	    triggerPath         : "cprSeedUCCDeP"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 
@@ -319,6 +343,8 @@ TrkFilters : {
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
 	    triggerPath         : "tprHelixIPADeM"	    
+	    prescaleUsingD0Phi  : false
+	    prescalerPar        : { amplitude: 0 frequency : 0 phase : 0}
 	}
 
 	tprHelixCalibIPADeMHSFilter : {
@@ -335,9 +361,9 @@ TrkFilters : {
 	    minD0               : 200.		    
 	    minAbsLambda        : 40. 		    
 	    maxAbsLambda        : 80. 		    
-	    triggerPath          : "tprHelixCalibIPADeM"	    
+	    triggerPath         : "tprHelixCalibIPADeM"	    
 	    prescaleUsingD0Phi  : true
-	    prescalerPar        : [6.2, 0.9675, 0.1396]
+	    prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
 	}
 
 
