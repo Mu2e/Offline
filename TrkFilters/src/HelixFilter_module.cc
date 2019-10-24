@@ -67,7 +67,7 @@ namespace mu2e
     // counters
     unsigned      _nevt, _npass;
     
-    int evalIPAPresc(float &phi0);
+    int evalIPAPresc(const float &phi0);
   };
 
   HelixFilter::HelixFilter(fhicl::ParameterSet const& pset) :
@@ -108,7 +108,7 @@ namespace mu2e
     return true;
   }
 
-  int HelixFilter::evalIPAPresc(float &phi0){
+  int HelixFilter::evalIPAPresc(const float &phi0){
     //function defined by M. Whalen (m.whalen@yale.edu)
     // reference: docdb-xxxx
     int val= (_prescalerPar._amplitude - (_prescalerPar._amplitude-1)*sin(_prescalerPar._frequency*phi0 + _prescalerPar._phase));
