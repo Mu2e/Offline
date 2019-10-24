@@ -18,6 +18,11 @@
 #include "DataProducts/inc/Helicity.hh"
 // mu2e
 #include "Mu2eUtilities/inc/HelixTool.hh"
+// helper function
+#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+#include "TrkFilters/inc/PhiPrescalingParams.hh"
+#include "TrkFilters/inc/TrkFiltersHelpers.hh"
+
 using namespace CLHEP;
 // c++
 #include <string>
@@ -57,7 +62,7 @@ namespace mu2e
     TrkFitFlag    _goodh; // helix fit flag
     std::string   _trigPath;
     bool          _prescaleUsingD0Phi;
-    std::vector<float> _prescalerPar;
+    PhiPrescalingParams     _prescalerPar;
     int           _debug;
     // counters
     unsigned      _nevt, _npass;
@@ -85,10 +90,12 @@ namespace mu2e
     _goodh             (pset.get<vector<string> >("helixFitFlag",vector<string>{"HelixOK"})),
     _trigPath          (pset.get<std::string>("triggerPath")),
     _prescaleUsingD0Phi(pset.get<bool>  ("prescaleUsingD0Phi",false)),
-    _prescalerPar      (pset.get< vector<float> >("prescalerPar", vector<float>{6.2, 0.9675, 0.1396})),
     _debug             (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
   {
+    if (_prescaleUsingD0Phi){
+      _prescalerPar    = pset.get<PhiPrescalingParams>("prescalerPar");
+    }
     produces<TriggerInfo>();
   }
 
@@ -104,7 +111,7 @@ namespace mu2e
   int HelixFilter::evalIPAPresc(float &phi0){
     //function defined by M. Whalen (m.whalen@yale.edu)
     // reference: docdb-xxxx
-    int val= (_prescalerPar[0] - (_prescalerPar[0]-1)*sin(_prescalerPar[1]*phi0 + _prescalerPar[2]));
+    int val= (_prescalerPar._amplitude - (_prescalerPar._amplitude-1)*sin(_prescalerPar._frequency*phi0 + _prescalerPar._phase));
     return val;
   }
 
