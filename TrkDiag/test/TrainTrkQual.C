@@ -219,9 +219,9 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   dataloader->AddVariable("detrkqual.Log10FitCon","LogFitCon","Probability",'F');
   dataloader->AddVariable("detrkqual.MomError","FitMomErr","MeV/c",'F');
   dataloader->AddVariable("detrkqual.T0Error","T0Err","nsec",'F');
-  dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
-  dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
-  dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
+  //dataloader->AddVariable("detrkqual.d0","D0","mm",'F');
+  //dataloader->AddVariable("detrkqual.MaxRadius","MaxRadius","mm",'F');
+  //dataloader->AddVariable("detrkqual.DoubleHitFraction","DoubleHitFraction","Fraction",'F');
   dataloader->AddVariable("detrkqual.NullAmbigHitFraction","NullHitFraction","Fraction",'F');
   dataloader->AddVariable("detrkqual.StrawHitFraction","MatFraction","Fraction",'F');
 //  dataloader->AddVariable("lastflt-firstflt","FltLen","mm",'F');
