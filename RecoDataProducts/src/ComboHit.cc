@@ -1,3 +1,4 @@
+//
 // Class to describe a combination of Straw Hits
 //
 // Original author David Brown
@@ -9,7 +10,6 @@
 // c++ includes
 #include <iostream>
 using std::vector;
-
 namespace mu2e {
 
   Float_t ComboHit::posRes(edir dir) const {
@@ -73,7 +73,7 @@ namespace mu2e {
     if(phandle.isValid()){
       _parent = phandle.id();
     } else {
-      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" <<std::endl;
+      throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid handle" << std::endl;
     }
   }
 
@@ -95,15 +95,14 @@ namespace mu2e {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-      //if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
-	//throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::std::endl;
+      if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
+	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
       // if not, it is the bottom and references StrawHits; fill the index vector with the content
       shids.push_back(ch.index(0));
     }
   }
 
   void ComboHitCollection::fillStrawHitIndices(art::Event const& event, uint16_t chindex, vector<StrawHitIndex>& shids) const {
-    
     ComboHit const& ch = this->at(chindex);
    // see if this collection references other collections: if so, go down 1 layer
     if(_parent.isValid()){
@@ -121,8 +120,8 @@ namespace mu2e {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-      //if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
-	//throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
+      if(ch.nCombo() != 1 || ch.nStrawHits() != 1)
+	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: invalid ComboHit" << std::endl;
       // if not, it is the bottom and the combo hit index is the same as the StrawHit index
       shids.push_back(chindex);
     }
@@ -172,37 +171,27 @@ namespace mu2e {
       art::Handle<ComboHitCollection> ph;
       setParentHandle(event,ph);
       if(ph.isValid()){
-      
       // get the parent collection
 	const ComboHitCollection *pc = ph.product();
 	// translate the indices down
 	std::vector<uint16_t> subindices;
-	//loop through indices:
-	
 	for(auto index : indices){
-	  //get combo hit
 	  ComboHit const& ch = (*this)[index];
-	  ///loop through nCombo hit in the coimbohit
 	  for(uint16_t iind = 0;iind < ch.nCombo(); ++iind)
-	     //fill list of combohit sub indices
 	    subindices.push_back(ch.index(iind));
 	}
-	//call to fill combo hit function for that one combohit list
 	pc->fillComboHits(event,subindices,iters);
-	
       } else {
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     } else {
-       
-    // already at lowest level: just translate indices to pointers
+// already at lowest level: just translate indices to pointers
       for(auto index : indices)
 	iters.push_back(std::next(begin(),index));
     }
   }
  
   bool ComboHitCollection::fillComboHits(art::Event const& event, uint16_t chindex, CHCIter& iters) const {
-   
     bool retval(false);
     iters.clear();
     ComboHit const& ch = (*this)[chindex];
@@ -215,16 +204,13 @@ namespace mu2e {
       // get the parent collection
 	const ComboHitCollection *pc = ph.product();
 	for(uint16_t iind = 0;iind < ch.nCombo(); ++iind){
-	 
 	  iters.push_back(std::next(pc->begin(), ch.index(iind)));
 	}
 	retval = true;
       } else {
-       
 	throw cet::exception("RECO")<<"mu2e::ComboHitCollection: Can't find parent collection" << std::endl;
       }
     }
- 
     return retval; 
   }
 
@@ -256,4 +242,3 @@ namespace mu2e {
 
   }
 }
-
