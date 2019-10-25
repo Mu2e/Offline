@@ -193,7 +193,7 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
             
             
     if (event_passes) {
-        std::cout << "IN EVENTACTION: THIS EVENT HAS PASSED!" << std::endl;
+//        std::cout << "IN EVENTACTION: THIS EVENT HAS PASSED!" << std::endl;
         
         perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
         
@@ -227,7 +227,7 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
         mcTrajectories = nullptr;
         simsRemap = nullptr;
         extMonFNALHits = nullptr;
-        std::cout << "IN EVENTACTION: THIS EVENT HAS *NOT* PASSED!" << std::endl;
+//        std::cout << "IN EVENTACTION: THIS EVENT HAS *NOT* PASSED!" << std::endl;
             
         //there is no need to clear SD data here, since it is done in the call to
         //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
