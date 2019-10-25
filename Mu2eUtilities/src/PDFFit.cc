@@ -45,8 +45,6 @@ const int N_sbins = 50;
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
-
-
 FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) : TimePDFFit(_chits, _straws,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k)
 {
   //create pdf bins using pre defined numbers:
@@ -100,20 +98,16 @@ void FullFit::CalculateFullPDF() {
   for (int is=0;is<N_sbins;is++){
      double sigma = this->pdf_sigmas[is];
      for (int it0=0;it0<N_tbins;it0++){
-       //Time residuals?
+       
        double time_gaus = this->pdf_times[it0];
-       //Time PDF
        double time_gaussian = 1.0/sqrt(2*TMath::Pi()*sigma*sigma)*exp(-(time_gaus*time_gaus)/(2*sigma*sigma));
      
-      //Use taus:
       for (int itau=0;itau<N_taubins;itau++){
         double tau = this->pdf_taus[itau];
         for (int it1=0;it1<N_tbins-it0;it1++){
           double time_tau = this->delta_T*it1;
           
-	  //Poisson stats nature of tau:
           double val_tau = pow(1/tau,k)*pow(time_tau,k-1)*exp(-time_tau/tau)/(double) Factorial(k-1);
-        
           this->pdf[is * N_taubins * N_tbins + itau * N_tbins + (it0+it1)] += time_gaussian * val_tau;
          
         }
@@ -128,7 +122,6 @@ void FullFit::CalculateFullPDF() {
         total += this->pdf[is * N_taubins * N_tbins + itau * N_tbins + it];
       }
       
-      //Normalize:
       for (int it=0;it<N_tbins;it++){
         this->pdf[(is*N_taubins*N_tbins)+(itau*N_tbins) + it] /= total;
        
@@ -137,6 +130,14 @@ void FullFit::CalculateFullPDF() {
   }
 }
 
+void FullFit::DeleteArrays() const{
+    
+    delete []  pdf_sigmas;
+    delete []  pdf_taus;
+    delete []  pdf_times;
+    delete []  pdf;
+
+}
 
 double FullFit::InterpolatePDF(double time_residual, double sigma, double tau) const
 {
@@ -220,9 +221,7 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   //Loop through the straws and get DOCA:
   for (size_t i=0;i<this->straws.size();i++){
       double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
-      //if(doca > 2.5) continue;
       double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
-      
       double pdf_t = 1/sqrt(2*TMath::Pi()*this->sigma_t*this->sigma_t) * exp(-(time_residual*time_residual)/(2*this->sigma_t*this->sigma_t));
       //Log Liklihood:
       llike -=log(pdf_t);
@@ -252,20 +251,11 @@ double DataFit::operator() (const std::vector<double> &x) const
   double t0 = x[4]; 
   long double llike = 0;
   
-  //Loop through the straws and get DOCA:
   for (size_t i=0;i<this->straws.size();i++){
-      double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
-      
-      double doca_penalty = 1;
-      /*
-      if (doca >= 2.5){
-        doca_penalty = exp(-(doca-2.5)/5.);
-        doca = 2.5;
-      }
-    */
+    double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
+    double doca_penalty = 1; 
     double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
-    //if(time_residual > 40 ) continue;
-     
+    
     if(time_residual>40){
 	time_residual = 40;
     }
@@ -275,7 +265,7 @@ double DataFit::operator() (const std::vector<double> &x) const
     double tau_eff = (hypotenuse/0.0625) - (doca/0.0625);
    
     double pdf_val = this->InterpolatePDF(time_residual,sigma,tau_eff);
-    pdf_val *= doca_penalty;
+    pdf_val *= doca_penalty;//unused
 
     if (pdf_val < 1e-3){
       pdf_val = 1e-3;

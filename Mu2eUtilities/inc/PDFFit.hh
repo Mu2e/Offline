@@ -56,12 +56,13 @@ class FullFit : public TimePDFFit {
   public:
     FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k);
 
-    double voltage=1425.;
+    //double voltage=1425.;
     int Factorial(int k);
     void CalculateFullPDF();
     double InterpolatePDF(double time_residual, double sigma, double tau) const;
-
-    double Min_t, Min_tau, Min_s;
+    void DeleteArrays() const;
+    double Min_t;
+    double  Min_tau, Min_s;
     double Max_t, Max_tau, Max_s;
     double delta_T, delta_Tau, delta_S;
     double *pdf_sigmas, *pdf_taus, *pdf_times;
@@ -74,9 +75,6 @@ class DataFit : public FullFit {
     DataFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k): FullFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _sigma_t, _k) {}
     
     double operator() (const std::vector<double> &x) const;
-    
-    //void calculate_weighted_pdf (const std::vector<double> &x, TH1F* h, double doca_min=-1, double doca_max=1e8, bool dist=false) const;
-
     };
 
 

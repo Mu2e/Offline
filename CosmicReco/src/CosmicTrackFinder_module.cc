@@ -109,18 +109,17 @@ namespace mu2e{
     int                                 _printfreq;
     int 				_minnsh; // minimum # of strawHits in CH
     int 				_minnch; // minimum # of ComboHits for viable fit
-    CosmicTrkFitFlag				_saveflag;//write tracks that satisfy these flags
-    //unsigned				_maxniter;  // maximum # of iterations over outlier filtering + fitting 
+    CosmicTrkFitFlag			_saveflag;//write tracks that satisfy these flags
+    
     int 				_minNHitsTimeCluster; //min number of hits in a viable time cluster
     int 				_max_seed_chi2; ///maximum chi2 allowed for seed
     
     art::ProductToken<ComboHitCollection> const _chToken;
     art::ProductToken<TimeClusterCollection> const _tcToken;
     art::ProductToken<StrawDigiMCCollection> const _mcToken;
-    //int    STCounter(0);
+   
     CosmicTrackFit     _tfit;
-    //TrkTimeCalculator _ttcalc;
-    //float             _t0shift; 
+     
     StrawHitFlag      _outlier;
    
     std::unique_ptr<ModuleHistToolBase>   _hmanager;
@@ -137,9 +136,9 @@ namespace mu2e{
 
  CosmicTrackFinder::CosmicTrackFinder(fhicl::ParameterSet const& pset) :
    art::EDProducer{pset},
-    _diag        (pset.get<int>("diagLevel",1)),
+    _diag        (pset.get<int>("diagLevel",0)),
     _mcdiag      (pset.get<int>("mcdiagLevel",2)),
-    _debug       (pset.get<int>("debugLevel",3)),
+    _debug       (pset.get<int>("debugLevel",0)),
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
     _minnsh      (pset.get<int>("minNStrawHits",2)),
     _minnch      (pset.get<int>("minNComboHits",8)),
@@ -167,7 +166,7 @@ namespace mu2e{
 //----------------------------------------------------------*/
 
   void CosmicTrackFinder::beginJob() {
-    if (_debug != 0) std::cout<<"Beginning STFinder Job..."<<std::endl;
+   
     art::ServiceHandle<art::TFileService> tfs;
     if (_diag > 0){
       art::ServiceHandle<art::TFileService> tfs;  
@@ -179,10 +178,6 @@ namespace mu2e{
 //----------------------------------------------------------*/
   void CosmicTrackFinder::beginRun(art::Run& run) {
     
-    if (_debug > 0)
-    {
-      std::cout << "BEGINNING Cosmic TRACK FINDING... " << std::endl;
-    }
    mu2e::GeomHandle<mu2e::Tracker> th;
    const Tracker* tracker = th.get();
    _data.run       = &run;
@@ -211,11 +206,7 @@ namespace mu2e{
      if(_mcdiag>0){ 	 
            auto const& mcdH = event.getValidHandle(_mcToken);
            const StrawDigiMCCollection& mccol(*mcdH);
-           _stResult._mccol =  &mccol;/*
-           for(size_t imc=0; imc<mccol.size(); imc++){
-                StrawDigiMC digi = mccol[imc];
-           	_stResult._mcDigisToProcess.push_back(digi);
-           }  */
+           _stResult._mccol =  &mccol;
        }
     _data.event       = &event;
     _data.nTimePeaks  = tccol.size();
@@ -414,7 +405,7 @@ void CosmicTrackFinder::OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Even
   }
   
   void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
- 
+    //This is for seed fit only, currently not in use....
     int nhits          = trackData._tseed._panel_hits.size();
     //int loc = _data.nseeds;
    

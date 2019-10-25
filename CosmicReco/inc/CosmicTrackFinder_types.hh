@@ -47,6 +47,7 @@ namespace mu2e {
       int     nShFit ; //Number ofstraw hits in the fit
       int     nChFit ; //Number of ComboHits Fit
       int     good     ; //Number which are "good"
+       
       //for chi2 fitting:
       double  Final_hit_residualX[kMaxNHits];
       double  Final_hit_errorX [kMaxNHits];
