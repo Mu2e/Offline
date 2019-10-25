@@ -19,9 +19,9 @@
 // mu2e
 #include "Mu2eUtilities/inc/HelixTool.hh"
 // helper function
-//#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
-#include "TrkFilters/inc/PhiPrescalingParams.hh"
-#include "TrkFilters/inc/TrkFiltersHelpers.hh"
+#include "GeneralUtilities/inc/PhiPrescalingParams.hh"
+#include "GeneralUtilities/inc/ParameterSetHelpers.hh"
+//#include "TrkFilters/inc/TrkFiltersHelpers.hh"
 
 using namespace CLHEP;
 // c++
@@ -94,7 +94,7 @@ namespace mu2e
     _nevt(0), _npass(0)
   {
     if (_prescaleUsingD0Phi){
-      _prescalerPar    = pset.get<PhiPrescalingParams>("prescalerPar");
+      _prescalerPar    = fhicl::getPhiPrescalerParams(pset, "prescalerPar");
     }
     produces<TriggerInfo>();
   }
