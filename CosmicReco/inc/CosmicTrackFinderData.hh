@@ -58,9 +58,6 @@ namespace mu2e {
       int       nShFit; //after fit
       int       nChFit; //after fit
 
-      //int       nChPPanel;
-      //int       nChHits; //same as above at moment as nothing removed
-
       float    Final_hit_residualX[kMaxResidIndex];
       float    Final_hit_residualY[kMaxResidIndex];
       float    Final_hit_pullX[kMaxResidIndex];
@@ -80,6 +77,7 @@ namespace mu2e {
       float    Initial_ErrorsTot[kMaxResidIndex];
       
       int      CosmicTrackFitCounter;
+   
       float    Final_chi2d_track;
       float    Final_chi2dX_track;
       float    Final_chi2dY_track;
@@ -106,7 +104,7 @@ namespace mu2e {
     int                               _nXYCh; //CH at start
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster filtering 
-    //const CosmicTrackSeedCollection*         _stcol;
+    //const CosmicTrackSeedCollection*         _stcol; // if multiple, not used
     const ComboHitCollection*         _chcol;
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;

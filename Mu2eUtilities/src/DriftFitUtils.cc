@@ -51,7 +51,7 @@ double DriftFitUtils::GetAmbig(TrkPoca hitpoca) {
 	double newamb = hitpoca.doca() > 0 ? 1 : -1;
 	return newamb;
 }
-//Function built to access the ambiguity sign -this could proably be improvedaif upgrade TwoLine utility....TODO
+
 double DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
 	XYZVec track_position(a0,b0,0);
 	XYZVec track_direction(a1,b1,1);
@@ -96,7 +96,7 @@ double DriftFitUtils::GetPropTime(ComboHit chit, Straw straw, double vprop) {
 
 double DriftFitUtils::TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit){ 
                 
-      	        double drift_time= doca/0.065;//srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);
+      	        double drift_time= doca/0.065;//srep.StrawResponse::driftDistanceToTime(strawid , fabs(doca), phi);//TODO fix the drift vel
       	        return drift_time;
 }
         
@@ -118,6 +118,6 @@ double DriftFitUtils::T0(Straw const&  straw, double doca, StrawResponse srep, d
 		double time_residual_long = TimeResidualLong( straw,  doca, srep,  t0,  hit);
 		double time_residual_trans = TimeResidualTrans(straw,doca, srep, t0, hit); 
 		Aver += hit.time() - time_residual_trans - time_residual_long;
-		return Aver; //hit.time() - time_residual_trans - time_residual_long;
+		return Aver; 
 }
 

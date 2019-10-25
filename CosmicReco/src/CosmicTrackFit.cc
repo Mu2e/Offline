@@ -65,15 +65,15 @@ namespace mu2e
   
   CosmicTrackFit::CosmicTrackFit(fhicl::ParameterSet const& pset) :
     _Npara(pset.get<unsigned>("Npara",4)),
-    _diag(pset.get<int>("diagLevel",1)),
+    _diag(pset.get<int>("diagLevel",1)), //1=seed info, 2= drift info
     _mcdiag(pset.get<int>("MCdiagLevel",1)),
-    _debug(pset.get<int>("debugLevel",1)),
+    _debug(pset.get<int>("debugLevel",1)), // set to 1 for chi2, currently will cause errors ifo not set
     _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
     _minnsh(pset.get<unsigned>("minNStrawHits",2)),
     _minCHHits(pset.get<unsigned>("minCHHits",8)),
     _n_outliers(pset.get<unsigned>("_n_outliers",2)),
-    _maxniter(pset.get<unsigned>("maxniter",1000)),//10
-    _maxchi2(pset.get<float>("maxchi2",2.5)) ,
+    _maxniter(pset.get<unsigned>("maxniter",1000)),
+    _maxchi2(pset.get<float>("maxchi2",2.5)) , //Need to set  in module, this is not used
     _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
     _max_position_deviation((pset.get<float>("max_position_deviation",200))),
     _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
@@ -177,6 +177,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 
  void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, CosmicTrackFinderTypes::Data_t& diagnostics){
  
+     //auto S = std::make_unique<::BuildMatrixSums>();// S;
      ::BuildMatrixSums S;
      ComboHit   *hitP1(0), *hitP2(0); 
      size_t nHits (trackData._chHitsToProcess.size());   
@@ -561,7 +562,7 @@ void CosmicTrackFit::TransformMC(CosmicTrackFinderData& trackData, TrackAxes Axe
 }     
 
 
-bool CosmicTrackFit::goodTrack(CosmicTrack* track)
+bool CosmicTrackFit::goodTrack(CosmicTrack* track) //Not used
   { 
     if(track->Diag.FinalChiTot < _maxchi2) return true;
     else return false;
@@ -570,11 +571,11 @@ bool CosmicTrackFit::goodTrack(CosmicTrack* track)
 /*--------------USE? ---------------------------//
 //          Checks if flag                        //
 //------------------------------------------------*/
-bool CosmicTrackFit::use_hit(const ComboHit& thit) const 
+bool CosmicTrackFit::use_hit(const ComboHit& thit) const //currently not used -keep option to set 
   {
     return (!thit._flag.hasAnyProperty(_dontuseflag));
   }
-bool CosmicTrackFit::use_track(double track_length) const 
+bool CosmicTrackFit::use_track(double track_length) const //not used but keep for now
   {
      return (track_length > _maxd) ? false : true ;
   }
@@ -583,8 +584,8 @@ This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimze
 //------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	 
-         EndResult endresult = LiklihoodFunctions::DoFit(trackData._tseed,  _srep, _maxHitDOCA, _minCHStrawFull, _maxLogL, _gaussTres, _maxTres);
-         
+         EndResult endresult = LiklihoodFunctions::DoFit(_diag, trackData._tseed,  _srep, _maxHitDOCA, _minCHStrawFull, _maxLogL, _gaussTres, _maxTres);
+         //Store output in diag lists:
          trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
          trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
          trackData._tseed._track.MinuitFitParams.B0 =  endresult.bestfit[2];//b0
@@ -598,14 +599,15 @@ void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
          trackData._tseed._track.MinuitFitParams.deltaT0 =  endresult.bestfiterrors[4];//errt0
 
          if(endresult.bestfitcov.size() !=0 ){
-		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);//TODO 
+		 TrackCov Cov(endresult.bestfitcov[0], 0., 0., endresult.bestfitcov[1], endresult.bestfitcov[2],0.,0., endresult.bestfitcov[3]);
 		 trackData._tseed._track.MinuitFitParams.Covarience = Cov;
          }
          if(endresult.NLL !=0){ trackData._tseed._track.minuit_converged = true;}
 	
 	 XYZVec X(1,0,0);
 	 XYZVec Y(0,1,0);
-	 XYZVec Z(0,0,1);//TODO (for plotting as need to make code to just plot in the XYZ)
+	 XYZVec Z(0,0,1);
+
 	 TrackAxes XYZ(X,Y,Z);
 	 trackData._tseed._track.MinuitCoordSystem = XYZ; 
 	 trackData._tseed._track.DriftDiag.FullFitEndDOCAs = endresult.FullFitEndDOCAs;

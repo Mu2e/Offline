@@ -35,7 +35,7 @@ using namespace mu2e;
 
 namespace LiklihoodFunctions{
         
-	EndResult DoFit(CosmicTrackSeed trackseed , StrawResponse srep, double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
+	EndResult DoFit(int _diag, CosmicTrackSeed trackseed , StrawResponse srep, double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
 	  
 	  std::vector<double> errors(5,0);
 	  std::vector<double> seed(5,0);
@@ -50,16 +50,7 @@ namespace LiklihoodFunctions{
 	  seed[2] = trackseed._track.FitEquationXYZ.Pos.Y();
 	  seed[3] = trackseed._track.FitEquationXYZ.Dir.Y();//trackseed._track.FitParams.B1;
 	  seed[4] = trackseed._t0.t0();
-	  /* alignment parameters -  6 DoF: TODO
-	  1) Translations:
-	  seed[5] = dx;//shifts of straw centre positions relative to truth
-	  seed[6] = dy;
-          seed[7] = dz;
-	  2) Rotations: 
-	  seed[8] =  eta;//shift about x
-	  seed[9] = zeta; //shift about y
-	  seed[10] = epsilon; //shift about z
-	  */
+	  
 	  //Seed errors = covarience of parameters in seed fit
 	  errors[0] = trackseed._track.FitParams.Covarience.sigA0; 
 	  errors[1] = trackseed._track.FitParams.Covarience.sigA1;
@@ -87,9 +78,10 @@ namespace LiklihoodFunctions{
 	  double tolerance = 1000;
           //Define Minimization method as "MIGRAD" (see minuit documentation)
 	  ROOT::Minuit2::FunctionMinimum min = migrad(maxfcn, tolerance);
-	  ROOT::Minuit2::MnPrint::SetLevel(3);
-	  ROOT::Minuit2::operator<<(cout, min);
-	
+	  if(_diag > 1){
+	  	ROOT::Minuit2::MnPrint::SetLevel(3);
+	  	ROOT::Minuit2::operator<<(cout, min);
+	  }
 	  //Will be the results of the fit routine:
 	  ROOT::Minuit2::MnUserParameters results = min.UserParameters();
 	  double minval = min.Fval();
@@ -109,12 +101,13 @@ namespace LiklihoodFunctions{
 	  if(minval != 0 and minval< 100 ){ cosmictrack.minuit_converged = true;} 
 	  //Add best fit results to appropriatly named element:
 	  endresult.NLL = minval;
+	  if(_diag > 1){
 	  for (size_t i=0;i<endresult.names.size();i++){
 	    std::cout << i << endresult.names[i] << " : " << endresult.bestfit[i] << " +- " << endresult.bestfiterrors[i] << std::endl;
 	    if(endresult.bestfitcov.size() != 0 and i< 4) cout<<"cov "<<endresult.bestfitcov[i]<<endl;
 	
 	  }
-     
+       }
        //Cut on Gaussian results remove "bad" hits
 	ComboHitCollection passed_hits;
 	std::vector<Straw> passed_straws;
@@ -127,7 +120,7 @@ namespace LiklihoodFunctions{
 			passed_hits.push_back(trackseed._straw_chits[i]);
 			passed_hits.push_back(trackseed._straw_chits[i]);
 			
-		}
+		} 
 	}
        
 	if(cosmictrack.minuit_converged ==true and trackseed._straw_chits.size() > minChits) {
@@ -156,7 +149,7 @@ namespace LiklihoodFunctions{
 	 newmigrad.Fix((unsigned) 4); 
 	 
          //Define Minimization method as "MIGRAD" (see minuit documentation)
-	  min = newmigrad(MaxLogL, tolerance);
+	 min = newmigrad(MaxLogL, tolerance);
 	
 	 //Will be the results of the fit routine:
 	 results = min.UserParameters();
@@ -164,13 +157,12 @@ namespace LiklihoodFunctions{
 	 //Define name for parameters
 	 endresult.bestfit = results.Params();
 	 endresult.bestfiterrors = results.Errors();
-
+	 
 	  for(size_t i = 0; i< trackseed._straws.size(); i++){
 		//Store Init DOCA	    
 	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3], trackseed._straw_chits[i]);
 	      double start_time_residual = fit.TimeResidual(trackseed._straws[i], start_doca,  srep, seed[4], trackseed._straw_chits[i]);
 	      
-	     
 		//Store Final Fit DOCA
 	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
               double ambig = fit.calculate_ambig(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
@@ -191,8 +183,8 @@ namespace LiklihoodFunctions{
 	      endresult.TrueAmbigs.push_back(trueambig);
 	      endresult.TrueDOCAs.push_back(true_doca);
 	  }
-	
-     }
+	  fullfit.DeleteArrays();
+     	}
 	 return endresult;
  
   }
