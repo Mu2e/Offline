@@ -7,7 +7,7 @@
 //
 // mu2e
 #include "TrkReco/inc/Chi2HelixFit.hh"
-#include "GeometryService/inc/GeomHandle.hh" 
+#include "GeometryService/inc/GeomHandle.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "CLHEP/Units/PhysicalConstants.h"
 #include "TrackerGeom/inc/Tracker.hh"

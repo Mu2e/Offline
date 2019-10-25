@@ -25,16 +25,13 @@ TimeClusterFinder : {
   ComboHitCollection : "makePH"
   StrawHitFlagCollection : "FlagBkgHits:ComboHits"
   CaloClusterCollection : "CaloClusterFromProtoCluster"
-  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
-
   # enable calorimeter cluster info in time clustering
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
   UseCaloCluster : true
   UseCaloClusterPosition : true
   CaloClusterWeight : 10.0
   TestFlag : true
 }
-
-
 # specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
 # note these are helicity-independent
 TimeClusterFinderDe : {
@@ -87,9 +84,6 @@ TimeClusterFinderUpi : {
     StrawHitBeta : 0.63
   }
 }
-
-
-
 
 # helix finding.  Search for both helicities
 RobustHelixFinder : {
@@ -461,11 +455,9 @@ MHFinalFitDmuP                :  {
   SeedCollection : MHSeedFitDmp
 }
 
-
 # Declare a table with all the modules needed for track reconstruction
 Tracking : {
   producers : {
-
     TimeClusterFinderDe  : @local::TimeClusterFinderDe
     HelixFinderDe  : @local::RobustHelixFinderDe
     TimeClusterFinderDmu  : @local::TimeClusterFinderDmu
@@ -478,7 +470,6 @@ Tracking : {
     HelixFinderUmu  : @local::RobustHelixFinderUmu
     TimeClusterFinderUpi  : @local::TimeClusterFinderUpi
     HelixFinderUpi  : @local::RobustHelixFinderUpi
-
 # should add proton FIXME!
 # now all the different track fits based on these inputs
 # First, seed fits
@@ -538,8 +529,6 @@ Tracking : {
 
   }
 }
-
-
 # production sequences for tracking specific paricles; first electrons
 Tracking.TPRDeM  : [ TimeClusterFinderDe, HelixFinderDe, KSFDeM, KFFDeM ]
 Tracking.TPRUeM  : [ TimeClusterFinderUe, HelixFinderUe, KSFUeM, KFFUeM ]
