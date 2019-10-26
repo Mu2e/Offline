@@ -141,6 +141,7 @@ namespace mu2e {
 
   //================================================================
   size_t MixBackgroundFramesDetail::eventsToSkip() {
+    //FIXME: Ideally, we would know the number of events in the secondary input file
     std::uniform_int_distribution<size_t> uniform(minSkip_, maxSkip_);
     size_t result = uniform(urbg_);
     if(debugLevel_ > 0) { 
