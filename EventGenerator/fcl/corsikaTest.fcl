@@ -5,6 +5,22 @@
 
 process_name : corsikaTest
 
+source: {
+    module_type: FromCorsikaBinary
+    fileNames: ["/mu2e/app/users/srsoleti/corsika-77100/run/DAT110001"]
+    runNumber          : 55
+    firstSubRunNumber  : 0
+    firstEventNumber   : 1
+    showerAreaExtension  : 10000
+    targetBoxXmin : -10000
+    targetBoxXmax : 3000
+    targetBoxYmin : -5000
+    targetBoxYmax : 5000
+    targetBoxZmin : -5000
+    targetBoxZmax : 21000
+    maxEvents: -1
+}
+
 customCutPhoton: {
    type: intersection
    pars: [ { type: kineticEnergy cut: 10. },
@@ -20,11 +36,6 @@ customCutNeutron: {
    // pars: [{type: kineticEnergy cut: 0.001},
    pars: [{type: kineticEnergy cut: 10.000},
          { type: pdgId pars: [ 2112, -2112 ] }]
-}
-
-source : {
-  module_type : EmptyEvent
-  maxEvents : @nil
 }
 
 services : {
@@ -50,21 +61,8 @@ physics : {
       module_type : CORSIKAEventGenerator
       refY0 : 20000
       buffer : 0
-      showerAreaExtension : 10000
       projectToTargetBox : true
-      randomXZshift : 1000
-      targetBoxXmin : -10000
-      targetBoxXmax : 3000
-      targetBoxYmin : -5000
-      targetBoxYmax : 5000
-      targetBoxZmin : -5000
-      targetBoxZmax : 21000
       tOffset : 0
-      showerInputFiles : ["/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110001",
-                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110002",
-                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110003",
-                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110004",
-                          "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT110005"]
     }
 
     g4run : 

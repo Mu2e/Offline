@@ -93,7 +93,11 @@ class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
 };
 
 mu2e::CORSIKAGenPlots::CORSIKAGenPlots(fhicl::ParameterSet const &p)
-    : EDAnalyzer(p), processName_(p.get<std::string>("processName", "")), CORSIKAModuleLabel_(p.get<std::string>("CORSIKAModuleLabel", "corsikaGen")), CORSIKAInstanceName_(p.get<std::string>("CORSIKAInstanceName", "")), _keMax(p.get<double>("keMax", 10E3))
+    : EDAnalyzer(p),
+    processName_(p.get<std::string>("processName", "")),
+    CORSIKAModuleLabel_(p.get<std::string>("CORSIKAModuleLabel", "FromCorsikaBinary")),
+    CORSIKAInstanceName_(p.get<std::string>("CORSIKAInstanceName", "")),
+    _keMax(p.get<double>("keMax", 10E3))
 {
   art::ServiceHandle<art::TFileService> tfs;
 
