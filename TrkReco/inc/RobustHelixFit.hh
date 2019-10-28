@@ -61,6 +61,7 @@ namespace mu2e
     void fitCircle(RobustHelixFinderData& helixData, bool forceTargetCon);
     bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
+    bool initFZ_from_dzFrequency(RobustHelixFinderData& helixData, int initHitPhi=1);
     void fitFZ(RobustHelixFinderData& helixData);
     void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
     bool goodHelix(RobustHelix const& rhel);
@@ -146,6 +147,7 @@ namespace mu2e
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
     TH1F _hphi;
     unsigned _ntripleMin, _ntripleMax;
+    bool     _use_initFZ_from_dzFrequency;
     unsigned _initFZNBins;
     float    _initFZMinL, _initFZMaxL, _initFZStepL;
     unsigned _fitFZNBins;
