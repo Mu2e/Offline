@@ -1,0 +1,4 @@
+physics.filters.tprLowPSeedDeMTCFilter.requireCaloCluster : false
+physics.filters.tprLowPSeedDeMTCFilter.minNHits : 10.0
+physics.filters.tprLowPSeedDeMTCFilter.minTime : 500.0
+physics.filters.tprLowPSeedDeMTCFilter.maxTime : 1695.0
