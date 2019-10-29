@@ -22,7 +22,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
-#include "MCDataProducts/inc/StrawDigiMC.hh"
 
 // MC Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
@@ -38,6 +37,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
+
+
 // ROOT incldues
 #include "TStyle.h"
 #include "Rtypes.h"
@@ -55,13 +56,38 @@ namespace mu2e
 {
   class CosmicAnalyzer : public art::EDAnalyzer {
     public:
-      explicit CosmicAnalyzer(fhicl::ParameterSet const& pset);
+	struct Config{
+	      using Name=fhicl::Name;
+	      using Comment=fhicl::Comment;
+	      fhicl::Atom<int> _diag{Name("diagLevel"), Comment("set to 1 for info"),1};
+	      fhicl::Atom<bool> _mcdiag{Name("mcdiag"), Comment("set on for MC info"),true};
+	      fhicl::Atom<art::InputTag> _chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+	      fhicl::Atom<art::InputTag> _tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+	      fhicl::Atom<art::InputTag> _costag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
+	      fhicl::Atom<art::InputTag> _mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
+	      //fhicl::Atom<fhicl::ParameterSet> _toff{Name("toff"), Comment("Sim particle time offset "),"TimeOffset"};
+	    };
+	typedef art::EDAnalyzer::Table<Config> Parameters;
+
+      explicit CosmicAnalyzer(const Parameters& conf);
       virtual ~CosmicAnalyzer();
       virtual void beginJob();
-      virtual void analyze(const art::Event& e);
+      virtual void analyze(const art::Event& e) override;
     private: 
+      
+      Config _conf;
       int  _diag;
       bool _mcdiag;
+
+      art::InputTag   _chtag;//combo
+      art::InputTag   _tctag;//timeclusters
+      art::InputTag   _costag;//Striaght tracks
+      art::InputTag   _mcdigistag; //MC digis
+      //SimParticleTimeOffset _toff;
+      const ComboHitCollection* _chcol;
+      const CosmicTrackSeedCollection* _coscol;
+      const TimeClusterCollection* _tccol;
+      const StrawDigiMCCollection* _mcdigis;
       CosmicTrackMCInfo trueinfo;
       //TTree Info:
       TTree* _cosmic_analysis;
@@ -184,16 +210,7 @@ namespace mu2e
       // add event id
       Int_t _evt; 
 
-      // Event object Tags
-      art::InputTag   _chtag;//combo
-      art::InputTag   _tctag;//timeclusters
-      art::InputTag   _costag;//Striaght tracks
-      art::InputTag   _mcdigistag; //MC digis
-      // Event data cache
-      const ComboHitCollection* _chcol;
-      const CosmicTrackSeedCollection* _coscol;
-      const TimeClusterCollection* _tccol;
-      const StrawDigiMCCollection* _mcdigis;
+      
       //Numbers:
       Int_t _nsh, _nch; // # associated straw hits / event
       Int_t     _ntc; // # clusters/event
@@ -206,8 +223,6 @@ namespace mu2e
 	
       //Flags:
 	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
-      //offsets for MC
-      SimParticleTimeOffset _toff;
       Int_t _strawid; // strawid info
       vector<ComboHitInfoMC> _chinfomc;
       CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
@@ -215,16 +230,9 @@ namespace mu2e
       bool findData(const art::Event& evt);
     };
 
-    CosmicAnalyzer::CosmicAnalyzer(fhicl::ParameterSet const& pset) :
-	art::EDAnalyzer(pset),
-	_diag		(pset.get<int>("diagLevel",1)),
-	_mcdiag		(pset.get<bool>("mcdiag",true)),
-	_chtag		(pset.get<art::InputTag>("ComboHitCollection")),
-	_tctag		(pset.get<art::InputTag>("TimeClusterCollection")),
-	_costag		(pset.get<art::InputTag>("CosmicTrackSeedCollection")),
-	_mcdigistag	(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
-	_toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
-        {}
+    CosmicAnalyzer::CosmicAnalyzer(const Parameters& conf) :
+	art::EDAnalyzer(conf),
+        _conf(conf()){}
 
     CosmicAnalyzer::~CosmicAnalyzer(){}
 
@@ -867,16 +875,16 @@ void CosmicAnalyzer::FillDriftMC(Straw const& straw, double RecoAmbig, CosmicTra
 	_chcol = 0; 
         _tccol = 0;
         _coscol = 0; 
-	auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
+	auto chH = evt.getValidHandle<ComboHitCollection>(_conf._chtag());
 	_chcol = chH.product();
-	auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);
+	auto tcH = evt.getValidHandle<TimeClusterCollection>(_conf._tctag());
 	_tccol =tcH.product();
-	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_costag);
+	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_conf._costag());
 	_coscol =stH.product();
         if(_mcdiag){
-           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
+           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_conf._mcdigistag());
            _mcdigis = mcdH.product();
-           _toff.updateMap(evt);
+           //_toff.updateMap(evt);
         }
 	return _chcol != 0 && _tccol!=0 && _coscol !=0 && (_mcdigis != 0 || !_mcdiag);
        }
