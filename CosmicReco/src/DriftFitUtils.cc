@@ -1,5 +1,6 @@
-#include "Mu2eUtilities/inc/DriftFitUtils.hh"
-#include "Mu2eUtilities/inc/ConvertXYZ.hh"
+
+
+#include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
 #include "Math/VectorUtil.h"
@@ -12,6 +13,7 @@
 #include "TrackerConditions/inc/StrawResponse.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
+#include "TrackerConditions/inc/DriftFitUtils.hh"
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
 #include "BTrk/BbrGeom/Trajectory.hh"
@@ -33,8 +35,8 @@ double DriftFitUtils::GetTestDOCA(Straw const& straw, double a0, double a1, doub
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& sdir = straw.getDirection();
 	
-	XYZVec wire_position = ConvertToXYZ(spos);
-        XYZVec wire_direction= ConvertToXYZ(sdir);
+	XYZVec wire_position = Geom::toXYZVec(spos);
+        XYZVec wire_direction= Geom::toXYZVec(sdir);
 	
 	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
                 track_direction,
@@ -47,20 +49,15 @@ double DriftFitUtils::GetTestDOCA(Straw const& straw, double a0, double a1, doub
 	return dca;
 }
 
-double DriftFitUtils::GetAmbig(TrkPoca hitpoca) {
-	double newamb = hitpoca.doca() > 0 ? 1 : -1;
-	return newamb;
-}
-
-double DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
+int DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
 	XYZVec track_position(a0,b0,0);
 	XYZVec track_direction(a1,b1,1);
 
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
 	const CLHEP::Hep3Vector& sdir = straw.getDirection();
 	
-	XYZVec wire_position = ConvertToXYZ(spos);
-        XYZVec wire_direction= ConvertToXYZ(sdir);
+	XYZVec wire_position = Geom::toXYZVec(spos);
+        XYZVec wire_direction= Geom::toXYZVec(sdir);
 	
 	TwoLinePCA_XYZ PCA = TwoLinePCA_XYZ(track_position,
                 track_direction,
@@ -68,8 +65,8 @@ double DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double 
                 wire_direction,
                 1.e-8);
 	
-        int ambig  = PCA.ambig();     		
-	double ambig_sign= ambig > 0 ? 1 : -1;
+        double ambig = PCA.LRambig();     		
+	int ambig_sign= ambig > 0 ? 1 : -1;
       	return ambig_sign;
 
 }

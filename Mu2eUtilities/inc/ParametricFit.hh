@@ -9,11 +9,7 @@
 
 using namespace mu2e;
 namespace ParametricFit{
-        //Remove this
-	double GettMin(XYZVec& point, XYZVec& starting_point, XYZVec& end_point);
-	XYZVec PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point);
-	double PointToLineDCA(XYZVec& point, XYZVec& line_starting_point, XYZVec& line_end_point);
-	XYZVec ParellelVector(XYZVec lineStartPoint, XYZVec lineEndPoint);
+       
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint);
 	bool LineToLineCA(XYZVec& FirstLinePos, XYZVec& FirstLineDir, 
 	 XYZVec& SecondLinePos, XYZVec& SecondLineDir, 
@@ -45,10 +41,6 @@ namespace ParametricFit{
         double GetTotalResidual(double resid_x,double resid_y);
 	double GetResidualError(XYZVec Major_Axis, XYZVec Minor_Axis, XYZVec track_direction, XYZVec& POCA, double DOCA);
         
-        double GetMCResidualX(double A0, double A1, XYZVec MCTrackDirection, XYZVec X, XYZVec point);
-        double GetMCResidualY(double A0, double A1, XYZVec MCTrackDirection, XYZVec Y, XYZVec point);
-	
-
 	}
 
 #endif

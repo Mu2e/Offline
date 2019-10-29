@@ -10,7 +10,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
+
 // ART:
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"

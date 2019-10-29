@@ -5,8 +5,8 @@
 #include "Math/VectorUtil.h"
 #include "TMath.h"
 #include "Math/Math.h"
-#include "Mu2eUtilities/inc/LiklihoodFunctions.hh"
-#include "Mu2eUtilities/inc/PDFFit.hh"
+#include "CosmicReco/inc/LiklihoodFunctions.hh"
+#include "CosmicReco/inc/PDFFit.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 //For Drift:

@@ -127,7 +127,7 @@ namespace mu2e {
     void fillClusterInfo (std::vector<spcount> const& primaries);
     void fillClusterInfo (TimeCluster const& tc,spcount const& primary, TimeClusterInfo& tcinfo);
     void fillClusterHitInfo (TimeCluster const& besttc,
-	art::Ptr<SimParticle> const& primary, art::Event const& evt); 
+art::Ptr<SimParticle> const& primary, art::Event const& evt); 
     void fillCECluster();
     void findPrimaries (art::Event const& evt, std::vector<spcount>& primaries);
     void findPrimary(art::Event const& evt, TimeCluster const& tc, spcount& primary );
@@ -339,9 +339,7 @@ namespace mu2e {
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	_ceclust._nce += ch.nStrawHits();
 	XYZVec cpos = ch.pos();
-	_ceclust._mcposx += ch.pos().x();// S. Middleton
-	_ceclust._mcposy += ch.pos().y();// S Middleton
-	_ceclust._mcposy += ch.pos().z();// S Middleton
+	
 	float hrho = sqrt(cpos.Perp2());
 	double hphi = cpos.phi();
 	double dphi = Angles::deltaPhi(hphi,cphi);
@@ -559,13 +557,7 @@ namespace mu2e {
 // simple entries
 
     //tcinfo._nhits = tp._strawHitIdxs.size();
-    //tcinfo._time  = tp._t0._t0;
-    //tcinfo._terr  = tp._t0._t0err;
-    //tcinfo._pos	  = tp._pos;
-    tcinfo._posx = tc._pos.x();//S Middleton
-    tcinfo._posy = tc._pos.y();// S Middleton
-    tcinfo._posz = tc._pos.z(); //S  Middleton
-
+   
     tcinfo._nhits = tc.nStrawHits();
     tcinfo._time  = tc._t0._t0;
     tcinfo._terr  = tc._t0._t0err;

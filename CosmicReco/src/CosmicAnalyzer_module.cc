@@ -12,7 +12,6 @@
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"

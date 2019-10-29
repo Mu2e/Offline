@@ -22,8 +22,8 @@
 #include "TrackerConditions/inc/StrawDrift.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
 //Utilities:
-#include "Mu2eUtilities/inc/PDFFit.hh"
-#include "Mu2eUtilities/inc/DriftFitUtils.hh"
+#include "CosmicReco/inc/PDFFit.hh"
+#include "TrackerConditions/inc/DriftFitUtils.hh"
 //Minuit
 #include <Minuit2/FCNBase.h>
 #include <Minuit2/MnMigrad.h>

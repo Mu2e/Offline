@@ -52,6 +52,7 @@ namespace mu2e
                 XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
                 XYZVec InitLineDirection( StrawDigiMC const& ch0,  StrawDigiMC const& chN, XYZVec reco, bool is_prime) ;
                 XYZVec LineDirection(double a0, double a1, const ComboHit *ch0, const ComboHit *chN, XYZVec ZPrime);
+                XYZVec ConvertToDetFrame(XYZVec vec);
                 XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
                 void BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
                 void RunFitChi2(const char* title, CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);

@@ -13,7 +13,7 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh" //CHANGE SEED
-#include "Mu2eUtilities/inc/BuildMatrixSums.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 #include "TrkReco/inc/TrkFaceData.hh"
 
 #include "Math/VectorUtil.h"
@@ -45,7 +45,6 @@ namespace mu2e {
 
     constexpr static uint16_t        kNMaxChHits = 150;
     
-    //possible use for alignment so keep for now:
     struct ChannelID {
       int Station;
       int Plane; 
@@ -109,7 +108,7 @@ namespace mu2e {
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;
     const StrawDigiMCCollection*      _mccol;
-    ::BuildMatrixSums         _S;//USED?
+    ::BuildLinearFitMatrixSums         _S;//USED?
 
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
