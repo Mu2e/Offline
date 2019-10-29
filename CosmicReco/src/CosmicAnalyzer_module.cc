@@ -255,7 +255,7 @@ namespace mu2e
         
 	
 	//--------------------------------Truth----------------------------------------//
-	if(_mcdiag == true){
+	if(_mcdiag ){
 		
 		_truea0XYZ = tfs->make<TH1F>("True Track Parameter A0 XYZ","True Track Parameter A0 XYZ " ,50,-10000, 10000);
 		_truea0XYZ->GetXaxis()->SetTitle("Track Parameter A0 XYZ");
@@ -291,6 +291,69 @@ namespace mu2e
 		_TrueTimeResiduals = tfs->make<TH1F>("True Time Res ","True Time Resid" ,50,0,500);
 		_TrueTimeResiduals->GetXaxis()->SetTitle("True Time Res [ns]");
 		_TrueTimeResiduals->SetStats();
+
+		_A0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{0} v #theta_{true,fit}  ","Seed Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+		_A0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+		_A0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{0}");
+		
+		_B0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{0} v #theta_{true,fit}  ","Seed Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
+		_B0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+		_B0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{0}");
+		
+		_A1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{1} v #theta_{true,fit}  ","Seed Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+		_A1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+		_A1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{1}");
+		
+		_B1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{1} v #theta_{true,fit}  ","Seed Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
+		_B1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
+		_B1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{1}");
+		
+		_A0SeedMCDiff = tfs->make<TH1F>("A^{seed}_{0}- A^{MC}_{0} ","A^{seed}_{0}- A^{MC}_{0}" ,100,-100, 100);
+		_A0SeedMCDiff->GetXaxis()->SetTitle("#Delta #A_{0}");
+		_A0SeedMCDiff->SetStats();
+		
+		_A1SeedMCDiff = tfs->make<TH1F>("A^{seed}_{1} - A^{MC}_{1}","A^{seed}_{1} - A^{MC}_{1}" ,100,-0.5 , 0.5);
+		_A1SeedMCDiff->GetXaxis()->SetTitle("#Delta A_{1}");
+		_A1SeedMCDiff->SetStats();
+		
+		_B0SeedMCDiff = tfs->make<TH1F>("B^{seed}_{0} - B^{seed}_{0}" ,"B^{seed}_{0} - B^{MC}_{0}",100,-100, 100);
+		_B0SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{0}");
+		_B0SeedMCDiff->SetStats();
+		
+		_B1SeedMCDiff = tfs->make<TH1F>("B^{seed}_{1} - B^{seed}_{1}", "B^{seed}_{1} - B^{seed}_{1}" ,100,-0.5, 0.5);
+		_B1SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{1}");
+		_B1SeedMCDiff->SetStats();
+		_A0MinuitMCDiff = tfs->make<TH1F>(" A0_{Minuit} - A0_{MC} "," A0_{Minuit} - A0_{Minuit}" ,100,-100,100);
+		_A0MinuitMCDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
+		_A0MinuitMCDiff->SetStats();
+		
+		_A1MinuitMCDiff = tfs->make<TH1F>(" A1_{Minuit} - A1_{MC} "," A1_{Minuit} - A1_{MC}" ,100,-0.5,0.5);
+		_A1MinuitMCDiff->GetXaxis()->SetTitle("#Delta A1 ");
+		_A1MinuitMCDiff->SetStats();
+		
+		_B0MinuitMCDiff = tfs->make<TH1F>(" B0_{Minuit} - B0_{MC} "," B0_{Minuit} - B0_{MC}" ,100,-100,100);
+		_B0MinuitMCDiff->GetXaxis()->SetTitle("#Delta B0 [mm]");
+		_B0MinuitMCDiff->SetStats();
+		
+		_B1MinuitMCDiff = tfs->make<TH1F>(" B1_{Minuit} - B1_{MC}  "," B1_{Minuit} - B1_{MC}" ,100,-0.5,0.5);
+		_B1MinuitMCDiff->GetXaxis()->SetTitle("#Delta B1 ");
+		_B1MinuitMCDiff->SetStats();
+
+		_seedDeltaA0_v_minuitA0  = tfs->make<TH2F>("#Delta A^{seed-MC}_{0} v A^{straw}_{0}", "A^{straw}_{0}", 50, -100,100, 50, -5000, 5000);
+		_seedDeltaA0_v_minuitA0->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{0}");
+		_seedDeltaA0_v_minuitA0->GetYaxis()->SetTitle("A^{straw}_{0}");
+
+		_seedDeltaA1_v_minuitA1  = tfs->make<TH2F>("#Delta A^{seed-MC}_{1} v A^{straw}_{1}", "A^{straw}_{1}", 50, -0.5, 0.5, 50, -5, 5);
+		_seedDeltaA1_v_minuitA1->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{1}");
+		_seedDeltaA1_v_minuitA1->GetYaxis()->SetTitle("A^{straw}_{1}");
+
+		_seedDeltaB0_v_minuitB0  = tfs->make<TH2F>("#Delta B^{seed-MC}_{0} v B^{straw}_{0}", "B^{straw}_{0}", 50, -100,100, 50, -5000, 5000);
+		_seedDeltaB0_v_minuitB0->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{0}");
+		_seedDeltaB0_v_minuitB0->GetYaxis()->SetTitle("B^{straw}_{0}");
+
+		_seedDeltaB1_v_minuitB1  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v B^{straw}_{1}", "B^{straw}_{1}", 50, -0.5, 0.5, 50, -5, 5);
+		_seedDeltaB1_v_minuitB1->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
+		_seedDeltaB1_v_minuitB1->GetYaxis()->SetTitle("B^{straw}_{1}");
 	}
 	_reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,3.141529);
 	_reco_phi_angle->GetXaxis()->SetTitle("#phi_{reco} [rad]");
@@ -355,22 +418,6 @@ namespace mu2e
 	_seedB1_v_seedA1->GetXaxis()->SetTitle("B_{1}");
 	_seedB1_v_seedA1->GetYaxis()->SetTitle("A_{1} ");
 	
-	_A0SeedMCDiff = tfs->make<TH1F>("A^{seed}_{0}- A^{MC}_{0} ","A^{seed}_{0}- A^{MC}_{0}" ,100,-100, 100);
-	_A0SeedMCDiff->GetXaxis()->SetTitle("#Delta #A_{0}");
-	_A0SeedMCDiff->SetStats();
-	
-	_A1SeedMCDiff = tfs->make<TH1F>("A^{seed}_{1} - A^{MC}_{1}","A^{seed}_{1} - A^{MC}_{1}" ,100,-0.5 , 0.5);
-	_A1SeedMCDiff->GetXaxis()->SetTitle("#Delta A_{1}");
-	_A1SeedMCDiff->SetStats();
-	
-	_B0SeedMCDiff = tfs->make<TH1F>("B^{seed}_{0} - B^{seed}_{0}" ,"B^{seed}_{0} - B^{MC}_{0}",100,-100, 100);
-	_B0SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{0}");
-	_B0SeedMCDiff->SetStats();
-	
-	_B1SeedMCDiff = tfs->make<TH1F>("B^{seed}_{1} - B^{seed}_{1}", "B^{seed}_{1} - B^{seed}_{1}" ,100,-0.5, 0.5);
-	_B1SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{1}");
-	_B1SeedMCDiff->SetStats();
-	
 	_Seed_Cov_A0 = tfs->make<TH1F>("#sigma_{A_{0}}", "#sigma_{A_{0}}" ,100,0, 100);
 	_Seed_Cov_A0->GetXaxis()->SetTitle("#sigma_{A_{0}}");
 
@@ -389,22 +436,6 @@ namespace mu2e
         _Seed_Cov_B0B1 = tfs->make<TH1F>("Seed #sigma_{B_{0}B_{1}}", "Seed #sigma_{B_{0}B_{1}}" ,100,0, 100);
 	_Seed_Cov_B0B1->GetXaxis()->SetTitle("#sigma_{B_{0}B_{1}}");
 
-	_A0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{0} v #theta_{true,fit}  ","Seed Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
-	_A0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_A0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{0}");
-	
-	_B0pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{0} v #theta_{true,fit}  ","Seed Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
-	_B0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_B0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{0}");
-	
-	_A1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull A_{1} v #theta_{true,fit}  ","Seed Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
-	_A1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_A1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{1}");
-	
-	_B1pull_v_theta_true= tfs->make<TProfile>("Seed Parameter Pull B_{1} v #theta_{true,fit}  ","Seed Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
-	_B1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_B1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{1}");
-	
 	_chisq_ndf_plot_init = tfs->make<TH1F>("Seed Init ChiSq/NDF","Seed Init ChiSq/NDF" ,100,0, 10);
 	_chisq_ndf_plot_init->GetXaxis()->SetTitle("Init. #Chi^{2}/N");
 	
@@ -563,37 +594,7 @@ namespace mu2e
 	_B1Minuit->GetXaxis()->SetTitle(" B1 ");
 	_B1Minuit->SetStats();
 	
-	_A0MinuitMCDiff = tfs->make<TH1F>(" A0_{Minuit} - A0_{MC} "," A0_{Minuit} - A0_{Minuit}" ,100,-100,100);
-	_A0MinuitMCDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
-	_A0MinuitMCDiff->SetStats();
 	
-	_A1MinuitMCDiff = tfs->make<TH1F>(" A1_{Minuit} - A1_{MC} "," A1_{Minuit} - A1_{MC}" ,100,-0.5,0.5);
-	_A1MinuitMCDiff->GetXaxis()->SetTitle("#Delta A1 ");
-	_A1MinuitMCDiff->SetStats();
-	
-	_B0MinuitMCDiff = tfs->make<TH1F>(" B0_{Minuit} - B0_{MC} "," B0_{Minuit} - B0_{MC}" ,100,-100,100);
-	_B0MinuitMCDiff->GetXaxis()->SetTitle("#Delta B0 [mm]");
-	_B0MinuitMCDiff->SetStats();
-	
-	_B1MinuitMCDiff = tfs->make<TH1F>(" B1_{Minuit} - B1_{MC}  "," B1_{Minuit} - B1_{MC}" ,100,-0.5,0.5);
-	_B1MinuitMCDiff->GetXaxis()->SetTitle("#Delta B1 ");
-	_B1MinuitMCDiff->SetStats();
-
-        _seedDeltaA0_v_minuitA0  = tfs->make<TH2F>("#Delta A^{seed-MC}_{0} v A^{straw}_{0}", "A^{straw}_{0}", 50, -100,100, 50, -5000, 5000);
-	_seedDeltaA0_v_minuitA0->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{0}");
-	_seedDeltaA0_v_minuitA0->GetYaxis()->SetTitle("A^{straw}_{0}");
-
-	_seedDeltaA1_v_minuitA1  = tfs->make<TH2F>("#Delta A^{seed-MC}_{1} v A^{straw}_{1}", "A^{straw}_{1}", 50, -0.5, 0.5, 50, -5, 5);
-	_seedDeltaA1_v_minuitA1->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{1}");
-	_seedDeltaA1_v_minuitA1->GetYaxis()->SetTitle("A^{straw}_{1}");
-
-	_seedDeltaB0_v_minuitB0  = tfs->make<TH2F>("#Delta B^{seed-MC}_{0} v B^{straw}_{0}", "B^{straw}_{0}", 50, -100,100, 50, -5000, 5000);
-	_seedDeltaB0_v_minuitB0->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{0}");
-	_seedDeltaB0_v_minuitB0->GetYaxis()->SetTitle("B^{straw}_{0}");
-
-	_seedDeltaB1_v_minuitB1  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v B^{straw}_{1}", "B^{straw}_{1}", 50, -0.5, 0.5, 50, -5, 5);
-	_seedDeltaB1_v_minuitB1->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
-	_seedDeltaB1_v_minuitB1->GetYaxis()->SetTitle("B^{straw}_{1}");
 	}
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
