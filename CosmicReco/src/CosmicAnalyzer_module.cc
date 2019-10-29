@@ -10,6 +10,8 @@
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "CosmicReco/inc/CosmicTrackMCInfo.hh"
+#include "TrackerConditions/inc/DriftFitUtils.hh"
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -21,13 +23,15 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
+
 // MC Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
-
+#include "GeometryService/inc/GeomHandle.hh"
+#include "GeometryService/inc/DetectorSystem.hh"
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -58,7 +62,7 @@ namespace mu2e
     private: 
       int  _diag;
       bool _mcdiag;
-      
+      CosmicTrackMCInfo trueinfo;
       //TTree Info:
       TTree* _cosmic_analysis;
       //seed Info:
@@ -71,9 +75,7 @@ namespace mu2e
       TH1F* _seed_a0XYZ;
       TH1F* _seed_b0XYZ;
       TH1F* _niters;
-     //Look for geometric bias in seed fit:
-      TH2F* _chiY_v_true_trackposY;
-      TH2F* _chiX_v_true_trackposX;
+     //Looking for geo bias:
       TH2F* _chi_v_true_theta;
      //Looking for hidden correlations between seed paramters
       TH2F* _seedA0_v_seedA1;
@@ -81,31 +83,13 @@ namespace mu2e
       TH2F* _seedA0_v_seedB1;
       TH2F* _seedB1_v_seedA1;
       TH2F* _seedA0_v_seedB0;
-    //Looking for correlations between residuals and N hits:
-      TH2F* _seedDeltaA0_v_N;
-      TH2F* _seedDeltaA1_v_N;
-      TH2F* _seedDeltaB0_v_N;
-      TH2F* _seedDeltaB1_v_N;
-    //Looking for correlations between seed residuals and true momentum:
-      TH2F* _seedDeltaA0_v_MOM;
-      TH2F* _seedDeltaA1_v_MOM;
-      TH2F* _seedDeltaB0_v_MOM;
-      TH2F* _seedDeltaB1_v_MOM;
-    // True MC parameters in local coords
-      TH1F* _truea1;
-      TH1F* _trueb1;
-      TH1F* _truea0;
-      TH1F* _trueb0;
+    
     //True MC paramets in global coords:
       TH1F* _truea1XYZ;
       TH1F* _trueb1XYZ;
       TH1F* _truea0XYZ;
       TH1F* _trueb0XYZ;
-      TH1F* _SPtruea1XYZ;
-      TH1F* _SPtrueb1XYZ;
-      TH1F* _SPtruea0XYZ;
-      TH1F* _SPtrueb0XYZ;
- 
+      
       //Angles Info:
       TH1F* _mc_phi_angle;
       TH1F* _reco_phi_angle;
@@ -135,7 +119,6 @@ namespace mu2e
       TH1F* _total_residualsY_init;
       TH1F* _total_pullsY_init;
       TH1F* _chisq_ndf_plot_final;
-      TH1F* _chisq_ndf_plot_true_fit;
       TH1F* _chisq_ndf_plot_finalX;
       TH1F* _chisq_ndf_plot_finalY;
       TH1F* _chisq_ndf_plot_initX;
@@ -170,11 +153,7 @@ namespace mu2e
       TH1F* _A1MinuitMCDiff;
       TH1F* _B0MinuitMCDiff;
       TH1F* _B1MinuitMCDiff;
-      //Looking for correlations berween residuals and number of outliers
-      TH2F* _DeltaA0_v_OUT;
-      TH2F* _DeltaA1_v_OUT;
-      TH2F* _DeltaB0_v_OUT;
-      TH2F* _DeltaB1_v_OUT;
+      
 
       //Drift diags:
       TH1F* _FullFitEndDOCAs;
@@ -191,12 +170,7 @@ namespace mu2e
       TH2F* _LL_v_MOM;
       TH2F* _LL_v_Nhits;
       TH2F* _AMBIG;
-      //look for coreelataions between true angle and paramets pulls
-      TProfile* _MinuitA0pull_v_theta_true;
-      TProfile* _MinuitB0pull_v_theta_true;
-      TProfile* _MinuitA1pull_v_theta_true;
-      TProfile* _MinuitB1pull_v_theta_true;
-
+      
       TH2F* _seedDeltaA0_v_minuitA0;
       TH2F* _seedDeltaA1_v_minuitA1;
       TH2F* _seedDeltaB0_v_minuitB0;
@@ -207,9 +181,6 @@ namespace mu2e
       TH2F* _seedDeltaB0_v_LL;
       TH2F* _seedDeltaB1_v_LL;
 
-     //Triggger AnalysisL:
-      TH1F* _TrueMomDOCACut;
-      TH1F* _TrueMomNoCuts;
       // add event id
       Int_t _evt; 
 
@@ -237,11 +208,10 @@ namespace mu2e
 	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
       //offsets for MC
       SimParticleTimeOffset _toff;
-
       Int_t _strawid; // strawid info
-
       vector<ComboHitInfoMC> _chinfomc;
-
+      CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
+      void FillDriftMC(Straw const& straw, double reco_ambig, CosmicTrackMCInfo info);
       bool findData(const art::Event& evt);
     };
 
@@ -286,22 +256,7 @@ namespace mu2e
 	
 	//--------------------------------Truth----------------------------------------//
 	if(_mcdiag == true){
-		_truea0 = tfs->make<TH1F>("True Track Parameter A0 ","True Track Parameter A0 " ,50,-2000, 2000);
-		_truea0->GetXaxis()->SetTitle("Track Parameter A0");
-		_truea0->SetStats();
 		
-		_trueb0 = tfs->make<TH1F>("True Track Parameter B0 "," True Track Parameter B0  " ,50,-2000, 2000);
-		_trueb0->GetXaxis()->SetTitle("Track Parameter B0");
-		_trueb0->SetStats();
-		
-		_truea1 = tfs->make<TH1F>("True Track Parameter A1  ","True Track Parameter A1 " ,50,-5,5);
-		_truea1->GetXaxis()->SetTitle("Track Parameter A1");
-		_truea1->SetStats();
-		
-		_trueb1 = tfs->make<TH1F>("True Track Parameter B1  ","True Track Parameter B1  " ,50,-5,5);
-		_trueb1->GetXaxis()->SetTitle("Track Parameter B1");
-		_trueb1->SetStats();
-
 		_truea0XYZ = tfs->make<TH1F>("True Track Parameter A0 XYZ","True Track Parameter A0 XYZ " ,50,-10000, 10000);
 		_truea0XYZ->GetXaxis()->SetTitle("Track Parameter A0 XYZ");
 		_truea0XYZ->SetStats();
@@ -318,27 +273,24 @@ namespace mu2e
 		_trueb1XYZ->GetXaxis()->SetTitle("Track Parameter B1");
 		_trueb1XYZ->SetStats();
 
-		_SPtruea0XYZ = tfs->make<TH1F>("Step Point True Track Parameter A0 XYZ","Step Point True Track Parameter A0 XYZ " ,50,-10000, 10000);
-		_SPtruea0XYZ->GetXaxis()->SetTitle("Track Parameter A0 XYZ");
-		_SPtruea0XYZ->SetStats();
 		
-		_SPtrueb0XYZ = tfs->make<TH1F>("Step Point rue Track Parameter B0 XYZ","Step Point True Track Parameter B0 XYZ " ,50,-5000, 5000);
-		_SPtrueb0XYZ->GetXaxis()->SetTitle("Track Parameter B0 XYZ");
-		_SPtrueb0XYZ->SetStats();
-		
-		_SPtruea1XYZ = tfs->make<TH1F>("Step Point True Track Parameter A1 XYZ ","Step Point True Track Parameter A1 XYZ" ,50,-5,5);
-		_SPtruea1XYZ->GetXaxis()->SetTitle("Track Parameter A1 XYZ");
-		_SPtruea1XYZ->SetStats();
-		
-		_SPtrueb1XYZ = tfs->make<TH1F>("Step Point True Track Parameter B1 XYZ ","Step Point True Track Parameter B1 XYZ " ,50,-5,5);
-		_SPtrueb1XYZ->GetXaxis()->SetTitle("Track Parameter B1");
-		_SPtrueb1XYZ->SetStats();
-
 		_mc_phi_angle = tfs->make<TH1F>("#phi_{true, fit}","#phi_{true, fit}" ,100,-3.141529,3.141529);
 		_mc_phi_angle->GetXaxis()->SetTitle("#phi_{true, fit} [rad]");
 
 		_mc_theta_angle = tfs->make<TH1F>("#theta_{true, fit}","#theta_{true, fit}" ,20,0,3.141529);
 		_mc_theta_angle->GetXaxis()->SetTitle("#theta_{true, fit} [rad]");
+
+		_AMBIG = tfs->make<TH2F>("True v Reco", "True v Reco", 2,-2,2,2,-2,2);
+		_AMBIG->GetXaxis()->SetTitle("True");
+		_AMBIG->GetYaxis()->SetTitle("Reco");
+
+		_TrueDOCAs = tfs->make<TH1F>("True DOCAs ","TrueDOCAs" ,50, 0,10);
+		_TrueDOCAs->GetXaxis()->SetTitle("True DOCAs [mm]");
+		_TrueDOCAs->SetStats();
+
+		_TrueTimeResiduals = tfs->make<TH1F>("True Time Res ","True Time Resid" ,50,0,500);
+		_TrueTimeResiduals->GetXaxis()->SetTitle("True Time Res [ns]");
+		_TrueTimeResiduals->SetStats();
 	}
 	_reco_phi_angle = tfs->make<TH1F>("#phi Angle of Reconstructred Track","#phi_{reco} Angle of Tracl " ,20,0,3.141529);
 	_reco_phi_angle->GetXaxis()->SetTitle("#phi_{reco} [rad]");
@@ -383,54 +335,6 @@ namespace mu2e
 	_niters->GetXaxis()->SetTitle("Seed Number of Iterations Until Seed Fit Converged");
 	_niters->SetStats();
 	
-	_seedDeltaA0_v_N  = tfs->make<TH2F>("#Delta A^{seed-MC}_{0} v #N_{hits}", "#N_{hits}", 50, -100,100, 50, 0,50);
-	_seedDeltaA0_v_N->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{0}");
-	_seedDeltaA0_v_N->GetYaxis()->SetTitle("#N_{hits}");
-
-	_seedDeltaA1_v_N  = tfs->make<TH2F>("#Delta A^{seed-MC}_{1} v #N_{hits}", "#N_{hits}", 50, -0.5, 0.5, 50, 0, 50);
-	_seedDeltaA1_v_N->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{1}");
-	_seedDeltaA1_v_N->GetYaxis()->SetTitle("#N_{hits}");
-
-	_seedDeltaB0_v_N = tfs->make<TH2F>("#Delta B^{seed-MC}_{0} v #N_{hits}", "#N_{hits}", 50, -100,100, 50, 0,50);
-	_seedDeltaB0_v_N->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{0}");
-	_seedDeltaB0_v_N->GetYaxis()->SetTitle("#N_{hits}");
-
-	_seedDeltaB1_v_N  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v #N_{hits}", "#N_{hits}", 50, -0.5, 0.5, 50, 0,50);
-	_seedDeltaB1_v_N->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
-	_seedDeltaB1_v_N->GetYaxis()->SetTitle("#N_{hits}");
-
-	_seedDeltaA0_v_MOM  = tfs->make<TH2F>("#Delta A^{seed-MC}_{0} v #p_{true}", "#p_{true}", 50, -100,100, 50, 0,10);
-	_seedDeltaA0_v_MOM->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{0}");
-	_seedDeltaA0_v_MOM->GetYaxis()->SetTitle("#p_{true}");
-
-	_seedDeltaA1_v_MOM  = tfs->make<TH2F>("#Delta A^{seed-MC}_{1} v #p_{true}", "#p_{true}", 50, -0.5, 0.5, 50, 0, 10);
-	_seedDeltaA1_v_MOM->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{1}");
-	_seedDeltaA1_v_MOM->GetYaxis()->SetTitle("#p_{true}");
-
-	_seedDeltaB0_v_MOM = tfs->make<TH2F>("#Delta B^{seed-MC}_{0} v #p_{true}", "#p_{true}", 50, -100,100, 50, 0,10);
-	_seedDeltaB0_v_MOM->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{0}");
-	_seedDeltaB0_v_MOM->GetYaxis()->SetTitle("#p_{true}");
-
-	_seedDeltaB1_v_MOM  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v #p_{true}", "#p_{true}", 50, -0.5, 0.5, 50, 0,10);
-	_seedDeltaB1_v_MOM->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
-	_seedDeltaB1_v_MOM->GetYaxis()->SetTitle("#p_{true}");
-
-	_DeltaA0_v_OUT = tfs->make<TH2F>("#Delta A_{0} v Outliers", "#Outliers", 50, -100,100, 20, 0,20);
-	_DeltaA0_v_OUT->GetXaxis()->SetTitle("#Delta A_{0}");
-	_DeltaA0_v_OUT->GetYaxis()->SetTitle("Outliers");
-
-	_DeltaA1_v_OUT  = tfs->make<TH2F>("#Delta A_{1} v Outliers", "#Outliers", 50, -0.5, 0.5, 20, 0, 20);
-	_DeltaA1_v_OUT->GetXaxis()->SetTitle("#Delta A_{1}");
-	_DeltaA1_v_OUT->GetYaxis()->SetTitle("Oiutliers");
-
-	_DeltaB0_v_OUT = tfs->make<TH2F>("#Delta B_{0} v Outliers", "Outliers", 50, -100,100, 20, 0,20);
-	_DeltaB0_v_OUT->GetXaxis()->SetTitle("#Delta B_{0}");
-	_DeltaB0_v_OUT->GetYaxis()->SetTitle("Outliers");
-
-	_DeltaB1_v_OUT  = tfs->make<TH2F>("#Delta B_{1} v Outliers", "Outliers", 50, -0.5, 0.5, 20, 0,20);
-	_DeltaB1_v_OUT->GetXaxis()->SetTitle("#Delta B_{1}");
-	_DeltaB1_v_OUT->GetYaxis()->SetTitle("Outliers");
-
 	_seedA0_v_seedA1 = tfs->make<TH2F>("Seed A_{0} v A_{1}", "Seed A_{0} v A_{1}", 50, -0.2, 0.2, 50, -1500, 1500);
 	_seedA0_v_seedA1->GetXaxis()->SetTitle("A_{1}");
 	_seedA0_v_seedA1->GetYaxis()->SetTitle("A_{0}");
@@ -466,18 +370,6 @@ namespace mu2e
 	_B1SeedMCDiff = tfs->make<TH1F>("B^{seed}_{1} - B^{seed}_{1}", "B^{seed}_{1} - B^{seed}_{1}" ,100,-0.5, 0.5);
 	_B1SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{1}");
 	_B1SeedMCDiff->SetStats();
-	
-	_chiX_v_true_trackposX = tfs->make<TH2F>("Seed #chi^{2}/ndf v A_{0,true}", "Seed #chi^{2}/ndf v A_{0,true}", 100, -2000,2000, 100, 0,5);
-	_chiX_v_true_trackposX->GetXaxis()->SetTitle("A_{0}");
-	_chiX_v_true_trackposX->GetYaxis()->SetTitle("#chi{2}/ndf");
-	
-	_chiY_v_true_trackposY = tfs->make<TH2F>("Seed #chi^{2}/ndf v B_{0,true}", "Seed #chi^{2}/ndf v B_{0,true}", 100, -2000,2000, 100, 0,5);
-	_chiY_v_true_trackposY->GetXaxis()->SetTitle("B_{0}");
-	_chiY_v_true_trackposY->GetYaxis()->SetTitle("#chi{2}/ndf");
-	
-	_chi_v_true_theta = tfs->make<TH2F>("Seed #chi^{2}/ndf v #theta_{true}", "Seed #chi^{2}/ndf v #theta_{true}", 100, 0, 3.141529, 100, 0,2);
-	_chi_v_true_theta->GetXaxis()->SetTitle("B_{0}");
-	_chi_v_true_theta->GetYaxis()->SetTitle("#chi{2}/ndf");
 	
 	_Seed_Cov_A0 = tfs->make<TH1F>("#sigma_{A_{0}}", "#sigma_{A_{0}}" ,100,0, 100);
 	_Seed_Cov_A0->GetXaxis()->SetTitle("#sigma_{A_{0}}");
@@ -617,11 +509,7 @@ namespace mu2e
 	_StartDOCAs->GetXaxis()->SetTitle("Initial DOCAs [mm]");
 	_StartDOCAs->SetStats();
 
-	_TrueDOCAs = tfs->make<TH1F>("True DOCAs ","TrueDOCAs" ,50, 0,10);
-	_TrueDOCAs->GetXaxis()->SetTitle("True DOCAs [mm]");
-	_TrueDOCAs->SetStats();
-
-        _FullFitEndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,50,0,500);
+	_FullFitEndTimeResiduals = tfs->make<TH1F>("Final Time Res ","Final Time Resid" ,50,0,500);
 	_FullFitEndTimeResiduals->GetXaxis()->SetTitle("Final Time Res [ns]");
 	_FullFitEndTimeResiduals->SetStats();
 
@@ -633,10 +521,6 @@ namespace mu2e
 	_StartTimeResiduals->GetXaxis()->SetTitle("Start Time Res [ns]");
 	_StartTimeResiduals->SetStats();
 
-	_TrueTimeResiduals = tfs->make<TH1F>("True Time Res ","True Time Resid" ,50,0,500);
-	_TrueTimeResiduals->GetXaxis()->SetTitle("True Time Res [ns]");
-	_TrueTimeResiduals->SetStats();
-	
 	_A0MinuitFitDiff = tfs->make<TH1F>(" A0 Minuit Diff "," A0 Minuit Diff" ,100,-100,100);
 	_A0MinuitFitDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
 	_A0MinuitFitDiff->SetStats();
@@ -710,58 +594,7 @@ namespace mu2e
 	_seedDeltaB1_v_minuitB1  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v B^{straw}_{1}", "B^{straw}_{1}", 50, -0.5, 0.5, 50, -5, 5);
 	_seedDeltaB1_v_minuitB1->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
 	_seedDeltaB1_v_minuitB1->GetYaxis()->SetTitle("B^{straw}_{1}");
-
-	_seedDeltaA0_v_LL  = tfs->make<TH2F>("#Delta A^{seed-MC}_{0} v LogL", "End Log L", 50, -100,100, 50, 0,200);
-	_seedDeltaA0_v_LL->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{0}");
-	_seedDeltaA0_v_LL->GetYaxis()->SetTitle("End LogL");
-
-	_seedDeltaA1_v_LL  = tfs->make<TH2F>("#Delta A^{seed-MC}_{1} v LogL", "End LogL", 50, -0.5, 0.5, 50, 0, 200);
-	_seedDeltaA1_v_LL->GetXaxis()->SetTitle("#Delta A^{seed-MC}_{1}");
-	_seedDeltaA1_v_LL->GetYaxis()->SetTitle("End LogL");
-
-	_seedDeltaB0_v_LL = tfs->make<TH2F>("#Delta B^{seed-MC}_{0} v LogL", "End LogL", 50, -100,100, 50, 0,200);
-	_seedDeltaB0_v_LL->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{0}");
-	_seedDeltaB0_v_LL->GetYaxis()->SetTitle("B^{straw}_{0}");
-
-	_seedDeltaB1_v_LL  = tfs->make<TH2F>("#Delta B^{seed-MC}_{1} v LogL", "End LogL", 50, -0.5, 0.5, 50, 0,200);
-	_seedDeltaB1_v_LL->GetXaxis()->SetTitle("#Delta B^{seed-MC}_{1}");
-	_seedDeltaB1_v_LL->GetYaxis()->SetTitle("End LogL");
-
-	_MinuitA0pull_v_theta_true= tfs->make<TProfile>("Minuit Fit Parameter Pull A_{0} v #theta_{true,fit}  ","Minuit Fit Parameter Pull A_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
-	_MinuitA0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_MinuitA0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{0}");
-	
-	_MinuitB0pull_v_theta_true= tfs->make<TProfile>("Minuit Fit Parameter Pull B_{0} v #theta_{true,fit}  ","Minuit Fit Parameter Pull B_{0} v #theta_{true,fit} ",100,0,3.141529,-200,200);
-	_MinuitB0pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_MinuitB0pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{0}");
-	
-	_MinuitA1pull_v_theta_true= tfs->make<TProfile>("Minuit Fit Parameter Pull A_{1} v #theta_{true,fit}  ","Minuit Fit Parameter Pull A_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
-	_MinuitA1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_MinuitA1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull A_{1}");
-	
-	_MinuitB1pull_v_theta_true= tfs->make<TProfile>("Minuit Fit Parameter Pull B_{1} v #theta_{true,fit}  ","Minuit Fit Parameter Pull B_{1} v #theta_{true,fit} ",100,0,3.141529,-10,10);
-	_MinuitB1pull_v_theta_true->GetXaxis()->SetTitle("#theta_{true}");
-	_MinuitB1pull_v_theta_true->GetYaxis()->SetTitle("Parameter Pull B_{1}");
-
-	_LL_v_MOM  = tfs->make<TH2F>("Log(L) v p_{true}", "p_{true}", 50, 0,1000, 50, 0,10);
-	_LL_v_MOM->GetXaxis()->SetTitle("Log(L)");
-	_LL_v_MOM->GetYaxis()->SetTitle("p_{true}");
-
-	_LL_v_Nhits = tfs->make<TH2F>("Log(L) v N_{hits}", "N_{Hits}", 100, 0, 1000, 30, 0,30);
-	_LL_v_Nhits->GetXaxis()->SetTitle("Log(L)");
-	_LL_v_Nhits->GetYaxis()->SetTitle("#N_{hits}");
-
-	_AMBIG = tfs->make<TH2F>("True v Reco", "True v Reco", 2,-2,2,2,-2,2);
-	_AMBIG->GetXaxis()->SetTitle("True");
-	_AMBIG->GetYaxis()->SetTitle("Reco");
-	if(_mcdiag==true){
-		_TrueMomDOCACut = tfs->make<TH1F>("True Mom Tot After DOCA Cut", "True Mom After DOCA cut", 100,0,100);
-		_TrueMomDOCACut->GetXaxis()->SetTitle("#p_{true} [MeV/c]");
-		
-		_TrueMomNoCuts = tfs->make<TH1F>("True Mom Tot No Cut", "True Mom No cut", 100,0,100);
-		_TrueMomNoCuts->GetXaxis()->SetTitle("#p_{true} [MeV/c]");
 	}
-        }
       }
       void CosmicAnalyzer::analyze(const art::Event& event) {
        
@@ -785,52 +618,11 @@ namespace mu2e
         	
         	CosmicTrackSeed sts =(*_coscol)[ist];
 		CosmicTrack st = sts._track;
-		CosmicTrkFitFlag const& status = sts._status;
-        	if (!status.hasAllProperties(CosmicTrkFitFlag::StraightTrackOK) ){continue;}
+		TrkFitFlag const& status = sts._status;
+        	if (!status.hasAllProperties(TrkFitFlag::helixOK) ){continue;}
 		if(st.converged == false or st.minuit_converged  == false) { continue;}
 		std::vector<int> panels, planes, stations;
 
-
-                if(_mcdiag ){
-		        _chiX_v_true_trackposX->Fill(st.FitParams.A0, st.Diag.FinalChiX);
-		        _chiY_v_true_trackposY->Fill(st.SeedTrueParams.B0, st.Diag.FinalChiY);
-               
-                	_mc_phi_angle->Fill(st.get_true_phi());
-	                _mc_theta_angle->Fill(st.get_true_theta());                  
-	                _chi_v_true_theta->Fill(st.get_true_theta(),st.get_true_chisq());
-			
-			_truea1->Fill(st.SeedTrueParams.A1);
-		        _trueb1->Fill(st.SeedTrueParams.B1);
-		        _truea0->Fill(st.SeedTrueParams.A0);
-		        _trueb0->Fill(st.SeedTrueParams.B0);
-	               
-		        _truea1XYZ->Fill(st.TrueFitEquation.Dir.X());
-		        _trueb1XYZ->Fill(st.TrueFitEquation.Dir.Y());
-		        _truea0XYZ->Fill(st.TrueFitEquation.Pos.X());
-		        _trueb0XYZ->Fill(st.TrueFitEquation.Pos.Y());
-
-			_SPtruea1XYZ->Fill(st.TrueTrueTrackDirection.X());
-		        _SPtrueb1XYZ->Fill(st.TrueTrueTrackDirection.Y());
-		        _SPtruea0XYZ->Fill(st.TrueTrueTrackPosition.X());
-		        _SPtrueb0XYZ->Fill(st.TrueTrueTrackPosition.Y());
-
-			
-		        _MinuitA0pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));
-		        _MinuitA1pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Dir.X()- st.MinuitFitParams.A1 ));
-		        _MinuitB0pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));
-		        _MinuitB1pull_v_theta_true->Fill(st.get_true_theta(), (st.TrueFitEquation.Dir.Y()- st.MinuitFitParams.B1));
-			if(st.MinuitFitParams.Covarience.sigA0 !=0){
-				_A0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
-			}if(st.MinuitFitParams.Covarience.sigA1 !=0){
-				_A1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
-		 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
-				_B0MinuitMCDiff->Fill((st.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
-				
-			}if(st.MinuitFitParams.Covarience.sigB1 !=0){
-				_B1MinuitMCDiff->Fill((st.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
-		       }
-                }
-		
 		_reco_phi_angle->Fill(st.get_fit_phi()); 
 		_niters->Fill(st.get_iter()); 
 		
@@ -857,73 +649,73 @@ namespace mu2e
 	        _seedA0_v_seedB0->Fill(st.FitParams.A0,st.FitParams.B0);
 	        _seedB1_v_seedA1->Fill(st.FitParams.B1,st.FitParams.A1);
 	 	
-                
-	
 		_A0MinuitFitDiff->Fill(st.MinuitFitParams.A0-st.FitEquationXYZ.Pos.X());
 		_A1MinuitFitDiff->Fill(st.MinuitFitParams.A1-st.FitEquationXYZ.Dir.X());
 		_B0MinuitFitDiff->Fill(st.MinuitFitParams.B0- st.FitEquationXYZ.Pos.Y());
 		_B1MinuitFitDiff->Fill(st.MinuitFitParams.B1-st.FitEquationXYZ.Dir.Y());
 		
- 
-	      _A0SeedMCDiff->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
-              _A1SeedMCDiff->Fill(st.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
-       	     _B0SeedMCDiff->Fill(st.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
-             _B1SeedMCDiff->Fill(st.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
-	      
 	        _A0Minuit->Fill(st.MinuitFitParams.A0);
 	        _A1Minuit->Fill(st.MinuitFitParams.A1);
 	        _B0Minuit->Fill(st.MinuitFitParams.B0);
 	        _B1Minuit->Fill(st.MinuitFitParams.B1);
+	       if(_mcdiag){
+			
+			trueinfo = FitMC(_mcdigis);
+			
+			_mc_phi_angle->Fill(trueinfo.TruePhi);
+	                _mc_theta_angle->Fill(trueinfo.TrueTheta);                  
+	                
+			_truea1XYZ->Fill(trueinfo.TrueFitEquation.Dir.X());
+		        _trueb1XYZ->Fill(trueinfo.TrueFitEquation.Dir.Y());
+		        _truea0XYZ->Fill(trueinfo.TrueFitEquation.Pos.X());
+		        _trueb0XYZ->Fill(trueinfo.TrueFitEquation.Pos.Y());
 
-	        _seedDeltaA0_v_minuitA0->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.MinuitFitParams.A0);
-		_seedDeltaB0_v_minuitB0->Fill(st.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.MinuitFitParams.B0);
-                _seedDeltaA1_v_minuitA1->Fill(st.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.MinuitFitParams.A1);
-		_seedDeltaB1_v_minuitB1->Fill(st.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.MinuitFitParams.B1);
-	  
-		_seedDeltaA0_v_LL->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.DriftDiag.NLL);
-		_seedDeltaA1_v_LL->Fill(st.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.DriftDiag.NLL);
-		_seedDeltaB0_v_LL->Fill(st.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.DriftDiag.NLL);
-		_seedDeltaB1_v_LL->Fill(st.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.DriftDiag.NLL);
+			if(st.MinuitFitParams.Covarience.sigA0 !=0){
+				_A0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.X()- st.MinuitFitParams.A0));///(st.MinuitFitParams.Covarience.sigA0));
+			}if(st.MinuitFitParams.Covarience.sigA1 !=0){
+				_A1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.X() - st.MinuitFitParams.A1));///(st.MinuitFitParams.Covarience.sigA1));
+		 	}if(st.MinuitFitParams.Covarience.sigB0 !=0){
+				_B0MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Pos.Y()- st.MinuitFitParams.B0));///(st.MinuitFitParams.Covarience.sigB0));
+				
+			}if(st.MinuitFitParams.Covarience.sigB1 !=0){
+				_B1MinuitMCDiff->Fill((trueinfo.TrueFitEquation.Dir.Y() - st.MinuitFitParams.B1));//(st.MinuitFitParams.Covarience.sigB1));
+		       }
 
-		_seedDeltaA0_v_N->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.get_N());
-		_seedDeltaA1_v_N->Fill(st.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.get_N());
-		_seedDeltaB0_v_N->Fill(st.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.get_N());
-		_seedDeltaB1_v_N->Fill(st.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.get_N());
-
-		double ptrue = sqrt(st.TrueTrueTrackDirection.Mag2());
-		_seedDeltaA0_v_MOM->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), ptrue);
-		_seedDeltaB0_v_MOM->Fill(st.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), ptrue);
-		_seedDeltaA1_v_MOM->Fill(st.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), ptrue);
-		_seedDeltaB1_v_MOM->Fill(st.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), ptrue);
+		      	_A0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X());
+		      	_A1SeedMCDiff->Fill(trueinfo.TrueFitEquation.Dir.X() -st.FitEquationXYZ.Dir.X());
+	       	     	_B0SeedMCDiff->Fill(trueinfo.TrueFitEquation.Pos.Y() - st.FitEquationXYZ.Pos.Y());
+		     	_B1SeedMCDiff->Fill(trueinfo.TrueFitEquation.Dir.Y()  - st.FitEquationXYZ.Dir.Y());
+		      
+			_seedDeltaA0_v_minuitA0->Fill(trueinfo.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.MinuitFitParams.A0);
+			_seedDeltaB0_v_minuitB0->Fill(trueinfo.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.MinuitFitParams.B0);
+		        _seedDeltaA1_v_minuitA1->Fill(trueinfo.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.MinuitFitParams.A1);
+			_seedDeltaB1_v_minuitB1->Fill(trueinfo.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.MinuitFitParams.B1);
+	  		
+			
+	    }
 		
 		_chisq_ndf_plot_init->Fill(st.Diag.InitialChiTot);
                 _chisq_ndf_plot_final->Fill(st.Diag.FinalChiTot);
                 
                 _chisq_ndf_plot_finalX->Fill(st.Diag.FinalChiX);
                 _chisq_ndf_plot_finalY->Fill(st.Diag.FinalChiY);
-                
+               
                 _chisq_ndf_plot_initX->Fill(st.Diag.InitialChiX);
                 _chisq_ndf_plot_initY->Fill(st.Diag.InitialChiY);
-                
+               
                 _change_chisq_ndf_plot_X->Fill(st.Diag.InitialChiX-st.Diag.FinalChiX);
                 _change_chisq_ndf_plot_Y->Fill(st.Diag.InitialChiY-st.Diag.FinalChiY);
                 _change_chisq_ndf_plot_Total->Fill(st.Diag.InitialChiTot-st.Diag.FinalChiTot);
-
-		_DeltaA0_v_OUT->Fill(st.TrueFitEquation.Pos.X()- st.FitEquationXYZ.Pos.X(), st.n_outliers);
-		_DeltaB0_v_OUT->Fill(st.TrueFitEquation.Pos.Y()- st.FitEquationXYZ.Pos.Y(), st.n_outliers);
-		_DeltaA1_v_OUT->Fill(st.TrueFitEquation.Dir.X()- st.FitEquationXYZ.Dir.X(), st.n_outliers);
-		_DeltaB1_v_OUT->Fill(st.TrueFitEquation.Dir.Y()- st.FitEquationXYZ.Dir.Y(), st.n_outliers);
 		
 		_NLL->Fill(st.DriftDiag.NLL);
-		_LL_v_MOM->Fill(st.DriftDiag.NLL, ptrue);
-		_LL_v_Nhits->Fill(st.DriftDiag.NLL, st.get_N());
-
+	        
                 for(size_t i=0; i< st.Diag.InitErrTot.size();i++){
+		
 		    _InitErrTot->Fill(st.Diag.InitErrTot[i]); 
-                    _total_residualsX_init->Fill(st.Diag.InitialResidualsX[i]);             
+                    _total_residualsX_init->Fill(st.Diag.InitialResidualsX[i]);        
 	            _total_pullsX_init->Fill(st.Diag.InitialResidualsX[i]/st.Diag.InitErrX[i]);
-	            _InitErrX->Fill(st.Diag.InitErrX[i]);      
-                    _total_residualsY_init->Fill(st.Diag.InitialResidualsY[i]);             
+	            _InitErrX->Fill(st.Diag.InitErrX[i]);     
+                    _total_residualsY_init->Fill(st.Diag.InitialResidualsY[i]);            
 	            _total_pullsY_init->Fill(st.Diag.InitialResidualsY[i]/st.Diag.InitErrY[i]);
 	            _InitErrY->Fill(st.Diag.InitErrY[i]); 
 	        }
@@ -941,7 +733,7 @@ namespace mu2e
                 for(size_t i=0; i<st.DriftDiag.GaussianEndDOCAs.size();i++){
 		    _GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
 		    _GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
-		    _TrueMomNoCuts->Fill(ptrue); 
+		  
 			
 		}
 		
@@ -950,9 +742,11 @@ namespace mu2e
 	            _StartTimeResiduals->Fill(st.DriftDiag.StartTimeResiduals[i]);
 	            _FullFitEndDOCAs->Fill(st.DriftDiag.FullFitEndDOCAs[i]);
 		    _FullFitEndTimeResiduals->Fill(st.DriftDiag.FullFitEndTimeResiduals[i]);
-		    _TrueDOCAs->Fill(st.DriftDiag.TrueDOCAs[i]);
-		    _TrueMomDOCACut->Fill(ptrue); 
-		    _TrueTimeResiduals->Fill(st.DriftDiag.TrueTimeResiduals[i]);	      
+		   	if(_mcdiag){
+				trueinfo = FitMC(_mcdigis);
+				FillDriftMC(sts._straws[i], st.DriftDiag.RecoAmbigs[i], trueinfo);
+				
+			}      
 	        }
 
 		for(size_t i=0; i< st.DriftDiag.FullFitEndDOCAs.size();i++){
@@ -960,15 +754,16 @@ namespace mu2e
                     _total_residualsY_Minuit->Fill(st.DriftDiag.FinalResidualsY[i]);   
 		    _minuit_pullsX_final->Fill(st.DriftDiag.FinalResidualsX[i]/st.DriftDiag.FinalErrX[i]);          
                     _minuit_pullsY_final->Fill(st.DriftDiag.FinalResidualsY[i]/st.DriftDiag.FinalErrY[i]);           
-   		   _AMBIG->Fill(st.DriftDiag.RecoAmbigs[i], st.DriftDiag.TrueAmbigs[i]);
+   		   
 		   
 	        }   
+     
 	        for(auto const& tseed : *_coscol) {   
-                	CosmicTrkFitFlag const& status = tseed._status;
-                	_hitsOK = status.hasAllProperties(CosmicTrkFitFlag::hitsOK);
-                	_StraightTrackOK = status.hasAllProperties(CosmicTrkFitFlag::StraightTrackOK);
-                	_StraightTrackConverged = status.hasAllProperties(CosmicTrkFitFlag::StraightTrackConverged);
-                	_StraightTrackInit = status.hasAllProperties(CosmicTrkFitFlag::StraightTrackInit);
+                	TrkFitFlag const& status = tseed._status;
+                	_hitsOK = status.hasAllProperties(TrkFitFlag::hitsOK);
+                	_StraightTrackOK = status.hasAllProperties(TrkFitFlag::helixOK);
+                	_StraightTrackConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
+                	_StraightTrackInit = status.hasAllProperties(TrkFitFlag::circleInit);
         	}
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
@@ -991,14 +786,83 @@ namespace mu2e
 	 
       }//end analyze
       _cosmic_analysis->Fill();
-      
+      if(_mcdiag){
       cout<<"true + "<< _AMBIG->GetBinContent(2,2)/_AMBIG->Integral()<<endl;
       cout<<"true - "<< _AMBIG->GetBinContent(1,1)/_AMBIG->Integral()<<endl;	
       cout<<"false + "<< _AMBIG->GetBinContent(2,1)/_AMBIG->Integral()<<endl;
       cout<<"false - "<< _AMBIG->GetBinContent(1,2)/_AMBIG->Integral()<<endl;
-
+      }
      }
-      bool CosmicAnalyzer::findData(const art::Event& evt){
+
+
+
+CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){	
+	
+        ::BuildLinearFitMatrixSums S; 
+        CosmicTrackMCInfo TrackTrueInfo;
+    	//size_t nHits (_mcdigis.size());
+        StrawDigiMC hitP1; 
+	StrawDigiMC first = (*_mcdigis)[0];
+        //Get StepPointMC:
+	art::Ptr<StepPointMC> const& spmcp0= first.stepPointMC(StrawEnd::cal);
+        XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
+        XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
+	
+        for(size_t ich = 0;ich < _mcdigis->size(); ++ich){
+            hitP1 = (*_mcdigis)[ich];
+	    
+            //Get StepPointMC:
+	    art::Ptr<StepPointMC> const& spmcp = hitP1.stepPointMC(StrawEnd::cal);
+            XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+            
+            //Use Step Point MC direction as the True Axes:
+            XYZVec ZPrime = Geom::toXYZVec(spmcp->momentum().unit());
+            
+            //Store True Track details:
+            TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);
+            TrackTrueInfo.TrueTrackCoordSystem = (TrueAxes);
+	    
+            //Apply routine to the True Tracks (for validation):
+            XYZVec point(posN.x(), posN.y(), posN.z());
+            XYZVec X(1,0,0);
+            XYZVec Y(0,1,0);
+            XYZVec Z(0,0,1);
+            S.addPoint( point, X,Y,Z, 1,1);
+            
+        }   
+    
+     TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
+     
+     XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
+     
+     XYZVec TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
+     TrueDir = TrueDir.Unit();
+     TrueDir = TrueDir/TrueDir.Z();
+     
+     pos0.SetX(pos0.X()-(dir0.X()*pos0.Z()/dir0.Z()));
+     pos0.SetY(pos0.Y()-(dir0.Y()*pos0.Z()/dir0.Z()));
+     pos0.SetZ(pos0.Z()-(dir0.Z()*pos0.Z()/dir0.Z()));
+     dir0 = dir0/dir0.Z();
+  
+     TrackEquation TrueTrack(pos0, dir0);
+     
+     TrackTrueInfo.TrueFitEquation = (TrueTrack);
+     TrackTrueInfo.TruePhi =(atan(TrueDir.y()/TrueDir.x()));
+     TrackTrueInfo.TrueTheta = (acos(TrueDir.x()/sqrt(TrueDir.Mag2())));
+     
+     return TrackTrueInfo;
+     }
+
+void CosmicAnalyzer::FillDriftMC(Straw const& straw, double RecoAmbig, CosmicTrackMCInfo info){
+
+     double true_doca = DriftFitUtils::GetTestDOCA(straw, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y());
+     double trueambig = DriftFitUtils::GetAmbig(straw, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y());
+     double true_time_residual = true_doca/0.0625;
+     _TrueDOCAs->Fill(true_doca);
+     _TrueTimeResiduals->Fill(true_time_residual);
+     _AMBIG->Fill(RecoAmbig, trueambig);
+}
+   bool CosmicAnalyzer::findData(const art::Event& evt){
 	_chcol = 0; 
         _tccol = 0;
         _coscol = 0; 

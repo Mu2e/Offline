@@ -84,6 +84,7 @@ using namespace std;
 	TrackSeedDiag();
 
    };
+  
    struct TrackDriftDiag{
         double FinalChiX;
    	double FinalChiY;
@@ -93,22 +94,20 @@ using namespace std;
    	std::vector<double> StartDOCAs;
    	std::vector<double> FullFitEndDOCAs;
 	std::vector<double> GaussianEndDOCAs;
-	std::vector<double> TrueDOCAs;
+	
    	std::vector<double> StartTimeResiduals;
    	std::vector<double> FullFitEndTimeResiduals;
 	std::vector<double> GaussianEndTimeResiduals;
-	std::vector<double> TrueTimeResiduals;
 	
    	std::vector<double> RecoAmbigs;
-	std::vector<double> TrueAmbigs;
-
+	
    	std::vector<double> FinalResidualsX;
    	std::vector<double> FinalResidualsY;
 	 
 	std::vector<double> FinalErrX;
 	std::vector<double> FinalErrY; 
 	std::vector<double> FinalErrTot;
-	
+
    	TrackDriftDiag();
    
    };
@@ -127,9 +126,9 @@ namespace mu2e {
 	 //---------------Accessors:--------------//
 	  
 	    double GetSagitta() const {return _Sagitta;}
-	    double get_true_phi() const { return TruePhi;}
+	   
 	    double get_fit_phi() const { return FitPhi;}
-	    double get_true_theta() const { return TrueTheta;}
+	    
 	    double get_fit_theta() const { return FitTheta;}
 	    
 	    int get_N() const { return _Nhits;}
@@ -161,8 +160,6 @@ namespace mu2e {
 	    	return Position;
 	    }
   
-	    
-	    double get_true_chisq() const { return _true_chisq;}
 	     void clear_errors(); //clears track info and diagnostics
 	     void clear_parameters(); //clears just track info
 	     void clear_diag();
@@ -175,18 +172,6 @@ namespace mu2e {
 	    	this->InitParams = par;
 	    }
 	   
-	    void SetSeedTrueParams(TrackParams par){ 
-	    	this->SeedTrueParams = par;
-	    }
-
-	    void SetStrawLevelTrueParams(TrackParams par){ 
-	    	this->StrawLevelTrueParams = par;
-	    }
-	    
-	    
-	    void SetRawTrueParams(TrackParams par){ 
-	    	this->RawTrueParams = par;
-	    }
 	    
 	    void SetMinuitParams(double par_a0, double par_a1, double par_b0, double par_b1, double par_t0 ){
 	    	this->MinuitFitParams.A0 = par_a0;
@@ -203,9 +188,7 @@ namespace mu2e {
 	    void SetInitTrackCoordSystem(TrackAxes coordsys){
 	    	this->InitTrackCoordSystem = coordsys;
     	    }
-    	    void SetTrueTrackCoordSystem(TrackAxes coordsys){
-	    	this->TrueTrackCoordSystem = coordsys;
-    	    }
+    	    
     	    void SetCovarience(double siga0, double siga0a1, double siga1a0, double siga1, double sigb0, double sigb0b1, double sigb1b0, double sigb1){ 
     	    	TrackCov Cov(siga0, siga0a1, siga1a0, siga1, sigb0, sigb0b1, sigb1b0, sigb1);
 	    	this->FitParams.Covarience = Cov;
@@ -227,16 +210,10 @@ namespace mu2e {
 	        this->MinuitFitEquation = Track;
 	     }
 	    
-	    void SetTrueTrackEquationXYZ(TrackEquation Track){ 
-	        this->TrueFitEquation = Track;
-	     }
 	    
-	    void set_true_phi(double track_angle){ TruePhi = track_angle;}
-	    void set_fit_phi(double track_angle){ FitPhi = track_angle;}
-	    void set_true_theta(double track_angle){ TrueTheta = track_angle;}
 	    void set_fit_theta(double track_angle){ FitTheta = track_angle;}
 	    void set_mom(XYZVec mom){ _track_mommentum = mom;}
-	    
+	    void set_fit_phi(double track_angle){ FitPhi = track_angle;}
 	    //-----------Fill Diag info----------//
 	    void set_finalchisq_dof(double finalchisq_dof)   { Diag.FinalChiTot = finalchisq_dof; }
 	    void set_finalchisq_dofX(double finalchisq_dofX) { Diag.FinalChiX = finalchisq_dofX; }
@@ -251,8 +228,6 @@ namespace mu2e {
 	    
 	    void set_init_fit_residualsY(double residual)  { Diag.InitialResidualsY.push_back(residual); }
 	    void set_final_fit_residualsY(double residual) { Diag.FinalResidualsY.push_back(residual); }
-	    
-	    void set_true_finalchisq_dof(double true_chisq) { _true_chisq = true_chisq; }
 	    
 	    void SetFinalErrorsX(double residual_err){ Diag.FinalErrX.push_back(residual_err); }
 	    void SetInitErrorsX(double residual_err) { Diag.InitErrX.push_back(residual_err); }
@@ -270,38 +245,26 @@ namespace mu2e {
 	     
 	    void SetInitErrorsY(double residual_err) { Diag.InitErrY.push_back(residual_err); }
 	    void SetFinalErrorsY(double residual_err) { Diag.FinalErrY.push_back(residual_err); }
-            void SetFirstPoint(double x, double y, double z){
-		FirstPoint.SetXYZ(x,y,z);
-		}
+            
             //------------End Diag Fill---------------//
 	    void set_niter(int iter){_niters= (iter);}
 	    
     	     TrackParams FitParams; //Seed Fit
              TrackParams InitParams; //Initial fit
-	     TrackParams SeedTrueParams; //True Params in Seed Fit Frame
-	     TrackParams StrawLevelTrueParams; //True Params in Drift Fit Frame
-	     TrackParams RawTrueParams;//untransformed true vlaues
 	     TrackParams MinuitFitParams; // Minuit Params
 
 	     TrackAxes MinuitCoordSystem;//Result from Minuit Fit
 	     TrackAxes TrackCoordSystem;//Seed Fit Result Axes
 	     TrackAxes InitTrackCoordSystem;//Initial Axes (start->end line)
-	     TrackAxes TrueTrackCoordSystem;//From Step Point MCs
-	    
+	     
 	     //These will become track representations LineFitTraj eventually TODO
 	     TrackEquation FitEquation;
 	     TrackEquation FitEquationXYZ;
-	     TrackEquation TrueFitEquation;
 	     TrackEquation MinuitFitEquation;
 
 	     TrackSeedDiag Diag;
 	     TrackDriftDiag DriftDiag;
-	     
-	     XYZVec TrueTrueTrackDirection;
-	     XYZVec TrueTrueTrackPosition;
-
-	     XYZVec FirstPoint;
-
+             
 	     XYZVec sigmaPos;
 	     XYZVec sigmaDir;
 	     
@@ -312,16 +275,13 @@ namespace mu2e {
   private:
 	    
 	    unsigned _Nhits;
-	    double TruePhi;
+	    
 	    double FitPhi;
-	    double TrueTheta;
 	    double FitTheta;
 	   
 	    double _Sagitta;//TODO
 	    XYZVec _track_mommentum;//TODO
 	   
-	    double _true_chisq;
-  
 	    int _niters;
 	    XYZVec Direction;
 	    

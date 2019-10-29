@@ -11,7 +11,7 @@
 #include "RecoDataProducts/inc/TrkStrawHitSeed.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CosmicTrkFitFlag.hh"
+#include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "canvas/Persistency/Common/Ptr.h"
 #include <vector>
 
@@ -27,18 +27,18 @@ namespace mu2e {
     std::vector<TrkStrawHitSeed> const& trkstrawhits() const { return _trkstrawhits;}
     ComboHitCollection const& hits() const { return _panel_hits; }
     CosmicTrack const& track() const { return _track; }
-    CosmicTrkFitFlag const& status() const { return _status; }
+    TrkFitFlag const& status() const { return _status; }
     art::Ptr<TimeCluster> const& timeCluster() const { return _timeCluster; }
     
     TrkT0	             _t0;	      // t0 for this track
     ComboHitCollection       _panel_hits;	      // hits for track (panel hits)
     ComboHitCollection       _straw_chits;    // get the straw level hits and store here (need to find panel hits first)
     CosmicTrack              _track;	     // Cosmic track created from these hits  
-    CosmicTrkFitFlag	             _status;      // status of processes used to create this seed
+    TrkFitFlag	             _status;      // status of processes used to create this seed
     art::Ptr<TimeCluster>    _timeCluster; // associated time cluster
     std::vector<StrawHitIndex> _strawHitIdxs; // associated straw hits: can be empty
     std::vector<TrkStrawHitSeed>  _trkstrawhits; //vector of associated trkstrawhits
-    ; 
+    
     std::vector<Straw> _straws; //vector of straw info 
     std::vector<Panel> _panels; //vector of panel info  TODO
     std::vector<Plane> _planes; //vector of plane info  TODO
