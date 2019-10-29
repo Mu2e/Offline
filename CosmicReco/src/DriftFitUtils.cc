@@ -66,8 +66,8 @@ int DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double b0,
                 1.e-8);
 	
         double ambig = PCA.LRambig();     		
-	int ambig_sign= ambig > 0 ? 1 : -1;
-      	return ambig_sign;
+	
+      	return ambig;
 
 }
 	

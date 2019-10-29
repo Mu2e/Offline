@@ -12,8 +12,7 @@
  <class name="mu2e::CosmicTrackSeedCollection"/>
  <class name="art::Ptr<mu2e::CosmicTrackSeed>"/>
  <class name="art::Wrapper<mu2e::CosmicTrackSeedCollection>"/>
-  <class name="mu2e::CosmicTrkFitFlag"/>
- <class name="mu2e::CosmicTrkFitFlagDetail"/>
+
 <!--  ********* calorimeter  ********* -->
  <class name="mu2e::CaloDigi"/>
  <class name="mu2e::CaloDigiCollection"/>

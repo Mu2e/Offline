@@ -68,7 +68,7 @@ namespace mu2e {
 
       _pca1 = _p1 + _t1*_s1;
       _pca2 = _p2 + _t2*_s2;
-      _LRambig = _s2;
+      _LRambig = _s2 > 0 ? 1 : -1;//int ambig_sign= ambig > 0 ? 1 : -1;
     }
 
     XYZVec diff = (_pca1-_pca2);
