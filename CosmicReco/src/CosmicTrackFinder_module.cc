@@ -36,12 +36,12 @@
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
-#include "RecoDataProducts/inc/CosmicTrkFitFlag.hh"
+#include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 //utils:
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
-
+#include "Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:
 #include "TrkReco/inc/PanelAmbigResolver.hh"
 #include "TrkReco/inc/PanelStateIterator.hh"
@@ -109,7 +109,7 @@ namespace mu2e{
     int                                 _printfreq;
     int 				_minnsh; // minimum # of strawHits in CH
     int 				_minnch; // minimum # of ComboHits for viable fit
-    CosmicTrkFitFlag			_saveflag;//write tracks that satisfy these flags
+    TrkFitFlag			_saveflag;//write tracks that satisfy these flags
     
     int 				_minNHitsTimeCluster; //min number of hits in a viable time cluster
     int 				_max_seed_chi2; ///maximum chi2 allowed for seed
@@ -131,6 +131,7 @@ namespace mu2e{
     void     fillGoodHits(CosmicTrackFinderData& TrackData);//apply "good" cut
     void     fillPluginDiag(CosmicTrackFinderData& TrackData);
     int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);
+    //void     FitMC(CosmicTrackFinderData& trackData, bool Det); // gets truth information
 };
 
 
@@ -142,7 +143,7 @@ namespace mu2e{
     _printfreq   (pset.get<int>   ("printFrequency", 101)),
     _minnsh      (pset.get<int>("minNStrawHits",2)),
     _minnch      (pset.get<int>("minNComboHits",8)),
-    _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"StraightTrackOK"})),
+    _saveflag    (pset.get<vector<string> >("SaveTrackFlag",vector<string>{"HelixOK"})),
     _minNHitsTimeCluster(pset.get<int>("minNHitsTimeCluster", 1 )), 
     _max_seed_chi2(pset.get<float>("max_seed_chi2",2.5)),
     _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
@@ -238,10 +239,10 @@ namespace mu2e{
       }
       if (_stResult._nFiltComboHits < _minnch ) 	continue;
       if (_stResult._nFiltStrawHits < _minnsh)          continue;
-     
+      _stResult._tseed._status.merge(TrkFitFlag::Straight);
       _stResult._nStrawHits = _stResult._nFiltStrawHits;
       _stResult._nComboHits = _stResult._nFiltComboHits;
-      _stResult._tseed._status.merge(CosmicTrkFitFlag::hitsOK);
+      _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
       _stResult._tseed._panel_hits = _stResult._chHitsToProcess;
       
       if (_diag) _stResult._diag.CosmicTrackFitCounter = 0;
@@ -264,13 +265,13 @@ namespace mu2e{
      _data.nseeds += 1;
      _tfit.BeginFit(title.str().c_str(), _stResult, _data);
 
-      if (_stResult._tseed._status.hasAnyProperty(CosmicTrkFitFlag::StraightTrackOK) && _stResult._tseed._status.hasAnyProperty(CosmicTrkFitFlag::StraightTrackConverged) && _stResult._tseed._track.converged == true ) { 
+      if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::helixOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::helixConverged) && _stResult._tseed._track.converged == true ) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
 	       
 	      fillGoodHits(_stResult);
 	      
 	      CosmicTrackFinderData tmpResult(_stResult);
-	      _stResult._tseed._status.merge(CosmicTrkFitFlag::StraightTrackOK);
+	      _stResult._tseed._status.merge(TrkFitFlag::helixOK);
               if (tmpResult._tseed.status().hasAnyProperty(_saveflag)){
               
 		      std::vector<uint16_t> chindices;
@@ -308,6 +309,7 @@ namespace mu2e{
 	              //Pass straw hits to the drift fit for ambig resolution:
                       if( tmpResult._tseed._track.Diag.FinalChiTot > _max_seed_chi2) continue;
 		      _tfit.DriftFit(tmpResult);
+		      
 		      //Add tmp to seed list:
 		      track_seed_vec.push_back(tmpResult._tseed);
 		     
@@ -436,14 +438,71 @@ int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHit
       int          index   = TCluster.hits().at(i);
       ComboHit     sh      = chcol.at(index); 
       if ( (sh.time() < minT) || (sh.time() > maxT) )  continue;
-      // ++ngoodhits;
+  
       ngoodhits += sh.nStrawHits();
     }
 
     return ngoodhits;
   } 
+/*
+void CosmicTrackFinder::FitMC(CosmicTrackFinderData& trackData, bool Det){	
+	GeomHandle<DetectorSystem> det;
+        ::BuildLinearFitMatrixSums S; 
+        CosmicTrack* cosmictrack = &trackData._tseed._track;;
+    	size_t nHits (trackData._mcDigisToProcess.size());
+        StrawDigiMC *hitP1; 
+	StrawDigiMC *first = &trackData._mcDigisToProcess[0]; 
+        //Get StepPointMC:
+	art::Ptr<StepPointMC> const& spmcp0= first->stepPointMC(StrawEnd::cal);
+        XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
+        XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
+        for (size_t f1=0; f1<nHits; ++f1){ 
+            hitP1 = &trackData._mcDigisToProcess[f1]; 
+	   
+            //Get StepPointMC:
+	    art::Ptr<StepPointMC> const& spmcp = hitP1->stepPointMC(StrawEnd::cal);
+            XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+           
+            //Use Step Point MC direction as the True Axes:
+            XYZVec ZPrime = Geom::toXYZVec(spmcp->momentum().unit());
+           
+            //Store True Track details:
+            TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);
+            cosmictrack->SetTrueTrackCoordSystem(TrueAxes);
+	    
+            //Apply routine to the True Tracks (for validation):
+            XYZVec point(posN.x(), posN.y(), posN.z());
+            XYZVec X(1,0,0);
+            XYZVec Y(0,1,0);
+            XYZVec Z(0,0,1);
+            S.addPoint( point, X,Y,Z, 1,1);
+            
+        }   
+    
+     TrackParams RawTrueParams(S.GetAlphaX()[0][0], S.GetAlphaX()[1][0], S.GetAlphaY()[0][0], S.GetAlphaY()[1][0]);
+     
+     XYZVec TruePos(S.GetAlphaX()[0][0], S.GetAlphaY()[0][0], 0);
+     if(Det==true){
+	TruePos = _tfit.ConvertPointToDetFrame(TruePos);
+     }
+     XYZVec TrueDir(S.GetAlphaX()[1][0], S.GetAlphaY()[1][0], 1);
+     TrueDir = TrueDir.Unit();
+     TrueDir = TrueDir/TrueDir.Z();
+   
+     pos0.SetX(pos0.X()-(dir0.X()*pos0.Z()/dir0.Z()));
+     pos0.SetY(pos0.Y()-(dir0.Y()*pos0.Z()/dir0.Z()));
+     pos0.SetX(pos0.Z()-(dir0.Z()*pos0.Z()/dir0.Z()));
+     dir0 = dir0/dir0.Z();
+    
+     cosmictrack->RawTrueParams = RawTrueParams;
+     TrackEquation TrueTrack(TruePos, TrueDir);
+     cosmictrack->SetTrueTrackEquationXYZ(TrueTrack);
 
+     cosmictrack->set_true_phi(atan(TrueDir.y()/TrueDir.x()));
+     cosmictrack->set_true_theta(acos(TrueDir.x()/sqrt(TrueDir.Mag2())));
+     }
 
+*/
 ///////////////////////////////////////////////////
 }//end mu2e namespace
 using mu2e::CosmicTrackFinder;

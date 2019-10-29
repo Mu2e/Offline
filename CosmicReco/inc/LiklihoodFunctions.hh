@@ -43,11 +43,7 @@ struct EndResult{
 		std::vector<double> FullFitEndDOCAs;
 		std::vector<double> FullFitEndTimeResiduals;
 
-	        std::vector<double> TrueDOCAs;
-		std::vector<double> TrueTimeResiduals;
-
 		std::vector<double> RecoAmbigs;
-		std::vector<double> TrueAmbigs;
 		
 		double NLL;
 	

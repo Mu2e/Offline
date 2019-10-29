@@ -28,7 +28,7 @@
 
 using namespace mu2e;
 
-double DriftFitUtils::GetTestDOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
+double DriftFitUtils::GetTestDOCA(Straw const& straw, double a0, double a1, double b0, double b1) {
 	XYZVec track_position(a0,b0,0);
 	XYZVec track_direction(a1,b1,1);
 
@@ -49,7 +49,7 @@ double DriftFitUtils::GetTestDOCA(Straw const& straw, double a0, double a1, doub
 	return dca;
 }
 
-int DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit) {
+int DriftFitUtils::GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1) {
 	XYZVec track_position(a0,b0,0);
 	XYZVec track_direction(a1,b1,1);
 

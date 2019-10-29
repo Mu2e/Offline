@@ -112,7 +112,7 @@ namespace LiklihoodFunctions{
 	ComboHitCollection passed_hits;
 	std::vector<Straw> passed_straws;
 	for(size_t i = 0; i< trackseed._straws.size(); i++){
-	      double gauss_end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
+	      double gauss_end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3]);
 	      double gauss_end_time_residual = fit.TimeResidual(trackseed._straws[i], gauss_end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
 	      endresult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
 	      endresult.GaussianEndDOCAs.push_back(gauss_end_doca);
@@ -160,28 +160,20 @@ namespace LiklihoodFunctions{
 	 
 	  for(size_t i = 0; i< trackseed._straws.size(); i++){
 		//Store Init DOCA	    
-	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3], trackseed._straw_chits[i]);
+	      double start_doca = fit.calculate_DOCA(trackseed._straws[i],seed[0], seed[1], seed[2], seed[3]);
 	      double start_time_residual = fit.TimeResidual(trackseed._straws[i], start_doca,  srep, seed[4], trackseed._straw_chits[i]);
 	      
 		//Store Final Fit DOCA
-	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
-              double ambig = fit.calculate_ambig(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3], trackseed._straw_chits[i]);
+	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3]);
+              double ambig = fit.calculate_ambig(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3]);
 	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
 	      
-	      
-		//Store True DOCA
-	      double true_doca = fit.calculate_DOCA(trackseed._straws[i], trackseed._track.TrueFitEquation.Pos.X(), trackseed._track.TrueFitEquation.Dir.X(), trackseed._track.TrueFitEquation.Pos.Y(),trackseed._track.TrueFitEquation.Dir.Y(), trackseed._straw_chits[i]);
-	      double trueambig = fit.calculate_ambig(trackseed._straws[i], trackseed._track.TrueFitEquation.Pos.X(), trackseed._track.TrueFitEquation.Dir.X(), trackseed._track.TrueFitEquation.Pos.Y(),trackseed._track.TrueFitEquation.Dir.Y(), trackseed._straw_chits[i]);
-	      double true_time_residual = fit.TimeResidual(trackseed._straws[i], true_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
- 	
 	      endresult.StartDOCAs.push_back(start_doca);
 	      endresult.StartTimeResiduals.push_back(start_time_residual);
 	      endresult.FullFitEndTimeResiduals.push_back(end_time_residual);
 	      endresult.FullFitEndDOCAs.push_back(end_doca);
 	      endresult.RecoAmbigs.push_back(ambig);
-	      endresult.TrueTimeResiduals.push_back(true_time_residual);
-	      endresult.TrueAmbigs.push_back(trueambig);
-	      endresult.TrueDOCAs.push_back(true_doca);
+	     
 	  }
 	  fullfit.DeleteArrays();
      	}

@@ -47,8 +47,8 @@ class TimePDFFit : public ROOT::Minuit2::FCNBase {
     double Up() const { return 0.5; };
     double operator() (const std::vector<double> &x) const;
     double TimeResidual(Straw straw, double doca, StrawResponse srep, double t0, ComboHit hit) const ;
-    double calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit hit) const;
-    double calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit hit) const;
+    double calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1) const;
+    double calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1) const;
     
 };
 

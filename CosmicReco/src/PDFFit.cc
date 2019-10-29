@@ -192,13 +192,13 @@ double FullFit::InterpolatePDF(double time_residual, double sigma, double tau) c
 }
 
 // This 3 functions talk to the drift util:
-double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
-	double doca = DriftFitUtils::GetTestDOCA(straw, a0,a1,b0,b1, chit); 
+double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1)const{
+	double doca = DriftFitUtils::GetTestDOCA(straw, a0,a1,b0,b1); 
         return (doca);
 }
 
-double TimePDFFit::calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1, ComboHit chit)const{
-	double ambig = DriftFitUtils::GetAmbig(straw, a0,a1,b0,b1, chit); 
+double TimePDFFit::calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1)const{
+	double ambig = DriftFitUtils::GetAmbig(straw, a0,a1,b0,b1); 
         return (ambig);
 }
 
@@ -220,8 +220,8 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
   
   //Loop through the straws and get DOCA:
   for (size_t i=0;i<this->straws.size();i++){
-      double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
-      double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
+      double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1); 
+      double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0,this->chits[i]);
       double pdf_t = 1/sqrt(2*TMath::Pi()*this->sigma_t*this->sigma_t) * exp(-(time_residual*time_residual)/(2*this->sigma_t*this->sigma_t));
       //Log Liklihood:
       llike -=log(pdf_t);
@@ -252,7 +252,7 @@ double DataFit::operator() (const std::vector<double> &x) const
   long double llike = 0;
   
   for (size_t i=0;i<this->straws.size();i++){
-    double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1,chits[i]); 
+    double doca = calculate_DOCA(this->straws[i], a0, a1, b0, b1); 
     double doca_penalty = 1; 
     double time_residual = this->TimeResidual(this->straws[i], doca, this->srep, t0, this->chits[i]);
     
