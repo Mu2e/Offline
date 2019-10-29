@@ -1,9 +1,9 @@
-#ifndef _MU2E_UTILITIES_BUILDMATRIXSUMS_HH
-#define _MU2E_UTILITIES_BUILDMATRIXSUMS_HH
+#ifndef _MU2E_UTILITIES_BUILDLINEARFITMATRIXSUMS_HH
+#define _MU2E_UTILITIES_BUILDLINEARFITMATRIXSUMS_HH
 
 #include "Math/VectorUtil.h"
 #include "TMatrixD.h"
-class BuildMatrixSums {
+class BuildLinearFitMatrixSums {
 
 protected:
   double betaX00, betaX10, gammaX00, gammaX01, gammaX11;
@@ -11,13 +11,13 @@ protected:
   double deltaX, deltaY;
   double chi2;
 public:
-  BuildMatrixSums();
-  BuildMatrixSums(const BuildMatrixSums& Sums);
-  ~BuildMatrixSums();
+  BuildLinearFitMatrixSums();
+  BuildLinearFitMatrixSums(const BuildLinearFitMatrixSums& Sums);
+  ~BuildLinearFitMatrixSums();
 
   void   clear();
-  void   init(const BuildMatrixSums& S);
-  void addPoint(XYZVec point_i, XYZVec XPrime, XYZVec YPrime,XYZVec ZPrime, double errX, double errY);
+  void   init(const BuildLinearFitMatrixSums& S);
+  void   addPoint(XYZVec point_i, XYZVec XPrime, XYZVec YPrime,XYZVec ZPrime, double errX, double errY);
  
 
   double Get2DParameter(int i, TMatrixD Alpha);

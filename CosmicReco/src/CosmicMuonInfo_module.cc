@@ -40,7 +40,7 @@ namespace mu2e {
     virtual bool filter  (art::Event& event) override;
 
   private:
-
+    //Config _conf;
     art::InputTag _strawHitsTag, _strawDigisTag, _strawDigiMCsTag, _caloDigisTag;
     art::InputTag _panelHitsTag;
     int           _diagLevel;

@@ -22,9 +22,6 @@ namespace mu2e {
     Float_t _minhtime, _maxhtime; // min and max cluster hit time
     Float_t _maxover; // max overlap with another time cluster this event
     XYZVec _pos; // average position of cluster
-    Float_t _posx; // average position, S Middleton	
-    Float_t _posy; // average position, S Middleton
-    Float_t _posz; // average position, S Middleton
     Float_t _ecalo; // calo cluster energy
     Float_t _tcalo; // calo cluster time
     Float_t _dtcalo; // calo cluster time
@@ -66,10 +63,7 @@ namespace mu2e {
     Int_t	_ncesel; // # of selected conversion electron hits
     Int_t	_nceclust; // # of conversion electron hits found in clusters
     Float_t	_time; // average time of CE hits (doesn't include drift!)
-    XYZVec	_pos; // average position of cluster
-    Float_t _mcposx; // average position, S Middleton
-    Float_t _mcposy; // average position, S Middleton
-    Float_t _mcposz; // average position, S Middleton
+    XYZVec	_pos; // average position of cluste
     Float_t	_maxdphi; // max dphi WRT average
     Float_t	_minrho; // min rho WRT average
     Float_t	_maxrho; // max rho WRT average

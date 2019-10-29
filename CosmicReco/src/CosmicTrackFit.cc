@@ -15,7 +15,6 @@
 #include "RecoDataProducts/inc/CosmicTrkFitFlag.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/TimeClusterCollection.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 //For Drift:
 #include "BTrk/BaBar/BaBar.hh"
@@ -30,10 +29,10 @@
 #include "BTrk/TrkBase/TrkMomCalculator.hh"
 //Fitting
 #include "Mu2eUtilities/inc/ParametricFit.hh"
-#include "Mu2eUtilities/inc/BuildMatrixSums.hh"
-#include "Mu2eUtilities/inc/LiklihoodFunctions.hh"
-#include "Mu2eUtilities/inc/DriftFitUtils.hh"
-#include "Mu2eUtilities/inc/ConvertXYZ.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+#include "CosmicReco/inc/LiklihoodFunctions.hh"
+#include "TrackerConditions/inc/DriftFitUtils.hh"
+#include "DataProducts/inc/XYZVec.hh"
 //ROOT:
 #include "TMatrixD.h"
 #include "Math/VectorUtil.h"
@@ -140,6 +139,14 @@ namespace mu2e
       return track.Unit();
     } 
   
+    XYZVec CosmicTrackFit::ConvertToDetFrame(XYZVec vec){
+        Hep3Vector vec1(vec.x(),vec.y(),vec.z());
+        GeomHandle<DetectorSystem> det;
+        Hep3Vector vec2 = det->toDetector(vec1);
+	XYZVec XYZ(vec2.x(), vec2.y(), vec2.z());
+	return XYZ;
+
+    }
 //--------------Fit-----------------//
 // This is the top level call to Fitting routines....
 //-------------------------------------------// 
@@ -177,8 +184,8 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 
  void CosmicTrackFit::FitAll(const char* title, CosmicTrackFinderData& trackData,  CosmicTrack* cosmictrack, CosmicTrackFinderTypes::Data_t& diagnostics){
  
-     //auto S = std::make_unique<::BuildMatrixSums>();// S;
-     ::BuildMatrixSums S;
+     //auto S = std::make_unique<::BuildLinearFitMatrixSums>();// S;
+     ::BuildLinearFitMatrixSums S;
      ComboHit   *hitP1(0), *hitP2(0); 
      size_t nHits (trackData._chHitsToProcess.size());   
      int DOF = (nHits);// - (_Npara);
@@ -224,7 +231,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
 	cosmictrack->set_initchisq_dofX(S.GetChi2X()/abs(DOF));
 	cosmictrack->set_initchisq_dof(S.GetTotalChi2()/abs(DOF));
 	for (size_t f2=0; f2<nHits; ++f2){
-         	if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue;     
+         	//if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue;     
          	hitP1 = &trackData._chHitsToProcess[f2];  
 		if (!use_hit(*hitP1) && hitP1->nStrawHits() < _minnsh)  continue;  
 	        XYZVec point(hitP1->pos().x(),hitP1->pos().y(),hitP1->pos().z());
@@ -243,7 +250,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
       
       //Step 6: Begin iteration for finding the best track fit possible.
       unsigned niter(0);
-      ::BuildMatrixSums S_niteration;
+      ::BuildLinearFitMatrixSums S_niteration;
       bool converged = false;
       CosmicTrack* BestTrack = cosmictrack;	 
       double chi2_best_track = 10000000;//chosen arbitary high number
@@ -263,7 +270,7 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
      	Axes = ParametricFit::GetTrackAxes(cosmictrack->GetTrackDirection());
      	cosmictrack->set_niter(niter );
      	for (size_t f4=0; f4 < nHits; ++f4){ 
-     	      if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue; 
+     	      //if(isnan(cosmictrack->GetTrackDirection().Mag2()) == true) continue; 
      	      hitP2 = &trackData._chHitsToProcess[f4];
       	      if (((!use_hit(*hitP2) ) && (hitP2->nStrawHits() < _minnsh) )) continue;   
 	      XYZVec point(hitP2->pos().x(),hitP2->pos().y(),hitP2->pos().z());	    	  
@@ -478,7 +485,7 @@ Can do 2 things:
 //----------------------------------------------------*/
 void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmictrack, bool Det){	
 	GeomHandle<DetectorSystem> det;
-        ::BuildMatrixSums S; 
+        ::BuildLinearFitMatrixSums S; 
         
     	size_t nHits (trackData._mcDigisToProcess.size());
         StrawDigiMC *hitP1; 
@@ -495,7 +502,7 @@ void CosmicTrackFit::FitMC(CosmicTrackFinderData& trackData, CosmicTrack* cosmic
             XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
            
             //Use Step Point MC direction as the True Axes:
-            XYZVec ZPrime = ConvertToXYZ(spmcp->momentum().unit());
+            XYZVec ZPrime = Geom::toXYZVec(spmcp->momentum().unit());
            
             //Store True Track details:
             TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);

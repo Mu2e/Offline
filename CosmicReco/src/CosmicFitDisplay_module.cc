@@ -85,9 +85,8 @@ namespace mu2e
       virtual void beginJob();
       virtual void analyze(const art::Event& e);
     private: 
-      //int  _diag;
       bool _mcdiag;
-      Int_t _evt; // add event id
+      Int_t _evt; 
 
       // The module label of this instance of this module.
       std::string moduleLabel_;
@@ -102,15 +101,13 @@ namespace mu2e
       TNtuple* _ntTrack = nullptr;
       TNtuple* _ntHit = nullptr;
 
-      // event object Tags
-
       art::InputTag   _chtag;//combo
       art::InputTag   _tctag;//timeclusters
-      art::InputTag   _sttag;//Striaght tracks
+      art::InputTag   _sttag;//Straight tracks
       bool doDisplay_;
       bool clickToAdvance_;
       
-      Int_t _strawid; // strawid info
+      Int_t _strawid; 
       void plot2dDriftCompare(const art::Event& event);
       void plot2d(const art::Event& evt);
       void plotTrackerElements(const art::Event& event);
@@ -121,8 +118,7 @@ namespace mu2e
        bool findData(const art::Event& evt);
     };
     CosmicFitDisplay::CosmicFitDisplay(fhicl::ParameterSet const& pset) :
-	art::EDAnalyzer(pset),
-	
+	art::EDAnalyzer{pset},
 	_mcdiag		(pset.get<bool>("MCdiag",true)),
 	_chtag		(pset.get<art::InputTag>("ComboHitCollection")),
 	_tctag		(pset.get<art::InputTag>("TimeClusterCollection")),
@@ -158,7 +154,7 @@ namespace mu2e
         plot2dDriftCompare(event);
       }//End Analyze 
      
-//----------Below here are a series of macros -  they are not glamarous but they produce useful debugging plots ----//
+//----------Below here are a series of macros -  they are not glamorous but they produce useful debugging plots ----//
 
       void CosmicFitDisplay::plot2dDriftCompare(const art::Event& event){
         _evt = event.id().event();  

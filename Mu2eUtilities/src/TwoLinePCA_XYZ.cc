@@ -34,7 +34,7 @@ namespace mu2e {
     _dca2d(0.),
     _closeToParallel(false),
     _cut(cut),
-    _ambig(0.)
+    _LRambig(0.)
      {
 
     // Cosine of angle between the two line directions.
@@ -68,7 +68,7 @@ namespace mu2e {
 
       _pca1 = _p1 + _t1*_s1;
       _pca2 = _p2 + _t2*_s2;
-      _ambig = _s2;
+      _LRambig = _s2;
     }
 
     XYZVec diff = (_pca1-_pca2);

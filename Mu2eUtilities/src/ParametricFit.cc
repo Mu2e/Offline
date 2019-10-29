@@ -13,39 +13,7 @@ using namespace mu2e;
 
 namespace ParametricFit{
 
-	double GettMin(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
-            double tMin = -(starting_point-point).Dot(end_point-starting_point) /((end_point-starting_point).Mag2());
-	    return tMin;
-
-       }
-
-	XYZVec PointToLineCA(XYZVec& point, XYZVec& starting_point, XYZVec& end_point){
-          double tMin = GettMin(point, starting_point, end_point);
-	  double POCA_x = starting_point.x() + (end_point.x()-starting_point.x())*tMin;
-	  double POCA_y = starting_point.y() + (end_point.x()-starting_point.y())*tMin;
-	  double POCA_z = starting_point.z() + (end_point.z()-starting_point.z())*tMin;
-	  XYZVec closestPointOnLine;
-	  closestPointOnLine.SetXYZ(POCA_x ,POCA_y ,POCA_z);
-	  return closestPointOnLine;
-	}
 	
-	double PointToLineDCA(XYZVec& point, XYZVec& line_starting_point, XYZVec& line_end_point){
-	   double dca;
-	   XYZVec closestPointOnLine=PointToLineCA( point, line_starting_point, line_end_point);
-	   dca =  sqrt((closestPointOnLine-point).Mag2());
-           return dca;
-          }
-
-        XYZVec ParellelVector(XYZVec lineStartPoint, XYZVec lineEndPoint){
-		XYZVec parellel;
-		double tx = lineStartPoint.x() -  lineEndPoint.x();
-		double ty = lineStartPoint.y()-lineStartPoint.y();
-		double tz = lineEndPoint.z() -  lineEndPoint.z();
-		parellel.SetXYZ( tx,ty,tz);
-		return parellel;
-
-	} 
-     
 	XYZVec pointOnLineFromX(XYZVec lineStartPoint, XYZVec lineEndPoint, double x,XYZVec outputPoint)
 	{
   	//Get t for given x coord (line eqn: r = r0 + mt)
@@ -95,11 +63,11 @@ namespace ParametricFit{
 
        }  
 
-int GetDOCASign(XYZVec track_dir, XYZVec point){
-        int sign = (track_dir.y()-point.y() < 0) ?  -1 : 1 ;
-	return sign;
+       int GetDOCASign(XYZVec track_dir, XYZVec point){
+        	int sign = (track_dir.y()-point.y() < 0) ?  -1 : 1 ;
+		return sign;
 
-}
+        }
 
 /*-----------------Get X' and Y' and hit errors------------//
 The initial track is found and its direction. z' becomes the parametric variable and the fit factorizes into 2 2-D fits, with intercept and slopes (A0, A1 and B0, B1) along x' and y' respectively.  You have to project the hits and their error ellipses onto x' and y'. The following 2 equations do this:

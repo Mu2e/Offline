@@ -4,20 +4,20 @@
 #include <math.h>
 #include<exception>
 #include "DataProducts/inc/XYZVec.hh"
-#include "Mu2eUtilities/inc/BuildMatrixSums.hh"
+#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
 
-BuildMatrixSums::BuildMatrixSums() {
+BuildLinearFitMatrixSums::BuildLinearFitMatrixSums() {
   clear();
 }
 
-BuildMatrixSums::BuildMatrixSums(const BuildMatrixSums& S) {
+BuildLinearFitMatrixSums::BuildLinearFitMatrixSums(const BuildLinearFitMatrixSums& S) {
   init(S);
  
 }
 
-BuildMatrixSums::~BuildMatrixSums() {
+BuildLinearFitMatrixSums::~BuildLinearFitMatrixSums() {
 }
-void BuildMatrixSums::clear(){
+void BuildLinearFitMatrixSums::clear(){
   //initialize:
   betaX00 = 0;
   betaX10 = 0;
@@ -33,7 +33,7 @@ void BuildMatrixSums::clear(){
   deltaY = 0;
   chi2 = 0;
 }
-void BuildMatrixSums::init(const BuildMatrixSums& S) {
+void BuildLinearFitMatrixSums::init(const BuildLinearFitMatrixSums& S) {
  
   betaX00 = S.betaX00;
   betaX10 = S.betaX10;
@@ -50,7 +50,7 @@ void BuildMatrixSums::init(const BuildMatrixSums& S) {
   chi2 = S.chi2;
 }
 
-void BuildMatrixSums::addPoint( XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
+void BuildLinearFitMatrixSums::addPoint( XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XYZVec ZPrime,  double errX, double errY){
 	XYZVec h_Prime(point_i.Dot(XPrime), point_i.Dot(YPrime),point_i.Dot(ZPrime));//hit in X"Y"Z'
 
 	if(errX == 0) return;
@@ -82,16 +82,16 @@ void BuildMatrixSums::addPoint( XYZVec point_i, XYZVec XPrime, XYZVec YPrime, XY
 }
 
 
-double BuildMatrixSums::Get2DParameter(int i, TMatrixD Alpha){
+double BuildLinearFitMatrixSums::Get2DParameter(int i, TMatrixD Alpha){
 	return Alpha[i][0];
 }
 
-void BuildMatrixSums::SetChi2(double newchi ){
+void BuildLinearFitMatrixSums::SetChi2(double newchi ){
 	chi2 = newchi;	
 }
 
 
-TMatrixD BuildMatrixSums::GetGammaX(){
+TMatrixD BuildLinearFitMatrixSums::GetGammaX(){
 	TMatrixD Gamma(2,2);
 	Gamma[0][0] = gammaX00;
 	Gamma[1][0] = gammaX01;
@@ -100,7 +100,7 @@ TMatrixD BuildMatrixSums::GetGammaX(){
 	return Gamma;
 }
 
-TMatrixD BuildMatrixSums::GetCovX(){
+TMatrixD BuildLinearFitMatrixSums::GetCovX(){
 	TMatrixD GammaINV = GetGammaX();
 	double* det = NULL;                  
 	try {
@@ -118,7 +118,7 @@ TMatrixD BuildMatrixSums::GetCovX(){
 	return CovX;
 }
 
-TMatrixD BuildMatrixSums::GetBetaX(){
+TMatrixD BuildLinearFitMatrixSums::GetBetaX(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaX00;
 	Beta[1][0] = betaX10;
@@ -126,7 +126,7 @@ TMatrixD BuildMatrixSums::GetBetaX(){
 	return Beta;
 }
 
-TMatrixD BuildMatrixSums::GetAlphaX(){
+TMatrixD BuildLinearFitMatrixSums::GetAlphaX(){
         TMatrixD Gamma = GetGammaX();
 	TMatrixD Beta  = GetBetaX();
 	double* det = NULL;                  
@@ -143,7 +143,7 @@ TMatrixD BuildMatrixSums::GetAlphaX(){
 	return Alpha;
 }
 
-TMatrixD BuildMatrixSums::GetGammaY(){
+TMatrixD BuildLinearFitMatrixSums::GetGammaY(){
 	TMatrixD Gamma(2,2);
 	Gamma[0][0] = gammaY00;
 	Gamma[1][0] = gammaY01;
@@ -151,7 +151,7 @@ TMatrixD BuildMatrixSums::GetGammaY(){
 	Gamma[1][1] = gammaY11;
 	return Gamma;
 }
-TMatrixD BuildMatrixSums::GetCovY(){
+TMatrixD BuildLinearFitMatrixSums::GetCovY(){
 	TMatrixD GammaINV = GetGammaY();
 	double* det = NULL;                  
 	try {
@@ -168,7 +168,7 @@ TMatrixD BuildMatrixSums::GetCovY(){
 	CovY[0][1] = sqrt(GammaINV[0][1]);
 	return CovY;
 }
-TMatrixD BuildMatrixSums::GetBetaY(){
+TMatrixD BuildLinearFitMatrixSums::GetBetaY(){
 	TMatrixD Beta(2,1);
 	Beta[0][0] = betaY00;
 	Beta[1][0] = betaY10;
@@ -176,7 +176,7 @@ TMatrixD BuildMatrixSums::GetBetaY(){
 	return Beta;
 }
 
-TMatrixD BuildMatrixSums::GetAlphaY(){
+TMatrixD BuildLinearFitMatrixSums::GetAlphaY(){
         TMatrixD Gamma = GetGammaY();
 	TMatrixD Beta  = GetBetaY();
 	double* det = NULL; 
@@ -193,7 +193,7 @@ TMatrixD BuildMatrixSums::GetAlphaY(){
        return Alpha;
 }
 
-double BuildMatrixSums::GetChi2X(){
+double BuildLinearFitMatrixSums::GetChi2X(){
 	TMatrixD GammaX = GetGammaX();
 	TMatrixD BetaX  = GetBetaX();
 	//TMatrixD AlphaX = GetAlphaX();
@@ -215,7 +215,7 @@ double BuildMatrixSums::GetChi2X(){
 	return chi2X[0][0];
 }
 
-double BuildMatrixSums::GetChi2Y(){
+double BuildLinearFitMatrixSums::GetChi2Y(){
 
 	TMatrixD GammaY = GetGammaY();
 	TMatrixD BetaY  = GetBetaY();
@@ -239,7 +239,7 @@ double BuildMatrixSums::GetChi2Y(){
 	return chi2Y[0][0];
 }
 
-double BuildMatrixSums::GetTotalChi2(){
+double BuildLinearFitMatrixSums::GetTotalChi2(){
 	double chi2X = GetChi2X();
         double chi2Y = GetChi2Y();
         return chi2Y+chi2X;

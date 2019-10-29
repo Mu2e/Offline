@@ -22,7 +22,7 @@ namespace mu2e {
     struct Data_t {
       const art::Run*               run;
       const art::Event*               event;
-      fhicl::ParameterSet*            timeOffsets; //what are these?
+      
       enum {kMaxSeeds = 1000, kMaxNHits = 50 };
       int     nseeds ; //Number of Seeds
       int     npasses ; //Number passing all cuts in finder
