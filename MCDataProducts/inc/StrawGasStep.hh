@@ -7,8 +7,8 @@
 //
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/Assns.h"
-#include "cetlib/map_vector.h"
 
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/ProcessCode.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/XYZVec.hh"
@@ -17,33 +17,45 @@
 namespace mu2e {
   class StrawGasStep {
     public:
-      typedef cet::map_vector_key key_type;
+      struct StepType {
+	constexpr static uint8_t _smsk = 0xF; // mask for shape field
+	constexpr static uint8_t _ssft = 0; // shift for shape field
+	constexpr static uint8_t _imsk = 0xF0; // mask for ionization field
+	constexpr static uint8_t _isft = 4; // shift for ionization field
+	enum shape {line=0,arc,curl,point }; // shape of the trajectory within the straw
+	enum ionization { minion=0, highion, neutral }; // type of ionization
+	uint16_t _stype;
 
-      StrawGasStep() : _eIon(0.0), _pathLen(0.0), _mom(0.0), _time(0.0) {}
-      StrawGasStep( key_type   simParticleKey, StrawId    strawId, 
-	Float_t  Edep, Float_t    pathLength, Float_t width, Float_t    momentum, Double_t   time, 
-	XYZVec const& startPosition, XYZVec const& endPosition) : _simpart(simParticleKey),
-	_strawId(strawId), _eIon(Edep),
-	_pathLen(pathLength), _width(width), _mom(momentum), _time(time),
+	StepType() : _stype(0) {}
+	StepType(StepType::shape shp, StepType::ionization ion) :
+	  _stype( shp | (ion << _isft)) {}
+	shape() const { return _stype & _smsk; }
+	ionization() const { return (_stype & _imsk) >> _isft; }
+
+      }; 
+
+      StrawGasStep() : _eIon(0.0), _pathLen(0.), _mom(0.0), _time(0.0) {}
+      StrawGasStep( StrawId    strawId, StepType stype,
+	Float_t  Edep, Float_t    pathLength, Float_t width, Double_t   time, 
+	XYZVec const& startPosition, XYZVec const& endPosition) :
+	_strawId(strawId), _stype(stype), _eIon(Edep),
+	_pathLen(pathLength), _width(width), _time(time),
 	_startpos(startPosition), _endpos(endPosition) {}
 
-      key_type   simParticleKey() const { return _simpart; }
       StrawId    strawId()    const { return _strawId;}
+      StepType   stepType()    const { return _stype; }
       Float_t    ionizingEdep()    const { return _eIon; }
       Float_t    pathLength()   const { return _pathLen; }
       Float_t    radialWidth()   const { return _width; } 
-      Float_t    momentum()     const { return _mom; }
       Double_t   time()         const { return _time; }
       XYZVec const& startPosition() const { return _startpos; }
       XYZVec const& endPosition() const { return _endpos; }
     private:
-
-      key_type      _simpart; // key to the primary particle generating this edep
       StrawId       _strawId; // straw
+      StepType	    _stype; // type of step: used downstream in response simulation
       Float_t       _eIon;  // ionization energy deposited in this straw by this particle
       Float_t       _pathLen;  // Length the primary particle traveled in this straw gas: this is NOT necessarily the end-start distance
       Float_t       _width; // transverse RMS of the charge cloud WRT the wire
-      Float_t	    _mom; // scalar momentum of the particle in the middle of this gas volume
       Double_t      _time; // time particle enters this gas volume; must be double to allow for long-lived particles
       XYZVec	    _startpos, _endpos; //entrance and exit to the gas volume
   };
