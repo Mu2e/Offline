@@ -60,27 +60,25 @@ struct ycomp : public std::binary_function<XYZVec,XYZVec,bool> {
 namespace mu2e
 {
   
-  CosmicTrackFit::CosmicTrackFit(fhicl::ParameterSet const& pset) :
-    _Npara(pset.get<unsigned>("Npara",4)),
-    _diag(pset.get<int>("diagLevel",1)), //1=seed info, 2= drift info
-    _debug(pset.get<int>("debugLevel",1)), // set to 1 for chi2, currently will cause errors ifo not set
-    _dontuseflag(pset.get<std::vector<std::string>>("DontUseFlag",vector<string>{"Outlier"})),
-    _minnsh(pset.get<unsigned>("minNStrawHits",2)),
-    _minCHHits(pset.get<unsigned>("minCHHits",8)),
-    _n_outliers(pset.get<unsigned>("_n_outliers",2)),
-    _maxniter(pset.get<unsigned>("maxniter",1000)),
-    _maxchi2(pset.get<float>("maxchi2",2.5)) , //Need to set  in module, this is not used
-    _max_chi2_change(pset.get<float>("max_chi2_change",0.001)),
-    _max_position_deviation((pset.get<float>("max_position_deviation",200))),
-    _maxHitDOCA      (pset.get<int>("maxHitDOCA",2.5)),
-    _maxLogL (pset.get<int>("maxLogL",150)),
-    _minCHStrawFull (pset.get<int>("minCHStrawFull",8)),
-    _gaussTres (pset.get<int>("gaussTres",24)),
-    _maxTres (pset.get<int>("maxTres",40))
-    {}
-
-    CosmicTrackFit::~CosmicTrackFit(){}
-
+    CosmicTrackFit::CosmicTrackFit(const Config& conf) :
+	_Npara (conf.Npara()),
+   	_diag (conf.diag()),
+   	_debug  (conf.debug()),
+	_dontuseflag (conf.dontuseflag()),
+    	_minnsh   (conf.minnsh()),
+    	_minnch  (conf.minnch()),
+    	_n_outliers (conf.n_outliers()),
+	_maxniter (conf.maxniter()),
+        _max_seed_chi2 (conf.max_seed_chi2()),
+	_max_chi2_change (conf.max_chi2_change()),
+	_max_position_deviation (conf.max_position_deviation()),
+	_maxHitDOCA (conf.maxHitDOCA()),
+	_maxLogL (conf.maxLogL()),
+	_gaussTres (conf.gaussTres()),
+	_maxTres (conf.maxTres()),
+	_maxd (conf.maxd())
+    	{}
+	 
     /* ---------------Initialize Fit----------------//
     //----------------------------------------------*/
     bool CosmicTrackFit::initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics) {
@@ -459,7 +457,7 @@ void CosmicTrackFit::ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData,
 
 bool CosmicTrackFit::goodTrack(CosmicTrack* track) //Not used
   { 
-    if(track->Diag.FinalChiTot < _maxchi2) return true;
+    if(track->Diag.FinalChiTot < _max_seed_chi2) return true;
     else return false;
   }
 
@@ -479,7 +477,7 @@ This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimze
 //------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	 
-         EndResult endresult = LiklihoodFunctions::DoFit(_diag, trackData._tseed,  _srep, _maxHitDOCA, _minCHStrawFull, _maxLogL, _gaussTres, _maxTres);
+         EndResult endresult = LiklihoodFunctions::DoFit(_diag, trackData._tseed,  _srep, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
          //Store output in diag lists:
          trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
          trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
