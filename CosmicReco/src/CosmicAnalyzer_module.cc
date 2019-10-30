@@ -59,8 +59,9 @@ namespace mu2e
 	struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
+	     
 	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),1};
-	      fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),false};
+	      fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),true};
 	      fhicl::Atom<art::InputTag> chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
 	      fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
 	      fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
@@ -76,6 +77,7 @@ namespace mu2e
     private: 
       
       Config _conf;
+
       int  _diag;
       bool _mcdiag;
 
@@ -240,13 +242,12 @@ namespace mu2e
 	_mcdigistag (conf().mcdigistag()),
 	_toff (conf().toff())
     {
-       cout<<" making papras"<<endl;
-	// The following consumes statements are necessary because
-      // SimParticleTimeOffset::updateMap calls getValidHandle.
-      for (auto const& tag : conf().toff().inputs()) {
-        consumes<SimParticleTimeMap>(tag);
-      }
-	
+      
+	if(_mcdiag){
+	      for (auto const& tag : conf().toff().inputs()) {
+		consumes<SimParticleTimeMap>(tag);
+	      }
+	}
     }
 
     CosmicAnalyzer::~CosmicAnalyzer(){}
@@ -254,7 +255,7 @@ namespace mu2e
     void CosmicAnalyzer::beginJob() {
       // create diagnostics if requested...
       if(_diag > 0){
-	 cout<<"init job"<<endl;
+	 
 	art::ServiceHandle<art::TFileService> tfs;
 	//Tree for detailed diagnostics
 	_cosmic_analysis=tfs->make<TTree>("cosmic_analysis"," Diagnostics for Cosmic Track Fitting");
@@ -891,16 +892,16 @@ void CosmicAnalyzer::FillDriftMC(Straw const& straw, double RecoAmbig, CosmicTra
 	_chcol = 0; 
         _tccol = 0;
         _coscol = 0; 
-	auto chH = evt.getValidHandle<ComboHitCollection>(_conf.chtag());
+	auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
 	_chcol = chH.product();
-	auto tcH = evt.getValidHandle<TimeClusterCollection>(_conf.tctag());
+	auto tcH = evt.getValidHandle<TimeClusterCollection>(_tctag);
 	_tccol =tcH.product();
-	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_conf.costag());
+	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_costag);
 	_coscol =stH.product();
         if(_mcdiag){
-	    cout<<"finding data "<<endl;
+	    
 	   _mcdigis=0;
-           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_conf.mcdigistag());
+           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_mcdigistag);
            _mcdigis = mcdH.product();
            _toff.updateMap(evt);
         }
