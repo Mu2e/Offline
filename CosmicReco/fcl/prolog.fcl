@@ -46,14 +46,8 @@ CHD : {
 CosmicTrackFinder : {
     module_type		: CosmicTrackFinder
     ComboHitCollection     : "makePH"
-    ComboHitFlagCollection : "FlagBkgHits:ComboHits"
     TimeClusterCollection  : "TimeClusterFinderCosmics"
-    CosmicTrackSeedCollection  :"CosmicTrackFinder"
     StrawDigiMCCollection : "compressDigiMCs"
-    diagPlugin : { tool_type                    : "CosmicTrackFinderDiag"
-    mcTruth                                 : 0
-                                    
-    }
     
 }
 

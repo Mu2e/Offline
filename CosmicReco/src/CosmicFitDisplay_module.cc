@@ -80,13 +80,28 @@ namespace mu2e
 {
   class CosmicFitDisplay : public art::EDAnalyzer {
     public:
-      explicit CosmicFitDisplay(fhicl::ParameterSet const& pset);
-      virtual ~CosmicFitDisplay();
-      virtual void beginJob();
-      virtual void analyze(const art::Event& e);
+	struct Config{
+	      using Name=fhicl::Name;
+	      using Comment=fhicl::Comment;
+	      fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),true};
+	      fhicl::Atom<art::InputTag> chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+	      fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+	      fhicl::Atom<art::InputTag> sttag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
+	      fhicl::Atom<bool> doDisplay{Name("doDisplay"),Comment("use display"), false};
+		fhicl::Atom<bool> clickToAdvance{Name("clickToAdvance"),Comment("next event"), false};
+
+	    };
+	typedef art::EDAnalyzer::Table<Config> Parameters;
+
+      	explicit CosmicFitDisplay(const Parameters& conf);
+	
+      	virtual ~CosmicFitDisplay();
+      	virtual void beginJob();
+      	virtual void analyze(const art::Event& e) override;
     private: 
-      bool _mcdiag;
-      Int_t _evt; 
+	Config _conf;
+      	bool _mcdiag;
+      	Int_t _evt; 
 
       // The module label of this instance of this module.
       std::string moduleLabel_;
@@ -117,16 +132,16 @@ namespace mu2e
       std::vector<double> GetMaxAndMin(std::vector<double> myvector);
        bool findData(const art::Event& evt);
     };
-    CosmicFitDisplay::CosmicFitDisplay(fhicl::ParameterSet const& pset) :
-	art::EDAnalyzer{pset},
-	_mcdiag		(pset.get<bool>("MCdiag",true)),
-	_chtag		(pset.get<art::InputTag>("ComboHitCollection")),
-	_tctag		(pset.get<art::InputTag>("TimeClusterCollection")),
-	_sttag		(pset.get<art::InputTag>("CosmicTrackSeedCollection")),
-	doDisplay_(pset.get<bool>("doDisplay",false)),
-        clickToAdvance_(pset.get<bool>("clickToAdvance",false))
-        {}
-
+    CosmicFitDisplay::CosmicFitDisplay(const Parameters& conf) :
+	art::EDAnalyzer(conf),
+	_mcdiag (conf().mcdiag()),
+	_chtag (conf().chtag()),
+	_tctag (conf().tctag()),
+	_sttag (conf().sttag()),
+	doDisplay_ (conf().doDisplay()),
+	clickToAdvance_ (conf().clickToAdvance())
+	{}
+   
     CosmicFitDisplay::~CosmicFitDisplay(){}
 
     void CosmicFitDisplay::beginJob() {

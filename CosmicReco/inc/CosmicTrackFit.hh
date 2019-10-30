@@ -9,21 +9,20 @@
 #endif/*__GCCXML__*/
 
 //Mu2e Cosmics:
-#include "CosmicReco/inc/CosmicTrackFinder_types.hh"
 #include "CosmicReco/inc/CosmicTrackFinderData.hh"
-
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+#include "CosmicReco/inc/CosmicTrackFinderData.hh"
 // data
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
+
 
 //Drift:
 #include "TrackerConditions/inc/StrawResponse.hh"
 #include "TrackerConditions/inc/StrawPhysics.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
-// Mu2e objects
-#include "CosmicReco/inc/CosmicTrackFinderData.hh"
+// Math
 #include "Math/VectorUtil.h"
 #include "Math/Vector2D.h"
 
@@ -67,12 +66,13 @@ namespace mu2e
 	      fhicl::Atom<float> gaussTres{Name("GaussianSeedTimeResolution"),Comment("The resolution of the Gaussian seed fit in time"), 24 };
               fhicl::Atom<float> maxTres{Name("MaxTimeResidual"),Comment("The maxiumum allowed time residual for any hit used for full drift fit"), 40 };
 		fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track") ,2000.};
+		fhicl::Atom<float> maxpull{Name("MaxHitPullSForeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
     	};
 		
 		explicit CosmicTrackFit(const Config& conf);
     		
     		virtual ~CosmicTrackFit(){};
-                bool initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
+                bool initCosmicTrack(const char* title, CosmicTrackFinderData& TrackData);
 		std::vector<XYZVec> SortPoints(std::vector<XYZVec> pointY);
                 XYZVec InitLineDirection(const ComboHit *ch0, const ComboHit *chN);
                 
@@ -80,14 +80,14 @@ namespace mu2e
                 XYZVec ConvertPointToDetFrame(XYZVec vec);
 
                 XYZVec GetTrackDirection(std::vector<XYZVec> hitXYZ, XYZVec XDoublePrime, XYZVec YDoublePrime, XYZVec ZPrime); 
-                void BeginFit(const char* title, CosmicTrackFinderData& TrackData, CosmicTrackFinderTypes::Data_t& diagnostics);
-                void RunFitChi2(const char* title, CosmicTrackFinderData& trackData, CosmicTrackFinderTypes::Data_t& diagnostics);
-                void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track, CosmicTrackFinderTypes::Data_t& diagnostics);
+                void BeginFit(const char* title, CosmicTrackFinderData& TrackData);
+                void RunFitChi2(const char* title, CosmicTrackFinderData& trackData);
+                void FitAll(const char* title, CosmicTrackFinderData& trackData,CosmicTrack* track);
 
 		void ConvertFitToDetectorFrame(CosmicTrackFinderData& trackData, TrackAxes axes, XYZVec Position, XYZVec Direction, CosmicTrack* cosmictrack, bool isseed, bool det);
 		
 		
-                bool goodTrack(CosmicTrack* track);
+                bool goodTrack(CosmicTrack& track);
 		void DriftFit(CosmicTrackFinderData& trackData);
 		
                 const Tracker*            _tracker;
@@ -115,6 +115,7 @@ namespace mu2e
 		float _gaussTres;//resolution for intial seed
 		float _maxTres;//maximum allowed time residual in drift fit
 		float _maxd;//unused
+		float _maxpull;
   };
 	
 

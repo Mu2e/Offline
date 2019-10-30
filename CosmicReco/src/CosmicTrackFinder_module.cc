@@ -2,15 +2,13 @@
 // Purpose: Cosmic Track finder- module calls seed fitting routine to begin cosmic track analysis. The module can call the seed fit and drift fit. Producing a "CosmicTrackSeed" list.
 
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinder_types.hh"
 #include "CosmicReco/inc/CosmicTrackFinderData.hh"
 
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 //Mu2e General:
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "TrackerGeom/inc/Tracker.hh"
-#include "RecoDataProducts/inc/TimeCluster.hh"
-
 // ART:
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
@@ -35,12 +33,9 @@
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
-#include "TrackerGeom/inc/Tracker.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
 //utils:
-#include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:
 #include "TrkReco/inc/PanelAmbigResolver.hh"
@@ -100,7 +95,6 @@ namespace mu2e{
     struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
-	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),1};
 	      fhicl::Atom<int> mcdiag{Name("mcdiag"), Comment("set on for MC info"),2};
 	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
               fhicl::Atom<int> printfreq{Name("printFrequency"), Comment("print frquency"), 101};
@@ -108,8 +102,7 @@ namespace mu2e{
     	      fhicl::Atom<int> minnch {Name("minNComboHits"), Comment("number of combohits allowed"),8};
     	      fhicl::Atom<TrkFitFlag> saveflag {Name("SaveTrackFlag"),Comment("if set to OK then save the track"), TrkFitFlag::helixOK};
               fhicl::Atom<int> minNHitsTimeCluster{Name("minNHitsTimeCluster"),Comment("minium allowed time cluster"), 1 };
-    	      fhicl::Atom<float> max_seed_chi2{Name("max_seed_chi2"),Comment("maximum chi 2 for seed"),2.5};
-              fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+    	      fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
 	      fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
 	      fhicl::Atom<art::InputTag> mcToken{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag")};
 	      fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
@@ -126,7 +119,7 @@ namespace mu2e{
     Config _conf;
 
   //config parameters:
-    int 				_diag,_mcdiag, _debug;
+    int 				_mcdiag, _debug;
     int                                 _printfreq;
     int 				_minnsh; // minimum # of strawHits in CH
     int 				_minnch; // minimum # of ComboHits for viable fit
@@ -143,14 +136,11 @@ namespace mu2e{
      
     StrawHitFlag      _outlier;
    
-    std::unique_ptr<ModuleHistToolBase>   _hmanager;
-    CosmicTrackFinderTypes::Data_t        _data;
     CosmicTrackFinderData                 _stResult;
     ProditionsHandle<StrawResponse> _strawResponse_h; 
     void     OrderHitsY(CosmicTrackFinderData& TrackData); //Order in height
     void     OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Event& event); //Same but for MCDigis
     void     fillGoodHits(CosmicTrackFinderData& TrackData);//apply "good" cut
-    void     fillPluginDiag(CosmicTrackFinderData& TrackData);
     int      goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol);
    
 };
@@ -158,7 +148,6 @@ namespace mu2e{
 
  CosmicTrackFinder::CosmicTrackFinder(const Parameters& conf) :
    art::EDProducer(conf),
-   	_diag (conf().diag()),
    	_mcdiag (conf().mcdiag()),
 	_debug  (conf().debug()),
     	_printfreq  (conf().printfreq()),
@@ -166,8 +155,7 @@ namespace mu2e{
     	_minnch  (conf().minnch()),
     	_saveflag  (conf().saveflag()),
     	_minNHitsTimeCluster(conf().minNHitsTimeCluster()),
-    	_max_seed_chi2 (conf().max_seed_chi2()),
-	_chToken (conf().chToken()),
+    	_chToken (conf().chToken()),
 	_tcToken (conf().tcToken()),
 	_mcToken (conf().mcToken()),
 	_tfit (conf().tfit())
@@ -176,8 +164,7 @@ namespace mu2e{
 	    consumes<TimeClusterCollection>(_tcToken);
 	    consumes<StrawDigiMCCollection>(_mcToken);
 	    produces<CosmicTrackSeedCollection>();
-	    //if (_diag != 0) _hmanager = //currently unused due to changes into validated fhicl art::make_tool<ModuleHistToolBase>(pset.get<fhicl::ParameterSet>("diagPlugin"));
-	    //if(_diag)    _hmanager = std::make_unique<ModuleHistToolBase>();
+	    
  }
 
  CosmicTrackFinder::~CosmicTrackFinder(){}
@@ -189,10 +176,7 @@ namespace mu2e{
   void CosmicTrackFinder::beginJob() {
    
     art::ServiceHandle<art::TFileService> tfs;
-    if (_diag > 0){//TODO
-      art::ServiceHandle<art::TFileService> tfs;  
-      //_hmanager->bookHistograms(tfs);
-    } 
+    
   }
 /* ------------------------Begin Run--------------------------//
 //                   sets up the tracker                     //
@@ -201,7 +185,7 @@ namespace mu2e{
     
    mu2e::GeomHandle<mu2e::Tracker> th;
    const Tracker* tracker = th.get();
-   _data.run       = &run;
+  
    _stResult.run = &run;
    auto const& srep = _strawResponse_h.get(run.id());
    _tfit.setTracker  (tracker);
@@ -230,8 +214,7 @@ namespace mu2e{
            _stResult._mccol =  &mccol;
        }
     
-    _data.event       = &event;
-    _data.nTimePeaks  = tccol.size();
+    
     _stResult.event   = &event;
     _stResult._chcol  = &chcol; 
     _stResult._tccol  = &tccol;
@@ -268,8 +251,6 @@ namespace mu2e{
       _stResult._tseed._status.merge(TrkFitFlag::hitsOK);
       _stResult._tseed._panel_hits = _stResult._chHitsToProcess;
       
-      if (_diag) _stResult._diag.CosmicTrackFitCounter = 0;
-      
       if(_mcdiag > 0 && _stResult._chHitsToProcess.size() > 0){
 		OrderHitsYMC(_stResult, event);
 		for(auto const & mcd : _stResult._mcDigisToProcess){
@@ -285,9 +266,7 @@ namespace mu2e{
      title << "Run: " << event.id().run()
      << "  Subrun: " << event.id().subRun()
      << "  Event: " << event.id().event()<<".root";
-     _data.nseeds += 1;
-	
-     _tfit.BeginFit(title.str().c_str(), _stResult, _data);
+     _tfit.BeginFit(title.str().c_str(), _stResult);
 
       if (_stResult._tseed._status.hasAnyProperty(TrkFitFlag::helixOK) && _stResult._tseed._status.hasAnyProperty(TrkFitFlag::helixConverged) && _stResult._tseed._track.converged == true ) { 
 	       std::vector<CosmicTrackSeed>          track_seed_vec;
@@ -332,7 +311,7 @@ namespace mu2e{
 	     		}  
 	     		}
 	              
-                      if( tmpResult._tseed._track.Diag.FinalChiTot > _max_seed_chi2) continue;
+                      if( _tfit.goodTrack(tmpResult._tseed._track) == false) continue;
 		      _tfit.DriftFit(tmpResult);
 		      
 		      //Add tmp to seed list:
@@ -342,14 +321,12 @@ namespace mu2e{
 		      
 		      if (track_seed_vec.size() == 0)     continue;
 		      col->push_back(tmpResult._tseed);  
-			            
+			          
               }
         }
     }
  
   event.put(std::move(seed_col));    
-  //if (_diag > 0 ) _hmanager->fillHistograms(&_data);
-  
   }
 
   void CosmicTrackFinder::fillGoodHits(CosmicTrackFinderData& trackData){
@@ -433,30 +410,6 @@ void CosmicTrackFinder::OrderHitsYMC(CosmicTrackFinderData& TrackData, art::Even
     TrackData._nFiltStrawHits = nFiltStrawHits;  //StrawHit counter
   }
   
-  void CosmicTrackFinder::fillPluginDiag(CosmicTrackFinderData& trackData) {
-    //This is for seed fit only, currently not in use....
-    int nhits          = trackData._tseed._panel_hits.size();
-    //int loc = _data.nseeds;
-   
-    _data.ntclhits = trackData._timeCluster->hits().size();
-    _data.nhits = nhits;
-    _data.nShFit = trackData._diag.nShFit;
-    _data.nChFit = trackData._diag.nChFit;
-    //_data.niters[loc] = trackData._diag.niters;
-    for (int i=0; i<trackData._diag.nChFit; ++i) {
-        
-	_data.Final_hit_residualX[i] = trackData._diag.Final_hit_residualX[i];
-	_data.Final_hit_residualY[i] = trackData._diag.Final_hit_residualY[i];
-	_data.Initial_hit_residualX[i] = trackData._diag.Initial_hit_residualX[i];
-	_data.Initial_hit_residualY[i] = trackData._diag.Initial_hit_residualY[i];
-	_data.Final_hit_pullX[i] = trackData._diag.Final_hit_residualX[i];
-	_data.Final_hit_pullY[i] = trackData._diag.Final_hit_residualY[i];
-	_data.Initial_hit_pullX[i] = trackData._diag.Initial_hit_residualX[i];
-	_data.Initial_hit_pullY[i] = trackData._diag.Initial_hit_residualY[i];
-    }
-  
-}
-
 int  CosmicTrackFinder::goodHitsTimeCluster(const TimeCluster TCluster, ComboHitCollection chcol){
     int   nhits         = TCluster.nhits();
     int   ngoodhits(0);

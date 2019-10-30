@@ -5,7 +5,6 @@
 
 // Cosmic Tracks:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
-#include "CosmicReco/inc/CosmicTrackFinder_types.hh"
 #include "CosmicReco/inc/CosmicTrackFinderData.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"

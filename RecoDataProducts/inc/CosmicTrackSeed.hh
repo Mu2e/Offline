@@ -1,8 +1,5 @@
 #ifndef RecoDataProducts_CosmicTrackSeed_hh
 #define RecoDataProducts_CosmicTrackSeed_hh
-//
-// S. Middleton - seed class for striaght track fit
-// Feb 2019
 
 // Mu2e includes
 #include "BTrk/TrkBase/TrkT0.hh"

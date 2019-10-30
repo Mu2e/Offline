@@ -52,44 +52,7 @@ namespace mu2e {
       int Panel; 
     };
 
-    struct Diag_t {
    
-      int       nShFit; //after fit
-      int       nChFit; //after fit
-
-      float    Final_hit_residualX[kMaxResidIndex];
-      float    Final_hit_residualY[kMaxResidIndex];
-      float    Final_hit_pullX[kMaxResidIndex];
-      float    Final_hit_pullY[kMaxResidIndex];
-      float    Initial_hit_residualX[kMaxResidIndex];
-      float    Initial_hit_residualY[kMaxResidIndex];
-      float    Initial_hit_pullX[kMaxResidIndex];
-      float    Initial_hit_pullY[kMaxResidIndex];
-      
-      float    Final_ErrorsX[kMaxResidIndex];
-      float    Final_ErrorsY[kMaxResidIndex];
-      
-      float    Initial_ErrorsX[kMaxResidIndex];
-      float    Initial_ErrorsY[kMaxResidIndex];
-      
-      float    Final_ErrorsTot[kMaxResidIndex];
-      float    Initial_ErrorsTot[kMaxResidIndex];
-      
-      int      CosmicTrackFitCounter;
-   
-      float    Final_chi2d_track;
-      float    Final_chi2dX_track;
-      float    Final_chi2dY_track;
-      float    Initial_chi2dX_track;
-      float    Initial_chi2dY_track;
-      float    Initial_chi2d_track;
-      float    Change_chi2dX_track;
-      float    Change_chi2dY_track;
-      float    Change_chi2d_track;
-      float    True_chi2d_track;
-      
-      unsigned      niters;    
-    };
     const art::Event*                 event;
     const art::Run*		      run;
     
@@ -99,11 +62,11 @@ namespace mu2e {
     CosmicTrackSeed                   _tseed;
     int                               _nStrawHits;      
     int                               _nComboHits;    
-    //int                               _nXYSh; //SH at start
+    
     int                               _nXYCh; //CH at start
     int                               _nFiltComboHits;  //ComboHits from the TimeCluster filtering 
     int                               _nFiltStrawHits;  //StrawHits from the TimeCluster filtering 
-    //const CosmicTrackSeedCollection*         _stcol; // if multiple, not used
+    
     const ComboHitCollection*         _chcol;
     const StrawHitCollection*         _shcol;
     const TimeClusterCollection*      _tccol;
@@ -113,8 +76,6 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
 // diagnostics, histogramming
 //-----------------------------------------------------------------------------
-    Diag_t             _diag;
-
     std::array<FaceZ_t,StrawId::_ntotalfaces>         _oTracker;//array of faces, length of number of faces
     ComboHitCollection                                _chHitsToProcess;
     std::vector<XYWVec>                               _chHitsWPos;
@@ -135,7 +96,7 @@ namespace mu2e {
     void          clearMCVariables();
     void          clearTempVariables();
     void          clearResults();
-    void          clearDiagnostics();
+    
   };
 
 };
