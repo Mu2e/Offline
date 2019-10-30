@@ -112,8 +112,6 @@ namespace mu2e {
       double _tstep, _nfall;
       // Limit on number of events for which there will be full printout.
       int _maxFullPrint;
-      // Name of the tracker StepPoint collection
-      string _trackerStepPoints;
 
       // Parameters
       bool   _addXtalk; // should we add cross talk hits?
@@ -154,6 +152,10 @@ namespace mu2e {
       bool _sort; // sort cluster sizes before filling energy
       // List of dead straws as a parameter set; needed at beginRun time.
       ProditionsHandle<DeadStraw> _deadStraw_h;
+      // StepPointMC selector
+      // This selector will select only data products with the given instance name.
+      // optionally exclude modules: this is a fix
+      art::Selector _selector;
 
       // diagnostics
       TTree* _swdiag;
@@ -242,7 +244,6 @@ namespace mu2e {
     _nfall(pset.get<double>("WaveformTail",10.0)),  // # of decay lambda past last signal to record waveform
     // Parameters
     _maxFullPrint(pset.get<int>("maxFullPrint",2)),
-    _trackerStepPoints(pset.get<string>("trackerStepPoints","tracker")),
     _addXtalk(pset.get<bool>("addCrossTalk",false)),
     _ctMinCharge(pset.get<double>("xtalkMinimumCharge",0)),
     _addNoise(pset.get<bool>("addNoise",false)),
@@ -267,8 +268,9 @@ namespace mu2e {
     _firstEvent(true),      // Control some information messages.
     _ptfac(pset.get<double>("PtFactor", 2.0)), // factor for defining curling in a straw
     _maxnclu(pset.get<unsigned>("MaxNClusters", 10)), // max # of clusters for low-PT steps
-    _sort(pset.get<bool>("SortClusterEnergy",false))
-    {
+    _sort(pset.get<bool>("SortClusterEnergy",false)),
+    _selector{art::ProductInstanceNameSelector(pset.get<string>("trackerStepPoints","tracker")) &&
+      !art::ModuleLabelSelector(pset.get<string>("SkipTheseStepPoints","")) } {
       // Tell the framework what we consume.
       consumesMany<StepPointMCCollection>();
       consumes<EventWindowMarker>(_ewMarkerTag);
@@ -500,10 +502,8 @@ namespace mu2e {
       const Tracker& tracker = *GeomHandle<Tracker>();
       // Get all of the tracker StepPointMC collections from the event:
       typedef vector< art::Handle<StepPointMCCollection> > HandleVector;
-      // This selector will select only data products with the given instance name.
-      art::ProductInstanceNameSelector selector(_trackerStepPoints);
       HandleVector stepsHandles;
-      event.getMany( selector, stepsHandles);
+      event.getMany( _selector, stepsHandles);
       // Informational message on the first event.
       if ( _firstEvent ) {
         mf::LogInfo log(_messageCategory);

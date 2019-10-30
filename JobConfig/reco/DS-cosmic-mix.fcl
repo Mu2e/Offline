@@ -1,4 +1,4 @@
-#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
+#include "JobConfig/reco/mcdigis-trig.fcl"
 services.TFileService.fileName: "nts.owner.DS-cosmic-mix.version.sequencer.root"
 outputs.Output.fileName: "mcs.owner.DS-cosmic-mix.version.sequencer.art"
 
