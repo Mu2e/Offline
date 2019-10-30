@@ -59,13 +59,13 @@ namespace mu2e
 	struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
-	      fhicl::Atom<int> _diag{Name("diagLevel"), Comment("set to 1 for info"),1};
-	      fhicl::Atom<bool> _mcdiag{Name("mcdiag"), Comment("set on for MC info"),true};
-	      fhicl::Atom<art::InputTag> _chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
-	      fhicl::Atom<art::InputTag> _tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
-	      fhicl::Atom<art::InputTag> _costag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
-	      fhicl::Atom<art::InputTag> _mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
-	      //fhicl::Atom<fhicl::ParameterSet> _toff{Name("toff"), Comment("Sim particle time offset "),"TimeOffset"};
+	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),1};
+	      fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),false};
+	      fhicl::Atom<art::InputTag> chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
+	      fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
+	      fhicl::Atom<art::InputTag> costag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
+	      fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
+	      fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
 	    };
 	typedef art::EDAnalyzer::Table<Config> Parameters;
 
@@ -83,7 +83,7 @@ namespace mu2e
       art::InputTag   _tctag;//timeclusters
       art::InputTag   _costag;//Striaght tracks
       art::InputTag   _mcdigistag; //MC digis
-      //SimParticleTimeOffset _toff;
+      SimParticleTimeOffset _toff;
       const ComboHitCollection* _chcol;
       const CosmicTrackSeedCollection* _coscol;
       const TimeClusterCollection* _tccol;
@@ -232,13 +232,29 @@ namespace mu2e
 
     CosmicAnalyzer::CosmicAnalyzer(const Parameters& conf) :
 	art::EDAnalyzer(conf),
-        _conf(conf()){}
+	_diag (conf().diag()),
+	_mcdiag (conf().mcdiag()),
+	_chtag (conf().chtag()),
+	_tctag (conf().tctag()),
+	_costag (conf().costag()),
+	_mcdigistag (conf().mcdigistag()),
+	_toff (conf().toff())
+    {
+       cout<<" making papras"<<endl;
+	// The following consumes statements are necessary because
+      // SimParticleTimeOffset::updateMap calls getValidHandle.
+      for (auto const& tag : conf().toff().inputs()) {
+        consumes<SimParticleTimeMap>(tag);
+      }
+	
+    }
 
     CosmicAnalyzer::~CosmicAnalyzer(){}
 
     void CosmicAnalyzer::beginJob() {
       // create diagnostics if requested...
       if(_diag > 0){
+	 cout<<"init job"<<endl;
 	art::ServiceHandle<art::TFileService> tfs;
 	//Tree for detailed diagnostics
 	_cosmic_analysis=tfs->make<TTree>("cosmic_analysis"," Diagnostics for Cosmic Track Fitting");
@@ -875,16 +891,18 @@ void CosmicAnalyzer::FillDriftMC(Straw const& straw, double RecoAmbig, CosmicTra
 	_chcol = 0; 
         _tccol = 0;
         _coscol = 0; 
-	auto chH = evt.getValidHandle<ComboHitCollection>(_conf._chtag());
+	auto chH = evt.getValidHandle<ComboHitCollection>(_conf.chtag());
 	_chcol = chH.product();
-	auto tcH = evt.getValidHandle<TimeClusterCollection>(_conf._tctag());
+	auto tcH = evt.getValidHandle<TimeClusterCollection>(_conf.tctag());
 	_tccol =tcH.product();
-	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_conf._costag());
+	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_conf.costag());
 	_coscol =stH.product();
         if(_mcdiag){
-           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_conf._mcdigistag());
+	    cout<<"finding data "<<endl;
+	   _mcdigis=0;
+           auto mcdH = evt.getValidHandle<StrawDigiMCCollection>(_conf.mcdigistag());
            _mcdigis = mcdH.product();
-           //_toff.updateMap(evt);
+           _toff.updateMap(evt);
         }
 	return _chcol != 0 && _tccol!=0 && _coscol !=0 && (_mcdigis != 0 || !_mcdiag);
        }
