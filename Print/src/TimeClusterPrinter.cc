@@ -8,7 +8,7 @@ void
 mu2e::TimeClusterPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<TimeClusterCollection> > vah;
     event.getManyByType(vah);
@@ -87,17 +87,6 @@ void
 mu2e::TimeClusterPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind   nhits      x       y       z       time\n";
-
-}
-
-void 
-mu2e::TimeClusterPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("TimeClusterPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

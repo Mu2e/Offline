@@ -1,0 +1,16 @@
+physics.filters.tprHelixCalibIPADeMHSFilter.helicity      : 1		    
+physics.filters.tprHelixCalibIPADeMHSFilter.minNStrawHits : 15   		    
+physics.filters.tprHelixCalibIPADeMHSFilter.minMomentum   : 30.  		    
+physics.filters.tprHelixCalibIPADeMHSFilter.maxMomentum   : 70. 		    
+physics.filters.tprHelixCalibIPADeMHSFilter.minPt         : 0    		    
+physics.filters.tprHelixCalibIPADeMHSFilter.maxChi2XY     : 8.   		    
+physics.filters.tprHelixCalibIPADeMHSFilter.maxChi2PhiZ   : 8.   		    
+physics.filters.tprHelixCalibIPADeMHSFilter.maxD0         : 500. 		    
+physics.filters.tprHelixCalibIPADeMHSFilter.minD0         : 200.		    
+physics.filters.tprHelixCalibIPADeMHSFilter.minAbsLambda  : 40. 		    
+physics.filters.tprHelixCalibIPADeMHSFilter.maxAbsLambda  : 80. 		    
+physics.filters.tprHelixCalibIPADeMHSFilter.minNLoops     : 0
+physics.filters.tprHelixCalibIPADeMHSFilter.maxNLoops     : 30
+physics.filters.tprHelixCalibIPADeMHSFilter.prescaleUsingD0Phi  : true
+physics.filters.tprHelixCalibIPADeMHSFilter.prescalerPar        : { amplitude: 6.2 frequency : 0.9675 phase : 0.1396}
+

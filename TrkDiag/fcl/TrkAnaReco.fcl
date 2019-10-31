@@ -18,6 +18,10 @@ physics :
 physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence ]
 physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 
+# Include more information (MC, full TrkQual and TrkPID branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
+
 # for hit level diagnostics, set diagLevel to 2
 physics.analyzers.TrkAnaNeg.diagLevel : 1
 physics.analyzers.TrkAnaNeg.FillMCInfo : true
