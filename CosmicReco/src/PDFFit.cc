@@ -1,4 +1,4 @@
-//Likilhood Functions for minuit fitting
+//PDF Functions for minuit fitting
 
 //ROOT:
 #include "Math/VectorUtil.h"
@@ -239,7 +239,7 @@ double GaussianPDFFit::operator() (const std::vector<double> &x) const
 }
 
 //Full fit PDF function:
-double PDFFitter::operator() (const std::vector<double> &x) const
+double FullDriftFit::operator() (const std::vector<double> &x) const
 {
   
   if (sigma > Max_s)
