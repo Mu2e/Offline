@@ -45,7 +45,7 @@ const int N_sbins = 50;
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
-FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) : TimePDFFit(_chits, _straws,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k)
+FullDriftFit::FullDriftFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) : GaussianPDFFit(_chits, _straws,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k)
 {
   //create pdf bins using pre defined numbers:
   pdf_times = new double[N_tbins];
@@ -80,7 +80,7 @@ FullFit::FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawRe
 /*-------Factorial ------//
 calculates factorial for deominator
 //-----------------------*/
-int FullFit::Factorial(int k)
+int FullDriftFit::Factorial(int k)
 {
   if (k == 0)
     return 1;
@@ -93,7 +93,7 @@ int FullFit::Factorial(int k)
 /* ------- Calc. Full PDF--------/
 Fills PDF bins
 //----------------------------*/
-void FullFit::CalculateFullPDF() {
+void FullDriftFit::CalculateFullPDF() {
   
   for (int is=0;is<N_sbins;is++){
      double sigma = this->pdf_sigmas[is];
@@ -130,7 +130,7 @@ void FullFit::CalculateFullPDF() {
   }
 }
 
-void FullFit::DeleteArrays() const{
+void FullDriftFit::DeleteArrays() const{
     
     delete []  pdf_sigmas;
     delete []  pdf_taus;
@@ -139,7 +139,7 @@ void FullFit::DeleteArrays() const{
 
 }
 
-double FullFit::InterpolatePDF(double time_residual, double sigma, double tau) const
+double FullDriftFit::InterpolatePDF(double time_residual, double sigma, double tau) const
 {
 
   int bin_s = (sigma - this->Min_s)/(this->delta_S);
@@ -192,23 +192,23 @@ double FullFit::InterpolatePDF(double time_residual, double sigma, double tau) c
 }
 
 // This 3 functions talk to the drift util:
-double TimePDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1)const{
+double GaussianPDFFit::calculate_DOCA(Straw const& straw, double a0, double a1, double b0, double b1)const{
 	double doca = DriftFitUtils::GetTestDOCA(straw, a0,a1,b0,b1); 
         return (doca);
 }
 
-double TimePDFFit::calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1)const{
+double GaussianPDFFit::calculate_ambig(Straw const& straw, double a0, double a1, double b0, double b1)const{
 	double ambig = DriftFitUtils::GetAmbig(straw, a0,a1,b0,b1); 
         return (ambig);
 }
 
-double TimePDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 ,  ComboHit hit)const{
+double GaussianPDFFit::TimeResidual(Straw straw, double doca, StrawResponse srep, double t0 ,  ComboHit hit)const{
 	double tres =  DriftFitUtils::TimeResidual( straw, doca, srep, t0, hit);
 	return tres;
 }
 
 //Gaussian PDF function:
-double TimePDFFit::operator() (const std::vector<double> &x) const
+double GaussianPDFFit::operator() (const std::vector<double> &x) const
 {
   //Name/store parameters in terms of Minuit "x's":
   double a0 = x[0];
@@ -239,7 +239,7 @@ double TimePDFFit::operator() (const std::vector<double> &x) const
 }
 
 //Full fit PDF function:
-double DataFit::operator() (const std::vector<double> &x) const
+double PDFFitter::operator() (const std::vector<double> &x) const
 {
   
   if (sigma > Max_s)

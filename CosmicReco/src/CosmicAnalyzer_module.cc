@@ -6,11 +6,10 @@
 // Cosmic Tracks:
 #include "CosmicReco/inc/CosmicTrackFit.hh"
 #include "CosmicReco/inc/CosmicTrackFinderData.hh"
-#include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "CosmicReco/inc/CosmicTrackMCInfo.hh"
-#include "TrackerConditions/inc/DriftFitUtils.hh"
+
 //Mu2e Data Prods:
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
@@ -22,9 +21,12 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "DataProducts/inc/XYZVec.hh"
 
-// MC Utilities
+//Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
+#include "TrackerConditions/inc/DriftFitUtils.hh"
+#include "Mu2eUtilities/inc/ParametricFit.hh"
+
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
@@ -58,7 +60,6 @@ namespace mu2e
 	struct Config{
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
-	     
 	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),1};
 	      fhicl::Atom<bool> mcdiag{Name("mcdiag"), Comment("set on for MC info"),true};
 	      fhicl::Atom<art::InputTag> chtag{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
@@ -67,7 +68,7 @@ namespace mu2e
 	      fhicl::Atom<art::InputTag> mcdigistag{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag"),"makeSD"};
 	      fhicl::Table<SimParticleTimeOffset::Config> toff{Name("TimeOffsets"), Comment("Sim particle time offset ")};
 	    };
-	typedef art::EDAnalyzer::Table<Config> Parameters;
+      typedef art::EDAnalyzer::Table<Config> Parameters;
 
       explicit CosmicAnalyzer(const Parameters& conf);
       virtual ~CosmicAnalyzer();
@@ -90,20 +91,26 @@ namespace mu2e
       const TimeClusterCollection* _tccol;
       const StrawDigiMCCollection* _mcdigis;
       CosmicTrackMCInfo trueinfo;
-      //TTree Info:
+
+      	//TTree Info:
       TTree* _cosmic_analysis;
-      //seed Info:
+
+      	//Seed Info:
       TH1F* _seed_a1;
       TH1F* _seed_b1;
       TH1F* _seed_a0;
       TH1F* _seed_b0;
+
+      	//Seed Info in Det Frame:
       TH1F* _seed_a1XYZ;
       TH1F* _seed_b1XYZ;
       TH1F* _seed_a0XYZ;
       TH1F* _seed_b0XYZ;
       TH1F* _niters;
+
      //Looking for geo bias:
       TH2F* _chi_v_true_theta;
+
      //Looking for hidden correlations between seed paramters
       TH2F* _seedA0_v_seedA1;
       TH2F* _seedB0_v_seedB1;
@@ -123,11 +130,12 @@ namespace mu2e
       TH1F* _mc_theta_angle;
       TH1F* _reco_theta_angle;
 
-      //Looking for correvariation between seed parameter and true parameters:
+      //Looking for difference between seed parameter and true parameters:
       TH1F* _A0SeedMCDiff;
       TH1F* _A1SeedMCDiff;
       TH1F* _B0SeedMCDiff;
       TH1F* _B1SeedMCDiff;
+
      //Look at distributions of covarience of each seed parameter:
       TH1F* _Seed_Cov_A0;
       TH1F* _Seed_Cov_A1;
@@ -135,11 +143,13 @@ namespace mu2e
       TH1F* _Seed_Cov_B1;
       TH1F* _Seed_Cov_B0B1;
       TH1F* _Seed_Cov_A0A1;
-     //look for coreelataions between true angle and paramets pulls
+
+     //look for correlataions between true angle and parameters pulls
       TProfile* _A0pull_v_theta_true;
       TProfile* _B0pull_v_theta_true;
       TProfile* _A1pull_v_theta_true;
       TProfile* _B1pull_v_theta_true;
+
       //Seed Diagnostics:
       TH1F* _total_residualsX_init;
       TH1F* _total_pullsX_init;
@@ -165,24 +175,29 @@ namespace mu2e
       TH1F* _FinalErrTot;
       TH1F* _InitErrTot;
 
-      //Drift Parameters
+      	//Drift Parameters
       TH1F* _total_residualsX_Minuit;
       TH1F* _total_residualsY_Minuit;
-      TH1F* _A0MinuitFitDiff;//difference between seed and minuit fits
+
+	//difference between seed and minuit fits
+      TH1F* _A0MinuitFitDiff;
       TH1F* _A1MinuitFitDiff;
       TH1F* _B0MinuitFitDiff;
       TH1F* _B1MinuitFitDiff;
+
+	//Track Parameters from end of minuit minimzation rotuine:
       TH1F* _A0Minuit;
       TH1F* _A1Minuit;
       TH1F* _B0Minuit;
       TH1F* _B1Minuit;
+	//Difference in minuit derived parameters and MC true
       TH1F* _A0MinuitMCDiff;
       TH1F* _A1MinuitMCDiff;
       TH1F* _B0MinuitMCDiff;
       TH1F* _B1MinuitMCDiff;
       
 
-      //Drift diags:
+      	//Drift diags:
       TH1F* _FullFitEndDOCAs;
       TH1F* _TrueDOCAs;
       TH1F* _FullFitEndTimeResiduals;
@@ -194,19 +209,13 @@ namespace mu2e
       TH1F* _minuit_pullsX_final;
       TH1F* _minuit_pullsY_final;
       TH1F* _NLL;
-      TH2F* _LL_v_MOM;
-      TH2F* _LL_v_Nhits;
       TH2F* _AMBIG;
-      
+
+         //Compare residual with end result :
       TH2F* _seedDeltaA0_v_minuitA0;
       TH2F* _seedDeltaA1_v_minuitA1;
       TH2F* _seedDeltaB0_v_minuitB0;
       TH2F* _seedDeltaB1_v_minuitB1;
-
-      TH2F* _seedDeltaA0_v_LL;
-      TH2F* _seedDeltaA1_v_LL;
-      TH2F* _seedDeltaB0_v_LL;
-      TH2F* _seedDeltaB1_v_LL;
 
       // add event id
       Int_t _evt; 
@@ -214,7 +223,7 @@ namespace mu2e
       
       //Numbers:
       Int_t _nsh, _nch; // # associated straw hits / event
-      Int_t     _ntc; // # clusters/event
+      Int_t _ntc; // # clusters/event
       Int_t _nhits, _nused; // # hits used
       Int_t _n_panels; // # panels
       Int_t _n_stations; // # stations
@@ -224,7 +233,7 @@ namespace mu2e
 	
       //Flags:
 	Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
-      Int_t _strawid; // strawid info
+      Int_t _strawid; 
       vector<ComboHitInfoMC> _chinfomc;
       CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
       void FillDriftMC(Straw const& straw, double reco_ambig, CosmicTrackMCInfo info);
@@ -347,6 +356,7 @@ namespace mu2e
 		_B1SeedMCDiff = tfs->make<TH1F>("B^{seed}_{1} - B^{seed}_{1}", "B^{seed}_{1} - B^{seed}_{1}" ,100,-0.5, 0.5);
 		_B1SeedMCDiff->GetXaxis()->SetTitle("#Delta B^{seed}_{1}");
 		_B1SeedMCDiff->SetStats();
+
 		_A0MinuitMCDiff = tfs->make<TH1F>(" A0_{Minuit} - A0_{MC} "," A0_{Minuit} - A0_{Minuit}" ,100,-100,100);
 		_A0MinuitMCDiff->GetXaxis()->SetTitle("#Delta A0 [mm]");
 		_A0MinuitMCDiff->SetStats();
@@ -683,6 +693,7 @@ namespace mu2e
 	        _A1Minuit->Fill(st.MinuitFitParams.A1);
 	        _B0Minuit->Fill(st.MinuitFitParams.B0);
 	        _B1Minuit->Fill(st.MinuitFitParams.B1);
+
 	       if(_mcdiag){
 			
 			trueinfo = FitMC(_mcdigis);
@@ -735,7 +746,6 @@ namespace mu2e
 		_NLL->Fill(st.DriftDiag.NLL);
 	        
                 for(size_t i=0; i< st.Diag.InitErrTot.size();i++){
-		
 		    _InitErrTot->Fill(st.Diag.InitErrTot[i]); 
                     _total_residualsX_init->Fill(st.Diag.InitialResidualsX[i]);        
 	            _total_pullsX_init->Fill(st.Diag.InitialResidualsX[i]/st.Diag.InitErrX[i]);
@@ -758,7 +768,6 @@ namespace mu2e
                 for(size_t i=0; i<st.DriftDiag.GaussianEndDOCAs.size();i++){
 		    _GaussianEndDOCAs->Fill(st.DriftDiag.GaussianEndDOCAs[i]);
 		    _GaussianEndTimeResiduals->Fill(st.DriftDiag.GaussianEndTimeResiduals[i]);
-		  
 			
 		}
 		
@@ -769,8 +778,7 @@ namespace mu2e
 		    _FullFitEndTimeResiduals->Fill(st.DriftDiag.FullFitEndTimeResiduals[i]);
 		   	if(_mcdiag){
 				trueinfo = FitMC(_mcdigis);
-				FillDriftMC(sts._straws[i], st.DriftDiag.RecoAmbigs[i], trueinfo);
-				
+				FillDriftMC(sts._straws[i], st.DriftDiag.RecoAmbigs[i], trueinfo);	
 			}      
 	        }
 
@@ -779,9 +787,7 @@ namespace mu2e
                     _total_residualsY_Minuit->Fill(st.DriftDiag.FinalResidualsY[i]);   
 		    _minuit_pullsX_final->Fill(st.DriftDiag.FinalResidualsX[i]/st.DriftDiag.FinalErrX[i]);          
                     _minuit_pullsY_final->Fill(st.DriftDiag.FinalResidualsY[i]/st.DriftDiag.FinalErrY[i]);           
-   		   
-		   
-	        }   
+   		}   
      
 	        for(auto const& tseed : *_coscol) {   
                 	TrkFitFlag const& status = tseed._status;
@@ -790,6 +796,7 @@ namespace mu2e
                 	_StraightTrackConverged = status.hasAllProperties(TrkFitFlag::helixConverged);
                 	_StraightTrackInit = status.hasAllProperties(TrkFitFlag::circleInit);
         	}
+
 		for(size_t ich = 0;ich < _chcol->size(); ++ich){
                         ComboHit const& chit =(*_chcol)[ich];
 			
@@ -812,22 +819,22 @@ namespace mu2e
       }//end analyze
       _cosmic_analysis->Fill();
       if(_mcdiag){
-      cout<<"true + "<< _AMBIG->GetBinContent(2,2)/_AMBIG->Integral()<<endl;
-      cout<<"true - "<< _AMBIG->GetBinContent(1,1)/_AMBIG->Integral()<<endl;	
-      cout<<"false + "<< _AMBIG->GetBinContent(2,1)/_AMBIG->Integral()<<endl;
-      cout<<"false - "<< _AMBIG->GetBinContent(1,2)/_AMBIG->Integral()<<endl;
+	      cout<<"true + "<< _AMBIG->GetBinContent(2,2)/_AMBIG->Integral()<<endl;
+	      cout<<"true - "<< _AMBIG->GetBinContent(1,1)/_AMBIG->Integral()<<endl;	
+	      cout<<"false + "<< _AMBIG->GetBinContent(2,1)/_AMBIG->Integral()<<endl;
+	      cout<<"false - "<< _AMBIG->GetBinContent(1,2)/_AMBIG->Integral()<<endl;
       }
      }
 
 
 
 CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){	
-	
-        ::BuildLinearFitMatrixSums S; 
+	::BuildLinearFitMatrixSums S; 
         CosmicTrackMCInfo TrackTrueInfo;
-    	//size_t nHits (_mcdigis.size());
+    	
         StrawDigiMC hitP1; 
 	StrawDigiMC first = (*_mcdigis)[0];
+
         //Get StepPointMC:
 	art::Ptr<StepPointMC> const& spmcp0= first.stepPointMC(StrawEnd::cal);
         XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
@@ -887,7 +894,8 @@ void CosmicAnalyzer::FillDriftMC(Straw const& straw, double RecoAmbig, CosmicTra
      _TrueTimeResiduals->Fill(true_time_residual);
      _AMBIG->Fill(RecoAmbig, trueambig);
 }
-   bool CosmicAnalyzer::findData(const art::Event& evt){
+
+bool CosmicAnalyzer::findData(const art::Event& evt){
 	_chcol = 0; 
         _tccol = 0;
         _coscol = 0; 
@@ -911,8 +919,4 @@ void CosmicAnalyzer::FillDriftMC(Straw const& straw, double RecoAmbig, CosmicTra
 
 using mu2e::CosmicAnalyzer;
 DEFINE_ART_MODULE(CosmicAnalyzer);
-    
-
-    
-
 
