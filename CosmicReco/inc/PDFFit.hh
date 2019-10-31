@@ -22,11 +22,8 @@
 
 using namespace mu2e;
 
-class TimePDFFit : public ROOT::Minuit2::FCNBase {
+class GaussianPDFFit : public ROOT::Minuit2::FCNBase {
   public:
-    
-    //std::vector<double> time_residuals;
-  
     ComboHitCollection chits;
     std::vector<Straw> straws;
     StrawResponse srep;
@@ -42,7 +39,7 @@ class TimePDFFit : public ROOT::Minuit2::FCNBase {
     
     int nparams =5; 
     
-     TimePDFFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) :  chits(_chits), straws(_straws), srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k) {};
+     GaussianPDFFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) :  chits(_chits), straws(_straws), srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k) {};
    
     double Up() const { return 0.5; };
     double operator() (const std::vector<double> &x) const;
@@ -52,12 +49,10 @@ class TimePDFFit : public ROOT::Minuit2::FCNBase {
     
 };
 
-class FullFit : public TimePDFFit {
+class FullDriftFit : public GaussianPDFFit {
   public:
-    FullFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k);
-
-    //double voltage=1425.;
-    int Factorial(int k);
+    FullDriftFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k);
+int Factorial(int k);
     void CalculateFullPDF();
     double InterpolatePDF(double time_residual, double sigma, double tau) const;
     void DeleteArrays() const;
@@ -70,13 +65,11 @@ class FullFit : public TimePDFFit {
     int k;
 };
 
-class DataFit : public FullFit {
+class PDFFitter : public FullDriftFit {
   public:
-    DataFit(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k): FullFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _sigma_t, _k) {}
+    PDFFitter(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k): FullDriftFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _sigma_t, _k) {}
     
     double operator() (const std::vector<double> &x) const;
-    };
-
-
+};
 
 #endif

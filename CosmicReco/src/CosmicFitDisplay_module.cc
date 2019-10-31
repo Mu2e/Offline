@@ -1,4 +1,3 @@
-
 //TGeo:
 #include <TGeoVolume.h>
 #include <TGeoTube.h>
@@ -20,10 +19,6 @@
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-
-#include "RecoDataProducts/inc/CosmicTrack.hh"
-#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
@@ -35,10 +30,14 @@
 //Mu2e Tracker Geom:
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerGeom/inc/Straw.hh"
+
 // Mu2e diagnostics
 #include "TrkDiag/inc/ComboHitInfo.hh"
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 
+//Cosmics:
+#include "RecoDataProducts/inc/CosmicTrack.hh"
+#include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -48,7 +47,6 @@
 #include "art/Framework/Core/ModuleMacros.h"
 
 // ROOT incldues
-
 #include "TLegend.h"
 #include "TLatex.h"
 #include "TTree.h"
@@ -88,9 +86,8 @@ namespace mu2e
 	      fhicl::Atom<art::InputTag> tctag{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
 	      fhicl::Atom<art::InputTag> sttag{Name("CosmicTrackSeedCollection"),Comment("tag for cosmci track seed collection")};
 	      fhicl::Atom<bool> doDisplay{Name("doDisplay"),Comment("use display"), false};
-		fhicl::Atom<bool> clickToAdvance{Name("clickToAdvance"),Comment("next event"), false};
-
-	    };
+	      fhicl::Atom<bool> clickToAdvance{Name("clickToAdvance"),Comment("next event"), false};
+	 };
 	typedef art::EDAnalyzer::Table<Config> Parameters;
 
       	explicit CosmicFitDisplay(const Parameters& conf);
@@ -103,35 +100,36 @@ namespace mu2e
       	bool _mcdiag;
       	Int_t _evt; 
 
-      // The module label of this instance of this module.
-      std::string moduleLabel_;
-      const ComboHitCollection* _chcol;
-      const CosmicTrackSeedCollection* _coscol;
-      //For Event Displays:
-      TApplication* application_;
-      TDirectory*   directory_ = nullptr;
-      TTree* _cosmic_fit;
-      TCanvas*      canvas_ = nullptr;
-      TH2D* _display = nullptr;
-      TNtuple* _ntTrack = nullptr;
-      TNtuple* _ntHit = nullptr;
+	// The module label of this instance of this module.
+	std::string moduleLabel_;
+	const ComboHitCollection* _chcol;
+	const CosmicTrackSeedCollection* _coscol;
+	//For Event Displays:
+	TApplication* application_;
+	TDirectory*   directory_ = nullptr;
+	TTree* _cosmic_fit;
+	TCanvas*      canvas_ = nullptr;
+	TH2D* _display = nullptr;
+	TNtuple* _ntTrack = nullptr;
+	TNtuple* _ntHit = nullptr;
 
-      art::InputTag   _chtag;//combo
-      art::InputTag   _tctag;//timeclusters
-      art::InputTag   _sttag;//Straight tracks
-      bool doDisplay_;
-      bool clickToAdvance_;
+	art::InputTag   _chtag;//combo
+	art::InputTag   _tctag;//timeclusters
+	art::InputTag   _sttag;//Straight tracks
+	bool doDisplay_;
+	bool clickToAdvance_;
       
-      Int_t _strawid; 
-      void plot2dDriftCompare(const art::Event& event);
-      void plot2d(const art::Event& evt);
-      void plotTrackerElements(const art::Event& event);
-      void plot3dPrimes(const art::Event& evt);
-      void plot3dXYZ(const art::Event& evt);
-      void improved_event3D(const art::Event& evt);
-      std::vector<double> GetMaxAndMin(std::vector<double> myvector);
-       bool findData(const art::Event& evt);
-    };
+	Int_t _strawid; 
+	void plot2dDriftCompare(const art::Event& event);
+	void plot2d(const art::Event& evt);
+	void plotTrackerElements(const art::Event& event);
+	void plot3dPrimes(const art::Event& evt);
+	void plot3dXYZ(const art::Event& evt);
+	void Geom3D(const art::Event& evt);
+	std::vector<double> GetMaxAndMin(std::vector<double> myvector);
+	bool findData(const art::Event& evt);
+};
+
     CosmicFitDisplay::CosmicFitDisplay(const Parameters& conf) :
 	art::EDAnalyzer(conf),
 	_mcdiag (conf().mcdiag()),
@@ -165,9 +163,9 @@ namespace mu2e
         
       }
       void CosmicFitDisplay::analyze(const art::Event& event) {
-      //Call one or more of the macros from below here, for example: plot2d( event);  
+      //Call one or more of the macros from below here, for example:   
         plot2dDriftCompare(event);
-      }//End Analyze 
+      }
      
 //----------Below here are a series of macros -  they are not glamorous but they produce useful debugging plots ----//
 
@@ -184,8 +182,7 @@ namespace mu2e
         //loop over tracks:
 	
         for(size_t i =0; i < _ncosmics; i++){
-                
-        	CosmicTrackSeed track =(*_coscol)[i];
+                CosmicTrackSeed track =(*_coscol)[i];
 		if(track._track.converged == false){continue;}
 		if(track._track.minuit_converged == false){continue;}
 
@@ -546,29 +543,29 @@ namespace mu2e
         }
         
       
-      double minz = *std::min_element(z.begin(), z.end());
-      double maxz = *std::max_element(z.begin(), z.end());
-      
-      double minx = *std::min_element(x.begin(), x.end());
-      double maxx = *std::max_element(x.begin(), x.end());
-      double miny = *std::min_element(y.begin(), y.end());
-      double maxy = *std::max_element(y.begin(), y.end());
-      
-      double minzinit = *std::min_element(zinit.begin(), zinit.end());
-      double maxzinit = *std::max_element(zinit.begin(), zinit.end());
-      
-      double minxinit = *std::min_element(xinit.begin(), xinit.end());
-      double maxxinit = *std::max_element(xinit.begin(), xinit.end());
-      double minyinit = *std::min_element(yinit.begin(), yinit.end());
-      double maxyinit = *std::max_element(yinit.begin(), yinit.end());
-    
-      double minrawz = *std::min_element(rawz.begin(), rawz.end());
-      double maxrawz = *std::max_element(rawz.begin(), rawz.end());
-     
-      double minrawx = *std::min_element(rawx.begin(), rawx.end());
-      double maxrawx = *std::max_element(rawx.begin(), rawx.end());
-      double minrawy = *std::min_element(rawy.begin(), rawy.end());
-      double maxrawy = *std::max_element(rawy.begin(), rawy.end());
+	double minz = *std::min_element(z.begin(), z.end());
+	double maxz = *std::max_element(z.begin(), z.end());
+
+	double minx = *std::min_element(x.begin(), x.end());
+	double maxx = *std::max_element(x.begin(), x.end());
+	double miny = *std::min_element(y.begin(), y.end());
+	double maxy = *std::max_element(y.begin(), y.end());
+
+	double minzinit = *std::min_element(zinit.begin(), zinit.end());
+	double maxzinit = *std::max_element(zinit.begin(), zinit.end());
+
+	double minxinit = *std::min_element(xinit.begin(), xinit.end());
+	double maxxinit = *std::max_element(xinit.begin(), xinit.end());
+	double minyinit = *std::min_element(yinit.begin(), yinit.end());
+	double maxyinit = *std::max_element(yinit.begin(), yinit.end());
+
+	double minrawz = *std::min_element(rawz.begin(), rawz.end());
+	double maxrawz = *std::max_element(rawz.begin(), rawz.end());
+
+	double minrawx = *std::min_element(rawx.begin(), rawx.end());
+	double maxrawx = *std::max_element(rawx.begin(), rawx.end());
+	double minrawy = *std::min_element(rawy.begin(), rawy.end());
+	double maxrawy = *std::max_element(rawy.begin(), rawy.end());
       
         GeomHandle<Tracker> tracker; 
         GeomHandle<Straw> straw; 
@@ -1226,7 +1223,7 @@ namespace mu2e
       }//end 3d
 
       
-      void CosmicFitDisplay::plot3dPrimes(const art::Event& event){
+      void CosmicFitDisplay::plot3dPrimes(const art::Event& event){ //local coords
          
         _evt = event.id().event();  // add event id
 
@@ -1372,8 +1369,8 @@ namespace mu2e
            }//end display
       }//end 3d
 
-      
-      void CosmicFitDisplay::improved_event3D(const art::Event& event){
+      //TODO :  below function is unfinished
+      void CosmicFitDisplay::Geom3D(const art::Event& event){
           
           TGeoManager *geom = new TGeoManager("tracker_geom", "tracker_geom");
           //Materials/Media

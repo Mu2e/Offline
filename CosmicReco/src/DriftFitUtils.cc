@@ -1,5 +1,3 @@
-
-
 #include "DataProducts/inc/XYZVec.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA_XYZ.hh"
 
@@ -110,11 +108,5 @@ double DriftFitUtils::TimeResidual(Straw const&  straw, double doca, StrawRespon
 		double time_residual_trans = TimeResidualTrans(straw,doca, srep, t0, hit); 
 		return time_residual_trans + time_residual_long;// + hitlen/299 + fltlen/299;
 }
-// This function is curently unused ....TODO remove if this turns out to be the case when finisihed
-double DriftFitUtils::T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit, double Aver){
-		double time_residual_long = TimeResidualLong( straw,  doca, srep,  t0,  hit);
-		double time_residual_trans = TimeResidualTrans(straw,doca, srep, t0, hit); 
-		Aver += hit.time() - time_residual_trans - time_residual_long;
-		return Aver; 
-}
+
 

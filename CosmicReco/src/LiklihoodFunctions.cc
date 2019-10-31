@@ -35,13 +35,13 @@ using namespace mu2e;
 
 namespace LiklihoodFunctions{
         
-	EndResult DoFit(int _diag, CosmicTrackSeed trackseed , StrawResponse srep, double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
+	FitResult DoFit(int _diag, CosmicTrackSeed trackseed , StrawResponse srep, double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
 	  
 	  std::vector<double> errors(5,0);
 	  std::vector<double> seed(5,0);
           std::vector<double> newseed(5,0);
 	  std::vector<double> newerrors(5,0);
-	  EndResult endresult;
+	  FitResult FitResult;
 	  CosmicTrack cosmictrack = trackseed._track;
          
           //Seed Gaussian PDF using seed fit parameters stored in track info 
@@ -62,7 +62,7 @@ namespace LiklihoodFunctions{
 	  std::vector<double> constraints(5,0);
 	  //Define the PDF used by Minuit:
 	 
-          TimePDFFit fit(trackseed._straw_chits, trackseed._straws, srep, cosmictrack, constraint_means,constraints, _gaussTres, 1);
+          GaussianPDFFit fit(trackseed._straw_chits, trackseed._straws, srep, cosmictrack, constraint_means,constraints, _gaussTres, 1);
 	  
           //Initiate Minuit Fit:
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
@@ -86,25 +86,25 @@ namespace LiklihoodFunctions{
 	  ROOT::Minuit2::MnUserParameters results = min.UserParameters();
 	  double minval = min.Fval();
 	  //Define name for parameters
-	  endresult.bestfit = results.Params();
-	  endresult.bestfiterrors = results.Errors();
+	  FitResult.bestfit = results.Params();
+	  FitResult.bestfiterrors = results.Errors();
           //Store Minuit Covarience if exisits:
-	  if(min.HasValidCovariance()) endresult.bestfitcov = min.UserCovariance().Data();
+	  if(min.HasValidCovariance()) FitResult.bestfitcov = min.UserCovariance().Data();
 
           //Name Parameters:
-	  endresult.names.push_back("a0");
-	  endresult.names.push_back("a1");
-	  endresult.names.push_back("b0");
-	  endresult.names.push_back("b1");
-	  endresult.names.push_back("t0");
+	  FitResult.names.push_back("a0");
+	  FitResult.names.push_back("a1");
+	  FitResult.names.push_back("b0");
+	  FitResult.names.push_back("b1");
+	  FitResult.names.push_back("t0");
 
 	  if(minval != 0 and minval< 100 ){ cosmictrack.minuit_converged = true;} 
 	  //Add best fit results to appropriatly named element:
-	  endresult.NLL = minval;
+	  FitResult.NLL = minval;
 	  if(_diag > 1){
-	  for (size_t i=0;i<endresult.names.size();i++){
-	    std::cout << i << endresult.names[i] << " : " << endresult.bestfit[i] << " +- " << endresult.bestfiterrors[i] << std::endl;
-	    if(endresult.bestfitcov.size() != 0 and i< 4) cout<<"cov "<<endresult.bestfitcov[i]<<endl;
+	  for (size_t i=0;i<FitResult.names.size();i++){
+	    std::cout << i << FitResult.names[i] << " : " << FitResult.bestfit[i] << " +- " << FitResult.bestfiterrors[i] << std::endl;
+	    if(FitResult.bestfitcov.size() != 0 and i< 4) cout<<"cov "<<FitResult.bestfitcov[i]<<endl;
 	
 	  }
        }
@@ -112,10 +112,10 @@ namespace LiklihoodFunctions{
 	ComboHitCollection passed_hits;
 	std::vector<Straw> passed_straws;
 	for(size_t i = 0; i< trackseed._straws.size(); i++){
-	      double gauss_end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3]);
-	      double gauss_end_time_residual = fit.TimeResidual(trackseed._straws[i], gauss_end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
-	      endresult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
-	      endresult.GaussianEndDOCAs.push_back(gauss_end_doca);
+	      double gauss_end_doca = fit.calculate_DOCA(trackseed._straws[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3]);
+	      double gauss_end_time_residual = fit.TimeResidual(trackseed._straws[i], gauss_end_doca,  srep, FitResult.bestfit[4], trackseed._straw_chits[i]);
+	      FitResult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
+	      FitResult.GaussianEndDOCAs.push_back(gauss_end_doca);
 	       if (gauss_end_doca < max_doca and gauss_end_time_residual < maxTres){ 
 			passed_hits.push_back(trackseed._straw_chits[i]);
 			passed_hits.push_back(trackseed._straw_chits[i]);
@@ -126,21 +126,21 @@ namespace LiklihoodFunctions{
 	if(cosmictrack.minuit_converged ==true and trackseed._straw_chits.size() > minChits) {
 
 	 //Now run Full Fit:
-	 newseed[0] = endresult.bestfit[0];
-	 newseed[1] = endresult.bestfit[1];
-	 newseed[2] = endresult.bestfit[2];
-	 newseed[3] = endresult.bestfit[3];
-	 newseed[4] = endresult.bestfit[4];
+	 newseed[0] = FitResult.bestfit[0];
+	 newseed[1] = FitResult.bestfit[1];
+	 newseed[2] = FitResult.bestfit[2];
+	 newseed[3] = FitResult.bestfit[3];
+	 newseed[4] = FitResult.bestfit[4];
 
-	 newerrors[0] = endresult.bestfiterrors[0]; 
-	 newerrors[1] = endresult.bestfiterrors[1];
-	 newerrors[2] = endresult.bestfiterrors[2];
-	 newerrors[3] = endresult.bestfiterrors[3];
+	 newerrors[0] = FitResult.bestfiterrors[0]; 
+	 newerrors[1] = FitResult.bestfiterrors[1];
+	 newerrors[2] = FitResult.bestfiterrors[2];
+	 newerrors[3] = FitResult.bestfiterrors[3];
 	 newerrors[4] = trackseed._t0.t0Err();
-	 DataFit fullfit(passed_hits, passed_straws, srep, cosmictrack, constraint_means,constraints,_gaussTres, 1);
+	 PDFFitter fulldriftfit(passed_hits, passed_straws, srep, cosmictrack, constraint_means,constraints,_gaussTres, 1);
 	
 	 ROOT::Minuit2::MnUserParameters newparams(newseed,newerrors);
-	 ROOT::Minuit2::MnMigrad newmigrad(fullfit, newparams,mnStrategy);
+	 ROOT::Minuit2::MnMigrad newmigrad(fulldriftfit, newparams,mnStrategy);
 	 //Set Limits as tracker dimensions:
 	 newmigrad.SetLimits((signed) 0,-10000, 10000);
 	 newmigrad.SetLimits((signed) 1, -5, 5);
@@ -155,8 +155,8 @@ namespace LiklihoodFunctions{
 	 results = min.UserParameters();
 	 minval = min.Fval();
 	 //Define name for parameters
-	 endresult.bestfit = results.Params();
-	 endresult.bestfiterrors = results.Errors();
+	 FitResult.bestfit = results.Params();
+	 FitResult.bestfiterrors = results.Errors();
 	 
 	  for(size_t i = 0; i< trackseed._straws.size(); i++){
 		//Store Init DOCA	    
@@ -164,20 +164,20 @@ namespace LiklihoodFunctions{
 	      double start_time_residual = fit.TimeResidual(trackseed._straws[i], start_doca,  srep, seed[4], trackseed._straw_chits[i]);
 	      
 		//Store Final Fit DOCA
-	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3]);
-              double ambig = fit.calculate_ambig(trackseed._straws[i],endresult.bestfit[0], endresult.bestfit[1], endresult.bestfit[2], endresult.bestfit[3]);
-	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, endresult.bestfit[4], trackseed._straw_chits[i]);
+	      double end_doca = fit.calculate_DOCA(trackseed._straws[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3]);
+              double ambig = fit.calculate_ambig(trackseed._straws[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3]);
+	      double end_time_residual = fit.TimeResidual(trackseed._straws[i], end_doca,  srep, FitResult.bestfit[4], trackseed._straw_chits[i]);
 	      
-	      endresult.StartDOCAs.push_back(start_doca);
-	      endresult.StartTimeResiduals.push_back(start_time_residual);
-	      endresult.FullFitEndTimeResiduals.push_back(end_time_residual);
-	      endresult.FullFitEndDOCAs.push_back(end_doca);
-	      endresult.RecoAmbigs.push_back(ambig);
+	      FitResult.StartDOCAs.push_back(start_doca);
+	      FitResult.StartTimeResiduals.push_back(start_time_residual);
+	      FitResult.FullFitEndTimeResiduals.push_back(end_time_residual);
+	      FitResult.FullFitEndDOCAs.push_back(end_doca);
+	      FitResult.RecoAmbigs.push_back(ambig);
 	     
 	  }
-	  fullfit.DeleteArrays();
+	  fulldriftfit.DeleteArrays();
      	}
-	 return endresult;
+	 return FitResult;
  
   }
   

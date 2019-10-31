@@ -27,7 +27,7 @@
 #include <Minuit2/FCNBase.h>
 
 using namespace mu2e;
-struct EndResult{
+struct FitResult{
         public:
 		std::vector<std::string> names;
 		std::vector<double> bestfit;
@@ -51,7 +51,7 @@ struct EndResult{
 
 namespace LiklihoodFunctions {
 	
-	EndResult DoFit(int diag, CosmicTrackSeed trackseed, StrawResponse srep, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+	FitResult DoFit(int diag, CosmicTrackSeed trackseed, StrawResponse srep, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
 
 }
 
