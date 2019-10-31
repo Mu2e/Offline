@@ -28,8 +28,8 @@
 //Fitting
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 #include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
-#include "CosmicReco/inc/LiklihoodFunctions.hh"
-#include "TrackerConditions/inc/DriftFitUtils.hh"
+#include "CosmicReco/inc/MinuitDriftFitter.hh"
+#include "CosmicReco/inc/DriftFitUtils.hh"
 #include "DataProducts/inc/XYZVec.hh"
 //ROOT:
 #include "TMatrixD.h"
@@ -474,7 +474,7 @@ This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimze
 //------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData){
 	 
-         FitResult endresult = LiklihoodFunctions::DoFit(_diag, trackData._tseed,  _srep, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
+         FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData._tseed,  _srep, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
          //Store output in diag lists:
          trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
          trackData._tseed._track.MinuitFitParams.A1 =  endresult.bestfit[1];//a1
