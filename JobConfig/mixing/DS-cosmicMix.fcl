@@ -27,7 +27,7 @@ physics : {
   }
   filters: { @table::Mixing.filters }
   analyzers: { @table::Mixing.analyzers }
-# special that reuses some of the inputs as primary information
+# special path that reuses some of the inputs as primary information
   TriggerPath : [
     TrackerFix,
     DigiFilter,

@@ -1,0 +1,14 @@
+physics.filters.tprLowPSeedDeMHSFilter.helicity      : 1
+physics.filters.tprLowPSeedDeMHSFilter.minNStrawHits : 15.0
+physics.filters.tprLowPSeedDeMHSFilter.minMomentum   : 50.0
+physics.filters.tprLowPSeedDeMHSFilter.maxMomentum   : 70.0
+physics.filters.tprLowPSeedDeMHSFilter.minPt         : 0.0
+physics.filters.tprLowPSeedDeMHSFilter.maxChi2XY     : 8.0
+physics.filters.tprLowPSeedDeMHSFilter.maxChi2PhiZ   : 8.0
+physics.filters.tprLowPSeedDeMHSFilter.maxD0         : 300.0
+physics.filters.tprLowPSeedDeMHSFilter.minD0         : -150.0
+physics.filters.tprLowPSeedDeMHSFilter.minAbsLambda  : 140.0
+physics.filters.tprLowPSeedDeMHSFilter.maxAbsLambda  : 300.0
+physics.filters.tprLowPSeedDeMHSFilter.minNLoops     : 0
+physics.filters.tprLowPSeedDeMHSFilter.maxNLoops     : 30
+physics.filters.tprLowPSeedDeMHSFilter.prescaleUsingD0Phi  : false
