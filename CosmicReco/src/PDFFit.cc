@@ -23,7 +23,7 @@
 #include "TrackerConditions/inc/StrawResponse.hh"
 //Utilities:
 #include "CosmicReco/inc/PDFFit.hh"
-#include "TrackerConditions/inc/DriftFitUtils.hh"
+#include "CosmicReco/inc/DriftFitUtils.hh"
 //Minuit
 #include <Minuit2/FCNBase.h>
 #include <Minuit2/MnMigrad.h>

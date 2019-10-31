@@ -24,7 +24,7 @@
 //Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "TrkDiag/inc/TrkMCTools.hh"
-#include "TrackerConditions/inc/DriftFitUtils.hh"
+#include "CosmicReco/inc/DriftFitUtils.hh"
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 
 // Mu2e diagnostics
