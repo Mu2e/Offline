@@ -4,12 +4,12 @@
 #
 #include "fcl/standardProducers.fcl"
 #include "TrkDiag/fcl/prolog.fcl"
-# the following is for reading primary digis
+# the following is for reading primary digis.  Note there is no trigger information for primaries
 ##include "JobConfig/reco/mcdigis_primary.fcl"
 # the following is for reading mixed digis MDC2018g and earlier
-#include "JobConfig/reco/mcdigis_nocosmic.fcl"
+#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
 # the following is for reading mixed digis MDC2018h and later
-###include "JobConfig/reco/mcdigis.fcl"
+###include "JobConfig/reco/mcdigis-trig.fcl"
 process_name : TrkAnaDigisReco
 # augment producers and analyzers
 physics.producers: {
@@ -40,9 +40,16 @@ services.TFileService.fileName: "nts.owner.TrkAnaDigisReco.version.sequencer.roo
 # uncomment the following for hit level diagnostics
 #physics.analyzers.TrkAnaNeg.diagLevel : 2
 #physics.analyzers.TrkAnaPos.diagLevel : 2
-# trigger information is not supported by this script
+# trigger information is only for mixed digis
+physics.analyzers.TrkAnaNeg.FillTriggerInfo : true
+physics.analyzers.TrkAnaPos.FillTriggerInfo : true
+
 
 # Filter based on the reco path
 physics.analyzers.TrkAnaNeg.SelectEvents : [RecoPath]
 physics.analyzers.TrkAnaPos.SelectEvents : [RecoPath]
+
+# Include more information (MC, full TrkQual and TrkPID branches)
+physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt
+physics.analyzers.TrkAnaPos.candidate.options : @local::AllOpt
 

@@ -12,3 +12,4 @@ physics.filters.cprSeedDeMHSFilter.minAbsLambda  : 140.0
 physics.filters.cprSeedDeMHSFilter.maxAbsLambda  : 330.0
 physics.filters.cprSeedDeMHSFilter.minNLoops     : 0
 physics.filters.cprSeedDeMHSFilter.maxNLoops     : 30
+physics.filters.cprSeedDeMHSFilter.prescaleUsingD0Phi  : false

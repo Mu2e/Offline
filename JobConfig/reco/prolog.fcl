@@ -1,4 +1,4 @@
-#
+
 #  Prolog for production reconstruction jobs
 #
 #include "TrkHitReco/fcl/prolog.fcl"
@@ -218,21 +218,44 @@ Reconstruction : {
 # full MC sequence
   RecoMCSequence :  [ CaloMCFix, FindMCPrimary,  CrvCoincidenceClusterMatchMC, SelectRecoMC, compressRecoMCs ]
 
-#define output products 
-# Calo and CRV should be defined elswehere, FIXME!
-# separate MC info FIXME!
- # define reco products to keep
-  ToKeep : [ "drop *_*_*_*",
-	    "keep *_genCounter_*_*",
+# define products to keep
+# First, high-level reco products
+  HighReco : [
 	    "keep mu2e::KalSeeds_KFF*_*_*",
 	    "keep mu2e::KalSeeds_KSF*_*_*",
 	    "keep mu2e::HelixSeeds_MH*_*_*",
 	    "keep mu2e::TimeClusters_MH*_*_*",
 	    "keep mu2e::CaloClusters_CaloClusterFromProtoCluster_*_*",
-            "keep art::TriggerResults_*_*_*",
+            "keep art::TriggerResults_*_*_*"
+	    ]
+# low-level reco products, selected to match the high-level reco objects
+  LowReco : [ "keep *_SelectRecoMC_*_*" ]
+# low-level reco products, without any high-level match
+  LowRecoAll : [ 
+            "keep mu2e::StrawDigis_makeSD_*_*",
+            "keep mu2e::StrawHitFlags_FlagBkgHits_StrawHits_*",
+            "keep mu2e::ComboHits_makeSH_*_*",
+	    "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
+	    "keep mu2e::CaloCrystalHits_CaloCrystalHitFromHit_*_*",
+	    "keep mu2e::CrvDigis_CrvDigi_*_*",
+	    "keep mu2e::CrvRecoPulses_CrvRecoPulses_*_*",
+	    "keep mu2e::CrvCoincidenceClusters_CrvCoincidenceClusterFinder_*_*"
+	    ]
+# MC truth matched to reco
+  RecoMC : [
             "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
-	    "keep *_compressRecoMCs_*_*",
-	    "keep *_SelectRecoMC_*_*" ]
+	    "keep *_genCounter_*_*",
+	    "keep *_compressRecoMCs_*_*"
+	    ]
+# Digi-leverl MC truth 
+  DigiMC : [
+            "keep mu2e::ProtonBunchIntensity_*_MeanIntensity_*",
+	    "keep *_genCounter_*_*",
+	    "keep mu2e::PrimaryParticle_*_*_*",
+	    "keep mu2e::ProtonBunchIntensity_protonBunchIntensity_*_*",
+	    "keep mu2e::EventWindowMarker_EWMProducer_*_*",
+	    "keep *_compressDigiMCs_*_*"
+	    ]
 }
 # must define some things outside the brackets due to internal dependence
 #
@@ -280,15 +303,26 @@ Reconstruction.RecoMCPath : [
   @sequence::Reconstruction.RecoMCSequence,
   RecoFilter
 ]
-#
+# Special path for validation
+Reconstruction.DePath : [
+  @sequence::Reconstruction.CaloRecoSequence, # CaloReco needs to preceed TrkReco
+  @sequence::TrkHitReco.PrepareHits, # Track hit
+  @sequence::Reconstruction.DeSequence,
+  @sequence::Reconstruction.CrvRecoSequence,
+  @sequence::Reconstruction.RecoMCSequence,
+  RecoFilter
+]
+# default output
 Reconstruction.Output : {
   module_type : RootOutput
   SelectEvents : [ RecoPath ]
   fileName    : @nil
   outputCommands : [ "drop *_*_*_*",
-#  outputCommands : [ "keep *_*_*_*",
-  @sequence::Reconstruction.ToKeep ]
+  @sequence::Reconstruction.HighReco,
+  @sequence::Reconstruction.LowReco,
+  @sequence::Reconstruction.RecoMC ]
 }
+
 
 
 END_PROLOG

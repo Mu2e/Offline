@@ -8,7 +8,7 @@ void
 mu2e::StatusG4Printer::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<StatusG4> > vah;
     event.getManyByType(vah);
@@ -68,14 +68,4 @@ mu2e::StatusG4Printer::PrintHeader(const std::string& tag, std::ostream& os) {
   os << "\nProductPrint " << tag << "\n";
 }
 
-void 
-mu2e::StatusG4Printer::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("StatusG4Printer",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
-}
 

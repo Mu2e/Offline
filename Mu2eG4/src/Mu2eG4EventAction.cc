@@ -10,7 +10,6 @@
 #include "Mu2eG4/inc/TrackingAction.hh"
 #include "Mu2eG4/inc/Mu2eG4SteppingAction.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
-#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
@@ -40,7 +39,6 @@ namespace mu2e {
     Mu2eG4EventAction::Mu2eG4EventAction(const fhicl::ParameterSet& pset,
         TrackingAction* tracking_action,
         Mu2eG4SteppingAction* stepping_action,
-        ExtMonFNALPixelSD* extmon_FNAL_pixelSD,
         SensitiveDetectorHelper* sensitive_detectorhelper,
         IMu2eG4Cut& stacking_cuts,
         IMu2eG4Cut& stepping_cuts,
@@ -58,7 +56,6 @@ namespace mu2e {
         multiStagePars_(pset.get<fhicl::ParameterSet>("MultiStageParameters")),
         _trackingAction(tracking_action),
         _steppingAction(stepping_action),
-        _extMonFNALPixelSD(extmon_FNAL_pixelSD),
         _sensitiveDetectorHelper(sensitive_detectorhelper),
         _stackingCuts(&stacking_cuts),
         _steppingCuts(&stepping_cuts),
@@ -154,8 +151,8 @@ void Mu2eG4EventAction::BeginOfEventAction(const G4Event *evt)
         
         _sensitiveDetectorHelper->updateSensitiveDetectors(*_processInfo, *_spHelper);
         
-        if(_extMonFNALPixelSD) {
-            _extMonFNALPixelSD->beforeG4Event(extMonFNALHits.get(), *_spHelper);
+        if (_sensitiveDetectorHelper->getExtMonFNALPixelSD()) {
+            _sensitiveDetectorHelper->getExtMonFNALPixelSD()->beforeG4Event(extMonFNALHits.get(), *_spHelper);
         }
         
     }

@@ -7,67 +7,67 @@
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardServices.fcl"
 #include "fcl/standardProducers.fcl"
-#include "Validation/fcl/prolog.fcl"
+#include "JobConfig/primary/prolog.fcl"
+#include "JobConfig/reco/prolog.fcl"
+#include "Trigger/fcl/templates.fcl"
 
 process_name : ceSimReco
 
-services : {
-    @table::service.all
+source : { module_type :EmptyEvent }
+services: @local::Services.SimAndReco
+
+physics: {
+  producers : {
+    @table::Primary.producers
+    @table::Reconstruction.producers
+    generate : @local::CeEndpointGun
+    protonBunchIntensity : {
+      module_type: ProtonBunchIntensityFlat
+      mean: 0.0 # No PBI possible for pure signal! 
+      halfWidth : 1.0
+    } 
+  }
+  filters : { 
+    @table::Primary.filters
+    @table::Reconstruction.filters
+  }
+  analyzers: {
+    @table::Primary.analyzers
+    @table::Reconstruction.analyzers
+    @table::Trigger.analyzers
+  }
+
+  TriggerPath : [
+    @sequence::Primary.TriggerPath,
+    protonBunchIntensity,
+    @sequence::Reconstruction.DePath,
+    @sequence::Reconstruction.CrvRecoSequence,
+    @sequence::Reconstruction.RecoMCSequence
+  ]
+  EndPath : @local::Primary.EndPath
 }
 
-source : {
-    module_type : EmptyEvent
+outputs : { 
+  Output : {
+     module_type : RootOutput
+     #SelectEvents : [ TriggerPath ]
+     fileName    : @nil
+     outputCommands : [
+	 @sequence::Reconstruction.HighReco,
+	 @sequence::Reconstruction.LowReco,
+	 @sequence::Reconstruction.RecoMC,
+	 # drop reco products which be empty
+	 "drop mu2e::Crv*_*_*_*",
+	 "drop mu2e::StepPointMCs_*_CRV_*",
+	 "drop *_MHDeP_*_*",
+	 "drop *_KSFDeP_*_*",
+	 "drop *_KFFDeP_*_*",
+	 "keep mu2e::StatusG4_*_*_*"
+     ]
+  }
 }
-
-physics : {
-   producers: {
-      # generate monoenergetic conversion electrons
-      @table::generation.CE.mod
-      # run g4sim all the way through the detector
-      @table::simulation.default.mod
-      # proton and muon time, proton bunch summarizer
-      @table::timeSimulation.all.mod
-      #digis
-      @table::digis.straw.mod
-      @table::digis.cal.mod
-      #@table::digis.crv.mod      # no CRV digi yet
-      @table::reco.cal.mod
-      @table::reco.straw.mod      # digi to straw hit, flagBgHits
-      @table::reco.trk.mod
-      @table::reco.ctrk.mod
-      @table::reco.pid.mod
-    }
-   filters: {
-      @table::simulation.default.flt
-      @table::reco.ctrk.flt
-   }
-
-    all_path : [ 
-      @sequence::generation.CE.seq , 
-      @sequence::simulation.default.seq , 
-      @sequence::timeSimulation.all.seq , 
-      @sequence::digis.straw.seq , 
-      @sequence::digis.cal.seq ,
-      #@sequence::digis.crv.seq ,
-      @sequence::reco.cal.seq ,
-      @sequence::reco.straw.seq ,
-      @sequence::reco.trk.seq.eleDMUP , # DeM and UeP
-      @sequence::reco.ctrk.seq , 
-      @sequence::reco.pid.seq 
-   ]
-
-    trigger_paths  : [ all_path ]
-    out : [ fullOutput ]
-    end_paths      : [ out ]
-
-}
-
-outputs: {
-    fullOutput : {
-	module_type : RootOutput
-	fileName    : @nil
-    }
-}
+#include "JobConfig/primary/epilog.fcl"
+#include "JobConfig/reco/epilog.fcl"
 
 # print summaries
 services.scheduler.wantSummary: true
@@ -76,7 +76,7 @@ services.TimeTracker.printSummary: true
 # histogram file
 services.TFileService.fileName: "nts.owner.val-ceSimReco.dsconf.seq.root"
 # art file 
-outputs.fullOutput.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
+outputs.Output.fileName : "mcs.owner.val-ceSimReco.dsconf.seq.art"
 
 # run 1h by default
 source.maxEvents: 5000
