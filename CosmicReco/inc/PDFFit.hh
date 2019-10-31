@@ -63,12 +63,6 @@ int Factorial(int k);
     double *pdf_sigmas, *pdf_taus, *pdf_times;
     double *pdf;
     int k;
-};
-
-class PDFFitter : public FullDriftFit {
-  public:
-    PDFFitter(ComboHitCollection _chits, std::vector<Straw> &_straws, StrawResponse _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k): FullDriftFit(_chits,_straws, _srep, _track, _constraint_means, _constraints, _sigma_t, _k) {}
-    
     double operator() (const std::vector<double> &x) const;
 };
 
