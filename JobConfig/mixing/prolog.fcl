@@ -22,7 +22,7 @@ mixerTemplateCommon: {
       meanEventsPerProton: @nil
       products: @nil
       minSkip : 0
-      maxSkip : 10000
+      maxSkip : 1000 # temporary
    }
 }
 
