@@ -20,6 +20,7 @@
 
 namespace art { class InputTag; }
 namespace CLHEP { class Hep3Vector; }
+namespace mu2e { class PhiPrescalingParams; }
 
 class Binning;
 
@@ -46,6 +47,8 @@ namespace fhicl {
   // key : { n : <number of points>  low : <low edge of low bin>  high : <high edge of high bin> }
   template<> bool ParameterSet::get_if_present<Binning>(std::string const & key, Binning& value) const;
 
+  //the function below should became a template function
+  mu2e::PhiPrescalingParams getPhiPrescalerParams(fhicl::ParameterSet const&pset, std::string const& key);
 }
 
 #endif/*GeneralUtilities_inc_ParameterSetHelpers_hh*/
