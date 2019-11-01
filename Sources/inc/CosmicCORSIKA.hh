@@ -203,7 +203,7 @@ namespace mu2e {
 
     private:
 
-      bool genEvent(GenParticleCollection &genParts);
+      bool genEvent(GenParticleCollection &genParts, float &timeOffset);
       static float wrapvar( const float var, const float low, const float high);
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
@@ -213,11 +213,13 @@ namespace mu2e {
       static bool pointInBox(float x, float y, float x0, float y0, float x1, float z1);
       static float distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v);
 
+      GlobalConstantsHandle<ParticleDataTable> pdt;
+
       const float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
+      const float _ns2s = CLHEP::ns / CLHEP::s;
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
       float _fluxConstant = 1.8e4;
-
       float _tOffset = 0; ///< Time offset of sample, defaults to zero (no offset) [s]
       bool _projectToTargetBox = false;
       float _showerAreaExtension = 0; ///< Extend distribution of corsika particles in x,z by this much (e.g. 1000 will extend 10 m in -x, +x, -z, and +z) [mm]

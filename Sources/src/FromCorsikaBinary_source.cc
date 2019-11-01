@@ -64,7 +64,6 @@ namespace mu2e {
                               art::RunPrincipal*&    outR,
                               art::SubRunPrincipal*& outSR,
                               art::EventPrincipal*&  outE);
-
       unsigned getSubRunNumber(const std::string& filename) const;
 
       unsigned currentEventNumber_;
