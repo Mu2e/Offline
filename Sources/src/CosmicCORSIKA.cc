@@ -24,7 +24,6 @@ namespace mu2e {
         _targetBoxZmin(conf.targetBoxZmin()), // mm
         _targetBoxZmax(conf.targetBoxZmax())  // mm
   {
-
   }
 
   const unsigned int CosmicCORSIKA::getNumShowers() {
@@ -145,7 +144,7 @@ namespace mu2e {
   }
 
 
- bool CosmicCORSIKA::genEvent(GenParticleCollection &genParts) {
+ bool CosmicCORSIKA::genEvent(GenParticleCollection &genParts, float &timeOffset) {
     float block[273]; // all data blocks have this size
     // static TDatabasePDG *pdgt = TDatabasePDG::Instance();
 
@@ -201,7 +200,6 @@ namespace mu2e {
       else if (strcmp(blockName, "RUNE") == 0)
       {
         _loops = 0;
-        std::cout << "END OF FILE" << std::endl;
         return false;
         // end run condition
       }
@@ -240,9 +238,7 @@ namespace mu2e {
                   const float x = block[k + 5];
                   const float z = -block[k + 4];
 
-                  GlobalConstantsHandle<ParticleDataTable> pdt;
-                  ParticleDataTable const &pdt_ = *pdt;
-                  const float m = pdt_.particle(pdgId).ref().mass(); // to MeV
+                  const float m = pdt->particle(pdgId).ref().mass(); // to MeV
 
                   const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
 
@@ -250,6 +246,8 @@ namespace mu2e {
                   const HepLorentzVector mom4(P_x, P_y, P_z, energy);
 
                   const float particleTime = block[k + 6];
+                  if (particleTime < timeOffset)
+                    timeOffset = particleTime;
 
                   genParts.push_back(GenParticle(static_cast<PDGCode::type>(pdgId),
                                                   GenId::cosmicCORSIKA, position, mom4,
@@ -281,7 +279,8 @@ namespace mu2e {
     {
 
       GenParticleCollection pretruth;
-      if (genEvent(pretruth)) {
+      float timeOffset = std::numeric_limits<float>::max();
+      if (genEvent(pretruth, timeOffset)) {
         for (unsigned int i = 0; i < pretruth.size(); ++i)
         {
           GenParticle particle = pretruth[i];
@@ -302,7 +301,7 @@ namespace mu2e {
           {
             genParts.push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                                             GenId::cosmicCORSIKA, position, mom4,
-                                            particle.time() + _tOffset));
+                                            (particle.time() + _tOffset - timeOffset) * _ns2s));
           }
 
         }
