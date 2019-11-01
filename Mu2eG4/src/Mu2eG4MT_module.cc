@@ -229,7 +229,7 @@ namespace mu2e {
     // This does not work in a Shared Module
     //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
         
-    std::cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  std::endl;
+    G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
 } // end G4:G4(fhicl::ParameterSet const& pSet);
 
 
@@ -341,7 +341,7 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     WorkerRMMap::accessor access_workerMap;
     
     if (!myworkerRunManagerMap.find(access_workerMap, tid)){
-        std::cerr << "FOR TID: " << tid << ", NO WORKER.  We are making one.\n";
+        G4cout << "FOR TID: " << tid << ", NO WORKER.  We are making one.\n";
         myworkerRunManagerMap.insert(access_workerMap, tid);
         //std::ostringstream oss;
         //oss << tid;
@@ -350,15 +350,14 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     }
 
     if (event.id().event() == 1) {
-        std::cerr << "Our RMmap has " << myworkerRunManagerMap.size() << " members\n";
+        G4cout << "Our RMmap has " << myworkerRunManagerMap.size() << " members\n";
     }
 
     myworkerRunManagerMap.find(access_workerMap, tid);
     Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
     access_workerMap.release();
     
-    std::cerr << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:"
-              << std::hex << scheduleWorkerRM << std::dec << "\n";
+    G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << "\n";
     
     //if this is the first time the thread is being used, it should be initialized
     if (!scheduleWorkerRM->workerRMInitialized()){
@@ -370,10 +369,10 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
     scheduleWorkerRM->processEvent(&event);
     
-    std::cerr << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
+    G4cout << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
     
 /////////////////////////////////////////////////////////////////////////////////////
-    std::cout << "Putting data into the EVENT" << std::endl;
+    G4cout << "Putting data into the EVENT" << G4endl;
     
     std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore->getSimPartCollection();
     
