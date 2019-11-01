@@ -95,6 +95,13 @@ namespace mu2e
     _minarea2    = minarea*minarea;
     _initFZNBins = (int)((_initFZMaxL - _initFZMinL)/_initFZStepL);
     _fitFZNBins  = (int)((_fitFZMaxL - _fitFZMinL)/_fitFZStepL);
+    if (_use_initFZ_from_dzFrequency){
+      _initFZFrequencyNSigma          = pset.get<float>("initFZFrequencyNSigma", 3);
+      _initFZFrequencyBinsToIntegrate = pset.get<int>  ("initFZFrequencyBinsToIntegrate", 10);
+      _initFZFrequencyArraySize       = pset.get<int>  ("initFZFrequencyArraySize", 200);
+      _initFZFrequencyNMaxPeaks       = pset.get<int>  ("initFZFrequencyNMaxPeaks", 10);
+      _initFZFrequencyTolerance       = pset.get<float>("initFZFrequencyTolerance", 2.);
+    }
   }
 
   RobustHelixFit::~RobustHelixFit()
@@ -393,13 +400,9 @@ namespace mu2e
     if(extractFZ0(HelixData, fz0))
       {
 	rhel._fz0 = deltaPhi(0.0,fz0);
-	ComboHit*hitP1(0);
-	for (int f=0; f<nHits; ++f){
-	  hitP1 = &HelixData._chHitsToProcess[f];
-	  // if (!use(*hitP1) )                          continue;   
-	  resolvePhi(*hitP1,rhel);
+	for (auto &hitP1: HelixData._chHitsToProcess){
+	  resolvePhi(hitP1,rhel);
 	}
-	
 	retval = true;
       }
 
@@ -660,7 +663,6 @@ namespace mu2e
       
 	for (int ip=0; ip<nhitsPanelF1; ++ip){
 	  ComboHit* hit = &HelixData._chHitsToProcess[panelz->idChBegin + ip];
-	  // if (!use(*hitP1) )                          continue;   
 	  resolvePhi(*hit,rhel);
 	}
       }//end loop pver the panels
@@ -673,7 +675,7 @@ namespace mu2e
 // function that fills an array with the dz values obtained by looping over
 // the possible combinations of faces
 //--------------------------------------------------------------------------------
-  bool RobustHelixFit::fillArrayDz(RobustHelixFinderData& HelixData, int* hist, int &dimArray, float &bin_size, float &start_dz){
+  bool RobustHelixFit::fillArrayDz(RobustHelixFinderData& HelixData, std::vector<int> &hist, float &bin_size, float &start_dz){
     ComboHit*      hitP1(0), *hitP2(0);
     uint16_t       facezF1(0), facezF2(0);
     int            nHits(HelixData._chHitsToProcess.size());
@@ -695,7 +697,7 @@ namespace mu2e
 
 	//increment the hist array in the correct position
 	int i = (dz-start_dz)/bin_size;
-	if (i < dimArray)  {
+	if (i < _initFZFrequencyArraySize)  {
 	  hist[i] = hist[i] + 1.;
 	  ++counter;
 	}
@@ -758,30 +760,30 @@ namespace mu2e
 //   - set the number of bins that are integrated; the alg performs a running sum 
 //     to search for the maxima
 //--------------------------------------------------------------------------------
-  void RobustHelixFit::findHistPeaks(int *hist_sum, int &dimArray, int binWidth,
-				     int &binsToIntegrate, float &tolerance, float& nsigma, const int &nMaxPeaks, float &start_dz,
-				     float *xmp, float *sigma, float*swmax, int *indexPeak,int &first_peak, int & peaks_found){
+  void RobustHelixFit::findHistPeaks(std::vector<int>&hist_sum, int binWidth,
+				     float &start_dz,
+				     std::vector<float> &xmp, std::vector<float> &sigma, std::vector<float> &swmax, std::vector<int> &indexPeak,int &first_peak, int & peaks_found){
     
 
-    float  shift_dz(binsToIntegrate*binWidth/2.);
+    float  shift_dz(_initFZFrequencyBinsToIntegrate*binWidth/2.);
     float  sw(0);
     int    bin_index(0);
 
-    for (int ipeak=0; ipeak<nMaxPeaks; ++ipeak){
+    for (int ipeak=0; ipeak<_initFZFrequencyNMaxPeaks; ++ipeak){
       //      if (ipeak>0) bin_index = (xmp[ipeak-1] + 0.4*lambda[ipeak-1]*6.28 - start_dz)/bin_size;//shifting the starting pos 1/2 pitch from the previous peak
-      if (ipeak>0) bin_index = (xmp[ipeak-1] + nsigma*sigma[ipeak-1])/binWidth;//shifting the starting pos 1/2 pitch from the previous peak
+      if (ipeak>0) bin_index = (xmp[ipeak-1] + _initFZFrequencyNSigma*sigma[ipeak-1])/binWidth;//shifting the starting pos 1/2 pitch from the previous peak
       
-      if (bin_index >= dimArray-binsToIntegrate)       break;
+      if (bin_index >= _initFZFrequencyArraySize-_initFZFrequencyBinsToIntegrate)       break;
 
-      for (int ix= bin_index; ix<dimArray-binsToIntegrate; ix++) {
+      for (int ix= bin_index; ix<_initFZFrequencyArraySize-_initFZFrequencyBinsToIntegrate; ix++) {
     	sw  = 0;
-    	for (int l=0; l<binsToIntegrate; ++l){
+    	for (int l=0; l<_initFZFrequencyBinsToIntegrate; ++l){
     	  sw += hist_sum[ix+l];//hdz->GetBinContent(ix+l+1);
     	}
-    	if (sw > swmax[ipeak] + tolerance*swmax[ipeak]) { 
+    	if (sw > swmax[ipeak] + _initFZFrequencyTolerance*swmax[ipeak]) { 
     	  xmp[ipeak] = 0;
     	  //now, calculate the weighted average
-    	  for (int l=0; l<binsToIntegrate; ++l){
+    	  for (int l=0; l<_initFZFrequencyBinsToIntegrate; ++l){
     	    xmp[ipeak] = xmp[ipeak] + binWidth*(ix + l + 0.5)*hist_sum[ix+l]; //*hdz->GetBinContent(ix+l+1);
     	  }
     	  xmp[ipeak]  /= sw;
@@ -801,7 +803,7 @@ namespace mu2e
       float numerator_sum(0);
     
       //calculating the standard deviation of the peak
-      for (int l=0; l<binsToIntegrate; ++l){
+      for (int l=0; l<_initFZFrequencyBinsToIntegrate; ++l){
 	sw             = hist_sum[indexPeak[ipeak]+l]; //hdz->GetBinContent(indexPeak[ipeak]+l+1);
 	float        x = (indexPeak[ipeak] + l + .5)*binWidth +  start_dz;  //hdz->GetBinCenter(indexPeak[ipeak] + l+1);
 	numerator_sum += sw*(x - xmp[ipeak])*(x - xmp[ipeak]);
@@ -809,7 +811,7 @@ namespace mu2e
       sigma[ipeak] = sqrt((numerator_sum)/swmax[ipeak]);
       
       //checking if peak postion is far enogh away from dz=0
-      if (xmp[ipeak]-nsigma*sigma[ipeak]>0) {
+      if (xmp[ipeak]-_initFZFrequencyNSigma*sigma[ipeak]>0) {
 	if (peaks_found == 0) first_peak = ipeak;
 	peaks_found = peaks_found +1;
       }
@@ -826,26 +828,20 @@ namespace mu2e
 //--------------------------------------------------------------------------------
   bool RobustHelixFit::initFZ_from_dzFrequency(RobustHelixFinderData& HelixData, int InitHiPhi){
     bool retval(false);
-    // ComboHitCollection& hhits = HelixData._hseed._hhits;
     RobustHelix& rhel         = HelixData._hseed._helix;
 
     rhel._lambda = 1.0e12; //infinite slope for now
-    rhel._fz0 = 0.0;
+    rhel._fz0    = 0.0;
     static TrkFitFlag circleOK(TrkFitFlag::circleOK);
     static TrkFitFlag helixOK(TrkFitFlag::helixOK);
 
     // make initial estimate of dfdz using 'nearby' pairs.  This insures they are on the same loop
-    int            nHits(HelixData._chHitsToProcess.size());
-    
-    //need to define an array of a given length 
-    int            dimArray(200);
-    int            hist[200] = {0};
-    int            hist_sum[200] = {0}; 
-    float          bin_size(16.);//mm
-    float          start_dz(0);
-    float          nsigma(3);
-    float          dzdphisign(0);
-    int            binsToIntegrate(10); 
+    // need to define an array of a given length 
+    std::vector<int> hist(_initFZFrequencyArraySize);
+    std::vector<int> hist_sum(_initFZFrequencyArraySize);
+    float            bin_size(16.);//mm
+    float            start_dz(0);
+    float            dzdphisign(0);
 
     if (rhel.helicity()._value == Helicity::neghel) {
       dzdphisign = -1.;
@@ -854,14 +850,14 @@ namespace mu2e
       dzdphisign = 1.;
     }
 
-    if (!fillArrayDz(HelixData, hist, dimArray, bin_size, start_dz)){
+    if (!fillArrayDz(HelixData, hist, bin_size, start_dz)){
       return false;
     }
       
     //create the histogram of the sum of N-consectutive bins
-    for (int i = 0; i<dimArray-binsToIntegrate; i++){ 
+    for (int i = 0; i<_initFZFrequencyArraySize - _initFZFrequencyBinsToIntegrate; i++){ 
       int sum(0);
-      for (int j = 0; j< binsToIntegrate; j++){
+      for (int j = 0; j< _initFZFrequencyBinsToIntegrate; j++){
 	sum += hist[i+j];
       }
       hist_sum[i] = sum;
@@ -883,23 +879,19 @@ namespace mu2e
       printf("[RobustHelixFinder::initFZ:PEAK_SEARCH]   dzdphisign   counter  ix   hist[ix]   sw\n");
     }
     
-    int       peaks_found(0);
+    int                peaks_found(0);
+    std::vector<float> swmax(_initFZFrequencyNMaxPeaks), xmp(_initFZFrequencyNMaxPeaks), sigma(_initFZFrequencyNMaxPeaks);
+    std::vector<int>   indexPeak;(_initFZFrequencyNMaxPeaks);
+    int                first_peak(-1);
+    float              minNCounts(10.);
 
-    const int         nMaxPeaks(10);
-    float       swmax[nMaxPeaks]={0.};
-    float       xmp  [nMaxPeaks]={0.};
-    float       sigma [nMaxPeaks]={0.};
-    int         indexPeak[nMaxPeaks]={0};
-    float       tolerance(.2);
-    int         first_peak(-1);
-    float       minNCounts(10.);
-
-    findHistPeaks(hist_sum, dimArray, bin_size, binsToIntegrate, tolerance, nsigma, nMaxPeaks, start_dz, xmp, sigma, swmax, indexPeak, first_peak, peaks_found);
-
+    findHistPeaks(hist_sum, bin_size, start_dz, xmp, sigma, swmax, indexPeak, first_peak, peaks_found);
+    
+    //now, evaluate the weighted average of the lambda values found from the peak search
     float     total_wg(0), weight_lambda(0);
-    for (int i=1; i<nMaxPeaks; ++i){
+    for (int i=1; i<_initFZFrequencyNMaxPeaks; ++i){
       if (swmax[i]>minNCounts){
-	if ( (xmp[i]-nsigma*sigma[i]>0) && (xmp[i-1]-nsigma*sigma[i-1]>0)){
+	if ( (xmp[i] - _initFZFrequencyNSigma*sigma[i]>0) && (xmp[i-1] - _initFZFrequencyNSigma*sigma[i-1]>0)){
 	  double   wg = sqrt(swmax[i]*swmax[i-1]);
 	  weight_lambda += wg*(xmp[i] - xmp[i-1])/6.28;//(lambda[i]*swmax[i]);
 	  total_wg   += wg;
@@ -920,17 +912,12 @@ namespace mu2e
     }
 
     float  fz0(0);    
-
     if(extractFZ0(HelixData, fz0))
       {
 	rhel._fz0 = deltaPhi(0.0,fz0);
-	ComboHit*hitP1(0);
-	for (int f=0; f<nHits; ++f){
-	  hitP1 = &HelixData._chHitsToProcess[f];
-	  // if (!use(*hitP1) )                          continue;   
-	  resolvePhi(*hitP1,rhel);
+	for (auto &hitP1: HelixData._chHitsToProcess){
+	  resolvePhi(hitP1,rhel);
 	}
-	
 	retval = true;
       }
 
