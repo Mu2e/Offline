@@ -154,6 +154,7 @@ private:
     // used by G4 to make this info available.
     friend class G4;
     friend class Mu2eG4;
+    friend class Mu2eG4MT; 
     friend class Mu2eG4Study;
     void addWorldG4(const Mu2eHall&);
 

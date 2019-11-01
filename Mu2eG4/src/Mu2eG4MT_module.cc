@@ -88,9 +88,9 @@ namespace tbb {
 
 namespace mu2e {
 
-  class Mu2eG4 : public art::SharedProducer {
+  class Mu2eG4MT : public art::SharedProducer {
   public:
-    Mu2eG4(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& pf);
+    Mu2eG4MT(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& pf);
     // Accept compiler supplied d'tor
 
   private:
@@ -163,7 +163,7 @@ namespace mu2e {
   }; // end G4 header
 
     
-  Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& procFrame):
+  Mu2eG4MT::Mu2eG4MT(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& procFrame):
     SharedProducer{pSet},
     pset_(pSet),
     mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
@@ -234,7 +234,7 @@ namespace mu2e {
 
 
     
-void Mu2eG4::beginRun( art::Run &run, art::ProcessingFrame const& procFrame) {
+void Mu2eG4MT::beginRun( art::Run &run, art::ProcessingFrame const& procFrame) {
     
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config  = geom->config();
@@ -260,11 +260,11 @@ void Mu2eG4::beginRun( art::Run &run, art::ProcessingFrame const& procFrame) {
         exportG4PDT( "Start:" );//once per job
     }
     
-}//Mu2eG4::beginRun
+}//Mu2eG4MT::beginRun
 
 
     
-void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ) {
+void Mu2eG4MT::initializeG4( GeometryService& geom, art::Run const& run ) {
         if (standardMu2eDetector_) {
             geom.addWorldG4(*GeomHandle<Mu2eHall>());
             originInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld();
@@ -281,11 +281,11 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ) {
         masterThread->readRunData(&physVolHelper_);
         masterThread->beginRun();
         
-}//Mu2eG4::initializeG4
+}//Mu2eG4MT::initializeG4
 
     
  
-void Mu2eG4::beginSubRun(art::SubRun& sr, art::ProcessingFrame const& procFrame) {
+void Mu2eG4MT::beginSubRun(art::SubRun& sr, art::ProcessingFrame const& procFrame) {
         using Collection_t = PhysicalVolumeInfoMultiCollection;
         auto mvi = std::make_unique<Collection_t>();
         
@@ -306,7 +306,7 @@ void Mu2eG4::beginSubRun(art::SubRun& sr, art::ProcessingFrame const& procFrame)
         
         
 // Create one G4 event and copy its output to the art::event.
-void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
+void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     
     
     if (num_schedules>1) {
@@ -393,11 +393,11 @@ void Mu2eG4::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     perThreadStore->clearData();
     scheduleWorkerRM->TerminateOneEvent();
     
-}//end Mu2eG4::produce
+}//end Mu2eG4MT::produce
 
         
 // Tell G4 that this run is over.
-void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
+void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
     
     // KJK - should move this to endJob
     std::atomic<int> threads_left = num_threads;
@@ -436,7 +436,7 @@ void Mu2eG4::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
 
 
         
-void Mu2eG4::endJob(art::ProcessingFrame const& procFrame) {
+void Mu2eG4MT::endJob(art::ProcessingFrame const& procFrame) {
 
     if ( _exportPDTEnd ) exportG4PDT( "End:" );
     physVolHelper_.endRun();
@@ -445,4 +445,4 @@ void Mu2eG4::endJob(art::ProcessingFrame const& procFrame) {
 
 } // End of namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::Mu2eG4);
+DEFINE_ART_MODULE(mu2e::Mu2eG4MT);
