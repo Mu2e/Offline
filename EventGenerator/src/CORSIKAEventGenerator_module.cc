@@ -40,6 +40,9 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandFlat.h"
 
+#include "Mu2eUtilities/inc/VectorVolume.hh"
+
+
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
 
@@ -75,13 +78,6 @@ namespace mu2e {
 
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
-
-      static void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir,
-                                   std::vector<CLHEP::Hep3Vector> &intersections,
-                                   float xMin, float xMax, float yMin, float yMax, float zMin, float zMax);
-      static bool pointInBox(float x, float y, float x0, float y0, float x1, float z1);
-      static float distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v);
-
 
       bool  _geomInfoObtained = false;
       Config _conf;
@@ -120,91 +116,6 @@ namespace mu2e {
     produces<GenParticleCollection>();
   }
 
-  bool CorsikaEventGenerator::pointInBox(float x, float y, float x0, float y0,
-                              float x1, float y1)
-  {
-    bool ret = false;
-    if ((x >= x0) && (x <= x1) && (y >= y0) && (y <= y1))
-    {
-      ret = true;
-    }
-    return ret;
-  }
-
-  float CorsikaEventGenerator::distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v)
-  {
-    return safeSqrt((u.x() - v.x()) * (u.x() - v.x()) +
-                    (u.y() - v.y()) * (u.y() - v.y()) +
-                    (u.z() - v.z()) * (u.z() - v.z()));
-  }
-
-  void CorsikaEventGenerator::calIntersections(Hep3Vector orig, Hep3Vector dir,
-                                  std::vector<CLHEP::Hep3Vector> &intersections, float xMin, float xMax,
-                                  float yMin, float yMax, float zMin, float zMax)
-  {
-    // roof: _targetBoxYmax, _targetBoxXmin, _targetBoxXmax, _targetBoxZmin, _targetBoxZmax
-    // skip projection if the particle goes parallely to the plane
-    if (dir.y() != 0.)
-    {
-      const float t = (yMax - orig.y()) / dir.y();
-      const float x1 = dir.x() * t + orig.x();
-      const float z1 = dir.z() * t + orig.z();
-      // std::cout << "x1 " << x1 << " " << z1 << std::endl;
-
-      if (pointInBox(x1, z1, xMin, zMin, xMax, zMax))
-      {
-        intersections.push_back(Hep3Vector(x1, yMax, z1));
-      }
-    }
-
-    //east: zMin, xMin, xMax, yMin, yMax
-    if (dir.z() != 0.)
-    {
-      const float t = (zMin - orig.z()) / dir.z();
-      const float x1 = dir.x() * t + orig.x();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(x1, y1, xMin, yMin, xMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(x1, y1, zMin));
-      }
-    }
-
-    //west: zMax, xMin, xMax, yMin, yMax
-    if (dir.z() != 0.)
-    {
-      const float t = (zMax - orig.z()) / dir.z();
-      const float x1 = dir.x() * t + orig.x();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(x1, y1, xMin, yMin, xMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(x1, y1, zMax));
-      }
-    }
-
-    //south: xMin, yMin, yMax, zMin, zMax
-    if (dir.x() != 0.)
-    {
-      const float t = (xMin - orig.x()) / dir.x();
-      const float z1 = dir.z() * t + orig.z();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(z1, y1, zMin, yMin, zMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(xMin, y1, z1));
-      }
-    }
-
-    //north: xMax, yMin, yMax, zMin, zMax
-    if (dir.x() != 0.)
-    {
-      const float t = (xMax - orig.x()) / dir.x();
-      const float z1 = dir.z() * t + orig.z();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(z1, y1, zMin, yMin, zMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(xMax, y1, z1));
-      }
-    }
-  }
 
   void CorsikaEventGenerator::beginSubRun( art::SubRun &subrun){
 
@@ -266,36 +177,18 @@ namespace mu2e {
 
       if (_projectToTargetBox)
       {
-        _targetBoxIntersections.clear();
+        _worldIntersections.clear();
+        VectorVolume particleWorld(particle.position(), particle.momentum().vect(),
+                                   _worldXmin, _worldXmax, _worldYmin, _worldYmax, _worldZmin, _worldZmax);
+        particleWorld.calIntersections(_worldIntersections);
 
-        calIntersections(position, mom4.vect(),
-                          _targetBoxIntersections, _targetBoxXmin, _targetBoxXmax,
-                          _targetBoxYmin, _targetBoxYmax, _targetBoxZmin, _targetBoxZmax);
-
-        if (_targetBoxIntersections.size() > 0)
+        if (_worldIntersections.size() > 0)
         {
-          _worldIntersections.clear();
-          calIntersections(position, mom4.vect(), _worldIntersections,
-                            _worldXmin, _worldXmax, _worldYmin, _worldYmax, _worldZmin, _worldZmax);
-
-          if (_worldIntersections.size() > 0)
-          {
-            int idx = 0;
-            float closestDistance = distance(_worldIntersections.at(0), position);
-            for (unsigned i = 0; i < _worldIntersections.size(); ++i)
-            {
-              if (distance(_worldIntersections.at(i), position) < closestDistance)
-              {
-                idx = i;
-                closestDistance = _targetBoxIntersections.at(idx).y();
-              }
-            }
-
-            const Hep3Vector projectedPos = _worldIntersections.at(idx);
-            genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
-                                                GenId::cosmicCORSIKA, projectedPos, mom4,
-                                                particle.time()));
-          }
+          // Being inside the world volume, the intersection can be only one.
+          const Hep3Vector projectedPos = _worldIntersections.at(0);
+          genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
+                                              GenId::cosmicCORSIKA, projectedPos, mom4,
+                                              particle.time()));
         }
       } else {
         genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),

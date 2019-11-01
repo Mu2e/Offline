@@ -34,6 +34,9 @@
 
 #include "fhiclcpp/types/ConfigurationTable.h"
 
+#include "Mu2eUtilities/inc/VectorVolume.hh"
+
+
 namespace art
 {
   class Run;
@@ -203,20 +206,18 @@ namespace mu2e {
 
     private:
 
-      bool genEvent(GenParticleCollection &genParts, float &timeOffset);
-      static float wrapvar( const float var, const float low, const float high);
+      bool genEvent(std::map<std::pair<int,int>, GenParticleCollection> &particles_map);
+      float wrapvarBoxNo(const float var, const float low, const float high, int &boxno);
+      static float wrapvar(const float var, const float low, const float high);
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
-      static void calIntersections(CLHEP::Hep3Vector orig, CLHEP::Hep3Vector dir,
-                                   std::vector<CLHEP::Hep3Vector> &intersections,
-                                   float xMin, float xMax, float yMin, float yMax, float zMin, float zMax);
-      static bool pointInBox(float x, float y, float x0, float y0, float x1, float z1);
-      static float distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v);
+      std::map<std::pair<int,int>, GenParticleCollection> _particles_map;
 
       GlobalConstantsHandle<ParticleDataTable> pdt;
 
       const float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
       const float _ns2s = CLHEP::ns / CLHEP::s;
+      const float _cm2mm = CLHEP::cm / CLHEP::mm;
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
       float _fluxConstant = 1.8e4;

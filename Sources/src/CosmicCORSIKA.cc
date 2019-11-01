@@ -52,90 +52,12 @@ namespace mu2e {
     std::cout << "Simulated live-time: " << getLiveTime() << std::endl;
   }
 
-  bool CosmicCORSIKA::pointInBox(float x, float y, float x0, float y0,
-                                         float x1, float y1)
+
+  float CosmicCORSIKA::wrapvarBoxNo(const float var, const float low, const float high, int &boxno)
   {
-    bool ret = false;
-    if ((x >= x0) && (x <= x1) && (y >= y0) && (y <= y1))
-    {
-      ret = true;
-    }
-    return ret;
-  }
-
-  float CosmicCORSIKA::distance(const CLHEP::Hep3Vector &u, const CLHEP::Hep3Vector &v)
-  {
-    return safeSqrt((u.x() - v.x()) * (u.x() - v.x()) +
-                    (u.y() - v.y()) * (u.y() - v.y()) +
-                    (u.z() - v.z()) * (u.z() - v.z()));
-  }
-
-  void CosmicCORSIKA::calIntersections(Hep3Vector orig, Hep3Vector dir,
-                                               std::vector<CLHEP::Hep3Vector> &intersections, float xMin, float xMax,
-                                               float yMin, float yMax, float zMin, float zMax)
-  {
-    // roof: _targetBoxYmax, _targetBoxXmin, _targetBoxXmax, _targetBoxZmin, _targetBoxZmax
-    // skip projection if the particle goes parallely to the plane
-    if (dir.y() != 0.)
-    {
-      const float t = (yMax - orig.y()) / dir.y();
-      const float x1 = dir.x() * t + orig.x();
-      const float z1 = dir.z() * t + orig.z();
-      // std::cout << "x1 " << x1 << " " << z1 << std::endl;
-
-      if (pointInBox(x1, z1, xMin, zMin, xMax, zMax))
-      {
-        intersections.push_back(Hep3Vector(x1, yMax, z1));
-      }
-    }
-
-    //east: zMin, xMin, xMax, yMin, yMax
-    if (dir.z() != 0.)
-    {
-      const float t = (zMin - orig.z()) / dir.z();
-      const float x1 = dir.x() * t + orig.x();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(x1, y1, xMin, yMin, xMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(x1, y1, zMin));
-      }
-    }
-
-    //west: zMax, xMin, xMax, yMin, yMax
-    if (dir.z() != 0.)
-    {
-      const float t = (zMax - orig.z()) / dir.z();
-      const float x1 = dir.x() * t + orig.x();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(x1, y1, xMin, yMin, xMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(x1, y1, zMax));
-      }
-    }
-
-    //south: xMin, yMin, yMax, zMin, zMax
-    if (dir.x() != 0.)
-    {
-      const float t = (xMin - orig.x()) / dir.x();
-      const float z1 = dir.z() * t + orig.z();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(z1, y1, zMin, yMin, zMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(xMin, y1, z1));
-      }
-    }
-
-    //north: xMax, yMin, yMax, zMin, zMax
-    if (dir.x() != 0.)
-    {
-      const float t = (xMax - orig.x()) / dir.x();
-      const float z1 = dir.z() * t + orig.z();
-      const float y1 = dir.y() * t + orig.y();
-      if (pointInBox(z1, y1, zMin, yMin, zMax, yMax))
-      {
-        intersections.push_back(Hep3Vector(xMax, y1, z1));
-      }
-    }
+    //wrap variable so that it's always between low and high
+    boxno = int(floor(var / (high - low)));
+    return (var - (high - low) * floor(var / (high - low))) + low;
   }
 
   float CosmicCORSIKA::wrapvar( const float var, const float low, const float high){
@@ -144,7 +66,7 @@ namespace mu2e {
   }
 
 
- bool CosmicCORSIKA::genEvent(GenParticleCollection &genParts, float &timeOffset) {
+ bool CosmicCORSIKA::genEvent(std::map<std::pair<int,int>, GenParticleCollection> &particles_map) {
     float block[273]; // all data blocks have this size
     // static TDatabasePDG *pdgt = TDatabasePDG::Instance();
 
@@ -235,9 +157,12 @@ namespace mu2e {
                   const float P_x = block[k + 2] * _GeV2MeV;
                   const float P_y = -block[k + 3] * _GeV2MeV;
                   const float P_z = block[k + 1] * _GeV2MeV;
-                  const float x = block[k + 5];
-                  const float z = -block[k + 4];
 
+                  int boxnox = 0, boxnoz = 0;
+
+                  const float x = wrapvarBoxNo(block[k + 5] * _cm2mm, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
+                  const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
+                  std::pair xz(boxnox, boxnoz);
                   const float m = pdt->particle(pdgId).ref().mass(); // to MeV
 
                   const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
@@ -246,19 +171,25 @@ namespace mu2e {
                   const HepLorentzVector mom4(P_x, P_y, P_z, energy);
 
                   const float particleTime = block[k + 6];
-                  if (particleTime < timeOffset)
-                    timeOffset = particleTime;
 
-                  genParts.push_back(GenParticle(static_cast<PDGCode::type>(pdgId),
-                                                  GenId::cosmicCORSIKA, position, mom4,
-                                                  particleTime));
+                  GenParticle part(static_cast<PDGCode::type>(pdgId),
+                                   GenId::cosmicCORSIKA, position, mom4,
+                                   particleTime);
+
+                  if (particles_map.count(xz) == 0) {
+                    GenParticleCollection parts;
+                    parts.push_back(part);
+                    particles_map.insert({xz, parts});
+                  } else {
+                    particles_map[xz].push_back(part);
+                  }
+
                   particleDataSubBlockCounter++;
                 }
               }
             }
             else
             {
-
               validParticleSubBlock = false;
             }
           }
@@ -274,44 +205,50 @@ namespace mu2e {
   {
 
     // loop over particles in the truth object
+
     bool passed = false;
-    while (!passed)
-    {
+    while (!passed) {
 
-      GenParticleCollection pretruth;
-      float timeOffset = std::numeric_limits<float>::max();
-      if (genEvent(pretruth, timeOffset)) {
-        for (unsigned int i = 0; i < pretruth.size(); ++i)
+      if (_particles_map.size() == 0)
+      {
+        if (!genEvent(_particles_map))
         {
-          GenParticle particle = pretruth[i];
-          const HepLorentzVector mom4 = particle.momentum();
-
-          const Hep3Vector position(
-              wrapvar(particle.position().x(), _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension),
-              particle.position().y(),
-              wrapvar(particle.position().z(), _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension)
-          );
-
-          _targetBoxIntersections.clear();
-          calIntersections(position, mom4.vect(),
-                           _targetBoxIntersections, _targetBoxXmin, _targetBoxXmax,
-                           _targetBoxYmin, _targetBoxYmax, _targetBoxZmin, _targetBoxZmax);
-
-          if (_targetBoxIntersections.size() > 0 || !_projectToTargetBox)
-          {
-            genParts.push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
-                                            GenId::cosmicCORSIKA, position, mom4,
-                                            (particle.time() + _tOffset - timeOffset) * _ns2s));
-          }
-
+          return false;
         }
-
-        if (genParts.size() != 0) {
-          passed = true;
-        }
-      } else {
-        return false;
       }
+
+      GenParticleCollection particles = _particles_map.begin()->second;
+      GenParticleCollection crossingParticles;
+
+      float timeOffset = std::numeric_limits<float>::max();
+
+      for (unsigned int i = 0; i < particles.size(); i++) {
+        GenParticle particle = particles[i];
+
+
+        _targetBoxIntersections.clear();
+        VectorVolume particleTarget(particle.position(), particle.momentum().vect(),
+                                    _targetBoxXmin, _targetBoxXmax,
+                                    _targetBoxYmin, _targetBoxYmax,
+                                    _targetBoxZmin, _targetBoxZmax);
+
+        particleTarget.calIntersections(_targetBoxIntersections);
+
+        if (_targetBoxIntersections.size() > 0 || !_projectToTargetBox)
+          crossingParticles.push_back(particle);
+
+        if (particle.time() < timeOffset)
+          timeOffset = particle.time();
+      }
+
+      for (unsigned int i = 0; i < crossingParticles.size(); i++) {
+          GenParticle part = crossingParticles[i];
+          genParts.push_back(GenParticle(part.pdgId(), part.generatorId(), part.position(), part.momentum(), part.time()-timeOffset+_tOffset));
+      }
+      _particles_map.erase(_particles_map.begin()->first);
+
+      if (genParts.size() != 0)
+        passed = true;
 
     }
 
