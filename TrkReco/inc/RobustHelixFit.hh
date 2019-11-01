@@ -62,6 +62,12 @@ namespace mu2e
     bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
     bool initFZ_from_dzFrequency(RobustHelixFinderData& helixData, int initHitPhi=1);
+    bool fillArrayDz(RobustHelixFinderData& HelixData, int *v, int& dimArray, float &bin_size, float& startDz);
+    bool extractFZ0(RobustHelixFinderData& HelixData, float& fz0);
+    bool extractLambdaFromDzHist(int *hist_sum, float& lambda);
+    void findHistPeaks(int *input, int &dimArray, int bin_size, 
+		       int &binsToIntegrate, float &tolerance, float& nsigma, const int &nMaxPeaks, float &start_dz,
+		       float *xPeak, float *xSigma, float*swmax, int *iPeak, int &first_peak, int &peaks_found);
     void fitFZ(RobustHelixFinderData& helixData);
     void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
     bool goodHelix(RobustHelix const& rhel);
