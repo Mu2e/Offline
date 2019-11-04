@@ -1,0 +1,104 @@
+// Re-sample particles entering from the PS (dsregion stream), propagate them, and write out tracker, CRV hits
+// and compressed  calorimeter showers.
+//
+// Yuri Oksuzian, 2019
+
+#include "JobConfig/beam/prolog.fcl"
+
+process_name: psresampler
+
+source: { module_type : EmptyEvent }
+services: { @table::mu2e.services.simServices }
+physics: { @table::mu2e.physics.g4s4Flash }
+outputs: { @table::mu2e.outputs.g4s4Defs }
+
+//----------------------------------------------------------------
+physics.trigger_paths: [  detPath ]
+physics.out: [ detectorOutput ]
+
+// We should run genCounter for all EmptyEvent jobs.
+physics.producers.genCounter: {module_type: GenEventCounter }
+
+// Bring in info from the previous stage
+physics.filters.flashResample: {
+   module_type: ResamplingMixer
+   fileNames: @nil
+   readMode: "sequential"
+   wrapFiles: true
+   mu2e: {
+      products: {
+	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
+	 simParticleMixer: { mixingMap: [ [ "dsRegionFilter", "" ] ] }
+	 stepPointMCMixer: { mixingMap: [ 
+	       [ "dsRegionFilter:virtualdetector", ":" ],
+	       [ "dsRegionFilter:dsregion", ":" ] 
+	       ] }
+      }
+   }
+}
+
+// Point Mu2eG4 to the pre-simulated data
+physics.producers.g4run.MultiStageParameters: {
+   simParticleNumberOffset: 100000
+   genInputHits:  [ "flashResample:dsregion" ]
+   inputSimParticles: "flashResample"
+   inputMCTrajectories: ""
+   inputPhysVolumeMultiInfo: "" # earlier info dropped
+}
+physics.producers.g4run.SDConfig.preSimulatedHits:  ["flashResample:virtualdetector"]
+
+//----------------------------------------------------------------
+physics.filters.flashPrefilter: {
+   module_type: FilterG4Out
+   mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO", "g4run:CRV", "g4run:protonabsorber", "g4run:virtualdetector" ]
+   vetoParticles: [ ]
+}
+
+//----------------------------------------------------------------
+// Fix shower compressor config
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput: g4run
+physics.producers.CaloShowerStepFromStepPt.usePhysVolInfo: true
+physics.producers.CaloShowerStepFromStepPt.calorimeterStepPoints: "flashPrefilter:calorimeter"
+physics.producers.CaloShowerStepFromStepPt.calorimeterROStepPoints: "flashPrefilter:calorimeterRO"
+// The module needs to stop using getMany() and accept InputTags for configuration.
+// Until it is fixed, we have to use a hacked version.
+physics.producers.CaloShowerStepFromStepPt.module_type: CaloShowerStepFromStepPtHACKED
+
+
+//----------------------------------------------------------------
+// The final filter
+physics.filters.detectorFilter: {
+   module_type: "FilterG4Out"
+   mainHitInputs: [
+      "flashPrefilter:tracker", 
+      "flashPrefilter:CRV"
+   ]
+   mainSPPtrInputs: [
+      "CaloShowerStepFromStepPt"
+   ]
+   extraHitInputs: [
+      "flashPrefilter:virtualdetector",
+      "flashPrefilter:protonabsorber"
+   ]
+}
+
+// Add genCounter and flashResample to the trigger path.
+physics.detPath: [ "genCounter", "flashResample", 
+   //need to remove compressPVDetector//  @sequence::physics.detPath
+   "g4run",
+   "g4consistent",
+   "flashPrefilter", # removes stopped muon daughters, filters out stuff not hitting tracker, calo or CRV
+   "CaloShowerStepFromStepPt",
+   "detectorFilter", # filters out particles in calo showers
+   "CaloShowerCrystalSteps",
+   "CaloShowerROSteps"
+]
+
+// Set output file names
+services.TFileService.fileName: "nts.owner.PS-resampler.version.sequencer.root"
+outputs.detectorOutput.fileName: "sim.owner.PS-resampler-TrkCalCRV.version.sequencer.art"
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_phase1.txt"
+
+// Test:
+// physics.filters.flashResample.fileNames: [ "/pnfs/mu2e/tape/phy-sim/sim/mu2e/beam-g4s1-dsregion/g4-10-5/art/91/b1/sim.mu2e.beam-g4s1-dsregion.g4-10-5.002701_00002991.art" ]
