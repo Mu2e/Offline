@@ -109,13 +109,6 @@ physics.filters.dsFilter: {
          vetoDaughters  : []
 }
 
-physics.filters.stepPointMomentumFilter: {
-        module_type: FilterStepPointMomentum
-        inputs : [ "dsResample:crvStage1" ]
-        cutMomentumMin: 45.  // Drop low momentum tracks
-        cutMomentumMax: 500. // Drop straight tracks
-}
-
 physics.filters.trackerStepPointFilter: {
          module_type : TrackerStepPointFilter 
 }
@@ -128,6 +121,13 @@ physics.filters.detectorFilter: {
          vetoDaughters: []
 }
 
+physics.filters.stepPointMomentumFilter: {
+        module_type: FilterStepPointMomentum
+        inputs : [ "detectorFilter:tracker" ]
+        cutMomentumMin: 45.  // Drop low momentum tracks
+        cutMomentumMax: 500. // Drop straight tracks
+}
+
 physics.filters.g4status: {
          module_type: FilterStatusG4
          input: "g4run"
@@ -135,7 +135,7 @@ physics.filters.g4status: {
 }
 
 
-physics.trig: [genCounter, dsResample, g4run, g4consistent, stepPointMomentumFilter, dsFilter, trackerStepPointFilter, detectorFilter]
+physics.trig: [genCounter, dsResample, g4run, g4consistent, dsFilter, trackerStepPointFilter, detectorFilter, stepPointMomentumFilter]
 physics.g4StatusFilter : [dsResample, g4run, "!g4status"]
 physics.outputs: [truncatedEvtsOutput, DSVacuumOut]
 physics.an: [genCountLogger]
@@ -189,5 +189,4 @@ physics.producers.g4run.Mu2eG4CommonCut:{
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 100000
 // Test:
 //physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/363672.fcllist_191019181515/00/00000/sim.oksuzian.minedep-filter-cat.cryconcat_rs1_1019.002701_00000000.art"]
-//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/scratch/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/good/682690.fcllist_191024104002/00/00047/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00020094.art"]
-//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/scratch/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/good/683306.fcllist_191024104850/00/00000/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00000385.art"]
+//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/683306.fcllist_191024104850/00/00000/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00000385.art"]
