@@ -26,10 +26,8 @@ int mu2e::ValBkgCluster::fill(const mu2e::BkgClusterCollection & coll,
     for(auto const& h : bc.hits()) {
       _hd->Fill(h.distance());
     }
-    int i=0;
     for(auto sn: bc.flag().bitNames()) { 
-      if(bc.flag().hasAnyProperty(BkgClusterFlag(sn.first))) _hBits->Fill(i); 
-      i++;
+      if(bc.flag().hasAnyProperty(BkgClusterFlag(sn.first))) _hBits->Fill(std::log2(sn.second)); 
     }
 
   }
