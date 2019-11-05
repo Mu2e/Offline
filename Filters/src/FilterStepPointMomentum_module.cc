@@ -29,24 +29,50 @@ namespace mu2e {
     unsigned numInputEvents_;
     unsigned numPassedEvents_;
   public:
-    explicit FilterStepPointMomentum(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Sequence<art::InputTag> inputs {
+        Name("inputs"),
+          Comment("Particles and StepPointMCs mentioned in thise collections will be preserved.")
+          };
+
+      fhicl::Atom<double> cutMomentumMin {
+        Name("cutMomentumMin"),
+          Comment("The filter passes events if any of the step points satisties pmag>cutMomentumMin\n"
+                  "By default cutMomentumMin=-inf\n"),
+          -std::numeric_limits<double>::max()
+          };
+
+      fhicl::Atom<double> cutMomentumMax {
+        Name("cutMomentumMax"),
+          Comment("The filter passes events if any of the step points satisties pmag<cutMomentumMax\n"
+                  "By default cutMomentumMax=inf\n"),
+          std::numeric_limits<double>::max()
+          };
+
+    };
+
+    using Parameters = art::EDFilter::Table<Config>;
+    explicit FilterStepPointMomentum(const Parameters& conf);
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
   };
 
   //================================================================
-  FilterStepPointMomentum::FilterStepPointMomentum(const fhicl::ParameterSet& pset)
-    : art::EDFilter{pset}
-    , cutMomentumMin_(pset.get<double>("cutMomentumMin"))
-    , cutMomentumMax_(pset.get<double>("cutMomentumMax",  std::numeric_limits<double>::max()))
+  FilterStepPointMomentum::FilterStepPointMomentum(const Parameters& conf)
+    : art::EDFilter{conf}
+    , cutMomentumMin_(conf().cutMomentumMin())
+    , cutMomentumMax_(conf().cutMomentumMax())
     , numInputEvents_(0)
     , numPassedEvents_(0)
   {
-    typedef std::vector<std::string> VS;
-    const VS in(pset.get<VS>("inputs"));
-    for(const auto& i : in) {
+    for(const auto& i : conf().inputs()) {
       inputs_.emplace_back(i);
     }
+
   }
 
   //================================================================
