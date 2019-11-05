@@ -23,6 +23,7 @@ namespace mu2e {
     typedef std::vector<art::InputTag> InputTags;
     InputTags inputs_;
     double cutMomentumMin_;
+    double cutMomentumMax_;
 
     // statistics counters
     unsigned numInputEvents_;
@@ -37,6 +38,7 @@ namespace mu2e {
   FilterStepPointMomentum::FilterStepPointMomentum(const fhicl::ParameterSet& pset)
     : art::EDFilter{pset}
     , cutMomentumMin_(pset.get<double>("cutMomentumMin"))
+    , cutMomentumMax_(pset.get<double>("cutMomentumMax",  std::numeric_limits<double>::max()))
     , numInputEvents_(0)
     , numPassedEvents_(0)
   {
@@ -53,7 +55,7 @@ namespace mu2e {
     for(const auto& cn : inputs_) {
       auto ih = event.getValidHandle<StepPointMCCollection>(cn);
       for(const auto& hit : *ih) {
-        if(hit.momentum().mag() > cutMomentumMin_) {
+        if(hit.momentum().mag() > cutMomentumMin_ && hit.momentum().mag() < cutMomentumMax_) {
           passed = true;
           break;
         }
