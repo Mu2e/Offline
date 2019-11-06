@@ -18,15 +18,18 @@
 #include "art_root_io/TFileService.h"
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
+#include "HepPDT/ParticleData.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/DeadStraw.hh"
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "BTrk/BField/BField.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
+#include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
-#include "MCDataProducts/inc/PtrStepPointMCVector.hh"
+#include "MCDataProducts/inc/StepPointMC.hh"
 #include <utility>
 // root
 #include "TH1F.h"
@@ -34,6 +37,7 @@
 
 using namespace std;
 using CLHEP::Hep3Vector;
+using HepPDT::ParticleData;
 namespace mu2e {
 
   class MakeStrawGasSteps : public art::EDProducer {
@@ -64,11 +68,14 @@ namespace mu2e {
 	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
 	  Comment("Estimated size of output collection"), 2000};
 	fhicl::Atom<string> trackerSteps { Name("trackerStepPoints"),
-	  Comment("Tracker StepPointMC Producer Instance name"),"tracker"};
+	  Comment("Tracker StepPointMC Instance name"),"tracker"};
+	fhicl::Atom<string> stepsToSkip { Name("SkipTheseStepPoints"),
+	  Comment("Tracker StepPointMC producers to skip"), ""};
 	fhicl::Atom<string> keepDeltas { Name("KeepDeltasModule"),
 	  Comment("Dont combine Deltas from this module's collection")};
 	fhicl::Atom<unsigned> startSize { Name("StartSize"),
 	  Comment("Starting size for straw-particle vector"),4};
+	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps")};
 	fhicl::Atom<bool> allStepsAssns{ Name("AllStepsAssns"),
 	  Comment("Build the association to all the contributing StepPointMCs"),false};
       };
@@ -80,34 +87,44 @@ namespace mu2e {
       void beginRun(art::Run& run) override;
       void produce(art::Event& e) override;
       typedef pair<StrawId,cet::map_vector_key> SSPair; // key for pair of straw, SimParticle
-      typedef map< SSPair , PtrStepPointMCVector > SPSMap; // steps by straw, SimParticle
+      typedef art::Ptr<StepPointMC> SPMCP;
+      typedef vector<SPMCP> SPMCPV;
+      typedef map< SSPair , SPMCPV > SPSMap; // steps by straw, SimParticle
       typedef art::Handle<StepPointMCCollection> SPMCCH;
       typedef vector< SPMCCH > SPMCCHV;
       void fillMap(Tracker const& tracker,DeadStraw const& deadStraw, 
 	  SPMCCH const& spmcch, SPSMap& spsmap);
       void compressDeltas(SPSMap& spsmap);
-      void fillStep(PtrStepPointMCVector const& spmcptrs, Straw const& straw,
-      ParticleData const* pdata, StrawGasStep& sgs, art::Ptr<StepPointMC>& spmcptr);
-      void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, art::Ptr<StepPointMC>const&  spmcptr);
-      XYZVec endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw,float charge);
+      void setStepType(SPMCP const& spmcptr, ParticleData const* pdata, StrawGasStep::StepType& stype);
+      void fillStep(SPMCPV const& spmcptrs, Straw const& straw,
+	  ParticleData const* pdata, cet::map_vector_key pid, 
+	  StrawGasStep& sgs, SPMCP & spmcptr);
+      void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCP const&  spmcptr, SPMCPV const& spmcptrs);
+      XYZVec endPosition(SPMCP const& last, Straw const& straw,float charge,StrawGasStep::StepType& stype);
       int _debug, _diag;
       bool _combineDeltas, _allAssns;
       float _maxDeltaLen, _radtol, _parrot, _curlrot;
       float _minionBG;
+      float _curlfac, _linefac;
       float _curlmom, _linemom;
       unsigned _csize, _ssize;
+      SimParticleTimeOffset _toff; // time offsets
+      string _keepDeltas;
+      // StepPointMC selector
+      // This selector will select only data products with the given instance name.
+      // optionally exclude modules: this is a fix
+      art::Selector _selector;
       bool _firstEvent;
-      string _trackerSteps, _keepDeltas;
       // cache the BField direction at the tracker center
       Hep3Vector _bdir;
       float _bnom; // BField in units of (MeV/c)/mm
+      ProditionsHandle<DeadStraw> _deadStraw_h; // dead straw list
       // diagnostic histograms
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
       Float_t _prilen, _pridist, _elen, _erad, _epri, _esec, _partP, _brot, _width, _doca;
       vector<Float_t> _sdist;
       Int_t _npri, _nsec, _partPDG;
-      ProditionsHandle<DeadStraw> _deadStraw_h;
   };
 
   MakeStrawGasSteps::MakeStrawGasSteps(const Parameters& config )  : 
@@ -121,20 +138,22 @@ namespace mu2e {
     _parrot(config().parabolicRotation()),
     _curlrot(config().curlRotation()),
     _minionBG(config().minionBG()),
-    _curlRatio(config().curlRatio()),
-    _lineRatio(config().lineRatio()),
+    _curlfac(config().curlRatio()),
+    _linefac(config().lineRatio()),
     _csize(config().csize()),
     _ssize(config().startSize()),
-    _firstEvent(false),
-    _trackerSteps(config().trackerSteps()),
-    _keepDeltas(config().keepDeltas())
-    {
-      consumesMany<StepPointMCCollection>();
-      produces <StrawGasStepCollection>();
-      // 2 associations: one to all the constituent StepPointMCs, the other to the first (in time) primary
-      produces <StrawGasStepAssns>("Primary");
-      if(_allAssns)produces <StrawGasStepAssns>("All");
-    }
+    _toff(config().SPTO()),
+    _keepDeltas(config().keepDeltas()),
+    _selector{art::ProductInstanceNameSelector(config().trackerSteps()) &&
+      !art::ModuleLabelSelector(config().stepsToSkip()) },
+    _firstEvent(false)
+  {
+    consumesMany<StepPointMCCollection>();
+    produces <StrawGasStepCollection>();
+    // 2 associations: one to all the constituent StepPointMCs, the other to the first (in time) primary
+    produces <StrawGasStepAssns>("Primary");
+    if(_allAssns)produces <StrawGasStepAssns>("All");
+  }
 
   void MakeStrawGasSteps::beginJob(){
     art::ServiceHandle<art::TFileService> tfs;
@@ -143,9 +162,9 @@ namespace mu2e {
       _hphi = tfs->make<TH1F>("phi","Step rotation angle",100,0.0,3.14);
       if(_diag > 1) {
 	_sgsdiag=tfs->make<TTree>("sgsdiag","StrawGasStep diagnostics");
-        _sgsdiag->Branch("prilen",&_prilen,"prilen/F");
-        _sgsdiag->Branch("elen",&_elen,"elen/F");
-        _sgsdiag->Branch("pridist",&_pridist,"pridist/F");
+	_sgsdiag->Branch("prilen",&_prilen,"prilen/F");
+	_sgsdiag->Branch("elen",&_elen,"elen/F");
+	_sgsdiag->Branch("pridist",&_pridist,"pridist/F");
 	_sgsdiag->Branch("brot",&_brot,"brot/F");
 	_sgsdiag->Branch("erad",&_erad,"erad/F");
 	_sgsdiag->Branch("epri",&_epri,"epri/F");
@@ -172,16 +191,18 @@ namespace mu2e {
     _bnom = bnom.mag()*BField::mmTeslaToMeVc;
     // pre-compute momentum thresholds for straight, arc, and curler
     const Tracker& tracker = *GeomHandle<Tracker>();
-    const Straw& straw = tracker.getStraw(StrawId(0,0,0));
-    float rstraw = straw.innerRadius();
-    _curlmom = _bnom*rstraw;
-    _linemom = _arcfac*_pcurl;
+    const Straw& straw = tracker.getStraw(StrawId(0,0,0)); // any straw is good enough
+    float pstraw = _bnom*straw.innerRadius();// transverse momentum with same radius as straw
+    _curlmom = _curlfac*pstraw;
+    _linemom = _linefac*pstraw;
   }
 
   void MakeStrawGasSteps::produce(art::Event& event) {
+  // setup conditions, etc
     const Tracker& tracker = *GeomHandle<Tracker>();
     GlobalConstantsHandle<ParticleDataTable> pdt;
     DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
+    _toff.updateMap(event);
     // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
     sgsc->reserve(_csize);
@@ -192,9 +213,8 @@ namespace mu2e {
     auto StrawGasStepCollectionGetter = event.productGetter(StrawGasStepCollectionPID);
     // Get all of the tracker StepPointMC collections from the event:
     // This selector will select only data products with the given instance name.
-    art::ProductInstanceNameSelector selector(_trackerSteps);
     SPMCCHV stepsHandles;
-    event.getMany( selector, stepsHandles);
+    event.getMany( _selector, stepsHandles);
     //    const Tracker& tracker = *GeomHandle<Tracker>();
     // Informational message on the first event.
     if ( _firstEvent && _debug>0 ) {
@@ -234,11 +254,14 @@ namespace mu2e {
       for(auto ispsmap = spsmap.begin(); ispsmap != spsmap.end(); ispsmap++){
 	auto pid = ispsmap->first.second; // primary SimParticle
 	auto const& spmcptrs = ispsmap->second;
-	const Straw& straw = tracker.getStraw(ispsmap->first.first);
-	ParticleData const* pdata = pdt->particle(spcptrs.front()->simParticle()->pdgId());
+	auto const& straw = tracker.getStraw(ispsmap->first.first);
+	auto const& simptr = spmcptrs.front()->simParticle();
+	auto pref = pdt->particle(simptr->pdgId());
+	ParticleData const* pdata(0);
+	if(pref.isValid())pdata = &pref.ref();
 	StrawGasStep sgs;
-	art::Ptr<StepPointMC> spmcptr;
-	fillStep(spmcptrs,straw,pdata,sgs,spmcptr);
+	SPMCP  spmcptr;
+	fillStep(spmcptrs,straw,pdata,pid,sgs,spmcptr);
 	sgsc->push_back(sgs);
 	// create the Assns to the 'trigger' StepPointMC
 	auto sgsp = art::Ptr<StrawGasStep>(StrawGasStepCollectionPID,sgsc->size()-1,StrawGasStepCollectionGetter);
@@ -248,17 +271,17 @@ namespace mu2e {
 	  for(auto const& spmcptr : spmcptrs)
 	    sgsa_all->addSingle(sgsp,spmcptr);
 	}
-	if(_diag > 0)fillStepDiag(straw,sgs,spmcptr);
+	if(_diag > 0)fillStepDiag(straw,sgs,spmcptr,spmcptrs);
 	if(_debug > 1){
 	  // checks and printout
-	  cout << " SGS with " << spmcptrs.size() << " steps, StrawId = " << sgs.strawId()  << " SimParticle Key = " << sgs.simParticleKey()
-	    << " edep = " << eion << " pathlen = " << pathlen << " glen = " << sqrt((end-start).mag2()) << " width = " << width << " mom = " << mom
+	  cout << " SGS with " << spmcptrs.size() << " steps, StrawId = " << sgs.strawId()  << " SimParticle Key = " << spmcptr->simParticle().id()
+	    << " edep = " << sgs.ionizingEdep() << " pathlen = " << sgs.pathLength() << " glen = " << sqrt((sgs.endPosition()-sgs.startPosition()).mag2()) << " width = " << sgs.width()
 	    << " time = " << sgs.time() << endl;
 
 	  // check if end is inside physical straw
 	  const Straw& straw = tracker.getStraw(sgs.strawId());
 	  static double r2 = straw.innerRadius()*straw.innerRadius();
-	  Hep3Vector hend = Geom::Hep3Vec(end);
+	  Hep3Vector hend = Geom::Hep3Vec(sgs.endPosition());
 	  double rd2 = (hend-straw.getMidPoint()).perpPart(straw.getDirection()).mag2();
 	  if(rd2 - r2 > 1e-5 ) cout << "End outside straw, radius " << sqrt(rd2) << endl;
 	}
@@ -272,18 +295,17 @@ namespace mu2e {
     if(_allAssns) event.put(move(sgsa_all),"All");
   } // end of produce
 
-  void MakeStrawGasSteps::fillStep(PtrStepPointMCVector const& spmcptrs, Straw const& straw,
-      ParticleData const* pdata, StrawGasStep& sgs, art::Ptr<StepPointMC>& spmcptr){
+  void MakeStrawGasSteps::fillStep(SPMCPV const& spmcptrs, Straw const& straw,
+      ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs, SPMCP & spmcptr){
     // variables we accumulate for all the StepPoints in this pair
     double eion(0.0), pathlen(0.0);
-    double time(0.0), mom(0.0);
     if(_diag>1){
       _npri=_nsec=0;
       _epri=_esec=0.0;
     }
     // keep track of the first and last PRIMARY step
-    art::Ptr<StepPointMC> first;
-    art::Ptr<StepPointMC> last;
+    SPMCP  first;
+    SPMCP  last;
     // loop over all  the StepPoints for this SimParticle
     for(auto const& spmcptr : spmcptrs){
       bool primary=spmcptr->simParticle()->id() == pid;
@@ -315,17 +337,14 @@ namespace mu2e {
     // Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
     XYZVec start = Geom::toXYZVec(first->position());
     float charge(0.0);
-    if(pdata!=0){
-      charge = pdt->particle(first->simParticle()->pdgId()).ref().charge();
-    }
+    if(pdata!=0) charge = pdata->charge();
     // determine the type of step
     StrawGasStep::StepType stype;
-    setType(first,stype);
+    setStepType(first,pdata,stype);
     // compute the end position and step type
     // in future we should store the end position in the StepPointMC FIXME!
     XYZVec end = endPosition(last,straw,charge,stype);
-    time = first->time(); // use first time as time of this step (cluster times will be added)
-    mom = 0.5*(first->momentum().mag() + last->momentum().mag());	// average first and last momentum
+    float  mom = 0.5*(first->momentum().mag() + last->momentum().mag());	// average first and last momentum
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();
     auto pperp = pdir.perp(_bdir);
@@ -335,9 +354,11 @@ namespace mu2e {
     static const float prms(1.0/(12.0*sqrt(5.0))); // RMS for a parabola.  This includes a factor 1/8 for the sagitta calculation too
     float sagrms = prms*sint*pathlen*pathlen*_bnom*pperp/mom;
     double width = std::min(sagrms,bendrms); // choose the smaller: different approximations work for different momenta/directions
-    // create the gas step
+    // apply the time offsets
+    double stime = _toff.timeWithOffsetsApplied(*first);
+  // create the gas step
     sgs = StrawGasStep( first->strawId(), stype,
-	(float)eion,(float)pathlen, (float)width, (float)mom, time, 
+	(float)eion,(float)pathlen, (float)width, (float)stime,
 	start, end);
   }
 
@@ -359,8 +380,8 @@ namespace mu2e {
 	// create key
 	SSPair stpair(sid,tid);
 	// create ptr to this step
-	art::Ptr<StepPointMC> spmcptr(spmcch,ispmc);
-	vector<art::Ptr<StepPointMC>> spmcptrv;
+	SPMCP  spmcptr(spmcch,ispmc);
+	vector<SPMCP > spmcptrv;
 	spmcptrv.reserve(_ssize);
 	spmcptrv.push_back(spmcptr);
 	// check if this key exists and add it if not
@@ -443,11 +464,11 @@ namespace mu2e {
     }
   }
 
-  XYZVec MakeStrawGasSteps::endPosition(art::Ptr<StepPointMC>const& last, Straw const& straw, float charge) {
+  XYZVec MakeStrawGasSteps::endPosition(SPMCP const& last, Straw const& straw, float charge,StrawGasStep::StepType& stype) {
     static const double r2 = straw.innerRadius()*straw.innerRadius();
     XYZVec retval;
     // null charge has no propagation.
-    if(charge == 0.0){
+    if(charge == 0.0 || stype.shape()==StrawGasStep::StepType::point){
       retval = last->position();
     } else {
       auto momhat = last->momentum().unit();
@@ -480,17 +501,17 @@ namespace mu2e {
   }
 
   void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs,
-      art::Ptr<StepPointMC>const&  spmcptr) {
+      SPMCP const&  spmcptr, SPMCPV const& spmcptrs) {
     _erad = sqrt((Geom::Hep3Vec(sgs.endPosition())-straw.getMidPoint()).perpPart(straw.getDirection()).mag2());
     _hendrad->Fill(_erad);
     _hphi->Fill(_brot);
     if(_diag > 1){
-      _prilen = pathlen;
+      _prilen = sgs.pathLength();
       _pridist = sqrt((sgs.endPosition()-sgs.startPosition()).mag2());
-      _partP = mom;
+      _partP = spmcptr->momentum().mag();
       _partPDG = spmcptr->simParticle()->pdgId();
       _elen = spmcptr->stepLength();
-      _width = width;
+      _width = sgs.width();
       // compute DOCA to the wire
       TwoLinePCA poca(Geom::Hep3Vec(sgs.startPosition()),Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()),
 	  straw.getMidPoint(),straw.getDirection());
@@ -505,7 +526,7 @@ namespace mu2e {
     }
   }
 
-  void MakeStrawGasSteps::setType(art::Ptr<StepPointMC>const& spmcptr, StrawGasStep::StepType& stype) {
+  void MakeStrawGasSteps::setStepType(SPMCP const& spmcptr, ParticleData const* pdata, StrawGasStep::StepType& stype) {
   // now determine ioniztion and shape
     int itype, shape;
     if(pdata->charge() == 0.0){
@@ -519,15 +540,15 @@ namespace mu2e {
 	shape = StrawGasStep::StepType::arc;
       else
 	shape = StrawGasStep::StepType::line;
-      mass = pdata->mass();
+      double mass = pdata->mass();
       double bg = mom/mass; // beta x gamma
       if(bg > _minionBG)
 	itype =StrawGasStep::StepType::minion;
       else
      	itype =StrawGasStep::StepType::highion;
     }
-    stype = StrawGasStep::StepType( (StrawGasStep::StepType::shape)shape,
-	(StrawGasStep::StepType::ionization)itype );
+    stype = StrawGasStep::StepType( (StrawGasStep::StepType::Shape)shape,
+	(StrawGasStep::StepType::Ionization)itype );
   }
 
 }

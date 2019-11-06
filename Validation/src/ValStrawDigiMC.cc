@@ -33,9 +33,6 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
 
     // check the Ptr's.  If the products are not there, the accessors can crash
     bool ptrOK = true;
-    for(auto const& ap: sd.stepPointMCs()) {
-      if(!ap.isAvailable()) ptrOK = false;
-    }
     auto const& a0 = sd.stepPointMC(StrawEnd::cal);
     auto const& a1 = sd.stepPointMC(StrawEnd::hv);
     

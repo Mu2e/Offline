@@ -25,8 +25,20 @@ namespace mu2e {
 
   StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2],
       CLHEP::HepLorentzVector cpos[2],
-      art::Ptr<StepPointMC> stepMC[2], vector<art::Ptr<StepPointMC> > const& stepMCs) :
-    _strawid(sid), _stepMCs(stepMCs)
+      art::Ptr<StrawGasStep> sgs[2], art::Ptr<StepPointMC> stepmc[2]) :
+    _strawid(sid)
+  {
+    for(size_t strawend=0;strawend<2;++strawend){
+      _wetime[strawend] = wetime[strawend];
+      _cpos[strawend] = cpos[strawend];
+      _sgs[strawend] = sgs[strawend];
+      _stepMC[strawend] = stepmc[strawend];
+    }
+  }
+
+// legacy constructor: StrawGasSteps will be empty!
+  StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2], 
+	CLHEP::HepLorentzVector cpos[2], art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepmcs) :_strawid(sid)
   {
     for(size_t strawend=0;strawend<2;++strawend){
       _wetime[strawend] = wetime[strawend];
@@ -35,23 +47,24 @@ namespace mu2e {
     }
   }
 
-  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs) : _strawid(rhs.strawId()), _stepMCs(rhs.stepPointMCs()) {
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs) : _strawid(rhs.strawId()) {
     for(int i_end=0;i_end<StrawEnd::nends;++i_end){
       StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
       _wetime[end] = rhs.wireEndTime(end);
       _cpos[end] = rhs.clusterPosition(end);
+      _sgs[end] = rhs.strawGasStep(end);
       _stepMC[end] = rhs.stepPointMC(end);
     }
   }
 
-  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs) : _strawid(rhs.strawId()) {
+  StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2] ) : _strawid(rhs.strawId()) {
     for(int i_end=0;i_end<StrawEnd::nends;++i_end){
       StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
       _wetime[end] = rhs.wireEndTime(end);
       _cpos[end] = rhs.clusterPosition(end);
+      _sgs[end] = rhs.strawGasStep(end);
       _stepMC[end] = stepMC[i_end];
     }
-    _stepMCs = stepMCs;
   }
 
   double StrawDigiMC::driftDistance(StrawEnd strawend) const {
@@ -84,26 +97,12 @@ namespace mu2e {
   }
 
   double StrawDigiMC::energySum() const {
-    double esum(0.0);
-    for(auto imcs = _stepMCs.begin(); imcs!= _stepMCs.end(); ++ imcs){
-      esum += (*imcs)->eDep();
-    }
-    return esum;
+    return _sgs[0]->ionizingEdep();
   }
 
 
   double StrawDigiMC::triggerEnergySum(StrawEnd strawend) const {
-    double esum(0.0);
-    if(!_stepMC[(size_t)strawend].isNull()){
-      for(auto imcs = _stepMCs.begin(); imcs!= _stepMCs.end(); ++ imcs){
-	// if the simParticle for this step is the same as the one which fired the discrim, add the energy
-	if( (*imcs)->simParticle() == _stepMC[(size_t)strawend]->simParticle() ||
-	    (*imcs)->simParticle()->parent() == _stepMC[(size_t)strawend]->simParticle() ||
-	    (*imcs)->simParticle() == _stepMC[(size_t)strawend]->simParticle()->parent() )
-	  esum += (*imcs)->eDep();
-      }
-    }
-    return esum;
+    return _sgs[strawend]->ionizingEdep();
   }
 
   // Print the information found in this hit.

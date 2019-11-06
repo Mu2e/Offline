@@ -126,12 +126,6 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
       }
     }
 
-    for (const auto& i_step_mc : i_strawDigiMC.stepPointMCs()) {
-      if (i_step_mc.isAvailable()) {
-	fillTree(*i_step_mc);
-      }
-    }
-
     _digiProductId = _stepProductId;
     _digiTime = i_strawDigiMC.wireEndTime(StrawEnd::cal);
     _digis->Fill();

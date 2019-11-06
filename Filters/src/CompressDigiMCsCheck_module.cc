@@ -144,45 +144,41 @@ namespace mu2e {
 	  // If we only access steps through digis then you will get the correct information
 	  // You cannot loop over the StepPointMCCollection however
 	  // Here we check that the HV and Cal StepPtrs also exist in the WaveformStepPtrs
-	  const auto& i_newStepPointMCCal = i_newStrawDigiMC.stepPointMC(StrawEnd::cal);
-	  bool identical_cal_ptr = false;
-	  bool identical_hv_ptr = false;
-	  for (const auto& i_triggerStepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
-	    if (i_triggerStepPointPtr == i_newStepPointMC) {
-	      identical_hv_ptr = true;
-	    }
-	    if (i_triggerStepPointPtr == i_newStepPointMCCal) {
-	      identical_cal_ptr = true;
-	    }
-	  }
-	  if (! (identical_hv_ptr && identical_cal_ptr) ) {
-	    throw cet::exception("CompressDigiMCsCheck") << "Trigger StepPointMCs in StrawDigiMCs are not identical to any StepPointMC in the waveform. This could indicate a duplication of StepPointMCs" << std::endl;
-	  }
-
-	  // Case 2: In this case, we have looped over an StepPointMCCollection with duplicated steps
-	  //         (and have not duplicated things further)
-	  //         StepPointMCs: A, B, C, D, E, A', A''
-	  //         and the waveform will now include the duplicated steps:
-	  //         StrawDigiMC: HVStepPtr-->A', CalStepPtr-->A'', WaveformStepPtrs-->A, B, C, D, E, A', A''
-	  // This will not trigger the exception in Case 1
-	  // Here we check that there are no identical waveform steps
-	  for (const auto& i_stepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
-	    for (const auto& j_stepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
-	      if (i_stepPointPtr == j_stepPointPtr) {
-		continue; // these will obviously match
-	      }
-
-	      if ( (i_stepPointPtr->volumeId() == j_stepPointPtr->volumeId()) &&
-		   (i_stepPointPtr->totalEDep() == j_stepPointPtr->totalEDep()) && 
-		   (i_stepPointPtr->simParticle() == j_stepPointPtr->simParticle())
-		   ) {
-		throw cet::exception("CompressDigiMCsCheck") 
-		  << "Two StepPointMCs in StrawDigiMC waveform are identical: " << std::endl
-		  << "\ti_stepPointPtr: volumeId = " << i_stepPointPtr->volumeId() << ", EDep = " << i_stepPointPtr->totalEDep() << ", SimPart = " << i_stepPointPtr->simParticle() << std::endl
-		  << "\tj_stepPointPtr: volumeId = " << j_stepPointPtr->volumeId() << ", EDep = " << j_stepPointPtr->totalEDep() << ", SimPart = " << j_stepPointPtr->simParticle() << std::endl;
-	      }
-	    }
-	  }
+//	  const auto& i_newStepPointMCCal = i_newStrawDigiMC.stepPointMC(StrawEnd::cal);
+//	  bool identical_cal_ptr = false;
+//	  bool identical_hv_ptr = false;
+//	  for (const auto& i_triggerStepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
+//	    if (i_triggerStepPointPtr == i_newStepPointMC) {
+//	      identical_hv_ptr = true;
+//	    }
+//	    if (i_triggerStepPointPtr == i_newStepPointMCCal) {
+//	      identical_cal_ptr = true;
+//	    }
+//	  }
+//	  if (! (identical_hv_ptr && identical_cal_ptr) ) {
+//	    throw cet::exception("CompressDigiMCsCheck") << "Trigger StepPointMCs in StrawDigiMCs are not identical to any StepPointMC in the waveform. This could indicate a duplication of StepPointMCs" << std::endl;
+//	  }
+//
+//	  // Case 2: In this case, we have looped over an StepPointMCCollection with duplicated steps
+//	  //         (and have not duplicated things further)
+//	  //         StepPointMCs: A, B, C, D, E, A', A''
+//	  //         and the waveform will now include the duplicated steps:
+//	  //         StrawDigiMC: HVStepPtr-->A', CalStepPtr-->A'', WaveformStepPtrs-->A, B, C, D, E, A', A''
+//	  // This will not trigger the exception in Case 1
+//	  // Here we check that there are no identical waveform steps
+//	  for (const auto& i_stepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
+//	    for (const auto& j_stepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
+//	      if (i_stepPointPtr == j_stepPointPtr) {
+//		continue; // these will obviously match
+//	      }
+//
+//	      if ( (i_stepPointPtr->volumeId() == j_stepPointPtr->volumeId()) &&
+//		   (i_stepPointPtr->totalEDep() == j_stepPointPtr->totalEDep())
+//		   ) {
+//		throw cet::exception("CompressDigiMCsCheck") << "Two StepPointMCs in StrawDigiMC waveform are identical" << std::endl;
+//	      }
+//	    }
+//	  }
 	}
       }
     }

@@ -40,6 +40,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 // MC structures
 #include "TrackerMC/inc/StrawClusterSequencePair.hh"
 #include "TrackerMC/inc/StrawWaveform.hh"
@@ -551,6 +552,7 @@ namespace mu2e {
                 art::Ptr<StepPointMC> const& spmcptr,
                 Straw const& straw, StrawClusterSequencePair& shsp) {
       StepPointMC const& step = *spmcptr;
+      art::Ptr<StrawGasStep> sgsptr;// kludge for backwards compatibility
       StrawId sid = straw.id();
      // get time offset for this step
       double tstep = _toff.timeWithOffsetsApplied(step);
@@ -594,7 +596,7 @@ namespace mu2e {
             double ctime = microbunchTime(strawele,gtime);
             // create the clust
             StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
-                               spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime)); //JB: + wireq._phi
+                               sgsptr,spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime)); //JB: + wireq._phi
 
             // add the clusts to the appropriate sequence.
             shsp.clustSequence(end).insert(clust);

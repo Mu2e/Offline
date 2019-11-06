@@ -70,9 +70,10 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
   // energy accessor is not protected against bad Ptr
   double energy = 0.0, tenergy0 = 0.0, tenergy1 = 0.0;
   bool eOK = true;
-  for(auto const& ap: obj.stepPointMCs()) {
-    if(!ap.isAvailable()) eOK = false;
-  }
+  if(!obj.stepPointMC(StrawEnd::cal).isAvailable() ||
+      !obj.stepPointMC(StrawEnd::hv).isAvailable() ||
+      !obj.strawGasStep(StrawEnd::cal).isAvailable() ||
+      !obj.strawGasStep(StrawEnd::hv).isAvailable() ) eOK = false;
   if(eOK) {
     energy = obj.energySum();
     tenergy0 = obj.triggerEnergySum(StrawEnd::cal);
