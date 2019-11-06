@@ -5,20 +5,26 @@
 
 process_name : corsikaTest
 
+targetParams: {
+    projectToTargetBox : true
+    targetBoxXmin: -10000
+    targetBoxXmax: 3000
+    targetBoxYmin: -5000
+    targetBoxYmax: 5000
+    targetBoxZmin: -5000
+    targetBoxZmax: 21000
+}
+
 source: {
     module_type: FromCorsikaBinary
     fileNames: ["/mu2e/app/users/srsoleti/corsika-77100/run/DAT110001"]
-    runNumber          : 55
+    runNumber          : 1
     firstSubRunNumber  : 0
     firstEventNumber   : 1
     showerAreaExtension  : 10000
-    targetBoxXmin : -10000
-    targetBoxXmax : 3000
-    targetBoxYmin : -5000
-    targetBoxYmax : 5000
-    targetBoxZmin : -5000
-    targetBoxZmax : 21000
     maxEvents: -1
+    @table::targetParams
+    fluxConstant: 1.8e4
 }
 
 customCutPhoton: {
@@ -38,6 +44,7 @@ customCutNeutron: {
          { type: pdgId pars: [ 2112, -2112 ] }]
 }
 
+
 services : {
   message : @local::default_message
   TFileService : { fileName : "nts.corsikaHist.owner.version.sequencer.root" }
@@ -46,8 +53,9 @@ services : {
   ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
   G4Helper : { }
-  RandomNumberGenerator : { }
   SeedService : @local::automaticSeeds
+  RandomNumberGenerator : { }
+
   TimeTracker: {
     printSummary: true  # default
   }
@@ -57,20 +65,20 @@ services.GeometryService.inputFile : "JobConfig/cosmic/geom_cosmic.txt"
 
 physics : {
   producers : {
+
     corsikaGen : {
       module_type : CORSIKAEventGenerator
-      refY0 : 20000
-      buffer : 0
-      projectToTargetBox : true
-      tOffset : 0
+      corsikaModuleLabel: "FromCorsikaBinary"
+      refPointChoice: "UNDEFINED"
+      @table::targetParams
     }
 
-    g4run : 
+    g4run :
     {
       module_type: Mu2eG4
       physics: @local::mu2eg4DefaultPhysics
       ResourceLimits: @local::mu2eg4DefaultResourceLimits
-	    TrajectoryControl: @local::mu2eg4DefaultTrajectories 
+	    TrajectoryControl: @local::mu2eg4DefaultTrajectories
       debug: @local::mu2eg4DefaultDebug
       visualization: @local::mu2eg4NoVisualization
 
@@ -96,6 +104,7 @@ physics : {
       }
     }
 
+
     randomsaver : @local::randomsaver
 
     genCounter: {
@@ -112,14 +121,16 @@ physics : {
     }
 
     corsikaGenPlots: {
+         CORSIKAModuleLabel   : "corsikaGen"
+         CORSIKAInstanceName  : ""
          module_type: CORSIKAGenPlots
     }
 
   }
 
-  trigFilter: [corsikaGen, genCounter, g4run, randomsaver]
+  trigFilter: [corsikaGen, g4run, g4run, randomsaver]
   e1 : [outfile]
-  ana : [genCountLogger, corsikaGenPlots]
+  ana : [corsikaGenPlots]
 
   trigger_paths  : [trigFilter]
   end_paths : [e1, ana]
@@ -131,8 +142,6 @@ outputs : {
     fileName : "sim.corsikaOut.owner.version.sequencer.art"
   }
 }
-
 services.SeedService.baseSeed         :  3425
 services.SeedService.maxUniqueEngines :  20
-
 // vim: set ft=cpp:
