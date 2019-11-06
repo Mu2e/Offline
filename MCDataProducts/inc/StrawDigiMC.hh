@@ -6,8 +6,9 @@
 // Original author David Brown, LBNL
 //
 // Mu2e includes
-#include "RecoDataProducts/inc/StrawDigi.hh"
 #include "DataProducts/inc/StrawId.hh"
+#include "DataProducts/inc/StrawEnd.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 // CLHEP includes
 #include "CLHEP/Vector/LorentzVector.h"
@@ -17,6 +18,7 @@
 // C++ includes
 #include <iostream>
 #include <vector>
+#include <array>
 
 // Mu2e includes
 
@@ -29,13 +31,15 @@ namespace mu2e {
     StrawDigiMC();
     // construct from hitlets
     StrawDigiMC(StrawId sid, double wetime[2], 
-    CLHEP::HepLorentzVector cpos[2], 
-    art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs);
+	CLHEP::HepLorentzVector cpos[2], 
+	art::Ptr<StrawGasStep> sgs[2], art::Ptr<StepPointMC> stepMC[2]);
+    // temporary legacy construtctor fot testing FIXME!
+    StrawDigiMC(StrawId sid, double wetime[2], 
+	CLHEP::HepLorentzVector cpos[2], art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepmcs);
 
     // copy construcors
     StrawDigiMC(const StrawDigiMC& rhs); // default: don't copy art::Ptrs
-    StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepMCs);
-
+    StrawDigiMC(const StrawDigiMC& rhs, art::Ptr<StepPointMC> stepMC[2] );
     // Accessors
     StrawId strawId() const { return _strawid; }
     double wireEndTime(StrawEnd strawend) const { return _wetime[strawend]; }
@@ -44,9 +48,11 @@ namespace mu2e {
     double driftDistance(StrawEnd strawend) const;
     double distanceToMid(StrawEnd strawend) const;
     art::Ptr<StepPointMC> const&  stepPointMC(StrawEnd strawend) const { return _stepMC[strawend]; }
-    std::vector<art::Ptr<StepPointMC> > const& stepPointMCs() const { return _stepMCs; }
+    std::array<art::Ptr<StepPointMC>,StrawEnd::nends> const&  stepPointMCs() const { return _stepMC; }
+    art::Ptr<StrawGasStep> const&  strawGasStep(StrawEnd strawend) const { return _sgs[strawend]; }
     StrawEnd earlyEnd() const { return (_wetime[StrawEnd::cal] < _wetime[StrawEnd::hv]) ?  StrawEnd::cal : StrawEnd::hv; }
     art::Ptr<StepPointMC> const&  earlyStepPointMC() const { return stepPointMC(earlyEnd()); }
+    art::Ptr<StrawGasStep> const&  earlyStrawGasStep() const { return strawGasStep(earlyEnd()); }
 
     double energySum() const;// sum of all MC true energy deposited
     // energy sum of particle that triggered the discriminator
@@ -58,15 +64,13 @@ namespace mu2e {
 
   private:
     StrawId  _strawid;      // Straw sid
-  // the following should be an std::array<,2>, but that's not supported by CINT: FIXME!!
-    CLHEP::HepLorentzVector _cpos[2]; // Positions of the clusters responsible
+    std::array<CLHEP::HepLorentzVector,StrawEnd::nends> _cpos; // Positions of the clusters responsible
     // for the TDC firings on each end (can be the same)
-    double _wetime[2]; // times at the wire ends of the signals which fired the TDC.  This needs double precision as neutrons can take seconds (!) to generate signals
+    std::array<double,StrawEnd::nends> _wetime; // times at the wire ends of the signals which fired the TDC.  This needs double precision as neutrons can take seconds (!) to generate signals
     // in ns from event window marker
 
-    art::Ptr<StepPointMC> _stepMC[2];	  // Ptr into StepPointMC collection of step which
-    // triggered the TDC
-    std::vector<art::Ptr<StepPointMC> > _stepMCs; // All StepPointMCs which contributed to the waveform
+    std::array<art::Ptr<StrawGasStep>,StrawEnd::nends> _sgs;	  // Ptr into StrawGasStep collection of step which
+    std::array<art::Ptr<StepPointMC>,StrawEnd::nends> _stepMC;	  // Ptr into StepPointMC collection of step which
   };
 
   inline std::ostream& operator<<( std::ostream& ost,

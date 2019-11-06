@@ -127,20 +127,21 @@ namespace mu2e {
 	if(!found)sct.push_back(spcount(spp,isactive));
       }
       if(saveall){
-	// add the SimParticles that contributed non-trigger energy.  These have 0 count
-	for(const auto& tshs : kseed.hits()) {
-	  StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
-	  for(auto const& spmc : mcdigi.stepPointMCs()){
-	    bool found(false);
-	    for(auto& spc : sct ) {
-	      if(spc._spp == spmc->simParticle() ){
-		found = true;
-		break;
-	      }
-	    }
-	    if(!found)sct.push_back(spcount(spmc->simParticle()));
-	  }
-	}
+      // FIXME!
+//	// add the SimParticles that contributed non-trigger energy.  These have 0 count
+//	for(const auto& tshs : kseed.hits()) {
+//	  StrawDigiMC const& mcdigi = mcdigis.at(tshs.index());
+//	  for(auto const& spmc : mcdigi.stepPointMCs()){
+//	    bool found(false);
+//	    for(auto& spc : sct ) {
+//	      if(spc._spp == spmc->simParticle() ){
+//		found = true;
+//		break;
+//	      }
+//	    }
+//	    if(!found)sct.push_back(spcount(spmc->simParticle()));
+//	  }
+//	}
       }
       // sort by # of contributions
       sort(sct.begin(),sct.end(),spcountcomp());

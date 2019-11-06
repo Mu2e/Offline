@@ -64,7 +64,8 @@
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 // straws
 #include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 
 // tracking 
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"

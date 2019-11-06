@@ -201,9 +201,6 @@ namespace mu2e {
     for(auto const& sd : *trkDMC) { // loop over StrawDigiMC
       SPsave.insert(sd.stepPointMC(StrawEnd::cal)->simParticle().key());
       SPsave.insert(sd.stepPointMC(StrawEnd::hv )->simParticle().key());
-      for(auto const& s: sd.stepPointMCs()) {
-        SPsave.insert(s->simParticle().key());
-      }
     }
     if(_verbose>5) std::cout
             << "CalibCosmicFilter SimParticles saved after tracker "
@@ -357,13 +354,10 @@ namespace mu2e {
       outDMCp(new mu2e::StrawDigiMCCollection());
     auto& outDMC = *outDMCp;
     art::Ptr<StepPointMC> stepMC[2];
-    std::vector<art::Ptr<StepPointMC> > stepMCs;
     for(auto d: *trkDMC) {
       stepMC[StrawEnd::cal] = SPMCmap[d.stepPointMC(StrawEnd::cal)];
       stepMC[StrawEnd::hv ] = SPMCmap[d.stepPointMC(StrawEnd::hv )];
-      stepMCs.clear();
-      for(auto i:d.stepPointMCs()) stepMCs.push_back(SPMCmap[i]);
-      outDMC.push_back( mu2e::StrawDigiMC(d, stepMC, stepMCs) );
+      outDMC.push_back( mu2e::StrawDigiMC(d, stepMC) );
     } // loop over digis
 
     if(_verbose>5) std::cout
@@ -398,6 +392,7 @@ namespace mu2e {
       auto& outCrvDMC = *outCrvDMCp;
 
       auto crvDMC = event.getValidHandle<CrvDigiMCCollection>(_crvDMCtag);
+      std::vector<art::Ptr<StepPointMC> > stepMCs;
       for(auto d: *crvDMC) {
         stepMCs.clear();
         for(auto i:d.GetStepPoints()) stepMCs.push_back(SPMCmap[i]);
