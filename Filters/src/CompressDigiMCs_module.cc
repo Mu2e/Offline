@@ -672,22 +672,23 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
     newTriggerStepPtr[i_end] = new_step_point;
   }
 
-  std::vector<art::Ptr<StepPointMC> > newWaveformStepPtrs;
-  for (const auto& i_step_mc : old_straw_digi_mc.stepPointMCs()) {
-    const auto& newStepPtrIter = step_remap.find(i_step_mc);
-    if (newStepPtrIter == step_remap.end()) {
-      if (i_step_mc.isAvailable()) {
-	step_remap[i_step_mc] = copyStepPointMC( *i_step_mc, _trackerOutputInstanceLabel );
-      }
-      else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
-	step_remap[i_step_mc] = i_step_mc;
-      }
-    }
-    art::Ptr<StepPointMC> new_step_point = step_remap.at(i_step_mc);
-    newWaveformStepPtrs.push_back(new_step_point);
-  }
+//  std::vector<art::Ptr<StepPointMC> > newWaveformStepPtrs;
+//  for (const auto& i_step_mc : old_straw_digi_mc.stepPointMCs()) {
+//    const auto& newStepPtrIter = step_remap.find(i_step_mc);
+//    if (newStepPtrIter == step_remap.end()) {
+//      if (i_step_mc.isAvailable()) {
+//	step_remap[i_step_mc] = copyStepPointMC( *i_step_mc, _trackerOutputInstanceLabel );
+//      }
+//      else { // this is a null Ptr but it should be added anyway to keep consistency (not expected for StrawDigis)
+//	step_remap[i_step_mc] = i_step_mc;
+//      }
+//    }
+//    art::Ptr<StepPointMC> new_step_point = step_remap.at(i_step_mc);
+//    newWaveformStepPtrs.push_back(new_step_point);
+//  }
 
-  StrawDigiMC new_straw_digi_mc(old_straw_digi_mc, newTriggerStepPtr, newWaveformStepPtrs); // copy everything except the Ptrs from the old StrawDigiMC
+//  StrawDigiMC new_straw_digi_mc(old_straw_digi_mc, newTriggerStepPtr, newWaveformStepPtrs); // copy everything except the Ptrs from the old StrawDigiMC
+  StrawDigiMC new_straw_digi_mc(old_straw_digi_mc, newTriggerStepPtr); // copy everything except the Ptrs from the old StrawDigiMC
   _newStrawDigiMCs->push_back(new_straw_digi_mc);
 }
 

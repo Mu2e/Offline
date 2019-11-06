@@ -310,7 +310,7 @@ namespace mu2e
         _pdist = dprod.mag();
         _pperp = dprod.perp(zdir);
         _pmom = spmcp->momentum().mag();
-        _mcnsteps = mcdigi.stepPointMCs().size();
+        _mcnsteps = 2; // FIXME!
         // compute energy sum
         _mcedep = mcdigi.energySum();
         _mcetrig = mcdigi.triggerEnergySum(StrawEnd::cal);

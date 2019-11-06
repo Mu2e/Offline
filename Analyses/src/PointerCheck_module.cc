@@ -454,7 +454,6 @@ namespace mu2e {
     for(auto const& d: coll) { // loop over the collection
       n++;
       // assemble all the pointer in the object
-      ptrs = d.stepPointMCs();
       ptrs.push_back(d.stepPointMC(StrawEnd::cal));
       ptrs.push_back(d.stepPointMC(StrawEnd::hv ));
       // check them
