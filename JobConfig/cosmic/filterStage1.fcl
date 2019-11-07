@@ -1,0 +1,72 @@
+// Yuri Oksuzian, 2019
+// Run this script over stage 1 dsstops
+// For example:
+// mu2e -c JobConfig/cosmic/filterStage1.fcl -s /pnfs/mu2e/tape/phy-sim/sim/mu2e/cosmic-g4s1s2-cryresample/cry-rs1-1019/art/34/bd/sim.mu2e.cosmic-g4s1s2-cryresample.cry-rs1-1019.002701_00022997.art
+// Select cosmics with low energy depostion and/or cosmics entering through user specified CRV regions 
+
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "Mu2eG4/fcl/prolog.fcl"
+
+# Give this job a name.
+process_name : filterS1
+
+source : {
+   module_type : RootInput
+}
+
+services : {
+   message               : @local::default_message
+   TFileService          : { fileName : "nts.owner.filtered-s1.version.sequencer.root" }
+   RandomNumberGenerator : { }
+   GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_crv_v07.txt" }
+   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
+   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
+   G4Helper               : { }
+   SeedService            : @local::automaticSeeds
+}
+
+physics : {
+   filters: {
+	filterS1: {
+        module_type: FilterCosmicsStage1
+        inputs : [ "cosmicFilter:CRV" ]
+
+// Gap events
+//	cutEDepMax: 10
+
+//Upstream region
+//	cutEDepMin: 10
+//	cutZMax: 3000
+//Downstream region
+//	cutEDepMin: 10
+//	cutZMin: 3000
+
+   	}
+   }
+   trig: [filterS1]
+   outputs: [dsout]
+   end_paths: [outputs]
+   trigger_paths: [trig]
+}
+
+outputs: {
+   dsout : {
+      module_type :  RootOutput
+      SelectEvents:  ["trig"]
+      outputCommands:["keep *_*_*_*"]
+      fileName    : "sim.owner.filtered-s1.version.sequencer.art"
+   }
+}
+
+// Limit the amount of "Begin processing the ... record" messages
+services.message.destinations.log.categories.ArtReport.reportEvery : 1
+services.message.destinations.log.categories.ArtReport.limit : 1
+services.message.destinations.log.categories.ArtReport.timespan : 300
+
+//Add Mu2e geometry service identifier				      
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
+services.SeedService.policy:  autoIncrement
+services.SeedService.maxUniqueEngines: 20
+services.SeedService.baseSeed: 658586250
