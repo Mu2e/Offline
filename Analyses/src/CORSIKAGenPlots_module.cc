@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////////////////
-// Class:       CRYGenPlots
+// Class:       CORSIKAGenPlots
 // Plugin Type: analyzer (art v2_10_04)
-// File:        CRYGenPlots_module.cc
+// File:        CORSIKAGenPlots_module.cc
 //
-// Generated at Wed Jun 27 18:05:40 2018 by Hoai Nam Tran using cetskelgen
-// from cetlib version v3_02_01.
+// Stefano Roberto Soleti (roberto@lbl.gov)
+//
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -29,24 +29,24 @@
 #include "TH2F.h"
 #include "TTree.h"
 namespace mu2e {
-  class CRYGenPlots;
+  class CORSIKAGenPlots;
 }
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
 
 
-class mu2e::CRYGenPlots : public art::EDAnalyzer {
+class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
   public:
-    explicit CRYGenPlots(fhicl::ParameterSet const & p);
+    explicit CORSIKAGenPlots(fhicl::ParameterSet const & p);
     // The compiler-generated destructor is fine for non-base
     // classes without bare pointers or other resource use.
 
     // Plugins should not be copied or assigned.
-    CRYGenPlots(CRYGenPlots const &) = delete;
-    CRYGenPlots(CRYGenPlots &&) = delete;
-    CRYGenPlots & operator = (CRYGenPlots const &) = delete;
-    CRYGenPlots & operator = (CRYGenPlots &&) = delete;
+    CORSIKAGenPlots(CORSIKAGenPlots const &) = delete;
+    CORSIKAGenPlots(CORSIKAGenPlots &&) = delete;
+    CORSIKAGenPlots & operator = (CORSIKAGenPlots const &) = delete;
+    CORSIKAGenPlots & operator = (CORSIKAGenPlots &&) = delete;
 
     // Required functions.
     void analyze(art::Event const & e) override;
@@ -57,48 +57,47 @@ class mu2e::CRYGenPlots : public art::EDAnalyzer {
 
   private:
     std::string processName_;
-    std::string CRYModuleLabel_;
-    std::string CRYInstanceName_;
-    double _keMax;
+    std::string CORSIKAModuleLabel_;
+    std::string CORSIKAInstanceName_;
+    float _keMax = std::numeric_limits<float>::max();
 
     // histograms
-    TH2F *_hXZ;
-    TH1F *_hY;
-    TH1F *_hKE;
-    TH1F *_hTheta;
-    TH1F *_hPhi;
-    TH1F *_hPmag;
-    TH1F *_hPyOverPmag;
-    TH1F *_hTime;
-    TH2F *_hPtypeKE;
-    TH1F *_hNSecondaries;
+    TH2F *_hXZ = nullptr;
+    TH1F *_hY = nullptr;
+    TH1F *_hKE = nullptr;
+    TH1F *_hTheta = nullptr;
+    TH1F *_hPhi = nullptr;
+    TH1F *_hPmag = nullptr;
+    TH1F *_hPyOverPmag = nullptr;
+    TH1F *_hTime = nullptr;
+    TH2F *_hPtypeKE = nullptr;
+    TH1F *_hNSecondaries = nullptr;
 
-    TTree *_cosmicTree;
+    TTree *_cosmicTree = nullptr;
 
-    float _x;
-    float _y;
-    float _z;
-    float _px;
-    float _py;
-    float _pz;
-    float _theta;
-    float _phi;
-    float _KE;
-    float _p;
-    float _t;
-    int _pdgId;
+    float _x = std::numeric_limits<float>::lowest();
+    float _y = std::numeric_limits<float>::lowest();
+    float _z = std::numeric_limits<float>::lowest();
+    float _px = std::numeric_limits<float>::lowest();
+    float _py = std::numeric_limits<float>::lowest();
+    float _pz = std::numeric_limits<float>::lowest();
+    float _theta = std::numeric_limits<float>::lowest();
+    float _phi = std::numeric_limits<float>::lowest();
+    float _KE = std::numeric_limits<float>::lowest();
+    float _p = std::numeric_limits<float>::lowest();
+    float _t = std::numeric_limits<float>::lowest();
+    PDGCode::type _pdgId;
 
     void bookHists(art::ServiceHandle<art::TFileService> &);
     GlobalConstantsHandle<ParticleDataTable> pdt;
 };
 
-
-  mu2e::CRYGenPlots::CRYGenPlots(fhicl::ParameterSet const & p)
-: EDAnalyzer(p)
-  , processName_(p.get<std::string>("processName", ""))
-  , CRYModuleLabel_(p.get<std::string>("CRYModuleLabel", "cryGen"))
-  , CRYInstanceName_(p.get<std::string>("CRYInstanceName", ""))
-  , _keMax(p.get<double>("keMax", 10E3))
+mu2e::CORSIKAGenPlots::CORSIKAGenPlots(fhicl::ParameterSet const &p)
+    : EDAnalyzer(p),
+    processName_(p.get<std::string>("processName", "")),
+    CORSIKAModuleLabel_(p.get<std::string>("CORSIKAModuleLabel", "FromCorsikaBinary")),
+    CORSIKAInstanceName_(p.get<std::string>("CORSIKAInstanceName", "")),
+    _keMax(p.get<double>("keMax", 10E3))
 {
   art::ServiceHandle<art::TFileService> tfs;
 
@@ -118,24 +117,27 @@ class mu2e::CRYGenPlots : public art::EDAnalyzer {
   _cosmicTree->Branch("p", &_p, "p/F");
   _cosmicTree->Branch("t", &_t, "t/F");
   _cosmicTree->Branch("pdgId", &_pdgId, "pdgId/I");
+
 }
 
 
-void mu2e::CRYGenPlots::analyze(art::Event const & e)
+void mu2e::CORSIKAGenPlots::analyze(art::Event const & e)
 {
   art::Handle<GenParticleCollection> gpHandle;
   bool success;
 
   if (processName_.length() > 0)
-     success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, processName_,
+     success = e.getByLabel(CORSIKAModuleLabel_, CORSIKAInstanceName_, processName_,
          gpHandle);
   else
-    success = e.getByLabel(CRYModuleLabel_, CRYInstanceName_, gpHandle);
+    success = e.getByLabel(CORSIKAModuleLabel_, CORSIKAInstanceName_, gpHandle);
 
-  if (!success) 
+  if (!success)
     return;
 
   const auto & particles = *gpHandle;
+
+
   _hNSecondaries->Fill(particles.size());
   for(const auto & p : particles)
   {
@@ -167,7 +169,6 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
 
     _theta = yMom3.theta();
     _phi = yMom3.phi();
-
     _KE = mom4.e() - mass;
     _p = mom3.mag();
 
@@ -175,14 +176,6 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
 
     _pdgId = p.pdgId();
     _cosmicTree->Fill();
-
-    _hKE->Fill(mom4.e() - mass);
-    _hTheta->Fill(yMom3.theta());
-    _hPhi->Fill(yMom3.phi());
-
-    _hPmag->Fill(mom3.mag());
-    _hTime->Fill(p.time());
-    _hPyOverPmag->Fill(mom4.py() / mom3.mag());
 
     switch (p.pdgId()) {
       case 13: // mu-
@@ -227,17 +220,17 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
 
 }
 
-void mu2e::CRYGenPlots::beginJob()
+void mu2e::CORSIKAGenPlots::beginJob()
 {
   // Implementation of optional member function here.
 }
 
-void mu2e::CRYGenPlots::endJob()
+void mu2e::CORSIKAGenPlots::endJob()
 {
   // Implementation of optional member function here.
 }
 
-void mu2e::CRYGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
+void mu2e::CORSIKAGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
 {
 
   _hXZ = tfs->make<TH2F>("XZ", "XZ", 500, -2.0e5,  2.0e5, 500, -2.0e5, 2.0e5 );
@@ -268,4 +261,4 @@ void mu2e::CRYGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
   _hPtypeKE->GetYaxis()->SetBinLabel(7, "kaon");
   _hPtypeKE->GetYaxis()->SetBinLabel(8, "others");
 }
-DEFINE_ART_MODULE(mu2e::CRYGenPlots)
+DEFINE_ART_MODULE(mu2e::CORSIKAGenPlots)
