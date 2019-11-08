@@ -320,10 +320,15 @@ namespace mu2e
 
 	  if(_result.missingHits.size() > 0){
 	    _kfit.addHits(srep,detmodel,_result,_maxaddchi);
-	  }else if (_cprmode){
-	    int last_iteration  = -1;
-	    _kfit.fitIteration(detmodel,_result,last_iteration);
 	  }
+//-----------------------------------------------------------------------------
+// rarely, in close-to-the-edge cases, the refit may fail and the track fit would
+// end up in undefined state. Avoid that. The commented out part didn't make sense anyway
+//-----------------------------------------------------------------------------
+	  // else if (_cprmode){
+	  //   int last_iteration  = -1;
+	  //   _kfit.fitIteration(detmodel,_result,last_iteration);
+	  // }
 	  if(_debug > 1)
 	    cout << "AddHits Fit result " << _result.krep->fitStatus()
 	    << " NDOF = " << _result.krep->nDof() << endl;
