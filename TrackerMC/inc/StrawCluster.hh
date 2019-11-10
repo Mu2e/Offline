@@ -35,7 +35,7 @@ namespace mu2e {
       explicit StrawCluster(const StrawCluster& primary, double deltat);
       explicit StrawCluster(ClusterType type,StrawId sid,
 	  StrawEnd end,
-	  double time,
+	  float time,
 	  float charge,
 	  float ddist,
 	  float phi,
@@ -43,6 +43,18 @@ namespace mu2e {
 	  float drifttime,
 	  float proptime,
 	  art::Ptr<StrawGasStep> const& sgs,
+	  XYZVec const& cpos, float ctime);
+	  
+      // legacy constructor
+      explicit StrawCluster(ClusterType type,StrawId sid,
+	  StrawEnd end,
+	  double time,
+	  float charge,
+	  float ddist,
+	  float phi,
+	  float wdist,
+	  float drifttime,
+	  float proptime,
 	  art::Ptr<StepPointMC> const& stepmc,
 	  CLHEP::HepLorentzVector const& cpos);
       // use compiler version of copy, assignment
@@ -58,24 +70,27 @@ namespace mu2e {
       float   driftTime() const { return _drifttime; }
       float   propTime() const { return _proptime; }
       art::Ptr<StrawGasStep> const& strawGasStep() const { return _sgsptr; }
-      art::Ptr<StepPointMC> const& stepPointMC() const { return _spmcptr; }
-      CLHEP::HepLorentzVector const& clusterPosition() const { return _cpos; }
+      float cluTime() const { return _ctime; }
+      XYZVec const& cluPos() const { return _cpos; }
+      art::Ptr<StepPointMC> const& stepPointMC() const { return _spmcptr; } // Legacy function FIXME
+      CLHEP::HepLorentzVector clusterPosition() const { return CLHEP::HepLorentzVector(Geom::Hep3Vec(_cpos),_ctime); } // legacy function FIXME
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
     private:
-      ClusterType _type; // type of clust
+      ClusterType _type; // type of cluster
       StrawId  _strawId;      // Straw id
       StrawEnd	_end;		  // which end of the straw
-      double _time;            // microbunch time at the wire end, in ns since EventWindowMarker
-      float     _charge;          // charge at the wire end, in units of pC
-      float	_ddist;		  // drift distance charge traveled to the wire
-      float	_phi;    //JB: angle between E and B at ionization event
-      float	_wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
-      float _drifttime;
-      float _proptime;
-      art::Ptr<StrawGasStep> _sgsptr; // reference to step
-      art::Ptr<StepPointMC> _spmcptr;  // legacy ref to StepPointMC FIXME!
-      CLHEP::HepLorentzVector _cpos; // position and time of the cluster that created this clust
+      float  _time;            // microbunch time at the wire end, in ns since EventWindowMarker, offsets and wrapping applied
+      float  _charge;          // charge at the wire end, in units of pC
+      float  _ddist;		  // drift distance charge traveled to the wire
+      float  _phi;    // angle between E and B at ionization event
+      float  _wdist;		  // distance along the wire the charge has traveled, used to calculate dispersion
+      float _drifttime; // drift time to the wire
+      float _proptime;  // propagation time to the wire end
+      art::Ptr<StrawGasStep> _sgsptr; 
+      art::Ptr<StepPointMC> _spmcptr;  // legacy ref to StepPointMC should be removed after testing FIXME!
+      XYZVec _cpos;
+      float _ctime; 
     };
   } // namespace TrackerMC
 } // namespace mu2e

@@ -52,7 +52,6 @@
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "TrackerGeom/inc/Straw.hh"
 
 #include "CosmicRayShieldGeom/inc/CRSScintillatorBar.hh"

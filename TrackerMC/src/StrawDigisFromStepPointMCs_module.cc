@@ -552,7 +552,6 @@ namespace mu2e {
                 art::Ptr<StepPointMC> const& spmcptr,
                 Straw const& straw, StrawClusterSequencePair& shsp) {
       StepPointMC const& step = *spmcptr;
-      art::Ptr<StrawGasStep> sgsptr;// kludge for backwards compatibility
       StrawId sid = straw.id();
      // get time offset for this step
       double tstep = _toff.timeWithOffsetsApplied(step);
@@ -595,8 +594,9 @@ namespace mu2e {
             // convert from
             double ctime = microbunchTime(strawele,gtime);
             // create the clust
-            StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
-                               sgsptr,spmcptr,CLHEP::HepLorentzVector(iclu->_pos,mbtime)); //JB: + wireq._phi
+            StrawCluster clust(StrawCluster::primary,sid,end,ctime,
+	    weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,
+		spmcptr,CLHEP::HepLorentzVector(Geom::Hep3Vec(iclu->_pos),mbtime)); 
 
             // add the clusts to the appropriate sequence.
             shsp.clustSequence(end).insert(clust);
@@ -618,8 +618,8 @@ namespace mu2e {
       }
 
       // get tracker information
-      const Tracker& tracker = *GeomHandle<Tracker>(); //JB
-      const Straw& straw = tracker.getStraw(step.strawId());//JB
+      const Tracker& tracker = *GeomHandle<Tracker>(); 
+      const Straw& straw = tracker.getStraw(step.strawId());
       // if the step length is small compared to the mean free path, or this is an
       // uncharged particle, put all the energy in a single cluster
       if (charge == 0.0 || step.stepLength() < strawphys.meanFreePath()){
@@ -627,11 +627,11 @@ namespace mu2e {
         double fne = cen/strawphys.meanElectronEnergy();
         unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
 
-        Hep3Vector cdir = (step.position()-straw.getMidPoint());//JB
-        cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));//JB
-        double phi = cdir.theta(); //JB
+        Hep3Vector cdir = (step.position()-straw.getMidPoint());
+        cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
+        double phi = cdir.theta(); 
         for (size_t i=0;i<ne;i++){
-          IonCluster cluster(step.position(),phi,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1); //JB + phi
+          IonCluster cluster(Geom::toXYZVec(step.position()),phi,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1);
           clusters.push_back(cluster);
         }
       }
@@ -679,7 +679,7 @@ namespace mu2e {
           cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
           double phi = cdir.theta(); //JB: point1 and point2 are the DCA on/to the track/wire. theta takes the angle to the z-axis
           for (size_t i=0;i<ne[ic];i++){
-            IonCluster cluster(cpos[ic],phi,strawphys.ionizationCharge((unsigned)1),cen[ic]/(float)ne[ic],1);
+            IonCluster cluster(Geom::toXYZVec(cpos[ic]),phi,strawphys.ionizationCharge((unsigned)1),cen[ic]/(float)ne[ic],1);
             clusters.push_back(cluster);
           }
           //cout <<"phi1b = "<<phi<<"\n";
@@ -710,7 +710,7 @@ namespace mu2e {
                 StrawPhysics const& strawphys,Straw const& straw,
                 IonCluster const& cluster, WireCharge& wireq ) {
       // Compute the vector from the cluster to the wire
-      Hep3Vector cpos = cluster._pos-straw.getMidPoint();
+      Hep3Vector cpos = Geom::Hep3Vec(cluster._pos)-straw.getMidPoint();
       // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
       double dd = min(cpos.perp(straw.getDirection()),straw.innerRadius());
       // sample the gain for this cluster
@@ -1146,7 +1146,7 @@ namespace mu2e {
       // sum the energy from the explicit trigger particle, and find it's releationship
       _mcthreshenergy = 0.0;
       _mcnstep = mcdigi.stepPointMCs().size();
-      art::Ptr<StepPointMC> threshpart = mcdigi.stepPointMC(StrawEnd::cal);
+      auto threshpart = mcdigi.stepPointMC(StrawEnd::cal);
       if(threshpart.isNull()) threshpart = mcdigi.stepPointMC(StrawEnd::hv);
       for(auto imcs = mcdigi.stepPointMCs().begin(); imcs!= mcdigi.stepPointMCs().end(); ++ imcs){
         // if the SimParticle for this step is the same as the one which fired the discrim, add the energy

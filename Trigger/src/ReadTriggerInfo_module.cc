@@ -55,7 +55,6 @@
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
-#include "TrkDiag/inc/TrkMCTools.hh"
 
 #include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
@@ -906,7 +905,7 @@ namespace mu2e {
 	int  hitIndex  = int(KSeed->hits().at(j).index());
 	hit            = &_chcol->at(hitIndex);
 	loc            = hit - hit_0;
-	const mu2e::StepPointMC* step(0);
+	const mu2e::StrawGasStep* step(0);
 	const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(loc);
 	if (sdmc->wireEndTime(mu2e::StrawEnd::cal) < sdmc->wireEndTime(mu2e::StrawEnd::hv)) {
 	  step = sdmc->stepPointMC(mu2e::StrawEnd::cal).get();
@@ -941,25 +940,15 @@ namespace mu2e {
       }
     
       //finally, get the info of the first StrawDigi
-      const mu2e::StepPointMC* step(0);
       const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(mostvalueindex);
-      if (sdmc->wireEndTime(mu2e::StrawEnd::cal) < sdmc->wireEndTime(mu2e::StrawEnd::hv)) {
-	step = sdmc->stepPointMC(mu2e::StrawEnd::cal).get();
-      }
-      else {
-	step = sdmc->stepPointMC(mu2e::StrawEnd::hv ).get();
-      }
-      
-      const mu2e::SimParticle * sim (0);
-
-      if (step) {
-	art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+	art::Ptr<mu2e::SimParticle> const& simptr = sdmc->earlyStrawGasStep()->simParticle();
 	int     pdg   = simptr->pdgId();
 	art::Ptr<mu2e::SimParticle> mother = simptr;
 
-	while(mother->hasParent()) mother = mother->parent();
-	sim = mother.operator ->();
-	int      pdgM   = sim->pdgId();
+	while(mother->hasParent()) 
+	  mother = mother->parent();
+	//sim = mother.operator->();
+	int      pdgM   = mother->pdgId();
 	double   pXMC   = simptr->startMomentum().x();
 	double   pYMC   = simptr->startMomentum().y();
 	double   pZMC   = simptr->startMomentum().z();
@@ -991,7 +980,6 @@ namespace mu2e {
 	Hist._hTrkInfo[TrkTrigIndex][18]->Fill(origin_r);
 	Hist._hTrkInfo[TrkTrigIndex][19]->Fill(pdgM);
 	Hist._hTrkInfo[TrkTrigIndex][20]->Fill(energy);
-      }
     }
   }
 
@@ -1039,18 +1027,14 @@ namespace mu2e {
 
 	for (size_t k=0; k<shids.size(); ++k) {
 	  const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(shids[k]);
-	  art::Ptr<mu2e::StepPointMC>  spmcp;
-	  mu2e::TrkMCTools::stepPoint(spmcp,*sdmc);
-	  const mu2e::StepPointMC* step = spmcp.get();
-	  if (step) {
-	    art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+	  auto const& spmcp = sdmc->earlyStepPointMC();
+	    art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle(); 
 	    int sim_id        = simptr->id().asInt();
-	    float   dz        = step->position().z();// - trackerZ0;
+	    float   dz        = spmcp->position().z();// - trackerZ0;
 	    hits_simp_id.push_back   (sim_id); 
 	    hits_simp_index.push_back(shids[k]);
 	    hits_simp_z.push_back(dz);
 	    break;
-	  }
 	}
       }//end loop over the hits
     
@@ -1071,22 +1055,16 @@ namespace mu2e {
     
       //finally, get the info of the first StrawDigi
       const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(mostvalueindex);
-      art::Ptr<mu2e::StepPointMC>  spmcp;
-      mu2e::TrkMCTools::stepPoint(spmcp,*sdmc);
-      const mu2e::StepPointMC*     step = spmcp.get();  
-      const mu2e::SimParticle *    sim (0);
-
-      if (step) {
-	art::Ptr<mu2e::SimParticle> const& simptr = step->simParticle(); 
+      auto const& spmcp = sdmc->earlyStepPointMC();
+	art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle(); 
 	int     pdg   = simptr->pdgId();
 	art::Ptr<mu2e::SimParticle> mother = simptr;
 
 	while(mother->hasParent()) mother = mother->parent();
-	sim = mother.operator ->();
-	int      pdgM   = sim->pdgId();
-	double   pXMC   = step->momentum().x();
-	double   pYMC   = step->momentum().y();
-	double   pZMC   = step->momentum().z();
+	int      pdgM   = mother->pdgId();
+	double   pXMC   = spmcp->momentum().x();
+	double   pYMC   = spmcp->momentum().y();
+	double   pZMC   = spmcp->momentum().z();
 	double   mass(-1.);//  = part->Mass();
 	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
 	mass   = pdt->particle(pdg).ref().mass();
@@ -1116,7 +1094,6 @@ namespace mu2e {
 	Hist._hHelInfo[HelTrigIndex][18]->Fill(origin_r);
 	Hist._hHelInfo[HelTrigIndex][19]->Fill(pdgM);
 	Hist._hHelInfo[HelTrigIndex][20]->Fill(energy);
-      }
     }
   }
   //--------------------------------------------------------------------------------

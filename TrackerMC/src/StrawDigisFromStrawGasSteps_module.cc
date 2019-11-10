@@ -68,193 +68,195 @@ namespace mu2e {
     using namespace TrkTypes;
 
     struct WireCharge { // charge at the wire after drift
-      double _charge; // charge at the wire, in units of pC
-      double _time; // relative time at the wire, relative to ionzation time (ns)
-      double _dd;  // transverse distance drifted to the wrie
-      double _phi; //JB: angle between E and B at ionization event
-      double _wpos; // position long the wire, WRT the wire center, signed by the wire direction
+      float _charge; // charge at the wire, in units of pC
+      float _time; // relative time at the wire, relative to ionzation time (ns)
+      float _dd;  // transverse distance drifted to the wrie
+      float _phi; // angle between E and B at ionization event
+      float _wpos; // position long the wire, WRT the wire center, signed by the wire direction
 
     };
 
     struct WireEndCharge { // charge at one end of the wire after propagation
-      double _charge; // charge at the wire, in units of pC
-      double _time; // time at the wire end, relative to the time the charge reached the wire (ns)
-      double _wdist; // propagation distance from the point of collection to the end
+      float _charge; // charge at the wire, in units of pC
+      float _time; // time at the wire end, relative to the time the charge reached the wire (ns)
+      float _wdist; // propagation distance from the point of collection to the end
     };
 
     class StrawDigisFromStrawGasSteps : public art::EDProducer {
-    public:
-      using Name=fhicl::Name;
-      using Comment=fhicl::Comment;
-  
-      struct Config {
-	fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
-	fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"), 0};
-	fhicl::Atom<int> print{ Name("printLevel"), Comment("Print Level"), 0};
-	fhicl::Atom<unsigned> maxhist{ Name("MaxHist"), Comment("Maximum number of waveform histograms"), 100};
-	fhicl::Atom<bool> xtalkhist{ Name("CrossTalkHist"), Comment("Histogram of cross-talk"), false};
-	fhicl::Atom<int> minnxinghist{ Name("MinNXingHist"), Comment("Minimum # of crossings to histogram waveform"),1};
-	fhicl::Atom<double> tstep { Name("WaveformStep"), Comment("WaveformStep (nsec)"),0.1 };
-	fhicl::Atom<double> nfall{ Name("WaveformTail"), Comment("# of decay lambda past last signal to record waveform"),10.0};
-	fhicl::Atom<int> maxFullPrint{ Name("maxFullPrint"), Comment("Limit on number of events for which there will be full printout") ,2};
-	fhicl::Atom<bool> addXtalk{ Name("addCrossTalk"), Comment("Should we add cross talk hits?"),false };
-	fhicl::Atom<double> ctMinCharge{ Name("xtalkMinimumCharge"), Comment("minimum charge to add cross talk (for performance issues)") ,0};
-	fhicl::Atom<bool> addNoise{ Name("addNoise"), Comment("should we add noise hits? NOT CURRENTLY IMPLEMENTED FIXME!"),false };
-	fhicl::Atom<double> preampxtalk{ Name("preAmplificationCrossTalk"), Comment("Pre-amplification (straw) X-talk coupling"), 0.0 };
-	fhicl::Atom<double> postampxtalk{ Name("postAmplificationCrossTalk"), Comment("Post-amplification (board) X-talk coupling") ,0.02}; 
-	fhicl::Atom<double> bgcut{ Name("BetaGammaCut"), Comment("treat particles with beta-gamma above this as minimum-ionizing"),0.5 };
-	fhicl::Atom<double> minstepE{ Name("minstepE"), Comment(" minimum step energy depostion to turn into a straw signal (MeV)"),2.0e-6 }; 
-	fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
-	fhicl::Atom<art::InputTag> StrawGasStepCollectionTag{ Name("StrawGasStepCollection"), Comment("StrawGasStepCollection producer"),"SGSMaker" };
-	fhicl::Atom<double> steptimebuf{ Name("StrawGasStepTimeBuffer"), Comment("buffer for MC step point times (nsec) ") ,100.0 }; 
-	fhicl::Atom<double> flashBuffer{ Name("FlashTimeBuffer"), Comment("buffer for flash blanking times (nsec) ") ,10.0 }; 
-	fhicl::Atom<double> tdcbuf{ Name("TDCTimeBuffer"), Comment("buffer for TDC jitter (nsec) ") ,2.0 };
-	fhicl::Atom<uint16_t> allStraw{ Name("AllHitsStraw"), Comment("minimum straw # to read all hits") ,90};
-	fhicl::Sequence<uint16_t> allPlanes{ Name("AllHitsPlanes"), Comment("planes to read all hits"), std::vector<uint16_t>{} };
-	fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
-	fhicl::Atom<bool> sort{ Name("SortClusterEnergy"), Comment("Sort clusters by energy before digitizing") ,false };
-    	fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
-  };
+      public:
+	using Name=fhicl::Name;
+	using Comment=fhicl::Comment;
 
-      typedef art::Ptr<StrawGasStep> SGSPtr;
-      typedef art::Ptr<StepPointMC> SPMCPtr;
-      typedef map<StrawId,StrawClusterSequencePair> StrawClusterMap;  // clusts by straw
-      // work with pairs of waveforms, one for each straw end
-      typedef std::array<StrawWaveform,2> SWFP;
-      typedef std::array<WFX,2> WFXP;
-      typedef list<WFXP> WFXPList;
-      typedef WFXPList::const_iterator WFXPI;
+	struct Config {
+	  fhicl::Atom<int> debug{ Name("debugLevel"), Comment("Debug Level"), 0};
+	  fhicl::Atom<int> diag{ Name("diagLevel"), Comment("Diag Level"), 0};
+	  fhicl::Atom<int> print{ Name("printLevel"), Comment("Print Level"), 0};
+	  fhicl::Atom<unsigned> maxhist{ Name("MaxHist"), Comment("Maximum number of waveform histograms"), 100};
+	  fhicl::Atom<bool> xtalkhist{ Name("CrossTalkHist"), Comment("Histogram of cross-talk"), false};
+	  fhicl::Atom<int> minnxinghist{ Name("MinNXingHist"), Comment("Minimum # of crossings to histogram waveform"),1};
+	  fhicl::Atom<float> tstep { Name("WaveformStep"), Comment("WaveformStep (nsec)"),0.1 };
+	  fhicl::Atom<float> nfall{ Name("WaveformTail"), Comment("# of decay lambda past last signal to record waveform"),10.0};
+	  fhicl::Atom<int> maxFullPrint{ Name("maxFullPrint"), Comment("Limit on number of events for which there will be full printout") ,2};
+	  fhicl::Atom<bool> addXtalk{ Name("addCrossTalk"), Comment("Should we add cross talk hits?"),false };
+	  fhicl::Atom<float> ctMinCharge{ Name("xtalkMinimumCharge"), Comment("minimum charge to add cross talk (for performance issues)") ,0};
+	  fhicl::Atom<bool> addNoise{ Name("addNoise"), Comment("should we add noise hits? NOT CURRENTLY IMPLEMENTED FIXME!"),false };
+	  fhicl::Atom<float> preampxtalk{ Name("preAmplificationCrossTalk"), Comment("Pre-amplification (straw) X-talk coupling"), 0.0 };
+	  fhicl::Atom<float> postampxtalk{ Name("postAmplificationCrossTalk"), Comment("Post-amplification (board) X-talk coupling") ,0.02}; 
+	  fhicl::Atom<float> minstepE{ Name("minstepE"), Comment(" minimum step energy depostion to turn into a straw signal (MeV)"),2.0e-6 }; 
+	  fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
+	  fhicl::Atom<art::InputTag> StrawGasStepCollectionTag{ Name("StrawGasStepCollection"), Comment("StrawGasStepCollection producer"),"SGSMaker" };
+	  fhicl::Atom<float> steptimebuf{ Name("StrawGasStepTimeBuffer"), Comment("buffer for MC step point times (nsec) ") ,100.0 }; 
+	  fhicl::Atom<float> flashBuffer{ Name("FlashTimeBuffer"), Comment("buffer for flash blanking times (nsec) ") ,10.0 }; 
+	  fhicl::Atom<float> tdcbuf{ Name("TDCTimeBuffer"), Comment("buffer for TDC jitter (nsec) ") ,2.0 };
+	  fhicl::Atom<uint16_t> allStraw{ Name("AllHitsStraw"), Comment("minimum straw # to read all hits") ,90};
+	  fhicl::Sequence<uint16_t> allPlanes{ Name("AllHitsPlanes"), Comment("planes to read all hits"), std::vector<uint16_t>{} };
+	  fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
+	  fhicl::Atom<bool> sort{ Name("SortClusterEnergy"), Comment("Sort clusters by energy before digitizing") ,false };
+	  fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
+	  fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps")};
 
-      using Parameters = art::EDProducer::Table<Config>;
-      explicit StrawDigisFromStrawGasSteps(const Parameters& config);
-      // Accept compiler written d'tor.
+	};
 
-    private:
+	typedef art::Ptr<StrawGasStep> SGSPtr;
+	typedef art::Ptr<StepPointMC> SPMCPtr;
+	typedef map<StrawId,StrawClusterSequencePair> StrawClusterMap;  // clusts by straw
+	// work with pairs of waveforms, one for each straw end
+	typedef std::array<StrawWaveform,2> SWFP;
+	typedef std::array<WFX,2> WFXP;
+	typedef list<WFXP> WFXPList;
+	typedef WFXPList::const_iterator WFXPI;
 
-      void beginJob() override;
-      void beginRun(art::Run& run) override;
-      void produce(art::Event& e) override;
+	using Parameters = art::EDProducer::Table<Config>;
+	explicit StrawDigisFromStrawGasSteps(const Parameters& config);
+	// Accept compiler written d'tor.
 
-      // Diagnostics
-      int _debug, _diag, _printLevel;
-      unsigned _maxhist;
-      bool  _xtalkhist;
-      unsigned _minnxinghist;
-      double _tstep, _nfall;
-      // Limit on number of events for which there will be full printout.
-      int _maxFullPrint;
+      private:
 
-      // Parameters
-      bool   _addXtalk;
-      double _ctMinCharge;
-      bool   _addNoise;
-      double _preampxtalk, _postampxtalk;// these should come from conditions, FIXME!!
-      double _bgcut; 
-      double _minstepE; 
-      art::InputTag _ewMarkerTag; 
-      double _mbtime; 
-      double _mbbuffer; 
-      double _flashbuffer;
-      double _adcbuffer; 
-      double _steptimebuf; 
-      double _tdcbuf; 
-      uint16_t _allStraw; 
-      std::vector<uint16_t> _allPlanes;
-      StrawElectronics::Path _diagpath; 
-      unsigned _maxnclu;
-      bool _sort; // sort cluster sizes before filling energy
-      // Random number distributions
-      art::RandomNumberGenerator::base_engine_t& _engine;
-      CLHEP::RandGaussQ _randgauss;
-      CLHEP::RandFlat _randflat;
-      CLHEP::RandExponential _randexp;
-      CLHEP::RandPoisson _randP;
-      // A category for the error logger.
-      const string _messageCategory;
-      // Give some informationation messages only on the first event.
-      bool _firstEvent;
-      // Proditions
-      ProditionsHandle<StrawPhysics> _strawphys_h;
-      ProditionsHandle<StrawElectronics> _strawele_h;
-      art::Selector _selector;
-      // diagnostics
-      TTree* _swdiag;
-      Int_t _swplane, _swpanel, _swlayer, _swstraw, _ndigi;
-      Float_t _hqsum[2], _vmax[2], _tvmax[2], _sesum[2];
-      Int_t _wmcpdg[2], _wmcproc[2], _nxing[2], _nclu[2];
-      Int_t _nsteppoint[2], _npart[2];
-      Float_t _mce[2], _slen[2], _sedep[2];
-      Float_t _tmin[2], _tmax[2], _txing[2], _xddist[2], _xwdist[2], _xpdist[2];
-      TTree* _sddiag;
-      Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
-      Int_t _ncludd[2], _iclust[2];
-      Int_t _nstep;
-      Float_t _ectime[2], _ecddist[2], _ecdtime[2], _ecptime[2];
-      Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2], _dtime[2], _ptime[2];
-      Float_t _wdist[2], _vstart[2], _vcross[2];
-      Float_t _phi[2]; //JB
-      Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
-      Double_t _mctime;
-      Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
-      Float_t _mcdca, _mcdcaphi, _mcdcadtime;
-      Int_t _dmcpdg, _dmcproc, _dmcgen;
-      Float_t _dmcmom;
-      Bool_t _xtalk;
-      vector<unsigned> _adc;
-      Int_t _tdc[2], _tot[2];
-      TTree* _sdiag;
-      Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
-      Int_t _nclust, _netot, _partPDG, _stype;
-      vector<IonCluster> _clusters;
-      Float_t _ewMarkerOffset;
-      array<Float_t, StrawId::_nupanels> _ewMarkerROCdt;
+	void beginJob() override;
+	void beginRun(art::Run& run) override;
+	void produce(art::Event& e) override;
 
-      //  helper functions
-      void fillClusterMap(StrawPhysics const& strawphys,
-	  StrawElectronics const& strawele,Tracker const& tracker,
-	  art::Event const& event, StrawClusterMap & hmap);
-      void addStep(StrawPhysics const& strawphys,
-	  StrawElectronics const& strawele,
-	  Straw const& straw,
-	  SGSPtr const& sgsptr,
-	  SPMCPtr const& spmcptr,
-	  StrawClusterSequencePair& shsp);
-      void divideStep(StrawPhysics const& strawphys,
-	  StrawElectronics const& strawele,
-	  Straw const& straw,
-	  StrawGasStep const& step, 
-	  vector<IonCluster>& clusters);
-      void driftCluster(StrawPhysics const& strawphys, Straw const& straw,
-	  IonCluster const& cluster, WireCharge& wireq);
-      void propagateCharge(StrawPhysics const& strawphys, Straw const& straw,
-	  WireCharge const& wireq, StrawEnd end, WireEndCharge& weq);
-      double microbunchTime(StrawElectronics const& strawele, double globaltime) const;
-      void addGhosts(StrawElectronics const& strawele, StrawCluster const& clust,StrawClusterSequence& shs);
-      void addNoise(StrawClusterMap& hmap);
-      void findThresholdCrossings(StrawElectronics const& strawele, SWFP const& swfp, WFXPList& xings);
-      void createDigis(StrawPhysics const& strawphys,
-	  StrawElectronics const& strawele,
-	  StrawClusterSequencePair const& hsp,
-	  XTalk const& xtalk,
-	  StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis);
-      void fillDigis(StrawPhysics const& strawphys,
-	  StrawElectronics const& strawele,
-	  WFXPList const& xings,SWFP const& swfp , StrawId sid,
-	  StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis);
-      bool createDigi(StrawElectronics const& strawele,WFXP const& xpair, SWFP const& wf, StrawId sid, StrawDigiCollection* digis);
-      void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
-      void fillClusterNe(StrawPhysics const& strawphys,std::vector<unsigned>& me);
-      void fillClusterPositions(StrawGasStep const& step, std::vector<Hep3Vector>& cpos);
-      void fillClusterMinion(StrawPhysics const& strawphys, StrawGasStep const& step, std::vector<unsigned>& me, std::vector<double>& cen);
-      bool readAll(StrawId const& sid) const;
-      // diagnostic functions
-      void waveformHist(StrawElectronics const& strawele,
-	  SWFP const& wf, WFXPList const& xings);
-      void waveformDiag(StrawElectronics const& strawele,
-	  SWFP const& wf, WFXPList const& xings);
-      void digiDiag(StrawPhysics const& strawphys, SWFP const& wf, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
-      void stepDiag(StrawPhysics const& strawphys, StrawElectronics const& strawele,
-	StrawGasStep const& sgs, StepPointMC const& spmc);
+	// Diagnostics
+	int _debug, _diag, _printLevel;
+	unsigned _maxhist;
+	bool  _xtalkhist;
+	unsigned _minnxinghist;
+	double _tstep, _nfall;
+	// Limit on number of events for which there will be full printout.
+	int _maxFullPrint;
+
+	// Parameters
+	bool   _addXtalk;
+	double _ctMinCharge;
+	bool   _addNoise;
+	double _preampxtalk, _postampxtalk;// these should come from conditions, FIXME!!
+	double _minstepE; 
+	art::InputTag _ewMarkerTag; 
+	double _mbtime; 
+	double _mbbuffer; 
+	double _flashbuffer;
+	double _adcbuffer; 
+	double _steptimebuf; 
+	double _tdcbuf; 
+	uint16_t _allStraw; 
+	std::vector<uint16_t> _allPlanes;
+	StrawElectronics::Path _diagpath; 
+	unsigned _maxnclu;
+	bool _sort; // sort cluster sizes before filling energy
+	// Random number distributions
+	art::RandomNumberGenerator::base_engine_t& _engine;
+	CLHEP::RandGaussQ _randgauss;
+	CLHEP::RandFlat _randflat;
+	CLHEP::RandExponential _randexp;
+	CLHEP::RandPoisson _randP;
+	// A category for the error logger.
+	const string _messageCategory;
+	// Give some informationation messages only on the first event.
+	bool _firstEvent;
+	// Proditions
+	ProditionsHandle<StrawPhysics> _strawphys_h;
+	ProditionsHandle<StrawElectronics> _strawele_h;
+	art::Selector _selector;
+	SimParticleTimeOffset _toff; // time offsets
+	// diagnostics
+	TTree* _swdiag;
+	Int_t _swplane, _swpanel, _swlayer, _swstraw, _ndigi;
+	Float_t _hqsum[2], _vmax[2], _tvmax[2], _sesum[2];
+	Int_t _wmcpdg[2], _wmcproc[2], _nxing[2], _nclu[2];
+	Int_t _nsteppoint[2], _npart[2];
+	Float_t _mce[2], _slen[2], _sedep[2];
+	Float_t _tmin[2], _tmax[2], _txing[2], _xddist[2], _xwdist[2], _xpdist[2];
+	TTree* _sddiag;
+	Int_t _sdplane, _sdpanel, _sdlayer, _sdstraw;
+	Int_t _ncludd[2], _iclust[2];
+	Int_t _nstep;
+	Float_t _ectime[2], _ecddist[2], _ecdtime[2], _ecptime[2];
+	Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2], _dtime[2], _ptime[2];
+	Float_t _wdist[2], _vstart[2], _vcross[2];
+	Float_t _phi[2];
+	Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
+	Double_t _mctime;
+	Int_t _mcthreshpdg, _mcthreshproc, _mcnstep;
+	Float_t _mcdca, _mcdcaphi, _mcdcadtime;
+	Int_t _dmcpdg, _dmcproc, _dmcgen;
+	Float_t _dmcmom;
+	Bool_t _xtalk;
+	vector<unsigned> _adc;
+	Int_t _tdc[2], _tot[2];
+	TTree* _sdiag;
+	Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
+	Int_t _nclust, _netot, _partPDG, _stype;
+	vector<IonCluster> _clusters;
+	Float_t _ewMarkerOffset;
+	array<Float_t, StrawId::_nupanels> _ewMarkerROCdt;
+
+	//  helper functions
+	void fillClusterMap(StrawPhysics const& strawphys,
+	    StrawElectronics const& strawele,Tracker const& tracker,
+	    art::Event const& event, StrawClusterMap & hmap);
+	void addStep(StrawPhysics const& strawphys,
+	    StrawElectronics const& strawele,
+	    Straw const& straw,
+	    SGSPtr const& sgsptr,
+	    SPMCPtr const& spmcptr,
+	    StrawClusterSequencePair& shsp);
+	void divideStep(StrawPhysics const& strawphys,
+	    StrawElectronics const& strawele,
+	    Straw const& straw,
+	    StrawGasStep const& step, 
+	    vector<IonCluster>& clusters);
+	void driftCluster(StrawPhysics const& strawphys, Straw const& straw,
+	    IonCluster const& cluster, WireCharge& wireq);
+	void propagateCharge(StrawPhysics const& strawphys, Straw const& straw,
+	    WireCharge const& wireq, StrawEnd end, WireEndCharge& weq);
+	double microbunchTime(StrawElectronics const& strawele, double globaltime) const;
+	void addGhosts(StrawElectronics const& strawele, StrawCluster const& clust,StrawClusterSequence& shs);
+	void addNoise(StrawClusterMap& hmap);
+	void findThresholdCrossings(StrawElectronics const& strawele, SWFP const& swfp, WFXPList& xings);
+	void createDigis(StrawPhysics const& strawphys,
+	    StrawElectronics const& strawele,
+	    StrawClusterSequencePair const& hsp,
+	    XTalk const& xtalk,
+	    StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis);
+	void fillDigis(StrawPhysics const& strawphys,
+	    StrawElectronics const& strawele,
+	    WFXPList const& xings,SWFP const& swfp , StrawId sid,
+	    StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis);
+	bool createDigi(StrawElectronics const& strawele,WFXP const& xpair, SWFP const& wf, StrawId sid, StrawDigiCollection* digis);
+	void findCrossTalkStraws(Straw const& straw,vector<XTalk>& xtalk);
+	void fillClusterNe(StrawPhysics const& strawphys,std::vector<unsigned>& me);
+	void fillClusterPositions(StrawGasStep const& step, std::vector<XYZVec>& cpos);
+	void fillClusterMinion(StrawPhysics const& strawphys, StrawGasStep const& step, std::vector<unsigned>& me, std::vector<float>& cen);
+	bool readAll(StrawId const& sid) const;
+	// diagnostic functions
+	void waveformHist(StrawElectronics const& strawele,
+	    SWFP const& wf, WFXPList const& xings);
+	void waveformDiag(StrawElectronics const& strawele,
+	    SWFP const& wf, WFXPList const& xings);
+	void digiDiag(StrawPhysics const& strawphys, SWFP const& wf, WFXP const& xpair, StrawDigi const& digi,StrawDigiMC const& mcdigi);
+	void stepDiag(StrawPhysics const& strawphys, StrawElectronics const& strawele,
+	    StrawGasStep const& sgs, StepPointMC const& spmc);
+	float EBAngle(XYZVec const& cpos,Straw const& straw) const;
     };
 
     StrawDigisFromStrawGasSteps::StrawDigisFromStrawGasSteps(const Parameters& config) :
@@ -273,7 +275,6 @@ namespace mu2e {
       _addNoise(config().addNoise()),
       _preampxtalk(config().preampxtalk()),
       _postampxtalk(config().postampxtalk()),
-      _bgcut(config().bgcut()),
       _minstepE(config().minstepE()),
       _ewMarkerTag(config().ewMarkerTag()),
       _flashbuffer(config().flashBuffer()),
@@ -292,16 +293,17 @@ namespace mu2e {
       _messageCategory("HITS"),
       _firstEvent(true),      // Control some information messages.
       // This selector will select only data products with the given instance name.
-      _selector{ art::ProductInstanceNameSelector(config().spinstance()) }
-    {
-      // Tell the framework what we consume.
-      consumesMany<StrawGasStepCollection>();
-      consumesMany<StrawGasStepAssns>();
-      consumes<EventWindowMarker>(_ewMarkerTag);
-      // Tell the framework what we make.
-      produces<StrawDigiCollection>();
-      produces<StrawDigiMCCollection>();
-    }
+      _selector{ art::ProductInstanceNameSelector(config().spinstance())},
+      _toff(config().SPTO())
+      {
+	// Tell the framework what we consume.
+	consumesMany<StrawGasStepCollection>();
+	consumesMany<StrawGasStepAssns>();
+	consumes<EventWindowMarker>(_ewMarkerTag);
+	// Tell the framework what we make.
+	produces<StrawDigiCollection>();
+	produces<StrawDigiMCCollection>();
+      }
 
     void StrawDigisFromStrawGasSteps::beginJob(){
 
@@ -319,87 +321,87 @@ namespace mu2e {
 	_sdiag->Branch("steptime",&_steptime,"steptime/F");
 	_sdiag->Branch("nclust",&_nclust,"nclust/I");
 	_sdiag->Branch("netot",&_netot,"netot/I");
-        _sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
-        _sdiag->Branch("stepType",&_stype,"stepType/I");
-        _sdiag->Branch("clusters",&_clusters);
+	_sdiag->Branch("partPDG",&_partPDG,"partPDG/I");
+	_sdiag->Branch("stepType",&_stype,"stepType/I");
+	_sdiag->Branch("clusters",&_clusters);
 
-        _swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
-        _swdiag->Branch("plane",&_swplane,"plane/I");
-        _swdiag->Branch("panel",&_swpanel,"panel/I");
-        _swdiag->Branch("layer",&_swlayer,"layer/I");
-        _swdiag->Branch("straw",&_swstraw,"straw/I");
-        _swdiag->Branch("ndigi",&_ndigi,"ndigi/I");
-        _swdiag->Branch("hqsum",&_hqsum,"hqsumcal/F:hqsumhv/F");
-        _swdiag->Branch("vmax",&_vmax,"vmaxcal/F:vmaxhv/F");
-        _swdiag->Branch("tvmax",&_tvmax,"tvmaxcal/F:tvmaxhv/F");
-        _swdiag->Branch("mcpdg",&_wmcpdg,"mcpdgcal/I:mcpdghv/I");
-        _swdiag->Branch("mcproc",&_wmcproc,"mcproccal/I:mcprochv/I");
-        _swdiag->Branch("mce",&_mce,"mcecal/F:mcehv/F");
-        _swdiag->Branch("slen",&_slen,"slencal/F:slenhv/F");
-        _swdiag->Branch("sedep",&_sedep,"sedepcal/F:sedephv/F");
-        _swdiag->Branch("nxing",&_nxing,"nxingcal/I:nxinghv/I");
-        _swdiag->Branch("nclust",&_nclu,"nclucal/I:ncluhv/I");
-        _swdiag->Branch("nstep",&_nsteppoint,"nscal/I:nshv/I");
-        _swdiag->Branch("sesum",&_sesum,"sesumcal/F:sesumhv/F");
-        _swdiag->Branch("npart",&_npart,"npart/I");
-        _swdiag->Branch("tmin",&_tmin,"tmincal/F:tminhv/F");
-        _swdiag->Branch("tmax",&_tmax,"tmaxcal/F:tmaxhv/F");
-        _swdiag->Branch("txing",&_txing,"txcal/F:txhv/F");
-        _swdiag->Branch("xddist",&_xddist,"xdcal/F:xdhv/F");
-        _swdiag->Branch("xwdist",&_xwdist,"xwdcal/F:xwdhv/F");
-        _swdiag->Branch("xpdist",&_xpdist,"xpdcal/F:xpdhv/F");
+	_swdiag =tfs->make<TTree>("swdiag","StrawWaveform diagnostics");
+	_swdiag->Branch("plane",&_swplane,"plane/I");
+	_swdiag->Branch("panel",&_swpanel,"panel/I");
+	_swdiag->Branch("layer",&_swlayer,"layer/I");
+	_swdiag->Branch("straw",&_swstraw,"straw/I");
+	_swdiag->Branch("ndigi",&_ndigi,"ndigi/I");
+	_swdiag->Branch("hqsum",&_hqsum,"hqsumcal/F:hqsumhv/F");
+	_swdiag->Branch("vmax",&_vmax,"vmaxcal/F:vmaxhv/F");
+	_swdiag->Branch("tvmax",&_tvmax,"tvmaxcal/F:tvmaxhv/F");
+	_swdiag->Branch("mcpdg",&_wmcpdg,"mcpdgcal/I:mcpdghv/I");
+	_swdiag->Branch("mcproc",&_wmcproc,"mcproccal/I:mcprochv/I");
+	_swdiag->Branch("mce",&_mce,"mcecal/F:mcehv/F");
+	_swdiag->Branch("slen",&_slen,"slencal/F:slenhv/F");
+	_swdiag->Branch("sedep",&_sedep,"sedepcal/F:sedephv/F");
+	_swdiag->Branch("nxing",&_nxing,"nxingcal/I:nxinghv/I");
+	_swdiag->Branch("nclust",&_nclu,"nclucal/I:ncluhv/I");
+	_swdiag->Branch("nstep",&_nsteppoint,"nscal/I:nshv/I");
+	_swdiag->Branch("sesum",&_sesum,"sesumcal/F:sesumhv/F");
+	_swdiag->Branch("npart",&_npart,"npart/I");
+	_swdiag->Branch("tmin",&_tmin,"tmincal/F:tminhv/F");
+	_swdiag->Branch("tmax",&_tmax,"tmaxcal/F:tmaxhv/F");
+	_swdiag->Branch("txing",&_txing,"txcal/F:txhv/F");
+	_swdiag->Branch("xddist",&_xddist,"xdcal/F:xdhv/F");
+	_swdiag->Branch("xwdist",&_xwdist,"xwdcal/F:xwdhv/F");
+	_swdiag->Branch("xpdist",&_xpdist,"xpdcal/F:xpdhv/F");
 
 
-        if(_diag > 1){
-          _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
-          _sddiag->Branch("plane",&_sdplane,"plane/I");
-          _sddiag->Branch("panel",&_sdpanel,"panel/I");
-          _sddiag->Branch("layer",&_sdlayer,"layer/I");
-          _sddiag->Branch("straw",&_sdstraw,"straw/I");
-          _sddiag->Branch("nstep",&_nstep,"nstep/I");
-          _sddiag->Branch("xtime",&_xtime,"xtimecal/F:xtimehv/F");
-          _sddiag->Branch("tctime",&_tctime,"tctimecal/F:tctimehv/F");
-          _sddiag->Branch("ectime",&_ectime,"ectimecal/F:ectimehv/F");
-          _sddiag->Branch("ecdtime",&_ecdtime,"ecdtimecal/F:ecdtimehv/F");
-          _sddiag->Branch("ecptime",&_ecptime,"ecptimecal/F:ecptimehv/F");
-          _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
-          _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
-          _sddiag->Branch("phi",&_phi,"phical/F:phihv/F");//JB
-          _sddiag->Branch("ecddist",&_ecddist,"ecddistcal/F:ecddisthv/F");
-          _sddiag->Branch("vstart",&_vstart,"vstartcal/F:vstarthv/F");
-          _sddiag->Branch("vcross",&_vcross,"vcrosscal/F:vcrosshv/F");
-          _sddiag->Branch("ddist",&_ddist,"ddistcal/F:ddisthv/F");
-          _sddiag->Branch("dtime",&_dtime,"dtimecal/F:dtimehv/F");
-          _sddiag->Branch("ptime",&_ptime,"ptimecal/F:ptimehv/F");
-          _sddiag->Branch("nclust",&_ncludd,"nclustcal/I:nclusthv/I");
-          _sddiag->Branch("iclust",&_iclust,"iclustcal/I:iclusthv/I");
-          _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
-          _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
-          _sddiag->Branch("adc",&_adc);
-          _sddiag->Branch("mctime",&_mctime,"mctime/D");
-          _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
-          _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
-          _sddiag->Branch("mcthreshenergy",&_mcthreshenergy,"mcthreshenergy/F");
-          _sddiag->Branch("mcthreshpdg",&_mcthreshpdg,"mcthreshpdg/I");
-          _sddiag->Branch("mcthreshproc",&_mcthreshproc,"mcthreshproc/I");
-          _sddiag->Branch("mcnstep",&_mcnstep,"mcnstep/I");
-          _sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
-          _sddiag->Branch("mcdcaphi",&_mcdcaphi,"mcdcaphi/F");
-          _sddiag->Branch("mcdcadtime",&_mcdcadtime,"mcdcadtime/F");
-          _sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
-          _sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
-          _sddiag->Branch("mcgen",&_dmcgen,"mcgen/I");
-          _sddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
-          _sddiag->Branch("xtalk",&_xtalk,"xtalk/B");
+	if(_diag > 1){
+	  _sddiag =tfs->make<TTree>("sddiag","StrawDigi diagnostics");
+	  _sddiag->Branch("plane",&_sdplane,"plane/I");
+	  _sddiag->Branch("panel",&_sdpanel,"panel/I");
+	  _sddiag->Branch("layer",&_sdlayer,"layer/I");
+	  _sddiag->Branch("straw",&_sdstraw,"straw/I");
+	  _sddiag->Branch("nstep",&_nstep,"nstep/I");
+	  _sddiag->Branch("xtime",&_xtime,"xtimecal/F:xtimehv/F");
+	  _sddiag->Branch("tctime",&_tctime,"tctimecal/F:tctimehv/F");
+	  _sddiag->Branch("ectime",&_ectime,"ectimecal/F:ectimehv/F");
+	  _sddiag->Branch("ecdtime",&_ecdtime,"ecdtimecal/F:ecdtimehv/F");
+	  _sddiag->Branch("ecptime",&_ecptime,"ecptimecal/F:ecptimehv/F");
+	  _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
+	  _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
+	  _sddiag->Branch("phi",&_phi,"phical/F:phihv/F");
+	  _sddiag->Branch("ecddist",&_ecddist,"ecddistcal/F:ecddisthv/F");
+	  _sddiag->Branch("vstart",&_vstart,"vstartcal/F:vstarthv/F");
+	  _sddiag->Branch("vcross",&_vcross,"vcrosscal/F:vcrosshv/F");
+	  _sddiag->Branch("ddist",&_ddist,"ddistcal/F:ddisthv/F");
+	  _sddiag->Branch("dtime",&_dtime,"dtimecal/F:dtimehv/F");
+	  _sddiag->Branch("ptime",&_ptime,"ptimecal/F:ptimehv/F");
+	  _sddiag->Branch("nclust",&_ncludd,"nclustcal/I:nclusthv/I");
+	  _sddiag->Branch("iclust",&_iclust,"iclustcal/I:iclusthv/I");
+	  _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
+	  _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
+	  _sddiag->Branch("adc",&_adc);
+	  _sddiag->Branch("mctime",&_mctime,"mctime/D");
+	  _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
+	  _sddiag->Branch("mctrigenergy",&_mctrigenergy,"mctrigenergy/F");
+	  _sddiag->Branch("mcthreshenergy",&_mcthreshenergy,"mcthreshenergy/F");
+	  _sddiag->Branch("mcthreshpdg",&_mcthreshpdg,"mcthreshpdg/I");
+	  _sddiag->Branch("mcthreshproc",&_mcthreshproc,"mcthreshproc/I");
+	  _sddiag->Branch("mcnstep",&_mcnstep,"mcnstep/I");
+	  _sddiag->Branch("mcdca",&_mcdca,"mcdca/F");
+	  _sddiag->Branch("mcdcaphi",&_mcdcaphi,"mcdcaphi/F");
+	  _sddiag->Branch("mcdcadtime",&_mcdcadtime,"mcdcadtime/F");
+	  _sddiag->Branch("mcpdg",&_dmcpdg,"mcpdg/I");
+	  _sddiag->Branch("mcproc",&_dmcproc,"mcproc/I");
+	  _sddiag->Branch("mcgen",&_dmcgen,"mcgen/I");
+	  _sddiag->Branch("mcmom",&_dmcmom,"mcmom/F");
+	  _sddiag->Branch("xtalk",&_xtalk,"xtalk/B");
 
-        }
+	}
       }
     }
 
     void StrawDigisFromStrawGasSteps::beginRun( art::Run& run ){
       if ( _printLevel > 0 ) {
-        auto const& strawphys = _strawphys_h.get(run.id());
-        strawphys.print(cout);
+	auto const& strawphys = _strawphys_h.get(run.id());
+	strawphys.print(cout);
       }
     }
 
@@ -407,12 +409,12 @@ namespace mu2e {
       if ( _printLevel > 1 ) cout << "StrawDigisFromStrawGasSteps: produce() begin; event " << event.id().event() << endl;
       static int ncalls(0);
       ++ncalls;
-      // update conditions caches.
+      // update conditions caches, etc
       ConditionsHandle<AcceleratorParams> accPar("ignored");
       StrawPhysics const& strawphys = _strawphys_h.get(event.id());
       StrawElectronics const& strawele = _strawele_h.get(event.id());
       const Tracker& tracker = *GeomHandle<Tracker>();
-
+      _toff.updateMap(event);
       _mbtime = accPar->deBuncherPeriod;
       art::Handle<EventWindowMarker> ewMarkerHandle;
       event.getByLabel(_ewMarkerTag, ewMarkerHandle);
@@ -420,7 +422,7 @@ namespace mu2e {
       _ewMarkerOffset = ewMarker.timeOffset();
       // calculate event window marker jitter for this microbunch for each panel
       for (size_t i=0;i<StrawId::_nupanels;i++){
-        _ewMarkerROCdt.at(i) = _randgauss.fire(0,strawele.eventWindowMarkerROCJitter());
+	_ewMarkerROCdt.at(i) = _randgauss.fire(0,strawele.eventWindowMarkerROCJitter());
       }
       // make the microbunch buffer long enough to get the full waveform
       _mbbuffer = (strawele.nADCSamples() - strawele.nADCPreSamples())*strawele.adcPeriod();
@@ -436,26 +438,26 @@ namespace mu2e {
       if(_addNoise)addNoise(hmap);
       // loop over the clust sequences
       for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
-        StrawClusterSequencePair const& hsp = ihsp->second;
-        // create primary digis from this clust sequence
-        XTalk self(hsp.strawId()); // this object represents the straws coupling to itself, ie 100%
-        createDigis(strawphys,strawele,hsp,self,digis.get(),mcdigis.get());
-        // if we're applying x-talk, look for nearby coupled straws
-        if(_addXtalk) {
-          // only apply if the charge is above a threshold
-          double totalCharge = 0;
-          for(auto ih=hsp.clustSequence(StrawEnd::cal).clustList().begin();ih!= hsp.clustSequence(StrawEnd::cal).clustList().end();++ih){
-            totalCharge += ih->charge();
-          }
-          if( totalCharge > _ctMinCharge){
-            vector<XTalk> xtalk;
-            Straw const& straw = tracker.getStraw(hsp.strawId());
-            findCrossTalkStraws(straw,xtalk);
-            for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
-              createDigis(strawphys,strawele,hsp,*ixtalk,digis.get(),mcdigis.get());
-            }
-          }
-        }
+	StrawClusterSequencePair const& hsp = ihsp->second;
+	// create primary digis from this clust sequence
+	XTalk self(hsp.strawId()); // this object represents the straws coupling to itself, ie 100%
+	createDigis(strawphys,strawele,hsp,self,digis.get(),mcdigis.get());
+	// if we're applying x-talk, look for nearby coupled straws
+	if(_addXtalk) {
+	  // only apply if the charge is above a threshold
+	  double totalCharge = 0;
+	  for(auto ih=hsp.clustSequence(StrawEnd::cal).clustList().begin();ih!= hsp.clustSequence(StrawEnd::cal).clustList().end();++ih){
+	    totalCharge += ih->charge();
+	  }
+	  if( totalCharge > _ctMinCharge){
+	    vector<XTalk> xtalk;
+	    Straw const& straw = tracker.getStraw(hsp.strawId());
+	    findCrossTalkStraws(straw,xtalk);
+	    for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
+	      createDigis(strawphys,strawele,hsp,*ixtalk,digis.get(),mcdigis.get());
+	    }
+	  }
+	}
       }
       // store the digis in the event
       event.put(move(digis));
@@ -468,14 +470,14 @@ namespace mu2e {
     } // end produce
 
     void StrawDigisFromStrawGasSteps::createDigis(
-          StrawPhysics const& strawphys,
-          StrawElectronics const& strawele,
-          StrawClusterSequencePair const& hsp,
-	  XTalk const& xtalk,
-          StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis) {
+	StrawPhysics const& strawphys,
+	StrawElectronics const& strawele,
+	StrawClusterSequencePair const& hsp,
+	XTalk const& xtalk,
+	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis) {
       // instantiate waveforms for both ends of this straw
       SWFP waveforms  ={ StrawWaveform(hsp.clustSequence(StrawEnd::cal),xtalk),
-        StrawWaveform(hsp.clustSequence(StrawEnd::hv),xtalk) };
+	StrawWaveform(hsp.clustSequence(StrawEnd::hv),xtalk) };
       // find the threshold crossing points for these waveforms
       WFXPList xings;
       // find the threshold crossings
@@ -494,32 +496,32 @@ namespace mu2e {
       event.getMany( _selector, stepsHandles);
       // Informational message on the first event.
       if ( _firstEvent ) {
-        mf::LogInfo log(_messageCategory);
-        log << "StrawDigisFromStrawGasSteps::fillHitMap will use StrawGasSteps from: \n";
-        for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
-             i != e; ++i ){
-          art::Provenance const& prov(*(i->provenance()));
-          log  << "   " << prov.branchName() << "\n";
-        }
+	mf::LogInfo log(_messageCategory);
+	log << "StrawDigisFromStrawGasSteps::fillHitMap will use StrawGasSteps from: \n";
+	for ( HandleVector::const_iterator i=stepsHandles.begin(), e=stepsHandles.end();
+	    i != e; ++i ){
+	  art::Provenance const& prov(*(i->provenance()));
+	  log  << "   " << prov.branchName() << "\n";
+	}
       }
       if(stepsHandles.empty()){
-        throw cet::exception("SIM")<<"mu2e::StrawDigisFromStrawGasSteps: No StrawGasStep collections found for tracker" << endl;
+	throw cet::exception("SIM")<<"mu2e::StrawDigisFromStrawGasSteps: No StrawGasStep collections found for tracker" << endl;
       }
       // Loop over StrawGasStep collections
       for ( auto const& sgsch : stepsHandles) {
-        StrawGasStepCollection const& steps(*sgsch);
+	StrawGasStepCollection const& steps(*sgsch);
 	// find the associated Assns for this sgsch
 	art::Handle<StrawGasStepAssns> sgsah;
 	if(!event.getByLabel(sgsch.provenance()->moduleLabel(),sgsch.provenance()->productInstanceName(),sgsah)){
 	  throw cet::exception("SIM")<<"mu2e::StrawDigisFromStrawGasSteps: No StrawGasStepAssns found for module "
-	  << sgsch.provenance()->moduleLabel() << " instance " 
-	  << sgsch.provenance()->productInstanceName() << endl;
+	    << sgsch.provenance()->moduleLabel() << " instance " 
+	    << sgsch.provenance()->productInstanceName() << endl;
 	}
 	StrawGasStepAssns const& sgsa = *sgsah;
-        // Loop over the StrawGasSteps in this collection
+	// Loop over the StrawGasSteps in this collection
 	for(size_t isgs = 0; isgs < steps.size(); isgs++){
 	  auto const& sgs = steps[isgs];
-       	  // lookup straw here, to avoid having to find the tracker for every step
+	  // lookup straw here, to avoid having to find the tracker for every step
 	  StrawId const & sid = sgs.strawId();
 	  Straw const& straw = tracker.getStraw(sid);
 	  if(sgs.ionizingEdep() > _minstepE){
@@ -532,7 +534,7 @@ namespace mu2e {
 	    auto const& spmcptr = isgsa.second;
 	    // create a clust from this step, and add it to the clust map
 	    addStep(strawphys,strawele,straw,sgsptr,spmcptr,hmap[sid]);
-          }
+	  }
 	}
       }
     }
@@ -544,10 +546,11 @@ namespace mu2e {
 	StrawClusterSequencePair& shsp) {
       auto const& sgs = *sgsptr;
       StrawId sid = sgs.strawId();
+      // apply time offsets, and take module with MB
+      double ctime  = microbunchTime(strawele,sgs.time() + _toff.totalTimeOffset(sgs.simParticle()));
       // test if this step point is roughly in the digitization window
-      double mbtime = microbunchTime(strawele,sgs.time());
-      if( (mbtime > strawele.flashEnd() - _steptimebuf
-	    && mbtime <  strawele.flashStart()) || readAll(sid)) {
+      if( (ctime > strawele.flashEnd() - _steptimebuf
+	    && ctime <  strawele.flashStart()) || readAll(sid)) {
 	// Subdivide the StrawGasStep into ionization clusters
 	_clusters.clear();
 	divideStep(strawphys,strawele,straw,sgs,_clusters);
@@ -562,18 +565,17 @@ namespace mu2e {
 	    // compute the longitudinal propagation effects
 	    WireEndCharge weq;
 	    propagateCharge(strawphys,straw,wireq,end,weq);
-            // compute the total time incuding propagation delays, modulo the microbunch
-            double gtime = sgs.time() + wireq._time + weq._time;
-            double ctime = microbunchTime(strawele,gtime);
-	    CLHEP::HepLorentzVector cpos(iclu->_pos,mbtime);
-            // create the clust
-	    StrawCluster clust(StrawCluster::primary,sid,end,ctime,weq._charge,wireq._dd,wireq._phi,weq._wdist,wireq._time,weq._time,sgsptr,spmcptr,cpos);
-            // add the clusts to the appropriate sequence.
-            shsp.clustSequence(end).insert(clust);
-            // if required, add a 'ghost' copy of this clust
-            addGhosts(strawele,clust,shsp.clustSequence(end));
-          }
-        }
+	    // time of this cluster was produced, including offset
+	    // compute the time the signal arrives at the wire end
+	    double gtime = ctime + wireq._time + weq._time;
+	    // create the clust
+	    StrawCluster clust(StrawCluster::primary,sid,end,(float)gtime,weq._charge,wireq._dd,wireq._phi,weq._wdist,(float)wireq._time,(float)weq._time,sgsptr,iclu->_pos,(float)ctime);
+	    // add the clusts to the appropriate sequence.
+	    shsp.clustSequence(end).insert(clust);
+	    // if required, add a 'ghost' copy of this clust
+	    addGhosts(strawele,clust,shsp.clustSequence(end));
+	  }
+	}
 	if(_diag > 0) stepDiag(strawphys, strawele, sgs, *spmcptr);
       }
     }
@@ -584,20 +586,19 @@ namespace mu2e {
 	StrawGasStep const& sgs,
 	vector<IonCluster>& clusters) {
       // single cluster
-      if (sgs.stepType().shape() == StrawGasStep::StepType::point || sgs.pathLength() < strawphys.meanFreePath()){
-	double cen = sgs.ionizingEdep();
-	double fne = cen/strawphys.meanElectronEnergy();
+      if (sgs.stepType().shape() == StrawGasStep::StepType::point || sgs.stepLength() < strawphys.meanFreePath()){
+	float cen = sgs.ionizingEdep();
+	float fne = cen/strawphys.meanElectronEnergy();
 	unsigned ne = std::max( static_cast<unsigned>(_randP(fne)),(unsigned)1);
-	Hep3Vector cdir = (Geom::Hep3Vec(sgs.startPosition())-straw.getMidPoint());//JB
-	cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));//JB
-	double phi = cdir.theta(); //JB
+	float phi = EBAngle(sgs.startPosition(),straw);
 	for (size_t i=0;i<ne;i++){
-	  IonCluster cluster(Geom::Hep3Vec(sgs.startPosition()),phi,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1);
+	  IonCluster cluster(sgs.startPosition(),phi,strawphys.ionizationCharge((unsigned)1),cen/(float)ne,1);
 	  clusters.push_back(cluster);
 	}
+
       } else {
 	// compute the number of clusters for this step from the mean free path
-	double fnc = sgs.pathLength()/strawphys.meanFreePath();
+	double fnc = sgs.stepLength()/strawphys.meanFreePath();
 	// use a truncated Poisson distribution; this keeps both the mean and variance physical
 	unsigned nc = std::max(static_cast<unsigned>(_randP.fire(fnc)),(unsigned)1);
 	// if not minion, limit the number of steps geometrically
@@ -606,11 +607,11 @@ namespace mu2e {
 	// require clusters not exceed the energy sum required for single-electron clusters
 	nc = std::min(nc,static_cast<unsigned>(floor(sgs.ionizingEdep()/strawphys.ionizationEnergy((unsigned)1))));
 	// generate random positions for the clusters
-	std::vector<Hep3Vector> cposv(nc);
+	std::vector<XYZVec> cposv(nc);
 	fillClusterPositions(sgs,cposv);
 	// generate electron counts and energies for these clusters: minion model is more detailed
 	std::vector<unsigned> ne(nc);
-	std::vector<double> cen(nc);
+	std::vector<float> cen(nc);
 	if(minion){
 	  fillClusterMinion(strawphys,sgs,ne,cen);
 	} else {
@@ -624,14 +625,13 @@ namespace mu2e {
 	// create the cluster objects
 	for(unsigned ic=0;ic<nc;++ic){
 	  // compute phi for this cluster
-	  Hep3Vector cdir = (cposv[ic]-straw.getMidPoint());
-	  cdir -= straw.getDirection()*(cdir.dot(straw.getDirection()));
-	  double phi = cdir.theta(); //JB: point1 and point2 are the DCA on/to the track/wire. theta takes the angle to the z-axis
-	  for (size_t i=0;i<ne[ic];i++){
-	    IonCluster cluster(cposv[ic],phi,strawphys.ionizationCharge((unsigned)1),cen[ic]/(float)ne[ic],1);
+	  float phi=EBAngle(cposv[ic],straw);
+	  float ee = cen[ic]/(float)ne[ic];
+	  // let each electron drift separate (RBonvtre)
+	  for (size_t ie=0;ie<ne[ic];ie++){
+	    IonCluster cluster(cposv[ic],phi,strawphys.ionizationCharge((unsigned)1),ee,1);
 	    clusters.push_back(cluster);
 	  }
-	  //cout <<"phi1b = "<<phi<<"\n";
 	}
       }
     }
@@ -640,15 +640,15 @@ namespace mu2e {
 	StrawPhysics const& strawphys,Straw const& straw,
 	IonCluster const& cluster, WireCharge& wireq ) {
       // Compute the vector from the cluster to the wire
-      Hep3Vector cpos = cluster._pos-straw.getMidPoint();
+      Hep3Vector cpos = Geom::Hep3Vec(cluster._pos)-straw.getMidPoint();
       // drift distance perp to wire, and angle WRT magnetic field (for Lorentz effect)
       double dd = min(cpos.perp(straw.getDirection()),straw.innerRadius());
       // sample the gain for this cluster
       double gain = strawphys.clusterGain(_randgauss, _randflat, cluster._ne);
       wireq._charge = cluster._charge*(gain);
       // compute drift time for this cluster
-      double dt = strawphys.driftDistanceToTime(dd,cluster._phi); //JB: this is now from the lorentz corrected r-component of the drift
-      wireq._phi = cluster._phi; //JB
+      double dt = strawphys.driftDistanceToTime(dd,cluster._phi); // this is now from the lorentz corrected r-component of the drift
+      wireq._phi = cluster._phi; //
       wireq._time = _randgauss.fire(dt,strawphys.driftTimeSpread(dd));
       wireq._dd = dd;
       // position along wire
@@ -657,15 +657,15 @@ namespace mu2e {
     }
 
     void StrawDigisFromStrawGasSteps::propagateCharge(
-          StrawPhysics const& strawphys, Straw const& straw,
-          WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
+	StrawPhysics const& strawphys, Straw const& straw,
+	WireCharge const& wireq, StrawEnd end, WireEndCharge& weq) {
       // compute distance to the appropriate end
       double wlen = straw.halfLength(); // use the full length, not the active length
       // NB: the following assumes the straw direction points in increasing azimuth.  FIXME!
       if(end == StrawEnd::hv)
-        weq._wdist = wlen - wireq._wpos;
+	weq._wdist = wlen - wireq._wpos;
       else
-        weq._wdist = wlen + wireq._wpos;
+	weq._wdist = wlen + wireq._wpos;
       // split the charge
       weq._charge = 0.5*wireq._charge;
       weq._time = strawphys.propagationTime(weq._wdist);
@@ -683,7 +683,7 @@ namespace mu2e {
     void StrawDigisFromStrawGasSteps::addGhosts(StrawElectronics const& strawele,StrawCluster const& clust,StrawClusterSequence& shs) {
       // add enough buffer to cover both the flash blanking and the ADC waveform
       if(clust.time() < strawele.flashStart() - _mbtime + _mbbuffer)
-        shs.insert(StrawCluster(clust,_mbtime));
+	shs.insert(StrawCluster(clust,_mbtime));
       if(clust.time() > _mbtime - _mbbuffer) shs.insert(StrawCluster(clust,-_mbtime));
     }
 
@@ -694,7 +694,7 @@ namespace mu2e {
       double strawnoise = _randgauss.fire(0,strawele.strawNoise());
       // add specifics for each end
       double thresh[2] = {_randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(0))+strawnoise,strawele.analogNoise(StrawElectronics::thresh)),
-        _randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(1))+strawnoise,strawele.analogNoise(StrawElectronics::thresh))};
+	_randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(1))+strawnoise,strawele.analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
       double tstart =strawele.flashEnd() - _flashbuffer; 
       // for reading all hits, make sure we start looking for clusters at the minimum possible cluster time
@@ -704,37 +704,37 @@ namespace mu2e {
       // search for coherent crossings on both ends
       bool crosses[2];
       for(size_t iend=0;iend<2;++iend){
-        crosses[iend] = swfp[iend].crossesThreshold(strawele,thresh[iend],wfx[iend]);
+	crosses[iend] = swfp[iend].crossesThreshold(strawele,thresh[iend],wfx[iend]);
       }
       // loop until we hit the end of the waveforms.  Require both in time.  Buffer to account for eventual TDC jitter
       // this is a loose pre-selection, final selection is done at digitization
       while( crosses[0] && crosses[1] && std::max(wfx[0]._time,wfx[1]._time)
-          < strawele.flashStart() + strawele.electronicsTimeDelay() + _tdcbuf){
-        // see if the crossings match
-        if(strawele.combineEnds(wfx[0]._time,wfx[1]._time)){
-          // put the pair of crossings in the crosing list
-          // make sure the time is positive in case this was a hit from the 'previous' microbunch
-          if(std::min(wfx[0]._time,wfx[1]._time) > 0.0 )xings.push_back(wfx);
-          // search for next crossing:
-          // update threshold for straw noise
-          strawnoise = _randgauss.fire(0,strawele.strawNoise());
-          for(unsigned iend=0;iend<2;++iend){
-            // insure a minimum time buffer between crossings
-            wfx[iend]._time += strawele.deadTimeAnalog();
-            // skip to the next clust
-            ++(wfx[iend]._iclust);
-            // update threshold for incoherent noise
-            thresh[iend] = _randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(iend)),strawele.analogNoise(StrawElectronics::thresh));
-            // find next crossing
-            crosses[iend] = swfp[iend].crossesThreshold(strawele,thresh[iend],wfx[iend]);
-          }
-        } else {
-          // skip to the next crossing on the earlier waveform
-          unsigned iearly = wfx[0]._time < wfx[1]._time ? 0 : 1;
-          ++(wfx[iearly]._iclust);
-          wfx[iearly]._time += strawele.deadTimeAnalog();
-          crosses[iearly] = swfp[iearly].crossesThreshold(strawele,thresh[iearly],wfx[iearly]);
-        }
+	  < strawele.flashStart() + strawele.electronicsTimeDelay() + _tdcbuf){
+	// see if the crossings match
+	if(strawele.combineEnds(wfx[0]._time,wfx[1]._time)){
+	  // put the pair of crossings in the crosing list
+	  // make sure the time is positive in case this was a hit from the 'previous' microbunch
+	  if(std::min(wfx[0]._time,wfx[1]._time) > 0.0 )xings.push_back(wfx);
+	  // search for next crossing:
+	  // update threshold for straw noise
+	  strawnoise = _randgauss.fire(0,strawele.strawNoise());
+	  for(unsigned iend=0;iend<2;++iend){
+	    // insure a minimum time buffer between crossings
+	    wfx[iend]._time += strawele.deadTimeAnalog();
+	    // skip to the next clust
+	    ++(wfx[iend]._iclust);
+	    // update threshold for incoherent noise
+	    thresh[iend] = _randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(iend)),strawele.analogNoise(StrawElectronics::thresh));
+	    // find next crossing
+	    crosses[iend] = swfp[iend].crossesThreshold(strawele,thresh[iend],wfx[iend]);
+	  }
+	} else {
+	  // skip to the next crossing on the earlier waveform
+	  unsigned iearly = wfx[0]._time < wfx[1]._time ? 0 : 1;
+	  ++(wfx[iearly]._iclust);
+	  wfx[iearly]._time += strawele.deadTimeAnalog();
+	  crosses[iearly] = swfp[iearly].crossesThreshold(strawele,thresh[iearly],wfx[iearly]);
+	}
       }
     }
 
@@ -745,45 +745,44 @@ namespace mu2e {
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis ) {
       // loop over crossings
       for(auto xpair : xings) {
-        // create a digi from this pair.  This also performs a finial test
-        // on whether the pair should make a digi
-        if(createDigi(strawele,xpair,wf,sid,digis)){
-          // fill associated MC truth matching. Only count the same step once
-          double wetime[2] = {-100.,-100.};
-          CLHEP::HepLorentzVector cpos[2];
-          art::Ptr<StrawGasStep> sgs[2];
-          art::Ptr<StepPointMC> stepMC[2];
-          for (size_t iend=0;iend<2;++iend){
-            StrawCluster const& sc = *(xpair[iend]._iclust);
-            wetime[iend] = sc.time();
-            cpos[iend] = sc.clusterPosition();
-            sgs[iend] = sc.strawGasStep();
-            stepMC[iend] = sc.stepPointMC();
-          }
-          // choose the minimum time from either end, as the ADC sums both
-          double ptime = 1.0e10;
-          for (size_t iend=0;iend<2;++iend){
-            ptime = std::min(ptime,wetime[iend]);
-          }
-          // subtract a small buffer
-          ptime -= _adcbuffer;
-          mcdigis->push_back(StrawDigiMC(sid,wetime,cpos,sgs,stepMC));
+	// create a digi from this pair.  This also performs a finial test
+	// on whether the pair should make a digi
+	if(createDigi(strawele,xpair,wf,sid,digis)){
+	  // fill associated MC truth matching. Only count the same step once
+	  StrawDigiMC::SGSPA sgspa;
+	  StrawDigiMC::PA cpos;
+	  StrawDigiMC::FA ctime, wetime;
+	  for (size_t iend=0;iend<2;++iend){
+	    StrawCluster const& sc = *(xpair[iend]._iclust);
+	    wetime[iend] = sc.time();
+	    ctime[iend] = sc.cluTime();
+	    cpos[iend] = sc.cluPos();
+	    sgspa[iend] = sc.strawGasStep();
+	  }
+	  // choose the minimum time from either end, as the ADC sums both
+	  float ptime = 1.0e10;
+	  for (size_t iend=0;iend<2;++iend){
+	    ptime = std::min(ptime,wetime[iend]);
+	  }
+	  // subtract a small buffer
+	  ptime -= _adcbuffer;
+	  mcdigis->push_back(StrawDigiMC(sid,cpos,ctime,wetime,sgspa));
 	  if(_diag > 1){
 	    digiDiag(strawphys,wf,xpair,digis->back(),mcdigis->back());
 	  }
-        }
+	}
       }
       // waveform diags
       if ( _diag > 1 && (wf[0].clusts().clustList().size() > 0 ||
-	  wf[1].clusts().clustList().size() > 0 ) ) {
-        // waveform xing diagnostics
-        _ndigi = digis->size();
-        waveformDiag(strawele,wf,xings);
+	    wf[1].clusts().clustList().size() > 0 ) ) {
+	// waveform xing diagnostics
+	_ndigi = digis->size();
+	waveformDiag(strawele,wf,xings);
       }
     }
 
     bool StrawDigisFromStrawGasSteps::createDigi(StrawElectronics const& strawele, WFXP const& xpair, SWFP const& waveform,
-                                                StrawId sid, StrawDigiCollection* digis){
+	StrawId sid, StrawDigiCollection* digis){
       // initialize the float variables that we later digitize
       TDCTimes xtimes = {0.0,0.0};
       TrkTypes::TOTValues tot;
@@ -797,38 +796,38 @@ namespace mu2e {
       double dt = _ewMarkerROCdt[sid.getPanel()];
       // loop over the associated crossings
       for(size_t iend = 0;iend<2; ++iend){
-        WFX const& wfx = xpair[iend];
-        // record the crossing time for this end, including clock jitter  These already include noise effects
-        // add noise for TDC on each side
-        double tdc_jitter = _randgauss.fire(0.0,strawele.TDCResolution());
-        xtimes[iend] = wfx._time+dt+tdc_jitter;
-        // randomize threshold using the incoherent noise
-        double threshold = _randgauss.fire(wfx._vcross,strawele.analogNoise(StrawElectronics::thresh));
-        // find TOT
-        tot[iend] = waveform[iend].digitizeTOT(strawele,threshold,wfx._time + dt);
-        // sample ADC
-        waveform[iend].sampleADCWaveform(strawele,adctimes,wf[iend]);
+	WFX const& wfx = xpair[iend];
+	// record the crossing time for this end, including clock jitter  These already include noise effects
+	// add noise for TDC on each side
+	double tdc_jitter = _randgauss.fire(0.0,strawele.TDCResolution());
+	xtimes[iend] = wfx._time+dt+tdc_jitter;
+	// randomize threshold using the incoherent noise
+	double threshold = _randgauss.fire(wfx._vcross,strawele.analogNoise(StrawElectronics::thresh));
+	// find TOT
+	tot[iend] = waveform[iend].digitizeTOT(strawele,threshold,wfx._time + dt);
+	// sample ADC
+	waveform[iend].sampleADCWaveform(strawele,adctimes,wf[iend]);
       }
       // uncalibrate
       strawele.uncalibrateTimes(xtimes,sid);
       // add ends and add noise
       ADCVoltages wfsum; wfsum.reserve(adctimes.size());
       for(unsigned isamp=0;isamp<adctimes.size();++isamp){
-        wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,strawele.analogNoise(StrawElectronics::adc)));
+	wfsum.push_back(wf[0][isamp]+wf[1][isamp]+_randgauss.fire(0.0,strawele.analogNoise(StrawElectronics::adc)));
       }
       // digitize, and make final test.  This call includes the clock error WRT the proton pulse
       TrkTypes::TDCValues tdcs;
       bool digitize;
       if(readAll(sid))
-        digitize = strawele.digitizeAllTimes(xtimes,_mbtime,tdcs);
+	digitize = strawele.digitizeAllTimes(xtimes,_mbtime,tdcs);
       else
-        digitize = strawele.digitizeTimes(xtimes,tdcs);
+	digitize = strawele.digitizeTimes(xtimes,tdcs);
 
       if(digitize){
-        TrkTypes::ADCWaveform adc;
-        strawele.digitizeWaveform(sid,wfsum,adc);
-        // create the digi from this
-        digis->push_back(StrawDigi(sid,tdcs,tot,adc));
+	TrkTypes::ADCWaveform adc;
+	strawele.digitizeWaveform(sid,wfsum,adc);
+	// create the digi from this
+	digis->push_back(StrawDigi(sid,tdcs,tot,adc));
       }
       return digitize;
     }
@@ -845,10 +844,10 @@ namespace mu2e {
       vector<StrawId> const& preampNeighbors = straw.preampNeighboursById();
       // convert these to cross-talk
       for(auto isid=strawNeighbors.begin();isid!=strawNeighbors.end();++isid){
-        xtalk.push_back(XTalk(selfid,*isid,_preampxtalk,0));
+	xtalk.push_back(XTalk(selfid,*isid,_preampxtalk,0));
       }
       for(auto isid=preampNeighbors.begin();isid!=preampNeighbors.end();++isid){
-        xtalk.push_back(XTalk(selfid,*isid,0,_postampxtalk));
+	xtalk.push_back(XTalk(selfid,*isid,0,_postampxtalk));
       }
     }
 
@@ -858,7 +857,7 @@ namespace mu2e {
       // create random noise clusts and add them to the sequences of random straws.
     }
 
-    void StrawDigisFromStrawGasSteps::fillClusterPositions(StrawGasStep const& sgs, std::vector<Hep3Vector>& cposv) {
+    void StrawDigisFromStrawGasSteps::fillClusterPositions(StrawGasStep const& sgs, std::vector<XYZVec>& cposv) {
       // generate a random position between the start and end points. Also smear perp to the path by the width
       XYZVec path = sgs.endPosition() - sgs.startPosition();
       for(auto& cpos : cposv) {
@@ -867,7 +866,7 @@ namespace mu2e {
       }
     }
 
-    void StrawDigisFromStrawGasSteps::fillClusterMinion(StrawPhysics const& strawphys, StrawGasStep const& step, std::vector<unsigned>& ne, std::vector<double>& cen) {
+    void StrawDigisFromStrawGasSteps::fillClusterMinion(StrawPhysics const& strawphys, StrawGasStep const& step, std::vector<unsigned>& ne, std::vector<float>& cen) {
       // Loop until we've assigned energy + electrons to every cluster
       unsigned mc(0);
       double esum(0.0);
@@ -879,52 +878,52 @@ namespace mu2e {
 	fillClusterNe(strawphys,me);
 	for(auto ie : me) {
 	  // maximum energy for this cluster requires at least 1 electron for the rest of the cluster
-          double emax = etot - esum - (nc -mc -1)*strawphys.ionizationEnergy((unsigned)1);
-          double eele = strawphys.ionizationEnergy(ie);
-          if( eele < emax){
-            ne[mc] = ie;
-            cen[mc] = eele;
-            ++mc;
-            esum += eele;
-          } else {
-            break;
-          }
-        }
+	  double emax = etot - esum - (nc -mc -1)*strawphys.ionizationEnergy((unsigned)1);
+	  double eele = strawphys.ionizationEnergy(ie);
+	  if( eele < emax){
+	    ne[mc] = ie;
+	    cen[mc] = eele;
+	    ++mc;
+	    esum += eele;
+	  } else {
+	    break;
+	  }
+	}
       }
       // distribute any residual energy randomly to these clusters.  This models delta rays
       unsigned ns;
       do{
-        unsigned me = strawphys.nePerIon(_randflat.fire());
-        double emax = etot - esum;
-        double eele = strawphys.ionizationEnergy(me);
-        if(eele < emax){
-          // choose a random cluster to assign this energy to
-          unsigned mc = std::min(nc-1,static_cast<unsigned>(floor(_randflat.fire(nc))));
-          ne[mc] += me;
-          cen[mc] += eele;
-          esum += eele;
-        }
-        // maximum energy for this cluster requires at least 1 electron for the rest of the cluster
-        ns = static_cast<unsigned>(floor((etot-esum)/strawphys.ionizationEnergy((unsigned)1)));
+	unsigned me = strawphys.nePerIon(_randflat.fire());
+	double emax = etot - esum;
+	double eele = strawphys.ionizationEnergy(me);
+	if(eele < emax){
+	  // choose a random cluster to assign this energy to
+	  unsigned mc = std::min(nc-1,static_cast<unsigned>(floor(_randflat.fire(nc))));
+	  ne[mc] += me;
+	  cen[mc] += eele;
+	  esum += eele;
+	}
+	// maximum energy for this cluster requires at least 1 electron for the rest of the cluster
+	ns = static_cast<unsigned>(floor((etot-esum)/strawphys.ionizationEnergy((unsigned)1)));
       } while(ns > 0);
     }
 
     void StrawDigisFromStrawGasSteps::fillClusterNe(StrawPhysics const& strawphys,std::vector<unsigned>& me) {
       for(size_t ie=0;ie < me.size(); ++ie){
-        me[ie] = strawphys.nePerIon(_randflat.fire());
+	me[ie] = strawphys.nePerIon(_randflat.fire());
       }
       if(_sort)std::sort(me.begin(),me.end());
     }
 
     bool StrawDigisFromStrawGasSteps::readAll(StrawId const& sid) const {
       return sid.straw() >= _allStraw &&
-        (std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end());
+	(std::find(_allPlanes.begin(),_allPlanes.end(),sid.plane()) != _allPlanes.end());
     }
 
-// diagnostic functions
+    // diagnostic functions
     void StrawDigisFromStrawGasSteps::waveformDiag(
-                     StrawElectronics const& strawele,
-                     SWFP const& wfs, WFXPList const& xings) {
+	StrawElectronics const& strawele,
+	SWFP const& wfs, WFXPList const& xings) {
       const Tracker& tracker = *GeomHandle<Tracker>();
       const Straw& straw = tracker.getStraw( wfs[0].clusts().strawId() );
       _swplane = straw.id().getPlane();
@@ -932,73 +931,73 @@ namespace mu2e {
       _swlayer = straw.id().getLayer();
       _swstraw = straw.id().getStraw();
       for(size_t iend=0;iend<2; ++iend){
-        ClusterList const& clusts = wfs[iend].clusts().clustList();
-        size_t nclust = clusts.size();
-        set<art::Ptr<StepPointMC> > steps;
-        set<art::Ptr<SimParticle> > parts;
-        _nxing[iend] = 0;
-        _txing[iend] = strawele.flashStart() + _mbbuffer;
-        _xddist[iend] = _xwdist[iend] = _xpdist[iend] = -1.0;
-        for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-          ++_nxing[iend];
-          _txing[iend] = min(_txing[iend],static_cast<float_t>(ixing->at(iend)._time));
-          _xddist[iend] = ixing->at(iend)._iclust->driftDistance();
-          _xwdist[iend] = ixing->at(iend)._iclust->wireDistance();
-          // compute direction perpendicular to wire and momentum
-          auto const& spp = ixing->at(iend)._iclust->stepPointMC();
-          if(!spp.isNull()){
-            Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
-            // project the differences in position to get the perp distance
-            _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
-          }
-        }
-        if(_nxing[iend] == 0){
-          // no xings: just take the 1st clust
-          if(nclust > 0 ){
-            _xddist[iend] = clusts.front().driftDistance();
-            _xwdist[iend] = clusts.front().wireDistance();
-            auto const& spp = clusts.front().stepPointMC();
-            if(!spp.isNull()){
-              Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
-              // project the differences in position to get the perp distance
-              _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
-            }
-          }
-        }
-        if(nclust > 0){
-          _tmin[iend] = clusts.begin()->time();
-          _tmax[iend] = clusts.rbegin()->time();
-        } else {
-          _tmin[iend] = _mbtime+_mbbuffer;
-          _tmax[iend] = -100.0;
-        }
+	ClusterList const& clusts = wfs[iend].clusts().clustList();
+	size_t nclust = clusts.size();
+	set<art::Ptr<StepPointMC> > steps;
+	set<art::Ptr<SimParticle> > parts;
+	_nxing[iend] = 0;
+	_txing[iend] = strawele.flashStart() + _mbbuffer;
+	_xddist[iend] = _xwdist[iend] = _xpdist[iend] = -1.0;
+	for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
+	  ++_nxing[iend];
+	  _txing[iend] = min(_txing[iend],static_cast<float_t>(ixing->at(iend)._time));
+	  _xddist[iend] = ixing->at(iend)._iclust->driftDistance();
+	  _xwdist[iend] = ixing->at(iend)._iclust->wireDistance();
+	  // compute direction perpendicular to wire and momentum
+	  auto const& spp = ixing->at(iend)._iclust->strawGasStep();
+	  if(!spp.isNull()){
+	    Hep3Vector pdir = straw.getDirection().cross(Geom::Hep3Vec(spp->momentum())).unit();
+	    // project the differences in position to get the perp distance
+	    _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
+	  }
+	}
+	if(_nxing[iend] == 0){
+	  // no xings: just take the 1st clust
+	  if(nclust > 0 ){
+	    _xddist[iend] = clusts.front().driftDistance();
+	    _xwdist[iend] = clusts.front().wireDistance();
+	    auto const& spp = clusts.front().stepPointMC();
+	    if(!spp.isNull()){
+	      Hep3Vector pdir = straw.getDirection().cross(spp->momentum()).unit();
+	      // project the differences in position to get the perp distance
+	      _xpdist[iend] = pdir.dot(spp->position()-straw.getMidPoint());
+	    }
+	  }
+	}
+	if(nclust > 0){
+	  _tmin[iend] = clusts.begin()->time();
+	  _tmax[iend] = clusts.rbegin()->time();
+	} else {
+	  _tmin[iend] = _mbtime+_mbbuffer;
+	  _tmax[iend] = -100.0;
+	}
 
-        _hqsum[iend] = 0.0;
-        _vmax[iend] = _tvmax[iend] = 0.0;
-        _wmcpdg[iend] = _wmcproc[iend] = 0;
-        for(auto iclu=clusts.begin();iclu!=clusts.end();++iclu){
-          if(iclu->stepPointMC().isNonnull()){
-            steps.insert(iclu->stepPointMC());
-            parts.insert(iclu->stepPointMC()->simParticle());
-            _hqsum[iend] += iclu->charge();
-            double ctime = iclu->time()+strawele.maxResponseTime(_diagpath,iclu->wireDistance());
-            double vout = wfs[iend].sampleWaveform(strawele,_diagpath,ctime);
-            if(vout > _vmax[iend]){
-              _vmax[iend] = vout;
-              _tvmax[iend] = ctime;
-              _wmcpdg[iend] = iclu->stepPointMC()->simParticle()->pdgId();
-              _wmcproc[iend] = iclu->stepPointMC()->simParticle()->creationCode();
-              _mce[iend] = iclu->stepPointMC()->simParticle()->startMomentum().e();
-              _slen[iend] = iclu->stepPointMC()->stepLength();
-              _sedep[iend] = iclu->stepPointMC()->ionizingEdep();
-            }
-          }
-        }
-        _nsteppoint[iend] = steps.size();
-        _npart[iend] = parts.size();
-        _sesum[iend] = 0.0;
-        for(auto istep=steps.begin();istep!=steps.end();++istep)
-          _sesum [iend]+= (*istep)->ionizingEdep();
+	_hqsum[iend] = 0.0;
+	_vmax[iend] = _tvmax[iend] = 0.0;
+	_wmcpdg[iend] = _wmcproc[iend] = 0;
+	for(auto iclu=clusts.begin();iclu!=clusts.end();++iclu){
+	  if(iclu->stepPointMC().isNonnull()){
+	    steps.insert(iclu->stepPointMC());
+	    parts.insert(iclu->stepPointMC()->simParticle());
+	    _hqsum[iend] += iclu->charge();
+	    double ctime = iclu->time()+strawele.maxResponseTime(_diagpath,iclu->wireDistance());
+	    double vout = wfs[iend].sampleWaveform(strawele,_diagpath,ctime);
+	    if(vout > _vmax[iend]){
+	      _vmax[iend] = vout;
+	      _tvmax[iend] = ctime;
+	      _wmcpdg[iend] = iclu->stepPointMC()->simParticle()->pdgId();
+	      _wmcproc[iend] = iclu->stepPointMC()->simParticle()->creationCode();
+	      _mce[iend] = iclu->stepPointMC()->simParticle()->startMomentum().e();
+	      _slen[iend] = iclu->stepPointMC()->stepLength();
+	      _sedep[iend] = iclu->stepPointMC()->ionizingEdep();
+	    }
+	  }
+	}
+	_nsteppoint[iend] = steps.size();
+	_npart[iend] = parts.size();
+	_sesum[iend] = 0.0;
+	for(auto istep=steps.begin();istep!=steps.end();++istep)
+	  _sesum [iend]+= (*istep)->ionizingEdep();
       }
       _swdiag->Fill();
       // waveform histograms
@@ -1009,43 +1008,43 @@ namespace mu2e {
       // histogram individual waveforms
       static unsigned nhist(0);// maximum number of histograms per job!
       for(size_t iend=0;iend<2;++iend){
-        // step to the 1st cluster past the blanking time to avoid double-counting
-        ClusterList const& clist = wfs[iend].clusts().clustList();
-        auto icl = clist.begin();
-        while(icl->time() < strawele.flashEnd())
-          icl++;
-        if(icl != clist.end() && nhist < _maxhist && xings.size() >= _minnxinghist &&
-           ( ((!_xtalkhist) && wfs[iend].xtalk().self()) || (_xtalkhist && !wfs[iend].xtalk().self()) ) ) {
-          double tstart = icl->time()-_tstep;
-          double tfall = strawele.fallTime(_diagpath);
-          double tend = clist.rbegin()->time() + _nfall*tfall;
-          ADCTimes times;
-          ADCVoltages volts;
-          times.reserve(size_t(ceil(tend-tstart)/_tstep));
-          volts.reserve(size_t(ceil(tend-tstart)/_tstep));
-          double t = tstart;
-          while(t<tend){
-            times.push_back(t);
-            volts.push_back(wfs[iend].sampleWaveform(strawele,_diagpath,t));
-            t += _tstep;
-          }
-          ++nhist;
-          art::ServiceHandle<art::TFileService> tfs;
-          char name[60];
-          char title[100];
-          snprintf(name,60,"SWF%i_%i",wfs[iend].clusts().strawId().asUint16(),nhist);
-          snprintf(title,100,"Electronic output for straw %i end %i path %i;time (nSec);Waveform (mVolts)",wfs[iend].clusts().strawId().asUint16(),(int)iend,_diagpath);
-          TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
-          for(size_t ibin=0;ibin<times.size();++ibin)
-            wfh->SetBinContent(ibin+1,volts[ibin]);
-          TList* flist = wfh->GetListOfFunctions();
-          for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
-            TMarker* smark = new TMarker(ixing->at(iend)._time,ixing->at(iend)._vcross,8);
-            smark->SetMarkerColor(kGreen);
-            smark->SetMarkerSize(2);
-            flist->Add(smark);
-          }
-        }
+	// step to the 1st cluster past the blanking time to avoid double-counting
+	ClusterList const& clist = wfs[iend].clusts().clustList();
+	auto icl = clist.begin();
+	while(icl->time() < strawele.flashEnd())
+	  icl++;
+	if(icl != clist.end() && nhist < _maxhist && xings.size() >= _minnxinghist &&
+	    ( ((!_xtalkhist) && wfs[iend].xtalk().self()) || (_xtalkhist && !wfs[iend].xtalk().self()) ) ) {
+	  double tstart = icl->time()-_tstep;
+	  double tfall = strawele.fallTime(_diagpath);
+	  double tend = clist.rbegin()->time() + _nfall*tfall;
+	  ADCTimes times;
+	  ADCVoltages volts;
+	  times.reserve(size_t(ceil(tend-tstart)/_tstep));
+	  volts.reserve(size_t(ceil(tend-tstart)/_tstep));
+	  double t = tstart;
+	  while(t<tend){
+	    times.push_back(t);
+	    volts.push_back(wfs[iend].sampleWaveform(strawele,_diagpath,t));
+	    t += _tstep;
+	  }
+	  ++nhist;
+	  art::ServiceHandle<art::TFileService> tfs;
+	  char name[60];
+	  char title[100];
+	  snprintf(name,60,"SWF%i_%i",wfs[iend].clusts().strawId().asUint16(),nhist);
+	  snprintf(title,100,"Electronic output for straw %i end %i path %i;time (nSec);Waveform (mVolts)",wfs[iend].clusts().strawId().asUint16(),(int)iend,_diagpath);
+	  TH1F* wfh = tfs->make<TH1F>(name,title,volts.size(),times.front(),times.back());
+	  for(size_t ibin=0;ibin<times.size();++ibin)
+	    wfh->SetBinContent(ibin+1,volts[ibin]);
+	  TList* flist = wfh->GetListOfFunctions();
+	  for(auto ixing=xings.begin();ixing!=xings.end();++ixing){
+	    TMarker* smark = new TMarker(ixing->at(iend)._time,ixing->at(iend)._vcross,8);
+	    smark->SetMarkerColor(kGreen);
+	    smark->SetMarkerSize(2);
+	    flist->Add(smark);
+	  }
+	}
       }
     }
 
@@ -1058,47 +1057,47 @@ namespace mu2e {
       _sdstraw = straw.id().getStraw();
 
       for(size_t iend=0;iend<2;++iend){
-        _xtime[iend] = xpair[iend]._time;
-        _tctime[iend] = xpair[iend]._iclust->time();
-        _charge[iend] = xpair[iend]._iclust->charge();
-        _ddist[iend] = xpair[iend]._iclust->driftDistance();
-        _dtime[iend] = xpair[iend]._iclust->driftTime();
-        _ptime[iend] = xpair[iend]._iclust->propTime();
-        _phi[iend] = xpair[iend]._iclust->phi(); //JB
-        _wdist[iend] = xpair[iend]._iclust->wireDistance();
-        _vstart[iend] = xpair[iend]._vstart;
-        _vcross[iend] = xpair[iend]._vcross;
-        _tdc[iend] = digi.TDC(xpair[iend]._iclust->strawEnd());
-        _tot[iend] = digi.TOT(xpair[iend]._iclust->strawEnd());
-        ClusterList const& clist = wfs[iend].clusts().clustList();
-        auto ctrig = xpair[iend]._iclust;
-        _ncludd[iend] = clist.size();
-        // find the earliest cluster from the same particle that triggered the crossing
-        auto iclu = clist.begin();
-        while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
-          ++iclu;
-        }
-        if(iclu != clist.end() ){
-          _ectime[iend] = iclu->time();
-          _ecddist[iend] = iclu->driftDistance();
-          _ecdtime[iend] = iclu->driftTime();
-          _ecptime[iend] = iclu->propTime();
-          // count how many clusters till we get to the trigger cluster
-          size_t iclust(0);
-          while( iclu != clist.end() && iclu != ctrig){
-            ++iclu;
-            ++iclust;
-          }
-          _iclust[iend] = iclust;
-        }
+	_xtime[iend] = xpair[iend]._time;
+	_tctime[iend] = xpair[iend]._iclust->time();
+	_charge[iend] = xpair[iend]._iclust->charge();
+	_ddist[iend] = xpair[iend]._iclust->driftDistance();
+	_dtime[iend] = xpair[iend]._iclust->driftTime();
+	_ptime[iend] = xpair[iend]._iclust->propTime();
+	_phi[iend] = xpair[iend]._iclust->phi(); 
+	_wdist[iend] = xpair[iend]._iclust->wireDistance();
+	_vstart[iend] = xpair[iend]._vstart;
+	_vcross[iend] = xpair[iend]._vcross;
+	_tdc[iend] = digi.TDC(xpair[iend]._iclust->strawEnd());
+	_tot[iend] = digi.TOT(xpair[iend]._iclust->strawEnd());
+	ClusterList const& clist = wfs[iend].clusts().clustList();
+	auto ctrig = xpair[iend]._iclust;
+	_ncludd[iend] = clist.size();
+	// find the earliest cluster from the same particle that triggered the crossing
+	auto iclu = clist.begin();
+	while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
+	  ++iclu;
+	}
+	if(iclu != clist.end() ){
+	  _ectime[iend] = iclu->time();
+	  _ecddist[iend] = iclu->driftDistance();
+	  _ecdtime[iend] = iclu->driftTime();
+	  _ecptime[iend] = iclu->propTime();
+	  // count how many clusters till we get to the trigger cluster
+	  size_t iclust(0);
+	  while( iclu != clist.end() && iclu != ctrig){
+	    ++iclu;
+	    ++iclust;
+	  }
+	  _iclust[iend] = iclust;
+	}
       }
       if(xpair[0]._iclust->stepPointMC() == xpair[1]._iclust->stepPointMC())
-        _nstep = 1;
+	_nstep = 1;
       else
-        _nstep = 2;
+	_nstep = 2;
       _adc.clear();
       for(auto iadc=digi.adcWaveform().begin();iadc!=digi.adcWaveform().end();++iadc){
-        _adc.push_back(*iadc);
+	_adc.push_back(*iadc);
       }
       // mc truth information
       _dmcpdg = _dmcproc = _dmcgen = 0;
@@ -1110,24 +1109,20 @@ namespace mu2e {
       if(!sgsptr.isNull() && !spmcptr.isNull()){
 	auto const& sgs = *sgsptr;
 	auto const& spmc = *spmcptr;
-        _mctime = sgs.time();
-        // compute the doca for this step
-        TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
-            Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
-        _mcdca = pca.dca();
-
-        Hep3Vector mccdir = (pca.point2()-straw.getMidPoint());
-        mccdir -= straw.getDirection()*(mccdir.dot(straw.getDirection()));
-        _mcdcaphi = mccdir.theta();
-        _mcdcadtime = strawphys.driftDistanceToTime(_mcdca,_mcdcaphi); //JB: this is now from the lorentz corrected r-component of the drift
-
-        if(!spmc.simParticle().isNull()){
+	_mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle());
+	// compute the doca for this step
+	TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
+	    Geom::Hep3Vec(sgs.startPosition()), Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()) );
+	_mcdca = pca.dca();
+	_mcdcaphi = EBAngle(Geom::toXYZVec(pca.point2()),straw);
+	_mcdcadtime = strawphys.driftDistanceToTime(_mcdca,_mcdcaphi); 
+	if(!spmc.simParticle().isNull()){
 	  auto const& sp = *spmc.simParticle();
-          _dmcpdg = sp.pdgId();
-          _dmcproc = sp.creationCode();
-          if(sp.genParticle().isNonnull())
-            _dmcgen = sp.genParticle()->generatorId().id();
-          _dmcmom = spmc.momentum().mag();
+	  _dmcpdg = sp.pdgId();
+	  _dmcproc = sp.creationCode();
+	  if(sp.genParticle().isNonnull())
+	    _dmcgen = sp.genParticle()->generatorId().id();
+	  _dmcmom = spmc.momentum().mag();
 	  _mcthreshpdg = spmc.simParticle()->pdgId();
 	  _mcthreshproc = spmc.simParticle()->creationCode();
 	}
@@ -1145,9 +1140,9 @@ namespace mu2e {
 
     void StrawDigisFromStrawGasSteps::stepDiag( StrawPhysics const& strawphys, StrawElectronics const& strawele,
 	StrawGasStep const& sgs, StepPointMC const& spmc) {
-      _steplen = sgs.pathLength();
+      _steplen = sgs.stepLength();
       _stepE = sgs.ionizingEdep();
-      _steptime = microbunchTime(strawele,sgs.time());
+      _steptime = microbunchTime(strawele,sgs.time()+ _toff.totalTimeOffset(sgs.simParticle()));
       _stype = sgs.stepType()._stype;
       _partP = spmc.momentum().mag();
       _partPDG = spmc.simParticle()->pdgId();
@@ -1164,6 +1159,14 @@ namespace mu2e {
       _sdiag->Fill();
     }
 
+    float StrawDigisFromStrawGasSteps::EBAngle(XYZVec const& cpos,Straw const& straw) const {
+      // this assumes E points along the radial direction and B along Z FIXME!
+      XYZVec smid = Geom::toXYZVec(straw.getMidPoint());
+      XYZVec sdir = Geom::toXYZVec(straw.getDirection());
+      XYZVec cdir = cpos - smid;
+      cdir -= sdir*(cdir.Dot(sdir));
+      return cdir.theta();
+    }
 
   } // end namespace trackermc
 } // end namespace mu2e
