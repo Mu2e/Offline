@@ -9,9 +9,10 @@
 #include "canvas/Persistency/Common/Assns.h"
 
 #include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/ProcessCode.hh"
+#include "MCDataProducts/inc/SimParticle.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/XYZVec.hh"
+#include "CLHEP/Vector/ThreeVector.h"
 #include <Rtypes.h>
 
 namespace mu2e {
@@ -36,20 +37,29 @@ namespace mu2e {
 
       StrawGasStep() : _eIon(0.0), _pathLen(0.), _width(0.0), _time(0.0) {}
       StrawGasStep( StrawId    strawId, StepType stype,
-	Float_t  Edep, Float_t    pathLength, Float_t width, Double_t   time, 
-	XYZVec const& startPosition, XYZVec const& endPosition) :
+	Float_t  Edep, Float_t    stepLength, Float_t width, Double_t   time, 
+	XYZVec const& startPosition, XYZVec const& endPosition, XYZVec const& mom, art::Ptr<SimParticle> const& simp) :
 	_strawId(strawId), _stype(stype), _eIon(Edep),
-	_pathLen(pathLength), _width(width), _time(time),
-	_startpos(startPosition), _endpos(endPosition) {}
+	_pathLen(stepLength), _width(width), _time(time),
+	_startpos(startPosition), _endpos(endPosition),
+	_mom(mom), _simp(simp) {}
 
       StrawId    strawId()    const { return _strawId;}
       StepType   stepType()    const { return _stype; }
       Float_t    ionizingEdep()    const { return _eIon; }
-      Float_t    pathLength()   const { return _pathLen; }
+      Float_t    stepLength()   const { return _pathLen; }
       Float_t    width()   const { return _width; } 
-      Double_t   time()         const { return _time; }
+      Double_t   time()         const { return _time; } // time the particle entered the gas (without offsets!)
       XYZVec const& startPosition() const { return _startpos; }
       XYZVec const& endPosition() const { return _endpos; }
+      XYZVec const& momentum() const { return _mom; }
+      art::Ptr<SimParticle> const& simParticle() const { return _simp; }
+
+      // legacy accessors, for compatibility with StepPointMC consumers
+      CLHEP::Hep3Vector position() const { return Geom::Hep3Vec(_startpos); }
+      CLHEP::Hep3Vector momvec() const { return Geom::Hep3Vec(_mom); }
+      float eDep() const { return _eIon; }
+      float totalEDep() const { return _eIon; }
     private:
       StrawId       _strawId; // straw
       StepType	    _stype; // type of step: used downstream in response simulation
@@ -58,6 +68,8 @@ namespace mu2e {
       Float_t       _width; // transverse RMS of the charge cloud WRT the wire
       Double_t      _time; // time particle enters this gas volume; must be double to allow for long-lived particles
       XYZVec	    _startpos, _endpos; //entrance and exit to the gas volume
+      XYZVec	    _mom; //momentum at the start of this step
+      art::Ptr<SimParticle> _simp;  // primary simparticle of this step
   };
 
   typedef std::vector<StrawGasStep> StrawGasStepCollection;
@@ -65,7 +77,7 @@ namespace mu2e {
 
   inline std::ostream& operator<<( std::ostream& ost, StrawGasStep const& sgs){
     ost << "StrawGasStep StrawId " << sgs.strawId() << " Type " << sgs.stepType()._stype
-    << " Ionization " << sgs.ionizingEdep() << " path length " << sgs.pathLength()
+    << " Ionization " << sgs.ionizingEdep() << " path length " << sgs.stepLength()
     << " Width " << sgs.width(); 
     return ost;
   }

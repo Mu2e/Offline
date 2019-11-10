@@ -12,7 +12,21 @@ namespace mu2e {
   namespace TrackerMC {
     StrawCluster::StrawCluster() : _type(unknown), _strawId(0), _end(StrawEnd::cal), _time(0.0), _charge(0.0), _ddist(0.0),_phi(0.0),  _wdist(0.0), _drifttime(0.0), _proptime(0.0)
     {}
+
     StrawCluster::StrawCluster(ClusterType type,StrawId sid,
+                               StrawEnd end,
+                               float time,
+                               float charge,
+                               float ddist,
+                               float phi,
+                               float wdist,
+                               float drifttime,
+                               float proptime,
+			       art::Ptr<StrawGasStep> const& sgsptr,
+			       XYZVec const& cpos, float ctime) : _type(type), _strawId(sid), _end(end), _time(time),
+    _charge(charge), _ddist(ddist), _phi(phi),_wdist(wdist), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgsptr), _cpos(cpos), _ctime(ctime) {}
+
+     StrawCluster::StrawCluster(ClusterType type,StrawId sid,
                                StrawEnd end,
                                double time,
                                float charge,
@@ -21,10 +35,9 @@ namespace mu2e {
                                float wdist,
                                float drifttime,
                                float proptime,
-  			       art::Ptr<StrawGasStep> const& sgs,
 			       art::Ptr<StepPointMC> const& stepmc,
 			       CLHEP::HepLorentzVector const& cpos) : _type(type), _strawId(sid), _end(end), _time(time),
-    _charge(charge), _ddist(ddist), _phi(phi),_wdist(wdist), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgs), _spmcptr(stepmc), _cpos(cpos)
+    _charge(charge), _ddist(ddist), _phi(phi),_wdist(wdist), _drifttime(drifttime), _proptime(proptime), _spmcptr(stepmc), _cpos(cpos)
     {}
 
     // delegating constructors in C++11!
