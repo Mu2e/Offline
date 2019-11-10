@@ -75,7 +75,6 @@ namespace mu2e {
 	  Comment("Dont combine Deltas from this module's collection")};
 	fhicl::Atom<unsigned> startSize { Name("StartSize"),
 	  Comment("Starting size for straw-particle vector"),4};
-	fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps")};
 	fhicl::Atom<bool> allStepsAssns{ Name("AllStepsAssns"),
 	  Comment("Build the association to all the contributing StepPointMCs"),false};
       };
@@ -108,7 +107,6 @@ namespace mu2e {
       float _curlfac, _linefac;
       float _curlmom, _linemom;
       unsigned _csize, _ssize;
-      SimParticleTimeOffset _toff; // time offsets
       string _keepDeltas;
       // StepPointMC selector
       // This selector will select only data products with the given instance name.
@@ -142,7 +140,6 @@ namespace mu2e {
     _linefac(config().lineRatio()),
     _csize(config().csize()),
     _ssize(config().startSize()),
-    _toff(config().SPTO()),
     _keepDeltas(config().keepDeltas()),
     _selector{art::ProductInstanceNameSelector(config().trackerSteps()) &&
       !art::ModuleLabelSelector(config().stepsToSkip()) },
@@ -150,9 +147,8 @@ namespace mu2e {
   {
     consumesMany<StepPointMCCollection>();
     produces <StrawGasStepCollection>();
-    // 2 associations: one to all the constituent StepPointMCs, the other to the first (in time) primary
-    produces <StrawGasStepAssns>("Primary");
-    if(_allAssns)produces <StrawGasStepAssns>("All");
+    // associations: to all the constituent StepPointMCs
+    if(_allAssns)produces <StrawGasStepAssns>();
   }
 
   void MakeStrawGasSteps::beginJob(){
@@ -202,12 +198,10 @@ namespace mu2e {
     const Tracker& tracker = *GeomHandle<Tracker>();
     GlobalConstantsHandle<ParticleDataTable> pdt;
     DeadStraw const& deadStraw = _deadStraw_h.get(event.id());
-    _toff.updateMap(event);
     // create output
     unique_ptr<StrawGasStepCollection> sgsc(new StrawGasStepCollection);
     sgsc->reserve(_csize);
-    unique_ptr<StrawGasStepAssns> sgsa_primary(new StrawGasStepAssns);
-    unique_ptr<StrawGasStepAssns> sgsa_all(new StrawGasStepAssns);
+    unique_ptr<StrawGasStepAssns> sgsa(new StrawGasStepAssns);
     // needed for making Ptrs
     auto StrawGasStepCollectionPID = event.getProductID<StrawGasStepCollection>();
     auto StrawGasStepCollectionGetter = event.productGetter(StrawGasStepCollectionPID);
@@ -263,19 +257,17 @@ namespace mu2e {
 	SPMCP  spmcptr;
 	fillStep(spmcptrs,straw,pdata,pid,sgs,spmcptr);
 	sgsc->push_back(sgs);
-	// create the Assns to the 'trigger' StepPointMC
-	auto sgsp = art::Ptr<StrawGasStep>(StrawGasStepCollectionPID,sgsc->size()-1,StrawGasStepCollectionGetter);
-	sgsa_primary->addSingle(sgsp,spmcptr);
+	auto sgsptr = art::Ptr<StrawGasStep>(StrawGasStepCollectionPID,sgsc->size()-1,StrawGasStepCollectionGetter);
 	// optionall add Assns for all StepPoints, including delta-rays
 	if(_allAssns){
 	  for(auto const& spmcptr : spmcptrs)
-	    sgsa_all->addSingle(sgsp,spmcptr);
+	    sgsa->addSingle(sgsptr,spmcptr);
 	}
 	if(_diag > 0)fillStepDiag(straw,sgs,spmcptr,spmcptrs);
 	if(_debug > 1){
 	  // checks and printout
-	  cout << " SGS with " << spmcptrs.size() << " steps, StrawId = " << sgs.strawId()  << " SimParticle Key = " << spmcptr->simParticle().id()
-	    << " edep = " << sgs.ionizingEdep() << " pathlen = " << sgs.pathLength() << " glen = " << sqrt((sgs.endPosition()-sgs.startPosition()).mag2()) << " width = " << sgs.width()
+	  cout << " SGS with " << spmcptrs.size() << " steps, StrawId = " << sgs.strawId()  << " SimParticle Key = " << sgs.simParticle()->id()
+	    << " edep = " << sgs.ionizingEdep() << " pathlen = " << sgs.stepLength() << " glen = " << sqrt((sgs.endPosition()-sgs.startPosition()).mag2()) << " width = " << sgs.width()
 	    << " time = " << sgs.time() << endl;
 
 	  // check if end is inside physical straw
@@ -291,8 +283,7 @@ namespace mu2e {
       cout << "Total number of StrawGasSteps " << sgsc->size() << " , StepPointMCs = " << nspmcs << endl;
     }
     event.put(move(sgsc));
-    event.put(move(sgsa_primary),"Primary");
-    if(_allAssns) event.put(move(sgsa_all),"All");
+    if(_allAssns) event.put(move(sgsa));
   } // end of produce
 
   void MakeStrawGasSteps::fillStep(SPMCPV const& spmcptrs, Straw const& straw,
@@ -331,8 +322,6 @@ namespace mu2e {
     }
     if(first.isNull() || last.isNull())
       throw cet::exception("SIM")<<"mu2e::MakeStrawGasSteps: No first or last step" << endl;
-    // for now, define the first StepPoint as the 'trigger' for this step.  Eventually
-    // this might be the one closest to the wire FIXME!
     spmcptr = first;
     // Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
     XYZVec start = Geom::toXYZVec(first->position());
@@ -344,7 +333,9 @@ namespace mu2e {
     // compute the end position and step type
     // in future we should store the end position in the StepPointMC FIXME!
     XYZVec end = endPosition(last,straw,charge,stype);
-    float  mom = 0.5*(first->momentum().mag() + last->momentum().mag());	// average first and last momentum
+
+    XYZVec momvec = Geom::toXYZVec(0.5*(first->momentum() + last->momentum()));	// average first and last momentum
+    float  mom = sqrt(momvec.mag2()); 
     // determine the width from the sigitta or curl radius
     auto pdir = first->momentum().unit();
     auto pperp = pdir.perp(_bdir);
@@ -354,12 +345,10 @@ namespace mu2e {
     static const float prms(1.0/(12.0*sqrt(5.0))); // RMS for a parabola.  This includes a factor 1/8 for the sagitta calculation too
     float sagrms = prms*sint*pathlen*pathlen*_bnom*pperp/mom;
     double width = std::min(sagrms,bendrms); // choose the smaller: different approximations work for different momenta/directions
-    // apply the time offsets
-    double stime = _toff.timeWithOffsetsApplied(*first);
   // create the gas step
     sgs = StrawGasStep( first->strawId(), stype,
-	(float)eion,(float)pathlen, (float)width, (float)stime,
-	start, end);
+	(float)eion,(float)pathlen, (float)width, first->time(),
+	start, end, momvec, first->simParticle());
   }
 
   void MakeStrawGasSteps::fillMap(Tracker const& tracker,DeadStraw const& deadStraw, 
@@ -506,7 +495,7 @@ namespace mu2e {
     _hendrad->Fill(_erad);
     _hphi->Fill(_brot);
     if(_diag > 1){
-      _prilen = sgs.pathLength();
+      _prilen = sgs.stepLength();
       _pridist = sqrt((sgs.endPosition()-sgs.startPosition()).mag2());
       _partP = spmcptr->momentum().mag();
       _partPDG = spmcptr->simParticle()->pdgId();

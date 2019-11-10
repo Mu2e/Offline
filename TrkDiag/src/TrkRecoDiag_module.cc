@@ -510,9 +510,8 @@ namespace mu2e {
       if(tsh.flag().hasAllProperties(StrawHitFlag::active))++_kfna;
       if(spp.isNonnull()){
 	StrawDigiMC const& mcdigi = _mcdigis->at(tsh.index());
-	art::Ptr<StepPointMC> spmcp;
-	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-	    spmcp->simParticle() == spp){
+	auto const& spmcp = mcdigi.earlyStrawGasStep();
+	if ( spmcp->simParticle() == spp){
 	  ++_kfnp;
 	  if(!tsh.flag().hasAnyProperty(StrawHitFlag::outlier))++_kfnap;
 	}
@@ -545,9 +544,8 @@ namespace mu2e {
       if(tsh.flag().hasAllProperties(StrawHitFlag::active))++_ksna;
       if(spp.isNonnull()){
 	StrawDigiMC const& mcdigi = _mcdigis->at(tsh.index());
-	art::Ptr<StepPointMC> spmcp;
-	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-	    spmcp->simParticle() == spp){
+	auto spmcp = mcdigi.earlyStrawGasStep();
+	if ( spmcp->simParticle() == spp){
 	  ++_ksnp;
 	  if(!tsh.flag().hasAnyProperty(StrawHitFlag::outlier))++_ksnap;
 	}
@@ -573,9 +571,8 @@ namespace mu2e {
       if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsna += hhit.nStrawHits();
       if(spp.isNonnull()){
 	StrawDigiMC const& mcdigi = _mcdigis->at(hhit.index());
-	art::Ptr<StepPointMC> spmcp;
-	if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-	    spmcp->simParticle() == spp){
+	auto spmcp = mcdigi.earlyStrawGasStep();
+	if ( spmcp->simParticle() == spp){
 	  _hsnp += hhit.nStrawHits(); 
 	  if(!hhit.flag().hasAnyProperty(StrawHitFlag::outlier))_hsnap += hhit.nStrawHits(); 
 	}
@@ -597,9 +594,8 @@ namespace mu2e {
     // count matching hits
     for(auto tchit : tc.hits()){
       StrawDigiMC const& mcdigi = _mcdigis->at(tchit);
-      art::Ptr<StepPointMC> spmcp;
-      if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-	  spmcp->simParticle() == spp){
+      auto spmcp = mcdigi.earlyStrawGasStep();
+      if ( spmcp->simParticle() == spp){
 	++_tcnp;
       }
     }

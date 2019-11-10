@@ -456,7 +456,7 @@ namespace mu2e
 
   void KalDiag::fillHitInfoMC(art::Ptr<SimParticle> const& pspp, StrawDigiMC const& mcdigi,Straw const& straw,
     TrkStrawHitInfoMC& tshinfomc) const {
-    art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
+    auto const& spmcp = mcdigi.earlyStepPointMC();
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     // create MC info and fill
     tshinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
@@ -470,8 +470,8 @@ namespace mu2e
     tshinfomc._rel = rel.relationship();
     // find the step midpoint
     Hep3Vector mcsep = spmcp->position()-straw.getMidPoint();
-    Hep3Vector dir = spmcp->momentum().unit();
-    tshinfomc._mom = spmcp->momentum().mag();
+    Hep3Vector dir = Geom::Hep3Vec(spmcp->momentum()).unit();
+    tshinfomc._mom = sqrt(spmcp->momentum().mag2());
     tshinfomc._cpos = mcdigi.clusterPosition(mcdigi.earlyEnd());
     tshinfomc._len = mcsep.dot(straw.getDirection());
     Hep3Vector mcperp = (dir.cross(straw.getDirection())).unit();
@@ -517,7 +517,7 @@ namespace mu2e
 	const TrkStrawHit* tsh = *ihit;
 	if(tsh != 0){
 	  StrawDigiMC const& mcdigi = _mcdata._mcdigis->at(tsh->index());
-	  art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
+	  auto const& spmcp = mcdigi.earlyStepPointMC();
 	  if(spp == spmcp->simParticle()){
 	    ++mcinfo._nhits;
 	    // easiest way to get MC ambiguity is through info object
@@ -538,7 +538,7 @@ namespace mu2e
     for(auto imcd = _mcdata._mcdigis->begin(); imcd !=_mcdata._mcdigis->end();++imcd){
       if( imcd->stepPointMC(StrawEnd::cal)->simParticle() == spp){
 	mcinfo._ndigi++;
-	if(imcd->stepPointMC(StrawEnd::cal)->momentum().mag()/mcmom > _mingood)
+	if(sqrt(imcd->stepPointMC(StrawEnd::cal)->momentum().mag2())/mcmom > _mingood)
 	  mcinfo._ndigigood++;
       }
     }
@@ -719,9 +719,9 @@ namespace mu2e
     unsigned nstrs = mcData()._mcdigis->size();
     for(unsigned istr=0; istr<nstrs;++istr){
       StrawDigiMC const& mcdigi = mcData()._mcdigis->at(istr);
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.earlyStepPointMC();
+      auto const& spmcp = mcdigi.earlyStepPointMC();
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
-      bool conversion = (spp->genParticle().isNonnull() && spp->genParticle()->generatorId().isConversion() && spmcp->momentum().mag()>90.0);
+      bool conversion = (spp->genParticle().isNonnull() && spp->genParticle()->generatorId().isConversion() && sqrt(spmcp->momentum().mag2())>90.0);
       if(conversion){
 	++ncehits;
       }

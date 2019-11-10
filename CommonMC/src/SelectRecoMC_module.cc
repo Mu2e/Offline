@@ -286,7 +286,7 @@ namespace mu2e {
       const auto& mcstep = *(sdmc.earlyStepPointMC());
       tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
       tshmc._mom = mcstep.momentum();
-      tshmc._time = fmod(_toff.timeWithOffsetsApplied(mcstep),_mbtime);
+      tshmc._time = fmod(mcstep.time(),_mbtime);
       tshmc._strawId = sdmc.strawId();
       mcseed._tshmcs.push_back(tshmc);
     }
@@ -301,7 +301,8 @@ namespace mu2e {
       auto const& spc = spcc[isp];
       for (size_t isdmc=0; isdmc < sdmcc.size(); isdmc++){
 	auto const& sdmc = sdmcc[isdmc];
-	if(sdmc.earlyStepPointMC()->simParticle() == spc._spp){
+	auto const& mcstep = *(sdmc.earlyStrawGasStep());
+	if(mcstep.simParticle() == spc._spp){
 	  // search to see if the associated digi is already on the track
 	  bool used(false);
 	  for(auto const& tshmc : mcseed._tshmcs ) {
@@ -316,10 +317,9 @@ namespace mu2e {
 	    tshmc._sdmcindex = isdmc;
 	    tshmc._spindex = isp;
 	    tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-	    const auto& mcstep = *(sdmc.earlyStepPointMC());
 	    tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
 	    tshmc._mom = mcstep.momentum();
-	    tshmc._time = fmod(_toff.timeWithOffsetsApplied(mcstep),_mbtime);
+	    tshmc._time = sdmc.clusterTime(sdmc.earlyEnd());
 	    tshmc._strawId = sdmc.strawId();
 	    mcseed._tshmcs.push_back(tshmc);
 	  }
