@@ -31,6 +31,7 @@
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "GeometryService/inc/Mu2eEnvelope.hh"
 #include "MCDataProducts/inc/GenParticle.hh"
+#include "MCDataProducts/inc/CosmicLivetime.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "ExtinctionMonitorFNAL/Geometry/inc/ExtMonFNAL.hh"
@@ -60,19 +61,13 @@ namespace mu2e {
         fhicl::Atom<std::string> corsikaModuleLabel{Name("corsikaModuleLabel"), Comment("Reference point in the coordinate system"), "FromCorsikaBinary"};
         fhicl::Atom<std::string> refPointChoice{Name("refPointChoice"), Comment("Reference point in the coordinate system"), "UNDEFINED"};
         fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
-        fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Extension of the generation plane"), -5000};
-        fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Extension of the generation plane"), 5000};
-        fhicl::Atom<float> targetBoxYmin{Name("targetBoxYmin"), Comment("Extension of the generation plane"), -5000};
-        fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Extension of the generation plane"), 5000};
-        fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Extension of the generation plane"), -5000};
-        fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Extension of the generation plane"), 5000};
       };
       typedef art::EDProducer::Table<Config> Parameters;
 
       explicit CorsikaEventGenerator(const Parameters &conf);
       // Accept compiler written d'tor.  Modules are never moved or copied.
       virtual void produce (art::Event& e);
-      virtual void beginSubRun(art::SubRun &sr);
+      virtual void endSubRun(art::SubRun &sr);
 
     private:
 
@@ -89,12 +84,7 @@ namespace mu2e {
       float _worldYmax = 0;
       float _worldZmin = 0;
       float _worldZmax = 0;
-      float _targetBoxXmin = 0;
-      float _targetBoxXmax = 0;
-      float _targetBoxYmin = 0;
-      float _targetBoxYmax = 0;
-      float _targetBoxZmin = 0;
-      float _targetBoxZmax = 0;
+
       bool _projectToTargetBox = false;
       Hep3Vector _cosmicReferencePointInMu2e;
       std::string _refPointChoice;
@@ -104,21 +94,17 @@ namespace mu2e {
   CorsikaEventGenerator::CorsikaEventGenerator(const Parameters &conf) : EDProducer{conf},
                                                                          _conf(conf()),
                                                                          _corsikaModuleLabel(_conf.corsikaModuleLabel()),
-                                                                         _targetBoxXmin(_conf.targetBoxXmin()),
-                                                                         _targetBoxXmax(_conf.targetBoxXmax()),
-                                                                         _targetBoxYmin(_conf.targetBoxYmin()),
-                                                                         _targetBoxYmax(_conf.targetBoxYmax()),
-                                                                         _targetBoxZmin(_conf.targetBoxZmin()),
-                                                                         _targetBoxZmax(_conf.targetBoxZmax()),
                                                                          _projectToTargetBox(_conf.projectToTargetBox()),
                                                                          _refPointChoice(_conf.refPointChoice())
   {
     produces<GenParticleCollection>();
   }
 
-
-  void CorsikaEventGenerator::beginSubRun( art::SubRun &subrun){
-
+  void CorsikaEventGenerator::endSubRun(art::SubRun &subrun)
+  {
+    art::Handle<mu2e::CosmicLivetime> livetime;
+    subrun.getByLabel(_corsikaModuleLabel, livetime);
+    std::cout << *livetime << std::endl;
   }
 
   void CorsikaEventGenerator::produce(art::Event &evt)
