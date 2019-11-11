@@ -69,7 +69,6 @@ namespace mu2e {
   }
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
-    : PrimaryGeneratorAction(0, nullptr)
   {}
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
