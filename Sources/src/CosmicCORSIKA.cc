@@ -35,21 +35,9 @@ namespace mu2e {
     fread(&_garbage, 4, 1, in);
   }
 
-  const float CosmicCORSIKA::getLiveTime()
-  {
-    const float area = (_targetBoxXmax + 2 * _showerAreaExtension - _targetBoxXmin) * (_targetBoxZmax + 2 * _showerAreaExtension - _targetBoxZmin) * 1e-6; //m^2
-    const float eslope = -2.7;
-    const float lowE = 1.3;     // GeV
-    const float highE = 1e6; // GeV
-    const float EiToOneMinusGamma = pow(lowE, 1 + eslope);
-    const float EfToOneMinusGamma = pow(highE, 1 + eslope);
-    // http://pdg.lbl.gov/2018/reviews/rpp2018-rev-cosmic-rays.pdf eq. 29.2
-    return _primaries / (M_PI * area * _fluxConstant * (EfToOneMinusGamma - EiToOneMinusGamma) / (1. + eslope));
-  }
 
   CosmicCORSIKA::~CosmicCORSIKA(){
-    std::cout << "Total number of primaries: " << getNumShowers() << std::endl;
-    std::cout << "Simulated live-time: " << getLiveTime() << std::endl;
+
   }
 
 
@@ -58,11 +46,6 @@ namespace mu2e {
     //wrap variable so that it's always between low and high
     boxno = int(floor(var / (high - low)));
     return (var - (high - low) * floor(var / (high - low))) + low;
-  }
-
-  float CosmicCORSIKA::wrapvar( const float var, const float low, const float high){
-    //wrap variable so that it's always between low and high
-    return (var - (high - low) * floor(var/(high-low))) + low;
   }
 
 
