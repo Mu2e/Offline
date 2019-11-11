@@ -84,8 +84,8 @@ namespace mu2e {
   public:
 
     enum {
-      kNTrigInfo     = 20,
-      kNTrackTrig    = 10,
+      kNTrigInfo     = 40,
+      kNTrackTrig    = 20,
       kNTrackTrigVar = 30,
       kNHelixTrig    = 10,
       kNHelixTrigVar = 30,
@@ -93,7 +93,7 @@ namespace mu2e {
       kNCaloCalibVar = 5,
       kNCaloOnly     = 5,
       kNCaloOnlyVar  = 5,
-      kNOcc          = 20,
+      kNOcc          = 40,
       kNOccVar       = 10
     };
 
