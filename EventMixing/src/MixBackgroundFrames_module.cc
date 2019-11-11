@@ -53,13 +53,9 @@ namespace mu2e {
           Comment("control the level of debug output"),
           0u
           };
-      Atom<int> minSkip { Name("minSkip"),
-	  Comment("minimum number of background events to skip at the start of a file"),
-	  0
-	  };
-      Atom<int> maxSkip { Name("maxSkip"),
-	  Comment("maximum number of background events to skip at the start of a file"),
-	  10000
+      Atom<int> skipFactor { Name("skipFactor"),
+	  Comment("mixer will skip a number of background events between 0 and this integer mulitplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
+	  1
 	  };
     };
 
@@ -96,8 +92,7 @@ namespace mu2e {
 
     ProtonBunchIntensity pbi_;
     int totalBkgCount_;
-    int minSkip_;
-    int maxSkip_;
+    int skipFactor_;
 
   public:
     MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper &helper);
@@ -120,8 +115,7 @@ namespace mu2e {
     , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , urbg_{ engine_ }
     , totalBkgCount_(0)
-    , minSkip_{ retrieveConfiguration("mu2e", pset).minSkip() }
-    , maxSkip_{ retrieveConfiguration("mu2e", pset).maxSkip() }
+    , skipFactor_{ retrieveConfiguration("mu2e", pset).skipFactor() }
   {}
 
   //================================================================
@@ -142,7 +136,7 @@ namespace mu2e {
   //================================================================
   size_t MixBackgroundFramesDetail::eventsToSkip() {
     //FIXME: Ideally, we would know the number of events in the secondary input file
-    std::uniform_int_distribution<size_t> uniform(minSkip_, maxSkip_);
+    std::uniform_int_distribution<size_t> uniform(0, skipFactor_*meanEventsPerProton_*pbi_.intensity());
     size_t result = uniform(urbg_);
     if(debugLevel_ > 0) { 
       std::cout << " Skipping " << result << " Secondaries " << std::endl; 
