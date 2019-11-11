@@ -17,17 +17,18 @@ physics :
 {
   producers : @local::TrkHitReco.producers
   analyzers :  {
-    PHD : @local::CHD
-    SHD : @local::CHD
+    PCHD : @local::CHD
+    SCHD : @local::CHD
+    SHD : @local::SHD
   }
 }
 physics.producers.makePH.TestFlag : false
 physics.producers.makePH.TestRadius : false
-physics.analyzers.SHD.ComboHitCollection : "makeSH"
-physics.analyzers.PHD.ComboHitCollection : "makePH"
 # uncomment the following to process MDC2018g and earlier
 #physics.analyzers.SHD.TimeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
 #physics.analyzers.PHD.TimeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
-
-physics.TrkAnaTriggerPath : [ makeSH, makePH ]
-physics.TrkAnaEndPath : [ SHD, PHD ]
+physics.analyzers.SCHD.ComboHitCollection : "makeSH"
+physics.analyzers.PCHD.ComboHitCollection : "makePH"
+physics.producers.makeSH.WriteStrawHitCollection : true
+physics.TrkAnaTriggerPath : [ @sequence::TrkHitReco.PrepareHits ]
+physics.TrkAnaEndPath : [ SCHD, PCHD, SHD ]

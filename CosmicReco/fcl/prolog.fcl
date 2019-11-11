@@ -1,0 +1,128 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+# this file is included by fcl/standardProducers.fcl inside the PROLOG section
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+# time clustering is the 1st stage of track finding 
+TimeClusterFinder : {
+  module_type  : TimeClusterFinder
+  ClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster.weights.xml" }
+  ClusterCaloMVA : { MVAWeights : "TrkPatRec/test/TimeClusterCalo.weights.xml" }
+  ComboHitCollection : "makePH"
+  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+  CaloClusterCollection : "CaloClusterFromProtoCluster"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+
+  # enable calorimeter cluster info in time clustering
+  UseCaloCluster : true
+  UseCaloClusterPosition : true
+  #CaloClusterWeight : 10.0
+  TestFlag : true
+}
+
+#cosmics:
+TimeClusterFinderCosmics : {
+  @table::TimeClusterFinder
+  ComboHitCollection : "makePH"
+  #CaloClusterCollection : "CaloClusterFromProtoCluster"
+  T0Calculator : { CaloT0Offset : @local::TrackCaloMatching.DtOffset }
+  maxdPhi : 10.0
+  RefineClusters : false
+  PrefilterCluster : false
+  UseCaloCluster : false
+  UseCaloClusterPosition : false
+}
+
+CHD : {
+	module_type : ComboHitDiag
+	StrawDigiMCCollection : "compressDigiMCs"
+	ComboHitCollection : "makePH"
+	UseFlagCollection : true
+	StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+}
+CosmicTrackFinder : {
+    module_type		: CosmicTrackFinder
+    ComboHitCollection     : "makePH"
+    TimeClusterCollection  : "TimeClusterFinderCosmics"
+    StrawDigiMCCollection : "compressDigiMCs"
+    
+}
+
+ CosmicAnalysis : {
+	module_type : CosmicAnalyzer
+	ComboHitCollection : "makePH"
+	TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : CosmicTrackFinder
+	StrawDigiMCCollection : "compressDigiMCs"
+	TimeOffsets : {inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]}
+  }
+
+CosmicFitDisplay : {
+	module_type : CosmicFitDisplay
+	ComboHitCollection : "makePH"
+        _chtag : "makePH"
+        _tctag : TimeClusterFinderCosmics
+        _sttag : CosmicTrackFinder
+        doDisplay            : true
+	TimeClusterCollection : TimeClusterFinderCosmics
+        CosmicTrackSeedCollection : CosmicTrackFinder
+        
+  }
+
+CosmicMuonInfo : {
+	module_type : CosmicMuonInfo
+	strawDigisTag   : "makeSD"
+	strawHitsTag    : "makeSH"
+	panelHitsTag    : "makePH"
+	strawDigiMCsTag : "compressDigiMCs"
+	caloDigisTag    : "CaloDigiFromShower"
+	diagLevel       : 0
+	filterCuts      : {
+	pmin          : 200. # MeV/c set low 
+	pmax          : 1000000. # MeV/c currnetly not using 
+	minStrawDigis :    2  # Minimum number of digis made by the primary muon //10
+	minPlanes     :    2  # Minimum number of planes hit by the muon track//3
+	minBackground :    0  # Make > 0 to select events with background digis
+	maxBackground : 9999  # Make a small number to limit digis not from the muon
+	  }
+}
+CosmicTracking : {
+  producers :{
+    TimeClusterFinderCosmics  : @local::TimeClusterFinderCosmics
+    CosmicTrackFinder  : @local::CosmicTrackFinder
+ }
+  analyzers : {
+      
+      CosmicAnalysis : @local::CosmicAnalysis
+      CosmicFitDisplay : @local::CosmicFitDisplay
+   }
+  filters : {
+	CosmicMuonInfo: @local::CosmicMuonInfo
+   }
+}
+# 
+# define standard outputs 
+  Output : {
+    Digis : [ "keep mu2e::StrawDigis_*_*_*" ]
+    Hits : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_*_*",
+	 "keep mu2e::ComboHitCollection_*_*_*",
+	  "keep mu2e::StrawHits_*_*_*"	]
+
+    Tracks : [ "keep mu2e::StrawHitFlagDetailmu2e::BitMaps_FlagBkgHits_StrawHits_*",
+	 "keep mu2e::ComboHitCollection_makePH_*_*",
+	    "keep mu2e::TimeClusters_*_*_*" ]
+    MCTracks : ["keep mu2e::GenParticles_*_*_*",
+		"keep mu2e::SimParticles_*_*_*" ]
+    MCDigis : ["keep mu2e::StrawDigiMCs_*_*_*"]
+    MCHits : [ "keep mu2e::StepPointMCs_*_tracker_*",
+	      "keep mu2e::StepPointMCs_*_virtualdetector_*"]
+
+  }
+
+#production sequence to find straight track
+CosmicTracking.FindCosmics : [  TimeClusterFinderCosmics, CosmicTrackFinder ]
+
+END_PROLOG
