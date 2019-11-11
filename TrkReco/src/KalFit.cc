@@ -85,7 +85,7 @@ namespace mu2e
   struct StrawFlightComp : public binary_function<StrawFlight, StrawFlight, bool> {
     double _maxdiff; // maximum flight difference; below this, consider 2 intersections 'the same'
     StrawFlightComp(double maxdiff) : _maxdiff(maxdiff) {}
-    bool operator () (StrawFlight const& a, StrawFlight const& b) { return a._id < b._id ||
+    bool operator () (StrawFlight const& a, StrawFlight const& b) const { return a._id < b._id ||
     ( a._id == b._id && a._flt < b._flt && fabs(a._flt-b._flt)>=_maxdiff);}
   };
 
