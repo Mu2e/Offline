@@ -58,12 +58,12 @@ struct Config
   fhicl::Atom<float> lowE{Name("lowE"), Comment("lowE"), 1.3};
   fhicl::Atom<float> highE{Name("highE"), Comment("highE"), 1e6};
   fhicl::Atom<float> fluxConstant{Name("fluxConstant"), Comment("Flux constant"), 1.8e4};
-  fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Target box x min"), -5000};
-  fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Target box x max"), 5000};
+  fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Target box x min"), -10000};
+  fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Target box x max"), 3000};
   fhicl::Atom<float> targetBoxYmin{Name("targetBoxYmin"), Comment("Target box y min"), -5000};
   fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Target box y max"), 5000};
   fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min"), -5000};
-  fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max"), 5000};
+  fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max"), 21000};
 
 };
 typedef fhicl::WrappedTable<Config> Parameters;

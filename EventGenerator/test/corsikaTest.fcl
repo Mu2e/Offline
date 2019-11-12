@@ -17,7 +17,7 @@ targetParams: {
 
 source: {
     module_type: FromCorsikaBinary
-    fileNames: ["/mu2e/data/users/srsoleti/DAT110001"]
+    fileNames: ["/pnfs/mu2e/persistent/users/srsoleti/corsika/DAT110001"]
     runNumber          : 1
     firstSubRunNumber  : 0
     firstEventNumber   : 1
