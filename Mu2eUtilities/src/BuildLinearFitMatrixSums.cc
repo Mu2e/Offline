@@ -105,7 +105,7 @@ TMatrixD BuildLinearFitMatrixSums::GetCovX(){
 	double* det = NULL;                  
 	try {
     	        GammaINV.Invert(det);
-        } catch (std::exception exc) {
+        } catch (std::exception& exc) {
     
 	        std::stringstream message;
 		message << "Error in Cov Mat : Cannot fit due to singular matrix error on inversion!" << std::endl;
@@ -133,7 +133,7 @@ TMatrixD BuildLinearFitMatrixSums::GetAlphaX(){
 	try {
     	        Gamma.Invert(det);
     
-  	   } catch (std::exception exc) {
+  	   } catch (std::exception& exc) {
     
 		    std::stringstream message;
 		    message << "Error in Alpha : Cannot fit due to singular matrix error on inversion!" << std::endl;
@@ -156,7 +156,7 @@ TMatrixD BuildLinearFitMatrixSums::GetCovY(){
 	double* det = NULL;                  
 	try {
     	        GammaINV.Invert(det);
-        } catch (std::exception exc) {
+        } catch (std::exception& exc) {
     
 	        std::stringstream message;
 		message << "Error in Cov Mat : Cannot fit due to singular matrix error on inversion!" << std::endl;
@@ -184,7 +184,7 @@ TMatrixD BuildLinearFitMatrixSums::GetAlphaY(){
 	try {
     	        Gamma.Invert(det);
     
-  	   } catch (std::exception exc) {
+  	   } catch (std::exception& exc) {
     
 		    std::stringstream message;
 		    message << "Error in Alpha : Cannot fit due to singular matrix error on inversion!" << std::endl;
@@ -200,7 +200,7 @@ double BuildLinearFitMatrixSums::GetChi2X(){
         double* det = NULL;                  
 	try {
     	        GammaX.Invert(det);
-  	   } catch (std::exception exc) {
+  	   } catch (std::exception& exc) {
 		    std::stringstream message;
 		    message << "Error in Chi2X : Cannot fit due to singular matrix error on inversion!" << std::endl;
           } 
@@ -223,7 +223,7 @@ double BuildLinearFitMatrixSums::GetChi2Y(){
 	try {
     	        GammaY.Invert(det);
     
-  	   } catch (std::exception exc) {
+  	   } catch (std::exception& exc) {
     
 		    std::stringstream message;
 		    message << "Error in Chi2Y : Cannot fit due to singular matrix error on inversion!" << std::endl;
