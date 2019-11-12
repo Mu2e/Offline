@@ -51,3 +51,4 @@ services.TFileService.fileName : "nts.owner.DS-flash-TrkCal-cut.version.sequence
 services.message.destinations.log.categories.ArtReport.reportEvery : 1
 services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
+services.GeometryService.simulatedDetector.tool_type : "Mu2e"
