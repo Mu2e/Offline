@@ -37,12 +37,19 @@ namespace mu2e {
 
   // Has ith path accepted the event?
   bool
-  TriggerResultsNavigator::accept(std::string const& name) const
+  TriggerResultsNavigator::accepted(std::string const& name) const
   {
     size_t index = findTrigPath(name);
     return _trigResults->accept(index);
   }
     
+
+  art::hlt::HLTState 
+  TriggerResultsNavigator::state(std::string const& name) const{
+    size_t index = findTrigPath(name);
+    return _trigResults->state(index);
+  }
+
   void 
   TriggerResultsNavigator::print() const {
     printf("TriggerResultsNaviogator Map\n");
@@ -53,8 +60,8 @@ namespace mu2e {
     for  (unsigned int i=0; i< _trigPathsNames.size(); ++i){
       std::string name     = _trigPathsNames[i];
       size_t      index    = findTrigPath(name);
-      bool        accepted = accept(name);
-      printf("// %24s  %2li       %i    //\n", name.c_str(), index, accepted == true ? 1:0);
+      bool        good     = accepted(name);
+      printf("// %24s  %2li       %i    //\n", name.c_str(), index, good == true ? 1:0);
     }
       
   }
