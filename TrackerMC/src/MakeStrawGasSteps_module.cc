@@ -96,9 +96,8 @@ namespace mu2e {
       void compressDeltas(SPSMap& spsmap);
       void setStepType(SPMCP const& spmcptr, ParticleData const* pdata, StrawGasStep::StepType& stype);
       void fillStep(SPMCPV const& spmcptrs, Straw const& straw,
-	  ParticleData const* pdata, cet::map_vector_key pid, 
-	  StrawGasStep& sgs, SPMCP & spmcptr);
-      void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCP const&  spmcptr, SPMCPV const& spmcptrs);
+	  ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs);
+      void fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs);
       XYZVec endPosition(SPMCP const& last, Straw const& straw,float charge,StrawGasStep::StepType& stype);
       int _debug, _diag;
       bool _combineDeltas, _allAssns;
@@ -121,8 +120,8 @@ namespace mu2e {
       TH1F *_hendrad, *_hphi;
       TTree* _sgsdiag;
       Float_t _prilen, _pridist, _elen, _erad, _epri, _esec, _partP, _brot, _width, _doca;
-      vector<Float_t> _sdist;
-      Int_t _npri, _nsec, _partPDG;
+      vector<Float_t> _sdist, _sdot, _sp, _slen;
+      Int_t _npri, _nsec, _partPDG, _sion, _sshape;
   };
 
   MakeStrawGasSteps::MakeStrawGasSteps(const Parameters& config )  : 
@@ -171,7 +170,12 @@ namespace mu2e {
         _sgsdiag->Branch("nsec",&_nsec,"nsec/I");
         _sgsdiag->Branch("partP",&_partP,"partP/F");
         _sgsdiag->Branch("partPDG",&_partPDG,"partPDG/I");
-        _sgsdiag->Branch("sdist",&_sdist);
+	_sgsdiag->Branch("sion",&_sion,"sion/I");
+	_sgsdiag->Branch("sshape",&_sshape,"sshape/I");
+	_sgsdiag->Branch("sdist",&_sdist);
+	_sgsdiag->Branch("sdot",&_sdot);
+	_sgsdiag->Branch("sp",&_sp);
+	_sgsdiag->Branch("slen",&_slen);
       }
     }
   }
@@ -254,8 +258,7 @@ namespace mu2e {
 	ParticleData const* pdata(0);
 	if(pref.isValid())pdata = &pref.ref();
 	StrawGasStep sgs;
-	SPMCP  spmcptr;
-	fillStep(spmcptrs,straw,pdata,pid,sgs,spmcptr);
+	fillStep(spmcptrs,straw,pdata,pid,sgs);
 	sgsc->push_back(sgs);
 	auto sgsptr = art::Ptr<StrawGasStep>(StrawGasStepCollectionPID,sgsc->size()-1,StrawGasStepCollectionGetter);
 	// optionall add Assns for all StepPoints, including delta-rays
@@ -263,7 +266,7 @@ namespace mu2e {
 	  for(auto const& spmcptr : spmcptrs)
 	    sgsa->addSingle(sgsptr,spmcptr);
 	}
-	if(_diag > 0)fillStepDiag(straw,sgs,spmcptr,spmcptrs);
+	if(_diag > 0)fillStepDiag(straw,sgs,spmcptrs);
 	if(_debug > 1){
 	  // checks and printout
 	  cout << " SGS with " << spmcptrs.size() << " steps, StrawId = " << sgs.strawId()  << " SimParticle Key = " << sgs.simParticle()->id()
@@ -287,7 +290,7 @@ namespace mu2e {
   } // end of produce
 
   void MakeStrawGasSteps::fillStep(SPMCPV const& spmcptrs, Straw const& straw,
-      ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs, SPMCP & spmcptr){
+      ParticleData const* pdata, cet::map_vector_key pid, StrawGasStep& sgs){
     // variables we accumulate for all the StepPoints in this pair
     double eion(0.0), pathlen(0.0);
     if(_diag>1){
@@ -322,7 +325,6 @@ namespace mu2e {
     }
     if(first.isNull() || last.isNull())
       throw cet::exception("SIM")<<"mu2e::MakeStrawGasSteps: No first or last step" << endl;
-    spmcptr = first;
     // Define the position at entrance and exit; note the StepPointMC position is at the start of the step, so we have to extend the last
     XYZVec start = Geom::toXYZVec(first->position());
     float charge(0.0);
@@ -489,27 +491,35 @@ namespace mu2e {
     return retval; 
   }
 
-  void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs,
-      SPMCP const&  spmcptr, SPMCPV const& spmcptrs) {
+  void MakeStrawGasSteps::fillStepDiag(Straw const& straw, StrawGasStep const& sgs, SPMCPV const& spmcptrs) {
     _erad = sqrt((Geom::Hep3Vec(sgs.endPosition())-straw.getMidPoint()).perpPart(straw.getDirection()).mag2());
     _hendrad->Fill(_erad);
     _hphi->Fill(_brot);
     if(_diag > 1){
+      _sshape = sgs.stepType().shape();
+      _sion = sgs.stepType().ionization();
       _prilen = sgs.stepLength();
       _pridist = sqrt((sgs.endPosition()-sgs.startPosition()).mag2());
-      _partP = spmcptr->momentum().mag();
-      _partPDG = spmcptr->simParticle()->pdgId();
-      _elen = spmcptr->stepLength();
+      auto const& spmc = *spmcptrs.front();
+      _partP = spmc.momentum().mag();
+      _partPDG = spmc.simParticle()->pdgId();
+      _elen = spmc.stepLength();
       _width = sgs.width();
       // compute DOCA to the wire
       TwoLinePCA poca(Geom::Hep3Vec(sgs.startPosition()),Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()),
 	  straw.getMidPoint(),straw.getDirection());
       _doca = poca.dca();
       _sdist.clear();
+      _sdot.clear();
+      _sp.clear();
+      _slen.clear();
       auto sdir = Geom::Hep3Vec(sgs.endPosition()-sgs.startPosition()).unit();
       for(auto const& spmcptr : spmcptrs){
 	auto dist = ((spmcptr->position()-Geom::Hep3Vec(sgs.startPosition())).cross(sdir)).mag(); 
 	_sdist.push_back(dist);
+	_sdot.push_back(sdir.dot(spmcptr->momentum().unit()));
+	_sp.push_back(spmcptr->momentum().mag());
+	_slen.push_back(spmcptr->stepLength());
       }
       _sgsdiag->Fill();
     }
