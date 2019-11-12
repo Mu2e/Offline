@@ -75,7 +75,7 @@ namespace io {
             with_file_name() { std::memset(file_name, 0, max_file_name_length + 1); }
 
             void set_file_name(const char* file_name) {
-                std::strncpy(this->file_name, file_name, max_file_name_length);
+                std::strncpy(this->file_name, file_name, max_file_name_length+1);
                 this->file_name[max_file_name_length] = '\0';
             }
 
@@ -1050,7 +1050,7 @@ namespace io {
        private:
         LineReader in;
 
-        char*(row[column_count]);
+        char* row[column_count];
         std::string column_names[column_count];
 
         std::vector<int> col_order;
