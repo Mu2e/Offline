@@ -53,8 +53,8 @@ namespace mu2e {
           Comment("control the level of debug output"),
           0u
           };
-      Atom<int> skipFactor { Name("skipFactor"),
-	  Comment("mixer will skip a number of background events between 0 and this integer mulitplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
+      Atom<float> skipFactor { Name("skipFactor"),
+	  Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
 	  1
 	  };
     };
@@ -92,7 +92,7 @@ namespace mu2e {
 
     ProtonBunchIntensity pbi_;
     int totalBkgCount_;
-    int skipFactor_;
+    float skipFactor_;
 
   public:
     MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper &helper);
