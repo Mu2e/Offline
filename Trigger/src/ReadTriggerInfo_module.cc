@@ -707,7 +707,7 @@ namespace mu2e {
     
     for (unsigned int i=0; i< _trigPaths.size(); ++i){
       string&path = _trigPaths.at(i);
-      if (trigNavig.accept(path)) _sumHist._hTrigInfo[15]->Fill((double)i);
+      if (trigNavig.accepted(path)) _sumHist._hTrigInfo[15]->Fill((double)i);
     }
     
     //get the strawDigiMC truth if present
