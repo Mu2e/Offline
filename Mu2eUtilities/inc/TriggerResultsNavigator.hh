@@ -31,7 +31,8 @@ namespace mu2e {
     size_t    find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const;
 
     // Has ith path accepted the event?
-    bool      accept(std::string const& name) const;
+    bool      accepted(std::string const& name) const;
+    art::hlt::HLTState state(std::string const& name) const;
     void      print() const;
 
   private:
