@@ -42,7 +42,7 @@
 #include "CLHEP/Random/RandFlat.h"
 
 #include "Mu2eUtilities/inc/VectorVolume.hh"
-
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 using CLHEP::Hep3Vector;
 using CLHEP::HepLorentzVector;
@@ -61,6 +61,8 @@ namespace mu2e {
         fhicl::Atom<std::string> corsikaModuleLabel{Name("corsikaModuleLabel"), Comment("Reference point in the coordinate system"), "FromCorsikaBinary"};
         fhicl::Atom<std::string> refPointChoice{Name("refPointChoice"), Comment("Reference point in the coordinate system"), "UNDEFINED"};
         fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
+        fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Top coordinate of the target box on the Y axis")};
+        fhicl::Atom<float> intDist{Name("intDist"), Comment("Maximum distance of closest approach for backtracked trajectories")};
       };
       typedef art::EDProducer::Table<Config> Parameters;
 
@@ -71,7 +73,6 @@ namespace mu2e {
 
     private:
 
-      std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
 
       bool  _geomInfoObtained = false;
@@ -85,17 +86,23 @@ namespace mu2e {
       float _worldZmin = 0;
       float _worldZmax = 0;
 
+      float _targetBoxYmax;
+
       bool _projectToTargetBox = false;
       Hep3Vector _cosmicReferencePointInMu2e;
       std::string _refPointChoice;
+
+      float _intDist = 0;
 
   };
 
   CorsikaEventGenerator::CorsikaEventGenerator(const Parameters &conf) : EDProducer{conf},
                                                                          _conf(conf()),
                                                                          _corsikaModuleLabel(_conf.corsikaModuleLabel()),
+                                                                         _targetBoxYmax(_conf.targetBoxYmax()),
                                                                          _projectToTargetBox(_conf.projectToTargetBox()),
-                                                                         _refPointChoice(_conf.refPointChoice())
+                                                                         _refPointChoice(_conf.refPointChoice()),
+                                                                         _intDist(_conf.intDist())
   {
     produces<GenParticleCollection>();
   }
@@ -151,11 +158,54 @@ namespace mu2e {
     const GenParticleCollection &particles(*corsikaParticles);
     std::unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
 
+
+    /*
+     * In this block we check if there are two or more particles that intersect
+     * before the roof of the Mu2e world. If this happens, the particles are assumed to come
+     * from a common mother particle. This is to avoid simulating unphysical processes
+     * that can happen between the roof and the interaction point.
+     */
+    std::vector<CLHEP::Hep3Vector> endPoints(particles.size());
+    std::vector<bool> doNotBacktrack(particles.size(), false);
+
+    if (_intDist >= 0) {
+      for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i)
+      {
+        for (GenParticleCollection::const_iterator j = i+1; j != particles.end(); ++j)
+        {
+
+          GenParticle const &particle1 = *i;
+          GenParticle const &particle2 = *j;
+
+          TwoLinePCA twoLine(particle1.position(), -particle1.momentum().vect(), particle2.position(), -particle2.momentum().vect());
+          const CLHEP::Hep3Vector point1 = twoLine.point1();
+          const CLHEP::Hep3Vector point2 = twoLine.point2();
+
+          /*
+          * If their distance of closest approach is smaller than _intDist
+          * and the point of closest approach is between the roof and the
+          * top of the target box then we stop the backtracking at interaction
+          * point
+          */
+          if (twoLine.dca() < _intDist &&
+              point1.y() > _targetBoxYmax &&
+              point1.y() < _worldYmax &&
+              point2.y() > _targetBoxYmax &&
+              point2.y() < _worldYmax)
+          {
+            doNotBacktrack[i - particles.begin()] = true;
+            doNotBacktrack[j - particles.begin()] = true;
+            endPoints[i - particles.begin()] = point1;
+            endPoints[j - particles.begin()] = point2;
+          }
+        }
+      }
+    }
+
     for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i)
     {
       GenParticle const &particle = *i;
       const HepLorentzVector mom4 = particle.momentum();
-
       const Hep3Vector position(
           particle.position().x() + _cosmicReferencePointInMu2e.x(),
           particle.position().y(),
@@ -163,18 +213,30 @@ namespace mu2e {
 
       if (_projectToTargetBox)
       {
-        _worldIntersections.clear();
-        VectorVolume particleWorld(particle.position(), particle.momentum().vect(),
-                                   _worldXmin, _worldXmax, _worldYmin, _worldYmax, _worldZmin, _worldZmax);
-        particleWorld.calIntersections(_worldIntersections);
+        // Check if the particle needs to be backtracked to the roof or not
+        if (doNotBacktrack[i - particles.begin()]) {
+          Hep3Vector projectedPos = endPoints[i - particles.begin()];
 
-        if (_worldIntersections.size() > 0)
-        {
-          // Being inside the world volume, the intersection can be only one.
-          const Hep3Vector projectedPos = _worldIntersections.at(0);
+          projectedPos.setX(projectedPos.x() + _cosmicReferencePointInMu2e.x());
+          projectedPos.setZ(projectedPos.z() + _cosmicReferencePointInMu2e.z());
+
           genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
                                               GenId::cosmicCORSIKA, projectedPos, mom4,
                                               particle.time()));
+        } else {
+          _worldIntersections.clear();
+          VectorVolume particleWorld(position, particle.momentum().vect(),
+                                    _worldXmin, _worldXmax, _worldYmin, _worldYmax, _worldZmin, _worldZmax);
+          particleWorld.calIntersections(_worldIntersections);
+
+          if (_worldIntersections.size() > 0)
+          {
+            // Being inside the world volume, the intersection can be only one.
+            const Hep3Vector projectedPos = _worldIntersections.at(0);
+            genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
+                                                GenId::cosmicCORSIKA, projectedPos, mom4,
+                                                particle.time()));
+          }
         }
       } else {
         genParticles->push_back(GenParticle(static_cast<PDGCode::type>(particle.pdgId()),
