@@ -16,7 +16,6 @@
 // Mu2e includes
 #include "DataProducts/inc/StrawId.hh"
 #include "DataProducts/inc/StrawEnd.hh"
-#include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StrawGasStep.hh"
 // toolkit includes
 #include "canvas/Persistency/Common/Ptr.h"
@@ -44,19 +43,6 @@ namespace mu2e {
 	  float proptime,
 	  art::Ptr<StrawGasStep> const& sgs,
 	  XYZVec const& cpos, float ctime);
-	  
-      // legacy constructor
-      explicit StrawCluster(ClusterType type,StrawId sid,
-	  StrawEnd end,
-	  double time,
-	  float charge,
-	  float ddist,
-	  float phi,
-	  float wdist,
-	  float drifttime,
-	  float proptime,
-	  art::Ptr<StepPointMC> const& stepmc,
-	  CLHEP::HepLorentzVector const& cpos);
       // use compiler version of copy, assignment
       // Accessors
       ClusterType type() const { return _type; }
@@ -72,7 +58,6 @@ namespace mu2e {
       art::Ptr<StrawGasStep> const& strawGasStep() const { return _sgsptr; }
       float cluTime() const { return _ctime; }
       XYZVec const& cluPos() const { return _cpos; }
-      art::Ptr<StepPointMC> const& stepPointMC() const { return _spmcptr; } // Legacy function FIXME
       CLHEP::HepLorentzVector clusterPosition() const { return CLHEP::HepLorentzVector(Geom::Hep3Vec(_cpos),_ctime); } // legacy function FIXME
       // Print contents of the object.
       void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
@@ -88,7 +73,6 @@ namespace mu2e {
       float _drifttime; // drift time to the wire
       float _proptime;  // propagation time to the wire end
       art::Ptr<StrawGasStep> _sgsptr; 
-      art::Ptr<StepPointMC> _spmcptr;  // legacy ref to StepPointMC should be removed after testing FIXME!
       XYZVec _cpos;
       float _ctime; 
     };
