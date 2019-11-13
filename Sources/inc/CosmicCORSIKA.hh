@@ -30,6 +30,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/Randomize.h"
 
 #include "fhiclcpp/types/ConfigurationTable.h"
 
@@ -53,18 +54,18 @@ struct Config
   fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
   fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Art module type"), ""};
   fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
-  fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Extension of the generation box on the xz plane"), 10000};
+  fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Extension of the generation box on the xz plane");
   fhicl::Atom<float> tOffset{Name("tOffset"), Comment("Time offset"), 0};
   fhicl::Atom<float> lowE{Name("lowE"), Comment("lowE"), 1.3};
   fhicl::Atom<float> highE{Name("highE"), Comment("highE"), 1e6};
-  fhicl::Atom<float> fluxConstant{Name("fluxConstant"), Comment("Flux constant"), 1.8e4};
-  fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Target box x min"), -10000};
-  fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Target box x max"), 3000};
-  fhicl::Atom<float> targetBoxYmin{Name("targetBoxYmin"), Comment("Target box y min"), -5000};
-  fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Target box y max"), 5000};
-  fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min"), -5000};
-  fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max"), 21000};
-
+  fhicl::Atom<float> fluxConstant{Name("fluxConstant"), Comment("Primary cosmic nucleon flux constant")};
+  fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Target box x min")};
+  fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Target box x max")};
+  fhicl::Atom<float> targetBoxYmin{Name("targetBoxYmin"), Comment("Target box y min")};
+  fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Target box y max")};
+  fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min")};
+  fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max")};
+  fhicl::Atom<int> seed{Name("seed"), Comment("Seed for particle random offset")};
 };
 typedef fhicl::WrappedTable<Config> Parameters;
 
@@ -238,6 +239,10 @@ namespace mu2e {
       float _garbage;
 
       unsigned int _primaries = 0;
+
+      CLHEP::HepJamesRandom _engine;
+      CLHEP::RandFlat _randFlatX;
+      CLHEP::RandFlat _randFlatZ;
   };  // CosmicCORSIKA
 
 }

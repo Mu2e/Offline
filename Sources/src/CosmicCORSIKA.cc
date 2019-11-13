@@ -22,7 +22,10 @@ namespace mu2e {
         _targetBoxYmin(conf.targetBoxYmin()), // mm
         _targetBoxYmax(conf.targetBoxYmax()),  // mm
         _targetBoxZmin(conf.targetBoxZmin()), // mm
-        _targetBoxZmax(conf.targetBoxZmax())  // mm
+        _targetBoxZmax(conf.targetBoxZmax()),  // mm
+        _engine(conf.seed()),
+        _randFlatX(_engine, -(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2, +(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2),
+        _randFlatZ(_engine, -(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2, +(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2)
   {
   }
 
@@ -59,6 +62,10 @@ namespace mu2e {
 
     if (feof(in))
       return false;
+
+    // Particle offset, must be the same for every particle in one event
+    const float xOffset = _randFlatX.fire();
+    const float zOffset = _randFlatZ.fire();
 
     while (running)
     {
@@ -143,14 +150,14 @@ namespace mu2e {
 
                   int boxnox = 0, boxnoz = 0;
 
-                  const float x = wrapvarBoxNo(block[k + 5] * _cm2mm, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
-                  const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
+                  const float x = wrapvarBoxNo(block[k + 5] * _cm2mm + xOffset, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
+                  const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm + zOffset, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
                   std::pair xz(boxnox, boxnoz);
                   const float m = pdt->particle(pdgId).ref().mass(); // to MeV
 
                   const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
 
-                  const Hep3Vector position(x, 0, z);
+                  const Hep3Vector position(x, _targetBoxYmax, z);
                   const HepLorentzVector mom4(P_x, P_y, P_z, energy);
 
                   const float particleTime = block[k + 6];
