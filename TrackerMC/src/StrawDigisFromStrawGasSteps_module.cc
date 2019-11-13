@@ -1048,7 +1048,7 @@ namespace mu2e {
 	_ncludd[iend] = clist.size();
 	// find the earliest cluster from the same particle that triggered the crossing
 	auto iclu = clist.begin();
-	while( iclu != clist.end() && ctrig->stepPointMC()->simParticle() != iclu->stepPointMC()->simParticle() ){
+	while( iclu != clist.end() && ctrig->strawGasStep()->simParticle() != iclu->strawGasStep()->simParticle() ){
 	  ++iclu;
 	}
 	if(iclu != clist.end() ){
@@ -1065,7 +1065,7 @@ namespace mu2e {
 	  _iclust[iend] = iclust;
 	}
       }
-      if(xpair[0]._iclust->stepPointMC() == xpair[1]._iclust->stepPointMC())
+      if(xpair[0]._iclust->strawGasStep() == xpair[1]._iclust->strawGasStep())
 	_nstep = 1;
       else
 	_nstep = 2;
