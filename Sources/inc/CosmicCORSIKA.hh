@@ -54,7 +54,7 @@ struct Config
   fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
   fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Art module type"), ""};
   fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
-  fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Extension of the generation box on the xz plane");
+  fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Extension of the generation box on the xz plane")};
   fhicl::Atom<float> tOffset{Name("tOffset"), Comment("Time offset"), 0};
   fhicl::Atom<float> lowE{Name("lowE"), Comment("lowE"), 1.3};
   fhicl::Atom<float> highE{Name("highE"), Comment("highE"), 1e6};
