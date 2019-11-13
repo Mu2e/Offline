@@ -26,20 +26,6 @@ namespace mu2e {
 			       XYZVec const& cpos, float ctime) : _type(type), _strawId(sid), _end(end), _time(time),
     _charge(charge), _ddist(ddist), _phi(phi),_wdist(wdist), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgsptr), _cpos(cpos), _ctime(ctime) {}
 
-     StrawCluster::StrawCluster(ClusterType type,StrawId sid,
-                               StrawEnd end,
-                               double time,
-                               float charge,
-                               float ddist,
-                               float phi,
-                               float wdist,
-                               float drifttime,
-                               float proptime,
-			       art::Ptr<StepPointMC> const& stepmc,
-			       CLHEP::HepLorentzVector const& cpos) : _type(type), _strawId(sid), _end(end), _time(time),
-    _charge(charge), _ddist(ddist), _phi(phi),_wdist(wdist), _drifttime(drifttime), _proptime(proptime), _spmcptr(stepmc), _cpos(cpos)
-    {}
-
     // delegating constructors in C++11!
     StrawCluster::StrawCluster(const StrawCluster& primary, StrawId const& id, float xfactor) :
     StrawCluster(primary) {
