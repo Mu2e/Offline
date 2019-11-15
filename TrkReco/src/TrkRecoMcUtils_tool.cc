@@ -116,7 +116,7 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   int TrkRecoMcUtils::strawHitSimId(const art::Event* Event, int HitIndex) {
     if (Event->event() != _lastEvent) initEvent(Event);
-    return (*_mcdigis)[HitIndex].earlyStepPointMC()->simParticle()->id().asInt();
+    return (*_mcdigis)[HitIndex].earlyStrawGasStep()->simParticle()->id().asInt();
   }
 //-----------------------------------------------------------------------------
 // find MC truth DOCA in a given straw
@@ -136,7 +136,7 @@ namespace mu2e {
 
     int hitIndex = ch-&_chColl->at(0);
     
-    auto const& step = (*_mcdigis)[hitIndex].earlyStepPointMC();
+    auto const& step = (*_mcdigis)[hitIndex].earlyStrawGasStep();
 
     CLHEP::Hep3Vector v2 = step->position();
     HepPoint    p2(v2.x(),v2.y(),v2.z());
@@ -217,7 +217,7 @@ namespace mu2e {
 
     if (Event->event() != _lastEvent) initEvent(Event);
 
-    return (*_mcdigis)[HitIndex].earlyStepPointMC()->simParticle().get();
+    return (*_mcdigis)[HitIndex].earlyStrawGasStep()->simParticle().get();
   }
 
 //-----------------------------------------------------------------------------

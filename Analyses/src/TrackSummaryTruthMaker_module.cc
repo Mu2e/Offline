@@ -80,10 +80,10 @@ namespace mu2e {
         }
 
         if(hit->isActive()) {
-          ++nPrincipal[particleEnteringG4Volume(*dmc.stepPointMC(end))];
+          ++nPrincipal[particleEnteringG4Volume(*dmc.strawGasStep(end))];
           // Aggregate all the steps, so that each particle is counted no more than once per hit
           std::set<art::Ptr<SimParticle> > parts;
-	  parts.insert(particleEnteringG4Volume(*dmc.stepPointMC(end)));
+	  parts.insert(particleEnteringG4Volume(*dmc.strawGasStep(end)));
           for(const auto& p: parts) {
             ++nAll[p];
           }

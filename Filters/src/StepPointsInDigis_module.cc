@@ -120,7 +120,7 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 
     for(int i_end=0;i_end<StrawEnd::nends;++i_end){
       StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
-      auto const& old_step_point = i_strawDigiMC.stepPointMC(end);
+      auto const& old_step_point = i_strawDigiMC.strawGasStep(end);
       if (old_step_point.isAvailable()) {
 	fillTree( *old_step_point );
       }

@@ -612,13 +612,13 @@ namespace mu2e {
       MCRelationship mcrel;
       SPP sp;
       for(auto mcd : *_mcdigis) {
-	MCRelationship prel(psp,mcd.earlyStepPointMC()->simParticle());
+	MCRelationship prel(psp,mcd.earlyStrawGasStep()->simParticle());
 	if(prel == mcrel)
 	  count++;
 	else if(prel > mcrel){
 	  mcrel = prel;
 	  count = 1;
-	  sp = mcd.earlyStepPointMC()->simParticle();
+	  sp = mcd.earlyStrawGasStep()->simParticle();
 	}
       }
       if(count > nprimary){

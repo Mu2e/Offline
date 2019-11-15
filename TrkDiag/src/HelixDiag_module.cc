@@ -786,7 +786,7 @@ namespace mu2e {
     } else {
     // no vd steps: try to fill from the tracker StepPoints
       for(auto imcd = _mcdigis->begin();imcd != _mcdigis->end(); ++imcd){
-	auto const& stepptr = imcd->stepPointMC(imcd->earlyEnd());
+	auto const& stepptr = imcd->strawGasStep(imcd->earlyEnd());
 	if(stepptr->simParticle() == pspp){
 	  mom = Geom::Hep3Vec(stepptr->momentum());
 	  pos = stepptr->position();

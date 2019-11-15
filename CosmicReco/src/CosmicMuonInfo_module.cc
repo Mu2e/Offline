@@ -143,11 +143,11 @@ namespace {
 
       int n{-1};
       for ( auto const& digimc : digimcs ){
-        auto const& sim_cal = digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle();
-        auto const& sim_hv  = digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle();
+        auto const& sim_cal = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
+        auto const& sim_hv  = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
         if ( sim_cal == sim_hv ){
-          double p = sqrt(digimc.stepPointMC(mu2e::StrawEnd::cal)->momentum().mag2());
-          _bySim[digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle()].addIndex(++n,p);
+          double p = sqrt(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().mag2());
+          _bySim[digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle()].addIndex(++n,p);
           ++_sum;
         }else{
           ++_nbad;

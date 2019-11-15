@@ -31,14 +31,14 @@ int mu2e::ValStrawDigiMC::fill(const mu2e::StrawDigiMCCollection & coll,
 
     // check the Ptr's.  If the products are not there, the accessors can crash
     bool ptrOK = true;
-    auto const& a0 = sd.stepPointMC(StrawEnd::cal);
-    auto const& a1 = sd.stepPointMC(StrawEnd::hv);
+    auto const& a0 = sd.strawGasStep(StrawEnd::cal);
+    auto const& a1 = sd.strawGasStep(StrawEnd::hv);
     
     if(!(a0.isAvailable() && a1.isAvailable()) ) ptrOK = false;
 
     double ns = 0.0;
-    if(sd.stepPointMC(StrawEnd::cal).isAvailable()) ns++;
-    if(sd.stepPointMC(StrawEnd::hv).isAvailable()) ns++;
+    if(sd.strawGasStep(StrawEnd::cal).isAvailable()) ns++;
+    if(sd.strawGasStep(StrawEnd::hv).isAvailable()) ns++;
     _hgStep->Fill(ns);
     
     if(ptrOK) {
