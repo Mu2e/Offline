@@ -67,7 +67,7 @@ namespace mu2e {
     for(auto const& mcdigi : *mcdigis) {
     // look at the early end
       StrawEnd fend = mcdigi.earlyEnd();
-      auto const& step =  mcdigi.stepPointMC(fend);
+      auto const& step =  mcdigi.strawGasStep(fend);
       art::Ptr<SimParticle> const& sp = step->simParticle();
       auto const& mom = step->momentum(); // cast to 3-vector
       if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << sqrt(mom.mag2()) << std::endl;

@@ -36,9 +36,6 @@ namespace mu2e {
     StrawDigiMC();
     // construct from hitlets
     StrawDigiMC(StrawId sid, PA cpos, FA ctime, FA wetime, SGSPA sgs);
-    // temporary legacy construtctor fot testing FIXME!
-    StrawDigiMC(StrawId sid, double wetime[2], 
-	CLHEP::HepLorentzVector cpos[2], art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepmcs);
 
     // use compuater copy construcors
     StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgsp ); // update the Ptrs
@@ -63,9 +60,6 @@ namespace mu2e {
     void print( std::ostream& ost = std::cout, bool doEndl = true ) const;
 
 // legacy functions
-    SGSP const&  stepPointMC(StrawEnd strawend) const { return _sgspa[strawend]; }
-    SGSPA const&  stepPointMCs() const { return _sgspa; }
-    SGSP const&  earlyStepPointMC() const { return stepPointMC(earlyEnd()); }
     CLHEP::HepLorentzVector clusterPosition(StrawEnd strawend) const { return CLHEP::HepLorentzVector(Geom::Hep3Vec(_cpos[strawend]),_ctime[strawend]); }
 
   private:
@@ -73,7 +67,7 @@ namespace mu2e {
     PA _cpos; // Positions of the trigger clusters
     FA _ctime; // times of the trigger clusters
     FA _wtime; // times at the wire ends of the signals which fired the TDC.
-    SGSPA _sgspa; // StrawGasStep collection that triggered each end
+    SGSPA _sgspa; // StrawGasStep that triggered each end
   };
 
   inline std::ostream& operator<<( std::ostream& ost,
