@@ -391,8 +391,8 @@ art::Ptr<SimParticle> const& primary, art::Event const& evt);
 	_chcol->fillStrawDigiIndices(event,ich,shids);
 	StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
 	StrawEnd itdc;
-	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
-	tchi._mcmom = sqrt(mcdigi.stepPointMC(itdc)->momentum().mag2());
+	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.strawGasStep(itdc));
+	tchi._mcmom = sqrt(mcdigi.strawGasStep(itdc)->momentum().mag2());
 	art::Ptr<SimParticle> sp = mcdigi.earlyStrawGasStep()->simParticle();
 	tchi._mcpdg = sp->pdgId();
 	tchi._mcproc = sp->creationCode();

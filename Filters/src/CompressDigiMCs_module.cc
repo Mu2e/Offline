@@ -661,7 +661,7 @@ void mu2e::CompressDigiMCs::copyStrawDigiMC(const mu2e::StrawDigiMC& old_straw_d
   for(int i_end=0;i_end<StrawEnd::nends;++i_end){
     StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
 
-    const auto& old_step_point = old_straw_digi_mc.stepPointMC(end);
+    const auto& old_step_point = old_straw_digi_mc.strawGasStep(end);
     const auto& newStepPtrIter = step_remap.find(old_step_point);
     if (newStepPtrIter == step_remap.end()) {
       if (old_step_point.isAvailable()) {

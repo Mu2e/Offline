@@ -308,10 +308,10 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 
 	const mu2e::StrawGasStep   *step;
 	if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-	  step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
+	  step = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
 	}
 	else {
-	  step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
+	  step = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
 	}
 
 //	vol_id = step->volumeId();

@@ -464,7 +464,7 @@ namespace mu2e
     for(auto id : dids) {
       StrawDigiMC const& mcdigi = _mcdigis->at(id);
       // use TDC channel 0 to define the MC match
-      auto const& spmcp = mcdigi.earlyStepPointMC();
+      auto const& spmcp = mcdigi.earlyStrawGasStep();
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 
       if(spp == pptr){

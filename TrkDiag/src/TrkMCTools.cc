@@ -24,7 +24,7 @@ namespace mu2e {
 
     bool CEDigi(StrawDigiMC const& mcdigi) {
       bool conversion(false);
-      auto const& spmcp = mcdigi.earlyStepPointMC();
+      auto const& spmcp = mcdigi.earlyStrawGasStep();
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
       int gid(-1);
       if(spp->genParticle().isNonnull())

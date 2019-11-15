@@ -585,10 +585,10 @@ namespace mu2e {
 
       const mu2e::StrawGasStep   *stmc;
       if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-	stmc = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
+	stmc = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
       }
       else {
-	stmc = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
+	stmc = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
       }
 
       const mu2e::SimParticle* sim = &(*stmc->simParticle());

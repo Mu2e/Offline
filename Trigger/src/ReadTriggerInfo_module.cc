@@ -892,10 +892,10 @@ namespace mu2e {
 	const mu2e::StrawGasStep* step(0);
 	const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(loc);
 	if (sdmc->wireEndTime(mu2e::StrawEnd::cal) < sdmc->wireEndTime(mu2e::StrawEnd::hv)) {
-	  step = sdmc->stepPointMC(mu2e::StrawEnd::cal).get();
+	  step = sdmc->strawGasStep(mu2e::StrawEnd::cal).get();
 	}
 	else {
-	  step = sdmc->stepPointMC(mu2e::StrawEnd::hv ).get();
+	  step = sdmc->strawGasStep(mu2e::StrawEnd::hv ).get();
 	}
 	
 	if (step) {
@@ -1012,7 +1012,7 @@ namespace mu2e {
 
 	for (size_t k=0; k<shids.size(); ++k) {
 	  const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(shids[k]);
-	  auto const& spmcp = sdmc->earlyStepPointMC();
+	  auto const& spmcp = sdmc->earlyStrawGasStep();
 	    art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle(); 
 	    int sim_id        = simptr->id().asInt();
 	    float   dz        = spmcp->position().z();// - trackerZ0;
@@ -1040,7 +1040,7 @@ namespace mu2e {
     
       //finally, get the info of the first StrawDigi
       const mu2e::StrawDigiMC* sdmc = &_mcdigis->at(mostvalueindex);
-      auto const& spmcp = sdmc->earlyStepPointMC();
+      auto const& spmcp = sdmc->earlyStrawGasStep();
 	art::Ptr<mu2e::SimParticle> const& simptr = spmcp->simParticle(); 
 	int     pdg   = simptr->pdgId();
 	art::Ptr<mu2e::SimParticle> mother = simptr;

@@ -60,11 +60,13 @@ namespace mu2e {
 	fhicl::Atom<float> curlRotation{ Name("curlRotation"),
 	  Comment("Minimum bending rotation to use curl end estimation (radians)"),2.0};
 	fhicl::Atom<float> minionBG{ Name("minionBetaGamma"),
-	  Comment("Minimum beta x gamma value to consider a particle minimmum-ionizing"),0.5};
+	  Comment("Minimum beta*gamma to consider a particle minimmum-ionizing"),0.5};
+	fhicl::Atom<float> minionKE{ Name("minionKineticEnergy"),
+	  Comment("Minimum kinetic energy to consider a particle minimmum-ionizing (MeV)"),20.0};
 	fhicl::Atom<float> curlRatio{ Name("CurlRatio"),
 	  Comment("Maximum bend radius to straw radius ratio to consider a particle a curler"),1.0};
 	fhicl::Atom<float> lineRatio{ Name("LineRatio"),
-	  Comment("Minimum bend radius to straw radius ratio to consider a particle path a line"),10.0};
+	  Comment("Minimum bend radius to straw radius ratio to consider a particle path a line (mm)"),10.0};
 	fhicl::Atom<unsigned> csize{ Name("OutputCollectionSize"),
 	  Comment("Estimated size of output collection"), 2000};
 	fhicl::Atom<string> trackerSteps { Name("trackerStepPoints"),
@@ -102,7 +104,7 @@ namespace mu2e {
       int _debug, _diag;
       bool _combineDeltas, _allAssns;
       float _maxDeltaLen, _radtol, _parrot, _curlrot;
-      float _minionBG;
+      float _minionBG, _minionKE;
       float _curlfac, _linefac;
       float _curlmom, _linemom;
       unsigned _csize, _ssize;
@@ -135,6 +137,7 @@ namespace mu2e {
     _parrot(config().parabolicRotation()),
     _curlrot(config().curlRotation()),
     _minionBG(config().minionBG()),
+    _minionKE(config().minionKE()),
     _curlfac(config().curlRatio()),
     _linefac(config().lineRatio()),
     _csize(config().csize()),
@@ -540,8 +543,9 @@ namespace mu2e {
       else
 	shape = StrawGasStep::StepType::line;
       double mass = pdata->mass();
-      double bg = mom/mass; // beta x gamma
-      if(bg > _minionBG)
+      double bg = mom/mass; // betagamma
+      double ke = sqrt(mom*mom + mass*mass)-mass; // kinetic energy
+      if(bg > _minionBG && ke > _minionKE)
 	itype =StrawGasStep::StepType::minion;
       else
      	itype =StrawGasStep::StepType::highion;

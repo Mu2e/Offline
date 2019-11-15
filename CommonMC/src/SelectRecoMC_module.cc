@@ -274,7 +274,7 @@ namespace mu2e {
       auto const& sdmc = sdmcc.at(hit.index()); // bounds-check for security;
       for(size_t isp=0;isp < spcc.size(); isp++){
 	auto const& spc = spcc[isp];
-	if(sdmc.earlyStepPointMC()->simParticle() == spc._spp){
+	if(sdmc.earlyStrawGasStep()->simParticle() == spc._spp){
 	  spref = isp;
 	  break;
 	}
@@ -283,7 +283,7 @@ namespace mu2e {
       tshmc._spindex = spref;
       // fill other info directly from the StrawDigiMC
       tshmc._energySum = sdmc.triggerEnergySum(sdmc.earlyEnd());
-      const auto& mcstep = *(sdmc.earlyStepPointMC());
+      const auto& mcstep = *(sdmc.earlyStrawGasStep());
       tshmc._cpos = Geom::toXYZVec(sdmc.clusterPosition(sdmc.earlyEnd()));
       tshmc._mom = mcstep.momentum();
       tshmc._time = fmod(mcstep.time(),_mbtime);

@@ -302,7 +302,7 @@ namespace mu2e
         StrawDigiMC const& mcdigi = _mcdigis->at(istr);
         // use TDC channel 0 to define the MC match
         StrawEnd itdc;
-        auto const& spmcp = mcdigi.stepPointMC(itdc);
+        auto const& spmcp = mcdigi.strawGasStep(itdc);
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 	SimParticle const& osp = spp->originParticle();
 	Hep3Vector dprod = spmcp->position()-det->toDetector(osp.startPosition());

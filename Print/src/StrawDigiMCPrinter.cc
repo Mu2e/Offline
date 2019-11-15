@@ -70,8 +70,8 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
   // energy accessor is not protected against bad Ptr
   double energy = 0.0, tenergy0 = 0.0, tenergy1 = 0.0;
   bool eOK = true;
-  if(!obj.stepPointMC(StrawEnd::cal).isAvailable() ||
-      !obj.stepPointMC(StrawEnd::hv).isAvailable() ||
+  if(!obj.strawGasStep(StrawEnd::cal).isAvailable() ||
+      !obj.strawGasStep(StrawEnd::hv).isAvailable() ||
       !obj.strawGasStep(StrawEnd::cal).isAvailable() ||
       !obj.strawGasStep(StrawEnd::hv).isAvailable() ) eOK = false;
   if(eOK) {
@@ -81,8 +81,8 @@ mu2e::StrawDigiMCPrinter::Print(const mu2e::StrawDigiMC& obj, int ind, std::ostr
   }
 
   // now check if the basic StepPointMC's are also available
-  auto const& a0 = obj.stepPointMC(StrawEnd::cal);
-  auto const& a1 = obj.stepPointMC(StrawEnd::hv);
+  auto const& a0 = obj.strawGasStep(StrawEnd::cal);
+  auto const& a1 = obj.strawGasStep(StrawEnd::hv);
 
   if(!(a0.isAvailable() && a1.isAvailable()) ) {
     // give up at this point since basically no accessors work

@@ -25,18 +25,8 @@ namespace mu2e {
     _strawid(sid), _cpos(cpos), _ctime(ctime), _wtime(wetime), _sgspa(sgs)
   {}
 
-// legacy constructor: StrawGasSteps will be empty!
-  StrawDigiMC::StrawDigiMC(StrawId sid, double wetime[2], 
-	CLHEP::HepLorentzVector cpos[2], art::Ptr<StepPointMC> stepMC[2], std::vector<art::Ptr<StepPointMC> > const& stepmcs) :_strawid(sid)
-  {
-    for(size_t strawend=0;strawend<2;++strawend){
-      _wtime[strawend] = wetime[strawend];
-      _cpos[strawend] = cpos[strawend];
-    }
-  }
-
   StrawDigiMC::StrawDigiMC(const StrawDigiMC& rhs, SGSPA sgspa ) : StrawDigiMC(rhs)  {
-    _sgspa = sgspa; // can't initialize after delecated construtor
+    _sgspa = sgspa; 
   }
 
   bool StrawDigiMC::isCrossTalk(StrawEnd strawend) const {
