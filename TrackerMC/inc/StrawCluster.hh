@@ -36,6 +36,7 @@ namespace mu2e {
 	  StrawEnd end,
 	  float time,
 	  float charge,
+	  float wdist,
 	  StrawPosition const& pos,
 	  float drifttime,
 	  float proptime,
@@ -48,8 +49,8 @@ namespace mu2e {
       StrawEnd strawEnd() const { return _end; }
       double time()       const { return _time;}
       float   charge()  const { return _charge; }
-      StrawPosition const& pos() const { return _pos; }
-      float wireDistance() const { return _pos.Z(); }
+      StrawPosition const& cluPos() const { return _pos; }
+      float wireDistance() const { return _wdist; }
       float driftDistance() const { return _pos.Rho(); }
       float driftPhi() const { return _pos.Phi(); }
       float   driftTime() const { return _drifttime; }
@@ -64,6 +65,7 @@ namespace mu2e {
       StrawEnd	_end;		  // which end of the straw
       float  _time;            // microbunch time at the wire end, in ns since EventWindowMarker, offsets and wrapping applied
       float  _charge;          // charge at the wire end, in units of pC
+      float _wdist;    // propagation distance from cluster to the wire end
       StrawPosition _pos;  // cluster position WRT the straw 
       float _drifttime; // drift time to the wire
       float _proptime;  // propagation time to the wire end

@@ -94,9 +94,10 @@ namespace mu2e {
 	  fhicl::Atom<int> minnxinghist{ Name("MinNXingHist"), Comment("Minimum # of crossings to histogram waveform"),1};
 	  fhicl::Atom<float> tstep { Name("WaveformStep"), Comment("WaveformStep (nsec)"),0.1 };
 	  fhicl::Atom<float> nfall{ Name("WaveformTail"), Comment("# of decay lambda past last signal to record waveform"),10.0};
-	  fhicl::Atom<unsigned> maxnclu{ Name("MaxNClusters"), Comment("Maximum number of clusters for non-minion steps"), 10};
+	  fhicl::Atom<unsigned> maxnclu{ Name("MaxNClusters"), Comment("Maximum number of clusters for non-minion steps"), 20};
 	  fhicl::Atom<bool> addXtalk{ Name("addCrossTalk"), Comment("Should we add cross talk hits?"),false };
 	  fhicl::Atom<bool> drift1e{ Name("DriftSingleElectrons"), Comment("Always drift single electrons"),false };
+	  fhicl::Atom<bool> randrad{ Name("RandomizeRadius"), Comment("Randomize the drift by step width effects"),true };
 	  fhicl::Atom<float> ctMinCharge{ Name("xtalkMinimumCharge"), Comment("minimum charge to add cross talk (for performance issues)") ,0};
 	  fhicl::Atom<bool> addNoise{ Name("addNoise"), Comment("should we add noise hits? NOT CURRENTLY IMPLEMENTED FIXME!"),false };
 	  fhicl::Atom<float> preampxtalk{ Name("preAmplificationCrossTalk"), Comment("Pre-amplification (straw) X-talk coupling"), 0.0 };
@@ -141,7 +142,7 @@ namespace mu2e {
 	unsigned _minnxinghist;
 	double _tstep, _nfall;
 	// Parameters
-	bool   _addXtalk, _drift1e;
+	bool   _addXtalk, _drift1e, _randrad;
 	double _ctMinCharge;
 	bool   _addNoise;
 	double _preampxtalk, _postampxtalk;// these should come from conditions, FIXME!!
@@ -197,7 +198,9 @@ namespace mu2e {
 	Bool_t _xtalk;
 	vector<unsigned> _adc;
 	Int_t _tdc[2], _tot[2];
+	Int_t _sdtype;
 	TTree* _sdiag;
+	Float_t _sdwidth, _sdlen;
 	Float_t _steplen, _stepE, _qsum, _esum, _eesum, _qe, _partP, _steptime;
 	Int_t _nclust, _netot, _partPDG, _stype;
 	vector<IonCluster> _clusters;
@@ -266,6 +269,7 @@ namespace mu2e {
       _nfall(config().nfall()),
       _addXtalk(config().addXtalk()),
       _drift1e(config().drift1e()),
+      _randrad(config().randrad()),
       _ctMinCharge(config().ctMinCharge()),
       _addNoise(config().addNoise()),
       _preampxtalk(config().preampxtalk()),
@@ -371,6 +375,9 @@ namespace mu2e {
 	  _sddiag->Branch("iclust",&_iclust,"iclustcal/I:iclusthv/I");
 	  _sddiag->Branch("tdc",&_tdc,"tdccal/I:tdchv/I");
 	  _sddiag->Branch("tot",&_tot,"totcal/I:tothv/I");
+	  _sddiag->Branch("sdtype",&_sdtype,"sdtype/I");
+	  _sddiag->Branch("sdwidth",&_sdwidth,"sdwidth/F");
+	  _sddiag->Branch("sdlen",&_sdlen,"sdlen/F");
 	  _sddiag->Branch("adc",&_adc);
 	  _sddiag->Branch("mctime",&_mctime,"mctime/D");
 	  _sddiag->Branch("mcenergy",&_mcenergy,"mcenergy/F");
@@ -550,7 +557,7 @@ namespace mu2e {
 	    // compute the time the signal arrives at the wire end
 	    double gtime = ctime + wireq._time + weq._time;
 	    // create the clust
-	    StrawCluster clust(StrawCluster::primary,sid,end,(float)gtime,weq._charge,wireq._pos,(float)wireq._time,(float)weq._time,sgsptr,(float)ctime);
+	    StrawCluster clust(StrawCluster::primary,sid,end,(float)gtime,weq._charge,weq._wdist,wireq._pos,(float)wireq._time,(float)weq._time,sgsptr,(float)ctime);
 	    // add the clusts to the appropriate sequence.
 	    shsp.clustSequence(end).insert(clust);
 	    // if required, add a 'ghost' copy of this clust
@@ -740,7 +747,7 @@ namespace mu2e {
 	    StrawCluster const& sc = *(xpair[iend]._iclust);
 	    wetime[iend] = sc.time();
 	    ctime[iend] = sc.cluTime();
-	    cpos[iend] = strawPosition(sc.pos(),straw);
+	    cpos[iend] = strawPosition(sc.cluPos(),straw);
 	    sgspa[iend] = sc.strawGasStep();
 	  }
 	  // choose the minimum time from either end, as the ADC sums both
@@ -842,11 +849,19 @@ namespace mu2e {
     }
 
     void StrawDigisFromStrawGasSteps::fillClusterPositions(StrawGasStep const& sgs, Straw const& straw, std::vector<StrawPosition>& cposv) {
-      // generate a random position between the start and end points. Also smear perp to the path by the width
+      // generate a random position between the start and end points.
       XYZVec path = sgs.endPosition() - sgs.startPosition();
       for(auto& cpos : cposv) {
-	// add width effects FIXME!
-	cpos = strawPosition(sgs.startPosition() + _randflat.fire(1.0)*path,straw);
+	XYZVec pos = sgs.startPosition() + _randflat.fire(1.0)*path;
+      	// randomize the position by width.  This needs to be 2-d to avoid problems at the origin
+	if(_randrad){
+	  XYZVec sdir = Geom::toXYZVec(straw.getDirection());
+	  XYZVec p1 = path.Cross(sdir).Unit();
+	  XYZVec p2 = path.Cross(p1).Unit();
+	  pos += p1*_randgauss.fire()*sgs.width();
+	  pos += p2*_randgauss.fire()*sgs.width();
+	}
+	cpos = strawPosition(pos,straw);
       }
     }
 
@@ -914,7 +929,7 @@ namespace mu2e {
       _swlayer = straw.id().getLayer();
       _swstraw = straw.id().getStraw();
       for(size_t iend=0;iend<2; ++iend){
-	ClusterList const& clusts = wfs[iend].clusts().clustList();
+	StrawClusterList const& clusts = wfs[iend].clusts().clustList();
 	size_t nclust = clusts.size();
 	set<SGSPtr > steps;
 	set<SPPtr > parts;
@@ -992,7 +1007,7 @@ namespace mu2e {
       static unsigned nhist(0);// maximum number of histograms per job!
       for(size_t iend=0;iend<2;++iend){
 	// step to the 1st cluster past the blanking time to avoid double-counting
-	ClusterList const& clist = wfs[iend].clusts().clustList();
+	StrawClusterList const& clist = wfs[iend].clusts().clustList();
 	auto icl = clist.begin();
 	while(icl->time() < strawele.flashEnd())
 	  icl++;
@@ -1052,7 +1067,7 @@ namespace mu2e {
 	_vcross[iend] = xpair[iend]._vcross;
 	_tdc[iend] = digi.TDC(xpair[iend]._iclust->strawEnd());
 	_tot[iend] = digi.TOT(xpair[iend]._iclust->strawEnd());
-	ClusterList const& clist = wfs[iend].clusts().clustList();
+	StrawClusterList const& clist = wfs[iend].clusts().clustList();
 	auto ctrig = xpair[iend]._iclust;
 	_ncludd[iend] = clist.size();
 	// find the earliest cluster from the same particle that triggered the crossing
@@ -1087,7 +1102,7 @@ namespace mu2e {
       _dmcmom = -1.0;
       _mctime = _mcenergy = _mctrigenergy = _mcthreshenergy = _mcdca = -1000.0;
       _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
-      auto const& sgsptr = xpair[0]._iclust->strawGasStep();
+      auto const& sgsptr = mcdigi.earlyStrawGasStep();
       auto const& sgs = *sgsptr;
       _mctime = sgs.time() + _toff.totalTimeOffset(sgs.simParticle());
       // compute the doca for this step
@@ -1105,6 +1120,9 @@ namespace mu2e {
 	_dmcgen = sp.genParticle()->generatorId().id();
       _mcthreshpdg = sp.pdgId();
       _mcthreshproc = sp.creationCode();
+      _sdtype= sgs.stepType()._stype;
+      _sdwidth= sgs.width();
+      _sdlen= sgs.stepLength();
       _mcenergy = mcdigi.energySum();
       _mctrigenergy = mcdigi.triggerEnergySum(StrawEnd::cal);
       // sum the energy from the explicit trigger particle, and find it's releationship
@@ -1138,14 +1156,16 @@ namespace mu2e {
     }
 
     StrawPosition StrawDigisFromStrawGasSteps::strawPosition( XYZVec const& cpos,Straw const& straw) const {
-    // first calculate the angle
+      static XYZVec zdir(0.0,0.0,1.0);
       XYZVec smid = Geom::toXYZVec(straw.getMidPoint());
+      XYZVec delta = cpos - smid; // cluster position WRT straw middle
       XYZVec sdir = Geom::toXYZVec(straw.getDirection());
-      XYZVec cdir = cpos - smid;
-      float dw = cdir.Dot(sdir);
-      cdir -= sdir*dw;
-      float phi = cdir.theta();
-      float rho = min(sqrt(cdir.mag2()),(float)straw.innerRadius());
+      XYZVec pdir = sdir.Cross(zdir); // radial direction
+      if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
+      float dw = delta.Dot(sdir);
+      XYZVec cperp = delta - dw*sdir; // just perp part
+      float phi = atan2(cperp.Dot(pdir),cperp.Dot(zdir));// angle around wire WRT Z axis in range -pi,pi
+      float rho = min(sqrt(cperp.mag2()),(float)straw.innerRadius()); // truncate!
       return StrawPosition(rho,dw,phi);
     }
 
@@ -1155,7 +1175,7 @@ namespace mu2e {
       XYZVec sdir = Geom::toXYZVec(straw.getDirection());
       XYZVec pdir = sdir.Cross(zdir);
       if(pdir.Dot(smid) < 0.0)pdir *= -1.0; // sign radially outwards
-      XYZVec cdir = cos(cpos.Phi())*zdir + sin(cpos.Phi())*pdir;
+      XYZVec cdir = cos(cpos.Phi())*zdir + sin(cpos.Phi())*pdir; // cluster direction perp to wire
       XYZVec retval = smid + cpos.Z()*sdir + cpos.Rho()*cdir;
       return retval; 
     }
