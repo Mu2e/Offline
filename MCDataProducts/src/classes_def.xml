@@ -204,6 +204,7 @@
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> > >" />
 
 <!--  ********* straws  ********* -->
+ <class name="mu2e::StrawGasStep::StepType"/>
  <class name="mu2e::StrawGasStep"/>
  <class name="mu2e::StrawGasStepCollection"/>
  <class name="art::Wrapper<mu2e::StrawGasStepCollection>"/>

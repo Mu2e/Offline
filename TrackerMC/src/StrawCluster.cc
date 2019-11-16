@@ -17,12 +17,13 @@ namespace mu2e {
                                StrawEnd end,
                                float time,
                                float charge,
+			       float wdist,
 			       StrawPosition const& pos,
                                float drifttime,
                                float proptime,
 			       art::Ptr<StrawGasStep> const& sgsptr,
 			       float ctime) : _type(type), _strawId(sid), _end(end), _time(time),
-    _charge(charge), _pos(pos), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgsptr), _ctime(ctime) {}
+    _charge(charge), _wdist(wdist), _pos(pos), _drifttime(drifttime), _proptime(proptime), _sgsptr(sgsptr), _ctime(ctime) {}
 
     // delegating constructors in C++11!
     StrawCluster::StrawCluster(const StrawCluster& primary, StrawId const& id, float xfactor) :
@@ -44,8 +45,8 @@ namespace mu2e {
       << " charge " << _charge
       << " drift distance " << _pos.Rho()
       << " phi " << _pos.Phi()
-      << " wire propagation distance " << _pos.Z()
-      << *_sgsptr << std::endl;
+      << " wire propagation distance " << _wdist
+      << " " << *_sgsptr << std::endl;
     }
   }
 }
