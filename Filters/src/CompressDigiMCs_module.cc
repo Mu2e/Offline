@@ -271,6 +271,9 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     _newStepPointMCsPID[i_instance] = event.getProductID<StepPointMCCollection>(i_instance);
     _newStepPointMCGetter[i_instance] = event.productGetter(_newStepPointMCsPID[i_instance]);
   }
+  _newStrawGasSteps = std::unique_ptr<StrawGasStepCollection>(new StrawGasStepCollection);
+  _newStrawGasStepsPID = event.getProductID<StrawGasStepCollection>();
+  _newStrawGasStepGetter = event.productGetter(_newStrawGasStepsPID);
 
   _newSimParticles = std::unique_ptr<SimParticleCollection>(new SimParticleCollection);
   _newSimParticlesPID = event.getProductID<SimParticleCollection>();
@@ -617,6 +620,7 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     event.put(std::move(_newStepPointMCs.at(i_instance)), i_instance);
   }
   event.put(std::move(_newStrawDigiMCs));
+  event.put(std::move(_newStrawGasSteps));
   event.put(std::move(_newCrvDigiMCs));
 
   event.put(std::move(_newSimParticles));
