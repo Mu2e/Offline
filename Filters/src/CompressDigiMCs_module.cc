@@ -543,12 +543,18 @@ void mu2e::CompressDigiMCs::produce(art::Event & event)
     }
   }
 
-  // Update the StepPointMCs
+   // Update the StepPointMCs
   for (const auto& i_instance : _newStepPointMCInstances) {
     for (auto& i_stepPointMC : *_newStepPointMCs.at(i_instance)) {
       art::Ptr<SimParticle> newSimPtr = remap.at(i_stepPointMC.simParticle());
       i_stepPointMC.simParticle() = newSimPtr;
     }
+  }
+ 
+  // Update the StrawGasSteps
+  for (auto& i_strawGasStep : *_newStrawGasSteps) {
+    art::Ptr<SimParticle> newSimPtr = remap.at(i_strawGasStep.simParticle());
+    i_strawGasStep.simParticle() = newSimPtr;
   }
 
   if (_caloClusterMCTag == "") {
