@@ -54,6 +54,7 @@ namespace mu2e {
       XYZVec const& endPosition() const { return _endpos; }
       XYZVec const& momentum() const { return _mom; }
       art::Ptr<SimParticle> const& simParticle() const { return _simp; }
+      art::Ptr<SimParticle>& simParticle() { return _simp; }
 
       // legacy accessors, for compatibility with StepPointMC consumers
       CLHEP::Hep3Vector position() const { return Geom::Hep3Vec(_startpos); }
