@@ -1,7 +1,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "fhiclcpp/ParameterSetRegistry.h"
 #include "Mu2eUtilities/inc/TriggerResultsNavigator.hh"
-#include <ostream>
+#include <iostream>
+#include <iomanip>
 
 namespace mu2e {
 
@@ -37,24 +38,33 @@ namespace mu2e {
 
   // Has ith path accepted the event?
   bool
-  TriggerResultsNavigator::accept(std::string const& name) const
+  TriggerResultsNavigator::accepted(std::string const& name) const
   {
     size_t index = findTrigPath(name);
     return _trigResults->accept(index);
   }
     
+
+  art::hlt::HLTState 
+  TriggerResultsNavigator::state(std::string const& name) const{
+    size_t index = findTrigPath(name);
+    return _trigResults->state(index);
+  }
+
   void 
   TriggerResultsNavigator::print() const {
-    printf("TriggerResultsNaviogator Map\n");
-    printf("//------------------------------------------//\n");
-    printf("//  trig_pathName          id     accepted  //\n");
-    printf("//------------------------------------------//\n");
+    std::cout << "TriggerResultsNaviogator Map" << std::endl;
+    std::cout << "//------------------------------------------//" << std::endl;
+    std::cout << "//  trig_pathName          id     accepted  //" << std::endl;
+    std::cout << "//------------------------------------------//" << std::endl;
 
     for  (unsigned int i=0; i< _trigPathsNames.size(); ++i){
       std::string name     = _trigPathsNames[i];
       size_t      index    = findTrigPath(name);
-      bool        accepted = accept(name);
-      printf("// %24s  %2li       %i    //\n", name.c_str(), index, accepted == true ? 1:0);
+      bool        good     = accepted(name);
+      std::cout << std::right;
+      std::cout <<"//"<<std::setw(24) << name << std::setw(2) << index << (good == true ? 1:0) << "//"<< std::endl;
+      // %24s  %2li       %i    //\n", name.c_str(), index, good == true ? 1:0);
     }
       
   }
