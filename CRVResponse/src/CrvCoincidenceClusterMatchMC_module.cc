@@ -118,12 +118,12 @@ namespace mu2e
         //get MC information, if available
         if(hasMCInfo)
         {
-          std::set<art::Ptr<StepPointMC> > stepsThisPulse;
+          //for all reco pulses
+          CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, stepsAllPulses);
 
-          CrvHelper::GetStepPointsFromCrvRecoPulses(crvRecoPulse, crvDigiMCCollection, stepsThisPulse);
-          CrvHelper::GetStepPointsFromCrvRecoPulses(crvRecoPulse, crvDigiMCCollection, stepsAllPulses);
-          CrvHelper::GetInfoFromStepPoints(stepsThisPulse, _timeOffsets, 
-                                           energyDeposited, earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
+          //for this reco pulse
+          CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, _timeOffsets, 
+                                             energyDeposited, earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
         }
 
         pulses.emplace_back(simParticle,energyDeposited);

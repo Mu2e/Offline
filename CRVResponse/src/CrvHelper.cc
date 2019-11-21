@@ -2,9 +2,9 @@
 
 namespace mu2e 
 {
-  void CrvHelper::GetStepPointsFromCrvRecoPulses(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
-                                                 const art::Handle<CrvDigiMCCollection> &digis,
-                                                 std::set<art::Ptr<StepPointMC> > &steps)
+  void CrvHelper::GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
+                                                const art::Handle<CrvDigiMCCollection> &digis,
+                                                std::set<art::Ptr<StepPointMC> > &steps)
   {
     if(!digis.isValid()) return;
 
@@ -64,6 +64,20 @@ namespace mu2e
         earliestHitPos=step.position();
       }
     }
+  }
+
+  void CrvHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse, 
+                                          const art::Handle<CrvDigiMCCollection> &digis,
+                                          const SimParticleTimeOffset &timeOffsets,
+                                          double &energyDeposited, double &earliestHitTime,
+                                          CLHEP::Hep3Vector &earliestHitPos,
+                                          art::Ptr<SimParticle> &mostLikelySimParticle)
+  {
+    std::set<art::Ptr<StepPointMC> > steps;
+
+    CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
+    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, energyDeposited, 
+                                     earliestHitTime, earliestHitPos, mostLikelySimParticle);
   }
 
 } // end namespace mu2e

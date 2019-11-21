@@ -19,14 +19,20 @@ namespace mu2e
   class CrvHelper 
   {
     public:
-    static void GetStepPointsFromCrvRecoPulses(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
-                                               const art::Handle<CrvDigiMCCollection> &digis,
-                                               std::set<art::Ptr<StepPointMC> > &steps);
+    static void GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
+                                              const art::Handle<CrvDigiMCCollection> &digis,
+                                              std::set<art::Ptr<StepPointMC> > &steps);
     static void GetInfoFromStepPoints(const std::set<art::Ptr<StepPointMC> > &steps, 
                                       const SimParticleTimeOffset &timeOffsets,
                                       double &energyDeposited, double &earliestHitTime,
                                       CLHEP::Hep3Vector &earliestHitPos,
                                       art::Ptr<SimParticle> &mostLikelySimParticle);
+    static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse, 
+                                        const art::Handle<CrvDigiMCCollection> &digis,
+                                        const SimParticleTimeOffset &timeOffsets,
+                                        double &energyDeposited, double &earliestHitTime,
+                                        CLHEP::Hep3Vector &earliestHitPos,
+                                        art::Ptr<SimParticle> &mostLikelySimParticle);
 
     private:
     CrvHelper();
