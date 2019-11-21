@@ -23,14 +23,11 @@ namespace mu2e {
         _targetBoxYmax(conf.targetBoxYmax()),  // mm
         _targetBoxZmin(conf.targetBoxZmin()), // mm
         _targetBoxZmax(conf.targetBoxZmax()),  // mm
+        _resample(conf.resample()),
         _engine(conf.seed()),
         _randFlatX(_engine, -(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2, +(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2),
         _randFlatZ(_engine, -(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2, +(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2)
   {
-  }
-
-  const unsigned int CosmicCORSIKA::getNumShowers() {
-    return _primaries;
   }
 
   void CosmicCORSIKA::openFile(FILE *f) {
@@ -40,7 +37,6 @@ namespace mu2e {
 
 
   CosmicCORSIKA::~CosmicCORSIKA(){
-
   }
 
 
@@ -112,7 +108,16 @@ namespace mu2e {
       else if (strcmp(blockName, "RUNE") == 0)
       {
         _loops = 0;
-        return false;
+        if (_resample) {
+          std::cout << "Resampling file..." << std::endl;
+          fseek(in, 0, SEEK_SET);
+          fread(&_garbage, 4, 1, in);
+          continue;
+        } else {
+          std::cout << "End of run " << std::endl;
+          _primaries = 0;
+          return false;
+        }
         // end run condition
       }
       else if (strcmp(blockName, "LONG")==0)
@@ -191,7 +196,7 @@ namespace mu2e {
   }
 
 
-  bool CosmicCORSIKA::generate( GenParticleCollection& genParts)
+  bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned int &primaries)
   {
 
     // loop over particles in the truth object
@@ -211,6 +216,8 @@ namespace mu2e {
       GenParticleCollection crossingParticles;
 
       float timeOffset = std::numeric_limits<float>::max();
+
+      primaries = _primaries;
 
       for (unsigned int i = 0; i < particles.size(); i++) {
         GenParticle particle = particles[i];
@@ -237,8 +244,10 @@ namespace mu2e {
       }
       _particles_map.erase(_particles_map.begin()->first);
 
-      if (genParts.size() != 0)
+      if (genParts.size() != 0) {
         passed = true;
+        _primaries = 0;
+      }
 
     }
 

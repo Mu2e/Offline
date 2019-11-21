@@ -25,6 +25,7 @@ source: {
     maxEvents: -1
     @table::targetParams
     seed: 1
+    resample: false
     fluxConstant: 1.8e4
     lowE: 1.3
     highE: 1e6
@@ -133,7 +134,7 @@ physics : {
 
   }
 
-  trigFilter: [corsikaGen, g4run, g4run, randomsaver]
+  trigFilter: [corsikaGen, g4run, randomsaver]
   e1 : [outfile]
   ana : [corsikaGenPlots]
 

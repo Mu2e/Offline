@@ -70,6 +70,7 @@ namespace mu2e {
       // Accept compiler written d'tor.  Modules are never moved or copied.
       virtual void produce (art::Event& e);
       virtual void endSubRun(art::SubRun &sr);
+      virtual void beginSubRun(art::SubRun &sr);
 
     private:
 
@@ -94,6 +95,12 @@ namespace mu2e {
 
       float _intDist = 0;
 
+      unsigned int _primaries = 0;
+      float _area = 0;
+      float _lowE = 0;
+      float _highE = 0;
+      float _fluxConstant = 0;
+
   };
 
   CorsikaEventGenerator::CorsikaEventGenerator(const Parameters &conf) : EDProducer{conf},
@@ -105,13 +112,19 @@ namespace mu2e {
                                                                          _intDist(_conf.intDist())
   {
     produces<GenParticleCollection>();
+    produces<CosmicLivetime,art::InSubRun>();
+  }
+
+  void CorsikaEventGenerator::beginSubRun(art::SubRun &subrun)
+  {
+    _primaries = 0;
   }
 
   void CorsikaEventGenerator::endSubRun(art::SubRun &subrun)
   {
-    art::Handle<mu2e::CosmicLivetime> livetime;
-    subrun.getByLabel(_corsikaModuleLabel, livetime);
+    std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(_primaries, _area, _lowE, _highE, _fluxConstant));
     std::cout << *livetime << std::endl;
+    subrun.put(std::move(livetime));
   }
 
   void CorsikaEventGenerator::produce(art::Event &evt)
@@ -158,6 +171,13 @@ namespace mu2e {
     const GenParticleCollection &particles(*corsikaParticles);
     std::unique_ptr<GenParticleCollection> genParticles(new GenParticleCollection);
 
+    art::Handle<mu2e::CosmicLivetime> livetime;
+    evt.getByLabel(_corsikaModuleLabel, livetime);
+    _area = (*livetime).area();
+    _lowE = (*livetime).lowE();
+    _highE = (*livetime).highE();
+    _fluxConstant = (*livetime).fluxConstant();
+    _primaries += (*livetime).primaries();
 
     /*
      * In this block we check if there are two or more particles that intersect
