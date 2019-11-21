@@ -66,6 +66,7 @@ struct Config
   fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min")};
   fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max")};
   fhicl::Atom<int> seed{Name("seed"), Comment("Seed for particle random offset")};
+  fhicl::Atom<bool> resample{Name("resample"), Comment("Resampling flag")};
 };
 typedef fhicl::WrappedTable<Config> Parameters;
 
@@ -79,7 +80,6 @@ namespace mu2e {
       CosmicCORSIKA(const Config& conf);
       // CosmicCORSIKA(art::Run &run, CLHEP::HepRandomEngine &engine);
       ~CosmicCORSIKA();
-      const unsigned int getNumShowers();
 
       const std::map<unsigned int, int> corsikaToPdgId = {
         {1, 22}, // gamma
@@ -202,7 +202,7 @@ namespace mu2e {
         {195, -5332} // Omega+_bbar
       };
 
-      virtual bool generate(GenParticleCollection &);
+      virtual bool generate(GenParticleCollection &, unsigned int &);
       void openFile(FILE *f);
 
     private:
@@ -239,6 +239,8 @@ namespace mu2e {
       float _garbage;
 
       unsigned int _primaries = 0;
+
+      bool _resample = false;
 
       CLHEP::HepJamesRandom _engine;
       CLHEP::RandFlat _randFlatX;

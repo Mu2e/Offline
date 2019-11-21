@@ -72,7 +72,7 @@ namespace mu2e {
 
       art::ProductID particlesPID_;
 
-      float _area;
+      float _area;  // m2
       float _lowE;  // GeV
       float _highE; // GeV
       float _fluxConstant;
@@ -118,7 +118,7 @@ namespace mu2e {
       }
 
       rh.reconstitutes<mu2e::GenParticleCollection,art::InEvent>(myModuleLabel_);
-      rh.reconstitutes<mu2e::CosmicLivetime,art::InSubRun>(myModuleLabel_);
+      rh.reconstitutes<mu2e::CosmicLivetime,art::InEvent>(myModuleLabel_);
       _area = (conf().targetBoxXmax() + 2 * conf().showerAreaExtension() - conf().targetBoxXmin())
             * (conf().targetBoxZmax() + 2 * conf().showerAreaExtension() - conf().targetBoxZmin()) * _mm22m2; // m^2
 
@@ -162,14 +162,16 @@ namespace mu2e {
                                        art::EventPrincipal*& outE)
     {
       std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
-      bool still_data = (_corsikaGen.generate(*particles));
+      unsigned int primaries;
+      bool still_data = _corsikaGen.generate(*particles, primaries);
       if (!still_data) {
         return false;
       }
 
       managePrincipals(runNumber_, currentSubRunNumber_, ++currentEventNumber_, outR, outSR, outE);
       art::put_product_in_principal(std::move(particles), *outE, myModuleLabel_);
-
+      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(primaries, _area, _lowE, _highE, _fluxConstant));
+      art::put_product_in_principal(std::move(livetime), *outE, myModuleLabel_);
       return true;
 
     } // readNext()
@@ -187,10 +189,6 @@ namespace mu2e {
     art::Timestamp ts;
 
     art::SubRunID newID(runNumber, subRunNumber);
-    // if(newID.runID() != lastSubRunID_.runID()) {
-    //   // art takes ownership of the object pointed to by outR and will delete it at the appropriate time.
-    //   outR = pm_.makeRunPrincipal(runNumber, ts);
-    // }
 
     if(newID != lastSubRunID_) {
       // art takes ownership of the object pointed to by outSR and will delete it at the appropriate time.
@@ -198,8 +196,7 @@ namespace mu2e {
       outSR = pm_.makeSubRunPrincipal(runNumber,
                                       subRunNumber,
                                       ts);
-      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(_corsikaGen.getNumShowers(), _area, _lowE, _highE, _fluxConstant));
-      art::put_product_in_principal(std::move(livetime), *outSR, myModuleLabel_);
+
     }
     lastSubRunID_ = newID;
 
