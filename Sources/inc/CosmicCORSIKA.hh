@@ -10,7 +10,6 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 
 // Framework includes
-#include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -31,6 +30,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Random/RandFlat.h"
+#include "CLHEP/Random/Randomize.h"
 
 #include "fhiclcpp/types/ConfigurationTable.h"
 
@@ -47,23 +47,26 @@ struct Config
   using Name = fhicl::Name;
   using Comment = fhicl::Comment;
   fhicl::Sequence<std::string> showerInputFiles{Name("fileNames"),Comment("List of CORSIKA binary output paths")};
-  fhicl::Atom<int> firstEventNumber{Name("firstEventNumber"), Comment("Reference point on the Y axis"), 0};
-  fhicl::Atom<int> firstSubRunNumber{Name("firstSubRunNumber"), Comment("Reference point on the Y axis"), 0};
-  fhicl::Atom<int> maxEvents{Name("maxEvents"), Comment("Reference point on the Y axis"), 0};
-  fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("Reference point on the Y axis"), 0};
-  fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Reference point on the Y axis"), ""};
-  fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Reference point on the Y axis"), ""};
+  fhicl::Atom<int> firstEventNumber{Name("firstEventNumber"), Comment("First event number"), 0};
+  fhicl::Atom<int> firstSubRunNumber{Name("firstSubRunNumber"), Comment("First subrun number"), 0};
+  fhicl::Atom<int> maxEvents{Name("maxEvents"), Comment("Max number of events"), 0};
+  fhicl::Atom<unsigned int> runNumber{Name("runNumber"), Comment("First run number"), 0};
+  fhicl::Atom<std::string> module_label{Name("module_label"), Comment("Art module label"), ""};
+  fhicl::Atom<std::string> module_type{Name("module_type"), Comment("Art module type"), ""};
   fhicl::Atom<bool> projectToTargetBox{Name("projectToTargetBox"), Comment("Store only events that cross the target box"), false};
-  fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Reference point on the Y axis"), 10000};
+  fhicl::Atom<float> showerAreaExtension{Name("showerAreaExtension"), Comment("Extension of the generation box on the xz plane")};
   fhicl::Atom<float> tOffset{Name("tOffset"), Comment("Time offset"), 0};
-  fhicl::Atom<float> fluxConstant{Name("fluxConstant"), Comment("Flux constant"), 1.8e4};
-  fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Extension of the generation plane"), -5000};
-  fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Extension of the generation plane"), 5000};
-  fhicl::Atom<float> targetBoxYmin{Name("targetBoxYmin"), Comment("Extension of the generation plane"), -5000};
-  fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Extension of the generation plane"), 5000};
-  fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Extension of the generation plane"), -5000};
-  fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Extension of the generation plane"), 5000};
-
+  fhicl::Atom<float> lowE{Name("lowE"), Comment("lowE"), 1.3};
+  fhicl::Atom<float> highE{Name("highE"), Comment("highE"), 1e6};
+  fhicl::Atom<float> fluxConstant{Name("fluxConstant"), Comment("Primary cosmic nucleon flux constant")};
+  fhicl::Atom<float> targetBoxXmin{Name("targetBoxXmin"), Comment("Target box x min")};
+  fhicl::Atom<float> targetBoxXmax{Name("targetBoxXmax"), Comment("Target box x max")};
+  fhicl::Atom<float> targetBoxYmin{Name("targetBoxYmin"), Comment("Target box y min")};
+  fhicl::Atom<float> targetBoxYmax{Name("targetBoxYmax"), Comment("Target box y max")};
+  fhicl::Atom<float> targetBoxZmin{Name("targetBoxZmin"), Comment("Target box z min")};
+  fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max")};
+  fhicl::Atom<int> seed{Name("seed"), Comment("Seed for particle random offset")};
+  fhicl::Atom<bool> resample{Name("resample"), Comment("Resampling flag")};
 };
 typedef fhicl::WrappedTable<Config> Parameters;
 
@@ -71,14 +74,12 @@ class GenParticleCollection;
 
 namespace mu2e {
 
-  class CosmicCORSIKA{
+  class CosmicCORSIKA {
 
     public:
       CosmicCORSIKA(const Config& conf);
       // CosmicCORSIKA(art::Run &run, CLHEP::HepRandomEngine &engine);
       ~CosmicCORSIKA();
-      const float getLiveTime();
-      const unsigned int getNumShowers();
 
       const std::map<unsigned int, int> corsikaToPdgId = {
         {1, 22}, // gamma
@@ -201,14 +202,14 @@ namespace mu2e {
         {195, -5332} // Omega+_bbar
       };
 
-      virtual bool generate(GenParticleCollection &);
+      virtual bool generate(GenParticleCollection &, unsigned int &);
       void openFile(FILE *f);
 
     private:
 
       bool genEvent(std::map<std::pair<int,int>, GenParticleCollection> &particles_map);
       float wrapvarBoxNo(const float var, const float low, const float high, int &boxno);
-      static float wrapvar(const float var, const float low, const float high);
+
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
       std::vector<CLHEP::Hep3Vector> _worldIntersections;
       std::map<std::pair<int,int>, GenParticleCollection> _particles_map;
@@ -216,7 +217,6 @@ namespace mu2e {
       GlobalConstantsHandle<ParticleDataTable> pdt;
 
       const float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
-      const float _ns2s = CLHEP::ns / CLHEP::s;
       const float _cm2mm = CLHEP::cm / CLHEP::mm;
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
@@ -239,6 +239,12 @@ namespace mu2e {
       float _garbage;
 
       unsigned int _primaries = 0;
+
+      bool _resample = false;
+
+      CLHEP::HepJamesRandom _engine;
+      CLHEP::RandFlat _randFlatX;
+      CLHEP::RandFlat _randFlatZ;
   };  // CosmicCORSIKA
 
 }
