@@ -22,12 +22,12 @@ namespace mu2e {
         _targetBoxYmin(conf.targetBoxYmin()), // mm
         _targetBoxYmax(conf.targetBoxYmax()),  // mm
         _targetBoxZmin(conf.targetBoxZmin()), // mm
-        _targetBoxZmax(conf.targetBoxZmax())  // mm
+        _targetBoxZmax(conf.targetBoxZmax()),  // mm
+        _resample(conf.resample()),
+        _engine(conf.seed()),
+        _randFlatX(_engine, -(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2, +(_targetBoxXmax-_targetBoxXmin+_showerAreaExtension)/2),
+        _randFlatZ(_engine, -(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2, +(_targetBoxZmax-_targetBoxZmin+_showerAreaExtension)/2)
   {
-  }
-
-  const unsigned int CosmicCORSIKA::getNumShowers() {
-    return _primaries;
   }
 
   void CosmicCORSIKA::openFile(FILE *f) {
@@ -35,21 +35,8 @@ namespace mu2e {
     fread(&_garbage, 4, 1, in);
   }
 
-  const float CosmicCORSIKA::getLiveTime()
-  {
-    const float area = (_targetBoxXmax + 2 * _showerAreaExtension - _targetBoxXmin) * (_targetBoxZmax + 2 * _showerAreaExtension - _targetBoxZmin) * 1e-6; //m^2
-    const float eslope = -2.7;
-    const float lowE = 1.3;     // GeV
-    const float highE = 1e6; // GeV
-    const float EiToOneMinusGamma = pow(lowE, 1 + eslope);
-    const float EfToOneMinusGamma = pow(highE, 1 + eslope);
-    // http://pdg.lbl.gov/2018/reviews/rpp2018-rev-cosmic-rays.pdf eq. 29.2
-    return _primaries / (M_PI * area * _fluxConstant * (EfToOneMinusGamma - EiToOneMinusGamma) / (1. + eslope));
-  }
 
   CosmicCORSIKA::~CosmicCORSIKA(){
-    std::cout << "Total number of primaries: " << getNumShowers() << std::endl;
-    std::cout << "Simulated live-time: " << getLiveTime() << std::endl;
   }
 
 
@@ -58,11 +45,6 @@ namespace mu2e {
     //wrap variable so that it's always between low and high
     boxno = int(floor(var / (high - low)));
     return (var - (high - low) * floor(var / (high - low))) + low;
-  }
-
-  float CosmicCORSIKA::wrapvar( const float var, const float low, const float high){
-    //wrap variable so that it's always between low and high
-    return (var - (high - low) * floor(var/(high-low))) + low;
   }
 
 
@@ -76,6 +58,10 @@ namespace mu2e {
 
     if (feof(in))
       return false;
+
+    // Particle offset, must be the same for every particle in one event
+    const float xOffset = _randFlatX.fire();
+    const float zOffset = _randFlatZ.fire();
 
     while (running)
     {
@@ -122,7 +108,16 @@ namespace mu2e {
       else if (strcmp(blockName, "RUNE") == 0)
       {
         _loops = 0;
-        return false;
+        if (_resample) {
+          std::cout << "Resampling file..." << std::endl;
+          fseek(in, 0, SEEK_SET);
+          fread(&_garbage, 4, 1, in);
+          continue;
+        } else {
+          std::cout << "End of run " << std::endl;
+          _primaries = 0;
+          return false;
+        }
         // end run condition
       }
       else if (strcmp(blockName, "LONG")==0)
@@ -160,14 +155,14 @@ namespace mu2e {
 
                   int boxnox = 0, boxnoz = 0;
 
-                  const float x = wrapvarBoxNo(block[k + 5] * _cm2mm, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
-                  const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
+                  const float x = wrapvarBoxNo(block[k + 5] * _cm2mm + xOffset, _targetBoxXmin - _showerAreaExtension, _targetBoxXmax + _showerAreaExtension, boxnox);
+                  const float z = wrapvarBoxNo(-block[k + 4] * _cm2mm + zOffset, _targetBoxZmin - _showerAreaExtension, _targetBoxZmax + _showerAreaExtension, boxnoz);
                   std::pair xz(boxnox, boxnoz);
                   const float m = pdt->particle(pdgId).ref().mass(); // to MeV
 
                   const float energy = safeSqrt(P_x * P_x + P_y * P_y + P_z * P_z + m * m);
 
-                  const Hep3Vector position(x, 0, z);
+                  const Hep3Vector position(x, _targetBoxYmax, z);
                   const HepLorentzVector mom4(P_x, P_y, P_z, energy);
 
                   const float particleTime = block[k + 6];
@@ -201,7 +196,7 @@ namespace mu2e {
   }
 
 
-  bool CosmicCORSIKA::generate( GenParticleCollection& genParts)
+  bool CosmicCORSIKA::generate( GenParticleCollection& genParts, unsigned int &primaries)
   {
 
     // loop over particles in the truth object
@@ -221,6 +216,8 @@ namespace mu2e {
       GenParticleCollection crossingParticles;
 
       float timeOffset = std::numeric_limits<float>::max();
+
+      primaries = _primaries;
 
       for (unsigned int i = 0; i < particles.size(); i++) {
         GenParticle particle = particles[i];
@@ -247,8 +244,10 @@ namespace mu2e {
       }
       _particles_map.erase(_particles_map.begin()->first);
 
-      if (genParts.size() != 0)
+      if (genParts.size() != 0) {
         passed = true;
+        _primaries = 0;
+      }
 
     }
 

@@ -11,6 +11,7 @@
 
 #include "CLHEP/Vector/LorentzVector.h"
 #include "CLHEP/Vector/ThreeVector.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/Core/InputSourceMacros.h"
@@ -32,6 +33,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "MCDataProducts/inc/GenParticle.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/CosmicLivetime.hh"
 
 #include "Sources/inc/CosmicCORSIKA.hh"
 #include "SeedService/inc/SeedService.hh"
@@ -70,6 +72,13 @@ namespace mu2e {
 
       art::ProductID particlesPID_;
 
+      float _area;  // m2
+      float _lowE;  // GeV
+      float _highE; // GeV
+      float _fluxConstant;
+
+      const float _mm22m2 = CLHEP::mm2 / CLHEP::m2;
+
     public:
       CorsikaBinaryDetail(const Parameters &conf,
                           art::ProductRegistryHelper &,
@@ -98,6 +107,9 @@ namespace mu2e {
       , runNumber_(conf().runNumber())
       , currentSubRunNumber_(-1U)
       , currentEventNumber_(0)
+      , _lowE(conf().lowE())
+      , _highE(conf().highE())
+      , _fluxConstant(conf().fluxConstant())
       , _corsikaGen(conf())
     {
       if(!art::RunID(runNumber_).isValid()) {
@@ -106,19 +118,9 @@ namespace mu2e {
       }
 
       rh.reconstitutes<mu2e::GenParticleCollection,art::InEvent>(myModuleLabel_);
-
-      // auto get_ProductID = [](auto const& typeLabel, auto const& processName) {
-      //   if (!typeLabel.hasEmulatedModule()) {
-      //     throw cet::exception("BADCONFIG", " FromCorsikaBinary: ")
-      //     << " Must provided emulated module name for reconstituted product.\n";
-      //   }
-      //   auto const canonical_product_name = art::canonicalProductName(typeLabel.friendlyClassName(),
-      //                                                                 typeLabel.emulatedModule(),
-      //                                                                 typeLabel.productInstanceName(),
-      //                                                                 processName);
-      //   return art::ProductID{canonical_product_name};
-      // };
-      // particlesPID_ = get_ProductID(gpcTypeLabel, art::Globals::instance()->processName());
+      rh.reconstitutes<mu2e::CosmicLivetime,art::InEvent>(myModuleLabel_);
+      _area = (conf().targetBoxXmax() + 2 * conf().showerAreaExtension() - conf().targetBoxXmin())
+            * (conf().targetBoxZmax() + 2 * conf().showerAreaExtension() - conf().targetBoxZmin()) * _mm22m2; // m^2
 
     }
 
@@ -160,14 +162,16 @@ namespace mu2e {
                                        art::EventPrincipal*& outE)
     {
       std::unique_ptr<GenParticleCollection> particles(new GenParticleCollection());
-      bool still_data = (_corsikaGen.generate(*particles));
+      unsigned int primaries;
+      bool still_data = _corsikaGen.generate(*particles, primaries);
       if (!still_data) {
         return false;
       }
 
       managePrincipals(runNumber_, currentSubRunNumber_, ++currentEventNumber_, outR, outSR, outE);
       art::put_product_in_principal(std::move(particles), *outE, myModuleLabel_);
-
+      std::unique_ptr<CosmicLivetime> livetime(new CosmicLivetime(primaries, _area, _lowE, _highE, _fluxConstant));
+      art::put_product_in_principal(std::move(livetime), *outE, myModuleLabel_);
       return true;
 
     } // readNext()
@@ -185,10 +189,6 @@ namespace mu2e {
     art::Timestamp ts;
 
     art::SubRunID newID(runNumber, subRunNumber);
-    // if(newID.runID() != lastSubRunID_.runID()) {
-    //   // art takes ownership of the object pointed to by outR and will delete it at the appropriate time.
-    //   outR = pm_.makeRunPrincipal(runNumber, ts);
-    // }
 
     if(newID != lastSubRunID_) {
       // art takes ownership of the object pointed to by outSR and will delete it at the appropriate time.
@@ -196,6 +196,7 @@ namespace mu2e {
       outSR = pm_.makeSubRunPrincipal(runNumber,
                                       subRunNumber,
                                       ts);
+
     }
     lastSubRunID_ = newID;
 
