@@ -173,9 +173,13 @@ namespace mu2e {
 	      }
 
 	      if ( (i_stepPointPtr->volumeId() == j_stepPointPtr->volumeId()) &&
-		   (i_stepPointPtr->totalEDep() == j_stepPointPtr->totalEDep())
+		   (i_stepPointPtr->totalEDep() == j_stepPointPtr->totalEDep()) && 
+		   (i_stepPointPtr->simParticle() == j_stepPointPtr->simParticle())
 		   ) {
-		throw cet::exception("CompressDigiMCsCheck") << "Two StepPointMCs in StrawDigiMC waveform are identical" << std::endl;
+		throw cet::exception("CompressDigiMCsCheck") 
+		  << "Two StepPointMCs in StrawDigiMC waveform are identical: " << std::endl
+		  << "\ti_stepPointPtr: volumeId = " << i_stepPointPtr->volumeId() << ", EDep = " << i_stepPointPtr->totalEDep() << ", SimPart = " << i_stepPointPtr->simParticle() << std::endl
+		  << "\tj_stepPointPtr: volumeId = " << j_stepPointPtr->volumeId() << ", EDep = " << j_stepPointPtr->totalEDep() << ", SimPart = " << j_stepPointPtr->simParticle() << std::endl;
 	      }
 	    }
 	  }
