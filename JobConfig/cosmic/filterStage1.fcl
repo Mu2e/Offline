@@ -33,14 +33,14 @@ physics : {
         module_type: FilterCosmicsStage1
         inputs : [ "cosmicFilter:CRV" ]
 
-// Gap events
-//	cutEDepMax: 10
+// Events with the low energy deposition in CRV. Filters 1% from the total number of events from stage 1.
+       cutEDepMax: 14
 
 //Upstream region
-//	cutEDepMin: 10
+//	cutEDepMin: 14
 //	cutZMax: 3000
 //Downstream region
-//	cutEDepMin: 10
+//	cutEDepMin: 14
 //	cutZMin: 3000
 
    	}
