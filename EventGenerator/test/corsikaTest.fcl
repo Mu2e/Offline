@@ -26,6 +26,7 @@ source: {
     @table::targetParams
     seed: 1
     resample: false
+    compact: false
     fluxConstant: 1.8e4
     lowE: 1.3
     highE: 1e6
