@@ -1,0 +1,13 @@
+#ifndef RecoDataProducts_NewCaloRecoDigiCollection_hh
+#define RecoDataProducts_NewCaloRecoDigiCollection_hh
+
+#include "RecoDataProducts/inc/NewCaloRecoDigi.hh"
+#include <vector>
+
+
+namespace mu2e 
+{
+   typedef std::vector<mu2e::NewCaloRecoDigi> NewCaloRecoDigiCollection;
+}
+
+#endif 
