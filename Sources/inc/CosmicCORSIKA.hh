@@ -242,7 +242,7 @@ namespace mu2e {
       unsigned int _primaries = 0;
 
       bool _resample = false;
-      bool _compact = false;
+      bool _compact = true;
 
       CLHEP::HepJamesRandom _engine;
       CLHEP::RandFlat _randFlatX;
