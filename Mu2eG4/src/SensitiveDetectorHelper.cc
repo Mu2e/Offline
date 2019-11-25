@@ -142,15 +142,15 @@ void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
     
         G4SDManager* SDman = G4SDManager::GetSDMpointer();
         art::ServiceHandle<G4Helper> helper;
-
         for(auto& iter : lvsd_) {
             iter.second.sensitiveDetector = new Mu2eSensitiveDetector(iter.first, config);
             SDman->AddNewDetector(iter.second.sensitiveDetector);
             helper->locateVolInfo(iter.first).logical->SetSensitiveDetector(iter.second.sensitiveDetector);
         }
+
 }
 
-    
+
 // Find the sensitive detector objects and attach them to each StepInstance object.
 // Must not be called until G4 has been initialized.
 void SensitiveDetectorHelper::registerSensitiveDetectors(){
@@ -159,10 +159,10 @@ void SensitiveDetectorHelper::registerSensitiveDetectors(){
         for ( InstanceMap::iterator i=stepInstances_.begin();
              i != stepInstances_.end(); ++i ) {
             StepInstance& step(i->second);
-            if (verbosityLevel_ > 0 ) {
+	    //           if (verbosityLevel_ > 0 ) {
                 std::cout << __func__ << " looking for sd with name: "
                 << step.stepName << std::endl;
-            }
+		//     }
             bool printWarnings = (verbosityLevel_ > -1) ? true : false;
             step.sensitiveDetector =
             dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));

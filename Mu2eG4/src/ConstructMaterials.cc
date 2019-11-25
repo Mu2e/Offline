@@ -1543,7 +1543,7 @@ namespace mu2e {
       // and now tungsten
       G4Element* tungsten = new G4Element("Tungsten","W",74.,183.84*CLHEP::g/CLHEP::mole);
       G4Material* ProductionTargetTungstenLa2_O3 = new G4Material(mat.name
-								  ,6.51*CLHEP::g/CLHEP::cm3
+								  ,18.75*CLHEP::g/CLHEP::cm3
 								  ,2);
       ProductionTargetTungstenLa2_O3->AddMaterial(La2_O3,1.0*CLHEP::perCent);
       ProductionTargetTungstenLa2_O3->AddElement(tungsten,99.0*CLHEP::perCent);

@@ -13,6 +13,7 @@
 #include "TDirectory.h"
 #include "TH1.h"
 #include "TTree.h"
+#include "TH2F.h"
 
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
@@ -178,18 +179,17 @@ namespace mu2e {
     TH1F* _hHitY;
     TH1F* _hHitZ;
 
-    TH1F* _hHit_Fin1_X;
-    TH1F* _hHit_Fin1_Y;
-    TH1F* _hHit_Fin1_Z;
-    TH1F* _hHit_Fin2_X;
-    TH1F* _hHit_Fin2_Y;
-    TH1F* _hHit_Fin2_Z;
-    TH1F* _hHit_Fin3_X;
-    TH1F* _hHit_Fin3_Y;
-    TH1F* _hHit_Fin3_Z;
-    TH1F* _hHit_Fin4_X;
-    TH1F* _hHit_Fin4_Y;
-    TH1F* _hHit_Fin4_Z;
+
+    TH1F* _hHitZCore;
+    TH1F* _hHitZStartingCore;
+
+    TH1F* _hHitZFin;
+    TH1F* _hHitZStartingFin;
+
+    
+
+  TH2F* _hHitPosRing;
+    TH2F* _hHitNegRing;
 
     CLHEP::Hep3Vector _gunOrigin;
     CLHEP::HepRotation _gunRotation;
@@ -244,27 +244,38 @@ namespace mu2e {
       art::ServiceHandle<GeometryService> geom;
 
     _gunRotation = GeomHandle<ProductionTarget>()->protonBeamRotation();
-    _gunOrigin = GeomHandle<ProductionTarget>()->position() + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength());
+    _gunOrigin = GeomHandle<ProductionTarget>()->haymanPosition();
 
     std::cout << "gun origin pieces in analysis module \n " << 
-      GeomHandle<ProductionTarget>()->position()  << "\n"<<
-      _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength()) << "\n" <<
+      GeomHandle<ProductionTarget>()->haymanPosition()  << "\n"<<
+      _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfHaymanLength()) << "\n" <<
       _gunOrigin << std::endl;
-    _hEnergyVsZ = tfs->make<TH1F>("_hEnergyVsZ","Energy vs Z",300,-6300.,-6000.);
-    _hHitX = tfs->make<TH1F>("_hHitX","Internal X Position of Hit, Energy Weighted",100,-10.,10.);
-    _hHitY = tfs->make<TH1F>("_hHitY","Internal Y Position Of Hit, Energy Weighted",100,-10.,10.);
-    std::cout << " half length = " << GeomHandle<ProductionTarget>()->halfLength() << std::endl;
-    Int_t nbins = +2.0*GeomHandle<ProductionTarget>()->halfLength() + 0.5;
+
+    Int_t nbins = +2.0*GeomHandle<ProductionTarget>()->halfHaymanLength() + 0.5;
     std::cout << " nbins = " << nbins << std::endl;
-    _hHitZ = tfs->make<TH1F>("_hHitZ","Internal Z Position of Hit, Energy Weighted",nbins+10,-10., +2.0*GeomHandle<ProductionTarget>()->halfLength());
 
-    _hHit_Fin1_Z = tfs->make<TH1F>("_hHitZFin1","Internal Z Position of Hit, Energy Weighted, Fin1",nbins+10,-10., +2.0*GeomHandle<ProductionTarget>()->halfLength());
+    _hEnergyVsZ = tfs->make<TH1F>("_hEnergyVsZ","Energy vs Z",nbins+10
+				  ,0.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+    //300,-6300.,-6000.);
+    _hHitX = tfs->make<TH1F>("_hHitX","Internal X Position of Hit, Energy Weighted",200,-20.,20.);
+    _hHitY = tfs->make<TH1F>("_hHitY","Internal Y Position Of Hit, Energy Weighted",200,-20.,20.);
+    std::cout << " half length = " << GeomHandle<ProductionTarget>()->halfHaymanLength() << std::endl;
+ 
+    _hHitZCore = tfs->make<TH1F>("_hHitZCore","Internal Z Position of Hit, Core Section, Energy Weighted",nbins+10
+ 				 ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
-    _hHit_Fin2_Z = tfs->make<TH1F>("_hHitZFin2","Internal Z Position of Hit, Energy Weighted, Fin2",nbins+10,-10., +2.0*GeomHandle<ProductionTarget>()->halfLength());
+    _hHitZStartingCore = tfs->make<TH1F>("_hHitZStartingCore","Internal Z Position of Hit, Starting Core Section, Energy Weighted",nbins+10
+				 ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
-    _hHit_Fin3_Z = tfs->make<TH1F>("_hHitZFin3","Internal Z Position of Hit, Energy Weighted, Fin 3",nbins+10,-10., +2.0*GeomHandle<ProductionTarget>()->halfLength());
+    _hHitZFin = tfs->make<TH1F>("_hHitZFin","Internal Z Position of Hit, Fin Section, Energy Weighted",nbins+10
+				 ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
 
-    _hHit_Fin4_Z = tfs->make<TH1F>("_hHitZFin4","Internal Z Position of Hit, Energy Weighted, Fin 4",nbins+10,-10., +2.0*GeomHandle<ProductionTarget>()->halfLength());
+    _hHitZStartingFin = tfs->make<TH1F>("_hHitZStartingFin","Internal Z Position of Hit, Starting Fin Section, Energy Weighted",nbins+10
+				 ,-10.,+2.0*GeomHandle<ProductionTarget>()->halfHaymanLength());
+
+
+    _hHitNegRing = tfs->make<TH2F>("_hHitNegRing","Scatter Plot for Ring at Beginning of Target",50,-25.,25.,50,-25.,25.);
+    _hHitPosRing = tfs->make<TH2F>("_hHitPosRing","Scatter Plot for Ring at End of Target",50,-25.,25.,50,-25.,25.);
 
 
     booked = true;
@@ -283,38 +294,82 @@ namespace mu2e {
     }
 
 
-    //    std::cout << "hitsInputTag_ " << hitsInputTag_ << std::endl;
-    //std::cout << "hitsInputTag instance " << hitsInputTag_.instance() << std::endl;
-
+ 
     std::string hitInputTagInstance = hitsInputTag_.instance();
-    const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
+ 
+    //              std::cout << "hitsInputTag_ " << hitsInputTag_ << std::endl;
+    //std::cout << "hitsInputTag instance " << hitInputTagInstance << std::endl;
+
+   const auto& ih = event.getValidHandle<StepPointMCCollection>(hitsInputTag_);
 
     for(const auto& i : *ih) {
 
 
       hit_ = VDHit(toff_, i);
-      if (hit_.totalEDep > 0){_hEnergyVsZ->Fill(hit_.z,hit_.totalEDep);}
       CLHEP::Hep3Vector hitLoc(hit_.x,hit_.y,hit_.z);
 
+      //      std::cout << "hit x = " << hitLoc << std::endl;
+      //     if (hit_.totalEDep > 0){_hEnergyVsZ->Fill(hit_.z,hit_.totalEDep);}
+  
       //
       // this rotation takes me from mu2e coordinates to internal  
-      // at generation time  we apply _gunRotation to go from target coord to mu2e coord; now apply inverse
-           CLHEP::Hep3Vector hitPositionInCore = _gunRotation.inverse()*(hitLoc - _gunOrigin);
-      
-      _hHitX->Fill(hitPositionInCore.x(),hit_.totalEDep);
-      _hHitY->Fill(hitPositionInCore.y(),hit_.totalEDep);
+      // at generation time  we apply _gunRotation to go from target coord to mu2e coord.  A little tricky
+      // since gunOrigin is defined to be the downstream end of the gun for the rotated target, that is, where the protons hit. Let's transform that away.
+ 
+      CLHEP::Hep3Vector hitPositionInternal = _gunRotation.inverse()*(hitLoc - _gunOrigin) - CLHEP::Hep3Vector(0.,0., GeomHandle<ProductionTarget>()->halfHaymanLength());
+      //      std::cout << "hitloc, rotation, core = " << hitLoc << "\n" << _gunOrigin << "\n" << _gunRotation << "\n" << hitPositionInternal << std::endl;
+	   //	   std::cout << " x val " << hitLoc << std::endl;
+ 
       //
       // - sign since beam travels toward negative z in Mu2e coordinates.  make plot run from zero and look like the target...
-      if (hitInputTagInstance == "ProductionTargetCore") {
-      _hHitZ->Fill(-hitPositionInCore.z(),hit_.totalEDep);
-      } else if (hitInputTagInstance == "ProductionTargetFin1"){
-      _hHit_Fin1_Z->Fill(-hitPositionInCore.z(),hit_.totalEDep);
-     } else if (hitInputTagInstance == "ProductionTargetFin2"){
-       _hHit_Fin2_Z->Fill(-hitPositionInCore.z(),hit_.totalEDep);
-     } else if (hitInputTagInstance == "ProductionTargetFin3"){
-       _hHit_Fin3_Z->Fill(-hitPositionInCore.z(),hit_.totalEDep);
-     } else if (hitInputTagInstance == "ProductionTargetFin4"){
-        _hHit_Fin4_Z->Fill(-hitPositionInCore.z(),hit_.totalEDep);
+      if (hitInputTagInstance == "ProductionTargetCoreSection") {
+	_hHitZCore->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+      } else if (hitInputTagInstance == "ProductionTargetPositiveEndRing"){
+	//	std::cout << "in pos ring" << std::endl;
+	//  	   std::cout << " x val " << hitLoc << std::endl;
+	_hHitPosRing->Fill(hitPositionInternal.x(),hitPositionInternal.y(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+
+      } else if (hitInputTagInstance == "ProductionTargetNegativeEndRing"){
+	//	std::cout << "in neg ring" << std::endl;
+	//   	   std::cout << " x val " << hitLoc << std::endl;
+	_hHitNegRing->Fill(hitPositionInternal.x(),hitPositionInternal.y(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+      } else if (hitInputTagInstance == "ProductionTargetStartingCoreSection"){
+	//	std::cout << "in  starting core" << std::endl;
+	//  	   std::cout << " x val " << hitLoc << std::endl;
+	_hHitZStartingCore->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+      } else if (hitInputTagInstance == "ProductionTargetFinSection"){
+	//	std::cout << "in  starting core" << std::endl;
+	//  	   std::cout << " x val " << hitLoc << std::endl;
+	_hHitZFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+      } else if (hitInputTagInstance == "ProductionTargetFinStartingSection"){
+	//	std::cout << "in  starting core" << std::endl;
+	//  	   std::cout << " x val " << hitLoc << std::endl;
+	_hHitZStartingFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+      } else if (hitInputTagInstance == "ProductionTargetFinTopSection" || hitInputTagInstance == "ProductionTargetFinTopStartingSection"){
+	//	std::cout << "in  starting core" << std::endl;
+	//  	   std::cout << " x val " << hitLoc << std::endl;
+	_hHitZStartingFin->Fill(-hitPositionInternal.z(),hit_.totalEDep);
+	_hHitX->Fill(hitPositionInternal.x(),hit_.totalEDep);
+	_hHitY->Fill(hitPositionInternal.y(),hit_.totalEDep);
+	_hEnergyVsZ->Fill(-hitPositionInternal.z(),hit_.totalEDep);
       }
 
       if(writeProperTime_) {

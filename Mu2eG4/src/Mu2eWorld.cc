@@ -767,6 +767,7 @@ namespace mu2e {
       //get the LVStore singleton
       G4LogicalVolumeStore* store = G4LogicalVolumeStore::GetInstance();
 
+
       // G4 takes ownership and will delete the detectors at the job end
 
 
@@ -1000,9 +1001,104 @@ namespace mu2e {
         }//for
     }//if stoppingtarget
 
+    //done
+
+    /************************** ProductionTarget **************************/
+
+
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetCoreSection)) {
+        Mu2eSensitiveDetector* prodtargcoreSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetCoreSection(), _config );
+        SDman->AddNewDetector(prodtargcoreSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetCoreSection") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargcoreSD);
+            }
+        }
+    }
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetStartingCoreSection)) {
+        Mu2eSensitiveDetector* prodtargstartingcoreSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetStartingCoreSection(), _config );
+        SDman->AddNewDetector(prodtargstartingcoreSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetStartingCoreSection") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargstartingcoreSD);
+            }
+        }
+    }
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinStartingSection)) {
+        Mu2eSensitiveDetector* prodtargfinstartingSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinStartingSection(), _config );
+        SDman->AddNewDetector(prodtargfinstartingSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetFinStartingSection") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargfinstartingSD);
+            }
+        }
+    }
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetNegativeEndRing)) {
+        Mu2eSensitiveDetector* prodtargnegativeendringSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetNegativeEndRing(), _config );
+        SDman->AddNewDetector(prodtargnegativeendringSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetNegativeEndRing") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargnegativeendringSD);
+            }
+        }
+    }
+    if(sdHelper_->enabled(StepInstanceName::ProductionTargetPositiveEndRing)) {
+        Mu2eSensitiveDetector* prodtargpositiveendringSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetPositiveEndRing(), _config );
+        SDman->AddNewDetector(prodtargpositiveendringSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetPositiveEndRing") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargpositiveendringSD);
+            }
+        }
+    }
+   if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinSection)) {
+        Mu2eSensitiveDetector* prodtargfinsectionSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinSection(), _config );
+        SDman->AddNewDetector(prodtargfinsectionSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetFinSection") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargfinsectionSD);
+            }
+        }
+    }
+
+   if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopSection)) {
+        Mu2eSensitiveDetector* prodtargfintopsectionSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopSection(), _config );
+        SDman->AddNewDetector(prodtargfintopsectionSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetFinTopSection") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargfintopsectionSD);
+            }
+        }
+    }
+
+   if(sdHelper_->enabled(StepInstanceName::ProductionTargetFinTopStartingSection)) {
+        Mu2eSensitiveDetector* prodtargfintopstartingsectionSD =
+        new Mu2eSensitiveDetector( SensitiveDetectorName::ProductionTargetFinTopStartingSection(), _config );
+        SDman->AddNewDetector(prodtargfintopstartingsectionSD);
+        for(G4LogicalVolumeStore::iterator pos=store->begin(); pos!=store->end(); pos++){
+            G4String LVname = (*pos)->GetName();
+            if (LVname.find("ProductionTargetFinTopStartingSection") != std::string::npos) {
+              (*pos)->SetSensitiveDetector(prodtargfintopstartingsectionSD);
+            }
+        }
+    }
+
 
 /************************** CRV **************************/
-    //done
     if(sdHelper_->enabled(StepInstanceName::CRV)) {
 
         Mu2eSensitiveDetector* sbSD =

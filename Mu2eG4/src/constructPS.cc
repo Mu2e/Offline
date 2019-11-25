@@ -306,7 +306,7 @@ namespace mu2e {
                                           G4Colour::Blue(),
 					  "PS"
                                           );
-    std::cout << "inside " << __func__ << psVacuumParams.originInMu2e() << " " << _hallOriginInMu2e << std::endl;
+    //    std::cout << "inside " << __func__ << psVacuumParams.originInMu2e() << " " << _hallOriginInMu2e << std::endl;
 
     // Build the production target.
 

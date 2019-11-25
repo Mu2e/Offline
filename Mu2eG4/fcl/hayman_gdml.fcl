@@ -25,6 +25,7 @@ physics : {
 }
 
 services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_hayman_v2.txt"
+//services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
 
 // Disable all physics except transport.
 physics.producers.g4run.physics.physicsListName: "Minimal"
