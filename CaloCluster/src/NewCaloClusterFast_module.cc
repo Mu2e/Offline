@@ -119,15 +119,16 @@ namespace mu2e {
        art::Handle<NewCaloDigiCollection> caloDigisHandle;
        event.getByLabel(caloDigiModuleLabel_, caloDigisHandle);
 
+
        auto crystalHitColl   = std::make_unique<CaloCrystalHitCollection>();
        auto recoClustersColl = std::make_unique<CaloClusterCollection>();
-       // std::unique_ptr<CaloCrystalHitCollection> crystalHitColl  (new CaloCrystalHitCollection);
-       // std::unique_ptr<CaloClusterCollection>    recoClustersColl(new CaloClusterCollection);
+       
        recoClustersColl->reserve(10);
 
        _crystalHitsPtrID     = event.getProductID<CaloCrystalHitCollection>();
        _crystalHitsPtrGetter = event.productGetter(_crystalHitsPtrID);
 
+       //Call to extract Digi:
        extractRecoDigi( caloDigisHandle, *recoClustersColl, *crystalHitColl);
 
        if ( diagLevel_ > 3 )
