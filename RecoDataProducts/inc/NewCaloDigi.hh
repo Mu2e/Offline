@@ -1,6 +1,8 @@
+//Author: S Middleton
+//Date: Nov 2019
+//Purpose: New Digi product
 #ifndef RecoDataProducts_NewCaloDigi_hh
 #define RecoDataProducts_NewCaloDigi_hh
-// Original author S Middleton (Based on Bertrand's CaloDigi code)
 
 #include <vector>
 
@@ -28,7 +30,7 @@ namespace mu2e
 	  double 		  peakpos()   const { return _peakpos;	}
 	  std::string 		  errorFlag() const { return _errorFlag;			
 	  std::string	          onspillFlag() const { return _onspillFlag; }
-
+	  std::string 		  eventMode()   const return _eventMode; }
       private:
 
 	  int               _roId;      
@@ -37,10 +39,11 @@ namespace mu2e
 	  double	    _peakpos;	//peak position	
 	  std::string	    _errorFlag; //flag for errors
 	  std::string       _onspillFlag; //flag to say whether this is on or off spill data 
+	  std::string       _eventMode; //gives info on event mode
   };
 
  
-   typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;
+   typedef std::vector<mu2e::NewCaloDigi> NewCaloDigiCollection;
 
 }
 

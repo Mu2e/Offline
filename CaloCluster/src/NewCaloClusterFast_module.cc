@@ -1,3 +1,7 @@
+//Author: S Middleton
+//Date: Nov 2019
+//Purpose: Module that will extract reco from new digi.
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"

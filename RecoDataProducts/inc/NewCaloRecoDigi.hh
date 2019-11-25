@@ -1,3 +1,7 @@
+//Author: S Middleton
+//Date: Nov 2019
+//Purpose: Part of upgrade to new caloDigi data product
+
 #ifndef RecoDataProducts_CaloRecoDigi_hh
 #define RecoDataProducts_CaloRecoDigi_hh
 
@@ -9,14 +13,14 @@
 namespace mu2e
 {
 
-  class CaloRecoDigi {
+  class NewCaloRecoDigi {
 
      public:
 
-       CaloRecoDigi(): _roId(-1),_caloDigi(),_eDep(0),_eDepErr(0),_time(0),_timeErr(0),_chi2(-1),_ndf(0),_pileUp(false)
+       NewCaloRecoDigi(): _roId(-1),_caloDigi(),_eDep(0),_eDepErr(0),_time(0),_timeErr(0),_chi2(-1),_ndf(0),_pileUp(false)
        {} 
 
-       CaloRecoDigi(int roId, art::Ptr<CaloDigi> caloDigi, double eDep, double eDepErr, double time, 
+       NewCaloRecoDigi(int roId, art::Ptr<NewCaloDigi> caloDigi, double eDep, double eDepErr, double time, 
                        double timeErr, double chi2, int ndf, bool pileUp) :
 	   _roId(roId),_caloDigi(caloDigi),_eDep(eDep),_eDepErr(eDepErr),_time(time),_timeErr(timeErr),
 	   _chi2(chi2),_ndf(ndf),_pileUp(pileUp)
