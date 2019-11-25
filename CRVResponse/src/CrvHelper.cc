@@ -23,17 +23,19 @@ namespace mu2e
 
   void CrvHelper::GetInfoFromStepPoints(const std::set<art::Ptr<StepPointMC> > &steps, 
                                         const SimParticleTimeOffset &timeOffsets,
-                                        double &energyDeposited, double &earliestHitTime,
-                                        CLHEP::Hep3Vector &earliestHitPos,
+                                        double &totalEnergyDeposited, double &ionizingEnergyDeposited,
+                                        double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle)
   {
-    energyDeposited=0;
+    totalEnergyDeposited=0;
+    ionizingEnergyDeposited=0;
     std::map<art::Ptr<SimParticle>,double> simParticleMap;
     std::set<art::Ptr<StepPointMC> >::const_iterator stepPointIter;
     for(stepPointIter=steps.begin(); stepPointIter!=steps.end(); stepPointIter++)
     {
       const StepPointMC &step = **stepPointIter;
-      energyDeposited+=step.totalEDep();
+      totalEnergyDeposited+=step.totalEDep();
+      ionizingEnergyDeposited+=step.ionizingEdep();
       simParticleMap[step.simParticle()]+=step.totalEDep();
     }
 
@@ -69,14 +71,14 @@ namespace mu2e
   void CrvHelper::GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse, 
                                           const art::Handle<CrvDigiMCCollection> &digis,
                                           const SimParticleTimeOffset &timeOffsets,
-                                          double &energyDeposited, double &earliestHitTime,
-                                          CLHEP::Hep3Vector &earliestHitPos,
+                                          double &totalEnergyDeposited, double &ionizingEnergyDeposited,
+                                          double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                           art::Ptr<SimParticle> &mostLikelySimParticle)
   {
     std::set<art::Ptr<StepPointMC> > steps;
 
     CrvHelper::GetStepPointsFromCrvRecoPulse(crvRecoPulse, digis, steps);
-    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, energyDeposited, 
+    CrvHelper::GetInfoFromStepPoints(steps, timeOffsets, totalEnergyDeposited, ionizingEnergyDeposited, 
                                      earliestHitTime, earliestHitPos, mostLikelySimParticle);
   }
 

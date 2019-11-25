@@ -97,6 +97,7 @@ namespace mu2e
     {
       bool   hasMCInfo                = (crvDigiMCCollection.isValid()?true:false); //MC
       double totalEnergyDeposited     = 0;         //MC
+      double ionizingEnergyDeposited  = 0;         //MC  //not used here
       double earliestHitTime          = NAN;       //MC
       art::Ptr<SimParticle> simParticle;           //MC
       CLHEP::Hep3Vector     earliestHitPos;        //MC
@@ -111,7 +112,8 @@ namespace mu2e
       {
         const art::Ptr<CrvRecoPulse> crvRecoPulse = crvRecoPulses[i];
         art::Ptr<SimParticle> simParticleThisPulse;
-        double energyDeposited = 0;
+        double totalEnergyDepositedThisPulse = 0;
+        double ionizingEnergyDepositedThisPulse = 0; //not used here
         double earliestHitTimeThisPulse = NAN; //not used here
         CLHEP::Hep3Vector earliestHitPosThisPulse; //not used here
 
@@ -123,14 +125,15 @@ namespace mu2e
 
           //for this reco pulse
           CrvHelper::GetInfoFromCrvRecoPulse(crvRecoPulse, crvDigiMCCollection, _timeOffsets, 
-                                             energyDeposited, earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
+                                             totalEnergyDepositedThisPulse, ionizingEnergyDepositedThisPulse, 
+                                             earliestHitTimeThisPulse, earliestHitPosThisPulse, simParticleThisPulse);
         }
 
-        pulses.emplace_back(simParticle,energyDeposited);
+        pulses.emplace_back(simParticle,totalEnergyDepositedThisPulse);
       }//loop over reco pulses
 
       CrvHelper::GetInfoFromStepPoints(stepsAllPulses, _timeOffsets, 
-                                       totalEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
+                                       totalEnergyDeposited, ionizingEnergyDeposited, earliestHitTime, earliestHitPos, simParticle);
 
       //insert the cluster information into the vector of the crv coincidence clusters
       crvCoincidenceClusterMCCollection->emplace_back(hasMCInfo, pulses, simParticle, totalEnergyDeposited, earliestHitTime, earliestHitPos);
