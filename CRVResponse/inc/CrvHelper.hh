@@ -24,14 +24,14 @@ namespace mu2e
                                               std::set<art::Ptr<StepPointMC> > &steps);
     static void GetInfoFromStepPoints(const std::set<art::Ptr<StepPointMC> > &steps, 
                                       const SimParticleTimeOffset &timeOffsets,
-                                      double &energyDeposited, double &earliestHitTime,
-                                      CLHEP::Hep3Vector &earliestHitPos,
+                                      double &totalEnergyDeposited, double &ionizingEnergyDeposited, 
+                                      double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                       art::Ptr<SimParticle> &mostLikelySimParticle);
     static void GetInfoFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse, 
                                         const art::Handle<CrvDigiMCCollection> &digis,
                                         const SimParticleTimeOffset &timeOffsets,
-                                        double &energyDeposited, double &earliestHitTime,
-                                        CLHEP::Hep3Vector &earliestHitPos,
+                                        double &totalEnergyDeposited, double &ionizingEnergyDeposited, 
+                                        double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
 
     private:
