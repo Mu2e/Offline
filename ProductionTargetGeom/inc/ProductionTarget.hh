@@ -24,6 +24,7 @@ namespace mu2e {
   public:
 
     // cylinder parameters
+    std::string tier1TargetType() const {return _tier1TargetType;}
     int    version() const { return _version; }
     double rOut() const { return _rOut; }
     double halfLength() const { return _halfLength; }
@@ -53,6 +54,7 @@ namespace mu2e {
     const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
 
     const CLHEP::Hep3Vector& haymanPosition() const { std::cout << "hayman position = " << _haymanProdTargetPosition << std::endl; return _haymanProdTargetPosition; return _haymanProdTargetPosition; }
+ 
 
 
     // "passive" rotation, used for placing the production target.
@@ -72,7 +74,7 @@ namespace mu2e {
 
     //
     // accessors for hayman v2
- 
+    std::string haymanTargetType()           const  {return _haymanTargetType;}
     double halfHaymanLength()                const  {return _halfHaymanLength;}
     std::string targetCoreMaterial()         const  {return _targetCoreMaterial;}
     std::string targetFinMaterial()          const  {return _targetFinMaterial;}
@@ -100,9 +102,30 @@ namespace mu2e {
     double supportRingCutoutThickness()     const {return _supportRingCutoutThickness;}
     double supportRingCutoutLength()        const {return _supportRingCutoutLength;}
     double supportRingCutoutAngularSize()   const {return _supportRingCutoutAngularSize;}
-
+    
     double productionTargetMotherOuterRadius() const {return _productionTargetMotherOuterRadius;}
     double productionTargetMotherHalfLength()  const {return _productionTargetMotherHalfLength;}
+
+    std::string hayman_v_2_0 = "Hayman_v_2_0";
+    std::string tier1 = "MDC2018";
+
+    CLHEP::Hep3Vector targetPositionByVersion() const {
+      if (_haymanTargetType == hayman_v_2_0){
+	return _haymanProdTargetPosition;} 
+      else if  (_tier1TargetType == "MDC2018"){
+	return _prodTargetPosition;}
+      else throw cet::exception("BADCONFIG") 
+	     << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+    }
+    double targetHalfLengthByVersion() const {
+     if (_haymanTargetType == hayman_v_2_0){
+	return _halfHaymanLength;} 
+     else if  (_tier1TargetType == "MDC2018"){
+	return _halfLength;}
+      else throw cet::exception("BADCONFIG") 
+	     << "in ProductionTarget.hh, no valid target specified"<< std::endl;
+    }
+
 
 
     //----------------------------------------------------------------
@@ -111,7 +134,7 @@ namespace mu2e {
     friend class ProductionTargetMaker;
 
     // Private ctr: the class should be only obtained via ProductionTargetFNAL::ProductionTargetMaker.
-    ProductionTarget(int version, double rOut, double halfLength, double rotX,
+    ProductionTarget(std::string tier1TargetType, int version, double rOut, double halfLength, double rotX,
 		     double rotY, const CLHEP::Hep3Vector& position, 
 		     int    nFins,
 		     double finHeight, double finThickness, 
@@ -120,7 +143,7 @@ namespace mu2e {
 		     double hubOverhangUS, double hubOverhangDS );
 
     ProductionTarget(
-		     int version
+		     std::string haymanTargetType, int version
 		     ,double productionTargetMotherOuterRadius
 		     ,double productionTargetMotherHalfLength
 		     ,double rOut
@@ -165,6 +188,9 @@ namespace mu2e {
     std::map<double,CLHEP::Hep3Vector> _anchoringPntsLft;
 
     CLHEP::Hep3Vector _prodTargetPosition;
+
+    std::string _tier1TargetType;
+    std::string _haymanTargetType;
  
     int    _version;
     double _productionTargetMotherOuterRadius;
