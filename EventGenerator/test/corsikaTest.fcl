@@ -17,7 +17,7 @@ targetParams: {
 
 source: {
     module_type: FromCorsikaBinary
-    fileNames: ["/pnfs/mu2e/persistent/users/srsoleti/corsika/DAT110001"]
+    fileNames: ["/mu2e/app/users/srsoleti/corsika-77100/run/DAT110001"]
     runNumber          : 1
     firstSubRunNumber  : 0
     firstEventNumber   : 1
@@ -26,7 +26,7 @@ source: {
     @table::targetParams
     seed: 1
     resample: false
-    compact: false
+    compact: true
     fluxConstant: 1.8e4
     lowE: 1.3
     highE: 1e6
