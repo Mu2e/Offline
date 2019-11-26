@@ -18,7 +18,7 @@ physics :
   filters : { 
     trkQualFilter : { module_type : TrkQualFilter
     		      inputTag : "TrkQualDeM"
-		      effRequest : 0.5
+		      effRequest : 0.8
 		    }
   }
 }
