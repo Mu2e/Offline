@@ -2,8 +2,8 @@
 //Date: Nov 2019
 //Purpose: Part of upgrade to new caloDigi data product
 
-#ifndef RecoDataProducts_CaloRecoDigi_hh
-#define RecoDataProducts_CaloRecoDigi_hh
+#ifndef RecoDataProducts_NewCaloRecoDigi_hh
+#define RecoDataProducts_NewCaloRecoDigi_hh
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/NewCaloDigi.hh"
