@@ -9,7 +9,7 @@ source : { module_type : RootInput }
 
 services : @local::Services.Reco
 
-services.DbService.textFile : ["TrkDiag/test/effToTrkQual.txt"]
+services.DbService.textFile : ["TrkDiag/test/effToTrkQualCeM.txt"]
 
 physics :
 {

@@ -44,7 +44,7 @@ namespace mu2e {
     bool endRun(art::Run& run) override;
     bool filter(art::Event& event) override;
     
-    mu2e::DbHandle<mu2e::TrkQualCalib> _trkQualCalib;
+    mu2e::DbHandle<mu2e::TrkQualCeMCalib> _trkQualCalib;
 
     art::InputTag _inputTag;
     float _effRequest;

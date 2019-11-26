@@ -28,7 +28,11 @@ namespace mu2e {
     };
 
 
-    TrkQualCalib():DbTable("TrkQualCalib","trkqual.calib","channel,eff,cut") {}
+    TrkQualCalib():DbTable("TrkQualCalib","TrkQual.calib","channel,eff,cut") {
+      throw cet::exception("TrkQualCalib") << "Shouldn't be creating a bare TrkQualCalib table" << std::endl;
+    }
+
+    TrkQualCalib(std::string suffix):DbTable(("TrkQual"+suffix+"Calib").c_str(),("TrkQual"+suffix+".calib").c_str(),"channel,eff,cut") {}
     const Row& rowAt(const std::size_t index) const { return _rows.at(index);}
     const Row& row(const int channel) const { 
                 return _rows.at(_chanIndex.at(channel)); }
@@ -43,7 +47,7 @@ namespace mu2e {
       int channel = std::stoi(columns[0]);
       // enforce a strict sequential order - optional
       if(channel!=int(_rows.size())) {
-	throw cet::exception("TSTCALIB1_BAD_INDEX") 
+	throw cet::exception("TRKQUALCALIB_BAD_INDEX") 
 	  << "TrkQualCalib::addRow found index out of order: " 
 	  <<channel << " != " << _rows.back().channel()+1 <<"\n";
       }
@@ -68,5 +72,9 @@ namespace mu2e {
     std::map<int,std::size_t> _chanIndex;
   };
   
+  class TrkQualCeMCalib : public TrkQualCalib {
+  public:
+    TrkQualCeMCalib():TrkQualCalib("CeM") {}
+  };
 };
 #endif
