@@ -14,6 +14,10 @@
 // calorimeter
 #include "RecoDataProducts/inc/CaloDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/NewCaloDigi.hh"
+#include "RecoDataProducts/inc/NewCaloDigiCollection.hh"
+#include "RecoDataProducts/inc/NewCaloRecoDigi.hh"
+#include "RecoDataProducts/inc/NewCaloRecoDigiCollection.hh"
 #include "RecoDataProducts/inc/CaloHitCollection.hh"
 #include "RecoDataProducts/inc/CaloCrystalHit.hh"
 #include "RecoDataProducts/inc/CaloProtoClusterCollection.hh"

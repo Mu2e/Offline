@@ -20,11 +20,24 @@
  <class name="std::vector<art::Ptr<mu2e::CaloDigi> >"/>
  <class name="art::Wrapper<mu2e::CaloDigiCollection>"/>
 
+ <class name="mu2e::NewCaloDigi"/>
+ <class name="mu2e::NewCaloDigiCollection"/>
+ <class name="art::Ptr<mu2e::NewCaloDigi>"/>
+ <class name="std::vector<art::Ptr<mu2e::NewCaloDigi> >"/>
+ <class name="art::Wrapper<mu2e::NewCaloDigiCollection>"/>
+
  <class name="mu2e::CaloRecoDigi"/>
  <class name="std::vector<art::Ptr<mu2e::CaloRecoDigi> >"/>
  <class name="mu2e::CaloRecoDigiCollection"/>
  <class name="art::Ptr<mu2e::CaloRecoDigi>"/>
  <class name="art::Wrapper<mu2e::CaloRecoDigiCollection>"/>
+
+ <class name="mu2e::NewCaloRecoDigi"/>
+ <class name="std::vector<art::Ptr<mu2e::NewCaloRecoDigi> >"/>
+ <class name="mu2e::NewCaloRecoDigiCollection"/>
+ <class name="art::Ptr<mu2e::NewCaloRecoDigi>"/>
+ <class name="art::Wrapper<mu2e::NewCaloRecoDigiCollection>"/>
+
 
  <class name="mu2e::CaloHit"/>
  <class name="std::vector<art::Ptr<mu2e::CaloHit> >"/>
