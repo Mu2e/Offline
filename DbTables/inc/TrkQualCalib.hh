@@ -35,7 +35,7 @@ namespace mu2e {
     std::vector<Row> const& rows() const {return _rows;}
     std::size_t nrow() const { return _rows.size(); };
     //this table should always be 3 rows
-    virtual std::size_t nrowFix() const { return 3; }; 
+    //    virtual std::size_t nrowFix() const { return 3; }; 
     size_t size() const { return _csv.capacity() + 
 	+ nrow()*nrow()/2 + nrow()*sizeof(Row); };
 
