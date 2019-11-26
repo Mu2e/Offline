@@ -6,7 +6,7 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/NewCaloCrystalHitCollection.hh"
 #include "RecoDataProducts/inc/NewCaloRecoDigiCollection.hh"
 
 #include "TH1F.h"
@@ -30,7 +30,7 @@ namespace mu2e {
       time4Merge_          (pset.get<double>     ("time4Merge")),
       diagLevel_           (pset.get<int>        ("diagLevel",0))
     {
-      produces<CaloCrystalHitCollection>();
+      produces<NewCaloCrystalHitCollection>();
     }
 
     void beginJob() override;
@@ -55,11 +55,11 @@ namespace mu2e {
     TH1F*  hEdep1_;
     TH1F*  hEdep2_;
 
-    void makeCaloHits(CaloCrystalHitCollection& CaloHits,
+    void makeCaloHits(NewCaloCrystalHitCollection& CaloHits,
                       const art::ValidHandle<NewCaloRecoDigiCollection>& recoCaloDigisHandle);
 
     void fillBuffer(int crystalId, int nRoid, double time, double timeErr, double eDep, double eDepErr,
-                    std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& caloHits);
+                    std::vector<CaloRecoDigiPtr>& buffer, NewCaloCrystalHitCollection& caloHits);
   };
 
 
@@ -84,7 +84,7 @@ namespace mu2e {
   void NewCaloCrystalHitFromHit::produce(art::Event& event)
   {
     auto const& recoCaloDigisHandle = event.getValidHandle(caloDigisToken_);
-    auto caloHits = std::make_unique<CaloCrystalHitCollection>();
+    auto caloHits = std::make_unique<NewCaloCrystalHitCollection>();
     makeCaloHits(*caloHits, recoCaloDigisHandle);
 
     event.put(std::move(caloHits));
@@ -92,7 +92,7 @@ namespace mu2e {
 
 
   //--------------------------------------------------------------------------------------------------------------
-  void NewCaloCrystalHitFromHit::makeCaloHits(CaloCrystalHitCollection& caloHits,
+  void NewCaloCrystalHitFromHit::makeCaloHits(NewCaloCrystalHitCollection& caloHits,
                                            art::ValidHandle<NewCaloRecoDigiCollection> const& recoCaloDigisHandle)
   {
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
@@ -189,9 +189,9 @@ namespace mu2e {
                                          double const eDep,
                                          double const eDepErr,
                                          std::vector<CaloRecoDigiPtr>& buffer,
-                                         CaloCrystalHitCollection& caloHits)
+                                         NewCaloCrystalHitCollection& caloHits)
   {
-    caloHits.emplace_back(CaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
+    caloHits.emplace_back(NewCaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
 
     if (diagLevel_ > 1)
       {
