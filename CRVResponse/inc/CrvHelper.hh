@@ -23,6 +23,7 @@ namespace mu2e
   class CrvHelper 
   {
     public:
+    //CrvRecoPulse to MC match function
     static void GetStepPointsFromCrvRecoPulse(const art::Ptr<CrvRecoPulse> &crvRecoPulse,
                                               const art::Handle<CrvDigiMCCollection> &digis,
                                               std::set<art::Ptr<StepPointMC> > &steps);
@@ -38,6 +39,21 @@ namespace mu2e
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
 
+    //SiPM ID bit masks
+    constexpr static unsigned long _crvBarIndexMask      = 0xFFFF00000000;
+    constexpr static unsigned long _crvBarIndexShift     = 4*8;
+    constexpr static unsigned long _crvSectorNumberMask  = 0x0000FF000000;
+    constexpr static unsigned long _crvSectorNumberShift = 4*6;
+    constexpr static unsigned long _crvModuleNumberMask  = 0x000000FF0000;
+    constexpr static unsigned long _crvModuleNumberShift = 4*4;
+    constexpr static unsigned long _crvLayerNumberMask   = 0x00000000F000;
+    constexpr static unsigned long _crvLayerNumberShift  = 4*3;
+    constexpr static unsigned long _crvCounterNumberMask = 0x000000000FF0;
+    constexpr static unsigned long _crvCounterNumberShift= 4*1;
+    constexpr static unsigned long _crvSiPMNumberMask    = 0x00000000000F;
+    constexpr static unsigned long _crvSiPMNumberShift   = 4*0;
+
+    //SiPM ID / scintillator bar index function
     static unsigned long                 GetSiPMID(const GeomHandle<CosmicRayShield> &CRS, 
                                                    mu2e::CRSScintillatorBarIndex crvBarIndex, 
                                                    int SiPMNumber);
@@ -50,6 +66,8 @@ namespace mu2e
                                                            mu2e::CRSScintillatorBarIndex crvBarIndex,
                                                            int &sectorNumber, int &moduleNumber, 
                                                            int &layerNumber, int &counterNumber);
+    static std::string                   GetSectorName(const GeomHandle<CosmicRayShield> &CRS, int sectorNumber);
+    static int                           GetSectorType(const GeomHandle<CosmicRayShield> &CRS, int sectorNumber);
     static CLHEP::Hep3Vector             GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
                                                           unsigned long SiPMID); 
     static CLHEP::Hep3Vector             GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS, 
