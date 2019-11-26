@@ -24,43 +24,40 @@
 #include <string>
 
 
+#include <iostream>
+#include <string>
+
+
 namespace mu2e {
 
   class NewCaloRecoDigiFromDigi : public art::EDProducer {
 
   public:
 
-    enum processorStrategy {NoChoice, RawExtract, LogNormalFit, FixedFast};
-    struct Config{
-	      using Name=fhicl::Name;
-	      using Comment=fhicl::Comment;
-	      fhicl::Atom<art::InputTag> digitag{Name("NewCaloDigiCollection"),Comment("tag for digi collection")};
-	      fhicl::Atom<double> digiSampling{Name("digiSampling"),Comment("todo")};
-	      fhicl::Atom<int> diagLevel{Name("diagLevel"), Comment("set to 1 for info"),0};
-	      fhicl::Atom<std::string> processorStrategy{Name("processorStrategy"), Comment("todo")};
-	     // fhicl::Table<SomeOtherClass::Config> tfit{Name("CallName"), Comment("fit")};
-	      fhicl::Atom<double> maxChi2Cut{Name("maxChi2Cut"), Comment("todo")};
-              fhicl::Atom<int> nplot{Name("nplot"), Comment("todo"), 0};
-	     
-       };
-      
-      
-     typedef art::EDProducer::Table<Config> Parameters;
+  
+    explicit NewCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
+      art::EDProducer{pset},
+      caloDigisToken_{consumes<NewCaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
+      digiSampling_        (pset.get<double>     ("digiSampling")),
+      maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
+      diagLevel_           (pset.get<int>        ("diagLevel",0)),
+      nplot_(0)
+    {
+      produces<NewCaloRecoDigiCollection>();
+      auto const& param = pset.get<fhicl::ParameterSet>("RawProcessor", {});
+      waveformProcessor_ = std::make_unique<RawProcessor>(param);
+       
+    }
 
-      explicit NewCaloRecoDigiFromDigi(const Parameters& conf);
-      virtual ~NewCaloRecoDigiFromDigi() {};
-      virtual void produce(art::Event& e);
-      virtual void beginRun(art::Run& aRun) override;
-   
+    void beginRun(art::Run& aRun) override;
+    void produce(art::Event& e) override;
+
   private:
-    Config _conf;
-    
 
-    art::InputTag digitag_;
+    art::ProductToken<NewCaloDigiCollection> const caloDigisToken_;
     double const digiSampling_;
+    double       maxChi2Cut_;
     int          diagLevel_;
-    std::string const processorStrategy_;
-    double       maxChi2Cut_;   
     int          nplot_;
 
     std::unique_ptr<WaveformProcessor> waveformProcessor_;
@@ -70,66 +67,17 @@ namespace mu2e {
 
   };
 
-NewCaloRecoDigiFromDigi::NewCaloRecoDigiFromDigi(const Parameters& conf) :
-	   art::EDProducer(conf),
-	   digitag_(conf().digitag()),
-	   digiSampling_(conf().digiSampling()),
-	   diagLevel_(conf().diagLevel()),
-    	   processorStrategy_(conf().processorStrategy()),
-           maxChi2Cut_(conf().maxChi2Cut()),
-           nplot_(conf().nplot())
-    {
-		 
-	      produces<NewCaloRecoDigiCollection>();
-             
-	      std::map<std::string, processorStrategy> spmap;
-	      spmap["RawExtract"]   = RawExtract;
-	      spmap["LogNormalFit"] = LogNormalFit;
-	      spmap["FixedFast"]    = FixedFast;
 
-	      switch (spmap[processorStrategy_])
-		{
-		case RawExtract:
-		  {
-		    auto const& param = pset.get<fhicl::ParameterSet>("RawProcessor", {});
-		    waveformProcessor_ = std::make_unique<RawProcessor>(param);
-		    break;
-		  }
-
-		case LogNormalFit:
-		  {
-		    auto const& param = pset.get<fhicl::ParameterSet>("LogNormalProcessor", {});
-		    waveformProcessor_ = std::make_unique<LogNormalProcessor>(param);
-		    break;
-		  }
-
-		case FixedFast:
-		  {
-		    auto const& param = pset.get<fhicl::ParameterSet>("FixedFastProcessor", {});
-		    waveformProcessor_ = std::make_unique<FixedFastProcessor>(param);
-		    break;
-		  }
-
-		default:
-		  {
-		    throw cet::exception("CATEGORY")<< "Unrecognized processor in CaloHitsFromDigis module";
-		  }
-		}
-	
-  }
   //-------------------------------------------------------
   void NewCaloRecoDigiFromDigi::produce(art::Event& event)
   {
 
     if (diagLevel_ > 0) std::cout<<"[NewCaloRecoDigiFromDigi::produce] begin"<<std::endl;
 
-    auto const& digiH = event.getValidHandle<NewCaloDigiCollection>(digitag_);
-	
-    //Get the calorimeter Digis
-    //auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
+    auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
 
     auto recoCaloDigiColl = std::make_unique<NewCaloRecoDigiCollection>();
-    extractRecoDigi(digiH, *recoCaloDigiColl);
+    extractRecoDigi(caloDigisH, *recoCaloDigiColl);
 
     if ( diagLevel_ > 3 )
       {
@@ -162,10 +110,15 @@ NewCaloRecoDigiFromDigi::NewCaloRecoDigiFromDigi(const Parameters& conf) :
     
     for (const auto& caloDigi : caloDigis)
       {
-       
+	uint16_t errFlag = caloDigi.errorFlag();
+        if(errFlag){ continue; } ///NOTE: Added for new format! Function: to skip if flagged!
         int    roId     = caloDigi.roId();
         double t0       = caloDigi.t0();
+        //float peak	=caloDigi.peakpos(); //TODO
+        //uint8_t eventMode = caloDigi.eventMode();
         double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
+        ///TODO - use this event mode to chose calibration settings!
+
         const std::vector<int>& waveform = caloDigi.waveform();
 
         size_t index = &caloDigi - base;
