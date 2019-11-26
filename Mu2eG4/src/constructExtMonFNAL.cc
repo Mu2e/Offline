@@ -82,30 +82,31 @@ namespace mu2e {
         
     double px = stack.motherTransverseHalfSize()[0];
     double py = stack.motherTransverseHalfSize()[1];
-    std::vector<G4TwoVector> polygon;
-    polygon.push_back({+px,+py});
-    polygon.push_back({-px,+py});
-    polygon.push_back({-px,-py});
-    polygon.push_back({+px,-py});
 
-    std::vector<G4ExtrudedSolid::ZSection> zsections;
-    zsections.emplace_back(stack.motherStartZ(), G4TwoVector(), 1.);
-    zsections.emplace_back(stack.motherEndZ(), G4TwoVector(), 1.);
-    VolumeInfo mother = nestExtrudedSolid("ExtMonStackMother"+volNameSuffix,
-                                          polygon,
-                                          zsections,
-                                          findMaterialOrThrow("G4_AIR"),
-                                          stackRotationInRoomInv,
-                                          stackRefPointInRoom,
-                                          parent,
-                                          0,
-                                          isStackMotherVisible,
-                                          G4Colour::Magenta(),
-                                          isStackMotherSolid,
-                                          forceAuxEdgeVisible,
-                                          placePV,
-                                          doSurfaceCheck
-                                          );
+    // Construct ExtMonStackMother* as nestedBox
+    double stackMotherZCoord = (stack.motherStartZ() + stack.motherEndZ())/2.0;
+    CLHEP::Hep3Vector stackMotherZVec (0, 0, stackMotherZCoord);
+    CLHEP::Hep3Vector stackMotherOffset = stackRefPointInRoom +
+      stackRotationInRoom * stackMotherZVec;
+
+    double pz = abs( stack.motherStartZ() - stack.motherEndZ() )/2.0;
+    double const halfDims[3] = {px, py, pz};
+
+    VolumeInfo mother = nestBox("ExtMonStackMother"+volNameSuffix,
+                                halfDims,
+                                findMaterialOrThrow("G4_AIR"),
+                                stackRotationInRoomInv,
+                                stackMotherOffset,
+                                parent,
+                                0,
+                                isStackMotherVisible,
+                                G4Colour::Magenta(),
+                                isStackMotherSolid,
+                                forceAuxEdgeVisible,
+                                placePV,
+                                doSurfaceCheck
+                                );
+
     constructExtMonFNALPlanes(mother,
                               module,
                               stack,
@@ -164,7 +165,6 @@ namespace mu2e {
                                   )
                                 );
 
-
           VolumeInfo vdInfo = nestBox(VirtualDetector::volumeName(vdId),
                                       hlen,
                                       vacuumMaterial,
@@ -207,7 +207,16 @@ namespace mu2e {
     const auto geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "extMonFNALSensorPlane", "extMonFNAL.sensorPlane" );
     bool const isSensorPlaneVisible = geomOptions->isVisible("extMonFNALSensorPlane"); 
-    bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane"); 
+    bool const isSensorPlaneSolid   = geomOptions->isSolid("extMonFNALSensorPlane");
+
+    // Define local offsets for planes (for G4Box)
+    auto planeMax = std::max_element(std::begin(stack.plane_zoffset()),
+                                         std::end(stack.plane_zoffset()));
+    auto planeMin = std::min_element(std::begin(stack.plane_zoffset()),
+                                         std::end(stack.plane_zoffset()));
+    double planeZero= (*planeMin - *planeMax)/2.;
+
+    double zOffset = planeZero;
 
     for(unsigned iplane = 0; iplane < stack.nplanes(); ++iplane) {
       std::vector<double> hs;
@@ -215,10 +224,16 @@ namespace mu2e {
       ExtMonFNALPlane plane(module, hs);
       std::ostringstream osp;
       osp<<"EMFPlane"<<volNameSuffix<<iplane;
-      
+
+      if (iplane > 0) {
+        double planeSpacing = stack.plane_zoffset()[iplane] - stack.plane_zoffset()[iplane-1];
+        zOffset += planeSpacing;
+      }
+
+
       AGDEBUG("Constucting "<<osp.str()<<", plane number "<<iplane + stack.planeNumberOffset());
-      G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], stack.plane_zoffset()[iplane]};
-      
+      G4ThreeVector offset = {stack.plane_xoffset()[iplane], stack.plane_yoffset()[iplane], zOffset};
+
       // nest individual planes
       VolumeInfo vplane = nestBox(osp.str(),
                                   plane.halfSize(),

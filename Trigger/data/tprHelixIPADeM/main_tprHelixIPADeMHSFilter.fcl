@@ -11,4 +11,4 @@ physics.filters.tprHelixIPADeMHSFilter.minAbsLambda  : 40.
 physics.filters.tprHelixIPADeMHSFilter.maxAbsLambda  : 80. 		    
 physics.filters.tprHelixIPADeMHSFilter.minNLoops     : 0
 physics.filters.tprHelixIPADeMHSFilter.maxNLoops     : 30
-
+physics.filters.tprHelixIPADeMHSFilter.prescaleUsingD0Phi  : false

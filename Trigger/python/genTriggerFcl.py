@@ -18,6 +18,8 @@ from shutil import copyfile
 
 from argparse import ArgumentParser
 
+from codecs import open
+
 #
 # process one subdirectory (one path)
 #
@@ -48,21 +50,21 @@ def appendEpilog(trig_path, projectDir, verbose, doWrite, sourceFiles, targetFil
         filters = minbias_filters
 
     if len(filters) == 0 :
-        print "ERROR: path "+trig_path+" has no associated filters"
+        print("ERROR: path {} has no associated filters".format(trig_path))
         exit(1)
 
     #create the sub-epilog file
     subEpilogDirName = projectDir + "/" + trig_path
 
     if verbose :
-        print "Creating directory "+subEpilogDirName
+        print("Creating directory {}".format(subEpilogDirName))
     if doWrite :
         if not os.path.exists(subEpilogDirName) :
             os.makedirs(subEpilogDirName)
 
     subEpilogName = subEpilogDirName + ".fcl"
     if verbose :
-        print "Creating "+subEpilogName
+        print("Creating {}".format(subEpilogName))
     if doWrite :
         subEpilogFile = open(subEpilogName,"w")
     targetFiles.append(subEpilogName)
@@ -75,7 +77,7 @@ def appendEpilog(trig_path, projectDir, verbose, doWrite, sourceFiles, targetFil
         subSubEpilogFileName = subEpilogDirName + "/main_"+ filterName + '.fcl' 
         targetFiles.append(subSubEpilogFileName)
         if verbose:
-            print "Creating "+subSubEpilogFileName
+            print("Creating {}".format(subSubEpilogFileName))
 
         # first copy the fcl file
         if doWrite :
@@ -112,7 +114,7 @@ def appendEpilog(trig_path, projectDir, verbose, doWrite, sourceFiles, targetFil
 def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True):
 
     if verbose :
-        print "doWrite =",doWrite
+        print("doWrite = {}".format(doWrite))
 
     # when we run from SConscript, the cwd is the python subdir
     # but all file name are relative to Offline, so go there
@@ -131,12 +133,12 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
     if len(tempArr) > 1:
         temp = "/".join (tempArr[:-1])
         if temp != "Trigger/data" :
-            print "ERROR config file must be in directory Trigger/data"
+            print("ERROR config file must be in directory Trigger/data")
             exit(1)
     tempArr = tempArr[-1].split(".")
     if len(tempArr) > 1:
         if tempArr[1] != "config" or len(tempArr)>2 :
-            print "ERROR config file must of type .config"
+            print("ERROR config file must of type .config")
             exit(1)
     configFileBaseName = tempArr[0];
     configFileName = "Trigger/data/" + configFileBaseName + ".config"
@@ -167,7 +169,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
     mainFclFileName = projectDir+"/main.fcl"
     targetFiles.append(mainFclFileName)
     if verbose :
-        print "Creating " + mainFclFileName
+        print("Creating {}".format(mainFclFileName))
 
     if online :
         templateFileName = "Trigger/fcl/main_online.fcl"
@@ -180,7 +182,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
 
     # now open main fcl file for appending paths
     if doWrite :
-        mainFclFile = open(mainFclFileName,"a")
+        mainFclFile = open(mainFclFileName,"a",encoding="utf-8")
 
     path_list = ""
     trig_list = ""
@@ -188,7 +190,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
     mainEpilogFileName   = projectDir + "/" + "allPaths.fcl"
     targetFiles.append(mainEpilogFileName)
     if verbose :
-        print "Creating "+mainEpilogFileName
+        print("Creating {}".format(mainEpilogFileName))
     if doWrite :
         mainEpilogFile   = open(mainEpilogFileName, "w");
 
@@ -216,7 +218,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
                 if pathName in open(trig_prolog_files[i]).read():
                     pathCheck  = True
             if pathCheck == False: 
-                print (pathName+" NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED \n")
+                print ("{} NOT FOUND IN ANY PROLOG_TRIGGER.FCL FILES. PLEASE, CHECK THE INPUT FILE PROVIDED".format(pathName))
                 exit(1)
 
             if path_list != "":
@@ -273,10 +275,10 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
         mainFclFile.close()
 
     if verbose :
-        print
-        print "main fcl: " + mainFclFileName
-        print "Top level epilog file: " + mainEpilogFileName
-        print
+        print("")
+        print("main fcl: {}".format(mainFclFileName))
+        print("Top level epilog file: ".format(mainEpilogFileName))
+        print("")
 
     # now cd back to where we started
     os.chdir(cwd)
@@ -302,8 +304,8 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     if args.verbose :
-        print "Config file name: " + args.configFileText
-        print "Online flag: " + str(args.online)
+        print("Config file name: {}".format(args.configFileText))
+        print("Online flag: {}".format(str(args.online)))
 
     generate(args.configFileText, args.online, args.verbose, True)
 

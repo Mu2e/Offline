@@ -17,19 +17,8 @@ namespace mu2e {
   class CrvDigiMCPrinter : public ProductPrinter {
   public:
 
-    typedef std::vector<std::string> vecstr;
-
-    CrvDigiMCPrinter() { set( fhicl::ParameterSet() ); }
-    CrvDigiMCPrinter(const fhicl::ParameterSet& pset) { set(pset); }
-
-    // tags to select which product instances to process
-    void setTags(const vecstr& tags) { _tags = tags; }
-
-    // pset should contain a table called CrvDigiMCPrinter
-    void set(const fhicl::ParameterSet& pset);
-
-    // the vector<string> list of inputTags
-    const vecstr& tags() const {return _tags; }
+    CrvDigiMCPrinter() { }
+    CrvDigiMCPrinter(const Config& conf):ProductPrinter(conf) { }
 
     // all the ways to request a printout
     void Print(art::Event const& event,
@@ -48,10 +37,6 @@ namespace mu2e {
     void PrintHeader(const std::string& tag, 
 		     std::ostream& os = std::cout);
     void PrintListHeader(std::ostream& os = std::cout);
-
-  private:
-
-    vecstr _tags;
 
   };
 

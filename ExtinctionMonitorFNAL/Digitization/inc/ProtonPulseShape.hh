@@ -47,7 +47,7 @@ namespace mu2e {
       };
 
       struct ProtonPathSort {
-        bool operator()(const ProtonPathMARSId& a, const ProtonPathMARSId& b) {
+        bool operator()(const ProtonPathMARSId& a, const ProtonPathMARSId& b) const {
           CmpProtonIdAndSimPath cm;
           IO::CmpG4JobInfo cg;
           return cm(a.minfo,b.minfo) || (!cm(b.minfo, a.minfo) &&

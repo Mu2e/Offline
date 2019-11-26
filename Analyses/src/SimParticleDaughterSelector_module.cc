@@ -44,7 +44,23 @@ namespace mu2e {
 
   class SimParticleDaughterSelector : public art::EDProducer {
   public:
-    explicit SimParticleDaughterSelector(fhicl::ParameterSet const& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The input collection.") };
+      fhicl::Sequence<std::string> processes{ Name("processes"),
+          Comment("A list of production process names, like \"DIO\", \"NuclearCapture\".\n"
+                  "SimParticles with the given production codes will be written  to the output.\n"
+                  "If the process list is empty, all particles are passed to the output.\n"
+                  "You can use this mode to produce diagnostic histograms that will contain\nthe names of possible processes."
+                  )
+          };
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit SimParticleDaughterSelector(const Parameters& conf);
+
     void produce(art::Event& evt) override;
   private:
     art::InputTag particleInput_;
@@ -56,15 +72,14 @@ namespace mu2e {
   };
 
   //================================================================
-  SimParticleDaughterSelector::SimParticleDaughterSelector(const fhicl::ParameterSet& pset)
-    : EDProducer{pset}
-    , particleInput_(pset.get<std::string>("particleInput"))
+  SimParticleDaughterSelector::SimParticleDaughterSelector(const Parameters& conf)
+    : EDProducer{conf}
+    , particleInput_(conf().particleInput())
     , haccepted_(tfs()->make<TH1D>("accepted", "Accepted pdgId and process code pairs", 1, 0., 1.))
     , hignored_(tfs()->make<TH1D>("ignored", "Ignored pdgId and process code pairs", 1, 0., 1.))
   {
     produces<SimParticlePtrCollection>();
-
-    const auto& processes = pset.get<std::vector<std::string> >("processes");
+    const auto& processes = conf().processes();
     for(const auto& proc: processes) {
       procs_.insert(ProcessCode::findByName(proc).id());
     }

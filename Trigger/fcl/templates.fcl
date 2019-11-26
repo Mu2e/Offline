@@ -8,6 +8,7 @@
 #include "CalPatRec/fcl/prolog_trigger.fcl"
 #include "CaloCluster/fcl/prolog_trigger.fcl"
 #include "TrkHitReco/fcl/prolog_trigger.fcl"
+#include "TrkReco/fcl/prolog_trigger.fcl"
 #include "TrkFilters/fcl/prolog_trigger.fcl"
 #include "CaloFilters/fcl/prolog_trigger.fcl"
 
@@ -17,6 +18,7 @@ Trigger : {
 	@table::CaloClusterTrigger.producers
 	@table::TrkHitRecoTrigger.producers
 	@table::TrkHitReco.producers
+	@table::TrkRecoTrigger.producers
 	@table::TprTrigger.producers
 	@table::CprTrigger.producers
 	
@@ -203,11 +205,11 @@ Trigger : {
 	triggerOutput : { 
 	    module_type: RootOutput
 	    fileName: "filteredOutput.root"
-	    SelectEvents : [ unbiased_path, 
-			     minimumbiasSDCount_path,
-			     largeSDCount_path,
-			     caloMVACE_path,
-			     tprSeedDeM_path, tprSeedDeP_path, cprSeedDeM_path, cprSeedDeP_path ]
+	    SelectEvents : [ unbiased_trigger, 
+			     minimumbiasSDCount_trigger,
+			     largeSDCount_trigger,
+			     caloMVACE_trigger,
+			     tprSeedDeM_trigger, tprSeedDeP_trigger, cprSeedDeM_trigger, cprSeedDeP_trigger ]
 #	    Compressionlevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -217,7 +219,7 @@ Trigger : {
 	rootoutUnbiased : { 
 	    module_type: RootOutput
 	    fileName: "driver_unbiased.root"
-	    SelectEvents : [ unbiased_path ]
+	    SelectEvents : [ unbiased_trigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -227,7 +229,7 @@ Trigger : {
 	rootoutCaloOnly : {
 	    module_type: RootOutput
 	    fileName: "driver_calo_only.root"
-	    SelectEvents : [ caloOnly_path ]
+	    SelectEvents : [ caloOnly_trigger ]
 #	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -237,7 +239,7 @@ Trigger : {
 	rootoutTrkDem : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dem.root"
-	    SelectEvents : [ tprSeedDeM_path, cprSeedDeM_path ]
+	    SelectEvents : [ tprSeedDeM_trigger, cprSeedDeM_trigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",
@@ -247,7 +249,7 @@ Trigger : {
 	rootoutTrkDep : {
 	    module_type: RootOutput
 	    fileName: "driver_trk_dep.root"
-	    SelectEvents : [ tprDeP_path, cprSeedDeP_path ]
+	    SelectEvents : [ tprDeP_trigger, cprSeedDeP_trigger ]
 	    compressionLevel: 0
 	    
 	    outputCommands: [ "keep *_*_*_*",

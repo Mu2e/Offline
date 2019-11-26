@@ -17,22 +17,14 @@ namespace mu2e {
   class BkgQualPrinter : public ProductPrinter {
   public:
 
-    typedef std::vector<std::string> vecstr;
+    BkgQualPrinter() { }
+    BkgQualPrinter(const ConfigE& conf):ProductPrinter(conf) { 
+      _eCut = conf.eCut();
+    }
 
-    BkgQualPrinter() { set( fhicl::ParameterSet() ); }
-    BkgQualPrinter(const fhicl::ParameterSet& pset) { set(pset); }
-
-    // tags to select which product instances to process
-    void setTags(const vecstr& tags) { _tags = tags; }
-
-    // pset should contain a table called BkgQualPrinter
-    void set(const fhicl::ParameterSet& pset);
-
-    // do not print if p is below this cut
+    // do not print if e is below this cut
     void setECut(double e) { _eCut = e; }
-
-    // the vector<string> list of inputTags
-    const vecstr& tags() const {return _tags; }
+    double eCut() const { return _eCut; }
 
     // all the ways to request a printout
     void Print(art::Event const& event,
@@ -55,7 +47,6 @@ namespace mu2e {
   private:
 
     double _eCut;
-    vecstr _tags;
 
   };
 

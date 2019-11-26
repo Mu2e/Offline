@@ -10,6 +10,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include "GeneralUtilities/inc/Binning.hh"
+#include "GeneralUtilities/inc/PhiPrescalingParams.hh"
 
 #include "canvas/Utilities/InputTag.h"
 
@@ -120,4 +121,15 @@ bool fhicl::ParameterSet::get_if_present<Binning>(std::string const & key, Binni
   int    nbins = pset.get<int>("nbins");
   value = Binning(nbins,low,high);
   return present;
+}
+
+
+mu2e::PhiPrescalingParams fhicl::getPhiPrescalerParams(fhicl::ParameterSet const&pset, std::string const& key){
+  fhicl::ParameterSet scalerPset = pset.get<fhicl::ParameterSet>(key);
+
+  float amplitude = scalerPset.get<float>("amplitude");
+  float frequency = scalerPset.get<float>("frequency");
+  float phase     = scalerPset.get<float>("phase"    );
+  
+  return mu2e::PhiPrescalingParams(amplitude, frequency, phase);
 }
