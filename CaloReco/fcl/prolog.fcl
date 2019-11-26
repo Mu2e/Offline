@@ -5,7 +5,7 @@
 
 BEGIN_PROLOG
 
-OnlineRecoDigi :
+OnlineRecoDigiMaker :
 { 
     module_type           : NewCaloRecoDigiFromDigi
     caloDigiModuleLabel   : CaloDigiFromShower  
@@ -57,6 +57,23 @@ CaloCrystalHitFromHit:
     caloDigisModuleLabel  : CaloRecoDigiFromDigi	    	    
     time4Merge            : 4.0   #ns
     diagLevel             : 0
+}
+
+OnlineHitMaker:
+{
+    module_type           : NewCaloCrystalHitFromHit
+    caloDigisModuleLabel  : CaloRecoDigiFromDigi	    	    
+    time4Merge            : 4.0   #ns
+    diagLevel             : 0
+}
+
+OnlineCaloReco : 
+{
+   producers : {
+     OnlineDigiMaker    : @local::OnlineDigiMaker
+     OnlineHitMaker  : @local::OnlineHitMaker
+   }
+   Reco : [ OnlineDigiMaker, OnlineHitMaker ]
 }
 
 
