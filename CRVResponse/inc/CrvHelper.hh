@@ -14,6 +14,10 @@
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 #include "art/Framework/Principal/Handle.h"
 
+#include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
+#include "DataProducts/inc/CRSScintillatorBarIndex.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+
 namespace mu2e 
 {
   class CrvHelper 
@@ -33,6 +37,23 @@ namespace mu2e
                                         double &totalEnergyDeposited, double &ionizingEnergyDeposited, 
                                         double &earliestHitTime, CLHEP::Hep3Vector &earliestHitPos,
                                         art::Ptr<SimParticle> &mostLikelySimParticle);
+
+    static unsigned long                 GetSiPMID(const GeomHandle<CosmicRayShield> &CRS, 
+                                                   mu2e::CRSScintillatorBarIndex crvBarIndex, 
+                                                   int SiPMNumber);
+    static mu2e::CRSScintillatorBarIndex GetBarIndex(unsigned long SiPMID);
+    static int                           GetSiPMNumber(unsigned long SiPMID);
+    static void                          GetCrvCounterInfo(unsigned long SiPMID, 
+                                         int &sectorNumber, int &moduleNumber, 
+                                         int &layerNumber, int &counterNumber);
+    static void                          GetCrvCounterInfo(const GeomHandle<CosmicRayShield> &CRS, 
+                                                           mu2e::CRSScintillatorBarIndex crvBarIndex,
+                                                           int &sectorNumber, int &moduleNumber, 
+                                                           int &layerNumber, int &counterNumber);
+    static CLHEP::Hep3Vector             GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS,
+                                                          unsigned long SiPMID); 
+    static CLHEP::Hep3Vector             GetCrvCounterPos(const GeomHandle<CosmicRayShield> &CRS, 
+                                                          mu2e::CRSScintillatorBarIndex crvBarIndex);
 
     private:
     CrvHelper();
