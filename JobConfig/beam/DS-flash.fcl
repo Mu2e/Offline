@@ -91,10 +91,8 @@ physics.producers.outOfTargetMuonDaughters: {
 
 physics.filters.flashPrefilter: {
    module_type: FilterG4Out
-   noInstanceName : true
    mainHitInputs: [ "g4run:tracker", "g4run:calorimeter", "g4run:calorimeterRO" ]
    extraHitInputs: [ "g4run:virtualdetector", "g4run:protonabsorber" ]
-   numSimParticleCollections: 1
    vetoParticles: [ "stoppedMuonDaughters", "outOfTargetMuonDaughters" ]
 }
 
@@ -113,8 +111,6 @@ physics.producers.CaloShowerStepFromStepPt.module_type: CaloShowerStepFromStepPt
 // The final filter
 physics.filters.detectorFilter: {
    module_type: "FilterG4Out"
-   noInstanceName: true
-   numSimParticleCollections: 1
    mainHitInputs: [
       "flashPrefilter:tracker"
    ]

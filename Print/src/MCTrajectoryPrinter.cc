@@ -8,7 +8,7 @@ void
 mu2e::MCTrajectoryPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<MCTrajectoryCollection> > vah;
     event.getManyByType(vah);
@@ -123,16 +123,5 @@ void
 mu2e::MCTrajectoryPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << "ind   parent  npoint       first Point            firstT     firstEk            last Point           lastT    lastEk\n";
-}
-
-void 
-mu2e::MCTrajectoryPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("MCTrajectoryPrinter",fhicl::ParameterSet());
-
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
 }
 

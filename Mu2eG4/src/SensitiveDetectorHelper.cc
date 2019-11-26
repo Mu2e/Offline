@@ -28,6 +28,7 @@
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "G4Helper/inc/G4Helper.hh"
 #include "Mu2eG4/inc/EventStash.hh"
+#include "GeometryService/inc/GeometryService.hh"
 
 // From art and its tool chain
 #include "art/Framework/Principal/Event.h"
@@ -49,6 +50,7 @@ namespace mu2e {
 SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset)
     :
     extMonPixelsEnabled_(false),
+    standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     verbosityLevel_(pset.get<int>("verbosityLevel",0)),
     cutMomentumMin_(pset.get<double>("cutMomentumMin",0)),
     minTrackerStepPoints_(pset.get<size_t>("minTrackerStepPoints",15))
@@ -167,6 +169,12 @@ void SensitiveDetectorHelper::registerSensitiveDetectors(){
             step.sensitiveDetector =
             dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
         }
+    
+        extMonFNALPixelSD_ = ( standardMu2eDetector_ && extMonPixelsEnabled_) ?
+        dynamic_cast<ExtMonFNALPixelSD*>(sdManager->
+                                         FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
+        : nullptr;
+    
 }
 
     

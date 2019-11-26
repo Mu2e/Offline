@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # A script to generate the text files
 
 radius_change_line="350"

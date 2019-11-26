@@ -31,9 +31,16 @@ namespace mu2e {
     TH1D* _hp;
     TH1D* _hendKE;
     TH1D* _hpe;
+    TH1D* _hpe2;
+    TH1D* _hpg;
+    TH1D* _hpg2;
     TH1D* _hpm;
     TH1D* _hp0;
     TH1D* _hpi;
+    TH1D* _hpk0;
+    TH1D* _hpk;
+    TH1D* _hpn0;
+    TH1D* _hpn02;
     TH1D* _hpn;
     TH1D* _hpn2;
     TH1D* _hsx;

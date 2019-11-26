@@ -98,10 +98,8 @@ physics : {
    filters: {
       extmonBeamFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs : [ "g4run:extmonbeam" ]
          extraHitInputs : [ "g4run:virtualdetector", "g4run:PSEnclosureEndPlate", "g4run:PSEnclosureWindow0", "g4run:PSEnclosureWindow1" ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
    }

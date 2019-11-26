@@ -7,19 +7,14 @@
 
 using namespace std;
 void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadstraw, const char* outfile) {
-  unsigned NStraws(48);
-  unsigned NLayers(2);
-  unsigned NPlanes(40);
+  unsigned NStraws(96);
+  unsigned NPlanes(36);
   unsigned NPanels(6);
   vector<string> deadstraws;
   vector<unsigned> inactiveplanes;
   vector<string> inactivepanels;
   vector<string> inactivestraws;
-// 20-slot tracker with 18 stations:w
-  inactiveplanes.push_back(12);
-  inactiveplanes.push_back(13);
-  inactiveplanes.push_back(26);
-  inactiveplanes.push_back(27);
+  
   TRandom3 myrand(3499803);
 
   filebuf fb;
@@ -35,14 +30,13 @@ void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadst
       int plane = myrand.Integer(NPlanes);
       if(find(inactiveplanes.begin(), inactiveplanes.end(), plane) == inactiveplanes.end()){
 	++ndplane;
-	os  << plane;
+	os  << "\"" << plane << "\"";
 	if(ndplane < ndeadplane) os << "," << endl;
 	inactiveplanes.push_back(plane);
       }
     }
     os  << "]" << endl;
   }
-
 
   if(ndeadpanel > 0){
     os  << "deadPanels : [ " << endl;
@@ -74,10 +68,9 @@ void RandomDeadStraws(unsigned ndeadplane, unsigned ndeadpanel, unsigned ndeadst
 	char panelid[80];
 	snprintf(panelid,80,"\"%u_%u\"",plane,panel);
 	if(find(inactivepanels.begin(),inactivepanels.end(),panelid) == inactivepanels.end()){
-	  unsigned layer = myrand.Integer(NLayers);
 	  unsigned straw = myrand.Integer(NStraws);
 	  char strawid[80];
-	  snprintf(strawid,80,"\"%u_%u_%u_%u\"",plane,panel,layer,straw);
+	  snprintf(strawid,80,"\"%u_%u_%u\"",plane,panel,straw);
 	  if(find(deadstraws.begin(), deadstraws.end(), strawid) == deadstraws.end()){
 	    ++ndstraw;
 	    os << strawid;
