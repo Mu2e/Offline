@@ -1,4 +1,4 @@
-TABLE TrkQualCalib
+TABLE TrkQualCeMCalib
 # Training file = /mu2e/data/users/edmonds/Offline_cvmfs/trkana-CeEndpoint-mix.v754.root
 # Training tree = TrkAnaNeg/trkana
 # Training name = TrkQual

@@ -34,8 +34,8 @@ mu2e::DbTable::ptr_t mu2e::DbTableFactory::newTable(std::string const& name) {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPlane());
   } else if (name=="TrkAlignPanel") {
     return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkAlignPanel());
-  } else if (name=="TrkQualCalib") {
-    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkQualCalib());
+  } else if (name=="TrkQualCeMCalib") {
+    return std::shared_ptr<mu2e::DbTable>(new mu2e::TrkQualCeMCalib());
   } else {
     throw cet::exception("DBFILE_BAD_TABLE_NAME") 
       << "DbTableFactory::newTable call with bad table name: "+name+"\n";
