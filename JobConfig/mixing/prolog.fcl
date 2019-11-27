@@ -21,8 +21,7 @@ mixerTemplateCommon: {
       protonBunchIntensityTag: "protonBunchIntensity"
       meanEventsPerProton: @nil
       products: @nil
-      minSkip : 0
-      maxSkip : 1000 # temporary
+      skipFactor : 1 # temporary
    }
 }
 

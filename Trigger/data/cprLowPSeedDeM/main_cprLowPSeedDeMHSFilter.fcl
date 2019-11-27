@@ -1,7 +1,7 @@
 physics.filters.cprLowPSeedDeMHSFilter.fitparticle   : @local::Particle.eminus	 
 physics.filters.cprLowPSeedDeMHSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.cprLowPSeedDeMHSFilter.minNStrawHits : 15.0
-physics.filters.cprLowPSeedDeMHSFilter.minMomentum   : 60.0
+physics.filters.cprLowPSeedDeMHSFilter.minMomentum   : 50.0
 physics.filters.cprLowPSeedDeMHSFilter.maxMomentum   : 80.0
 physics.filters.cprLowPSeedDeMHSFilter.minPt         : 0.0
 physics.filters.cprLowPSeedDeMHSFilter.maxChi2XY     : 5.0

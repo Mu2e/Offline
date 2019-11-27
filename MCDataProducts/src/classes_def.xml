@@ -172,6 +172,9 @@
  <class name="mu2e::CaloHitMCTruthCollection"/>
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
 
+ <class name="mu2e::CosmicLivetime"/>
+ <class name="art::Wrapper<mu2e::CosmicLivetime>"/>
+
  <class name="mu2e::CaloDigiMC"/>
  <class name="mu2e::CaloDigiMCCollection"/>
  <class name="art::Wrapper<mu2e::CaloDigiMCCollection>"/>
