@@ -67,6 +67,7 @@ struct Config
   fhicl::Atom<float> targetBoxZmax{Name("targetBoxZmax"), Comment("Target box z max")};
   fhicl::Atom<int> seed{Name("seed"), Comment("Seed for particle random offset")};
   fhicl::Atom<bool> resample{Name("resample"), Comment("Resampling flag")};
+  fhicl::Atom<bool> compact{Name("compact"), Comment("CORSIKA compact output flag")};
 };
 typedef fhicl::WrappedTable<Config> Parameters;
 
@@ -206,8 +207,8 @@ namespace mu2e {
       void openFile(FILE *f);
 
     private:
-
       bool genEvent(std::map<std::pair<int,int>, GenParticleCollection> &particles_map);
+      bool genEventCompact(std::map<std::pair<int,int>, GenParticleCollection> &particles_map);
       float wrapvarBoxNo(const float var, const float low, const float high, int &boxno);
 
       std::vector<CLHEP::Hep3Vector> _targetBoxIntersections;
@@ -241,6 +242,7 @@ namespace mu2e {
       unsigned int _primaries = 0;
 
       bool _resample = false;
+      bool _compact = true;
 
       CLHEP::HepJamesRandom _engine;
       CLHEP::RandFlat _randFlatX;
