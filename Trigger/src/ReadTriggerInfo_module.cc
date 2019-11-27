@@ -83,8 +83,8 @@ namespace mu2e {
   public:
 
     enum {
-      kNTrigInfo     = 20,
-      kNTrackTrig    = 10,
+      kNTrigInfo     = 40,
+      kNTrackTrig    = 20,
       kNTrackTrigVar = 30,
       kNHelixTrig    = 10,
       kNHelixTrigVar = 30,
@@ -92,7 +92,7 @@ namespace mu2e {
       kNCaloCalibVar = 5,
       kNCaloOnly     = 5,
       kNCaloOnlyVar  = 5,
-      kNOcc          = 20,
+      kNOcc          = 40,
       kNOccVar       = 10
     };
 
@@ -706,7 +706,7 @@ namespace mu2e {
     
     for (unsigned int i=0; i< _trigPaths.size(); ++i){
       string&path = _trigPaths.at(i);
-      if (trigNavig.accept(path)) _sumHist._hTrigInfo[15]->Fill((double)i);
+      if (trigNavig.accepted(path)) _sumHist._hTrigInfo[15]->Fill((double)i);
     }
     
     //get the strawDigiMC truth if present
