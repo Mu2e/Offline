@@ -1,3 +1,7 @@
+//Author: S Middleton
+//Date: Nov 2019
+//Purpose: To make CaloRecoHits from the Digis using the new data product structure (for Online compatib.)
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -58,7 +62,7 @@ namespace mu2e {
     double const digiSampling_;
     double       maxChi2Cut_;
     int          diagLevel_;
-    int          nplot_;
+    int          nplot_; //TODO : do we need this?
 
     std::unique_ptr<WaveformProcessor> waveformProcessor_;
 
@@ -106,19 +110,23 @@ namespace mu2e {
     ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
     auto const& caloDigis = *caloDigisHandle;
-    NewCaloDigi const* base = &caloDigis.front(); // What if caloDigis is empty?
+    //if(caloDigis.size() == 0){ continue; } TODO
+    NewCaloDigi const* base = &caloDigis.front(); 
     
     for (const auto& caloDigi : caloDigis)
       {
+    
 	uint16_t errFlag = caloDigi.errorFlag();
-        if(errFlag){ continue; } ///NOTE: Added for new format! Function: to skip if flagged!
+        if(errFlag){ continue; } 
+        
         int    roId     = caloDigi.roId();
         double t0       = caloDigi.t0();
-        //float peak	=caloDigi.peakpos(); //TODO
+        
+        //float peak	=caloDigi.peakpos(); 
         //uint8_t eventMode = caloDigi.eventMode();
+        //TODO: if(evenMode == is somethings do this){} --> change calib work
         double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
-        ///TODO - use this event mode to chose calibration settings!
-
+       
         const std::vector<int>& waveform = caloDigi.waveform();
 
         size_t index = &caloDigi - base;
@@ -128,7 +136,7 @@ namespace mu2e {
         y.clear();
         for (unsigned int i=0;i<waveform.size();++i)
           {
-            x.push_back(t0 + (i+0.5)*digiSampling_); // add 0.5 to be in middle of bin
+            x.push_back(t0 + (i+0.5)*digiSampling_); //-timeCorrection_?
             y.push_back(waveform.at(i));
           }
 

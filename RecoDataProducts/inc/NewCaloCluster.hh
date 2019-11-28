@@ -1,10 +1,8 @@
+//Author: S Middleton (based on old code)
+//Date: Nov 2019
+//Purpose: Basic copy-paste of the previous version, might be redundant...
 #ifndef RecoDataProducts_NewCaloCluster_hh
 #define RecoDataProducts_NewCaloCluster_hh
-
-//
-// Calorimeter cluster information
-//
-// Note: set the size independently of the NewCaloCrystalHitPtrVector to work with fast clustering algorithm
 
 #include "canvas/Persistency/Common/Ptr.h"
 #include "RecoDataProducts/inc/NewCaloCrystalHitCollection.hh"
@@ -55,7 +53,7 @@ namespace mu2e {
 	    double                         secondMoment()             const{return secondMoment_;}       
 	    double                         angle()                    const{return angle_;}       
 	    const CLHEP::Hep3Vector&       cog3Vector()               const{return cog3Vector_;}      
-	    const CaloCrystalHitPtrVector& CaloCrystalHitsPtrVector() const{return NewCaloCrystalHitsPtrVector_;}
+	    const CaloCrystalHitPtrVector& CaloCrystalHitsPtrVector() const{return CaloCrystalHitsPtrVector_;}
 	    bool                           isSplit()                  const{return isSplit_;} 
 
 
