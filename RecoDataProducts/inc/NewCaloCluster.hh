@@ -78,7 +78,7 @@ namespace mu2e {
 	    double                   secondMoment_;	      
 	    double                   angle_;	      
 	    CLHEP::Hep3Vector        cog3Vector_; 
-	   CaloCrystalHitPtrVector  CaloCrystalHitsPtrVector_;
+	    CaloCrystalHitPtrVector  CaloCrystalHitsPtrVector_;
 	    unsigned                 size_;
             bool                     isSplit_;    
 

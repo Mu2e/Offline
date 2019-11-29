@@ -50,15 +50,6 @@ namespace mu2e {
 
     std::vector<std::vector<const NewCaloRecoDigi*>> hitMap_;  
 
-    //TODO - do we need these?
-    TH1F*  hEdep_;
-    TH1F*  hTime_;
-    TH1F*  hNRo_;
-    TH1F*  hEdep_Cry_;
-    TH1F*  hDelta_;
-    TH2F*  hNRo2_;
-    TH1F*  hEdep1_;
-    TH1F*  hEdep2_;
 
     void MakeCaloCrystalHits(NewCaloCrystalHitCollection& CaloCrystalHits, const art::ValidHandle<NewCaloRecoDigiCollection>& recoCaloDigisHandle);
 
@@ -69,29 +60,15 @@ namespace mu2e {
 
   //--------------------------------------------
   void NewCaloCrystalHitFromHit::beginJob()
-  {
-    if (diagLevel_ > 2) {
-      art::ServiceHandle<art::TFileService> tfs;
-      hEdep_     = tfs->make<TH1F>("hEdep",   "Hit energy deposition",        200,   0.,  500);
-      hTime_     = tfs->make<TH1F>("hTime",   "Hit time ",                  12000,   0., 2000);
-      hNRo_      = tfs->make<TH1F>("hNRo",    "Number RO ",                    10,   0.,   10);
-      hEdep_Cry_ = tfs->make<TH1F>("hEdepCry","Energy deposited per crystal",2000,   0., 2000);
-      hDelta_    = tfs->make<TH1F>("hDelta",  "Hit time difference",          200, -20,    20);
-      hNRo2_     = tfs->make<TH2F>("hNRo2",   "Number RO ",                    5,    0., 5, 50, 0, 50);
-      hEdep1_    = tfs->make<TH1F>("hEdep1",  "Hit energy deposition",        200,   0.,  100);
-      hEdep2_    = tfs->make<TH1F>("hEdep2",  "Hit energy deposition",        200,   0.,  100);
-    }
-  }
+  {}
 
 
   //------------------------------------------------------------
   void NewCaloCrystalHitFromHit::produce(art::Event& event)
   {
-    //Get by Handle:
     auto const& recoCaloDigisHandle = event.getValidHandle(caloDigisToken_);
     auto CaloCrystalHits = std::make_unique<NewCaloCrystalHitCollection>();
     MakeCaloCrystalHits(*CaloCrystalHits, recoCaloDigisHandle);
-    //Move Collection to event:
     event.put(std::move(CaloCrystalHits));
   }
 
@@ -101,15 +78,13 @@ namespace mu2e {
   {
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
     auto const& recoCaloDigis = *recoCaloDigisHandle;
-    NewCaloRecoDigi const* base = &recoCaloDigis.front(); // What if recoCaloDigis is empty?
+    NewCaloRecoDigi const* base = &recoCaloDigis.front(); // TODO What if recoCaloDigis is empty?
 
 
-    //extend hitMap_ if needed and clear it
     if (cal.nRO() > int(hitMap_.size()))
       for (int i = hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const NewCaloRecoDigi*>());
     for (size_t i=0; i<hitMap_.size(); ++i) hitMap_[i].clear();
 
-    // fill the map that associate for each crystal the corresponding CaloRecoDigi indexes
     for (unsigned int i=0; i< recoCaloDigis.size(); ++i)
       {
         int crystalId = cal.caloInfo().crystalByRO(recoCaloDigis[i].ROid());
@@ -124,14 +99,14 @@ namespace mu2e {
         //check if empty:
         if (hits.empty()) continue;
 
-        //sort hits:
+        //sort hits in terms of time:
         std::sort(hits.begin(),hits.end(),[](const auto a, const auto b){return a->time() < b->time();});
 
-        //find first and last hit:
+        //find hit:
         auto startHit = hits.begin();
         auto endHit   = hits.begin();
 
-        //creat a buffer
+        //create a buffer 
         std::vector<CaloRecoDigiPtr> buffer;
         double timeW(0);
         double eDepTot(0),eDepTotErr(0);
@@ -142,8 +117,7 @@ namespace mu2e {
           {
             //time:
             double deltaTime = (*endHit)->time()-(*startHit)->time();
-            //fill histograms if requested:
-            if (diagLevel_ > 2) hDelta_->Fill(deltaTime);
+        
             //if > than set merge time:
             if (deltaTime > time4Merge_) 
               {
@@ -209,16 +183,7 @@ namespace mu2e {
       {
         std::cout<<"[NewCaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="<<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
 
-        if (diagLevel_ > 2)
-          {
-            hTime_->Fill(time);
-            hEdep_->Fill(eDep);
-            hNRo_->Fill(nRoid);
-            hEdep_Cry_->Fill(crystalId,eDep);
-            hNRo2_->Fill(nRoid,eDep);
-            if (nRoid==1) hEdep1_->Fill(eDep);
-            if (nRoid==2) hEdep2_->Fill(eDep);
-          }
+        
       }
   }
 
