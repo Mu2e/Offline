@@ -49,19 +49,14 @@ CaloClusterFast :
     includeCrystalHits    : false
 }
 
-OnlineFast :
+NewCaloClusterFast :
 { 
-    module_type           : NewCaloClusterFast
-    caloCrystalModuleLabel : OnlineHitMaker
-    digiSampling          : @local::HitMakerDigiSampling
-    blindTime             : @local::HitMakerBlindTime
-    endTimeBuffer         : 80
-    windowPeak            : 2
+    module_type          : NewCaloClusterFast
+    caloCrystalModuleLabel : NewCaloCrystalHitFromHit
     extendSecond          : true
     minEnergy             : 50
-    timeCorrection        : 20.0
-    adcToEnergy           : 0.0461333
     diagLevel             : 0
+    deltaTime              : 2
     includeCrystalHits    : false
 }
 
@@ -127,10 +122,10 @@ CaloClusterFast :
    Reco : [ CaloClusterFast ]
 }
 
-OnlineFastCluster :
+NewCaloClusterFast :
 {
    producers : {
-       CaloClusterFast  : @local::NewCaloClusterFast
+       NewCaloClusterFast  : @local::NewCaloClusterFast
        CaloTrigger      : @local::CaloTrigger
    }
 

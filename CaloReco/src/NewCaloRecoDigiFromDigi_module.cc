@@ -44,16 +44,15 @@ namespace mu2e {
       caloDigisToken_{consumes<NewCaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
       digiSampling_        (pset.get<double>     ("digiSampling")),
       maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
-      diagLevel_           (pset.get<int>        ("diagLevel",0)),
-      nplot_(0)
-    {
+      diagLevel_           (pset.get<int>        ("diagLevel",0))
+     {
       produces<NewCaloRecoDigiCollection>();
       auto const& param = pset.get<fhicl::ParameterSet>("RawProcessor", {});
       waveformProcessor_ = std::make_unique<RawProcessor>(param);
        
     }
 
-    void beginRun(art::Run& aRun) override;
+    void beginRun(art::Run& aRun);
     void produce(art::Event& e) override;
 
   private:
@@ -62,12 +61,11 @@ namespace mu2e {
     double const digiSampling_;
     double       maxChi2Cut_;
     int          diagLevel_;
-    int          nplot_; //TODO : do we need this?
+   
 
     std::unique_ptr<WaveformProcessor> waveformProcessor_;
 
-    void extractRecoDigi(art::ValidHandle<NewCaloDigiCollection> const& caloDigis,
-                         NewCaloRecoDigiCollection& recoCaloHits);
+    void extractRecoDigi(art::ValidHandle<NewCaloDigiCollection> const& caloDigis, NewCaloRecoDigiCollection& recoCaloHits);
 
   };
 
@@ -151,6 +149,7 @@ namespace mu2e {
 
         for (int i=0;i<waveformProcessor_->nPeaks();++i)
           {
+	    
             double eDep      = waveformProcessor_->amplitude(i)*adc2MeV;
             double eDepErr   = waveformProcessor_->amplitudeErr(i)*adc2MeV;
             double time      = waveformProcessor_->time(i);

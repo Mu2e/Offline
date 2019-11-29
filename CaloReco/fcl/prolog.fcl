@@ -17,7 +17,6 @@ OnlineRecoDigiMaker :
         windowPeak        : 2
         minPeakAmplitude  : 15
 	shiftTime         : 19.90
-       # scaleFactor       :  ?
 	diagLevel         : 0
     }
    
@@ -62,7 +61,7 @@ CaloCrystalHitFromHit:
 OnlineHitMaker:
 {
     module_type           : NewCaloCrystalHitFromHit
-    caloDigisModuleLabel  : CaloRecoDigiFromDigi	    	    
+    caloDigisModuleLabel  : NewCaloRecoDigiFromDigi	    	    
     time4Merge            : 4.0   #ns
     diagLevel             : 0
 }
@@ -70,10 +69,10 @@ OnlineHitMaker:
 OnlineCaloReco : 
 {
    producers : {
-     OnlineDigiMaker    : @local::OnlineDigiMaker
-     OnlineHitMaker  : @local::OnlineHitMaker
+     OnlineRecoDigiMaker    : @local::OnlineDigiMaker
+     OnlineHitMaker  : @local::OnlineRecoHitMaker
    }
-   Reco : [ OnlineDigiMaker, OnlineHitMaker ]
+   Reco : [ OnlineRecoDigiMaker, OnlineHitMaker ]
 }
 
 

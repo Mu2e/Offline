@@ -29,17 +29,11 @@ namespace mu2e {
     explicit NewCaloClusterFast(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
       caloCrystalToken_{consumes<NewCaloCrystalHitCollection>(pset.get<std::string>("caloCrystalModuleLabel"))},
-      digiSampling_(pset.get<double>("digiSampling")),
-      windowPeak_(pset.get<unsigned>("windowPeak")),
       extendSecond_(pset.get<bool>("extendSecond")),
-      blindTime_(pset.get<double>("blindTime")),
-      endTimeBuffer_(pset.get<double>("endTimeBuffer")),
       minEnergy_( pset.get<double>("minEnergy")),
-      timeCorrection_(pset.get<double>("timeCorrection")),
-      adcToEnergy_(pset.get<double>("adcToEnergy")),
       diagLevel_(pset.get<int>("diagLevel",0)),
-      includeCrystalHits_(pset.get<bool>("includeCrystalHits")),
-      window_(2*windowPeak_+1)
+      deltaTime_(pset.get<double>("deltaTime")),
+      includeCrystalHits_(pset.get<bool>("includeCrystalHits"))
     {
      
       produces<NewCaloClusterCollection>();
@@ -53,28 +47,18 @@ namespace mu2e {
 
   private:
     art::ProductToken<NewCaloCrystalHitCollection> const caloCrystalToken_;
-    double       digiSampling_;
-    unsigned     windowPeak_;
+   
     bool         extendSecond_;
-    double       blindTime_;
-    double       endTimeBuffer_;
     double       minEnergy_;
-    double       timeCorrection_;
-    double       adcToEnergy_;
     int          diagLevel_;
+    double       deltaTime_;
     bool         includeCrystalHits_;
-    unsigned     window_;
-
-    
-    int mbtime_;
-
+ 
     art::ProductID                _crystalHitsPtrID;
     art::EDProductGetter const*  _crystalHitsPtrGetter;
 
     void MakeClusters(NewCaloClusterCollection& recoClusters, const art::Handle<NewCaloCrystalHitCollection> & recoCrystalHit);
-    void FormCluster(const Calorimeter* cal, NewCaloCrystalHit *crystalSeed, std::vector<CaloCrystalList>& idHitVec)  ;
-    void FillCluster(NewCaloClusterCollection& caloClustersColl, const CaloCrystalList& clusterPtrList, const art::Handle<NewCaloCrystalHitCollection>& CaloCrystalHitsHandle);
-    
+  
   };
 
 
@@ -83,9 +67,6 @@ namespace mu2e {
   {
 
        if (diagLevel_ > 0) std::cout<<"[CaloClusterFast::produce] begin"<<std::endl;
-
-       ConditionsHandle<AcceleratorParams> accPar("ignored");
-       mbtime_ = accPar->deBuncherPeriod; //TODO
 
        art::Handle<NewCaloCrystalHitCollection> caloCrystalHitsHandle;
        bool const success = event.getByToken(caloCrystalToken_, caloCrystalHitsHandle);
@@ -113,25 +94,21 @@ namespace mu2e {
        return;
   }
 
-
-
   void NewCaloClusterFast::MakeClusters(NewCaloClusterCollection& recoClusters, const art::Handle<NewCaloCrystalHitCollection> & CaloCrystalHitsHandle)
   {
-      CaloCrystalList  clusterList;
-      
+      //find the hit collection (previous module)
       const NewCaloCrystalHitCollection& recoCrystalHits(*CaloCrystalHitsHandle);
-      if (recoCrystalHits.empty()) return;
-
+     
+      //find calorimter:
       mu2e::GeomHandle<mu2e::Calorimeter> ch;
       const Calorimeter* cal = ch.get();
-      
-      unsigned offsetT0_ = unsigned(blindTime_/digiSampling_);
-      
+      //skip if empty collection:
       if (recoCrystalHits.empty()) return;
+      //make spaces for lists of crystals:
       std::vector<CaloCrystalList>      clusterList, caloIdHitMap(cal->nCrystal());
-      
+      //make a list to store seed info:
       std::list<const NewCaloCrystalHit*>  seeds_;
-    
+      //loop through collection, fill seeds and map:
       for (const auto& hit : recoCrystalHits)
       {
         if (hit.energyDep() < minEnergy_) continue;
@@ -139,57 +116,62 @@ namespace mu2e {
         seeds_.push_back(&hit);
        
       }
-
+    //sort seeds interms of energy deposited.
     seeds_.sort([](const NewCaloCrystalHit* a, const NewCaloCrystalHit* b) {return a->energyDep() > b->energyDep();});
-
+    //check the seeds arnt empty, if not proceed:
     while( !seeds_.empty() )
       {
-        const NewCaloCrystalHit* crystalSeed = *seeds_.begin();
-        if (crystalSeed->energyDep() < minEnergy_) break;
-
-        CaloCrystalList List = FormCluster(caloIdHitMap);
-
-        clusterList.push_back(List);
-      
-        for (const auto& hit : List) { seeds_.remove(hit); } //TODO
-      }
-    for (auto cluster : clusterList) { FillCluster(recoClusters, cluster, CaloCrystalHitsHandle); }
-}
-    
-CaloCrystalList   NewCaloFastCluster::FormCluster(const Calorimeter* cal_, NewCaloCrystalHit *crystalSeed_, std::vector<CaloCrystalList>& idHitVec)  
-       { 
-
-            CaloCrystalList clusterList_; 
-            CaloCrystalList crystalsToVisit_;
-    
-            double seedTime_ crystalSeed->time();
-            clusterList_.push_front(crystalSeed_);
-            crystalToVisit_.push(crystalSeed_->id());  
-
-            CaloCrystalList& cryL = idHitVec[crystalSeed_->id()];
-            cryL.erase(std::find(cryL.begin(), cryL.end(), crystalSeed_));
-
+	        //find seed:
+            const NewCaloCrystalHit* crystalSeed = *seeds_.begin();
+	        //check it fulfils criteria on energy:
+            if (crystalSeed->energyDep() < minEnergy_) break;
+	        //make some lists for cluster finding:
+            CaloCrystalList List;
+            std::queue<int> crystalToVisit_;
+            //store the time of this seed for refrence:
+            double seedTime_ = crystalSeed->time();
+            //add seed to front of this List of crystals:
+            List.push_front(crystalSeed); 
+            //add crystal ID to list of crytals to visit in this instance of the clustering alogrithm:
+            crystalToVisit_.push(crystalSeed->id());  
+            if (extendSecond_) for (const auto& nneighbor : cal->nextNeighbors(crystalSeed->id())) crystalToVisit_.push(nneighbor);
+	       //find the crystal from map, which is assoiciated with this seed:
+            CaloCrystalList& cryL = caloIdHitMap[crystalSeed->id()];
+	        //erase the associated parts:
+            cryL.erase(std::find(cryL.begin(), cryL.end(), crystalSeed));
+	        //make a list of bools to assoicate with the crystals and say whether tey have been visted already:
+	    std::vector<bool>      isVisited_;
+	    isVisited_.reserve(crystalToVisit_.size());
+	        //proceed while the list is not empty:
             while (!crystalToVisit_.empty())
             {            
+ 		         //get id of the crystak being visited:
                  int visitId         = crystalToVisit_.front();
                  isVisited_[visitId] = 1;
-
-                 std::vector<int> const& neighborsId = cal_->crystal(visitId).neighbors();
+                 //loop through the neighbours if the crystal and check:
+                 std::vector<int> const& neighborsId = cal->crystal(visitId).neighbors();
                  for (auto& iId : neighborsId)
                  {               
+		          //if visited --> skip
                      if (isVisited_[iId]) continue;
+		          //if not then assign a flag to say its been done now:
                      isVisited_[iId]=1;
-
-
-                     CaloCrystalList& list = idHitVec[iId];
+		          //copy list:
+                     CaloCrystalList& list = caloIdHitMap[iId];
+		          //iterate:
                      auto it=list.begin();
                      while(it != list.end())
                      {
+                        //get hit:
                          NewCaloCrystalHit const* hit = *it;
-                         if (std::abs(hit->time() - seedTime_) < deltaTime_).......//TODO
+			         //time check:
+                         if (std::abs(hit->time() - seedTime_) < deltaTime_) 
                          { 
+			             //check energy:
                             if (hit->energyDep() < minEnergy_) { crystalToVisit_.push(iId); }
-                            clusterList_.push_front(hit);
+			                 //add hit:
+                            List.push_front(hit);
+			             //remove:
                             it = list.erase(it);   
                          } 
                          else {++it;}
@@ -198,54 +180,66 @@ CaloCrystalList   NewCaloFastCluster::FormCluster(const Calorimeter* cal_, NewCa
                  }
                                        
                  crystalToVisit_.pop();                 
-            }
-            
-           clusterList_.sort([] (NewCaloCrystalHit const* lhs, NewCaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();} );               
-       } 
-       return clusterList_;
-}
-
-
-//----------------------------------------------------------------------------------------------------------
-  void NewCaloFastCluster::FillCluster(NewCaloClusterCollection& caloClustersColl, const CaloCrystalList& clusterPtrList, const art::Handle<NewCaloCrystalHitCollection>& CaloCrystalHitsHandle)
-  {
-
-    const NewCaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
-    const NewCaloCrystalHit* caloCrystalHitBase = &CaloCrystalHits.front();
-
-    std::vector<art::Ptr<NewCaloCrystalHit>> caloCrystalHitsPtrVector;
-    double totalEnergy(0),totalEnergyErr(0);
-    
-    for (auto clusterPrt : clusterPtrList)
-      {
+            } //ends while 
+            //sort the List of crystals again interms of energy:
+           List.sort([] (NewCaloCrystalHit const* lhs, NewCaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();} );               
+	       //ad list to list of lists for cluster making:
+        clusterList.push_back(List);
+        //remove from seeds:
+        for (const auto& hit : List) { seeds_.remove(hit); } 
+     }//ends seeds
+      
+    //loop through list for clustering:
+    // Note: ClusterList is a list of crystal_lists, each element of the cluster list is a cluster
+    for (auto cluster : clusterList) { 
         
-	    totalEnergy    += clusterPrt->energyDep();
-        totalEnergyErr += clusterPrt->energyDepErr()*clusterPrt->energyDepErr();
-        //TODO positions
-        size_t idx = (clusterPrt - caloCrystalHitBase);
-        caloCrystalHitsPtrVector.push_back( art::Ptr<NewCaloCrystalHit>(CaloCrystalHitsHandle,idx) );
-      }
+        const NewCaloCrystalHit* caloCrystalHitBase = &recoCrystalHits.front();
+	    //create pointer --> this will be associated with the cluster if include set
+	std::vector<art::Ptr<NewCaloCrystalHit>> caloCrystalHitsPtrVector;
+	    //need to add up these over all crystals in cluster:
+        double totalEnergy(0),totalEnergyErr(0), xcl(0), ycl(0), ncry(0);
+        //loop:
+        for (auto clusterPrt : cluster) //Note: a clusterPrt is a crystal hit
+        {
+            int    crId = clusterPrt->id();
+            totalEnergy    += clusterPrt->energyDep();
+            totalEnergyErr += clusterPrt->energyDepErr()*clusterPrt->energyDepErr();
+            xcl += cal->crystal(crId).localPosition().x()*clusterPrt->energyDep();
+            ycl += cal->crystal(crId).localPosition().y()*clusterPrt->energyDep();
+            size_t idx = (clusterPrt - caloCrystalHitBase);
+            if(includeCrystalHits_) caloCrystalHitsPtrVector.push_back( art::Ptr<NewCaloCrystalHit>(CaloCrystalHitsHandle,idx) ); //TODO
+            ncry++;
+        }
+        //make cluster:
+        std::vector<art::Ptr<NewCaloCrystalHit>> hitsPtr;
+        totalEnergyErr = sqrt(totalEnergyErr);
+        xcl = xcl/totalEnergy;
+	    ycl = ycl/totalEnergy;
 
-    totalEnergyErr = sqrt(totalEnergyErr);
-    double time    = (*clusterPtrList.begin())->time();
-    double timeErr = (*clusterPtrList.begin())->timeErr();
-   
+        double time    = (*cluster.begin())->time();
+        double timeErr = (*cluster.begin())->timeErr();
+        const auto& seed  = **caloCrystalHitsPtrVector.begin();
+        int iSection = cal->crystal(seed.id()).diskId(); 
 
-    caloClustersColl.emplace_back(NewCaloCluster(time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,false)); //TODO
+     
+        if (includeCrystalHits_){
+           int   firstCrystal_index = recoCrystalHits.size() - ncry;//TODO recoCrystalHits--> what is this?
+           int   lastCrystal_index  = recoCrystalHits.size();
+           for (int k=firstCrystal_index; k<lastCrystal_index; ++k){
+             art::Ptr<NewCaloCrystalHit> aPtr = art::Ptr<NewCaloCrystalHit>(_crystalHitsPtrID, k, _crystalHitsPtrGetter); //TODO
+             hitsPtr.push_back(aPtr);
+           }
+        
+        }
+        NewCaloCluster Endcluster(iSection,time,timeErr,totalEnergy,totalEnergyErr,hitsPtr,ncry,0.0);
+        Endcluster.cog3Vector(CLHEP::Hep3Vector(xcl,ycl,0));
+        recoClusters.emplace_back(std::move(Endcluster));
 
 
-    if (diagLevel_ > 1)
-      {
-        std::cout<<"This cluster contains "<<clusterPtrList.size()<<" crystals, id= ";
-        for (auto clusterPrt : clusterPtrList) std::cout<<clusterPrt->id()<<" ";
-        std::cout<<" with energy="<<totalEnergy<<" and time="<<time<<std::endl;;
-      }
+
+} //ends clusters
+ 
+}//end function
+
   }
-
-  
-
-
-using mu2e::NewCaloClusterFast;
-DEFINE_ART_MODULE(NewCaloClusterFast);
-
-
+DEFINE_ART_MODULE(mu2e::NewCaloClusterFast);
