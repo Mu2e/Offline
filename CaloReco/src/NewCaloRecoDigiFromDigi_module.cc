@@ -12,11 +12,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art_root_io/TFileService.h"
 
-#include "CaloReco/inc/WaveformProcessor.hh"
-#include "CaloReco/inc/LogNormalProcessor.hh"
-#include "CaloReco/inc/FixedFastProcessor.hh"
-#include "CaloReco/inc/RawProcessor.hh"
-
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
 #include "RecoDataProducts/inc/NewCaloDigi.hh"
@@ -44,12 +39,14 @@ namespace mu2e {
       caloDigisToken_{consumes<NewCaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
       digiSampling_        (pset.get<double>     ("digiSampling")),
       maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
+      windowPeak_         (pset.get<int>    ("windowPeak")),
+      minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
+      shiftTime_          (pset.get<double> ("shiftTime")),
+      scaleFactor_        (pset.get<double> ("scaleFactor")),
       diagLevel_           (pset.get<int>        ("diagLevel",0))
      {
       produces<NewCaloRecoDigiCollection>();
-      auto const& param = pset.get<fhicl::ParameterSet>("RawProcessor", {});
-      waveformProcessor_ = std::make_unique<RawProcessor>(param);
-       
+
     }
 
     void beginRun(art::Run& aRun);
@@ -60,11 +57,13 @@ namespace mu2e {
     art::ProductToken<NewCaloDigiCollection> const caloDigisToken_;
     double const digiSampling_;
     double       maxChi2Cut_;
+    int windowPeak_ ;
+    double minPeakAmplitude_ ;
+    double shiftTime_ ;
+    double       scaleFactor_;
     int          diagLevel_;
    
-
-    std::unique_ptr<WaveformProcessor> waveformProcessor_;
-
+   
     void extractRecoDigi(art::ValidHandle<NewCaloDigiCollection> const& caloDigis, NewCaloRecoDigiCollection& recoCaloHits);
 
   };
@@ -96,16 +95,14 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void NewCaloRecoDigiFromDigi::beginRun(art::Run& aRun)
-  {
-    waveformProcessor_->initialize();
-  }
+  {}
 
   //--------------------------------------------------------------------------------------
   void NewCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<NewCaloDigiCollection> const& caloDigisHandle, NewCaloRecoDigiCollection &recoCaloHits)
   {
 
     std::vector<double> x,y;
-    ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
+    ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");//TODO
 
     auto const& caloDigis = *caloDigisHandle;
     //if(caloDigis.size() == 0){ continue; } TODO
@@ -120,7 +117,7 @@ namespace mu2e {
         int    roId     = caloDigi.roId();
         double t0       = caloDigi.t0();
         
-        //float peak	=caloDigi.peakpos(); 
+       
         //uint8_t eventMode = caloDigi.eventMode();
         //TODO: if(evenMode == is somethings do this){} --> change calib work
         double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
@@ -134,8 +131,9 @@ namespace mu2e {
         y.clear();
         for (unsigned int i=0;i<waveform.size();++i)
           {
-            x.push_back(t0 + (i+0.5)*digiSampling_); //-timeCorrection_?
-            y.push_back(waveform.at(i));
+	   
+            		x.push_back(t0 + (i+0.5)*digiSampling_); //-timeCorrection_ windowPeak?
+            		y.push_back(waveform.at(i));
           }
 
         if (diagLevel_ > 3)
@@ -144,34 +142,35 @@ namespace mu2e {
             for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
           }
 
-        waveformProcessor_->reset();
-        waveformProcessor_->extract(x,y);
+           unsigned int nPeaks_ = caloDigi.peakpos().size();
+           double chi2   = 0;
+           int ndf    = 1;
+           bool isPileUp;
+           if(nPeaks_ > 1) { isPileUp = true ; } 
+	   else { isPileUp = false; }
+           for (unsigned int i=0;i<nPeaks_;++i)
+           { 
+		 
+                if(y[caloDigi.peakpos()[i]] <  minPeakAmplitude_) {continue;}
+                double eDep= scaleFactor_*y[caloDigi.peakpos()[i]]*adc2MeV;
+                double eDepErr =  0*adc2MeV;
+                double time =  x[caloDigi.peakpos()[i]] - shiftTime_;
+                double timeErr = 0;
 
-        for (int i=0;i<waveformProcessor_->nPeaks();++i)
-          {
-	    
-            double eDep      = waveformProcessor_->amplitude(i)*adc2MeV;
-            double eDepErr   = waveformProcessor_->amplitudeErr(i)*adc2MeV;
-            double time      = waveformProcessor_->time(i);
-            double timeErr   = waveformProcessor_->timeErr(i);
-            bool   isPileUp  = waveformProcessor_->isPileUp(i);
-            double chi2      = waveformProcessor_->chi2();
-            int    ndf       = waveformProcessor_->ndf();
+                 if (diagLevel_ > 1)
+                  {
+                    std::cout<<"[NewCaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
+                  }
 
-            if (diagLevel_ > 1)
-              {
-                std::cout<<"[NewCaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
+                if (chi2/ndf > maxChi2Cut_) continue;
+
+                recoCaloHits.emplace_back(NewCaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
               }
 
-            if (chi2/ndf > maxChi2Cut_) continue;
-
-            recoCaloHits.emplace_back(NewCaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
           }
 
       }
 
-  }
-
-}
+    }
 
 DEFINE_ART_MODULE(mu2e::NewCaloRecoDigiFromDigi);

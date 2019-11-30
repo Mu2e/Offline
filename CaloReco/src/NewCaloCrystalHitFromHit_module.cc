@@ -20,8 +20,6 @@
 #include <string>
 #include <cmath>
 
-
-
 namespace mu2e {
 
 
@@ -176,7 +174,7 @@ namespace mu2e {
                                          std::vector<CaloRecoDigiPtr>& buffer,
                                          NewCaloCrystalHitCollection& CaloCrystalHits)
   {
-    //TODO--> flags etc.?
+ 
     CaloCrystalHits.emplace_back(NewCaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
 
     if (diagLevel_ > 1)
