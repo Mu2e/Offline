@@ -192,7 +192,7 @@ namespace mu2e {
 	std::vector<art::Ptr<NewCaloCrystalHit>> caloCrystalHitsPtrVector;
 	    //need to add up these over all crystals in cluster:
         double totalEnergy(0),totalEnergyErr(0), xcl(0), ycl(0), ncry(0);
-        //loop:
+            //loop:
         for (auto clusterPrt : cluster) //Note: a clusterPrt is a crystal hit
         {
             int    crId = clusterPrt->id();
@@ -208,7 +208,7 @@ namespace mu2e {
         std::vector<art::Ptr<NewCaloCrystalHit>> hitsPtr;
         totalEnergyErr = sqrt(totalEnergyErr);
         xcl = xcl/totalEnergy;
-	    ycl = ycl/totalEnergy;
+	ycl = ycl/totalEnergy;
 
         double time    = (*cluster.begin())->time();
         double timeErr = (*cluster.begin())->timeErr();
