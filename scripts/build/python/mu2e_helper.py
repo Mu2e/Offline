@@ -29,10 +29,10 @@ class mu2e_helper:
         # where dictionaries go: tmp/src/package/subdir
         self.tmpdir = "tmp/src/"+self.relpath
         # change string package/subdir/src to package_subdir
-        tokens = string.split(self.relpath,'/')
+        tokens = self.relpath.split('/')
         if len(tokens) > 1:
             if tokens[-1] == 'src': tokens.pop()
-        self.libstub = string.join(tokens,'_')
+        self.libstub = '_'.join(tokens)
 
         # A few places we use ClassDef in order to enable a class
         # to be fully capable at the root prompt
