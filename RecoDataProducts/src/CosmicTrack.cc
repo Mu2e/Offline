@@ -66,9 +66,6 @@ namespace mu2e{
    			
 	 }
     
-	double GetSagitta(){
-		return 1.;
-	}
 
 	// Destructor
 	CosmicTrack::~CosmicTrack() {}

@@ -34,14 +34,16 @@ using namespace mu2e;
 
 namespace DriftFitUtils{
   	TrackEquation ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction);
-	double GetTestDOCA(Straw const& straw, double a0, double a1, double b0, double b1);
-        int GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1);
-  	double GetPropVelocity(StrawResponse rep, ComboHit chit); 
-	double GetPropTime(ComboHit chit, Straw straw, double vprop);
-  	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
-  	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
-  	double TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
-  	double T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit, double average);
+	double GetTestDOCA(ComboHit chit,XYZVec pos, XYZVec dir);
+	double GetTestDOCA(ComboHit chit,double a0, double a1, double b0, double b1);
+        int GetAmbig(ComboHit chit, XYZVec pos, XYZVec dir);
+        int GetAmbig(ComboHit chit, double a0, double a1, double b0, double b1);
+  	double GetPropVelocity(StrawResponse::cptr_t srep, ComboHit chit); 
+	double GetPropTime(ComboHit chit, double vprop);
+  	double TimeResidualTrans(double doca);
+  	double TimeResidualLong(double doca, StrawResponse::cptr_t srep, double t0, ComboHit chit);
+  	double TimeResidual(double doca, StrawResponse::cptr_t srep, double t0, ComboHit hit);
+  	
   
  }
 
