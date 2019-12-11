@@ -14,6 +14,8 @@ namespace mu2e {
         ~PointLinePCA_XYZ();
 	double dca()   const { return _dca;};
         XYZVec const& pca() const { return _pca;}; 
+	void set_dca(double dca){ _dca = dca;}
+	void set_pca(XYZVec pca){ _pca.SetXYZ(pca.X(), pca.Y(), pca.Z());}
     private:
 	
 	XYZVec _point;

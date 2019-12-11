@@ -49,7 +49,7 @@ namespace mu2e
 	      using Name=fhicl::Name;
 	      using Comment=fhicl::Comment;
 	      fhicl::Atom<int> Npara{Name("NParameters"),Comment("number of fit parameters used"), 4 };
-	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),1};
+	      fhicl::Atom<int> diag{Name("diagLevel"), Comment("set to 1 for info"),2};
 	      fhicl::Atom<int> debug{Name("debugLevel"), Comment("set to 1 for debug prints"),1};
 	      fhicl::Atom<string> dontuseflag {Name("DoNotUseFlag"),Comment("if set to OK then save the track"), "Outlier"};
               fhicl::Atom<unsigned> minnsh {Name("minNStrawHits"), Comment("minimum number of straw hits "),2};
@@ -61,12 +61,12 @@ namespace mu2e
     	      fhicl::Atom<float> max_seed_chi2{Name("MaxSeedChi2DOF"),Comment("maximum chi 2/dof for seed"),2.5};
 	      fhicl::Atom<float> max_chi2_change{Name("MaxDeltaChi2"),Comment("The maxiumum allowed change in chi2 before convergeing seed fit"),0.001};
 	      fhicl::Atom<float> max_position_deviation{Name("MaxPosDev"),Comment("The maxiumum allowed change in position correlated parameters between seed fit iterations "), 200 };
-	       fhicl::Atom<float> maxHitDOCA{Name("MaxDOCA"),Comment("The maxiumum allowed DOCA to wire for any hit used for full drift fit"), 2.5 };
+	      fhicl::Atom<float> maxHitDOCA{Name("MaxDOCA"),Comment("The maxiumum allowed DOCA to wire for any hit used for full drift fit"), 2.5 };
 	      fhicl::Atom<float> maxLogL{Name("MaxLogL"),Comment("The maxiumum allowed outcome of Minuit fit routine"), 150 };
 	      fhicl::Atom<float> gaussTres{Name("GaussianSeedTimeResolution"),Comment("The resolution of the Gaussian seed fit in time"), 24 };
               fhicl::Atom<float> maxTres{Name("MaxTimeResidual"),Comment("The maxiumum allowed time residual for any hit used for full drift fit"), 40 };
-		fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track") ,2000.};
-		fhicl::Atom<float> maxpull{Name("MaxHitPullSForeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
+	      fhicl::Atom<float> maxd{Name("MaxTrackLength"),Comment("The maxiumum allowed length of track") ,2000.};
+	      fhicl::Atom<float> maxpull{Name("MaxHitPullSForeed"),Comment("The maxiumum allowed combo hit pull from fit") ,100.};
     	};
 		
 		explicit CosmicTrackFit(const Config& conf);
@@ -88,16 +88,16 @@ namespace mu2e
 		
 		
                 bool goodTrack(CosmicTrack& track);
-		void DriftFit(CosmicTrackFinderData& trackData);
+		void DriftFit(CosmicTrackFinderData& trackData, StrawResponse::cptr_t srep);
 		
                 const Tracker*            _tracker;
     		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }
-                StrawResponse _srep;
-                void  setStrawResponse (StrawResponse rep) {_srep = rep;}
+                
+		bool use_hit(ComboHit const&) const;
+  		bool use_track(double length) const;
 	private:
 		Config _conf;
-  		bool use_hit(ComboHit const&) const;
-  		bool use_track(double length) const;
+  		
     		//void setOutlier(ComboHit&) const; TODO
                 unsigned _Npara;
 		int _diag;
