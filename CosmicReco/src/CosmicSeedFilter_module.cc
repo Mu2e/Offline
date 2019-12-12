@@ -27,40 +27,33 @@ using namespace std;
 
 namespace mu2e
 {
-  class SeedFilter : public art::EDFilter
+  class CosmicSeedFilter : public art::EDFilter
   {
   public:
-    explicit SeedFilter(fhicl::ParameterSet const& pset);
+    explicit CosmicSeedFilter(fhicl::ParameterSet const& pset);
     virtual bool filter(art::Event& event) override;
     virtual bool endRun( art::Run& run ) override;
 
   private:
 
     art::InputTag   _cosmicTag;
-
-    int _minnsh;
-    int _minnch;    
-    int _minNHitsTimeCluster;
-/*
-    unsigned n_outliers;
-    unsigned maxniter;
-
-*/
     TrkFitFlag      _goodcosmic; 
     TrkFitFlag      _convergedcosmic;
+    unsigned int _minnsh;
+    unsigned int _minnch;    
+    unsigned int _minNHitsTimeCluster;
     std::string     _trigPath;
     int             _debug;
-    // counters
     unsigned        _nevt, _npass;
   };
 
-  SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
+  CosmicSeedFilter::CosmicSeedFilter(fhicl::ParameterSet const& pset) :
     art::EDFilter{pset},
     _cosmicTag     (pset.get<art::InputTag>("CosmicTrackSeedCollection","KSFDeM")),
     _goodcosmic(pset.get<vector<string> >("comsicseedFitFlag",vector<string>{"HelixOK"})),
     _convergedcosmic(pset.get<vector<string> > ("comsicseedFitFlag", vector<string>{"HelixConverged"})),
-    _minnsh (pset.get<int>   ("minnsh",8)),
-    _minnch (pset.get<int>   ("minnch",8)),
+    _minnsh (pset.get<unsigned int>   ("minnsh",8)),
+    _minnch (pset.get<unsigned int>   ("minnch",8)),
     _trigPath  (pset.get<std::string>("triggerPath")),
     _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
@@ -68,7 +61,7 @@ namespace mu2e
     produces<TriggerInfo>();
   }
 
-  bool SeedFilter::filter(art::Event& evt){
+  bool CosmicSeedFilter::filter(art::Event& evt){
     unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
     bool   retval(false);
@@ -79,7 +72,7 @@ namespace mu2e
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
-      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh &&cosmic.timeCluster().isNonnull()){ 
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh ){ //TODO - timecluster check 
        
         ++_npass;
         // Fill the trigger info object
@@ -88,7 +81,7 @@ namespace mu2e
         // associate to the helix which triggers.  Note there may be other helices which also pass the filter
         // but filtering is by event!
         size_t index = std::distance(coscol->begin(),icos);
-        triginfo->_track = art::Ptr<CosmicTrackSeed>(cosH,index);
+        triginfo->_cosmic = art::Ptr<CosmicTrackSeed>(cosH,index);
         if(_debug > 1){
           cout << moduleDescription().moduleLabel() << " passed event " << evt.id() << endl;
         }
