@@ -52,12 +52,17 @@ CosmicFilters : { @table::CosmicFilters
 
     filters   : {
 	
-	CosmicCountFilter     : { #TODO check this
-	    module_type : CosmicCountFilter
-	    strawDigiCollection : " "
+	CosmicCountFilter     : { #TODO
+            module_type : DigiFilter
+	    strawDigiCollection : makeSD
+	    caloDigiCollection  : notUsed
 	    useStrawDigi        : true
-	    minNStrawDigi       : -1
-	    maxNStrawDigi       : -1
+	    useCaloDigi         : false
+	    minNStrawDigi       : 10 
+	    maxNStrawDigi       : 10000
+	    minNCaloDigi        : -1
+	    maxNCaloDigi        : -1
+	    maxCaloEnergy       : -1
 	    triggerPath         : "CosmicStraightTrigger"	    	    	    
 	}
 
@@ -72,13 +77,13 @@ CosmicFilters : { @table::CosmicFilters
 
 	CosmicTriggerPreselect   : { @table::CosmicReco.CosmicTriggerPreselect  }
 	
-	CosmicFilter  : { @table::CosmicReco.CosmicFilter }
+	CosmicFilter  : { @table::CosmicReco.CosmicFilters }
 	
     }
 
     sequences   : {
 	
-	CosmicStraightTrigger  : [ CosmicEventPrescale,  CosmicCountFilter, Trigger, CosmicSeedFilter, EndEventPrescale ] #TODO
+	CosmicStraightTrigger  : [ CosmicEventPrescale,  CosmicCountFilter, TimeClusterFinderCosmics, CosmicTrackFinder, CosmicSeedFilter, EndEventPrescale ] 
 	
 	
 }
