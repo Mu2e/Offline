@@ -44,15 +44,7 @@ namespace mu2e
 /*
     unsigned n_outliers;
     unsigned maxniter;
-    float _max_seed_chi2;
-    float _max_chi2_change;
-    float _max_position_deviation;
-    float _maxHitDOCA;
-    float _maxLogL;
-    float _gaussTres;
-    float _maxTres;
-    float _maxd;
-    float _maxpull;
+
 */
     TrkFitFlag      _goodcosmic; 
     TrkFitFlag      _convergedcosmic;
@@ -65,9 +57,10 @@ namespace mu2e
   SeedFilter::SeedFilter(fhicl::ParameterSet const& pset) :
     art::EDFilter{pset},
     _cosmicTag     (pset.get<art::InputTag>("CosmicTrackSeedCollection","KSFDeM")),
-   
     _goodcosmic(pset.get<vector<string> >("comsicseedFitFlag",vector<string>{"HelixOK"})),
     _convergedcosmic(pset.get<vector<string> > ("comsicseedFitFlag", vector<string>{"HelixConverged"})),
+    _minnsh (pset.get<int>   ("minnsh",8)),
+    _minnch (pset.get<int>   ("minnch",8)),
     _trigPath  (pset.get<std::string>("triggerPath")),
     _debug     (pset.get<int>   ("debugLevel",0)),
     _nevt(0), _npass(0)
@@ -78,7 +71,7 @@ namespace mu2e
   bool SeedFilter::filter(art::Event& evt){
     unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     ++_nevt;
-  
+    bool   retval(false);
     // find the collection
     auto cosH = evt.getValidHandle<CosmicTrackSeedCollection>(_cosmicTag);
     const CosmicTrackSeedCollection* coscol = cosH.product();
@@ -86,8 +79,7 @@ namespace mu2e
     for(auto icos = coscol->begin(); icos != coscol->end(); ++icos) {
       auto const& cosmic = *icos;
      
-      
-      if( cosmic.status().hasAllProperties(_goodcosmic)){ //TODO the cuts {
+      if( cosmic.status().hasAllProperties(_goodcosmic) && cosmic.status().hasAllProperties(_convergedcosmic) && cosmic.hits().size()>_minnch && cosmic.trkstrawhits().size() > _minnsh &&cosmic.timeCluster().isNonnull()){ 
        
         ++_npass;
         // Fill the trigger info object
