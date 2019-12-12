@@ -8,30 +8,21 @@ BEGIN_PROLOG
 CosmicFilters : {
     CosmicTriggerPreselect : {
 	diagLevel              : 0
-	module_type            : CosmicTriggerPreselect
+	module_type            : CosmicPreselect
 	trkPatRecModuleLabel   : MergePatRec
-	trkQualTag             : MergePatRec
-	caloClusterModuleLabel : CaloClusterFromProtoCluster
-	trackClusterMatchModuleLabel : TrackCaloMatching
-	fitparticle            : 11
-	fitdirection           : 0 
-	TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] }
-	virtualhit             : 1 # ask for CE hit on a ECAL virtual detector
+	TimeOffsets            : { inputs : [ "protonTimeMap", "muonTimeMap" ] } #TODO - dot we need comsics here?
+	#virtualhit             : 1 # ask for CE hit on a ECAL virtual detector
 	trkgood                : 1 # 0:no match 1:good track 
-	matchgood              : 1 # 0:no match 1:good track match
 	T0MIN                  : 700
-	ECLUMIN                : 50
     }
 
-#From CosmicTrackFinder:
-    CosmicTrackFilter : {
-	module_type            : CosmicTrackFilter
-	CaloClusterCollection  : "CaloClusterFast"
+#From CosmicTrackFinder: //DONE
+    CosmicSeedFilter : {
+	module_type            : CosmicSeedFilter
+        minnsh                 : 8
+        minnch 		       : 8
 	debugLevel             : 0	      
-	MinNCrystalHits        : 7	      
-	MinEnergy              : 150.0    #MeV
-	MaxEnergy              : 600.0    #MeV
-	triggerPath             : "CaloCalibCosmic"	    
+	triggerPath            : "CosmicStraightTrigger"	    
     }
 
   
@@ -41,7 +32,7 @@ CosmicFilters : { @table::CosmicFilters
     
     producers : {
     	
-	fetchDigis : { module_type:PrefetchData
+	fetchDigis : { module_type: PrefetchData #TODO
 	    debugLevel                    : 0
 	    mcDiag                        : true
 
@@ -63,33 +54,24 @@ CosmicFilters : { @table::CosmicFilters
 
     filters   : {
 	
-	#set the prescaler for each trigger path: we want a event-based prescaler and also a prescaler on the good events.
-	#TODO: add also a path for the selection of failed events
-
-	CosmicCountFilter     : {
+	CosmicCountFilter     : { #TODO check this
 	    module_type : CosmicCountFilter
 	    strawDigiCollection : " "
 	    useStrawDigi        : true
-	    useCaloDigi         : false
 	    minNStrawDigi       : -1
 	    maxNStrawDigi       : -1
-	    minNCaloDigi        : 2
-	    maxNCaloDigi        : 10000
-	    maxCaloEnergy       : -1
 	    triggerPath         : "CosmicStraightTrigger"	    	    	    
 	}
 
-#PreScaler for Passed Events:
+#PreScaler for Passed Events: //DONE
 	EndEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
-	    triggerPath        : "CosmicStraight"	    	    
-	    triggerFlag   : ["PrescaleRandom"]	    
+            useFilteredEvents : true
+	    triggerPath        : "CosmicStraightTrigger"	    	    
+	    triggerFlag   : ["PrescaleGoodEvents"]	    
 	}
-	
-	
-	
-	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
+
 	CosmicTriggerPreselect   : { @table::CosmicReco.CosmicTriggerPreselect  }
 	
 	CosmicFilter  : { @table::CosmicReco.CosmicFilter }
@@ -98,7 +80,7 @@ CosmicFilters : { @table::CosmicFilters
 
     sequences   : {
 	
-	CosmicStraightTrigger  : [ CosmicTriggerPrescale, CosmicCountFilter, CosmicTrigger, Filter, EndEventPrescale ]
+	CosmicStraightTrigger  : [ CosmicTriggerPreselect,  CosmicCountFilter, Trigger, CosmicSeedFilter, EndEventPrescale ] #TODO
 	
 	
 }
