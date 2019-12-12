@@ -42,11 +42,18 @@ namespace mu2e
     virtual bool beginRun(art::Run&   run   );
     virtual bool endRun( art::Run& run ) override;
 
+    //function that evaluates the ratio between the measured ComboHits and the
+    //expected intesections of the helix with the tracker planes. This function
+    //models the tracker as a perfect cylinder
+    float   helixHitRatio(const HelixSeed* helix);
+
+
   private:
     art::InputTag _hsTag;
     bool          _hascc; // Calo Cluster
     int           _hel;
     int           _minnstrawhits;
+    double        _minHitRatio;
     double        _minmom, _maxmom;
     double        _maxpT;
     double        _minpT;
@@ -76,6 +83,7 @@ namespace mu2e
     _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
     _hel               (pset.get<int>   ("helicity")),
     _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
+    _minHitRatio       (pset.get<double>("minHitRatio",0.)),
     _minmom            (pset.get<double>("minMomentum",70.0)),
     _maxmom            (pset.get<double>("maxMomentum",120.0)),
     _minpT             (pset.get<double>("minPt", 0.)),
@@ -141,7 +149,8 @@ namespace mu2e
       float d0         = hs.helix().rcent() - hs.helix().radius();
       float lambda     = std::fabs(hs.helix().lambda());
       float nLoops     = helTool.nLoops();
-      
+      float hRatio     = helixHitRatio(&hs);
+
       if(_debug > 2){
         cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
       }
@@ -158,7 +167,8 @@ namespace mu2e
 	  nLoops     <= _maxnloops &&
 	  nLoops     >= _minnloops &&
           hmom       >= _minmom    && 
-	  hmom       <= _maxmom) {
+	  hmom       <= _maxmom    &&
+	  hRatio     >= _minHitRatio ) {
 
 	//now check if we want to prescake or not 
 	if (_prescaleUsingD0Phi) {
@@ -191,6 +201,61 @@ namespace mu2e
     }
     return true;
   }
+
+
+  float   HelixFilter::helixHitRatio(const HelixSeed* helix){
+
+    int      nCH = helix->hits().size();
+    int      nFaces(36); //was 36, now doing stations instead of faces
+    float    expected_hits(0);
+    float    z_step(178.); //are they really equally spaced? was 89 before
+    float    minR_tracker(380.);
+    float    maxR_tracker(860.);
+
+    //find the z of the first hit (closest to the stopping target)
+    const ComboHit*    hit(0);
+    double   firstHitZ(1e5);
+    double   lastHitZ(-1e5);
+    
+    for (int k=0; k<nCH; ++k){
+      hit   = &helix->hits().at(k);
+      if (hit->pos().z() > lastHitZ){
+	lastHitZ = hit->pos().z();
+      }
+    }
+
+    for (int i=0; i<nCH; ++i){
+      hit   = &helix->hits().at(i);
+      if (hit->pos().z() < firstHitZ){
+	firstHitZ = hit->pos().z();
+      }
+    }
+
+    for (int i=0; i<nFaces;i++){
+      //float   z = zStart_tracker + i*z_step;
+      float   z = firstHitZ + (double)i*z_step;
+      if (z < firstHitZ )  continue;
+      if (z > lastHitZ  )  continue;
+
+      XYZVec  pos;
+      pos.SetZ(z);
+      helix->helix().position(pos);
+      
+      //now check that we are in the active area of tracker
+      double   hitR = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
+      if (hitR < minR_tracker)  continue;
+      if (hitR > maxR_tracker)  continue;
+
+      ++expected_hits;
+    }
+
+    //each face has two planes. We are assuming 2 ComboHits per face
+    float   hitRatio = nCH / (2.*expected_hits);
+    return hitRatio;
+
+  }
+
+  
 }
 using mu2e::HelixFilter;
 DEFINE_ART_MODULE(HelixFilter);
