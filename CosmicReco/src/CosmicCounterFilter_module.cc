@@ -45,7 +45,7 @@ using namespace std;
 namespace mu2e {
 
 
-  class CosmicCounter : public art::EDFilter {
+  class CosmicCounterFilter : public art::EDFilter {
      
   public:
     using Name=fhicl::Name;
@@ -59,7 +59,7 @@ namespace mu2e {
 	  Comment("label of the given trigger-path")};
     };
 
-    virtual ~CaloClusterCounter() { }
+    virtual ~CosmicCounterFilter() { }
 
     virtual void beginJob();
     virtual void endJob  ();
@@ -67,7 +67,7 @@ namespace mu2e {
     virtual bool endRun( art::Run& run ) override;
 
     using Parameters = art::EDFilter::Table<Config>;
-    explicit CaloClusterCounter(const Parameters& conf);
+    explicit CosmicCounterFilter(const Parameters& conf);
 
   private:
        
@@ -82,7 +82,7 @@ namespace mu2e {
   };
 
 
-  CosmicCounter::CaloClusterCounter(const Parameters& config):
+  CosmicCounterFilter::CosmicCounterFilter(const Parameters& config):
     art::EDFilter{config},
     _diagLevel                   (config().diag()), 
     _nProcess                    (0),		     
@@ -93,29 +93,26 @@ namespace mu2e {
       produces<TriggerInfo>();
     }
   
-  void CosmicCounter::beginJob(){ }
+  void CosmicCounterFilter::beginJob(){ }
 
-  void CosmicCounter::endJob(){}
+  void CosmicCounterFilter::endJob(){}
 
-  bool CosmicCounter::endRun( art::Run& run ) {
+  bool CosmicCounterFilter::endRun( art::Run& run ) {
     if(_diagLevel > 0 && _nProcess > 0){
-      cout << "CosmicCounter" << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
+      cout << "CosmicCounterFilter" << " passed " <<  _nPass << " events out of " << _nProcess << " for a ratio of " << float(_nPass)/float(_nProcess) << endl;
     }
     return true;
   }
   
-  //--------------------------------------------------------------------------------
-  // Follow the body of the Filter logic
-  //--------------------------------------------------------------------------------
-  bool CosmicCounter::filter(art::Event& event) {
+  bool CosmicCounterFilter::filter(art::Event& event) {
 
     ++_nProcess;
-    if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CosmicCounter =  "<<_nProcess  <<std::endl;
+    if (_nProcess%10==0 && _diagLevel > 0) std::cout<<"Processing event from CosmicCounterFilter =  "<<_nProcess  <<std::endl;
    
     unique_ptr<TriggerInfo> triginfo(new TriggerInfo);
     bool   retval(false);
 
-    auto  cosH = event.getValidHandle<CosmicTrackSeedCollection>(_clTag);
+    auto  cosH = event.getValidHandle<CosmicTrackSeedCollection>(_csTag);
     const CosmicTrackSeedCollection*  cosmics = cosH.product();
 
     int    nPass(0);
@@ -126,7 +123,7 @@ namespace mu2e {
       ++nPass;
     }
       
-    if (nPass>_npass) retval = true;  
+    if (nPass>_nPass) retval = true;  
 
     event.put(std::move(triginfo));
     return retval;
@@ -134,6 +131,6 @@ namespace mu2e {
  
 }  // end namespace mu2e
 
-DEFINE_ART_MODULE(mu2e::CosmicCounter);
+DEFINE_ART_MODULE(mu2e::CosmicCounterFilter);
 
 
