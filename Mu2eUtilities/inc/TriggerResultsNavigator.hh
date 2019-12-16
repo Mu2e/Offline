@@ -32,6 +32,13 @@ namespace mu2e {
 
     // Has ith path accepted the event?
     bool      accepted(std::string const& name) const;
+
+    bool      wasrun(std::string const& name) const;
+
+    std::vector<std::string>   triggerModules (std::string const& name) const;
+    unsigned                   indexLastModule(std::string const& name) const;
+    std::string                nameLastModule (std::string const& name) const;
+    
     art::hlt::HLTState state(std::string const& name) const;
     void      print() const;
 
