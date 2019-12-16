@@ -58,8 +58,8 @@ CosmicFilters : { @table::CosmicFilters
 	    caloDigiCollection  : notUsed
 	    useStrawDigi        : true
 	    useCaloDigi         : false
-	    minNStrawDigi       : 10 
-	    maxNStrawDigi       : 10000
+	    minNStrawDigi       : 8 
+	    maxNStrawDigi       : 100
 	    minNCaloDigi        : -1
 	    maxNCaloDigi        : -1
 	    maxCaloEnergy       : -1
@@ -83,7 +83,7 @@ CosmicFilters : { @table::CosmicFilters
 
     sequences   : {
 	
-	CosmicStraightTrigger  : [ CosmicEventPrescale,  CosmicCountFilter, TimeClusterFinderCosmics, CosmicTrackFinder, CosmicSeedFilter, EndEventPrescale ] 
+	CosmicStraightTrigger  : [ CosmicEventPrescale,  CosmicCountFilter, TimeClusterFinderCosmics, TimeClusterfinder, CosmicTrackFinder, CosmicSeedFilter, EndEventPrescale ] 
 	
 	
 }
