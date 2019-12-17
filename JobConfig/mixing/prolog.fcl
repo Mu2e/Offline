@@ -14,13 +14,14 @@ mixerTemplateCommon: {
 #     randomLimReplace -- events unique within a primary event
 #     randomNoReplace -- events guaranteed to be used once only.
 #   readMode            : randomNoReplace
-   readMode            : randomLimReplace
+   readMode            : sequential
    wrapFiles           : true
 
    mu2e: {
       protonBunchIntensityTag: "protonBunchIntensity"
       meanEventsPerProton: @nil
       products: @nil
+      skipFactor : 1 # temporary
    }
 }
 

@@ -51,6 +51,7 @@ namespace mu2e {
       int _altitude;
       double _subboxLength;
       double _maxShowerEn;
+      double _minShowerEn;
 
       std::string _setupString;
       std::string _cryDataPath;

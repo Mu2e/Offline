@@ -36,10 +36,8 @@ int mu2e::ValHelixSeed::fill(const mu2e::HelixSeedCollection & coll,
     _hNStrHit->Fill(nstrawhits);
     const TrkFitFlag& tff = hs.status();
 
-    int i=0;
     for(auto sn: tff.bitNames()) { 
-      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(i); 
-      i++;
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second)); 
     }
 
     _ht0->Fill(hs.t0().t0());
