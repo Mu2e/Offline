@@ -1120,7 +1120,7 @@ namespace mu2e {
       _mcthreshpdg = _mcthreshproc = _mcnstep = 0;
       art::Ptr<StepPointMC> const& spmc = xpair[0]._iclust->stepPointMC();
       if(!spmc.isNull()){
-        _mctime = _toff.timeWithOffsetsApplied(*spmc);
+        _mctime = _toff.timeWithOffsetsApplied(*spmc) -_ewMarkerOffset;
         // compute the doca for this step
         TwoLinePCA pca( straw.getMidPoint(), straw.getDirection(),
             spmc->position(), spmc->momentum().unit() );
