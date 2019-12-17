@@ -77,7 +77,13 @@ namespace mu2e {
     unsigned                    indexLast  = indexLastModule(name);
     std::vector<std::string>    modulesVec = triggerModules(name);
     
-    return modulesVec[indexLast];
+    if ( modulesVec.size() == 0) {
+      std::string nn = "PATH "+name+" NOT FOUND";
+      std::cout << "[TriggerResultsNavigator::nameLastModule] " << nn << std::endl;
+      return nn;
+    }else {
+      return modulesVec[indexLast];
+    }
   }
   
   art::hlt::HLTState 
