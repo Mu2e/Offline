@@ -53,7 +53,6 @@ namespace mu2e {
   
   std::vector<std::string>   
   TriggerResultsNavigator::triggerModules(std::string const& name) const{
-    std::cout << "Parameter set registry size: " << fhicl::ParameterSetRegistry::get().size() << std::endl;
     std::vector<std::string>     modules;
 
     for ( auto const& i : fhicl::ParameterSetRegistry::get() ){
