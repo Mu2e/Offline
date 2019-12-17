@@ -54,7 +54,7 @@ enum bkgweight{linear=0,exponential=1,polynomial=2};
 enum tch{hastch=0,notch,donttest};
 
 int
-TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
+TrainTrkQual(TTree* mytree, std::string train_name="TrkQual", int bkgw=exponential,int tch=donttest)
 {
 
   // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
@@ -145,8 +145,8 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
   // --- Here the preparation phase begins
 
   // Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-  TString tname("TrkQual");
-  switch(tch) {
+  TString tname = train_name;
+  /*  switch(tch) {
     case hastch:
       tname = "TrkQualTCH";
       break;
@@ -156,6 +156,7 @@ TrainTrkQual(TTree* mytree,int bkgw=exponential,int tch=donttest)
     case donttest : default :
       break;
   }
+  */
   TString outfilename(tname);
   outfilename += ".root";
   TFile* outputFile = TFile::Open( outfilename, "RECREATE" );
