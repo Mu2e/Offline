@@ -16,8 +16,9 @@
 
 // Mu2e includes.
 #include "RecoDataProducts/inc/TrkQual.hh"
+#include "Mu2eUtilities/inc/MVATools.hh"
 #include "DbService/inc/DbHandle.hh"
-#include "DbTables/inc/TrkQualCalib.hh"
+#include "DbTables/inc/TrkQualDb.hh"
 
 
 #include <iostream>
@@ -43,8 +44,8 @@ namespace mu2e {
     bool beginRun(art::Run& run) override;
     bool endRun(art::Run& run) override;
     bool filter(art::Event& event) override;
-    
-    mu2e::DbHandle<mu2e::TrkQualCeMCalib> _trkQualCalib;
+
+    mu2e::DbHandle<mu2e::TrkQualDb> _trkQualDb;
 
     art::InputTag _inputTag;
     float _effRequest;
@@ -54,7 +55,9 @@ namespace mu2e {
     art::EDFilter{conf},
     _inputTag(conf().inputTag()),
     _effRequest(conf().effRequest())
-    {    }
+    { 
+
+    }
 
   bool TrkQualFilter::beginRun(art::Run& run) {
     return true;
@@ -66,24 +69,31 @@ namespace mu2e {
   bool TrkQualFilter::filter(art::Event& event) {
 
     float trkQualCut = -1;
-    auto const& trkQualTable = _trkQualCalib.get(event.id());
+    auto const& trkQualTable = _trkQualDb.get(event.id());
     for (const auto& i_row : trkQualTable.rows()) {
-      if (i_row.eff() == _effRequest) {
-	trkQualCut = i_row.cut();
-	break;
+      if (i_row.mvaname() == "TrkQual") {
+	const auto& calib = trkQualTable.getCalib(i_row.idx());
+	for (const auto& i_pair : calib) {
+	  if (i_pair.first == _effRequest) {
+	    trkQualCut = i_pair.second;
+	    break;
+	  }
+	}
       }
     }
+
     if (trkQualCut < 0) {
       throw cet::exception("TrkQualFilter") << "trkQualCut is less than 0 (value = " << trkQualCut << ")" << std::endl;
     }
-
+    
     auto trkQualCollsH = event.getValidHandle<TrkQualCollection>(_inputTag);
 
     bool pass = false;
     for(const auto& i_trkQual : *trkQualCollsH) {
       std::cout << "TrkQual = " << i_trkQual.MVAOutput() << std::endl;
+      
       if (i_trkQual.MVAOutput() >= trkQualCut) {
-	pass = true;
+      	pass = true;
       }
     }
 

@@ -65,36 +65,57 @@ MVATools::MVATools(fhicl::ParameterSet const& pset) :
    mvaWgtsFile_ = configFile(weights);
 }
 
+MVATools::MVATools(const std::string& xmlfilename) :
+  mvaWgtsFile_(xmlfilename), 
+  wgts_(), 
+  x_(), 
+  y_(),
+  fv_(), 
+  layerToNeurons_(), 
+  synapsessPerLayer_(),
+  voffset_(), 
+  vscale_(), 
+  title_(), 
+  label_(),
+  activeType_(aType::null),
+  activationTypeString_("none"),
+  oldMVA_(false),
+  isNorm_(false) { }
+
 MVATools::~MVATools() {}
 
+xercesc::DOMDocument* MVATools::getXmlDoc() {
 
+  try
+    {
+      XMLPlatformUtils::Initialize();
+    } 
+  catch (XMLException& e)
+    {
+      char* message = XMLString::transcode( e.getMessage() ) ;
+      throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
+      XMLString::release( &message ) ;
+    }
+  
+  XercesDOMParser* parser = new XercesDOMParser();
+  parser->setValidationScheme(XercesDOMParser::Val_Never);
+  parser->setDoNamespaces(false);
+  parser->setDoSchema(false);
+  parser->setLoadExternalDTD( false );
+  
+  XMLCh *xmlFile = XMLString::transcode(mvaWgtsFile_.c_str());
+  parser->parse(xmlFile);
+  XMLString::release( &xmlFile ) ;
+  
+  xercesc::DOMDocument* xmlDoc = parser->getDocument() ;
+  return xmlDoc;
+}
 
 void MVATools::initMVA()
 {
     if (wgts_.size()>0) throw cet::exception("RECO")<<"mu2e::MVATools: already initialized" << std::endl;
 
-    try
-    {
-       XMLPlatformUtils::Initialize();
-    } 
-    catch (XMLException& e)
-    {
-       char* message = XMLString::transcode( e.getMessage() ) ;
-       throw cet::exception("RECO")<<"mu2e::MVATools: XML initialization error: " <<  message << std::endl;
-       XMLString::release( &message ) ;
-    }
-
-    XercesDOMParser* parser = new XercesDOMParser();
-    parser->setValidationScheme(XercesDOMParser::Val_Never);
-    parser->setDoNamespaces(false);
-    parser->setDoSchema(false);
-    parser->setLoadExternalDTD( false );
-
-    XMLCh *xmlFile = XMLString::transcode(mvaWgtsFile_.c_str());
-    parser->parse(xmlFile);
-    XMLString::release( &xmlFile ) ;
- 
-    xercesc::DOMDocument* xmlDoc = parser->getDocument() ;
+    xercesc::DOMDocument* xmlDoc = getXmlDoc();
 
     getGen(xmlDoc);
     getOpts(xmlDoc);
@@ -328,6 +349,50 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
     XMLString::release(&ATT_NSYNAPSES);    
 }
 
+  void MVATools::getCalib(std::map<float, float>& effCalib) {
+
+    xercesc::DOMDocument* xmlDoc = getXmlDoc();
+
+    XMLCh* TAG_CALIBRATION = XMLString::transcode("Calib");
+    XMLCh* ATT_INDEX = XMLString::transcode("Index");
+    XMLCh* ATT_EFF = XMLString::transcode("Eff");
+    XMLCh* ATT_CUT = XMLString::transcode("Cut");
+    
+    XMLCh *xpathStr = XMLString::transcode("/MethodSetup/Calibration");
+    DOMXPathResult* xpathRes = xmlDoc->evaluate(xpathStr,xmlDoc->getDocumentElement(),NULL,
+						DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE, NULL);
+    XMLString::release(&xpathStr);
+    DOMElement* varElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
+    if (!varElem) {
+      throw cet::exception("MVATools") << "No calibration for this MVA" << std::endl;
+    }
+    xpathRes->release();
+    
+    DOMNodeList* children = varElem->getElementsByTagName(TAG_CALIBRATION);
+    for( XMLSize_t ix = 0 ; ix < children->getLength() ; ++ix ) {       
+      float eff(0.0);
+      float cut(0.0);
+      
+      DOMNode* childNode = children->item( ix ) ;
+      DOMNamedNodeMap* attrs = childNode->getAttributes();
+      for( XMLSize_t ia = 0 ; ia < attrs->getLength() ; ++ia ) {
+	DOMNode* attr = attrs->item(ia);
+	char* attValue = XMLString::transcode(attr->getNodeValue());
+	
+	if (XMLString::equals(ATT_EFF,attr->getNodeName()) )      eff = strtof(attValue,NULL);
+	if (XMLString::equals(ATT_CUT,attr->getNodeName()) )      cut = strtof(attValue,NULL);
+	
+	XMLString::release( &attValue ) ;
+      }
+
+      effCalib.insert(std::pair<float, float>(eff, cut));      
+    }
+  
+    XMLString::release(&TAG_CALIBRATION);
+    XMLString::release(&ATT_INDEX);
+    XMLString::release(&ATT_EFF);
+    XMLString::release(&ATT_CUT);
+}
 
 
 

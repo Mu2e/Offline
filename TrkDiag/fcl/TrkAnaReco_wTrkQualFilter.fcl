@@ -9,7 +9,7 @@ source : { module_type : RootInput }
 
 services : @local::Services.Reco
 
-services.DbService.textFile : ["TrkDiag/test/effToTrkQualCeM.txt"]
+services.DbService.textFile : ["TrkDiag/test/TrkQualDb.txt" ]
 
 physics :
 {
@@ -20,13 +20,22 @@ physics :
     		      inputTag : "TrkQualDeM"
 		      effRequest : 0.8
 		    }
+    trkQualNewFilter : { module_type : TrkQualFilter
+    		       	 inputTag : "TrkQualNewDeM"
+		      	 effRequest : 0.8
+		       }
   }
 }
 
+physics.producers.TrkQualNewDeM : @local::TrkQualDeM
+physics.producers.TrkQualNewDeM.TrkQualMVA.MVAWeights : "TrkDiag/test/TrkQualNew.weights.xml"
+
 physics.TrkAnaTrigPath : [ @sequence::TrkAnaReco.TrigSequence, trkQualFilter ]
+physics.TrkAnaNewTrigPath : [ @sequence::TrkAnaReco.TrigSequence, TrkQualNewDeM, trkQualNewFilter ]
+
 physics.TrkAnaEndPath : [ @sequence::TrkAnaReco.EndSequence ]
 
-physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath ]
+physics.analyzers.TrkAnaNeg.SelectEvents : [ TrkAnaTrigPath, TrkAnaNewTrigPath ]
 
 # Include more information (MC, full TrkQual and TrkPID branches)
 physics.analyzers.TrkAnaNeg.candidate.options : @local::AllOpt

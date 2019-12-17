@@ -22,9 +22,12 @@ namespace mu2e
        };       
        explicit MVATools(fhicl::ParameterSet const&);
        explicit MVATools(const Config& conf);
+       explicit MVATools(const std::string& xmlfilename);
 
        virtual ~MVATools();
+       xercesc::DOMDocument* getXmlDoc();
        void     initMVA();
+       void     calibMVA();
        float    evalMVA(const std::vector<float>&,MVAMask vmask=0xffffffff) const;
        float    evalMVA(const std::vector<double>&,MVAMask vmask=0xffffffff) const;
        void     showMVA()const;
@@ -55,7 +58,10 @@ namespace mu2e
        aType activeType_;
        std::string activationTypeString_;
        bool oldMVA_;
-       bool isNorm_;       
+       bool isNorm_;
+
+  public:
+       void   getCalib(std::map<float, float>& effCalib);
   };
 }
 #endif

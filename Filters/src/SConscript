@@ -59,6 +59,7 @@ helper.make_plugins( [
     'boost_filesystem',
     'boost_system',
     'hep_concurrency',
+    'xerces-c'
     ] )
 
 #helper.make_dict_and_map( [
