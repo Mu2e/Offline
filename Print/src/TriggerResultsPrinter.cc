@@ -58,7 +58,7 @@ mu2e::TriggerResultsPrinter::Print(const art::TriggerResults& obj, int ind, std:
   auto pathNames = trigNavig.getTrigPaths();
   for(auto name: pathNames) {
     os << "  " 
-       << (trigNavig.accept(name) ? "pass" : "fail" )
+       << (trigNavig.accepted(name) ? "pass" : "fail" )
        << "  " << name << std::endl;
   }
 
