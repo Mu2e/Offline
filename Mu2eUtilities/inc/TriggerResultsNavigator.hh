@@ -35,6 +35,8 @@ namespace mu2e {
 
     bool      wasrun(std::string const& name) const;
 
+    //NOTE: the following three functions can be used only within the same job that runs the 
+    // trigger paths, otherwise they will fail
     std::vector<std::string>   triggerModules (std::string const& name) const;
     unsigned                   indexLastModule(std::string const& name) const;
     std::string                nameLastModule (std::string const& name) const;
