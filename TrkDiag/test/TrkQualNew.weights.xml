@@ -199,4 +199,18 @@
       </Layer>
     </Layout>
   </Weights>
+  <Calibration>
+    <Calib Index="0" Eff="0" Cut="0.9995"/>
+    <Calib Index="1" Eff="0.1" Cut="0.9995"/>
+    <Calib Index="2" Eff="0.2" Cut="0.9993"/>
+    <Calib Index="3" Eff="0.3" Cut="0.9985"/>
+    <Calib Index="4" Eff="0.4" Cut="0.9971"/>
+    <Calib Index="5" Eff="0.5" Cut="0.9939"/>
+    <Calib Index="6" Eff="0.6" Cut="0.9869"/>
+    <Calib Index="7" Eff="0.7" Cut="0.9673"/>
+    <Calib Index="8" Eff="0.8" Cut="0.8993"/>
+    <Calib Index="9" Eff="0.9" Cut="0.5895"/>
+    <Calib Index="10" Eff="1" Cut="0.0005"/>
+  </Calibration>
 </MethodSetup>
+
