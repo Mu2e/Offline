@@ -10,29 +10,45 @@ using namespace std;
 
 double EfficiencyToTrkQual(TTree* inpt_tree, const char* train_name, double effic, int subdivs=10000);
 
-void CalibrateTrkQualEff(TTree* tree, std::string train_name) {
-
+void CalibTrkQual_Eff(TTree* tree, std::string train_name) {
 
   double min_eff = 0.0;
   double max_eff = 1.0;
   double eff_step = 0.1;
 
-  std::cout << "Creating calib table for " << train_name << "..." << std::endl;
-  std::string outfilename = "TrkDiag/test/" + train_name + "Calib.txt";
+  std::string xmlfilename = "TrkDiag/test/" + train_name + ".weights.xml";
+  std::ifstream xmlfile(xmlfilename, std::ofstream::in);
 
+  std::string outfilename = "TrkDiag/test/" + train_name + ".weights.xml_calibrating";
   std::ofstream outfile(outfilename, std::ofstream::out);
-  
-  outfile << "TABLE " << train_name << "Calib" << std::endl;
-  outfile << "# Training file = " << tree->GetCurrentFile()->GetName() << std::endl;
-  outfile << "# Training tree = " << tree->GetDirectory()->GetName() << "/" << tree->GetName() << std::endl;
-  outfile << "# Training name = " << train_name << std::endl;
-  
-  int counter = 0;
-  for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
-    double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff);
-    outfile << counter << ", " << i_eff << ", " << trkqual_cut << std::endl;
-    ++counter;
+
+  const int n_chars = 256;
+  char xmlline[n_chars];
+  while (xmlfile.good()) {
+    xmlfile.getline(xmlline, n_chars);
+
+    std::string xml_string(xmlline);
+
+    if (xml_string.find("<Calibration>") != std::string::npos) {
+      std::cout << "Calibration block already exists... Aborting..." << std::endl;
+      return;
+    }
+
+    int counter = 0;
+    if (xml_string.find("</MethodSetup>") != std::string::npos) {
+      // Add the calibration block just before the end
+      outfile << "  <Calibration>" << std::endl;
+      for (double i_eff = min_eff; i_eff <= max_eff; i_eff += eff_step) {
+	double trkqual_cut = EfficiencyToTrkQual(tree, train_name.c_str(), i_eff);
+	outfile << "    <Calib Index=\"" << counter << "\" Eff=\"" << i_eff << "\" Cut=\"" << trkqual_cut << "\"/>" << std::endl;
+	++counter;
+      }
+      outfile << "  </Calibration>" << std::endl;
+    }
+
+    outfile << xml_string << std::endl;
   }
+  
   outfile.close();
 
   std::cout << "Done!" << std::endl;

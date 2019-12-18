@@ -364,7 +364,7 @@ void MVATools::getWgts(xercesc::DOMDocument* xmlDoc)
     XMLString::release(&xpathStr);
     DOMElement* varElem = dynamic_cast<DOMElement* >(xpathRes->getNodeValue()) ;
     if (!varElem) {
-      throw cet::exception("MVATools") << "No calibration for this MVA" << std::endl;
+      throw cet::exception("MVATools") << "No calibration for this MVA (" << mvaWgtsFile_ << ")" << std::endl;
     }
     xpathRes->release();
     

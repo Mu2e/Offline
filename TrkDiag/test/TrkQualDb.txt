@@ -1,6 +1,6 @@
 TABLE TrkQualDb
-# Training file = out/trkana-CeEndpoint-mix.TrkQualNew.root
-# Training tree = TrkAnaNeg/trkana
-# Training name = TrkQual
+#idx,name,xmlfile,calibrated?
 0,TrkQual,TrkDiag/test/TrkQual.weights.xml,1
-1,TrkQualNew,TrkDiag/test/TrkQualNew.weights.xml,0
+1,TrkQualNew,TrkDiag/test/TrkQualNew.weights.xml,1
+2,TrkQualPos,TrkDiag/test/TrkQualPos.weights.xml,0
+

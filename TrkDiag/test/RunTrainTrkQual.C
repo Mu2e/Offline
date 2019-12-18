@@ -1,5 +1,4 @@
 #include "TrkDiag/test/TrainTrkQual.C+"
-#include "TrkDiag/test/EfficiencyToTrkQual.C+"
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
@@ -9,8 +8,6 @@ void RunTrainTrkQual(){
   TTree* tree = (TTree*) file->Get("TrkAnaNeg/trkana");
   std::string train_name = "TrkQual";
 
-  //  TrainTrkQual(tree, train_name);
-
-  CalibrateTrkQualEff(tree, train_name);
+  TrainTrkQual(tree, train_name);
 }
 
