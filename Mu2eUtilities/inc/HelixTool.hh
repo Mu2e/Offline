@@ -60,10 +60,42 @@ namespace mu2e {
 
       if (counter > 0) _meanHitRadialDist /= counter;
 
-      _nLoops = (z_last_hit - z_first_hit)/(fabs(Helix->helix().lambda())*2.*M_PI);
+      _nLoops = (z_last_hit - z_first_hit)/(fabs(robustHel->lambda())*2.*M_PI);
 
       //here we evaluate once the impact parameter
       _d0 = robustHel->rcent  () - robustHel->radius ();
+
+
+      // we now estiamte the ratio of the number of measured hits to the number of the expected ones
+      // we make a few assumptions and appriximations:
+      //   - 36 tacking faces
+      //   - an average spacing of 178 mm
+      //   - we approximate the tracker as a cylinder: r_min = 380 mm, r_max = 860 mm
+      int      nFaces(36); 
+      float    expected_hits(0);
+      float    z_step(178.); 
+      float    minR_tracker(380.);
+      float    maxR_tracker(860.);
+
+      for (int i=0; i<nFaces;i++){
+	float   z = z_first_hit + (double)i*z_step;
+	if (z < z_first_hit )  continue;
+	if (z > z_last_hit  )  continue;
+
+	XYZVec  pos;
+	pos.SetZ(z);
+	robustHel->position(pos);
+      
+	//now check that we are in the active area of tracker
+	double   hitR = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
+	if (hitR < minR_tracker)  continue;
+	if (hitR > maxR_tracker)  continue;
+
+	++expected_hits;
+      }
+
+      //each face has two planes. We are assuming 2 ComboHits per face
+      _hitRatio = nhits / (2.*expected_hits);
     }
 
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
@@ -75,6 +107,11 @@ namespace mu2e {
     float  d0               () const { return _d0;                }
     float  nstrawhits       () const { return _nStrawHits;        }
 
+    //function that evaluates the ratio between the measured ComboHits and the
+    //expected intesections of the helix with the tracker planes. This function
+    //models the tracker as a perfect cylinder
+    float  hitRatio         () const { return _hitRatio;          }
+
 
   private:
     const HelixSeed* _hel;
@@ -84,6 +121,7 @@ namespace mu2e {
     int        _nStrawHits;
     float      _meanHitRadialDist;
     float      _d0;
+    float      _hitRatio;
   };
 
 } // namespace mu2e
