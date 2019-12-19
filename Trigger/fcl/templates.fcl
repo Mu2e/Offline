@@ -219,7 +219,8 @@ Trigger : {
 		# granularity : [Event | SubRun | Run | InputFile | Job] # default is Event 
 		# maxInputFiles : 1 
 	    }
-	    outputCommands: [ "keep *_*_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 
 	rootoutUnbiased : { 
@@ -228,7 +229,8 @@ Trigger : {
 	    SelectEvents : [ unbiased_trigger ]
 	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 	
 	rootoutCaloOnly : {
@@ -237,7 +239,8 @@ Trigger : {
 	    SelectEvents : [ caloOnly_trigger ]
 #	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 
 	rootoutTrkDem : {
@@ -246,7 +249,8 @@ Trigger : {
 	    SelectEvents : [ tprSeedDeM_trigger, cprSeedDeM_trigger ]
 	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 
 	rootoutTrkDep : {
@@ -255,7 +259,8 @@ Trigger : {
 	    SelectEvents : [ tprDeP_trigger, cprSeedDeP_trigger ]
 	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 	
 
