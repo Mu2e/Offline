@@ -31,7 +31,7 @@ int mu2e::ValHelixSeed::fill(const mu2e::HelixSeedCollection & coll,
 
   for(auto const& hs : coll) {
     _hNCombo->Fill(hs.hits().size());
-    HelixTool helTool(&hs, 3);
+    HelixTool helTool(&hs);
     int   nstrawhits = helTool.nstrawhits();
     _hNStrHit->Fill(nstrawhits);
     const TrkFitFlag& tff = hs.status();

@@ -1,10 +1,6 @@
 //
 // An EDAnalyzer module that reads the Trigger Info 
 //
-// $Id:  $
-// $Author:  $
-// $Date:  $
-//
 // Original author G. Pezzullo
 //
 
@@ -29,6 +25,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 //Conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -230,6 +227,7 @@ namespace mu2e {
 
     float                     _nProcess;
     double                    _bz0;
+
     double                    _nPOT;
     
     std::vector<trigInfo_>    _trigAll;	     
@@ -248,6 +246,8 @@ namespace mu2e {
     caloCalibrationHist_      _caloCalibHist;
     occupancyHist_            _occupancyHist;
 
+    const mu2e::Tracker*      _tracker;
+    
     //the following pointer is needed to navigate the MC truth info of the strawHits
     const mu2e::StrawDigiMCCollection* _mcdigis;
     const mu2e::ComboHitCollection*    _chcol;
@@ -365,7 +365,7 @@ namespace mu2e {
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
       Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
       Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops; nLoops", 500, 0, 50);
-      Hist._hHelInfo[i][9] = helInfoDir.make<TH1F>(Form("hHitRatio_%i" , i), "Helix hitRatio; NComboHits/nExpectedComboHits", 100, 0, 2);
+      Hist._hHelInfo[i][9] = helInfoDir.make<TH1F>(Form("hHitRatio_%i" , i), "Helix hitRatio; NComboHits/nExpectedComboHits", 200, 0, 2);
 
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
@@ -682,6 +682,9 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    _tracker  = th.get();
   }
 
   void ReadTriggerInfo::endSubRun(const art::SubRun& sr){}
@@ -853,7 +856,7 @@ namespace mu2e {
 
   void   ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*KSeed, trackInfoHist_   &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(KSeed->helix().get());
+    HelixTool helTool(KSeed->helix().get(), _tracker);
 
     int                nsh = (int)KSeed->hits().size();
     KalSegment const& fseg = KSeed->segments().front();
@@ -979,7 +982,7 @@ namespace mu2e {
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(HSeed);
+    HelixTool helTool(HSeed, _tracker);
 
     int        nch       = (int)HSeed->hits().size();
     int        nsh(0);
