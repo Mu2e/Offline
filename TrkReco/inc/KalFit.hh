@@ -143,8 +143,8 @@ namespace mu2e
   // helper functions
     bool fitable(KalSeed const& kseed);
     void initT0(KalFitData&kalData);
-    
-    void makeTrkStrawHits  (StrawResponse::cptr_t srep, 
+   
+    void makeTrkStrawHits  (Mu2eDetector::cptr_t detmodel, StrawResponse::cptr_t srep, 
 			    KalFitData&kalData, TrkStrawHitVector& tshv );
     void makeTrkCaloHit    (KalFitData&kalData, TrkCaloHit *&tch);
     void makeMaterials     ( Mu2eDetector::cptr_t detmodel,

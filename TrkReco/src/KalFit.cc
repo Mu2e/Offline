@@ -257,7 +257,7 @@ namespace mu2e
       kalData.helixTraj = &htraj;
       // create the hits
       TrkStrawHitVector tshv;
-      makeTrkStrawHits(srep,kalData, tshv);
+      makeTrkStrawHits(detmodel,srep,kalData, tshv);
       
    // Find the wall and gas material description objects for these hits
       std::vector<DetIntersection> detinter;
@@ -314,7 +314,7 @@ namespace mu2e
       for(unsigned iind=0;iind<kalData.missingHits.size(); ++iind){
         size_t istraw = kalData.missingHits[iind].index;
         const ComboHit& strawhit(kalData.chcol->at(istraw));
-        const Straw& straw = _tracker->getStraw(strawhit.strawId());
+	const Straw& straw = *detmodel->strawElem(strawhit.strawId())->straw();
 // estimate  initial flightlength
         double hflt(0.0);
         TrkHelixUtils::findZFltlen(*reftraj,straw.getMidPoint().z(),hflt);
@@ -482,7 +482,7 @@ namespace mu2e
   }
 
   void
-  KalFit::makeTrkStrawHits(StrawResponse::cptr_t srep,
+  KalFit::makeTrkStrawHits(Mu2eDetector::cptr_t detmodel, StrawResponse::cptr_t srep,
 			   KalFitData& kalData, TrkStrawHitVector& tshv ) {
 
     std::vector<TrkStrawHitSeed>const hseeds = kalData.kalSeed->hits();
@@ -492,7 +492,7 @@ namespace mu2e
       // create a TrkStrawHit from this seed.
       size_t index = ths.index();
       const ComboHit& strawhit(kalData.chcol->at(index));
-      const Straw& straw = _tracker->getStraw(strawhit.strawId());
+      const Straw& straw = *detmodel->strawElem(strawhit.strawId())->straw();
       TrkStrawHit* trkhit = new TrkStrawHit(srep,strawhit,straw,ths.index(),ths.t0(),ths.trkLen(),
 					    _maxpull,_strHitW);
       assert(trkhit != 0);
