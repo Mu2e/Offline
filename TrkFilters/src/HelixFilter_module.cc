@@ -13,6 +13,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // data
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "DataProducts/inc/Helicity.hh"
@@ -60,6 +61,7 @@ namespace mu2e
     double        _maxnloops;
     double        _minnloops;
     double        _bz0;
+    const Tracker* _tracker;
     TrkFitFlag    _goodh; // helix fit flag
     std::string   _trigPath;
     bool          _prescaleUsingD0Phi;
@@ -107,6 +109,9 @@ namespace mu2e
     GeomHandle<DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    _tracker = th.get();
     return true;
   }
 
@@ -133,7 +138,7 @@ namespace mu2e
       //check the helicity
       if (!(hs.helix().helicity() == Helicity(_hel)))        continue;
 
-      HelixTool helTool(&hs, 3);
+      HelixTool helTool(&hs, _tracker);
       // compute the helix momentum.  Note this is in units of mm!!!
       float hmom       = hs.helix().momentum()*mm2MeV;
       int   nstrawhits = helTool.nstrawhits();
@@ -196,60 +201,6 @@ namespace mu2e
     return true;
   }
 
-
-  // float   HelixFilter::helixHitRatio(const HelixSeed* helix){
-
-  //   int      nCH = helix->hits().size();
-  //   int      nFaces(36); //was 36, now doing stations instead of faces
-  //   float    expected_hits(0);
-  //   float    z_step(178.); //are they really equally spaced? was 89 before
-  //   float    minR_tracker(380.);
-  //   float    maxR_tracker(860.);
-
-  //   //find the z of the first hit (closest to the stopping target)
-  //   const ComboHit*    hit(0);
-  //   double   firstHitZ(1e5);
-  //   double   lastHitZ(-1e5);
-    
-  //   for (int k=0; k<nCH; ++k){
-  //     hit   = &helix->hits().at(k);
-  //     if (hit->pos().z() > lastHitZ){
-  // 	lastHitZ = hit->pos().z();
-  //     }
-  //   }
-
-  //   for (int i=0; i<nCH; ++i){
-  //     hit   = &helix->hits().at(i);
-  //     if (hit->pos().z() < firstHitZ){
-  // 	firstHitZ = hit->pos().z();
-  //     }
-  //   }
-
-  //   for (int i=0; i<nFaces;i++){
-  //     //float   z = zStart_tracker + i*z_step;
-  //     float   z = firstHitZ + (double)i*z_step;
-  //     if (z < firstHitZ )  continue;
-  //     if (z > lastHitZ  )  continue;
-
-  //     XYZVec  pos;
-  //     pos.SetZ(z);
-  //     helix->helix().position(pos);
-      
-  //     //now check that we are in the active area of tracker
-  //     double   hitR = sqrt(pos.x()*pos.x() + pos.y()*pos.y());
-  //     if (hitR < minR_tracker)  continue;
-  //     if (hitR > maxR_tracker)  continue;
-
-  //     ++expected_hits;
-  //   }
-
-  //   //each face has two planes. We are assuming 2 ComboHits per face
-  //   float   hitRatio = nCH / (2.*expected_hits);
-  //   return hitRatio;
-
-  // }
-
-  
 }
 using mu2e::HelixFilter;
 DEFINE_ART_MODULE(HelixFilter);
