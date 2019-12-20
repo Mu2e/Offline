@@ -67,8 +67,8 @@ namespace mu2e {
 	for (size_t ipn=0; ipn<idPanels.size(); ++ipn){
 	  const Panel* panel = &pln->getPanel(ipn);
 	  float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	  if (z < z_first_hit )  continue;
-	  if (z > z_last_hit  )  continue;
+	  // if (z < z_first_hit )  continue;
+	  // if (z > z_last_hit  )  continue;
 
 	  XYZVec  pos;
 	  pos.SetZ(z);
