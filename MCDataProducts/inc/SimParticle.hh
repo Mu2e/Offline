@@ -279,6 +279,7 @@ namespace mu2e {
     bool _endDefined;
 
   };
+  typedef cet::map_vector<mu2e::SimParticle> SimParticleCollection;
 
 }
 

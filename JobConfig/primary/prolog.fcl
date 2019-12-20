@@ -21,9 +21,13 @@ Primary: {
     @table::CaloDigiMC.producers
     @table::CrvDAQPackage.producers
 # dedicated digi maker for filter
+# 2 stages now
+    makeSGS : {
+      module_type : MakeStrawGasSteps
+      KeepDeltasModule : "g4run" # don'e compress deltas on primary particles
+    }
     makeSD:{
       @table::makeSD
-      TimeOffsets : { inputs : [ @sequence::CommonMC.TimeMaps ] }
     }
     compressDigiMCs : @local::DigiCompression.Primary
   }

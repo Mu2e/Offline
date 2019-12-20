@@ -15,7 +15,7 @@
 
 namespace mu2e {
   namespace TrackerMC {
-    typedef std::list<StrawCluster> ClusterList;
+    typedef std::list<StrawCluster> StrawClusterList;
     class StrawClusterSequence {
       public:
 	// constructors
@@ -25,15 +25,15 @@ namespace mu2e {
 	StrawClusterSequence(StrawClusterSequence const& other);
 	StrawClusterSequence& operator =(StrawClusterSequence const& other);
 	// accessors: just hand over the list!
-	ClusterList const& clustList() const { return _clist; }
+	StrawClusterList const& clustList() const { return _clist; }
 	// insert a new clust, in time order.
-	ClusterList::iterator insert(StrawCluster const& clust);
+	StrawClusterList::iterator insert(StrawCluster const& clust);
 	StrawId const& strawId() const { return _strawId; }
 	StrawEnd const& strawEnd() const { return _end; }
       private:
 	StrawId _strawId;
 	StrawEnd _end;
-	ClusterList _clist; // time-ordered sequence of clusts
+	StrawClusterList _clist; // time-ordered sequence of clusts
     };
   }
 }
