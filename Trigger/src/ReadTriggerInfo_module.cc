@@ -1,10 +1,6 @@
 //
 // An EDAnalyzer module that reads the Trigger Info 
 //
-// $Id:  $
-// $Author:  $
-// $Date:  $
-//
 // Original author G. Pezzullo
 //
 
@@ -29,6 +25,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 
 //Conditions
 #include "ConditionsService/inc/AcceleratorParams.hh"
@@ -201,7 +198,7 @@ namespace mu2e {
     void     bookOccupancyInfoHist    (art::ServiceHandle<art::TFileService> & Tfs, occupancyHist_         &Hist);
 
 
-    void     findTrigIndex            (std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index);
+    void     findTrigIndex            (std::vector<trigInfo_> &Vec, std::string &ModuleLabel, int &Index);
     void     fillTrackTrigInfo        (int TrkTrigIndex  , const KalSeed*   KSeed, trackInfoHist_         &Hist);
     void     fillHelixTrigInfo        (int HelTrigIndex  , const HelixSeed* HSeed, helixInfoHist_         &Hist);
     void     fillCaloTrigSeedInfo     (int CTrigSeedIndex, const CaloTrigSeed*HCl, caloTrigSeedHist_      &Hist);
@@ -230,6 +227,7 @@ namespace mu2e {
 
     float                     _nProcess;
     double                    _bz0;
+
     double                    _nPOT;
     
     std::vector<trigInfo_>    _trigAll;	     
@@ -248,6 +246,8 @@ namespace mu2e {
     caloCalibrationHist_      _caloCalibHist;
     occupancyHist_            _occupancyHist;
 
+    const mu2e::Tracker*      _tracker;
+    
     //the following pointer is needed to navigate the MC truth info of the strawHits
     const mu2e::StrawDigiMCCollection* _mcdigis;
     const mu2e::ComboHitCollection*    _chcol;
@@ -364,7 +364,8 @@ namespace mu2e {
       Hist._hHelInfo[i][5] = helInfoDir.make<TH1F>(Form("hChi2dZPhi_%i", i), "Helix #chi^{2}_{z#phi}/ndof;#chi^{2}_{z#phi}/ndof", 100, 0, 50);
       Hist._hHelInfo[i][6] = helInfoDir.make<TH1F>(Form("hClE_%i"      , i), "calorimeter Cluster energy; E [MeV]", 240, 0, 120);
       Hist._hHelInfo[i][7] = helInfoDir.make<TH1F>(Form("hLambda_%i"   , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
-      Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops", 500, 0, 50);
+      Hist._hHelInfo[i][8] = helInfoDir.make<TH1F>(Form("hNLoops_%i"   , i), "Helix nLoops; nLoops", 500, 0, 50);
+      Hist._hHelInfo[i][9] = helInfoDir.make<TH1F>(Form("hHitRatio_%i" , i), "Helix hitRatio; NComboHits/nExpectedComboHits", 200, 0, 2);
 
         
       Hist._hHelInfo[i][10] = helInfoDir.make<TH1F>(Form("hPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
@@ -681,6 +682,9 @@ namespace mu2e {
     GeomHandle<DetectorSystem> det;
     CLHEP::Hep3Vector vpoint_mu2e = det->toMu2e(CLHEP::Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    _tracker  = th.get();
   }
 
   void ReadTriggerInfo::endSubRun(const art::SubRun& sr){}
@@ -695,9 +699,9 @@ namespace mu2e {
       _nPOT  = (double)evtWeightH->intensity();
     }
 
-    std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
+    //    std::vector<art::Handle<TriggerInfo> > hTrigInfoVec;
     
-    event.getManyByType(hTrigInfoVec);
+    //    event.getManyByType(hTrigInfoVec);
 
     //get the TriggerResult
     art::InputTag const tag{Form("TriggerResults::%s", _processName.c_str())};  
@@ -744,108 +748,88 @@ namespace mu2e {
     if (cdH.isValid()) {
       cdCol = cdH.product();
     }
-
-    // std::vector<std::string>   trigNames = {"caloCalibCosmic","caloMVACE", "tprSeedDeM", "tprSeedDeP", "cprSeedDeM", "cprSeedDeP"};
-    // if (trigAlg != 0) {
-    //   for (unsigned i=0; i<6; ++i){
-    // 	if (trigMap->find(trigNames[i]) != trigMap->end()) 
-    // 	  if (trigAlg->hasAnyProperty(trigMap->find(trigNames[i])->second) ) _sumHist._hTrigInfo[15]->Fill((double)i);
-    //   }
-    // }
-
     
     //fill the general occupancy histogram
     fillOccupancyInfo   (_nTrackTrig+_nCaloTrig, sdCol, cdCol, _occupancyHist);
 
-    art::Handle<TriggerInfo>       hTrigInfo;
-    TriggerFlag                    prescalerFlag       = TriggerFlag::prescaleRandom;
-    TriggerFlag                    trackFlag           = TriggerFlag::track;
-    TriggerFlag                    helixFlag           = TriggerFlag::helix;
-    TriggerFlag                    caloFlag            = TriggerFlag::caloCluster;
-    TriggerFlag                    caloCalibFlag       = TriggerFlag::caloCalib;
-    TriggerFlag                    caloTrigSeedFlag    = TriggerFlag::caloTrigSeed;
-    TriggerFlag                    caloOrTrackFlag     = trackFlag; caloOrTrackFlag.merge(caloFlag); caloOrTrackFlag.merge(caloCalibFlag); caloOrTrackFlag.merge(caloTrigSeedFlag);// caloOrTrackFlag.merge(helixFlag);
-    
     std::vector<int>   trigFlagAll_index, trigFlag_index;
+
+    art::Handle<TriggerInfo> hTrigInfoH;
+    const mu2e::TriggerInfo* trigInfo(0);
+
+    for (unsigned int i=0; i< _trigPaths.size(); ++i){
+      string&path = _trigPaths.at(i);
+      if (trigNavig.accepted(path)) {
+	std::vector<std::string>      moduleNames = trigNavig.triggerModules(path);
+
+	for (size_t j=0; j<moduleNames.size(); ++j){
+	  std::string  moduleLabel = moduleNames[j];
+	  int          index_all(0);         
+	  int          index(0);         
     
-    for (size_t i=0; i<hTrigInfoVec.size(); ++i){
-      hTrigInfo = hTrigInfoVec.at(i);
-      if (!hTrigInfo.isValid())         continue;
-      const TriggerInfo* trigInfo  = hTrigInfo.product();
-      const TriggerFlag  flag      = trigInfo->triggerBits();
+	  //fill the Global Trigger bits info
+	  findTrigIndex(_trigAll, moduleLabel, index_all);
+	  _trigAll[index_all].label  = moduleLabel;
 
-      std::string    moduleLabel   = hTrigInfo.provenance()->moduleLabel();
-      int            index_all(0);         
-      int            index(0);         
-      
-      //fill the Global Trigger bits info
-      findTrigIndex(_trigAll, moduleLabel, index_all);
-      _trigAll[index_all].label  = moduleLabel;
+	  event.getByLabel(moduleLabel, hTrigInfoH);
+	  if (hTrigInfoH.isValid()){
+	    trigInfo = hTrigInfoH.product();
+	  }
+	  if ( moduleLabel.find(std::string("HSFilter")) != std::string::npos) {
+	    findTrigIndex(_trigHelix, moduleLabel, index);
+	    _trigHelix[index].label  = moduleLabel;
+	    _trigHelix[index].counts = _trigHelix[index].counts + 1;
+	    const HelixSeed*hseed = trigInfo->helix().get();
+	    if(hseed) {
+	      fillHelixTrigInfo(index, hseed, _helHist);
+	      fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
+	    }
+	    
+	  }else if ( moduleLabel.find("TSFilter") != std::string::npos){
+	    findTrigIndex(_trigTrack, moduleLabel, index);
+	    _trigTrack[index].label  = moduleLabel;
+	    _trigTrack[index].counts = _trigTrack[index].counts + 1;
+	    const KalSeed*kseed = trigInfo->track().get();
+	    if(kseed) {
+	      fillTrackTrigInfo(index, kseed, _trkHist);
+	      fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
+	    }
+	    trigFlag_index.push_back(index_all);
+	  }else if ( moduleLabel.find("EventPrescale") != std::string::npos){
+	    findTrigIndex(_trigEvtPS, moduleLabel, index);
+	    _trigEvtPS[index].label  = moduleLabel;
+	    _trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
+	  }else if ( moduleLabel.find("CaloCosmicCalib") != std::string::npos){
+	    findTrigIndex(_trigCaloCalib, moduleLabel, index);
+	    _trigCaloCalib[index].label  = moduleLabel;
+	    _trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
+	    const CaloCluster*cluster = trigInfo->caloCluster().get();
+	    if(cluster) fillCaloCalibTrigInfo(index, cluster, _caloCalibHist);
+	    trigFlag_index.push_back(index_all);
+	  }else if ( (moduleLabel.find("caloMVACEFilter") != std::string::npos) || (moduleLabel.find("caloLHCEFilter") != std::string::npos) ){
+	    findTrigIndex(_trigCaloOnly, moduleLabel, index);
+	    _trigCaloOnly[index].label  = moduleLabel;
+	    _trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
+	    const CaloTrigSeed*clseed = trigInfo->caloTrigSeed().get();
+	    if(clseed) {
+	      fillCaloTrigSeedInfo(index, clseed, _caloTSeedHist);
+	      fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
+	    }
+	    trigFlag_index.push_back(index_all);	    
+	  }
+	  
 
-      findTrigIndex(_trigFinal, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloOrTrackFlag)){ 
-	_trigFinal[index].label    = moduleLabel;
-	_trigFinal[index].counts   = _trigFinal[index].counts + 1;
-	_trigAll[index_all].counts = _trigAll[index_all].counts + 1;
-	trigFlagAll_index.push_back(index_all);
+	  if ( moduleLabel.find("caloMVACEFilter") || moduleLabel.find("TSFilter")){ 
+	    findTrigIndex(_trigFinal, moduleLabel, index);
+	    _trigFinal[index].label    = moduleLabel;
+	    _trigFinal[index].counts   = _trigFinal[index].counts + 1;
+	    _trigAll[index_all].counts = _trigAll[index_all].counts + 1;
+	    trigFlagAll_index.push_back(index_all);
+	  }
+	}//end loop over the modules in a given trigger path
       }
-      //fill the Calo-Only Trigger bits info
-      findTrigIndex(_trigCaloOnly, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloFlag) || flag.hasAnyProperty(caloTrigSeedFlag)){ 
-	_trigCaloOnly[index].label  = moduleLabel;
-	_trigCaloOnly[index].counts = _trigCaloOnly[index].counts + 1;
-	const CaloTrigSeed*clseed = trigInfo->caloTrigSeed().get();
-	if(clseed) {
-	  fillCaloTrigSeedInfo(index, clseed, _caloTSeedHist);
-	  fillOccupancyInfo   (_nTrackTrig*2+index, sdCol, cdCol, _occupancyHist);
-	}
-	trigFlag_index.push_back(index_all);
-      }
-
-      //fill the CaloCalib Trigger bits info
-      findTrigIndex(_trigCaloCalib, moduleLabel, index);
-      if ( flag.hasAnyProperty(caloCalibFlag)){ 
-	_trigCaloCalib[index].label  = moduleLabel;
-	_trigCaloCalib[index].counts = _trigCaloCalib[index].counts + 1;
-	const CaloCluster*cluster = trigInfo->caloCluster().get();
-	if(cluster) fillCaloCalibTrigInfo(index, cluster, _caloCalibHist);
-	trigFlag_index.push_back(index_all);
-      }
-      
-      //fill the Track Trigger bits info
-      findTrigIndex(_trigTrack, moduleLabel, index);
-      if ( flag.hasAnyProperty(trackFlag)){ 
-	_trigTrack[index].label  = moduleLabel;
-	_trigTrack[index].counts = _trigTrack[index].counts + 1;
-	const KalSeed*kseed = trigInfo->track().get();
-	if(kseed) {
-	  fillTrackTrigInfo(index, kseed, _trkHist);
-	  fillOccupancyInfo(index, sdCol, cdCol, _occupancyHist);
-	}
-	trigFlag_index.push_back(index_all);
-      }
-       //fill the Helix Trigger bits info
-      findTrigIndex(_trigHelix, moduleLabel, index);
-      if ( flag.hasAnyProperty(helixFlag)){ 
-	_trigHelix[index].label  = moduleLabel;
-	_trigHelix[index].counts = _trigHelix[index].counts + 1;
-	const HelixSeed*hseed = trigInfo->helix().get();
-	if(hseed) {
-	  fillHelixTrigInfo(index, hseed, _helHist);
-	  fillOccupancyInfo(_nTrackTrig+index, sdCol, cdCol, _occupancyHist);
-	}
-      }
-      
-      //fill the Event-Prescaler Trigger bits info
-      findTrigIndex(_trigEvtPS, moduleLabel, index);
-      if ( flag.hasAnyProperty(prescalerFlag)){ 
-	_trigEvtPS[index].label  = moduleLabel;
-	_trigEvtPS[index].counts = _trigEvtPS[index].counts + 1;
-      }
-      
-      
-    }//end loop over the TriggerInfo Handles
-
+    }
+  
     //now fill the correlation matrix
     for (size_t i=0; i<trigFlagAll_index.size(); ++i){
       for (size_t j=0; j<trigFlagAll_index.size(); ++j){
@@ -857,7 +841,7 @@ namespace mu2e {
 
   }
   
-  void   ReadTriggerInfo::findTrigIndex(std::vector<trigInfo_> Vec, std::string ModuleLabel, int &Index){
+  void   ReadTriggerInfo::findTrigIndex(std::vector<trigInfo_> &Vec, std::string& ModuleLabel, int &Index){
     //reset the index value
     Index = 0;
     for (size_t i=0; i<Vec.size(); ++i){
@@ -872,7 +856,7 @@ namespace mu2e {
 
   void   ReadTriggerInfo::fillTrackTrigInfo(int TrkTrigIndex, const KalSeed*KSeed, trackInfoHist_   &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(KSeed->helix().get());
+    HelixTool helTool(KSeed->helix().get(), _tracker);
 
     int                nsh = (int)KSeed->hits().size();
     KalSegment const& fseg = KSeed->segments().front();
@@ -998,7 +982,7 @@ namespace mu2e {
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
-    HelixTool helTool(HSeed);
+    HelixTool helTool(HSeed, _tracker);
 
     int        nch       = (int)HSeed->hits().size();
     int        nsh(0);
@@ -1026,6 +1010,7 @@ namespace mu2e {
     Hist._hHelInfo[HelTrigIndex][6]->Fill(clE);
     Hist._hHelInfo[HelTrigIndex][7]->Fill(lambda);
     Hist._hHelInfo[HelTrigIndex][8]->Fill(nLoops);
+    Hist._hHelInfo[HelTrigIndex][9]->Fill(helTool.hitRatio());
 
      //add the MC info if available
     if (_mcdigis) {
