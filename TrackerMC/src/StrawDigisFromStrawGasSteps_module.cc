@@ -625,7 +625,7 @@ namespace mu2e {
 	      clusters.push_back(cluster);
 	    }
 	  } else {
-	    IonCluster cluster(cposv[ic],strawphys.ionizationCharge(nc),cen[ic],ne[ic]);
+	    IonCluster cluster(cposv[ic],strawphys.ionizationCharge(ne[ic]),cen[ic],ne[ic]);
 	    clusters.push_back(cluster);
 	  }
 	}
