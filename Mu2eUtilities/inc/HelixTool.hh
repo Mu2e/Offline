@@ -18,7 +18,7 @@ namespace mu2e {
   class HelixTool{
 
   public:
-    HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker=NULL);
+    HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker);
 
     // Accept compiler supplied d'tor, copy c'tor and assignment operator.
 
