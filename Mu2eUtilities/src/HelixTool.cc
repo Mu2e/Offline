@@ -3,13 +3,13 @@
 
 namespace mu2e {
 
-  HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker){
+  HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) :
+    _tracker(MyTracker) {
     _hel = Helix;
     _trackerRIn = 0;
     _trackerROut = 0;
     
     if (MyTracker != NULL){
-      _tracker       = MyTracker;
       _trackerRIn    = _tracker->getInnerTrackerEnvelopeParams().innerRadius();
       _trackerROut   = _tracker->getInnerTrackerEnvelopeParams().outerRadius();
     }
