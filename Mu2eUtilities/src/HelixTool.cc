@@ -6,13 +6,8 @@ namespace mu2e {
   HelixTool::HelixTool(const HelixSeed *Helix, const mu2e::Tracker*MyTracker) :
     _tracker(MyTracker) {
     _hel = Helix;
-    _trackerRIn = 0;
-    _trackerROut = 0;
-    
-    if (MyTracker != NULL){
-      _trackerRIn    = _tracker->getInnerTrackerEnvelopeParams().innerRadius();
-      _trackerROut   = _tracker->getInnerTrackerEnvelopeParams().outerRadius();
-    }
+    _trackerRIn    = _tracker->getInnerTrackerEnvelopeParams().innerRadius();
+    _trackerROut   = _tracker->getInnerTrackerEnvelopeParams().outerRadius();
 
     //initialize
     _meanHitRadialDist = 0.;
@@ -57,32 +52,30 @@ namespace mu2e {
     // we now estiamte the ratio of the number of measured hits to the number of the expected ones
     // we make a few assumptions and appriximations:
     float    expected_faces(1e-6);
-    if (_tracker != NULL){
-      for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
-	const Plane* pln = &_tracker->getPlane(planeId);
-	int   nPanels = pln->nPanels();
-	if (nPanels == 0 )         continue;
-	std::array<int,2>   idPanels = {0, (nPanels-1)};
+    for (int planeId=0; planeId<_tracker->nPlanes(); planeId++) {
+      const Plane* pln = &_tracker->getPlane(planeId);
+      int   nPanels = pln->nPanels();
+      if (nPanels == 0 )         continue;
+      std::array<int,2>   idPanels = {0, (nPanels-1)};
 	
-	for (size_t ipn=0; ipn<idPanels.size(); ++ipn){
-	  const Panel* panel = &pln->getPanel(ipn);
-	  float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
-	  // if (z < z_first_hit )  continue;
-	  // if (z > z_last_hit  )  continue;
+      for (size_t ipn=0; ipn<idPanels.size(); ++ipn){
+	const Panel* panel = &pln->getPanel(ipn);
+	float    z = (panel->getStraw(0).getMidPoint().z()+panel->getStraw(1).getMidPoint().z())/2.;
+	// if (z < z_first_hit )  continue;
+	// if (z > z_last_hit  )  continue;
 
-	  XYZVec  pos;
-	  pos.SetZ(z);
-	  robustHel->position(pos);
+	XYZVec  pos;
+	pos.SetZ(z);
+	robustHel->position(pos);
 	
-	  //now check that we are in the active area of tracker
-	  float   hitR = sqrtf(pos.x()*pos.x() + pos.y()*pos.y());
-	  if (hitR < _trackerRIn )  continue;
-	  if (hitR > _trackerROut)  continue;
+	//now check that we are in the active area of tracker
+	float   hitR = sqrtf(pos.x()*pos.x() + pos.y()*pos.y());
+	if (hitR < _trackerRIn )  continue;
+	if (hitR > _trackerROut)  continue;
 	  
-	  ++expected_faces;
-	}//end loop over the two panels
-      }//end loop over the planes
-    }
+	++expected_faces;
+      }//end loop over the two panels
+    }//end loop over the planes
 
     //each plane has two layers of panels. We are assuming 2 ComboHits per face
     _hitRatio = _nStrawHits/expected_faces;
