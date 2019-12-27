@@ -275,11 +275,9 @@ namespace mu2e {
 	      hhits.fillStrawDigiIndices(evt,ihh,sdis);
 	      for(auto idigi : sdis) {
 		StrawDigiMC const& mcdigi = _mcdigis->at(idigi);
-		art::Ptr<StepPointMC> spmcp;
-		if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 &&
-		    spmcp->simParticle() == pspp ){
+		if ( mcdigi.earlyStrawGasStep()->simParticle() == pspp ){
 		  ++nmc;
-		  _mct0 += _toff.timeWithOffsetsApplied(*spmcp);
+		  _mct0 += _toff.timeWithOffsetsApplied(*mcdigi.earlyStrawGasStep());
 		  if(!hhit._flag.hasAnyProperty(StrawHitFlag::outlier))++_npused;
 		}
 	      }
@@ -538,8 +536,8 @@ namespace mu2e {
 	_chcol->fillStrawDigiIndices(evt,ich,sdis);
 	for(auto isd : sdis) { 
 	  StrawDigiMC const& mcdigi = _mcdigis->at(isd);
-	  art::Ptr<StepPointMC> spmcp;
-	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
+	  auto const& spmcp = mcdigi.earlyStrawGasStep();
+	  if ( spmcp->simParticle() == pspp ){
 	    double mcdphi = atan2(spmcp->position().y()-_mch.centery(),spmcp->position().x()-_mch.centerx()) - _mch.circleAzimuth(spmcp->position().z());
 	    mcdphi -= rint(mcdphi/CLHEP::twopi)*CLHEP::twopi;
 	    TMarker* mch = new TMarker(spmcp->position().z(),mcdphi,20);
@@ -719,8 +717,8 @@ namespace mu2e {
 	_chcol->fillStrawDigiIndices(evt,ich,sdis);
 	for(auto isd : sdis) { 
 	  StrawDigiMC const& mcdigi = _mcdigis->at(isd);
-	  art::Ptr<StepPointMC> spmcp;
-	  if (TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp){
+	  auto const& spmcp = mcdigi.earlyStrawGasStep();
+	  if ( spmcp->simParticle() == pspp ){
 	    TMarker* mch = new TMarker(spmcp->position().x()-pcent.x(),spmcp->position().y()-pcent.y(),20);
 	    mch->SetMarkerColor(kBlue);
 	    mch->SetMarkerSize(1);
@@ -751,18 +749,15 @@ namespace mu2e {
 
    void HelixDiag::fillHitInfoMC(const art::Ptr<SimParticle>& pspp, StrawDigiMC const& digimc, HitInfoMC& hinfomc) {
     hinfomc.reset();
-    art::Ptr<SimParticle> spp;
-    art::Ptr<StepPointMC> spmcp;
-    if(TrkMCTools::simParticle(spp,digimc) > 0 && TrkMCTools::stepPoint(spmcp,digimc) >= 0 ){
-      hinfomc._pdg = spp->pdgId();
-      hinfomc._proc = spp->originParticle().creationCode();
-      if(spp->genParticle().isNonnull())
-	hinfomc._gen = spp->genParticle()->generatorId().id();
-      MCRelationship rel(pspp,spp);
-      hinfomc._rel = rel.relationship();
-      hinfomc._t0 = _toff.timeWithOffsetsApplied(*spmcp);
-    }
-  }
+    auto const& spp = digimc.earlyStrawGasStep()->simParticle();
+    hinfomc._pdg = spp->pdgId();
+    hinfomc._proc = spp->originParticle().creationCode();
+    if(spp->genParticle().isNonnull())
+      hinfomc._gen = spp->genParticle()->generatorId().id();
+    MCRelationship rel(pspp,spp);
+    hinfomc._rel = rel.relationship();
+    hinfomc._t0 = _toff.timeWithOffsetsApplied(*digimc.earlyStrawGasStep());
+   }
 
   bool HelixDiag::fillMCHelix(art::Ptr<SimParticle> const& pspp) {
     bool retval(false);
@@ -791,9 +786,9 @@ namespace mu2e {
     } else {
     // no vd steps: try to fill from the tracker StepPoints
       for(auto imcd = _mcdigis->begin();imcd != _mcdigis->end(); ++imcd){
-	auto const& stepptr = imcd->stepPointMC(imcd->earlyEnd());
+	auto const& stepptr = imcd->strawGasStep(imcd->earlyEnd());
 	if(stepptr->simParticle() == pspp){
-	  mom = stepptr->momentum();
+	  mom = Geom::Hep3Vec(stepptr->momentum());
 	  pos = stepptr->position();
 	  retval = true;
 	  break;
@@ -826,8 +821,7 @@ namespace mu2e {
   bool
   HelixDiag::primary(art::Ptr<SimParticle> const& pspp, size_t index) {
     StrawDigiMC const& mcdigi = _mcdigis->at(index);
-    art::Ptr<StepPointMC> spmcp;
-    return TrkMCTools::stepPoint(spmcp,mcdigi) >= 0 && spmcp->simParticle() == pspp;
+    return (mcdigi.earlyStrawGasStep()->simParticle() == pspp );
   }
 
   bool

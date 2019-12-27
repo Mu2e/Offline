@@ -75,10 +75,8 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     //    for(mu2e::TrkFitFlagDetail::bit_type i=0; i<f.size(); i++) 
     //  if(f.hasAnyProperty(i)) _hStatus->Fill(i); 
 
-    int i=0;
     for(auto sn: tff.bitNames()) { 
-      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(i); 
-      i++;
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second)); 
     }
 
     _hflt0->Fill(ks.flt0());

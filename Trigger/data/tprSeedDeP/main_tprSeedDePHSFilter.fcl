@@ -1,5 +1,8 @@
+physics.filters.tprSeedDePHSFilter.fitparticle   : @local::Particle.eplus	 
+physics.filters.tprSeedDePHSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.tprSeedDePHSFilter.helicity      : -1
 physics.filters.tprSeedDePHSFilter.minNStrawHits : 15.0
+physics.filters.tprSeedDePHSFilter.minHitRatio   : 0.4
 physics.filters.tprSeedDePHSFilter.minMomentum : 60.0
 physics.filters.tprSeedDePHSFilter.maxMomentum : 140.0
 physics.filters.tprSeedDePHSFilter.minPt : 0.0
@@ -11,3 +14,4 @@ physics.filters.tprSeedDePHSFilter.minAbsLambda : 100.0
 physics.filters.tprSeedDePHSFilter.maxAbsLambda : 330.0
 physics.filters.tprSeedDePHSFilter.minNLoops     : 0
 physics.filters.tprSeedDePHSFilter.maxNLoops     : 30
+physics.filters.tprSeedDePHSFilter.prescaleUsingD0Phi  : false

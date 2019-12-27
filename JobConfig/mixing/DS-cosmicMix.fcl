@@ -23,11 +23,13 @@ physics : {
 				crystalOutputInstance : "calorimeter"
 				sipmOutputInstance : "calorimeterRO"
 			      }
+    TrackerFix : @local::DigiCompression.TrackerFix # this re-writes the tracker StepPointMCs to fix the duplication problem in the original compression
   }
   filters: { @table::Mixing.filters }
   analyzers: { @table::Mixing.analyzers }
 # special path that reuses some of the inputs as primary information
   TriggerPath : [
+    TrackerFix,
     DigiFilter,
     protonBunchIntensity,
     @sequence::Mixing.TrkCalMixSequence,
@@ -141,4 +143,11 @@ physics.producers.protonTimeMap.InputTimeMaps: [
 
 # separateCaloShowerSteps
 physics.producers.separateCaloShowerSteps.inputTag : "compressDigiMCs::input_source"
+
+# Fix for cosmic time map: this time should NOT be used with MDC2018 Daya Bay as that generated
+# the time with the primary event
+physics.producers.cosmicTimeMap.tmin : 0
+physics.producers.cosmicTimeMap.tmax : 0
+physics.producers.TrackerFix.trackerSteps : "compressDigiMCs:tracker:input_source"
+physics.producers.makeSD.SkipTheseStepPoints: "compressDigiMCs" # don't use the original compressed StepPoints as they have the duplication bug
 

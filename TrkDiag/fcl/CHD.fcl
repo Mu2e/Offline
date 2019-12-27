@@ -1,0 +1,34 @@
+#
+#  This script runs ComboHitDiag off of digis
+# David Brown (LBNL) 24 Oct. 2019
+#
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardProducers.fcl"
+#include "fcl/standardServices.fcl"
+#include "TrkDiag/fcl/prolog.fcl"
+
+process_name : ComboHitDiag
+
+source : { module_type : RootInput }
+
+services : @local::Services.Reco
+
+physics :
+{
+  producers : @local::TrkHitReco.producers
+  analyzers :  {
+    PCHD : @local::CHD
+    SCHD : @local::CHD
+    SHD : @local::SHD
+  }
+}
+physics.producers.makePH.TestFlag : false
+physics.producers.makePH.TestRadius : false
+# uncomment the following to process MDC2018g and earlier
+#physics.analyzers.SHD.TimeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+#physics.analyzers.PHD.TimeOffsets.inputs : [ @sequence::DigiCompression.NoCosmicTimeMaps ]
+physics.analyzers.SCHD.ComboHitCollection : "makeSH"
+physics.analyzers.PCHD.ComboHitCollection : "makePH"
+physics.producers.makeSH.WriteStrawHitCollection : true
+physics.TrkAnaTriggerPath : [ @sequence::TrkHitReco.PrepareHits ]
+physics.TrkAnaEndPath : [ SCHD, PCHD, SHD ]
