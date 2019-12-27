@@ -102,6 +102,7 @@ namespace mu2e {
 
     fhicl::ParameterSet pset_;
     Mu2eG4ResourceLimits mu2elimits_;
+    Mu2eG4TrajectoryControl trajectoryControl_;
     Mu2eG4MultiStageParameters multiStagePars_;
 
     std::unique_ptr<MTMasterThread> masterThread;
@@ -126,6 +127,10 @@ namespace mu2e {
     int _smvlevel;
 
     art::InputTag _generatorModuleLabel;
+      
+    // Instance name of the timeVD StepPointMC data product.
+    const StepInstanceName _tvdOutputName;
+    std::vector<double> timeVDtimes_;
 
     // Helps with indexology related to persisting G4 volume information.
     // string to ptr maps, speed optimization
@@ -167,6 +172,7 @@ namespace mu2e {
     SharedProducer{pSet},
     pset_(pSet),
     mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
+    trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
     multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
 
     masterThread(std::make_unique<MTMasterThread>(pSet)),
@@ -186,6 +192,8 @@ namespace mu2e {
     _smvlevel(pSet.get<int>("debug.steppingVerbosityLevel",0)),
     
     _generatorModuleLabel(pSet.get<string>("generatorModuleLabel", "")),
+    _tvdOutputName(StepInstanceName::timeVD),
+    timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
     physVolHelper_(),
     sensitiveDetectorHelper_(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
 
@@ -206,7 +214,8 @@ namespace mu2e {
     // This statement requires that the external libraries the module uses are thread-safe,
     // and that the data member members are used in a thread-safe manner
     async<art::InEvent>();
-        
+      
+    //produces
     auto& collector = producesCollector();
         
     sensitiveDetectorHelper_.declareProducts(collector);
@@ -215,15 +224,44 @@ namespace mu2e {
     steppingCuts_->declareProducts(collector);
     commonCuts_->declareProducts(collector);
         
-       
     produces<StatusG4>();
     produces<SimParticleCollection>();
-     
+        
+    if(!timeVDtimes_.empty()) {
+        produces<StepPointMCCollection>(_tvdOutputName.name());
+    }
+        
+    if(trajectoryControl_.produce()) {
+        produces<MCTrajectoryCollection>();
+    }
+        
+    if(multiStagePars_.multiStage()) {
+        produces<SimParticleRemapping>();
+    }
+        
+    produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
+        
+    //consumes
     if (_generatorModuleLabel != invalid_tag) {
       consumes<GenParticleCollection>(_generatorModuleLabel);
     }
         
-    produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
+    // Declare which products this module will read.
+    auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
+    if (inputPhysVolTag != invalid_tag) {
+        consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
+    }
+    auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
+    if (inputSimParticlesTag != invalid_tag) {
+        consumes<SimParticleCollection>(inputSimParticlesTag);
+    }
+    auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
+    if (inputMCTrajectoryTag != invalid_tag) {
+        consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
+    }
+    for (auto const& tag : multiStagePars_.genInputHits()) {
+        consumes<StepPointMCCollection>(tag);
+    }
         
     // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
     // This does not work in a Shared Module
@@ -357,7 +395,7 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
     access_workerMap.release();
     
-    G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << "\n";
+    G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << scheduleWorkerRM << "\n";
     
     //if this is the first time the thread is being used, it should be initialized
     if (!scheduleWorkerRM->workerRMInitialized()){
@@ -383,6 +421,18 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
         event.put(std::move(simsToCheck));
         perThreadStore->putSensitiveDetectorData(simProductGetter);
         perThreadStore->putCutsData(simProductGetter);
+        
+        if(!timeVDtimes_.empty()) {
+            event.put(std::move(perThreadStore->getTVDHits()),perThreadStore->getTVDName());
+        }
+        
+        if(trajectoryControl_.produce()) {
+            event.put(std::move(perThreadStore->getMCTrajCollection()));
+        }
+        
+        if(multiStagePars_.multiStage()) {
+            event.put(std::move(perThreadStore->getSimParticleRemap()));
+        }
         
         if(sensitiveDetectorHelper_.extMonPixelsEnabled()) {
             event.put(std::move(perThreadStore->getExtMonFNALSimHitCollection()));

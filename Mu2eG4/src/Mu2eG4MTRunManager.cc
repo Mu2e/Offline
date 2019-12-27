@@ -126,7 +126,7 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
 /////////////////////////////////////////////////////////////////////////////////////
         //RANDOM NUMBER SEEDING: NEED TO FIGURE THIS OUT
         //taken from G4MTRunManager::InitializeEventLoop()
-        int numevents = 1000;
+        int numevents = 10000;
         int numworkers = 1;
         SetNumberOfEventsToBeProcessed(numevents);
         //numberOfEventToBeProcessed = 1000;//this needs to be filled from the # of events we are processing
