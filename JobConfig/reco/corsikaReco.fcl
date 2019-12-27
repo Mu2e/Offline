@@ -1,0 +1,6 @@
+# process primary signal-only digis
+#include "JobConfig/reco/mcdigis_primary.fcl"
+# compress MCTrajectories: this only works for digis produced in MDC2018h and later
+#physics.producers.compressRecoMCs.mcTrajectoryTag : "compressDigiMCs"
+services.TFileService.fileName: "nts.owner.CorsikaReco.version.sequencer.root"
+outputs.Output.fileName: "mcs.owner.CorsikaReco.version.sequencer.art"

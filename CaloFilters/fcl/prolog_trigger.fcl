@@ -94,6 +94,21 @@ CaloFilters : {
 	MinLikelihoodCut       : [ 41.44, 10.36]                           
 	triggerPath             : "CaloLHCE"	    
     }
+
+    #fixme! this is just a place holder for the photon filter
+    caloPhotonFilter : {
+	module_type            : CaloLikelihood
+	CaloClusterModuleLabel : CaloClusterFast
+	SignalTemplates        : "CaloFilters/data/v7_1_5/caloLH_ce.root"  
+	BackgroundTemplates    : "CaloFilters/data/v7_1_5/caloLH_bkg.root" 
+	DropSecondDisk         : false					   
+	MinClusterEnergy       : 50.   # MeV				   
+	ClusterEnergyStep      : 10.   # MeV          			   
+	MinClusterRadialDist   : 350.  # mm				   
+	ClusterRadialDistStep  : 50.   # mm				   
+	MinLikelihoodCut       : [ 41.44, 10.36]                           
+	triggerPath             : "CaloPhoton"	    
+    }
   
 }
 
@@ -201,6 +216,20 @@ CaloFilters : { @table::CaloFilters
 	    triggerPath         : "CaloLHCE"	    	    	    
 	}
 
+	caloPhotonCDCountFilter     : {
+	    module_type : DigiFilter
+	    strawDigiCollection : notUSed
+	    caloDigiCollection  : CaloDigiFromShower
+	    useStrawDigi        : false
+	    useCaloDigi         : true
+	    minNStrawDigi       : -1
+	    maxNStrawDigi       : -1
+	    minNCaloDigi        : 2
+	    maxNCaloDigi        : 10000
+	    maxCaloEnergy       : -1
+	    triggerPath         : "CaloPhoton"	    	    	    
+	}
+
 	caloMVACEEventPrescale : {
 	    module_type : PrescaleEvent
 	    nPrescale         : 1
@@ -265,6 +294,21 @@ CaloFilters : { @table::CaloFilters
 	    triggerFlag       : ["PrescaleGoodEvents"]	    
 	}
 
+	caloPhotonEventPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1
+	    triggerFlag   : ["PrescaleRandom"]	    
+	    triggerPath        : "CaloPhoton"	    	    
+	}
+	
+	caloPhotonPrescale : {
+	    module_type : PrescaleEvent
+	    nPrescale         : 1 
+	    useFilteredEvents : true
+	    triggerPath        : "CaloPhoton"	    	    
+	    triggerFlag       : ["PrescaleGoodEvents"]	    
+	}
+
 	
 	#FIXME! this filter will no longer be needed once we will have a standardized definition of good events
 	caloTriggerPreselect   : { @table::CaloFilters.caloTriggerPreselect  }
@@ -281,6 +325,9 @@ CaloFilters : { @table::CaloFilters
 	
 	#select events based on a likelihood discriminator
 	caloLHCEFilter         : { @table::CaloFilters.caloLHCEFilter        }
+
+	#fixme@ this is just a place holder
+	caloPhotonFilter         : { @table::CaloFilters.caloPhotonFilter        }
 	
     }
 
@@ -294,6 +341,9 @@ CaloFilters : { @table::CaloFilters
 	caloCalibCosmic  : [ caloCalibCosmicEventPrescale, caloCalibCosmicCDCountFilter, CaloClusterFast, caloCalibCosmicFilter, caloCalibCosmicPrescale] 
 
 	caloLHCE         : [ caloLHCEEventPrescale, caloLHCECDCountFilter, CaloClusterFast, caloLHCEFilter, caloLHCEPrescale] 
+
+	#FIX ME! THIS IS JUST A PLACE HOLDER
+	caloPhoton       : [ caloPhotonEventPrescale, caloPhotonCDCountFilter, CaloClusterFast, caloPhotonFilter, caloPhotonPrescale] 
 
     }
 }

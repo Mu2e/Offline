@@ -163,6 +163,8 @@ namespace mu2e {
     RobustHelixFinderTypes::Data_t        _data;
     RobustHelixFinderData                 _hfResult;
 
+    const Tracker* _tracker;
+
     void     findHelices(ComboHitCollection& chcol, const TimeClusterCollection& tccol);    
     void     prefilterHits(RobustHelixFinderData& helixData, int& nFilteredStrawHits); 
     unsigned filterCircleHits(RobustHelixFinderData& helixData); 
@@ -252,14 +254,14 @@ namespace mu2e {
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
     mu2e::GeomHandle<mu2e::Tracker> th;
-    const Tracker* tracker = th.get();
+    _tracker = th.get();
 
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
-    _hfit.setTracker    (tracker);
+    _hfit.setTracker    (_tracker);
     _hfit.setCalorimeter(ch.get());
     
-    _chi2hfit.setTracker    (tracker);
+    _chi2hfit.setTracker    (_tracker);
     _chi2hfit.setCalorimeter(ch.get());
   }
   //--------------------------------------------------------------------------------
@@ -495,7 +497,7 @@ namespace mu2e {
     }
 
     if (_diag){
-      HelixTool helTool(&helixData._hseed, 3);
+      HelixTool helTool(&helixData._hseed, _tracker);//_trackerRIn, _trackerROut, _trackerLength);
       helixData._diag.nLoops            = helTool.nLoops();
       helixData._diag.meanHitRadialDist = helTool.meanHitRadialDist();
     }

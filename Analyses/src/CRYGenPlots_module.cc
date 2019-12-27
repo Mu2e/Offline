@@ -73,8 +73,23 @@ class mu2e::CRYGenPlots : public art::EDAnalyzer {
     TH2F *_hPtypeKE;
     TH1F *_hNSecondaries;
 
-    void bookHists();
-  GlobalConstantsHandle<ParticleDataTable> pdt;
+    TTree *_cosmicTree;
+
+    float _x;
+    float _y;
+    float _z;
+    float _px;
+    float _py;
+    float _pz;
+    float _theta;
+    float _phi;
+    float _KE;
+    float _p;
+    float _t;
+    int _pdgId;
+
+    void bookHists(art::ServiceHandle<art::TFileService> &);
+    GlobalConstantsHandle<ParticleDataTable> pdt;
 };
 
 
@@ -85,7 +100,24 @@ class mu2e::CRYGenPlots : public art::EDAnalyzer {
   , CRYInstanceName_(p.get<std::string>("CRYInstanceName", ""))
   , _keMax(p.get<double>("keMax", 10E3))
 {
-  bookHists();
+  art::ServiceHandle<art::TFileService> tfs;
+
+  bookHists(tfs);
+
+  _cosmicTree = tfs->make<TTree>("cosmicTree", "TTree with cosmic ray info");
+
+  _cosmicTree->Branch("x", &_x, "x/F");
+  _cosmicTree->Branch("y", &_y, "y/F");
+  _cosmicTree->Branch("z", &_z, "z/F");
+  _cosmicTree->Branch("px", &_px, "px/F");
+  _cosmicTree->Branch("py", &_py, "py/F");
+  _cosmicTree->Branch("pz", &_pz, "pz/F");
+  _cosmicTree->Branch("theta", &_theta, "theta/F");
+  _cosmicTree->Branch("phi", &_phi, "phi/F");
+  _cosmicTree->Branch("KE", &_KE, "KE/F");
+  _cosmicTree->Branch("p", &_p, "p/F");
+  _cosmicTree->Branch("t", &_t, "t/F");
+  _cosmicTree->Branch("pdgId", &_pdgId, "pdgId/I");
 }
 
 
@@ -115,7 +147,34 @@ void mu2e::CRYGenPlots::analyze(art::Event const & e)
 
     HepLorentzVector mom4 = p.momentum();
     Hep3Vector mom3(mom4.px(), mom4.py(), mom4.pz());
-    Hep3Vector yMom3(mom4.pz(), mom4.px(), mom4.py()); // for theta, phi
+    Hep3Vector yMom3(mom4.pz(), mom4.px(), -mom4.py()); // for theta, phi
+
+    _hKE->Fill(mom4.e() - mass);
+    _hTheta->Fill(yMom3.theta());
+    _hPhi->Fill(yMom3.phi());
+
+    _hPmag->Fill(mom3.mag());
+    _hTime->Fill(p.time());
+    _hPyOverPmag->Fill(mom4.py() / mom3.mag());
+
+    _x = p.position().x();
+    _y = p.position().y();
+    _z = p.position().z();
+
+    _px = mom4.px();
+    _py = mom4.py();
+    _pz = mom4.pz();
+
+    _theta = yMom3.theta();
+    _phi = yMom3.phi();
+
+    _KE = mom4.e() - mass;
+    _p = mom3.mag();
+
+    _t = p.time();
+
+    _pdgId = p.pdgId();
+    _cosmicTree->Fill();
 
     _hKE->Fill(mom4.e() - mass);
     _hTheta->Fill(yMom3.theta());
@@ -178,9 +237,8 @@ void mu2e::CRYGenPlots::endJob()
   // Implementation of optional member function here.
 }
 
-void mu2e::CRYGenPlots::bookHists()
+void mu2e::CRYGenPlots::bookHists(art::ServiceHandle<art::TFileService> &tfs)
 {
-  art::ServiceHandle<art::TFileService> tfs;
 
   _hXZ = tfs->make<TH2F>("XZ", "XZ", 500, -2.0e5,  2.0e5, 500, -2.0e5, 2.0e5 );
   _hY = tfs->make<TH1F>("Y", "Y", 500, -15.0e3, 21.0e3 );

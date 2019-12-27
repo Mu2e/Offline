@@ -61,6 +61,13 @@ namespace mu2e
     void fitCircle(RobustHelixFinderData& helixData, bool forceTargetCon);
     bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
+    bool initFZ_from_dzFrequency(RobustHelixFinderData& helixData, int initHitPhi=1);
+    bool fillArrayDz(RobustHelixFinderData& HelixData, std::vector<int> &v,float &bin_size, float& startDz);
+    bool extractFZ0(RobustHelixFinderData& HelixData, float& fz0);
+    bool extractLambdaFromDzHist(int *hist_sum, float& lambda);
+    void findHistPeaks(std::vector<int> &input, int bin_size, 
+		       float &start_dz,
+		       std::vector<float> &xPeak, std::vector<float> &xSigma, std::vector<float>&swmax, std::vector<int> &iPeak, int &first_peak, int &peaks_found);
     void fitFZ(RobustHelixFinderData& helixData);
     void fitFZ_2(RobustHelixFinderData& helixData, int weightMode=1);
     bool goodHelix(RobustHelix const& rhel);
@@ -146,6 +153,12 @@ namespace mu2e
     Helicity _helicity; // helicity value to look for.  This defines the sign of dphi/dz
     TH1F _hphi;
     unsigned _ntripleMin, _ntripleMax;
+    bool     _use_initFZ_from_dzFrequency;
+    float    _initFZFrequencyNSigma;
+    int      _initFZFrequencyBinsToIntegrate;
+    int      _initFZFrequencyArraySize;
+    int      _initFZFrequencyNMaxPeaks;
+    float    _initFZFrequencyTolerance;
     unsigned _initFZNBins;
     float    _initFZMinL, _initFZMaxL, _initFZStepL;
     unsigned _fitFZNBins;
