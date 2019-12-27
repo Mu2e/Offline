@@ -44,7 +44,6 @@ struct Mu2eG4PerThreadStorage
     pset_(pset),
     simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet()))
     {
-        std::cout << "We are in the c'tor of PerThreadStorage!!!" << std::endl;
         tvd.first = "";
         tvd.second = nullptr;
     }
