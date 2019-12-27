@@ -6,6 +6,7 @@
 #include "art/Framework/Principal/Event.h"
 
 #include "MCDataProducts/inc/StepPointMC.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 
 
 namespace mu2e {
@@ -93,6 +94,10 @@ namespace mu2e {
 
   double SimParticleTimeOffset::timeWithOffsetsApplied(const StepPointMC& s) const {
     return s.time() + totalTimeOffset(s);
+  }
+
+  double SimParticleTimeOffset::timeWithOffsetsApplied(const StrawGasStep& s) const {
+    return s.time() + totalTimeOffset(s.simParticle());
   }
 
 }

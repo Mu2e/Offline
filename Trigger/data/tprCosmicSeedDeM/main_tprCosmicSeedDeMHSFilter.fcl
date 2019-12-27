@@ -1,0 +1,17 @@
+physics.filters.tprCosmicSeedDeMHSFilter.fitparticle   : @local::Particle.eminus	 
+physics.filters.tprCosmicSeedDeMHSFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.tprCosmicSeedDeMHSFilter.helicity      : 1
+physics.filters.tprCosmicSeedDeMHSFilter.minNStrawHits : 15.0
+physics.filters.tprCosmicSeedDeMHSFilter.minHitRatio   : 0.4
+physics.filters.tprCosmicSeedDeMHSFilter.minMomentum   : 50.0
+physics.filters.tprCosmicSeedDeMHSFilter.maxMomentum   : 300.0
+physics.filters.tprCosmicSeedDeMHSFilter.minPt         : 0.0
+physics.filters.tprCosmicSeedDeMHSFilter.maxChi2XY     : 8.0
+physics.filters.tprCosmicSeedDeMHSFilter.maxChi2PhiZ   : 8.0
+physics.filters.tprCosmicSeedDeMHSFilter.maxD0         : 600.0
+physics.filters.tprCosmicSeedDeMHSFilter.minD0         : -600.0
+physics.filters.tprCosmicSeedDeMHSFilter.minAbsLambda  : 50.0
+physics.filters.tprCosmicSeedDeMHSFilter.maxAbsLambda  : 500.0
+physics.filters.tprCosmicSeedDeMHSFilter.minNLoops     : 0
+physics.filters.tprCosmicSeedDeMHSFilter.maxNLoops     : 30
+physics.filters.tprCosmicSeedDeMHSFilter.prescaleUsingD0Phi  : false

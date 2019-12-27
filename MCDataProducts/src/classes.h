@@ -31,6 +31,7 @@
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
+#include "MCDataProducts/inc/CosmicLivetime.hh"
 
 // simulation bookeeping
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
@@ -62,8 +63,8 @@
 #include "MCDataProducts/inc/CaloHitSimPartMCCollection.hh"
 #include "MCDataProducts/inc/CaloClusterMC.hh"
 // straws
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
+#include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 
 // tracking 
 #include "MCDataProducts/inc/TrackSummaryTruthAssns.hh"

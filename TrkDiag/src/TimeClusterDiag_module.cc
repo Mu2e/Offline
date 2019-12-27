@@ -127,7 +127,7 @@ namespace mu2e {
     void fillClusterInfo (std::vector<spcount> const& primaries);
     void fillClusterInfo (TimeCluster const& tc,spcount const& primary, TimeClusterInfo& tcinfo);
     void fillClusterHitInfo (TimeCluster const& besttc,
-	art::Ptr<SimParticle> const& primary, art::Event const& evt); 
+art::Ptr<SimParticle> const& primary, art::Event const& evt); 
     void fillCECluster();
     void findPrimaries (art::Event const& evt, std::vector<spcount>& primaries);
     void findPrimary(art::Event const& evt, TimeCluster const& tc, spcount& primary );
@@ -194,8 +194,7 @@ namespace mu2e {
       _mcmidt0 = -1000;
      // loop over the digis and find the ones that match
       for(auto mcd : *_mcdigis) {
-        art::Ptr<SimParticle> sp;
-        TrkMCTools::simParticle(sp,mcd);
+        art::Ptr<SimParticle> sp = mcd.earlyStrawGasStep()->simParticle();
         if(sp.isNonnull() &&
             sp->genParticle().isNonnull() &&
             sp->genParticle()->generatorId().id() == _mcgen){
@@ -318,13 +317,19 @@ namespace mu2e {
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	++nce;
 	_ceclust._pos += ch.pos();
+	//_ceclust._time +=  _ttcalc.comboHitTime(ch);
 	_ceclust._time +=  _ttcalc.comboHitTime(ch,_pitch);
       }
     }
+
+    //_ceclust._pos /= nce;
+    //_ceclust._time /= nce;
+
     if(nce > 0){
       _ceclust._pos /= nce;
       _ceclust._time /= nce;
     }
+
     // 2nd pass to get extents {
     double cphi = _ceclust._pos.phi();
     double mindphi(1e10), maxdphi(-1e10);
@@ -333,6 +338,7 @@ namespace mu2e {
       if(_shfcol[ich].hasAllProperties(_cesel)){
 	_ceclust._nce += ch.nStrawHits();
 	XYZVec cpos = ch.pos();
+	
 	float hrho = sqrt(cpos.Perp2());
 	double hphi = cpos.phi();
 	double dphi = Angles::deltaPhi(hphi,cphi);
@@ -385,18 +391,16 @@ namespace mu2e {
 	_chcol->fillStrawDigiIndices(event,ich,shids);
 	StrawDigiMC const& mcdigi = _mcdigis->at(shids[0]);// FIXME!
 	StrawEnd itdc;
-	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.stepPointMC(itdc));
-	tchi._mcmom = mcdigi.stepPointMC(itdc)->momentum().mag();
-	art::Ptr<SimParticle> sp;
-	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
-	  tchi._mcpdg = sp->pdgId();
-	  tchi._mcproc = sp->creationCode();
-	  if(sp->genParticle().isNonnull())
-	    tchi._mcgen = sp->genParticle()->generatorId().id();
-	  if(primary.isNonnull()){
-	    MCRelationship rel(primary,sp);
-	    tchi._mcrel = rel.relationship();
-	  }
+	tchi._mctime = _toff.timeWithOffsetsApplied( *mcdigi.strawGasStep(itdc));
+	tchi._mcmom = sqrt(mcdigi.strawGasStep(itdc)->momentum().mag2());
+	art::Ptr<SimParticle> sp = mcdigi.earlyStrawGasStep()->simParticle();
+	tchi._mcpdg = sp->pdgId();
+	tchi._mcproc = sp->creationCode();
+	if(sp->genParticle().isNonnull())
+	  tchi._mcgen = sp->genParticle()->generatorId().id();
+	if(primary.isNonnull()){
+	  MCRelationship rel(primary,sp);
+	  tchi._mcrel = rel.relationship();
 	}
       }
       _tchinfo.push_back(tchi);
@@ -521,19 +525,17 @@ namespace mu2e {
       for(auto shid : shids ) {
 	StrawDigiMC const& mcdigi = _mcdigis->at(shid);
 	StrawEnd itdc;
-	art::Ptr<SimParticle> sp;
-	if(TrkMCTools::simParticle(sp,mcdigi) > 0){
-	  bool found(false);
-	  for(size_t isp=0;isp<sct.size();++isp){
-	    // count direct daughter/parent as part the same particle
-	    if(sct[isp]._spp == sp ){
-	      found = true;
-	      sct[isp].append(sp);
-	      break;
-	    }
+	art::Ptr<SimParticle> sp = mcdigi.earlyStrawGasStep()->simParticle();
+	bool found(false);
+	for(size_t isp=0;isp<sct.size();++isp){
+	  // count direct daughter/parent as part the same particle
+	  if(sct[isp]._spp == sp ){
+	    found = true;
+	    sct[isp].append(sp);
+	    break;
 	  }
-	  if(!found)sct.push_back(sp);
 	}
+	if(!found)sct.push_back(sp);
       }
     }
     // sort by # of contributions
@@ -548,10 +550,14 @@ namespace mu2e {
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     const Calorimeter* calo = ch.get();
 // simple entries
+
+    //tcinfo._nhits = tp._strawHitIdxs.size();
+   
     tcinfo._nhits = tc.nStrawHits();
     tcinfo._time  = tc._t0._t0;
     tcinfo._terr  = tc._t0._t0err;
     tcinfo._pos	  = tc._pos;
+
     // calo info if available
     if(tc._caloCluster.isNonnull()){
       tcinfo._ecalo = tc._caloCluster->energyDep();

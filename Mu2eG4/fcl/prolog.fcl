@@ -103,7 +103,7 @@ mu2eg4DefaultTrajectories: {
 }
 #----------------
 mu2eg4DefaultDebug: {
-    stepLimitKillerVerbose: true
+    stepLimitKillerVerbose: false
     printPhysicsProcessSummary : false
     PiENuPolicyVerbosity : 0
     printTrackTiming: false

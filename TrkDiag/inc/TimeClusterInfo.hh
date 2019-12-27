@@ -63,7 +63,7 @@ namespace mu2e {
     Int_t	_ncesel; // # of selected conversion electron hits
     Int_t	_nceclust; // # of conversion electron hits found in clusters
     Float_t	_time; // average time of CE hits (doesn't include drift!)
-    XYZVec	_pos; // average position of cluster
+    XYZVec	_pos; // average position of cluste
     Float_t	_maxdphi; // max dphi WRT average
     Float_t	_minrho; // min rho WRT average
     Float_t	_maxrho; // max rho WRT average
