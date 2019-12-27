@@ -1,0 +1,3 @@
+physics.filters.caloPhotonPrescale.nPrescale    : 1
+physics.filters.caloPhotonPrescale.useFilteredEvents : true
+physics.filters.caloPhotonPrescale.triggerFlag  : ["PrescaleGoodEvents"]

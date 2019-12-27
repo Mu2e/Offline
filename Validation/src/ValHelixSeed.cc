@@ -1,5 +1,7 @@
 #include <cmath>
 #include "Validation/inc/ValHelixSeed.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "Mu2eUtilities/inc/HelixTool.hh"
 
 int mu2e::ValHelixSeed::declare(art::TFileDirectory tfs) {
@@ -28,18 +30,18 @@ int mu2e::ValHelixSeed::fill(const mu2e::HelixSeedCollection & coll,
   // histogram contents change, and will not match previous versions
   _hVer->Fill(0.0);
   _hN->Fill(coll.size()); 
+  mu2e::GeomHandle<mu2e::Tracker> th;
+  auto myTracker = th.get();
 
   for(auto const& hs : coll) {
     _hNCombo->Fill(hs.hits().size());
-    HelixTool helTool(&hs, 3);
+    HelixTool helTool(&hs, myTracker);
     int   nstrawhits = helTool.nstrawhits();
     _hNStrHit->Fill(nstrawhits);
     const TrkFitFlag& tff = hs.status();
 
-    int i=0;
     for(auto sn: tff.bitNames()) { 
-      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(i); 
-      i++;
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second)); 
     }
 
     _ht0->Fill(hs.t0().t0());

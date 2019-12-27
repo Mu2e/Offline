@@ -31,7 +31,17 @@ namespace mu2e {
     size_t    find(std::map<std::string, unsigned int> const& posmap, std::string const& name) const;
 
     // Has ith path accepted the event?
-    bool      accept(std::string const& name) const;
+    bool      accepted(std::string const& name) const;
+
+    bool      wasrun(std::string const& name) const;
+
+    //NOTE: the following three functions can be used only within the same job that runs the 
+    // trigger paths, otherwise they will fail
+    std::vector<std::string>   triggerModules (std::string const& name) const;
+    unsigned                   indexLastModule(std::string const& name) const;
+    std::string                nameLastModule (std::string const& name) const;
+    
+    art::hlt::HLTState state(std::string const& name) const;
     void      print() const;
 
   private:

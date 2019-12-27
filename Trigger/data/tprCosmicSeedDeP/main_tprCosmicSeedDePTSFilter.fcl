@@ -1,0 +1,9 @@
+physics.filters.tprCosmicSeedDePTSFilter.fitparticle   : @local::Particle.eplus	 
+physics.filters.tprCosmicSeedDePTSFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.tprCosmicSeedDePTSFilter.minNStrawHits : 15.0
+physics.filters.tprCosmicSeedDePTSFilter.minMomentum   : 50.0
+physics.filters.tprCosmicSeedDePTSFilter.maxMomentum   : 300.0
+physics.filters.tprCosmicSeedDePTSFilter.maxChi2DOF    : 20.0
+physics.filters.tprCosmicSeedDePTSFilter.maxMomErr     : 10.0
+physics.filters.tprCosmicSeedDePTSFilter.minD0         : -800.0
+physics.filters.tprCosmicSeedDePTSFilter.maxD0         : 800.0

@@ -1,3 +1,4 @@
+from __future__ import print_function
 from string import Template
 import sys
 import random
@@ -54,7 +55,7 @@ filenames = {}
 ffns = open(os.path.join(dirname,"filenames"))
 for line in ffns: 
   signal = line.split()[0]
-  print signal
+  print(signal)
   filenames[signal] = line.split()[1]
   starting_fraction = float(line.split()[2])
   max_fraction = float(line.split()[3])
@@ -86,7 +87,7 @@ for line in ffns:
 
   te.GetEntry(check_entry)
   if (not start_run_id == te.EventAuxiliary.run() or not start_subrun_id == te.EventAuxiliary.subRun() or not start_event_id == te.EventAuxiliary.event()):
-    print "PROBLEM GETTING STARTING EVENT"
+    print("PROBLEM GETTING STARTING EVENT")
     import pdb;pdb.set_trace()
   starting_event_num[signal] = [start_run_id,start_subrun_id,start_event_id]
   # determine how many events we can use before throwing error
@@ -179,13 +180,13 @@ while True:
           currently_used_events[line.split()[0]] += int(line.split()[1])
   p.wait()
   num_events_already_sampled += events_this_run
-  print "Job done, return code:",p.returncode,"processed",num_events_already_sampled,"events out of",total_sample_events
+  print("Job done, return code: " + p.returncode + " processed " + num_events_already_sampled + " events out of " + total_sample_events)
   if num_events_already_sampled >= total_sample_events:
     break
   for signal in currently_used_events:
     if currently_used_events[signal] > max_possible_events[signal]:
-      print "SIGNAL",signal,"HAS RUN OUT OF EVENTS!",currently_used_events[signal],max_possible_events[signal]
-    print "SIGNAL",signal,currently_used_events[signal],max_possible_events[signal]
+      print("SIGNAL " + signal + " HAS RUN OUT OF EVENTS! " + currently_used_events[signal] + " " + max_possible_events[signal])
+    print("SIGNAL " + signal + " " + currently_used_events[signal] + " " + max_possible_events[signal])
 
   subrun+=1
 
