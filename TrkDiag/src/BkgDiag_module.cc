@@ -206,9 +206,7 @@ namespace mu2e
         std::vector<StrawDigiIndex> dids;
         _chcol->fillStrawDigiIndices(event,ich,dids);
         StrawDigiMC const& mcdigi = _mcdigis->at(dids[0]);// taking 1st digi: is there a better idea??
-        StrawEnd itdc(StrawEnd::cal);
-        art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);     
-        art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+        art::Ptr<SimParticle> const& spp = mcdigi.earlyStrawGasStep()->simParticle();
         _hitPdg[_nhits] = spp->pdgId();
         _hitCrCode[_nhits] = spp->creationCode();
         _hitGen[_nhits] = -1;
@@ -373,13 +371,11 @@ namespace mu2e
 
 
   void BkgDiag::findPrimary(std::vector<uint16_t>const& dids, art::Ptr<SimParticle>& pptr,double& pmom, std::vector<int>& icontrib) const { 
-    static StrawEnd itdc(StrawEnd::cal);
     // find the unique simparticles which produced these hits
     std::set<art::Ptr<SimParticle> > pp;
     for(auto id : dids) {
       StrawDigiMC const& mcdigi = _mcdigis->at(id);
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
-      art::Ptr<SimParticle> const& spp = spmcp->simParticle();
+      art::Ptr<SimParticle> const& spp = mcdigi.earlyStrawGasStep()->simParticle();
       if(spp.isNonnull()){
 	pp.insert(spp);
       }
@@ -468,11 +464,11 @@ namespace mu2e
     for(auto id : dids) {
       StrawDigiMC const& mcdigi = _mcdigis->at(id);
       // use TDC channel 0 to define the MC match
-      art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+      auto const& spmcp = mcdigi.earlyStrawGasStep();
       art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 
       if(spp == pptr){
-	pmom = spmcp->momentum().mag();
+	pmom = sqrt(spmcp->momentum().mag2());
 	break;
       }
     }
@@ -480,11 +476,10 @@ namespace mu2e
 
   void BkgDiag::fillStrawHitInfoMC(StrawDigiMC const& mcdigi, art::Ptr<SimParticle>const& pptr, StrawHitInfo& shinfo) const {
     // use TDC channel 0 to define the MC match
-    StrawEnd itdc(StrawEnd::cal);
-    art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+    auto const& spmcp = mcdigi.earlyStrawGasStep();
     art::Ptr<SimParticle> const& spp = spmcp->simParticle();
     shinfo._mct0 = _toff.timeWithOffsetsApplied(*spmcp);
-    shinfo._mcht = mcdigi.wireEndTime(itdc);
+    shinfo._mcht = mcdigi.wireEndTime(mcdigi.earlyEnd());
     shinfo._mcpdg = spp->pdgId();
     shinfo._mcproc = spp->creationCode();
     shinfo._mcedep = mcdigi.energySum();
@@ -495,8 +490,8 @@ namespace mu2e
     shinfo._mcpos = spmcp->position();
     shinfo._mctime = shinfo._mct0;
     shinfo._mcedep = mcdigi.energySum();;
-    shinfo._mcmom = spmcp->momentum().mag();
-    double cosd = spmcp->momentum().cosTheta();
+    shinfo._mcmom = sqrt(spmcp->momentum().mag2());
+    double cosd = cos(spmcp->momentum().Theta());
     shinfo._mctd = cosd/sqrt(1.0-cosd*cosd);
     // relationship to parent
     shinfo._relation=MCRelationship::none;

@@ -302,15 +302,15 @@ namespace mu2e
         StrawDigiMC const& mcdigi = _mcdigis->at(istr);
         // use TDC channel 0 to define the MC match
         StrawEnd itdc;
-        art::Ptr<StepPointMC> const& spmcp = mcdigi.stepPointMC(itdc);
+        auto const& spmcp = mcdigi.strawGasStep(itdc);
         art::Ptr<SimParticle> const& spp = spmcp->simParticle();
 	SimParticle const& osp = spp->originParticle();
 	Hep3Vector dprod = spmcp->position()-det->toDetector(osp.startPosition());
 	static Hep3Vector zdir(0.0,0.0,1.0);
         _pdist = dprod.mag();
         _pperp = dprod.perp(zdir);
-        _pmom = spmcp->momentum().mag();
-        _mcnsteps = mcdigi.stepPointMCs().size();
+        _pmom = sqrt(spmcp->momentum().mag2());
+        _mcnsteps = 2; // FIXME!
         // compute energy sum
         _mcedep = mcdigi.energySum();
         _mcetrig = mcdigi.triggerEnergySum(StrawEnd::cal);
@@ -334,7 +334,7 @@ namespace mu2e
         _mcoe = osp.startMomentum().e();
         _mcom = osp.startMomentum().vect().mag();
         _mcshlen = (spmcp->position()-straw.getMidPoint()).dot(straw.getDirection());
-	Hep3Vector mdir = spmcp->momentum().unit();
+	Hep3Vector mdir = Geom::Hep3Vec(spmcp->momentum()).unit();
 	Hep3Vector tdir = (straw.getDirection().cross(mdir)).unit();
         _mcshd = (spmcp->position()-straw.getMidPoint()).dot(tdir);
 	double scos = mdir.dot(straw.getDirection());

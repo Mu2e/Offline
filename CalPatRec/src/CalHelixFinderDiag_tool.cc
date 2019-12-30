@@ -15,8 +15,6 @@
 #include "CalPatRec/inc/CalHelixFinder_types.hh"
 #include "Mu2eUtilities/inc/ModuleHistToolBase.hh"
 
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"

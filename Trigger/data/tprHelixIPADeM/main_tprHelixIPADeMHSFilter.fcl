@@ -1,5 +1,6 @@
 physics.filters.tprHelixIPADeMHSFilter.helicity      : 1		    
 physics.filters.tprHelixIPADeMHSFilter.minNStrawHits : 15   		    
+physics.filters.tprHelixIPADeMHSFilter.minHitRatio   : 0.5
 physics.filters.tprHelixIPADeMHSFilter.minMomentum   : 30.  		    
 physics.filters.tprHelixIPADeMHSFilter.maxMomentum   : 70. 		    
 physics.filters.tprHelixIPADeMHSFilter.minPt         : 0    		    

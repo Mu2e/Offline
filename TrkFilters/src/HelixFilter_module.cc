@@ -13,6 +13,7 @@
 #include "BFieldGeom/inc/BFieldManager.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 // data
 #include "RecoDataProducts/inc/HelixSeed.hh"
 #include "DataProducts/inc/Helicity.hh"
@@ -47,6 +48,7 @@ namespace mu2e
     bool          _hascc; // Calo Cluster
     int           _hel;
     int           _minnstrawhits;
+    double        _minHitRatio;
     double        _minmom, _maxmom;
     double        _maxpT;
     double        _minpT;
@@ -59,6 +61,7 @@ namespace mu2e
     double        _maxnloops;
     double        _minnloops;
     double        _bz0;
+    const Tracker* _tracker;
     TrkFitFlag    _goodh; // helix fit flag
     std::string   _trigPath;
     bool          _prescaleUsingD0Phi;
@@ -76,6 +79,7 @@ namespace mu2e
     _hascc             (pset.get<bool>  ("requireCaloCluster",false)),
     _hel               (pset.get<int>   ("helicity")),
     _minnstrawhits     (pset.get<int>   ("minNStrawHits",15)),
+    _minHitRatio       (pset.get<double>("minHitRatio",0.)),
     _minmom            (pset.get<double>("minMomentum",70.0)),
     _maxmom            (pset.get<double>("maxMomentum",120.0)),
     _minpT             (pset.get<double>("minPt", 0.)),
@@ -105,6 +109,9 @@ namespace mu2e
     GeomHandle<DetectorSystem> det;
     Hep3Vector vpoint_mu2e = det->toMu2e(Hep3Vector(0.0,0.0,0.0));
     _bz0 = bfmgr->getBField(vpoint_mu2e).z();
+
+    mu2e::GeomHandle<mu2e::Tracker> th;
+    _tracker = th.get();
     return true;
   }
 
@@ -131,7 +138,7 @@ namespace mu2e
       //check the helicity
       if (!(hs.helix().helicity() == Helicity(_hel)))        continue;
 
-      HelixTool helTool(&hs, 3);
+      HelixTool helTool(&hs, _tracker);
       // compute the helix momentum.  Note this is in units of mm!!!
       float hmom       = hs.helix().momentum()*mm2MeV;
       int   nstrawhits = helTool.nstrawhits();
@@ -141,7 +148,8 @@ namespace mu2e
       float d0         = hs.helix().rcent() - hs.helix().radius();
       float lambda     = std::fabs(hs.helix().lambda());
       float nLoops     = helTool.nLoops();
-      
+      float hRatio     = helTool.hitRatio();
+
       if(_debug > 2){
         cout << moduleDescription().moduleLabel() << "status = " << hs.status() << " nhits = " << hs.hits().size() << " mom = " << hmom << endl;
       }
@@ -158,7 +166,8 @@ namespace mu2e
 	  nLoops     <= _maxnloops &&
 	  nLoops     >= _minnloops &&
           hmom       >= _minmom    && 
-	  hmom       <= _maxmom) {
+	  hmom       <= _maxmom    &&
+	  hRatio     >= _minHitRatio ) {
 
 	//now check if we want to prescake or not 
 	if (_prescaleUsingD0Phi) {
@@ -191,6 +200,7 @@ namespace mu2e
     }
     return true;
   }
+
 }
 using mu2e::HelixFilter;
 DEFINE_ART_MODULE(HelixFilter);
