@@ -66,17 +66,15 @@ namespace mu2e {
     std::map<art::Ptr<SimParticle>,unsigned> pmap;
     for(auto const& mcdigi : *mcdigis) {
     // look at the early end
-      StrawEnd fend(StrawEnd::cal);
-      if(mcdigi.wireEndTime(StrawEnd::hv) < mcdigi.wireEndTime(StrawEnd::cal))
-	fend = StrawEnd(StrawEnd::hv);
-      art::Ptr<StepPointMC>step =  mcdigi.stepPointMC(fend);
+      StrawEnd fend = mcdigi.earlyEnd();
+      auto const& step =  mcdigi.strawGasStep(fend);
       art::Ptr<SimParticle> const& sp = step->simParticle();
-      CLHEP::Hep3Vector const& mom = step->momentum(); // cast to 3-vector
-      if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << mom.mag() << std::endl;
+      auto const& mom = step->momentum(); // cast to 3-vector
+      if(debug_ > 0)std::cout <<"SimParticle PDG = " << sp->pdgId() << " Mom = " << sqrt(mom.mag2()) << std::endl;
       bool goodpdg(true);
       if(pdgs_.size() > 0)
 	goodpdg = std::find(pdgs_.begin(),pdgs_.end(),sp->pdgId()) != pdgs_.end();
-      if(goodpdg && mom.mag() > minpmom_ && mom.mag() < maxpmom_ ){
+      if(goodpdg && sqrt(mom.mag2()) > minpmom_ && sqrt(mom.mag2()) < maxpmom_ ){
 	auto mapfnd = pmap.find(sp);
 	if(mapfnd == pmap.end()) 
 	  pmap[sp] = 1;

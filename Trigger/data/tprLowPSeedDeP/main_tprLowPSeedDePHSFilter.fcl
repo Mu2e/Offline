@@ -1,5 +1,8 @@
+physics.filters.tprLowPSeedDePHSFilter.fitparticle   : @local::Particle.eplus	 
+physics.filters.tprLowPSeedDePHSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.tprLowPSeedDePHSFilter.helicity      : -1
 physics.filters.tprLowPSeedDePHSFilter.minNStrawHits : 15.0
+physics.filters.tprLowPSeedDePHSFilter.minHitRatio   : 0.4
 physics.filters.tprLowPSeedDePHSFilter.minMomentum : 40.0
 physics.filters.tprLowPSeedDePHSFilter.maxMomentum : 60.0
 physics.filters.tprLowPSeedDePHSFilter.minPt : 0.0
