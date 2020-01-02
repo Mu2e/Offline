@@ -4,7 +4,6 @@
 // Original author David Brown, LBNL
 //
 // Mu2e includes
-#include "GeometryService/inc/GeomHandle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "DataProducts/inc/StrawEnd.hh"
 // Framework includes.
