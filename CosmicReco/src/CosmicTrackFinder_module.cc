@@ -33,6 +33,7 @@
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 //utils:
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:

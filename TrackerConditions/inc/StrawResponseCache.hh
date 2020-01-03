@@ -2,8 +2,8 @@
 #define TrackerConditions_StrawResponseCache_hh
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
-//#include "DbService/inc/DbHandle.hh"
 #include "TrackerConditions/inc/StrawResponseMaker.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 
 
 namespace mu2e {
