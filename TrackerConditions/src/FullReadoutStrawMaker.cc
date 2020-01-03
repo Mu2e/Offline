@@ -3,7 +3,6 @@
 //
 
 #include "TrackerConditions/inc/FullReadoutStraw.hh"
-#include "TrackerConditions/inc/FullReadoutStrawConfig.hh"
 #include "TrackerConditions/inc/FullReadoutStrawMaker.hh"
 #include "DataProducts/inc/StrawId.hh"
 #include <iostream>

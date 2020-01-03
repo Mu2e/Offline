@@ -7,7 +7,7 @@
 //
 
 #include "TrackerConditions/inc/StrawResponse.hh"
-#include "TrackerConditions/inc/StrawResponseConfig.hh"
+#include "TrackerConfig/inc/StrawResponseConfig.hh"
 
 
 namespace mu2e {
