@@ -30,10 +30,10 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 //utils:
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:
