@@ -1,0 +1,38 @@
+// Berm along the south-west side
+
+string dirt.beamline.berm.sw.name     = "dirtBeamlineBermSW";
+
+string dirt.beamline.berm.sw.material = "MBOverburden";
+
+double dirt.beamline.berm.sw.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.beamline.berm.sw.offsetFromFloorSurface.y = 9017; 
+double dirt.beamline.berm.sw.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.beamline.berm.sw.yHalfThickness           =1244.6; 
+
+//trapezoid vertices
+vector<double> dirt.beamline.berm.sw.xPositions = {
+  -31778.2,   // p1
+  -12192.2,   // p2
+  -16538.2,   // p3
+  -31778.2,   // p4
+  -31778.2,   // p5
+  -22134.2,   // p6
+  -22134.2,   // p7
+  -31778.2    // p8
+};
+
+vector<double> dirt.beamline.berm.sw.yPositions = {
+  -7505.7,  // p1
+  -7505.7,  // p2
+  -13601.7, // p3
+  -16649.7, // p4
+  -7505.7,  // p5
+  -7505.7,  // p6
+  -7505.7,  // p7
+  -10553.7  // p8
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_PSarea_hatchLid.ccl
+
+string building.psArea.hatch.lid.name     = "psAreaHatchLid";
+
+string building.psArea.hatch.lid.material = "StainlessSteel";
+
+double building.psArea.hatch.lid.offsetFromMu2eOrigin.x   = 947.4;
+double building.psArea.hatch.lid.offsetFromFloorSurface.y = 11933.24;
+double building.psArea.hatch.lid.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.psArea.hatch.lid.yHalfThickness           = 4.76;
+
+vector<double> building.psArea.hatch.lid.xPositions = {
+  -4750.05,   // p1
+  -4750.05,   // p2
+  -11709.1,   // p3
+  -11709.1   // p4
+};
+
+vector<double> building.psArea.hatch.lid.yPositions = {
+  355.854,   // p1
+  5892.55,   // p2
+  5892.55,   // p3
+  355.854   // p4
+};
+
+// Local Variables:
+// mode:c++
+// End:
