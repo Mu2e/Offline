@@ -1,0 +1,2 @@
+physics.filters.cprLowPSeedDePEventPrescale.nPrescale    : 1
+physics.filters.cprLowPSeedDePEventPrescale.triggerFlag  : ["PrescaleRandom"]

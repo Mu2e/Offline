@@ -46,7 +46,7 @@ namespace mu2e {
     // Accessors for the 3d and 2d DCA.
     double dca()   const { return _dca; }
     double dca2d() const { return _dca2d; }
-
+    int LRambig()   const { return _LRambig; }
     // Accessors for the endpoints on the line-segment of closest approach.
     XYZVec const& point1() const { return _pca1; }
     XYZVec const& point2() const { return _pca2; }
@@ -79,7 +79,7 @@ namespace mu2e {
 
     // The value of that cut.
     double _cut;
-
+    int _LRambig;
   };
 
 } // namespace mu2e

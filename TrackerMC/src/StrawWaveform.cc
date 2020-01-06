@@ -139,7 +139,7 @@ namespace mu2e {
       return dt < timestep;
     }
 
-    double StrawWaveform::maxLinearResponse(StrawElectronics const& strawele,ClusterList::const_iterator const& iclust) const {
+    double StrawWaveform::maxLinearResponse(StrawElectronics const& strawele,StrawClusterList::const_iterator const& iclust) const {
       // ignore saturation effects
       double linresp = strawele.maxLinearResponse(_sid,StrawElectronics::thresh,iclust->wireDistance(),iclust->charge());
       linresp *= (_xtalk._preamp + _xtalk._postamp);
@@ -148,7 +148,7 @@ namespace mu2e {
 
     double StrawWaveform::sampleWaveform(StrawElectronics const& strawele,StrawElectronics::Path ipath,double time) const {
       // loop over all clusts and add their response at this time
-      ClusterList const& hlist = _cseq.clustList();
+      StrawClusterList const& hlist = _cseq.clustList();
       double linresp(0.0);
       auto iclust = hlist.begin();
       while(iclust != hlist.end() && iclust->time()-strawele.clusterLookbackTime() < time){

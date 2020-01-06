@@ -105,11 +105,11 @@ namespace mu2e {
 	}
 	const auto& i_newStrawDigiMC = newStrawDigiMCs.at(i_new_digi_mc);
 	
-	const auto& i_oldStepPointMC = i_oldStrawDigiMC.stepPointMC(StrawEnd::hv);
+	const auto& i_oldStepPointMC = i_oldStrawDigiMC.strawGasStep(StrawEnd::hv);
 	if (!i_oldStepPointMC.isAvailable()) {
 	  continue; // this is a null step point
 	}
-	const auto& i_newStepPointMC = i_newStrawDigiMC.stepPointMC(StrawEnd::hv);
+	const auto& i_newStepPointMC = i_newStrawDigiMC.strawGasStep(StrawEnd::hv);
 	
 	const auto& i_old_digi_mc_strawId = i_oldStrawDigiMC.strawId();
 	const auto& i_new_digi_mc_strawId = i_newStrawDigiMC.strawId();
@@ -133,22 +133,17 @@ namespace mu2e {
 	  throw cet::exception("CompressDigiMCsCheck") << "Old and new StepPointMC times with offsets applied do not match (StrawDigiMC)" << std::endl;
 	}
 
-	// Loop through all the StepPointMCs in the waveform and check that the trigger step points are the same Ptr
+	// Check for tracker duplicate steps, there are two different cases. What should be happening is something like the following:
+	// We have five StepPointMCs: A, B, C, D, E
+	// StrawDigiMC has seven StepPtrs: HVStepPtr-->A   CalStepPtr-->A  WaveformStepPtrs-->A, B, C, D, E
 	if (_checkTrackerDuplicateSteps) {
-	  const auto& i_newStepPointMCCal = i_newStrawDigiMC.stepPointMC(StrawEnd::cal);
-	  bool identical_cal_ptr = false;
-	  bool identical_hv_ptr = false;
-	  for (const auto& i_triggerStepPointPtr : i_newStrawDigiMC.stepPointMCs()) {
-	    if (i_triggerStepPointPtr == i_newStepPointMC) {
-	      identical_hv_ptr = true;
-	    }
-	    if (i_triggerStepPointPtr == i_newStepPointMCCal) {
-	      identical_cal_ptr = true;
-	    }
-	  }
-	  if (! (identical_hv_ptr && identical_cal_ptr) ) {
-	    throw cet::exception("CompressDigiMCsCheck") << "Trigger StepPointMCs in StrawDigiMCs are not identical to any StepPointMC in the waveform. This could indicate a duplication of StepPointMCs" << std::endl;
-	  }
+	  // Case 1. In this case we have accidentally treated the HVStepPtr and CalStepPtr as separate and duplicated step A (A' and A'')
+	  //         so we end up with seven StepPointsMCs: A, B, C, D, E, A', A''
+	  //         and the StepPtrs all point to different: HVStepPtr-->A'   CalStepPtr-->A''   WaveformStepPtrs-->A, B, C, D, E
+	  // This will not trigger the exception in Case 2
+	  // If we only access steps through digis then you will get the correct information
+	  // You cannot loop over the StepPointMCCollection however
+	  // Here we check that the HV and Cal StepPtrs also exist in the WaveformStepPtrs
 	}
       }
     }

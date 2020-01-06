@@ -1,0 +1,9 @@
+physics.filters.cprLowPSeedDeMTSFilter.fitparticle   : @local::Particle.eminus	 
+physics.filters.cprLowPSeedDeMTSFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.cprLowPSeedDeMTSFilter.minNStrawHits : 15.0
+physics.filters.cprLowPSeedDeMTSFilter.minMomentum   : 50.0
+physics.filters.cprLowPSeedDeMTSFilter.maxMomentum   : 80.0
+physics.filters.cprLowPSeedDeMTSFilter.maxChi2DOF    : 20.0
+physics.filters.cprLowPSeedDeMTSFilter.maxMomErr     : 10.0
+physics.filters.cprLowPSeedDeMTSFilter.minD0         : -200.0
+physics.filters.cprLowPSeedDeMTSFilter.maxD0         : 200.0

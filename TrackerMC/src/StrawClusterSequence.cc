@@ -36,8 +36,8 @@ namespace mu2e {
       return *this;
     }
     // insert a new clust.  This is the only non-trivial function
-    ClusterList::iterator StrawClusterSequence::insert(StrawCluster const& clust) {
-      ClusterList::iterator retval = _clist.end();
+    StrawClusterList::iterator StrawClusterSequence::insert(StrawCluster const& clust) {
+      StrawClusterList::iterator retval = _clist.end();
       if(clust.type() == StrawCluster::unknown){
 	throw cet::exception("SIM")
 	  << "mu2e::StrawClusterSequence: tried to add unknown clust type"
@@ -59,7 +59,7 @@ namespace mu2e {
 	retval = _clist.begin();
       } else {
 	// loop over the contents and insert in the correct place
-	ClusterList::iterator ibefore = _clist.begin();
+	StrawClusterList::iterator ibefore = _clist.begin();
 	while(ibefore != _clist.end() && ibefore->time() < clust.time())
 	  ++ibefore;
 	retval = _clist.insert(ibefore,clust);

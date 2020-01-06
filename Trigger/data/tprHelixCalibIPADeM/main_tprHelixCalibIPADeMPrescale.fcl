@@ -1,0 +1,3 @@
+physics.filters.tprHelixCalibIPADeMPrescale.nPrescale    : 1
+physics.filters.tprHelixCalibIPADeMPrescale.useFilteredEvents : true
+physics.filters.tprHelixCalibIPADeMPrescale.triggerFlag  : ["PrescaleGoodEvents"]
