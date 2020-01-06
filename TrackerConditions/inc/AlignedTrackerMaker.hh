@@ -5,7 +5,7 @@
 //
 
 #include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/AlignedTrackerConfig.hh"
+#include "TrackerConfig/inc/AlignedTrackerConfig.hh"
 #include "DbTables/inc/TrkAlignTracker.hh"
 #include "DbTables/inc/TrkAlignPlane.hh"
 #include "DbTables/inc/TrkAlignPanel.hh"
