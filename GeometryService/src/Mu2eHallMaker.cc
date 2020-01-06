@@ -104,7 +104,7 @@ namespace mu2e {
 				      const std::string& varPrefixStr )
   {
     std::vector<std::string> varNames;
-    c.getVectorString( varPrefixStr, varNames );
+    c.getVectorString( varPrefixStr, varNames, varNames ); //default is empty list
 
     for ( const auto& prefix : varNames ) {
       CLHEP::Hep3Vector offset
@@ -218,7 +218,7 @@ namespace mu2e {
                                               const double min, const double max ) {
 
     std::vector<std::string> varNames;
-    c.getVectorString( varPrefixStr, varNames );
+    c.getVectorString( varPrefixStr, varNames,varNames ); //defult is empty list
 
     for ( const auto& prefix : varNames ) {
 
