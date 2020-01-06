@@ -4,7 +4,6 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/Mu2eDetector.hh"
-#include "TrackerConditions/inc/Mu2eDetectorConfig.hh"
 #include "TrackerConditions/inc/Mu2eDetectorMaker.hh"
 
 using namespace std;
