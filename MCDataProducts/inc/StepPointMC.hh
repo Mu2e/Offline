@@ -90,6 +90,7 @@
 #include "CLHEP/Vector/ThreeVector.h"
 
 #include <ostream>
+#include <vector>
 
 namespace mu2e {
 
@@ -203,6 +204,7 @@ namespace mu2e {
     h.print(ost, false);
     return ost;
   }
+   typedef std::vector<mu2e::StepPointMC> StepPointMCCollection;
 
 } // namespace mu2e
 

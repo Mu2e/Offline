@@ -17,13 +17,13 @@ outputs : {
 
 outputs.Output.outputCommands : [ "drop *_*_*_*",
 			      	  "keep mu2e::StepPointMCs_*_*_*"
-				]
+			]
 
 physics.producers.TrackerFix.trackerSteps : "compressDigiMCs:tracker"
 
 # customize the output
-services.TFileService.fileName: "out/nts.owner.fix.trackerStepCompressionFixModule.sequencer.root"
-outputs.Output.fileName: "out/dig.owner.fix.trackerStepCompressionFixModule.sequencer.art"
+services.TFileService.fileName: "nts.owner.fix.trackerStepCompressionFixModule.sequencer.root"
+outputs.Output.fileName: "dig.owner.fix.trackerStepCompressionFixModule.sequencer.art"
 physics.end_paths : [ EndPath ] # needed for generate_fcl
 
 

@@ -1,0 +1,4 @@
+physics.filters.tprHelixCalibIPADeMTCFilter.requireCaloCluster : false
+physics.filters.tprHelixCalibIPADeMTCFilter.minNHits           : 10.0
+physics.filters.tprHelixCalibIPADeMTCFilter.minTime            : 500.0
+physics.filters.tprHelixCalibIPADeMTCFilter.maxTime            : 1695.0

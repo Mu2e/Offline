@@ -8,7 +8,7 @@
 #include "TrackerConditions/inc/DeadStraw.hh"
 #include "DataProducts/inc/PanelId.hh"
 #include "DataProducts/inc/PlaneId.hh"
-#include "TrackerConditions/inc/DeadStrawConfig.hh"
+#include "TrackerConfig/inc/DeadStrawConfig.hh"
 
 // C++ includes
 #include <set>
