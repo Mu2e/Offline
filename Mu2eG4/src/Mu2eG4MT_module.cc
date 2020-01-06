@@ -447,12 +447,15 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
         
 // Tell G4 that this run is over.
 void Mu2eG4MT::endRun(art::Run & run, art::ProcessingFrame const& procFrame) {
-    
+
+    G4cout << "At endRun, we have " << myworkerRunManagerMap.size() << " members in the map\n";    
     // KJK - should move this to endJob
-    std::atomic<int> threads_left = num_threads;
     
+    std::atomic<int> threads_left = myworkerRunManagerMap.size();//num_threads;
+    
+
     tbb::task_group g;
-    for (int i = 0; i < num_threads; ++i) {
+    for (int i = 0; i < static_cast<int>(myworkerRunManagerMap.size()); ++i) {
     
       auto destroy_worker = [&threads_left, this] {
           WorkerRMMap::accessor access_workerMap;
