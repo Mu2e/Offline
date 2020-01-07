@@ -8,7 +8,7 @@ makeSGS : {
 makeSD : {
     module_type : StrawDigisFromStrawGasSteps
     TimeOffsets   : [  @sequence::CommonMC.TimeMaps ]
-    StrawGasStepCollection : makeSGS
+    StrawGasStepModule : makeSGS
 }
 #------------------------------------------------------------------------------
 
