@@ -25,8 +25,7 @@
 //    system is done in Mu2eG4/src/PrimaryGeneratorAction.cc .
 //
 
-// C++ includes
-#include <iostream>
+//C++ includes
 #include <string>
 
 // Mu2e includes
@@ -57,8 +56,7 @@ namespace mu2e {
   class PrimaryProtonGun: public GeneratorBase{
   public:
 
-      PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config,
-                       std::string sID);
+    PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config);
 
     ~PrimaryProtonGun() = default;
 
@@ -109,12 +107,6 @@ namespace mu2e {
     CLHEP::RandGaussQ   _randGaussQ;
     RandomUnitSphere    _randomUnitSphere;
       
-    // Make histograms or not.
-    bool _makeOutFiles;
-      
-    // Print out various beam parameters based on the run time configuration.
-    std::ofstream outFile_;
-
     virtual void generateOne( GenParticleCollection&  );
   };
 
