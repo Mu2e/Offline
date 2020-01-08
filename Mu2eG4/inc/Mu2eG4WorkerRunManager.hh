@@ -39,8 +39,6 @@ namespace mu2e {
     class TrackingAction;
     class ExtMonFNALPixelSD;
 
-    
-
     class Mu2eG4WorkerRunManager : public G4WorkerRunManager{
                 
   public:
@@ -62,18 +60,13 @@ namespace mu2e {
         return perThreadObjects_.get();
     }
         
-        
-    //G4VUserPhysicsList* myphysicsList;
-        
   private:
             
         fhicl::ParameterSet const& pset_;
         
         bool m_managerInitialized;
-        bool m_userWorkerInit;//is there a UserWorkerInitialization class?
         bool m_steppingVerbose;
         
-        //Mu2eG4PerThreadStorage* perThreadObjects_;
         std::unique_ptr<Mu2eG4PerThreadStorage> perThreadObjects_;
     
         Mu2eG4MTRunManager* masterRM;
@@ -82,8 +75,6 @@ namespace mu2e {
         Mu2eG4ResourceLimits mu2elimits_;
         Mu2eG4TrajectoryControl trajectoryControl_;
         Mu2eG4MultiStageParameters multiStagePars_;
-        
-        //G4VUserPhysicsList* PHYSlist;
         
         PhysicsProcessInfo physicsProcessInfo_;
         SensitiveDetectorHelper sensitiveDetectorHelper_;
