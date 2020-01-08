@@ -85,7 +85,7 @@ Mixing : {
     }
     makeSDPrimary : {
       @table::makeSD
-      StrawGasStepCollection : makeSGSPrimary
+      StrawGasStepModule : makeSGSPrimary
       TimeOffsets :  [ @sequence::CommonMC.TimeMapsPrimary ] 
     }
    # digi compression
