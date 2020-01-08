@@ -112,7 +112,7 @@ namespace mu2e {
      
         
     // Instantiate generator for this run.
-    _primaryProtonGunGenerator = std::make_unique <PrimaryProtonGun>( _engine, run, config, schedID);
+    _primaryProtonGunGenerator = std::make_unique <PrimaryProtonGun>( _engine, run, config);
         
   }//beginRun
 
