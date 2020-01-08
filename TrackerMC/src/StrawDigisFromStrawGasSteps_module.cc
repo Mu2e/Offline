@@ -104,7 +104,6 @@ namespace mu2e {
 	  fhicl::Atom<float> postampxtalk{ Name("postAmplificationCrossTalk"), Comment("Post-amplification (board) X-talk coupling") ,0.02}; 
 	  fhicl::Atom<float> minstepE{ Name("minstepE"), Comment(" minimum step energy depostion to turn into a straw signal (MeV)"),2.0e-6 }; 
 	  fhicl::Atom<art::InputTag> ewMarkerTag{ Name("EventWindowMarker"), Comment("EventWindowMarker producer"),"EWMProducer" };
-	  fhicl::Atom<art::InputTag> StrawGasStepCollectionTag{ Name("StrawGasStepCollection"), Comment("StrawGasStepCollection producer") };
 	  fhicl::Atom<float> steptimebuf{ Name("StrawGasStepTimeBuffer"), Comment("buffer for MC step point times (nsec) ") ,100.0 }; 
 	  fhicl::Atom<float> flashBuffer{ Name("FlashTimeBuffer"), Comment("buffer for flash blanking times (nsec) ") ,10.0 }; 
 	  fhicl::Atom<float> tdcbuf{ Name("TDCTimeBuffer"), Comment("buffer for TDC jitter (nsec) ") ,2.0 };
@@ -112,6 +111,7 @@ namespace mu2e {
 	  fhicl::Sequence<uint16_t> allPlanes{ Name("AllHitsPlanes"), Comment("planes to read all hits"), std::vector<uint16_t>{} };
 	  fhicl::Atom<int> diagpath{ Name("DiagPath"), Comment("Digitization Path for waveform diagnostics") ,0 };
 	  fhicl::Atom<string> spinstance { Name("StrawGasStepInstance"), Comment("StrawGasStep Instance name"),""};
+	  fhicl::Atom<string> spmodule { Name("StrawGasStepModule"), Comment("StrawGasStep Module name"),""};
 	  fhicl::Sequence<art::InputTag> SPTO { Name("TimeOffsets"), Comment("Sim Particle Time Offset Maps")};
 
 	};
@@ -186,7 +186,7 @@ namespace mu2e {
 	Int_t _ncludd[2], _iclust[2];
 	Int_t _nstep;
 	Float_t _ectime[2], _ecddist[2], _ecdtime[2], _ecptime[2];
-	Float_t _xtime[2], _tctime[2], _charge[2], _ddist[2], _dtime[2], _ptime[2];
+	Float_t _xtime[2], _tctime[2], _charge[2], _acharge[2], _ddist[2], _dtime[2], _ptime[2];
 	Float_t _wdist[2], _vstart[2], _vcross[2];
 	Float_t _phi[2];
 	Float_t _mcenergy, _mctrigenergy, _mcthreshenergy;
@@ -295,6 +295,9 @@ namespace mu2e {
       _selector{ art::ProductInstanceNameSelector(config().spinstance())},
       _toff(config().SPTO())
       {
+        if (config().spmodule() != ""){
+          _selector = _selector && art::ModuleLabelSelector(config().spmodule());
+        }
 	// Tell the framework what we consume.
 	consumesMany<StrawGasStepCollection>();
 	consumes<EventWindowMarker>(_ewMarkerTag);
@@ -363,6 +366,7 @@ namespace mu2e {
 	  _sddiag->Branch("ecdtime",&_ecdtime,"ecdtimecal/F:ecdtimehv/F");
 	  _sddiag->Branch("ecptime",&_ecptime,"ecptimecal/F:ecptimehv/F");
 	  _sddiag->Branch("charge",&_charge,"chargecal/F:chargehv/F");
+	  _sddiag->Branch("acharge",&_acharge,"achargecal/F:achargehv/F");
 	  _sddiag->Branch("wdist",&_wdist,"wdistcal/F:wdisthv/F");
 	  _sddiag->Branch("phi",&_phi,"phical/F:phihv/F");
 	  _sddiag->Branch("ecddist",&_ecddist,"ecddistcal/F:ecddisthv/F");
@@ -509,6 +513,7 @@ namespace mu2e {
       if(stepsHandles.empty()){
 	throw cet::exception("SIM")<<"mu2e::StrawDigisFromStrawGasSteps: No StrawGasStep collections found for tracker" << endl;
       }
+
       // Loop over StrawGasStep collections
       for ( auto const& sgsch : stepsHandles) {
 	StrawGasStepCollection const& steps(*sgsch);
@@ -1057,7 +1062,8 @@ namespace mu2e {
       for(size_t iend=0;iend<2;++iend){
 	_xtime[iend] = xpair[iend]._time;
 	_tctime[iend] = xpair[iend]._iclust->time();
-	_charge[iend] = xpair[iend]._iclust->charge();
+        _charge[iend] = 0;
+        _acharge[iend] = 0;
 	_ddist[iend] = xpair[iend]._iclust->driftDistance();
 	_dtime[iend] = xpair[iend]._iclust->driftTime();
 	_ptime[iend] = xpair[iend]._iclust->propTime();
@@ -1083,10 +1089,16 @@ namespace mu2e {
 	  // count how many clusters till we get to the trigger cluster
 	  size_t iclust(0);
 	  while( iclu != clist.end() && iclu != ctrig){
+            _charge[iend] += iclu->charge();
+            _acharge[iend] += iclu->charge();
 	    ++iclu;
 	    ++iclust;
 	  }
 	  _iclust[iend] = iclust;
+          while (iclu != clist.end() && iclu->time() < _xtime[iend] + _mbbuffer){
+            _acharge[iend] += iclu->charge();
+            ++iclu;
+          }
 	}
       }
       if(xpair[0]._iclust->strawGasStep() == xpair[1]._iclust->strawGasStep())
