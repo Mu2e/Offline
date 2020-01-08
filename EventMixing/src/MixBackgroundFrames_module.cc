@@ -33,53 +33,6 @@
 //================================================================
 namespace mu2e {
 
-  namespace {
-    using namespace fhicl;
-    struct MyTopConfig {
-      Table<Mu2eProductMixer::Config> products { Name("products") };
-
-      Atom<art::InputTag> protonBunchIntensityTag { Name("protonBunchIntensityTag"),
-          Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
-          };
-
-      Atom<double> meanEventsPerProton { Name("meanEventsPerProton"),
-          Comment("The mean number of secondary events to mix per proton on target. "
-                  "The number of protons on target for each output microbunch-event will be taken "
-                  "from the protonBunchIntensity input."
-                  ),
-          1u
-          };
-      Atom<int> debugLevel { Name("debugLevel"),
-          Comment("control the level of debug output"),
-          0u
-          };
-      Atom<float> skipFactor { Name("skipFactor"),
-          Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
-          1
-          };
-    };
-
-    // The following hack will hopefully go away after
-    // https://cdcvs.fnal.gov/redmine/issues/19970
-    // is resolved.
-    MyTopConfig
-    retrieveConfiguration(const std::string& subTableName, const fhicl::ParameterSet& pset)
-    {
-      std::set<std::string> ignorable_keys;
-
-      // Ignore everything but the subtable
-      const auto& allnames = pset.get_names();
-      for(const auto& i: allnames) {
-        if(i != subTableName) {
-          ignorable_keys.insert(i);
-        }
-      }
-
-      return fhicl::Table<MyTopConfig>(pset.get<fhicl::ParameterSet>(subTableName),
-                                       ignorable_keys )();
-    }
-  }
-
   //----------------------------------------------------------------
   // Our "detail" class for art/Framework/Modules/MixFilter.h
   class MixBackgroundFramesDetail {
@@ -95,7 +48,37 @@ namespace mu2e {
     float skipFactor_;
 
   public:
-    MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper &helper);
+
+    struct Config {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+
+      fhicl::Table<Mu2eProductMixer::Config> products { Name("products") };
+
+      fhicl::Atom<art::InputTag> protonBunchIntensityTag { Name("protonBunchIntensityTag"),
+          Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
+          };
+
+      fhicl::Atom<double> meanEventsPerProton { Name("meanEventsPerProton"),
+          Comment("The mean number of secondary events to mix per proton on target. "
+                  "The number of protons on target for each output microbunch-event will be taken "
+                  "from the protonBunchIntensity input."
+                  ),
+          1u
+          };
+      fhicl::Atom<int> debugLevel { Name("debugLevel"),
+          Comment("control the level of debug output"),
+          0u
+          };
+      fhicl::Atom<float> skipFactor { Name("skipFactor"),
+          Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
+          1
+          };
+    };
+
+
+    using Parameters = art::MixFilterTable<Config>;
+    explicit MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper);
 
     void startEvent(const art::Event& event);
 
@@ -107,15 +90,15 @@ namespace mu2e {
   };
 
   //================================================================
-  MixBackgroundFramesDetail::MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper& helper)
-    : spm_{ retrieveConfiguration("mu2e", pset).products(), helper }
-    , pbiTag_{ retrieveConfiguration("mu2e", pset).protonBunchIntensityTag() }
-    , meanEventsPerProton_{ retrieveConfiguration("mu2e", pset).meanEventsPerProton() }
-    , debugLevel_{ retrieveConfiguration("mu2e", pset).debugLevel() }
+  MixBackgroundFramesDetail::MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper)
+    : spm_{ pars().products(), helper }
+    , pbiTag_{ pars().protonBunchIntensityTag() }
+    , meanEventsPerProton_{ pars().meanEventsPerProton() }
+    , debugLevel_{ pars().debugLevel() }
     , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , urbg_{ engine_ }
     , totalBkgCount_(0)
-    , skipFactor_{ retrieveConfiguration("mu2e", pset).skipFactor() }
+    , skipFactor_{ pars().skipFactor() }
   {}
 
   //================================================================
