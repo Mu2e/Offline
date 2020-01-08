@@ -11,10 +11,10 @@ double building.radiation.slabne5.offsetFromMu2eOrigin.z   = -3581.4;
 double building.radiation.slabne5.yHalfThickness           = 228.6;
 
 vector<double> building.radiation.slabne5.xPositions = {
-  13970.5,
-  14427.7,
-  14427.7,
-  13970.5
+  14046.2, //east of northwest pillar
+  14503.4,
+  14503.4,
+  14046.2
 };
 
 vector<double> building.radiation.slabne5.yPositions = {
