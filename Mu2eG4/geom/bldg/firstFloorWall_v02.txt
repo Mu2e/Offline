@@ -18,10 +18,10 @@ vector<double> building.firstFloor.wall.xPositions = {
   -2286,   // c
   7975.6,   // d
   7975.6,   // e
-  13157.7,   // p1
-  13157.7,   // p2
-  13970.5,   // p3
-  13970.5,    // p4
+  13233.4,   // p1 northwest pillar
+  13233.4,   // p2
+  14046.2,   // p3
+  14046.2,    // p4
   45745.4,   // f
   45745.4,   // g
   -2921   // h
@@ -33,9 +33,9 @@ vector<double> building.firstFloor.wall.yPositions = {
   609.6,   // c
   609.6,   // d
   2032,   // e
-  2032,   // p1
-  1117.6,   // p2
-  1117.6,   // p3
+  2032,   // p1 northwest pillar
+  1524.0,   // p2
+  1524.0,   // p3
   2032,   // p4
   2032,   // f
   2438.4,   // g
