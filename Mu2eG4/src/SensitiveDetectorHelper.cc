@@ -131,13 +131,6 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
             stepInstancesForMomentumCut_.emplace_back(i);
         }
         
-/*        for (std::vector<std::string>::iterator j=stepInstancesForMomentumCut_.begin();
-             j != stepInstancesForMomentumCut_.end(); j++) {
-
-            cout << "in SDH stepInstancesForMomentumCut = " << *j << endl;
-        }
-*/
-        
   }//end c'tor
 
 void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
@@ -287,21 +280,13 @@ bool SensitiveDetectorHelper::filterStepPointMomentum(){
          i != stepInstances_.end(); ++i ) {
         StepInstance& instance(i->second);
         
-        //std::cout << "instance.stepName == " << instance.stepName << std::endl;
-        
         for (std::vector<std::string>::iterator j=stepInstancesForMomentumCut_.begin();
              j != stepInstancesForMomentumCut_.end(); j++) {
-
-            //std::cout << "stepInstancesForMomentumCut_=" << *j << std::endl;
             
             if (instance.stepName == *j) {
-                
-                //std::cout << "instance.stepName == stepInstancesForMomentumCut_=" << instance.stepName << std::endl;
-                
                 for(const auto& hit : instance.p) {
                     if(hit.momentum().mag() > cutMomentumMin_) {
                         passed = true;
-                        //std::cout << "SDH stepInstances, hit.momentum().mag() = " << hit.momentum().mag() << std::endl;
                         break;
                     }//if momentum
                 }//for hit
@@ -319,7 +304,6 @@ bool SensitiveDetectorHelper::filterStepPointMomentum(){
                 for(const auto& hit : i.second.p) {
                     if(hit.momentum().mag() > cutMomentumMin_) {
                         passed = true;
-                        //std::cout << "SDH lvsds, hit.momentum().mag() = " << hit.momentum().mag() << std::endl;
                         break;
                     }//if momentum
                 }//for hit
@@ -345,10 +329,8 @@ bool SensitiveDetectorHelper::filterTrackerStepPoints(){
 
         for ( InstanceMap::iterator i=stepInstances_.begin();
              i != stepInstances_.end(); ++i ) {
-            //StepInstance& instance(i->second);
             if (i->second.stepName == "tracker" && i->second.p.size() >= minTrackerStepPoints_) {
                 passed = true;
-                //std::cout << "in SDH StepInstances i->second.p.size() = " << i->second.p.size() << std::endl;
             }
         }//for stepInstances
         
@@ -359,7 +341,6 @@ bool SensitiveDetectorHelper::filterTrackerStepPoints(){
                 
                 if (i.second.stepName == "tracker" && i.second.p.size() >= minTrackerStepPoints_) {
                     passed = true;
-                    //std::cout << "in SDH lvsds i.second.p.size() = " << i.second.p.size() << std::endl;
                 }
 
                 }

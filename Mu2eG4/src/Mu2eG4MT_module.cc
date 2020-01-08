@@ -48,7 +48,6 @@
 
 // Geant4 includes
 #include "G4Run.hh"
-#include "G4Timer.hh"
 
 // C++ includes.
 #include <cstdlib>
@@ -123,8 +122,6 @@ namespace mu2e {
     std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
     int _rmvlevel;
-    int _tmvlevel;
-    int _smvlevel;
 
     art::InputTag _generatorModuleLabel;
       
@@ -143,20 +140,12 @@ namespace mu2e {
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
 
-    unique_ptr<G4Timer> _timer; // local Mu2e per Geant4 event timer
-    // Counters for cumulative time spent processing events by Geant4
-    G4double _realElapsed;
-    G4double _systemElapsed;
-    G4double _userElapsed;
-
     const bool standardMu2eDetector_;
     G4ThreeVector originInWorld;
       
     // count the number of events that have been excluded because they did not
     // pass the filtering in Mu2eG4EventAction
     int numExcludedEvents = 0;
-    
-    //std::mutex initmutex_;
       
     CLHEP::HepJamesRandom _engine;
 
@@ -188,19 +177,12 @@ namespace mu2e {
     commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
 
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
-    _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
-    _smvlevel(pSet.get<int>("debug.steppingVerbosityLevel",0)),
     
     _generatorModuleLabel(pSet.get<string>("generatorModuleLabel", "")),
     _tvdOutputName(StepInstanceName::timeVD),
     timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
     physVolHelper_(),
     sensitiveDetectorHelper_(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
-
-    _timer(make_unique<G4Timer>()),
-    _realElapsed(0.),
-    _systemElapsed(0.),
-    _userElapsed(0.),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     
     //NEED TO FIGURE OUT HOW TO CONNECT THIS ENGINE TO THE G4 ENGINE

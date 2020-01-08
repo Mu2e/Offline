@@ -27,7 +27,6 @@
 #include "Mu2eG4/inc/preG4InitializeTasks.hh"
 
 #include "Mu2eG4/inc/ActionInitialization.hh"
-//#include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 
 //G4 includes
@@ -68,7 +67,7 @@ Mu2eG4MTRunManager::~Mu2eG4MTRunManager()
 void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
     {
         if (m_managerInitialized) {
-            std::cout << "Mu2eG4MTRunManager::initializeG4 was already done - exit";
+            G4cout << "Mu2eG4MTRunManager::initializeG4 was already done - exit" << G4endl;
             return;
         }
         
@@ -84,7 +83,7 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
             
         G4StateManager* stateManager = G4StateManager::GetStateManager();
         G4String currentState = stateManager->GetStateString(stateManager->GetCurrentState());
-        std::cout << "Current G4State is : " << currentState << std::endl;
+        G4cout << "Current G4State is : " << currentState << G4endl;
             
         if (GetCurrentRun()) {
             delete currentRun;
@@ -94,13 +93,9 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
             currentRun->SetRunID(art_runnumber);
         }
             
-        std::cout << "Art Run Number is: " << art_runnumber << std::endl;
-        std::cout << "Current Run is " << GetCurrentRun()->GetRunID() << std::endl;
-            
-        //We don't need to do this here.  RunActions are owned by the worker threads
-        //m_userRunAction->BeginOfRunAction(m_currentRun);
-        //if(userRunAction) userRunAction->BeginOfRunAction(currentRun);
-            
+        G4cout << "Art Run Number is: " << art_runnumber << G4endl;
+        G4cout << "Current Run is " << GetCurrentRun()->GetRunID() << G4endl;
+        
         currentRun->SetDCtable(DCtable);
         G4SDManager* fSDM = G4SDManager::GetSDMpointerIfExist();
         if(fSDM)
@@ -111,7 +106,6 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
         //randomNumberStatusForThisRun = oss.str();
         //currentRun->SetRandomNumberStatus(randomNumberStatusForThisRun);
         
-            
         if(storeRandomNumberStatus) {
             G4String fileN = "currentRun";
             if ( rngStatusEventsFlag ) {
@@ -138,9 +132,6 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
         if(verboseLevel>0)
         { timer->Start(); }
    
-        //n_select_msg = -1;
-        //selectMacro = "";
-
         //initialize seeds
         //If user did not implement InitializeSeeds,
         // use default: nSeedsPerEvent seeds per event
@@ -236,8 +227,6 @@ void Mu2eG4MTRunManager::declarePhysicsAndGeometry()
             << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
         }
         
-        //G4ThreeVector originInWorld = GeomHandle<WorldG4>()->mu2eOriginInWorld();
-        
         preG4InitializeTasks(pset_);
         
         physicsList_ = physicsListDecider(pset_);
@@ -249,20 +238,6 @@ void Mu2eG4MTRunManager::declarePhysicsAndGeometry()
         
         SetUserInitialization(allMu2e);
         SetUserInitialization(physicsList_);
-        //SetUserInitialization( new Mu2eG4WorkerInitialization(pset_) );//This is NEW code, not sure we need it.
-        
-        
-        /*ActionInitialization* actionInit = new ActionInitialization(pset_,
-                                                                    sensitiveDetectorHelper_,
-                                                                    &_genEventBroker,
-                                                                    &physVolHelper_,
-                                                                    originInWorld
-                                                                    );
-        */
-        //in MT mode, this is where BuildForMaster is called for master thread
-        // in sequential mode, this is where Build() is called for main thread
-        //        SetUserInitialization(actionInit);
-        
     }
   
     
@@ -289,19 +264,10 @@ void Mu2eG4MTRunManager::terminateRun() {
     
         masterRunAction_->MasterEndRunAction();
     
-        /*if (m_userRunAction) {
-            m_userRunAction->EndOfRunAction(m_currentRun);
-            delete m_userRunAction;
-            m_userRunAction = nullptr;
-        }*/
         if ((G4MTRunManager::GetMTMasterRunManagerKernel()!=nullptr) && !m_runTerminated) {
             std::cerr << "CALLING RunTermination() from MTRunManager\n";
-            //G4MTRunManager::GetMTMasterRunManagerKernel()->RunTermination();
-            
             G4RunManager::TerminateEventLoop();
             G4RunManager::RunTermination();
-            
-        
         }
         m_runTerminated = true;
 }

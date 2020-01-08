@@ -16,7 +16,6 @@
 #include "Mu2eG4/inc/Mu2eG4WorkerRunManager.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/Mu2eG4MTRunManager.hh"
-#include "Mu2eG4/inc/Mu2eG4WorkerInitialization.hh"
 #include "Mu2eG4/inc/SteppingVerbose.hh"
 #include "Mu2eG4/inc/WorldMaker.hh"
 #include "Mu2eG4/inc/physicsListDecider.hh"
@@ -32,7 +31,6 @@
 //G4 includes
 #include "G4WorkerThread.hh"
 #include "G4StateManager.hh"
-//#include "G4VSteppingVerbose.hh"
 #include "G4UserWorkerThreadInitialization.hh"
 #include "G4VPhysicalVolume.hh"
 #include "G4TransportationManager.hh"
@@ -67,7 +65,6 @@ namespace mu2e {
     G4WorkerRunManager(),
     pset_(pset),
     m_managerInitialized(false),
-    m_userWorkerInit(true),
     m_steppingVerbose(true),
     perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>(pset)),
     masterRM(nullptr),
@@ -82,9 +79,7 @@ namespace mu2e {
     stackingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
     steppingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut",fhicl::ParameterSet()), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_))
-{
-    //SetVerboseLevel(2);
-}
+{}
   
 // Destructor of base is called automatically.  No need to do anything.
 Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
@@ -131,13 +126,9 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     //This stuff happens in this call: localRM->Initialize();
     //WHAT IF CALLED wrm->Initialize();?
  
-    //G4RunManagerKernel* masterKernel = G4MTRunManager::GetMasterRunManagerKernel();
-    //G4VPhysicalVolume* worldPV = masterKernel->GetCurrentWorld();
     G4VPhysicalVolume* worldPV = G4MTRunManager::GetMasterRunManagerKernel()->GetCurrentWorld();
     kernel->WorkerDefineWorldVolume(worldPV);
-        
-    //G4TransportationManager* tM = G4TransportationManager::GetTransportationManager();
-    //tM->SetWorldForTracking(worldPV);
+    
     G4TransportationManager::GetTransportationManager()->SetWorldForTracking(worldPV);
     
     const G4VUserDetectorConstruction* detector = masterRM->GetUserDetectorConstruction();
@@ -163,9 +154,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     
     initializeUserActions(origin_in_world);
     
-    //if(masterRM->GetUserWorkerInitialization())
-    //    { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
-        
     G4StateManager* stateManager = G4StateManager::GetStateManager();
     G4String currentState =  stateManager->GetStateString(stateManager->GetCurrentState());
     std::cout << "Current G4State is : " << currentState << std::endl;
@@ -179,8 +167,6 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     
    
 void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_in_world){
-        
-    std::cout << "We are in WorkerRM::InitializeUserActions on thread " << workerID_ << std::endl;
     
     userPrimaryGeneratorAction = new PrimaryGeneratorAction(pset_, perThreadObjects_.get());
     SetUserAction(userPrimaryGeneratorAction);
@@ -223,12 +209,6 @@ void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_i
                                          &physicsProcessInfo_,
                                          origin_in_world) );
 
-        /*
-         if(masterRM->GetUserActionInitialization())
-         { masterRM->GetNonConstUserActionInitialization()->Build(); }
-         if(masterRM->GetUserWorkerInitialization())
-         { masterRM->GetUserWorkerInitialization()->WorkerStart(); }
-         */
 }
 
 void Mu2eG4WorkerRunManager::initializeRun(art::Event* art_event){
@@ -294,31 +274,8 @@ void Mu2eG4WorkerRunManager::initializeRun(art::Event* art_event){
     }
     
     perThreadObjects_->currentRunNumber = art_event->id().run();
-/////////////////////////////////////////////
-    
-  
-    
-/*
-    if (art_event->id().run() != perThreadObjects_->currentRunNumber) {
-        if (perThreadObjects_->currentRunNumber != 0 && !perThreadObjects_->runTerminated) {
-            //terminateRun();
-            throw cet::exception("WorkerRUNMANAGER") << "Error: There is a problem with Run Numbering\n";
-        }
-        
-        perThreadObjects_->currentRun = new G4Run();
-        G4StateManager::GetStateManager()->SetNewState(G4State_GeomClosed);
-        
-        if(userRunAction){
-            userRunAction->BeginOfRunAction(currentRun);
-        }
-        //if (m_pls->userRunAction) {
-        //    m_pls->userRunAction->BeginOfRunAction(perThreadObjects_->currentRun);
-        //}
-            
-        perThreadObjects_->currentRunNumber = art_event->id().run();
-    }
-*/
-        m_managerInitialized = true;
+
+    m_managerInitialized = true;
 }
 
     
@@ -329,8 +286,6 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     ConstructScoringWorlds();
     
     std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << workerID_ << std::endl;
-    //RunInitialization();DONE ABOVE
-    //G4WorkerRunManager::DoEventLoop(1);DOESN'T WORK
     
     eventLoopOnGoing = true;
     while(seedsQueue.size()>0)
@@ -341,21 +296,7 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     eventLoopOnGoing = true;
     
     ProcessOneEvent(event->id().event());
-    //TerminateOneEvent();
-     
-    //_runManager->InitializeEventLoop(num_events,macroFile,n_select);
-    //_timer->Start();
-    //_runManager->ProcessOneEvent(eventNumber);
-    //_timer->Stop();
-    
-    // Accumulate time spent in G4 for all events in this run.
-    //_realElapsed   += _timer->GetRealElapsed();
-    //_systemElapsed += _timer->GetSystemElapsed();
-    //_userElapsed   += _timer->GetUserElapsed();
-    //_runManager->TerminateOneEvent();
-        
-    
-        
+ 
 }
     
     
