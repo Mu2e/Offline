@@ -45,12 +45,6 @@ void Mu2eG4MasterRunAction::MasterBeginRunAction() {
             G4cout << "Mu2eG4MasterRunAction " << __func__ << " called " << G4endl;
         }
     
-    //G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
-    //G4TrackingManager* tm  = rmk->GetTrackingManager();
-    //tm->SetVerboseLevel(pset_.get<int>("debug.trackingVerbosityLevel",0));
-    //G4SteppingManager* sm  = tm->GetSteppingManager();
-    //sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
-
         //this class is ONLY called in MT mode
         //we want these actions performed only in the Master thread
         physVolHelper_->beginRun();//map w/~20,000 entries

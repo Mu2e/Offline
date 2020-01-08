@@ -19,7 +19,6 @@
 
 //G4 includes
 #include "G4Timer.hh"
-//#include "G4Event.hh"
 #include "G4SDManager.hh"
 #include "G4EventManager.hh"
 
@@ -68,11 +67,8 @@ namespace mu2e {
         _artEvent(),
         _g4InternalFiltering(pset.get<bool>("G4InteralFiltering",false))
         {
-            std::cout << "From EventAction ctor:" << std::endl;
             G4SDManager* SDman = G4SDManager::GetSDMpointer();
             SDman->ListTree();
-        
-            //G4EventManager::GetEventManager()->SetVerboseLevel(2);
         }
     
 Mu2eG4EventAction::~Mu2eG4EventAction()
@@ -193,8 +189,6 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
             
             
     if (event_passes) {
-//        std::cout << "IN EVENTACTION: THIS EVENT HAS PASSED!" << std::endl;
-        
         perThreadObjects_->insertSimsAndStatusData(std::move(g4stat), std::move(simParticles));
         
         _sensitiveDetectorHelper->insertSDDataIntoPerThreadStorage(perThreadObjects_);
@@ -220,23 +214,19 @@ void Mu2eG4EventAction::EndOfEventAction(const G4Event *evt)
 
     }//event_passes cuts
     else {
-
-        //g4stat = StatusG4();
-        simParticles = nullptr;
-        tvdHits = nullptr;
-        mcTrajectories = nullptr;
-        simsRemap = nullptr;
-        extMonFNALHits = nullptr;
-//        std::cout << "IN EVENTACTION: THIS EVENT HAS *NOT* PASSED!" << std::endl;
-            
-        //there is no need to clear SD data here, since it is done in the call to
-        //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
+            simParticles = nullptr;
+            tvdHits = nullptr;
+            mcTrajectories = nullptr;
+            simsRemap = nullptr;
+            extMonFNALHits = nullptr;
         
-        //CLEAR OUT THE STEPPING CUTS
-        _stackingCuts->deleteCutsData();
-        _steppingCuts->deleteCutsData();
-        _commonCuts->deleteCutsData();
-        }//else put NULL ptrs into the stash
+            //there is no need to clear SD data here, since it is done in the call to
+            //_sensitiveDetectorHelper->createProducts in the BeginOfEventAction above
+        
+            _stackingCuts->deleteCutsData();
+            _steppingCuts->deleteCutsData();
+            _commonCuts->deleteCutsData();
+         }//else put NULL ptrs into the stash
     
 }//EndOfEventAction
     

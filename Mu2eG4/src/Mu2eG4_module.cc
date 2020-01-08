@@ -43,7 +43,6 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/StatusG4.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
-//#include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 
@@ -145,8 +144,6 @@ namespace mu2e {
 #endif
 
     int _rmvlevel;
-    int _tmvlevel;
-    int _smvlevel;
     int _checkFieldMap;
 
     // Names of macro files for visualization.
@@ -184,8 +181,6 @@ namespace mu2e {
 
     Mu2eG4PerThreadStorage perThreadStore;
 
-    //used in testing code
-    //int event_counter = 0;
     int numExcludedEvents = 0;
 
   }; // end G4 header
@@ -214,8 +209,6 @@ namespace mu2e {
 #endif
     // FIXME:  naming of pset parameters
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
-    _tmvlevel(pSet.get<int>("debug.trackingVerbosityLevel",0)),
-    _smvlevel(pSet.get<int>("debug.steppingVerbosityLevel",0)),
     _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
     _visMacro(pSet.get<std::string>("visualization.initMacro")),
     _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
@@ -327,12 +320,7 @@ void Mu2eG4::beginRun( art::Run &run){
     // BeamOnReadyToBeginRun.
 
     if ( ncalls == 1 ) {
-      //stackingCuts_->finishConstruction(_originInWorld);
-      //steppingCuts_->finishConstruction(_originInWorld);
-      //commonCuts_->finishConstruction  (_originInWorld);
-
       if( _checkFieldMap>0 ) generateFieldMap(_originInWorld,_checkFieldMap);
-
       if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
     }
 }
@@ -396,7 +384,6 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
                                                                 multiStagePars_.simParticleNumberOffset()
                                                                 );
 
-    //in MT mode, this is where BuildForMaster is called for master thread
     // in sequential mode, this is where Build() is called for main thread
     _runManager->SetUserInitialization(actioninit);
 
