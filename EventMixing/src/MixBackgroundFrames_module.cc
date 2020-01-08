@@ -54,9 +54,9 @@ namespace mu2e {
           0u
           };
       Atom<float> skipFactor { Name("skipFactor"),
-	  Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
-	  1
-	  };
+          Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
+          1
+          };
     };
 
     // The following hack will hopefully go away after
@@ -138,8 +138,8 @@ namespace mu2e {
     //FIXME: Ideally, we would know the number of events in the secondary input file
     std::uniform_int_distribution<size_t> uniform(0, skipFactor_*meanEventsPerProton_*pbi_.intensity());
     size_t result = uniform(urbg_);
-    if(debugLevel_ > 0) { 
-      std::cout << " Skipping " << result << " Secondaries " << std::endl; 
+    if(debugLevel_ > 0) {
+      std::cout << " Skipping " << result << " Secondaries " << std::endl;
     }
     return result;
   }
@@ -151,8 +151,8 @@ namespace mu2e {
       std::cout << "The following bkg events were mixed in (START)" << std::endl;
       int counter = 0;
       for (const auto& i_eid : seq) {
-	std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
-	++counter;
+        std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
+        ++counter;
       }
       totalBkgCount_ += counter;
       std::cout << "Bkg Event Count  (this microbunch) = " << counter << std::endl;
