@@ -4,8 +4,11 @@
 #include "TMath.h"
 #include "TMatrixD.h"
 #include "DataProducts/inc/XYZVec.hh"
+<<<<<<< HEAD
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
+=======
+>>>>>>> updated track details analyzer to use strawgasstep
 #include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
 #include<vector>
 #include<bitset>
