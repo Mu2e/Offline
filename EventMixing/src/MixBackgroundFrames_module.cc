@@ -49,7 +49,7 @@ namespace mu2e {
 
   public:
 
-    struct Config {
+    struct Mu2eConfig {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
 
@@ -76,6 +76,13 @@ namespace mu2e {
           };
     };
 
+    // The ".mu2e" in FHICL parameters like
+    // physics.filters.somemixer.mu2e.meanEventsPerProton clearly
+    // separates experiment specific settings from those provided by
+    // the art framework (like "somemixer.wrapFiles").
+    struct Config {
+      fhicl::Table<Mu2eConfig> mu2e { fhicl::Name("mu2e") };
+    };
 
     using Parameters = art::MixFilterTable<Config>;
     explicit MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper);
@@ -91,14 +98,14 @@ namespace mu2e {
 
   //================================================================
   MixBackgroundFramesDetail::MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper)
-    : spm_{ pars().products(), helper }
-    , pbiTag_{ pars().protonBunchIntensityTag() }
-    , meanEventsPerProton_{ pars().meanEventsPerProton() }
-    , debugLevel_{ pars().debugLevel() }
+    : spm_{ pars().mu2e().products(), helper }
+    , pbiTag_{ pars().mu2e().protonBunchIntensityTag() }
+    , meanEventsPerProton_{ pars().mu2e().meanEventsPerProton() }
+    , debugLevel_{ pars().mu2e().debugLevel() }
     , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , urbg_{ engine_ }
     , totalBkgCount_(0)
-    , skipFactor_{ pars().skipFactor() }
+    , skipFactor_{ pars().mu2e().skipFactor() }
   {}
 
   //================================================================
