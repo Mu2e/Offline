@@ -12,10 +12,9 @@
 
 #include "MCDataProducts/inc/StepInstanceName.hh"
 
-#include <boost/static_assert.hpp>
-
 #include <iostream>
 #include <iomanip>
+#include <initializer_list>
 #include <sstream>
 #include <stdexcept>
 
@@ -36,16 +35,9 @@ namespace mu2e {
     return names().at(id);
   }
 
-  std::vector<std::string> const& StepInstanceName::names(){
-
-    static vector<string> nam;
-
-    if ( nam.empty() ){
-      const char* tmp[] = { STEPINSTANCENAME_NAMES };
-      BOOST_STATIC_ASSERT(sizeof(tmp)/sizeof(char*) == lastEnum);
-      nam.insert( nam.begin(), tmp, tmp+lastEnum);
-    }
-
+  std::vector<std::string> const& StepInstanceName::names() {
+    static_assert(initializer_list{STEPINSTANCENAME_NAMES}.size() == lastEnum);
+    static vector<string> const nam{STEPINSTANCENAME_NAMES};
     return nam;
   }
 
