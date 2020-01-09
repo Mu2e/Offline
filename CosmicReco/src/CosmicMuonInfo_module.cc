@@ -66,7 +66,6 @@ namespace mu2e {
     TH1D* _thetaMC       = nullptr;
     TH1D* _phiMCcuts        = nullptr;
     TH1D* _thetaMCcuts       = nullptr;
-    TH1D* _driftDistance = nullptr;
     TH1D* _hNStrawHits    = nullptr;
     TH1D* _hNPanelHits    = nullptr;
     TH1D* _hUniquePanel   = nullptr;
@@ -144,11 +143,11 @@ namespace {
 
       int n{-1};
       for ( auto const& digimc : digimcs ){
-        auto const& sim_cal = digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle();
-        auto const& sim_hv  = digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle();
+        auto const& sim_cal = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
+        auto const& sim_hv  = digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle();
         if ( sim_cal == sim_hv ){
-          double p = digimc.stepPointMC(mu2e::StrawEnd::cal)->momentum().mag();
-          _bySim[digimc.stepPointMC(mu2e::StrawEnd::cal)->simParticle()].addIndex(++n,p);
+          double p = sqrt(digimc.strawGasStep(mu2e::StrawEnd::cal)->momentum().mag2());
+          _bySim[digimc.strawGasStep(mu2e::StrawEnd::cal)->simParticle()].addIndex(++n,p);
           ++_sum;
         }else{
           ++_nbad;
@@ -224,7 +223,6 @@ mu2e::CosmicMuonInfo::CosmicMuonInfo(fhicl::ParameterSet const& pset):
 
   art::ServiceHandle<art::TFileService> tfs;
   
-  _driftDistance  = tfs->make<TH1D>( "Drift Distance",   "Drift Distance",  100,  -5, 5 );
   _phiMC	  = tfs->make<TH1D>( "#phi_{MC}",   "Angle #phi_{MC} of Muon MC tracks All",  100, -3.141529,      3.141529 );
   _thetaMC        = tfs->make<TH1D>( "#theta_{MC}",   "Angle #theta_{MC} of Muon MC tracks All",  20, 0,      3.141529 );
   _phiMCcuts	  = tfs->make<TH1D>( "#phi_after_cuts_{MC}",   "Angle #phi_{MC} of Muon MC tracks after MC cuts",  100, -3.141529,      3.141529 );
@@ -305,11 +303,6 @@ bool mu2e::CosmicMuonInfo::filter(art::Event& event) {
          << endl;
   }
 
-  for(auto const& digi : *strawDigiMCs){
-      double driftDistance = digi.driftDistance(mu2e::StrawEnd::cal);
-      _driftDistance->Fill(driftDistance);
-       
-  }
   _hnBadDigis->Fill( digisBySim.nBad() );
 
   for ( auto const& combo : *comboHits ){

@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerConditions/inc/AlignedTrackerConfig.hh"
 #include "TrackerConditions/inc/AlignedTrackerMaker.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "CLHEP/Vector/ThreeVector.h"

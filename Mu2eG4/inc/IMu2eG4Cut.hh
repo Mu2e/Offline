@@ -49,7 +49,7 @@ namespace mu2e {
 
   class SimParticleHelper;
   class Mu2eG4ResourceLimits;
-  class EventStash;
+  class Mu2eG4PerThreadStorage;
 
   class IMu2eG4Cut {
   public:
@@ -65,7 +65,7 @@ namespace mu2e {
       virtual void beginEvent(const art::Event& evt, const SimParticleHelper& spHelper) = 0;
 
       // put data into the stash
-      virtual void insertCutsDataIntoStash(int g4event_identifier, EventStash* stash_for_event_data) = 0;
+      virtual void insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store) = 0;
       
       // delete data if we don't need it
       virtual void deleteCutsData() = 0;

@@ -88,8 +88,8 @@ namespace mu2e
 	const StrawDigiMCCollection* mcdigis = mcdigisHandle.product();
 	for(auto imcdigi = mcdigis->begin(); imcdigi != mcdigis->end(); ++imcdigi){
 	  if( imcdigi->wireEndTime(StrawEnd::cal) > _minCETime ) {
-	    if(imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
-		imcdigi->stepPointMC(StrawEnd::cal)->simParticle()->genParticle()->generatorId().isConversion()) ++ncehits;
+	    if(imcdigi->strawGasStep(StrawEnd::cal)->simParticle()->genParticle().isNonnull() &&
+		imcdigi->strawGasStep(StrawEnd::cal)->simParticle()->genParticle()->generatorId().isConversion()) ++ncehits;
 	  }
 	}
       }

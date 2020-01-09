@@ -9,7 +9,6 @@
 
 // Mu2e includes
 #include "TrackerConditions/inc/DeadStraw.hh"
-#include "TrackerConditions/inc/DeadStrawConfig.hh"
 #include "TrackerConditions/inc/DeadStrawMaker.hh"
 #include "DataProducts/inc/StrawId.hh"
 

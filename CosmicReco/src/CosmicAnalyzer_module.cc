@@ -38,12 +38,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-
-//Geom
-#include "TrackerGeom/inc/Tracker.hh"
-#include "TrackerGeom/inc/Straw.hh"
-#include "TrackerConditions/inc/StrawResponse.hh"
-// ROOT incldues
+//ROOT
 #include "TStyle.h"
 #include "Rtypes.h"
 #include "TH1F.h"
@@ -757,7 +752,7 @@ namespace mu2e
 		
 		for(size_t i=0; i<sts._straw_chits.size();i++){
 			    ComboHit chit = sts._straw_chits[i];
-			    cout<<"getting hits "<<endl;
+			    
 			    double StartDOCA = DriftFitUtils::GetTestDOCA(chit, st.FitParams.A0,st.FitParams.A1, st.FitParams.B0, st.FitParams.B1);
 			    _StartDOCAs->Fill(StartDOCA);
 			    //double StartTOCA = DriftFitUtils::TimeResidual(StartDOCA, srep, sts._t0.t0(), chit);
@@ -835,7 +830,7 @@ CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){
 	StrawDigiMC first = (*_mcdigis)[0];
 
         //Get StepPointMC:
-	art::Ptr<StepPointMC> const& spmcp0= first.stepPointMC(StrawEnd::cal);
+	auto const& spmcp0= first.strawGasStep(StrawEnd::cal);
         XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
         XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
 	
@@ -843,11 +838,11 @@ CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){
             hitP1 = (*_mcdigis)[ich];
 	    
             //Get StepPointMC:
-	    art::Ptr<StepPointMC> const& spmcp = hitP1.stepPointMC(StrawEnd::cal);
+	    auto const& spmcp = hitP1.strawGasStep(StrawEnd::cal);
             XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
             
             //Use Step Point MC direction as the True Axes:
-            XYZVec ZPrime = Geom::toXYZVec(spmcp->momentum().unit());
+            XYZVec ZPrime = spmcp->momentum().unit();
             
             //Store True Track details:
             TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);

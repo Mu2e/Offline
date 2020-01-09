@@ -11,7 +11,7 @@
 #include <vector>
 #include <string>
 #include "TrackerConditions/inc/StrawPhysics.hh"
-#include "TrackerConditions/inc/StrawPhysicsConfig.hh"
+#include "TrackerConfig/inc/StrawPhysicsConfig.hh"
 
 
 namespace mu2e {

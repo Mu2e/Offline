@@ -52,5 +52,5 @@ namespace mu2e {
 
 }
 
-DECLARE_ART_SERVICE(mu2e::G4Helper, LEGACY)
+DECLARE_ART_SERVICE(mu2e::G4Helper, SHARED)
 #endif /* G4Helper_G4Helper_hh */
