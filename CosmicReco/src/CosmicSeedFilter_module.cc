@@ -1,15 +1,11 @@
-//
-//  Filter for selecting good seed (chisq) track fits: this is part of the track trigger
-//  Original author: Dave Brown (LBNL) 3/1/2017
-//
-// framework
+////Author: S Middleton
+//Date: Dec 2019
+//Purpose: For Devloping Straight Track Trigger
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-//Author: S Middleton
-//Date: Dec 2019
-//Purpose: For Devloping Straight Track Trigger
+
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "fhiclcpp/ParameterSet.h"
 
