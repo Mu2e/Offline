@@ -68,14 +68,14 @@ namespace mu2e {
 	void returnCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const;
 	bool roughCrossing(StrawElectronics const& strawele, double threshold, WFX& wfx) const;
 	bool fineCrossing(StrawElectronics const& strawele, double threshold, double vmax, WFX& wfx) const;
-	double maxLinearResponse(StrawElectronics const& strawele,ClusterList::const_iterator const& iclust) const;
+	double maxLinearResponse(StrawElectronics const& strawele,StrawClusterList::const_iterator const& iclust) const;
     };
 
     struct WFX { // waveform crossing
       double _time; // time waveform crossed threhold.  Note this includes noise effects
       double _vstart; // starting voltage, at time 0 of the referenced clust
       double _vcross; // crossing voltage
-      ClusterList::const_iterator _iclust; // iterator to clust associated with this crossing
+      StrawClusterList::const_iterator _iclust; // iterator to clust associated with this crossing
       WFX() = delete; // disallow
       WFX(StrawWaveform const& wf, double time) : _time(time), _vstart(0.0), _vcross(0.0),
       _iclust(wf.clusts().clustList().begin()) {}

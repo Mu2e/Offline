@@ -17,14 +17,13 @@
 
 // Framework includes
 #include "art/Framework/Principal/Event.h"
-#include "art_root_io/TFileDirectory.h"
-#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
+#include "art/Utilities/Globals.h"
 
 // G4 Includes
 #include "G4Event.hh"
@@ -37,9 +36,6 @@
 #include "globals.hh"
 #include "G4Threading.hh"
 
-#include "G4IsotopeProperty.hh"
-#include "G4NuclideTable.hh"
-
 // Mu2e includes
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "Mu2eG4/inc/PrimaryGeneratorAction.hh"
@@ -50,12 +46,8 @@
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/WorldG4.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "Mu2eG4/inc/GenEventBroker.hh"
-#include "Mu2eG4/inc/PerEventObjectsManager.hh"
+#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
-
-// ROOT includes
-#include "TH1D.h"
 
 
 using namespace std;
@@ -65,22 +57,11 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(bool fill,
-                                                 int verbosityLevel,
-                                                 GenEventBroker *gen_eventbroker,
-                                                 PerEventObjectsManager *per_evtobjmanager)
+  PrimaryGeneratorAction::PrimaryGeneratorAction(int verbosityLevel, Mu2eG4PerThreadStorage* tls)
     :
-    _totalMultiplicity(nullptr),
     verbosityLevel_(verbosityLevel),
-    genEventBroker_(gen_eventbroker),
-    perEvtObjManager(per_evtobjmanager)
+    perThreadObjects_(tls)
   {
-
-      if(fill) {
-          art::ServiceHandle<art::TFileService> tfs;
-          _totalMultiplicity = tfs->make<TH1D>( "totalMultiplicity", "Total multiplicity of primary particles", 20, 0, 20);
-      }
-
       if ( verbosityLevel_ > 0 ) {
           cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
       }
@@ -88,58 +69,27 @@ namespace mu2e {
   }
 
   PrimaryGeneratorAction::PrimaryGeneratorAction()
-    : PrimaryGeneratorAction(true, 0, nullptr, nullptr)
+    : PrimaryGeneratorAction(0, nullptr)
   {}
 
   PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
-                                                 GenEventBroker *gen_eventbroker,
-                                                 PerEventObjectsManager* per_evtobjmanager)
+                                                 Mu2eG4PerThreadStorage* tls)
     :
-    PrimaryGeneratorAction(pset.get<bool>("debug.fillDiagnosticHistograms", false),
-                           pset.get<int>("debug.diagLevel", 0),
-                           gen_eventbroker,
-                           per_evtobjmanager)
-    {
-      art::ServiceHandle<GeometryService> geom;
-      standardMu2eDetector_ = geom->isStandardMu2eDetector();
-      preCreateIsomers_ = pset.get<bool>("debug.preCreateIsomers",false);
-      pdgIdToGenerate_ = static_cast<PDGCode::type>(pset.get<int>("debug.pdgIdToGenerate", -1111111111));
-    }
+    PrimaryGeneratorAction(pset.get<int>("debug.diagLevel", 0), tls)
+    {}
 
 
 //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
 void PrimaryGeneratorAction::setEventData()
     {
+        genParticles_ = perThreadObjects_->gensHandle.isValid() ?
+                        perThreadObjects_->gensHandle.product() :
+                        nullptr;
 
-        if (G4Threading::IsWorkerThread())//if this is being called by a worker thread, we are in MT mode
-        {
-            //get the instance of the GenParticleCollection that we need for this event
-            GenEventBroker::GenParticleCollectionInstance genCollectionInstance = genEventBroker_->getNextGenPartCollectionInstance();
+        hitInputs_ = perThreadObjects_->genInputHits;
 
-            //store the instance number currently being used
-            perEvtObjManager->storeEventInstanceNumber(genCollectionInstance.instanceNumber);
-
-            //here's the ptr to the GPC
-            genParticles_ = genCollectionInstance.genCollection;
-
-        }
-        else//we are in sequential mode
-        {
-            genParticles_ = genEventBroker_->getGenParticleHandle().isValid() ?
-                            genEventBroker_->getGenParticleHandle().product() :
-                            nullptr;
-            perEvtObjManager->storeEventInstanceNumber(0);
-        }
-
-        hitInputs_ = genEventBroker_->getHitHandles();
-
-        perEvtObjManager->createSimParticleHelpers(genEventBroker_->getproductID(),
-                                                   genEventBroker_->getartEvent(),
-                                                   &(genEventBroker_->getGenParticleHandle()),
-                                                   genEventBroker_->getSimProductGetter());
-
-        parentMapping_ = perEvtObjManager->getSimParticlePrimaryHelper();
-
+        parentMapping_ = perThreadObjects_->simParticlePrimaryHelper;
+        
     }
 
 
@@ -159,15 +109,15 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 void PrimaryGeneratorAction::fromEvent(G4Event* event)
     {
 
-        // art::ServiceHandle<GeometryService> geom;
-        // SimpleConfig const & _config = geom->config();
+        art::ServiceHandle<GeometryService> geom;
+        SimpleConfig const & _config = geom->config();
 
         // Get the offsets to map from generator world to G4 world.
         // check if this is standard mu2e configuration or not
 
-	G4ThreeVector const mu2eOrigin =
-	//        (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
-	  (! standardMu2eDetector_) ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+        G4ThreeVector const mu2eOrigin =
+        (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
+        ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
         // For each generated particle, add it to the event.
         if(genParticles_) {
@@ -185,46 +135,35 @@ void PrimaryGeneratorAction::fromEvent(G4Event* event)
             }
         }
 
-	if ( pdgIdToGenerate_ != -1111111111 ) {
-	  cout << __func__ << " *TESTING*: Adding *ONLY*  : " << pdgIdToGenerate_ << endl;
 
-	  // a test
-	  int ovl = verbosityLevel_;
-	  verbosityLevel_ = 2;
-	  G4ParticleTable::GetParticleTable()->SetVerboseLevel(verbosityLevel_);
-	  addG4Particle(event,
-			pdgIdToGenerate_,
-			// Transform into G4 world coordinate system
-			G4ThreeVector()+mu2eOrigin,
-			0.0,
-			0.0,
-			G4ThreeVector());
-	  verbosityLevel_ = ovl;
+        // a test
+        // int ovl = verbosityLevel_;
+        // verbosityLevel_ = 2;
+        // addG4Particle(event,
+        //               static_cast<PDGCode::type>(1000010048),
+        //               // Transform into G4 world coordinate system
+        //               G4ThreeVector()+mu2eOrigin,
+        //               0.0,
+        //               0.0,
+        //               G4ThreeVector());
+        // verbosityLevel_ = ovl;
 
-	} else {
 
-	  // Also create particles from the input hits
-	  for(const auto& hitcoll : *hitInputs_) {
+        // Also create particles from the input hits
+        for(const auto& hitcoll : *hitInputs_) {
 
             for(const auto& hit : *hitcoll) {
-	      addG4Particle(event,
-			    hit.simParticle()->pdgId(),
-			    // Transform into G4 world coordinate system
-			    hit.position() + mu2eOrigin,
-			    hit.time(),
-			    hit.properTime(),
-			    hit.momentum());
+                addG4Particle(event,
+                              hit.simParticle()->pdgId(),
+                              // Transform into G4 world coordinate system
+                              hit.position() + mu2eOrigin,
+                              hit.time(),
+                              hit.properTime(),
+                              hit.momentum());
 
-	      parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
+                parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
 
             }
-	  }
-
-	}
-
-        // Fill multiplicity histogram.
-        if(_totalMultiplicity){
-            _totalMultiplicity->Fill(parentMapping_->numPrimaries());
         }
 
     }
@@ -241,84 +180,76 @@ void PrimaryGeneratorAction::addG4Particle(G4Event *event,
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
 
     if ( verbosityLevel_ > 1) {
-      cout << __func__ << " pdgId   : " << pdgId << endl;
+      cout << __func__ << " pdgId   : " <<pdgId << endl;
     }
 
-//     static bool firstTime = true;
-//     if (firstTime && preCreateIsomers_ ) { // use with caution
-// #if G4VERSION<4099
-//       G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
-// #else
-//       G4IonTable::GetIonTable()->GetIonTable()->CreateAllIon();
-// #endif
-//       firstTime = false;
-//     }
+    //       static bool firstTime = true; // uncomment generate all nuclei ground states
+    //       if (firstTime) {
+    //#if G4VERSION<4099
+    //         G4ParticleTable::GetParticleTable()->GetIonTable()->CreateAllIon();
+    //#else
+    //         G4IonTable::GetIonTable()->GetIonTable()->CreateAllIon();
+    //#endif
+    //         firstTime = false;
+    //       }
 
     if (pdgId>PDGCode::G4Threshold) {
 
-      G4int ZZ,AA,JJ;
+      G4int ZZ,AA,LL,JJ;
       G4double EE;
 
       int exc = pdgId%10;
 
       // subtract exc to get Z,A,...
 
-      bool retCode = G4IonTable::GetNucleusByEncoding(pdgId-exc,ZZ,AA,EE,JJ);
+      bool retCode = G4IonTable::GetNucleusByEncoding(pdgId-exc,ZZ,AA,LL,EE,JJ);
 
       // if g4 complains about no GenericIon we need to abort and add it in the physics list...
 
       if ( verbosityLevel_ > 1) {
-        cout << __func__ << " will set up nucleus pdgId,Z,A,E,J, exc: "
+        cout << __func__ << " will set up nucleus pdgId,Z,A,L,E,J, exc: "
              << pdgId
-             << ", " << ZZ << ", " << AA << ", " << EE << ", " << JJ
+             << ", " << ZZ << ", " << AA << ", " << LL << ", " << EE << ", " << JJ
              << ", " << exc << ", " << retCode
              << endl;
       }
 
-      G4ParticleDefinition const * pDef = nullptr;
+      G4ParticleDefinition const * pDef;
+
+      G4double excEnergy = 0.001;
+      // for an excited state; we will fudge it by adding 1keV regardles of the isomer level
 
       if (exc==0) {
 
         // a ground state
 
 #if G4VERSION<4099
-        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,0.0);
+        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,0.0);
 #else
-        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,0.0);
+        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,0.0);
 #endif
         // looks like spin is ignored and should never be non zero...
 
       } else {
 
-	G4NuclideTable* pNuclideTable = G4NuclideTable::GetNuclideTable();
-	// for some reason G4NuclideTable::GetIsotopeByIsoLvl does not return non 0 levels
-	// hopefully will not need to do it often or till the far end of the loop
-	for ( size_t i = 0 ; i != pNuclideTable->entries() ; ++i ) {
-	  const G4IsotopeProperty*  pProperty = pNuclideTable->GetIsotopeByIndex( i );
-	  if ( ZZ != pProperty->GetAtomicNumber() ) continue;
-	  if ( AA != pProperty->GetAtomicMass()   ) continue;
-	  G4double eExc  = pProperty->GetEnergy();
-	  if (eExc <= 0.0) continue;
-	  pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,eExc);
-	  // hopefully we'll find the right one
-	  if ( pdgId != pDef->GetPDGEncoding() ) continue;
-	  break;
-	}
-
+#if G4VERSION<4099
+        pDef = G4ParticleTable::GetParticleTable()->GetIon(ZZ,AA,LL,excEnergy);
+#else
+        pDef = G4IonTable::GetIonTable()->GetIon(ZZ,AA,LL,excEnergy);
+#endif
       }
 
-      // the ids should be the same
-      if ( !pDef || pdgId != pDef->GetPDGEncoding() ) {
-	if (pDef) {cout << __func__ << " got " << pDef->GetPDGEncoding() << " expected " << pdgId << endl;}
-        throw cet::exception("GENE")
-          << "Problem creating " << pdgId << "\n";
-      }
-
-      if ( verbosityLevel_ > 1 ) {
+      if ( verbosityLevel_ > 1) {
         cout << __func__ << " will set up : "
              << pDef->GetParticleName()
              << " with id: " << pDef->GetPDGEncoding()
              << endl;
+      }
+      // the ids should be the same
+      if ( pdgId != pDef->GetPDGEncoding() ) {
+
+        throw cet::exception("GENE")
+          << "Problem creating " << pdgId << "\n";
       }
 
     }
@@ -328,7 +259,7 @@ void PrimaryGeneratorAction::addG4Particle(G4Event *event,
                             mom.x(),
                             mom.y(),
                             mom.z());
-
+        
     // Add the particle to the event.
     vertex->SetPrimary( particle );
 

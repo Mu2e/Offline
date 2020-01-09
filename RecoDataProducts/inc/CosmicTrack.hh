@@ -4,9 +4,7 @@
 #include "TMath.h"
 #include "TMatrixD.h"
 #include "DataProducts/inc/XYZVec.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
-#include "Mu2eUtilities/inc/BuildLinearFitMatrixSums.hh"
-#include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
+
 #include<vector>
 #include<bitset>
 
@@ -100,7 +98,7 @@ namespace mu2e {
 	    	return InitParams;
 	    }
 
-	    XYZVec GetTrackDirection() const{ //TODO use private direction 🙈
+	    XYZVec GetTrackDirection() const{ //TODO use private direction 
 	    	XYZVec Direction(FitParams.A1, FitParams.B1, 1);
 	    	return Direction;
 	    }

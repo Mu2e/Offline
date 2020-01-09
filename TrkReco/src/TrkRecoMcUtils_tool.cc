@@ -22,8 +22,6 @@
 #include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 
 #include "MCDataProducts/inc/StepPointMC.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 
@@ -73,7 +71,6 @@ namespace mu2e {
     int   getPdgID   (const SimParticle* Sim) override;
     float getStartMom(const SimParticle* Sim) override;
 
-    const StepPointMC* getStepPointMC(int HitIndex);
   };
 
 //-----------------------------------------------------------------------------
@@ -114,34 +111,12 @@ namespace mu2e {
   }
 
 //-----------------------------------------------------------------------------
-  const StepPointMC* TrkRecoMcUtils::getStepPointMC(int HitIndex) {
-    const StepPointMC* step(nullptr);
-    if (_mcdigis) { 
-      const mu2e::StrawDigiMC*  mcdigi = &_mcdigis->at(HitIndex);
-      
-      if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-	step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
-      }
-      else {
-	step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
-      }
-    }
-    return step;
-  }
-
 //-----------------------------------------------------------------------------
 // returns ID of the SimParticle corresponding to straw hit 'Index'
 //-----------------------------------------------------------------------------
   int TrkRecoMcUtils::strawHitSimId(const art::Event* Event, int HitIndex) {
-    int           simId(-1);
-    
     if (Event->event() != _lastEvent) initEvent(Event);
-    
-    const StepPointMC* step = getStepPointMC(HitIndex);
-
-    if (step) simId = step->simParticle()->id().asInt();
-    
-    return simId;
+    return (*_mcdigis)[HitIndex].earlyStrawGasStep()->simParticle()->id().asInt();
   }
 //-----------------------------------------------------------------------------
 // find MC truth DOCA in a given straw
@@ -161,13 +136,13 @@ namespace mu2e {
 
     int hitIndex = ch-&_chColl->at(0);
     
-    const StepPointMC* step = getStepPointMC(hitIndex);
+    auto const& step = (*_mcdigis)[hitIndex].earlyStrawGasStep();
 
-    const CLHEP::Hep3Vector* v2 = &step->position();
-    HepPoint    p2(v2->x(),v2->y(),v2->z());
+    CLHEP::Hep3Vector v2 = step->position();
+    HepPoint    p2(v2.x(),v2.y(),v2.z());
 
     TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
-    TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
+    TrkLineTraj trstep (p2,Geom::Hep3Vec(step->momentum()).unit(),0.,0.);
 
     TrkPoca poca(trstep, 0., trstraw, 0.);
 
@@ -242,13 +217,7 @@ namespace mu2e {
 
     if (Event->event() != _lastEvent) initEvent(Event);
 
-    const mu2e::StepPointMC   *step = getStepPointMC(HitIndex);
-
-    const mu2e::SimParticle* sim(nullptr);
-
-    sim = (step != nullptr) ? step->simParticle().get() : nullptr;
-
-    return sim;
+    return (*_mcdigis)[HitIndex].earlyStrawGasStep()->simParticle().get();
   }
 
 //-----------------------------------------------------------------------------
