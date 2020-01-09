@@ -1,0 +1,21 @@
+physics.producers.makeSD.TimeOffsets : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap", "compressDigiMCs:cosmicTimeMap"]
+
+physics.producers.compressDigiMCs.simParticleTags : [ "compressDigiMCs" ]
+physics.producers.compressDigiMCs.crvDigiMCTag : "compressDigiMCs"
+physics.producers.compressDigiMCs.extraStepPointMCTags : [ "compressDigiMCs:virtualdetector", "compressDigiMCs:protonabsorber" ]
+physics.producers.compressDigiMCs.timeMapTags : [ "compressDigiMCs:protonTimeMap", "compressDigiMCs:muonTimeMap"]
+# CaloFix is always run and either fixes the off-by-one error, or doesn't
+# In both cases it creates a new collection
+physics.producers.compressDigiMCs.caloShowerStepTags : [ "CaloFix" ]
+physics.producers.compressDigiMCs.caloShowerSimTag : "CaloFix"
+physics.producers.compressDigiMCs.caloShowerStepROTag : "CaloFix"
+
+physics.analyzers.digiCompressionCheck.oldStrawDigiMCTag : "compressDigiMCs::previous_process"
+physics.analyzers.digiCompressionCheck.OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap:previous_process", "compressDigiMCs:muonTimeMap:previous_process"  ] }
+physics.analyzers.digiCompressionCheck.oldCaloShowerSimTag : "CaloFix"
+physics.analyzers.digiCompressionCheck.oldCrvDigiMCTag : "compressDigiMCs::previous_process"
+
+physics.analyzers.digiCompressionCheck.newStrawDigiMCTag : "compressDigiMCs::current_process"
+physics.analyzers.digiCompressionCheck.NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap:current_process", "compressDigiMCs:muonTimeMap:current_process" ] }
+physics.analyzers.digiCompressionCheck.newCaloShowerSimTag : "compressDigiMCs::current_process"
+physics.analyzers.digiCompressionCheck.newCrvDigiMCTag : "compressDigiMCs::current_process"
