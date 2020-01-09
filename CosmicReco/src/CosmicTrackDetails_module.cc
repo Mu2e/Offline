@@ -363,7 +363,7 @@ namespace mu2e
 		      _StraightTrackInit = status.hasAllProperties(TrkFitFlag::circleInit);
         	}
 
-		cout<<"getting plane info "<<endl;
+		
                 //----------------Get panels/planes/stations per track:------------------//
                 _n_panels = std::set<float>( panels.begin(), panels.end() ).size();
 		_n_planes = std::set<float>( planes.begin(), planes.end() ).size();
@@ -387,7 +387,7 @@ CosmicTrackMCInfo CosmicTrackDetails::FitMC(const StrawDigiMCCollection*& _mcdig
 	StrawDigiMC first = (*_mcdigis)[0];
 
         //Get StepPointMC:
-	art::Ptr<StepPointMC> const& spmcp0= first.stepPointMC(StrawEnd::cal);
+	auto const& spmcp0= first.earlyStrawGasStep();
         XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
         XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
 	
@@ -395,11 +395,11 @@ CosmicTrackMCInfo CosmicTrackDetails::FitMC(const StrawDigiMCCollection*& _mcdig
             hitP1 = (*_mcdigis)[ich];
 	    
             //Get StepPointMC:
-	    art::Ptr<StepPointMC> const& spmcp = hitP1.stepPointMC(StrawEnd::cal);
+	    auto const& spmcp= hitP1.earlyStrawGasStep();
             XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
             
             //Use Step Point MC direction as the True Axes:
-            XYZVec ZPrime = Geom::toXYZVec(spmcp->momentum().unit());
+            XYZVec ZPrime = (spmcp->momentum().Unit());
             
             //Store True Track details:
             TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);

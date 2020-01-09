@@ -4,7 +4,7 @@
 #include "TMath.h"
 #include "TMatrixD.h"
 #include "DataProducts/inc/XYZVec.hh"
-
+#include "Mu2eUtilities/inc/PointLinePCA_XYZ.hh"
 #include<vector>
 #include<bitset>
 
