@@ -123,5 +123,5 @@ namespace mu2e {
 
 }
 
-DECLARE_ART_SERVICE(mu2e::ConditionsService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::ConditionsService, SHARED)
 #endif /* ConditionsService_ConditionsService_hh */
