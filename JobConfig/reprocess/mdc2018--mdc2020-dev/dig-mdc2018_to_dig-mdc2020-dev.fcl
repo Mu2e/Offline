@@ -24,6 +24,7 @@ physics : {
     @table::Mixing.producers
 
     # some older digis (MDC2018f and earlier) have an off-by-one error in the caloShowerSteps
+    # need to fix it now, otherwise the compression check will fail
     CaloFix : { @table::DigiCompression.CaloFix 
         caloShowerStepTags : [ "compressDigiMCs" ]
         caloShowerSimTag : "compressDigiMCs"
@@ -31,8 +32,8 @@ physics : {
     }
 
   }
-  analyzers: { @table::Mixing.analyzers 
-  }
+
+  analyzers: { @table::Mixing.analyzers }
 
   TriggerPath : [ CaloFix,
   	      	  @sequence::TrackerMC.DigiSim,
