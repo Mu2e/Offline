@@ -14,7 +14,7 @@ source : { module_type : EmptyEvent maxEvents : 1 }
 
 services : {
    message               : @local::mf_errorsOnly
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "ExtinctionMonitorFNAL/test/geom_Mau11.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

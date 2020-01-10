@@ -30,7 +30,7 @@ services :
     fileName : "CaloClusterEffOut.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {

@@ -13,7 +13,7 @@ source : {
 
 services : {
   message               : @local::default_message
-  RandomNumberGenerator : {}
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
   SeedService : @local::automaticSeeds
 }
 

@@ -31,7 +31,7 @@ services :
     fileName : "CaloClusterEnergyResolMapOut.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {

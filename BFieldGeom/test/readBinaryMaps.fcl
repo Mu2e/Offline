@@ -17,7 +17,7 @@ services : {
 
   message               : @local::default_message
   TFileService          : { fileName : "readBinaryMaps.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService        : { inputFile      : "BFieldGeom/test/geom_readBinaries.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"         }

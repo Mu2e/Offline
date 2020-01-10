@@ -20,7 +20,7 @@ services : {
 
    message               : @local::default_message
    TFileService          : { fileName : "hist_beam_pseextmonwin.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/validation/geom_psEnclosure.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

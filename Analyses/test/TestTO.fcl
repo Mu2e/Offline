@@ -29,7 +29,7 @@ services :
     fileName      : "TestTO.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {

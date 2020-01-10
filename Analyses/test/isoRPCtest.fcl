@@ -39,7 +39,7 @@ services :
     fileName      : "isoRPC.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {
