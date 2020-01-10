@@ -60,7 +60,7 @@ namespace mu2e {
     policy_(unDefined),
     pSet_(pSet),
     knownSeeds_(),
-    baseSeed_(0),
+    baseSeed_(8),
     checkRange_(true),
     maxUniqueEngines_(20),
 
