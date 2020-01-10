@@ -102,7 +102,7 @@ outputs: {
 services.TFileService.fileName : "g4test_03.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 # physics.producers.g4run.SDConfig.enableAllSDs : true

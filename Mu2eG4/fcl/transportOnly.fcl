@@ -89,7 +89,7 @@ physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimet
 services.TFileService.fileName : "transportOnly.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 physics.producers.generate.inputfile   : "Mu2eG4/test/genconfig_tonly.txt"

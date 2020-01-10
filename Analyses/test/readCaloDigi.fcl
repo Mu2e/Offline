@@ -27,7 +27,7 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     G4Helper               : { }
     SeedService            : { @table::automaticSeeds
-        baseSeed         :  0
+        baseSeed         :  8
         maxUniqueEngines :  20
     }
 }
@@ -143,5 +143,5 @@ outputs: {
 
 physics.producers.MakeCaloProtoCluster.caloCrystalModuleLabel : "CaloCrystalHitsFromCaloHits"
 
-services.SeedService.baseSeed             :  0
+services.SeedService.baseSeed             :  8
 services.SeedService.maxUniqueEngines     :  20
