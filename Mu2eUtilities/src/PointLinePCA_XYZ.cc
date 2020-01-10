@@ -15,8 +15,9 @@ namespace mu2e{
 	  double POCA_z = start.z() + (end.z()-start.z())*tMin;
 	  XYZVec closestPointOnLine;
 	  closestPointOnLine.SetXYZ(POCA_x ,POCA_y ,POCA_z);
-	  set_pca(closestPointOnLine);
-	  set_dca(sqrt((closestPointOnLine-point).Mag2()));
+	 
+	 _pca = closestPointOnLine;
+	 _dca = sqrt((closestPointOnLine-point).Mag2());
          }
 
 	PointLinePCA_XYZ::~PointLinePCA_XYZ(){}
