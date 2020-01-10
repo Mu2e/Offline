@@ -458,7 +458,12 @@ bool CosmicTrackFit::use_track(double track_length) const //not used but keep fo
 This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimzed track parameters 
 //------------------------------------------------*/
 void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse::cptr_t _srep){
-	 FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData, _srep, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
+	 std::vector<Straw> straws;
+	 for(size_t i = 0; i< trackData._tseed._straw_chits.size(); i++){
+	      Straw const& straw = _tracker->getStraw(trackData._tseed._straw_chits[i].strawId());
+	      straws.push_back(straw);
+	 }
+	 FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData, _srep, straws, _tracker, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
          
 
          trackData._tseed._track.MinuitFitParams.A0 =  endresult.bestfit[0];//a0
