@@ -98,10 +98,10 @@ namespace mu2e
       const StrawDigiMCCollection* _mcdigis;
       CosmicTrackMCInfo trueinfo;
 
-      	//TTree Info:
+      //TTree Info:
       TTree* _cosmic_tree;
-     
-    //True MC paramets in global coords:
+      const Tracker* tracker;
+      //True MC paramets in global coords:
       Float_t _TrueA1;
       Float_t _TrueB1;
       Float_t _TrueA0;
@@ -164,7 +164,7 @@ namespace mu2e
       Int_t _strawid; 
       vector<ComboHitInfoMC> _chinfomc;
       CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
-      CosmicTrackMCInfo FillDriftMC(ComboHit chi, double reco_ambig, CosmicTrackMCInfo info, double t0);
+      CosmicTrackMCInfo FillDriftMC(ComboHit chi, double reco_ambig, CosmicTrackMCInfo info, double t0, Straw const& straw);
       bool findData(const art::Event& evt);
     };
 
@@ -189,7 +189,8 @@ namespace mu2e
     CosmicTrackDetails::~CosmicTrackDetails(){}
 
     void CosmicTrackDetails::beginJob() {
-      
+      mu2e::GeomHandle<mu2e::Tracker> th;
+      tracker = th.get();
       // create diagnostics if requested...
       if(_diag > 0){
 	
@@ -324,7 +325,7 @@ namespace mu2e
 		}
 		for(size_t i=0; i<sts._straw_chits.size();i++){
 			    ComboHit chit = sts._straw_chits[i];
-			   
+			    Straw const& straw = tracker->getStraw(chit.strawId());
 			    _nused=i;
 			
                 //-----------Fill diag details:----------//
@@ -339,19 +340,19 @@ namespace mu2e
 
 		//--------------Fit Output Info :---------//
 			   // mu2e::StrawResponse strawResponse;
-			    double fitdoca = DriftFitUtils::GetTestDOCA(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1);
+			    double fitdoca = DriftFitUtils::GetTestDOCA(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, straw);
 			    _FitDOCAs[_nused] = fitdoca;
-			    _RecoAmbig[_nused] = DriftFitUtils::GetAmbig(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1);
+			    _RecoAmbig[_nused] = DriftFitUtils::GetAmbig(chit, st.MinuitFitParams.A0,st.MinuitFitParams.A1, st.MinuitFitParams.B0, st.MinuitFitParams.B1, straw);
 			 
 			  // _FitTOCAs[_nused] = DriftFitUtils::TimeResidual(fitdoca, strawResponse, t0, chit); --->TODO---> think how to access this here without the Diag frameworj
     
 			   if(_mcdiag){
 				trueinfo = FitMC(_mcdigis);
-				trueinfo = FillDriftMC(chit, _RecoAmbig[_nused], trueinfo, t0);
+				trueinfo = FillDriftMC(chit, _RecoAmbig[_nused], trueinfo, t0, straw);
 				
-		    		_TrueDOCAs[_nused] =DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y());
+		    		_TrueDOCAs[_nused] =DriftFitUtils::GetTestDOCA(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), straw);
 				_TrueTimeResiduals[_nused] = _TrueDOCAs[_nused]/0.0625;//TODO
-    				_TrueAmbig[_nused] = DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y());
+    				_TrueAmbig[_nused] = DriftFitUtils::GetAmbig(chit, trueinfo.TrueFitEquation.Pos.X(), trueinfo.TrueFitEquation.Dir.X(), trueinfo.TrueFitEquation.Pos.Y(),trueinfo.TrueFitEquation.Dir.Y(), straw);
 			
 		           }
 		}
@@ -436,10 +437,10 @@ CosmicTrackMCInfo CosmicTrackDetails::FitMC(const StrawDigiMCCollection*& _mcdig
      return TrackTrueInfo;
      }
 
-CosmicTrackMCInfo CosmicTrackDetails::FillDriftMC(ComboHit chit, double RecoAmbig, CosmicTrackMCInfo info, double t0){
+CosmicTrackMCInfo CosmicTrackDetails::FillDriftMC(ComboHit chit, double RecoAmbig, CosmicTrackMCInfo info, double t0, Straw const& straw){
      //mu2e::StrawResponse strawResponse;
-     double true_doca = DriftFitUtils::GetTestDOCA(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y());
-     double trueambig = DriftFitUtils::GetAmbig(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y());
+     double true_doca = DriftFitUtils::GetTestDOCA(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(), straw);
+     double trueambig = DriftFitUtils::GetAmbig(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(), straw);
      //double true_time_residual =DriftFitUtils::TimeResidual(true_doca, strawResponse, t0, chit);
      info.Ambig.push_back(trueambig);
      info.TrueDOCA.push_back(true_doca);

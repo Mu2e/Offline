@@ -45,7 +45,7 @@ const int N_sbins = 50;
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
-FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse::cptr_t _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k) : GaussianPDFFit(_chits,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k)
+FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse::cptr_t _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k, std::vector<Straw> &_straws) : GaussianPDFFit(_chits,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k, _straws)
 {
   //create pdf bins using pre defined numbers:
   pdf_times = new double[N_tbins];
@@ -192,18 +192,18 @@ double FullDriftFit::InterpolatePDF(double time_residual, double sigma, double t
 }
 
 // This 3 functions talk to the drift util:
-double GaussianPDFFit::calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1)const{
-	double doca = DriftFitUtils::GetTestDOCA(chit, a0,a1,b0,b1); 
+double GaussianPDFFit::calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, Straw const& straw)const{
+	double doca = DriftFitUtils::GetTestDOCA(chit, a0,a1,b0,b1, straw); 
         return (doca);
 }
 
-double GaussianPDFFit::calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1)const{
-	double ambig = DriftFitUtils::GetAmbig(chit, a0,a1,b0,b1); 
+double GaussianPDFFit::calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1, Straw const& straw)const{
+	double ambig = DriftFitUtils::GetAmbig(chit, a0,a1,b0,b1, straw); 
         return (ambig);
 }
 
-double GaussianPDFFit::TimeResidual(double doca, StrawResponse::cptr_t srep, double t0 ,  ComboHit hit)const{
-	double tres =  DriftFitUtils::TimeResidual(doca, srep, t0, hit);
+double GaussianPDFFit::TimeResidual(double doca, StrawResponse::cptr_t srep, double t0 ,  ComboHit hit, Straw const& straw)const{
+	double tres =  DriftFitUtils::TimeResidual(doca, srep, t0, hit, straw);
 	return (tres);
 }
 
@@ -220,8 +220,8 @@ double GaussianPDFFit::operator() (const std::vector<double> &x) const
   
   //Loop through the straws and get DOCA:
   for (size_t i=0;i<this->chits.size();i++){
-      double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1); 
-      double time_residual = this->TimeResidual(doca, this->srep, t0,this->chits[i]);
+      double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1, this->straws[i]); 
+      double time_residual = this->TimeResidual(doca, this->srep, t0,this->chits[i], this->straws[i]);
       double pdf_t = 1/sqrt(2*TMath::Pi()*this->sigma_t*this->sigma_t) * exp(-(time_residual*time_residual)/(2*this->sigma_t*this->sigma_t));
       //Log Liklihood:
       llike -=log(pdf_t);
@@ -252,9 +252,9 @@ double FullDriftFit::operator() (const std::vector<double> &x) const
   long double llike = 0;
   
   for (size_t i=0;i<this->chits.size();i++){
-    double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1); 
+    double doca = calculate_DOCA(this->chits[i], a0, a1, b0, b1, this->straws[i]); 
     double doca_penalty = 1; 
-    double time_residual = this->TimeResidual(doca, this->srep, t0, this->chits[i]);
+    double time_residual = this->TimeResidual(doca, this->srep, t0, this->chits[i], this->straws[i]);
     
     if(time_residual>40){
 	time_residual = 40;
