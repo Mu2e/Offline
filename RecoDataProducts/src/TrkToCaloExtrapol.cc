@@ -128,17 +128,17 @@ namespace mu2e {
   }
 
 
-  Hep3Vector TrkToCaloExtrapol::t0Momentum() const{
-    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
+  Hep3Vector TrkToCaloExtrapol::entranceMomentum() const{
+    //double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
     //std::cout<<" TrkToCaloExtrapol-> fltlen = "<<fltlen<<std::endl;
 
-    return _trk->momentum(fltlen);
+    return _trk->momentum(_pathLengthEntrance);
   }
 
-  BbrVectorErr TrkToCaloExtrapol::t0MomentumErr() const{
-    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
+  BbrVectorErr TrkToCaloExtrapol::entranceMomentumErr() const{
+    //    double fltlen = _trk->firstHit()->kalHit()->hit()->fltLen();
 
-    return _trk->momentumErr(fltlen);
+    return _trk->momentumErr(_pathLengthEntrance);
   }
 
   double TrkToCaloExtrapol::pathLengthExit() const{
