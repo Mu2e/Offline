@@ -47,7 +47,7 @@ Services : {
   }
 
   SimOnly   : {
-    RandomNumberGenerator   : { }
+    RandomNumberGenerator   : { defaultEngineKind: "MixMaxRng" }
     SeedService		    : @local::automaticSeeds
     G4Helper: {}
   }
