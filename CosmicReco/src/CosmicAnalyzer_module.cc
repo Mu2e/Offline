@@ -70,10 +70,10 @@ namespace mu2e
 
       explicit CosmicAnalyzer(const Parameters& conf);
       virtual ~CosmicAnalyzer();
-      virtual void beginJob();
+      virtual void beginJob() override;
       
       virtual void analyze(const art::Event& e) override;
-      virtual void endJob();
+      virtual void endJob() override;
     private: 
       
       Config _conf;

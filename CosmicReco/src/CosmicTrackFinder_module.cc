@@ -110,8 +110,8 @@ namespace mu2e{
     typedef art::EDProducer::Table<Config> Parameters;
     explicit CosmicTrackFinder(const Parameters& conf);
     virtual ~CosmicTrackFinder();
-    virtual void beginJob();
-    virtual void beginRun(art::Run& run);
+    virtual void beginJob() override;
+    virtual void beginRun(art::Run& run) override;
     virtual void produce(art::Event& event ) override;
      /*///NEW INFRASTRUCTURE////////
     typedef art::Ptr<ComboHit>          ComboHitPtr;

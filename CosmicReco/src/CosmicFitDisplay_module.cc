@@ -94,7 +94,7 @@ namespace mu2e
       	explicit CosmicFitDisplay(const Parameters& conf);
 	
       	virtual ~CosmicFitDisplay();
-      	virtual void beginJob();
+      	virtual void beginJob() override;
       	virtual void analyze(const art::Event& e) override;
     private: 
 	Config _conf;
@@ -1486,7 +1486,6 @@ bool CosmicFitDisplay::findData(const art::Event& evt){
         _coscol = 0; 
 	auto chH = evt.getValidHandle<ComboHitCollection>(_chtag);
 	_chcol = chH.product();
-	
 	auto stH = evt.getValidHandle<CosmicTrackSeedCollection>(_sttag);
 	_coscol =stH.product();
       
