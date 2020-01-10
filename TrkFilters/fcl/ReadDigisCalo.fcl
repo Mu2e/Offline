@@ -34,7 +34,7 @@ services : {
     G4Helper               : { }
     BTrkHelper             : @local::BTrkHelperDefault
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
+	baseSeed         :  8
 	maxUniqueEngines :  20
     }
     

@@ -91,5 +91,5 @@ physics.DePSeedTrigPath : [ TPRFetchDigis,  @sequence::TrkFilters.sequences.tprD
 # physics.ReadDigisEndPath : [ TrkTriggerDiag ]
 
 services.TFileService.fileName : "readDigis.hist"
-services.SeedService.baseSeed : 0
+services.SeedService.baseSeed : 8
 services.SeedService.maxUniqueEngines : 20
