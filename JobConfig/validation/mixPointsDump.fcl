@@ -12,7 +12,7 @@ source: { module_type: RootInput }
 services: {
    TFileService: { fileName: "stepPoints.root" }
    message: @local::default_message
-   RandomNumberGenerator: { }
+   RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
    ConditionsService: { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService: { inputFile : "Mu2eG4/test/globalConstants_01.txt" }
    SeedService: @local::automaticSeeds

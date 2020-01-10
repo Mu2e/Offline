@@ -33,7 +33,7 @@ services : {
 
     scheduler: { defaultExceptions : false }
     TFileService: {}
-    RandomNumberGenerator: {}
+    RandomNumberGenerator: {defaultEngineKind: "MixMaxRng"}
 
    GeometryService: {@table::Services.Core.GeometryService}
    ConditionsService: { conditionsfile : "Mu2eG4/test/conditions_01.txt" }

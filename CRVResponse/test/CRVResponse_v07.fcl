@@ -14,7 +14,7 @@ source :
 
 services :
 {
-  RandomNumberGenerator: { }
+  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
   GeometryService        : { inputFile : "Mu2eG4/geom/geom_common_crv_v07.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
   GlobalConstantsService : { inputFile : "Mu2eG4/test/globalConstants_01.txt" }

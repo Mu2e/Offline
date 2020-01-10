@@ -27,7 +27,7 @@ services :
     fileName      : "transportMuonStudy_tmp.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 

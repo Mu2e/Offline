@@ -99,7 +99,7 @@ services :
     fileName : "CaloClusterCogCorrFunc.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService :
   {
