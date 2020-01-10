@@ -99,7 +99,7 @@ services : {
 
    message               : @local::default_message
    TFileService          : { }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_current.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

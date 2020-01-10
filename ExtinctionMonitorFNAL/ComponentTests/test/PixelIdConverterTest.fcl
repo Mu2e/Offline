@@ -17,7 +17,7 @@ source : {
 services : {
     message : @local::default_message
     scheduler: { defaultExceptions : false }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
     GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFTwoGrooves.txt" }
     SeedService       : @local::automaticSeeds
 }

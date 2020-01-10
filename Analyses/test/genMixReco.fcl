@@ -39,7 +39,7 @@ services : {
 
     message               : @local::default_message
     TFileService          : { fileName : "genReco.hist" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     # Mu2e services
     GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }

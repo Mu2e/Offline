@@ -19,7 +19,7 @@ services : {
 
     scheduler: { defaultExceptions : false }
     TFileService : { fileName : "g4hists_channelTest.root" }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
     GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_channelTest.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }

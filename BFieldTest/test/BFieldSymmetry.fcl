@@ -11,7 +11,7 @@ source: {
 
 services: {
   message               : @local::default_message
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
   TFileService          : { fileName : "bfmapSymmetry.root" }
   scheduler             : { defaultExceptions : false }
 

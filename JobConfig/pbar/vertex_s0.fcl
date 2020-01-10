@@ -29,7 +29,7 @@ source : {
 services : {
    message               : @local::default_message
    TFileService          : { fileName : "nts.owner.pbar_g4s0.version.sequencer.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }

@@ -113,7 +113,7 @@ services :
 
    message               : @local::default_message
    TFileService          : { }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/cosmic/geom_cosmic.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
