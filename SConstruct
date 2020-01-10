@@ -19,12 +19,12 @@ mu2ePrint = GetOption("mu2ePrint")
 mu2eOpts["mu2ePrint"] = mu2ePrint
 
 # add an option to print only short lines for each target
-AddOption('--mu2eCompact', dest='mu2eCompact', 
+AddOption('--mu2eCompactPrint', dest='mu2eCompactPrint', 
           action="store_true",default=False,
-          help='print short text line for each target')
-mu2eCompact = GetOption("mu2eCompact")
+          help='print only a short text line for each target')
+mu2eCompactPrint = GetOption("mu2eCompactPrint")
 
-mu2eOpts["mu2eCompact"] = mu2eCompact
+mu2eOpts["mu2eCompactPrint"] = mu2eCompactPrint
 
 # Check that some important environment variables have been set; 
 # result is a dictionary of the options
@@ -49,7 +49,7 @@ if mu2ePrint > 5:
 cccomstr = ""
 linkcomstr = ""
 genreflexcomstr = ""
-if mu2eCompact :
+if mu2eCompactPrint :
     cccomstr = "Compiling $SOURCE"
     linkcomstr = "Linking $TARGET"
     genreflexcomstr = "genreflex ${SOURCES[1]}"
