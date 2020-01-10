@@ -103,5 +103,5 @@ physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

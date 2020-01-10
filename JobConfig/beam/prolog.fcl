@@ -18,7 +18,7 @@ mu2e.services.simServices: {
 }
 
 // Default seeding of random engines - the seed will be overwritten in grid jobs
-mu2e.services.simServices.SeedService.baseSeed:  0
+mu2e.services.simServices.SeedService.baseSeed:  8
 mu2e.services.simServices.SeedService.maxUniqueEngines:  20
 
 // Limit the amount of "Begin processing the ... record" messages
