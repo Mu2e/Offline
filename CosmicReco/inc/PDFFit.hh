@@ -33,25 +33,26 @@ class GaussianPDFFit : public ROOT::Minuit2::FCNBase {
     std::vector<double> constraints;
     double sigma_t;
     int k;
-    std::vector<Straw>  straws;
+    std::vector<StrawId>  const& straws;
+   const Tracker* tracker;
     std::vector<double> DOCAs;
     std::vector<double> TimeResiduals;
     
     int nparams =5; 
     
-     GaussianPDFFit(ComboHitCollection _chits, StrawResponse::cptr_t _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k, std::vector<Straw> &_straws) :  chits(_chits),  srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k), straws(_straws) {};
+     GaussianPDFFit(ComboHitCollection _chits, StrawResponse::cptr_t _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k, std::vector<StrawId> const& _straws, const Tracker* _tracker) :  chits(_chits),  srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k), straws(_straws), tracker(_tracker)) {};
    
     double Up() const { return 0.5; };
     double operator() (const std::vector<double> &x) const;
-    double TimeResidual(double doca, StrawResponse::cptr_t srep, double t0, ComboHit hit, Straw const& straw) const ;
-    double calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, Straw const& straw) const;
-    double calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1, Straw const& straw) const;
+    double TimeResidual(double doca, StrawResponse::cptr_t srep, double t0, ComboHit hit, const StrawId straw, const Tracker* tracker) const ;
+    double calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, const StrawId straw, const Tracker tracker* tracker) const;
+    double calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1, const StrawId straw, const Tracker* tracker) const;
     
 };
 
 class FullDriftFit : public GaussianPDFFit {
   public:
-    FullDriftFit(ComboHitCollection _chits,  StrawResponse::cptr_t srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k, std::vector<Straw> &_straws);
+    FullDriftFit(ComboHitCollection _chits,  StrawResponse::cptr_t srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k, std::vector<StrawId> const& _straws, const Tracker* _tracker);
 int Factorial(int k);
     void CalculateFullPDF();
     double InterpolatePDF(double time_residual, double sigma, double tau) const;
