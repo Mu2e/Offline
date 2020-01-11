@@ -60,7 +60,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(3.0);
+  _hVer->Fill(4.0);
 
   // p of highest momentum electron SimParticle with good tanDip
   double p_mc = mcTrkP(event);
