@@ -31,9 +31,8 @@ outputs : { @table::ReprocessDigis.outputs }
 services.TFileService.fileName: "nts.owner.CeEndpoint-mix.version.sequencer.root"
 outputs.Output.fileName: "dig.owner.CeEndpoint-mix.version.sequencer.art"
 outputs.Output.outputCommands : [ "keep *_*_*_*", 
-			      	  "drop *_compressDigiMCs_*_CeEndpointMix",
-				  "drop *_CaloFix_*_*",
-				  "drop *_TrackerFix_*_*"
+			          @sequence::ReprocessDigis.dropCommands,
+			      	  "drop *_compressDigiMCs_*_CeEndpointMix"
 				]
 
 physics.end_paths : [ EndPath ] # needed for generate_fcl
