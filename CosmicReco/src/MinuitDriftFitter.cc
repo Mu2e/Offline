@@ -36,7 +36,7 @@ using namespace mu2e;
 
 
 namespace MinuitDriftFitter{
-	 FitResult DoFit(int _diag, CosmicTrackFinderData& trackdata, StrawResponse::cptr_t srep, std::vector<Straw> straws, const Tracker* tracker,double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
+	 FitResult DoFit(int _diag, CosmicTrackFinderData& trackdata, StrawResponse::cptr_t srep, std::vector<StrawId> const& strawIds, const Tracker* tracker,double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
 	  
 	
 	  std::vector<double> errors(5,0);
@@ -64,7 +64,7 @@ namespace MinuitDriftFitter{
 	  std::vector<double> constraints(5,0);
 	  //Define the PDF used by Minuit:
 	 
-          GaussianPDFFit fit(trackdata._tseed._straw_chits,  srep, cosmictrack, constraint_means,constraints, _gaussTres, 1, straws);
+          GaussianPDFFit fit(trackdata._tseed._straw_chits,  srep, cosmictrack, constraint_means,constraints, _gaussTres, 1, strawIds,  tracker);
 	  
           //Initiate Minuit Fit:
 	  ROOT::Minuit2::MnStrategy mnStrategy(2); 
@@ -117,12 +117,12 @@ namespace MinuitDriftFitter{
        }
        //Cut on Gaussian results remove "bad" hits
 	ComboHitCollection passed_hits;
-	std::vector<Straw> passed_straws;
+	std::vector<StrawId> const& passed_strawIds;
 	for(size_t i = 0; i< trackdata._tseed._straw_chits.size(); i++){
-	      Straw const& straw = tracker->getStraw(trackdata._tseed._straw_chits[i].strawId());
-	      passed_straws.push_back(straw);
-	      double gauss_end_doca = fit.calculate_DOCA(trackdata._tseed._straw_chits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], straw);
-	      double gauss_end_time_residual = fit.TimeResidual( gauss_end_doca,  srep, FitResult.bestfit[4], trackdata._tseed._straw_chits[i], straw);
+	      //Straw const& straw = tracker->getStraw(trackdata._tseed._straw_chits[i].strawId());
+	      passed_strawIds.push_back(trackdata._tseed._straw_chits[i].strawId()));
+	      double gauss_end_doca = fit.calculate_DOCA(trackdata._tseed._straw_chits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], trackdata._tseed._straw_chits[i].strawId(), tracker);
+	      double gauss_end_time_residual = fit.TimeResidual( gauss_end_doca,  srep, FitResult.bestfit[4], trackdata._tseed._straw_chits[i], trackdata._tseed._straw_chits[i].strawId(), tracker);
 	      FitResult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
 	      FitResult.GaussianEndDOCAs.push_back(gauss_end_doca);
 	       if (gauss_end_doca < max_doca and gauss_end_time_residual < maxTres){ 
@@ -148,7 +148,7 @@ namespace MinuitDriftFitter{
 	 newerrors[2] = FitResult.bestfiterrors[2];
 	 newerrors[3] = FitResult.bestfiterrors[3];
 	 newerrors[4] = trackdata._tseed._t0.t0Err();
-	 FullDriftFit fulldriftfit(passed_hits, srep, cosmictrack, constraint_means,constraints,_gaussTres, 1, passed_straws);
+	 FullDriftFit fulldriftfit(passed_hits, srep, cosmictrack, constraint_means,constraints,_gaussTres, 1, passed_strawsIds, tracker);
 	
 	 ROOT::Minuit2::MnUserParameters newparams(newseed,newerrors);
 	 ROOT::Minuit2::MnMigrad newmigrad(fulldriftfit, newparams,mnStrategy);
@@ -170,14 +170,14 @@ namespace MinuitDriftFitter{
 	 FitResult.bestfiterrors = results.Errors();
 	 
 	  for(size_t i = 0; i< passed_hits.size(); i++){
-	      Straw const& straw = tracker->getStraw(passed_hits[i].strawId());
-	      double start_doca = fit.calculate_DOCA(passed_hits[i],seed[0], seed[1], seed[2], seed[3], straw);
-	      double start_time_residual = fit.TimeResidual(start_doca,  srep, seed[4], trackdata._tseed._straw_chits[i], straw);
+	      //Straw const& straw = tracker->getStraw(passed_hits[i].strawId());
+	      double start_doca = fit.calculate_DOCA(passed_hits[i],seed[0], seed[1], seed[2], seed[3], passed_strawIds[i]);
+	      double start_time_residual = fit.TimeResidual(start_doca,  srep, seed[4], trackdata._tseed._straw_chits[i], passed_strawIds[i]);
 	      
 		//Store Final Fit DOCA:
-	      double end_doca = fit.calculate_DOCA(passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], straw);
-              double ambig = fit.calculate_ambig(passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], straw);
-	      double end_time_residual = fit.TimeResidual( end_doca,  srep, FitResult.bestfit[4], passed_hits[i], straw);
+	      double end_doca = fit.calculate_DOCA(passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], passed_strawIds[i]);
+              double ambig = fit.calculate_ambig(passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], passed_strawIds[i]);
+	      double end_time_residual = fit.TimeResidual( end_doca,  srep, FitResult.bestfit[4], passed_hits[i], passed_strawIds);
 	      
 	      FitResult.StartDOCAs.push_back(start_doca);
 	      FitResult.StartTimeResiduals.push_back(start_time_residual);
