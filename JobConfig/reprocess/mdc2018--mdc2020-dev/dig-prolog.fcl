@@ -53,6 +53,13 @@ ReprocessDigis : {
 
   outputs: { Output : { @table::Mixing.Output }
   }
+
+  dropCommands : [ "drop *_CaloFix_*_*",
+		   "drop *_TrackerFix_*_*",
+		   "drop mu2e::StrawDigiMCs_makeSD_*_*",
+		   "drop mu2e::StrawGasSteps_makeSGS_*_*"
+		 ]
+
 }
 
 
