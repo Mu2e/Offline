@@ -52,7 +52,7 @@ struct FitResult{
 
 namespace MinuitDriftFitter {
 	
-	FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse::cptr_t srep, const std::vector<StrawId> const& strawIds, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+	FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse::cptr_t srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
 	
 
 }
