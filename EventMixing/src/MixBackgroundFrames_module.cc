@@ -33,53 +33,6 @@
 //================================================================
 namespace mu2e {
 
-  namespace {
-    using namespace fhicl;
-    struct MyTopConfig {
-      Table<Mu2eProductMixer::Config> products { Name("products") };
-
-      Atom<art::InputTag> protonBunchIntensityTag { Name("protonBunchIntensityTag"),
-          Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
-          };
-
-      Atom<double> meanEventsPerProton { Name("meanEventsPerProton"),
-          Comment("The mean number of secondary events to mix per proton on target. "
-                  "The number of protons on target for each output microbunch-event will be taken "
-                  "from the protonBunchIntensity input."
-                  ),
-          1u
-          };
-      Atom<int> debugLevel { Name("debugLevel"),
-          Comment("control the level of debug output"),
-          0u
-          };
-      Atom<float> skipFactor { Name("skipFactor"),
-	  Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
-	  1
-	  };
-    };
-
-    // The following hack will hopefully go away after
-    // https://cdcvs.fnal.gov/redmine/issues/19970
-    // is resolved.
-    MyTopConfig
-    retrieveConfiguration(const std::string& subTableName, const fhicl::ParameterSet& pset)
-    {
-      std::set<std::string> ignorable_keys;
-
-      // Ignore everything but the subtable
-      const auto& allnames = pset.get_names();
-      for(const auto& i: allnames) {
-        if(i != subTableName) {
-          ignorable_keys.insert(i);
-        }
-      }
-
-      return fhicl::Table<MyTopConfig>(pset.get<fhicl::ParameterSet>(subTableName),
-                                       ignorable_keys )();
-    }
-  }
-
   //----------------------------------------------------------------
   // Our "detail" class for art/Framework/Modules/MixFilter.h
   class MixBackgroundFramesDetail {
@@ -95,7 +48,44 @@ namespace mu2e {
     float skipFactor_;
 
   public:
-    MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper &helper);
+
+    struct Mu2eConfig {
+      using Name = fhicl::Name;
+      using Comment = fhicl::Comment;
+
+      fhicl::Table<Mu2eProductMixer::Config> products { Name("products") };
+
+      fhicl::Atom<art::InputTag> protonBunchIntensityTag { Name("protonBunchIntensityTag"),
+          Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
+          };
+
+      fhicl::Atom<double> meanEventsPerProton { Name("meanEventsPerProton"),
+          Comment("The mean number of secondary events to mix per proton on target. "
+                  "The number of protons on target for each output microbunch-event will be taken "
+                  "from the protonBunchIntensity input."
+                  ),
+          1u
+          };
+      fhicl::Atom<int> debugLevel { Name("debugLevel"),
+          Comment("control the level of debug output"),
+          0u
+          };
+      fhicl::Atom<float> skipFactor { Name("skipFactor"),
+          Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
+          1
+          };
+    };
+
+    // The ".mu2e" in FHICL parameters like
+    // physics.filters.somemixer.mu2e.meanEventsPerProton clearly
+    // separates experiment specific settings from those provided by
+    // the art framework (like "somemixer.wrapFiles").
+    struct Config {
+      fhicl::Table<Mu2eConfig> mu2e { fhicl::Name("mu2e") };
+    };
+
+    using Parameters = art::MixFilterTable<Config>;
+    explicit MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper);
 
     void startEvent(const art::Event& event);
 
@@ -107,15 +97,15 @@ namespace mu2e {
   };
 
   //================================================================
-  MixBackgroundFramesDetail::MixBackgroundFramesDetail(const fhicl::ParameterSet& pset, art::MixHelper& helper)
-    : spm_{ retrieveConfiguration("mu2e", pset).products(), helper }
-    , pbiTag_{ retrieveConfiguration("mu2e", pset).protonBunchIntensityTag() }
-    , meanEventsPerProton_{ retrieveConfiguration("mu2e", pset).meanEventsPerProton() }
-    , debugLevel_{ retrieveConfiguration("mu2e", pset).debugLevel() }
+  MixBackgroundFramesDetail::MixBackgroundFramesDetail(const Parameters& pars, art::MixHelper& helper)
+    : spm_{ pars().mu2e().products(), helper }
+    , pbiTag_{ pars().mu2e().protonBunchIntensityTag() }
+    , meanEventsPerProton_{ pars().mu2e().meanEventsPerProton() }
+    , debugLevel_{ pars().mu2e().debugLevel() }
     , engine_{helper.createEngine(art::ServiceHandle<SeedService>()->getSeed())}
     , urbg_{ engine_ }
     , totalBkgCount_(0)
-    , skipFactor_{ retrieveConfiguration("mu2e", pset).skipFactor() }
+    , skipFactor_{ pars().mu2e().skipFactor() }
   {}
 
   //================================================================
@@ -138,8 +128,8 @@ namespace mu2e {
     //FIXME: Ideally, we would know the number of events in the secondary input file
     std::uniform_int_distribution<size_t> uniform(0, skipFactor_*meanEventsPerProton_*pbi_.intensity());
     size_t result = uniform(urbg_);
-    if(debugLevel_ > 0) { 
-      std::cout << " Skipping " << result << " Secondaries " << std::endl; 
+    if(debugLevel_ > 0) {
+      std::cout << " Skipping " << result << " Secondaries " << std::endl;
     }
     return result;
   }
@@ -151,8 +141,8 @@ namespace mu2e {
       std::cout << "The following bkg events were mixed in (START)" << std::endl;
       int counter = 0;
       for (const auto& i_eid : seq) {
-	std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
-	++counter;
+        std::cout << "Run: " << i_eid.run() << " SubRun: " << i_eid.subRun() << " Event: " << i_eid.event() << std::endl;
+        ++counter;
       }
       totalBkgCount_ += counter;
       std::cout << "Bkg Event Count  (this microbunch) = " << counter << std::endl;
