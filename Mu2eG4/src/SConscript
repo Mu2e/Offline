@@ -229,6 +229,8 @@ mainlib = helper.make_mainlib ( [
         'Hist', 'Tree', 'Core',
         'boost_regex',
         'boost_system',
+        'tbb',
+        'pthread',
     ],
                                 [  G4CPPFLAGS, G4GS_CPPFLAGS ],
                                 [ '-L'+g4libdir, '-I'+g4inc ]
@@ -265,6 +267,8 @@ helper.make_plugins( [
     'Tree', 'Core',
     'boost_filesystem',
     'boost_system',
+    'tbb',
+    'pthread',
     ],
                      [],
                      [ G4CPPFLAGS, G4GS_CPPFLAGS ],

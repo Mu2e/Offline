@@ -196,9 +196,9 @@ void TrackingAction::beginRun(const PhysicalVolumeHelper* physVolHelper,
                                                _saveTrajectoryMomentumCut);
 
     _steppingAction->BeginOfTrack();
-
+            
     if ( !_debugList.inList() ) return;
-    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap, 
+    Mu2eG4UserHelpers::printTrackInfo( trk, "Start new Track: ", _transientMap,
                                        _timer, _mu2eOrigin);
 
     _timer.reset();
