@@ -45,7 +45,7 @@ class GaussianPDFFit : public ROOT::Minuit2::FCNBase {
     double Up() const { return 0.5; };
     double operator() (const std::vector<double> &x) const;
     double TimeResidual(double doca, StrawResponse::cptr_t srep, double t0, ComboHit hit, const StrawId straw, const Tracker* tracker) const ;
-    double calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, const StrawId straw, const Tracker tracker* tracker) const;
+    double calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, const StrawId straw, const Tracker* tracker) const;
     double calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1, const StrawId straw, const Tracker* tracker) const;
     
 };
