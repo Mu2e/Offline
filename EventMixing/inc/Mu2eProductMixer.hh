@@ -100,8 +100,8 @@ namespace mu2e {
                                  art::PtrRemapper const& remap);
 
     bool mixProtonTimeMap(std::vector<mu2e::SimParticleTimeMap const*> const &in,
-			    	mu2e::SimParticleTimeMap& out,
-				art::PtrRemapper const& remap);
+                                mu2e::SimParticleTimeMap& out,
+                                art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other

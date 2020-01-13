@@ -199,16 +199,16 @@ namespace mu2e {
   }
 
   bool Mu2eProductMixer::mixProtonTimeMap(std::vector<SimParticleTimeMap const*> const& in,
-                                                 SimParticleTimeMap& out,
-                                                 art::PtrRemapper const& remap)
+                                          SimParticleTimeMap& out,
+                                          art::PtrRemapper const& remap)
   {
-   for(size_t incount = 0; incount < in.size(); ++incount) {
-      auto const& timemap = *in[incount]; 
+    for(size_t incount = 0; incount < in.size(); ++incount) {
+      auto const& timemap = *in[incount];
       //std::cout << "Mixing time map " << incount << " size " << timemap.size() << std::endl;
       for(auto & imap : timemap) {
-	auto newptr = remap(imap.first, simOffsets_[incount]);
-	out[newptr] = imap.second;
-	// do I need to go down the chain?  I think not
+        auto newptr = remap(imap.first, simOffsets_[incount]);
+        out[newptr] = imap.second;
+        // do I need to go down the chain?  I think not
       }
     }
 
