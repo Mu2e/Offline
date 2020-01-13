@@ -40,8 +40,7 @@ namespace mu2e {
       tracker,        virtualdetector,   timeVD,            stoppingtarget,    CRV, 
       calorimeter,    calorimeterRO,     calorimeterROCard, calorimeterCrate,  ExtMonUCITof,     
       trackerDS,     protonabsorber,    PSVacuum,          stepper,           trackerSWires,     
-      itrackerFWires, trackerWalls,      STMDet,            panelEBKey,
-      DSCableRun, 
+      itrackerFWires, trackerWalls,      STMDet,            panelEBKey, DSCableRun,
       ProductionTargetCoreSection, ProductionTargetStartingCoreSection, 
       ProductionTargetFinStartingSection,ProductionTargetNegativeEndRing, ProductionTargetPositiveEndRing,
       ProductionTargetFinSection,ProductionTargetFinTopSection,ProductionTargetFinTopStartingSection,lastEnum

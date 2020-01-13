@@ -3,10 +3,8 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "ConfigTools/inc/SimpleConfig.hh"
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-#include "TMath.h"
 #include <iostream>
-
-
+#include <algorithm>
 
 namespace mu2e {
 
@@ -14,11 +12,11 @@ namespace mu2e {
 
 
     if (c.getString("targetPS_model") == "MDC2018"){ 
-      std::cout << "making Tier1 in maker" << std::endl;
+      //     std::cout << "making Tier1 in maker" << std::endl;
       return std::move(makeTier1(c, solenoidOffset));
 	} else 
       if (c.getString("targetPS_model") == "Hayman_v_2_0"){ 
-	std::cout << " making Hayman in Maker" << std::endl;
+	//	std::cout << " making Hayman in Maker" << std::endl;
 	return std::move(makeHayman_v_2_0(c, solenoidOffset));
 	  } else 
 	{throw cet::exception("GEOM") << " illegal production target version specified = " << c.getInt("targetPS_version")  << std::endl;}
@@ -321,7 +319,7 @@ namespace mu2e {
     c.getVectorDouble("targetPS_heightOfRectangularGapPerSection",heightOfRectangularGapPerSection);
     c.getVectorDouble("targetPS_thicknessOfGapPerSection",thicknessOfGapPerSection);
     c.getVectorDouble("targetPS_finAngles",finAngles);
-
+    for_each (finAngles.begin(),finAngles.end(),[]( double& elem){elem *= CLHEP::degree;});
     std::unique_ptr<ProductionTarget> tgtPS
       (new ProductionTarget(
 			    c.getString("targetPS_model","NULL"),
@@ -357,8 +355,7 @@ namespace mu2e {
                             c.getDouble("targetPS_supportRingInnerRadius"),
                             c.getDouble("targetPS_supportRingOuterRadius"),
                             c.getDouble("targetPS_supportRingCutoutThickness"),
-                            c.getDouble("targetPS_supportRingCutoutLength"),
-                            c.getDouble("targetPS_supportRingCutoutAngularSize")
+                            c.getDouble("targetPS_supportRingCutoutLength")
 			    ));
 
     return std::move(tgtPS);

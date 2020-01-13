@@ -101,7 +101,6 @@ namespace mu2e {
     double supportRingOuterRadius()         const {return _supportRingOuterRadius;}
     double supportRingCutoutThickness()     const {return _supportRingCutoutThickness;}
     double supportRingCutoutLength()        const {return _supportRingCutoutLength;}
-    double supportRingCutoutAngularSize()   const {return _supportRingCutoutAngularSize;}
     
     double productionTargetMotherOuterRadius() const {return _productionTargetMotherOuterRadius;}
     double productionTargetMotherHalfLength()  const {return _productionTargetMotherHalfLength;}
@@ -172,7 +171,6 @@ namespace mu2e {
 		     ,double supportRingOuterRadius
 		     ,double supportRingCutoutThickness
 		     ,double supportRingCutoutLength
-		     ,double supportRingCutoutAngularSize
 		     );
  
     CLHEP::HepRotation _protonBeamRotation;
@@ -242,7 +240,6 @@ namespace mu2e {
     double _supportRingOuterRadius;
     double _supportRingCutoutThickness;
     double _supportRingCutoutLength;
-    double _supportRingCutoutAngularSize;
 		     
 
     // Needed for persistency

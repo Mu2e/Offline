@@ -3,7 +3,7 @@
 // Most of the geometry is inherited from the existing Production target
 // geometry, except as below.
 
-// This file is not stand-alone - it builds on an earlier version of the target.
+// The below is the Tier 1 target; this file contains the changes/new variables for the Hayman 2 target
 #include "Mu2eG4/geom/ProductionTargetInPS.txt"
 
 // Next line must come after the #include so that it overrides the definition in there.
@@ -11,8 +11,6 @@ int PSHayman.verbosityLevel = 0;
 // Now the specific items for version 2 of the Production Target
 int targetPS_version                       = 3;
 string targetPS_model = "Hayman_v_2_0";
-//int targetPS_version                       = 1;
-//string targetPS_model = "MDC2018";
 double targetPS_productionTargetMotherOuterRadius = 200.; //mm
 double targetPS_productionTargetMotherHalfLength = 120.; //mm  wag right now; was calculated in earlier versions, formerly 200 and 94.1412 (target 1/2 = 80 + something)
 double targetPS_rOut	                   = 3.15;// mm  
@@ -25,9 +23,6 @@ string targetPS_targetCoreMaterial         = "ProductionTargetTungstenLa2_O3";
 string targetPS_targetFinMaterial          = "ProductionTargetTungstenLa2_O3";
 string targetPS_supportRingMaterial        = "G4_Al";
 string targetPS_spokeMaterial              = "G4_Galactic";
-//string targetPS_targetCoreMaterial         = "G4_W";
-//string targetPS_targetFinMaterial          = "G4_W";
-//string targetPS_supportRingMaterial        = "G4_Galactic";
 string targetPS_spokeMaterial              = "ProductionTargetTungstenLa2_O3";
 string targetPS_targetVacuumMaterial       = "PSVacuum";
 int targetPS_numberOfTargetSections        = 3;
@@ -37,30 +32,15 @@ vector<double> targetPS_thicknessOfSegmentPerSection = {2.5,5.,5.}; //mm
 vector<double> targetPS_heightOfRectangularGapPerSection = {12.135,12.135,12.640}; //mm
 vector<double> targetPS_thicknessOfGapPerSection                 = {2.0,2.0,1.0}; //mm
 
-//int targetPS_numberOfTargetSections        = 1;
-//vector<double> targetPS_startingSectionThickness    = {5.}; //mm
-//vector<int> targetPS_numberOfSegmentsPerSection     = {12};
-//vector<double> targetPS_thicknessOfSegmentPerSection = {2.5}; //mm
-//vector<double> targetPS_heightOfRectangularGapPerSection = {12.135}; //mm
-//vector<double> targetPS_thicknessOfGapPerSection                 = {2.0}; //mm
-
 int targetPS_nHaymanFins                        = 4;
 vector<double> targetPS_finAngles                        = {45.,135.,225.,315.}; //degrees
-//int targetPS_nHaymanFins                        = 1;
-//vector<double> targetPS_finAngles                        = {90.}; //degrees
-//vector<double> targetPS_finAngles                        = {0.,90.,180.,270.}; //degrees
 double targetPS_finOuterRadius             = 16.15;
 double targetPS_finThickness               = 1.0; //                                                                                                                                                              full thickness
 double targetPS_supportRingLength          = 8.0; // full length in mm
 double targetPS_supportRingInnerRadius     = 15.;
 double targetPS_supportRingOuterRadius     = 17.;
 double targetPS_supportRingCutoutThickness = 1.0; //full extent of cutout, divide by 2 when making G4 box 
-//double targetPS_supportRingCutoutThickness = 2.0; //full extent of cutout, divide by 2 when making G4 box 
-//double targetPS_supportRingCutoutThickness = 3.0; //full extent of cutout, divide by 2 when making G4 box 
 double targetPS_supportRingCutoutLength    = 4.0; //taken to be whole length of ring (so divide by 2 in G4). Needs to be check in code, see code
-//double targetPS_supportRingCutoutLength    = 8.0; //taken to be whole length of ring (so divide by 2 in G4)
-//  angular size of ring is 5 mm across at 16.15 mm away if exact fit or 5/16.5*(180/pi)
-double targetPS_supportRingCutoutAngularSize = 17.4;  //degrees, set to fit rounded up to 3 s.d.
 
 
 // This tells emacs to view this file in c++ mode.

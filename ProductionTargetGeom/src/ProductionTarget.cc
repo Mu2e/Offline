@@ -59,7 +59,6 @@ namespace mu2e {
 				     ,double supportRingOuterRadius
 				     ,double supportRingCutoutThickness
 				     ,double supportRingCutoutLength
-				     ,double supportRingCutoutAngularSize
 				     )
   : _protonBeamRotation(CLHEP::HepRotation::IDENTITY)
     ,_haymanTargetType(haymanTargetType)
@@ -92,7 +91,6 @@ namespace mu2e {
     ,_supportRingOuterRadius(supportRingOuterRadius)
     ,_supportRingCutoutThickness(supportRingCutoutThickness)
     ,_supportRingCutoutLength(supportRingCutoutLength)
-    ,_supportRingCutoutAngularSize(supportRingCutoutAngularSize)
   {
     //having this duplicated is inelegant but when it comes time to rip out Tier 1 I think it will be easier
     _protonBeamRotation.rotateX(rotHaymanX).rotateY(rotHaymanY).rotateZ(rotHaymanZ);
