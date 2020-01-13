@@ -311,13 +311,13 @@ namespace mu2e {
     // Build the production target.
 
     if ( targetPS_model == "MDC2018" ){
-      std::cout << __func__ << "MDC 2018 target" << std::endl;
+      verbosityLevel> 0 && std::cout << __func__ << "MDC 2018 target" << std::endl;
       constructTargetPS(psVacuumInfo, _config );
     } else if ( targetPS_model == "HaymanLowerDensity" ){
-      std::cout << __func__ << "HaymanLowerDensity target" << std::endl;
+      verbosityLevel> 0 && std::cout << __func__ << "HaymanLowerDensity target" << std::endl;
       constructHaymanRings(psVacuumInfo, _config);
     } else if (targetPS_model == "Hayman_v_2_0"){
-      std::cout << __func__ << "Hayman 2.0 target" << std::endl;
+      verbosityLevel> 0 && std::cout << __func__ << "Hayman 2.0 target" << std::endl;
       constructTargetPS(psVacuumInfo, _config );
     } else{
       throw cet::exception("CONFIG")

@@ -22,6 +22,7 @@
 #include "GeomPrimitives/inc/Polycone.hh"
 #include "GeomPrimitives/inc/Box.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
+#include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/G4GeometryOptions.hh"
 #include "GeometryService/inc/GeometryService.hh"
 #include "GeometryService/inc/GeomHandle.hh"
@@ -57,11 +58,31 @@
 #include "G4IntersectionSolid.hh"
 
 #include "TMath.h"
+#include <math.h>
 using namespace std;
 
 namespace mu2e {
 
-
+  void placeSubtractionVolumeBoxTubs(
+				     const std::string& name //volume info for main object
+				     ,const CLHEP::Hep3Vector& translation
+				     ,VolumeInfo const& parent
+				     ,G4Box*  boxCutout //subtraction volume object
+				     ,G4Tubs* tubsCutout
+				     ,const CLHEP::HepRotation* rotAngle
+				     ,G4Material* material// finish nesting args
+				     ,G4RotationMatrix* rotOverall
+				     ,G4ThreeVector const& offset
+				     ,int const copyNo
+				     ,const G4Colour color
+				     ,const std::string& lookupToken
+				     ,const bool verbose = false
+				     )
+  {
+    VolumeInfo boxWithTubsCutoutInfo(name,translation,parent.centerInWorld);
+    boxWithTubsCutoutInfo.solid = new G4SubtractionSolid(name,boxCutout,tubsCutout, rotOverall, offset);
+    finishNesting(boxWithTubsCutoutInfo,material,rotAngle,translation,parent.logical,copyNo,color,lookupToken,verbose);
+  }
 
   void constructTargetPS(VolumeInfo const & parent, SimpleConfig const & _config) {
 
@@ -102,11 +123,11 @@ namespace mu2e {
 						    G4Colour::Blue(),
 						    "PS"
 						    );
-      std::cout << "inside clause 1 of " << __func__ << std::endl;
-     std::cout << "target position and hall origin = " << tgt->position() << "\n" << _hallOriginInMu2e << " " <<
-	parent.centerInMu2e() << std::endl;
-      std::cout << "supWheel and envHalfLength = " << _clamp_supWheel_rOut  << "\n" <<
-	envHalfLength << std::endl;
+      G4cout << "inside clause 1 of " << __func__ << G4endl;
+     G4cout << "target position and hall origin = " << tgt->position() << "\n" << _hallOriginInMu2e << " " <<
+	parent.centerInMu2e() << G4endl;
+      G4cout << "supWheel and envHalfLength = " << _clamp_supWheel_rOut  << "\n" <<
+	envHalfLength << G4endl;
 
       double const _supWheel_trgtPS_rIn         = _config.getDouble("supWheel_trgtPS_rIn");
       double const _supWheel_trgtPS_rOut        = _config.getDouble("supWheel_trgtPS_rOut");
@@ -173,7 +194,7 @@ namespace mu2e {
 					      0,
 					      G4Colour::Magenta()
 					      );
-      std::cout << "_loclCenter for Tier 1 target = " << _loclCenter << std::endl;
+      G4cout << "_loclCenter for Tier 1 target = " << _loclCenter << G4endl;
       // Now add fins for version 2
       if ( tgt->version() > 1 ) {
 	// Length of fins must be calculated:
@@ -429,8 +450,8 @@ namespace mu2e {
       G4ThreeVector _loclCenter(0.0,0.0,0.0);
       G4ThreeVector zeroTranslation(0.,0.,0.);
       G4RotationMatrix* targetRotation = new G4RotationMatrix(tgt->productionTargetRotation().inverse());
-      if (verbosityLevel > 2){std::cout << "target rotation  = " << *targetRotation << std::endl;}
-      G4RotationMatrix* identityRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+      if (verbosityLevel > 2){G4cout << "target rotation  = " << *targetRotation << G4endl;}
+      //     G4RotationMatrix* identityRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
       VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
 						    prodTargetMotherParams,
 						    parent.logical->GetMaterial(),
@@ -443,14 +464,14 @@ namespace mu2e {
 						    );
 
       if (verbosityLevel > 0){
-	std::cout << "target position and hall origin = " 
+	G4cout << "target position and hall origin = " 
 		  << tgt->haymanProdTargetPosition() << "\n" <<
-	  _hallOriginInMu2e << " " << parent.centerInMu2e() << std::endl;
+	  _hallOriginInMu2e << " " << parent.centerInMu2e() << G4endl;
       }
       if (verbosityLevel > 2){
-	std::cout << __func__ << "created prodTargetMotherInfo " 
+	G4cout << __func__ << "created prodTargetMotherInfo " 
 		  << tgt->productionTargetMotherOuterRadius() 
-		  << " " <<tgt->productionTargetMotherHalfLength() << std::endl;
+		  << " " <<tgt->productionTargetMotherHalfLength() << G4endl;
       }
       //
       // construct each section
@@ -466,7 +487,7 @@ namespace mu2e {
       // start at most negative end (technically could start at center but this is simpler since target is not symmetric about its center
       // this variable gets incremented every time we add anything
       double _currentZ = _loclCenter.z() - tgt->halfHaymanLength();
-      if (verbosityLevel > 2){std::cout << __func__ << " current Z starts at " << _currentZ << std::endl;}
+      if (verbosityLevel > 2){G4cout << __func__ << " current Z starts at " << _currentZ << G4endl;}
       //
       // running z locations for placing elements
       CLHEP::Hep3Vector _segmentCenter(0.,0.,0.);
@@ -477,24 +498,47 @@ namespace mu2e {
       int coreCopyNumber = 0;
       int finCopyNumber = 0;
       int finTopCopyNumber = 0;
-      //                 numberOfSections = 1;
 
       double angularSize = TMath::ASin((tgt->haymanFinThickness()/2.)/targetRadius);
       double dSphi = M_PI/2. - angularSize;
       double dPphi = 2.*angularSize;
 
       //
-      //  need this for a) drawing subtraction volumes and b) rectangular cutouts out of circular support rings, etc.
-      double magicOffset = 0.001;
+      //  need this for a) drawing subtraction volumes and b) rectangular cutouts out of circular support rings, etc. otherwise visualizer gets
+      //  confused and how can G4 know which of two volumes some plane, for example, belongs to?
+      constexpr double magicOffset = 0.0001;
 
       //
       //other constants
       double cutoutHeightAboveTarget = tgt->supportRingInnerRadius() + tgt->supportRingCutoutThickness()/2. - magicOffset;
+      G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+      AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+ 
+      CLHEP::HepRotation* rotRing = reg.add(CLHEP::HepRotation(tgt->productionTargetRotation()));
 
-      CLHEP::HepRotation* rotRing = new CLHEP::HepRotation(tgt->productionTargetRotation());
+      //
+      // we're going to use these over and over; save time, memory, make cleaner and put in registry.  save typing with currentFinAngles
+      // fins are constructed at 90^o relative to boxes and it's just cleaner to do it this way
+      std::vector<CLHEP::HepRotation*> rotFinsG4;
+      std::vector<CLHEP::HepRotation*> rotBoxesG4;
+      std::vector<double> currentFinAngles;
+      for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin){
+	rotFinsG4.emplace_back(reg.add(CLHEP::HepRotation(tgt->productionTargetRotation())));
+	rotBoxesG4.emplace_back(reg.add(CLHEP::HepRotation::IDENTITY));
+	//
+	// here I have a little confusing fix.  The fin is built along the y-axis.  But the rotation is given wrt the x axis.  Hence I need to
+	// subtract off that 90^o . Then the - sign is CLHEP vs G4
+        currentFinAngles.emplace_back(tgt->finAngles().at(ithFin));
+	rotFinsG4.at(ithFin)->rotateZ(-(-M_PI/2. + currentFinAngles.at(ithFin)));
+	rotBoxesG4.at(ithFin)->rotateZ(currentFinAngles.at(ithFin));
+	if (verbosityLevel > 1){G4cout << "rotFin " << ithFin << " " << *rotFinsG4.at(ithFin) << G4endl;}
+      }
+
+      G4Box* cutoutBox = reg.add(G4Box("cutoutBox",tgt->supportRingCutoutThickness()/2.+ magicOffset,
+					tgt->haymanFinThickness() + magicOffset,tgt->supportRingCutoutLength()/2.+ magicOffset));
 
 
-
+      // get real
       for (int ithSection = 0; ithSection < numberOfSections; ++ithSection){
 	int numberOfSegments = tgt->numberOfSegmentsPerSection().at(ithSection);
 	std::string startName = "ProductionTargetStartingCoreSection_" + std::to_string(ithSection);
@@ -507,8 +551,8 @@ namespace mu2e {
 	//set currentZ to be in the center of the starting section
 	_currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
 	if (verbosityLevel > 3){
-	  std::cout << __func__ << " ithSection , startingSegmentCenter at " << ithSection << " " <<_currentZ << std::endl;
-	  std::cout << "    and copy number for starting segment is now " << coreCopyNumber << std::endl;
+	  G4cout << __func__ << " ithSection , startingSegmentCenter at " << ithSection << " " <<_currentZ << G4endl;
+	  G4cout << "    and copy number for starting segment is now " << coreCopyNumber << G4endl;
 	}
  	_startingSegmentCenter.setZ(_currentZ);
 
@@ -530,109 +574,86 @@ namespace mu2e {
 	//build fins around starting segment
 	for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin)
 	  {
-	    double currentFinAngle = tgt->finAngles().at(ithFin)*CLHEP::degree;
 	    const std::string name = "ProductionTargetFinStartingSection_" + std::to_string(ithSection+1) + "_Fin_" + std::to_string(ithFin);
  
  	    if (verbosityLevel > 1)
-	      {std::cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << std::endl;}
+	      {G4cout << "Fin Section and Angle = " << name << " " << currentFinAngles.at(ithFin) << " fin copy number = " << finCopyNumber << G4endl;}
 
 	    double finHalfHeightAboveTarget = (tgt->finOuterRadius() - tgt->rOut())/2.;
 	    G4Box* finBox = new G4Box("finBox",tgt->haymanFinThickness()/2.,finHalfHeightAboveTarget,currentHalfStartingSegment);
+
 	    // 
 	    // this tubs is in the xy plane with an extent along z.  So phi goes in the xy plane.  
 	    // need extra length for visualization tool and overlap avoidance
-	    G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfStartingSegment+.0001,dSphi,dPphi);
-	    //
-	    // I now have two G4Solids, a box and a cutout.  Combine them to make a logical volume. the box is 
-	    // oriented so that it is "z" thick and "radius" high.  the tubs is made to be the same, so no rotation
-	    // and also no translation needed 
-	    //
-	    // and this is confusing but needed.  I move the fin where it needs to go using CLHEP, which requires the inverse matrix 
-	    // -- but when I feed it to G4 I need the regular form.  Just to add, the .inverse is active and was inverted already. sigh...
-	    // I'm sure there are better ways to do this but this has the advantage of my understanding it
-
-	    CLHEP::HepRotation* rotFin = new CLHEP::HepRotation(tgt->productionTargetRotation().inverse());
-	    CLHEP::HepRotation* rotFinG4 = new CLHEP::HepRotation(tgt->productionTargetRotation());
-
-	    // 
-	    // ok here I have a little confusing fix.  The fin is built along the y-axis.  But the rotation is given wrt the x axis.  Hence I need to
-	    // subtract off that 90^o 
-	    double rotAdj = -M_PI/2 + currentFinAngle;
-	    rotFin->rotateZ(rotAdj);
-	    //
-	    // g4 version.
-	    rotFinG4->rotateZ(-rotAdj);
+	    G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfStartingSegment + magicOffset,dSphi,dPphi);
 	    ++finCopyNumber;
 
-	    // 
-	    // for debugging
-	    CLHEP::Hep3Vector offset(0.,0.,0.);
 	    G4ThreeVector finTranslation = currentStartingSegmentCenter;
 	    //
 	    // G4 translates and then rotates.  I want to offset the fin to its final location relative to the core and then let G4 perform rotations,
 	    // both of the fin about the z axis and then the entire production target rotation angle
 	    double distanceFromCenter = finHalfHeightAboveTarget + tgt->rOut();
-	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle),0.);
+	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*cos(currentFinAngles.at(ithFin))
+						   ,distanceFromCenter*sin(currentFinAngles.at(ithFin)),0.);
 	    // 
 	    // finTranslation was already put in the target rotated frame.  I have to rotate the offset vector as well
 	    offsetRelativeToCore *= tgt->productionTargetRotation().inverse();
 	    finTranslation = finTranslation + offsetRelativeToCore;
 	    
-	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*TMath::Cos(angularSize), 0.);
-	    G4SubtractionSolid* finWithCutoutSolid   = new G4SubtractionSolid(name,finBox,tubCutout,identityRotation,downshift);
-	    G4LogicalVolume*    finWithCutoutLogical = new G4LogicalVolume(finWithCutoutSolid,prodTargetFinMaterial,name);
-	    G4VPhysicalVolume*  finWithCutout = 
-	      new G4PVPlacement(rotFinG4,finTranslation,finWithCutoutLogical,name,prodTargetMotherInfo.logical,0,finCopyNumber,false);
-	    //
-	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, 
-	    // since finWithCutout is never used otherwise.
-	    if (doSurfaceCheck){checkForOverlaps(finWithCutout,_config,0);}
+	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*cos(angularSize), 0.);
+	    placeSubtractionVolumeBoxTubs(name
+					  ,finTranslation
+					  ,prodTargetMotherInfo
+					  ,finBox
+					  ,tubCutout
+					  ,rotFinsG4.at(ithFin)
+					  ,prodTargetFinMaterial
+					  ,nullptr
+					  ,downshift
+					  ,finCopyNumber
+					  ,G4Colour::Blue()
+					  ,"PS"
+					  ,verbosityLevel>1);
 
 	    //
 	    // for each fin, build the little section at the top that joins it to the next fin.  This will be  a G4Box with a cutout. 
 	    // Here make the cutout a little tubs without the fancy angular business, since I don't have fins overlapping fins up at the top.
 	    const std::string nameTop = "ProductionTargetFinTopStartingSection_" + std::to_string(ithSection+1) + "_Fin_" + std::to_string(ithFin);
-  
-	    //Much easier to visualize but the code is equally yucky
+
 	    double gapRadius = tgt->thicknessOfGapPerSection().at(ithSection)/2.;
-	    //	    double zTopBox = currentHalfStartingSegment + gapRadius;
 	    double finTopHalfHeight =( tgt->finOuterRadius() - tgt->heightOfRectangularGapPerSection().at(ithSection))/2.;
-	    if (verbosityLevel > 2){std::cout << "finTopHalfHeight = " << finTopHalfHeight <<std::endl;}
+	    if (verbosityLevel > 2){G4cout << "finTopHalfHeight = " << finTopHalfHeight <<G4endl;}
 	    G4Box* finTopBox = new G4Box("finTopBox",tgt->haymanFinThickness()/2.,finTopHalfHeight,tgt->thicknessOfGapPerSection().at(ithSection)/2.);
-	    G4Tubs* finTopCutout = new G4Tubs("finTopCutout",0.,gapRadius+.0001,tgt->haymanFinThickness()/2. + .0001,0.,2.*M_PI);
+	    G4Tubs* finTopCutout = new G4Tubs("finTopCutout",0.,gapRadius + magicOffset,tgt->haymanFinThickness()/2. + magicOffset,0.,2.*M_PI);
 	    ++finTopCopyNumber;
 
-	    if (verbosityLevel > 2){std::cout << "current starting SegmentCenter, current HalfSegment, gap radius = " 
+	    if (verbosityLevel > 2){G4cout << "current starting SegmentCenter, current HalfSegment, gap radius = " 
 					      << currentStartingSegmentCenter << " " << currentHalfStartingSegment 
-					      << " " << gapRadius << std::endl;}
-	    G4ThreeVector finTopBoxLocation = currentStartingSegmentCenter 
+					      << " " << gapRadius << G4endl;}
+	    G4ThreeVector finTopLocation = currentStartingSegmentCenter 
                       + tgt->productionTargetRotation().inverse()*CLHEP::Hep3Vector(0.,0.,currentHalfStartingSegment + gapRadius);
 	    //
 	    // for debugging
 	    CLHEP::Hep3Vector offsetTop(0.,0.,0.);
 	    //
 	    // rotate the offset vector 
-	    G4ThreeVector finTopTranslation = finTopBoxLocation + offsetTop;
-	    //
-	    // G4 translates and then rotates.  I want to offset the fin to its final location relative to the core and then let G4 perform rotations,
-	    // both of the fin about the z axis and then the entire production target rotation angle
+	    G4ThreeVector finTopTranslation = finTopLocation + offsetTop;
 	    double distanceTopFromCenter = tgt->finOuterRadius() - finTopHalfHeight; 
- 
-	    CLHEP::Hep3Vector offsetTopRelativeToCore(distanceTopFromCenter*TMath::Cos(currentFinAngle),distanceTopFromCenter*TMath::Sin(currentFinAngle),0.);
+	    CLHEP::Hep3Vector offsetTopRelativeToCore(distanceTopFromCenter*cos(currentFinAngles.at(ithFin))
+						      ,distanceTopFromCenter*sin(currentFinAngles.at(ithFin)),0.);
 	    // 
 	    // finTranslation was already put in the target rotated frame.  I have to rotate the offset vector as well
 	    offsetTopRelativeToCore *= tgt->productionTargetRotation().inverse();
 	    finTopTranslation = finTopTranslation + offsetTopRelativeToCore;
-	    if (verbosityLevel > 2){std::cout << "finTopTranslation = " << finTopTranslation << std::endl;}
+	    if (verbosityLevel > 2){G4cout << "finTopTranslation = " << finTopTranslation << G4endl;}
 	    CLHEP::Hep3Vector downshiftTopBox = CLHEP::Hep3Vector(0.,-finTopHalfHeight, 0.);
-		    //CLHEP::Hep3Vector downshiftTopBox(0.15.,0.);
 	    //
 	    // these are oriented with gap radius along z.  Recall still in mother volume so this axis is OK
 	    G4RotationMatrix* tubTopRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
 	    tubTopRotation->rotateY(M_PI/2.);
 	    G4SubtractionSolid* finTopWithCutoutSolid   = new G4SubtractionSolid(nameTop,finTopBox,finTopCutout,tubTopRotation,downshiftTopBox);
 	    G4LogicalVolume*    finTopWithCutoutLogical = new G4LogicalVolume(finTopWithCutoutSolid,prodTargetFinMaterial,nameTop);
-	    G4VPhysicalVolume*  finTopWithCutout        = new G4PVPlacement(rotFinG4,finTopTranslation,finTopWithCutoutLogical,nameTop,prodTargetMotherInfo.logical,0,finTopCopyNumber,false);
+	    G4VPhysicalVolume*  finTopWithCutout        = new G4PVPlacement(rotFinsG4.at(ithFin),finTopTranslation,finTopWithCutoutLogical,nameTop,prodTargetMotherInfo.logical,0,finTopCopyNumber,false);
 
 	    //
 	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
@@ -665,78 +686,48 @@ namespace mu2e {
 	  //
 	  // this is all so I can add multiple cutouts to the ring and only do one placement.
 	  std::vector<G4SubtractionSolid*> ringWithCutoutSolid;
-	  // you actuall need these to be slighly larger for two reasons: 1) the visualizer gets confused about which volume you should see 
-	  // but more substantially the ring and the square cutout don't match so you'll get an overlap!  making the cutout bigger fixes it.  I tested these numbers just by looking at opengl
-	  //	  G4Box* cutoutBox = new G4Box("cutoutBox",tgt->supportRingCutoutThickness()/2.+ magicOffset,tgt->haymanFinThickness()/2.+ magicOffset,tgt->supportRingCutoutLength()/2.+ magicOffset);
-	  G4Box* cutoutBox = new G4Box("cutoutBox",tgt->supportRingCutoutThickness()/2.+ magicOffset,
-				       tgt->haymanFinThickness() + magicOffset,tgt->supportRingCutoutLength()/2.+ magicOffset);
+
+	  //	  G4Box* cutoutBox = new G4Box("cutoutBox",tgt->supportRingCutoutThickness()/2.+ magicOffset,
+	  //			       tgt->haymanFinThickness() + magicOffset,tgt->supportRingCutoutLength()/2.+ magicOffset);
 	  std::string nameRing = "ProductionTargetNegativeRingCutout";
 
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin){
-	    //for (int ithFin = 0; ithFin < 1; ++ithFin){
-	    double currentFinAngle = tgt->finAngles().at(ithFin)*CLHEP::degree;
+	    double currentFinAngle = tgt->finAngles().at(ithFin);
 	    const std::string name = "ProductionTargetNegativeRingCutout_" + std::to_string(ithSection) 
 	      + "_Segment_" +"_Fin_" + std::to_string(ithFin);
-	    if (verbosityLevel > 6)
-	      {std::cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << std::endl;}
-	    // divide by 2 to make box half-height since I gave it the "radius" to start with; arbitrary convention. 
-	    //	    double cutoutHeightAboveTarget = tgt->supportRingInnerRadius() + tgt->supportRingCutoutLength()/2. - magicOffset;
-	    //double cutoutHeightAboveTarget = tgt->supportRingInnerRadius() + tgt->supportRingCutoutLength()/4. - magicOffset;
-	    //double cutoutHeightAboveTarget = tgt->supportRingInnerRadius() - magicOffset;
-	    if (verbosityLevel > 2){std::cout << " cutoutHeightAboveTarget = " << tgt->supportRingInnerRadius() << " " 
-					      << " " << tgt->supportRingCutoutThickness() << " " << cutoutHeightAboveTarget << std::endl;}
-	    //	    CLHEP::HepRotation* rotBox = new CLHEP::HepRotation(tgt->productionTargetRotation().inverse());
-	    //CLHEP::HepRotation* rotBoxG4 = new CLHEP::HepRotation(tgt->productionTargetRotation());
-	    CLHEP::HepRotation* rotBox = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    CLHEP::HepRotation* rotBoxG4 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    rotBox->rotateZ(currentFinAngle);
-	    //
-	    // g4 version
-	    rotBoxG4->rotateZ(currentFinAngle);
 	    ++boxCopyNumber;
 
-	    //
-	    // and this is the hard part.  G4 takes a vector below in the PVPlacement and then rotates the object.  So it moves the object 
-	    // by finTranslation in the mother volume and then rotates it.  It does NOT rotate the translation vector!! The user needs
-	    // to calculate that.   
-	    // 
-	    // this is how high we want to move it.  
-	    //CLHEP::Hep3Vector offset(0.,finHalfHeightAboveTarget + tgt->rOut(),0.);
-	    CLHEP::Hep3Vector offset(0.,0.,0.);
+	    if (verbosityLevel > 6)
+	      {G4cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << G4endl;}
+	    if (verbosityLevel > 2){G4cout << " cutoutHeightAboveTarget = " << tgt->supportRingInnerRadius() << " " 
+					      << " " << tgt->supportRingCutoutThickness() << " " << cutoutHeightAboveTarget << G4endl;}
 
 	    //
 	    // G4 translates and then rotates.  I want to offset the fin to its final location relative to the core and then let G4 perform rotations,
 	    // both of the fin about the z axis and then the entire production target rotation angle
-	    //double distanceFromCenter = cutoutHeightAboveTarget*0.9;
-	    	    double distanceFromCenter = cutoutHeightAboveTarget;
-	    //
-	    // and this part is annoying.  Since we have lifted the fin away from the axis, when we rotate in y the z value shifts a little.
-	    CLHEP::Hep3Vector boxShift(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle),0.);
-	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle), 
-	    						   tgt->supportRingCutoutLength()/2.+.01);// move to end of ring, hence /4
+	    double distanceFromCenter = cutoutHeightAboveTarget;
+
+	    CLHEP::Hep3Vector boxShift(distanceFromCenter*cos(currentFinAngles.at(ithFin)),distanceFromCenter*sin(currentFinAngles.at(ithFin)),0.);
+	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*cos(currentFinAngles.at(ithFin)),distanceFromCenter*sin(currentFinAngles.at(ithFin)), 
+	    						   tgt->supportRingCutoutLength()/2. + magicOffset);
 
 	    if (verbosityLevel > 3){
-	      std::cout << "production target rotation angle = " << tgt->productionTargetRotation().getTheta() << std::endl;
-	      std::cout << "fin dump: " << currentFinAngle << " " << distanceFromCenter << " " << offsetRelativeToCore << std::endl;
-	      std::cout << "ithfin; current fin angle; rotFin; finTranslation = " << ithFin << " " 
-			<< currentFinAngle << *rotBox << " " << *rotBoxG4 << " " << ringTranslation << std::endl;
-	      std::cout << "production target rotation = " << tgt->productionTargetRotation() << std::endl;
+	      G4cout << "production target rotation angle = " << tgt->productionTargetRotation().getTheta() << G4endl;
+	      G4cout << "fin dump: " << currentFinAngles.at(ithFin) << " " << distanceFromCenter << " " << offsetRelativeToCore << G4endl;
+	      G4cout << "ithfin; current fin angle; rotFin; finTranslation = " << ithFin << " " 
+		     << currentFinAngles.at(ithFin)  << " " << *rotFinsG4.at(ithFin) << " " << ringTranslation << G4endl;
+	      G4cout << "production target rotation = " << tgt->productionTargetRotation() << G4endl;
 	    }
 
-	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,0.,0.);//for debugging
-	    offsetRelativeToCore = offsetRelativeToCore + downshift;
 	    if (ithFin == 0){
-	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,supportRing,cutoutBox,rotBoxG4,offsetRelativeToCore));
+	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,supportRing,cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }else {
-	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxG4,offsetRelativeToCore));
+	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }
 	  }
 	
 	  G4LogicalVolume*    ringWithCutoutLogical = new G4LogicalVolume(ringWithCutoutSolid.at(tgt->nHaymanFins() - 1),prodTargetFinMaterial,name);
 	  G4VPhysicalVolume*  ringWithCutout        = new G4PVPlacement(rotRing,ringTranslation,ringWithCutoutLogical,nameRing,prodTargetMotherInfo.logical,0,finCopyNumber,false);
-	  //
-	  // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
-
 	  if (doSurfaceCheck){checkForOverlaps(ringWithCutout,_config,0);}
 
 
@@ -748,7 +739,7 @@ namespace mu2e {
 	//
 	// set current z to be at the end of this starting segment before beginning loop on sections
 	_currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
-	if (verbosityLevel > 0){std::cout << __func__ << " ithSection , startingSegment Z ends at " << ithSection << " " <<_currentZ << std::endl;}
+	if (verbosityLevel > 0){G4cout << __func__ << " ithSection , startingSegment Z ends at " << ithSection << " " <<_currentZ << G4endl;}
 	double currentGap = tgt->thicknessOfGapPerSection().at(ithSection);
 	double currentHalfSegment = tgt->thicknessOfSegmentPerSection().at(ithSection)/2.;
 
@@ -756,14 +747,14 @@ namespace mu2e {
 	  std::string name = "ProductionTargetCoreSection_" + std::to_string(ithSection) 
 	    + "_Segment_" + std::to_string(ithSegment);
 	  if (verbosityLevel > 0) {
-	    std::cout << __func__ << "name = " << name << " and core copy number = " << coreCopyNumber << std::endl;
-	    std::cout << __func__ << "gap, and segment half = " << currentGap << " " << currentHalfSegment << std::endl;
+	    G4cout << __func__ << "name = " << name << " and core copy number = " << coreCopyNumber << G4endl;
+	    G4cout << __func__ << "gap, and segment half = " << currentGap << " " << currentHalfSegment << G4endl;
 	  }
 	  TubsParams segmentParams(0.,targetRadius,currentHalfSegment);
 	  _currentZ += currentHalfSegment + currentGap;
 	  if (verbosityLevel > 0){
-	    std::cout << __func__ << " ithSection , current Z for segment center is at " << ithSection << " " 
-		      << ithSegment << " "  <<_currentZ << std::endl;
+	    G4cout << __func__ << " ithSection , current Z for segment center is at " << ithSection << " " 
+		      << ithSegment << " "  <<_currentZ << G4endl;
 	  }
  	  _segmentCenter.setZ(_currentZ);
 	  G4ThreeVector currentSegmentCenter = tgt->productionTargetRotation().inverse()*_segmentCenter;
@@ -783,7 +774,7 @@ namespace mu2e {
 					    placePV,
 					    doSurfaceCheck
 					    );
-	  if (verbosityLevel > 2){std::cout << "segment center after volumeinfo = " << _segmentCenter << std::endl;}
+	  if (verbosityLevel > 2){G4cout << "segment center after volumeinfo = " << _segmentCenter << G4endl;}
 
 	  //
 	  //now add fins surrounding this core segment.  Build them as simple rectangles with a G4 subtraction volume for the core.
@@ -791,40 +782,22 @@ namespace mu2e {
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin)
 	    //		    	    	    	  for (int ithFin = 0; ithFin < 1; ++ithFin)
 	    {
-	      //
-	      // what we do is make a rectangular fin; cut out the appropriate core section with a subtraction volume;
-	      // then that object is placed.  
-	      double currentFinAngle = tgt->finAngles().at(ithFin)*CLHEP::degree;
 	      const std::string name = "ProductionTargetFinSection_" + std::to_string(ithSection) + "_Segment_" + std::to_string(ithSegment) + "_Fin_" + std::to_string(ithFin);
 	      if (verbosityLevel > 1)
-		{std::cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << std::endl;}
+		{G4cout << "Fin Section and Angle = " << name << " " << currentFinAngles.at(ithFin) << " fin copy number = " << finCopyNumber << G4endl;}
 	      // divide by 2 to make box half-height since I gave it the "radius" to start with; arbitrary convention. 
 	      double finHalfHeightAboveTarget = (tgt->finOuterRadius() - tgt->rOut())/2.;
-	      if (verbosityLevel > 2){std::cout << "finHeightAboveTarget = " << tgt->finOuterRadius() << " " 
-						 << tgt->rOut() << " " << finHalfHeightAboveTarget << std::endl;}
+	      if (verbosityLevel > 2){G4cout << "finHeightAboveTarget = " << tgt->finOuterRadius() << " " 
+						 << tgt->rOut() << " " << finHalfHeightAboveTarget << G4endl;}
 	      G4Box* finBox = new G4Box("finBox",tgt->haymanFinThickness()/2.,finHalfHeightAboveTarget,currentHalfSegment);
 	      // 
 	      // this tubs is in the xy plane with an extent along z.  So phi goes in the xy plane.
-	      G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfSegment+.0001,dSphi,dPphi);// need extra length for visualization tool
+	      G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfSegment + magicOffset,dSphi,dPphi);// need extra length for visualization tool
 	      //
 	      // I now have two G4Solids, a box and a cutout.  Combine them to make a logical volume. the box is 
 	      // oriented so that it is "z" thick and "radius" high.  the tubs is made to be the same, so no rotation
 	      // and also no translation needed 
-	      //
-	      // and this is confusing but needed.  I move the fin where it needs to go using CLHEP, which requires the inverse matrix 
-	      // -- but when I feed it to G4 I need the regular form.  Just to add, the .inverse is active and was inverted already. sigh...
-	      // I'm sure there are better ways to do this but this has the advantage of my understanding it
 
-              CLHEP::HepRotation* rotFin = new CLHEP::HepRotation(tgt->productionTargetRotation().inverse());
-              CLHEP::HepRotation* rotFinG4 = new CLHEP::HepRotation(tgt->productionTargetRotation());
-	      // 
-	      // ok here I have a little confusing fix.  The fin is built along the y-axis.  But the rotation is given wrt the x axis.  Hence I need to
-	      // subtract off that 90^o 
-	      double rotAdj = -M_PI/2 + currentFinAngle;
-	      rotFin->rotateZ(rotAdj);
-	      //
-	      // g4 version.
-	      rotFinG4->rotateZ(-rotAdj);
 	      ++finCopyNumber;
 
 	      //
@@ -833,37 +806,44 @@ namespace mu2e {
 	      G4ThreeVector finTranslation = currentSegmentCenter;
 
 	      double distanceFromCenter = finHalfHeightAboveTarget + tgt->rOut();
-	      CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle),0.);
+	      CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*cos(currentFinAngles.at(ithFin)),distanceFromCenter*sin(currentFinAngles.at(ithFin)),0.);
 	      // 
 	      // finTranslation was already put in the target rotated frame.  I have to rotate the offset vector as well
 	      offsetRelativeToCore *= tgt->productionTargetRotation().inverse();
 	      finTranslation = finTranslation + offsetRelativeToCore;
 
 
-	      CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*TMath::Cos(angularSize), 0.);
-	      G4SubtractionSolid* finWithCutoutSolid   = new G4SubtractionSolid(name,finBox,tubCutout,identityRotation,downshift);
-	      G4LogicalVolume*    finWithCutoutLogical = new G4LogicalVolume(finWithCutoutSolid,prodTargetFinMaterial,name);
-	      G4VPhysicalVolume*  finWithCutout        = new G4PVPlacement(rotFinG4,finTranslation,finWithCutoutLogical,name,prodTargetMotherInfo.logical,0,finCopyNumber,false);
-
-	      if (doSurfaceCheck){checkForOverlaps(finWithCutout,_config,0);}
-
+	      CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*cos(angularSize), 0.);
+	      placeSubtractionVolumeBoxTubs(name
+					    ,finTranslation
+					    ,prodTargetMotherInfo
+					    ,finBox
+					    ,tubCutout
+					    ,rotFinsG4.at(ithFin)
+					    ,prodTargetFinMaterial
+					    ,nullptr
+					    ,downshift
+					    ,finCopyNumber
+					    ,G4Colour::Blue()
+					    ,"PS"
+					    ,verbosityLevel>1);
 	    //
 	    // for each fin, build the little section at the top that joins it to the next fin.  This will be  a G4Box with a cutout. 
 	    // Here make the cutout a little tubs without the fancy angular business, since I don't have fins overlapping fins up at the top.
-	    const std::string nameTop = "ProductionTargetFinTopSection_" + std::to_string(ithSection+1) + "_Segment_" + std::to_string(ithSegment) + "_Fin_" + std::to_string(ithFin);
+	    const std::string nameTop = "ProductionTargetFinTopSection_" + std::to_string(ithSection+1) 
+	      + "_Segment_" + std::to_string(ithSegment) + "_Fin_" + std::to_string(ithFin);
   
 	    //Much easier to visualize but the code is equally yucky
 	    double gapRadius = tgt->thicknessOfGapPerSection().at(ithSection)/2.;
-	    //	    double zTopBox = currentHalfStartingSegment + gapRadius;
 	    double finTopHalfHeight =( tgt->finOuterRadius() - tgt->heightOfRectangularGapPerSection().at(ithSection))/2.;
-	    if (verbosityLevel > 2){std::cout << "finTopHalfHeight = " << finTopHalfHeight <<std::endl;} 
+	    if (verbosityLevel > 2){G4cout << "finTopHalfHeight = " << finTopHalfHeight <<G4endl;} 
 	    G4Box* finTopBox = new G4Box("finTopBox",tgt->haymanFinThickness()/2.,finTopHalfHeight,tgt->thicknessOfGapPerSection().at(ithSection)/2.);
-	    G4Tubs* finTopCutout = new G4Tubs("finTopCutout",0.,gapRadius+.0001,tgt->haymanFinThickness()/2. + .0001,0.,2.*M_PI);
+	    G4Tubs* finTopCutout = new G4Tubs("finTopCutout",0.,gapRadius + magicOffset,tgt->haymanFinThickness()/2. + magicOffset,0.,2.*M_PI);
 	    ++finTopCopyNumber;
 
-	    if (verbosityLevel > 2){std::cout << "current starting SegmentCenter, current HalfSegment, gap radius = " 
+	    if (verbosityLevel > 2){G4cout << "current starting SegmentCenter, current HalfSegment, gap radius = " 
 					      << currentStartingSegmentCenter << " " << currentHalfStartingSegment << " " 
-					      << gapRadius << std::endl;}
+					      << gapRadius << G4endl;}
 	    G4ThreeVector finTopBoxLocation = currentSegmentCenter 
                       + tgt->productionTargetRotation().inverse()*CLHEP::Hep3Vector(0.,0.,currentHalfSegment + gapRadius);
 	    //
@@ -877,21 +857,21 @@ namespace mu2e {
 	    // both of the fin about the z axis and then the entire production target rotation angle
 	    double distanceTopFromCenter = tgt->finOuterRadius() - finTopHalfHeight; 
  
-	    CLHEP::Hep3Vector offsetTopRelativeToCore(distanceTopFromCenter*TMath::Cos(currentFinAngle),distanceTopFromCenter*TMath::Sin(currentFinAngle),0.);
+	    CLHEP::Hep3Vector offsetTopRelativeToCore(distanceTopFromCenter*cos(currentFinAngles.at(ithFin)),distanceTopFromCenter*sin(currentFinAngles.at(ithFin)),0.);
 	    // 
 	    // finTranslation was already put in the target rotated frame.  I have to rotate the offset vector as well
 	    offsetTopRelativeToCore *= tgt->productionTargetRotation().inverse();
 	    finTopTranslation = finTopTranslation + offsetTopRelativeToCore;
-	    if (verbosityLevel > 2){std::cout << "finTopTranslation = " << finTopTranslation << std::endl;}
+	    if (verbosityLevel > 2){G4cout << "finTopTranslation = " << finTopTranslation << G4endl;}
 	    CLHEP::Hep3Vector downshiftTopBox = CLHEP::Hep3Vector(0.,-finTopHalfHeight, 0.);
-		    //CLHEP::Hep3Vector downshiftTopBox(0.15.,0.);
+
 	    //
 	    // these are oriented with gap radius along z.  Recall still in mother volume so this axis is OK
 	    G4RotationMatrix* tubTopRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
 	    tubTopRotation->rotateY(M_PI/2.);
 	    G4SubtractionSolid* finTopWithCutoutSolid   = new G4SubtractionSolid(nameTop,finTopBox,finTopCutout,tubTopRotation,downshiftTopBox);
 	    G4LogicalVolume*    finTopWithCutoutLogical = new G4LogicalVolume(finTopWithCutoutSolid,prodTargetFinMaterial,nameTop);
-	    G4VPhysicalVolume*  finTopWithCutout        = new G4PVPlacement(rotFinG4,finTopTranslation,finTopWithCutoutLogical,nameTop,prodTargetMotherInfo.logical,0,finTopCopyNumber,false);
+	    G4VPhysicalVolume*  finTopWithCutout        = new G4PVPlacement(rotFinsG4.at(ithFin),finTopTranslation,finTopWithCutoutLogical,nameTop,prodTargetMotherInfo.logical,0,finTopCopyNumber,false);
 
 	    //
 	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
@@ -902,11 +882,11 @@ namespace mu2e {
 	  //
 	  // if this is the last segment, add another gap before next section starts!
 	  if (ithSegment == numberOfSegments-1) {
-	    if (verbosityLevel > 0){std::cout << " z before = " << _currentZ << std::endl;}
+	    if (verbosityLevel > 0){G4cout << " z before = " << _currentZ << G4endl;}
 	    _currentZ += currentGap;
-	    if (verbosityLevel > 0){std::cout << " z after = " << _currentZ << std::endl;}
+	    if (verbosityLevel > 0){G4cout << " z after = " << _currentZ << G4endl;}
 	  }
-	  if (verbosityLevel > 0){std::cout << __func__ << " ending at z=" << _currentZ << std::endl;}
+	  if (verbosityLevel > 0){G4cout << __func__ << " ending at z=" << _currentZ << G4endl;}
 	  //	  prodTargetCoreInfoBySegment.push_back(coreSegment);
 	}
 	  ++coreCopyNumber;
@@ -919,7 +899,7 @@ namespace mu2e {
 	  //	
 	  //set currentZ to be in the center of the starting section
 	  _currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
-	  if (verbosityLevel > 0){std::cout << __func__ << " ithSection+1 , startingSegmentCenter at " << ithSection+1 << " " <<_currentZ << std::endl;}
+	  if (verbosityLevel > 0){G4cout << __func__ << " ithSection+1 , startingSegmentCenter at " << ithSection+1 << " " <<_currentZ << G4endl;}
 	  _startingSegmentCenter.setZ(_currentZ);
 	  CLHEP::Hep3Vector currentStartingSegmentCenter = tgt->productionTargetRotation().inverse()*_startingSegmentCenter;
 	  double currentHalfStartingSegment = tgt->startingSectionThickness().at(ithSection)/2.;
@@ -940,26 +920,19 @@ namespace mu2e {
 
 	  //build fins around starting segment
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin){
-	    double currentFinAngle = tgt->finAngles().at(ithFin)*CLHEP::degree;
+
+	    double currentFinAngle = tgt->finAngles().at(ithFin);
 	    const std::string name = "ProductionTargetFinStartingSection_" + std::to_string(ithSection+1) + "_Fin_" + std::to_string(ithFin);
 
 	    if (verbosityLevel > 1)
-	      {std::cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << std::endl;}
+	      {G4cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << G4endl;}
 
 	    double finHalfHeightAboveTarget = (tgt->finOuterRadius() - tgt->rOut())/2.;
 	    G4Box* finBox = new G4Box("finBox",tgt->haymanFinThickness()/2.,finHalfHeightAboveTarget,currentHalfStartingSegment);
 	    // 
 	    // this tubs is in the xy plane with an extent along z.  So phi goes in the xy plane.
             // need extra length for visualization tool and overlap avoidance
-	    G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfStartingSegment+.0001,dSphi,dPphi);
-	    //
-	    // I now have two G4Solids, a box and a cutout.  Combine them to make a logical volume. the box is 
-	    // oriented so that it is "z" thick and "radius" high.  the tubs is made to be the same, so no rotation
-	    // and also no translation needed 
-	    //
-	    // and this is confusing but needed.  I move the fin where it needs to go using CLHEP, which requires the inverse matrix 
-	    // -- but when I feed it to G4 I need the regular form.  Just to add, the .inverse is active and was inverted already. sigh...
-	    // I'm sure there are better ways to do this but this has the advantage of my understanding it
+	    G4Tubs* tubCutout = new G4Tubs("finCutout",0.,tgt->rOut(),currentHalfStartingSegment + magicOffset,dSphi,dPphi);
 
 	    CLHEP::HepRotation* rotFin = new CLHEP::HepRotation(tgt->productionTargetRotation().inverse());
 	    CLHEP::HepRotation* rotFinG4 = new CLHEP::HepRotation(tgt->productionTargetRotation());
@@ -983,16 +956,16 @@ namespace mu2e {
 	    // G4 translates and then rotates.  I want to offset the fin to its final location relative to the core and then let G4 perform rotations,
 	    // both of the fin about the z axis and then the entire production target rotation angle
 	    double distanceFromCenter = finHalfHeightAboveTarget + tgt->rOut();
-	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle),0.);
+	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*cos(currentFinAngle),distanceFromCenter*sin(currentFinAngle),0.);
 	    // 
 	    // finTranslation was already put in the target rotated frame.  I have to rotate the offset vector as well
 	    offsetRelativeToCore *= tgt->productionTargetRotation().inverse();
 	    finTranslation = finTranslation + offsetRelativeToCore;
-	    if (verbosityLevel > 2){std::cout << "finTranslation = " << finTranslation << std::endl;}
-	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*TMath::Cos(angularSize), 0.);
-	    G4SubtractionSolid* finWithCutoutSolid   = new G4SubtractionSolid(name,finBox,tubCutout,identityRotation,downshift);
+	    if (verbosityLevel > 2){G4cout << "finTranslation = " << finTranslation << G4endl;}
+	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*cos(angularSize), 0.);
+	    G4SubtractionSolid* finWithCutoutSolid   = new G4SubtractionSolid(name,finBox,tubCutout,nullptr,downshift);
 	    G4LogicalVolume*    finWithCutoutLogical = new G4LogicalVolume(finWithCutoutSolid,prodTargetFinMaterial,name);
-	    G4VPhysicalVolume*  finWithCutout        = new G4PVPlacement(rotFinG4,finTranslation,finWithCutoutLogical,name,prodTargetMotherInfo.logical,0,finCopyNumber,false);
+	    G4VPhysicalVolume*  finWithCutout        = new G4PVPlacement(rotFinsG4.at(ithFin),finTranslation,finWithCutoutLogical,name,prodTargetMotherInfo.logical,0,finCopyNumber,false);
 
 	    //
 	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
@@ -1004,8 +977,8 @@ namespace mu2e {
 	  // set current z to be at the end of this starting segment as a final check
 	  _currentZ += tgt->startingSectionThickness().at(ithSection)/2.;
 	  if (verbosityLevel > 0){
-	    std::cout << __func__ << " ithSection+1 , startingSegment Z ends at " << ithSection+1 << " " <<_currentZ << std::endl;
-	    std::cout << "             with copy number for last segment  = " << ithSection+1 << std::endl;
+	    G4cout << __func__ << " ithSection+1 , startingSegment Z ends at " << ithSection+1 << " " <<_currentZ << G4endl;
+	    G4cout << "             with copy number for last segment  = " << ithSection+1 << G4endl;
 	  }
 	  /***********and now the final end ring  ***********/
 	  std::string name = "ProductionTargetPositiveEndRing";
@@ -1021,57 +994,35 @@ namespace mu2e {
 	    + tgt->productionTargetRotation().inverse()*CLHEP::Hep3Vector(0.,0.,tgt->supportRingLength()/2.);
 
 	  std::vector<G4SubtractionSolid*> ringWithCutoutSolid;
-	  G4Box* cutoutBox = new G4Box("cutoutBox",tgt->supportRingCutoutThickness()/2.+ magicOffset,
-				       tgt->haymanFinThickness() + magicOffset,+tgt->supportRingCutoutLength()/2.+ magicOffset);
 	  std::string nameRing = "ProductionTargetPositiveRingCutout";
 
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin){
-	    //for (int ithFin = 0; ithFin < 1; ++ithFin){
-	    double currentFinAngle = tgt->finAngles().at(ithFin)*CLHEP::degree;
-	    const std::string name = "ProductionTargetPositiveRingCutout_" + std::to_string(ithSection) 
+	    double currentFinAngle = tgt->finAngles().at(ithFin);
+            const std::string name = "ProductionTargetPositiveRingCutout_" + std::to_string(ithSection) 
 	      + "_Segment_" +"_Fin_" + std::to_string(ithFin);
-	    CLHEP::HepRotation* rotBox = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    CLHEP::HepRotation* rotBoxG4 = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
-	    rotBox->rotateZ(currentFinAngle);
-	    //
-	    // g4 version
-	    rotBoxG4->rotateZ(currentFinAngle);
 	    ++boxCopyNumber;
 
-	    //
-	    // and this is the hard part.  G4 takes a vector below in the PVPlacement and then rotates the object.  So it moves the object 
-	    // by finTranslation in the mother volume and then rotates it.  It does NOT rotate the translation vector!! The user needs
-	    // to calculate that.   
-	    // 
-	    // this is how high we want to move it.  
-	    //CLHEP::Hep3Vector offset(0.,finHalfHeightAboveTarget + tgt->rOut(),0.);
-	    CLHEP::Hep3Vector offset(0.,0.,0.);
 
 	    //
 	    // G4 translates and then rotates.  I want to offset the fin to its final location relative to the core and then let G4 perform rotations,
 	    // both of the fin about the z axis and then the entire production target rotation angle
-	    //double distanceFromCenter = cutoutHeightAboveTarget*0.9;
 	    double distanceFromCenter = cutoutHeightAboveTarget;
-	    //
-	    // and this part is annoying.  Since we have lifted the fin away from the axis, when we rotate in y the z value shifts a little.
-	    CLHEP::Hep3Vector boxShift(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle),0.);
-	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*TMath::Cos(currentFinAngle),distanceFromCenter*TMath::Sin(currentFinAngle), 
-						   -tgt->supportRingCutoutLength()/2.-.01);// note flipped sign from other end of target
+
+	    CLHEP::Hep3Vector boxShift(distanceFromCenter*cos(currentFinAngle),distanceFromCenter*sin(currentFinAngle),0.);
+	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*cos(currentFinAngle),distanceFromCenter*sin(currentFinAngle), 
+						   -tgt->supportRingCutoutLength()/2. - magicOffset);// note flipped sign from other end of target
 
 	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,0.,0.);//for debugging
 	    offsetRelativeToCore = offsetRelativeToCore + downshift;
 	    if (ithFin == 0){
-	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,supportRing,cutoutBox,rotBoxG4,offsetRelativeToCore));
+	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,supportRing,cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }else {
-	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxG4,offsetRelativeToCore));
+	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }
 	  }
 	
 	  G4LogicalVolume*    ringWithCutoutLogical = new G4LogicalVolume(ringWithCutoutSolid.at(tgt->nHaymanFins() - 1),prodTargetFinMaterial,name);
 	  G4VPhysicalVolume*  ringWithCutoutPositive  = new G4PVPlacement(rotRing,ringTranslation,ringWithCutoutLogical,nameRing,prodTargetMotherInfo.logical,0,finCopyNumber,false);
-	  //
-	  // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
-
 	  if (doSurfaceCheck){checkForOverlaps(ringWithCutoutPositive,_config,0);}
 	}
       }
