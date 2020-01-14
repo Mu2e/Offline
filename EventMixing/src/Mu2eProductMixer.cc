@@ -58,6 +58,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStepPointMCs, *this);
     }
 
+    for(const auto& e: conf.mcTrajectoryMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixMCTrajectories, *this);
+    }
+
     for(const auto& e: conf.caloShowerStepMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSteps, *this);
@@ -147,6 +152,34 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
+    }
+
+    return true;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixMCTrajectories(std::vector<MCTrajectoryCollection const*> const& in,
+                                           MCTrajectoryCollection& out,
+                                           art::PtrRemapper const& remap)
+  {
+    // flattenCollections() does not seem to preserve enough info to remap ptrs in the output map.
+    // Follow the pattern, including the nullptr checks, but add custom remapping code.
+
+    for(std::vector<MCTrajectoryCollection const*>::size_type ieIndex = 0; ieIndex < in.size(); ++ieIndex) {
+      if (in[ieIndex] != nullptr) {
+        for(const auto & orig : *in[ieIndex]) {
+          auto res = out.insert(std::make_pair(remap(orig.first, simOffsets_[ieIndex]),
+                                               MCTrajectory(remap(orig.second.sim(), simOffsets_[ieIndex]),
+                                                            orig.second.points())
+                                               ));
+
+          if(!res.second) {
+            throw cet::exception("BUG")<<"mixMCTrajectories(): failed to insert an entry, ieIndex="<<ieIndex
+                                       <<", orig ptr = "<<orig.first
+                                       <<std::endl;
+          }
+        }
+      }
     }
 
     return true;
