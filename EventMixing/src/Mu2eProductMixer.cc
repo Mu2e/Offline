@@ -68,6 +68,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixCaloShowerSteps, *this);
     }
 
+    for(const auto& e: conf.strawGasStepMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixStrawGasSteps, *this);
+    }
+
     for(const auto& e: conf.extMonSimHitMixer().mixingMap()) {
       helper.declareMixOp
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixExtMonSimHits, *this);
@@ -197,6 +202,23 @@ namespace mu2e {
       auto ie = getInputEventIndex(i, stepOffsets);
       auto& step = out[i];
       step.setSimParticle( remap(step.simParticle(), simOffsets_[ie]) );
+    }
+
+    return true;
+  }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixStrawGasSteps(std::vector<StrawGasStepCollection const*> const& in,
+                                          StrawGasStepCollection& out,
+                                          art::PtrRemapper const& remap)
+  {
+    std::vector<StrawGasStepCollection::size_type> stepOffsets;
+    art::flattenCollections(in, out, stepOffsets);
+
+    for(StrawGasStepCollection::size_type i=0; i<out.size(); ++i) {
+      auto ie = getInputEventIndex(i, stepOffsets);
+      auto& step = out[i];
+      step.simParticle() = remap(step.simParticle(), simOffsets_[ie]);
     }
 
     return true;
