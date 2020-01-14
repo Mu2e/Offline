@@ -229,12 +229,14 @@ Reconstruction : {
             "keep art::TriggerResults_*_*_*"
 	    ]
 # low-level reco products, selected to match the high-level reco objects
-  LowReco : [ "keep *_SelectRecoMC_*_*" ]
+  LowReco : [ "keep *_SelectRecoMC_*_*",
+             "keep mu2e::ComboHitCollection_*_*_*"
+	    ]
 # low-level reco products, without any high-level match
   LowRecoAll : [ 
             "keep mu2e::StrawDigis_makeSD_*_*",
             "keep mu2e::StrawHitFlags_FlagBkgHits_StrawHits_*",
-            "keep mu2e::ComboHits_makeSH_*_*",
+            "keep mu2e::ComboHitCollection_makeSH_*_*",
 	    "keep mu2e::CaloDigis_CaloDigiFromShower_*_*",
 	    "keep mu2e::CaloCrystalHits_CaloCrystalHitFromHit_*_*",
 	    "keep mu2e::CrvDigis_CrvDigi_*_*",
