@@ -135,6 +135,7 @@ StrawElectronics : {
    reflectionVelocity : 400
    reflectionALength : 2400
    reflectionFrac : 0.40
+   triggerHysteresis : 0
    clusterLookbackTime : 5.0
    timeOffsetPanel : [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

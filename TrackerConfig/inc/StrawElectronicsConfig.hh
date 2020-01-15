@@ -118,6 +118,8 @@ namespace mu2e {
       Name("reflectionALength"), Comment("reflectionALength")};
     fhicl::Atom<double> reflectionFrac {
       Name("reflectionFrac"), Comment("reflectionFrac")};
+    fhicl::Atom<double> triggerHysteresis {
+      Name("triggerHysteresis"), Comment("triggerHysteresis")};
     fhicl::Atom<double> clusterLookbackTime {
       Name("clusterLookbackTime"), Comment("clusterLookbackTime")};
     fhicl::Sequence<double> timeOffsetPanel {
