@@ -94,10 +94,9 @@ CeplusEndpointGun : {
     muonStops      : @local::mu2e.tgtMuonStops
 }
 
-PrimaryProtonGunN: {
-    module_type : PrimaryProtonGunN
-    inputfile   : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-    stashSize   : @nil
+PrimaryProtonGunR: {
+    module_type : PrimaryProtonGunR
+    inputfile   : "JobConfig/beam/genconfig_PrimaryProtons.txt"
 }
 
 
@@ -150,7 +149,6 @@ EventGenerator : { @table::EventGenerator
 	CeEndpointGun               : { @table::CeEndpointGun               }
 	StoppedParticleReactionGun  : { @table::StoppedParticleReactionGun  }
         StoppedParticleReactionGunN : { @table::StoppedParticleReactionGunN }
-        PrimaryProtonGunN           : { @table::PrimaryProtonGunN           }
 #------------------------------------------------------------------------------
 # new implementation from Eleonora, doesn't require tabulations of LL spectra
 # conversion e- and e+ on Al27 

@@ -49,6 +49,10 @@ namespace mu2e {
     const PhysicalVolumeInfoSingleStage& persistentSingleStageInfo() const{
       return _pSingleStage;
     }
+      
+      const bool helperIsInitialized() const{
+          return m_helperInitialized;
+      }
 
     // Return the index into _persistentInfo for the physical volume attached to this track.
     int index( const G4Track* track ) const;
@@ -64,6 +68,8 @@ namespace mu2e {
 
     // Map used to look up persistent index of each physical volume.
     VolMapType _volumeMap;
+      
+    bool m_helperInitialized;
 
   };
 

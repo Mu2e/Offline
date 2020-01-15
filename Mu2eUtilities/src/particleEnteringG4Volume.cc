@@ -14,3 +14,7 @@ art::Ptr<mu2e::SimParticle> mu2e::particleEnteringG4Volume(const StepPointMC& st
 
     return p;
 }
+art::Ptr<mu2e::SimParticle> mu2e::particleEnteringG4Volume(const StrawGasStep& step) {
+    art::Ptr<SimParticle> p = step.simParticle();
+    return p;
+}

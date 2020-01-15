@@ -33,6 +33,10 @@
 #include <math.h>
 #include <cmath>
 #include <algorithm>
+// Framework
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
 
 //ROOT
 #include "TMatrixD.h"

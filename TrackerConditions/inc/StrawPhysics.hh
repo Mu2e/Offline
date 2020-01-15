@@ -19,7 +19,6 @@
 #include "fhiclcpp/ParameterSet.h"
 
 #include "TrackerConditions/inc/StrawDrift.hh"
-#include "ProditionsService/inc/ProditionsHandle.hh"
 
 namespace mu2e {
   class StrawPhysics : virtual public ProditionsEntity {

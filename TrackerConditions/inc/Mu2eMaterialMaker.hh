@@ -7,7 +7,7 @@
 //
 
 #include "TrackerConditions/inc/Mu2eMaterial.hh"
-#include "TrackerConditions/inc/Mu2eMaterialConfig.hh"
+#include "TrackerConfig/inc/Mu2eMaterialConfig.hh"
 
 namespace mu2e {
 

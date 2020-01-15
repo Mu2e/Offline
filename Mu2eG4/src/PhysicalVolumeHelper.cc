@@ -46,8 +46,9 @@ namespace mu2e {
 
   PhysicalVolumeHelper::PhysicalVolumeHelper():
     _persistentInfo(),
-    _volumeMap(){
-  }
+    _volumeMap(),
+    m_helperInitialized(false)
+    {}
 
   // Return the index into _persistentInfo for the volume attached to this track.
   int PhysicalVolumeHelper::index( const G4Track* track ) const{
@@ -119,6 +120,8 @@ namespace mu2e {
       _pSingleStage[cet::map_vector_key(_persistentInfo.size()-1)] = _persistentInfo.back();
     }
 
+    m_helperInitialized = true;
+      
   }
 
   // Clear information at the end of a run.
