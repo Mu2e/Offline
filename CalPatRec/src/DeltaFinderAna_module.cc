@@ -45,10 +45,9 @@
 #include <algorithm>
 #include <cmath>
 #include "CLHEP/Vector/ThreeVector.h"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 
 using namespace std; 
 using CLHEP::Hep3Vector;
@@ -584,12 +583,12 @@ namespace mu2e {
 
       const mu2e::StrawDigiMC* mcdigi = &_mcdigis->at(i);
 
-      const mu2e::StepPointMC   *stmc;
+      const mu2e::StrawGasStep   *stmc;
       if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-	stmc = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
+	stmc = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
       }
       else {
-	stmc = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
+	stmc = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
       }
 
       const mu2e::SimParticle* sim = &(*stmc->simParticle());

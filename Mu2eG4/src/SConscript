@@ -26,7 +26,7 @@ if g4_version[2] == '9':
 else:
     g4_version = g4_version[1:5]
 
-# print "GEANT4_VERSION ",  g4_version
+# print("GEANT4_VERSION ",  g4_version)
 
 # Compiler switches needed by the default G4 build.
 G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',    '-DG4GMAKE',
@@ -54,8 +54,8 @@ elif  g4vis == 'none':
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
 
-# print "mu2eopts      ",  mu2eopts
-# print "G4GS_CPPFLAGS ",  G4GS_CPPFLAGS
+# print("mu2eopts      ",  mu2eopts)
+# print("G4GS_CPPFLAGS ",  G4GS_CPPFLAGS)
 
 # The granular version of the G4 libraries.
 G4GRANULARLIBS = [
@@ -229,6 +229,8 @@ mainlib = helper.make_mainlib ( [
         'Hist', 'Tree', 'Core',
         'boost_regex',
         'boost_system',
+        'tbb',
+        'pthread',
     ],
                                 [  G4CPPFLAGS, G4GS_CPPFLAGS ],
                                 [ '-L'+g4libdir, '-I'+g4inc ]
@@ -265,6 +267,8 @@ helper.make_plugins( [
     'Tree', 'Core',
     'boost_filesystem',
     'boost_system',
+    'tbb',
+    'pthread',
     ],
                      [],
                      [ G4CPPFLAGS, G4GS_CPPFLAGS ],

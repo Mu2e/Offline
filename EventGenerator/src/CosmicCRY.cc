@@ -134,11 +134,6 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
     _worldZmin = worldGeom->mu2eOriginInWorld().z() - worldGeom->halfLengths()[2] + deltaX;
     _worldZmax = worldGeom->mu2eOriginInWorld().z() + worldGeom->halfLengths()[2] - deltaX;
 
-    mf::LogInfo("CosmicCRY") << "Ref. point: " << _cosmicReferencePointInMu2e << std::endl;
-    mf::LogInfo("CosmicCRY") << "Target box: " << _targetBoxXmin << ", " << _targetBoxXmax << ", " << _targetBoxYmin << ", " << _targetBoxYmax << ", " << _targetBoxZmin << ", " << _targetBoxZmax;
-    mf::LogInfo("CosmicCRY") << "World: " << _worldXmin << ", " << _worldXmax << ", " << _worldYmin << ", " << _worldYmax << ", "
-                             << _worldZmin << ", " << _worldZmax;
-
     if (_refPointChoice == "TRACKER")
       _cosmicReferencePointInMu2e = Hep3Vector(detsys->getOrigin().x(),
                                                _refY0, detsys->getOrigin().z());
@@ -154,6 +149,11 @@ void CosmicCRY::generate(GenParticleCollection &genParts)
     }
     else if (_refPointChoice == "UNDEFINED")
       _cosmicReferencePointInMu2e = Hep3Vector(0., _refY0, 0.);
+
+    mf::LogInfo("CosmicCRY") << "Ref. point: " << _cosmicReferencePointInMu2e << std::endl;
+    mf::LogInfo("CosmicCRY") << "Target box: " << _targetBoxXmin << ", " << _targetBoxXmax << ", " << _targetBoxYmin << ", " << _targetBoxYmax << ", " << _targetBoxZmin << ", " << _targetBoxZmax;
+    mf::LogInfo("CosmicCRY") << "World: " << _worldXmin << ", " << _worldXmax << ", " << _worldYmin << ", " << _worldYmax << ", "
+                             << _worldZmin << ", " << _worldZmax;
 
     _geomInfoObtained = true;
   }

@@ -38,7 +38,9 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
-
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/Table.h"
 
 // ROOT incldues
 #include "TStyle.h"
@@ -836,7 +838,7 @@ CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){
 	StrawDigiMC first = (*_mcdigis)[0];
 
         //Get StepPointMC:
-	art::Ptr<StepPointMC> const& spmcp0= first.stepPointMC(StrawEnd::cal);
+	auto const& spmcp0= first.strawGasStep(StrawEnd::cal);
         XYZVec pos0(spmcp0->position().x(), spmcp0->position().y(), spmcp0->position().z());
         XYZVec dir0(spmcp0->momentum().x(), spmcp0->momentum().y(), spmcp0->momentum().z());
 	
@@ -844,11 +846,11 @@ CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){
             hitP1 = (*_mcdigis)[ich];
 	    
             //Get StepPointMC:
-	    art::Ptr<StepPointMC> const& spmcp = hitP1.stepPointMC(StrawEnd::cal);
+	    auto const& spmcp = hitP1.strawGasStep(StrawEnd::cal);
             XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
             
             //Use Step Point MC direction as the True Axes:
-            XYZVec ZPrime = Geom::toXYZVec(spmcp->momentum().unit());
+            XYZVec ZPrime = spmcp->momentum().unit();
             
             //Store True Track details:
             TrackAxes TrueAxes = ParametricFit::GetTrackAxes(ZPrime);

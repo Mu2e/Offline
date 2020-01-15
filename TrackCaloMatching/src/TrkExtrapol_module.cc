@@ -42,8 +42,6 @@
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "RecoDataProducts/inc/TrkToCaloExtrapol.hh"
 

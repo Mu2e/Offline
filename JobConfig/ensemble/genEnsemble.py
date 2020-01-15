@@ -1,3 +1,4 @@
+from __future__ import print_function
 from string import Template
 import sys
 import random
@@ -7,7 +8,7 @@ from normalizations import *
 random.seed()
 
 if len(sys.argv) < 6:
-  print "python JobConfig/ensemble/genEnsemble.py <dirname> <max livetime> <livetime for DIO/RPC gen> <kmax number> <run number>"
+  print("python JobConfig/ensemble/genEnsemble.py <dirname> <max livetime> <livetime for DIO/RPC gen> <kmax number> <run number>")
   sys.exit()
 
 dirname = sys.argv[1]
@@ -17,7 +18,7 @@ kmax_number = int(sys.argv[4])
 run_number = int(sys.argv[5])
 
 if os.path.exists(os.path.join(os.getcwd(), dirname)):
-  print "Error: this directory exists!"
+  print("Error: this directory exists!")
   sys.exit()
 
 os.system("mkdir " + dirname)
@@ -27,14 +28,14 @@ livetime_fraction_max = 1.0
 livetime = max_livetime_rmc * random.uniform(livetime_fraction_min,livetime_fraction_max)
 
 if max_livetime_rmc <= 6/365.*20/24.:
-  print "One week"
+  print("One week")
   # for one week
   rue_exp_min = -14
   rue_exp_max = -12.8
   rup_exp_min = -14
   rup_exp_max = -12.8
 else:
-  print "One month"
+  print("One month")
   # for one month
   rue_exp_min = -14.6
   rue_exp_max = -13.4
@@ -45,7 +46,7 @@ else:
 rue = 10**random.uniform(rue_exp_min,rue_exp_max)
 rup = 10**random.uniform(rup_exp_min,rup_exp_max)
 if rue > 2e-13:
-  print "rue too high, change normalization"
+  print("rue too high, change normalization")
   sys.exit()
 
 dem_emin = 93 # generated momentum minimum
@@ -58,7 +59,7 @@ kmax_max = 91
 
 kmax = random.uniform(kmax_min,kmax_max)
 if kmax > 91:
-  print "kmax too high, change normalization"
+  print("kmax too high, change normalization")
   sys.exit()
 
 fout = open(dirname + "/kmax","w")
@@ -85,7 +86,7 @@ norms = {
   "RMCexternal-cut-mix": rmc_normalization(1, dep_emin, kmax_max, False),
   "RMCinternal-cut-mix": rmc_normalization(1, dep_emin, kmax_max, True),
   "RPCexternal-cut-mix": 1.59222825e+08, #FIXME python takes too long
-  "RPCinternal-cut-mix": 1.098685+06,
+  "RPCinternal-cut-mix": 1.098685e+06,
   }
 
 # these have been optimized for 93 MeV and 83 MeV for dem and dep respectively

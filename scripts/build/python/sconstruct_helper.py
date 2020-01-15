@@ -15,12 +15,12 @@ import subprocess
 # return a dictionary with mu2eOpts
 def mu2eEnvironment():
     mu2eOpts = {}
-    if not os.environ.has_key('MU2E_BASE_RELEASE'):
+    if 'MU2E_BASE_RELEASE' not in os.environ:
         raise Exception('You have not specified MU2E_BASE_RELEASE for this build')
     primaryBase = os.environ['MU2E_BASE_RELEASE']
     mu2eOpts["primaryBase"] = primaryBase
 
-    if os.environ.has_key("MU2E_SATELLITE_RELEASE"):
+    if "MU2E_SATELLITE_RELEASE" in os.environ:
         mu2eOpts["satellite"] = True
         mu2eOpts["satelliteBase"] = os.environ["MU2E_SATELLITE_RELEASE"]
         base = mu2eOpts["satelliteBase"]
@@ -35,12 +35,12 @@ def mu2eEnvironment():
     mu2eOpts['tmpdir'] = base+'/tmp'
 
     envopts = os.environ['MU2E_SETUP_BUILDOPTS'].strip()
-    fsopts  = subprocess.check_output(primaryBase+"/buildopts",shell=True).strip()
+    fsopts  = subprocess.check_output(primaryBase+"/buildopts",shell=True).strip().decode() # decode to convert byte string to text
     if envopts != fsopts:
         raise Exception("ERROR: Inconsistent build options: (MU2E_SETUP_BUILDOPTS vs ./buildopts)\n"
              +"Please source setup.sh after setting new options with buildopts.\n")
 
-    # copy the buildopts to the dicitonary
+    # copy the buildopts to the dictionary
     mu2eOpts["buildopts"] = fsopts
     for line in fsopts.split():
         pp = line.split("=")
@@ -204,17 +204,17 @@ def extraCleanup():
     for top, dirs, files in os.walk("./lib"):
         for name in files:
             ff =  os.path.join(top, name)
-            print "removing file ", ff
+            print("removing file ", ff)
             os.unlink (ff)
 
     for top, dirs, files in os.walk("./tmp"):
         for name in files:
             ff =  os.path.join(top, name)
-            print "removing file ", ff
+            print("removing file ", ff)
             os.unlink (ff)
 
     for top, dirs, files in os.walk("./gen"):
         for name in files:
             ff =  os.path.join(top, name)
-            print "removing file ", ff
+            print("removing file ", ff)
             os.unlink (ff)

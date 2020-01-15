@@ -6,10 +6,9 @@
 
 #include "TrackerConditions/inc/Mu2eMaterial.hh"
 #include "TrackerConditions/inc/Mu2eDetector.hh"
-#include "TrackerConditions/inc/Mu2eDetectorConfig.hh"
+#include "TrackerConfig/inc/Mu2eDetectorConfig.hh"
 
 namespace mu2e {
-
   class Mu2eDetectorMaker {
 
   public:

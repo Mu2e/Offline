@@ -1,0 +1,9 @@
+// Re-sample cosmic dsstops particles from stage-1
+// Yuri Oksuzian, 2019
+
+#include "JobConfig/cosmic/dsstops_resampler.fcl"
+physics.filters.filterS1.cutEDepMin: 14
+//Drop truncated stream
+physics.outputs: [DSVacuumOut]
+//Unfiltered stage-1 output
+//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/tape/phy-sim/sim/mu2e/cosmic-g4s1s2-cryresample/cry-rs1-1019/art/34/bd/sim.mu2e.cosmic-g4s1s2-cryresample.cry-rs1-1019.002701_00022997.art"]

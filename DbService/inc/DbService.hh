@@ -71,5 +71,5 @@ namespace mu2e {
 }
 
 
-DECLARE_ART_SERVICE(mu2e::DbService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::DbService, SHARED)
 #endif

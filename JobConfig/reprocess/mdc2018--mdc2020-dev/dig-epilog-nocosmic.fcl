@@ -1,0 +1,9 @@
+#
+# Some older digi files don't have cosmicTimeMaps. Have decided not to add 
+# them during reprocessing because then the 
+# reco configurations might need to be different
+
+physics.producers.makeSD.TimeOffsets : [ "compressDigiMCs:protonTimeMap:input_source", "compressDigiMCs:muonTimeMap:input_source" ] 
+
+physics.analyzers.digiCompressionCheck.OldTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap:input_source", "compressDigiMCs:muonTimeMap:input_source"  ] }
+physics.analyzers.digiCompressionCheck.NewTimeOffsets : { inputs : [ "compressDigiMCs:protonTimeMap:current_process", "compressDigiMCs:muonTimeMap:current_process" ] }
