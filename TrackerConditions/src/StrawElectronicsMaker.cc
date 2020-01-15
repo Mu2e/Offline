@@ -1,6 +1,8 @@
 
 #include "TrackerConditions/inc/StrawElectronicsMaker.hh"
 #include "GeneralUtilities/inc/DigitalFiltering.hh"
+#include "GeometryService/inc/GeomHandle.hh"
+#include "TrackerGeom/inc/Tracker.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
 #include <math.h>
@@ -95,8 +97,6 @@ namespace mu2e {
     ptr->setCurrentImpulse(currentImpulse);
 
     const double pC_per_uA_ns{1000}; // unit conversion from pC/ns to microAmp
-    auto thresh = StrawElectronics::thresh;
-    auto adc    = StrawElectronics::adc;
 
     auto integral_normalization = log(responseBins/2/sampleRate + _config.currentT0s()[0]) - log(_config.currentT0s()[0]); // integral of 1/(t+t0) for 0 cm
 
@@ -137,30 +137,27 @@ namespace mu2e {
 			wPoints[ai]._currentPulse,wPoints[ai]._preampToAdc1Response);
       
       // now set other parameters
-      wPoints[ai]._tmax[thresh] = 0;
-      wPoints[ai]._linmax[thresh] = 0;
-      wPoints[ai]._tmax[adc] = 0;
-      wPoints[ai]._linmax[adc] = 0;
       double preampToAdc1Max = 0;
+      double linmax_thresh = 0;
+      double linmax_adc = 0;
       for (int i=0;i<responseBins;i++){
-	if (wPoints[ai]._preampResponse[i] > wPoints[ai]._linmax[thresh]){
-	  wPoints[ai]._linmax[thresh] = wPoints[ai]._preampResponse[i];
-	  wPoints[ai]._tmax[thresh] = (-responseBins/2 + i)/sampleRate;
-	}
-	if (wPoints[ai]._adcResponse[i] > wPoints[ai]._linmax[adc]){
-	  wPoints[ai]._linmax[adc] = wPoints[ai]._adcResponse[i];
-	  wPoints[ai]._tmax[adc] = (-responseBins/2 + i)/sampleRate;
-	}
+        if (wPoints[ai]._preampResponse[i] > linmax_thresh){
+          linmax_thresh = wPoints[ai]._preampResponse[i];
+        }
+        if (wPoints[ai]._adcResponse[i] > linmax_adc){
+          linmax_adc = wPoints[ai]._adcResponse[i];
+        }
+
 	if (wPoints[ai]._preampToAdc1Response[i] > preampToAdc1Max)
 	  preampToAdc1Max = wPoints[ai]._preampToAdc1Response[i];
       }
       
       // normalize preampToAdc1Response to match preampResponse
       for (int i=0;i<responseBins;i++){
-	wPoints[ai]._preampToAdc1Response[i] *= 
-	  wPoints[ai]._linmax[thresh]/preampToAdc1Max;
+	wPoints[ai]._preampToAdc1Response[i] *= linmax_thresh/preampToAdc1Max;
       }
     } // loop over wireDistances
+
 
     // normalize preampToAdc2Response to match adcResponse
     std::vector<double> preampToAdc2test(responseBins,0);
@@ -175,12 +172,48 @@ namespace mu2e {
 	preampToAdc2Max = preampToAdc2test[i];
     }
 
+    double linmax_adc = 0;
     for (int i=0;i<responseBins;i++){
-      preampToAdc2Response[i] *= wPoints[0]._linmax[adc]/preampToAdc2Max;
-      preampToAdc2test[i] *= wPoints[0]._linmax[adc]/preampToAdc2Max;
+      if (wPoints[0]._adcResponse[i] > linmax_adc){
+        linmax_adc = wPoints[0]._adcResponse[i];
+      }
+    }
+
+    for (int i=0;i<responseBins;i++){
+      preampToAdc2Response[i] *= linmax_adc/preampToAdc2Max;
+      preampToAdc2test[i] *= linmax_adc/preampToAdc2Max;
     }
     
     ptr->setPreampToAdc2Response(preampToAdc2Response);
+
+    GeomHandle<mu2e::Tracker> th;
+    const Tracker* tracker = th.get();
+    
+    for (size_t ipoint=0;ipoint<wPoints.size();ipoint++){
+      for (size_t ipath=0;ipath<StrawElectronics::npaths;ipath++){
+        for (size_t is=0;is<StrawId::_nstraws;is++){
+          StrawId sid(0,0,is);
+          Straw const& straw = tracker->getStraw(sid);
+          double tmax = 0;
+          double linmax = -9e9;
+          int start = -5*sampleRate;
+          int end = 20*sampleRate;
+          for (int k=start;k<end;k++){
+            double time = k/(double)sampleRate;
+            double resp = ptr->linearResponse(straw,static_cast<StrawElectronics::Path>(ipath),time,1e-9,wPoints[ipoint]._distance,false);
+            if (resp > linmax){
+              linmax = resp;
+              tmax = time;
+            }
+          }
+          wPoints[ipoint]._tmax[ipath].push_back(tmax);
+          wPoints[ipoint]._linmax[ipath].push_back(linmax*1e9);
+          std::cout << ipoint << " " << straw.id().getStraw() << " " <<  2*straw.halfLength() << " " << tmax << " " << linmax*1e9 << std::endl;
+        }
+      }
+    }
+    
+    ptr->setwPoints(wPoints);
 
     return ptr;
 
