@@ -27,7 +27,7 @@
 
 using namespace mu2e;
 
-double DriftFitUtils::GetTestDOCA(ComboHit chit, double a0, double a1, double b0, double b1, const Tracker* tracker) {
+double DriftFitUtils::GetTestDOCA(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker) {
 	
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	
@@ -52,7 +52,7 @@ double DriftFitUtils::GetTestDOCA(ComboHit chit, double a0, double a1, double b0
 	return dca;
 }
 
-double DriftFitUtils::GetTestDOCA(ComboHit chit, XYZVec track_position, XYZVec track_direction, const Tracker* tracker) {
+double DriftFitUtils::GetTestDOCA(ComboHit const& chit, XYZVec track_position, XYZVec track_direction, const Tracker* tracker) {
 	
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
@@ -73,7 +73,7 @@ double DriftFitUtils::GetTestDOCA(ComboHit chit, XYZVec track_position, XYZVec t
 	return dca;
 }
 
-int DriftFitUtils::GetAmbig(ComboHit chit, XYZVec track_position, XYZVec track_direction, const Tracker* tracker) {
+int DriftFitUtils::GetAmbig(ComboHit const& chit, XYZVec track_position, XYZVec track_direction, const Tracker* tracker) {
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
@@ -95,7 +95,7 @@ int DriftFitUtils::GetAmbig(ComboHit chit, XYZVec track_position, XYZVec track_d
 }
 
 
-int DriftFitUtils::GetAmbig(ComboHit chit, double a0, double a1, double b0, double b1,  const Tracker* tracker) {
+int DriftFitUtils::GetAmbig(ComboHit const& chit, double a0, double a1, double b0, double b1,  const Tracker* tracker) {
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	
 	XYZVec track_position(a0,b0,0);
@@ -119,12 +119,12 @@ int DriftFitUtils::GetAmbig(ComboHit chit, double a0, double a1, double b0, doub
 
 }
 	
-double DriftFitUtils::GetPropVelocity(StrawResponse::cptr_t rep, ComboHit chit){
-	   	double vprop = 2.0*rep->halfPropV(chit.strawId(),1000.0*chit.energyDep());
+double DriftFitUtils::GetPropVelocity(StrawResponse const& rep, ComboHit const& chit){
+	   	double vprop = 2.0*rep.halfPropV(chit.strawId(),1000.0*chit.energyDep());
 		return vprop; 
 }
 
-double DriftFitUtils::GetPropTime(ComboHit chit,  double vprop, const Tracker* tracker) {
+double DriftFitUtils::GetPropTime(ComboHit const& chit,  double vprop, const Tracker* tracker) {
 	    
 	    Straw const& straw = tracker->getStraw(chit.strawId());
 	    
@@ -147,14 +147,14 @@ double DriftFitUtils::TimeResidualTrans( double doca){
 		return drift_time;
 }
         
-double DriftFitUtils::TimeResidualLong(double doca, StrawResponse::cptr_t srep,  double t0, ComboHit hit,  const Tracker* tracker){
-		double _vprop = 2.0*srep->halfPropV(hit.strawId(),1000.0*hit.energyDep());
-      	        double propagation_time = GetPropTime(hit, _vprop, tracker);
+double DriftFitUtils::TimeResidualLong(double doca, StrawResponse const& srep,  double t0, ComboHit const& chit,  const Tracker* tracker){
+		double _vprop = 2.0*srep.halfPropV(chit.strawId(),1000.0*chit.energyDep());
+      	        double propagation_time = GetPropTime(chit, _vprop, tracker);
 		return propagation_time;
 }
 
-double DriftFitUtils::TimeResidual(double doca, StrawResponse::cptr_t srep, double t0, ComboHit hit,  const Tracker* tracker){
-		double time_residual_long = TimeResidualLong(doca, srep,  t0,  hit,  tracker);
+double DriftFitUtils::TimeResidual(double doca, StrawResponse const& srep, double t0, ComboHit const& chit,  const Tracker* tracker){
+		double time_residual_long = TimeResidualLong(doca, srep,  t0,  chit,  tracker);
 		double time_residual_trans = TimeResidualTrans(doca); 
 		return time_residual_trans + time_residual_long;// + hitlen/299 + fltlen/299;
 }

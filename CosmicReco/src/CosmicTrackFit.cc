@@ -457,7 +457,7 @@ bool CosmicTrackFit::use_track(double track_length) const //not used but keep fo
  /*-------------Drift Fit Diagnotics--------------//
 This is were the fitter "talks" to the Minuit fitter. "EndResult" is the minimzed track parameters 
 //------------------------------------------------*/
-void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse::cptr_t _srep){
+void CosmicTrackFit::DriftFit(CosmicTrackFinderData& trackData, StrawResponse const& _srep ){
 	 
 	 FitResult endresult = MinuitDriftFitter::DoFit(_diag, trackData, _srep, _tracker, _maxHitDOCA, _minnch, _maxLogL, _gaussTres, _maxTres);
          

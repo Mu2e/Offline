@@ -45,7 +45,7 @@ const int N_sbins = 50;
 float wireradius = 12.5/1000.; //12.5 um in mm 
 float strawradius = 2.5; //2.5 mm in mm 
 
-FullDriftFit::FullDriftFit(ComboHitCollection _chits, StrawResponse::cptr_t _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k, const Tracker* _tracker) : GaussianPDFFit(_chits,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k, _tracker)
+FullDriftFit::FullDriftFit(ComboHitCollection &_chits, StrawResponse const& srep , CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k, const Tracker* _tracker) : GaussianPDFFit(&_chits,  _srep, _track,  _constraint_means, _constraints, _sigma_t, _k, _tracker)
 {
   //create pdf bins using pre defined numbers:
   pdf_times = new double[N_tbins];
@@ -192,17 +192,17 @@ double FullDriftFit::InterpolatePDF(double time_residual, double sigma, double t
 }
 
 // This 3 functions talk to the drift util:
-double GaussianPDFFit::calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, const Tracker* tracker)const{
+double GaussianPDFFit::calculate_DOCA(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker)const{
 	double doca = DriftFitUtils::GetTestDOCA(chit, a0,a1,b0,b1, tracker); 
         return (doca);
 }
 
-double GaussianPDFFit::calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1, const Tracker* tracker)const{
+double GaussianPDFFit::calculate_ambig(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker)const{
 	double ambig = DriftFitUtils::GetAmbig(chit, a0,a1,b0,b1, tracker); 
         return (ambig);
 }
 
-double GaussianPDFFit::TimeResidual(double doca, StrawResponse::cptr_t srep, double t0 ,  ComboHit hit, const Tracker* tracker)const{
+double GaussianPDFFit::TimeResidual(double doca, StrawResponse const& srep , double t0 ,  ComboHit const& hit, const Tracker* tracker)const{
 	double tres =  DriftFitUtils::TimeResidual(doca, srep, t0, hit, tracker);
 	return (tres);
 }
