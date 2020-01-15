@@ -52,7 +52,7 @@ double DriftFitUtils::GetTestDOCA(ComboHit const& chit, double a0, double a1, do
 	return dca;
 }
 
-double DriftFitUtils::GetTestDOCA(ComboHit const& chit, XYZVec track_position, XYZVec track_direction, const Tracker* tracker) {
+double DriftFitUtils::GetTestDOCA(ComboHit const& chit, XYZVec const& track_position, XYZVec const&  track_direction, const Tracker* tracker) {
 	
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
@@ -73,7 +73,7 @@ double DriftFitUtils::GetTestDOCA(ComboHit const& chit, XYZVec track_position, X
 	return dca;
 }
 
-int DriftFitUtils::GetAmbig(ComboHit const& chit, XYZVec track_position, XYZVec track_direction, const Tracker* tracker) {
+int DriftFitUtils::GetAmbig(ComboHit const& chit, XYZVec const& track_position, XYZVec const&  track_direction, const Tracker* tracker) {
 	Straw const& straw = tracker->getStraw(chit.strawId());
 	
 	const CLHEP::Hep3Vector& spos = straw.getMidPoint();
