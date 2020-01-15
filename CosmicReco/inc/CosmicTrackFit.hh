@@ -92,7 +92,7 @@ namespace mu2e
 		
 		
                 bool goodTrack(CosmicTrack& track);
-		void DriftFit(CosmicTrackFinderData& trackData, StrawResponse::cptr_t srep);
+		void DriftFit(CosmicTrackFinderData& trackData, StrawResponse const& srep);
 		
                 const Tracker*            _tracker;
     		void  setTracker    (const Tracker*    Tracker) { _tracker     = Tracker; }

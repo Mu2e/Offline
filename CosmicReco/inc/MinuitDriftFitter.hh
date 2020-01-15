@@ -1,5 +1,5 @@
-#ifndef _MU2E_UTILITIES_MINUITDRIFTFITTER_HH
-#define _MU2E_UTILITIES_MINUITDDRIFTFITTER_HH
+#ifndef _COSMIC_RECO_MINUITDRIFTFITTER_HH
+#define _COSMIC_RECO_MINUITDDRIFTFITTER_HH
 // Author: S. Middleton 
 // Date: July 2019
 //Purpose: Will pass PDF function to Minuit 
@@ -52,7 +52,7 @@ struct FitResult{
 
 namespace MinuitDriftFitter {
 	
-	FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse::cptr_t srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
+	FitResult DoFit(int diag, CosmicTrackFinderData& trackdata, StrawResponse const& srep, const Tracker* tracker, double doca_cut, unsigned int MinNCh_cut, int LogLcut, double _gaussTres, double _maxTres);
 	
 
 }

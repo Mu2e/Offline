@@ -1,5 +1,5 @@
-#ifndef _MU2E_UTILITIES_PDFFit_HH
-#define _MU2E_UTILITIES_PDFFit_HH
+#ifndef _COSMIC_RECO_PDFFit_HH
+#define _COSMIC_RECO_PDFFit_HH
 
 // Class of PDFs for liklihood functions which will be sent to Minuit for cosmic track analysis in tracker. 
 // NB: This Code is based on Richie's prototype analysis code.
@@ -25,7 +25,7 @@ using namespace mu2e;
 class GaussianPDFFit : public ROOT::Minuit2::FCNBase {
   public:
     ComboHitCollection chits;
-    StrawResponse::cptr_t srep;
+    StrawResponse const& srep ;
     CosmicTrack track;
     std::vector<double> docas;
      
@@ -40,19 +40,19 @@ class GaussianPDFFit : public ROOT::Minuit2::FCNBase {
     
     int nparams =5; 
     
-     GaussianPDFFit(ComboHitCollection _chits, StrawResponse::cptr_t _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k,  const Tracker* _tracker) :  chits(_chits),  srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k), tracker(_tracker) {};
+     GaussianPDFFit(ComboHitCollection _chits, StrawResponse const& _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double _sigma_t, int _k,  const Tracker* _tracker) :  chits(_chits),  srep(_srep), track(_track), constraint_means(_constraint_means), constraints(_constraints) , sigma_t(_sigma_t), k(_k), tracker(_tracker) {};
    
     double Up() const { return 0.5; };
     double operator() (const std::vector<double> &x) const;
-    double TimeResidual(double doca, StrawResponse::cptr_t srep, double t0, ComboHit hit,  const Tracker* tracker) const ;
-    double calculate_DOCA(ComboHit chit, double a0, double a1, double b0, double b1, const Tracker* tracker) const;
-    double calculate_ambig(ComboHit chit, double a0, double a1, double b0, double b1,  const Tracker* tracker) const;
+    double TimeResidual(double doca, StrawResponse const& srep , double t0, ComboHit const& hit,  const Tracker* tracker) const ;
+    double calculate_DOCA(ComboHit const& chit, double a0, double a1, double b0, double b1, const Tracker* tracker) const;
+    double calculate_ambig(ComboHit const& chit, double a0, double a1, double b0, double b1,  const Tracker* tracker) const;
     
 };
 
 class FullDriftFit : public GaussianPDFFit {
   public:
-    FullDriftFit(ComboHitCollection _chits,  StrawResponse::cptr_t srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k, const Tracker* _tracker);
+    FullDriftFit(ComboHitCollection _chits,  StrawResponse const& _srep, CosmicTrack _track, std::vector<double> &_constraint_means, std::vector<double> &_constraints, double sigma_t, int _k, const Tracker* _tracker);
 int Factorial(int k);
     void CalculateFullPDF();
     double InterpolatePDF(double time_residual, double sigma, double tau) const;
