@@ -14,9 +14,7 @@
  <class name="art::Wrapper<mu2e::GenParticle>"/>
  <class name="art::Ptr<mu2e::GenParticle>"/>
  <class name="mu2e::GenParticleCollection"/>
- <class name="mu2e::GenParticleCollections"/>
  <class name="art::Wrapper<mu2e::GenParticleCollection>"/>
- <class name="art::Wrapper<mu2e::GenParticleCollections>"/>
 
  <class name="mu2e::GenSimParticleLink" />
  <class name="art::Wrapper<mu2e::GenSimParticleLink>"/>
@@ -172,6 +170,9 @@
  <class name="mu2e::CaloHitMCTruthCollection"/>
  <class name="art::Wrapper<mu2e::CaloHitMCTruthCollection>"/>
 
+ <class name="mu2e::CosmicLivetime"/>
+ <class name="art::Wrapper<mu2e::CosmicLivetime>"/>
+
  <class name="mu2e::CaloDigiMC"/>
  <class name="mu2e::CaloDigiMCCollection"/>
  <class name="art::Wrapper<mu2e::CaloDigiMCCollection>"/>
@@ -203,9 +204,12 @@
  <class name="art::Wrapper< art::Assns<mu2e::SimParticle,mu2e::CaloCluster,art::Ptr<mu2e::CaloShowerSim> > >" />
 
 <!--  ********* straws  ********* -->
- <class name="mu2e::StrawHitMCTruth"/>
- <class name="mu2e::StrawHitMCTruthCollection"/>
- <class name="art::Wrapper<mu2e::StrawHitMCTruthCollection>"/>
+ <class name="mu2e::StrawGasStep::StepType"/>
+ <class name="mu2e::StrawGasStep"/>
+ <class name="mu2e::StrawGasStepCollection"/>
+ <class name="art::Wrapper<mu2e::StrawGasStepCollection>"/>
+ <class name="art::Ptr<mu2e::StrawGasStep>"/>
+ <class name="art::Assns<mu2e::StrawGasStep,mu2e::StepPointMC,void>" />
 
  <class name="mu2e::StrawDigiMC"/>
  <class name="mu2e::StrawDigiMCCollection"/>

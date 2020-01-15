@@ -1,0 +1,4 @@
+
+# some older digi files didn't keep the MCTrajectory objects
+# there's nothing we can do about this now
+physics.producers.compressDigiMCs.mcTrajectoryTag : ""

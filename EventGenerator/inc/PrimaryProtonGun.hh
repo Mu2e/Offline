@@ -25,6 +25,9 @@
 //    system is done in Mu2eG4/src/PrimaryGeneratorAction.cc .
 //
 
+//C++ includes
+#include <string>
+
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
@@ -37,6 +40,8 @@
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
+
+#include "CLHEP/Random/JamesRandom.h"
 
 // Forward references outside of namespace mu2e
 namespace art {
@@ -52,11 +57,13 @@ namespace mu2e {
   public:
 
     PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config);
+
     ~PrimaryProtonGun() = default;
 
-    virtual void generate( GenParticleCollection&  );
+    virtual void generate( GenParticleCollection& );
 
   private:
+      
     CLHEP::HepRotation _gunRotation; // rotates target frame to Mu2e frame
     CLHEP::Hep3Vector _gunOrigin;
 
@@ -99,7 +106,7 @@ namespace mu2e {
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandGaussQ   _randGaussQ;
     RandomUnitSphere    _randomUnitSphere;
-
+      
     virtual void generateOne( GenParticleCollection&  );
   };
 

@@ -36,8 +36,6 @@
 #include "CLHEP/Vector/ThreeVector.h"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "Mu2eUtilities/inc/TwoLinePCA.hh"
 using namespace std; 
 using CLHEP::Hep3Vector;

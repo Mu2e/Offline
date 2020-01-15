@@ -26,15 +26,14 @@
 // MC data
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
-#include "MCDataProducts/inc/StepPointMCCollection.hh"
 //MU2E:
 #include "RecoDataProducts/inc/StrawHitCollection.hh"
 #include "RecoDataProducts/inc/StrawHitPositionCollection.hh"
 #include "RecoDataProducts/inc/StrawHitFlagCollection.hh"
-#include "RecoDataProducts/inc/StereoHit.hh"
 #include "RecoDataProducts/inc/TimeCluster.hh"
 #include "RecoDataProducts/inc/TrkFitFlag.hh"
 #include "TrkReco/inc/TrkTimeCalculator.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 //utils:
 #include "Mu2eUtilities/inc/ParametricFit.hh"
 //For Drift:
@@ -72,14 +71,14 @@ namespace{
   
     struct ycomp_digi : public std::binary_function<mu2e::StrawDigiMC,mu2e::StrawDigiMC,bool> {
     bool operator()(mu2e::StrawDigiMC const& p1, mu2e::StrawDigiMC const& p2) {
-    art::Ptr<mu2e::StepPointMC> const& spmcp1 = p1.stepPointMC(mu2e::StrawEnd::cal); 
-    art::Ptr<mu2e::StepPointMC> const& spmcp2 = p2.stepPointMC(mu2e::StrawEnd::cal);
+    auto const& spmcp1 = p1.strawGasStep(mu2e::StrawEnd::cal); 
+    auto const& spmcp2 = p2.strawGasStep(mu2e::StrawEnd::cal);
     
     return spmcp1->position().y() > spmcp2->position().y(); }
   };
   //For MC StrawDigis:
   struct ycomp_MC : public std::binary_function<mu2e::StrawDigiMC,mu2e::StrawDigiMC,bool> {
-    bool operator()(art::Ptr<mu2e::StepPointMC> const& spmcp1, art::Ptr<mu2e::StepPointMC> const& spmcp2) {
+    bool operator()(art::Ptr<mu2e::StrawGasStep> const& spmcp1, art::Ptr<mu2e::StrawGasStep> const& spmcp2) {
     return spmcp1->position().y() > spmcp2->position().y(); }
   };
    struct zcomp : public std::binary_function<mu2e::ComboHit,mu2e::ComboHit,bool> {
@@ -254,8 +253,8 @@ namespace mu2e{
       if(_mcdiag > 0 && _stResult._chHitsToProcess.size() > 0){
 		OrderHitsYMC(_stResult, event);
 		for(auto const & mcd : _stResult._mcDigisToProcess){
-			art::Ptr<StepPointMC> const& spmcp = mcd.stepPointMC(StrawEnd::cal);
-            		XYZVec posN(spmcp->position().x(), spmcp->position().y(), spmcp->position().z());
+			auto const& spmcp = mcd.strawGasStep(StrawEnd::cal);
+            		XYZVec posN(spmcp->startPosition());
                 	
 		}
 			

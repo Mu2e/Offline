@@ -1,9 +1,0 @@
-# example script for running reconstruction for Valdation of Ceminus and Ceplus
-#include "JobConfig/reco/mcdigis-trig_nocosmic.fcl"
-#include "JobConfig/reco/Validation_epilog.fcl"
-physics.RecoPath : [ cosmicTimeMap, @sequence::Reconstruction.DePath,
-  @sequence::Reconstruction.CrvRecoSequence,
-  @sequence::Reconstruction.RecoMCSequence
-]
-services.TFileService.fileName: "nts.owner.CeRecoVal.version.sequencer.root"
-outputs.Output.fileName: "mcs.owner.CeRecoVal.version.sequencer.art"

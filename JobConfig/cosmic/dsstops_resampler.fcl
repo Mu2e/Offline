@@ -33,29 +33,15 @@ crvOuterBox:
 
 cosmicKineticEnergyCuts: 
 {
-   type: union
-   pars:
-   [
-      {
-      // Kills showers outside of CRV box
-        type: intersection
-        pars: 
-        [ 
-          { type: union pars: [ @local::crvOuterBox ] },
-          { type: kineticEnergy cut: 10.0 }, 
-          { type: pdgId pars: [ 2212, 2112, 11, -11, 22  ] }
-        ]
-      },
-      {
-      // Kill lower momentum e+/e- stuck in vacuum and air
-	 type: intersection
-	 pars: 
-	 [
-	   {type: intersection pars: [ { type: kineticEnergy cut: 1.0 }, { type: pdgId pars: [ 11, -11] }]},
-	   {type: inVolume pars: [ TS2Vacuum, TS4Vacuum, DS2Vacuum, HallAir ]}
-	 ]
-      }
-   ]
+// Kill lower momentum particles outside of the CRV box
+  type: intersection
+  pars:
+  [
+    { type: intersection pars: [
+    { type: kineticEnergy cut: 80.0 },
+    { type: pdgId pars: [ 22, 11, -11, 2112 ] }]},
+    { type: union pars: [ @local::crvOuterBox ] }
+  ]
 }
 
 
@@ -86,34 +72,32 @@ physics.filters.dsResample: {
       products: {
 	 genParticleMixer: { mixingMap: [ [ "generate", "" ] ] }
 	 simParticleMixer: { mixingMap: [ [ "cosmicFilter", ""] ] } 
-	 stepPointMCMixer: { mixingMap: [ [ "cosmicFilter:crvStage1", ":" ] ] }
+	 stepPointMCMixer: { mixingMap: [ 
+	       [ "cosmicFilter:crvStage1", ":" ],
+	       [ "cosmicFilter:CRV", ":" ] 
+	       ] }
       }
    }
 }
 
 // Point Mu2eG4 to the pre-simulated data
 physics.producers.g4run.MultiStageParameters: {
-   simParticleNumberOffset: 100000 
+   simParticleNumberOffset: 300000  # FIX ME!!! ResamplingMixer needs to be fixed to avoid storing simparticles with IDs > 100,000
    genInputHits:  [ "dsResample:crvStage1" ]
    inputSimParticles: "dsResample"
    inputMCTrajectories: ""
    inputPhysVolumeMultiInfo: "" 
 }
+physics.producers.g4run.SDConfig.preSimulatedHits:  ["dsResample:CRV"]
+
 
 //----------------------------------------------------------------
-// The final filter
-physics.filters.dsFilter: {
-         module_type: FilterG4Out
-         mainHitInputs  : [ "dsResample:crvStage1" ]
-         extraHitInputs : []
-         vetoDaughters  : []
-}
+// The final filters
 
-physics.filters.stepPointMomentumFilter: {
-        module_type: FilterStepPointMomentum
-        inputs : [ "dsResample:crvStage1" ]
-        cutMomentumMin: 45.  // Drop low momentum tracks
-        cutMomentumMax: 500. // Drop straight tracks
+physics.filters.filterS1: {
+         module_type: FilterCosmicsStage1
+         inputs : [ "dsResample:CRV" ]
+//         cutEDepMin: 14  // Filter events that deposit low that 14 MeV in CRV 
 }
 
 physics.filters.trackerStepPointFilter: {
@@ -128,6 +112,13 @@ physics.filters.detectorFilter: {
          vetoDaughters: []
 }
 
+physics.filters.stepPointMomentumFilter: {
+        module_type: FilterStepPointMomentum
+        inputs : [ "detectorFilter:tracker" ]
+        cutMomentumMin: 45.  // Drop low momentum tracks
+        cutMomentumMax: 500. // Drop straight tracks
+}
+
 physics.filters.g4status: {
          module_type: FilterStatusG4
          input: "g4run"
@@ -135,8 +126,8 @@ physics.filters.g4status: {
 }
 
 
-physics.trig: [genCounter, dsResample, g4run, g4consistent, stepPointMomentumFilter, dsFilter, trackerStepPointFilter, detectorFilter]
-physics.g4StatusFilter : [dsResample, g4run, "!g4status"]
+physics.trig: [genCounter, dsResample, filterS1, g4run, g4consistent, trackerStepPointFilter, detectorFilter, stepPointMomentumFilter]
+physics.g4StatusFilter : [dsResample, filterS1, g4run, "!g4status"]
 physics.outputs: [truncatedEvtsOutput, DSVacuumOut]
 physics.an: [genCountLogger]
 physics.end_paths: [outputs, an]
@@ -173,7 +164,6 @@ services.TFileService.fileName: "nts.owner.s2-dsstops-resampler.version.sequence
 
 //Specify Mu2e geometry
 services.GeometryService.simulatedDetector.tool_type : "Mu2e"
-physics.producers.g4run.SDConfig.preSimulatedHits: []
 physics.producers.g4run.TrajectoryControl: @local::mu2eg4DefaultTrajectories
 physics.producers.g4run.Mu2eG4CommonCut:{
             type: union
@@ -187,7 +177,5 @@ physics.producers.g4run.Mu2eG4CommonCut:{
             ]
          }
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 100000
-// Test:
-//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/363672.fcllist_191019181515/00/00000/sim.oksuzian.minedep-filter-cat.cryconcat_rs1_1019.002701_00000000.art"]
-//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/scratch/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/good/682690.fcllist_191024104002/00/00047/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00020094.art"]
-//physics.filters.dsResample.fileNames: ["/pnfs/mu2e/scratch/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/good/683306.fcllist_191024104850/00/00000/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00000385.art"]
+// Test on the file with events that deposited lower than 14 MeV in CRV
+// physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/25394938.fcllist_191106224859/00/00053/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00007722.art"]

@@ -204,16 +204,23 @@ Trigger : {
     outputs: {
 	triggerOutput : { 
 	    module_type: RootOutput
-	    fileName: "filteredOutput.root"
+	    fileName: "filteredOutput_%#.root"
 	    SelectEvents : [ unbiased_trigger, 
 			     minimumbiasSDCount_trigger,
 			     largeSDCount_trigger,
 			     caloMVACE_trigger,
 			     tprSeedDeM_trigger, tprSeedDeP_trigger, cprSeedDeM_trigger, cprSeedDeP_trigger ]
 #	    Compressionlevel: 0
-	    
-	    outputCommands: [ "keep *_*_*_*",
-			      "drop *_daq_*_*" ]
+	    fileProperties : {
+		maxEvents : 1000
+		# maxSubRuns : 
+		# maxSize : # in Kib
+		# maxAge : #in s
+		# granularity : [Event | SubRun | Run | InputFile | Job] # default is Event 
+		# maxInputFiles : 1 
+	    }
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 
 	rootoutUnbiased : { 
@@ -222,8 +229,8 @@ Trigger : {
 	    SelectEvents : [ unbiased_trigger ]
 	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*",
-			      "drop *_daq_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 	
 	rootoutCaloOnly : {
@@ -232,8 +239,8 @@ Trigger : {
 	    SelectEvents : [ caloOnly_trigger ]
 #	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*",
-			      "drop *_daq_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 
 	rootoutTrkDem : {
@@ -242,8 +249,8 @@ Trigger : {
 	    SelectEvents : [ tprSeedDeM_trigger, cprSeedDeM_trigger ]
 	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*",
-			      "drop *_daq_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 
 	rootoutTrkDep : {
@@ -252,8 +259,8 @@ Trigger : {
 	    SelectEvents : [ tprDeP_trigger, cprSeedDeP_trigger ]
 	    compressionLevel: 0
 	    
-	    outputCommands: [ "keep *_*_*_*",
-			      "drop *_daq_*_*" ]
+	    outputCommands: ["drop *_*_*_*",
+			     "keep *_*_*_*" ]
 	}
 	
 
