@@ -33,8 +33,6 @@
 #include <Minuit2/FunctionMinimum.h>
 using namespace mu2e;
 
-
-
 namespace MinuitDriftFitter{
 	 FitResult DoFit(int _diag, CosmicTrackFinderData& trackdata, StrawResponse const& srep , const Tracker* tracker,double max_doca, unsigned int minChits, int MaxLogL, double _gaussTres, double maxTres){
 	  
@@ -119,8 +117,8 @@ namespace MinuitDriftFitter{
 	ComboHitCollection passed_hits;
 	
 	for(size_t i = 0; i< trackdata._tseed._straw_chits.size(); i++){
-	      double gauss_end_doca = fit.calculate_DOCA(&trackdata._tseed._straw_chits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3],  tracker);
-	      double gauss_end_time_residual = fit.TimeResidual( gauss_end_doca,  srep, FitResult.bestfit[4], &trackdata._tseed._straw_chits[i],  tracker);
+	      double gauss_end_doca = fit.calculate_DOCA(trackdata._tseed._straw_chits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3],  tracker);
+	      double gauss_end_time_residual = fit.TimeResidual( gauss_end_doca,  srep, FitResult.bestfit[4], trackdata._tseed._straw_chits[i],  tracker);
 	      FitResult.GaussianEndTimeResiduals.push_back(gauss_end_time_residual);
 	      FitResult.GaussianEndDOCAs.push_back(gauss_end_doca);
 	       if (gauss_end_doca < max_doca and gauss_end_time_residual < maxTres){ 
@@ -169,13 +167,13 @@ namespace MinuitDriftFitter{
 	 
 	  for(size_t i = 0; i< passed_hits.size(); i++){
 	     
-	      double start_doca = fit.calculate_DOCA(&passed_hits[i],seed[0], seed[1], seed[2], seed[3], tracker);
-	      double start_time_residual = fit.TimeResidual(start_doca,  srep, seed[4], &trackdata._tseed._straw_chits[i], tracker);
+	      double start_doca = fit.calculate_DOCA(passed_hits[i],seed[0], seed[1], seed[2], seed[3], tracker);
+	      double start_time_residual = fit.TimeResidual(start_doca,  srep, seed[4], trackdata._tseed._straw_chits[i], tracker);
 	      
 		//Store Final Fit DOCA:
-	      double end_doca = fit.calculate_DOCA(&passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], tracker);
-              double ambig = fit.calculate_ambig(&passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], tracker);
-	      double end_time_residual = fit.TimeResidual( end_doca,  srep, FitResult.bestfit[4], &passed_hits[i], tracker);
+	      double end_doca = fit.calculate_DOCA(passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], tracker);
+              double ambig = fit.calculate_ambig(passed_hits[i],FitResult.bestfit[0], FitResult.bestfit[1], FitResult.bestfit[2], FitResult.bestfit[3], tracker);
+	      double end_time_residual = fit.TimeResidual( end_doca,  srep, FitResult.bestfit[4], passed_hits[i], tracker);
 	      
 	      FitResult.StartDOCAs.push_back(start_doca);
 	      FitResult.StartTimeResiduals.push_back(start_time_residual);
