@@ -74,6 +74,7 @@ namespace mu2e {
                       double reflectionVelocity,
                       double reflectionALength,
                       double reflectionFrac,
+                      double triggerHysteresis,
 		      double clusterLookbackTime, 
 		      std::vector<double> timeOffsetPanel, 
 		      std::vector<double> timeOffsetStrawHV, 
@@ -100,6 +101,7 @@ namespace mu2e {
       _reflectionVelocity(reflectionVelocity),
       _reflectionALength(reflectionALength),
       _reflectionFrac(reflectionFrac),
+      _triggerHysteresis(triggerHysteresis),
       _clusterLookbackTime(clusterLookbackTime), 
       _timeOffsetPanel(timeOffsetPanel), 
       _timeOffsetStrawHV(timeOffsetStrawHV), 
@@ -151,6 +153,7 @@ namespace mu2e {
     double TDCResolution() const { return _tdcResolution; }
     double electronicsTimeDelay() const { return _electronicsTimeDelay; }
     double eventWindowMarkerROCJitter() const { return _ewMarkerROCJitter; }
+    double triggerHysteresis() const { return _triggerHysteresis; }
     
     double currentToVoltage(StrawId sid, Path ipath) const { return _dVdI[ipath][sid.getStraw()]; }
     double maxLinearResponse(StrawId sid, Path ipath,double distance,double charge=1.0) const;
@@ -258,6 +261,7 @@ namespace mu2e {
     double _reflectionVelocity;
     double _reflectionALength;
     double _reflectionFrac;
+    double _triggerHysteresis;
     
     std::vector<double> _currentImpulse;
     std::vector<double> _preampToAdc2Response;
