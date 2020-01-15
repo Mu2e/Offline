@@ -1,4 +1,4 @@
-physics.filters.tprCosmicSeedDePHSFilter.fitparticle   : @local::Particle.eminus
+physics.filters.tprCosmicSeedDePHSFilter.fitparticle   : @local::Particle.eplus
 physics.filters.tprCosmicSeedDePHSFilter.fitdirection  : @local::FitDir.downstream
 physics.filters.tprCosmicSeedDePHSFilter.helicity      : -1
 physics.filters.tprCosmicSeedDePHSFilter.minNStrawHits : 15.0
