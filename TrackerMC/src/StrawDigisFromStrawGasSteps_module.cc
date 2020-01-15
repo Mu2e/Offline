@@ -232,6 +232,7 @@ namespace mu2e {
 	void createDigis(StrawPhysics const& strawphys,
 	    StrawElectronics const& strawele,
 	    Tracker const& tracker,
+            Straw const& straw,
 	    StrawClusterSequencePair const& hsp,
 	    XTalk const& xtalk,
 	    StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis);
@@ -444,9 +445,10 @@ namespace mu2e {
       // loop over the clust sequences
       for(auto ihsp=hmap.begin();ihsp!= hmap.end();++ihsp){
 	StrawClusterSequencePair const& hsp = ihsp->second;
+	Straw const& straw = tracker.getStraw(hsp.strawId());
 	// create primary digis from this clust sequence
 	XTalk self(hsp.strawId()); // this object represents the straws coupling to itself, ie 100%
-	createDigis(strawphys,strawele,tracker,hsp,self,digis.get(),mcdigis.get());
+	createDigis(strawphys,strawele,tracker,straw,hsp,self,digis.get(),mcdigis.get());
 	// if we're applying x-talk, look for nearby coupled straws
 	if(_addXtalk) {
 	  // only apply if the charge is above a threshold
@@ -456,10 +458,9 @@ namespace mu2e {
 	  }
 	  if( totalCharge > _ctMinCharge){
 	    vector<XTalk> xtalk;
-	    Straw const& straw = tracker.getStraw(hsp.strawId());
 	    findCrossTalkStraws(straw,xtalk);
 	    for(auto ixtalk=xtalk.begin();ixtalk!=xtalk.end();++ixtalk){
-	      createDigis(strawphys,strawele,tracker,hsp,*ixtalk,digis.get(),mcdigis.get());
+	      createDigis(strawphys,strawele,tracker,straw,hsp,*ixtalk,digis.get(),mcdigis.get());
 	    }
 	  }
 	}
@@ -478,12 +479,13 @@ namespace mu2e {
 	StrawPhysics const& strawphys,
 	StrawElectronics const& strawele,
 	Tracker const& tracker,
+        Straw const& straw,
 	StrawClusterSequencePair const& hsp,
 	XTalk const& xtalk,
 	StrawDigiCollection* digis, StrawDigiMCCollection* mcdigis) {
       // instantiate waveforms for both ends of this straw
-      SWFP waveforms  ={ StrawWaveform(hsp.clustSequence(StrawEnd::cal),xtalk),
-	StrawWaveform(hsp.clustSequence(StrawEnd::hv),xtalk) };
+      SWFP waveforms  ={ StrawWaveform(straw,hsp.clustSequence(StrawEnd::cal),xtalk),
+	StrawWaveform(straw,hsp.clustSequence(StrawEnd::hv),xtalk) };
       // find the threshold crossing points for these waveforms
       WFXPList xings;
       // find the threshold crossings
@@ -686,13 +688,13 @@ namespace mu2e {
       // Keep track of crossings on each end to keep them in sequence
       double strawnoise = _randgauss.fire(0,strawele.strawNoise());
       // add specifics for each end
-      double thresh[2] = {_randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(0))+strawnoise,strawele.analogNoise(StrawElectronics::thresh)),
-	_randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(1))+strawnoise,strawele.analogNoise(StrawElectronics::thresh))};
+      double thresh[2] = {_randgauss.fire(strawele.threshold(swfp[0].straw().id(),static_cast<StrawEnd::End>(0))+strawnoise,strawele.analogNoise(StrawElectronics::thresh)),
+	_randgauss.fire(strawele.threshold(swfp[0].straw().id(),static_cast<StrawEnd::End>(1))+strawnoise,strawele.analogNoise(StrawElectronics::thresh))};
       // Initialize search when the electronics becomes enabled:
       double tstart =strawele.flashEnd() - _flashbuffer; 
       // for reading all hits, make sure we start looking for clusters at the minimum possible cluster time
       // this accounts for deadtime effects from previous microbunches
-      if(readAll(swfp[0].strawId()))tstart = -strawele.deadTimeAnalog();
+      if(readAll(swfp[0].straw().id()))tstart = -strawele.deadTimeAnalog();
       WFXP wfx = {WFX(swfp[0],tstart),WFX(swfp[1],tstart)};
       // search for coherent crossings on both ends
       bool crosses[2];
@@ -717,7 +719,7 @@ namespace mu2e {
 	    // skip to the next clust
 	    ++(wfx[iend]._iclust);
 	    // update threshold for incoherent noise
-	    thresh[iend] = _randgauss.fire(strawele.threshold(swfp[0].strawId(),static_cast<StrawEnd::End>(iend)),strawele.analogNoise(StrawElectronics::thresh));
+	    thresh[iend] = _randgauss.fire(strawele.threshold(swfp[0].straw().id(),static_cast<StrawEnd::End>(iend)),strawele.analogNoise(StrawElectronics::thresh));
 	    // find next crossing
 	    crosses[iend] = swfp[iend].crossesThreshold(strawele,thresh[iend],wfx[iend]);
 	  }
@@ -983,7 +985,7 @@ namespace mu2e {
 	    steps.insert(iclu->strawGasStep());
 	    parts.insert(iclu->strawGasStep()->simParticle());
 	    _hqsum[iend] += iclu->charge();
-	    double ctime = iclu->time()+strawele.maxResponseTime(_diagpath,iclu->wireDistance());
+	    double ctime = iclu->time()+strawele.maxResponseTime(straw.id(),_diagpath,iclu->wireDistance());
 	    double vout = wfs[iend].sampleWaveform(strawele,_diagpath,ctime);
 	    if(vout > _vmax[iend]){
 	      _vmax[iend] = vout;
