@@ -70,6 +70,10 @@ namespace mu2e {
 		      std::vector<double> currentNormalizations, 
 		      std::vector<double> currentSigmas, 
 		      std::vector<double> currentT0s, 
+                      double reflectionTimeShift,
+                      double reflectionVelocity,
+                      double reflectionALength,
+                      double reflectionFrac,
 		      double clusterLookbackTime, 
 		      std::vector<double> timeOffsetPanel, 
 		      std::vector<double> timeOffsetStrawHV, 
@@ -92,6 +96,10 @@ namespace mu2e {
       _preampToAdc2Zeros(preampToAdc2Zeros), _wireDistances(wireDistances), 
       _currentMeans(currentMeans), _currentNormalizations(currentNormalizations), 
       _currentSigmas(currentSigmas), _currentT0s(currentT0s), 
+      _reflectionTimeShift(reflectionTimeShift),
+      _reflectionVelocity(reflectionVelocity),
+      _reflectionALength(reflectionALength),
+      _reflectionFrac(reflectionFrac),
       _clusterLookbackTime(clusterLookbackTime), 
       _timeOffsetPanel(timeOffsetPanel), 
       _timeOffsetStrawHV(timeOffsetStrawHV), 
@@ -246,6 +254,10 @@ namespace mu2e {
     std::vector<double> _currentNormalizations;
     std::vector<double> _currentSigmas;
     std::vector<double> _currentT0s;
+    double _reflectionTimeShift;
+    double _reflectionVelocity;
+    double _reflectionALength;
+    double _reflectionFrac;
     
     std::vector<double> _currentImpulse;
     std::vector<double> _preampToAdc2Response;
