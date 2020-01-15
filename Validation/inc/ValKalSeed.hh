@@ -56,6 +56,7 @@ namespace mu2e {
     TH1D* _hHDrift;
     TH1D* _hHDOCA;
     TH1D* _hHEDep;
+    TH1D* _hHPanel;
     TH1D* _hSRadLen;
     TH1D* _hSRadLenSum;
   };
