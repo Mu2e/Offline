@@ -131,6 +131,10 @@ StrawElectronics : {
    currentNormalizations : [ 1.0, 1.0 ]
    currentSigmas : [ 2.2, 3.0 ]
    currentT0s : [ 4.7, 8.2 ]
+   reflectionTimeShift : 4.5
+   reflectionVelocity : 400
+   reflectionALength : 2400
+   reflectionFrac : 0.40
    clusterLookbackTime : 5.0
    timeOffsetPanel : [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
       0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,

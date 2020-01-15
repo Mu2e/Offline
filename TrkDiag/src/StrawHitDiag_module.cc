@@ -25,6 +25,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
+#include "DataProducts/inc/EventWindowMarker.hh"
 // Utilities
 #include "Mu2eUtilities/inc/SimParticleTimeOffset.hh"
 using namespace std;
@@ -49,6 +50,7 @@ namespace mu2e
       art::InputTag _shTag;
       art::InputTag _chTag;
       art::InputTag _shfTag;
+      art::InputTag _ewMarkerTag;
       art::InputTag _stTag;
       art::InputTag _mcdigisTag;
       // cache of event objects
@@ -85,6 +87,7 @@ namespace mu2e
       Int_t _sid, _plane, _panel, _layer, _straw;
       Float_t _shwres, _shtres;
       Bool_t _mcxtalk;
+      Float_t _ewMarkerOffset;
       // helper array
       StrawEnd _end[2];
   };
@@ -96,6 +99,7 @@ namespace mu2e
     _shTag(pset.get<string>("StrawHitCollection","makeSH")),
     _chTag(pset.get<string>("ComboHitCollection","makeSH")),
     _shfTag(pset.get<string>("StrawHitFlagCollection")),
+    _ewMarkerTag(pset.get<art::InputTag>("EventWindowMarkerLabel","EWMProducer")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets")),
     _end{StrawEnd::cal,StrawEnd::hv}
@@ -133,6 +137,7 @@ namespace mu2e
     _chcol = 0;
     _shfcol = 0;
     _mcdigis = 0;
+    _ewMarkerOffset = 0;
     // nb: getValidHandle does the protection (exception) on handle validity so I don't have to
     auto shH = evt.getValidHandle<StrawHitCollection>(_shTag);
     _shcol = shH.product();
@@ -148,6 +153,9 @@ namespace mu2e
       // update time offsets
       _toff.updateMap(evt);
     }
+    auto ewMarkerHandle = evt.getValidHandle<EventWindowMarker>(_ewMarkerTag);
+    auto ewMarker = ewMarkerHandle.product();
+    _ewMarkerOffset = ewMarker->timeOffset();
     return _shcol != 0 && _chcol != 0 && (_shfcol != 0 || !_useshfcol) && (_mcdigis != 0  || !_mcdiag);
   }
 
@@ -190,6 +198,7 @@ namespace mu2e
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
     _shdiag->Branch("wres",&_shwres,"wres/F");
     _shdiag->Branch("tres",&_shtres,"tres/F");
+    _shdiag->Branch("ewmoffset",&_ewMarkerOffset,"ewmoffset/F");
     if(_mcdiag){
       _shdiag->Branch("mcshpos.",&_mcshp);
       _shdiag->Branch("mcopos.",&_mcop);
