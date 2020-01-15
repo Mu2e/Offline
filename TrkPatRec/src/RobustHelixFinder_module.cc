@@ -140,6 +140,7 @@ namespace mu2e {
 
     bool				_usemva; // use MVA to cut outliers
     float                               _minmva; // outlier cut on MVA
+    bool                                _useTripletAreaWt;
 
     art::ProductToken<ComboHitCollection> const _chToken;
     art::ProductToken<TimeClusterCollection> const _tcToken;
@@ -219,6 +220,7 @@ namespace mu2e {
     _minrerr     (pset.get<float>("MinRadiusErr",20.0)), // mm
     _usemva      (pset.get<bool>("UseHitMVA",false)),
     _minmva      (pset.get<float> ("MinMVA",0.1)), // min MVA output to define an outlier
+    _useTripletAreaWt(pset.get<bool>("UseTripletArea", false)),
     _chToken{consumes<ComboHitCollection>(pset.get<art::InputTag>("ComboHitCollection"))},
     _tcToken{consumes<TimeClusterCollection>(pset.get<art::InputTag>("TimeClusterCollection"))},
     _hsel        (pset.get<std::vector<std::string> >("HitSelectionBits",std::vector<string>{"TimeDivision"})),
@@ -343,7 +345,7 @@ namespace mu2e {
       if (_reducedchi2){
 	_chi2hfit.fitChi2Circle(_hfResult, _targetcon);
       }else{
-	_hfit.fitCircle(_hfResult, _targetconInit);//require consistency for the trajectory of being produced in the Al stopping target
+	_hfit.fitCircle(_hfResult, _targetconInit, _useTripletAreaWt);//require consistency for the trajectory of being produced in the Al stopping target
       }
 
       if (_diag && _reducedchi2) {
@@ -1270,7 +1272,7 @@ namespace mu2e {
     do {
       niterxy = 0;
       do {
-	_hfit.fitCircle(helixData, _targetcon);
+	_hfit.fitCircle(helixData, _targetcon, _useTripletAreaWt);
 	xychanged = filterCircleHits(helixData) > 0;
 	++niterxy;
       } while (helixData._hseed._status.hasAllProperties(TrkFitFlag::circleOK) && niterxy < _maxniter && xychanged);
@@ -1438,7 +1440,7 @@ namespace mu2e {
   void RobustHelixFinder::refitHelix(RobustHelixFinderData& helixData) {
     // reset the fit status flags, in case this is called iteratively
     helixData._hseed._status.clear(TrkFitFlag::helixOK);      
-    _hfit.fitCircle(helixData, _targetcon);
+    _hfit.fitCircle(helixData, _targetcon, _useTripletAreaWt);
     if (helixData._hseed._status.hasAnyProperty(TrkFitFlag::circleOK)) {
       _hfit.fitFZ(helixData);
       if (_hfit.goodHelix(helixData._hseed._helix)) helixData._hseed._status.merge(TrkFitFlag::helixOK);
