@@ -241,7 +241,7 @@ namespace mu2e
       Int_t _strawid; 
       vector<ComboHitInfoMC> _chinfomc;
       CosmicTrackMCInfo FitMC(const StrawDigiMCCollection*& _mcdigis);
-      CosmicTrackMCInfo FillDriftMC(ComboHit chit, double reco_ambig, CosmicTrackMCInfo info, const Tracker* tracker);
+      CosmicTrackMCInfo FillDriftMC(ComboHit const& chit, double reco_ambig, CosmicTrackMCInfo info, const Tracker* tracker);
       bool findData(const art::Event& evt);
     };
 
@@ -756,7 +756,7 @@ namespace mu2e
                 _change_chisq_ndf_plot_Total->Fill(st.Diag.InitialChiTot-st.Diag.FinalChiTot);
 		
 		for(size_t i=0; i<sts._straw_chits.size();i++){
-			    ComboHit chit = sts._straw_chits[i];
+			    ComboHit const& chit = sts._straw_chits[i];
 			    
 			    double StartDOCA = DriftFitUtils::GetTestDOCA(chit, st.FitParams.A0,st.FitParams.A1, st.FitParams.B0, st.FitParams.B1,tracker);
 			    _StartDOCAs->Fill(StartDOCA);
@@ -884,7 +884,7 @@ CosmicTrackMCInfo CosmicAnalyzer::FitMC(const StrawDigiMCCollection*& _mcdigis){
      return TrackTrueInfo;
      }
 
-CosmicTrackMCInfo CosmicAnalyzer::FillDriftMC(ComboHit chit, double RecoAmbig, CosmicTrackMCInfo info, const Tracker* tracker){
+CosmicTrackMCInfo CosmicAnalyzer::FillDriftMC(ComboHit const& chit, double RecoAmbig, CosmicTrackMCInfo info, const Tracker* tracker){
 
      double true_doca = DriftFitUtils::GetTestDOCA(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(),  tracker);
      double trueambig = DriftFitUtils::GetAmbig(chit, info.TrueFitEquation.Pos.X(), info.TrueFitEquation.Dir.X(), info.TrueFitEquation.Pos.Y(),info.TrueFitEquation.Dir.Y(),  tracker);
