@@ -2,7 +2,7 @@
 #define TrackerConditions_StrawPhysicsCache_hh
 
 #include "Mu2eInterfaces/inc/ProditionsCache.hh"
-//#include "DbService/inc/DbHandle.hh"
+#include "ProditionsService/inc/ProditionsHandle.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
 #include "TrackerConditions/inc/StrawPhysicsMaker.hh"
 

@@ -7,7 +7,7 @@
 #include "TrackerConditions/inc/FullReadoutStraw.hh"
 #include "DataProducts/inc/PanelId.hh"
 #include "DataProducts/inc/PlaneId.hh"
-#include "TrackerConditions/inc/FullReadoutStrawConfig.hh"
+#include "TrackerConfig/inc/FullReadoutStrawConfig.hh"
 #include <set>
 #include <iosfwd>
 

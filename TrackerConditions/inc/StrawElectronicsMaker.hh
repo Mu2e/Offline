@@ -7,7 +7,7 @@
 //
 
 #include "TrackerConditions/inc/StrawElectronics.hh"
-#include "TrackerConditions/inc/StrawElectronicsConfig.hh"
+#include "TrackerConfig/inc/StrawElectronicsConfig.hh"
 #include "DbTables/inc/TrkDelayPanel.hh"
 #include "DbTables/inc/TrkPreampRStraw.hh"
 #include "DbTables/inc/TrkPreampStraw.hh"

@@ -24,6 +24,7 @@
 #include "GlobalConstantsService/inc/PhysicsParams.hh"
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "Mu2eUtilities/inc/TwoLinePCA.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -74,6 +75,7 @@ class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
     TH1F *_hNSecondaries = nullptr;
 
     TTree *_cosmicTree = nullptr;
+    TTree *_eventTree = nullptr;
 
     float _x = std::numeric_limits<float>::lowest();
     float _y = std::numeric_limits<float>::lowest();
@@ -86,6 +88,7 @@ class mu2e::CORSIKAGenPlots : public art::EDAnalyzer {
     float _KE = std::numeric_limits<float>::lowest();
     float _p = std::numeric_limits<float>::lowest();
     float _t = std::numeric_limits<float>::lowest();
+    std::vector<float> _dca;
     PDGCode::type _pdgId;
 
     void bookHists(art::ServiceHandle<art::TFileService> &);
@@ -118,6 +121,8 @@ mu2e::CORSIKAGenPlots::CORSIKAGenPlots(fhicl::ParameterSet const &p)
   _cosmicTree->Branch("t", &_t, "t/F");
   _cosmicTree->Branch("pdgId", &_pdgId, "pdgId/I");
 
+  _eventTree = tfs->make<TTree>("eventTree", "TTree with cosmic ray info per shower");
+  _eventTree->Branch("dca", &_dca);
 }
 
 
@@ -137,8 +142,34 @@ void mu2e::CORSIKAGenPlots::analyze(art::Event const & e)
 
   const auto & particles = *gpHandle;
 
+  // Store the point of closest approach between target box and roof for
+  // events with more than one particle
+  _dca.clear();
+  for (GenParticleCollection::const_iterator i = particles.begin(); i != particles.end(); ++i)
+  {
+    for (GenParticleCollection::const_iterator j = i+1; j != particles.end(); ++j)
+    {
+        GenParticle const &particle1 = *i;
+        GenParticle const &particle2 = *j;
+
+        TwoLinePCA twoLine(particle1.position(), -particle1.momentum().vect(), particle2.position(), -particle2.momentum().vect());
+        const CLHEP::Hep3Vector point1 = twoLine.point1();
+        const CLHEP::Hep3Vector point2 = twoLine.point2();
+
+
+        if (point1.y() > 5000 &&
+            point1.y() < 15365.4 &&
+            point2.y() > 5000 &&
+            point2.y() < 15365.4)
+        {
+          _dca.push_back(twoLine.dca());
+        }
+    }
+  }
+  _eventTree->Fill();
 
   _hNSecondaries->Fill(particles.size());
+
   for(const auto & p : particles)
   {
     _hXZ->Fill(p.position().x(), p.position().z());

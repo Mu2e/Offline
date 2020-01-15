@@ -31,26 +31,65 @@ namespace mu2e {
     unsigned numInputEvents_;
     unsigned numPassedEvents_;
   public:
-    explicit FilterCosmicsStage1(const fhicl::ParameterSet& pset);
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      
+      fhicl::Sequence<art::InputTag> inputs {
+        Name("inputs"),
+          Comment("Particles and StepPointMCs mentioned in thise collections will be preserved.")
+          };
+      
+      fhicl::Atom<double> cutEDepMin {
+        Name("cutEDepMin"),
+          Comment("The filter passes events if total energy deposition in CRV > cutEDepMin\n"
+                  "By default cutEDepMin=-inf\n"),
+          -std::numeric_limits<double>::max()
+          };
+      
+      fhicl::Atom<double> cutEDepMax {
+        Name("cutEDepMax"),
+          Comment("The filter passes events if total energy deposition in CRV < cutEDepMax\n"
+                  "By default cutEDepMax=inf\n"),
+          std::numeric_limits<double>::max()
+          };
+
+      fhicl::Atom<double> cutZMin {
+        Name("cutZMin"),
+          Comment("The filter passes events if z-pos of the first step in CRV > cutZMin\n"
+                  "By default cutZMin=-inf\n"),
+          -std::numeric_limits<double>::max()
+          };
+      
+      fhicl::Atom<double> cutZMax {
+        Name("cutZMax"),
+          Comment("The filter passes events if z-pos of the first step in CRV < cutZMax\n"
+                  "By default cutZMax=inf\n"),
+          std::numeric_limits<double>::max()
+          };
+      
+    };
+
+    using Parameters = art::EDFilter::Table<Config>;
+    explicit FilterCosmicsStage1(const Parameters& conf);
     virtual bool filter(art::Event& event) override;
     virtual void endJob() override;
+
   };
 
   //================================================================
-  FilterCosmicsStage1::FilterCosmicsStage1(const fhicl::ParameterSet& pset)
-    : art::EDFilter{pset}
-    , cutEDepMin_(pset.get<double>("cutEDepMin", -std::numeric_limits<double>::max()))
-    , cutEDepMax_(pset.get<double>("cutEDepMax",  std::numeric_limits<double>::max()))
-
-    , cutZMin_(pset.get<double>("cutZMin", -std::numeric_limits<double>::max()))
-    , cutZMax_(pset.get<double>("cutZMax",  std::numeric_limits<double>::max()))
+  FilterCosmicsStage1::FilterCosmicsStage1(const Parameters& conf)
+    : art::EDFilter{conf}
+    , cutEDepMin_(conf().cutEDepMin())
+    , cutEDepMax_(conf().cutEDepMax())
+    , cutZMin_(conf().cutZMin())
+    , cutZMax_(conf().cutZMax())
 
     , numInputEvents_(0)
     , numPassedEvents_(0)
   {
-    typedef std::vector<std::string> VS;
-    const VS in(pset.get<VS>("inputs"));
-    for(const auto& i : in) {
+    for(const auto& i : conf().inputs()) {
       inputs_.emplace_back(i);
     }
   }

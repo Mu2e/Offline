@@ -23,6 +23,7 @@ namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
   class StepPointMC;
+  class StrawGasStep;
 
   class SimParticleTimeOffset {
   public:
@@ -44,6 +45,7 @@ namespace mu2e {
     double totalTimeOffset(art::Ptr<SimParticle> p) const;
     double totalTimeOffset(const StepPointMC& s) const;
     double timeWithOffsetsApplied(const StepPointMC& s) const;
+    double timeWithOffsetsApplied(const StrawGasStep& s) const;
 
   private:
     std::vector<art::InputTag> inputs_;

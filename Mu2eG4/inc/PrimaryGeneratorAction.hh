@@ -29,7 +29,6 @@
 class G4ParticleDefinition;
 class G4ParticleGun;
 class G4Event;
-class TH1D;
 
 namespace fhicl { class ParameterSet; }
 
@@ -39,8 +38,7 @@ namespace mu2e {
 
     class SteppingAction;
     class SimParticlePrimaryHelper;
-    class GenEventBroker;
-    class PerEventObjectsManager;
+    class Mu2eG4PerThreadStorage;
 
     typedef std::vector<art::ValidHandle<StepPointMCCollection> > HitHandles;
 
@@ -50,20 +48,16 @@ namespace mu2e {
       PrimaryGeneratorAction();
       
       explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
-                                      GenEventBroker *gen_eventbroker,
-                                      PerEventObjectsManager *per_evtobjmanager);
+                                      Mu2eG4PerThreadStorage* pts);
       
       // This is the interface specified by G4.
       void GeneratePrimaries(G4Event*);
 
   private:
 
-      explicit PrimaryGeneratorAction(bool fillHistograms,
-                                      int verbosityLevel,
-                                      GenEventBroker *gen_eventbroker,
-                                      PerEventObjectsManager *per_evtobjmanager);
+      explicit PrimaryGeneratorAction(int verbosityLevel,
+                                      Mu2eG4PerThreadStorage* pts);
       
-
       void setEventData();
 
       void fromEvent( G4Event* );
@@ -83,17 +77,9 @@ namespace mu2e {
       const HitHandles* hitInputs_;
       SimParticlePrimaryHelper* parentMapping_;
 
-      TH1D* _totalMultiplicity;
-
       int verbosityLevel_;
-
-      int standardMu2eDetector_;
       
-      GenEventBroker* genEventBroker_;
-      PerEventObjectsManager* perEvtObjManager;
-
-      bool preCreateIsomers_;
-      PDGCode::type pdgIdToGenerate_;
+      Mu2eG4PerThreadStorage* perThreadObjects_;
       
   };
 
