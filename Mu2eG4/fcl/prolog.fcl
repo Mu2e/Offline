@@ -180,7 +180,6 @@ Mu2eG4: {
     }
 }
 
-
 #----------------------------------------------------------------
 # For running in MT mode
 MTmu2eg4runDefaultSingleStage: {
@@ -213,6 +212,12 @@ MTmu2eg4runDefaultSingleStage: {
         enabled             : false
         primariesOnly       : false
         prefix              : "SimParticle: "
+    }
+}
+
+Mu2eG4MT: {
+    producers : {
+        g4mtrun : { @table::MTmu2eg4runDefaultSingleStage }
     }
 }
 

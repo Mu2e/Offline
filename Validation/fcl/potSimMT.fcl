@@ -1,22 +1,68 @@
 #
 # generate protons on target and simulate through the detector
 #
+#include "fcl/minimalMessageService.fcl"
+#include "fcl/standardServices.fcl"
+#include "fcl/standardProducers.fcl"
 
-#include "Validation/fcl/potSim.fcl"
 
 process_name : potSimMT
 
-# MT mode related changes
+services : @local::Services.Sim
 
-physics.producers.g4run.runinMTMode     : true
-physics.producers.g4run.numberOfThreads : 4
-physics.producers.generate: {
-   module_type          : PrimaryProtonGunN
-   inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-   stashSize            : 40
+source.module_type : EmptyEvent
+
+physics : {
+   producers: {
+      generate: {
+         module_type          : PrimaryProtonGunR
+         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
+      }
+      @table::Mu2eG4MT.producers
+    }
+
+   filters : {
+      g4status: {
+         module_type: FilterStatusG4
+         input: "g4mtrun"
+      }
+   }
+
+    all_path : [  generate, g4mtrun, g4status ]
+
+    trigger_paths  : [ all_path ]
+    out : [ fullOutput ]
+
 }
+
+outputs: {
+    fullOutput : {
+      module_type : RootOutput
+      fileName    : @nil
+      outputCommands : [
+         "keep *_*_*_*",
+	 "drop mu2e::StepPointMCs_*_calorimeterRO_*"
+     ]
+
+    }
+}
+
+
+# print summaries
+services.scheduler.wantSummary: true
+services.TimeTracker.printSummary: true
 
 # histogram file
 services.TFileService.fileName : "nts.owner.val-potSimMT.dsconf.seq.root"
 # art file
-outputs.fullOutput.fileName    : "sim.owner.val-potSimMT.dsconf.seq.art"
+outputs.fullOutput.fileName: "sim.owner.val-potSimMT.dsconf.seq.art"
+
+# run 1h by default
+source.maxEvents: 500
+
+# Initialze seeding of random engines
+services.SeedService.baseSeed         :  0
+services.SeedService.maxUniqueEngines :  20
+
+# use the geometry on the head
+services.GeometryService.inputFile : "Mu2eG4/geom/geom_common_current.txt"
