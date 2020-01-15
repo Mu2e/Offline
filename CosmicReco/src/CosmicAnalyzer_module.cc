@@ -76,7 +76,7 @@ namespace mu2e
       explicit CosmicAnalyzer(const Parameters& conf);
       virtual ~CosmicAnalyzer();
       virtual void beginJob() override;
-      
+      virtual void beginRun(const art::Run& r) override;
       virtual void analyze(const art::Event& e) override;
       virtual void endJob() override;
     private: 
@@ -267,8 +267,7 @@ namespace mu2e
 
 
     void CosmicAnalyzer::beginJob() {
-      mu2e::GeomHandle<mu2e::Tracker> th;
-      tracker = th.get();
+      
       // create diagnostics if requested...
       if(_diag > 0){
 	if(_mcdiag) { 
@@ -640,8 +639,13 @@ namespace mu2e
 	
 	
 	}
-      }
-	
+      } 
+
+    void CosmicAnalyzer::beginRun(const art::Run& run){
+	mu2e::GeomHandle<mu2e::Tracker> th;
+       tracker = th.get();
+
+}
       void CosmicAnalyzer::analyze(const art::Event& event) {
        
         _evt = event.id().event();  // add event id
