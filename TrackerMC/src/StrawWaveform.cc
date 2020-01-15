@@ -227,7 +227,7 @@ namespace mu2e {
 
   unsigned short StrawWaveform::digitizeTOT(StrawElectronics const& strawele, double threshold, double time) const {
       for (size_t i=1;i<strawele.maxTOT();i++){
-        if (sampleWaveform(strawele,StrawElectronics::thresh,time + i*strawele.totLSB()) < threshold)
+        if (sampleWaveform(strawele,StrawElectronics::thresh,time + i*strawele.totLSB()) < threshold - strawele.triggerHysteresis())
           return static_cast<unsigned short>(i);
       }
       return static_cast<unsigned short>(strawele.maxTOT());

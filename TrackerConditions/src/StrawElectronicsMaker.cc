@@ -35,7 +35,8 @@ namespace mu2e {
        _config.currentNormalizations(), _config.currentSigmas(), 
        _config.currentT0s(), _config.reflectionTimeShift(),
        _config.reflectionVelocity(), _config.reflectionALength(),
-       _config.reflectionFrac(), _config.clusterLookbackTime(), 
+       _config.reflectionFrac(), _config.triggerHysteresis(),
+       _config.clusterLookbackTime(), 
        _config.timeOffsetPanel(), _config.timeOffsetStrawHV(), 
        _config.timeOffsetStrawCal() );
 
