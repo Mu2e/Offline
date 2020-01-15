@@ -47,6 +47,9 @@ namespace mu2e {
     int totalBkgCount_;
     float skipFactor_;
 
+    bool writeEventIDs_;
+    art::EventIDSequence idseq_;
+
   public:
 
     struct Mu2eConfig {
@@ -74,6 +77,11 @@ namespace mu2e {
           Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
           1
           };
+
+      fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
+          Comment("Write out IDs of events on the secondary input stream."),
+          false
+          };
     };
 
     // The ".mu2e" in FHICL parameters like
@@ -93,7 +101,10 @@ namespace mu2e {
 
     size_t eventsToSkip();
 
-    void processEventIDs(art::EventIDSequence const& seq);
+    void processEventIDs(const art::EventIDSequence& seq);
+
+    void finalizeEvent(art::Event& e);
+
   };
 
   //================================================================
@@ -136,6 +147,9 @@ namespace mu2e {
 
   //================================================================
   void MixBackgroundFramesDetail::processEventIDs(art::EventIDSequence const& seq) {
+    if(writeEventIDs_) {
+      idseq_ = seq;
+    }
 
     if (debugLevel_ > 4) {
       std::cout << "The following bkg events were mixed in (START)" << std::endl;
@@ -147,6 +161,15 @@ namespace mu2e {
       totalBkgCount_ += counter;
       std::cout << "Bkg Event Count  (this microbunch) = " << counter << std::endl;
       std::cout << "Bkg Event Count  (all microbunches) = " << totalBkgCount_ << " (END)" << std::endl;
+    }
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::finalizeEvent(art::Event& e) {
+    if(writeEventIDs_) {
+      auto o = std::make_unique<art::EventIDSequence>();
+      o->swap(idseq_);
+      e.put(std::move(o));
     }
   }
 
