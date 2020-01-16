@@ -1,0 +1,13 @@
+// Phase-II configuration is the same as phase-I, with updated shielding materials
+
+#include "Mu2eG4/geom/geom_2019_PhaseI.txt"
+// External Shielding
+#include "Mu2eG4/geom/ExtShieldUpstream_v05.txt"
+#include "Mu2eG4/geom/ExtShieldDownstream_v05.txt"
+//capture the updated STM shielding hole
+double ExtShieldDownstream.holeRadiusType27Box2Hole1 = 125.0;  //hole for photons to STM in concrete
+
+// This tells emacs to view this file in c++ mode.
+// Local Variables:
+// mode:c++
+// End:
