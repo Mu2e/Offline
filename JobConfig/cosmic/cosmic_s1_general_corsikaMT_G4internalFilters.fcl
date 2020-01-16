@@ -12,15 +12,7 @@ targetParams: {
 
 source: {
     module_type: FromCorsikaBinary
-    fileNames: ["/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300001",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300002",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300003",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300004",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300005",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300006",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300007",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300008",
-                "/pnfs/mu2e/scratch/users/srsoleti/corsika/DAT300009"]
+    fileNames: ["/pnfs/mu2e/persistent/users/srsoleti/corsika/DAT300001"]
     runNumber          : 1
     firstSubRunNumber  : 0
     firstEventNumber   : 1
