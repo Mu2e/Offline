@@ -151,7 +151,8 @@ CreateMVAFactory(TTree* inputTree,
   Use["FDA_MCMT"]        = 0;
   //
   // --- Neural Networks (all are feed-forward Multilayer Perceptrons)
-  Use["MLP"]             = 1; // Recommended ANN
+  Use["MLP"]             = 0; // Recommended ANN
+  Use["MLPReLU"]         = 1; // Recommended ANN with rectified linear units single layer
   Use["MLPBFGS"]         = 0; // Recommended ANN with optional training method
   Use["MLPBNN"]          = 0; // Recommended ANN with BFGS training method and bayesian regulator
   Use["CFMlpANN"]        = 0; // Depreciated ANN from ALEPH
@@ -461,6 +462,9 @@ CreateMVAFactory(TTree* inputTree,
   // TMVA ANN: MLP (recommended ANN) -- all ANNs in TMVA are Multilayer Perceptrons
   if (Use["MLP"])
     factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLP", "H:!V:VarTransform=N" );
+ 
+  if (Use["MLPReLU"])
+    factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPRelu", "H:!V:NeuronType=ReLU:VarTransform=N:HiddenLayers=N" );
 
   if (Use["MLPBFGS"])
     factory->BookMethod( dataloader, TMVA::Types::kMLP, "MLPBFGS", "H:!V:NeuronType=tanh:VarTransform=N:NCycles=600:HiddenLayers=N+5:TestRate=5:TrainingMethod=BFGS:!UseRegulator" );
@@ -544,8 +548,8 @@ void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
   std::string baseDir(basedir);
   std::string outDir;
   std::string sigweight, bkgweight;
-  varnames.push_back("HitRho");
-  varnames.push_back("HitRhoSpread");
+  //varnames.push_back("HitRho");
+  //varnames.push_back("HitRhoSpread");
   varnames.push_back("ClusterRho");
   varnames.push_back("ZMin");
   varnames.push_back("ZMax");
@@ -553,8 +557,8 @@ void TrainBkgMVA(const char* files="bkgfiles.txt",const char* basedir="bkg") {
   varnames.push_back("NPlanes");
   varnames.push_back("PlaneFraction");
   varnames.push_back("NHits");
-  vardescrip.push_back("Cluster Hit Rho");
-  vardescrip.push_back("Cluster Hit Rho RMS"); 
+  //vardescrip.push_back("Cluster Hit Rho");
+  //vardescrip.push_back("Cluster Hit Rho RMS"); 
   vardescrip.push_back("Cluster transverse Radius"); 
   vardescrip.push_back("Z of first hit");
   vardescrip.push_back("Z of last hit");

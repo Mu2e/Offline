@@ -23,9 +23,7 @@ int mu2e::ValBkgCluster::fill(const mu2e::BkgClusterCollection & coll,
   for(auto bc : coll) {
     _hr->Fill(bc.pos().R());
     _ht->Fill(bc.time());
-    for(auto const& h : bc.hits()) {
-      _hd->Fill(h.distance());
-    }
+    //for(auto const& h : bc.hits()) _hd->Fill(h.distance());    
     for(auto sn: bc.flag().bitNames()) { 
       if(bc.flag().hasAnyProperty(BkgClusterFlag(sn.first))) _hBits->Fill(std::log2(sn.second)); 
     }
