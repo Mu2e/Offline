@@ -1,19 +1,17 @@
-#include "fhiclcpp/types/Atom.h"
-#include "fhiclcpp/types/Sequence.h"
-#include "canvas/Utilities/InputTag.h"
-
 #include "art/Framework/Principal/Event.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Handle.h"
-#include "GeometryService/inc/GeomHandle.hh"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art_root_io/TFileService.h"
+#include "canvas/Utilities/InputTag.h"
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/Sequence.h"
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConfigTools/inc/ConfigFileLookupPolicy.hh"
 #include "ConditionsService/inc/AcceleratorParams.hh"
 
+#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
 #include "RecoDataProducts/inc/StrawHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/ComboHit.hh"
@@ -21,14 +19,10 @@
 #include "RecoDataProducts/inc/BkgClusterHit.hh"
 #include "RecoDataProducts/inc/BkgQual.hh"
 
+#include "Mu2eUtilities/inc/MVATools.hh"
 #include "TrkReco/inc/ClustererFclConfig.hh"
 #include "TrkReco/inc/TNTClusterer.hh"
-#include "Mu2eUtilities/inc/MVATools.hh"
 
-#include "CLHEP/Units/PhysicalConstants.h"
-#include "MCDataProducts/inc/StrawDigiMCCollection.hh"
-
-#include <iostream>
 #include <string>
 #include <vector>
 
