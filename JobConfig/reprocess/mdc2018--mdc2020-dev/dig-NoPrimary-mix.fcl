@@ -1,0 +1,48 @@
+
+# Update MDC2018 digi files to MDC2020-dev files so that people
+# can continue development work
+#
+# This is to convert NoPrimary-mix files
+#
+# A. Edmonds Jan 2020
+
+#include "JobConfig/reprocess/mdc2018--mdc2020-dev/dig-prolog.fcl"
+
+process_name : NoPrimaryMixDev
+
+source : { @table::ReprocessDigis.Source }
+
+services: @local::Services.Sim
+
+physics : { 
+  producers : { @table::ReprocessDigis.producers }
+  analyzers: { @table::ReprocessDigis.analyzers }
+
+  TriggerPath : [ @sequence::ReprocessDigis.TriggerPath ]
+#  EndPath : [ @sequence::ReprocessDigis.EndPath ] no GenCount on NoPrimary
+   EndPath : [digiCompressionCheck, Output ]
+
+}
+
+outputs : { @table::ReprocessDigis.outputs }
+
+#include "JobConfig/reprocess/mdc2018--mdc2020-dev/dig-epilog-all.fcl"
+#include "JobConfig/reprocess/mdc2018--mdc2020-dev/dig-epilog-nocosmic.fcl"
+#include "JobConfig/reprocess/mdc2018--mdc2020-dev/dig-epilog-nomctraj.fcl"
+
+# patch compressDigiMCs for NoPrimary
+physics.producers.compressDigiMCs.extraStepPointMCTags : [ ]
+
+# customize the output
+services.TFileService.fileName: "nts.owner.NoPrimary-mix.version.sequencer.root"
+outputs.Output.fileName: "dig.owner.NoPrimary-mix.version.sequencer.art"
+outputs.Output.outputCommands : [ "keep *_*_*_*", 
+			          @sequence::ReprocessDigis.dropCommands,
+			      	  "drop *_compressDigiMCs_*_NoPrimary"
+				]
+
+physics.end_paths : [ EndPath ] # needed for generate_fcl
+
+# test values; these get overwritten by generate_fcl
+services.SeedService.baseSeed         :  773651
+services.SeedService.maxUniqueEngines :  20
