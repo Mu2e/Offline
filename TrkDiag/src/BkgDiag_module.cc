@@ -123,6 +123,7 @@ namespace mu2e
     art::ServiceHandle<art::TFileService> tfs;
     
     if(_diag > 0){
+      _iev=0;
       // detailed delta diagnostics
       _bdiag=tfs->make<TTree>("bkgdiag","background diagnostics");
       // general branches
@@ -353,6 +354,7 @@ namespace mu2e
       _bdiag->Fill();
       ++_cluIdx;
     }
+  ++_iev;
   }
 
   bool BkgDiag::findData(const art::Event& evt){
