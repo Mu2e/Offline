@@ -231,6 +231,7 @@ namespace mu2e {
 
       const float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
       const float _cm2mm = CLHEP::cm / CLHEP::mm;
+      const float _ns2s = CLHEP::ns / CLHEP::s;
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
       float _fluxConstant = 1.8e4;
