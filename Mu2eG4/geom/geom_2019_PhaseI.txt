@@ -1,8 +1,4 @@
-// Updated to be used in the 2019 MARS simulation campaign, based off Mu2eG4/geom/geom_common_current.txt
-//   from tag v7_5_3
-// Top level geometry file first used in pass 2 of (stage 4 and after) of the CD3c simulation campaign.
-//
-// Warning:  do not write 10000. as 10,000.; it will be read as two numbers (10., 0.).
+// Updated to be used in the 2019/2020 CRY simulation campaign, based off Mu2eG4/geom/geom_MARS_2019.txt
 
 string detector.name  = "g4geom_v00";
 
@@ -38,15 +34,11 @@ double mu2e.detectorSystemZ0 = 10171.;   // mm  G4BL: (17730-7292=9801 mm)
 #include "Mu2eG4/geom/mu2eWorld.txt"
 // mu2eHall.txt should be used with protonBeamDump_v02.txt, below
 //#include "Mu2eG4/geom/mu2eHall.txt"
-// whereas mu2eHall_v02.txt should be used with protonBeamDump_v03.txt, below
-#include "Mu2eG4/geom/mu2eHall_v02.txt"
+// whereas mu2eHall_v02.txt and _v03.txt should be used with protonBeamDump_v03.txt, below
+#include "Mu2eG4/geom/mu2eHall_v03.txt"
 
 // Solenoids
 #include "Mu2eG4/geom/DetectorSolenoid_v04.txt"
-double    ds.CableRunCalCore.dRadiusFraction = 0.0864; //increase fiber sizes for increased statistics
-double    ds.CableRunCalCore.dPhiFraction    = 0.0864;
-double    ds.CableRunTrkCore.dRadiusFraction = 0.1051; // changed to be 100 mm^2
-double    ds.CableRunTrkCore.dPhiFraction    = 0.1051; 
 #include "Mu2eG4/geom/DSShielding_v02.txt"
 #include "Mu2eG4/geom/ProductionSolenoid_v02.txt"
 #include "Mu2eG4/geom/psEnclosure_v04.txt"
