@@ -37,8 +37,6 @@
 #include "MCDataProducts/inc/PtrStepPointMCVector.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
-#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PointTrajectory.hh"
 
 #include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Matrix/Matrix.h"
@@ -476,22 +474,24 @@ namespace mu2e
       
       cet::map_vector_key simid =  sim.id();
   
-      art::Handle<PointTrajectoryCollection> trajHandle;
-      evt.getByLabel(_g4ModuleLabel, trajHandle);
-      if (!(trajHandle.isValid())) {
-        cerr << "TrkExtDiag warning : tragHandle invalid" << endl;
-        continue;
-      }
+//      art::Handle<PointTrajectoryCollection> trajHandle;
+//      evt.getByLabel(_g4ModuleLabel, trajHandle);
+//      if (!(trajHandle.isValid())) {
+//        cerr << "TrkExtDiag warning : tragHandle invalid" << endl;
+//        continue;
+//      }
+//
+//      const PointTrajectoryCollection & trajC = *trajHandle;
+// 
+//      const PointTrajectory* traj = trajC.getOrNull(simid);
+//      if (traj == nullptr) {
+//        cerr << "TrkExtDiag warning : traj invalid" << endl;
+//        continue;
+//      }
+//  
 
-      const PointTrajectoryCollection & trajC = *trajHandle;
- 
-      const PointTrajectory* traj = trajC.getOrNull(simid);
-      if (traj == nullptr) {
-        cerr << "TrkExtDiag warning : traj invalid" << endl;
-        continue;
-      }
-  
-      const vector<Hep3Vector>& pvec = traj->points();
+      //const vector<Hep3Vector>& pvec = traj->points();
+      const vector<Hep3Vector> pvec; // PointTrajectoryCollection has been gone for years.  Leave a dummy variable here to not break compilation; there is a request to not remove this file.
 
       double simstep = 1.;
       if (pvec.size() >= MAXNSIM) {

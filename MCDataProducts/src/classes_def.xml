@@ -63,12 +63,6 @@
  <class name="mu2e::PtrStepPointMCVectorCollection"/>
  <class name="art::Wrapper<mu2e::PtrStepPointMCVectorCollection>"/>
 
- <class name="mu2e::PointTrajectory"/>
- <class name="std::pair<cet::map_vector_key,mu2e::PointTrajectory>"/>
- <class name="std::vector<std::pair<cet::map_vector_key,mu2e::PointTrajectory> >" />
- <class name="mu2e::PointTrajectoryCollection"/>
- <class name="art::Wrapper<mu2e::PointTrajectoryCollection>"/>
-
  <class name="mu2e::MCTrajectoryPoint"/>
  <class name="std::vector<mu2e::MCTrajectoryPoint>"/>
  <class name="mu2e::MCTrajectory"/>
