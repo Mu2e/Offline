@@ -103,10 +103,6 @@
  <class name="mu2e::PhysicalVolumeInfoMultiCollection"/>
  <class name="art::Wrapper<mu2e::PhysicalVolumeInfoMultiCollection>"/>
 
- <class name="mu2e::MixingSummary"/>
- <class name="std::vector<std::vector<size_t> >"/>
- <class name="art::Wrapper<mu2e::MixingSummary>"/>
-
  <class name="mu2e::EventWeight"/>
  <class name="art::Wrapper<mu2e::EventWeight>"/>
 
