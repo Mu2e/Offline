@@ -25,6 +25,10 @@ namespace mu2e {
   class ResamplingMixerDetail {
     Mu2eProductMixer spm_;
     const unsigned nSecondaries_;
+
+    bool writeEventIDs_;
+    art::EventIDSequence idseq_;
+
   public:
 
     struct Mu2eConfig {
@@ -36,6 +40,11 @@ namespace mu2e {
       fhicl::Atom<unsigned> nSecondaries { Name("nSecondaries"),
           Comment("Number of secondary events per single primary, a positive integer."),
           1u };
+
+      fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
+          Comment("Write out IDs of events on the secondary input stream."),
+          true
+          };
     };
 
     struct Config {
@@ -44,13 +53,37 @@ namespace mu2e {
 
     using Parameters = art::MixFilterTable<Config>;
     ResamplingMixerDetail(const Parameters& pset, art::MixHelper &helper);
+
     size_t nSecondaries() const { return nSecondaries_; }
+
+    void processEventIDs(const art::EventIDSequence& seq);
+
+    void finalizeEvent(art::Event& e);
   };
 
   ResamplingMixerDetail::ResamplingMixerDetail(const Parameters& pars, art::MixHelper& helper)
     : spm_{ pars().mu2e().products(), helper }
     , nSecondaries_{ pars().mu2e().nSecondaries() }
-  {}
+    , writeEventIDs_{ pars().mu2e().writeEventIDs() }
+  {
+    if(writeEventIDs_) {
+      helper.produces<art::EventIDSequence>();
+    }
+  }
+
+  void ResamplingMixerDetail::processEventIDs(const art::EventIDSequence& seq) {
+    if(writeEventIDs_) {
+      idseq_ = seq;
+    }
+  }
+
+  void ResamplingMixerDetail::finalizeEvent(art::Event& e) {
+    if(writeEventIDs_) {
+      auto o = std::make_unique<art::EventIDSequence>();
+      o->swap(idseq_);
+      e.put(std::move(o));
+    }
+  }
 
 }
 
