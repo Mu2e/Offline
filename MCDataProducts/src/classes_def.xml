@@ -211,6 +211,8 @@
  <class name="art::Ptr<mu2e::StrawGasStep>"/>
  <class name="art::Assns<mu2e::StrawGasStep,mu2e::StepPointMC,void>" />
  <class name="art::Wrapper< art::Assns<mu2e::StrawGasStep,mu2e::StepPointMC,void> >" />
+ <class name="art::Assns<mu2e::StepPointMC,mu2e::StrawGasStep,void>" />
+ <class name="art::Wrapper< art::Assns<mu2e::StepPointMC,mu2e::StrawGasStep,void> >" />
 
  <class name="mu2e::StrawDigiMC"/>
  <class name="mu2e::StrawDigiMCCollection"/>
