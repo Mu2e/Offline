@@ -73,6 +73,7 @@ namespace mu2e {
       fhicl::Table<CollectionMixerConfig> extMonSimHitMixer { fhicl::Name("extMonSimHitMixer") };
       fhicl::Table<CollectionMixerConfig> protonBunchIntensityMixer { fhicl::Name("protonBunchIntensityMixer") };
       fhicl::Table<CollectionMixerConfig> protonTimeMapMixer { fhicl::Name("protonTimeMapMixer") };
+      fhicl::Table<CollectionMixerConfig> eventIDMixer { fhicl::Name("eventIDMixer") };
     };
 
     Mu2eProductMixer(const Config& conf, art::MixHelper& helper);
@@ -114,6 +115,10 @@ namespace mu2e {
     bool mixProtonTimeMap(std::vector<mu2e::SimParticleTimeMap const*> const &in,
                                 mu2e::SimParticleTimeMap& out,
                                 art::PtrRemapper const& remap);
+
+    bool mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
+                     art::EventIDSequence& out,
+                     art::PtrRemapper const& remap);
 
     //----------------
     // If elements of a collection can be pointed to by other
