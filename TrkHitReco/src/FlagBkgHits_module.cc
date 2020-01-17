@@ -20,7 +20,6 @@
 #include "RecoDataProducts/inc/BkgQual.hh"
 
 #include "Mu2eUtilities/inc/MVATools.hh"
-#include "TrkReco/inc/ClustererFclConfig.hh"
 #include "TrkReco/inc/TNTClusterer.hh"
 
 #include <string>
@@ -54,7 +53,7 @@ namespace mu2e
              fhicl::Atom<bool>                  saveBkgClusters{      Name("SaveBkgClusters"),      Comment("Save bkg clusters"),false };
              fhicl::Atom<int>                   debugLevel{           Name("DebugLevel"),           Comment("Debug"),0 };
              fhicl::Atom<int>                   printFrequency{       Name("PrintFrequency"),       Comment("Print frequency"),100 };
-             fhicl::Table<TNTClustererConfig>   TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
+             fhicl::Table<TNTClusterer::Config> TNTClustering{        Name("TNTClustering"),        Comment("TNT Clusterer config") };
          };
 
          enum clusterer {TwoNiveauThreshold=1};
