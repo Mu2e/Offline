@@ -117,7 +117,12 @@ namespace mu2e {
     , urbg_{ engine_ }
     , totalBkgCount_(0)
     , skipFactor_{ pars().mu2e().skipFactor() }
-  {}
+    , writeEventIDs_{ pars().mu2e().writeEventIDs() }
+  {
+    if(writeEventIDs_) {
+      helper.produces<art::EventIDSequence>();
+    }
+  }
 
   //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
