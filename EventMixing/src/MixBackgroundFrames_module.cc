@@ -56,7 +56,17 @@ namespace mu2e {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
 
-      fhicl::Table<Mu2eProductMixer::Config> products { Name("products") };
+      fhicl::Table<Mu2eProductMixer::Config> products { Name("products"),
+          Comment("A table specifying products to be mixed.  For each supported data type\n"
+                  "there is a mixingMap sequence that defines mapping of inputs to outputs.\n"
+                  "Each entry in the top-level mixingMap sequence is a sequence of two strings:\n"
+                  "    [ \"InputTag\", \"outputInstanceName\" ]\n"
+                  "The output instance name colon \":\" is special: it means take instance name from the input tag.\n"
+                  "For example, with this config:\n"
+                  "   mixingMap: [ [ \"detectorFilter:tracker\", \"tracker\" ], [ \"detectorFilter:virtualdetector\", \":\" ] ]\n"
+                  "the outputs will be named \"tracker\" and \"virtualdetector\"\n"
+                  )
+          };
 
       fhicl::Atom<art::InputTag> protonBunchIntensityTag { Name("protonBunchIntensityTag"),
           Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
