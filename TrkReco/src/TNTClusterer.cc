@@ -4,7 +4,7 @@
 
 namespace mu2e
 {
-   TNTClusterer::TNTClusterer(const TNTClustererConfig& config) :
+   TNTClusterer::TNTClusterer(const Config& config) :
       hitDtIdx_(),
       dhit_      (config.hitDistance()),           
       dseed_     (config.seedDistance()),           
