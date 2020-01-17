@@ -15,7 +15,6 @@
 #include "GlobalConstantsService/inc/ParticleDataTable.hh"
 #include "MCDataProducts/inc/G4BeamlineInfoCollection.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "TH1F.h"
@@ -415,23 +414,6 @@ namespace mu2e {
   }
 
   void ReadVirtualDetector::beginRun(art::Run const& run){
-
-    // Get pointers to the physical volumes we are interested
-    art::Handle<PhysicalVolumeInfoCollection> physVolumes;
-    run.getByLabel(_physInputTag, physVolumes);
-    if( physVolumes.isValid() ) {
-
-      for ( size_t i=0; i<physVolumes->size(); ++i ) {
-        if( (*physVolumes)[i].name().compare(0,11,"TargetFoil_") == 0 ) {
-
-          vid_stop[i] = (*physVolumes)[i].copyNo();
-          cout << "ReadVirtualDetector: register stopping target volume " << i << " = "
-               << (*physVolumes)[i].name() << " " << (*physVolumes)[i].copyNo() << endl;
-        }
-      }
-
-    }
-
   }
 
   void ReadVirtualDetector::analyze(const art::Event& event) {
