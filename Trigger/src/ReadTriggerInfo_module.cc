@@ -1167,11 +1167,10 @@ namespace mu2e {
 	art::Ptr<mu2e::SimParticle> mother = simptr;
 
 	while(mother->hasParent()) mother = mother->parent();
-	sim = mother.operator ->();
-	int      pdgM   = sim->pdgId();
-	double   pXMC   = step->momentum().x();
-	double   pYMC   = step->momentum().y();
-	double   pZMC   = step->momentum().z();
+	int      pdgM   = mother->pdgId();
+	double   pXMC   = spmcp->momentum().x();
+	double   pYMC   = spmcp->momentum().y();
+	double   pZMC   = spmcp->momentum().z();
 	// double   mass(-1.);//  = part->Mass();
 	// double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
 	// mass   = pdt->particle(pdg).ref().mass();
@@ -1220,7 +1219,6 @@ namespace mu2e {
 	  indexMother = 90;
 	}
 
-
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
@@ -1268,7 +1266,7 @@ namespace mu2e {
 
 	// Hist._hHelInfo[HelTrigIndex][20]->Fill(energy);
       }
-    }
+    
   }
   //--------------------------------------------------------------------------------
   
