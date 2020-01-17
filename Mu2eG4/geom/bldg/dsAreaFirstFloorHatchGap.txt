@@ -1,0 +1,29 @@
+// Floor between the TS and DS hatches
+
+string building.dsArea.firstfloor.hatchgap.name     = "dsAreaFirstFloorHatchGap";
+
+string building.dsArea.firstfloor.hatchgap.material = "CONCRETE_MARS";
+
+double building.dsArea.firstfloor.hatchgap.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.firstfloor.hatchgap.offsetFromFloorSurface.y = 6858.0;
+double building.dsArea.firstfloor.hatchgap.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.firstfloor.hatchgap.yHalfThickness           = 914.4;
+
+vector<double> building.dsArea.firstfloor.hatchgap.xPositions = {
+  6705.6,  // B
+  7315.2,   // C
+  7315.2,   // C1
+  6705.6 // A
+};
+
+vector<double> building.dsArea.firstfloor.hatchgap.yPositions = {
+  -1041.4,   // B
+  -1041.4,   // C
+  -8661.4,   // C1
+  -8661.4   // A
+};
+
+// Local Variables:
+// mode:c++
+// End:

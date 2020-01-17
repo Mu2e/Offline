@@ -129,8 +129,8 @@ void TrkAnaPlots::BuildCuts(float momwin){
   _eplustq = TCut("dequal.TrkQualDeP>0.8");
   _eminuspid = TCut("dequal.TrkPIDDeM>0.95");
   _epluspid = TCut("dequal.TrkPIDDeP>0.95");
-  _eminustrig = TCut("(trigbits&0x4010)>0"); // negative, TrkPatRec or CalPatRec
-  _eplustrig = TCut("(trigbits&0x8020)>0"); // positive, TrkPatRec or CalPatRec
+  _eminustrig = TCut("(trigbits&0x80080)>0"); // negative, TrkPatRec or CalPatRec
+  _eplustrig = TCut("(trigbits&0x100100)>0"); // positive, TrkPatRec or CalPatRec
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eminusmom,momwin);
   _eminusrmom = TCut(ctext);
   snprintf(ctext,200,"abs(deent.mom-%f)<%f",eplusmom,momwin);
