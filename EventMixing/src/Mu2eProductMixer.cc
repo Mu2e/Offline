@@ -88,6 +88,11 @@ namespace mu2e {
         (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixProtonTimeMap, *this);
     }
 
+    for(const auto& e: conf.eventIDMixer().mixingMap()) {
+      helper.declareMixOp
+        (e.inTag, e.resolvedInstanceName(), &Mu2eProductMixer::mixEventIDs, *this);
+    }
+
   }
 
   //----------------------------------------------------------------
@@ -269,6 +274,17 @@ namespace mu2e {
 
     return true;
   }
+
+  //----------------------------------------------------------------
+  bool Mu2eProductMixer::mixEventIDs(std::vector<art::EventIDSequence const*> const &in,
+                                     art::EventIDSequence& out,
+                                     art::PtrRemapper const&)
+  {
+    art::flattenCollections(in, out);
+    return true;
+  }
+
+  //----------------------------------------------------------------
 
 }
 //================================================================
