@@ -33,15 +33,15 @@ namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
 
-    class SensitiveDetectorHelper;
-    class IMu2eG4Cut;
-    class PrimaryGeneratorAction;
-    class Mu2eG4PerThreadStorage;
-    class PhysicalVolumeHelper;
+  class SensitiveDetectorHelper;
+  class IMu2eG4Cut;
+  class PrimaryGeneratorAction;
+  class Mu2eG4PerThreadStorage;
+  class PhysicalVolumeHelper;
 
 
-class ActionInitialization : public G4VUserActionInitialization
-{
+  class ActionInitialization : public G4VUserActionInitialization
+  {
   public:
     ActionInitialization(const fhicl::ParameterSet& pset,
                          SensitiveDetectorHelper* sensitive_detectorhelper,
@@ -62,7 +62,7 @@ class ActionInitialization : public G4VUserActionInitialization
     virtual G4VSteppingVerbose* InitializeSteppingVerbose() const;
 
 
-   private:
+  private:
 
     fhicl::ParameterSet const& pset_;
 
@@ -79,12 +79,12 @@ class ActionInitialization : public G4VUserActionInitialization
     SensitiveDetectorHelper* sensitiveDetectorHelper_;
     Mu2eG4PerThreadStorage*  perThreadStorage_;
     PhysicalVolumeHelper* physVolHelper_;
-    
+
     mutable PhysicsProcessInfo physicsProcessInfo_;
-    
+
     CLHEP::Hep3Vector const& originInWorld_;
     unsigned stageOffset_;
-};
+  };
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_ActionInitialization_hh */

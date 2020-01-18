@@ -20,7 +20,7 @@
 namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
-    
+
   class PhysicalVolumeHelper;
 
   class Mu2eG4MasterRunAction : public G4UserRunAction
@@ -34,7 +34,7 @@ namespace mu2e {
 
     //methods
     virtual void BeginOfRunAction(const G4Run* aRun);
-      
+
     void MasterBeginRunAction();
     void MasterEndRunAction();
 
@@ -47,5 +47,3 @@ namespace mu2e {
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_MasterRunAction_hh */
-
-
