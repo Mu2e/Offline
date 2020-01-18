@@ -216,7 +216,7 @@ physics : {
 
 
 services.TFileService.fileName : "genReco.hist"
-services.SeedService.baseSeed : 0
+services.SeedService.baseSeed : 8
 services.SeedService.maxUniqueEngines : 20
 
 # Temporarily use Andy's muon stops.  These will be replaced soon with MDC2018 output

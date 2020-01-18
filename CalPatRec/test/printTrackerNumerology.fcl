@@ -17,7 +17,7 @@ END_PROLOG
 services : {
     message               : @local::default_message
     TFileService          : { fileName : "delta_finder_arpan.root" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
     #   Timing                : { }
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt"      }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
@@ -25,7 +25,7 @@ services : {
     BTrkHelper             : @local::BTrkHelperDefault
     G4Helper               : { }
     SeedService            : { @table::automaticSeeds
-	baseSeed         :  0
+	baseSeed         :  8
 	maxUniqueEngines :  20
     }
     

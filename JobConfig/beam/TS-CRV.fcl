@@ -18,7 +18,7 @@ services : {
 
    message               : @local::default_message
    TFileService          : { fileName : "nts.owner.beam-g4s2-crv.version.sequencer.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
