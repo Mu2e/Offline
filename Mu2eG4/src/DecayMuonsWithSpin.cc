@@ -107,16 +107,16 @@ void DecayMuonsWithSpin::ConstructParticle()
 
   G4DecayTable* MuonPlusDecayTable = new G4DecayTable();
   MuonPlusDecayTable -> Insert(new
-			       G4MuonDecayChannelWithSpin("mu+",0.986));
+                               G4MuonDecayChannelWithSpin("mu+",0.986));
   MuonPlusDecayTable -> Insert(new
-			       G4MuonRadiativeDecayChannelWithSpin("mu+",0.014));
+                               G4MuonRadiativeDecayChannelWithSpin("mu+",0.014));
   G4MuonPlus::MuonPlusDefinition() -> SetDecayTable(MuonPlusDecayTable);
 
   G4DecayTable* MuonMinusDecayTable = new G4DecayTable();
   MuonMinusDecayTable -> Insert(new
-				G4MuonDecayChannelWithSpin("mu-",0.986));
+                                G4MuonDecayChannelWithSpin("mu-",0.986));
   MuonMinusDecayTable -> Insert(new
-				G4MuonRadiativeDecayChannelWithSpin("mu-",0.014));
+                                G4MuonRadiativeDecayChannelWithSpin("mu-",0.014));
   G4MuonMinus::MuonMinusDefinition() -> SetDecayTable(MuonMinusDecayTable);
 }
 

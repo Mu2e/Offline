@@ -64,13 +64,13 @@ namespace mu2e {
     ~Mu2eStudyWorld();
 
     // Construct everything.
-    // The non-const return type is eventually required 
+    // The non-const return type is eventually required
     // by G4VUserDetectorConstruction::Construct();
     //G4VPhysicalVolume * construct();
-      
-      virtual G4VPhysicalVolume * construct() override;
-      
-      virtual void constructSDandField() override;
+
+    virtual G4VPhysicalVolume * construct() override;
+
+    virtual void constructSDandField() override;
 
 
   private:
@@ -83,12 +83,12 @@ namespace mu2e {
     fhicl::ParameterSet               pset_;
 
     // _verbosityLevel in the base class
- 
+
     bool        writeGDML_;
     std::string gdmlFileName_;
     std::string g4stepperName_;
     double      bfieldMaxStep_;
- 
+
 
   };
 
