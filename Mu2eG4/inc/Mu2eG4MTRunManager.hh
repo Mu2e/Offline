@@ -21,17 +21,17 @@
 namespace G4 {class G4VUserPhysicsList;}
 
 namespace mu2e {
-    
-    class Mu2eG4MasterRunAction;
 
-  
-    class Mu2eG4MTRunManager : public G4MTRunManager{
-    
+  class Mu2eG4MasterRunAction;
+
+
+  class Mu2eG4MTRunManager : public G4MTRunManager{
+
   public:
-    
+
     Mu2eG4MTRunManager(const fhicl::ParameterSet& pset);
     virtual ~Mu2eG4MTRunManager();
-        
+
     //we need our own versions of these functions in order to correctly control the event loop
     void initializeG4(int art_runnumber);
     void initializeKernelAndRM();
@@ -39,35 +39,35 @@ namespace mu2e {
     void initializeMasterRunAction();
     void stopG4();
     void terminateRun();
-        
+
     inline G4VUserPhysicsList* getMasterPhysicsList() {return physicsList_;}
-    
+
     inline void setPhysVolumeHelper(PhysicalVolumeHelper* phys_volume_helper) {physVolHelper_ = phys_volume_helper;}
     inline PhysicalVolumeHelper* getPhysVolumeHelper() {return physVolHelper_;}
 
-        
+
   private:
-    
+
     // Private and unimplemented to prevent copying.
     Mu2eG4MTRunManager( Mu2eG4MTRunManager const & );
     Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & );
-        
+
     fhicl::ParameterSet pset_;
-            
+
     bool m_managerInitialized;
     bool m_runTerminated;
-        
+
     PhysicalVolumeHelper* physVolHelper_;
     SensitiveDetectorHelper sensitiveDetectorHelper_;
     Mu2eG4MasterRunAction* masterRunAction_;
     G4VUserPhysicsList* physicsList_;
-        
+
     int rmvlevel_;
-        
+
     G4int maxNumEventstoSeed_;
-        
+
   };
-  
+
 } // end namespace mu2e
 
 #endif /* Mu2eG4_MTRunManager_hh */

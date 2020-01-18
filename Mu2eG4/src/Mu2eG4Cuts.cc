@@ -88,17 +88,17 @@ namespace mu2e {
     }
 
     void IOHelper::insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store){
-        if(steppingOutput_) {
-            per_thread_store->insertCutsStepPointMC(std::move(steppingOutput_), steppingOutputName_);
-        }
+      if(steppingOutput_) {
+        per_thread_store->insertCutsStepPointMC(std::move(steppingOutput_), steppingOutputName_);
+      }
     }
-      
+
     void IOHelper::deleteCutsData(){
-        if(steppingOutput_) {
-            steppingOutput_ = nullptr;
-        }
+      if(steppingOutput_) {
+        steppingOutput_ = nullptr;
+      }
     }
-      
+
     void IOHelper::finishConstruction(const CLHEP::Hep3Vector& mu2eOriginInWorld) {
       mu2eOrigin_ = mu2eOriginInWorld;
     }
@@ -214,19 +214,19 @@ namespace mu2e {
         cut->beginEvent(evt, spHelper);
       }
     }
-      
+
     void Union::insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store){
-          IOHelper::insertCutsDataIntoPerThreadStorage(per_thread_store);
-          for(auto& cut: cuts_) {
-              cut->insertCutsDataIntoPerThreadStorage(per_thread_store);
-          }
+      IOHelper::insertCutsDataIntoPerThreadStorage(per_thread_store);
+      for(auto& cut: cuts_) {
+        cut->insertCutsDataIntoPerThreadStorage(per_thread_store);
       }
-      
+    }
+
     void Union::deleteCutsData(){
-          IOHelper::deleteCutsData();
-          for(auto& cut: cuts_) {
-            cut->deleteCutsData();
-          }
+      IOHelper::deleteCutsData();
+      for(auto& cut: cuts_) {
+        cut->deleteCutsData();
+      }
     }
 
 
@@ -305,19 +305,19 @@ namespace mu2e {
         cut->beginEvent(evt, spHelper);
       }
     }
-      
+
     void Intersection::insertCutsDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store){
-        IOHelper::insertCutsDataIntoPerThreadStorage(per_thread_store);
-        for(auto& cut: cuts_) {
-            cut->insertCutsDataIntoPerThreadStorage(per_thread_store);
-        }
+      IOHelper::insertCutsDataIntoPerThreadStorage(per_thread_store);
+      for(auto& cut: cuts_) {
+        cut->insertCutsDataIntoPerThreadStorage(per_thread_store);
+      }
     }
-      
+
     void Intersection::deleteCutsData(){
-          IOHelper::deleteCutsData();
-          for(auto& cut: cuts_) {
-              cut->deleteCutsData();
-          }
+      IOHelper::deleteCutsData();
+      for(auto& cut: cuts_) {
+        cut->deleteCutsData();
+      }
     }
 
 
@@ -624,7 +624,7 @@ namespace mu2e {
 
     //================================================================
     class GlobalTime: virtual public IMu2eG4Cut,
-                         public IOHelper
+                      public IOHelper
     {
     public:
       virtual bool steppingActionCut(const G4Step  *step);

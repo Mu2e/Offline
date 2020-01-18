@@ -123,9 +123,9 @@ namespace mu2e{
 
     else if ( name  == "ErrorPhysicsList" ) {
       // rather special case of G4VUserPhysicsList for Track Error
-      // Propagation, with special Energy Loss implementation 
+      // Propagation, with special Energy Loss implementation
       // (see User's Guide: For Application Developers)
-      return new G4ErrorPhysicsList(); 
+      return new G4ErrorPhysicsList();
     }
 
     // General case
