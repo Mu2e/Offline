@@ -19,7 +19,7 @@ services : {
 
   message               : @local::default_message
   TFileService          : { fileName : "beamline_01.root"  }
-  RandomNumberGenerator : {}
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
   GeometryService        : { inputFile      : "Mu2eG4/test/beamline_geom.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -57,7 +57,7 @@ physics : {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // Enable G4 graphics.

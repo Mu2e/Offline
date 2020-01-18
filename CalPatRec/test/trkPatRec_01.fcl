@@ -37,7 +37,7 @@ services : {
     
     
     TFileService : { fileName   : "calPatRec.root" }
-#    RandomNumberGenerator : { }
+#    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 	
