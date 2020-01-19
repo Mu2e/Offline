@@ -339,85 +339,86 @@ namespace mu2e
 //-----------------------------------------------------------------------------
 // now evaluate the T0 and its error using the straw hits
 //-----------------------------------------------------------------------------
-	  int last_iteration  = -1;
-	  if (_cprmode)	_kfit.updateT0(_result, last_iteration);
+//	  int last_iteration  = -1;
+//	  if (_cprmode)	_kfit.updateT0(_result, last_iteration);
 
 	  // warning about 'fit current': this is not an error
 	  if(!_result.krep->fitCurrent()){
 	    cout << "Fit not current! " << endl;
-	  }
-	  // flg all hits as belonging to a track.  Doesn't work for TrkCaloHit FIXME!
-	  if(ikseed<StrawHitFlag::_maxTrkId){
-	    for(auto ihit=_result.krep->hitVector().begin();ihit != _result.krep->hitVector().end();++ihit){
-	      TrkStrawHit* tsh = dynamic_cast<TrkStrawHit*>(*ihit);
-	      if((*ihit)->isActive() && tsh != 0)shfcol->at(tsh->index()).merge(StrawHitFlag::track);
+	    _result.deleteTrack();
+	  } else {
+	    // flg all hits as belonging to a track.  Doesn't work for TrkCaloHit FIXME!
+	    if(ikseed<StrawHitFlag::_maxTrkId){
+	      for(auto ihit=_result.krep->hitVector().begin();ihit != _result.krep->hitVector().end();++ihit){
+		TrkStrawHit* tsh = dynamic_cast<TrkStrawHit*>(*ihit);
+		if((*ihit)->isActive() && tsh != 0)shfcol->at(tsh->index()).merge(StrawHitFlag::track);
+	      }
 	    }
-	  }
-	  
-	  
-	  // save successful kalman fits in the event
-	  KalRep *krep = _result.stealTrack();
-	  krcol->push_back(krep);
 
-	  int index = krcol->size()-1;
-	  krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
-	  // convert successful fits into 'seeds' for persistence
-	  TrkFitFlag fflag(kseed.status());
-	  fflag.merge(TrkFitFlag::KFF);
-	  if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
-	  if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
-	  //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
-	  KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
-	  // reference the seed fit in this fit
-	  auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
-	  fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
-	  // redundant but possibly useful
-	  fseed._helix = kseed.helix();
-	  // fill with new information
-	  fseed._t0 = krep->t0();
-	  fseed._flt0 = krep->flt0();
-	  // global fit information
-	  fseed._chisq = krep->chisq();
-	  // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
-	  fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
-	  fseed._nbend = TrkUtilities::countBends(krep);
-	  TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
-	  TrkUtilities::fillStraws(krep,fseed._straws);
-	  // sample the fit at the requested z positions.  Need options here to define a set of
-	  // standard points, or to sample each unique segment on the fit FIXME!
-	  for(auto zpos : _zsave) {
-	    // compute the flightlength for this z
-	    double fltlen = krep->pieceTraj().zFlight(zpos);
-	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
-	    BbrVectorErr momerr = krep->momentumErr(fltlen);
-	    // sample the helix
-	    double locflt(0.0);
-	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
-	    // fill the segment
-	    KalSegment kseg;
-	    TrkUtilities::fillSegment(*htraj,momerr,locflt-fltlen,kseg);
-	    fseed._segments.push_back(kseg);
-	  }
-	  // see if there's a TrkCaloHit
-	  const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
-	  if(tch != 0){
-	    TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
-	    // set the Ptr using the helix: this could be more direct FIXME!
-	    fseed._chit._cluster = ccPtr;
-	    // create a helix segment at the TrkCaloHit
-	    KalSegment kseg;
-	    // sample the momentum at this flight.  This belongs in a separate utility FIXME
-	    BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
-	    double locflt(0.0);
-	    const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
-	    TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
-	    fseed._segments.push_back(kseg);
-	  }
-	  // save KalSeed for this track
-	  kscol->push_back(fseed);
-	  
-	  if (_diag > 0) _hmanager->fillHistograms(&_data);
 
+	    // save successful kalman fits in the event
+	    KalRep *krep = _result.stealTrack();
+	    krcol->push_back(krep);
+
+	    int index = krcol->size()-1;
+	    krPtrcol->emplace_back(kalRepsID, index, event.productGetter(kalRepsID));
+	    // convert successful fits into 'seeds' for persistence
+	    TrkFitFlag fflag(kseed.status());
+	    fflag.merge(TrkFitFlag::KFF);
+	    if(krep->fitStatus().success()) fflag.merge(TrkFitFlag::kalmanOK);
+	    if(krep->fitStatus().success()==1) fflag.merge(TrkFitFlag::kalmanConverged);
+	    //	  KalSeed fseed(_tpart,_fdir,krep->t0(),krep->flt0(),kseed.status());
+	    KalSeed fseed(krep->particleType(),_fdir,krep->t0(),krep->flt0(),fflag);
+	    // reference the seed fit in this fit
+	    auto ksH = event.getValidHandle<KalSeedCollection>(_ksToken);
+	    fseed._kal = art::Ptr<KalSeed>(ksH,ikseed);
+	    // redundant but possibly useful
+	    fseed._helix = kseed.helix();
+	    // fill with new information
+	    fseed._t0 = krep->t0();
+	    fseed._flt0 = krep->flt0();
+	    // global fit information
+	    fseed._chisq = krep->chisq();
+	    // compute the fit consistency.  Note our fit has effectively 6 parameters as t0 is allowed to float and its error is propagated to the chisquared
+	    fseed._fitcon =  TrkUtilities::chisqConsistency(krep);
+	    fseed._nbend = TrkUtilities::countBends(krep);
+	    TrkUtilities::fillStrawHitSeeds(krep,*_chcol,fseed._hits);
+	    TrkUtilities::fillStraws(krep,fseed._straws);
+	    // sample the fit at the requested z positions.  Need options here to define a set of
+	    // standard points, or to sample each unique segment on the fit FIXME!
+	    for(auto zpos : _zsave) {
+	      // compute the flightlength for this z
+	      double fltlen = krep->pieceTraj().zFlight(zpos);
+	      // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	      BbrVectorErr momerr = krep->momentumErr(fltlen);
+	      // sample the helix
+	      double locflt(0.0);
+	      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(fltlen,locflt));
+	      // fill the segment
+	      KalSegment kseg;
+	      TrkUtilities::fillSegment(*htraj,momerr,locflt-fltlen,kseg);
+	      fseed._segments.push_back(kseg);
+	    }
+	    // see if there's a TrkCaloHit
+	    const TrkCaloHit* tch = TrkUtilities::findTrkCaloHit(krep);
+	    if(tch != 0){
+	      TrkUtilities::fillCaloHitSeed(tch,fseed._chit);
+	      // set the Ptr using the helix: this could be more direct FIXME!
+	      fseed._chit._cluster = ccPtr;
+	      // create a helix segment at the TrkCaloHit
+	      KalSegment kseg;
+	      // sample the momentum at this flight.  This belongs in a separate utility FIXME
+	      BbrVectorErr momerr = krep->momentumErr(tch->fltLen());
+	      double locflt(0.0);
+	      const HelixTraj* htraj = dynamic_cast<const HelixTraj*>(krep->localTrajectory(tch->fltLen(),locflt));
+	      TrkUtilities::fillSegment(*htraj,momerr,locflt-tch->fltLen(),kseg);
+	      fseed._segments.push_back(kseg);
+	    }
+	    // save KalSeed for this track
+	    kscol->push_back(fseed);
+
+	    if (_diag > 0) _hmanager->fillHistograms(&_data);
+	  }
 	} else {// fit failure
 	  _result.deleteTrack();
 	  //	  delete krep;

@@ -71,6 +71,11 @@ namespace mu2e {
     float x;
     float y;
     float z;
+
+    float InitX;
+    float InitY;
+    float InitZ;
+
     float time;
 
     float px;
@@ -83,10 +88,16 @@ namespace mu2e {
     int   pdgId;
     unsigned particleId;
     unsigned volumeCopyNumber;
+    int eventId;
+    int subrunId;
 
     VDHit() : x(std::numeric_limits<double>::quiet_NaN())
             , y(std::numeric_limits<double>::quiet_NaN())
             , z(std::numeric_limits<double>::quiet_NaN())
+
+	    , InitX(std::numeric_limits<double>::quiet_NaN())
+	    , InitY(std::numeric_limits<double>::quiet_NaN())
+            , InitZ(std::numeric_limits<double>::quiet_NaN())
 
             , time(std::numeric_limits<double>::quiet_NaN())
 
@@ -100,13 +111,19 @@ namespace mu2e {
       , pdgId(0)
       , particleId(-1U)
       , volumeCopyNumber(-1U)
+      , eventId(0)
+      , subrunId(0)
     {}
 
     //----------------------------------------------------------------
-    VDHit(const SimParticleTimeOffset& toff, const StepPointMC& hit)
+    VDHit(const SimParticleTimeOffset& toff, const art::Event& event, const StepPointMC& hit)
       : x(hit.position().x())
       , y(hit.position().y())
       , z(hit.position().z())
+
+      , InitX(hit.simParticle()->startPosition().x())
+      , InitY(hit.simParticle()->startPosition().y())
+      , InitZ(hit.simParticle()->startPosition().z())
 
       , time(toff.timeWithOffsetsApplied(hit))
 
@@ -122,6 +139,9 @@ namespace mu2e {
       , pdgId(hit.simParticle()->pdgId())
       , particleId(hit.simParticle()->id().asUint())
       , volumeCopyNumber(hit.volumeId())
+
+      , eventId(event.id().event())
+      , subrunId(event.id().subRun())
     {}
 
   }; // struct VDHit
@@ -169,7 +189,7 @@ namespace mu2e {
   //================================================================
   void StepPointMC1stHitDumper::beginJob() {
     art::ServiceHandle<art::TFileService> tfs;
-    static const char branchDesc[] = "x/F:y/F:z/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i";
+    static const char branchDesc[] = "x/F:y/F:z/F:InitX/F:InitY/F:InitZ/F:time/F:px/F:py/F:pz/F:pmag/F:ek/F:charge/F:pdgId/I:particleId/i:volumeCopy/i:eventId/I:subrunId/I";
     nt_ = tfs->make<TTree>( "nt", "StepPointMC1stHitDumper ntuple");
     nt_->Branch("hits", &hit_, branchDesc);
     if(writeProperTime_) {
@@ -195,7 +215,7 @@ namespace mu2e {
         // std::cout << event.id() << ": " << stepPoints.at(i) << std::endl;
       // }
       if (stepPoints.size()) {
-        hit_ = VDHit(toff_, stepPoints.at(0));
+        hit_ = VDHit(toff_, event, stepPoints.at(0));
         // std::cout << event.id() << ", " << hit_.pdgId
           // << ", " << hit_.time << ", " << hit_.charge
           // << std::endl;

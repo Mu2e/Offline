@@ -19,24 +19,20 @@ namespace mu2e {
   class StepPointMCPrinter : public ProductPrinter {
   public:
 
-    typedef std::vector<std::string> vecstr;
+    struct Config : public ProductPrinter::Config {
+      fhicl::Atom<float> pCut{ fhicl::Name("pCut"), 
+	  fhicl::Comment("minimum momentum"),-1};
+    };
 
-    StepPointMCPrinter() { set( fhicl::ParameterSet() ); }
-    StepPointMCPrinter(const fhicl::ParameterSet& pset) { set(pset); }
-
-    // tags to select which product instances to process
-    void setTags(const vecstr& tags) { _tags = tags; }
-    // usually customized in the subclass for items relevant to that product
+    StepPointMCPrinter():_pCut(-1) { }
+    StepPointMCPrinter(const Config& conf):ProductPrinter(conf) { 
+      _pCut = conf.pCut();
+    }
 
     // methods to setup parameters
     // do not print if p is below this cut
     void setPCut(double p) { _pCut = p; }
-
-    // pset should contain a table called StepPointMCPrinter
-    void set(const fhicl::ParameterSet& pset);
-
-    // the vector<string> list of inputTags
-    const vecstr& tags() const {return _tags; }
+    double pCut() const { return _pCut; }
 
     // all the ways to request a printout
     void Print(art::Event const& event,
@@ -58,7 +54,6 @@ namespace mu2e {
 
   private:
     double _pCut;
-    vecstr _tags;
 
   };
 

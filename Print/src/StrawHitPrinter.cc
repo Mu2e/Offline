@@ -8,7 +8,7 @@ void
 mu2e::StrawHitPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<StrawHitCollection> > vah;
     event.getManyByType(vah);
@@ -88,18 +88,6 @@ void
 mu2e::StrawHitPrinter::PrintListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind StrwInd   time       dt      eDep\n";
-
-}
-
-void 
-mu2e::StrawHitPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("StrawHitPrinter",fhicl::ParameterSet());
-
-  _eCut = localPset.get<double>("eCut",-1);
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
 
 }
 

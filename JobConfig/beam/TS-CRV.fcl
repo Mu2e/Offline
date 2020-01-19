@@ -95,10 +95,8 @@ physics : {
    filters: {
       crvFilter: {
          module_type: FilterG4Out
-	 noInstanceName : true
          mainHitInputs : [ "g4run:CRV" ]
          extraHitInputs : [ ]
-         numSimParticleCollections : 1
          vetoDaughters: []
       }
 

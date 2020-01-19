@@ -14,6 +14,7 @@
 #include "Mu2eG4/inc/Mu2eSensitiveDetector.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
+#include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
 
 // From the art tool chain
 #include "fhiclcpp/ParameterSet.h"
@@ -74,10 +75,8 @@ namespace mu2e {
       void instantiateLVSDs(const SimpleConfig& config);
 
       bool extMonPixelsEnabled() const { return extMonPixelsEnabled_; }
+      ExtMonFNALPixelSD* getExtMonFNALPixelSD() const { return extMonFNALPixelSD_; }
       
-      //LG: I made this public to use it in testing something
-      std::vector<std::string> stepInstanceNamesToBeProduced() const;
-
       int verbosityLevel() const { return verbosityLevel_; }
 
   private:
@@ -118,11 +117,12 @@ namespace mu2e {
       InputTags preSimulatedHits_;
 
       // Return all of the instances names of the data products to be produced.
-      //LG: I made this public to use it in testing something
-      //std::vector<std::string> stepInstanceNamesToBeProduced() const;
+      std::vector<std::string> stepInstanceNamesToBeProduced() const;
 
       // Separate handling as this detector does not produced StepPointMCs
       bool extMonPixelsEnabled_;
+      ExtMonFNALPixelSD* extMonFNALPixelSD_ = nullptr;
+      const bool standardMu2eDetector_;
       
       int  verbosityLevel_;
 
