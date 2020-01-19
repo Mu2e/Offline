@@ -1,0 +1,29 @@
+// West edge for the TS area hatch block
+
+string building.tsArea.hatchwedge.name     = "tsAreaHatchWEdge";
+
+string building.tsArea.hatchwedge.material = "CONCRETE_MARS";
+
+double building.tsArea.hatchwedge.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsArea.hatchwedge.offsetFromFloorSurface.y = 6477.0;
+double building.tsArea.hatchwedge.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsArea.hatchwedge.yHalfThickness           = 1295.4;
+
+vector<double> building.tsArea.hatchwedge.xPositions = {
+  -609.6,  // B
+  -355.6,   // C
+  -355.6,   // C1
+  -609.6 // A
+};
+
+vector<double> building.tsArea.hatchwedge.yPositions = {
+   609.6,   // B
+   609.6,   // C
+  -8661.4,   // C1
+  -8661.4   // A
+};
+
+// Local Variables:
+// mode:c++
+// End:

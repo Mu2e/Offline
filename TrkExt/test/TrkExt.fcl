@@ -22,7 +22,7 @@ services :
   message : @local::default_message
 
   TFileService : { fileName : "result-TrkExt.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 
@@ -155,5 +155,5 @@ outputs: {
 physics.producers.generate.inputfile  : "Mu2eG4/test/genconfig_01.txt"
 physics.producers.makeSH.diagLevel    : 0
 physics.producers.makeSH.maxFullPrint : 0
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

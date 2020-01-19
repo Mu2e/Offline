@@ -25,22 +25,14 @@ source : {
   maxEvents : 100
 }
 
+
 services : {
-
-  message               : @local::default_message
-  TFileService          : { fileName : "g4study_Box.root" }
-  RandomNumberGenerator : { }
-
+  @table::Services.SimAndReco
+  TFileService          : { fileName : "g4study.root" }
   GeometryService        : { @table::Services.SimAndReco.GeometryService
       inputFile          : "Mu2eG4/test/g4study_Box_geom.txt"  
       simulatedDetector  : { tool_type      : "ConstructEnvBox" }
   }
-
-  ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
-  GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
-  G4Helper               : { }
-  SeedService            : @local::automaticSeeds
-
 }
 
 physics : {
@@ -110,7 +102,7 @@ outputs:  {
 }
 
 # Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 #services.message.destinations.log.noTimeStamps : true
 # inform the geometry service it is not the standard Mu2e Detector

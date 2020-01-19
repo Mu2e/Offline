@@ -9,7 +9,7 @@ services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s2EMFOneGr
 services.TFileService.fileName : "hg4s2EMFOneGroove.root"
 outputs.outVDFiltered.fileName : "vdg4s2EMFOneGroove.art"
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.

@@ -47,7 +47,7 @@ services : {
     #  message.destinations.log.default.limit : 5
     
     TFileService          : { fileName   : "calPatRec.root" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common.txt" }
     #GeometryService        : { inputFile : "murat/geom/geom_common_BaF2_r_1_1.txt" }

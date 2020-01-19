@@ -1,0 +1,31 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_remoteHatchLid.ccl
+
+string building.remote.handling.Hatch.Lid.name     = "remoteHandlingHatchLid";
+
+string building.remote.handling.Hatch.Lid.material = "StainlessSteel";
+
+double building.remote.handling.Hatch.Lid.offsetFromMu2eOrigin.x   = 947.4;
+double building.remote.handling.Hatch.Lid.offsetFromFloorSurface.y = 11323.64;
+double building.remote.handling.Hatch.Lid.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.remote.handling.Hatch.Lid.yHalfThickness           = 4.76;
+
+vector<double> building.remote.handling.Hatch.Lid.xPositions = {
+  9245.6,   // P1
+  9245.6,   // P2
+  3708.4,   // P3
+  3708.4   // P4
+};
+
+vector<double> building.remote.handling.Hatch.Lid.yPositions = {
+  16154.4,   // P1
+  13360.4,   // P2
+  13360.4,   // P3
+  16154.1   // P4
+};
+
+// Local Variables:
+// mode:c++
+// End:

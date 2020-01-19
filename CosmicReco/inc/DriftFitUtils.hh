@@ -1,5 +1,5 @@
-#ifndef _MU2E_UTILITIES_DriftFitUtils_HH
-#define _MU2E_UTILITIES_DriftFitUtils_HH
+#ifndef _COSMIC_RECO_DriftFitUtils_HH
+#define _COSMIC_RECO_DriftFitUtils_HH
 //Date: August 2019
 //Author: S. Middletin
 //Purpose: Add in drift fit functionality in seperate file for ease
@@ -10,7 +10,7 @@
 #include "RecoDataProducts/inc/CosmicTrack.hh"
 #include "RecoDataProducts/inc/CosmicTrackSeed.hh"
 #include "TrackerConditions/inc/StrawDrift.hh"
-#include "RecoDataProducts/inc/ComboHit.hh"
+
 //Tracker Drift Conditions:
 #include "TrackerGeom/inc/Tracker.hh"
 #include "TrackerConditions/inc/StrawResponse.hh"
@@ -34,14 +34,16 @@ using namespace mu2e;
 
 namespace DriftFitUtils{
   	TrackEquation ConvertFitToDetectorFrame(TrackAxes axes, XYZVec Position, XYZVec Direction);
-	double GetTestDOCA(Straw const& straw, double a0, double a1, double b0, double b1);
-        int GetAmbig(Straw const& straw, double a0, double a1, double b0, double b1);
-  	double GetPropVelocity(StrawResponse rep, ComboHit chit); 
-	double GetPropTime(ComboHit chit, Straw straw, double vprop);
-  	double TimeResidualTrans(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
-  	double TimeResidualLong(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit chit);
-  	double TimeResidual(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit);
-  	double T0(Straw const&  straw, double doca, StrawResponse srep, double t0, ComboHit hit, double average);
+	double GetTestDOCA(ComboHit const& chit,XYZVec const& pos, XYZVec const& dir,  const Tracker* tracker);
+	double GetTestDOCA(ComboHit const& chit,double a0, double a1, double b0, double b1, const Tracker* tracker);
+        int GetAmbig(ComboHit const& chit, XYZVec const& pos, XYZVec const& dir,  const Tracker* tracker);
+        int GetAmbig(ComboHit const& chit, double a0, double a1, double b0, double b1,  const Tracker* tracker);
+  	double GetPropVelocity(StrawResponse const& srep, ComboHit const& chit); 
+	double GetPropTime(ComboHit const& chit, double vprop, const Tracker* tracker);
+  	double TimeResidualTrans(double doca);
+  	double TimeResidualLong(double doca, StrawResponse const& srep, double t0, ComboHit const& chit,  const Tracker* tracker);
+  	double TimeResidual(double doca, StrawResponse const& srep, double t0, ComboHit const& hit,  const Tracker* tracker);
+  	
   
  }
 

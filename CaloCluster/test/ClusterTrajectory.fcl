@@ -31,7 +31,7 @@ services :
     fileName : "CaloClusterTrj.root"
   }
 
-  RandomNumberGenerator : { }	
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }	
 	
   GeometryService :
   {
@@ -126,5 +126,5 @@ outputs:
 #physics.producers.CaloReadoutHitsMaker.maxFullPrint : 0
 #physics.producers.CaloCrystalHitsMaker.diagLevel : -1
 #physics.producers.CaloCrystalHitsMaker.maxFullPrint : 0
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

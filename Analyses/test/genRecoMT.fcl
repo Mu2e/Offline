@@ -243,5 +243,5 @@ physics.analyzers.RKFDeM.KalDiag.SimParticleLabel : "g4run"
 physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
 #physics.producers.KFFDeM.KalFit.debugLevel : 4
 services.TFileService.fileName : "genReco.hist"
-services.SeedService.baseSeed : 0
+services.SeedService.baseSeed : 8
 services.SeedService.maxUniqueEngines : 20

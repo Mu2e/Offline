@@ -11,7 +11,6 @@
 //
 
 // C++ includes.
-#include <iostream>
 
 // Framework includes
 #include "art/Framework/Principal/Run.h"
@@ -33,15 +32,12 @@
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 
-//ROOT Includes
-#include "TH1D.h"
-
 using namespace std;
 
 namespace mu2e {
 
-  PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config):
-
+    PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config):
+    
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
     _gunOrigin(GeomHandle<ProductionTarget>()->position()
                + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength())),
@@ -109,6 +105,7 @@ namespace mu2e {
     // Energy and kinetic energy.
     double e = sqrt( _p*_p + _proton_mass*_proton_mass);
 
+
     // Generated 4 momentum.
     CLHEP::HepLorentzVector mom( _randomUnitSphere.fire(_p), e );
 
@@ -125,7 +122,7 @@ namespace mu2e {
                                      // Convert momentum to Mu2e coordinates
                                      _gunRotation*mom,
                                      time));
-
-  }
+      
+  }//generateOne
 
 }

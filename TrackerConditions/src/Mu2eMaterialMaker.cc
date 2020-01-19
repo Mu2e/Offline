@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "TrackerConditions/inc/Mu2eMaterial.hh"
-#include "TrackerConditions/inc/Mu2eMaterialConfig.hh"
 #include "TrackerConditions/inc/Mu2eMaterialMaker.hh"
 #include "BTrk/BaBar/ExternalInfo.hh"
 

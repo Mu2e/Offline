@@ -29,7 +29,7 @@ services : {
     message               : @local::default_message
     TFileService          : { fileName : "{ART_HIST_FILE}" }
 
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService        : { inputFile      : "JobConfig/TDR/geom_MothersToHits.txt" }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"        }
@@ -188,7 +188,7 @@ outputs: {
 #------------------------------------------------------------------------------
 # 1. only for interactive submission
 #------------------------------------------------------------------------------
-services.SeedService.baseSeed             :  0
+services.SeedService.baseSeed             :  8
 services.SeedService.maxUniqueEngines     :  20
 
 # print per event timing for ::event entry points

@@ -1,4 +1,4 @@
 <lcgdict>
- <class name="mu2e::IonCluster" />
- <class name="std::vector<mu2e::IonCluster>" />
+ <class name="mu2e::TrackerMC::IonCluster" />
+ <class name="std::vector<mu2e::TrackerMC::IonCluster>" />
 </lcgdict>

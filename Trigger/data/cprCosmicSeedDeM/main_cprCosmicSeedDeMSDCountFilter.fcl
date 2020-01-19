@@ -1,9 +1,9 @@
-physics.filters.tprCosmicSeedDeMSDCountFilter.caloDigiCollection  : notUsed
-physics.filters.tprCosmicSeedDeMSDCountFilter.useStrawDigi        : true	 
-physics.filters.tprCosmicSeedDeMSDCountFilter.useCaloDigi         : false	 
-physics.filters.tprCosmicSeedDeMSDCountFilter.minNStrawDigi       : 10 	 
-physics.filters.tprCosmicSeedDeMSDCountFilter.maxNStrawDigi       : 10000	 
-physics.filters.tprCosmicSeedDeMSDCountFilter.minNCaloDigi        : -1	 
-physics.filters.tprCosmicSeedDeMSDCountFilter.maxNCaloDigi        : -1	 
-physics.filters.tprCosmicSeedDeMSDCountFilter.maxCaloEnergy       : -1     
+physics.filters.cprCosmicSeedDeMSDCountFilter.caloDigiCollection  : notUsed
+physics.filters.cprCosmicSeedDeMSDCountFilter.useStrawDigi        : true	 
+physics.filters.cprCosmicSeedDeMSDCountFilter.useCaloDigi         : false	 
+physics.filters.cprCosmicSeedDeMSDCountFilter.minNStrawDigi       : 10 	 
+physics.filters.cprCosmicSeedDeMSDCountFilter.maxNStrawDigi       : 10000	 
+physics.filters.cprCosmicSeedDeMSDCountFilter.minNCaloDigi        : -1	 
+physics.filters.cprCosmicSeedDeMSDCountFilter.maxNCaloDigi        : -1	 
+physics.filters.cprCosmicSeedDeMSDCountFilter.maxCaloEnergy       : -1     
 

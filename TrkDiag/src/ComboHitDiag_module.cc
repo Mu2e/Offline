@@ -236,7 +236,7 @@ namespace mu2e
 	  throw cet::exception("DIAG")<<"mu2e::ComboHitDiag: invalid ComboHit" << std::endl;
 	// use the 1st hit to define the MC match; this is arbitrary should be an average FIXME!
 	StrawDigiMC const& mcd1 = _mcdigis->at(shids[0]);
-	art::Ptr<StepPointMC> const& spmcp = mcd1.stepPointMC(StrawEnd::cal);
+	auto const& spmcp = mcd1.strawGasStep(StrawEnd::cal);
 	art::Ptr<SimParticle> spp = spmcp->simParticle();
 	_mctime = _toff.timeWithOffsetsApplied(*spmcp);
 	_mcpdg = spp->pdgId();

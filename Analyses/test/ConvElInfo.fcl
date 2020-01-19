@@ -113,5 +113,5 @@ physics.producers.makeSH.diagLevel : -1
 physics.producers.makeSH.maxFullPrint : 0
 physics.producers.generate.inputfile : "Analyses/test/genconfig_Bkg.txt"
 services.TFileService.fileName : "CEH.root"
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
