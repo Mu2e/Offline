@@ -129,8 +129,6 @@ namespace mu2e {
     G4VUserPhysicsList* physicsList_;
     std::string storePhysicsTablesDir_;
 
-    ActionInitialization const * _actionInit;
-
     //these cut objects are used to indicate what data product is produced
     //additional thread-local cut objects are owned by ActionInitialization
     std::unique_ptr<IMu2eG4Cut> stackingCuts_;
