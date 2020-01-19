@@ -31,7 +31,7 @@ services :
     fileName : "cosmic/cosmic.root"
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
 # Uncomment to enable memory use profiling
 # SimpleMemoryCheck :

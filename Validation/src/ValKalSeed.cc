@@ -35,6 +35,12 @@ int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hCCDOCA = tfs.make<TH1D>("CCDOCA","Calo DOCA to Track",100,-100.0,100.0);
   _hCChlen = tfs.make<TH1D>("CChlen","Calo POCA Depth",100,-100.0,500.0);
   _hCCtlen = tfs.make<TH1D>("CCtlen","Calo POCA Track Length",100,1000.0,5000.0);
+  _hHDrift = tfs.make<TH1D>("HDrift","Hit Drift Radius;drift radius (mm)",100,0.0,3.0);
+  _hHDOCA = tfs.make<TH1D>("HDOCA","Hit Wire DOCA;DOCA (mm)",100,-3.0,3.0);
+  _hHEDep = tfs.make<TH1D>("HEDep","Hit Energy Deposition;EDep (KeV)",100,0,5.0);
+  _hHPanel = tfs.make<TH1D>( "HPanel", "Hit Unique Panel",216, -0.5, 215.5);
+  _hSRadLen = tfs.make<TH1D>("SRadLen","Fractional Straw Radiation Length",100,0,1.0e-3);
+  _hSRadLenSum = tfs.make<TH1D>("SRadLenSum","Sum Fractional Straw Radiation Length",100,0,0.04);
   int ibin=1;
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"All CE"); // bin 1, first visible
   _hCuts->GetXaxis()->SetBinLabel(ibin++,"MC Selection");
@@ -55,7 +61,7 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
 
   // increment this by 1 any time the defnitions of the histograms or the 
   // histogram contents change, and will not match previous versions
-  _hVer->Fill(3.0);
+  _hVer->Fill(5.0);
 
   // p of highest momentum electron SimParticle with good tanDip
   double p_mc = mcTrkP(event);
@@ -153,6 +159,24 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
       _hCChlen->Fill(chs.hitLen());
       _hCCtlen->Fill(chs.trkLen());
     }
+  // Assocated TrkStrawHit info
+    for(auto const& tshs : ks.hits()){
+      if(tshs.flag().hasAllProperties(StrawHitFlag::active)){
+	_hHDrift->Fill(tshs.driftRadius());
+	_hHDOCA->Fill(tshs.wireDOCA());
+	_hHEDep->Fill(1000*tshs.energyDep());
+	_hHPanel->Fill(tshs.strawId().uniquePanel());
+      }
+    }
+    // Assocated Material info
+    float radlensum(0.0);
+    for(auto const& ts : ks.straws()){
+      if(ts.active()){
+	_hSRadLen->Fill(ts.radLen());
+	radlensum += ts.radLen();
+      }
+    }
+    _hSRadLenSum->Fill(radlensum);
     
   }
   return 0;

@@ -26,8 +26,6 @@ namespace mu2e {
     TH1D* _hN2;
     TH1D* _htime0;
     TH1D* _htime1;
-    TH1D* _hdrift;
-    TH1D* _hdriftM;
     TH1D* _hener;
     TH1D* _henerT;
     TH1D* _hcross;

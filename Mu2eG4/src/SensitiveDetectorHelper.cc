@@ -27,7 +27,7 @@
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 #include "G4Helper/inc/G4Helper.hh"
-#include "Mu2eG4/inc/EventStash.hh"
+#include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
 #include "GeometryService/inc/GeometryService.hh"
 
 // From art and its tool chain
@@ -131,13 +131,6 @@ SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset
             stepInstancesForMomentumCut_.emplace_back(i);
         }
         
-/*        for (std::vector<std::string>::iterator j=stepInstancesForMomentumCut_.begin();
-             j != stepInstancesForMomentumCut_.end(); j++) {
-
-            cout << "in SDH stepInstancesForMomentumCut = " << *j << endl;
-        }
-*/
-        
   }//end c'tor
 
 void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
@@ -169,12 +162,12 @@ void SensitiveDetectorHelper::registerSensitiveDetectors(){
             step.sensitiveDetector =
             dynamic_cast<Mu2eSensitiveDetector*>(sdManager->FindSensitiveDetector(step.stepName.c_str(),printWarnings));
         }
-    
+
         extMonFNALPixelSD_ = ( standardMu2eDetector_ && extMonPixelsEnabled_) ?
         dynamic_cast<ExtMonFNALPixelSD*>(sdManager->
                                          FindSensitiveDetector(SensitiveDetectorName::ExtMonFNAL()))
         : nullptr;
-    
+
 }
 
     
@@ -259,27 +252,25 @@ void SensitiveDetectorHelper::updateSensitiveDetectors( PhysicsProcessInfo&   in
     }//for
 
 }
-
     
-void SensitiveDetectorHelper::insertSDDataIntoStash(int position_to_insert, EventStash* stash_for_event_data){
+    
+void SensitiveDetectorHelper::insertSDDataIntoPerThreadStorage(Mu2eG4PerThreadStorage* per_thread_store){
         
         for ( InstanceMap::iterator i=stepInstances_.begin();
              i != stepInstances_.end(); ++i ) {
             unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
             StepInstance& instance(i->second);
             std::swap( instance.p, *p);
-            stash_for_event_data->insertSDStepPointMC(position_to_insert, std::move(p),
-                                                      instance.stepName);
+            per_thread_store->insertSDStepPointMC(std::move(p), instance.stepName);
         }
         
         for (auto& i: lvsd_) {
             unique_ptr<StepPointMCCollection> p(new StepPointMCCollection);
             std::swap( i.second.p, *p);
-            stash_for_event_data->insertSDStepPointMC(position_to_insert, std::move(p),
-                                                      i.second.stepName);
+            per_thread_store->insertSDStepPointMC(std::move(p), i.second.stepName);
         }
 }
-    
+
     
 bool SensitiveDetectorHelper::filterStepPointMomentum(){
     
@@ -289,21 +280,13 @@ bool SensitiveDetectorHelper::filterStepPointMomentum(){
          i != stepInstances_.end(); ++i ) {
         StepInstance& instance(i->second);
         
-        //std::cout << "instance.stepName == " << instance.stepName << std::endl;
-        
         for (std::vector<std::string>::iterator j=stepInstancesForMomentumCut_.begin();
              j != stepInstancesForMomentumCut_.end(); j++) {
-
-            //std::cout << "stepInstancesForMomentumCut_=" << *j << std::endl;
             
             if (instance.stepName == *j) {
-                
-                //std::cout << "instance.stepName == stepInstancesForMomentumCut_=" << instance.stepName << std::endl;
-                
                 for(const auto& hit : instance.p) {
                     if(hit.momentum().mag() > cutMomentumMin_) {
                         passed = true;
-                        //std::cout << "SDH stepInstances, hit.momentum().mag() = " << hit.momentum().mag() << std::endl;
                         break;
                     }//if momentum
                 }//for hit
@@ -321,7 +304,6 @@ bool SensitiveDetectorHelper::filterStepPointMomentum(){
                 for(const auto& hit : i.second.p) {
                     if(hit.momentum().mag() > cutMomentumMin_) {
                         passed = true;
-                        //std::cout << "SDH lvsds, hit.momentum().mag() = " << hit.momentum().mag() << std::endl;
                         break;
                     }//if momentum
                 }//for hit
@@ -347,10 +329,8 @@ bool SensitiveDetectorHelper::filterTrackerStepPoints(){
 
         for ( InstanceMap::iterator i=stepInstances_.begin();
              i != stepInstances_.end(); ++i ) {
-            //StepInstance& instance(i->second);
             if (i->second.stepName == "tracker" && i->second.p.size() >= minTrackerStepPoints_) {
                 passed = true;
-                //std::cout << "in SDH StepInstances i->second.p.size() = " << i->second.p.size() << std::endl;
             }
         }//for stepInstances
         
@@ -361,7 +341,6 @@ bool SensitiveDetectorHelper::filterTrackerStepPoints(){
                 
                 if (i.second.stepName == "tracker" && i.second.p.size() >= minTrackerStepPoints_) {
                     passed = true;
-                    //std::cout << "in SDH lvsds i.second.p.size() = " << i.second.p.size() << std::endl;
                 }
 
                 }

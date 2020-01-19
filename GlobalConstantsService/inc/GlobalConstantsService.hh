@@ -59,5 +59,5 @@ namespace mu2e {
 
 }
 
-DECLARE_ART_SERVICE(mu2e::GlobalConstantsService, LEGACY)
+DECLARE_ART_SERVICE(mu2e::GlobalConstantsService, SHARED)
 #endif /* GlobalConstantsService_GlobalConstantsService_hh */

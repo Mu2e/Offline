@@ -15,7 +15,7 @@ source : {
 services : {
    message               : @local::default_message
    TFileService          : { fileName : "pbitest.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
    SeedService            : @local::automaticSeeds
 }
 
@@ -54,5 +54,5 @@ physics : {
    end_paths: [ a1 ]
 }
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

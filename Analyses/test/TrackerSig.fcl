@@ -121,5 +121,5 @@ physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
 services.TFileService.fileName : "TSig.root"
 services.GeometryService.inputFile : "myConfigsTT/geom_tt3.txt"
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

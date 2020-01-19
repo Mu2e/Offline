@@ -55,6 +55,7 @@ public:
 
   // Other functions
   void fillTree(const mu2e::StepPointMC& old_step);
+  void fillTree(const mu2e::StrawGasStep& old_step);
 
 
 private:
@@ -119,16 +120,9 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 
     for(int i_end=0;i_end<StrawEnd::nends;++i_end){
       StrawEnd::End end = static_cast<StrawEnd::End>(i_end);
-      
-      const art::Ptr<StepPointMC>& old_step_point = i_strawDigiMC.stepPointMC(end);
+      auto const& old_step_point = i_strawDigiMC.strawGasStep(end);
       if (old_step_point.isAvailable()) {
 	fillTree( *old_step_point );
-      }
-    }
-
-    for (const auto& i_step_mc : i_strawDigiMC.stepPointMCs()) {
-      if (i_step_mc.isAvailable()) {
-	fillTree(*i_step_mc);
       }
     }
 
@@ -150,6 +144,23 @@ void mu2e::StepPointsInDigis::analyze(art::Event const& event)
 }
 
 void mu2e::StepPointsInDigis::fillTree(const mu2e::StepPointMC& old_step) {
+
+  _stepX = old_step.position().x();
+  _stepY = old_step.position().y();
+  _stepZ = old_step.position().z();
+  _stepRawTime = old_step.time();
+  _stepOffsettedTime = _toff.timeWithOffsetsApplied(old_step);
+  _stepEDep = old_step.totalEDep();
+  art::Ptr<SimParticle> simPtr = old_step.simParticle();
+  while (simPtr->isSecondary()) {
+    simPtr = simPtr->parent();
+  }
+  _stepGenId = simPtr->genParticle()->generatorId().id();
+  _stepProductId = simPtr.id().value();
+  _steps->Fill();
+}
+
+void mu2e::StepPointsInDigis::fillTree(const mu2e::StrawGasStep& old_step) {
 
   _stepX = old_step.position().x();
   _stepY = old_step.position().y();

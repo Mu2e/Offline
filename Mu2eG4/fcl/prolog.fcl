@@ -181,4 +181,46 @@ Mu2eG4: {
 }
 
 #----------------------------------------------------------------
+# For running in MT mode
+MTmu2eg4runDefaultSingleStage: {
+    module_type           : Mu2eG4MT
+    physics               : @local::mu2eg4DefaultPhysics
+    ResourceLimits        : @local::mu2eg4DefaultResourceLimits
+    TrajectoryControl     : @local::mu2eg4DefaultTrajectories
+
+    Mu2eG4StackingOnlyCut : @local::mu2eg4CutNeutrinos
+    Mu2eG4SteppingOnlyCut : @local::mu2eg4NoCut
+    Mu2eG4CommonCut	  : @local::mu2eg4NoCut
+
+    generatorModuleLabel  : generate
+    MultiStageParameters  : {}
+
+    SDConfig : {
+        verbosityLevel : 0
+        enableAllSDs : false  # this would activate all SDs listed in StepInstanceName enum
+        # activate minimal set of sensitive detectors used by everybody
+        enableSD : [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector ]
+        # in the including fcl file set e.g. physics.producers.g4run.SDConfig.enableSD : @erase
+        # whan setting enableAllSDs : true
+        TimeVD: { times: [] }
+    }
+
+    debug:  @local::mu2eg4DefaultDebug
+    visualization: @local::mu2eg4NoVisualization
+
+    SimParticlePrinter : {
+        enabled             : false
+        primariesOnly       : false
+        prefix              : "SimParticle: "
+    }
+}
+
+Mu2eG4MT: {
+    producers : {
+        g4mtrun : { @table::MTmu2eg4runDefaultSingleStage }
+    }
+}
+
+
+#----------------------------------------------------------------
 END_PROLOG

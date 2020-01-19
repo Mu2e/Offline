@@ -215,6 +215,7 @@ namespace mu2e {
 
     // Make dirt based on Mu2e envelope
     Mu2eHallMaker::makeDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
+    Mu2eHallMaker::makeTrapDirt( *tmphall.get(), *_g4GeomOptions, *_config, *mu2eEnv.get() );
 
     addDetector(std::move( tmphall ) );
     addDetector(std::move( mu2eEnv ) );

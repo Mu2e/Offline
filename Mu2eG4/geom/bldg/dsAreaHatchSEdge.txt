@@ -1,0 +1,29 @@
+// South edge for DS area hatch 
+
+string building.dsArea.hatchsedge.name     = "dsAreaHatchSEdge";
+
+string building.dsArea.hatchsedge.material = "CONCRETE_MARS";
+
+double building.dsArea.hatchsedge.offsetFromMu2eOrigin.x   = 947.4;
+double building.dsArea.hatchsedge.offsetFromFloorSurface.y = 6858.0;
+double building.dsArea.hatchsedge.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.dsArea.hatchsedge.yHalfThickness           = 914.4;
+
+vector<double> building.dsArea.hatchsedge.xPositions = {
+  7315.2,   // B
+  29362.4,   // C
+  29362.4,   // C1
+  7315.2   // E
+};
+
+vector<double> building.dsArea.hatchsedge.yPositions = {
+  -8534.4,   // B
+  -8534.4,   // C
+  -8661.4,   // C1
+  -8661.4   // E
+};
+
+// Local Variables:
+// mode:c++
+// End:

@@ -15,7 +15,7 @@ source :
 
 services :
 {
-  RandomNumberGenerator: { }
+  RandomNumberGenerator: {defaultEngineKind: "MixMaxRng" }
   TFileService           : { fileName: "test.root" }
   GeometryService        : { inputFile : "Mu2eG4/geom/studies/geom_cosmic_v05.txt" }
   ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }

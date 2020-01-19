@@ -153,5 +153,5 @@ services.GeometryService.inputFile : "JobConfig/common/geom_baseline.txt"
 services.TFileService.fileName : "nts.owner.stoppedMuonsSingleStage.version.sequencer.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

@@ -29,10 +29,9 @@
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/SimParticle.hh"
 #include "MCDataProducts/inc/SimParticleCollection.hh"
+#include "MCDataProducts/inc/StrawGasStep.hh"
 #include "MCDataProducts/inc/StepPointMC.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
-#include "MCDataProducts/inc/StrawHitMCTruth.hh"
-#include "MCDataProducts/inc/StrawHitMCTruthCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 
@@ -301,21 +300,22 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 
       if (_ListOfMCStrawHits) nstraws = _ListOfMCStrawHits->size();
 
-      const mu2e::StepPointMC* step(0);
+      const mu2e::StrawGasStep* step(0);
 
       for (int i=0; i<nstraws; i++) {
 
 	const mu2e::StrawDigiMC* mcdigi = &_ListOfMCStrawHits->at(i);
 
-	const mu2e::StepPointMC   *step;
+	const mu2e::StrawGasStep   *step;
 	if (mcdigi->wireEndTime(mu2e::StrawEnd::cal) < mcdigi->wireEndTime(mu2e::StrawEnd::hv)) {
-	  step = mcdigi->stepPointMC(mu2e::StrawEnd::cal).get();
+	  step = mcdigi->strawGasStep(mu2e::StrawEnd::cal).get();
 	}
 	else {
-	  step = mcdigi->stepPointMC(mu2e::StrawEnd::hv ).get();
+	  step = mcdigi->strawGasStep(mu2e::StrawEnd::hv ).get();
 	}
 
-	vol_id = step->volumeId();
+//	vol_id = step->volumeId();
+	vol_id = step->strawId().asUint16();
  	if (vol_id == straw->id().asUint16()) {
  					// step found - use the first one in the straw
  	  break;
@@ -328,11 +328,11 @@ void ObjectDumpUtils::printKalRep(const KalRep* Krep, const char* Opt, const cha
 	const Hep3Vector* v1 = &straw->getMidPoint();
 	HepPoint p1(v1->x(),v1->y(),v1->z());
 
-	const Hep3Vector* v2 = &step->position();
-	HepPoint    p2(v2->x(),v2->y(),v2->z());
+	Hep3Vector v2 = step->position();
+	HepPoint    p2(v2.x(),v2.y(),v2.z());
 
 	TrkLineTraj trstraw(p1,straw->getDirection()  ,0.,0.);
-	TrkLineTraj trstep (p2,step->momentum().unit(),0.,0.);
+	TrkLineTraj trstep (p2,Geom::Hep3Vec(step->momentum().unit()),0.,0.);
 
 	TrkPoca poca(trstep, 0., trstraw, 0.);
 
