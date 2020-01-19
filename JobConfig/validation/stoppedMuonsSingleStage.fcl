@@ -112,11 +112,9 @@ physics : {
    filters: {
       tgtStopFilter: {
          module_type: FilterG4Out
-         noInstanceName : true
          mainHitInputs: []
          extraHitInputs: [ "g4run:virtualdetector" ]
          mainSPPtrInputs: [ "stoppedMuonFinder" ]
-         numSimParticleCollections: 1
       }
 
       g4consistent: {

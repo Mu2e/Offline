@@ -26,10 +26,10 @@ if g4_version[2] == '9':
 else:
     g4_version = g4_version[1:5]
 
-# print "GEANT4_VERSION ",  g4_version
+# print("GEANT4_VERSION ",  g4_version)
 
 # Compiler switches needed by the default G4 build.
-G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',
+G4CPPFLAGS = [ '-DG4OPTIMISE',           '-DG4VERBOSE',    '-DG4GMAKE',
                '-DG4_STORE_TRAJECTORY',  '-DG4UI_USE_TCSH ',
                '-DG4UI_USE',             '-DG4VIS_USE_DAWNFILE',
                '-DG4VIS_USE_HEPREPFILE', '-DG4VIS_USE_RAYTRACER',
@@ -54,8 +54,8 @@ elif  g4vis == 'none':
 else:
     G4GS_CPPFLAGS = [ '-DG4VIS_USE_OPENGLX',    '-DG4VIS_USE_OPENGL' ]
 
-# print "mu2eopts      ",  mu2eopts
-# print "G4GS_CPPFLAGS ",  G4GS_CPPFLAGS
+# print("mu2eopts      ",  mu2eopts)
+# print("G4GS_CPPFLAGS ",  G4GS_CPPFLAGS)
 
 # The granular version of the G4 libraries.
 G4GRANULARLIBS = [

@@ -8,7 +8,7 @@ void
 mu2e::StepPointMCPrinter::Print(art::Event const& event,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<StepPointMCCollection> > vah;
     event.getManyByType(vah);
@@ -127,15 +127,4 @@ mu2e::StepPointMCPrinter::PrintListHeader(std::ostream& os) {
   os << "ind     parent     vol     eDep     noIonEDep         Position                       P      time    endProc" << std::endl;
 }
 
-void 
-mu2e::StepPointMCPrinter::set(const fhicl::ParameterSet& pset) {
-
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("StepPointMCPrinter",fhicl::ParameterSet());
-
-  _pCut = localPset.get<double>("pCut",-1);
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
-}
 

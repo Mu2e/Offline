@@ -14,7 +14,11 @@ int mu2e::ValKalSeed::declare(art::TFileDirectory tfs) {
   _hchi2 = tfs.make<TH1D>( "Chi2N", "Chi2/DOF", 100, 0.0, 20.0);
   _hhasCal = tfs.make<TH1D>( "hasCal", "CalCluster attached", 2, -0.5, 1.5);
   _hfitCon = tfs.make<TH1D>( "FitConn", "Fit CL", 100, 0.0, 1.0);
+  _hfitConC = tfs.make<TH1D>( "FitConnC", "Fit CL CPR", 100, 0.0, 1.0);
+  _hfitConT = tfs.make<TH1D>( "FitConnT", "Fit CL TPR", 100, 0.0, 1.0);
   _hp = tfs.make<TH1D>( "p", "p", 100, 0., 110.);
+  _hpC = tfs.make<TH1D>( "pC", "p CPR", 100, 0., 110.);
+  _hpT = tfs.make<TH1D>( "pT", "p TPR", 100, 0., 110.);
   _hpce = tfs.make<TH1D>( "pce", "p CE", 100, 95.0, 110.);
   _hpcep = tfs.make<TH1D>( "pcep", "p CE+", 100, 82.0, 97.);
   _hpe = tfs.make<TH1D>( "pe", "p error", 100, 0.0, 1.0);
@@ -65,14 +69,14 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     _hNStraw->Fill(ks.hits().size());
     _hNSeg->Fill(ks.segments().size());
     const TrkFitFlag& tff = ks.status();
+    bool isCPR = tff.hasAllProperties(TrkFitFlag::CPRHelix);
+    bool isTPR = tff.hasAllProperties(TrkFitFlag::TPRHelix);
 
     //    for(mu2e::TrkFitFlagDetail::bit_type i=0; i<f.size(); i++) 
     //  if(f.hasAnyProperty(i)) _hStatus->Fill(i); 
 
-    int i=0;
     for(auto sn: tff.bitNames()) { 
-      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(i); 
-      i++;
+      if(tff.hasAnyProperty(TrkFitFlag(sn.first))) _hStatus->Fill(std::log2(sn.second)); 
     }
 
     _hflt0->Fill(ks.flt0());
@@ -82,7 +86,8 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
     int q = ks.hasCaloCluster();
     _hhasCal->Fill(q);
     _hfitCon->Fill(ks.fitConsistency());
-
+    if(isCPR) _hfitConC->Fill(ks.fitConsistency());
+    if(isTPR) _hfitConT->Fill(ks.fitConsistency());
     if( ks.segments().size()>0 ) {
       // first segment - in default config, this is front of tracker
       std::size_t i = 0;
@@ -92,6 +97,8 @@ int mu2e::ValKalSeed::fill(const mu2e::KalSeedCollection & coll,
       auto const& h = ss.helix(); // HelixVal
       double p = ss.mom();
       _hp->Fill(ss.mom());
+      if(isCPR) _hpC->Fill(ss.mom());
+      if(isTPR) _hpT->Fill(ss.mom());
       _hpce->Fill(ss.mom());
       _hpcep->Fill(ss.mom());
       _hpe->Fill(ss.momerr());

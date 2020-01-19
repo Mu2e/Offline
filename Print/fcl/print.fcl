@@ -17,101 +17,105 @@ physics :{
     printModule : {
       module_type : PrintModule
 
-      StatusG4Printer : {
+      statusG4Printer : {
         verbose : 0
       }
-      GenParticlePrinter : {
+      genParticlePrinter : {
         verbose : 1
       }
 
-      SimParticlePrinter : {
+      simParticlePrinter : {
         pCut : 10.0
       }
-      SimParticlePtrPrinter : {
+      simParticlePtrPrinter : {
         verbose : 0
       }
-      SimParticleTimeMapPrinter : {
+      simParticleTimeMapPrinter : {
         verbose : 1
       }
-      StepPointMCPrinter : {
+      stepPointMCPrinter : {
         pCut : 10.0
       }
 
-      CaloShowerStepPrinter : {
+      caloShowerStepPrinter : {
         verbose: 0
       }
-      CaloHitPrinter : {
+      caloHitPrinter : {
         verbose: 0
       }
-      CaloDigiPrinter : {
+      caloDigiPrinter : {
         verbose: 0
       }
-      CaloRecoDigiPrinter : {
+      caloRecoDigiPrinter : {
         verbose: 1
       }
-      CaloCrystalHitPrinter : {
+      caloCrystalHitPrinter : {
         verbose: 0
       }
-      CaloClusterPrinter : {
+      caloClusterPrinter : {
         eCut :  10.0
       }
 
-      CrvDigiPrinter : {
+      crvDigiPrinter : {
         verbose: 0
       }
-      CrvDigiMCPrinter : {
+      crvDigiMCPrinter : {
         verbose: 0
       }
-      CrvRecoPulsePrinter : {
+      crvRecoPulsePrinter : {
         verbose: 1
       }
-      CrvCoincidenceClusterPrinter : {
+      crvCoincidenceClusterPrinter : {
         verbose: 1
       }
 
-      StrawDigiPrinter : {
+      strawDigiPrinter : {
         verbose: 0
       }
-      StrawDigiMCPrinter : {
+      strawDigiMCPrinter : {
         verbose: 0
       }
-      StrawHitPrinter : {
+      strawHitPrinter : {
         verbose: 0
       }
-      StrawHitFlagPrinter : {
+      strawHitFlagPrinter : {
         verbose: 0
       }
-      BkgClusterPrinter : {
+      bkgClusterPrinter : {
         verbose: 0
       }
-      BkgQualPrinter : {
+      bkgQualPrinter : {
         verbose: 0
       }
-       ComboHitPrinter : {
-        verbose: 0
-      }
-
-      TimeClusterPrinter : {
-        verbose: 0
-      }
-      TrackClusterMatchPrinter : {
-        verbose: 0
-      }
-      TrkCaloIntersectPrinter : {
+      comboHitPrinter : {
         verbose: 0
       }
 
-      TrackSummaryPrinter : {
+      timeClusterPrinter : {
+        verbose: 0
+      }
+      trackClusterMatchPrinter : {
+        verbose: 0
+      }
+      trkCaloIntersectPrinter : {
+        verbose: 0
+      }
+
+      trackSummaryPrinter : {
         verbose: 3
       }
-      KalRepPrinter : {
+      kalRepPrinter : {
         verbose: 3
       }
-      KalSeedPrinter : {
+      kalSeedPrinter : {
         verbose: 3
       }
 
-      PhysicalVolumePrinter : {
+      physicalVolumePrinter : {
+        verbose: 1
+      }
+
+      triggerResultsPrinter : {
         verbose: 1
       }
 

@@ -8,7 +8,7 @@ void
 mu2e::PhysicalVolumePrinter::PrintSubRun(art::SubRun const& subrun,
 				std::ostream& os) {
   if(verbose()<1) return;
-  if(_tags.empty()) {
+  if(tags().empty()) {
     // if a list of instances not specified, print all instances
     std::vector< art::Handle<PhysicalVolumeInfoMultiCollection> > vah;
     subrun.getManyByType(vah);
@@ -116,16 +116,5 @@ void
 mu2e::PhysicalVolumePrinter::PrintPVListHeader(std::ostream& os) {
   if(verbose()<1) return;
   os << " ind    id copyNo                                     name                    material\n";
-}
-
-void 
-mu2e::PhysicalVolumePrinter::set(const fhicl::ParameterSet& pset) {
-
-  //std::cout << pset.to_indented_string() << std::endl;
-  fhicl::ParameterSet localPset = 
-    pset.get<fhicl::ParameterSet>("PhysicalVolumePrinter",fhicl::ParameterSet());
-  setVerbose( localPset.get<int>("verbose",verbose()) );
-  _tags = vecstr( localPset.get<vecstr>("inputTags",vecstr()) );
-
 }
 

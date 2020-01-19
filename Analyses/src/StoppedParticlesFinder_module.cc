@@ -35,7 +35,50 @@ namespace mu2e {
 
   class StoppedParticlesFinder : public art::EDProducer {
   public:
-    explicit StoppedParticlesFinder(fhicl::ParameterSet const& pset);
+
+
+    struct Config {
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+
+      fhicl::Atom<art::InputTag> particleInput{ Name("particleInput"), Comment("The particle input collection.") };
+
+      fhicl::Atom<art::InputTag> physVolInfoInput{ Name("physVolInfoInput"), Comment("The PhysicalVolumeInfoMultiCollection input.") };
+
+      fhicl::Sequence<int> particleTypes{
+        Name("particleTypes"),
+          Comment("A list of PDG IDs of particles to include in the stopped particle search.")
+          };
+
+      fhicl::Atom<std::string> stoppingMaterial{
+        Name("stoppingMaterial"),
+          Comment("A non-emtpy string here will select particles that stopped in the given material. Otherwise see vetoedMaterials below."),
+          ""
+          };
+
+      fhicl::Sequence<std::string> vetoedMaterials{ Name("vetoedMaterials"),
+          Comment("Used only if stoppingMaterial is set to an emtpy string.\n"
+                  "Particles stopping in materials that DO NOT match any on this list will be selected."),
+          [this](){ return stoppingMaterial().empty(); }
+          };
+
+      fhicl::Atom<unsigned> particleOffsetThreshold{ Name("particleOffsetThreshold"),
+          Comment("Ignore particles with numbers below the threshold. This should be used\n"
+                  "to limit the selection to stops in just the latest simulation stage."
+                  ),
+          0
+          };
+
+      fhicl::Atom<int> verbosityLevel{ Name("verbosityLevel"),
+          Comment("Controls the printouts.  Levels 0 through 3 are used.\nHigher levels are more verbose."),
+          0
+          };
+
+    };
+
+    using Parameters = art::EDProducer::Table<Config>;
+    explicit StoppedParticlesFinder(const Parameters& conf);
+
     void beginSubRun(art::SubRun& sr) override;
     void produce(art::Event& evt) override;
     void endJob() override;
@@ -45,9 +88,9 @@ namespace mu2e {
     std::string stoppingMaterial_;
     std::vector<std::string> vetoedMaterials_;
 
-    int verbosityLevel_;
-
     unsigned offsetThreshold_; // to select particles from the current simulation stage
+
+    int verbosityLevel_;
 
     typedef std::set<PDGCode::type> PDGCodeSet;
     PDGCodeSet particleTypes_;
@@ -65,14 +108,13 @@ namespace mu2e {
   };
 
   //================================================================
-  StoppedParticlesFinder::StoppedParticlesFinder(const fhicl::ParameterSet& pset)
-    : EDProducer{pset}
-    , particleInput_(pset.get<std::string>("particleInput"))
-    , physVolInfoInput_(pset.get<std::string>("physVolInfoInput"))
-    , stoppingMaterial_(pset.get<std::string>("stoppingMaterial", ""))
-    , vetoedMaterials_(pset.get<std::vector<std::string> >("vetoedMaterials", std::vector<std::string>()))
-    , verbosityLevel_(pset.get<int>("verbosityLevel", 0))
-    , offsetThreshold_(pset.get<unsigned>("particleOffsetThreshold", 0))
+  StoppedParticlesFinder::StoppedParticlesFinder(const Parameters& conf)
+    : EDProducer{conf}
+    , particleInput_(conf().particleInput())
+    , physVolInfoInput_(conf().physVolInfoInput())
+    , stoppingMaterial_(conf().stoppingMaterial())
+    , offsetThreshold_(conf().particleOffsetThreshold())
+    , verbosityLevel_(conf().verbosityLevel())
     , hStopMaterials_(art::ServiceHandle<art::TFileService>()->make<TH1D>("stopmat", "Stopping materials", 1, 0., 1.))
     , vols_()
     , numTotalParticles_()
@@ -81,7 +123,11 @@ namespace mu2e {
   {
     produces<SimParticlePtrCollection>();
 
-    auto pt(pset.get<std::vector<int> >("particleTypes"));
+    if(stoppingMaterial_.empty()) {
+      vetoedMaterials_ = conf().vetoedMaterials();
+    }
+
+    auto pt(conf().particleTypes());
     for(const auto& pid : pt) {
       particleTypes_.insert(PDGCode::type(pid));
     }
@@ -103,12 +149,6 @@ namespace mu2e {
 
       mf::LogInfo("Info")<<os.str();
     }
-
-    //----------------
-    if( !stoppingMaterial_.empty() &&  !vetoedMaterials_.empty()) {
-      throw cet::exception("BADCONFIG")<<"Only one stoppingMaterial or vetoedMaterials may be requested.";
-    }
-
   }
 
   //================================================================

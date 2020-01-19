@@ -1,0 +1,33 @@
+# -*- mode: tcl -*-
+#------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+
+BEGIN_PROLOG
+
+CRVFilters : {
+    
+#skelethon for a cosmic muon calibration
+    crvCoincidenceClusterFilter : {
+	module_type                 : CrvCoincidenceClusterFilter
+	CrvCoincidenceClusterFinder : "CrvCoincidenceClusterFinder"
+	MinNCluster                 : 1
+	triggerPath                 : "CRVCC"	    
+    }
+
+CRVFilters : { @table::CRVFilters
+    
+    filters   : {
+	
+	#select events based on the presence of a cluster of coincidences
+	crvCoincidenceClusterFilter         : { @table::CaloFilters.crvCoincidenceClusterFilter       }
+	
+    }
+
+    sequences   : {
+	
+	caloCalibCosmic  : [ CrvRecoPulses, CrvCoincidence, CrvCoincidenceClusterFinder, crvCoincidenceClusterFilter] 
+
+    }
+}
+
+END_PROLOG

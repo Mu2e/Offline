@@ -41,6 +41,7 @@ namespace mu2e {
   class CalHelixFinderAlg {
   public:
     enum { kMaxNHits = 10000 } ;
+
 //-----------------------------------------------------------------------------
 // data members
 //-----------------------------------------------------------------------------
@@ -50,10 +51,10 @@ namespace mu2e {
     //    const CalTimePeak*         fTimePeak;
     //    const TimeCluster*         fTimeCluster; //needed for debugging
     
-    double                     fCaloTime;
-    double                     fCaloX;   
-    double                     fCaloY;   
-    double                     fCaloZ;   
+    float                     fCaloTime;
+    float                     fCaloX;   
+    float                     fCaloY;   
+    float                     fCaloZ;   
     
     //    std::vector<CalHelixPoint> _xyzp;        // normally includes only hits from the time peak
 //-----------------------------------------------------------------------------
@@ -75,13 +76,13 @@ namespace mu2e {
     
     struct PhiZFitInfo_t     {
       HitInfo_t          seedIndex;	     
-      double             dfdz;
-      double             phi0;      
+      float             dfdz;
+      float             phi0;      
       int                faceId;	     
-      double             weight;	     
+      float             weight;	     
       int                useInteligentWeight;
-      double             dz;		     
-      double             zlast;		     
+      float             dz;		     
+      float             zlast;		     
       int                nPointsRemoved;     
       int                doCleanUp;	     
       const char*        banner;             
@@ -97,64 +98,67 @@ namespace mu2e {
     // int                  _smartTag;     //flag used to test addiotional layer of rejection after the search for the "best triplet"
     StrawHitFlag         _hsel;         // good hit selection
     StrawHitFlag         _bkgsel;       // background hit selection
-    double               _maxHitEnergy; // 
+    float               _maxHitEnergy; // 
     int                  _minNHits;     // minimum # of hits for a helix candidate
                                         // 2014-03-10 Gianipez and P. Murat: limit
                                         // the dfdz value in the pattern-recognition stage
-    double               _mpDfDz;
-    double               _absMpDfDz;         // absolute value of most probable expected dphi/dz
-    double               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
-    double               _maxDfDz;
-    double               _minDfDz;
-    double               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
-    double               _weightXY;     // scale factor for makeing the xy-chi2 with a mean close to 1
+    float               _mpDfDz;
+    float               _absMpDfDz;         // absolute value of most probable expected dphi/dz
+    int                 _initDfDz;
+    float               _dzOverHelPitchCut; //cut on the ratio between the Dz and the predicted helix-pitch used in ::findDfDz(...)
+    float               _maxDfDz;
+    float               _minDfDz;
+    float               _sigmaPhi;     // hit phi resolution (wrt the trajectory axis, assume R=25-30cm)
+    float               _weightXY;     // scale factor for makeing the xy-chi2 with a mean close to 1
     int                  _targetcon;    //require or not the circle fit to inlcude the Stopping Target center
-    double               _weightZPhi;
-    double               _weight3D;
-    double               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
-    double               _maxPanelToHelixDPhi;  // max dphi between the helix prediction and a given tracker plane
+    float               _weightZPhi;
+    float               _weight3D;
+    float               _maxXDPhi;     // max normalized hit residual in phi (findRZ)
+    float               _maxPanelToHelixDPhi;  // max dphi between the helix prediction and a given tracker plane
 
-    double               _hdfdz;        // estimated d(phi)/dz value
-    double               _sdfdz;        // estimated d(phi)/dz error
-    double               _hphi0;
+    float               _hdfdz;        // estimated d(phi)/dz value
+    float               _sdfdz;        // estimated d(phi)/dz error
+    float               _hphi0;
 					// 201-03-31 Gianipez added for changing the value of the
 					// squared distance requed bewtween a straw hit and its predicted 
 					// position used in the patter recognition procedure
-    double               _distPatRec;
-    int                  _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
+    float               _distPatRec;
+    int                 _minDeltaNShPatRec;  //minimum number of additional StrawHits required in 
                                               //the findTrack function to set the new Helix
 
-    double               _mindist;       // minimum distance between points used in circle initialization
-    double               _pmin, _pmax;   // range of total momentum
-    double               _tdmin, _tdmax; // range of abs(tan(dip)
+    float               _mindist;       // minimum distance between points used in circle initialization
+    float               _pmin, _pmax;   // range of total momentum
+    float               _tdmin, _tdmax; // range of abs(tan(dip)
     bool                 _xyweights;
     bool                 _zweights;      // weight points by estimated errors
     bool                 _filter;        // filter hits
     bool                 _plotall;       // plot also failed fits
     bool                 _usetarget;     // constrain to target when initializing
-    mutable double       _bz;            // cached value of Field Z component at the tracker origin
+    float                _maxZTripletSearch; //maximum z allowed for the hit used to search the best triplet
+    mutable float       _bz;            // cached value of Field Z component at the tracker origin
 //-----------------------------------------------------------------------------
 // cached value of radius and pitch sign: these depend on the particle type
 // and direction
 //-----------------------------------------------------------------------------
-    double    _rmin, _rmax, _smin, _smax, _dfdzsign;
+    float    _rmin, _rmax, _smin, _smax, _dfdzsign;
 //-----------------------------------------------------------------------------//
 // store the paramters value of the most reliable track candidate
 //-----------------------------------------------------------------------------//
     int       _nHitsMaxPerPanel;
 
                                          // thresholds for the worst hit chi2, total XY and ZPhi fit chi2's
-    double    _hitChi2Max;
-    double    _chi2xyMax;
-    double    _chi2zphiMax;
-    double    _chi2hel3DMax;
+    float    _hitChi2Max;
+    float    _chi2xyMax;
+    float    _chi2zphiMax;
+    float    _chi2hel3DMax;
 
     // indices, distance from prediction and distance along z axis from the seeding hit
     // of the hits found in the pattern recognition
 
     int       _phiCorrectedDefined;
 
-    double    _dfdzErr;                 // error on dfdz by ::findDfDz
+    float    _dfdzErr;                 // error on dfdz by ::findDfDz
+    float    _minarea2;
 //-----------------------------------------------------------------------------
 // checkpoints, used for debugging
 //-----------------------------------------------------------------------------
@@ -164,50 +168,49 @@ namespace mu2e {
 //-----------------------------------------------------------------------------
   public:
                                         // parameter set should be passed in on construction
-
     explicit CalHelixFinderAlg(fhicl::ParameterSet const&);
     virtual ~CalHelixFinderAlg();
                                         // cached bfield accessor
-    double bz() const;
+    float bz() const;
 
-    void   calculateDfDz    (double phi0, double phi1, double z0,  double z1, double &dfdz);
-    void   calculateDphiDz_2(CalHelixFinderData& Helix,HitInfo_t HitIndex, int NHits, double X0, double Y0, double& DphiDz);
+    void   calculateDfDz    (float phi0, float phi1, float z0,  float z1, float &dfdz);
+    void   calculateDphiDz_2(CalHelixFinderData& Helix,HitInfo_t HitIndex, int NHits, float X0, float Y0, float& DphiDz);
 
     //projects the straw hit error along the radial direction of the circle-helix
-    double calculateWeight     (const mu2e::ComboHit&  Hit,
+    float calculateWeight     (const mu2e::ComboHit&  Hit,
 				// const CLHEP::Hep3Vector& HitPos, 
 				// const CLHEP::Hep3Vector& StrawDir, 
 				const XYZVec& HelCenter, 
-				double                   Radius);
+				float                   Radius);
 
-    double calculatePhiWeight  (const ComboHit&  Hit,
+    float calculatePhiWeight  (const ComboHit&  Hit,
 				// const XYZVec& HitPos   , 
 				// const XYZVec& StrawDir , 
 				const XYZVec& HelCenter, 
-				double                   Radius   , 
+				float                   Radius   , 
 				int                      Print    , 
 				const char*              Banner=NULL);
 
-    void   resolve2PiAmbiguity (ComboHit* Hit, XYZVec& Center, double &Phi_ref, double &DPhi);
+    void   resolve2PiAmbiguity (ComboHit* Hit, XYZVec& Center, float &Phi_ref, float &DPhi);
 
     //calculates the residual along the radial direction of the helix-circle
-    double calculateRadialDist (const XYZVec& HitPos, 
+    float calculateRadialDist (const XYZVec& HitPos, 
 				const XYZVec& HelCenter, 
-				double                   Radius);
+				float                   Radius);
 
-    void   calculateTrackParameters(const XYZVec& p1, 
+    bool   calculateTrackParameters(const XYZVec& p1, 
 				    const XYZVec& p2,
                                     const XYZVec& p3,
 				    XYZVec&       Center, 
-				    double&       Radius,
-                                    double&       Phi0, 
-				    double&       TanLambda);
+				    float&       Radius,
+                                    float&       Phi0, 
+				    float&       TanLambda);
 
     void   countUsedHits           (CalHelixFinderData& Helix,
 				    HitInfo_t           SeedIndex,
 				    int&                NComboHits, 
 				    int&                NPoints);
-    static double deltaPhi         (double phi1, double phi2);
+    static float deltaPhi         (float phi1, float phi2);
 
    // returns the index of the hit which provides the highest contribute to the chi2
     void   cleanUpWeightedCircleFit(CalHelixFinderData& Helix,
@@ -229,13 +232,13 @@ namespace mu2e {
     void   findWorstChi2HitInFitPhiZ(CalHelixFinderData& Helix,
 				     PhiZFitInfo_t&      phiZInfo,
 				     HitInfo_t&          WorstHit,
-				     double&             HitChi2);
+				     float&             HitChi2);
 
 
     void   findWorstResidHitInFitPhiZ(CalHelixFinderData& Helix,
 				      PhiZFitInfo_t&      phiZInfo,
 				      HitInfo_t&          WorstHit,
-				      double&             HitChi2);
+				      float&             HitChi2);
 
     // void   doCleanUpFitPhiZ         (CalHelixFinderData& Helix,
     // 				     );
@@ -244,7 +247,7 @@ namespace mu2e {
     void   doWeightedCircleFit     (CalHelixFinderData& Helix,
 				    HitInfo_t           SeedIndex,
 				    XYZVec&             HelCenter, 
-				    double&             Radius, 
+				    float&             Radius, 
 				    int                 Print=0, 
 				    const char*         Banner=NULL);
     
@@ -302,7 +305,7 @@ namespace mu2e {
     void   rescueHits           (CalHelixFinderData&  Helix, HitInfo_t SeedIndex   ,
 				 int UsePhiResiduals = 0);
 
-    // void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, double DfDz, double Phi0);
+    // void   resolve2PiAmbiguity  (CalHelixFinderData& Helix,const XYZVec& Center, float DfDz, float Phi0);
 
     void   resetTrackParamters  ();
 //-----------------------------------------------------------------------------
@@ -316,10 +319,12 @@ namespace mu2e {
 					   HitInfo_t          SeedIndex,
                                            // int*               IdVec,
                                            const XYZVec& HelCenter,
-                                           double&             Radius,
-                                           // double*            Weights,
+                                           float&             Radius,
+                                           // float*            Weights,
                                            HitInfo_t&         Iworst ,
-                                           double&             HitChi2Worst);
+                                           float&             HitChi2Worst);
+
+
 
   };
 }

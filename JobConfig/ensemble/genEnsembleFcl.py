@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 from string import Template
 import sys
 import random
@@ -33,7 +35,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       d = {"minE": dem_emin, "particleTypes": [11, 13], "minMom": dem_emin}
       fclFileName = projectDir + "/" + tname + ".fcl"
       if verbose:
-        print "Creating " + fclFileName
+        print("Creating " + fclFileName)
       targetFiles.append(fclFileName)
       fout = open(fclFileName,"w")
       fout.write(t.substitute(d))
@@ -45,7 +47,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       d = {"name": tname}
       fclFileName = projectDir + "/reco-" + tname + ".fcl"
       if verbose:
-        print "Creating " + fclFileName
+        print("Creating " + fclFileName)
       targetFiles.append(fclFileName)
       fout = open(fclFileName,"w")
       fout.write(t.substitute(d))
@@ -59,7 +61,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       d = {"minE": dep_emin+1, "particleTypes": [11, 13,-11,-13], "minMom": dep_emin, "pionTMin": rpc_tmin}
       fclFileName = projectDir + "/" + tname + ".fcl"
       if verbose:
-        print "Creating " + fclFileName
+        print("Creating " + fclFileName)
       targetFiles.append(fclFileName)
       fout = open(fclFileName,"w")
       fout.write(t.substitute(d))
@@ -71,7 +73,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       d = {"name": tname}
       fclFileName = projectDir + "/reco-" + tname + ".fcl"
       if verbose:
-        print "Creating " + fclFileName
+        print("Creating " + fclFileName)
       targetFiles.append(fclFileName)
       fout = open(fclFileName,"w")
       fout.write(t.substitute(d))
@@ -90,7 +92,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
         d = {"minE": dep_emin+1, "particleTypes": [11, 13,-11,-13], "minMom": dep_emin, "kMaxNum": ikmax, "pionTMin": rpc_tmin}
         fclFileName = projectDir + "/" + temp_tname + ".fcl"
         if verbose:
-          print "Creating " + fclFileName
+          print("Creating " + fclFileName)
         targetFiles.append(fclFileName)
         fout = open(fclFileName,"w")
         fout.write(t.substitute(d))
@@ -105,7 +107,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
         d = {"name": temp_tname}
         fclFileName = projectDir + "/reco-" + temp_tname + ".fcl"
         if verbose:
-          print "Creating " + fclFileName
+          print("Creating " + fclFileName)
         targetFiles.append(fclFileName)
         fout = open(fclFileName,"w")
         fout.write(t.substitute(d))
@@ -118,7 +120,7 @@ def generate(verbose=True,dem_emin=93,dep_emin=83,rpc_tmin=400):
       d = {"name": tname}
       fclFileName = projectDir + "/reco-" + tname + ".fcl"
       if verbose:
-        print "Creating " + fclFileName
+        print("Creating " + fclFileName)
       targetFiles.append(fclFileName)
       fout = open(fclFileName,"w")
       fout.write(t.substitute(d))
