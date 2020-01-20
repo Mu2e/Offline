@@ -17,6 +17,7 @@
 #include "G4Threading.hh"
 
 //Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -25,8 +26,6 @@
 //C++ includes
 #include <vector>
 #include <memory>
-
-namespace fhicl { class ParameterSet; }
 
 namespace CLHEP { class Hep3Vector; }
 
@@ -42,7 +41,7 @@ namespace mu2e {
   class ActionInitialization : public G4VUserActionInitialization
   {
   public:
-    ActionInitialization(const fhicl::ParameterSet& pset,
+    ActionInitialization(const Mu2eG4Config::Top& conf,
                          SensitiveDetectorHelper* sensitive_detectorhelper,
                          Mu2eG4PerThreadStorage* per_thread_storage,
                          PhysicalVolumeHelper* phys_volume_helper,
@@ -63,9 +62,8 @@ namespace mu2e {
 
   private:
 
-    fhicl::ParameterSet const& pset_;
+    Mu2eG4Config::Top conf_;
 
-    //these are set using pset
     Mu2eG4TrajectoryControl trajectoryControl_;
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2eLimits_;

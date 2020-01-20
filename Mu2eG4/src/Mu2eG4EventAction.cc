@@ -24,17 +24,21 @@
 
 //art includes
 #include "canvas/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
 
 //C++ includes
 #include <iostream>
 
+// G4Timer.hh in v4_10_4_p03b contains
+// #define times ostimes
+// which breaks non-G4Timer code.
+#undef times
+
 using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4EventAction::Mu2eG4EventAction(const fhicl::ParameterSet& pset,
+  Mu2eG4EventAction::Mu2eG4EventAction(const Mu2eG4Config::Top& conf,
                                        TrackingAction* tracking_action,
                                        Mu2eG4SteppingAction* stepping_action,
                                        SensitiveDetectorHelper* sensitive_detectorhelper,
@@ -47,10 +51,10 @@ namespace mu2e {
   :
   G4UserEventAction(),
     perThreadObjects_(pts),
-    trajectoryControl_(pset.get<fhicl::ParameterSet>("TrajectoryControl")),
-    simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
-    timeVDtimes_(pset.get<std::vector<double> >("SDConfig.TimeVD.times")),
-    multiStagePars_(pset.get<fhicl::ParameterSet>("MultiStageParameters")),
+    trajectoryControl_(conf.TrajectoryControl()),
+    simParticlePrinter_(),
+    timeVDtimes_(conf.SDConfig().TimeVD().times()),
+    multiStagePars_(conf),
     _trackingAction(tracking_action),
     _steppingAction(stepping_action),
     _sensitiveDetectorHelper(sensitive_detectorhelper),
@@ -65,8 +69,13 @@ namespace mu2e {
     _parentHelper(),
     _processInfo(phys_process_info),
     _artEvent(),
-    _g4InternalFiltering(pset.get<bool>("G4InteralFiltering",false))
+    _g4InternalFiltering(conf.G4InteralFiltering())
   {
+    SimParticleCollectionPrinter::Config c;
+    if(conf.SimParticlePrinter(c)) {
+      simParticlePrinter_ = SimParticleCollectionPrinter(c);
+    }
+
     //G4SDManager* SDman = G4SDManager::GetSDMpointer();
     //SDman->ListTree();
   }

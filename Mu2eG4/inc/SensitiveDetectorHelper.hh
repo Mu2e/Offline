@@ -15,6 +15,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
 #include "Mu2eG4/inc/ExtMonFNALPixelSD.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // From the art tool chain
 #include "fhiclcpp/ParameterSet.h"
@@ -42,6 +43,7 @@ namespace mu2e {
   public:
 
     SensitiveDetectorHelper(fhicl::ParameterSet const& pset);
+    SensitiveDetectorHelper(const Mu2eG4Config::SDConfig_& conf);
     // Accept compiler generator copy c'tor and assignment operator.
 
     // Register the sensitive detector with this class; to be called after G4 Initialize.

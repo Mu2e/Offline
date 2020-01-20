@@ -11,6 +11,7 @@
 
 //Mu2e includes
 //#include "Mu2eG4/inc/SteppingVerbose.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
 #include "MCDataProducts/inc/GenParticleCollection.hh"

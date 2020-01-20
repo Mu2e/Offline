@@ -17,8 +17,6 @@
 
 #include <vector>
 
-namespace fhicl { class ParameterSet; }
-
 namespace mu2e {
 
   class PhysicalVolumeHelper;
@@ -27,7 +25,7 @@ namespace mu2e {
   {
 
   public:
-    Mu2eG4MasterRunAction(const fhicl::ParameterSet& pset,
+    Mu2eG4MasterRunAction(int diagLevel_,
                           PhysicalVolumeHelper*);
 
     virtual ~Mu2eG4MasterRunAction();
@@ -40,7 +38,7 @@ namespace mu2e {
 
   private:
     //data members
-    const fhicl::ParameterSet& pset_;
+    int diagLevel_;
     PhysicalVolumeHelper* physVolHelper_;
 
   };

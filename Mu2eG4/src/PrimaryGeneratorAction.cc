@@ -21,7 +21,6 @@
 #include "art/Framework/Principal/Handle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "canvas/Persistency/Provenance/ProductID.h"
 #include "art/Utilities/Globals.h"
 
@@ -57,9 +56,9 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
+  PrimaryGeneratorAction::PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
                                                  Mu2eG4PerThreadStorage* tls)
-    : verbosityLevel_(pset.get<int>("debug.diagLevel", 0))
+    : verbosityLevel_(debug.diagLevel())
     , perThreadObjects_(tls)
   {
     if ( verbosityLevel_ > 0 ) {

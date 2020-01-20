@@ -20,11 +20,11 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4MasterRunAction::Mu2eG4MasterRunAction(const fhicl::ParameterSet& pset,
+  Mu2eG4MasterRunAction::Mu2eG4MasterRunAction(int diagLevel,
                                                PhysicalVolumeHelper* phys_volume_helper)
     :
     G4UserRunAction(),
-    pset_(pset),
+    diagLevel_(diagLevel),
     physVolHelper_(phys_volume_helper)
   {}
 
@@ -41,7 +41,7 @@ namespace mu2e {
 
   void Mu2eG4MasterRunAction::MasterBeginRunAction() {
 
-    if (pset_.get<int>("debug.diagLevel",0)>0) {
+    if (diagLevel_ > 0) {
       G4cout << "Mu2eG4MasterRunAction " << __func__ << " called " << G4endl;
     }
 

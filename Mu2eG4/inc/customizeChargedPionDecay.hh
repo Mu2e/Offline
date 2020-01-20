@@ -13,11 +13,11 @@
 // $Date: 2012/07/10 21:16:53 $
 //
 
-namespace fhicl { class ParameterSet; }
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e{
 
-  void customizeChargedPionDecay(const fhicl::ParameterSet& pset);
+  void customizeChargedPionDecay(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug);
 
 }  // end namespace mu2e
 

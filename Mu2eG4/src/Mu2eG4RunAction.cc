@@ -27,7 +27,7 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4RunAction::Mu2eG4RunAction(const fhicl::ParameterSet& pset,
+  Mu2eG4RunAction::Mu2eG4RunAction(const Mu2eG4Config::Debug& debug,
                                    CLHEP::Hep3Vector const& origin_in_world,
                                    PhysicalVolumeHelper* phys_volume_helper,
                                    PhysicsProcessInfo* phys_process_info,
@@ -37,7 +37,7 @@ namespace mu2e {
                                    )
   :
   G4UserRunAction(),
-    pset_(pset),
+    debug_(debug),
     originInWorld(origin_in_world),
     _physVolHelper(phys_volume_helper),
     _processInfo(phys_process_info),
@@ -53,16 +53,16 @@ namespace mu2e {
   void Mu2eG4RunAction::BeginOfRunAction(const G4Run* aRun)
   {
 
-    if (pset_.get<int>("debug.diagLevel",0)>0) {
+    if (debug_.diagLevel() > 0) {
       G4cout << "Mu2eG4RunAction " << __func__ << " : G4Run: " << aRun->GetRunID() << G4endl;
     }
 
     // run managers are thread local
     G4RunManagerKernel const * rmk = G4RunManagerKernel::GetRunManagerKernel();
     G4TrackingManager* tm  = rmk->GetTrackingManager();
-    tm->SetVerboseLevel(pset_.get<int>("debug.trackingVerbosityLevel",0));
+    tm->SetVerboseLevel(debug_.trackingVerbosityLevel());
     G4SteppingManager* sm  = tm->GetSteppingManager();
-    sm->SetVerboseLevel(pset_.get<int>("debug.steppingVerbosityLevel",0));
+    sm->SetVerboseLevel(debug_.steppingVerbosityLevel());
 
     _sensitiveDetectorHelper->registerSensitiveDetectors();
 

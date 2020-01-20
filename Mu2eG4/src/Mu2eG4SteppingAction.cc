@@ -28,7 +28,7 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const fhicl::ParameterSet& pset,
+  Mu2eG4SteppingAction::Mu2eG4SteppingAction(const Mu2eG4Config::Debug& debug,
                                              const std::vector<double>& timeVDtimes,
                                              IMu2eG4Cut& steppingCuts,
                                              IMu2eG4Cut& commonCuts,
@@ -42,7 +42,7 @@ namespace mu2e {
 
     numTrackSteps_(),
     numKilledTracks_(),
-    stepLimitKillerVerbose_(pset.get<bool>("debug.stepLimitKillerVerbose")),
+    stepLimitKillerVerbose_(debug.stepLimitKillerVerbose()),
 
   // Things related to time virtual detector
     tvd_time_(timeVDtimes),
@@ -52,8 +52,8 @@ namespace mu2e {
     trajectoryControl_(&trajectoryControl),
 
   // Default values for parameters that are optional in the run time configuration.
-    _debugEventList(pset.get<std::vector<int> >("debug.eventList", std::vector<int>())),
-    _debugTrackList(pset.get<std::vector<int> >("debug.trackList", std::vector<int>())),
+    _debugEventList(debug.eventList()),
+    _debugTrackList(debug.trackList()),
 
     _spHelper()
   {

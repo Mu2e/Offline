@@ -25,7 +25,6 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
-#include "fhiclcpp/ParameterSet.h"
 
 // Mu2e includes
 #include "Mu2eG4/inc/ConstructMaterials.hh"
@@ -59,9 +58,9 @@ using namespace std;
 
 namespace mu2e {
 
-  ConstructMaterials::ConstructMaterials(const fhicl::ParameterSet& pset)
-    : printElements_(pset.get<bool>("debug.printElements"))
-    , printMaterials_(pset.get<bool>("debug.printMaterials"))
+  ConstructMaterials::ConstructMaterials(const Mu2eG4Config::Debug& debug)
+    : printElements_(debug.printElements())
+    , printMaterials_(debug.printMaterials())
   {
     art::ServiceHandle<GeometryService> geom;
     mu2eStandardDetector_ = geom->isStandardMu2eDetector();
