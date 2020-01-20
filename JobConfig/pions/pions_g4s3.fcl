@@ -26,7 +26,7 @@ source : {
 services : {
     message                : @local::default_message
     TFileService           : { fileName : "nts.owner.pions-g4s3.version.sequencer.root" }
-    RandomNumberGenerator  : {}
+    RandomNumberGenerator  : {defaultEngineKind: "MixMaxRng"}
     GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt"    }
     ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
     GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
@@ -159,5 +159,5 @@ services.message.destinations.log.categories.ArtReport.limit : 1
 services.message.destinations.log.categories.ArtReport.timespan : 300
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed          : 0
+services.SeedService.baseSeed          : 8
 services.SeedService.maxUniqueEngines  : 20

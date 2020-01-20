@@ -41,7 +41,7 @@ services :
       fileName      : "conversionEnergyLoss.root"
    }
 
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService :
    {

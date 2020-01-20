@@ -229,8 +229,9 @@ namespace mu2e {
 
       GlobalConstantsHandle<ParticleDataTable> pdt;
 
-      const float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
-      const float _cm2mm = CLHEP::cm / CLHEP::mm;
+      static constexpr float _GeV2MeV = CLHEP::GeV / CLHEP::MeV;
+      static constexpr float _cm2mm = CLHEP::cm / CLHEP::mm;
+      static constexpr float _ns2s = CLHEP::ns / CLHEP::s;
 
       CLHEP::Hep3Vector _cosmicReferencePointInMu2e;
       float _fluxConstant = 1.8e4;

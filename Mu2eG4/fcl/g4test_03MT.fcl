@@ -1,8 +1,8 @@
-# Configuration file for G4Test03
+# Configuration file for G4Test03MT
 #
 #  - Generate 200 events including one conversion electron plus
 #    some number of background processes.
-#  - Run these through G4.
+#  - Run these through G4 in MT mode
 #  - No event display.
 #  - Form StrawHits from StepPointMC objects
 #  - Write event data to an output file
@@ -13,13 +13,8 @@
 #include "fcl/standardProducers.fcl"
 #include "fcl/standardServices.fcl"
 
-BEGIN_PROLOG
-stashSize:10
-END_PROLOG
-
-
 # Give this job a name.
-process_name : G4Test03
+process_name : G4Test03MT
 
 # Start form an empty source
 source : {
@@ -27,33 +22,27 @@ source : {
   maxEvents : 200
 }
 
-services : @local::Services.SimAndReco
+services : {
+  @table::Services.SimAndReco
+  TFileService : { fileName : "g4test_03MT.root" }
+}
 
 physics : {
 
   producers: {
 
     # Generate the event.
-
-    generate: {
-      @table::EventGenerator.producers.StoppedParticleReactionGunN
-      stashSize : @local::stashSize
-    }
+    generate: @local::CeEndpointGun
 
     # Run G4 and add its output to the event.
-
-    g4run : {
-      @table::g4run
-      runinMTMode : true
-      numberOfThreads : 2
-    }
+    @table::Mu2eG4MT.producers
+#    g4mtrun : @local::MTmu2eg4runDefaultSingleStage
 
     # Work needed to setup the digi makers.
     @table::CommonMC.producers
     @table::TrackerMC.producers
 
-
-    # Calorimeter sequence    
+    # Calorimeter sequence
     @table::CaloDigiMC.producers
     @table::CaloReco.producers
 
@@ -72,16 +61,15 @@ physics : {
     checkhits: {
       module_type            : ReadBack
       generatorModuleLabel   : generate
-      g4ModuleLabel          : g4run
+      g4ModuleLabel          : g4mtrun
       diagLevel              : 0
       minimumEnergy          : 0.000
       maxFullPrint           : 201
     }
 
-
   }
 
-  p1 : [generate, g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloDigiMC.DigiSim,
+  p1 : [generate, g4mtrun, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloDigiMC.DigiSim,
          @sequence::CaloReco.Reco,randomsaver ]
   e1 : [readGens, checkhits, outfile]
 
@@ -94,31 +82,21 @@ outputs: {
 
   outfile : {
     module_type : RootOutput
-    fileName    : "data_03.root"
+    fileName    : "data_03MT.root"
   }
 
 }
 
-services.TFileService.fileName : "g4test_03.root"
-
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
-# physics.producers.g4run.SDConfig.enableAllSDs : true
-physics.producers.g4run.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
-# physics.producers.g4run.BirksConsts : { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV }
+physics.producers.g4mtrun.SDConfig.enableSD     : [tracker, calorimeter, calorimeterRO, CRV, virtualdetector, stoppingtarget ]
 
 # mu stops
-physics.producers.generate.muonStops.inputFiles : [ "mergedMuonStops/nts.mu2e.DS-TGTstops.MDC2018a.001002_00000000.root" ]
-
+physics.producers.generate.muonStops.inputFiles : @local::mergedMuon_tgtStops_mdc2018
 
 // Enable diagnsotic printout for pedagogical purposes.
 physics.producers.makeSH.diagLevel : 0
 physics.producers.makeSH.maxFullPrint : 5
-physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4run"
-#physics.producers.g4run.physics.turnOffRadioactiveDecay: true
-#physics.producers.g4run.physics.addProcesses : [ "GammaToMuPair", "AnnihiToMuPair", "ee2hadr" ]
-#physics.producers.g4run.debug.diagLevel : 1
-#physics.producers.g4run.physics.minRangeRegionCuts: {
-#   CalorimeterMother : 0.1 TrackerMother : 0.001 } // {RegionName : mm }
+physics.producers.CaloShowerStepFromStepPt.physVolInfoInput : "g4mtrun"

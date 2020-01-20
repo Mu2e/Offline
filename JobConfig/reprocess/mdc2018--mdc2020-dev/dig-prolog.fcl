@@ -1,0 +1,66 @@
+# Update MDC2018 digi files to MDC2020-dev digi files so that people
+# can continue development work
+#
+# This currently reprocesses tracker StepPointMCs into StrawGasSteps and to new
+# StrawDigis and StrawDigiMCs
+#
+# A. Edmonds (January 2020)
+
+#include "JobConfig/mixing/prolog.fcl"
+
+
+BEGIN_PROLOG
+
+ReprocessDigis : {
+  Source : {
+    module_type : RootInput
+    fileNames   : @nil
+    inputCommands : [ "keep *",
+    		      "drop mu2e::StrawDigis_*_*_*",
+		      "drop mu2e::StrawDigiMCs_*_*_*"
+		    ]
+    # don't follow art's rule on branch 'dependencies'
+    dropDescendantsOfDroppedBranches: false
+  }
+
+  producers : {
+    @table::Mixing.producers
+
+    # Some older digis (MDC2018f and earlier) have an off-by-one error in the caloShowerSteps
+    # need to fix it now, otherwise the compression check will fail.
+    # This module checks to see if the bug is in the input collections and so can safely be run on both old and new digis
+    # (like in the reco sequence)
+    CaloFix : { @table::DigiCompression.CaloFix 
+        caloShowerStepTags : [ "compressDigiMCs" ]
+        caloShowerSimTag : "compressDigiMCs"
+        caloShowerStepROTag : "compressDigiMCs"
+    }
+
+    # Some older digis (MDC2018h and earlier) have an error where tracker stepPoints were incorrectly duplicated
+    # this was fine if just trying to get information through a Ptr
+    # but means that one cannot loop over the step collection a second time.
+    # This module will remove duplicated steps and can be safelt run on both old and new digis
+    TrackerFix : { @table::DigiCompression.TrackerFix 
+    	       	   trackerSteps : "compressDigiMCs:tracker:input_source"
+    }
+  }
+
+  analyzers: { @table::Mixing.analyzers }
+
+  # can always run CaloFix and TrackerFix
+  TriggerPath : [ CaloFix, TrackerFix, @sequence::TrackerMC.DigiSim, compressDigiMCs ]
+  EndPath : [ @sequence::Mixing.EndPath ]
+
+  outputs: { Output : { @table::Mixing.Output }
+  }
+
+  dropCommands : [ "drop *_CaloFix_*_*",
+		   "drop *_TrackerFix_*_*",
+		   "drop mu2e::StrawDigiMCs_makeSD_*_*",
+		   "drop mu2e::StrawGasSteps_makeSGS_*_*"
+		 ]
+
+}
+
+
+END_PROLOG

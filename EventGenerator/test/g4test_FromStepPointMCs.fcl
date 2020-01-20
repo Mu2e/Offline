@@ -20,7 +20,7 @@ services: {
     scheduler: { defaultExceptions : false }
 
     TFileService          : { fileName : "g4FromStepPointMCs.root" }
-    RandomNumberGenerator : { }
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
     GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt"  }
@@ -103,5 +103,5 @@ physics.producers.CaloCrystalHitsMaker.diagLevel : 0
 physics.producers.CaloCrystalHitsMaker.maxFullPrint : 201
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

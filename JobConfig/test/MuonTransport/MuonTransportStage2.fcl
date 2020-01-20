@@ -13,7 +13,7 @@ services : {
 
    message               : @local::default_message
    TFileService          : { fileName : "histMuonTransportStage2.root" }
-   RandomNumberGenerator : { }
+   RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
    GeometryService        : { inputFile      : "JobConfig/test/MuonTransport/geom_MuonTransportSingleStage.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
@@ -88,5 +88,5 @@ physics : {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
