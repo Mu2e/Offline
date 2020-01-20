@@ -121,7 +121,7 @@ namespace mu2e {
     int    _mcTrajectoryMinSteps;
     unsigned _nKilledByFieldPropagator;
     double _rangeToIgnore;
-    
+
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
     Mu2eG4SteppingAction * _steppingAction;
 
@@ -145,7 +145,7 @@ namespace mu2e {
     // If the track passes, the min hits cut and the momentum cut, add the
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
-      
+
   };
 
 } // end namespace mu2e
