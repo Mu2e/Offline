@@ -73,11 +73,6 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eStudyWorld::~Mu2eStudyWorld(){
-    // Do not destruct the solids, logical volumes or physical volumes.
-    // G4 looks after that itself.
-  }
-
   Mu2eStudyWorld::Mu2eStudyWorld(const fhicl::ParameterSet& pset,
                                  SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : Mu2eUniverse(pset)
