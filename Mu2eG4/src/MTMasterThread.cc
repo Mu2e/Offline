@@ -22,7 +22,6 @@ namespace mu2e {
 
   MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
     :
-    pset_(pset),
     m_mtDebugOutput(pset.get<bool>("mtDebugOutput",false)),
     m_masterThreadState(ThreadState::NotExist),
     m_masterCanProceed(false),
