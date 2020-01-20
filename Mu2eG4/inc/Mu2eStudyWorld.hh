@@ -60,7 +60,6 @@ namespace mu2e {
     Mu2eStudyWorld(const fhicl::ParameterSet& pset,
                    SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
-    Mu2eStudyWorld();
     ~Mu2eStudyWorld();
 
     // Construct everything.

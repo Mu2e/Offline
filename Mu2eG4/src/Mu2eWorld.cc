@@ -140,7 +140,8 @@ namespace mu2e {
 
   Mu2eWorld::Mu2eWorld(const fhicl::ParameterSet& pset,
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
-    : sdHelper_(sdHelper)
+    : Mu2eUniverse(pset)
+    , sdHelper_(sdHelper)
     , pset_(pset)
     , activeWr_Wl_SD_(true)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
@@ -157,10 +158,7 @@ namespace mu2e {
     , strawGasMaxStep_(pset.get<double>("physics.strawGasMaxStep")*CLHEP::mm)
     , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
     , useEmOption4InTracker_(pset.get<bool>("physics.useEmOption4InTracker",false))
-  {
-    _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
-    _g4VerbosityLevel = pset.get<int>("debug.diagLevel");
-  }
+  {}
 
 
   // This is the callback called by G4 via G4VPhysicalVolume* WorldMaker::Construct()
