@@ -1,5 +1,6 @@
 physics.filters.cprLowPSeedDeMHSFilter.fitparticle   : @local::Particle.eminus	 
 physics.filters.cprLowPSeedDeMHSFilter.fitdirection  : @local::FitDir.downstream
+physics.filters.cprLowPSeedDeMHSFilter.helicity      : 1
 physics.filters.cprLowPSeedDeMHSFilter.minNStrawHits : 15.0
 physics.filters.cprLowPSeedDeMHSFilter.minHitRatio   : 0.4
 physics.filters.cprLowPSeedDeMHSFilter.minMomentum   : 50.0
@@ -9,8 +10,8 @@ physics.filters.cprLowPSeedDeMHSFilter.maxChi2XY     : 5.0
 physics.filters.cprLowPSeedDeMHSFilter.maxChi2PhiZ   : 5.0
 physics.filters.cprLowPSeedDeMHSFilter.maxD0         : 350.0
 physics.filters.cprLowPSeedDeMHSFilter.minD0         : -350.0
-physics.filters.cprLowPSeedDeMHSFilter.minAbsLambda  : 140.0
-physics.filters.cprLowPSeedDeMHSFilter.maxAbsLambda  : 330.0
+physics.filters.cprLowPSeedDeMHSFilter.minAbsLambda  : 50.0
+physics.filters.cprLowPSeedDeMHSFilter.maxAbsLambda  : 500.0
 physics.filters.cprLowPSeedDeMHSFilter.minNLoops     : 0
 physics.filters.cprLowPSeedDeMHSFilter.maxNLoops     : 30
 physics.filters.cprLowPSeedDeMHSFilter.prescaleUsingD0Phi  : false

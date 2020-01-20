@@ -14,6 +14,7 @@ namespace mu2e {
         ~PointLinePCA_XYZ();
 	double dca()   const { return _dca;};
         XYZVec const& pca() const { return _pca;}; 
+	
     private:
 	
 	XYZVec _point;

@@ -25,7 +25,7 @@ services :
     fileName : "g4test_02.root"
   }
 
-  RandomNumberGeneratorService : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
 # Uncomment to enable memory use profiling
 # SimpleMemoryCheck :

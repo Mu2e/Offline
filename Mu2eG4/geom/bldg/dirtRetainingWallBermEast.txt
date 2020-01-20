@@ -1,0 +1,66 @@
+// Berm along the remote handling retaining wall
+
+string dirt.retaining.Wall.berm.east.name     = "dirtRetainingWallBermEast";
+
+string dirt.retaining.Wall.berm.east.material = "MBOverburden";
+
+double dirt.retaining.Wall.berm.east.offsetFromMu2eOrigin.x   = 947.4;
+double dirt.retaining.Wall.berm.east.offsetFromFloorSurface.y = 9372.6;
+double dirt.retaining.Wall.berm.east.offsetFromMu2eOrigin.z   = -3581.4;
+
+double dirt.retaining.Wall.berm.east.yHalfThickness           = 1600.2; //top of retaining wall to dirtUpToGradeLevelW
+
+//trapezoid vertices
+vector<double> dirt.retaining.Wall.berm.east.xPositions = {
+  -14605.,  // P1
+  -14605.,  // 
+  -2000.,   // P0
+  -2000.,
+  -14605.,  // P1
+  -14605.,   // 
+  -2000.,   // P0
+  -2000.
+};
+  // -3000.,
+  // -3000.,
+  // 3000.,
+  // 3000.,
+  // -3000.,
+  // -3000.,
+  // 3000.,
+  // 3000.
+
+
+  // -21038.6, // P2 delta X from dirtbeamlineberm slope delta y / delta x ~ -1.955
+  // -20527.1, // P3
+  // -14605.,  // P4
+  // -2000.    // P5
+
+vector<double> dirt.retaining.Wall.berm.east.yPositions = {
+  10312.4,   //
+  15812.4,   // P0
+  15812.4,   // P1
+  10312.4,   //
+  10312.4,   //
+  10312.4,   // P0
+  10312.4,   // P1
+  10312.4    //
+};
+
+  // -3000.,
+  // 3000.,
+  // 3000.,
+  // -3000.,
+  // -3000.,
+  // 3000.,
+  // 3000.,
+  // -3000.
+
+  // 9866.57,   // P2
+  // 8866.57,   // P3
+  // 10312.4,   // P4
+  // 10312.4    // P5
+
+// Local Variables:
+// mode:c++
+// End:

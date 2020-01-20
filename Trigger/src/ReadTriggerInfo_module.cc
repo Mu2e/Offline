@@ -84,13 +84,29 @@ namespace mu2e {
       kNTrackTrig    = 20,
       kNTrackTrigVar = 30,
       kNHelixTrig    = 10,
-      kNHelixTrigVar = 30,
+      kNHelixTrigVar = 100,
       kNCaloCalib    = 5,
       kNCaloCalibVar = 5,
       kNCaloOnly     = 5,
       kNCaloOnlyVar  = 5,
       kNOcc          = 40,
       kNOccVar       = 10
+    };
+
+    struct MCInfo {
+      double  pMC;  
+      double  pTMC;  
+      double  pZMC;  
+      double  dpMC;  
+      double  dpTMC; 
+      double  dpZMC; 
+      double  pdg;   
+      double  origZ; 
+      double  origR; 
+      double  pdgM;  
+      double  lambda;
+      double  d0;
+      double  p;
     };
 
     struct  trigInfo_ {
@@ -200,6 +216,7 @@ namespace mu2e {
     void     findTrigIndex            (std::vector<trigInfo_> &Vec, std::string &ModuleLabel, int &Index);
     void     fillTrackTrigInfo        (int TrkTrigIndex  , const KalSeed*   KSeed, trackInfoHist_         &Hist);
     void     fillHelixTrigInfo        (int HelTrigIndex  , const HelixSeed* HSeed, helixInfoHist_         &Hist);
+    void     fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo);
     void     fillCaloTrigSeedInfo     (int CTrigSeedIndex, const CaloTrigSeed*HCl, caloTrigSeedHist_      &Hist);
     void     fillCaloCalibTrigInfo    (int ClCalibIndex  , const CaloCluster* HCl, caloCalibrationHist_   &Hist);
     void     fillOccupancyInfo        (int Index         , const StrawDigiCollection*SDCol, const CaloDigiCollection*CDCol, occupancyHist_   &Hist);
@@ -377,8 +394,97 @@ namespace mu2e {
       Hist._hHelInfo[i][17] = helInfoDir.make<TH1F>(Form("hGenZ_%i" , i), "z origin; z-origin [mm]"              , 300,   0,   15000);
       Hist._hHelInfo[i][18] = helInfoDir.make<TH1F>(Form("hGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
       Hist._hHelInfo[i][19] = helInfoDir.make<TH1F>(Form("hPDGM_%i" , i), "PDG Mother Id; PdgId-mother"          , 2253,   -30.5,   2222.5);
-      Hist._hHelInfo[i][20] = helInfoDir.make<TH1F>(Form("hEMC_%i"  , i), "MC Energy; E_{MC} [MeV]"              , 400,   0,   200);
+      //      Hist._hHelInfo[i][20] = helInfoDir.make<TH1F>(Form("hEMC_%i"  , i), "MC Energy; E_{MC} [MeV]"              , 400,   0,   200);
+      
+      Hist._hHelInfo[i][20] = helInfoDir.make<TH1F>(Form("hMuMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][21] = helInfoDir.make<TH1F>(Form("hMuMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][22] = helInfoDir.make<TH1F>(Form("hMuMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][23] = helInfoDir.make<TH1F>(Form("hMuMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][24] = helInfoDir.make<TH1F>(Form("hMuMinusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][25] = helInfoDir.make<TH1F>(Form("hMuMinusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][26] = helInfoDir.make<TH1F>(Form("hMuMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][27] = helInfoDir.make<TH1F>(Form("hMuMinusGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][28] = helInfoDir.make<TH1F>(Form("hMuMinusGenR_%i" , i), "r origin; r-origin [mm]",500,   0,   5000);
+      Hist._hHelInfo[i][29] = helInfoDir.make<TH1F>(Form("hMuMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+     
+      Hist._hHelInfo[i][30] = helInfoDir.make<TH1F>(Form("hMuPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][31] = helInfoDir.make<TH1F>(Form("hMuPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][32] = helInfoDir.make<TH1F>(Form("hMuPlusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][33] = helInfoDir.make<TH1F>(Form("hMuPlusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][34] = helInfoDir.make<TH1F>(Form("hMuPlusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][35] = helInfoDir.make<TH1F>(Form("hMuPlusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][36] = helInfoDir.make<TH1F>(Form("hMuPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][37] = helInfoDir.make<TH1F>(Form("hMuPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
+      Hist._hHelInfo[i][38] = helInfoDir.make<TH1F>(Form("hMuPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][39] = helInfoDir.make<TH1F>(Form("hMuPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
 
+      Hist._hHelInfo[i][40] = helInfoDir.make<TH1F>(Form("hIPAMuPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][41] = helInfoDir.make<TH1F>(Form("hIPAMuP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][42] = helInfoDir.make<TH1F>(Form("hIPAMuD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][43] = helInfoDir.make<TH1F>(Form("hIPAMuDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][44] = helInfoDir.make<TH1F>(Form("hIPAMuDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][45] = helInfoDir.make<TH1F>(Form("hIPAMuDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][46] = helInfoDir.make<TH1F>(Form("hIPAMuPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][47] = helInfoDir.make<TH1F>(Form("hIPAMuGenZ_%i" , i), "z origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][48] = helInfoDir.make<TH1F>(Form("hIPAMuGenR_%i" , i), "r origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][49] = helInfoDir.make<TH1F>(Form("hIPAMuLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+      Hist._hHelInfo[i][50] = helInfoDir.make<TH1F>(Form("hGammaPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][51] = helInfoDir.make<TH1F>(Form("hGammaP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][52] = helInfoDir.make<TH1F>(Form("hGammaD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][53] = helInfoDir.make<TH1F>(Form("hGammaDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][54] = helInfoDir.make<TH1F>(Form("hGammaDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][55] = helInfoDir.make<TH1F>(Form("hGammaDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][56] = helInfoDir.make<TH1F>(Form("hGammaPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][57] = helInfoDir.make<TH1F>(Form("hGammaGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][58] = helInfoDir.make<TH1F>(Form("hGammaGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][59] = helInfoDir.make<TH1F>(Form("hGammaLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+      Hist._hHelInfo[i][60] = helInfoDir.make<TH1F>(Form("hProtonPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][61] = helInfoDir.make<TH1F>(Form("hProtonP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][62] = helInfoDir.make<TH1F>(Form("hProtonD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][63] = helInfoDir.make<TH1F>(Form("hProtonDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][64] = helInfoDir.make<TH1F>(Form("hProtonDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][65] = helInfoDir.make<TH1F>(Form("hProtonDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][66] = helInfoDir.make<TH1F>(Form("hProtonPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][67] = helInfoDir.make<TH1F>(Form("hProtonGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][68] = helInfoDir.make<TH1F>(Form("hProtonGenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][69] = helInfoDir.make<TH1F>(Form("hProtonLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+      Hist._hHelInfo[i][70] = helInfoDir.make<TH1F>(Form("hN0PMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][71] = helInfoDir.make<TH1F>(Form("hN0P_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][72] = helInfoDir.make<TH1F>(Form("hN0D0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][73] = helInfoDir.make<TH1F>(Form("hN0DP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][74] = helInfoDir.make<TH1F>(Form("hN0DPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][75] = helInfoDir.make<TH1F>(Form("hN0DPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][76] = helInfoDir.make<TH1F>(Form("hN0PDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][77] = helInfoDir.make<TH1F>(Form("hN0GenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][78] = helInfoDir.make<TH1F>(Form("hN0GenR_%i" , i), "radial position origin; r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][79] = helInfoDir.make<TH1F>(Form("hN0Lambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+      
+      Hist._hHelInfo[i][80] = helInfoDir.make<TH1F>(Form("hPiMinusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][81] = helInfoDir.make<TH1F>(Form("hPiMinusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][82] = helInfoDir.make<TH1F>(Form("hPiMinusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][83] = helInfoDir.make<TH1F>(Form("hPiMinusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][84] = helInfoDir.make<TH1F>(Form("hPiMinusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][85] = helInfoDir.make<TH1F>(Form("hPiMinusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][86] = helInfoDir.make<TH1F>(Form("hPiMinusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][87] = helInfoDir.make<TH1F>(Form("hPiMinusGenZ_%i" , i), "origin; z-origin [mm]", 300,   0,   15000);
+      Hist._hHelInfo[i][88] = helInfoDir.make<TH1F>(Form("hPiMinusGenR_%i" , i), "r origin; r-origin [mm]",500,   0,   5000);
+      Hist._hHelInfo[i][89] = helInfoDir.make<TH1F>(Form("hPiMinusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+     
+      Hist._hHelInfo[i][90] = helInfoDir.make<TH1F>(Form("hPiPlusPMC_%i" , i), "MC Track Momentum @ tracker front; p[MeV/c]", 400, 0, 200);
+      Hist._hHelInfo[i][91] = helInfoDir.make<TH1F>(Form("hPiPlusP_%i", i), "Track P; p [MeV/c]" , 400, 0, 200);
+      Hist._hHelInfo[i][92] = helInfoDir.make<TH1F>(Form("hPiPlusD0_%i", i), "Helix impact parameter; d0 [mm]", 801, -400.5, 400.5);
+      Hist._hHelInfo[i][93] = helInfoDir.make<TH1F>(Form("hPiPlusDP_%i"  , i), "#Delta p @ tracker front; #Delta p = p_{hel} - p_{MC} [MeV/c]"     , 800, -200, 200);
+      Hist._hHelInfo[i][94] = helInfoDir.make<TH1F>(Form("hPiPlusDPt_%i"  , i), "#Delta pT @ tracker front; #Delta pT = pT_{hel} - pT_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][95] = helInfoDir.make<TH1F>(Form("hPiPlusDPz_%i"  , i), "#Delta pZ @ tracker front; #Delta pZ = pZ_{hel} - pZ_{MC} [MeV/c]", 800, -200, 200);
+      Hist._hHelInfo[i][96] = helInfoDir.make<TH1F>(Form("hPiPlusPDG_%i"  , i), "PDG Id; PdgId"                        , 2253,   -30.5,   2222.5);
+      Hist._hHelInfo[i][97] = helInfoDir.make<TH1F>(Form("hPiPlusGenZ_%i" , i), "origin; z-origin [mm];", 300,   0,   15000);
+      Hist._hHelInfo[i][98] = helInfoDir.make<TH1F>(Form("hPiPlusGenR_%i" , i), "r origin;  r-origin [mm]", 500,   0,   5000);
+      Hist._hHelInfo[i][99] = helInfoDir.make<TH1F>(Form("hPiPlusLambda_%i" , i), "Helix #lambda=dz/d#phi; |#lambda| [mm/rad]", 500, 0, 500);
+
+ 
     }
   }
   //--------------------------------------------------------------------------------//
@@ -967,6 +1073,21 @@ namespace mu2e {
     }
   }
 
+
+  void     ReadTriggerInfo::fillHelixTrigInfoAdd     (int HelTrigIndex  , int MCMotherIndex, const HelixSeed* HSeed, helixInfoHist_         &Hist, MCInfo &TMPMCInfo){
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 0]->Fill(TMPMCInfo.pMC);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 1]->Fill(TMPMCInfo.p);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 2]->Fill(TMPMCInfo.d0);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 3]->Fill(TMPMCInfo.dpMC);   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 4]->Fill(TMPMCInfo.dpTMC); 
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 5]->Fill(TMPMCInfo.dpZMC); 
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 6]->Fill(TMPMCInfo.pdg);	   
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 7]->Fill(TMPMCInfo.origZ);
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 8]->Fill(TMPMCInfo.origR);  
+    Hist._hHelInfo[HelTrigIndex][MCMotherIndex + 9]->Fill(TMPMCInfo.lambda);      
+  }
+
+
   
   void   ReadTriggerInfo::fillHelixTrigInfo(int HelTrigIndex, const HelixSeed*HSeed, helixInfoHist_  &Hist){
     GlobalConstantsHandle<ParticleDataTable> pdt;
@@ -1050,11 +1171,54 @@ namespace mu2e {
 	double   pXMC   = spmcp->momentum().x();
 	double   pYMC   = spmcp->momentum().y();
 	double   pZMC   = spmcp->momentum().z();
-	double   mass(-1.);//  = part->Mass();
-	double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
-	mass   = pdt->particle(pdg).ref().mass();
-	energy = sqrt(pXMC*pXMC+pYMC*pYMC+pZMC*pZMC+mass*mass);
+	// double   mass(-1.);//  = part->Mass();
+	// double   energy(-1.);// = sqrt(px*px+py*py+pz*pz+mass*mass);
+	// mass   = pdt->particle(pdg).ref().mass();
+	// energy = sqrt(pXMC*pXMC+pYMC*pYMC+pZMC*pZMC+mass*mass);
       
+	//need to check the mother of the particle
+	//the possible cases we are interested are:
+	// 1) IPA negative muon: 
+	// 2) atmospheric negative muon:
+	// 3) atmospheric positive muon:
+	// 4) photon
+	// 5) proton
+	// 6) neutron
+
+	int   indexMother(-1);
+
+	if (pdgM == 13){ //negative muon
+	  XYZVec  mother_origin;
+	  mother_origin.SetX(mother->startPosition().x()+3904);
+	  mother_origin.SetY(mother->startPosition().y());
+	  mother_origin.SetZ(mother->startPosition().z());
+	  double mother_origin_r =  sqrt(mother_origin.x()*mother_origin.x() + mother_origin.y()*mother_origin.y());
+	  double IPA_z(7400.), IPA_z_tolerance(600.);
+	  // case 1: origin in the IPA and PDG-Id
+	  if ( (fabs(mother_origin_r) <= 300.5) && 
+	       (fabs(mother_origin_r) >= 299.5) && 
+	       (fabs(mother_origin.z() - IPA_z) < IPA_z_tolerance) &&
+	       (mother->startMomentum().px() < 1e-10) &&
+	       (mother->startMomentum().py() < 1e-10) &&
+	       (mother->startMomentum().pz() < 1e-10)){
+	    indexMother = 40;
+	  }else{//case 2: negative cosmic muon
+	    indexMother = 20;	  
+	  }
+	}else if (pdgM == -13){//case 3: positive muon
+	  indexMother = 30;
+	}else if (pdgM == 22){//case 4: photon
+	  indexMother = 50;
+	}else if (pdgM == 2212){//case 5: proton
+	  indexMother = 60;
+	}else if (pdgM == 2112){ //case 6: neutron
+	  indexMother = 70;
+	}else if (pdgM == -211){ //case 7: pi minus
+	  indexMother = 80;
+	}else if (pdgM == 211){ //case 8: pi plus
+	  indexMother = 90;
+	}
+
 	double   pTMC   = sqrt(pXMC*pXMC + pYMC*pYMC);
 	double   pMC    = sqrt(pZMC*pZMC + pTMC*pTMC);
       
@@ -1068,18 +1232,41 @@ namespace mu2e {
 	double pz     = sqrt(p*p - pt*pt);
 
 	//now fill the MC histograms
-	Hist._hHelInfo[HelTrigIndex][10]->Fill(pMC);
-	Hist._hHelInfo[HelTrigIndex][11]->Fill(pTMC);
-	Hist._hHelInfo[HelTrigIndex][12]->Fill(pZMC);
-	Hist._hHelInfo[HelTrigIndex][13]->Fill(p - pMC);
-	Hist._hHelInfo[HelTrigIndex][14]->Fill(pt - pTMC);
-	Hist._hHelInfo[HelTrigIndex][15]->Fill(pz - pZMC);
-	Hist._hHelInfo[HelTrigIndex][16]->Fill(pdg);
+	Hist._hHelInfo[HelTrigIndex][10]->Fill(pMC);	   
+	Hist._hHelInfo[HelTrigIndex][11]->Fill(pTMC);	   
+	Hist._hHelInfo[HelTrigIndex][12]->Fill(pZMC);	   
+	Hist._hHelInfo[HelTrigIndex][13]->Fill(p - pMC);   
+	Hist._hHelInfo[HelTrigIndex][14]->Fill(pt - pTMC); 
+	Hist._hHelInfo[HelTrigIndex][15]->Fill(pz - pZMC); 
+	Hist._hHelInfo[HelTrigIndex][16]->Fill(pdg);	   
 	Hist._hHelInfo[HelTrigIndex][17]->Fill(origin.z());
-	Hist._hHelInfo[HelTrigIndex][18]->Fill(origin_r);
-	Hist._hHelInfo[HelTrigIndex][19]->Fill(pdgM);
-	Hist._hHelInfo[HelTrigIndex][20]->Fill(energy);
-    }
+	Hist._hHelInfo[HelTrigIndex][18]->Fill(origin_r);  
+	Hist._hHelInfo[HelTrigIndex][19]->Fill(pdgM);      
+
+	//fill the "add" info
+	if (indexMother>0){
+	  MCInfo tmpMCInfo;
+	  tmpMCInfo.pMC   = (pMC);	
+	  tmpMCInfo.pTMC  = (pTMC);	
+	  tmpMCInfo.pZMC  = (pZMC);	
+	  tmpMCInfo.dpMC  = (p - pMC); 
+	  tmpMCInfo.dpTMC = (pt - pTMC);
+	  tmpMCInfo.dpZMC = (pz - pZMC);
+	  tmpMCInfo.pdg   = (pdg);	 
+	  tmpMCInfo.origZ = (origin.z());
+	  tmpMCInfo.origR = (origin_r);  
+	  tmpMCInfo.pdgM  = (pdgM);      
+	  tmpMCInfo.lambda  = lambda;      
+	  tmpMCInfo.d0    = d0;      
+	  tmpMCInfo.p     = p;      
+	  
+
+	  fillHelixTrigInfoAdd(HelTrigIndex, indexMother, HSeed, Hist, tmpMCInfo);
+	}
+
+	// Hist._hHelInfo[HelTrigIndex][20]->Fill(energy);
+      }
+    
   }
   //--------------------------------------------------------------------------------
   

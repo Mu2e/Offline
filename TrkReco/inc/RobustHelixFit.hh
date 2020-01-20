@@ -57,8 +57,8 @@ namespace mu2e
     explicit RobustHelixFit(fhicl::ParameterSet const&);
     virtual ~RobustHelixFit();
 
-    bool initCircle(RobustHelixFinderData& helixData, bool forceTargetCon);
-    void fitCircle(RobustHelixFinderData& helixData, bool forceTargetCon);
+    bool initCircle(RobustHelixFinderData& helixData, bool forceTargetCon, bool useTripleAreaWt=false);
+    void fitCircle(RobustHelixFinderData& helixData, bool forceTargetCon, bool useTripleAreaWt=false);
     bool initFZ(RobustHelixFinderData& helixData, int initHitPhi=1);
     bool initFZ_2(RobustHelixFinderData& helixData);
     bool initFZ_from_dzFrequency(RobustHelixFinderData& helixData, int initHitPhi=1);
@@ -88,14 +88,14 @@ namespace mu2e
     const Tracker*            _tracker;
     const Calorimeter*         _calorimeter;
 
-    void fitCircleMedian(RobustHelixFinderData& helixData, bool forceTargetCon);
+    void fitCircleMedian(RobustHelixFinderData& helixData, bool forceTargetCon, bool useTripleAreaWt=false);
     
     float lambdaMin()  { return _lmin; }
     float lambdaMax()  { return _lmax; }
 
   private:
 
-    void fitHelix(RobustHelixFinderData& helixData, bool forceTargetCon);
+    void fitHelix(RobustHelixFinderData& helixData, bool forceTargetCon, bool useTripletAreaWt=false);
     void fitCircleAGE(RobustHelixFinderData& helixData);
     void fitCircleMean(RobustHelixFinderData& helixData);
     void findAGE(RobustHelixFinderData  const& helixData, XYZVec const& center,float& rmed, float& age);
