@@ -21,7 +21,6 @@
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
 #include "MCDataProducts/inc/StepInstanceName.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 
 //C++ includes
 #include <iostream>
@@ -41,8 +40,7 @@ namespace mu2e {
   struct Mu2eG4PerThreadStorage
   {
     explicit Mu2eG4PerThreadStorage(const fhicl::ParameterSet& pset):
-      pset_(pset),
-      simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet()))
+      pset_(pset)
     {
       tvd.first = "";
       tvd.second = nullptr;
@@ -107,10 +105,6 @@ namespace mu2e {
     void insertCutsStepPointMC(std::unique_ptr<StepPointMCCollection> step_point_mc,
                                std::string instance_name) {
       cutsSteps[instance_name] = std::move(step_point_mc);
-    }
-
-    void printInfo() {
-      simParticlePrinter_.print(std::cout, *simPartCollection);
     }
 
     /////////////////////////////////////////////////////////////
@@ -240,8 +234,6 @@ namespace mu2e {
 
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > sensitiveDetectorSteps;
     std::unordered_map< std::string, std::unique_ptr<StepPointMCCollection> > cutsSteps;
-
-    SimParticleCollectionPrinter simParticlePrinter_;
 
     /*
       G4RunManagerKernel* kernel = nullptr;
