@@ -43,7 +43,7 @@ namespace mu2e {
   {
   public:
 
-    explicit WorldMaker(std::unique_ptr<WorldType> pw = std::unique_ptr<WorldType>(new WorldType()), std::unique_ptr<MaterialsType> pm = std::unique_ptr<MaterialsType>(new ConstructMaterials()))
+    explicit WorldMaker(std::unique_ptr<WorldType> pw, std::unique_ptr<MaterialsType> pm)
       :
       _materials(std::move(pm)),
       _world(std::move(pw))
