@@ -38,7 +38,6 @@ namespace mu2e {
   G4VUserActionInitialization(),
     pset_(pset),
     trajectoryControl_(pset.get<fhicl::ParameterSet>("TrajectoryControl")),
-    simParticlePrinter_(pset.get<fhicl::ParameterSet>("SimParticlePrinter", SimParticleCollectionPrinter::defaultPSet())),
     timeVDtimes_(pset.get<std::vector<double> >("SDConfig.TimeVD.times")),
     mu2eLimits_(pset.get<fhicl::ParameterSet>("ResourceLimits")),
 

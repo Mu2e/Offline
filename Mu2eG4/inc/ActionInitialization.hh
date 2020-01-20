@@ -18,7 +18,6 @@
 
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
-#include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
 
@@ -68,7 +67,6 @@ namespace mu2e {
 
     //these are set using pset
     Mu2eG4TrajectoryControl trajectoryControl_;
-    SimParticleCollectionPrinter simParticlePrinter_;
     std::vector<double> timeVDtimes_;
     Mu2eG4ResourceLimits mu2eLimits_;
 
