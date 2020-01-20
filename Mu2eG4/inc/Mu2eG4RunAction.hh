@@ -21,14 +21,14 @@ namespace CLHEP { class Hep3Vector; }
 
 namespace mu2e {
 
-    class PhysicalVolumeHelper;
-    class PhysicsProcessInfo;
-    class TrackingAction;
-    class Mu2eG4SteppingAction;
-    class SensitiveDetectorHelper;
+  class PhysicalVolumeHelper;
+  class PhysicsProcessInfo;
+  class TrackingAction;
+  class Mu2eG4SteppingAction;
+  class SensitiveDetectorHelper;
 
-class Mu2eG4RunAction : public G4UserRunAction
-{
+  class Mu2eG4RunAction : public G4UserRunAction
+  {
   public:
     Mu2eG4RunAction(const fhicl::ParameterSet& pset,
                     CLHEP::Hep3Vector const&,
@@ -58,7 +58,7 @@ class Mu2eG4RunAction : public G4UserRunAction
 
     SensitiveDetectorHelper* _sensitiveDetectorHelper;
 
-};
+  };
 
 }  // end namespace mu2e
 #endif /* Mu2eG4_RunAction_hh */
