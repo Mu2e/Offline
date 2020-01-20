@@ -27,6 +27,8 @@
 //G4 forward reference
 class G4VPhysicalVolume;
 
+namespace fhicl { class ParameterSet; }
+
 namespace mu2e {
 
   // Forward references within mu2e namespace.
@@ -35,7 +37,7 @@ namespace mu2e {
   class Mu2eUniverse {
   public:
 
-    Mu2eUniverse();
+    explicit Mu2eUniverse(const fhicl::ParameterSet& pset);
     virtual ~Mu2eUniverse();
 
     // Construct everything.
