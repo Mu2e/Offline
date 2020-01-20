@@ -73,9 +73,6 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eStudyWorld::Mu2eStudyWorld()
-  {}
-
   Mu2eStudyWorld::~Mu2eStudyWorld(){
     // Do not destruct the solids, logical volumes or physical volumes.
     // G4 looks after that itself.
@@ -83,15 +80,14 @@ namespace mu2e {
 
   Mu2eStudyWorld::Mu2eStudyWorld(const fhicl::ParameterSet& pset,
                                  SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
-    : sdHelper_(sdHelper)
+    : Mu2eUniverse(pset)
+    , sdHelper_(sdHelper)
     , pset_(pset)
     , writeGDML_(pset.get<bool>("debug.writeGDML"))
     , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
     , g4stepperName_(pset.get<std::string>("physics.stepper"))
     , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))//unused
-  {
-    _verbosityLevel = pset.get<int>("debug.worldVerbosityLevel");
-  }
+  {}
 
   // This is the callback called by G4
   G4VPhysicalVolume * Mu2eStudyWorld::construct(){
