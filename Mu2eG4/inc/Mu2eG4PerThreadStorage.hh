@@ -26,7 +26,6 @@
 #include <iostream>
 
 //art includes
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Run.h"
 #include "cetlib_except/exception.h"
@@ -39,8 +38,7 @@ namespace mu2e {
 
   struct Mu2eG4PerThreadStorage
   {
-    explicit Mu2eG4PerThreadStorage(const fhicl::ParameterSet& pset):
-      pset_(pset)
+    explicit Mu2eG4PerThreadStorage()
     {
       tvd.first = "";
       tvd.second = nullptr;
@@ -211,7 +209,6 @@ namespace mu2e {
 
     /////////////////////////////////////////////////////////////
     // run-level data members
-    const fhicl::ParameterSet& pset_;
     art::RunNumber_t currentRunNumber = 0;
 
     //bool threadInitialized = false;

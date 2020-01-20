@@ -222,7 +222,7 @@ namespace mu2e {
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
     _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
-    perThreadStore(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet()))
+    perThreadStore()
     {
 
       if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {

@@ -70,7 +70,7 @@ namespace mu2e {
     m_steppingVerbose(true),
     m_mtDebugOutput(pset.get<bool>("mtDebugOutput",false)),
     rmvlevel_(pset.get<int>("debug.diagLevel",0)),
-    perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>(pset)),
+    perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>()),
     masterRM(nullptr),
     workerID_(worker_ID),
     mu2elimits_(pset.get<fhicl::ParameterSet>("ResourceLimits")),
