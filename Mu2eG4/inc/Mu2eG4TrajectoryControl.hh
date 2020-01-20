@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 
-namespace fhicl { class ParameterSet; }
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e {
 
@@ -14,7 +14,7 @@ namespace mu2e {
   public:
     typedef std::map<std::string, double> PerVolumeDistanceMap;
 
-    explicit Mu2eG4TrajectoryControl(const fhicl::ParameterSet& pset);
+    explicit Mu2eG4TrajectoryControl(const Mu2eG4Config::TrajectoryControl_& tc);
 
     bool produce() const { return produce_; }
     double defaultMinPointDistance() const { return defaultMinPointDistance_; }

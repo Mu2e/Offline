@@ -17,8 +17,9 @@
 #include <mutex>
 #include <condition_variable>
 
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
+
 namespace art { class Run; }
-namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -28,7 +29,7 @@ namespace mu2e {
   class MTMasterThread
   {
   public:
-    MTMasterThread(const fhicl::ParameterSet& pset);
+    explicit MTMasterThread(const Mu2eG4Config::Top& conf);
     ~MTMasterThread();
 
 

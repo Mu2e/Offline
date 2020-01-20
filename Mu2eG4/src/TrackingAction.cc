@@ -62,12 +62,12 @@ using namespace std;
 
 namespace mu2e {
 
-  TrackingAction::TrackingAction(const fhicl::ParameterSet& pset,
+  TrackingAction::TrackingAction(const Mu2eG4Config::Top& conf,
                                  Mu2eG4SteppingAction * steppingAction,
                                  unsigned stageOffset,
                                  const Mu2eG4TrajectoryControl& trajectoryControl,
                                  const Mu2eG4ResourceLimits& lim):
-    _debugList(pset.get<std::vector<int> >("debug.trackingActionEventList", std::vector<int>())),
+    _debugList(conf.debug().trackingActionEventList()),
     _physVolHelper(0),
     _timer(),
     _trajectories(nullptr),
@@ -78,14 +78,14 @@ namespace mu2e {
     _saveTrajectoryMomentumCut(trajectoryControl.saveTrajectoryMomentumCut()),
     _mcTrajectoryMinSteps(trajectoryControl.mcTrajectoryMinSteps()),
     _nKilledByFieldPropagator(0),
-    _rangeToIgnore(pset.get<double>("physics.rangeToIgnore")),
+    _rangeToIgnore(conf.physics().rangeToIgnore()),
     _steppingAction(steppingAction),
     _stageOffset(stageOffset),
     _processInfo(0),
-    _printTrackTiming(pset.get<bool>("debug.printTrackTiming")),
+    _printTrackTiming(conf.debug().printTrackTiming()),
     _spHelper(),
     _primaryHelper(),
-    _stepLimitKillerVerbose(pset.get<bool>("debug.stepLimitKillerVerbose"))
+    _stepLimitKillerVerbose(conf.debug().stepLimitKillerVerbose())
   {
 
     if ( _stepLimitKillerVerbose && (G4Threading::G4GetThreadId() <= 0) ) {

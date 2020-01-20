@@ -26,6 +26,7 @@
 #include "Mu2eG4/inc/MTMasterThread.hh"
 #include "Mu2eG4/inc/SimParticleHelper.hh"
 #include "Mu2eG4/inc/SimParticlePrimaryHelper.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // Data products that will be produced by this module.
 #include "MCDataProducts/inc/GenParticleCollection.hh"
@@ -89,7 +90,9 @@ namespace mu2e {
 
   class Mu2eG4MT : public art::SharedProducer {
   public:
-    Mu2eG4MT(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& pf);
+    using Parameters = art::SharedProducer::Table<Mu2eG4Config::Top>;
+
+    Mu2eG4MT(Parameters const& pars, art::ProcessingFrame const& pf);
     // Accept compiler supplied d'tor
 
   private:
@@ -99,7 +102,7 @@ namespace mu2e {
     void endRun(art::Run &r, art::ProcessingFrame const& pf) override;
     void beginSubRun(art::SubRun &sr, art::ProcessingFrame const& pf) override;
 
-    fhicl::ParameterSet pset_;
+    Mu2eG4Config::Top conf_;
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
     Mu2eG4MultiStageParameters multiStagePars_;
@@ -128,7 +131,7 @@ namespace mu2e {
 
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
-    std::vector<double> timeVDtimes_;
+    bool timeVD_enabled_;
 
     // Helps with indexology related to persisting G4 volume information.
     // string to ptr maps, speed optimization
@@ -158,33 +161,33 @@ namespace mu2e {
   }; // end G4 header
 
 
-  Mu2eG4MT::Mu2eG4MT(fhicl::ParameterSet const& pSet, art::ProcessingFrame const& procFrame):
-    SharedProducer{pSet},
-    pset_(pSet),
-    mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
-    trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
-    multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
+  Mu2eG4MT::Mu2eG4MT(Parameters const& pars, art::ProcessingFrame const& procFrame):
+    SharedProducer{pars},
+    conf_(pars()),
+    mu2elimits_(pars().ResourceLimits()),
+    trajectoryControl_(pars().TrajectoryControl()),
+    multiStagePars_(pars()),
 
-    masterThread(std::make_unique<MTMasterThread>(pSet)),
+    masterThread(std::make_unique<MTMasterThread>(pars())),
 
-    _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
-    _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
-    _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
+    _warnEveryNewRun(pars().debug().warnEveryNewRun()),
+    _exportPDTStart(pars().debug().exportPDTStart()),
+    _exportPDTEnd(pars().debug().exportPDTEnd()),
 
-    storePhysicsTablesDir_(pSet.get<std::string>("debug.storePhysicsTablesDir","")),
+    storePhysicsTablesDir_(pars().debug().storePhysicsTablesDir()),
 
-    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
+    stackingCuts_(createMu2eG4Cuts(pars().Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    steppingCuts_(createMu2eG4Cuts(pars().Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    commonCuts_(createMu2eG4Cuts(pars().Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_)),
 
-    _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
-    _mtDebugOutput(pSet.get<bool>("debug.mtDebugOutput",false)),
+    _rmvlevel(pars().debug().diagLevel()),
+    _mtDebugOutput(pars().debug().mtDebugOutput()),
 
-    _generatorModuleLabel(pSet.get<string>("generatorModuleLabel", "")),
+    _generatorModuleLabel(pars().generatorModuleLabel()),
     _tvdOutputName(StepInstanceName::timeVD),
-    timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
+    timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
     physVolHelper_(),
-    sensitiveDetectorHelper_(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
+    sensitiveDetectorHelper_(pars().SDConfig()),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
 
     //NEED TO FIGURE OUT HOW TO CONNECT THIS ENGINE TO THE G4 ENGINE
@@ -211,7 +214,7 @@ namespace mu2e {
       produces<StatusG4>();
       produces<SimParticleCollection>();
 
-      if(!timeVDtimes_.empty()) {
+      if(timeVD_enabled_) {
         produces<StepPointMCCollection>(_tvdOutputName.name());
       }
 
@@ -252,7 +255,7 @@ namespace mu2e {
       //createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
 
       G4cout << "WE WILL RUN " << num_schedules << " SCHEDULES" <<  G4endl;
-    } // end G4:G4(fhicl::ParameterSet const& pSet);
+    } // end Mu2eG4MT constructor
 
 
 
@@ -360,7 +363,7 @@ namespace mu2e {
       //std::ostringstream oss;
       //oss << tid;
       //std::string workerID = oss.str();
-      access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(pset_, tid);
+      access_workerMap->second = std::make_unique<Mu2eG4WorkerRunManager>(conf_, tid);
     }
 
     if (event.id().event() == 1) {
@@ -401,7 +404,7 @@ namespace mu2e {
       perThreadStore->putSensitiveDetectorData(simProductGetter);
       perThreadStore->putCutsData(simProductGetter);
 
-      if(!timeVDtimes_.empty()) {
+      if(timeVD_enabled_) {
         event.put(std::move(perThreadStore->getTVDHits()),perThreadStore->getTVDName());
       }
 

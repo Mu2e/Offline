@@ -37,6 +37,7 @@ class G4UserLimits;
 // Mu2e includes
 #include "Mu2eG4/inc/InitEnvToolBase.hh"
 #include "Mu2eG4/inc/Mu2eUniverse.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -57,7 +58,7 @@ namespace mu2e {
   class Mu2eStudyWorld : public Mu2eUniverse {
   public:
 
-    Mu2eStudyWorld(const fhicl::ParameterSet& pset,
+    Mu2eStudyWorld(const Mu2eG4Config::Top& conf,
                    SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
     // Construct everything.
@@ -77,7 +78,7 @@ namespace mu2e {
     SensitiveDetectorHelper*          sdHelper_; // Non-owning
     std::unique_ptr<InitEnvToolBase>  constructEnv_;
 
-    fhicl::ParameterSet               pset_;
+    Mu2eG4Config::Top                 conf_;
 
     // _verbosityLevel in the base class
 

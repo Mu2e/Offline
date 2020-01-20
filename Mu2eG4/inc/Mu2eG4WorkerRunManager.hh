@@ -11,10 +11,8 @@
 // Included from Geant4
 #include "G4WorkerRunManager.hh"
 
-//art includes
-#include "fhiclcpp/ParameterSet.h"
-
 //Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4ResourceLimits.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
@@ -43,7 +41,7 @@ namespace mu2e {
 
   public:
 
-    Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::thread::id worker_ID);
+    Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, std::thread::id worker_ID);
     virtual ~Mu2eG4WorkerRunManager();
 
     //**********************************************************
@@ -62,7 +60,7 @@ namespace mu2e {
 
   private:
 
-    fhicl::ParameterSet const& pset_;
+    Mu2eG4Config::Top conf_;
 
     bool m_managerInitialized;
     bool m_steppingVerbose;

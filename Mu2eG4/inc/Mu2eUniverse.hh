@@ -20,14 +20,13 @@
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // G4 includes
 #include "G4Types.hh"
 
 //G4 forward reference
 class G4VPhysicalVolume;
-
-namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -37,7 +36,7 @@ namespace mu2e {
   class Mu2eUniverse {
   public:
 
-    explicit Mu2eUniverse(const fhicl::ParameterSet& pset);
+    explicit Mu2eUniverse(const Mu2eG4Config::Debug& debug);
     virtual ~Mu2eUniverse();
 
     // Construct everything.

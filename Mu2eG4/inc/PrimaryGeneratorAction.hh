@@ -25,12 +25,11 @@
 // Mu2eG4 includes
 #include "MCDataProducts/inc/GenParticleCollection.hh"
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 class G4ParticleDefinition;
 class G4ParticleGun;
 class G4Event;
-
-namespace fhicl { class ParameterSet; }
 
 namespace art { class ProductID; }
 
@@ -45,7 +44,7 @@ namespace mu2e {
   class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction{
   public:
 
-    explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
+    explicit PrimaryGeneratorAction(const Mu2eG4Config::Debug& debug,
                                     Mu2eG4PerThreadStorage* pts);
 
     // This is the interface specified by G4.

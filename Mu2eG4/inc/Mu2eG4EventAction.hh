@@ -16,6 +16,7 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/ExtMonFNALSimHitCollection.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/Mu2eG4MultiStageParameters.hh"
 #include "Mu2eG4/inc/Mu2eG4TrajectoryControl.hh"
 #include "Mu2eUtilities/inc/SimParticleCollectionPrinter.hh"
@@ -32,7 +33,6 @@
 class G4Event;
 class G4Timer;
 
-namespace fhicl { class ParameterSet; }
 namespace art { class Event; }
 
 namespace mu2e {
@@ -52,7 +52,7 @@ namespace mu2e {
   {
   public:
 
-    Mu2eG4EventAction(const fhicl::ParameterSet&,
+    Mu2eG4EventAction(const Mu2eG4Config::Top&,
                       TrackingAction*,
                       Mu2eG4SteppingAction*,
                       SensitiveDetectorHelper*,

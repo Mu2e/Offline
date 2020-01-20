@@ -11,7 +11,6 @@
 
 //art includes
 #include "art/Framework/Principal/Run.h"
-#include "fhiclcpp/ParameterSet.h"
 
 //C++ includes
 #include <iostream>
@@ -20,9 +19,9 @@ using namespace std;
 
 namespace mu2e {
 
-  MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
+  MTMasterThread::MTMasterThread(const Mu2eG4Config::Top& conf)
     :
-    m_mtDebugOutput(pset.get<bool>("mtDebugOutput",false)),
+    m_mtDebugOutput(conf.debug().mtDebugOutput()),
     m_masterThreadState(ThreadState::NotExist),
     m_masterCanProceed(false),
     m_mainCanProceed(false),
@@ -43,7 +42,7 @@ namespace mu2e {
         std::unique_lock<std::mutex> lk2(m_threadMutex);
 
         // Create the master run manager, and share it with the art::mu2e thread
-        masterRunManager = std::make_shared<Mu2eG4MTRunManager>(pset);
+        masterRunManager = std::make_shared<Mu2eG4MTRunManager>(conf);
         m_masterRunManager = masterRunManager;
 
         // State loop

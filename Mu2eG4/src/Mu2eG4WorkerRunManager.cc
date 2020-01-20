@@ -63,26 +63,26 @@ namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
   // generate an exception.
-  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const fhicl::ParameterSet& pset, std::thread::id worker_ID):
+  Mu2eG4WorkerRunManager::Mu2eG4WorkerRunManager(const Mu2eG4Config::Top& conf, std::thread::id worker_ID):
     G4WorkerRunManager(),
-    pset_(pset),
+    conf_(conf),
     m_managerInitialized(false),
     m_steppingVerbose(true),
-    m_mtDebugOutput(pset.get<bool>("mtDebugOutput",false)),
-    rmvlevel_(pset.get<int>("debug.diagLevel",0)),
-    perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>(pset)),
+    m_mtDebugOutput(conf.debug().mtDebugOutput()),
+    rmvlevel_(conf.debug().diagLevel()),
+    perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>()),
     masterRM(nullptr),
     workerID_(worker_ID),
-    mu2elimits_(pset.get<fhicl::ParameterSet>("ResourceLimits")),
-    trajectoryControl_(pset.get<fhicl::ParameterSet>("TrajectoryControl")),
-    multiStagePars_(pset.get<fhicl::ParameterSet>("MultiStageParameters")),
+    mu2elimits_(conf.ResourceLimits()),
+    trajectoryControl_(conf.TrajectoryControl()),
+    multiStagePars_(conf),
 
     physicsProcessInfo_(),
-    sensitiveDetectorHelper_(pset.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
+    sensitiveDetectorHelper_(conf.SDConfig()),
     extMonFNALPixelSD_(),
-    stackingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut",fhicl::ParameterSet()), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_))
+    stackingCuts_(createMu2eG4Cuts(conf.Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    steppingCuts_(createMu2eG4Cuts(conf.Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    commonCuts_(createMu2eG4Cuts(conf.Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_))
   {
     if (m_mtDebugOutput) {
       G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
@@ -177,11 +177,11 @@ namespace mu2e {
 
   void Mu2eG4WorkerRunManager::initializeUserActions(const G4ThreeVector& origin_in_world){
 
-    userPrimaryGeneratorAction = new PrimaryGeneratorAction(pset_, perThreadObjects_.get());
+    userPrimaryGeneratorAction = new PrimaryGeneratorAction(conf_.debug(), perThreadObjects_.get());
     SetUserAction(userPrimaryGeneratorAction);
 
-    steppingAction_ = new Mu2eG4SteppingAction(pset_,
-                                               pset_.get<std::vector<double> >("SDConfig.TimeVD.times"),
+    steppingAction_ = new Mu2eG4SteppingAction(conf_.debug(),
+                                               conf_.SDConfig().TimeVD().times(),
                                                *steppingCuts_.get(),
                                                *commonCuts_.get(),
                                                trajectoryControl_,
@@ -191,14 +191,14 @@ namespace mu2e {
     SetUserAction( new Mu2eG4StackingAction(*stackingCuts_.get(),
                                             *commonCuts_.get()) );
 
-    trackingAction_ = new TrackingAction(pset_,
+    trackingAction_ = new TrackingAction(conf_,
                                          steppingAction_,
                                          multiStagePars_.simParticleNumberOffset(),
                                          trajectoryControl_,
                                          mu2elimits_);
     SetUserAction(trackingAction_);
 
-    SetUserAction( new Mu2eG4RunAction(pset_,
+    SetUserAction( new Mu2eG4RunAction(conf_.debug(),
                                        origin_in_world,
                                        masterRM->getPhysVolumeHelper(),
                                        &physicsProcessInfo_,
@@ -206,7 +206,7 @@ namespace mu2e {
                                        steppingAction_,
                                        &sensitiveDetectorHelper_) );
 
-    SetUserAction( new Mu2eG4EventAction(pset_,
+    SetUserAction( new Mu2eG4EventAction(conf_,
                                          trackingAction_,
                                          steppingAction_,
                                          &sensitiveDetectorHelper_,

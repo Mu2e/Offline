@@ -228,7 +228,3 @@ void DecayMuonsWithSpin::ConstructProcess()
 
 
 }
-
-bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset) {
-  return pset.get<bool>( "physics.decayMuonsWithSpin", false);
-}

@@ -47,17 +47,17 @@ namespace mu2e {
 
   // If the c'tor is called a second time, the c'tor of base will
   // generate an exception.
-  Mu2eG4MTRunManager::Mu2eG4MTRunManager(const fhicl::ParameterSet& pset):
+  Mu2eG4MTRunManager::Mu2eG4MTRunManager(const Mu2eG4Config::Top& conf):
     G4MTRunManager(),
-    pset_(pset),
+    conf_(conf),
     m_managerInitialized(false),
     m_runTerminated(false),
     physVolHelper_(nullptr),
-    sensitiveDetectorHelper_(pset.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
+    sensitiveDetectorHelper_(conf.SDConfig()),
     masterRunAction_(nullptr),
     physicsList_(nullptr),
-    rmvlevel_(pset.get<int>("debug.diagLevel",0)),
-    maxNumEventstoSeed_(pset.get<G4int>("maxEventsToSeed",10000))
+    rmvlevel_(conf.debug().diagLevel()),
+    maxNumEventstoSeed_(conf.maxEventsToSeed())
   {}
 
   // Destructor of base is called automatically.  No need to do anything.
@@ -220,17 +220,17 @@ namespace mu2e {
     G4VUserDetectorConstruction* allMu2e;
 
     if ((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()) {
-      allMu2e = (new WorldMaker<Mu2eWorld>(make_unique<Mu2eWorld>(pset_, &sensitiveDetectorHelper_),
-                                           make_unique<ConstructMaterials>(pset_)));
+      allMu2e = (new WorldMaker<Mu2eWorld>(make_unique<Mu2eWorld>(conf_, &sensitiveDetectorHelper_),
+                                           make_unique<ConstructMaterials>(conf_.debug())));
     }
     else {
       throw cet::exception("CONFIG")
         << "Error: You are trying to run in MT mode without the Standard Mu2e Detector!\n";
     }
 
-    preG4InitializeTasks(pset_);
+    preG4InitializeTasks(conf_.physics(), conf_.debug());
 
-    physicsList_ = physicsListDecider(pset_);
+    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
 
     physicsList_->SetVerboseLevel(rmvlevel_);
     SetVerboseLevel(rmvlevel_);
@@ -244,7 +244,7 @@ namespace mu2e {
 
   void Mu2eG4MTRunManager::initializeMasterRunAction()
   {
-    masterRunAction_ = new Mu2eG4MasterRunAction(pset_, physVolHelper_);
+    masterRunAction_ = new Mu2eG4MasterRunAction(conf_.debug().diagLevel(), physVolHelper_);
     SetUserAction( masterRunAction_ );
     masterRunAction_->MasterBeginRunAction();
   }
