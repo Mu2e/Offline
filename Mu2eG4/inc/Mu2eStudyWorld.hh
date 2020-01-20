@@ -60,8 +60,6 @@ namespace mu2e {
     Mu2eStudyWorld(const fhicl::ParameterSet& pset,
                    SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
 
-    ~Mu2eStudyWorld();
-
     // Construct everything.
     // The non-const return type is eventually required
     // by G4VUserDetectorConstruction::Construct();
