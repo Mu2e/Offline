@@ -31,7 +31,7 @@ namespace mu2e {
 
   Mu2eUniverse::Mu2eUniverse():
     _geom(*(art::ServiceHandle<GeometryService>())),
-    _config(_geom.config()), 
+    _config(_geom.config()),
     _helper(&(*(art::ServiceHandle<G4Helper>())))
   {} // beware of the order of initialization/declarations
 

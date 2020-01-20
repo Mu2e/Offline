@@ -1,7 +1,7 @@
 #ifndef Mu2eG4_Mu2eUniverse_hh
 #define Mu2eG4_Mu2eUniverse_hh
 //
-// (Pure virtual) Umbrela for the the Mu2e G4 world classes 
+// (Pure virtual) Umbrela for the the Mu2e G4 world classes
 //
 // $Id: Mu2eUniverse.hh,v 1.2 2012/11/19 23:03:24 genser Exp $
 // $Author: genser $
@@ -39,11 +39,11 @@ namespace mu2e {
     virtual ~Mu2eUniverse();
 
     // Construct everything.
-    // The non-const return type is eventually required 
+    // The non-const return type is eventually required
     // by G4VUserDetectorConstruction::Construct();
     virtual G4VPhysicalVolume * construct() = 0;
-      
-      virtual void constructSDandField() = 0;
+
+    virtual void constructSDandField() = 0;
 
   protected:
 
