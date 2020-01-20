@@ -68,8 +68,6 @@ namespace mu2e {
   class Mu2eWorld : public Mu2eUniverse {
   public:
 
-    explicit Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/);
-
     Mu2eWorld(const fhicl::ParameterSet& pset,
               SensitiveDetectorHelper *sdHelper/*no ownership passing*/
               );
