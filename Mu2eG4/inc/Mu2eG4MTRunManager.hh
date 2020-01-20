@@ -49,8 +49,8 @@ namespace mu2e {
   private:
 
     // Private and unimplemented to prevent copying.
-    Mu2eG4MTRunManager( Mu2eG4MTRunManager const & );
-    Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & );
+    explicit Mu2eG4MTRunManager( Mu2eG4MTRunManager const & ) =  delete;
+    Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & ) = delete;
 
     fhicl::ParameterSet pset_;
 
