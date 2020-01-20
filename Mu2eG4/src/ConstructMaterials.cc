@@ -59,14 +59,6 @@ using namespace std;
 
 namespace mu2e {
 
-  ConstructMaterials::ConstructMaterials() {
-    art::ServiceHandle<GeometryService> geom;
-    SimpleConfig const& config = geom->config();
-    mu2eStandardDetector_ = geom->isStandardMu2eDetector();
-    printElements_ = config.getBool("g4.printElements",false);
-    printMaterials_ = config.getBool("g4.printMaterials",false);
-  }
-
   ConstructMaterials::ConstructMaterials(const fhicl::ParameterSet& pset)
     : printElements_(pset.get<bool>("debug.printElements"))
     , printMaterials_(pset.get<bool>("debug.printMaterials"))
