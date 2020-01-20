@@ -39,7 +39,6 @@ namespace mu2e {
   class ConstructMaterials{
   public:
 
-    ConstructMaterials();
     explicit ConstructMaterials(const fhicl::ParameterSet& pset);
 
     ~ConstructMaterials();
