@@ -62,9 +62,9 @@ namespace mu2e {
     verbosityLevel_(verbosityLevel),
     perThreadObjects_(tls)
   {
-      if ( verbosityLevel_ > 0 ) {
-          cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
-      }
+    if ( verbosityLevel_ > 0 ) {
+      cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
+    }
 
   }
 
@@ -76,106 +76,106 @@ namespace mu2e {
                                                  Mu2eG4PerThreadStorage* tls)
     :
     PrimaryGeneratorAction(pset.get<int>("debug.diagLevel", 0), tls)
-    {}
+  {}
 
 
-//load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
-void PrimaryGeneratorAction::setEventData()
-    {
-        genParticles_ = perThreadObjects_->gensHandle.isValid() ?
-                        perThreadObjects_->gensHandle.product() :
-                        nullptr;
+  //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
+  void PrimaryGeneratorAction::setEventData()
+  {
+    genParticles_ = perThreadObjects_->gensHandle.isValid() ?
+      perThreadObjects_->gensHandle.product() :
+      nullptr;
 
-        hitInputs_ = perThreadObjects_->genInputHits;
+    hitInputs_ = perThreadObjects_->genInputHits;
 
-        parentMapping_ = perThreadObjects_->simParticlePrimaryHelper;
-        
-    }
+    parentMapping_ = perThreadObjects_->simParticlePrimaryHelper;
+
+  }
 
 
-void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
-    {
-        //load the GenParticleCollection etc for the event
-        setEventData();
-        // For debugging.
-        //testTrack(anEvent);
+  void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
+  {
+    //load the GenParticleCollection etc for the event
+    setEventData();
+    // For debugging.
+    //testTrack(anEvent);
 
-        fromEvent(anEvent);
-    }
+    fromEvent(anEvent);
+  }
 
   // Copy generated particles from the event into G4.
   // At the moment none of the supported generators make multi-particle vertices.
   // That may change in the future.
-void PrimaryGeneratorAction::fromEvent(G4Event* event)
-    {
+  void PrimaryGeneratorAction::fromEvent(G4Event* event)
+  {
 
-        art::ServiceHandle<GeometryService> geom;
-        SimpleConfig const & _config = geom->config();
+    art::ServiceHandle<GeometryService> geom;
+    SimpleConfig const & _config = geom->config();
 
-        // Get the offsets to map from generator world to G4 world.
-        // check if this is standard mu2e configuration or not
+    // Get the offsets to map from generator world to G4 world.
+    // check if this is standard mu2e configuration or not
 
-        G4ThreeVector const mu2eOrigin =
-        (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
-        ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
+    G4ThreeVector const mu2eOrigin =
+      (!_config.getBool("mu2e.standardDetector",true) || !(geom->isStandardMu2eDetector()))
+      ?  G4ThreeVector(0.0,0.0,0.0) : (GeomHandle<WorldG4>())->mu2eOriginInWorld();
 
-        // For each generated particle, add it to the event.
-        if(genParticles_) {
-            for (unsigned i=0; i < genParticles_->size(); ++i) {
-                const GenParticle& genpart = (*genParticles_)[i];
-                addG4Particle(event,
-                              genpart.pdgId(),
-                              // Transform into G4 world coordinate system
-                              genpart.position() + mu2eOrigin,
-                              genpart.time(),
-                              genpart.properTime(),
-                              genpart.momentum());
+    // For each generated particle, add it to the event.
+    if(genParticles_) {
+      for (unsigned i=0; i < genParticles_->size(); ++i) {
+        const GenParticle& genpart = (*genParticles_)[i];
+        addG4Particle(event,
+                      genpart.pdgId(),
+                      // Transform into G4 world coordinate system
+                      genpart.position() + mu2eOrigin,
+                      genpart.time(),
+                      genpart.properTime(),
+                      genpart.momentum());
 
-                parentMapping_->addEntryFromGenParticle(i);
-            }
-        }
-
-
-        // a test
-        // int ovl = verbosityLevel_;
-        // verbosityLevel_ = 2;
-        // addG4Particle(event,
-        //               static_cast<PDGCode::type>(1000010048),
-        //               // Transform into G4 world coordinate system
-        //               G4ThreeVector()+mu2eOrigin,
-        //               0.0,
-        //               0.0,
-        //               G4ThreeVector());
-        // verbosityLevel_ = ovl;
-
-
-        // Also create particles from the input hits
-        for(const auto& hitcoll : *hitInputs_) {
-
-            for(const auto& hit : *hitcoll) {
-                addG4Particle(event,
-                              hit.simParticle()->pdgId(),
-                              // Transform into G4 world coordinate system
-                              hit.position() + mu2eOrigin,
-                              hit.time(),
-                              hit.properTime(),
-                              hit.momentum());
-
-                parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
-
-            }
-        }
-
+        parentMapping_->addEntryFromGenParticle(i);
+      }
     }
 
 
-void PrimaryGeneratorAction::addG4Particle(G4Event *event,
-                                           PDGCode::type pdgId,
-                                           const G4ThreeVector& pos,
-                                           double time,
-                                           double properTime,
-                                           const G4ThreeVector& mom)
-    {
+    // a test
+    // int ovl = verbosityLevel_;
+    // verbosityLevel_ = 2;
+    // addG4Particle(event,
+    //               static_cast<PDGCode::type>(1000010048),
+    //               // Transform into G4 world coordinate system
+    //               G4ThreeVector()+mu2eOrigin,
+    //               0.0,
+    //               0.0,
+    //               G4ThreeVector());
+    // verbosityLevel_ = ovl;
+
+
+    // Also create particles from the input hits
+    for(const auto& hitcoll : *hitInputs_) {
+
+      for(const auto& hit : *hitcoll) {
+        addG4Particle(event,
+                      hit.simParticle()->pdgId(),
+                      // Transform into G4 world coordinate system
+                      hit.position() + mu2eOrigin,
+                      hit.time(),
+                      hit.properTime(),
+                      hit.momentum());
+
+        parentMapping_->addEntryFromStepPointMC(hit.simParticle()->id());
+
+      }
+    }
+
+  }
+
+
+  void PrimaryGeneratorAction::addG4Particle(G4Event *event,
+                                             PDGCode::type pdgId,
+                                             const G4ThreeVector& pos,
+                                             double time,
+                                             double properTime,
+                                             const G4ThreeVector& mom)
+  {
     // Create a new vertex
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pos, time);
 
@@ -259,13 +259,13 @@ void PrimaryGeneratorAction::addG4Particle(G4Event *event,
                             mom.x(),
                             mom.y(),
                             mom.z());
-        
+
     // Add the particle to the event.
     vertex->SetPrimary( particle );
 
     // Add the vertex to the event.
     event->AddPrimaryVertex( vertex );
-    }
+  }
 
 
 } // end namespace mu2e

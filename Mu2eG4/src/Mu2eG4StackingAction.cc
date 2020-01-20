@@ -14,16 +14,16 @@ namespace mu2e {
     : stackingCuts_(&stackingCuts)
     , commonCuts_(&commonCuts)
   {}
-    
-    G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
-        if(stackingCuts_->stackingActionCut(trk)) {
-            return fKill;
-        }
-        if(commonCuts_->stackingActionCut(trk)) {
-            return fKill;
-        }
-        return fUrgent;
+
+  G4ClassificationOfNewTrack Mu2eG4StackingAction::ClassifyNewTrack(const G4Track* trk){
+    if(stackingCuts_->stackingActionCut(trk)) {
+      return fKill;
     }
+    if(commonCuts_->stackingActionCut(trk)) {
+      return fKill;
+    }
+    return fUrgent;
+  }
 
 
 

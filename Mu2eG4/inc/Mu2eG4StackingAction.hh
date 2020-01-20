@@ -16,7 +16,7 @@ namespace mu2e {
     Mu2eG4StackingAction(const fhicl::ParameterSet& pset,
                          IMu2eG4Cut& stackingCuts,
                          IMu2eG4Cut& commonCuts);
-      
+
     G4ClassificationOfNewTrack ClassifyNewTrack(const G4Track* aTrack) override;
 
   private:
