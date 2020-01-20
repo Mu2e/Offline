@@ -138,26 +138,6 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eWorld::Mu2eWorld(SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
-    : sdHelper_(sdHelper)
-    , pset_(fhicl::ParameterSet())
-    , activeWr_Wl_SD_(_config.getBool("tracker.ActiveWr_Wl_SD",false))
-    , writeGDML_(_config.getBool("writeGDML",false))
-    , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
-    , g4stepperName_(_config.getString("g4.stepper"))
-    , g4epsilonMin_(_config.getDouble("g4.epsilonMin"))
-    , g4epsilonMax_(_config.getDouble("g4.epsilonMax"))
-    , g4DeltaOneStep_(_config.getDouble("g4.deltaOneStep")*CLHEP::mm)
-    , g4DeltaIntersection_(_config.getDouble("g4.deltaIntersection")*CLHEP::mm)
-    , g4DeltaChord_(_config.getDouble("g4.deltaChord")*CLHEP::mm)
-    , bfieldMaxStep_(_config.getDouble("bfield.maxStep", 20.)*CLHEP::mm)
-    , strawGasMaxStep_(_config.getDouble("strawGas.maxStep", 20.)*CLHEP::mm)
-    , useEmOption4InTracker_(_config.getBool("g4.useEmOption4InTracker",false))
-  {
-    _verbosityLevel = _config.getInt("world.verbosityLevel", 0);
-    _g4VerbosityLevel = _config.getInt("g4.diagLevel", 0);
-  }
-
   Mu2eWorld::Mu2eWorld(const fhicl::ParameterSet& pset,
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
     : sdHelper_(sdHelper)
