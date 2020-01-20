@@ -29,12 +29,12 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eUniverse::Mu2eUniverse(const fhicl::ParameterSet& pset):
+  Mu2eUniverse::Mu2eUniverse(const Mu2eG4Config::Debug& debug):
     _geom(*(art::ServiceHandle<GeometryService>())),
     _config(_geom.config()),
     _helper(&(*(art::ServiceHandle<G4Helper>()))),
-    _verbosityLevel(pset.get<int>("debug.worldVerbosityLevel")),
-    _g4VerbosityLevel(pset.get<int>("debug.diagLevel"))
+    _verbosityLevel(debug.worldVerbosityLevel()),
+    _g4VerbosityLevel(debug.diagLevel())
   {} // beware of the order of initialization/declarations
 
   Mu2eUniverse::~Mu2eUniverse(){

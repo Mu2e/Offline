@@ -34,6 +34,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -54,7 +55,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -94,8 +94,9 @@ namespace mu2e {
 
   class Mu2eG4 : public art::EDProducer {
   public:
-    Mu2eG4(fhicl::ParameterSet const& pSet);
-    // Accept compiler supplied d'tor
+
+    using Parameters = art::EDProducer::Table<Mu2eG4Config::Top>;
+    explicit Mu2eG4(const Parameters& pars);
 
   private:
     void produce(art::Event& e) override;
@@ -104,7 +105,7 @@ namespace mu2e {
     void endRun(art::Run &) override;
     void beginSubRun(art::SubRun &sr) override;
 
-    fhicl::ParameterSet pset_;
+    Mu2eG4Config::Top conf_;
 
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
@@ -164,7 +165,7 @@ namespace mu2e {
 
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
-    std::vector<double> timeVDtimes_;
+    bool timeVD_enabled_;
 
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
@@ -186,46 +187,43 @@ namespace mu2e {
 
   }; // end G4 header
 
-  Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
-    EDProducer{pSet},
-    pset_(pSet),
-    mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
-    trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
-    multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
+  Mu2eG4::Mu2eG4(const Parameters& pars):
+    EDProducer{pars},
+    conf_(pars()),
+    mu2elimits_(pars().ResourceLimits()),
+    trajectoryControl_(pars().TrajectoryControl()),
+    multiStagePars_(pars()),
     _runManager(std::make_unique<G4RunManager>()),
-    _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
-    _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
-    _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
+    _warnEveryNewRun(pars().debug().warnEveryNewRun()),
+    _exportPDTStart(pars().debug().exportPDTStart()),
+    _exportPDTEnd(pars().debug().exportPDTEnd()),
 
-    storePhysicsTablesDir_(pSet.get<std::string>("debug.storePhysicsTablesDir","")),
+    storePhysicsTablesDir_(pars().debug().storePhysicsTablesDir()),
 
-    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
+    stackingCuts_(createMu2eG4Cuts(pars().Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    steppingCuts_(createMu2eG4Cuts(pars().Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    commonCuts_(createMu2eG4Cuts(pars().Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_)),
 
     _session(nullptr),
     _UI(nullptr),
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     _visManager(nullptr),
 #endif
-    // FIXME:  naming of pset parameters
-    _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
-    _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
-    _visMacro(pSet.get<std::string>("visualization.initMacro")),
-    _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
-    _g4Macro(pSet.get<std::string>("g4Macro","")),
-    _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
+    _rmvlevel(pars().debug().diagLevel()),
+    _checkFieldMap(pars().debug().checkFieldMap()),
+    _visMacro(pars().visualization().initMacro()),
+    _visGUIMacro(pars().visualization().GUIMacro()),
+    _g4Macro(pars().g4Macro()),
+    _generatorModuleLabel(pars().generatorModuleLabel()),
     _physVolHelper(),
-    //_printPhysicsProcessSummary(pSet.get<bool>("debug.printPhysicsProcessSummary",false)),
-    _extMonFNALPixelSD(),
     _tvdOutputName(StepInstanceName::timeVD),
-    timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
+    timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
     _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
     _systemElapsed(0.),
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-    _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
+    _sensitiveDetectorHelper(pars().SDConfig()),
     perThreadStore()
     {
 
@@ -240,7 +238,7 @@ namespace mu2e {
       produces<StatusG4>();
       produces<SimParticleCollection>();
 
-      if(!timeVDtimes_.empty()) {
+      if(timeVD_enabled_) {
         produces<StepPointMCCollection>(_tvdOutputName.name());
       }
 
@@ -283,7 +281,7 @@ namespace mu2e {
       // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
       createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
 
-    } // end G4:G4(fhicl::ParameterSet const& pSet);
+    } // end Mu2eG4 constructor
 
 
   // That should really be beginJob().  G4 does not care about run
@@ -339,7 +337,7 @@ namespace mu2e {
 
 
     // Create user actions and register them with G4.
-    G4VUserDetectorConstruction* allMu2e;
+    G4VUserDetectorConstruction* allMu2e = nullptr;
 
     // as mentioned above, we give the last element to the Master thread to setup the InstanceMap in the ctor of the SDH class
 
@@ -347,27 +345,27 @@ namespace mu2e {
       geom.addWorldG4(*GeomHandle<Mu2eHall>());
 
       allMu2e =
-        (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(_sensitiveDetectorHelper)  ),
-                                   std::make_unique<ConstructMaterials>(pset_)) );
+        (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(conf_, &(_sensitiveDetectorHelper)  ),
+                                   std::make_unique<ConstructMaterials>(conf_.debug())) );
 
       _originInWorld = (GeomHandle<WorldG4>())->mu2eOriginInWorld();
     }
     else {
       allMu2e =
-        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(_sensitiveDetectorHelper) ),
-                                        std::make_unique<ConstructMaterials>(pset_)) );
+        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(conf_, &(_sensitiveDetectorHelper) ),
+                                        std::make_unique<ConstructMaterials>(conf_.debug())) );
 
       // non-Mu2e detector: the system origin os set to (0.,0.,0.); do not use geometry service for that
       _originInWorld = G4ThreeVector(0.0,0.0,0.0);
     }
 
-    preG4InitializeTasks(pset_);
+    preG4InitializeTasks(conf_.physics(), conf_.debug());
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(allMu2e);
 
-    physicsList_ = physicsListDecider(pset_);
+    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
     physicsList_->SetVerboseLevel(_rmvlevel);
 
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(_rmvlevel);
@@ -378,8 +376,7 @@ namespace mu2e {
 
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(pset_,
-                                                                _extMonFNALPixelSD,
+    ActionInitialization* actioninit = new ActionInitialization(conf_,
                                                                 &_sensitiveDetectorHelper,
                                                                 &perThreadStore,
                                                                 &_physVolHelper,
@@ -490,7 +487,7 @@ namespace mu2e {
       perThreadStore.putSensitiveDetectorData(simProductGetter);
       perThreadStore.putCutsData(simProductGetter);
 
-      if(!timeVDtimes_.empty()) {
+      if(timeVD_enabled_) {
         event.put(std::move(perThreadStore.getTVDHits()),perThreadStore.getTVDName());
       }
 

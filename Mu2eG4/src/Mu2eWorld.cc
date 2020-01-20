@@ -138,26 +138,26 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eWorld::Mu2eWorld(const fhicl::ParameterSet& pset,
+  Mu2eWorld::Mu2eWorld(const Mu2eG4Config::Top& conf,
                        SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
-    : Mu2eUniverse(pset)
+    : Mu2eUniverse(conf.debug())
     , sdHelper_(sdHelper)
-    , pset_(pset)
+    , conf_(conf)
     , activeWr_Wl_SD_(true)
-    , writeGDML_(pset.get<bool>("debug.writeGDML"))
-    , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
-    , g4stepperName_(pset.get<std::string>("physics.stepper"))
-    , g4epsilonMin_(pset.get<double>("physics.epsilonMin"))
-    , g4epsilonMax_(pset.get<double>("physics.epsilonMax"))
-    , g4DeltaOneStep_(pset.get<double>("physics.deltaOneStep")*CLHEP::mm)
-    , g4DeltaIntersection_(pset.get<double>("physics.deltaIntersection")*CLHEP::mm)
-    , g4DeltaChord_(pset.get<double>("physics.deltaChord")*CLHEP::mm)
-    , g4StepMinimum_(pset.get<double>("physics.stepMinimum")*CLHEP::mm)
-    , g4MaxIntSteps_(pset.get<int>("physics.maxIntSteps"))
-    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep")*CLHEP::mm)
-    , strawGasMaxStep_(pset.get<double>("physics.strawGasMaxStep")*CLHEP::mm)
-    , limitStepInAllVolumes_(pset.get<bool>("physics.limitStepInAllVolumes"))
-    , useEmOption4InTracker_(pset.get<bool>("physics.useEmOption4InTracker",false))
+    , writeGDML_(conf.debug().writeGDML())
+    , gdmlFileName_(conf.debug().GDMLFileName())
+    , g4stepperName_(conf.physics().stepper())
+    , g4epsilonMin_(conf.physics().epsilonMin())
+    , g4epsilonMax_(conf.physics().epsilonMax())
+    , g4DeltaOneStep_(conf.physics().deltaOneStep()*CLHEP::mm)
+    , g4DeltaIntersection_(conf.physics().deltaIntersection()*CLHEP::mm)
+    , g4DeltaChord_(conf.physics().deltaChord()*CLHEP::mm)
+    , g4StepMinimum_(conf.physics().stepMinimum()*CLHEP::mm)
+    , g4MaxIntSteps_(conf.physics().maxIntSteps())
+    , bfieldMaxStep_(conf.physics().bfieldMaxStep()*CLHEP::mm)
+    , strawGasMaxStep_(conf.physics().strawGasMaxStep()*CLHEP::mm)
+    , limitStepInAllVolumes_(conf.physics().limitStepInAllVolumes())
+    , useEmOption4InTracker_(conf.physics().useEmOption4InTracker())
   {}
 
 
@@ -266,11 +266,8 @@ namespace mu2e {
     }
 
     // creating regions to be able to asign special cut and EM options
-
-    const fhicl::ParameterSet& minRangeRegionCutsPSet{
-      pset_.get<fhicl::ParameterSet>("physics.minRangeRegionCuts",fhicl::ParameterSet())};
-
-    if (!minRangeRegionCutsPSet.is_empty()) {
+    fhicl::ParameterSet minRangeRegionCutsPSet;
+    if (conf_.physics().minRangeRegionCuts.get_if_present(minRangeRegionCutsPSet)) {
       const std::vector<std::string> regionNames{minRangeRegionCutsPSet.get_names()};
       for(const auto& regionName : regionNames) {
         G4Region* region = new G4Region(regionName); // G4RegionStore takes ownership
@@ -282,7 +279,7 @@ namespace mu2e {
         G4double productionCut = minRangeRegionCutsPSet.get<double>(regionName);
         regionProductionCuts->SetProductionCut(productionCut);
         // the above sets the same cut for gamma, e- and e+, proton/ions
-        G4double protonProductionCut = pset_.get<double>("physics.protonProductionCut");
+        G4double protonProductionCut = conf_.physics().protonProductionCut();
         regionProductionCuts->SetProductionCut(protonProductionCut,"proton");
         region->SetProductionCuts(regionProductionCuts);
 
@@ -304,7 +301,8 @@ namespace mu2e {
     // different EM option even when no production cuts are set explicitly
 
     if ( useEmOption4InTracker_
-         && !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+         //&& !pset_.has_key("physics.minRangeRegionCuts.TrackerMother")) {
+         && !minRangeRegionCutsPSet.has_key("TrackerMother")) {
       G4Region* region = new G4Region("TrackerMother");
       trackerInfo.logical->SetRegion(region);
       region->AddRootLogicalVolume(trackerInfo.logical);

@@ -73,15 +73,15 @@ using namespace std;
 
 namespace mu2e {
 
-  Mu2eStudyWorld::Mu2eStudyWorld(const fhicl::ParameterSet& pset,
+  Mu2eStudyWorld::Mu2eStudyWorld(const Mu2eG4Config::Top& conf,
                                  SensitiveDetectorHelper *sdHelper/*no ownership passing*/)
-    : Mu2eUniverse(pset)
+    : Mu2eUniverse(conf.debug())
     , sdHelper_(sdHelper)
-    , pset_(pset)
-    , writeGDML_(pset.get<bool>("debug.writeGDML"))
-    , gdmlFileName_(pset.get<std::string>("debug.GDMLFileName"))
-    , g4stepperName_(pset.get<std::string>("physics.stepper"))
-    , bfieldMaxStep_(pset.get<double>("physics.bfieldMaxStep"))//unused
+    , conf_(conf)
+    , writeGDML_(conf.debug().writeGDML())
+    , gdmlFileName_(conf.debug().GDMLFileName())
+    , g4stepperName_(conf.physics().stepper())
+    , bfieldMaxStep_(conf.physics().bfieldMaxStep())//unused
   {}
 
   // This is the callback called by G4

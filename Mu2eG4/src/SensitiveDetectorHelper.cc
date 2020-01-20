@@ -34,7 +34,6 @@
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Core/ProducesCollector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "fhiclcpp/ParameterSet.h"
 
 // From G4
 #include "G4VSensitiveDetector.hh"
@@ -47,34 +46,24 @@ using namespace std;
 
 namespace mu2e {
 
-  SensitiveDetectorHelper::SensitiveDetectorHelper(fhicl::ParameterSet const& pset)
+  //================================================================
+  SensitiveDetectorHelper::SensitiveDetectorHelper(const Mu2eG4Config::SDConfig_& conf)
     :
     extMonPixelsEnabled_(false),
     standardMu2eDetector_((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-    verbosityLevel_(pset.get<int>("verbosityLevel",0)),
-    cutMomentumMin_(pset.get<double>("cutMomentumMin",0)),
-    minTrackerStepPoints_(pset.get<size_t>("minTrackerStepPoints",15))
+    verbosityLevel_(conf.verbosityLevel()),
+    cutMomentumMin_(conf.cutMomentumMin()),
+    minTrackerStepPoints_(conf.minTrackerStepPoints())
   {
-    // Backward compatible defaults
-    bool enableAllSDs = true;
     std::vector<std::string> enabledSDs;
-
-    if(!pset.is_empty()) {
-      enableAllSDs = pset.get<bool>("enableAllSDs", false);
-      const bool explicitList = pset.get_if_present<std::vector<std::string> >("enableSD", enabledSDs);
-
-      if(enableAllSDs && explicitList) {
-        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: enableAllSDs=true conflicts with explicit list enableSD\n";
-      }
-      if(!enableAllSDs && !explicitList) {
-        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: no SDs are defined.  Either say enableAllSDs:true, or enableSD:[list]\n";
-      }
+    if(!conf.enableAllSDs()) {
+      enabledSDs = conf.enableSD();
     }
 
     typedef std::set<std::string> TODO;
     TODO todo(enabledSDs.begin(), enabledSDs.end());
 
-    if(enableAllSDs || (todo.find(SensitiveDetectorName::ExtMonFNAL()) != todo.end())) {
+    if(conf.enableAllSDs() || (todo.find(SensitiveDetectorName::ExtMonFNAL()) != todo.end())) {
       extMonPixelsEnabled_ = true;
       todo.erase(SensitiveDetectorName::ExtMonFNAL());
     }
@@ -83,7 +72,7 @@ namespace mu2e {
     std::vector<StepInstanceName> const& preDefinedSD(StepInstanceName::allValues());
     for ( std::vector<StepInstanceName>::const_iterator i=preDefinedSD.begin(); i != preDefinedSD.end(); ++i ){
 
-      if(enableAllSDs || (todo.find(i->name()) != todo.end())) {
+      if(conf.enableAllSDs() || (todo.find(i->name()) != todo.end())) {
         todo.erase(i->name());
 
         // stepper does not have a sensitive detector associated with it...
@@ -103,7 +92,7 @@ namespace mu2e {
     }
 
     //----------------
-    std::vector<string> lvlist(pset.get<vector<string>>("sensitiveVolumes", {}));
+    std::vector<string> lvlist(conf.sensitiveVolumes());
     for(const auto& name : lvlist) {
       lvsd_[name] = StepInstance(name);
     }
@@ -116,7 +105,7 @@ namespace mu2e {
 
     //----------------
     // New hits will be added to hits from these existing collections
-    for(const auto& s : pset.get<vector<string> >("preSimulatedHits", vector<string>())) {
+    for(const auto& s : conf.preSimulatedHits()) {
       preSimulatedHits_.emplace_back(s);
       // check that the destination is known and enabled
       if(std::find(outputs.begin(), outputs.end(), preSimulatedHits_.back().instance()) == outputs.end()) {
@@ -126,14 +115,13 @@ namespace mu2e {
 
     //----------------
 
-    const vector<string> in = pset.get< vector<string> >("inputs", vector<string>());
-    for(const auto& i : in) {
+    for(const auto& i : conf.inputs()) {
       stepInstancesForMomentumCut_.emplace_back(i);
     }
 
   }//end c'tor
 
-
+  //================================================================
   void SensitiveDetectorHelper::instantiateLVSDs(const SimpleConfig& config){
 
     G4SDManager* SDman = G4SDManager::GetSDMpointer();

@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -32,8 +33,6 @@
 
 #include <map>
 #include <string>
-
-namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -48,7 +47,7 @@ namespace mu2e {
 
   public:
 
-    TrackingAction(const fhicl::ParameterSet& pset,
+    TrackingAction(const Mu2eG4Config::Top& conf,
                    Mu2eG4SteppingAction *,
                    unsigned stageOffset,
                    const Mu2eG4TrajectoryControl& trajectoryControl,

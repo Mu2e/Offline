@@ -71,7 +71,4 @@ private:
 };
 
 
-namespace fhicl { class ParameterSet; }
-bool getDecayMuonsWithSpin(const fhicl::ParameterSet& pset);
-
 #endif

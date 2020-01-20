@@ -30,9 +30,6 @@
 #include <map>
 #include <list>
 
-
-#include "fhiclcpp/ParameterSet.h"
-
 // Forward references.
 class G4Material;
 class G4Mag_UsualEqRhs;
@@ -40,6 +37,7 @@ class G4UserLimits;
 
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eUniverse.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "G4Helper/inc/VolumeInfo.hh"
 #include "Mu2eG4/inc/FieldMgr.hh"
 #include "G4Helper/inc/G4Helper.hh"
@@ -68,7 +66,7 @@ namespace mu2e {
   class Mu2eWorld : public Mu2eUniverse {
   public:
 
-    Mu2eWorld(const fhicl::ParameterSet& pset,
+    Mu2eWorld(const Mu2eG4Config::Top& conf,
               SensitiveDetectorHelper *sdHelper/*no ownership passing*/
               );
 
@@ -111,7 +109,7 @@ namespace mu2e {
 
     SensitiveDetectorHelper *sdHelper_; // Non-owning
 
-    fhicl::ParameterSet pset_;
+    Mu2eG4Config::Top conf_;
 
     // Values of the following variables are taken from either
     // ParameterSet or SimpleConfig, depending on the constructor

@@ -42,7 +42,6 @@
 
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"
 #include "DataProducts/inc/PDGCode.hh"
-#include "fhiclcpp/ParameterSet.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib_except/exception.h"
@@ -107,7 +106,7 @@ namespace mu2e{
     // A helper class to parse the configuration parameter.
     struct Control {
 
-      explicit Control ( const fhicl::ParameterSet& pset)
+      explicit Control ( const Mu2eG4Config::Physics& phys)
         : brENu(0.)
         , brMuNu(1.)
         , addENu(true)
@@ -116,7 +115,7 @@ namespace mu2e{
         // FIXME:  Get this from the global conditions service.
         double pdgBR = 1.23e-4;
 
-        const std::string option = pset.get<std::string>("physics.PiENuPolicy");
+        const std::string option = phys.PiENuPolicy();
         if ( option == "PDG" ){
           brENu = pdgBR;
           brMuNu = 1.-brENu;
@@ -174,11 +173,11 @@ namespace mu2e{
 
   } // end anonymous namespace
 
-  void customizeChargedPionDecay(const fhicl::ParameterSet& pset) {
+  void customizeChargedPionDecay(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug) {
 
     // Figure out what we need to do.
-    Control ctrl(pset);
-    int verbosity = pset.get<int>("debug.PiENuPolicyVerbosity");
+    Control ctrl(phys);
+    int verbosity = debug.PiENuPolicyVerbosity();
 
     // Nothing to do or to print out.
     if ( !ctrl.addENu && verbosity == 0 ) return;

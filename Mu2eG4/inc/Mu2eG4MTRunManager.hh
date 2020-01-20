@@ -11,10 +11,8 @@
 // Included from Geant4
 #include "G4MTRunManager.hh"
 
-//art includes
-#include "fhiclcpp/ParameterSet.h"
-
 //Mu2e includes
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 
@@ -29,7 +27,7 @@ namespace mu2e {
 
   public:
 
-    Mu2eG4MTRunManager(const fhicl::ParameterSet& pset);
+    Mu2eG4MTRunManager(const Mu2eG4Config::Top& conf);
     virtual ~Mu2eG4MTRunManager();
 
     //we need our own versions of these functions in order to correctly control the event loop
@@ -52,7 +50,7 @@ namespace mu2e {
     explicit Mu2eG4MTRunManager( Mu2eG4MTRunManager const & ) =  delete;
     Mu2eG4MTRunManager& operator=( Mu2eG4MTRunManager const & ) = delete;
 
-    fhicl::ParameterSet pset_;
+    Mu2eG4Config::Top conf_;
 
     bool m_managerInitialized;
     bool m_runTerminated;
