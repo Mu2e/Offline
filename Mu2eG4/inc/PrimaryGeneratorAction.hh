@@ -45,8 +45,6 @@ namespace mu2e {
   class PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction{
   public:
 
-    PrimaryGeneratorAction();
-
     explicit PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
                                     Mu2eG4PerThreadStorage* pts);
 
@@ -54,9 +52,6 @@ namespace mu2e {
     void GeneratePrimaries(G4Event*);
 
   private:
-
-    explicit PrimaryGeneratorAction(int verbosityLevel,
-                                    Mu2eG4PerThreadStorage* pts);
 
     void setEventData();
 

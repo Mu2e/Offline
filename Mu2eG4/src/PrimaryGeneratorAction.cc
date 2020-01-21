@@ -57,26 +57,15 @@ using CLHEP::HepLorentzVector;
 
 namespace mu2e {
 
-  PrimaryGeneratorAction::PrimaryGeneratorAction(int verbosityLevel, Mu2eG4PerThreadStorage* tls)
-    :
-    verbosityLevel_(verbosityLevel),
-    perThreadObjects_(tls)
+  PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
+                                                 Mu2eG4PerThreadStorage* tls)
+    : verbosityLevel_(pset.get<int>("debug.diagLevel", 0))
+    , perThreadObjects_(tls)
   {
     if ( verbosityLevel_ > 0 ) {
       cout << __func__ << " verbosityLevel_  : " <<  verbosityLevel_ << endl;
     }
-
   }
-
-  PrimaryGeneratorAction::PrimaryGeneratorAction()
-  {}
-
-  PrimaryGeneratorAction::PrimaryGeneratorAction(const fhicl::ParameterSet& pset,
-                                                 Mu2eG4PerThreadStorage* tls)
-    :
-    PrimaryGeneratorAction(pset.get<int>("debug.diagLevel", 0), tls)
-  {}
-
 
   //load in per-art-event data from GenEventBroker and per-G4-event data from EventObjectManager
   void PrimaryGeneratorAction::setEventData()
