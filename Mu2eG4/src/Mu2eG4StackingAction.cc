@@ -8,8 +8,7 @@
 
 namespace mu2e {
 
-  Mu2eG4StackingAction::Mu2eG4StackingAction(const fhicl::ParameterSet&,
-                                             IMu2eG4Cut& stackingCuts,
+  Mu2eG4StackingAction::Mu2eG4StackingAction(IMu2eG4Cut& stackingCuts,
                                              IMu2eG4Cut& commonCuts)
     : stackingCuts_(&stackingCuts)
     , commonCuts_(&commonCuts)

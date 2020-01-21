@@ -188,8 +188,7 @@ namespace mu2e {
                                                mu2elimits_);
     SetUserAction(steppingAction_);
 
-    SetUserAction( new Mu2eG4StackingAction(pset_,
-                                            *stackingCuts_.get(),
+    SetUserAction( new Mu2eG4StackingAction(*stackingCuts_.get(),
                                             *commonCuts_.get()) );
 
     trackingAction_ = new TrackingAction(pset_,
