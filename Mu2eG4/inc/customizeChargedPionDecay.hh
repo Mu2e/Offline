@@ -13,12 +13,11 @@
 // $Date: 2012/07/10 21:16:53 $
 //
 
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e{
 
-  // This only needs to be templated to share
-  // code for fhicl::ParameterSet and SimpleConfig cases.
-  template<class Config> void customizeChargedPionDecay(const Config& config);
+  void customizeChargedPionDecay(const fhicl::ParameterSet& pset);
 
 }  // end namespace mu2e
 
