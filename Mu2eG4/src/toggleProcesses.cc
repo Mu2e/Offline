@@ -45,6 +45,8 @@
 #include "Mu2eG4/inc/Mu2eRecorderProcess.hh"
 #include "fhiclcpp/ParameterSet.h"
 
+#include "Mu2eG4/inc/toggleProcesses.hh"
+
 namespace mu2e{
 
   //================================================================
