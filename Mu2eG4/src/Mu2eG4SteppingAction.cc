@@ -34,7 +34,6 @@ namespace mu2e {
                                              IMu2eG4Cut& commonCuts,
                                              const Mu2eG4TrajectoryControl& trajectoryControl,
                                              const Mu2eG4ResourceLimits& lim) :
-    pset_(pset),
 
     steppingCuts_(&steppingCuts),
     commonCuts_(&commonCuts),

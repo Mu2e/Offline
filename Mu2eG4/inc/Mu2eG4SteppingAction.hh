@@ -80,8 +80,6 @@ namespace mu2e {
                          double globalTime );
 
   private:
-    fhicl::ParameterSet pset_;
-
     // owned by Mu2eG4 module.
     IMu2eG4Cut* steppingCuts_;
     IMu2eG4Cut* commonCuts_;
