@@ -6,28 +6,26 @@ BEGIN_PROLOG
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
 # Original 2-level clusterer
-TLTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
-# Bertrand's faster version
+# flag hits from low-energy electrons (Compton electrons, delta rays, ...)
+# First, configure the clusters
 TNTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
+    HitDistance      : 5.0
+    SeedDistance     : 20.0
+    ClusterDiameter  : 5.0
+    ClusterTime      : 20.0
+    MaxHitTimeDiff   : 30.0
+    MaxSumDistance   : 100.0
+    MaxCluIterations : 10
+    MaxDistance      : 100.0
+    MinHitError      : 5.0
+    TimeRMS          : 2.0
+    DeltaTimeBinMin  : 10
+    MedianCentroid   : false
+    ComboInit        : true
+    TestFlag         : true
+    BackgroundMask   : []
+    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
-
 
 # now trigger-specific versions; these make deep copies
 TTmakeSH : {
@@ -69,25 +67,25 @@ TTmakeSTH : {
     ComboHitCollection : "TTSmakePH"
 }
 TTflagBkgHits : {
-    module_type : FlagBkgHits
-    ComboHitCollection : "TTmakePH"
-    StrawHitCollection : "TTmakeSH"
-    BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
-    MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-    TLTClusterer : { @table::TLTClusterer 
-	TestFlag : false}
-    TNTClusterer : { @table::TNTClusterer
-	TestFlag : false}
-    # use TNTClusterer
-    Clusterer : 2
-    FilterOutput : true
-    FlagComboHits : true
-    FlagStrawHits : false 
-    ComboHitCollection : "TTmakePH"
-    BkgMVA : {
-	MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
-    }
+
+  module_type          : FlagBkgHits
+  ComboHitCollection   : "TTmakePH"
+  StrawHitCollection   : "TTmakeSH"
+  ClusterAlgorithm     : 1
+  TNTClustering        : { @table::TNTClusterer }
+  MinActiveHits        : 3
+  MinNPlanes           : 2
+  #MaxIsolated          : 0  
+  ClusterPositionError : 10
+  BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
+  BkgMVACut            : 0.5
+  FilterOutput         : false
+  FlagComboHits        : true
+  FlagStrawHits        : true
+  BackgroundMask       : ["Background"]
+  StereoSelection      : ["Stereo","PanelCombo"]
 }
+
 # stereo versions
 TTSflagBkgHits : {
     @table::TTflagBkgHits
