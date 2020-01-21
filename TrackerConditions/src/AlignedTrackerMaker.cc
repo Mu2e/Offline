@@ -54,6 +54,11 @@ namespace mu2e {
       auto const& rowpl = tapl_p->rowAt( plane.id().plane() );
       HepTransform align_plane(rowpl.dx(),rowpl.dy(),rowpl.dz(),
 			       rowpl.rx(),rowpl.ry(),rowpl.rz());
+
+
+	if ( _config.verbose() > 0 ) {
+	  cout << "AlignedTrackerMaker::fromDb plane ID " << plane.id().plane() << " alignment constants: " << align_plane << endl;
+	}
       // how to place the plane in the tracker
       HepTransform plane_to_tracker(0.0,0.0,plane.origin().z(),0.0,0.0,0.0);
 
