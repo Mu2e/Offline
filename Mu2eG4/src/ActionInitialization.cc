@@ -80,7 +80,7 @@ namespace mu2e {
                                                                     mu2eLimits_);
     SetUserAction(steppingAction);
 
-    SetUserAction( new Mu2eG4StackingAction(pset_, stacking_Cuts, common_Cuts) );
+    SetUserAction( new Mu2eG4StackingAction(stacking_Cuts, common_Cuts) );
 
     TrackingAction* trackingAction = new TrackingAction(pset_,
                                                         steppingAction,
