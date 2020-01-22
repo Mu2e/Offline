@@ -37,6 +37,7 @@ mu2eg4DefaultPhysics: {
 
     // current G4 stepper choices in Mu2eWorld.cc are shown below
     // G4DormandPrince745 Geant4 10.4+
+    // G4DormandPrince745WSpin
     // G4ClassicalRK4
     // G4ClassicalRK4WSpin
     // G4ImplicitEuler
@@ -45,22 +46,22 @@ mu2eg4DefaultPhysics: {
     // G4SimpleHeum
     // G4HelixImplicitEuler
     // G4HelixSimpleRunge
-    stepper : "G4ClassicalRK4"
+    stepper : "G4DormandPrince745"
     // the following parameters control intagration and have a cumulative effect on the final precision
     // limits on the relative position errors
     // epsilonMin Can be 1.0e-5 to 1.0e-10  Minimum & value for largest steps
     // epsilonMax Can be 1.0e-3 to 1.0e-8   Maximum & value for smallest steps
-    epsilonMin        : 5.0e-5
-    epsilonMax        : 1.0e-3
-    // the following values are in mm
-    deltaOneStep      : 5.0e-2 // position error acceptable in an integration (not physics) step
-    deltaIntersection : 5.0e-2 // maximum inaccuracy of a single boundary crossing
-    deltaChord : 5.0e-2 // maximum "miss distance" between chord and a mid point of an integration step
-    stepMinimum       : 1.0e-2 // mm minimum size of the integration step
-    maxIntSteps       : 1000 // maximum of internal integration steps per physical step
-    rangeToIgnore     : 0.00001 // below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
+    // relative error of the position/momentum inaccuracy, take precedence over deltaOneStep
+    epsilonMin        : 1.0e-5
+    epsilonMax        : 1.0e-5
+    deltaOneStep      : 1.0e-5 // mm position error acceptable in an integration (not physics) step
+    deltaIntersection : 1.0e-5 // mm maximum inaccuracy of a single boundary crossing
+    deltaChord        : 1.0e-2 // mm maximum "miss distance" between chord and a mid point of an integration step
+    stepMinimum       : 1.0e-3 // mm minimum size of the integration step
+    maxIntSteps       : 100000 // maximum number of internal integration steps per physical step
     bfieldMaxStep     : 20. // mm;  value used in step limmiter, impacts tracking accuracy as well
     strawGasMaxStep   : -1.0 // mm;  for straw step limmiter, impacts tracking accuracy as well (set negative to disable)
+    rangeToIgnore     : 1.0e-5 // mm below which an electron or proton killed by the FieldPropagator will not be counted in statusG4
     limitStepInAllVolumes: false
 }
 #----------------
