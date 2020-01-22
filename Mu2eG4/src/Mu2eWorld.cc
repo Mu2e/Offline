@@ -144,7 +144,7 @@ namespace mu2e {
     , activeWr_Wl_SD_(_config.getBool("tracker.ActiveWr_Wl_SD",false))
     , writeGDML_(_config.getBool("writeGDML",false))
     , gdmlFileName_(_config.getString("GDMLFileName","mu2e.gdml"))
-    , g4stepperName_(_config.getString("g4.stepper","G4SimpleRunge"))
+    , g4stepperName_(_config.getString("g4.stepper"))
     , g4epsilonMin_(_config.getDouble("g4.epsilonMin"))
     , g4epsilonMax_(_config.getDouble("g4.epsilonMax"))
     , g4DeltaOneStep_(_config.getDouble("g4.deltaOneStep")*CLHEP::mm)
@@ -458,6 +458,7 @@ namespace mu2e {
         G4cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4ClassicalRK4WSpin "
              << "and used G4ClassicalRK4 with Spin" << G4endl;
       }
+#if G4VERSION>4103
     } else if ( g4stepperName_  == "G4DormandPrince745WSpin" ) {
       delete _rhs; // FIXME: avoid the delete
       _rhs  = new G4Mag_SpinEqRhs(_field);
@@ -466,6 +467,7 @@ namespace mu2e {
         G4cout << __func__ << " Replaced G4Mag_UsualEqRhs with G4DormandPrince745WSpin "
              << "and used G4DormandPrince745 with Spin" << G4endl;
       }
+#endif
     } else if ( g4stepperName_  == "G4ImplicitEuler" ) {
       _stepper = new G4ImplicitEuler(_rhs);
     } else if ( g4stepperName_  == "G4ExplicitEuler" ) {
@@ -482,10 +484,15 @@ namespace mu2e {
     } else if ( g4stepperName_  == "G4BogackiShampine23" ) {
       _stepper = new G4BogackiShampine23(_rhs);
 #endif
-    } else {
+    } else if ( g4stepperName_  == "G4SimpleRunge" ) {
       _stepper = new G4SimpleRunge(_rhs);
-      if ( _g4VerbosityLevel > -1 ) G4cout << __func__ << " Using default G4SimpleRunge stepper" << G4endl;
+    } else {
+        throw cet::exception("GEOM")
+          << "Unrecognized stepper : "
+          << g4stepperName_
+          << "\n";
     }
+
     G4ChordFinder * _chordFinder = new G4ChordFinder(_field,g4StepMinimum_,_stepper);
     G4FieldManager * _manager = new G4FieldManager(_field,_chordFinder,true);
 
