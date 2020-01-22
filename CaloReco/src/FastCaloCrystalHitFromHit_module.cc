@@ -1,6 +1,6 @@
 //Author: S Middleton
 //Date: Nov 2019
-//Purpose: For the purpose of crystal hit making from online
+//Purpose: For the purpose of fast crystal hit from recodigi
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -10,8 +10,8 @@
 
 #include "CalorimeterGeom/inc/Calorimeter.hh"
 #include "GeometryService/inc/GeomHandle.hh"
-#include "RecoDataProducts/inc/NewCaloCrystalHitCollection.hh"
-#include "RecoDataProducts/inc/NewCaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloCrystalHitCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -23,16 +23,16 @@
 namespace mu2e {
 
 
-  class NewCaloCrystalHitFromHit : public art::EDProducer {
+  class CaloCrystalHitFromHit : public art::EDProducer {
   public:
 
-    explicit NewCaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
+    explicit CaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
-      caloDigisToken_{consumes<NewCaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
+      caloDigisToken_{consumes<CaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
       time4Merge_          (pset.get<double>     ("time4Merge")),
       diagLevel_           (pset.get<int>        ("diagLevel",0))
     {
-      produces<NewCaloCrystalHitCollection>();
+      produces<CaloCrystalHitCollection>();
     }
 
     void beginJob() override;
@@ -40,47 +40,47 @@ namespace mu2e {
 
   private:
 
-    typedef art::Ptr<NewCaloRecoDigi> CaloRecoDigiPtr;
+    typedef art::Ptr<CaloRecoDigi> CaloRecoDigiPtr;
 
-    art::ProductToken<NewCaloRecoDigiCollection> const caloDigisToken_;
+    art::ProductToken<CaloRecoDigiCollection> const caloDigisToken_;
     double      time4Merge_;
     int         diagLevel_;
 
-    std::vector<std::vector<const NewCaloRecoDigi*>> hitMap_;  
+    std::vector<std::vector<const CaloRecoDigi*>> hitMap_;  
 
 
-    void MakeCaloCrystalHits(NewCaloCrystalHitCollection& CaloCrystalHits, const art::ValidHandle<NewCaloRecoDigiCollection>& recoCaloDigisHandle);
+    void MakeCaloCrystalHits(CaloCrystalHitCollection& CaloCrystalHits, const art::ValidHandle<CaloRecoDigiCollection>& recoCaloDigisHandle);
 
     void FillBuffer(int crystalId, int nRoid, double time, double timeErr, double eDep, double eDepErr,
-                    std::vector<CaloRecoDigiPtr>& buffer, NewCaloCrystalHitCollection& CaloCrystalHits);
+                    std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& CaloCrystalHits);
   };
 
 
   //--------------------------------------------
-  void NewCaloCrystalHitFromHit::beginJob()
+  void CaloCrystalHitFromHit::beginJob()
   {}
 
 
   //------------------------------------------------------------
-  void NewCaloCrystalHitFromHit::produce(art::Event& event)
+  void CaloCrystalHitFromHit::produce(art::Event& event)
   {
     auto const& recoCaloDigisHandle = event.getValidHandle(caloDigisToken_);
-    auto CaloCrystalHits = std::make_unique<NewCaloCrystalHitCollection>();
+    auto CaloCrystalHits = std::make_unique<CaloCrystalHitCollection>();
     MakeCaloCrystalHits(*CaloCrystalHits, recoCaloDigisHandle);
     event.put(std::move(CaloCrystalHits));
   }
 
 
   //--------------------------------------------------------------------------------------------------------------
-  void NewCaloCrystalHitFromHit::MakeCaloCrystalHits(NewCaloCrystalHitCollection& CaloCrystalHits, art::ValidHandle<NewCaloRecoDigiCollection> const& recoCaloDigisHandle)
+  void CaloCrystalHitFromHit::MakeCaloCrystalHits(CaloCrystalHitCollection& CaloCrystalHits, art::ValidHandle<CaloRecoDigiCollection> const& recoCaloDigisHandle)
   {
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
     auto const& recoCaloDigis = *recoCaloDigisHandle;
-    NewCaloRecoDigi const* base = &recoCaloDigis.front(); // TODO What if recoCaloDigis is empty?
+    CaloRecoDigi const* base = &recoCaloDigis.front(); // TODO What if recoCaloDigis is empty?
 
 
     if (cal.nRO() > int(hitMap_.size()))
-      for (int i = hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const NewCaloRecoDigi*>());
+      for (int i = hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const CaloRecoDigi*>());
     for (size_t i=0; i<hitMap_.size(); ++i) hitMap_[i].clear();
 
     for (unsigned int i=0; i< recoCaloDigis.size(); ++i)
@@ -92,7 +92,7 @@ namespace mu2e {
 
     for (unsigned int crystalId=0;crystalId<hitMap_.size();++crystalId)
       {
-        std::vector<const NewCaloRecoDigi*> &hits = hitMap_[crystalId];
+        std::vector<const CaloRecoDigi*> &hits = hitMap_[crystalId];
         
         //check if empty:
         if (hits.empty()) continue;
@@ -143,7 +143,7 @@ namespace mu2e {
                 //get index:
                 size_t index = *endHit - base;
                 //add to end of hit buffer:
-                buffer.push_back(art::Ptr<NewCaloRecoDigi>(recoCaloDigisHandle, index));
+                buffer.push_back(art::Ptr<CaloRecoDigi>(recoCaloDigisHandle, index));
                 //increment:
                 ++endHit;
               }
@@ -159,27 +159,27 @@ namespace mu2e {
 
     if ( diagLevel_ > 0 )
       {
-        printf("[NewCaloCrystalHitFromHit::produce] produced RecoCrystalHits ");
+        printf("[CaloCrystalHitFromHit::produce] produced RecoCrystalHits ");
         printf(": CaloCrystalHits.size()  = %i \n", int(CaloCrystalHits.size()));
       }
 
   }
 
-  void NewCaloCrystalHitFromHit::FillBuffer(int const crystalId,
+  void CaloCrystalHitFromHit::FillBuffer(int const crystalId,
                                          int const nRoid,
                                          double const time,
                                          double const timeErr,
                                          double const eDep,
                                          double const eDepErr,
                                          std::vector<CaloRecoDigiPtr>& buffer,
-                                         NewCaloCrystalHitCollection& CaloCrystalHits)
+                                         CaloCrystalHitCollection& CaloCrystalHits)
   {
  
-    CaloCrystalHits.emplace_back(NewCaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
+    CaloCrystalHits.emplace_back(CaloCrystalHit(crystalId, nRoid, time, timeErr, eDep, eDepErr, buffer));
 
     if (diagLevel_ > 1)
       {
-        std::cout<<"[NewCaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="<<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
+        std::cout<<"[CaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="<<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
 
         
       }
@@ -188,4 +188,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::NewCaloCrystalHitFromHit);
+DEFINE_ART_MODULE(mu2e::CaloCrystalHitFromHit);

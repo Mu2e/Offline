@@ -7,7 +7,7 @@ BEGIN_PROLOG
 
 OnlineRecoDigiMaker :
 { 
-    module_type           : NewCaloRecoDigiFromDigi
+    module_type           : FastCaloRecoDigiFromDigi
     caloDigiModuleLabel   : CaloDigiFromShower  
     digiSampling          : @local::HitMakerDigiSampling
     maxChi2Cut            : 10
@@ -57,8 +57,8 @@ CaloCrystalHitFromHit:
 
 OnlineHitMaker:
 {
-    module_type           : NewCaloCrystalHitFromHit
-    caloDigisModuleLabel  : NewCaloRecoDigiFromDigi	    	    
+    module_type           : FastCaloCrystalHitFromHit
+    caloDigisModuleLabel  : FastCaloRecoDigiFromDigi	    	    
     time4Merge            : 4.0   #ns
     diagLevel             : 0
 }
