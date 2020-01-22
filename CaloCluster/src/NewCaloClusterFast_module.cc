@@ -27,13 +27,13 @@
 namespace mu2e {
 
 
-  class CaloClusterFast : public art::EDProducer {
+  class NewCaloClusterFast : public art::EDProducer {
 
   public:
 
-    explicit CaloClusterFast(fhicl::ParameterSet const& pset) :
+    explicit NewCaloClusterFast(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
-      caloCrystalToken_{consumes<CaloCrystalHitCollection>(pset.get<std::string>("caloCrystalModuleLabel"))},
+   caloCrystalToken_{consumes<CaloCrystalHitCollection>(pset.get<std::string>("caloCrystalModuleLabel"))},
       extendSecond_(pset.get<bool>("extendSecond")),
       minEnergy_( pset.get<double>("minEnergy")),
       diagLevel_(pset.get<int>("diagLevel",0)),
@@ -44,10 +44,8 @@ namespace mu2e {
       produces<CaloClusterCollection>();
 
     }
-    
     typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
-
-    virtual ~CaloClusterFast() {};
+    virtual ~NewCaloClusterFast() {};
     virtual void produce(art::Event& e) override;
 
   private:
@@ -68,9 +66,9 @@ namespace mu2e {
 
 
   //-------------------------------------------------------
-  void CaloClusterFast::produce(art::Event& event)
+  void NewCaloClusterFast::produce(art::Event& event)
   {
-       if (diagLevel_ > 0) std::cout<<"[CaloClusterFast::produce] begin"<<std::endl;
+       if (diagLevel_ > 0) std::cout<<"[NewCaloClusterFast::produce] begin"<<std::endl;
 
        art::Handle<CaloCrystalHitCollection> caloCrystalHitsHandle;
        bool const success = event.getByToken(caloCrystalToken_, caloCrystalHitsHandle);
@@ -86,15 +84,15 @@ namespace mu2e {
 
        if ( diagLevel_ > 3 )
        {
-           printf("[CaloClusterFast::produce] produced RecoCrystalHits ");
+           printf("[NewCaloClusterFast::produce] produced RecoCrystalHits ");
            printf(", recoClustersColl size  = %i \n", int(recoClustersColl->size()));
        }
         event.put(std::move(recoClustersColl));
-        if (diagLevel_ > 0) std::cout<<"[CaloClusterFast::produce] end"<<std::endl;
+        if (diagLevel_ > 0) std::cout<<"[NewCaloClusterFast::produce] end"<<std::endl;
 	return;
   }
 
-  void CaloClusterFast::MakeClusters(CaloClusterCollection& recoClusters, const art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
+  void NewCaloClusterFast::MakeClusters(CaloClusterCollection& recoClusters, const art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
   {
       //Find the hit collection 
       const CaloCrystalHitCollection& recoCrystalHits(*CaloCrystalHitsHandle);
@@ -182,7 +180,7 @@ namespace mu2e {
             } //ends while 
             //sort the List of crystals again interms of energy:
            List.sort([] (CaloCrystalHit const* lhs, CaloCrystalHit const* rhs) {return lhs->energyDep() > rhs->energyDep();} );               
-	       //ad list to list of lists for cluster making:
+	       //add list to lis-of-lists for cluster making:
         clusterList.push_back(List);
         //remove from seeds:
         for (const auto& hit : List) { seeds_.remove(hit); } 
@@ -231,7 +229,9 @@ namespace mu2e {
         
         }
         CaloCluster Endcluster(iSection,time,timeErr,totalEnergy,totalEnergyErr,hitsPtr,ncry,0.0);
+	//Get centre-of-g:
         Endcluster.cog3Vector(CLHEP::Hep3Vector(xcl,ycl,0));
+        //Add cluster to event:
         recoClusters.emplace_back(std::move(Endcluster));
 
 
@@ -241,4 +241,4 @@ namespace mu2e {
 }//end function
 
   }
-DEFINE_ART_MODULE(mu2e::CaloClusterFast);
+DEFINE_ART_MODULE(mu2e::NewCaloClusterFast);
