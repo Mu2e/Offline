@@ -52,7 +52,7 @@ CaloClusterFast :
 NewCaloClusterFast :
 { 
     module_type          : NewCaloClusterFast
-    caloCrystalModuleLabel : NewCaloCrystalHitFromHit
+    caloCrystalModuleLabel : FastCaloCrystalHitFromHit
     extendSecond          : true
     minEnergy             : 50
     diagLevel             : 0

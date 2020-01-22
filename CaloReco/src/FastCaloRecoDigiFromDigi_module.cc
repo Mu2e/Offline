@@ -1,6 +1,6 @@
 //Author: S Middleton
 //Date: Nov 2019
-//Purpose: To make CaloRecoHits from the Digis using the new data product structure (for Online compatib.)
+//Purpose: To make CaloRecoHits quickly from the Digis using the  data product structure (for Online compatib.)
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
@@ -14,10 +14,10 @@
 
 #include "ConditionsService/inc/ConditionsHandle.hh"
 #include "ConditionsService/inc/CalorimeterCalibrations.hh"
-#include "RecoDataProducts/inc/NewCaloDigi.hh"
-#include "RecoDataProducts/inc/NewCaloDigiCollection.hh"
-#include "RecoDataProducts/inc/NewCaloRecoDigi.hh"
-#include "RecoDataProducts/inc/NewCaloRecoDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloDigi.hh"
+#include "RecoDataProducts/inc/CaloDigiCollection.hh"
+#include "RecoDataProducts/inc/CaloRecoDigi.hh"
+#include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 
 #include <iostream>
 #include <string>
@@ -29,14 +29,14 @@
 
 namespace mu2e {
 
-  class NewCaloRecoDigiFromDigi : public art::EDProducer {
+  class CaloRecoDigiFromDigi : public art::EDProducer {
 
   public:
 
   
-    explicit NewCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
+    explicit CaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
-      caloDigisToken_{consumes<NewCaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
+      caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
       digiSampling_        (pset.get<double>     ("digiSampling")),
       maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
       windowPeak_         (pset.get<int>    ("windowPeak")),
@@ -45,7 +45,7 @@ namespace mu2e {
       scaleFactor_        (pset.get<double> ("scaleFactor")),
       diagLevel_           (pset.get<int>        ("diagLevel",0))
      {
-      produces<NewCaloRecoDigiCollection>();
+      produces<CaloRecoDigiCollection>();
 
     }
 
@@ -54,7 +54,7 @@ namespace mu2e {
 
   private:
 
-    art::ProductToken<NewCaloDigiCollection> const caloDigisToken_;
+    art::ProductToken<CaloDigiCollection> const caloDigisToken_;
     double const digiSampling_;
     double       maxChi2Cut_;
     int windowPeak_ ;
@@ -64,41 +64,41 @@ namespace mu2e {
     int          diagLevel_;
    
    
-    void extractRecoDigi(art::ValidHandle<NewCaloDigiCollection> const& caloDigis, NewCaloRecoDigiCollection& recoCaloHits);
+    void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits);
 
   };
 
 
   //-------------------------------------------------------
-  void NewCaloRecoDigiFromDigi::produce(art::Event& event)
+  void CaloRecoDigiFromDigi::produce(art::Event& event)
   {
 
-    if (diagLevel_ > 0) std::cout<<"[NewCaloRecoDigiFromDigi::produce] begin"<<std::endl;
+    if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] begin"<<std::endl;
 
     auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
 
-    auto recoCaloDigiColl = std::make_unique<NewCaloRecoDigiCollection>();
+    auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
     extractRecoDigi(caloDigisH, *recoCaloDigiColl);
 
     if ( diagLevel_ > 3 )
       {
-        printf("[NewCaloRecoDigiFromDigi::produce] produced RecoCrystalHits ");
+        printf("[CaloRecoDigiFromDigi::produce] produced RecoCrystalHits ");
         printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
       }
 
     event.put(std::move(recoCaloDigiColl));
 
-    if (diagLevel_ > 0) std::cout<<"[NewCaloRecoDigiFromDigi::produce] end"<<std::endl;
+    if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
 
     return;
   }
 
   //-----------------------------------------------------------------------------
-  void NewCaloRecoDigiFromDigi::beginRun(art::Run& aRun)
+  void CaloRecoDigiFromDigi::beginRun(art::Run& aRun)
   {}
 
   //--------------------------------------------------------------------------------------
-  void NewCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<NewCaloDigiCollection> const& caloDigisHandle, NewCaloRecoDigiCollection &recoCaloHits)
+  void CaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits)
   {
 
     std::vector<double> x,y;
@@ -106,7 +106,7 @@ namespace mu2e {
 
     auto const& caloDigis = *caloDigisHandle;
     //if(caloDigis.size() == 0){ continue; } TODO
-    NewCaloDigi const* base = &caloDigis.front(); 
+    CaloDigi const* base = &caloDigis.front(); 
     
     for (const auto& caloDigi : caloDigis)
       {
@@ -125,7 +125,7 @@ namespace mu2e {
         const std::vector<int>& waveform = caloDigi.waveform();
 
         size_t index = &caloDigi - base;
-        art::Ptr<NewCaloDigi> caloDigiPtr(caloDigisHandle, index);
+        art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
 
         x.clear();
         y.clear();
@@ -138,7 +138,7 @@ namespace mu2e {
 
         if (diagLevel_ > 3)
           {
-            std::cout<<"[NewCaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
+            std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
             for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
           }
 
@@ -159,12 +159,12 @@ namespace mu2e {
 
                  if (diagLevel_ > 1)
                   {
-                    std::cout<<"[NewCaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
+                    std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
                   }
 
                 if (chi2/ndf > maxChi2Cut_) continue;
 
-                recoCaloHits.emplace_back(NewCaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
+                recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
               }
 
           }
@@ -173,4 +173,4 @@ namespace mu2e {
 
     }
 
-DEFINE_ART_MODULE(mu2e::NewCaloRecoDigiFromDigi);
+DEFINE_ART_MODULE(mu2e::CaloRecoDigiFromDigi);
