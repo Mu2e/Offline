@@ -23,10 +23,10 @@
 namespace mu2e {
 
 
-  class CaloCrystalHitFromHit : public art::EDProducer {
+  class FastCaloCrystalHitFromHit : public art::EDProducer {
   public:
 
-    explicit CaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
+    explicit FastCaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
       caloDigisToken_{consumes<CaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
       time4Merge_          (pset.get<double>     ("time4Merge")),
@@ -35,7 +35,6 @@ namespace mu2e {
       produces<CaloCrystalHitCollection>();
     }
 
-    void beginJob() override;
     void produce(art::Event& e) override;
 
   private:
@@ -55,24 +54,19 @@ namespace mu2e {
                     std::vector<CaloRecoDigiPtr>& buffer, CaloCrystalHitCollection& CaloCrystalHits);
   };
 
-
-  //--------------------------------------------
-  void CaloCrystalHitFromHit::beginJob()
-  {}
-
-
   //------------------------------------------------------------
-  void CaloCrystalHitFromHit::produce(art::Event& event)
+  void FastCaloCrystalHitFromHit::produce(art::Event& event)
   {
     auto const& recoCaloDigisHandle = event.getValidHandle(caloDigisToken_);
     auto CaloCrystalHits = std::make_unique<CaloCrystalHitCollection>();
     MakeCaloCrystalHits(*CaloCrystalHits, recoCaloDigisHandle);
+    //store the crystal hit collection:
     event.put(std::move(CaloCrystalHits));
   }
 
 
   //--------------------------------------------------------------------------------------------------------------
-  void CaloCrystalHitFromHit::MakeCaloCrystalHits(CaloCrystalHitCollection& CaloCrystalHits, art::ValidHandle<CaloRecoDigiCollection> const& recoCaloDigisHandle)
+  void FastCaloCrystalHitFromHit::MakeCaloCrystalHits(CaloCrystalHitCollection& CaloCrystalHits, art::ValidHandle<CaloRecoDigiCollection> const& recoCaloDigisHandle)
   {
     Calorimeter const &cal = *(GeomHandle<Calorimeter>());
     auto const& recoCaloDigis = *recoCaloDigisHandle;
@@ -159,13 +153,13 @@ namespace mu2e {
 
     if ( diagLevel_ > 0 )
       {
-        printf("[CaloCrystalHitFromHit::produce] produced RecoCrystalHits ");
+        printf("[FastCaloCrystalHitFromHit::produce] produced RecoCrystalHits ");
         printf(": CaloCrystalHits.size()  = %i \n", int(CaloCrystalHits.size()));
       }
 
   }
 
-  void CaloCrystalHitFromHit::FillBuffer(int const crystalId,
+  void FastCaloCrystalHitFromHit::FillBuffer(int const crystalId,
                                          int const nRoid,
                                          double const time,
                                          double const timeErr,
@@ -179,7 +173,7 @@ namespace mu2e {
 
     if (diagLevel_ > 1)
       {
-        std::cout<<"[CaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="<<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
+        std::cout<<"[FastCaloCrystalHitFromHit] created hit in crystal id="<<crystalId<<"\t with time="<<time<<"\t eDep="<<eDep<<"\t  from "<<nRoid<<" RO"<<std::endl;
 
         
       }
@@ -188,4 +182,4 @@ namespace mu2e {
 
 }
 
-DEFINE_ART_MODULE(mu2e::CaloCrystalHitFromHit);
+DEFINE_ART_MODULE(mu2e::FastCaloCrystalHitFromHit);

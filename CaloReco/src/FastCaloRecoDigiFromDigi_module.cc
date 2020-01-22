@@ -29,16 +29,13 @@
 
 namespace mu2e {
 
-  class CaloRecoDigiFromDigi : public art::EDProducer {
+  class FastCaloRecoDigiFromDigi : public art::EDProducer {
 
   public:
-
-  
-    explicit CaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
+    explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
       art::EDProducer{pset},
       caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
       digiSampling_        (pset.get<double>     ("digiSampling")),
-      maxChi2Cut_          (pset.get<double>     ("maxChi2Cut")),
       windowPeak_         (pset.get<int>    ("windowPeak")),
       minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
       shiftTime_          (pset.get<double> ("shiftTime")),
@@ -46,20 +43,17 @@ namespace mu2e {
       diagLevel_           (pset.get<int>        ("diagLevel",0))
      {
       produces<CaloRecoDigiCollection>();
-
     }
 
-    void beginRun(art::Run& aRun);
     void produce(art::Event& e) override;
 
   private:
 
     art::ProductToken<CaloDigiCollection> const caloDigisToken_;
     double const digiSampling_;
-    double       maxChi2Cut_;
-    int windowPeak_ ;
-    double minPeakAmplitude_ ;
-    double shiftTime_ ;
+    int 	 windowPeak_ ;
+    double 	 minPeakAmplitude_ ;
+    double 	 shiftTime_ ;
     double       scaleFactor_;
     int          diagLevel_;
    
@@ -70,10 +64,10 @@ namespace mu2e {
 
 
   //-------------------------------------------------------
-  void CaloRecoDigiFromDigi::produce(art::Event& event)
+  void FastCaloRecoDigiFromDigi::produce(art::Event& event)
   {
 
-    if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] begin"<<std::endl;
+    if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] begin"<<std::endl;
 
     auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
 
@@ -82,23 +76,20 @@ namespace mu2e {
 
     if ( diagLevel_ > 3 )
       {
-        printf("[CaloRecoDigiFromDigi::produce] produced RecoCrystalHits ");
+        printf("[FastRecoDigiFromDigi::produce] produced RecoCrystalHits ");
         printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
       }
 
     event.put(std::move(recoCaloDigiColl));
 
-    if (diagLevel_ > 0) std::cout<<"[CaloRecoDigiFromDigi::produce] end"<<std::endl;
+    if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] end"<<std::endl;
 
     return;
   }
 
-  //-----------------------------------------------------------------------------
-  void CaloRecoDigiFromDigi::beginRun(art::Run& aRun)
-  {}
 
   //--------------------------------------------------------------------------------------
-  void CaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits)
+  void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits)
   {
 
     std::vector<double> x,y;
@@ -116,7 +107,7 @@ namespace mu2e {
         
         int    roId     = caloDigi.roId();
         double t0       = caloDigi.t0();
-        
+        //removed crId -> no need as we extract crystal hit in this path
        
         //uint8_t eventMode = caloDigi.eventMode();
         //TODO: if(evenMode == is somethings do this){} --> change calib work
@@ -131,27 +122,26 @@ namespace mu2e {
         y.clear();
         for (unsigned int i=0;i<waveform.size();++i)
           {
-	   
-            		x.push_back(t0 + (i+0.5)*digiSampling_); //-timeCorrection_ windowPeak?
-            		y.push_back(waveform.at(i));
+	   	x.push_back(t0 + (i+0.5)*digiSampling_); //time TODO (what about -timeCorrection_ windowPeak?) 
+    		y.push_back(waveform.at(i)); //amplitude
           }
 
         if (diagLevel_ > 3)
           {
-            std::cout<<"[CaloRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
+            std::cout<<"[FastRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
             for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
           }
 
-           unsigned int nPeaks_ = caloDigi.peakpos().size();
+           unsigned int nPeaks_ = caloDigi.peakpos().size(); //should always be 1 (assume no pile up)
            double chi2   = 0;
            int ndf    = 1;
            bool isPileUp;
-           if(nPeaks_ > 1) { isPileUp = true ; } 
+           if(nPeaks_ > 1) { isPileUp = true ; } //set pile up flag
 	   else { isPileUp = false; }
            for (unsigned int i=0;i<nPeaks_;++i)
            { 
 		 
-                if(y[caloDigi.peakpos()[i]] <  minPeakAmplitude_) {continue;}
+                if(y[caloDigi.peakpos()[i]] <  minPeakAmplitude_) {continue;} // New Feature!
                 double eDep= scaleFactor_*y[caloDigi.peakpos()[i]]*adc2MeV;
                 double eDepErr =  0*adc2MeV;
                 double time =  x[caloDigi.peakpos()[i]] - shiftTime_;
@@ -159,11 +149,9 @@ namespace mu2e {
 
                  if (diagLevel_ > 1)
                   {
-                    std::cout<<"[CaloRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
+                    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
                   }
-
-                if (chi2/ndf > maxChi2Cut_) continue;
-
+ 		//store product i.e. CaloRecoDigi(collection)
                 recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
               }
 
@@ -173,4 +161,4 @@ namespace mu2e {
 
     }
 
-DEFINE_ART_MODULE(mu2e::CaloRecoDigiFromDigi);
+DEFINE_ART_MODULE(mu2e::FastCaloRecoDigiFromDigi);

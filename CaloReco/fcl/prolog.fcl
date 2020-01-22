@@ -10,7 +10,6 @@ OnlineRecoDigiMaker :
     module_type           : FastCaloRecoDigiFromDigi
     caloDigiModuleLabel   : CaloDigiFromShower  
     digiSampling          : @local::HitMakerDigiSampling
-    maxChi2Cut            : 10
     diagLevel             : 0
     windowPeak        : 2
     minPeakAmplitude  : 15
