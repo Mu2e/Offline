@@ -12,9 +12,9 @@ namespace mu2e
   class CaloDigi {
 
       public:
-
+  
 	  CaloDigi(): _roId(-1), _t0(0.), _waveform(0), _peakpos(0.), _errorFlag(0), _eventMode(0) {}
-
+      
 	 CaloDigi(int ROId, int t0, std::vector<int>& waveform, std::vector<float> peakpos, uint16_t errorFlag, uint8_t eventMode):
 	    _roId(ROId),
 	    _t0(t0),
@@ -22,6 +22,13 @@ namespace mu2e
 	    _peakpos(peakpos),
 	    _errorFlag(errorFlag),
 	    _eventMode(eventMode)
+	  {}
+
+          //For schema evolution:
+          CaloDigi(int ROId, int t0, std::vector<int>& waveform):
+	    _roId(ROId),
+	    _t0(t0),
+	    _waveform(waveform)
 	  {}
 
 	  int                     roId()      const { return _roId;}    
