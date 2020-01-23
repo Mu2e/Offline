@@ -14,6 +14,7 @@
 
 // generation
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollections.hh"
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
