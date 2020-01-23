@@ -15,6 +15,8 @@
  <class name="art::Ptr<mu2e::GenParticle>"/>
  <class name="mu2e::GenParticleCollection"/>
  <class name="art::Wrapper<mu2e::GenParticleCollection>"/>
+ <class name="mu2e::GenParticleCollections"/>
+ <class name="art::Wrapper<mu2e::GenParticleCollections>"/>
 
  <class name="mu2e::GenSimParticleLink" />
  <class name="art::Wrapper<mu2e::GenSimParticleLink>"/>
