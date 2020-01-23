@@ -198,7 +198,6 @@ namespace mu2e
     _shdiag->Branch("pmom",&_pmom,"pmom/F");
     _shdiag->Branch("wres",&_shwres,"wres/F");
     _shdiag->Branch("tres",&_shtres,"tres/F");
-    _shdiag->Branch("ewmoffset",&_ewMarkerOffset,"ewmoffset/F");
     if(_mcdiag){
       _shdiag->Branch("mcshpos.",&_mcshp);
       _shdiag->Branch("mcopos.",&_mcop);
@@ -328,7 +327,7 @@ namespace mu2e
         _mcgen = -1;
         if(osp.genParticle().isNonnull())
           _mcgen = osp.genParticle()->generatorId().id();
-        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp);
+        _mcsptime = _toff.timeWithOffsetsApplied(*spmcp) - _ewMarkerOffset;
 	for(size_t iend=0;iend<2; ++iend){
 	  _mcwt[iend] = mcdigi.wireEndTime(_end[iend]);
 	  _mcct[iend] = mcdigi.clusterPosition(_end[iend]).t();
