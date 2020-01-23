@@ -208,7 +208,6 @@ namespace mu2e {
           }
           wPoints[ipoint]._tmax[ipath].push_back(tmax);
           wPoints[ipoint]._linmax[ipath].push_back(linmax*1e9);
-          std::cout << ipoint << " " << straw.id().getStraw() << " " <<  2*straw.halfLength() << " " << tmax << " " << linmax*1e9 << std::endl;
         }
       }
     }
