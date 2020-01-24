@@ -49,17 +49,6 @@ CaloClusterFast :
     includeCrystalHits    : false
 }
 
-NewCaloClusterFast :
-{ 
-    module_type          : NewCaloClusterFast
-    caloCrystalModuleLabel : FastCaloCrystalHitFromHit
-    extendSecond          : true
-    minEnergy             : 50
-    diagLevel             : 0
-    deltaTime              : 2
-    includeCrystalHits    : false
-}
-
 
 CaloProtoClusterFromCrystalHit :
 {
