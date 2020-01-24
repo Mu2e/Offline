@@ -15,7 +15,7 @@ OnlineRecoDigiMaker :
     windowPeak        : 2
     minPeakAmplitude  : 15
     shiftTime         : 19.90
-	
+    EventWindowMarkerLabel : "EWMProducer"
    
 }
 
