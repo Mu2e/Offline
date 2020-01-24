@@ -31,134 +31,119 @@ namespace mu2e {
 
   class FastCaloRecoDigiFromDigi : public art::EDProducer {
 
-  public:
-    explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
-      art::EDProducer{pset},
-      caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
-      digiSampling_        (pset.get<double>     ("digiSampling")),
-      windowPeak_         (pset.get<int>    ("windowPeak")),
-      minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
-      shiftTime_          (pset.get<double> ("shiftTime")),
-      scaleFactor_        (pset.get<double> ("scaleFactor")),
-      diagLevel_           (pset.get<int>        ("diagLevel",0))
-     {
-      produces<CaloRecoDigiCollection>();
-    }
+  	public:
+		explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
+		art::EDProducer{pset},
+		caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
+		digiSampling_        (pset.get<double>     ("digiSampling")),
+		windowPeak_         (pset.get<int>    ("windowPeak")),
+		minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
+		shiftTime_          (pset.get<double> ("shiftTime")),
+		scaleFactor_        (pset.get<double> ("scaleFactor")),
+		diagLevel_           (pset.get<int>        ("diagLevel",0))
+	     	{
+	      	produces<CaloRecoDigiCollection>();
+		}
 
-    void produce(art::Event& e) override;
+    		void produce(art::Event& e) override;
 
-  private:
+	private:
 
-    art::ProductToken<CaloDigiCollection> const caloDigisToken_;
-    double const digiSampling_;
-    int 	 windowPeak_ ;
-    double 	 minPeakAmplitude_ ;
-    double 	 shiftTime_ ;
-    double       scaleFactor_;
-    int          diagLevel_;
+		art::ProductToken<CaloDigiCollection> const caloDigisToken_;
+		double const digiSampling_;
+		int 	 windowPeak_ ;
+		double 	 minPeakAmplitude_ ;
+		double 	 shiftTime_ ;
+		double       scaleFactor_;
+		int          diagLevel_;
    
    
-    void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits);
+		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits);
 
-  };
+	};
 
+	void FastCaloRecoDigiFromDigi::produce(art::Event& event)
+  	{
 
-  //-------------------------------------------------------
-  void FastCaloRecoDigiFromDigi::produce(art::Event& event)
-  {
+		if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] begin"<<std::endl;
 
-    if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] begin"<<std::endl;
+		auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
 
-    auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
+		auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
+		extractRecoDigi(caloDigisH, *recoCaloDigiColl);
 
-    auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
-    extractRecoDigi(caloDigisH, *recoCaloDigiColl);
+		if ( diagLevel_ > 3 )
+		{
+			printf("[FastRecoDigiFromDigi::produce] produced RecoCrystalHits ");
+			printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
+		}
 
-    if ( diagLevel_ > 3 )
-      {
-        printf("[FastRecoDigiFromDigi::produce] produced RecoCrystalHits ");
-        printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
-      }
+		event.put(std::move(recoCaloDigiColl));
 
-    event.put(std::move(recoCaloDigiColl));
+		if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] end"<<std::endl;
 
-    if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] end"<<std::endl;
+		return;
+	}
 
-    return;
-  }
+	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits)
+  	{
 
+		std::vector<double> x,y;
+		ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");//TODO
 
-  //--------------------------------------------------------------------------------------
-  void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits)
-  {
+		auto const& caloDigis = *caloDigisHandle;
+		//if(caloDigis.size() == 0){ continue; } TODO
+		CaloDigi const* base = &caloDigis.front(); 
 
-    std::vector<double> x,y;
-    ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");//TODO
-
-    auto const& caloDigis = *caloDigisHandle;
-    //if(caloDigis.size() == 0){ continue; } TODO
-    CaloDigi const* base = &caloDigis.front(); 
+		for (const auto& caloDigi : caloDigis)
+		{
     
-    for (const auto& caloDigi : caloDigis)
-      {
-    
-	uint16_t errFlag = caloDigi.errorFlag();
-        if(errFlag){ continue; } 
-        
-        int    roId     = caloDigi.roId();
-        double t0       = caloDigi.t0();
-        //removed crId -> no need as we extract crystal hit in this path
-       
-        //uint8_t eventMode = caloDigi.eventMode();
-        //TODO: if(evenMode == is somethings do this){} --> change calib work
-        double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
-       
-        const std::vector<int>& waveform = caloDigi.waveform();
+			int    roId     = caloDigi.roId();
+			double t0       = caloDigi.t0();
+			//removed crId -> no need as we extract crystal hit in this path
+			double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
+			const std::vector<int>& waveform = caloDigi.waveform();
 
-        size_t index = &caloDigi - base;
-        art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
+			size_t index = &caloDigi - base;
+			art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
 
-        x.clear();
-        y.clear();
-        for (unsigned int i=0;i<waveform.size();++i)
-          {
-	   	x.push_back(t0 + (i+0.5)*digiSampling_); //time TODO (what about -timeCorrection_ windowPeak?) 
-    		y.push_back(waveform.at(i)); //amplitude
-          }
+			x.clear();
+			y.clear();
+			for (unsigned int i=0;i<waveform.size();++i)
+			  {
+			   	x.push_back(t0 + (i+0.5)*digiSampling_); //time TODO (what about -timeCorrection_ windowPeak?) 
+				y.push_back(waveform.at(i)); //amplitude
+			  }
 
-        if (diagLevel_ > 3)
-          {
-            std::cout<<"[FastRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
-            for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
-          }
+			if (diagLevel_ > 3)
+			  {
+				    std::cout<<"[FastRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
+				    for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
+			  }
 
-           unsigned int nPeaks_ = caloDigi.peakpos().size(); //should always be 1 (assume no pile up)
-           double chi2   = 0;
-           int ndf    = 1;
-           bool isPileUp;
-           if(nPeaks_ > 1) { isPileUp = true ; } //set pile up flag
-	   else { isPileUp = false; }
-           for (unsigned int i=0;i<nPeaks_;++i)
-           { 
+			unsigned int nPeaks_ = caloDigi.peakpos().size(); //should always be 1 (assume no pile up)
+			double chi2   = 0;
+			int ndf    = 1;
+			bool isPileUp;
+			if(nPeaks_ > 1) { isPileUp = true ; } //set pile up flag
+			else { isPileUp = false; }
+			for (unsigned int i=0;i<nPeaks_;++i)
+			{ 
 		 
-                if(y[caloDigi.peakpos()[i]] <  minPeakAmplitude_) {continue;} // New Feature!
-                double eDep= scaleFactor_*y[caloDigi.peakpos()[i]]*adc2MeV;
-                double eDepErr =  0*adc2MeV;
-                double time =  x[caloDigi.peakpos()[i]] - shiftTime_;
-                double timeErr = 0;
+				if(y[caloDigi.peakpos()[i]] <  minPeakAmplitude_) {continue;} // New Feature!
+				double eDep= scaleFactor_*y[caloDigi.peakpos()[i]]*adc2MeV;
+				double eDepErr =  0*adc2MeV;
+				double time =  x[caloDigi.peakpos()[i]] - shiftTime_;
+				double timeErr = 0;
 
-                 if (diagLevel_ > 1)
-                  {
-                    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
-                  }
- 		//store product i.e. CaloRecoDigi(collection)
-                recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
-              }
-
-          }
-
-      }
-
-    }
+				 if (diagLevel_ > 1)
+				  {
+				    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
+				  }
+				recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
+			}
+		}
+	}
+}
 
 DEFINE_ART_MODULE(mu2e::FastCaloRecoDigiFromDigi);
