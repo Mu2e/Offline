@@ -51,8 +51,6 @@ helper.make_plugins([mainlib,
                      'mu2e_DataProducts',
                      'mu2e_Mu2eInterfaces',
                      'mu2e_GeneralUtilities',
-                     # fixes linker error after using
-                     # Proditions to retrieve aligned tracker
                      'mu2e_GeomPrimitives',
 
                      'art_Framework_Core',

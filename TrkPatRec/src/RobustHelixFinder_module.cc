@@ -258,15 +258,9 @@ namespace mu2e {
 
   //-----------------------------------------------------------------------------
   void RobustHelixFinder::beginRun(art::Run& ) {
-    //mu2e::GeomHandle<mu2e::Tracker> th;
-    //_tracker = th.get();
-
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
 
-    //_hfit.setTracker    (_tracker);
     _hfit.setCalorimeter(ch.get());
-
-    //_chi2hfit.setTracker    (_tracker);
     _chi2hfit.setCalorimeter(ch.get());
   }
   //--------------------------------------------------------------------------------
@@ -294,11 +288,10 @@ namespace mu2e {
   }
 
   void RobustHelixFinder::produce(art::Event& event ) {
-    auto tracker = _alignedTracker_h.getPtr(event.id());
-    _tracker = tracker.get();
+      
+    _tracker = _alignedTracker_h.getPtr(event.id()).get();
     _hfit.setTracker    (_tracker);
     _chi2hfit.setTracker    (_tracker);
-
 
     // find input
     auto const& tcH = event.getValidHandle(_tcToken);
