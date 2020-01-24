@@ -161,11 +161,7 @@ namespace mu2e {
   {
       if (_printLevel > 0) std::cout << "In StrawHitReco produce " << std::endl;
 
-      auto tracker = _alignedTracker_h.getPtr(event.id());
-
-      //const Tracker& tt(*GeomHandle<Tracker>());
-      const Tracker& tt = *tracker.get();
-
+      const Tracker& tt = *(_alignedTracker_h.getPtr(event.id())).get();
 
       size_t nplanes = tt.nPlanes();
       size_t npanels = tt.getPlane(0).nPanels();

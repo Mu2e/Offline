@@ -67,7 +67,6 @@ helper.make_plugins([mainlib,
                      'mu2e_DataProducts',
                      'mu2e_GeneralUtilities',
 
-                     # temp fix
                      'mu2e_GeomPrimitives',
 
                      # 'mu2e_CalPatRec',
