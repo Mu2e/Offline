@@ -40,7 +40,15 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
-
+NewCaloClusterFast :
+{ 
+    module_type          : NewCaloClusterFast
+    caloCrystalModuleLabel : OnlineHitMaker
+    extendSecond          : true
+    minEnergy             : 50
+    diagLevel             : 0
+    deltaTime              : 2
+}
 
 CaloClusterTrigger :
 {
