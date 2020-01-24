@@ -182,14 +182,10 @@ namespace mu2e
   }
 //-----------------------------------------------------------------------------
   void KalFinalFit::beginRun(art::Run& r) {
-   // _data.tracker     = _alignedTracker_h.getPtr(r.eventID).get();
-
     mu2e::GeomHandle<mu2e::Calorimeter> ch;
     _data.calorimeter = ch.get();
 
     _kfit.setCalorimeter (_data.calorimeter);
-    //_kfit.setTracker     (_data.tracker);
-
     _kfit.setCaloGeom();
   }
 
@@ -198,9 +194,8 @@ namespace mu2e
 
     auto srep = _strawResponse_h.getPtr(event.id());
     auto detmodel = _mu2eDetector_h.getPtr(event.id());
-    auto tracker = _alignedTracker_h.getPtr(event.id());
 
-    _data.tracker = tracker.get();
+    _data.tracker = _alignedTracker_h.getPtr(event.id()).get();
     _kfit.setTracker(_data.tracker);
 
     // event printout
