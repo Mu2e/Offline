@@ -61,11 +61,10 @@ namespace mu2e {
   	{
 		Calorimeter const &cal = *(GeomHandle<Calorimeter>());
 		auto const& recoCaloDigis = *recoCaloDigisHandle;
-		CaloRecoDigi const* base = &recoCaloDigis.front(); // TODO What if recoCaloDigis is empty?
-		if (cal.nRO() > int(hitMap_.size())) continue;
-		
-		for (int i = hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const CaloRecoDigi*>());
-		for (size_t i=0; i<hitMap_.size(); ++i) hitMap_[i].clear();
+		CaloRecoDigi const* base = &recoCaloDigis.front(); 
+
+		for (int i = hitMap_.size(); i<= cal.nRO(); ++i) hitMap_.push_back(std::vector<const CaloRecoDigi*>()); //adds a hit map for each RO channel - what if we only have 1? the  others empty - is this ok? TODO
+		for (size_t i=0; i<hitMap_.size(); ++i) hitMap_[i].clear();//clean map
 
 		for (unsigned int i=0; i< recoCaloDigis.size(); ++i)
 		{
@@ -77,13 +76,10 @@ namespace mu2e {
 		for (unsigned int crystalId=0;crystalId<hitMap_.size();++crystalId)
 		{
 			std::vector<const CaloRecoDigi*> &hits = hitMap_[crystalId];
-        
-			//check if empty:
+        		//check if empty:
 			if (hits.empty()) continue;
-
 			//sort hits in terms of time:
 			std::sort(hits.begin(),hits.end(),[](const auto a, const auto b){return a->time() < b->time();});
-
 			//find hit:
 			auto startHit = hits.begin();
 			auto endHit   = hits.begin();
@@ -105,7 +101,6 @@ namespace mu2e {
 				{
 					double time = timeW/nRoid;
 					double timeErr = 0;
-					//fill that buffer: //TODO -->peakpos, flags etc.
 					FillBuffer(crystalId, nRoid, time, timeErr, eDepTot/nRoid, eDepTotErr/nRoid, buffer, CaloCrystalHits);
 					//clear:
 					buffer.clear();

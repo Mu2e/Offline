@@ -19,6 +19,8 @@
 #include "RecoDataProducts/inc/CaloRecoDigi.hh"
 #include "RecoDataProducts/inc/CaloRecoDigiCollection.hh"
 
+#include "DataProducts/inc/EventWindowMarker.hh"
+
 #include <iostream>
 #include <string>
 
@@ -35,14 +37,16 @@ namespace mu2e {
 		explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
 		art::EDProducer{pset},
 		caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
-		digiSampling_        (pset.get<double>     ("digiSampling")),
+		digiSampling_        (pset.get<double>("digiSampling")),
 		windowPeak_         (pset.get<int>    ("windowPeak")),
 		minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
 		shiftTime_          (pset.get<double> ("shiftTime")),
 		scaleFactor_        (pset.get<double> ("scaleFactor")),
-		diagLevel_           (pset.get<int>        ("diagLevel",0))
+		diagLevel_          (pset.get<int>    ("diagLevel",0)),
+		ewMarkerTag_(pset.get<art::InputTag>("EventWindowMarkerLabel"))
 	     	{
-	      	produces<CaloRecoDigiCollection>();
+			consumes<EventWindowMarker>(ewMarkerTag_);
+	      		produces<CaloRecoDigiCollection>();
 		}
 
     		void produce(art::Event& e) override;
@@ -56,9 +60,9 @@ namespace mu2e {
 		double 	 shiftTime_ ;
 		double       scaleFactor_;
 		int          diagLevel_;
+   		art::InputTag ewMarkerTag_;// name of the module that makes eventwindowmarkers
    
-   
-		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits);
+		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits, double const& ewOffset);
 
 	};
 
@@ -68,9 +72,16 @@ namespace mu2e {
 		if (diagLevel_ > 0) std::cout<<"[FastRecoDigiFromDigi::produce] begin"<<std::endl;
 
 		auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
-
 		auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
-		extractRecoDigi(caloDigisH, *recoCaloDigiColl);
+		//Get EW time offset (as per StrawHitReco):
+		double ewmOffset = 0;
+		art::Handle<EventWindowMarker> ewMarkerHandle;
+		if (event.getByLabel(ewMarkerTag_, ewMarkerHandle)){
+			const EventWindowMarker& ewMarker(*ewMarkerHandle);
+			ewmOffset = ewMarker.timeOffset();
+		}
+
+		extractRecoDigi(caloDigisH, *recoCaloDigiColl, ewmOffset);
 
 		if ( diagLevel_ > 3 )
 		{
@@ -85,7 +96,7 @@ namespace mu2e {
 		return;
 	}
 
-	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits)
+	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits, double const& eventWindowOffset)
   	{
 
 		std::vector<double> x,y;
@@ -111,7 +122,7 @@ namespace mu2e {
 			y.clear();
 			for (unsigned int i=0;i<waveform.size();++i)
 			  {
-			   	x.push_back(t0 + (i+0.5)*digiSampling_); //time TODO (what about -timeCorrection_ windowPeak?) 
+			   	x.push_back(t0 + (i+0.5)*digiSampling_+eventWindowOffset); 
 				y.push_back(waveform.at(i)); //amplitude
 			  }
 
