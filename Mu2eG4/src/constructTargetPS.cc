@@ -67,7 +67,7 @@ namespace mu2e {
 				     const std::string& name //volume info for main object
 				     ,const CLHEP::Hep3Vector& translation
 				     ,VolumeInfo const& parent
-				     ,G4Box*  boxCutout //subtraction volume object
+				     ,G4Box*  boxCutout //action volume object
 				     ,G4Tubs* tubsCutout
 				     ,const CLHEP::HepRotation* rotAngle
 				     ,G4Material* material// finish nesting args
@@ -433,7 +433,9 @@ namespace mu2e {
       bool placePV             = geomOptions->placePV( "ProductionTarget" );
       bool doSurfaceCheck      = geomOptions->doSurfaceCheck( "ProductionTarget" );
       
-
+      G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
+      AntiLeakRegistry & reg = _helper.antiLeakRegistry();
+ 
       // 
 
       // begin all names with ProductionTarget so when we build sensitive detectors we can make them all 
@@ -443,15 +445,16 @@ namespace mu2e {
       GeomHandle<ProductionTarget> tgt;
       G4Material* prodTargetCoreMaterial = findMaterialOrThrow(tgt->targetCoreMaterial());
       G4Material* prodTargetFinMaterial  = findMaterialOrThrow(tgt->targetFinMaterial());
+      G4Material* prodTargetSupportRingMaterial = findMaterialOrThrow(tgt->supportRingMaterial());
+
       TubsParams prodTargetMotherParams( 0.
       					 ,tgt->productionTargetMotherOuterRadius()
       					 ,tgt->productionTargetMotherHalfLength());
 
       G4ThreeVector _loclCenter(0.0,0.0,0.0);
       G4ThreeVector zeroTranslation(0.,0.,0.);
-      G4RotationMatrix* targetRotation = new G4RotationMatrix(tgt->productionTargetRotation().inverse());
+      G4RotationMatrix* targetRotation = reg.add(G4RotationMatrix(tgt->productionTargetRotation().inverse()));
       if (verbosityLevel > 2){G4cout << "target rotation  = " << *targetRotation << G4endl;}
-      //     G4RotationMatrix* identityRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
       VolumeInfo prodTargetMotherInfo   = nestTubs( "ProductionTargetMother",
 						    prodTargetMotherParams,
 						    parent.logical->GetMaterial(),
@@ -511,8 +514,6 @@ namespace mu2e {
       //
       //other constants
       double cutoutHeightAboveTarget = tgt->supportRingInnerRadius() + tgt->supportRingCutoutThickness()/2. - magicOffset;
-      G4Helper    & _helper = *(art::ServiceHandle<G4Helper>());
-      AntiLeakRegistry & reg = _helper.antiLeakRegistry();
  
       CLHEP::HepRotation* rotRing = reg.add(CLHEP::HepRotation(tgt->productionTargetRotation()));
 
@@ -530,7 +531,7 @@ namespace mu2e {
 	// subtract off that 90^o . Then the - sign is CLHEP vs G4
         currentFinAngles.emplace_back(tgt->finAngles().at(ithFin));
 	rotFinsG4.at(ithFin)->rotateZ(-(-M_PI/2. + currentFinAngles.at(ithFin)));
-	rotBoxesG4.at(ithFin)->rotateZ(currentFinAngles.at(ithFin));
+	rotBoxesG4.at(ithFin)->rotateZ(-(-M_PI/2. + currentFinAngles.at(ithFin)));
 	if (verbosityLevel > 1){G4cout << "rotFin " << ithFin << " " << *rotFinsG4.at(ithFin) << G4endl;}
       }
 
@@ -541,7 +542,7 @@ namespace mu2e {
       // get real
       for (int ithSection = 0; ithSection < numberOfSections; ++ithSection){
 	int numberOfSegments = tgt->numberOfSegmentsPerSection().at(ithSection);
-	std::string startName = "ProductionTargetStartingCoreSection_" + std::to_string(ithSection);
+	std::string startName = "ProductionTargetStartingCoreSection_" + std::to_string(ithSection+1);
 	//
 	// first place starting segment
 
@@ -575,7 +576,6 @@ namespace mu2e {
 	for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin)
 	  {
 	    const std::string name = "ProductionTargetFinStartingSection_" + std::to_string(ithSection+1) + "_Fin_" + std::to_string(ithFin);
- 
  	    if (verbosityLevel > 1)
 	      {G4cout << "Fin Section and Angle = " << name << " " << currentFinAngles.at(ithFin) << " fin copy number = " << finCopyNumber << G4endl;}
 
@@ -649,15 +649,24 @@ namespace mu2e {
 	    CLHEP::Hep3Vector downshiftTopBox = CLHEP::Hep3Vector(0.,-finTopHalfHeight, 0.);
 	    //
 	    // these are oriented with gap radius along z.  Recall still in mother volume so this axis is OK
-	    G4RotationMatrix* tubTopRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+	    G4RotationMatrix* tubTopRotation = reg.add(G4RotationMatrix(CLHEP::HepRotation::IDENTITY));
+	    //	    G4RotationMatrix* tubTopRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
 	    tubTopRotation->rotateY(M_PI/2.);
-	    G4SubtractionSolid* finTopWithCutoutSolid   = new G4SubtractionSolid(nameTop,finTopBox,finTopCutout,tubTopRotation,downshiftTopBox);
-	    G4LogicalVolume*    finTopWithCutoutLogical = new G4LogicalVolume(finTopWithCutoutSolid,prodTargetFinMaterial,nameTop);
-	    G4VPhysicalVolume*  finTopWithCutout        = new G4PVPlacement(rotFinsG4.at(ithFin),finTopTranslation,finTopWithCutoutLogical,nameTop,prodTargetMotherInfo.logical,0,finTopCopyNumber,false);
 
+	    VolumeInfo finTopWithCutoutInfo(nameTop,finTopTranslation,prodTargetMotherInfo.centerInWorld);
+	    finTopWithCutoutInfo.solid = new G4SubtractionSolid(nameTop,finTopBox,finTopCutout,tubTopRotation,downshiftTopBox);
+	    finishNesting(finTopWithCutoutInfo
+			  ,prodTargetFinMaterial
+			  ,rotFinsG4.at(ithFin)
+			  ,finTopTranslation
+			  ,prodTargetMotherInfo.logical
+			  ,finTopCopyNumber
+			  ,G4Colour::White()
+			  ,"ProductionTarget"
+			  ,verbosityLevel>1);
 	    //
 	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
-	    if (doSurfaceCheck){checkForOverlaps(finTopWithCutout,_config,0);}
+	    //	    if (doSurfaceCheck){checkForOverlaps(finTopWithCutout,_config,0);}
 
 	  }
 
@@ -685,10 +694,9 @@ namespace mu2e {
 
 	  //
 	  // this is all so I can add multiple cutouts to the ring and only do one placement.
+	  //	  std::vector<G4SubtractionSolid*> ringWithCutoutSolid;
 	  std::vector<G4SubtractionSolid*> ringWithCutoutSolid;
 
-	  //	  G4Box* cutoutBox = new G4Box("cutoutBox",tgt->supportRingCutoutThickness()/2.+ magicOffset,
-	  //			       tgt->haymanFinThickness() + magicOffset,tgt->supportRingCutoutLength()/2.+ magicOffset);
 	  std::string nameRing = "ProductionTargetNegativeRingCutout";
 
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin){
@@ -706,7 +714,6 @@ namespace mu2e {
 	    // G4 translates and then rotates.  I want to offset the fin to its final location relative to the core and then let G4 perform rotations,
 	    // both of the fin about the z axis and then the entire production target rotation angle
 	    double distanceFromCenter = cutoutHeightAboveTarget;
-
 	    CLHEP::Hep3Vector boxShift(distanceFromCenter*cos(currentFinAngles.at(ithFin)),distanceFromCenter*sin(currentFinAngles.at(ithFin)),0.);
 	    CLHEP::Hep3Vector offsetRelativeToCore(distanceFromCenter*cos(currentFinAngles.at(ithFin)),distanceFromCenter*sin(currentFinAngles.at(ithFin)), 
 	    						   tgt->supportRingCutoutLength()/2. + magicOffset);
@@ -720,16 +727,30 @@ namespace mu2e {
 	    }
 
 	    if (ithFin == 0){
-	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,supportRing,cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
+	      	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,supportRing,cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }else {
-	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
+	      	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }
 	  }
 	
-	  G4LogicalVolume*    ringWithCutoutLogical = new G4LogicalVolume(ringWithCutoutSolid.at(tgt->nHaymanFins() - 1),prodTargetFinMaterial,name);
+	  
+	  G4LogicalVolume*    ringWithCutoutLogical = new G4LogicalVolume(ringWithCutoutSolid.at(tgt->nHaymanFins() - 1),prodTargetSupportRingMaterial,name);
 	  G4VPhysicalVolume*  ringWithCutout        = new G4PVPlacement(rotRing,ringTranslation,ringWithCutoutLogical,nameRing,prodTargetMotherInfo.logical,0,finCopyNumber,false);
 	  if (doSurfaceCheck){checkForOverlaps(ringWithCutout,_config,0);}
+	  
 
+	  /*	  VolumeInfo ringWithCutoutNegative(name,ringTranslation,prodTargetMotherInfo.centerInWorld);
+          ringWithCutoutNegative.solid = ringWithCutoutSolid.at(tgt->nHaymanFins() - 1); // what does this =  mean?  
+	  finishNesting(ringWithCutoutNegative
+			,prodTargetSupportRingMaterial
+			,rotRing
+			,ringTranslation
+			,prodTargetMotherInfo.logical
+			,finCopyNumber
+			,G4Colour::White()
+			,"ProductionTarget"
+			,verbosityLevel>1);
+	  */
 
 	}
 
@@ -744,7 +765,7 @@ namespace mu2e {
 	double currentHalfSegment = tgt->thicknessOfSegmentPerSection().at(ithSection)/2.;
 
 	for (int ithSegment = 0; ithSegment < numberOfSegments; ++ithSegment){
-	  std::string name = "ProductionTargetCoreSection_" + std::to_string(ithSection) 
+	  std::string name = "ProductionTargetCoreSection_" + std::to_string(ithSection+1) 
 	    + "_Segment_" + std::to_string(ithSegment);
 	  if (verbosityLevel > 0) {
 	    G4cout << __func__ << "name = " << name << " and core copy number = " << coreCopyNumber << G4endl;
@@ -782,7 +803,7 @@ namespace mu2e {
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin)
 	    //		    	    	    	  for (int ithFin = 0; ithFin < 1; ++ithFin)
 	    {
-	      const std::string name = "ProductionTargetFinSection_" + std::to_string(ithSection) + "_Segment_" + std::to_string(ithSegment) + "_Fin_" + std::to_string(ithFin);
+	      const std::string name = "ProductionTargetFinSection_" + std::to_string(ithSection+1) + "_Segment_" + std::to_string(ithSegment) + "_Fin_" + std::to_string(ithFin);
 	      if (verbosityLevel > 1)
 		{G4cout << "Fin Section and Angle = " << name << " " << currentFinAngles.at(ithFin) << " fin copy number = " << finCopyNumber << G4endl;}
 	      // divide by 2 to make box half-height since I gave it the "radius" to start with; arbitrary convention. 
@@ -867,16 +888,21 @@ namespace mu2e {
 
 	    //
 	    // these are oriented with gap radius along z.  Recall still in mother volume so this axis is OK
-	    G4RotationMatrix* tubTopRotation = new G4RotationMatrix(CLHEP::HepRotation::IDENTITY);
+	    G4RotationMatrix* tubTopRotation = reg.add(G4RotationMatrix(CLHEP::HepRotation::IDENTITY));
 	    tubTopRotation->rotateY(M_PI/2.);
-	    G4SubtractionSolid* finTopWithCutoutSolid   = new G4SubtractionSolid(nameTop,finTopBox,finTopCutout,tubTopRotation,downshiftTopBox);
-	    G4LogicalVolume*    finTopWithCutoutLogical = new G4LogicalVolume(finTopWithCutoutSolid,prodTargetFinMaterial,nameTop);
-	    G4VPhysicalVolume*  finTopWithCutout        = new G4PVPlacement(rotFinsG4.at(ithFin),finTopTranslation,finTopWithCutoutLogical,nameTop,prodTargetMotherInfo.logical,0,finTopCopyNumber,false);
-
-	    //
-	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
-	    if (doSurfaceCheck){checkForOverlaps(finTopWithCutout,_config,0);}
-
+	    
+	    VolumeInfo finTopWithCutoutInfo(nameTop,finTopTranslation,prodTargetMotherInfo.centerInWorld);
+	    finTopWithCutoutInfo.solid = new G4SubtractionSolid(nameTop,finTopBox,finTopCutout,tubTopRotation,downshiftTopBox);
+	    finishNesting(finTopWithCutoutInfo
+			  ,prodTargetFinMaterial
+			  ,rotFinsG4.at(ithFin)
+			  ,finTopTranslation
+			  ,prodTargetMotherInfo.logical
+			  ,finTopCopyNumber
+			  ,G4Colour::White()
+			  ,"ProductionTarget"
+			  ,verbosityLevel>1);
+	    
 	    }
 	  _currentZ += currentHalfSegment;
 	  //
@@ -887,13 +913,12 @@ namespace mu2e {
 	    if (verbosityLevel > 0){G4cout << " z after = " << _currentZ << G4endl;}
 	  }
 	  if (verbosityLevel > 0){G4cout << __func__ << " ending at z=" << _currentZ << G4endl;}
-	  //	  prodTargetCoreInfoBySegment.push_back(coreSegment);
 	}
 	  ++coreCopyNumber;
 	//
 	// if this is the last section, add on one more beginning block. decided not to extend vectors and have zero segments, just ugly
 	if (ithSection == (numberOfSections -1) ){
-	  startName = "ProductionTargetStartingCoreSection_" + std::to_string(ithSection+1);
+	  startName = "ProductionTargetStartingCoreSection_" + std::to_string(ithSection+1+1);
 	  TubsParams startingSegmentParamsEnd(0.,targetRadius,tgt->startingSectionThickness().at(ithSection)/2.);
 
 	  //	
@@ -922,7 +947,7 @@ namespace mu2e {
 	  for (int ithFin = 0; ithFin < tgt->nHaymanFins(); ++ithFin){
 
 	    double currentFinAngle = tgt->finAngles().at(ithFin);
-	    const std::string name = "ProductionTargetFinStartingSection_" + std::to_string(ithSection+1) + "_Fin_" + std::to_string(ithFin);
+	    const std::string name = "ProductionTargetFinStartingSection_" + std::to_string(ithSection+1+1) + "_Fin_" + std::to_string(ithFin);
 
 	    if (verbosityLevel > 1)
 	      {G4cout << "Fin Section and Angle = " << name << " " << currentFinAngle << " fin copy number = " << finCopyNumber << G4endl;}
@@ -963,15 +988,19 @@ namespace mu2e {
 	    finTranslation = finTranslation + offsetRelativeToCore;
 	    if (verbosityLevel > 2){G4cout << "finTranslation = " << finTranslation << G4endl;}
 	    CLHEP::Hep3Vector downshift = CLHEP::Hep3Vector(0.,-finHalfHeightAboveTarget - targetRadius*cos(angularSize), 0.);
-	    G4SubtractionSolid* finWithCutoutSolid   = new G4SubtractionSolid(name,finBox,tubCutout,nullptr,downshift);
-	    G4LogicalVolume*    finWithCutoutLogical = new G4LogicalVolume(finWithCutoutSolid,prodTargetFinMaterial,name);
-	    G4VPhysicalVolume*  finWithCutout        = new G4PVPlacement(rotFinsG4.at(ithFin),finTranslation,finWithCutoutLogical,name,prodTargetMotherInfo.logical,0,finCopyNumber,false);
 
-	    //
-	    // this check also uses finWithCutout.  Indirectly it's a way of forcing an overlap check or it won't compile, since finWithCutout is never used otherwise.
-	    if (doSurfaceCheck){checkForOverlaps(finWithCutout,_config,0);}
-	  
-
+	    VolumeInfo finWithCutoutInfo(name,finTranslation,prodTargetMotherInfo.centerInWorld);
+	    finWithCutoutInfo.solid = new G4SubtractionSolid(name,finBox,tubCutout,nullptr,downshift);
+	    finishNesting(finWithCutoutInfo
+			  ,prodTargetFinMaterial
+			  ,rotFinsG4.at(ithFin)
+			  ,finTranslation
+			  ,prodTargetMotherInfo.logical
+			  ,finCopyNumber
+			  ,G4Colour::White()
+			  ,"ProductionTarget"
+			  ,verbosityLevel>1);
+	    
 	  }
 	  //
 	  // set current z to be at the end of this starting segment as a final check
@@ -1020,10 +1049,20 @@ namespace mu2e {
 	      ringWithCutoutSolid.push_back(new G4SubtractionSolid(name,ringWithCutoutSolid.at(ithFin-1),cutoutBox,rotBoxesG4.at(ithFin),offsetRelativeToCore));
 	    }
 	  }
-	
-	  G4LogicalVolume*    ringWithCutoutLogical = new G4LogicalVolume(ringWithCutoutSolid.at(tgt->nHaymanFins() - 1),prodTargetFinMaterial,name);
-	  G4VPhysicalVolume*  ringWithCutoutPositive  = new G4PVPlacement(rotRing,ringTranslation,ringWithCutoutLogical,nameRing,prodTargetMotherInfo.logical,0,finCopyNumber,false);
-	  if (doSurfaceCheck){checkForOverlaps(ringWithCutoutPositive,_config,0);}
+
+	  
+	  VolumeInfo ringWithCutoutPositive(name,ringTranslation,prodTargetMotherInfo.centerInWorld);
+          ringWithCutoutPositive.solid = ringWithCutoutSolid.at(tgt->nHaymanFins() - 1); // what does this =  mean?  
+	  finishNesting(ringWithCutoutPositive
+			,prodTargetSupportRingMaterial
+			,rotRing
+			,ringTranslation
+			,prodTargetMotherInfo.logical
+			,finCopyNumber
+			,G4Colour::White()
+			,"ProductionTarget"
+			,verbosityLevel>1);
+	  
 	}
       }
     }

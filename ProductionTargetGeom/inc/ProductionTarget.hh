@@ -47,13 +47,13 @@ namespace mu2e {
 
 
     // in mu2e coordinates
-    const CLHEP::Hep3Vector& position() const { std::cout << "regular prod target position = " << _prodTargetPosition << std::endl; return _prodTargetPosition; }
+    const CLHEP::Hep3Vector& position() const { return _prodTargetPosition; }
 
     // this is used to transorm particle momentum and position from
     // the PrimaryProtonGun frame to the Mu2e frame
     const CLHEP::HepRotation& protonBeamRotation() const { return _protonBeamRotation; }
-
-    const CLHEP::Hep3Vector& haymanPosition() const { std::cout << "hayman position = " << _haymanProdTargetPosition << std::endl; return _haymanProdTargetPosition; return _haymanProdTargetPosition; }
+ 
+    const CLHEP::Hep3Vector& haymanPosition() const { return _haymanProdTargetPosition; }
  
 
 
@@ -67,8 +67,11 @@ namespace mu2e {
     const std::map<double, CLHEP::Hep3Vector> & anchoringPntsLft() const { return _anchoringPntsLft; }
 
     ~ProductionTarget() {
-           if (_pHubsRgtParams!=NULL) delete _pHubsRgtParams;
-           if (_pHubsLftParams!=NULL) delete _pHubsLftParams;
+
+      if (!_tier1TargetType.empty()){
+	delete _pHubsRgtParams;
+	delete _pHubsLftParams;
+      }
     }
 
 
