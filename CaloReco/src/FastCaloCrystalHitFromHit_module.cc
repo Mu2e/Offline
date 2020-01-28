@@ -26,10 +26,11 @@ namespace mu2e {
 
 			explicit FastCaloCrystalHitFromHit(fhicl::ParameterSet const& pset) :
 			art::EDProducer{pset},
-			caloDigisToken_{consumes<CaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
+caloDigisToken_{consumes<CaloRecoDigiCollection>(pset.get<std::string>("caloDigisModuleLabel"))},
 			time4Merge_          (pset.get<double>     ("time4Merge")),
 			diagLevel_           (pset.get<int>        ("diagLevel",0))
 			{
+				
 				produces<CaloCrystalHitCollection>();
 			}
 
