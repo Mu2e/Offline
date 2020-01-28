@@ -27,21 +27,19 @@
 
 #include <iostream>
 #include <string>
-
-
+   
 namespace mu2e {
 
   class FastCaloRecoDigiFromDigi : public art::EDProducer {
 
   	public:
 		explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
-		art::EDProducer{pset},
-		caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
+		art::EDProducer{pset}, caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
 		digiSampling_        (pset.get<double>("digiSampling")),
 		windowPeak_         (pset.get<int>    ("windowPeak")),
 		minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
 		shiftTime_          (pset.get<double> ("shiftTime")),
-		scaleFactor_        (pset.get<double> ("scaleFactor")),
+		scaleFactor_        (pset.get<double> ("scaleFactor", 1)),
 		diagLevel_          (pset.get<int>    ("diagLevel",0)),
 		ewMarkerTag_(pset.get<art::InputTag>("EventWindowMarkerLabel"))
 	     	{
@@ -132,27 +130,18 @@ namespace mu2e {
 				    for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
 			  }
 
-			unsigned int nPeaks_ = caloDigi.peakpos().size(); //should always be 1 (assume no pile up)
-			double chi2   = 0;
-			int ndf    = 1;
-			bool isPileUp;
-			if(nPeaks_ > 1) { isPileUp = true ; } //set pile up flag
-			else { isPileUp = false; }
-			for (unsigned int i=0;i<nPeaks_;++i)
-			{ 
-		 
-				if(y[caloDigi.peakpos()[i]] <  minPeakAmplitude_) {continue;} // New Feature!
-				double eDep= scaleFactor_*y[caloDigi.peakpos()[i]]*adc2MeV;
-				double eDepErr =  0*adc2MeV;
-				double time =  x[caloDigi.peakpos()[i]] - shiftTime_;
-				double timeErr = 0;
+			if(y[caloDigi.peakpos()] <  minPeakAmplitude_) {continue;} // New Feature!
+			double eDep= scaleFactor_*y[caloDigi.peakpos()]*adc2MeV;
+			double eDepErr =  0*adc2MeV;
+			double time =  x[caloDigi.peakpos()] - shiftTime_;
+			double timeErr = 0;
 
-				 if (diagLevel_ > 1)
-				  {
-				    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"   i="<<i<<"  eDep="<<eDep<<" time="<<time<<"  chi2="<<chi2<<std::endl;
-				  }
-				recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,chi2,ndf,isPileUp));
-			}
+			 if (diagLevel_ > 1)
+			  {
+			    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"  eDep="<<eDep<<" time="<<time<<std::endl;
+			  }
+			recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,0,1,false));
+			
 		}
 	}
 }
