@@ -111,15 +111,7 @@ CaloClusterFast :
    Reco : [ CaloClusterFast ]
 }
 
-NewCaloClusterFast :
-{
-   producers : {
-       NewCaloClusterFast  : @local::NewCaloClusterFast
-       CaloTrigger      : @local::CaloTrigger
-   }
 
-   Reco : [ NewCaloClusterFast ]
-}
 
 
 

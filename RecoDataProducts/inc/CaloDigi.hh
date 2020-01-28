@@ -15,7 +15,7 @@ namespace mu2e
   
 	  CaloDigi(): _roId(-1), _t0(0.), _waveform(0), _peakpos(0.){}
       
-	 CaloDigi(int ROId, int t0, std::vector<int>& waveform, std::vector<float> peakpos):
+	 CaloDigi(int ROId, int t0, std::vector<int>& waveform, size_t peakpos):
 	    _roId(ROId),
 	    _t0(t0),
 	    _waveform(waveform),
@@ -31,7 +31,7 @@ namespace mu2e
 	  int                     roId()      const { return _roId;}    
 	  int                     t0()        const { return _t0;}
 	  const std::vector<int>& waveform()  const { return _waveform; }
-	  std::vector<float> 	  peakpos()   const { return _peakpos;	}
+	  size_t 	  peakpos()   const { return _peakpos;	}
 	 
 
 	private:
@@ -39,7 +39,7 @@ namespace mu2e
 	  int               _roId;      
 	  int               _t0;        //time of the first digitezd bin of the signal
 	  std::vector<int>  _waveform;  //array of the samples associated with the digitezed signal
-	  std::vector<float>     _peakpos;	//peak position	for fast estimate of total charge and hit time
+	  size_t     _peakpos;	//peak position	for fast estimate of total charge and hit time
   };
 
    typedef std::vector<mu2e::CaloDigi> CaloDigiCollection;

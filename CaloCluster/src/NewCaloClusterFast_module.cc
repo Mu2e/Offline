@@ -37,9 +37,7 @@ namespace mu2e {
 			diagLevel_(pset.get<int>("diagLevel",0)),
 			deltaTime_(pset.get<double>("deltaTime"))
 			{
-
 				produces<CaloClusterCollection>();
-
 			}
 			typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
 			virtual ~NewCaloClusterFast() {};
