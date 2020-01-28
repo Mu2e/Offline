@@ -64,10 +64,10 @@ struct Mu2eG4PerThreadStorage
             artEvent->getByLabel(generatorModuleLabel, gensHandle);
         }
         
-        if ( !gensHandle.isValid() )
+        if ( !gensHandle.isValid() && genInputHits == nullptr )
         {
             throw cet::exception("CONFIG")
-            << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run in MT mode and there is no GenParticleCollection!\n";
+            << "Error in PerThreadStorage::initializeEventInfo.  You are trying to run a G4job without an input for G4.\n";
         }
         
     }

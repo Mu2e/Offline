@@ -79,11 +79,14 @@ namespace mu2e {
     stackingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", fhicl::ParameterSet()), mu2elimits_)),
     steppingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut",fhicl::ParameterSet()), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_))
-{}
+{
+    std::cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
+    
+}
   
 // Destructor of base is called automatically.  No need to do anything.
 Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
-  std::cout << "This WorkerRM is being destroyed!\n";
+    std::cout << "WorkerRM on thread " << workerID_ << " is being destroyed\n!";
 }
     
 
@@ -285,7 +288,7 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     numberOfEventProcessed = 0;
     ConstructScoringWorlds();
     
-    std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << workerID_ << std::endl;
+//    std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << workerID_ << std::endl;
     
     eventLoopOnGoing = true;
     while(seedsQueue.size()>0)
