@@ -328,16 +328,6 @@ void Mu2eG4MT::beginSubRun(art::SubRun& sr, art::ProcessingFrame const& procFram
 // Create one G4 event and copy its output to the art::event.
 void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame) {
     
-    
-    if (num_schedules>1) {
-        if (   multiStagePars_.inputSimParticles() != art::InputTag()
-                || multiStagePars_.inputMCTrajectories() != art::InputTag()
-                || !(multiStagePars_.genInputHits().empty()) ) {
-                throw cet::exception("CONFIG")
-                << "Error: You are trying to run in MT mode with input from previous stages.  This is an invalid configuration!\n";
-        }
-    }
-    
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
         event.getByLabel(_generatorModuleLabel, gensHandle);
