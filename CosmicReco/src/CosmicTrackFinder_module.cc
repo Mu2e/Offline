@@ -104,15 +104,19 @@ namespace mu2e{
     	      fhicl::Atom<art::InputTag> chToken{Name("ComboHitCollection"),Comment("tag for combo hit collection")};
 	      fhicl::Atom<art::InputTag> tcToken{Name("TimeClusterCollection"),Comment("tag for time cluster collection")};
 	      fhicl::Atom<art::InputTag> mcToken{Name("StrawDigiMCCollection"),Comment("StrawDigi collection tag")};
+	      fhicl::Atom<bool> DoDrift{Name("DoDrift"),Comment("turn on for drift fit")};
 	      fhicl::Table<CosmicTrackFit::Config> tfit{Name("CosmicTrackFit"), Comment("fit")};
     };
     typedef art::EDProducer::Table<Config> Parameters;
     explicit CosmicTrackFinder(const Parameters& conf);
     virtual ~CosmicTrackFinder();
-    virtual void beginJob();
-    virtual void beginRun(art::Run& run);
+    virtual void beginJob() override;
+    virtual void beginRun(art::Run& run) override;
     virtual void produce(art::Event& event ) override;
-    
+     /*///NEW INFRASTRUCTURE////////
+    typedef art::Ptr<ComboHit>          ComboHitPtr;
+    typedef std::vector<ComboHitPtr>    ComboHitPtrVector;
+////////////////////////////*/
   private:
     
     Config _conf;
@@ -130,10 +134,10 @@ namespace mu2e{
     art::InputTag  _chToken;
     art::InputTag  _tcToken;
     art::InputTag  _mcToken;
-    
+    bool 	   _DoDrift;
     CosmicTrackFit     _tfit;
      
-    StrawHitFlag      _outlier;
+    StrawHitFlag      _dontuseflag;
    
     CosmicTrackFinderData                 _stResult;
     ProditionsHandle<StrawResponse> _strawResponse_h; 
@@ -157,6 +161,7 @@ namespace mu2e{
     	_chToken (conf().chToken()),
 	_tcToken (conf().tcToken()),
 	_mcToken (conf().mcToken()),
+	_DoDrift (conf().DoDrift()),
 	_tfit (conf().tfit())
 {
 	    consumes<ComboHitCollection>(_chToken);
@@ -186,13 +191,16 @@ namespace mu2e{
    const Tracker* tracker = th.get();
   
    _stResult.run = &run;
-   auto const& srep = _strawResponse_h.get(run.id());
    _tfit.setTracker  (tracker);
-   _tfit.setStrawResponse (srep);
+   
+
    }
 
   void CosmicTrackFinder::produce(art::Event& event ) {
-     
+
+     auto _srep = _strawResponse_h.getPtr(event.id());
+    StrawResponse const& srep = * _srep.get();
+
      if (_debug != 0) std::cout<<"Producing Cosmic Track in  Finder..."<<std::endl;
      unique_ptr<CosmicTrackSeedCollection> seed_col(new CosmicTrackSeedCollection());
      
@@ -217,12 +225,19 @@ namespace mu2e{
     _stResult.event   = &event;
     _stResult._chcol  = &chcol; 
     _stResult._tccol  = &tccol;
-    
-    
+  
+/*///////NEW INFRASTRUCTURE//////////
+    for(size_t i=0;i<chcol.size();i++){
+    //_stResult._tseed._panelHits = art::Ptr<ComboHitCollection>(chH,1);
+    ComboHitPtr chptr = art::Ptr<ComboHit>(chH,i);
+    _stResult._tseed._panelHits.push_back(chptr);
+}
+//////////////////////////////////*/
+
     for (size_t index=0;index< tccol.size();++index) {
       int   nGoodTClusterHits(0);
       const auto& tclust = tccol[index];
-      nGoodTClusterHits     = goodHitsTimeCluster(tclust,chcol );
+      nGoodTClusterHits     = goodHitsTimeCluster(tclust,chcol);
     
       if ( nGoodTClusterHits < _minNHitsTimeCluster)         continue;
       if (_debug > 0){
@@ -236,7 +251,7 @@ namespace mu2e{
       _stResult._tseed._panel_hits.setParent(chcol.parent());
       _stResult._tseed._t0          = tclust._t0;
       _stResult._tseed._timeCluster = art::Ptr<TimeCluster>(tcH,index);
-      
+
       OrderHitsY(_stResult); 
 
       if (_debug != 0){
@@ -290,17 +305,16 @@ namespace mu2e{
 		      	 //it = "_normal_iterator<const mu2e::ComboHit*, std::vector<mu2e::ComboHit> >"
 		      	  const mu2e::ComboHit chit = it[0];
 		      	  tmpResult._tseed._straw_chits.push_back(chit);
-		      	  Straw const& straw = _tfit._tracker->getStraw(chit.strawId()); 
-           		  tmpResult._tseed._straws.push_back(straw);
+		      	 
            		  
 	      	      }
 	
 	      	      for(size_t ich= 0; ich<tmpResult._tseed._straw_chits.size(); ich++) {  
-           	 
+           	        
            		std::vector<StrawHitIndex> shitids;          	          		
            	        tmpResult._tseed._straw_chits.fillStrawHitIndices(event, ich,shitids);  
                         tmpResult._tseed._strawHitIdxs.push_back(ich);
-               
+               	        
 			for(auto const& ids : shitids){ 
 				size_t    istraw   = (ids);
 			     	TrkStrawHitSeed tshs;
@@ -310,15 +324,37 @@ namespace mu2e{
 	     		}  
 	     		}
 	              
-                      if( _tfit.goodTrack(tmpResult._tseed._track) == false) continue;
-		      _tfit.DriftFit(tmpResult);
-		      
-		      //Add tmp to seed list:
+                      if( _tfit.goodTrack(tmpResult._tseed._track) == false){
+			tmpResult._tseed._status.clear(TrkFitFlag::helixConverged);
+			tmpResult._tseed._status.clear(TrkFitFlag::helixOK);
+			 continue;
+			}
+ 		      ComboHitCollection tmpHits;
+		      if(_DoDrift){
+		      _tfit.DriftFit(tmpResult, srep);
+			      if( tmpResult._tseed._track.minuit_converged == false){
+				tmpResult._tseed._status.clear(TrkFitFlag::helixConverged);
+				tmpResult._tseed._status.clear(TrkFitFlag::helixOK);
+				continue;
+				}
+			      ;
+			     
+			      for(auto const &chit : tmpResult._tseed._straw_chits){
+				
+				
+				if(!chit._flag.hasAnyProperty(StrawHitFlag::outlier)){
+					
+					tmpHits.push_back(chit);
+				}
+				
+			      }
+			      tmpResult._tseed._straw_chits = tmpHits;
+		      }
 		      track_seed_vec.push_back(tmpResult._tseed);
 		     
 		      CosmicTrackSeedCollection* col = seed_col.get();
 		      
-		      if (track_seed_vec.size() == 0)     continue;
+		      if ((_DoDrift and tmpHits.size() == 0) or track_seed_vec.size() == 0)     continue;
 		      col->push_back(tmpResult._tseed);  
 			          
               }
@@ -335,7 +371,7 @@ namespace mu2e{
     ComboHit*     hit(0);
     for (unsigned f=0; f<trackData._chHitsToProcess.size(); ++f){
       hit = &trackData._chHitsToProcess[f];
-      //if (hit->_flag.hasAnyProperty(_outlier))     continue;
+      if (hit->_flag.hasAnyProperty(_dontuseflag))     continue;
       
       ComboHit                thit(*hit);					
       trackData._tseed._panel_hits.push_back(thit);

@@ -178,12 +178,13 @@ namespace mu2e{
     if ( useEmOption4InTracker(pset) && (name.find("_EMZ") == std::string::npos) ) {
       // assign Mu2eEmStandard_opt4 to the tracker
       if (getDiagLevel(pset)>0) {
-        G4cout << __func__ << " Assigning EmStandardPhysics_option4 to the tracker" << G4endl;
+        G4cout << __func__
+               << " Assigning EmStandardPhysics_option4 to the TrackerMother" << G4endl;
       }
       G4EmParameters* emParams = G4EmParameters::Instance();
       // fixme: get the value from fhicl and key on modifyEMOption once using 4105
       // emParams->SetMscEnergyLimit(115.0*CLHEP::MeV);
-      emParams->AddPhysics("Tracker", "G4EmStandard_opt4");
+      emParams->AddPhysics("TrackerMother", "G4EmStandard_opt4");
     }
 
     if ( modifyEMOption0(pset) && (name.find("_EM") == std::string::npos) ) {

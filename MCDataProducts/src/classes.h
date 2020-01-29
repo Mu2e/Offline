@@ -14,6 +14,7 @@
 
 // generation
 #include "MCDataProducts/inc/GenParticleCollection.hh"
+#include "MCDataProducts/inc/GenParticleCollections.hh"
 #include "MCDataProducts/inc/GenParticleSPMHistory.hh"
 #include "MCDataProducts/inc/PrimaryParticle.hh"
 #include "MCDataProducts/inc/GenSimParticleLink.hh"
@@ -27,7 +28,6 @@
 #include "MCDataProducts/inc/StepPointMCCollection.hh"
 #include "MCDataProducts/inc/PtrStepPointMCVectorCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
-#include "MCDataProducts/inc/PointTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticleTimeMap.hh"
 #include "MCDataProducts/inc/SimParticleRemapping.hh"
 #include "MCDataProducts/inc/VisibleGenElTrackCollection.hh"
@@ -37,7 +37,6 @@
 #include "MCDataProducts/inc/PhysicalVolumeInfo.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
-#include "MCDataProducts/inc/MixingSummary.hh"
 #include "MCDataProducts/inc/StepFilterMode.hh"
 #include "MCDataProducts/inc/ProtonBunchIntensity.hh"
 #include "MCDataProducts/inc/EventWeight.hh"

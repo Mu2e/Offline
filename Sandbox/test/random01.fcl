@@ -13,7 +13,7 @@ source : {
 
 services : {
   message               : @local::default_message
-  RandomNumberGenerator : {}
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
   SeedService : @local::automaticSeeds
 
@@ -45,5 +45,5 @@ outputs: {
 
 }
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

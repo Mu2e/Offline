@@ -45,7 +45,7 @@ physics.producers.g4run.physics.physicsListName: "QGSP_BERT"
 services.TFileService.fileName : "g4test_02.root"
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // Enable G4 graphics with the yz view.

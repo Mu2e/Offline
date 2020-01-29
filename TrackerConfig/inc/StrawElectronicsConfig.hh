@@ -110,6 +110,16 @@ namespace mu2e {
       Name("currentSigmas"), Comment("currentSigmas")};
     fhicl::Sequence<double> currentT0s {
       Name("currentT0s"), Comment("currentT0s")};
+    fhicl::Atom<double> reflectionTimeShift { 
+      Name("reflectionTimeShift"), Comment("reflectionTimeShift")};
+    fhicl::Atom<double> reflectionVelocity { 
+      Name("reflectionVelocity"), Comment("reflectionVelocity")};
+    fhicl::Atom<double> reflectionALength { 
+      Name("reflectionALength"), Comment("reflectionALength")};
+    fhicl::Atom<double> reflectionFrac {
+      Name("reflectionFrac"), Comment("reflectionFrac")};
+    fhicl::Atom<double> triggerHysteresis {
+      Name("triggerHysteresis"), Comment("triggerHysteresis")};
     fhicl::Atom<double> clusterLookbackTime {
       Name("clusterLookbackTime"), Comment("clusterLookbackTime")};
     fhicl::Sequence<double> timeOffsetPanel {

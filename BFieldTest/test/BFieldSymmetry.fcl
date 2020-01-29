@@ -11,7 +11,7 @@ source: {
 
 services: {
   message               : @local::default_message
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
   TFileService          : { fileName : "bfmapSymmetry.root" }
   scheduler             : { defaultExceptions : false }
 
@@ -36,5 +36,5 @@ physics: {
 }
 
 // Initialze seeding of random engines: do not put these lines in base .fcl files for grid jobs.
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

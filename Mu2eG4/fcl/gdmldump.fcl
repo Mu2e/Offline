@@ -30,7 +30,7 @@ services.GeometryService.inputFile : "Mu2eG4/geom/geom_common.txt"
 physics.producers.g4run.physics.physicsListName: "Minimal"
 physics.producers.g4run.SDConfig.enableSD     : []
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 physics.producers.g4run.debug.writeGDML: true

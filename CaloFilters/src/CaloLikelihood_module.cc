@@ -471,7 +471,7 @@ namespace mu2e {
     int        templateNBins = Template->GetNbinsX();
     if (binIndex > templateNBins) {
       thisprob = 1e-17;
-      std::cout << "whoops out of range" << std::endl;
+      //      std::cout << "whoops out of range" << std::endl;
     } else{
       thisprob = Template->GetBinContent(binIndex);
     }

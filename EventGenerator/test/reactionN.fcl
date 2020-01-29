@@ -14,7 +14,7 @@ services: {
 
   message               : @local::default_message
   TFileService          : { fileName : "g4test_03.root" }
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
   SeedService            : @local::automaticSeeds
@@ -38,5 +38,5 @@ physics: {
   end  : [ reactionNCheck ]
 }
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

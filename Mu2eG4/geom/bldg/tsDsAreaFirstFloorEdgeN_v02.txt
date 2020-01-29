@@ -1,0 +1,43 @@
+// SimpleConfig geometry file automatically produced for original file: 
+//
+//   geom/geom_TSDS_NfirstFloorEdge.ccl
+
+string building.tsDsArea.firstFloorEdge.N.name     = "tsDsAreaFirstFloorEdgeN";
+
+string building.tsDsArea.firstFloorEdge.N.material = "CONCRETE_MARS";
+
+double building.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.x   = 947.4;
+double building.tsDsArea.firstFloorEdge.N.offsetFromFloorSurface.y = 7569.2;
+double building.tsDsArea.firstFloorEdge.N.offsetFromMu2eOrigin.z   = -3581.4;
+
+double building.tsDsArea.firstFloorEdge.N.yHalfThickness           = 203.2;
+
+vector<double> building.tsDsArea.firstFloorEdge.N.xPositions = {
+  -2921,   // A
+  -609.6,   // A0
+  -609.6,   // C
+  6705.6,   // E
+  6705.6,   // F
+  44932.6,   // F0
+  44932.6,   // F1
+  45745.4,   // f2
+  45745.4,   // g1
+  -2921   // g
+};
+
+vector<double> building.tsDsArea.firstFloorEdge.N.yPositions = {
+  -8661.4,   // A
+  -8661.4,   // A0
+  609.6,   // C
+  609.6,   // E
+  -1041.4,   // F
+  -1041.4,   // F0
+  -8661.4,   // F1
+  -8661.4,   // f2
+  2438.4,   // g1
+  2438.4   // g
+};
+
+// Local Variables:
+// mode:c++
+// End:
