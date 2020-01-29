@@ -49,7 +49,9 @@ NewCaloClusterFast :
     caloCrystalModuleLabel : FastCaloCrystalHitFromHit
     extendSecond          : true
     minEnergy             : 50
-    diagLevel             : 3
+    minSeedEnergy         : 10
+    minHitEnergy          : 1
+    diagLevel             : 4
     deltaTime              : 2
 }
 
