@@ -28,6 +28,8 @@
 #include "G4Material.hh"
 #include "G4Color.hh"
 #include "G4ExtrudedSolid.hh"
+#include "G4GenericTrap.hh"
+#include "G4RotationMatrix.hh"
 #include "G4Orb.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4TwoVector.hh"
@@ -87,6 +89,7 @@ namespace mu2e {
 
     constructSolids( config, hallInfo, building->getBldgSolids(), horizontalConcreteRotation, notchMgr );
     constructSolids( config, hallInfo, building->getDirtSolids(), horizontalConcreteRotation, notchMgr );
+    constructTrapSolids( config, hallInfo, building->getDirtTrapSolids(), horizontalConcreteRotation, notchMgr );
 
     return hallInfo;
 
@@ -191,7 +194,7 @@ namespace mu2e {
 					   volume.getVertices(),
 					   volume.getYhalfThickness(),
 					   G4TwoVector(0,0), 1., G4TwoVector(0,0), 1.);
-      
+
 	finishNesting(tmpVol,
 		      findMaterialOrThrow( volume.getMaterial() ),
 		      &rot,
@@ -216,5 +219,134 @@ namespace mu2e {
       OR = 0;
     }
   } // end function def for constructSolids
+
+  //================================================================================
+  void constructTrapSolids( const SimpleConfig& config,
+			    const VolumeInfo& hallInfo, 
+			    const std::map<std::string,GenericTrap>& solidMap,
+			    const CLHEP::HepRotation& rot,
+			    const NotchManager& notchMgr) {
+    
+    //-----------------------------------------------------------------
+    // Building and dirt volumes are generic trapezoids.
+    //-----------------------------------------------------------------
+    
+    const auto& geoOptions         = art::ServiceHandle<GeometryService>()->geomOptions();
+    const bool doSurfaceCheck      = geoOptions->doSurfaceCheck("HallAir"); 
+    const bool forceAuxEdgeVisible = geoOptions->forceAuxEdgeVisible("HallAir"); 
+    const bool placePV             = geoOptions->placePV("HallAir"); 
+
+    OrientationResolver* OR = new OrientationResolver();
+
+    // Loop over all volumes in the map
+    for ( const auto& keyVolumePair : solidMap ) {
+
+      const auto& volume = keyVolumePair.second;
+      const auto& volName = keyVolumePair.first;
+      
+      geoOptions->loadEntry( config, volume.getName(), volume.getName() );
+      const CLHEP::HepRotation vRot = rot*volume.getRotation();
+      const G4RotationMatrix* vRotG4 = new G4RotationMatrix(vRot);
+
+      if ( notchMgr.hasNotches( volName ) ) {
+	// First do volumes with notches
+
+	// Make the VolumeInfo, without solid info
+	VolumeInfo tmpVol(volume.getName(),
+			  volume.getOffsetFromMu2eOrigin() - hallInfo.centerInMu2e(),
+			  hallInfo.centerInWorld);
+
+	// Make the main extruded solid from which notches will be subtracted
+	G4GenericTrap* aVol = new G4GenericTrap(tmpVol.name, 
+						volume.getYhalfThickness(),
+						volume.getVertices()
+						);
+      
+	// Now loop over the notches and subtract them from above
+	// First, create the eventual solid
+	G4SubtractionSolid* aSolid = 0;
+	// Get the vector of notches
+	vector<Notch> volNotches = notchMgr.getNotchVector(volName);
+	for ( unsigned int iNotch = 0; iNotch < volNotches.size(); iNotch++ ) {
+	  ostringstream notchName;
+	  notchName << "Notch" << iNotch+1;
+	  Notch tmpNotch = volNotches[iNotch];
+	  vector<double> halfDims = tmpNotch.getDims();
+	  G4Box* notchBox = new G4Box( notchName.str(), 
+				       halfDims[0],halfDims[1],halfDims[2]);
+
+	  CLHEP::HepRotation* notchRotat = new CLHEP::HepRotation(CLHEP::HepRotation::IDENTITY);
+	  OR->getRotationFromOrientation( *notchRotat, tmpNotch.getOrient());
+				       
+	  if ( 0 == aSolid ) {
+	    aSolid = new G4SubtractionSolid( tmpVol.name,
+					     aVol,
+					     notchBox,
+					     notchRotat,
+					     tmpNotch.getCenter() );
+	  } else {
+	    G4SubtractionSolid * bSolid = new G4SubtractionSolid 
+	      ( tmpVol.name,
+		aSolid,
+		notchBox,
+		notchRotat,
+		tmpNotch.getCenter() );
+	    aSolid = bSolid;
+	  } // end if...else for first or later notch
+	} // end loop over all notches
+
+	tmpVol.solid = aSolid;
+
+	finishNesting(tmpVol,
+		      findMaterialOrThrow( volume.getMaterial() ),
+		      vRotG4,
+		      tmpVol.centerInParent,
+		      hallInfo.logical,
+		      0,
+		      geoOptions->isVisible( volume.getName() ),
+		      G4Colour::Grey(),
+		      geoOptions->isSolid( volume.getName() ),
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck
+		      );
+
+      } else {  // Now for volumes without notches
+
+	VolumeInfo tmpVol(volume.getName(),
+			  volume.getOffsetFromMu2eOrigin() - hallInfo.centerInMu2e(),
+			  hallInfo.centerInWorld);
+      
+	tmpVol.solid = new G4GenericTrap(tmpVol.name, 
+					 volume.getYhalfThickness(),
+					 volume.getVertices()
+					 );
+	
+	auto vertices = volume.getVertices();
+	finishNesting(tmpVol,
+		      findMaterialOrThrow( volume.getMaterial() ),
+		      // 0,
+		      vRotG4,
+		      tmpVol.centerInParent,
+		      hallInfo.logical,
+		      0,
+		      geoOptions->isVisible( volume.getName() ),
+		      G4Colour::Grey(),
+		      geoOptions->isSolid( volume.getName() ),
+		      forceAuxEdgeVisible,
+		      placePV,
+		      doSurfaceCheck
+		      );
+
+      } // end else of if for has notches
+
+    } // end loop over parts
+
+    // clean up a bit
+    if ( 0 != OR ) {
+      delete OR;
+      OR = 0;
+    }
+  } // end function def for constructTrapSolids
 
 } // end namespace mu2e

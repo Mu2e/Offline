@@ -7,7 +7,7 @@ services.GeometryService.inputFile : "ExtinctionMonitorFNAL/test/geom_s1EMFOneGr
 services.TFileService.fileName : "hg4s1EMFOneGroove.root"
 outputs.outVDFiltered.fileName : "vdg4s1EMFOneGroove.art"
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.

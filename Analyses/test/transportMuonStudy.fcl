@@ -27,7 +27,7 @@ services :
     fileName      : "transportMuonStudy_tmp.root"
   }
 
-  RandomNumberGenerator : { }
+  RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
   GeometryService   : { inputFile : "Mu2eG4/geom/geom_common.txt" }
 
@@ -110,5 +110,5 @@ outputs:
 physics.producers.generate.inputfile : "EventGenerator/defaultConfigs/primaryProtonGun.txt"
 //physics.producers.g4run.diagLevel : 2
 //physics.producers.g4run.visMacro: "Mu2eG4/test/visVols.mac"
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20

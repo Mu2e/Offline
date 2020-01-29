@@ -34,7 +34,7 @@ namespace mu2e {
 
     // Dimensions and material of the world.
     G4Material* worldMaterial = materialFinder.get("world.materialName");
-    G4Material* dirtMaterial = MaterialFinder(config).get("dirt.overburdenMaterialName");
+    G4Material* dirtMaterial  = materialFinder.get("dirt.overburdenMaterialName");
 
     G4GeometryOptions * geomOptions = art::ServiceHandle<GeometryService>()->geomOptions();
     geomOptions->loadEntry( config, "World"    , "world.box" );

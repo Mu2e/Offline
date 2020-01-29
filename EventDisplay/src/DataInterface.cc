@@ -25,7 +25,6 @@ using namespace std;
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
 #include "HepPID/ParticleName.hh"
-#include "MCDataProducts/inc/PhysicalVolumeInfoCollection.hh"
 #include "MCDataProducts/inc/PhysicalVolumeInfoMultiCollection.hh"
 #include "MCDataProducts/inc/MCTrajectoryCollection.hh"
 #include "MCDataProducts/inc/SimParticlePtrCollection.hh"
@@ -1119,14 +1118,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
   }
 
 
-  unsigned int physicalVolumeEntries=0;
-  const mu2e::PhysicalVolumeInfoCollection *physicalVolumes=contentSelector->getPhysicalVolumeInfoCollection();
   const mu2e::PhysicalVolumeInfoMultiCollection *physicalVolumesMulti=contentSelector->getPhysicalVolumeInfoMultiCollection();
-  if(physicalVolumes!=nullptr)
-  {
-    physicalVolumeEntries=physicalVolumes->size();
-  }
-
 
   resetBoundaryP(_tracksMinmax);
   std::vector<ContentSelector::trackInfoStruct> trackInfos;
@@ -1149,14 +1141,7 @@ void DataInterface::fillEvent(boost::shared_ptr<ContentSelector> const &contentS
       std::string particlename=HepPID::particleName(particle.pdgId());
       std::string startVolumeName="unknown volume";
       std::string endVolumeName="unknown volume";
-      if(physicalVolumes!=nullptr)
-      {
-        unsigned int startVolume=particle.startVolumeIndex();
-        unsigned int endVolume  =particle.endVolumeIndex();
-        if(startVolume<physicalVolumeEntries && startVolume>=0) startVolumeName=physicalVolumes->at(startVolume).name();
-        if(endVolume<physicalVolumeEntries && endVolume>=0) endVolumeName=physicalVolumes->at(endVolume).name();
-      }
-      else if(physicalVolumesMulti!=nullptr)
+      if(physicalVolumesMulti!=nullptr)
       {
         mu2e::PhysicalVolumeMultiHelper volumeMultiHelper(*physicalVolumesMulti);
         startVolumeName=volumeMultiHelper.startVolume(particle).name();

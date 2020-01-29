@@ -19,7 +19,7 @@ services : {
 
     scheduler: { defaultExceptions : false }
     TFileService : { fileName : "g4hists_channelTest.root" }
-    RandomNumberGenerator : {}
+    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng"}
 
     GeometryService : { inputFile : "ExtinctionMonitorFNAL/test/geom_channelTest.txt" }
     ConditionsService : { conditionsfile : "Mu2eG4/test/conditions_01.txt" }
@@ -58,7 +58,7 @@ physics : {
 //----------------------------------------------------------------
 physics.producers.g4run.visualization.initMacro: "ExtinctionMonitorFNAL/test/vis_extMonFNAL_channelTest.mac"
 
-services.SeedService.baseSeed         :  0
+services.SeedService.baseSeed         :  8
 services.SeedService.maxUniqueEngines :  20
 
 // This tells emacs to view this file in the JavaScript mode.

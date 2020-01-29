@@ -9,7 +9,7 @@ physics.filters.tprHelixCalibIPADeMHSFilter.maxChi2PhiZ   : 8.
 physics.filters.tprHelixCalibIPADeMHSFilter.maxD0         : 500. 		    
 physics.filters.tprHelixCalibIPADeMHSFilter.minD0         : 200.		    
 physics.filters.tprHelixCalibIPADeMHSFilter.minAbsLambda  : 40. 		    
-physics.filters.tprHelixCalibIPADeMHSFilter.maxAbsLambda  : 80. 		    
+physics.filters.tprHelixCalibIPADeMHSFilter.maxAbsLambda  : 500. 		    
 physics.filters.tprHelixCalibIPADeMHSFilter.minNLoops     : 0
 physics.filters.tprHelixCalibIPADeMHSFilter.maxNLoops     : 30
 physics.filters.tprHelixCalibIPADeMHSFilter.prescaleUsingD0Phi  : true

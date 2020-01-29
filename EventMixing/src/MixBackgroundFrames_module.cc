@@ -47,13 +47,26 @@ namespace mu2e {
     int totalBkgCount_;
     float skipFactor_;
 
+    bool writeEventIDs_;
+    art::EventIDSequence idseq_;
+
   public:
 
     struct Mu2eConfig {
       using Name = fhicl::Name;
       using Comment = fhicl::Comment;
 
-      fhicl::Table<Mu2eProductMixer::Config> products { Name("products") };
+      fhicl::Table<Mu2eProductMixer::Config> products { Name("products"),
+          Comment("A table specifying products to be mixed.  For each supported data type\n"
+                  "there is a mixingMap sequence that defines mapping of inputs to outputs.\n"
+                  "Each entry in the top-level mixingMap sequence is a sequence of two strings:\n"
+                  "    [ \"InputTag\", \"outputInstanceName\" ]\n"
+                  "The output instance name colon \":\" is special: it means take instance name from the input tag.\n"
+                  "For example, with this config:\n"
+                  "   mixingMap: [ [ \"detectorFilter:tracker\", \"tracker\" ], [ \"detectorFilter:virtualdetector\", \":\" ] ]\n"
+                  "the outputs will be named \"tracker\" and \"virtualdetector\"\n"
+                  )
+          };
 
       fhicl::Atom<art::InputTag> protonBunchIntensityTag { Name("protonBunchIntensityTag"),
           Comment("InputTag of a ProtonBunchIntensity product representing beam fluctuations.")
@@ -74,6 +87,11 @@ namespace mu2e {
           Comment("mixer will skip a number of background events between 0 and this numberr multiplied by meanEventsPerProton and PBI intensity at the start of each secondary input file."),
           1
           };
+
+      fhicl::Atom<bool> writeEventIDs { Name("writeEventIDs"),
+          Comment("Write out IDs of events on the secondary input stream."),
+          false
+          };
     };
 
     // The ".mu2e" in FHICL parameters like
@@ -93,7 +111,10 @@ namespace mu2e {
 
     size_t eventsToSkip();
 
-    void processEventIDs(art::EventIDSequence const& seq);
+    void processEventIDs(const art::EventIDSequence& seq);
+
+    void finalizeEvent(art::Event& e);
+
   };
 
   //================================================================
@@ -106,7 +127,12 @@ namespace mu2e {
     , urbg_{ engine_ }
     , totalBkgCount_(0)
     , skipFactor_{ pars().mu2e().skipFactor() }
-  {}
+    , writeEventIDs_{ pars().mu2e().writeEventIDs() }
+  {
+    if(writeEventIDs_) {
+      helper.produces<art::EventIDSequence>();
+    }
+  }
 
   //================================================================
   void MixBackgroundFramesDetail::startEvent(const art::Event& event) {
@@ -136,6 +162,9 @@ namespace mu2e {
 
   //================================================================
   void MixBackgroundFramesDetail::processEventIDs(art::EventIDSequence const& seq) {
+    if(writeEventIDs_) {
+      idseq_ = seq;
+    }
 
     if (debugLevel_ > 4) {
       std::cout << "The following bkg events were mixed in (START)" << std::endl;
@@ -147,6 +176,15 @@ namespace mu2e {
       totalBkgCount_ += counter;
       std::cout << "Bkg Event Count  (this microbunch) = " << counter << std::endl;
       std::cout << "Bkg Event Count  (all microbunches) = " << totalBkgCount_ << " (END)" << std::endl;
+    }
+  }
+
+  //================================================================
+  void MixBackgroundFramesDetail::finalizeEvent(art::Event& e) {
+    if(writeEventIDs_) {
+      auto o = std::make_unique<art::EventIDSequence>();
+      o->swap(idseq_);
+      e.put(std::move(o));
     }
   }
 

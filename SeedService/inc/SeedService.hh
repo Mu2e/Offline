@@ -17,7 +17,7 @@
 //
 //    SeedService : {
 //       policy           : "autoIncrement"  // Required: Other legal value are listed in SEED_SERVICE_POLICIES
-//       baseSeed         : 0                // Required: An integer >= 0.
+//       baseSeed         : 0                // Required: An integer > 0.
 //       checkRange       : true             // Optional: legal values true or false; defaults to true
 //       maxUniqueEngines : 20               // Required iff checkRange is true.
 //

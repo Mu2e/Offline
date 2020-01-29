@@ -8,6 +8,7 @@
 namespace mu2e {
 
   class ExtrudedSolid;
+  class GenericTrap;
   class SimpleConfig;
   class Mu2eEnvelope;
   class G4GeometryOptions;
@@ -23,12 +24,23 @@ namespace mu2e {
               G4GeometryOptions& geomOptions,
               const SimpleConfig& config,
               const Mu2eEnvelope& mu2eEnv );
+    static void
+    makeTrapDirt( Mu2eHall& mh,
+		  G4GeometryOptions& geomOptions,
+		  const SimpleConfig& config,
+		  const Mu2eEnvelope& mu2eEnv );
 
     static void
     loadSolids( std::map<std::string,ExtrudedSolid>& solidMap,
                 G4GeometryOptions& geomOptions,
                 const SimpleConfig& config,
                 const std::string& varPrefixStr );
+
+    static void
+    loadTrapSolids( std::map<std::string,GenericTrap>& solidMap,
+		    G4GeometryOptions& geomOptions,
+		    const SimpleConfig& config,
+		    const std::string& varPrefixStr );
 
     static std::vector<CLHEP::Hep2Vector>
     getPairedVector( const std::vector<double>& v1,
@@ -41,6 +53,12 @@ namespace mu2e {
                            const std::string& dim,
                            const double min, const double max );
 
+    static void
+    replaceBoundaryValues( std::map<std::string,GenericTrap>& solidMap,
+                           const SimpleConfig& config,
+                           const std::string& varPrefixStr,
+                           const std::string& dim,
+                           const double min, const double max );
   };
 }
 
