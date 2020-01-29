@@ -12,9 +12,9 @@ BEGIN_PROLOG
 FastCaloRecoDigiFromDigi :
 { 
     module_type           : FastCaloRecoDigiFromDigi
-    caloDigiModuleLabel   : compressDigiMCs
+    caloDigiModuleLabel   : CaloDigiFromShower
     digiSampling          : @local::HitMakerDigiSampling
-    diagLevel             : 3
+    diagLevel             : 4
     windowPeak            : 2
     minPeakAmplitude  	  : 15
     shiftTime         	   : 19.90
