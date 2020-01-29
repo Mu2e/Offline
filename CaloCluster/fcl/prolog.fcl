@@ -13,6 +13,12 @@ END_PROLOG
 
 BEGIN_PROLOG
 
+CaloClusterCompare : {
+	module_type : CaloClusterCompare
+        CaloClusterCollection : CaloClusterFast
+  }
+
+
 CaloTrigger : {    
     module_type           : CaloTrigger
     caloDigiModuleLabel   : CaloDigiFromShower
@@ -106,6 +112,9 @@ CaloClusterFast :
    producers : {
        CaloClusterFast  : @local::CaloClusterFast
        CaloTrigger      : @local::CaloTrigger
+   }
+   analyzers : {
+	CaloClusterCompare : @local::CaloClusterCompare
    }
 
    Reco : [ CaloClusterFast ]

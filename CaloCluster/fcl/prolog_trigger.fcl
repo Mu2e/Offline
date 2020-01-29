@@ -43,17 +43,12 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
-#NewCaloClusterFast :
-#{ 
-#    module_type          : NewCaloClusterFast
-#    caloCrystalModuleLabel : FastCaloCrystalHitFromHit
-#    extendSecond          : true
-#    minEnergy             : 50
-#    minSeedEnergy         : 10
-#    minHitEnergy          : 1
-#    diagLevel             : 4
-#    deltaTime              : 2
-#}
+
+NewCaloClusterCompare : {
+	module_type : CaloClusterCompare
+        CaloClusterCollection : NewCaloClusterFast
+  }
+
 
 NewCaloClusterFast :
 {
@@ -78,8 +73,11 @@ NewCaloClusterFast :
        NewCaloClusterFast  : @local::NewCaloClusterFast
        CaloTrigger      : @local::CaloTrigger
    }
-
+   analyzers : {
+	NewCaloClusterCompare : @local::NewCaloClusterCompare
+   }
    Reco : [ NewCaloClusterFast ]
+   Analysis : [NewCaloClusterCompare]
 }
 
 CaloClusterTrigger :
