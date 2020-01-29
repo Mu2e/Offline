@@ -56,8 +56,6 @@
 
 #include "G4UnionSolid.hh"
 #include "G4IntersectionSolid.hh"
-
-#include "TMath.h"
 #include <math.h>
 using namespace std;
 
@@ -502,7 +500,7 @@ namespace mu2e {
       int finCopyNumber = 0;
       int finTopCopyNumber = 0;
 
-      double angularSize = TMath::ASin((tgt->haymanFinThickness()/2.)/targetRadius);
+      double angularSize = asin((tgt->haymanFinThickness()/2.)/targetRadius);
       double dSphi = M_PI/2. - angularSize;
       double dPphi = 2.*angularSize;
 
