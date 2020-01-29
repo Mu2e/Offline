@@ -270,7 +270,10 @@ namespace mu2e {
 
             if (sampleStop == sampleStart) continue;  //check if peak is acceptable and digitize
 
-            double sampleMax = *std::max_element(&itWave.at(sampleStart),&itWave.at(sampleStop));
+	    auto    itMax = std::max_element(&itWave.at(sampleStart),&itWave.at(sampleStop));
+	    size_t  sampleMaxIndex = itMax - &itWave.at(sampleStart);
+	    //            double sampleMax = *std::max_element(&itWave.at(sampleStart),&itWave.at(sampleStop));
+            double sampleMax = *itMax;
             if (sampleMax*ADCTomV_ < thresholdAmplitude_) continue;
 
 
@@ -278,7 +281,7 @@ namespace mu2e {
             std::vector<int> wf;
             for (int i=sampleStart; i<=sampleStop; ++i) wf.push_back(int(itWave.at(i)));
 
-            caloDigiColl.emplace_back( CaloDigi(iRO,t0,wf) );
+            caloDigiColl.emplace_back( CaloDigi(iRO,t0,wf, sampleMaxIndex) );
 
             if (diagLevel_ > 4) diag1(iRO,t0,wf);
           }
