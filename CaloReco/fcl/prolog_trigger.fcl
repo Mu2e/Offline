@@ -28,7 +28,7 @@ FastCaloCrystalHitFromHit:
     module_type           : FastCaloCrystalHitFromHit
     caloDigisModuleLabel  : FastCaloRecoDigiFromDigi	    	    
     time4Merge            : 4.0   #ns
-    diagLevel             : 0
+    diagLevel             : 4
 }
 
 OnlineCaloReco : 

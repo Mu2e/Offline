@@ -43,17 +43,34 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
+#NewCaloClusterFast :
+#{ 
+#    module_type          : NewCaloClusterFast
+#    caloCrystalModuleLabel : FastCaloCrystalHitFromHit
+#    extendSecond          : true
+#    minEnergy             : 50
+#    minSeedEnergy         : 10
+#    minHitEnergy          : 1
+#    diagLevel             : 4
+#    deltaTime              : 2
+#}
+
 NewCaloClusterFast :
-{ 
-    module_type          : NewCaloClusterFast
-    caloCrystalModuleLabel : FastCaloCrystalHitFromHit
-    extendSecond          : true
-    minEnergy             : 50
-    minSeedEnergy         : 10
-    minHitEnergy          : 1
-    diagLevel             : 4
-    deltaTime              : 2
-}
+{
+  module_type            : CaloProtoClusterFromCrystalHit
+  caloCrystalModuleLabel : FastCaloCrystalHitFromHit
+  mainClusterCollName    : Cluster
+  splitClusterCollName   : None
+  isOnline               : true
+  minEnergy              : 50
+  EminSeed               : 10
+  ExpandCut              : 1.0
+  EnoiseCut              : 1.0
+  timeCut                : 500
+  deltaTime              : 2
+  diagLevel              : 4
+}  
+
 
 NewCaloClusterFast :
 {
