@@ -1,7 +1,6 @@
 //
 // Run time configuration to help debug the beamline.
 // Run one of:
-//  - Primary proton gun 
 //  - Single particle gun, configured to shoot muons out of the production target.
 //  - Particles from G4beamline format input file.
 //
@@ -17,29 +16,9 @@ bool conversionGun.do    = false;
 // Pick any combination.
 // If you enable fromG4BLFile you must NOT select 
 // g4.physicsListName = "Minimal" in the beamline_geom.txt
-bool primaryProtonGun.do = false;
-bool particleGun.do      = false;
-bool fromG4BLFile.do     = true;
+bool particleGun.do      = true;
+bool fromG4BLFile.do     = false;
 
-// Primary proton gun.
-// For the full set of parameters see EventGenerator/src/PrimaryProtonGun.cc
-
-// cos(theta)=-1. perfectly aligned impact on production target.
-double primaryProtonGun.czmin = -1.;
-double primaryProtonGun.czmax = -1.;
-
-// Displacement of PrimaryProtonGun relative to center of upstream face of the 
-// the production target; in mm.
-vector<double> beamDisplacementOnTarget = {0.,0.,0.};
-
-// Beam spot sigma (in both transverse dimensions); in mm.
-double primaryProtonGun.beamSpotSigma = 0.;   
-
-// Range of times over which protons hit the target; in ns.
-double primaryProtonGun.tmin  =    0.;
-double primaryProtonGun.tmax  =  100.;
-
-//
 // --------------------------------------------------------------
 // 
 
