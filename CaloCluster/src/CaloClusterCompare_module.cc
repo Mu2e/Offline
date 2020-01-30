@@ -69,19 +69,19 @@ namespace mu2e
 	
 	void CaloClusterCompare::beginJob() {
       		art::ServiceHandle<art::TFileService> tfs;
-		_Energy= tfs->make<TH1F>("Energy Dep [MeV]","EDep" ,50,0, 110);
+		_Energy= tfs->make<TH1F>("Energy Dep [MeV]","EDep" ,20,40, 110);
 		_Energy->GetXaxis()->SetTitle("EDep");
-		_Time= tfs->make<TH1F>("Time","Time" ,50,500,1700);
+		_Time= tfs->make<TH1F>("Time","Time" ,20,500,1700);
 		_Time->GetXaxis()->SetTitle("Time");
-		_EnergyErr= tfs->make<TH1F>("Energy Dep Err[MeV]","EDep Err" ,50,0, 110);
+		_EnergyErr= tfs->make<TH1F>("Energy Dep Err[MeV]","EDep Err" ,20,0, 5);
 		_EnergyErr->GetXaxis()->SetTitle("EDepErr");
-		_TimeErr= tfs->make<TH1F>("TimeErr","TimeErr" ,50,500,1700);
+		_TimeErr= tfs->make<TH1F>("TimeErr","TimeErr" ,50,0,50);
 		_TimeErr->GetXaxis()->SetTitle("TimeErr");
 		_Angle= tfs->make<TH1F>("Angle","Angle " ,50,-3.1415, 3.1415);
 		_Angle->GetXaxis()->SetTitle("Angle");
-		_PosX= tfs->make<TH1F>("PosX","Pos X" ,100,1000,1000);
+		_PosX= tfs->make<TH1F>("PosX","Pos X" ,50,-650,650);
 		_PosX->GetXaxis()->SetTitle("X Pos");
-		_PosY= tfs->make<TH1F>("PosY","PosY " ,100,1000,1000);
+		_PosY= tfs->make<TH1F>("PosY","PosY " ,50,-650,650);
 		_PosY->GetXaxis()->SetTitle("Y Pos");
 		_PosZ= tfs->make<TH1F>("PosZ","Pos Z" ,100,1000,1000);
 		_PosZ->GetXaxis()->SetTitle("Z Pos");
