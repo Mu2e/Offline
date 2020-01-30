@@ -1,8 +1,8 @@
 // Lisa Goodenough, Jan 2020
 
-#include "JobConfig/beam/beam_defs_g4s1_MT.fcl"
+#include "JobConfig/beam/beam_defs_g4s1MT.fcl"
 
-
+physics.producers.g4mtrun.maxEventsToSeed              : 20000
 //services.scheduler.num_threads                       : 5
 //services.scheduler.num_schedules                     : 5
 

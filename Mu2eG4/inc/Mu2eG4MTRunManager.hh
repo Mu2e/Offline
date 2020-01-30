@@ -64,6 +64,8 @@ namespace mu2e {
         
     int rmvlevel_;
         
+    G4int maxNumEventstoSeed_;
+        
   };
   
 } // end namespace mu2e
