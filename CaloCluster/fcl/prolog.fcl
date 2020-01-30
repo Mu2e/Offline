@@ -46,7 +46,7 @@ CaloClusterFast :
     endTimeBuffer         : 80
     windowPeak            : 2
     minAmplitude          : 20
-    extendSecond          : true
+    extendSecond          : false
     minSeedAmplitude      : 200
     minEnergy             : 50
     timeCorrection        : 20.0
@@ -62,6 +62,7 @@ CaloProtoClusterFromCrystalHit :
   caloCrystalModuleLabel : CaloCrystalHitFromHit
   mainClusterCollName    : mainCluster
   splitClusterCollName   : splitCluster
+  minEnergy		  :0
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
@@ -118,6 +119,7 @@ CaloClusterFast :
    }
 
    Reco : [ CaloClusterFast ]
+   Analysis : [ CaloClusterCompare]
 }
 
 
