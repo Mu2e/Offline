@@ -15,7 +15,7 @@
 
 
 # Give this job a name.
-process_name : BeamART3
+process_name : G4TestPOT
 
 # Start from an empty source
 source : {
