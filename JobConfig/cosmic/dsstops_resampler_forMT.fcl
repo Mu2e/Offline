@@ -2,7 +2,7 @@
 // Yuri Oksuzian, 2019
 // based off JobConfig/beam/DS-flash.fcl by Andrei Gaponenko, 2018
 
-#include "JobConfig/beam/prolog_forMT.fcl"
+#include "JobConfig/beam/prologMT.fcl"
 
 BEGIN_PROLOG
 
@@ -178,4 +178,4 @@ physics.producers.g4run.Mu2eG4CommonCut:{
          }
 physics.producers.g4run.ResourceLimits.maxSimParticleCollectionSize: 100000
 // Test on the file with events that deposited lower than 14 MeV in CRV
-// physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/25394938.fcllist_191106224859/00/00053/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00007722.art"]
+ physics.filters.dsResample.fileNames: ["/pnfs/mu2e/persistent/users/oksuzian/workflow/cry_rs1_1019_g4_10_5/outstage/25394938.fcllist_191106224859/00/00053/sim.oksuzian.minedep-filter.cry-minedep_filter-10-5.002701_00007722.art"]

@@ -122,6 +122,7 @@ namespace mu2e {
     std::unique_ptr<IMu2eG4Cut> commonCuts_;
 
     int _rmvlevel;
+    bool _mtDebugOutput;
 
     art::InputTag _generatorModuleLabel;
       
@@ -177,6 +178,7 @@ namespace mu2e {
     commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
 
     _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
+    _mtDebugOutput(pSet.get<bool>("debug.mtDebugOutput",false)),
     
     _generatorModuleLabel(pSet.get<string>("generatorModuleLabel", "")),
     _tvdOutputName(StepInstanceName::timeVD),
@@ -351,7 +353,9 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     WorkerRMMap::accessor access_workerMap;
     
     if (!myworkerRunManagerMap.find(access_workerMap, tid)){
-        G4cout << "FOR TID: " << tid << ", NO WORKER.  We are making one.\n";
+        if (_mtDebugOutput){
+            G4cout << "FOR TID: " << tid << ", NO WORKER.  We are making one.\n";
+        }
         myworkerRunManagerMap.insert(access_workerMap, tid);
         //std::ostringstream oss;
         //oss << tid;
@@ -367,7 +371,9 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     Mu2eG4WorkerRunManager* scheduleWorkerRM = (access_workerMap->second).get();
     access_workerMap.release();
     
-    G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << scheduleWorkerRM << "\n";
+    if (_mtDebugOutput){
+        G4cout << "FOR SchedID: " << schedID << ", TID=" << tid << ", workerRunManagers[schedID].get() is:" << scheduleWorkerRM << "\n";
+    }
     
     //if this is the first time the thread is being used, it should be initialized
     if (!scheduleWorkerRM->workerRMInitialized()){
@@ -379,11 +385,12 @@ void Mu2eG4MT::produce(art::Event& event, art::ProcessingFrame const& procFrame)
     perThreadStore->initializeEventInfo(&event, &spHelper, &parentHelper, &genInputHits, _generatorModuleLabel);
     scheduleWorkerRM->processEvent(&event);
     
-    G4cout << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
+    if (_mtDebugOutput){
+        G4cout << "Current Event in RM is: " << scheduleWorkerRM->GetCurrentEvent()->GetEventID() << "\n";
+    }
     
 /////////////////////////////////////////////////////////////////////////////////////
-    G4cout << "Putting data into the EVENT" << G4endl;
-    
+    //putting data into the event
     std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore->getSimPartCollection();
     
     if (simsToCheck == nullptr) {

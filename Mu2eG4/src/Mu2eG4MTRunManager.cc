@@ -56,7 +56,8 @@ Mu2eG4MTRunManager::Mu2eG4MTRunManager(const fhicl::ParameterSet& pset):
     sensitiveDetectorHelper_(pset.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
     masterRunAction_(nullptr),
     physicsList_(nullptr),
-    rmvlevel_(pset.get<int>("debug.diagLevel",0))
+    rmvlevel_(pset.get<int>("debug.diagLevel",0)),
+    maxNumEventstoSeed_(pset.get<G4int>("maxEventsToSeed",10000))
     {}
   
 // Destructor of base is called automatically.  No need to do anything.
@@ -120,7 +121,7 @@ void Mu2eG4MTRunManager::initializeG4(int art_runnumber)
 /////////////////////////////////////////////////////////////////////////////////////
         //RANDOM NUMBER SEEDING: NEED TO FIGURE THIS OUT
         //taken from G4MTRunManager::InitializeEventLoop()
-        int numevents = 10000;
+        int numevents = maxNumEventstoSeed_;
         int numworkers = 1;
         SetNumberOfEventsToBeProcessed(numevents);
         //numberOfEventToBeProcessed = 1000;//this needs to be filled from the # of events we are processing
