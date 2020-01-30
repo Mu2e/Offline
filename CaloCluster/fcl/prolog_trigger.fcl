@@ -44,7 +44,7 @@ CaloClusterFast :
 }
 
 
-NewCaloClusterCompare : {
+CaloClusterCompare : {
 	module_type : CaloClusterCompare
         CaloClusterCollection : NewCaloClusterFast
   }
@@ -74,10 +74,10 @@ NewCaloClusterFast :
        CaloTrigger      : @local::CaloTrigger
    }
    analyzers : {
-	NewCaloClusterCompare : @local::NewCaloClusterCompare
+	CaloClusterCompare : @local::CaloClusterCompare
    }
    Reco : [ NewCaloClusterFast ]
-   Analysis : [NewCaloClusterCompare]
+   Analysis : [CaloClusterCompare]
 }
 
 CaloClusterTrigger :
