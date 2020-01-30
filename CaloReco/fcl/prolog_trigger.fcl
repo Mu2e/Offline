@@ -16,7 +16,7 @@ FastCaloRecoDigiFromDigi :
     digiSampling          : @local::HitMakerDigiSampling
     diagLevel             : 4
     windowPeak            : 2
-    minPeakAmplitude  	  : 15
+    minPeakAmplitude  	  : 20# 15
     shiftTime         	   : 19.90
     EventWindowMarkerLabel : "EWMProducer"
    
