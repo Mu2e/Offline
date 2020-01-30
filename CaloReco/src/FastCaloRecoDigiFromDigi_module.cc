@@ -37,7 +37,7 @@ namespace mu2e {
 		art::EDProducer{pset}, caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
 		digiSampling_        (pset.get<double>("digiSampling")),
 		windowPeak_         (pset.get<int>    ("windowPeak")),
-		minPeakAmplitude_   (pset.get<double> ("minPeakAmplitude")),
+		minDigiE_   (pset.get<double> ("minDigiE")),
 		shiftTime_          (pset.get<double> ("shiftTime")),
 		scaleFactor_        (pset.get<double> ("scaleFactor", 1)),
 		diagLevel_          (pset.get<int>    ("diagLevel",0)),
@@ -54,7 +54,7 @@ namespace mu2e {
 		art::ProductToken<CaloDigiCollection> const caloDigisToken_;
 		double const digiSampling_;
 		int 	 windowPeak_ ;
-		double 	 minPeakAmplitude_ ;
+		double 	 minDigiE_ ;
 		double 	 shiftTime_ ;
 		double       scaleFactor_;
 		int          diagLevel_;
@@ -130,8 +130,9 @@ namespace mu2e {
 				    for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
 			  }
 
-			if(y[caloDigi.peakpos()] <  minPeakAmplitude_) {continue;} // New Feature!
+			 // New Feature!
 			double eDep= scaleFactor_*y[caloDigi.peakpos()]*adc2MeV;
+			if(eDep <  minDigiE_) {continue;}
 			double eDepErr =  0*adc2MeV;
 			double time =  x[caloDigi.peakpos()] - shiftTime_;
 			double timeErr = 0;
