@@ -32,8 +32,9 @@ namespace mu2e
             _rotation.rotateZ(rz);
         }
 
-        HepTransform(HepTransform const&other) :
+        HepTransform(HepTransform const& other) :
             _displacement(other._displacement), _rotation(other._rotation) { }
+
 
         CLHEP::Hep3Vector displacement() const { return _displacement; }
 
@@ -45,6 +46,17 @@ namespace mu2e
         }
 
         void setRotation(CLHEP::HepRotation &aRot) { _rotation = aRot; }
+
+        HepTransform &operator=(HepTransform const &other)
+        {
+            if(&other == this)
+                return *this;
+
+            _displacement = other._displacement;
+            _rotation = other._rotation;
+
+            return *this;
+        }
 
         // combine HepTransform
         HepTransform &operator*=(HepTransform const &b);
