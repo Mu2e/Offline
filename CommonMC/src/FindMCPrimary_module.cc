@@ -97,9 +97,9 @@ namespace mu2e {
 	}
       }
     }
-    // handle CRY separately: it simulates secondaries and we have to create the primary ourselves.
+    // handle CRY and CORSIKA separately: it simulates secondaries and we have to create the primary ourselves.
     // This should be done in the generator FIXME!
-    if(pgps.size() >0 && pgps.front()->generatorId() == GenId::cosmicCRY){
+    if(pgps.size() >0 && (pgps.front()->generatorId() == GenId::cosmicCRY || pgps.front()->generatorId() == GenId::cosmicCORSIKA )){
       HepLorentzVector pmom;
       Hep3Vector ppos;
       double ptime(FLT_MAX);
