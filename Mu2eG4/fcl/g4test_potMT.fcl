@@ -15,7 +15,7 @@
 
 
 # Give this job a name.
-process_name : g4test_potMT
+process_name : G4TestPOTMT
 
 # Start from an empty source
 source : {
