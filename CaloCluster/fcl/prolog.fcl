@@ -31,7 +31,7 @@ CaloTrigger : {
     minSeedAmplitude      : 433
     minEnergy             : 50
     timeCorrection        : 20.0
-    adcToEnergy           : 0.0461333
+    adcToEnergy           : 0.0459634#0.0461333
     diagLevel             : 0
 }
 
@@ -46,13 +46,13 @@ CaloClusterFast :
     endTimeBuffer         : 80
     windowPeak            : 2
     minAmplitude          : 20
-    extendSecond          : false
+    extendSecond          : true
     minSeedAmplitude      : 200
     minEnergy             : 50
     timeCorrection        : 20.0
     adcToEnergy           : 0.0461333
     diagLevel             : 0
-    includeCrystalHits    : false
+    includeCrystalHits    : true
 }
 
 

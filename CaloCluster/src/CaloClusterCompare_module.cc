@@ -56,6 +56,8 @@ namespace mu2e
 	        TH1F* _PosX;  
 	    	TH1F* _PosY;
 		TH1F* _PosZ; 
+  		TH1F* _CryIds;
+		TH1F* _ClSize;
 		bool findData(const art::Event& evt);
  	};
 
@@ -69,9 +71,9 @@ namespace mu2e
 	
 	void CaloClusterCompare::beginJob() {
       		art::ServiceHandle<art::TFileService> tfs;
-		_Energy= tfs->make<TH1F>("Energy Dep [MeV]","EDep" ,20,40, 110);
+		_Energy= tfs->make<TH1F>("Energy Dep [MeV]","EDep" ,120,50, 110);
 		_Energy->GetXaxis()->SetTitle("EDep");
-		_Time= tfs->make<TH1F>("Time","Time" ,20,500,1700);
+		_Time= tfs->make<TH1F>("Time","Time" ,40,500,1700);
 		_Time->GetXaxis()->SetTitle("Time");
 		_EnergyErr= tfs->make<TH1F>("Energy Dep Err[MeV]","EDep Err" ,20,0, 5);
 		_EnergyErr->GetXaxis()->SetTitle("EDepErr");
@@ -85,6 +87,10 @@ namespace mu2e
 		_PosY->GetXaxis()->SetTitle("Y Pos");
 		_PosZ= tfs->make<TH1F>("PosZ","Pos Z" ,100,1000,1000);
 		_PosZ->GetXaxis()->SetTitle("Z Pos");
+		_CryIds= tfs->make<TH1F>("Ids","CryIds" ,100,0,2000);
+		_CryIds->GetXaxis()->SetTitle("CryIds");
+		_ClSize= tfs->make<TH1F>("Clsize","ClSize" ,20,0,20);
+		_ClSize->GetXaxis()->SetTitle("ClSize");
 		
 	}
 
@@ -93,9 +99,10 @@ namespace mu2e
        
         
 		if(!findData(event)) // find data
-		throw cet::exception("RECO")<<"No Time Clusters in event"<< endl; 
+		throw cet::exception("RECO")<<"No data in event"<< endl; 
 
 		for(size_t ist = 0;ist < _clustercol->size(); ++ist){
+		
 		CaloCluster sts =(*_clustercol)[ist];
 		_Energy->Fill(sts.energyDep());
 		_Time->Fill(sts.time());
@@ -105,8 +112,17 @@ namespace mu2e
 		_PosX->Fill(sts.cog3Vector().x());
 		_PosY->Fill(sts.cog3Vector().y());
 		_PosZ->Fill(sts.cog3Vector().z());
+		_ClSize->Fill(sts.size());
+		std::cout<<"========== Event : "<<event.id()<<"========"<<std::endl;
+		std::cout<<"Cluster "<<ist<<" size "<<sts.size()<<" Edep "<<sts.energyDep()<<" Time "<<sts.time()<<" Pos "<<sts.cog3Vector().x()<<" "<<sts.cog3Vector().y()<<std::endl;
+		for(unsigned i =0 ; i< sts.caloCrystalHitsPtrVector().size();i++){
+			art::Ptr< CaloCrystalHit>  cry=sts.caloCrystalHitsPtrVector()[i] ;
+           		std::cout<<"crystal ids "<<cry->id()<<" ROid "<<cry->nROId()<<"crystal time "<<cry->time()<<" crystal e dep "<<cry->energyDep()<<" E dep total "<<cry->energyDepTot()<<std::endl;
+			
 		}
 	}
+}
+
 	bool CaloClusterCompare::findData(const art::Event& evt){
 		_clustercol = 0; 
 		
