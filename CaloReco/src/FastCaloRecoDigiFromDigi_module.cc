@@ -36,7 +36,7 @@ namespace mu2e {
 		explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
 		art::EDProducer{pset}, caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
 		digiSampling_        (pset.get<double>("digiSampling")),
-		windowPeak_         (pset.get<int>    ("windowPeak")),
+		//windowPeak_         (pset.get<int>    ("windowPeak")),
 		minDigiE_   (pset.get<double> ("minDigiE")),
 		shiftTime_          (pset.get<double> ("shiftTime")),
 		scaleFactor_        (pset.get<double> ("scaleFactor", 1)),
@@ -53,7 +53,7 @@ namespace mu2e {
 
 		art::ProductToken<CaloDigiCollection> const caloDigisToken_;
 		double const digiSampling_;
-		int 	 windowPeak_ ;
+		//int 	 windowPeak_ ;
 		double 	 minDigiE_ ;
 		double 	 shiftTime_ ;
 		double       scaleFactor_;
@@ -98,10 +98,10 @@ namespace mu2e {
   	{
 
 		std::vector<double> x,y;
-		ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");//TODO
+		ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
 
 		auto const& caloDigis = *caloDigisHandle;
-		//if(caloDigis.size() == 0){ continue; } TODO
+		
 		CaloDigi const* base = &caloDigis.front(); 
 
 		for (const auto& caloDigi : caloDigis)
@@ -121,17 +121,17 @@ namespace mu2e {
 			for (unsigned int i=0;i<waveform.size();++i)
 			  {
 			   	x.push_back(t0 + (i+0.5)*digiSampling_+eventWindowOffset); 
-				y.push_back(waveform.at(i)); //amplitude
+				y.push_back(waveform.at(i)); 
 			  }
 
 			if (diagLevel_ > 3)
 			  {
 				    std::cout<<"[FastRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
-				    for (auto const& val : waveform) {std::cout<< val<<" ";} std::cout<<std::endl;
+				    for (auto const& val : waveform) {std::cout<< val<<" ";} 
 			  }
 
-			 // New Feature!
-			double eDep= scaleFactor_*y[caloDigi.peakpos()]*adc2MeV;
+			
+			double eDep= y[caloDigi.peakpos()]*adc2MeV;
 			if(eDep <  minDigiE_) {continue;}
 			double eDepErr =  0*adc2MeV;
 			double time =  x[caloDigi.peakpos()] - shiftTime_;
