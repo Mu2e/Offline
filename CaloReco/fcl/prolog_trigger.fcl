@@ -11,12 +11,11 @@ BEGIN_PROLOG
 
 FastCaloRecoDigiFromDigi :
 { 
-    module_type           : FastCaloRecoDigiFromDigi
-    caloDigiModuleLabel   : CaloDigiFromShower
-    digiSampling          : @local::HitMakerDigiSampling
-    diagLevel             : 4
-    windowPeak            : 2
-    minDigiE 	  	   : 1 #MEV
+    module_type            : FastCaloRecoDigiFromDigi
+    caloDigiModuleLabel    : CaloDigiFromShower
+    digiSampling           : @local::HitMakerDigiSampling
+    diagLevel              : 0
+    minDigiE 	  	   : 1 
     shiftTime         	   : 19.90
     EventWindowMarkerLabel : "EWMProducer"
    
@@ -25,10 +24,10 @@ FastCaloRecoDigiFromDigi :
 
 FastCaloCrystalHitFromHit:
 {
-    module_type           : FastCaloCrystalHitFromHit
+    module_type           : CaloCrystalHitFromHit #fast
     caloDigisModuleLabel  : FastCaloRecoDigiFromDigi	    	    
-    time4Merge            : 4.0   #ns
-    diagLevel             : 4
+    time4Merge            : 5.01   #ns
+    diagLevel             : 0
 }
 
 OnlineCaloReco : 
