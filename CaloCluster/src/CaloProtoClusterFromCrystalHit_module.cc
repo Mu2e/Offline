@@ -61,146 +61,179 @@ namespace mu2e {
 
   public:
 
-    typedef std::vector<const CaloCrystalHit*>  CaloCrystalVec;
-    typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
+	typedef std::vector<const CaloCrystalHit*>  CaloCrystalVec;
+	typedef std::list<const CaloCrystalHit*>    CaloCrystalList;
 
 
-    explicit CaloProtoClusterFromCrystalHit(fhicl::ParameterSet const& pset) :
-      art::EDProducer{pset},
-      caloCrystalToken_{consumes<CaloCrystalHitCollection>(pset.get<std::string>("caloCrystalModuleLabel"))},
-      producerNameMain_(pset.get<std::string>("mainClusterCollName")),
-      producerNameSplit_(pset.get<std::string>("splitClusterCollName")),
-      isOnline_(pset.get<bool>("isOnline",false)),
-      minEnergy_(pset.get<double>("minEnergy",0)),
-      EminSeed_(pset.get<double>("EminSeed")),
-      EnoiseCut_(pset.get<double>("EnoiseCut")),
-      ExpandCut_(pset.get<double>("ExpandCut")),
-      timeCut_(pset.get<double>("timeCut")),
-      deltaTime_(pset.get<double>("deltaTime")),
-      diagLevel_(pset.get<int>("diagLevel",0)),
-      messageCategory_("CLUSTER")
-    {
-        if(isOnline_) produces<CaloClusterCollection>();
+	explicit CaloProtoClusterFromCrystalHit(fhicl::ParameterSet const& pset) :
+	art::EDProducer{pset},
+	caloCrystalToken_{consumes<CaloCrystalHitCollection>(pset.get<std::string>("caloCrystalModuleLabel"))},
+	producerNameMain_(pset.get<std::string>("mainClusterCollName")),
+	producerNameSplit_(pset.get<std::string>("splitClusterCollName")),
+	isOnline_(pset.get<bool>("isOnline",false)),
+	minEnergy_(pset.get<double>("minEnergy",0)),
+	EminSeed_(pset.get<double>("EminSeed")),
+	EnoiseCut_(pset.get<double>("EnoiseCut")),
+	ExpandCut_(pset.get<double>("ExpandCut")),
+	timeCut_(pset.get<double>("timeCut")),
+	deltaTime_(pset.get<double>("deltaTime")),
+	diagLevel_(pset.get<int>("diagLevel",0)),
+	messageCategory_("CLUSTER")
+	{
+	if(isOnline_) produces<CaloClusterCollection>();
 	else{
 		produces<CaloProtoClusterCollection>(producerNameMain_);
 		produces<CaloProtoClusterCollection>(producerNameSplit_);
 	}
-    }
+	}
 
-    void produce(art::Event& e) override;
+	void produce(art::Event& e) override;
 
-  private:
+	private:
 
-    art::ProductToken<CaloCrystalHitCollection> const caloCrystalToken_;
-    std::string       producerNameMain_;
-    std::string       producerNameSplit_;
-    bool              isOnline_;
-    double            minEnergy_;
-    double            EminSeed_;
-    double            EnoiseCut_;
-    double            ExpandCut_;
-    double            timeCut_;
-    double            deltaTime_;
-    int               diagLevel_;
-    const std::string messageCategory_;
+	art::ProductToken<CaloCrystalHitCollection> const caloCrystalToken_;
+	std::string       producerNameMain_;
+	std::string       producerNameSplit_;
+	bool              isOnline_;
+	double            minEnergy_;
+	double            EminSeed_;
+	double            EnoiseCut_;
+	double            ExpandCut_;
+	double            timeCut_;
+	double            deltaTime_;
+	int               diagLevel_;
+	const std::string messageCategory_;
 
-    void makeProtoClusters(CaloProtoClusterCollection& caloProtoClustersMain,
-                           CaloProtoClusterCollection& caloProtoClustersSplit,
-                           const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle);
-
-
-    void MakeOnlineClusters(CaloClusterCollection& caloClusters,
-                           const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle);
-
-    void filterByTime(CaloCrystalList& liste,
-                      const std::vector<double>& clusterTime,
-                      std::list<const CaloCrystalHit*> &seedList);
-
-    void fillCluster(CaloProtoClusterCollection& caloProtoClustersColl, const CaloCrystalList& clusterList,
-                     const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle);
-
-    void FillOnlineCluster(CaloClusterCollection& caloClustersColl, const CaloCrystalList& clusterList,
-                     const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle, const Calorimeter& cal);
-
-    void dump(const std::vector<CaloCrystalList>& caloIdHitMap);
-
-  };
+	void makeProtoClusters(CaloProtoClusterCollection& caloProtoClustersMain,
+		           CaloProtoClusterCollection& caloProtoClustersSplit,
+		           const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle);
 
 
-  void CaloProtoClusterFromCrystalHit::produce(art::Event& event)
-  {
-     if (diagLevel_ > 0) std::cout<<"[CaloProtoClusterFromCrystalHits::produce] begin"<<std::endl;
+	void MakeOnlineClusters(CaloClusterCollection& caloClusters,
+		           const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle);
 
-    // Check that calorimeter geometry description exists
-    art::ServiceHandle<GeometryService> geom;
-    if( !(geom->hasElement<Calorimeter>()) ) return;
+	void filterByTime(CaloCrystalList& liste,
+		      const std::vector<double>& clusterTime,
+		      std::list<const CaloCrystalHit*> &seedList);
 
-    // Get handles to calorimeter crystal hits
-    art::Handle<CaloCrystalHitCollection> CaloCrystalHitsHandle;
-    bool const success = event.getByToken(caloCrystalToken_, CaloCrystalHitsHandle);
-    if (!success) return;
+	void fillCluster(CaloProtoClusterCollection& caloProtoClustersColl, const CaloCrystalList& clusterList,
+		     const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle);
 
-    // Create a new CaloCluster collection and fill it
-    if(!isOnline_){
-      auto caloProtoClustersMain = std::make_unique<CaloProtoClusterCollection>();
-      auto caloProtoClustersSplit = std::make_unique<CaloProtoClusterCollection>();
-      makeProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,CaloCrystalHitsHandle);
+	void FillOnlineCluster(CaloClusterCollection& caloClustersColl, const CaloCrystalList& clusterList,
+		     const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle, const Calorimeter& cal);
 
-      event.put(std::move(caloProtoClustersMain),  producerNameMain_);
-      event.put(std::move(caloProtoClustersSplit), producerNameSplit_);
-    } else {
-      auto recoClustersColl = std::make_unique<CaloClusterCollection>();
-      if ( diagLevel_ > 3 )
-      {
-	printf("[OnlineClusterMaker::produce] produced RecoCrystalHits ");
-	printf(", recoClustersColl size  = %i \n", int(recoClustersColl->size()));
-      }
-    MakeOnlineClusters(*recoClustersColl,CaloCrystalHitsHandle);
-    event.put(std::move(recoClustersColl));
-    }
-    if (diagLevel_ > 0) std::cout<<"[CaloProtoClusterFromCrystalHit::produce] end"<<std::endl;
-    return;
+	void dump(const std::vector<CaloCrystalList>& caloIdHitMap);
+
+	};
+
+
+	void CaloProtoClusterFromCrystalHit::produce(art::Event& event)
+	{
+		if (diagLevel_ > 0) std::cout<<"[CaloProtoClusterFromCrystalHits::produce] begin"<<std::endl;
+
+		// Check that calorimeter geometry description exists
+		art::ServiceHandle<GeometryService> geom;
+		if( !(geom->hasElement<Calorimeter>()) ) return;
+
+		// Get handles to calorimeter crystal hits
+		art::Handle<CaloCrystalHitCollection> CaloCrystalHitsHandle;
+		bool const success = event.getByToken(caloCrystalToken_, CaloCrystalHitsHandle);
+		if (!success) return;
+
+		// Create a new CaloCluster collection and fill it
+		if(!isOnline_){
+			auto caloProtoClustersMain = std::make_unique<CaloProtoClusterCollection>();
+			auto caloProtoClustersSplit = std::make_unique<CaloProtoClusterCollection>();
+			makeProtoClusters(*caloProtoClustersMain,*caloProtoClustersSplit,CaloCrystalHitsHandle);
+
+			event.put(std::move(caloProtoClustersMain),  producerNameMain_);
+			event.put(std::move(caloProtoClustersSplit), producerNameSplit_);
+		} else {
+			auto recoClustersColl = std::make_unique<CaloClusterCollection>();
+		if ( diagLevel_ > 3 )
+		{
+			printf("[OnlineClusterMaker::produce] produced RecoCrystalHits ");
+			printf(", recoClustersColl size  = %i \n", int(recoClustersColl->size()));
+		}
+	    MakeOnlineClusters(*recoClustersColl,CaloCrystalHitsHandle);
+	    event.put(std::move(recoClustersColl));
+    	}
+    	if (diagLevel_ > 0) std::cout<<"[CaloProtoClusterFromCrystalHit::produce] end"<<std::endl;
+    	return;
 
     
   }
 
 //----------------------------------------------------------------------------------------------------------
-  void CaloProtoClusterFromCrystalHit::MakeOnlineClusters(CaloClusterCollection& recoClusters,
+	void CaloProtoClusterFromCrystalHit::MakeOnlineClusters(CaloClusterCollection& recoClusters,
                                                          const art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
-  {
-    const Calorimeter& cal = *(GeomHandle<Calorimeter>());
-    const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
-    if (CaloCrystalHits.empty()) return;
+	  {
+	    const Calorimeter& cal = *(GeomHandle<Calorimeter>());
+	    const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
+	    if (CaloCrystalHits.empty()) return;
 
-    std::vector<CaloCrystalList>      clusterList, caloIdHitMap(cal.nCrystal());
-    std::list<const CaloCrystalHit*>  seedList;
-    std::vector<double>               clusterTime;
-    //Loop through collection, fill seeds and map:
-    for (const auto& hit : CaloCrystalHits)
-      {
-        if (hit.energyDep() <  EnoiseCut_) continue;
-        caloIdHitMap[hit.id()].push_back(&hit);
-        seedList.push_back(&hit);
-      }
+	    if ( diagLevel_ > 0 )
+		{
+			printf("[ProtCluster Online::produce] input RecoCrystalHits ");
+			printf(": CaloCrystalHits.size()  = %i \n", int(CaloCrystalHits.size()));
+			for(auto const& cry : CaloCrystalHits){
+				std::cout<<" Hit Info: crystal ids "<<cry.id()<<" ROid "<<cry.nROId()<<"crystal time "<<cry.time()<<" crystal e dep "<<cry.energyDep()<<" E dep total "<<cry.energyDepTot()<<std::endl;
+			}
+		}
+	    
+	std::vector<CaloCrystalList>      clusterList, caloIdHitMap(cal.nCrystal());
+	std::list<const CaloCrystalHit*>  seedList;
+	std::vector<double>               clusterTime;
+	//Loop through collection, fill seeds and map:
+	for (const auto& hit : CaloCrystalHits)
+	{
+		if (hit.energyDep() <  EnoiseCut_) continue;
+		caloIdHitMap[hit.id()].push_back(&hit);
+		if ( diagLevel_ > 0 )
+		{
+			printf("after E min noise ");
+			printf(": CaloCrystalHits.size()  = %i \n", int(CaloCrystalHits.size()));
+			std::cout<<" Hit Info: crystal ids "<<hit.id()<<std::endl;
+			
+		}
 
-    seedList.sort([](const CaloCrystalHit* a, const CaloCrystalHit* b) {return a->energyDep() > b->energyDep();});
-    //check the seeds arnt empty, if not proceed:
-    while( !seedList.empty() )
-      {
-        const CaloCrystalHit* crystalSeed = *seedList.begin();
-        if (crystalSeed->energyDep() < EminSeed_) break;
+		seedList.push_back(&hit);
+	}
 
-        ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_);
-        finder.formCluster(caloIdHitMap);
+	    seedList.sort([](const CaloCrystalHit* a, const CaloCrystalHit* b) {return a->energyDep() > b->energyDep();});
+	    //check the seeds arnt empty, if not proceed:
+	    while( !seedList.empty() )
+	      {
+		const CaloCrystalHit* crystalSeed = *seedList.begin();
+		if (crystalSeed->energyDep() < EminSeed_) break;
 
-        clusterList.push_back(finder.clusterList());
-        clusterTime.push_back(crystalSeed->time());
+		if ( diagLevel_ > 0 )
+		{
+			printf("after E min seed ");
+			printf(": CaloCrystalHits.size()  = %i \n", int(seedList.size()));
+			std::cout<<" Hit Info: crystal ids "<<crystalSeed->id()<<std::endl;
+			
+		}
+	    
+		ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_);
+		finder.formCluster(caloIdHitMap);
 
-        for (const auto& hit: finder.clusterList()) seedList.remove(hit);
-      }
+		clusterList.push_back(finder.clusterList());
+		clusterTime.push_back(crystalSeed->time());
 
-     //save the main and split clusters
-    for (auto cluster : clusterList)  FillOnlineCluster(recoClusters,cluster,CaloCrystalHitsHandle,cal);
+		for (const auto& hit: finder.clusterList()) seedList.remove(hit);
+		if ( diagLevel_ > 0 )
+		{
+			for (const auto& hit: finder.clusterList()) {
+				printf("after c finder ");
+				printf(": CaloCrystalHits.size()  = %i \n", int(finder.clusterList().size()));
+				std::cout<<" Hit Info: crystal ids "<<hit->id()<<" time "<<hit->time()<<" edep "<<hit->energyDep()<<std::endl;
+			}
+			}
+      		}
+
+	     //save the main and split clusters
+	    for (auto cluster : clusterList)  FillOnlineCluster(recoClusters,cluster,CaloCrystalHitsHandle,cal);
     
 
   }
@@ -239,7 +272,7 @@ namespace mu2e {
         const CaloCrystalHit* crystalSeed = *seedList.begin();
         if (crystalSeed->energyDep() < EminSeed_) break;
 
-        ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_);
+        ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_,isOnline_);
         finder.formCluster(caloIdHitMap);
 
         mainClusterList.push_back(finder.clusterList());

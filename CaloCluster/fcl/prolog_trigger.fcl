@@ -54,16 +54,16 @@ NewCaloClusterFast :
 {
   module_type            : CaloProtoClusterFromCrystalHit
   caloCrystalModuleLabel : FastCaloCrystalHitFromHit
-  mainClusterCollName    : Cluster
+  mainClusterCollName    : None
   splitClusterCollName   : None
   isOnline               : true
   minEnergy              : 50
-  EminSeed               : 10
-  ExpandCut              : 1.0
-  EnoiseCut              : 1.0
-  timeCut                : 500
-  deltaTime              : 2
-  diagLevel              : 4
+  EminSeed               : 20 
+  ExpandCut              : 1 
+  EnoiseCut              : 1
+  timeCut                : @local::HitMakerBlindTime   
+  deltaTime              : 5.01
+  diagLevel              : 0
 }  
 
 

@@ -179,7 +179,7 @@ namespace mu2e {
            unsigned countdown(window_ - 1);
            unsigned nCount(0);
            deque_.clear();
-
+	  
            for (; it != waveform.end(); ++it)
            {
                 while (!deque_.empty() && *it > deque_.back()) deque_.pop_back();
@@ -191,6 +191,7 @@ namespace mu2e {
                    if (deque_.front()> minAmp_ && deque_.front()== *std::prev(it,windowPeak_) && *std::prev(it,windowPeak_) != *std::prev(it,windowPeak_-1))
                    {
                        int index = int(t0/digiSampling_) + nCount - winOffsetT0_;
+		      
                        hitList_[index].push_back(FastHit(crId,index,deque_.front()));
                        if (deque_.front()> minSeedAmp_) seeds_.emplace_back(&(hitList_[index].back()));
                    }
@@ -199,7 +200,7 @@ namespace mu2e {
                    ++tail;
                 }
                 ++nCount;
-           }
+           } 
       }
 
       if (seeds_.empty()) return;
@@ -229,7 +230,7 @@ namespace mu2e {
          double     hitTime = (seed->index_+offsetT0_)*digiSampling_-timeCorrection_;
          if (includeCrystalHits_) {
            recoCrystalHits.push_back(CaloCrystalHit(seed->crId_, 2, hitTime, 0, seed->val_*adcToEnergy_, 0., caloRecoDigi));
-         }
+	  }
          seed->val_ = 0;
 
          while (!crystalToVisit.empty())
@@ -266,6 +267,7 @@ namespace mu2e {
                for (const auto& neighbor : cal->neighbors(nid)) crystalToVisit.push(neighbor);
                if (extendSecond_) for (const auto& nneighbor : cal->nextNeighbors(nid)) crystalToVisit.push(nneighbor);
            }
+	    
             for (auto& hit : hitList_[seed->index_+1])
             {
                if (hit.crId_ != nid || hit.val_ <0.5) continue;
