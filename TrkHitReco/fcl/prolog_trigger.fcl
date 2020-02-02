@@ -5,9 +5,6 @@ BEGIN_PROLOG
 
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
-# Original 2-level clusterer
-# flag hits from low-energy electrons (Compton electrons, delta rays, ...)
-# First, configure the clusters
 TNTClusterer : { 
     HitDistance      : 5.0
     SeedDistance     : 20.0
@@ -29,31 +26,31 @@ TNTClusterer : {
 
 # now trigger-specific versions; these make deep copies
 TTmakeSH : {
-    module_type : StrawHitReco
-    FilterHits : true
+    module_type             : StrawHitReco
+    FilterHits              : true
     WriteStrawHitCollection : false
-    EventWindowMarkerLabel : "EWMProducer"
+    EventWindowMarkerLabel  : "EWMProducer"
 }
 # combine hits in a panel
 TTmakePH : {
-    module_type : CombineStrawHits
-    TestFlag : false
-    TestRadius : true
-    ComboHitCollection : "TTmakeSH"
+    module_type             : CombineStrawHits
+    TestFlag                : false
+    TestRadius              : true
+    ComboHitCollection      : "TTmakeSH"
 }
 TTmakeSHUCC : {
-    module_type : StrawHitReco
-    UseCalorimeter : true
-    FilterHits : true
+    module_type             : StrawHitReco
+    UseCalorimeter          : true
+    FilterHits              : true
     WriteStrawHitCollection : false
-    EventWindowMarkerLabel : "EWMProducer"
+    EventWindowMarkerLabel  : "EWMProducer"
 }
 # combine hits in a panel
 TTmakePHUCC : {
-    module_type : CombineStrawHits
-    TestFlag : false
-    TestRadius : true
-    ComboHitCollection : "TTmakeSHUCC"
+    module_type             : CombineStrawHits
+    TestFlag                : false
+    TestRadius              : true
+    ComboHitCollection      : "TTmakeSHUCC"
 }
 # stereo version: defer the radius test
 TTSmakePH : {
@@ -63,7 +60,7 @@ TTSmakePH : {
 # combine panel hits in a station
 TTmakeSTH : {
     @table::makeSTH
-    TestFlag : false
+    TestFlag           : false
     ComboHitCollection : "TTSmakePH"
 }
 TTflagBkgHits : {
@@ -79,9 +76,9 @@ TTflagBkgHits : {
   ClusterPositionError : 10
   BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
   BkgMVACut            : 0.5
-  FilterOutput         : false
+  FilterOutput         : true
   FlagComboHits        : true
-  FlagStrawHits        : true
+  FlagStrawHits        : false
   BackgroundMask       : ["Background"]
   StereoSelection      : ["Stereo","PanelCombo"]
 }
@@ -105,7 +102,8 @@ TrkHitRecoTrigger : {
 	        ComboHitCollection : TTmakePHUCC		
 	}
     }
-    # sequences
+    
+    # SEQUENCES
     # production sequence to prepare hits for tracking
     sequences: {
 	TTprepareHits     : [ TTmakeSH, TTmakePH,TTflagBkgHits ]
