@@ -1,21 +1,34 @@
 #include "GeometryService/inc/ProductionTargetMaker.hh"
-
 #include "cetlib_except/exception.h"
-
 #include "CLHEP/Units/SystemOfUnits.h"
-
 #include "ConfigTools/inc/SimpleConfig.hh"
-
 #include "ProductionTargetGeom/inc/ProductionTarget.hh"
-
 #include <iostream>
+#include <algorithm>
 
 namespace mu2e {
 
   std::unique_ptr<ProductionTarget> ProductionTargetMaker::make(const SimpleConfig& c, double solenoidOffset) {
 
+
+    if (c.getString("targetPS_model") == "MDC2018"){ 
+      //     std::cout << "making Tier1 in maker" << std::endl;
+      return std::move(makeTier1(c, solenoidOffset));
+	} else 
+      if (c.getString("targetPS_model") == "Hayman_v_2_0"){ 
+	//	std::cout << " making Hayman in Maker" << std::endl;
+	return std::move(makeHayman_v_2_0(c, solenoidOffset));
+	  } else 
+	{throw cet::exception("GEOM") << " illegal production target version specified = " << c.getInt("targetPS_version")  << std::endl;}
+    return 0;
+
+  }
+
+  std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeTier1(const SimpleConfig& c, double solenoidOffset){
     std::unique_ptr<ProductionTarget> tgtPS
-      (new ProductionTarget(c.getInt("targetPS_version",1),
+      (new ProductionTarget(
+			    c.getString("targetPS_model","NULL"),
+			    c.getInt("targetPS_version",1),
 			    c.getDouble("targetPS_rOut"),
                             c.getDouble("targetPS_halfLength"),
                             c.getDouble("targetPS_rotX") * CLHEP::degree,
@@ -35,8 +48,7 @@ namespace mu2e {
 			    c.getDouble("targetPS_hubAngleDS"   ,0.0),
 			    c.getDouble("targetPS_hubOverhangUS",0.0),
 			    c.getDouble("targetPS_hubOverhangDS",0.0) ) );
-
-    double trgtMaxAngle = c.getDouble("targetPS_rotY");
+   double trgtMaxAngle = c.getDouble("targetPS_rotY");
     if (c.getDouble("targetPS_rotX")>trgtMaxAngle) { trgtMaxAngle=c.getDouble("targetPS_rotX"); }
     trgtMaxAngle *= CLHEP::deg;
 
@@ -274,7 +286,6 @@ namespace mu2e {
 //                       HubLftCornersOutRadii,
 //                       center,
 //                       c.getString("targetPS_Hub_materialName")));
-
     tgtPS->_pHubsRgtParams = new Polycone(HubRgtCornersZ,
                       HubRgtCornersInnRadii,
                       HubRgtCornersOutRadii,
@@ -287,7 +298,68 @@ namespace mu2e {
                       center,
                       c.getString("targetPS_Hub_materialName"));
 
-    return std::move(tgtPS);
-  } // make()
 
+    return std::move(tgtPS);
+  }
+
+  std::unique_ptr<ProductionTarget> ProductionTargetMaker::makeHayman_v_2_0(const SimpleConfig& c, double solenoidOffset){
+
+    //simple config does not have a method for returning a vector: all voids.  So I get it, stuff it in a 
+    //temporary variable, and put that into the constructor.
+
+    std::vector<double> startingSectionThickness;
+    std::vector<int>    numberOfSegmentsPerSection;
+    std::vector<double> thicknessOfSegmentPerSection;
+    std::vector<double> heightOfRectangularGapPerSection;
+    std::vector<double> thicknessOfGapPerSection;
+    std::vector<double> finAngles;
+    c.getVectorDouble("targetPS_startingSectionThickness",startingSectionThickness);
+    c.getVectorInt("targetPS_numberOfSegmentsPerSection",numberOfSegmentsPerSection);
+    c.getVectorDouble("targetPS_thicknessOfSegmentPerSection",thicknessOfSegmentPerSection);
+    c.getVectorDouble("targetPS_heightOfRectangularGapPerSection",heightOfRectangularGapPerSection);
+    c.getVectorDouble("targetPS_thicknessOfGapPerSection",thicknessOfGapPerSection);
+    c.getVectorDouble("targetPS_finAngles",finAngles);
+    for_each (finAngles.begin(),finAngles.end(),[]( double& elem){elem *= CLHEP::degree;});
+    std::unique_ptr<ProductionTarget> tgtPS
+      (new ProductionTarget(
+			    c.getString("targetPS_model","NULL"),
+			    c.getInt("targetPS_version"),
+			    c.getDouble("targetPS_productionTargetMotherOuterRadius"),
+			    c.getDouble("targetPS_productionTargetMotherHalfLength"),
+			    c.getDouble("targetPS_rOut"),
+                            c.getDouble("targetPS_halfHaymanLength"),
+                            c.getDouble("targetPS_rotX") * CLHEP::degree,
+                            c.getDouble("targetPS_rotY") * CLHEP::degree,
+                            c.getDouble("targetPS_rotZ") * CLHEP::degree,
+                            CLHEP::Hep3Vector(solenoidOffset,
+                                              0,
+                                              c.getDouble("productionTarget.zNominal")
+                                              )
+                            + c.getHep3Vector("productionTarget.offset"),
+                            c.getString("targetPS_targetCoreMaterial"),
+			    c.getString("targetPS_targetFinMaterial"),
+			    c.getString("targetPS_targetVacuumMaterial"),
+			    c.getString("targetPS_supportRingMaterial"),
+			    c.getString("targetPS_spokeMaterial"),
+			    c.getInt("targetPS_numberOfTargetSections"),
+			    startingSectionThickness,
+                            numberOfSegmentsPerSection,
+			    thicknessOfSegmentPerSection,
+			    heightOfRectangularGapPerSection,
+			    thicknessOfGapPerSection,
+			    c.getInt("targetPS_nHaymanFins"),
+			    finAngles,
+			    c.getDouble("targetPS_finThickness"),
+			    c.getDouble("targetPS_finOuterRadius"),
+			    c.getDouble("targetPS_supportRingLength"),
+                            c.getDouble("targetPS_supportRingInnerRadius"),
+                            c.getDouble("targetPS_supportRingOuterRadius"),
+                            c.getDouble("targetPS_supportRingCutoutThickness"),
+                            c.getDouble("targetPS_supportRingCutoutLength")
+			    ));
+
+    return std::move(tgtPS);
+  }
+ 
+ 
 } // namespace mu2e
