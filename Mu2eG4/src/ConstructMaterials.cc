@@ -1528,9 +1528,29 @@ namespace mu2e {
     // Completed constructMu2eMaterials2(), second function for
     // building all Mu2e materials.
 
+
+
+    mat = uniqueMaterialOrThrow("ProductionTargetTungstenLa2_O3");
+    {
+
+     G4Material* ProductionTargetTungstenLa2_O3 = new G4Material(mat.name
+								  ,18.75*CLHEP::g/CLHEP::cm3
+								  ,2);
+     constexpr double wPercentage = 99.;
+
+     // first define lanthanum oxide
+     //     G4Element* lanthanum = new G4Element("Lanthanum","La",57.,138.905*CLHEP::g/CLHEP::mole);
+     //G4Element* oxygen = new G4Element("Oxygen","O",8.,15.999*CLHEP::g/CLHEP::mole);
+     G4Material* La2_O3 = new G4Material("La2_O3", 6.51*CLHEP::g/CLHEP::cm3  ,2);
+     La2_O3->AddElement(getElementOrThrow("La"),2);
+     La2_O3->AddElement(getElementOrThrow("O"),3);
+     //
+     // and now tungsten
+     ProductionTargetTungstenLa2_O3->AddMaterial(La2_O3,(100. - wPercentage)*CLHEP::perCent);
+     ProductionTargetTungstenLa2_O3->AddElement(getElementOrThrow("W"),wPercentage*CLHEP::perCent);
+    }
+
   }
-
-
 
 
   // Check to see if the named material already exists.

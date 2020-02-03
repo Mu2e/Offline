@@ -39,8 +39,8 @@ namespace mu2e {
     PrimaryProtonGun::PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config):
     
     _gunRotation(GeomHandle<ProductionTarget>()->protonBeamRotation()),
-    _gunOrigin(GeomHandle<ProductionTarget>()->position()
-               + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->halfLength())),
+    _gunOrigin(GeomHandle<ProductionTarget>()->targetPositionByVersion()
+               + _gunRotation*CLHEP::Hep3Vector(0., 0., GeomHandle<ProductionTarget>()->targetHalfLengthByVersion())),
 
     _proton_mass(GlobalConstantsHandle<ParticleDataTable>()->particle(PDGCode::p_plus).ref().mass().value()),
 
@@ -81,7 +81,6 @@ namespace mu2e {
     double dy = 0;
     double dr = 0;
     double phi = 0;
-
     if (_shape == std::string("gaus")) {
       dx = _randGaussQ.fire();
       dy = _randGaussQ.fire();
@@ -114,6 +113,7 @@ namespace mu2e {
     rot.setPhi( _beamRotationPhi * CLHEP::degree );
     rot.setPsi( _beamRotationPsi * CLHEP::degree );
     mom = rot * mom;
+
 
     // Add the proton to the list of generated particles.
     genParts.push_back( GenParticle( PDGCode::p_plus, GenId::primaryProtonGun,

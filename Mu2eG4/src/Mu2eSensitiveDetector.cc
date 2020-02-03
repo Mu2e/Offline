@@ -47,7 +47,6 @@ namespace mu2e {
    // Get list of events for which to make debug printout.
     // we generate the key string based on the detector name
     // consult Mu2eG4/inc/SensitiveDetectorName.hh for the names
-
     std::ostringstream sdKeyName;
     sdKeyName<<"g4."<< SensitiveDetectorName << "SDEventList";
     // G4cout << __func__ << " sdKeyName: " << sdKeyName.str() << G4endl;

@@ -204,7 +204,22 @@ namespace mu2e {
 
     addDetector(PSVacuumMaker::make(*_config, ps, pse, vacPS_TS_z));
 
-    addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
+    //addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
+
+   if (_config->getString("targetPS_model") == "MDC2018"){ 
+     //      std::cout << "adding Tier1 in GeometryService" << std::endl;
+      addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.position()));
+	} else 
+      if (_config->getString("targetPS_model") == "Hayman_v_2_0"){ 
+	//	std::cout << " adding Hayman in GeometryService" << std::endl;
+	addDetector(PSShieldMaker::make(*_config, ps.psEndRefPoint(), prodTarget.haymanProdTargetPosition()));
+	  } else 
+	{throw cet::exception("GEOM") << " " << __func__ << " illegal production target version specified in GeometryService_service = " << _config->getString("targetPS_model")  << std::endl;}
+
+
+
+
+
 
     // Construct building solids
     std::unique_ptr<Mu2eHall> tmphall(Mu2eHallMaker::makeBuilding(*_g4GeomOptions,*_config));
