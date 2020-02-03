@@ -732,13 +732,9 @@ namespace mu2e {
 	  }
 	
 	  
-	  G4LogicalVolume*    ringWithCutoutLogical = new G4LogicalVolume(ringWithCutoutSolid.at(tgt->nHaymanFins() - 1),prodTargetSupportRingMaterial,name);
-	  G4VPhysicalVolume*  ringWithCutout        = new G4PVPlacement(rotRing,ringTranslation,ringWithCutoutLogical,nameRing,prodTargetMotherInfo.logical,0,finCopyNumber,false);
-	  if (doSurfaceCheck){checkForOverlaps(ringWithCutout,_config,0);}
-	  
 
-	  /*	  VolumeInfo ringWithCutoutNegative(name,ringTranslation,prodTargetMotherInfo.centerInWorld);
-          ringWithCutoutNegative.solid = ringWithCutoutSolid.at(tgt->nHaymanFins() - 1); // what does this =  mean?  
+	  VolumeInfo ringWithCutoutNegative(name,ringTranslation,prodTargetMotherInfo.centerInWorld);
+          ringWithCutoutNegative.solid = ringWithCutoutSolid.at(tgt->nHaymanFins() - 1);  
 	  finishNesting(ringWithCutoutNegative
 			,prodTargetSupportRingMaterial
 			,rotRing
@@ -748,7 +744,7 @@ namespace mu2e {
 			,G4Colour::White()
 			,"ProductionTarget"
 			,verbosityLevel>1);
-	  */
+	  
 
 	}
 
