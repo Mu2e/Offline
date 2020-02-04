@@ -36,6 +36,8 @@
 #include "G4TransportationManager.hh"
 #include "G4VUserPhysicsList.hh"
 #include "G4ParallelWorldProcessStore.hh"
+#include "G4ParticleHPManager.hh"
+#include "G4HadronicProcessStore.hh"
 
 //Other includes
 #include "CLHEP/Random/JamesRandom.h"
@@ -66,6 +68,8 @@ namespace mu2e {
     pset_(pset),
     m_managerInitialized(false),
     m_steppingVerbose(true),
+    m_mtDebugOutput(pset.get<bool>("mtDebugOutput",false)),
+    rmvlevel_(pset.get<int>("debug.diagLevel",0)),
     perThreadObjects_(std::make_unique<Mu2eG4PerThreadStorage>(pset)),
     masterRM(nullptr),
     workerID_(worker_ID),
@@ -80,13 +84,17 @@ namespace mu2e {
     steppingCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut",fhicl::ParameterSet()), mu2elimits_)),
     commonCuts_(createMu2eG4Cuts(pset_.get<fhicl::ParameterSet>("Mu2eG4CommonCut", fhicl::ParameterSet()), mu2elimits_))
 {
-    std::cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
-    
+    if (m_mtDebugOutput) {
+        G4cout << "WorkerRM on thread " << workerID_ << " is being created\n!";
+    }
+
 }
   
 // Destructor of base is called automatically.  No need to do anything.
 Mu2eG4WorkerRunManager::~Mu2eG4WorkerRunManager(){
-    std::cout << "WorkerRM on thread " << workerID_ << " is being destroyed\n!";
+    if (m_mtDebugOutput) {
+        G4cout << "WorkerRM on thread " << workerID_ << " is being destroyed\n!";
+    }
 }
     
 
@@ -94,10 +102,12 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
         
     masterRM = mRM;
     
-    std::cout << "starting WorkerRM::initializeThread on thread: " << workerID_ << std::endl;
+    if (m_mtDebugOutput) {
+        G4cout << "starting WorkerRM::initializeThread on thread: " << workerID_ << G4endl;
+    }
+    
     G4Threading::G4SetThreadId(getThreadIndex());
         
-    //should this be TL?
     const CLHEP::HepRandomEngine* masterEngine = masterRM->getMasterRandomEngine();
     masterRM->GetUserWorkerThreadInitialization()->SetupRNGEngine(masterEngine);
     
@@ -119,16 +129,10 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
             //    SteppingVerbose::SetInstance(sv);
     }
     
-
-    
     // Initialize worker part of shared resources (geometry, physics)
     G4WorkerThread::BuildGeometryAndPhysicsVector();
   
-        
     // Set the geometry for the worker, share from master
-    //This stuff happens in this call: localRM->Initialize();
-    //WHAT IF CALLED wrm->Initialize();?
- 
     G4VPhysicalVolume* worldPV = G4MTRunManager::GetMasterRunManagerKernel()->GetCurrentWorld();
     kernel->WorkerDefineWorldVolume(worldPV);
     
@@ -139,11 +143,14 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     const_cast<G4VUserDetectorConstruction*>(detector)->ConstructSDandField();
     
     // Set the physics list for the worker, share from master
-    std::cout << "WorkerRunManager initializing the PhysicsList" << std::endl;
     physicsList = const_cast<G4VUserPhysicsList*>(masterRM->GetUserPhysicsList());
     SetUserInitialization(physicsList);
     
-  
+    physicsList->SetVerboseLevel(rmvlevel_);
+    SetVerboseLevel(rmvlevel_);
+    G4ParticleHPManager::GetInstance()->SetVerboseLevel(rmvlevel_);
+    G4HadronicProcessStore::Instance()->SetVerbose(rmvlevel_);
+    
     //these called in G4RunManager::InitializePhysics()
     G4StateManager::GetStateManager()->SetNewState(G4State_Init);
     kernel->InitializePhysics();
@@ -159,13 +166,12 @@ void Mu2eG4WorkerRunManager::initializeThread(Mu2eG4MTRunManager* mRM, const G4T
     
     G4StateManager* stateManager = G4StateManager::GetStateManager();
     G4String currentState =  stateManager->GetStateString(stateManager->GetCurrentState());
-    std::cout << "Current G4State is : " << currentState << std::endl;
-        
-    //Initialize();//This is really just a check at this point
-        
+    
     //we have to do this so that the state is correct for RunInitialization
     G4StateManager::GetStateManager()->SetNewState(G4State_Idle);
-    std::cout << "completed WorkerRM::initializeThread on thread " << workerID_ << std::endl;
+    if (m_mtDebugOutput) {
+        G4cout << "completed WorkerRM::initializeThread on thread " << workerID_ << G4endl;
+    }
 }
     
    
@@ -287,8 +293,6 @@ void Mu2eG4WorkerRunManager::processEvent(art::Event* event){
     numberOfEventToBeProcessed = 1;
     numberOfEventProcessed = 0;
     ConstructScoringWorlds();
-    
-//    std::cout << "WorkerRM::ProcessEvent:" << event->id().event() << " on thread " << workerID_ << std::endl;
     
     eventLoopOnGoing = true;
     while(seedsQueue.size()>0)

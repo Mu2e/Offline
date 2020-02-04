@@ -23,6 +23,7 @@ namespace mu2e {
 MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
     :
     pset_(pset),
+    m_mtDebugOutput(pset.get<bool>("mtDebugOutput",false)),
     m_masterThreadState(ThreadState::NotExist),
     m_masterCanProceed(false),
     m_mainCanProceed(false),
@@ -51,29 +52,42 @@ MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
             while (true) {
                 // Signal main thread that it can proceed
                 m_mainCanProceed = true;
-                std::cout << "Master thread: State loop, notify main thread" << std::endl;
+                if (m_mtDebugOutput) {
+                    G4cout << "Master thread: State loop, notify main thread" << G4endl;
+                }
+                
                 m_notifyMainCV.notify_one();
                 
                 // Wait until the main thread sends signal
                 m_masterCanProceed = false;
-                std::cout << "Master thread: State loop, starting wait" << std::endl;
+                if (m_mtDebugOutput) {
+                    G4cout << "Master thread: State loop, starting wait" << G4endl;
+                }
                 m_notifyMasterCV.wait(lk2, [&] { return m_masterCanProceed; });
                 
                 // Act according to the state
-                std::cout << "Master thread: Woke up, state is " << static_cast<int>(m_masterThreadState) << std::endl;
+                if (m_mtDebugOutput) {
+                    G4cout << "Master thread: Woke up, state is " << static_cast<int>(m_masterThreadState) << G4endl;
+                }
                 
                 if (m_masterThreadState == ThreadState::BeginRun) {
                     // Initialize Geant4
-                    std::cout << "Master thread: Initializing Geant4" << std::endl;
+                    if (m_mtDebugOutput) {
+                        G4cout << "Master thread: Initializing Geant4" << G4endl;
+                    }
                     masterRunManager->initializeG4(run_number);
                     isG4Alive = true;
                 } else if (m_masterThreadState == ThreadState::EndRun) {
                     // Stop Geant4
-                    std::cout << "Master thread: Stopping Geant4" << std::endl;
+                    if (m_mtDebugOutput) {
+                        G4cout << "Master thread: Stopping Geant4" << G4endl;
+                    }
                     masterRunManager->stopG4();
                     isG4Alive = false;
                 } else if (m_masterThreadState == ThreadState::Destruct) {
-                    std::cout << "Master thread: Breaking out of state loop" << std::endl;
+                    if (m_mtDebugOutput) {
+                        G4cout << "Master thread: Breaking out of state loop" << G4endl;
+                    }
                     if (isG4Alive)
                         throw cet::exception("G4STATELOGICERROR")
                         << "Geant4 is still alive, master thread state must be set to EndRun before Destruct\n";
@@ -85,26 +99,36 @@ MTMasterThread::MTMasterThread(const fhicl::ParameterSet& pset)
             }
             
             // Cleanup
-            std::cout << "MTMasterThread: start Mu2eG4MTRunManager destruction\n";
-            std::cout << "Master thread: Am I unique owner of masterRunManager? "
-                      << masterRunManager.unique() << std::endl;
+            if (m_mtDebugOutput) {
+                G4cout << "MTMasterThread: start Mu2eG4MTRunManager destruction\n";
+                G4cout << "Master thread: Am I unique owner of masterRunManager? "
+                      << masterRunManager.unique() << G4endl;
+            }
             
             masterRunManager.reset();
             //G4PhysicalVolumeStore::Clean();
             
-            std::cout << "Master thread: reset shared_ptr" << std::endl;
+            if (m_mtDebugOutput) {
+                G4cout << "Master thread: reset shared_ptr" << G4endl;
+            }
             lk2.unlock();
-            std::cout << "MTMasterThread: Master thread is finished" << std::endl;
+            if (m_mtDebugOutput) {
+                G4cout << "MTMasterThread: Master thread is finished" << G4endl;
+            }
         });
         
         // Start waiting for a signal from the condition variable (releases the lock temporarily)
         // First for initialization
         m_mainCanProceed = false;
-        std::cout << "Main thread: Signal master for initialization" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "Main thread: Signal master for initialization" << G4endl;
+        }
         m_notifyMainCV.wait(lk, [&]() { return m_mainCanProceed; });
         
         lk.unlock();
-        std::cout << "MTMasterThread: Master thread is constructed" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread: Master thread is constructed" << G4endl;
+        }
     }
     
 
@@ -124,12 +148,16 @@ void MTMasterThread::beginRun() const {
         m_masterThreadState = ThreadState::BeginRun;
         m_masterCanProceed = true;
         m_mainCanProceed = false;
-        std::cout << "MTMasterThread: Signal master for BeginRun" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread: Signal master for BeginRun" << G4endl;
+        }
         m_notifyMasterCV.notify_one();
         m_notifyMainCV.wait(lk2, [&]() { return m_mainCanProceed; });
         
         lk2.unlock();
-        std::cout << "MTMasterThread: finish BeginRun" <<std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread: finish BeginRun" << G4endl;
+        }
     }
  
 
@@ -141,11 +169,15 @@ void MTMasterThread::endRun() const {
         m_masterThreadState = ThreadState::EndRun;
         m_mainCanProceed = false;
         m_masterCanProceed = true;
-        std::cout << "MTMasterThread: Signal master for EndRun" <<std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread: Signal master for EndRun" <<G4endl;
+        }
         m_notifyMasterCV.notify_one();
         m_notifyMainCV.wait(lk2, [&]() { return m_mainCanProceed; });
         lk2.unlock();
-        std::cout << "MTMasterThread: finish EndRun" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread: finish EndRun" << G4endl;
+        }
     }
 
     
@@ -153,24 +185,34 @@ void MTMasterThread::stopThread() {
         if (m_stopped) {
             return;
         }
-        std::cout << "MTMasterThread::stopThread: stop main thread" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread::stopThread: stop main thread" << G4endl;
+        }
         
         // Release our instance of the shared master run manager, so that
         // the G4 master thread can do the cleanup. Then notify the master
         // thread, and join it.
         std::unique_lock<std::mutex> lk2(m_threadMutex);
         m_masterRunManager.reset();
-        std::cout << "Main thread: reset shared_ptr" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "Main thread: reset shared_ptr" << G4endl;
+        }
         
         m_masterThreadState = ThreadState::Destruct;
         m_masterCanProceed = true;
-        std::cout << "MTMasterThread::stopThread: notify" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread::stopThread: notify" << G4endl;
+        }
         m_notifyMasterCV.notify_one();
         lk2.unlock();
-        
-        std::cout << "Main thread: joining master thread" << std::endl;
+    
+        if (m_mtDebugOutput) {
+            G4cout << "Main thread: joining master thread" << G4endl;
+        }
         m_masterThread.join();
-        std::cout << "MTMasterThread::stopThread: main thread finished" << std::endl;
+        if (m_mtDebugOutput) {
+            G4cout << "MTMasterThread::stopThread: main thread finished" << G4endl;
+        }
         m_stopped = true;
     }
     

@@ -16,12 +16,6 @@ double primaryProtonGun.tmax  =    0.;
 // -N results in a constant #N of protons being generated per event
 double primaryProtonGun.mean  =    -1.;
 
-// Determine whether to make data files with distrubutions of
-// various beam-related quantities related to the above config parameters
-bool primaryProtonGun.makeOutFiles  = false;
-string primaryProtonGun.outFileName = primaryProtonGunModule;
-
-
 //----------------------------------------------------------------
 // This tells emacs to view this file in c++ mode.
 // Local Variables:

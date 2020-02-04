@@ -45,6 +45,8 @@ private:
     
     const fhicl::ParameterSet& pset_;
     
+    bool m_mtDebugOutput;
+    
     enum class ThreadState { NotExist = 0, BeginRun = 1, EndRun = 2, Destruct = 3 };
     
     std::shared_ptr<Mu2eG4MTRunManager> m_masterRunManager;
