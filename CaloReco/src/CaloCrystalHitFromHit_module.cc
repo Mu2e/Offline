@@ -133,7 +133,7 @@ namespace mu2e {
           {
             double deltaTime = (*endHit)->time()-(*startHit)->time();
             if (diagLevel_ > 2) hDelta_->Fill(deltaTime);
-
+		
             if (deltaTime > time4Merge_)
               {
                 //double time = timeW/timeWtot;
