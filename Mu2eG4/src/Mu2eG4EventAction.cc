@@ -67,8 +67,8 @@ namespace mu2e {
         _artEvent(),
         _g4InternalFiltering(pset.get<bool>("G4InteralFiltering",false))
         {
-            G4SDManager* SDman = G4SDManager::GetSDMpointer();
-            SDman->ListTree();
+            //G4SDManager* SDman = G4SDManager::GetSDMpointer();
+            //SDman->ListTree();
         }
     
 Mu2eG4EventAction::~Mu2eG4EventAction()
