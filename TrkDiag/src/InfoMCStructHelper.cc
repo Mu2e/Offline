@@ -108,6 +108,10 @@ namespace mu2e {
 
     // go through the SimParticles of this primary, and find the one most related to the
     // downstream fit (KalSeedMC)
+
+    if (primary.primarySimParticles().empty()) {
+      throw cet::exception("Simulation")<<"InfoMCStructHelper: No Primary Particle found" << std::endl;
+    }
     auto bestprimarysp = primary.primarySimParticles().front();
     MCRelationship bestrel;
     for(auto const& spp : primary.primarySimParticles()){

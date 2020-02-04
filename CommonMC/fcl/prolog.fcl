@@ -38,8 +38,8 @@ CommonMC: {
     GenParticles : "compressDigiMCs"
     SimParticles : "compressDigiMCs"
     PrimaryGenIds : ["CeEndpoint", "CeLeadingLog", "dioTail",
-	"cosmicDYB", "CosmicCRY", 
-	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
+	"cosmicDYB", "CosmicCRY", "CosmicCORSIKA", 
+ 	"InternalRPC" , "InternalRMC", "ExternalRPC", "ExternalRMC"  ]
   }
   SelectRecoMC : {
     module_type : SelectRecoMC
