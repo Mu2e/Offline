@@ -110,7 +110,7 @@ namespace mu2e {
 			int    roId     = caloDigi.roId();
 			double t0       = caloDigi.t0();
 			//removed crId -> no need as we extract crystal hit in this path
-			double adc2MeV  = calorimeterCalibrations->ADC2MeV(roId);
+			double adc2MeV  = calorimeterCalibrations->Peak2MeV(roId);
 			const std::vector<int>& waveform = caloDigi.waveform();
 
 			size_t index = &caloDigi - base;
