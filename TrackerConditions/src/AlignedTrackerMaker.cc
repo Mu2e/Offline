@@ -64,7 +64,7 @@ namespace mu2e {
 
       // make an intermediate multiplication
       HepTransform plane_temp = align_tracker
-	* plane_to_tracker * align_plane;
+	* (plane_to_tracker * align_plane);
 
       for(auto panel_p : plane.getPanels()) {
 	auto& panel = *panel_p;
@@ -80,13 +80,13 @@ namespace mu2e {
 	HepTransform panel_to_plane(dv.x(),dv.y(),dv.z(),0.0,0.0,rz);
 
 	// make an intermediate multiplication
-	HepTransform panel_temp = plane_temp * panel_to_plane * align_panel;
+	HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
 
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-	  // need to const cast so we can update geometry - fixme
-	  Straw& straw = const_cast<Straw &>(panel.getStraw(istr));
-
-	  // how to place the straw in the panel
+          // access strawId from Panel since it performs necessary checks
+          Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
+	  
+          // how to place the straw in the panel
 	  double dx = straw.getMidPoint().perp()
 	    - panel.straw0MidPoint().perp();
 	  double dz = ( straw.getMidPoint()
