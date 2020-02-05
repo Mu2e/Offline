@@ -162,6 +162,10 @@ namespace mu2e {
       return *(_allStraws_p.at(id.asUint16()));
     }
 
+    Straw &getStraw(StrawId const& id) {
+      return const_cast<Straw &>(this->getStraw(id));
+    }
+
     std::array<Straw,StrawId::_nustraws> const& getStraws() const{
       return _allStraws;
     }
@@ -183,12 +187,6 @@ namespace mu2e {
 
   protected:
 
-      Straw &getStraw(StrawId const& strawId)
-      {
-          // private accessor for non-const Straws
-          // via the const-accessor for getStraw so as to avoid code duplication
-          return const_cast<Straw &>(static_cast<const Tracker &>(*this).getStraw(strawId));
-      }
 
     std::string _name;
 
