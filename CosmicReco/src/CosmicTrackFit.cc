@@ -171,7 +171,8 @@ void CosmicTrackFit::RunFitChi2(const char* title, CosmicTrackFinderData& TrackD
      cosmictrack->SetFirstHitVec(ch0->pos().x(), ch0->pos().y(), ch0->pos().z());
      cosmictrack->SetLastHitVec(chN->pos().x(), chN->pos().y(), chN->pos().z());
      cosmictrack->Set_N(nHits);
-
+     cout<<"start "<<ch0->pos().x()<<" , "<<ch0->pos().y()<<" , "<<ch0->pos().z()<<endl;
+     cout<<"end "<<chN->pos().x()<<" , "<<chN->pos().y()<<" , "<<chN->pos().z()<<endl;
      //Step 1: Get Initial Estimate of track direction
      XYZVec ZPrime = InitLineDirection(ch0, chN);  
      std::vector<XYZVec> AxesList = ParametricFit::GetAxes(ZPrime);
