@@ -83,7 +83,6 @@ namespace mu2e {
 	HepTransform panel_temp = plane_temp * (panel_to_plane * align_panel);
 
 	for(size_t istr=0; istr< StrawId::_nstraws; istr++) {
-          // access strawId from Panel since it performs necessary checks
           Straw &straw = tracker.getStraw(panel.getStraw(istr).id());
 	  
           // how to place the straw in the panel
