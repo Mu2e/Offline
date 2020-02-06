@@ -3,9 +3,6 @@
 
 // C++ includes
 
-// Framework includes
-#include "fhiclcpp/ParameterSet.h"
-
 // Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4CustomizationPhysicsConstructor.hh"
 #include "Mu2eG4/inc/customizeChargedPionDecay.hh"

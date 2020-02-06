@@ -18,7 +18,6 @@
 #include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // From the art tool chain
-#include "fhiclcpp/ParameterSet.h"
 #include "cetlib/maybe_ref.h"
 
 // From C++ and STL
@@ -29,8 +28,7 @@
 
 // Forward references.
 namespace art   { class Event; }
-namespace art   { class SharedProducer; }
-namespace fhicl { class ParameterSet; }
+namespace art   { class ProducesCollector; }
 
 namespace mu2e {
 
@@ -42,7 +40,6 @@ namespace mu2e {
 
   public:
 
-    SensitiveDetectorHelper(fhicl::ParameterSet const& pset);
     SensitiveDetectorHelper(const Mu2eG4Config::SDConfig_& conf);
     // Accept compiler generator copy c'tor and assignment operator.
 
