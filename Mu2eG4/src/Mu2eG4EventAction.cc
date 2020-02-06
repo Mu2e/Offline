@@ -29,11 +29,6 @@
 //C++ includes
 #include <iostream>
 
-// G4Timer.hh in v4_10_4_p03b contains
-// #define times ostimes
-// which breaks non-G4Timer code.
-#undef times
-
 using namespace std;
 
 namespace mu2e {
