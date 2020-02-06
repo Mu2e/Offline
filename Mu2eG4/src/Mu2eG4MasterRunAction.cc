@@ -9,9 +9,6 @@
 #include "G4VUserPhysicsList.hh"
 #include "G4RunManager.hh"
 
-//art includes
-#include "fhiclcpp/ParameterSet.h"
-
 //Mu2e includes
 #include "Mu2eG4/inc/Mu2eG4MasterRunAction.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"

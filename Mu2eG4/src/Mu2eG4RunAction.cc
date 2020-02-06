@@ -14,9 +14,6 @@
 #include "Mu2eG4/inc/SensitiveDetectorHelper.hh"
 #include "Mu2eG4/inc/SensitiveDetectorName.hh"
 
-//art includes
-#include "fhiclcpp/ParameterSet.h"
-
 //G4 includes
 #include "G4RunManager.hh"
 

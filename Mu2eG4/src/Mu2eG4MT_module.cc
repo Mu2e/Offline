@@ -42,7 +42,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/SharedProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Utilities/InputTag.h"
 #include "art/Utilities/Globals.h"
