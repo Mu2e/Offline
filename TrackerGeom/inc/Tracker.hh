@@ -163,7 +163,7 @@ namespace mu2e {
     }
 
     Straw &getStraw(StrawId const& id) {
-      return const_cast<Straw &>(this->getStraw(id));
+      return const_cast<Straw &>(*(_allStraws_p.at(id.asUint16())));
     }
 
     std::array<Straw,StrawId::_nustraws> const& getStraws() const{
