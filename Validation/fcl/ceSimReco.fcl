@@ -45,6 +45,9 @@ physics: {
     @sequence::Reconstruction.RecoMCSequence
   ]
   EndPath : @local::Primary.EndPath
+
+  trigger_paths: [ TriggerPath ]
+  end_paths: [ EndPath ]
 }
 
 outputs : { 
