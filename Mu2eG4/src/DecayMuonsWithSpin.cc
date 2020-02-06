@@ -38,9 +38,6 @@
 
 #include "Mu2eG4/inc/DecayMuonsWithSpin.hh"
 
-#include "fhiclcpp/ParameterSet.h"
-
-
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessManager.hh"
 
