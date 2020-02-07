@@ -267,6 +267,7 @@ def generate(configFileText="allTrig", online=False, verbose=True, doWrite=True)
             mainFclFile.write(triggerOutput_line)
 
     if doWrite :
+        mainEpilogFile.write("Trigger.allPaths: [ " + path_list + " ]\n")
         mainEpilogFile.close()
 
     # include the main epilog file, which includes the others, in main fcl
