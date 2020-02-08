@@ -27,11 +27,34 @@ TimeClusterFinder : {
   CaloClusterCollection : "CaloClusterFromProtoCluster"
   # enable calorimeter cluster info in time clustering
   CaloClusterCollection : "CaloClusterFromProtoCluster"
-  UseCaloCluster : true
+  UseCaloCluster : false
   UseCaloClusterPosition : true
   CaloClusterWeight : 10.0
   TestFlag : true
 }
+
+#TimeClusterFinder : {
+#  module_type  : TimeAndPhiClusterFinder
+#  ComboHitCollection : "makePH"
+#  StrawHitFlagCollection : "FlagBkgHits:ComboHits"
+#  CaloClusterCollection  : "CaloClusterFromProtoCluster"
+#  UseCaloCluster         : false
+#  UseCaloClusterPosition : false
+#  CaloClusterWeight      : 10.0
+#  TimeClusterMVA : { MVAWeights : "TrkPatRec/test/TimeCluster3.weights.xml" }
+#  TestFlag     : true
+#  maxTimeDT    : 30
+#  MVAScoreCut  : 0.7
+#  timeStrategy : 1
+    
+#  diagPlugin : { tool_type : "TimeAndPhiClusterFinderDiag"
+#    MCDiag : false
+#    StrawDigiMCCollection : "compressDigiMCs"
+#  }
+#}
+
+
+
 # specific time cluster finders for different particle hypotheses.  The redundant Calo time offset should come from conditions FIXME!
 # note these are helicity-independent
 TimeClusterFinderDe : {
