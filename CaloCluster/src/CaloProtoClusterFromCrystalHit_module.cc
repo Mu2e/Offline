@@ -71,7 +71,7 @@ namespace mu2e {
 	producerNameMain_(pset.get<std::string>("mainClusterCollName")),
 	producerNameSplit_(pset.get<std::string>("splitClusterCollName")),
 	isOnline_(pset.get<bool>("isOnline",false)),
-	minEnergy_(pset.get<double>("minEnergy",0)),
+	minClusterEnergy_(pset.get<double>("minClusterEnergy",0)),
 	EminSeed_(pset.get<double>("EminSeed")),
 	EnoiseCut_(pset.get<double>("EnoiseCut")),
 	ExpandCut_(pset.get<double>("ExpandCut")),
@@ -95,7 +95,7 @@ namespace mu2e {
 	std::string       producerNameMain_;
 	std::string       producerNameSplit_;
 	bool              isOnline_;
-	double            minEnergy_;
+	double            minClusterEnergy_;
 	double            EminSeed_;
 	double            EnoiseCut_;
 	double            ExpandCut_;
@@ -388,7 +388,7 @@ namespace mu2e {
        
       }
 
-    if (totalEnergy < minEnergy_)  return;
+    if (totalEnergy < minClusterEnergy_)  return;
 
     //make cluster:
     totalEnergyErr = sqrt(totalEnergyErr);
