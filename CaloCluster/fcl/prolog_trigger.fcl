@@ -43,13 +43,6 @@ CaloClusterFast :
     includeCrystalHits    : true
 }
 
-
-CaloClusterCompare : {
-	module_type : CaloClusterCompare
-        CaloClusterCollection : NewCaloClusterFast
-  }
-
-
 NewCaloClusterFast :
 {
   module_type            : CaloProtoClusterFromCrystalHit
@@ -57,7 +50,7 @@ NewCaloClusterFast :
   mainClusterCollName    : None
   splitClusterCollName   : None
   isOnline               : true
-  minEnergy              : 50
+  minClusterEnergy       : 50
   EminSeed               : 20 
   ExpandCut              : 1 
   EnoiseCut              : 1
@@ -67,27 +60,17 @@ NewCaloClusterFast :
 }  
 
 
-NewCaloClusterFast :
-{
-   producers : {
-       NewCaloClusterFast  : @local::NewCaloClusterFast
-       CaloTrigger      : @local::CaloTrigger
-   }
-   analyzers : {
-	CaloClusterCompare : @local::CaloClusterCompare
-   }
-   Reco : [ NewCaloClusterFast ]
-   Analysis : [CaloClusterCompare]
-}
-
 CaloClusterTrigger :
 {
    producers : {
        CaloClusterFast  : @local::CaloClusterFast
        CaloTrigger      : @local::CaloTrigger
+       NewCaloClusterFast  : @local::NewCaloClusterFast
    }
 
    Reco : [ CaloClusterFast ]
+   NewReco : [ NewCaloClusterFast ]
+   CrystalReco : [FastCaloRecoDigiFromDigi, FastCaloCrystalHitFromHit]
 }
 
 
