@@ -45,33 +45,33 @@ namespace mu2e {
 
 		while (!crystalToVisit_.empty())
 		{            
-			 int visitId         = crystalToVisit_.front();
-			 isVisited_[visitId] = 1;
-			 
-			 std::vector<int>  neighborsId = cal_->crystal(visitId).neighbors();
-			 if(isOnline_){
-			 	for (const auto& nneighbor : cal_->nextNeighbors(visitId)) neighborsId.push_back(nneighbor);
+			int visitId         = crystalToVisit_.front();
+			isVisited_[visitId] = 1;
+
+			std::vector<int>  neighborsId = cal_->crystal(visitId).neighbors();
+			if(isOnline_){
+				for (const auto& nneighbor : cal_->nextNeighbors(visitId)) neighborsId.push_back(nneighbor);
 			}
-			 for (auto& iId : neighborsId)
+			for (auto& iId : neighborsId)
 		 	{               
 		    
-		             if (isVisited_[iId]) continue;
-		             isVisited_[iId]=1;
-			     CaloCrystalList& list = idHitVec[iId];
-		             auto it=list.begin();
-		             while(it != list.end())
-		             {
-		                 CaloCrystalHit const* hit = *it;
-		                 if (std::abs(hit->time() - seedTime_) < deltaTime_)
-		                 { 
-		                   
-		                    if (hit->energyDep() > ExpandCut_) crystalToVisit_.push(iId);
+				if (isVisited_[iId]) continue;
+				isVisited_[iId]=1;
+				CaloCrystalList& list = idHitVec[iId];
+				auto it=list.begin();
+				while(it != list.end())
+				{
+					CaloCrystalHit const* hit = *it;
+				 	if (std::abs(hit->time() - seedTime_) < deltaTime_)
+				 	{ 
 				   
-		                    clusterList_.push_front(hit);
-		                    it = list.erase(it);   
-		                 } 
-		                 else {++it;}
-		             } 
+				    		if (hit->energyDep() > ExpandCut_) crystalToVisit_.push(iId);
+				   
+				    		clusterList_.push_front(hit);
+				    		it = list.erase(it);   
+				 	} 
+				 	else {++it;}
+				} 
                      
                  	}
                                        

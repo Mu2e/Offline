@@ -13,10 +13,7 @@ END_PROLOG
 
 BEGIN_PROLOG
 
-CaloClusterCompare : {
-	module_type : CaloClusterCompare
-        CaloClusterCollection : CaloClusterFast
-  }
+
 
 
 CaloTrigger : {    
@@ -62,7 +59,7 @@ CaloProtoClusterFromCrystalHit :
   caloCrystalModuleLabel : CaloCrystalHitFromHit
   mainClusterCollName    : mainCluster
   splitClusterCollName   : splitCluster
-  minEnergy		  :0
+  minClusterEnergy	 : 0
   EminSeed               : 10
   ExpandCut              : 1.0
   EnoiseCut              : 1.0
@@ -114,16 +111,7 @@ CaloClusterFast :
        CaloClusterFast  : @local::CaloClusterFast
        CaloTrigger      : @local::CaloTrigger
    }
-   analyzers : {
-	CaloClusterCompare : @local::CaloClusterCompare
-   }
-
    Reco : [ CaloClusterFast ]
-   Analysis : [ CaloClusterCompare]
 }
-
-
-
-
 
 END_PROLOG
