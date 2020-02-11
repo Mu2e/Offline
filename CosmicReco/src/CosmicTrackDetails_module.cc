@@ -104,7 +104,7 @@ namespace mu2e
 
       //TTree Info:
       TTree* _cosmic_tree;
-      const Tracker* tracker;
+
       //True MC paramets in global coords:
       Float_t _TrueA1;
       Float_t _TrueB1;
@@ -271,7 +271,7 @@ namespace mu2e
 
       void CosmicTrackDetails::analyze(const art::Event& event)
       {
-        tracker = _alignedTracker_h.getPtr(event.id()).get();
+        const Tracker *tracker = _alignedTracker_h.getPtr(event.id()).get();
 
         _evt = event.id().event();  // add event id
         if(!findData(event)) // find data
