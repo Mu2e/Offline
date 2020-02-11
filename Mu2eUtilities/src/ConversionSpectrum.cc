@@ -17,7 +17,7 @@
 
 // C++ includes
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 //GSL includes
 #include "stdio.h"
