@@ -5,7 +5,7 @@
 #include "TrackerGeom/inc/Tracker.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
-#include <math.h>
+#include <cmath>
 #include <complex>
 #include <memory>
 
