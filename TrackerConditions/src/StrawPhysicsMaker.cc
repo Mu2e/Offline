@@ -1,6 +1,6 @@
 
 #include "TrackerConditions/inc/StrawPhysicsMaker.hh"
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 
 

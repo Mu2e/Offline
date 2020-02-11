@@ -14,7 +14,6 @@
 #include <iostream>
 #include <string>
 #include <cmath>
-#include <math.h>
 
 #include "CosmicRayShieldGeom/inc/CosmicRayShield.hh"
 #include "DataProducts/inc/CRSScintillatorBarIndex.hh"

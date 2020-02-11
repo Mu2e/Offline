@@ -12,7 +12,7 @@
 #include "GeneralUtilities/inc/DigitalFiltering.hh"
 #include "cetlib_except/exception.h"
 #include "TMath.h"
-#include <math.h>
+#include <cmath>
 #include <complex>
 #include <algorithm>
 
