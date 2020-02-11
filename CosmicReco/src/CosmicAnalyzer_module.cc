@@ -32,6 +32,9 @@
 #include "GeneralUtilities/inc/ParameterSetHelpers.hh"
 #include "GeometryService/inc/GeomHandle.hh"
 #include "GeometryService/inc/DetectorSystem.hh"
+
+#include "ProditionsService/inc/ProditionsHandle.hh"
+
 // Framework includes.
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Principal/Event.h"
@@ -235,7 +238,7 @@ namespace mu2e
       Int_t _n_planes; // # stations
       int n_analyze =0;
       Float_t _hit_time, _hit_drift_time, _cluster_time, _dt;
-
+	  ProditionsHandle<Tracker> _alignedTracker_h;
       //Flags:
       Bool_t _StraightTrackInit, _StraightTrackConverged, _StraightTrackOK, _hitsOK;
       Int_t _strawid;
