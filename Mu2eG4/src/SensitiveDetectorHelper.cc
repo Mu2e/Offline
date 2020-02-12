@@ -55,15 +55,26 @@ namespace mu2e {
     cutMomentumMin_(conf.cutMomentumMin()),
     minTrackerStepPoints_(conf.minTrackerStepPoints())
   {
+
+    bool enableAllSDs = false;
+    conf.enableAllSDs(enableAllSDs);
+
     std::vector<std::string> enabledSDs;
-    if(!conf.enableAllSDs()) {
-      enabledSDs = conf.enableSD();
+    if(conf.enableSD(enabledSDs)) {
+      if(enableAllSDs) {
+        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: enabledSDs should not be used when enableAllSDs=true\n";
+      }
+    }
+    else {
+      if(!enableAllSDs) {
+        throw cet::exception("CONFIG")<<"SensitiveDetectorHelper: enabledSDs must be specified used when enableAllSDs is not set to true\n";
+      }
     }
 
     typedef std::set<std::string> TODO;
     TODO todo(enabledSDs.begin(), enabledSDs.end());
 
-    if(conf.enableAllSDs() || (todo.find(SensitiveDetectorName::ExtMonFNAL()) != todo.end())) {
+    if(enableAllSDs || (todo.find(SensitiveDetectorName::ExtMonFNAL()) != todo.end())) {
       extMonPixelsEnabled_ = true;
       todo.erase(SensitiveDetectorName::ExtMonFNAL());
     }
@@ -72,7 +83,7 @@ namespace mu2e {
     std::vector<StepInstanceName> const& preDefinedSD(StepInstanceName::allValues());
     for ( std::vector<StepInstanceName>::const_iterator i=preDefinedSD.begin(); i != preDefinedSD.end(); ++i ){
 
-      if(conf.enableAllSDs() || (todo.find(i->name()) != todo.end())) {
+      if(enableAllSDs || (todo.find(i->name()) != todo.end())) {
         todo.erase(i->name());
 
         // stepper does not have a sensitive detector associated with it...
