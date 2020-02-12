@@ -190,7 +190,6 @@ MTmu2eg4runDefaultSingleStage: {
     Mu2eG4CommonCut	  : @local::mu2eg4NoCut
 
     generatorModuleLabel  : generate
-    MultiStageParameters  : {}
 
     SDConfig : {
         verbosityLevel : 0
