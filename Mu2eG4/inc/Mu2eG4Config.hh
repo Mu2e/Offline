@@ -11,6 +11,7 @@
 #include "fhiclcpp/types/Atom.h"
 #include "fhiclcpp/types/OptionalAtom.h"
 #include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/OptionalSequence.h"
 #include "fhiclcpp/types/Table.h"
 #include "fhiclcpp/types/OptionalTable.h"
 #include "fhiclcpp/types/DelegatedParameter.h"
@@ -73,10 +74,12 @@ namespace mu2e {
 
       fhicl::Atom<int> verbosityLevel {Name("verbosityLevel"), 0};
 
-      fhicl::Atom<bool> enableAllSDs {Name("enableAllSDs"), true};
-      fhicl::Sequence<std::string> enableSD {Name("enableSD"),
-          Comment("An explicit list of enabled detectors in case enableAllSDs=false"),
-          [this]() { return !enableAllSDs(); }
+      fhicl::OptionalAtom<bool> enableAllSDs {Name("enableAllSDs"),
+          Comment("Either set enableAllSDs=true or provide an explicit list in enableSD.")
+          };
+
+      fhicl::OptionalSequence<std::string> enableSD {Name("enableSD"),
+          Comment("An explicit list of enabled detectors.  Must not be set if enableAllSDs=true.")
       };
 
       fhicl::Sequence<std::string> sensitiveVolumes {Name("sensitiveVolumes"), {}};
