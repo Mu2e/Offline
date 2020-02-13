@@ -1,71 +1,75 @@
 BEGIN_PROLOG
+
 # Normal reco seqence module: this produces a hit for every digi, and uses
 # flags to keep track of which hits to use
 # Reconstruct hits: this produces StrawHits and ComboHits
 makeSH : {
-  module_type : StrawHitReco
-  FilterHits : false
+  module_type             : StrawHitReco
+  FilterHits              : false
   WriteStrawHitCollection : true
-  EventWindowMarkerLabel : "EWMProducer"
+  EventWindowMarkerLabel  : "EWMProducer"
 }
+
 # combine hits in a panel
 makePH : {
-  module_type : CombineStrawHits
-  TestFlag : true
-  TestRadius : true
+  module_type        : CombineStrawHits
+  TestFlag           : true
+  TestRadius         : true
   ComboHitCollection : "makeSH"
 }
+
 # combine panel hits in a station
 makeSTH : {
-  module_type : MakeStereoHits
-  TestFlag : true
-  MVATool : { MVAWeights : "TrkHitReco/test/StereoMVA.weights.xml" }
-  ComboHitCollection : "makePH"
+  module_type         : MakeStereoHits
+  TestFlag            : true
+  MVATool             : { MVAWeights : "TrkHitReco/test/StereoMVA.weights.xml" }
+  ComboHitCollection  : "makePH"
 }
+
 # flag hits from low-energy electrons (Compton electrons, delta rays, ...)
 # First, configure the clusters
-# Original 2-level clusterer
-TLTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
-}
-# Bertrand's faster version
 TNTClusterer : { 
-    MaxNIterations : 10
-    TimeDifference : 25.0
-    MaxDistance : 100.0
-    HitDistance : 5.0
-    SeedDistance : 25.0
-    MaxTimeDifference : 40.0
-    BackgroundMask : []
-    SignalMask : ["TimeSelection", "EnergySelection","RadiusSelection"]
+    HitDistance      : 5.0
+    SeedDistance     : 20.0
+    ClusterDiameter  : 5.0
+    ClusterTime      : 20.0
+    MaxHitTimeDiff   : 30.0
+    MaxSumDistance   : 100.0
+    MaxCluIterations : 10
+    MaxDistance      : 100.0
+    MinHitError      : 5.0
+    TimeRMS          : 2.0
+    DeltaTimeBinMin  : 10
+    MedianCentroid   : false
+    ComboInit        : true
+    TestFlag         : true
+    BackgroundMask   : []
+    SignalMask       : ["TimeSelection", "EnergySelection","RadiusSelection"]
 }
+
 # Now configure the module
 FlagBkgHits : {
-  module_type : FlagBkgHits
-  ComboHitCollection : "makePH"
-  StrawHitCollection : "makeSH"
-  BkgMVA : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
-  MVANames : [ "HitRho", "HitRhoSpread", "ClusterRho", "ZMin", "ZMax", "ZGap", "NPlanes", "PlaneFraction","NHits" ] 
-  TLTClusterer : { @table::TLTClusterer
-		    TestFlag : true }
-  TNTClusterer : { @table::TNTClusterer
-		    TestFlag : true}
-  # use TNTClusterer
-  Clusterer : 2
-  FilterOutput : false
-  FlagComboHits : true
-  FlagStrawHits : true
-  BkgMVA : {
-    MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml"
-  }
+  module_type          : FlagBkgHits
+  ComboHitCollection   : "makePH"
+  StrawHitCollection   : "makeSH"
+  ClusterAlgorithm     : 1
+  TNTClustering        : { @table::TNTClusterer }
+  MinActiveHits        : 3
+  MinNPlanes           : 2
+  #MaxIsolated          : 0  
+  ClusterPositionError : 10
+  BkgMVA               : { MVAWeights : "TrkHitReco/data/BkgMVAPanel.weights.xml" }
+  BkgMVACut            : 0.5
+  FilterOutput         : false
+  FlagComboHits        : true
+  FlagStrawHits        : true
+  BackgroundMask       : ["Background"]
+  StereoSelection      : ["Stereo","PanelCombo"]
+  
+  
+
 }
+
 SflagBkgHits : {
   @table::FlagBkgHits
   ComboHitCollection : "makeSTH"
@@ -75,16 +79,17 @@ SflagBkgHits : {
 TrkHitReco : {
     producers : { 
 	# normal reco
-	makeSH            : { @table::makeSH              }
-	makePH            : { @table::makePH            }
-	makeSTH            : { @table::makeSTH            }
-	FlagBkgHits		  : { @table::FlagBkgHits            }
-	SflagBkgHits		  : { @table::SflagBkgHits            }
+	makeSH        : { @table::makeSH       }
+	makePH        : { @table::makePH       }
+	makeSTH       : { @table::makeSTH      }
+	FlagBkgHits   : { @table::FlagBkgHits  }
+	SflagBkgHits  : { @table::SflagBkgHits }
     }
-# sequences
-# production sequence to prepare hits for tracking
-  PrepareHits : [ makeSH, makePH, FlagBkgHits ]
-  SPrepareHits : [ makeSH, makePH, makeSTH, SflagBkgHits ]
+
+    # SEQUENCES
+    # production sequence to prepare hits for tracking
+    PrepareHits  : [ makeSH, makePH, FlagBkgHits ]
+    SPrepareHits : [ makeSH, makePH, makeSTH, SflagBkgHits ]
 }
 
 END_PROLOG

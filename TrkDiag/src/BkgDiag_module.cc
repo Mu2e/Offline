@@ -23,6 +23,7 @@
 #include "RecoDataProducts/inc/ComboHit.hh"
 #include "RecoDataProducts/inc/StrawHitFlag.hh"
 #include "RecoDataProducts/inc/BkgCluster.hh"
+#include "RecoDataProducts/inc/BkgClusterHit.hh"
 #include "RecoDataProducts/inc/BkgQual.hh"
 #include "MCDataProducts/inc/StrawDigiMC.hh"
 #include "MCDataProducts/inc/MCRelationship.hh"
@@ -61,6 +62,7 @@ namespace mu2e
       art::InputTag _shfTag;
       art::InputTag _bkgcTag;
       art::InputTag _bkgqTag;
+      art::InputTag _bkghTag;
       art::InputTag _mcdigisTag;
       // time offset
       SimParticleTimeOffset _toff;
@@ -70,6 +72,7 @@ namespace mu2e
       const StrawDigiMCCollection *_mcdigis;
       const BkgClusterCollection *_bkgccol;
       const BkgQualCollection *_bkgqcol;
+      const BkgClusterHitCollection *_bkghitcol;
 
       // background diagnostics
       TTree* _bdiag,*_bdiag2;
@@ -91,8 +94,8 @@ namespace mu2e
       std::vector<BkgHitInfo> _bkghinfo;
       
       Int_t   _nindex,_hitidx[8192];      
-      Int_t   _nhits,_hitPdg[8192],_hitCrCode[8192],_hitGen[8192],_hitNcombo[8192];
-      Float_t _hitRad[8192],_hitPhi[8192],_hitTime[8192];
+      Int_t   _nhits,_hitx[8192],_hity[8192],_hitz[8192],_hitSimId[8192],_hitPdg[8192],_hitCrCode[8192],_hitGen[8192],_hitNcombo[8192];
+      Float_t _hitRad[8192],_hitPhi[8192],_hitHPhi[8192],_hitTime[8192],_hitZ[8192];
 
   };
  
@@ -109,6 +112,7 @@ namespace mu2e
     _shfTag(pset.get<string>("StrawHitFlagCollection","FlagBkgHits")),
     _bkgcTag(pset.get<string>("BackgroundClusterCollection","FlagBkgHits")),
     _bkgqTag(pset.get<string>("BackgroundQualCollection","FlagBkgHits")),
+    _bkghTag(pset.get<string>("BackgroundHitClusterCollection","FlagBkgHits")),
     _mcdigisTag(pset.get<art::InputTag>("StrawDigiMCCollection","makeSD")),
     _toff(pset.get<fhicl::ParameterSet>("TimeOffsets"))
   {}
@@ -119,6 +123,7 @@ namespace mu2e
     art::ServiceHandle<art::TFileService> tfs;
     
     if(_diag > 0){
+      _iev=0;
       // detailed delta diagnostics
       _bdiag=tfs->make<TTree>("bkgdiag","background diagnostics");
       // general branches
@@ -175,19 +180,20 @@ namespace mu2e
       _bdiag2->Branch("nhits",      &_nhits,        "nhits/I");
       _bdiag2->Branch("hitRad",     &_hitRad,       "hitRad[nhits]/F");
       _bdiag2->Branch("hitPhi",     &_hitPhi,       "hitPhi[nhits]/F");
+      _bdiag2->Branch("hitHPhi",    &_hitHPhi,      "hitHPhi[nhits]/F");
       _bdiag2->Branch("hitTime",    &_hitTime,      "hitTime[nhits]/F");      
+      _bdiag2->Branch("hitZ",       &_hitZ,         "hitZ[nhits]/F");
       _bdiag2->Branch("hitNcombo",  &_hitNcombo,    "hitNcombo[nhits]/I");      
+      _bdiag2->Branch("hitSimId",   &_hitSimId,     "hitSimId[nhits]/I");
       if(_mcdiag){
 	_bdiag2->Branch("hitPdg",   &_hitPdg,       "hitPdg[nhits]/I");
 	_bdiag2->Branch("hitCrCode",&_hitCrCode,    "hitCrCode[nhits]/I");
 	_bdiag2->Branch("hitGen",   &_hitGen,       "hitGen[nhits]/I");
-      }
-      
+      }      
     }
   }
 
   void BkgDiag::analyze(const art::Event& event ) {
-    _iev = event.event();
     if(!findData(event))
       throw cet::exception("RECO")<<"mu2e::BkgDiag: data missing or incomplete"<< endl;
     // check consistency
@@ -200,8 +206,10 @@ namespace mu2e
     for(size_t ich=0;ich<_chcol->size();++ich){     	
       _hitRad[_nhits]    = sqrtf(_chcol->at(ich).pos().perp2());
       _hitPhi[_nhits]    = _chcol->at(ich).pos().phi();
+      _hitHPhi[_nhits]   = _chcol->at(ich).helixPhi();
       _hitTime[_nhits]   = _chcol->at(ich).time();
-      _hitNcombo[_nhits] = _chcol->at(ich).nCombo();	
+      _hitZ[_nhits]      = _chcol->at(ich).pos().z();
+      _hitNcombo[_nhits] = _chcol->at(ich).nCombo();	      
       if(_mcdiag){
         std::vector<StrawDigiIndex> dids;
         _chcol->fillStrawDigiIndices(event,ich,dids);
@@ -210,7 +218,8 @@ namespace mu2e
         _hitPdg[_nhits] = spp->pdgId();
         _hitCrCode[_nhits] = spp->creationCode();
         _hitGen[_nhits] = -1;
-        if (spp->genParticle().isNonnull()) _hitGen[_nhits] = spp->genParticle()->generatorId().id();      
+        _hitSimId[_nhits] = spp->id().asInt();     
+        if (spp->genParticle().isNonnull()) _hitGen[_nhits] = spp->genParticle()->generatorId().id();
       }
       ++_nhits;
     }
@@ -232,7 +241,7 @@ namespace mu2e
 	_bkgqualvars[ivar] = qual[static_cast<BkgQual::MVA_varindex>(ivar)];
       }
       _mvaout = qual.MVAOutput();
-      _mvastat = (Int_t)qual.status();
+      _mvastat = qual.status();
       // info on nearest cluster
       _mindt = _mindrho = 1.0e3;
       for(size_t jbkg = 0; jbkg < _bkgccol->size(); ++jbkg){
@@ -262,8 +271,7 @@ namespace mu2e
       // fill vector of indices to all digis used in this cluster's hits 
       // this goes recursively through the ComboHit chain
 	std::vector<StrawDigiIndex> cdids;
-	for(auto const& chit : cluster.hits()){
-	  size_t ich = chit.index();
+	for(auto const& ich : cluster.hits()){
 	  // get the list of StrawHit indices associated with this ComboHit
 	  _chcol->fillStrawDigiIndices(event,ich,cdids);
 	}	
@@ -288,13 +296,13 @@ namespace mu2e
       _nactive = _nstereo = _nsactive = _nbkg = 0;
       bool pce = _pgen==2; // primary from a CE
       _nindex=0;
-      for(auto const& chit : cluster.hits()){
-	size_t ich = chit.index();
-	ComboHit const& ch = _chcol->at(ich);
+      for(auto const& ich : cluster.hits()){
+        ComboHit const& ch = _chcol->at(ich);
+        BkgClusterHit const& bhit = _bkghitcol->at(ich);
         _hitidx[_nindex]=ich;
         ++_nindex;
 	_nshits += ch.nStrawHits();
-	StrawHitFlag const& shf = chit.flag();
+	StrawHitFlag const& shf = bhit.flag();
 	if(shf.hasAllProperties(StrawHitFlag::active)){
 	  _nactive += ch.nStrawHits();
 	  if(shf.hasAllProperties(StrawHitFlag::stereo))_nsactive+= ch.nStrawHits();
@@ -304,7 +312,7 @@ namespace mu2e
 	// fill hit-specific information
 	BkgHitInfo bkghinfo;
 	// fill basic straw hit info
-	fillStrawHitInfo(chit.index(),bkghinfo);
+	fillStrawHitInfo(ich,bkghinfo);
 	if(_mcdiag){
 	  std::vector<StrawDigiIndex> dids;
 	  _chcol->fillStrawDigiIndices(event,ich,dids);
@@ -314,7 +322,7 @@ namespace mu2e
 	// background hit specific information
 	bkghinfo._active = shf.hasAllProperties(StrawHitFlag::active);
 	bkghinfo._cbkg = shf.hasAllProperties(StrawHitFlag::bkg);
-	bkghinfo._gdist = chit.distance();
+	bkghinfo._gdist = bhit.distance();
 	bkghinfo._index = ich;
 	// calculate separation to cluster
 	Hep3Vector psep = Geom::Hep3Vec(PerpVector(ch.pos()-cluster.pos(),Geom::ZDir()));
@@ -346,6 +354,7 @@ namespace mu2e
       _bdiag->Fill();
       ++_cluIdx;
     }
+  ++_iev;
   }
 
   bool BkgDiag::findData(const art::Event& evt){
@@ -357,6 +366,8 @@ namespace mu2e
     _shfcol = shfH.product();
     auto bkgcH = evt.getValidHandle<BkgClusterCollection>(_bkgcTag);
     _bkgccol = bkgcH.product();
+    auto bkghH = evt.getValidHandle<BkgClusterHitCollection>(_bkghTag);
+    _bkghitcol = bkghH.product();
     auto bkgqH = evt.getValidHandle<BkgQualCollection>(_bkgqTag);
     _bkgqcol = bkgqH.product();
     if(_mcdiag){
