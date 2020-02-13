@@ -18,13 +18,12 @@ FastCaloRecoDigiFromDigi :
     minDigiE 	  	   : 1 
     shiftTime         	   : 19.90
     EventWindowMarkerLabel : "EWMProducer"
-   
 }
 
 
 FastCaloCrystalHitFromHit:
 {
-    module_type           : CaloCrystalHitFromHit #fast
+    module_type           : CaloCrystalHitFromHit
     caloDigisModuleLabel  : FastCaloRecoDigiFromDigi	    	    
     time4Merge            : 5.01   #ns
     diagLevel             : 0
@@ -36,6 +35,7 @@ OnlineCaloReco :
      FastCaloRecoDigiFromDigi    : @local::FastCaloRecoDigiFromDigi 
      FastCaloCrystalHitFromHit  : @local::FastCaloCrystalHitFromHit
    }
+
    Reco : [ FastCaloRecoDigiFromDigi , FastCaloCrystalHitFromHit ]
 }
 

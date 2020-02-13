@@ -74,7 +74,7 @@ namespace mu2e {
 
 
       //find location of potential peaks
-      std::vector<int> peakLocation; //TODO ---> is this peak position?
+      std::vector<int> peakLocation; 
 
       for (unsigned int iu=windowPeak_;iu<xvec_.size()-windowPeak_;++iu)
       {

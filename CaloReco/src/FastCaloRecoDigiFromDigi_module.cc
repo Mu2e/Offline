@@ -35,11 +35,9 @@ namespace mu2e {
   	public:
 		explicit FastCaloRecoDigiFromDigi(fhicl::ParameterSet const& pset) :
 		art::EDProducer{pset}, caloDigisToken_{consumes<CaloDigiCollection>(pset.get<std::string>("caloDigiModuleLabel"))},
-		digiSampling_        (pset.get<double>("digiSampling")),
-		//windowPeak_         (pset.get<int>    ("windowPeak")),
-		minDigiE_   (pset.get<double> ("minDigiE")),
+		digiSampling_       (pset.get<double>("digiSampling")),
+		minDigiE_   	    (pset.get<double> ("minDigiE")),
 		shiftTime_          (pset.get<double> ("shiftTime")),
-		scaleFactor_        (pset.get<double> ("scaleFactor", 1)),
 		diagLevel_          (pset.get<int>    ("diagLevel",0)),
 		ewMarkerTag_(pset.get<art::InputTag>("EventWindowMarkerLabel"))
 	     	{
@@ -53,11 +51,9 @@ namespace mu2e {
 
 		art::ProductToken<CaloDigiCollection> const caloDigisToken_;
 		double const digiSampling_;
-		//int 	 windowPeak_ ;
 		double 	 minDigiE_ ;
 		double 	 shiftTime_ ;
-		double       scaleFactor_;
-		int          diagLevel_;
+		int      diagLevel_;
    		art::InputTag ewMarkerTag_;// name of the module that makes eventwindowmarkers
    
 		void extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigis, CaloRecoDigiCollection& recoCaloHits, double const& ewOffset);
@@ -71,7 +67,7 @@ namespace mu2e {
 
 		auto const& caloDigisH = event.getValidHandle(caloDigisToken_);
 		auto recoCaloDigiColl = std::make_unique<CaloRecoDigiCollection>();
-		//Get EW time offset (as per StrawHitReco):
+		
 		double ewmOffset = 0;
 		art::Handle<EventWindowMarker> ewMarkerHandle;
 		if (event.getByLabel(ewMarkerTag_, ewMarkerHandle)){
@@ -81,7 +77,7 @@ namespace mu2e {
 
 		extractRecoDigi(caloDigisH, *recoCaloDigiColl, ewmOffset);
 
-		if ( diagLevel_ > 3 )
+		if ( diagLevel_ > 0 )
 		{
 			printf("[FastRecoDigiFromDigi::produce] produced RecoCrystalHits ");
 			printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
@@ -109,7 +105,6 @@ namespace mu2e {
     
 			int    roId     = caloDigi.roId();
 			double t0       = caloDigi.t0();
-			//removed crId -> no need as we extract crystal hit in this path
 			double adc2MeV  = calorimeterCalibrations->Peak2MeV(roId);
 			const std::vector<int>& waveform = caloDigi.waveform();
 
