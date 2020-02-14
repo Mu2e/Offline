@@ -66,6 +66,8 @@ namespace mu2e {
         
         bool m_managerInitialized;
         bool m_steppingVerbose;
+        bool m_mtDebugOutput;
+        int rmvlevel_;
         
         std::unique_ptr<Mu2eG4PerThreadStorage> perThreadObjects_;
     

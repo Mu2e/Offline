@@ -1,5 +1,6 @@
-// Lisa Goodenough, March 2018
-// modified version of beam_g4s1.fcl for running in MT mode
+// Lisa Goodenough, January 2020
+// Include this for beam_g4s1MT_phase1.fcl
+// Yuri: turned off extinction monitor output streams
 
 #include "fcl/minimalMessageService.fcl"
 #include "fcl/standardProducers.fcl"
@@ -7,12 +8,8 @@
 #include "Mu2eG4/fcl/prolog.fcl"
 
 BEGIN_PROLOG
-#----------------------------------------------------------------
-# for the GenParticle and Event Stashes
-stashSize:50
-
-#----------------------------------------------------------------
 # Mu2eG4 cuts
+
 
 dsRegionCuts: {
    type: intersection
@@ -22,10 +19,11 @@ dsRegionCuts: {
 
       // Yuri's e-mail 2015-04-10: x=1612. from CRV considerations.
       // This is also large enought to enclose TS3 (its half length is 975 mm).
-      { type: plane normal: [ -1, 0, 0 ] point : [ 1612., 0, 0 ] },
+      // Yuri: Moved the plane to cover all the shielding from stage 1.
+     { type: plane normal: [ -1, 0, 0 ] point : [ 2800., 0, 0 ] },
 
-      // Make sure the muon beam reaches our TS3Vacuum stopping volume
-      { type: notInVolume pars: [TS2Vacuum] },
+      // Make sure the muon beam reaches our DS2Vacuum stopping volume
+      {type: notInVolume pars:[TS2Vacuum, TS3Vacuum, TS4Vacuum, TS5Vacuum, Coll31, Coll32, Coll51, TS2InnerCryoShell, TS3InnerCryoShell, TS4InnerCryoShell, TS2CryoInsVac, TS3CryoInsVac, PbarAbsDisk, PbarAbsWedge, VirtualDetector_Coll31_In, VirtualDetector_Coll32_In, VirtualDetector_Coll31_Out, VirtualDetector_Coll32_Out, Coll31OutRecord, Coll32InRecord, Coll31OutRecord, VirtualDetector_TS4_Bend, VirtualDetector_Coll5_In, VirtualDetector_Coll5_Out, VirtualDetector_Coll5_OutSurf]},
 
       // This union splits the output of the above cuts
       // into two exclusive streams
@@ -33,7 +31,7 @@ dsRegionCuts: {
 	    {
 	       type: intersection
 	       pars: [
-		  { type: inVolume pars: [TS3Vacuum] },
+		  { type: inVolume pars: [DS2Vacuum] },
 		  { type: isCharged }
 	       ]
 	       write: mubeam
@@ -90,7 +88,7 @@ END_PROLOG
 
 #================================================================
 # Give this job a name.
-process_name :  beamg4s1
+process_name :  beamg4s1MT
 
 source : {
    module_type : EmptyEvent
@@ -99,11 +97,17 @@ source : {
 
 services : {
 
+   scheduler : {
+      num_schedules : 5
+      num_threads   : 5
+   }
+
+
    message               : @local::default_message
    TFileService          : { fileName : "nts.owner.beam-g4s1.version.sequencer.root" }
    RandomNumberGenerator : {defaultEngineKind: "MixMaxRng" }
 
-   GeometryService        : { inputFile      : "JobConfig/common/geom_baseline.txt" }
+   GeometryService        : { inputFile      : "Mu2eG4/geom/geom_common_current.txt" }
    ConditionsService      : { conditionsfile : "Mu2eG4/test/conditions_01.txt"      }
    GlobalConstantsService : { inputFile      : "Mu2eG4/test/globalConstants_01.txt" }
    G4Helper               : { }
@@ -125,20 +129,16 @@ physics : {
    producers: {
 
       generate: {
-         module_type          : PrimaryProtonGunN
-         inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsN.txt"
-         stashSize            : @local::stashSize
+         module_type          : PrimaryProtonGunR
+         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
       }
 
       genCounter: {
          module_type: GenEventCounter
       }
 
-      g4run : {
-         module_type: Mu2eG4
-         runinMTMode : true
-         numberOfThreads : 5
-
+      g4mtrun : {
+         module_type: Mu2eG4MT
          physics: @local::mu2eg4DefaultPhysics
          ResourceLimits: @local::mu2eg4DefaultResourceLimits
 	 TrajectoryControl: @local::mu2eg4NoTrajectories
@@ -165,97 +165,99 @@ physics : {
             type: union
             pars: [
                @local::mu2eg4CutDeltaElectrons, // 8% speed up from killing electrons with Ek<1 MeV
-               @local::dsRegionCuts,
-               @local::extMonRegionCuts
+               @local::dsRegionCuts
+//               @local::extMonRegionCuts
             ]
          }
       }
 
       compressPVmuonBeam : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4run"
+         volumesInput : "g4mtrun"
          hitInputs : []
          particleInputs : [ "muonBeamFilter" ]
       }
 
       compressPVdsRegion : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4run"
+         volumesInput : "g4mtrun"
          hitInputs : []
          particleInputs : [ "dsRegionFilter" ]
       }
 
       compressPVextmonBeam : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4run"
+         volumesInput : "g4mtrun"
          hitInputs : []
          particleInputs : [ "extmonBeamFilter" ]
       }
 
       compressPVextmonRegion : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4run"
+         volumesInput : "g4mtrun"
          hitInputs : []
          particleInputs : [ "extmonRegionFilter" ]
       }
 
       compressPVFull : {
          module_type: CompressPhysicalVolumes
-         volumesInput : "g4run"
+         volumesInput : "g4mtrun"
          hitInputs : []
-         particleInputs : [ "g4run" ]
+         particleInputs : [ "g4mtrun" ]
       }
    }
 
    filters: {
       muonBeamFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4run:mubeam" ]
-         extraHitInputs : [ "g4run:virtualdetector" ]
+         mainHitInputs : [ "g4mtrun:mubeam" ]
+         extraHitInputs : [ "g4mtrun:virtualdetector" ]
          vetoDaughters: []
       }
 
       dsRegionFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4run:dsregion" ]
-         extraHitInputs : [ "g4run:virtualdetector" ]
+         mainHitInputs : [ "g4mtrun:dsregion" ]
+         extraHitInputs : [ "g4mtrun:virtualdetector" ]
          vetoDaughters: []
       }
 
       extmonBeamFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4run:extmonbeam" ]
-         extraHitInputs : [ "g4run:virtualdetector" ]
+         mainHitInputs : [ "g4mtrun:extmonbeam" ]
+         extraHitInputs : [ "g4mtrun:virtualdetector" ]
          vetoDaughters: []
       }
 
       extmonRegionFilter: {
          module_type: FilterG4Out
-         mainHitInputs : [ "g4run:extmonregion" ]
-         extraHitInputs : [ "g4run:virtualdetector" ]
+         mainHitInputs : [ "g4mtrun:extmonregion" ]
+         extraHitInputs : [ "g4mtrun:virtualdetector" ]
          vetoDaughters: []
       }
 
       g4status: {
          module_type: FilterStatusG4
-         input: "g4run"
+         input: "g4mtrun"
+	 maxAcceptedStatus: 1  #  status 2 and above means StepPointMCCollection may have non-dereferencable pointers
       }
 
       g4consistent: {
          module_type: FilterStatusG4
-         input: "g4run"
+         input: "g4mtrun"
 	 maxAcceptedStatus: 9  #  status 10 and above means StepPointMCCollection may have non-dereferencable pointers
       }
    }
 
-   trigmubeam : [generate, genCounter, g4run, g4consistent, muonBeamFilter, compressPVmuonBeam]
-   trigdsregion : [generate, genCounter, g4run, g4consistent, dsRegionFilter, compressPVdsRegion]
-   trigextmonbeam : [generate, genCounter, g4run, g4consistent, extmonBeamFilter, compressPVextmonBeam]
-   trigextmonregion : [generate, genCounter, g4run, g4consistent, extmonRegionFilter, compressPVextmonRegion]
-   g4StatusFilter : [generate, genCounter, g4run, "!g4status", compressPVFull ]
-   trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
+   trigmubeam : [generate, genCounter, g4mtrun, g4consistent, muonBeamFilter, compressPVmuonBeam]
+   trigdsregion : [generate, genCounter, g4mtrun, g4consistent, dsRegionFilter, compressPVdsRegion]
+//   trigextmonbeam : [generate, genCounter, g4mtrun, g4consistent, extmonBeamFilter, compressPVextmonBeam]
+//   trigextmonregion : [generate, genCounter, g4mtrun, g4consistent, extmonRegionFilter, compressPVextmonRegion]
+   g4StatusFilter : [generate, genCounter, g4mtrun, "!g4status", compressPVFull ]
+//   trigger_paths  : [trigmubeam, trigdsregion, trigextmonbeam, trigextmonregion, g4StatusFilter]
+   trigger_paths  : [trigmubeam, trigdsregion, g4StatusFilter]
 
-   outputs: [truncatedEvtsOutput, mubeamout, dsout, extmonbeamout,extmonregionout]
+   outputs: [truncatedEvtsOutput, mubeamout, dsout]
    an: [ genCountLogger, collectionSizes ]
    end_paths: [outputs, an]
 }
@@ -272,7 +274,6 @@ outputs: {
          "keep *_muonBeamFilter_*_*",
          "keep *_compressPVmuonBeam_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-mubeam.version.sequencer.art"
    }
 
    dsout : {
@@ -285,7 +286,6 @@ outputs: {
          "keep *_dsRegionFilter_*_*",
          "keep *_compressPVdsRegion_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-dsregion.version.sequencer.art"
    }
 
    extmonbeamout : {
@@ -298,7 +298,6 @@ outputs: {
          "keep *_extmonBeamFilter_*_*",
          "keep *_compressPVextmonBeam_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-extmonbeam.version.sequencer.art"
    }
 
    extmonregionout : {
@@ -311,7 +310,6 @@ outputs: {
          "keep *_extmonRegionFilter_*_*",
          "keep *_compressPVextmonRegion_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-extmonregion.version.sequencer.art"
    }
 
    truncatedEvtsOutput : {
@@ -321,16 +319,15 @@ outputs: {
          "keep mu2e::GenParticles_*_*_*",
          "keep mu2e::GenEventCount_*_*_*",
          "keep mu2e::StatusG4_*_*_*",
-         "keep *_g4run_*_*",
-         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4run_*_*",
+         "keep *_g4mtrun_*_*",
+         "drop uintmu2e::PhysicalVolumeInfomvstd::pairs_g4mtrun_*_*",
          "keep *_compressPVFull_*_*"
       ]
-      fileName    : "sim.owner.beam-g4s1-truncated.version.sequencer.art"
    }
 
 }
 // Larger range cut for the first stage
-physics.producers.g4run.physics.minRangeCut : 1. // mm
+physics.producers.g4mtrun.physics.minRangeCut : 1. // mm
 
 // Limit the amount of "Begin processing the ... record" messages
 services.message.destinations.log.categories.ArtReport.reportEvery : 1

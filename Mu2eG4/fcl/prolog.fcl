@@ -117,6 +117,7 @@ mu2eg4DefaultDebug: {
     fillDiagnosticHistograms: false
     warnEveryNewRun : false
     diagLevel : 0
+    mtDebugOutput : false
     trackingVerbosityLevel : 0
     steppingVerbosityLevel : 0
     navigatorCheckMode : false

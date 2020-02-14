@@ -12,7 +12,7 @@ double productionTarget.zNominal = -6164.5;
 // int    productionTarget.verbosity = 2;
 
 // Optional shift of production target from the nominal
-//vector<double> productionTarget.offset = { 0., 0., 0.};
+vector<double> productionTarget.offset = { 0., 0., 0.};
 
 // target core
 double targetPS_halfLength        =     80.;   // mm
