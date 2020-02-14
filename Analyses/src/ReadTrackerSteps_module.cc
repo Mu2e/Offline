@@ -1,9 +1,5 @@
 //
-// example Plugin to read Tracker PlaneSupport Detectors data and create ntuples
-//
-//  $Id: ReadTrackerDSDetectors_module.cc,v 1.2 2013/10/21 20:44:04 genser Exp $
-//  $Author: genser $
-//  $Date: 2013/10/21 20:44:04 $
+// example Plugin to read Tracker Step data and create ntuples
 //
 // Original author KLG
 //
@@ -48,11 +44,11 @@ using CLHEP::keV;
 
 namespace mu2e {
 
-  class ReadTrackerDSDetectors : public art::EDAnalyzer {
+  class ReadTrackerSteps : public art::EDAnalyzer {
   public:
 
-    explicit ReadTrackerDSDetectors(fhicl::ParameterSet const& pset);
-    virtual ~ReadTrackerDSDetectors() {}
+    explicit ReadTrackerSteps(fhicl::ParameterSet const& pset);
+    virtual ~ReadTrackerSteps() {}
 
     virtual void beginJob();
     void analyze(const art::Event& e);
@@ -71,64 +67,64 @@ namespace mu2e {
 
     // Pointers to histograms, ntuples.
 
-    TH1F*    _hNsdDet;
-    TH1F*    _hNsdDetH;
+    TH1F*    _hNtset;
+    TH1F*    _hNtsetH;
 
-    TNtuple* _nttsdd;
+    TNtuple* _nttts;
 
-    // Name of the SDD StepPoint collection
-    std::string  _sddStepPoints;
+    // Name of the TS StepPoint collection
+    std::string  _tsStepPoints;
 
   };
 
-  ReadTrackerDSDetectors::ReadTrackerDSDetectors(fhicl::ParameterSet const& pset) : 
+  ReadTrackerSteps::ReadTrackerSteps(fhicl::ParameterSet const& pset) : 
     art::EDAnalyzer(pset),
     // Run time parameters
     _diagLevel(pset.get<int>("diagLevel",0)),
     _hitMakerModuleLabel(pset.get<string>("hitMakerModuleLabel","g4run")),
     _nAnalyzed(0),
     _maxFullPrint(pset.get<int>("maxFullPrint",5)),
-    _hNsdDet(0),
-    _hNsdDetH(0),
-    _nttsdd(0),
-    _sddStepPoints(pset.get<string>("sddStepPoints","trackerDS"))
+    _hNtset(0),
+    _hNtsetH(0),
+    _nttts(0),
+    _tsStepPoints(pset.get<string>("tsStepPoints","trackerDS"))
   {}
 
  
 
-  void ReadTrackerDSDetectors::beginJob(){
+  void ReadTrackerSteps::beginJob(){
 
     // Get access to the TFile service.
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    _hNsdDet  = tfs->make<TH1F>( "hNsdDet ", 
-                                 "Number/ID of the detector which was hit",
+    _hNtset  = tfs->make<TH1F>( "hNtset ", 
+                                 "Number/ID of the detector with step",
                                  50,  0., 50. );
 
-    _hNsdDetH = tfs->make<TH1F>( "hNsdDetH", 
-                                 "Number of hits in PlaneSupport Detectors",
+    _hNtsetH = tfs->make<TH1F>( "hNtsetH", 
+                                 "Number of steps",
                                  50,  0., 50. );
 
     // Create an ntuple.
-    _nttsdd = tfs->make<TNtuple>( "nttsdd", 
-                                  "Plane Support Detectors ntuple",
+    _nttts = tfs->make<TNtuple>( "nttts", 
+                                  "Tracker steps ntuple",
                                   "evt:trk:sid:pdg:time:x:y:z:px:py:pz:"
                                   "g4bl_time");
   }
 
-  void ReadTrackerDSDetectors::analyze(const art::Event& event) {
+  void ReadTrackerSteps::analyze(const art::Event& event) {
 
     ++_nAnalyzed;
 
     if (_diagLevel>1 ) {
-      cout << "ReadTrackerDSDetectors::" << __func__ 
+      cout << "ReadTrackerSteps::" << __func__ 
            << setw(4) << " called for event "  
            << event.id().event()
            << " hitMakerModuleLabel "
            << _hitMakerModuleLabel 
-           << " sddStepPoints " 
-           << _sddStepPoints
+           << " tsStepPoints " 
+           << _tsStepPoints
            << endl;
     }
 
@@ -137,7 +133,7 @@ namespace mu2e {
     if (!geom->hasElement<Tracker>()) 
       {
         mf::LogError("Geom")
-          << "Skipping ReadTrackerDSDetectors::analyze due to lack of tracker\n";
+          << "Skipping ReadTrackerSteps::analyze due to lack of tracker\n";
         return;
       }
 
@@ -146,12 +142,12 @@ namespace mu2e {
     // Get a handle to the hits created by G4.
     art::Handle<StepPointMCCollection> hitsHandle;
 
-    event.getByLabel(_hitMakerModuleLabel, _sddStepPoints, hitsHandle);
+    event.getByLabel(_hitMakerModuleLabel, _tsStepPoints, hitsHandle);
 
     if (!hitsHandle.isValid() ) {
 
       mf::LogError("Hits")
-        << " Skipping ReadTrackerDSDetectors::analyze due to problems with hits\n";
+        << " Skipping ReadTrackerSteps::analyze due to problems with hits\n";
       return;
     }
 
@@ -160,8 +156,8 @@ namespace mu2e {
     unsigned int const nhits = hits.size();
 
     if (_diagLevel>0 && nhits>0 ) {
-      cout << "ReadTrackerDSDetectors::" << __func__ 
-           << " Number of SDD hits: " <<setw(4) 
+      cout << "ReadTrackerSteps::" << __func__ 
+           << " Number of TS hits: " <<setw(4) 
            << nhits
            << endl;
     }
@@ -174,11 +170,11 @@ namespace mu2e {
     // Fill histograms & ntuple
 
     // Fill histogram with number of hits per event.
-    _hNsdDetH->Fill(nhits);
+    _hNtsetH->Fill(nhits);
 
-    float nt[_nttsdd->GetNvar()];
+    float nt[_nttts->GetNvar()];
 
-    // Loop over all SDD hits.
+    // Loop over all TS hits.
     for ( size_t i=0; i<nhits; ++i ){
 
       // Alias, used for readability.
@@ -189,7 +185,7 @@ namespace mu2e {
       int did = hit.volumeId();
 
       // Fill histogram with the detector numbers
-      _hNsdDet->Fill(did);
+      _hNtset->Fill(did);
 
       const CLHEP::Hep3Vector& pos = hit.position();
       const CLHEP::Hep3Vector& mom = hit.momentum();
@@ -220,11 +216,11 @@ namespace mu2e {
       nt[10] = mom.z();
       nt[11] = hit.properTime();
 
-      _nttsdd->Fill(nt);
+      _nttts->Fill(nt);
 
       if ( _nAnalyzed < _maxFullPrint){
-        cout <<  "ReadTrackerDSDetectors::" << __func__ 
-             << ": SDD hit: "
+        cout <<  "ReadTrackerSteps::" << __func__ 
+             << ": TS hit: "
              << setw(8) << event.id().event() << " | "
              << setw(4) << hit.volumeId()     << " | "
              << setw(6) << pdgId              << " | "
@@ -241,5 +237,5 @@ namespace mu2e {
 
 }  // end namespace mu2e
 
-using mu2e::ReadTrackerDSDetectors;
-DEFINE_ART_MODULE(ReadTrackerDSDetectors);
+using mu2e::ReadTrackerSteps;
+DEFINE_ART_MODULE(ReadTrackerSteps);
