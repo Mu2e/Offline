@@ -61,9 +61,9 @@ physics : {
     # Look at the hits from virtualdetectors
     readvd: {
       module_type      : ReadVirtualDetector
-      vdStepPoints     : virtualdetector
-      savePDG          : [13 , -211]
-      maxPrint         : 200
+      vdStepPoints     : "g4run:virtualdetector"
+      savePDG          : [11]
+      maxPrint         : 201
     }
 
   }
