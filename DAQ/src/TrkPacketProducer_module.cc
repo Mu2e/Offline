@@ -12,9 +12,6 @@
 #include <string>
 #include <cmath>
 
-#include <math.h>
-
-
 // Framework includes.
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h"
