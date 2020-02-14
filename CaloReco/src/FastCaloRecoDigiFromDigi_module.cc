@@ -89,50 +89,30 @@ namespace mu2e {
 
 	void FastCaloRecoDigiFromDigi::extractRecoDigi(art::ValidHandle<CaloDigiCollection> const& caloDigisHandle, CaloRecoDigiCollection &recoCaloHits, double const& eventWindowOffset)
   	{
-
-		std::vector<double> x,y;
 		ConditionsHandle<CalorimeterCalibrations> calorimeterCalibrations("ignored");
-
 		auto const& caloDigis = *caloDigisHandle;
-		
 		CaloDigi const* base = &caloDigis.front(); 
 
 		for (const auto& caloDigi : caloDigis)
 		{
-    
-			int    roId     = caloDigi.roId();
+ 			int    roId     = caloDigi.roId();
 			double t0       = caloDigi.t0();
+				// TODO:+ calorimeterCalibrations->timeOffset(roId);
 			double adc2MeV  = calorimeterCalibrations->Peak2MeV(roId);
-			const std::vector<int>& waveform = caloDigi.waveform();
-
 			size_t index = &caloDigi - base;
 			art::Ptr<CaloDigi> caloDigiPtr(caloDigisHandle, index);
 
-			x.clear();
-			y.clear();
-			for (unsigned int i=0;i<waveform.size();++i)
-			  {
-			   	x.push_back(t0 + (i+0.5)*digiSampling_+eventWindowOffset); 
-				y.push_back(waveform.at(i)); 
-			  }
-
-			if (diagLevel_ > 3)
-			  {
-				    std::cout<<"[FastRecoDigiFromDigi::extractRecoDigi] extract amplitude from this set of hits for RoId="<<roId<<" a time "<<t0<<std::endl;
-				    for (auto const& val : waveform) {std::cout<< val<<" ";} 
-			  }
-
-			
-			double eDep= y[caloDigi.peakpos()]*adc2MeV;
+			double time = t0 + (caloDigi.peakpos()+0.5)*digiSampling_+ eventWindowOffset - shiftTime_; 
+			double eDep = (caloDigi.waveform().at(caloDigi.peakpos()))*adc2MeV; 
 			if(eDep <  minDigiE_) {continue;}
 			double eDepErr =  0*adc2MeV;
-			double time =  x[caloDigi.peakpos()] - shiftTime_;
 			double timeErr = 0;
 
-			 if (diagLevel_ > 1)
+			if (diagLevel_ > 1)
 			  {
-			    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extract "<<roId<<"  eDep="<<eDep<<" time="<<time<<std::endl;
+			    std::cout<<"[FastRecoDigiFromDigi::extractAmplitude] extracted Digi with roId =  "<<roId<<"  eDep = "<<eDep<<" time = " <<time<<std::endl;
 			  }
+
 			recoCaloHits.emplace_back(CaloRecoDigi(roId, caloDigiPtr, eDep,eDepErr,time,timeErr,0,1,false));
 			
 		}
