@@ -77,11 +77,8 @@ namespace mu2e {
 
 		extractRecoDigi(caloDigisH, *recoCaloDigiColl, ewmOffset);
 
-		if ( diagLevel_ > 0 )
-		{
-			printf("[FastRecoDigiFromDigi::produce] produced RecoCrystalHits ");
-			printf(", recoCaloDigiColl size  = %i \n", int(recoCaloDigiColl->size()));
-		}
+		if ( diagLevel_ > 0 )std::cout<<"[FastCaloRecoDigiFromDigi::produce] extracted "<<recoCaloDigiColl->size()<<" RecoDigis"<<std::endl;
+		
 
 		event.put(std::move(recoCaloDigiColl));
 

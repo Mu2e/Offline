@@ -45,11 +45,8 @@ CaloClusterFast :
 
 NewCaloClusterFast :
 {
-  module_type            : CaloProtoClusterFromCrystalHit
+  module_type            : CaloClusterOnline
   caloCrystalModuleLabel : FastCaloCrystalHitFromHit
-  mainClusterCollName    : None
-  splitClusterCollName   : None
-  isOnline               : true
   minClusterEnergy       : 50
   EminSeed               : 20 
   ExpandCut              : 1 
