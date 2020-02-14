@@ -6,7 +6,7 @@
 // Original author David Brown, LBNL
 //
 #include "TrackerMC/inc/StrawWaveform.hh"
-#include <math.h>
+#include <cmath>
 #include <boost/math/special_functions/binomial.hpp>
 
 using namespace std;

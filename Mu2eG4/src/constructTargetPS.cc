@@ -56,7 +56,7 @@
 
 #include "G4UnionSolid.hh"
 #include "G4IntersectionSolid.hh"
-#include <math.h>
+#include <cmath>
 using namespace std;
 
 namespace mu2e {
