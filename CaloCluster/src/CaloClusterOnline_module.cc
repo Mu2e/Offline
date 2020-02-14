@@ -92,7 +92,7 @@ namespace mu2e {
     return;
   }
     
-  void CaloClusterOnline::MakeOnlineClusters(CaloClusterCollection& recoClusters, const 				art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
+  void CaloClusterOnline::MakeOnlineClusters(CaloClusterCollection& recoClusters, const art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
       {
         const Calorimeter& cal = *(GeomHandle<Calorimeter>());
         const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
