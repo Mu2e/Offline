@@ -102,7 +102,7 @@ namespace mu2e {
         std::vector<CaloCrystalList>      clusterList, caloIdHitMap(cal.nCrystal());
         std::list<const CaloCrystalHit*>  seedList;
         std::vector<double>               clusterTime;
-        //Loop through collection, fill seeds and map:
+        
         for (const auto& hit : CaloCrystalHits)
         {
             if (hit.energyDep() <  EnoiseCut_) continue;
@@ -117,12 +117,7 @@ namespace mu2e {
             const CaloCrystalHit* crystalSeed = *seedList.begin();
             if (crystalSeed->energyDep() < EminSeed_) break;
 
-            if ( diagLevel_ > 0 )
-            {
-                std::cout<<"Number of CaloCrystalHits: "<<seedList.size()<<std::endl;
-            }
-
-            ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_);
+            ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_, true);
             finder.formCluster(caloIdHitMap);
 
             clusterList.push_back(finder.clusterList());
