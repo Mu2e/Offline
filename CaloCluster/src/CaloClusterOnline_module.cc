@@ -92,8 +92,7 @@ namespace mu2e {
     return;
   }
     
-  void CaloClusterOnline::MakeOnlineClusters(CaloClusterCollection& recoClusters,
-                                                         const art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
+  void CaloClusterOnline::MakeOnlineClusters(CaloClusterCollection& recoClusters, const 				art::Handle<CaloCrystalHitCollection> & CaloCrystalHitsHandle)
       {
         const Calorimeter& cal = *(GeomHandle<Calorimeter>());
         const CaloCrystalHitCollection& CaloCrystalHits(*CaloCrystalHitsHandle);
@@ -101,7 +100,6 @@ namespace mu2e {
 
         std::vector<CaloCrystalList>      clusterList, caloIdHitMap(cal.nCrystal());
         std::list<const CaloCrystalHit*>  seedList;
-        std::vector<double>               clusterTime;
         
         for (const auto& hit : CaloCrystalHits)
         {
@@ -119,15 +117,14 @@ namespace mu2e {
 
             ClusterFinder finder(cal,crystalSeed,deltaTime_, ExpandCut_, true);
             finder.formCluster(caloIdHitMap);
-
-            clusterList.push_back(finder.clusterList());
-            clusterTime.push_back(crystalSeed->time());
-
+	    
+	    clusterList.push_back(finder.clusterList());
             for (const auto& hit: finder.clusterList()) seedList.remove(hit);
 
       }
 
-        for (auto cluster : clusterList)  FillOnlineCluster(recoClusters,cluster,CaloCrystalHitsHandle,cal);
+        for (auto cluster : clusterList)  FillOnlineCluster(recoClusters,
+						cluster,CaloCrystalHitsHandle,cal);
   }
 
   void CaloClusterOnline::FillOnlineCluster(CaloClusterCollection& caloClustersColl, const CaloCrystalList& clusterPtrList, const art::Handle<CaloCrystalHitCollection>& CaloCrystalHitsHandle, const Calorimeter& cal)
@@ -163,7 +160,8 @@ namespace mu2e {
     const auto& seed  = **caloCrystalHitsPtrVector.begin();
     int iSection = cal.crystal(seed.id()).diskId();
 
-    CaloCluster Endcluster(iSection,time,timeErr,totalEnergy,totalEnergyErr,caloCrystalHitsPtrVector,ncry,0.0);
+    CaloCluster Endcluster(iSection,time,timeErr,totalEnergy,
+				totalEnergyErr,caloCrystalHitsPtrVector,ncry,0.0);
     Endcluster.cog3Vector(CLHEP::Hep3Vector(xcl,ycl,0));
     caloClustersColl.emplace_back(Endcluster);
   }
