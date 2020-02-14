@@ -58,6 +58,15 @@ physics : {
       maxFullPrint           : 201
     }
 
+    # Read Tracker Steps
+    checkts: {
+      module_type          : ReadTrackerSteps
+      diagLevel            : 0
+      hitMakerModuleLabel  : g4run
+      tsStepPoints         : tracker
+      maxFullPrint         : 201
+    }
+
     # Look at the hits from virtualdetectors
     readvd: {
       module_type      : ReadVirtualDetector
@@ -69,7 +78,8 @@ physics : {
   }
 
   p1 : [generate , g4run, @sequence::CommonMC.DigiSim, @sequence::TrackerMC.DigiSim, @sequence::CaloDigiMC.DigiSim, @sequence::CaloReco.Reco,randomsaver ]
-  e1 : [readGens, checkhits, readvd, outfile]
+#  e1 : [readGens, checkhits, checkts, readvd, outfile, dump]
+  e1 : [readGens, checkhits, checkts, readvd, outfile]
 
   trigger_paths  : [p1]
   end_paths      : [e1]
@@ -80,8 +90,15 @@ outputs:  {
 
   outfile : {
     module_type   :   RootOutput
-    fileName      :   "data_06.root"
+    fileName      :   "transportOnly.art"
   }
+  # Print info about all data products in the file.
+#  dump:
+#  {
+#    module_type   : DataProductDump
+#    # temporary patch for crash until art 2_10 or 2_11
+#    wantResolvedOnly: true
+#  }
 
 }
 
