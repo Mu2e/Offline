@@ -24,6 +24,7 @@
 #include "Mu2eG4/inc/EventNumberList.hh"
 #include "Mu2eG4/inc/PhysicalVolumeHelper.hh"
 #include "Mu2eG4/inc/PhysicsProcessInfo.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
@@ -32,8 +33,6 @@
 
 #include <map>
 #include <string>
-
-namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -48,7 +47,7 @@ namespace mu2e {
 
   public:
 
-    TrackingAction(const fhicl::ParameterSet& pset,
+    TrackingAction(const Mu2eG4Config::Top& conf,
                    Mu2eG4SteppingAction *,
                    unsigned stageOffset,
                    const Mu2eG4TrajectoryControl& trajectoryControl,
@@ -121,7 +120,7 @@ namespace mu2e {
     int    _mcTrajectoryMinSteps;
     unsigned _nKilledByFieldPropagator;
     double _rangeToIgnore;
-    
+
     // Non-owning pointer to stepping action; lifetime of pointee is one run.
     Mu2eG4SteppingAction * _steppingAction;
 
@@ -145,7 +144,7 @@ namespace mu2e {
     // If the track passes, the min hits cut and the momentum cut, add the
     // trajectory information to the output data product.
     void swapTrajectory( const G4Track* trk );
-      
+
   };
 
 } // end namespace mu2e

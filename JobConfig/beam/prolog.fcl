@@ -36,7 +36,6 @@ mu2e.physics.producers.g4run.commonBase: {
    visualization: @local::mu2eg4NoVisualization
 
    generatorModuleLabel: @nil
-   MultiStageParameters: @nil
 
    SDConfig: {
       enableSD: [ tracker, calorimeter, calorimeterRO, CRV, virtualdetector, protonabsorber ]
@@ -64,7 +63,6 @@ mu2e.physics.producers.g4run.flash.SDConfig.preSimulatedHits:  ["mothersFilter:v
 #----------------------------------------------------------------
 mu2e.physics.producers.g4run.muons: @local::mu2e.physics.producers.g4run.commonBase
 mu2e.physics.producers.g4run.muons.generatorModuleLabel: "generate"
-mu2e.physics.producers.g4run.muons.MultiStageParameters:  {}
 mu2e.physics.producers.g4run.muons.SDConfig.preSimulatedHits: []
 
 #================================================================

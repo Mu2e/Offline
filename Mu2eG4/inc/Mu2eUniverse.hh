@@ -1,7 +1,7 @@
 #ifndef Mu2eG4_Mu2eUniverse_hh
 #define Mu2eG4_Mu2eUniverse_hh
 //
-// (Pure virtual) Umbrela for the the Mu2e G4 world classes 
+// (Pure virtual) Umbrela for the the Mu2e G4 world classes
 //
 // $Id: Mu2eUniverse.hh,v 1.2 2012/11/19 23:03:24 genser Exp $
 // $Author: genser $
@@ -20,6 +20,7 @@
 // Mu2e includes
 #include "G4Helper/inc/G4Helper.hh"
 #include "GeometryService/inc/GeometryService.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 // G4 includes
 #include "G4Types.hh"
@@ -35,15 +36,15 @@ namespace mu2e {
   class Mu2eUniverse {
   public:
 
-    Mu2eUniverse();
+    explicit Mu2eUniverse(const Mu2eG4Config::Debug& debug);
     virtual ~Mu2eUniverse();
 
     // Construct everything.
-    // The non-const return type is eventually required 
+    // The non-const return type is eventually required
     // by G4VUserDetectorConstruction::Construct();
     virtual G4VPhysicalVolume * construct() = 0;
-      
-      virtual void constructSDandField() = 0;
+
+    virtual void constructSDandField() = 0;
 
   protected:
 

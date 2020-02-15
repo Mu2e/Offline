@@ -9,11 +9,11 @@
 //
 //-----------------------------------------------------------------------------
 
-namespace fhicl { class ParameterSet; }
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e{
 
-  void setBirksConstant(const fhicl::ParameterSet& pset);
+  void setBirksConstant(const Mu2eG4Config::Physics& phys, const Mu2eG4Config::Debug& debug);
 
 }  // end namespace mu2e
 

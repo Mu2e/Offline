@@ -3,7 +3,7 @@
 #ifndef Mu2eG4_Mu2eG4ResourceLimits_hh
 #define Mu2eG4_Mu2eG4ResourceLimits_hh
 
-namespace fhicl { class ParameterSet; }
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
 namespace mu2e {
 
@@ -12,7 +12,7 @@ namespace mu2e {
     unsigned maxStepPointCollectionSize_;
     unsigned maxSimParticleCollectionSize_;
   public:
-    explicit Mu2eG4ResourceLimits(const fhicl::ParameterSet& pset);
+    explicit Mu2eG4ResourceLimits(const Mu2eG4Config::Limits& lim);
 
     unsigned maxStepsPerTrack() const { return maxStepsPerTrack_; }
     unsigned maxStepPointCollectionSize() const { return maxStepPointCollectionSize_; }
