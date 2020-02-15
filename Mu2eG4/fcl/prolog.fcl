@@ -14,7 +14,6 @@ mu2eg4DefaultPhysics: {
     PiENuPolicy : "PDG"
     noDecay: []
     BirksConsts : {} // e.g. { G4_POLYSTYRENE : 0.07943 } // {string : mm/MeV}
-    useNewMuMinusAtomicCapture: false
     minRangeCut: 0.010 // mm
 
     // uncomment to activate the cuts per region; works for Geant4 "root" volumes
@@ -105,7 +104,6 @@ mu2eg4DefaultTrajectories: {
 #----------------
 mu2eg4DefaultDebug: {
     stepLimitKillerVerbose: false
-    printPhysicsProcessSummary : false
     PiENuPolicyVerbosity : 0
     printTrackTiming: false
     worldVerbosityLevel : 0
@@ -114,13 +112,11 @@ mu2eg4DefaultDebug: {
     storePhysicsTablesDir: "" // Make it not "" to activate; directory must exist first
     exportPDTStart : false
     exportPDTEnd : false
-    fillDiagnosticHistograms: false
     warnEveryNewRun : false
     diagLevel : 0
     mtDebugOutput : false
     trackingVerbosityLevel : 0
     steppingVerbosityLevel : 0
-    navigatorCheckMode : false
     checkFieldMap : 0
     writeGDML : false
     GDMLFileName : "mu2e.gdml"
@@ -150,7 +146,6 @@ mu2eg4runDefaultSingleStage: {
     Mu2eG4CommonCut       : @local::mu2eg4NoCut
 
     generatorModuleLabel  : generate
-    MultiStageParameters  : {}
 
     SDConfig : {
         verbosityLevel : 0
@@ -195,7 +190,6 @@ MTmu2eg4runDefaultSingleStage: {
     Mu2eG4CommonCut	  : @local::mu2eg4NoCut
 
     generatorModuleLabel  : generate
-    MultiStageParameters  : {}
 
     SDConfig : {
         verbosityLevel : 0

@@ -33,6 +33,7 @@
 #include "Mu2eG4/inc/findMaterialOrThrow.hh"
 #include "Mu2eG4/inc/checkConfigRelics.hh"
 #include "Mu2eG4/inc/Mu2eG4PerThreadStorage.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 #include "Mu2eG4/inc/Mu2eVisCommands.hh"
 #endif
@@ -53,7 +54,6 @@
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art_root_io/TFileService.h"
 #include "art_root_io/TFileDirectory.h"
@@ -93,8 +93,9 @@ namespace mu2e {
 
   class Mu2eG4 : public art::EDProducer {
   public:
-    Mu2eG4(fhicl::ParameterSet const& pSet);
-    // Accept compiler supplied d'tor
+
+    using Parameters = art::EDProducer::Table<Mu2eG4Config::Top>;
+    explicit Mu2eG4(const Parameters& pars);
 
   private:
     void produce(art::Event& e) override;
@@ -103,7 +104,7 @@ namespace mu2e {
     void endRun(art::Run &) override;
     void beginSubRun(art::SubRun &sr) override;
 
-    fhicl::ParameterSet pset_;
+    Mu2eG4Config::Top conf_;
 
     Mu2eG4ResourceLimits mu2elimits_;
     Mu2eG4TrajectoryControl trajectoryControl_;
@@ -128,8 +129,6 @@ namespace mu2e {
     // to be able to make StorePhysicsTable call after the event loop started
     G4VUserPhysicsList* physicsList_;
     std::string storePhysicsTablesDir_;
-
-    ActionInitialization const * _actionInit;
 
     //these cut objects are used to indicate what data product is produced
     //additional thread-local cut objects are owned by ActionInitialization
@@ -163,7 +162,7 @@ namespace mu2e {
 
     // Instance name of the timeVD StepPointMC data product.
     const StepInstanceName _tvdOutputName;
-    std::vector<double> timeVDtimes_;
+    bool timeVD_enabled_;
 
     // Do the G4 initialization that must be done only once per job, not once per run
     void initializeG4( GeometryService& geom, art::Run const& run );
@@ -185,103 +184,101 @@ namespace mu2e {
 
   }; // end G4 header
 
-  Mu2eG4::Mu2eG4(fhicl::ParameterSet const& pSet):
-    EDProducer{pSet},
-    pset_(pSet),
-    mu2elimits_(pSet.get<fhicl::ParameterSet>("ResourceLimits")),
-    trajectoryControl_(pSet.get<fhicl::ParameterSet>("TrajectoryControl")),
-    multiStagePars_(pSet.get<fhicl::ParameterSet>("MultiStageParameters")),
+  Mu2eG4::Mu2eG4(const Parameters& pars):
+    EDProducer{pars},
+    conf_(pars()),
+    mu2elimits_(pars().ResourceLimits()),
+    trajectoryControl_(pars().TrajectoryControl()),
+    multiStagePars_(pars()),
     _runManager(std::make_unique<G4RunManager>()),
-    _warnEveryNewRun(pSet.get<bool>("debug.warnEveryNewRun",false)),
-    _exportPDTStart(pSet.get<bool>("debug.exportPDTStart",false)),
-    _exportPDTEnd(pSet.get<bool>("debug.exportPDTEnd",false)),
+    _warnEveryNewRun(pars().debug().warnEveryNewRun()),
+    _exportPDTStart(pars().debug().exportPDTStart()),
+    _exportPDTEnd(pars().debug().exportPDTEnd()),
 
-    storePhysicsTablesDir_(pSet.get<std::string>("debug.storePhysicsTablesDir","")),
+    storePhysicsTablesDir_(pars().debug().storePhysicsTablesDir()),
 
-    stackingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4StackingOnlyCut", {}), mu2elimits_)),
-    steppingCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4SteppingOnlyCut", {}), mu2elimits_)),
-    commonCuts_(createMu2eG4Cuts(pSet.get<fhicl::ParameterSet>("Mu2eG4CommonCut", {}), mu2elimits_)),
+    stackingCuts_(createMu2eG4Cuts(pars().Mu2eG4StackingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    steppingCuts_(createMu2eG4Cuts(pars().Mu2eG4SteppingOnlyCut.get<fhicl::ParameterSet>(), mu2elimits_)),
+    commonCuts_(createMu2eG4Cuts(pars().Mu2eG4CommonCut.get<fhicl::ParameterSet>(), mu2elimits_)),
 
     _session(nullptr),
     _UI(nullptr),
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     _visManager(nullptr),
 #endif
-    // FIXME:  naming of pset parameters
-    _rmvlevel(pSet.get<int>("debug.diagLevel",0)),
-    _checkFieldMap(pSet.get<int>("debug.checkFieldMap",0)),
-    _visMacro(pSet.get<std::string>("visualization.initMacro")),
-    _visGUIMacro(pSet.get<std::string>("visualization.GUIMacro")),
-    _g4Macro(pSet.get<std::string>("g4Macro","")),
-    _generatorModuleLabel(pSet.get<std::string>("generatorModuleLabel", "")),
+    _rmvlevel(pars().debug().diagLevel()),
+    _checkFieldMap(pars().debug().checkFieldMap()),
+    _visMacro(pars().visualization().initMacro()),
+    _visGUIMacro(pars().visualization().GUIMacro()),
+    _g4Macro(pars().g4Macro()),
+    _generatorModuleLabel(pars().generatorModuleLabel()),
     _physVolHelper(),
-    //_printPhysicsProcessSummary(pSet.get<bool>("debug.printPhysicsProcessSummary",false)),
     _tvdOutputName(StepInstanceName::timeVD),
-    timeVDtimes_(pSet.get<std::vector<double> >("SDConfig.TimeVD.times")),
+    timeVD_enabled_(pars().SDConfig().TimeVD().enabled()),
     _timer(std::make_unique<G4Timer>()),
     _realElapsed(0.),
     _systemElapsed(0.),
     _userElapsed(0.),
     _standardMu2eDetector((art::ServiceHandle<GeometryService>())->isStandardMu2eDetector()),
-    _sensitiveDetectorHelper(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet())),
-    perThreadStore(pSet.get<fhicl::ParameterSet>("SDConfig", fhicl::ParameterSet()))
+    _sensitiveDetectorHelper(pars().SDConfig()),
+    perThreadStore()
     {
-    
-        if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
-            throw cet::exception("CONFIG")
-            << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
-    }
 
-    auto& collector = producesCollector();
-    _sensitiveDetectorHelper.declareProducts(collector);
+      if((_generatorModuleLabel == art::InputTag()) && multiStagePars_.genInputHits().empty()) {
+        throw cet::exception("CONFIG")
+          << "Error: both generatorModuleLabel and genInputHits are empty - nothing to do!\n";
+      }
 
-    produces<StatusG4>();
-    produces<SimParticleCollection>();
+      auto& collector = producesCollector();
+      _sensitiveDetectorHelper.declareProducts(collector);
 
-    if(!timeVDtimes_.empty()) {
-      produces<StepPointMCCollection>(_tvdOutputName.name());
-    }
+      produces<StatusG4>();
+      produces<SimParticleCollection>();
 
-    if(trajectoryControl_.produce()) {
-      produces<MCTrajectoryCollection>();
-    }
+      if(timeVD_enabled_) {
+        produces<StepPointMCCollection>(_tvdOutputName.name());
+      }
 
-    if(multiStagePars_.multiStage()) {
-      produces<SimParticleRemapping>();
-    }
+      if(trajectoryControl_.produce()) {
+        produces<MCTrajectoryCollection>();
+      }
 
-    //can we simplify this and directly declare the relevent products
-    //rather than contructing these unneccesary object?
-    stackingCuts_->declareProducts(collector);
-    steppingCuts_->declareProducts(collector);
-    commonCuts_->declareProducts(collector);
+      if(multiStagePars_.multiStage()) {
+        produces<SimParticleRemapping>();
+      }
 
-    // Declare which products this module will read.
-    auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
-    if (inputPhysVolTag != invalid_tag) {
-      consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
-    }
-    auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
-    if (inputSimParticlesTag != invalid_tag) {
-      consumes<SimParticleCollection>(inputSimParticlesTag);
-    }
-    auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
-    if (inputMCTrajectoryTag != invalid_tag) {
-      consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
-    }
-    if (_generatorModuleLabel != invalid_tag) {
-      consumes<GenParticleCollection>(_generatorModuleLabel);
-    }
-    for (auto const& tag : multiStagePars_.genInputHits()) {
-      consumes<StepPointMCCollection>(tag);
-    }
+      //can we simplify this and directly declare the relevent products
+      //rather than contructing these unneccesary object?
+      stackingCuts_->declareProducts(collector);
+      steppingCuts_->declareProducts(collector);
+      commonCuts_->declareProducts(collector);
 
-    produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
+      // Declare which products this module will read.
+      auto const& inputPhysVolTag = multiStagePars_.inputPhysVolumeMultiInfo();
+      if (inputPhysVolTag != invalid_tag) {
+        consumes<PhysicalVolumeInfoMultiCollection, art::InSubRun>(inputPhysVolTag);
+      }
+      auto const& inputSimParticlesTag = multiStagePars_.inputSimParticles();
+      if (inputSimParticlesTag != invalid_tag) {
+        consumes<SimParticleCollection>(inputSimParticlesTag);
+      }
+      auto const& inputMCTrajectoryTag = multiStagePars_.inputMCTrajectories();
+      if (inputMCTrajectoryTag != invalid_tag) {
+        consumes<MCTrajectoryCollection>(inputMCTrajectoryTag);
+      }
+      if (_generatorModuleLabel != invalid_tag) {
+        consumes<GenParticleCollection>(_generatorModuleLabel);
+      }
+      for (auto const& tag : multiStagePars_.genInputHits()) {
+        consumes<StepPointMCCollection>(tag);
+      }
 
-    // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
-    createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
+      produces<PhysicalVolumeInfoMultiCollection,art::InSubRun>();
 
-} // end G4:G4(fhicl::ParameterSet const& pSet);
+      // The string "G4Engine" is magic; see the docs for RandomNumberGenerator.
+      createEngine( art::ServiceHandle<SeedService>()->getSeed(), "G4Engine");
+
+    } // end Mu2eG4 constructor
 
 
   // That should really be beginJob().  G4 does not care about run
@@ -289,8 +286,8 @@ namespace mu2e {
   // that Mu2e GeometryService refuses to give information outside of
   // an art run.  That makes sense for alignments and such, but
   // necessitates workarounds for G4 geometry.
-void Mu2eG4::beginRun( art::Run &run){
-    
+  void Mu2eG4::beginRun( art::Run &run){
+
     art::ServiceHandle<GeometryService> geom;
     SimpleConfig const& config  = geom->config();
     checkConfigRelics(config);
@@ -323,10 +320,10 @@ void Mu2eG4::beginRun( art::Run &run){
       if( _checkFieldMap>0 ) generateFieldMap(_originInWorld,_checkFieldMap);
       if ( _exportPDTStart ) exportG4PDT( "Start:" );//once per job
     }
-}
+  }
 
 
-void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
+  void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     if ( _rmvlevel > 0 ) {
       mf::LogInfo logInfo("GEOM");
@@ -337,35 +334,35 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
 
     // Create user actions and register them with G4.
-    G4VUserDetectorConstruction* allMu2e;
+    G4VUserDetectorConstruction* allMu2e = nullptr;
 
     // as mentioned above, we give the last element to the Master thread to setup the InstanceMap in the ctor of the SDH class
-    
+
     if (_standardMu2eDetector) {
       geom.addWorldG4(*GeomHandle<Mu2eHall>());
 
-      allMu2e = 
-     	(new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(pset_, &(_sensitiveDetectorHelper)  ),
-     				   std::make_unique<ConstructMaterials>(pset_)) );
-    
+      allMu2e =
+        (new WorldMaker<Mu2eWorld>(std::make_unique<Mu2eWorld>(conf_, &(_sensitiveDetectorHelper)  ),
+                                   std::make_unique<ConstructMaterials>(conf_.debug())) );
+
       _originInWorld = (GeomHandle<WorldG4>())->mu2eOriginInWorld();
     }
     else {
       allMu2e =
-	(new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(pset_, &(_sensitiveDetectorHelper) ),
-					std::make_unique<ConstructMaterials>(pset_)) );
+        (new WorldMaker<Mu2eStudyWorld>(std::make_unique<Mu2eStudyWorld>(conf_, &(_sensitiveDetectorHelper) ),
+                                        std::make_unique<ConstructMaterials>(conf_.debug())) );
 
       // non-Mu2e detector: the system origin os set to (0.,0.,0.); do not use geometry service for that
       _originInWorld = G4ThreeVector(0.0,0.0,0.0);
     }
 
-    preG4InitializeTasks(pset_);
+    preG4InitializeTasks(conf_.physics(), conf_.debug());
 
     _runManager->SetVerboseLevel(_rmvlevel);
 
     _runManager->SetUserInitialization(allMu2e);
 
-    physicsList_ = physicsListDecider(pset_);
+    physicsList_ = physicsListDecider(conf_.physics(), conf_.debug());
     physicsList_->SetVerboseLevel(_rmvlevel);
 
     G4ParticleHPManager::GetInstance()->SetVerboseLevel(_rmvlevel);
@@ -376,7 +373,7 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
 
     //this is where the UserActions are instantiated
-    ActionInitialization* actioninit = new ActionInitialization(pset_,
+    ActionInitialization* actioninit = new ActionInitialization(conf_,
                                                                 &_sensitiveDetectorHelper,
                                                                 &perThreadStore,
                                                                 &_physVolHelper,
@@ -391,10 +388,10 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
 
     // Any final G4 interactive commands ...
     if ( !_g4Macro.empty() ) {
-        G4String command("/control/execute ");
-        ConfigFileLookupPolicy path;
-        command += path(_g4Macro);
-        _UI->ApplyCommand(command);
+      G4String command("/control/execute ");
+      ConfigFileLookupPolicy path;
+      command += path(_g4Macro);
+      _UI->ApplyCommand(command);
 
     }
 
@@ -402,33 +399,33 @@ void Mu2eG4::initializeG4( GeometryService& geom, art::Run const& run ){
     _runManager->Initialize();
 
     if ( _rmvlevel > 0 ) {
-       G4cout << __func__
-              << " After Initialize(), G4RunManagerType:  "
-              << _runManager->GetRunManagerType() << G4endl;
+      G4cout << __func__
+             << " After Initialize(), G4RunManagerType:  "
+             << _runManager->GetRunManagerType() << G4endl;
     }
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
     // Setup the graphics if requested.
     if ( !_visMacro.empty() ) {
 
-        _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive());
-        _visManager->Initialize();
+      _visManager = std::unique_ptr<G4VisManager>(new G4VisExecutive());
+      _visManager->Initialize();
 
-        ConfigFileLookupPolicy visPath;
+      ConfigFileLookupPolicy visPath;
 
-        G4String command("/control/execute ");
-        command += visPath(_visMacro);
+      G4String command("/control/execute ");
+      command += visPath(_visMacro);
 
-        _UI->ApplyCommand( command );
+      _UI->ApplyCommand( command );
 
     }
 #endif
 
-} // end G4::initializeG4
+  } // end G4::initializeG4
 
 
-void Mu2eG4::beginSubRun(art::SubRun& sr)
-{
+  void Mu2eG4::beginSubRun(art::SubRun& sr)
+  {
     using Collection_t = PhysicalVolumeInfoMultiCollection;
     auto mvi = std::make_unique<Collection_t>();
 
@@ -444,23 +441,23 @@ void Mu2eG4::beginSubRun(art::SubRun& sr)
     mvi->emplace_back(multiStagePars_.simParticleNumberOffset(), _physVolHelper.persistentSingleStageInfo());
 
     sr.put(std::move(mvi));
-}
+  }
 
 
-// Create one G4 event and copy its output to the art::event.
-void Mu2eG4::produce(art::Event& event) {
+  // Create one G4 event and copy its output to the art::event.
+  void Mu2eG4::produce(art::Event& event) {
 
     art::Handle<GenParticleCollection> gensHandle;
     if(!(_generatorModuleLabel == art::InputTag())) {
-        event.getByLabel(_generatorModuleLabel, gensHandle);
+      event.getByLabel(_generatorModuleLabel, gensHandle);
     }
-    
+
     // StepPointMCCollection of input hits from the previous simulation stage
     HitHandles genInputHits;
     for(const auto& i : multiStagePars_.genInputHits()) {
-        genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
+      genInputHits.emplace_back(event.getValidHandle<StepPointMCCollection>(i));
     }
-    
+
     // ProductID and ProductGetter for the SimParticleCollection.
     art::ProductID simPartId(event.getProductID<SimParticleCollection>());
     art::EDProductGetter const* simProductGetter = event.productGetter(simPartId);
@@ -472,78 +469,78 @@ void Mu2eG4::produce(art::Event& event) {
 
     // Run G4 for this event and access the completed event.
     BeamOnDoOneArtEvent( event.id().event() );
-    
-    
-    /////////////////////////////////////////////////////////////////////////////////////    
+
+
+    /////////////////////////////////////////////////////////////////////////////////////
     std::unique_ptr<SimParticleCollection> simsToCheck = perThreadStore.getSimPartCollection();
 
     if (simsToCheck == nullptr) {
-        numExcludedEvents++;
+      numExcludedEvents++;
     }
     else {
-        
-        event.put(std::move(perThreadStore.getG4Status()));
-        event.put(std::move(simsToCheck));
-        perThreadStore.putSensitiveDetectorData(simProductGetter);
-        perThreadStore.putCutsData(simProductGetter);
-        
-        if(!timeVDtimes_.empty()) {
-            event.put(std::move(perThreadStore.getTVDHits()),perThreadStore.getTVDName());
-        }
 
-        if(trajectoryControl_.produce()) {
-            event.put(std::move(perThreadStore.getMCTrajCollection()));
-        }
+      event.put(std::move(perThreadStore.getG4Status()));
+      event.put(std::move(simsToCheck));
+      perThreadStore.putSensitiveDetectorData(simProductGetter);
+      perThreadStore.putCutsData(simProductGetter);
 
-        if(multiStagePars_.multiStage()) {
-            event.put(std::move(perThreadStore.getSimParticleRemap()));
-        }
+      if(timeVD_enabled_) {
+        event.put(std::move(perThreadStore.getTVDHits()),perThreadStore.getTVDName());
+      }
 
-        if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
-            event.put(std::move(perThreadStore.getExtMonFNALSimHitCollection()));
-        }
+      if(trajectoryControl_.produce()) {
+        event.put(std::move(perThreadStore.getMCTrajCollection()));
+      }
+
+      if(multiStagePars_.multiStage()) {
+        event.put(std::move(perThreadStore.getSimParticleRemap()));
+      }
+
+      if(_sensitiveDetectorHelper.extMonPixelsEnabled()) {
+        event.put(std::move(perThreadStore.getExtMonFNALSimHitCollection()));
+      }
 
     }//simsToCheck !=nullptr
 
     _runManager->TerminateOneEvent();
     perThreadStore.clearData();
-}//end Mu2eG4::produce
+  }//end Mu2eG4::produce
 
 
-// Tell G4 that this run is over.
-void Mu2eG4::endRun(art::Run & run){
+  // Tell G4 that this run is over.
+  void Mu2eG4::endRun(art::Run & run){
 
-        BeamOnEndRun();
-        G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
-}
+    BeamOnEndRun();
+    G4cout << "at endRun: numExcludedEvents = " << numExcludedEvents << G4endl;
+  }
 
 
-void Mu2eG4::endJob(){
+  void Mu2eG4::endJob(){
 
     if ( _exportPDTEnd ) exportG4PDT( "End:" );
     _physVolHelper.endRun();
-}
+  }
 
 
 
 
 
-/**************************************************************
+  /**************************************************************
                     FUNCTION DEFINITIONS
- **************************************************************/
+  **************************************************************/
 
-// Do the "begin run" parts of BeamOn.
-void Mu2eG4::BeamOnBeginRun( unsigned int runNumber, const char* macroFile, G4int n_select){
+  // Do the "begin run" parts of BeamOn.
+  void Mu2eG4::BeamOnBeginRun( unsigned int runNumber, const char* macroFile, G4int n_select){
 
     if ( _rmvlevel > 0 ) {
-        G4cout << __func__ << ": runNumber: " << runNumber << G4endl;
+      G4cout << __func__ << ": runNumber: " << runNumber << G4endl;
     }
 
     _runManager->SetRunIDCounter(runNumber);
 
     bool cond = _runManager->ConfirmBeamOnCondition();
     if(!cond){
-        throw cet::exception("G4INIT")
+      throw cet::exception("G4INIT")
         << "ConfirmBeamOn failed\n";
     }
 
@@ -553,24 +550,24 @@ void Mu2eG4::BeamOnBeginRun( unsigned int runNumber, const char* macroFile, G4in
 
 
     G4int numberOfEventsToBeProcessed = std::numeric_limits<int>::max(); // largest int for now
-    
+
     _runManager->SetNumberOfEventsToBeProcessed(numberOfEventsToBeProcessed);// this would have been set by BeamOn
     _runManager->ConstructScoringWorlds();
     _runManager->RunInitialization();
-    
+
     _runManager->InitializeEventLoop(numberOfEventsToBeProcessed,macroFile,n_select);
-    
-
-}//BeamOnBeginRun
 
 
-// Do the "per event" part of DoEventLoop.
-void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber ){
+  }//BeamOnBeginRun
+
+
+  // Do the "per event" part of DoEventLoop.
+  void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber ){
 
     if ( _rmvlevel > 1 ) {
-        G4cout << __func__ << ": eventNumber: " << eventNumber << G4endl;
+      G4cout << __func__ << ": eventNumber: " << eventNumber << G4endl;
     }
-    
+
     _timer->Start();
     _runManager->ProcessOneEvent(eventNumber);
     _timer->Stop();
@@ -582,14 +579,14 @@ void Mu2eG4::BeamOnDoOneArtEvent( int eventNumber ){
 
     // Pause to see graphics.
     if ( !_visMacro.empty() ){
-        DoVisualizationFromMacro();
+      DoVisualizationFromMacro();
     }
 
-}//BeamOnDoOneArtEvent
+  }//BeamOnDoOneArtEvent
 
 
-// Do the "end of run" parts of DoEventLoop and BeamOn.
-void Mu2eG4::BeamOnEndRun(){
+  // Do the "end of run" parts of DoEventLoop and BeamOn.
+  void Mu2eG4::BeamOnEndRun(){
 
     if (storePhysicsTablesDir_!="") {
       if ( _rmvlevel > 0 ) {
@@ -608,18 +605,18 @@ void Mu2eG4::BeamOnEndRun(){
            << "s Real="  << _realElapsed
            << "s Sys="   << _systemElapsed
            << "s" << G4endl;
-    
-}//BeamOnEndRun
+
+  }//BeamOnEndRun
 
 
-void Mu2eG4::DoVisualizationFromMacro(){
+  void Mu2eG4::DoVisualizationFromMacro(){
 
     // Prompt to continue and wait for reply.
     cout << "Enter a character to go to the next event" << endl;
     cout << "q quits, s enters G4 interactive session, g enters a GUI session (if available)"
-    << endl;
+         << endl;
     cout << "Once in G4 interactive session, to quit it type \"exit\" or use File menu"
-    << endl;
+         << endl;
 
     string userinput;
     cin >> userinput;
@@ -627,76 +624,76 @@ void Mu2eG4::DoVisualizationFromMacro(){
 
     // Check if user is requesting an early termination of the event loop.
     if ( !userinput.empty() ){
-        // Check only the first character; >> skips whitespace by default
-        char c = tolower( userinput[0] );
-        if ( c == 'q' ){
-            throw cet::exception("CONTROL")
-            << "Early end of event loop requested inside G4, \n";
-        } else if ( c == 's' || c == 'g' || c == 'v' ){
-            // v is for backward compatibility
-            G4int argc=1;
-            // Cast away const-ness; required by the G4 interface ...
-            char* dummy = (char *)"dummy";
-            char** argv = &dummy;
-            G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
-            new G4UIExecutive(argc, argv,"tcsh") :
-            new G4UIExecutive(argc, argv);
+      // Check only the first character; >> skips whitespace by default
+      char c = tolower( userinput[0] );
+      if ( c == 'q' ){
+        throw cet::exception("CONTROL")
+          << "Early end of event loop requested inside G4, \n";
+      } else if ( c == 's' || c == 'g' || c == 'v' ){
+        // v is for backward compatibility
+        G4int argc=1;
+        // Cast away const-ness; required by the G4 interface ...
+        char* dummy = (char *)"dummy";
+        char** argv = &dummy;
+        G4UIExecutive* UIE = ( c == 's' || c == 'v' ) ?
+          new G4UIExecutive(argc, argv,"tcsh") :
+          new G4UIExecutive(argc, argv);
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined G4VIS_USE_OPENGLQT )
 
-            if (UIE->IsGUI()) {
+        if (UIE->IsGUI()) {
 
-                // we add a command here and initialize it
-                // (/vis/sceneHandler has to exist prior to this)
-                auto* drEv = new Mu2eVisCommandSceneHandlerDrawEvent();
-                _visManager->RegisterMessenger(drEv); // assumes ownership;
-                // drEv->SetVisManager(_visManager.get());
-                // vis manager pointer is static member of the drEv base
-                // class so the above is not needed
+          // we add a command here and initialize it
+          // (/vis/sceneHandler has to exist prior to this)
+          auto* drEv = new Mu2eVisCommandSceneHandlerDrawEvent();
+          _visManager->RegisterMessenger(drEv); // assumes ownership;
+          // drEv->SetVisManager(_visManager.get());
+          // vis manager pointer is static member of the drEv base
+          // class so the above is not needed
 
-                if ( !_visGUIMacro.empty() ){
-                    G4String command("/control/execute ");
-                    ConfigFileLookupPolicy visPath;
-                    command += visPath(_visGUIMacro);
-                    _UI->ApplyCommand( command );
+          if ( !_visGUIMacro.empty() ){
+            G4String command("/control/execute ");
+            ConfigFileLookupPolicy visPath;
+            command += visPath(_visGUIMacro);
+            _UI->ApplyCommand( command );
 
-                    cout << "In GUI interactive session use the \"Start Here\" menu "
-                    << "followed by the Viewer commands or redisplaying event"
-                    << endl;
+            cout << "In GUI interactive session use the \"Start Here\" menu "
+                 << "followed by the Viewer commands or redisplaying event"
+                 << endl;
 
-                } else {
-                    cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
-                }
+          } else {
+            cout << __func__ << " WARNING: visGUIMacro empty, may need to be defined in fcl" << endl;
+          }
 
-            } // end UIE->IsGUI()
+        } // end UIE->IsGUI()
 #endif
-            UIE->SessionStart();
-            delete UIE;
+        UIE->SessionStart();
+        delete UIE;
 
-            //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
-            //will select it if not current to deal with a case which may occur
-            //e.g. in a simultaneous use of OGL & Qt
+        //If current scene is scene-0 and if scene-handler-0 has viewer-0 we
+        //will select it if not current to deal with a case which may occur
+        //e.g. in a simultaneous use of OGL & Qt
 
-            // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
+        // basically _UI->ApplyCommand("/vis/viewer/select viewer-0"); // to have tracks drawn
 
 #if ( defined G4VIS_USE_OPENGLX || defined G4VIS_USE_OPENGL || defined  G4VIS_USE_OPENGLQT )
-            G4String viewerToLookFor("viewer-0");
-            G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
-            if (pViewer) {
-                if (pViewer != _visManager->GetCurrentViewer()) {
-                    _visManager->SetCurrentViewer(pViewer);
-                }
-            }
-            // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
-            // if (gsys) {
-            //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
-            // }
+        G4String viewerToLookFor("viewer-0");
+        G4VViewer* pViewer = _visManager->GetViewer(viewerToLookFor);
+        if (pViewer) {
+          if (pViewer != _visManager->GetCurrentViewer()) {
+            _visManager->SetCurrentViewer(pViewer);
+          }
+        }
+        // G4VGraphicsSystem* gsys = _visManager->GetCurrentGraphicsSystem();
+        // if (gsys) {
+        //   cout << __func__ << " current GraphicsSystem Name " << gsys->GetName() <<  endl;
+        // }
 #endif
-        } // end c == 'q'
+      } // end c == 'q'
 
     } // end !userinput.empty()
 
-}//DoVisualizationFromMacro
+  }//DoVisualizationFromMacro
 
 
 } // End of namespace mu2e

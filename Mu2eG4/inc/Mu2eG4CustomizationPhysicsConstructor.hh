@@ -6,8 +6,8 @@
 #define Mu2eG4CustomizationPhysicsConstructor_h 1
 
 #include "G4VPhysicsConstructor.hh"
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
 
-namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -15,7 +15,7 @@ namespace mu2e {
   {
   public:
 
-    explicit Mu2eG4CustomizationPhysicsConstructor(const fhicl::ParameterSet* pset);
+    explicit Mu2eG4CustomizationPhysicsConstructor(const Mu2eG4Config::Physics* phys, const Mu2eG4Config::Debug *debug);
 
     Mu2eG4CustomizationPhysicsConstructor();
 
@@ -31,7 +31,8 @@ namespace mu2e {
 
     // non owning pointer
     // can't be ref due to the default constructor factory requirement
-    const fhicl::ParameterSet* pset_;
+    const Mu2eG4Config::Physics* phys_;
+    const Mu2eG4Config::Debug* debug_;
 
   };
 

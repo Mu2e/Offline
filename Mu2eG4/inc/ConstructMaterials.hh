@@ -13,6 +13,8 @@
 #include <string>
 #include <memory>
 
+#include "Mu2eG4/inc/Mu2eG4Config.hh"
+
 // Forward references in global namespace.
 class G4Box;
 class G4LogicalVolume;
@@ -20,8 +22,6 @@ class G4VPhysicalVolume;
 class G4Element;
 
 #include "G4String.hh"
-
-namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -39,8 +39,7 @@ namespace mu2e {
   class ConstructMaterials{
   public:
 
-    ConstructMaterials();
-    explicit ConstructMaterials(const fhicl::ParameterSet& pset);
+    explicit ConstructMaterials(const Mu2eG4Config::Debug& debug);
 
     ~ConstructMaterials();
 
