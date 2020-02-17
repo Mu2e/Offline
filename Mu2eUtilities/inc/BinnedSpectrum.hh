@@ -9,8 +9,8 @@
 // $Author: knoepfel $
 // $Date: 2014/04/25 17:26:42 $
 //
-// Original author Kyle Knoepfel 
-//                 
+// Original author Kyle Knoepfel
+//
 
 // C++ includes
 #include <assert.h>
@@ -19,10 +19,9 @@
 #include <utility>
 #include <vector>
 
-#include "cetlib_except/exception.h"
-
 #include "Mu2eUtilities/inc/Table.hh"
-#include "fhiclcpp/ParameterSet.h"
+
+namespace fhicl { class ParameterSet; }
 
 namespace mu2e {
 
@@ -80,14 +79,14 @@ namespace mu2e {
       if (_fixMax){
         for (double step = XMax-_binWidth/2.; step >= XMin + _binWidth/2.; step += _binWidth){
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) ); 
+          pdf     .push_back( s.getWeight(step) );
         }
         std::reverse(abscissa.begin(),abscissa.end());
         std::reverse(pdf.begin(),pdf.end());
       }else{
-        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {	 
+        for ( double step = XMin+_binWidth/2. ; step <= XMax-_binWidth/2.; step += _binWidth ) {
           abscissa.push_back( step );
-          pdf     .push_back( s.getWeight(step) ); 
+          pdf     .push_back( s.getWeight(step) );
         }
       }
       if (_finalBin && abscissa[abscissa.size()-1] + _binWidth/2. < XMax){
