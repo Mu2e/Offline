@@ -32,11 +32,7 @@ physics : {
  
    producers: {
 
-      generate: {
-         module_type          : PrimaryProtonGunR
-         inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsR.txt"
-      }
-
+      generate: @local::PrimaryProtonGun
    }
 
 

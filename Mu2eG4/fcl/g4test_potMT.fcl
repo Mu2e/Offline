@@ -31,10 +31,7 @@ physics : {
   producers: {
 
     # Generate the event.
-      generate: {
-         module_type          : PrimaryProtonGunR
-         inputfile            : "Mu2eG4/test/genconfig_PrimaryProtonsR.txt"
-      }
+      generate : @local::PrimaryProtonGun
 
     # Run G4 and add its output to the event.
     g4MTrun : @local::MTmu2eg4runDefaultSingleStage

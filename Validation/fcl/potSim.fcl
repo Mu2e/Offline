@@ -14,10 +14,8 @@ source.module_type : EmptyEvent
 
 physics : {
    producers: {
-      generate: {
-         module_type          : PrimaryProtonGunR
-         inputfile            : "JobConfig/beam/genconfig_PrimaryProtons.txt"
-      }
+      generate: @local::PrimaryProtonGun
+
       @table::Mu2eG4.producers
     }
 
