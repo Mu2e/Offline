@@ -29,16 +29,24 @@
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
-#include "EventGenerator/inc/PrimaryProtonGunConfig.hh"
+#include "GlobalConstantsService/inc/GlobalConstantsHandle.hh"
+#include "GlobalConstantsService/inc/PhysicsParams.hh"
 
 // Framework Includes
-
+#include "fhiclcpp/types/Atom.h"
+#include "fhiclcpp/types/OptionalAtom.h"
+#include "fhiclcpp/types/Sequence.h"
+#include "fhiclcpp/types/TupleAs.h"
+#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
 #include "CLHEP/Random/JamesRandom.h"
 #include "CLHEP/Units/PhysicalConstants.h"
+
+// C++ includes
+#include <string>
 
 
 // Forward references outside of namespace mu2e
@@ -47,12 +55,41 @@ namespace art {
 }
 
 namespace mu2e {
-    
-  class PhysicsParams;
-    
+        
   class PrimaryProtonGunImpl: public GeneratorBase {
       
   public:
+      
+    struct PrimaryProtonGunConfig {
+          
+      using Name=fhicl::Name;
+      using Comment=fhicl::Comment;
+      using Hep3Vector_t = CLHEP::Hep3Vector(double, double, double);
+          
+      fhicl::OptionalAtom<double> proton_momentum {Name("proton_momentum"), Comment("Momentum of generated proton in MeV. \nThe default is set dynamically in the constructor using the Global Constants Service, PhysicsParams.")};
+          
+      fhicl::TupleAs<Hep3Vector_t> beamDisplacementOnTarget {Name("beamDisplacementOnTarget"), Comment("Offset of production point relative to upstream face of production target; in mm.") };
+          
+      fhicl::Atom<double> beamRotationTheta {Name("beamRotationTheta"), Comment("Rotation of beam direction in Theta wrt to target angle; in deg"), 0.};
+      fhicl::Atom<double> beamRotationPhi {Name("beamRotationPhi"), Comment("Rotation of beam direction in Phi wrt to target angle; in deg"), 0.};
+      fhicl::Atom<double> beamRotationPsi {Name("beamRotationPsi"), Comment("Rotation of beam direction in Psi wrt to target angle; in deg"), 0.};
+          
+      fhicl::Atom<double> beamSpotSigma {Name("beamSpotSigma"), Comment("Beamspot is 2D gaussian with this sigma in x and y.") };
+          
+      fhicl::Atom<double> czmin {Name("czmin"), Comment("Limit on generated z over a unit sphere."), -1.};
+      fhicl::Atom<double> czmax {Name("czmax"), Comment("Limit on generated z over a unit sphere."), 1.};
+          
+      fhicl::Atom<double> phimin {Name("phimin"), Comment("Limit on generated phi over a unit sphere."), 0.};
+      fhicl::Atom<double> phimax {Name("phimax"), Comment("Limit on generated phi over a unit sphere."), CLHEP::twopi};
+          
+      fhicl::Atom<double> tmin {Name("tmin"), Comment("Time of generation is flat within these limits. Time in ns."), 0.};
+      fhicl::Atom<double> tmax {Name("tmax"), Comment("Time of generation is flat within these limits. Time in ns."), 100.};
+          
+      fhicl::Atom<std::string> shape {Name("shape"), Comment("Shape of beam spot as a function of x and y."), "gaus"};
+          
+      fhicl::Atom<double> rmax {Name("rmax"), Comment("Maximum radius of beam spot for flat distribution"), 100.};
+      fhicl::Atom<double> mean {Name("mean"), Comment("Poisson mean; negative for non-random abs(mean)"), -1};
+    };
       
     explicit PrimaryProtonGunImpl(CLHEP::HepRandomEngine& engine, const PrimaryProtonGunConfig& config);
       

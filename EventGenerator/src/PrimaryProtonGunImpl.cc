@@ -42,7 +42,7 @@ namespace mu2e {
 
     // Parameters from the run time configuration.
     _config(config),
-    _p(config.proton_momentum()),
+    _p(GlobalConstantsHandle<PhysicsParams>()->getProtonMomentum()),
     _beamDisplacementOnTarget(config.beamDisplacementOnTarget()),
     _beamRotationTheta(config.beamRotationTheta()),
     _beamRotationPhi(config.beamRotationPhi()),
@@ -57,7 +57,10 @@ namespace mu2e {
     _randFlat{engine},
     _randGaussQ{engine, 0., config.beamSpotSigma()},
     _randomUnitSphere{engine, config.czmin(), config.czmax(), config.phimin(), config.phimax()}
-    {}
+    {
+        _config.proton_momentum(_p);
+        
+    }
 
   void PrimaryProtonGunImpl::generate( GenParticleCollection& genParts ){
     long n = _config.mean() < 0 ? static_cast<long>(-_config.mean()): _randPoissonQ.fire();
