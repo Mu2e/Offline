@@ -1,9 +1,9 @@
-#ifndef EventGenerator_PrimaryProtonGun_hh
-#define EventGenerator_PrimaryProtonGun_hh
+#ifndef EventGenerator_PrimaryProtonGunImpl_hh
+#define EventGenerator_PrimaryProtonGunImpl_hh
 //
 // Generate a proton with the primary proton energy
 //
-// $Id: PrimaryProtonGun.hh,v 1.17 2013/12/13 21:35:07 gandr Exp $
+// $Id: PrimaryProtonGunImpl.hh,v 1.17 2013/12/13 21:35:07 gandr Exp $
 // $Author: gandr $
 // $Date: 2013/12/13 21:35:07 $
 //
@@ -25,23 +25,21 @@
 //    system is done in Mu2eG4/src/PrimaryGeneratorAction.cc .
 //
 
-//C++ includes
-#include <string>
 
 // Mu2e includes
 #include "EventGenerator/inc/GeneratorBase.hh"
 #include "Mu2eUtilities/inc/RandomUnitSphere.hh"
+#include "EventGenerator/inc/PrimaryProtonGunConfig.hh"
 
 // Framework Includes
-#include "art/Framework/Principal/Run.h"
 
-#include "CLHEP/Vector/ThreeVector.h"
 #include "CLHEP/Vector/Rotation.h"
 #include "CLHEP/Random/RandFlat.h"
 #include "CLHEP/Random/RandGaussQ.h"
 #include "CLHEP/Random/RandPoissonQ.h"
-
 #include "CLHEP/Random/JamesRandom.h"
+#include "CLHEP/Units/PhysicalConstants.h"
+
 
 // Forward references outside of namespace mu2e
 namespace art {
@@ -49,17 +47,15 @@ namespace art {
 }
 
 namespace mu2e {
-
-  // Forward reference.
-  class SimpleConfig;
-
-  class PrimaryProtonGun: public GeneratorBase{
+    
+  class PhysicsParams;
+    
+  class PrimaryProtonGunImpl: public GeneratorBase {
+      
   public:
-
-    PrimaryProtonGun(CLHEP::HepRandomEngine& engine, art::Run const& run, SimpleConfig const& config);
-
-    ~PrimaryProtonGun() = default;
-
+      
+    explicit PrimaryProtonGunImpl(CLHEP::HepRandomEngine& engine, const PrimaryProtonGunConfig& config);
+      
     virtual void generate( GenParticleCollection& );
 
   private:
@@ -70,7 +66,8 @@ namespace mu2e {
     double _proton_mass;
 
     // Start parameters from the run time configuration.
-
+    PrimaryProtonGunConfig _config;
+      
     // Momentum of the generated proton; in MeV.
     double _p;
 
@@ -82,15 +79,6 @@ namespace mu2e {
     double _beamRotationPhi;
     double _beamRotationPsi;
 
-    // Beamspot is a 2D gaussian with this sigma in both x and y.
-    double _beamSpotSigma;
-
-    // Limits on the generated direction; generated over a unit sphere within these limits.
-    double _czmin;
-    double _czmax;
-    double _phimin;
-    double _phimax;
-
     // Time of generation is a flat distribution within these limits. Time in ns.
     double _tmin;
     double _tmax;
@@ -100,16 +88,16 @@ namespace mu2e {
 
     // radius max, for flat distribution
     double _rmax;
-
-    double _mean;  // poisson mean; negative for non-random abs(mean)
+            
     CLHEP::RandPoissonQ _randPoissonQ;
     CLHEP::RandFlat     _randFlat;
     CLHEP::RandGaussQ   _randGaussQ;
     RandomUnitSphere    _randomUnitSphere;
       
-    virtual void generateOne( GenParticleCollection&  );
+    virtual void generateOne( GenParticleCollection& );
+      
   };
 
 } // end namespace mu2e,
 
-#endif /* EventGenerator_PrimaryProtonGun_hh */
+#endif /* EventGenerator_PrimaryProtonGunImpl_hh */
