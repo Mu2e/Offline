@@ -37,7 +37,10 @@ double BirkCorrHadron = 4.0;
 double ROphotostatistic = 30.0;//p.e / MeV
 
 //conversion factor from ADC counts to MeV
-double ADC2MeVConversionFactor = 1.6e-03; //5.46e-04;//0.989e-03;
+double ADC2MeVConversionFactor =  1.6e-03;
+
+//conversion factor from ADC counts to MeV
+double Peak2MeVConversionFactor =  0.0459634;
 
 //value of the sigma used to do the Gaussian smearing due to the electronic noise,
 //this is the quadratic sum of all APDs.....
